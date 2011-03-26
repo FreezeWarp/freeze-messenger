@@ -1,0 +1,185 @@
+/* General */
+* { /* This sets the box model to border-box, which is defined in CSS3 and supported by every browser. Border-box defines widths as including the border, which makes percentages like 20% and 80% work when one of the elements has a border. */
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+#chatContainer {
+  height: 560px;
+}
+
+
+
+
+/***** Left Side *****/
+
+#leftPanel {
+  float: left;
+  height: 560px;
+  width: 45%;
+}
+
+#roomListHeader {
+  text-align: left;   
+}
+
+#roomListContainer {
+  height: 150px;
+  overflow: auto;
+  margin: 0px;
+}
+
+#textEntryContainer {
+  padding: 10px;
+  width: 80%;
+  float: left;
+}
+#messageInput {
+  height: 100px;
+  width: 100%;
+  padding: 3px;
+}
+
+#controls {
+  max-height: 70px;
+  padding-bottom: 5px; 
+}
+#controls button:last-child {
+  margin-right: 0%;
+}
+
+#buttonMenuLeft {
+  float: left;
+  width: 10%;
+}
+#buttonMenuRight {
+  float: right;
+  width: 10%;
+}
+#buttonMenuLeft button, #buttonMenuRight button {
+  width: 100%;
+}
+
+#youtubeResultsContainer {
+  height: 320px;
+  overflow: auto;
+}
+
+#textentryBoxUpload, #textentryBoxYoutube, #textentryBoxUrl {
+  display: none;
+  text-align: center;
+}
+
+#fileUpload, #urlUpload {
+  width: 300px;
+}
+
+#activeUsers {
+  min-height: 20px;
+  max-height: 40px;
+  overflow: auto;
+}
+
+
+
+/***** Right Side *****/
+
+#rightPanel {
+  float: right;
+  width: 55%;
+  height: 560px;
+}
+
+#title {
+  text-align: left;
+}
+#rightTitle {
+  width: 30%;
+  min-width: 140px;
+}
+
+#messageList {
+  height: 440px;
+  overflow: auto; 
+}
+
+
+
+/***** Other Crap *****/
+
+
+.leftPart {
+  float: left;
+  text-align: left;
+}
+.rightPart {
+  float: right;
+  text-align: right;
+}
+
+.username {
+  font-weight: bold; 
+}
+.usernameTable span {
+  width: 100px;
+  overflow: hidden;
+  display: inline-block; 
+  word-wrap: normal;
+  white-space: nowrap;
+}
+
+.inline {
+  display: inline;
+}
+.inlineBlock {
+  display: inline-block;
+}
+.hidden {
+  display: none;
+}
+
+.embedImage {
+  max-width: 300px;
+  max-height: 300px;
+  border: none;
+}
+
+a img:hover {
+  opacity: .5;
+}
+img.standard {
+  height: 16px;
+  width: 16px;
+}
+
+button.standard {
+  padding: 2px 5px;
+  height: 28px;
+  margin: 1px;
+}
+select.standard {
+  height: 28px;
+}
+
+iframe.nodisplay {
+  width: 0px;
+  height: 0px;
+  border: 0px; 
+  display: none; /* The above are probably redundant, I suppose. */
+}
+
+table.rowHover tr:hover { /* This is used in the AdminCP as a quick hack to make things easier to understand. */
+  opacity: .8; 
+}
+
+.messageLine {
+  margin: 4px 0px;
+  display: block;
+}
+
+h2, h3, h4 {
+  margin: 0px; 
+}

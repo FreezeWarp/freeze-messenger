@@ -1,0 +1,4 @@
+<FilesMatch "\.(gif|jpg|jpeg|png|swf)$">
+#ExpiresDefault A604800
+#Header set Cache-Control "max-age=604800, public"
+</FilesMatch>

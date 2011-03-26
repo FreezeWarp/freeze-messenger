@@ -1,0 +1,135 @@
+body {
+  min-width: 100px; 
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+#controls {
+  max-height: 70px;
+  padding-bottom: 5px; 
+}
+#buttonMenuLeft, #buttonMenuRight {
+  display: none;
+}
+#activeUsers {
+  min-height: 20px;
+  max-height: 40px;
+  overflow: auto;
+}
+#textEntryContainer {
+  padding: 10px;
+  width: 100%;
+  float: left;
+}
+#messageInput {
+  height: 100px;
+  width: 100%;
+}
+#textentryBoxYoutube {
+  display: none; 
+}
+#textentryBoxUpload {
+  display: none;
+  text-align: center;
+}
+#youtubeResultsContainer {
+  height: 200px;
+  overflow: auto;
+}
+#fileUpload, #urlUpload {
+  width: 300px;
+}
+
+#rightPanel {}
+#roomTitle {}
+#title, #roomListHeader {
+  text-align: left; 
+}
+#refreshStatus {
+  float: right;
+  text-align: right; 
+}
+#messageList {
+}
+#messageListContainer {
+    position:relative;
+    z-index:1;
+    width:auto/* your desired width, auto and 100% are fine */;
+    height:380px/* element height */;
+    overflow:auto/* hidden|auto|scroll */; 
+}
+#roomListHeader {}
+#roomListContainer {}
+#roomListTable {}
+#leftPanel {}
+#wysiwygControls {}
+#wysiwygControls button {}
+#settingControls {}
+#settingControls button {}
+#chatContainer {}
+#controls button {}
+#controls button:last-child {}
+#controls {
+  display: none;
+}
+img.standard {
+  height: 16px;
+  width: 16px;
+}
+.messageLine {
+  word-wrap: break-word; /* For those wondering, word-wrap: break-word was introduced as a Microsoft proprietary CSS extension in IE 5.5. It has since been standarized in CSS3, and implemented in both Firefox and Chrome. Opera support was added in 10.5. */
+}
+.leftPart {
+  float: left;
+  text-align: left;
+}
+.rightPart {
+  float: right;
+  text-align: right;
+}
+.username {
+  font-weight: bold; 
+}
+.username span {
+  width: 100px;
+  overflow: hidden;
+  display: inline-block; 
+  word-wrap: normal;
+  white-space: nowrap;
+}
+.inline {
+  display: inline;
+}
+.inlineBlock {
+  display: inline-block;
+}
+.hidden {
+  display: none;
+}
+.embedImage {
+  max-width: 300px;
+  max-height: 300px;
+  border: none;
+}
+a img:hover {
+  opacity: .5;
+}
+
+iframe.nodisplay {
+  width: 0px;
+  height: 0px;
+  border: 0px; 
+} 
+
+select, input[type=text], input[type=password] {
+  max-width: 150px;
+}
