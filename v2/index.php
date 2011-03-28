@@ -10,8 +10,16 @@ require_once('functions/container.php'); // Used for /some/ formatting, though p
 
 $action = $_GET['action']; // What are we gonna be doing today?
 
-if ($_COOKIE['vrim10-reverseOrder'] == 'true') $reverse = true; // Check the cookies for reverse post order.
+/* Cookie Processing */
+// Cookies are stored as strings, and 'false' == bool(true) in PHP... stupid, I know, so instead we use the string "true", which returns true when compared against both the string and the bool "true" types. It also returns false against the integer one.
+// Also note that for GET transfer, the integer values "0" and "1" evaluate false and true respectively.
+if ($_COOKIE['vrim10-reverseOrder'] == 'false') $reverse = 0;
+elseif ($_COOKIE['vrim10-reverseOrder'] == 'true' || $user['settings'] & 32) $reverse = 1; // Check the cookies for reverse post order.
 
+/* Start Room Code
+ * Get and format all of the rooms for display in a second here. */
+if ($user['favRooms']) $rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE options & 4 = FALSE AND id IN ($user[favRooms])",'id'); // Get all rooms
+if ($rooms) foreach ($rooms AS $room3) $roomHtml .= "            <li><a href=\"/index.php?room=$room3[id]\" class=\"room\" data-roomid=\"$room3[id]\">$room3[name]</a></li>\n";
 
 
 /* Code required before headers are sent. */
@@ -20,6 +28,7 @@ if ($user['userid']) {
   switch ($action) {
     case 'chat': case '': case false:
       $includeIE9 = true;
+      $inRoom = true;
       require_once('process/main.php');
       $title = 'Room ' . htmlentities($room['name']);
     break;
@@ -79,7 +88,7 @@ else { // Not logged in.
       <label for="rememberme">Remember Me for One Week?:</label>
       <input type="checkbox" name="rememberme" id="rememberme" /><br /><br />
 
-      <input type="submit" value="Lets Go!" /><input type="reset" value="Start Over." /><input type="button" value="Secure Login" onclick="$(\'#normalLogin\').slideUp(); $(\'#secureLogin\').slideDown();" />
+      <button type="submit">Launch</button><button type="reset">Start Over</button><button type="button" onclick="$(\'#normalLogin\').slideUp(); $(\'#secureLogin\').slideDown();">Secure Login</button>
     </form>
   </div>
 

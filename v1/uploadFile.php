@@ -63,7 +63,7 @@ switch ($_POST['method']) {
     $extParts = explode('.',$_FILES['fileUpload']['name']);
     $ext = $extParts[count($extParts) - 1];
 
-    $fileLocation = "/var/www/chatinterface/htdocs/userdata/uploads/$user[userid]/" . preg_replace('/[^a-zA-Z0-9_\.]/','',$_FILES['fileUpload']['name']);
+    $fileLocation = "/var/www/chatinterface/htdocs/v1/userdata/uploads/$user[userid]/" . preg_replace('/[^a-zA-Z0-9_\.]/','',$_FILES['fileUpload']['name']);
     $serverLocation = "userdata/uploads/$user[userid]/" . preg_replace('/[^a-zA-Z0-9_\.]/','',$_FILES['fileUpload']['name']);
 
     if (!hasPermission($room,$user)) $errorMessage = 'You do not have permission to do this.';

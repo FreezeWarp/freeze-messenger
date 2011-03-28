@@ -7,9 +7,12 @@ $room = intval($_POST['room']); // Get the room from POST.
 
 $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
 
-if (strlen($message) == 0 || strlen($message) > 1000) { echo 'This message is too long or short. Messages must be more than 0 characters and less than or equal to 1000.'; } // Too short/long.
-elseif (preg_match('/^(\ |\n|\r)*$/',$message)) { echo 'In some countries, you could be arrested for posting only spaces. Now aren\'t you glad we stopped you?'; } // All spaces.
-//elseif (strstr($message,array('4chan.net','Pokefarm.net'))) { echo 'You have made mention to a website which is banned within the chat.'; }
+if (strlen($message) == 0 || strlen($message) > 1000) { // Too short/long.
+  echo 'This message is too long or short. Messages must be more than 0 characters and less than or equal to 1000.';
+}
+elseif (preg_match('/^(\ |\n|\r)*$/',$message)) { // All spaces.
+  echo 'In some countries, you could be arrested for posting only spaces. Now aren\'t you glad we stopped you?';
+}
 elseif (!hasPermission($room,$user)) { echo 'Whoa buddy. You aren\'t allowed to post here.'; } // Not allowed to post.
 elseif (strpos($message, '/topic') === 0) {
   $title = preg_replace('/^\/topic (.+?)$/i','$1',$message);

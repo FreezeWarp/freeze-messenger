@@ -59,34 +59,23 @@ function nl2vb($message) {
   return str_replace("\n",'{n}',$message);
 }
 
-function censor($text,$settings = 2) {
-//  return str_ireplace(array('fuck','faggot','cunt','damn','cock','shit','douche','f*** you','hammer time','learn to spell'),array('f***','f*****','c**t','hoover dam','c**k','$h*!','d*****','f*** me','[youtube]otCpCn0l4Wo[/youtube]','[youtube]UHysmKGGLA8[/youtube]'),$text);
-  if (($settings & 2) == false) {
-    $text = str_ireplace(
-              array('i blame freeze',
-                    'fuck',
-                    'faggot',
-                    'cunt',
-                    'damn',
-                    'bitch',
-                    'cock',
-                    'shit',
-                    'douche',
-                    'porn',
-                    '  '),
-              array(':ibf:',
-                    'f***',
-                    'f*****',
-                    'c**t',
-                    'd@&#',
-                    'b!&¢@',
-                    'c**k',
-                    '$h*!',
-                    'd*****',
-                    'pr0n',
-                    ' &nbsp;'),
-                         $text);
+function censor($text,$roomid) {
+  global $sqlPrefix;
+
+  $words = sqlArr("SELECT w.word, w.severity, w.param
+FROM {$sqlPrefix}censorLists AS l, {$sqlPrefix}censorWords AS w
+WHERE w.listid = l.id",'word');
+
+  if (!$words) return $text;
+
+  foreach ($words AS $word) {
+    switch($word['severity']) {
+      case 'replace':
+        $text = str_replace($word['word'],$word['param'],$text);
+      break;
+    }
   }
+
   return $text;
 }
 

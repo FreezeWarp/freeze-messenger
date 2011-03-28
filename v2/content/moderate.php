@@ -1,36 +1,107 @@
 <?php
 if ($user['settings'] & 16) { // Check that the user is an admin.
-  echo '<div style="width: 20%; float: left;">
-<table class="page">
+  switch ($_GET['do']) {
+    case 'censor':
+    switch($_GET['do2']) {
+      case false:
+      case 'viewLists':
+      $lists = sqlArr("SELECT * FROM {$sqlPrefix}censorLists WHERE options & 1",'id');
+      foreach ($lists AS $list) {
+        $options = array();
+
+        if ($list['options'] & 2) $options[] = "Dissabable";
+        if ($list['options'] & 4) $options[] = "Disabled in Private";
+        if ($list['options'] & 8) $options[] = "Mature";
+
+        $rows .= '    <tr><td>' . $list['name'] . '</td><td align="center">' . ($list['type'] == 'white' ? '<div style="border-radius: 1em; background-color: white; border: 1px solid black; width: 20px; height: 20px;"></div>' : '<div style="border-radius: 1em; background-color: black; border: 1px solid white; width: 20px; height: 20px;"></div>') . '</td><td>' . implode(', ',$options) . '</td><td><a href="/index.php?action=moderate&do=censor&do2=deleteList&listid=' . $list['id'] . '"><img src="images/edit-delete.png" /></a><a href="/index.php?action=moderate&do=censor&do2=editList&listid=' . $list['id'] . '"><img src="images/document-edit.png" /></a><a href="/index.php?action=moderate&do=censor&do2=viewWords&listid=' . $list['id'] . '"><img src="images/view-list-text.png" alt="View Words" /></a></td></tr>
+  ';
+      }
+
+      echo container('Current Lists<a href="/index.php?action=moderate&do=censor&do2=addList"><img src="images/document-new.png" style="float: right;" /></a>','<table class="page rowHover" border="1">
   <thead>
-    <tr class="hrow">
+    <tr class="hrow ui-widget-header">
+      <td>List Name</td>
+      <td>Type</td>
+      <td>Notes</td>
       <td>Actions</td>
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <td style="border-bottom: 1px solid;"><a href="/index.php?action=moderate">Home</a></td>
-    </tr>
-    <tr>
-      <td><a href="/index.php?action=moderate&do=showimages">Moderate Images</a></td>
-    </tr>
-    <tr>
-      <td><a href="/index.php?action=moderate&do=listusers">Moderate Users</a></td>
-    </tr>
-    <tr>
-      <td><span style="padding-left: 15px;"><a href="/index.php?action=moderate&do=banuser">Ban a User</a></span></td>
-    </tr>
-    <tr>
-      <td><span style="padding-left: 15px;"><a href="/index.php?action=moderate&do=unbanuser">Unban a User</a></span></td>
-    </tr>
-    <tr>
-      <td><a href="/index.php?action=moderate&do=maintence">Maintence</a></td>
-    </tr>
+' . $rows . '
   </tbody>
-</table>
-</div>
-<div style="width: 80%; float: right;">';
-  switch ($_GET['do']) {
+</table>');
+      break;
+
+      case 'addList':
+      echo container('Create New Censor List','<form action="/index.php?action=moderate&do=censor&do2=addList2" method="post">
+  Name: <input type="text" name="name" /><br />
+  Type: <select name="type">
+    <option value="white">whitelist</option>
+    <option value="blacklist">blacklist</option>
+  </select><br />
+  Can be Dissabled: <input type="checkbox" name="candis" value="true" /><br />
+  Dissabled in Private Rooms: <input type="checkbox" name="privdis" value="true" /><br />
+  Mature: <input type="checkbox" name="mature" value="true" /><br /><br />
+
+  <button type="submit">Submit</button><button type="reset">Reset</button>
+</form>');
+      break;
+
+      case 'addList2':
+      $listname = mysqlEscape($_POST['name']);
+      $listtype = ($_POST['name'] == 'black' ? 'black' : 'white');
+      $listoptions = ($_POST['candis'] ? 2 : 0) + ($_POST['privdis'] ? 4 : 0) + ($_POST['mature'] ? 8 : 0);
+
+      sqlArr("INSERT INTO {$sqlPrefix}censorLists () VALUES ()");
+
+      echo container('List Added','The list has been added.<br /><br />' . button('Return to Viewing Lists','/index.php?action=moderate&do=censor&do2=viewLists'));
+      break;
+
+      case 'editList':
+
+      break;
+
+      case 'deleteList':
+
+      break;
+
+      case 'viewWords':
+      $listid = intval($_GET['listid']);
+      $words = sqlArr("SELECT * FROM {$sqlPrefix}censorWords WHERE listid = $listid",'id');
+      foreach ($words AS $word) {
+        $rows .= '    <tr><td>' . $word['word'] . '</td><td>' . $word['severity'] . '</td><td>' . $word['param'] . '</td><td><a href="/index.php?action=moderate&do=censor&do2=deleteWord&wordid=' . $list['id'] . '"><img src="images/edit-delete.png" /></a><a href="/index.php?action=moderate&do=censor&do2=editWord&wordid=' . $word['id'] . '"><img src="images/document-edit.png" /></a></td></tr>
+  ';
+      }
+
+      echo container('Current Words<a href=""><img src="images/document-new.png" style="float: right;" />','<table class="page rowHover" border="1">
+  <thead>
+    <tr class="hrow ui-widget-header">
+      <td>Word</td>
+      <td>Type</td>
+      <td>Param</td>
+      <td>Actions</td>
+    </tr>
+  </thead>
+  <tbody>
+' . $rows . '
+  </tbody>
+</table>');
+      break;
+
+      case 'addWord':
+
+      break;
+
+      case 'editWord':
+
+      break;
+
+      case 'deleteWord':
+
+      break;
+    }
+    break;
+
     case 'showimages':
     $userid = intval($_GET['userid']);
     if ($userid) {
@@ -42,7 +113,7 @@ if ($user['settings'] & 16) { // Check that the user is an admin.
 
       echo container('Moderate and Delete Images','<table class="page rowHover">
   <thead>
-    <tr class="hrow">
+    <tr class="hrow ui-widget-header">
       <td>Preview</td>
       <td>Name</td>
       <td>Actions</td>
@@ -58,7 +129,7 @@ if ($user['settings'] & 16) { // Check that the user is an admin.
 
       echo container('Select a User','<table class="page rowHover">
   <thead>
-    <tr class="hrow">
+    <tr class="hrow ui-widget-header">
       <td>User ID</td><td>Username</td>
     </tr>
   </thead>
@@ -105,9 +176,9 @@ if ($user['settings'] & 16) { // Check that the user is an admin.
     case 'banuser':
     $userTable = mysqlReadThrough(mysqlQuery("SELECT u.userid, u.username, u2.settings FROM user AS u, {$sqlPrefix}users AS u2 WHERE u2.userid = u.userid AND (u2.settings & 1 = false)"),'<tr><td>$userid</td><td>$username</td><td><a href="/index.php?action=moderate&do=banuser2&userid=$userid">Ban</a></td></tr>');
 
-    echo '<table class="page rowHover">
+    echo container('Ban a User','<table class="page rowHover">
   <thead>
-    <tr class="hrow">
+    <tr class="hrow ui-widget-header">
       <td>User ID</td>
       <td>Username</td>
       <td>Actions</td>
@@ -115,7 +186,7 @@ if ($user['settings'] & 16) { // Check that the user is an admin.
   </thead>
   <tbody>' . $userTable . '
   </tbody>
-</table>';
+</table>');
     break;
 
     case 'banuser2':
@@ -128,9 +199,9 @@ if ($user['settings'] & 16) { // Check that the user is an admin.
     case 'unbanuser':
     $userTable = mysqlReadThrough(mysqlQuery("SELECT u.userid, u.username, u2.settings FROM user AS u, {$sqlPrefix}users AS u2 WHERE u2.userid = u.userid AND u2.settings & 1"),'<tr><td>$userid</td><td>$username</td><td><a href="/index.php?action=moderate&do=unbanuser2&userid=$userid">Unban</a></td></tr>');
 
-    echo '<table class="page rowHover">
+    echo container('Unban a User','<table class="page rowHover">
   <thead>
-    <tr class="hrow">
+    <tr class="hrow ui-widget-header">
       <td>User ID</td>
       <td>Username</td>
       <td>Actions</td>
@@ -138,7 +209,7 @@ if ($user['settings'] & 16) { // Check that the user is an admin.
   </thead>
   <tbody>' . $userTable . '
   </tbody>
-</table>';
+</table>');
     break;
 
     case 'unbanuser2':
@@ -220,7 +291,7 @@ if ($user['settings'] & 16) { // Check that the user is an admin.
       default:
       echo '<table class="page">
   <thead>
-    <tr class="hrow">
+    <tr class="hrow ui-widget-header">
       <td>System Maintence</td>
     </tr>
   </thead>
@@ -245,9 +316,9 @@ if ($user['settings'] & 16) { // Check that the user is an admin.
     $activeUsers = sqlArr("SELECT COUNT(userid) AS count, userid FROM {$sqlPrefix}ping WHERE UNIX_TIMESTAMP(time) > UNIX_TIMESTAMP(NOW()) - 60 GROUP BY userid",'userid');
     $bannedUsers = sqlArr("SELECT userid FROM {$sqlPrefix}users WHERE settings & 1",'userid');
     $status = (file_exists('.tempStop')) ? 'Stopped' : 'Running';
-    echo container('Welcome','<script type="text/javascript">$(document).ready(function() { $(\'#moderateRight\').animate({\'height\' : \'300px\'},1750); });</script><div style="height: 0px; overflow: hidden;" id="moderateRight"><div style="text-align: center; font-size: 40px; font-weight: bold;">Welcome~~</div><br /><br />
+    echo container('Welcome','<script type="text/javascript">$(document).ready(function() { $(\'#moderateRight\').animate({\'height\' : window.innerHeight - 50},1750); });</script><div style="height: 0px; overflow: hidden;" id="moderateRight"><div style="text-align: center; font-size: 40px; font-weight: bold;">Welcome~~</div><br /><br />
 
-Welcome to the Victory Road Instant Messenger control panel. Here you, as one of our grandé and spectacular administrative staff, can perform every task needed to you during any given day.<br /><br />
+Welcome to the FreezeMessenger control panel. Here you, as one of our grandé and spectacular administrative staff, can perform every task needed to you during any given day.<br /><br />
 
 Server Time: ' . date('h:ia') . '<br />
 Your Time: ' . vbdate('h:ia') . '<br />
@@ -256,7 +327,7 @@ Banned Users: <a href="/index.php?action=moderate&do=unbanuser">' . count($banne
 Status: <a href="/index.php?action=moderate&do=maintence&do2=disable">' . $status . '</a><br /><br /><br />
 
 
-Freezie is Bored.</div>');
+<img src="http://www.victoryroad.net/image.php?u=179&type=thumb" style="float: left;" />Freezie is Energetic.</div>');
     break;
   }
   echo '</div>';

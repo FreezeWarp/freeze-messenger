@@ -63,7 +63,8 @@ switch ($_POST['method']) {
     $extParts = explode('.',$_FILES['fileUpload']['name']);
     $ext = $extParts[count($extParts) - 1];
 
-    $fileLocation = "/var/www/chatinterface/htdocs/userdata/uploads/$user[userid]/" . preg_replace('/[^a-zA-Z0-9_\.]/','',$_FILES['fileUpload']['name']);
+    $fileLocation = "/var/www/chatinterface/htdocs/v1/userdata/uploads/$user[userid]/" . preg_replace('/[^a-zA-Z0-9_\.]/','',$_FILES['fileUpload']['name']);
+    $serverLocation = "userdata/uploads/$user[userid]/" . preg_replace('/[^a-zA-Z0-9_\.]/','',$_FILES['fileUpload']['name']);
 
     if (!hasPermission($room,$user)) $errorMessage = 'You do not have permission to do this.';
     elseif (!in_array($_FILES['fileUpload']['type'],$validTypes)) $errorMessage = 'You must upload a PNG, GIF, or JPEG file.';
@@ -71,14 +72,14 @@ switch ($_POST['method']) {
     elseif ($_FILES['fileUpload']['size'] > 4 * 1000 * 1000) $errorMessage = 'The file you are trying to upload is too large.';
     elseif ($_FILES['fileUpload']['error'] > 0) $errorMessage = 'Other Error: ' . $_FILES['fileUpload']['error'];
     else {
-      if (file_exists($fileLocation)) $message = '[img]http://vrim.victoryroad.net/' . $fileLocation . '[/img]';
+      if (file_exists($fileLocation)) $message = '[img]http://vrim.victoryroad.net/' . $serverLocation . '[/img]';
       else {
         if (!is_dir("userdata/uploads/$user[userid]")) mkdir ("userdata/uploads/$user[userid]",0755);
 
         if (!move_uploaded_file($_FILES['fileUpload']['tmp_name'],$fileLocation)) {
-          $errorMessage = 'Could not upload file. (' . $fileLocation . ')';
+          $errorMessage = 'Could not upload file. (' . $serverLocation . ')';
         }
-        else $message = '[img]http://vrim.victoryroad.net/' . str_replace('/var/www/chatinterface/htdocs/',$fileLocation) . '[/img]';
+        else $message = '[img]http://vrim.victoryroad.net/' . $serverLocation . '[/img]';
       }
     }
   }

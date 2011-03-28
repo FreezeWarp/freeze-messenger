@@ -2,14 +2,15 @@
 <!-- Original Source Code Copyright © 2011 Joseph T. Parsons. -->
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <title><?php echo ($brandingTitle ?: 'IceIM') . ($title ? " - $title" : ''); ?></title>
+  <title><?php echo ($brandingTitle ?: 'FreezeMessenger') . ($title ? " - $title" : ''); ?></title>
   <meta name="robots" content="index, follow" />
   <meta name="author" content="Joseph T. Parsons" />
   <meta name="keywords" content="instant messenger, im, instant message<?php echo ($brandingKeywords ? ", $brandingKeywords" : '') . ($keywords ? ', ' . implode(', ',$keywords) : ''); ?>" />
   <meta name="description" content="The VictoryRoad Instant Messenger is a powerful online instant messenger that supports secure one-on-one messenging, chat rooms, advance archiving, and more. It works easily on a variety of platforms, including mobile." />
   <link rel="icon" id="favicon" type="image/gif" href="/images/favicon.gif" />
 
-  <!-- START Scripts -->
+  <!-- START Scripts
+    -- We should minimize these latter; I mean... *Will Smith Voice* DAMN!! -->
   <script src="client/js/jquery-1.5.1.min.js" type="text/javascript"></script>
   <script src="client/js/jquery-ui-1.8.11.custom.min.js" type="text/javascript"></script>
   <script src="client/js/jquery.cookie.js" type="text/javascript"></script>
@@ -62,7 +63,13 @@
       </ul>
       <h3><a href="#">Me</a></h3>
       <ul>
-        ' . ($user['settings'] & 16 ? '<li><a href="/index.php?action=moderate">AdminCP</a></li>' : '') . '
+        ' . ($user['settings'] & 16 ? '<li><a href="/index.php?action=moderate">AdminCP</a></li>
+        <ul><li><a href="/index.php?action=moderate&do=showimages">Moderate Images</a></li>
+        <li><a href="/index.php?action=moderate&do=listusers">Moderate Users</a></li>
+        <ul><li><a href="/index.php?action=moderate&do=banuser">Ban a User</a></li>
+        <li><a href="/index.php?action=moderate&do=unbanuser">Unban a User</a></li></ul>
+        <li><a href="/index.php?action=moderate&do=censor">Modify Censor</a></li>
+        <li><a href="/index.php?action=moderate&do=maintence">Maintence</a></li></ul>' : '') . '
         ' . ($user['userid'] ? '
         <li style="border-bottom: 1px solid;"><a href="#" id="changeSettings">Change Settings</a></li>' : '') . '
         ' . ($user['userid'] ? '<li><a href="/index.php?action=logout">Logout</a></li>' : '<li><a href="/index.php">Login</a></li>') . '
@@ -73,9 +80,9 @@
   ' . $roomHtml . '
         <li><a href="javascript:void(0);" onclick="showAllRooms();">Show All</a></li>
         </ul>
-      </div>
+      </div>' . ($inRoom ? '
       <h3><a href="#">Active Users</a></h3>
-      <div id="activeUsers">Loading...</div>
+      <div id="activeUsers">Loading...</div>' : '') . '
       <h3><a href="#">Copyright</a></h3>
       <div>
         <ul>
