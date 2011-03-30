@@ -15,12 +15,18 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 require_once('../global.php');
+require_once('../functions/generalFunctions.php');
+require_once('../functions/container.php');
 
-  $roomSelect = mysqlReadThrough(mysqlQuery("SELECT * FROM {$sqlPrefix}rooms WHERE " . ((($user['settings'] & 16) == false) ? "(owner = '$user[userid]' OR moderators REGEXP '({$user[userid]},)|{$user[userid]}$') AND " : '') . "(options & 16) = false AND (options & 4) = false AND (options & 8) = false"),'<option value="$id"{{' . intval($_GET['roomid']) . ' == $id}}{{ selected="selected"}{}}>$name</option>
-');
-  $userSelect = mysqlReadThrough(mysqlQuery("SELECT u2.userid, u2.username FROM {$sqlPrefix}users AS u, user AS u2 WHERE u2.userid = u.userid ORDER BY username"),'<option value="$userid">$username</option>
-');
-  echo '';
+$roomid = intval($_POST['roomid']);
+$room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $roomid");
 
+if ($banned || !$room) { // Check that the user isn't banned.
+  echo container('We\'re Sorry','We\'re sorry, but for the time being you have been banned from the chat. You make contact a Victory Road administrator for more information.');
+}
+
+else {
+  require_once('../roomTemplate.php'); // While the below arguably should be in this too [since it is needed for pretty much anything to work], we're only reusing the code in the AJAX room switcher, which itself just assumes everything below already exists in the DOM.
+}
 
 ?>

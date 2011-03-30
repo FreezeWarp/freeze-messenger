@@ -365,9 +365,9 @@ else { // If the user is not valid, remove all user data. If a user's name is co
 
 
 /* Process Daylight Savings Time */
-if ($user['options'] & 64) $user['timezoneoffset']; // DST is autodetect. We'll just set it by hand.
+if ($user['options'] & 64) $user['timezoneoffset']++; // DST is autodetect. We'll just set it by hand.
 elseif ($user['options'] & 128) $user['timezoneoffset']++; // DST is on, add an hour
-else $user['timezoneoffset']++; // DST is on.
+else $user['timezoneoffset']; // DST is off
 
 
 /* Process Style Settings */

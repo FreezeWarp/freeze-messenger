@@ -1,4 +1,19 @@
 <?php
+/* FreezeMessenger Copyright © 2011 Joseph Todd Parsons
+
+ * This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
 ini_set('max_execution_time','30');
 
 require_once('../global.php');
@@ -51,7 +66,7 @@ else {
   $activeUsers = implode(', ',$users2);
 
   /* Get Missed Messages */
-  $missedMessages = sqlArr("SELECT r.* FROM {$sqlPrefix}rooms AS r LEFT JOIN {$sqlPrefix}ping AS p ON (p.userid = $user[userid] AND p.roomid = r.id) WHERE r.options & 16 AND IF(p.time,UNIX_TIMESTAMP(r.lastMessageTime) > (UNIX_TIMESTAMP(p.time) + 10), (r.allowedUsers REGEXP '({$user[userid]},)|{$user[userid]}$'))",'id'); // Right now only private IMs are included, but in the future this will be expanded.
+  $missedMessages = sqlArr("SELECT r.* FROM {$sqlPrefix}rooms AS r LEFT JOIN {$sqlPrefix}ping AS p ON (p.userid = $user[userid] AND p.roomid = r.id) WHERE r.options & 16 AND (r.allowedUsers REGEXP '({$user[userid]},)|{$user[userid]}$') AND IF(p.time, UNIX_TIMESTAMP(r.lastMessageTime) > (UNIX_TIMESTAMP(p.time) + 10), TRUE)",'id'); // Right now only private IMs are included, but in the future this will be expanded.
 
   if ($missedMessages) {
     foreach ($missedMessages AS $message) {

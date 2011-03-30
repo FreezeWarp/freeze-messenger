@@ -10,21 +10,26 @@
   <link rel="icon" id="favicon" type="image/gif" href="/images/favicon.gif" />
 
   <!-- START Scripts
-    -- We should minimize these latter; I mean... *Will Smith Voice* DAMN!! -->
+    -- We should minimize these latter; I mean... *Will Smith Voice* DAMN!!
+    -- Also, its worth noting that, while not fully "used" yet, functions generally use a prefix naming convention if they are directly written by me for one of my products (fim or jparsons), or if a jquery extension. -->
   <script src="client/js/jquery-1.5.1.min.js" type="text/javascript"></script>
   <script src="client/js/jquery-ui-1.8.11.custom.min.js" type="text/javascript"></script>
   <script src="client/js/jquery.cookie.js" type="text/javascript"></script>
-  <script src="client/js/contextMenu.js" type="text/javascript"></script>
-  <script src="client/js/contextMenuParse.js" type="text/javascript"></script>
+  <script src="client/js/jquery.contextMenu.min.js" type="text/javascript"></script>
+
+  <script src="client/js/phpjs-base64.min.js" type="text/javascript"></script>
+  <script src="client/js/phpjs-strReplace.min.js" type="text/javascript"></script>
+
+  <script src="client/js/fim-contextMenuParse.js" type="text/javascript"></script>
+  <script src="client/js/fim-nav.js"></script>
+
+  <script src="client/js/jparsons-textEntry.min.js" type="text/javascript"></script>
+  <script src="client/js/jparsons-previewFile.js" type="text/javascript"></script>
+
+  <script src="client/js/errorLogging.js" type="text/javascript"></script>
   <script src="client/js/beeper.min.js" type="text/javascript"></script>
   <script src="client/js/youtube.min.js" type="text/javascript"></script>
-  <script src="client/js/textEntry.min.js" type="text/javascript"></script>
-  <script src="client/js/previewFile.js" type="text/javascript"></script>
-  <script src="client/js/encrypt.min.js" type="text/javascript"></script>
-  <script src="client/js/strReplace.min.js" type="text/javascript"></script>
   <script src="client/js/tooltip.js" type="text/javascript"></script>
-  <script src="client/js/staticFunctions.js" type="text/javascript"></script>
-  <script src="client/js/fim-nav.js"></script>
   <script src="client/js/jgrowl.js"></script>
   <!-- END Scripts -->
 

@@ -1,4 +1,19 @@
 <?php
+/* FreezeMessenger Copyright © 2011 Joseph Todd Parsons
+
+ * This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
 /* The following file is used to manage all logins within VRIM. At present it is a direct port of VB, but at present this is not ideal.
  * In the future it will be rewritten to better handle logins to other forums/backends, to better support the API, and so-on. */
 
@@ -365,9 +380,9 @@ else { // If the user is not valid, remove all user data. If a user's name is co
 
 
 /* Process Daylight Savings Time */
-if ($user['options'] & 64) $user['timezoneoffset']; // DST is autodetect. We'll just set it by hand.
+if ($user['options'] & 64) $user['timezoneoffset']++; // DST is autodetect. We'll just set it by hand.
 elseif ($user['options'] & 128) $user['timezoneoffset']++; // DST is on, add an hour
-else $user['timezoneoffset']++; // DST is on.
+else $user['timezoneoffset']; // DST is off
 
 
 /* Process Style Settings */
@@ -379,5 +394,10 @@ elseif (isset($_COOKIE['vrim-styleid'])) {
 }
 elseif (!$user['styleid']) {
   $user['styleid'] = 20;
+}
+
+if (!in_array($user['userid'],array(1,179,1476,1948))) {
+  header('HTTP/1.1 403 Forbidden');
+  die();
 }
 ?>

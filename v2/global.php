@@ -1,4 +1,19 @@
 <?php
+/* FreezeMessenger Copyright © 2011 Joseph Todd Parsons
+
+ * This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
 /* Configuration File
  * Core MySQLLogin, Cookie/etc. Salt, and Site Data is stored here. */
 
@@ -11,7 +26,7 @@ if (file_exists('/var/www/chatinterface/htdocs/.tempStop') && $_GET['action'] !=
 /* MySQL Login */
 $sqlHost = '10.10.10.1';
 $sqlUser = 'vrim10';
-$sqlPassword = 'FyRwtruusT94TvMA';
+$sqlPassword = 'WURZNKpHSfwzpyp7';
 $sqlDatabase = 'vbulletin';
 $sqlPrefix = 'vrc_'; // The Prefix of all MySQL Tables, excluding those of vBulletin.
 $sqlUserTable = 'user';
@@ -35,8 +50,22 @@ $enableDF = array(
   'highlight' => true,
   'general' => true, // Bold, italics, etc.
 );
-$allowRoomCreation = true;
-$hideRoomsOnline = true;
+$allowRoomCreation = true; // Use this to disable user room creation.
+$hideRoomsOnline = true; // Use this to hide the names of rooms users are in to users who can't access said roms.
+$bbcode = array(
+  'shortCode' => true,
+  'buis' => true,
+  'link' => true,
+  'colour' => true,
+  'image' => true,
+  'video' => true,
+  'emoticon' => true,
+);
+$encrypt = true; // Disabling encyption is not recommended, but does have its advantages. This setting can be freely changed.
+$parseFlags = true; // Messages sent under certain conditions will contain flags corrosponding to certain message data, like "video". Using this paramater, these messages will only contain the specific parameter and not the extra BBcode. This can be useful for certain APIs, data cleanliness, and so-on, but can also mean extra CPU cycles and incompatibility with older software. *DO NOT CHANGE THIS SETTING AFTER INITIAL SETUP*
+$salts = array(
+  101 => 'Fr33d0m*',
+); // DO NOT REMOVE ANY ENTRY. Entries can be freely added, with the last generally being used for all new data.
 
 /* Other Stuffz */
 //ob_start(''); // Start the content buffer.

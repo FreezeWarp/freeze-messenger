@@ -1,3 +1,20 @@
+/* FreezeMessenger Copyright © 2011 Joseph Todd Parsons
+
+ * This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+var roomid;
+
 $(document).ready(function(){
   roomid = $('data[name=roomid]').attr('value');
 
@@ -43,7 +60,7 @@ $(document).ready(function(){
   });
 
   $('#copyrightLink').click(function() {
-    quickDialogue('FIM, including (but not limited to) FIM\'s private web API, FIM\'s public XML API, FIM\'s legacy public CSV API, and all sourcecode created for use originally with FIM &copy; 2010-2011 Joseph T. Parsons.<br /><br />jQuery, jQueryUI, and all jQueryUI Themeroller Themes &copy; The jQuery Project.<br /><br />jGrowl &copy; 2009 Stan Lemon.<br /><br />jQuery Cookie Plugin &copy; 2006 Klaus Hartl<br /><br />EZPZ Tooltip &copy; 2009 Mike Enriquez<br /><br />Context Menu &copy; ???<br /><br />Youtube Plugin &copy; ???','FIM Copyrights','copyrightDialogue');
+    quickDialogue('FIM, including (but not limited to) FIM\'s private web API, FIM\'s public XML API, FIM\'s legacy public CSV API, and all sourcecode created for use originally with FIM &copy; 2010-2011 Joseph T. Parsons.<br /><br />jQuery, jQueryUI, and all jQueryUI Themeroller Themes &copy; The jQuery Project.<br /><br />jGrowl &copy; 2009 Stan Lemon.<br /><br />jQuery Cookie Plugin &copy; 2006 Klaus Hartl<br /><br />EZPZ Tooltip &copy; 2009 Mike Enriquez<br /><br />Beeper &copy; 2009 Patrick Mueller<br /><br />Error Logger Utility &copy; Ben Alman<br /><br />Context Menu &copy; 2008 Cory S.N. LaViska<br /><br />Youtube Plugin &copy; ???','FIM Copyrights','copyrightDialogue');
   });
 
   $(document).ready(function(){

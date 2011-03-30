@@ -1,4 +1,22 @@
 <?php
+/* FreezeMessenger Copyright © 2011 Joseph Todd Parsons
+
+ * This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+require_once('../global.php');
+require_once('../functions/container.php');
+
 if ($user['settings'] & 16) { // Check that the user is an admin.
   switch ($_GET['do']) {
     case 'censor':
@@ -6,6 +24,7 @@ if ($user['settings'] & 16) { // Check that the user is an admin.
       case false:
       case 'viewLists':
       $lists = sqlArr("SELECT * FROM {$sqlPrefix}censorLists WHERE options & 1",'id');
+
       foreach ($lists AS $list) {
         $options = array();
 
@@ -34,31 +53,97 @@ if ($user['settings'] & 16) { // Check that the user is an admin.
 
       case 'addList':
       echo container('Create New Censor List','<form action="/index.php?action=moderate&do=censor&do2=addList2" method="post">
-  Name: <input type="text" name="name" /><br />
-  Type: <select name="type">
-    <option value="white">whitelist</option>
-    <option value="blacklist">blacklist</option>
-  </select><br />
-  Can be Dissabled: <input type="checkbox" name="candis" value="true" /><br />
-  Dissabled in Private Rooms: <input type="checkbox" name="privdis" value="true" /><br />
-  Mature: <input type="checkbox" name="mature" value="true" /><br /><br />
+  <table>
+    <tr>
+      <td>Name:</td>
+      <td><input type="text" name="name" /><td>
+    </tr>
+    <tr>
+      <td>Type:</td>
+      <td>
+        <select name="type">
+          <option value="white">whitelist</option>
+          <option value="black">blacklist</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td>Can be Dissabled:</td>
+      <td><input type="checkbox" name="candis" value="true" /></td>
+    </tr>
+    <tr>
+      <td>Dissabled in Private Rooms:</td>
+      <td><input type="checkbox" name="privdis" value="true" /></td>
+    </tr>
+    <tr>
+      <td>Mature:</td>
+      <td><input type="checkbox" name="mature" value="true" /><td>
+    </tr>
+  </table>
 
   <button type="submit">Submit</button><button type="reset">Reset</button>
 </form>');
       break;
 
       case 'addList2':
-      $listname = mysqlEscape($_POST['name']);
-      $listtype = ($_POST['name'] == 'black' ? 'black' : 'white');
-      $listoptions = ($_POST['candis'] ? 2 : 0) + ($_POST['privdis'] ? 4 : 0) + ($_POST['mature'] ? 8 : 0);
+      $options = array('white','black');
 
-      sqlArr("INSERT INTO {$sqlPrefix}censorLists () VALUES ()");
+      $listname = mysqlEscape($_POST['name']);
+      $listtype = (in_array($_POST['name'],$options) ? $_POST['name'] : 'white');
+      $listoptions = 1 + ($_POST['candis'] ? 2 : 0) + ($_POST['privdis'] ? 4 : 0) + ($_POST['mature'] ? 8 : 0);
+
+      mysqlQuery("INSERT INTO {$sqlPrefix}censorLists (name, type, options) VALUES ('$listname', '$listtype', '$listoptions')");
 
       echo container('List Added','The list has been added.<br /><br />' . button('Return to Viewing Lists','/index.php?action=moderate&do=censor&do2=viewLists'));
       break;
 
       case 'editList':
+      $listid = intval($_GET['listid']);
+      $list = sqlArr("SELECT * FROM {$sqlPrefix}censorLists WHERE id = $listid");
 
+      echo container('Edit Censor List','<form action="/index.php?action=moderate&do=censor&do2=addList2" method="post">
+  <table>
+    <tr>
+      <td>Name:</td>
+      <td><input type="text" name="name" /><td>
+    </tr>
+    <tr>
+      <td>Type:</td>
+      <td>
+        <select name="type">
+          <option value="white" ' . ($list['type'] == 'white' ? ' selected="selected"' : '') . '>whitelist</option>
+          <option value="black" ' . ($list['type'] == 'black' ? ' selected="selected"' : '') . '>blacklist</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td>Can be Dissabled:</td>
+      <td><input type="checkbox" name="candis" value="true" ' . ($list['options'] & 2 ? ' checked="checked"' : '') . ' /></td>
+    </tr>
+    <tr>
+      <td>Dissabled in Private Rooms:</td>
+      <td><input type="checkbox" name="privdis" value="true" ' . ($list['options'] & 4 ? ' checked="checked"' : '') . ' /></td>
+    </tr>
+    <tr>
+      <td>Mature:</td>
+      <td><input type="checkbox" name="mature" value="true" ' . ($list['options'] & 8 ? ' checked="checked"' : '') . ' /><td>
+    </tr>
+  </table>
+
+  <button type="submit">Submit</button><button type="reset">Reset</button>
+</form>');
+      break;
+
+      case 'editList2':
+      $options = array('white','black');
+
+      $listname = mysqlEscape($_POST['name']);
+      $listtype = (in_array($_POST['name'],$options) ? $_POST['name'] : 'white');
+      $listoptions = 1 + ($_POST['candis'] ? 2 : 0) + ($_POST['privdis'] ? 4 : 0) + ($_POST['mature'] ? 8 : 0);
+
+      mysqlQuery("INSERT INTO {$sqlPrefix}censorLists (name, type, options) VALUES ('$listname', '$listtype', '$listoptions')");
+
+      echo container('List Added','The list has been added.<br /><br />' . button('Return to Viewing Lists','/index.php?action=moderate&do=censor&do2=viewLists'));
       break;
 
       case 'deleteList':
@@ -68,12 +153,17 @@ if ($user['settings'] & 16) { // Check that the user is an admin.
       case 'viewWords':
       $listid = intval($_GET['listid']);
       $words = sqlArr("SELECT * FROM {$sqlPrefix}censorWords WHERE listid = $listid",'id');
-      foreach ($words AS $word) {
-        $rows .= '    <tr><td>' . $word['word'] . '</td><td>' . $word['severity'] . '</td><td>' . $word['param'] . '</td><td><a href="/index.php?action=moderate&do=censor&do2=deleteWord&wordid=' . $list['id'] . '"><img src="images/edit-delete.png" /></a><a href="/index.php?action=moderate&do=censor&do2=editWord&wordid=' . $word['id'] . '"><img src="images/document-edit.png" /></a></td></tr>
+      if ($words) {
+        foreach ($words AS $word) {
+          $rows .= '    <tr><td>' . $word['word'] . '</td><td>' . $word['severity'] . '</td><td>' . $word['param'] . '</td><td><a href="/index.php?action=moderate&do=censor&do2=deleteWord&wordid=' . $word['id'] . '"><img src="images/edit-delete.png" /></a><a href="/index.php?action=moderate&do=censor&do2=editWord&wordid=' . $word['id'] . '"><img src="images/document-edit.png" /></a></td></tr>
   ';
+        }
+      }
+      else {
+        $rows = '<tr><td colspan="4">No words have been added.</td></tr>';
       }
 
-      echo container('Current Words<a href=""><img src="images/document-new.png" style="float: right;" />','<table class="page rowHover" border="1">
+      echo container('Current Words<a href="/index.php?action=moderate&do=censor&do2=addWord&listid=' . $listid . '"><img src="images/document-new.png" style="float: right;" /></a>','<table class="page rowHover" border="1">
   <thead>
     <tr class="hrow ui-widget-header">
       <td>Word</td>
@@ -89,15 +179,102 @@ if ($user['settings'] & 16) { // Check that the user is an admin.
       break;
 
       case 'addWord':
+      $listid = intval($_GET['listid']);
 
+      echo container('Add New Word','<form action="/index.php?action=moderate&do=censor&do2=addWord2" method="post">
+<table>
+  <tr>
+    <td>Text</td>
+    <td><input type="text" name="text" /></td>
+  </tr>
+    <td>Severity:
+    <td>
+      <select name="severity">
+        <option value="replace">replace</option>
+        <option value="warn">warn</option>
+        <option value="confirm">confirm</option>
+        <option value="block">block</option>
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td>Param:</td>
+    <td><input type="text" name="param" /></td>
+  </tr>
+</table><br />
+
+  <input type="hidden" name="listid" value="' . $listid . '" />
+
+  <button type="submit">Submit</button><button type="reset">Reset</button>
+</form>');
+      break;
+
+      case 'addWord2':
+      $options = array('replace','warn','confirm','block');
+
+      $wordtext = mysqlEscape($_POST['text']);
+      $wordsev = (in_array($_POST['severity'],$options) ? $_POST['severity'] : 'replace');
+      $wordparam = mysqlEscape($_POST['param']);
+      $listid = intval($_POST['listid']);
+
+      mysqlQuery("INSERT INTO {$sqlPrefix}censorWords (listid, word, severity, param) VALUES ($listid, '$wordtext', '$wordsev', '$wordparam')");
+
+      echo container('Word Added','The word has been added.<br /><br />' . button('Return to Viewing Words','/index.php?action=moderate&do=censor&do2=viewWords&listid=' . $listid));
       break;
 
       case 'editWord':
+      $wordid = intval($_GET['wordid']);
+      $word = sqlArr("SELECT * FROM {$sqlPrefix}censorWords WHERE id = $wordid");
 
+      echo container('Edit Word "' . $word['word'] . '"','<form action="/index.php?action=moderate&do=censor&do2=editWord2" method="post">
+<table>
+  <tr>
+    <td>Text</td>
+    <td><input type="text" name="text" value="' . $word['word'] . '" /></td>
+  </tr>
+    <td>Severity:
+    <td>
+      <select name="severity">
+        <option value="replace" ' . ($word['severity'] == 'replace' ? ' selected="selected"' : '') . '>replace</option>
+        <option value="warn" ' . ($word['severity'] == 'warn' ? ' selected="selected"' : '') . '>warn</option>
+        <option value="confirm" ' . ($word['severity'] == 'confirm' ? ' selected="selected"' : '') . '>confirm</option>
+        <option value="block" ' . ($word['severity'] == 'block' ? ' selected="selected"' : '') . '>block</option>
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td>Param:</td>
+    <td><input type="text" name="param" value="' . $word['param'] . '"  /></td>
+  </tr>
+</table><br />
+
+  <input type="hidden" name="wordid" value="' . $word['id'] . '" />
+
+  <button type="submit">Submit</button><button type="reset">Reset</button>
+</form>');
+      break;
+
+      case 'editWord2':
+      $options = array('replace','warn','confirm','block');
+
+      $wordid = intval($_POST['wordid']);
+      $word = sqlArr("SELECT * FROM {$sqlPrefix}censorWords WHERE id = $wordid");
+
+      $wordtext = mysqlEscape($_POST['text']);
+      $wordsev = (in_array($_POST['severity'],$options) ? $_POST['severity'] : 'replace');
+      $wordparam = mysqlEscape($_POST['param']);
+
+      mysqlQuery("UPDATE {$sqlPrefix}censorWords SET word = '$wordtext', severity = '$wordsev', param = '$wordparam' WHERE id = $wordid");
+
+      echo container('Word Changed','The word has been changed.<br /><br />' . button('Return to Viewing Words','/index.php?action=moderate&do=censor&do2=viewWords&listid=' . $word['listid']));
       break;
 
       case 'deleteWord':
+      $wordid = intval($_GET['wordid']);
 
+      mysqlQuery("DELETE FROM {$sqlPrefix}censorWords WHERE id = $wordid");
+
+      echo container('Word Deleted','The word has been removed.<br /><br /><button onclick="window.history.back();" type="button">Go Back</button>');
       break;
     }
     break;

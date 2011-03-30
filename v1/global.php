@@ -11,7 +11,7 @@ if (file_exists('/var/www/chatinterface/htdocs/.tempStop') && $_GET['action'] !=
 /* MySQL Login */
 $sqlHost = '10.10.10.1';
 $sqlUser = 'vrim10';
-$sqlPassword = 'FyRwtruusT94TvMA';
+$sqlPassword = 'WURZNKpHSfwzpyp7';
 $sqlDatabase = 'vbulletin';
 $sqlPrefix = 'vrc_'; // The Prefix of all MySQL Tables, excluding those of vBulletin.
 

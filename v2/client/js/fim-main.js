@@ -1,3 +1,18 @@
+/* FreezeMessenger Copyright © 2011 Joseph Todd Parsons
+
+ * This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
 /* Variable Setting */
 var blur = false;
 var totalFails = 0;
@@ -9,10 +24,11 @@ var topic;
 var lastMessage;
 var messages;
 var activeUsers;
-var ding = $('data[name=ding]').attr('value');
-var reverse = $('data[name=reverse]').attr('value');
-var roomid = $('data[name=roomid]').attr('value');
+var ding = ($('data[name=ding]').attr('value') == '1' ? true : false);
+var reverse = ($('data[name=reverse]').attr('value') == '1' ? true : false);
 var soundOn = (ding ? true : false);
+
+
 
 /* Bing! Function */
 window.onblur = function() {
@@ -46,7 +62,7 @@ function updatePosts() {
   window.clearInterval(timer1);
 
   $.ajax({
-    url: 'ajax/fim-main.php?room=' + roomid + '&lastMessage=' + lastMessage + '&reverse=' + reverse + '&encrypt=base64',
+    url: 'ajax/fim-main.php?room=' + roomid + '&lastMessage=' + lastMessage + '&reverse=' + (reverse ? 1 : 0) + '&encrypt=base64',
     type: 'GET',
     timeout: timeout,
     cache: false,
@@ -117,13 +133,15 @@ function updatePosts() {
 }
 
 
-function sendMessage(message) {
+function sendMessage(message,confirmed) {
+  confirmed = (confirmed == 1 ? 1 : '');
+  
   $.ajax({
     url: 'ajax/fim-sendMessage.php',
     type: 'POST',
     cache: false,
     timeout: 5000,
-    data: 'room=' + roomid + '&message=' + str_replace('+','%2b',str_replace('&','%26',str_replace('%','%25',message))),
+    data: 'room=' + roomid + '&confirmed=' + confirmed + '&message=' + str_replace('+','%2b',str_replace('&','%26',str_replace('%','%25',message))),
     success: function(html) {
       if (html == 'success') {
         updatePosts();

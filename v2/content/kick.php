@@ -1,6 +1,22 @@
 <?php
-require_once('functions/parserFunctions.php');
-require_once('global');
+/* FreezeMessenger Copyright © 2011 Joseph Todd Parsons
+
+ * This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+require_once('../global.php'); // Used for everything.
+require_once('../functions/parserFunctions.php'); // Used for /some/ formatting, though perhaps too sparcely right now.
+
 $phase = $_GET['phase'];
 if (!$phase) $phase = '1'; // Default to phase 1.
 
@@ -39,11 +55,7 @@ elseif ($phase == '2') {
   elseif ($user2['settings'] & 16 && false) { // You can't kick admins.
     echo 'You\'re really not supposed to kick admins... I mean, sure, it sounds fun and all, but still... we don\'t like it >:D';
 
-    $message = finalParse('/me fought the law and the law won.');
-
-    list($messageRaw,$messageHtml,$messageVBnet,$saltNum,$iv) = $message;
-
-    mysqlQuery("INSERT INTO {$sqlPrefix}messages (user, room, rawText, htmlText, vbText, salt, iv, microtime, ip) VALUES ($user[userid], $room[id], '$messageRaw', '$messageHtml', '$messageVBnet', $saltNum, '$iv', '" . microtime(true) . "', '$ip')");
+    sendMessage('/me fought the law and the law won.',$user['userid'],$room['id']);
   }
   elseif (!hasPermission($room,$user,'moderate')) {
     echo '...You\'re not a mod...';
@@ -51,11 +63,7 @@ elseif ($phase == '2') {
   else {
     mysqlQuery("INSERT INTO {$sqlPrefix}kick (userid, kickerid, length, room) VALUES ($user2[userid], $user[userid], $time, $room[id])");
 
-    $message = finalParse('/me kicked ' . $user2['username']);
-
-    list($messageRaw,$messageHtml,$messageVBnet,$saltNum,$iv) = $message;
-
-    mysqlQuery("INSERT INTO {$sqlPrefix}messages (user, room, rawText, htmlText, vbText, salt, iv, microtime, ip) VALUES ($user[userid], $room[id], '$messageRaw', '$messageHtml', '$messageVBnet', $saltNum, '$iv', '" . microtime(true) . "', '$ip')");
+    sendMessage('/me kicked ' . $user2['username'],$user['userid'],$room['id']);
 
     echo 'The user has been kicked';
   }

@@ -1,4 +1,19 @@
 <?php
+/* FreezeMessenger Copyright © 2011 Joseph Todd Parsons
+
+ * This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
 function inArray($needle,$haystack) {
   foreach($needle AS $need) {
     if (in_array($need,$haystack)) {
@@ -110,11 +125,10 @@ function vrim_urldecode($str) {
 }
 
 function vrim_decrypt($message) {
+  global $salts;
+
   if ($message['salt'] && $message['iv']) {
-    switch ($message['salt']) {
-      case 101: $salt = 'Fr33d0m*'; break;
-      default: return $message; break;
-    }
+    $salt = $salts[$message['salt']];
 
     $message['vbText'] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message['vbText']), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
     $message['htmlText'] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message['htmlText']), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");

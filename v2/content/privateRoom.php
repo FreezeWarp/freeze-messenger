@@ -1,4 +1,22 @@
 <?php
+/* FreezeMessenger Copyright © 2011 Joseph Todd Parsons
+
+ * This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+require_once('../global.php');
+require_once('../functions/container.php');
+
 $phase = $_GET['phase'];
 if (!$phase) $phase = '1'; // Default to phase 1.
 
@@ -24,14 +42,14 @@ elseif ($phase == '2') {
     $user2 = sqlArr("SELECT * FROM user WHERE userid = $userid");
   }
   else {
-    echo container('Error','You did not specify a user');
+    trigger_error('You did not specify a user.',E_USER_ERROR);
   }
 
   if (!$user2) { // No user exists.
-    echo container('Error','That user could not be found.');
+    trigger_error('That user could not be found.',E_USER_ERROR);
   }
   elseif ($user2['userid'] == $user['userid']) {
-    echo container('Error','Um... Why exactly do you want to talk to yourself?');
+    trigger_error('Um... Why exactly do you want to talk to yourself?',E_USER_ERROR);
   }
   else {
     $group = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE (allowedUsers = '$user[userid],$user2[userid]' OR allowedUsers = '$user2[userid],$user[userid]') AND options & 16"); // Query a group that would match the criteria for a private room.
