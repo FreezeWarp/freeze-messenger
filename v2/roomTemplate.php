@@ -42,7 +42,7 @@ elseif (hasPermission($room,$user)) { // The user is not banned, and is allowed 
 
 <form action="#" method="post">
   <input type="button" onclick="$(\'#stopMessage\').slideUp(); $(\'#chatContainer\').slideDown();" value="Continue." />
-  <input type="button" onclick="window.location.href = \'/index.php\';" value="Go Back" />
+  <input type="button" onclick="window.history.back()" value="Go Back" />
 </form>') . '
     </div>';
   }
@@ -73,7 +73,7 @@ elseif (hasPermission($room,$user)) { // The user is not banned, and is allowed 
   </div>','
   <div id="messageListContainer">
     <div id="messageList">
-      <a href="/index.php?action=archive&roomid=' . $room['id'] . '">View older messages.</a>
+      <a href="/archive.php?roomid=' . $room['id'] . '">View older messages.</a>
     </div>
   </div>') . '
   <div id="textentryBoxMessage">

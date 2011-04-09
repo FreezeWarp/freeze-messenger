@@ -33,11 +33,14 @@ if ($phase == '1') {
 </form>');
 }
 elseif ($phase == '2') {
-  if ($_POST['username']) {
+  $username = ($_POST['username'] ?: $_GET['username']);
+  $userid = ($_POST['userid'] ?: $_GET['userid']);
+
+  if ($username) {
     $safename = mysqlEscape($_POST['username']); // Escape the username for MySQL.
     $user2 = sqlArr("SELECT * FROM user WHERE username = '$safename'"); // Get the user information.
   }
-  elseif ($_GET['userid']) {
+  elseif ($userid) {
     $userid = intval($_GET['userid']);
     $user2 = sqlArr("SELECT * FROM user WHERE userid = $userid");
   }
@@ -54,7 +57,7 @@ elseif ($phase == '2') {
   else {
     $group = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE (allowedUsers = '$user[userid],$user2[userid]' OR allowedUsers = '$user2[userid],$user[userid]') AND options & 16"); // Query a group that would match the criteria for a private room.
     if ($group) {
-      echo "<script type=\"text/javascript\">window.location.href = '/index.php?room=$group[id]';</script>";
+      echo "<script type=\"text/javascript\">window.open('/chat.php?room=$group[id]','room$group[id]');</script>";
     }
     else {
       $allowedGroups = '';
@@ -66,7 +69,7 @@ elseif ($phase == '2') {
 
       mysqlQuery("INSERT INTO {$sqlPrefix}rooms (name,allowedGroups,allowedUsers,moderators,owner,options,bbcode) VALUES ('$name','$allowedGroups','$allowedUsers','$moderators',$user[userid],$options,$bbcode)");
       $insertId = mysql_insert_id();
-      echo "<script type=\"text/javascript\">window.location.href = '/index.php?room=$insertId';</script>";
+      echo "<script type=\"text/javascript\">window.open('/chat.php?room=$insertId','_BLANK');</script>";
     }
   }
 }

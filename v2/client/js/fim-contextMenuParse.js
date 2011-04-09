@@ -18,18 +18,20 @@ function contextMenuParse() {
     menu: 'userMenu'
   },
   function(action, el) {
+    var userid = $(el).attr('data-userid');
+
     switch(action) {
       case 'private_im':
-      window.open('/index.php?action=privateRoom&phase=2&userid=' + $(el).attr('data-userid'),'privateim' + attr('data-userid')); 
+      ajaxDialogue('content/privateRoom.php?phase=2&userid=' + userid,'Private IM','privateRoomDialogue',1000);
       break;
       case 'profile':
-      window.open('http://victoryroad.net/member.php?u=' + $(el).attr('data-userid'),'profile' + attr('data-userid')); 
+      window.open('http://victoryroad.net/member.php?u=' + userid,'profile' + userid);
       break;
       case 'kick':
-      $('#kick').dialog();
+      ajaxDialogue('/content/kick.php?userid=' + userid + '&roomid=' + $('body').attr('data-roomid'),'Kick User','kickUserDialogue',1000);
       break;
       case 'ban':
-      window.open('/index.php?action=moderate&do=banuser2&userid=' + $(el).attr('data-userid'),'banuser' + attr('data-userid'));
+      window.open('/moderate.php&do=banuser2&userid=' + userid,'banuser' + userid);
       break;
     }
   });
@@ -38,8 +40,27 @@ function contextMenuParse() {
     menu: 'messageMenu'
   },
   function(action, el) {
+    postid = $(el).attr('data-messageid');
+
     switch(action) {
       case 'delete':
+      if (confirm('Are you sure you want to delete this message?')) {
+        $.ajax({
+          url: '/ajax/fim-modAction.php?action=deletepost&postid=' + postid,
+          type: 'GET',
+          cache: false,
+          success: function() {
+            $(el).parent().fadeOut();
+          },
+          error: function() {
+            quickDialogue('The message could not be deleted.','Error','message');
+          }
+        });
+      }
+      break;
+
+      case 'link':
+      quickDialogue('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="http://2.vrim.victoryroad.net/archive.php?roomid=' + $('body').attr('data-roomid') + '&message=' + postid + '" />','Link to This Message','linkMessage');
       break;
     }
   });
@@ -50,6 +71,19 @@ function contextMenuParse() {
   function(action, el) {
     switch(action) {
       case 'delete':
+      if (confirm('Are you sure you want to delete this room?')) {
+        $.ajax({
+          url: '/ajax/fim-modAction.php?action=deleteroom&roomid=' + postid,
+          type: 'GET',
+          cache: false,
+          success: function() {
+            $(el).parent().fadeOut();
+          },
+          error: function() {
+            quickDialogue('The room could not be deleted.','Error','message');
+          }
+        });
+      }
       break;
       case 'edit':
       ajaxDialogue('/content/editRoom.php?roomid=' + $(el).attr('data-roomid'),'Edit Room','editRoomDialogue',1000);

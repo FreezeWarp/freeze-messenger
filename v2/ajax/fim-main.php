@@ -47,7 +47,7 @@ else {
       }
 
       $messagesText .= "<span id=\"message$message[id]\" class=\"messageLine\">" . userFormat($message, $room) . "
-  @ <em>" . vbdate(false,$message['time']) . "</em>: <span style=\"{$style}padding: 2px;\" class=\"messageText\">$message[htmlText]</span><br />
+  @ <em>" . vbdate(false,$message['time']) . "</em>: <span style=\"{$style}padding: 2px;\" class=\"messageText\" data-messageid=\"$message[id]\">$message[htmlText]</span><br />
 </span>\n";
       if ($message['id'] > $lastmessage) $lastmessage = $message['id'];
     }
@@ -66,12 +66,14 @@ else {
   $activeUsers = implode(', ',$users2);
 
   /* Get Missed Messages */
-  $missedMessages = sqlArr("SELECT r.* FROM {$sqlPrefix}rooms AS r LEFT JOIN {$sqlPrefix}ping AS p ON (p.userid = $user[userid] AND p.roomid = r.id) WHERE r.options & 16 AND (r.allowedUsers REGEXP '({$user[userid]},)|{$user[userid]}$') AND IF(p.time, UNIX_TIMESTAMP(r.lastMessageTime) > (UNIX_TIMESTAMP(p.time) + 10), TRUE)",'id'); // Right now only private IMs are included, but in the future this will be expanded.
+  $missedMessages = sqlArr("SELECT r.* FROM {$sqlPrefix}rooms AS r LEFT JOIN {$sqlPrefix}ping AS p ON (p.userid = $user[userid] AND p.roomid = r.id) WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.id IN ($user[watchRooms])" : '') . ") AND (r.allowedUsers REGEXP '({$user[userid]},)|{$user[userid]}$' OR r.allowedUsers = '*') AND IF(p.time, UNIX_TIMESTAMP(r.lastMessageTime) > (UNIX_TIMESTAMP(p.time) + 10), TRUE)",'id'); // Right now only private IMs are included, but in the future this will be expanded.
 
   if ($missedMessages) {
     foreach ($missedMessages AS $message) {
-      $roomName = htmlspecialchars($message['name']);
-      $return .= "notify('<a href=\"/index.php?room=$message[id]\" target=\"_BLANK\">$roomName</a>','New Messages','newMessageNotification',$message[id]);";
+      if (!hasPermission($message,$user,'view')) { continue; }
+
+      $roomName = htmlspecialchars(addslashes($message['name']));
+      $return .= "notify('<a href=\"/chat.php?room=$message[id]\" target=\"_BLANK\">$roomName</a>','New Messages','newMessageNotification',$message[id]);";
     }
   }
 

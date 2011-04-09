@@ -157,7 +157,7 @@ function updateActive() {
     error: function() {
       $('#activeUsers').html('Refresh Failed');
       totalFails2++;
-    },
+    }
   });
 
   if (totalFails2 > 5) {

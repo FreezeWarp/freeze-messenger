@@ -396,8 +396,8 @@ elseif (!$user['styleid']) {
   $user['styleid'] = 20;
 }
 
-if (!in_array($user['userid'],array(1,179,1476,1948))) {
+if (!in_array($user['userid'],array(1,10,16,179,933,1476,1948))) {
   header('HTTP/1.1 403 Forbidden');
-  die();
+  die('403 Forbidden');
 }
 ?>

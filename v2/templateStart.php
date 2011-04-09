@@ -8,6 +8,14 @@
   <meta name="keywords" content="instant messenger, im, instant message<?php echo ($brandingKeywords ? ", $brandingKeywords" : '') . ($keywords ? ', ' . implode(', ',$keywords) : ''); ?>" />
   <meta name="description" content="The VictoryRoad Instant Messenger is a powerful online instant messenger that supports secure one-on-one messenging, chat rooms, advance archiving, and more. It works easily on a variety of platforms, including mobile." />
   <link rel="icon" id="favicon" type="image/gif" href="/images/favicon.gif" />
+  <!--[if lte IE 9]>
+  <link rel="shortcut icon" id="faviconfallback" href="/images/favicon1632.ico"/>
+  <![endif]--><!-- Did you know that IE sucks? -->
+
+  <!-- START Styles -->
+  <link rel="stylesheet" type="text/css" href="client/css/ui-darkness/jquery-ui-1.8.11.custom.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" media="screen" />
+  <!-- END Styles -->
 
   <!-- START Scripts
     -- We should minimize these latter; I mean... *Will Smith Voice* DAMN!!
@@ -20,8 +28,8 @@
   <script src="client/js/phpjs-base64.min.js" type="text/javascript"></script>
   <script src="client/js/phpjs-strReplace.min.js" type="text/javascript"></script>
 
-  <script src="client/js/fim-contextMenuParse.js" type="text/javascript"></script>
   <script src="client/js/fim-nav.js"></script>
+  <script src="client/js/fim-contextMenuParse.js" type="text/javascript"></script>
 
   <script src="client/js/jparsons-textEntry.min.js" type="text/javascript"></script>
   <script src="client/js/jparsons-previewFile.js" type="text/javascript"></script>
@@ -33,17 +41,56 @@
   <script src="client/js/jgrowl.js"></script>
   <!-- END Scripts -->
 
-  <!-- START Styles -->
-  <link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" media="screen" />
-  <link rel="stylesheet" type="text/css" href="client/css/ui-darkness/jquery-ui-1.8.11.custom.css" media="screen" />
-  <!-- END Styles -->
+  <!-- IE9 Stuff is Back! w00t! -->
+<?php
+
+    if ($user['favRooms']) {
+      $favRooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE options & 4 = FALSE AND id IN ($user[favRooms])",'id');
+
+      foreach ($favRooms AS $id => $room2) {
+        if (!hasPermission($room2,$user,'post')) {
+          $currentRooms = explode(',',$user['favRooms']);
+          foreach ($currentRooms as $room3) if ($room3 != $room2['id'] && $room3 != '') $currentRooms2[] = $room3; // Rebuild the array without the room ID.
+          $newRoomString = mysqlEscape(implode(',',$currentRooms2));
+
+          mysqlQuery("UPDATE {$sqlPrefix}users SET favRooms = '$newRoomString' WHERE userid = $user[userid]");
+          continue;
+        }
+
+        $room2['name'] = addslashes($room2['name']);
+
+        $roomMs .= "    window.external.msSiteModeAddJumpListItem('$room[name]','{$installUrl}chat.php?room=$room2[id]','{$installUrl}images/favicon.ico');
+";
+        $roomHtml .= "          <li><a href=\"/chat.php?room=$room2[id]\" class=\"room\" data-roomid=\"$room2[id]\">$room2[name]</a></li>
+";
+      }
+    }
+
+echo '  <meta name="application-name" content="' . ($brandingTitle ?: 'FreezeMessenger') . '" /> 
+  <meta name="msapplication-tooltip" content="Launch ' . ($brandingTitle ?: 'FreezeMessenger') . ' Web Interace" /> 
+  <meta name="msapplication-navbutton-color" content="black" />
+  <meta name="msapplication-task" content="name=Archive;action-uri=' . $installUrl . 'archive.php;icon-uri=http://vrim.victoryroad.net/images/favicon.ico" />
+  <meta name="msapplication-task" content="name=Room List;action-uri=' . $installUrl . 'viewRooms.php;icon-uri=http://vrim.victoryroad.net/images/favicon.ico" />
+  <meta name="msapplication-task" content="name=View Stats;action-uri=' . $installUrl . 'stats.php;icon-uri=http://vrim.victoryroad.net/images/favicon.ico" />
+
+  <script type="text/javascript">
+  try {
+    window.external.msSiteModeCreateJumplist(\'Favourite Rooms\');
+' . $roomMs . '  }
+  catch (ex) {
+    // Do nothing.
+  }
+  </script>
+';
+?>
 </head>
 
-<body>
+<body<?php echo $bodyHook; ?>>
 <div id="tooltext" class="tooltip-content"></div>
 <div id="page">
   <div id="header">
     <?php
+
     echo '<!-- START links -->
     <div id="menu">
       <h3><a href="#">Community</a></h3>
@@ -56,34 +103,33 @@
       </ul>
       <h3><a href="#">Quick Links</a></h3>
       <ul>
-        <li style="border-bottom: 1px solid;"><a href="/index.php?action=archive">Message Archive</a></li>
-        <li><a href="/index.php?action=viewRooms">Room List</a></li>
+        <li style="border-bottom: 1px solid;"><a href="/archive.php">Message Archive</a></li>
+        <li><a href="/viewRooms.php">Room List</a></li>
         ' . ($user['userid'] && $allowRoomCreation ? '<li><a href="#" id="createRoom">Create a Room</a></li>
         <li><a href="#" id="editRoom">Edit This Room</a></li>
-        <li style="border-bottom: 1px solid;"><a href="/index.php?action=privateRoom">Enter Private IM</a></li>' : '') . '
+        <li style="border-bottom: 1px solid;"><a href="#" id="priateRoom">Enter Private IM</a></li>' : '') . '
         <li><a href="#" id="online">Who\'s Online?</a></li>
-        <li><a href="/index.php?action=stats">View Stats</a></li>
+        <li><a href="/stats.php">View Stats</a></li>
         ' . ($user['userid'] ? '<li><a href="#" id="manageKick">Manage Kicked Users</a></li>' : '') . '
-        ' . ($user['userid'] ? '<li><a href="/index.php?action=kick">Kick a User</a></li>' : '') . '
+        ' . ($user['userid'] ? '<li><a href="#" id="kick">Kick a User</a></li>' : '') . '
       </ul>
       <h3><a href="#">Me</a></h3>
       <ul>
-        ' . ($user['settings'] & 16 ? '<li><a href="/index.php?action=moderate">AdminCP</a></li>
-        <ul><li><a href="/index.php?action=moderate&do=showimages">Moderate Images</a></li>
-        <li><a href="/index.php?action=moderate&do=listusers">Moderate Users</a></li>
-        <ul><li><a href="/index.php?action=moderate&do=banuser">Ban a User</a></li>
-        <li><a href="/index.php?action=moderate&do=unbanuser">Unban a User</a></li></ul>
-        <li><a href="/index.php?action=moderate&do=censor">Modify Censor</a></li>
-        <li><a href="/index.php?action=moderate&do=maintence">Maintence</a></li></ul>' : '') . '
+        ' . ($user['settings'] & 16 ? '<li><a href="/moderate.php">AdminCP</a></li>
+        <ul><li><a href="/moderate.php?do=showimages">Moderate Images</a></li>
+        <li><a href="/moderate.php?do=listusers">Moderate Users</a></li>
+        <ul><li><a href="/moderate.php?do=banuser">Ban a User</a></li>
+        <li><a href="/moderate.php?do=unbanuser">Unban a User</a></li></ul>
+        <li><a href="/moderate.php?do=censor">Modify Censor</a></li>
+        <li><a href="/moderate.php?do=maintence">Maintence</a></li></ul>' : '') . '
         ' . ($user['userid'] ? '
         <li style="border-bottom: 1px solid;"><a href="#" id="changeSettings">Change Settings</a></li>' : '') . '
-        ' . ($user['userid'] ? '<li><a href="/index.php?action=logout">Logout</a></li>' : '<li><a href="/index.php">Login</a></li>') . '
+        ' . ($user['userid'] ? '<li><a href="/logout.php">Logout</a></li>' : '<li><a href="/login.php">Login</a></li>') . '
       </ul>
       <h3><a href="#">Rooms</a></h3>
       <div id="rooms">
         <ul id="roomList">
-  ' . $roomHtml . '
-        <li><a href="javascript:void(0);" onclick="showAllRooms();">Show All</a></li>
+' . $roomHtml . '          <li><a href="javascript:void(0);" onclick="showAllRooms();">Show All</a></li>
         </ul>
       </div>' . ($inRoom ? '
       <h3><a href="#">Active Users</a></h3>

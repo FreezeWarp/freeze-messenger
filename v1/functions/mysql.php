@@ -7,7 +7,6 @@
  * return = void */
 function mysqlConnect($host,$user,$password,$database) {
   if (!mysql_connect($host,$user,$password)) {
-    echo mysql_error();
     return false;
   }
   if (!mysql_select_db($database)) {

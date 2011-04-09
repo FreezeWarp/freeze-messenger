@@ -16,7 +16,9 @@ body {
   margin-left: 5px;
   margin-right: 5px;
   margin-bottom: 20px;
+  padding: 0px;
   font-family: Ubuntu, Calibri, Verdana;
+  overflow-x: hidden;
 }
 
 
@@ -58,6 +60,7 @@ body {
 #messageInputContainer {
   white-space: nowrap;
   padding-left: 3px;
+  border: 1px solid black;
 }
 
 #youtubeResultsContainer {
@@ -147,6 +150,7 @@ img.standard {
 button.standard {
   height: 32px;
   width: 32px;
+  padding: 7px !important;
 }
 select.standard {
   height: 28px;
@@ -316,17 +320,33 @@ div.jGrowl div.jGrowl-notification div.jGrowl-close {
 }
 
 div.jGrowl div.jGrowl-closer {
-  padding-top:                    4px;
-  padding-bottom:                 4px;
-  cursor:                                 pointer;
-  font-size:                              .9em;
-  font-weight:                    bold;
-  text-align:                     center;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  cursor: pointer;
+  font-size: .9em;
+  font-weight: bold;
+  text-align: center;
 }
 
 /** Hide jGrowl when printing **/
 @media print {
   div.jGrowl {
-    display:                        none;
+    display: none;
   }
+}
+
+/* This attempts to remove styling which breaks the icons in most browsers (except Webkit). To be honest, I'm guessing I did something else wrong, but I can't for the life of my figure out what. */
+.ui-button-icon-only .ui-icon, .ui-button-text-icon-primary .ui-icon, .ui-button-text-icon-secondary .ui-icon, .ui-button-text-icons .ui-icon, .ui-button-icons-only .ui-icon {
+  /* Alright, first of all, these two declarations are an age-old approach to center block elements in other block elements. However, today they don't work in modern IE & Webkit. Yet, this doesn't matter since those browsers already center the icon without them. Its only Firefox (which still supports them) that needs it.*/
+  margin-right: auto !important;
+  margin-left: auto !important;
+
+  /* Next up, we reset jQueryUI default stylings, since for one reason or another they break in both Firefox & (modern) IE. This is probably because of some improper declaration elsewhere, but no matter what it works. */
+  top: 0 !important;
+  left: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+
+  /* Finally, position:relative is more predictable then position:absolute, which is also used in jQueryUI. */
+  position: relative;
 }

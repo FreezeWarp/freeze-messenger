@@ -26,11 +26,28 @@ foreach($fontData AS $font) {
   $fontBox .= "<option value=\"$font[id]\" style=\"font-family: $font[data];\">$font[name]</option>";
 }
 
+$watchRooms = explode(',',$user['watchRooms']);
+
+$roomData = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE " . ((($user['settings'] & 16) == false) ? "(owner = '$user[userid]' OR moderators REGEXP '({$user[userid]},)|{$user[userid]}$') AND " : '') . "(options & 16) = false AND (options & 4) = false AND (options & 8) = false",'id');
+foreach ($roomData AS $roomData2) {
+  $roomData3 .= '"' . addslashes($roomData2['name']) . '",
+';
+  $roomData4 .= 'roomRef["' . addslashes($roomData2['name']) . '"] = ' . $roomData2['id'] . ';
+';
+
+  if (in_array($roomData2['id'],$watchRooms)) {
+    $watchList .= "<span id=\"watchRoomSubList" . $roomData2['id'] . "\">" . $roomData2['name'] . " (<a href=\"javascript:void(0);\" onclick=\"removeRoom(" . $roomData2['id'] . ");\">x</a>), </span>";
+  }
+}
+
 if ($phase == '1') {
   echo '
 <link rel="stylesheet" media="screen" type="text/css" href="client/colorpicker/css/colorpicker.css" />
 <script type="text/javascript" src="client/colorpicker/js/colorpicker.js"></script>
 <script type="text/javascript">
+var roomRef = new Object;
+' . $roomData4 . '
+
 $(document).ready(function(){
   $(\'#defaultHighlight\').ColorPicker({
     color: \'' . rgb2html($user['defaultHighlight']) . '\',
@@ -89,6 +106,43 @@ $(document).ready(function(){
     return false; // Don\'t submit the form.
   });
 });
+
+$(function() {
+  var rooms = [
+    ' . $roomData3 . '
+  ];
+  $("#defaultRoom").autocomplete({
+    source: rooms
+  });
+  $("#watchRoomBridge").autocomplete({
+    source: rooms
+  });
+});
+
+function addRoom() {
+  var val = $("#watchRoomBridge").val();
+  var id = roomRef[val];
+
+  var currentRooms = $("#watchRooms").val().split(",");
+  currentRooms.push(id);
+
+  $("#watchRoomsList").append("<span id=\"watchRoomSubList" + id + "\">" + val + " (<a href=\"javascript:void(0);\" onclick=\"removeRoom(" + id + ");\">x</a>), </span>");
+  $("#watchRooms").val(currentRooms.toString(","));
+}
+
+function removeRoom(id) {
+  $("#watchRoomSubList" + id).fadeOut(500,function(){$(this).remove()});
+
+  var currentRooms = $("#watchRooms").val().split(",");
+  for(var i = 0; i < currentRooms.length; i++) {
+    if(currentRooms[i] == id) {
+      currentRooms.splice(i, 1);
+      break;
+    }
+  }
+
+  $("#watchRooms").val(currentRooms.toString(","));
+}
 </script>
 
 <form action="/index.php?action=options&phase=2" method="post" id="changeSettingsForm">
@@ -125,18 +179,22 @@ $(document).ready(function(){
   <label for="defaultItalics">Italics</label><input type="checkbox" name="defaultItalics" id="defaultItalics" value="true"' . ($user['defaultFormatting'] & 256 ? ' checked="checked"' : '') . ' onchange="if ($(this).is(\':checked\')) { $(\'#fontPreview\').css(\'font-style\',\'italic\'); } else { $(\'#fontPreview\').css(\'font-style\',\'normal\'); }" /><br />' : '') . '
   <small><span style="margin-left: 10px;" id="fontPreview">Here\'s a preview!</span></small><br /><br />' : '') . '
 
-  <label for="defaultRoom">Default Room:</label>   <select name="defaultRoom">
-  ' . mysqlReadThrough(mysqlQuery('SELECT * FROM ' . $sqlPrefix . 'rooms WHERE options & 1 ORDER BY id'),'<option value="$id"{{$id == ' . $user['defaultRoom']. '}}{{selected="selected"}{}}>$name</option>') . '
-  </select><br />
-  <small><span style="margin-left: 10px;">This changes what room defaults when you first visit VRIM. For now, only official rooms can be selected.</span></small><br /><br />
+  <label for="defaultRoom">Default Room:</label>   <input type="text" name="defaultRoom" id="defaultRoom" /><br />
+  <small><span style="margin-left: 10px;">This changes what room defaults when you first visit VRIM.</span></small><br /><br />
 
-  <button type="submit">Save Settings</button><button type="reset">Reset</button><br /><br />
+  <label for="watchRooms">Watch Rooms:</label>  <input type="text" name="watchRoomBridge" id="watchRoomBridge" /><input type="button" value="Add" onclick="addRoom()" /><br />
+  <small><span style="margin-left: 10px;">These rooms will be monitored for new posts, similar to Private IMs.</span></small><br />
+  <small><span style="margin-left: 10px;">Current Rooms: <span id="watchRoomsList">' . $watchList .  '</span></span></small><br /><br />
+
+  <input type="hidden" name="watchRooms" id="watchRooms" value="' . $user['watchRooms'] . '" />
+
+  <button type="submit">Save Settings</button><button type="reset">Reset</button>
 </form>';
 }
 elseif ($phase == '2') {
   $reverse = ($_POST['reverse'] ? true : false);
   $mature = ($_POST['mature'] ? true : false);
-  $disableFormatting = ($_POST['disabeFormatting'] ? true : false);
+  $disableFormatting = ($_POST['disableFormatting'] ? true : false);
   $disableVideo = ($_POST['disableVideo'] ? true : false);
   $disableImage = ($_POST['disableImage'] ? true : false);
   $disableDing = ($_POST['disableding'] ? true : false);
@@ -160,7 +218,7 @@ elseif ($phase == '2') {
       $highlight = mysqlEscape(implode(',',html2rgb($_POST['defaultHighlight'])));
     }
     else {
-      trigger_error('The specified highlight, ' . $_POST['defaultHighlight'] . ', does not exist',E_USER_WARNING);
+      trigger_error("The specified highlight, $_POST[defaultHighlight], does not exist",E_USER_WARNING);
     }
   }
 
@@ -168,10 +226,37 @@ elseif ($phase == '2') {
     $defaultFormatting = ($_POST['defaultBold'] ? 256 : 0) + ($_POST['defaultItalics'] ? 512 : 0);
   }
 
-  if ($_POST['defaultRoom']) $defaultRoom = $_POST['defaultRoom'];
-  else $defaultRoom = 1;
+  if ($_POST['defaultRoom']) {
+    $defaultRoom = mysqlEscape($_POST['defaultRoom']);
+    $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE name LIKE '$defaultRoom'");
+    if ($room['id']) {
+      $defaultRoom = $room['id'];
+    }
+    else {
+      $defaultRoom = 1;
+      trigger_error("The specified room, $_POST[defaultRoom], does not exist.",E_USER_WARNING);
+    }
+  }
+  else {
+    $defaultRoom = 1;
+  }
 
-  mysqlQuery("UPDATE {$sqlPrefix}users SET settings = $settings, defaultFormatting = $defaultFormatting, defaultHighlight = \"$highlight\", defaultColour = \"$colour\", defaultFontface = \"$fontface\", defaultRoom = $defaultRoom WHERE userid = $user[userid]");
+  if ($_POST['watchRooms']) {
+    $watchRooms = explode(',',$_POST['watchRooms']);
+    foreach ($watchRooms AS $wroom) {
+      $id = intval($wroom);
+      if (!$id) continue;
+
+      $wroom2 = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $id");
+      if (!hasPermission($wroom2,$user)) continue;
+
+      $watchRooms2[] = $wroom2['id'];
+    }
+
+    $watchRooms2 = mysqlEscape(implode(',',$watchRooms2));
+  }
+
+  mysqlQuery("UPDATE {$sqlPrefix}users SET settings = $settings, defaultFormatting = $defaultFormatting, defaultHighlight = \"$highlight\", defaultColour = \"$colour\", defaultFontface = \"$fontface\", defaultRoom = $defaultRoom, watchRooms = '$watchRooms2' WHERE userid = $user[userid]");
 
   echo 'Your settings have been updated successfully.';
 }

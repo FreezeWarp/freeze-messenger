@@ -76,7 +76,9 @@ function sqlArr($query,$index = false) {
  * $function uses {{{x}}} to equal $row['x']
  * return = string */
 function mysqlReadThrough($queryData,$function) {
-  while (false != ($row = mysql_fetch_assoc($queryData))) {
+  $queryData2 = $queryData;
+
+  while (false != ($row = mysql_fetch_assoc($queryData2))) {
     $uid++;
     $row['uid'] = $uid;
     $data2 = preg_replace('/\$([a-zA-Z0-9]+)/e','$row[$1]',$function); // the "e" flag is a PHP-only extension that allows parsing of PHP code in the replacement.

@@ -96,7 +96,7 @@ else { $(\'#fontPreview\').css(\'font-style\',\'normal\'); }
 elseif ($phase == '2') {
   $reverse = ($_POST['reverse'] ? true : false);
   $mature = ($_POST['mature'] ? true : false);
-  $disableFormatting = ($_POST['disabeFormatting'] ? true : false);
+  $disableFormatting = ($_POST['disableFormatting'] ? true : false);
   $disableVideo = ($_POST['disableVideo'] ? true : false);
   $disableImage = ($_POST['disableImage'] ? true : false);
   $disableDing = ($_POST['disableding'] ? true : false);

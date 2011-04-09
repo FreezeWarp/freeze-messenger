@@ -46,7 +46,7 @@ $(document).ready(function(){
 });
 </script>
 
-<form action="/index.php?action=editRoom&phase=2&roomid=' . $room['id'] . '" method="post" id="editRoomForm">
+<form action="#" method="post" id="editRoomForm">
   <label for="name">Name</label>: <input type="text" name="name" id="name" value="' . $room['name'] . '" /><br />
   <small><span style="margin-left: 10px;">Your group\'s name. Note: This should not container anything vulgar or it will be deleted.</span></small><br /><br />
 

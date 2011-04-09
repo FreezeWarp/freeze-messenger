@@ -61,7 +61,7 @@ else {
 ";
     }
 
-    $messages = sqlArr("SELECT m.id, UNIX_TIMESTAMP(m.time) AS time, m.rawText, m.htmlText, m.deleted, m.salt, m.iv, u.userid, u.username, vu.settings, vu.defaultColour, vu.defaultFontface, vu.defaultHighlight, vu.defaultFormatting, u.displaygroupid FROM {$sqlPrefix}messages AS m, {$sqlPrefix}users AS vu, user AS u WHERE room = $roomid " . ($user['settings'] & 16 == false ? "AND deleted != true" : '') . " AND m.user = u.userid AND u.userid = vu.userid " . ($userIDs ? " AND user IN ($userIDs)" : '') . " ORDER BY m.time $order LIMIT $limit OFFSET $offset",'id'); // get the messages that should display.
+    $messages = sqlArr("SELECT m.id, UNIX_TIMESTAMP(m.time) AS time, m.rawText, m.htmlText, m.deleted, m.salt, m.iv, u.userid, u.username, vu.settings, vu.defaultColour, vu.defaultFontface, vu.defaultHighlight, vu.defaultFormatting, u.displaygroupid FROM {$sqlPrefix}messages AS m, {$sqlPrefix}users AS vu, user AS u WHERE room = $roomid " . (hasPermission($room,$user,'moderate' == false) ? "AND deleted != true" : '') . " AND m.user = u.userid AND u.userid = vu.userid " . ($userIDs ? " AND user IN ($userIDs)" : '') . " ORDER BY m.time $order LIMIT $limit OFFSET $offset",'id'); // get the messages that should display.
 
     if ($messages) {
       foreach ($messages AS $id => $message) {

@@ -16,7 +16,7 @@
 var roomid;
 
 $(document).ready(function(){
-  roomid = $('data[name=roomid]').attr('value');
+  roomid = $('body').attr('data-roomid');
 
   $('#menu').accordion({
     autoHeight: false,
@@ -30,6 +30,14 @@ $(document).ready(function(){
   $('table > tbody > tr:last-child > td:last-child, table > tr:last-child > td:last-child').addClass('ui-corner-br');
 
   $('button').button();
+
+  $('a#kick').click(function() {
+    ajaxDialogue('/content/kick.php','Kick User','kickUserDialogue',1000);
+  });
+
+  $('a#privateRoom').click(function() {
+    ajaxDialogue('/content/privateRoom.php','Enter Private Room','privateRoomDialogue',1000);
+  });
 
   $('a#manageKick').click(function() {
     ajaxDialogue('/content/manageKick.php?roomid=' + roomid,'Manage Kicked Users in This Room','manageKickDialogue',600);
@@ -87,7 +95,7 @@ function ajaxDialogue(uri,title,id,width,cF) {
         title: title,
         close: function() {
           $('#' + id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
-          cF();
+          if (cF) cF();
         }
       });
     }
@@ -107,6 +115,24 @@ function quickDialogue(content,title,id,width) {
   });
 
   return false;
+}
+
+function quickConfirm(text) {
+  $('<div id="dialog-confirm"><span class="ui-icon ui-icon-alert" style="float: left; margin: 0px 7px 20px 0px;"></span>' + text + '</div>').dialog({
+    resizable: false,
+    height: 240,
+    modal: true,
+    buttons: {
+      Confirm: function() {
+        $(this).dialog("close");
+        return true;
+      },
+      Cancel: function() {
+        $(this).dialog("close");
+        return false;
+      }
+    }
+  });
 }
 
 function notify(text,header,id,id2) {

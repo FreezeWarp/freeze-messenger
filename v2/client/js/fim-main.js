@@ -24,11 +24,9 @@ var topic;
 var lastMessage;
 var messages;
 var activeUsers;
-var ding = ($('data[name=ding]').attr('value') == '1' ? true : false);
-var reverse = ($('data[name=reverse]').attr('value') == '1' ? true : false);
+var ding = ($('body').attr('data-ding') == '1' ? true : false);
+var reverse = ($('body').attr('data-reverse') == '1' ? true : false);
 var soundOn = (ding ? true : false);
-
-
 
 /* Bing! Function */
 window.onblur = function() {
@@ -60,7 +58,7 @@ function faviconFlash() {
 /* AJAX functions */
 function updatePosts() {
   window.clearInterval(timer1);
-
+//alert('ajax/fim-main.php?room=' + roomid + '&lastMessage=' + lastMessage + '&reverse=' + (reverse ? 1 : 0) + '&encrypt=base64');
   $.ajax({
     url: 'ajax/fim-main.php?room=' + roomid + '&lastMessage=' + lastMessage + '&reverse=' + (reverse ? 1 : 0) + '&encrypt=base64',
     type: 'GET',
@@ -116,7 +114,7 @@ function updatePosts() {
 
   if (totalFails > 10) {
     timer1 = window.setInterval(updatePosts,30000);
-    timeout = 29000;
+    timeout = 29900;
   }
   else if (totalFails > 5) {
     timer1 = window.setInterval(updatePosts,10000);
@@ -160,16 +158,9 @@ function sendMessage(message,confirmed) {
   });
 }
 
-function stopUpload(success,message) {
-  if (success == 1) {
-    sendMessage(message);
-  }
-  return true;
-}
-
 /* Youtube */
 function youtubeSend(id) {
-  $.ajax({url: 'ajax/sendMessage.php', type: 'POST', contentType: 'application/x-www-form-urlencoded;charset=UTF-8', cache: false, data: 'room=' + roomid + '&message=' + escape('[youtube]' + id + '[/youtube]'), success: function(html) { /*updatePosts();*/ } });
+  $.ajax({url: 'uploadFile.php', type: 'POST', contentType: 'application/x-www-form-urlencoded;charset=UTF-8', cache: false, data: 'method=youtube&room=' + roomid + '&youtubeUpload=' + escape('http://www.youtube.com/?v=' + id), success: function(html) { /*updatePosts();*/ } });
   $('#textentryBoxYoutube').dialog('close');
 }
 
@@ -198,7 +189,7 @@ function updateVids(searchPhrase) {
 
 $(document).ready(function() {
   $("#icon_reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (reverse ? 'n' : 's') } );
-  $("#icon_help").button( "option", "icons", { primary: 'ui-icon-help' } );
+  $("#icon_help").button({ icons: {primary:'ui-icon-help'} }).css({height: '32px', width: '32px'});
   $("#icon_muteSound").button( "option", "icons", { primary: 'ui-icon-volume-on' } );
   $("#icon_url").button( "option", "icons", { primary: 'ui-icon-link' } );
   $("#icon_upload").button( "option", "icons", { primary: 'ui-icon-image' } );
@@ -238,7 +229,7 @@ $(document).ready(function() {
 
 function showAllRooms() {
   $.ajax({
-    url: 'ajax/roomList.php?rooms=*',
+    url: 'ajax/fim-roomList.php?rooms=*',
     timeout: 5000,
     type: 'GET',
     cache: false,
@@ -256,9 +247,21 @@ function toBottom() {
 }
 
 function resize () {
-  $('#messageList').css('height',(window.innerHeight - 230));
-  $('#messageInput').css('width',(window.innerWidth - (window.innerWidth * .3)));
+  var windowWidth = document.documentElement.clientWidth;
+  var windowHeight = document.documentElement.clientHeight;
+
+  $('#messageList').css('height',(windowHeight - 230));
+  /* Body Padding: 10px
+   * Right Area Width: 75%
+   * "Enter Message" Table Padding: 10px
+   *** TD Padding: 2px (on Standard Styling)
+   * Message Input Container Padding : 3px (all padding-left)
+   * Left Button Width: 36px
+   * Message Input Text Area Padding: 6px */
+  $('#messageInput').css('width',(((windowWidth - 10) * .75) - 10 - 2 - 3 - 36 - 6));
 }
+
+$(window).resize(resize);
 
 jQTubeUtil.init({
   key: "AI39si5_Dbv6rqUPbSe8e4RZyXkDM3X0MAAtOgCuqxg_dvGTWCPzrtN_JLh9HlTaoC01hCLZCxeEDOaxsjhnH5p7HhZVnah2iQ",
@@ -266,5 +269,3 @@ jQTubeUtil.init({
   time: "this_month",   // *optional -- "this_month" is set by default
   maxResults: 20   // *optional -- defined as 10 results by default
 });
-
-$(window).resize(resize);

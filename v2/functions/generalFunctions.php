@@ -66,6 +66,13 @@ function hasPermission($roomData,$userData,$type = 'post') { // The below permis
     else $roomValid = false; // The user is not allowed either via being an owner, moderator (for the chat itself or the forums),
     break;
 
+    case 'admin':
+    if ($banned) $roomValid = false; // The user is banned.
+    elseif (($userData['settings'] & 16) && (($roomData['options'] & 16) == false)) $roomValid = true; // The user is an admin.
+    elseif ($roomData['owner'] == $userData['userid'] && $roomData['owner'] > 0)  $roomValid = true; // The users owns the room (and it is not deleted).
+    else $roomValid = false; // The user is not allowed either via being an owner, moderator (for the chat itself or the forums),
+    break;
+
     case 'know':
     if ($userData['settings'] & 16) $roomValid = true; // The user is an admin.
     elseif ($roomData['owner'] == $userData['userid'] && $roomData['owner'] > 0)  $roomValid = true; // The users owns the room.
@@ -103,7 +110,7 @@ function userFormat($message, $room, $messageTable = true) {
 }
 
 function messageStyle($message) {
-  global $enableDF;
+  global $enableDF, $user;
 
   if ($enableDF && (($user['settings'] & 512) == false) && !in_array($message['flag'],array('me','topic','kick'))) {
     if ($message['defaultColour'] && $enableDF['colour']) $style .= "color: rgb($message[defaultColour]); ";
@@ -124,18 +131,51 @@ function vrim_urldecode($str) {
   return str_replace(array('%2b','%26'),array('+','&'),$str);
 }
 
-function vrim_decrypt($message) {
+function vrim_decrypt($message,$index = false) {
   global $salts;
 
   if ($message['salt'] && $message['iv']) {
     $salt = $salts[$message['salt']];
 
-    $message['vbText'] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message['vbText']), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
-    $message['htmlText'] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message['htmlText']), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
-    $message['rawText'] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message['rawText']), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
+    if ($index) {
+      if (is_array($index)) {
+        foreach ($index AS $index2) {
+          $message[$index2] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message[$index2]), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
+        }
+      }
+      else {
+        $message[$index] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message[$index]), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
+      }
+    }
+    else {
+      $message['vbText'] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message['vbText']), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
+      $message['htmlText'] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message['htmlText']), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
+      $message['rawText'] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message['rawText']), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
+    }
   }
 
   return $message;
+}
+
+function vrim_encrypt($data) {
+  global $salts;
+
+  $salt = end($salts);
+  $saltNum = key($salts);
+
+  $iv_size = mcrypt_get_iv_size(MCRYPT_3DES,MCRYPT_MODE_CBC);
+  $iv = base64_encode(mcrypt_create_iv($iv_size, MCRYPT_RAND));
+
+  if (is_array($data)) {
+    foreach ($data AS &$data2) {
+      $data2 = base64_encode(rtrim(mcrypt_encrypt(MCRYPT_3DES, $salt, $data2, MCRYPT_MODE_CBC, base64_decode($iv)),"\0"));
+    }
+  }
+  else {
+    $data = base64_encode(rtrim(mcrypt_encrypt(MCRYPT_3DES, $salt, $data, MCRYPT_MODE_CBC, base64_decode($iv)),"\0"));
+  }
+
+  return array($data,$iv,$saltNum);
 }
 
 function html2rgb($color) {

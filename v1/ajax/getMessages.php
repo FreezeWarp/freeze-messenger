@@ -19,7 +19,7 @@ else {
   if ($reverse && $messages) $messages = array_reverse($messages);
 
   if ($messages) {
-    if ((($user['settings'] & 16) || in_array($user['userid'],explode(',',$room['moderators'])) || $user['userid'] == $room['owner']) && (($room['options'] & 32) == false)) $canModerate = true; // The user /can/ moderate if they are a mod of the room, the room's owner, or an admin. If the room is disabled from moderation ($room['options'] & 32), then you still can't edit it.
+    if (hasPermission($room,$user,'moderate')) $canModerate = true; // The user /can/ moderate if they are a mod of the room, the room's owner, or an admin. If the room is disabled from moderation ($room['options'] & 32), then you still can't edit it.
 
     foreach ($messages AS $id => $message) {
       $message = vrim_decrypt($message);

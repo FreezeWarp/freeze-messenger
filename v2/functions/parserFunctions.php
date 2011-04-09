@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+require_once('generalFunctions.php');
+
 function htmlParse($text,$bbcodeLevel = 1) {
   global $bbcode;
 
@@ -21,10 +23,10 @@ function htmlParse($text,$bbcodeLevel = 1) {
   global $forumpath;
 
   $search['shortCode'] = array(
-    '/ \+([a-zA-Z0-9\ ]+)\+ /is',
-    '/ \=([a-zA-Z0-9\ ]+)\= /is',
-    '/ \/([a-zA-Z0-9\ ]+)\/ /is',
-    '/ \_([a-zA-Z0-9\ ]+)\_ /is',
+    '/\+([a-zA-Z0-9\ ]+)\+/is',
+    '/\=([a-zA-Z0-9\ ]+)\=/is',
+    '/\/([a-zA-Z0-9\ ]+)\//is',
+    '/\_([a-zA-Z0-9\ ]+)\_/is',
   );
 
   $search['buis'] = array(
@@ -35,11 +37,11 @@ function htmlParse($text,$bbcodeLevel = 1) {
   );
 
   $search['link'] = array(
+    '/(?<!(\[noparse\]))(?<!(\[img\]))(?<!(\[url\])) ((http|https|ftp|data|gopher|sftp|ssh):(\/\/|)(.+?\.|)([a-zA-Z]+)\.(com|net|org|co\.uk|co\.jp|info|us|gov)((\/)([^ ]*)|)) (?!\[\/url\])(?!\[\/img\])(?!\[\/noparse\])/',
     '/\[url=("|)(.*?)("|)\](.*?)\[\/url\]/is',
     '/\[url\](.*?)\[\/url\]/is',
     '/\[email=("|)(.*?)("|)\](.*?)\[\/email\]/is',
     '/\[email\](.*?)\[\/email\]/is',
-    '/(?<!(\[noparse\]))(?<!(\[img\]))(?<!(\[url\]))((http|https|ftp|data|gopher|sftp|ssh):(\/\/|)(.+?\.|)([a-zA-Z]+)\.(com|net|org|co\.uk|co\.jp|info|us|gov)((\/)([^ ]*)|))(?!\[\/url\])(?!\[\/img\])(?!\[\/noparse\])/',
   );
 
   $search['colour'] = array(
@@ -65,11 +67,11 @@ function htmlParse($text,$bbcodeLevel = 1) {
   );
 
   $replace['link'] = array(
+    '<a href="$4" target="_BLANK">$4</a>',
     '<a href="$2" target="_BLANK">$4</a>',
     '<a href="$1" target="_BLANK">$1</a>',
     '<a href="mailto:$2">$4</a>',
     '<a href="mailto:$1">$1</a>',
-    '<a href="$4" target="_BLANK">$4</a>',
   );
 
   $replace['colour'] = array(
@@ -83,8 +85,8 @@ function htmlParse($text,$bbcodeLevel = 1) {
   );
 
   $replace['video'] = array(
-    ($bbcodeLevel <= 2 ? '<object width="420" height="255"><param name="movie" value="http://www.youtube.com/v/$1=en&amp;fs=1&amp;rel=0&amp;border=0"></param><param name="allowFullScreen" value="true"></param><embed src="http://www.youtube.com/v/$1&amp;hl=en&amp;fs=1&amp;rel=0&amp;border=0" type="application/x-shockwave-flash" allowfullscreen="true" width="420" height="255"></embed></object>' : ($bbcodeLevel <= 13 ? '<a href="http://www.youtube.com/watch?v=$1" target="_BLANK">[Youtube Video]</a>' : '$1')),
-    ($bbcodeLevel <= 2 ? '<object width="425" height="349"><param name="movie" value="http://www.youtube.com/v/$1=en&amp;rel=0&amp;border=0"></param><param name="allowFullScreen" value="true"></param><embed src="http://www.youtube.com/v/$1&amp;hl=en&amp;rel=0&amp;border=0" type="application/x-shockwave-flash" allowfullscreen="true" width="310" height="255"></embed></object>' : ($bbcodeLevel <= 13 ? '<a href="http://www.youtube.com/watch?v=$1" target="_BLANK">[Youtube Video]</a>' : '$1')),
+    ($bbcodeLevel <= 3 ? '<object width="420" height="255"><param name="movie" value="http://www.youtube.com/v/$1=en&amp;fs=1&amp;rel=0&amp;border=0"></param><param name="allowFullScreen" value="true"></param><embed src="http://www.youtube.com/v/$1&amp;hl=en&amp;fs=1&amp;rel=0&amp;border=0" type="application/x-shockwave-flash" allowfullscreen="true" width="420" height="255"></embed></object>' : ($bbcodeLevel <= 13 ? '<a href="http://www.youtube.com/watch?v=$1" target="_BLANK">[Youtube Video]</a>' : '$1')),
+    ($bbcodeLevel <= 3 ? '<object width="425" height="349"><param name="movie" value="http://www.youtube.com/v/$1=en&amp;rel=0&amp;border=0"></param><param name="allowFullScreen" value="true"></param><embed src="http://www.youtube.com/v/$1&amp;hl=en&amp;rel=0&amp;border=0" type="application/x-shockwave-flash" allowfullscreen="true" width="310" height="255"></embed></object>' : ($bbcodeLevel <= 13 ? '<a href="http://www.youtube.com/watch?v=$1" target="_BLANK">[Youtube Video]</a>' : '$1')),
   );
 
   if ($bbcode['shortCode'] && $bbCodeLevel <= 16) {
@@ -111,11 +113,13 @@ function htmlParse($text,$bbcodeLevel = 1) {
   $search2 = array(
     '/^\/me (.+?)$/i',
     '/\[noparse\](.*?)\[\/noparse\]/is',
+    '/\[room\]([0-9]+?)\[\/room\]/is',
   );
 
   $replace2 = array(
     ($bbcodeLevel <= 9 ? '<span style="color: red; padding: 10px;">* ' . $user['username'] . ' $1</span>' : '* ' . $user['username'] . ' $1</span>'),
     '$1',
+    '<a href="http://vrim.victoryroad.net/?room=$1">Room $1</a>',
   );
 
   // Parse BB Code
@@ -218,34 +222,59 @@ function htmlwrap($str, $maxLength, $char = '<br />') { /* An adaption of a PHP.
 }
 
 function finalParse($message) {
-  global $room, $salts;
-
-  $salt = end($salts);
-  $saltNum = key($salts);
-
-  $iv_size = mcrypt_get_iv_size(MCRYPT_3DES,MCRYPT_MODE_CBC);
-  $iv = base64_encode(mcrypt_create_iv($iv_size, MCRYPT_RAND));
+  global $room, $salts, $encrypt;
 
   $messageRaw = $message; // Parses the sources for MySQL.
   $messageHtml = nl2br(htmlwrap(htmlParse(censor(htmlspecialchars($message),$room['roomid']),$room['options']),30,' ')); // Parses for browser or HTML rendering.
-  $messageVBnet = nl2vb(smilie($message,$room['bbcode'])); // Not yet coded, you see.
+  $messageApi = nl2vb(smilie($message,$room['bbcode'])); // Not yet coded, you see.
 
-  $messageRaw = mysqlEscape(base64_encode(rtrim(mcrypt_encrypt(MCRYPT_3DES, $salt, $messageRaw, MCRYPT_MODE_CBC, base64_decode($iv)),"\0")));
-  $messageHtml = mysqlEscape(base64_encode(rtrim(mcrypt_encrypt(MCRYPT_3DES, $salt, $messageHtml, MCRYPT_MODE_CBC, base64_decode($iv)),"\0")));
-  $messageVBnet = mysqlEscape(base64_encode(rtrim(mcrypt_encrypt(MCRYPT_3DES, $salt, $messageVBnet, MCRYPT_MODE_CBC, base64_decode($iv)),"\0")));
+  if ($salts && $encrypt) {
+    $salt = end($salts);
+    $saltNum = key($salts);
 
-  return array($messageRaw, $messageHtml, $messageVBnet, $saltNum, $iv);
+    $iv_size = mcrypt_get_iv_size(MCRYPT_3DES,MCRYPT_MODE_CBC);
+    $iv = base64_encode(mcrypt_create_iv($iv_size, MCRYPT_RAND));
+
+    list($messages,$iv,$saltNum) = vrim_encrypt(array($messageRaw,$messageHtml,$messageApi));
+    list($messageRaw,$messageHtml,$messageApi) = $messages;
+
+    $messageRaw = mysqlEscape($messageRaw);
+    $messageHtml = mysqlEscape($messageHtml);
+    $messageApi = mysqlEscape($messageApi);
+  }
+  else {
+    $messageRaw = mysqlEscape($messageRaw);
+    $messageHtml = mysqlEscape($messageHtml);
+    $messageApi = mysqlEscape($messageApi);
+  }
+
+  return array($messageRaw, $messageHtml, $messageApi, $saltNum, $iv);
 }
 
 function sendMessage($messageText,$user,$room,$flag = '') {
-  global $sqlPrefix;
+  global $sqlPrefix, $parseFlags;
 
-  $message = finalParse($messageText);
-  list($messageRaw,$messageHtml,$messageVBnet,$saltNum,$iv) = $message;
   $ip = mysqlEscape($_SERVER['REMOTE_ADDR']); // Get the IP address of the user.
   $flag = mysqlEscape($flag);
 
-  mysqlQuery("INSERT INTO {$sqlPrefix}messages (user, room, rawText, htmlText, vbText, salt, iv, microtime, ip, flag) VALUES ($user[userid], $room[id], '$messageRaw', '$messageHtml', '$messageVBnet', $saltNum, '$iv', '" . microtime(true) . "', '$ip', '$flag')");
+  if ($parseFlags && in_array($flag,array('image','video','link','email'))) {
+    $messageRaw = $messageText;
+    $messageApi = $messageText;
+    switch ($flag) {
+      case 'image': $messageHtml = "<img src=\"$messageText\" alt=\"\" />"; break;
+      case 'video':
+      $messageHtml = preg_replace('/^http\:\/\/(www\.|)youtube\.com\/(.*?)?v=(.+?)(&|)(.*?)$/',($bbcodeLevel <= 2 ? '<object width="425" height="349"><param name="movie" value="http://www.youtube.com/v/$3=en&amp;rel=0&amp;border=0"></param><param name="allowFullScreen" value="true"></param><embed src="http://www.youtube.com/v/$3&amp;hl=en&amp;rel=0&amp;border=0" type="application/x-shockwave-flash" allowfullscreen="true" width="310" height="255"></embed></object>' : ($bbcodeLevel <= 13 ? '<a href="http://www.youtube.com/watch?v=$3" target="_BLANK">[Youtube Video]</a>' : 'http://www.youtube.com/watch?v=$3')),$messageText);
+      break;
+      case 'link': $messageHtml = "<a href=\"$messageText\">$messageText</a>"; break;
+      case 'email': $messageHtml = "<a href=\"mailto:$messageText\">$messageText</a>"; break;
+    }
+  }
+  else {
+    $message = finalParse($messageText);
+    list($messageRaw,$messageHtml,$messageApi,$saltNum,$iv) = $message;
+  }
+
+  mysqlQuery("INSERT INTO {$sqlPrefix}messages (user, room, rawText, htmlText, vbText, salt, iv, microtime, ip, flag) VALUES ($user[userid], $room[id], '$messageRaw', '$messageHtml', '$messageApi', '$saltNum', '$iv', '" . microtime(true) . "', '$ip', '$flag')");
   mysqlQuery("UPDATE {$sqlPrefix}rooms SET lastMessageTime = NOW() WHERE id = $room[id]");
 }
 ?>

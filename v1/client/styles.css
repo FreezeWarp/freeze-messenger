@@ -37,6 +37,9 @@
   width: 80%;
   float: left;
 }
+body.quirks #textEntryContainer {
+  width: 75%;
+}
 #messageInput {
   height: 100px;
   width: 100%;

@@ -95,6 +95,10 @@ echo '
   </script>-->
 </head>
 
+
+<!--[if lte IE 7]>
+<body class="quirks">
+<![endif]-->
 <body>
 <div id="page">
   <div id="header">

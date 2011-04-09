@@ -41,7 +41,7 @@ $(document).ready(function(){
   });
 });
 </script>
-<form action="/index.php?action=createRoom&phase=2" method="post" id="createRoomForm">
+<form action="#" method="post" id="createRoomForm">
   <label for="name">Name</label>: <input type="text" name="name" id="name" /><br />
   <small><span style="margin-left: 10px;">Your group\'s name. Note: This should not container anything vulgar or it will be deleted.</span></small><br /><br />
 

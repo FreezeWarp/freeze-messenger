@@ -21,11 +21,29 @@ $phase = $_GET['phase'];
 if (!$phase) $phase = '1'; // Default to phase 1.
 
 if ($phase == '1') {
-  $roomSelect = mysqlReadThrough(mysqlQuery("SELECT * FROM {$sqlPrefix}rooms WHERE " . ((($user['settings'] & 16) == false) ? "(owner = '$user[userid]' OR moderators REGEXP '({$user[userid]},)|{$user[userid]}$') AND " : '') . "(options & 16) = false AND (options & 4) = false AND (options & 8) = false"),'<option value="$id"{{' . intval($_GET['roomid']) . ' == $id}}{{ selected="selected"}{}}>$name</option>
+  $userid = intval($_POST['userid'] ?: $_GET['userid']);
+  $roomid = intval($_POST['roomid'] ?: $_GET['roomid']);
+
+  $roomSelect = mysqlReadThrough(mysqlQuery("SELECT * FROM {$sqlPrefix}rooms WHERE " . ((($user['settings'] & 16) == false) ? "(owner = '$user[userid]' OR moderators REGEXP '({$user[userid]},)|{$user[userid]}$') AND " : '') . "(options & 16) = false AND (options & 4) = false AND (options & 8) = false"),'<option value="$id"{{' . $roomid . ' == $id}}{{ selected="selected"}{}}>$name</option>
 ');
-  $userSelect = mysqlReadThrough(mysqlQuery("SELECT u2.userid, u2.username FROM {$sqlPrefix}users AS u, user AS u2 WHERE u2.userid = u.userid ORDER BY username"),'<option value="$userid">$username</option>
+  $userSelect = mysqlReadThrough(mysqlQuery("SELECT u2.userid, u2.username FROM {$sqlPrefix}users AS u, user AS u2 WHERE u2.userid = u.userid ORDER BY username"),'<option value="$userid"{{' . $userid . ' == $userid}}{{ selected="selected"}{}}>$username</option>
 ');
-  echo '<form action="/index.php?action=kick&phase=2" method="post">
+  echo '<script type="text/javascript">
+$(document).ready(function(){
+  $("#kickUserForm").submit(function(){
+    data = $("#kickUserForm").serialize(); // Serialize the form data for AJAX.
+    $.post("content/kick.php?phase=2",data,function(html) {
+      quickDialogue(html,\'\',\'kickUserResultDialogue\');
+    }); // Send the form data via AJAX.
+
+    $("#kickUserDialogue").dialog(\'close\');
+
+    return false; // Don\'t submit the form.
+  });
+});
+</script>
+
+<form action="#" id="kickUserForm" method="post">
   <label for="userid">User</label>: <select name="userid">' . $userSelect . '</select><br />
   <label for="roomid">Room</label>: <select name="roomid">' . $roomSelect . '</select><br />
   <label for="time">Time</label>: <input type="text" name="time" id="time" style="width: 50px;" />
@@ -63,7 +81,7 @@ elseif ($phase == '2') {
   else {
     mysqlQuery("INSERT INTO {$sqlPrefix}kick (userid, kickerid, length, room) VALUES ($user2[userid], $user[userid], $time, $room[id])");
 
-    sendMessage('/me kicked ' . $user2['username'],$user['userid'],$room['id']);
+    sendMessage('/me kicked ' . $user2['username'],$user,$room);
 
     echo 'The user has been kicked';
   }
