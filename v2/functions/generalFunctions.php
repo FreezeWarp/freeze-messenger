@@ -178,6 +178,22 @@ function vrim_encrypt($data) {
   return array($data,$iv,$saltNum);
 }
 
+function vrim_encodeXML($data) {
+  $ref = array(
+    '&' => '&amp;', // By placing this first, we avoid accidents!
+    '\'' => '&apos;',
+    '<' => '&lt;',
+    '>' => '&gt;',
+    '"' => '&quot;',
+  );
+
+  foreach ($ref AS $search => $replace) {
+    $data = str_replace($search,$replace,$data);
+  }
+
+  return $data;
+}
+
 function html2rgb($color) {
   if ($color[0] == '#') $color = substr($color, 1);
 

@@ -1,8 +1,8 @@
 <?php
 /* Start Libs */
 
-require_once('global.php'); // Used for everything.
-require_once('functions/container.php'); // Used for /some/ formatting, though perhaps too sparcely right now.
+require_once('../global.php'); // Used for everything.
+require_once('../functions/container.php'); // Used for everything.
 
 
 
@@ -53,8 +53,8 @@ if ($user['userid'] || in_array($action,array('archive','viewRooms','help','onli
     case 'archive': require_once('content/archive.php'); break;
     case 'options': require_once('content/options.php'); break;
     case 'moderate': require_once('content/moderate.php'); break;
-    case 'help': require_once('content/help.php'); break;
-    case 'online': require_once('content/online.php'); break;
+    case 'help': require_once('../content/help.php'); break;
+    case 'online': require_once('../content/online.php'); break;
     case 'kick': require_once('content/kick.php'); break;
     case 'logout': require_once('content/logout.php'); break;
     case 'unkick': require_once('content/unkick.php'); break;

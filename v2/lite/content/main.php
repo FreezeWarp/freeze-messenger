@@ -1,11 +1,4 @@
 <?php
-echo '<ul id="userMenu" class="contextMenu">
-  <li><a href="javascript:void(0);" data-action="private_im">Private IM</a></li>
-  <li><a href="javascript:void(0);" data-action="profile">View Profile</a></li>
-  ' . (hasPermission($room,$user,'moderate') ? '<li><a href="javascript:void(0);" data-action="kick">Kick</a></li>' : '') .
-  ($user['settings'] & 16 ? '<li><a href="javascript:void(0);" data-action="ban">Ban</a></li>' : '') . '
-</ul>';
-
 if ($banned) { // Check that the user isn't banned.
   echo container('We\'re Sorry','We\'re sorry, but for the time being you have been banned from the chat. You make contact a Victory Road administrator for more information.');
 }
@@ -25,23 +18,28 @@ elseif (($room['options'] & 2) && (($user['settings'] & 64) == false)) {
 elseif (hasPermission($room,$user)) { // The user is not banned, and is allowed to view this room.
   // Require the server-generated Javascript.
   if ($mode == 'normal') {
-    echo '<script src="/content/main.js.php?room=' . $room['id'] . '&r=' . $reverse . '&m=' . $mode . '&d=' . ($user['settings'] & 128 ? 0 : 1) . '" type="text/javascript"></script>
-<script src="/client/beeper.min.js" type="text/javascript"></script>
-<script src="/client/youtube.min.js" type="text/javascript"></script>
-<script src="/client/textEntry.min.js" type="text/javascript"></script>
-<script src="/client/previewFile.min.js" type="text/javascript"></script>
-<script src="/client/encrypt.min.js" type="text/javascript"></script>
-<script src="/client/encrypt.min.js" type="text/javascript"></script>
-<script src="/client/strReplace.min.js" type="text/javascript"></script>
-<script src="/client/changeTitle.js" type="text/javascript"></script>
-<script type="text/javascript">
-jQTubeUtil.init({
-  key: "AI39si5_Dbv6rqUPbSe8e4RZyXkDM3X0MAAtOgCuqxg_dvGTWCPzrtN_JLh9HlTaoC01hCLZCxeEDOaxsjhnH5p7HhZVnah2iQ",
-  orderby: "relevance",  // *optional -- "viewCount" is set by default
-  time: "this_month",   // *optional -- "this_month" is set by default
-  maxResults: 20   // *optional -- defined as 10 results by default
-});
-</script>
+    echo '
+  <script src="/client/js/phpjs-base64.min.js" type="text/javascript"></script>
+  <script src="/client/js/phpjs-strReplace.min.js" type="text/javascript"></script>
+
+  <script src="/client/js/jparsons-textEntry.min.js" type="text/javascript"></script>
+  <script src="/client/js/jparsons-previewFile.js" type="text/javascript"></script>
+
+  <script src="/client/js/beeper.min.js" type="text/javascript"></script>
+  <script src="/client/js/youtube.min.js" type="text/javascript"></script>
+  <script src="/client/js/jgrowl.js"></script>
+
+  <script type="text/javascript">
+  jQTubeUtil.init({
+    key: "AI39si5_Dbv6rqUPbSe8e4RZyXkDM3X0MAAtOgCuqxg_dvGTWCPzrtN_JLh9HlTaoC01hCLZCxeEDOaxsjhnH5p7HhZVnah2iQ",
+    orderby: "relevance",  // *optional -- "viewCount" is set by default
+    time: "this_month",   // *optional -- "this_month" is set by default
+    maxResults: 20   // *optional -- defined as 10 results by default
+  });
+  </script>
+
+  <script src="/client/js/fim-main.js" type="text/javascript"></script>
+  <script src="/client/js/fim-chatLite.js" type="text/javascript"></script>
 ';
   }
   elseif ($mode == 'mobile') {
@@ -88,7 +86,7 @@ document.addEventListener(\'DOMContentLoaded\', loaded);</script>';*/
     container('
     <div id="title">
       <span id="status" class="leftPart">' . 
-        ($room['options'] & 1 ? '<img src="images/bookmarks.png" class="standard" title="This is an Official Room" alt="Official" />' : '') . '<br />
+        ($room['options'] & 1 ? '<img src="/images/bookmarks.png" class="standard" title="This is an Official Room" alt="Official" />' : '') . '<br />
         <span id="refreshStatus" onclick="alert(\'Failed \' + totalFails + \' times. Current refreshing every \' + (timeout / 1000 + .1) + \' seconds.\');"></span>
       </span>
 
@@ -110,13 +108,13 @@ document.addEventListener(\'DOMContentLoaded\', loaded);</script>';*/
           </button>
 
           <button type="button" onclick="window.open(\'/index.php?action=help&popup=true\',\'help\',\'status=0,toolbar=0,width=600,height=400,scrollbars=1,resizable=1,location=0\');" class="standard">
-            <img src="images/help-contents.png" class="standard" alt="Help" />
+            <img src="/images/help-contents.png" class="standard" alt="Help" />
           </button>
         </form>
       </div>
 
       ' . $room['name'] . '<br />
-      <em id="title' . $room['id'] . '">' . ($mode == 'normal' ? "<!--<a href=\"javascript:void(0);\" onclick=\"$('#title$room[id]').html('<form action=&quot;#&quot; onsubmit=&quot;var title = $(\'#input$room[id]\').val(); changeTitle($room[id],title); return false;&quot; style=&quot;display: inline;&quot;><input type=&quot;text&quot; name=&quot;newTitle&quot; style=&quot;width: 300px&quot; value=&quot;" . htmlentities($room['title']) . "&quot; id=&quot;input$room[id]&quot; /></form>'); $(this).hide();\"><img src=\"/images/edit-rename.png\" class=\"standard\" alt=\"Configure\" />-->" : '') . $room['title'] . ($mode == 'normal' ? '<!--</a>-->' : '') . '</em>
+      <em id="topic' . $room['id'] . '">' . $room['title'] . '</em>
     </div>','<div id="messageListContainer"><div id="messageList">
   ' . $messageText . (!$_GET['popup'] ? '
   <a href="/index.php?action=archive&roomid=' . $room['id'] . '">View older messages.</a>' : '') . '
@@ -168,16 +166,16 @@ document.addEventListener(\'DOMContentLoaded\', loaded);</script>';*/
             <div id="buttonMenuLeft">
               ' . ($room['bbcode'] <= 16 ? '
               <button type="button" onclick="addPTag(\'+\',\'+\');" class="standard">
-                <img src="images/format-text-bold.png" alt="B" class="standard" title="Bold" />
+                <img src="/images/format-text-bold.png" alt="B" class="standard" title="Bold" />
               </button><br />
               <button type="button" onclick="addPTag(\'_\',\'_\');" class="standard">
-                <img src="images/format-text-underline.png" alt="U" class="standard" title="Underline" />
+                <img src="/images/format-text-underline.png" alt="U" class="standard" title="Underline" />
               </button><br />
               <button type="button" onclick="addPTag(\' /\',\'/ \');" class="standard">
-                <img src="images/format-text-italic.png" alt="I" class="standard" title="Italics" />
+                <img src="/images/format-text-italic.png" alt="I" class="standard" title="Italics" />
               </button><br />
               <button type="button" onclick="addPTag(\'=\',\'=\');" class="standard">
-                <img src="images/format-text-strikethrough.png" alt="S" class="standard" title="Strikethrough" />
+                <img src="/images/format-text-strikethrough.png" alt="S" class="standard" title="Strikethrough" />
               </button>' : '') . '
             </div>' : '') . '
 
@@ -188,10 +186,10 @@ document.addEventListener(\'DOMContentLoaded\', loaded);</script>';*/
 
             ($mode == 'normal' ? '<div id="buttonMenuRight">' . ($room['bbcode'] <= 13 ? '
               <button type="button" onclick="$(\'#textentryBoxMessage, #roomListTable, #activeUsersContainer, #textentryBoxUrl\').slideUp();$(\'#textentryBoxUrl\').slideDown();" class="standard">
-                <img src="images/insert-link.png" class="standard" alt="L" title="Insert Link" />
+                <img src="/images/insert-link.png" class="standard" alt="L" title="Insert Link" />
               </button><br />' : '') . ($room['bbcode'] <= 5 ? '
               <button type="button" onclick="$(\'#textentryBoxMessage, #roomListTable, #activeUsersContainer, #textentryBoxUrl\').slideUp();$(\'#textentryBoxUpload\').slideDown();" class="standard">
-                <img src="images/insert-image.png" class="standard" alt="I" title="Insert or Upload an Image" />
+                <img src="/images/insert-image.png" class="standard" alt="I" title="Insert or Upload an Image" />
               </button><br />' : '') . ($room['bbcode'] <= 2 ? '
               <button type="button" onclick="$(\'#textentryBoxMessage, #roomListTable, #activeUsersContainer, #textentryBoxUrl\').slideUp();$(\'#textentryBoxYoutube\').slideDown();" class="standard">
                 <img src="/images/youtube.png" class="standard" alt="YT" title="Insert a Youtube Video" />

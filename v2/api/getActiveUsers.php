@@ -18,10 +18,24 @@ if (!$roomsArray) {
   $failMessage = 'The room string was not formatted properly in Comma-Seperated notation.';
 }
 else {
-  foreach ($roomsArray AS $roomXML) $roomsXML .= "<room>$roomXML</room>";
-
   foreach ($roomsArray AS $room) {
-    $users = sqlArr("SELECT u.username, u.userid, r.id AS roomid, r.name AS roomname, r.title AS roomtopic, p.id FROM {$sqlPrefix}ping AS p, {$sqlPrefix}rooms AS r, user AS u WHERE p.roomid = $room AND p.roomid = r.id AND p.userid = u.userid AND UNIX_TIMESTAMP(p.time) >= ($time - $onlineThreshold) ORDER BY u.username",'id');
+    $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
+
+    if (!hasPermission($room,$user,'know')) continue;
+
+    $roomsXML .= "
+      <room>$room[id]</room>";
+
+    $users = sqlArr("SELECT u.username, u.userid, p.id, p.status, p.typing FROM {$sqlPrefix}ping AS p, {$sqlPrefix}rooms AS r, user AS u WHERE p.roomid = $room[id] AND p.roomid = r.id AND p.userid = u.userid AND UNIX_TIMESTAMP(p.time) >= ($time - $onlineThreshold) ORDER BY u.username",'id');
+
+    $userXML .= "    <room>
+      <roomData>
+          <roomid>$user[id]</roomid>
+          <roomname>$user[name]</roomname>
+          <roomtopic>$user[topic]</roomtopic>
+      </roomData>
+      <users>
+";
 
     if ($users) {
       foreach ($users AS $user) {
@@ -29,32 +43,36 @@ else {
       <userid>$user[userid]</userid>
       <username>$user[username]</username>
       <displaygroupid>$user[displaygroupid]</displaygroupid>
-      <room>
-        <roomid>$user[roomid]</roomid>
-        <roomname>$user[roomname]</roomname>
-        <roomtopic>$user[roomtopic]</roomtopic>
-      </room>'
-    </user>";
+      <status>$user[status]</status>
+      <typing>$user[typing]</typing>
+    </user>
+";
       }
     }
+
+      $userXML .= "      </users>
+    </room>
+";
   }
 }
 
 $data = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getActiveUsers>
+  <activeUser>
+    <userid>$user[userid]</userid>
+    <username>" . vrim_encodeXML($user['username']) . "</username>
+  </activeUser>
   <sentData>
     <rooms>$rooms</rooms>
-    <roomsList>
-    $roomsXML
+    <roomsList>$roomsXML
     </roomsList>
     <onlineThreshold>$onlineThreshold</onlineThreshold>
     <time>$time</time>
   </sentData>
   <errorcode>$failCode</errorcode>
   <errortext>$failMessage</errortext>
-  <users>
-    $userXML
-  </users>
+  <rooms>
+$userXML  </rooms>
 </getActiveUsers>";
 
 if ($_GET['gz']) {

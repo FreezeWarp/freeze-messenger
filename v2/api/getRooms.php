@@ -2,9 +2,14 @@
 require_once('../global.php');
 header('Content-type: text/xml');
 
+$rooms = $_GET['rooms'];
+$roomsArray = explode(',',$rooms);
+foreach ($roomsArray AS &$v) $v = intval($v);
+
 $favRooms = explode(',',$user['favRooms']);
 
 $whereClause = ($_GET['showDeleted'] ? '' : '(options & 4 = FALSE) AND ');
+if ($rooms) $whereClause .= ' id IN (' . implode(',',$roomsArray) . ') AND ';
 
 switch ($_GET['order']) {
   case 'id': $order = 'id ' . ($_GET['orderReverse'] ? 'DESC' : 'ASC'); break;
@@ -26,8 +31,8 @@ if ($rooms2) {
 
     $roomXML .= "    <room>
       <roomid>$row[id]</roomid>
-      <roomname>$row[name]</roomname>
-      <roomtopic>$row[title]</roomtopic>
+      <roomname>" . vrim_encodeXML($row['name']) . "</roomname>
+      <roomtopic>" . vrim_encodeXML($row['title']) . "</roomtopic>
       <allowedUsers>$row[allowedUsers]</allowedUsers>
       <allowedGroups>$row[allowedGroups]</allowedGroups>
       <favourite>$fav</favourite>

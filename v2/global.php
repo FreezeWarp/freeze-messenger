@@ -20,11 +20,15 @@
 error_reporting(E_ALL ^ E_NOTICE);
 
 if (file_exists('/var/www/chatinterface/htdocs/.tempStop') && $_GET['action'] != 'moderate') {
-  die('VRIM has been disabled by an administrator. Please remain patient while order is restored.');
+  die('The chat has been disabled by an administrator. Please remain patient while order is restored.');
 }
 
 /* MySQL Login */
 $loginMethod = 'vbulletin'; // The product used for login. Currently only "vbulletin3.8" is supported.
+$forumUrl = 'http://someforum/';
+$forumCookieSalt = 'pSD68BENJ7q5w7ReEUTBX0H6LWOO5TEmuZakrwXRu4OI2wMqgxIVf';
+$forumTablePrefix = '';
+$forumCookiePrefix = 'bb';
 
 $sqlHost = '10.10.10.1'; // The SQL host IP address (usually IPv4).
 $sqlUser = 'vrim10'; // The SQL user used to connect.
@@ -69,6 +73,7 @@ $enableDF = array( // Default formatting users can user to differentiate their t
 );
 $allowRoomCreation = true; // Use this to disable user room creation.
 $hideRoomsOnline = true; // Use this to hide the names of rooms users are in to users who can't access said roms.
+$hidePostCounts = true; // If enabled, users will not be able to view post counts in rooms they are not able to access.
 $bbcode = array( // Enable & Disable BBCode.
   'shortCode' => false,
   'buis' => true,
@@ -81,11 +86,12 @@ $bbcode = array( // Enable & Disable BBCode.
 
 $parseFlags = true; // Messages sent under certain conditions will contain flags corrosponding to certain message data, like "video". Using this paramater, these messages will only contain the specific parameter and not the extra BBcode. This can be useful for certain APIs, data cleanliness, and so-on, but can also mean extra CPU cycles and incompatibility with older software, and also disables encryption for messages with parse flags. *DO NOT CHANGE THIS SETTING AFTER INITIAL SETUP*
 
+//$branding['description'] = 'The VictoryRoad Instant Messenger is a powerful online instant messenger that supports secure one-on-one messenging, chat rooms, advance archiving, and more. It works easily on a variety of platforms, including mobile.';
+//$branding['title'] = '';
 
 /* DO NOT EDIT BELOW */
 //ob_start(''); // Start the content buffer.
 date_default_timezone_set('GMT'); // Set the timezone to GMT.
-
 
 require_once('functions/mysql.php'); // Core MySQL Functions
 require_once('functions/time.php'); // Time is a big deal, right?

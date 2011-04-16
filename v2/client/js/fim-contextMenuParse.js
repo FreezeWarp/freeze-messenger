@@ -136,7 +136,7 @@ function contextMenuParse() {
       var thisid = $(el).attr('data-userid');
 
       if (thisid != $('#tooltext').attr('data-lastuserid')) {
-        $('#tooltext').attr('data-lastuserid',thisid)
+        $('#tooltext').attr('data-lastuserid',thisid);
         $.get("ajax/fim-usernameHover.php?userid=" + thisid, function(html) {
            content.html(html);
         });

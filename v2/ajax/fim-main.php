@@ -22,6 +22,7 @@ require_once('../global.php');
 $room = intval($_GET['room']);
 $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
 $lastid = intval($_GET['lastMessage']);
+$lastmessage=  $lastid;
 $reverse = intval($_GET['reverse']);
 $time = time();
 
@@ -73,7 +74,7 @@ else {
       if (!hasPermission($message,$user,'view')) { continue; }
 
       $roomName = htmlspecialchars(addslashes($message['name']));
-      $return .= "notify('<a href=\"/chat.php?room=$message[id]\" target=\"_BLANK\">$roomName</a>','New Messages','newMessageNotification',$message[id]);";
+      $return .= "notify('<a href=\"./index.php?room=$message[id]\" target=\"_BLANK\">$roomName</a>','New Messages','newMessageNotification',$message[id]); alert(1);";
     }
   }
 

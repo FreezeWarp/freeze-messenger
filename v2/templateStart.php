@@ -2,19 +2,20 @@
 <!-- Original Source Code Copyright © 2011 Joseph T. Parsons. -->
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <title><?php echo ($brandingTitle ?: 'FreezeMessenger') . ($title ? " - $title" : ''); ?></title>
+  <title><?php echo ($branding['title'] ?: 'FreezeMessenger') . ($title ? " - $title" : ''); ?></title>
   <meta name="robots" content="index, follow" />
   <meta name="author" content="Joseph T. Parsons" />
-  <meta name="keywords" content="instant messenger, im, instant message<?php echo ($brandingKeywords ? ", $brandingKeywords" : '') . ($keywords ? ', ' . implode(', ',$keywords) : ''); ?>" />
-  <meta name="description" content="The VictoryRoad Instant Messenger is a powerful online instant messenger that supports secure one-on-one messenging, chat rooms, advance archiving, and more. It works easily on a variety of platforms, including mobile." />
-  <link rel="icon" id="favicon" type="image/gif" href="/images/favicon.gif" />
+  <meta name="keywords" content="instant messenger, im, instant message<?php echo ($branding['keywords'] ? ", $branding[keywords]" : '') . ($keywords ? ', ' . implode(', ',$keywords) : ''); ?>" />
+  <meta name="description" content="<?php echo $branding['description']; ?>" />
+  <link rel="icon" id="favicon" type="image/gif" href="<?php echo ($branding['favicon'] ? $branding['favicon'] : '/images/favicon.gif'); ?>" />
   <!--[if lte IE 9]>
-  <link rel="shortcut icon" id="faviconfallback" href="/images/favicon1632.ico"/>
-  <![endif]--><!-- Did you know that IE sucks? -->
+  <link rel="shortcut icon" id="faviconfallback" href="<?php echo ($branding['faviconIE'] ? $branding['faviconIE'] : ($branding['favicon'] ? $branding['favicon'] : '/images/favicon1632.ico')); ?>" />
+  <![endif]-->
 
   <!-- START Styles -->
   <link rel="stylesheet" type="text/css" href="client/css/ui-darkness/jquery-ui-1.8.11.custom.css" media="screen" />
   <link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="client/css/jgrowl.css" media="screen,handheld" />
   <!-- END Styles -->
 
   <!-- START Scripts
@@ -28,7 +29,7 @@
   <script src="client/js/phpjs-base64.min.js" type="text/javascript"></script>
   <script src="client/js/phpjs-strReplace.min.js" type="text/javascript"></script>
 
-  <script src="client/js/fim-nav.js"></script>
+  <script src="client/js/fim-nav.js" type="text/javascript"></script>
   <script src="client/js/fim-contextMenuParse.js" type="text/javascript"></script>
 
   <script src="client/js/jparsons-textEntry.min.js" type="text/javascript"></script>
@@ -38,7 +39,7 @@
   <script src="client/js/beeper.min.js" type="text/javascript"></script>
   <script src="client/js/youtube.min.js" type="text/javascript"></script>
   <script src="client/js/tooltip.js" type="text/javascript"></script>
-  <script src="client/js/jgrowl.js"></script>
+  <script src="client/js/jgrowl.js" type="text/javascript"></script>
   <!-- END Scripts -->
 
   <!-- IE9 Stuff is Back! w00t! -->
@@ -61,7 +62,7 @@
 
         $roomMs .= "    window.external.msSiteModeAddJumpListItem('$room[name]','{$installUrl}chat.php?room=$room2[id]','{$installUrl}images/favicon.ico');
 ";
-        $roomHtml .= "          <li><a href=\"/chat.php?room=$room2[id]\" class=\"room\" data-roomid=\"$room2[id]\">$room2[name]</a></li>
+        $roomHtml .= "          <li><a href=\"./chat.php?room=$room2[id]\" class=\"room\" data-roomid=\"$room2[id]\">$room2[name]</a></li>
 ";
       }
     }
@@ -103,28 +104,28 @@ echo '  <meta name="application-name" content="' . ($brandingTitle ?: 'FreezeMes
       </ul>
       <h3><a href="#">Quick Links</a></h3>
       <ul>
-        <li style="border-bottom: 1px solid;"><a href="/archive.php">Message Archive</a></li>
-        <li><a href="/viewRooms.php">Room List</a></li>
+        <li style="border-bottom: 1px solid;"><a href="./archive.php">Message Archive</a></li>
+        <li><a href="./viewRooms.php">Room List</a></li>
         ' . ($user['userid'] && $allowRoomCreation ? '<li><a href="#" id="createRoom">Create a Room</a></li>
         <li><a href="#" id="editRoom">Edit This Room</a></li>
         <li style="border-bottom: 1px solid;"><a href="#" id="priateRoom">Enter Private IM</a></li>' : '') . '
         <li><a href="#" id="online">Who\'s Online?</a></li>
-        <li><a href="/stats.php">View Stats</a></li>
+        <li><a href="./stats.php">View Stats</a></li>
         ' . ($user['userid'] ? '<li><a href="#" id="manageKick">Manage Kicked Users</a></li>' : '') . '
         ' . ($user['userid'] ? '<li><a href="#" id="kick">Kick a User</a></li>' : '') . '
       </ul>
       <h3><a href="#">Me</a></h3>
       <ul>
-        ' . ($user['settings'] & 16 ? '<li><a href="/moderate.php">AdminCP</a></li>
-        <ul><li><a href="/moderate.php?do=showimages">Moderate Images</a></li>
-        <li><a href="/moderate.php?do=listusers">Moderate Users</a></li>
-        <ul><li><a href="/moderate.php?do=banuser">Ban a User</a></li>
-        <li><a href="/moderate.php?do=unbanuser">Unban a User</a></li></ul>
-        <li><a href="/moderate.php?do=censor">Modify Censor</a></li>
-        <li><a href="/moderate.php?do=maintence">Maintence</a></li></ul>' : '') . '
+        ' . ($user['settings'] & 16 ? '<li><a href="./moderate.php">AdminCP</a></li>
+        <ul><li><a href="./moderate.php?do=showimages">Moderate Images</a></li>
+        <li><a href="./moderate.php?do=listusers">Moderate Users</a></li>
+        <ul><li><a href="./moderate.php?do=banuser">Ban a User</a></li>
+        <li><a href="./moderate.php?do=unbanuser">Unban a User</a></li></ul>
+        <li><a href="./moderate.php?do=censor">Modify Censor</a></li>
+        <li><a href="./moderate.php?do=maintence">Maintence</a></li></ul>' : '') . '
         ' . ($user['userid'] ? '
         <li style="border-bottom: 1px solid;"><a href="#" id="changeSettings">Change Settings</a></li>' : '') . '
-        ' . ($user['userid'] ? '<li><a href="/logout.php">Logout</a></li>' : '<li><a href="/login.php">Login</a></li>') . '
+        ' . ($user['userid'] ? '<li><a href="./logout.php">Logout</a></li>' : '<li><a href="./login.php">Login</a></li>') . '
       </ul>
       <h3><a href="#">Rooms</a></h3>
       <div id="rooms">

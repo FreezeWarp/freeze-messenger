@@ -22,4 +22,6 @@ if ($mode == 'normal' || $mode == 'simple') {
   if ($user['favRooms']) $rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE options & 4 = FALSE AND id IN ($user[favRooms])",'id'); // Get all rooms
   if ($rooms) foreach ($rooms AS $room3) $roomHtml .= "            <li><a href=\"/index.php?room=$room3[id]\">$room3[name]</a></li>\n";
 }
+
+$bodyHook = ' data-roomid="' . $room['id'] . '" data-ding="' . ($user['settings'] & 128 ? 0 : 1) . '" data-reverse="' . $reverse . '"';
 ?>

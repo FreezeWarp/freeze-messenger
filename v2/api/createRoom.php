@@ -1,4 +1,6 @@
 <?php
+die('Not implemented');
+
 header('Content-type: text/plain');
 require_once('../global.php');
 
@@ -13,7 +15,7 @@ $nomod = ($_GET['nomod'] == 'true' ? true : false);
 
 if (!$name) $error = 'no_name';
 if (!$bbcode || $bbcode >= 17) $error = 'bbcode_outofrange';
-if (sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE name = '$name' AND id != $roomid")) $error = 'name_taken';
+if (sqlArr("SELECT * FROM {$sqlPrefix}ro getMessages, oms WHERE name = '$name' AND id != $roomid")) $error = 'name_taken';
 
 $options = ($room['options'] & 1) + ($mature ? 2 : 0) + ($room['options'] & 8) + ($room['options'] & 16) + ($nomod ? 32 : 0);
 

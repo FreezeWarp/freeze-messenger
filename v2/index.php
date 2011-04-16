@@ -16,9 +16,9 @@
 
 
 
+error_reporting(0);
 
-die('Depreciated [yes, I know I can\'t spell]<br />
-
-<a href="/chat.php">Click here to go to the main chat.</a> This page will redirect there in the future.');
+$roomid = intval($_GET['room']);
+header('Location: chat.php?room=' . $roomid);
 
 ?>

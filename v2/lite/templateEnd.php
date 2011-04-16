@@ -20,9 +20,7 @@ google_ad_height = 60;
 
     <div id="rightFooter">
       <div style="vertical-align: middle;">
-        <span class="pseudolink" onclick="alert(&quot;The current time is <?php echo vbdate('g:ia'); ?>&quot;);"><?php echo vbdate('g:ia'); ?></span>
-        <span class="pseudolink" onclick="newwindow=window.open('http://www.victoryroad.net/online.php?popup=true','online','height=500,width=700'); if (window.focus) { newwindow.focus() }">Who's Online?</span>
-        <span class="pseudolink" onclick="alert(&quot;VRIM Backend and API © 2010-2011 Joseph T. Parsons. Some Rights Reserved.\n\nVRIM Internet Client © 2010-2011 Joseph T. Parsons. Some Rights Reserved.\n\nVRIM Windows® Cleint © 2010-2011 Scott Cheney. Some Rights Reserved.\n\n\Source Code from Victory Road's VictoryBattles © 2009-2011 Joseph T. Parsons. Some Rights Reserved\n\nSource Code from the Fliler Project © 2008-2011 Joseph T. Parsons and Licensed Under GPLv3.\n\njQuery © 2010 The jQuery Team.\n\njQuery Plugins © Their Respective Owners.&quot;);">©</span><br /><small>by Joseph T. Parsons</small><br />
+        <span class="pseudolink" onclick="alert(&quot;VRIM Backend and API © 2010-2011 Joseph T. Parsons. Some Rights Reserved.\n\nVRIM Internet Client © 2010-2011 Joseph T. Parsons. Some Rights Reserved.\n\nVRIM Windows® Cleint © 2010-2011 Scott Cheney. Some Rights Reserved.\n\n\Source Code from Victory Road's VictoryBattles © 2009-2011 Joseph T. Parsons. Some Rights Reserved\n\nSource Code from the Fliler Project © 2008-2011 Joseph T. Parsons and Licensed Under GPLv3.\n\njQuery © 2010 The jQuery Team.\n\njQuery Plugins © Their Respective Owners.&quot;);">© Joseph T. Parsons</span><br />
         <select onchange="var date = new Date(); date.setTime(date.getTime() + (1000 * 60 * 60 * 24 * 365)); document.cookie = 'vrim-styleid=' + this.options[this.selectedIndex].value + '; expires=' + date.toGMTString() + '; path=/; domain=.victoryroad.net'; location.reload(true);" name="styleid" id="styleid">
           <option value="">Select a Skin</option>
           <option value="20">Dark Illusionist</option>

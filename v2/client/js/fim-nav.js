@@ -15,6 +15,74 @@
 
 var roomid;
 
+function ajaxDialogue(uri,title,id,width,cF) {
+  var dialog = $('<div style="display: none;" id="' + id +  '"></div>').appendTo('body');
+  dialog.load(
+    uri,
+    {},
+    function (responseText, textStatus, XMLHttpRequest) {
+      dialog.dialog({
+        width: (width ? width: 600),
+        title: title,
+        close: function() {
+          $('#' + id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
+          if (cF) {
+            cF();
+          }
+        }
+      });
+    }
+  );
+
+  return false;
+}
+
+function quickDialogue(content,title,id,width) {
+  var dialog = $('<div style="display: none;" id="' + id +  '">' + content + '</div>').appendTo('body');
+  dialog.dialog({
+    width: (width ? width: 600),
+    title: title,
+    close: function() {
+      $('#' + id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
+    }
+  });
+
+  return false;
+}
+
+function quickConfirm(text) {
+  $('<div id="dialog-confirm"><span class="ui-icon ui-icon-alert" style="float: left; margin: 0px 7px 20px 0px;"></span>' + text + '</div>').dialog({
+    resizable: false,
+    height: 240,
+    modal: true,
+    buttons: {
+      Confirm: function() {
+        $(this).dialog("close");
+        return true;
+      },
+      Cancel: function() {
+        $(this).dialog("close");
+        return false;
+      }
+    }
+  });
+}
+
+function showAllRooms() {
+  $.ajax({
+    url: '/ajax/fim-roomList.php?rooms=*',
+    timeout: 5000,
+    type: 'GET',
+    cache: false,
+    success: function(html) {
+      $('#rooms').html(html);
+    },
+    error: function() {
+      alert('Failed to show all rooms');
+    }
+  });
+}
+
 $(document).ready(function(){
   roomid = $('body').attr('data-roomid');
 
@@ -83,70 +151,3 @@ $(document).ready(function(){
     });
   });
 });
-
-function ajaxDialogue(uri,title,id,width,cF) {
-  var dialog = $('<div style="display: none;" id="' + id +  '"></div>').appendTo('body');
-  dialog.load(
-    uri,
-    {},
-    function (responseText, textStatus, XMLHttpRequest) {
-      dialog.dialog({
-        width: (width ? width: 600),
-        title: title,
-        close: function() {
-          $('#' + id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
-          if (cF) cF();
-        }
-      });
-    }
-  );
-
-  return false;
-}
-
-function quickDialogue(content,title,id,width) {
-  var dialog = $('<div style="display: none;" id="' + id +  '">' + content + '</div>').appendTo('body');
-  dialog.dialog({
-    width: (width ? width: 600),
-    title: title,
-    close: function() {
-      $('#' + id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
-    }
-  });
-
-  return false;
-}
-
-function quickConfirm(text) {
-  $('<div id="dialog-confirm"><span class="ui-icon ui-icon-alert" style="float: left; margin: 0px 7px 20px 0px;"></span>' + text + '</div>').dialog({
-    resizable: false,
-    height: 240,
-    modal: true,
-    buttons: {
-      Confirm: function() {
-        $(this).dialog("close");
-        return true;
-      },
-      Cancel: function() {
-        $(this).dialog("close");
-        return false;
-      }
-    }
-  });
-}
-
-function notify(text,header,id,id2) {
-  if ($('#' + id + ' > #' + id + id2).html()) { }
-  else {
-  if ($('#' + id).html()) {
-    $('#' + id).append('<br />' + text);
-  }
-  else {
-    $.jGrowl('<div id="' + id + '"><span id="' + id + id2 + '">' + text + '</span></div>', {
-      sticky: true,
-      glue: true,
-      header: header
-    }); 
-  }
-  }
-}

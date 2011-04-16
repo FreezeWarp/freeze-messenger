@@ -19,9 +19,6 @@ if (($room['options'] & 2) && (($user['settings'] & 64) == false)) {
 }
 
 elseif (hasPermission($room,$user)) { // The user is not banned, and is allowed to view this room.
-  // Require the server-generated Javascript.
-  echo '<script src="client/js/fim-main.js" type="text/javascript"></script>
-';
 
   if ((($room['options'] & 1) == false) && (($user['settings'] & 64) == false)) {
     if ($room['options'] & 16) {

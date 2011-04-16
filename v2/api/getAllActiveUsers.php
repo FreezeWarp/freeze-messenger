@@ -29,8 +29,10 @@ if ($users) {
       </room>";
 
     $usersXML .= "    <user>
-      <userid>$user[userid]</userid>
-      <username>$user[username]</username>
+      <userdata>
+        <userid>$user[userid]</userid>
+        <username>$user[username]</username>
+      </userdata>
       <rooms>
       $roomsXML
       </rooms>
@@ -41,6 +43,10 @@ if ($users) {
 
 $data = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getAllActiveUsers>
+  <activeUser>
+    <userid>$user[userid]</userid>
+    <username>" . vrim_encodeXML($user['username']) . "</username>
+  </activeUser>
   <sentData>
     <onlineThreshold>$onlineThreshold</onlineThreshold>
     <time>$time</time>

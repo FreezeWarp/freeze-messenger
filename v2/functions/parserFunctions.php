@@ -37,7 +37,7 @@ function htmlParse($text,$bbcodeLevel = 1) {
   );
 
   $search['link'] = array(
-    '/(?<!(\[noparse\]))(?<!(\[img\]))(?<!(\[url\])) ((http|https|ftp|data|gopher|sftp|ssh):(\/\/|)(.+?\.|)([a-zA-Z]+)\.(com|net|org|co\.uk|co\.jp|info|us|gov)((\/)([^ ]*)|)) (?!\[\/url\])(?!\[\/img\])(?!\[\/noparse\])/',
+    '/(?<!(\[noparse\]))(?<!(\[img\]))(?<!(\[url\]))((http|https|ftp|data|gopher|sftp|ssh):(\/\/|)(.+?\.|)([a-zA-Z]+)\.(com|net|org|co\.uk|co\.jp|info|us|gov)((\/)([^ ]*)([^\?\.\!])|))(?!\[\/url\])(?!\[\/img\])(?!\[\/noparse\])/', // The regex is naturally selective; it improves slightly with each FIM version, but I don't really know how to do it, so I only add to it piece by piece to prevent regressions.
     '/\[url=("|)(.*?)("|)\](.*?)\[\/url\]/is',
     '/\[url\](.*?)\[\/url\]/is',
     '/\[email=("|)(.*?)("|)\](.*?)\[\/email\]/is',
@@ -55,8 +55,8 @@ function htmlParse($text,$bbcodeLevel = 1) {
   );
 
   $search['video'] = array(
-    '/^\[youtubewide\](.*?)\[\/youtubewide\]$/is',
-    '/^\[youtube\](.*?)\[\/youtube\]$/is',
+    '/\[youtubewide\](.*?)\[\/youtubewide\]/is',
+    '/\[youtube\](.*?)\[\/youtube\]/is',
   );
 
   $replace['buis'] = array(
@@ -85,8 +85,10 @@ function htmlParse($text,$bbcodeLevel = 1) {
   );
 
   $replace['video'] = array(
-    ($bbcodeLevel <= 3 ? '<object width="420" height="255"><param name="movie" value="http://www.youtube.com/v/$1=en&amp;fs=1&amp;rel=0&amp;border=0"></param><param name="allowFullScreen" value="true"></param><embed src="http://www.youtube.com/v/$1&amp;hl=en&amp;fs=1&amp;rel=0&amp;border=0" type="application/x-shockwave-flash" allowfullscreen="true" width="420" height="255"></embed></object>' : ($bbcodeLevel <= 13 ? '<a href="http://www.youtube.com/watch?v=$1" target="_BLANK">[Youtube Video]</a>' : '$1')),
-    ($bbcodeLevel <= 3 ? '<object width="425" height="349"><param name="movie" value="http://www.youtube.com/v/$1=en&amp;rel=0&amp;border=0"></param><param name="allowFullScreen" value="true"></param><embed src="http://www.youtube.com/v/$1&amp;hl=en&amp;rel=0&amp;border=0" type="application/x-shockwave-flash" allowfullscreen="true" width="310" height="255"></embed></object>' : ($bbcodeLevel <= 13 ? '<a href="http://www.youtube.com/watch?v=$1" target="_BLANK">[Youtube Video]</a>' : '$1')),
+//    ($bbcodeLevel <= 3 ? '<iframe class="youtube-player" type="text/html" width="420" height="255" src="http://www.youtube.com/embed/$1" frameborder="0"></iframe>' : ($bbcodeLevel <= 13 ? '<a href="http://www.youtube.com/watch?v=$1" target="_BLANK">[Youtube Video]</a>' : '$1')),
+//    ($bbcodeLevel <= 3 ? '<iframe class="youtube-player" type="text/html" width="420" height="310" src="http://www.youtube.com/embed/$1" frameborder="0"></iframe>' : ($bbcodeLevel <= 13 ? '<a href="http://www.youtube.com/watch?v=$1" target="_BLANK">[Youtube Video]</a>' : '$1')),
+    ($bbcode <= 3 ? '<object width="420" height="255" wmode="opaque"><param name="movie" value="http://www.youtube.com/v/$1=en&amp;fs=1&amp;rel=0&amp;border=0"></param><param name="allowFullScreen" value="true"></param><embed src="http://www.youtube.com/v/$1&amp;hl=en&amp;fs=1&amp;rel=0&amp;border=0" type="application/x-shockwave-flash" allowfullscreen="true" width="420" height="255" wmode="opaque"></embed></object>' : ($bbcode <= 13 ? '<a href="http://www.youtube.com/watch?v=$1" target="_BLANK">[Youtube Video]</a>' : '$1')),
+    ($bbcode <= 3 ? '<object width="425" height="349" wmode="opaque"><param name="movie" value="http://www.youtube.com/v/$1=en&amp;rel=0&amp;border=0"></param><param name="allowFullScreen" value="true"></param><embed src="http://www.youtube.com/v/$1&amp;hl=en&amp;rel=0&amp;border=0" type="application/x-shockwave-flash" allowfullscreen="true" width="310" height="255" wmode="opaque"></embed></object>' : ($bbcode <= 13 ? '<a href="http://www.youtube.com/watch?v=$1" target="_BLANK">[Youtube Video]</a>' : '$1')),
   );
 
   if ($bbcode['shortCode'] && $bbCodeLevel <= 16) {
@@ -166,7 +168,7 @@ function smilie($text) {
 
   $searchText2 = implode('|',$searchText);
 
-  return preg_replace("/(?<!(\[noparse\]))(?<!(\quot))($searchText2)(?!\[\/noparse\])/ie","'[img=\\3]http://www.victoryroad.net/' . indexValue(\$smilies2,strtolower('\\3')) . '[/img]'",$text);
+  return preg_replace("/(?<!(\[noparse\]))(?<!(quot))(?<!(gt))(?<!(lt))(?<!(apos))(?<!(amp))($searchText2)(?!\[\/noparse\])/ie","'[img=\\3]http://www.victoryroad.net/' . indexValue(\$smilies2,strtolower('\\7')) . '[/img]'",$text);
 }
 
 function indexValue($array,$index) {
@@ -225,7 +227,7 @@ function finalParse($message) {
   global $room, $salts, $encrypt;
 
   $messageRaw = $message; // Parses the sources for MySQL.
-  $messageHtml = nl2br(htmlwrap(htmlParse(censor(htmlspecialchars($message),$room['roomid']),$room['options']),30,' ')); // Parses for browser or HTML rendering.
+  $messageHtml = nl2br(htmlwrap(htmlParse(censor(vrim_encodeXML($message),$room['roomid']),$room['options']),30,' ')); // Parses for browser or HTML rendering.
   $messageApi = nl2vb(smilie($message,$room['bbcode'])); // Not yet coded, you see.
 
   if ($salts && $encrypt) {
@@ -260,13 +262,23 @@ function sendMessage($messageText,$user,$room,$flag = '') {
   if ($parseFlags && in_array($flag,array('image','video','link','email'))) {
     $messageRaw = $messageText;
     $messageApi = $messageText;
+
     switch ($flag) {
-      case 'image': $messageHtml = "<img src=\"$messageText\" alt=\"\" />"; break;
-      case 'video':
-      $messageHtml = preg_replace('/^http\:\/\/(www\.|)youtube\.com\/(.*?)?v=(.+?)(&|)(.*?)$/',($bbcodeLevel <= 2 ? '<object width="425" height="349"><param name="movie" value="http://www.youtube.com/v/$3=en&amp;rel=0&amp;border=0"></param><param name="allowFullScreen" value="true"></param><embed src="http://www.youtube.com/v/$3&amp;hl=en&amp;rel=0&amp;border=0" type="application/x-shockwave-flash" allowfullscreen="true" width="310" height="255"></embed></object>' : ($bbcodeLevel <= 13 ? '<a href="http://www.youtube.com/watch?v=$3" target="_BLANK">[Youtube Video]</a>' : 'http://www.youtube.com/watch?v=$3')),$messageText);
+      case 'image':
+      $messageHtml = "<a href=\"$messageText\"><img src=\"$messageText\" alt=\"\" style=\"max-height: 300px; max-width: 300px;\" /></a>";
       break;
-      case 'link': $messageHtml = "<a href=\"$messageText\">$messageText</a>"; break;
-      case 'email': $messageHtml = "<a href=\"mailto:$messageText\">$messageText</a>"; break;
+
+      case 'video':
+      $messageHtml = preg_replace('/^http\:\/\/(www\.|)youtube\.com\/(.*?)?v=(.+)(&|)(.*?)$/',($bbcode <= 3 ? '<object width="420" height="255" wmode="opaque"><param name="movie" value="http://www.youtube.com/v/$3=en&amp;fs=1&amp;rel=0&amp;border=0"></param><param name="allowFullScreen" value="true"></param><embed src="http://www.youtube.com/v/$3&amp;hl=en&amp;fs=1&amp;rel=0&amp;border=0" type="application/x-shockwave-flash" allowfullscreen="true" width="420" height="255" wmode="opaque"></embed></object>' : ($bbcode <= 13 ? '<a href="http://www.youtube.com/watch?v=$3" target="_BLANK">[Youtube Video]</a>' : '$3')),$messageText);
+      break;
+
+      case 'link':
+      $messageHtml = "<a href=\"$messageText\">$messageText</a>";
+      break;
+
+      case 'email':
+      $messageHtml = "<a href=\"mailto:$messageText\">$messageText</a>";
+      break;
     }
   }
   else {

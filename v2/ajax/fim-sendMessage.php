@@ -70,6 +70,9 @@ elseif (strpos($message, '/topic') === 0) {
 
   sendMessage('/me changed the topic to ' . $title,$user,$room,'topic');
   mysqlQuery("UPDATE {$sqlPrefix}rooms SET title = '$title' WHERE id = $room[id]");
+
+
+  echo 'success';
 }
 else {
   if (strpos($message, '/me') === 0) { $flag = 'me'; }
