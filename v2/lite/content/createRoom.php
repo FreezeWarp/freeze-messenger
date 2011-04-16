@@ -9,7 +9,7 @@ elseif ($user['settings'] & 2) {
   echo container('Error','You have been banned from room creation.');
 }
 elseif ($phase == '1') {
-  echo container('<h3>Create a Room</h3>','<form action="/index.php?action=createRoom&phase=2" method="post">
+  echo container('<h3>Create a Room</h3>','<form action="./index.php?action=createRoom&phase=2" method="post">
   <label for="name">Name</label>: <input type="text" name="name" id="name" /><br />
   <small><span style="margin-left: 10px;">Your group\'s name. Note: This should not container anything vulgar or it will be deleted.</span></small><br /><br />
 
@@ -44,8 +44,9 @@ elseif ($phase == '2') {
       $bbcode = intval($_POST['bbcode']);
 
       mysqlQuery("INSERT INTO {$sqlPrefix}rooms (name,allowedGroups,allowedUsers,moderators,owner,options,bbcode) VALUES ('$name','$allowedGroups','$allowedUsers','$moderators',$user[userid],$options,$bbcode)");
+
       $insertId = mysql_insert_id();
-      if ($insertId) echo container('Create a Room','Your group was successfully created at:<br /><br /><form action="index.php?room=' . $insertId . '" method="post"><input type="text" style="width: 300px;" value="http://vrc.victoryroad.net/index.php?room=' . $insertId . '" name="url" /><input type="submit" value="Go There!" /></form>');
+      if ($insertId) echo container('Create a Room','Your group was successfully created at:<br /><br /><form action="./index.php?room=' . $insertId . '" method="post"><input type="text" style="width: 300px;" value="' . $installUrl . '/lite/index.php?room=' . $insertId . '" name="url" /><input type="submit" value="Go There!" /></form>');
       else echo container('Creation Failed','Your group could not be created.');
     }
   }

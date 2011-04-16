@@ -3,7 +3,7 @@ if (!$_GET['roomid']) {
   $roomSelect = mysqlReadThrough(mysqlQuery("SELECT * FROM {$sqlPrefix}rooms WHERE " . ((($user['settings'] & 16) == false) ? "owner = '$user[userid]' AND " : '') . "(options & 16) = false AND (options & 8) = false AND (options & 4) = false"),'<option value="$id">$name</option>
 ');
   if ($roomSelect) {
-    echo container('Select a Room to Edit','<form action="/index.php" method="GET">
+    echo container('Select a Room to Edit','<form action="./index.php" method="GET">
       <label for="roomid">Room: </label>
       <select name="roomid" id="roomid">
         ' . $roomSelect . '
@@ -29,7 +29,7 @@ else {
     elseif ($user['userid'] != $room['owner'] && !($user['settings'] & 16)) echo container('Error','You must be the owner to edit this room');
     elseif ($room['settings'] & 4) echo container('Error','This room is deleted, and as such may not be edited.');
     else {
-      echo container('Edit Room "' . $room['name'] . '"','<form action="/index.php?action=editRoom&phase=2&roomid=' . $room['id'] . '" method="post">
+      echo container('Edit Room "' . $room['name'] . '"','<form action="./index.php?action=editRoom&phase=2&roomid=' . $room['id'] . '" method="post">
   <label for="name">Name</label>: <input type="text" name="name" id="name" value="' . $room['name'] . '" /><br />
   <small><span style="margin-left: 10px;">Your group\'s name. Note: This should not container anything vulgar or it will be deleted.</span></small><br /><br />
 
@@ -71,7 +71,7 @@ else {
         $options = ($room['options'] & 1) + ($_POST['mature'] ? 2 : 0) + ($room['options'] & 4) + ($room['options'] & 8) + ($_POST['disableModeration'] ? 32 + 0 : 0);
         $bbcode = intval($_POST['bbcode']);
         mysqlQuery("UPDATE {$sqlPrefix}rooms SET name = '$name', allowedGroups = '$allowedGroups', allowedUsers = '$allowedUsers', moderators = '$moderators', options = '$options', bbcode = '$bbcode' WHERE id = $room[id]");
-        echo container('Edit a Room','Your group was successfully edited.<br /><br />' . button('Go To It','index.php?room=' . $room['id']));
+        echo container('Edit a Room','Your group was successfully edited.<br /><br />' . button('Go To It','./index.php?room=' . $room['id']));
       }
     }
   }

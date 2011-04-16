@@ -3,7 +3,7 @@ $roomList = mysqlEscape($_GET['roomList'] ?: '1,2,3,4,5,6,7,8,9,10');
 $number = (intval($_GET['number']) ?: 10);
 
 echo container('Change Settings','
-<form action="/index.php" method="GET">
+<form action="./index.php" method="GET">
 <label for="roomList">Room List (IDs): </label><input type="text" id="roomList" name="roomList" value="' . $roomList . '" /><br />
 <label for="number">Number of Results: </label><select name="number" id="number">
   <option value="10">10</option>

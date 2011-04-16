@@ -8,7 +8,7 @@ if ($phase == '1') {
 ');
   $userSelect = mysqlReadThrough(mysqlQuery("SELECT u2.userid, u2.username FROM {$sqlPrefix}users AS u, user AS u2 WHERE u2.userid = u.userid ORDER BY username"),'<option value="$userid">$username</option>
 ');
-  echo container('<h3>Kick a User</h3>','<form action="/index.php?action=kick&phase=2" method="post">
+  echo container('<h3>Kick a User</h3>','<form action="./index.php?action=kick&phase=2" method="post">
   <label for="userid">User</label>: <select name="userid">' . $userSelect . '</select><br />
   <label for="roomid">Room</label>: <select name="roomid">' . $roomSelect . '</select><br />
   <label for="time">Time</label>: <input type="text" name="time" id="time" style="width: 50px;" />

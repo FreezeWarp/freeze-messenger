@@ -44,14 +44,6 @@ elseif (hasPermission($room,$user)) { // The user is not banned, and is allowed 
   }
   elseif ($mode == 'mobile') {
     echo '<script src="/content/mainMobile.js.php?room=' . $room['id'] . '&r=' . $reverse . '"></script>';
-
-/*echo '
-<script src="/client/iscroll-min.js" type="text/javascript"></script>
-<script>function loaded() {
-  document.addEventListener(\'touchmove\', function(e){ e.preventDefault(); });
-  myScroll = new iScroll(\'messageList\', {desktopCompatibility:true});
-}
-document.addEventListener(\'DOMContentLoaded\', loaded);</script>';*/
   }
   elseif ($mode == 'simple') {
     echo '<script src="/content/mainMobile.js.php?room=' . $room['id'] . '&r=' . $reverse . '"></script>';

@@ -9,7 +9,7 @@ if (!$_GET['roomid']) { // If no room ID is provided, then give the search form.
 
   echo container('<h3>The Archives: Select a Room</h3>','Here you can find and search through every post made on VRIM. Simply enter a room, time frame, and the number of results to show and we can get started:<br /><br />
 
-<form action="/index.php" method="get">
+<form action="./index.php" method="get">
   <label for="roomid">Room:</label>
   <select name="roomid" id="roomid">
   ' . $roomSelect . '
@@ -110,7 +110,7 @@ else {
       }
 
 echo container("<h3>The Archives: $room[name]</h3>","$output2
-<form method=\"get\" action=\"/index.php\">
+<form method=\"get\" action=\"./index.php\">
   <input type=\"hidden\" name=\"action\" value=\"archive\" />
   <input type=\"hidden\" name=\"numresults\" value=\"$_GET[numresults]\" />
   <input type=\"hidden\" name=\"roomid\" value=\"$_GET[roomid]\" />
@@ -123,7 +123,7 @@ echo container("<h3>The Archives: $room[name]</h3>","$output2
   </select>
   <input type=\"submit\" value=\"Go\" />
 </form><br />
-<form method=\"get\" action=\"/index.php\">
+<form method=\"get\" action=\"./index.php\">
   <input type=\"hidden\" name=\"action\" value=\"archive\" />
   <input type=\"hidden\" name=\"numresults\" value=\"$_GET[numresults]\" />
   <input type=\"hidden\" name=\"roomid\" value=\"$_GET[roomid]\" />

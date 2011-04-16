@@ -9,7 +9,7 @@ foreach($fontData AS $font) {
 }
 
 if ($phase == '1') {
-  echo container('<h3>User Options</h3>','<form action="/index.php?action=options&phase=2" method="post">
+  echo container('<h3>User Options</h3>','<form action="./index.php?action=options&phase=2" method="post">
   <label for="reverse">Show Old Posts First:</label> <input type="checkbox" name="reverse" id="reverse" value="true"' . ($user['settings'] & 32 ? ' checked="checked"' : '') . ' /><br />
   <small><span style="margin-left: 10px;">This will show newer posts at the bottom instead of the top, as is common with many instant messenging programs.</span></small><br /><br />
 
@@ -139,6 +139,6 @@ elseif ($phase == '2') {
 
   mysqlQuery("UPDATE {$sqlPrefix}users SET settings = $settings, defaultFormatting = $defaultFormatting, defaultHighlight = \"$highlight\", defaultColour = \"$colour\", defaultFontface = \"$fontface\", defaultRoom = $defaultRoom WHERE userid = $user[userid]");
 
-  echo container('Settings Updated','Your settings have been updated successfully.' . button('Return','/index.php'));
+  echo container('Settings Updated','Your settings have been updated successfully.' . button('Return','./index.php'));
 }
 ?>
