@@ -74,7 +74,7 @@ else {
       if (!hasPermission($message,$user,'view')) { continue; }
 
       $roomName = htmlspecialchars(addslashes($message['name']));
-      $return .= "notify('<a href=\"./index.php?room=$message[id]\" target=\"_BLANK\">$roomName</a>','New Messages','newMessageNotification',$message[id]); alert(1);";
+      $return .= "notify('<a href=\"./index.php?room=$message[id]\" target=\"_BLANK\">$roomName</a>','New Messages','newMessageNotification',$message[id]);";
     }
   }
 

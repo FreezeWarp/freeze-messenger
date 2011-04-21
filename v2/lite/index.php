@@ -1,6 +1,7 @@
 <?php
 /* Start Libs */
 
+$lite = true;
 require_once('../global.php'); // Used for everything.
 require_once('../functions/container.php'); // Used for everything.
 

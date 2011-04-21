@@ -14,6 +14,9 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+$noReqLogin = true;
+$title = 'Message Archive';
+
 require_once('global.php'); // Used for everything.
 require_once('functions/container.php'); // Used for /some/ formatting, though perhaps too sparcely right now.
 require_once('templateStart.php');
@@ -26,27 +29,25 @@ if (!$_GET['roomid']) { // If no room ID is provided, then give the search form.
     }
   }
 
-  echo container('<h3>The Archives: Select a Room</h3>','Here you can find and search through every post made on VRIM. Simply enter a room, time frame, and the number of results to show and we can get started:<br /><br />
+  echo container($phrases['archiveChooseSettings'],$phrases['archiveMessage'] . '<br /><br />
 
 <form action="/archive.php" method="get">
-  <label for="roomid">Room:</label>
+  <label for="roomid"></label>
   <select name="roomid" id="roomid">
   ' . $roomSelect . '
   </select><br /><br />
 
-  <label for="numresults">Number of Results Per Page:</label>
+  <label for="numresults">' . $phrases['archiveNumResultsLabel'] . '</label>
   <select name="numresults" id="numresults">
     <option value="10">10</option><option value="20">20</option>
     <option value="50" selected="selected">50</option>
     <option value="100">100</option>
     <option value="500">500</option>
   </select><br /><br />
-  
-  <label for="oldfirst">Oldest First</label> <input type="checkbox" name="oldfirst" id="oldfirst" value="true" /><br /><br />
 
-  <label for="userids">User IDs (Optional)</label> <input type="text" name="userids" id="userids"  /><br /><br />
+  <label for="oldfirst">' . $phrases['archiveReversePostOrderLabel'] . '</label> <input type="checkbox" name="oldfirst" id="oldfirst" value="true" /><br /><br />
 
-<!--  <label for="search">Search Phrase (Optional)</label> <input type="text" name="search" id="search"  /><br /><br />-->
+  <label for="userids">' . $phrases['archiveUserIdsLabel'] . '</label> <input type="text" name="userids" id="userids"  /><br /><br />
 
   <button type="submit">View Archive</button>
 
@@ -65,11 +66,11 @@ else {
   $offset = ($page - 1) * $limit; // This is calculated for the MySQL query based on page and limit.
 
   if (!$room) {
-    echo container('Error','That room doesn\'t exist');
+    echo container('Error',$phrase['chatRoomDoesNotExist']);
   }
 
   elseif (!hasPermission($room,$user,'view')) { // Gotta make sure the user can view that room.
-    echo container('Archive','You are not allowed to view this room.');
+    echo container('Archive',$phrase['chatAccessDenied']);
   }
 
   else {
@@ -140,9 +141,9 @@ else {
         $output2 = '<table class="page ui-widget">
   <thead>
     <tr class="hrow ui-widget-header">
-      <td width="20%">User</td>
-      <td width="20%">Time</td>
-      <td width="60%">Message</td>
+      <td width="20%">' . $phrase['archiveHeaderUser'] . '</td>
+      <td width="20%">' . $phrase['archiveHeaderTime'] . '</td>
+      <td width="60%">' . $phrase['archiveHeaderMessage'] . '</td>
     </tr>
   </thead>
   <tbody class="ui-widget-content">
@@ -159,7 +160,7 @@ echo container("<h3>The Archives: $room[name]</h3>","
   <input type=\"hidden\" name=\"oldfirst\" value=\"$_GET[oldfirst]\" />
   <input type=\"hidden\" name=\"userids\" value=\"$_GET[userids]\" />
   <input type=\"hidden\" name=\"search\" value=\"$_GET[search]\" />
-  <label for=\"pagen\">Page: </label>
+  <label for=\"pagen\">$phrase[archivePageSelect]</label>
   <select name=\"pagen\" id=\"pagen\">
     $jumpList
   </select>
@@ -172,10 +173,10 @@ echo container("<h3>The Archives: $room[name]</h3>","
   <input type=\"hidden\" name=\"userids\" value=\"$_GET[userids]\" />
   <input type=\"hidden\" name=\"search\" value=\"$_GET[search]\" />
   <input type=\"hidden\" name=\"pagen\" value=\"$_GET[pagen]\" />
-  <label for=\"pagen\">View As: </label>
+  <label for=\"pagen\">$phrase[archiveViewAs]</label>
   <select name=\"format\" id=\"format\">
-    <option value=\"normal\">Normal</option>
-    <option value=\"bbcode\">Forum BBCode</option>
+    <option value=\"normal\">$phrase[archiveFormatHTML]</option>
+    <option value=\"bbcode\">$phrase[archiveFormatBBCode]</option>
   </select>
   <input type=\"submit\" value=\"Go\" />
 </form>");

@@ -1,4 +1,19 @@
 <?php
+/* FreezeMessenger Copyright © 2011 Joseph Todd Parsons
+
+ * This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
 $apiRequest = true;
 
 require_once('../global.php');
@@ -7,8 +22,8 @@ header('Content-type: text/xml');
 
 $message = vrim_urldecode($_GET['message']);
 
-$room = intval($_GET['room']);
-$room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
+$roomid = intval($_GET['roomid']);
+$room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $roomid");
 $ip = mysqlEscape($_SERVER['REMOTE_ADDR']); // Get the IP address of the user.
 
 
@@ -86,14 +101,14 @@ else {
 
 
 
-  echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
+echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <sendMessage>
   <activeUser>
     <userid>$user[userid]</userid>
     <username>" . vrim_encodeXML($user['username']) . "</username>
   </activeUser>
   <sentData>
-    <room>" . vrim_encodeXML($_GET['room']) . "</room>
+    <roomid>" . vrim_encodeXML($_GET['roomid']) . "</roomid>
     <message>" . vrim_encodeXML($_GET['message']) . "</message>
   </sentData>
   <errorcode>$failCode</errorcode>

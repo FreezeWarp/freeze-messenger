@@ -12,7 +12,7 @@ elseif (!$room) { // No room data was returned.
 }
 
 elseif (($room['options'] & 2) && (($user['settings'] & 64) == false)) {
-  echo container('Mature Room','This room is marked as being mature, thus access has been restricted. Parental controls can be disabled from within your user <a href="/index.php?page=options">options</a>.');
+  echo container('Mature Room','This room is marked as being mature, thus access has been restricted. Parental controls can be disabled from within your user <a href="./index.php?page=options">options</a>.');
 }
 
 elseif (hasPermission($room,$user)) { // The user is not banned, and is allowed to view this room.
@@ -78,7 +78,7 @@ elseif (hasPermission($room,$user)) { // The user is not banned, and is allowed 
     container('
     <div id="title">
       <span id="status" class="leftPart">' . 
-        ($room['options'] & 1 ? '<img src="/images/bookmarks.png" class="standard" title="This is an Official Room" alt="Official" />' : '') . '<br />
+        ($room['options'] & 1 ? '<img src="../images/bookmarks.png" class="standard" title="This is an Official Room" alt="Official" />' : '') . '<br />
         <span id="refreshStatus" onclick="alert(\'Failed \' + totalFails + \' times. Current refreshing every \' + (timeout / 1000 + .1) + \' seconds.\');"></span>
       </span>
 
@@ -92,15 +92,15 @@ elseif (hasPermission($room,$user)) { // The user is not banned, and is allowed 
           </select>-->
 
           ' . (($mode == 'normal' && (($user['settings'] & 128) == false)) ? '<button type="button" onclick="if (soundOn) { soundOn = false; $(\'#icon_muteSound\').attr(\'src\',\'/images/audio-volume-muted.png\'); } else { soundOn = true; $(\'#icon_muteSound\').attr(\'src\',\'/images/audio-volume-high.png\'); }" class="standard" onmouseover="if(soundOn) { $(\'#icon_muteSound\').attr(\'src\',\'/images/audio-volume-muted.png\'); } else { $(\'#icon_muteSound\').attr(\'src\',\'/images/audio-volume-high.png\'); }" onmouseout="if(soundOn) { $(\'#icon_muteSound\').attr(\'src\',\'/images/audio-volume-high.png\'); } else { $(\'#icon_muteSound\').attr(\'src\',\'/images/audio-volume-muted.png\'); }" >
-            <img src="/images/audio-volume-high.png" class="standard" alt="(Un)mute" id="icon_muteSound" />
+            <img src="../images/audio-volume-high.png" class="standard" alt="(Un)mute" id="icon_muteSound" />
           </button>' : '') . '
 
           <button type="button" onclick="createCookie(\'vrim10-reverseOrder\',' . ($reverse ? 'false' : 'true') . ',7 * 24 * 3600); location.reload(true);" class="standard" onmouseover="$(\'#icon_revOrder\').attr(\'src\',\'/images/go-' . ($reverse ? 'down' : 'up') . '.png\');" onmouseout="$(\'#icon_revOrder\').attr(\'src\',\'/images/go-' . ($reverse ? 'up' : 'down') . '.png\');" title="Switch the order of posts. This will refresh the page.">
-            <img src="/images/go-' . ($reverse ? 'up' : 'down') . '.png" class="standard" alt="Rev. Order" id="icon_revOrder" />
+            <img src="../images/go-' . ($reverse ? 'up' : 'down') . '.png" class="standard" alt="Rev. Order" id="icon_revOrder" />
           </button>
 
-          <button type="button" onclick="window.open(\'/index.php?action=help&popup=true\',\'help\',\'status=0,toolbar=0,width=600,height=400,scrollbars=1,resizable=1,location=0\');" class="standard">
-            <img src="/images/help-contents.png" class="standard" alt="Help" />
+          <button type="button" onclick="window.open(\'./index.php?action=help&popup=true\',\'help\',\'status=0,toolbar=0,width=600,height=400,scrollbars=1,resizable=1,location=0\');" class="standard">
+            <img src="../images/help-contents.png" class="standard" alt="Help" />
           </button>
         </form>
       </div>
@@ -109,7 +109,7 @@ elseif (hasPermission($room,$user)) { // The user is not banned, and is allowed 
       <em id="topic' . $room['id'] . '">' . $room['title'] . '</em>
     </div>','<div id="messageListContainer"><div id="messageList">
   ' . $messageText . (!$_GET['popup'] ? '
-  <a href="/index.php?action=archive&roomid=' . $room['id'] . '">View older messages.</a>' : '') . '
+  <a href="./index.php?action=archive&roomid=' . $room['id'] . '">View older messages.</a>' : '') . '
 </div></div>') . '
   </div>
   <div id="leftPanel">
@@ -117,21 +117,21 @@ elseif (hasPermission($room,$user)) { // The user is not banned, and is allowed 
       ' . container('
       <div id="roomListHeader">
         <div class="rightPart">
-          <form action="/index.php?action=viewRooms" method="post" class="inline">
+          <form action="./index.php?action=viewRooms" method="post" class="inline">
             <button type="submit" class="standard">
-              <img src="/images/view-list-details.png" alt="View All Rooms" title="View All Rooms" class="standard" />
+              <img src="../images/view-list-details.png" alt="View All Rooms" title="View All Rooms" class="standard" />
             </button>
           </form>
 
-          <form action="/index.php?action=createRoom" method="post" class="inline">
+          <form action="./index.php?action=createRoom" method="post" class="inline">
             <button type="submit" class="standard">
-              <img src="/images/document-new.png" alt="Create a Room" title="Create a Room" class="standard" />
+              <img src="../images/document-new.png" alt="Create a Room" title="Create a Room" class="standard" />
             </button>
           </form>' . (((($user['userid'] == $room['owner']) || ($user['settings'] & 16))) && (($room['options'] & 16) == false) ? '
 
-          <form action="/index.php?action=editRoom&amp;roomid=' . $room['id'] . '" method="post" class="inline">
+          <form action="./index.php?action=editRoom&amp;roomid=' . $room['id'] . '" method="post" class="inline">
             <button type="submit" class="standard">
-              <img src="/images/document-edit.png" alt="Edit This Room" title="Edit the Current Room" class="standard" />
+              <img src="../images/document-edit.png" alt="Edit This Room" title="Edit the Current Room" class="standard" />
             </button>
           </form>' : '') . '
         </div>
@@ -151,23 +151,23 @@ elseif (hasPermission($room,$user)) { // The user is not banned, and is allowed 
         <form onsubmit="var message = $(\'textarea#messageInput\').val(); if (message.length == 0) { alert(\'Please enter your message.\'); } else { sendMessage(message); $(\'textarea#messageInput\').val(\'\'); } return false;" id="sendform">' . container('
           <div class="leftPart">Enter a Message</div>
           <div class="rightPart">
-            <button type="submit" class="standard"><img src="/images/dialog-ok.png" alt="Apply" class="standard" title="Send the Message" /></button>
-            <button type="reset" class="standard"><img src="/images/dialog-cancel.png" alt="Cancel" class="standard" title="Reset the Message Box" /></button>
+            <button type="submit" class="standard"><img src="../images/dialog-ok.png" alt="Apply" class="standard" title="Send the Message" /></button>
+            <button type="reset" class="standard"><img src="../images/dialog-cancel.png" alt="Cancel" class="standard" title="Reset the Message Box" /></button>
           </div>','
           <div id="messageInputContainer" class="middle">' . ($mode == 'normal' ? '
             <div id="buttonMenuLeft">
               ' . ($room['bbcode'] <= 16 ? '
               <button type="button" onclick="addPTag(\'+\',\'+\');" class="standard">
-                <img src="/images/format-text-bold.png" alt="B" class="standard" title="Bold" />
+                <img src="../images/format-text-bold.png" alt="B" class="standard" title="Bold" />
               </button><br />
               <button type="button" onclick="addPTag(\'_\',\'_\');" class="standard">
-                <img src="/images/format-text-underline.png" alt="U" class="standard" title="Underline" />
+                <img src="../images/format-text-underline.png" alt="U" class="standard" title="Underline" />
               </button><br />
               <button type="button" onclick="addPTag(\' /\',\'/ \');" class="standard">
-                <img src="/images/format-text-italic.png" alt="I" class="standard" title="Italics" />
+                <img src="../images/format-text-italic.png" alt="I" class="standard" title="Italics" />
               </button><br />
               <button type="button" onclick="addPTag(\'=\',\'=\');" class="standard">
-                <img src="/images/format-text-strikethrough.png" alt="S" class="standard" title="Strikethrough" />
+                <img src="../images/format-text-strikethrough.png" alt="S" class="standard" title="Strikethrough" />
               </button>' : '') . '
             </div>' : '') . '
 
@@ -178,13 +178,13 @@ elseif (hasPermission($room,$user)) { // The user is not banned, and is allowed 
 
             ($mode == 'normal' ? '<div id="buttonMenuRight">' . ($room['bbcode'] <= 13 ? '
               <button type="button" onclick="$(\'#textentryBoxMessage, #roomListTable, #activeUsersContainer, #textentryBoxUrl\').slideUp();$(\'#textentryBoxUrl\').slideDown();" class="standard">
-                <img src="/images/insert-link.png" class="standard" alt="L" title="Insert Link" />
+                <img src="../images/insert-link.png" class="standard" alt="L" title="Insert Link" />
               </button><br />' : '') . ($room['bbcode'] <= 5 ? '
               <button type="button" onclick="$(\'#textentryBoxMessage, #roomListTable, #activeUsersContainer, #textentryBoxUrl\').slideUp();$(\'#textentryBoxUpload\').slideDown();" class="standard">
-                <img src="/images/insert-image.png" class="standard" alt="I" title="Insert or Upload an Image" />
+                <img src="../images/insert-image.png" class="standard" alt="I" title="Insert or Upload an Image" />
               </button><br />' : '') . ($room['bbcode'] <= 2 ? '
               <button type="button" onclick="$(\'#textentryBoxMessage, #roomListTable, #activeUsersContainer, #textentryBoxUrl\').slideUp();$(\'#textentryBoxYoutube\').slideDown();" class="standard">
-                <img src="/images/youtube.png" class="standard" alt="YT" title="Insert a Youtube Video" />
+                <img src="../images/youtube.png" class="standard" alt="YT" title="Insert a Youtube Video" />
               </button>' : '') . '
             </div>' : '') . '
           </div>') . '

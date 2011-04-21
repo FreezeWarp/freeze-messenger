@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+$title = 'Room Stats';
+
 require_once('global.php');
 require_once('functions/container.php');
 require_once('templateStart.php');
@@ -32,20 +34,20 @@ $(window).resize(resize);
 $roomList = mysqlEscape($_GET['roomList'] ?: '1,2,3,4,5,6,7,8,9,10');
 $number = (intval($_GET['number']) ?: 10);
 
-echo container('Change Settings','
-<form action="/stats.php" method="GET">
-  <label for="roomList">Room List (IDs): </label>
-  <input type="text" id="roomList" name="roomList" value="' . $roomList . '" /><br />
+echo container($phrases['statsChooseSettings'],"
+<form action=\"/stats.php\" method=\"GET\">
+  <label for=\"roomList\">$phrases[statsRoomList]</label>
+  <input type=\"text\" id=\"roomList\" name=\"roomList\" value=\"{$roomList}\" /><br />
 
-  <label for="number">Number of Results: </label>
-  <select name="number" id="number">
-    <option value="10">10</option>
-    <option value="25">25</option>
-    <option value="50">50</option>
+  <label for=\"number\">$phrases[statsNumResults]</label>
+  <select name=\"number\" id=\"number\">
+    <option value=\"10\">10</option>
+    <option value=\"25\">25</option>
+    <option value=\"50\">50</option>
   </select><br /><br />
 
-  <input type="submit" value="Go" /><input type="reset" value="Reset" />
-</form>');
+  <button type=\"submit\">$phrases[statsChooseSettingsSubmit]</button><button type=\"reset\">$phrases[statsChooseSettingsReset]</button>
+</form>");
 
 $rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id IN ($roomList)",'id');
 foreach ($rooms AS $room) {
@@ -55,7 +57,8 @@ foreach ($rooms AS $room) {
 
   $tableHeader[] = $room;
 
-  $totalPosts = sqlArr("SELECT COUNT(m.id) AS count, u.userid, u.username FROM {$sqlPrefix}messages AS m, user AS u WHERE room = $room[id] AND u.userid = m.user AND m.deleted = false GROUP BY m.user ORDER BY count DESC LIMIT $number",'userid');
+  $totalPosts = sqlArr("SELECT m.messages AS count, u.userid, u.username FROM {$sqlPrefix}ping AS m, user AS u WHERE m.roomid = $room[id] AND u.userid = m.userid ORDER BY count DESC LIMIT $number",'userid');
+
   $i = 0;
   foreach ($totalPosts AS $totalPoster) {
     $i++;
@@ -74,7 +77,7 @@ echo '
 <table class="page ui-widget rowHover" id="stats">
   <thead class="ui-widget-header">
   <tr class="hrow">
-    <td>Place</td>
+    <td>' . $phrases['statsPlace'] . '</td>
 ';
 foreach ($tableHeader AS $headRow) {
   echo '    <td>' . $headRow['name'] . '</td>

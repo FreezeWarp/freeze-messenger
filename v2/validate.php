@@ -120,6 +120,7 @@ if (isset($_GET['username'],$_GET['password'])) { // API.
 }
 
 elseif (isset($_POST['username'],$_POST['password'])) { // Data is stored in a just-submitted login form.
+
   $username = $_POST['username'];
   $password = $_POST['password'];
 
@@ -259,6 +260,7 @@ if ($valid) { // If the user is valid, process their preferrences.
     $user2['styleid'] = $userCopy['styleid'];
     $user2['timezoneoffset'] = $userCopy['timezoneoffset'];
     $user2['displaygroupid'] = $userCopy['displaygroupid'];
+    $user2['membergroupids'] = $userCopy['membergroupids'];
 
     if ($userCopy['options'] & 64) $user2['timezoneoffset']++; // DST is autodetect. We'll just set it by hand.
     elseif ($userCopy['options'] & 128) $user2['timezoneoffset']++; // DST is on, add an hour
@@ -280,17 +282,6 @@ if ($valid) { // If the user is valid, process their preferrences.
 
   $user = array_merge($user2,$userprefs); // Merge userprefs into user for future referrence.
 
-  if ($setCookie) {
-    if ($loginMethod == 'vbulletin') {
-      if ($rememberMe) { // This will store the user's login information in the browser's cookies for one week.
-        setcookie($forumCookiePrefix . 'userid',$userCopy['userid'],time() + 60 * 60 * 24 * 365,'/','.victoryroad.net'); // Set the cookie for userid.
-        setcookie($forumCookiePrefix . 'password',md5($userCopy['password'] . $forumCookieSalt),time() + 60 * 60 * 24 * 365,'/','.victoryroad.net'); // Set the cookie for password.
-      }
-
-      setcookie($forumCookiePrefix . 'sessionhash',$sessionhash,0,'/','.victoryroad.net'); // Set the cookie for the unique session.
-    }
-  }
-
   if ($session == 'create') {
     if ($loginMethod == 'vbulletin') {
       $sessionhash = md5(uniqid(microtime(), true)); // Generate the sessionhash, which should be unique to this browsing session.
@@ -305,6 +296,17 @@ if ($valid) { // If the user is valid, process their preferrences.
   }
   else {
 
+  }
+
+  if ($setCookie) {
+    if ($loginMethod == 'vbulletin') {
+      if ($rememberMe) { // This will store the user's login information in the browser's cookies for one week.
+        setcookie($forumCookiePrefix . 'userid',$userCopy['userid'],time() + 60 * 60 * 24 * 365,'/','.victoryroad.net'); // Set the cookie for userid.
+        setcookie($forumCookiePrefix . 'password',md5($userCopy['password'] . $forumCookieSalt),time() + 60 * 60 * 24 * 365,'/','.victoryroad.net'); // Set the cookie for password.
+      }
+
+      setcookie($forumCookiePrefix . 'sessionhash',$sessionhash,0,'/','.victoryroad.net'); // Set the cookie for the unique session.
+    }
   }
 
   if ($bannedUserGroups) {
@@ -380,14 +382,11 @@ if ($api) {
 ";
   die();
 }
-else {
-
+elseif (!$valid && !$noReqLogin) {
+  header('Location: login.php');
 }
-
-
-
-if (!in_array($user['userid'],array(1,10,16,179,933,1476,1948))) {
-  header('HTTP/1.1 403 Forbidden');
-  die('403 Forbidden');
+elseif ($valid) {
+  // Store Cookies
+  
 }
 ?>

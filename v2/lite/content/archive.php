@@ -90,7 +90,7 @@ else {
   <td style=\"$style\">
     " . ($canModerate ? "
     <a href=\"javascript:void(0);\" onclick=\"$.ajax({url: '/ajax/modAction.php?action=deletepost&postid=$message[id]', type: 'GET', cache: false, success: function() { $('#message$message[id]').animate({'opacity':'$opacityb2'}); } });\">
-      <img src=\"images/edit-delete.png\" style=\"opacity: $opacitya; height: 16px; width: 16px;\" />
+      <img src=\"../images/edit-delete.png\" style=\"opacity: $opacitya; height: 16px; width: 16px;\" />
     </a>": '') . "
     <span>$message[htmlText]</span>
   </td>

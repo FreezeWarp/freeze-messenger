@@ -19,7 +19,8 @@ $rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id IN ($roomList)",'id');
 foreach ($rooms AS $room) {
   $tableHeader[] = $room;
 
-  $totalPosts = sqlArr("SELECT COUNT(m.id) AS count, u.userid, u.username FROM {$sqlPrefix}messages AS m, user AS u WHERE room = $room[id] AND u.userid = m.user AND m.deleted = false GROUP BY m.user ORDER BY count DESC LIMIT $number",'userid');
+  $totalPosts = sqlArr("SELECT m.messages AS count, u.userid, u.username FROM {$sqlPrefix}ping AS m, user AS u WHERE m.roomid = $room[id] AND u.userid = m.userid ORDER BY count DESC LIMIT $number",'userid');
+
   $i = 0;
   foreach ($totalPosts AS $totalPoster) {
     $i++;

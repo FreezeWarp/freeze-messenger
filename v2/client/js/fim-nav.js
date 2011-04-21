@@ -24,6 +24,7 @@ function ajaxDialogue(uri,title,id,width,cF) {
       dialog.dialog({
         width: (width ? width: 600),
         title: title,
+        hide: "puff",
         close: function() {
           $('#' + id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
           if (cF) {
@@ -123,7 +124,11 @@ $(document).ready(function(){
     ajaxDialogue('/content/editRoom.php?roomid=' + roomid,'Edit Room','editRoomDialogue',1000);
   });
 
-  $('a#changeSettings').click(function() {
+  $('a.editRoomMulti').click(function() {
+    ajaxDialogue('/content/editRoom.php?roomid=' + $(this).attr('data-roomid'),'Edit Room','editRoomDialogue',1000);
+  });
+
+  $('a#changeSettings,a.changeSettingsMulti').click(function() {
     ajaxDialogue('/content/options.php','Change My Settings','changeSettingsDialogue',1000,
       function() {
         $('.colorpicker').empty().remove();
@@ -136,7 +141,7 @@ $(document).ready(function(){
   });
 
   $('#copyrightLink').click(function() {
-    quickDialogue('FIM, including (but not limited to) FIM\'s private web API, FIM\'s public XML API, FIM\'s legacy public CSV API, and all sourcecode created for use originally with FIM &copy; 2010-2011 Joseph T. Parsons.<br /><br />jQuery, jQueryUI, and all jQueryUI Themeroller Themes &copy; The jQuery Project.<br /><br />jGrowl &copy; 2009 Stan Lemon.<br /><br />jQuery Cookie Plugin &copy; 2006 Klaus Hartl<br /><br />EZPZ Tooltip &copy; 2009 Mike Enriquez<br /><br />Beeper &copy; 2009 Patrick Mueller<br /><br />Error Logger Utility &copy; Ben Alman<br /><br />Context Menu &copy; 2008 Cory S.N. LaViska<br /><br />Youtube Plugin &copy; ???','FIM Copyrights','copyrightDialogue');
+    quickDialogue('<div style="text-align: center;">FIM, including (but not limited to) FIM\'s private web API, FIM\'s public XML API, FIM\'s legacy public CSV API, and all sourcecode created for use originally with FIM &copy; 2010-2011 Joseph T. Parsons.<br /><br />jQuery, jQueryUI, and all jQueryUI Themeroller Themes &copy; The jQuery Project.<br /><br />jGrowl &copy; 2009 Stan Lemon.<br />jQuery Cookie Plugin &copy; 2006 Klaus Hartl<br />EZPZ Tooltip &copy; 2009 Mike Enriquez<br />Beeper &copy; 2009 Patrick Mueller<br />Error Logger Utility &copy; Ben Alman<br />Context Menu &copy; 2008 Cory S.N. LaViska<br />jQTubeUtil &copy; 2010 Nirvana Tikku</div>','FIM Copyrights','copyrightDialogue');
   });
 
   $(document).ready(function(){

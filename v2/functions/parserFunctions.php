@@ -288,5 +288,6 @@ function sendMessage($messageText,$user,$room,$flag = '') {
 
   mysqlQuery("INSERT INTO {$sqlPrefix}messages (user, room, rawText, htmlText, vbText, salt, iv, microtime, ip, flag) VALUES ($user[userid], $room[id], '$messageRaw', '$messageHtml', '$messageApi', '$saltNum', '$iv', '" . microtime(true) . "', '$ip', '$flag')");
   mysqlQuery("UPDATE {$sqlPrefix}rooms SET lastMessageTime = NOW() WHERE id = $room[id]");
+  mysqlQuery("UPDATE {$sqlPrefix}ping SET messages = messages + 1 WHERE userid = $user[userid] AND roomid = $room[id]");
 }
 ?>

@@ -1,4 +1,19 @@
 <?php
+/* FreezeMessenger Copyright © 2011 Joseph Todd Parsons
+
+ * This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
 $apiRequest = true;
 
 require_once('../global.php');
@@ -14,13 +29,24 @@ $oldestMessage = intval($_GET['messageIdMin']);
 $newestDate = intval($_GET['messageDateMax']);
 $oldestDate = intval($_GET['messageDateMin']);
 
+$messageStart = intval($_GET['messageIdStart']);
 
-$messageLimit = ($_GET['maxMessages'] ? intval($_GET['maxMessages']) : ($messageLimit ? $messageLimit : 40));
+$watchRooms = intval($_GET['watchRooms']);
+
+if ($_GET['maxMessages'] == '0') {
+  $messageLimit = 10000000000;
+}
+else {
+  $messageLimit = ($_GET['maxMessages'] ? intval($_GET['maxMessages']) : ($messageLimit ? $messageLimit : 40));
+}
 
 if ($newestMessage) $whereClause .= "AND m.id < $newestMessage ";
 if ($oldestMessage) $whereClause .= "AND m.id > $oldestMessage ";
 if ($newestdate) $whereClause .= "AND m.date < $newestdate ";
 if ($oldestdate) $whereClause .= "AND m.date > $oldestdate ";
+if (!$whereClause && $messageStart) {
+  echo $whereClause .= "AND m.id > $messageStart AND m.id < " . ($messageStart + $messageLimit);
+}
 
 if (!$rooms) {
   $failCode = 'badroomsrequest';
@@ -90,6 +116,24 @@ else {
   }
 }
 
+if ($watchRooms) {
+  /* Get Missed Messages */
+  $missedMessages = sqlArr("SELECT r.*, UNIX_TIMESTAMP(r.lastMessageTime) AS lastMessageTimestamp FROM {$sqlPrefix}rooms AS r LEFT JOIN {$sqlPrefix}ping AS p ON (p.userid = $user[userid] AND p.roomid = r.id) WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.id IN ($user[watchRooms])" : '') . ") AND (r.allowedUsers REGEXP '({$user[userid]},)|{$user[userid]}$' OR r.allowedUsers = '*') AND IF(p.time, UNIX_TIMESTAMP(r.lastMessageTime) > (UNIX_TIMESTAMP(p.time) + 10), TRUE)",'id'); // Right now only private IMs are included, but in the future this will be expanded.
+
+  if ($missedMessages) {
+    foreach ($missedMessages AS $message) {
+      if (!hasPermission($message,$user,'view')) { continue; }
+
+      $roomName = vrim_encodeXML($message['name']);
+      $watchRoomsXML .= "    <room>
+      <roomid>$message[id]</roomid>
+      <roomname>$roomName</roomname>
+      <lastMessageTime>$message[lastMessageTimestamp]</lastMessageTime>
+    </room>";
+    }
+  }
+}
+
 
 
 $data = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
@@ -116,6 +160,9 @@ $data = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
   <messages>
     $messageXML
   </messages>
+  <watchrooms>
+    $watchRoomsXML
+  </watchrooms>
 </getMessages>";
 
 if ($_GET['gz']) {

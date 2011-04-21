@@ -146,23 +146,23 @@ function removeRoom(id) {
 </script>
 
 <form action="/index.php?action=options&phase=2" method="post" id="changeSettingsForm">
-  <label for="reverse">Show Old Posts First:</label> <input type="checkbox" name="reverse" id="reverse" value="true"' . ($user['settings'] & 32 ? ' checked="checked"' : '') . ' /><br />
-  <small><span style="margin-left: 10px;">This will show newer posts at the bottom instead of the top, as is common with many instant messenging programs.</span></small><br /><br />
+  <label for="reverse">' . $phrases['settingsReversePostOrderLabel'] . '</label> <input type="checkbox" name="reverse" id="reverse" value="true"' . ($user['settings'] & 32 ? ' checked="checked"' : '') . ' /><br />
+  <small><span style="margin-left: 10px;">' . $phrases['settingsReversePostOrderBlurb'] . '</span></small><br /><br />
 
-  <label for="disableding">Disable Ding:</label> <input type="checkbox" name="disableding" id="disableding" value="true" ' . ($user['settings'] & 128 ? ' checed="checked"' : '') . '" /><br />
-  <small><span style="margin-left: 10px;">If checked, the ding will be completely disabled in the chat.</span></small><br /><br />
+  <label for="disableding">' . $phrases['settingsDisableDingLabel'] . '</label> <input type="checkbox" name="disableding" id="disableding" value="true" ' . ($user['settings'] & 128 ? ' checed="checked"' : '') . '" /><br />
+  <small><span style="margin-left: 10px;">' . $phrases['settingsDisableDingBlurb'] . '</span></small><br /><br />
 
-  <label for="mature">Disable Parental Controls:</label> <input type="checkbox" name="mature" id="mature" value="true"' . ($user['settings'] & 64 ? ' checked="checked"' : '') . ' /><br />
-  <small><span style="margin-left: 10px;">By default parental controls are enabled that help keep younger users safe. Check this to disable these features, however we take no responsibility for any reprecussions.</span></small><br /><br />
+  <label for="mature">' . $phrases['settingsParentalControlsLabel'] . '</label> <input type="checkbox" name="mature" id="mature" value="true"' . ($user['settings'] & 64 ? ' checked="checked"' : '') . ' /><br />
+  <small><span style="margin-left: 10px;">' . $phrases['settingsParentalControlsBlurb'] . '</span></small><br /><br />
 
-  <label for="disableFormatting">Disable Formatting:</label> <input type="checkbox" name="disableFormatting" id="disableFormatting" value="true"' . ($user['settings'] & 512 ? ' checked="checked"' : '') . ' /><br />
-  <small><span style="margin-left: 10px;">This will disable default formatting some users use on their messages.</span></small><br /><br />
+  <label for="disableFormatting">' . $phrases['settingsDisableFormattingLabel'] . '</label> <input type="checkbox" name="disableFormatting" id="disableFormatting" value="true"' . ($user['settings'] & 512 ? ' checked="checked"' : '') . ' /><br />
+  <small><span style="margin-left: 10px;">' . $phrases['settingsDisableFormattingBlurb'] . '</span></small><br /><br />
 
-  <label for="disableVideo">Disable Video Embeds:</label> <input type="checkbox" name="disableVideo" id="disableVideo" value="true"' . ($user['settings'] & 1024 ? ' checked="checked"' : '') . ' /><br />
-  <small><span style="margin-left: 10px;">This will disable video embeds in rooms that allow them, replaced with a "click to activate" link.</span></small><br /><br />
+  <label for="disableVideo">' . $phrases['settingsDisableVideoLabel'] . '</label> <input type="checkbox" name="disableVideo" id="disableVideo" value="true"' . ($user['settings'] & 1024 ? ' checked="checked"' : '') . ' /><br />
+  <small><span style="margin-left: 10px;">' . $phrases['settingsDisableVideoBlurb'] . '</span></small><br /><br />
 
-  <label for="disableImage">Disable Image Embeds:</label> <input type="checkbox" name="disableImage" id="disableImage" value="true"' . ($user['settings'] & 2048 ? ' checked="checked"' : '') . ' /><br />
-  <small><span style="margin-left: 10px;">This will disable image embeds in rooms that allow them, replaced with a link or alternate text.</span></small><br /><br />
+  <label for="disableImage">' . $phrases['settingsDisableImageLabel'] . '</label> <input type="checkbox" name="disableImage" id="disableImage" value="true"' . ($user['settings'] & 2048 ? ' checked="checked"' : '') . ' /><br />
+  <small><span style="margin-left: 10px;">' . $phrases['settingsDisableImageBlurb'] . '</span></small><br /><br />
 
   ' . ($enableDF ? '
   Default Formatting:<br />
@@ -177,14 +177,14 @@ function removeRoom(id) {
   '<label for="defaultBold">Bold</label><input type="checkbox" name="defaultBold" id="defaultBold" onchange="if ($(this).is(\':checked\')) { $(\'#fontPreview\').css(\'font-weight\',\'bold\'); } else { $(\'#fontPreview\').css(\'font-weight\',\'normal\'); }" value="true"' . ($user['defaultFormatting'] & 256 ? ' checked="checked"' : '') . ' />
 
   <label for="defaultItalics">Italics</label><input type="checkbox" name="defaultItalics" id="defaultItalics" value="true"' . ($user['defaultFormatting'] & 256 ? ' checked="checked"' : '') . ' onchange="if ($(this).is(\':checked\')) { $(\'#fontPreview\').css(\'font-style\',\'italic\'); } else { $(\'#fontPreview\').css(\'font-style\',\'normal\'); }" /><br />' : '') . '
-  <small><span style="margin-left: 10px;" id="fontPreview">Here\'s a preview!</span></small><br /><br />' : '') . '
+  <small><span style="margin-left: 10px;" id="fontPreview">' . $phrases['settingsDefaultFormattingPreview'] . '</span></small><br /><br />' : '') . '
 
-  <label for="defaultRoom">Default Room:</label>   <input type="text" name="defaultRoom" id="defaultRoom" /><br />
-  <small><span style="margin-left: 10px;">This changes what room defaults when you first visit VRIM.</span></small><br /><br />
+  <label for="defaultRoom">' . $phrases['settingsDefaultRoomLabel'] . '</label>   <input type="text" name="defaultRoom" id="defaultRoom" /><br />
+  <small><span style="margin-left: 10px;">' . $phrases['settingsDefaultRoomBlurb'] . '</span></small><br /><br />
 
-  <label for="watchRooms">Watch Rooms:</label>  <input type="text" name="watchRoomBridge" id="watchRoomBridge" /><input type="button" value="Add" onclick="addRoom()" /><br />
-  <small><span style="margin-left: 10px;">These rooms will be monitored for new posts, similar to Private IMs.</span></small><br />
-  <small><span style="margin-left: 10px;">Current Rooms: <span id="watchRoomsList">' . $watchList .  '</span></span></small><br /><br />
+  <label for="watchRooms">' . $phrases['settingsWatchRoomsLabel'] . '</label>  <input type="text" name="watchRoomBridge" id="watchRoomBridge" /><input type="button" value="Add" onclick="addRoom();" /><br />
+  <small><span style="margin-left: 10px;">' . $phrases['settingsWatchRoomsBlurb'] . '</span></small><br />
+  <small><span style="margin-left: 10px;">' . $phrases['settingsWatchRoomsCurrentRooms'] . '<span id="watchRoomsList">' . $watchList .  '</span></span></small><br /><br />
 
   <input type="hidden" name="watchRooms" id="watchRooms" value="' . $user['watchRooms'] . '" />
 

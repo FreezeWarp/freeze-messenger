@@ -15,22 +15,22 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 if (($room['options'] & 2) && (($user['settings'] & 64) == false)) {
-  echo container('Mature Room','This room is marked as being mature, thus access has been restricted. Parental controls can be disabled from within your user <a href="/index.php?page=options">options</a>.');
+  echo container('Mature Room','This room is marked as being mature, thus access has been restricted. Parental controls can be disabled from within your user <a href="#" class="changeSettingsMulti">options</a>.');
 }
 
 elseif (hasPermission($room,$user)) { // The user is not banned, and is allowed to view this room.
 
   if ((($room['options'] & 1) == false) && (($user['settings'] & 64) == false)) {
     if ($room['options'] & 16) {
-      $stopMessage = 'This room is a private room between you and another individual, and is not accessible to any other user or administrator. If you would like to ignore this person right click their username and choose &quot;Ignore&quot;. If you are being harrassed, please contact either Cat333Pokémon or FreezeWarp.';
+      $stopMessage = $phrases['chatPrivateRoom'];
     }
     else {
-      $stopMessage = 'This room is not an official room, and as such is not actively moderated. Please excercise caution when talking to people you do not know, and do not reveal personal information.';
+      $stopMessage = $phrases['chatNotModerated'];
     }
   }
 
   if (($user['settings'] & 16) && ((($room['owner'] == $user['userid'] && $room['owner'] > 0) || (in_array($user['userid'],explode(',',$room['allowedUsers'])) || $room['allowedUsers'] == '*') || (in_array($user['userid'],explode(',',$room['moderators']))) || ((inArray(explode(',',$user['membergroupids']),explode(',',$room['allowedGroups'])) || $room['allowedGroups'] == '*') && ($room['allowedGroups'] != ''))) == false)) {
-    $stopMessage = 'You are not a part of this group, rather you are only granted access because you are an administrator. Please respect user privacy: do not post in this group unwanted, and moreover do not spy without due reason.';
+    $stopMessage = $phrases['chatAdminAccess'];
   }
 
   if ($stopMessage) {
@@ -95,6 +95,6 @@ elseif (hasPermission($room,$user)) { // The user is not banned, and is allowed 
 }
 
 else {
-  echo container('Access Denied','You see... our incredibly high standards of admittance, or perhaps just our unjust bias, has resulted in us unfairly denying you access to this probably-not-worth-your time room. We do apologize for being such snobs... but yet, we still are. So, we must now ask you to leave.');
+  echo container('Access Denied',$phrases['chatAccessDenied']);
 }
 ?>

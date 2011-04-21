@@ -1,4 +1,6 @@
 <?php
+require_once('../functions/parserFunctions.php');
+
 $phase = $_GET['phase'];
 if (!$phase) $phase = '1'; // Default to phase 1.
 
@@ -19,15 +21,22 @@ elseif ($phase == '2') {
   $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
 
   if (!$user2['userid']) {
-    echo container('','Uh... User detection thingy error.');
+    trigger_error('Invalid User',E_USER_ERROR);
+  }
+  elseif (!$room['id']) {
+    trigger_error('Invalid Room',E_USER_ERROR);
   }
   elseif (!hasPermission($room,$user,'moderate')) {
-    echo container('Error','...You\'re not a mod...');
+    trigger_error('No Permission',E_USER_ERROR);
   }
   else {
+    modLog('unkick',"$user2[userid],$room[id]");
+
     mysqlQuery("DELETE FROM {$sqlPrefix}kick WHERE userid = $user2[userid] AND room = $room[id]");
 
-    echo container('',$user2['username'] . ' has been unbanned.');
+    sendMessage('/me unkicked ' . $user2['username'],$user,$room);
+
+    echo container('Success',$user2['username'] . ' has been unbanned.');
   }
 }
 else {

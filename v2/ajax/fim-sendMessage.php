@@ -61,7 +61,7 @@ elseif ($blockedWordSeverity == 'block') {
   echo 'The word ' . $blockedWordText . ' is not allowed: ' . $blockedWordReason;
 }
 elseif ($blockedWordSeverity == 'confirm') {
-  echo 'Warning: The word ' . $blockedWordtext . ' may not be allowed: ' . $blockedWordReason . '. Would you still like to send it?:<br /><br /><button type="button" onclick="(this).parent().dialog(\'close\');">No</button><button type="button" onclick="sendMessage(\'' . addslashes($message) . '\',1); (this).parent().dialog(\'close\');">Yes</button>';
+  echo 'Warning: The word ' . $blockedWordtext . ' may not be allowed: ' . $blockedWordReason . '. Would you still like to send it?:<br /><br /><button type="button" onclick="$(this).parent().dialog(\'close\');">No</button><button type="button" onclick="sendMessage(\'' . addslashes($message) . '\',1); $(this).parent().dialog(\'close\');">Yes</button>';
 }
 elseif (strpos($message, '/topic') === 0) {
   $title = preg_replace('/^\/topic (.+?)$/i','$1',$message);

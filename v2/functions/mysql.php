@@ -97,4 +97,20 @@ function iif($condition,$true,$false) {
 function mysqlClose() {
   mysql_close();
 }
+
+function modLog($action,$data) {
+  global $sqlPrefix, $user;
+
+  $action = mysqlEscape($action);
+  $data = mysqlEscape($data);
+  $ip = mysqlEscape($_SERVER['REMOTE_ADDR']);
+  $userid = intval($user['userid']);
+
+  if (mysqlQuery("INSERT INTO {$sqlPrefix}modlog (userid, ip, action, data) VALUES ($userid, '$ip', '$action', '$data')")) {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
 ?>

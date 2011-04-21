@@ -15,6 +15,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 $inRoom = true;
+$title = 'Chat';
 
 require_once('global.php');
 require_once('functions/container.php');
@@ -35,7 +36,7 @@ require_once('templateStart.php');
 
 
 if ($banned) { // Check that the user isn't banned.
-  echo container('We\'re Sorry','We\'re sorry, but for the time being you have been banned from the chat. You may contact a Victory Road administrator for more information.');
+  echo container('We\'re Sorry',$phrases['chatBanned']);
 }
 
 elseif (!$room) { // No room data was returned.

@@ -1,5 +1,6 @@
 <?php
-require_once('functions/parserFunctions.php');
+require_once('../functions/parserFunctions.php');
+
 $phase = $_GET['phase'];
 if (!$phase) $phase = '1'; // Default to phase 1.
 
@@ -33,30 +34,28 @@ elseif ($phase == '2') {
 
   $time = floor($_POST['time'] * $_POST['interval']);
 
-  if (!$user2['userid']) echo container('','Invalid User');
-  elseif (!$room['id']) echo container('','Invalid Room');
+  if (!$user2['userid']) {
+    trigger_error('Invalid User',E_USER_ERROR);
+  }
+  elseif (!$room['id']) {
+    trigger_error('Invalid Room',E_USER_ERROR);
+  }
   elseif ($user2['settings'] & 16 && false) { // You can't kick admins.
-    echo container('','You\'re really not supposed to kick admins... I mean, sure, it sounds fun and all, but still... we don\'t like it >:D');
+    trigger_error('You\'re really not supposed to kick admins... I mean, sure, it sounds fun and all, but still... we don\'t like it >:D');
 
-    $message = finalParse('/me fought the law and the law won.');
-
-    list($messageRaw,$messageHtml,$messageVBnet,$saltNum,$iv) = $message;
-
-    mysqlQuery("INSERT INTO {$sqlPrefix}messages (user, room, rawText, htmlText, vbText, salt, iv, microtime, ip) VALUES ($user[userid], $room[id], '$messageRaw', '$messageHtml', '$messageVBnet', $saltNum, '$iv', '" . microtime(true) . "', '$ip')");
+    sendMessage('/me fought the law and the law won.',$user['userid'],$room['id']);
   }
   elseif (!hasPermission($room,$user,'moderate')) {
-    echo container('','...You\'re not a mod...');
+    trigger_error('No Permission',E_USER_ERROR);
   }
   else {
+    modLog('kick',"$user2[userid],$room[id]");
+
     mysqlQuery("INSERT INTO {$sqlPrefix}kick (userid, kickerid, length, room) VALUES ($user2[userid], $user[userid], $time, $room[id])");
-    
-    $message = finalParse('/me kicked ' . $user2['username']);
 
-    list($messageRaw,$messageHtml,$messageVBnet,$saltNum,$iv) = $message;
+    sendMessage('/me kicked ' . $user2['username'],$user,$room);
 
-    mysqlQuery("INSERT INTO {$sqlPrefix}messages (user, room, rawText, htmlText, vbText, salt, iv, microtime, ip) VALUES ($user[userid], $room[id], '$messageRaw', '$messageHtml', '$messageVBnet', $saltNum, '$iv', '" . microtime(true) . "', '$ip')");
-
-    echo container('','The user has been kicked');
+    echo container('Success','The user has been kicked');
   }
 }
 else {

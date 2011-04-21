@@ -68,17 +68,23 @@ elseif ($phase == '2') {
 
   $time = floor($_POST['time'] * $_POST['interval']);
 
-  if (!$user2['userid']) 'Invalid User';
-  elseif (!$room['id']) 'Invalid Room';
+  if (!$user2['userid']) {
+    trigger_error('Invalid User',E_USER_ERROR);
+  }
+  elseif (!$room['id']) {
+    trigger_error('Invalid Room',E_USER_ERROR);
+  }
   elseif ($user2['settings'] & 16 && false) { // You can't kick admins.
-    echo 'You\'re really not supposed to kick admins... I mean, sure, it sounds fun and all, but still... we don\'t like it >:D';
+    trigger_error('You\'re really not supposed to kick admins... I mean, sure, it sounds fun and all, but still... we don\'t like it >:D');
 
     sendMessage('/me fought the law and the law won.',$user['userid'],$room['id']);
   }
   elseif (!hasPermission($room,$user,'moderate')) {
-    echo '...You\'re not a mod...';
+    trigger_error('No Permission',E_USER_ERROR);
   }
   else {
+    modLog('kick',"$user2[userid],$room[id]");
+
     mysqlQuery("INSERT INTO {$sqlPrefix}kick (userid, kickerid, length, room) VALUES ($user2[userid], $user[userid], $time, $room[id])");
 
     sendMessage('/me kicked ' . $user2['username'],$user,$room);

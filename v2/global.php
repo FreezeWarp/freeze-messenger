@@ -17,86 +17,27 @@
 /* Configuration File
  * Core MySQLLogin, Cookie/etc. Salt, and Site Data is stored here. */
 
+
+
 error_reporting(E_ALL ^ E_NOTICE);
+
 
 if (file_exists('/var/www/chatinterface/htdocs/.tempStop') && $_GET['action'] != 'moderate') {
   die('The chat has been disabled by an administrator. Please remain patient while order is restored.');
 }
 
-/* MySQL Login */
-$loginMethod = 'vbulletin'; // The product used for login. Currently only "vbulletin3.8" is supported.
-$forumUrl = 'http://someforum/';
-$forumCookieSalt = 'pSD68BENJ7q5w7ReEUTBX0H6LWOO5TEmuZakrwXRu4OI2wMqgxIVf';
-$forumTablePrefix = '';
-$forumCookiePrefix = 'bb';
 
-$sqlHost = '10.10.10.1'; // The SQL host IP address (usually IPv4).
-$sqlUser = 'vrim10'; // The SQL user used to connect.
-$sqlPassword = 'WURZNKpHSfwzpyp7'; // The SQL password of the above user.
-$sqlDatabase = 'vbulletin'; // The MySQL database.
-$sqlPrefix = 'vrc_'; // The Prefix of all MySQL Tables, excluding those of vBulletin.
-$sqlUserTable = 'user'; // The user table in the login method used.
-$sqlUserIdCol = 'userid'; // The user ID column of the user table in the login method used.
-$sqlUsernameCol = 'username'; // The username column of the user table in the login method used.
-$sqlUsergroupCol = 'displaygroupid'; // The usergroup column of the user table in the login method used.
-
-$installLoc = '/var/www/chatinterface/htdocs/v1/'; // The server location that the product is installed (global.php should be placed in this directory). This is not neccissarly needed, but is required if uploads are made to the server.
-$installUrl = 'http://2.vrim.victoryroad.net/'; // The web accessible equivilent of the above path.
+require_once('config.php');
 
 
-/* Encryption */
-$salts = array( // DO NOT REMOVE ANY ENTRY. Entries can be freely added, with the last generally being used for all new data. Note that to disable encryption, make this empty. Alternatively, to disable encryption without losing all old messages, add a new entry at the bottom that is empty.
-  101 => 'Fr33d0m*',
-);
-$encrypt = true;
-
-
-/* Uploads */
-$enableUploads = true;
-$enableGeneralUploads = true; // If enabled, users can upload general files to the server, not just to rooms.
-$uploadMimes = array('image/gif','image/jpeg','image/png','image/pjpeg','application/octet-stream'); // Mime types which all files must be.
-$uploadExtensions = array('gif','jpg','jpeg','png'); // Files who use the octetstream mimetype will be checked against their extension instead.
-$uploadMatchBoth = true; // If enabled, files must use both a compatible extension and mimetype.
-$uploadMethod = 'database'; // Files can be uploaded both to a MySQL database and to the server. Choose either "database" or "server".
-$encryptUploads = true; // Uploads can be encrypted on the server if uploaded to the server, though it takes up considerably more CPU (and a bit more storage space).
-
-
-/* Misc Configuration */
-$bannedUserGroups = array(8); // Usergroups which are not given access to the chat.
-$messageLimit = 40; // The message limit for obtaining messages.
-$onlineThreshold = 15; // The number of seconds befoer a user is removed from online lists.
-$enableDF = array( // Default formatting users can user to differentiate their text.
-  'colour' => true,
-  'font' => true,
-  'highlight' => true,
-  'general' => true, // Bold, italics, etc.
-);
-$allowRoomCreation = true; // Use this to disable user room creation.
-$hideRoomsOnline = true; // Use this to hide the names of rooms users are in to users who can't access said roms.
-$hidePostCounts = true; // If enabled, users will not be able to view post counts in rooms they are not able to access.
-$bbcode = array( // Enable & Disable BBCode.
-  'shortCode' => false,
-  'buis' => true,
-  'link' => true,
-  'colour' => true,
-  'image' => true,
-  'video' => true,
-  'emoticon' => true,
-);
-
-$parseFlags = true; // Messages sent under certain conditions will contain flags corrosponding to certain message data, like "video". Using this paramater, these messages will only contain the specific parameter and not the extra BBcode. This can be useful for certain APIs, data cleanliness, and so-on, but can also mean extra CPU cycles and incompatibility with older software, and also disables encryption for messages with parse flags. *DO NOT CHANGE THIS SETTING AFTER INITIAL SETUP*
-
-//$branding['description'] = 'The VictoryRoad Instant Messenger is a powerful online instant messenger that supports secure one-on-one messenging, chat rooms, advance archiving, and more. It works easily on a variety of platforms, including mobile.';
-//$branding['title'] = '';
-
-/* DO NOT EDIT BELOW */
-//ob_start(''); // Start the content buffer.
 date_default_timezone_set('GMT'); // Set the timezone to GMT.
+
 
 require_once('functions/mysql.php'); // Core MySQL Functions
 require_once('functions/time.php'); // Time is a big deal, right?
 require_once('functions/errorHandler.php');
 require_once('functions/generalFunctions.php');
+
 
 // Run Key MySQL Queries
 if (!mysqlConnect($sqlHost,$sqlUser,$sqlPassword,$sqlDatabase)) {
@@ -108,8 +49,44 @@ else {
   error_log('MySQL connection established.');
 }
 
-if ($novalidate == true) {}
-else require_once('validate.php');
+
+if ($novalidate == true) {
+  /* Do Nothing */
+}
+else {
+  require_once('validate.php');
+}
+
 
 mysqlQuery('SET NAMES UTF8');
+
+
+/*** Get Phrases ***/
+
+$phrases2 = sqlArr("SELECT * FROM {$sqlPrefix}phrases",'id');
+
+if ($_GET['lang']) {
+  $lang = $_GET['lang'];
+}
+elseif (!$lang) {
+  $lang = 'en';
+}
+
+foreach ($phrases2 AS $phrase) {
+  $phrases[$phrase['name']] = $phrase['text_' . $lang];
+}
+
+unset($phrases2);
+unset($phrase);
+
+
+/*** Get Code Hooks ***/
+
+$hooks2 = sqlArr("SELECT * FROM {$sqlPrefix}hooks",'id');
+foreach ($hooks2 AS $hook) {
+  $hooks[$hook['name']] = $hook['code'];
+}
+
+unset($hooks2);
+unset($hook);
 ?>
