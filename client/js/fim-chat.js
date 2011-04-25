@@ -42,7 +42,17 @@ function resize () {
   var windowWidth = document.documentElement.clientWidth;
   var windowHeight = document.documentElement.clientHeight;
 
-  $('#messageList').css('height',(windowHeight - 230));
+  if (light) {
+  /* Body Padding: 10px
+   * "Enter Message" Table Padding: 10px
+   *** TD Padding: 2px (on Standard Styling)
+   * Message Input Container Padding : 3px (all padding-left)
+   * Message Input Text Area Padding: 6px */
+    $('#messageInput').css('width',(windowWidth - 10 - 10 - 2 - 3 - 6));
+  }
+  else {
+    $('#messageList').css('height',(windowHeight - 230));
+    $('#messageList').css('max-width',((windowWidth - 10) * .75));
   /* Body Padding: 10px
    * Right Area Width: 75%
    * "Enter Message" Table Padding: 10px
@@ -50,7 +60,8 @@ function resize () {
    * Message Input Container Padding : 3px (all padding-left)
    * Left Button Width: 36px
    * Message Input Text Area Padding: 6px */
-  $('#messageInput').css('width',(((windowWidth - 10) * .75) - 10 - 2 - 3 - 36 - 6));
+    $('#messageInput').css('width',(((windowWidth - 10) * .75) - 10 - 2 - 3 - 36 - 6));
+  }
 }
 
 $(window).resize(resize);

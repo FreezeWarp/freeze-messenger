@@ -9,4 +9,6 @@ $phrases[hookBodyEndAll]
 $phrases[hookBodyEndFull]
 </body>
 </html>";
+
+eval(hook('templateEnd'));
 ?>

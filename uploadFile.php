@@ -16,17 +16,24 @@
 
 ini_set('max_execution_time','10');
 error_reporting(E_ALL);
+$reqPhrases = true;
+$reqHooks = true;
+$title = 'Upload File';
 
 require_once('global.php');
 
 $room = intval($_GET['room'] ?: $_POST['room']);
 $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
 
+eval(hook('uploadStart'));
+
 if (!hasPermission($room,$user) && $room) { // Can't post in that room.
   $errorMessage = 'You do not have permission to do this.';
 }
 
 elseif (!$room && !$_POST['method'] && $enableGeneralUploads) { // General upload; form.
+  eval(hook('uploadFormStart'));
+
   require_once('templateStart.php');
   require_once('functions/container.php');
 
@@ -60,24 +67,29 @@ elseif (!$room && !$_POST['method'] && $enableGeneralUploads) { // General uploa
   $uploads = sqlArr("SELECT v.fileid, f.mime, f.size, f.name, f.rating, v.md5hash FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS v WHERE f.userid = $user[userid] AND f.id = v.fileid",'fileid');
   foreach ($uploads AS $file) {
     $file['size'] = formatSize($file['size']);
-
-    $files .= "    <tr>
+    $fileEntry = "    <tr>
       <td><img src=\"/file.php?hash=$file[md5hash]\" style=\"max-height: 100px; max-width: 100px;\" /></td>
       <td>$file[name] ($file[rating]+)</td>
       <td>$file[size]</td>
       <td>$file[mime]</td>
       <td><img src=\"images/edit-delete.png\" /> | <a href=\"#\" onclick=\"$('#rateDialogue').dialog();\">Rate</a></td>
     </tr>";
+
+    eval(hook('uploadFormFileEachStart'));
+
+    $files .= $fileEntry;
+
+    eval(hook('uploadFormFileEachEnd'));
   }
 
   echo container('View My Uploads','<table class="page">
   <thead>
     <tr class="hrow">
-      <td>Preview</td>
-      <td>Name</td>
-      <td>Size</td>
-      <td>Mime Type</td>
-      <td>Actions</td>
+      <td>' . $phrases['uploadHeaderPreview'] . '</td>
+      <td>' . $phrases['uploadHeaderName'] . '</td>
+      <td>' . $phrases['uploadHeaderSize'] . '</td>
+      <td>' . $phrases['uploadHeaderMime'] . '</td>
+      <td>' . $phrases['uploadHeaderActions'] . '</td>
     </tr>
   </thead>
 
@@ -105,44 +117,53 @@ $(document).ready(function(){
     <label for="rating">Rating:</label>
 
     <select name="rating" id="rating">
-      <option value="6">6+ (E/G)</option>
-      <option value="10">10+ (E10+/PG)</option>
-      <option value="13">13+ (T/PG-13)</option>
-      <option value="16">16+ (M/R)</option>
-      <option value="18">18+ (AO/NC-17)</option>
+      <option value="6">' . $phrases['uploadRating6'] . '</option>
+      <option value="10">' . $phrases['uploadRating10'] . '</option>
+      <option value="13">' . $phrases['uploadRating13'] . '</option>
+      <option value="16">' . $phrases['uploadRating16'] . '</option>
+      <option value="18">' . $phrases['uploadRating18'] . '</option>
     </select>
   </form>';
 
-  echo container('Upload New File','<form action="/uploadFile.php" method="post" enctype="multipart/form-data" target="upload_target" id="uploadFileForm">
+  echo container($phrases['uploadNewFileTitle'],'<form action="/uploadFile.php" method="post" enctype="multipart/form-data" target="upload_target" id="uploadFileForm">
   <fieldset>
-    <legend>Upload from Computer</legend>
+    <legend>' . $phrases['uploadNewFileComputer'] . '</legend>
     <label for="fileUpload">File: </label>
     <input name="fileUpload" id="fileUpload" type="file" onChange="upFiles()" /><br /><br />
   </fieldset>
   <fieldset>
-    <legend>Preview & Submit</legend>
+    <legend>' . $phrases['uploadNewFilePreview'] . '</legend>
     <div id="preview"></div><br /><br />
 
     <button onclick="$(\'#textentryBoxUpload\').dialog(\'close\');" type="button">Cancel</button>
-    <button type="submit" id="imageUploadSubmitButton">Upload</button>
+    <button type="submit" id="imageUploadSubmitButton">' . $phrases['uploadNewFileSubmit'] . '</button>
   </fieldset>
   <iframe id="upload_target" name="upload_target" class="nodisplay"></iframe>
   <input type="hidden" name="method" value="image" />
   <input type="hidden" name="generalUpload" value="true" />
 </form>');
 
+
+  eval(hook('uploadFormEnd'));
+
   require_once('templateEnd.php');
 }
 
 elseif ($_POST['method']) { // Actual upload; process.
+  eval(hook('uploadProcessStart'));
+
   if (!$room && !$enableGeneralUploads) {
     die();
   }
 
   switch ($_POST['method']) {
     case 'url':
+    eval(hook('uploadProcessUrlStart'));
+
     if ($_POST['linkEmail']) {
       $flag = 'email';
+
+      eval(hook('uploadProcessUrlEmailStart'));
 
       if ($parseFlags) {
         $message = $_POST['linkEmail'];
@@ -153,35 +174,45 @@ elseif ($_POST['method']) { // Actual upload; process.
 
         $message = "[email]{$linkText}[/email]";
       }
+
+      eval(hook('uploadProcessUrlEmailEnd'));
     }
     elseif ($_POST['linkUrl']) {
       $flag = 'link';
-  
+
+      eval(hook('uploadProcessUrlLinkStart'));
+
       if ($parseFlags) {
         $message = $_POST['linkUrl'];
       }
       else {
         $linkUrl = $_POST['linkUrl'];
-  
+
         if ($_POST['linkText']) $linkText = $_POST['linkText'];
         else $linkText = $_POST['linkUrl'];
-  
+
         $message = "[url={$linkUrl}]{$linkText}[/url]";
       }
+
+      eval(hook('uploadProcessUrlLinkEnd'));
     }
     else {
-      $errorMessage = 'You did not specify a URL.';
+      $errorMessage = $phrases['uploadErrorNoUrl'];
     }
+
+    eval(hook('uploadProcessUrlEnd'));
     break;
-  
+
     case 'youtube':
+    eval(hook('uploadProcessYoutubeStart'));
+
     if ($_POST['urlLink']) {
       $message = '[url]' . $_POST['urlLink'] . '[/url]';
     }
     elseif ($_POST['youtubeUpload'] && $_POST['youtubeUpload'] != 'http://') {
       if (preg_match('/^(http:\/\/|)(www\.|)youtube.com\/(.*)?v=([a-zA-Z0-9\-\_]+)(&|)(.*)$/i',$_POST['youtubeUpload'])) { // A youtube video
         $flag = 'video';
-  
+
         if ($parseFlags) {
           $message = $_POST['youtubeUpload'];
         }
@@ -191,13 +222,19 @@ elseif ($_POST['method']) { // Actual upload; process.
         }
       }
       else {
-        $errorMessage = 'The URL does not appear to be a Youtube video.';
+        $errorMessage = $phrases['uploadErrorNoYoutube'];
       }
     }
+
+    eval(hook('uploadProcessYoutubeEnd'));
     break;
-  
+
     case 'image':
+    eval(hook('uploadProcessImageStart'));
+
     if ($_POST['urlUpload'] && $_POST['urlUpload'] != 'http://') {
+      eval(hook('uploadProcessImageUrlStart'));
+
       $validTypes = array('image/gif','image/jpeg','image/png','image/pjpeg');
       $urlUpload = $_POST['urlUpload'];
       $ch = curl_init($urlUpload);
@@ -205,12 +242,12 @@ elseif ($_POST['method']) { // Actual upload; process.
       curl_exec($ch);
       $mime = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
       $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-  
+
       if ($status != 200) {
-        $errorMessage = 'That image does not exist or refuses to load.';
+        $errorMessage = $phrases['uploadErrorNoExist'];
       }
       elseif (!in_array($mime,$validTypes)) {
-        $errorMessage = 'That image is not of a valid type.';
+        $errorMessage = $phrases['uploadErrorBadType'];
       }
       else {
         if ($parseFlags) {
@@ -220,6 +257,8 @@ elseif ($_POST['method']) { // Actual upload; process.
           $message = '[img]' . $urlUpload . '[/img]';
         }
       }
+
+      eval(hook('uploadProcessImageUrlEnd'));
     }
     else {
       $flag = 'image';
@@ -239,20 +278,25 @@ elseif ($_POST['method']) { // Actual upload; process.
       $fileLocation = "{$installLoc}userdata/uploads/{$user[userid]}/" . preg_replace('/[^a-zA-Z0-9_\.]/','',$_FILES['fileUpload']['name']);
       $webLocation = "{$installUrl}userdata/uploads/{$user[userid]}/" . preg_replace('/[^a-zA-Z0-9_\.]/','',$_FILES['fileUpload']['name']);
 
+      eval(hook('uploadProcessImageStoreStart'));
+
+
       if (!in_array($_FILES['fileUpload']['type'],$validTypes)) {
-        $errorMessage = 'You must upload a PNG, GIF, or JPEG file.';
+        $errorMessage = $phrases['uploadErrorBadType'];
       }
       elseif (!in_array($ext,$validExts) && $_FILES['fileUpload']['type'] == 'application/octet-stream') {
-        $errorMessage = 'You must upload a PNG, GIF, or JPEG file.';
+        $errorMessage = $phrases['uploadErrorBadType'];
       }
       elseif ($_FILES['fileUpload']['size'] > 4 * 1000 * 1000) {
-        $errorMessage = 'The file you are trying to upload is too large.';
+        $errorMessage = $phrases['uploadErrorSize'];
       }
       elseif ($_FILES['fileUpload']['error'] > 0) {
-        $errorMessage = 'Other Error: ' . $_FILES['fileUpload']['error'];
+        $errorMessage = $phrases['uploadErrorOther'] . $_FILES['fileUpload']['error'];
       }
       else {
         if ($uploadMethod == 'server') {
+          eval(hook('uploadProcessImageStoreServerStart'));
+
           if (file_exists($fileLocation)) {
             if ($parseFlags) {
               $message = $webLocation;
@@ -265,7 +309,7 @@ elseif ($_POST['method']) { // Actual upload; process.
             if (!is_dir("{$installLoc}userdata/uploads/$user[userid]")) mkdir ("{$installLoc}userdata/uploads/$user[userid]",0775);
 
             if (!move_uploaded_file($_FILES['fileUpload']['tmp_name'],$fileLocation)) {
-              $errorMessage = 'Could not upload file. (' . $fileLocation . ')';
+              $errorMessage = $phrases['uploadErrorFinal'];
             }
             else {
               if ($parseFlags) {
@@ -276,8 +320,12 @@ elseif ($_POST['method']) { // Actual upload; process.
               }
             }
           }
+
+          eval(hook('uploadProcessImageStoreServerEnd'));
         }
         elseif ($uploadMethod == 'database') {
+          eval(hook('uploadProcessImageStoreDatabaseStart'));
+
           $contents = file_get_contents($_FILES['fileUpload']['tmp_name']);
           $md5hash = md5($contents);
 
@@ -298,7 +346,7 @@ elseif ($_POST['method']) { // Actual upload; process.
           }
 
           if (!$contents) {
-            $errorMessage .= 'Could not obtain file contents.';
+            $errorMessage .= $phrases['uploadErrorFileContents'];
           }
           else {
             $prefile = sqlArr("SELECT v.id, f.fileid FROM {$sqlPrefix}fileVersions AS v, {$sqlPrefix}files AS f WHERE v.md5hash = '$md5hash' AND v.fileid = f.id AND f.userid = $user[userid]");
@@ -329,12 +377,16 @@ elseif ($_POST['method']) { // Actual upload; process.
               }
             }
           }
+
+          eval(hook('uploadProcessImageStoreDatabaseEnd'));
         }
         else {
-          $errorMessage = 'Unknown upload method.';
+          $errorMessage = $phrases['uploadErrorMethod'];
         }
       }
     }
+
+    eval(hook('uploadProcessImageEnd'));
     break;
   }
 

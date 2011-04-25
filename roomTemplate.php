@@ -14,8 +14,12 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+
+eval(hook('roomTemplateStart'));
+
+
 if (($room['options'] & 2) && (($user['settings'] & 64) == false)) {
-  echo container('Mature Room','This room is marked as being mature, thus access has been restricted. Parental controls can be disabled from within your user <a href="#" class="changeSettingsMulti">options</a>.');
+  echo container($phrases['chatMatureTitle'],$phrases['chatMatureMessage']);
 }
 
 elseif (hasPermission($room,$user)) { // The user is not banned, and is allowed to view this room.
@@ -80,12 +84,12 @@ elseif (hasPermission($room,$user)) { // The user is not banned, and is allowed 
         <button type="submit" class="standard" id="icon_submit"></button>
         <button type="reset" class="standard" id="icon_reset"></button>
       </div>','
-      <div id="messageInputContainer" class="middle">
+      <div id="messageInputContainer" class="middle">' . (!$light ? '
         <div id="buttonMenuLeft">' . ($room['bbcode'] <= 13 ? '
           <button type="button" onclick="$(\'#textentryBoxUrl\').dialog({width : \'600px\', title : \'Insert a Linked Document\'});" class="standard" id="icon_url"></button><br />' : '') . ($room['bbcode'] <= 5 ? '
           <button type="button" onclick="$(\'#textentryBoxUpload\').dialog({width : \'600px\', title : \'Insert an Image\'});" class="standard" id="icon_upload"></button><br />' : '') . ($room['bbcode'] <= 2 ? '
           <button type="button" onclick="$(\'#textentryBoxYoutube\').dialog({width : \'600px\', title : \'Insert a Youtube Video\'});" class="standard" id="icon_video"></button>' : '') . '
-        </div>
+        </div>' : '') . '
 
         <textarea onkeypress="if (event.keyCode == 13 && !event.shiftKey) { $(\'#sendform\').submit(); return false; }" id="messageInput" autofocus="autofocus" placeholder="Enter your text." style="' . messageStyle($user) . '"></textarea>
       </div>') . '
@@ -97,4 +101,6 @@ elseif (hasPermission($room,$user)) { // The user is not banned, and is allowed 
 else {
   echo container('Access Denied',$phrases['chatAccessDenied']);
 }
+
+eval(hook('roomTemplateEnd'));
 ?>

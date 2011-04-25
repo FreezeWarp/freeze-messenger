@@ -26,6 +26,7 @@ var messages;
 var activeUsers;
 var ding = ($('body').attr('data-ding') === '1' ? true : false);
 var reverse = ($('body').attr('data-reverse') === '1' ? true : false);
+var light = ($('body').attr('data-mode') === 'light' ? true : false);
 var soundOn = (ding ? true : false);
 
 
@@ -55,8 +56,15 @@ function faviconFlash() {
 function updatePosts() {
   window.clearInterval(window.timer1);
 
+  if (light) {
+    var encrypt = 'plaintext';
+  }
+  else {
+    var encrypt = 'base64';
+  }
+
   $.ajax({
-    url: '/ajax/fim-main.php?room=' + roomid + '&lastMessage=' + lastMessage + '&reverse=' + (reverse ? 1 : 0) + '&encrypt=base64',
+    url: '/ajax/fim-main.php?room=' + roomid + '&lastMessage=' + lastMessage + '&reverse=' + (reverse ? 1 : 0) + '&encrypt=' + encrypt,
     type: 'GET',
     timeout: timeout,
     cache: false,
@@ -68,35 +76,45 @@ function updatePosts() {
       $('#refreshStatus').html('<img src="/images/dialog-ok.png" alt="Apply" class="standard" />');
 
       if (topic) {
-        $('#topic' + roomid).html(base64_decode(topic));
+        if (!light) {
+          topic = base64_decode(topic);
+        }
+        $('#topic' + roomid).html(topic);
       }
 
       if (activeUsers) {
-        $('#activeUsers').html(base64_decode(activeUsers));
+        if (!light) {
+          activeUsers = base64_decode(activeUsers)
+        }
+        
+        $('#activeUsers').html(activeUsers);
       }
 
       if (messages) {
-        if (blur && soundOn) {
-          window.beep();
-          window.clearInterval(timer3);
-          timer3 = window.setInterval(faviconFlash,1000);
-        }
-        if (blur) {
-          try {
-            if (window.external.msIsSiteMode()) {
-              window.external.msSiteModeActivate();
+        if (!light) {
+          if (blur && soundOn) {
+            window.beep();
+            window.clearInterval(timer3);
+            timer3 = window.setInterval(faviconFlash,1000);
+          }
+          if (blur && !light) {
+            try {
+              if (window.external.msIsSiteMode()) {
+                window.external.msSiteModeActivate();
+              }
+            }
+            catch(ex) {
+              // Supress Error
             }
           }
-          catch(ex) {
-            // Supress Error
-          }
+          messages = base64_decode(messages);
         }
 
         if (reverse) {
-          $('#messageList').append(base64_decode(messages));
+          $('#messageList').append(messages);
         }
         else {
-          $('#messageList').prepend(base64_decode(messages));
+          $('#messageList').prepend(messages);
         }
 
         if (reverse) {
@@ -209,12 +227,14 @@ function updateVids(searchPhrase) {
 
 
 /***** Other Scripts ******/
-jQTubeUtil.init({
-  key: "AI39si5_Dbv6rqUPbSe8e4RZyXkDM3X0MAAtOgCuqxg_dvGTWCPzrtN_JLh9HlTaoC01hCLZCxeEDOaxsjhnH5p7HhZVnah2iQ",
-  orderby: "relevance",  // *optional -- "viewCount" is set by default
-  time: "this_month",   // *optional -- "this_month" is set by default
-  maxResults: 20   // *optional -- defined as 10 results by default
-});
+if (!light) {
+  jQTubeUtil.init({
+    key: "AI39si5_Dbv6rqUPbSe8e4RZyXkDM3X0MAAtOgCuqxg_dvGTWCPzrtN_JLh9HlTaoC01hCLZCxeEDOaxsjhnH5p7HhZVnah2iQ",
+    orderby: "relevance",  // *optional -- "viewCount" is set by default
+    time: "this_month",   // *optional -- "this_month" is set by default
+    maxResults: 20   // *optional -- defined as 10 results by default
+  });
+}
 
 function notify(text,header,id,id2) {
   if ($('#' + id + ' > #' + id + id2).html()) { }

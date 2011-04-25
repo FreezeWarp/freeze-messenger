@@ -16,9 +16,12 @@
 
 $inRoom = true;
 $title = 'Chat';
+$reqPhrases = true;
+$reqHooks = true;
 
 require_once('global.php');
 require_once('functions/container.php');
+
 
 /* Cookie Processing
  * Cookies are stored as strings, and 'false' == bool(true) in PHP... stupid, I know, so instead we use the string "true", which returns true when compared against both the string and the bool "true" types. It also returns false against the integer one.
@@ -32,15 +35,27 @@ $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = '$room'"); // Data on
 
 $bodyHook = ' data-roomid="' . $room['id'] . '" data-ding="' . ($user['settings'] & 128 ? 0 : 1) . '" data-reverse="' . $reverse . '"';
 
+
+eval(hook('chatStart'));
+
+
 require_once('templateStart.php');
 
 
+eval(hook('chatStartOutput'));
+
+
 if ($banned) { // Check that the user isn't banned.
-  echo container('We\'re Sorry',$phrases['chatBanned']);
+
+  eval(hook('chatBanned'));
+
+  echo container($phrases['chatBannedTitle'],$phrases['chatBannedMessage']);
 }
 
 elseif (!$room) { // No room data was returned.
-  trigger_error('Room not found.',E_USER_ERROR);
+  eval(hook('chatRoomDoesNotExist'));
+
+  trigger_error($phrases['chatRoomDoesNotExist'],E_USER_ERROR);
 }
 
 else {
@@ -54,7 +69,7 @@ else {
   require_once('roomTemplate.php'); // While the below arguably should be in this too [since it is needed for pretty much anything to work], we're only reusing the code in the AJAX room switcher, which itself just assumes everything below already exists in the DOM.
   echo '</div>';
 
-  echo '<div id="dialogues">
+  if (!$light) echo '<div id="dialogues">
   <div id="textentryBox">
     <div id="textentryBoxUpload">
       <form action="/uploadFile.php?room=' . $room['id'] . '" method="post" enctype="multipart/form-data" target="upload_target" id="uploadFileForm" onsubmit="$(\'#textentryBoxUpload\').dialog(\'close\');">
@@ -169,6 +184,8 @@ else {
   </div>
 </div>';
 }
+
+eval(hook('chatEnd'));
 
 require_once('templateEnd.php');
 ?>

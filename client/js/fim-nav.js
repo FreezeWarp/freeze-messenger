@@ -21,8 +21,17 @@ function ajaxDialogue(uri,title,id,width,cF) {
     uri,
     {},
     function (responseText, textStatus, XMLHttpRequest) {
+      $('button').button();
+
+      if (light) {
+        var windowWidth = document.documentElement.clientWidth;
+        if (width > windowWidth || !width) {
+          width = windowWidth;
+        }
+      }
+
       dialog.dialog({
-        width: (width ? width: 600),
+        width: (width ? width : 600),
         title: title,
         hide: "puff",
         close: function() {
@@ -43,6 +52,7 @@ function quickDialogue(content,title,id,width) {
   dialog.dialog({
     width: (width ? width: 600),
     title: title,
+    hide: "puff",
     close: function() {
       $('#' + id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
     }
@@ -56,6 +66,7 @@ function quickConfirm(text) {
     resizable: false,
     height: 240,
     modal: true,
+    hide: "puff",
     buttons: {
       Confirm: function() {
         $(this).dialog("close");

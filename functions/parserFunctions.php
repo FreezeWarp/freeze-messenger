@@ -37,7 +37,7 @@ function htmlParse($text,$bbcodeLevel = 1) {
   );
 
   $search['link'] = array(
-    '/(?<!(\[noparse\]))(?<!(\[img\]))(?<!(\[url\]))((http|https|ftp|data|gopher|sftp|ssh):(\/\/|)(.+?\.|)([a-zA-Z]+)\.(com|net|org|co\.uk|co\.jp|info|us|gov)((\/)([^ ]*)([^\?\.\!])|))(?!\[\/url\])(?!\[\/img\])(?!\[\/noparse\])/', // The regex is naturally selective; it improves slightly with each FIM version, but I don't really know how to do it, so I only add to it piece by piece to prevent regressions.
+    "/(?<!(\[noparse\]))(?<!(\[img\]))(?<!(\[url\]))((http|https|ftp|data|gopher|sftp|ssh):(\/\/|)(.+?\.|)([a-zA-Z]+)\.(com|net|org|co\.uk|co\.jp|info|us|gov)((\/)([^ \n]*)([^\?\.\! \n])|))(?!\[\/url\])(?!\[\/img\])(?!\[\/noparse\])/", // The regex is naturally selective; it improves slightly with each FIM version, but I don't really know how to do it, so I only add to it piece by piece to prevent regressions.
     '/\[url=("|)(.*?)("|)\](.*?)\[\/url\]/is',
     '/\[url\](.*?)\[\/url\]/is',
     '/\[email=("|)(.*?)("|)\](.*?)\[\/email\]/is',
@@ -175,9 +175,9 @@ function indexValue($array,$index) {
   return $array[$index];
 }
 
-function htmlwrap($str, $maxLength, $char = '<br />') { /* An adaption of a PHP.net commentor function dealing with HTML for BBCode */
+function htmlwrap($str, $maxLength = 40, $char = '<br />') { /* An adaption of a PHP.net commentor function dealing with HTML for BBCode */
   // Configuration
-  $noparseTags = array('img','a','youtube');
+  $noparseTags = array('img','a');
 
   // Initialize Variables
   $count = 0;
@@ -187,37 +187,53 @@ function htmlwrap($str, $maxLength, $char = '<br />') { /* An adaption of a PHP.
   $tagParams = false;
 
   for ($i = 0; $i < strlen($str); $i++) {
-    $newStr .= $str[$i];
+    $noAppend = false;
 
     if ($str[$i] == '<') { // The character starts a BBcode tag - don't touch nothing.
       $currentTag = '';
       $openTag = true;
-      continue;
+    }
+    elseif ($str[$i] == '/' && $openTag) {
+      $endTag = true;
     }
     elseif (($openTag) && ($str[$i] == ' ')) {
       $tagParams = true;
     }
-    elseif (($openTag) && !$tagParams && ($str[$i] != '>')) {
+    elseif (($openTag) && (!$endTag) && ($tagParams == false) && ($str[$i] != '>')) {
       $currentTag .= $str[$i];
-      continue;
     }
     elseif (($openTag) && ($str[$i] == '>')) { // And the BBCode tag is done again - we can touch stuffz.
+      $endTag = false;
       $openTag = false;
-      continue;
+      $tagParams = false;
     }
-
-    if (!$openTag && !in_array($currentTag, $noparseTags)) {
-      if ($str[$i] == ' ' || $str[$i] == "\n") { // The character is a space.
-        $count = 0; // Because the character is a space, we should reset the count back to 0.
+    else {
+      if ($currentTag == 'a' && $count >= ($maxLength - 1)) {
+        $noAppend = true;
+        if (!$elipse) {
+          $newStr .= '...';
+        }
+        $elipse = true;
       }
-      else {
-        $count++; // Increment the current count.
-        if ($count == $maxLength) { // We've reached the limit; add a break and reset the count back to 0.
-          $newStr .= $char;
-          $count = 0;
+      elseif (!$openTag) {
+        if ($str[$i] == ' ' || $str[$i] == "\n") { // The character is a space.
+          $count = 0; // Because the character is a space, we should reset the count back to 0.
+        }
+        else {
+           $count++; // Increment the current count.
+
+           if ($count == $maxLength) { // We've reached the limit; add a break and reset the count back to 0.
+            $newStr .= $char;
+            $count = 0;
+          }
         }
       }
     }
+
+    if (!$noAppend) {
+      $newStr .= $str[$i];
+    }
+
   }
 
   return $newStr;

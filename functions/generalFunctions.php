@@ -102,7 +102,7 @@ function displayGroupToColour($id) {
 function userFormat($message, $room, $messageTable = true) {
   $colour = 'color: rgb(' . displayGroupToColour($message['displaygroupid']) . '); ';
   $class = ($messageTable ? 'username usernameTable' : 'username');
-  if (in_array($message['userid'],explode(',',$room['moderators'])) || $message['usersettings'] & 16) $userAppend = '*';
+  if (in_array($message['userid'],explode(',',$room['moderators'])) || $message['usersettings'] & 16 || $message['userid'] == $room['owner']) $userAppend = '*';
 
   return "<a href=\"http://www.victoryroad.net/member.php?u=$message[userid]\" class=\"{$class}\" data-userid=\"$message[userid]\">
   <span style=\"{$colour}\">$message[username]{$userAppend}</span>
@@ -259,7 +259,7 @@ function hook($name) {
     return $hook;
   }
   else {
-    return false;
+    return 'return false;';
   }
 }
 ?>

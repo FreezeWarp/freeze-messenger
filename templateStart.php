@@ -39,6 +39,16 @@ if ($keywords) {
 }
 
 
+if ($_REQUEST['mode'] == 'light') {
+  $bodyHook .= ' data-mode="light"';
+  $styleHook .= "<link rel=\"stylesheet\" type=\"text/css\" href=\"client/css/stylesv2Mobile.css\" media=\"screen,handheld\" />";
+  $light = true;
+}
+else {
+  $light = false;
+}
+
+
 
 /*** Start ***/
 
@@ -62,6 +72,7 @@ echo "$phrases[doctype]
   <link rel=\"stylesheet\" type=\"text/css\" href=\"client/css/ui-darkness/jquery-ui-1.8.11.custom.css\" media=\"screen\" />
   <link rel=\"stylesheet\" type=\"text/css\" href=\"client/css/stylesv2.css\" media=\"screen\" />
   <link rel=\"stylesheet\" type=\"text/css\" href=\"client/css/jgrowl.css\" media=\"screen,handheld\" />
+  {$styleHook}
   <!-- END Styles -->
 
   <!-- START Scripts
@@ -72,24 +83,18 @@ echo "$phrases[doctype]
   <script src=\"client/js/jquery.cookie.js\" type=\"text/javascript\"></script>
   <script src=\"client/js/jquery.contextMenu.min.js\" type=\"text/javascript\"></script>
 
-  <script src=\"client/js/phpjs-base64.min.js\" type=\"text/javascript\"></script>
   <script src=\"client/js/phpjs-strReplace.min.js\" type=\"text/javascript\"></script>
-
   <script src=\"client/js/fim-nav.js\" type=\"text/javascript\"></script>
-  <script src=\"client/js/fim-contextMenuParse.js\" type=\"text/javascript\"></script>
-
   <script src=\"client/js/jparsons-previewFile.js\" type=\"text/javascript\"></script>
+  <script src=\"client/js/jgrowl.js\" type=\"text/javascript\"></script>
 
+  " . (!$light ? "
+  <script src=\"client/js/fim-contextMenuParse.js\" type=\"text/javascript\"></script>
+  <script src=\"client/js/phpjs-base64.min.js\" type=\"text/javascript\"></script>
   <script src=\"client/js/errorLogging.js\" type=\"text/javascript\"></script>
   <script src=\"client/js/beeper.min.js\" type=\"text/javascript\"></script>
   <script src=\"client/js/youtube.min.js\" type=\"text/javascript\"></script>
-  <script src=\"client/js/tooltip.js\" type=\"text/javascript\"></script>
-  <script src=\"client/js/jgrowl.js\" type=\"text/javascript\"></script>
-  <script src=\"http://jqueryui.com/themeroller/themeswitchertool/\" type=\"text/javascript\"></script><script>
-  $(document).ready(function(){
-    $('#switcher').themeswitcher();
-  });
-  </script>
+  <script src=\"client/js/tooltip.js\" type=\"text/javascript\"></script>" : "") . "
   <!-- END Scripts -->
 
   <!-- IE9 Stuffz -->";
@@ -99,6 +104,8 @@ echo "$phrases[doctype]
        * Used for IE9 Coolness ***/
 
     if ($user['favRooms']) {
+      $stop = false;
+
       $favRooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE options & 4 = FALSE AND id IN ($user[favRooms])",'id');
 
       eval(hook('templateFavRoomsStart'));
@@ -112,6 +119,9 @@ echo "$phrases[doctype]
           $newRoomString = mysqlEscape(implode(',',$currentRooms2));
 
           mysqlQuery("UPDATE {$sqlPrefix}users SET favRooms = '$newRoomString' WHERE userid = $user[userid]");
+
+          $stop = false;
+
           continue;
         }
 
@@ -184,7 +194,7 @@ echo "  <meta name=\"application-name\" content=\"$phrases[brandingTitle]\" />
       ' . ($user['userid'] ? '
       <li style="border-bottom: 1px solid;"><a href="#" id="changeSettings">' . $phrases['templateChangeSettings'] . '</a></li>' : '') . '
       ' . ($user['userid'] ? '<li><a href="./logout.php">' . $phrases['templateLogout'] . '</a></li>' : '<li><a href="./login.php">' . $phrases['templateLogin'] . '</a></li>') . '
-      ' . ($_GET['experimental'] || $_COOKIE['jquery-ui-theme'] ? '<li id="switcher"></li>' : '') . "
+      ' . ($_GET['experimental'] /*|| $_COOKIE['jquery-ui-theme']*/ && false ? '<li id="switcher"></li>' : '') . "
     </ul>
     <h3><a href=\"#\">$phrases[templateRoomListCat]</a></h3>
     <div id=\"rooms\">

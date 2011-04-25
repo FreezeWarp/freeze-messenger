@@ -16,9 +16,16 @@
 
 $noReqLogin = true;
 $title = 'Message Archive';
+$reqPhrases = true;
+$reqHooks = true;
 
 require_once('global.php'); // Used for everything.
 require_once('functions/container.php'); // Used for /some/ formatting, though perhaps too sparcely right now.
+
+
+exec(hook('archiveStart'));
+
+
 require_once('templateStart.php');
 
 if (!$_GET['roomid']) { // If no room ID is provided, then give the search form.
@@ -28,6 +35,8 @@ if (!$_GET['roomid']) { // If no room ID is provided, then give the search form.
       $roomSelect .= "<option value=\"$room2[id]\">$room2[name]</option>";
     }
   }
+
+  exec(hook('archiveForm'));
 
   echo container($phrases['archiveChooseSettings'],$phrases['archiveMessage'] . '<br /><br />
 
@@ -42,14 +51,14 @@ if (!$_GET['roomid']) { // If no room ID is provided, then give the search form.
     <option value="10">10</option><option value="20">20</option>
     <option value="50" selected="selected">50</option>
     <option value="100">100</option>
-    <option value="500">500</option>
+    <option value="500">500</option>' . $phrases['archiveNumResultsHook'] . '
   </select><br /><br />
 
   <label for="oldfirst">' . $phrases['archiveReversePostOrderLabel'] . '</label> <input type="checkbox" name="oldfirst" id="oldfirst" value="true" /><br /><br />
 
   <label for="userids">' . $phrases['archiveUserIdsLabel'] . '</label> <input type="text" name="userids" id="userids"  /><br /><br />
 
-  <button type="submit">View Archive</button>
+  <button type="submit">' . $phrases['archiveSubmit'] . '</button>
 
 </form>');
 }
@@ -65,12 +74,14 @@ else {
 
   $offset = ($page - 1) * $limit; // This is calculated for the MySQL query based on page and limit.
 
+  exec(hook('archiveResultsStart'));
+
   if (!$room) {
-    echo container('Error',$phrase['chatRoomDoesNotExist']);
+    trigger_error($phrase['chatRoomDoesNotExist'],E_USER_ERROR);
   }
 
   elseif (!hasPermission($room,$user,'view')) { // Gotta make sure the user can view that room.
-    echo container('Archive',$phrase['chatAccessDenied']);
+    echo container($phrase['chatAccessDenied'],E_USER_ERROR);
   }
 
   else {
@@ -94,10 +105,17 @@ else {
       $limitHook = "LIMIT $limit OFFSET $offset";
     }
 
+
+    exec(hook('archiveResultsPreprocess'));
+
     $messages = sqlArr("SELECT m.id, UNIX_TIMESTAMP(m.time) AS time, m.rawText, m.htmlText, m.deleted, m.salt, m.iv, u.userid, u.username, vu.settings, vu.defaultColour, vu.defaultFontface, vu.defaultHighlight, vu.defaultFormatting, u.displaygroupid FROM {$sqlPrefix}messages AS m, {$sqlPrefix}users AS vu, user AS u WHERE room = $roomid " . ($user['settings'] & 16 == false ? "AND deleted != true" : '') . " AND m.user = u.userid AND u.userid = vu.userid " . ($userIDs ? " AND user IN ($userIDs)" : '') . " $whereHook ORDER BY m.time $order $limitHook",'id'); // get the messages that should display.
+
+    exec(hook('archiveResultsProcess'));
 
     if ($messages) {
       foreach ($messages AS $id => $message) {
+        exec(hook('archiveResultsProcessEachStart'));
+
         $message = vrim_decrypt($message);
         $style = messageStyle($message);
 
@@ -111,7 +129,8 @@ else {
           $output .= '[url=http://www.victoryroad.net/member.php?u=' . $message['userid'] . '][div=color:rgb(' . displayGroupToColour($message['displaygroupid']) . ');font-weight:bold;display:inline;]' . $message['username'] . '[/div][/url]|' . vbdate('m/d/y g:i:sa',$message['time']) . '|' . "[div=display:inline;color:rgb($message[defaultColour]);font-family:$message[defaultFontface];background-color:rgb($message[defaultHighlight]);]$message[htmlText][/div]\n";
           break;
 
-          default:
+          case '':
+          case 'normal':
         $output .= "<tr style=\"opacity: $opacityb\" id=\"message$message[id]\">
   <td>
     $hooks[0]
@@ -130,6 +149,8 @@ else {
 </tr>";
           break;
         }
+
+        exec(hook('archiveResultsProcessEachEnd'));
       }
 
       switch ($_GET['format']) {
@@ -137,7 +158,8 @@ else {
         $output2 = "<textarea style=\"width: 80%; height: 400px;\">[table]{$output}[/table]</textarea>";
         break;
 
-        default:
+        case '':
+        case 'normal':
         $output2 = '<table class="page ui-widget">
   <thead>
     <tr class="hrow ui-widget-header">
@@ -153,41 +175,46 @@ else {
         break;
       }
 
-echo container("<h3>The Archives: $room[name]</h3>","
-<form method=\"get\" action=\"/archive.php\">
+      exec(hook('archiveResultsOutputStart'));
+
+echo container("$phrases[archiveTitle]: $room[name]","
+<form method=\"get\" action=\"/archive.php\" style=\"text-align: center\">
   <input type=\"hidden\" name=\"numresults\" value=\"$_GET[numresults]\" />
   <input type=\"hidden\" name=\"roomid\" value=\"$_GET[roomid]\" />
   <input type=\"hidden\" name=\"oldfirst\" value=\"$_GET[oldfirst]\" />
   <input type=\"hidden\" name=\"userids\" value=\"$_GET[userids]\" />
   <input type=\"hidden\" name=\"search\" value=\"$_GET[search]\" />
-  <label for=\"pagen\">$phrase[archivePageSelect]</label>
+  <label for=\"pagen\">$phrases[archivePageSelect]</label>
   <select name=\"pagen\" id=\"pagen\">
     $jumpList
-  </select>
-  <input type=\"submit\" value=\"Go\" />
-</form>
-<form method=\"get\" action=\"/archive.php\">
+  </select><br />
+  <button type=\"submit\">$phrases[archiveSubmit]</button>
+</form><br /><br />
+<form method=\"get\" action=\"/archive.php\" style=\"text-align: center\">
   <input type=\"hidden\" name=\"numresults\" value=\"$_GET[numresults]\" />
   <input type=\"hidden\" name=\"roomid\" value=\"$_GET[roomid]\" />
   <input type=\"hidden\" name=\"oldfirst\" value=\"$_GET[oldfirst]\" />
   <input type=\"hidden\" name=\"userids\" value=\"$_GET[userids]\" />
   <input type=\"hidden\" name=\"search\" value=\"$_GET[search]\" />
   <input type=\"hidden\" name=\"pagen\" value=\"$_GET[pagen]\" />
-  <label for=\"pagen\">$phrase[archiveViewAs]</label>
+  <label for=\"pagen\">$phrases[archiveViewAs]</label>
   <select name=\"format\" id=\"format\">
-    <option value=\"normal\">$phrase[archiveFormatHTML]</option>
-    <option value=\"bbcode\">$phrase[archiveFormatBBCode]</option>
-  </select>
-  <input type=\"submit\" value=\"Go\" />
+    <option value=\"normal\">$phrases[archiveFormatHTML]</option>
+    <option value=\"bbcode\">$phrases[archiveFormatBBCode]</option>$phrase[archiveFormatSelectHook]
+  </select><br />
+  <button type=\"submit\">$phrases[archiveSubmit]</button>
 </form>");
 
       echo $output2;
     }
     else {
-      echo container('Error','This room has no messages.');
+      trigger_error($phrases['archiveNoMessages']);
     }
   }
 }
+
+
+exec(hook('archiveEnd'));
 
 require_once('templateEnd.php');
 ?>

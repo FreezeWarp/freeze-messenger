@@ -79,10 +79,18 @@ else {
   }
 
   /* Present Data */
-  if ($lastmessage) $return .= "lastMessage = $lastmessage;";
-  if ($topic) $return .= 'topic = "' . base64_encode($topic) . '";';
-  if ($messagesText) $return .= 'messages = "' . base64_encode($messagesText) . '";';
-  if ($activeUsers) $return .= 'activeUsers = "' . base64_encode($activeUsers) . '";';
+  if ($_GET['encrypt'] == 'plaintext') {
+    if ($lastmessage) $return .= "lastMessage = $lastmessage;";
+    if ($topic) $return .= 'topic = "' . str_replace(array("\n",'\\','"'),array('','\\\\','\"'),$topic) . '";';
+    if ($messagesText) $return .= 'messages = "' . str_replace(array("\n",'\\','"'),array('','\\\\','\"'),$messagesText) . '";';
+    if ($activeUsers) $return .= 'activeUsers = "' . str_replace(array("\n",'\\','"'),array('','\\\\','\"'),$activeUsers) . '";';
+  }
+  else {
+    if ($lastmessage) $return .= "lastMessage = $lastmessage;";
+    if ($topic) $return .= 'topic = "' . base64_encode($topic) . '";';
+    if ($messagesText) $return .= 'messages = "' . base64_encode($messagesText) . '";';
+    if ($activeUsers) $return .= 'activeUsers = "' . base64_encode($activeUsers) . '";';
+  }
 
   echo $return;
 }

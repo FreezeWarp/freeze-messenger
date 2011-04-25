@@ -15,9 +15,15 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 $noReqLogin = true;
+$reqHooks = true;
+$reqPhrases = true;
 $title = 'Login';
 
 require_once('global.php');
+
+
+eval(hook('loginStart'));
+
 
 if ($valid) {
   header('Location: chat.php');
@@ -28,29 +34,33 @@ require_once('templateStart.php');
 
 if ($flag) {
   switch($flag) {
-    case 'nouser': $message .= 'No user exists with that user title. Is it possible that you have changed your name recently?'; break; // No user with that username exists.
-    case 'nopass': $message .= 'You appeared to have entered a wrong password. Remeber, passwords are case sensitive.'; break; // The password is wrong.
+    case 'nouser': $message .= $phrases['loginNoUser']; break; // No user with that username exists.
+    case 'nopass': $message .= $phrases['loginNoPass']; break; // The password is wrong.
   }
 
-    echo container('Unsuccessful Login',$message);
+  eval(hook('loginFlag'));
+
+  if ($message) {
+    echo container($phrases['loginBad'],$message);
+  }
 }
 
-  echo container('Login to Victory Road Chat','<div id="normalLogin">
-  Hello. Please Enter Your Login Credentials Below:<br />
+  echo container($phrases['loginTitle'],"<div id=\"normalLogin\">
+  <br />
 
-    <form action="/login.php" method="post" style="text-align: center; display: block;">
-    <label for="username">Username:</label><br />
-    <input type="text" name="username" placeholder="Please enter your username." /><br /><br />
+    <form action=\"/login.php\" method=\"post\" style=\"text-align: center; display: block;\">
+    <label for=\"username\">$phrases[loginUsername]</label><br />
+    <input type=\"text\" name=\"username\" /><br /><br />
 
-      <label for="password">Password:</label><br />
-    <input type="password" name="password" placeholder="Please enter your password." /><br /><br />
+      <label for=\"password\">$phrases[loginPassword]</label><br />
+    <input type=\"password\" name=\"password\" /><br /><br />
 
-      <label for="rememberme">Remember Me for One Week?:</label>
-    <input type="checkbox" name="rememberme" id="rememberme" /><br /><br />
+      <label for=\"rememberme\">$phrases[loginRemember]</label>
+    <input type=\"checkbox\" name=\"rememberme\" id=\"rememberme\" /><br /><br />
 
-      <button type="submit">Launch</button><button type="reset">Start Over</button><button type="button" onclick="$(\'#normalLogin\').slideUp(); $(\'#secureLogin\').slideDown();">Secure Login</button>
+      <button type=\"submit\">$phrases[loginSubmit]</button><button type=\"reset\">$phrases[loginReset]</button><button type=\"button\" onclick=\"$('#normalLogin').slideUp(); $('#secureLogin').slideDown();\">Secure Login</button>
   </form>
-</div>
+</div>" . '
 
 <div id="secureLogin" style="display: none;">
   Below you can login directly to the forums via SSL encyption:<br /><br />
@@ -60,7 +70,7 @@ if ($flag) {
   Once you have logged in, <a href="/">click here</a>.
 </div>');
 
-  echo container('Guest Links','<ul>
+  echo container($phrases['loginGuestLinks'],'<ul>
   <li><a href="/index.php?action=online">Who\'s Online</a></li>
   <li><a href="/viewRooms.php">Room List</a></li>
   <li><a href="/archive.php">Archives</a></li>
@@ -68,5 +78,9 @@ if ($flag) {
     <li><a href="/index.php?action=archive&roomid=1">Main</a></li>
   </ul>
 </ul>');
+
+
+eval(hook('loginEnd'));
+
 
 require_once('templateEnd.php');

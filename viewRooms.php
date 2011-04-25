@@ -1,29 +1,18 @@
 <?php
 $noReqLogin = true;
 $title = 'Room List';
+$reqPhrases = true;
+$reqHooks = true;
 
 require_once('global.php');
+
+
+eval(hook('viewRoomsStart'));
+
+
 require_once('templateStart.php');
 require_once('functions/container.php');
-?>
 
-<script type="text/javascript">
-function changeTitle(room,title) {
-  $.ajax({
-    url: '/ajax/setTitle.php',
-    type: 'POST',
-    contentType: 'application/x-www-form-urlencoded;charset=UTF-8',
-    cache: false,
-    data: 'room=' + room + '&title=' + escape(title),
-    success: function(html) {
-      $('#title' + room).html('<a href="javascript:void(0);" onclick="$(\'td#title' + room + '\').html(\'<form action=&quot;#&quot; onsubmit=&quot;var title = $(\\\'#input' + room + '\\\').val(); changeTitle(' + room + ',title); return false;&quot; style=&quot;display: inline;&quot;><input type=&quot;text&quot; name=&quot;newTitle&quot; style=&quot;width: 300px&quot; value=&quot;' + escape(title) + '&quot; id=&quot;input' + room + '&quot; /></form>\'); $(this).hide();"><img src="/images/edit-rename.png" class="standard" alt="Configure" />' + title);
-    },
-    error: function() { alert('Could not update the topic.'); }
-  });
-}
-</script>
-
-<?php
 $showAdvanced = ($mode == 'normal' ? true : false); // For advanced functionality.
 static $roomHtml;
 
@@ -31,14 +20,28 @@ $rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE options & 4 = FALSE AND o
 
 if ($user['userid']) { // Logged in user
   $favRooms = explode(',',$user['favRooms']);
+
+  $stop = false;
+  $id = 0;
+
+  eval(hook('viewRoomsUserStart'));
+
   foreach ($rooms AS $id => $room2) {
-    if (hasPermission($room2,$user)) {
+
+    eval(hook('viewRoomsUserRoomEachStart'));
+
+    if (hasPermission($room2,$user) && !$stop) {
       if ($room2['options'] & 16) $room2['class'] = 'Private';
       elseif ($room2['options'] & 1) $room2['class'] = 'Official';
       else $room2['class'] = 'Unofficial';
 
-      $rooms2[] = $room2;
+      $rooms2[$id] = $room2;
     }
+
+    $stop = false;
+
+    eval(hook('viewRoomsUserRoomEachEnd'));
+
   }
 
 
@@ -49,13 +52,19 @@ if ($user['userid']) { // Logged in user
       $opacity = (in_array($room3['id'],$favRooms) ? 1 : .5);
       $active = (in_array($room3['id'],$favRooms) ? 1 : 0);
 
-      $roomHtml .= "  <tr id=\"row$id\">
+      $roomRow = "  <tr id=\"row$id\">
       " . ($showAdvanced ? "<td>$room3[class]</td>" : '') . "
       <td><a href=\"/chat.php?room=$room3[id]\">$room3[name]</a></td>
-      " . ($showAdvanced ? "<td id=\"title$id\"><a href=\"javascript:void(0);\" onclick=\"$('td#title$id').html('<form action=&quot;#&quot; onsubmit=&quot;var title = $(\'#input$id\').val(); changeTitle($room3[id],title); return false;&quot; style=&quot;display: inline;&quot;><input type=&quot;text&quot; name=&quot;newTitle&quot; style=&quot;width: 300px&quot; value=&quot;" . htmlentities(addslashes($room3['title'])) . "&quot; id=&quot;input$id&quot; /></form>'); $(this).hide();\"><img src=\"/images/edit-rename.png\" class=\"standard\" alt=\"Change Topic\" />$room3[title]</td>" : '') . "
       <td>" . (($user['userid'] == $room3['owner'] || $user['settings'] & 16) ? '<a href="#" class="editRoomMulti" data-roomid="' . $room3['id'] . '"><img src="/images/document-edit.png" class="standard" alt="Configure" /></a>' . (($room3['options'] & 1) == false ? "<a href=\"javascript:void(0);\" onclick=\"if (confirm('Are you sure you want to delete this room')) { $.ajax({url: '/ajax/modAction.php?action=deleteroom&amp;roomid=$room3[id]', type: 'GET', cache: false, success: function() { $('#row$id').fadeOut(); } }); }\"><img src=\"/images/document-close.png\" class=\"standard\" alt=\"Delete\" /></a>" : '') : '') . "<a href=\"javascript:void(0);\" onclick=\"$.ajax({url: '/ajax/modAction.php?action=favroom&amp;roomid=$room3[id]', type: 'GET', cache: false, success: function() { if ($('#star$id').attr('data-active') == 1) { $('#star$id').attr('data-active','0'); $('#star$id').fadeTo(150,.5); } else { $('#star$id').attr('data-active','1'); $('#star$id').fadeTo(150,1); } } });\"><img id=\"star$id\" src=\"/images/bookmarks.png\" class=\"standard\" alt=\"(Un-)Favourite\" style=\"opacity: $opacity\" onmouseover=\"if ($(this).attr('data-active') == 1) { $(this).fadeTo(150,.5); } else { $(this).fadeTo(150,1); }\" onmouseout=\"if ($(this).attr('data-active') == 1) { $(this).fadeTo(150,1); } else { $(this).fadeTo(150,.5); }\" data-active=\"$active\" /></a></td>
     </tr>
-  "; }
+  ";
+
+      eval(hook('viewRoomsUserDisplayEach'));
+
+      $roomHtml .= $roomRow;
+    }
+
+    eval(hook('viewRoomsUserStartOutput'));
 
     echo '<script type="text/javascript" src="/client/changeTitle.js"></script>';
 
@@ -78,18 +87,40 @@ if ($user['userid']) { // Logged in user
   else {
     echo container('Error','No rooms were found which you are allowed to view.');
   }
+
+  eval(hook('viewRoomsUserEnd'));
 }
 else {
-  foreach ($rooms AS $id => $room2) 
-    if (hasPermission($room2,$user,'view')) $rooms2[] = $room2;
+  eval(hook('viewRoomsAnonStart'));
+
+  $stop = false;
+
+  foreach ($rooms AS $id => $room2) {
+    eval(hook('viewRoomsAnonRoomEachStart'));
+
+    if (hasPermission($room2,$user,'view') && !$stop) {
+      $rooms2[$id] = $room2;
+    }
+
+    $stop = false;
+
+    eval(hook('viewRoomsAnonRoomEachEnd'));
+  }
 
   if ($rooms2) {
     foreach ($rooms2 AS $room3) {
-      $roomHtml .= "  <tr id=\"row$id\">
+      $roomRow = "  <tr id=\"row$id\">
       <td><a href=\"/chat.php?action=archive&roomid=$room3[id]&numresults=50\">$room3[name]</a></td>
       <td id=\"title$id\">$room3[title]</td>
     </tr>
-  "; }
+  ";
+
+      eval(hook('viewRoomsAnonDisplayEach'));
+
+      $roomHtml .= $roomRow;
+    }
+
+    eval(hook('viewRoomsAnonStartOutput'));
 
     echo '<table class="page ui-widget" border="1">
   <tr class="hrow ui-widget-header">
@@ -102,7 +133,12 @@ else {
   else {
     echo container('Error','No rooms were found which you are allowed to view.');
   }
+
+  eval(hook('viewRoomsAnonEnd'));
 }
+
+
+eval(hook('viewRoomsEnd'));
 
 require_once('templateEnd.php');
 ?>

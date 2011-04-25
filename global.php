@@ -63,30 +63,38 @@ mysqlQuery('SET NAMES UTF8');
 
 /*** Get Phrases ***/
 
-$phrases2 = sqlArr("SELECT * FROM {$sqlPrefix}phrases",'id');
+if ($reqPhrases) {
+  $phrases2 = sqlArr("SELECT * FROM {$sqlPrefix}phrases",'id');
 
-if ($_GET['lang']) {
-  $lang = $_GET['lang'];
-}
-elseif (!$lang) {
-  $lang = 'en';
-}
+  if ($_GET['lang']) {
+    $lang = $_GET['lang'];
+  }
+  elseif (!$lang) {
+    $lang = 'en';
+  }
 
-foreach ($phrases2 AS $phrase) {
-  $phrases[$phrase['name']] = $phrase['text_' . $lang];
-}
+  foreach ($phrases2 AS $phrase) {
+    $phrases[$phrase['name']] = $phrase['text_' . $lang];
 
-unset($phrases2);
-unset($phrase);
+    if (!$phrases[$phrase['name']] && $phrase['text_en']) {
+      $phrases[$phrase['name']] = $phrase['text_en'];
+    }
+  }
+
+  unset($phrases2);
+  unset($phrase);
+}
 
 
 /*** Get Code Hooks ***/
+if ($reqHooks) {
+  $hooks2 = sqlArr("SELECT * FROM {$sqlPrefix}hooks",'id');
 
-$hooks2 = sqlArr("SELECT * FROM {$sqlPrefix}hooks",'id');
-foreach ($hooks2 AS $hook) {
-  $hooks[$hook['name']] = $hook['code'];
+  foreach ($hooks2 AS $hook) {
+    $hooks[$hook['name']] = $hook['code'];
+  }
+
+  unset($hooks2);
+  unset($hook);
 }
-
-unset($hooks2);
-unset($hook);
 ?>

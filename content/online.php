@@ -13,6 +13,10 @@
 
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+$reqHooks = true;
+$reqPhrases = true;
+require_once('../global.php');
 ?>
 
 <script type="text/javascript">function updateOnline() { $.ajax({ url: '/ajax/fim-online.php', type: 'GET', timeout: 2400, cache: false, success: function(html) { if (html) $('#onlineUsers').html(html); }, error: function() { $('#onlineUsers').html('Refresh Failed'); }, }); } var timer2 = setInterval(updateOnline,2500);</script>
@@ -20,14 +24,14 @@
 echo '<table class="page">
   <thead>
     <tr class="hrow">
-      <td>Username</td>
-      <td>Rooms</td>
+      <td>' . $phrases['onlineUsername'] . '</td>
+      <td>' . $phrases['onlineRoom'] . '</td>
     </tr>
   </thead>
 
   <tbody id="onlineUsers">
     <tr>
-      <td colspan="2">Loading...</td>
+      <td colspan="2">' . $phrases['onlineLoading'] . '</td>
     </tr>
   </tbody>
 </table>';

@@ -20,6 +20,8 @@ require_once('global.php');
 require_once('functions/container.php');
 require_once('templateStart.php');
 
+eval(hook('moderateStart'));
+
 if ($user['settings'] & 16) { // Check that the user is an admin.
   switch ($_GET['do']) {
     case 'phrases':
@@ -29,15 +31,104 @@ if ($user['settings'] & 16) { // Check that the user is an admin.
       $phrases2 = sqlArr("SELECT * FROM {$sqlPrefix}phrases",'id');
 
       foreach ($phrases2 AS $phrase) {
-        $phrase['text'] = nl2br(htmlentities($phrase['text']));
+        $phrase['text_en'] = nl2br(htmlentities($phrase['text_en']));
 
-        $rows .= "<tr><td>$phrase[name]</td><td>$phrase[text]</td><td><a href=\"./moderate.php?do=phrases&do2=edit&phraseId=$phrase[id]\">Edit</td></tr>";
+        $rows .= "<tr><td>$phrase[name]</td><td>$phrase[text_en]</td><td><a href=\"./moderate.php?do=phrases&do2=edit&phraseId=$phrase[id]&lang=en\">Edit</td></tr>";
       }
 
       echo container('Phrases','<table class="page rowHover" border="1">
   <thead>
     <tr class="hrow ui-widget-header">
       <td>Phrase</td>
+      <td>Current Value (English)</td>
+      <td>Actions</td>
+    </tr>
+  </thead>
+  <tbody>
+' . $rows . '
+  </tbody>
+</table>');
+      break;
+
+      case 'edit':
+      if (in_array($_GET['lang'],array('en','es','jp'))) {
+      $phraseID = intval($_GET['phraseId']);
+      $lang = $_GET['lang'];
+
+      $phrase = sqlArr("SELECT * FROM {$sqlPrefix}phrases WHERE id = $phraseID");
+      $phrase['text'] = $phrase['text_' . $lang];
+
+      echo container("Edit Phrase '$phrase[name]'","
+
+<link rel=\"stylesheet\" href=\"./client/codemirror/lib/codemirror.css\">
+<link rel=\"stylesheet\" href=\"./client/codemirror/mode/xml/xml.css\">
+<script src=\"./client/codemirror/lib/codemirror.js\"></script>
+<script src=\"./client/codemirror/mode/xml/xml.js\"></script>
+<script src=\"./client/codemirror/lib/overlay.js\"></script> 
+
+
+<script>
+$(document).ready(function() {
+  var editor = CodeMirror.fromTextArea(document.getElementById(\"text\"),{
+    mode:  \"xml\"
+  });
+});
+</script>
+<style type=\"text/css\">
+.CodeMirror {
+  border: 1px solid white;
+  background-color: white;
+  color: black;
+}
+</style> 
+
+<form action=\"./moderate.php?do=phrases&do2=edit2&phraseId=$phrase[id]\" method=\"post\">
+  <label for=\"text\">New Value:</label><br />
+  <textarea name=\"text\" id=\"text\" style=\"width: 100%; height: 300px;\">$phrase[text_en]</textarea><br /><br />
+
+  <button type=\"submit\">Update</button>
+  <input type=\"hidden\" name=\"lang\" value=\"$lang\" />
+</form>");
+      }
+      else {
+        trigger_error('Language not found.',E_USER_ERROR);
+      }
+      break;
+
+      case 'edit2':
+      if (in_array($_POST['lang'],array('en','es','jp'))) {
+        $phraseID = intval($_GET['phraseId']);
+        $text = mysqlEscape($_POST['text']);
+
+        mysqlQuery("UPDATE {$sqlPrefix}phrases SET text_$lang = '$text' WHERE id = $phraseID");
+
+        modLog('phraseEdit',$phraseID);
+
+        echo container('Updated','The phrase has been updated.<br /><br />' . button('Return','./moderate.php?do=phrases'));
+      }
+      else {
+        trigger_error('Language not found.',E_USER_ERROR);
+      }
+      break;
+    }
+    break;
+
+    case 'hooks':
+    switch ($_GET['do2']) {
+      case false:
+      case 'view':
+      $hooks2 = sqlArr("SELECT * FROM {$sqlPrefix}hooks",'id');
+
+      foreach ($hooks2 AS $hook) {
+        $hook['code'] = nl2br(htmlentities($hook['code']));
+
+        $rows .= "<tr><td>$hook[name]</td><td>$hook[code]</td><td><a href=\"./moderate.php?do=hooks&do2=edit&hookId=$hook[id]\">Edit</td></tr>";
+      }
+
+      echo container('Hooks','<table class="page rowHover" border="1">
+  <thead>
+    <tr class="hrow ui-widget-header">
+      <td>Hook</td>
       <td>Current Value</td>
       <td>Actions</td>
     </tr>
@@ -49,26 +140,50 @@ if ($user['settings'] & 16) { // Check that the user is an admin.
       break;
 
       case 'edit':
-      $phraseID = intval($_GET['phraseId']);
-      $phrase = sqlArr("SELECT * FROM {$sqlPrefix}phrases WHERE id = $phraseID");
+      $hookID = intval($_GET['hookId']);
 
-      echo container("Edit Phrase '$phrase[name]'","<form action=\"./moderate.php?do=phrases&do2=edit2&phraseId=$phrase[id]\" method=\"post\">
+      $hook = sqlArr("SELECT * FROM {$sqlPrefix}hooks WHERE id = $hookID");
+
+      echo container("Edit Hook '$hook[name]'","
+
+<link rel=\"stylesheet\" href=\"./client/codemirror/lib/codemirror.css\">
+<link rel=\"stylesheet\" href=\"./client/codemirror/mode/clike/clike.css\">
+<script src=\"./client/codemirror/lib/codemirror.js\"></script>
+<script src=\"./client/codemirror/mode/clike/clike.js\"></script>
+
+
+<script>
+$(document).ready(function() {
+  var editor = CodeMirror.fromTextArea(document.getElementById(\"text\"),{
+    mode:  \"clike\"
+  });
+});
+</script>
+<style type=\"text/css\">
+.CodeMirror {
+  border: 1px solid white;
+  background-color: white;
+  color: black;
+}
+</style> 
+
+<form action=\"./moderate.php?do=hooks&do2=edit2&hookId=$hook[id]\" method=\"post\">
   <label for=\"text\">New Value:</label><br />
-  <textarea name=\"text\" id=\"text\">$phrase[text]</textarea><br /><br />
+  <textarea name=\"text\" id=\"text\" style=\"width: 100%; height: 300px;\">$hook[code]</textarea><br /><br />
 
   <button type=\"submit\">Update</button>
 </form>");
       break;
 
       case 'edit2':
-      $phraseID = intval($_GET['phraseId']);
+      $hookID = intval($_GET['hookId']);
       $text = mysqlEscape($_POST['text']);
 
-      mysqlQuery("UPDATE {$sqlPrefix}phrases SET text = '$text' WHERE id = $phraseID");
+      mysqlQuery("UPDATE {$sqlPrefix}hooks SET code = '$text' WHERE id = $hookID");
 
-      modLog('phraseEdit',$phraseID);
+      modLog('hookEdit',$hookID);
 
-      echo container('Updated','The phrase has been updated.<br /><br />' . button('Return','./moderate.php?do=phrases'));
+      echo container('Updated','The hook has been updated.<br /><br />' . button('Return','./moderate.php?do=hooks'));
       break;
     }
     break;
@@ -628,6 +743,8 @@ Status: <a href="./moderate.php?do=maintenance&do2=disable">' . $status . '</a><
 else {
   trigger_error('You do not have permission to access this page.',E_USER_ERROR);
 }
+
+eval(hook('moderateEnd'));
 
 require_once('templateEnd.php');
 ?>

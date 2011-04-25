@@ -14,16 +14,32 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+
 $title = 'Logout';
+
+
+require_once('global.php');
+
+
+eval(hook('logoutStart'));
+
 
 setcookie('bbuserid','removed',0,'/','.victoryroad.net');
 setcookie('bbpassword','removed',0,'/','.victoryroad.net');
 setcookie('bbsessionhash','removed',0,'/','.victoryroad.net');
 
-require_once('global.php');
+
+eval(hook('logoutPostcookie'));
+
+
 require_once('functions/container.php');
 require_once('templateStart.php');
 
+
 echo container('Thank You','You are now logged out.<br /><br /><a href="/">Return to the main page.</a>');
+
+
+eval(hook('logoutEnd'));
+
 
 require_once('templateEnd.php');

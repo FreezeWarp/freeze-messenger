@@ -14,6 +14,9 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+$reqPhrases = true;
+$reqHooks = true;
+
 require_once('../global.php');
 require_once('../functions/generalFunctions.php');
 require_once('../functions/parserFunctions.php');
@@ -202,10 +205,11 @@ elseif ($phase == '2') {
   $settings = ($user['settings'] & 1) + ($user['settings'] & 2) + ($user['settings'] & 4) + ($user['settings'] & 8) + ($user['settings'] & 16) + ($reverse ? 32 : 0) + ($mature ? 64 : 0) + ($disableDing ? 128 : 0) + ($disableFormatting ? 512 : 0) + ($disableVideo ? 1024 : 0) + ($disableImage ? 2048 : 0);
 
   if ($enableDF['font']) {
+    // No codey yet.
   }
 
   if ($enableDF['colour']) {
-    if (preg_match('/(0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F){3,6}/i',$_POST['defaultColour'])) {
+    if (preg_match('/(0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F){3,6}/i',$_POST['defaultColour']) || !$_POST['defaultColour']) {
       $colour = mysqlEscape(implode(',',html2rgb($_POST['defaultColour'])));
     }
     else {
@@ -214,7 +218,7 @@ elseif ($phase == '2') {
   }
 
   if ($enableDF['highlight']) {
-    if (preg_match('/(0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F){3,6}/i',$_POST['defaultHighlight']) || $_POST['defaultHighlight'] == 'transparent') {
+    if (preg_match('/(0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F){3,6}/i',$_POST['defaultHighlight']) || !$_POST['defaultHighlight']) {
       $highlight = mysqlEscape(implode(',',html2rgb($_POST['defaultHighlight'])));
     }
     else {

@@ -14,25 +14,20 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+$reqPhrases = true;
+$reqHooks = true;
 $title = 'Room Stats';
 
 require_once('global.php');
 require_once('functions/container.php');
 require_once('templateStart.php');
-?>
-
-<script style="text/javascript">
-function resize () {
-  $('#stats').css('width',((window.innerWidth - 10) * .7));
-}
-
-$(window).resize(resize);
-</script>
-
-<?php
 
 $roomList = mysqlEscape($_GET['roomList'] ?: '1,2,3,4,5,6,7,8,9,10');
 $number = (intval($_GET['number']) ?: 10);
+
+$rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id IN ($roomList)",'id');
+
+eval(hook('statsStart'));
 
 echo container($phrases['statsChooseSettings'],"
 <form action=\"/stats.php\" method=\"GET\">
@@ -43,19 +38,22 @@ echo container($phrases['statsChooseSettings'],"
   <select name=\"number\" id=\"number\">
     <option value=\"10\">10</option>
     <option value=\"25\">25</option>
-    <option value=\"50\">50</option>
+    <option value=\"50\">50</option>$phrases[statsNumResultsHook]
   </select><br /><br />
 
   <button type=\"submit\">$phrases[statsChooseSettingsSubmit]</button><button type=\"reset\">$phrases[statsChooseSettingsReset]</button>
 </form>");
 
-$rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id IN ($roomList)",'id');
 foreach ($rooms AS $room) {
+  eval(hook('statsRoomEachStart'));
+
   if ($hidePostCounts) {
-    if (!hasPermission($room,$user,'know')) continue;
+    if (!hasPermission($room,$user,'know')) {
+      continue;
+    }
   }
 
-  $tableHeader[] = $room;
+  $tableHeader .= '<td>' . $room['name'] . '</td>';
 
   $totalPosts = sqlArr("SELECT m.messages AS count, u.userid, u.username FROM {$sqlPrefix}ping AS m, user AS u WHERE m.roomid = $room[id] AND u.userid = m.userid ORDER BY count DESC LIMIT $number",'userid');
 
@@ -65,45 +63,49 @@ foreach ($rooms AS $room) {
     $table[$i] .= '
     <td>' . $totalPoster['username'] . ' (' . ($totalPoster['count'] ?: 0) . ')' . '</td>';
   }
+
   while ($i < $number) {
     $i++;
     $table[$i] .= '
     <td>&nbsp;</td>';
   }
-}
 
-echo '
-<div style="overflow: auto;">
-<table class="page ui-widget rowHover" id="stats">
-  <thead class="ui-widget-header">
-  <tr class="hrow">
-    <td>' . $phrases['statsPlace'] . '</td>
-';
-foreach ($tableHeader AS $headRow) {
-  echo '    <td>' . $headRow['name'] . '</td>
-';
+  eval(hook('statsRoomEachStart'));
 }
-echo '  </tr>
-  </thead>
-  <tbody class="ui-widget-content">
-';
 
 $i = 0;
 foreach ($table AS $row) {
   $i++;
-  echo '  <tr>
-    <th>' . $i . '</td>' . $row;
-  $j = 0;
-  echo '
+
+  $tableContents .= '  <tr>
+    <th>' . $i . '</td>' . $row . '
   </tr>
 ';
 }
 
+eval(hook('statsRoomPreoutput'));
+
 echo '
+<script style="text/javascript">
+function resize () {
+  $(\'#stats\').css(\'width\',((window.innerWidth - 10) * .7));
+}
+
+$(window).resize(resize);
+</script>
+
+<div style="overflow: auto;">
+<table class="page ui-widget rowHover" id="stats">
+  <thead class="ui-widget-header">
+  <tr class="hrow">
+    <td>' . $phrases['statsPlace'] . '</td>' . $tableHeader . '  </tr>
+  </thead>
+  <tbody class="ui-widget-content">' . $tableContents . '
   </tbody>
 </table>
 </div>';
 
+eval(hook('statsEnd'));
 
 require_once('templateEnd.php');
 ?>

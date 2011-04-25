@@ -24,7 +24,6 @@ echo "$phrases[doctype]
   <link rel=\"stylesheet\" type=\"text/css\" href=\"../client/css/stylesLite";
 
   switch($mode) {
-    case 'simple': echo 'Simple'; break;
     case 'mobile': echo 'Mobile'; break;
   }
 

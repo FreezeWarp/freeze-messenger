@@ -14,6 +14,10 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+
+$reqPhrases = true;
+$reqHooks = true;
+
 require_once('../global.php'); // Used for everything.
 
 if (!$_GET['roomid']) {
@@ -25,6 +29,24 @@ else {
 
   $phase = $_GET['phase'];
   if (!$phase) $phase = '1'; // Default to phase 1.
+
+
+  $listsActive = sqlArr("SELECT * FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomid = $room[id]",'id');
+  if ($listsActive) {
+    foreach ($listsActive AS $active) {
+      $listStatus[$active['listid']] = $active['status'];
+    }
+  }
+
+
+  $lists = sqlArr("SELECT * FROM {$sqlPrefix}censorLists AS l WHERE options & 2",'id');
+  foreach ($lists AS $list) {
+    if ($list['type'] == 'black' && $listStatus[$list['id']] == 'block') $checked = true;
+    elseif ($list['type'] == 'white' && $listStatus[$list['id']] != 'unblock') $checked = true;
+    else $checked = false;
+
+    $censorLists .= "<label><input type=\"checkbox\" name=\"censor[$list[id]]\" " . ($checked ? " checked=\"checked\""  : '') . " /> $list[name]</label><br />";
+  }
 
   if ($phase == '1') {
     if (!$room) trigger_error('This is not a valid room (roomid = ' . $_GET['roomid'] . ').',E_USER_ERROR);
@@ -44,43 +66,58 @@ $(document).ready(function(){
     return false; // Don\'t submit the form.
   });
 });
-</script>
+</script>' . "
+<form action=\"#\" method=\"post\" id=\"createRoomForm\">
+  <label for=\"name\">$phrases[editRoomNameLabel]</label>: <input type=\"text\" name=\"name\" id=\"name\" /><br />
+  <small><span style=\"margin-left: 10px;\">$phrases[editRoomNameBlurb]</span></small><br /><br />
 
-<form action="#" method="post" id="editRoomForm">
-  <label for="name">Name</label>: <input type="text" name="name" id="name" value="' . $room['name'] . '" /><br />
-  <small><span style="margin-left: 10px;">Your group\'s name. Note: This should not container anything vulgar or it will be deleted.</span></small><br /><br />
+  <label for=\"allowedUsers\">$phrases[editRoomAllowedUsersLabel]</label>: <input type=\"text\" name=\"allowedUsers\" id=\"allowedUsers\" /><br />
+  <small><span style=\"margin-left: 10px;\">$phrases[editRoomAllowedUsersBlurb]</span></small><br /><br />
 
-  <label for="allowedUsers">Allowed Users</label>: <input type="text" name="allowedUsers" id="allowedUsers" value="' . $room['allowedUsers'] . '" /><br />
-  <small><span style="margin-left: 10px;">A comma-seperated list of User IDs who can view this chat. Moderators can see your conversation regardless of this setting. Use "*" for everybody.</span></small><br /><br />
+  <label for=\"allowedGroups\">$phrases[editRoomAllowedGroupsLabel]</label>: <input type=\"text\" name=\"allowedGroups\" id=\"allowedGroups\" /><br />
+  <small><span style=\"margin-left: 10px;\">$phrases[editRoomAllowedGroupsBlurb]</span></small><br /><br />
 
-  <label for="allowedGroups">Allowed Groups</label>: <input type="text" name="allowedGroups" id="allowedGroups" value="' . $room['allowedGroups'] . '" /><br />
-  <small><span style="margin-left: 10px;">A comma-seperated list of Group IDs who can view this chat. Moderators can see your conversation regardless of this setting. Use "*" for everybody.</span></small><br /><br />
+  <label for=\"moderators\">$phrases[editRoomModeratorsLabel]</label>: <input type=\"text\" name=\"moderators\" id=\"moderators\" /><br />
+  <small><span style=\"margin-left: 10px;\">$phrases[editRoomModeratorsBlurb]</span></small><br /><br />
 
-  <label for="moderators">Moderators</label>: <input type="text" name="moderators" id="moderators" value="' . $room['moderators'] . '" /><br />
-  <small><span style="margin-left: 10px;">A comma-seperated list of moderator <strong>IDs</strong> who can delete posts from your group.</span></small><br /><br />
+  <label for=\"mature\">$phrases[editRoomMatureLabel]</label>: <input type=\"checkbox\" name=\"mature\" id=\"mature\" /><br />
+  <small><span style=\"margin-left: 10px;\">$phrases[editRoomMatureBlurb]</strong></small><br /><br />
 
-  <label for="mature">Mature</label>: <input type="checkbox" name="mature" id="mature"' . ($room['options'] & 2 ? ' checked="checked"' : '') . ' /><br />
-  <small><span style="margin-left: 10px;">Mature rooms allow certain content that is otherwise not allowed in that users are required to enable access to these rooms first. In addition, the censor is disabled for all such rooms. <strong>Hatespeech, illegal content, and similar is disallowed regardless.</strong></small><br /><br />
+  <label for=\"bbcode\">$phrases[editRoomBBCode]</label>: <select name=\"bbcode\">
+    <option value=\"1\" selected=\"selected\">$phrases[editRoomBBCodeAll]</option>
+    <option value=\"5\">$phrases[editRoomBBCodeMulti]</option>
+    <option value=\"9\">$phrases[editRoomBBCodeImg]</option>
+    <option value=\"13\">$phrases[editRoomBBCodeLink]</option>
+    <option value=\"16\">$phrases[editRoomBBCodeBasic]</option>
+    <option>$phrases[editRoomBBCodeNothing]</option>
+  </select><br />
 
-  <label for="disableModeration">Disable Moderation</label>: <input type="checkbox" name="disableModeration" id="disableModeration"' . ($room['options'] & 32 ? ' checked="checked"' : '') . ' /><br />
-  <small><span style="margin-left: 10px;">Disable all moderation from this room.</strong></small><br /><br />
+  <small style=\"margin-left: 10px;\">$phrases[editRoomBBCodeBlurb]</small><br /><br />
 
-  <label for="bbcode">BB Code Settings</label>: <select name="bbcode"><option value="1" selected="selected">Allow All Content</option><option value="5">Disallow Multimedia (Youtube, etc.)</option><option value="9">Disallow Images and Multimedia</option><option value="13">Only Allow Basic Formatting and Links</option><option value="16">Only Allow Basic Formatting</option><option>Allow No Formatting</option></select><br />
-  <small style="margin-left: 10px;">To prevent certain kinds of spam, different levels of BB code can be disallowed. Generally, this doesn\'t really come at much benefit anybody, save for the nitpicky (like us).</small><br /><br />
+  <label>$phrases[editRoomCensorLabel]</label>:<br /><div style=\"margin-left: 10px;\">{$censorLists}</div><br />
 
-  <button type="submit">Modify Group</button><button type="reset">Reset</button></form>';
+  <button type=\"submit\">$phrases[editRoomSubmit]</buttin><button type=\"reset\">$phrases[editRoomReset]</button>
+</form>";
     }
   }
   elseif ($phase == '2') {
     $name = substr(mysqlEscape($_POST['name']),0,20); // Limits to 20 characters.
 
-    if (!$name) trigger_error('Please fill in a name for your group.<br /><br /><button type="button" onclick="window.history.back();">Go Back</buton>',E_USER_ERROR); // ...It has to have a name /still/.
-    elseif ($user['userid'] != $room['owner'] && !($user['settings'] & 16)) trigger_error('You must be the owner to edit a room',E_USER_ERROR); // Again, check to make sure the user is the group's owner or an admin.
-    elseif ($room['settings'] & 4) trigger_error('This room is deleted, and as such may not be edited.',E_USER_ERROR); // Make sure the room hasn't been deleted.
+    if (!$name) {
+      trigger_error($phrases['editRoomNoName'],E_USER_ERROR); // ...It has to have a name /still/.
+    }
+    elseif ($user['userid'] != $room['owner'] && !($user['settings'] & 16)) {
+      trigger_error($phrases['editRoomNotOwner'],E_USER_ERROR); // Again, check to make sure the user is the group's owner or an admin.
+    }
+    elseif ($room['settings'] & 4) {
+      trigger_error($phrases['editRoomDeleted'],E_USER_ERROR); // Make sure the room hasn't been deleted.
+    }
     else {
       $data = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE name = '$name'");
 
-      if ($data && $data['id'] != $room['id']) echo 'The name for your group is already taken.'; // Here we query the database for the same name. If anything is found, data is true, but since our own room could be the same name, we have to make sure our result isn't the same as the room we're dealing with.
+      if ($data && $data['id'] != $room['id']) {
+        trigger_error($phrases['editRoomNameTaken'],E_USER_ERROR);
+      }
       else {
         $allowedGroups = mysqlEscape($_POST['allowedGroups']);
         $allowedUsers = mysqlEscape($_POST['allowedUsers']);
@@ -93,7 +130,7 @@ $(document).ready(function(){
     }
   }
   else {
-    trigger_error('Unknown Action',E_USER_ERROR);
+    trigger_error($phrases['editRoomUnknownAction'],E_USER_ERROR);
   }
 }
 ?>
