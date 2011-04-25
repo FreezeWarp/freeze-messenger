@@ -1,0 +1,214 @@
+/********************************
+ ** FM Lite for Mobile Styling **
+ ********************************/
+
+/* HTML Elements
+ * Includes: body, input, image, fieldset, legend, and table */
+body {
+  min-width: 100px; 
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 16px;
+  font-family: 'Verdana', 'Trebuchet MS', 'FreeSans', 'Arial', sans-serif;
+  color: #000000;
+}
+
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+#controls {
+  max-height: 70px;
+  padding-bottom: 5px; 
+}
+#buttonMenuLeft, #buttonMenuRight {
+  display: none;
+}
+#activeUsers {
+  min-height: 20px;
+  max-height: 40px;
+  overflow: auto;
+}
+#textEntryContainer {
+  padding: 10px;
+  width: 100%;
+  float: left;
+}
+#messageInput {
+  height: 100px;
+  width: 100%;
+}
+#textentryBoxYoutube {
+  display: none; 
+}
+#textentryBoxUpload {
+  display: none;
+  text-align: center;
+}
+#youtubeResultsContainer {
+  height: 200px;
+  overflow: auto;
+}
+#fileUpload, #urlUpload {
+  width: 300px;
+}
+
+#rightPanel {}
+#roomTitle {}
+#title, #roomListHeader {
+  text-align: left; 
+}
+#refreshStatus {
+  float: right;
+  text-align: right; 
+}
+#messageList {
+}
+#messageListContainer {
+    position:relative;
+    z-index:1;
+    width:auto/* your desired width, auto and 100% are fine */;
+    height:380px/* element height */;
+    overflow:auto/* hidden|auto|scroll */; 
+}
+#roomListHeader {}
+#roomListContainer {}
+#roomListTable {}
+#leftPanel {}
+#wysiwygControls {}
+#wysiwygControls button {}
+#settingControls {}
+#settingControls button {}
+#chatContainer {}
+#controls button {}
+#controls button:last-child {}
+#controls {
+  display: none;
+}
+img.standard {
+  height: 16px;
+  width: 16px;
+}
+.messageLine {
+  word-wrap: break-word; /* For those wondering, word-wrap: break-word was introduced as a Microsoft proprietary CSS extension in IE 5.5. It has since been standarized in CSS3, and implemented in both Firefox and Chrome. Opera support was added in 10.5. */
+}
+.leftPart {
+  float: left;
+  text-align: left;
+}
+.rightPart {
+  float: right;
+  text-align: right;
+}
+.username {
+  font-weight: bold; 
+}
+.username span {
+  width: 100px;
+  overflow: hidden;
+  display: inline-block; 
+  word-wrap: normal;
+  white-space: nowrap;
+}
+.inline {
+  display: inline;
+}
+.inlineBlock {
+  display: inline-block;
+}
+.hidden {
+  display: none;
+}
+.embedImage {
+  max-width: 300px;
+  max-height: 300px;
+  border: none;
+}
+a img:hover {
+  opacity: .5;
+}
+
+iframe.nodisplay {
+  width: 0px;
+  height: 0px;
+  border: 0px; 
+} 
+
+select, input[type=text], input[type=password] {
+  max-width: 150px;
+}
+
+
+table.main, table.page, table.middle, select.middle, input.middle, textarea.middle { margin-left: auto; margin-right: auto; }
+
+table, tr, td { border-spacing: 0 !important; border-style: solid; }
+table[border] td { border-width: 1px; }
+table.main, table.page { -moz-border-radius: 10px; border-radius: 10px; display: table; }
+table.page { padding: 0px; width: 90%; max-width: 100%; display: table; border: 3px solid black; border-width: 3px; }
+table.lefthang { float: left; display: inline; margin-right: 5px; }
+tr.hrow > td, td.hrow, thead { font-weight: bold; text-align: center; } /* Table Head Styling */
+table.fixed { table-layout: fixed; }
+table.main td { padding: 6px; }
+table.page td { padding: 3px; }
+div.center, div[align=center], td.center, td[align=center] { text-align: center; } /* Replaces [align=center] */
+
+
+input, button, select, textarea {
+  border: 1px solid black; -moz-border-radius: .3em; border-radius: .3em;
+  z-index: 5; position: relative; /* In case another element is making the form element innaccessible. */ 
+}
+/*input[type=button], input[type=submit], input[type=reset], button { border-style: outset; }*/
+input[type=button]:active, input[type=submit]:active, input[type=reset]:active, button:active { border-style: inset; }
+textarea.middle { display: block; }
+select.middle, input.middle, form.middle { display: block; text-align: center; }
+
+
+img, a > img { border: none; } /* In some browsers (like Firefox) images have a border by default, especially if they are linked. Remove the border. */
+a { }
+a:link, a:active, a:visited { text-decoration: none; }
+a:hover { text-decoration: underline; }
+.hrow a { color: #d3d3d3 !important; }
+span.pseudolink:hover { text-decoration: underline; cursor: pointer; }
+
+.inlineBlock { display: inline-block; }
+
+div.lefthang { width: 49%; float: left; }
+div.righthang { width: 49%; float: right; }
+div.clear { clear: both; }
+
+
+/* Template Elements
+ * Contains key elements used throughout the page. */
+#page { top: 20px; padding: 10px; -moz-border-radius: 0px 0px 10px 10px; border-radius: 0px 0px 10px 10px; }
+
+#header { }
+#banner { left: 5px; right: 5px; text-align: center; margin-left: auto; margin-right: auto; display: block; overflow: hidden; }
+#banner img { width: 800px; height: 150px; }
+
+#menubar { height: 26px; }
+#menubar ul#menu li.headlink { font-size: 16px; font-weight: bold; text-align: center; width: 33%; padding: 0px; vertical-align: middle; line-height: 26px; white-space: nowrap; z-index: 100; }
+#menubar ul#menu li.headlink ul { width: 100%; z-index: 90; font-size: 16px; white-space: normal; }
+
+#bannerAd { margin-left: auto; margin-right: auto; text-align: center; overflow: auto; clear: both; }
+
+#content { padding: 3px; }
+
+#footer { border: 1px solid black; -moz-border-radius: 0px 0px 10px 10px; border-radius: 0px 0px 10px 10px; text-align: center; font-size: 10px; height: 70px; position: relative; z-index: 0; clear: both; font-weight: bold; color: #000000; }
+
+/* Dropdown Menu Elements
+ * These are used to control the various dropdown menus, first the generic dropdowns, then those specific to the PC, and finally those specific to the pagebar. */
+.cssdropdown ul, .cssdropdown li {  list-style-type: none; }
+.cssdropdown { padding: 0px; margin: 0px; }
+.cssdropdown li.headlink { float: left; text-align: center; position: relative; cursor: pointer; }
+.cssdropdown li.headlink ul { cursor: default; display: none; text-align: left; position: absolute; margin: 0px; padding: 0px; background: rgba(191,191,191,.85); }
+
+ul.pcDropDown li.headlink { font-weight: bold; font-size: 10px; width: 80px; text-align: left; border: 1px solid black; z-index: 20; }
+ul.pcDropDown li.headlink ul { width: 80px; z-index: 10; }
+
+ul.pageBar li.headlink { font-weight: bold; font-size: 12px; text-align: left; border: 1px solid black; width: 120px; z-index: 80; }
+ul.pageBar li.headlink ul { width: 120px; z-index: 70; }

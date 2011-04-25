@@ -1,0 +1,23 @@
+/********************************
+ ** FM Lite for Embed Styling ***
+ ********************************/
+
+body {
+  margin: 0px;
+  padding: 0px;
+}
+#activeUsers {
+  min-height: 20px;
+  max-height: 20px;
+  overflow: auto;
+}
+#chatContainer, #leftPanel, #rightPanel {
+  height: 240px;
+}
+div#page {
+  top: 0px;
+  padding: 0px;
+}
+table.page {
+  width: 95%;
+}

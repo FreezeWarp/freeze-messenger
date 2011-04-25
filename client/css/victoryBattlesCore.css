@@ -1,0 +1,143 @@
+/* VictoryBattles Style Sheet
+ * VictoyBattles was a seperate project whose styles I borrowed for the original Lite layout. 'Bit more cleanup still, but otherwise works decently.
+ * It is included in the source during development for easy referrence. */
+
+
+/* HTML Elements
+ * Includes: body, input, image, fieldset, legend, and table */
+body { font-size: 16px; font-family: 'Verdana', 'Trebuchet MS', 'FreeSans', 'Arial', sans-serif; color: #000000; }
+
+
+table.main, table.page, table.middle, select.middle, input.middle, textarea.middle { margin-left: auto; margin-right: auto; }
+
+table, tr, td { border-spacing: 0 !important; border-style: solid; }
+table[border] td { border-width: 1px; }
+table.main, table.page { -moz-border-radius: 10px; border-radius: 10px; display: table; }
+table.page { padding: 0px; width: 90%; max-width: 100%; display: table; border: 3px solid black; border-width: 3px; }
+table.lefthang { float: left; display: inline; margin-right: 5px; }
+tr.hrow > td, td.hrow, thead { font-weight: bold; text-align: center; } /* Table Head Styling */
+table.fixed { table-layout: fixed; }
+table.main td { padding: 6px; }
+table.page td { padding: 3px; }
+div.center, div[align=center], td.center, td[align=center] { text-align: center; } /* Replaces [align=center] */
+
+
+input, button, select, textarea {
+  border: 1px solid black; -moz-border-radius: .3em; border-radius: .3em;
+  z-index: 5; position: relative; /* In case another element is making the form element innaccessible. */ 
+}
+/*input[type=button], input[type=submit], input[type=reset], button { border-style: outset; }*/
+input[type=button]:active, input[type=submit]:active, input[type=reset]:active, button:active { border-style: inset; }
+textarea.middle { display: block; }
+select.middle, input.middle, form.middle { display: block; text-align: center; }
+
+
+img, a > img { border: none; } /* In some browsers (like Firefox) images have a border by default, especially if they are linked. Remove the border. */
+a { }
+a:link, a:active, a:visited { text-decoration: none; }
+a:hover { text-decoration: underline; }
+.hrow a { color: #d3d3d3 !important; }
+span.pseudolink:hover { text-decoration: underline; cursor: pointer; }
+
+.inlineBlock { display: inline-block; }
+
+div.lefthang { width: 49%; float: left; }
+div.righthang { width: 49%; float: right; }
+div.clear { clear: both; }
+
+
+/* Template Elements
+ * Contains key elements used throughout the page. */
+#page { top: 20px; padding: 10px; -moz-border-radius: 0px 0px 10px 10px; border-radius: 0px 0px 10px 10px; }
+
+#header { }
+#banner { left: 5px; right: 5px; text-align: center; margin-left: auto; margin-right: auto; display: block; overflow: hidden; }
+#banner img { width: 800px; height: 150px; }
+
+#menubar { height: 26px; }
+#menubar ul#menu li.headlink { font-size: 16px; font-weight: bold; text-align: center; width: 33%; padding: 0px; vertical-align: middle; line-height: 26px; white-space: nowrap; z-index: 100; }
+#menubar ul#menu li.headlink ul { width: 100%; z-index: 90; font-size: 16px; white-space: normal; }
+
+#oldmenubar { -moz-border-radius: 25px; border-radius: 25px; height: 32px; margin-left: 2%; margin-right: 2%; border: 1px solid black; }
+ul#oldmenudropdown > li.headlink { font-size: 16px; font-weight: bold; text-align: center; width: 20%; padding: 0px; vertical-align: middle; line-height: 32px; white-space: nowrap; z-index: 100; }
+ul#oldmenudropdown > li.headlink > ul { width: 100%; z-index: 90; font-size: 16px; white-space: normal; border-radius: 25px; -moz-border-radius: 25px; }
+ul#oldmenudropdown > li.headlink > ul > li:first-child { border-top-left-radius: 25px; border-top-right-radius: 25px; }
+ul#oldmenudropdown > li.headlink > ul > li:last-child { border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; }
+#oldmenuactionssub, #oldmenuplacessub { height: 32px; overflow: hidden; white-space: nowrap; }
+ul.oldmenu { height: 32px; width: 40%; float: left; border: 2px solid black; border-radius: 25px; -moz-border-radius: 25px; }
+ul.oldmenu > ul { width: 80%; }
+ul.oldmenu, ul.oldmenu > li, ul.oldmenu > ul, ul.oldmenu > ul > li { list-style-type: none; }
+ul#oldmenudropdown, ul.oldmenu, ul.oldmenu > ul { padding-left: 0px; padding-right: 0px; margin: 0px; }
+ul#oldmenudropdown, ul#oldmenudropdown > li > ul, ul.oldmenu > li, ul.oldmenu > ul > li, ul.oldmenu, ul.oldmenu > ul { -moz-padding-start:  0px; -webkit-padding-start: 0px; padding-start: 0px; -moz-padding-end:  0px; -webkit-padding-end: 0px; padding-end: 0px; }
+ul.oldmenu > li, ul.oldmenu > ul > li { font-size: 16px; font-weight: bold; text-align: center; float: left; padding: 0px 3px; vertical-align: middle; white-space: nowrap; overflow: hidden; position: relative; top: -1px; }
+ul.oldmenu > li { width: 20%; margin: 0px; margin-left: 0px; border: 2px solid black;  -moz-border-radius: 25px; border-radius: 25px; line-height: 28px; }
+ul.oldmenu > ul > li { margin: 0px; width: 20%; border-right: 1px solid black; border-top: 1px solid black; border-bottom: 1px solid black; border-top-right-radius: 25px; border-bottom-right-radius: 25px; -moz-border-radius-topright: 25px; -moz-border-radius-bottomright: 25px; line-height: 30px; }
+ul.oldmenu > ul > li:last-child { border: 0px solid black; line-height: 32px; }
+ul#oldmenudropdown, ul#oldmenudropdown > li.headlink, ul#oldmenudropdown > li.headlink > ul, ul.oldmenu, ul.oldmenu > li, ul.oldmenu > ul > li { -webkit-box-sizing: border-box; -ms-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }
+
+#bannerAd { margin-left: auto; margin-right: auto; text-align: center; overflow: auto; clear: both; }
+
+#content { padding: 3px; }
+
+#footer { border: 1px solid black; -moz-border-radius: 0px 0px 10px 10px; border-radius: 0px 0px 10px 10px; text-align: center; font-size: 10px; height: 70px; position: relative; z-index: 0; clear: both; }
+#leftFooter { float: left; width: 64%; height: 70px; margin: auto; top: 5px; position: relative; }
+#rightFooter { font-size: 14px; white-space: nowrap; padding-left: 3px; padding-right: 3px; padding-top: 5px; text-align: center; float: right; height: 70px; width: 200px; -moz-border-radius-topleft: 10px; -moz-border-radius-bottomleft: 10px; -moz-border-radius-bottomright: 10px; border-bottom-right-radius: 10px; border-top-left-radius: 10px; border-bottom-left-radius: 10px; background-color: rgba(255,255,255,.7); -webkit-box-sizing: border-box; -ms-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }
+#styleSwitcher { opacity: .75; filter: alpha(opacity=75); }
+
+
+/* Pokemon Box Elements
+ * These display Pokemon boxes, which are rendered quite frequently. Cross-browser support is important. */
+.pokemonBox { width: 80px; height: 120px; padding: 3px; overflow: hidden; display: inline-block; }
+.pokemonBox_topleftText { text-align: right; width: 80px; height: 0px; overflow: visible; white-space: nowrap; font-size: 10px; }
+.pokmeonBox_image { width: 80px; height: 80px; text-align: center; overflow: hidden; }
+.pokemonBox_bar { color: rgb(0,255,0); border: black 1px solid; width: 78px; }
+.pokemonBox_barFill { font-size: 8px; font-weight: bold; background-color: black; white-space: nowrap; overflow: visible; }
+.pokemonBox_bottomText { font-size: 11px; font-weight: bold; color: black; text-align: center; }
+.pokemonBox_bar, .pokemonBox_barFill { -moz-border-radius: .3em; border-radius: .3em; height: 10px; }
+
+.blackFill { background-color: #000000; color: white; }
+.blackFillHlight { background-color: #7f7f7f; color: white; }
+.redFill { background-color: #ff0000; color: white; }
+.blueFill { background-color: #00007f; color: white; }
+.greenFill { background-color: #007f00; color: white; }
+.yellowFill { background-color: #7f7f00; color: white; }
+.violetFill { background-color: #7f007f; color: white; }
+.cyanFill { background-color: #007f7f; color: white; }
+.whiteFill { background-color: #ffffff; color: black; }
+
+
+/* Map Display Elements
+ * These are used specifically for the maps on the homepage. They are not tested cross-browser, and will likely not work in a variety of browser. A simpler method should also be used in a plain-HTML view, however no Javascript is used to display. */
+#mapcontainer { overflow: auto; display: block; border: 0px none transparent; margin: 0px auto; text-align: center; max-width: 720px; }
+ul.map { display: inline-block; position: relative; list-style: none; background-repeat: no-repeat; margin: 0px auto; padding: 0px; }
+ul.map a { position: absolute; display: block; overflow: hidden; }
+ul.agroup { list-style: none; }
+ul.map ul.agroup, ul.map li.nogroup a { filter: alpha(opacity=40); opacity: .4; }
+ul.map ul.agroup:hover, ul.map li.nogroup a:hover { opacity: .7; filter: alpha(opacity=70); }
+ul.map .itemball { opacity: 1.0 !important; filter: alpha(opacity=100) !important; background: url('/images/area/itemball.png'); }
+ul.map a { text-decoration: none; }
+.map .hidden { visibility: hidden; }
+
+
+/* Dropdown Menu Elements
+ * These are used to control the various dropdown menus, first the generic dropdowns, then those specific to the PC, and finally those specific to the pagebar. */
+.cssdropdown ul, .cssdropdown li {  list-style-type: none; }
+.cssdropdown { padding: 0px; margin: 0px; }
+.cssdropdown li.headlink { float: left; text-align: center; position: relative; cursor: pointer; }
+.cssdropdown li.headlink ul { cursor: default; display: none; text-align: left; position: absolute; margin: 0px; padding: 0px; background: rgba(191,191,191,.85); }
+
+ul.pcDropDown li.headlink { font-weight: bold; font-size: 10px; width: 80px; text-align: left; border: 1px solid black; z-index: 20; }
+ul.pcDropDown li.headlink ul { width: 80px; z-index: 10; }
+
+ul.pageBar li.headlink { font-weight: bold; font-size: 12px; text-align: left; border: 1px solid black; width: 120px; z-index: 80; }
+ul.pageBar li.headlink ul { width: 120px; z-index: 70; }
+
+/* Context Menu Styles
+ * These are used when you right click on certain elements. */
+.contextMenu { position: absolute; width: 120px; z-index: 99999; /*  border: solid 1px #CCC; background-color: #7f7f7f;*/ border: 1px solid black; background: rgba(191,191,191,.85); padding: 0px; margin: 0px; display: none; }
+.contextMenu li { list-style: none; padding: 0px; margin: 0px; }
+.contextMenu a { text-decoration: none; display: block; line-height: 20px; height: 20px; outline: none; padding: 1px 5px; padding-left: 10px; }
+.contextMenu li.hover a { background: rgba(210,210,210,.95); }
+.contextMenu li.disabled a { cursor: default; }
+.contextMenu li.hover.disabled a { background-color: transparent; }
+.contextMenu li.separator { border-top: 1px solid black; }
