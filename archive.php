@@ -216,5 +216,5 @@ echo container("$phrases[archiveTitle]: $room[name]","
 
 exec(hook('archiveEnd'));
 
-require_once('templateEnd.php');
+require_once('templateEnd.php');*/
 ?>

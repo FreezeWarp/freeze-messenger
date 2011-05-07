@@ -123,11 +123,15 @@ else {
     eval(hook('viewRoomsAnonStartOutput'));
 
     echo '<table class="page ui-widget" border="1">
-  <tr class="hrow ui-widget-header">
-    <td style="width: 25%;">Room Name</td>
-    <td style="width: 75%;">Topic</td>
-  </tr>
-  ' . $roomHtml . '
+  <thead>
+    <tr class="hrow ui-widget-header">
+      <td style="width: 25%;">Room Name</td>
+      <td style="width: 75%;">Topic</td>
+    </tr>
+  </thead>
+  <tbody class="ui-widget-content">
+    ' . $roomHtml . '
+  </tbody>
 </table>';
   }
   else {
