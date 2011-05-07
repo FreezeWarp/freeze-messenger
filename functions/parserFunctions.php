@@ -91,7 +91,7 @@ function htmlParse($text,$bbcodeLevel = 1) {
     ($bbcode <= 3 ? '<object width="425" height="349" wmode="opaque"><param name="movie" value="http://www.youtube.com/v/$1=en&amp;rel=0&amp;border=0"></param><param name="allowFullScreen" value="true"></param><embed src="http://www.youtube.com/v/$1&amp;hl=en&amp;rel=0&amp;border=0" type="application/x-shockwave-flash" allowfullscreen="true" width="310" height="255" wmode="opaque"></embed></object>' : ($bbcode <= 13 ? '<a href="http://www.youtube.com/watch?v=$1" target="_BLANK">[Youtube Video]</a>' : '$1')),
   );
 
-  if ($bbcode['shortCode'] && $bbCodeLevel <= 16) {
+  if ($bbcode['shortCode'] && $bbcodeLevel <= 16) {
     $text = preg_replace($search['shortCode'],$replace['buis'],$text);
   }
   if ($bbcode['buis'] && $bbcodeLevel <= 16) {
@@ -119,7 +119,7 @@ function htmlParse($text,$bbcodeLevel = 1) {
   );
 
   $replace2 = array(
-    ($bbcodeLevel <= 9 ? '<span style="color: red; padding: 10px;">* ' . $user['username'] . ' $1</span>' : '* ' . $user['username'] . ' $1</span>'),
+    ($bbcodeLevel <= 9 ? '<span style="color: red; padding: 10px;">* ' . $user['username'] . ' $1</span>' : '<span>* ' . $user['username'] . ' $1</span>'),
     '$1',
     '<a href="http://vrim.victoryroad.net/?room=$1">Room $1</a>',
   );
@@ -256,37 +256,20 @@ function htmlwrap($str, $maxLength = 40, $char = '<br />') { /* An adaption of a
 }
 
 function finalParse($message) {
-  global $room, $salts, $encrypt;
+  global $room;
 
   $messageRaw = $message; // Parses the sources for MySQL.
   $messageHtml = nl2br(htmlwrap(htmlParse(censor(vrim_encodeXML($message),$room['id']),$room['options']),30,' ')); // Parses for browser or HTML rendering.
   $messageApi = nl2vb(smilie($message,$room['bbcode'])); // Not yet coded, you see.
 
-  if ($salts && $encrypt) {
-    $salt = end($salts);
-    $saltNum = key($salts);
-
-    $iv_size = mcrypt_get_iv_size(MCRYPT_3DES,MCRYPT_MODE_CBC);
-    $iv = base64_encode(mcrypt_create_iv($iv_size, MCRYPT_RAND));
-
-    list($messages,$iv,$saltNum) = vrim_encrypt(array($messageRaw,$messageHtml,$messageApi));
-    list($messageRaw,$messageHtml,$messageApi) = $messages;
-
-    $messageRaw = mysqlEscape($messageRaw);
-    $messageHtml = mysqlEscape($messageHtml);
-    $messageApi = mysqlEscape($messageApi);
-  }
-  else {
-    $messageRaw = mysqlEscape($messageRaw);
-    $messageHtml = mysqlEscape($messageHtml);
-    $messageApi = mysqlEscape($messageApi);
-  }
-
-  return array($messageRaw, $messageHtml, $messageApi, $saltNum, $iv);
+  return array($messageRaw, $messageHtml, $messageApi);
 }
 
+
 function sendMessage($messageText,$user,$room,$flag = '') {
-  global $sqlPrefix, $parseFlags;
+  global $sqlPrefix, $parseFlags, $salts, $encrypt;
+
+  $user['username'] = mysqlEscape($user['username']);
 
   $ip = mysqlEscape($_SERVER['REMOTE_ADDR']); // Get the IP address of the user.
   $flag = mysqlEscape($flag);
@@ -315,11 +298,38 @@ function sendMessage($messageText,$user,$room,$flag = '') {
   }
   else {
     $message = finalParse($messageText);
-    list($messageRaw,$messageHtml,$messageApi,$saltNum,$iv) = $message;
+    list($messageRaw,$messageHtml,$messageApi) = $message;
   }
 
+  $messageHtmlCache = $messageHtml;
+
+  if ($salts && $encrypt) {
+    $salt = end($salts);
+    $saltNum = key($salts);
+
+    $iv_size = mcrypt_get_iv_size(MCRYPT_3DES,MCRYPT_MODE_CBC);
+    $iv = base64_encode(mcrypt_create_iv($iv_size, MCRYPT_RAND));
+
+    list($messages,$iv,$saltNum) = vrim_encrypt(array($messageRaw,$messageHtml,$messageApi));
+    list($messageRaw,$messageHtml,$messageApi) = $messages;
+  }
+
+  $messageRaw = mysqlEscape($messageRaw);
+  $messageHtml = mysqlEscape($messageHtml);
+  $messageHtmlCache = mysqlEscape($messageHtmlCache);
+  $messageApi = mysqlEscape($messageApi);
+
   mysqlQuery("INSERT INTO {$sqlPrefix}messages (user, room, rawText, htmlText, vbText, salt, iv, microtime, ip, flag) VALUES ($user[userid], $room[id], '$messageRaw', '$messageHtml', '$messageApi', '$saltNum', '$iv', '" . microtime(true) . "', '$ip', '$flag')");
-  mysqlQuery("UPDATE {$sqlPrefix}rooms SET lastMessageTime = NOW() WHERE id = $room[id]");
-  mysqlQuery("UPDATE {$sqlPrefix}ping SET messages = messages + 1 WHERE userid = $user[userid] AND roomid = $room[id]");
+  $messageid = mysqlInsertId();
+
+  mysqlQuery("INSERT INTO {$sqlPrefix}messagesCached (messageid, roomid, userid, username, usergroup, time, htmlText, flag) VALUES ($messageid, $room[id], $user[userid], '$user[username]', $user[displaygroupid], NOW(), '$messageHtmlCache', '$flag')");
+  $messageid2 = mysqlInsertId();
+
+  if ($messageid2 > 100) {
+    mysqlQuery("DELETE FROM {$sqlPrefix}messagesCached WHERE id <= " . ($messageid2 - 100));
+  }
+
+  mysqlQuery("UPDATE {$sqlPrefix}rooms SET lastMessageTime = NOW(), lastMessageId = $messageid WHERE id = $room[id]");
+  mysqlQuery("INSERT INTO {$sqlPrefix}roomStats (userid, roomid, messages) VALUES ($user[userid], $room[id], 1) ON DUPLICATE KEY UPDATE messages = messages + 1");
 }
 ?>

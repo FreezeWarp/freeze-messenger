@@ -87,6 +87,10 @@ function mysqlReadThrough($queryData,$function) {
   return $data;
 }
 
+function mysqlInsertId() {
+  return mysql_insert_id();
+}
+
 function iif($condition,$true,$false) {
   if (eval('return ' . stripslashes($condition) . ';')) {
     return $true;

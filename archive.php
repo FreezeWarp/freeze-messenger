@@ -41,24 +41,45 @@ if (!$_GET['roomid']) { // If no room ID is provided, then give the search form.
   echo container($phrases['archiveChooseSettings'],$phrases['archiveMessage'] . '<br /><br />
 
 <form action="/archive.php" method="get">
-  <label for="roomid"></label>
-  <select name="roomid" id="roomid">
-  ' . $roomSelect . '
-  </select><br /><br />
-
-  <label for="numresults">' . $phrases['archiveNumResultsLabel'] . '</label>
-  <select name="numresults" id="numresults">
-    <option value="10">10</option><option value="20">20</option>
-    <option value="50" selected="selected">50</option>
-    <option value="100">100</option>
-    <option value="500">500</option>' . $phrases['archiveNumResultsHook'] . '
-  </select><br /><br />
-
-  <label for="oldfirst">' . $phrases['archiveReversePostOrderLabel'] . '</label> <input type="checkbox" name="oldfirst" id="oldfirst" value="true" /><br /><br />
-
-  <label for="userids">' . $phrases['archiveUserIdsLabel'] . '</label> <input type="text" name="userids" id="userids"  /><br /><br />
-
-  <button type="submit">' . $phrases['archiveSubmit'] . '</button>
+<table class="leftright">
+  <tr>
+    <td colspan="2">
+      <select name="roomid" id="roomid">
+        ' . $roomSelect . '
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <label for="numresults">' . $phrases['archiveNumResultsLabel'] . '</label>
+    <td>
+    <td>
+      <select name="numresults" id="numresults">
+        <option value="10">10</option><option value="20">20</option>
+        <option value="50" selected="selected">50</option>
+        <option value="100">100</option>
+        <option value="500">500</option>
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <label for="oldfirst">' . $phrases['archiveReversePostOrderLabel'] . '</label>
+    </td>
+    <td>
+      <input type="checkbox" name="oldfirst" id="oldfirst" value="true" />
+    <td>
+  </tr>
+  <tr>
+    <td><label for="userids">' . $phrases['archiveUserIdsLabel'] . '</label></td>
+    <td><input type="text" name="userids" id="userids"  /></td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <button type="submit">' . $phrases['archiveSubmit'] . '</button>
+    </td>
+  </tr>
+</table>
 
 </form>');
 }
@@ -216,5 +237,5 @@ echo container("$phrases[archiveTitle]: $room[name]","
 
 exec(hook('archiveEnd'));
 
-require_once('templateEnd.php');*/
+require_once('templateEnd.php');
 ?>
