@@ -1,0 +1,24 @@
+/********************************
+ *** FreezeMessenger Styling ****
+ *** Mobile Override Classes ****
+ ********************************/
+
+#messageList {
+  overflow: auto;
+  height: auto;
+}
+
+
+/***** Menu *****/
+#menu {
+  float: none;
+  width: 100%;
+}
+
+
+
+/***** Content *****/
+#content {
+  float: none;
+  width: 100%;
+}

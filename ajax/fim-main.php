@@ -29,32 +29,28 @@ $time = time();
 if (!hasPermission($room,$user,'view')) {} // Gotta make sure the user can view that room.
 else {
   /* Update Ping */
-  mysqlQuery("INSERT INTO {$sqlPrefix}ping (userid,roomid,time) VALUES ($user[userid],$room[id],CURRENT_TIMESTAMP()) ON DUPLICATE KEY UPDATE time = CURRENT_TIMESTAMP()");
+  mysqlQuery("INSERT INTO {$sqlPrefix}ping (userid,roomid,time)
+VALUES ($user[userid],$room[id],CURRENT_TIMESTAMP())
+ON DUPLICATE KEY UPDATE time = CURRENT_TIMESTAMP()");
 
   /* Get Messages */
-  $messages = sqlArr("
-SELECT m.id,
+  $messages = sqlArr("SELECT m.messageid AS id,
   UNIX_TIMESTAMP(m.time) AS time,
-  m.htmlText,
-  m.iv,
-  m.salt,
-  m.flag,
-  u.{$sqlUserIdCol} AS userid,
-  u.{$sqlUsernameCol} AS username,
-  u.{$sqlUsergroupCol} AS displaygroupid,
+  m.htmlText AS htmlText,
+  m.userid AS userid,
+  m.username AS username,
+  m.usergroup AS displaygroupid,
   u2.settings AS usersettings,
   u2.defaultColour,
   u2.defaultFontface,
   u2.defaultHighlight,
-  u2.defaultFormatting
-FROM {$sqlPrefix}messages AS m,
-  user AS u,
+  u2.defaultFormatting,
+  m.flag
+FROM {$sqlPrefix}messagesCached AS m,
   {$sqlPrefix}users AS u2
-WHERE room = $room[id]
-  AND m.deleted != true
-  AND m.user = u.userid
-  AND m.user = u2.userid
-  AND m.id > $lastid
+WHERE m.roomid = $room[id]
+  AND m.userid = u2.userid
+  AND m.messageid > $lastid
 ORDER BY m.time DESC
 LIMIT $messageLimit",'id');
   if ($reverse && $messages) $messages = array_reverse($messages);
@@ -74,12 +70,12 @@ LIMIT $messageLimit",'id');
       switch ($_GET['mode']) {
         case 'complex':
         case '':
-       $messagesText .= "<span id=\"message$message[id]\" class=\"messageLine\" style=\"padding-bottom: 3px; padding-top: 3px; vertical-align: middle;\"><img alt=\"\" src=\"{$forumUrl}image.php?u=$message[userid]\" style=\"max-width: 32px; max-height: 32px; padding-right: 3px;\" class=\"username usernameTable\" data-userid=\"$message[userid]\" time=\"" . vbdate(false,$message['time']) .  "\" /><span style=\"{$style}padding: 2px;\" class=\"messageText\" data-messageid=\"$message[id]\">$message[htmlText]</span><br />
+        $messagesText .= "<span id=\"message$message[id]\" class=\"messageLine\" style=\"padding-bottom: 3px; padding-top: 3px; vertical-align: middle;\"><img alt=\"\" src=\"{$forumUrl}image.php?u=$message[userid]\" style=\"max-width: 32px; max-height: 32px; padding-right: 3px;\" class=\"username usernameTable\" data-userid=\"$message[userid]\" time=\"" . vbdate(false,$message['time']) .  "\" /><span style=\"{$style}padding: 2px;\" class=\"messageText\" data-messageid=\"$message[id]\">$message[htmlText]</span><br />
 </span>\n";
         break;
 
         case 'simple':
-$messagesText .= "<span id=\"message$message[id]\" class=\"messageLine\">" . userFormat($message, $room) . "
+        $messagesText .= "<span id=\"message$message[id]\" class=\"messageLine\">" . userFormat($message, $room) . "
   @ <em>" . vbdate(false,$message['time']) . "</em>: <span style=\"{$style}padding: 2px;\" class=\"messageText\" data-messageid=\"$message[id]\">$message[htmlText]</span><br />
 </span>\n";
         break;
@@ -94,11 +90,9 @@ $messagesText .= "<span id=\"message$message[id]\" class=\"messageLine\">" . use
   }
 
   /* Get Active Users */
-  $users = sqlArr("
-SELECT u.{$sqlUsernameCol} AS username,
+  $users = sqlArr("SELECT u.{$sqlUsernameCol} AS username,
   u.{$sqlUserIdCol} AS userid,
   u.{$sqlUsergroupCol} AS displaygroupid,
-  p.id,
   u2.settings AS usersettings
 FROM {$sqlPrefix}ping AS p,
   {$sqlUserTable} AS u,
@@ -106,8 +100,8 @@ FROM {$sqlPrefix}ping AS p,
 WHERE p.roomid = $room[id]
   AND p.userid = u.userid
   AND u2.userid = u.userid
-  AND UNIX_TIMESTAMP(p.time) >= (UNIX_TIMESTAMP(NOW()) - $onlineThreshold)
-ORDER BY u.username",'id');
+  AND UNIX_TIMESTAMP(p.time) >= UNIX_TIMESTAMP(NOW()) - $onlineThreshold
+ORDER BY u.username",'userid');
 
   if ($users) {
     foreach ($users AS $user2) { $users2[] = userFormat($user2, $room, false); }

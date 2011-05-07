@@ -20,6 +20,11 @@
 
 
 
+
+
+///* Required Forum-Included Functions *///
+
+
 /* The following function is derived from vBulletin code required for properly defining a vBulletin-compatible cookie.
  * It is deemed fair use to use this code for the following reasons. If its authors have any issue, please contact Joseph T. Parsons by email (rehtaew@gmail.com) to sort any possible issues out:
  ** It is brief in nature.
@@ -53,7 +58,19 @@ function realIp() { // vBulletin Function
 
 
 
+
+
+///* Require Base *///
+
 require_once('global.php');
+
+
+
+
+
+
+
+///* Process Functions for Each Forum  *///
 
 /* User should be array, password md5sum of plaintext. */
 function processVBulletin($user,$password) {
@@ -78,6 +95,7 @@ function processVBulletin($user,$password) {
 
 
 
+///* Obtain Login Data From Different Locations *///
 
 if (isset($_GET['username'],$_GET['password'])) { // API.
   $apiVersion = intval($_GET['apiVersion']);
@@ -165,6 +183,7 @@ else { // No login data exists.
 
 
 
+///* Process Login Data *///
 
 if ($flag) {
   // Do nothing.
@@ -247,29 +266,45 @@ elseif ($loginMethod === 'vbulletin') {
 
 
 
-
+///* Final Forum-Specific Processing *///
 
 if ($valid) { // If the user is valid, process their preferrences.
+
   $userCopy = $user;
   unset($user);
 
   switch ($loginMethod) {
-    case 'vbulletin':
-    $user2['username'] = $userCopy['username'];
-    $user2['userid'] = $userCopy['userid'];
-    $user2['styleid'] = $userCopy['styleid'];
-    $user2['timezoneoffset'] = $userCopy['timezoneoffset'];
-    $user2['displaygroupid'] = $userCopy['displaygroupid'];
-    $user2['membergroupids'] = $userCopy['membergroupids'];
 
-    if ($userCopy['options'] & 64) $user2['timezoneoffset']++; // DST is autodetect. We'll just set it by hand.
-    elseif ($userCopy['options'] & 128) $user2['timezoneoffset']++; // DST is on, add an hour
+    case 'vbulletin':
+
+    /* Set Relevant Column Data */
+    $sqlUserTable = 'user'; // The user table in the login method used.
+    $sqlUserIdCol = 'userid'; // The user ID column of the user table in the login method used.
+    $sqlUsernameCol = 'username'; // The username column of the user table in the login method used.
+    $sqlUsergroupCol = 'displaygroupid'; // The usergroup column of the user table in the login method used.
+    $sqlMembergroupCol = 'membergroupids';
+    $sqlUserTimezoneCol = 'timezoneoffset';
+    $sqlUserOptionsCol = 'options';
+
+    /* Set Relevant User Data */
+    $user2['username'] = $userCopy[$sqlUsernameCol];
+    $user2['userid'] = $userCopy[$sqlUserIdCol];
+    $user2['timezoneoffset'] = $userCopy[$sqlUserTimezone];
+    $user2['displaygroupid'] = $userCopy[$sqlUsergroupCol];
+    $user2['membergroupids'] = $userCopy[$sqlMembergroupCol];
+
+    if ($userCopy[$sqlUserOptionsCol] & 64) $user2['timezoneoffset']++; // DST is autodetect. We'll just set it by hand.
+    elseif ($userCopy[$sqlUserOptionsCol] & 128) $user2['timezoneoffset']++; // DST is on, add an hour
     else $user2['timezoneoffset']; // DST is off
+
     break;
+
+
 
     default:
     die('Error');
     break;
+
   }
 
   $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userid = ' . $userCopy['userid']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
