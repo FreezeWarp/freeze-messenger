@@ -104,9 +104,7 @@ function userFormat($message, $room, $messageTable = true) {
   $class = ($messageTable ? 'username usernameTable' : 'username');
   if (in_array($message['userid'],explode(',',$room['moderators'])) || $message['usersettings'] & 16 || $message['userid'] == $room['owner']) $userAppend = '*';
 
-  return "<a href=\"http://www.victoryroad.net/member.php?u=$message[userid]\" class=\"{$class}\" data-userid=\"$message[userid]\">
-  <span style=\"{$colour}\">$message[username]{$userAppend}</span>
-</a>";
+  return "<span style=\"{$colour}\" class=\"{$class}\" data-userid=\"$message[userid]\">$message[username]{$userAppend}</span>";
 }
 
 function messageStyle($message) {
@@ -195,11 +193,19 @@ function vrim_encodeXML($data) {
 }
 
 function html2rgb($color) {
-  if ($color[0] == '#') $color = substr($color, 1);
+  if ($color[0] == '#') {
+    $color = substr($color, 1);
+  }
 
-  if (strlen($color) == 6) list($r, $g, $b) = array($color[0] . $color[1], $color[2] . $color[3], $color[4] . $color[5]);
-  elseif (strlen($color) == 3) list($r, $g, $b) = array($color[0].$color[0], $color[1].$color[1], $color[2].$color[2]);
-  else return false;
+  if (strlen($color) == 6) { echo 1;
+    list($r, $g, $b) = array($color[0] . $color[1], $color[2] . $color[3], $color[4] . $color[5]);
+  }
+  elseif (strlen($color) == 3) { echo 2;
+    list($r, $g, $b) = array($color[0].$color[0], $color[1].$color[1], $color[2].$color[2]);
+  }
+  else { echo 3;
+    return false;
+  }
 
   $r = hexdec($r);
   $g = hexdec($g);
@@ -219,9 +225,9 @@ function rgb2html($r, $g = false, $b = false) {
   $g = dechex($g < 0 ? 0 : ($g > 255 ? 255 : $g));
   $b = dechex($b < 0 ? 0 : ($b > 255 ? 255 : $b));
 
-  $color = (strlen($r) < 2 ? '0':'') . $r;
-  $color .= (strlen($g) < 2 ? '0':'') . $g;
-  $color .= (strlen($b) < 2 ? '0':'') . $b;
+  $color = (strlen($r) < 2 ? '0' : '') . $r;
+  $color .= (strlen($g) < 2 ? '0' : '') . $g;
+  $color .= (strlen($b) < 2 ? '0' : '') . $b;
 
   return '#' . $color;
 }
@@ -261,5 +267,98 @@ function hook($name) {
   else {
     return 'return false;';
   }
+}
+
+function template($name) {
+  global $templates, $phrases, $title, $user, $room, $message, $template, $templateVars; // Lame approach.
+
+  if($templateVars[$name]) {
+    $vars = explode(',',$templateVars[$name]);
+    foreach ($vars AS $var) {
+      $globalVars[] = '$' . $var;
+    }
+    $globalString = implode(',',$globalVars);
+
+    eval("global $globalString;");
+  }
+
+  $template2 = $templates[$name];
+
+
+  $template2 = preg_replace('/<if cond="(.+?)">(.+?)(<else \/>(.+?)|)<\/if>/es',"iifl('\\1','\\2','\\4','global $globalString;')",$template2);
+//  $template2 = preg_replace('/<if cond="(.+?)">(.+?)<\/if>/es',"stripslashes(iifl('\\1','\\2','','global $globalString;'))",$template2);
+  $template2 = preg_replace('/(.+)/e','stripslashes("\\1")',$template2);
+  return $template2;
+}
+
+function iifl($condition,$true,$false,$eval) {
+  global $templates, $phrases, $title, $user, $room, $message, $template, $templateVars; // Lame approach.
+
+  if($eval) {
+    eval($eval);
+  }
+
+  if (eval('return ' . stripslashes($condition) . ';')) {
+    return stripslashes($true);
+  }
+  return stripslashes($false);
+}
+
+function errorHandler($errno, $errstr, $errfile, $errline) {
+  global $lite;
+
+  $errorString = $errstr . ($_GET['showErrorsFull'] ? " on line $errline" : '');
+
+  if ($lite && function_exists('container')) {
+    switch ($errno) {
+      case E_USER_ERROR:
+      echo container('Error',$errorString);
+      break;
+      case E_USER_WARNING:
+      echo container('Error [Ignored]',$errorString);
+      break;
+      case E_USER_NOTICE:
+      break;
+      case E_ERROR:
+      echo container('System Error',$errorString);
+      break;
+      case E_WARNING:
+      echo container('System Error [Ignored]',$errorString);
+      break;
+      case E_NOTICE:
+      break;
+      default:
+      echo container('Invalid error code: the error handler could not launch.');
+      break;
+    }
+  }
+  else {
+    switch ($errno) {
+      case E_USER_ERROR:
+      echo '<div class="ui-state-error">' . $errorString . '</div>';
+      break;
+      case E_USER_WARNING:
+      echo '<div class="ui-state-error">The following error has been encountered, though it has been ignored: "' . $errorString . '".</div>';
+      break;
+      case E_USER_NOTICE:
+      break;
+      case E_ERROR:
+      die('The script you are running has died with the error "' . $errorString . '".<br />');
+      break;
+      case E_WARNING:
+      echo '<div class="ui-state-error">System error: "' . $errorString . '".</div>';
+      break;
+      case E_NOTICE:
+      break;
+      default:
+      echo '<div class="ui-state-error">Invalid error code: the error handler could not launch.</div>';
+      break;
+    }
+  }
+
+  error_log("$errno-level error in $errfile on line $errline: $errstr");
+
+  // Don't execute the internal PHP error handler.
+  return true;
 }
 ?>

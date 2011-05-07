@@ -22,7 +22,7 @@ require_once('../global.php');
 $room = intval($_GET['room']);
 $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
 $lastid = intval($_GET['lastMessage']);
-$lastmessage=  $lastid;
+$lastmessage = $lastid;
 $reverse = intval($_GET['reverse']);
 $time = time();
 
@@ -32,7 +32,31 @@ else {
   mysqlQuery("INSERT INTO {$sqlPrefix}ping (userid,roomid,time) VALUES ($user[userid],$room[id],CURRENT_TIMESTAMP()) ON DUPLICATE KEY UPDATE time = CURRENT_TIMESTAMP()");
 
   /* Get Messages */
-  $messages = sqlArr("SELECT m.id, UNIX_TIMESTAMP(m.time) AS time, m.rawText, m.vbText, m.htmlText, m.iv, m.salt, u.{$sqlUserIdCol} AS userid, u.{$sqlUsernameCol} AS username, u.{$sqlUsergroupCol} AS displaygroupid, u2.settings AS usersettings, u2.defaultColour, u2.defaultFontface, u2.defaultHighlight, u2.defaultFormatting, m.flag FROM {$sqlPrefix}messages AS m, user AS u, {$sqlPrefix}users AS u2 WHERE room = $room[id] AND deleted != true AND m.user = u.userid AND m.user = u2.userid AND m.id > $lastid ORDER BY m.time DESC LIMIT $messageLimit",'id');
+  $messages = sqlArr("
+SELECT m.id,
+  UNIX_TIMESTAMP(m.time) AS time,
+  m.htmlText,
+  m.iv,
+  m.salt,
+  m.flag,
+  u.{$sqlUserIdCol} AS userid,
+  u.{$sqlUsernameCol} AS username,
+  u.{$sqlUsergroupCol} AS displaygroupid,
+  u2.settings AS usersettings,
+  u2.defaultColour,
+  u2.defaultFontface,
+  u2.defaultHighlight,
+  u2.defaultFormatting
+FROM {$sqlPrefix}messages AS m,
+  user AS u,
+  {$sqlPrefix}users AS u2
+WHERE room = $room[id]
+  AND m.deleted != true
+  AND m.user = u.userid
+  AND m.user = u2.userid
+  AND m.id > $lastid
+ORDER BY m.time DESC
+LIMIT $messageLimit",'id');
   if ($reverse && $messages) $messages = array_reverse($messages);
 
   if ($messages) {
@@ -47,9 +71,20 @@ else {
         if (!$reverse) $stopTopic = true;
       }
 
-      $messagesText .= "<span id=\"message$message[id]\" class=\"messageLine\">" . userFormat($message, $room) . "
+      switch ($_GET['mode']) {
+        case 'complex':
+        case '':
+       $messagesText .= "<span id=\"message$message[id]\" class=\"messageLine\" style=\"padding-bottom: 3px; padding-top: 3px; vertical-align: middle;\"><img alt=\"\" src=\"{$forumUrl}image.php?u=$message[userid]\" style=\"max-width: 32px; max-height: 32px; padding-right: 3px;\" class=\"username usernameTable\" data-userid=\"$message[userid]\" time=\"" . vbdate(false,$message['time']) .  "\" /><span style=\"{$style}padding: 2px;\" class=\"messageText\" data-messageid=\"$message[id]\">$message[htmlText]</span><br />
+</span>\n";
+        break;
+
+        case 'simple':
+$messagesText .= "<span id=\"message$message[id]\" class=\"messageLine\">" . userFormat($message, $room) . "
   @ <em>" . vbdate(false,$message['time']) . "</em>: <span style=\"{$style}padding: 2px;\" class=\"messageText\" data-messageid=\"$message[id]\">$message[htmlText]</span><br />
 </span>\n";
+        break;
+      }
+
       if ($message['id'] > $lastmessage) $lastmessage = $message['id'];
     }
 
@@ -59,7 +94,20 @@ else {
   }
 
   /* Get Active Users */
-  $users = sqlArr("SELECT u.{$sqlUsernameCol} AS username, u.{$sqlUserIdCol} AS userid, u.{$sqlUsergroupCol} AS displaygroupid, p.id, u2.settings AS usersettings FROM {$sqlPrefix}ping AS p, {$sqlUserTable} AS u, {$sqlPrefix}users AS u2 WHERE p.roomid = $room[id] AND p.userid = u.userid AND u2.userid = u.userid AND UNIX_TIMESTAMP(p.time) >= UNIX_TIMESTAMP(NOW()) - $onlineThreshold ORDER BY u.username",'id');
+  $users = sqlArr("
+SELECT u.{$sqlUsernameCol} AS username,
+  u.{$sqlUserIdCol} AS userid,
+  u.{$sqlUsergroupCol} AS displaygroupid,
+  p.id,
+  u2.settings AS usersettings
+FROM {$sqlPrefix}ping AS p,
+  {$sqlUserTable} AS u,
+  {$sqlPrefix}users AS u2
+WHERE p.roomid = $room[id]
+  AND p.userid = u.userid
+  AND u2.userid = u.userid
+  AND UNIX_TIMESTAMP(p.time) >= (UNIX_TIMESTAMP(NOW()) - $onlineThreshold)
+ORDER BY u.username",'id');
 
   if ($users) {
     foreach ($users AS $user2) { $users2[] = userFormat($user2, $room, false); }
@@ -67,7 +115,12 @@ else {
   $activeUsers = implode(', ',$users2);
 
   /* Get Missed Messages */
-  $missedMessages = sqlArr("SELECT r.* FROM {$sqlPrefix}rooms AS r LEFT JOIN {$sqlPrefix}ping AS p ON (p.userid = $user[userid] AND p.roomid = r.id) WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.id IN ($user[watchRooms])" : '') . ") AND (r.allowedUsers REGEXP '({$user[userid]},)|{$user[userid]}$' OR r.allowedUsers = '*') AND IF(p.time, UNIX_TIMESTAMP(r.lastMessageTime) > (UNIX_TIMESTAMP(p.time) + 10), TRUE)",'id'); // Right now only private IMs are included, but in the future this will be expanded.
+  $missedMessages = sqlArr("SELECT r.*
+FROM {$sqlPrefix}rooms AS r
+  LEFT JOIN {$sqlPrefix}ping AS p ON (p.userid = $user[userid] AND p.roomid = r.id)
+WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.id IN ($user[watchRooms])" : '') . ")
+  AND (r.allowedUsers REGEXP '({$user[userid]},)|{$user[userid]}$' OR r.allowedUsers = '*')
+  AND IF(p.time, UNIX_TIMESTAMP(r.lastMessageTime) > (UNIX_TIMESTAMP(p.time) + 10), TRUE)",'id'); // Right now only private IMs are included, but in the future this will be expanded.
 
   if ($missedMessages) {
     foreach ($missedMessages AS $message) {

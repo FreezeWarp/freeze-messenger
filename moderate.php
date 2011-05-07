@@ -15,6 +15,8 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 $title = 'Moderate';
+$reqPhrases = true;
+$reqHooks = true;
 
 require_once('global.php');
 require_once('functions/container.php');
@@ -64,7 +66,6 @@ if ($user['settings'] & 16) { // Check that the user is an admin.
 <link rel=\"stylesheet\" href=\"./client/codemirror/mode/xml/xml.css\">
 <script src=\"./client/codemirror/lib/codemirror.js\"></script>
 <script src=\"./client/codemirror/mode/xml/xml.js\"></script>
-<script src=\"./client/codemirror/lib/overlay.js\"></script> 
 
 
 <script>
@@ -187,6 +188,80 @@ $(document).ready(function() {
       break;
     }
     break;
+
+    case 'templates':
+    switch ($_GET['do2']) {
+      case false:
+      case 'view':
+      $templates2 = sqlArr("SELECT * FROM {$sqlPrefix}templates",'id');
+
+      foreach ($templates2 AS $template) {
+        $template['code'] = nl2br(htmlentities($template['code']));
+
+        $rows .= "<tr><td>$template[name]</td><td><a href=\"./moderate.php?do=templates&do2=edit&templateId=$template[id]\">Edit</td></tr>";
+      }
+
+      echo container('Hooks','<table class="page rowHover" border="1">
+  <thead>
+    <tr class="hrow ui-widget-header">
+      <td>Hook</td>
+      <td>Actions</td>
+    </tr>
+  </thead>
+  <tbody>
+' . $rows . '
+  </tbody>
+</table>');
+      break;
+
+      case 'edit':
+      $templateID = intval($_GET['templateId']);
+
+      $template = sqlArr("SELECT * FROM {$sqlPrefix}templates WHERE id = $templateID");
+
+      echo container("Edit Hook '$template[name]'","
+<link rel=\"stylesheet\" href=\"./client/codemirror/lib/codemirror.css\">
+<link rel=\"stylesheet\" href=\"./client/codemirror/mode/xml/xml.css\">
+<script src=\"./client/codemirror/lib/codemirror.js\"></script>
+<script src=\"./client/codemirror/mode/xml/xml.js\"></script>
+
+
+<script>
+$(document).ready(function() {
+  var editor = CodeMirror.fromTextArea(document.getElementById(\"text\"),{
+    mode:  \"clike\"
+  });
+});
+</script>
+<style type=\"text/css\">
+.CodeMirror {
+  border: 1px solid white;
+  background-color: white;
+  color: black;
+}
+</style> 
+
+<form action=\"./moderate.php?do=templates&do2=edit2&templateId=$template[id]\" method=\"post\">
+  <label for=\"text\">New Value:</label><br />
+  <textarea name=\"text\" id=\"text\" style=\"width: 100%; height: 300px;\">$template[data]</textarea><br /><br />
+
+  <button type=\"submit\">Update</button>
+</form>");
+      break;
+
+      case 'edit2':
+      $templateID = intval($_GET['templateId']);
+      $text = mysqlEscape($_POST['text']);
+
+      mysqlQuery("UPDATE {$sqlPrefix}templates SET data = '$text' WHERE id = $templateID");
+
+      modLog('templateEdit',$templateID);
+
+      echo container('Updated','The template has been updated.<br /><br />' . button('Return','./moderate.php?do=templates'));
+      break;
+    }
+    break;
+
 
     case 'censor':
     switch($_GET['do2']) {

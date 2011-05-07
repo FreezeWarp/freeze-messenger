@@ -98,11 +98,16 @@ function showAllRooms() {
 $(document).ready(function(){
   roomid = $('body').attr('data-roomid');
 
-  $('#menu').accordion({
-    autoHeight: false,
-    navigation: true,
-    clearStyle: true
-  });
+  if ($('body').attr('data-mode') == 'mobile') {
+    
+  }
+  else {
+    $('#menu').accordion({
+      autoHeight: false,
+      navigation: true,
+      clearStyle: true
+    });
+  }
 
   $('table > thead > tr:first-child > td:first-child, table > tr:first-child > td:first-child').addClass('ui-corner-tl');
   $('table > thead > tr:first-child > td:last-child, table > tr:first-child > td:last-child').addClass('ui-corner-tr');

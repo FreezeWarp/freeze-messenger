@@ -67,17 +67,17 @@ $(document).ready(function(){
   });
 });
 </script>' . "
-<form action=\"#\" method=\"post\" id=\"createRoomForm\">
-  <label for=\"name\">$phrases[editRoomNameLabel]</label>: <input type=\"text\" name=\"name\" id=\"name\" /><br />
+<form action=\"#\" method=\"post\" id=\"editRoomForm\">
+  <label for=\"name\">$phrases[editRoomNameLabel]</label>: <input type=\"text\" name=\"name\" id=\"name\" value=\"$room[name]\" /><br />
   <small><span style=\"margin-left: 10px;\">$phrases[editRoomNameBlurb]</span></small><br /><br />
 
-  <label for=\"allowedUsers\">$phrases[editRoomAllowedUsersLabel]</label>: <input type=\"text\" name=\"allowedUsers\" id=\"allowedUsers\" /><br />
+  <label for=\"allowedUsers\">$phrases[editRoomAllowedUsersLabel]</label>: <input type=\"text\" name=\"allowedUsers\" id=\"allowedUsers\" value=\"$room[allowedUsers]\" /><br />
   <small><span style=\"margin-left: 10px;\">$phrases[editRoomAllowedUsersBlurb]</span></small><br /><br />
 
-  <label for=\"allowedGroups\">$phrases[editRoomAllowedGroupsLabel]</label>: <input type=\"text\" name=\"allowedGroups\" id=\"allowedGroups\" /><br />
+  <label for=\"allowedGroups\">$phrases[editRoomAllowedGroupsLabel]</label>: <input type=\"text\" name=\"allowedGroups\" id=\"allowedGroups\" value=\"$room[allowedGroups]\" /><br />
   <small><span style=\"margin-left: 10px;\">$phrases[editRoomAllowedGroupsBlurb]</span></small><br /><br />
 
-  <label for=\"moderators\">$phrases[editRoomModeratorsLabel]</label>: <input type=\"text\" name=\"moderators\" id=\"moderators\" /><br />
+  <label for=\"moderators\">$phrases[editRoomModeratorsLabel]</label>: <input type=\"text\" name=\"moderators\" id=\"moderators\" value=\"$room[moderators]\" /><br />
   <small><span style=\"margin-left: 10px;\">$phrases[editRoomModeratorsBlurb]</span></small><br /><br />
 
   <label for=\"mature\">$phrases[editRoomMatureLabel]</label>: <input type=\"checkbox\" name=\"mature\" id=\"mature\" /><br />
@@ -96,7 +96,7 @@ $(document).ready(function(){
 
   <label>$phrases[editRoomCensorLabel]</label>:<br /><div style=\"margin-left: 10px;\">{$censorLists}</div><br />
 
-  <button type=\"submit\">$phrases[editRoomSubmit]</buttin><button type=\"reset\">$phrases[editRoomReset]</button>
+  <button type=\"submit\">$phrases[editRoomSubmit]</button><button type=\"reset\">$phrases[editRoomReset]</button>
 </form>";
     }
   }
@@ -119,6 +119,32 @@ $(document).ready(function(){
         trigger_error($phrases['editRoomNameTaken'],E_USER_ERROR);
       }
       else {
+        $listsActive = sqlArr("SELECT * FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomid = $room[id]",'id');
+        if ($listsActive) {
+          foreach ($listsActive AS $active) {
+            $listStatus[$active['listid']] = $active['status'];
+          }
+        }
+
+       $censorLists = $_POST['censor'];
+       foreach($censorLists AS $id => $list) {
+         $listsNew[$id] = $list;
+       }
+
+       $lists = sqlArr("SELECT * FROM {$sqlPrefix}censorLists AS l WHERE options & 2",'id');
+       foreach ($lists AS $list) {
+          if ($list['type'] == 'black' && $listStatus[$list['id']] == 'block') $checked = true;
+          elseif ($list['type'] == 'white' && $listStatus[$list['id']] != 'unblock') $checked = true;
+          else $checked = false;
+
+          if ($checked == true && !$listsNew[$list['id']]) {
+            mysqlQuery("INSERT INTO ${sqlPrefix}censorBlackWhiteLists (roomid, listid, status) VALUES ($room[id], $id, 'unblock') ON DUPLICATE KEY UPDATE status = 'unblock'");
+          }
+          elseif ($checked == false && $listsNew[$list['id']]) {
+            mysqlQuery("INSERT INTO ${sqlPrefix}censorBlackWhiteLists (roomid, listid, status) VALUES ($room[id], $id, 'block') ON DUPLICATE KEY UPDATE status = 'block'");
+          }
+        }
+
         $allowedGroups = mysqlEscape($_POST['allowedGroups']);
         $allowedUsers = mysqlEscape($_POST['allowedUsers']);
         $moderators = mysqlEscape($_POST['moderators']);

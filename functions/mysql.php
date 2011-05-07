@@ -88,7 +88,7 @@ function mysqlReadThrough($queryData,$function) {
 }
 
 function iif($condition,$true,$false) {
-  if (eval('return ' . $condition . ';')) {
+  if (eval('return ' . stripslashes($condition) . ';')) {
     return $true;
   }
   return $false;

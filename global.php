@@ -19,24 +19,21 @@
 
 
 
-error_reporting(E_ALL ^ E_NOTICE);
-
-
 if (file_exists('/var/www/chatinterface/htdocs/.tempStop') && $_GET['action'] != 'moderate') {
   die('The chat has been disabled by an administrator. Please remain patient while order is restored.');
 }
 
 
-require_once('config.php');
 
-
-date_default_timezone_set('GMT'); // Set the timezone to GMT.
-
-
-require_once('functions/mysql.php'); // Core MySQL Functions
-require_once('functions/time.php'); // Time is a big deal, right?
-require_once('functions/errorHandler.php');
+require_once('config.php'); // Configuration Variables
+require_once('functions/mysql.php');
 require_once('functions/generalFunctions.php');
+
+
+error_reporting(E_ALL ^ E_NOTICE);
+date_default_timezone_set('GMT'); // Set the timezone to GMT.
+$old_error_handler = set_error_handler("errorHandler"); // Error Handler
+
 
 
 // Run Key MySQL Queries
@@ -58,7 +55,8 @@ else {
 }
 
 
-mysqlQuery('SET NAMES UTF8');
+
+//mysqlQuery('SET NAMES UTF8');
 
 
 /*** Get Phrases ***/
@@ -97,4 +95,18 @@ if ($reqHooks) {
   unset($hooks2);
   unset($hook);
 }
+
+/*** Get Code Hooks ***/
+if ($reqPhrases) {
+  $templates2 = sqlArr("SELECT * FROM {$sqlPrefix}templates",'id');
+
+  foreach ($templates2 AS $template) {
+    $templates[$template['name']] = $template['data'];
+    $templateVars[$template['name']] = $template['vars'];
+  }
+
+  unset($templates2);
+  unset($template);
+}
+
 ?>

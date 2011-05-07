@@ -25,8 +25,8 @@ $phase = $_GET['phase'];
 if (!$phase) $phase = '1'; // Default to phase 1.
 
 $fontData = sqlArr("SELECT * FROM {$sqlPrefix}fonts ORDER BY category, name",'id');
-foreach($fontData AS $font) {
-  $fontBox .= "<option value=\"$font[id]\" style=\"font-family: $font[data];\">$font[name]</option>";
+foreach($fontData AS $id => $font) {
+  $fontBox .= "<option value=\"$font[id]\" style=\"font-family: $font[data];\" data-font=\"$font[data]\">$font[name]</option>";
 }
 
 $watchRooms = explode(',',$user['watchRooms']);
@@ -87,9 +87,9 @@ $(document).ready(function(){
   });
 
   $(\'#fontPreview\').css(\'color\',\'' . rgb2html($user['defaultColour']) . '\');
-  $(\'#defaultColor\').css(\'background-color\',\'' . rgb2html($user['defaultColour']) . '\');
+  $(\'#defaultColour\').css(\'background-color\',\'' . rgb2html($user['defaultColour']) . '\');
   $(\'#fontPreview\').css(\'background-color\',\'' . rgb2html($user['defaultHighlight']) . '\');
-  $(\'#defaultColor\').css(\'background-color\',\'' . rgb2html($user['defaultHighlight']) . '\');
+  $(\'#defaultHighlight\').css(\'background-color\',\'' . rgb2html($user['defaultHighlight']) . '\');
 
   if ($(\'#defaultItalics\').is(\':checked\')) { $(\'#fontPreview\').css(\'font-style\',\'italic\'); }
   else { $(\'#fontPreview\').css(\'font-style\',\'normal\'); }
@@ -171,7 +171,7 @@ function removeRoom(id) {
   Default Formatting:<br />
 
   ' . ($enableDF['font'] ? '
-  <select name="defaultFace" id="defaultFace" onchange="var fontFace = $(\'#defaultFace option:selected\').val(); $(\'#fontPreview\').css(\'font-family\',fontFace);" style="margin-left: 10px;">'. $fontBox . '</select>' : '') . ($enableDF['colour'] ? '
+  <select name="defaultFace" id="defaultFace" onchange="var fontFace = $(\'#defaultFace option:selected\').attr(\'data-font\'); $(\'#fontPreview\').css(\'font-family\',fontFace);" style="margin-left: 10px;">'. $fontBox . '</select>' : '') . ($enableDF['colour'] ? '
 
   <input style="width: 40px;" id="defaultColour" name="defaultColour" />'  : '') . ($enableDF['highlight'] ? '
 
@@ -204,11 +204,13 @@ elseif ($phase == '2') {
 
   $settings = ($user['settings'] & 1) + ($user['settings'] & 2) + ($user['settings'] & 4) + ($user['settings'] & 8) + ($user['settings'] & 16) + ($reverse ? 32 : 0) + ($mature ? 64 : 0) + ($disableDing ? 128 : 0) + ($disableFormatting ? 512 : 0) + ($disableVideo ? 1024 : 0) + ($disableImage ? 2048 : 0);
 
-  if ($enableDF['font']) {
-    // No codey yet.
+  if ($enableDF['font'] && $_POST['defaultFace']) {
+    echo $id = intval($_POST['defaultFace']);
+    $font = sqlArr("SELECT * FROM {$sqlPrefix}fonts WHERE id = $id");
+    echo $fontface = $font['data'];
   }
 
-  if ($enableDF['colour']) {
+  if ($enableDF['colour'] && $_POST['defaultColour']) {
     if (preg_match('/(0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F){3,6}/i',$_POST['defaultColour']) || !$_POST['defaultColour']) {
       $colour = mysqlEscape(implode(',',html2rgb($_POST['defaultColour'])));
     }
@@ -217,7 +219,7 @@ elseif ($phase == '2') {
     }
   }
 
-  if ($enableDF['highlight']) {
+  if ($enableDF['highlight'] && $_POST['defaultHighlight']) {
     if (preg_match('/(0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F){3,6}/i',$_POST['defaultHighlight']) || !$_POST['defaultHighlight']) {
       $highlight = mysqlEscape(implode(',',html2rgb($_POST['defaultHighlight'])));
     }
@@ -225,6 +227,8 @@ elseif ($phase == '2') {
       trigger_error("The specified highlight, $_POST[defaultHighlight], does not exist",E_USER_WARNING);
     }
   }
+
+   
 
   if ($enableDF['general']) {
     $defaultFormatting = ($_POST['defaultBold'] ? 256 : 0) + ($_POST['defaultItalics'] ? 512 : 0);

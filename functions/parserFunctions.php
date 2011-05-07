@@ -137,14 +137,30 @@ function nl2vb($message) {
 function censor($text,$roomid = false) {
   global $sqlPrefix;
 
-  $words = sqlArr("SELECT w.word, w.severity, w.param
+  $words = sqlArr("SELECT w.word, w.severity, w.param, l.id AS listid
 FROM {$sqlPrefix}censorLists AS l, {$sqlPrefix}censorWords AS w
 WHERE w.listid = l.id AND w.severity = 'replace'",'word');
+
+  if ($roomid) {
+    $listsActive = sqlArr("SELECT * FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomid = $roomid",'id');
+
+    if ($listsActive) {
+      foreach ($listsActive AS $active) {
+        if ($active['status'] == 'unblock') {
+          $noBlock[] = $active['listid'];
+        }
+      }
+    }
+  }
 
   if (!$words) return $text;
 
 
   foreach ($words AS $word) {
+    if ($noBlock) {
+      if (in_array($word['listid'],$noBlock)) continue;
+    }
+
     $words2[strtolower($word['word'])] = $word['param'];
     $searchText[] = addcslashes(strtolower($word['word']),'^&|!$?()[]<>\\/.+*');
   }
@@ -243,7 +259,7 @@ function finalParse($message) {
   global $room, $salts, $encrypt;
 
   $messageRaw = $message; // Parses the sources for MySQL.
-  $messageHtml = nl2br(htmlwrap(htmlParse(censor(vrim_encodeXML($message),$room['roomid']),$room['options']),30,' ')); // Parses for browser or HTML rendering.
+  $messageHtml = nl2br(htmlwrap(htmlParse(censor(vrim_encodeXML($message),$room['id']),$room['options']),30,' ')); // Parses for browser or HTML rendering.
   $messageApi = nl2vb(smilie($message,$room['bbcode'])); // Not yet coded, you see.
 
   if ($salts && $encrypt) {

@@ -36,6 +36,7 @@ $(document).ready(function() {
   });
 
   resize();
+ 
 });
 
 function resize () {

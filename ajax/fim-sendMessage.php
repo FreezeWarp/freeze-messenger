@@ -48,7 +48,7 @@ else {
 }
 
 
-if (strlen($message) == 0 || strlen($message) > 1000) { // Too short/long.
+if (strlen($message) == 0 || strlen($message) > 10000) { // Too short/long.
   echo 'This message is too long or short. Messages must be more than 0 characters and less than or equal to 1000.';
 }
 elseif (preg_match('/^(\ |\n|\r)*$/',$message)) { // All spaces.
