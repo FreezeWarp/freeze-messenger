@@ -42,20 +42,32 @@ if (!$_GET['roomid']) { // If no room ID is provided, then give the search form.
 }
 
 else {
-  $page = intval($_GET['pagen']) ?: 1; // The page of the results. This should be greater than or equal to one.
   $order = ($_GET['oldfirst'] ? 'ASC' : 'DESC'); // The order, either ASC (oldest to newest) or DESC (newest to oldest).
+  $ordero = $order;
+
   $limit = intval($_GET['numresults']) ?: 50; // The limit for results on each page.
+  if ($limit > 500) $limit = 2;
+
   $userIDs = mysqlEscape(urldecode($_GET['userids'])); // Searching only specific users.
+
   $roomid = intval($_GET['roomid'] ?: 1);
   $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $roomid");
-  $messageStart = intval($_GET['message']);
 
-  $offset = ($page - 1) * $limit; // This is calculated for the MySQL query based on page and limit.
+  $messageStart = intval($_GET['messageStart'] ?: $_GET['message']);
+  $messageEnd = intval($_GET['messageEnd']);
+
+  if ($messageEnd) {
+    $messageBase = $messageEnd;
+    $flopSymbol = true;
+  }
+  elseif ($messageStart) {
+    $messageBase = $messageStart;
+  }
 
   exec(hook('archiveResultsStart'));
 
   if (!$room) {
-    trigger_error($phrase['chatRoomDoesNotExist'],E_USER_ERROR);
+    trigger_error($phrase['chatRoomDEndoesNotExist'],E_USER_ERROR);
   }
 
   elseif (!hasPermission($room,$user,'view')) { // Gotta make sure the user can view that room.
@@ -63,35 +75,80 @@ else {
   }
 
   else {
-    if ((($user['settings'] & 16) || in_array($user['userid'],explode(',',$room['moderators'])) || $user['userid'] == $room['owner']) && (($room['options'] & 32) == false)) $canModerate = true; // The user /can/ moderate if they are a mod of the room, the room's owner, or an admin. If the room is disabled from moderation ($room['options'] & 32), then you still can't edit it.
-
-    $total = sqlArr("SELECT COUNT(id) AS total FROM {$sqlPrefix}messages WHERE user IN (SELECT userid FROM user) AND room = $roomid" . ($user['settings'] & 16 == false ? "AND deleted != true" : '') . ($userIDs ? " AND user IN ($userIDs)" : '')); // Get the total number of messages that exist for the query coniditons.
-    $totalPages = ceil($total['total'] / $limit); // Determine how many pages this should be divided into.
-    for ($a = 0; $a <= $totalPages; $a++) { // Create the jump list for the pages.
-      $b = ($a+1);
-      $jumpList .= "<option value=\"$b\"" . ($b == $page ? ' selected="selected"':'') . ">$b</option>
-";
+    if ((($user['settings'] & 16) || in_array($user['userid'],explode(',',$room['moderators'])) || $user['userid'] == $room['owner']) && (($room['options'] & 32) == false)) {
+      $canModerate = true; // The user /can/ moderate if they are a mod of the room, the room's owner, or an admin. If the room is disabled from moderation ($room['options'] & 32), then you still can't edit it.
     }
 
-    if ($messageStart) {
-      if ($order == "DESC") $whereHook = " AND m.id <= $messageStart";
-      else $whereHook = " AND m.id >= $messageStart";
+    if ($messageBase) {
+      if ($order == "DESC") {
+        if ($flopSymbol) {
+          $sym = '>';
+          $order = "ASC";
+          $flopResults = true;
+        }
+        else {
+          $sym = '<';
+        }
 
-      $limitHook = "LIMIT $limit";
-    }
-    else {
-      $limitHook = "LIMIT $limit OFFSET $offset";
-    }
+        $whereHook = " AND m.id $sym= $messageBase";
+      }
+      else {
+        if ($flopSymbol) {
+          $sym = '<';
+          $order = "DESC";
+          $flopResults = true;
+        }
+        else {
+          $sym = '>';
+        }
 
+        $whereHook = " AND m.id $sym= $messageBase";
+      }
+    }
 
     exec(hook('archiveResultsPreprocess'));
 
-    $messages = sqlArr("SELECT m.id, UNIX_TIMESTAMP(m.time) AS time, m.rawText, m.htmlText, m.deleted, m.salt, m.iv, u.userid, u.username, vu.settings, vu.defaultColour, vu.defaultFontface, vu.defaultHighlight, vu.defaultFormatting, u.displaygroupid FROM {$sqlPrefix}messages AS m, {$sqlPrefix}users AS vu, user AS u WHERE room = $roomid " . ($user['settings'] & 16 == false ? "AND deleted != true" : '') . " AND m.user = u.userid AND u.userid = vu.userid " . ($userIDs ? " AND user IN ($userIDs)" : '') . " $whereHook ORDER BY m.time $order $limitHook",'id'); // get the messages that should display.
+  $messages = sqlArr("SELECT m.id,
+  UNIX_TIMESTAMP(m.time) AS time,
+  m.htmlText,
+  m.deleted,
+  m.salt,
+  m.iv,
+  u.userid,
+  u.username,
+  vu.settings,
+  vu.defaultColour,
+  vu.defaultFontface,
+  vu.defaultHighlight,
+  vu.defaultFormatting,
+  u.displaygroupid
+FROM vrc_messages AS m
+  INNER JOIN vrc_users AS vu ON vu.userid = m.user
+  INNER JOIN user AS u ON u.userid = m.user
+WHERE m.room = $room[id]
+  " . ($user['settings'] & 16 == false ? "AND deleted != true" : '') . "
+  " . ($userIDs ? " AND user IN ($userIDs)" : '') . "
+  $whereHook
+ORDER BY m.id $order
+LIMIT $limit",'id');
+
+    if ($flopResults) {
+      $messages = array_reverse($messages);
+    }
 
     exec(hook('archiveResultsProcess'));
 
     if ($messages) {
       foreach ($messages AS $id => $message) {
+        if ($ordero == "DESC") {
+          if (!$messagePrev || $messagePrev < $message['id']) $messagePrev = $message['id'];
+          if (!$messageNext || $messageNext > $message['id']) $messageNext = $message['id'];
+        }
+        else {
+          if (!$messagePrev || $messagePrev > $message['id']) $messagePrev = $message['id'];
+          if (!$messageNext || $messageNext < $message['id']) $messageNext = $message['id'];
+        }
+
         exec(hook('archiveResultsProcessEachStart'));
 
         $message = vrim_decrypt($message);
@@ -161,27 +218,12 @@ echo container("$phrases[archiveTitle]: $room[name]","
   <input type=\"hidden\" name=\"roomid\" value=\"$_GET[roomid]\" />
   <input type=\"hidden\" name=\"oldfirst\" value=\"$_GET[oldfirst]\" />
   <input type=\"hidden\" name=\"userids\" value=\"$_GET[userids]\" />
-  <input type=\"hidden\" name=\"search\" value=\"$_GET[search]\" />
-  <label for=\"pagen\">$phrases[archivePageSelect]</label>
-  <select name=\"pagen\" id=\"pagen\">
-    $jumpList
-  </select><br />
-  <button type=\"submit\">$phrases[archiveSubmit]</button>
-</form><br /><br />
-<form method=\"get\" action=\"/archive.php\" style=\"text-align: center\">
-  <input type=\"hidden\" name=\"numresults\" value=\"$_GET[numresults]\" />
-  <input type=\"hidden\" name=\"roomid\" value=\"$_GET[roomid]\" />
-  <input type=\"hidden\" name=\"oldfirst\" value=\"$_GET[oldfirst]\" />
-  <input type=\"hidden\" name=\"userids\" value=\"$_GET[userids]\" />
-  <input type=\"hidden\" name=\"search\" value=\"$_GET[search]\" />
-  <input type=\"hidden\" name=\"pagen\" value=\"$_GET[pagen]\" />
-  <label for=\"pagen\">$phrases[archiveViewAs]</label>
+  <label for=\"format\">$phrases[archiveViewAs]</label>
   <select name=\"format\" id=\"format\">
     <option value=\"normal\">$phrases[archiveFormatHTML]</option>
     <option value=\"bbcode\">$phrases[archiveFormatBBCode]</option>$phrase[archiveFormatSelectHook]
-  </select><br />
-  <button type=\"submit\">$phrases[archiveSubmit]</button>
-</form>");
+  </select><br /><button type=\"submit\" name=\"messageEnd\" value=\"$messagePrev\"><< Previous</button>  <button type=\"submit\" name=\"messageStart\" value=\"$messageNext\">Next >></button>
+</form><br /><br />");
 
       echo $output2;
     }
