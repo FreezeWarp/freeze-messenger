@@ -399,3 +399,19 @@ div.jGrowl div.jGrowl-closer {
     display: none;
   }
 }
+
+table.leftright tr td:first-child {
+  text-align: left;
+}
+table.leftright tr td:last-child {
+  text-align: right;
+}
+table.leftright tr td[colspan='2'] {
+  text-align: center;
+}
+
+table.center {
+  margin-left: auto;
+  margin-right: auto;
+  display: table;
+}

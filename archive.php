@@ -41,7 +41,7 @@ if (!$_GET['roomid']) { // If no room ID is provided, then give the search form.
   echo container($phrases['archiveChooseSettings'],$phrases['archiveMessage'] . '<br /><br />
 
 <form action="/archive.php" method="get">
-<table class="leftright">
+<table class="leftright center">
   <tr>
     <td colspan="2">
       <select name="roomid" id="roomid">
@@ -52,7 +52,7 @@ if (!$_GET['roomid']) { // If no room ID is provided, then give the search form.
   <tr>
     <td>
       <label for="numresults">' . $phrases['archiveNumResultsLabel'] . '</label>
-    <td>
+    </td>
     <td>
       <select name="numresults" id="numresults">
         <option value="10">10</option><option value="20">20</option>
@@ -68,11 +68,15 @@ if (!$_GET['roomid']) { // If no room ID is provided, then give the search form.
     </td>
     <td>
       <input type="checkbox" name="oldfirst" id="oldfirst" value="true" />
-    <td>
+    </td>
   </tr>
   <tr>
-    <td><label for="userids">' . $phrases['archiveUserIdsLabel'] . '</label></td>
-    <td><input type="text" name="userids" id="userids"  /></td>
+    <td>
+      <label for="userids">' . $phrases['archiveUserIdsLabel'] . '</label>
+    </td>
+    <td>
+      <input type="text" name="userids" id="userids"  />
+    </td>
   </tr>
   <tr>
     <td colspan="2">
