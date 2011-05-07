@@ -38,17 +38,19 @@ if ($keywords) {
   $keyWordString .= ", $keywords";
 }
 
+$mode = ($_GET['mode'] ?: $_COOKIE['mode']);
 
-if ($_REQUEST['mode'] == 'light' || $_REQUESt['mode'] == 'mobile') {
+if ($mode == 'light' || $mode == 'mobile') {
   $bodyHook .= ' data-mode="light"';
   $styleHook .= "<link rel=\"stylesheet\" type=\"text/css\" href=\"client/css/stylesv2Mobile.css\" media=\"screen,handheld\" />";
   $light = true;
+
+  setcookie('mode',$mode);
 }
 else {
   $light = false;
 }
 
-$mode = $_GET['mode'];
 
 /*** Start ***/
 
@@ -95,6 +97,6 @@ if ($user['favRooms']) {
   eval(hook('templateFavRoomsEnd'));
 }
 
-
-echo template('templateStart');
+if ($mode == 'mobile' && !$showMobileMenus) {}
+else {  echo template('templateStart'); }
 ?>
