@@ -146,9 +146,9 @@ function vrim_decrypt($message,$index = false) {
       }
     }
     else {
-      $message['vbText'] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message['vbText']), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
-      $message['htmlText'] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message['htmlText']), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
-      $message['rawText'] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message['rawText']), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
+      if ($message['apiText']) $message['apiText'] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message['apiText']), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
+      if ($message['htmlText']) $message['htmlText'] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message['htmlText']), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
+      if ($message['rawText']) $message['rawText'] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message['rawText']), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
     }
   }
 

@@ -8,9 +8,9 @@ $sqlPrefix = ''; // The Prefix of all MySQL Tables, excluding those of vBulletin
 
 ///* Forum Integration *///
 $loginMethod = 'vbulletin'; // The product used for login. Currently only "vbulletin3.8" is supported.
-$installLoc = '/var/www/vrim.victoryroad.net/htdocs/'; // The server location that the product is installed (global.php should be placed in this directory). This is not neccissarly needed, but is required if uploads are made to the server.
-$installUrl = 'http://vrim.victoryroad.net/'; // The web accessible equivilent of the above path.
-$forumUrl = 'http://www.victoryroad.net/'; // The URL of the forum being used.
+$installLoc = ''; // The server location that the product is installed (global.php should be placed in this directory). This is not neccissarly needed, but is required if uploads are made to the server.
+$installUrl = ''; // The web accessible equivilent of the above path.
+$forumUrl = ''; // The URL of the forum being used.
 
 $forumCookieSalt = ''; // The cookie salt used with vBulletin
 $forumTablePrefix = ''; // The table prefix of all forum tables.
@@ -59,4 +59,6 @@ $bbcode = array( // Enable & Disable BBCode.
 
 $parseFlags = true; // Messages sent under certain conditions will contain flags corrosponding to certain message data, like "video". Using this paramater, these messages will only contain the specific parameter and not the extra BBcode. This can be useful for certain APIs, data cleanliness, and so-on, but can also mean extra CPU cycles and incompatibility with older software, and also disables encryption for messages with parse flags. *DO NOT CHANGE THIS SETTING AFTER INITIAL SETUP*
 
+$enableForeignApi = true;
+$insecureApi = true;
 ?>

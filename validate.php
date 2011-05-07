@@ -65,7 +65,25 @@ function realIp() { // vBulletin Function
 require_once('global.php');
 
 
-
+if ($apiRequest) {
+  if (strstr($_SERVER['HTTP_REFERER'],$installUrl)) {
+    $apiRequestCheck = false;
+  }
+  else {
+    if (!$enableForeignApi) {
+      die('Foreign API Disabled');
+    }
+    elseif ($insecureApi) {
+      $apiRequestCheck = false;
+    }
+    else {
+      $apiRequestCheck = true;
+    }
+  }
+}
+else {
+  $apiRequestCheck = false;
+}
 
 
 
@@ -161,14 +179,14 @@ elseif (isset($_GET['sessionhash'])) {
   $password = false;
 }
 
-elseif (isset($_COOKIE[$forumCookiePrefix . 'sessionhash']) && !$apiRequest) { // Data is stored in session cookie.
+elseif (isset($_COOKIE[$forumCookiePrefix . 'sessionhash']) && !$apiRequestCheck) { // Data is stored in session cookie.
   $sessionHash = vrim_urldecode($_COOKIE[$forumCookiePrefix . 'sessionhash']);
 
   $username = false;
   $password = false;
 }
 
-elseif (isset($_COOKIE[$forumCookiePrefix . 'userid'],$_COOKIE[$forumCookiePrefix . 'password']) && !$apiRequest) { // Data is stored in long-lasting cookies.
+elseif (isset($_COOKIE[$forumCookiePrefix . 'userid'],$_COOKIE[$forumCookiePrefix . 'password']) && !$apiRequestCheck) { // Data is stored in long-lasting cookies.
   $userid = intval($_COOKIE[$forumCookiePrefix . 'userid']);
   $passwordVBulletin = $_COOKIE[$forumCookiePrefix . 'password'];
 }
@@ -417,7 +435,7 @@ if ($api) {
 ";
   die();
 }
-elseif (!$valid && !$noReqLogin) {
+elseif (!$valid && !$noReqLogin && !$apiRequest) {
   header('Location: login.php');
 }
 elseif ($valid) {
