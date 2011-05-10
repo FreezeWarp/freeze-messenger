@@ -15,7 +15,6 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 $apiRequest = true;
-
 require_once('../global.php');
 header('Content-type: text/xml');
 
@@ -39,17 +38,19 @@ $messageStart = intval($_GET['messageIdStart']); // INT
 $watchRooms = intval($_GET['watchRooms']); // BOOL
 $activeUsers = intval($_GET['activeUsers']); // BOOL
 $archive = intval($_GET['archive']); // BOOL
+$noPing = intval($_GET['noping']); // BOOL
+
 $encode = ($_GET['encode']); // String - 'base64', 'plaintext'
-$fields = ($_GET['fields']); // String - 'api', 'html', or 'both'
+$fields = ($_GET['messageFields']); // String - 'api', 'html', or 'both'
 
 
 $onlineThreshold = intval($_GET['onlineThreshold'] ?: $onlineThreshold); // INT - Only if activeUsers = TRUE
 
-if ($_GET['maxMessages'] == '0') {
+if ($_GET['messageLimit'] == '0') {
   $messageLimit = 500; // Sane maximum.
 }
 else {
-  $messageLimit = ($_GET['maxMessages'] ? intval($_GET['maxMessages']) : ($messageLimit ? $messageLimit : 40));
+  $messageLimit = ($_GET['messageLimit'] ? intval($_GET['messageLimit']) : ($messageLimit ? $messageLimit : 40));
   if ($messageLimit > 500) $messageLimit = 500; // Sane maximum.
 }
 
@@ -58,19 +59,16 @@ else {
 
 ///* Query Filter Generation *///
 
-if ($newestMessage) $whereClause .= "AND m.id < $newestMessage ";
-if ($oldestMessage) $whereClause .= "AND m.id > $oldestMessage ";
+if ($newestMessage) $whereClause .= "AND m.messageid < $newestMessage ";
+if ($oldestMessage) $whereClause .= "AND m.messageid > $oldestMessage ";
 if ($newestdate) $whereClause .= "AND m.date < $newestdate ";
 if ($oldestdate) $whereClause .= "AND m.date > $oldestdate ";
 if (!$whereClause && $messageStart) {
-  echo $whereClause .= "AND m.id > $messageStart AND m.id < " . ($messageStart + $messageLimit);
+  $whereClause .= "AND m.messageid > $messageStart AND m.messageid < " . ($messageStart + $messageLimit);
 }
 
 
-
-
 ///* Error Checking *///
-
 if (!$rooms) {
   $failCode = 'badroomsrequest';
   $failMessage = 'The room string was not supplied or evaluated to false.';
@@ -92,12 +90,12 @@ else {
       if (!hasPermission($room,$user)) { } // Gotta make sure the user can view that room.
       else {
 
-        if (!$_GET['noping']) {
+        if (!$noPing) {
           mysqlQuery("INSERT INTO {$sqlPrefix}ping (userid,roomid,time) VALUES ($user[userid],$room[id],CURRENT_TIMESTAMP()) ON DUPLICATE KEY UPDATE time = CURRENT_TIMESTAMP()");
         }
 
-        switch ($_GET['fields']) {
-          case 'both': $messageFields = 'm.apiText AS apiText, m.htmlText AS htmlText,'; break;
+        switch ($fields) {
+          case 'both': case '': $messageFields = 'm.apiText AS apiText, m.htmlText AS htmlText,'; break;
           case 'api': $messageFields = 'm.apiText AS apiText,'; break;
           case 'html': $messageFields = 'm.htmlText AS htmlText,'; break;
           default:
@@ -133,8 +131,7 @@ LIMIT $messageLimit",'id');
 
         }
         else {
-
-          $messages = sqlArr("SELECT m.messageid AS id,
+          $messages = sqlArr("SELECT m.messageid,
   UNIX_TIMESTAMP(m.time) AS time,
   $messageFields
   m.userid AS userid,
@@ -143,7 +140,7 @@ LIMIT $messageLimit",'id');
   m.flag AS flag,
   u2.settings AS usersettings,
   u2.defaultColour AS defaultColour,
-  u2.defaultFontface AS defaultFontface 
+  u2.defaultFontface AS defaultFontface,
   u2.defaultHighlight AS defaultHighlight,
   u2.defaultFormatting AS defaultFormatting
 FROM {$sqlPrefix}messagesCached AS m,
@@ -152,12 +149,14 @@ WHERE m.roomid = $room[id]
   AND m.userid = u2.userid
 $whereClause
 ORDER BY m.id DESC
-LIMIT $messageLimit",'id');
-
+LIMIT $messageLimit",'messageid');
         }
 
         if ($messages) {
-          if ($_GET['order'] == 'reverse') $messages = array_reverse($messages);
+          if ($_GET['order'] == 'reverse') {
+            $messages = array_reverse($messages);
+          }
+
           foreach ($messages AS $id => $message) {
             $message = vrim_decrypt($message);
 
@@ -172,7 +171,6 @@ LIMIT $messageLimit",'id');
               break;
             }
 
-            $message['displaygroupid'] = displayGroupToColour($message['displaygroupid']);
             $messageXML .=  "    <message>
       <roomdata>
         <roomid>$room[id]</roomid>
@@ -180,8 +178,9 @@ LIMIT $messageLimit",'id');
         <roomtopic>$room[title]</roomtopic>
       </roomdata>
       <messagedata>
-        <messageid>$message[id]</messageid>
+        <messageid>$message[messageid]</messageid>
         <messagetime>$message[time]</messagetime>
+        <messagetimeformatted>" . vbdate(false,$message['time']) . "</messagetimeformatted>
         <messagetext>
           <apptext>$message[apiText]</apptext>
           <htmltext>$message[htmlText]</htmltext>
@@ -205,14 +204,14 @@ LIMIT $messageLimit",'id');
 
         ///* Process Active Users
         if ($activeUsers) {
-  $ausers = sqlArr("SELECT u.{$sqlUsernameCol} AS username,
-  u.{$sqlUseridCol} AS userid,
-  u.{$sqlUsergroupCol} AS displaygroupid,
+  $ausers = sqlArr("SELECT u.{$sqlUserTableCols[username]} AS username,
+  u.{$sqlUserTableCols[userid]} AS userid,
+  u.{$sqlUserTableCols[usergroup]} AS displaygroupid,
   p.status,
   p.typing
-FROM {$sqlPrefix}ping AS p
-  {$sqlUserTable} AS u,
-WHERE p.roomid IN  $room[id]
+FROM {$sqlPrefix}ping AS p,
+  {$sqlUserTable} AS u
+WHERE p.roomid IN ($room[id])
   AND p.userid = u.userid
   AND UNIX_TIMESTAMP(p.time) >= (UNIX_TIMESTAMP(NOW()) - $onlineThreshold)
 ORDER BY u.username
@@ -221,10 +220,9 @@ LIMIT 500",'userid');
   if ($ausers) {
     foreach ($ausers AS $user) {
         $ausersXML .= "      <user>
-        <username>$message[username]</username>
-        <userid>$message[userid]</userid>
-        <displaygroupid>$message[displaygroupid]</displaygroupid>
-        <displaygroupcolor>" . displayGroupToColour($message['displaygroupid']) . "</displaygroupcolor>
+        <username>$user[username]</username>
+        <userid>$user[userid]</userid>
+        <displaygroupid>$user[displaygroupid]</displaygroupid>
       </user>
 ";
       }

@@ -319,7 +319,8 @@ function sendMessage($messageText,$user,$room,$flag = '') {
   $messageHtmlCache = mysqlEscape($messageHtmlCache);
   $messageApi = mysqlEscape($messageApi);
 
-  mysqlQuery("INSERT INTO {$sqlPrefix}messages (user, room, rawText, htmlText, vbText, salt, iv, microtime, ip, flag) VALUES ($user[userid], $room[id], '$messageRaw', '$messageHtml', '$messageApi', '$saltNum', '$iv', '" . microtime(true) . "', '$ip', '$flag')");
+
+  mysqlQuery("INSERT INTO {$sqlPrefix}messages (user, room, rawText, htmlText, apiText, salt, iv, microtime, ip, flag) VALUES ($user[userid], $room[id], '$messageRaw', '$messageHtml', '$messageApi', '$saltNum', '$iv', '" . microtime(true) . "', '$ip', '$flag')");
   $messageid = mysqlInsertId();
 
   mysqlQuery("INSERT INTO {$sqlPrefix}messagesCached (messageid, roomid, userid, username, usergroup, time, htmlText, flag) VALUES ($messageid, $room[id], $user[userid], '$user[username]', $user[displaygroupid], NOW(), '$messageHtmlCache', '$flag')");

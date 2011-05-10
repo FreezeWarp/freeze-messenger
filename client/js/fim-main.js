@@ -21,14 +21,14 @@ var totalFails2 = 0;
 var timeout2 = 4900;
 var timer3;
 var topic;
-var lastMessage;
+var lastMessage = 0;
 var messages;
 var activeUsers;
-var ding = ($('body').attr('data-ding') === '1' ? true : false);
-var reverse = ($('body').attr('data-reverse') === '1' ? true : false);
-var light = ($('body').attr('data-mode') === 'light' ? true : false);
-var soundOn = (ding ? true : false);
-
+var soundOn = ($('body').attr('data-ding') === '1' ? true : false);
+var reverse = ($('body').attr('data-reverse') === '1' ? 1 : 0);
+var light = ($('body').attr('data-mode') === 'light' ? 1 : 0);
+var complex = ($('body').attr('data-complex') === '1' ? 1 : 0);
+var forumUrl = 'http://www.victoryroad.net/';
 
 
 
@@ -52,6 +52,7 @@ function faviconFlash() {
   }
 }
 
+
 /* AJAX functions */
 function updatePosts() {
   window.clearInterval(window.timer1);
@@ -64,33 +65,34 @@ function updatePosts() {
   }
 
   $.ajax({
-    url: '/ajax/fim-main.php?room=' + roomid + '&lastMessage=' + lastMessage + '&reverse=' + (reverse ? 1 : 0) + '&encrypt=' + encrypt,
+//    url: '/ajax/fim-main.php?room=' + roomid + '&lastMessage=' + lastMessage + '&reverse=' + (reverse ? 1 : 0) + '&encrypt=' + encrypt,
+    url: '/api/getMessages.php?rooms=' + roomid + '&messageIdMin=' + (lastMessage) + '&messageLimit=40&watchRooms=1&activeUsers=1&order=' + (reverse ? 'reverse' : 'normal'),
     type: 'GET',
     timeout: timeout,
     cache: false,
-    success: function(html) {
-      if (html) {
-      totalFails = 0;
-      eval(html);
+    success: function(xml) {
+      if (xml) {
+        totalFails = 0;
 
-      $('#refreshStatus').html('<img src="/images/dialog-ok.png" alt="Apply" class="standard" />');
+        $('#refreshStatus').html('<img src="/images/dialog-ok.png" alt="Apply" class="standard" />');
 
-      if (topic) {
-        if (!light) {
-          topic = base64_decode(topic);
+        var newTopic = $(xml).find('topic').html();
+        if (newTopic) {
+          $('#topic' + roomid).html(newTopic);
         }
-        $('#topic' + roomid).html(topic);
+
+
+        $('#activeUsers').html('');
+        $(xml).find('activeUsers > user').each(function() {
+          var username = $(this).find('username').text();
+          var userid = $(this).find('userid').text();
+          var displaygroupid = $(this).find('displaygroupid').text();
+
+          $('#activeUsers').append('<span class="username" data-userid="' + userid + '">' + username + '</span>');
+        });
       }
 
-      if (activeUsers) {
-        if (!light) {
-          activeUsers = base64_decode(activeUsers)
-        }
-        
-        $('#activeUsers').html(activeUsers);
-      }
-
-      if (messages) {
+      if ($(xml).find('messages > message').length > 0) {
         if (!light) {
           if (blur && soundOn) {
             window.beep();
@@ -107,14 +109,28 @@ function updatePosts() {
               // Supress Error
             }
           }
-          messages = base64_decode(messages);
-        }
+          
+          
+          $(xml).find('messages > message').each(function() {
+            var text = $(this).find('htmltext').text();
+            var messageTime = $(this).find('messagetimeformatted').text();
+          
+            var messageId = $(this).find('messageid').text();
 
-        if (reverse) {
-          $('#messageList').append(messages);
-        }
-        else {
-          $('#messageList').prepend(messages);
+            var username = $(this).find('userdata > username').text();
+            var userid = $(this).find('userdata > userid').text();
+
+            if (complex) {
+              $('#messageList').append('<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="" src="' + forumUrl + 'image.php?u=' + userid + '" style="max-width: 32px; max-height: 32px; padding-right: 3px;" class="username usernameTable" data-userid="' + userid + '" time="' + messageTime + '" /><span style="padding: 2px;" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />');
+            }
+            else {
+              $('#messageList').append('<span id="message' + messageId + '" class="messageLine"><span class="username usernameTable" data-userid="' + userid + '">' + username + '</span> @ <em>' + messageTime + '</em>: <span style="padding: 2px;" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />');
+            }
+          
+            if (messageId > lastMessage) {
+              lastMessage = messageId;
+            }
+          });
         }
 
         if (reverse) {
@@ -124,11 +140,6 @@ function updatePosts() {
         if (typeof contextMenuParse === 'function') {
           contextMenuParse();
         }
-      }
-
-      messages = '';
-      topic = '';
-      activeUsers = '';
       }
     },
     error: function(html) {
@@ -160,17 +171,45 @@ function sendMessage(message,confirmed) {
   confirmed = (confirmed === 1 ? 1 : '');
 
   $.ajax({
-    url: '/ajax/fim-sendMessage.php',
-    type: 'POST',
+    url: '/api/sendMessage.php?roomid=' + roomid + '&confirmed=' + confirmed + '&message=' + str_replace('+','%2b',str_replace('&','%26',str_replace('%','%25',message))),
+    type: 'GET',
     cache: false,
     timeout: 2500,
-    data: 'room=' + roomid + '&confirmed=' + confirmed + '&message=' + str_replace('+','%2b',str_replace('&','%26',str_replace('%','%25',message))),
-    success: function(html) {
-      if (html === 'success') {
+    success: function(xml) {
+      var status = $(xml).find('errorcode').text();
+      var emessage = $(xml).find('errormessage').text();
+      switch (status) {
+        case '':
         updatePosts();
+        break;
+        
+        case 'badroom':
+        $('<div style="display: none;">A valid room was not provided.</div>').dialog({ title : 'Error'});
+        break;
+        
+        case 'badmessage':
+        $('<div style="display: none;">A valid message was not provided.</div>').dialog({ title : 'Error'});
+        break;
+        
+        case 'spacemessage':
+        $('<div style="display: none;">Too... many... spaces!</div>').dialog({ title : 'Error'});
+        break;
+        
+        case 'noperm':
+        $('<div style="display: none;">You do not have permission to post in this room.</div>').dialog({ title : 'Error'});
+        break;
+        
+        case 'blockcensor':
+        $('<div style="display: none;">' + emessage + '</div>').dialog({ title : 'Error'});
+        break;
+        
+        case 'confirmcensor':
+        $('<div style="display: none;">' + emessage + '<br /><br /><button type="button" onclick="$(this).parent().dialog(&apos;close&apos;);">No</button><button type="button" onclick="sendMessage(&apos;' + escape(message) + '&apos;,1); $(this).parent().dialog(&apos;close&apos;);">Yes</button></div>').dialog({ title : 'Error'});
+        break;
+      }
+      if (html === 'success') {
       }
       else {
-        $('<div style="display: none;">' + html + '</div>').dialog({ title : 'Error'});
       }
     },
     error: function() {
@@ -207,7 +246,7 @@ callbackFunction = function(response) {
       html += '<tr>';
     }
 
-    html += '<td><img src="http://i2.ytimg.com/vi/' + video.videoId + '/default.jpg" style="width: 80px; height: 60px;" /><br /><small><a href="javascript: void(0);" onclick="youtubeSend(\'' + video.videoId + '\')">' + video.title + '</a></small></td>';
+    html += '<td><img src="http://i2.ytimg.com/vi/' + video.videoId + '/default.jpg" style="width: 80px; height: 60px;" /><br /><small><a href="javascript: void(0);" onclick="youtubeSend(&apos;' + video.videoId + '&apos;)">' + video.title + '</a></small></td>';
 
     if (num % 3 === 0) {
       html += '</tr>';

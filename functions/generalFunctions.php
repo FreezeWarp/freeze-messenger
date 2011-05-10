@@ -26,85 +26,189 @@ function inArray($needle,$haystack) {
 function hasPermission($roomData,$userData,$type = 'post') { // The below permissions are very hierachle.
   global $sqlPrefix, $banned;
 
+  /* Make sure all presented data is correct. */
   if (!$roomData['id']) {
     return false;
   }
 
+  /* Get the User's Kick Status */
   if ($userData['userid']) {
     $kick = sqlArr("SELECT * FROM {$sqlPrefix}kick WHERE userid = $userData[userid] AND room = $roomData[id] AND UNIX_TIMESTAMP(NOW()) <= (UNIX_TIMESTAMP(time) + length)");
   }
 
+
+  if ((in_array($userData['userid'],explode(',',$roomData['allowedUsers']))
+    || $roomData['allowedUsers'] == '*')
+  && $roomData['allowedUsers']) {
+    $isAllowedUser = true;
+  }
+
+  if (in_array($userData['userid'],explode(',',$roomData['moderators']))
+  && $roomData['moderators']) {
+    $isModerator = true; // The user is one of the chat moderators (and it is not deleted).
+  }
+
+  if ((inArray(explode(',',$userData['membergroupids']),explode(',',$roomData['allowedGroups']))
+    || $roomData['allowedGroups'] == '*')
+  && $roomData['allowedGroups']) {
+    $isAllowedGroup = true;
+  }
+
+  if ($roomData['owner'] == $userData['userid'] && $roomData['owner'] > 0) {
+    $isOwner = true;
+  }
+
+  if ($roomData['options'] & 4) {
+    $isRoomDeleted = false; // The room is deleted.
+  }
+
+  if ($roomData['options'] & 16) {
+    $isRoomPrivate = true;
+  }
+
+  if ($userData['options'] & 16) {
+    $isAdmin = true;
+  }
+
   switch ($type) {
     case 'post':
-    if ($banned) $roomValid = false; // The user is banned.
-    elseif (($userData['settings'] & 16) && (($roomData['options'] & 16) == false)) $roomValid = true; // The user is an admin.
-    elseif ($roomData['options'] & 4) $roomValid = false; // The room is deleted.
-    elseif ($roomData['owner'] == $userData['userid'] && $roomData['owner'] > 0)  $roomValid = true; // The users owns the room (and it is not deleted).
-    elseif (in_array($userData['userid'],explode(',',$roomData['moderators'])) && $roomData['moderators']) $roomValid = true; // The user is one of the chat moderators (and it is not deleted).
-    elseif ($kick['id']) $roomValid = false;
-    elseif ((in_array($userData['userid'],explode(',',$roomData['allowedUsers'])) || $roomData['allowedUsers'] == '*') && $roomData['allowedUsers']) $roomValid = true; // The user is in the allowed users column (and it is not deleted).
-    elseif ((inArray(explode(',',$userData['membergroupids']),explode(',',$roomData['allowedGroups'])) || $roomData['allowedGroups'] == '*') && $roomData['allowedGroups']) $roomValid = true; // The user is a part of a group that is in the allowed groups (and it is not deleted).
-    else $roomValid = false; // The user is not allowed either via being an owner, moderator (for the chat itself or the forums),
+    if ($banned) {
+      $roomValid = false;
+      $reason = 'banned';
+    }
+    elseif ($kick['id']) {
+      $roomValid = false;
+      $reason = 'kicked';
+    }
+    elseif ($isAdmin && !$isPrivateRoom) {
+      $roomValid = true;
+    }
+    elseif ($isRoomDeleted) {
+      $roomValid = false;
+      $reason = 'deleted';
+    }
+    elseif ($isAllowedUser || $isAllowedGroup || $isOwner) {
+      $roomValid = true;
+    }
+    else {
+      $roomValid = false;
+      $reason = 'general';
+    }
     break;
 
     case 'view':
-    if (($userData['settings'] & 16) && (($roomData['options'] & 16) == false)) $roomValid = true; // The user is an admin.
-    elseif ($roomData['owner'] == $userData['userid'] && $roomData['owner'] > 0) $roomValid = true; // The users owns the room.
-    elseif ($roomData['options'] & 4) $roomValid = false; // The room is deleted.
-    elseif ((in_array($userData['userid'],explode(',',$roomData['moderators']))) && $roomData['moderators']) $roomValid = true; // The user is one of the chat moderators (and it is not deleted).
-    //elseif ($kick['id']) $roomValid = false;
-    elseif ((in_array($userData['userid'],explode(',',$roomData['allowedUsers'])) || $roomData['allowedUsers'] == '*') && $roomData['allowedUsers']) $roomValid = true; // The user is in the allowed users column (and it is not deleted).
-    elseif ((inArray(explode(',',$userData['membergroupids']),explode(',',$roomData['allowedGroups'])) || $roomData['allowedGroups'] == '*') && $roomData['allowedGroups']) $roomValid = true; // The user is a part of a group that is in the allowed groups (and it is not deleted).
-    else $roomValid = false; // The user is not allowed either via being an owner, moderator (for the chat itself or the forums),
+    if ($isAdmin && !$isPrivateRoom) {
+      $roomValid = true;
+    }
+    elseif ($isRoomDeleted) {
+      $roomValid = false;
+      $reason = 'deleted';
+    }
+    elseif ($isAllowedUser || $isAllowedGroup || $isOwner) {
+      $roomValid = true;
+    }
+    else {
+      $roomValid = false;
+      $reason = 'general';
+    }
     break;
 
     case 'moderate':
-    if ($banned) $roomValid = false; // The user is banned.
-    elseif (($userData['settings'] & 16) && (($roomData['options'] & 16) == false)) $roomValid = true; // The user is an admin.
-    elseif ($roomData['owner'] == $userData['userid'] && $roomData['owner'] > 0)  $roomValid = true; // The users owns the room (and it is not deleted).
-    elseif (in_array($userData['userid'],explode(',',$roomData['moderators'])) && $roomData['moderators']) $roomValid = true; // The user is one of the chat moderators (and it is not deleted).
-    else $roomValid = false; // The user is not allowed either via being an owner, moderator (for the chat itself or the forums),
+    if ($banned) {
+      $roomValid = false;
+      $reason = 'banned';
+    }
+    elseif ($kick['id']) {
+      $roomValid = false;
+      $reason = 'kicked';
+    }
+    elseif ($isPrivateRoom) {
+      $roomValid = false;
+      $reason = 'private';
+    }
+    elseif ($isOwner || $isModerator || $isAdmin) {
+      $roomValid = true;
+    }
+    else {
+      $roomValid = false;
+      $reason = 'general';
+    }
     break;
 
     case 'admin':
-    if ($banned) $roomValid = false; // The user is banned.
-    elseif (($userData['settings'] & 16) && (($roomData['options'] & 16) == false)) $roomValid = true; // The user is an admin.
-    elseif ($roomData['owner'] == $userData['userid'] && $roomData['owner'] > 0) $roomValid = true; // The user owns the room (and it is not deleted).
-    else $roomValid = false; // The user is not allowed either via being an owner, moderator (for the chat itself or the forums),
+    if ($banned) {
+      $roomValid = false;
+      $reason = 'banned';
+    }
+    elseif ($kick['id']) {
+      $roomValid = false;
+      $reason = 'kicked';
+    }
+    elseif ($isPrivateRoom) {
+      $roomValid = false;
+      $reason = 'private';
+    }
+    elseif ($isAdmin) {
+      $roomValid = true;
+    }
+    else {
+      $roomValid = false;
+      $reason = 'general';
+    }
     break;
 
     case 'know':
-    if ($userData['settings'] & 16) $roomValid = true; // The user is an admin.
-    elseif ($roomData['owner'] == $userData['userid'] && $roomData['owner'] > 0)  $roomValid = true; // The users owns the room.
-    elseif ((in_array($userData['userid'],explode(',',$roomData['moderators']))) && $roomData['moderators']) $roomValid = true; // The user is one of the chat moderators.
-    elseif ((in_array($userData['userid'],explode(',',$roomData['allowedUsers'])) || $roomData['allowedUsers'] == '*') && $roomData['allowedUsers']) $roomValid = true; // The user is in the allowed users column (and it is not deleted).
-    elseif ((inArray(explode(',',$userData['membergroupids']),explode(',',$roomData['allowedGroups'])) || $roomData['allowedGroups'] == '*') && $roomData['allowedGroups']) $roomValid = true; // The user is a part of a group that is in the allowed groups (and it is not deleted).
-    else $roomValid = false; // The user is not allowed either via being an owner, moderator (for the chat itself or the forums),
+    if ($banned) {
+      $roomValid = false;
+      $reason = 'banned';
+    }
+    elseif ($kick['id']) {
+      $roomValid = false;
+      $reason = 'kicked';
+    }
+    elseif ($isAdmin) {
+      $roomValid = true;
+    }
+    elseif ($isRoomDeleted) {
+      $roomValid = false;
+      $reason = 'deleted';
+    }
+    elseif ($isAllowedUser || $isAllowedGroup || $isOwner) {
+      $roomValid = true;
+    }
+    else {
+      $roomValid = false;
+      $reason = 'general';
+    }
     break;
   }
 
   return $roomValid;
 }
 
-function displayGroupToColour($id) {
-  switch ($id) {
-    case 5: return '0,170,0'; break;
-    case 6: return '170,0,0'; break;
-    case 7: return '0,0,255'; break;
-    case 23: return '255,140,0'; break;
-    case 24: return '255,140,0'; break;
-    case 25: return '0,127,127'; break;
-    case 30: return '255,0,0'; break;
-    case 36: return '170,0,170'; break;
-  }
-}
-
 function userFormat($message, $room, $messageTable = true) {
-  $colour = 'color: rgb(' . displayGroupToColour($message['displaygroupid']) . '); ';
-  $class = ($messageTable ? 'username usernameTable' : 'username');
-  if (in_array($message['userid'],explode(',',$room['moderators'])) || $message['usersettings'] & 16 || $message['userid'] == $room['owner']) $userAppend = '*';
+  global $loginMethod, $cachedUserGroups, $parseGroups, $sqlUserGroupTable, $sqlUserGroupTableCols, $permission;
 
-  return "<span style=\"{$colour}\" class=\"{$class}\" data-userid=\"$message[userid]\">$message[username]{$userAppend}</span>";
+  if ($message['displaygroupid'] && $parseGroups) { // The "parseGroups" toggle can be set in the configuration or will be set manually in validate.php whenever a login method doesn't use this token.
+    if (!$cachedUserGroups[$message['displaygroupid']]) {
+      switch ($loginMethod) {
+        case 'vbulletin':
+        $group = sqlArr("SELECT * FROM {$sqlUserGroupTable} WHERE {$sqlUserGroupTableCols[groupid]} = {$message[displaygroupid]}");
+        print_r($group);
+        break;
+      }
+
+      $cachedUserGroups[$message['displaygroupid']] = $group;
+    }
+
+    $openTag = $cachedUserGroups[$message['displaygroupid']]['openTag'];
+    $closeTag = $cachedUserGroups[$message['displaygroupid']]['openTag'];
+  }
+
+  $class = ($messageTable ? 'username usernameTable' : 'username');
+  if ($permission['isModerator'] || $permission['isAdmin'] || $permission['isOwner']) $userAppend = '*';
+
+  return "{$openTag}<span style=\"{$colour}\" class=\"{$class}\" data-userid=\"$message[userid]\">$message[username]{$userAppend}</span>{$closeTag}";
 }
 
 function messageStyle($message) {

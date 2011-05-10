@@ -297,19 +297,27 @@ if ($valid) { // If the user is valid, process their preferrences.
 
     /* Set Relevant Column Data */
     $sqlUserTable = 'user'; // The user table in the login method used.
-    $sqlUserIdCol = 'userid'; // The user ID column of the user table in the login method used.
-    $sqlUsernameCol = 'username'; // The username column of the user table in the login method used.
-    $sqlUsergroupCol = 'displaygroupid'; // The usergroup column of the user table in the login method used.
-    $sqlMembergroupCol = 'membergroupids';
-    $sqlUserTimezoneCol = 'timezoneoffset';
-    $sqlUserOptionsCol = 'options';
+    $sqlUserGroupTable = 'usergroup'; // The usergroup table in the login method used.
+
+    $sqlUserTableCols = array(
+      'userid' => 'userid', // The user ID column of the user table in the login method used.
+      'username' => 'username', // The username column of the user table in the login method used.
+      'usergroup' => 'displaygroupid', // The usergroup column of the user table in the login method used.
+      'allgroups' => 'membergroupids',
+      'tzoffset' => 'timezoneoffset',
+      'options' => 'options',
+    );
+    $sqlUserGroupTableCols = array(
+      'groupid' => 'usergroupid',
+    );
+    $parseGroups = true;
 
     /* Set Relevant User Data */
-    $user2['username'] = $userCopy[$sqlUsernameCol];
-    $user2['userid'] = $userCopy[$sqlUserIdCol];
-    $user2['timezoneoffset'] = $userCopy[$sqlUserTimezone];
-    $user2['displaygroupid'] = $userCopy[$sqlUsergroupCol];
-    $user2['membergroupids'] = $userCopy[$sqlMembergroupCol];
+    $user2['username'] = $userCopy[$sqlUserTableCols['username']];
+    $user2['userid'] = $userCopy[$sqlUserTableCols['userid']];
+    $user2['timezoneoffset'] = $userCopy[$sqlUserTableCols['tzoffset']];
+    $user2['displaygroupid'] = $userCopy[$sqlUserTableCols['usergroup']];
+    $user2['membergroupids'] = $userCopy[$sqlUserTableCols['allgroups']];
 
     if ($userCopy[$sqlUserOptionsCol] & 64) $user2['timezoneoffset']++; // DST is autodetect. We'll just set it by hand.
     elseif ($userCopy[$sqlUserOptionsCol] & 128) $user2['timezoneoffset']++; // DST is on, add an hour
@@ -440,6 +448,5 @@ elseif (!$valid && !$noReqLogin && !$apiRequest) {
 }
 elseif ($valid) {
   // Store Cookies
-  
 }
 ?>
