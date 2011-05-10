@@ -46,7 +46,7 @@ function contextMenuParse() {
       case 'delete':
       if (confirm('Are you sure you want to delete this message?')) {
         $.ajax({
-          url: '/ajax/fim-modAction.php?action=deletepost&postid=' + postid,
+          url: 'ajax/fim-modAction.php?action=deletepost&postid=' + postid,
           type: 'GET',
           cache: false,
           success: function() {
@@ -73,7 +73,7 @@ function contextMenuParse() {
       case 'delete':
       if (confirm('Are you sure you want to delete this room?')) {
         $.ajax({
-          url: '/ajax/fim-modAction.php?action=deleteroom&roomid=' + postid,
+          url: 'ajax/fim-modAction.php?action=deleteroom&roomid=' + postid,
           type: 'GET',
           cache: false,
           success: function() {
@@ -137,10 +137,27 @@ function contextMenuParse() {
 
       if (thisid != $('#tooltext').attr('data-lastuserid')) {
         $('#tooltext').attr('data-lastuserid',thisid);
-        $.get("ajax/fim-usernameHover.php?userid=" + thisid, function(html) {
-           content.html(html);
+        $.get("api/getUserInfo.php?userid=" + thisid, function(xml) {
+          var username = $(xml).find('userData > username').text();
+          var userid = $(xml).find('userData > userid').text();
+          var start_tag = unxml($(xml).find('userData > startTag').text());
+          var end_tag = unxml($(xml).find('userData > endTag').text());
+          var usertitle = $(xml).find('userData > usertitle').text();
+          var posts = $(xml).find('userData > postcount').text();
+          var joindate = $(xml).find('userData > joindateformatted').text();
+          
+          content.html('<div style="width: 400px;"><img alt="" src="' + forumUrl + 'image.php?u=' + userid + '" style="float: left;" /><span class="username" data-userid="' + userid + '">' + start_tag + username + end_tag + '</span><br />' + usertitle + '<br /><em>Posts</em>: ' + posts + '<br /><em>Member Since</em>: ' + joindate + '</div>');
         });
       }
     }
   });
+}
+
+function unxml(data) {
+  data = str_replace('&lt;','<',data);
+  data = str_replace('&gt;','>',data);
+  data = str_replace('&apos;',"'",data);
+  data = str_replace('&quot;','"',data);
+  
+  return data;
 }

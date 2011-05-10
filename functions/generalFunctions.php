@@ -409,7 +409,7 @@ function iifl($condition,$true,$false,$eval) {
 }
 
 function errorHandler($errno, $errstr, $errfile, $errline) {
-  global $lite;
+  global $lite, $apiRequest;
 
   $errorString = $errstr . ($_GET['showErrorsFull'] ? " on line $errline" : '');
 
@@ -436,6 +436,9 @@ function errorHandler($errno, $errstr, $errfile, $errline) {
       break;
     }
   }
+/*  elseif ($apiRequest) {
+    $warnings = '';
+  }*/
   else {
     switch ($errno) {
       case E_USER_ERROR:

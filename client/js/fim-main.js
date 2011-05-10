@@ -65,8 +65,7 @@ function updatePosts() {
   }
 
   $.ajax({
-//    url: '/ajax/fim-main.php?room=' + roomid + '&lastMessage=' + lastMessage + '&reverse=' + (reverse ? 1 : 0) + '&encrypt=' + encrypt,
-    url: '/api/getMessages.php?rooms=' + roomid + '&messageIdMin=' + (lastMessage) + '&messageLimit=40&watchRooms=1&activeUsers=1&order=' + (reverse ? 'reverse' : 'normal'),
+    url: 'api/getMessages.php?rooms=' + roomid + '&messageIdMin=' + (lastMessage) + '&messageLimit=40&watchRooms=1&activeUsers=1&order=' + (reverse ? 'reverse' : 'normal'),
     type: 'GET',
     timeout: timeout,
     cache: false,
@@ -120,11 +119,39 @@ function updatePosts() {
             var username = $(this).find('userdata > username').text();
             var userid = $(this).find('userdata > userid').text();
 
+            var styleColor = $(this).find('defaultFormatting > color').text();
+            var styleHighlight = $(this).find('defaultFormatting > highlight').text();
+            var styleFontface = $(this).find('defaultFormatting > fontface').text();
+            var styleGeneral = parseInt($(this).find('defaultFormatting > general').text());
+
+            var style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: "' + styleFontface + '";';
+
+            if (styleGeneral & 256) {
+              style += 'font-weight: bold;';
+            }
+            if (styleGeneral & 512) {
+              style += 'font-style: oblique;';
+            }
+            if (styleGeneral & 1024) {
+              style += 'text-decoration: underline;';
+            }
+            if (styleGeneral & 2048) {
+              style += 'text-decoration: line-through;';
+            }
+            
+            
             if (complex) {
-              $('#messageList').append('<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="" src="' + forumUrl + 'image.php?u=' + userid + '" style="max-width: 32px; max-height: 32px; padding-right: 3px;" class="username usernameTable" data-userid="' + userid + '" time="' + messageTime + '" /><span style="padding: 2px;" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />');
+              var data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="" src="' + forumUrl + 'image.php?u=' + userid + '" style="max-width: 32px; max-height: 32px; padding-right: 3px;" class="username usernameTable" data-userid="' + userid + '" time="' + messageTime + '" /><span style="padding: 2px;" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
             }
             else {
-              $('#messageList').append('<span id="message' + messageId + '" class="messageLine"><span class="username usernameTable" data-userid="' + userid + '">' + username + '</span> @ <em>' + messageTime + '</em>: <span style="padding: 2px;" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />');
+              var data = '<span id="message' + messageId + '" class="messageLine"><span class="username usernameTable" data-userid="' + userid + '">' + username + '</span> @ <em>' + messageTime + '</em>: <span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
+            }
+            
+            if (reverse) {
+              $('#messageList').append(data);
+            }
+            else {
+              $('#messageList').prepend(data);
             }
           
             if (messageId > lastMessage) {
@@ -171,7 +198,7 @@ function sendMessage(message,confirmed) {
   confirmed = (confirmed === 1 ? 1 : '');
 
   $.ajax({
-    url: '/api/sendMessage.php?roomid=' + roomid + '&confirmed=' + confirmed + '&message=' + str_replace('+','%2b',str_replace('&','%26',str_replace('%','%25',message))),
+    url: 'api/sendMessage.php?roomid=' + roomid + '&confirmed=' + confirmed + '&message=' + str_replace('+','%2b',str_replace('&','%26',str_replace('%','%25',message))),
     type: 'GET',
     cache: false,
     timeout: 2500,
@@ -206,10 +233,6 @@ function sendMessage(message,confirmed) {
         case 'confirmcensor':
         $('<div style="display: none;">' + emessage + '<br /><br /><button type="button" onclick="$(this).parent().dialog(&apos;close&apos;);">No</button><button type="button" onclick="sendMessage(&apos;' + escape(message) + '&apos;,1); $(this).parent().dialog(&apos;close&apos;);">Yes</button></div>').dialog({ title : 'Error'});
         break;
-      }
-      if (html === 'success') {
-      }
-      else {
       }
     },
     error: function() {

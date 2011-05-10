@@ -20,26 +20,27 @@ require_once('../global.php');
 header('Content-type: text/xml');
 
 $userid = intval($_GET['userid']);
-$username = mysqlEscape(vrim_urldecode($_GET['username']));
+//$username = mysqlEscape(vrim_urldecode($_GET['username']));
 
 if ($userid) {
-  $getuservb = sqlArr("SELECT * FROM user WHERE userid = $userid");
+  $where = "u.{$sqlUserTableCols[userid]} = $userid";
 }
 elseif ($username) {
-  $getuservb = sqlArr("SELECT * FROM user WHERE username = '$username'");
+  $where = "u.{$sqlUserTableCols[username]} = '$username'";
 }
 else {
   $failCode = 'nodata';
-  $failMessage = 'Neither a username or userid was privided.';
+  $failMessage = 'Neither a username or userid was provided.';
 }
 
-if ($getuservb) {
-  if ($user['userid'] > 0) {
-    $getuser = sqlArr("SELECT * FROM {$sqlPrefix}users WHERE userid = $getuservb[userid]");
-  }
-  else {
-    $failCode = 'logicerror';
-  }
+if ($where) {
+  $getuserf = sqlArr("SELECT * FROM {$sqlUserTable} AS u, {$sqlUserGroupTable} AS g WHERE {$where} AND u.{$sqlUserTableCols[usergroup]} = g.{$sqlUserGroupTableCols[groupid]}");
+  $getuserf['opentag'] = vrim_encodeXML($getuserf['opentag']);
+  $getuserf['closetag'] = vrim_encodeXML($getuserf['closetag']);
+}
+
+if ($getuserf) {
+  $getuser = sqlArr("SELECT * FROM {$sqlPrefix}users AS u WHERE userid = $getuserf[userid]");
 }
 
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
@@ -55,10 +56,16 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
   <errorcode>$failCode</errorcode>
   <errortext>$failMessage</errortext>
   <userData>
-    <userid>$geteuser[userid]</userid>
-    <username>$getuser[username]</username>
+    <userid>$getuser[userid]</userid>
+    <username>$getuserf[username]</username>
     <settings>$getuser[settings]</settings>
+    <startTag>$getuserf[opentag]</startTag>
+    <endTag>$getuserf[closetag]</endTag>
     <favRooms>$getuser[favRooms]</favRooms>
+    <postcount>$getuserf[posts]</postcount>
+    <joindate>$getuserf[joindate]</joindate>
+    <joindateformatted>" . vbdate(false,$getuserf['joindate']) . "</joindateformatted>
+    <usertitle>$getuserf[usertitle]</usertitle>
   </userData>
 </getUserInfo>";
 
