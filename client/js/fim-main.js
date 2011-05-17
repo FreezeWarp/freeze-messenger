@@ -26,10 +26,6 @@ var messages;
 var activeUsers;
 var soundOn = ($('body').attr('data-ding') === '1' ? true : false);
 var reverse = ($('body').attr('data-reverse') === '1' ? 1 : 0);
-var light = ($('body').attr('data-mode') === 'light' ? 1 : 0);
-var complex = ($('body').attr('data-complex') === '1' ? 1 : 0);
-var forumUrl = 'http://www.victoryroad.net/';
-
 
 
 function toBottom() {
@@ -82,13 +78,19 @@ function updatePosts() {
 
 
         $('#activeUsers').html('');
+        var activeUserHtml = new Array;
+
         $(xml).find('activeUsers > user').each(function() {
           var username = $(this).find('username').text();
           var userid = $(this).find('userid').text();
           var displaygroupid = $(this).find('displaygroupid').text();
+          var start_tag = unxml($(this).find('startTag').text());
+          var end_tag = unxml($(this).find('endTag').text());
 
-          $('#activeUsers').append('<span class="username" data-userid="' + userid + '">' + username + '</span>');
+          activeUserHtml.push('<span class="username" data-userid="' + userid + '">' + start_tag + username + end_tag + '</span>');
         });
+
+        $('#activeUsers').html(activeUserHtml.join(', '));
       }
 
       if ($(xml).find('messages > message').length > 0) {
@@ -118,13 +120,15 @@ function updatePosts() {
 
             var username = $(this).find('userdata > username').text();
             var userid = $(this).find('userdata > userid').text();
+            var groupFormatStart = unxml($(this).find('userdata > startTag').text());
+            var groupFormatEnd = unxml($(this).find('userdata > endTag').text());
 
             var styleColor = $(this).find('defaultFormatting > color').text();
             var styleHighlight = $(this).find('defaultFormatting > highlight').text();
             var styleFontface = $(this).find('defaultFormatting > fontface').text();
             var styleGeneral = parseInt($(this).find('defaultFormatting > general').text());
 
-            var style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: "' + styleFontface + '";';
+            var style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + styleFontface + ';';
 
             if (styleGeneral & 256) {
               style += 'font-weight: bold;';
@@ -141,10 +145,10 @@ function updatePosts() {
             
             
             if (complex) {
-              var data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="" src="' + forumUrl + 'image.php?u=' + userid + '" style="max-width: 32px; max-height: 32px; padding-right: 3px;" class="username usernameTable" data-userid="' + userid + '" time="' + messageTime + '" /><span style="padding: 2px;" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
+              var data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="' + username + '" src="' + forumUrl + 'image.php?u=' + userid + '" style="max-width: 24px; max-height: 24px; padding-right: 3px;" class="username usernameTable" data-userid="' + userid + '" /><span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
             }
             else {
-              var data = '<span id="message' + messageId + '" class="messageLine"><span class="username usernameTable" data-userid="' + userid + '">' + username + '</span> @ <em>' + messageTime + '</em>: <span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
+              var data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="username usernameTable" data-userid="' + userid + '">' + username + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
             }
             
             if (reverse) {
@@ -163,10 +167,10 @@ function updatePosts() {
         if (reverse) {
           toBottom();
         }
+      }
 
-        if (typeof contextMenuParse === 'function') {
-          contextMenuParse();
-        }
+      if (typeof contextMenuParse === 'function') {
+        contextMenuParse();
       }
     },
     error: function(html) {
@@ -243,7 +247,6 @@ function sendMessage(message,confirmed) {
         $('#messageList').prepend('Your message, "' + message + '", could not be sent and will be retried.');
       }
 
-      sleep(2000);
       sendMessage(message);
     }
   });

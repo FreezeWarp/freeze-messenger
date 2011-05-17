@@ -151,13 +151,8 @@ function contextMenuParse() {
       }
     }
   });
-}
-
-function unxml(data) {
-  data = str_replace('&lt;','<',data);
-  data = str_replace('&gt;','>',data);
-  data = str_replace('&apos;',"'",data);
-  data = str_replace('&quot;','"',data);
   
-  return data;
+  $('.messageText').tipTip({
+    attribute: 'data-time'
+  });
 }

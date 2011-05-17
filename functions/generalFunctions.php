@@ -23,7 +23,7 @@ function inArray($needle,$haystack) {
   return false;
 }
 
-function hasPermission($roomData,$userData,$type = 'post') { // The below permissions are very hierachle.
+function hasPermission($roomData,$userData,$type = 'post',$trans = false) { // The below permissions are very hierachle.
   global $sqlPrefix, $banned;
 
   /* Make sure all presented data is correct. */
@@ -33,9 +33,8 @@ function hasPermission($roomData,$userData,$type = 'post') { // The below permis
 
   /* Get the User's Kick Status */
   if ($userData['userid']) {
-    $kick = sqlArr("SELECT * FROM {$sqlPrefix}kick WHERE userid = $userData[userid] AND room = $roomData[id] AND UNIX_TIMESTAMP(NOW()) <= (UNIX_TIMESTAMP(time) + length)");
+    $kick = sqlArr("SELECT UNIX_TIMESTAMP(k.time) AS kickedOn, UNIX_TIMESTAMP(k.time) + k.length AS expiresOn, k.id FROM {$sqlPrefix}kick AS k WHERE userid = $userData[userid] AND room = $roomData[id] AND UNIX_TIMESTAMP(NOW()) <= (UNIX_TIMESTAMP(time) + length)");
   }
-
 
   if ((in_array($userData['userid'],explode(',',$roomData['allowedUsers']))
     || $roomData['allowedUsers'] == '*')
@@ -66,7 +65,7 @@ function hasPermission($roomData,$userData,$type = 'post') { // The below permis
     $isRoomPrivate = true;
   }
 
-  if ($userData['options'] & 16) {
+  if ($userData['settings'] & 16) {
     $isAdmin = true;
   }
 
@@ -76,7 +75,7 @@ function hasPermission($roomData,$userData,$type = 'post') { // The below permis
       $roomValid = false;
       $reason = 'banned';
     }
-    elseif ($kick['id']) {
+    elseif ($kick['id'] && !$isAdmin) {
       $roomValid = false;
       $reason = 'kicked';
     }
@@ -118,7 +117,7 @@ function hasPermission($roomData,$userData,$type = 'post') { // The below permis
       $roomValid = false;
       $reason = 'banned';
     }
-    elseif ($kick['id']) {
+    elseif ($kick['id'] && !$isAdmin) {
       $roomValid = false;
       $reason = 'kicked';
     }
@@ -183,7 +182,17 @@ function hasPermission($roomData,$userData,$type = 'post') { // The below permis
     break;
   }
 
-  return $roomValid;
+  if ($trans) {
+    return array(
+      $roomValid,
+      $reason,
+      $kick['expiresOn']
+    );
+  }
+
+  else {
+    return $roomValid;
+  }
 }
 
 function userFormat($message, $room, $messageTable = true) {
@@ -194,15 +203,15 @@ function userFormat($message, $room, $messageTable = true) {
       switch ($loginMethod) {
         case 'vbulletin':
         $group = sqlArr("SELECT * FROM {$sqlUserGroupTable} WHERE {$sqlUserGroupTableCols[groupid]} = {$message[displaygroupid]}");
-        print_r($group);
+        //print_r($group);
         break;
       }
 
       $cachedUserGroups[$message['displaygroupid']] = $group;
     }
 
-    $openTag = $cachedUserGroups[$message['displaygroupid']]['openTag'];
-    $closeTag = $cachedUserGroups[$message['displaygroupid']]['openTag'];
+    $openTag = $cachedUserGroups[$message['displaygroupid']]['opentag'];
+    $closeTag = $cachedUserGroups[$message['displaygroupid']]['closetag'];
   }
 
   $class = ($messageTable ? 'username usernameTable' : 'username');
@@ -387,11 +396,17 @@ function template($name) {
   }
 
   $template2 = $templates[$name];
+  while (preg_match('/<if cond="(.+?)">(.+?)(<else \/>(.+?)|)<\/if>/s',$template2)) {
+    $template2 = preg_replace('/<if cond="(.+?)">(.+?)(<else \/>(.+?)|)<\/if>(.*?)$/es',"iifl('\\1','\\2','\\4','global $globalString;') . stripslashes('\\5')",$template2);
+  }
+  $template2 = preg_replace('/<if cond="(.+?)">(.+?)<\/if>/es',"stripslashes(iifl('\\1','\\2','','global $globalString;'))",$template2);
+  while (preg_match('/{{container}{(.+?)}{(.+?)}}/s',$template2)) {
+    $template2 = preg_replace('/{{container}{(.+?)}{(.+?)}}(.*?)$/es',"container(stripslashes('\\1'),stripslashes('\\2')) . stripslashes('\\3')",$template2);
+  }
 
 
-  $template2 = preg_replace('/<if cond="(.+?)">(.+?)(<else \/>(.+?)|)<\/if>/es',"iifl('\\1','\\2','\\4','global $globalString;')",$template2);
-//  $template2 = preg_replace('/<if cond="(.+?)">(.+?)<\/if>/es',"stripslashes(iifl('\\1','\\2','','global $globalString;'))",$template2);
   $template2 = preg_replace('/(.+)/e','stripslashes("\\1")',$template2);
+
   return $template2;
 }
 

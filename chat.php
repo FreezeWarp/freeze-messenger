@@ -46,7 +46,6 @@ eval(hook('chatStartOutput'));
 
 
 if ($banned) { // Check that the user isn't banned.
-
   eval(hook('chatBanned'));
 
   echo container($phrases['chatBannedTitle'],$phrases['chatBannedMessage']);

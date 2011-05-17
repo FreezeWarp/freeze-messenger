@@ -13,7 +13,7 @@
 
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-
+die('Dep');
 require_once('../global.php');
 require_once('../functions/parserFunctions.php');
 require_once('../functions/generalFunctions.php');

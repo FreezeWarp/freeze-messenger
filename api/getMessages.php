@@ -68,6 +68,13 @@ if (!$whereClause && $messageStart) {
 }
 
 
+
+
+  if ($loginMethod == 'vbulletin') {
+//  $tableClause .= "{$sqlUserGroupTable} AS g";
+//  $whereClause .= "u.{$sqlUserTableCols[usergroup]} = g.{$sqlUserGroupTableCols[groupid]}";
+}
+
 ///* Error Checking *///
 if (!$rooms) {
   $failCode = 'badroomsrequest';
@@ -106,7 +113,7 @@ else {
 
         if ($archive) {
 
-          $messages = sqlArr("SELECT m.id,
+          $messages = sqlArr("SELECT m.id AS messageid,
   UNIX_TIMESTAMP(m.time) AS time,
   $messageFields
   m.iv AS iv,
@@ -126,17 +133,19 @@ WHERE room = $room[id]
   AND m.user = u.userid
   AND m.user = u2.userid
 $whereClause
-ORDER BY m.id DESC
-LIMIT $messageLimit",'id');
+ORDER BY messageid DESC
+LIMIT $messageLimit",'messageid');
 
         }
         else {
-          $messages = sqlArr("SELECT m.messageid,
+          $messages = sqlArr("SELECT m.messageid AS messageid,
   UNIX_TIMESTAMP(m.time) AS time,
   $messageFields
   m.userid AS userid,
   m.username AS username,
   m.usergroup AS displaygroupid,
+  m.groupFormatStart AS groupFormatStart,
+  m.groupFormatEnd AS groupFormatEnd,
   m.flag AS flag,
   u2.settings AS usersettings,
   u2.defaultColour AS defaultColour,
@@ -148,14 +157,14 @@ FROM {$sqlPrefix}messagesCached AS m,
 WHERE m.roomid = $room[id]
   AND m.userid = u2.userid
 $whereClause
-ORDER BY m.id DESC
+ORDER BY messageid ASC
 LIMIT $messageLimit",'messageid');
         }
 
         if ($messages) {
-          if ($_GET['order'] == 'reverse') {
+/*          if ($_GET['order'] == 'reverse') {
             $messages = array_reverse($messages);
-          }
+          }*/
 
           foreach ($messages AS $id => $message) {
             $message = vrim_decrypt($message);
@@ -191,6 +200,8 @@ LIMIT $messageLimit",'messageid');
         <username>$message[username]</username>
         <userid>$message[userid]</userid>
         <displaygroupid>$message[displaygroupid]</displaygroupid>
+        <startTag>" . vrim_encodeXML($message['groupFormatStart']) . "</startTag>
+        <endTag>" . vrim_encodeXML($message['groupFormatEnd']) . "</endTag>
         <defaultFormatting>
           <color>$message[defaultColour]</color>
           <highlight>$message[defaultHighlight]</highlight>
@@ -204,13 +215,21 @@ LIMIT $messageLimit",'messageid');
 
         ///* Process Active Users
         if ($activeUsers) {
+switch ($loginMethod) {
+  case 'vbulletin':
+  $join = "LEFT JOIN {$sqlUserGroupTable} AS g ON displaygroupid = g.{$sqlUserGroupTableCols[groupid]}";
+  break;
+}
   $ausers = sqlArr("SELECT u.{$sqlUserTableCols[username]} AS username,
   u.{$sqlUserTableCols[userid]} AS userid,
   u.{$sqlUserTableCols[usergroup]} AS displaygroupid,
   p.status,
-  p.typing
+  p.typing,
+  g.$sqlUserGroupTableCols[startTag] AS opentag,
+  g.$sqlUserGroupTableCols[endTag] AS closetag
 FROM {$sqlPrefix}ping AS p,
   {$sqlUserTable} AS u
+{$join}
 WHERE p.roomid IN ($room[id])
   AND p.userid = u.userid
   AND UNIX_TIMESTAMP(p.time) >= (UNIX_TIMESTAMP(NOW()) - $onlineThreshold)
@@ -218,11 +237,16 @@ ORDER BY u.username
 LIMIT 500",'userid');
 
   if ($ausers) {
-    foreach ($ausers AS $user) {
+    foreach ($ausers AS $auser) {
+        $auser['opentag'] = vrim_encodeXML($auser['opentag']);
+        $auser['closetag'] = vrim_encodeXML($auser['closetag']);
+
         $ausersXML .= "      <user>
-        <username>$user[username]</username>
-        <userid>$user[userid]</userid>
-        <displaygroupid>$user[displaygroupid]</displaygroupid>
+        <username>$auser[username]</username>
+        <userid>$auser[userid]</userid>
+        <displaygroupid>$auser[displaygroupid]</displaygroupid>
+        <startTag>$auser[opentag]</startTag>
+        <endTag>$auser[closetag]</endTag>
       </user>
 ";
       }

@@ -309,6 +309,8 @@ if ($valid) { // If the user is valid, process their preferrences.
     );
     $sqlUserGroupTableCols = array(
       'groupid' => 'usergroupid',
+      'startTag' => 'opentag',
+      'endTag' => 'closetag',
     );
     $parseGroups = true;
 

@@ -33,11 +33,11 @@ function htmlParse($text,$bbcodeLevel = 1) {
     '/\[(b|strong)\](.+?)\[\/(b|strong)\]/is',
     '/\[(s|strike)\](.+?)\[\/(s|strike)\]/is',
     '/\[(i|em)\](.+?)\[\/(i|em)\]/is',
-    '/\[u\](.+?)\[\/u\]/is',
+    '/\[(u)\](.+?)\[\/(u)\]/is',
   );
 
   $search['link'] = array(
-    "/(?<!(\[noparse\]))(?<!(\[img\]))(?<!(\[url\]))((http|https|ftp|data|gopher|sftp|ssh):(\/\/|)(.+?\.|)([a-zA-Z]+)\.(com|net|org|co\.uk|co\.jp|info|us|gov)((\/)([^ \n]*)([^\?\.\! \n])|))(?!\[\/url\])(?!\[\/img\])(?!\[\/noparse\])/", // The regex is naturally selective; it improves slightly with each FIM version, but I don't really know how to do it, so I only add to it piece by piece to prevent regressions.
+    "/(?<!(\[noparse\]))(?<!(\[img\]))(?<!(\[url\]))((http|https|ftp|data|gopher|sftp|ssh):(\/\/|)(.+?\.|)([a-zA-Z\-]+)\.(com|net|org|co\.uk|co\.jp|info|us|gov)((\/)([^ \n]*)([^\?\.\! \n])|))(?!\[\/url\])(?!\[\/img\])(?!\[\/noparse\])/", // The regex is naturally selective; it improves slightly with each FIM version, but I don't really know how to do it, so I only add to it piece by piece to prevent regressions.
     '/\[url=("|)(.*?)("|)\](.*?)\[\/url\]/is',
     '/\[url\](.*?)\[\/url\]/is',
     '/\[email=("|)(.*?)("|)\](.*?)\[\/email\]/is',
@@ -60,10 +60,10 @@ function htmlParse($text,$bbcodeLevel = 1) {
   );
 
   $replace['buis'] = array(
-    '<span style="font-weight: bold;">$1</span>',
-    '<span style="text-decoration: line-through;">$1</span>',
-    '<span style="font-style: oblique;">$1</span>',
-    '<span style="text-decoration: underline;">$1</span>',
+    '<span style="font-weight: bold;">$2</span>',
+    '<span style="text-decoration: line-through;">$2</span>',
+    '<span style="font-style: oblique;">$2</span>',
+    '<span style="text-decoration: underline;">$2</span>',
   );
 
   $replace['link'] = array(
@@ -202,23 +202,24 @@ function htmlwrap($str, $maxLength = 40, $char = '<br />') { /* An adaption of a
   $openTag = false;
   $tagParams = false;
 
-  for ($i = 0; $i < strlen($str); $i++) {
-    $noAppend = false;
+  for ($i = 0; $i < mb_strlen($str,'UTF-8'); $i++) {
+   $mb = mb_substr($str,$i,1,'UTF-8'); 
+   $noAppend = false;
 
-    if ($str[$i] == '<') { // The character starts a BBcode tag - don't touch nothing.
+    if ($mb == '<') { // The character starts a BBcode tag - don't touch nothing.
       $currentTag = '';
       $openTag = true;
     }
-    elseif ($str[$i] == '/' && $openTag) {
+    elseif ($mb == '/' && $openTag) {
       $endTag = true;
     }
-    elseif (($openTag) && ($str[$i] == ' ')) {
+    elseif (($openTag) && ($mb == ' ')) {
       $tagParams = true;
     }
-    elseif (($openTag) && (!$endTag) && ($tagParams == false) && ($str[$i] != '>')) {
-      $currentTag .= $str[$i];
+    elseif (($openTag) && (!$endTag) && ($tagParams == false) && ($mb != '>')) {
+      $currentTag .= $mb;
     }
-    elseif (($openTag) && ($str[$i] == '>')) { // And the BBCode tag is done again - we can touch stuffz.
+    elseif (($openTag) && ($mb == '>')) { // And the BBCode tag is done again - we can touch stuffz.
       $endTag = false;
       $openTag = false;
       $tagParams = false;
@@ -232,7 +233,7 @@ function htmlwrap($str, $maxLength = 40, $char = '<br />') { /* An adaption of a
         $elipse = true;
       }
       elseif (!$openTag) {
-        if ($str[$i] == ' ' || $str[$i] == "\n") { // The character is a space.
+        if ($mb == ' ' || $mb == "\n") { // The character is a space.
           $count = 0; // Because the character is a space, we should reset the count back to 0.
         }
         else {
@@ -247,7 +248,7 @@ function htmlwrap($str, $maxLength = 40, $char = '<br />') { /* An adaption of a
     }
 
     if (!$noAppend) {
-      $newStr .= $str[$i];
+      $newStr .= $mb;
     }
 
   }
@@ -267,7 +268,7 @@ function finalParse($message) {
 
 
 function sendMessage($messageText,$user,$room,$flag = '') {
-  global $sqlPrefix, $parseFlags, $salts, $encrypt;
+  global $sqlPrefix, $parseFlags, $salts, $encrypt, $loginMethod, $sqlUserGroupTableCols, $sqlUserGroupTable;
 
   $user['username'] = mysqlEscape($user['username']);
 
@@ -301,6 +302,14 @@ function sendMessage($messageText,$user,$room,$flag = '') {
     list($messageRaw,$messageHtml,$messageApi) = $message;
   }
 
+  if ($loginMethod == 'vbulletin' && $user['displaygroupid']) {
+    $group = sqlArr("SELECT * FROM {$sqlUserGroupTable} AS g WHERE g.{$sqlUserGroupTableCols[groupid]} = $user[displaygroupid]");
+  }
+
+
+  if ($loginMethod == 'vbulletin') {
+  }
+
   $messageHtmlCache = $messageHtml;
 
   if ($salts && $encrypt) {
@@ -323,7 +332,7 @@ function sendMessage($messageText,$user,$room,$flag = '') {
   mysqlQuery("INSERT INTO {$sqlPrefix}messages (user, room, rawText, htmlText, apiText, salt, iv, microtime, ip, flag) VALUES ($user[userid], $room[id], '$messageRaw', '$messageHtml', '$messageApi', '$saltNum', '$iv', '" . microtime(true) . "', '$ip', '$flag')");
   $messageid = mysqlInsertId();
 
-  mysqlQuery("INSERT INTO {$sqlPrefix}messagesCached (messageid, roomid, userid, username, usergroup, time, htmlText, flag) VALUES ($messageid, $room[id], $user[userid], '$user[username]', $user[displaygroupid], NOW(), '$messageHtmlCache', '$flag')");
+  mysqlQuery("INSERT INTO {$sqlPrefix}messagesCached (messageid, roomid, userid, username, usergroup, groupFormatStart, groupFormatEnd, time, htmlText, flag) VALUES ($messageid, $room[id], $user[userid], '$user[username]', $user[displaygroupid], '$group[opentag]', '$group[closetag]', NOW(), '$messageHtmlCache', '$flag')");
   $messageid2 = mysqlInsertId();
 
   if ($messageid2 > 100) {

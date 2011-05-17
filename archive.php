@@ -67,10 +67,10 @@ else {
   exec(hook('archiveResultsStart'));
 
   if (!$room) {
-    trigger_error($phrase['chatRoomDEndoesNotExist'],E_USER_ERROR);
+    trigger_error($phrase['chatRoomDoesNotExist'],E_USER_ERROR);
   }
 
-  elseif (!hasPermission($room,$user,'view')) { // Gotta make sure the user can view that room.
+  elseif (!hasPermission($room,$user,'view')) { // Gotta mEndake sure the user can view that room.
     echo container($phrase['chatAccessDenied'],E_USER_ERROR);
   }
 

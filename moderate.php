@@ -242,6 +242,9 @@ $(document).ready(function() {
 </style> 
 
 <form action=\"./moderate.php?do=templates&do2=edit2&templateId=$template[id]\" method=\"post\">
+  <label for=\"vars\">Vars:</label><br />
+  <input type=\"text\" name=\"vars\" value=\"$template[vars]\" />
+
   <label for=\"text\">New Value:</label><br />
   <textarea name=\"text\" id=\"text\" style=\"width: 100%; height: 300px;\">$template[data]</textarea><br /><br />
 
@@ -252,8 +255,9 @@ $(document).ready(function() {
       case 'edit2':
       $templateID = intval($_GET['templateId']);
       $text = mysqlEscape($_POST['text']);
+      $vars = mysqlEscape($_POST['vars']);
 
-      mysqlQuery("UPDATE {$sqlPrefix}templates SET data = '$text' WHERE id = $templateID");
+      mysqlQuery("UPDATE {$sqlPrefix}templates SET data = '$text', vars = '$vars' WHERE id = $templateID");
 
       modLog('templateEdit',$templateID);
 
@@ -768,6 +772,20 @@ $(document).ready(function() {
       }
 
       echo container('Updating Private Room Cache',"$results");
+      break;
+
+      case 'defaultgroup':
+      if (!$defaultDisplayGroup) {
+        trigger_error('A default group was not specified in the config.php file.',E_USER_ERROR);
+      }
+      elseif (!$_GET['confirm']) {
+        $table = mysqlReadThrough(mysqlQuery("SELECT * FROM {$sqlUserTable} WHERE {$sqlUserTableCols[usergroup]} = 0"),'<tr><td>$userid</td><td>$username</td></tr>');
+        echo container('Warning','The following users will be affected: <table border="1"><thead><tr><td>UserID</td><td>Username</td></tr></thead><tbody>' . $table . '</tbody></table><br /><br /><form action="moderate.php" method="get"><button type="submit">Confirm</button><input type="hidden" name="do2" value="defaultgroup" /><input type="hidden" name="confirm" value="true" /></form><form action="moderate.php" method="get"><button type="submit">Go Back</button></form>');
+      }
+      else {
+        mysql_query("UPDATE {$sqlUserTable} SET {$sqlUserTableCols[usergroup]} = $defaultDisplayGroup WHERE {$sqlUserTableCols[usergroup]} = 0");
+        echo container('Warning','The following users will be affected: <table border="1"><thead><tr><td>UserID</td><td>Username</td></tr></thead><tbody>' . $table . '</tbody></table><br /><br /><form action="moderate.php" method="get"><button type="submit">Confirm</button><input type="hidden" name="do2" value="defaultgroup" /><input type="hidden" name="confirm" value="true" /></form><form action="moderate.php" method="get"><button type="submit">Go Back</button></form>');
+      }
       break;
 
       default:

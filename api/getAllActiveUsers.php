@@ -22,7 +22,7 @@ header('Content-type: text/xml');
 $time = ($_GET['time'] ?: time());
 $onlineThreshold = ($_GET['onlineThreshold'] ?: $onlineThreshold);
 
-$users = sqlArr("SELECT
+$ausers = sqlArr("SELECT
   u.username, u.userid, GROUP_CONCAT(r.name) AS roomnames, GROUP_CONCAT(r.id) AS roomids
 FROM
   user AS u, {$sqlPrefix}rooms AS r, {$sqlPrefix}ping AS p
@@ -35,20 +35,20 @@ GROUP BY
 ORDER BY
   u.username",'userid');
 
-if ($users) {
-  foreach ($users AS $user) {
+if ($ausers) {
+  foreach ($ausers AS $auser) {
     unset($roomsXML);
 
-    $rooms = array_combine(explode(',',$user['roomids']),explode(',',$user['roomnames']));
+    $rooms = array_combine(explode(',',$auser['roomids']),explode(',',$auser['roomnames']));
     foreach ($rooms AS $id => $name) $roomsXML .= "      <room>
         <roomid>$id</roomid>
         <roomname>$name</roomname>
       </room>";
 
-    $usersXML .= "    <user>
+    $ausersXML .= "    <user>
       <userdata>
-        <userid>$user[userid]</userid>
-        <username>$user[username]</username>
+        <userid>$auser[userid]</userid>
+        <username>$auser[username]</username>
       </userdata>
       <rooms>
       $roomsXML
@@ -71,7 +71,7 @@ $data = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
   <errorcode>$failCode</errorcode>
   <errortext>$failMessage</errortext>
   <users>
-    $usersXML
+    $ausersXML
   </users>
 </getAllActiveUsers>";
 

@@ -40,10 +40,13 @@ $(document).ready(function() {
 });
 
 function resize () {
-  var windowWidth = document.documentElement.clientWidth;
-  var windowHeight = document.documentElement.clientHeight;
+  var windowWidth = (window.innerWidth ? window.innerWidth : document.documentElement.clientWidth);
+  var windowHeight = (window.innerHeight ? window.innerHeight : document.documentElement.clientHeight);
 
-  if (light) {
+  if (layout == 'alt') {
+    
+  }
+  else if (light) {
   /* Body Padding: 10px
    * "Enter Message" Table Padding: 10px
    *** TD Padding: 2px (on Standard Styling)
@@ -61,7 +64,7 @@ function resize () {
    * Message Input Container Padding : 3px (all padding-left)
    * Left Button Width: 36px
    * Message Input Text Area Padding: 6px */
-    $('#messageInput').css('width',(((windowWidth - 10) * .75) - 10 - 2 - 3 - 36 - 6));
+    $('#messageInput').css('width',(((windowWidth - 10) * .75) - 10 - 2 - 3 - 36 - 6 - 20));
   }
 }
 

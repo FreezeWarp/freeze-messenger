@@ -34,7 +34,7 @@ else {
 }
 
 if ($where) {
-  $getuserf = sqlArr("SELECT * FROM {$sqlUserTable} AS u, {$sqlUserGroupTable} AS g WHERE {$where} AND u.{$sqlUserTableCols[usergroup]} = g.{$sqlUserGroupTableCols[groupid]}");
+  $getuserf = sqlArr("SELECT * FROM {$sqlUserTable} AS u LEFT JOIN {$sqlUserGroupTable} AS g ON u.{$sqlUserTableCols[usergroup]} = g.{$sqlUserGroupTableCols[groupid]} WHERE {$where}");
   $getuserf['opentag'] = vrim_encodeXML($getuserf['opentag']);
   $getuserf['closetag'] = vrim_encodeXML($getuserf['closetag']);
 }

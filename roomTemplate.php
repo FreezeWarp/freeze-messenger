@@ -17,12 +17,13 @@
 
 eval(hook('roomTemplateStart'));
 
+list($hasPermission,$hPC,$hPT) = hasPermission($room,$user,'post',true);
 
 if (($room['options'] & 2) && (($user['settings'] & 64) == false)) {
   echo container($phrases['chatMatureTitle'],$phrases['chatMatureMessage']);
 }
 
-elseif (hasPermission($room,$user)) { // The user is not banned, and is allowed to view this room.
+elseif ($hasPermission) { // The user is not banned, and is allowed to view this room.
 
   if ((($room['options'] & 1) == false) && (($user['settings'] & 64) == false)) {
     if ($room['options'] & 16) {
@@ -38,16 +39,14 @@ elseif (hasPermission($room,$user)) { // The user is not banned, and is allowed 
   }
 
   if ($stopMessage) {
-    echo '<div id="stopMessage">
-    ' . container('Warning',$stopMessage . '<br /><br />
-
-<form action="#" method="post">
-  <input type="button" onclick="$(\'#stopMessage\').slideUp(); $(\'#chatContainer\').slideDown();" value="Continue." />
-  <input type="button" onclick="window.history.back()" value="Go Back" />
-</form>') . '
-    </div>';
+    echo template('chatStopMessage');
   }
 
+  else {
+$textboxStyle = messageStyle($user);
+    echo template('chatTemplate');
+  }
+/*
   echo '<div id="chatContainer"' . ($stopMessage ? ' style="display: none;"' : '') . '>' .
     container('
   <div id="title">
@@ -95,11 +94,23 @@ elseif (hasPermission($room,$user)) { // The user is not banned, and is allowed 
       </div>') . '
     </form>
   </div>
-</div>';
+</div>';*/
 }
 
 else {
-  echo container('Access Denied',$phrases['chatAccessDenied']);
+  switch ($hPC) {
+    case 'general':
+    $hPM = '[snobs and stuff]';
+    break;
+    case 'banned':
+    $hPM = '[banned and stuff]';
+    break;
+    case 'kicked':
+    $hPM = 'You have been kicked from this room. Your kick will expire on ' . vbdate('m/d/Y g:i:sa',$hPT) . '.';
+    break;
+  }
+
+  echo container('Access Denied',$hPM);
 }
 
 eval(hook('roomTemplateEnd'));

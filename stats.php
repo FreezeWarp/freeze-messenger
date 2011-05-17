@@ -29,20 +29,7 @@ $rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id IN ($roomList)",'id');
 
 eval(hook('statsStart'));
 
-echo container($phrases['statsChooseSettings'],"
-<form action=\"/stats.php\" method=\"GET\">
-  <label for=\"roomList\">$phrases[statsRoomList]</label>
-  <input type=\"text\" id=\"roomList\" name=\"roomList\" value=\"{$roomList}\" /><br />
-
-  <label for=\"number\">$phrases[statsNumResults]</label>
-  <select name=\"number\" id=\"number\">
-    <option value=\"10\">10</option>
-    <option value=\"25\">25</option>
-    <option value=\"50\">50</option>$phrases[statsNumResultsHook]
-  </select><br /><br />
-
-  <button type=\"submit\">$phrases[statsChooseSettingsSubmit]</button><button type=\"reset\">$phrases[statsChooseSettingsReset]</button>
-</form>");
+echo container($phrases['statsChooseSettings'],template('statsChooseSettings'));
 
 foreach ($rooms AS $room) {
   eval(hook('statsRoomEachStart'));
@@ -55,7 +42,7 @@ foreach ($rooms AS $room) {
 
   $tableHeader .= '<td>' . $room['name'] . '</td>';
 
-  $totalPosts = sqlArr("SELECT m.messages AS count, u.userid, u.username FROM {$sqlPrefix}ping AS m, user AS u WHERE m.roomid = $room[id] AND u.userid = m.userid ORDER BY count DESC LIMIT $number",'userid');
+  $totalPosts = sqlArr("SELECT m.messages AS count, u.userid, u.username FROM {$sqlPrefix}roomStats AS m, user AS u WHERE m.roomid = $room[id] AND u.userid = m.userid ORDER BY count DESC LIMIT $number",'userid');
 
   $i = 0;
   foreach ($totalPosts AS $totalPoster) {
@@ -85,25 +72,7 @@ foreach ($table AS $row) {
 
 eval(hook('statsRoomPreoutput'));
 
-echo '
-<script style="text/javascript">
-function resize () {
-  $(\'#stats\').css(\'width\',((window.innerWidth - 10) * .7));
-}
-
-$(window).resize(resize);
-</script>
-
-<div style="overflow: auto;">
-<table class="page ui-widget rowHover" id="stats">
-  <thead class="ui-widget-header">
-  <tr class="hrow">
-    <td>' . $phrases['statsPlace'] . '</td>' . $tableHeader . '  </tr>
-  </thead>
-  <tbody class="ui-widget-content">' . $tableContents . '
-  </tbody>
-</table>
-</div>';
+echo template('statsView');
 
 eval(hook('statsEnd'));
 

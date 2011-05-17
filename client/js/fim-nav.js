@@ -83,12 +83,41 @@ function quickConfirm(text) {
 
 function showAllRooms() {
   $.ajax({
-    url: '/ajax/fim-roomList.php?rooms=*',
+    url: '/api/getRooms.php',
     timeout: 5000,
     type: 'GET',
     cache: false,
-    success: function(html) {
-      $('#rooms').html(html);
+    success: function(xml) {
+      var roomFavHtml = '';
+      var roomMyHtml = '';
+      var roomPrivHtml = '';
+      var roomHtml = '';
+      var text = '';
+
+      $(xml).find('room').each(function() {
+        var roomName = $(this).find('roomname').text();
+        var roomId = $(this).find('roomid').text();
+        var roomTopic = $(this).find('roomtopic').text();
+        var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
+        var isPriv = ($(this).find('optionDefinitions > privateim').text() == 'true' ? true : false);
+        var isOwner = (parseInt($(this).find('owner').text()) == userid ? true : false);
+        
+        var text = '<li><a href="/chat.php?room=' + roomId + '">' + roomName + '</a></li>';
+        
+        if (isFav) {
+          roomFavHtml += text;
+        }
+        if (isOwner && !isPriv) {
+          roomMyHtml += text;
+        }
+        if (isPriv) {
+          roomPrivHtml += text;
+        }
+        if (!isFav && !isOwner && !isPriv) {
+          roomHtml += text;
+        }
+      });
+      $('#rooms').html('<li>Favourites<ul>' + roomFavHtml + '</ul></li><li>My Rooms<ul>' + roomMyHtml + '</ul></li><li>General<ul>' + roomHtml + '</ul></li><li>Private<ul>' + roomPrivHtml + '</ul></li>');
     },
     error: function() {
       alert('Failed to show all rooms');

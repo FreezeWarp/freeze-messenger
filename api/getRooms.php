@@ -50,9 +50,10 @@ if ($rooms2) {
       <roomid>$row[id]</roomid>
       <roomname>" . vrim_encodeXML($row['name']) . "</roomname>
       <roomtopic>" . vrim_encodeXML($row['title']) . "</roomtopic>
+      <owner>$row[owner]</owner>
       <allowedUsers>$row[allowedUsers]</allowedUsers>
       <allowedGroups>$row[allowedGroups]</allowedGroups>
-      <favourite>$fav</favourite>
+      <favorite>$fav</favorite>
       <options>$row[options]</options>
       <optionDefinitions>
         <official>" . (($row['options'] & 1) ? 'true' : 'false') . "</official>

@@ -43,31 +43,31 @@ else {
     $roomsXML .= "
       <room>$room[id]</room>";
 
-    $users = sqlArr("SELECT u.username, u.userid, p.id, p.status, p.typing FROM {$sqlPrefix}ping AS p, {$sqlPrefix}rooms AS r, user AS u WHERE p.roomid = $room[id] AND p.roomid = r.id AND p.userid = u.userid AND UNIX_TIMESTAMP(p.time) >= ($time - $onlineThreshold) ORDER BY u.username",'id');
+    $ausers = sqlArr("SELECT u.username, u.userid, p.id, p.status, p.typing FROM {$sqlPrefix}ping AS p, {$sqlPrefix}rooms AS r, user AS u WHERE p.roomid = $room[id] AND p.roomid = r.id AND p.userid = u.userid AND UNIX_TIMESTAMP(p.time) >= ($time - $onlineThreshold) ORDER BY u.username",'id');
 
-    $userXML .= "    <room>
+    $auserXML .= "    <room>
       <roomData>
-          <roomid>$user[id]</roomid>
-          <roomname>$user[name]</roomname>
-          <roomtopic>$user[topic]</roomtopic>
+          <roomid>$auser[id]</roomid>
+          <roomname>$auser[name]</roomname>
+          <roomtopic>$auser[topic]</roomtopic>
       </roomData>
       <users>
 ";
 
-    if ($users) {
-      foreach ($users AS $user) {
-        $userXML .= "    <user>
-      <userid>$user[userid]</userid>
-      <username>$user[username]</username>
-      <displaygroupid>$user[displaygroupid]</displaygroupid>
-      <status>$user[status]</status>
-      <typing>$user[typing]</typing>
+    if ($ausers) {
+      foreach ($ausers AS $auser) {
+        $auserXML .= "    <user>
+      <userid>$auser[userid]</userid>
+      <username>$auser[username]</username>
+      <displaygroupid>$auser[displaygroupid]</displaygroupid>
+      <status>$auser[status]</status>
+      <typing>$auser[typing]</typing>
     </user>
 ";
       }
     }
 
-      $userXML .= "      </users>
+      $auserXML .= "      </users>
     </room>
 ";
   }
@@ -89,7 +89,7 @@ $data = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
   <errorcode>$failCode</errorcode>
   <errortext>$failMessage</errortext>
   <rooms>
-$userXML  </rooms>
+$auserXML  </rooms>
 </getActiveUsers>";
 
 if ($_GET['gz']) {
