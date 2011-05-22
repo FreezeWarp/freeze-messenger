@@ -32,35 +32,7 @@ if ($phase == '1') {
 ');
   $userSelect = mysqlReadThrough(mysqlQuery("SELECT u2.userid, u2.username FROM {$sqlPrefix}users AS u, user AS u2 WHERE u2.userid = u.userid ORDER BY username"),'<option value="$userid"{{' . $userid . ' == $userid}}{{ selected="selected"}{}}>$username</option>
 ');
-  echo '<script type="text/javascript">
-$(document).ready(function(){
-  $("#kickUserForm").submit(function(){
-    data = $("#kickUserForm").serialize(); // Serialize the form data for AJAX.
-    $.post("content/kick.php?phase=2",data,function(html) {
-      quickDialogue(html,\'\',\'kickUserResultDialogue\');
-    }); // Send the form data via AJAX.
-
-    $("#kickUserDialogue").dialog(\'close\');
-
-    return false; // Don\'t submit the form.
-  });
-});
-</script>
-
-<form action="#" id="kickUserForm" method="post">
-  <label for="userid">User</label>: <select name="userid">' . $userSelect . '</select><br />
-  <label for="roomid">Room</label>: <select name="roomid">' . $roomSelect . '</select><br />
-  <label for="time">Time</label>: <input type="text" name="time" id="time" style="width: 50px;" />
-  <select name="interval">
-    <option value="1">Seconds</option>
-    <option value="60">Minutes</option>
-    <option value="3600">Hours</option>
-    <option value="86400">Days</option>
-    <option value="604800">Weeks</option>
-  </select><br /><br />
-
-  <input type="submit" value="Kick User" /><input type="reset" value="Reset" />
-</form>';
+  echo template('kickForm');
 }
 
 elseif ($phase == '2') {

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-ini_set('max_execution_time','10');
+//ini_set('max_execution_time','10');
 error_reporting(E_ALL);
 $reqPhrases = true;
 $reqHooks = true;
@@ -36,9 +36,6 @@ elseif (!$room && !$_POST['method'] && $enableGeneralUploads) { // General uploa
 
   require_once('templateStart.php');
   require_once('functions/container.php');
-
-?>
-<?php
 
   function formatSize($size) {
 
@@ -214,10 +211,11 @@ elseif ($_POST['method']) { // Actual upload; process.
         $flag = 'video';
 
         if ($parseFlags) {
-          $message = $_POST['youtubeUpload'];
+//          $message = preg_replace('/^(.+)?v=([a-zA-Z0-9\-\_]+?)(&|)(.*)$/i','http://www.youtube.com/?v=$2',$_POST['youtubeUpload']);
+            $message = $_POST['youtubeUpload'];
         }
         else {
-          $vPart = preg_replace('/^(.+)?v=([a-zA-Z0-9\-\_]+)(&|)(.*)$/i','$2',$_POST['youtubeUpload']);
+          $vPart = preg_replace('/^(.+)?v=([a-zA-Z0-9\-\_]+?)(&|)(.*)$/i','$2',$_POST['youtubeUpload']);
           $message = '[youtube]' . $vPart . '[/youtube]';
         }
       }
@@ -237,28 +235,33 @@ elseif ($_POST['method']) { // Actual upload; process.
 
       $validTypes = array('image/gif','image/jpeg','image/png','image/pjpeg');
       $urlUpload = $_POST['urlUpload'];
-      $ch = curl_init($urlUpload);
-      curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-      curl_exec($ch);
-      $mime = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
-      $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+      if (function_exists('curl_init')) {
+        $ch = curl_init($urlUpload);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_exec($ch);
+        $mime = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-      if ($status != 200) {
-        $errorMessage = $phrases['uploadErrorNoExist'];
-      }
-      elseif (!in_array($mime,$validTypes)) {
-        $errorMessage = $phrases['uploadErrorBadType'];
-      }
-      else {
-        if ($parseFlags) {
-          $message = $urlUpload;
+        if ($status != 200) {
+          $errorMessage = $phrases['uploadErrorNoExist'];
+        }
+        elseif (!in_array($mime,$validTypes)) {
+          $errorMessage = $phrases['uploadErrorBadType'];
         }
         else {
-          $message = '[img]' . $urlUpload . '[/img]';
+          if ($parseFlags) {
+            $message = $urlUpload;
+          }
+          else {
+            $message = '[img]' . $urlUpload . '[/img]';
+          }
         }
-      }
 
-      eval(hook('uploadProcessImageUrlEnd'));
+        eval(hook('uploadProcessImageUrlEnd'));
+      }
+      else {
+        $errorMessage = 'Server Not Spported';
+      }
     }
     else {
       $flag = 'image';
@@ -403,3 +406,4 @@ elseif ($_POST['method']) { // Actual upload; process.
     echo '<script type="text/javascript">window.top.window.alert(\'' . $errorMessage . '\');</script>';
   }
 }
+?>

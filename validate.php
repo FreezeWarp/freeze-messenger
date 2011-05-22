@@ -449,6 +449,31 @@ elseif (!$valid && !$noReqLogin && !$apiRequest) {
   header('Location: login.php');
 }
 elseif ($valid) {
-  // Store Cookies
+  /* The following defines each individual user's options via an associative array. It is highly recommended this be used to referrence settings. */
+  $user['optionDefs'] = array(
+    'disableFormatting' => ($user['settingsOfficialAjax'] & 16),
+    'disableVideo' => ($user['settingsOfficialAjax'] & 32),
+    'disableImages' => ($user['settingsOfficialAjax'] & 64),
+    'reversePostOrder' => ($user['settingsOfficialAjax'] & 1024),
+    'showAvatars' => ($user['settingsOfficialAjax'] & 2048),
+    'audioDing' => ($user['settingsOfficialAjax'] & 8192),
+  );
+
+  $user['adminDefs'] = array(
+    'modPrivs' => ($user['adminPrivs'] & 1),
+    'modUsers' => ($user['adminPrivs'] & 16),
+    'modImages' => ($user['adminPrivs'] & 64),
+    'modCensorWords' => ($user['adminPrivs'] & 256),
+    'modCensorLists' => ($user['adminPrivs'] & 512),
+    'modPlugins' => ($user['adminPrivs'] & 4096),
+    'modTemplates' => ($user['adminPrivs'] & 8192),
+    'modHooks' => ($user['adminPrivs'] & 16384),
+    'modTranslations' => ($user['adminPrivs'] & 32768),
+  );
+
+  $user['userDefs'] = array(
+    'allowed' => ($user['userPrivs'] & 16),
+    'createRooms' => ($user['userPrivs'] & 32),
+  );
 }
 ?>

@@ -31,49 +31,7 @@ elseif ($user['settings'] & 2) {
   trigger_error($phrases['createRoomBanned'],E_USER_ERROR);
 }
 elseif ($phase == '1') {
-  echo '<script type="text/javascript">
-$(document).ready(function(){
-  $("#createRoomForm").submit(function(){
-    data = $("#createRoomForm").serialize(); // Serialize the form data for AJAX.
-    $.post("content/createRoom.php?phase=2",data,function(html) {
-      quickDialogue(html,\'\',\'createRoomResultDialogue\');
-    }); // Send the form data via AJAX.
-
-    $("#createRoomDialogue").dialog(\'close\');
-
-    return false; // Don\'t submit the form.
-  });
-});
-</script>' . "
-<form action=\"#\" method=\"post\" id=\"createRoomForm\">
-  <label for=\"name\">$phrases[editRoomNameLabel]</label>: <input type=\"text\" name=\"name\" id=\"name\" /><br />
-  <small><span style=\"margin-left: 10px;\">$phrases[editRoomNameBlurb]</span></small><br /><br />
-
-  <label for=\"allowedUsers\">$phrases[editRoomAllowedUsersLabel]</label>: <input type=\"text\" name=\"allowedUsers\" id=\"allowedUsers\" /><br />
-  <small><span style=\"margin-left: 10px;\">$phrases[editRoomAllowedUsersBlurb]</span></small><br /><br />
-
-  <label for=\"allowedGroups\">$phrases[editRoomAllowedGroupsLabel]</label>: <input type=\"text\" name=\"allowedGroups\" id=\"allowedGroups\" /><br />
-  <small><span style=\"margin-left: 10px;\">$phrases[editRoomAllowedGroupsBlurb]</span></small><br /><br />
-
-  <label for=\"moderators\">$phrases[editRoomModeratorsLabel]</label>: <input type=\"text\" name=\"moderators\" id=\"moderators\" /><br />
-  <small><span style=\"margin-left: 10px;\">$phrases[editRoomModeratorsBlurb]</span></small><br /><br />
-
-  <label for=\"mature\">$phrases[editRoomMatureLabel]</label>: <input type=\"checkbox\" name=\"mature\" id=\"mature\" /><br />
-  <small><span style=\"margin-left: 10px;\">$phrases[editRoomMatureBlurb]</strong></small><br /><br />
-
-  <label for=\"bbcode\">$phrases[editRoomBBCode]</label>: <select name=\"bbcode\">
-    <option value=\"1\" selected=\"selected\">$phrases[editRoomBBCodeAll]</option>
-    <option value=\"5\">$phrases[editRoomBBCodeMulti]</option>
-    <option value=\"9\">$phrases[editRoomBBCodeImg]</option>
-    <option value=\"13\">$phrases[editRoomBBCodeLink]</option>
-    <option value=\"16\">$phrases[editRoomBBCodeBasic]</option>
-    <option>$phrases[editRoomBBCodeNothing]</option>
-  </select><br />
-
-  <small style=\"margin-left: 10px;\">$phrases[editRoomBBCodeBlurb]</small><br /><br />
-
-  <button type=\"submit\">$phrases[createRoomSubmit]</buttin><button type=\"reset\">$phrases[createRoomReset]</button>
-</form>";
+  echo template('createRoomForm');
 }
 elseif ($phase == '2') {
   $name = substr(mysqlEscape($_POST['name']),0,20); // Limits to 20 characters.
@@ -96,7 +54,7 @@ elseif ($phase == '2') {
       $insertId = mysql_insert_id();
 
       if ($insertId) {
-        echo "$phrases[createRoomCreatedAt]<br /><br /><form action=\"{$installUrl}index.php?room={$insertId}\" method=\"post\"><input type=\"text\" style=\"width: 300px;\" value=\"http://vrim.victoryroad.net/index.php?room={$insertId}\" name=\"url\" /><input type=\"submit\" value=\"$phrases[editRoomCreatedGo]\" /></form>";
+        echo template('createRoomSuccess');
       }
       else {
         trigger_error($phrases['createRoomFail'],E_USER_ERROR);

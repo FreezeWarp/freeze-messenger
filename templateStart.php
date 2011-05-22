@@ -41,19 +41,13 @@ if ($keywords) {
 $mode = ($_GET['mode'] ?: $_COOKIE['mode']);
 
 if ($mode == 'mobile') {
-  $bodyHook .= ' data-mode="light"';
   $styleHook .= "<link rel=\"stylesheet\" type=\"text/css\" href=\"client/css/stylesv2Mobile.css\" media=\"screen,handheld\" />";
   $light = true;
 
   setcookie('mode',$mode);
 }
 elseif ($mode == 'light') {
-  $bodyHook .= ' data-mode="light"';
-
   setcookie('mode',$mode);
-}
-else {
-  $bodyHook .= ' data-complex="1"';
 }
 
 if ($_REQUEST['layout'] == 'alt') {
@@ -61,6 +55,20 @@ if ($_REQUEST['layout'] == 'alt') {
   $layout = 'alt';
 }
 
+$theme = ($_REQUEST['style'] ? $_REQUEST['style']
+  : ($_REQUEST['s']['style'] ? $_REQUEST['s']['style']
+    : ($user['themeOfficialAjax'] ? $user['themeOfficialAjax']
+      : $defaultTheme)));
+
+$styles = array(
+  1 => 'ui-darkness',
+  2 => 'ui-lightness',
+  3 => 'redmond',
+  4 => 'cupertino',
+  5 => 'dark-hive',
+  6 => 'start',
+);
+$style = $styles[$theme];
 
 /*** Start ***/
 

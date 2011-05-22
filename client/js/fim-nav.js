@@ -16,6 +16,63 @@
 var light;
 var roomid;
 
+
+  if ($('body').attr('data-mode') == 'mobile') {
+(function($, undefined ) {
+
+$( "#menu" ).live( "listviewcreate", function() {
+        var list = $( this ),
+                listview = list.data( "listview" );
+
+  var accordionDecorator = function() {
+        list.find('li').each(function(index, accordion) {
+                // Format the accordion accordingly:
+                // <li>...normal stuff in a jQM li
+                //   <div class="ui-li-accordion">...contents of this</div>
+                // </li>
+                // If we find an accordion element, make the li action be to open the accordion element
+      // console.log('accordion found ' + accordion);
+                // Get the li 
+                var $accordion = $(accordion);
+                $li = $accordion.closest('li');
+                // Move the contents of the accordion element to the end of the <li>
+                $li.append($accordion.clone());
+                $accordion.remove();
+                // Unbind all click events
+                $li.unbind('click');
+                // Remove all a elements
+                $li.find('a').remove();
+                // Bind click handler to show the accordion
+                $li.bind('click', function() {
+                        // Check that the current flap isn't already open
+                        var $accordion = $(this).find('.ui-li-accordion');
+                        if ($accordion.css('display') != 'none') {
+                                $accordion.slideUp();
+                                $(this).removeClass('ui-li-accordion-open');
+                                return;
+                        }
+                        // Close all other accordion flaps
+                        list.find('.ui-li-accordion').slideUp();
+                        // Open this flap 
+                        $accordion.slideToggle();
+                        $(this).toggleClass('ui-li-accordion-open');
+                });
+        });
+        };
+
+        accordionDecorator();
+
+        // Make sure that the decorator gets called on listview refresh too
+  var orig = listview.refresh;
+  listview.refresh = function() {
+    orig.apply(listview, arguments[0]);
+    accordionDecorator();
+  };
+});
+
+})( jQuery );
+  }
+
 function ajaxDialogue(uri,title,id,width,cF) {
   var dialog = $('<div style="display: none;" id="' + id +  '"></div>').appendTo('body');
   dialog.load(
@@ -81,6 +138,24 @@ function quickConfirm(text) {
   });
 }
 
+function notify(text,header,id,id2) {
+  if ($('#' + id + ' > #' + id + id2).html()) {
+    
+  }
+  else {
+    if ($('#' + id).html()) {
+      $('#' + id).append('<br />' + text);
+    }
+    else {
+      $.jGrowl('<div id="' + id + '"><span id="' + id + id2 + '">' + text + '</span></div>', {
+        sticky: true,
+        glue: true,
+        header: header
+      }); 
+    }
+  }
+}
+
 function showAllRooms() {
   $.ajax({
     url: '/api/getRooms.php',
@@ -132,11 +207,11 @@ $(document).ready(function(){
     
   }
   else {
-    $('#menu').accordion({
-      autoHeight: false,
-      navigation: true,
-      clearStyle: true
-    });
+      $('#menu').accordion({
+        autoHeight: false,
+        navigation: true,
+        clearStyle: true
+      });
   }
 
   $('table > thead > tr:first-child > td:first-child, table > tr:first-child > td:first-child').addClass('ui-corner-tl');
@@ -184,6 +259,14 @@ $(document).ready(function(){
 
   $('#icon_help').click(function() {
     ajaxDialogue('/content/help.php','Help','helpDialogue',1000);
+  });
+  
+  $('#icon_note').click(function() {
+    window.location = '/archive.php?roomid=' + roomid;
+  });
+  
+  $('#icon_settings').click(function() {
+    quickDialogue('<div class="leftright middle"><form action="/chat.php" method="post"><label><input type="checkbox" name="s[audio]"' + (soundOn ? ' checked="checked"' : '') + '  /> Audio</label><br /><label><input type="checkbox" name="s[reverse]"' + (reverse ? ' checked="checked"' : '') + ' /> Posts Ordered Oldest First</label><br /><label><input type="checkbox" name="s[complex]" ' + (complex ? ' checked="checked"' : '') + ' /> Complex Layout (with Avatars)</label><br /><label><select name="s[style]"><option value="1" data-name="ui-darkness">jQueryUI Darkness</option><option value="2" data-name="ui-lightness">jQueryUI Lightness</option><option value="3" data-name="redmond">Redmond (High Contrast 1)</option><option value="4" data-name="cupertino">Cupertino</option><option value="5" data-name="dark-hive">Dark Hive</option></select> Style</label><br /><input type="submit" value="Refresh Page" /></form><br /><br /><button onclick="webkitNotifyRequest(function() {});">Enable Desktop Notifications</button></div>','Settings','settingsAltDialouge');
   });
 
   $('#copyrightLink').click(function() {

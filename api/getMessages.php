@@ -17,7 +17,10 @@
 $apiRequest = true;
 require_once('../global.php');
 header('Content-type: text/xml');
-
+if ($longPolling) {
+  set_time_limit(0);
+  ini_set('max_execution_time',0);
+}
 
 
 
@@ -59,18 +62,23 @@ else {
 
 ///* Query Filter Generation *///
 
-if ($newestMessage) $whereClause .= "AND m.messageid < $newestMessage ";
-if ($oldestMessage) $whereClause .= "AND m.messageid > $oldestMessage ";
-if ($newestdate) $whereClause .= "AND m.date < $newestdate ";
-if ($oldestdate) $whereClause .= "AND m.date > $oldestdate ";
+if ($newestMessage) {
+  $whereClause .= "AND messageid < $newestMessage ";
+}
+if ($oldestMessage) {
+  $whereClause .= "AND messageid > $oldestMessage ";
+}
+if ($newestDate) {
+  $whereClause .= "AND UNIX_TIMESTAMP(m.time) < $newestDate ";
+}
+if ($oldestDate) {
+  $whereClause .= "AND UNIX_TIMESTAMP(m.time) > $oldestDate ";
+}
 if (!$whereClause && $messageStart) {
-  $whereClause .= "AND m.messageid > $messageStart AND m.messageid < " . ($messageStart + $messageLimit);
+  $whereClause .= "AND messageid > $messageStart AND messageid < " . ($messageStart + $messageLimit);
 }
 
-
-
-
-  if ($loginMethod == 'vbulletin') {
+if ($loginMethod == 'vbulletin') {
 //  $tableClause .= "{$sqlUserGroupTable} AS g";
 //  $whereClause .= "u.{$sqlUserTableCols[usergroup]} = g.{$sqlUserGroupTableCols[groupid]}";
 }
@@ -112,15 +120,14 @@ else {
         }
 
         if ($archive) {
-
-          $messages = sqlArr("SELECT m.id AS messageid,
+          $messageQuery = "SELECT m.id AS messageid,
   UNIX_TIMESTAMP(m.time) AS time,
   $messageFields
   m.iv AS iv,
   m.salt AS salt,
-  u.{$sqlUserIdCol} AS userid,
-  u.{$sqlUsernameCol} AS username,
-  u.{$sqlUsergroupCol} AS displaygroupid,
+  u.{$sqlUserTableCols[userid]} AS userid,
+  u.{$sqlUserTableCols[username]} AS username,
+  u.{$sqlUserTableCols[usergroup]} AS displaygroupid,
   u2.defaultColour AS defaultColour,
   u2.defaultFontface AS defaultFontface,
   u2.defaultHighlight AS defaultHighlight,
@@ -133,12 +140,11 @@ WHERE room = $room[id]
   AND m.user = u.userid
   AND m.user = u2.userid
 $whereClause
-ORDER BY messageid DESC
-LIMIT $messageLimit",'messageid');
-
+ORDER BY messageid $order
+LIMIT $messageLimit";
         }
         else {
-          $messages = sqlArr("SELECT m.messageid AS messageid,
+          $messageQuery = "SELECT m.messageid AS messageid,
   UNIX_TIMESTAMP(m.time) AS time,
   $messageFields
   m.userid AS userid,
@@ -157,15 +163,21 @@ FROM {$sqlPrefix}messagesCached AS m,
 WHERE m.roomid = $room[id]
   AND m.userid = u2.userid
 $whereClause
-ORDER BY messageid ASC
-LIMIT $messageLimit",'messageid');
+ORDER BY messageid $order
+LIMIT $messageLimit";
+        }
+
+        if ($longPolling) {
+          while (!$messages) {
+            $messages = sqlArr($messageQuery,'messageid');
+            sleep($longPollingWait);
+          }
+        }
+        else {
+          $messages = sqlArr($messageQuery,'messageid');
         }
 
         if ($messages) {
-/*          if ($_GET['order'] == 'reverse') {
-            $messages = array_reverse($messages);
-          }*/
-
           foreach ($messages AS $id => $message) {
             $message = vrim_decrypt($message);
 
@@ -184,7 +196,7 @@ LIMIT $messageLimit",'messageid');
       <roomdata>
         <roomid>$room[id]</roomid>
         <roomname>$room[name]</roomname>
-        <roomtopic>$room[title]</roomtopic>
+        <roomtopic>" . vrim_encodeXML($room['title']) . "</roomtopic>
       </roomdata>
       <messagedata>
         <messageid>$message[messageid]</messageid>
@@ -215,12 +227,13 @@ LIMIT $messageLimit",'messageid');
 
         ///* Process Active Users
         if ($activeUsers) {
-switch ($loginMethod) {
-  case 'vbulletin':
-  $join = "LEFT JOIN {$sqlUserGroupTable} AS g ON displaygroupid = g.{$sqlUserGroupTableCols[groupid]}";
-  break;
-}
-  $ausers = sqlArr("SELECT u.{$sqlUserTableCols[username]} AS username,
+          switch ($loginMethod) {
+            case 'vbulletin':
+            $join = "LEFT JOIN {$sqlUserGroupTable} AS g ON displaygroupid = g.{$sqlUserGroupTableCols[groupid]}";
+            break;
+          }
+
+          $ausers = sqlArr("SELECT u.{$sqlUserTableCols[username]} AS username,
   u.{$sqlUserTableCols[userid]} AS userid,
   u.{$sqlUserTableCols[usergroup]} AS displaygroupid,
   p.status,

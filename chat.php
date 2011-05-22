@@ -23,17 +23,65 @@ require_once('global.php');
 require_once('functions/container.php');
 
 
-/* Cookie Processing
- * Cookies are stored as strings, and 'false' == bool(true) in PHP... stupid, I know, so instead we use the string "true", which returns true when compared against both the string and the bool "true" types. It also returns false against the integer one.
- * Also note that for GET transfer, the integer values "0" and "1" evaluate false and true respectively. */
-if ($_COOKIE['vrim10-reverseOrder'] == 'false') $reverse = 0;
-elseif ($_COOKIE['vrim10-reverseOrder'] == 'true' || $user['settings'] & 32) $reverse = 1; // Check the cookies for reverse post order.
+/* Variable Setting */
+$setOptions = $_REQUEST['s'];
+
+if ($setOptions) {
+  if ($setOptions['style']) {
+    $newStyle = intval($setOptions['style']);
+
+    $user['themeOfficialAjax'] = $newStyle;
+
+    mysqlQuery("UPDATE {$sqlPrefix}users SET themeOfficialAjax = $newStyle WHERE userid = $user[userid]");
+  }
+
+  if ($setOptions['complex']) {
+    if ($setOptions['complex'] && (($user['settingsOfficialAjax'] & 8192) == false)) {
+      $user['settingsOfficialAjax'] += 8192;
+
+      $user['optionDefs']['audioDing'] = true;
+    }
+    elseif (!$setOptions['complex'] && ($user['settingsOfficialAjax'] & 8192)) {
+      $user['settingsOfficialAjax'] -= 8192;
+
+      $user['optionDefs']['audioDing'] = false;
+    }
+  }
+
+  if ($setOptions['audio']) {
+    if ($setOptions['audio'] && (($user['settingsOfficialAjax'] & 2048) == false)) {
+      $user['settingsOfficialAjax'] += 2048;
+
+      $user['optionDefs']['showAvatars'] = true;
+    }
+    elseif (!$setOptions['audio'] && ($user['settingsOfficialAjax'] & 2048)) {
+      $user['settingsOfficialAjax'] -= 2048;
+
+      $user['optionDefs']['showAvatars'] = false;
+    }
+  }
+
+  if ($setOptions['reverse']) {
+    if ($setOptions['reverse'] && (($user['settingsOfficialAjax'] & 1024) == false)) {
+      $user['settingsOfficialAjax'] += 1024;
+
+      $user['optionDefs']['reversePostOrder'] = true;
+    }
+    elseif (!$setOptions['reverse'] && ($user['settingsOfficialAjax'] & 1024)) {
+      $user['settingsOfficialAjax'] -= 1024;
+
+      $user['optionDefs']['reversePostOrder'] = false;
+    }
+  }
+
+  mysqlQuery("UPDATE {$sqlPrefix}users SET settingsOfficialAjax = $user[settingsOfficialAjax] WHERE userid = $user[userid]");
+}
 
 /* Get the room we're in */
 $room = intval($_GET['room'] ?: $user['defaultRoom'] ?: 1); // Get the room we're on. If there is a $_GET variable, use it, otherwise the user's "default", or finally just main.
 $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = '$room'"); // Data on the room.
 
-$bodyHook = ' data-roomid="' . $room['id'] . '" data-ding="' . ($user['settings'] & 128 ? 0 : 1) . '" data-reverse="' . $reverse . '"';
+$bodyHook = ' data-roomid="' . $room['id'] . '" data-ding="' . ($user['optionDefs']['audioDing'] ? 1 : 0) . '" data-reverse="' . ($user['optionDefs']['reversePostOrder'] ? 1 : 0) . '" data-complex="' . ($user['optionDefs']['showAvatars'] ? 1 : 0) . '"';
 
 
 eval(hook('chatStart'));
@@ -157,6 +205,12 @@ else {
     </ul>
 
     <ul id="messageMenu" class="contextMenu">
+      <li><a href="javascript:void(0);" data-action="link">Link To</a></li>
+      <li><a href="javascript:void(0);" data-action="delete">Delete</a></li>
+    </ul>
+
+    <ul id="messageMenuImage" class="contextMenu">
+      <li><a href="javascript:void(0);" data-action="url">Get URL</a></li>
       <li><a href="javascript:void(0);" data-action="link">Link To</a></li>
       <li><a href="javascript:void(0);" data-action="delete">Delete</a></li>
     </ul>

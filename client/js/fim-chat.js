@@ -1,6 +1,8 @@
 $(document).ready(function() {
   $("#icon_reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (reverse ? 'n' : 's') } );
   $("#icon_help").button({ icons: {primary:'ui-icon-help'} }).css({height: '32px', width: '32px'});
+  $("#icon_note").button({ icons: {primary:'ui-icon-note'} }).css({height: '32px', width: '32px'});
+  $("#icon_settings").button({ icons: {primary:'ui-icon-wrench'} }).css({height: '32px', width: '32px'});
   $("#icon_muteSound").button( "option", "icons", { primary: 'ui-icon-volume-on' } );
   $("#icon_url").button( "option", "icons", { primary: 'ui-icon-link' } );
   $("#icon_upload").button( "option", "icons", { primary: 'ui-icon-image' } );
@@ -34,10 +36,62 @@ $(document).ready(function() {
     $.cookie('vrim10-reverseOrder', value, {expires: 7 * 24 * 3600});
     location.reload(true);
   });
+  
+  if (!light) {
+    jQTubeUtil.init({
+      key: "AI39si5_Dbv6rqUPbSe8e4RZyXkDM3X0MAAtOgCuqxg_dvGTWCPzrtN_JLh9HlTaoC01hCLZCxeEDOaxsjhnH5p7HhZVnah2iQ",
+      orderby: "relevance",  // *optional -- "viewCount" is set by default
+      time: "this_month",   // *optional -- "this_month" is set by default
+      maxResults: 20   // *optional -- defined as 10 results by default
+    });
+  }
 
   resize();
- 
 });
+
+/***** Youtube *****/
+function youtubeSend(id) {
+  $.ajax({
+    url: '/uploadFile.php',
+    type: 'POST',
+    contentType: 'application/x-www-form-urlencoded;charset=UTF-8',
+    cache: false,
+    data: 'method=youtube&room=' + roomid + '&youtubeUpload=' + escape('http://www.youtube.com/?v=' + id),
+    success: function(html) { /*updatePosts();*/ }
+  });
+
+  $('#textentryBoxYoutube').dialog('close');
+}
+
+callbackFunction = function(response) {
+  var html = "";
+  var num = 0;
+
+  for (vid in response.videos) {
+    var video = response.videos[vid];
+    num ++;
+
+    if (num % 3 === 1) {
+      html += '<tr>';
+    }
+
+    html += '<td><img src="http://i2.ytimg.com/vi/' + video.videoId + '/default.jpg" style="width: 80px; height: 60px;" /><br /><small><a href="javascript: void(0);" onclick="youtubeSend(&apos;' + video.videoId + '&apos;)">' + video.title + '</a></small></td>';
+
+    if (num % 3 === 0) {
+      html += '</tr>';
+    }
+  }
+
+  if (num % 3 !== 0) {
+    html += '</tr>';
+  }
+
+  $('#youtubeResults').html(html);
+}
+
+function updateVids(searchPhrase) {
+  jQTubeUtil.search(searchPhrase, callbackFunction);
+}
 
 function resize () {
   var windowWidth = (window.innerWidth ? window.innerWidth : document.documentElement.clientWidth);

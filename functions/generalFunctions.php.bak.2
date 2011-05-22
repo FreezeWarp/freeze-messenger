@@ -239,7 +239,7 @@ function messageStyle($message) {
 }
 
 function vrim_urldecode($str) {
-  return str_replace(array('%2b','%26','%20'),array('+','&',"\n"),$str);
+  return str_replace(array('%2b','%26'),array('+','&'),$str);
 }
 
 function vrim_decrypt($message,$index = false) {
@@ -310,13 +310,13 @@ function html2rgb($color) {
     $color = substr($color, 1);
   }
 
-  if (strlen($color) == 6) {
+  if (strlen($color) == 6) { echo 1;
     list($r, $g, $b) = array($color[0] . $color[1], $color[2] . $color[3], $color[4] . $color[5]);
   }
-  elseif (strlen($color) == 3) {
+  elseif (strlen($color) == 3) { echo 2;
     list($r, $g, $b) = array($color[0].$color[0], $color[1].$color[1], $color[2].$color[2]);
   }
-  else {
+  else { echo 3;
     return false;
   }
 
@@ -398,6 +398,14 @@ function template($name) {
   $template2 = $templates[$name];
 
   $template2 = parser1($template2,0);
+//  $template2 = parser2($template2,0);
+/*  while (preg_match('/{{container}{(.+?)}{(.+?)}}/s',$template2)) {
+    $template2 = preg_replace('/{{container}{(.+?)}{(.+?)}}(.*?)$/es',"container(stripslashes('\\1'),stripslashes('\\2')) . stripslashes('\\3')",$template2);
+  }/*
+  while (preg_match('/{{if="(.+?)"}{(.+?)}({(.+?)}|)}/s',$template2)) {
+    $template2 = preg_replace('/{{if="(.+?)"}{(.+?)}({(.+?)}|)}(.*?)$/es',"iifl('\\1','\\2','\\4','global $globalString;') . stripslashes('\\5')",$template2);
+  }*/
+//  $template2 = preg_replace('/<if cond="(.+?)">(.+?)<\/if>/es',"stripslashes(iifl('\\1','\\2','','global $globalString;'))",$template2);
 
 
   $template2 = preg_replace('/(.+)/e','stripslashes("\\1")',$template2);
@@ -407,33 +415,72 @@ function template($name) {
 
 function parser1($text,$offset,$stop = false) {
   $i = $offset;
-//  static $cValue, $cValueProc, $iValue, $iValueProc;
 
   while ($i < strlen($text)) {
     $j = $text[$i];
 
-    if ($iValueProc) {
+
+/*    if ($i == ($iValue2Proc + 1) && $iValue2Proc) {
+      $str .= iifl("$cond","$iv","$iv2",'global $globalString;');
+      if ($stop) return array($str,$i);
+
+      $iv = '';
+      $iv2 = '';
+      $iValue2Proc = 0;
+      $cond = '';
+
+      continue;
+    }*/
+
+    if ($i == ($iValueProc + 1) && $iValueProc) {
       $str .= iifl("$cond","$iv[1]","$iv[2]",'global $globalString;');
       if ($stop) return array($str,$i);
 
       $iv = array(1 => '', 2 => '');
       $cond = '';
-      $iValueI = 1;
-      $iValueProc = false;
+      $iValueProc = 0;
 
       continue;
     }
 
-    elseif ($cValueProc) {
+    elseif ($i == ($cValueProc + 1) && $cValueProc) {
       $str .= container("$cv[1]","$cv[2]");
       if ($stop) return array($str,$i);
 
       $cv = array(1 => '', 2 => '');
-      $cValueProc = false;
+      $cValueProc = 0;
       $cond = '';
 
       continue;
     }
+/*
+    elseif ($i == ($cValue1Proc + 1) && $cValue1Proc) {
+      $str .= iifl("$cond","$value","",'global $globalString;');
+      if ($stop) return array($str,$i);
+
+      $value = '';
+      $value2 = '';
+      $cond = '';
+      $cValue1Proc = 0;
+
+      continue;
+    }*/
+
+/*    elseif ($iCond) {
+      switch ($j) {
+        case '"':
+        $iCond = false;
+        $iValue = true;
+        $i += 2;
+
+        continue;
+        break;
+
+        default:
+        $cond .= $j;
+        break;
+      }
+    }*/
 
     elseif ($cValue) {
       if (substr($text,$i,2) == '}{' && $cValueI == 1) {
@@ -445,16 +492,8 @@ function parser1($text,$offset,$stop = false) {
 
       elseif (substr($text,$i,2) == '}}') {
         $cValue = false;
-        $cValueProc = true;
+        $cValueProc = $i + 1;
         $i += 2;
-
-        continue;
-      }
-
-      elseif (substr($text,$i,13) == '{{container}{') {
-        list($nstr,$offset) = parser1($text,$i,true);
-        $i = $offset;
-        $cv[$cValueI] .= $nstr;
 
         continue;
       }
@@ -462,7 +501,7 @@ function parser1($text,$offset,$stop = false) {
       elseif (substr($text,$i,6) == '{{if="') {
         list($nstr,$offset) = parser1($text,$i,true);
         $i = $offset;
-        $cv[$cValueI] .= $nstr;
+        $str .= $nstr;
 
         continue;
       }
@@ -472,17 +511,34 @@ function parser1($text,$offset,$stop = false) {
         $cv[$cValueI] .= $j;
       }
     }
-    elseif ($iValue) {
-      if ((substr($text,$i,2) == '}{') && ($iValueI == 1)) {// die((substr($text,$i,2)) . '::' . $iValueI . '::' . $i);
-        $iValueI = 2;
+
+/*    elseif ($cValue) {
+      if (substr($text,$i,2) == '}{') {
+        $cValue = false;
+        $cValue2 = true;
 
         $i += 2;
         continue;
       }
 
-      elseif (substr($text,$i,2) == '}}') {
-        $iValue = false;
-        $iValueProc = true;
+      elseif (substr($text,$i,13) == '{{container}{') {
+        list($nstr,$offset) = parser1($text,$i,true);
+        $i = $offset;
+        $str .= $nstr;
+
+        continue;
+      }
+
+      else {
+        $escape = false;
+        $cv .= $j;
+      }
+    }
+
+    elseif ($cValue2) {
+      if (substr($text,$i,2) == '}}') {
+        $cValue2 = false;
+        $cValue2Proc = $i+1;
         $i += 2;
 
         continue;
@@ -491,7 +547,28 @@ function parser1($text,$offset,$stop = false) {
       elseif (substr($text,$i,13) == '{{container}{') {
         list($nstr,$offset) = parser1($text,$i,true);
         $i = $offset;
-        $iv[$iValueI] .= $nstr;
+        $str .= $nstr;
+        continue;
+      }
+
+      else {
+        $escape = false;
+        $cv2 .= $j;
+      }
+    }*/
+
+    elseif ($iValue) {
+      if (substr($text,$i,2) == '}{' && $iValueI == 1) {
+        $iValueI = 2;
+
+        $i += 2;
+        continue;
+      }
+
+      elseif (substr($text,$i,2) == '}}') {
+        $iValue = false;
+        $iValueProc = $i + 1;
+        $i += 2;
 
         continue;
       }
@@ -499,15 +576,41 @@ function parser1($text,$offset,$stop = false) {
       elseif (substr($text,$i,6) == '{{if="') {
         list($nstr,$offset) = parser1($text,$i,true);
         $i = $offset;
-        $iv[$iValueI] .= $nstr;
+        $str .= $nstr;
 
         continue;
       }
 
       else {
+        $escape = false;
         $iv[$iValueI] .= $j;
       }
     }
+
+/*    elseif ($iValue2) {
+      if (substr($text,$i,2) == '}}') {
+        $iValue2 = false;
+        $iValue2Proc = $i+1;
+        $i += 2;
+
+        continue;
+      }
+
+      elseif (substr($text,$i,6) == '{{if="') {
+        list($nstr,$offset) = parser1($text,$i,true);
+        $i = $offset;
+        $str .= $nstr;
+
+        $i += 6;
+        continue;
+      }
+
+      else {
+        $escape = false;
+        $iv2 .= $j;
+      }
+    }*/
+
     else {
       if (substr($text,$i,6) == '{{if="') {
         $i += 6;
@@ -515,8 +618,6 @@ function parser1($text,$offset,$stop = false) {
           $cond .= $text[$i];
           $i++;
         }
-
-        $i+=3;
 
         $iValue = true;
         $iValueI = 1;
@@ -526,8 +627,6 @@ function parser1($text,$offset,$stop = false) {
 
       elseif (substr($text,$i,13) == '{{container}{') {
         $cValue = true;
-        $cValueI = 1;
-
         $i += 13;
 
         continue;
@@ -542,6 +641,97 @@ function parser1($text,$offset,$stop = false) {
 
   return $str;
 }
+
+
+/*function parser2($text,$offset,$stop = false) {
+  $i = $offset;
+
+  while ($i < strlen($text)) {
+    $j = $text[$i];
+
+
+    if ($i == ($value2Proc + 1) && $value2Proc) {
+      $str .= container("$value","$value2");
+      if ($stop) return array($str,$i);
+
+      $value = '';
+      $value2 = '';
+      $i++;
+
+      continue;
+    }
+
+    elseif ($inValue) {
+
+      if ($j == '\\') {
+        $escape = true;
+      }
+
+      elseif (substr($text,$i,2) == '}{') {
+        $inValue = false;
+        $inValue2 = true;
+        $i += 2;
+
+        continue;
+      }
+
+      elseif (substr($text,$i,13) == '{{container}{') {
+        list($nstr,$offset) = parser2($text,$i,true);
+        $i = $offset;
+        $value .= $nstr;
+
+        continue;
+      }
+
+      else {
+        $escape = false;
+        $value .= $j;
+      }
+    }
+
+    elseif ($inValue2) {
+      if ($j == '\\') {
+        $escape = true;
+      }
+
+      elseif (!$escape && substr($text,$i,2) == '}}') {
+        $inValue2 = false;
+        $value2Proc = $i;
+        $i+=1;
+
+        continue;
+      }
+
+      elseif (substr($text,$i,13) == '{{container}{') {
+        list($nstr,$offset) = parser2($text,$i,true);
+        $i = $offset;
+        $value2 .= $nstr;
+
+        continue;
+      }
+
+      else {
+        $escape = false;
+        $value2 .= $j;
+      }
+    }
+
+    else {
+      else {
+        $str .= $j;
+      }
+    }
+
+    $i++;
+  }
+
+  if ($stop) {
+    return array($str,$i);
+  }
+  return $str;
+}*/
+
+
 
 function iifl($condition,$true,$false,$eval) {
   global $templates, $phrases, $title, $user, $room, $message, $template, $templateVars; // Lame approach.

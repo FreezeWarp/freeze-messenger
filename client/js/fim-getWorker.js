@@ -1,4 +1,3 @@
-<?php
 /* FreezeMessenger Copyright © 2011 Joseph Todd Parsons
 
  * This program is free software: you can redistribute it and/or modify
@@ -13,20 +12,19 @@
 
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-die('Dep');
-require_once('../global.php');
-require_once('../functions/parserFunctions.php');
-require_once('../functions/generalFunctions.php');
 
-$userid = intval($_GET['userid']);
-$user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE {$sqlUserIdCol} = $userid");
 
-switch ($loginMethod) {
-  case 'vbulletin':
-  $userdata = '<img alt="" src="' . $forumUrl . 'image.php?u=' . $user['userid'] . '" style="float: left;" />' . userFormat($user,false) . '<br />' . $user['usertitle'] . '<br /><em>Posts</em>: ' . $user['posts'] . '<br /><em>Member Since</em>: ' . vbdate('m/d/y',$user['joindate']);
-  break;
-}
+importScripts('jquery-1.5.1.min.js');
 
-echo '<div style="width: 300px;">' . $userdata . '</div>';
-
-?>
+$.ajax({
+  url: 'api/getMessages.php?rooms=' + roomid + '&messageIdMin=' + (lastMessage) + '&messageLimit=40&watchRooms=1&activeUsers=1&order=' + (reverse ? 'reverse' : 'normal'),
+  type: 'GET',
+  timeout: timeout,
+  async: true,
+  data: '',
+  contentType: "text/xml; charset=utf-8",
+  dataType: "xml",
+  cache: false,
+  success: function no(xml) { postMessage(xml) },
+//  error: ,
+});

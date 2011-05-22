@@ -64,6 +64,40 @@ function contextMenuParse() {
       break;
     }
   });
+  
+  $('.messageLine .messageText img').contextMenu({
+    menu: 'messageMenuImage'
+  },
+  function(action, el) {
+    postid = $(el).attr('data-messageid');
+
+    switch(action) {
+      case 'url':
+      var src= $(el).attr('src');
+      
+      quickDialogue('<img src="' + src + '" style="max-width: 550px; max-height: 550px;" /><br /><br /><input type="text" value="' + src +  '" style="width: 550px;" />','Copy Image URL','getUrl');
+      break;
+      case 'delete':
+      if (confirm('Are you sure you want to delete this message?')) {
+        $.ajax({
+          url: 'ajax/fim-modAction.php?action=deletepost&postid=' + postid,
+          type: 'GET',
+          cache: false,
+          success: function() {
+            $(el).parent().fadeOut();
+          },
+          error: function() {
+            quickDialogue('The message could not be deleted.','Error','message');
+          }
+        });
+      }
+      break;
+
+      case 'link':
+      quickDialogue('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="http://2.vrim.victoryroad.net/archive.php?roomid=' + $('body').attr('data-roomid') + '&message=' + postid + '" />','Link to This Message','linkMessage');
+      break;
+    }
+  });
 
   $('.room').contextMenu({
     menu: 'roomMenu'
@@ -151,8 +185,10 @@ function contextMenuParse() {
       }
     }
   });
-  
-  $('.messageText').tipTip({
-    attribute: 'data-time'
-  });
+
+  if (complex) {
+    $('.messageText').tipTip({
+      attribute: 'data-time'
+    });
+  }
 }

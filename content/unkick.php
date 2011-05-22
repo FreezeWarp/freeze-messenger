@@ -26,12 +26,10 @@ $phase = $_GET['phase'];
 if (!$phase) $phase = '1'; // Default to phase 1.
 
 if ($phase == '1') {
-  echo container('Unkick a User','<form action="./index.php?action=unkick&phase=2" method="post">
-  <label for="userid">User ID</label>: <input type="text" name="userid" id="userid" value="' . $_GET['userid'] . '" style="width: 50px;" /><br />
-  <label for="roomid">Room ID</label>: <input type="text" name="roomid" id="roomid" value="' . $_GET['roomid'] . '" style="width: 50px;" /><br />
+  $userid = intval($_GET['userid']);
+  $roomid = intval($_GET['roomid']);
 
-  <input type="submit" value="Unkick User" /><input type="reset" value="Reset" />
-</form>');
+  echo container('Unkick a User',template('unkickForm'));
 }
 
 elseif ($phase == '2') {

@@ -27,14 +27,7 @@ if (!$phase) $phase = '1'; // Default to phase 1.
 if ($phase == '1') {
   echo container('Summary','Private rooms are rooms that can only be accessed by you and one other user of your choosing. Similar to private messages, these rooms can not be moderated, allow all BBCode, and lack many other group-based permissions.');
 
-  echo container('Create / Enter a Private Room','<form action="/index.php?action=privateRoom&phase=2" method="post">
-
-  <label for="username">Username</label>: <input type="text" name="username" id="username" /><br />
-  <small><span style="margin-left: 10px;">The other user you would like to talk to.</span></small><br /><br />
-
-  <input type="submit" value="Go" />
-
-</form>');
+  echo container('Create / Enter a Private Room',template('privateRoomForm'));
 }
 elseif ($phase == '2') {
   $username = ($_POST['username'] ?: $_GET['username']);
