@@ -13,148 +13,6 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-var light;
-var roomid;
-
-
-  if ($('body').attr('data-mode') == 'mobile') {
-(function($, undefined ) {
-
-$( "#menu" ).live( "listviewcreate", function() {
-        var list = $( this ),
-                listview = list.data( "listview" );
-
-  var accordionDecorator = function() {
-        list.find('li').each(function(index, accordion) {
-                // Format the accordion accordingly:
-                // <li>...normal stuff in a jQM li
-                //   <div class="ui-li-accordion">...contents of this</div>
-                // </li>
-                // If we find an accordion element, make the li action be to open the accordion element
-      // console.log('accordion found ' + accordion);
-                // Get the li 
-                var $accordion = $(accordion);
-                $li = $accordion.closest('li');
-                // Move the contents of the accordion element to the end of the <li>
-                $li.append($accordion.clone());
-                $accordion.remove();
-                // Unbind all click events
-                $li.unbind('click');
-                // Remove all a elements
-                $li.find('a').remove();
-                // Bind click handler to show the accordion
-                $li.bind('click', function() {
-                        // Check that the current flap isn't already open
-                        var $accordion = $(this).find('.ui-li-accordion');
-                        if ($accordion.css('display') != 'none') {
-                                $accordion.slideUp();
-                                $(this).removeClass('ui-li-accordion-open');
-                                return;
-                        }
-                        // Close all other accordion flaps
-                        list.find('.ui-li-accordion').slideUp();
-                        // Open this flap 
-                        $accordion.slideToggle();
-                        $(this).toggleClass('ui-li-accordion-open');
-                });
-        });
-        };
-
-        accordionDecorator();
-
-        // Make sure that the decorator gets called on listview refresh too
-  var orig = listview.refresh;
-  listview.refresh = function() {
-    orig.apply(listview, arguments[0]);
-    accordionDecorator();
-  };
-});
-
-})( jQuery );
-  }
-
-function ajaxDialogue(uri,title,id,width,cF) {
-  var dialog = $('<div style="display: none;" id="' + id +  '"></div>').appendTo('body');
-  dialog.load(
-    uri,
-    {},
-    function (responseText, textStatus, XMLHttpRequest) {
-      $('button').button();
-
-      if (light) {
-        var windowWidth = document.documentElement.clientWidth;
-        if (width > windowWidth || !width) {
-          width = windowWidth;
-        }
-      }
-
-      dialog.dialog({
-        width: (width ? width : 600),
-        title: title,
-        hide: "puff",
-        close: function() {
-          $('#' + id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
-          if (cF) {
-            cF();
-          }
-        }
-      });
-    }
-  );
-
-  return false;
-}
-
-function quickDialogue(content,title,id,width) {
-  var dialog = $('<div style="display: none;" id="' + id +  '">' + content + '</div>').appendTo('body');
-  dialog.dialog({
-    width: (width ? width: 600),
-    title: title,
-    hide: "puff",
-    close: function() {
-      $('#' + id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
-    }
-  });
-
-  return false;
-}
-
-function quickConfirm(text) {
-  $('<div id="dialog-confirm"><span class="ui-icon ui-icon-alert" style="float: left; margin: 0px 7px 20px 0px;"></span>' + text + '</div>').dialog({
-    resizable: false,
-    height: 240,
-    modal: true,
-    hide: "puff",
-    buttons: {
-      Confirm: function() {
-        $(this).dialog("close");
-        return true;
-      },
-      Cancel: function() {
-        $(this).dialog("close");
-        return false;
-      }
-    }
-  });
-}
-
-function notify(text,header,id,id2) {
-  if ($('#' + id + ' > #' + id + id2).html()) {
-    
-  }
-  else {
-    if ($('#' + id).html()) {
-      $('#' + id).append('<br />' + text);
-    }
-    else {
-      $.jGrowl('<div id="' + id + '"><span id="' + id + id2 + '">' + text + '</span></div>', {
-        sticky: true,
-        glue: true,
-        header: header
-      }); 
-    }
-  }
-}
 
 function showAllRooms() {
   $.ajax({
@@ -201,6 +59,25 @@ function showAllRooms() {
 }
 
 $(document).ready(function(){
+  
+  
+  $('#icon_settings').click(function() {
+    ajaxTabDialogue('/content/options.php','changeSettingsDialogue',1000,function() {
+        $('.colorpicker').empty().remove();
+      });
+/*    
+  var dialog = $('<div id="settingsDialog"><ul class="tabList">  <li><a href="#settings1">Chat Display</a></li>  <li><a href="#settings2">Message Formatting</span></a></li>  <li><a href="#setings3">General</a></li></ul></div>').appendTo('body');
+
+  dialog.tabbedDialog({'modal':false,'width':800, 'height':600,'minWidth':400, 'minHeight':300,'draggable':true});
+  */
+/*    tabDialogue('/content/options.php','Change My Settings','changeSettingsDialogue',1000,
+      function() {
+        $('.colorpicker').empty().remove();
+      }
+    );*/
+//    quickDialogue('<div class="leftright middle"><form action="/chat.php" method="post"><label><input type="checkbox" name="s[audio]"' + (soundOn ? ' checked="checked"' : '') + '  /> Audio</label><br /><label><input type="checkbox" name="s[reverse]"' + (reverse ? ' checked="checked"' : '') + ' /> Posts Ordered Oldest First</label><br /><label><input type="checkbox" name="s[complex]" ' + (complex ? ' checked="checked"' : '') + ' /> Complex Layout (with Avatars)</label><br /><label><select name="s[style]"><option value="1" data-name="ui-darkness">jQueryUI Darkness</option><option value="2" data-name="ui-lightness">jQueryUI Lightness</option><option value="3" data-name="redmond">Redmond (High Contrast 1)</option><option value="4" data-name="cupertino">Cupertino</option><option value="5" data-name="dark-hive">Dark Hive</option></select> Style</label><br /><input type="submit" value="Refresh Page" /></form><br /><br /><button onclick="webkitNotifyRequest(function() {});">Enable Desktop Notifications</button></div>','Settings','settingsAltDialouge');
+  });
+  
   roomid = $('body').attr('data-roomid');
 
   if ($('body').attr('data-mode') == 'mobile') {
@@ -264,10 +141,6 @@ $(document).ready(function(){
   $('#icon_note').click(function() {
     window.location = '/archive.php?roomid=' + roomid;
   });
-  
-  $('#icon_settings').click(function() {
-    quickDialogue('<div class="leftright middle"><form action="/chat.php" method="post"><label><input type="checkbox" name="s[audio]"' + (soundOn ? ' checked="checked"' : '') + '  /> Audio</label><br /><label><input type="checkbox" name="s[reverse]"' + (reverse ? ' checked="checked"' : '') + ' /> Posts Ordered Oldest First</label><br /><label><input type="checkbox" name="s[complex]" ' + (complex ? ' checked="checked"' : '') + ' /> Complex Layout (with Avatars)</label><br /><label><select name="s[style]"><option value="1" data-name="ui-darkness">jQueryUI Darkness</option><option value="2" data-name="ui-lightness">jQueryUI Lightness</option><option value="3" data-name="redmond">Redmond (High Contrast 1)</option><option value="4" data-name="cupertino">Cupertino</option><option value="5" data-name="dark-hive">Dark Hive</option></select> Style</label><br /><input type="submit" value="Refresh Page" /></form><br /><br /><button onclick="webkitNotifyRequest(function() {});">Enable Desktop Notifications</button></div>','Settings','settingsAltDialouge');
-  });
 
   $('#copyrightLink').click(function() {
     quickDialogue('<div style="text-align: center;">FIM, including (but not limited to) FIM\'s private web API, FIM\'s public XML API, FIM\'s legacy public CSV API, and all sourcecode created for use originally with FIM &copy; 2010-2011 Joseph T. Parsons.<br /><br />jQuery, jQueryUI, and all jQueryUI Themeroller Themes &copy; The jQuery Project.<br /><br />jGrowl &copy; 2009 Stan Lemon.<br />jQuery Cookie Plugin &copy; 2006 Klaus Hartl<br />EZPZ Tooltip &copy; 2009 Mike Enriquez<br />Beeper &copy; 2009 Patrick Mueller<br />Error Logger Utility &copy; Ben Alman<br />Context Menu &copy; 2008 Cory S.N. LaViska<br />jQTubeUtil &copy; 2010 Nirvana Tikku</div>','FIM Copyrights','copyrightDialogue');
@@ -285,3 +158,112 @@ $(document).ready(function(){
     });
   });
 });
+
+<script type="text/javascript">
+var roomRef = new Object;
+{$roomData4}
+
+$(document).ready(function(){
+  $('#defaultHighlight').ColorPicker({
+    color: '',
+    onShow: function (colpkr) {
+      $(colpkr).fadeIn(500);
+      return false;
+    },
+    onHide: function (colpkr) {
+      $(colpkr).fadeOut(500);
+      return false; 
+    },
+    onChange: function(hsb, hex, rgb) {
+      $('#defaultHighlight').css('background-color','#' + hex);
+      $('#defaultHighlight').val(hex);
+      $('#fontPreview').css('background-color','#' + hex);
+    }
+  });
+
+  $('#defaultColour').ColorPicker({
+    color: '',
+    onShow: function (colpkr) {
+      $(colpkr).fadeIn(500);
+      return false;
+    },
+    onHide: function (colpkr) {
+      $(colpkr).fadeOut(500);
+      return false; 
+    },
+    onChange: function(hsb, hex, rgb) {
+      $('#defaultColour').css('background-color','#' + hex);
+      $('#defaultColour').val(hex);
+      $('#fontPreview').css('color','#' + hex);
+    }
+  });
+
+  $('#fontPreview').css('color','');
+  $('#defaultColour').css('background-color','');
+  $('#fontPreview').css('background-color','');
+  $('#defaultHighlight').css('background-color','');
+
+  if ($('#defaultItalics').is(':checked')) {
+    $('#fontPreview').css('font-style','italic');
+  }
+  else {
+    $('#fontPreview').css('font-style','normal');
+  }
+
+  if ($('#defaultBold').is(':checked')) {
+    $('#fontPreview').css('font-weight','bold');
+  }
+  else {
+    $('#fontPreview').css('font-style','normal');
+  }
+
+  $("#changeSettingsForm").submit(function(){
+    data = $("#changeSettingsForm").serialize(); // Serialize the form data for AJAX.
+    $.post("content/options.php?phase=2",data,function(html) {
+      quickDialogue(html,'','changeSettingsResultDialogue');
+    }); // Send the form data via AJAX.
+
+    $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
+    $(".colorpicker").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
+
+    return false; // Don't submit the form.
+  });
+});
+
+$(function() {
+  var rooms = [
+    $roomData3
+  ];
+  $("#defaultRoom").autocomplete({
+    source: rooms
+  });
+  $("#watchRoomBridge").autocomplete({
+    source: rooms
+  });
+});
+
+function addRoom() {
+  var val = $("#watchRoomBridge").val();
+  var id = roomRef[val];
+
+  var currentRooms = $("#watchRooms").val().split(",");
+  currentRooms.push(id);
+
+  $("#watchRoomsList").append("<span id=\"watchRoomSubList" + id + "\">" + val + " (<a href=\"javascript:void(0);\" onclick=\"removeRoom(" + id + ");\">x</a>), </span>");
+  $("#watchRooms").val(currentRooms.toString(","));
+}
+
+function removeRoom(id) {
+  $("#watchRoomSubList" + id).fadeOut(500,function(){\$(this).remove()});
+
+  var currentRooms = $("#watchRooms").val().split(",");
+  for(var i = 0; i < currentRooms.length; i++) {
+    if(currentRooms[i] == id) {
+      currentRooms.splice(i, 1);
+      break;
+    }
+  }
+
+  $("#watchRooms").val(currentRooms.toString(","));
+}
+</script>

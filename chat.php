@@ -23,6 +23,9 @@ require_once('global.php');
 require_once('functions/container.php');
 
 
+
+
+
 /* Variable Setting */
 $setOptions = $_REQUEST['s'];
 
@@ -35,47 +38,78 @@ if ($setOptions) {
     mysqlQuery("UPDATE {$sqlPrefix}users SET themeOfficialAjax = $newStyle WHERE userid = $user[userid]");
   }
 
-  if ($setOptions['complex']) {
-    if ($setOptions['complex'] && (($user['settingsOfficialAjax'] & 8192) == false)) {
-      $user['settingsOfficialAjax'] += 8192;
+  if ($setOptions['reverse'] && (($user['settingsOfficialAjax'] & 16) == false)) {
+    $user['settingsOfficialAjax'] += 16;
 
-      $user['optionDefs']['audioDing'] = true;
-    }
-    elseif (!$setOptions['complex'] && ($user['settingsOfficialAjax'] & 8192)) {
-      $user['settingsOfficialAjax'] -= 8192;
+    $user['optionDefs']['disableFormatting'] = true;
+  }
+  elseif (!$setOptions['reverse'] && ($user['settingsOfficialAjax'] & 16)) {
+    $user['settingsOfficialAjax'] -= 16;
 
-      $user['optionDefs']['audioDing'] = false;
-    }
+    $user['optionDefs']['disableFormatting'] = false;
   }
 
-  if ($setOptions['audio']) {
-    if ($setOptions['audio'] && (($user['settingsOfficialAjax'] & 2048) == false)) {
-      $user['settingsOfficialAjax'] += 2048;
+  if ($setOptions['reverse'] && (($user['settingsOfficialAjax'] & 32) == false)) {
+    $user['settingsOfficialAjax'] += 32;
 
-      $user['optionDefs']['showAvatars'] = true;
-    }
-    elseif (!$setOptions['audio'] && ($user['settingsOfficialAjax'] & 2048)) {
-      $user['settingsOfficialAjax'] -= 2048;
+    $user['optionDefs']['disableVideos'] = true;
+  }
+  elseif (!$setOptions['reverse'] && ($user['settingsOfficialAjax'] & 32)) {
+    $user['settingsOfficialAjax'] -= 32;
 
-      $user['optionDefs']['showAvatars'] = false;
-    }
+    $user['optionDefs']['disableVideos'] = false;
   }
 
-  if ($setOptions['reverse']) {
-    if ($setOptions['reverse'] && (($user['settingsOfficialAjax'] & 1024) == false)) {
-      $user['settingsOfficialAjax'] += 1024;
+  if ($setOptions['reverse'] && (($user['settingsOfficialAjax'] & 64) == false)) {
+    $user['settingsOfficialAjax'] += 64;
 
-      $user['optionDefs']['reversePostOrder'] = true;
-    }
-    elseif (!$setOptions['reverse'] && ($user['settingsOfficialAjax'] & 1024)) {
-      $user['settingsOfficialAjax'] -= 1024;
+    $user['optionDefs']['disableImages'] = true;
+  }
+  elseif (!$setOptions['reverse'] && ($user['settingsOfficialAjax'] & 64)) {
+    $user['settingsOfficialAjax'] -= 64;
 
-      $user['optionDefs']['reversePostOrder'] = false;
-    }
+    $user['optionDefs']['disableImages'] = false;
+  }
+
+  if ($setOptions['reverse'] && (($user['settingsOfficialAjax'] & 1024) == false)) {
+    $user['settingsOfficialAjax'] += 1024;
+
+    $user['optionDefs']['reversePostOrder'] = true;
+  }
+  elseif (!$setOptions['reverse'] && ($user['settingsOfficialAjax'] & 1024)) {
+    $user['settingsOfficialAjax'] -= 1024;
+
+    $user['optionDefs']['reversePostOrder'] = false;
+  }
+
+  if ($setOptions['audio'] && (($user['settingsOfficialAjax'] & 2048) == false)) {
+    $user['settingsOfficialAjax'] += 2048;
+
+    $user['optionDefs']['showAvatars'] = true;
+  }
+  elseif (!$setOptions['audio'] && ($user['settingsOfficialAjax'] & 2048)) {
+    $user['settingsOfficialAjax'] -= 2048;
+
+    $user['optionDefs']['showAvatars'] = false;
+  }
+
+  if ($setOptions['complex'] && (($user['settingsOfficialAjax'] & 8192) == false)) {
+    $user['settingsOfficialAjax'] += 8192;
+
+    $user['optionDefs']['audioDing'] = true;
+  }
+  elseif (!$setOptions['complex'] && ($user['settingsOfficialAjax'] & 8192)) {
+    $user['settingsOfficialAjax'] -= 8192;
+
+    $user['optionDefs']['audioDing'] = false;
   }
 
   mysqlQuery("UPDATE {$sqlPrefix}users SET settingsOfficialAjax = $user[settingsOfficialAjax] WHERE userid = $user[userid]");
 }
+
+
+
+
 
 /* Get the room we're in */
 $room = intval($_GET['room'] ?: $user['defaultRoom'] ?: 1); // Get the room we're on. If there is a $_GET variable, use it, otherwise the user's "default", or finally just main.

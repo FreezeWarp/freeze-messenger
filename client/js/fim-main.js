@@ -92,7 +92,7 @@ function updatePosts() {
 
 function getError(xml) {
   if (longpolling) {
-    setTimeout(updatePosts,50);
+    setTimeout(updatePosts,0);
   }
   else {
     totalFails += 1;
@@ -226,7 +226,7 @@ function getSuccess(xml) {
   }
 
   if (longpolling) {
-    setTimeout(updatePosts,50);
+    setTimeout(updatePosts,0);
   }
   
   first = false;

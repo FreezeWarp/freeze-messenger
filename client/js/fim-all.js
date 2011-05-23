@@ -45,6 +45,7 @@ $(document).ready(function() {
   window.light = ($('body').attr('data-mode') === 'light' ? 1 : 0);
   window.complex = ($('body').attr('data-complex') === '1' ? 1 : 0);
   window.userid = parseInt($('body').attr('data-userid'));
+  window.roomid = parseInt($('body').attr('data-roomid'));
   window.layout = ($('body').attr('data-layout'));
   window.soundOn = ($('body').attr('data-ding') === '1' ? true : false);
   window.reverse = ($('body').attr('data-reverse') === '1' ? 1 : 0);

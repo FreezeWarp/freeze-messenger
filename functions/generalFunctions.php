@@ -397,7 +397,7 @@ function template($name) {
 
   $template2 = $templates[$name];
 
-  $template2 = parser1($template2,0);
+  $template2 = parser1($template2,0,false,$globalString);
 
 
   $template2 = preg_replace('/(.+)/e','stripslashes("\\1")',$template2);
@@ -405,7 +405,7 @@ function template($name) {
   return $template2;
 }
 
-function parser1($text,$offset,$stop = false) {
+function parser1($text,$offset,$stop = false,$globalString) {
   $i = $offset;
 //  static $cValue, $cValueProc, $iValue, $iValueProc;
 
@@ -413,7 +413,7 @@ function parser1($text,$offset,$stop = false) {
     $j = $text[$i];
 
     if ($iValueProc) {
-      $str .= iifl("$cond","$iv[1]","$iv[2]",'global $globalString;');
+      $str .= iifl("$cond","$iv[1]","$iv[2]","global $globalString;");
       if ($stop) return array($str,$i);
 
       $iv = array(1 => '', 2 => '');
@@ -452,7 +452,7 @@ function parser1($text,$offset,$stop = false) {
       }
 
       elseif (substr($text,$i,13) == '{{container}{') {
-        list($nstr,$offset) = parser1($text,$i,true);
+        list($nstr,$offset) = parser1($text,$i,true,$globalString);
         $i = $offset;
         $cv[$cValueI] .= $nstr;
 
@@ -460,7 +460,7 @@ function parser1($text,$offset,$stop = false) {
       }
 
       elseif (substr($text,$i,6) == '{{if="') {
-        list($nstr,$offset) = parser1($text,$i,true);
+        list($nstr,$offset) = parser1($text,$i,true,$globalString);
         $i = $offset;
         $cv[$cValueI] .= $nstr;
 
@@ -489,7 +489,7 @@ function parser1($text,$offset,$stop = false) {
       }
 
       elseif (substr($text,$i,13) == '{{container}{') {
-        list($nstr,$offset) = parser1($text,$i,true);
+        list($nstr,$offset) = parser1($text,$i,true,$globalString);
         $i = $offset;
         $iv[$iValueI] .= $nstr;
 
@@ -497,7 +497,7 @@ function parser1($text,$offset,$stop = false) {
       }
 
       elseif (substr($text,$i,6) == '{{if="') {
-        list($nstr,$offset) = parser1($text,$i,true);
+        list($nstr,$offset) = parser1($text,$i,true,$globalString);
         $i = $offset;
         $iv[$iValueI] .= $nstr;
 
