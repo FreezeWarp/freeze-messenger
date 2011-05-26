@@ -23,23 +23,57 @@ $rooms = $_GET['rooms'];
 $roomsArray = explode(',',$rooms);
 foreach ($roomsArray AS &$v) $v = intval($v);
 
+
+$showDeleted = intval($_GET['showDeleted']);
+$reverseOrder = intval($_GET['reverseOrder']);
+
+
 $favRooms = explode(',',$user['favRooms']);
 
-$whereClause = ($_GET['showDeleted'] ? '' : '(options & 4 = FALSE) AND ');
+
+$whereClause = ($showDeleted ? '' : '(options & 4 = FALSE) AND ');
 if ($rooms) $whereClause .= ' id IN (' . implode(',',$roomsArray) . ') AND ';
 
+
+switch ($_GET['permLevel']) {
+  case 'post':
+  case 'view':
+  case 'moderate':
+  case 'know':
+  $permLevel = $_GET['permLevel'];
+  break;
+
+  default:
+  $permLevel = 'post';
+  break;
+}
+
+
 switch ($_GET['order']) {
-  case 'id': $order = 'id ' . ($_GET['orderReverse'] ? 'DESC' : 'ASC'); break;
-  case 'name': $order = 'name ' . ($_GET['orderReverse'] ? 'DESC' : 'ASC'); break;
-  case 'vrim': $order = '(options & 1) DESC, (options & 16) ASC'; break;
-  default: $order = 'id ' . ($_GET['orderReverse'] ? 'DESC' : 'ASC'); break;
+  case 'id':
+  $order = 'id ' . ($reverseOrder ? 'DESC' : 'ASC');
+  break;
+
+  case 'name':
+  $order = 'name ' . ($reverseOrder ? 'DESC' : 'ASC');
+  break;
+
+  case 'native':
+  $order = '(options & 1) DESC, (options & 16) ASC';
+  break;
+
+  default:
+  $order = 'id ' . ($reverseOrder ? 'DESC' : 'ASC');
+  break;
 }
 
 
-$rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE $whereClause (options & 8 = FALSE) ORDER BY $order",'id'); // Get all rooms
+$rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE $whereClause TRUE ORDER BY $order",'id'); // Get all rooms
 foreach ($rooms AS $id => $room2) {
-  if (hasPermission($room2,$user)) $rooms2[] = $room2;
+  if (hasPermission($room2,$user,$permLevel)) $rooms2[] = $room2;
 }
+
+
 
 if ($rooms2) {
   foreach ($rooms2 AS $row) {
@@ -67,6 +101,11 @@ if ($rooms2) {
 
 $data = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getRooms>
+  <activeUser>
+    <userid>$user[userid]</userid>
+    <username>" . vrim_encodeXML($user['username']) . "</username>
+  </activeUser>
+
   <sentData>
     <order>" . htmlspecialchars($order) . "</order>
     <showDeleted>" . ($_GET['showDeleted'] ? 'true' : 'false') . "</showDeleted>

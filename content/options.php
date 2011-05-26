@@ -24,52 +24,36 @@ require_once('../functions/parserFunctions.php');
 $phase = $_GET['phase'];
 if (!$phase) $phase = '1'; // Default to phase 1.
 
-$fontData = sqlArr("SELECT * FROM {$sqlPrefix}fonts ORDER BY category, name",'id');
+/*$fontData = sqlArr("SELECT * FROM {$sqlPrefix}fonts ORDER BY category, name",'id');
 foreach($fontData AS $id => $font) {
   $fontBox .= "<option value=\"$font[id]\" style=\"font-family: $font[data];\" data-font=\"$font[data]\">$font[name]</option>";
 }
 
-$watchRooms = explode(',',$user['watchRooms']);
+$watchRooms = explode(',',$user['watchRooms']);*/
 
-$roomData = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE " . ((($user['settings'] & 16) == false) ? "(owner = '$user[userid]' OR moderators REGEXP '({$user[userid]},)|{$user[userid]}$') AND " : '') . "(options & 16) = false AND (options & 4) = false AND (options & 8) = false",'id');
-foreach ($roomData AS $roomData2) {
-  $roomData3 .= '"' . addslashes($roomData2['name']) . '",
-';
-  $roomData4 .= 'roomRef["' . addslashes($roomData2['name']) . '"] = ' . $roomData2['id'] . ';
-';
+$reverse = ($_POST['reverse'] ? true : false);
+$mature = ($_POST['mature'] ? true : false);
+$disableFormatting = ($_POST['disableFormatting'] ? true : false);
+$disableVideo = ($_POST['disableVideo'] ? true : false);
+$disableImage = ($_POST['disableImage'] ? true : false);
+$disableDing = ($_POST['disableding'] ? true : false);
 
-  if (in_array($roomData2['id'],$watchRooms)) {
-    $watchList .= "<span id=\"watchRoomSubList" . $roomData2['id'] . "\">" . $roomData2['name'] . " (<a href=\"javascript:void(0);\" onclick=\"removeRoom(" . $roomData2['id'] . ");\">x</a>), </span>";
-  }
+$settings = ($user['settings'] & 1) + ($user['settings'] & 2) + ($user['settings'] & 4) + ($user['settings'] & 8) + ($user['settings'] & 16) + ($reverse ? 32 : 0) + ($mature ? 64 : 0) + ($disableDing ? 128 : 0) + ($disableFormatting ? 512 : 0) + ($disableVideo ? 1024 : 0) + ($disableImage ? 2048 : 0);
+
+if ($enableDF['font'] && $_POST['defaultFace']) {
+  echo $id = intval($_POST['defaultFace']);
+  $font = sqlArr("SELECT * FROM {$sqlPrefix}fonts WHERE id = $id");
+  echo $fontface = $font['data'];
 }
 
-if ($phase == '1') {
-  echo template('userSettingsForm');
+if ($enableDF['colour'] && $_POST['defaultColour']) {
+  if (preg_match('/(0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F){3,6}/i',$_POST['defaultColour']) || !$_POST['defaultColour']) {
+    $colour = mysqlEscape(implode(',',html2rgb($_POST['defaultColour'])));
+  }
+  else {
+    trigger_error('The specified colour, ' . $_POST['defaultColour'] . ', does not exist',E_USER_WARNING);
+  }
 }
-elseif ($phase == '2') {
-  $reverse = ($_POST['reverse'] ? true : false);
-  $mature = ($_POST['mature'] ? true : false);
-  $disableFormatting = ($_POST['disableFormatting'] ? true : false);
-  $disableVideo = ($_POST['disableVideo'] ? true : false);
-  $disableImage = ($_POST['disableImage'] ? true : false);
-  $disableDing = ($_POST['disableding'] ? true : false);
-
-  $settings = ($user['settings'] & 1) + ($user['settings'] & 2) + ($user['settings'] & 4) + ($user['settings'] & 8) + ($user['settings'] & 16) + ($reverse ? 32 : 0) + ($mature ? 64 : 0) + ($disableDing ? 128 : 0) + ($disableFormatting ? 512 : 0) + ($disableVideo ? 1024 : 0) + ($disableImage ? 2048 : 0);
-
-  if ($enableDF['font'] && $_POST['defaultFace']) {
-    echo $id = intval($_POST['defaultFace']);
-    $font = sqlArr("SELECT * FROM {$sqlPrefix}fonts WHERE id = $id");
-    echo $fontface = $font['data'];
-  }
-
-  if ($enableDF['colour'] && $_POST['defaultColour']) {
-    if (preg_match('/(0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F){3,6}/i',$_POST['defaultColour']) || !$_POST['defaultColour']) {
-      $colour = mysqlEscape(implode(',',html2rgb($_POST['defaultColour'])));
-    }
-    else {
-      trigger_error('The specified colour, ' . $_POST['defaultColour'] . ', does not exist',E_USER_WARNING);
-    }
-  }
 
   if ($enableDF['highlight'] && $_POST['defaultHighlight']) {
     if (preg_match('/(0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F){3,6}/i',$_POST['defaultHighlight']) || !$_POST['defaultHighlight']) {

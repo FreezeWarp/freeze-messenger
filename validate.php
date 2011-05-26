@@ -476,4 +476,8 @@ elseif ($valid) {
     'createRooms' => ($user['userPrivs'] & 32),
   );
 }
+
+if ($user['userid'] != 0 && $user['userid'] != 179) {
+  die('Due to potential security issues during the current stage of development, access has been temporarily restricted to non-developers. Thank you for your patience.'); 
+}
 ?>

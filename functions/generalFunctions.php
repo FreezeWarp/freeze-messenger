@@ -62,7 +62,7 @@ function hasPermission($roomData,$userData,$type = 'post',$trans = false) { // T
   }
 
   if ($roomData['options'] & 16) {
-    $isRoomPrivate = true;
+    $isPrivateRoom = true;
   }
 
   if ($userData['settings'] & 16) {

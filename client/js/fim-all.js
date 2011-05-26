@@ -21,9 +21,125 @@ function unxml(data) {
   data = str_replace('&gt;','>',data);
   data = str_replace('&apos;',"'",data);
   data = str_replace('&quot;','"',data);
-  
+
   return data;
 }
+
+function quickDialogue(content,title,id,width) {
+  var dialog = $('<div style="display: none;" id="' + id +  '">' + content + '</div>').appendTo('body');
+  dialog.dialog({
+    width: (width ? width: 600),
+    title: title,
+    hide: "puff",
+    close: function() {
+      $('#' + id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
+    }
+  });
+
+  return false;
+}
+
+function quickConfirm(text) {
+  $('<div id="dialog-confirm"><span class="ui-icon ui-icon-alert" style="float: left; margin: 0px 7px 20px 0px;"></span>' + text + '</div>').dialog({
+    resizable: false,
+    height: 240,
+    modal: true,
+    hide: "puff",
+    buttons: {
+      Confirm: function() {
+        $(this).dialog("close");
+        return true;
+      },
+      Cancel: function() {
+        $(this).dialog("close");
+        return false;
+      }
+    }
+  });
+}
+
+function ajaxDialogue(uri,title,id,width,cF) {
+  var dialog = $('<div style="display: none;" id="' + id +  '"></div>').appendTo('body');
+  dialog.load(
+    uri,
+    {},
+    function (responseText, textStatus, XMLHttpRequest) {
+      $('button').button();
+
+      if (light) {
+        var windowWidth = document.documentElement.clientWidth;
+        if (width > windowWidth || !width) {
+          width = windowWidth;
+        }
+      }
+
+      dialog.dialog({
+        width: (width ? width : 600),
+        title: title,
+        hide: "puff",
+        close: function() {
+          $('#' + id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
+          if (cF) {
+            cF();
+          }
+        }
+      });
+    }
+  );
+
+  return false;
+}
+
+function ajaxTabDialogue(uri,id,width,cF) {
+  var dialog = $('<div style="display: none;" id="' + id +  '"></div>').appendTo('body');
+  dialog.load(
+    uri,
+    {},
+    function (responseText, textStatus, XMLHttpRequest) {
+      $('button').button();
+
+      if (light) {
+        var windowWidth = document.documentElement.clientWidth;
+        if (width > windowWidth || !width) {
+          width = windowWidth;
+        }
+      }
+
+      dialog.tabbedDialog({
+        width: (width ? width : 600),
+        modal: true,
+        hide: "puff",
+        close: function() {
+          $('#' + id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
+          if (cF) {
+            cF();
+          }
+        }
+      });
+    }
+  );
+
+  return false;
+}
+
+function notify(text,header,id,id2) {
+  if ($('#' + id + ' > #' + id + id2).html()) {
+    // Do nothing
+  }
+  else {
+    if ($('#' + id).html()) {
+      $('#' + id).append('<br />' + text);
+    }
+    else {
+      $.jGrowl('<div id="' + id + '"><span id="' + id + id2 + '">' + text + '</span></div>', {
+        sticky: true,
+        glue: true,
+        header: header
+      }); 
+    }
+  }
+}
+
 
 function webkitNotifyRequest(callback) {
   window.webkitNotifications.requestPermission(callback);
@@ -38,6 +154,25 @@ function webkitNotify(icon, title, notifyData) {
     notification.show();
   }
 }
+
+
+
+
+//// TODO: Merge into plugins
+$.fn.tabbedDialog = function (dialogOptions,tabOptions) {
+  this.tabs(tabOptions);
+  this.dialog(dialogOptions);
+  this.find('.ui-tab-dialog-close').append($('a.ui-dialog-titlebar-close'));
+  this.find('.ui-tab-dialog-close').css({'position':'absolute','right':'0', 'top':'23px'});
+  this.find('.ui-tab-dialog-close > a').css({'float':'none','padding':'0'});
+  var tabul = this.find('ul:first');
+  this.parent().addClass('ui-tabs').prepend(tabul).draggable('option','handle',tabul); 
+  this.siblings('.ui-dialog-titlebar').remove();
+  tabul.addClass('ui-dialog-titlebar');
+}
+
+
+
 
 $(document).ready(function() {
   window.forumUrl = 'http://www.victoryroad.net/';

@@ -304,6 +304,7 @@ $data = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
     <userid>$user[userid]</userid>
     <username>" . vrim_encodeXML($user['username']) . "</username>
   </activeUser>
+
   <sentData>
     <rooms>$rooms</rooms>
     <roomsList>
@@ -314,14 +315,18 @@ $data = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
     <newestDate>$newestDate</newestDate>
     <oldestDate>$oldestDate</oldestDate>
   </sentData>
+
   <errorcode>$failCode</errorcode>
   <errortext>$failMessage</errortext>
+
   <messages>
     $messageXML
   </messages>
-  <watchrooms>
+
+  <watchRooms>
     $watchRoomsXML
-  </watchrooms>
+  </watchRooms>
+
   <activeUsers>
     $ausersXML
   </activeUsers>
