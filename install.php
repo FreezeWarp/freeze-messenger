@@ -44,9 +44,12 @@ Thank you for downloading FreezeMessenger! FreezeMessenger is a new, easy-to-use
 Still, there are some server requirements to using FreezeMessenger. Make sure all of the following are installed, then click "Next" below:<br />
 
 <ul>
-  <li>MySQL 5+ (' . (function_exists('mysql_connect') ? 'Looks Good' : 'Not Detected') . ')</li>
+  <li>MySQL 5.0+
+  <li>MySQLi Extension (' . (function_exists('mysqli_connect') ? 'Looks Good' : 'Not Detected') . ')</li>
   <li>PHP 5.0+ (' . (floatval(phpversion()) > 5.0 ? 'Looks Good' : 'Not Detected - Version ' . phpversion() . ' Installed') . ')</li>
-</ul>
+</ul><br />
+
+If the MySQLi Extension is not present, you can still use FreezeMessenger, but will need to install it manually.<br /><br />
 
 <form onsubmit="return false;">
 <button style="float: right;" type="button" onclick="$(\'#part1\').slideUp(); $(\'#part2\').slideDown();">Next &rarr;</button>
@@ -73,7 +76,7 @@ First things first, please enter your MySQL connection details below:<br /><br /
 </table>
 </form><br /><br />
 
-<strong>Note</strong>: You are strongly encourged to create the database and corrosponding user manually to avoid any security risks. If you want the installation script to create the database, the user you specify here must have permission to do so (usually the "root" user can do this).
+<strong>Note</strong>: You are strongly encourged to create the database and corrosponding user manually to avoid any security risks. If you want the installation script to create the database, the user you specify here must have permission to do so (usually the "root" user can do this).<br /><br />
 <form onsubmit="return false;">
 <button style="float: left;" type="button" onclick="$(\'#part2\').slideUp(); $(\'#part1\').slideDown();">&larr; Back</button>
 <button style="float: right;" type="button" onclick="$.get(\'install.php?phase=1\',$(\'#mysql_connect_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part2\').slideUp(); $(\'#part3\').slideDown(); } else { alert(\'Could not connect.\'); } } );">Verify &rarr;</button>
@@ -93,7 +96,7 @@ MySQL connection successful. Next, we need to create or select the database. If 
   <td><input type="checkbox" name="mysql_createdb" /></td>
 </tr>
 </table>
-</form>
+</form><br /><br />
 <form onsubmit="return false;">
 <button style="float: left;" type="button" onclick="$(\'#part3\').slideUp(); $(\'#part2\').slideDown();">&larr; Back</button>
 <button style="float: right;" type="button" onclick="$.get(\'install.php?phase=2\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#mysql_db_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part3\').slideUp(); $(\'#part4\').slideDown(); } else { alert(\'Could not connect.\'); } } );">Verify &rarr;</button>
@@ -106,13 +109,13 @@ MySQL database connection successful. Next, we need to create the tables. If the
 <table>
 <tr>
   <td>Do not create tables if they exist.</td>
-  <td><input type="checkbox" name="mysql_tableprefix" /></td>
+  <td><input type="checkbox" name="mysql_nooverwrite" /></td>
 </tr>
 <tr>
   <td>Table Prefix</td>
-  <td><input type="text" name="mysql_nooverwrite" /></td>
+  <td><input type="text" name="mysql_tableprefix" /></td>
 </tr>
-</table>
+</table><br /><br />
 </form>
 <form onsubmit="return false;">
 <button style="float: left;" type="button" onclick="$(\'#part4\').slideUp(); $(\'#part3\').slideDown();">&larr; Back</button>
@@ -128,11 +131,13 @@ MySQL database connection successful. Next, we need to create the tables. If the
   $username = urldecode($_GET['mysql_username']);
   $password = urldecode($_GET['mysql_password']);
 
-  if (@mysql_connect($host,$username,$password)) {
-    echo 'success';
+  $mysqli = new mysqli($host,$username,$password);
+
+  if (mysqli_connect_error()) {
+    echo 'Connection Error: ' . mysqli_connect_error();
   }
   else {
-    echo 'failure';
+    echo 'success';
   }
   break;
 
@@ -143,25 +148,28 @@ MySQL database connection successful. Next, we need to create the tables. If the
   $database = urldecode($_GET['mysql_database']);
   $createdb = urldecode($_GET['mysql_createdb']);
 
-  if (@mysql_connect($host,$username,$password)) {
-    if (@mysql_select_db($database)) {
+  $mysqli = new mysqli($host,$username,$password);
+
+  if (mysqli_connect_error()) {
+    echo 'Connection Error: ' . mysqli_connect_error();
+  }
+  else {
+    if ($mysqli->select_db($database)) {
       echo 'success';
     }
     elseif ($createdb) {
-      $databaseSafe = mysql_real_escape_string($database);
-      if (mysql_query("CREATE DATABASE {$database}")) {
+      $databaseSafe = $mysqli->real_escape_string($database);
+
+      if ($mysqli->query("CREATE DATABASE {$database}")) {
         echo 'success';
       }
-      else { echo 1;
-        echo 'failure';
+      else {
+        echo 'Database Creation Unsuccessful';
       }
     }
-    else { echo 2;
-      echo 'failure';
+    else {
+      echo 'Invalid Database';
     }
-  }
-  else { echo 3;
-    echo 'failure';
   }
   break;
 
@@ -177,29 +185,46 @@ MySQL database connection successful. Next, we need to create the tables. If the
   $prefix = urldecode($_GET['mysql_tableprefix']);
   $nooverwrite = urldecode($_GET['mysql_nooverwrite']);
 
-  if (@mysql_connect($host,$username,$password)) {
-    if (@mysql_select_db($database)) {
-      $databaseSafe = mysql_real_escape_string($database);
-      $showTables = mysql_query("SHOW TABLES FROM $databaseSafe");
+  $mysqli = new mysqli($host,$username,$password,$database);
 
-      $importFiles = scandir('sqldump');
-      foreach ($importFiles AS $file) {
-        if ($file == '.' || $file == '..') continue;
-
-        $contents = file_get_contents("sqldump/{$file}");
-        $contents = str_replace(array('{prefix}','{engine}'),array($prefix,'InnoDB'),$contents);
-        if (!mysql_query($contents)) {
-          echo $contents;echo mysql_error();die('dfailure');
-        }
-      }
-      echo 'success';
-    }
-    else {
-      echo 'failure';
-    }
+  if (mysqli_connect_error()) {
+    echo 'Connection Error: ' . mysqli_connect_error();
   }
   else {
-    echo 'failure';
+    $databaseSafe = $mysqli->real_escape_string($database);
+    $showTables = $mysqli->query("SHOW TABLES FROM $databaseSafe",MYSQLI_USE_RESULT);
+
+    while ($table = $showTables->fetch_row()) {
+      $mysqlTables[] = $table[0];
+    }
+
+    $showTables->free_result();
+
+    $importFiles = scandir('sqldump');
+    foreach ($importFiles AS $file) {
+      if ($file == '.' || $file == '..') continue;
+
+      $contents = file_get_contents("sqldump/{$file}");
+      $contents = str_replace(array('{prefix}','{engine}'),array($prefix,'InnoDB'),$contents);
+      $table = $prefix . str_replace('.sql','',$file);
+
+      if (@in_array($table,$mysqlTables) && $nooverwrite) continue;
+      elseif (@in_array($table,$mysqlTables)) {
+        $newTable = $table . '~' . time();
+
+        if (!$mysqli->query("RENAME TABLE `$table` TO `$newTable`")) {
+          die("Could Not Rename Table '$table'");
+        }
+      }
+
+      if (!$data = $mysqli->multi_query($contents)) {
+        echo $contents;
+        echo $mysqli->error;
+        die('Could Not Run Query');
+      }
+      while ($mysqli->next_result()) {;}
+    }
+    echo 'success';
   }
 }
 ?>
