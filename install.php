@@ -1,5 +1,9 @@
 <?php
 error_reporting(E_ALL ^ E_NOTICE);
+if (file_exists('config.php')) {
+  die('The configuration file (config.php) exists. Please remove it before attempting reinstallation.');
+}
+
 switch ($_REQUEST['phase']) {
   case false:
   default:
@@ -26,6 +30,15 @@ switch ($_REQUEST['phase']) {
 
   <script src="client/js/jquery-ui-1.8.11.custom.min.js" type="text/javascript"></script>
   <script src="client/js/jquery.plugins.05182011.min.js" type="text/javascript"></script>
+  <script>
+  function resize() {
+    $(\'body\').css(\'height\',window.innerHeight);
+  }
+
+  $(document).ready(resize);
+  window.onresize = resize;
+
+  </script>
   <!-- END Scripts -->
 </head>
 <body>
@@ -45,8 +58,11 @@ Still, there are some server requirements to using FreezeMessenger. Make sure al
 
 <ul>
   <li>MySQL 5.0+
-  <li>MySQLi Extension (' . (function_exists('mysqli_connect') ? 'Looks Good' : 'Not Detected') . ')</li>
   <li>PHP 5.0+ (' . (floatval(phpversion()) > 5.0 ? 'Looks Good' : 'Not Detected - Version ' . phpversion() . ' Installed') . ')</li>
+  <ul>
+    <li>Multibyte String Extension (' . (function_exists('mb_get_info') ? 'Looks Good' : 'Not Detected') . ')</li>
+    <li>MySQLi Extension (' . (function_exists('mysqli_connect') ? 'Looks Good' : 'Not Detected') . ')</li>
+  </ul>
 </ul><br />
 
 If the MySQLi Extension is not present, you can still use FreezeMessenger, but will need to install it manually.<br /><br />
@@ -114,6 +130,44 @@ MySQL database connection successful. Next, we need to create the tables. If the
 <tr>
   <td>Table Prefix</td>
   <td><input type="text" name="mysql_tableprefix" /></td>
+</tr>
+</table><br /><br />
+</form>
+<form onsubmit="return false;">
+<button style="float: left;" type="button" onclick="$(\'#part4\').slideUp(); $(\'#part3\').slideDown();">&larr; Back</button>
+<button style="float: right;" type="button" onclick="$.get(\'install.php?phase=3\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#mysql_db_form\').serialize() + \'&\' + $(\'#mysql_table_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part4\').slideUp(); $(\'#part5\').slideDown(); } else { alert(\'Could not connect.\'); } } );">Verify &rarr;</button>
+</form>
+</div>
+
+<div id="part5" style="display: none;">
+<h1>FreezeMessenger Installation: Generate Configuration File</h1><hr />
+Now that the database has been successfully installed, we must generate the configuration file. There are two ways of doing this: either modify config.base.php and save it as config.php or enter the details below. You are recommended to do this manually, though.<br /><br />
+
+<form onsubmit="return false;" name="mysql_table_form" id="mysql_table_form">
+<table>
+<tr>
+  <td>Forum Integration</td>
+  <td><select name="forum"><option value="vanilla">No Integration</option><option value="vbulletin">vBulletin 3.8</option><option value="phpbb">PHPBB 3</option></select></td>
+</tr>
+<tr>
+  <td>Forum URL</td>
+  <td><input type="text" name="forum_tableprefix" /></td>
+</tr>
+<tr>
+  <td>Forum Table Prefix</td>
+  <td><input type="text" name="forum_tableprefix" /></td>
+</tr>
+<tr>
+  <td>Forum Cookie Prefix</td>
+  <td><input type="text" name="forum_cookieprefix" /></td>
+</tr>
+<tr>
+  <td>Forum Salt</td>
+  <td><input type="text" name="forum_salt" /></td>
+</tr>
+<tr>
+  <td>Encryption Phrase</td>
+  <td><input type="text" name="encrypt_salt" /></td>
 </tr>
 </table><br /><br />
 </form>
@@ -226,5 +280,13 @@ MySQL database connection successful. Next, we need to create the tables. If the
     }
     echo 'success';
   }
+
+  case 4: // Add first room.
+
+  break;
+
+  case 5: // Config File
+
+  break;
 }
 ?>

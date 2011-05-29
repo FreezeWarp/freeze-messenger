@@ -45,8 +45,8 @@ $enableDF = array( // Default formatting users can user to differentiate their t
 );
 $allowRoomCreation = true; // Use this to disable user room creation.
 $allowPrivateRooms = true; // Use this to disable user room creation.
-$hideRoomsOnline = true; // Use this to hide the names of rooms users are in to users who can't access said roms.
-$hidePostCounts = true; // If enabled, users will not be able to view post counts in rooms they are not able to access.
+$hideRoomsOnline = false; // Use this to hide the names of rooms users are in to users who can't access said roms.
+$hidePostCounts = false; // If enabled, users will not be able to view post counts in rooms they are not able to access.
 $bbcode = array( // Enable & Disable BBCode.
   'shortCode' => false,
   'buis' => true,
@@ -58,6 +58,7 @@ $bbcode = array( // Enable & Disable BBCode.
 );
 
 $parseFlags = true; // Messages sent under certain conditions will contain flags corrosponding to certain message data, like "video". Using this paramater, these messages will only contain the specific parameter and not the extra BBcode. This can be useful for certain APIs, data cleanliness, and so-on, but can also mean extra CPU cycles and incompatibility with older software, and also disables encryption for messages with parse flags. *DO NOT CHANGE THIS SETTING AFTER INITIAL SETUP*
+$longPolling = false; // If true, experimental longpolling support will be enabled. In general, it is recommended you NOT set this to true.
 
 $enableForeignApi = true;
 $insecureApi = true;
