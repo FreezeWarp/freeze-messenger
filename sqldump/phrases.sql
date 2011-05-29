@@ -1,37 +1,12 @@
--- phpMyAdmin SQL Dump
--- version 3.3.7deb5build0.10.10.1
--- http://www.phpmyadmin.net
---
--- Host: 10.10.10.1
--- Generation Time: May 07, 2011 at 01:49 PM
--- Server version: 5.1.41
--- PHP Version: 5.3.3-1ubuntu9.5
-
-SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
-
---
--- Database: `vbulletin`
---
-
--- --------------------------------------------------------
-
---
--- Table structure for table `vrc_phrases`
---
-
-CREATE TABLE IF NOT EXISTS `vrc_phrases` (
+CREATE TABLE IF NOT EXISTS `{prefix}phrases` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
   `text_en` longtext CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `text_jp` longtext CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=182 ;
+) ENGINE={engine} DEFAULT CHARSET=utf8;
 
---
--- Dumping data for table `vrc_phrases`
---
-
-INSERT INTO `vrc_phrases` (`id`, `name`, `text_en`, `text_jp`) VALUES
+INSERT INTO `{prefix}phrases` (`id`, `name`, `text_en`, `text_jp`) VALUES
 (1, 'brandingTitle', 'VRIM2 Beta', ''),
 (2, 'brandingFavicon', 'http://vrim.victoryroad.net/images/favicon.gif', ''),
 (3, 'brandingFaviconIE', 'http://vrim.victoryroad.net/images/favicon1632.ico', ''),

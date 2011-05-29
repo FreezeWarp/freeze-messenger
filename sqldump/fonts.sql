@@ -1,37 +1,12 @@
--- phpMyAdmin SQL Dump
--- version 3.3.7deb5build0.10.10.1
--- http://www.phpmyadmin.net
---
--- Host: 10.10.10.1
--- Generation Time: May 07, 2011 at 01:53 PM
--- Server version: 5.1.41
--- PHP Version: 5.3.3-1ubuntu9.5
-
-SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
-
---
--- Database: `vbulletin`
---
-
--- --------------------------------------------------------
-
---
--- Table structure for table `vrc_fonts`
---
-
-CREATE TABLE IF NOT EXISTS `vrc_fonts` (
+CREATE TABLE IF NOT EXISTS `{prefix}fonts` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `name` varchar(20) NOT NULL,
   `data` varchar(500) NOT NULL,
   `category` varchar(20) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=73 ;
+) ENGINE={engine} DEFAULT CHARSET=utf8;
 
---
--- Dumping data for table `vrc_fonts`
---
-
-INSERT INTO `vrc_fonts` (`id`, `name`, `data`, `category`) VALUES
+INSERT INTO `{prefix}fonts` (`id`, `name`, `data`, `category`) VALUES
 (1, 'FreeMono', 'FreeMono, TwlgMono, ''Courier New'', Consolas, monospace', 'monospace'),
 (2, 'Courier New', '''Courier New'', FreeMono, TwlgMono, Consolas, Courier, monospace', 'monospace'),
 (3, 'Consolas', 'Consolas, ''Courier New'', FreeMono, TwlgMono, monospace', 'monospace'),
