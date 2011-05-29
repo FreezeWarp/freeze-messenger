@@ -70,6 +70,8 @@ $styles = array(
 );
 $style = $styles[$theme];
 
+
+
 /*** Start ***/
 
 header('Content-Type: text/html; charset=utf-8'); 

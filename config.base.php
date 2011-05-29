@@ -62,4 +62,6 @@ $longPolling = false; // If true, experimental longpolling support will be enabl
 
 $enableForeignApi = true;
 $insecureApi = true;
+
+$defaultTheme = 4;
 ?>
