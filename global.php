@@ -71,11 +71,13 @@ if ($reqPhrases) {
     $lang = 'en';
   }
 
-  foreach ($phrases2 AS $phrase) {
-    $phrases[$phrase['name']] = $phrase['text_' . $lang];
+  if ($phrases2) {
+    foreach ($phrases2 AS $phrase) {
+      $phrases[$phrase['name']] = $phrase['text_' . $lang];
 
-    if (!$phrases[$phrase['name']] && $phrase['text_en']) {
-      $phrases[$phrase['name']] = $phrase['text_en'];
+      if (!$phrases[$phrase['name']] && $phrase['text_en']) {
+        $phrases[$phrase['name']] = $phrase['text_en'];
+      }
     }
   }
 
@@ -88,8 +90,10 @@ if ($reqPhrases) {
 if ($reqHooks) {
   $hooks2 = sqlArr("SELECT * FROM {$sqlPrefix}hooks",'id');
 
-  foreach ($hooks2 AS $hook) {
-    $hooks[$hook['name']] = $hook['code'];
+  if ($hooks2) {
+    foreach ($hooks2 AS $hook) {
+      $hooks[$hook['name']] = $hook['code'];
+    }
   }
 
   unset($hooks2);
