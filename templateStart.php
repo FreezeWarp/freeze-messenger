@@ -58,7 +58,7 @@ if ($_REQUEST['layout'] == 'alt') {
 $theme = ($_REQUEST['style'] ? $_REQUEST['style']
   : ($_REQUEST['s']['style'] ? $_REQUEST['s']['style']
     : ($user['themeOfficialAjax'] ? $user['themeOfficialAjax']
-      : $defaultTheme)));
+      : ($defaultTheme ? $defaultTheme : 4))));
 
 $styles = array(
   1 => 'ui-darkness',
