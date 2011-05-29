@@ -54,10 +54,146 @@ function realIp() { // vBulletin Function
   return implode('.', array_slice(explode('.', $alt_ip), 0, 3));
 }
 
+function phpbb_hash($password) {
+  $itoa64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+
+  $random_state = unique_id();
+  $random = '';
+  $count = 6;
+
+  if (($fh = @fopen('/dev/urandom', 'rb'))) {
+    $random = fread($fh, $count);
+    fclose($fh);
+  }
+
+  if (strlen($random) < $count) {
+    $random = '';
+
+    for ($i = 0; $i < $count; $i += 16) {
+      $random_state = md5(unique_id() . $random_state);
+      $random .= pack('H*', md5($random_state));
+    }
+    $random = substr($random, 0, $count);
+  }
+
+  $hash = _hash_crypt_private($password, _hash_gensalt_private($random, $itoa64), $itoa64);
+
+  if (strlen($hash) == 34) {
+    return $hash;
+  }
+
+  return md5($password);
+}
+
+function unique_id($extra = 'c') {
+  static $dss_seeded = false;
+  global $forumCookieSalt;
+
+  $val = $forumCookieSalt . microtime();
+  $val = md5($val);
+  $randSeed = md5($forumCookieSalt . $val . $extra);
+
+  return substr($val, 4, 16);
+}
 
 
 
+function _hash_crypt_private($password, $setting, &$itoa64) {
+  $itoa64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
+  $output = '*';
+
+  // Check for correct hash
+  if (substr($setting, 0, 3) != '$H$') {
+    return $output;
+  }
+
+  $count_log2 = strpos($itoa64, $setting[3]);
+
+  if ($count_log2 < 7 || $count_log2 > 30) {
+    return $output;
+  }
+
+  $count = 1 << $count_log2;
+  $salt = substr($setting, 4, 8);
+
+  if (strlen($salt) != 8) {
+    return $output;
+  }
+
+        /**
+        * We're kind of forced to use MD5 here since it's the only
+        * cryptographic primitive available in all versions of PHP
+        * currently in use.  To implement our own low-level crypto
+        * in PHP would result in much worse performance and
+        * consequently in lower iteration counts and hashes that are
+        * quicker to crack (by non-PHP code).
+        */
+  $hash = md5($salt . $password, true);
+  do {
+    $hash = md5($hash . $password, true);
+  } while (--$count);
+
+  $output = substr($setting, 0, 12);
+  $output .= _hash_encode64($hash, 16, $itoa64);
+
+  return $output;
+}
+
+function _hash_encode64($input, $count, &$itoa64) {
+  $output = '';
+  $i = 0;
+
+  do {
+    $value = ord($input[$i++]);
+    $output .= $itoa64[$value & 0x3f];
+
+    if ($i < $count) {
+      $value |= ord($input[$i]) << 8;
+    }
+
+    $output .= $itoa64[($value >> 6) & 0x3f];
+
+    if ($i++ >= $count) {
+      break;
+    }
+
+    if ($i < $count) {
+      $value |= ord($input[$i]) << 16;
+    }
+
+    $output .= $itoa64[($value >> 12) & 0x3f];
+
+    if ($i++ >= $count) {
+      break;
+    }
+
+    $output .= $itoa64[($value >> 18) & 0x3f];
+  } while ($i < $count);
+
+  return $output;
+}
+
+
+function _hash_gensalt_private($input, &$itoa64, $iteration_count_log2 = 6) {
+  if ($iteration_count_log2 < 4 || $iteration_count_log2 > 31) {
+    $iteration_count_log2 = 8;
+  }
+
+  $output = '$H$';
+  $output .= $itoa64[min($iteration_count_log2 + 5, 30)];
+  $output .= _hash_encode64($input, 6, $itoa64);
+
+  return $output;
+}
+
+function phpbb_check_hash($password, $hash) {
+  if (strlen($hash) == 34) {
+    return (_hash_crypt_private($password, $hash, $itoa64) === $hash) ? true : false;
+  }
+
+  return (md5($password) === $hash) ? true : false;
+}
 
 
 ///* Require Base *///
@@ -108,6 +244,18 @@ function processVBulletin($user,$password) {
   }
 }
 
+function processPHPBB($user, $password) {
+  global $forumPrefix;
+
+  if (!$user['user_id']) return false;
+
+  if (phpbb_check_hash($password, $user['user_password'])) {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
 
 
 
@@ -160,11 +308,16 @@ elseif (isset($_POST['username'],$_POST['password'])) { // Data is stored in a j
   $username = $_POST['username'];
   $password = $_POST['password'];
 
-  if ($_POST['passwordEncrypt'] == 'md5') {
-    // Do nothing
+  if ($loginMethod == 'vbulletin') {
+    if ($_POST['passwordEncrypt'] == 'md5') {
+      // Do nothing
+    }
+    else {
+      $password = md5($password);
+    }
   }
   else {
-    $password = md5($password);
+
   }
 
   if ($_POST['rememberme']) {
@@ -211,6 +364,79 @@ elseif ($loginMethod === 'vbulletin') {
     $user = sqlArr('SELECT * FROM ' . $forumPrefix . 'user WHERE username = "' . mysqlEscape($username) . '" LIMIT 1');
 
     if (processVBulletin($user,$password)) {
+      $setCookie = true;
+      $valid = true;
+      $session = 'create';
+    }
+    else {
+      $valid = false;
+    }
+  }
+
+  elseif ($userid && $password) {
+    $user = sqlArr('SELECT * FROM ' . $forumPrefix . 'user WHERE userid = "' . intval($userid) . '" LIMIT 1');
+
+    if (processVBulletin($user,$password)) {
+      $setCookie = true;
+      $valid = true;
+      $session = 'create';
+    }
+    else {
+      $valid = false;
+    }
+  }
+
+  elseif ($sessionHash) {
+    $session = sqlArr('SELECT * FROM session WHERE sessionhash = "' . mysqlEscape($sessionHash) . '"');
+
+    if (!$session['userid']) {
+      if (isset($_COOKIE[$forumCookiePrefix . 'userid'],$_COOKIE[$forumCookiePrefix . 'password'])) { // Data is stored in long-lasting cookies.
+        $userid = intval($_COOKIE[$forumCookiePrefix . 'userid']);
+        $passwordVBulletin = $_COOKIE[$forumCookiePrefix . 'password'];
+
+        $user = sqlArr('SELECT * FROM user WHERE userid = "' . intval($userid) . '" AND "' . mysqlEscape($_COOKIE['bbpassword'])  . '" = MD5(CONCAT(password,"' . $forumCookieSalt . '"))'); // Query from vBulletin user table.
+
+        if ($user) {
+          $valid = true;
+
+          $session = 'create';
+          $setCookie = true;
+        }
+        else {
+          $valid = false;
+        }
+      }
+    }
+    else {
+      $user = sqlArr('SELECT * FROM user WHERE userid = "' . intval($session['userid']) . '"'); // Query from vBulletin user table.
+      $session = 'update';
+      $valid = true;
+    }
+  }
+
+  elseif ($userid && $passwordVBulletin) {
+    $user = sqlArr('SELECT * FROM user WHERE userid = "' . intval($userid) . '" AND "' . mysqlEscape($_COOKIE['bbpassword'])  . '" = MD5(CONCAT(password,"' . $forumCookieSalt . '"))'); // Query from vBulletin user table.
+
+    if ($user) {
+      $valid = true;
+
+      $session = 'create';
+      $setCookie = true;
+    }
+    else {
+      $valid = false;
+    }
+  }
+
+  else {
+    $valid = false;
+  }
+}
+elseif ($loginMethod == 'phpbb') {
+  if ($username && $password) {
+    $user = sqlArr('SELECT * FROM ' . $forumPrefix . 'users WHERE username = "' . mysqlEscape($username) . '" LIMIT 1');
+
+    if (processPHPBB($user,$password)) {
       $setCookie = true;
       $valid = true;
       $session = 'create';
@@ -329,18 +555,46 @@ if ($valid) { // If the user is valid, process their preferrences.
 
 
 
+    case 'phpbb':
+    $sqlUserTable = 'users'; // The user table in the login method used.
+    $sqlUserGroupTable = 'groups'; // The usergroup table in the login method used.
+
+    $sqlUserTableCols = array(
+      'userid' => 'user_id', // The user ID column of the user table in the login method used.
+      'username' => 'username', // The username column of the user table in the login method used.
+      'usergroup' => 'group_id', // The usergroup column of the user table in the login method used.
+      'allgroups' => 'group_id',
+      'tzoffset' => 'user_timezone',
+    );
+    $sqlUserGroupTableCols = array(
+      'groupid' => 'group_id',
+//      'startTag' => 'opentag',
+//      'endTag' => 'closetag',
+    );
+
+    $parseGroups = false;
+
+    /* Set Relevant User Data */
+    $user2['username'] = $userCopy[$sqlUserTableCols['username']];
+    $user2['userid'] = $userCopy[$sqlUserTableCols['userid']];
+    $user2['timezoneoffset'] = $userCopy[$sqlUserTableCols['tzoffset']];
+    $user2['displaygroupid'] = $userCopy[$sqlUserTableCols['usergroup']];
+    $user2['membergroupids'] = $userCopy[$sqlUserTableCols['allgroups']];
+    break;
+
+
     default:
     die('Error');
     break;
 
   }
 
-  $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userid = ' . $userCopy['userid']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
+  $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userid = ' . $user2['userid']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
 
   if (!$userprefs) {
-    mysqlQuery('INSERT INTO ' . $sqlPrefix . 'users SET userid = ' . $userCopy['userid']); // Create the new row
+    mysqlQuery('INSERT INTO ' . $sqlPrefix . 'users SET userid = ' . $user2['userid']); // Create the new row
 
-    $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userid = ' . $userCopy['userid']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
+    $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userid = ' . $user2['userid']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
   }
 
   $user = array_merge($user2,$userprefs); // Merge userprefs into user for future referrence.
@@ -475,9 +729,5 @@ elseif ($valid) {
     'allowed' => ($user['userPrivs'] & 16),
     'createRooms' => ($user['userPrivs'] & 32),
   );
-}
-
-if ($user['userid'] != 0 && $user['userid'] != 179) {
-  die('Due to potential security issues during the current stage of development, access has been temporarily restricted to non-developers. Thank you for your patience.'); 
 }
 ?>
