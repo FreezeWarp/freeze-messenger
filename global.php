@@ -19,12 +19,6 @@
 
 
 
-if (file_exists('/var/www/chatinterface/htdocs/.tempStop') && $_GET['action'] != 'moderate') {
-  die('The chat has been disabled by an administrator. Please remain patient while order is restored.');
-}
-
-
-
 require_once('config.php'); // Configuration Variables
 require_once('functions/mysql.php');
 require_once('functions/generalFunctions.php');
@@ -32,19 +26,16 @@ require_once('functions/generalFunctions.php');
 
 error_reporting(E_ALL ^ E_NOTICE);
 date_default_timezone_set('GMT'); // Set the timezone to GMT.
-$old_error_handler = set_error_handler("errorHandler"); // Error Handler
+$errorHandlerOriginal = set_error_handler("errorHandler"); // Error Handler
 
 
 
-// Run Key MySQL Queries
+// Connect to MySQL
 if (!mysqlConnect($sqlHost,$sqlUser,$sqlPassword,$sqlDatabase)) {
-  error_log('Could not connect to MySQL.');
-
   die('Could not connect');
 }
-else {
-  error_log('MySQL connection established.');
-}
+
+
 
 
 if ($novalidate == true) {

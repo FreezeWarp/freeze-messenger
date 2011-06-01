@@ -23,7 +23,10 @@ require_once('global.php');
 require_once('functions/container.php');
 
 
-
+if (!$valid) {
+  header('Location: login.php');
+  die('You are not authenticated. <a href="login.php">Click here to login.</a>');
+}
 
 
 /* Get the room we're in */
@@ -55,14 +58,62 @@ elseif (!$room) { // No room data was returned.
 }
 
 else {
-  echo '
-
-
-<div id="roomTemplateContainer">';
   echo '<script src="client/js/fim-main.js" type="text/javascript"></script>
 <script src="client/js/fim-chat.js" type="text/javascript"></script>
-';
-  require_once('roomTemplate.php'); // While the below arguably should be in this too [since it is needed for pretty much anything to work], we're only reusing the code in the AJAX room switcher, which itself just assumes everything below already exists in the DOM.
+
+<div id="roomTemplateContainer">';
+
+  eval(hook('roomTemplateStart'));
+  
+  list($hasPermission,$hPC,$hPT) = hasPermission($room,$user,'post',true);
+  
+  if (($room['options'] & 2) && (($user['settings'] & 64) == false)) {
+    echo container($phrases['chatMatureTitle'],$phrases['chatMatureMessage']);
+  }
+  
+  elseif ($hasPermission) { // The user is not banned, and is allowed to view this room.
+  
+    if ((($room['options'] & 1) == false) && (($user['settings'] & 64) == false)) {
+      if ($room['options'] & 16) {
+        $stopMessage = $phrases['chatPrivateRoom'];
+      }
+      else {
+        $stopMessage = $phrases['chatNotModerated'];
+      }
+    }
+  
+    if (($user['settings'] & 16) && ((($room['owner'] == $user['userid'] && $room['owner'] > 0) || (in_array($user['userid'],explode(',',$room['allowedUsers'])) || $room['allowedUsers'] == '*') || (in_array($user['userid'],explode(',',$room['moderators']))) || ((inArray(explode(',',$user['membergroupids']),explode(',',$room['allowedGroups'])) || $room['allowedGroups'] == '*') && ($room['allowedGroups'] != ''))) == false)) {
+      $stopMessage = $phrases['chatAdminAccess'];
+    }
+  
+    if ($stopMessage) {
+      echo template('chatStopMessage');
+    }
+  
+    else {
+  $textboxStyle = messageStyle($user);
+      echo template('chatTemplate');
+    }
+  }
+
+  else {
+    switch ($hPC) {
+      case 'general':
+      $hPM = '[snobs and stuff]';
+      break;
+      case 'banned':
+      $hPM = '[banned and stuff]';
+      break;
+      case 'kicked':
+      $hPM = 'You have been kicked from this room. Your kick will expire on ' . vbdate('m/d/Y g:i:sa',$hPT) . '.';
+      break;
+    }
+  
+    echo container('Access Denied',$hPM);
+  }
+
+  eval(hook('roomTemplateEnd'));
+
   echo '</div>';
 
   if (!$light) echo '<div id="dialogues">

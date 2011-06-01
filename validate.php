@@ -719,7 +719,7 @@ if ($api) {
   die();
 }
 elseif (!$valid && !$noReqLogin && !$apiRequest) {
-  header('Location: login.php');
+
 }
 elseif ($valid) {
   /* The following defines each individual user's options via an associative array. It is highly recommended this be used to referrence settings. */
