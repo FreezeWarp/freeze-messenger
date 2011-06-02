@@ -68,6 +68,7 @@ switch ($loginMethod) {
   );
 
   $parseGroups = false;
+  break;
 
   default:
   trigger_error("Login method '$loginMethod' unrecognized.",E_USER_ERROR);
