@@ -202,10 +202,13 @@ require_once('global.php');
 
 
 if ($apiRequest) {
-  if (strstr($_SERVER['HTTP_REFERER'],$installUrl)) {
-    $apiRequestCheck = false;
+  if ($_SERVER['HTTP_REFERER']) {
+    if (strstr($_SERVER['HTTP_REFERER'],$installUrl)) {
+      $apiRequestCheck = false;
+    }
   }
-  else {
+
+  if ($apiRequestCheck !== false) {
     if (!$enableForeignApi) {
       die('Foreign API Disabled');
     }
