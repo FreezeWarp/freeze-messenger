@@ -20,6 +20,10 @@
 
 
 
+///* Require Base *///
+
+require_once('global.php');
+
 
 
 ///* Required Forum-Included Functions *///
@@ -66,7 +70,7 @@ switch ($loginMethod) {
   $parseGroups = false;
 
   default:
-  die('Error');
+  trigger_error("Login method '$loginMethod' unrecognized.",E_USER_ERROR);
   break;
 
 }
@@ -241,11 +245,6 @@ function phpbb_check_hash($password, $hash) {
 
   return (md5($password) === $hash) ? true : false;
 }
-
-
-///* Require Base *///
-
-require_once('global.php');
 
 
 if ($apiRequest) {
