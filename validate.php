@@ -202,7 +202,7 @@ require_once('global.php');
 
 
 if ($apiRequest) {
-  if ($_SERVER['HTTP_REFERER']) {
+  if ($_SERVER['HTTP_REFERER'] && $installUrl) {
     if (strstr($_SERVER['HTTP_REFERER'],$installUrl)) {
       $apiRequestCheck = false;
     }
