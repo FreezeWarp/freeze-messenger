@@ -28,16 +28,16 @@ var first = true;
 
 
 function toBottom() {
-  document.getElementById('messageList').scrollTop=document.getElementById('messageList').scrollHeight;
+  document.getElementById('messageList').scrollTop = document.getElementById('messageList').scrollHeight;
 }
 
 
 function faviconFlash() {
-    if ($('#favicon').attr('href') === '/images/favicon.gif') {
-      $('#favicon').attr('href','/images/favicon2.gif');
+    if ($('#favicon').attr('href') === 'images/favicon.gif') {
+      $('#favicon').attr('href','images/favicon2.gif');
     }
     else {
-      $('#favicon').attr('href','/images/favicon.gif');
+      $('#favicon').attr('href','images/favicon.gif');
     }
   
 }
@@ -95,7 +95,7 @@ function getError(xml) {
   }
   else {
     totalFails += 1;
-    $('#refreshStatus').html('<img src="/images/dialog-error.png" alt="Apply" class="standard" />');
+    $('#refreshStatus').html('<img src="images/dialog-error.png" alt="Apply" class="standard" />');
   }
 }
 
@@ -105,7 +105,7 @@ function getSuccess(xml) {
     totalFails = 0;
     var notifyData = '';
 
-    $('#refreshStatus').html('<img src="/images/dialog-ok.png" alt="Apply" class="standard" />');
+    $('#refreshStatus').html('<img src="images/dialog-ok.png" alt="Apply" class="standard" />');
 
     var newTopic = $(xml).find('topic').html();
     if (newTopic) {
@@ -204,7 +204,7 @@ function getSuccess(xml) {
 
     if (blur && notify) {
       if (window.webkitNotifications) {
-        webkitNotify('/images/favicon.gif', 'New Message', notifyData);
+        webkitNotify('images/favicon.gif', 'New Message', notifyData);
       }
     }
 
@@ -294,7 +294,7 @@ window.onblur = function() {
 window.onfocus = function() {
   blur = false;
   window.clearInterval(timer3);
-  $('#favicon').attr('href','/images/favicon.gif');
+  $('#favicon').attr('href','images/favicon.gif');
 };
 
 
