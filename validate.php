@@ -640,11 +640,11 @@ if ($valid) { // If the user is valid, process their preferrences.
   elseif ($session == 'update' && $sessionHash) {
     switch ($loginMethod) {
       case 'vbulletin':
-      mysqlQuery('UPDATE ' . $sqlSessionTable . ' SET lastactivity = "' . time() . '", useragent = "' . $_SERVER['HTTP_USER_AGENT'] . '" WHERE sessionhash = "' . $session['sessionhash'] . '"');
+      mysqlQuery('UPDATE ' . $sqlSessionTable . ' SET lastactivity = "' . time() . '" WHERE sessionhash = "' . $session['sessionhash'] . '"');
       break;
 
       case 'phpbb':
-      mysqlQuery('UPDATE ' . $sqlSessionTable . ' SET session_time = "' . time() . '", session_browser = "' . $_SERVER['HTTP_USER_AGENT'] . '" WHERE session_id = "' . $session['session_id'] . '"');
+      mysqlQuery('UPDATE ' . $sqlSessionTable . ' SET session_time = "' . time() . '" WHERE session_id = "' . $session['session_id'] . '"');
       break;
     }
   }
