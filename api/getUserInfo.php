@@ -14,13 +14,14 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/* This script, unfortunately, mixes not-nicely with forums. So, its kinda messy. */
 $apiRequest = true;
 
 require_once('../global.php');
 header('Content-type: text/xml');
 
 $userid = intval($_GET['userid']);
-//$username = mysqlEscape(vrim_urldecode($_GET['username']));
+$username = mysqlEscape(vrim_urldecode($_GET['username']));
 
 if ($userid) {
   $where = "u.{$sqlUserTableCols[userid]} = $userid";
@@ -33,15 +34,32 @@ else {
   $failMessage = 'Neither a username or userid was provided.';
 }
 
-if ($where) {
-  $getuserf = sqlArr("SELECT * FROM {$sqlUserTable} AS u LEFT JOIN {$sqlUserGroupTable} AS g ON u.{$sqlUserTableCols[usergroup]} = g.{$sqlUserGroupTableCols[groupid]} WHERE {$where}");
-  $getuserf['opentag'] = vrim_encodeXML($getuserf['opentag']);
-  $getuserf['closetag'] = vrim_encodeXML($getuserf['closetag']);
-}
+switch ($loginMethod) {
+  case 'vbulletin':
+  if ($where) {
+    $getuserf = sqlArr("SELECT * FROM {$sqlUserTable} AS u LEFT JOIN {$sqlUserGroupTable} AS g ON u.{$sqlUserTableCols[usergroup]} = g.{$sqlUserGroupTableCols[groupid]} WHERE {$where}");
+    $getuserf['opentag'] = vrim_encodeXML($getuserf['opentag']);
+    $getuserf['closetag'] = vrim_encodeXML($getuserf['closetag']);
+  }
 
-if ($getuserf) {
-  $useridf = $getuserf[$sqlUserTableCols['userid']];
-  $getuser = sqlArr("SELECT * FROM {$sqlPrefix}users AS u WHERE userid = $useridf");
+  if ($getuserf) {
+    $useridf = $getuserf[$sqlUserTableCols['userid']];
+    $getuser = sqlArr("SELECT * FROM {$sqlPrefix}users AS u WHERE userid = $useridf");
+  }
+  break;
+
+  case 'phpbb':
+  if ($where) {
+    $getuserf = sqlArr("SELECT u.user_id, u.username, u.user_posts AS posts, u.user_colour FROM {$sqlUserTable} AS u WHERE {$where}");
+    $getuserf['opentag'] = vrim_encodeXML('<span style="color: ' . $getuserf['user_colour'] . ';">');
+    $getuserf['closetag'] = vrim_encodeXML('</span>');
+  }
+
+  if ($getuserf) {
+    $useridf = $getuserf[$sqlUserTableCols['userid']];
+    $getuser = sqlArr("SELECT * FROM {$sqlPrefix}users AS u WHERE userid = $useridf");
+  }
+  break;
 }
 
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
