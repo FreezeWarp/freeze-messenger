@@ -172,14 +172,37 @@ WHERE w.listid = l.id AND w.severity = 'replace'",'word');
   return $text;
 }
 
-/* The smilie functions bears some similiarites to its vBulletin equivilent because features used can ONLY be done in this certain way. The function is unique, and was not copylifted. */
+/* The smilie functions bears some similiarites to its vBulletin equivilent because features used can ONLY be done in this certain way. The function is unique, and was not copylifted.
+ * Also, this function sadly doesn't integrate very well into... anything. */
 function smilie($text) {
-  global $room;
+  global $room, $loginMethod, $forumPrefix;
 
-  $smilies = sqlArr("SELECT smilietext, smiliepath, smilieid FROM smilie",'smilieid');
-  foreach ($smilies AS $id => $smilie) {
-    $smilies2[strtolower($smilie['smilietext'])] = $smilie['smiliepath'];
-    $searchText[] = addcslashes(strtolower($smilie['smilietext']),'^&|!$?()[]<>\\/.+*');
+  switch($loginMethod) {
+    case 'vbulletin':
+    $smilies = sqlArr("SELECT smilietext, smiliepath, smilieid FROM {$forumPrefix}smilie",'smilieid');
+
+    if (!$smilies) return $text;
+
+    foreach ($smilies AS $id => $smilie) {
+      $smilies2[strtolower($smilie['smilietext'])] = $smilie['smiliepath'];
+      $searchText[] = addcslashes(strtolower($smilie['smilietext']),'^&|!$?()[]<>\\/.+*');
+    }
+    break;
+
+    case 'phpbb':
+    $smilies = sqlArr("SELECT code, smiley_url, smilie_id FROM {$forumPrefix}smilie",'smilieid');
+
+    if (!$smilies) return $text;
+
+    foreach ($smilies AS $id => $smilie) {
+      $smilies2[strtolower($smilie['smilietext'])] = $smilie['smiliepath'];
+      $searchText[] = addcslashes(strtolower($smilie['smilietext']),'^&|!$?()[]<>\\/.+*');
+    }
+    break;
+
+    default:
+    return $text;
+    break;
   }
 
   $searchText2 = implode('|',$searchText);

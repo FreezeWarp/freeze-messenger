@@ -60,7 +60,6 @@ else {
 
 
 
-
 ///* Query Filter Generation *///
 
 if ($newestMessage) {
@@ -134,7 +133,7 @@ else {
   u2.defaultHighlight AS defaultHighlight,
   u2.defaultFormatting AS defaultFormatting
 FROM {$sqlPrefix}messages AS m,
-  user AS u,
+  {$sqlUserTable} AS u,
   {$sqlPrefix}users AS u2
 WHERE room = $room[id]
   AND m.deleted != true
@@ -231,6 +230,7 @@ LIMIT $messageLimit";
           switch ($loginMethod) {
             case 'vbulletin':
             $join = "LEFT JOIN {$sqlUserGroupTable} AS g ON displaygroupid = g.{$sqlUserGroupTableCols[groupid]}";
+            $cols = ",g.$sqlUserGroupTableCols[startTag] AS opentag, g.$sqlUserGroupTableCols[endTag] AS closetag";
             break;
           }
 
@@ -238,9 +238,8 @@ LIMIT $messageLimit";
   u.{$sqlUserTableCols[userid]} AS userid,
   u.{$sqlUserTableCols[usergroup]} AS displaygroupid,
   p.status,
-  p.typing,
-  g.$sqlUserGroupTableCols[startTag] AS opentag,
-  g.$sqlUserGroupTableCols[endTag] AS closetag
+  p.typing
+  $cols
 FROM {$sqlPrefix}ping AS p,
   {$sqlUserTable} AS u
 {$join}

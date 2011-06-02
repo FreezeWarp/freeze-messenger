@@ -561,7 +561,7 @@ function iifl($condition,$true,$false,$eval) {
 
 /* Note: errors should be hidden. It's sorta best practice, especially with the API. */
 function errorHandler($errno, $errstr, $errfile, $errline) {
-  global $errorFile;
+  global $errorFile, $installLoc;
   $errorFile = ($errorFile ? $errorFile : $installLoc . 'error_log.txt');
 
   switch ($errno) {

@@ -563,8 +563,8 @@ if ($valid) { // If the user is valid, process their preferrences.
 
 
     case 'phpbb':
-    $sqlUserTable = 'users'; // The user table in the login method used.
-    $sqlUserGroupTable = 'groups'; // The usergroup table in the login method used.
+    $sqlUserTable = $forumPrefix . 'users'; // The user table in the login method used.
+    $sqlUserGroupTable = $forumPrefix . 'groups'; // The usergroup table in the login method used.
 
     $sqlUserTableCols = array(
       'userid' => 'user_id', // The user ID column of the user table in the login method used.
