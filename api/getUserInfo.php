@@ -40,7 +40,8 @@ if ($where) {
 }
 
 if ($getuserf) {
-  $getuser = sqlArr("SELECT * FROM {$sqlPrefix}users AS u WHERE userid = $getuserf[userid]");
+  $useridf = $getuserf[$sqlUserTableCols['userid']];
+  $getuser = sqlArr("SELECT * FROM {$sqlPrefix}users AS u WHERE userid = $useridf");
 }
 
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
