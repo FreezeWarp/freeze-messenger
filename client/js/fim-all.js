@@ -184,4 +184,5 @@ $(document).ready(function() {
   window.layout = ($('body').attr('data-layout'));
   window.soundOn = ($('body').attr('data-ding') === '1' ? true : false);
   window.reverse = ($('body').attr('data-reverse') === '1' ? 1 : 0);
+  window.longPolling = ($('body').attr('data-longPolling') === '1' ? 1 : 0);
 });

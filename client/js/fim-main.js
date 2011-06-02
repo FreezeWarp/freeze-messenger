@@ -23,7 +23,7 @@ var lastMessage = 0;
 var messages;
 var activeUsers;
 var notify = true;
-var timeout = (longpolling ? 1000000 : 2400);
+var timeout = (window.longPolling ? 1000000 : 2400);
 var first = true;
 
 
@@ -45,7 +45,7 @@ function faviconFlash() {
 
 /* AJAX functions */
 function updatePosts() {
-  if (!longpolling) {
+  if (!window.longPolling) {
     window.clearInterval(window.timer1);
   }
 
@@ -69,7 +69,7 @@ function updatePosts() {
     error: getError,
   });
 
-  if (!longpolling) {
+  if (!window.longPolling) {
     if (totalFails > 10) {
       window.timer1 = window.setInterval(window.updatePosts,30000);
       timeout = 29900;
@@ -90,7 +90,7 @@ function updatePosts() {
 }
 
 function getError(xml) {
-  if (longpolling) {
+  if (window.longPolling) {
     setTimeout(updatePosts,50);
   }
   else {
@@ -224,7 +224,7 @@ function getSuccess(xml) {
     contextMenuParse();
   }
 
-  if (longpolling) {
+  if (window.longPolling) {
     setTimeout(updatePosts,50);
   }
   
@@ -299,7 +299,7 @@ window.onfocus = function() {
 
 
 /* Refresh */
-if (longpolling) {
+if (window.longPolling) {
   $(document).ready(function() {
     updatePosts();
   });

@@ -33,7 +33,7 @@ if (!$valid) {
 $room = intval($_GET['room'] ?: $user['defaultRoom'] ?: 1); // Get the room we're on. If there is a $_GET variable, use it, otherwise the user's "default", or finally just main.
 $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = '$room'"); // Data on the room.
 
-$bodyHook = ' data-roomid="' . $room['id'] . '" data-ding="' . ($user['optionDefs']['audioDing'] ? 1 : 0) . '" data-reverse="' . ($user['optionDefs']['reversePostOrder'] ? 1 : 0) . '" data-complex="' . ($user['optionDefs']['showAvatars'] ? 1 : 0) . '"';
+$bodyHook = ' data-roomid="' . $room['id'] . '" data-ding="' . ($user['optionDefs']['audioDing'] ? 1 : 0) . '" data-reverse="' . ($user['optionDefs']['reversePostOrder'] ? 1 : 0) . '" data-complex="' . ($user['optionDefs']['showAvatars'] ? 1 : 0) . '" data-longPolling="' . ($longPolling ? 1 : 0) . '"';
 
 
 eval(hook('chatStart'));
