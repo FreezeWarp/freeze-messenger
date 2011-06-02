@@ -248,9 +248,10 @@ function processVBulletin($user,$password) {
 }
 
 function processPHPBB($user, $password) {
-  global $forumPrefix;
+  global $forumPrefix, $brokenUsers;
 
   if (!$user['user_id']) return false;
+  elseif (in_array($user['user_id'],$brokenUsers)) return false;
 
   if (phpbb_check_hash($password, $user['user_password'])) {
     return true;
@@ -491,6 +492,7 @@ elseif ($loginMethod == 'phpbb') {
         }
       }*/ die('88');
     }
+    elseif (in_array($session['session_user_id'],$brokenUsers)) {} // Don't use sessions for broken users.
     else {
       $user = sqlArr('SELECT * FROM ' . $forumPrefix . 'users WHERE user_id = "' . intval($session['session_user_id']) . '"'); // Query from vBulletin user table.
       $session = 'update';
@@ -545,10 +547,9 @@ if ($valid) { // If the user is valid, process their preferrences.
     );
     $sqlUserGroupTableCols = array(
       'groupid' => 'usergroupid',
-      'startTag' => 'opentag',
-      'endTag' => 'closetag',
     );
-    $parseGroups = true;
+
+    $parseGroups = true; // This still needed?
 
     /* Set Relevant User Data */
     $user2['username'] = $userCopy[$sqlUserTableCols['username']];
@@ -578,8 +579,6 @@ if ($valid) { // If the user is valid, process their preferrences.
     );
     $sqlUserGroupTableCols = array(
       'groupid' => 'group_id',
-//      'startTag' => 'opentag',
-//      'endTag' => 'closetag',
     );
 
     $parseGroups = false;
