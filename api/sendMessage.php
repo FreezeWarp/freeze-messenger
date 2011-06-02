@@ -20,9 +20,9 @@ require_once('../global.php');
 require_once('../functions/parserFunctions.php');
 header('Content-type: text/xml');
 
-$message = vrim_urldecode($_GET['message']);
+$message = vrim_urldecode($_POST['message']);
 
-$roomid = intval($_GET['roomid']);
+$roomid = intval($_POST['roomid']);
 $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $roomid");
 $ip = mysqlEscape($_SERVER['REMOTE_ADDR']); // Get the IP address of the user.
 
@@ -35,7 +35,7 @@ WHERE w.listid = l.id AND (w.severity = 'warn' OR w.severity = 'confirm' OR w.se
 if (!$words) {}
 else {
   foreach ($words AS $word) {
-    if ($_GET['ignoreBlock'] && $word['severity'] == 'confirm') continue;
+    if ($_POST['ignoreBlock'] && $word['severity'] == 'confirm') continue;
 
     $searchText[] = addcslashes(strtolower($word['word']),'^&|!$?()[]<>\\/.+*');
   }
@@ -108,8 +108,8 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
     <username>" . vrim_encodeXML($user['username']) . "</username>
   </activeUser>
   <sentData>
-    <roomid>" . vrim_encodeXML($_GET['roomid']) . "</roomid>
-    <message>" . vrim_encodeXML($_GET['message']) . "</message>
+    <roomid>" . vrim_encodeXML($_POST['roomid']) . "</roomid>
+    <message>" . vrim_encodeXML($_POST['message']) . "</message>
   </sentData>
   <errorcode>$failCode</errorcode>
   <errortext>$failMessage</errortext>

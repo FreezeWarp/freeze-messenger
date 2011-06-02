@@ -25,7 +25,7 @@ function contextMenuParse() {
       ajaxDialogue('content/privateRoom.php?phase=2&userid=' + userid,'Private IM','privateRoomDialogue',1000);
       break;
       case 'profile':
-      window.open('http://victoryroad.net/member.php?u=' + userid,'profile' + userid);
+      window.open(window.forumUrl + 'member.php?u=' + userid,'profile' + userid);
       break;
       case 'kick':
       ajaxDialogue('/content/kick.php?userid=' + userid + '&roomid=' + $('body').attr('data-roomid'),'Kick User','kickUserDialogue',1000);
@@ -124,45 +124,6 @@ function contextMenuParse() {
       break;
     }
   });
-
-/*  $('.room').click(
-    function() {
-      var roomSwitchId = $(this).attr('data-roomid');
-
-      if (!roomSwitchId) {
-        quickDialogue('The roomid could not be obtained, possibly due to a scripting error.','Error','roomError');
-        return false;
-      }
-
-      $.ajax({
-        url: 'ajax/fim-roomDisplay.php',
-        type: 'POST',
-        cache: false,
-        timeout: 5000,
-        data: 'roomid=' + roomSwitchId,
-        success: function(html) {
-          if (html) {
-            try {
-              roomid = roomSwitchId;
-              $('form[action^="/uploadFile"]').attr('action','/uploadFile.php?room=' + roomSwitchId);
-              $('#roomTemplateContainer').html(html);
-            }
-            catch(err) {
-              quickDialogue('An error caused the page to become unstable. <a href="/index.php?room=' + roomSwitchId + '">Click here to refresh.</a>','Error','roomError');
-              debug.log(err);
-            }
-          }
-          else {
-            quickDialogue('The room data appears to be invalid. <a href="/index.php?room=' + roomSwitchId + '">Click here to attempt to go there with a page refresh.</a>','Error','roomError');
-          }
-        },
-        error: function() {
-          quickDialogue('The room could not be switched. <a href="/index.php?room=' + roomSwitchId + '">Click here to attempt to go there with a page refresh.</a>','Error','roomError');
-        }
-      });
-      return false;
-    }
-  );*/
 
   $('.username').ezpz_tooltip({
     contentId: 'tooltext',
