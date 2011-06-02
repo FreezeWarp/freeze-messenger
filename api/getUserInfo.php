@@ -40,6 +40,7 @@ switch ($loginMethod) {
     $getuserf = sqlArr("SELECT * FROM {$sqlUserTable} AS u LEFT JOIN {$sqlUserGroupTable} AS g ON u.{$sqlUserTableCols[usergroup]} = g.{$sqlUserGroupTableCols[groupid]} WHERE {$where}");
     $getuserf['opentag'] = vrim_encodeXML($getuserf['opentag']);
     $getuserf['closetag'] = vrim_encodeXML($getuserf['closetag']);
+    $getuserf['avatar'] = $forumUrl . '/image.php?u=' . $getuserf['userid'];
   }
 
   if ($getuserf) {
@@ -50,9 +51,10 @@ switch ($loginMethod) {
 
   case 'phpbb':
   if ($where) {
-    $getuserf = sqlArr("SELECT u.user_id, u.username, u.user_posts AS posts, u.user_colour FROM {$sqlUserTable} AS u WHERE {$where}");
-    $getuserf['opentag'] = vrim_encodeXML('<span style="color: ' . $getuserf['user_colour'] . ';">');
+    $getuserf = sqlArr("SELECT u.user_id, u.username, u.user_posts AS posts, u.user_colour, u.user_avatar FROM {$sqlUserTable} AS u WHERE {$where}");
+    $getuserf['opentag'] = vrim_encodeXML('<span style="color: #' . $getuserf['user_colour'] . ';">');
     $getuserf['closetag'] = vrim_encodeXML('</span>');
+    $getuserf['avatar'] = $forumUrl . '/download/file.php?avatar=' . $getuserf['user_avatar'];
   }
 
   if ($getuserf) {
@@ -85,6 +87,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
     <joindate>$getuserf[joindate]</joindate>
     <joindateformatted>" . vbdate(false,$getuserf['joindate']) . "</joindateformatted>
     <usertitle>$getuserf[usertitle]</usertitle>
+    <avatar>$getuserf[avatar]</avatar>
   </userData>
 </getUserInfo>";
 
