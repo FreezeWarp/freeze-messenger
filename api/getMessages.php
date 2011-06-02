@@ -137,7 +137,7 @@ FROM {$sqlPrefix}messages AS m,
   {$sqlPrefix}users AS u2
 WHERE room = $room[id]
   AND m.deleted != true
-  AND m.user = u.userid
+  AND m.user = u.{$sqlUserTableCols[userid]}
   AND m.user = u2.userid
 $whereClause
 ORDER BY messageid $order
@@ -244,9 +244,9 @@ FROM {$sqlPrefix}ping AS p,
   {$sqlUserTable} AS u
 {$join}
 WHERE p.roomid IN ($room[id])
-  AND p.userid = u.userid
+  AND p.userid = u.{$sqlUserTableCols[userid]}
   AND UNIX_TIMESTAMP(p.time) >= (UNIX_TIMESTAMP(NOW()) - $onlineThreshold)
-ORDER BY u.username
+ORDER BY u.{$sqlUserTableCols[username]}
 LIMIT 500",'userid');
 
   if ($ausers) {

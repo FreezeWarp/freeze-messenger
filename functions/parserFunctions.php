@@ -190,7 +190,7 @@ function smilie($text) {
     break;
 
     case 'phpbb':
-    $smilies = sqlArr("SELECT code, smiley_url, smilie_id FROM {$forumPrefix}smilie",'smilieid');
+    $smilies = sqlArr("SELECT code, smiley_url, smiley_id FROM {$forumPrefix}smilies",'smiley_id');
 
     if (!$smilies) return $text;
 

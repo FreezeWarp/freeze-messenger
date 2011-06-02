@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS `{prefix}messages` (
   `room` int(10) NOT NULL,
   `rawText` varchar(5000) COLLATE utf8_bin NOT NULL,
   `htmlText` varchar(5000) COLLATE utf8_bin NOT NULL,
-  `vbText` varchar(5000) COLLATE utf8_bin NOT NULL,
+  `apiText` varchar(5000) COLLATE utf8_bin NOT NULL,
   `salt` int(10) NOT NULL,
   `iv` varchar(15) COLLATE utf8_bin NOT NULL,
   `deleted` int(1) NOT NULL,
