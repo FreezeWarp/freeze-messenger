@@ -390,8 +390,8 @@ elseif (isset($_COOKIE[$forumCookiePrefix . 'sessionhash']) && !$apiRequestCheck
   $password = false;
 }
 
-elseif (isset($_COOKIE[$forumCookiePrefix . 'lwplf_sid']) && !$apiRequestCheck) {
-  $sessionHash = vrim_urldecode($_COOKIE[$forumCookiePrefix . 'lwplf_sid']);
+elseif (isset($_COOKIE[$forumCookiePrefix . 'sid']) && !$apiRequestCheck) {
+  $sessionHash = vrim_urldecode($_COOKIE[$forumCookiePrefix . 'sid']);
 
   $username = false;
   $password = false;
@@ -653,13 +653,19 @@ if ($valid) { // If the user is valid, process their preferrences.
   }
 
   if ($setCookie) {
-    if ($loginMethod == 'vbulletin') {
+    switch($loginMethod) {
+      case 'vbulletin':
       if ($rememberMe) { // This will store the user's login information in the browser's cookies for one week.
         setcookie($forumCookiePrefix . 'userid',$userCopy['userid'],time() + 60 * 60 * 24 * 365,'/','.victoryroad.net'); // Set the cookie for userid.
         setcookie($forumCookiePrefix . 'password',md5($userCopy['password'] . $forumCookieSalt),time() + 60 * 60 * 24 * 365,'/','.victoryroad.net'); // Set the cookie for password.
       }
 
       setcookie($forumCookiePrefix . 'sessionhash',$sessionhash,0,'/','.victoryroad.net'); // Set the cookie for the unique session.
+      break;
+
+      case 'phpbb':
+      setcookie($forumCookiePrefix . 'sid',$sessionhash,0,'/','.victoryroad.net'); // Set the cookie for the unique session.
+      break;
     }
   }
 
