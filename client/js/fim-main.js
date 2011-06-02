@@ -22,7 +22,6 @@ var topic;
 var lastMessage = 0;
 var messages;
 var activeUsers;
-var longpolling = true;
 var notify = true;
 var timeout = (longpolling ? 1000000 : 2400);
 var first = true;
