@@ -559,62 +559,30 @@ function iifl($condition,$true,$false,$eval) {
   return $false;
 }
 
+/* Note: errors should be hidden. It's sorta best practice, especially with the API. */
 function errorHandler($errno, $errstr, $errfile, $errline) {
-  global $lite, $apiRequest;
+  global $errorFile;
+  $errorFile = ($errorFile ? $errorFile : $installLoc . 'error_log.txt');
 
-  $errorString = $errstr . ($_GET['showErrorsFull'] ? " on line $errline" : '');
+  switch ($errno) {
+    case E_USER_ERROR:
+    error_log("User Error; File '$errfile'; Line '$errline': $errstr\n",3,$errorFile);
+    die("An error has occured: $errstr. \n\nThe application has terminated.");
+    break;
 
-  if ($lite && function_exists('container')) {
-    switch ($errno) {
-      case E_USER_ERROR:
-      echo container('Error',$errorString);
-      break;
-      case E_USER_WARNING:
-      echo container('Error [Ignored]',$errorString);
-      break;
-      case E_USER_NOTICE:
-      break;
-      case E_ERROR:
-      echo container('System Error',$errorString);
-      break;
-      case E_WARNING:
-      echo container('System Error [Ignored]',$errorString);
-      break;
-      case E_NOTICE:
-      break;
-      default:
-      echo container('Invalid error code: the error handler could not launch.');
-      break;
-    }
+    case E_USER_WARNING:
+    error_log("User Warning; File '$errfile'; Line '$errline': $errstr\n",3,$errorFile);
+    break;
+
+    case E_ERROR:
+    error_log("System Error; File '$errfile'; Line '$errline': $errstr\n",3,$errorFile);
+    die("An error has occured: $errstr. \n\nThe application has terminated.");
+    break;
+
+    case E_WARNING:
+    error_log("System Warning; File '$errfile'; Line '$errline': $errstr\n",3,$errorFile);
+    break;
   }
-/*  elseif ($apiRequest) {
-    $warnings = '';
-  }*/
-  else {
-    switch ($errno) {
-      case E_USER_ERROR:
-      echo '<div class="ui-state-error">' . $errorString . '</div>';
-      break;
-      case E_USER_WARNING:
-      echo '<div class="ui-state-error">The following error has been encountered, though it has been ignored: "' . $errorString . '".</div>';
-      break;
-      case E_USER_NOTICE:
-      break;
-      case E_ERROR:
-      die('The script you are running has died with the error "' . $errorString . '".<br />');
-      break;
-      case E_WARNING:
-      echo '<div class="ui-state-error">System error: "' . $errorString . '".</div>';
-      break;
-      case E_NOTICE:
-      break;
-      default:
-      echo '<div class="ui-state-error">Invalid error code: the error handler could not launch.</div>';
-      break;
-    }
-  }
-
-  error_log("$errno-level error in $errfile on line $errline: $errstr");
 
   // Don't execute the internal PHP error handler.
   return true;

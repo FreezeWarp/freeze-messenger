@@ -21,6 +21,7 @@ $reqHooks = true;
 
 require_once('global.php');
 require_once('functions/container.php');
+trigger_error('aa',E_USER_ERROR);
 
 
 if (!$valid) {
