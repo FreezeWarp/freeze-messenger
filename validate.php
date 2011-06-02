@@ -612,12 +612,12 @@ if ($valid) { // If the user is valid, process their preferrences.
 
   }
 
-  $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userid = ' . $user2['userid']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
+  $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userid = ' . (int) $user2['userid']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
 
   if (!$userprefs) {
-    mysqlQuery('INSERT INTO ' . $sqlPrefix . 'users SET userid = ' . $user2['userid']); // Create the new row
+    mysqlQuery('INSERT INTO ' . $sqlPrefix . 'users SET userid = ' . (int) $user2['userid']); // Create the new row
 
-    $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userid = ' . $user2['userid']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
+    $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userid = ' . (int) $user2['userid']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
   }
 
   $user = array_merge($user2,$userprefs); // Merge userprefs into user for future referrence.
@@ -627,13 +627,13 @@ if ($valid) { // If the user is valid, process their preferrences.
       case 'vbulletin':
       $sessionhash = md5(uniqid(microtime(), true)); // Generate the sessionhash, which should be unique to this browsing session.
 
-      mysqlQuery('INSERT INTO ' . $sqlSessionTable . ' SET sessionhash = "' . $sessionhash . '", idhash="' . $idhash . '", userid = "' . $user['userid'] . '", host = "' . $_SERVER['REMOTE_ADDR'] . '", lastactivity = "' . time()  . '", location="/chat.php", useragent="' . $_SERVER['HTTP_USER_AGENT'] . '", loggedin = 2'); // Add to the vBulletin session table for the who's online.
+      mysqlQuery('INSERT INTO ' . $sqlSessionTable . ' SET sessionhash = "' . mysqlEscape($sessionhash) . '", idhash="' . mysqlEscape($idhash) . '", userid = "' . (int) $user['userid'] . '", host = "' . mysqlEscape($_SERVER['REMOTE_ADDR']) . '", lastactivity = "' . time()  . '", location="/chat.php", useragent="' . mysqlEscape($_SERVER['HTTP_USER_AGENT']) . '", loggedin = 2'); // Add to the vBulletin session table for the who's online.
       break;
 
       case 'phpbb':
       $sessionhash = md5(unique_id()); // Works slightly different compared to vB, you'll see.
 
-      mysqlQuery('INSERT INTO ' . $sqlSessionTable . ' SET session_id = "' . $sessionhash . '", session_user_id = "' . $user['userid'] . '", session_ip = "' . $_SERVER['REMOTE_ADDR'] . '", session_time = "' . time()  . '", session_page="chat.php", session_browser="' . $_SERVER['HTTP_USER_AGENT'] . '"'); // Add to the vBulletin session table for the who's online.
+      mysqlQuery('INSERT INTO ' . $sqlSessionTable . ' SET session_id = "' . mysqlEscape($sessionhash) . '", session_user_id = "' . (int) $user['userid'] . '", session_ip = "' . mysqlEscape($_SERVER['REMOTE_ADDR']) . '", session_time = "' . time()  . '", session_page="chat.php", session_browser="' . mysqlEscape($_SERVER['HTTP_USER_AGENT']) . '"'); // Add to the vBulletin session table for the who's online.
       break;
     }
   }
