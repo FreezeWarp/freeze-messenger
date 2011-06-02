@@ -508,7 +508,7 @@ elseif ($loginMethod == 'phpbb') {
   elseif ($userid && $password) { die('3');
     $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userid = "' . intval($userid) . '" LIMIT 1');
 
-    if (processVBulletin($user,$password)) {
+    if (processPHPBB($user,$password)) {
       $setCookie = true;
       $valid = true;
       $session = 'create';
@@ -631,7 +631,9 @@ if ($valid) { // If the user is valid, process their preferrences.
       break;
 
       case 'phpbb':
-      
+      $sessionhash = md5(unique_id()); // Works slightly different compared to vB, you'll see.
+
+      mysqlQuery('INSERT INTO ' . $sqlSessionTable . ' SET session_id = "' . $sessionhash . '", session_user_id = "' . $user['userid'] . '", session_ip = "' . $_SERVER['REMOTE_ADDR'] . '", session_time = "' . time()  . '", session_page="chat.php", session_browser="' . $_SERVER['HTTP_USER_AGENT'] . '"'); // Add to the vBulletin session table for the who's online.
       break;
     }
   }
