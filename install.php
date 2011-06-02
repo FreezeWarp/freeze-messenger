@@ -1,8 +1,8 @@
 <?php
 error_reporting(E_ALL ^ E_NOTICE);
-if (file_exists('config.php')) {
+/*if (file_exists('config.php')) {
   die('The configuration file (config.php) exists. Please remove it before attempting reinstallation.');
-}
+}*/
 
 switch ($_REQUEST['phase']) {
   case false:

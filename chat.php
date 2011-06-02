@@ -72,7 +72,7 @@ else {
   }
   
   elseif ($hasPermission) { // The user is not banned, and is allowed to view this room.
-  
+
     if ((($room['options'] & 1) == false) && (($user['settings'] & 64) == false)) {
       if ($room['options'] & 16) {
         $stopMessage = $phrases['chatPrivateRoom'];
@@ -91,7 +91,7 @@ else {
     }
   
     else {
-  $textboxStyle = messageStyle($user);
+      $textboxStyle = messageStyle($user);
       echo template('chatTemplate');
     }
   }
@@ -116,7 +116,7 @@ else {
 
   echo '</div>';
 
-  if (!$light) echo '<div id="dialogues">
+  echo '<div id="dialogues">
   <div id="textentryBox">
     <div id="textentryBoxUpload">
       <form action="/uploadFile.php?room=' . $room['id'] . '" method="post" enctype="multipart/form-data" target="upload_target" id="uploadFileForm" onsubmit="$(\'#textentryBoxUpload\').dialog(\'close\');">

@@ -17,6 +17,7 @@
 $apiRequest = true;
 require_once('../global.php');
 header('Content-type: text/xml');
+
 if ($longPolling) {
   set_time_limit(0);
   ini_set('max_execution_time',0);

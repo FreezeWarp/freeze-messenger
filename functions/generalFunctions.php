@@ -25,6 +25,7 @@ function inArray($needle,$haystack) {
 
 function hasPermission($roomData,$userData,$type = 'post',$trans = false) { // The below permissions are very hierachle.
   global $sqlPrefix, $banned;
+  static $isAdmin, $isModerator, $isAllowedUser, $isAllowedGroup, $isOwner, $isRoomDeleted;
 
   /* Make sure all presented data is correct. */
   if (!$roomData['id']) {
@@ -417,7 +418,7 @@ function parser1($text,$offset,$stop = false,$globalString) {
       if ($stop) return array($str,$i);
 
       $iv = array(1 => '', 2 => '');
-      $cond = '';
+      $cond = '';       
       $iValueI = 1;
       $iValueProc = false;
 
@@ -459,7 +460,7 @@ function parser1($text,$offset,$stop = false,$globalString) {
         continue;
       }
 
-      elseif (substr($text,$i,6) == '{{if="') {
+      elseif (substr($text,$i,6) == '{{if="') {// die('<<<' . $text . '>>>');
         list($nstr,$offset) = parser1($text,$i,true,$globalString);
         $i = $offset;
         $cv[$cValueI] .= $nstr;
@@ -472,8 +473,9 @@ function parser1($text,$offset,$stop = false,$globalString) {
         $cv[$cValueI] .= $j;
       }
     }
+
     elseif ($iValue) {
-      if ((substr($text,$i,2) == '}{') && ($iValueI == 1)) {// die((substr($text,$i,2)) . '::' . $iValueI . '::' . $i);
+      if ((substr($text,$i,2) == '}{') && ($iValueI == 1)) {
         $iValueI = 2;
 
         $i += 2;
@@ -508,6 +510,7 @@ function parser1($text,$offset,$stop = false,$globalString) {
         $iv[$iValueI] .= $j;
       }
     }
+
     else {
       if (substr($text,$i,6) == '{{if="') {
         $i += 6;
@@ -537,6 +540,7 @@ function parser1($text,$offset,$stop = false,$globalString) {
         $str .= $j;
       }
     }
+
     $i++;
   }
 

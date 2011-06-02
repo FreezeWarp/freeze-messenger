@@ -13,3 +13,6 @@ CREATE TABLE IF NOT EXISTS `{prefix}rooms` (
   PRIMARY KEY (`id`),
   KEY `options` (`options`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8;
+
+INSERT INTO `{prefix}rooms` (`id`, `name`, `title`, `allowedGroups`, `allowedUsers`, `options`) VALUES
+(1, 'Your Room!', 'Hit the Edit Room Button to Change Things or Use /topic to Change the Topic', '*', '*', 1)
