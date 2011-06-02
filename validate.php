@@ -24,6 +24,51 @@
 
 ///* Required Forum-Included Functions *///
 
+switch ($loginMethod) {
+
+  case 'vbulletin':
+  /* Set Relevant Column Data */
+  $sqlUserTable = 'user'; // The user table in the login method used.
+  $sqlUserGroupTable = 'usergroup'; // The usergroup table in the login method used.
+
+  $sqlUserTableCols = array(
+    'userid' => 'userid', // The user ID column of the user table in the login method used.
+    'username' => 'username', // The username column of the user table in the login method used.
+    'usergroup' => 'displaygroupid', // The usergroup column of the user table in the login method used.
+    'allgroups' => 'membergroupids',
+    'tzoffset' => 'timezoneoffset',
+    'options' => 'options',
+  );
+  $sqlUserGroupTableCols = array(
+    'groupid' => 'usergroupid',
+  );
+
+  $parseGroups = true; // This still needed?
+  break;
+
+  case 'phpbb':
+  $sqlUserTable = $forumPrefix . 'users'; // The user table in the login method used.
+  $sqlUserGroupTable = $forumPrefix . 'groups'; // The usergroup table in the login method used.
+
+  $sqlUserTableCols = array(
+    'userid' => 'user_id', // The user ID column of the user table in the login method used.
+    'username' => 'username', // The username column of the user table in the login method used.
+    'usergroup' => 'group_id', // The usergroup column of the user table in the login method used.
+    'allgroups' => 'group_id',
+    'tzoffset' => 'user_timezone',
+  );
+  $sqlUserGroupTableCols = array(
+    'groupid' => 'group_id',
+  );
+
+  $parseGroups = false;
+
+  default:
+  die('Error');
+  break;
+
+}
+
 
 /* The following function is derived from vBulletin code required for properly defining a vBulletin-compatible cookie.
  * It is deemed fair use to use this code for the following reasons. If its authors have any issue, please contact Joseph T. Parsons by email (rehtaew@gmail.com) to sort any possible issues out:
@@ -533,24 +578,6 @@ if ($valid) { // If the user is valid, process their preferrences.
 
     case 'vbulletin':
 
-    /* Set Relevant Column Data */
-    $sqlUserTable = 'user'; // The user table in the login method used.
-    $sqlUserGroupTable = 'usergroup'; // The usergroup table in the login method used.
-
-    $sqlUserTableCols = array(
-      'userid' => 'userid', // The user ID column of the user table in the login method used.
-      'username' => 'username', // The username column of the user table in the login method used.
-      'usergroup' => 'displaygroupid', // The usergroup column of the user table in the login method used.
-      'allgroups' => 'membergroupids',
-      'tzoffset' => 'timezoneoffset',
-      'options' => 'options',
-    );
-    $sqlUserGroupTableCols = array(
-      'groupid' => 'usergroupid',
-    );
-
-    $parseGroups = true; // This still needed?
-
     /* Set Relevant User Data */
     $user2['username'] = $userCopy[$sqlUserTableCols['username']];
     $user2['userid'] = $userCopy[$sqlUserTableCols['userid']];
@@ -567,20 +594,6 @@ if ($valid) { // If the user is valid, process their preferrences.
 
 
     case 'phpbb':
-    $sqlUserTable = $forumPrefix . 'users'; // The user table in the login method used.
-    $sqlUserGroupTable = $forumPrefix . 'groups'; // The usergroup table in the login method used.
-
-    $sqlUserTableCols = array(
-      'userid' => 'user_id', // The user ID column of the user table in the login method used.
-      'username' => 'username', // The username column of the user table in the login method used.
-      'usergroup' => 'group_id', // The usergroup column of the user table in the login method used.
-      'allgroups' => 'group_id',
-      'tzoffset' => 'user_timezone',
-    );
-    $sqlUserGroupTableCols = array(
-      'groupid' => 'group_id',
-    );
-
     $parseGroups = false;
 
     /* Set Relevant User Data */
