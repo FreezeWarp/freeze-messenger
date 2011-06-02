@@ -175,7 +175,7 @@ WHERE w.listid = l.id AND w.severity = 'replace'",'word');
 /* The smilie functions bears some similiarites to its vBulletin equivilent because features used can ONLY be done in this certain way. The function is unique, and was not copylifted.
  * Also, this function sadly doesn't integrate very well into... anything. */
 function smilie($text) {
-  global $room, $loginMethod, $forumPrefix;
+  global $room, $loginMethod, $forumPrefix, $forumUrl;
 
   switch($loginMethod) {
     case 'vbulletin':
@@ -187,7 +187,9 @@ function smilie($text) {
       $smilies2[strtolower($smilie['smilietext'])] = $smilie['smiliepath'];
       $searchText[] = addcslashes(strtolower($smilie['smilietext']),'^&|!$?()[]<>\\/.+*');
     }
-    break;
+
+     $forumUrlS = $forumUrl;
+     break;
 
     case 'phpbb':
     $smilies = sqlArr("SELECT code, smiley_url, smiley_id FROM {$forumPrefix}smilies",'smiley_id');
@@ -195,9 +197,11 @@ function smilie($text) {
     if (!$smilies) return $text;
 
     foreach ($smilies AS $id => $smilie) {
-      $smilies2[strtolower($smilie['smilietext'])] = $smilie['smiliepath'];
-      $searchText[] = addcslashes(strtolower($smilie['smilietext']),'^&|!$?()[]<>\\/.+*');
+      $smilies2[strtolower($smilie['code'])] = $smilie['smiley_url'];
+      $searchText[] = addcslashes(strtolower($smilie['code']),'^&|!$?()[]<>\\/.+*');
     }
+
+    $forumUrlS = $forumUrl . 'images/smilies/';
     break;
 
     default:
@@ -207,7 +211,7 @@ function smilie($text) {
 
   $searchText2 = implode('|',$searchText);
 
-  return preg_replace("/(?<!(\[noparse\]))(?<!(quot))(?<!(gt))(?<!(lt))(?<!(apos))(?<!(amp))($searchText2)(?!\[\/noparse\])/ie","'[img=\\3]http://www.victoryroad.net/' . indexValue(\$smilies2,strtolower('\\7')) . '[/img]'",$text);
+  return preg_replace("/(?<!(\[noparse\]))(?<!(quot))(?<!(gt))(?<!(lt))(?<!(apos))(?<!(amp))($searchText2)(?!\[\/noparse\])/ie","'[img=\\3]$forumUrlS' . indexValue(\$smilies2,strtolower('\\7')) . '[/img]'",$text);
 }
 
 function indexValue($array,$index) {
