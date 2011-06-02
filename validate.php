@@ -28,8 +28,9 @@ switch ($loginMethod) {
 
   case 'vbulletin':
   /* Set Relevant Column Data */
-  $sqlUserTable = 'user'; // The user table in the login method used.
-  $sqlUserGroupTable = 'usergroup'; // The usergroup table in the login method used.
+  $sqlUserTable = $forumPrefix . 'user'; // The user table in the login method used.
+  $sqlUserGroupTable = $forumPrefix . 'usergroup'; // The usergroup table in the login method used.
+  $sqlSessionTable = $forumPrefix . 'session'; // The sessions table in the login method used.
 
   $sqlUserTableCols = array(
     'userid' => 'userid', // The user ID column of the user table in the login method used.
@@ -49,6 +50,7 @@ switch ($loginMethod) {
   case 'phpbb':
   $sqlUserTable = $forumPrefix . 'users'; // The user table in the login method used.
   $sqlUserGroupTable = $forumPrefix . 'groups'; // The usergroup table in the login method used.
+  $sqlSessionTable = $forumPrefix . 'sessions'; // The sessions table in the login method used.
 
   $sqlUserTableCols = array(
     'userid' => 'user_id', // The user ID column of the user table in the login method used.
@@ -417,7 +419,7 @@ if ($flag) {
 }
 elseif ($loginMethod === 'vbulletin') {
   if ($username && $password) {
-    $user = sqlArr('SELECT * FROM ' . $forumPrefix . 'user WHERE username = "' . mysqlEscape($username) . '" LIMIT 1');
+    $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE username = "' . mysqlEscape($username) . '" LIMIT 1');
 
     if (processVBulletin($user,$password)) {
       $setCookie = true;
@@ -430,7 +432,7 @@ elseif ($loginMethod === 'vbulletin') {
   }
 
   elseif ($userid && $password) {
-    $user = sqlArr('SELECT * FROM ' . $forumPrefix . 'user WHERE userid = "' . intval($userid) . '" LIMIT 1');
+    $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userid = "' . intval($userid) . '" LIMIT 1');
 
     if (processVBulletin($user,$password)) {
       $setCookie = true;
@@ -443,14 +445,14 @@ elseif ($loginMethod === 'vbulletin') {
   }
 
   elseif ($sessionHash) {
-    $session = sqlArr('SELECT * FROM ' . $forumPrefix . 'session WHERE sessionhash = "' . mysqlEscape($sessionHash) . '"');
+    $session = sqlArr('SELECT * FROM ' . $sqlSessionTable . ' WHERE sessionhash = "' . mysqlEscape($sessionHash) . '"');
 
     if (!$session['userid']) {
       if (isset($_COOKIE[$forumCookiePrefix . 'userid'],$_COOKIE[$forumCookiePrefix . 'password'])) { // Data is stored in long-lasting cookies.
         $userid = intval($_COOKIE[$forumCookiePrefix . 'userid']);
         $passwordVBulletin = $_COOKIE[$forumCookiePrefix . 'password'];
 
-        $user = sqlArr('SELECT * FROM ' . $forumPrefix . 'user WHERE userid = "' . intval($userid) . '" AND "' . mysqlEscape($_COOKIE['bbpassword'])  . '" = MD5(CONCAT(password,"' . $forumCookieSalt . '"))'); // Query from vBulletin user table.
+        $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userid = "' . intval($userid) . '" AND "' . mysqlEscape($_COOKIE['bbpassword'])  . '" = MD5(CONCAT(password,"' . $forumCookieSalt . '"))'); // Query from vBulletin user table.
 
         if ($user) {
           $valid = true;
@@ -464,14 +466,14 @@ elseif ($loginMethod === 'vbulletin') {
       }
     }
     else {
-      $user = sqlArr('SELECT * FROM ' . $forumPrefix . 'user WHERE userid = "' . intval($session['userid']) . '"'); // Query from vBulletin user table.
+      $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userid = "' . intval($session['userid']) . '"'); // Query from vBulletin user table.
       $session = 'update';
       $valid = true;
     }
   }
 
   elseif ($userid && $passwordVBulletin) {
-    $user = sqlArr('SELECT * FROM ' . $forumPrefix . 'user WHERE userid = "' . intval($userid) . '" AND "' . mysqlEscape($_COOKIE['bbpassword'])  . '" = MD5(CONCAT(password,"' . $forumCookieSalt . '"))'); // Query from vBulletin user table.
+    $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userid = "' . intval($userid) . '" AND "' . mysqlEscape($_COOKIE['bbpassword'])  . '" = MD5(CONCAT(password,"' . $forumCookieSalt . '"))'); // Query from vBulletin user table.
 
     if ($user) {
       $valid = true;
@@ -491,7 +493,7 @@ elseif ($loginMethod === 'vbulletin') {
 
 elseif ($loginMethod == 'phpbb') {
   if ($username && $password) {
-    $user = sqlArr('SELECT * FROM ' . $forumPrefix . 'users WHERE username = "' . mysqlEscape($username) . '" LIMIT 1');
+    $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE username = "' . mysqlEscape($username) . '" LIMIT 1');
 
     if (processPHPBB($user,$password)) {
       $setCookie = true;
@@ -504,7 +506,7 @@ elseif ($loginMethod == 'phpbb') {
   }
 
   elseif ($userid && $password) { die('3');
-    $user = sqlArr('SELECT * FROM ' . $forumPrefix . 'user WHERE userid = "' . intval($userid) . '" LIMIT 1');
+    $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userid = "' . intval($userid) . '" LIMIT 1');
 
     if (processVBulletin($user,$password)) {
       $setCookie = true;
@@ -517,14 +519,14 @@ elseif ($loginMethod == 'phpbb') {
   }
 
   elseif ($sessionHash) {
-    $session = sqlArr('SELECT * FROM ' . $forumPrefix . 'sessions WHERE session_id = "' . mysqlEscape($sessionHash) . '"');
+    $session = sqlArr('SELECT * FROM ' . $sqlSessionTable . ' WHERE session_id = "' . mysqlEscape($sessionHash) . '"');
 
     if (!$session['session_user_id']) {
 /*      if (isset($_COOKIE[$forumCookiePrefix . 'userid'],$_COOKIE[$forumCookiePrefix . 'password'])) { // Data is stored in long-lasting cookies.
         $userid = intval($_COOKIE[$forumCookiePrefix . 'userid']);
         $passwordVBulletin = $_COOKIE[$forumCookiePrefix . 'password'];
 
-        $user = sqlArr('SELECT * FROM ' . $forumPrefix . 'user WHERE userid = "' . intval($userid) . '" AND "' . mysqlEscape($_COOKIE['bbpassword'])  . '" = MD5(CONCAT(password,"' . $forumCookieSalt . '"))'); // Query from vBulletin user table.
+        $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userid = "' . intval($userid) . '" AND "' . mysqlEscape($_COOKIE['bbpassword'])  . '" = MD5(CONCAT(password,"' . $forumCookieSalt . '"))'); // Query from vBulletin user table.
 
         if ($user) {
           $valid = true;
@@ -539,14 +541,14 @@ elseif ($loginMethod == 'phpbb') {
     }
     elseif (in_array($session['session_user_id'],$brokenUsers)) {} // Don't use sessions for broken users.
     else {
-      $user = sqlArr('SELECT * FROM ' . $forumPrefix . 'users WHERE user_id = "' . intval($session['session_user_id']) . '"'); // Query from vBulletin user table.
+      $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE user_id = "' . intval($session['session_user_id']) . '"'); // Query from vBulletin user table.
       $session = 'update';
       $valid = true;
     }
   }
 
   elseif ($userid && $passwordVBulletin) { die('5');
-    $user = sqlArr('SELECT * FROM ' . $forumPrefix . 'user WHERE userid = "' . intval($userid) . '" AND "' . mysqlEscape($_COOKIE['bbpassword'])  . '" = MD5(CONCAT(password,"' . $forumCookieSalt . '"))'); // Query from vBulletin user table.
+    $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userid = "' . intval($userid) . '" AND "' . mysqlEscape($_COOKIE['bbpassword'])  . '" = MD5(CONCAT(password,"' . $forumCookieSalt . '"))'); // Query from vBulletin user table.
 
     if ($user) {
       $valid = true;
@@ -577,7 +579,6 @@ if ($valid) { // If the user is valid, process their preferrences.
   switch ($loginMethod) {
 
     case 'vbulletin':
-
     /* Set Relevant User Data */
     $user2['username'] = $userCopy[$sqlUserTableCols['username']];
     $user2['userid'] = $userCopy[$sqlUserTableCols['userid']];
@@ -626,7 +627,7 @@ if ($valid) { // If the user is valid, process their preferrences.
       case 'vbulletin':
       $sessionhash = md5(uniqid(microtime(), true)); // Generate the sessionhash, which should be unique to this browsing session.
 
-      mysqlQuery('INSERT INTO ' . $forumPrefix . 'session SET sessionhash = "' . $sessionhash . '", idhash="' . $idhash . '", userid = "' . $user['userid'] . '", host = "' . $_SERVER['REMOTE_ADDR'] . '", lastactivity = "' . time()  . '", location="/chat.php", useragent="' . $_SERVER['HTTP_USER_AGENT'] . '", loggedin = 2'); // Add to the vBulletin session table for the who's online.
+      mysqlQuery('INSERT INTO ' . $sqlSessionTable . ' SET sessionhash = "' . $sessionhash . '", idhash="' . $idhash . '", userid = "' . $user['userid'] . '", host = "' . $_SERVER['REMOTE_ADDR'] . '", lastactivity = "' . time()  . '", location="/chat.php", useragent="' . $_SERVER['HTTP_USER_AGENT'] . '", loggedin = 2'); // Add to the vBulletin session table for the who's online.
       break;
 
       case 'phpbb':
@@ -637,11 +638,11 @@ if ($valid) { // If the user is valid, process their preferrences.
   elseif ($session == 'update' && $sessionHash) {
     switch ($loginMethod) {
       case 'vbulletin':
-      mysqlQuery('UPDATE ' . $forumPrefix . 'session SET lastactivity = "' . time() . '", useragent = "' . $_SERVER['HTTP_USER_AGENT'] . '" WHERE sessionhash = "' . $session['sessionhash'] . '"');
+      mysqlQuery('UPDATE ' . $sqlSessionTable . ' SET lastactivity = "' . time() . '", useragent = "' . $_SERVER['HTTP_USER_AGENT'] . '" WHERE sessionhash = "' . $session['sessionhash'] . '"');
       break;
 
       case 'phpbb':
-      mysqlQuery('UPDATE ' . $forumPrefix . 'sessions SET session_time = "' . time() . '", session_browser = "' . $_SERVER['HTTP_USER_AGENT'] . '" WHERE session_id = "' . $session['session_id'] . '"');
+      mysqlQuery('UPDATE ' . $sqlSessionTable . ' SET session_time = "' . time() . '", session_browser = "' . $_SERVER['HTTP_USER_AGENT'] . '" WHERE session_id = "' . $session['session_id'] . '"');
       break;
     }
   }
