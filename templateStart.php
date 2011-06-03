@@ -74,8 +74,6 @@ $style = $styles[$theme];
 
 /*** Start ***/
 
-header('Content-Type: text/html; charset=utf-8'); 
-
 eval(hook('templateStart'));
 
 /*** Process Favourite Rooms

@@ -11,7 +11,10 @@ CREATE TABLE IF NOT EXISTS `{prefix}rooms` (
   `lastMessageTime` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `lastMessageId` int(10) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `options` (`options`)
+  KEY `options` (`options`),
+  KEY `owner` (`owner`),
+  KEY `lastMessageId` (`lastMessageId`),
+  KEY `lastMessageTime` (`lastMessageTime`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8;
 
 INSERT INTO `{prefix}rooms` (`id`, `name`, `title`, `allowedGroups`, `allowedUsers`, `options`) VALUES

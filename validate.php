@@ -227,19 +227,6 @@ function _hash_encode64($input, $count, &$itoa64) {
   return $output;
 }
 
-
-function _hash_gensalt_private($input, &$itoa64, $iteration_count_log2 = 6) {
-  if ($iteration_count_log2 < 4 || $iteration_count_log2 > 31) {
-    $iteration_count_log2 = 8;
-  }
-
-  $output = '$H$';
-  $output .= $itoa64[min($iteration_count_log2 + 5, 30)];
-  $output .= _hash_encode64($input, 6, $itoa64);
-
-  return $output;
-}
-
 function phpbb_check_hash($password, $hash) {
   if (strlen($hash) == 34) {
     return (_hash_crypt_private($password, $hash, $itoa64) === $hash) ? true : false;
