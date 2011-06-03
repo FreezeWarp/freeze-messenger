@@ -78,12 +78,14 @@ if (!$whereClause && $messageStart) {
   $whereClause .= "AND messageid > $messageStart AND messageid < " . ($messageStart + $messageLimit);
 }
 
-if ($loginMethod == 'vbulletin') {
-  $tableClause .= "{$sqlUserGroupTable} AS g";
-  $whereClause .= "u.{$sqlUserTableCols[usergroup]} = g.{$sqlUserGroupTableCols[groupid]}";
-}
-elseif ($loginMethod == 'phpbb') {
-  $colClause .= ', u.user_colour';
+if ($archive) {
+  if ($loginMethod == 'vbulletin') {
+    $tableClause .= "{$sqlUserGroupTable} AS g";
+    $whereClause .= "u.{$sqlUserTableCols[usergroup]} = g.{$sqlUserGroupTableCols[groupid]}";
+  }
+  elseif ($loginMethod == 'phpbb') {
+    $colClause .= ', u.user_colour';
+  }
 }
 
 ///* Error Checking *///
@@ -162,6 +164,7 @@ LIMIT $messageLimit";
   u2.defaultFontface AS defaultFontface,
   u2.defaultHighlight AS defaultHighlight,
   u2.defaultFormatting AS defaultFormatting
+  $colClause
 FROM {$sqlPrefix}messagesCached AS m,
   {$sqlPrefix}users AS u2
 WHERE m.roomid = $room[id]
@@ -189,7 +192,7 @@ LIMIT $messageLimit";
             $message['apiText'] = vrim_encodeXML($message['apiText']);
             $message['htmlText'] = vrim_encodeXML($message['htmlText']);
 
-            if ($loginMethod == 'phpbb') {
+            if ($loginMethod == 'phpbb' && $archive) {
               $message['groupFormatStart'] = "<span style=\"color: #$message[user_colour]\">";
               $message['groupFormatEnd'] = '</span>';
             }
