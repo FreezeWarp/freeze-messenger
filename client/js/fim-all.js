@@ -283,6 +283,31 @@ $(document).ready(function() {
 
     archive(0);
   });
+  
+  $('#roomList').click(function() {
+    $.ajax({
+      url: 'api/getRooms.php',
+      timeout: 5000,
+      type: 'GET',
+      cache: false,
+      success: function(xml) {
+        $(xml).find('room').each(function() {
+          var roomName = $(this).find('roomname').text();
+          var roomId = $(this).find('roomid').text();
+          var roomTopic = $(this).find('roomtopic').text();
+          var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
+          var isPriv = ($(this).find('optionDefinitions > privateim').text() == 'true' ? true : false);
+          var isOwner = (parseInt($(this).find('owner').text()) == userid ? true : false);
+
+          roomHtml += '<tr id="room' + roomId + '><td><a href="/chat.php?room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isOwner ? '<a href="#" class="editRoomMulti" data-roomid="' + roomId + '"><img src="/images/document-edit.png" class="standard" alt="Configure" /></a>' : '') + '</td></tr>';
+        });
+        quickDialouge('<table><thead><tr><th>Name</th><th>Topic</th><th>Actions</th></tr></thead><tbody>' + roomHtml + '</tbody></table>','Room List','roomList',600);
+      },
+      error: function() {
+        alert('Failed to show all rooms');
+      }
+    });
+  });
 
   $('#copyrightLink').click(function() {
     ajaxTabDialogue('template.php?template=copyright','copyrightDialogue',600);
