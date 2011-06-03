@@ -262,7 +262,7 @@ $(document).ready(function() {
   });
 
   $('a#createRoom').click(function() {
-    ajaxDialogue('content/createRoom.php','Create a New Room','createRoomDialogue',1000);
+    ajaxDialogue('template.php?template=createRoomForm','Create a New Room','createRoomDialogue',1000);
   });
 
   $('a#editRoom').click(function() {
@@ -278,7 +278,6 @@ $(document).ready(function() {
   });
   
   $('#icon_note').click(function() {
-//    window.location = 'archive.php?roomid=' + roomid;
     quickDialogue('<table><thead><tr><th>User</th><th>Time</th><th>Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table>','Archive','archiveDialogue',1000);
 
     archive(0);
