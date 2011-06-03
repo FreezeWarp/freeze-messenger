@@ -279,12 +279,41 @@ $(document).ready(function() {
   
   $('#icon_note').click(function() {
 //    window.location = 'archive.php?roomid=' + roomid;
-    var encrypt = 'base64';
+    quickDialogue('<table><thead><tr><th>User</th><th>Time</th><th>Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table>','Archive','archiveDialogue',1000);
+
+    archive(0);
+  });
+
+  $('#copyrightLink').click(function() {
+    ajaxTabDialogue('template.php?template=copyright','copyrightDialogue',600);
+  });
+
+  $('#icon_settings, #changeSettings, a.changeSettingsMulti').click(function() {
+    ajaxTabDialogue('template.php?template=userSettingsForm','changeSettingsDialogue',1000,function() {
+      $('.colorpicker').empty().remove();
+    });
+  });
+
+  $(document).ready(function(){
+    $("#kickForm").submit(function(){
+      data = $("#kickForm").serialize(); // Serialize the form data for AJAX.
+
+        $.post("content/kick.php?phase=2",data); // Send the form data via AJAX.
+
+        $("#kick").dialog('close');
+
+        return false; // Don\'t submit the form.
+    });
+  });
+});
+
+function archive(id) {
+      var encrypt = 'base64';
 
     $.ajax({
-      url: 'api/getMessages.php?rooms=' + roomid + '&messageIdMin=' + (lastMessage) + '&messageLimit=100&watchRooms=1&activeUsers=1&archive=' + (first ? '1&messageDateMin=' + (Math.round((new Date()).getTime() / 1000) - 600) : '0'),
+      url: 'api/getMessages.php?rooms=' + roomid + '&messageIdMin=' + (lastMessage) + '&messageLimit=100&watchRooms=1&activeUsers=1&archive=1&messageIdMin=' + id,
       type: 'GET',
-      timeout: timeout,
+      timeout: 1000,
       async: true,
       data: '',
       contentType: "text/xml; charset=utf-8",
@@ -323,13 +352,13 @@ $(document).ready(function() {
               style += 'text-decoration: line-through;';
             }
 
-            var data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="username usernameTable" data-userid="' + userid + '">' + username + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
+            var data = '<tr id="archiveMessage' + messageId + '"><td>' + groupFormatStart + '<span class="username usernameTable" data-userid="' + userid + '">' + username + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageid="' + messageId + '">' + text + '</td></tr>';
 
             if (window.reverse) {
-              $('#messageList').append(data);
+              $('#archiveMessageList').append(data);
             }
             else {
-              $('#messageList').prepend(data);
+              $('#archiveMessageList').prepend(data);
             }
 
             if (messageId > lastMessage) {
@@ -344,27 +373,4 @@ $(document).ready(function() {
       },
       error: function() {  alert('Error'); },
     });
-  });
-
-  $('#copyrightLink').click(function() {
-    ajaxTabDialogue('template.php?template=copyright','copyrightDialogue',600);
-  });
-
-  $('#icon_settings, #changeSettings, a.changeSettingsMulti').click(function() {
-    ajaxTabDialogue('template.php?template=userSettingsForm','changeSettingsDialogue',1000,function() {
-      $('.colorpicker').empty().remove();
-    });
-  });
-
-  $(document).ready(function(){
-    $("#kickForm").submit(function(){
-      data = $("#kickForm").serialize(); // Serialize the form data for AJAX.
-
-        $.post("content/kick.php?phase=2",data); // Send the form data via AJAX.
-
-        $("#kick").dialog('close');
-
-        return false; // Don\'t submit the form.
-    });
-  });
-});
+}
