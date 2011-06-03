@@ -18,7 +18,7 @@
 
 function updateOnline() {
   $.ajax({
-    url: '/api/getAllActiveUsers.php',
+    url: 'api/getAllActiveUsers.php',
     type: 'GET',
     timeout: 2400,
     cache: false,

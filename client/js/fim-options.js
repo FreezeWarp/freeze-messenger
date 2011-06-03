@@ -21,7 +21,7 @@ var roomList = new Array;
 
 function getRoomList() {
   $.ajax({
-    url: '/api/getRooms.php?permLevel=post',
+    url: 'api/getRooms.php?permLevel=post',
     timeout: 5000,
     type: 'GET',
     async: false,
