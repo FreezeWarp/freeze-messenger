@@ -266,11 +266,11 @@ $(document).ready(function() {
   });
 
   $('a#editRoom').click(function() {
-    ajaxDialogue('content/editRoom.php?roomid=' + roomid,'Edit Room','editRoomDialogue',1000);
+    ajaxDialogue('template.php?template=editRoomForm&roomid=' + roomid,'Edit Room','editRoomDialogue',1000);
   });
 
   $('a.editRoomMulti').click(function() {
-    ajaxDialogue('content/editRoom.php?roomid=' + $(this).attr('data-roomid'),'Edit Room','editRoomDialogue',1000);
+    ajaxDialogue('template.php?template=editRoomForm&roomid=' + $(this).attr('data-roomid'),'Edit Room','editRoomDialogue',1000);
   });
 
   $('#icon_help').click(function() {
