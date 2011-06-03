@@ -332,9 +332,9 @@ function sendMessage($messageText,$user,$room,$flag = '') {
   if ($loginMethod == 'vbulletin' && $user['displaygroupid']) {
     $group = sqlArr("SELECT * FROM {$sqlUserGroupTable} AS g WHERE g.{$sqlUserGroupTableCols[groupid]} = $user[displaygroupid]");
   }
-
-
-  if ($loginMethod == 'vbulletin') {
+  elseif ($loginMethod == 'phpbb') {
+    $group['opentag'] = "<span style=\"color: #$user[colour];\">";
+    $group['closetag'] = "</span>";
   }
 
   $messageHtmlCache = $messageHtml;

@@ -62,6 +62,7 @@ switch ($loginMethod) {
     'usergroup' => 'group_id', // The usergroup column of the user table in the login method used.
     'allgroups' => 'group_id',
     'tzoffset' => 'user_timezone',
+    'colour' => 'user_colour',
   );
   $sqlUserGroupTableCols = array(
     'groupid' => 'group_id',
@@ -572,6 +573,7 @@ if ($valid) { // If the user is valid, process their preferrences.
     $user2['timezoneoffset'] = $userCopy[$sqlUserTableCols['tzoffset']];
     $user2['displaygroupid'] = $userCopy[$sqlUserTableCols['usergroup']];
     $user2['membergroupids'] = $userCopy[$sqlUserTableCols['allgroups']];
+    $user2['colour'] = $userCopy[$sqlUserTableCols['colour']];
     break;
 
 
