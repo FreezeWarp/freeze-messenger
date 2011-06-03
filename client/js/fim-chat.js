@@ -13,7 +13,7 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-/* Variable Setting */
+/***** Variable Setting *****/
 var blur = false;
 var totalFails = 0;
 var totalFails2 = 0;
@@ -27,7 +27,8 @@ var timeout = (window.longPolling ? 1000000 : 2400);
 var first = true;
 
 
-/* Misc Functions */
+
+/***** Misc Functions *****/
 function toBottom() {
   document.getElementById('messageList').scrollTop = document.getElementById('messageList').scrollHeight;
 }
@@ -46,7 +47,7 @@ function faviconFlash() {
 
 
 
-/* Context Menu */
+/***** Context Menu *****/
 
 function contextMenuParse() {
   $('.username').contextMenu({
@@ -195,7 +196,7 @@ function contextMenuParse() {
 
 
 
-/* AJAX Functions */
+/***** AJAX Functions *****/
 
 function updatePosts() {
   if (!window.longPolling) {
@@ -290,7 +291,7 @@ function getSuccess(xml) {
       var messageId = Number($(this).find('messageid').text());
 
       var username = $(this).find('userdata > username').text();
-      var userid = $(this).find('userdata > userid').text();
+      var userid = Number($(this).find('userdata > userid').text());
       var groupFormatStart = unxml($(this).find('userdata > startTag').text());
       var groupFormatEnd = unxml($(this).find('userdata > endTag').text());
 
@@ -345,7 +346,7 @@ function getSuccess(xml) {
         
         
   if (blur) {
-    if (soundOn) {
+    if (window.soundOn) {
       window.beep();
 
       if (navigator.appName === 'Microsoft Internet Explorer') {
@@ -440,19 +441,10 @@ function sendMessage(message,confirmed) {
 }
 
 
-/* Bing! Function */
-window.onblur = function() {
-  blur = true;
-};
-
-window.onfocus = function() {
-  blur = false;
-  window.clearInterval(timer3);
-  $('#favicon').attr('href','images/favicon.gif');
-};
 
 
-/* Initiate getMessages */
+/***** Initiate getMessages *****/
+
 if (window.longPolling) {
   $(document).ready(function() {
     updatePosts();
@@ -463,6 +455,9 @@ else {
 }
 
 
+
+
+/***** DOM Parsing *****/
 
 $(document).ready(function() {
   $("#icon_reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (reverse ? 'n' : 's') } );
@@ -488,11 +483,11 @@ $(document).ready(function() {
 
   $("#icon_muteSound").hover(
     function() {
-      if (soundOn) $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-off' } );
+      if (window.soundOn) $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-off' } );
       else $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-on' } );
     },
     function () {
-      if (soundOn) $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-on' } );
+      if (window.soundOn) $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-on' } );
       else $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-off' } );
     }
   );
@@ -514,6 +509,9 @@ $(document).ready(function() {
 
   resize();
 });
+
+
+
 
 /***** Youtube *****/
 function youtubeSend(id) {
@@ -559,22 +557,17 @@ function updateVids(searchPhrase) {
   jQTubeUtil.search(searchPhrase, callbackFunction);
 }
 
-function resize () {
+
+
+
+/***** Window Manipulation *****/
+
+function windowResize () {
   var windowWidth = (window.innerWidth ? window.innerWidth : document.documentElement.clientWidth);
   var windowHeight = (window.innerHeight ? window.innerHeight : document.documentElement.clientHeight);
 
-  if (layout == 'alt') {
-    
-  }
-  else if (light) {
-  /* Body Padding: 10px
-   * "Enter Message" Table Padding: 10px
-   *** TD Padding: 2px (on Standard Styling)
-   * Message Input Container Padding : 3px (all padding-left)
-   * Message Input Text Area Padding: 6px */
-    $('#messageInput').css('width',(windowWidth - 10 - 10 - 2 - 3 - 6));
-  }
-  else {
+  switch (window.layout) {
+    default:
     $('#messageList').css('height',(windowHeight - 230));
     $('#messageList').css('max-width',((windowWidth - 10) * .75));
   /* Body Padding: 10px
@@ -585,7 +578,20 @@ function resize () {
    * Left Button Width: 36px
    * Message Input Text Area Padding: 6px */
     $('#messageInput').css('width',(((windowWidth - 10) * .75) - 10 - 2 - 3 - 36 - 6 - 20));
+    break;
   }
 }
 
-$(window).resize(resize);
+function windowBlur () {
+  blur = true;
+}
+
+function windowFocus() {
+  blur = false;
+  window.clearInterval(timer3);
+  $('#favicon').attr('href','images/favicon.gif');
+}
+
+window.onresize = windowResize;
+window.onblur = windowBlur;
+window.onfocus = windowFocus;
