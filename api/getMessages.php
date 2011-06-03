@@ -202,25 +202,25 @@ LIMIT $messageLimit";
             }
 
             $messageXML .=  "    <message>
-      <roomdata>
-        <roomid>$room[id]</roomid>
-        <roomname>$room[name]</roomname>
-        <roomtopic>" . vrim_encodeXML($room['title']) . "</roomtopic>
-      </roomdata>
-      <messagedata>
-        <messageid>$message[messageid]</messageid>
-        <messagetime>$message[time]</messagetime>
-        <messagetimeformatted>" . vbdate(false,$message['time']) . "</messagetimeformatted>
-        <messagetext>
-          <apptext>$message[apiText]</apptext>
-          <htmltext>$message[htmlText]</htmltext>
-        </messagetext>
+      <roomData>
+        <roomId>$room[id]</roomId>
+        <roomName>$room[name]</roomName>
+        <roomTopic>" . vrim_encodeXML($room['title']) . "</roomTopic>
+      </roomData>
+      <messageData>
+        <messageId>$message[messageid]</messageId>
+        <messageTime>$message[time]</messageTime>
+        <messageTimeFormatted>" . vbdate(false,$message['time']) . "</messageTimeFormatted>
+        <messageText>
+          <appText>$message[apiText]</appText>
+          <htmlText>$message[htmlText]</htmlText>
+        </messageText>
         <flags>$message[flag]</flags>
-      </messagedata>
-      <userdata>
-        <username>$message[username]</username>
-        <userid>$message[userid]</userid>
-        <displaygroupid>$message[displaygroupid]</displaygroupid>
+      </messageData>
+      <userData>
+        <userName>$message[username]</userName>
+        <userId>$message[userid]</userId>
+        <userGroup>$message[displaygroupid]</userGroup>
         <startTag>" . vrim_encodeXML($message['groupFormatStart']) . "</startTag>
         <endTag>" . vrim_encodeXML($message['groupFormatEnd']) . "</endTag>
         <defaultFormatting>
@@ -229,7 +229,7 @@ LIMIT $messageLimit";
           <fontface>$message[defaultFontface]</fontface>
           <general>$message[defaultFormatting]</general>
         </defaultFormatting>
-      </userdata>
+      </userData>
     </message>";
           }
         }
@@ -275,9 +275,9 @@ LIMIT 500",'userid');
         }
 
         $ausersXML .= "      <user>
-        <username>$auser[username]</username>
-        <userid>$auser[userid]</userid>
-        <displaygroupid>$auser[displaygroupid]</displaygroupid>
+        <userName>$auser[username]</userName>
+        <userId>$auser[userid]</userId>
+        <userGroup>$auser[displaygroupid]</userGroup>
         <startTag>$auser[opentag]</startTag>
         <endTag>$auser[closetag]</endTag>
       </user>
