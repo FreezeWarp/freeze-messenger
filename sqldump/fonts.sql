@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS `{prefix}fonts` (
   PRIMARY KEY (`id`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8;
 
+-- DIVIDE
+
 INSERT INTO `{prefix}fonts` (`id`, `name`, `data`, `category`) VALUES
 (1, 'FreeMono', 'FreeMono, TwlgMono, ''Courier New'', Consolas, monospace', 'monospace'),
 (2, 'Courier New', '''Courier New'', FreeMono, TwlgMono, Consolas, Courier, monospace', 'monospace'),

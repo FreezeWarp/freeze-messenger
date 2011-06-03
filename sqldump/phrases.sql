@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS `{prefix}phrases` (
   PRIMARY KEY (`id`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8;
 
+-- DIVIDE
+
 INSERT INTO `{prefix}phrases` (`id`, `name`, `text_en`, `text_jp`) VALUES
 (1, 'brandingTitle', 'FreezeMessenger', ''),
 (2, 'brandingFavicon', 'images/favicon.gif', ''),

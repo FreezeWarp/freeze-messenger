@@ -257,6 +257,8 @@ Now that the database has been successfully installed, we must generate the conf
 
     $importFiles = scandir('sqldump');
     foreach ($importFiles AS $file) {
+      $queries = array();
+
       if ($file == '.' || $file == '..') continue;
 
       $contents = file_get_contents("sqldump/{$file}");
@@ -272,12 +274,17 @@ Now that the database has been successfully installed, we must generate the conf
         }
       }
 
-      if (!$data = $mysqli->multi_query($contents)) {
-        echo $contents;
-        echo $mysqli->error;
-        die('Could Not Run Query');
+      $queries = explode('-- DIVIDE', $contents);
+
+      foreach ($queries AS $query) {
+        if (!trim($query)) continue;
+
+        if (!$mysqli->query($query)) {
+          echo $query;
+          echo $mysqli->error;
+          die('Could Not Run Query');
+        }
       }
-      while ($mysqli->next_result()) {;}
     }
     echo 'success';
   }

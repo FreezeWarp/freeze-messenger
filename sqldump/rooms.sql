@@ -17,5 +17,7 @@ CREATE TABLE IF NOT EXISTS `{prefix}rooms` (
   KEY `lastMessageTime` (`lastMessageTime`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8;
 
+-- DIVIDE
+
 INSERT INTO `{prefix}rooms` (`id`, `name`, `title`, `allowedGroups`, `allowedUsers`, `options`) VALUES
 (1, 'Your Room!', 'Hit the Edit Room Button to Change Things or Use /topic to Change the Topic', '*', '*', 1)
