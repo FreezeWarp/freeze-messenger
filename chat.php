@@ -115,5 +115,5 @@ else {
 
 eval(hook('chatEnd'));
 
-require_once('templateEnd.php');
+echo template('templateEnd');
 ?>

@@ -839,5 +839,5 @@ else {
 
 eval(hook('moderateEnd'));
 
-require_once('templateEnd.php');
+echo template('templateEnd');
 ?>

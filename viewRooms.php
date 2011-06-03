@@ -1,23 +1,4 @@
 <?php
-$noReqLogin = true;
-$title = 'Room List';
-$reqPhrases = true;
-$reqHooks = true;
-
-require_once('global.php');
-
-
-eval(hook('viewRoomsStart'));
-
-
-require_once('templateStart.php');
-require_once('functions/container.php');
-
-$showAdvanced = ($mode == 'normal' ? true : false); // For advanced functionality.
-static $roomHtml;
-
-$rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE options & 4 = FALSE AND options & 8 = FALSE ORDER BY options & 1 DESC, options & 16 ASC, id ASC",'id'); // Get all rooms
-
 if ($user['userid']) { // Logged in user
   $favRooms = explode(',',$user['favRooms']);
 
@@ -90,59 +71,4 @@ if ($user['userid']) { // Logged in user
 
   eval(hook('viewRoomsUserEnd'));
 }
-else {
-  eval(hook('viewRoomsAnonStart'));
-
-  $stop = false;
-
-  foreach ($rooms AS $id => $room2) {
-    eval(hook('viewRoomsAnonRoomEachStart'));
-
-    if (hasPermission($room2,$user,'view') && !$stop) {
-      $rooms2[$id] = $room2;
-    }
-
-    $stop = false;
-
-    eval(hook('viewRoomsAnonRoomEachEnd'));
-  }
-
-  if ($rooms2) {
-    foreach ($rooms2 AS $room3) {
-      $roomRow = "  <tr id=\"row$id\">
-      <td><a href=\"/chat.php?action=archive&roomid=$room3[id]&numresults=50\">$room3[name]</a></td>
-      <td id=\"title$id\">$room3[title]</td>
-    </tr>
-  ";
-
-      eval(hook('viewRoomsAnonDisplayEach'));
-
-      $roomHtml .= $roomRow;
-    }
-
-    eval(hook('viewRoomsAnonStartOutput'));
-
-    echo '<table class="page ui-widget" border="1">
-  <thead>
-    <tr class="hrow ui-widget-header">
-      <td style="width: 25%;">Room Name</td>
-      <td style="width: 75%;">Topic</td>
-    </tr>
-  </thead>
-  <tbody class="ui-widget-content">
-    ' . $roomHtml . '
-  </tbody>
-</table>';
-  }
-  else {
-    echo container('Error','No rooms were found which you are allowed to view.');
-  }
-
-  eval(hook('viewRoomsAnonEnd'));
-}
-
-
-eval(hook('viewRoomsEnd'));
-
-require_once('templateEnd.php');
 ?>

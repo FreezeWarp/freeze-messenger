@@ -40,5 +40,9 @@ switch ($action) {
   case 'unkickuser':
 
   break;
+
+  default:
+
+  break;
 }
 ?>

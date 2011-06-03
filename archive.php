@@ -14,20 +14,6 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-$noReqLogin = true;
-$title = 'Message Archive';
-$reqPhrases = true;
-$reqHooks = true;
-
-require_once('global.php'); // Used for everything.
-require_once('functions/container.php'); // Used for /some/ formatting, though perhaps too sparcely right now.
-
-
-exec(hook('archiveStart'));
-
-
-require_once('templateStart.php');
-
 if (!$_GET['roomid']) { // If no room ID is provided, then give the search form.
   $rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE options & 8 = false ORDER BY options & 1 DESC, options & 16 ASC, id",'id');
   foreach ($rooms AS $room2) {
@@ -232,9 +218,4 @@ echo container("$phrases[archiveTitle]: $room[name]","
     }
   }
 }
-
-
-exec(hook('archiveEnd'));
-
-require_once('templateEnd.php');
 ?>
