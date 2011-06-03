@@ -2,7 +2,6 @@
  *** FreezeMessenger Styling ****
  ********************************/
 
-
 /* General */
 * { /* This sets the box model to border-box, which is defined in CSS3 and supported by every browser. Border-box defines widths as including the border, which makes percentages like 20% and 80% work when one of the elements has a border. */
   -webkit-box-sizing: border-box;
@@ -186,7 +185,7 @@ h2, h3, h4 {
   margin-right: auto !important;
   margin-left: auto !important;
 
-  /* Next up, we reset jQueryUI default stylings, since for one reason or another they break in both Firefox & (modern) IE. This is probably because of some improper declaration elsewhere, but no matter what it works. */
+  /* Next up, we reset jQueryUI default stylings, since for one reason or another they break in both Firefox & (modern) IE. This is probably because of some improper declaration elsewhere, but regardless it works. */
   top: 0 !important;
   left: 0 !important;
   margin-top: 0 !important;
@@ -194,6 +193,22 @@ h2, h3, h4 {
 
   /* Finally, position:relative is more predictable then position:absolute, which is also used in jQueryUI. */
   position: relative;
+}
+
+table.leftright tr td:first-child {
+  text-align: left;
+}
+table.leftright tr td:last-child {
+  text-align: right;
+}
+table.leftright tr td[colspan='2'] {
+  text-align: center;
+}
+
+table.center {
+  margin-left: auto;
+  margin-right: auto;
+  display: table;
 }
 
 
@@ -285,40 +300,9 @@ div.jGrowl {
   font-size: 12px;
 }
 
-/** Special IE6 Style Positioning **/
-div.ie6 {
-  position: absolute;
-}
 
-div.ie6.top-right {
-  right: auto;
-  bottom: auto;
-  left: expression( ( 0 - jGrowl.offsetWidth + ( document.documentElement.clientWidth ? document.documentElement.clientWidth : document.body.clientWidth ) + ( ignoreMe2 = document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft ) ) + 'px' );
-  top: expression( ( 0 + ( ignoreMe = document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop ) ) + 'px' );
-}
+/* Normal Style Positions */
 
-div.ie6.top-left {
-  left: expression( ( 0 + ( ignoreMe2 = document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft ) ) + 'px' );
-  top: expression( ( 0 + ( ignoreMe = document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop ) ) + 'px' );
-}
-
-div.ie6.bottom-right {
-  left: expression( ( 0 - jGrowl.offsetWidth + ( document.documentElement.clientWidth ? document.documentElement.clientWidth : document.body.clientWidth ) + ( ignoreMe2 = document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft ) ) + 'px' );
-  top: expression( ( 0 - jGrowl.offsetHeight + ( document.documentElement.clientHeight ? document.documentElement.clientHeight : document.body.clientHeight ) + ( ignoreMe = document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop ) ) + 'px' );
-}
-
-div.ie6.bottom-left {
-  left: expression( ( 0 + ( ignoreMe2 = document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft ) ) + 'px' );
-  top: expression( ( 0 - jGrowl.offsetHeight + ( document.documentElement.clientHeight ? document.documentElement.clientHeight : document.body.clientHeight ) + ( ignoreMe = document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop ) ) + 'px' );
-}
-
-div.ie6.center {
-  left: expression( ( 0 + ( ignoreMe2 = document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft ) ) + 'px' );
-  top: expression( ( 0 + ( ignoreMe = document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop ) ) + 'px' );
-  width: 100%;
-}
-
-/** Normal Style Positions **/
 div.jGrowl {
   position: absolute;
 }
@@ -353,7 +337,9 @@ div.jGrowl.center {
   left: 25%;
 }
 
-/** Cross Browser Styling **/
+
+/* Cross Browser Styling */
+
 div.center div.jGrowl-notification, div.center div.jGrowl-closer {
   margin-left: auto;
   margin-right: auto;
@@ -403,28 +389,14 @@ div.jGrowl div.jGrowl-closer {
   text-align: center;
 }
 
-/** Hide jGrowl when printing **/
+/* Hide jGrowl when printing */
 @media print {
   div.jGrowl {
     display: none;
   }
 }
 
-table.leftright tr td:first-child {
-  text-align: left;
-}
-table.leftright tr td:last-child {
-  text-align: right;
-}
-table.leftright tr td[colspan='2'] {
-  text-align: center;
-}
 
-table.center {
-  margin-left: auto;
-  margin-right: auto;
-  display: table;
-}
 
 
 
@@ -439,6 +411,10 @@ table.center {
   padding: 10px;
   z-index: 3000;
 }
+
+
+
+
 
 
 /********************************
