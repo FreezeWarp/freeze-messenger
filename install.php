@@ -289,12 +289,33 @@ Now that the database has been successfully installed, we must generate the conf
     echo 'success';
   }
 
-  case 4: // Add first room.
+  case 5: // Config File
 
   break;
 
-  case 5: // Config File
+  case 'dev':
+  $mysqli = new mysqli('localhost','a','a','phpbb');
+  $prefix = 'fim_';
+  $table = "{$prefix}templates"
 
+  $mysqli->query("DROP TABLE {$table}");
+
+  $contents = file_get_contents("sqldump/templates.sql");
+  $contents = str_replace(array('{prefix}','{engine}'),array($prefix,'InnoDB'),$contents);;
+
+  $queries = explode('-- DIVIDE', $contents);
+
+  foreach ($queries AS $query) {
+    if (!trim($query)) continue;
+
+    if (!$mysqli->query($query)) {
+      echo $query;
+      echo $mysqli->error;
+      die('Could Not Run Query');
+    }
+  }
+
+  echo 'success';
   break;
 }
 ?>
