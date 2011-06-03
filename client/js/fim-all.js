@@ -285,6 +285,8 @@ $(document).ready(function() {
   });
   
   $('#roomList').click(function() {
+    var roomHtml = '';
+    
     $.ajax({
       url: 'api/getRooms.php',
       timeout: 5000,
@@ -299,9 +301,9 @@ $(document).ready(function() {
           var isPriv = ($(this).find('optionDefinitions > privateim').text() == 'true' ? true : false);
           var isOwner = (parseInt($(this).find('owner').text()) == userid ? true : false);
 
-          roomHtml += '<tr id="room' + roomId + '><td><a href="/chat.php?room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isOwner ? '<a href="#" class="editRoomMulti" data-roomid="' + roomId + '"><img src="/images/document-edit.png" class="standard" alt="Configure" /></a>' : '') + '</td></tr>';
+          roomHtml += '<tr id="room' + roomId + '"><td><a href="/chat.php?room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isOwner ? '<a href="#" class="editRoomMulti" data-roomid="' + roomId + '"><img src="images/document-edit.png" class="standard" alt="Configure" /></a>' : '') + '</td></tr>';
         });
-        quickDialouge('<table><thead><tr><th>Name</th><th>Topic</th><th>Actions</th></tr></thead><tbody>' + roomHtml + '</tbody></table>','Room List','roomList',600);
+        quickDialogue('<table><thead><tr><th>Name</th><th>Topic</th><th>Actions</th></tr></thead><tbody>' + roomHtml + '</tbody></table>','Room List','roomList',600);
       },
       error: function() {
         alert('Failed to show all rooms');
