@@ -36,37 +36,6 @@ if ($phase == '1') {
 }
 
 elseif ($phase == '2') {
-  $userid = intval($_POST['userid']);
-  $user2 = sqlArr("SELECT u1.settings, u2.userid, u2.username FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userid = $userid AND u2.userid = u1.userid");
-
-  $room = intval($_POST['roomid']);
-  $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
-
-  $time = floor($_POST['time'] * $_POST['interval']);
-
-  if (!$user2['userid']) {
-    trigger_error('Invalid User',E_USER_ERROR);
-  }
-  elseif (!$room['id']) {
-    trigger_error('Invalid Room',E_USER_ERROR);
-  }
-  elseif ($user2['settings'] & 16 && false) { // You can't kick admins.
-    trigger_error('You\'re really not supposed to kick admins... I mean, sure, it sounds fun and all, but still... we don\'t like it >:D');
-
-    sendMessage('/me fought the law and the law won.',$user['userid'],$room['id']);
-  }
-  elseif (!hasPermission($room,$user,'moderate')) {
-    trigger_error('No Permission',E_USER_ERROR);
-  }
-  else {
-    modLog('kick',"$user2[userid],$room[id]");
-
-    mysqlQuery("INSERT INTO {$sqlPrefix}kick (userid, kickerid, length, room) VALUES ($user2[userid], $user[userid], $time, $room[id])");
-
-    sendMessage('/me kicked ' . $user2['username'],$user,$room);
-
-    echo 'The user has been kicked';
-  }
 }
 else {
   trigger_error('Unknown Action',E_USER_ERROR);

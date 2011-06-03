@@ -34,33 +34,6 @@ elseif ($phase == '1') {
   echo template('createRoomForm');
 }
 elseif ($phase == '2') {
-  $name = substr(mysqlEscape($_POST['name']),0,20); // Limits to 20 characters.
-
-  if (!$name) {
-    trigger_error($phrases['editRoomNoName'],E_USER_ERROR);
-  }
-  else {
-    if (sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE name = '$name'")) {
-      trigger_error($phrases['editRoomNameTaken'],E_USER_ERROR);
-    }
-    else {
-      $allowedGroups = mysqlEscape($_POST['allowedGroups']);
-      $allowedUsers = mysqlEscape($_POST['allowedUsers']);
-      $moderators = mysqlEscape($_POST['moderators']);
-      $options = ($_POST['mature'] ? 2 : 0);
-      $bbcode = intval($_POST['bbcode']);
-
-      mysqlQuery("INSERT INTO {$sqlPrefix}rooms (name,allowedGroups,allowedUsers,moderators,owner,options,bbcode) VALUES ('$name','$allowedGroups','$allowedUsers','$moderators',$user[userid],$options,$bbcode)");
-      $insertId = mysql_insert_id();
-
-      if ($insertId) {
-        echo template('createRoomSuccess');
-      }
-      else {
-        trigger_error($phrases['createRoomFail'],E_USER_ERROR);
-      }
-    }
-  }
 }
 else {
   trigger_error($phrases['createRoomUnknownAction'],E_USER_ERROR);
