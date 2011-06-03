@@ -322,15 +322,15 @@ function archive(id) {
       success: function (xml) {
         if ($(xml).find('messages > message').length > 0) {
           $(xml).find('messages > message').each(function() {
-            var text = $(this).find('htmltext').text();
-            var messageTime = $(this).find('messagetimeformatted').text();
+            var text = unxml($(this).find('htmlText').text());
+            var messageTime = $(this).find('messageTimeFormatted').text();
 
-            var messageId = Number($(this).find('messageid').text());
+            var messageId = Number($(this).find('messageId').text());
 
-            var username = $(this).find('userdata > username').text();
-            var userid = Number($(this).find('userdata > userid').text());
-            var groupFormatStart = unxml($(this).find('userdata > startTag').text());
-            var groupFormatEnd = unxml($(this).find('userdata > endTag').text());
+            var username = $(this).find('userData > userName').text();
+            var userid = Number($(this).find('userData > userId').text());
+            var groupFormatStart = unxml($(this).find('userData > startTag').text());
+            var groupFormatEnd = unxml($(this).find('userData > endTag').text());
 
             var styleColor = $(this).find('defaultFormatting > color').text();
             var styleHighlight = $(this).find('defaultFormatting > highlight').text();
