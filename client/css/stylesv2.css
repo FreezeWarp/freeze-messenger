@@ -23,6 +23,7 @@ body {
 
 
 /***** Menu *****/
+
 #menu {
   float: left;
   width: 25%;
@@ -99,7 +100,6 @@ body {
 
 
 /***** Other Crap *****/
-
 
 .leftPart {
   float: left;
@@ -230,12 +230,14 @@ table.center {
   margin: 0px;
   display: none;
 }
+
 .contextMenu li {
   list-style: none;
   padding: 0px;
   padding-bottom: 3px;
   margin: 0px;
 }
+
 .contextMenu a {
   text-decoration: none;
   display: block;
@@ -245,8 +247,9 @@ table.center {
   padding-left: 10px;
   
 }
-.contextMenu li.hover a {
-}
+
+.contextMenu li.hover a { }
+
 .contextMenu li.disabled a {
   cursor: default;
 }
@@ -301,7 +304,7 @@ div.jGrowl {
 }
 
 
-/* Normal Style Positions */
+/***** Normal Style Positions *****/
 
 div.jGrowl {
   position: absolute;
@@ -338,7 +341,7 @@ div.jGrowl.center {
 }
 
 
-/* Cross Browser Styling */
+/***** Cross Browser Styling *****/
 
 div.center div.jGrowl-notification, div.center div.jGrowl-closer {
   margin-left: auto;
@@ -389,7 +392,9 @@ div.jGrowl div.jGrowl-closer {
   text-align: center;
 }
 
-/* Hide jGrowl when printing */
+
+/***** Hide jGrowl when printing *****/
+
 @media print {
   div.jGrowl {
     display: none;
