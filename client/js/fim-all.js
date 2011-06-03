@@ -278,7 +278,72 @@ $(document).ready(function() {
   });
   
   $('#icon_note').click(function() {
-    window.location = 'archive.php?roomid=' + roomid;
+//    window.location = 'archive.php?roomid=' + roomid;
+    var encrypt = 'base64';
+
+    $.ajax({
+      url: 'api/getMessages.php?rooms=' + roomid + '&messageIdMin=' + (lastMessage) + '&messageLimit=100&watchRooms=1&activeUsers=1&archive=' + (first ? '1&messageDateMin=' + (Math.round((new Date()).getTime() / 1000) - 600) : '0'),
+      type: 'GET',
+      timeout: timeout,
+      async: true,
+      data: '',
+      contentType: "text/xml; charset=utf-8",
+      dataType: "xml",
+      cache: false,
+      success: function (xml) {
+        if ($(xml).find('messages > message').length > 0) {
+          $(xml).find('messages > message').each(function() {
+            var text = $(this).find('htmltext').text();
+            var messageTime = $(this).find('messagetimeformatted').text();
+
+            var messageId = Number($(this).find('messageid').text());
+
+            var username = $(this).find('userdata > username').text();
+            var userid = Number($(this).find('userdata > userid').text());
+            var groupFormatStart = unxml($(this).find('userdata > startTag').text());
+            var groupFormatEnd = unxml($(this).find('userdata > endTag').text());
+
+            var styleColor = $(this).find('defaultFormatting > color').text();
+            var styleHighlight = $(this).find('defaultFormatting > highlight').text();
+            var styleFontface = $(this).find('defaultFormatting > fontface').text();
+            var styleGeneral = parseInt($(this).find('defaultFormatting > general').text());
+
+            var style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + styleFontface + ';';
+
+            if (styleGeneral & 256) {
+              style += 'font-weight: bold;';
+            }
+            if (styleGeneral & 512) {
+              style += 'font-style: oblique;';
+            }
+            if (styleGeneral & 1024) {
+              style += 'text-decoration: underline;';
+            }
+            if (styleGeneral & 2048) {
+              style += 'text-decoration: line-through;';
+            }
+
+            var data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="username usernameTable" data-userid="' + userid + '">' + username + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
+
+            if (window.reverse) {
+              $('#messageList').append(data);
+            }
+            else {
+              $('#messageList').prepend(data);
+            }
+
+            if (messageId > lastMessage) {
+              lastMessage = messageId;
+            }
+          });
+
+          if (typeof contextMenuParse === 'function') {
+            contextMenuParse();
+          }
+        }
+      },
+      error: function() {  alert('Error'); },
+    });
   });
 
   $('#copyrightLink').click(function() {
