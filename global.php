@@ -18,7 +18,6 @@
  * Core MySQLLogin, Cookie/etc. Salt, and Site Data is stored here. */
 
 
-
 require_once('config.php'); // Configuration Variables
 require_once('functions/mysql.php');
 require_once('functions/generalFunctions.php');
@@ -104,4 +103,7 @@ if ($reqPhrases) {
   unset($template);
 }
 
+
+
+header('Content-type: text/html; charset=utf-8');
 ?>

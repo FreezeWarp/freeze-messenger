@@ -38,17 +38,6 @@ if ($keywords) {
   $keyWordString .= ", $keywords";
 }
 
-$mode = ($_GET['mode'] ?: $_COOKIE['mode']);
-
-if ($mode == 'mobile') {
-  $styleHook .= "<link rel=\"stylesheet\" type=\"text/css\" href=\"client/css/stylesv2Mobile.css\" media=\"screen,handheld\" />";
-  $light = true;
-
-  setcookie('mode',$mode);
-}
-elseif ($mode == 'light') {
-  setcookie('mode',$mode);
-}
 
 if ($_REQUEST['layout'] == 'alt') {
   $styleHook .= "<style>#menu { display: none; width: 0px; } #messageListContainer { float: right; width: 50%; } #textentryBoxMessage { float: left; width: 50%; } #content { width: 100%; }</style>";

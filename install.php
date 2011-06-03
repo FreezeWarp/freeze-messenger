@@ -240,6 +240,7 @@ Now that the database has been successfully installed, we must generate the conf
   $nooverwrite = urldecode($_GET['mysql_nooverwrite']);
 
   $mysqli = new mysqli($host,$username,$password,$database);
+  $mysqli->query("SET NAMES utf8") or die('Hello');
 
   if (mysqli_connect_error()) {
     echo 'Connection Error: ' . mysqli_connect_error();
