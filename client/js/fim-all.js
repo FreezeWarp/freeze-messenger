@@ -308,69 +308,69 @@ $(document).ready(function() {
 });
 
 function archive(id) {
-      var encrypt = 'base64';
+  var encrypt = 'base64';
 
-    $.ajax({
-      url: 'api/getMessages.php?rooms=' + roomid + '&messageIdMin=' + (lastMessage) + '&messageLimit=100&watchRooms=1&activeUsers=1&archive=1&messageIdMin=' + id,
-      type: 'GET',
-      timeout: 1000,
-      async: true,
-      data: '',
-      contentType: "text/xml; charset=utf-8",
-      dataType: "xml",
-      cache: false,
-      success: function (xml) {
-        if ($(xml).find('messages > message').length > 0) {
-          $(xml).find('messages > message').each(function() {
-            var text = unxml($(this).find('htmlText').text());
-            var messageTime = $(this).find('messageTimeFormatted').text();
+  $.ajax({
+    url: 'api/getMessages.php?rooms=' + roomid + '&messageIdMin=' + (lastMessage) + '&archive=1&messageIdMin=' + id + '&messageLimit=40',
+    type: 'GET',
+    timeout: 1000,
+    async: true,
+    data: '',
+    contentType: "text/xml; charset=utf-8",
+    dataType: "xml",
+    cache: false,
+    success: function (xml) {
+      if ($(xml).find('messages > message').length > 0) {
+        $(xml).find('messages > message').each(function() {
+          var text = unxml($(this).find('htmlText').text());
+          var messageTime = $(this).find('messageTimeFormatted').text();
 
             var messageId = Number($(this).find('messageId').text());
 
             var username = $(this).find('userData > userName').text();
-            var userid = Number($(this).find('userData > userId').text());
-            var groupFormatStart = unxml($(this).find('userData > startTag').text());
-            var groupFormatEnd = unxml($(this).find('userData > endTag').text());
+          var userid = Number($(this).find('userData > userId').text());
+          var groupFormatStart = unxml($(this).find('userData > startTag').text());
+          var groupFormatEnd = unxml($(this).find('userData > endTag').text());
 
             var styleColor = $(this).find('defaultFormatting > color').text();
-            var styleHighlight = $(this).find('defaultFormatting > highlight').text();
-            var styleFontface = $(this).find('defaultFormatting > fontface').text();
-            var styleGeneral = parseInt($(this).find('defaultFormatting > general').text());
+          var styleHighlight = $(this).find('defaultFormatting > highlight').text();
+          var styleFontface = $(this).find('defaultFormatting > fontface').text();
+          var styleGeneral = parseInt($(this).find('defaultFormatting > general').text());
 
             var style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + styleFontface + ';';
 
             if (styleGeneral & 256) {
-              style += 'font-weight: bold;';
-            }
-            if (styleGeneral & 512) {
-              style += 'font-style: oblique;';
-            }
-            if (styleGeneral & 1024) {
-              style += 'text-decoration: underline;';
-            }
-            if (styleGeneral & 2048) {
-              style += 'text-decoration: line-through;';
-            }
+            style += 'font-weight: bold;';
+          }
+          if (styleGeneral & 512) {
+            style += 'font-style: oblique;';
+          }
+          if (styleGeneral & 1024) {
+            style += 'text-decoration: underline;';
+          }
+          if (styleGeneral & 2048) {
+            style += 'text-decoration: line-through;';
+          }
 
             var data = '<tr id="archiveMessage' + messageId + '"><td>' + groupFormatStart + '<span class="username usernameTable" data-userid="' + userid + '">' + username + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageid="' + messageId + '">' + text + '</td></tr>';
 
             if (window.reverse) {
-              $('#archiveMessageList').append(data);
-            }
-            else {
-              $('#archiveMessageList').prepend(data);
-            }
+            $('#archiveMessageList').append(data);
+          }
+          else {
+            $('#archiveMessageList').prepend(data);
+          }
 
             if (messageId > lastMessage) {
-              lastMessage = messageId;
-            }
-          });
+            lastMessage = messageId;
+          }
+        });
 
           if (typeof contextMenuParse === 'function') {
-            contextMenuParse();
-          }
+          contextMenuParse();
         }
-      },
-      error: function() {  alert('Error'); },
-    });
+      }
+    },
+    error: function() {  alert('Error'); },
+  });
 }
