@@ -303,8 +303,8 @@ if ($watchRooms) {
 
       $roomName = vrim_encodeXML($message['name']);
       $watchRoomsXML .= "    <room>
-      <roomid>$message[id]</roomid>
-      <roomname>$roomName</roomname>
+      <roomId>$message[id]</roomId>
+      <roomName>$roomName</roomName>
       <lastMessageTime>$message[lastMessageTimestamp]</lastMessageTime>
     </room>";
     }

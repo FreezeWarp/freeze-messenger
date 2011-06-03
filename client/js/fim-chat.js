@@ -280,7 +280,7 @@ function getSuccess(xml) {
 
   if ($(xml).find('messages > message').length > 0) {
     $(xml).find('messages > message').each(function() {
-      var text = $(this).find('htmlText').text();
+      var text = unxml($(this).find('htmlText').text());
       var messageTime = $(this).find('messageTimeFormatted').text();
 
       var messageId = parseInt($(this).find('messageId').text());
