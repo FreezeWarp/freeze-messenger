@@ -43,10 +43,10 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
   <errorcode>$failCode</errorcode>
   <errortext>$failMessage</errortext>
   <roomData>
-    <roomid>$room[id]</roomid>
-    <roomname>$room[name]</roomname>
-    <roomtopic>$room[topic]</roomtopic>
-    <roomowner>$room[owner]</roomowner>
+    <roomId>$room[id]</roomId>
+    <roomName>$room[name]</roomName>
+    <roomTopic>$room[topic]</roomTopic>
+    <roomOwner>$room[owner]</roomOwner>
     <allowedUsers>$room[allowedUsers]</allowedUsers>
     <allowedGroups>$room[allowedGroups]</allowedGroups>
     <moderators>$room[moderators]</moderators>

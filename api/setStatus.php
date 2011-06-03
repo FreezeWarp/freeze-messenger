@@ -20,10 +20,10 @@ require_once('../global.php');
 require_once('../functions/parserFunctions.php');
 header('Content-type: text/xml');
 
-$statusType = vrim_urldecode($_GET['statusType']); // typing, status
-$statusValue = vrim_urldecode($_GET['statusValue']);
+$statusType = vrim_urldecode($_POST['statusType']); // typing, status
+$statusValue = vrim_urldecode($_POST['statusValue']);
 
-$room = intval($_GET['room']);
+$room = intval($_POST['room']);
 $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
 
 
@@ -61,12 +61,12 @@ else {
   echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <setStatus>
   <activeUser>
-    <userid>$user[userid]</userid>
-    <username>" . vrim_encodeXML($user['username']) . "</username>
+    <userId>$user[userid]</userId>
+    <userName>" . vrim_encodeXML($user['username']) . "</userName>
   </activeUser>
   <sentData>
-    <roomid>" . vrim_encodeXML($_GET['roomid']) . "</room>
-    <userid>" . vrim_encodeXML($_GET['userid']) . "</message>
+    <roomId>" . vrim_encodeXML($_POST['roomid']) . "</roomId>
+    <userId>" . vrim_encodeXML($_POST['userid']) . "</userId>
   </sentData>
   <errorcode>$failCode</errorcode>
   <errortext>$failMessage</errortext>

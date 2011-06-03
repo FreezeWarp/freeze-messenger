@@ -61,8 +61,8 @@ if ($ausers) {
 $data = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getAllActiveUsers>
   <activeUser>
-    <userid>$user[userid]</userid>
-    <username>" . vrim_encodeXML($user['username']) . "</username>
+    <userId>$user[userid]</userId>
+    <userName>" . vrim_encodeXML($user['username']) . "</userName>
   </activeUser>
   <sentData>
     <onlineThreshold>$onlineThreshold</onlineThreshold>

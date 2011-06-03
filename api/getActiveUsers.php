@@ -47,9 +47,9 @@ else {
 
     $auserXML .= "    <room>
       <roomData>
-          <roomid>$auser[id]</roomid>
-          <roomname>$auser[name]</roomname>
-          <roomtopic>$auser[topic]</roomtopic>
+        <roomId>$auser[id]</roomId>
+        <roomName>$auser[name]</roomName>
+        <roomTopic>$auser[topic]</roomTopic>
       </roomData>
       <users>
 ";
@@ -57,9 +57,9 @@ else {
     if ($ausers) {
       foreach ($ausers AS $auser) {
         $auserXML .= "    <user>
-      <userid>$auser[userid]</userid>
-      <username>$auser[username]</username>
-      <displaygroupid>$auser[displaygroupid]</displaygroupid>
+      <userId>$auser[userid]</userid>
+      <userName>$auser[username]</userName>
+      <userGroup>$auser[displaygroupid]</userGroup>
       <status>$auser[status]</status>
       <typing>$auser[typing]</typing>
     </user>

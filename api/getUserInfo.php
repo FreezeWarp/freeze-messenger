@@ -67,26 +67,26 @@ switch ($loginMethod) {
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getUserInfo>
   <activeUser>
-    <userid>$user[userid]</userid>
-    <username>" . vrim_encodeXML($user['username']) . "</username>
+    <userId>$user[userid]</userId>
+    <userName>" . vrim_encodeXML($user['username']) . "</userName>
   </activeUser>
   <sentData>
-    <userid>$userid</userid>
-    <username>$username</username>
+    <userId>$userid</userId>
+    <userName>$username</userName>
   </sentData>
   <errorcode>$failCode</errorcode>
   <errortext>$failMessage</errortext>
   <userData>
-    <userid>$getuser[userid]</userid>
-    <username>$getuserf[username]</username>
+    <userId>$getuser[userid]</userid>
+    <userName>$getuserf[username]</username>
     <settings>$getuser[settings]</settings>
     <startTag>$getuserf[opentag]</startTag>
     <endTag>$getuserf[closetag]</endTag>
     <favRooms>$getuser[favRooms]</favRooms>
-    <postcount>$getuserf[posts]</postcount>
-    <joindate>$getuserf[joindate]</joindate>
-    <joindateformatted>" . vbdate(false,$getuserf['joindate']) . "</joindateformatted>
-    <usertitle>$getuserf[usertitle]</usertitle>
+    <postCount>$getuserf[posts]</postCount>
+    <joinDate>$getuserf[joindate]</joinDate>
+    <joinDateFormatted>" . vbdate(false,$getuserf['joindate']) . "</joinDateFormatted>
+    <userTitle>$getuserf[usertitle]</userTitle>
     <avatar>$getuserf[avatar]</avatar>
   </userData>
 </getUserInfo>";

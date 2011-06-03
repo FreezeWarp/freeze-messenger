@@ -16,6 +16,8 @@ $forumCookieSalt = ''; // The cookie salt used with vBulletin
 $forumTablePrefix = ''; // The table prefix of all forum tables.
 $forumCookiePrefix = 'bb'; // The cookie prefix of forum cookies.
 
+$brokenUsers = array(1,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30); // This is generally only needed with PHPBB, which allows for several "broken" accounts to be used for posting - several bots as well as the anonymous account. At least in the latter case, it may be beneficial to allow it.
+
 ///* Encryption *///
 $salts = array( // DO NOT REMOVE ANY ENTRY. Entries can be freely added, with the last generally being used for all new data. Note that to disable encryption, make this empty. Alternatively, to disable encryption without losing all old messages, add a new entry at the bottom that is empty.
   101 => 'xxx',

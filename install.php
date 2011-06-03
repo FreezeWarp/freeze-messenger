@@ -295,8 +295,9 @@ Now that the database has been successfully installed, we must generate the conf
 
   case 'dev':
   $mysqli = new mysqli('localhost','a','a','phpbb');
+  $mysqli->query("SET NAMES utf8");
   $prefix = 'fim_';
-  $table = "{$prefix}templates"
+  $table = "{$prefix}templates";
 
   $mysqli->query("DROP TABLE {$table}");
 

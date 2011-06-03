@@ -104,11 +104,11 @@ else {
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <sendMessage>
   <activeUser>
-    <userid>$user[userid]</userid>
-    <username>" . vrim_encodeXML($user['username']) . "</username>
+    <userId>$user[userid]</userId>
+    <userName>" . vrim_encodeXML($user['username']) . "</userName>
   </activeUser>
   <sentData>
-    <roomid>" . vrim_encodeXML($_POST['roomid']) . "</roomid>
+    <roomId>" . vrim_encodeXML($_POST['roomid']) . "</roomId>
     <message>" . vrim_encodeXML($_POST['message']) . "</message>
   </sentData>
   <errorcode>$failCode</errorcode>

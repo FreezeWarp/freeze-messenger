@@ -81,9 +81,9 @@ if ($rooms2) {
     $fav = (in_array($row['id'],$favRooms) ? 'true' : 'false');
 
     $roomXML .= "    <room>
-      <roomid>$row[id]</roomid>
-      <roomname>" . vrim_encodeXML($row['name']) . "</roomname>
-      <roomtopic>" . vrim_encodeXML($row['title']) . "</roomtopic>
+      <roomId>$row[id]</roomId>
+      <roomName>" . vrim_encodeXML($row['name']) . "</roomName>
+      <roomTopic>" . vrim_encodeXML($row['title']) . "</roomTopic>
       <owner>$row[owner]</owner>
       <allowedUsers>$row[allowedUsers]</allowedUsers>
       <allowedGroups>$row[allowedGroups]</allowedGroups>
@@ -93,7 +93,7 @@ if ($rooms2) {
         <official>" . (($row['options'] & 1) ? 'true' : 'false') . "</official>
         <deleted>" . (($row['options'] & 4) ? 'true' : 'false') . "</deleted>
         <hidden>" . (($row['options'] & 8) ? 'true' : 'false') . "</hidden>
-        <privateim>" . (($row['options'] & 16) ? 'true' : 'false') . "</privateim>
+        <privateIm>" . (($row['options'] & 16) ? 'true' : 'false') . "</privateIm>
       </optionDefinitions>
     </room>";
   }
@@ -102,8 +102,8 @@ if ($rooms2) {
 $data = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getRooms>
   <activeUser>
-    <userid>$user[userid]</userid>
-    <username>" . vrim_encodeXML($user['username']) . "</username>
+    <userId>$user[userid]</userId>
+    <userName>" . vrim_encodeXML($user['username']) . "</userName>
   </activeUser>
 
   <sentData>
