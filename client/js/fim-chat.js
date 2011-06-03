@@ -64,10 +64,10 @@ function contextMenuParse() {
       window.open(window.forumUrl + 'member.php?u=' + userid,'profile' + userid);
       break;
       case 'kick':
-      ajaxDialogue('/content/kick.php?userid=' + userid + '&roomid=' + $('body').attr('data-roomid'),'Kick User','kickUserDialogue',1000);
+      ajaxDialogue('content/kick.php?userid=' + userid + '&roomid=' + $('body').attr('data-roomid'),'Kick User','kickUserDialogue',1000);
       break;
       case 'ban':
-      window.open('/moderate.php&do=banuser2&userid=' + userid,'banuser' + userid);
+      window.open('moderate.php&do=banuser2&userid=' + userid,'banuser' + userid);
       break;
     }
   });
@@ -156,7 +156,7 @@ function contextMenuParse() {
       }
       break;
       case 'edit':
-      ajaxDialogue('/content/editRoom.php?roomid=' + $(el).attr('data-roomid'),'Edit Room','editRoomDialogue',1000);
+      ajaxDialogue('content/editRoom.php?roomid=' + $(el).attr('data-roomid'),'Edit Room','editRoomDialogue',1000);
       break;
     }
   });
@@ -509,7 +509,7 @@ $(document).ready(function() {
 /***** Youtube *****/
 function youtubeSend(id) {
   $.ajax({
-    url: '/uploadFile.php',
+    url: 'uploadFile.php',
     type: 'POST',
     contentType: 'application/x-www-form-urlencoded;charset=UTF-8',
     cache: false,

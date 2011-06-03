@@ -185,7 +185,7 @@ $(document).ready(function() {
 
 function showAllRooms() {
   $.ajax({
-    url: '/api/getRooms.php',
+    url: 'api/getRooms.php',
     timeout: 5000,
     type: 'GET',
     cache: false,
@@ -204,7 +204,7 @@ function showAllRooms() {
         var isPriv = ($(this).find('optionDefinitions > privateim').text() == 'true' ? true : false);
         var isOwner = (parseInt($(this).find('owner').text()) == userid ? true : false);
         
-        var text = '<li><a href="/chat.php?room=' + roomId + '">' + roomName + '</a></li>';
+        var text = '<li><a href="chat.php?room=' + roomId + '">' + roomName + '</a></li>';
         
         if (isFav) {
           roomFavHtml += text;
@@ -246,15 +246,15 @@ $(document).ready(function() {
   $('button').button();
 
   $('a#kick').click(function() {
-    ajaxDialogue('/content/kick.php','Kick User','kickUserDialogue',1000);
+    ajaxDialogue('content/kick.php','Kick User','kickUserDialogue',1000);
   });
 
   $('a#privateRoom').click(function() {
-    ajaxDialogue('/content/privateRoom.php','Enter Private Room','privateRoomDialogue',1000);
+    ajaxDialogue('content/privateRoom.php','Enter Private Room','privateRoomDialogue',1000);
   });
 
   $('a#manageKick').click(function() {
-    ajaxDialogue('/content/manageKick.php?roomid=' + roomid,'Manage Kicked Users in This Room','manageKickDialogue',600);
+    ajaxDialogue('content/manageKick.php?roomid=' + roomid,'Manage Kicked Users in This Room','manageKickDialogue',600);
   });
 
   $('a#online').click(function() {
@@ -262,15 +262,15 @@ $(document).ready(function() {
   });
 
   $('a#createRoom').click(function() {
-    ajaxDialogue('/content/createRoom.php','Create a New Room','createRoomDialogue',1000);
+    ajaxDialogue('content/createRoom.php','Create a New Room','createRoomDialogue',1000);
   });
 
   $('a#editRoom').click(function() {
-    ajaxDialogue('/content/editRoom.php?roomid=' + roomid,'Edit Room','editRoomDialogue',1000);
+    ajaxDialogue('content/editRoom.php?roomid=' + roomid,'Edit Room','editRoomDialogue',1000);
   });
 
   $('a.editRoomMulti').click(function() {
-    ajaxDialogue('/content/editRoom.php?roomid=' + $(this).attr('data-roomid'),'Edit Room','editRoomDialogue',1000);
+    ajaxDialogue('content/editRoom.php?roomid=' + $(this).attr('data-roomid'),'Edit Room','editRoomDialogue',1000);
   });
 
   $('#icon_help').click(function() {
@@ -278,7 +278,7 @@ $(document).ready(function() {
   });
   
   $('#icon_note').click(function() {
-    window.location = '/archive.php?roomid=' + roomid;
+    window.location = 'archive.php?roomid=' + roomid;
   });
 
   $('#copyrightLink').click(function() {
