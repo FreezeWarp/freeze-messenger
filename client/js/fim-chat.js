@@ -325,7 +325,7 @@ function getSuccess(xml) {
       
       notifyData += username + ': ' + text + "\n";
       
-      if (reverse) {
+      if (window.reverse) {
         $('#messageList').append(data);
       }
       else {
@@ -339,7 +339,7 @@ function getSuccess(xml) {
           
           
 
-    if (reverse) {
+    if (window.reverse) {
       toBottom();
     }
   }
@@ -428,7 +428,7 @@ function sendMessage(message,confirmed) {
       }
     },
     error: function() {
-      if (reverse) {
+      if (window.reverse) {
         $('#messageList').append('Your message, "' + message + '", could not be sent and will be retried.');
       }
       else {
@@ -460,7 +460,7 @@ else {
 /***** DOM Parsing *****/
 
 $(document).ready(function() {
-  $("#icon_reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (reverse ? 'n' : 's') } );
+  $("#icon_reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (window.reverse ? 'n' : 's') } );
   $("#icon_help").button({ icons: {primary:'ui-icon-help'} }).css({height: '32px', width: '32px'});
   $("#icon_note").button({ icons: {primary:'ui-icon-note'} }).css({height: '32px', width: '32px'});
   $("#icon_settings").button({ icons: {primary:'ui-icon-wrench'} }).css({height: '32px', width: '32px'});
@@ -474,10 +474,10 @@ $(document).ready(function() {
 
   $("#icon_reversePostOrder").hover(
     function() {
-      $("#icon_reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (reverse ? 's' : 'n') } );
+      $("#icon_reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (window.reverse ? 's' : 'n') } );
     },
     function () {
-      $("#icon_reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (reverse ? 'n' : 's') } );
+      $("#icon_reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (window.reverse ? 'n' : 's') } );
     }
   );
 
@@ -493,7 +493,7 @@ $(document).ready(function() {
   );
 
   $("#icon_reversePostOrder").click(function() {
-    var value = (reverse ? 'false' : 'true');
+    var value = (window.reverse ? 'false' : 'true');
     $.cookie('vrim10-reverseOrder', value, {expires: 7 * 24 * 3600});
     location.reload(true);
   });
