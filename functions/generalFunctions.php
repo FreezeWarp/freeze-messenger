@@ -587,4 +587,24 @@ function errorHandler($errno, $errstr, $errfile, $errline) {
   // Don't execute the internal PHP error handler.
   return true;
 }
+
+function container($title,$content,$class = 'page') {
+
+  return $return = "<table class=\"$class ui-widget\">
+  <thead>
+    <tr class=\"hrow ui-widget-header ui-corner-top\">
+      <td>$title</td>
+    </tr>
+  </thead>
+  <tbody class=\"ui-widget-content ui-corner-bottom\">
+    <tr>
+      <td>
+        <div>$content</div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+";
+}
 ?>
