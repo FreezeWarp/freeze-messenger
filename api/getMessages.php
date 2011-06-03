@@ -79,8 +79,11 @@ if (!$whereClause && $messageStart) {
 }
 
 if ($loginMethod == 'vbulletin') {
-//  $tableClause .= "{$sqlUserGroupTable} AS g";
-//  $whereClause .= "u.{$sqlUserTableCols[usergroup]} = g.{$sqlUserGroupTableCols[groupid]}";
+  $tableClause .= "{$sqlUserGroupTable} AS g";
+  $whereClause .= "u.{$sqlUserTableCols[usergroup]} = g.{$sqlUserGroupTableCols[groupid]}";
+}
+elseif ($loginMethod == 'phpbb') {
+  $colClause .= ', u.user_colour';
 }
 
 ///* Error Checking *///
@@ -132,6 +135,7 @@ else {
   u2.defaultFontface AS defaultFontface,
   u2.defaultHighlight AS defaultHighlight,
   u2.defaultFormatting AS defaultFormatting
+  $colClause
 FROM {$sqlPrefix}messages AS m,
   {$sqlUserTable} AS u,
   {$sqlPrefix}users AS u2
@@ -185,6 +189,11 @@ LIMIT $messageLimit";
             $message['apiText'] = vrim_encodeXML($message['apiText']);
             $message['htmlText'] = vrim_encodeXML($message['htmlText']);
 
+            if ($loginMethod == 'phpbb') {
+              $message['groupFormatStart'] = "<span style=\"color: #$message[user_colour]\">";
+              $message['groupFormatEnd'] = '</span>';
+            }
+
             switch ($encode) {
               case 'base64':
               $message['apiText'] = base64_encode($message['apiText']);
@@ -230,7 +239,10 @@ LIMIT $messageLimit";
           switch ($loginMethod) {
             case 'vbulletin':
             $join = "LEFT JOIN {$sqlUserGroupTable} AS g ON displaygroupid = g.{$sqlUserGroupTableCols[groupid]}";
-            $cols = ",g.$sqlUserGroupTableCols[startTag] AS opentag, g.$sqlUserGroupTableCols[endTag] AS closetag";
+            $cols = ", g.$sqlUserGroupTableCols[startTag] AS opentag, g.$sqlUserGroupTableCols[endTag] AS closetag";
+            break;
+            case 'phpbb':
+            $cols = ", u.user_colour";
             break;
           }
 
@@ -251,8 +263,16 @@ LIMIT 500",'userid');
 
   if ($ausers) {
     foreach ($ausers AS $auser) {
-        $auser['opentag'] = vrim_encodeXML($auser['opentag']);
-        $auser['closetag'] = vrim_encodeXML($auser['closetag']);
+        switch ($loginMethod) {
+          case 'vbulletin':
+          $auser['opentag'] = vrim_encodeXML($auser['opentag']);
+          $auser['closetag'] = vrim_encodeXML($auser['closetag']);
+          break;
+          case 'phpbb':
+          $auser['opentag'] = vrim_encodeXML("<span style=\"color: #$auser[user_colour]\">");
+          $auser['closetag'] = vrim_encodeXML("</span>");
+          break;
+        }
 
         $ausersXML .= "      <user>
         <username>$auser[username]</username>
