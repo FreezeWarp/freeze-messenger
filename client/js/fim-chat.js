@@ -203,12 +203,7 @@ function updatePosts() {
     window.clearInterval(window.timer1);
   }
 
-  if (light) {
-    var encrypt = 'plaintext';
-  }
-  else {
-    var encrypt = 'base64';
-  }
+  var encrypt = 'base64';
 
   $.ajax({
     url: 'api/getMessages.php?rooms=' + roomid + '&messageIdMin=' + (lastMessage) + '&messageLimit=100&watchRooms=1&activeUsers=1&archive=' + (first ? '1&messageDateMin=' + (Math.round((new Date()).getTime() / 1000) - 600) : '0'),
@@ -498,16 +493,14 @@ $(document).ready(function() {
     location.reload(true);
   });
   
-  if (!light) {
-    jQTubeUtil.init({
-      key: "AI39si5_Dbv6rqUPbSe8e4RZyXkDM3X0MAAtOgCuqxg_dvGTWCPzrtN_JLh9HlTaoC01hCLZCxeEDOaxsjhnH5p7HhZVnah2iQ",
-      orderby: "relevance",  // *optional -- "viewCount" is set by default
-      time: "this_month",   // *optional -- "this_month" is set by default
-      maxResults: 20   // *optional -- defined as 10 results by default
-    });
-  }
+  jQTubeUtil.init({
+    key: "AI39si5_Dbv6rqUPbSe8e4RZyXkDM3X0MAAtOgCuqxg_dvGTWCPzrtN_JLh9HlTaoC01hCLZCxeEDOaxsjhnH5p7HhZVnah2iQ",
+    orderby: "relevance",  // *optional -- "viewCount" is set by default
+    time: "this_month",   // *optional -- "this_month" is set by default
+    maxResults: 20   // *optional -- defined as 10 results by default
+  });
 
-  resize();
+  windowResize();
 });
 
 

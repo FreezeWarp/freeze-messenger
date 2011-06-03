@@ -66,11 +66,9 @@ function ajaxDialogue(uri,title,id,width,cF) {
     function (responseText, textStatus, XMLHttpRequest) {
       $('button').button();
 
-      if (light) {
-        var windowWidth = document.documentElement.clientWidth;
-        if (width > windowWidth || !width) {
-          width = windowWidth;
-        }
+      var windowWidth = document.documentElement.clientWidth;
+      if (width > windowWidth || !width) {
+        width = windowWidth;
       }
 
       dialog.dialog({
@@ -98,11 +96,9 @@ function ajaxTabDialogue(uri,id,width,cF) {
     function (responseText, textStatus, XMLHttpRequest) {
       $('button').button();
 
-      if (light) {
-        var windowWidth = document.documentElement.clientWidth;
-        if (width > windowWidth || !width) {
-          width = windowWidth;
-        }
+      var windowWidth = document.documentElement.clientWidth;
+      if (width > windowWidth || !width) {
+        width = windowWidth;
       }
 
       dialog.tabbedDialog({
