@@ -287,7 +287,7 @@ function getSuccess(xml) {
       var text = $(this).find('htmltext').text();
       var messageTime = $(this).find('messagetimeformatted').text();
 
-      var messageId = $(this).find('messageid').text();
+      var messageId = Number($(this).find('messageid').text());
 
       var username = $(this).find('userdata > username').text();
       var userid = $(this).find('userdata > userid').text();
@@ -344,8 +344,8 @@ function getSuccess(xml) {
   }
         
         
-  if (!light) {
-    if (blur && soundOn) {
+  if (blur) {
+    if (soundOn) {
       window.beep();
 
       if (navigator.appName === 'Microsoft Internet Explorer') {
@@ -355,13 +355,13 @@ function getSuccess(xml) {
       }
     }
 
-    if (blur && notify) {
+    if (notify) {
       if (window.webkitNotifications) {
         webkitNotify('images/favicon.gif', 'New Message', notifyData);
       }
     }
 
-    if (blur) {
+    if (navigator.appName === 'Microsoft Internet Explorer') {
       try {
         if (window.external.msIsSiteMode()) {
           window.external.msSiteModeActivate();
