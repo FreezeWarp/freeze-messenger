@@ -25,7 +25,7 @@ var activeUsers;
 var notify = true;
 var timeout = (window.longPolling ? 1000000 : 2400);
 var first = true;
-
+var favicon = $('#favicon').attr('href');
 
 
 /***** Misc Functions *****/
@@ -35,12 +35,12 @@ function toBottom() {
 
 
 function faviconFlash() {
-    if ($('#favicon').attr('href') === 'images/favicon.gif') {
-      $('#favicon').attr('href','images/favicon2.gif');
-    }
-    else {
-      $('#favicon').attr('href','images/favicon.gif');
-    }
+  if ($('#favicon').attr('href') === favicon) {
+    $('#favicon').attr('href','images/favicon2.gif');
+  }
+  else {
+    $('#favicon').attr('href',favicon);
+  }
   
 }
 
@@ -582,7 +582,7 @@ function windowBlur () {
 function windowFocus() {
   blur = false;
   window.clearInterval(timer3);
-  $('#favicon').attr('href','images/favicon.gif');
+  $('#favicon').attr('href',favicon);
 }
 
 window.onresize = windowResize;

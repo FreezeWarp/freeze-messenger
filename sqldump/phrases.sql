@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS `{prefix}phrases` (
 
 INSERT INTO `{prefix}phrases` (`id`, `name`, `text_en`, `text_jp`) VALUES
 (1, 'brandingTitle', 'FreezeMessenger', 'フリーズ の メッセンジャー'),
-(2, 'brandingFavicon', 'images/favicon.gif', 'v'),
+(2, 'brandingFavicon', 'images/favicon.png', 'images/favicon.png'),
 (3, 'brandingFaviconIE', 'images/favicon1632.ico', 'images/favicon1632.ico'),
 (4, 'doctype', '<!DOCTYPE HTML>', '<!DOCTYPE HTML>'),
 (5, 'brandingDescription', '', ''),
