@@ -26,7 +26,7 @@ switch ($_REQUEST['phase']) {
   <!-- END Styles -->
 
   <!-- START Scripts -->
-  <script src="client/js/jquery-1.5.1.min.js" type="text/javascript"></script>
+  <script src="client/js/jquery-1.6.1.min.js" type="text/javascript"></script>
 
   <script src="client/js/jquery-ui-1.8.11.custom.min.js" type="text/javascript"></script>
   <script src="client/js/jquery.plugins.05182011.min.js" type="text/javascript"></script>

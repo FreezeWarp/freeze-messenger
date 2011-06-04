@@ -37,8 +37,8 @@ switch ($loginMethod) {
   $sqlSessionTable = $forumPrefix . 'session'; // The sessions table in the login method used.
 
   $sqlUserTableCols = array(
-    'userId' => 'userId', // The user ID column of the user table in the login method used.
-    'userName' => 'userName', // The userName column of the user table in the login method used.
+    'userId' => 'userid', // The user ID column of the user table in the login method used.
+    'userName' => 'username', // The userName column of the user table in the login method used.
     'usergroup' => 'displaygroupid', // The usergroup column of the user table in the login method used.
     'allgroups' => 'membergroupids',
     'tzoffset' => 'timezoneoffset',
@@ -58,7 +58,7 @@ switch ($loginMethod) {
 
   $sqlUserTableCols = array(
     'userId' => 'user_id', // The user ID column of the user table in the login method used.
-    'userName' => 'userName', // The userName column of the user table in the login method used.
+    'userName' => 'username', // The userName column of the user table in the login method used.
     'usergroup' => 'group_id', // The usergroup column of the user table in the login method used.
     'allgroups' => 'group_id',
     'tzoffset' => 'user_timezone',
