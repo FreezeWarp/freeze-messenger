@@ -1,16 +1,23 @@
 <?php
-$action = vrim_urldecode($_GET['action']);
+$apiRequest = true;
+
+require_once('../global.php');
+header('Content-type: text/xml');
+
+$action = vrim_urldecode($_POST['action']);
 
 switch ($action) {
   case 'createRoom':
   $name = substr(mysqlEscape($_POST['name']),0,20); // Limits to 20 characters.
 
   if (!$name) {
-    trigger_error($phrases['editRoomNoName'],E_USER_ERROR);
+    $failCode = 'noName';
+    $failMessage = 'A room name was not supplied.';
   }
   else {
     if (sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE name = '$name'")) {
-      trigger_error($phrases['editRoomNameTaken'],E_USER_ERROR);
+      $failCode = 'exists';
+      $failMessage = 'The room specified already exists.';
     }
     else {
       $allowedGroups = mysqlEscape($_POST['allowedGroups']);
@@ -23,10 +30,11 @@ switch ($action) {
       $insertId = mysql_insert_id();
 
       if ($insertId) {
-        echo template('createRoomSuccess');
+        $data = "<insertId>$insertId</insertId>";
       }
       else {
-        trigger_error($phrases['createRoomFail'],E_USER_ERROR);
+        $failCode = 'unknown';
+        $failMessage = 'Room created failed for unknown reasons.';
       }
     }
   }
@@ -35,20 +43,24 @@ switch ($action) {
   case 'editRoom':
   $name = substr(mysqlEscape($_POST['name']),0,20); // Limits to 20 characters.
 
-    if (!$name) {
-    trigger_error($phrases['editRoomNoName'],E_USER_ERROR); // ...It has to have a name /still/.
+  if (!$name) {
+    $failCode = 'noName';
+    $failMessage = 'A room name was not supplied.';
   }
-  elseif ($user['userId'] != $room['owner'] && !($user['settings'] & 16)) {
-    trigger_error($phrases['editRoomNotOwner'],E_USER_ERROR); // Again, check to make sure the user is the group's owner or an admin.
+  elseif ($user['userId'] != $room['owner'] && !($user['settings'] & 16)) { // Again, check to make sure the user is the group's owner or an admin.
+    $failCode = 'noperm';
+    $failMessage = 'You do not have permission to edit this room.';
   }
-  elseif ($room['settings'] & 4) {
-    trigger_error($phrases['editRoomDeleted'],E_USER_ERROR); // Make sure the room hasn't been deleted.
+  elseif ($room['settings'] & 4) { // Make sure the room hasn't been deleted.
+    $failCode = 'deleted';
+    $failMessage = 'The room has been deleted - it can not be edited.';
   }
   else {
-    $data = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE name = '$name'");
+    $data = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE name = '$name'"); // Get existing data.
 
-      if ($data && $data['id'] != $room['id']) {
-      trigger_error($phrases['editRoomNameTaken'],E_USER_ERROR);
+    if ($data && $data['id'] != $room['id']) {
+      $failCode = 'exists';
+      $failMessage = 'The room name specified already exists.';
     }
     else {
       $listsActive = sqlArr("SELECT * FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomId = $room[id]",'id');
@@ -58,18 +70,24 @@ switch ($action) {
         }
       }
 
-       $censorLists = $_POST['censor'];
-     foreach($censorLists AS $id => $list) {
-       $listsNew[$id] = $list;
-     }
+      $censorLists = $_POST['censor'];
+      foreach($censorLists AS $id => $list) {
+        $listsNew[$id] = $list;
+      }
 
-       $lists = sqlArr("SELECT * FROM {$sqlPrefix}censorLists AS l WHERE options & 2",'id');
-     foreach ($lists AS $list) {
-        if ($list['type'] == 'black' && $listStatus[$list['id']] == 'block') $checked = true;
-        elseif ($list['type'] == 'white' && $listStatus[$list['id']] != 'unblock') $checked = true;
-        else $checked = false;
+      $lists = sqlArr("SELECT * FROM {$sqlPrefix}censorLists AS l WHERE options & 2",'id');
+      foreach ($lists AS $list) {
+        if ($list['type'] == 'black' && $listStatus[$list['id']] == 'block') {
+          $checked = true;
+        }
+        elseif ($list['type'] == 'white' && $listStatus[$list['id']] != 'unblock') {
+          $checked = true;
+        }
+        else {
+          $checked = false;
+        }
 
-          if ($checked == true && !$listsNew[$list['id']]) {
+        if ($checked == true && !$listsNew[$list['id']]) {
           mysqlQuery("INSERT INTO ${sqlPrefix}censorBlackWhiteLists (roomId, listId, status) VALUES ($room[id], $id, 'unblock') ON DUPLICATE KEY UPDATE status = 'unblock'");
         }
         elseif ($checked == false && $listsNew[$list['id']]) {
@@ -77,13 +95,12 @@ switch ($action) {
         }
       }
 
-        $allowedGroups = mysqlEscape($_POST['allowedGroups']);
+      $allowedGroups = mysqlEscape($_POST['allowedGroups']);
       $allowedUsers = mysqlEscape($_POST['allowedUsers']);
       $moderators = mysqlEscape($_POST['moderators']);
       $options = ($room['options'] & 1) + ($_POST['mature'] ? 2 : 0) + ($room['options'] & 4) + ($room['options'] & 8) + ($_POST['disableModeration'] ? 32 + 0 : 0);
       $bbcode = intval($_POST['bbcode']);
       mysqlQuery("UPDATE {$sqlPrefix}rooms SET name = '$name', allowedGroups = '$allowedGroups', allowedUsers = '$allowedUsers', moderators = '$moderators', options = '$options', bbcode = '$bbcode' WHERE id = $room[id]");
-      echo template('editRoomSuccess');
     }
   }
   break;
@@ -112,7 +129,6 @@ switch ($action) {
 
 
   case 'kickuser':
-
   $userId = intval($_POST['userId']);
   $user2 = sqlArr("SELECT u1.settings, u2.userId, u2.userName FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userId = $userId AND u2.userId = u1.userId");
 
@@ -177,4 +193,22 @@ switch ($action) {
 
   break;
 }
+
+echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
+<moderate>
+  <activeUser>
+    <userId>$user[userId]</userId>
+    <userName>" . vrim_encodeXML($user['userName']) . "</userName>
+  </activeUser>
+  <sentData>
+    <action>" . vrim_encodeXML($_POST['action']) . "</action>
+    <roomId>" . (int) $_POST['roomId'] . "</roomId>
+    <userId>" . (int) $_POST['userId'] . "</userId>
+  </sentData>
+  <errorcode>$failCode</errorcode>
+  <errortext>$failMessage</errortext>
+  <response>
+    $data
+  </response>
+</sendMessage>";
 ?>
