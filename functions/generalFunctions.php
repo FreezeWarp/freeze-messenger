@@ -272,6 +272,10 @@ function vrim_decrypt($message,$index = false) {
 function vrim_encrypt($data) {
   global $salts;
 
+  if (!function_exists('mcrypt_encrypt')) {
+    return $data;
+  }
+
   $salt = end($salts);
   $saltNum = key($salts);
 
