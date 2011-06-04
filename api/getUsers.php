@@ -19,55 +19,58 @@ $apiRequest = true;
 require_once('../global.php');
 header('Content-type: text/xml');
 
-$users = $_GET['rooms'];
-$usersArray = explode(',',$rooms);
-foreach ($usersArray AS &$v) $v = intval($v);
+$usersArray = explode(',',$_GET['rooms']);
+foreach ($usersArray AS &$v) {
+  $v = intval($v);
+}
 
 
-if ($users) $whereClause .= ' userid IN (' . implode(',',$usersArray) . ') AND ';
+if ($users) $whereClause .= ' userId IN (' . implode(',',$usersArray) . ') AND ';
 
 
 switch ($_GET['order']) {
   case 'id':
-  case 'userid':
-  $order = 'userid ' . ($reverseOrder ? 'DESC' : 'ASC');
+  case 'userId':
+  $order = 'userId ' . ($reverseOrder ? 'DESC' : 'ASC');
   break;
 
   case 'name':
-  case 'username':
-  $order = 'username ' . ($reverseOrder ? 'DESC' : 'ASC');
+  case 'userName':
+  $order = 'userName ' . ($reverseOrder ? 'DESC' : 'ASC');
   break;
 
   default:
-  $order = 'userid ' . ($reverseOrder ? 'DESC' : 'ASC');
+  $order = 'userId ' . ($reverseOrder ? 'DESC' : 'ASC');
   break;
 }
+
 
 switch ($loginMethod) {
   case 'vbulletin':
-  $join = "LEFT JOIN {$sqlUserTable} AS u2 ON u2.userid = u.userid";
-  $cols = ", u2.username";
+  case 'phpbb':
+  $join = "LEFT JOIN {$sqlUserTable} AS u2 ON u2.{$sqlUserTableCols[userId]} = u.userId";
+  $cols = ", u2.{$sqlUserTableCols[userName]} AS userName, u2.{$sqlUserTableCols[userGroup] AS userGroup";
   break;
 }
 
 
-$users = sqlArr("SELECT u.userid {$cols} FROM {$sqlPrefix}users AS u {$join} WHERE {$whereClause} TRUE ORDER BY {$order}",'userid'); // Get all rooms
+$users = sqlArr("SELECT u.userId {$cols} FROM {$sqlPrefix}users AS u {$join} WHERE {$whereClause} TRUE ORDER BY {$order}",'userId'); // Get all rooms
 if ($users) {
   foreach ($users AS $row) {
-    $row['username'] = htmlspecialchars($row['username']);
-
     $userXML .= "    <user>
-      <userid>$row[userid]</userid>
-      <username>" . vrim_encodeXML($row['username']) . "</username>
+      <userId>$row[userId]</userId>
+      <userName>" . vrim_encodeXML($row['userName']) . "</userName>
+      <userGroup>" . vrim_encodeXML($row['userName']) . "</userGroup>
     </user>";
   }
 }
 
+
 $data = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getRooms>
   <activeUser>
-    <userid>$user[userid]</userid>
-    <username>" . vrim_encodeXML($user['username']) . "</username>
+    <userId>$user[userId]</userId>
+    <userName>" . vrim_encodeXML($user['userName']) . "</userName>
   </activeUser>
 
   <sentData>
@@ -81,8 +84,9 @@ $data = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
   </users>
 </getRooms>";
 
+
 if ($_GET['gz']) {
- echo gzcompress($data);
+  echo gzcompress($data);
 }
 else {
   echo $data;
