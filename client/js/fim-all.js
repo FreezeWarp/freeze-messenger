@@ -248,15 +248,67 @@ $(document).ready(function() {
   $('button').button();
 
   $('a#kick').click(function() {
-    ajaxDialogue('content/kick.php','Kick User','kickUserDialogue',1000);
+    ajaxDialogue('template.php?template=kickForm','Kick User','kickUserDialogue',1000);
+    
+    $.ajax({
+      url: 'api/getRooms.php',
+      timeout: 5000,
+      type: 'GET',
+      cache: false,
+      success: function(xml) {
+        var roomHtml = '';
+
+        $(xml).find('room').each(function() {
+          var roomName = $(this).find('roomName').text();
+          var roomId = $(this).find('roomId').text();
+          var roomTopic = $(this).find('roomTopic').text();
+          var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
+          var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
+          var isOwner = (parseInt($(this).find('owner').text()) == userId ? true : false);
+
+          roomHtml += '<option value="' + roomId + '">' + roomName + '</option>';
+        });
+        
+        $('select[name=roomId]').html(roomHtml);
+      },
+      error: function() {
+        alert('Failed to show all rooms');
+      }
+    });
+    
+    $.ajax({
+      url: 'api/getRooms.php',
+      timeout: 5000,
+      type: 'GET',
+      cache: false,
+      success: function(xml) {
+        var roomHtml = '';
+
+        $(xml).find('room').each(function() {
+          var roomName = $(this).find('roomName').text();
+          var roomId = $(this).find('roomId').text();
+          var roomTopic = $(this).find('roomTopic').text();
+          var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
+          var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
+          var isOwner = (parseInt($(this).find('owner').text()) == userId ? true : false);
+
+          roomHtml += '<option value="' + roomId + '">' + roomName + '</option>';
+        });
+        
+        $('select[name=roomId]').html(roomHtml);
+      },
+      error: function() {
+        alert('Failed to show all rooms');
+      }
+    });
   });
 
   $('a#privateRoom').click(function() {
-    ajaxDialogue('content/privateRoom.php','Enter Private Room','privateRoomDialogue',1000);
+    ajaxDialogue('template.php?template=privateRoomForm','Enter Private Room','privateRoomDialogue',1000);
   });
 
   $('a#manageKick').click(function() {
-    ajaxDialogue('content/manageKick.php?roomId=' + roomId,'Manage Kicked Users in This Room','manageKickDialogue',600);
+    ajaxDialogue('template.php?template=manageKickForm&roomId=' + roomId,'Manage Kicked Users in This Room','manageKickDialogue',600);
   });
 
   $('a#online').click(function() {
@@ -322,15 +374,16 @@ $(document).ready(function() {
     });
   });
 
-  $(document).ready(function(){
-    $("#kickForm").submit(function(){
-      data = $("#kickForm").serialize(); // Serialize the form data for AJAX.
+  $(document).ready(function(){    
+    $("#kickUserForm").submit(function(){
+      data = $("#kickUserForm").serialize(); // Serialize the form data for AJAX.
+      $.post("content/kick.php?phase=2",data,function(html) {
+        quickDialogue(html,'','kickUserResultDialogue');
+      }); // Send the form data via AJAX.
 
-        $.post("content/kick.php?phase=2",data); // Send the form data via AJAX.
+      $("#kickUserDialogue").dialog('close');
 
-        $("#kick").dialog('close');
-
-        return false; // Don\'t submit the form.
+      return false; // Don't submit the form.
     });
   });
 });

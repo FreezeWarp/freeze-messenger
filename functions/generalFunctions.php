@@ -566,21 +566,21 @@ function errorHandler($errno, $errstr, $errfile, $errline) {
 
   switch ($errno) {
     case E_USER_ERROR:
-    error_log("User Error; File '$errfile'; Line '$errline': $errstr\n",3,$errorFile);
+    error_log("User Error in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr\n",3,$errorFile);
     die("An error has occured: $errstr. \n\nThe application has terminated.");
     break;
 
     case E_USER_WARNING:
-    error_log("User Warning; File '$errfile'; Line '$errline': $errstr\n",3,$errorFile);
+    error_log("User Warning in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr\n",3,$errorFile);
     break;
 
     case E_ERROR:
-    error_log("System Error; File '$errfile'; Line '$errline': $errstr\n",3,$errorFile);
+    error_log("System Error in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr\n",3,$errorFile);
     die("An error has occured: $errstr. \n\nThe application has terminated.");
     break;
 
     case E_WARNING:
-    error_log("System Warning; File '$errfile'; Line '$errline': $errstr\n",3,$errorFile);
+    error_log("System Warning in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr\n",3,$errorFile);
     break;
   }
 
