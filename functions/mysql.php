@@ -55,8 +55,15 @@ function mysqlQuery($query) {
 function mysqlArray($queryData,$index = false) {
   if ($queryData !== false  && $queryData !== null) {
     if ($index) {
+      if ($index === true) {
+        $indexV++;
+      }
+      else {
+        $indexV = $row[$index];
+      }
+
       while (false !== ($row = mysql_fetch_assoc($queryData))) {
-        $data[$row[$index]] = $row;
+        $data[$indexV] = $row;
       }
       return $data;
     }

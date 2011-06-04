@@ -21,10 +21,12 @@ header('Content-type: text/xml');
 
 $rooms = $_GET['rooms'];
 $roomsArray = explode(',',$rooms);
-foreach ($roomsArray AS &$v) $v = intval($v);
+foreach ($roomsArray AS &$v) {
+  $v = intval($v);
+}
 
 $time = ($_GET['time'] ?: time());
-$onlineThreshold = ($_GET['onlineThreshold'] ?: $onlineThreshold); 
+$onlineThreshold = (int) ($_GET['onlineThreshold'] ? $_GET['onlineThreshold'] : $onlineThreshold); 
 
 if (!$rooms) {
   $failCode = 'badroomsrequest';
@@ -43,7 +45,24 @@ else {
     $roomsXML .= "
       <room>$room[id]</room>";
 
-    $ausers = sqlArr("SELECT u.userName, u.userId, p.id, p.status, p.typing FROM {$sqlPrefix}ping AS p, {$sqlPrefix}rooms AS r, user AS u WHERE p.roomId = $room[id] AND p.roomId = r.id AND p.userId = u.userId AND UNIX_TIMESTAMP(p.time) >= ($time - $onlineThreshold) ORDER BY u.userName",'id');
+    $ausers = sqlArr("SELECT
+  u.{$sqlUserTableCols[userName]} AS userName,
+  u.{$sqlUserTableCols[userId]} AS userId,
+  p.status,
+  p.typing
+  $cols
+FROM {$sqlPrefix}ping AS p,
+  {$sqlPrefix}rooms AS r,
+  {$sqlUserTable} AS u
+  $tables
+WHERE p.roomId = $room[id] AND
+  p.roomId = r.id AND
+  p.userId = u.$sqlUserTableCols[userId] AND
+  UNIX_TIMESTAMP(p.time) >= ($time - $onlineThreshold)
+  $where
+ORDER BY u.{$sqlUserTableCols[userName]}
+  $orderby
+$query",true);
 
     $auserXML .= "    <room>
       <roomData>

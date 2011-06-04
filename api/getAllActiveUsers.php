@@ -22,23 +22,37 @@ header('Content-type: text/xml');
 $time = ($_GET['time'] ?: time());
 $onlineThreshold = ($_GET['onlineThreshold'] ?: $onlineThreshold);
 
+switch ($loginMethod) {
+
+}
+
 $ausers = sqlArr("SELECT
   u.$sqlUserTableCols[userName] AS userName,
   u.$sqlUserTableCols[userId] AS userId,
   GROUP_CONCAT(r.name) AS roomNames,
   GROUP_CONCAT(r.id) AS roomIds
+  $cols
 FROM
   $sqlUserTable AS u,
   {$sqlPrefix}rooms AS r,
   {$sqlPrefix}ping AS p
+  $tables
 WHERE
   u.$sqlUserTableCols[userId] = p.userId AND
   r.id = p.roomId AND
   UNIX_TIMESTAMP(p.time) > $time - $onlineThreshold
+  $where
 GROUP BY
   p.userId
+  $groupby
 ORDER BY
-  u.userName",'userId');
+  u.userName
+  $orderby
+$query",'userId');
+
+switch ($loginMethod) {
+
+}
 
 if ($ausers) {
   foreach ($ausers AS $auser) {
@@ -51,10 +65,12 @@ if ($ausers) {
       </room>";
 
     $ausersXML .= "    <user>
-      <userdata>
+      <userData>
         <userId>$auser[userId]</userId>
         <userName>$auser[userName]</userName>
-      </userdata>
+        <startTag>$auser[userName]</startTag>
+        <endTag>$auser[userName]</endTag>
+      </userData>
       <rooms>
       $roomsXML
       </rooms>

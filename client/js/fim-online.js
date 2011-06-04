@@ -28,6 +28,8 @@ function updateOnline() {
       $(xml).find('user').each(function() {
         var userName = $(this).find('userName').text();
         var userId = $(this).find('userId').text();
+        var startTag = $(this).find('startTag').text();
+        var endTag = $(this).find('endTag').text();
         var roomData = new Array();
 
         $(this).find('room').each(function() {
@@ -37,7 +39,7 @@ function updateOnline() {
         });
         roomData = roomData.join(', ');
 
-        data += '<tr><td>' + userName + '</td><td>' + roomData + '</td></tr>';
+        data += '<tr><td>' + startTag + userName + endTag + '</td><td>' + roomData + '</td></tr>';
       });
 
       $('#onlineUsers').html(data);
