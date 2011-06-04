@@ -23,21 +23,23 @@ function updateOnline() {
     timeout: 2400,
     cache: false,
     success: function(xml) {
-      var data;
+      var data = '';
+
       $(xml).find('user').each(function() {
-        var username = $(this).find('username').text();
-        var userid = $(this).find('userid').text();
+        var userName = $(this).find('userName').text();
+        var userId = $(this).find('userId').text();
         var roomData = new Array();
 
         $(this).find('room').each(function() {
-          var roomid = $(this).find('roomid').text();
-          var roomname = $(this).find('roomname').text();
-          roomData.push('<a href="/chat.php?room=' + roomid + '">' + roomname + '</a>');
+          var roomId = $(this).find('roomId').text();
+          var roomName = $(this).find('roomName').text();
+          roomData.push('<a href="/chat.php?room=' + roomId + '">' + roomName + '</a>');
         });
         roomData = roomData.join(', ');
-        
-        data += '<tr><td>' + username + '</td><td>' + roomData + '</td></tr>';
+
+        data += '<tr><td>' + userName + '</td><td>' + roomData + '</td></tr>';
       });
+
       $('#onlineUsers').html(data);
     },
     error: function() {

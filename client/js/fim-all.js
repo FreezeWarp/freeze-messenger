@@ -197,11 +197,11 @@ function showAllRooms() {
       var text = '';
 
       $(xml).find('room').each(function() {
-        var roomName = $(this).find('roomname').text();
-        var roomId = $(this).find('roomid').text();
-        var roomTopic = $(this).find('roomtopic').text();
+        var roomName = $(this).find('roomName').text();
+        var roomId = $(this).find('roomId').text();
+        var roomTopic = $(this).find('roomTopic').text();
         var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
-        var isPriv = ($(this).find('optionDefinitions > privateim').text() == 'true' ? true : false);
+        var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
         var isOwner = (parseInt($(this).find('owner').text()) == userid ? true : false);
         
         var text = '<li><a href="chat.php?room=' + roomId + '">' + roomName + '</a></li>';
@@ -293,11 +293,11 @@ $(document).ready(function() {
       cache: false,
       success: function(xml) {
         $(xml).find('room').each(function() {
-          var roomName = $(this).find('roomname').text();
-          var roomId = $(this).find('roomid').text();
-          var roomTopic = $(this).find('roomtopic').text();
+          var roomName = $(this).find('roomName').text();
+          var roomId = $(this).find('roomId').text();
+          var roomTopic = $(this).find('roomTopic').text();
           var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
-          var isPriv = ($(this).find('optionDefinitions > privateim').text() == 'true' ? true : false);
+          var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
           var isOwner = (parseInt($(this).find('owner').text()) == userid ? true : false);
 
           roomHtml += '<tr id="room' + roomId + '"><td><a href="/chat.php?room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isOwner ? '<a href="#" class="editRoomMulti" data-roomid="' + roomId + '"><img src="images/document-edit.png" class="standard" alt="Configure" /></a>' : '') + '</td></tr>';
@@ -351,21 +351,21 @@ function archive(id) {
           var text = unxml($(this).find('htmlText').text());
           var messageTime = $(this).find('messageTimeFormatted').text();
 
-            var messageId = Number($(this).find('messageId').text());
+          var messageId = Number($(this).find('messageId').text());
 
-            var username = $(this).find('userData > userName').text();
+          var username = $(this).find('userData > userName').text();
           var userid = Number($(this).find('userData > userId').text());
           var groupFormatStart = unxml($(this).find('userData > startTag').text());
           var groupFormatEnd = unxml($(this).find('userData > endTag').text());
 
-            var styleColor = $(this).find('defaultFormatting > color').text();
+          var styleColor = $(this).find('defaultFormatting > color').text();
           var styleHighlight = $(this).find('defaultFormatting > highlight').text();
           var styleFontface = $(this).find('defaultFormatting > fontface').text();
           var styleGeneral = parseInt($(this).find('defaultFormatting > general').text());
 
-            var style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + styleFontface + ';';
+          var style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + styleFontface + ';';
 
-            if (styleGeneral & 256) {
+          if (styleGeneral & 256) {
             style += 'font-weight: bold;';
           }
           if (styleGeneral & 512) {
