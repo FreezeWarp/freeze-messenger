@@ -24,7 +24,7 @@ require_once('global.php');
 eval(hook('logoutStart'));
 
 
-setcookie('bbuserid','removed',0,'/','.victoryroad.net');
+setcookie('bbuserId','removed',0,'/','.victoryroad.net');
 setcookie('bbpassword','removed',0,'/','.victoryroad.net');
 setcookie('bbsessionhash','removed',0,'/','.victoryroad.net');
 

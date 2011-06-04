@@ -34,7 +34,7 @@ else {
   $limit = intval($_GET['numresults']) ?: 50; // The limit for results on each page.
   if ($limit > 500) $limit = 2;
 
-  $userIDs = mysqlEscape(urldecode($_GET['userids'])); // Searching only specific users.
+  $userIDs = mysqlEscape(urldecode($_GET['userIds'])); // Searching only specific users.
 
   $roomid = intval($_GET['roomid'] ?: 1);
   $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $roomid");
@@ -61,7 +61,7 @@ else {
   }
 
   else {
-    if ((($user['settings'] & 16) || in_array($user['userid'],explode(',',$room['moderators'])) || $user['userid'] == $room['owner']) && (($room['options'] & 32) == false)) {
+    if ((($user['settings'] & 16) || in_array($user['userId'],explode(',',$room['moderators'])) || $user['userId'] == $room['owner']) && (($room['options'] & 32) == false)) {
       $canModerate = true; // The user /can/ moderate if they are a mod of the room, the room's owner, or an admin. If the room is disabled from moderation ($room['options'] & 32), then you still can't edit it.
     }
 
@@ -100,7 +100,7 @@ else {
   m.deleted,
   m.salt,
   m.iv,
-  u.userid,
+  u.userId,
   u.username,
   vu.settings,
   vu.defaultColour,
@@ -109,8 +109,8 @@ else {
   vu.defaultFormatting,
   u.displaygroupid
 FROM vrc_messages AS m
-  INNER JOIN vrc_users AS vu ON vu.userid = m.user
-  INNER JOIN user AS u ON u.userid = m.user
+  INNER JOIN vrc_users AS vu ON vu.userId = m.user
+  INNER JOIN user AS u ON u.userId = m.user
 WHERE m.room = $room[id]
   " . ($user['settings'] & 16 == false ? "AND deleted != true" : '') . "
   " . ($userIDs ? " AND user IN ($userIDs)" : '') . "
@@ -147,7 +147,7 @@ LIMIT $limit",'id');
 
         switch ($_GET['format']) {
           case 'bbcode':
-          $output .= '[url=http://www.victoryroad.net/member.php?u=' . $message['userid'] . '][div=color:rgb(' . displayGroupToColour($message['displaygroupid']) . ');font-weight:bold;display:inline;]' . $message['username'] . '[/div][/url]|' . vbdate('m/d/y g:i:sa',$message['time']) . '|' . "[div=display:inline;color:rgb($message[defaultColour]);font-family:$message[defaultFontface];background-color:rgb($message[defaultHighlight]);]$message[htmlText][/div]\n";
+          $output .= '[url=http://www.victoryroad.net/member.php?u=' . $message['userId'] . '][div=color:rgb(' . displayGroupToColour($message['displaygroupid']) . ');font-weight:bold;display:inline;]' . $message['username'] . '[/div][/url]|' . vbdate('m/d/y g:i:sa',$message['time']) . '|' . "[div=display:inline;color:rgb($message[defaultColour]);font-family:$message[defaultFontface];background-color:rgb($message[defaultHighlight]);]$message[htmlText][/div]\n";
           break;
 
           case '':
@@ -203,7 +203,7 @@ echo container("$phrases[archiveTitle]: $room[name]","
   <input type=\"hidden\" name=\"numresults\" value=\"$_GET[numresults]\" />
   <input type=\"hidden\" name=\"roomid\" value=\"$_GET[roomid]\" />
   <input type=\"hidden\" name=\"oldfirst\" value=\"$_GET[oldfirst]\" />
-  <input type=\"hidden\" name=\"userids\" value=\"$_GET[userids]\" />
+  <input type=\"hidden\" name=\"userIds\" value=\"$_GET[userIds]\" />
   <label for=\"format\">$phrases[archiveViewAs]</label>
   <select name=\"format\" id=\"format\">
     <option value=\"normal\">$phrases[archiveFormatHTML]</option>

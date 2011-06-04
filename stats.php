@@ -42,7 +42,7 @@ foreach ($rooms AS $room) {
 
   $tableHeader .= '<td>' . $room['name'] . '</td>';
 
-  $totalPosts = sqlArr("SELECT m.messages AS count, u.userid, u.username FROM {$sqlPrefix}roomStats AS m, user AS u WHERE m.roomid = $room[id] AND u.userid = m.userid ORDER BY count DESC LIMIT $number",'userid');
+  $totalPosts = sqlArr("SELECT m.messages AS count, u.userId, u.username FROM {$sqlPrefix}roomStats AS m, user AS u WHERE m.roomid = $room[id] AND u.userId = m.userId ORDER BY count DESC LIMIT $number",'userId');
 
   $i = 0;
   foreach ($totalPosts AS $totalPoster) {

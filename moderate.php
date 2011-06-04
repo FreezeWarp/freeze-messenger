@@ -540,17 +540,17 @@ $(document).ready(function() {
     break;
 
     case 'showimages':
-    $userid = intval($_GET['userid']);
-    if ($userid) {
+    $userId = intval($_GET['userId']);
+    if ($userId) {
       if ($uploadMethod == 'server') {
-        $images = array_filter(scandir($installLoc . '/userdata/uploads/' . $userid),function($var) { if (!in_array($var,array('.','..'))) return $var; }); // This rather long function does the following (in order): scans the userdata/uploads directory, filters out "." and "..", and creates a CSV list of the results.
+        $images = array_filter(scandir($installLoc . '/userdata/uploads/' . $userId),function($var) { if (!in_array($var,array('.','..'))) return $var; }); // This rather long function does the following (in order): scans the userdata/uploads directory, filters out "." and "..", and creates a CSV list of the results.
 
         foreach ($images as $image) {
-          $tableCode .= "<tr><td><a href=\"/userdata/uploads/$userid/$image\"><img src=\"/userdata/uploads/$userid/$image\" style=\"max-width: 200px; max-height: 200px;\" /></a></td><td>$image</td><td><a href=\"./moderate.php?do=deleteimage&img=$userid/$image\"><img src=\"images/edit-delete.png\" /></a></td></tr>";
+          $tableCode .= "<tr><td><a href=\"/userdata/uploads/$userId/$image\"><img src=\"/userdata/uploads/$userId/$image\" style=\"max-width: 200px; max-height: 200px;\" /></a></td><td>$image</td><td><a href=\"./moderate.php?do=deleteimage&img=$userId/$image\"><img src=\"images/edit-delete.png\" /></a></td></tr>";
         }
       }
       elseif ($uploadMethod == 'database') {
-        $tableCode = mysqlReadThrough(mysqlQuery("SELECT f.id, md5hash, name, deleted FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS fv WHERE userid = $userid AND f.id = fv.fileid AND f.deleted != 1"),'<tr><td><a href="./file.php?hash=$md5hash"><img src="./file.php?hash=$md5hash" style="max-width: 200px; max-height: 200px;" /></a></td><td>$name</td><td><a href="./moderate.php?do=deleteimage&img=$id"><img src="images/edit-delete.png" /></a></td></tr>'); // This process a basic MySQL query, and returns the results as a set of table rows.
+        $tableCode = mysqlReadThrough(mysqlQuery("SELECT f.id, md5hash, name, deleted FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS fv WHERE userId = $userId AND f.id = fv.fileid AND f.deleted != 1"),'<tr><td><a href="./file.php?hash=$md5hash"><img src="./file.php?hash=$md5hash" style="max-width: 200px; max-height: 200px;" /></a></td><td>$name</td><td><a href="./moderate.php?do=deleteimage&img=$id"><img src="images/edit-delete.png" /></a></td></tr>'); // This process a basic MySQL query, and returns the results as a set of table rows.
       }
 
       echo container('Moderate and Delete Images','<table class="page rowHover">
@@ -568,10 +568,10 @@ $(document).ready(function() {
     else {
       if ($uploadMethod == 'server') {
         $users = implode(',',array_filter(scandir($installLoc . 'userdata/uploads/'),function($var) { if (!in_array($var,array('.','..'))) return $var; })); // This rather long function does the following (in order): scans the userdata/uploads directory, filters out "." and "..", and creates a CSV list of the results.
-        $users = mysqlReadThrough(mysqlQuery("SELECT userid, username FROM user WHERE userid IN ($users)"),'<tr><td>$userid</td><td><a href="./moderate.php?do=showimages&userid=$userid">$username</a></td></tr>'); // This process a basic MySQL query, and returns the results as a set of table rows.
+        $users = mysqlReadThrough(mysqlQuery("SELECT userId, username FROM user WHERE userId IN ($users)"),'<tr><td>$userId</td><td><a href="./moderate.php?do=showimages&userId=$userId">$username</a></td></tr>'); // This process a basic MySQL query, and returns the results as a set of table rows.
       }
       elseif ($uploadMethod == 'database') {
-        $users = mysqlReadThrough(mysqlQuery("SELECT u1.userid, username FROM user AS u1, {$sqlPrefix}users AS u2 WHERE u2.userid = u1.userid"),'<tr><td>$userid</td><td><a href="./moderate.php?do=showimages&userid=$userid">$username</a></td></tr>'); // This process a basic MySQL query, and returns the results as a set of table rows.
+        $users = mysqlReadThrough(mysqlQuery("SELECT u1.userId, username FROM user AS u1, {$sqlPrefix}users AS u2 WHERE u2.userId = u1.userId"),'<tr><td>$userId</td><td><a href="./moderate.php?do=showimages&userId=$userId">$username</a></td></tr>'); // This process a basic MySQL query, and returns the results as a set of table rows.
       }
 
       echo container('Select a User','<table class="page rowHover">
@@ -593,11 +593,11 @@ $(document).ready(function() {
 
       if (file_exists("./userdata/uploads/$img")) {
         $file = mysqlEscape("userdata/uploads/$img");
-        $userid = intval(preg_replace("/^userdata\/uploads\/(.+?)\/.+$/","$1",$file));
+        $userId = intval(preg_replace("/^userdata\/uploads\/(.+?)\/.+$/","$1",$file));
         $contents = mysqlEscape(base64_encode(file_get_contents("{$installLoc}/userdata/uploads/$img")));
 
         if ($user && $contents) {
-          if (mysqlQuery("INSERT INTO {$sqlPrefix}trashFiles (name, type, userid, deletedBy, contents) VALUES ('$file', 'image_upload', $userid, $user[userid], '$contents')")) {
+          if (mysqlQuery("INSERT INTO {$sqlPrefix}trashFiles (name, type, userId, deletedBy, contents) VALUES ('$file', 'image_upload', $userId, $user[userId], '$contents')")) {
             if (unlink("./userdata/uploads/$img")) {
               echo container('Image Deleted','The image was successfully deleted. It is now located in the MySQL trash.');
             }
@@ -633,7 +633,7 @@ $(document).ready(function() {
     break;
 
     case 'banuser':
-    $userTable = mysqlReadThrough(mysqlQuery("SELECT u.userid, u.username, u2.settings FROM user AS u, {$sqlPrefix}users AS u2 WHERE u2.userid = u.userid AND (u2.settings & 1 = false)"),'<tr><td>$userid</td><td>$username</td><td><a href="./moderate.php?do=banuser2&userid=$userid">Ban</a></td></tr>');
+    $userTable = mysqlReadThrough(mysqlQuery("SELECT u.userId, u.username, u2.settings FROM user AS u, {$sqlPrefix}users AS u2 WHERE u2.userId = u.userId AND (u2.settings & 1 = false)"),'<tr><td>$userId</td><td>$username</td><td><a href="./moderate.php?do=banuser2&userId=$userId">Ban</a></td></tr>');
 
     echo container('Ban a User','<table class="page rowHover">
   <thead>
@@ -649,17 +649,17 @@ $(document).ready(function() {
     break;
 
     case 'banuser2':
-    $userid = intval($_GET['userid']);
+    $userId = intval($_GET['userId']);
 
-    modLog('banuser',$userid);
+    modLog('banuser',$userId);
 
-    mysqlQuery("UPDATE {$sqlPrefix}users SET settings = IF(settings & 1 = false,settings + 1,settings) WHERE userid = $userid");
+    mysqlQuery("UPDATE {$sqlPrefix}users SET settings = IF(settings & 1 = false,settings + 1,settings) WHERE userId = $userId");
 
     echo container('User Banned','The user has been banned.');
     break;
 
     case 'unbanuser':
-    $userTable = mysqlReadThrough(mysqlQuery("SELECT u.userid, u.username, u2.settings FROM user AS u, {$sqlPrefix}users AS u2 WHERE u2.userid = u.userid AND u2.settings & 1"),'<tr><td>$userid</td><td>$username</td><td><a href="./moderate.php?do=unbanuser2&userid=$userid">Unban</a></td></tr>');
+    $userTable = mysqlReadThrough(mysqlQuery("SELECT u.userId, u.username, u2.settings FROM user AS u, {$sqlPrefix}users AS u2 WHERE u2.userId = u.userId AND u2.settings & 1"),'<tr><td>$userId</td><td>$username</td><td><a href="./moderate.php?do=unbanuser2&userId=$userId">Unban</a></td></tr>');
 
     echo container('Unban a User','<table class="page rowHover">
   <thead>
@@ -675,11 +675,11 @@ $(document).ready(function() {
     break;
 
     case 'unbanuser2':
-    $userid = intval($_GET['userid']);
+    $userId = intval($_GET['userId']);
 
-    modLog('unbanuser',$userid);
+    modLog('unbanuser',$userId);
 
-    mysqlQuery("UPDATE {$sqlPrefix}users SET settings = IF(settings & 1,settings - 1,settings) WHERE userid = $userid");
+    mysqlQuery("UPDATE {$sqlPrefix}users SET settings = IF(settings & 1,settings - 1,settings) WHERE userId = $userId");
 
     echo container('User Unbanned','The user has been unbanned.');
     break;
@@ -731,7 +731,7 @@ $(document).ready(function() {
 
       $records = sqlArr("SELECT * FROM {$sqlPrefix}ping LIMIT $limit OFFSET $offset",'id');
       foreach ($records AS $id => $record) {
-        $totalPosts = sqlArr("SELECT COUNT(m.id) AS count FROM {$sqlPrefix}messages AS m WHERE room = $record[roomid] AND user = $record[userid] AND m.deleted = false GROUP BY m.user");
+        $totalPosts = sqlArr("SELECT COUNT(m.id) AS count FROM {$sqlPrefix}messages AS m WHERE room = $record[roomid] AND user = $record[userId] AND m.deleted = false GROUP BY m.user");
         $totalPosts = intval($totalPosts['count']);
         mysqlQuery("UPDATE {$sqlPrefix}ping SET messages = $totalPosts WHERE id = $record[id]");
       }
@@ -750,8 +750,8 @@ $(document).ready(function() {
           $results .= "Failed to Process Room ID $room[id]; Bad allowedUsers definition '$room[allowedUsers]'.<br />";
         }
         else {
-          $user1 = sqlArr("SELECT * FROM user WHERE userid = $user1id");
-          $user2 = sqlArr("SELECT * FROM user WHERE userid = $user2id");
+          $user1 = sqlArr("SELECT * FROM user WHERE userId = $user1id");
+          $user2 = sqlArr("SELECT * FROM user WHERE userId = $user2id");
 
           if (!$user1['username']) {
             $results .= "Failed to Process Room ID $room[id]; User ID $user1id no longer exists.<br />";
@@ -779,7 +779,7 @@ $(document).ready(function() {
         trigger_error('A default group was not specified in the config.php file.',E_USER_ERROR);
       }
       elseif (!$_GET['confirm']) {
-        $table = mysqlReadThrough(mysqlQuery("SELECT * FROM {$sqlUserTable} WHERE {$sqlUserTableCols[usergroup]} = 0"),'<tr><td>$userid</td><td>$username</td></tr>');
+        $table = mysqlReadThrough(mysqlQuery("SELECT * FROM {$sqlUserTable} WHERE {$sqlUserTableCols[usergroup]} = 0"),'<tr><td>$userId</td><td>$username</td></tr>');
         echo container('Warning','The following users will be affected: <table border="1"><thead><tr><td>UserID</td><td>Username</td></tr></thead><tbody>' . $table . '</tbody></table><br /><br /><form action="moderate.php" method="get"><button type="submit">Confirm</button><input type="hidden" name="do2" value="defaultgroup" /><input type="hidden" name="confirm" value="true" /></form><form action="moderate.php" method="get"><button type="submit">Go Back</button></form>');
       }
       else {
@@ -814,8 +814,8 @@ $(document).ready(function() {
 
 
     default:
-    $activeUsers = sqlArr("SELECT COUNT(userid) AS count, userid FROM {$sqlPrefix}ping WHERE UNIX_TIMESTAMP(time) > UNIX_TIMESTAMP(NOW()) - 60 GROUP BY userid",'userid');
-    $bannedUsers = sqlArr("SELECT userid FROM {$sqlPrefix}users WHERE settings & 1",'userid');
+    $activeUsers = sqlArr("SELECT COUNT(userId) AS count, userId FROM {$sqlPrefix}ping WHERE UNIX_TIMESTAMP(time) > UNIX_TIMESTAMP(NOW()) - 60 GROUP BY userId",'userId');
+    $bannedUsers = sqlArr("SELECT userId FROM {$sqlPrefix}users WHERE settings & 1",'userId');
     $status = (file_exists('.tempStop')) ? 'Stopped' : 'Running';
     echo container('Welcome','<script type="text/javascript">$(document).ready(function() { $(\'#moderateRight\').animate({\'height\' : window.innerHeight - 50},1750); });</script><div style="height: 0px; overflow: hidden;" id="moderateRight"><div style="text-align: center; font-size: 40px; font-weight: bold;">Welcome~~</div><br /><br />
 

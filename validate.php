@@ -37,7 +37,7 @@ switch ($loginMethod) {
   $sqlSessionTable = $forumPrefix . 'session'; // The sessions table in the login method used.
 
   $sqlUserTableCols = array(
-    'userid' => 'userid', // The user ID column of the user table in the login method used.
+    'userId' => 'userId', // The user ID column of the user table in the login method used.
     'username' => 'username', // The username column of the user table in the login method used.
     'usergroup' => 'displaygroupid', // The usergroup column of the user table in the login method used.
     'allgroups' => 'membergroupids',
@@ -57,7 +57,7 @@ switch ($loginMethod) {
   $sqlSessionTable = $forumPrefix . 'sessions'; // The sessions table in the login method used.
 
   $sqlUserTableCols = array(
-    'userid' => 'user_id', // The user ID column of the user table in the login method used.
+    'userId' => 'user_id', // The user ID column of the user table in the login method used.
     'username' => 'username', // The username column of the user table in the login method used.
     'usergroup' => 'group_id', // The usergroup column of the user table in the login method used.
     'allgroups' => 'group_id',
@@ -270,7 +270,7 @@ function processVBulletin($user,$password) {
 
   $idhash = md5($_SERVER['HTTP_USER_AGENT'] . realIp());
 
-  if (!$user['userid']) return false;
+  if (!$user['userId']) return false;
 
   if ($user['password'] === md5($password . $user['salt'])) { // The password matches.
     global $user; // Make sure accessible elsewhere.
@@ -385,15 +385,15 @@ elseif (isset($_COOKIE[$forumCookiePrefix . 'sid']) && !$apiRequestCheck) {
   $password = false;
 }
 
-elseif (isset($_COOKIE[$forumCookiePrefix . 'userid'],$_COOKIE[$forumCookiePrefix . 'password']) && !$apiRequestCheck) { // Data is stored in long-lasting cookies.
-  $userid = intval($_COOKIE[$forumCookiePrefix . 'userid']);
+elseif (isset($_COOKIE[$forumCookiePrefix . 'userId'],$_COOKIE[$forumCookiePrefix . 'password']) && !$apiRequestCheck) { // Data is stored in long-lasting cookies.
+  $userId = intval($_COOKIE[$forumCookiePrefix . 'userId']);
   $passwordVBulletin = $_COOKIE[$forumCookiePrefix . 'password'];
 }
 
 else { // No login data exists.
   $username = false;
   $password = false;
-  $userid = false;
+  $userId = false;
   $sessionHash = false;
 }
 
@@ -419,8 +419,8 @@ elseif ($loginMethod === 'vbulletin') {
     }
   }
 
-  elseif ($userid && $password) {
-    $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userid = "' . intval($userid) . '" LIMIT 1');
+  elseif ($userId && $password) {
+    $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userId = "' . intval($userId) . '" LIMIT 1');
 
     if (processVBulletin($user,$password)) {
       $setCookie = true;
@@ -435,12 +435,12 @@ elseif ($loginMethod === 'vbulletin') {
   elseif ($sessionHash) {
     $session = sqlArr('SELECT * FROM ' . $sqlSessionTable . ' WHERE sessionhash = "' . mysqlEscape($sessionHash) . '"');
 
-    if (!$session['userid']) {
-      if (isset($_COOKIE[$forumCookiePrefix . 'userid'],$_COOKIE[$forumCookiePrefix . 'password'])) { // Data is stored in long-lasting cookies.
-        $userid = intval($_COOKIE[$forumCookiePrefix . 'userid']);
+    if (!$session['userId']) {
+      if (isset($_COOKIE[$forumCookiePrefix . 'userId'],$_COOKIE[$forumCookiePrefix . 'password'])) { // Data is stored in long-lasting cookies.
+        $userId = intval($_COOKIE[$forumCookiePrefix . 'userId']);
         $passwordVBulletin = $_COOKIE[$forumCookiePrefix . 'password'];
 
-        $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userid = "' . intval($userid) . '" AND "' . mysqlEscape($_COOKIE[$forumCookiePrefix . 'password'])  . '" = MD5(CONCAT(password,"' . $forumCookieSalt . '"))'); // Query from vBulletin user table.
+        $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userId = "' . intval($userId) . '" AND "' . mysqlEscape($_COOKIE[$forumCookiePrefix . 'password'])  . '" = MD5(CONCAT(password,"' . $forumCookieSalt . '"))'); // Query from vBulletin user table.
 
         if ($user) {
           $valid = true;
@@ -454,14 +454,14 @@ elseif ($loginMethod === 'vbulletin') {
       }
     }
     else {
-      $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userid = "' . (int) $session['userid'] . '"'); // Query from vBulletin user table.
+      $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userId = "' . (int) $session['userId'] . '"'); // Query from vBulletin user table.
       $session = 'update';
       $valid = true;
     }
   }
 
-  elseif ($userid && $passwordVBulletin) {
-    $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userid = "' . (int) $userid . '" AND "' . mysqlEscape($_COOKIE[$forumCookiePrefix . 'password'])  . '" = MD5(CONCAT(password,"' . $forumCookieSalt . '"))'); // Query from vBulletin user table.
+  elseif ($userId && $passwordVBulletin) {
+    $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userId = "' . (int) $userId . '" AND "' . mysqlEscape($_COOKIE[$forumCookiePrefix . 'password'])  . '" = MD5(CONCAT(password,"' . $forumCookieSalt . '"))'); // Query from vBulletin user table.
 
     if ($user) {
       $valid = true;
@@ -493,8 +493,8 @@ elseif ($loginMethod == 'phpbb') {
     }
   }
 
-  elseif ($userid && $password) {
-    $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userid = "' . (int) $userid . '" LIMIT 1');
+  elseif ($userId && $password) {
+    $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userId = "' . (int) $userId . '" LIMIT 1');
 
     if (processPHPBB($user,$password)) {
       $setCookie = true;
@@ -538,7 +538,7 @@ if ($valid) { // If the user is valid, process their preferrences.
     case 'vbulletin':
     /* Set Relevant User Data */
     $user2['username'] = $userCopy[$sqlUserTableCols['username']];
-    $user2['userid'] = $userCopy[$sqlUserTableCols['userid']];
+    $user2['userId'] = $userCopy[$sqlUserTableCols['userId']];
     $user2['timezoneoffset'] = $userCopy[$sqlUserTableCols['tzoffset']];
     $user2['displaygroupid'] = $userCopy[$sqlUserTableCols['usergroup']];
     $user2['membergroupids'] = $userCopy[$sqlUserTableCols['allgroups']];
@@ -556,7 +556,7 @@ if ($valid) { // If the user is valid, process their preferrences.
 
     /* Set Relevant User Data */
     $user2['username'] = $userCopy[$sqlUserTableCols['username']];
-    $user2['userid'] = $userCopy[$sqlUserTableCols['userid']];
+    $user2['userId'] = $userCopy[$sqlUserTableCols['userId']];
     $user2['timezoneoffset'] = $userCopy[$sqlUserTableCols['tzoffset']];
     $user2['displaygroupid'] = $userCopy[$sqlUserTableCols['usergroup']];
     $user2['membergroupids'] = $userCopy[$sqlUserTableCols['allgroups']];
@@ -571,12 +571,12 @@ if ($valid) { // If the user is valid, process their preferrences.
   }
 
 
-  $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userid = ' . (int) $user2['userid']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
+  $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
 
   if (!$userprefs) {
-    mysqlQuery('INSERT INTO ' . $sqlPrefix . 'users SET userid = ' . (int) $user2['userid']); // Create the new row
+    mysqlQuery('INSERT INTO ' . $sqlPrefix . 'users SET userId = ' . (int) $user2['userId']); // Create the new row
 
-    $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userid = ' . (int) $user2['userid']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
+    $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
   }
 
 
@@ -588,13 +588,13 @@ if ($valid) { // If the user is valid, process their preferrences.
       case 'vbulletin':
       $sessionhash = md5(uniqid(microtime(), true)); // Generate the sessionhash, which should be unique to this browsing session.
 
-      mysqlQuery('INSERT INTO ' . $sqlSessionTable . ' SET sessionhash = "' . mysqlEscape($sessionhash) . '", idhash="' . mysqlEscape($idhash) . '", userid = "' . (int) $user['userid'] . '", host = "' . mysqlEscape($_SERVER['REMOTE_ADDR']) . '", lastactivity = "' . time()  . '", location="/chat.php", useragent="' . mysqlEscape($_SERVER['HTTP_USER_AGENT']) . '", loggedin = 2'); // Add to the vBulletin session table for the who's online.
+      mysqlQuery('INSERT INTO ' . $sqlSessionTable . ' SET sessionhash = "' . mysqlEscape($sessionhash) . '", idhash="' . mysqlEscape($idhash) . '", userId = "' . (int) $user['userId'] . '", host = "' . mysqlEscape($_SERVER['REMOTE_ADDR']) . '", lastactivity = "' . time()  . '", location="/chat.php", useragent="' . mysqlEscape($_SERVER['HTTP_USER_AGENT']) . '", loggedin = 2'); // Add to the vBulletin session table for the who's online.
       break;
 
       case 'phpbb':
       $sessionhash = md5(unique_id()); // Works slightly different compared to vB, you'll see.
 
-      mysqlQuery('INSERT INTO ' . $sqlSessionTable . ' SET session_id = "' . mysqlEscape($sessionhash) . '", session_user_id = "' . (int) $user['userid'] . '", session_ip = "' . mysqlEscape($_SERVER['REMOTE_ADDR']) . '", session_time = "' . time()  . '", session_page="chat.php", session_browser="' . mysqlEscape($_SERVER['HTTP_USER_AGENT']) . '"'); // Add to the vBulletin session table for the who's online.
+      mysqlQuery('INSERT INTO ' . $sqlSessionTable . ' SET session_id = "' . mysqlEscape($sessionhash) . '", session_user_id = "' . (int) $user['userId'] . '", session_ip = "' . mysqlEscape($_SERVER['REMOTE_ADDR']) . '", session_time = "' . time()  . '", session_page="chat.php", session_browser="' . mysqlEscape($_SERVER['HTTP_USER_AGENT']) . '"'); // Add to the vBulletin session table for the who's online.
       break;
     }
   }
@@ -618,7 +618,7 @@ if ($valid) { // If the user is valid, process their preferrences.
     switch($loginMethod) {
       case 'vbulletin':
       if ($rememberMe) { // This will store the user's login information in the browser's cookies for one week.
-        setcookie($forumCookiePrefix . 'userid',$userCopy[$sqlUserTableCols['userid']],time() + 60 * 60 * 24 * 365,'/',$forumCookieDomain); // Set the cookie for userid.
+        setcookie($forumCookiePrefix . 'userId',$userCopy[$sqlUserTableCols['userId']],time() + 60 * 60 * 24 * 365,'/',$forumCookieDomain); // Set the cookie for userId.
         setcookie($forumCookiePrefix . 'password',md5($userCopy[$sqlUserTableCols['password']] . $forumCookieSalt),time() + 60 * 60 * 24 * 365,'/',$forumCookieDomain); // Set the cookie for password.
       }
 
@@ -626,7 +626,7 @@ if ($valid) { // If the user is valid, process their preferrences.
       break;
 
       case 'phpbb':
-      setcookie($forumCookiePrefix . 'u',$userCopy[$sqlUserTableCols['userid']],0,'/',$forumCookieDomain); // Set the cookie for the unique session.
+      setcookie($forumCookiePrefix . 'u',$userCopy[$sqlUserTableCols['userId']],0,'/',$forumCookieDomain); // Set the cookie for the unique session.
       setcookie($forumCookiePrefix . 'sid',$sessionhash,0,'/',$forumCookieDomain); // Set the cookie for the unique session.
       break;
     }
@@ -644,7 +644,7 @@ else { // If the user is not valid, remove all user data. If a user's name is co
   unset($user);
   $user['settings'] = 45; // Set the user prefs to their defaults.
   $user['membergroupids'] = '1';
-  $user['userid'] = 0;
+  $user['userId'] = 0;
 }
 
 
@@ -691,7 +691,7 @@ if ($api) {
   <errortext>$failMessage</errortext>
   <sessionhash>$sessionhash</sessionhash>
   <userdata>
-    <userid>$user[userid]</userid>
+    <userId>$user[userId]</userId>
     <username>$user[username]</username>
     <membergroupids>$user[membergroupids]</membergroupids>
     <messageFormatting>

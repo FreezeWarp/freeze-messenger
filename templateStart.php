@@ -83,7 +83,7 @@ if ($user['favRooms']) {
       foreach ($currentRooms as $room3) if ($room3 != $room2['id'] && $room3 != '') $currentRooms2[] = $room3; // Rebuild the array without the room ID.
       $newRoomString = mysqlEscape(implode(',',$currentRooms2));
 
-      mysqlQuery("UPDATE {$sqlPrefix}users SET favRooms = '$newRoomString' WHERE userid = $user[userid]");
+      mysqlQuery("UPDATE {$sqlPrefix}users SET favRooms = '$newRoomString' WHERE userId = $user[userId]");
 
       $stop = false;
 

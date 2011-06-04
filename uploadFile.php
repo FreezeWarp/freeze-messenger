@@ -61,7 +61,7 @@ elseif (!$room && !$_POST['method'] && $enableGeneralUploads) { // General uploa
 
   }
 
-  $uploads = sqlArr("SELECT v.fileid, f.mime, f.size, f.name, f.rating, v.md5hash FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS v WHERE f.userid = $user[userid] AND f.id = v.fileid",'fileid');
+  $uploads = sqlArr("SELECT v.fileid, f.mime, f.size, f.name, f.rating, v.md5hash FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS v WHERE f.userId = $user[userId] AND f.id = v.fileid",'fileid');
   foreach ($uploads AS $file) {
     $file['size'] = formatSize($file['size']);
     $fileEntry = "    <tr>
@@ -278,8 +278,8 @@ elseif ($_POST['method']) { // Actual upload; process.
       $extParts = explode('.',$_FILES['fileUpload']['name']);
       $ext = $extParts[count($extParts) - 1];
 
-      $fileLocation = "{$installLoc}userdata/uploads/{$user[userid]}/" . preg_replace('/[^a-zA-Z0-9_\.]/','',$_FILES['fileUpload']['name']);
-      $webLocation = "{$installUrl}userdata/uploads/{$user[userid]}/" . preg_replace('/[^a-zA-Z0-9_\.]/','',$_FILES['fileUpload']['name']);
+      $fileLocation = "{$installLoc}userdata/uploads/{$user[userId]}/" . preg_replace('/[^a-zA-Z0-9_\.]/','',$_FILES['fileUpload']['name']);
+      $webLocation = "{$installUrl}userdata/uploads/{$user[userId]}/" . preg_replace('/[^a-zA-Z0-9_\.]/','',$_FILES['fileUpload']['name']);
 
       eval(hook('uploadProcessImageStoreStart'));
 
@@ -309,7 +309,7 @@ elseif ($_POST['method']) { // Actual upload; process.
             }
           }
           else {
-            if (!is_dir("{$installLoc}userdata/uploads/$user[userid]")) mkdir ("{$installLoc}userdata/uploads/$user[userid]",0775);
+            if (!is_dir("{$installLoc}userdata/uploads/$user[userId]")) mkdir ("{$installLoc}userdata/uploads/$user[userId]",0775);
 
             if (!move_uploaded_file($_FILES['fileUpload']['tmp_name'],$fileLocation)) {
               $errorMessage = $phrases['uploadErrorFinal'];
@@ -352,7 +352,7 @@ elseif ($_POST['method']) { // Actual upload; process.
             $errorMessage .= $phrases['uploadErrorFileContents'];
           }
           else {
-            $prefile = sqlArr("SELECT v.id, f.fileid FROM {$sqlPrefix}fileVersions AS v, {$sqlPrefix}files AS f WHERE v.md5hash = '$md5hash' AND v.fileid = f.id AND f.userid = $user[userid]");
+            $prefile = sqlArr("SELECT v.id, f.fileid FROM {$sqlPrefix}fileVersions AS v, {$sqlPrefix}files AS f WHERE v.md5hash = '$md5hash' AND v.fileid = f.id AND f.userId = $user[userId]");
 
             if ($prefile) {
               $webLocation = "{$installUrl}file.php?hash={$prefile[md5hash]}";
@@ -365,7 +365,7 @@ elseif ($_POST['method']) { // Actual upload; process.
               }
             }
             else {
-              mysqlQuery("INSERT INTO {$sqlPrefix}files (userid, name, size, mime) VALUES ($user[userid], '$name', '$size', '$mime')");
+              mysqlQuery("INSERT INTO {$sqlPrefix}files (userId, name, size, mime) VALUES ($user[userId], '$name', '$size', '$mime')");
               $fileid = mysql_insert_id();
 
               mysqlQuery("INSERT INTO {$sqlPrefix}fileVersions (fileid, md5hash, salt, iv, contents) VALUES ($fileid, '$md5hash', '$saltNum', '$iv', '$contentsEncrypted')");

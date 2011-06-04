@@ -1,5 +1,5 @@
 <?php
-if ($user['userid']) { // Logged in user
+if ($user['userId']) { // Logged in user
   $favRooms = explode(',',$user['favRooms']);
 
   $stop = false;
@@ -36,7 +36,7 @@ if ($user['userid']) { // Logged in user
       $roomRow = "  <tr id=\"row$id\">
       " . ($showAdvanced ? "<td>$room3[class]</td>" : '') . "
       <td><a href=\"/chat.php?room=$room3[id]\">$room3[name]</a></td>
-      <td>" . (($user['userid'] == $room3['owner'] || $user['settings'] & 16) ? '<a href="#" class="editRoomMulti" data-roomid="' . $room3['id'] . '"><img src="/images/document-edit.png" class="standard" alt="Configure" /></a>' . (($room3['options'] & 1) == false ? "<a href=\"javascript:void(0);\" onclick=\"if (confirm('Are you sure you want to delete this room')) { $.ajax({url: '/ajax/modAction.php?action=deleteroom&amp;roomid=$room3[id]', type: 'GET', cache: false, success: function() { $('#row$id').fadeOut(); } }); }\"><img src=\"/images/document-close.png\" class=\"standard\" alt=\"Delete\" /></a>" : '') : '') . "<a href=\"javascript:void(0);\" onclick=\"$.ajax({url: '/ajax/modAction.php?action=favroom&amp;roomid=$room3[id]', type: 'GET', cache: false, success: function() { if ($('#star$id').attr('data-active') == 1) { $('#star$id').attr('data-active','0'); $('#star$id').fadeTo(150,.5); } else { $('#star$id').attr('data-active','1'); $('#star$id').fadeTo(150,1); } } });\"><img id=\"star$id\" src=\"/images/bookmarks.png\" class=\"standard\" alt=\"(Un-)Favourite\" style=\"opacity: $opacity\" onmouseover=\"if ($(this).attr('data-active') == 1) { $(this).fadeTo(150,.5); } else { $(this).fadeTo(150,1); }\" onmouseout=\"if ($(this).attr('data-active') == 1) { $(this).fadeTo(150,1); } else { $(this).fadeTo(150,.5); }\" data-active=\"$active\" /></a></td>
+      <td>" . (($user['userId'] == $room3['owner'] || $user['settings'] & 16) ? '<a href="#" class="editRoomMulti" data-roomid="' . $room3['id'] . '"><img src="/images/document-edit.png" class="standard" alt="Configure" /></a>' . (($room3['options'] & 1) == false ? "<a href=\"javascript:void(0);\" onclick=\"if (confirm('Are you sure you want to delete this room')) { $.ajax({url: '/ajax/modAction.php?action=deleteroom&amp;roomid=$room3[id]', type: 'GET', cache: false, success: function() { $('#row$id').fadeOut(); } }); }\"><img src=\"/images/document-close.png\" class=\"standard\" alt=\"Delete\" /></a>" : '') : '') . "<a href=\"javascript:void(0);\" onclick=\"$.ajax({url: '/ajax/modAction.php?action=favroom&amp;roomid=$room3[id]', type: 'GET', cache: false, success: function() { if ($('#star$id').attr('data-active') == 1) { $('#star$id').attr('data-active','0'); $('#star$id').fadeTo(150,.5); } else { $('#star$id').attr('data-active','1'); $('#star$id').fadeTo(150,1); } } });\"><img id=\"star$id\" src=\"/images/bookmarks.png\" class=\"standard\" alt=\"(Un-)Favourite\" style=\"opacity: $opacity\" onmouseover=\"if ($(this).attr('data-active') == 1) { $(this).fadeTo(150,.5); } else { $(this).fadeTo(150,1); }\" onmouseout=\"if ($(this).attr('data-active') == 1) { $(this).fadeTo(150,1); } else { $(this).fadeTo(150,.5); }\" data-active=\"$active\" /></a></td>
     </tr>
   ";
 

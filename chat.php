@@ -76,7 +76,7 @@ else {
       }
     }
   
-    if (($user['settings'] & 16) && ((($room['owner'] == $user['userid'] && $room['owner'] > 0) || (in_array($user['userid'],explode(',',$room['allowedUsers'])) || $room['allowedUsers'] == '*') || (in_array($user['userid'],explode(',',$room['moderators']))) || ((inArray(explode(',',$user['membergroupids']),explode(',',$room['allowedGroups'])) || $room['allowedGroups'] == '*') && ($room['allowedGroups'] != ''))) == false)) {
+    if (($user['settings'] & 16) && ((($room['owner'] == $user['userId'] && $room['owner'] > 0) || (in_array($user['userId'],explode(',',$room['allowedUsers'])) || $room['allowedUsers'] == '*') || (in_array($user['userId'],explode(',',$room['moderators']))) || ((inArray(explode(',',$user['membergroupids']),explode(',',$room['allowedGroups'])) || $room['allowedGroups'] == '*') && ($room['allowedGroups'] != ''))) == false)) {
       $stopMessage = $phrases['chatAdminAccess'];
     }
   
