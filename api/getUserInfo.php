@@ -77,8 +77,8 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
   <errorcode>$failCode</errorcode>
   <errortext>$failMessage</errortext>
   <userData>
-    <userId>$getuser[userid]</userid>
-    <userName>$getuserf[username]</username>
+    <userId>$getuser[userid]</userId>
+    <userName>$getuserf[username]</userName>
     <settings>$getuser[settings]</settings>
     <startTag>$getuserf[opentag]</startTag>
     <endTag>$getuserf[closetag]</endTag>

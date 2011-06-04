@@ -169,16 +169,16 @@ function contextMenuParse() {
       if (thisid != $('#tooltext').attr('data-lastuserid')) {
         $('#tooltext').attr('data-lastuserid',thisid);
         $.get("api/getUserInfo.php?userid=" + thisid, function(xml) {
-          var username = $(xml).find('userData > username').text();
-          var userid = $(xml).find('userData > userid').text();
-          var start_tag = unxml($(xml).find('userData > startTag').text());
-          var end_tag = unxml($(xml).find('userData > endTag').text());
-          var usertitle = $(xml).find('userData > usertitle').text();
-          var posts = $(xml).find('userData > postcount').text();
-          var joindate = $(xml).find('userData > joindateformatted').text();
+          var userName = $(xml).find('userData > userName').text();
+          var userId = $(xml).find('userData > userId').text();
+          var startTag = unxml($(xml).find('userData > startTag').text());
+          var endTag = unxml($(xml).find('userData > endTag').text());
+          var userTitle = $(xml).find('userData > userTitle').text();
+          var posts = $(xml).find('userData > postCount').text();
+          var joinDate = $(xml).find('userData > joinDateFormatted').text();
           var avatar = $(xml).find('userData > avatar').text();
-          
-          content.html('<div style="width: 400px;"><img alt="" src="' + avatar + '" style="float: left;" /><span class="username" data-userid="' + userid + '">' + start_tag + username + end_tag + '</span><br />' + usertitle + '<br /><em>Posts</em>: ' + posts + '<br /><em>Member Since</em>: ' + joindate + '</div>');
+
+          content.html('<div style="width: 400px;"><img alt="" src="' + avatar + '" style="float: left;" /><span class="userName" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>' + (userTitle ? '<br />' + userTitle : '') + '<br /><em>Posts</em>: ' + posts + '<br /><em>Member Since</em>: ' + joinDate + '</div>');
         });
       }
     }

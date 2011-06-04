@@ -9,7 +9,7 @@ require_once('global.php');
 $template = $_GET['template'];
 
 switch ($template) {
-  case 'kickForm':
+  case 'kickForm': /* The below calculations should be replaced with the API once possible. */
   $userid = intval($_POST['userid'] ?: $_GET['userid']);
   $roomid = intval($_POST['roomid'] ?: $_GET['roomid']);
 
@@ -20,7 +20,7 @@ switch ($template) {
   echo template('kickForm');
   break;
 
-  case 'editRoomForm':
+  case 'editRoomForm': /* The below calculations should be replaced with the API once possible. */
 
 
 //  if (!$room) trigger_error('This is not a valid room (roomid = ' . $_GET['roomid'] . ').',E_USER_ERROR);
