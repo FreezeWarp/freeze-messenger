@@ -25,7 +25,9 @@ foreach ($usersArray AS &$v) {
 }
 
 
-if ($users) $whereClause .= ' userId IN (' . implode(',',$usersArray) . ') AND ';
+if ($users) {
+  $whereClause .= ' userId IN (' . implode(',',$usersArray) . ') AND ';
+}
 
 
 switch ($_GET['order']) {
@@ -49,7 +51,7 @@ switch ($loginMethod) {
   case 'vbulletin':
   case 'phpbb':
   $join = "LEFT JOIN {$sqlUserTable} AS u2 ON u2.{$sqlUserTableCols[userId]} = u.userId";
-  $cols = ", u2.{$sqlUserTableCols[userName]} AS userName, u2.{$sqlUserTableCols[userGroup] AS userGroup";
+  $cols = ", u2.{$sqlUserTableCols[userName]} AS userName, u2.{$sqlUserTableCols[userGroup]} AS userGroup";
   break;
 }
 
@@ -60,11 +62,10 @@ if ($users) {
     $userXML .= "    <user>
       <userId>$row[userId]</userId>
       <userName>" . vrim_encodeXML($row['userName']) . "</userName>
-      <userGroup>" . vrim_encodeXML($row['userName']) . "</userGroup>
+      <userGroup>" . vrim_encodeXML($row['userGroup']) . "</userGroup>
     </user>";
   }
 }
-
 
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getRooms>
@@ -74,7 +75,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
   </activeUser>
 
   <sentData>
-    <order>" . htmlspecialchars($order) . "</order>
+    <order>" . vrim_encodeXML($order) . "</order>
   </sentData>
 
   <errorcode>$failCode</errorcode>
@@ -83,6 +84,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
     $userXML
   </users>
 </getRooms>";
+
 
 mysqlClose();
 ?>

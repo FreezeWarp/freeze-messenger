@@ -261,10 +261,6 @@ $(document).ready(function() {
         $(xml).find('room').each(function() {
           var roomName = $(this).find('roomName').text();
           var roomId = $(this).find('roomId').text();
-          var roomTopic = $(this).find('roomTopic').text();
-          var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
-          var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
-          var isOwner = (parseInt($(this).find('owner').text()) == userId ? true : false);
 
           roomHtml += '<option value="' + roomId + '">' + roomName + '</option>';
         });
@@ -277,28 +273,24 @@ $(document).ready(function() {
     });
     
     $.ajax({
-      url: 'api/getRooms.php',
+      url: 'api/getUsers.php',
       timeout: 5000,
       type: 'GET',
       cache: false,
       success: function(xml) {
-        var roomHtml = '';
+        var userHtml = '';
 
-        $(xml).find('room').each(function() {
-          var roomName = $(this).find('roomName').text();
-          var roomId = $(this).find('roomId').text();
-          var roomTopic = $(this).find('roomTopic').text();
-          var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
-          var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
-          var isOwner = (parseInt($(this).find('owner').text()) == userId ? true : false);
+        $(xml).find('user').each(function() {
+          var userName = $(this).find('userName').text();
+          var userId = $(this).find('userId').text();
 
-          roomHtml += '<option value="' + roomId + '">' + roomName + '</option>';
+          userHtml += '<option value="' + userId + '">' + userName + '</option>';
         });
-        
-        $('select[name=roomId]').html(roomHtml);
+
+        $('select[name=userId]').html(userHtml);
       },
       error: function() {
-        alert('Failed to show all rooms');
+        alert('Failed to show all users');
       }
     });
   });
