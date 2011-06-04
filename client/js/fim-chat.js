@@ -266,13 +266,13 @@ function getSuccess(xml) {
     var activeUserHtml = new Array;
 
     $(xml).find('activeUsers > user').each(function() {
-     var username = $(this).find('username').text();
-     var userid = $(this).find('userid').text();
-     var displaygroupid = $(this).find('displaygroupid').text();
-     var start_tag = unxml($(this).find('startTag').text());
-     var end_tag = unxml($(this).find('endTag').text());
+     var userName = $(this).find('userName').text();
+     var userId = $(this).find('userId').text();
+     var userGroup = $(this).find('userGroup').text();
+     var startTag = unxml($(this).find('startTag').text());
+     var endTag = unxml($(this).find('endTag').text());
 
-     activeUserHtml.push('<span class="username" data-userid="' + userid + '">' + start_tag + username + end_tag + '</span>');
+     activeUserHtml.push('<span class="username" data-userid="' + userId + '">' + startTag + userName + endTag + '</span>');
     });
 
     $('#activeUsers').html(activeUserHtml.join(', '));
