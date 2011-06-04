@@ -607,4 +607,13 @@ function container($title,$content,$class = 'page') {
 
 ";
 }
+
+// This is an experimental function. It is largely just an experiment.
+function htmlLight($data) {
+  $data = preg_replace('/\ {2,}/','',$data);
+  $data = preg_replace("/\n/",'',$data);
+  return $data;
+}
+
+ob_start(htmlLight);
 ?>
