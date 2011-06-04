@@ -19,8 +19,8 @@ $apiRequest = true;
 require_once('../global.php');
 header('Content-type: text/plain');
 
-$roomid = intval($_GET['roomid']);
-$room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $roomid",'id'); // Get all rooms
+$roomId = intval($_GET['roomId']);
+$room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $roomId",'id'); // Get all rooms
 
 if (hasPermission($room,$user) {
 
@@ -38,7 +38,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
     <userName>" . vrim_encodeXML($user['userName']) . "</userName>
   </activeUser>
   <sentData>
-    <roomid>$roomid</roomid>
+    <roomId>$roomId</roomId>
   </sentData>
   <errorcode>$failCode</errorcode>
   <errortext>$failMessage</errortext>

@@ -175,7 +175,7 @@ $(document).ready(function() {
 
   window.complex = ($('body').attr('data-complex') === '1' ? 1 : 0);
   window.userId = parseInt($('body').attr('data-userId'));
-  window.roomid = parseInt($('body').attr('data-roomid'));
+  window.roomId = parseInt($('body').attr('data-roomId'));
   window.layout = ($('body').attr('data-layout'));
   window.soundOn = ($('body').attr('data-ding') === '1' ? true : false);
   window.reverse = ($('body').attr('data-reverse') === '1' ? 1 : 0);
@@ -230,7 +230,7 @@ function showAllRooms() {
 
 $(document).ready(function() {
 
-  roomid = $('body').attr('data-roomid');
+  roomId = $('body').attr('data-roomId');
 
   $('#menu').accordion({
     autoHeight: false,
@@ -254,7 +254,7 @@ $(document).ready(function() {
   });
 
   $('a#manageKick').click(function() {
-    ajaxDialogue('content/manageKick.php?roomid=' + roomid,'Manage Kicked Users in This Room','manageKickDialogue',600);
+    ajaxDialogue('content/manageKick.php?roomId=' + roomId,'Manage Kicked Users in This Room','manageKickDialogue',600);
   });
 
   $('a#online').click(function() {
@@ -266,11 +266,11 @@ $(document).ready(function() {
   });
 
   $('a#editRoom').click(function() {
-    ajaxDialogue('template.php?template=editRoomForm&roomid=' + roomid,'Edit Room','editRoomDialogue',1000);
+    ajaxDialogue('template.php?template=editRoomForm&roomId=' + roomId,'Edit Room','editRoomDialogue',1000);
   });
 
   $('a.editRoomMulti').click(function() {
-    ajaxDialogue('template.php?template=editRoomForm&roomid=' + $(this).attr('data-roomid'),'Edit Room','editRoomDialogue',1000);
+    ajaxDialogue('template.php?template=editRoomForm&roomId=' + $(this).attr('data-roomId'),'Edit Room','editRoomDialogue',1000);
   });
 
   $('#icon_help').click(function() {
@@ -300,7 +300,7 @@ $(document).ready(function() {
           var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
           var isOwner = (parseInt($(this).find('owner').text()) == userId ? true : false);
 
-          roomHtml += '<tr id="room' + roomId + '"><td><a href="/chat.php?room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isOwner ? '<a href="#" class="editRoomMulti" data-roomid="' + roomId + '"><img src="images/document-edit.png" class="standard" alt="Configure" /></a>' : '') + '</td></tr>';
+          roomHtml += '<tr id="room' + roomId + '"><td><a href="/chat.php?room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isOwner ? '<a href="#" class="editRoomMulti" data-roomId="' + roomId + '"><img src="images/document-edit.png" class="standard" alt="Configure" /></a>' : '') + '</td></tr>';
         });
         quickDialogue('<table><thead><tr><th>Name</th><th>Topic</th><th>Actions</th></tr></thead><tbody>' + roomHtml + '</tbody></table>','Room List','roomListDialogue',600);
       },
@@ -337,7 +337,7 @@ function archive(id) {
   var encrypt = 'base64';
 
   $.ajax({
-    url: 'api/getMessages.php?rooms=' + roomid + '&messageIdMin=' + (lastMessage) + '&archive=1&messageIdMin=' + id + '&messageLimit=40',
+    url: 'api/getMessages.php?rooms=' + roomId + '&messageIdMin=' + (lastMessage) + '&archive=1&messageIdMin=' + id + '&messageLimit=40',
     type: 'GET',
     timeout: 1000,
     async: true,

@@ -64,7 +64,7 @@ function contextMenuParse() {
       window.open(window.forumUrl + 'member.php?u=' + userId,'profile' + userId);
       break;
       case 'kick':
-      ajaxDialogue('content/kick.php?userId=' + userId + '&roomid=' + $('body').attr('data-roomid'),'Kick User','kickUserDialogue',1000);
+      ajaxDialogue('content/kick.php?userId=' + userId + '&roomId=' + $('body').attr('data-roomId'),'Kick User','kickUserDialogue',1000);
       break;
       case 'ban':
       window.open('moderate.php&do=banuser2&userId=' + userId,'banuser' + userId);
@@ -96,7 +96,7 @@ function contextMenuParse() {
       break;
 
       case 'link':
-      quickDialogue('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="http://2.vrim.victoryroad.net/archive.php?roomid=' + $('body').attr('data-roomid') + '&message=' + postid + '" />','Link to This Message','linkMessage');
+      quickDialogue('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="http://2.vrim.victoryroad.net/archive.php?roomId=' + $('body').attr('data-roomId') + '&message=' + postid + '" />','Link to This Message','linkMessage');
       break;
     }
   });
@@ -130,7 +130,7 @@ function contextMenuParse() {
       break;
 
       case 'link':
-      quickDialogue('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="http://2.vrim.victoryroad.net/archive.php?roomid=' + $('body').attr('data-roomid') + '&message=' + postid + '" />','Link to This Message','linkMessage');
+      quickDialogue('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="http://2.vrim.victoryroad.net/archive.php?roomId=' + $('body').attr('data-roomId') + '&message=' + postid + '" />','Link to This Message','linkMessage');
       break;
     }
   });
@@ -143,7 +143,7 @@ function contextMenuParse() {
       case 'delete':
       if (confirm('Are you sure you want to delete this room?')) {
         $.ajax({
-          url: 'ajax/fim-modAction.php?action=deleteroom&roomid=' + postid,
+          url: 'ajax/fim-modAction.php?action=deleteroom&roomId=' + postid,
           type: 'GET',
           cache: false,
           success: function() {
@@ -156,7 +156,7 @@ function contextMenuParse() {
       }
       break;
       case 'edit':
-      ajaxDialogue('content/editRoom.php?roomid=' + $(el).attr('data-roomid'),'Edit Room','editRoomDialogue',1000);
+      ajaxDialogue('content/editRoom.php?roomId=' + $(el).attr('data-roomId'),'Edit Room','editRoomDialogue',1000);
       break;
     }
   });
@@ -206,7 +206,7 @@ function updatePosts() {
   var encrypt = 'base64';
 
   $.ajax({
-    url: 'api/getMessages.php?rooms=' + roomid + '&messageIdMin=' + (lastMessage) + '&messageLimit=100&watchRooms=1&activeUsers=1&archive=' + (first ? '1&messageDateMin=' + (Math.round((new Date()).getTime() / 1000) - 600) : '0'),
+    url: 'api/getMessages.php?rooms=' + roomId + '&messageIdMin=' + (lastMessage) + '&messageLimit=100&watchRooms=1&activeUsers=1&archive=' + (first ? '1&messageDateMin=' + (Math.round((new Date()).getTime() / 1000) - 600) : '0'),
     type: 'GET',
     timeout: timeout,
     async: true,
@@ -258,7 +258,7 @@ function getSuccess(xml) {
 
     var newTopic = $(xml).find('topic').html();
     if (newTopic) {
-      $('#topic' + roomid).html(newTopic);
+      $('#topic' + roomId).html(newTopic);
     }
 
 
@@ -387,7 +387,7 @@ function sendMessage(message,confirmed) {
   $.ajax({
     url: 'api/sendMessage.php',
     type: 'POST',
-    data: 'roomid=' + roomid + '&confirmed=' + confirmed + '&message=' + str_replace('+','%2b',str_replace('&','%26',str_replace('%','%25',message))),
+    data: 'roomId=' + roomId + '&confirmed=' + confirmed + '&message=' + str_replace('+','%2b',str_replace('&','%26',str_replace('%','%25',message))),
     cache: false,
     timeout: 2500,
     success: function(xml) {
@@ -513,7 +513,7 @@ function youtubeSend(id) {
     type: 'POST',
     contentType: 'application/x-www-form-urlencoded;charset=UTF-8',
     cache: false,
-    data: 'method=youtube&room=' + roomid + '&youtubeUpload=' + escape('http://www.youtube.com/?v=' + id),
+    data: 'method=youtube&room=' + roomId + '&youtubeUpload=' + escape('http://www.youtube.com/?v=' + id),
     success: function(html) { /*updatePosts();*/ }
   });
 

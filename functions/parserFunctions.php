@@ -134,20 +134,20 @@ function nl2vb($message) {
   return str_replace("\n",'{n}',$message);
 }
 
-function censor($text,$roomid = false) {
+function censor($text,$roomId = false) {
   global $sqlPrefix;
 
-  $words = sqlArr("SELECT w.word, w.severity, w.param, l.id AS listid
+  $words = sqlArr("SELECT w.word, w.severity, w.param, l.id AS listId
 FROM {$sqlPrefix}censorLists AS l, {$sqlPrefix}censorWords AS w
-WHERE w.listid = l.id AND w.severity = 'replace'",'word');
+WHERE w.listId = l.id AND w.severity = 'replace'",'word');
 
-  if ($roomid) {
-    $listsActive = sqlArr("SELECT * FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomid = $roomid",'id');
+  if ($roomId) {
+    $listsActive = sqlArr("SELECT * FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomId = $roomId",'id');
 
     if ($listsActive) {
       foreach ($listsActive AS $active) {
         if ($active['status'] == 'unblock') {
-          $noBlock[] = $active['listid'];
+          $noBlock[] = $active['listId'];
         }
       }
     }
@@ -158,7 +158,7 @@ WHERE w.listid = l.id AND w.severity = 'replace'",'word');
 
   foreach ($words AS $word) {
     if ($noBlock) {
-      if (in_array($word['listid'],$noBlock)) continue;
+      if (in_array($word['listId'],$noBlock)) continue;
     }
 
     $words2[strtolower($word['word'])] = $word['param'];
@@ -359,7 +359,7 @@ function sendMessage($messageText,$user,$room,$flag = '') {
   mysqlQuery("INSERT INTO {$sqlPrefix}messages (user, room, rawText, htmlText, apiText, salt, iv, microtime, ip, flag) VALUES ($user[userId], $room[id], '$messageRaw', '$messageHtml', '$messageApi', '$saltNum', '$iv', '" . microtime(true) . "', '$ip', '$flag')");
   $messageid = mysqlInsertId();
 
-  mysqlQuery("INSERT INTO {$sqlPrefix}messagesCached (messageid, roomid, userId, userName, userGroup, groupFormatStart, groupFormatEnd, time, htmlText, flag) VALUES ($messageid, $room[id], $user[userId], '$user[userName]', $user[displaygroupid], '$group[opentag]', '$group[closetag]', NOW(), '$messageHtmlCache', '$flag')");
+  mysqlQuery("INSERT INTO {$sqlPrefix}messagesCached (messageid, roomId, userId, userName, userGroup, groupFormatStart, groupFormatEnd, time, htmlText, flag) VALUES ($messageid, $room[id], $user[userId], '$user[userName]', $user[displaygroupid], '$group[opentag]', '$group[closetag]', NOW(), '$messageHtmlCache', '$flag')");
   $messageid2 = mysqlInsertId();
 
   if ($messageid2 > 100) {
@@ -367,6 +367,6 @@ function sendMessage($messageText,$user,$room,$flag = '') {
   }
 
   mysqlQuery("UPDATE {$sqlPrefix}rooms SET lastMessageTime = NOW(), lastMessageId = $messageid WHERE id = $room[id]");
-  mysqlQuery("INSERT INTO {$sqlPrefix}roomStats (userId, roomid, messages) VALUES ($user[userId], $room[id], 1) ON DUPLICATE KEY UPDATE messages = messages + 1");
+  mysqlQuery("INSERT INTO {$sqlPrefix}roomStats (userId, roomId, messages) VALUES ($user[userId], $room[id], 1) ON DUPLICATE KEY UPDATE messages = messages + 1");
 }
 ?>

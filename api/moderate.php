@@ -51,10 +51,10 @@ switch ($action) {
       trigger_error($phrases['editRoomNameTaken'],E_USER_ERROR);
     }
     else {
-      $listsActive = sqlArr("SELECT * FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomid = $room[id]",'id');
+      $listsActive = sqlArr("SELECT * FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomId = $room[id]",'id');
       if ($listsActive) {
         foreach ($listsActive AS $active) {
-          $listStatus[$active['listid']] = $active['status'];
+          $listStatus[$active['listId']] = $active['status'];
         }
       }
 
@@ -70,10 +70,10 @@ switch ($action) {
         else $checked = false;
 
           if ($checked == true && !$listsNew[$list['id']]) {
-          mysqlQuery("INSERT INTO ${sqlPrefix}censorBlackWhiteLists (roomid, listid, status) VALUES ($room[id], $id, 'unblock') ON DUPLICATE KEY UPDATE status = 'unblock'");
+          mysqlQuery("INSERT INTO ${sqlPrefix}censorBlackWhiteLists (roomId, listId, status) VALUES ($room[id], $id, 'unblock') ON DUPLICATE KEY UPDATE status = 'unblock'");
         }
         elseif ($checked == false && $listsNew[$list['id']]) {
-          mysqlQuery("INSERT INTO ${sqlPrefix}censorBlackWhiteLists (roomid, listid, status) VALUES ($room[id], $id, 'block') ON DUPLICATE KEY UPDATE status = 'block'");
+          mysqlQuery("INSERT INTO ${sqlPrefix}censorBlackWhiteLists (roomId, listId, status) VALUES ($room[id], $id, 'block') ON DUPLICATE KEY UPDATE status = 'block'");
         }
       }
 
@@ -116,7 +116,7 @@ switch ($action) {
   $userId = intval($_POST['userId']);
   $user2 = sqlArr("SELECT u1.settings, u2.userId, u2.userName FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userId = $userId AND u2.userId = u1.userId");
 
-  $room = intval($_POST['roomid']);
+  $room = intval($_POST['roomId']);
   $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
 
   $time = floor($_POST['time'] * $_POST['interval']);
@@ -150,7 +150,7 @@ switch ($action) {
   $userId = intval($_POST['userId']);
   $user2 = sqlArr("SELECT u1.settings, u2.userId, u2.userName FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userId = $userId AND u2.userId = u1.userId");
 
-  $room = intval($_POST['roomid']);
+  $room = intval($_POST['roomId']);
   $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
 
   if (!$user2['userId']) {

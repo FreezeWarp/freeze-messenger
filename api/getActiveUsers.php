@@ -43,7 +43,7 @@ else {
     $roomsXML .= "
       <room>$room[id]</room>";
 
-    $ausers = sqlArr("SELECT u.userName, u.userId, p.id, p.status, p.typing FROM {$sqlPrefix}ping AS p, {$sqlPrefix}rooms AS r, user AS u WHERE p.roomid = $room[id] AND p.roomid = r.id AND p.userId = u.userId AND UNIX_TIMESTAMP(p.time) >= ($time - $onlineThreshold) ORDER BY u.userName",'id');
+    $ausers = sqlArr("SELECT u.userName, u.userId, p.id, p.status, p.typing FROM {$sqlPrefix}ping AS p, {$sqlPrefix}rooms AS r, user AS u WHERE p.roomId = $room[id] AND p.roomId = r.id AND p.userId = u.userId AND UNIX_TIMESTAMP(p.time) >= ($time - $onlineThreshold) ORDER BY u.userName",'id');
 
     $auserXML .= "    <room>
       <roomData>

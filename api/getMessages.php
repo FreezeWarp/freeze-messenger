@@ -111,7 +111,7 @@ else {
       else {
 
         if (!$noPing) {
-          mysqlQuery("INSERT INTO {$sqlPrefix}ping (userId,roomid,time) VALUES ($user[userId],$room[id],CURRENT_TIMESTAMP()) ON DUPLICATE KEY UPDATE time = CURRENT_TIMESTAMP()");
+          mysqlQuery("INSERT INTO {$sqlPrefix}ping (userId,roomId,time) VALUES ($user[userId],$room[id],CURRENT_TIMESTAMP()) ON DUPLICATE KEY UPDATE time = CURRENT_TIMESTAMP()");
         }
 
         switch ($fields) {
@@ -167,7 +167,7 @@ LIMIT $messageLimit";
   $colClause
 FROM {$sqlPrefix}messagesCached AS m,
   {$sqlPrefix}users AS u2
-WHERE m.roomid = $room[id]
+WHERE m.roomId = $room[id]
   AND m.userId = u2.userId
 $whereClause
 ORDER BY messageid $order
@@ -258,7 +258,7 @@ LIMIT $messageLimit";
 FROM {$sqlPrefix}ping AS p,
   {$sqlUserTable} AS u
 {$join}
-WHERE p.roomid IN ($room[id])
+WHERE p.roomId IN ($room[id])
   AND p.userId = u.{$sqlUserTableCols[userId]}
   AND UNIX_TIMESTAMP(p.time) >= (UNIX_TIMESTAMP(NOW()) - $onlineThreshold)
 ORDER BY u.{$sqlUserTableCols[userName]}
@@ -298,7 +298,7 @@ LIMIT 500",'userId');
 ///* Process Watch Rooms *///
 if ($watchRooms) {
   /* Get Missed Messages */
-  $missedMessages = sqlArr("SELECT r.*, UNIX_TIMESTAMP(r.lastMessageTime) AS lastMessageTimestamp FROM {$sqlPrefix}rooms AS r LEFT JOIN {$sqlPrefix}ping AS p ON (p.userId = $user[userId] AND p.roomid = r.id) WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.id IN ($user[watchRooms])" : '') . ") AND (r.allowedUsers REGEXP '({$user[userId]},)|{$user[userId]}$' OR r.allowedUsers = '*') AND IF(p.time, UNIX_TIMESTAMP(r.lastMessageTime) > (UNIX_TIMESTAMP(p.time) + 10), TRUE)",'id'); // Right now only private IMs are included, but in the future this will be expanded.
+  $missedMessages = sqlArr("SELECT r.*, UNIX_TIMESTAMP(r.lastMessageTime) AS lastMessageTimestamp FROM {$sqlPrefix}rooms AS r LEFT JOIN {$sqlPrefix}ping AS p ON (p.userId = $user[userId] AND p.roomId = r.id) WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.id IN ($user[watchRooms])" : '') . ") AND (r.allowedUsers REGEXP '({$user[userId]},)|{$user[userId]}$' OR r.allowedUsers = '*') AND IF(p.time, UNIX_TIMESTAMP(r.lastMessageTime) > (UNIX_TIMESTAMP(p.time) + 10), TRUE)",'id'); // Right now only private IMs are included, but in the future this will be expanded.
 
   if ($missedMessages) {
     foreach ($missedMessages AS $message) {

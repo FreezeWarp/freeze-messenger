@@ -23,7 +23,7 @@ switch($_GET['action']) {
   $userId = intval($_GET['userId']);
   $user2 = sqlArr("SELECT u1.settings, u2.userId, u2.userName FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userId = $userId AND u2.userId = u1.userId");
 
-  $room = intval($_GET['roomid']);
+  $room = intval($_GET['roomId']);
   $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
 
   $time = floor($_GET['time'] * 60);
@@ -84,7 +84,7 @@ switch($_GET['action']) {
   break;
 
   case 'deleteroom':
-  $room = intval($_GET['roomid']);
+  $room = intval($_GET['roomId']);
   $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
 
   if (hasPermission($room,$user,'admin')) { // The user most either own the room or be an administrator. Additionally, the room can not be an official room.
@@ -106,7 +106,7 @@ switch($_GET['action']) {
   break;
 
   case 'favroom': // Note that we won't check permissions since the worse a hacker could do is learn a room's name - which doesn't make a difference.
-  $room = intval($_GET['roomid']);
+  $room = intval($_GET['roomId']);
 
   $currentRooms = explode(',',$user['favRooms']);
   if (!in_array($room,$currentRooms)) {

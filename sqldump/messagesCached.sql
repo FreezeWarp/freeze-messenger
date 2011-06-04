@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS `{prefix}messagesCached` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `messageid` int(10) NOT NULL,
-  `roomid` int(10) NOT NULL,
+  `roomId` int(10) NOT NULL,
   `userId` int(10) NOT NULL,
   `userName` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `userGroup` int(10) NOT NULL,

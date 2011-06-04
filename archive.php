@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-if (!$_GET['roomid']) { // If no room ID is provided, then give the search form.
+if (!$_GET['roomId']) { // If no room ID is provided, then give the search form.
   $rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE options & 8 = false ORDER BY options & 1 DESC, options & 16 ASC, id",'id');
   foreach ($rooms AS $room2) {
     if (hasPermission($room2,$user,'view')) {
@@ -36,8 +36,8 @@ else {
 
   $userIDs = mysqlEscape(urldecode($_GET['userIds'])); // Searching only specific users.
 
-  $roomid = intval($_GET['roomid'] ?: 1);
-  $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $roomid");
+  $roomId = intval($_GET['roomId'] ?: 1);
+  $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $roomId");
 
   $messageStart = intval($_GET['messageStart'] ?: $_GET['message']);
   $messageEnd = intval($_GET['messageEnd']);
@@ -201,7 +201,7 @@ LIMIT $limit",'id');
 echo container("$phrases[archiveTitle]: $room[name]","
 <form method=\"get\" action=\"/archive.php\" style=\"text-align: center\">
   <input type=\"hidden\" name=\"numresults\" value=\"$_GET[numresults]\" />
-  <input type=\"hidden\" name=\"roomid\" value=\"$_GET[roomid]\" />
+  <input type=\"hidden\" name=\"roomId\" value=\"$_GET[roomId]\" />
   <input type=\"hidden\" name=\"oldfirst\" value=\"$_GET[oldfirst]\" />
   <input type=\"hidden\" name=\"userIds\" value=\"$_GET[userIds]\" />
   <label for=\"format\">$phrases[archiveViewAs]</label>

@@ -84,8 +84,8 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
     <endTag>$getuserf[closetag]</endTag>
     <favRooms>$getuser[favRooms]</favRooms>
     <postCount>$getuserf[posts]</postCount>
-    <joinDate>$getuserf[joindate]</joinDate>
-    <joinDateFormatted>" . vbdate(false,$getuserf['joindate']) . "</joinDateFormatted>
+    <joinDate>$getuserf[joinDate]</joinDate>
+    <joinDateFormatted>" . vbdate(false,$getuserf['joinDate']) . "</joinDateFormatted>
     <userTitle>$getuserf[usertitle]</userTitle>
     <avatar>$getuserf[avatar]</avatar>
   </userData>

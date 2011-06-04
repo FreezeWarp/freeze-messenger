@@ -21,7 +21,7 @@ $reqHooks = true;
 require_once('../global.php');
 require_once('../functions/container.php');
 
-if (!$_GET['roomid']) {
+if (!$_GET['roomId']) {
   $roomSelect = mysqlReadThrough(mysqlQuery("SELECT * FROM {$sqlPrefix}rooms WHERE " . ((($user['settings'] & 16) == false) ? "(owner = '$user[userId]' OR moderators REGEXP '({$user[userId]},)|{$user[userId]}$') AND " : '') . "(options & 16) = false AND (options & 4) = false AND (options & 8) = false"),'<option value="$id">$name</option>
 ');
   if ($roomSelect) {
@@ -47,8 +47,8 @@ $(document).ready(function() {
 });
 </script>';
 
-  $roomid = intval($_GET['roomid']);
-  $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $roomid");
+  $roomId = intval($_GET['roomId']);
+  $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $roomId");
 
   if (hasPermission($room,$user,'moderate')) {
     $users = mysqlQuery("SELECT UNIX_TIMESTAMP(k.time) AS kickedOn, UNIX_TIMESTAMP(k.time) + k.length AS expiresOn, u1.userName AS userName, u1.userId AS userId, u2.userName AS kickername FROM {$sqlPrefix}kick AS k, user AS u1, user AS u2 WHERE k.room = $room[id] AND k.userId = u1.userId AND k.kickerid = u2.userId AND UNIX_TIMESTAMP(NOW()) <= (UNIX_TIMESTAMP(time) + length)");

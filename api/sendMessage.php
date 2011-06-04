@@ -22,15 +22,15 @@ header('Content-type: text/xml');
 
 $message = vrim_urldecode($_POST['message']);
 
-$roomid = intval($_POST['roomid']);
-$room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $roomid");
+$roomId = intval($_POST['roomId']);
+$room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $roomId");
 $ip = mysqlEscape($_SERVER['REMOTE_ADDR']); // Get the IP address of the user.
 
 
 
 $words = sqlArr("SELECT w.word, w.severity, w.param
 FROM {$sqlPrefix}censorLists AS l, {$sqlPrefix}censorWords AS w
-WHERE w.listid = l.id AND (w.severity = 'warn' OR w.severity = 'confirm' OR w.severity = 'block')",'word');
+WHERE w.listId = l.id AND (w.severity = 'warn' OR w.severity = 'confirm' OR w.severity = 'block')",'word');
 
 if (!$words) {}
 else {
@@ -108,7 +108,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
     <userName>" . vrim_encodeXML($user['userName']) . "</userName>
   </activeUser>
   <sentData>
-    <roomId>" . vrim_encodeXML($_POST['roomid']) . "</roomId>
+    <roomId>" . vrim_encodeXML($_POST['roomId']) . "</roomId>
     <message>" . vrim_encodeXML($_POST['message']) . "</message>
   </sentData>
   <errorcode>$failCode</errorcode>

@@ -280,7 +280,7 @@ $(document).ready(function() {
         if ($list['options'] & 4) $options[] = "Disabled in Private";
         if ($list['options'] & 8) $options[] = "Mature";
 
-        $rows .= '    <tr><td>' . $list['name'] . '</td><td align="center">' . ($list['type'] == 'white' ? '<div style="border-radius: 1em; background-color: white; border: 1px solid black; width: 20px; height: 20px;"></div>' : '<div style="border-radius: 1em; background-color: black; border: 1px solid white; width: 20px; height: 20px;"></div>') . '</td><td>' . implode(', ',$options) . '</td><td><a href="./moderate.php?do=censor&do2=deleteList&listid=' . $list['id'] . '"><img src="images/edit-delete.png" /></a><a href="./moderate.php?do=censor&do2=editList&listid=' . $list['id'] . '"><img src="images/document-edit.png" /></a><a href="./moderate.php?do=censor&do2=viewWords&listid=' . $list['id'] . '"><img src="images/view-list-text.png" alt="View Words" /></a></td></tr>
+        $rows .= '    <tr><td>' . $list['name'] . '</td><td align="center">' . ($list['type'] == 'white' ? '<div style="border-radius: 1em; background-color: white; border: 1px solid black; width: 20px; height: 20px;"></div>' : '<div style="border-radius: 1em; background-color: black; border: 1px solid white; width: 20px; height: 20px;"></div>') . '</td><td>' . implode(', ',$options) . '</td><td><a href="./moderate.php?do=censor&do2=deleteList&listId=' . $list['id'] . '"><img src="images/edit-delete.png" /></a><a href="./moderate.php?do=censor&do2=editList&listId=' . $list['id'] . '"><img src="images/document-edit.png" /></a><a href="./moderate.php?do=censor&do2=viewWords&listId=' . $list['id'] . '"><img src="images/view-list-text.png" alt="View Words" /></a></td></tr>
   ';
       }
 
@@ -346,8 +346,8 @@ $(document).ready(function() {
       break;
 
       case 'editList':
-      $listid = intval($_GET['listid']);
-      $list = sqlArr("SELECT * FROM {$sqlPrefix}censorLists WHERE id = $listid");
+      $listId = intval($_GET['listId']);
+      $list = sqlArr("SELECT * FROM {$sqlPrefix}censorLists WHERE id = $listId");
 
       echo container('Edit Censor List','<form action="./moderate.php?do=censor&do2=editList2&listId=' . $list['id'] . '" method="post">
   <table>
@@ -385,30 +385,30 @@ $(document).ready(function() {
       case 'editList2':
       $options = array('white','black');
 
-      $listid = intval($_GET['listId']);
+      $listId = intval($_GET['listId']);
       $listname = mysqlEscape($_POST['name']);
       $listtype = (in_array($_POST['name'],$options) ? $_POST['name'] : 'white');
       $listoptions = 1 + ($_POST['candis'] ? 2 : 0) + ($_POST['privdis'] ? 4 : 0) + ($_POST['mature'] ? 8 : 0);
 
-      mysqlQuery("UPDATE {$sqlPrefix}censorLists SET name = '$listname', type = '$listtype', options = '$listoptions' WHERE id = $listid");
+      mysqlQuery("UPDATE {$sqlPrefix}censorLists SET name = '$listname', type = '$listtype', options = '$listoptions' WHERE id = $listId");
 
       echo container('List Updated','The list has been updated.<br /><br />' . button('Return to Viewing Lists','./moderate.php?do=censor&do2=viewLists'));
       break;
 
       case 'deleteList':
-      $listid = intval($_GET['listid']);
+      $listId = intval($_GET['listId']);
 
-      modLog('deleteCensorList',$listid);
+      modLog('deleteCensorList',$listId);
 
-      mysqlQuery("DELETE FROM {$sqlPrefix}censorLists WHERE id = $listid");
-      mysqlQuery("DELETE FROM {$sqlPrefix}censorWords WHERE listid = $listid");
+      mysqlQuery("DELETE FROM {$sqlPrefix}censorLists WHERE id = $listId");
+      mysqlQuery("DELETE FROM {$sqlPrefix}censorWords WHERE listId = $listId");
 
       echo container('List Deleted','The list and its words have been deleted.<br /><br />' . button('Return to Viewing Lists','./moderate.php?do=censor&do2=viewLists'));
       break;
 
       case 'viewWords':
-      $listid = intval($_GET['listid']);
-      $words = sqlArr("SELECT * FROM {$sqlPrefix}censorWords WHERE listid = $listid",'id');
+      $listId = intval($_GET['listId']);
+      $words = sqlArr("SELECT * FROM {$sqlPrefix}censorWords WHERE listId = $listId",'id');
       if ($words) {
         foreach ($words AS $word) {
           $rows .= '    <tr><td>' . $word['word'] . '</td><td>' . $word['severity'] . '</td><td>' . $word['param'] . '</td><td><a href="./moderate.php?do=censor&do2=deleteWord&wordid=' . $word['id'] . '"><img src="images/edit-delete.png" /></a><a href="./moderate.php?do=censor&do2=editWord&wordid=' . $word['id'] . '"><img src="images/document-edit.png" /></a></td></tr>
@@ -419,7 +419,7 @@ $(document).ready(function() {
         $rows = '<tr><td colspan="4">No words have been added.</td></tr>';
       }
 
-      echo container('Current Words<a href="./moderate.php?do=censor&do2=addWord&listid=' . $listid . '"><img src="images/document-new.png" style="float: right;" /></a>','<table class="page rowHover" border="1">
+      echo container('Current Words<a href="./moderate.php?do=censor&do2=addWord&listId=' . $listId . '"><img src="images/document-new.png" style="float: right;" /></a>','<table class="page rowHover" border="1">
   <thead>
     <tr class="hrow ui-widget-header">
       <td>Word</td>
@@ -435,7 +435,7 @@ $(document).ready(function() {
       break;
 
       case 'addWord':
-      $listid = intval($_GET['listid']);
+      $listId = intval($_GET['listId']);
 
       echo container('Add New Word','<form action="./moderate.php?do=censor&do2=addWord2" method="post">
 <table>
@@ -459,7 +459,7 @@ $(document).ready(function() {
   </tr>
 </table><br />
 
-  <input type="hidden" name="listid" value="' . $listid . '" />
+  <input type="hidden" name="listId" value="' . $listId . '" />
 
   <button type="submit">Submit</button><button type="reset">Reset</button>
 </form>');
@@ -471,11 +471,11 @@ $(document).ready(function() {
       $wordtext = mysqlEscape($_POST['text']);
       $wordsev = (in_array($_POST['severity'],$options) ? $_POST['severity'] : 'replace');
       $wordparam = mysqlEscape($_POST['param']);
-      $listid = intval($_POST['listid']);
+      $listId = intval($_POST['listId']);
 
-      mysqlQuery("INSERT INTO {$sqlPrefix}censorWords (listid, word, severity, param) VALUES ($listid, '$wordtext', '$wordsev', '$wordparam')");
+      mysqlQuery("INSERT INTO {$sqlPrefix}censorWords (listId, word, severity, param) VALUES ($listId, '$wordtext', '$wordsev', '$wordparam')");
 
-      echo container('Word Added','The word has been added.<br /><br />' . button('Return to Viewing Words','./moderate.php?do=censor&do2=viewWords&listid=' . $listid));
+      echo container('Word Added','The word has been added.<br /><br />' . button('Return to Viewing Words','./moderate.php?do=censor&do2=viewWords&listId=' . $listId));
       break;
 
       case 'editWord':
@@ -524,7 +524,7 @@ $(document).ready(function() {
 
       mysqlQuery("UPDATE {$sqlPrefix}censorWords SET word = '$wordtext', severity = '$wordsev', param = '$wordparam' WHERE id = $wordid");
 
-      echo container('Word Changed','The word has been changed.<br /><br />' . button('Return to Viewing Words','./moderate.php?do=censor&do2=viewWords&listid=' . $word['listid']));
+      echo container('Word Changed','The word has been changed.<br /><br />' . button('Return to Viewing Words','./moderate.php?do=censor&do2=viewWords&listId=' . $word['listId']));
       break;
 
       case 'deleteWord':
@@ -731,7 +731,7 @@ $(document).ready(function() {
 
       $records = sqlArr("SELECT * FROM {$sqlPrefix}ping LIMIT $limit OFFSET $offset",'id');
       foreach ($records AS $id => $record) {
-        $totalPosts = sqlArr("SELECT COUNT(m.id) AS count FROM {$sqlPrefix}messages AS m WHERE room = $record[roomid] AND user = $record[userId] AND m.deleted = false GROUP BY m.user");
+        $totalPosts = sqlArr("SELECT COUNT(m.id) AS count FROM {$sqlPrefix}messages AS m WHERE room = $record[roomId] AND user = $record[userId] AND m.deleted = false GROUP BY m.user");
         $totalPosts = intval($totalPosts['count']);
         mysqlQuery("UPDATE {$sqlPrefix}ping SET messages = $totalPosts WHERE id = $record[id]");
       }

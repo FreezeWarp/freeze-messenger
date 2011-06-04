@@ -25,15 +25,15 @@ $onlineThreshold = ($_GET['onlineThreshold'] ?: $onlineThreshold);
 $ausers = sqlArr("SELECT
   u.$sqlUserTableCols[userName] AS userName,
   u.$sqlUserTableCols[userId] AS userId,
-  GROUP_CONCAT(r.name) AS roomnames,
-  GROUP_CONCAT(r.id) AS roomids
+  GROUP_CONCAT(r.name) AS roomNames,
+  GROUP_CONCAT(r.id) AS roomIds
 FROM
   $sqlUserTable AS u,
   {$sqlPrefix}rooms AS r,
   {$sqlPrefix}ping AS p
 WHERE
   u.$sqlUserTableCols[userId] = p.userId AND
-  r.id = p.roomid AND
+  r.id = p.roomId AND
   UNIX_TIMESTAMP(p.time) > $time - $onlineThreshold
 GROUP BY
   p.userId
@@ -44,10 +44,10 @@ if ($ausers) {
   foreach ($ausers AS $auser) {
     unset($roomsXML);
 
-    $rooms = array_combine(explode(',',$auser['roomids']),explode(',',$auser['roomnames']));
+    $rooms = array_combine(explode(',',$auser['roomIds']),explode(',',$auser['roomNames']));
     foreach ($rooms AS $id => $name) $roomsXML .= "      <room>
-        <roomid>$id</roomid>
-        <roomname>$name</roomname>
+        <roomId>$id</roomId>
+        <roomName>$name</roomName>
       </room>";
 
     $ausersXML .= "    <user>
