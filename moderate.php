@@ -779,11 +779,11 @@ $(document).ready(function() {
         trigger_error('A default group was not specified in the config.php file.',E_USER_ERROR);
       }
       elseif (!$_GET['confirm']) {
-        $table = mysqlReadThrough(mysqlQuery("SELECT * FROM {$sqlUserTable} WHERE {$sqlUserTableCols[usergroup]} = 0"),'<tr><td>$userId</td><td>$userName</td></tr>');
+        $table = mysqlReadThrough(mysqlQuery("SELECT * FROM {$sqlUserTable} WHERE {$sqlUserTableCols[userGroup]} = 0"),'<tr><td>$userId</td><td>$userName</td></tr>');
         echo container('Warning','The following users will be affected: <table border="1"><thead><tr><td>UserID</td><td>Username</td></tr></thead><tbody>' . $table . '</tbody></table><br /><br /><form action="moderate.php" method="get"><button type="submit">Confirm</button><input type="hidden" name="do2" value="defaultgroup" /><input type="hidden" name="confirm" value="true" /></form><form action="moderate.php" method="get"><button type="submit">Go Back</button></form>');
       }
       else {
-        mysql_query("UPDATE {$sqlUserTable} SET {$sqlUserTableCols[usergroup]} = $defaultDisplayGroup WHERE {$sqlUserTableCols[usergroup]} = 0");
+        mysql_query("UPDATE {$sqlUserTable} SET {$sqlUserTableCols[userGroup]} = $defaultDisplayGroup WHERE {$sqlUserTableCols[userGroup]} = 0");
         echo container('Warning','The following users will be affected: <table border="1"><thead><tr><td>UserID</td><td>Username</td></tr></thead><tbody>' . $table . '</tbody></table><br /><br /><form action="moderate.php" method="get"><button type="submit">Confirm</button><input type="hidden" name="do2" value="defaultgroup" /><input type="hidden" name="confirm" value="true" /></form><form action="moderate.php" method="get"><button type="submit">Go Back</button></form>');
       }
       break;

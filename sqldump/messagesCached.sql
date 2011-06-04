@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS `{prefix}messagesCached` (
   `roomid` int(10) NOT NULL,
   `userId` int(10) NOT NULL,
   `userName` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  `usergroup` int(10) NOT NULL,
+  `userGroup` int(10) NOT NULL,
   `groupFormatStart` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `groupFormatEnd` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

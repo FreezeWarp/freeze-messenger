@@ -81,7 +81,7 @@ if (!$whereClause && $messageStart) {
 if ($archive) {
   if ($loginMethod == 'vbulletin') {
     $tableClause .= "{$sqlUserGroupTable} AS g";
-    $whereClause .= "u.{$sqlUserTableCols[usergroup]} = g.{$sqlUserGroupTableCols[groupid]}";
+    $whereClause .= "u.{$sqlUserTableCols[userGroup]} = g.{$sqlUserGroupTableCols[groupid]}";
   }
   elseif ($loginMethod == 'phpbb') {
     $colClause .= ', u.user_colour';
@@ -132,7 +132,7 @@ else {
   m.salt AS salt,
   u.{$sqlUserTableCols[userId]} AS userId,
   u.{$sqlUserTableCols[userName]} AS userName,
-  u.{$sqlUserTableCols[usergroup]} AS displaygroupid,
+  u.{$sqlUserTableCols[userGroup]} AS displaygroupid,
   u2.defaultColour AS defaultColour,
   u2.defaultFontface AS defaultFontface,
   u2.defaultHighlight AS defaultHighlight,
@@ -155,7 +155,7 @@ LIMIT $messageLimit";
   $messageFields
   m.userId AS userId,
   m.userName AS userName,
-  m.usergroup AS displaygroupid,
+  m.userGroup AS displaygroupid,
   m.groupFormatStart AS groupFormatStart,
   m.groupFormatEnd AS groupFormatEnd,
   m.flag AS flag,
@@ -251,7 +251,7 @@ LIMIT $messageLimit";
 
           $ausers = sqlArr("SELECT u.{$sqlUserTableCols[userName]} AS userName,
   u.{$sqlUserTableCols[userId]} AS userId,
-  u.{$sqlUserTableCols[usergroup]} AS displaygroupid,
+  u.{$sqlUserTableCols[userGroup]} AS displaygroupid,
   p.status,
   p.typing
   $cols

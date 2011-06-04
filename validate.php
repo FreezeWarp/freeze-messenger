@@ -33,19 +33,19 @@ switch ($loginMethod) {
   case 'vbulletin':
   /* Set Relevant Column Data */
   $sqlUserTable = $forumPrefix . 'user'; // The user table in the login method used.
-  $sqlUserGroupTable = $forumPrefix . 'usergroup'; // The usergroup table in the login method used.
+  $sqlUserGroupTable = $forumPrefix . 'userGroup'; // The userGroup table in the login method used.
   $sqlSessionTable = $forumPrefix . 'session'; // The sessions table in the login method used.
 
   $sqlUserTableCols = array(
     'userId' => 'userid', // The user ID column of the user table in the login method used.
     'userName' => 'username', // The userName column of the user table in the login method used.
-    'usergroup' => 'displaygroupid', // The usergroup column of the user table in the login method used.
+    'userGroup' => 'displaygroupid', // The userGroup column of the user table in the login method used.
     'allgroups' => 'membergroupids',
     'tzoffset' => 'timezoneoffset',
     'options' => 'options',
   );
   $sqlUserGroupTableCols = array(
-    'groupid' => 'usergroupid',
+    'groupid' => 'userGroupid',
   );
 
   $parseGroups = true; // This still needed?
@@ -53,13 +53,13 @@ switch ($loginMethod) {
 
   case 'phpbb':
   $sqlUserTable = $forumPrefix . 'users'; // The user table in the login method used.
-  $sqlUserGroupTable = $forumPrefix . 'groups'; // The usergroup table in the login method used.
+  $sqlUserGroupTable = $forumPrefix . 'groups'; // The userGroup table in the login method used.
   $sqlSessionTable = $forumPrefix . 'sessions'; // The sessions table in the login method used.
 
   $sqlUserTableCols = array(
     'userId' => 'user_id', // The user ID column of the user table in the login method used.
     'userName' => 'username', // The userName column of the user table in the login method used.
-    'usergroup' => 'group_id', // The usergroup column of the user table in the login method used.
+    'userGroup' => 'group_id', // The userGroup column of the user table in the login method used.
     'allgroups' => 'group_id',
     'tzoffset' => 'user_timezone',
     'colour' => 'user_colour',
@@ -540,7 +540,7 @@ if ($valid) { // If the user is valid, process their preferrences.
     $user2['userName'] = $userCopy[$sqlUserTableCols['userName']];
     $user2['userId'] = $userCopy[$sqlUserTableCols['userId']];
     $user2['timezoneoffset'] = $userCopy[$sqlUserTableCols['tzoffset']];
-    $user2['displaygroupid'] = $userCopy[$sqlUserTableCols['usergroup']];
+    $user2['displaygroupid'] = $userCopy[$sqlUserTableCols['userGroup']];
     $user2['membergroupids'] = $userCopy[$sqlUserTableCols['allgroups']];
 
     if ($userCopy[$sqlUserOptionsCol] & 64) $user2['timezoneoffset']++; // DST is autodetect. We'll just set it by hand.
@@ -558,7 +558,7 @@ if ($valid) { // If the user is valid, process their preferrences.
     $user2['userName'] = $userCopy[$sqlUserTableCols['userName']];
     $user2['userId'] = $userCopy[$sqlUserTableCols['userId']];
     $user2['timezoneoffset'] = $userCopy[$sqlUserTableCols['tzoffset']];
-    $user2['displaygroupid'] = $userCopy[$sqlUserTableCols['usergroup']];
+    $user2['displaygroupid'] = $userCopy[$sqlUserTableCols['userGroup']];
     $user2['membergroupids'] = $userCopy[$sqlUserTableCols['allgroups']];
     $user2['colour'] = $userCopy[$sqlUserTableCols['colour']];
     break;

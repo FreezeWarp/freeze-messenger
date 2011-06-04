@@ -37,7 +37,7 @@ else {
 switch ($loginMethod) {
   case 'vbulletin':
   if ($where) {
-    $getuserf = sqlArr("SELECT * FROM {$sqlUserTable} AS u LEFT JOIN {$sqlUserGroupTable} AS g ON u.{$sqlUserTableCols[usergroup]} = g.{$sqlUserGroupTableCols[groupid]} WHERE {$where}");
+    $getuserf = sqlArr("SELECT * FROM {$sqlUserTable} AS u LEFT JOIN {$sqlUserGroupTable} AS g ON u.{$sqlUserTableCols[userGroup]} = g.{$sqlUserGroupTableCols[groupid]} WHERE {$where}");
     $getuserf['opentag'] = vrim_encodeXML($getuserf['opentag']);
     $getuserf['closetag'] = vrim_encodeXML($getuserf['closetag']);
     $getuserf['avatar'] = $forumUrl . '/image.php?u=' . $getuserf['userId'];

@@ -359,7 +359,7 @@ function sendMessage($messageText,$user,$room,$flag = '') {
   mysqlQuery("INSERT INTO {$sqlPrefix}messages (user, room, rawText, htmlText, apiText, salt, iv, microtime, ip, flag) VALUES ($user[userId], $room[id], '$messageRaw', '$messageHtml', '$messageApi', '$saltNum', '$iv', '" . microtime(true) . "', '$ip', '$flag')");
   $messageid = mysqlInsertId();
 
-  mysqlQuery("INSERT INTO {$sqlPrefix}messagesCached (messageid, roomid, userId, userName, usergroup, groupFormatStart, groupFormatEnd, time, htmlText, flag) VALUES ($messageid, $room[id], $user[userId], '$user[userName]', $user[displaygroupid], '$group[opentag]', '$group[closetag]', NOW(), '$messageHtmlCache', '$flag')");
+  mysqlQuery("INSERT INTO {$sqlPrefix}messagesCached (messageid, roomid, userId, userName, userGroup, groupFormatStart, groupFormatEnd, time, htmlText, flag) VALUES ($messageid, $room[id], $user[userId], '$user[userName]', $user[displaygroupid], '$group[opentag]', '$group[closetag]', NOW(), '$messageHtmlCache', '$flag')");
   $messageid2 = mysqlInsertId();
 
   if ($messageid2 > 100) {
