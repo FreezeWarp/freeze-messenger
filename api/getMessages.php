@@ -111,7 +111,7 @@ else {
       else {
 
         if (!$noPing) {
-          mysqlQuery("INSERT INTO {$sqlPrefix}ping (userid,roomid,time) VALUES ($user[userid],$room[id],CURRENT_TIMESTAMP()) ON DUPLICATE KEY UPDATE time = CURRENT_TIMESTAMP()");
+          mysqlQuery("INSERT INTO {$sqlPrefix}ping (userId,roomid,time) VALUES ($user[userId],$room[id],CURRENT_TIMESTAMP()) ON DUPLICATE KEY UPDATE time = CURRENT_TIMESTAMP()");
         }
 
         switch ($fields) {
@@ -130,7 +130,7 @@ else {
   $messageFields
   m.iv AS iv,
   m.salt AS salt,
-  u.{$sqlUserTableCols[userid]} AS userid,
+  u.{$sqlUserTableCols[userId]} AS userId,
   u.{$sqlUserTableCols[username]} AS username,
   u.{$sqlUserTableCols[usergroup]} AS displaygroupid,
   u2.defaultColour AS defaultColour,
@@ -143,8 +143,8 @@ FROM {$sqlPrefix}messages AS m,
   {$sqlPrefix}users AS u2
 WHERE room = $room[id]
   AND m.deleted != true
-  AND m.user = u.{$sqlUserTableCols[userid]}
-  AND m.user = u2.userid
+  AND m.user = u.{$sqlUserTableCols[userId]}
+  AND m.user = u2.userId
 $whereClause
 ORDER BY messageid $order
 LIMIT $messageLimit";
@@ -153,7 +153,7 @@ LIMIT $messageLimit";
           $messageQuery = "SELECT m.messageid AS messageid,
   UNIX_TIMESTAMP(m.time) AS time,
   $messageFields
-  m.userid AS userid,
+  m.userId AS userId,
   m.username AS username,
   m.usergroup AS displaygroupid,
   m.groupFormatStart AS groupFormatStart,
@@ -168,7 +168,7 @@ LIMIT $messageLimit";
 FROM {$sqlPrefix}messagesCached AS m,
   {$sqlPrefix}users AS u2
 WHERE m.roomid = $room[id]
-  AND m.userid = u2.userid
+  AND m.userId = u2.userId
 $whereClause
 ORDER BY messageid $order
 LIMIT $messageLimit";
@@ -222,7 +222,7 @@ LIMIT $messageLimit";
       </messageData>
       <userData>
         <userName>$message[username]</userName>
-        <userId>$message[userid]</userId>
+        <userId>$message[userId]</userId>
         <userGroup>$message[displaygroupid]</userGroup>
         <startTag>" . vrim_encodeXML($message['groupFormatStart']) . "</startTag>
         <endTag>" . vrim_encodeXML($message['groupFormatEnd']) . "</endTag>
@@ -250,7 +250,7 @@ LIMIT $messageLimit";
           }
 
           $ausers = sqlArr("SELECT u.{$sqlUserTableCols[username]} AS username,
-  u.{$sqlUserTableCols[userid]} AS userid,
+  u.{$sqlUserTableCols[userId]} AS userId,
   u.{$sqlUserTableCols[usergroup]} AS displaygroupid,
   p.status,
   p.typing
@@ -259,10 +259,10 @@ FROM {$sqlPrefix}ping AS p,
   {$sqlUserTable} AS u
 {$join}
 WHERE p.roomid IN ($room[id])
-  AND p.userid = u.{$sqlUserTableCols[userid]}
+  AND p.userId = u.{$sqlUserTableCols[userId]}
   AND UNIX_TIMESTAMP(p.time) >= (UNIX_TIMESTAMP(NOW()) - $onlineThreshold)
 ORDER BY u.{$sqlUserTableCols[username]}
-LIMIT 500",'userid');
+LIMIT 500",'userId');
 
   if ($ausers) {
     foreach ($ausers AS $auser) {
@@ -279,7 +279,7 @@ LIMIT 500",'userid');
 
         $ausersXML .= "      <user>
         <userName>$auser[username]</userName>
-        <userId>$auser[userid]</userId>
+        <userId>$auser[userId]</userId>
         <userGroup>$auser[displaygroupid]</userGroup>
         <startTag>$auser[opentag]</startTag>
         <endTag>$auser[closetag]</endTag>
@@ -298,7 +298,7 @@ LIMIT 500",'userid');
 ///* Process Watch Rooms *///
 if ($watchRooms) {
   /* Get Missed Messages */
-  $missedMessages = sqlArr("SELECT r.*, UNIX_TIMESTAMP(r.lastMessageTime) AS lastMessageTimestamp FROM {$sqlPrefix}rooms AS r LEFT JOIN {$sqlPrefix}ping AS p ON (p.userid = $user[userid] AND p.roomid = r.id) WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.id IN ($user[watchRooms])" : '') . ") AND (r.allowedUsers REGEXP '({$user[userid]},)|{$user[userid]}$' OR r.allowedUsers = '*') AND IF(p.time, UNIX_TIMESTAMP(r.lastMessageTime) > (UNIX_TIMESTAMP(p.time) + 10), TRUE)",'id'); // Right now only private IMs are included, but in the future this will be expanded.
+  $missedMessages = sqlArr("SELECT r.*, UNIX_TIMESTAMP(r.lastMessageTime) AS lastMessageTimestamp FROM {$sqlPrefix}rooms AS r LEFT JOIN {$sqlPrefix}ping AS p ON (p.userId = $user[userId] AND p.roomid = r.id) WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.id IN ($user[watchRooms])" : '') . ") AND (r.allowedUsers REGEXP '({$user[userId]},)|{$user[userId]}$' OR r.allowedUsers = '*') AND IF(p.time, UNIX_TIMESTAMP(r.lastMessageTime) > (UNIX_TIMESTAMP(p.time) + 10), TRUE)",'id'); // Right now only private IMs are included, but in the future this will be expanded.
 
   if ($missedMessages) {
     foreach ($missedMessages AS $message) {
@@ -324,7 +324,7 @@ $data = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 ]>
 <getMessages>
   <activeUser>
-    <userid>$user[userid]</userid>
+    <userId>$user[userId]</userId>
     <username>" . vrim_encodeXML($user['username']) . "</username>
   </activeUser>
 

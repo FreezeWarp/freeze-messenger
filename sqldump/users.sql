@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS `{prefix}users` (
-  `userid` int(10) NOT NULL,
+  `userId` int(10) NOT NULL,
   `settings` int(10) NOT NULL DEFAULT '32',
   `defaultRoom` int(10) NOT NULL DEFAULT '0',
   `favRooms` varchar(300) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL DEFAULT '1',
@@ -9,5 +9,5 @@ CREATE TABLE IF NOT EXISTS `{prefix}users` (
   `defaultHighlight` varchar(20) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `defaultColour` varchar(20) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `defaultFontface` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  PRIMARY KEY (`userid`)
+  PRIMARY KEY (`userId`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8;

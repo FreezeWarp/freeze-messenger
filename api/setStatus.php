@@ -43,7 +43,7 @@ else {
     $value = mysqlEscape($statusValue);
 
     if (!in_array($value,array('available','away','busy','invisible','offline'))) {
-      mysqlQuery("UPDATE vrc_ping SET status = '$value' WHERE userid = $user[userid] AND roomid = $room[id]");
+      mysqlQuery("UPDATE vrc_ping SET status = '$value' WHERE userId = $user[userId] AND roomid = $room[id]");
     }
     else {
       $failCode = 'badstatusvalue';
@@ -61,12 +61,12 @@ else {
   echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <setStatus>
   <activeUser>
-    <userId>$user[userid]</userId>
+    <userId>$user[userId]</userId>
     <userName>" . vrim_encodeXML($user['username']) . "</userName>
   </activeUser>
   <sentData>
     <roomId>" . vrim_encodeXML($_POST['roomid']) . "</roomId>
-    <userId>" . vrim_encodeXML($_POST['userid']) . "</userId>
+    <userId>" . vrim_encodeXML($_POST['userId']) . "</userId>
   </sentData>
   <errorcode>$failCode</errorcode>
   <errortext>$failMessage</errortext>

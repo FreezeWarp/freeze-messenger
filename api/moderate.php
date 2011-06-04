@@ -19,7 +19,7 @@ switch ($action) {
       $options = ($_POST['mature'] ? 2 : 0);
       $bbcode = intval($_POST['bbcode']);
 
-      mysqlQuery("INSERT INTO {$sqlPrefix}rooms (name,allowedGroups,allowedUsers,moderators,owner,options,bbcode) VALUES ('$name','$allowedGroups','$allowedUsers','$moderators',$user[userid],$options,$bbcode)");
+      mysqlQuery("INSERT INTO {$sqlPrefix}rooms (name,allowedGroups,allowedUsers,moderators,owner,options,bbcode) VALUES ('$name','$allowedGroups','$allowedUsers','$moderators',$user[userId],$options,$bbcode)");
       $insertId = mysql_insert_id();
 
       if ($insertId) {
@@ -38,7 +38,7 @@ switch ($action) {
     if (!$name) {
     trigger_error($phrases['editRoomNoName'],E_USER_ERROR); // ...It has to have a name /still/.
   }
-  elseif ($user['userid'] != $room['owner'] && !($user['settings'] & 16)) {
+  elseif ($user['userId'] != $room['owner'] && !($user['settings'] & 16)) {
     trigger_error($phrases['editRoomNotOwner'],E_USER_ERROR); // Again, check to make sure the user is the group's owner or an admin.
   }
   elseif ($room['settings'] & 4) {
@@ -113,15 +113,15 @@ switch ($action) {
 
   case 'kickuser':
 
-  $userid = intval($_POST['userid']);
-  $user2 = sqlArr("SELECT u1.settings, u2.userid, u2.username FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userid = $userid AND u2.userid = u1.userid");
+  $userId = intval($_POST['userId']);
+  $user2 = sqlArr("SELECT u1.settings, u2.userId, u2.username FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userId = $userId AND u2.userId = u1.userId");
 
   $room = intval($_POST['roomid']);
   $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
 
   $time = floor($_POST['time'] * $_POST['interval']);
 
-  if (!$user2['userid']) {
+  if (!$user2['userId']) {
     trigger_error('Invalid User',E_USER_ERROR);
   }
   elseif (!$room['id']) {
@@ -130,15 +130,15 @@ switch ($action) {
   elseif ($user2['settings'] & 16 && false) { // You can't kick admins.
     trigger_error('You\'re really not supposed to kick admins... I mean, sure, it sounds fun and all, but still... we don\'t like it >:D');
 
-    sendMessage('/me fought the law and the law won.',$user['userid'],$room['id']);
+    sendMessage('/me fought the law and the law won.',$user['userId'],$room['id']);
   }
   elseif (!hasPermission($room,$user,'moderate')) {
     trigger_error('No Permission',E_USER_ERROR);
   }
   else {
-    modLog('kick',"$user2[userid],$room[id]");
+    modLog('kick',"$user2[userId],$room[id]");
 
-    mysqlQuery("INSERT INTO {$sqlPrefix}kick (userid, kickerid, length, room) VALUES ($user2[userid], $user[userid], $time, $room[id])");
+    mysqlQuery("INSERT INTO {$sqlPrefix}kick (userId, kickerid, length, room) VALUES ($user2[userId], $user[userId], $time, $room[id])");
 
     sendMessage('/me kicked ' . $user2['username'],$user,$room);
 
@@ -147,13 +147,13 @@ switch ($action) {
   break;
 
   case 'unkickuser':
-  $userid = intval($_POST['userid']);
-  $user2 = sqlArr("SELECT u1.settings, u2.userid, u2.username FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userid = $userid AND u2.userid = u1.userid");
+  $userId = intval($_POST['userId']);
+  $user2 = sqlArr("SELECT u1.settings, u2.userId, u2.username FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userId = $userId AND u2.userId = u1.userId");
 
   $room = intval($_POST['roomid']);
   $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
 
-  if (!$user2['userid']) {
+  if (!$user2['userId']) {
     trigger_error('Invalid User',E_USER_ERROR);
   }
   elseif (!$room['id']) {
@@ -163,9 +163,9 @@ switch ($action) {
     trigger_error('No Permission',E_USER_ERROR);
   }
   else {
-    modLog('unkick',"$user2[userid],$room[id]");
+    modLog('unkick',"$user2[userId],$room[id]");
 
-    mysqlQuery("DELETE FROM {$sqlPrefix}kick WHERE userid = $user2[userid] AND room = $room[id]");
+    mysqlQuery("DELETE FROM {$sqlPrefix}kick WHERE userId = $user2[userId] AND room = $room[id]");
 
     sendMessage('/me unkicked ' . $user2['username'],$user,$room);
 

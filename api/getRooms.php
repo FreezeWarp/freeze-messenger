@@ -102,7 +102,7 @@ if ($rooms2) {
 $data = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getRooms>
   <activeUser>
-    <userId>$user[userid]</userId>
+    <userId>$user[userId]</userId>
     <userName>" . vrim_encodeXML($user['username']) . "</userName>
   </activeUser>
 

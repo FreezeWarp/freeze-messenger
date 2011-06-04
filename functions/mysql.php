@@ -108,9 +108,9 @@ function modLog($action,$data) {
   $action = mysqlEscape($action);
   $data = mysqlEscape($data);
   $ip = mysqlEscape($_SERVER['REMOTE_ADDR']);
-  $userid = intval($user['userid']);
+  $userId = intval($user['userId']);
 
-  if (mysqlQuery("INSERT INTO {$sqlPrefix}modlog (userid, ip, action, data) VALUES ($userid, '$ip', '$action', '$data')")) {
+  if (mysqlQuery("INSERT INTO {$sqlPrefix}modlog (userId, ip, action, data) VALUES ($userId, '$ip', '$action', '$data')")) {
     return true;
   }
   else {

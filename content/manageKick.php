@@ -22,7 +22,7 @@ require_once('../global.php');
 require_once('../functions/container.php');
 
 if (!$_GET['roomid']) {
-  $roomSelect = mysqlReadThrough(mysqlQuery("SELECT * FROM {$sqlPrefix}rooms WHERE " . ((($user['settings'] & 16) == false) ? "(owner = '$user[userid]' OR moderators REGEXP '({$user[userid]},)|{$user[userid]}$') AND " : '') . "(options & 16) = false AND (options & 4) = false AND (options & 8) = false"),'<option value="$id">$name</option>
+  $roomSelect = mysqlReadThrough(mysqlQuery("SELECT * FROM {$sqlPrefix}rooms WHERE " . ((($user['settings'] & 16) == false) ? "(owner = '$user[userId]' OR moderators REGEXP '({$user[userId]},)|{$user[userId]}$') AND " : '') . "(options & 16) = false AND (options & 4) = false AND (options & 8) = false"),'<option value="$id">$name</option>
 ');
   if ($roomSelect) {
     echo container('Manage Kicked Users','');
@@ -51,7 +51,7 @@ $(document).ready(function() {
   $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $roomid");
 
   if (hasPermission($room,$user,'moderate')) {
-    $users = mysqlQuery("SELECT UNIX_TIMESTAMP(k.time) AS kickedOn, UNIX_TIMESTAMP(k.time) + k.length AS expiresOn, u1.username AS username, u1.userid AS userid, u2.username AS kickername FROM {$sqlPrefix}kick AS k, user AS u1, user AS u2 WHERE k.room = $room[id] AND k.userid = u1.userid AND k.kickerid = u2.userid AND UNIX_TIMESTAMP(NOW()) <= (UNIX_TIMESTAMP(time) + length)");
+    $users = mysqlQuery("SELECT UNIX_TIMESTAMP(k.time) AS kickedOn, UNIX_TIMESTAMP(k.time) + k.length AS expiresOn, u1.username AS username, u1.userId AS userId, u2.username AS kickername FROM {$sqlPrefix}kick AS k, user AS u1, user AS u2 WHERE k.room = $room[id] AND k.userId = u1.userId AND k.kickerid = u2.userId AND UNIX_TIMESTAMP(NOW()) <= (UNIX_TIMESTAMP(time) + length)");
 
     while ($kickedUser = mysqlArray($users)) {
       $kickedUser['kickedOn'] = vbdate('m/d/Y g:i:sa',$kickedUser['kickedOn']);

@@ -174,7 +174,7 @@ $(document).ready(function() {
   window.forumUrl = 'http://www.victoryroad.net/';
 
   window.complex = ($('body').attr('data-complex') === '1' ? 1 : 0);
-  window.userid = parseInt($('body').attr('data-userid'));
+  window.userId = parseInt($('body').attr('data-userId'));
   window.roomid = parseInt($('body').attr('data-roomid'));
   window.layout = ($('body').attr('data-layout'));
   window.soundOn = ($('body').attr('data-ding') === '1' ? true : false);
@@ -202,7 +202,7 @@ function showAllRooms() {
         var roomTopic = $(this).find('roomTopic').text();
         var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
         var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
-        var isOwner = (parseInt($(this).find('owner').text()) == userid ? true : false);
+        var isOwner = (parseInt($(this).find('owner').text()) == userId ? true : false);
         
         var text = '<li><a href="chat.php?room=' + roomId + '">' + roomName + '</a></li>';
         
@@ -298,7 +298,7 @@ $(document).ready(function() {
           var roomTopic = $(this).find('roomTopic').text();
           var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
           var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
-          var isOwner = (parseInt($(this).find('owner').text()) == userid ? true : false);
+          var isOwner = (parseInt($(this).find('owner').text()) == userId ? true : false);
 
           roomHtml += '<tr id="room' + roomId + '"><td><a href="/chat.php?room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isOwner ? '<a href="#" class="editRoomMulti" data-roomid="' + roomId + '"><img src="images/document-edit.png" class="standard" alt="Configure" /></a>' : '') + '</td></tr>';
         });
@@ -354,7 +354,7 @@ function archive(id) {
           var messageId = Number($(this).find('messageId').text());
 
           var username = $(this).find('userData > userName').text();
-          var userid = Number($(this).find('userData > userId').text());
+          var userId = Number($(this).find('userData > userId').text());
           var groupFormatStart = unxml($(this).find('userData > startTag').text());
           var groupFormatEnd = unxml($(this).find('userData > endTag').text());
 
@@ -378,7 +378,7 @@ function archive(id) {
             style += 'text-decoration: line-through;';
           }
 
-            var data = '<tr id="archiveMessage' + messageId + '"><td>' + groupFormatStart + '<span class="username usernameTable" data-userid="' + userid + '">' + username + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageid="' + messageId + '">' + text + '</td></tr>';
+            var data = '<tr id="archiveMessage' + messageId + '"><td>' + groupFormatStart + '<span class="username usernameTable" data-userId="' + userId + '">' + username + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageid="' + messageId + '">' + text + '</td></tr>';
 
             if (window.reverse) {
             $('#archiveMessageList').append(data);

@@ -356,10 +356,10 @@ function sendMessage($messageText,$user,$room,$flag = '') {
   $messageApi = mysqlEscape($messageApi);
 
 
-  mysqlQuery("INSERT INTO {$sqlPrefix}messages (user, room, rawText, htmlText, apiText, salt, iv, microtime, ip, flag) VALUES ($user[userid], $room[id], '$messageRaw', '$messageHtml', '$messageApi', '$saltNum', '$iv', '" . microtime(true) . "', '$ip', '$flag')");
+  mysqlQuery("INSERT INTO {$sqlPrefix}messages (user, room, rawText, htmlText, apiText, salt, iv, microtime, ip, flag) VALUES ($user[userId], $room[id], '$messageRaw', '$messageHtml', '$messageApi', '$saltNum', '$iv', '" . microtime(true) . "', '$ip', '$flag')");
   $messageid = mysqlInsertId();
 
-  mysqlQuery("INSERT INTO {$sqlPrefix}messagesCached (messageid, roomid, userid, username, usergroup, groupFormatStart, groupFormatEnd, time, htmlText, flag) VALUES ($messageid, $room[id], $user[userid], '$user[username]', $user[displaygroupid], '$group[opentag]', '$group[closetag]', NOW(), '$messageHtmlCache', '$flag')");
+  mysqlQuery("INSERT INTO {$sqlPrefix}messagesCached (messageid, roomid, userId, username, usergroup, groupFormatStart, groupFormatEnd, time, htmlText, flag) VALUES ($messageid, $room[id], $user[userId], '$user[username]', $user[displaygroupid], '$group[opentag]', '$group[closetag]', NOW(), '$messageHtmlCache', '$flag')");
   $messageid2 = mysqlInsertId();
 
   if ($messageid2 > 100) {
@@ -367,6 +367,6 @@ function sendMessage($messageText,$user,$room,$flag = '') {
   }
 
   mysqlQuery("UPDATE {$sqlPrefix}rooms SET lastMessageTime = NOW(), lastMessageId = $messageid WHERE id = $room[id]");
-  mysqlQuery("INSERT INTO {$sqlPrefix}roomStats (userid, roomid, messages) VALUES ($user[userid], $room[id], 1) ON DUPLICATE KEY UPDATE messages = messages + 1");
+  mysqlQuery("INSERT INTO {$sqlPrefix}roomStats (userId, roomid, messages) VALUES ($user[userId], $room[id], 1) ON DUPLICATE KEY UPDATE messages = messages + 1");
 }
 ?>

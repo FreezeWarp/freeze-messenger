@@ -20,8 +20,8 @@ require_once('../functions/generalFunctions.php');
 
 switch($_GET['action']) {
   case 'kickuser':
-  $userid = intval($_GET['userid']);
-  $user2 = sqlArr("SELECT u1.settings, u2.userid, u2.username FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userid = $userid AND u2.userid = u1.userid");
+  $userId = intval($_GET['userId']);
+  $user2 = sqlArr("SELECT u1.settings, u2.userId, u2.username FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userId = $userId AND u2.userId = u1.userId");
 
   $room = intval($_GET['roomid']);
   $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
@@ -31,7 +31,7 @@ switch($_GET['action']) {
   if ($time <= 0) {
     echo 'Oh, stop entering "0". It\'s very annoying';
   }
-  elseif (!$user2['userid']) {
+  elseif (!$user2['userId']) {
     echo 'Uh... User detection thingy error.';
   }
   elseif ($user2['settings'] & 16) { // You can't kick admins.
@@ -41,31 +41,31 @@ switch($_GET['action']) {
 
     list($messageRaw,$messageHtml,$messageVBnet,$saltNum,$iv) = $message;
 
-    mysqlQuery("INSERT INTO {$sqlPrefix}messages (user, room, rawText, htmlText, vbText, salt, iv, microtime, ip) VALUES ($user[userid], $room[id], '$messageRaw', '$messageHtml', '$messageVBnet', $saltNum, '$iv', '" . microtime(true) . "', '$ip')");
+    mysqlQuery("INSERT INTO {$sqlPrefix}messages (user, room, rawText, htmlText, vbText, salt, iv, microtime, ip) VALUES ($user[userId], $room[id], '$messageRaw', '$messageHtml', '$messageVBnet', $saltNum, '$iv', '" . microtime(true) . "', '$ip')");
   }
   elseif (!hasPermission($room,$user,'moderate')) {
     echo '...You\'re not a mod...';
   }
   else {
-    mysqlQuery("INSERT INTO {$sqlPrefix}kick (userid, kickerid, length, room) VALUES ($user2[userid], $user[userid], $time, $room[id])");
+    mysqlQuery("INSERT INTO {$sqlPrefix}kick (userId, kickerid, length, room) VALUES ($user2[userId], $user[userId], $time, $room[id])");
     
     $message = finalParse('/me kicked ' . $user2['username']);
 
     list($messageRaw,$messageHtml,$messageVBnet,$saltNum,$iv) = $message;
 
-    mysqlQuery("INSERT INTO {$sqlPrefix}messages (user, room, rawText, htmlText, vbText, salt, iv, microtime, ip) VALUES ($user[userid], $room[id], '$messageRaw', '$messageHtml', '$messageVBnet', $saltNum, '$iv', '" . microtime(true) . "', '$ip')");
+    mysqlQuery("INSERT INTO {$sqlPrefix}messages (user, room, rawText, htmlText, vbText, salt, iv, microtime, ip) VALUES ($user[userId], $room[id], '$messageRaw', '$messageHtml', '$messageVBnet', $saltNum, '$iv', '" . microtime(true) . "', '$ip')");
   }
   break;
 
   case 'banuser':
-  $userid = intval($_GET['userid']);
-  $user2 = sqlArr("SELECT * FROM {$sqlPrefix}users WHERE userid = $userid");
+  $userId = intval($_GET['userId']);
+  $user2 = sqlArr("SELECT * FROM {$sqlPrefix}users WHERE userId = $userId");
 
   if ($user2['settings'] & 16) { } // You can't ban admins.
   elseif ($user['settings'] & 16 == false) { } // The user is not an administrator.
   else {  
-    if ($user2['settings'] & 1) mysqlQuery("UPDATE {$sqlPrefix}users SET settings = settings - 1 WHERE userid = $userid");
-    else mysqlQuery("UPDATE {$sqlPrefix}users SET settings = settings + 1 WHERE userid = $userid");
+    if ($user2['settings'] & 1) mysqlQuery("UPDATE {$sqlPrefix}users SET settings = settings - 1 WHERE userId = $userId");
+    else mysqlQuery("UPDATE {$sqlPrefix}users SET settings = settings + 1 WHERE userId = $userId");
   }
   break;
 
@@ -96,9 +96,9 @@ switch($_GET['action']) {
 
   case 'deleteimage':
   $image = intval($_GET['imageid']);
-  $image = sqlArr("SELECT userid, deleted FROM {$sqlPrefix}files WHERE id = $room");
+  $image = sqlArr("SELECT userId, deleted FROM {$sqlPrefix}files WHERE id = $room");
 
-  if (($user['settings'] & 16 || $image['userid'] == $user['userid']) && $image) {
+  if (($user['settings'] & 16 || $image['userId'] == $user['userId']) && $image) {
     if ($image['deleted'] && $user['settings'] & 16) mysqlQuery("UPDATE {$sqlPrefix}files SET deleted = 0 WHERE id = $image[id]"); // Normal users shouldn't be able to delete images. In truth, tihs is kinda lazy, but meh.
     else mysqlQuery("UPDATE {$sqlPrefix}files SET deleted = 1 WHERE id = $image[id]");
   }
@@ -119,7 +119,7 @@ switch($_GET['action']) {
     $newRoomString = mysqlEscape(implode(',',$currentRooms2));
   }
 
-  mysqlQuery("UPDATE {$sqlPrefix}users SET favRooms = '$newRoomString' WHERE userid = $user[userid]");
+  mysqlQuery("UPDATE {$sqlPrefix}users SET favRooms = '$newRoomString' WHERE userId = $user[userId]");
   break;
 }
 

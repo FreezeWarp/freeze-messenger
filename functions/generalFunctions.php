@@ -33,17 +33,17 @@ function hasPermission($roomData,$userData,$type = 'post',$trans = false) { // T
   }
 
   /* Get the User's Kick Status */
-  if ($userData['userid']) {
-    $kick = sqlArr("SELECT UNIX_TIMESTAMP(k.time) AS kickedOn, UNIX_TIMESTAMP(k.time) + k.length AS expiresOn, k.id FROM {$sqlPrefix}kick AS k WHERE userid = $userData[userid] AND room = $roomData[id] AND UNIX_TIMESTAMP(NOW()) <= (UNIX_TIMESTAMP(time) + length)");
+  if ($userData['userId']) {
+    $kick = sqlArr("SELECT UNIX_TIMESTAMP(k.time) AS kickedOn, UNIX_TIMESTAMP(k.time) + k.length AS expiresOn, k.id FROM {$sqlPrefix}kick AS k WHERE userId = $userData[userId] AND room = $roomData[id] AND UNIX_TIMESTAMP(NOW()) <= (UNIX_TIMESTAMP(time) + length)");
   }
 
-  if ((in_array($userData['userid'],explode(',',$roomData['allowedUsers']))
+  if ((in_array($userData['userId'],explode(',',$roomData['allowedUsers']))
     || $roomData['allowedUsers'] == '*')
   && $roomData['allowedUsers']) {
     $isAllowedUser = true;
   }
 
-  if (in_array($userData['userid'],explode(',',$roomData['moderators']))
+  if (in_array($userData['userId'],explode(',',$roomData['moderators']))
   && $roomData['moderators']) {
     $isModerator = true; // The user is one of the chat moderators (and it is not deleted).
   }
@@ -54,7 +54,7 @@ function hasPermission($roomData,$userData,$type = 'post',$trans = false) { // T
     $isAllowedGroup = true;
   }
 
-  if ($roomData['owner'] == $userData['userid'] && $roomData['owner'] > 0) {
+  if ($roomData['owner'] == $userData['userId'] && $roomData['owner'] > 0) {
     $isOwner = true;
   }
 
@@ -218,7 +218,7 @@ function userFormat($message, $room, $messageTable = true) {
   $class = ($messageTable ? 'username usernameTable' : 'username');
   if ($permission['isModerator'] || $permission['isAdmin'] || $permission['isOwner']) $userAppend = '*';
 
-  return "{$openTag}<span style=\"{$colour}\" class=\"{$class}\" data-userid=\"$message[userid]\">$message[username]{$userAppend}</span>{$closeTag}";
+  return "{$openTag}<span style=\"{$colour}\" class=\"{$class}\" data-userId=\"$message[userId]\">$message[username]{$userAppend}</span>{$closeTag}";
 }
 
 function messageStyle($message) {

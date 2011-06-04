@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS `{prefix}files` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
-  `userid` int(10) NOT NULL,
+  `userId` int(10) NOT NULL,
   `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `size` int(10) NOT NULL,
   `mime` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,

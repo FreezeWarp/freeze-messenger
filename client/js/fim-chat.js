@@ -54,20 +54,20 @@ function contextMenuParse() {
     menu: 'userMenu'
   },
   function(action, el) {
-    var userid = $(el).attr('data-userid');
+    var userId = $(el).attr('data-userId');
 
     switch(action) {
       case 'private_im':
-      ajaxDialogue('content/privateRoom.php?phase=2&userid=' + userid,'Private IM','privateRoomDialogue',1000);
+      ajaxDialogue('content/privateRoom.php?phase=2&userId=' + userId,'Private IM','privateRoomDialogue',1000);
       break;
       case 'profile':
-      window.open(window.forumUrl + 'member.php?u=' + userid,'profile' + userid);
+      window.open(window.forumUrl + 'member.php?u=' + userId,'profile' + userId);
       break;
       case 'kick':
-      ajaxDialogue('content/kick.php?userid=' + userid + '&roomid=' + $('body').attr('data-roomid'),'Kick User','kickUserDialogue',1000);
+      ajaxDialogue('content/kick.php?userId=' + userId + '&roomid=' + $('body').attr('data-roomid'),'Kick User','kickUserDialogue',1000);
       break;
       case 'ban':
-      window.open('moderate.php&do=banuser2&userid=' + userid,'banuser' + userid);
+      window.open('moderate.php&do=banuser2&userId=' + userId,'banuser' + userId);
       break;
     }
   });
@@ -164,11 +164,11 @@ function contextMenuParse() {
   $('.username').ezpz_tooltip({
     contentId: 'tooltext',
     beforeShow: function(content,el) {
-      var thisid = $(el).attr('data-userid');
+      var thisid = $(el).attr('data-userId');
 
-      if (thisid != $('#tooltext').attr('data-lastuserid')) {
-        $('#tooltext').attr('data-lastuserid',thisid);
-        $.get("api/getUserInfo.php?userid=" + thisid, function(xml) {
+      if (thisid != $('#tooltext').attr('data-lastuserId')) {
+        $('#tooltext').attr('data-lastuserId',thisid);
+        $.get("api/getUserInfo.php?userId=" + thisid, function(xml) {
           var userName = $(xml).find('userData > userName').text();
           var userId = $(xml).find('userData > userId').text();
           var startTag = unxml($(xml).find('userData > startTag').text());
@@ -272,7 +272,7 @@ function getSuccess(xml) {
      var startTag = unxml($(this).find('startTag').text());
      var endTag = unxml($(this).find('endTag').text());
 
-     activeUserHtml.push('<span class="username" data-userid="' + userId + '">' + startTag + userName + endTag + '</span>');
+     activeUserHtml.push('<span class="username" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>');
     });
 
     $('#activeUsers').html(activeUserHtml.join(', '));
@@ -286,7 +286,7 @@ function getSuccess(xml) {
       var messageId = parseInt($(this).find('messageId').text());
 
       var username = $(this).find('userData > userName').text();
-      var userid = parseInt($(this).find('userData > userId').text());
+      var userId = parseInt($(this).find('userData > userId').text());
       var groupFormatStart = unxml($(this).find('userData > startTag').text());
       var groupFormatEnd = unxml($(this).find('userData > endTag').text());
 
@@ -312,10 +312,10 @@ function getSuccess(xml) {
             
             
       if (complex) {
-        var data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="' + username + '" src="' + forumUrl + 'image.php?u=' + userid + '" style="max-width: 24px; max-height: 24px; padding-right: 3px;" class="username usernameTable" data-userid="' + userid + '" /><span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
+        var data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="' + username + '" src="' + forumUrl + 'image.php?u=' + userId + '" style="max-width: 24px; max-height: 24px; padding-right: 3px;" class="username usernameTable" data-userId="' + userId + '" /><span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
       }
       else {
-        var data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="username usernameTable" data-userid="' + userid + '">' + username + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
+        var data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="username usernameTable" data-userId="' + userId + '">' + username + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
       }
       
       notifyData += username + ': ' + text + "\n";

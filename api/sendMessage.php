@@ -104,7 +104,7 @@ else {
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <sendMessage>
   <activeUser>
-    <userId>$user[userid]</userId>
+    <userId>$user[userId]</userId>
     <userName>" . vrim_encodeXML($user['username']) . "</userName>
   </activeUser>
   <sentData>

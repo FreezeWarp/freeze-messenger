@@ -20,18 +20,18 @@ $apiRequest = true;
 require_once('../global.php');
 header('Content-type: text/xml');
 
-$userid = intval($_GET['userid']);
+$userId = intval($_GET['userId']);
 $username = mysqlEscape(vrim_urldecode($_GET['username']));
 
-if ($userid) {
-  $where = "u.{$sqlUserTableCols[userid]} = $userid";
+if ($userId) {
+  $where = "u.{$sqlUserTableCols[userId]} = $userId";
 }
 elseif ($username) {
   $where = "u.{$sqlUserTableCols[username]} = '$username'";
 }
 else {
   $failCode = 'nodata';
-  $failMessage = 'Neither a username or userid was provided.';
+  $failMessage = 'Neither a username or userId was provided.';
 }
 
 switch ($loginMethod) {
@@ -40,12 +40,12 @@ switch ($loginMethod) {
     $getuserf = sqlArr("SELECT * FROM {$sqlUserTable} AS u LEFT JOIN {$sqlUserGroupTable} AS g ON u.{$sqlUserTableCols[usergroup]} = g.{$sqlUserGroupTableCols[groupid]} WHERE {$where}");
     $getuserf['opentag'] = vrim_encodeXML($getuserf['opentag']);
     $getuserf['closetag'] = vrim_encodeXML($getuserf['closetag']);
-    $getuserf['avatar'] = $forumUrl . '/image.php?u=' . $getuserf['userid'];
+    $getuserf['avatar'] = $forumUrl . '/image.php?u=' . $getuserf['userId'];
   }
 
   if ($getuserf) {
-    $useridf = $getuserf[$sqlUserTableCols['userid']];
-    $getuser = sqlArr("SELECT * FROM {$sqlPrefix}users AS u WHERE userid = $useridf");
+    $userIdf = $getuserf[$sqlUserTableCols['userId']];
+    $getuser = sqlArr("SELECT * FROM {$sqlPrefix}users AS u WHERE userId = $userIdf");
   }
   break;
 
@@ -58,8 +58,8 @@ switch ($loginMethod) {
   }
 
   if ($getuserf) {
-    $useridf = $getuserf[$sqlUserTableCols['userid']];
-    $getuser = sqlArr("SELECT * FROM {$sqlPrefix}users AS u WHERE userid = $useridf");
+    $userIdf = $getuserf[$sqlUserTableCols['userId']];
+    $getuser = sqlArr("SELECT * FROM {$sqlPrefix}users AS u WHERE userId = $userIdf");
   }
   break;
 }
@@ -67,17 +67,17 @@ switch ($loginMethod) {
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getUserInfo>
   <activeUser>
-    <userId>$user[userid]</userId>
+    <userId>$user[userId]</userId>
     <userName>" . vrim_encodeXML($user['username']) . "</userName>
   </activeUser>
   <sentData>
-    <userId>$userid</userId>
+    <userId>$userId</userId>
     <userName>$username</userName>
   </sentData>
   <errorcode>$failCode</errorcode>
   <errortext>$failMessage</errortext>
   <userData>
-    <userId>$getuser[userid]</userId>
+    <userId>$getuser[userId]</userId>
     <userName>$getuserf[username]</userName>
     <settings>$getuser[settings]</settings>
     <startTag>$getuserf[opentag]</startTag>

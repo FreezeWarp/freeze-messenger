@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS `{prefix}modlog` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
-  `userid` int(10) NOT NULL,
+  `userId` int(10) NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `ip` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `action` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
