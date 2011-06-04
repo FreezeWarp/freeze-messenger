@@ -24,6 +24,23 @@ switch ($template) {
   $room = intval($_GET['roomid']); // Get the room we're on. If there is a $_GET variable, use it, otherwise the user's "default", or finally just main.
   $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = '$room'"); // Data on the room.
 
+  $listsActive = sqlArr("SELECT * FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomid = $room[id]",'id');
+  if ($listsActive) {
+    foreach ($listsActive AS $active) {
+      $listStatus[$active['listid']] = $active['status'];
+    }
+  }
+
+  $lists = sqlArr("SELECT * FROM {$sqlPrefix}censorLists AS l WHERE options & 2",'id');
+  foreach ($lists AS $list) {
+    if ($list['type'] == 'black' && $listStatus[$list['id']] == 'block') $checked = true;
+    elseif ($list['type'] == 'white' && $listStatus[$list['id']] != 'unblock') $checked = true;
+    else $checked = false;
+
+    $censorLists .= "<label><input type=\"checkbox\" name=\"censor[$list[id]]\" " . ($checked ? " checked=\"checked\""  : '') . " /> $list[name]</label><br />";
+  }
+
+
   echo template('editRoomForm');
   break;
 

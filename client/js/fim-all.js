@@ -277,7 +277,7 @@ $(document).ready(function() {
     ajaxTabDialogue('template.php?template=help','helpDialogue',1000);
   });
   
-  $('#icon_note').click(function() {
+  $('#icon_note, #messageArchive').click(function() {
     quickDialogue('<table><thead><tr><th>User</th><th>Time</th><th>Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table>','Archive','archiveDialogue',1000);
 
     archive(0);
@@ -302,7 +302,7 @@ $(document).ready(function() {
 
           roomHtml += '<tr id="room' + roomId + '"><td><a href="/chat.php?room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isOwner ? '<a href="#" class="editRoomMulti" data-roomid="' + roomId + '"><img src="images/document-edit.png" class="standard" alt="Configure" /></a>' : '') + '</td></tr>';
         });
-        quickDialogue('<table><thead><tr><th>Name</th><th>Topic</th><th>Actions</th></tr></thead><tbody>' + roomHtml + '</tbody></table>','Room List','roomList',600);
+        quickDialogue('<table><thead><tr><th>Name</th><th>Topic</th><th>Actions</th></tr></thead><tbody>' + roomHtml + '</tbody></table>','Room List','roomListDialogue',600);
       },
       error: function() {
         alert('Failed to show all rooms');

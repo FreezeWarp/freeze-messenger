@@ -56,7 +56,7 @@ else {
       echo template('editRoomForm');
     }
   }
-  elseif ($phase == '2') {s
+  elseif ($phase == '2') {
   }
   else {
     trigger_error($phrases['editRoomUnknownAction'],E_USER_ERROR);
