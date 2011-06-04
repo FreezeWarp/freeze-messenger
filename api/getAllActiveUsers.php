@@ -23,7 +23,7 @@ $time = ($_GET['time'] ?: time());
 $onlineThreshold = ($_GET['onlineThreshold'] ?: $onlineThreshold);
 
 $ausers = sqlArr("SELECT
-  u.$sqlUserTableCols[username] AS username,
+  u.$sqlUserTableCols[userName] AS userName,
   u.$sqlUserTableCols[userId] AS userId,
   GROUP_CONCAT(r.name) AS roomnames,
   GROUP_CONCAT(r.id) AS roomids
@@ -38,7 +38,7 @@ WHERE
 GROUP BY
   p.userId
 ORDER BY
-  u.username",'userId');
+  u.userName",'userId');
 
 if ($ausers) {
   foreach ($ausers AS $auser) {
@@ -53,7 +53,7 @@ if ($ausers) {
     $ausersXML .= "    <user>
       <userdata>
         <userId>$auser[userId]</userId>
-        <username>$auser[username]</username>
+        <userName>$auser[userName]</userName>
       </userdata>
       <rooms>
       $roomsXML
@@ -67,7 +67,7 @@ $data = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getAllActiveUsers>
   <activeUser>
     <userId>$user[userId]</userId>
-    <userName>" . vrim_encodeXML($user['username']) . "</userName>
+    <userName>" . vrim_encodeXML($user['userName']) . "</userName>
   </activeUser>
   <sentData>
     <onlineThreshold>$onlineThreshold</onlineThreshold>

@@ -34,7 +34,7 @@ require_once('templateStart.php');
 
 if ($flag) {
   switch($flag) {
-    case 'nouser': $message .= $phrases['loginNoUser']; break; // No user with that username exists.
+    case 'nouser': $message .= $phrases['loginNoUser']; break; // No user with that userName exists.
     case 'nopass': $message .= $phrases['loginNoPass']; break; // The password is wrong.
   }
 

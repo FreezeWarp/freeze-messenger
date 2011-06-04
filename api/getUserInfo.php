@@ -21,17 +21,17 @@ require_once('../global.php');
 header('Content-type: text/xml');
 
 $userId = intval($_GET['userId']);
-$username = mysqlEscape(vrim_urldecode($_GET['username']));
+$userName = mysqlEscape(vrim_urldecode($_GET['userName']));
 
 if ($userId) {
   $where = "u.{$sqlUserTableCols[userId]} = $userId";
 }
-elseif ($username) {
-  $where = "u.{$sqlUserTableCols[username]} = '$username'";
+elseif ($userName) {
+  $where = "u.{$sqlUserTableCols[userName]} = '$userName'";
 }
 else {
   $failCode = 'nodata';
-  $failMessage = 'Neither a username or userId was provided.';
+  $failMessage = 'Neither a userName or userId was provided.';
 }
 
 switch ($loginMethod) {
@@ -51,7 +51,7 @@ switch ($loginMethod) {
 
   case 'phpbb':
   if ($where) {
-    $getuserf = sqlArr("SELECT u.user_id, u.username, u.user_posts AS posts, u.user_colour, u.user_avatar FROM {$sqlUserTable} AS u WHERE {$where}");
+    $getuserf = sqlArr("SELECT u.user_id, u.userName, u.user_posts AS posts, u.user_colour, u.user_avatar FROM {$sqlUserTable} AS u WHERE {$where}");
     $getuserf['opentag'] = vrim_encodeXML('<span style="color: #' . $getuserf['user_colour'] . ';">');
     $getuserf['closetag'] = vrim_encodeXML('</span>');
     $getuserf['avatar'] = $forumUrl . '/download/file.php?avatar=' . $getuserf['user_avatar'];
@@ -68,17 +68,17 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getUserInfo>
   <activeUser>
     <userId>$user[userId]</userId>
-    <userName>" . vrim_encodeXML($user['username']) . "</userName>
+    <userName>" . vrim_encodeXML($user['userName']) . "</userName>
   </activeUser>
   <sentData>
     <userId>$userId</userId>
-    <userName>$username</userName>
+    <userName>$userName</userName>
   </sentData>
   <errorcode>$failCode</errorcode>
   <errortext>$failMessage</errortext>
   <userData>
     <userId>$getuser[userId]</userId>
-    <userName>$getuserf[username]</userName>
+    <userName>$getuserf[userName]</userName>
     <settings>$getuser[settings]</settings>
     <startTag>$getuserf[opentag]</startTag>
     <endTag>$getuserf[closetag]</endTag>

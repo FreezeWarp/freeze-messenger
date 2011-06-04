@@ -3372,7 +3372,7 @@ jQuery.extend({
 		/*
 		timeout: 0,
 		data: null,
-		username: null,
+		userName: null,
 		password: null,
 		*/
 		// Create the request object; Microsoft failed to properly
@@ -3510,9 +3510,9 @@ jQuery.extend({
 		var xhr = s.xhr();
 
 		// Open the socket
-		// Passing null username, generates a login popup on Opera (#2865)
-		if( s.username )
-			xhr.open(type, s.url, s.async, s.username, s.password);
+		// Passing null userName, generates a login popup on Opera (#2865)
+		if( s.userName )
+			xhr.open(type, s.url, s.async, s.userName, s.password);
 		else
 			xhr.open(type, s.url, s.async);
 

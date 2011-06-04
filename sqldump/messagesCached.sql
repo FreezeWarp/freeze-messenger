@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS `{prefix}messagesCached` (
   `messageid` int(10) NOT NULL,
   `roomid` int(10) NOT NULL,
   `userId` int(10) NOT NULL,
-  `username` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `userName` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `usergroup` int(10) NOT NULL,
   `groupFormatStart` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `groupFormatEnd` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,

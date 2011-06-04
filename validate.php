@@ -38,7 +38,7 @@ switch ($loginMethod) {
 
   $sqlUserTableCols = array(
     'userId' => 'userId', // The user ID column of the user table in the login method used.
-    'username' => 'username', // The username column of the user table in the login method used.
+    'userName' => 'userName', // The userName column of the user table in the login method used.
     'usergroup' => 'displaygroupid', // The usergroup column of the user table in the login method used.
     'allgroups' => 'membergroupids',
     'tzoffset' => 'timezoneoffset',
@@ -58,7 +58,7 @@ switch ($loginMethod) {
 
   $sqlUserTableCols = array(
     'userId' => 'user_id', // The user ID column of the user table in the login method used.
-    'username' => 'username', // The username column of the user table in the login method used.
+    'userName' => 'userName', // The userName column of the user table in the login method used.
     'usergroup' => 'group_id', // The usergroup column of the user table in the login method used.
     'allgroups' => 'group_id',
     'tzoffset' => 'user_timezone',
@@ -302,7 +302,7 @@ function processPHPBB($user, $password) {
 
 ///* Obtain Login Data From Different Locations *///
 
-if (isset($_GET['username'],$_GET['password'])) { // API.
+if (isset($_GET['userName'],$_GET['password'])) { // API.
   $apiVersion = intval($_GET['apiVersion']);
   switch($apiVersion) {
     case '1':
@@ -318,7 +318,7 @@ if (isset($_GET['username'],$_GET['password'])) { // API.
     break;
   }
 
-  $username = vrim_urldecode($_GET['username']);
+  $userName = vrim_urldecode($_GET['userName']);
   $password = vrim_urldecode($_GET['password']);
 
   switch ($_GET['passwordEncrypt']) {
@@ -342,9 +342,9 @@ if (isset($_GET['username'],$_GET['password'])) { // API.
   $api = true;
 }
 
-elseif (isset($_POST['username'],$_POST['password'])) { // Data is stored in a just-submitted login form.
+elseif (isset($_POST['userName'],$_POST['password'])) { // Data is stored in a just-submitted login form.
 
-  $username = $_POST['username'];
+  $userName = $_POST['userName'];
   $password = $_POST['password'];
 
   if ($loginMethod == 'vbulletin') {
@@ -367,21 +367,21 @@ elseif (isset($_POST['username'],$_POST['password'])) { // Data is stored in a j
 elseif (isset($_GET['sessionhash'])) {
   $sessionHash = vrim_urldecode($_GET['sessionhash']);
 
-  $username = false;
+  $userName = false;
   $password = false;
 }
 
 elseif (isset($_COOKIE[$forumCookiePrefix . 'sessionhash']) && !$apiRequestCheck) { // Data is stored in session cookie.
   $sessionHash = vrim_urldecode($_COOKIE[$forumCookiePrefix . 'sessionhash']);
 
-  $username = false;
+  $userName = false;
   $password = false;
 }
 
 elseif (isset($_COOKIE[$forumCookiePrefix . 'sid']) && !$apiRequestCheck) {
   $sessionHash = vrim_urldecode($_COOKIE[$forumCookiePrefix . 'sid']);
 
-  $username = false;
+  $userName = false;
   $password = false;
 }
 
@@ -391,7 +391,7 @@ elseif (isset($_COOKIE[$forumCookiePrefix . 'userId'],$_COOKIE[$forumCookiePrefi
 }
 
 else { // No login data exists.
-  $username = false;
+  $userName = false;
   $password = false;
   $userId = false;
   $sessionHash = false;
@@ -406,8 +406,8 @@ if ($flag) {
   // Do nothing.
 }
 elseif ($loginMethod === 'vbulletin') {
-  if ($username && $password) {
-    $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE username = "' . mysqlEscape($username) . '" LIMIT 1');
+  if ($userName && $password) {
+    $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userName = "' . mysqlEscape($userName) . '" LIMIT 1');
 
     if (processVBulletin($user,$password)) {
       $setCookie = true;
@@ -480,8 +480,8 @@ elseif ($loginMethod === 'vbulletin') {
 }
 
 elseif ($loginMethod == 'phpbb') {
-  if ($username && $password) {
-    $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE username = "' . mysqlEscape($username) . '" LIMIT 1');
+  if ($userName && $password) {
+    $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userName = "' . mysqlEscape($userName) . '" LIMIT 1');
 
     if (processPHPBB($user,$password)) {
       $setCookie = true;
@@ -537,7 +537,7 @@ if ($valid) { // If the user is valid, process their preferrences.
 
     case 'vbulletin':
     /* Set Relevant User Data */
-    $user2['username'] = $userCopy[$sqlUserTableCols['username']];
+    $user2['userName'] = $userCopy[$sqlUserTableCols['userName']];
     $user2['userId'] = $userCopy[$sqlUserTableCols['userId']];
     $user2['timezoneoffset'] = $userCopy[$sqlUserTableCols['tzoffset']];
     $user2['displaygroupid'] = $userCopy[$sqlUserTableCols['usergroup']];
@@ -555,7 +555,7 @@ if ($valid) { // If the user is valid, process their preferrences.
     $parseGroups = false;
 
     /* Set Relevant User Data */
-    $user2['username'] = $userCopy[$sqlUserTableCols['username']];
+    $user2['userName'] = $userCopy[$sqlUserTableCols['userName']];
     $user2['userId'] = $userCopy[$sqlUserTableCols['userId']];
     $user2['timezoneoffset'] = $userCopy[$sqlUserTableCols['tzoffset']];
     $user2['displaygroupid'] = $userCopy[$sqlUserTableCols['usergroup']];
@@ -683,7 +683,7 @@ if ($api) {
   <sentData>
     <apiVersion>" . vrim_encodeXML($_GET['apiVersion']) . "</apiVersion>
     <passwordEncrypt>" . vrim_encodeXML($_GET['passwordEncrypt']) . "</passwordEncrypt>
-    <username>" . vrim_encodeXML($_GET['username']) . "</username>
+    <userName>" . vrim_encodeXML($_GET['userName']) . "</userName>
     <password>" . vrim_encodeXML($_GET['password']) . "</password>
   </sentData>
   <valid>$valid</valid>
@@ -692,7 +692,7 @@ if ($api) {
   <sessionhash>$sessionhash</sessionhash>
   <userdata>
     <userId>$user[userId]</userId>
-    <username>$user[username]</username>
+    <userName>$user[userName]</userName>
     <membergroupids>$user[membergroupids]</membergroupids>
     <messageFormatting>
       <standard>$user[defaultFormatting]</standard>

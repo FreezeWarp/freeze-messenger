@@ -43,7 +43,7 @@ else {
     $roomsXML .= "
       <room>$room[id]</room>";
 
-    $ausers = sqlArr("SELECT u.username, u.userId, p.id, p.status, p.typing FROM {$sqlPrefix}ping AS p, {$sqlPrefix}rooms AS r, user AS u WHERE p.roomid = $room[id] AND p.roomid = r.id AND p.userId = u.userId AND UNIX_TIMESTAMP(p.time) >= ($time - $onlineThreshold) ORDER BY u.username",'id');
+    $ausers = sqlArr("SELECT u.userName, u.userId, p.id, p.status, p.typing FROM {$sqlPrefix}ping AS p, {$sqlPrefix}rooms AS r, user AS u WHERE p.roomid = $room[id] AND p.roomid = r.id AND p.userId = u.userId AND UNIX_TIMESTAMP(p.time) >= ($time - $onlineThreshold) ORDER BY u.userName",'id');
 
     $auserXML .= "    <room>
       <roomData>
@@ -58,7 +58,7 @@ else {
       foreach ($ausers AS $auser) {
         $auserXML .= "    <user>
       <userId>$auser[userId]</userId>
-      <userName>$auser[username]</userName>
+      <userName>$auser[userName]</userName>
       <userGroup>$auser[displaygroupid]</userGroup>
       <status>$auser[status]</status>
       <typing>$auser[typing]</typing>
@@ -77,7 +77,7 @@ $data = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getActiveUsers>
   <activeUser>
     <userId>$user[userId]</userId>
-    <username>" . vrim_encodeXML($user['username']) . "</username>
+    <userName>" . vrim_encodeXML($user['userName']) . "</userName>
   </activeUser>
   <sentData>
     <rooms>$rooms</rooms>

@@ -101,7 +101,7 @@ else {
   m.salt,
   m.iv,
   u.userId,
-  u.username,
+  u.userName,
   vu.settings,
   vu.defaultColour,
   vu.defaultFontface,
@@ -147,7 +147,7 @@ LIMIT $limit",'id');
 
         switch ($_GET['format']) {
           case 'bbcode':
-          $output .= '[url=http://www.victoryroad.net/member.php?u=' . $message['userId'] . '][div=color:rgb(' . displayGroupToColour($message['displaygroupid']) . ');font-weight:bold;display:inline;]' . $message['username'] . '[/div][/url]|' . vbdate('m/d/y g:i:sa',$message['time']) . '|' . "[div=display:inline;color:rgb($message[defaultColour]);font-family:$message[defaultFontface];background-color:rgb($message[defaultHighlight]);]$message[htmlText][/div]\n";
+          $output .= '[url=http://www.victoryroad.net/member.php?u=' . $message['userId'] . '][div=color:rgb(' . displayGroupToColour($message['displaygroupid']) . ');font-weight:bold;display:inline;]' . $message['userName'] . '[/div][/url]|' . vbdate('m/d/y g:i:sa',$message['time']) . '|' . "[div=display:inline;color:rgb($message[defaultColour]);font-family:$message[defaultFontface];background-color:rgb($message[defaultHighlight]);]$message[htmlText][/div]\n";
           break;
 
           case '':

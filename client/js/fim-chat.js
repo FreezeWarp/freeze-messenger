@@ -50,7 +50,7 @@ function faviconFlash() {
 /***** Context Menu *****/
 
 function contextMenuParse() {
-  $('.username').contextMenu({
+  $('.userName').contextMenu({
     menu: 'userMenu'
   },
   function(action, el) {
@@ -161,7 +161,7 @@ function contextMenuParse() {
     }
   });
 
-  $('.username').ezpz_tooltip({
+  $('.userName').ezpz_tooltip({
     contentId: 'tooltext',
     beforeShow: function(content,el) {
       var thisid = $(el).attr('data-userId');
@@ -272,7 +272,7 @@ function getSuccess(xml) {
      var startTag = unxml($(this).find('startTag').text());
      var endTag = unxml($(this).find('endTag').text());
 
-     activeUserHtml.push('<span class="username" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>');
+     activeUserHtml.push('<span class="userName" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>');
     });
 
     $('#activeUsers').html(activeUserHtml.join(', '));
@@ -285,7 +285,7 @@ function getSuccess(xml) {
 
       var messageId = parseInt($(this).find('messageId').text());
 
-      var username = $(this).find('userData > userName').text();
+      var userName = $(this).find('userData > userName').text();
       var userId = parseInt($(this).find('userData > userId').text());
       var groupFormatStart = unxml($(this).find('userData > startTag').text());
       var groupFormatEnd = unxml($(this).find('userData > endTag').text());
@@ -312,13 +312,13 @@ function getSuccess(xml) {
             
             
       if (complex) {
-        var data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="' + username + '" src="' + forumUrl + 'image.php?u=' + userId + '" style="max-width: 24px; max-height: 24px; padding-right: 3px;" class="username usernameTable" data-userId="' + userId + '" /><span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
+        var data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="' + userName + '" src="' + forumUrl + 'image.php?u=' + userId + '" style="max-width: 24px; max-height: 24px; padding-right: 3px;" class="userName userNameTable" data-userId="' + userId + '" /><span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
       }
       else {
-        var data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="username usernameTable" data-userId="' + userId + '">' + username + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
+        var data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
       }
       
-      notifyData += username + ': ' + text + "\n";
+      notifyData += userName + ': ' + text + "\n";
       
       if (window.reverse) {
         $('#messageList').append(data);

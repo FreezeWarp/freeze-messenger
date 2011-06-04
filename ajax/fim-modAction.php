@@ -21,7 +21,7 @@ require_once('../functions/generalFunctions.php');
 switch($_GET['action']) {
   case 'kickuser':
   $userId = intval($_GET['userId']);
-  $user2 = sqlArr("SELECT u1.settings, u2.userId, u2.username FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userId = $userId AND u2.userId = u1.userId");
+  $user2 = sqlArr("SELECT u1.settings, u2.userId, u2.userName FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userId = $userId AND u2.userId = u1.userId");
 
   $room = intval($_GET['roomid']);
   $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
@@ -49,7 +49,7 @@ switch($_GET['action']) {
   else {
     mysqlQuery("INSERT INTO {$sqlPrefix}kick (userId, kickerid, length, room) VALUES ($user2[userId], $user[userId], $time, $room[id])");
     
-    $message = finalParse('/me kicked ' . $user2['username']);
+    $message = finalParse('/me kicked ' . $user2['userName']);
 
     list($messageRaw,$messageHtml,$messageVBnet,$saltNum,$iv) = $message;
 

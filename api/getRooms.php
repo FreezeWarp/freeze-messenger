@@ -103,7 +103,7 @@ $data = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getRooms>
   <activeUser>
     <userId>$user[userId]</userId>
-    <userName>" . vrim_encodeXML($user['username']) . "</userName>
+    <userName>" . vrim_encodeXML($user['userName']) . "</userName>
   </activeUser>
 
   <sentData>

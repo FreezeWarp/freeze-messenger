@@ -131,7 +131,7 @@ else {
   m.iv AS iv,
   m.salt AS salt,
   u.{$sqlUserTableCols[userId]} AS userId,
-  u.{$sqlUserTableCols[username]} AS username,
+  u.{$sqlUserTableCols[userName]} AS userName,
   u.{$sqlUserTableCols[usergroup]} AS displaygroupid,
   u2.defaultColour AS defaultColour,
   u2.defaultFontface AS defaultFontface,
@@ -154,7 +154,7 @@ LIMIT $messageLimit";
   UNIX_TIMESTAMP(m.time) AS time,
   $messageFields
   m.userId AS userId,
-  m.username AS username,
+  m.userName AS userName,
   m.usergroup AS displaygroupid,
   m.groupFormatStart AS groupFormatStart,
   m.groupFormatEnd AS groupFormatEnd,
@@ -188,7 +188,7 @@ LIMIT $messageLimit";
           foreach ($messages AS $id => $message) {
             $message = vrim_decrypt($message);
 
-            $message['username'] = addslashes($message['username']);
+            $message['userName'] = addslashes($message['userName']);
             $message['apiText'] = vrim_encodeXML($message['apiText']);
             $message['htmlText'] = vrim_encodeXML($message['htmlText']);
 
@@ -221,7 +221,7 @@ LIMIT $messageLimit";
         <flags>$message[flag]</flags>
       </messageData>
       <userData>
-        <userName>$message[username]</userName>
+        <userName>$message[userName]</userName>
         <userId>$message[userId]</userId>
         <userGroup>$message[displaygroupid]</userGroup>
         <startTag>" . vrim_encodeXML($message['groupFormatStart']) . "</startTag>
@@ -249,7 +249,7 @@ LIMIT $messageLimit";
             break;
           }
 
-          $ausers = sqlArr("SELECT u.{$sqlUserTableCols[username]} AS username,
+          $ausers = sqlArr("SELECT u.{$sqlUserTableCols[userName]} AS userName,
   u.{$sqlUserTableCols[userId]} AS userId,
   u.{$sqlUserTableCols[usergroup]} AS displaygroupid,
   p.status,
@@ -261,7 +261,7 @@ FROM {$sqlPrefix}ping AS p,
 WHERE p.roomid IN ($room[id])
   AND p.userId = u.{$sqlUserTableCols[userId]}
   AND UNIX_TIMESTAMP(p.time) >= (UNIX_TIMESTAMP(NOW()) - $onlineThreshold)
-ORDER BY u.{$sqlUserTableCols[username]}
+ORDER BY u.{$sqlUserTableCols[userName]}
 LIMIT 500",'userId');
 
   if ($ausers) {
@@ -278,7 +278,7 @@ LIMIT 500",'userId');
         }
 
         $ausersXML .= "      <user>
-        <userName>$auser[username]</userName>
+        <userName>$auser[userName]</userName>
         <userId>$auser[userId]</userId>
         <userGroup>$auser[displaygroupid]</userGroup>
         <startTag>$auser[opentag]</startTag>
@@ -325,7 +325,7 @@ $data = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getMessages>
   <activeUser>
     <userId>$user[userId]</userId>
-    <username>" . vrim_encodeXML($user['username']) . "</username>
+    <userName>" . vrim_encodeXML($user['userName']) . "</userName>
   </activeUser>
 
   <sentData>

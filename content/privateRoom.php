@@ -28,12 +28,12 @@ if ($phase == '1') {
   echo template('privateRoomForm');
 }
 elseif ($phase == '2') {
-  $username = ($_POST['username'] ?: $_GET['username']);
+  $userName = ($_POST['userName'] ?: $_GET['userName']);
   $userId = ($_POST['userId'] ?: $_GET['userId']);
 
-  if ($username) {
-    $safename = mysqlEscape($_POST['username']); // Escape the username for MySQL.
-    $user2 = sqlArr("SELECT * FROM user WHERE username = '$safename'"); // Get the user information.
+  if ($userName) {
+    $safename = mysqlEscape($_POST['userName']); // Escape the userName for MySQL.
+    $user2 = sqlArr("SELECT * FROM user WHERE userName = '$safename'"); // Get the user information.
   }
   elseif ($userId) {
     $userId = intval($_GET['userId']);
@@ -60,7 +60,7 @@ elseif ($phase == '2') {
       $moderators = '';
       $options = 48;
       $bbcode = 1;
-      $name = mysqlEscape("Private IM ($user[username] and $user2[username])");
+      $name = mysqlEscape("Private IM ($user[userName] and $user2[userName])");
 
       mysqlQuery("INSERT INTO {$sqlPrefix}rooms (name,allowedGroups,allowedUsers,moderators,owner,options,bbcode) VALUES ('$name','$allowedGroups','$allowedUsers','$moderators',$user[userId],$options,$bbcode)");
       $insertId = mysql_insert_id();

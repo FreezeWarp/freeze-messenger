@@ -215,10 +215,10 @@ function userFormat($message, $room, $messageTable = true) {
     $closeTag = $cachedUserGroups[$message['displaygroupid']]['closetag'];
   }
 
-  $class = ($messageTable ? 'username usernameTable' : 'username');
+  $class = ($messageTable ? 'userName userNameTable' : 'userName');
   if ($permission['isModerator'] || $permission['isAdmin'] || $permission['isOwner']) $userAppend = '*';
 
-  return "{$openTag}<span style=\"{$colour}\" class=\"{$class}\" data-userId=\"$message[userId]\">$message[username]{$userAppend}</span>{$closeTag}";
+  return "{$openTag}<span style=\"{$colour}\" class=\"{$class}\" data-userId=\"$message[userId]\">$message[userName]{$userAppend}</span>{$closeTag}";
 }
 
 function messageStyle($message) {

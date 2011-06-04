@@ -119,7 +119,7 @@ function htmlParse($text,$bbcodeLevel = 1) {
   );
 
   $replace2 = array(
-    ($bbcodeLevel <= 9 ? '<span style="color: red; padding: 10px;">* ' . $user['username'] . ' $1</span>' : '<span>* ' . $user['username'] . ' $1</span>'),
+    ($bbcodeLevel <= 9 ? '<span style="color: red; padding: 10px;">* ' . $user['userName'] . ' $1</span>' : '<span>* ' . $user['userName'] . ' $1</span>'),
     '$1',
     '<a href="http://vrim.victoryroad.net/?room=$1">Room $1</a>',
   );
@@ -297,7 +297,7 @@ function finalParse($message) {
 function sendMessage($messageText,$user,$room,$flag = '') {
   global $sqlPrefix, $parseFlags, $salts, $encrypt, $loginMethod, $sqlUserGroupTableCols, $sqlUserGroupTable;
 
-  $user['username'] = mysqlEscape($user['username']);
+  $user['userName'] = mysqlEscape($user['userName']);
 
   $ip = mysqlEscape($_SERVER['REMOTE_ADDR']); // Get the IP address of the user.
   $flag = mysqlEscape($flag);
@@ -359,7 +359,7 @@ function sendMessage($messageText,$user,$room,$flag = '') {
   mysqlQuery("INSERT INTO {$sqlPrefix}messages (user, room, rawText, htmlText, apiText, salt, iv, microtime, ip, flag) VALUES ($user[userId], $room[id], '$messageRaw', '$messageHtml', '$messageApi', '$saltNum', '$iv', '" . microtime(true) . "', '$ip', '$flag')");
   $messageid = mysqlInsertId();
 
-  mysqlQuery("INSERT INTO {$sqlPrefix}messagesCached (messageid, roomid, userId, username, usergroup, groupFormatStart, groupFormatEnd, time, htmlText, flag) VALUES ($messageid, $room[id], $user[userId], '$user[username]', $user[displaygroupid], '$group[opentag]', '$group[closetag]', NOW(), '$messageHtmlCache', '$flag')");
+  mysqlQuery("INSERT INTO {$sqlPrefix}messagesCached (messageid, roomid, userId, userName, usergroup, groupFormatStart, groupFormatEnd, time, htmlText, flag) VALUES ($messageid, $room[id], $user[userId], '$user[userName]', $user[displaygroupid], '$group[opentag]', '$group[closetag]', NOW(), '$messageHtmlCache', '$flag')");
   $messageid2 = mysqlInsertId();
 
   if ($messageid2 > 100) {

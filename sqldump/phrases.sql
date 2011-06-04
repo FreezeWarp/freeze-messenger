@@ -17,7 +17,7 @@ INSERT INTO `{prefix}phrases` (`id`, `name`, `text_en`, `text_jp`) VALUES
 (6, 'brandingCommunityLinks', '', ''),
 (7, 'brandingIE9Color', 'blue', 'blue'),
 (27, 'chatAccessDenied', 'You see... our incredibly high standards of admittance, or perhaps just our unjust bias, has resulted in us unfairly denying you access to this probably-not-worth-your time room. We do apologize for being such snobs... but yet, we still are. So, we must now ask you to leave.', ''),
-(28, 'chatPrivateRoom', 'This room is a private room between you and another individual, and is not accessible to any other user or administrator. If you would like to ignore this person right click their username and choose &quot;Ignore&quot;. If you are being harrassed, please contact either Cat333Pokémon or FreezeWarp.', ''),
+(28, 'chatPrivateRoom', 'This room is a private room between you and another individual, and is not accessible to any other user or administrator. If you would like to ignore this person right click their userName and choose &quot;Ignore&quot;. If you are being harrassed, please contact either Cat333Pokémon or FreezeWarp.', ''),
 (29, 'chatNotModerated', 'This room is not an official room, and as such is not actively moderated. Please excercise caution when talking to people you do not know, and do not reveal personal information.', ''),
 (30, 'chatAdminAccess', 'You are not a part of this group, rather you are only granted access because you are an administrator. Please respect user privacy: do not post in this group unwanted, and moreover do not spy without due reason.', ''),
 (31, 'settingsParentalControlsLabel', 'Disable Parental Controls:', ''),

@@ -62,7 +62,7 @@ else {
 <setStatus>
   <activeUser>
     <userId>$user[userId]</userId>
-    <userName>" . vrim_encodeXML($user['username']) . "</userName>
+    <userName>" . vrim_encodeXML($user['userName']) . "</userName>
   </activeUser>
   <sentData>
     <roomId>" . vrim_encodeXML($_POST['roomid']) . "</roomId>

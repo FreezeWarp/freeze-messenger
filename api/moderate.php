@@ -114,7 +114,7 @@ switch ($action) {
   case 'kickuser':
 
   $userId = intval($_POST['userId']);
-  $user2 = sqlArr("SELECT u1.settings, u2.userId, u2.username FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userId = $userId AND u2.userId = u1.userId");
+  $user2 = sqlArr("SELECT u1.settings, u2.userId, u2.userName FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userId = $userId AND u2.userId = u1.userId");
 
   $room = intval($_POST['roomid']);
   $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
@@ -140,7 +140,7 @@ switch ($action) {
 
     mysqlQuery("INSERT INTO {$sqlPrefix}kick (userId, kickerid, length, room) VALUES ($user2[userId], $user[userId], $time, $room[id])");
 
-    sendMessage('/me kicked ' . $user2['username'],$user,$room);
+    sendMessage('/me kicked ' . $user2['userName'],$user,$room);
 
     echo 'The user has been kicked';
   }
@@ -148,7 +148,7 @@ switch ($action) {
 
   case 'unkickuser':
   $userId = intval($_POST['userId']);
-  $user2 = sqlArr("SELECT u1.settings, u2.userId, u2.username FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userId = $userId AND u2.userId = u1.userId");
+  $user2 = sqlArr("SELECT u1.settings, u2.userId, u2.userName FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userId = $userId AND u2.userId = u1.userId");
 
   $room = intval($_POST['roomid']);
   $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
@@ -167,9 +167,9 @@ switch ($action) {
 
     mysqlQuery("DELETE FROM {$sqlPrefix}kick WHERE userId = $user2[userId] AND room = $room[id]");
 
-    sendMessage('/me unkicked ' . $user2['username'],$user,$room);
+    sendMessage('/me unkicked ' . $user2['userName'],$user,$room);
 
-    echo $user2['username'] . ' has been unbanned.';
+    echo $user2['userName'] . ' has been unbanned.';
   }
   break;
 

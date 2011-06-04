@@ -353,7 +353,7 @@ function archive(id) {
 
           var messageId = Number($(this).find('messageId').text());
 
-          var username = $(this).find('userData > userName').text();
+          var userName = $(this).find('userData > userName').text();
           var userId = Number($(this).find('userData > userId').text());
           var groupFormatStart = unxml($(this).find('userData > startTag').text());
           var groupFormatEnd = unxml($(this).find('userData > endTag').text());
@@ -378,7 +378,7 @@ function archive(id) {
             style += 'text-decoration: line-through;';
           }
 
-            var data = '<tr id="archiveMessage' + messageId + '"><td>' + groupFormatStart + '<span class="username usernameTable" data-userId="' + userId + '">' + username + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageid="' + messageId + '">' + text + '</td></tr>';
+            var data = '<tr id="archiveMessage' + messageId + '"><td>' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageid="' + messageId + '">' + text + '</td></tr>';
 
             if (window.reverse) {
             $('#archiveMessageList').append(data);

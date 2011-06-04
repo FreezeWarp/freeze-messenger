@@ -568,10 +568,10 @@ $(document).ready(function() {
     else {
       if ($uploadMethod == 'server') {
         $users = implode(',',array_filter(scandir($installLoc . 'userdata/uploads/'),function($var) { if (!in_array($var,array('.','..'))) return $var; })); // This rather long function does the following (in order): scans the userdata/uploads directory, filters out "." and "..", and creates a CSV list of the results.
-        $users = mysqlReadThrough(mysqlQuery("SELECT userId, username FROM user WHERE userId IN ($users)"),'<tr><td>$userId</td><td><a href="./moderate.php?do=showimages&userId=$userId">$username</a></td></tr>'); // This process a basic MySQL query, and returns the results as a set of table rows.
+        $users = mysqlReadThrough(mysqlQuery("SELECT userId, userName FROM user WHERE userId IN ($users)"),'<tr><td>$userId</td><td><a href="./moderate.php?do=showimages&userId=$userId">$userName</a></td></tr>'); // This process a basic MySQL query, and returns the results as a set of table rows.
       }
       elseif ($uploadMethod == 'database') {
-        $users = mysqlReadThrough(mysqlQuery("SELECT u1.userId, username FROM user AS u1, {$sqlPrefix}users AS u2 WHERE u2.userId = u1.userId"),'<tr><td>$userId</td><td><a href="./moderate.php?do=showimages&userId=$userId">$username</a></td></tr>'); // This process a basic MySQL query, and returns the results as a set of table rows.
+        $users = mysqlReadThrough(mysqlQuery("SELECT u1.userId, userName FROM user AS u1, {$sqlPrefix}users AS u2 WHERE u2.userId = u1.userId"),'<tr><td>$userId</td><td><a href="./moderate.php?do=showimages&userId=$userId">$userName</a></td></tr>'); // This process a basic MySQL query, and returns the results as a set of table rows.
       }
 
       echo container('Select a User','<table class="page rowHover">
@@ -633,7 +633,7 @@ $(document).ready(function() {
     break;
 
     case 'banuser':
-    $userTable = mysqlReadThrough(mysqlQuery("SELECT u.userId, u.username, u2.settings FROM user AS u, {$sqlPrefix}users AS u2 WHERE u2.userId = u.userId AND (u2.settings & 1 = false)"),'<tr><td>$userId</td><td>$username</td><td><a href="./moderate.php?do=banuser2&userId=$userId">Ban</a></td></tr>');
+    $userTable = mysqlReadThrough(mysqlQuery("SELECT u.userId, u.userName, u2.settings FROM user AS u, {$sqlPrefix}users AS u2 WHERE u2.userId = u.userId AND (u2.settings & 1 = false)"),'<tr><td>$userId</td><td>$userName</td><td><a href="./moderate.php?do=banuser2&userId=$userId">Ban</a></td></tr>');
 
     echo container('Ban a User','<table class="page rowHover">
   <thead>
@@ -659,7 +659,7 @@ $(document).ready(function() {
     break;
 
     case 'unbanuser':
-    $userTable = mysqlReadThrough(mysqlQuery("SELECT u.userId, u.username, u2.settings FROM user AS u, {$sqlPrefix}users AS u2 WHERE u2.userId = u.userId AND u2.settings & 1"),'<tr><td>$userId</td><td>$username</td><td><a href="./moderate.php?do=unbanuser2&userId=$userId">Unban</a></td></tr>');
+    $userTable = mysqlReadThrough(mysqlQuery("SELECT u.userId, u.userName, u2.settings FROM user AS u, {$sqlPrefix}users AS u2 WHERE u2.userId = u.userId AND u2.settings & 1"),'<tr><td>$userId</td><td>$userName</td><td><a href="./moderate.php?do=unbanuser2&userId=$userId">Unban</a></td></tr>');
 
     echo container('Unban a User','<table class="page rowHover">
   <thead>
@@ -753,16 +753,16 @@ $(document).ready(function() {
           $user1 = sqlArr("SELECT * FROM user WHERE userId = $user1id");
           $user2 = sqlArr("SELECT * FROM user WHERE userId = $user2id");
 
-          if (!$user1['username']) {
+          if (!$user1['userName']) {
             $results .= "Failed to Process Room ID $room[id]; User ID $user1id no longer exists.<br />";
           }
-          elseif (!$user2['username']) {
+          elseif (!$user2['userName']) {
             $results .= "Failed to Process Room ID $room[id]; User ID $user2id no longer exists.<br />";
           }
           else {
-            $name = mysqlEscape("Private IM ($user1[username] and $user2[username])");
+            $name = mysqlEscape("Private IM ($user1[userName] and $user2[userName])");
             if (mysqlQuery("UPDATE {$sqlPrefix}rooms SET name = '$name', bbcode = 1, options = 48 WHERE id = $room[id]")) {
-              $results .= "Processed Room ID $room[id]; Users $user1[username], $user2[username]<br />";
+              $results .= "Processed Room ID $room[id]; Users $user1[userName], $user2[userName]<br />";
             }
             else {
               $results .= "Failed to Process Room ID $room[id]; MySQL Query Failed";
@@ -779,7 +779,7 @@ $(document).ready(function() {
         trigger_error('A default group was not specified in the config.php file.',E_USER_ERROR);
       }
       elseif (!$_GET['confirm']) {
-        $table = mysqlReadThrough(mysqlQuery("SELECT * FROM {$sqlUserTable} WHERE {$sqlUserTableCols[usergroup]} = 0"),'<tr><td>$userId</td><td>$username</td></tr>');
+        $table = mysqlReadThrough(mysqlQuery("SELECT * FROM {$sqlUserTable} WHERE {$sqlUserTableCols[usergroup]} = 0"),'<tr><td>$userId</td><td>$userName</td></tr>');
         echo container('Warning','The following users will be affected: <table border="1"><thead><tr><td>UserID</td><td>Username</td></tr></thead><tbody>' . $table . '</tbody></table><br /><br /><form action="moderate.php" method="get"><button type="submit">Confirm</button><input type="hidden" name="do2" value="defaultgroup" /><input type="hidden" name="confirm" value="true" /></form><form action="moderate.php" method="get"><button type="submit">Go Back</button></form>');
       }
       else {

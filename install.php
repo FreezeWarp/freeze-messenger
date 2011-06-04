@@ -83,7 +83,7 @@ First things first, please enter your MySQL connection details below:<br /><br /
 </tr>
 <tr>
   <td>Username</td>
-  <td><input type="text" name="mysql_username" /></td>
+  <td><input type="text" name="mysql_userName" /></td>
 </tr>
 <tr>
   <td>Password</td>
@@ -182,10 +182,10 @@ Now that the database has been successfully installed, we must generate the conf
 
   case 1: // MySQL Check
   $host = urldecode($_GET['mysql_host']);
-  $username = urldecode($_GET['mysql_username']);
+  $userName = urldecode($_GET['mysql_userName']);
   $password = urldecode($_GET['mysql_password']);
 
-  $mysqli = new mysqli($host,$username,$password);
+  $mysqli = new mysqli($host,$userName,$password);
 
   if (mysqli_connect_error()) {
     echo 'Connection Error: ' . mysqli_connect_error();
@@ -197,12 +197,12 @@ Now that the database has been successfully installed, we must generate the conf
 
   case 2: // Database Check
   $host = urldecode($_GET['mysql_host']);
-  $username = urldecode($_GET['mysql_username']);
+  $userName = urldecode($_GET['mysql_userName']);
   $password = urldecode($_GET['mysql_password']);
   $database = urldecode($_GET['mysql_database']);
   $createdb = urldecode($_GET['mysql_createdb']);
 
-  $mysqli = new mysqli($host,$username,$password);
+  $mysqli = new mysqli($host,$userName,$password);
 
   if (mysqli_connect_error()) {
     echo 'Connection Error: ' . mysqli_connect_error();
@@ -232,14 +232,14 @@ Now that the database has been successfully installed, we must generate the conf
   // If tables do exist, recreate if specified or leave alone.
 
   $host = urldecode($_GET['mysql_host']);
-  $username = urldecode($_GET['mysql_username']);
+  $userName = urldecode($_GET['mysql_userName']);
   $password = urldecode($_GET['mysql_password']);
   $database = urldecode($_GET['mysql_database']);
   $createdb = urldecode($_GET['mysql_createdb']);
   $prefix = urldecode($_GET['mysql_tableprefix']);
   $nooverwrite = urldecode($_GET['mysql_nooverwrite']);
 
-  $mysqli = new mysqli($host,$username,$password,$database);
+  $mysqli = new mysqli($host,$userName,$password,$database);
   $mysqli->query("SET NAMES utf8") or die('Hello');
 
   if (mysqli_connect_error()) {

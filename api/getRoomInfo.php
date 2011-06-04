@@ -35,7 +35,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getRoomInfo>
   <activeUser>
     <userId>$user[userId]</userId>
-    <username>" . vrim_encodeXML($user['username']) . "</username>
+    <userName>" . vrim_encodeXML($user['userName']) . "</userName>
   </activeUser>
   <sentData>
     <roomid>$roomid</roomid>

@@ -105,7 +105,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <sendMessage>
   <activeUser>
     <userId>$user[userId]</userId>
-    <userName>" . vrim_encodeXML($user['username']) . "</userName>
+    <userName>" . vrim_encodeXML($user['userName']) . "</userName>
   </activeUser>
   <sentData>
     <roomId>" . vrim_encodeXML($_POST['roomid']) . "</roomId>
