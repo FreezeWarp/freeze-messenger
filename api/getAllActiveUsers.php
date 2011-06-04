@@ -23,11 +23,16 @@ $time = ($_GET['time'] ?: time());
 $onlineThreshold = ($_GET['onlineThreshold'] ?: $onlineThreshold);
 
 $ausers = sqlArr("SELECT
-  u.username, u.userid, GROUP_CONCAT(r.name) AS roomnames, GROUP_CONCAT(r.id) AS roomids
+  u.$sqlUserTableCols[username] AS username,
+  u.$sqlUserTableCols[userid] AS userid,
+  GROUP_CONCAT(r.name) AS roomnames,
+  GROUP_CONCAT(r.id) AS roomids
 FROM
-  user AS u, {$sqlPrefix}rooms AS r, {$sqlPrefix}ping AS p
+  $sqlUserTable AS u,
+  {$sqlPrefix}rooms AS r,
+  {$sqlPrefix}ping AS p
 WHERE
-  u.userid = p.userid AND
+  u.$sqlUserTableCols[userid] = p.userid AND
   r.id = p.roomid AND
   UNIX_TIMESTAMP(p.time) > $time - $onlineThreshold
 GROUP BY
