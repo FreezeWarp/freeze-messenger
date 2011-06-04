@@ -318,7 +318,7 @@ if ($watchRooms) {
 
 
 ///* Output *///
-$data = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
+echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <!DOCTYPE html [
   <!ENTITY nbsp \" \">
 ]>
@@ -354,14 +354,6 @@ $data = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
     $ausersXML
   </activeUsers>
 </getMessages>";
-
-
-if ($_GET['gz']) {
- echo gzcompress($data);
-}
-else {
-  echo $data;
-}
 
 mysqlClose();
 ?>

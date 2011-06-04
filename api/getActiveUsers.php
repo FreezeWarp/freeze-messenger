@@ -73,7 +73,7 @@ else {
   }
 }
 
-$data = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
+echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getActiveUsers>
   <activeUser>
     <userId>$user[userId]</userId>
@@ -91,13 +91,6 @@ $data = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
   <rooms>
 $auserXML  </rooms>
 </getActiveUsers>";
-
-if ($_GET['gz']) {
- echo gzcompress($data);
-}
-else {
-  echo $data;
-}
 
 mysqlClose();
 ?>
