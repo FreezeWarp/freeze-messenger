@@ -31,6 +31,7 @@ function quickDialogue(content,title,id,width) {
     width: (width ? width: 600),
     title: title,
     hide: "puff",
+    modal: true,
     close: function() {
       $('#' + id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
     }
@@ -75,6 +76,7 @@ function ajaxDialogue(uri,title,id,width,cF) {
         width: (width ? width : 600),
         title: title,
         hide: "puff",
+        modal: true,
         close: function() {
           $('#' + id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
           if (cF) {
