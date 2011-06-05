@@ -143,7 +143,7 @@ MySQL database connection successful. Next, we need to create the tables. If the
 <h1>FreezeMessenger Installation: Generate Configuration File</h1><hr />
 Now that the database has been successfully installed, we must generate the configuration file. There are two ways of doing this: either modify config.base.php and save it as config.php or enter the details below. You are recommended to do this manually, though.<br /><br />
 
-<form onsubmit="return false;" name="mysql_table_form" id="mysql_table_form">
+<form onsubmit="return false;" name="config_form" id="config_form">
 <table>
 <tr>
   <td>Forum Integration</td>
@@ -151,7 +151,7 @@ Now that the database has been successfully installed, we must generate the conf
 </tr>
 <tr>
   <td>Forum URL</td>
-  <td><input type="text" name="forum_tableprefix" /></td>
+  <td><input type="text" name="forum_url" /></td>
 </tr>
 <tr>
   <td>Forum Table Prefix</td>
@@ -172,8 +172,8 @@ Now that the database has been successfully installed, we must generate the conf
 </table><br /><br />
 </form>
 <form onsubmit="return false;">
-<button style="float: left;" type="button" onclick="$(\'#part4\').slideUp(); $(\'#part3\').slideDown();">&larr; Back</button>
-<button style="float: right;" type="button" onclick="$.get(\'install.php?phase=3\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#mysql_db_form\').serialize() + \'&\' + $(\'#mysql_table_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part4\').slideUp(); $(\'#part5\').slideDown(); } else { alert(\'Could not connect.\'); } } );">Verify &rarr;</button>
+<button style="float: left;" type="button" onclick="$(\'#part5\').slideUp(); $(\'#part4\').slideDown();">&larr; Back</button>
+<button style="float: right;" type="button" onclick="$.get(\'install.php?phase=5\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#mysql_db_form\').serialize() + \'&\' + $(\'#mysql_table_form\').serialize() + \'&\' + $(\'#config_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part4\').slideUp(); $(\'#part5\').slideDown(); } else { alert(\'Could not connect.\'); } } );">Verify &rarr;</button>
 </form>
 </div>
 </body>
@@ -290,7 +290,13 @@ Now that the database has been successfully installed, we must generate the conf
   }
 
   case 5: // Config File
+  $forumUrl = $_GET['forum_url'];
+  $forumTablePrefix = $_GET['forum_tableprefix'];
+  $forumCookiePrefix = $_GET['forum_tableprefix'];
+  $forumSalt = $_GET['forum_salt'];
+  $encryptSalt = $_GET['encrypt_salt'];
 
+  $base = file_get_contents('config.base.php');
   break;
 
   case 'dev':

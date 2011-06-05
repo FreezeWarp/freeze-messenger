@@ -103,7 +103,5 @@ if ($reqPhrases) {
   unset($template);
 }
 
-
-
 header('Content-type: text/html; charset=utf-8');
 ?>

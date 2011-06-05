@@ -9,15 +9,6 @@ require_once('global.php');
 $template = $_GET['template'];
 
 switch ($template) {
-  case 'kickForm': /* The below calculations should be replaced with the API once possible. */
-  $userId = intval($_POST['userId'] ?: $_GET['userId']);
-  $roomId = intval($_POST['roomId'] ?: $_GET['roomId']);
-
-//  $userSelect = mysqlReadThrough(mysqlQuery("SELECT u2.$sqlUserTableCols[userId] AS userId, u2.$sqlUserTableCols[userName] AS userName FROM {$sqlPrefix}users AS u, $sqlUserTable AS u2 WHERE u2.$sqlUserTableCols[userId] = u.userId ORDER BY userName"),'<option value="$userId"{{' . $userId . ' == $userId}}{{ selected="selected"}{}}>$userName</option>');
-
-  echo template('kickForm');
-  break;
-
   case 'editRoomForm': /* The below calculations should be replaced with the API once possible. */
 //  if (!$room) trigger_error('This is not a valid room (roomId = ' . $_GET['roomId'] . ').',E_USER_ERROR);
 //  elseif ($user['userId'] != $room['owner'] && !($user['settings'] & 16)) trigger_error('You must be the owner to edit this room',E_USER_ERROR);
@@ -47,6 +38,7 @@ switch ($template) {
   echo template('editRoomForm');
   break;
 
+  case 'kickForm':
   case 'unkickForm':
   case 'copyright':
   case 'userSettingsForm':
