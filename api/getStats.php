@@ -32,6 +32,7 @@ $resultLimit = (int) ($_GET['number'] ? $_GET['number'] : 10);
 
 $rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id IN ($roomList)",'id');
 
+
 foreach ($rooms AS $room) {
   if ($hidePostCounts) {
     if (!hasPermission($room,$user,'know')) {
@@ -40,15 +41,31 @@ foreach ($rooms AS $room) {
   }
 
 
+  switch ($loginMethod) {
+    case 'phpbb':
+    $cols = ', u.user_colour AS userColour';
+    break;
+
+    case 'vbulletin':
+    break;
+  }
+
+
   $totalPosts = sqlArr("SELECT m.messages AS count,
   u.{$sqlUserTableCols[userId]} AS userId,
   u.{$sqlUserTableCols[userName]} AS userName
+  $cols
 FROM {$sqlPrefix}roomStats AS m,
   {$sqlUserTable} AS u
+  $tables
 WHERE m.roomId = $room[id] AND
   u.{$sqlUserTableCols[userId]} = m.userId
+  $where 
 ORDER BY count DESC
-LIMIT $resultLimit",'userId');
+  $orderby
+LIMIT $resultLimit
+  $limit",'userId');
+
 
   $roomStatsXml .= "<room>
   <roomData>
@@ -58,12 +75,21 @@ LIMIT $resultLimit",'userId');
 
 
   foreach ($totalPosts AS $totalPoster) {
+    switch ($loginMethod) {
+      case 'phpbb':
+      $totalPoster['startTag'] = "<span style=\"color: #$totalPoster[userColour]\">";
+      $totalPoster['endTag'] = "</span>";
+      break;
+    }
+
     $position++;
 
     $roomStatsXml .= "<user>
     <userData>
       <userId>$totalPoster[userId]</userId>
       <userName>$totalPoster[userName]</userName>
+      <startTag>" . vrim_encodeXML($totalPoster['startTag']) . "</startTag>
+      <endTag>" . vrim_encodeXML($totalPoster['endTag']) . "</endTag>
     </userData>
     <messageCount>$totalPoster[count]</messageCount>
     <position>$position</position>
