@@ -19,11 +19,16 @@ $apiRequest = true;
 require_once('../global.php');
 header('Content-type: text/xml');
 
-$time = ($_GET['time'] ?: time());
-$onlineThreshold = ($_GET['onlineThreshold'] ?: $onlineThreshold);
+$time = (int) ($_GET['time'] ? $_GET['time'] : time());
+$onlineThreshold = (int) ($_GET['onlineThreshold'] ? $_GET['onlineThreshold'] : $onlineThreshold);
 
 switch ($loginMethod) {
+  case 'phpbb':
+  $cols = ', u.user_colour AS userColour';
+  break;
 
+  case 'vbulletin':
+  break;
 }
 
 $ausers = sqlArr("SELECT
@@ -50,13 +55,16 @@ ORDER BY
   $orderby
 $query",'userId');
 
-switch ($loginMethod) {
-
-}
-
 if ($ausers) {
   foreach ($ausers AS $auser) {
     unset($roomsXML);
+
+    switch ($loginMethod) {
+      case 'phpbb':
+      $auser['startTag'] = "<span style=\"$user[userColour]\">";
+      $auser['endTag'] = "</span>";
+      break;
+    }
 
     $rooms = array_combine(explode(',',$auser['roomIds']),explode(',',$auser['roomNames']));
     foreach ($rooms AS $id => $name) $roomsXML .= "      <room>
@@ -68,8 +76,8 @@ if ($ausers) {
       <userData>
         <userId>$auser[userId]</userId>
         <userName>$auser[userName]</userName>
-        <startTag>$auser[userName]</startTag>
-        <endTag>$auser[userName]</endTag>
+        <startTag>$auser[startTag]</startTag>
+        <endTag>$auser[endTag]</endTag>
       </userData>
       <rooms>
       $roomsXML
