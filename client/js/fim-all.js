@@ -235,50 +235,50 @@ $(document).ready(function() {
   $('button').button();
 
   $('a#kick').click(function() {
-    ajaxDialogue('template.php?template=kickForm','Kick User','kickUserDialogue',1000);
-    
-    $.ajax({
-      url: 'api/getRooms.php',
-      timeout: 5000,
-      type: 'GET',
-      cache: false,
-      success: function(xml) {
-        var roomHtml = '';
-
-        $(xml).find('room').each(function() {
-          var roomName = $(this).find('roomName').text();
-          var roomId = $(this).find('roomId').text();
-
-          roomHtml += '<option value="' + roomId + '">' + roomName + '</option>';
-        });
-        
-        $('select[name=roomId]').html(roomHtml);
-      },
-      error: function() {
-        alert('Failed to show all rooms');
-      }
-    });
-    
-    $.ajax({
-      url: 'api/getUsers.php',
-      timeout: 5000,
-      type: 'GET',
-      cache: false,
-      success: function(xml) {
-        var userHtml = '';
-
-        $(xml).find('user').each(function() {
-          var userName = $(this).find('userName').text();
-          var userId = $(this).find('userId').text();
-
-          userHtml += '<option value="' + userId + '">' + userName + '</option>';
-        });
-
-        $('select[name=userId]').html(userHtml);
-      },
-      error: function() {
-        alert('Failed to show all users');
-      }
+    ajaxDialogue('template.php?template=kickForm','Kick User','kickUserDialogue',1000,function() {
+      $.ajax({
+        url: 'api/getRooms.php',
+        timeout: 5000,
+        type: 'GET',
+        cache: false,
+        success: function(xml) {
+          var roomHtml = '';
+  
+          $(xml).find('room').each(function() {
+            var roomName = $(this).find('roomName').text();
+            var roomId = $(this).find('roomId').text();
+  
+            roomHtml += '<option value="' + roomId + '">' + roomName + '</option>';
+          });
+          
+          $('select[name=roomId]').html(roomHtml);
+        },
+        error: function() {
+          alert('Failed to show all rooms');
+        }
+      });
+      
+      $.ajax({
+        url: 'api/getUsers.php',
+        timeout: 5000,
+        type: 'GET',
+        cache: false,
+        success: function(xml) {
+          var userHtml = '';
+  
+          $(xml).find('user').each(function() {
+            var userName = $(this).find('userName').text();
+            var userId = $(this).find('userId').text();
+  
+            userHtml += '<option value="' + userId + '">' + userName + '</option>';
+          });
+  
+          $('select[name=userId]').html(userHtml);
+        },
+        error: function() {
+          alert('Failed to show all users');
+        }
+      });
     });
   });
 
