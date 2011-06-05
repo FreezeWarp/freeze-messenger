@@ -59,8 +59,9 @@ function quickConfirm(text) {
   });
 }
 
-function ajaxDialogue(uri,title,id,width,cF) {
+function ajaxDialogue(uri,title,id,width,cF,oF) {
   var dialog = $('<div style="display: none;" id="' + id +  '"></div>').appendTo('body');
+
   dialog.load(
     uri,
     {},
@@ -77,6 +78,11 @@ function ajaxDialogue(uri,title,id,width,cF) {
         title: title,
         hide: "puff",
         modal: true,
+        open: function() {
+          if (oF) {
+            oF();
+          }
+        },
         close: function() {
           $('#' + id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
           if (cF) {
@@ -90,7 +96,7 @@ function ajaxDialogue(uri,title,id,width,cF) {
   return false;
 }
 
-function ajaxTabDialogue(uri,id,width,cF) {
+function ajaxTabDialogue(uri,id,width,cF,oF) {
   var dialog = $('<div style="display: none;" id="' + id +  '"></div>').appendTo('body');
   dialog.load(
     uri,
@@ -107,6 +113,11 @@ function ajaxTabDialogue(uri,id,width,cF) {
         width: (width ? width : 600),
         modal: true,
         hide: "puff",
+        open: function() {
+          if (oF) {
+            oF();
+          }
+        },
         close: function() {
           $('#' + id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
           if (cF) {
@@ -235,7 +246,7 @@ $(document).ready(function() {
   $('button').button();
 
   $('a#kick').click(function() {
-    ajaxDialogue('template.php?template=kickForm','Kick User','kickUserDialogue',1000,function() {
+    ajaxDialogue('template.php?template=kickForm','Kick User','kickUserDialogue',1000,false,function() {
       $.ajax({
         url: 'api/getRooms.php',
         timeout: 5000,
