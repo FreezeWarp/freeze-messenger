@@ -28,8 +28,8 @@ function updateOnline() {
       $(xml).find('user').each(function() {
         var userName = $(this).find('userName').text();
         var userId = $(this).find('userId').text();
-        var startTag = $(this).find('startTag').text();
-        var endTag = $(this).find('endTag').text();
+        var startTag = unxml($(this).find('startTag').text());
+        var endTag = unxml($(this).find('endTag').text());
         var roomData = new Array();
 
         $(this).find('room').each(function() {

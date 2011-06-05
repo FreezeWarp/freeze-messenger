@@ -362,7 +362,7 @@ $(document).ready(function() {
     var roomHtml = '';
     var number = 10;
     
-    for (var i = 1; i < number; i++) {
+    for (var i = 1; i <= number; i++) {
       statsHtml[i] = '';
     }
     
@@ -376,14 +376,15 @@ $(document).ready(function() {
           var roomName = $(this).find('roomName').text();
           var roomId = $(this).find('roomId').text();
 
-          
           $(this).find('user').each(function() {
             var userName = $(this).find('userData > userName').text();
             var userId = $(this).find('userData > userId').text();
+            var startTag = $(this).find('userData > startTag').text();
+            var endTag = $(this).find('userData > endTag').text();
             var position = parseInt($(this).find('position').text());
             var messageCount = $(this).find('messageCount').text();
 
-            statsHtml[position] += '<td>' + userName + '</td>';
+            statsHtml[position] += '<td>' + startTag + userName + endTag + ' (' + messageCount + ')</td>';
           });
           
           
@@ -391,7 +392,7 @@ $(document).ready(function() {
           
         });
         
-        for (var i = 1; i < number; i++) {
+        for (var i = 1; i <= number; i++) {
           statsHtml2 += '<tr><th>' + i + '</th>' + statsHtml[i] + '</tr>';
         }
         

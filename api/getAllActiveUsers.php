@@ -61,23 +61,26 @@ if ($ausers) {
 
     switch ($loginMethod) {
       case 'phpbb':
-      $auser['startTag'] = "<span style=\"$user[userColour]\">";
+      $auser['startTag'] = "<span style=\"color: #$auser[userColour]\">";
       $auser['endTag'] = "</span>";
       break;
     }
 
     $rooms = array_combine(explode(',',$auser['roomIds']),explode(',',$auser['roomNames']));
-    foreach ($rooms AS $id => $name) $roomsXML .= "      <room>
+
+    foreach ($rooms AS $id => $name) {
+      $roomsXML .= "      <room>
         <roomId>$id</roomId>
         <roomName>$name</roomName>
       </room>";
+    }
 
     $ausersXML .= "    <user>
       <userData>
         <userId>$auser[userId]</userId>
         <userName>$auser[userName]</userName>
-        <startTag>$auser[startTag]</startTag>
-        <endTag>$auser[endTag]</endTag>
+        <startTag>" . vrim_encodeXML($auser['startTag']) . "</startTag>
+        <endTag>" . vrim_encodeXML($auser['endTag']) . "</endTag>
       </userData>
       <rooms>
       $roomsXML
