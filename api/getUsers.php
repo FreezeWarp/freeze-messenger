@@ -79,10 +79,10 @@ if ($users) {
 
     $userXML .= "    <user>
       <userId>$row[userId]</userId>
-      <userName>" . vrim_encodeXML($row['userName']) . "</userName>
-      <userGroup>" . vrim_encodeXML($row['userGroup']) . "</userGroup>
-      <startTag>" . vrim_encodeXML($row['startTag']) . "</startTag>
-      <endTag>" . vrim_encodeXML($row['endTag']) . "</endTag>
+      <userName>" . fim_encodeXML($row['userName']) . "</userName>
+      <userGroup>" . fim_encodeXML($row['userGroup']) . "</userGroup>
+      <startTag>" . fim_encodeXML($row['startTag']) . "</startTag>
+      <endTag>" . fim_encodeXML($row['endTag']) . "</endTag>
     </user>";
   }
 }
@@ -92,11 +92,11 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getRooms>
   <activeUser>
     <userId>$user[userId]</userId>
-    <userName>" . vrim_encodeXML($user['userName']) . "</userName>
+    <userName>" . fim_encodeXML($user['userName']) . "</userName>
   </activeUser>
 
   <sentData>
-    <order>" . vrim_encodeXML($order) . "</order>
+    <order>" . fim_encodeXML($order) . "</order>
   </sentData>
 
   <errorcode>$failCode</errorcode>
