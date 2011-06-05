@@ -156,19 +156,6 @@ function webkitNotify(icon, title, notifyData) {
 
 
 
-//// TODO: Merge into plugins
-$.fn.tabbedDialog = function (dialogOptions,tabOptions) {
-  this.tabs(tabOptions);
-  this.dialog(dialogOptions);
-  this.find('.ui-tab-dialog-close').append($('a.ui-dialog-titlebar-close'));
-  this.find('.ui-tab-dialog-close').css({'position':'absolute','right':'0', 'top':'23px'});
-  this.find('.ui-tab-dialog-close > a').css({'float':'none','padding':'0'});
-  var tabul = this.find('ul:first');
-  this.parent().addClass('ui-tabs').prepend(tabul).draggable('option','handle',tabul); 
-  this.siblings('.ui-dialog-titlebar').remove();
-  tabul.addClass('ui-dialog-titlebar');
-}
-
 
 
 
