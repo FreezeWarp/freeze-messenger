@@ -20,8 +20,11 @@ header('Content-type: text/xml');
 
 $rooms = $_GET['rooms'];
 $roomsArray = explode(',',$rooms);
-foreach ($roomsArray AS &$v) $v = intval($v);
-$roomList = implode(',',$rooms);
+foreach ($roomsArray AS &$v) {
+  $v = intval($v);
+}
+$roomList = implode(',',$roomsArray);
+
 
 $resultLimit = (int) ($_GET['number'] ? $_GET['number'] : 10);
 
@@ -38,17 +41,16 @@ foreach ($rooms AS $room) {
 
 
   $totalPosts = sqlArr("SELECT m.messages AS count,
-  u.userId,
-  u.userName
+  u.{$sqlUserTableCols[userId]} AS userId,
+  u.{$sqlUserTableCols[userName]} AS userName
 FROM {$sqlPrefix}roomStats AS m,
-  user AS u
+  {$sqlUserTable} AS u
 WHERE m.roomId = $room[id] AND
-  u.userId = m.userId
+  u.{$sqlUserTableCols[userId]} = m.userId
 ORDER BY count DESC
 LIMIT $resultLimit",'userId');
 
-
-  $roomXml = "<room>
+  $roomStatsXml .= "<room>
   <roomData>
     <roomId>$room[roomId]</roomId>
     <roomName>$room[roomName]</roomName>
@@ -58,16 +60,18 @@ LIMIT $resultLimit",'userId');
   foreach ($totalPosts AS $totalPoster) {
     $position++;
 
-    $roomXml .= "<user>
+    $roomStatsXml .= "<user>
     <userData>
-
+      <userId>$totalPoster[userId]</userId>
+      <userName>$totalPoster[userName]</userName>
     </userData>
-    <messageCount></messageCount>
-    <position>$position</position>";
+    <messageCount>$totalPoster[count]</messageCount>
+    <position>$position</position>
+</user>";
   }
 
 
-  $roomXml = "</room>";
+  $roomStatsXml .= "</room>";
 }
 
 
@@ -84,10 +88,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
   </activeUser>
 
   <sentData>
-    <rooms>$rooms</rooms>
-    <roomsList>
-    $roomsXML
-    </roomsList>
+    <rooms>$roomList</rooms>
     <resultLimit>$resultLimit</resultLimit>
   </sentData>
 
@@ -95,7 +96,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
   <errortext>$failMessage</errortext>
 
   <roomStats>
-    $roomStatsXML
+    $roomStatsXml
   </roomStats>
 </getMessages>";
 
