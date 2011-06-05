@@ -52,8 +52,8 @@ LIMIT $resultLimit",'userId');
 
   $roomStatsXml .= "<room>
   <roomData>
-    <roomId>$room[roomId]</roomId>
-    <roomName>$room[roomName]</roomName>
+    <roomId>$room[id]</roomId>
+    <roomName>$room[name]</roomName>
   </roomData>";
 
 

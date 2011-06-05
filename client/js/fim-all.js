@@ -358,8 +358,13 @@ $(document).ready(function() {
   
   $('#viewStats').click(function() {
     var statsHtml = new Object;
+    var statsHtml2 = '';
     var roomHtml = '';
     var number = 10;
+    
+    for (var i = 1; i < number; i++) {
+      statsHtml[i] = '';
+    }
     
     $.ajax({
       url: 'api/getStats.php?rooms=' + roomId + '&maxResults=' + number,
@@ -384,9 +389,9 @@ $(document).ready(function() {
           
           roomHtml += '<th>' + roomName + '</th>';
           
-        }
+        });
         
-        for (i = 1; i < number; i++) {
+        for (var i = 1; i < number; i++) {
           statsHtml2 += '<tr><th>' + i + '</th>' + statsHtml[i] + '</tr>';
         }
         
