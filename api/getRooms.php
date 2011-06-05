@@ -24,8 +24,8 @@ $roomsArray = explode(',',$rooms);
 foreach ($roomsArray AS &$v) $v = intval($v);
 
 
-$showDeleted = intval($_GET['showDeleted']);
-$reverseOrder = intval($_GET['reverseOrder']);
+$showDeleted = (int) $_GET['showDeleted'];
+$reverseOrder = (int) $_GET['reverseOrder'];
 
 
 $favRooms = explode(',',$user['favRooms']);

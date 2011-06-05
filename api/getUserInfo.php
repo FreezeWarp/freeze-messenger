@@ -20,7 +20,7 @@ $apiRequest = true;
 require_once('../global.php');
 header('Content-type: text/xml');
 
-$userId = intval($_GET['userId']);
+$userId = (int) $_GET['userId'];
 $userName = mysqlEscape(vrim_urldecode($_GET['userName']));
 
 if ($userId) {

@@ -21,7 +21,7 @@ header('Content-type: text/xml');
 
 $usersArray = explode(',',$_GET['rooms']);
 foreach ($usersArray AS &$v) {
-  $v = intval($v);
+  $v = (int) $v;
 }
 
 

@@ -19,7 +19,7 @@ $apiRequest = true;
 require_once('../global.php');
 header('Content-type: text/plain');
 
-$roomId = intval($_GET['roomId']);
+$roomId = (int) $_GET['roomId'];
 $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $roomId",'id'); // Get all rooms
 
 if (hasPermission($room,$user) {
