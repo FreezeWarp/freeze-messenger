@@ -53,19 +53,40 @@ switch ($loginMethod) {
   $join = "LEFT JOIN {$sqlUserTable} AS u2 ON u2.{$sqlUserTableCols[userId]} = u.userId";
   $cols = ", u2.{$sqlUserTableCols[userName]} AS userName, u2.{$sqlUserTableCols[userGroup]} AS userGroup";
   break;
+
+  case 'phpbb':
+  $cols .= "u2.user_colour AS userColour";
+  break;
 }
 
 
-$users = sqlArr("SELECT u.userId {$cols} FROM {$sqlPrefix}users AS u {$join} WHERE {$whereClause} TRUE ORDER BY {$order}",'userId'); // Get all rooms
+$users = sqlArr("SELECT u.userId
+  {$cols}
+FROM {$sqlPrefix}users
+  AS u {$join}
+WHERE {$whereClause} TRUE
+ORDER BY {$order}",'userId'); // Get all rooms
+
+
 if ($users) {
   foreach ($users AS $row) {
+    switch($loginMethod) {
+      case 'phpbb':
+      $row['startTag'] = "<span style=\"color: #$row[userColour]\">";
+      $row['endTag'] = "</span>";
+      break;
+    }
+
     $userXML .= "    <user>
       <userId>$row[userId]</userId>
       <userName>" . vrim_encodeXML($row['userName']) . "</userName>
       <userGroup>" . vrim_encodeXML($row['userGroup']) . "</userGroup>
+      <startTag>" . vrim_encodeXML($row['startTag']) . "</startTag>
+      <endTag>" . vrim_encodeXML($row['endTag']) . "</endTag>
     </user>";
   }
 }
+
 
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getRooms>
