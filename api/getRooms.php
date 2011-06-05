@@ -82,8 +82,8 @@ if ($rooms2) {
 
     $roomXML .= "    <room>
       <roomId>$row[id]</roomId>
-      <roomName>" . vrim_encodeXML($row['name']) . "</roomName>
-      <roomTopic>" . vrim_encodeXML($row['title']) . "</roomTopic>
+      <roomName>" . fim_encodeXml($row['name']) . "</roomName>
+      <roomTopic>" . fim_encodeXml($row['title']) . "</roomTopic>
       <owner>$row[owner]</owner>
       <allowedUsers>$row[allowedUsers]</allowedUsers>
       <allowedGroups>$row[allowedGroups]</allowedGroups>
@@ -103,7 +103,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getRooms>
   <activeUser>
     <userId>$user[userId]</userId>
-    <userName>" . vrim_encodeXML($user['userName']) . "</userName>
+    <userName>" . fim_encodeXml($user['userName']) . "</userName>
   </activeUser>
 
   <sentData>

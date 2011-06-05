@@ -90,7 +90,7 @@ if ($user['favRooms']) {
       continue;
     }
 
-    $room2['name'] = vrim_encodeXML($room2['name']);
+    $room2['name'] = fim_encodeXml($room2['name']);
 
     $roomMs .= template('templateRoomMs');
     $roomHtml .= template('templateRoomHtml');

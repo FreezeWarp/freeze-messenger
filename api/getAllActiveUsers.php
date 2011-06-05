@@ -79,8 +79,8 @@ if ($ausers) {
       <userData>
         <userId>$auser[userId]</userId>
         <userName>$auser[userName]</userName>
-        <startTag>" . vrim_encodeXML($auser['startTag']) . "</startTag>
-        <endTag>" . vrim_encodeXML($auser['endTag']) . "</endTag>
+        <startTag>" . fim_encodeXml($auser['startTag']) . "</startTag>
+        <endTag>" . fim_encodeXml($auser['endTag']) . "</endTag>
       </userData>
       <rooms>
       $roomsXML
@@ -94,7 +94,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getAllActiveUsers>
   <activeUser>
     <userId>$user[userId]</userId>
-    <userName>" . vrim_encodeXML($user['userName']) . "</userName>
+    <userName>" . fim_encodeXml($user['userName']) . "</userName>
   </activeUser>
   <sentData>
     <onlineThreshold>$onlineThreshold</onlineThreshold>

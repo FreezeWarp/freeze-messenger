@@ -21,7 +21,7 @@ require_once('../global.php');
 header('Content-type: text/xml');
 
 $userId = (int) $_GET['userId'];
-$userName = mysqlEscape(vrim_urldecode($_GET['userName']));
+$userName = mysqlEscape(fim_urldecode($_GET['userName']));
 
 if ($userId) {
   $where = "u.{$sqlUserTableCols[userId]} = $userId";
@@ -38,8 +38,8 @@ switch ($loginMethod) {
   case 'vbulletin':
   if ($where) {
     $getuserf = sqlArr("SELECT * FROM {$sqlUserTable} AS u LEFT JOIN {$sqlUserGroupTable} AS g ON u.{$sqlUserTableCols[userGroup]} = g.{$sqlUserGroupTableCols[groupid]} WHERE {$where}");
-    $getuserf['opentag'] = vrim_encodeXML($getuserf['opentag']);
-    $getuserf['closetag'] = vrim_encodeXML($getuserf['closetag']);
+    $getuserf['opentag'] = fim_encodeXml($getuserf['opentag']);
+    $getuserf['closetag'] = fim_encodeXml($getuserf['closetag']);
     $getuserf['avatar'] = $forumUrl . '/image.php?u=' . $getuserf['userId'];
   }
 
@@ -52,8 +52,8 @@ switch ($loginMethod) {
   case 'phpbb':
   if ($where) {
     $getuserf = sqlArr("SELECT u.user_id, u.userName, u.user_posts AS posts, u.user_colour, u.user_avatar FROM {$sqlUserTable} AS u WHERE {$where}");
-    $getuserf['opentag'] = vrim_encodeXML('<span style="color: #' . $getuserf['user_colour'] . ';">');
-    $getuserf['closetag'] = vrim_encodeXML('</span>');
+    $getuserf['opentag'] = fim_encodeXml('<span style="color: #' . $getuserf['user_colour'] . ';">');
+    $getuserf['closetag'] = fim_encodeXml('</span>');
     $getuserf['avatar'] = $forumUrl . '/download/file.php?avatar=' . $getuserf['user_avatar'];
   }
 
@@ -68,7 +68,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getUserInfo>
   <activeUser>
     <userId>$user[userId]</userId>
-    <userName>" . vrim_encodeXML($user['userName']) . "</userName>
+    <userName>" . fim_encodeXml($user['userName']) . "</userName>
   </activeUser>
   <sentData>
     <userId>$userId</userId>

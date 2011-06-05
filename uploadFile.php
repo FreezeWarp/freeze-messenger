@@ -337,7 +337,7 @@ elseif ($_POST['method']) { // Actual upload; process.
           $mime = mysqlEscape($_FILES['fileUpload']['type']);
 
           if ($encryptUploads) {
-            list($contentsEncrypted,$iv,$saltNum) = vrim_encrypt($contents);
+            list($contentsEncrypted,$iv,$saltNum) = fim_encrypt($contents);
             $contentsEncrypted = mysqlEscape($contentsEncrypted);
             $iv = mysqlEscape($iv);
             $saltNum = intval($saltNum);

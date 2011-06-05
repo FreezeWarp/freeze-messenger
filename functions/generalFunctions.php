@@ -239,11 +239,11 @@ function messageStyle($message) {
   return $style;
 }
 
-function vrim_urldecode($str) {
+function fim_urldecode($str) {
   return str_replace(array('%2b','%26','%20'),array('+','&',"\n"),$str);
 }
 
-function vrim_decrypt($message,$index = false) {
+function fim_decrypt($message,$index = false) {
   global $salts;
 
   if ($message['salt'] && $message['iv']) {
@@ -269,7 +269,7 @@ function vrim_decrypt($message,$index = false) {
   return $message;
 }
 
-function vrim_encrypt($data) {
+function fim_encrypt($data) {
   global $salts;
 
   if (!function_exists('mcrypt_encrypt')) {
@@ -294,7 +294,7 @@ function vrim_encrypt($data) {
   return array($data,$iv,$saltNum);
 }
 
-function vrim_encodeXML($data) {
+function fim_encodeXml($data) {
   $ref = array(
     '&' => '&amp;', // By placing this first, we avoid accidents!
     '\'' => '&apos;',

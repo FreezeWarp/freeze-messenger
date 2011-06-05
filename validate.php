@@ -318,8 +318,8 @@ if (isset($_GET['userName'],$_GET['password'])) { // API.
     break;
   }
 
-  $userName = vrim_urldecode($_GET['userName']);
-  $password = vrim_urldecode($_GET['password']);
+  $userName = fim_urldecode($_GET['userName']);
+  $password = fim_urldecode($_GET['password']);
 
   switch ($_GET['passwordEncrypt']) {
     case 'md5':
@@ -365,21 +365,21 @@ elseif (isset($_POST['userName'],$_POST['password'])) { // Data is stored in a j
 }
 
 elseif (isset($_GET['sessionhash'])) {
-  $sessionHash = vrim_urldecode($_GET['sessionhash']);
+  $sessionHash = fim_urldecode($_GET['sessionhash']);
 
   $userName = false;
   $password = false;
 }
 
 elseif (isset($_COOKIE[$forumCookiePrefix . 'sessionhash']) && !$apiRequestCheck) { // Data is stored in session cookie.
-  $sessionHash = vrim_urldecode($_COOKIE[$forumCookiePrefix . 'sessionhash']);
+  $sessionHash = fim_urldecode($_COOKIE[$forumCookiePrefix . 'sessionhash']);
 
   $userName = false;
   $password = false;
 }
 
 elseif (isset($_COOKIE[$forumCookiePrefix . 'sid']) && !$apiRequestCheck) {
-  $sessionHash = vrim_urldecode($_COOKIE[$forumCookiePrefix . 'sid']);
+  $sessionHash = fim_urldecode($_COOKIE[$forumCookiePrefix . 'sid']);
 
   $userName = false;
   $password = false;
@@ -681,10 +681,10 @@ if ($api) {
   echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <login>
   <sentData>
-    <apiVersion>" . vrim_encodeXML($_GET['apiVersion']) . "</apiVersion>
-    <passwordEncrypt>" . vrim_encodeXML($_GET['passwordEncrypt']) . "</passwordEncrypt>
-    <userName>" . vrim_encodeXML($_GET['userName']) . "</userName>
-    <password>" . vrim_encodeXML($_GET['password']) . "</password>
+    <apiVersion>" . fim_encodeXml($_GET['apiVersion']) . "</apiVersion>
+    <passwordEncrypt>" . fim_encodeXml($_GET['passwordEncrypt']) . "</passwordEncrypt>
+    <userName>" . fim_encodeXml($_GET['userName']) . "</userName>
+    <password>" . fim_encodeXml($_GET['password']) . "</password>
   </sentData>
   <valid>$valid</valid>
   <errorcode>$flag</errorcode>

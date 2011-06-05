@@ -96,7 +96,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getActiveUsers>
   <activeUser>
     <userId>$user[userId]</userId>
-    <userName>" . vrim_encodeXML($user['userName']) . "</userName>
+    <userName>" . fim_encodeXml($user['userName']) . "</userName>
   </activeUser>
   <sentData>
     <rooms>$rooms</rooms>

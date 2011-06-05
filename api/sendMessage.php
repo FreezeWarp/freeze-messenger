@@ -20,7 +20,7 @@ require_once('../global.php');
 require_once('../functions/parserFunctions.php');
 header('Content-type: text/xml');
 
-$message = vrim_urldecode($_POST['message']);
+$message = fim_urldecode($_POST['message']);
 
 $roomId = intval($_POST['roomId']);
 $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $roomId");
@@ -105,11 +105,11 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <sendMessage>
   <activeUser>
     <userId>$user[userId]</userId>
-    <userName>" . vrim_encodeXML($user['userName']) . "</userName>
+    <userName>" . fim_encodeXml($user['userName']) . "</userName>
   </activeUser>
   <sentData>
-    <roomId>" . vrim_encodeXML($_POST['roomId']) . "</roomId>
-    <message>" . vrim_encodeXML($_POST['message']) . "</message>
+    <roomId>" . fim_encodeXml($_POST['roomId']) . "</roomId>
+    <message>" . fim_encodeXml($_POST['message']) . "</message>
   </sentData>
   <errorcode>$failCode</errorcode>
   <errortext>$failMessage</errortext>

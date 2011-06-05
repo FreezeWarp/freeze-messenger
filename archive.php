@@ -137,7 +137,7 @@ LIMIT $limit",'id');
 
         exec(hook('archiveResultsProcessEachStart'));
 
-        $message = vrim_decrypt($message);
+        $message = fim_decrypt($message);
         $style = messageStyle($message);
 
         $opacitya = ($user['settings'] & 1 ? '.5' : '1.0'); // Grey-out if deleted.

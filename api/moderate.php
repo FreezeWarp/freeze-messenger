@@ -19,7 +19,7 @@ $apiRequest = true;
 require_once('../global.php');
 header('Content-type: text/xml');
 
-$action = vrim_urldecode($_POST['action']);
+$action = fim_urldecode($_POST['action']);
 
 switch ($action) {
   case 'createRoom':
@@ -213,10 +213,10 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <moderate>
   <activeUser>
     <userId>$user[userId]</userId>
-    <userName>" . vrim_encodeXML($user['userName']) . "</userName>
+    <userName>" . fim_encodeXml($user['userName']) . "</userName>
   </activeUser>
   <sentData>
-    <action>" . vrim_encodeXML($_POST['action']) . "</action>
+    <action>" . fim_encodeXml($_POST['action']) . "</action>
     <roomId>" . (int) $_POST['roomId'] . "</roomId>
     <userId>" . (int) $_POST['userId'] . "</userId>
   </sentData>

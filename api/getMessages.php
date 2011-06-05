@@ -187,11 +187,11 @@ LIMIT $messageLimit";
 
         if ($messages) {
           foreach ($messages AS $id => $message) {
-            $message = vrim_decrypt($message);
+            $message = fim_decrypt($message);
 
             $message['userName'] = addslashes($message['userName']);
-            $message['apiText'] = vrim_encodeXML($message['apiText']);
-            $message['htmlText'] = vrim_encodeXML($message['htmlText']);
+            $message['apiText'] = fim_encodeXml($message['apiText']);
+            $message['htmlText'] = fim_encodeXml($message['htmlText']);
 
             if ($loginMethod == 'phpbb' && $archive) {
               $message['groupFormatStart'] = "<span style=\"color: #$message[user_colour]\">";
@@ -209,7 +209,7 @@ LIMIT $messageLimit";
       <roomData>
         <roomId>$room[id]</roomId>
         <roomName>$room[name]</roomName>
-        <roomTopic>" . vrim_encodeXML($room['title']) . "</roomTopic>
+        <roomTopic>" . fim_encodeXml($room['title']) . "</roomTopic>
       </roomData>
       <messageData>
         <messageId>$message[messageid]</messageId>
@@ -225,8 +225,8 @@ LIMIT $messageLimit";
         <userName>$message[userName]</userName>
         <userId>$message[userId]</userId>
         <userGroup>$message[displaygroupid]</userGroup>
-        <startTag>" . vrim_encodeXML($message['groupFormatStart']) . "</startTag>
-        <endTag>" . vrim_encodeXML($message['groupFormatEnd']) . "</endTag>
+        <startTag>" . fim_encodeXml($message['groupFormatStart']) . "</startTag>
+        <endTag>" . fim_encodeXml($message['groupFormatEnd']) . "</endTag>
         <defaultFormatting>
           <color>$message[defaultColour]</color>
           <highlight>$message[defaultHighlight]</highlight>
@@ -269,12 +269,12 @@ LIMIT 500",'userId');
     foreach ($ausers AS $auser) {
         switch ($loginMethod) {
           case 'vbulletin':
-          $auser['opentag'] = vrim_encodeXML($auser['opentag']);
-          $auser['closetag'] = vrim_encodeXML($auser['closetag']);
+          $auser['opentag'] = fim_encodeXml($auser['opentag']);
+          $auser['closetag'] = fim_encodeXml($auser['closetag']);
           break;
           case 'phpbb':
-          $auser['opentag'] = vrim_encodeXML("<span style=\"color: #$auser[user_colour]\">");
-          $auser['closetag'] = vrim_encodeXML("</span>");
+          $auser['opentag'] = fim_encodeXml("<span style=\"color: #$auser[user_colour]\">");
+          $auser['closetag'] = fim_encodeXml("</span>");
           break;
         }
 
@@ -305,7 +305,7 @@ if ($watchRooms) {
     foreach ($missedMessages AS $message) {
       if (!hasPermission($message,$user,'view')) { continue; }
 
-      $roomName = vrim_encodeXML($message['name']);
+      $roomName = fim_encodeXml($message['name']);
       $watchRoomsXML .= "    <room>
       <roomId>$message[id]</roomId>
       <roomName>$roomName</roomName>
@@ -326,7 +326,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getMessages>
   <activeUser>
     <userId>$user[userId]</userId>
-    <userName>" . vrim_encodeXML($user['userName']) . "</userName>
+    <userName>" . fim_encodeXml($user['userName']) . "</userName>
   </activeUser>
 
   <sentData>

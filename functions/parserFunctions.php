@@ -287,7 +287,7 @@ function finalParse($message) {
   global $room;
 
   $messageRaw = $message; // Parses the sources for MySQL.
-  $messageHtml = nl2br(htmlwrap(htmlParse(censor(vrim_encodeXML($message),$room['id']),$room['options']),30,' ')); // Parses for browser or HTML rendering.
+  $messageHtml = nl2br(htmlwrap(htmlParse(censor(fim_encodeXml($message),$room['id']),$room['options']),30,' ')); // Parses for browser or HTML rendering.
   $messageApi = nl2vb(smilie($message,$room['bbcode'])); // Not yet coded, you see.
 
   return array($messageRaw, $messageHtml, $messageApi);
@@ -346,7 +346,7 @@ function sendMessage($messageText,$user,$room,$flag = '') {
     $iv_size = mcrypt_get_iv_size(MCRYPT_3DES,MCRYPT_MODE_CBC);
     $iv = base64_encode(mcrypt_create_iv($iv_size, MCRYPT_RAND));
 
-    list($messages,$iv,$saltNum) = vrim_encrypt(array($messageRaw,$messageHtml,$messageApi));
+    list($messages,$iv,$saltNum) = fim_encrypt(array($messageRaw,$messageHtml,$messageApi));
     list($messageRaw,$messageHtml,$messageApi) = $messages;
   }
 

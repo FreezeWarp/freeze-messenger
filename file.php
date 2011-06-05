@@ -45,7 +45,7 @@ elseif ($hash) {
 eval(hook('filePostquery'));
 
 
-$file = vrim_decrypt($file,'contents');
+$file = fim_decrypt($file,'contents');
 
 
 eval(hook('filePredisplay'));
