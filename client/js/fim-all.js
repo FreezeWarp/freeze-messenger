@@ -355,6 +355,48 @@ $(document).ready(function() {
       }
     });
   });
+  
+  $('#viewStats').click(function() {
+    var statsHtml = new Object;
+    var roomHtml = '';
+    var number = 10;
+    
+    $.ajax({
+      url: 'api/getStats.php?rooms=' + roomId + '&maxResults=' + number,
+      timeout: 5000,
+      type: 'GET',
+      cache: false,
+      success: function(xml) {
+        $(xml).find('room').each(function() {
+          var roomName = $(this).find('roomName').text();
+          var roomId = $(this).find('roomId').text();
+
+          
+          $(this).find('user').each(function() {
+            var userName = $(this).find('userData > userName').text();
+            var userId = $(this).find('userData > userId').text();
+            var position = parseInt($(this).find('position').text());
+            var messageCount = $(this).find('messageCount').text();
+
+            statsHtml[position] += '<td>' + userName + '</td>';
+          });
+          
+          
+          roomHtml += '<th>' + roomName + '</th>';
+          
+        }
+        
+        for (i = 1; i < number; i++) {
+          statsHtml2 += '<tr><th>' + i + '</th>' + statsHtml[i] + '</tr>';
+        }
+        
+        quickDialogue('<table><thead><tr><th>Position</th>' + roomHtml + '</tr></thead><tbody>' + statsHtml2 + '</tbody></table>','Room Stats','roomStatsDialogue',600);
+      },
+      error: function() {
+        alert('Failed to show all rooms');
+      }
+    });
+  });
 
   $('#copyrightLink').click(function() {
     ajaxTabDialogue('template.php?template=copyright','copyrightDialogue',600);
