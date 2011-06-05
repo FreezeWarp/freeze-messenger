@@ -5,3 +5,6 @@ CREATE TABLE IF NOT EXISTS `{prefix}censorLists` (
   `options` int(4) NOT NULL DEFAULT '3',
   PRIMARY KEY (`id`)
 ) ENGINE={engine}  DEFAULT CHARSET=utf8;
+
+INSERT INTO `{prefix}censorLists` (`id`, `name`, `type`) VALUES
+(1, 'Example Censor', 'black')
