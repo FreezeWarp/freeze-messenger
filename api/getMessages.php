@@ -31,30 +31,31 @@ $rooms = $_GET['rooms'];
 $roomsArray = explode(',',$rooms);
 foreach ($roomsArray AS &$v) $v = intval($v);
 
-$newestMessage = intval($_GET['messageIdMax']); // INT
-$oldestMessage = intval($_GET['messageIdMin']); // INT
+$newestMessage = (int) $_GET['messageIdMax']; // INT
+$oldestMessage = (int) $_GET['messageIdMin']; // INT
 
-$newestDate = intval($_GET['messageDateMax']); // INT
-$oldestDate = intval($_GET['messageDateMin']); // INT
+$newestDate = (int) $_GET['messageDateMax']; // INT
+$oldestDate = (int) $_GET['messageDateMin']; // INT
 
-$messageStart = intval($_GET['messageIdStart']); // INT
+$messageStart = (int) $_GET['messageIdStart']; // INT
 
-$watchRooms = intval($_GET['watchRooms']); // BOOL
-$activeUsers = intval($_GET['activeUsers']); // BOOL
-$archive = intval($_GET['archive']); // BOOL
-$noPing = intval($_GET['noping']); // BOOL
+$watchRooms = (bool) $_GET['watchRooms']; // BOOL
+$activeUsers = (bool) $_GET['activeUsers']; // BOOL
+$archive = (bool) $_GET['archive']; // BOOL
+$noPing = (bool) $_GET['noping']; // BOOL
 
 $encode = ($_GET['encode']); // String - 'base64', 'plaintext'
 $fields = ($_GET['messageFields']); // String - 'api', 'html', or 'both'
 
 
-$onlineThreshold = intval($_GET['onlineThreshold'] ?: $onlineThreshold); // INT - Only if activeUsers = TRUE
+$onlineThreshold = (int) ($_GET['onlineThreshold'] ? $_GET['onlineThreshold'] : $onlineThreshold); // INT - Only if activeUsers = TRUE
+
 
 if ($_GET['messageLimit'] == '0') {
   $messageLimit = 500; // Sane maximum.
 }
 else {
-  $messageLimit = ($_GET['messageLimit'] ? intval($_GET['messageLimit']) : ($messageLimit ? $messageLimit : 40));
+  $messageLimit = (int) ($_GET['messageLimit'] ? $_GET['messageLimit'] : ($messageLimit ? $messageLimit : 40));
   if ($messageLimit > 500) $messageLimit = 500; // Sane maximum.
 }
 
