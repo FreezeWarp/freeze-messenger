@@ -272,7 +272,7 @@ function getSuccess(xml) {
      var startTag = unxml($(this).find('startTag').text());
      var endTag = unxml($(this).find('endTag').text());
 
-     activeUserHtml.push('<span class="userName" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>');
+     activeUserHtml.push('<span class="userName" data-userId="' + userId + '">' + startTag + '<span class="username">' + userName + '</span>' + endTag + '</span>');
     });
 
     $('#activeUsers').html(activeUserHtml.join(', '));

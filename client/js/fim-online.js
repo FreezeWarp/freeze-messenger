@@ -39,7 +39,7 @@ function updateOnline() {
         });
         roomData = roomData.join(', ');
 
-        data += '<tr><td>' + startTag + userName + endTag + '</td><td>' + roomData + '</td></tr>';
+        data += '<tr><td>' + startTag + '<span class="userName">' + userName + '</span>' + endTag + '</td><td>' + roomData + '</td></tr>';
       });
 
       $('#onlineUsers').html(data);
