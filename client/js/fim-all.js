@@ -342,123 +342,7 @@ $(document).ready(function() {
   });
 
   $('a#createRoom').click(function() {
-    ajaxTabDialogue('template.php?template=editRoomForm','createRoomDialogue',1000,false,function() {
-
-      var roomRef = new Object;
-      var roomList = new Array;
-  
-      $.ajax({
-        url: 'api/getRooms.php?permLevel=post',
-        timeout: 5000,
-        type: 'GET',
-        async: true,
-        cache: false,
-        success: function(xml) {
-          $(xml).find('room').each(function() {
-            var roomName = $(this).find('roomName').text();
-            var roomId = $(this).find('roomId').text();
-  
-            roomRef[roomName] = roomId;
-            roomList.push(roomName);
-          });
-  
-          $("#defaultRoom").autocomplete({
-            source: roomList
-          });
-          $("#watchRoomBridge").autocomplete({
-            source: roomList
-          });
-        },
-        error: function() {
-          alert('Rooms not obtained.');
-        }
-      });
-  
-      $('#defaultHighlight').ColorPicker({
-        color: '',
-        onShow: function (colpkr) {
-          $(colpkr).fadeIn(500);
-          return false;
-        },
-        onHide: function (colpkr) {
-          $(colpkr).fadeOut(500);
-          return false; 
-        },
-        onChange: function(hsb, hex, rgb) {
-          $('#defaultHighlight').css('background-color','#' + hex);
-          $('#defaultHighlight').val(hex);
-          $('#fontPreview').css('background-color','#' + hex);
-        }
-      });
-    
-      $('#defaultColour').ColorPicker({
-        color: '',
-        onShow: function (colpkr) {
-          $(colpkr).fadeIn(500);
-          return false;
-        },
-        onHide: function (colpkr) {
-          $(colpkr).fadeOut(500);
-          return false; 
-        },
-        onChange: function(hsb, hex, rgb) {
-          $('#defaultColour').css('background-color','#' + hex);
-          $('#defaultColour').val(hex);
-          $('#fontPreview').css('color','#' + hex);
-        }
-      });
-    
-      $('#fontPreview').css('color','');
-      $('#defaultColour').css('background-color','');
-      $('#fontPreview').css('background-color','');
-      $('#defaultHighlight').css('background-color','');
-    
-      if ($('#defaultItalics').is(':checked')) {
-        $('#fontPreview').css('font-style','italic');
-      }
-      else {
-        $('#fontPreview').css('font-style','normal');
-      }
-    
-      if ($('#defaultBold').is(':checked')) {
-        $('#fontPreview').css('font-weight','bold');
-      }
-      else {
-        $('#fontPreview').css('font-style','normal');
-      }
-  
-      function addRoom() {
-        var val = $("#watchRoomBridge").val();
-        var id = roomRef[val];
-        
-        if (!id) {
-          alert('Room does not exist.');
-        }
-        else {
-          var currentRooms = $("#watchRooms").val().split(",");
-          currentRooms.push(id);
-      
-          $("#watchRoomsList").append("<span id=\"watchRoomSubList" + id + "\">" + val + " (<a href=\"javascript:void(0);\" onclick=\"removeRoom(" + id + ");\">x</a>), </span>");
-          $("#watchRooms").val(currentRooms.toString(","));
-        }
-      }
-      
-      function removeRoom(id) {
-        $("#watchRoomSubList" + id).fadeOut(500, function() {
-          $(this).remove();
-        });
-      
-        var currentRooms = $("#watchRooms").val().split(",");
-        for (var i = 0; i < currentRooms.length; i++) {
-          if(currentRooms[i] == id) {
-            currentRooms.splice(i, 1);
-            break;
-          }
-        }
-      
-        $("#watchRooms").val(currentRooms.toString(","));
-      }
-    });
+    ajaxTabDialogue('template.php?template=editRoomForm','createRoomDialogue',1000);
   });
     
   $("#editRoomForm").submit(function() {
@@ -588,16 +472,137 @@ $(document).ready(function() {
     });
   });
 
+  
+  
   $('#copyrightLink').click(function() {
     ajaxTabDialogue('template.php?template=copyright','copyrightDialogue',600);
   });
 
+  
+  
   $('#icon_settings, #changeSettings, a.changeSettingsMulti').click(function() {
     ajaxTabDialogue('template.php?template=userSettingsForm','changeSettingsDialogue',1000,function() {
       $('.colorpicker').empty().remove();
+    },function() {
+      var roomRef = new Object;
+      var roomList = new Array;
+  
+      $.ajax({
+        url: 'api/getRooms.php?permLevel=post',
+        timeout: 5000,
+        type: 'GET',
+        async: true,
+        cache: false,
+        success: function(xml) {
+          $(xml).find('room').each(function() {
+            var roomName = $(this).find('roomName').text();
+            var roomId = $(this).find('roomId').text();
+  
+            roomRef[roomName] = roomId;
+            roomList.push(roomName);
+          });
+  
+          $("#defaultRoom").autocomplete({
+            source: roomList
+          });
+          $("#watchRoomBridge").autocomplete({
+            source: roomList
+          });
+        },
+        error: function() {
+          alert('Rooms not obtained.');
+        }
+      });
+  
+      $('#defaultHighlight').ColorPicker({
+        color: '',
+        onShow: function (colpkr) {
+          $(colpkr).fadeIn(500);
+          return false;
+        },
+        onHide: function (colpkr) {
+          $(colpkr).fadeOut(500);
+          return false; 
+        },
+        onChange: function(hsb, hex, rgb) {
+          $('#defaultHighlight').css('background-color','#' + hex);
+          $('#defaultHighlight').val(hex);
+          $('#fontPreview').css('background-color','#' + hex);
+        }
+      });
+    
+      $('#defaultColour').ColorPicker({
+        color: '',
+        onShow: function (colpkr) {
+          $(colpkr).fadeIn(500);
+          return false;
+        },
+        onHide: function (colpkr) {
+          $(colpkr).fadeOut(500);
+          return false; 
+        },
+        onChange: function(hsb, hex, rgb) {
+          $('#defaultColour').css('background-color','#' + hex);
+          $('#defaultColour').val(hex);
+          $('#fontPreview').css('color','#' + hex);
+        }
+      });
+    
+      $('#fontPreview').css('color','');
+      $('#defaultColour').css('background-color','');
+      $('#fontPreview').css('background-color','');
+      $('#defaultHighlight').css('background-color','');
+    
+      if ($('#defaultItalics').is(':checked')) {
+        $('#fontPreview').css('font-style','italic');
+      }
+      else {
+        $('#fontPreview').css('font-style','normal');
+      }
+    
+      if ($('#defaultBold').is(':checked')) {
+        $('#fontPreview').css('font-weight','bold');
+      }
+      else {
+        $('#fontPreview').css('font-style','normal');
+      }
+  
+      function addRoom() {
+        var val = $("#watchRoomBridge").val();
+        var id = roomRef[val];
+        
+        if (!id) {
+          alert('Room does not exist.');
+        }
+        else {
+          var currentRooms = $("#watchRooms").val().split(",");
+          currentRooms.push(id);
+      
+          $("#watchRoomsList").append("<span id=\"watchRoomSubList" + id + "\">" + val + " (<a href=\"javascript:void(0);\" onclick=\"removeRoom(" + id + ");\">x</a>), </span>");
+          $("#watchRooms").val(currentRooms.toString(","));
+        }
+      }
+      
+      function removeRoom(id) {
+        $("#watchRoomSubList" + id).fadeOut(500, function() {
+          $(this).remove();
+        });
+      
+        var currentRooms = $("#watchRooms").val().split(",");
+        for (var i = 0; i < currentRooms.length; i++) {
+          if(currentRooms[i] == id) {
+            currentRooms.splice(i, 1);
+            break;
+          }
+        }
+      
+        $("#watchRooms").val(currentRooms.toString(","));
+      }
     });
   });
 
+  
+  
   $(document).ready(function(){    
     $("#kickUserForm").submit(function(){
       data = $("#kickUserForm").serialize(); // Serialize the form data for AJAX.
