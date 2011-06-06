@@ -342,30 +342,18 @@ $(document).ready(function() {
   });
 
   $('a#createRoom').click(function() {
-    ajaxTabDialogue('template.php?template=editRoomForm','createRoomDialogue',1000);
-  });
-    
-  $("#editRoomForm").submit(function() {
-    var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
-    
-    $.post("api/moderate.php?roomId=" + roomId,data,function(xml) {
-      quickDialogue(html,'','editRoomResultDialogue');
-    }); // Send the form data via AJAX.
-    
-    $("#editRoomDialogue").dialog('close');
-      return false; // Don't submit the form.
-  });
+    ajaxTabDialogue('template.php?template=editRoomForm','createRoomDialogue',1000,false,function() {
+      $("#editRoomForm").submit(function() {
+        var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
 
-  $("#changeSettingsForm").submit(function(){
-    data = $("#changeSettingsForm").serialize(); // Serialize the form data for AJAX.
-    $.post("content/options.php?phase=2",data,function(html) {
-      quickDialogue(html,'','changeSettingsResultDialogue');
-    }); // Send the form data via AJAX.
-  
-    $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
-    $(".colorpicker").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
-  
-    return false; // Don't submit the form.
+        $.post("api/moderate.php?roomId=" + roomId,data,function(xml) {
+          quickDialogue(html,'','editRoomResultDialogue');
+        }); // Send the form data via AJAX.
+
+        $("#editRoomDialogue").dialog('close');
+        return false; // Don't submit the form.
+      });
+    });
   });
 
   $('a#editRoom').click(function() {
@@ -598,6 +586,18 @@ $(document).ready(function() {
       
         $("#watchRooms").val(currentRooms.toString(","));
       }
+    });
+    
+    $("#changeSettingsForm").submit(function(){
+      data = $("#changeSettingsForm").serialize(); // Serialize the form data for AJAX.
+      $.post("content/options.php?phase=2",data,function(html) {
+        quickDialogue(html,'','changeSettingsResultDialogue');
+      }); // Send the form data via AJAX.
+  
+      $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
+      $(".colorpicker").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
+  
+      return false; // Don't submit the form.
     });
   });
 
