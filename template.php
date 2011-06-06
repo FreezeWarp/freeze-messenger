@@ -38,14 +38,20 @@ switch ($template) {
   echo template('editRoomForm');
   break;
 
+  case 'createRoomSuccess':
+  $insertId = (int) $_GET['insertId'];
+
+  echo template('createRoomSuccess');
+  break;
+
   case 'kickForm':
   case 'unkickForm':
   case 'copyright':
   case 'userSettingsForm':
   case 'online':
-  case 'createRoomForm':
   case 'help':
   case 'privateRoomForm':
+  case 'createRoomForm':
   echo template($template);
   break;
 

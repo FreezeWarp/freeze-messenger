@@ -19,11 +19,11 @@ $apiRequest = true;
 require_once('../global.php');
 header('Content-type: text/xml');
 
-$action = fim_urldecode($_GET['action']);
+$action = fim_urldecode($_POST['action']);
 
 switch ($action) {
   case 'createRoom':
-  $name = substr(mysqlEscape($_GET['name']),0,20); // Limits to 20 characters.
+  $name = substr(mysqlEscape($_POST['name']),0,20); // Limits to 20 characters.
 
   if (!$name) {
     $failCode = 'noName';
@@ -35,11 +35,11 @@ switch ($action) {
       $failMessage = 'The room specified already exists.';
     }
     else {
-      $allowedGroups = mysqlEscape($_GET['allowedGroups']);
-      $allowedUsers = mysqlEscape($_GET['allowedUsers']);
-      $moderators = mysqlEscape($_GET['moderators']);
-      $options = ($_GET['mature'] ? 2 : 0);
-      $bbcode = intval($_GET['bbcode']);
+      $allowedGroups = mysqlEscape($_POST['allowedGroups']);
+      $allowedUsers = mysqlEscape($_POST['allowedUsers']);
+      $moderators = mysqlEscape($_POST['moderators']);
+      $options = ($_POST['mature'] ? 2 : 0);
+      $bbcode = intval($_POST['bbcode']);
 
       mysqlQuery("INSERT INTO {$sqlPrefix}rooms (name,allowedGroups,allowedUsers,moderators,owner,options,bbcode) VALUES ('$name','$allowedGroups','$allowedUsers','$moderators',$user[userId],$options,$bbcode)");
       $insertId = mysql_insert_id();
@@ -56,7 +56,7 @@ switch ($action) {
   break;
 
   case 'editRoom':
-  $name = substr(mysqlEscape($_GET['name']),0,20); // Limits to 20 characters.
+  $name = substr(mysqlEscape($_POST['name']),0,20); // Limits to 20 characters.
 
   if (!$name) {
     $failCode = 'noName';
@@ -85,7 +85,7 @@ switch ($action) {
         }
       }
 
-      $censorLists = $_GET['censor'];
+      $censorLists = $_POST['censor'];
       foreach($censorLists AS $id => $list) {
         $listsNew[$id] = $list;
       }
@@ -110,11 +110,11 @@ switch ($action) {
         }
       }
 
-      $allowedGroups = mysqlEscape($_GET['allowedGroups']);
-      $allowedUsers = mysqlEscape($_GET['allowedUsers']);
-      $moderators = mysqlEscape($_GET['moderators']);
-      $options = ($room['options'] & 1) + ($_GET['mature'] ? 2 : 0) + ($room['options'] & 4) + ($room['options'] & 8) + ($_GET['disableModeration'] ? 32 + 0 : 0);
-      $bbcode = intval($_GET['bbcode']);
+      $allowedGroups = mysqlEscape($_POST['allowedGroups']);
+      $allowedUsers = mysqlEscape($_POST['allowedUsers']);
+      $moderators = mysqlEscape($_POST['moderators']);
+      $options = ($room['options'] & 1) + ($_POST['mature'] ? 2 : 0) + ($room['options'] & 4) + ($room['options'] & 8) + ($_POST['disableModeration'] ? 32 + 0 : 0);
+      $bbcode = intval($_POST['bbcode']);
       mysqlQuery("UPDATE {$sqlPrefix}rooms SET name = '$name', allowedGroups = '$allowedGroups', allowedUsers = '$allowedUsers', moderators = '$moderators', options = '$options', bbcode = '$bbcode' WHERE id = $room[id]");
     }
   }
@@ -144,13 +144,13 @@ switch ($action) {
 
 
   case 'kickuser':
-  $userId = intval($_GET['userId']);
+  $userId = intval($_POST['userId']);
   $user2 = sqlArr("SELECT u1.settings, u2.userId, u2.userName FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userId = $userId AND u2.userId = u1.userId");
 
-  $room = intval($_GET['roomId']);
+  $room = intval($_POST['roomId']);
   $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
 
-  $time = floor($_GET['time'] * $_GET['interval']);
+  $time = floor($_POST['time'] * $_POST['interval']);
 
   if (!$user2['userId']) {
     trigger_error('Invalid User',E_USER_ERROR);
@@ -178,10 +178,10 @@ switch ($action) {
   break;
 
   case 'unkickuser':
-  $userId = intval($_GET['userId']);
+  $userId = intval($_POST['userId']);
   $user2 = sqlArr("SELECT u1.settings, u2.userId, u2.userName FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userId = $userId AND u2.userId = u1.userId");
 
-  $room = intval($_GET['roomId']);
+  $room = intval($_POST['roomId']);
   $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
 
   if (!$user2['userId']) {
@@ -216,9 +216,9 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
     <userName>" . fim_encodeXml($user['userName']) . "</userName>
   </activeUser>
   <sentData>
-    <action>" . fim_encodeXml($_GET['action']) . "</action>
-    <roomId>" . (int) $_GET['roomId'] . "</roomId>
-    <userId>" . (int) $_GET['userId'] . "</userId>
+    <action>" . fim_encodeXml($_POST['action']) . "</action>
+    <roomId>" . (int) $_POST['roomId'] . "</roomId>
+    <userId>" . (int) $_POST['userId'] . "</userId>
   </sentData>
   <errorcode>$failCode</errorcode>
   <errortext>$failMessage</errortext>

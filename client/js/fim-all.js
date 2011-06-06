@@ -510,11 +510,19 @@ $(document).ready(function() {
       $("#editRoomForm").submit(function() {
         var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
 
-        $.post("api/moderate.php?roomId=" + roomId,data,function(xml) {
-          quickDialogue(html,'','editRoomResultDialogue');
-        }); // Send the form data via AJAX.
+        $.post("api/moderate.php",data + '&action=createRoom',function(xml) {
+          var errorCode = $(xml).find('errorcode').text();
+          var errorMessage = $(xml).find('errortext').text();
+          var newRoomId = parseInt($(xml).find('insertId').text());
 
-        $("#editRoomDialogue").dialog('close');
+          if (errorCode) {
+            alert('An error has occured: ' + errorMessage);
+          }
+          else {
+            ajaxDialogue('template.php?template=createRoomSuccess&insertId=' + newRoomId,'Room Created!','editRoomResultDialogue',600);
+            $("#editRoomDialogue").dialog('close');
+          }
+        }); // Send the form data via AJAX.
         return false; // Don't submit the form.
       });
     });
