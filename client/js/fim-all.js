@@ -518,9 +518,6 @@ $(document).ready(function() {
     ajaxTabDialogue('template.php?template=userSettingsForm','changeSettingsDialogue',1000,function() {
       $('.colorpicker').empty().remove();
     },function() {
-      var roomRef = new Object;
-      var roomList = new Array;
-  
       $.ajax({
         url: 'api/getRooms.php?permLevel=post',
         timeout: 5000,
@@ -600,39 +597,7 @@ $(document).ready(function() {
       else {
         $('#fontPreview').css('font-style','normal');
       }
-  
-      function addRoom() {
-        var val = $("#watchRoomBridge").val();
-        var id = roomRef[val];
-        
-        if (!id) {
-          alert('Room does not exist.');
-        }
-        else {
-          var currentRooms = $("#watchRooms").val().split(",");
-          currentRooms.push(id);
-      
-          $("#watchRoomsList").append("<span id=\"watchRoomSubList" + id + "\">" + val + " (<a href=\"javascript:void(0);\" onclick=\"removeRoom(" + id + ");\">x</a>), </span>");
-          $("#watchRooms").val(currentRooms.toString(","));
-        }
-      }
-      
-      function removeRoom(id) {
-        $("#watchRoomSubList" + id).fadeOut(500, function() {
-          $(this).remove();
-        });
-      
-        var currentRooms = $("#watchRooms").val().split(",");
-        for (var i = 0; i < currentRooms.length; i++) {
-          if(currentRooms[i] == id) {
-            currentRooms.splice(i, 1);
-            break;
-          }
-        }
-      
-        $("#watchRooms").val(currentRooms.toString(","));
-      }
-    
+
       $("#changeSettingsForm").submit(function(){
         data = $("#changeSettingsForm").serialize(); // Serialize the form data for AJAX.
         $.post("content/options.php?phase=2",data,function(html) {
@@ -647,6 +612,8 @@ $(document).ready(function() {
     });
   });
 });
+
+
 
 function archive(id) {
   var encrypt = 'base64';
@@ -715,3 +682,39 @@ function archive(id) {
     error: function() {  alert('Error'); },
   });
 }
+
+function addRoom() {
+  var val = $("#watchRoomBridge").val();
+  var id = roomRef[val];
+  
+  if (!id) {
+    alert('Room does not exist.');
+  }
+  else {
+    var currentRooms = $("#watchRooms").val().split(",");
+    currentRooms.push(id);
+
+    $("#watchRoomsList").append("<span id=\"watchRoomSubList" + id + "\">" + val + " (<a href=\"javascript:void(0);\" onclick=\"removeRoom(" + id + ");\">x</a>), </span>");
+    $("#watchRooms").val(currentRooms.toString(","));
+  }
+}
+
+function removeRoom(id) {
+  $("#watchRoomSubList" + id).fadeOut(500, function() {
+    $(this).remove();
+  });
+
+  var currentRooms = $("#watchRooms").val().split(",");
+
+  for (var i = 0; i < currentRooms.length; i++) {
+    if(currentRooms[i] == id) {
+      currentRooms.splice(i, 1);
+      break;
+    }
+  }
+
+  $("#watchRooms").val(currentRooms.toString(","));
+}
+
+var roomRef = new Object;
+var roomList = new Array;
