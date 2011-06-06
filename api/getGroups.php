@@ -14,6 +14,51 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+$apiRequest = true;
 
+require_once('../global.php');
+header('Content-type: text/xml');
+
+
+$groups = sqlArr("SELECT $sqlGroupTableCols[groupId] AS groupId,
+  $sqlGroupTableCols[groupName] AS groupName
+FROM {$sqlGroupTable} AS g
+  {$tables}
+WHERE TRUE
+  {$where}
+ORDER BY g.{$sqlGroupTableCols[groupId]}
+  {$order}",'groupId'); // Get all rooms
+
+
+if ($groups) {
+  foreach ($groups AS $group) {
+    $groupXML .= "    <group>
+      <groupId>$group[groupId]</groupId>
+      <groupName>" . fim_encodeXml($group['groupName']) . "</groupName>
+    </group>";
+  }
+}
+
+
+echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
+<getFonts>
+  <activeUser>
+    <userId>$user[userId]</userId>
+    <userName>" . fim_encodeXml($user['userName']) . "</userName>
+  </activeUser>
+
+  <sentData>
+  </sentData>
+
+  <errorcode>$failCode</errorcode>
+  <errortext>$failMessage</errortext>
+
+  <groups>
+    $groupXML
+  </groups>
+</getFonts>";
+
+
+mysqlClose();
 
 ?>
