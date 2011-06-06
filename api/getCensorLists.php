@@ -14,6 +14,57 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+$apiRequest = true;
+
+require_once('../global.php');
+header('Content-type: text/xml');
 
 
+$room = (int) $_GET['roomid'];
+
+
+$censorLists = sqlArr("SELECT c.id AS listId,
+  c.name as listName,
+  c.type AS listType,
+  c.options AS listOptions
+FROM {$sqlPrefix}censorLists AS c
+  {$tables}
+WHERE TRUE
+  {$where}
+ORDER BY c.name
+  {$order}",'groupId'); // Get all rooms
+
+
+if ($censorLists) {
+  foreach ($censorLists AS $list) {
+    $listXML .= "    <list>
+      <listId>$list[listId]</listId>
+      <listName>" . fim_encodeXml($list['listName']) . "</listName>
+      <listType>" . fim_encodeXml($list['listType']) . "</listType>
+      <listOptions>$list[listOptions]</listOptions>
+    </list>";
+  }
+}
+
+
+echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
+<getFonts>
+  <activeUser>
+    <userId>$user[userId]</userId>
+    <userName>" . fim_encodeXml($user['userName']) . "</userName>
+  </activeUser>
+
+  <sentData>
+  </sentData>
+
+  <errorcode>$failCode</errorcode>
+  <errortext>$failMessage</errortext>
+
+  <lists>
+    $listXML
+  </lists>
+</getFonts>";
+
+
+mysqlClose();
 ?>
