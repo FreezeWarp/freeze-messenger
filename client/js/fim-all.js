@@ -302,11 +302,33 @@ $(document).ready(function() {
   });
 
   $('a#online').click(function() {
-    ajaxDialogue('template.php?template=online','View Active Users','onlineDialogue',600);
+    ajaxDialogue('template.php?template=online','View Active Users','onlineDialogue',600,false,function() {
+      $("#editRoomForm").submit(function() {
+        var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
+
+        $.post("api/moderate.php?phase=2&roomId=$room[id]",data,function(html) {
+          quickDialogue(html,'','editRoomResultDialogue');
+        }); // Send the form data via AJAX.
+
+        $("#editRoomDialogue").dialog('close');
+        return false; // Don't submit the form.
+      });
+    });
   });
 
   $('a#createRoom').click(function() {
-    ajaxDialogue('template.php?template=createRoomForm','Create a New Room','createRoomDialogue',1000);
+    ajaxDialogue('template.php?template=editRoomForm','Create a New Room','createRoomDialogue',1000,false,function() {
+      $("#editRoomForm").submit(function() {
+        var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
+
+        $.post("api/moderate.php?phase=2&roomId=$room[id]",data,function(html) {
+          quickDialogue(html,'','editRoomResultDialogue');
+        }); // Send the form data via AJAX.
+
+        $("#editRoomDialogue").dialog('close');
+        return false; // Don't submit the form.
+      });
+    });
   });
 
   $('a#editRoom').click(function() {
