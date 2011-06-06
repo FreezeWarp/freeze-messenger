@@ -6,5 +6,7 @@ CREATE TABLE IF NOT EXISTS `{prefix}censorLists` (
   PRIMARY KEY (`id`)
 ) ENGINE={engine}  DEFAULT CHARSET=utf8;
 
+-- DIVIDE
+
 INSERT INTO `{prefix}censorLists` (`id`, `name`, `type`) VALUES
-(1, 'Example Censor', 'black')
+(1, 'Example Censor', 'black');

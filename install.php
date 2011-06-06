@@ -289,7 +289,16 @@ Now that the database has been successfully installed, we must generate the conf
     echo 'success';
   }
 
+  break;
+
   case 5: // Config File
+  $host = urldecode($_GET['mysql_host']);
+  $userName = urldecode($_GET['mysql_userName']);
+  $password = urldecode($_GET['mysql_password']);
+  $database = urldecode($_GET['mysql_database']);
+  $prefix = urldecode($_GET['mysql_tableprefix']);
+
+  $forum = $_GET['forum'];
   $forumUrl = $_GET['forum_url'];
   $forumTablePrefix = $_GET['forum_tableprefix'];
   $forumCookiePrefix = $_GET['forum_tableprefix'];
@@ -297,6 +306,33 @@ Now that the database has been successfully installed, we must generate the conf
   $encryptSalt = $_GET['encrypt_salt'];
 
   $base = file_get_contents('config.base.php');
+
+  $find = array(
+    '$sqlHost = \'localhost\';',
+    '$sqlUser = \'\';',
+    '$sqlPassword = \'\';',
+    '$sqlDatabase = \'\';',
+    '$sqlPrefix = \'\';',
+    '$loginMethod = \'vbulletin\';',
+    '$installLoc = \'\';',
+    '$installUrl = \'\';',
+    '$forumUrl = \'\';',
+  );
+
+  $replace = array(
+    '$sqlHost = \'' . $host . '\';',
+    '$sqlUser = \'' . $userName . '\';',
+    '$sqlPassword = \'' . $password . '\';',
+    '$sqlDatabase = \'' . $database . '\';',
+    '$sqlPrefix = \'' . $prefix . '\';',
+    '$loginMethod = \'' . $forum . '\';',
+    '$installLoc = \'' . __DIR__ . '\';',
+    '$installUrl = \'' . str_replace('install.php','',$_SERVER['HTTP_REFERER']) . '\';',
+    '$forumUrl = \'' . $forumUrl . '\';',
+  );
+
+  $baseNew = str_replace($find,$replace,$base);
+  echo $baseNew;
   break;
 
   case 'dev':
