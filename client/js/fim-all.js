@@ -245,6 +245,9 @@ $(document).ready(function() {
 
   $('button').button();
 
+  
+  
+  
   $('a#kick').click(function() {
     ajaxDialogue('template.php?template=kickForm','Kick User','kickUserDialogue',1000,false,function() {
       $.ajax({
@@ -290,17 +293,37 @@ $(document).ready(function() {
           alert('Failed to show all users');
         }
       });
+      
+      $("#kickUserForm").submit(function() {
+        data = $("#kickUserForm").serialize(); // Serialize the form data for AJAX.
+        $.post("content/kick.php?phase=2",data,function(html) {
+          quickDialogue(html,'','kickUserResultDialogue');
+        }); // Send the form data via AJAX.
+  
+        $("#kickUserDialogue").dialog('close');
+  
+        return false; // Don't submit the form.
+      });
     });
   });
 
+  
+  
+  
   $('a#privateRoom').click(function() {
     ajaxDialogue('template.php?template=privateRoomForm','Enter Private Room','privateRoomDialogue',1000);
   });
 
+  
+  
+  
   $('a#manageKick').click(function() {
     ajaxDialogue('template.php?template=manageKickForm&roomId=' + roomId,'Manage Kicked Users in This Room','manageKickDialogue',600);
   });
 
+  
+  
+  
   $('a#online').click(function() {
     ajaxDialogue('template.php?template=online','View Active Users','onlineDialogue',600,false,function() {
       var timer2 = setInterval(updateOnline,2500);
@@ -341,6 +364,9 @@ $(document).ready(function() {
     }
   });
 
+  
+  
+  
   $('a#createRoom').click(function() {
     ajaxTabDialogue('template.php?template=editRoomForm','createRoomDialogue',1000,false,function() {
       $("#editRoomForm").submit(function() {
@@ -356,6 +382,9 @@ $(document).ready(function() {
     });
   });
 
+  
+  
+  
   $('a#editRoom').click(function() {
     ajaxTabDialogue('template.php?template=editRoomForm&roomId=' + roomId,'editRoomDialogue',1000,false,function() {
       $("#editRoomForm").submit(function() {
@@ -371,19 +400,31 @@ $(document).ready(function() {
     });
   });
 
+  
+  
+  
   $('a.editRoomMulti').click(function() {
     ajaxDialogue('template.php?template=editRoomForm&roomId=' + $(this).attr('data-roomId'),'Edit Room','editRoomDialogue',1000);
   });
 
+  
+  
+  
   $('#icon_help').click(function() {
     ajaxTabDialogue('template.php?template=help','helpDialogue',1000);
   });
+  
+  
+  
   
   $('#icon_note, #messageArchive').click(function() {
     quickDialogue('<table><thead><tr><th>User</th><th>Time</th><th>Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table>','Archive','archiveDialogue',1000);
 
     archive(0);
   });
+  
+  
+  
   
   $('#roomList').click(function() {
     var roomHtml = '';
@@ -411,6 +452,9 @@ $(document).ready(function() {
       }
     });
   });
+  
+  
+  
   
   $('#viewStats').click(function() {
     var statsHtml = new Object;
@@ -462,10 +506,12 @@ $(document).ready(function() {
 
   
   
+  
   $('#copyrightLink').click(function() {
     ajaxTabDialogue('template.php?template=copyright','copyrightDialogue',600);
   });
 
+  
   
   
   $('#icon_settings, #changeSettings, a.changeSettingsMulti').click(function() {
@@ -586,33 +632,18 @@ $(document).ready(function() {
       
         $("#watchRooms").val(currentRooms.toString(","));
       }
-    });
     
-    $("#changeSettingsForm").submit(function(){
-      data = $("#changeSettingsForm").serialize(); // Serialize the form data for AJAX.
-      $.post("content/options.php?phase=2",data,function(html) {
-        quickDialogue(html,'','changeSettingsResultDialogue');
-      }); // Send the form data via AJAX.
-  
-      $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
-      $(".colorpicker").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
-  
-      return false; // Don't submit the form.
-    });
-  });
-
-  
-  
-  $(document).ready(function(){    
-    $("#kickUserForm").submit(function(){
-      data = $("#kickUserForm").serialize(); // Serialize the form data for AJAX.
-      $.post("content/kick.php?phase=2",data,function(html) {
-        quickDialogue(html,'','kickUserResultDialogue');
-      }); // Send the form data via AJAX.
-
-      $("#kickUserDialogue").dialog('close');
-
-      return false; // Don't submit the form.
+      $("#changeSettingsForm").submit(function(){
+        data = $("#changeSettingsForm").serialize(); // Serialize the form data for AJAX.
+        $.post("content/options.php?phase=2",data,function(html) {
+          quickDialogue(html,'','changeSettingsResultDialogue');
+        }); // Send the form data via AJAX.
+    
+        $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
+        $(".colorpicker").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
+    
+        return false; // Don't submit the form.
+      });
     });
   });
 });
