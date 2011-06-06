@@ -20,18 +20,32 @@ require_once('../global.php');
 header('Content-type: text/xml');
 
 
-$groups = sqlArr("SELECT $sqlGroupTableCols[groupId] AS groupId,
-  $sqlGroupTableCols[groupName] AS groupName
-FROM {$sqlGroupTable} AS g
+$groups = sqlArr("SELECT $sqlUserGroupTableCols[groupId] AS groupId,
+  $sqlUserGroupTableCols[groupName] AS groupName
+FROM {$sqlUserGroupTable} AS g
   {$tables}
 WHERE TRUE
   {$where}
-ORDER BY g.{$sqlGroupTableCols[groupId]}
+ORDER BY g.{$sqlUserGroupTableCols[groupId]}
   {$order}",'groupId'); // Get all rooms
 
 
 if ($groups) {
   foreach ($groups AS $group) {
+    switch ($loginMethod) {
+      case 'phpbb':
+      if (function_exists('mb_convert_case')) {
+        $group['groupName'] = mb_convert_case(str_replace('_',' ',$group['groupName']), MB_CASE_TITLE, "UTF-8");
+      }
+      elseif (function_exists('uc_words')) {
+        $group['groupName'] = ucwords(str_replace('_',' ',$group['groupName']));
+      }
+      else {
+        $group['groupName'] = str_replace('_',' ',$group['groupName']);
+      }
+      break;
+    }
+
     $groupXML .= "    <group>
       <groupId>$group[groupId]</groupId>
       <groupName>" . fim_encodeXml($group['groupName']) . "</groupName>

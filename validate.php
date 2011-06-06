@@ -45,7 +45,8 @@ switch ($loginMethod) {
     'options' => 'options',
   );
   $sqlUserGroupTableCols = array(
-    'groupid' => 'usergroupid',
+    'groupId' => 'usergroupid',
+    'groupName' => 'title',
   );
 
   $parseGroups = true; // This still needed?
@@ -65,7 +66,8 @@ switch ($loginMethod) {
     'colour' => 'user_colour',
   );
   $sqlUserGroupTableCols = array(
-    'groupid' => 'group_id',
+    'groupId' => 'group_id',
+    'groupName' => 'group_name',
   );
 
   $parseGroups = false;
