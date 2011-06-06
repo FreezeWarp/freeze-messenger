@@ -15,39 +15,3 @@
 
 /* Online-specific functions
  * updateOnline */
-
-function updateOnline() {
-  $.ajax({
-    url: 'api/getAllActiveUsers.php',
-    type: 'GET',
-    timeout: 2400,
-    cache: false,
-    success: function(xml) {
-      var data = '';
-
-      $(xml).find('user').each(function() {
-        var userName = $(this).find('userName').text();
-        var userId = $(this).find('userId').text();
-        var startTag = unxml($(this).find('startTag').text());
-        var endTag = unxml($(this).find('endTag').text());
-        var roomData = new Array();
-
-        $(this).find('room').each(function() {
-          var roomId = $(this).find('roomId').text();
-          var roomName = $(this).find('roomName').text();
-          roomData.push('<a href="/chat.php?room=' + roomId + '">' + roomName + '</a>');
-        });
-        roomData = roomData.join(', ');
-
-        data += '<tr><td>' + startTag + '<span class="userName">' + userName + '</span>' + endTag + '</td><td>' + roomData + '</td></tr>';
-      });
-
-      $('#onlineUsers').html(data);
-    },
-    error: function() {
-      $('#onlineUsers').html('Refresh Failed');
-    },
-  });
-}
-
-var timer2 = setInterval(updateOnline,2500);
