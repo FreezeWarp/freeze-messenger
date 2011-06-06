@@ -15,16 +15,16 @@ switch ($template) {
 //  elseif ($room['settings'] & 4) trigger_error('This room is deleted, and as such may not be edited.',E_USER_ERROR);
 
   $room = intval($_GET['roomId']); // Get the room we're on. If there is a $_GET variable, use it, otherwise the user's "default", or finally just main.
-  $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = '$room'"); // Data on the room.
+  if ($room) $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = '$room'"); // Data on the room.
 
-  $listsActive = sqlArr("SELECT * FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomId = $room[id]",'id');
+  if ($room) $listsActive = sqlArr("SELECT * FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomId = $room[id]",'id');
   if ($listsActive) {
     foreach ($listsActive AS $active) {
       $listStatus[$active['listid']] = $active['status'];
     }
   }
 
-  $lists = sqlArr("SELECT * FROM {$sqlPrefix}censorLists AS l WHERE options & 2",'id');
+  if ($room) $lists = sqlArr("SELECT * FROM {$sqlPrefix}censorLists AS l WHERE options & 2",'id');
   if ($lists) {
     foreach ($lists AS $list) {
       if ($list['type'] == 'black' && $listStatus[$list['id']] == 'block') $checked = true;

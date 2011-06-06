@@ -254,21 +254,21 @@ $(document).ready(function() {
         cache: false,
         success: function(xml) {
           var roomHtml = '';
-  
+
           $(xml).find('room').each(function() {
             var roomName = $(this).find('roomName').text();
             var roomId = $(this).find('roomId').text();
-  
+
             roomHtml += '<option value="' + roomId + '">' + roomName + '</option>';
           });
-          
+
           $('select[name=roomId]').html(roomHtml);
         },
         error: function() {
           alert('Failed to show all rooms');
         }
       });
-      
+
       $.ajax({
         url: 'api/getUsers.php',
         timeout: 5000,
@@ -306,7 +306,7 @@ $(document).ready(function() {
   });
 
   $('a#createRoom').click(function() {
-    ajaxDialogue('template.php?template=editRoomForm','Create a New Room','createRoomDialogue',1000,false,function() {
+    ajaxTabDialogue('template.php?template=editRoomForm','createRoomDialogue',1000,false,function() {
       $("#editRoomForm").submit(function() {
         var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
 
@@ -321,7 +321,7 @@ $(document).ready(function() {
   });
 
   $('a#editRoom').click(function() {
-    ajaxDialogue('template.php?template=editRoomForm&roomId=' + roomId,'Edit Room','editRoomDialogue',1000,false,function() {
+    ajaxTabDialogue('template.php?template=editRoomForm&roomId=' + roomId,'editRoomDialogue',1000,false,function() {
       $("#editRoomForm").submit(function() {
         var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
 
