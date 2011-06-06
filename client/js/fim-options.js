@@ -29,11 +29,11 @@ function getRoomList() {
     success: function(xml) {
 
       $(xml).find('room').each(function() {
-        var roomName = $(this).find('roomname').text();
-        var roomId = $(this).find('roomid').text();
-        var roomTopic = $(this).find('roomtopic').text();
+        var roomName = $(this).find('roomName').text();
+        var roomId = $(this).find('roomId').text();
+        var roomTopic = $(this).find('roomTopic').text();
         var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
-        var isPriv = ($(this).find('optionDefinitions > privateim').text() == 'true' ? true : false);
+        var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
         var isOwner = (parseInt($(this).find('owner').text()) == userid ? true : false);
         
         roomRef[roomName] = roomId;
@@ -127,12 +127,17 @@ $(document).ready(function() {
 function addRoom() {
   var val = $("#watchRoomBridge").val();
   var id = roomRef[val];
+  
+  if (!id) {
+    alert('Room does not exist.');
+  }
+  else {
+    var currentRooms = $("#watchRooms").val().split(",");
+    currentRooms.push(id);
 
-  var currentRooms = $("#watchRooms").val().split(",");
-  currentRooms.push(id);
-
-  $("#watchRoomsList").append("<span id=\"watchRoomSubList" + id + "\">" + val + " (<a href=\"javascript:void(0);\" onclick=\"removeRoom(" + id + ");\">x</a>), </span>");
-  $("#watchRooms").val(currentRooms.toString(","));
+    $("#watchRoomsList").append("<span id=\"watchRoomSubList" + id + "\">" + val + " (<a href=\"javascript:void(0);\" onclick=\"removeRoom(" + id + ");\">x</a>), </span>");
+    $("#watchRooms").val(currentRooms.toString(","));
+  }
 }
 
 function removeRoom(id) {
