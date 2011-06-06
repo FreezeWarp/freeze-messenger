@@ -302,18 +302,7 @@ $(document).ready(function() {
   });
 
   $('a#online').click(function() {
-    ajaxDialogue('template.php?template=online','View Active Users','onlineDialogue',600,false,function() {
-      $("#editRoomForm").submit(function() {
-        var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
-
-        $.post("api/moderate.php?phase=2&roomId=$room[id]",data,function(html) {
-          quickDialogue(html,'','editRoomResultDialogue');
-        }); // Send the form data via AJAX.
-
-        $("#editRoomDialogue").dialog('close');
-        return false; // Don't submit the form.
-      });
-    });
+    ajaxDialogue('template.php?template=online','View Active Users','onlineDialogue',600);
   });
 
   $('a#createRoom').click(function() {
@@ -321,7 +310,7 @@ $(document).ready(function() {
       $("#editRoomForm").submit(function() {
         var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
 
-        $.post("api/moderate.php?phase=2&roomId=$room[id]",data,function(html) {
+        $.post("api/moderate.php?roomId=" + roomId,data,function(xml) {
           quickDialogue(html,'','editRoomResultDialogue');
         }); // Send the form data via AJAX.
 
@@ -332,7 +321,18 @@ $(document).ready(function() {
   });
 
   $('a#editRoom').click(function() {
-    ajaxDialogue('template.php?template=editRoomForm&roomId=' + roomId,'Edit Room','editRoomDialogue',1000);
+    ajaxDialogue('template.php?template=editRoomForm&roomId=' + roomId,'Edit Room','editRoomDialogue',1000,false,function() {
+      $("#editRoomForm").submit(function() {
+        var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
+
+        $.post("api/moderate.php?roomId=0",data,function(xml) {
+          quickDialogue(html,'','editRoomResultDialogue');
+        }); // Send the form data via AJAX.
+
+        $("#editRoomDialogue").dialog('close');
+        return false; // Don't submit the form.
+      });
+    });
   });
 
   $('a.editRoomMulti').click(function() {
