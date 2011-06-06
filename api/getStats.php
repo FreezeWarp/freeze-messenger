@@ -88,8 +88,8 @@ LIMIT $resultLimit
     <userData>
       <userId>$totalPoster[userId]</userId>
       <userName>$totalPoster[userName]</userName>
-      <startTag>" . vrim_encodeXML($totalPoster['startTag']) . "</startTag>
-      <endTag>" . vrim_encodeXML($totalPoster['endTag']) . "</endTag>
+      <startTag>" . fim_encodeXml($totalPoster['startTag']) . "</startTag>
+      <endTag>" . fim_encodeXml($totalPoster['endTag']) . "</endTag>
     </userData>
     <messageCount>$totalPoster[count]</messageCount>
     <position>$position</position>
@@ -110,7 +110,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <getMessages>
   <activeUser>
     <userId>$user[userId]</userId>
-    <userName>" . vrim_encodeXML($user['userName']) . "</userName>
+    <userName>" . fim_encodeXml($user['userName']) . "</userName>
   </activeUser>
 
   <sentData>
