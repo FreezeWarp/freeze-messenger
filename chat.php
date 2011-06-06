@@ -75,19 +75,19 @@ else {
         $stopMessage = $phrases['chatNotModerated'];
       }
     }
-  
+
     if (($user['settings'] & 16) && ((($room['owner'] == $user['userId'] && $room['owner'] > 0) || (in_array($user['userId'],explode(',',$room['allowedUsers'])) || $room['allowedUsers'] == '*') || (in_array($user['userId'],explode(',',$room['moderators']))) || ((inArray(explode(',',$user['membergroupids']),explode(',',$room['allowedGroups'])) || $room['allowedGroups'] == '*') && ($room['allowedGroups'] != ''))) == false)) {
       $stopMessage = $phrases['chatAdminAccess'];
     }
-  
+
     if ($stopMessage) {
       $chatTemplate = template('chatStopMessage');
     }
-  
-    else {
+
+//    else {
       $textboxStyle = messageStyle($user);
-      $chatTemplate = template('chatTemplate');
-    }
+      $chatTemplate .= template('chatTemplate');
+//    }
   }
 
   else {
@@ -102,7 +102,7 @@ else {
       $hPM = 'You have been kicked from this room. Your kick will expire on ' . vbdate('m/d/Y g:i:sa',$hPT) . '.';
       break;
     }
-  
+
     $chatTemplate = container('Access Denied',$hPM);
   }
 
