@@ -84,10 +84,8 @@ else {
       $chatTemplate = template('chatStopMessage');
     }
 
-//    else {
-      $textboxStyle = messageStyle($user);
-      $chatTemplate .= template('chatTemplate');
-//    }
+    $textboxStyle = messageStyle($user);
+    $chatTemplate .= template('chatTemplate');
   }
 
   else {

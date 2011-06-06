@@ -422,7 +422,7 @@ function parser1($text,$offset,$stop = false,$globalString) {
       if ($stop) return array($str,$i);
 
       $iv = array(1 => '', 2 => '');
-      $cond = '';       
+      $cond = '';
       $iValueI = 1;
       $iValueProc = false;
 
@@ -546,6 +546,25 @@ function parser1($text,$offset,$stop = false,$globalString) {
     }
 
     $i++;
+  }
+
+  if ($iValueProc) {
+    $str .= iifl("$cond","$iv[1]","$iv[2]","global $globalString;");
+    if ($stop) return array($str,$i);
+
+    $iv = array(1 => '', 2 => '');
+    $cond = '';
+    $iValueI = 1;
+    $iValueProc = false;
+  }
+
+  elseif ($cValueProc) {
+    $str .= container("$cv[1]","$cv[2]");
+    if ($stop) return array($str,$i);
+
+    $cv = array(1 => '', 2 => '');
+    $cValueProc = false;
+    $cond = '';
   }
 
   return $str;
