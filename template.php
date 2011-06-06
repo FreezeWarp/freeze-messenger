@@ -44,6 +44,12 @@ switch ($template) {
   echo template('createRoomSuccess');
   break;
 
+  case 'editRoomSuccess':
+  $roomId = (int) $_GET['roomId'];
+
+  echo template('createRoomSuccess');
+  break;
+
   case 'kickForm':
   case 'unkickForm':
   case 'copyright':
