@@ -16,6 +16,11 @@
 /* Global Definitions
  * These are used throughout all other Javascript files, so are defined before all other FIM-specific files. */
 
+
+/*******************************
+ ****** Static Functions *******
+ *******************************/
+
 function unxml(data) {
   data = str_replace('&lt;','<',data);
   data = str_replace('&gt;','>',data);
@@ -144,7 +149,7 @@ function notify(text,header,id,id2) {
         sticky: true,
         glue: true,
         header: header
-      }); 
+      });
     }
   }
 }
@@ -168,7 +173,9 @@ function webkitNotify(icon, title, notifyData) {
 
 
 
-
+/*******************************
+ ****** Variable Setting *******
+ *******************************/
 
 $(document).ready(function() {
   window.forumUrl = 'http://www.victoryroad.net/';
@@ -182,6 +189,16 @@ $(document).ready(function() {
   window.longPolling = ($('body').attr('data-longPolling') === '1' ? 1 : 0);
 });
 
+var roomRef = new Object;
+var roomList = new Array;
+
+
+
+
+
+/*******************************
+ ****** Content Functions ******
+ *******************************/
 
 function showAllRooms() {
   $.ajax({
@@ -203,9 +220,9 @@ function showAllRooms() {
         var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
         var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
         var isOwner = (parseInt($(this).find('owner').text()) == userId ? true : false);
-        
+
         var text = '<li><a href="chat.php?room=' + roomId + '">' + roomName + '</a></li>';
-        
+
         if (isFav) {
           roomFavHtml += text;
         }
@@ -226,393 +243,6 @@ function showAllRooms() {
     }
   });
 }
-
-
-$(document).ready(function() {
-
-  roomId = $('body').attr('data-roomId');
-
-  $('#menu').accordion({
-    autoHeight: false,
-    navigation: true,
-    clearStyle: true
-  });
-
-  $('table > thead > tr:first-child > td:first-child, table > tr:first-child > td:first-child').addClass('ui-corner-tl');
-  $('table > thead > tr:first-child > td:last-child, table > tr:first-child > td:last-child').addClass('ui-corner-tr');
-  $('table > tbody > tr:last-child > td:first-child, table > tr:last-child > td:first-child').addClass('ui-corner-bl');
-  $('table > tbody > tr:last-child > td:last-child, table > tr:last-child > td:last-child').addClass('ui-corner-br');
-
-  $('button').button();
-
-  
-  
-  
-  $('a#kick').click(function() {
-    ajaxDialogue('template.php?template=kickForm','Kick User','kickUserDialogue',1000,false,function() {
-      $.ajax({
-        url: 'api/getRooms.php',
-        timeout: 5000,
-        type: 'GET',
-        cache: false,
-        success: function(xml) {
-          var roomHtml = '';
-
-          $(xml).find('room').each(function() {
-            var roomName = $(this).find('roomName').text();
-            var roomId = $(this).find('roomId').text();
-
-            roomHtml += '<option value="' + roomId + '">' + roomName + '</option>';
-          });
-
-          $('select[name=roomId]').html(roomHtml);
-        },
-        error: function() {
-          alert('Failed to show all rooms');
-        }
-      });
-
-      $.ajax({
-        url: 'api/getUsers.php',
-        timeout: 5000,
-        type: 'GET',
-        cache: false,
-        success: function(xml) {
-          var userHtml = '';
-  
-          $(xml).find('user').each(function() {
-            var userName = $(this).find('userName').text();
-            var userId = $(this).find('userId').text();
-  
-            userHtml += '<option value="' + userId + '">' + userName + '</option>';
-          });
-  
-          $('select[name=userId]').html(userHtml);
-        },
-        error: function() {
-          alert('Failed to show all users');
-        }
-      });
-      
-      $("#kickUserForm").submit(function() {
-        data = $("#kickUserForm").serialize(); // Serialize the form data for AJAX.
-        $.post("content/kick.php?phase=2",data,function(html) {
-          quickDialogue(html,'','kickUserResultDialogue');
-        }); // Send the form data via AJAX.
-  
-        $("#kickUserDialogue").dialog('close');
-  
-        return false; // Don't submit the form.
-      });
-    });
-  });
-
-  
-  
-  
-  $('a#privateRoom').click(function() {
-    ajaxDialogue('template.php?template=privateRoomForm','Enter Private Room','privateRoomDialogue',1000);
-  });
-
-  
-  
-  
-  $('a#manageKick').click(function() {
-    ajaxDialogue('template.php?template=manageKickForm&roomId=' + roomId,'Manage Kicked Users in This Room','manageKickDialogue',600);
-  });
-
-  
-  
-  
-  $('a#online').click(function() {
-    ajaxDialogue('template.php?template=online','View Active Users','onlineDialogue',600,false,function() {
-      var timer2 = setInterval(updateOnline,2500);
-    });
-
-    function updateOnline() {
-      $.ajax({
-        url: 'api/getAllActiveUsers.php',
-        type: 'GET',
-        timeout: 2400,
-        cache: false,
-        success: function(xml) {
-          var data = '';
-    
-          $(xml).find('user').each(function() {
-            var userName = $(this).find('userName').text();
-            var userId = $(this).find('userId').text();
-            var startTag = unxml($(this).find('startTag').text());
-            var endTag = unxml($(this).find('endTag').text());
-            var roomData = new Array();
-    
-            $(this).find('room').each(function() {
-              var roomId = $(this).find('roomId').text();
-              var roomName = $(this).find('roomName').text();
-              roomData.push('<a href="/chat.php?room=' + roomId + '">' + roomName + '</a>');
-            });
-            roomData = roomData.join(', ');
-    
-            data += '<tr><td>' + startTag + '<span class="userName">' + userName + '</span>' + endTag + '</td><td>' + roomData + '</td></tr>';
-          });
-    
-          $('#onlineUsers').html(data);
-        },
-        error: function() {
-          $('#onlineUsers').html('Refresh Failed');
-        },
-      });
-    }
-  });
-
-  
-  
-  
-  $('a#createRoom').click(function() {
-    ajaxTabDialogue('template.php?template=editRoomForm','createRoomDialogue',1000,false,function() {
-      $("#editRoomForm").submit(function() {
-        var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
-
-        $.post("api/moderate.php?roomId=" + roomId,data,function(xml) {
-          quickDialogue(html,'','editRoomResultDialogue');
-        }); // Send the form data via AJAX.
-
-        $("#editRoomDialogue").dialog('close');
-        return false; // Don't submit the form.
-      });
-    });
-  });
-
-  
-  
-  
-  $('a#editRoom').click(function() {
-    ajaxTabDialogue('template.php?template=editRoomForm&roomId=' + roomId,'editRoomDialogue',1000,false,function() {
-      $("#editRoomForm").submit(function() {
-        var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
-
-        $.post("api/moderate.php?roomId=0",data,function(xml) {
-          quickDialogue(html,'','editRoomResultDialogue');
-        }); // Send the form data via AJAX.
-
-        $("#editRoomDialogue").dialog('close');
-        return false; // Don't submit the form.
-      });
-    });
-  });
-
-  
-  
-  
-  $('a.editRoomMulti').click(function() {
-    ajaxDialogue('template.php?template=editRoomForm&roomId=' + $(this).attr('data-roomId'),'Edit Room','editRoomDialogue',1000);
-  });
-
-  
-  
-  
-  $('#icon_help').click(function() {
-    ajaxTabDialogue('template.php?template=help','helpDialogue',1000);
-  });
-  
-  
-  
-  
-  $('#icon_note, #messageArchive').click(function() {
-    quickDialogue('<table><thead><tr><th>User</th><th>Time</th><th>Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table>','Archive','archiveDialogue',1000);
-
-    archive(0);
-  });
-  
-  
-  
-  
-  $('#roomList').click(function() {
-    var roomHtml = '';
-
-    $.ajax({
-      url: 'api/getRooms.php',
-      timeout: 5000,
-      type: 'GET',
-      cache: false,
-      success: function(xml) {
-        $(xml).find('room').each(function() {
-          var roomName = $(this).find('roomName').text();
-          var roomId = $(this).find('roomId').text();
-          var roomTopic = $(this).find('roomTopic').text();
-          var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
-          var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
-          var isOwner = (parseInt($(this).find('owner').text()) == userId ? true : false);
-
-          roomHtml += '<tr id="room' + roomId + '"><td><a href="/chat.php?room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isOwner ? '<a href="#" class="editRoomMulti" data-roomId="' + roomId + '"><img src="images/document-edit.png" class="standard" alt="Configure" /></a>' : '') + '</td></tr>';
-        });
-        quickDialogue('<table><thead><tr><th>Name</th><th>Topic</th><th>Actions</th></tr></thead><tbody>' + roomHtml + '</tbody></table>','Room List','roomListDialogue',600);
-      },
-      error: function() {
-        alert('Failed to show all rooms');
-      }
-    });
-  });
-  
-  
-  
-  
-  $('#viewStats').click(function() {
-    var statsHtml = new Object;
-    var statsHtml2 = '';
-    var roomHtml = '';
-    var number = 10;
-    
-    for (var i = 1; i <= number; i++) {
-      statsHtml[i] = '';
-    }
-    
-    $.ajax({
-      url: 'api/getStats.php?rooms=' + roomId + '&maxResults=' + number,
-      timeout: 5000,
-      type: 'GET',
-      cache: false,
-      success: function(xml) {
-        $(xml).find('room').each(function() {
-          var roomName = $(this).find('roomName').text();
-          var roomId = $(this).find('roomId').text();
-
-          $(this).find('user').each(function() {
-            var userName = $(this).find('userData > userName').text();
-            var userId = $(this).find('userData > userId').text();
-            var startTag = $(this).find('userData > startTag').text();
-            var endTag = $(this).find('userData > endTag').text();
-            var position = parseInt($(this).find('position').text());
-            var messageCount = $(this).find('messageCount').text();
-
-            statsHtml[position] += '<td>' + startTag + userName + endTag + ' (' + messageCount + ')</td>';
-          });
-          
-          
-          roomHtml += '<th>' + roomName + '</th>';
-          
-        });
-        
-        for (var i = 1; i <= number; i++) {
-          statsHtml2 += '<tr><th>' + i + '</th>' + statsHtml[i] + '</tr>';
-        }
-        
-        quickDialogue('<table><thead><tr><th>Position</th>' + roomHtml + '</tr></thead><tbody>' + statsHtml2 + '</tbody></table>','Room Stats','roomStatsDialogue',600);
-      },
-      error: function() {
-        alert('Failed to show all rooms');
-      }
-    });
-  });
-
-  
-  
-  
-  $('#copyrightLink').click(function() {
-    ajaxTabDialogue('template.php?template=copyright','copyrightDialogue',600);
-  });
-
-  
-  
-  
-  $('#icon_settings, #changeSettings, a.changeSettingsMulti').click(function() {
-    ajaxTabDialogue('template.php?template=userSettingsForm','changeSettingsDialogue',1000,function() {
-      $('.colorpicker').empty().remove();
-    },function() {
-      $.ajax({
-        url: 'api/getRooms.php?permLevel=post',
-        timeout: 5000,
-        type: 'GET',
-        async: true,
-        cache: false,
-        success: function(xml) {
-          $(xml).find('room').each(function() {
-            var roomName = $(this).find('roomName').text();
-            var roomId = $(this).find('roomId').text();
-  
-            roomRef[roomName] = roomId;
-            roomList.push(roomName);
-          });
-  
-          $("#defaultRoom").autocomplete({
-            source: roomList
-          });
-          $("#watchRoomBridge").autocomplete({
-            source: roomList
-          });
-        },
-        error: function() {
-          alert('Rooms not obtained.');
-        }
-      });
-  
-      $('#defaultHighlight').ColorPicker({
-        color: '',
-        onShow: function (colpkr) {
-          $(colpkr).fadeIn(500);
-          return false;
-        },
-        onHide: function (colpkr) {
-          $(colpkr).fadeOut(500);
-          return false; 
-        },
-        onChange: function(hsb, hex, rgb) {
-          $('#defaultHighlight').css('background-color','#' + hex);
-          $('#defaultHighlight').val(hex);
-          $('#fontPreview').css('background-color','#' + hex);
-        }
-      });
-    
-      $('#defaultColour').ColorPicker({
-        color: '',
-        onShow: function (colpkr) {
-          $(colpkr).fadeIn(500);
-          return false;
-        },
-        onHide: function (colpkr) {
-          $(colpkr).fadeOut(500);
-          return false; 
-        },
-        onChange: function(hsb, hex, rgb) {
-          $('#defaultColour').css('background-color','#' + hex);
-          $('#defaultColour').val(hex);
-          $('#fontPreview').css('color','#' + hex);
-        }
-      });
-    
-      $('#fontPreview').css('color','');
-      $('#defaultColour').css('background-color','');
-      $('#fontPreview').css('background-color','');
-      $('#defaultHighlight').css('background-color','');
-    
-      if ($('#defaultItalics').is(':checked')) {
-        $('#fontPreview').css('font-style','italic');
-      }
-      else {
-        $('#fontPreview').css('font-style','normal');
-      }
-    
-      if ($('#defaultBold').is(':checked')) {
-        $('#fontPreview').css('font-weight','bold');
-      }
-      else {
-        $('#fontPreview').css('font-style','normal');
-      }
-
-      $("#changeSettingsForm").submit(function(){
-        data = $("#changeSettingsForm").serialize(); // Serialize the form data for AJAX.
-        $.post("content/options.php?phase=2",data,function(html) {
-          quickDialogue(html,'','changeSettingsResultDialogue');
-        }); // Send the form data via AJAX.
-    
-        $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
-        $(".colorpicker").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
-    
-        return false; // Don't submit the form.
-      });
-    });
-  });
-});
-
 
 
 function archive(id) {
@@ -683,10 +313,11 @@ function archive(id) {
   });
 }
 
+
 function addRoom() {
   var val = $("#watchRoomBridge").val();
   var id = roomRef[val];
-  
+
   if (!id) {
     alert('Room does not exist.');
   }
@@ -698,6 +329,7 @@ function addRoom() {
     $("#watchRooms").val(currentRooms.toString(","));
   }
 }
+
 
 function removeRoom(id) {
   $("#watchRoomSubList" + id).fadeOut(500, function() {
@@ -716,5 +348,416 @@ function removeRoom(id) {
   $("#watchRooms").val(currentRooms.toString(","));
 }
 
-var roomRef = new Object;
-var roomList = new Array;
+
+
+
+
+/*******************************
+ ****** Frontend Creation ******
+ *******************************/
+
+$(document).ready(function() {
+
+  roomId = $('body').attr('data-roomId');
+
+  $('#menu').accordion({
+    autoHeight: false,
+    navigation: true,
+    clearStyle: true
+  });
+
+  $('table > thead > tr:first-child > td:first-child, table > tr:first-child > td:first-child').addClass('ui-corner-tl');
+  $('table > thead > tr:first-child > td:last-child, table > tr:first-child > td:last-child').addClass('ui-corner-tr');
+  $('table > tbody > tr:last-child > td:first-child, table > tr:last-child > td:first-child').addClass('ui-corner-bl');
+  $('table > tbody > tr:last-child > td:last-child, table > tr:last-child > td:last-child').addClass('ui-corner-br');
+
+  $('button').button();
+
+
+
+
+  /*** Kick ***/
+
+  $('a#kick').click(function() {
+    ajaxDialogue('template.php?template=kickForm','Kick User','kickUserDialogue',1000,false,function() {
+      $.ajax({
+        url: 'api/getRooms.php',
+        timeout: 5000,
+        type: 'GET',
+        cache: false,
+        success: function(xml) {
+          var roomHtml = '';
+
+          $(xml).find('room').each(function() {
+            var roomName = $(this).find('roomName').text();
+            var roomId = $(this).find('roomId').text();
+
+            roomHtml += '<option value="' + roomId + '">' + roomName + '</option>';
+          });
+
+          $('select[name=roomId]').html(roomHtml);
+        },
+        error: function() {
+          alert('Failed to show all rooms');
+        }
+      });
+
+      $.ajax({
+        url: 'api/getUsers.php',
+        timeout: 5000,
+        type: 'GET',
+        cache: false,
+        success: function(xml) {
+          var userHtml = '';
+
+          $(xml).find('user').each(function() {
+            var userName = $(this).find('userName').text();
+            var userId = $(this).find('userId').text();
+
+            userHtml += '<option value="' + userId + '">' + userName + '</option>';
+          });
+
+          $('select[name=userId]').html(userHtml);
+        },
+        error: function() {
+          alert('Failed to show all users');
+        }
+      });
+
+      $("#kickUserForm").submit(function() {
+        data = $("#kickUserForm").serialize(); // Serialize the form data for AJAX.
+        $.post("content/kick.php?phase=2",data,function(html) {
+          quickDialogue(html,'','kickUserResultDialogue');
+        }); // Send the form data via AJAX.
+
+        $("#kickUserDialogue").dialog('close');
+
+        return false; // Don't submit the form.
+      });
+    });
+  });
+
+
+
+
+  /*** Private Room ***/
+
+  $('a#privateRoom').click(function() {
+    ajaxDialogue('template.php?template=privateRoomForm','Enter Private Room','privateRoomDialogue',1000);
+  });
+
+
+
+
+  /*** Manage Kick ***/
+
+  $('a#manageKick').click(function() {
+    ajaxDialogue('template.php?template=manageKickForm&roomId=' + roomId,'Manage Kicked Users in This Room','manageKickDialogue',600);
+  });
+
+
+
+
+  /*** Online ***/
+
+  $('a#online').click(function() {
+    ajaxDialogue('template.php?template=online','View Active Users','onlineDialogue',600,false,function() {
+      var timer2 = setInterval(updateOnline,2500);
+    });
+
+    function updateOnline() {
+      $.ajax({
+        url: 'api/getAllActiveUsers.php',
+        type: 'GET',
+        timeout: 2400,
+        cache: false,
+        success: function(xml) {
+          var data = '';
+
+          $(xml).find('user').each(function() {
+            var userName = $(this).find('userName').text();
+            var userId = $(this).find('userId').text();
+            var startTag = unxml($(this).find('startTag').text());
+            var endTag = unxml($(this).find('endTag').text());
+            var roomData = new Array();
+
+            $(this).find('room').each(function() {
+              var roomId = $(this).find('roomId').text();
+              var roomName = $(this).find('roomName').text();
+              roomData.push('<a href="/chat.php?room=' + roomId + '">' + roomName + '</a>');
+            });
+            roomData = roomData.join(', ');
+
+            data += '<tr><td>' + startTag + '<span class="userName">' + userName + '</span>' + endTag + '</td><td>' + roomData + '</td></tr>';
+          });
+
+          $('#onlineUsers').html(data);
+        },
+        error: function() {
+          $('#onlineUsers').html('Refresh Failed');
+        },
+      });
+    }
+  });
+
+
+
+
+  /* Create Room */
+
+  $('a#createRoom').click(function() {
+    ajaxTabDialogue('template.php?template=editRoomForm','createRoomDialogue',1000,false,function() {
+      $("#editRoomForm").submit(function() {
+        var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
+
+        $.post("api/moderate.php?roomId=" + roomId,data,function(xml) {
+          quickDialogue(html,'','editRoomResultDialogue');
+        }); // Send the form data via AJAX.
+
+        $("#editRoomDialogue").dialog('close');
+        return false; // Don't submit the form.
+      });
+    });
+  });
+
+
+
+
+  /*** Edit Room ***/
+
+  $('a#editRoom').click(function() {
+    ajaxTabDialogue('template.php?template=editRoomForm&roomId=' + roomId,'editRoomDialogue',1000,false,function() {
+      $("#editRoomForm").submit(function() {
+        var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
+
+        $.post("api/moderate.php?roomId=0",data,function(xml) {
+          quickDialogue(html,'','editRoomResultDialogue');
+        }); // Send the form data via AJAX.
+
+        $("#editRoomDialogue").dialog('close');
+        return false; // Don't submit the form.
+      });
+    });
+  });
+
+  $('a.editRoomMulti').click(function() {
+    ajaxDialogue('template.php?template=editRoomForm&roomId=' + $(this).attr('data-roomId'),'Edit Room','editRoomDialogue',1000);
+  });
+
+
+
+
+  /*** Help ***/
+
+  $('#icon_help').click(function() {
+    ajaxTabDialogue('template.php?template=help','helpDialogue',1000);
+  });
+
+
+
+
+  /*** Archive ***/
+
+  $('#icon_note, #messageArchive').click(function() {
+    quickDialogue('<table><thead><tr><th>User</th><th>Time</th><th>Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table>','Archive','archiveDialogue',1000);
+
+    archive(0);
+  });
+
+
+
+
+  /*** Room List ***/
+
+  $('#roomList').click(function() {
+    var roomHtml = '';
+
+    $.ajax({
+      url: 'api/getRooms.php',
+      timeout: 5000,
+      type: 'GET',
+      cache: false,
+      success: function(xml) {
+        $(xml).find('room').each(function() {
+          var roomName = $(this).find('roomName').text();
+          var roomId = $(this).find('roomId').text();
+          var roomTopic = $(this).find('roomTopic').text();
+          var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
+          var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
+          var isOwner = (parseInt($(this).find('owner').text()) == userId ? true : false);
+
+          roomHtml += '<tr id="room' + roomId + '"><td><a href="/chat.php?room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isOwner ? '<a href="#" class="editRoomMulti" data-roomId="' + roomId + '"><img src="images/document-edit.png" class="standard" alt="Configure" /></a>' : '') + '</td></tr>';
+        });
+        quickDialogue('<table><thead><tr><th>Name</th><th>Topic</th><th>Actions</th></tr></thead><tbody>' + roomHtml + '</tbody></table>','Room List','roomListDialogue',600);
+      },
+      error: function() {
+        alert('Failed to show all rooms');
+      }
+    });
+  });
+
+
+
+
+  /*** Stats ***/
+
+  $('#viewStats').click(function() {
+    var statsHtml = new Object;
+    var statsHtml2 = '';
+    var roomHtml = '';
+    var number = 10;
+
+    for (var i = 1; i <= number; i++) {
+      statsHtml[i] = '';
+    }
+
+    $.ajax({
+      url: 'api/getStats.php?rooms=' + roomId + '&maxResults=' + number,
+      timeout: 5000,
+      type: 'GET',
+      cache: false,
+      success: function(xml) {
+        $(xml).find('room').each(function() {
+          var roomName = $(this).find('roomName').text();
+          var roomId = $(this).find('roomId').text();
+
+          $(this).find('user').each(function() {
+            var userName = $(this).find('userData > userName').text();
+            var userId = $(this).find('userData > userId').text();
+            var startTag = $(this).find('userData > startTag').text();
+            var endTag = $(this).find('userData > endTag').text();
+            var position = parseInt($(this).find('position').text());
+            var messageCount = $(this).find('messageCount').text();
+
+            statsHtml[position] += '<td>' + startTag + userName + endTag + ' (' + messageCount + ')</td>';
+          });
+
+
+          roomHtml += '<th>' + roomName + '</th>';
+
+        });
+
+        for (var i = 1; i <= number; i++) {
+          statsHtml2 += '<tr><th>' + i + '</th>' + statsHtml[i] + '</tr>';
+        }
+
+        quickDialogue('<table><thead><tr><th>Position</th>' + roomHtml + '</tr></thead><tbody>' + statsHtml2 + '</tbody></table>','Room Stats','roomStatsDialogue',600);
+      },
+      error: function() {
+        alert('Failed to show all rooms');
+      }
+    });
+  });
+
+
+
+
+  /*** Copyright & Credits ***/
+
+  $('#copyrightLink').click(function() {
+    ajaxTabDialogue('template.php?template=copyright','copyrightDialogue',600);
+  });
+
+
+
+
+  /*** User Settings ***/
+
+  $('#icon_settings, #changeSettings, a.changeSettingsMulti').click(function() {
+    ajaxTabDialogue('template.php?template=userSettingsForm','changeSettingsDialogue',1000,function() {
+      $('.colorpicker').empty().remove();
+    },function() {
+      $.ajax({
+        url: 'api/getRooms.php?permLevel=post',
+        timeout: 5000,
+        type: 'GET',
+        async: true,
+        cache: false,
+        success: function(xml) {
+          $(xml).find('room').each(function() {
+            var roomName = $(this).find('roomName').text();
+            var roomId = $(this).find('roomId').text();
+
+            roomRef[roomName] = roomId;
+            roomList.push(roomName);
+          });
+
+          $("#defaultRoom").autocomplete({
+            source: roomList
+          });
+          $("#watchRoomBridge").autocomplete({
+            source: roomList
+          });
+        },
+        error: function() {
+          alert('Rooms not obtained.');
+        }
+      });
+
+      $('#defaultHighlight').ColorPicker({
+        color: '',
+        onShow: function (colpkr) {
+          $(colpkr).fadeIn(500);
+          return false;
+        },
+        onHide: function (colpkr) {
+          $(colpkr).fadeOut(500);
+          return false;
+        },
+        onChange: function(hsb, hex, rgb) {
+          $('#defaultHighlight').css('background-color','#' + hex);
+          $('#defaultHighlight').val(hex);
+          $('#fontPreview').css('background-color','#' + hex);
+        }
+      });
+
+      $('#defaultColour').ColorPicker({
+        color: '',
+        onShow: function (colpkr) {
+          $(colpkr).fadeIn(500);
+          return false;
+        },
+        onHide: function (colpkr) {
+          $(colpkr).fadeOut(500);
+          return false;
+        },
+        onChange: function(hsb, hex, rgb) {
+          $('#defaultColour').css('background-color','#' + hex);
+          $('#defaultColour').val(hex);
+          $('#fontPreview').css('color','#' + hex);
+        }
+      });
+
+      $('#fontPreview').css('color','');
+      $('#defaultColour').css('background-color','');
+      $('#fontPreview').css('background-color','');
+      $('#defaultHighlight').css('background-color','');
+
+      if ($('#defaultItalics').is(':checked')) {
+        $('#fontPreview').css('font-style','italic');
+      }
+      else {
+        $('#fontPreview').css('font-style','normal');
+      }
+
+      if ($('#defaultBold').is(':checked')) {
+        $('#fontPreview').css('font-weight','bold');
+      }
+      else {
+        $('#fontPreview').css('font-style','normal');
+      }
+
+      $("#changeSettingsForm").submit(function(){
+        data = $("#changeSettingsForm").serialize(); // Serialize the form data for AJAX.
+        $.post("content/options.php?phase=2",data,function(html) {
+          quickDialogue(html,'','changeSettingsResultDialogue');
+        }); // Send the form data via AJAX.
+
+        $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
+        $(".colorpicker").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
+
+        return false; // Don't submit the form.
+      });
+    });
+  });
+});
