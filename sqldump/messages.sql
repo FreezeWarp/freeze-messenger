@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS `{prefix}messages` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `user` int(10) NOT NULL,
-  `room` int(10) NOT NULL,
+  `messageId` int(10) NOT NULL AUTO_INCREMENT,
+  `userId` int(10) NOT NULL,
+  `roomId` int(10) NOT NULL,
   `rawText` varchar(5000) CHARACTER SET utf8 COLLATE utf8_bin  NOT NULL,
   `htmlText` varchar(5000) CHARACTER SET utf8 COLLATE utf8_bin  NOT NULL,
   `apiText` varchar(5000) CHARACTER SET utf8 COLLATE utf8_bin  NOT NULL,
