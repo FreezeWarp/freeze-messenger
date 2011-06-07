@@ -635,7 +635,7 @@ if ($valid) { // If the user is valid, process their preferrences.
   }
 
   if ($bannedUserGroups) {
-    if (inArray($bannedUserGroups,explode(',',$user['membergroupids']))) $banned = true;
+    if (fim_inArray($bannedUserGroups,explode(',',$user['membergroupids']))) $banned = true;
   }
   if ($user['settings'] & 2) {
     $banned = true;

@@ -50,12 +50,12 @@ $(document).ready(function() {
   $roomId = intval($_GET['roomId']);
   $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $roomId");
 
-  if (hasPermission($room,$user,'moderate')) {
+  if (fim_hasPermission($room,$user,'moderate')) {
     $users = mysqlQuery("SELECT UNIX_TIMESTAMP(k.time) AS kickedOn, UNIX_TIMESTAMP(k.time) + k.length AS expiresOn, u1.userName AS userName, u1.userId AS userId, u2.userName AS kickername FROM {$sqlPrefix}kick AS k, user AS u1, user AS u2 WHERE k.room = $room[id] AND k.userId = u1.userId AND k.kickerid = u2.userId AND UNIX_TIMESTAMP(NOW()) <= (UNIX_TIMESTAMP(time) + length)");
 
     while ($kickedUser = mysqlArray($users)) {
-      $kickedUser['kickedOn'] = vbdate('m/d/Y g:i:sa',$kickedUser['kickedOn']);
-      $kickedUser['expiresOn'] = vbdate('m/d/Y g:i:sa',$kickedUser['expiresOn']);
+      $kickedUser['kickedOn'] = fim_date('m/d/Y g:i:sa',$kickedUser['kickedOn']);
+      $kickedUser['expiresOn'] = fim_date('m/d/Y g:i:sa',$kickedUser['expiresOn']);
 
       $userRow .= template('manageKickTableRow');
     }

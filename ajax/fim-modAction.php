@@ -43,7 +43,7 @@ switch($_GET['action']) {
 
     mysqlQuery("INSERT INTO {$sqlPrefix}messages (user, room, rawText, htmlText, vbText, salt, iv, microtime, ip) VALUES ($user[userId], $room[id], '$messageRaw', '$messageHtml', '$messageVBnet', $saltNum, '$iv', '" . microtime(true) . "', '$ip')");
   }
-  elseif (!hasPermission($room,$user,'moderate')) {
+  elseif (!fim_hasPermission($room,$user,'moderate')) {
     echo '...You\'re not a mod...';
   }
   else {
@@ -76,7 +76,7 @@ switch($_GET['action']) {
 
   $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $post[room]");
 
-  if (hasPermission($room,$user,'moderate')) {
+  if (fim_hasPermission($room,$user,'moderate')) {
     if ($post['deleted']) mysqlQuery("UPDATE {$sqlPrefix}messages SET deleted = 0 WHERE id = $post[id]");
     else mysqlQuery("UPDATE {$sqlPrefix}messages SET deleted = 1 WHERE id = $post[id]");
   }
@@ -87,7 +87,7 @@ switch($_GET['action']) {
   $room = intval($_GET['roomId']);
   $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
 
-  if (hasPermission($room,$user,'admin')) { // The user most either own the room or be an administrator. Additionally, the room can not be an official room.
+  if (fim_hasPermission($room,$user,'admin')) { // The user most either own the room or be an administrator. Additionally, the room can not be an official room.
     if ($room['options'] & 4) mysqlQuery("UPDATE {$sqlPrefix}rooms SET options = options - 4 WHERE id = $room[id]");
     else mysqlQuery("UPDATE {$sqlPrefix}rooms SET options = options + 4 WHERE id = $room[id]");
   }

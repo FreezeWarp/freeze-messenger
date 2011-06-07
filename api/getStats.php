@@ -35,7 +35,7 @@ $rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id IN ($roomList)",'id');
 
 foreach ($rooms AS $room) {
   if ($hidePostCounts) {
-    if (!hasPermission($room,$user,'know')) {
+    if (!fim_hasPermission($room,$user,'know')) {
       continue;
     }
   }

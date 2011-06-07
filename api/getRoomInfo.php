@@ -22,7 +22,7 @@ header('Content-type: text/plain');
 $roomId = (int) $_GET['roomId'];
 $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $roomId",'id'); // Get all rooms
 
-if (hasPermission($room,$user) {
+if (fim_hasPermission($room,$user) {
 
 }
 else {

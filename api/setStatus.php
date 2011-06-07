@@ -31,7 +31,7 @@ if (!$room) { // Bad room.
   $failCode = 'badroom';
   $failMessage = 'That room could not be found.';
 }
-elseif (!hasPermission($room,$user,'view')) { // Not allowed to post.
+elseif (!fim_hasPermission($room,$user,'view')) { // Not allowed to post.
   $failCode = 'noperm';
   $failMessage = 'You are not allowed to post in this room.';
 }

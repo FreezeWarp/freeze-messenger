@@ -822,7 +822,7 @@ $(document).ready(function() {
 Welcome to the FreezeMessenger control panel. Here you, as one of our grandé and spectacular administrative staff, can perform every task needed to you during any given day.<br /><br />
 
 Server Time: ' . date('h:ia') . '<br />
-Your Time: ' . vbdate('h:ia') . '<br />
+Your Time: ' . fim_date('h:ia') . '<br />
 Active Users in Last Minute: ' . count($activeUsers) . '<br />
 Banned Users: <a href="./moderate.php?do=unbanuser">' . count($bannedUsers) . '</a><br />
 Status: <a href="./moderate.php?do=maintenance&do2=disable">' . $status . '</a><br /><br /><br />

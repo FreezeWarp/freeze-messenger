@@ -70,7 +70,7 @@ switch ($_GET['order']) {
 
 $rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE $whereClause TRUE ORDER BY $order",'id'); // Get all rooms
 foreach ($rooms AS $id => $room2) {
-  if (hasPermission($room2,$user,$permLevel)) $rooms2[] = $room2;
+  if (fim_hasPermission($room2,$user,$permLevel)) $rooms2[] = $room2;
 }
 
 

@@ -78,7 +78,7 @@ if ($user['favRooms']) {
   foreach ($favRooms AS $id => $room2) {
     eval(hook('templateFavRoomsEachStart'));
 
-    if (!hasPermission($room2,$user,'post') && !$stop) {
+    if (!fim_hasPermission($room2,$user,'post') && !$stop) {
       $currentRooms = explode(',',$user['favRooms']);
       foreach ($currentRooms as $room3) if ($room3 != $room2['id'] && $room3 != '') $currentRooms2[] = $room3; // Rebuild the array without the room ID.
       $newRoomString = mysqlEscape(implode(',',$currentRooms2));

@@ -59,13 +59,13 @@ elseif (!$room) { // No room data was returned.
 
 else {
 
-  list($hasPermission,$hPC,$hPT) = hasPermission($room,$user,'post',true);
+  list($fim_hasPermission,$hPC,$hPT) = fim_hasPermission($room,$user,'post',true);
 
   if (($room['options'] & 2) && (($user['settings'] & 64) == false)) {
     echo template('chatMatureWarning');
   }
 
-  elseif ($hasPermission) { // The user is not banned, and is allowed to view this room.
+  elseif ($fim_hasPermission) { // The user is not banned, and is allowed to view this room.
 
     if ((($room['options'] & 1) == false) && (($user['settings'] & 64) == false)) {
       if ($room['options'] & 16) {
@@ -76,7 +76,7 @@ else {
       }
     }
 
-    if (($user['settings'] & 16) && ((($room['owner'] == $user['userId'] && $room['owner'] > 0) || (in_array($user['userId'],explode(',',$room['allowedUsers'])) || $room['allowedUsers'] == '*') || (in_array($user['userId'],explode(',',$room['moderators']))) || ((inArray(explode(',',$user['membergroupids']),explode(',',$room['allowedGroups'])) || $room['allowedGroups'] == '*') && ($room['allowedGroups'] != ''))) == false)) {
+    if (($user['settings'] & 16) && ((($room['owner'] == $user['userId'] && $room['owner'] > 0) || (in_array($user['userId'],explode(',',$room['allowedUsers'])) || $room['allowedUsers'] == '*') || (in_array($user['userId'],explode(',',$room['moderators']))) || ((fim_inArray(explode(',',$user['membergroupids']),explode(',',$room['allowedGroups'])) || $room['allowedGroups'] == '*') && ($room['allowedGroups'] != ''))) == false)) {
       $stopMessage = $phrases['chatAdminAccess'];
     }
 
@@ -84,7 +84,7 @@ else {
       $chatTemplate = template('chatStopMessage');
     }
 
-    $textboxStyle = messageStyle($user);
+    $textboxStyle = fim_messageStyle($user);
     $chatTemplate .= template('chatTemplate');
   }
 
@@ -97,14 +97,14 @@ else {
       $hPM = '[banned and stuff]';
       break;
       case 'kicked':
-      $hPM = 'You have been kicked from this room. Your kick will expire on ' . vbdate('m/d/Y g:i:sa',$hPT) . '.';
+      $hPM = 'You have been kicked from this room. Your kick will expire on ' . fim_date('m/d/Y g:i:sa',$hPT) . '.';
       break;
     }
 
     $chatTemplate = container('Access Denied',$hPM);
   }
 
-  $canModerate = hasPermission($room,$user,'moderate');
+  $canModerate = fim_hasPermission($room,$user,'moderate');
 
 
   echo template('chatInnerTemplate');

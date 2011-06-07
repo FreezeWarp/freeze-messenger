@@ -131,7 +131,7 @@ else {
     $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room2");
 
     if ($room) {
-      if (!hasPermission($room,$user)) { } // Gotta make sure the user can view that room.
+      if (!fim_hasPermission($room,$user)) { } // Gotta make sure the user can view that room.
       else {
 
         if (!$noPing) {
@@ -237,7 +237,7 @@ LIMIT $messageLimit";
       <messageData>
         <messageId>$message[messageid]</messageId>
         <messageTime>$message[time]</messageTime>
-        <messageTimeFormatted>" . vbdate(false,$message['time']) . "</messageTimeFormatted>
+        <messageTimeFormatted>" . fim_date(false,$message['time']) . "</messageTimeFormatted>
         <messageText>
           <appText>$message[apiText]</appText>
           <htmlText>$message[htmlText]</htmlText>
@@ -326,7 +326,7 @@ if ($watchRooms) {
 
   if ($missedMessages) {
     foreach ($missedMessages AS $message) {
-      if (!hasPermission($message,$user,'view')) { continue; }
+      if (!fim_hasPermission($message,$user,'view')) { continue; }
 
       $roomName = fim_encodeXml($message['name']);
       $watchRoomsXML .= "    <room>

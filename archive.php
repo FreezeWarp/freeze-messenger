@@ -17,7 +17,7 @@
 if (!$_GET['roomId']) { // If no room ID is provided, then give the search form.
   $rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE options & 8 = false ORDER BY options & 1 DESC, options & 16 ASC, id",'id');
   foreach ($rooms AS $room2) {
-    if (hasPermission($room2,$user,'view')) {
+    if (fim_hasPermission($room2,$user,'view')) {
       $roomSelect .= template('archiveChooseSettingsRoomOption');
     }
   }
@@ -56,7 +56,7 @@ else {
     trigger_error($phrase['chatRoomDoesNotExist'],E_USER_ERROR);
   }
 
-  elseif (!hasPermission($room,$user,'view')) { // Gotta mEndake sure the user can view that room.
+  elseif (!fim_hasPermission($room,$user,'view')) { // Gotta mEndake sure the user can view that room.
     echo container($phrase['chatAccessDenied'],E_USER_ERROR);
   }
 
@@ -138,7 +138,7 @@ LIMIT $limit",'id');
         exec(hook('archiveResultsProcessEachStart'));
 
         $message = fim_decrypt($message);
-        $style = messageStyle($message);
+        $style = fim_messageStyle($message);
 
         $opacitya = ($user['settings'] & 1 ? '.5' : '1.0'); // Grey-out if deleted.
         $opacitya2 = ($user['settings'] & 1 ? '1.0' : '.5'); // Grey-out if deleted.
@@ -147,7 +147,7 @@ LIMIT $limit",'id');
 
         switch ($_GET['format']) {
           case 'bbcode':
-          $output .= '[url=http://www.victoryroad.net/member.php?u=' . $message['userId'] . '][div=color:rgb(' . displayGroupToColour($message['displaygroupid']) . ');font-weight:bold;display:inline;]' . $message['userName'] . '[/div][/url]|' . vbdate('m/d/y g:i:sa',$message['time']) . '|' . "[div=display:inline;color:rgb($message[defaultColour]);font-family:$message[defaultFontface];background-color:rgb($message[defaultHighlight]);]$message[htmlText][/div]\n";
+          $output .= '[url=http://www.victoryroad.net/member.php?u=' . $message['userId'] . '][div=color:rgb(' . displayGroupToColour($message['displaygroupid']) . ');font-weight:bold;display:inline;]' . $message['userName'] . '[/div][/url]|' . fim_date('m/d/y g:i:sa',$message['time']) . '|' . "[div=display:inline;color:rgb($message[defaultColour]);font-family:$message[defaultFontface];background-color:rgb($message[defaultHighlight]);]$message[htmlText][/div]\n";
           break;
 
           case '':
@@ -155,10 +155,10 @@ LIMIT $limit",'id');
         $output .= "<tr style=\"opacity: $opacityb\" id=\"message$message[id]\">
   <td>
     $hooks[0]
-    " . userFormat($message, $room) . "
+    " . fim_userFormat($message, $room) . "
   </td>
   <td>
-    " . vbdate(false,$message['time']) . "
+    " . fim_date(false,$message['time']) . "
   </td>
   <td style=\"$style\">
     " . ($canModerate ? "

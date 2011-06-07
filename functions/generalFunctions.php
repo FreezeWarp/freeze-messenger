@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-function inArray($needle,$haystack) {
+function fim_inArray($needle,$haystack) {
   foreach($needle AS $need) {
     if (in_array($need,$haystack)) {
       return true;
@@ -23,7 +23,7 @@ function inArray($needle,$haystack) {
   return false;
 }
 
-function hasPermission($roomData,$userData,$type = 'post',$trans = false) { // The below permissions are very hierachle.
+function fim_hasPermission($roomData,$userData,$type = 'post',$trans = false) { // The below permissions are very hierachle.
   global $sqlPrefix, $banned;
   static $isAdmin, $isModerator, $isAllowedUser, $isAllowedGroup, $isOwner, $isRoomDeleted;
 
@@ -48,7 +48,7 @@ function hasPermission($roomData,$userData,$type = 'post',$trans = false) { // T
     $isModerator = true; // The user is one of the chat moderators (and it is not deleted).
   }
 
-  if ((inArray(explode(',',$userData['membergroupids']),explode(',',$roomData['allowedGroups']))
+  if ((fim_inArray(explode(',',$userData['membergroupids']),explode(',',$roomData['allowedGroups']))
     || $roomData['allowedGroups'] == '*')
   && $roomData['allowedGroups']) {
     $isAllowedGroup = true;
@@ -196,7 +196,7 @@ function hasPermission($roomData,$userData,$type = 'post',$trans = false) { // T
   }
 }
 
-function userFormat($message, $room, $messageTable = true) {
+function fim_userFormat($message, $room, $messageTable = true) {
   global $loginMethod, $cachedUserGroups, $parseGroups, $sqlUserGroupTable, $sqlUserGroupTableCols, $permission;
 
   if ($message['displaygroupid'] && $parseGroups) { // The "parseGroups" toggle can be set in the configuration or will be set manually in validate.php whenever a login method doesn't use this token.
@@ -221,7 +221,7 @@ function userFormat($message, $room, $messageTable = true) {
   return "{$openTag}<span style=\"{$colour}\" class=\"{$class}\" data-userId=\"$message[userId]\">$message[userName]{$userAppend}</span>{$closeTag}";
 }
 
-function messageStyle($message) {
+function fim_messageStyle($message) {
   global $enableDF, $user;
 
   if ($enableDF && (($user['settings'] & 512) == false) && !in_array($message['flag'],array('me','topic','kick'))) {
@@ -350,7 +350,7 @@ function rgb2html($r, $g = false, $b = false) {
   return '#' . $color;
 }
 
-function vbdate($format,$timestamp = false) {
+function fim_date($format,$timestamp = false) {
   global $user;
   $timestamp = ($timestamp ?: time());
 

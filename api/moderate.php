@@ -167,7 +167,7 @@ switch ($action) {
 
     sendMessage('/me fought the law and the law won.',$user['userId'],$room['id']);
   }
-  elseif (!hasPermission($room,$user,'moderate')) {
+  elseif (!fim_hasPermission($room,$user,'moderate')) {
     trigger_error('No Permission',E_USER_ERROR);
   }
   else {
@@ -194,7 +194,7 @@ switch ($action) {
   elseif (!$room['id']) {
     trigger_error('Invalid Room',E_USER_ERROR);
   }
-  elseif (!hasPermission($room,$user,'moderate')) {
+  elseif (!fim_hasPermission($room,$user,'moderate')) {
     trigger_error('No Permission',E_USER_ERROR);
   }
   else {

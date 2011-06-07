@@ -27,7 +27,7 @@ $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
 
 eval(hook('uploadStart'));
 
-if (!hasPermission($room,$user) && $room) { // Can't post in that room.
+if (!fim_hasPermission($room,$user) && $room) { // Can't post in that room.
   $errorMessage = 'You do not have permission to do this.';
 }
 

@@ -11,7 +11,7 @@ if ($user['userId']) { // Logged in user
 
     eval(hook('viewRoomsUserRoomEachStart'));
 
-    if (hasPermission($room2,$user) && !$stop) {
+    if (fim_hasPermission($room2,$user) && !$stop) {
       if ($room2['options'] & 16) $room2['class'] = 'Private';
       elseif ($room2['options'] & 1) $room2['class'] = 'Official';
       else $room2['class'] = 'Unofficial';

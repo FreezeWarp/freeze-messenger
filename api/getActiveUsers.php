@@ -40,7 +40,7 @@ else {
   foreach ($roomsArray AS $room) {
     $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
 
-    if (!hasPermission($room,$user,'know')) continue;
+    if (!fim_hasPermission($room,$user,'know')) continue;
 
     $roomsXML .= "
       <room>$room[id]</room>";

@@ -35,7 +35,7 @@ foreach ($rooms AS $room) {
   eval(hook('statsRoomEachStart'));
 
   if ($hidePostCounts) {
-    if (!hasPermission($room,$user,'know')) {
+    if (!fim_hasPermission($room,$user,'know')) {
       continue;
     }
   }
