@@ -247,11 +247,11 @@ function showAllRooms() {
 
 function archive(id) {
   var encrypt = 'base64';
-  var lastMessage;
-  var firstMessage;
+  var lastMessage = 0;
+  var firstMessage = 0;
 
   $.ajax({
-    url: 'api/getMessages.php?rooms=' + roomId + '&messageIdMin=' + (lastMessage) + '&archive=1&messageIdMin=' + id + '&messageLimit=40',
+    url: 'api/getMessages.php?rooms=' + roomId + '&archive=1&messageIdStart=' + id + '&messageLimit=20',
     type: 'GET',
     timeout: 1000,
     async: true,
@@ -310,6 +310,8 @@ function archive(id) {
           contextMenuParse();
         }
       }
+alert(lastMessage);
+      $('#showMore').attr('onclick','archive(' + lastMessage + ');');
     },
     error: function() {
       alert('Error');
@@ -579,9 +581,9 @@ $(document).ready(function() {
   /*** Archive ***/
 
   $('#icon_note, #messageArchive').click(function() {
-    quickDialogue('<table><thead><tr><th>User</th><th>Time</th><th>Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table>','Archive','archiveDialogue',1000);
+    quickDialogue('<table><thead><tr><th>User</th><th>Time</th><th>Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><button id="showMore">More >></button>','Archive','archiveDialogue',1000);
 
-    archive(0);
+    var lastMessage = archive(0);
   });
 
 
