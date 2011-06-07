@@ -257,15 +257,6 @@ switch ($action) {
   break;
 
 
-  case 'banuser':
-
-  break;
-
-  case 'unbanuser':
-
-  break;
-
-
   case 'kickuser':
   $userId = intval($_POST['userId']);
   $user2 = sqlArr("SELECT u1.settings, u2.userId, u2.userName FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userId = $userId AND u2.userId = u1.userId");
