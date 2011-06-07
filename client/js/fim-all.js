@@ -245,13 +245,23 @@ function showAllRooms() {
 }
 
 
-function archive(id) {
+function archive(idMax,idMin) {
   var encrypt = 'base64';
   var lastMessage = 0;
   var firstMessage = 0;
 
+  if (idMax) {
+    var where = 'messageIdStart=' + id;
+  }
+  else if (idMin) {
+    var where = 'messageIdEnd=' + id;
+  }
+  else {
+    var where = 'messageIdStart=0';
+  }
+
   $.ajax({
-    url: 'api/getMessages.php?rooms=' + roomId + '&archive=1&messageIdStart=' + id + '&messageLimit=20',
+    url: 'api/getMessages.php?rooms=' + roomId + '&archive=1&messageLimit=20&' + where,
     type: 'GET',
     timeout: 1000,
     async: true,
@@ -304,14 +314,18 @@ function archive(id) {
           if (messageId > lastMessage) {
             lastMessage = messageId;
           }
+          if (messageId < firstMessage || !firstMessage) {
+            firstMessage = messageId;
+          }
         });
 
         if (typeof contextMenuParse === 'function') {
           contextMenuParse();
         }
       }
-alert(lastMessage);
-      $('#showMore').attr('onclick','archive(' + lastMessage + ');');
+
+      $('#archiveNext').attr('onclick','archive(' + lastMessage + ',false);');
+      $('#archivePrev').attr('onclick','archive(false,' + firstMessage + ');');
     },
     error: function() {
       alert('Error');
@@ -581,7 +595,7 @@ $(document).ready(function() {
   /*** Archive ***/
 
   $('#icon_note, #messageArchive').click(function() {
-    quickDialogue('<table><thead><tr><th>User</th><th>Time</th><th>Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><button id="showMore">More >></button>','Archive','archiveDialogue',1000);
+    quickDialogue('<table><thead><tr><th>User</th><th>Time</th><th>Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><button id="archivePrev"><< Prev</button><button id="archiveNext">Next >></button>','Archive','archiveDialogue',1000);
 
     var lastMessage = archive(0);
   });
