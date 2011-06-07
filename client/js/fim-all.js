@@ -407,61 +407,61 @@ $(document).ready(function() {
   /*** Kick ***/
 
   $('a#kick').click(function() {
-    ajaxDialogue('template.php?template=kickForm','Kick User','kickUserDialogue',1000,false,function() {
-      $.ajax({
-        url: 'api/getRooms.php',
-        timeout: 5000,
-        type: 'GET',
-        cache: false,
-        success: function(xml) {
-          var roomHtml = '';
+    quickDialogue('<form action="#" id="kickUserForm" method="post">  <label for="userId">User</label>: <select name="userId">$userSelect</select><br />  <label for="roomId">Room</label>: <select name="roomId">$roomSelect</select><br />  <label for="time">Time</label>: <input type="text" name="time" id="time" style="width: 50px;" />  <select name="interval">    <option value="1">Seconds</option>    <option value="60">Minutes</option>    <option value="3600">Hours</option>    <option value="86400">Days</option>    <option value="604800">Weeks</option>  </select><br /><br />  <button type="submit">Kick User</button><button type="reset">Reset</button></form>','Kick User','kickUserDialogue',1000);
 
-          $(xml).find('room').each(function() {
-            var roomName = $(this).find('roomName').text();
-            var roomId = $(this).find('roomId').text();
+    $.ajax({
+      url: 'api/getRooms.php',
+      timeout: 5000,
+      type: 'GET',
+      cache: false,
+      success: function(xml) {
+        var roomHtml = '';
 
-            roomHtml += '<option value="' + roomId + '">' + roomName + '</option>';
-          });
+        $(xml).find('room').each(function() {
+          var roomName = $(this).find('roomName').text();
+          var roomId = $(this).find('roomId').text();
 
-          $('select[name=roomId]').html(roomHtml);
-        },
-        error: function() {
-          alert('Failed to show all rooms');
-        }
-      });
+          roomHtml += '<option value="' + roomId + '">' + roomName + '</option>';
+        });
 
-      $.ajax({
-        url: 'api/getUsers.php',
-        timeout: 5000,
-        type: 'GET',
-        cache: false,
-        success: function(xml) {
-          var userHtml = '';
+        $('select[name=roomId]').html(roomHtml);
+      },
+      error: function() {
+        alert('Failed to show all rooms');
+      }
+    });
 
-          $(xml).find('user').each(function() {
-            var userName = $(this).find('userName').text();
-            var userId = $(this).find('userId').text();
+    $.ajax({
+      url: 'api/getUsers.php',
+      timeout: 5000,
+      type: 'GET',
+      cache: false,
+      success: function(xml) {
+        var userHtml = '';
 
-            userHtml += '<option value="' + userId + '">' + userName + '</option>';
-          });
+        $(xml).find('user').each(function() {
+          var userName = $(this).find('userName').text();
+          var userId = $(this).find('userId').text();
 
-          $('select[name=userId]').html(userHtml);
-        },
-        error: function() {
-          alert('Failed to show all users');
-        }
-      });
+          userHtml += '<option value="' + userId + '">' + userName + '</option>';
+        });
 
-      $("#kickUserForm").submit(function() {
-        data = $("#kickUserForm").serialize(); // Serialize the form data for AJAX.
-        $.post("content/kick.php?phase=2",data,function(html) {
-          quickDialogue(html,'','kickUserResultDialogue');
-        }); // Send the form data via AJAX.
+        $('select[name=userId]').html(userHtml);
+      },
+      error: function() {
+        alert('Failed to show all users');
+      }
+    });
 
-        $("#kickUserDialogue").dialog('close');
+    $("#kickUserForm").submit(function() {
+      data = $("#kickUserForm").serialize(); // Serialize the form data for AJAX.
+      $.post("content/kick.php?phase=2",data,function(html) {
+        quickDialogue(html,'','kickUserResultDialogue');
+      }); // Send the form data via AJAX.
 
-        return false; // Don't submit the form.
-      });
+      $("#kickUserDialogue").dialog('close');
+
+      return false; // Don't submit the form.
     });
   });
 
