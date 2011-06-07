@@ -399,7 +399,7 @@ elseif ($_POST['method']) { // Actual upload; process.
     }
     else {
       require_once('functions/parserFunctions.php');
-      sendMessage($message,$user,$room,$flag);
+      fim_sendMessage($message,$user,$room,$flag);
     }
   }
   else {

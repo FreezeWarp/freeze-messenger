@@ -16,7 +16,7 @@
 
 require_once('generalFunctions.php');
 
-function htmlParse($text,$bbcodeLevel = 1) {
+function fimParse_htmlParse($text,$bbcodeLevel = 1) {
   global $bbcode;
 
   global $user;
@@ -104,7 +104,7 @@ function htmlParse($text,$bbcodeLevel = 1) {
     $text = preg_replace($search['link'],$replace['link'],$text);
   }
   if ($bbcode['image'] && $bbcodeLevel <= 5) {
-    if ($bbcode['emoticon']) $text = smilie($text);
+    if ($bbcode['emoticon']) $text = fimParse_smilieParse($text);
 
     $text = preg_replace($search['image'],$replace['image'],$text);
   }
@@ -134,7 +134,7 @@ function nl2vb($message) {
   return str_replace("\n",'{n}',$message);
 }
 
-function censor($text,$roomId = false) {
+function fimParse_censorParse($text,$roomId = false) {
   global $sqlPrefix;
 
   $words = sqlArr("SELECT w.word, w.severity, w.param, l.id AS listId
@@ -174,7 +174,7 @@ WHERE w.listId = l.id AND w.severity = 'replace'",'word');
 
 /* The smilie functions bears some similiarites to its vBulletin equivilent because features used can ONLY be done in this certain way. The function is unique, and was not copylifted.
  * Also, this function sadly doesn't integrate very well into... anything. */
-function smilie($text) {
+function fimParse_smilieParse($text) {
   global $room, $loginMethod, $forumPrefix, $forumUrl;
 
   switch($loginMethod) {
@@ -218,7 +218,7 @@ function indexValue($array,$index) {
   return $array[$index];
 }
 
-function htmlwrap($str, $maxLength = 40, $char = '<br />') { /* An adaption of a PHP.net commentor function dealing with HTML for BBCode */
+function fimParse_htmlWrap($str, $maxLength = 40, $char = '<br />') { /* An adaption of a PHP.net commentor function dealing with HTML for BBCode */
   // Configuration
   $noparseTags = array('img','a');
 
@@ -283,18 +283,18 @@ function htmlwrap($str, $maxLength = 40, $char = '<br />') { /* An adaption of a
   return $newStr;
 }
 
-function finalParse($message) {
+function fimParse_finalParse($message) {
   global $room;
 
   $messageRaw = $message; // Parses the sources for MySQL.
-  $messageHtml = nl2br(htmlwrap(htmlParse(censor(fim_encodeXml($message),$room['id']),$room['options']),30,' ')); // Parses for browser or HTML rendering.
-  $messageApi = nl2vb(smilie($message,$room['bbcode'])); // Not yet coded, you see.
+  $messageHtml = nl2br(fimParse_htmlWrap(fimParse_htmlParse(fimParse_censorParse(fim_encodeXml($message),$room['id']),$room['options']),30,' ')); // Parses for browser or HTML rendering.
+  $messageApi = nl2vb(fimParse_smilieParse($message,$room['bbcode'])); // Not yet coded, you see.
 
   return array($messageRaw, $messageHtml, $messageApi);
 }
 
 
-function sendMessage($messageText,$user,$room,$flag = '') {
+function fim_sendMessage($messageText,$user,$room,$flag = '') {
   global $sqlPrefix, $parseFlags, $salts, $encrypt, $loginMethod, $sqlUserGroupTableCols, $sqlUserGroupTable;
 
   $user['userName'] = mysqlEscape($user['userName']);
@@ -325,7 +325,7 @@ function sendMessage($messageText,$user,$room,$flag = '') {
     }
   }
   else {
-    $message = finalParse($messageText);
+    $message = fimParse_finalParse($messageText);
     list($messageRaw,$messageHtml,$messageApi) = $message;
   }
 
@@ -349,6 +349,7 @@ function sendMessage($messageText,$user,$room,$flag = '') {
     list($messages,$iv,$saltNum) = fim_encrypt(array($messageRaw,$messageHtml,$messageApi));
     list($messageRaw,$messageHtml,$messageApi) = $messages;
   }
+
 
   $messageRaw = mysqlEscape($messageRaw);
   $messageHtml = mysqlEscape($messageHtml);

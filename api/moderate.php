@@ -165,7 +165,7 @@ switch ($action) {
   elseif ($user2['settings'] & 16 && false) { // You can't kick admins.
     trigger_error('You\'re really not supposed to kick admins... I mean, sure, it sounds fun and all, but still... we don\'t like it >:D');
 
-    sendMessage('/me fought the law and the law won.',$user['userId'],$room['id']);
+    fim_sendMessage('/me fought the law and the law won.',$user['userId'],$room['id']);
   }
   elseif (!fim_hasPermission($room,$user,'moderate')) {
     trigger_error('No Permission',E_USER_ERROR);
@@ -175,7 +175,7 @@ switch ($action) {
 
     mysqlQuery("INSERT INTO {$sqlPrefix}kick (userId, kickerid, length, room) VALUES ($user2[userId], $user[userId], $time, $room[id])");
 
-    sendMessage('/me kicked ' . $user2['userName'],$user,$room);
+    fim_sendMessage('/me kicked ' . $user2['userName'],$user,$room);
 
     echo 'The user has been kicked';
   }
@@ -202,7 +202,7 @@ switch ($action) {
 
     mysqlQuery("DELETE FROM {$sqlPrefix}kick WHERE userId = $user2[userId] AND room = $room[id]");
 
-    sendMessage('/me unkicked ' . $user2['userName'],$user,$room);
+    fim_sendMessage('/me unkicked ' . $user2['userName'],$user,$room);
 
     echo $user2['userName'] . ' has been unbanned.';
   }

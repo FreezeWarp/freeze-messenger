@@ -88,21 +88,21 @@ elseif ($blockedWordSeverity == 'confirm') {
 elseif (strpos($message, '/topic') === 0) {
   $title = preg_replace('/^\/topic (.+?)$/i','$1',$message);
 
-  $title = mysqlEscape(censor($title)); // Parses the sources for MySQL and UTF8. We will also censor, but no BBcode.
+  $title = mysqlEscape(fimParse_censorParse($title)); // Parses the sources for MySQL and UTF8. We will also censor, but no BBcode.
 
-  sendMessage('/me changed the topic to ' . $title,$user,$room,'topic');
+  fim_sendMessage('/me changed the topic to ' . $title,$user,$room,'topic');
   mysqlQuery("UPDATE {$sqlPrefix}rooms SET title = '$title' WHERE id = $room[id]");
 }
 else {
   if (strpos($message, '/me') === 0) { $flag = 'me'; }
 
-  sendMessage($message,$user,$room,$flag);
+  fim_sendMessage($message,$user,$room,$flag);
 }
 
 
 
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
-<sendMessage>
+<fim_sendMessage>
   <activeUser>
     <userId>$user[userId]</userId>
     <userName>" . fim_encodeXml($user['userName']) . "</userName>
@@ -118,7 +118,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
     <severity>$blockWordApi[severity]</severity>
     <reason>$blockWordApi[reason]</reason>
   </censor>
-</sendMessage>";
+</fim_sendMessage>";
 
 mysqlClose();
 ?>

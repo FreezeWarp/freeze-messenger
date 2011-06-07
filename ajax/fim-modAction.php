@@ -37,7 +37,7 @@ switch($_GET['action']) {
   elseif ($user2['settings'] & 16) { // You can't kick admins.
     echo 'You\'re really not supposed to kick admins... I mean, sure, it sounds fun and all, but still... we don\'t like it >:D';
 
-    $message = finalParse('/me fought the law and the law won.');
+    $message = fimParse_finalParse('/me fought the law and the law won.');
 
     list($messageRaw,$messageHtml,$messageVBnet,$saltNum,$iv) = $message;
 
@@ -49,7 +49,7 @@ switch($_GET['action']) {
   else {
     mysqlQuery("INSERT INTO {$sqlPrefix}kick (userId, kickerid, length, room) VALUES ($user2[userId], $user[userId], $time, $room[id])");
     
-    $message = finalParse('/me kicked ' . $user2['userName']);
+    $message = fimParse_finalParse('/me kicked ' . $user2['userName']);
 
     list($messageRaw,$messageHtml,$messageVBnet,$saltNum,$iv) = $message;
 

@@ -70,7 +70,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
   </sentData>
   <errorcode>$failCode</errorcode>
   <errortext>$failMessage</errortext>
-</sendMessage>";
+</fim_sendMessage>";
 
 mysqlClose();
 ?>
