@@ -38,6 +38,7 @@ $newestDate = (int) $_GET['messageDateMax']; // INT
 $oldestDate = (int) $_GET['messageDateMin']; // INT
 
 $messageStart = (int) $_GET['messageIdStart']; // INT
+$messageEnd = (int) $_GET['messageIdEnd']; // INT
 
 $watchRooms = (bool) $_GET['watchRooms']; // BOOL
 $activeUsers = (bool) $_GET['activeUsers']; // BOOL
@@ -107,6 +108,9 @@ if ($oldestDate) {
 }
 if (!$whereClause && $messageStart) {
   $whereClause .= "AND messageId > $messageStart AND messageId < " . ($messageStart + $messageLimit);
+}
+if (!$whereClause && $messageEnd) {
+  $whereClause .= "AND messageId < $messageEnd AND messageId > " . ($messageEnd - $messageLimit);
 }
 
 if ($archive) {
