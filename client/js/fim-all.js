@@ -251,14 +251,16 @@ function archive(idMax,idMin) {
   var firstMessage = 0;
 
   if (idMax) {
-    var where = 'messageIdStart=' + id;
+    var where = 'messageIdStart=' + idMax;
   }
   else if (idMin) {
-    var where = 'messageIdEnd=' + id;
+    var where = 'messageIdEnd=' + idMin;
   }
   else {
     var where = 'messageIdStart=0';
   }
+
+  $('#archiveMessageList').html('');
 
   $.ajax({
     url: 'api/getMessages.php?rooms=' + roomId + '&archive=1&messageLimit=20&' + where,
