@@ -104,6 +104,5 @@ if ($user['favRooms']) {
   eval(hook('templateFavRoomsEnd'));
 }
 
-if ($mode == 'mobile' && !$showMobileMenus) {}
-else {  echo template('templateStart'); }
+echo template('templateStart');
 ?>

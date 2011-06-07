@@ -155,7 +155,6 @@ function unique_id($extra = 'c') {
 
 function _hash_crypt_private($password, $setting, &$itoa64) {
   $itoa64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-
   $output = '*';
 
   // Check for correct hash
@@ -176,14 +175,6 @@ function _hash_crypt_private($password, $setting, &$itoa64) {
     return $output;
   }
 
-        /**
-        * We're kind of forced to use MD5 here since it's the only
-        * cryptographic primitive available in all versions of PHP
-        * currently in use.  To implement our own low-level crypto
-        * in PHP would result in much worse performance and
-        * consequently in lower iteration counts and hashes that are
-        * quicker to crack (by non-PHP code).
-        */
   $hash = md5($salt . $password, true);
   do {
     $hash = md5($hash . $password, true);
@@ -738,4 +729,6 @@ elseif ($valid) {
     'createRooms' => ($user['userPrivs'] & 32),
   );
 }
+
+unset($sqlPassword); // Security!
 ?>
