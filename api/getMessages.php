@@ -87,10 +87,10 @@ $xmlData = array(
 ///* Query Filter Generation *///
 
 if ($newestMessage) {
-  $whereClause .= "AND messageid < $newestMessage ";
+  $whereClause .= "AND messageId < $newestMessage ";
 }
 if ($oldestMessage) {
-  $whereClause .= "AND messageid > $oldestMessage ";
+  $whereClause .= "AND messageId > $oldestMessage ";
 }
 if ($newestDate) {
   $whereClause .= "AND UNIX_TIMESTAMP(m.time) < $newestDate ";
@@ -99,7 +99,7 @@ if ($oldestDate) {
   $whereClause .= "AND UNIX_TIMESTAMP(m.time) > $oldestDate ";
 }
 if (!$whereClause && $messageStart) {
-  $whereClause .= "AND messageid > $messageStart AND messageid < " . ($messageStart + $messageLimit);
+  $whereClause .= "AND messageId > $messageStart AND messageId < " . ($messageStart + $messageLimit);
 }
 
 if ($archive) {
@@ -149,7 +149,7 @@ else {
         }
 
         if ($archive) {
-          $messageQuery = "SELECT m.id AS messageid,
+          $messageQuery = "SELECT m.id AS messageId,
   UNIX_TIMESTAMP(m.time) AS time,
   $messageFields
   m.iv AS iv,
@@ -170,11 +170,11 @@ WHERE room = $room[id]
   AND m.user = u.{$sqlUserTableCols[userId]}
   AND m.user = u2.userId
 $whereClause
-ORDER BY messageid $order
+ORDER BY messageId $order
 LIMIT $messageLimit";
         }
         else {
-          $messageQuery = "SELECT m.messageid AS messageid,
+          $messageQuery = "SELECT m.messageId AS messageId,
   UNIX_TIMESTAMP(m.time) AS time,
   $messageFields
   m.userId AS userId,
@@ -194,18 +194,18 @@ FROM {$sqlPrefix}messagesCached AS m,
 WHERE m.roomId = $room[id]
   AND m.userId = u2.userId
 $whereClause
-ORDER BY messageid $order
+ORDER BY messageId $order
 LIMIT $messageLimit";
         }
 
         if ($longPolling) {
           while (!$messages) {
-            $messages = sqlArr($messageQuery,'messageid');
+            $messages = sqlArr($messageQuery,'messageId');
             sleep($longPollingWait);
           }
         }
         else {
-          $messages = sqlArr($messageQuery,'messageid');
+          $messages = sqlArr($messageQuery,'messageId');
         }
 
         if ($messages) {
@@ -235,7 +235,7 @@ LIMIT $messageLimit";
         <roomTopic>" . fim_encodeXml($room['title']) . "</roomTopic>
       </roomData>
       <messageData>
-        <messageId>$message[messageid]</messageId>
+        <messageId>$message[messageId]</messageId>
         <messageTime>$message[time]</messageTime>
         <messageTimeFormatted>" . fim_date(false,$message['time']) . "</messageTimeFormatted>
         <messageText>
