@@ -62,8 +62,9 @@ $bbcode = array( // Enable & Disable BBCode.
 $parseFlags = true; // Messages sent under certain conditions will contain flags corrosponding to certain message data, like "video". Using this paramater, these messages will only contain the specific parameter and not the extra BBcode. This can be useful for certain APIs, data cleanliness, and so-on, but can also mean extra CPU cycles and incompatibility with older software, and also disables encryption for messages with parse flags. *DO NOT CHANGE THIS SETTING AFTER INITIAL SETUP*
 $longPolling = false; // If true, experimental longpolling support will be enabled. In general, it is recommended you NOT set this to true.
 
-$enableForeignApi = true;
-$insecureApi = true;
+$enableForeignApi = true; // Set this to off to disable interfaces other than the provided one.
+$insecureApi = true; // Should be off; will be removed.
 
-$defaultTheme = 4;
+$defaultTheme = 4; // Default of the provided themes, 1-5. 4 is normally the default.
+$compressOutput = true; // Set this to off to avoid compacting PHP-generated HTML and XML output.
 ?>

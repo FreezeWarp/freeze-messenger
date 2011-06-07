@@ -649,12 +649,13 @@ function fim_outputXml($array) {
 ]>";
 }
 
-// This is an experimental function. It is largely just an experiment.
-function htmlLight($data) {
+function fim_htmlCompact($data) {
   $data = preg_replace('/\ {2,}/','',$data);
   $data = preg_replace("/\n/",'',$data);
   return $data;
 }
 
-ob_start(htmlLight);
+if ($compressOutput) {
+  ob_start(fim_htmlCompact);
+}
 ?>
