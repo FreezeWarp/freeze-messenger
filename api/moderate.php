@@ -120,6 +120,10 @@ switch ($action) {
   }
   break;
 
+  case 'userOptions':
+
+  break;
+
   case 'deleteRoom':
 
   break;

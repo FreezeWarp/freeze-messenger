@@ -631,6 +631,24 @@ function container($title,$content,$class = 'page') {
 ";
 }
 
+function fim_outputXml($array) {
+  foreach ($array AS $key => $value) {
+    echo "<$key>";
+    if (is_array($value)) {
+      echo fim_outputXml($value);
+    }
+    else {
+      echo $value;
+    }
+    echo "</$key>";
+  }
+
+  echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
+<!DOCTYPE html [
+  <!ENTITY nbsp \" \">
+]>";
+}
+
 // This is an experimental function. It is largely just an experiment.
 function htmlLight($data) {
   $data = preg_replace('/\ {2,}/','',$data);

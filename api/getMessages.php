@@ -59,6 +59,29 @@ else {
   if ($messageLimit > 500) $messageLimit = 500; // Sane maximum.
 }
 
+$xmlData = array(
+  'getMessages' => array(
+    'activeUser' => array(
+      'userId' => $user['userId'],
+      'userName' => fim_encodeXml($user['userName']),
+    ),
+    'sentData' => array(
+      'rooms' => $rooms,
+      'roomsList' => $roomsXML,
+      'newestMessage' => $newestMessage,
+      'oldestMessage' => $oldestMessage,
+      'newestDate' => $newestDate,
+      'oldestDate' => $oldestDate,
+      'messageLimit' => $messageLimit,
+    ),
+    'errorcode' => $failCode,
+    'errormessage' => $failMessage,
+    'messages' => array(),
+    'watchRooms' => array(),
+    'activeUsers' => array(),
+  ),
+);
+
 
 
 ///* Query Filter Generation *///
@@ -319,10 +342,7 @@ if ($watchRooms) {
 
 
 ///* Output *///
-echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
-<!DOCTYPE html [
-  <!ENTITY nbsp \" \">
-]>
+echo "
 <getMessages>
   <activeUser>
     <userId>$user[userId]</userId>
@@ -355,6 +375,9 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
     $ausersXML
   </activeUsers>
 </getMessages>";
+
+
+//fim_outputXml($xmlData);
 
 mysqlClose();
 ?>
