@@ -149,7 +149,7 @@ else {
         }
 
         if ($archive) {
-          $messageQuery = "SELECT m.id AS messageId,
+          $messageQuery = "SELECT m.messageId,
   UNIX_TIMESTAMP(m.time) AS time,
   $messageFields
   m.iv AS iv,
@@ -165,10 +165,10 @@ else {
 FROM {$sqlPrefix}messages AS m,
   {$sqlUserTable} AS u,
   {$sqlPrefix}users AS u2
-WHERE room = $room[id]
+WHERE m.roomId = $room[id]
   AND m.deleted != true
-  AND m.user = u.{$sqlUserTableCols[userId]}
-  AND m.user = u2.userId
+  AND m.userId = u.{$sqlUserTableCols[userId]}
+  AND m.userId = u2.userId
 $whereClause
 ORDER BY messageId $order
 LIMIT $messageLimit";
@@ -322,7 +322,11 @@ LIMIT 500",'userId');
 ///* Process Watch Rooms *///
 if ($watchRooms) {
   /* Get Missed Messages */
-  $missedMessages = sqlArr("SELECT r.*, UNIX_TIMESTAMP(r.lastMessageTime) AS lastMessageTimestamp FROM {$sqlPrefix}rooms AS r LEFT JOIN {$sqlPrefix}ping AS p ON (p.userId = $user[userId] AND p.roomId = r.id) WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.id IN ($user[watchRooms])" : '') . ") AND (r.allowedUsers REGEXP '({$user[userId]},)|{$user[userId]}$' OR r.allowedUsers = '*') AND IF(p.time, UNIX_TIMESTAMP(r.lastMessageTime) > (UNIX_TIMESTAMP(p.time) + 10), TRUE)",'id'); // Right now only private IMs are included, but in the future this will be expanded.
+  $missedMessages = sqlArr("SELECT r.*,
+  UNIX_TIMESTAMP(r.lastMessageTime) AS lastMessageTimestamp
+FROM {$sqlPrefix}rooms AS r
+  LEFT JOIN {$sqlPrefix}ping AS p ON (p.userId = $user[userId] AND p.roomId = r.id)
+WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.id IN ($user[watchRooms])" : '') . ") AND (r.allowedUsers REGEXP '({$user[userId]},)|{$user[userId]}$' OR r.allowedUsers = '*') AND IF(p.time, UNIX_TIMESTAMP(r.lastMessageTime) > (UNIX_TIMESTAMP(p.time) + 10), TRUE)",'id'); // Right now only private IMs are included, but in the future this will be expanded.
 
   if ($missedMessages) {
     foreach ($missedMessages AS $message) {
