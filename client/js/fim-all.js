@@ -471,7 +471,7 @@ $(document).ready(function() {
   /*** Private Room ***/
 
   $('a#privateRoom').click(function() {
-    ajaxDialogue('template.php?template=privateRoomForm','Enter Private Room','privateRoomDialogue',1000);
+    quickDialogue('<form action="index.php?action=privateRoom&phase=2" method="post" id="privateRoomForm"><label for="userName">Username</label>: <input type="text" name="userName" id="userName" /><br /><small><span style="margin-left: 10px;">The other user you would like to talk to.</span></small><br /><br />  <input type="submit" value="Go" /></form>','Enter Private Room','privateRoomDialogue',1000);
   });
 
 
@@ -480,7 +480,19 @@ $(document).ready(function() {
   /*** Manage Kick ***/
 
   $('a#manageKick').click(function() {
-    ajaxDialogue('template.php?template=manageKickForm&roomId=' + roomId,'Manage Kicked Users in This Room','manageKickDialogue',600);
+    quickDialogue('<table class="page"><thead><tr class="hrow"><th>User</th><th>Kicked By</th><th>Kicked On</th><th>Expires On</th><th>Actions</th></tr>  </thead><tbody id="kickedUsers"></tbody></table>','Manage Kicked Users in This Room','manageKickDialogue',1000);
+
+   //<tr>  <td>$kickedUser[userName]</td>  <td>$kickedUser[kickername]</td>  <td>$kickedUser[kickedOn]</td>  <td>$kickedUser[expiresOn]</td>  <td>    <form action="#" method="post" data-formid="unkick">      <input type="submit" value="Unkick" />      <input type="hidden" name="userId" value="$kickedUser[userId]" />      <input type="hidden" name="roomId" value="$room[id]" />    </form>  </td></tr>
+
+    $("form[data-formid=unkick]").submit(function() {
+      data = $(this).serialize(); // Serialize the form data for AJAX.
+      $.post("content/unkick.php?phase=2",data,function(html) {
+        quickDialogue(html,'','unkickDialogue');
+      }); // Send the form data via AJAX.
+
+      $("#manageKickDialogue").dialog('destroy');
+      return false; // Don\\''t submit the form.
+    });
   });
 
 
