@@ -32,6 +32,12 @@ function unxml(data) {
 
 function quickDialogue(content,title,id,width) {
   var dialog = $('<div style="display: none;" id="' + id +  '">' + content + '</div>').appendTo('body');
+
+  var windowWidth = document.documentElement.clientWidth;
+  if (width > windowWidth || !width) {
+    width = windowWidth;
+  }
+
   dialog.dialog({
     width: (width ? width: 600),
     title: title,
