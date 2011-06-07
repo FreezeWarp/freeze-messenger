@@ -413,7 +413,7 @@ elseif ($loginMethod === 'vbulletin') {
   }
 
   elseif ($userId && $password) {
-    $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userId = "' . intval($userId) . '" LIMIT 1');
+    $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userId = "' . (int) $userId . '" LIMIT 1');
 
     if (processVBulletin($user,$password)) {
       $setCookie = true;
@@ -433,7 +433,7 @@ elseif ($loginMethod === 'vbulletin') {
         $userId = intval($_COOKIE[$forumCookiePrefix . 'userId']);
         $passwordVBulletin = $_COOKIE[$forumCookiePrefix . 'password'];
 
-        $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userId = "' . intval($userId) . '" AND "' . mysqlEscape($_COOKIE[$forumCookiePrefix . 'password'])  . '" = MD5(CONCAT(password,"' . $forumCookieSalt . '"))'); // Query from vBulletin user table.
+        $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userId = "' . intval($userId) . '" AND "' . mysqlEscape($_COOKIE[$forumCookiePrefix . 'password'])  . '" = MD5(CONCAT(password,"' . mysqlEscape($forumCookieSalt) . '"))'); // Query from vBulletin user table.
 
         if ($user) {
           $valid = true;
@@ -454,7 +454,7 @@ elseif ($loginMethod === 'vbulletin') {
   }
 
   elseif ($userId && $passwordVBulletin) {
-    $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userId = "' . (int) $userId . '" AND "' . mysqlEscape($_COOKIE[$forumCookiePrefix . 'password'])  . '" = MD5(CONCAT(password,"' . $forumCookieSalt . '"))'); // Query from vBulletin user table.
+    $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userId = "' . (int) $userId . '" AND "' . mysqlEscape($_COOKIE[$forumCookiePrefix . 'password'])  . '" = MD5(CONCAT(password,"' . mysqlEscape($forumCookieSalt) . '"))'); // Query from vBulletin user table.
 
     if ($user) {
       $valid = true;
@@ -594,11 +594,11 @@ if ($valid) { // If the user is valid, process their preferrences.
   elseif ($session == 'update' && $sessionHash) {
     switch ($loginMethod) {
       case 'vbulletin':
-      mysqlQuery('UPDATE ' . $sqlSessionTable . ' SET lastactivity = "' . time() . '" WHERE sessionhash = "' . $session['sessionhash'] . '"');
+      mysqlQuery('UPDATE ' . $sqlSessionTable . ' SET lastactivity = "' . time() . '" WHERE sessionhash = "' . mysqlEscape($session['sessionhash']) . '"');
       break;
 
       case 'phpbb':
-      mysqlQuery('UPDATE ' . $sqlSessionTable . ' SET session_time = "' . time() . '" WHERE session_id = "' . $session['session_id'] . '"');
+      mysqlQuery('UPDATE ' . $sqlSessionTable . ' SET session_time = "' . time() . '" WHERE session_id = "' . mysqlEscape($session['session_id']) . '"');
       break;
     }
   }
