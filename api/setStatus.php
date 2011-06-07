@@ -23,8 +23,8 @@ header('Content-type: text/xml');
 $statusType = fim_urldecode($_POST['statusType']); // typing, status
 $statusValue = fim_urldecode($_POST['statusValue']);
 
-$room = intval($_POST['room']);
-$room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
+$roomId = (int) $_POST['roomId'];
+$room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $roomId");
 
 
 if (!$room) { // Bad room.
@@ -37,7 +37,7 @@ elseif (!fim_hasPermission($room,$user,'view')) { // Not allowed to post.
 }
 else {
   if ($statusType == 'typing') {
-    $value = intval($statusValue);
+    $value = (int) $statusValue;
   }
   elseif ($statusType == 'status') {
     $value = mysqlEscape($statusValue);
@@ -65,8 +65,8 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
     <userName>" . fim_encodeXml($user['userName']) . "</userName>
   </activeUser>
   <sentData>
-    <roomId>" . fim_encodeXml($_POST['roomId']) . "</roomId>
-    <userId>" . fim_encodeXml($_POST['userId']) . "</userId>
+    <roomId>" . (int) $_POST['roomId'] . "</roomId>
+    <userId>" . (int) $_POST['userId'] . "</userId>
   </sentData>
   <errorcode>$failCode</errorcode>
   <errortext>$failMessage</errortext>

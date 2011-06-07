@@ -22,7 +22,7 @@ header('Content-type: text/xml');
 
 $message = fim_urldecode($_POST['message']);
 
-$roomId = intval($_POST['roomId']);
+$roomId = (int) $_POST['roomId'];
 $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $roomId");
 $ip = mysqlEscape($_SERVER['REMOTE_ADDR']); // Get the IP address of the user.
 
@@ -108,7 +108,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
     <userName>" . fim_encodeXml($user['userName']) . "</userName>
   </activeUser>
   <sentData>
-    <roomId>" . fim_encodeXml($_POST['roomId']) . "</roomId>
+    <roomId>" . (int) $_POST['roomId'] . "</roomId>
     <message>" . fim_encodeXml($_POST['message']) . "</message>
   </sentData>
   <errorcode>$failCode</errorcode>
