@@ -247,6 +247,8 @@ function showAllRooms() {
 
 function archive(id) {
   var encrypt = 'base64';
+  var lastMessage;
+  var firstMessage;
 
   $.ajax({
     url: 'api/getMessages.php?rooms=' + roomId + '&messageIdMin=' + (lastMessage) + '&archive=1&messageIdMin=' + id + '&messageLimit=40',
@@ -290,26 +292,28 @@ function archive(id) {
             style += 'text-decoration: line-through;';
           }
 
-            var data = '<tr id="archiveMessage' + messageId + '"><td>' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageid="' + messageId + '">' + text + '</td></tr>';
+          var data = '<tr id="archiveMessage' + messageId + '"><td>' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageid="' + messageId + '">' + text + '</td></tr>';
 
-            if (window.reverse) {
+          if (window.reverse) {
             $('#archiveMessageList').append(data);
           }
           else {
             $('#archiveMessageList').prepend(data);
           }
 
-            if (messageId > lastMessage) {
+          if (messageId > lastMessage) {
             lastMessage = messageId;
           }
         });
 
-          if (typeof contextMenuParse === 'function') {
+        if (typeof contextMenuParse === 'function') {
           contextMenuParse();
         }
       }
     },
-    error: function() {  alert('Error'); },
+    error: function() {
+      alert('Error');
+    },
   });
 }
 
@@ -604,7 +608,7 @@ $(document).ready(function() {
 
           roomHtml += '<tr id="room' + roomId + '"><td><a href="/chat.php?room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isOwner ? '<a href="#" class="editRoomMulti" data-roomId="' + roomId + '"><img src="images/document-edit.png" class="standard" alt="Configure" /></a>' : '') + '</td></tr>';
         });
-        quickDialogue('<table><thead><tr><th>Name</th><th>Topic</th><th>Actions</th></tr></thead><tbody>' + roomHtml + '</tbody></table>','Room List','roomListDialogue',600);
+        quickDialogue('<table><thead><tr><th>Name</th><th>Topic</th><th>Actions</th></tr></thead><tbody>' + roomHtml + '</tbody></table>','Room List','roomListDialogue',1000);
       },
       error: function() {
         alert('Failed to show all rooms');
