@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS `{prefix}messages` (
   `microtime` double NOT NULL,
   `ip` varchar(20) CHARACTER SET utf8 COLLATE utf8_bin  NOT NULL,
   `flag` varchar(10) CHARACTER SET utf8 COLLATE utf8_bin  NOT NULL,
-  PRIMARY KEY (`id`),
+  PRIMARY KEY (`messageId`),
   KEY `deleted` (`deleted`),
   KEY `time` (`time`),
   KEY `roomId` (`roomId`),
