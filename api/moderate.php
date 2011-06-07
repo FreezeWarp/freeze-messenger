@@ -131,17 +131,32 @@ switch ($action) {
 
   /*** Web Interface Options ***/
 
-/*  $user['optionDefs'] = array(
-    'disableFormatting' => ($user['settingsOfficialAjax'] & 16),
-    'disableVideos' => ($user['settingsOfficialAjax'] & 32),
-    'disableImages' => ($user['settingsOfficialAjax'] & 64),
-    'reversePostOrder' => ($user['settingsOfficialAjax'] & 1024),
-    'showAvatars' => ($user['settingsOfficialAjax'] & 2048),
-    'audioDing' => ($user['settingsOfficialAjax'] & 8192),
-  );*/
+  $settingsOfficialAjaxIndex = array(
+    'disableFormatting' => 16,
+    'disableVideos' => 32,
+    'disableImages' => 64,
+    'reversePostOrder' => 1024,
+    'showAvatars' => 2048,
+    'audioDing' => 8192,
+  );
 
   if ($user['adminPrivs']['modUsers'] || $user['userId'] == $userId) {
-
+    foreach ($settingsOfficialAjaxIndex AS $name => $val) {
+      if (isset($_GET['admin_' . $name])) {
+        if ((int) $_GET['admin_' . $name]) {
+          if ($userData['userPrivs'] & $val) {}
+          else {
+            $userData['userPrivs'] += $val;
+          }
+        }
+        else {
+          if ($userData['userPrivs'] & $val) {
+            $userData['userPrivs'] -= $val;
+          }
+          else {}
+        }
+      }
+    }
   }
   else {
     // No Permission
@@ -150,13 +165,28 @@ switch ($action) {
 
   /*** User Options ***/
 
-/*   $user['userDefs'] = array(
-    'allowed' => ($user['userPrivs'] & 16),
-    'createRooms' => ($user['userPrivs'] & 32),
-  ); */
+  $userIndex = array(
+    'modPrivs' => 16,
+    'modUsers' => 32,
+  );
 
   if ($user['adminPrivs']['modUsers'] || $user['userId'] == $userId) {
-
+    foreach ($userIndex AS $name => $val) {
+      if (isset($_GET['admin_' . $name])) {
+        if ((int) $_GET['admin_' . $name]) {
+          if ($userData['userPrivs'] & $val) {}
+          else {
+            $userData['userPrivs'] += $val;
+          }
+        }
+        else {
+          if ($userData['userPrivs'] & $val) {
+            $userData['userPrivs'] -= $val;
+          }
+          else {}
+        }
+      }
+    }
   }
   else {
     // No Permission
@@ -164,21 +194,34 @@ switch ($action) {
 
   /*** Admin Options ***/
 
-/*  $user['adminDefs'] = array(
-    'modPrivs' => ($user['adminPrivs'] & 1),
-    'modUsers' => ($user['adminPrivs'] & 16),
-    'modImages' => ($user['adminPrivs'] & 64),
-    'modCensorWords' => ($user['adminPrivs'] & 256),
-    'modCensorLists' => ($user['adminPrivs'] & 512),
-    'modPlugins' => ($user['adminPrivs'] & 4096),
-    'modTemplates' => ($user['adminPrivs'] & 8192),
-    'modHooks' => ($user['adminPrivs'] & 16384),
-    'modTranslations' => ($user['adminPrivs'] & 32768),
-  ); */
+  $adminIndex = array(
+    'modPrivs' => 1,
+    'modUsers' => 16,
+    'modImages' => 64,
+    'modCensorWords' => 256,
+    'modCensorLists' => 512,
+    'modPlugins' => 4096,
+    'modTemplates' => 8192,
+    'modHooks' => 16384,
+    'modTranslations' => 32768,
+  );
 
   if ($user['adminPrivs']['modPrivs']) {
-    if (isset($_GET['admin_modPrivs']) {
-
+    foreach ($adminIndex AS $name => $val) {
+      if (isset($_GET['admin_' . $name])) {
+        if ((int) $_GET['admin_' . $name]) {
+          if ($userData['adminPrivs'] & $val) {}
+          else {
+            $userData['adminPrivs'] += $val;
+          }
+        }
+        else {
+          if ($userData['adminPrivs'] & $val) {
+            $userData['adminPrivs'] -= $val;
+          }
+          else {}
+        }
+      }
     }
   }
   else {
