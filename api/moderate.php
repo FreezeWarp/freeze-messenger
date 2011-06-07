@@ -120,21 +120,97 @@ switch ($action) {
   }
   break;
 
-  case 'userOptions':
-
-  break;
-
   case 'deleteRoom':
 
   break;
 
+  case 'userOptions':
+  $userId = (int) $_GET['userId'];
+
+  $userData = sqlArr("SELECT * FROM {$sqlPrefix}users WHERE userId = $userId");
+
+  /*** Web Interface Options ***/
+
+/*  $user['optionDefs'] = array(
+    'disableFormatting' => ($user['settingsOfficialAjax'] & 16),
+    'disableVideos' => ($user['settingsOfficialAjax'] & 32),
+    'disableImages' => ($user['settingsOfficialAjax'] & 64),
+    'reversePostOrder' => ($user['settingsOfficialAjax'] & 1024),
+    'showAvatars' => ($user['settingsOfficialAjax'] & 2048),
+    'audioDing' => ($user['settingsOfficialAjax'] & 8192),
+  );*/
+
+  if ($user['adminPrivs']['modUsers'] || $user['userId'] == $userId) {
+
+  }
+  else {
+    // No Permission
+  }
+
+
+  /*** User Options ***/
+
+/*   $user['userDefs'] = array(
+    'allowed' => ($user['userPrivs'] & 16),
+    'createRooms' => ($user['userPrivs'] & 32),
+  ); */
+
+  if ($user['adminPrivs']['modUsers'] || $user['userId'] == $userId) {
+
+  }
+  else {
+    // No Permission
+  }
+
+  /*** Admin Options ***/
+
+/*  $user['adminDefs'] = array(
+    'modPrivs' => ($user['adminPrivs'] & 1),
+    'modUsers' => ($user['adminPrivs'] & 16),
+    'modImages' => ($user['adminPrivs'] & 64),
+    'modCensorWords' => ($user['adminPrivs'] & 256),
+    'modCensorLists' => ($user['adminPrivs'] & 512),
+    'modPlugins' => ($user['adminPrivs'] & 4096),
+    'modTemplates' => ($user['adminPrivs'] & 8192),
+    'modHooks' => ($user['adminPrivs'] & 16384),
+    'modTranslations' => ($user['adminPrivs'] & 32768),
+  ); */
+
+  if ($user['adminPrivs']['modPrivs']) {
+    if (isset($_GET['admin_modPrivs']) {
+
+    }
+  }
+  else {
+    // No Permission
+  }
+  break;
+
 
   case 'deletePost':
+  $messageId = (int) $_GET['messageId'];
+  $messageData = sqlArr("SELECT * FROM {$sqlPrefix}messages WHERE messageId = $messageId");
+  $roomData = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $messageData[roomId]");
 
+  if (fim_hasPermission($roomData,$user,'moderate')) {
+
+  }
+  else {
+    // No Permission
+  }
   break;
 
   case 'undeletePost':
+  $messageId = (int) $_GET['messageId'];
+  $messageData = sqlArr("SELECT * FROM {$sqlPrefix}messages WHERE messageId = $messageId");
+  $roomData = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $messageData[roomId]");
 
+  if (fim_hasPermission($roomData,$user,'moderate')) {
+
+  }
+  else {
+    // No Permission
+  }
   break;
 
 
