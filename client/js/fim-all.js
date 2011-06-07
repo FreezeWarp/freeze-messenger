@@ -704,7 +704,7 @@ $(document).ready(function() {
   $('#icon_settings, #changeSettings, a.changeSettingsMulti').click(function() {
     ajaxTabDialogue('template.php?template=userSettingsForm','changeSettingsDialogue',1000,function() {
       $('.colorpicker').empty().remove();
-    },function() {
+    }, function() {
       $.ajax({
         url: 'api/getRooms.php?permLevel=post',
         timeout: 5000,
@@ -729,6 +729,27 @@ $(document).ready(function() {
         },
         error: function() {
           alert('Rooms not obtained.');
+        }
+      });
+
+      $.ajax({
+        url: 'api/getFonts.php',
+        timeout: 5000,
+        type: 'GET',
+        async: true,
+        cache: false,
+        success: function(xml) {
+          $(xml).find('font').each(function() {
+            var fontName = $(this).find('fontName').text();
+            var fontId = $(this).find('fontId').text();
+            var fontGroup = $(this).find('fontGroup').text();
+            var fontData = $(this).find('fontData').text();
+
+            $('#defaultFace').append('<option value="' + fontId + '" style="' + fontData + '" data-font="' + fontData + '">' + fontName + '</option>');
+          });
+        },
+        error: function() {
+          alert('Fonts not obtained.');
         }
       });
 
@@ -785,9 +806,9 @@ $(document).ready(function() {
         $('#fontPreview').css('font-style','normal');
       }
 
-      $("#changeSettingsForm").submit(function(){
+      $("#changeSettingsForm").submit(function() {
         data = $("#changeSettingsForm").serialize(); // Serialize the form data for AJAX.
-        $.post("content/options.php?phase=2",data,function(html) {
+        $.post("api/moderate.php?action=userOptions&userId=" + userId,data,function(html) {
           quickDialogue(html,'','changeSettingsResultDialogue');
         }); // Send the form data via AJAX.
 
