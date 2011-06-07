@@ -47,6 +47,13 @@ $noPing = (bool) $_GET['noping']; // BOOL
 $encode = ($_GET['encode']); // String - 'base64', 'plaintext'
 $fields = ($_GET['messageFields']); // String - 'api', 'html', or 'both'
 
+if ($longPolling && $_GET['longPolling']) {
+  $longPolling = true;
+}
+else {
+  $longPolling = false;
+}
+
 
 $onlineThreshold = (int) ($_GET['onlineThreshold'] ? $_GET['onlineThreshold'] : $onlineThreshold); // INT - Only if activeUsers = TRUE
 
