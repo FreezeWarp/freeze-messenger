@@ -230,7 +230,7 @@ function htmlwrap($str, $maxLength = 40, $char = '<br />') { /* An adaption of a
   $tagParams = false;
 
   for ($i = 0; $i < mb_strlen($str,'UTF-8'); $i++) {
-   $mb = mb_substr($str,$i,1,'UTF-8'); 
+   $mb = mb_substr($str,$i,1,'UTF-8');
    $noAppend = false;
 
     if ($mb == '<') { // The character starts a BBcode tag - don't touch nothing.
@@ -356,7 +356,7 @@ function sendMessage($messageText,$user,$room,$flag = '') {
   $messageApi = mysqlEscape($messageApi);
 
 
-  mysqlQuery("INSERT INTO {$sqlPrefix}messages (user, room, rawText, htmlText, apiText, salt, iv, microtime, ip, flag) VALUES ($user[userId], $room[id], '$messageRaw', '$messageHtml', '$messageApi', '$saltNum', '$iv', '" . microtime(true) . "', '$ip', '$flag')");
+  mysqlQuery("INSERT INTO {$sqlPrefix}messages (userId, roomId, rawText, htmlText, apiText, salt, iv, microtime, ip, flag) VALUES ($user[userId], $room[id], '$messageRaw', '$messageHtml', '$messageApi', '$saltNum', '$iv', '" . microtime(true) . "', '$ip', '$flag')");
   $messageId = mysqlInsertId();
 
   mysqlQuery("INSERT INTO {$sqlPrefix}messagesCached (messageId, roomId, userId, userName, userGroup, groupFormatStart, groupFormatEnd, time, htmlText, flag) VALUES ($messageId, $room[id], $user[userId], '$user[userName]', $user[displaygroupid], '$group[opentag]', '$group[closetag]', NOW(), '$messageHtmlCache', '$flag')");
