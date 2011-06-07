@@ -142,16 +142,16 @@ switch ($action) {
 
   if ($user['adminPrivs']['modUsers'] || $user['userId'] == $userId) {
     foreach ($settingsOfficialAjaxIndex AS $name => $val) {
-      if (isset($_GET['admin_' . $name])) {
-        if ((int) $_GET['admin_' . $name]) {
-          if ($userData['userPrivs'] & $val) {}
+      if (isset($_GET['settingsOfficialAjax_' . $name])) {
+        if ((int) $_GET['settingsOfficialAjax_' . $name]) {
+          if ($userData['settingsOfficialAjax'] & $val) {}
           else {
-            $userData['userPrivs'] += $val;
+            $userData['settingsOfficialAjax'] += $val;
           }
         }
         else {
-          if ($userData['userPrivs'] & $val) {
-            $userData['userPrivs'] -= $val;
+          if ($userData['settingsOfficialAjax'] & $val) {
+            $userData['settingsOfficialAjax'] -= $val;
           }
           else {}
         }
@@ -172,8 +172,8 @@ switch ($action) {
 
   if ($user['adminPrivs']['modUsers'] || $user['userId'] == $userId) {
     foreach ($userIndex AS $name => $val) {
-      if (isset($_GET['admin_' . $name])) {
-        if ((int) $_GET['admin_' . $name]) {
+      if (isset($_GET['user_' . $name])) {
+        if ((int) $_GET['user_' . $name]) {
           if ($userData['userPrivs'] & $val) {}
           else {
             $userData['userPrivs'] += $val;
