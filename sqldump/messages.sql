@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS `{prefix}messages` (
   PRIMARY KEY (`id`),
   KEY `deleted` (`deleted`),
   KEY `time` (`time`),
-  KEY `roomId` (`room`Id),
+  KEY `roomId` (`roomId`),
   KEY `userId` (`userId`),
   KEY `microtime` (`microtime`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
