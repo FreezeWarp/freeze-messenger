@@ -483,9 +483,7 @@ $(document).ready(function() {
   /*** Online ***/
 
   $('a#online').click(function() {
-    ajaxDialogue('template.php?template=online','View Active Users','onlineDialogue',600,false,function() {
-      var timer2 = setInterval(updateOnline,2500);
-    });
+    quickDialogue('<table class="page"><thead><tr class="hrow"><th>User</th><th>Rooms</th></tr></thead><tbody id="onlineUsers"><tr><td colspan="2">Loading...</td></tr></tbody></table>','View Active Users','onlineDialogue');
 
     function updateOnline() {
       $.ajax({
@@ -520,6 +518,8 @@ $(document).ready(function() {
         },
       });
     }
+
+    var timer2 = setInterval(updateOnline,2500);
   });
 
 
