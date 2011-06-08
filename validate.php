@@ -104,7 +104,6 @@ switch ($loginMethod) {
 
 
 
-
 ///* Obtain Login Data From Different Locations *///
 
 if (isset($_GET['userName'],$_GET['password'])) { // API.
@@ -220,9 +219,16 @@ else {
   }
 
   elseif ($magicSessionHash) {
-    $user = sqlArr("SELECT s.userId, u.* FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE magicHash = '" . mysqlEscape($magicSessionHash) . "'");
+    $user = sqlArr("SELECT u.* FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE magicHash = '" . mysqlEscape($magicSessionHash) . "'");
 
-    $noSync = true;
+    if ($user['userId'] == $_COOKIE['fim_uid']) {
+      $valid = true;
+      $noSync = true;
+    }
+    else {
+      $valid = false;
+    }
+
   }
 
   elseif ($userId && $passwordVBulletin) {
@@ -253,79 +259,89 @@ else {
 if ($valid) { // If the user is valid, process their preferrences.
 
   if ($noSync || $loginMethod == 'vanilla') {
+
   }
   else {
-  switch ($loginMethod) {
+    if ($loginMethod == 'vbulletin' || $loginMethod == 'phpbb') {
 
-    case 'vbulletin':
-    case 'phpbb':
-    $userCopy = $user;
-    unset($user);
+      $userCopy = $user;
+      unset($user);
 
-    /* Set Relevant User Data */
-    $user2['userName'] = $userCopy[$sqlUserTableCols['userName']];
-    $user2['userId'] = $userCopy[$sqlUserTableCols['userId']];
-    $user2['timeZone'] = $userCopy[$sqlUserTableCols['timeZone']];
-    $user2['userGroup'] = $userCopy[$sqlUserTableCols['userGroup']];
-    $user2['allGroups'] = $userCopy[$sqlUserTableCols['allGroups']];
+      /* Set Relevant User Data */
+      $user2['userName'] = $userCopy[$sqlUserTableCols['userName']];
+      $user2['userId'] = $userCopy[$sqlUserTableCols['userId']];
+      $user2['timeZone'] = $userCopy[$sqlUserTableCols['timeZone']];
+      $user2['userGroup'] = $userCopy[$sqlUserTableCols['userGroup']];
+      $user2['allGroups'] = $userCopy[$sqlUserTableCols['allGroups']];
 
-    break;
+    }
 
-    case 'vbulletin':
+    switch ($loginMethod) {
+      case 'vbulletin':
 
-    if ($userCopy[$sqlUserOptionsCol] & 64) $user2['timezoneoffset']++; // DST is autodetect. We'll just set it by hand.
-    elseif ($userCopy[$sqlUserOptionsCol] & 128) $user2['timezoneoffset']++; // DST is on, add an hour
-    else $user2['timezoneoffset']; // DST is off
+      if ($userCopy[$sqlUserOptionsCol] & 64) $user2['timezoneoffset']++; // DST is autodetect. We'll just set it by hand.
+      elseif ($userCopy[$sqlUserOptionsCol] & 128) $user2['timezoneoffset']++; // DST is on, add an hour
+      else $user2['timezoneoffset']; // DST is off
 
-    $group = sqlArr("SELECT * FROM $sqlUserGroupTable WHERE $sqlUserGroupTableCols[groupId] = $user2[userGroup]");
+      $group = sqlArr("SELECT * FROM $sqlUserGroupTable WHERE $sqlUserGroupTableCols[groupId] = $user2[userGroup]");
 
-    $user2['userFormatStart'] = $group[$sqlUserGroupTableCols['startTag']];
-    $user2['userFormatEnd'] = $group[$sqlUserGroupTableCols['endTag']];
+      $user2['userFormatStart'] = $group[$sqlUserGroupTableCols['startTag']];
+      $user2['userFormatEnd'] = $group[$sqlUserGroupTableCols['endTag']];
 
-    break;
+      break;
 
-    case 'phpbb':
-    $user2['colour'] = $userCopy[$sqlUserTableCols['colour']];
+      case 'phpbb':
+      $user2['colour'] = $userCopy[$sqlUserTableCols['colour']];
 
-    $user2['userFormatStart'] = "<span style=\"color: #$user2[colour]\">";
-    $user2['userFormatEnd'] = '</span>';
-    break;
+      $user2['userFormatStart'] = "<span style=\"color: #$user2[colour]\">";
+      $user2['userFormatEnd'] = '</span>';
+      break;
 
-    default:
-    die('Error');
-    break;
+      default:
+      die('Error');
+      break;
 
-  }
-
-
-  $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
-
-  if (!$userprefs) {
-    mysqlQuery('INSERT INTO ' . $sqlPrefix . 'users
-SET userId = ' . (int) $user2['userId'] . ',
-  userName = "' . mysqlEscape($user2['userName']) . '",
-  userGroup = ' . (int) $user2['userGroup'] . ',
-  allGroups = "' . mysqlEscape($user2['allGroups']) . '",
-  userFormatStart = "' . mysqlEscape($user2['userFormatStart']) . '",
-  userFormatEnd = "' . mysqlEscape($user2['userFormatEnd']) . '"'); // Create the new row
+    }
 
     $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
-  }
 
+    if (!$userprefs) {
+      mysqlQuery('INSERT INTO ' . $sqlPrefix . 'users
+  SET userId = ' . (int) $user2['userId'] . ',
+    userName = "' . mysqlEscape($user2['userName']) . '",
+    userGroup = ' . (int) $user2['userGroup'] . ',
+    allGroups = "' . mysqlEscape($user2['allGroups']) . '",
+    userFormatStart = "' . mysqlEscape($user2['userFormatStart']) . '",
+    userFormatEnd = "' . mysqlEscape($user2['userFormatEnd']) . '"'); // Create the new row
 
-  $user = array_merge($user2,$userprefs); // Merge userprefs into user for future referrence.
+      $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
+    }
+    elseif ($userprefs['lastSync'] <= (time() - ($sync ? $sync : (60 * 60 * 24))) || true) {
+
+      mysqlQuery('UPDATE ' . $sqlPrefix . 'users
+  SET userId = ' . (int) $user2['userId'] . ',
+    userName = "' . mysqlEscape($user2['userName']) . '",
+    userGroup = ' . (int) $user2['userGroup'] . ',
+    allGroups = "' . mysqlEscape($user2['allGroups']) . '",
+    userFormatStart = "' . mysqlEscape($user2['userFormatStart']) . '",
+    userFormatEnd = "' . mysqlEscape($user2['userFormatEnd']) . '"'); // Create the new row
+
+      $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
+    }
+
+    $user = array_merge($user2,$userprefs); // Merge userprefs into user for future referrence.
   }
 
 
   if ($session == 'create') {
     $magicSessionHash = fim_generateSession();
     mysqlQuery("INSERT INTO {$sqlPrefix}sessions (userId,
-  time,
-  magicHash)
-  VALUES ($user[userId],
-  " . (int) time() . ",
-  '" . mysqlEscape($magicSessionHash) . "'
-  )");
+    time,
+    magicHash)
+    VALUES ($user[userId],
+    " . (int) time() . ",
+    '" . mysqlEscape($magicSessionHash) . "'
+    )");
   }
 
   elseif ($session == 'update' && $magicSessionHash) {

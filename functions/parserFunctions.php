@@ -325,14 +325,6 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
     list($messageRaw,$messageHtml,$messageApi) = $message;
   }
 
-  if ($loginMethod == 'vbulletin' && $user['displaygroupid']) {
-    $group = sqlArr("SELECT * FROM {$sqlUserGroupTable} AS g WHERE g.{$sqlUserGroupTableCols[groupid]} = $user[displaygroupid]");
-  }
-  elseif ($loginMethod == 'phpbb') {
-    $group['opentag'] = "<span style=\"color: #$user[colour];\">";
-    $group['closetag'] = "</span>";
-  }
-
   $messageHtmlCache = $messageHtml;
 
   if ($salts && $encrypt) {
@@ -361,7 +353,6 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
   apiText,
   salt,
   iv,
-  microtime,
   ip,
   flag)
 
@@ -372,7 +363,6 @@ VALUES ($user[userId],
   '$messageApi',
   '$saltNum',
   '$iv',
-  '" . microtime(true) . "',
   '$ip',
   '$flag')");
   $messageId = mysqlInsertId();
