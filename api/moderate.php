@@ -147,11 +147,13 @@ switch ($action) {
           if ($userData['settingsOfficialAjax'] & $val) {}
           else {
             $userData['settingsOfficialAjax'] += $val;
+            $dataModified .= "<value>" . $name . "</value>";
           }
         }
         else {
           if ($userData['settingsOfficialAjax'] & $val) {
             $userData['settingsOfficialAjax'] -= $val;
+            $dataModified .= "<value>" . $name . "</value>";
           }
           else {}
         }
@@ -177,11 +179,13 @@ switch ($action) {
           if ($userData['userPrivs'] & $val) {}
           else {
             $userData['userPrivs'] += $val;
+            $dataModified .= "<value>" . $name . "</value>";
           }
         }
         else {
           if ($userData['userPrivs'] & $val) {
             $userData['userPrivs'] -= $val;
+            $dataModified .= "<value>" . $name . "</value>";
           }
           else {}
         }
@@ -213,11 +217,13 @@ switch ($action) {
           if ($userData['adminPrivs'] & $val) {}
           else {
             $userData['adminPrivs'] += $val;
+            $dataModified .= "<value>" . $name . "</value>";
           }
         }
         else {
           if ($userData['adminPrivs'] & $val) {
             $userData['adminPrivs'] -= $val;
+            $dataModified .= "<value>" . $name . "</value>";
           }
           else {}
         }
@@ -227,6 +233,8 @@ switch ($action) {
   else {
     // No Permission
   }
+
+  $data = "<modified>$dataModified</modified>";
   break;
 
 

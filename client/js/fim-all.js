@@ -501,7 +501,7 @@ $(document).ready(function() {
   /*** Online ***/
 
   $('a#online').click(function() {
-    quickDialogue('<table class="page"><thead><tr class="hrow"><th>User</th><th>Rooms</th></tr></thead><tbody id="onlineUsers"><tr><td colspan="2">Loading...</td></tr></tbody></table>','View Active Users','onlineDialogue');
+    quickDialogue('<table class="page"><thead><tr class="hrow"><th>User</th><th>Rooms</th></tr></thead><tbody id="onlineUsers"><tr><td colspan="2">Loading...</td></tr></tbody></table>','View Active Users','onlineDialogue',600);
 
     function updateOnline() {
       $.ajax({
