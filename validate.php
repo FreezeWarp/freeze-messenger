@@ -100,34 +100,6 @@ switch ($loginMethod) {
 }
 
 
-/* The following function is derived from vBulletin code required for properly defining a vBulletin-compatible cookie.
- * It is deemed fair use to use this code for the following reasons. If its authors have any issue, please contact Joseph T. Parsons by email (rehtaew@gmail.com) to sort any possible issues out:
- ** It is brief in nature.
- ** It is required for the function used.
- ** It should not hurt or cause any damage to the vBulletin software nor its authors.
- ** The algorithm is incredibly basic, and mainly performs simplistic tests on PHP $_SERVER variables.
- ** It is used in good nature.
- * To be clear, the code is under the copyright of its vBulletin authors, and used as it is thought to be fair use. */
-
-function realIp() { // vBulletin Function
-  $alt_ip = $_SERVER['REMOTE_ADDR'];
-
-  if (isset($_SERVER['HTTP_CLIENT_IP'])) {
-    $alt_ip = $_SERVER['HTTP_CLIENT_IP'];
-  }
-  elseif (isset($_SERVER['HTTP_X_FORWARDED_FOR']) AND preg_match_all('#\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}#s', $_SERVER['HTTP_X_FORWARDED_FOR'], $matches)) {
-    foreach ($matches[0] AS $ip) {
-      if (!preg_match("#^(10|172\.16|192\.168)\.#", $ip)) {
-        $alt_ip = $ip;
-        break;
-      }
-    }
-  }
-  else if (isset($_SERVER['HTTP_FROM'])) {
-    $alt_ip = $_SERVER['HTTP_FROM'];
-  }
-  return implode('.', array_slice(explode('.', $alt_ip), 0, 3));
-}
 
 function phpbb_hash($password) {
   $itoa64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -319,7 +291,9 @@ function processVanilla($user, $password) {
   if (!$user[$sqlUserTableCols['userId']]) {
     return false;
   }
+  else {
 
+  }
 }
 
 function processLogin($user, $password) {
@@ -476,48 +450,47 @@ else {
   }
   elseif ($sessionHash) {
     if ($loginMethod == 'vbulletin') {
-    $session = sqlArr('SELECT * FROM ' . $sqlSessionTable . ' WHERE sessionhash = "' . mysqlEscape($sessionHash) . '"');
+      $session = sqlArr('SELECT * FROM ' . $sqlSessionTable . ' WHERE sessionhash = "' . mysqlEscape($sessionHash) . '"');
 
-    if (!$session['userId']) {
-      if (isset($_COOKIE[$forumCookiePrefix . 'userId'],$_COOKIE[$forumCookiePrefix . 'password'])) { // Data is stored in long-lasting cookies.
-        $userId = intval($_COOKIE[$forumCookiePrefix . 'userId']);
-        $passwordVBulletin = $_COOKIE[$forumCookiePrefix . 'password'];
+      if (!$session['userId']) {
+        if (isset($_COOKIE[$forumCookiePrefix . 'userId'],$_COOKIE[$forumCookiePrefix . 'password'])) { // Data is stored in long-lasting cookies.
+          $userId = intval($_COOKIE[$forumCookiePrefix . 'userId']);
+          $passwordVBulletin = $_COOKIE[$forumCookiePrefix . 'password'];
 
-        $user = sqlArr("SELECT * FROM $sqlUserTable WHERE $sqlUserTableCols[userId] = " . (int) $userId . '" AND "' . mysqlEscape($_COOKIE[$forumCookiePrefix . 'password'])  . '" = MD5(CONCAT(password,"' . mysqlEscape($forumCookieSalt) . '"))'); // Query from vBulletin user table.
+          $user = sqlArr("SELECT * FROM $sqlUserTable WHERE $sqlUserTableCols[userId] = " . (int) $userId . '" AND "' . mysqlEscape($_COOKIE[$forumCookiePrefix . 'password'])  . '" = MD5(CONCAT(password,"' . mysqlEscape($forumCookieSalt) . '"))'); // Query from vBulletin user table.
 
-        if ($user) {
-          $valid = true;
+          if ($user) {
+            $valid = true;
 
-          $session = 'create';
-          $setCookie = true;
-        }
-        else {
-          $valid = false;
+            $session = 'create';
+            $setCookie = true;
+          }
+          else {
+            $valid = false;
+          }
         }
       }
+      else {
+        $user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $session['userId']); // Query from vBulletin user table.
+        $session = 'update';
+        $valid = true;
+      }
     }
-    else {
-      $user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $session['userId']); // Query from vBulletin user table.
-      $session = 'update';
-      $valid = true;
-    }
-  }
-  elseif ($loginMethod = 'phpbb') {
+    elseif ($loginMethod = 'phpbb') {
+      $session = sqlArr('SELECT * FROM ' . $sqlSessionTable . ' WHERE session_id = "' . mysqlEscape($sessionHash) . '"');
 
-    $session = sqlArr('SELECT * FROM ' . $sqlSessionTable . ' WHERE session_id = "' . mysqlEscape($sessionHash) . '"');
-
-    if (!$session['session_user_id'] || in_array($session['session_user_id'],$brokenUsers)) {
-      $valid = false;
+      if (!$session['session_user_id'] || in_array($session['session_user_id'],$brokenUsers)) {
+        $valid = false;
+      }
+      elseif ($session['session_user_id'] != $_COOKIE[$forumCookiePrefix . 'u']) {
+        trigger_error('Session Mismatch',E_USER_ERROR);
+      }
+      else {
+        $user = sqlArr("SELECT * FROM $sqlUserTable WHERE $sqlUserTableCols[userId] = " . (int) $session['session_user_id']); // Query from user table.
+        $session = 'update';
+        $valid = true;
+      }
     }
-    elseif ($session['session_user_id'] != $_COOKIE[$forumCookiePrefix . 'u']) {
-      trigger_error('Session Mismatch',E_USER_ERROR);
-    }
-    else {
-      $user = sqlArr("SELECT * FROM $sqlUserTable WHERE $sqlUserTableCols[userId] = " . (int) $session['session_user_id']); // Query from user table.
-      $session = 'update';
-      $valid = true;
-    }
-  }
   }
   elseif ($userId && $passwordVBulletin) {
     $user = sqlArr("SELECT * FROM $sqlUserTable WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' AND "' . mysqlEscape($_COOKIE[$forumCookiePrefix . 'password'])  . '" = MD5(CONCAT(password,"' . mysqlEscape($forumCookieSalt) . '"))'); // Query from vBulletin user table.
@@ -679,6 +652,7 @@ else { // If the user is not valid, remove all user data. If a user's name is co
 
 
 if ($api) {
+
   switch ($flag) {
     case 'unrecpassencrpyt':
     $failMessage = 'The password encryption used was not recognized and could not be decoded.';
@@ -729,12 +703,17 @@ if ($api) {
   </userdata>
 </login>
 ";
+
   die();
+
 }
+
 elseif (!$valid && !$noReqLogin && !$apiRequest) {
 
 }
+
 elseif ($valid) {
+
   /* The following defines each individual user's options via an associative array. It is highly recommended this be used to referrence settings. */
   $user['optionDefs'] = array(
     'disableFormatting' => ($user['settingsOfficialAjax'] & 16),
@@ -761,6 +740,7 @@ elseif ($valid) {
     'allowed' => ($user['userPrivs'] & 16),
     'createRooms' => ($user['userPrivs'] & 32),
   );
+
 }
 
 unset($sqlPassword); // Security!
