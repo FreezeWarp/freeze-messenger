@@ -382,30 +382,12 @@ elseif (isset($_POST['userName'],$_POST['password'])) { // Data is stored in a j
   }
 }
 
+elseif (isset($_COOKIE['fim_msid'])) { // Magic Session!
+  $magicSessionHash = $_COOKIE['fim_msid'];
+}
+
 elseif (isset($_GET['sessionhash'])) {
-  $sessionHash = fim_urldecode($_GET['sessionhash']);
-
-  $userName = false;
-  $password = false;
-}
-
-elseif (isset($_COOKIE[$forumCookiePrefix . 'sessionhash']) && !$apiRequestCheck) { // Data is stored in session cookie.
-  $sessionHash = fim_urldecode($_COOKIE[$forumCookiePrefix . 'sessionhash']);
-
-  $userName = false;
-  $password = false;
-}
-
-elseif (isset($_COOKIE[$forumCookiePrefix . 'sid']) && !$apiRequestCheck) {
-  $sessionHash = fim_urldecode($_COOKIE[$forumCookiePrefix . 'sid']);
-
-  $userName = false;
-  $password = false;
-}
-
-elseif (isset($_COOKIE[$forumCookiePrefix . 'userId'],$_COOKIE[$forumCookiePrefix . 'password']) && !$apiRequestCheck) { // Data is stored in long-lasting cookies.
-  $userId = intval($_COOKIE[$forumCookiePrefix . 'userId']);
-  $passwordVBulletin = $_COOKIE[$forumCookiePrefix . 'password'];
+  $magicSessionHash = fim_urldecode($_GET['sessionhash']);
 }
 
 else { // No login data exists.
@@ -436,6 +418,7 @@ else {
       $valid = false;
     }
   }
+
   elseif ($userId && $password) {
     $user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $userId . '" LIMIT 1');
 
@@ -448,50 +431,11 @@ else {
       $valid = false;
     }
   }
-  elseif ($sessionHash) {
-    if ($loginMethod == 'vbulletin') {
-      $session = sqlArr('SELECT * FROM ' . $sqlSessionTable . ' WHERE sessionhash = "' . mysqlEscape($sessionHash) . '"');
 
-      if (!$session['userId']) {
-        if (isset($_COOKIE[$forumCookiePrefix . 'userId'],$_COOKIE[$forumCookiePrefix . 'password'])) { // Data is stored in long-lasting cookies.
-          $userId = intval($_COOKIE[$forumCookiePrefix . 'userId']);
-          $passwordVBulletin = $_COOKIE[$forumCookiePrefix . 'password'];
+  elseif ($magicSessionHash) {
 
-          $user = sqlArr("SELECT * FROM $sqlUserTable WHERE $sqlUserTableCols[userId] = " . (int) $userId . '" AND "' . mysqlEscape($_COOKIE[$forumCookiePrefix . 'password'])  . '" = MD5(CONCAT(password,"' . mysqlEscape($forumCookieSalt) . '"))'); // Query from vBulletin user table.
-
-          if ($user) {
-            $valid = true;
-
-            $session = 'create';
-            $setCookie = true;
-          }
-          else {
-            $valid = false;
-          }
-        }
-      }
-      else {
-        $user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $session['userId']); // Query from vBulletin user table.
-        $session = 'update';
-        $valid = true;
-      }
-    }
-    elseif ($loginMethod = 'phpbb') {
-      $session = sqlArr('SELECT * FROM ' . $sqlSessionTable . ' WHERE session_id = "' . mysqlEscape($sessionHash) . '"');
-
-      if (!$session['session_user_id'] || in_array($session['session_user_id'],$brokenUsers)) {
-        $valid = false;
-      }
-      elseif ($session['session_user_id'] != $_COOKIE[$forumCookiePrefix . 'u']) {
-        trigger_error('Session Mismatch',E_USER_ERROR);
-      }
-      else {
-        $user = sqlArr("SELECT * FROM $sqlUserTable WHERE $sqlUserTableCols[userId] = " . (int) $session['session_user_id']); // Query from user table.
-        $session = 'update';
-        $valid = true;
-      }
-    }
   }
+
   elseif ($userId && $passwordVBulletin) {
     $user = sqlArr("SELECT * FROM $sqlUserTable WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' AND "' . mysqlEscape($_COOKIE[$forumCookiePrefix . 'password'])  . '" = MD5(CONCAT(password,"' . mysqlEscape($forumCookieSalt) . '"))'); // Query from vBulletin user table.
 
@@ -505,6 +449,7 @@ else {
       $valid = false;
     }
   }
+
   else {
     $valid = false;
   }
@@ -584,7 +529,7 @@ SET userId = ' . (int) $user2['userId'] . ',
       case 'vbulletin':
       $sessionhash = md5(uniqid(microtime(), true)); // Generate the sessionhash, which should be unique to this browsing session.
 
-      mysqlQuery('INSERT INTO ' . $sqlSessionTable . ' SET sessionhash = "' . mysqlEscape($sessionhash) . '", idhash="' . mysqlEscape($idhash) . '", userId = "' . (int) $user['userId'] . '", host = "' . mysqlEscape($_SERVER['REMOTE_ADDR']) . '", lastactivity = "' . time()  . '", location="/chat.php", useragent="' . mysqlEscape($_SERVER['HTTP_USER_AGENT']) . '", loggedin = 2'); // Add to the vBulletin session table for the who's online.
+      mysqlQuery('INSERT INTO ' . $sqlSessionTable . ' SET sessionhash = "' . mysqlEscape($sessionhash) . '", idhash="' . mysqlEscape($idhash) . '", userid = "' . (int) $user['userId'] . '", host = "' . mysqlEscape($_SERVER['REMOTE_ADDR']) . '", lastactivity = "' . time()  . '", location="/chat.php", useragent="' . mysqlEscape($_SERVER['HTTP_USER_AGENT']) . '", loggedin = 2'); // Add to the vBulletin session table for the who's online.
       break;
 
       case 'phpbb':
