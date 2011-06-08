@@ -23,45 +23,38 @@ header('Content-type: text/xml');
 $userId = (int) $_GET['userId'];
 $userName = mysqlEscape(fim_urldecode($_GET['userName']));
 
+
 if ($userId) {
-  $where = "u.{$sqlUserTableCols[userId]} = $userId";
+  $where = "u.userId = $userId";
 }
 elseif ($userName) {
-  $where = "u.{$sqlUserTableCols[userName]} = '$userName'";
+  $where = "u.userName = '$userName'";
 }
 else {
   $failCode = 'nodata';
-  $failMessage = 'Neither a userName or userId was provided.';
+  $failMessage = 'Neither a username or userid was provided.';
 }
 
-switch ($loginMethod) {
-  case 'vbulletin':
-  if ($where) {
-    $getuserf = sqlArr("SELECT * FROM {$sqlUserTable} AS u LEFT JOIN {$sqlUserGroupTable} AS g ON u.{$sqlUserTableCols[userGroup]} = g.{$sqlUserGroupTableCols[groupid]} WHERE {$where}");
-    $getuserf['opentag'] = fim_encodeXml($getuserf['opentag']);
-    $getuserf['closetag'] = fim_encodeXml($getuserf['closetag']);
-    $getuserf['avatar'] = $forumUrl . '/image.php?u=' . $getuserf['userId'];
-  }
 
-  if ($getuserf) {
-    $userIdf = $getuserf[$sqlUserTableCols['userId']];
-    $getuser = sqlArr("SELECT * FROM {$sqlPrefix}users AS u WHERE userId = $userIdf");
-  }
-  break;
+if ($where) {
+  $getuser = sqlArr("SELECT * FROM {$sqlPrefix}users AS u WHERE {$where}");
+}
+if ($getuser) {
+  switch ($loginMethod) {
+    case 'vbulletin':
+    if ($where) {
+      $getuserf = sqlArr("SELECT * FROM {$sqlUserTable} AS u WHERE {$sqlUserTableCols[userId]} = $getuser[userId]");
+      $getuserf['avatar'] = $forumUrl . '/image.php?u=' . $getuserf['userId'];
+    }
+    break;
 
-  case 'phpbb':
-  if ($where) {
-    $getuserf = sqlArr("SELECT u.user_id, u.userName, u.user_posts AS posts, u.user_colour, u.user_avatar FROM {$sqlUserTable} AS u WHERE {$where}");
-    $getuserf['opentag'] = fim_encodeXml('<span style="color: #' . $getuserf['user_colour'] . ';">');
-    $getuserf['closetag'] = fim_encodeXml('</span>');
-    $getuserf['avatar'] = $forumUrl . '/download/file.php?avatar=' . $getuserf['user_avatar'];
+    case 'phpbb':
+    if ($where) {
+      $getuserf = sqlArr("SELECT u.user_id, u.userName, u.user_posts AS posts, u.user_colour, u.user_avatar FROM {$sqlUserTable} AS u WHERE {$sqlUserTableCols[userId]} = $getuser[userId]");
+      $getuserf['avatar'] = $forumUrl . '/download/file.php?avatar=' . $getuserf['user_avatar'];
+    }
+    break;
   }
-
-  if ($getuserf) {
-    $userIdf = $getuserf[$sqlUserTableCols['userId']];
-    $getuser = sqlArr("SELECT * FROM {$sqlPrefix}users AS u WHERE userId = $userIdf");
-  }
-  break;
 }
 
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
@@ -78,10 +71,10 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
   <errortext>$failMessage</errortext>
   <userData>
     <userId>$getuser[userId]</userId>
-    <userName>$getuserf[userName]</userName>
+    <userName>$getuser[userName]</userName>
     <settings>$getuser[settings]</settings>
-    <startTag>$getuserf[opentag]</startTag>
-    <endTag>$getuserf[closetag]</endTag>
+    <startTag>$getuser[userFormatStart]</startTag>
+    <endTag>$getuser[userFormatEnd]</endTag>
     <favRooms>$getuser[favRooms]</favRooms>
     <postCount>$getuserf[posts]</postCount>
     <joinDate>$getuserf[joinDate]</joinDate>

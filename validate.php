@@ -279,11 +279,11 @@ else {
 
 /* User should be array, password md5sum of plaintext. */
 function processVBulletin($user,$password) {
-  global $forumPrefix;
+  global $forumPrefix, $sqlUserTable, $sqlUserTableCols;
 
-  $idhash = md5($_SERVER['HTTP_USER_AGENT'] . realIp());
-
-  if (!$user['userId']) return false;
+  if (!$user[$sqlUserTableCols['userId']]) {
+    return false;
+  }
 
   if ($user['password'] === md5($password . $user['salt'])) { // The password matches.
     global $user; // Make sure accessible elsewhere.
@@ -296,16 +296,28 @@ function processVBulletin($user,$password) {
 }
 
 function processPHPBB($user, $password) {
-  global $forumPrefix, $brokenUsers;
+  global $forumPrefix, $brokenUsers, $sqlUserTable, $sqlUserTableCols;
 
-  if (!$user['user_id']) return false;
-  elseif (in_array($user['user_id'],$brokenUsers)) return false;
+  if (!$user[$sqlUserTableCols['userId']]) {
+    return false;
+  }
+  elseif (in_array($user['user_id'],$brokenUsers)) {
+    return false;
+  }
 
   if (phpbb_check_hash($password, $user['user_password'])) {
     return true;
   }
   else {
     return false;
+  }
+}
+
+function processVanilla($user, $password) {
+  global $tablePrefix, $sqlUserTable, $sqlUserTableCols;
+
+  if (!$user[$sqlUserTableCols['userId']]) {
+
   }
 }
 
@@ -420,7 +432,7 @@ if ($flag) {
 }
 elseif ($loginMethod === 'vbulletin') {
   if ($userName && $password) {
-    $user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE userName = '" . mysqlEscape($userName) . "' LIMIT 1");
+    $user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userName] = '" . mysqlEscape($userName) . "' LIMIT 1");
 
     if (processVBulletin($user,$password)) {
       $setCookie = true;
@@ -549,12 +561,18 @@ if ($valid) { // If the user is valid, process their preferrences.
   switch ($loginMethod) {
 
     case 'vbulletin':
+    case 'phpbb':
+
     /* Set Relevant User Data */
     $user2['userName'] = $userCopy[$sqlUserTableCols['userName']];
     $user2['userId'] = $userCopy[$sqlUserTableCols['userId']];
     $user2['timeZone'] = $userCopy[$sqlUserTableCols['timeZone']];
     $user2['userGroup'] = $userCopy[$sqlUserTableCols['userGroup']];
     $user2['allGroups'] = $userCopy[$sqlUserTableCols['allGroups']];
+
+    break;
+
+    case 'vbulletin':
 
     if ($userCopy[$sqlUserOptionsCol] & 64) $user2['timezoneoffset']++; // DST is autodetect. We'll just set it by hand.
     elseif ($userCopy[$sqlUserOptionsCol] & 128) $user2['timezoneoffset']++; // DST is on, add an hour
@@ -564,25 +582,15 @@ if ($valid) { // If the user is valid, process their preferrences.
 
     $user2['userFormatStart'] = $group[$sqlUserGroupTableCols['startTag']];
     $user2['userFormatEnd'] = $group[$sqlUserGroupTableCols['endTag']];
+
     break;
-
-
 
     case 'phpbb':
-    $parseGroups = false;
-
-    /* Set Relevant User Data */
-    $user2['userName'] = $userCopy[$sqlUserTableCols['userName']];
-    $user2['userId'] = $userCopy[$sqlUserTableCols['userId']];
-    $user2['timeZone'] = $userCopy[$sqlUserTableCols['timeZone']];
-    $user2['userGroup'] = $userCopy[$sqlUserTableCols['userGroup']];
-    $user2['allGroups'] = $userCopy[$sqlUserTableCols['allGroups']];
     $user2['colour'] = $userCopy[$sqlUserTableCols['colour']];
 
-    $user2['userFormatStart'] = "<span style=\"color: $user2[colour]\">";
+    $user2['userFormatStart'] = "<span style=\"color: #$user2[colour]\">";
     $user2['userFormatEnd'] = '</span>';
     break;
-
 
     default:
     die('Error');
@@ -624,6 +632,7 @@ SET userId = ' . (int) $user2['userId'] . ',
       break;
     }
   }
+
   elseif ($session == 'update' && $sessionHash) {
     switch ($loginMethod) {
       case 'vbulletin':
@@ -635,6 +644,7 @@ SET userId = ' . (int) $user2['userId'] . ',
       break;
     }
   }
+
   else {
 
   }

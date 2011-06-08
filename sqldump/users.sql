@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS `{prefix}users` (
   `userFormatStart` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `userFormatEnd` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `password` varchar(300) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `joinDate` timestamp NOT NULL,
+  `birthDate` timestamp NOT NULL,
   `defaultRoom` int(10) NOT NULL DEFAULT 1,
   `favRooms` varchar(300) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL DEFAULT '1',
   `watchRooms` varchar(300) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
