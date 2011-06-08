@@ -1,6 +1,8 @@
 CREATE TABLE IF NOT EXISTS `{prefix}users` (
   `userId` int(10) NOT NULL,
   `userName` varchar(300) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `userGroup` int(10) NOT NULL DEFAULT 1
+  `allGroups` varchar(300) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `defaultRoom` int(10) NOT NULL DEFAULT 1,
   `favRooms` varchar(300) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL DEFAULT '1',
   `watchRooms` varchar(300) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
