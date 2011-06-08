@@ -22,15 +22,6 @@ header('Content-type: text/xml');
 $time = (int) ($_GET['time'] ? $_GET['time'] : time());
 $onlineThreshold = (int) ($_GET['onlineThreshold'] ? $_GET['onlineThreshold'] : $onlineThreshold);
 
-switch ($loginMethod) {
-  case 'phpbb':
-  $cols = ', u.user_colour AS userColour';
-  break;
-
-  case 'vbulletin':
-  break;
-}
-
 $ausers = sqlArr("SELECT
   u.$sqlUserTableCols[userName] AS userName,
   u.$sqlUserTableCols[userId] AS userId,

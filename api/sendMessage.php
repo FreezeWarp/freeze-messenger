@@ -22,7 +22,7 @@ header('Content-type: text/xml');
 
 $message = fim_urldecode($_POST['message']);
 
-echo $roomId = (int) $_POST['roomId'];
+$roomId = (int) $_POST['roomId'];
 $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
 $ip = mysqlEscape($_SERVER['REMOTE_ADDR']); // Get the IP address of the user.
 

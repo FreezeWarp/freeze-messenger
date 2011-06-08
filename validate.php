@@ -40,8 +40,8 @@ switch ($loginMethod) {
     'userId' => 'userid', // The user ID column of the user table in the login method used.
     'userName' => 'username', // The userName column of the user table in the login method used.
     'userGroup' => 'displaygroupid', // The userGroup column of the user table in the login method used.
-    'allgroups' => 'membergroupids',
-    'tzoffset' => 'timezoneoffset',
+    'allGroups' => 'membergroupids',
+    'timeZone' => 'timezoneoffset',
     'options' => 'options',
   );
   $sqlUserGroupTableCols = array(
@@ -61,8 +61,8 @@ switch ($loginMethod) {
     'userId' => 'user_id', // The user ID column of the user table in the login method used.
     'userName' => 'username', // The userName column of the user table in the login method used.
     'userGroup' => 'group_id', // The userGroup column of the user table in the login method used.
-    'allgroups' => 'group_id',
-    'tzoffset' => 'user_timezone',
+    'allGroups' => 'group_id',
+    'timeZone' => 'user_timezone',
     'colour' => 'user_colour',
   );
   $sqlUserGroupTableCols = array(
@@ -433,7 +433,7 @@ elseif ($loginMethod === 'vbulletin') {
         $userId = intval($_COOKIE[$forumCookiePrefix . 'userId']);
         $passwordVBulletin = $_COOKIE[$forumCookiePrefix . 'password'];
 
-        $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userId = "' . intval($userId) . '" AND "' . mysqlEscape($_COOKIE[$forumCookiePrefix . 'password'])  . '" = MD5(CONCAT(password,"' . mysqlEscape($forumCookieSalt) . '"))'); // Query from vBulletin user table.
+        $user = sqlArr("SELECT * FROM $sqlUserTable WHERE $sqlUserTableCols[userId] = " . (int) $userId . '" AND "' . mysqlEscape($_COOKIE[$forumCookiePrefix . 'password'])  . '" = MD5(CONCAT(password,"' . mysqlEscape($forumCookieSalt) . '"))'); // Query from vBulletin user table.
 
         if ($user) {
           $valid = true;
@@ -447,14 +447,14 @@ elseif ($loginMethod === 'vbulletin') {
       }
     }
     else {
-      $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userId = "' . (int) $session['userId'] . '"'); // Query from vBulletin user table.
+      $user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $session['userId']); // Query from vBulletin user table.
       $session = 'update';
       $valid = true;
     }
   }
 
   elseif ($userId && $passwordVBulletin) {
-    $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userId = "' . (int) $userId . '" AND "' . mysqlEscape($_COOKIE[$forumCookiePrefix . 'password'])  . '" = MD5(CONCAT(password,"' . mysqlEscape($forumCookieSalt) . '"))'); // Query from vBulletin user table.
+    $user = sqlArr("SELECT * FROM $sqlUserTable WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' AND "' . mysqlEscape($_COOKIE[$forumCookiePrefix . 'password'])  . '" = MD5(CONCAT(password,"' . mysqlEscape($forumCookieSalt) . '"))'); // Query from vBulletin user table.
 
     if ($user) {
       $valid = true;
@@ -474,7 +474,7 @@ elseif ($loginMethod === 'vbulletin') {
 
 elseif ($loginMethod == 'phpbb') {
   if ($userName && $password) {
-    $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userName = "' . mysqlEscape($userName) . '" LIMIT 1');
+    $user = sqlArr("SELECT * FROM $sqlUserTable WHERE $sqlUserTableCols[userName] = \"" . mysqlEscape($userName) . '" LIMIT 1');
 
     if (processPHPBB($user,$password)) {
       $setCookie = true;
@@ -487,7 +487,7 @@ elseif ($loginMethod == 'phpbb') {
   }
 
   elseif ($userId && $password) {
-    $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE userId = "' . (int) $userId . '" LIMIT 1');
+    $user = sqlArr("SELECT * FROM $sqlUserTable WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' LIMIT 1');
 
     if (processPHPBB($user,$password)) {
       $setCookie = true;
@@ -509,7 +509,7 @@ elseif ($loginMethod == 'phpbb') {
       trigger_error('Session Mismatch',E_USER_ERROR);
     }
     else {
-      $user = sqlArr('SELECT * FROM ' . $sqlUserTable . ' WHERE user_id = "' . (int) $session['session_user_id'] . '"'); // Query from user table.
+      $user = sqlArr("SELECT * FROM $sqlUserTable WHERE $sqlUserTableCols[userId] = " . (int) $session['session_user_id']); // Query from user table.
       $session = 'update';
       $valid = true;
     }
@@ -532,14 +532,13 @@ if ($valid) { // If the user is valid, process their preferrences.
     /* Set Relevant User Data */
     $user2['userName'] = $userCopy[$sqlUserTableCols['userName']];
     $user2['userId'] = $userCopy[$sqlUserTableCols['userId']];
-    $user2['timezoneoffset'] = $userCopy[$sqlUserTableCols['tzoffset']];
-    $user2['displaygroupid'] = $userCopy[$sqlUserTableCols['userGroup']];
-    $user2['membergroupids'] = $userCopy[$sqlUserTableCols['allgroups']];
+    $user2['timeZone'] = $userCopy[$sqlUserTableCols['timeZone']];
+    $user2['userGroup'] = $userCopy[$sqlUserTableCols['userGroup']];
+    $user2['allGroups'] = $userCopy[$sqlUserTableCols['allGroups']];
 
     if ($userCopy[$sqlUserOptionsCol] & 64) $user2['timezoneoffset']++; // DST is autodetect. We'll just set it by hand.
     elseif ($userCopy[$sqlUserOptionsCol] & 128) $user2['timezoneoffset']++; // DST is on, add an hour
     else $user2['timezoneoffset']; // DST is off
-
     break;
 
 
@@ -550,9 +549,9 @@ if ($valid) { // If the user is valid, process their preferrences.
     /* Set Relevant User Data */
     $user2['userName'] = $userCopy[$sqlUserTableCols['userName']];
     $user2['userId'] = $userCopy[$sqlUserTableCols['userId']];
-    $user2['timezoneoffset'] = $userCopy[$sqlUserTableCols['tzoffset']];
-    $user2['displaygroupid'] = $userCopy[$sqlUserTableCols['userGroup']];
-    $user2['membergroupids'] = $userCopy[$sqlUserTableCols['allgroups']];
+    $user2['timeZone'] = $userCopy[$sqlUserTableCols['timeZone']];
+    $user2['userGroup'] = $userCopy[$sqlUserTableCols['userGroup']];
+    $user2['allGroups'] = $userCopy[$sqlUserTableCols['allGroups']];
     $user2['colour'] = $userCopy[$sqlUserTableCols['colour']];
     break;
 
@@ -630,7 +629,7 @@ SET userId = ' . (int) $user2['userId'] . ',
   }
 
   if ($bannedUserGroups) {
-    if (fim_inArray($bannedUserGroups,explode(',',$user['membergroupids']))) $banned = true;
+    if (fim_inArray($bannedUserGroups,explode(',',$user['allGroups']))) $banned = true;
   }
   if ($user['settings'] & 2) {
     $banned = true;
@@ -640,7 +639,7 @@ SET userId = ' . (int) $user2['userId'] . ',
 else { // If the user is not valid, remove all user data. If a user's name is correct but not the password, the user variable could contain sensitive data which should not be seen.
   unset($user);
   $user['settings'] = 45; // Set the user prefs to their defaults.
-  $user['membergroupids'] = '1';
+  $user['allGroups'] = '1';
   $user['userId'] = 0;
 }
 
@@ -690,7 +689,8 @@ if ($api) {
   <userdata>
     <userId>$user[userId]</userId>
     <userName>$user[userName]</userName>
-    <membergroupids>$user[membergroupids]</membergroupids>
+    <userGroup>$user[userGroup]</userGroup>
+    <allGroups>$user[allGroups]</allGroups>
     <messageFormatting>
       <standard>$user[defaultFormatting]</standard>
       <highlight>$user[defaultHighlight]</highlight>
