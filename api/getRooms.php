@@ -51,7 +51,7 @@ switch ($_GET['permLevel']) {
 
 switch ($_GET['order']) {
   case 'id':
-  $order = 'id ' . ($reverseOrder ? 'DESC' : 'ASC');
+  $order = 'roomId ' . ($reverseOrder ? 'DESC' : 'ASC');
   break;
 
   case 'name':
@@ -63,7 +63,7 @@ switch ($_GET['order']) {
   break;
 
   default:
-  $order = 'id ' . ($reverseOrder ? 'DESC' : 'ASC');
+  $order = 'roomId ' . ($reverseOrder ? 'DESC' : 'ASC');
   break;
 }
 

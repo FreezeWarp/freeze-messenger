@@ -139,7 +139,7 @@ else {
 
   foreach ($roomsArray AS $room2) {
     $room2 = intval($room2);
-    $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room2");
+    $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $room2");
 
     if ($room) {
       if (!fim_hasPermission($room,$user)) { } // Gotta make sure the user can view that room.
@@ -165,13 +165,13 @@ else {
   $messageFields
   m.iv AS iv,
   m.salt AS salt,
-  u.{$sqlUserTableCols[userId]} AS userId,
-  u.{$sqlUserTableCols[userName]} AS userName,
-  u.{$sqlUserTableCols[userGroup]} AS displaygroupid,
+  u2.userId AS userId,
+  u2.userName AS userName,
+  u2.userGroup AS userGroup
   u2.defaultColour AS defaultColour,
   u2.defaultFontface AS defaultFontface,
   u2.defaultHighlight AS defaultHighlight,
-  u2.defaultFormatting AS defaultFormatting
+  u2.defaultFormatting AS defaultFormatting,
   $colClause
 FROM {$sqlPrefix}messages AS m,
   {$sqlUserTable} AS u,
@@ -336,8 +336,8 @@ if ($watchRooms) {
   $missedMessages = sqlArr("SELECT r.*,
   UNIX_TIMESTAMP(r.lastMessageTime) AS lastMessageTimestamp
 FROM {$sqlPrefix}rooms AS r
-  LEFT JOIN {$sqlPrefix}ping AS p ON (p.userId = $user[userId] AND p.roomId = r.id)
-WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.id IN ($user[watchRooms])" : '') . ") AND (r.allowedUsers REGEXP '({$user[userId]},)|{$user[userId]}$' OR r.allowedUsers = '*') AND IF(p.time, UNIX_TIMESTAMP(r.lastMessageTime) > (UNIX_TIMESTAMP(p.time) + 10), TRUE)",'id'); // Right now only private IMs are included, but in the future this will be expanded.
+  LEFT JOIN {$sqlPrefix}ping AS p ON (p.userId = $user[userId] AND p.roomId = r.roomId)
+WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.roomId IN ($user[watchRooms])" : '') . ") AND (r.allowedUsers REGEXP '({$user[userId]},)|{$user[userId]}$' OR r.allowedUsers = '*') AND IF(p.time, UNIX_TIMESTAMP(r.lastMessageTime) > (UNIX_TIMESTAMP(p.time) + 10), TRUE)",'id'); // Right now only private IMs are included, but in the future this will be expanded.
 
   if ($missedMessages) {
     foreach ($missedMessages AS $message) {

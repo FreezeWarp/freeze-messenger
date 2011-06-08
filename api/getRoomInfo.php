@@ -20,7 +20,7 @@ require_once('../global.php');
 header('Content-type: text/plain');
 
 $roomId = (int) $_GET['roomId'];
-$room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $roomId",'id'); // Get all rooms
+$room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId",'id'); // Get all rooms
 
 if (fim_hasPermission($room,$user) {
 
