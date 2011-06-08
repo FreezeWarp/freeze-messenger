@@ -81,7 +81,7 @@ $(document).ready(function() {
   background-color: white;
   color: black;
 }
-</style> 
+</style>
 
 <form action=\"./moderate.php?do=phrases&do2=edit2&phraseId=$phrase[id]\" method=\"post\">
   <label for=\"text\">New Value:</label><br />
@@ -166,7 +166,7 @@ $(document).ready(function() {
   background-color: white;
   color: black;
 }
-</style> 
+</style>
 
 <form action=\"./moderate.php?do=hooks&do2=edit2&hookId=$hook[id]\" method=\"post\">
   <label for=\"text\">New Value:</label><br />
@@ -239,7 +239,7 @@ $(document).ready(function() {
   background-color: white;
   color: black;
 }
-</style> 
+</style>
 
 <form action=\"./moderate.php?do=templates&do2=edit2&templateId=$template[id]\" method=\"post\">
   <label for=\"vars\">Vars:</label><br />

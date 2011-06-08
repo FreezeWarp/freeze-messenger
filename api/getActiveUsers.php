@@ -26,7 +26,7 @@ foreach ($roomsArray AS &$v) {
 }
 
 $time = ($_GET['time'] ?: time());
-$onlineThreshold = (int) ($_GET['onlineThreshold'] ? $_GET['onlineThreshold'] : $onlineThreshold); 
+$onlineThreshold = (int) ($_GET['onlineThreshold'] ? $_GET['onlineThreshold'] : $onlineThreshold);
 
 if (!$rooms) {
   $failCode = 'badroomsrequest';

@@ -60,7 +60,7 @@ FROM {$sqlPrefix}roomStats AS m,
   $tables
 WHERE m.roomId = $room[id] AND
   u.{$sqlUserTableCols[userId]} = m.userId
-  $where 
+  $where
 ORDER BY count DESC
   $orderby
 LIMIT $resultLimit
