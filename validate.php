@@ -539,6 +539,11 @@ if ($valid) { // If the user is valid, process their preferrences.
     if ($userCopy[$sqlUserOptionsCol] & 64) $user2['timezoneoffset']++; // DST is autodetect. We'll just set it by hand.
     elseif ($userCopy[$sqlUserOptionsCol] & 128) $user2['timezoneoffset']++; // DST is on, add an hour
     else $user2['timezoneoffset']; // DST is off
+
+    $group = sqlArr("SELECT * FROM $sqlUserGroupTable WHERE $sqlUserGroupTableCols[groupId] = $user2[userGroup]");
+
+    $user2['userFormatStart'] = $group[$sqlUserGroupTableCols['startTag']];
+    $user2['userFormatEnd'] = $group[$sqlUserGroupTableCols['endTag']];
     break;
 
 
@@ -553,6 +558,9 @@ if ($valid) { // If the user is valid, process their preferrences.
     $user2['userGroup'] = $userCopy[$sqlUserTableCols['userGroup']];
     $user2['allGroups'] = $userCopy[$sqlUserTableCols['allGroups']];
     $user2['colour'] = $userCopy[$sqlUserTableCols['colour']];
+
+    $user2['userFormatStart'] = "<span style=\"color: $user2[colour]\">";
+    $user2['userFormatEnd'] = '</span>';
     break;
 
 
