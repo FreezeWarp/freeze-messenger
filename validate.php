@@ -73,6 +73,26 @@ switch ($loginMethod) {
   $parseGroups = false;
   break;
 
+  case 'vanilla':
+  $sqlUserTable = $tablePrefix . 'users'; // The user table in the login method used.
+  $sqlUserGroupTable = $tablePrefix . 'groups'; // The userGroup table in the login method used.
+  $sqlSessionTable = $tablePrefix . 'sessions'; // The sessions table in the login method used.
+
+  $sqlUserTableCols = array(
+    'userId' => 'userId', // The user ID column of the user table in the login method used.
+    'userName' => 'userName', // The userName column of the user table in the login method used.
+    'userGroup' => 'userGroup', // The userGroup column of the user table in the login method used.
+    'allGroups' => 'allGroups',
+    'timeZone' => 'timeZone',
+  );
+  $sqlUserGroupTableCols = array(
+    'groupId' => 'groupId',
+    'groupName' => 'groupName',
+  );
+
+  $parseGroups = false;
+  break;
+
   default:
   trigger_error("Login method '$loginMethod' unrecognized.",E_USER_ERROR);
   break;
