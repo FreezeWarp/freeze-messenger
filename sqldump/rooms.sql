@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS `{prefix}rooms` (
   `bbcode` int(2) NOT NULL,
   `lastMessageTime` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `lastMessageId` int(10) NOT NULL,
-  PRIMARY KEY (`id`),
+  PRIMARY KEY (`roomId`),
   KEY `options` (`options`),
   KEY `owner` (`owner`),
   KEY `lastMessageId` (`lastMessageId`),
@@ -19,5 +19,5 @@ CREATE TABLE IF NOT EXISTS `{prefix}rooms` (
 
 -- DIVIDE
 
-INSERT INTO `{prefix}rooms` (`id`, `name`, `title`, `allowedGroups`, `allowedUsers`, `options`) VALUES
+INSERT INTO `{prefix}rooms` (`roomId`, `name`, `title`, `allowedGroups`, `allowedUsers`, `options`) VALUES
 (1, 'Your Room!', 'Hit the Edit Room Button to Change Things or Use /topic to Change the Topic', '*', '*', 1)
