@@ -14,16 +14,16 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-/* The following file is used to manage all logins within VRIM. At present it is a direct port of VB, but at present this is not ideal.
- * In the future it will be rewritten to better handle logins to other forums/backends, to better support the API, and so-on. */
 
-
+/* Quick Notes:
+ * Magic Session Hash (Cookie Store): hash('sha256',hash('sha256',uniqid('',true)) . salt)
+ * Magic Session Hash (DB Check): hash('sha256',hash('sha256',hash('sha256',uniqid('',true)) . salt) . userId)
+ * Password Hash: sha1(sha1(password) . user_iv) */
 
 
 ///* Require Base *///
 
 require_once('global.php');
-
 
 
 ///* Required Forum-Included Functions *///
@@ -132,17 +132,6 @@ function phpbb_hash($password) {
   return md5($password);
 }
 
-function unique_id($extra = 'c') {
-  static $dss_seeded = false;
-  global $forumCookieSalt;
-
-  $val = $forumCookieSalt . microtime();
-  $val = md5($val);
-  $randSeed = md5($forumCookieSalt . $val . $extra);
-
-  return substr($val, 4, 16);
-}
-
 
 
 function _hash_crypt_private($password, $setting, &$itoa64) {
@@ -244,6 +233,42 @@ else {
   $apiRequestCheck = false;
 }
 
+function fim_generateSession() {
+  global $salts;
+
+  $salt = end($salts);
+
+  if (function_exists('mt_rand')) {
+    $rand = mt_rand(1,100000000);
+  }
+  elseif (function_exists('rand')) {
+    $rand = rand(1,100000000);
+  }
+
+  /* The algorithm below may not be ideal. It is intended to minimize the ability to guess a hash via a bruteforce mechanism. To do so, we both require that the userId is correct later on (though doing so would make little difference if a hacker is attempting to breach a certain user) and that they know the salt used in the system (without knowing this, it is impossible to attempt to attack by guessing the uniqid - something that is possible). The additional rand is most likely redundant, but for the sake of paranoi it doesn't neccissarly hurt. */
+
+  if (function_exists('hash')) {
+    return uniqid('',true) . hash('sha256',hash('sha256',$rand) . $salt);
+  }
+  else {
+    return uniqid('',true) . md5(md5($rand) . $salt);
+  }
+}
+
+function fim_generatePassword($password) {
+  global $salts;
+
+  $salt = end($salts);
+
+  /* Similar to generateSession, the algorthim used below is possibly inferrior, but still will withstand most basic methods, including rainbow tables and in many cases bruteforce (though this may not be true if an attacker is able to gain access to the associated config.php file; in this case, it still will be impossible to decipher anything more advanced than dictionary passwords). */
+
+  if (function_exists('hash')) {
+    return hash('sha256',hash('sha256',$password) . $salt);
+  }
+  else {
+    return md5(md5($password) . $salt);
+  }
+}
 
 
 
@@ -525,54 +550,20 @@ SET userId = ' . (int) $user2['userId'] . ',
 
 
   if ($session == 'create') {
-    switch ($loginMethod) {
-      case 'vbulletin':
-      $sessionhash = md5(uniqid(microtime(), true)); // Generate the sessionhash, which should be unique to this browsing session.
-
-      mysqlQuery('INSERT INTO ' . $sqlSessionTable . ' SET sessionhash = "' . mysqlEscape($sessionhash) . '", idhash="' . mysqlEscape($idhash) . '", userid = "' . (int) $user['userId'] . '", host = "' . mysqlEscape($_SERVER['REMOTE_ADDR']) . '", lastactivity = "' . time()  . '", location="/chat.php", useragent="' . mysqlEscape($_SERVER['HTTP_USER_AGENT']) . '", loggedin = 2'); // Add to the vBulletin session table for the who's online.
-      break;
-
-      case 'phpbb':
-      $sessionhash = md5(unique_id()); // Works slightly different compared to vB, you'll see.
-
-      mysqlQuery('INSERT INTO ' . $sqlSessionTable . ' SET session_id = "' . mysqlEscape($sessionhash) . '", session_user_id = "' . (int) $user['userId'] . '", session_ip = "' . mysqlEscape($_SERVER['REMOTE_ADDR']) . '", session_time = "' . time()  . '", session_page="chat.php", session_browser="' . mysqlEscape($_SERVER['HTTP_USER_AGENT']) . '"'); // Add to the vBulletin session table for the who's online.
-      break;
-    }
   }
 
   elseif ($session == 'update' && $sessionHash) {
-    switch ($loginMethod) {
-      case 'vbulletin':
-      mysqlQuery('UPDATE ' . $sqlSessionTable . ' SET lastactivity = "' . time() . '" WHERE sessionhash = "' . mysqlEscape($session['sessionhash']) . '"');
-      break;
-
-      case 'phpbb':
-      mysqlQuery('UPDATE ' . $sqlSessionTable . ' SET session_time = "' . time() . '" WHERE session_id = "' . mysqlEscape($session['session_id']) . '"');
-      break;
-    }
   }
 
   else {
-
   }
 
 
   if ($setCookie) {
-    switch($loginMethod) {
-      case 'vbulletin':
-      if ($rememberMe) { // This will store the user's login information in the browser's cookies for one week.
-        setcookie($forumCookiePrefix . 'userId',$userCopy[$sqlUserTableCols['userId']],time() + 60 * 60 * 24 * 365,'/',$forumCookieDomain); // Set the cookie for userId.
-        setcookie($forumCookiePrefix . 'password',md5($userCopy[$sqlUserTableCols['password']] . $forumCookieSalt),time() + 60 * 60 * 24 * 365,'/',$forumCookieDomain); // Set the cookie for password.
-      }
-
-      setcookie($forumCookiePrefix . 'sessionhash',$sessionhash,0,'/',$forumCookieDomain); // Set the cookie for the unique session.
-      break;
-
-      case 'phpbb':
-      setcookie($forumCookiePrefix . 'u',$userCopy[$sqlUserTableCols['userId']],0,'/',$forumCookieDomain); // Set the cookie for the unique session.
-      setcookie($forumCookiePrefix . 'sid',$sessionhash,0,'/',$forumCookieDomain); // Set the cookie for the unique session.
-      break;
+    if ($rememberMe) {
     }
+
+    setcookie($forumCookiePrefix . 'sessionhash',$sessionhash,0,'/',$forumCookieDomain); // Set the cookie for the unique session.
   }
 
   if ($bannedUserGroups) {
