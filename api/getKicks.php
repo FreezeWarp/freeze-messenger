@@ -18,25 +18,29 @@ $apiRequest = true;
 require_once('../global.php');
 header('Content-type: text/xml');
 
-
-$rooms = $_GET['rooms'];
-$roomsArray = explode(',',$rooms);
-foreach ($roomsArray AS &$v) {
-  $v = intval($v);
-  $roomData = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $v");
-  if (!hasPermission($roomData,$user,'moderate')) unset($v);
+if (isset($_GET['rooms'])) {
+  $rooms = (string) $_GET['rooms'];
+  $roomsArray = explode(',',$rooms);
 }
-$roomList = implode(',',$roomsArray);
-
-
-
-die('3');
-$users = $_GET['rooms'];
-$usersArray = explode(',',$users);
-foreach ($usersArray AS &$v) {
-  $v = intval($v);
+if ($roomsArray) {
+  foreach ($roomsArray AS &$v) {
+    $v = intval($v);
+    $roomData = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $v");
+    if (!hasPermission($roomData,$user,'moderate')) unset($v);
+  }
+  $roomList = implode(',',$roomsArray);
 }
-$userList = implode(',',$usersArray);
+
+if (isset($_GET['users'])) {
+  $users = (string) $_GET['users'];
+  $usersArray = explode(',',$users);
+}
+if ($usersArray) {
+  foreach ($usersArray AS &$v) {
+    $v = intval($v);
+  }
+  $userList = implode(',',$usersArray);
+}
 
 
 if ($roomList) {
@@ -54,11 +58,11 @@ $kicks = sqlArr("SELECT k.id,
   k.length,
   k.time,
   k.kickerId,
-  i.$sqlUserTableCols[userName] AS kickerName
+  i.$sqlUserTableCols[userName] AS kickerName,
   r.name AS roomName
-FROM {$sqlPrefix}kick
-  LEFT JOIN {$sqlUserTable} AS u ON k.userId = u.{$sqlUserTableCols[userId]},
-  LEFT JOIN {$sqlUserTable} AS i ON k.kickerId = i.{$sqlUserTableCols[userId]},
+FROM {$sqlPrefix}kick AS k
+  LEFT JOIN {$sqlUserTable} AS u ON k.userId = u.{$sqlUserTableCols[userId]}
+  LEFT JOIN {$sqlUserTable} AS i ON k.kickerId = i.{$sqlUserTableCols[userId]}
   LEFT JOIN {$sqlPrefix}rooms AS r ON k.roomId = r.id
 WHERE $where TRUE",'id');
 
