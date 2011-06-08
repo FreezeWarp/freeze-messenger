@@ -14,11 +14,11 @@ switch ($_REQUEST['phase']) {
   <title>Freeze Messenger Installation</title>
   <meta name="robots" content="noindex, nofollow" />
   <meta name="author" content="Joseph T. Parsons" />
-  <link rel="icon" id="favicon" type="image/gif" href="images/favicon.gif" />
+  <link rel="icon" id="favicon" type="image/png" href="images/favicon.png" />
   <!--[if lte IE 9]>
   <link rel="shortcut icon" id="faviconfallback" href="images/favicon1632.ico" />
   <![endif]-->
-  
+
   <!-- START Styles -->
   <link rel="stylesheet" type="text/css" href="client/css/cupertino/jquery-ui-1.8.11.custom.css" media="screen" />
   <link rel="stylesheet" type="text/css" href="client/css/cupertino/fim3.0.css" media="screen" />
@@ -120,7 +120,7 @@ MySQL connection successful. Next, we need to create or select the database. If 
 </div>
 <div id="part4" style="display: none;">
 <h1>FreezeMessenger Installation: MySQL Setup</h1><hr />
-MySQL database connection successful. Next, we need to create the tables. If these already exist (for instance, if you are in some way reinstalling), check "Do not create tables if they exist." Otherwise, leave this unchecked and they will be renamed (you will need to DROP them manually later). In addition, specify a table prefix if you are using forum integration. This is very important to avoid any potential issues. 
+MySQL database connection successful. Next, we need to create the tables. If these already exist (for instance, if you are in some way reinstalling), check "Do not create tables if they exist." Otherwise, leave this unchecked and they will be renamed (you will need to DROP them manually later). In addition, specify a table prefix if you are using forum integration. This is very important to avoid any potential issues.
 <form onsubmit="return false;" name="mysql_table_form" id="mysql_table_form">
 <table>
 <tr>
