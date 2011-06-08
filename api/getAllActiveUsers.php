@@ -50,13 +50,6 @@ if ($ausers) {
   foreach ($ausers AS $auser) {
     unset($roomsXML);
 
-    switch ($loginMethod) {
-      case 'phpbb':
-      $auser['startTag'] = "<span style=\"color: #$auser[userColour]\">";
-      $auser['endTag'] = "</span>";
-      break;
-    }
-
     $rooms = array_combine(explode(',',$auser['roomIds']),explode(',',$auser['roomNames']));
 
     foreach ($rooms AS $id => $name) {

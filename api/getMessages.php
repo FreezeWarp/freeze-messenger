@@ -133,7 +133,9 @@ else {
     $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $room2");
 
     if ($room) {
-      if (!fim_hasPermission($room,$user)) { } // Gotta make sure the user can view that room.
+      if (!fim_hasPermission($room,$user)) { // Gotta make sure the user can view that room.
+        // Do nothing
+      }
       else {
 
         if (!$noPing) {
@@ -306,7 +308,9 @@ WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.roomId IN ($user[watchRo
 
   if ($missedMessages) {
     foreach ($missedMessages AS $message) {
-      if (!fim_hasPermission($message,$user,'view')) { continue; }
+      if (!fim_hasPermission($message,$user,'view')) {
+        continue;
+      }
 
       $roomName = fim_encodeXml($message['name']);
       $watchRoomsXML .= "    <room>
