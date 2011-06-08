@@ -317,7 +317,26 @@ function processVanilla($user, $password) {
   global $tablePrefix, $sqlUserTable, $sqlUserTableCols;
 
   if (!$user[$sqlUserTableCols['userId']]) {
+    return false;
+  }
 
+}
+
+function processLogin($user, $password) {
+  global $loginMethod;
+
+  switch ($loginMethod) {
+    case 'vbulletin':
+    return processVBulletin($user, $password);
+    break;
+
+    case 'phpbb':
+    return processPHPBB($user, $password);
+    break;
+
+    case 'vanilla':
+    return processVanilla($user, $password);
+    break;
   }
 }
 
@@ -430,11 +449,11 @@ else { // No login data exists.
 if ($flag) {
   // Do nothing.
 }
-elseif ($loginMethod === 'vbulletin') {
+else {
   if ($userName && $password) {
     $user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userName] = '" . mysqlEscape($userName) . "' LIMIT 1");
 
-    if (processVBulletin($user,$password)) {
+    if (processLogin($user,$password)) {
       $setCookie = true;
       $valid = true;
       $session = 'create';
@@ -443,11 +462,10 @@ elseif ($loginMethod === 'vbulletin') {
       $valid = false;
     }
   }
-
   elseif ($userId && $password) {
     $user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $userId . '" LIMIT 1');
 
-    if (processVBulletin($user,$password)) {
+    if (processLogin($user,$password)) {
       $setCookie = true;
       $valid = true;
       $session = 'create';
@@ -456,8 +474,8 @@ elseif ($loginMethod === 'vbulletin') {
       $valid = false;
     }
   }
-
   elseif ($sessionHash) {
+    if ($loginMethod == 'vbulletin') {
     $session = sqlArr('SELECT * FROM ' . $sqlSessionTable . ' WHERE sessionhash = "' . mysqlEscape($sessionHash) . '"');
 
     if (!$session['userId']) {
@@ -484,54 +502,8 @@ elseif ($loginMethod === 'vbulletin') {
       $valid = true;
     }
   }
+  elseif ($loginMethod = 'phpbb') {
 
-  elseif ($userId && $passwordVBulletin) {
-    $user = sqlArr("SELECT * FROM $sqlUserTable WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' AND "' . mysqlEscape($_COOKIE[$forumCookiePrefix . 'password'])  . '" = MD5(CONCAT(password,"' . mysqlEscape($forumCookieSalt) . '"))'); // Query from vBulletin user table.
-
-    if ($user) {
-      $valid = true;
-
-      $session = 'create';
-      $setCookie = true;
-    }
-    else {
-      $valid = false;
-    }
-  }
-
-  else {
-    $valid = false;
-  }
-}
-
-elseif ($loginMethod == 'phpbb') {
-  if ($userName && $password) {
-    $user = sqlArr("SELECT * FROM $sqlUserTable WHERE $sqlUserTableCols[userName] = \"" . mysqlEscape($userName) . '" LIMIT 1');
-
-    if (processPHPBB($user,$password)) {
-      $setCookie = true;
-      $valid = true;
-      $session = 'create';
-    }
-    else {
-      $valid = false;
-    }
-  }
-
-  elseif ($userId && $password) {
-    $user = sqlArr("SELECT * FROM $sqlUserTable WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' LIMIT 1');
-
-    if (processPHPBB($user,$password)) {
-      $setCookie = true;
-      $valid = true;
-      $session = 'create';
-    }
-    else {
-      $valid = false;
-    }
-  }
-
-  elseif ($sessionHash) {
     $session = sqlArr('SELECT * FROM ' . $sqlSessionTable . ' WHERE session_id = "' . mysqlEscape($sessionHash) . '"');
 
     if (!$session['session_user_id'] || in_array($session['session_user_id'],$brokenUsers)) {
@@ -545,6 +517,23 @@ elseif ($loginMethod == 'phpbb') {
       $session = 'update';
       $valid = true;
     }
+  }
+  }
+  elseif ($userId && $passwordVBulletin) {
+    $user = sqlArr("SELECT * FROM $sqlUserTable WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' AND "' . mysqlEscape($_COOKIE[$forumCookiePrefix . 'password'])  . '" = MD5(CONCAT(password,"' . mysqlEscape($forumCookieSalt) . '"))'); // Query from vBulletin user table.
+
+    if ($user) {
+      $valid = true;
+
+      $session = 'create';
+      $setCookie = true;
+    }
+    else {
+      $valid = false;
+    }
+  }
+  else {
+    $valid = false;
   }
 }
 
