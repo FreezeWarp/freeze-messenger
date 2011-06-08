@@ -41,7 +41,6 @@ function faviconFlash() {
   else {
     $('#favicon').attr('href',favicon);
   }
-  
 }
 
 
@@ -100,7 +99,7 @@ function contextMenuParse() {
       break;
     }
   });
-  
+
   $('.messageLine .messageText img').contextMenu({
     menu: 'messageMenuImage'
   },
@@ -110,7 +109,7 @@ function contextMenuParse() {
     switch(action) {
       case 'url':
       var src= $(el).attr('src');
-      
+
       quickDialogue('<img src="' + src + '" style="max-width: 550px; max-height: 550px;" /><br /><br /><input type="text" value="' + src +  '" style="width: 550px;" />','Copy Image URL','getUrl');
       break;
       case 'delete':
@@ -309,62 +308,61 @@ function getSuccess(xml) {
       if (styleGeneral & 2048) {
         style += 'text-decoration: line-through;';
       }
-            
-            
+
+
       if (complex) {
         var data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="' + userName + '" src="' + forumUrl + 'image.php?u=' + userId + '" style="max-width: 24px; max-height: 24px; padding-right: 3px;" class="userName userNameTable" data-userId="' + userId + '" /><span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
       }
       else {
         var data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
       }
-      
+
       notifyData += userName + ': ' + text + "\n";
-      
+
       if (window.reverse) {
         $('#messageList').append(data);
       }
       else {
         $('#messageList').prepend(data);
       }
-          
+
       if (messageId > lastMessage) {
         lastMessage = messageId;
       }
     });
-          
-          
+
+
 
     if (window.reverse) {
       toBottom();
     }
-  }
-        
-        
-  if (blur) {
-    if (window.soundOn) {
-      window.beep();
 
-      if (navigator.appName === 'Microsoft Internet Explorer') {
-        timer3 = window.setInterval(faviconFlash,1000);
+    if (blur) {
+      if (window.soundOn) {
+        window.beep();
 
-        window.clearInterval(timer3);
-      }
-    }
+        if (navigator.appName === 'Microsoft Internet Explorer') {
+          timer3 = window.setInterval(faviconFlash,1000);
 
-    if (notify) {
-      if (window.webkitNotifications) {
-        webkitNotify('images/favicon.gif', 'New Message', notifyData);
-      }
-    }
-
-    if (navigator.appName === 'Microsoft Internet Explorer') {
-      try {
-        if (window.external.msIsSiteMode()) {
-          window.external.msSiteModeActivate();
+          window.clearInterval(timer3);
         }
       }
-      catch(ex) {
-        // Supress Error
+
+      if (notify) {
+        if (window.webkitNotifications) {
+          webkitNotify('images/favicon.gif', 'New Message', notifyData);
+        }
+      }
+
+      if (navigator.appName === 'Microsoft Internet Explorer') {
+        try {
+          if (window.external.msIsSiteMode()) {
+            window.external.msSiteModeActivate();
+          }
+        }
+        catch(ex) {
+          // Supress Error
+        }
       }
     }
   }
@@ -376,7 +374,7 @@ function getSuccess(xml) {
   if (window.longPolling) {
     setTimeout(updatePosts,50);
   }
-  
+
   first = false;
 }
 
@@ -396,27 +394,27 @@ function sendMessage(message,confirmed) {
       switch (status) {
         case '':
         break;
-        
+
         case 'badroom':
         $('<div style="display: none;">A valid room was not provided.</div>').dialog({ title : 'Error'});
         break;
-        
+
         case 'badmessage':
         $('<div style="display: none;">A valid message was not provided.</div>').dialog({ title : 'Error'});
         break;
-        
+
         case 'spacemessage':
         $('<div style="display: none;">Too... many... spaces!</div>').dialog({ title : 'Error'});
         break;
-        
+
         case 'noperm':
         $('<div style="display: none;">You do not have permission to post in this room.</div>').dialog({ title : 'Error'});
         break;
-        
+
         case 'blockcensor':
         $('<div style="display: none;">' + emessage + '</div>').dialog({ title : 'Error'});
         break;
-        
+
         case 'confirmcensor':
         $('<div style="display: none;">' + emessage + '<br /><br /><button type="button" onclick="$(this).parent().dialog(&apos;close&apos;);">No</button><button type="button" onclick="sendMessage(&apos;' + escape(message) + '&apos;,1); $(this).parent().dialog(&apos;close&apos;);">Yes</button></div>').dialog({ title : 'Error'});
         break;
@@ -492,7 +490,7 @@ $(document).ready(function() {
     $.cookie('vrim10-reverseOrder', value, {expires: 7 * 24 * 3600});
     location.reload(true);
   });
-  
+
   jQTubeUtil.init({
     key: "AI39si5_Dbv6rqUPbSe8e4RZyXkDM3X0MAAtOgCuqxg_dvGTWCPzrtN_JLh9HlTaoC01hCLZCxeEDOaxsjhnH5p7HhZVnah2iQ",
     orderby: "relevance",  // *optional -- "viewCount" is set by default
