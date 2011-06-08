@@ -130,10 +130,6 @@ function fimParse_htmlParse($text,$bbcodeLevel = 1) {
   return $text;
 }
 
-function nl2vb($message) {
-  return str_replace("\n",'{n}',$message);
-}
-
 function fimParse_censorParse($text,$roomId = false) {
   global $sqlPrefix;
 
@@ -288,7 +284,7 @@ function fimParse_finalParse($message) {
 
   $messageRaw = $message; // Parses the sources for MySQL.
   $messageHtml = nl2br(fimParse_htmlWrap(fimParse_htmlParse(fimParse_censorParse(fim_encodeXml($message),$room['id']),$room['options']),30,' ')); // Parses for browser or HTML rendering.
-  $messageApi = nl2vb(fimParse_smilieParse($message,$room['bbcode'])); // Not yet coded, you see.
+  $messageApi = fimParse_smilieParse($message,$room['bbcode']); // Not yet coded, you see.
 
   return array($messageRaw, $messageHtml, $messageApi);
 }
