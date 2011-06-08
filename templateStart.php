@@ -71,7 +71,7 @@ eval(hook('templateStart'));
 if ($user['favRooms']) {
   $stop = false;
 
-  $favRooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE options & 4 = FALSE AND id IN ($user[favRooms])",'id');
+  $favRooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE options & 4 = FALSE AND roomId IN ($user[favRooms])",'id');
 
   eval(hook('templateFavRoomsStart'));
 

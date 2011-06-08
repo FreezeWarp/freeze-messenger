@@ -28,13 +28,19 @@ function fim_hasPermission($roomData,$userData,$type = 'post',$trans = false) { 
   static $isAdmin, $isModerator, $isAllowedUser, $isAllowedGroup, $isOwner, $isRoomDeleted;
 
   /* Make sure all presented data is correct. */
-  if (!$roomData['id']) {
+  if (!$roomData['roomId']) {
     return false;
   }
 
   /* Get the User's Kick Status */
   if ($userData['userId']) {
-    $kick = sqlArr("SELECT UNIX_TIMESTAMP(k.time) AS kickedOn, UNIX_TIMESTAMP(k.time) + k.length AS expiresOn, k.id FROM {$sqlPrefix}kick AS k WHERE userId = $userData[userId] AND roomId = $roomData[id] AND UNIX_TIMESTAMP(NOW()) <= (UNIX_TIMESTAMP(time) + length)");
+    $kick = sqlArr("SELECT UNIX_TIMESTAMP(k.time) AS kickedOn,
+  UNIX_TIMESTAMP(k.time) + k.length AS expiresOn,
+  k.id
+FROM {$sqlPrefix}kick AS k
+WHERE userId = $userData[userId] AND
+  roomId = $roomData[roomId] AND
+  UNIX_TIMESTAMP(NOW()) <= (UNIX_TIMESTAMP(time) + length)");
   }
 
   if ((in_array($userData['userId'],explode(',',$roomData['allowedUsers']))

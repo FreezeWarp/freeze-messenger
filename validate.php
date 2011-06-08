@@ -567,7 +567,11 @@ if ($valid) { // If the user is valid, process their preferrences.
   $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
 
   if (!$userprefs) {
-    mysqlQuery('INSERT INTO ' . $sqlPrefix . 'users SET userId = ' . (int) $user2['userId']); // Create the new row
+    mysqlQuery('INSERT INTO ' . $sqlPrefix . 'users
+SET userId = ' . (int) $user2['userId'] . ',
+  userName = "' . mysqlEscape($user2['userName']) . '",
+  userGroup = ' . (int) $user2['userGroup'] . ',
+  allGroups = "' . mysqlEscape($user2['allGroups']) . '"'); // Create the new row
 
     $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
   }
