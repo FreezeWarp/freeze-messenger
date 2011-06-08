@@ -358,19 +358,19 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
 
 
   mysqlQuery("INSERT INTO {$sqlPrefix}messages
-(userId, --1
-  roomId, --2
-  rawText, --3
-  htmlText, --4
-  apiText, --5
-  salt, --6
-  iv, --7
-  microtime, --8
-  ip, --9
-  flag) --10
+(userId,
+  roomId,
+  rawText,
+  htmlText,
+  apiText,
+  salt,
+  iv,
+  microtime,
+  ip,
+  flag)
 
 VALUES ($user[userId],
-  $room[id],
+  $room[roomId],
   '$messageRaw',
   '$messageHtml',
   '$messageApi',
@@ -387,14 +387,14 @@ VALUES ($user[userId],
   userId,
   userName,
   userGroup,
-  groupFormatStart,
-  groupFormatEnd,
+  userFormatStart,
+  userFormatEnd,
   time,
   htmlText,
   flag)
 
 VALUES ($messageId,
-  $room[id],
+  $room[roomId],
   $user[userId],
   '$user[userName]',
   $user[displaygroupid],
