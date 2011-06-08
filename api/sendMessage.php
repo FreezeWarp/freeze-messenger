@@ -22,8 +22,8 @@ header('Content-type: text/xml');
 
 $message = fim_urldecode($_POST['message']);
 
-$roomId = (int) $_POST['roomId'];
-$room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $roomId");
+echo $roomId = (int) $_POST['roomId'];
+$room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
 $ip = mysqlEscape($_SERVER['REMOTE_ADDR']); // Get the IP address of the user.
 
 
@@ -91,7 +91,7 @@ elseif (strpos($message, '/topic') === 0) {
   $title = mysqlEscape(fimParse_censorParse($title)); // Parses the sources for MySQL and UTF8. We will also censor, but no BBcode.
 
   fim_sendMessage('/me changed the topic to ' . $title,$user,$room,'topic');
-  mysqlQuery("UPDATE {$sqlPrefix}rooms SET title = '$title' WHERE id = $room[id]");
+  mysqlQuery("UPDATE {$sqlPrefix}rooms SET title = '$title' WHERE roomId = $room[id]");
 }
 else {
   if (strpos($message, '/me') === 0) { $flag = 'me'; }
@@ -102,7 +102,7 @@ else {
 
 
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
-<fim_sendMessage>
+<sendMessage>
   <activeUser>
     <userId>$user[userId]</userId>
     <userName>" . fim_encodeXml($user['userName']) . "</userName>
@@ -118,7 +118,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
     <severity>$blockWordApi[severity]</severity>
     <reason>$blockWordApi[reason]</reason>
   </censor>
-</fim_sendMessage>";
+</sendMessage>";
 
 mysqlClose();
 ?>

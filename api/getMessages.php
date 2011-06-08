@@ -113,15 +113,6 @@ if (!$whereClause && $messageEnd) {
   $whereClause .= "AND messageId < $messageEnd AND messageId > " . ($messageEnd - $messageLimit);
 }
 
-if ($archive) {
-  if ($loginMethod == 'vbulletin') {
-    $tableClause .= "{$sqlUserGroupTable} AS g";
-    $whereClause .= "u.{$sqlUserTableCols[userGroup]} = g.{$sqlUserGroupTableCols[groupid]}";
-  }
-  elseif ($loginMethod == 'phpbb') {
-    $colClause .= ', u.user_colour';
-  }
-}
 
 ///* Error Checking *///
 if (!$rooms) {
@@ -146,7 +137,9 @@ else {
       else {
 
         if (!$noPing) {
-          mysqlQuery("INSERT INTO {$sqlPrefix}ping (userId,roomId,time) VALUES ($user[userId],$room[id],CURRENT_TIMESTAMP()) ON DUPLICATE KEY UPDATE time = CURRENT_TIMESTAMP()");
+          mysqlQuery("INSERT INTO {$sqlPrefix}ping
+(userId,roomId,time)
+VALUES ($user[userId],$room[roomId],CURRENT_TIMESTAMP()) ON DUPLICATE KEY UPDATE time = CURRENT_TIMESTAMP()");
         }
 
         switch ($fields) {
@@ -174,11 +167,9 @@ else {
   u2.defaultFormatting AS defaultFormatting,
   $colClause
 FROM {$sqlPrefix}messages AS m,
-  {$sqlUserTable} AS u,
   {$sqlPrefix}users AS u2
-WHERE m.roomId = $room[id]
+WHERE m.roomId = $room[roomId]
   AND m.deleted != true
-  AND m.userId = u.{$sqlUserTableCols[userId]}
   AND m.userId = u2.userId
 $whereClause
 ORDER BY messageId $order
@@ -190,11 +181,10 @@ LIMIT $messageLimit";
   $messageFields
   m.userId AS userId,
   m.userName AS userName,
-  m.userGroup AS displaygroupid,
-  m.groupFormatStart AS groupFormatStart,
-  m.groupFormatEnd AS groupFormatEnd,
+  m.userGroup AS userGroup,
+  m.userFormatStart AS userFormatStart,
+  m.userFormatEnd AS userFormatEnd,
   m.flag AS flag,
-  u2.settings AS usersettings,
   u2.defaultColour AS defaultColour,
   u2.defaultFontface AS defaultFontface,
   u2.defaultHighlight AS defaultHighlight,
@@ -202,7 +192,7 @@ LIMIT $messageLimit";
   $colClause
 FROM {$sqlPrefix}messagesCached AS m,
   {$sqlPrefix}users AS u2
-WHERE m.roomId = $room[id]
+WHERE m.roomId = $room[roomId]
   AND m.userId = u2.userId
 $whereClause
 ORDER BY messageId $order
@@ -226,11 +216,6 @@ LIMIT $messageLimit";
             $message['userName'] = addslashes($message['userName']);
             $message['apiText'] = fim_encodeXml($message['apiText']);
             $message['htmlText'] = fim_encodeXml($message['htmlText']);
-
-            if ($loginMethod == 'phpbb' && $archive) {
-              $message['groupFormatStart'] = "<span style=\"color: #$message[user_colour]\">";
-              $message['groupFormatEnd'] = '</span>';
-            }
 
             switch ($encode) {
               case 'base64':
@@ -258,9 +243,9 @@ LIMIT $messageLimit";
       <userData>
         <userName>$message[userName]</userName>
         <userId>$message[userId]</userId>
-        <userGroup>$message[displaygroupid]</userGroup>
-        <startTag>" . fim_encodeXml($message['groupFormatStart']) . "</startTag>
-        <endTag>" . fim_encodeXml($message['groupFormatEnd']) . "</endTag>
+        <userGroup>$message[userGroup]</userGroup>
+        <startTag>" . fim_encodeXml($message['userFormatStart']) . "</startTag>
+        <endTag>" . fim_encodeXml($message['userFormatEnd']) . "</endTag>
         <defaultFormatting>
           <color>$message[defaultColour]</color>
           <highlight>$message[defaultHighlight]</highlight>
@@ -274,55 +259,35 @@ LIMIT $messageLimit";
 
         ///* Process Active Users
         if ($activeUsers) {
-          switch ($loginMethod) {
-            case 'vbulletin':
-            $join = "LEFT JOIN {$sqlUserGroupTable} AS g ON displaygroupid = g.{$sqlUserGroupTableCols[groupid]}";
-            $cols = ", g.$sqlUserGroupTableCols[startTag] AS opentag, g.$sqlUserGroupTableCols[endTag] AS closetag";
-            break;
-            case 'phpbb':
-            $cols = ", u.user_colour";
-            break;
-          }
-
           $ausers = sqlArr("SELECT u.{$sqlUserTableCols[userName]} AS userName,
-  u.{$sqlUserTableCols[userId]} AS userId,
-  u.{$sqlUserTableCols[userGroup]} AS displaygroupid,
+  u.userId AS userId,
+  u.userGroup AS userGroup,
+  u.userFormatStart AS userFormatStart,
+  u.userFormatEnd AS userFormatStart,
   p.status,
   p.typing
   $cols
 FROM {$sqlPrefix}ping AS p,
-  {$sqlUserTable} AS u
+  {$sqlPrefix}users AS u
 {$join}
-WHERE p.roomId IN ($room[id])
-  AND p.userId = u.{$sqlUserTableCols[userId]}
+WHERE p.roomId IN ($room[roomId])
+  AND p.userId = u.userId
   AND UNIX_TIMESTAMP(p.time) >= (UNIX_TIMESTAMP(NOW()) - $onlineThreshold)
-ORDER BY u.{$sqlUserTableCols[userName]}
+ORDER BY u.userName
 LIMIT 500",'userId');
 
-  if ($ausers) {
-    foreach ($ausers AS $auser) {
-        switch ($loginMethod) {
-          case 'vbulletin':
-          $auser['opentag'] = fim_encodeXml($auser['opentag']);
-          $auser['closetag'] = fim_encodeXml($auser['closetag']);
-          break;
-          case 'phpbb':
-          $auser['opentag'] = fim_encodeXml("<span style=\"color: #$auser[user_colour]\">");
-          $auser['closetag'] = fim_encodeXml("</span>");
-          break;
+          if ($ausers) {
+            foreach ($ausers AS $auser) {
+              $ausersXML .= "      <user>
+                <userName>$auser[userName]</userName>
+                <userId>$auser[userId]</userId>
+                <userGroup>$auser[userGroup]</userGroup>
+                <startTag>" . fim_encodeXml($auser['userFormatStart']) . "</startTag>
+                <endTag>" . fim_encodeXml($auser['userFormatEnd']) . "</endTag>
+              </user>";
+            }
+          }
         }
-
-        $ausersXML .= "      <user>
-        <userName>$auser[userName]</userName>
-        <userId>$auser[userId]</userId>
-        <userGroup>$auser[displaygroupid]</userGroup>
-        <startTag>$auser[opentag]</startTag>
-        <endTag>$auser[closetag]</endTag>
-      </user>
-";
-      }
-    }
-}
       }
     }
   }

@@ -47,42 +47,25 @@ switch ($_GET['order']) {
 }
 
 
-switch ($loginMethod) {
-  case 'vbulletin':
-  case 'phpbb':
-  $join = "LEFT JOIN {$sqlUserTable} AS u2 ON u2.{$sqlUserTableCols[userId]} = u.userId";
-  $cols = ", u2.{$sqlUserTableCols[userName]} AS userName, u2.{$sqlUserTableCols[userGroup]} AS userGroup";
-  break;
 
-  case 'phpbb':
-  $cols .= "u2.user_colour AS userColour";
-  break;
-}
-
-
-$users = sqlArr("SELECT u.userId
-  {$cols}
-FROM {$sqlPrefix}users
-  AS u {$join}
+$users = sqlArr("SELECT u.userId,
+ u.userName,
+ u.userFormatStart,
+ u.userFormatEnd
+FROM {$sqlPrefix}users AS u
+  {$join}
 WHERE {$whereClause} TRUE
 ORDER BY {$order}",'userId'); // Get all rooms
 
 
 if ($users) {
   foreach ($users AS $row) {
-    switch($loginMethod) {
-      case 'phpbb':
-      $row['startTag'] = "<span style=\"color: #$row[userColour]\">";
-      $row['endTag'] = "</span>";
-      break;
-    }
-
     $userXML .= "    <user>
       <userId>$row[userId]</userId>
       <userName>" . fim_encodeXML($row['userName']) . "</userName>
       <userGroup>" . fim_encodeXML($row['userGroup']) . "</userGroup>
-      <startTag>" . fim_encodeXML($row['startTag']) . "</startTag>
-      <endTag>" . fim_encodeXML($row['endTag']) . "</endTag>
+      <startTag>" . fim_encodeXML($row['userFormatStart']) . "</startTag>
+      <endTag>" . fim_encodeXML($row['userFormatEnd']) . "</endTag>
     </user>";
   }
 }

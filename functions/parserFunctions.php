@@ -357,17 +357,59 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
   $messageApi = mysqlEscape($messageApi);
 
 
-  mysqlQuery("INSERT INTO {$sqlPrefix}messages (userId, roomId, rawText, htmlText, apiText, salt, iv, microtime, ip, flag) VALUES ($user[userId], $room[id], '$messageRaw', '$messageHtml', '$messageApi', '$saltNum', '$iv', '" . microtime(true) . "', '$ip', '$flag')");
+  mysqlQuery("INSERT INTO {$sqlPrefix}messages
+(userId, --1
+  roomId, --2
+  rawText, --3
+  htmlText, --4
+  apiText, --5
+  salt, --6
+  iv, --7
+  microtime, --8
+  ip, --9
+  flag) --10
+
+VALUES ($user[userId],
+  $room[id],
+  '$messageRaw',
+  '$messageHtml',
+  '$messageApi',
+  '$saltNum',
+  '$iv',
+  '" . microtime(true) . "',
+  '$ip',
+  '$flag')");
   $messageId = mysqlInsertId();
 
-  mysqlQuery("INSERT INTO {$sqlPrefix}messagesCached (messageId, roomId, userId, userName, userGroup, groupFormatStart, groupFormatEnd, time, htmlText, flag) VALUES ($messageId, $room[id], $user[userId], '$user[userName]', $user[displaygroupid], '$group[opentag]', '$group[closetag]', NOW(), '$messageHtmlCache', '$flag')");
+  mysqlQuery("INSERT INTO {$sqlPrefix}messagesCached
+(messageId,
+  roomId,
+  userId,
+  userName,
+  userGroup,
+  groupFormatStart,
+  groupFormatEnd,
+  time,
+  htmlText,
+  flag)
+
+VALUES ($messageId,
+  $room[id],
+  $user[userId],
+  '$user[userName]',
+  $user[displaygroupid],
+  '$group[opentag]',
+  '$group[closetag]',
+  NOW(),
+  '$messageHtmlCache',
+  '$flag')");
   $messageId2 = mysqlInsertId();
 
   if ($messageId2 > 100) {
     mysqlQuery("DELETE FROM {$sqlPrefix}messagesCached WHERE id <= " . ($messageId2 - 100));
   }
 
-  mysqlQuery("UPDATE {$sqlPrefix}rooms SET lastMessageTime = NOW(), lastMessageId = $messageId WHERE id = $room[id]");
+  mysqlQuery("UPDATE {$sqlPrefix}rooms SET lastMessageTime = NOW(), lastMessageId = $messageId WHERE roomId = $room[id]");
   mysqlQuery("INSERT INTO {$sqlPrefix}roomStats (userId, roomId, messages) VALUES ($user[userId], $room[id], 1) ON DUPLICATE KEY UPDATE messages = messages + 1");
 }
 ?>
