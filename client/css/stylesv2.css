@@ -20,6 +20,19 @@ body {
   overflow-x: hidden;
 }
 
+@font-face {
+  font-family: 'Ubuntu';
+  font-style: normal;
+  font-weight: bold;
+  src: local('Ubuntu Bold'), local('Ubuntu-Bold'), url('http://themes.googleusercontent.com/font?kit=0ihfXUL2emPh0ROJezvraD8E0i7KZn-EPnyo3HZu7kw') format('woff');
+}
+@font-face {
+  font-family: 'Ubuntu';
+  font-style: normal;
+  font-weight: normal;
+  src: local('Ubuntu'), url('http://themes.googleusercontent.com/font?kit=_xyN3apAT_yRRDeqB3sPRg') format('woff');
+}
+
 
 
 /***** Menu *****/
@@ -94,7 +107,7 @@ body {
 
 #messageList {
   height: 440px;
-  overflow: auto; 
+  overflow: auto;
 }
 
 
@@ -111,12 +124,12 @@ body {
 }
 
 .userName {
-  font-weight: bold; 
+  font-weight: bold;
 }
 .userNameTable {
   width: 150px;
   overflow: hidden;
-  display: inline-block; 
+  display: inline-block;
   word-wrap: normal;
   white-space: nowrap;
 }
@@ -157,12 +170,12 @@ select.standard {
 iframe.nodisplay {
   width: 0px;
   height: 0px;
-  border: 0px; 
+  border: 0px;
   display: none; /* The above are probably redundant, I suppose. */
 }
 
 table.rowHover tr:hover { /* This is used in the AdminCP as a quick hack to make things easier to understand. */
-  opacity: .8; 
+  opacity: .8;
 }
 table.page {
   border-spacing: 0px;
@@ -176,7 +189,7 @@ table.page {
 }
 
 h2, h3, h4 {
-  margin: 0px; 
+  margin: 0px;
 }
 
 /* This attempts to remove styling which breaks the icons in most browsers (except Webkit). To be honest, I'm guessing I did something else wrong myself, but I can't for the life of my figure out what. */
@@ -245,7 +258,7 @@ table.center {
   height: 20px;
   border: none;
   padding-left: 10px;
-  
+
 }
 
 .contextMenu li.hover a { }
@@ -351,8 +364,8 @@ div.center div.jGrowl-notification, div.center div.jGrowl-closer {
 div.jGrowl div.jGrowl-notification, div.jGrowl div.jGrowl-closer {
   background-color: #000;
   opacity: .85;
-  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=85)"; 
-  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=85); 
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=85)";
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=85);
   zoom: 1;
   width: 235px;
   padding: 10px;

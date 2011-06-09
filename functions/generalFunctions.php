@@ -54,7 +54,7 @@ WHERE userId = $userData[userId] AND
     $isModerator = true; // The user is one of the chat moderators (and it is not deleted).
   }
 
-  if ((fim_inArray(explode(',',$userData['membergroupids']),explode(',',$roomData['allowedGroups']))
+  if ((fim_inArray(explode(',',$userData['socialGroups']),explode(',',$roomData['allowedGroups']))
     || $roomData['allowedGroups'] == '*')
   && $roomData['allowedGroups']) {
     $isAllowedGroup = true;

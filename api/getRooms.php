@@ -65,6 +65,7 @@ switch ($_GET['order']) {
   default:
   $order = 'roomId ' . ($reverseOrder ? 'DESC' : 'ASC');
   break;
+
 }
 
 

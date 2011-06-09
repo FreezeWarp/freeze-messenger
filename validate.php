@@ -33,7 +33,8 @@ switch ($loginMethod) {
   case 'vbulletin':
   /* Set Relevant Column Data */
   $sqlUserTable = $forumPrefix . 'user'; // The user table in the login method used.
-  $sqlUserGroupTable = $forumPrefix . 'userGroup'; // The userGroup table in the login method used.
+  $sqlUserGroupTable = $forumPrefix . 'socialgroup'; // The userGroup table in the login method used.
+  $sqlMemberGroupTable = $forumPrefix . 'socialgroupmember'; // The userGroup table in the login method used.
   $sqlSessionTable = $forumPrefix . 'session'; // The sessions table in the login method used.
 
   $sqlUserTableCols = array(
@@ -45,8 +46,14 @@ switch ($loginMethod) {
     'options' => 'options',
   );
   $sqlUserGroupTableCols = array(
-    'groupId' => 'usergroupid',
-    'groupName' => 'title',
+    'groupId' => 'groupid',
+    'groupName' => 'name',
+  );
+  $sqlMemberGroupTableCols = array(
+    'groupId' => 'groupid',
+    'userId' => 'userid',
+    'type' => 'type',
+    'validType' => 'member',
   );
 
   $parseGroups = true; // This still needed?
@@ -57,6 +64,7 @@ switch ($loginMethod) {
 
   $sqlUserTable = $forumPrefix . 'users'; // The user table in the login method used.
   $sqlUserGroupTable = $forumPrefix . 'groups'; // The userGroup table in the login method used.
+  $sqlMemberGroupTable = $forumPrefix . 'user_group'; // The userGroup table in the login method used.
   $sqlSessionTable = $forumPrefix . 'sessions'; // The sessions table in the login method used.
 
   $sqlUserTableCols = array(
@@ -70,6 +78,12 @@ switch ($loginMethod) {
   $sqlUserGroupTableCols = array(
     'groupId' => 'group_id',
     'groupName' => 'group_name',
+  );
+  $sqlMemberGroupTableCols = array(
+    'groupId' => 'group_id',
+    'userId' => 'user_id',
+    'type' => 'user_pending',
+    'validType' => '0',
   );
 
   $parseGroups = false;
@@ -90,6 +104,12 @@ switch ($loginMethod) {
   $sqlUserGroupTableCols = array(
     'groupId' => 'groupId',
     'groupName' => 'groupName',
+  );
+  $sqlMemberGroupTableCols = array(
+    'groupId' => 'group_id',
+    'userId' => 'user_id',
+    'type' => 'user_pending',
+    'validType' => '0',
   );
 
   $parseGroups = false;
@@ -303,29 +323,35 @@ if ($valid) { // If the user is valid, process their preferrences.
 
     }
 
-    $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
+    $userprefs = sqlArr("SELECT * FROM {$sqlPrefix}users WHERE userId = " . (int) $user2['userId']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
+
+//    $socialGroups = sqlArr("SELECT * FROM {$sqlMemberGroupTable} WHERE {$sqlMemberGroupTableCols[userId]} = $user[userId] AND $sqlMemberGroupTableCols[type] = $sqlMemberGroupTableCols[validType]");
 
     if (!$userprefs) {
       mysqlQuery('INSERT INTO ' . $sqlPrefix . 'users
-  SET userId = ' . (int) $user2['userId'] . ',
-    userName = "' . mysqlEscape($user2['userName']) . '",
-    userGroup = ' . (int) $user2['userGroup'] . ',
-    allGroups = "' . mysqlEscape($user2['allGroups']) . '",
-    userFormatStart = "' . mysqlEscape($user2['userFormatStart']) . '",
-    userFormatEnd = "' . mysqlEscape($user2['userFormatEnd']) . '"'); // Create the new row
+SET userId = ' . (int) $user2['userId'] . ',
+  userName = "' . mysqlEscape($user2['userName']) . '",
+  userGroup = ' . (int) $user2['userGroup'] . ',
+  allGroups = "' . mysqlEscape($user2['allGroups']) . '",
+  userFormatStart = "' . mysqlEscape($user2['userFormatStart']) . '",
+  socialGroups = "' . mysqlEscape($socialGroups['groups']) . '",
+  userFormatEnd = "' . mysqlEscape($user2['userFormatEnd']) . '"'); // Create the new row
 
       $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
     }
-    elseif ($userprefs['lastSync'] <= (time() - ($sync ? $sync : (60 * 60 * 24))) || true) {
+    elseif ($userprefs['lastSync'] <= (time() - ($sync ? $sync : (60 * 60 * 2))) || true) {
+
+    $socialGroups = sqlArr("SELECT GROUP_CONCAT($sqlMemberGroupTableCols[groupId] SEPARATOR ',') AS groups FROM {$sqlMemberGroupTable} WHERE {$sqlMemberGroupTableCols[userId]} = $user2[userId] AND $sqlMemberGroupTableCols[type] = '$sqlMemberGroupTableCols[validType]'");
 
       mysqlQuery('UPDATE ' . $sqlPrefix . 'users
-  SET userId = ' . (int) $user2['userId'] . ',
-    userName = "' . mysqlEscape($user2['userName']) . '",
-    userGroup = ' . (int) $user2['userGroup'] . ',
-    allGroups = "' . mysqlEscape($user2['allGroups']) . '",
-    userFormatStart = "' . mysqlEscape($user2['userFormatStart']) . '",
-    userFormatEnd = "' . mysqlEscape($user2['userFormatEnd']) . '",
-    lastSync = NOW()'); // Create the new row
+SET userId = ' . (int) $user2['userId'] . ',
+  userName = "' . mysqlEscape($user2['userName']) . '",
+  userGroup = ' . (int) $user2['userGroup'] . ',
+  allGroups = "' . mysqlEscape($user2['allGroups']) . '",
+  userFormatStart = "' . mysqlEscape($user2['userFormatStart']) . '",
+  userFormatEnd = "' . mysqlEscape($user2['userFormatEnd']) . '",
+  socialGroups = "' . mysqlEscape($socialGroups['groups']) . '",
+  lastSync = NOW()'); // Create the new row
 
       $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
     }
@@ -336,6 +362,7 @@ if ($valid) { // If the user is valid, process their preferrences.
 
   if ($session == 'create') {
     $magicSessionHash = fim_generateSession();
+
     mysqlQuery("INSERT INTO {$sqlPrefix}sessions (userId,
     time,
     magicHash)
