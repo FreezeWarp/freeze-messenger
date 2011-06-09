@@ -1,4 +1,5 @@
-<FilesMatch "\.(gif|jpg|jpeg|png|swf)$">
-#ExpiresDefault A604800
-#Header set Cache-Control "max-age=604800, public"
+<IfModule mod_headers.c>
+<FilesMatch "\.(ico|pdf|flv|jpg|jpeg|png|gif|js|css|swf)$">
+Header set Cache-Control "max-age=290304000, public"
 </FilesMatch>
+</IfModule>
