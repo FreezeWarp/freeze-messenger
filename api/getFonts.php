@@ -19,6 +19,19 @@ $apiRequest = true;
 require_once('../global.php');
 header('Content-type: text/xml');
 
+$xmlData = array(
+  'getFonts' => array(
+    'activeUser' => array(
+      'userId' => (int) $user['userId'],
+      'userName' => fim_encodeXml($user['userName']),
+    ),
+    'sentData' => array(),
+    'errorcode' => fim_encodeXml($failCode),
+    'errormessage' => fim_encodeXml($failMessage),
+    'fonts' => array(),
+  ),
+);
+
 
 $fonts = sqlArr("SELECT f.id AS fontId,
   f.name AS fontName,
@@ -31,38 +44,22 @@ WHERE TRUE
   {$where}
 ORDER BY f.category,
   f.name
-  {$order}",'fontId'); // Get all rooms
+  {$order}",'fontId'); // Get all fonts
 
 
 if ($fonts) {
   foreach ($fonts AS $font) {
-    $fontXML .= "    <font>
-      <fontId>$font[fontId]</fontId>
-      <fontName>" . fim_encodeXml($font['fontName']) . "</fontName>
-      <fontGroup>" . fim_encodeXml($font['fontGroup']) . "</fontGroup>
-      <fontData>" . fim_encodeXml($font['fontData']) . "</fontData>
-    </font>";
+    $xmlData['getFonts']['fonts']['font ' . $font['fontId']] = array(
+      'userId' => (int) $font['fontId'],
+      'fontName' => fim_encodeXml($font['fontName']),
+      'fontGroup' => fim_encodeXml($font['fontGroup']),
+      'fontData' => fim_encodeXml($font['fontData']),
+    );
   }
 }
 
 
-echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
-<getFonts>
-  <activeUser>
-    <userId>$user[userId]</userId>
-    <userName>" . fim_encodeXml($user['userName']) . "</userName>
-  </activeUser>
-
-  <sentData>
-  </sentData>
-
-  <errorcode>$failCode</errorcode>
-  <errortext>$failMessage</errortext>
-
-  <fonts>
-    $fontXML
-  </fonts>
-</getFonts>";
+echo fim_outputXml($xmlData);
 
 
 mysqlClose();
