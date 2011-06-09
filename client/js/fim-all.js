@@ -574,7 +574,7 @@ $(document).ready(function() {
   /*** Edit Room ***/
 
   $('a#editRoom').click(function() {
-    ajaxTabDialogue('template.php?template=editRoomForm&roomId=' + roomId,'editRoomDialogue',1000,false,function() {
+    ajaxTabDialogue('template.php?template=editRoomForm','editRoomDialogue',1000,false,function() {
       $("#editRoomForm").submit(function() {
         var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
 

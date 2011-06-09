@@ -53,16 +53,16 @@ if ($userList) {
 
 $kicks = sqlArr("SELECT k.id,
   k.userId,
-  u.$sqlUserTableCols[userName] AS userName,
+  u.userName AS userName,
   k.roomId,
   k.length,
   k.time,
   k.kickerId,
-  i.$sqlUserTableCols[userName] AS kickerName,
+  i.userName AS kickerName,
   r.name AS roomName
 FROM {$sqlPrefix}kick AS k
-  LEFT JOIN {$sqlUserTable} AS u ON k.userId = u.{$sqlUserTableCols[userId]}
-  LEFT JOIN {$sqlUserTable} AS i ON k.kickerId = i.{$sqlUserTableCols[userId]}
+  LEFT JOIN {$sqlPrefix}users AS u ON k.userId = u.userId
+  LEFT JOIN {$sqlPrefix}users AS i ON k.kickerId = i.userId
   LEFT JOIN {$sqlPrefix}rooms AS r ON k.roomId = r.id
 WHERE $where TRUE",'id');
 

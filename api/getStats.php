@@ -30,7 +30,7 @@ $resultLimit = (int) ($_GET['number'] ? $_GET['number'] : 10);
 
 
 
-$rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id IN ($roomList)",'id');
+$rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId IN ($roomList)",'roomId');
 
 
 foreach ($rooms AS $room) {
@@ -41,25 +41,17 @@ foreach ($rooms AS $room) {
   }
 
 
-  switch ($loginMethod) {
-    case 'phpbb':
-    $cols = ', u.user_colour AS userColour';
-    break;
-
-    case 'vbulletin':
-    break;
-  }
-
-
   $totalPosts = sqlArr("SELECT m.messages AS count,
-  u.{$sqlUserTableCols[userId]} AS userId,
-  u.{$sqlUserTableCols[userName]} AS userName
+  u.userId AS userId,
+  u.userName AS userName,
+  u.userFormatStart,
+  u.userFormatEnd
   $cols
 FROM {$sqlPrefix}roomStats AS m,
-  {$sqlUserTable} AS u
+  {$sqlPrefix}users AS u
   $tables
-WHERE m.roomId = $room[id] AND
-  u.{$sqlUserTableCols[userId]} = m.userId
+WHERE m.roomId = $room[roomId] AND
+  u.userId = m.userId
   $where
 ORDER BY count DESC
   $orderby
@@ -69,18 +61,12 @@ LIMIT $resultLimit
 
   $roomStatsXml .= "<room>
   <roomData>
-    <roomId>$room[id]</roomId>
+    <roomId>$room[roomId]</roomId>
     <roomName>$room[name]</roomName>
   </roomData>";
 
 
   foreach ($totalPosts AS $totalPoster) {
-    switch ($loginMethod) {
-      case 'phpbb':
-      $totalPoster['startTag'] = "<span style=\"color: #$totalPoster[userColour]\">";
-      $totalPoster['endTag'] = "</span>";
-      break;
-    }
 
     $position++;
 
@@ -88,8 +74,8 @@ LIMIT $resultLimit
     <userData>
       <userId>$totalPoster[userId]</userId>
       <userName>$totalPoster[userName]</userName>
-      <startTag>" . fim_encodeXml($totalPoster['startTag']) . "</startTag>
-      <endTag>" . fim_encodeXml($totalPoster['endTag']) . "</endTag>
+      <startTag>" . fim_encodeXml($totalPoster['userFormatStart']) . "</startTag>
+      <endTag>" . fim_encodeXml($totalPoster['userFormatEnd']) . "</endTag>
     </userData>
     <messageCount>$totalPoster[count]</messageCount>
     <position>$position</position>

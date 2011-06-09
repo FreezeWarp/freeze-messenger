@@ -23,7 +23,7 @@ $title = 'Upload File';
 require_once('global.php');
 
 $room = intval($_GET['room'] ?: $_POST['room']);
-$room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
+$room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $room");
 
 eval(hook('uploadStart'));
 
@@ -297,36 +297,7 @@ elseif ($_POST['method']) { // Actual upload; process.
         $errorMessage = $phrases['uploadErrorOther'] . $_FILES['fileUpload']['error'];
       }
       else {
-        if ($uploadMethod == 'server') {
-          eval(hook('uploadProcessImageStoreServerStart'));
-
-          if (file_exists($fileLocation)) {
-            if ($parseFlags) {
-              $message = $webLocation;
-            }
-            else {
-              $message = "[img]{$webLocation}[/img]";
-            }
-          }
-          else {
-            if (!is_dir("{$installLoc}userdata/uploads/$user[userId]")) mkdir ("{$installLoc}userdata/uploads/$user[userId]",0775);
-
-            if (!move_uploaded_file($_FILES['fileUpload']['tmp_name'],$fileLocation)) {
-              $errorMessage = $phrases['uploadErrorFinal'];
-            }
-            else {
-              if ($parseFlags) {
-                $message = $webLocation;
-              }
-              else {
-                $message = "[img]{$webLocation}[/img]";
-              }
-            }
-          }
-
-          eval(hook('uploadProcessImageStoreServerEnd'));
-        }
-        elseif ($uploadMethod == 'database') {
+        if ($uploadMethod == 'database') {
           eval(hook('uploadProcessImageStoreDatabaseStart'));
 
           $contents = file_get_contents($_FILES['fileUpload']['tmp_name']);
