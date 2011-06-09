@@ -202,31 +202,6 @@ WHERE userId = $userData[userId] AND
   }
 }
 
-function fim_userFormat($message, $room, $messageTable = true) {
-  global $loginMethod, $cachedUserGroups, $parseGroups, $sqlUserGroupTable, $sqlUserGroupTableCols, $permission;
-
-  if ($message['displaygroupid'] && $parseGroups) { // The "parseGroups" toggle can be set in the configuration or will be set manually in validate.php whenever a login method doesn't use this token.
-    if (!$cachedUserGroups[$message['displaygroupid']]) {
-      switch ($loginMethod) {
-        case 'vbulletin':
-        $group = sqlArr("SELECT * FROM {$sqlUserGroupTable} WHERE {$sqlUserGroupTableCols[groupid]} = {$message[displaygroupid]}");
-        //print_r($group);
-        break;
-      }
-
-      $cachedUserGroups[$message['displaygroupid']] = $group;
-    }
-
-    $openTag = $cachedUserGroups[$message['displaygroupid']]['opentag'];
-    $closeTag = $cachedUserGroups[$message['displaygroupid']]['closetag'];
-  }
-
-  $class = ($messageTable ? 'userName userNameTable' : 'userName');
-  if ($permission['isModerator'] || $permission['isAdmin'] || $permission['isOwner']) $userAppend = '*';
-
-  return "{$openTag}<span style=\"{$colour}\" class=\"{$class}\" data-userId=\"$message[userId]\">$message[userName]{$userAppend}</span>{$closeTag}";
-}
-
 function fim_messageStyle($message) {
   global $enableDF, $user;
 
