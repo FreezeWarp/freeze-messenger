@@ -22,6 +22,22 @@ header('Content-type: text/xml');
 $time = (int) ($_GET['time'] ? $_GET['time'] : time());
 $onlineThreshold = (int) ($_GET['onlineThreshold'] ? $_GET['onlineThreshold'] : $onlineThreshold);
 
+$xmlData = array(
+  'getAllActiveUsers' => array(
+    'activeUser' => array(
+      'userId' => (int) $user['userId'],
+      'userName' => fim_encodeXml($user['userName']),
+    ),
+    'sentData' => array(
+      'onlineThreshold' => (int) $onlineThreshold,
+      'time' => (int) $time,
+    ),
+    'errorcode' => fim_encodeXml($failCode),
+    'errormessage' => fim_encodeXml($failMessage),
+    'users' => array(),
+  ),
+);
+
 $ausers = sqlArr("SELECT
   u.userName,
   u.userId,
@@ -50,48 +66,28 @@ $query",'userId');
 
 if ($ausers) {
   foreach ($ausers AS $auser) {
-    unset($roomsXML);
-
     $rooms = array_combine(explode(',',$auser['roomIds']),explode(',',$auser['roomNames']));
 
-    foreach ($rooms AS $roomId => $name) {
-      $roomsXML .= "      <room>
-        <roomId>$roomId</roomId>
-        <roomName>$name</roomName>
-      </room>";
-    }
+    $xmlData['getAllActiveUsers']['users']['user ' . $auser['userId']] = array(
+      'userData' => array(
+        'userId' => (int) $auser['userId'],
+        'userName' => fim_encodeXml($auser['userName']),
+        'startTag' => fim_encodeXml($auser['userFormatStart']),
+        'endTag' => fim_encodeXml($auser['userFormatEnd']),
+      ),
+      'rooms' => array(),
+    );
 
-    $ausersXML .= "    <user>
-      <userData>
-        <userId>$auser[userId]</userId>
-        <userName>$auser[userName]</userName>
-        <startTag>" . fim_encodeXml($auser['userFormatStart']) . "</startTag>
-        <endTag>" . fim_encodeXml($auser['userFormatEnd']) . "</endTag>
-      </userData>
-      <rooms>
-      $roomsXML
-      </rooms>
-    </user>
-";
+    foreach ($rooms AS $roomId => $name) {
+      $xmlData['getAllActiveUsers']['users']['user ' . $auser['userId']]['rooms']['room ' . $roomId] = array(
+        'roomId' => (int) $roomId,
+        'roomName' => fim_encodeXml($name),
+      );
+    }
   }
 }
 
-echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
-<getAllActiveUsers>
-  <activeUser>
-    <userId>$user[userId]</userId>
-    <userName>" . fim_encodeXml($user['userName']) . "</userName>
-  </activeUser>
-  <sentData>
-    <onlineThreshold>$onlineThreshold</onlineThreshold>
-    <time>$time</time>
-  </sentData>
-  <errorcode>$failCode</errorcode>
-  <errortext>$failMessage</errortext>
-  <users>
-    $ausersXML
-  </users>
-</getAllActiveUsers>";
+echo fim_outputXml($xmlData);
 
 mysqlClose();
 ?>

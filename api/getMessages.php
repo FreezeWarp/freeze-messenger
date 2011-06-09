@@ -291,6 +291,8 @@ else {
                 'userName' => fim_encodeXml($auser['userName']),
                 'userGroup' => (int) $auser['userGroup'],
                 'socialGroups' => fim_encodeXml($auser['socialGroups']),
+                'startTag' => fim_encodeXml($auser['userFormatStart']),
+                'endTag' => fim_encodeXml($auser['userFormatEnd']),
               );
             }
           }

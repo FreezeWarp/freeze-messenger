@@ -31,17 +31,17 @@ $onlineThreshold = (int) ($_GET['onlineThreshold'] ? $_GET['onlineThreshold'] : 
 $xmlData = array(
   'getActiveUsers' => array(
     'activeUser' => array(
-      'userId' => $user['userId'],
+      'userId' => (int) $user['userId'],
       'userName' => fim_encodeXml($user['userName']),
     ),
     'sentData' => array(
-      'rooms' => $rooms,
-      'roomsList' => $roomsXML,
-      'onlineThreshold' => $onlineThreshold,
-      'time' => $time,
+      'rooms' => fim_encodeXml($rooms),
+      'roomsList' => array(),
+      'onlineThreshold' => (int) $onlineThreshold,
+      'time' => (int) $time,
     ),
-    'errorcode' => $failCode,
-    'errormessage' => $failMessage,
+    'errorcode' => fim_encodeXml($failCode),
+    'errormessage' => fim_encodeXml($failMessage),
     'rooms' => array(),
   ),
 );
