@@ -186,15 +186,12 @@ LIMIT $messageLimit";
   m.userFormatStart AS userFormatStart,
   m.userFormatEnd AS userFormatEnd,
   m.flag AS flag,
-  u2.defaultColour AS defaultColour,
-  u2.defaultFontface AS defaultFontface,
-  u2.defaultHighlight AS defaultHighlight,
-  u2.defaultFormatting AS defaultFormatting
-  $colClause
-FROM {$sqlPrefix}messagesCached AS m,
-  {$sqlPrefix}users AS u2
+  m.defaultColour AS defaultColour,
+  m.defaultFontface AS defaultFontface,
+  m.defaultHighlight AS defaultHighlight,
+  m.defaultFormatting AS defaultFormatting
+FROM {$sqlPrefix}messagesCached AS m
 WHERE m.roomId = $room[roomId]
-  AND m.userId = u2.userId
 $whereClause
 ORDER BY messageId $order
 LIMIT $messageLimit";

@@ -375,6 +375,10 @@ VALUES ($user[userId],
   userGroup,
   userFormatStart,
   userFormatEnd,
+  defaultFormatting,
+  defaultColour,
+  defaultHighlight,
+  defaultFontface,
   time,
   htmlText,
   flag)
@@ -386,6 +390,10 @@ VALUES ($messageId,
   $user[userGroup],
   '" . mysqlEscape($user['userFormatStart']) . "',
   '" . mysqlEscape($user['userFormatEnd']) . "',
+  $user[defaultFormatting],
+  '" . mysqlEscape($user['defaultColour']) . "',
+  '" . mysqlEscape($user['defaultHighlight']) . "',
+  '" . mysqlEscape($user['defaultFontface']) . "',
   NOW(),
   '$messageHtmlCache',
   '$flag')");
@@ -395,7 +403,18 @@ VALUES ($messageId,
     mysqlQuery("DELETE FROM {$sqlPrefix}messagesCached WHERE id <= " . ($messageId2 - 100));
   }
 
-  mysqlQuery("UPDATE {$sqlPrefix}rooms SET lastMessageTime = NOW(), lastMessageId = $messageId WHERE roomId = $room[id]");
-  mysqlQuery("INSERT INTO {$sqlPrefix}roomStats (userId, roomId, messages) VALUES ($user[userId], $room[id], 1) ON DUPLICATE KEY UPDATE messages = messages + 1");
+  mysqlQuery("UPDATE {$sqlPrefix}rooms
+SET lastMessageTime = NOW(),
+  lastMessageId = $messageId
+WHERE roomId = $room[roomId]");
+
+  mysqlQuery("INSERT INTO {$sqlPrefix}roomStats (userId,
+  roomId,
+  messages)
+VALUES ($user[userId],
+  $room[roomId],
+  1)
+ON DUPLICATE KEY
+  UPDATE messages = messages + 1");
 }
 ?>

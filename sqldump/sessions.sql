@@ -4,4 +4,4 @@ CREATE TABLE IF NOT EXISTS `{prefix}sessions` (
   `browser` varchar(300) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `magicHash` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   PRIMARY KEY (`magicHash`)
-) ENGINE={engine} DEFAULT CHARSET=utf8;
+) ENGINE=MEMORY DEFAULT CHARSET=utf8;

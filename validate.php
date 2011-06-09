@@ -324,7 +324,8 @@ if ($valid) { // If the user is valid, process their preferrences.
     userGroup = ' . (int) $user2['userGroup'] . ',
     allGroups = "' . mysqlEscape($user2['allGroups']) . '",
     userFormatStart = "' . mysqlEscape($user2['userFormatStart']) . '",
-    userFormatEnd = "' . mysqlEscape($user2['userFormatEnd']) . '"'); // Create the new row
+    userFormatEnd = "' . mysqlEscape($user2['userFormatEnd']) . '",
+    lastSync = NOW()'); // Create the new row
 
       $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
     }
