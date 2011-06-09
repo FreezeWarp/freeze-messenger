@@ -162,12 +162,11 @@ VALUES ($user[userId],$room[roomId],CURRENT_TIMESTAMP()) ON DUPLICATE KEY UPDATE
   m.salt AS salt,
   u2.userId AS userId,
   u2.userName AS userName,
-  u2.userGroup AS userGroup
+  u2.userGroup AS userGroup,
   u2.defaultColour AS defaultColour,
   u2.defaultFontface AS defaultFontface,
   u2.defaultHighlight AS defaultHighlight,
-  u2.defaultFormatting AS defaultFormatting,
-  $colClause
+  u2.defaultFormatting AS defaultFormatting
 FROM {$sqlPrefix}messages AS m,
   {$sqlPrefix}users AS u2
 WHERE m.roomId = $room[roomId]
@@ -265,7 +264,7 @@ LIMIT $messageLimit";
   u.userId AS userId,
   u.userGroup AS userGroup,
   u.userFormatStart AS userFormatStart,
-  u.userFormatEnd AS userFormatStart,
+  u.userFormatEnd AS userFormatEnd,
   p.status,
   p.typing
   $cols

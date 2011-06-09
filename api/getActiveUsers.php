@@ -55,8 +55,8 @@ FROM {$sqlPrefix}ping AS p,
   {$sqlPrefix}rooms AS r,
   {$sqlUserTable} AS u
   $tables
-WHERE p.roomId = $room[id] AND
-  p.roomId = r.id AND
+WHERE p.roomId = $room[roomId] AND
+  p.roomId = r.roomId AND
   p.userId = u.$sqlUserTableCols[userId] AND
   UNIX_TIMESTAMP(p.time) >= ($time - $onlineThreshold)
   $where
@@ -66,7 +66,7 @@ $query",true);
 
     $auserXML .= "    <room>
       <roomData>
-        <roomId>$auser[id]</roomId>
+        <roomId>$auser[roomId]</roomId>
         <roomName>$auser[name]</roomName>
         <roomTopic>$auser[topic]</roomTopic>
       </roomData>

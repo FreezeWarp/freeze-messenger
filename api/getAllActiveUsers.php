@@ -23,19 +23,21 @@ $time = (int) ($_GET['time'] ? $_GET['time'] : time());
 $onlineThreshold = (int) ($_GET['onlineThreshold'] ? $_GET['onlineThreshold'] : $onlineThreshold);
 
 $ausers = sqlArr("SELECT
-  u.$sqlUserTableCols[userName] AS userName,
-  u.$sqlUserTableCols[userId] AS userId,
+  u.userName,
+  u.userId,
+  u.userFormatStart,
+  u.userFormatEnd,
   GROUP_CONCAT(r.name) AS roomNames,
-  GROUP_CONCAT(r.id) AS roomIds
+  GROUP_CONCAT(r.roomId) AS roomIds
   $cols
 FROM
-  $sqlUserTable AS u,
+  {$sqlPrefix}users AS u,
   {$sqlPrefix}rooms AS r,
   {$sqlPrefix}ping AS p
   $tables
 WHERE
-  u.$sqlUserTableCols[userId] = p.userId AND
-  r.id = p.roomId AND
+  u.userId = p.userId AND
+  r.roomId = p.roomId AND
   UNIX_TIMESTAMP(p.time) > $time - $onlineThreshold
   $where
 GROUP BY
@@ -52,9 +54,9 @@ if ($ausers) {
 
     $rooms = array_combine(explode(',',$auser['roomIds']),explode(',',$auser['roomNames']));
 
-    foreach ($rooms AS $id => $name) {
+    foreach ($rooms AS $roomId => $name) {
       $roomsXML .= "      <room>
-        <roomId>$id</roomId>
+        <roomId>$roomId</roomId>
         <roomName>$name</roomName>
       </room>";
     }
@@ -63,8 +65,8 @@ if ($ausers) {
       <userData>
         <userId>$auser[userId]</userId>
         <userName>$auser[userName]</userName>
-        <startTag>" . fim_encodeXml($auser['startTag']) . "</startTag>
-        <endTag>" . fim_encodeXml($auser['endTag']) . "</endTag>
+        <startTag>" . fim_encodeXml($auser['userFormatStart']) . "</startTag>
+        <endTag>" . fim_encodeXml($auser['userFormatEnd']) . "</endTag>
       </userData>
       <rooms>
       $roomsXML
