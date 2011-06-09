@@ -16,7 +16,6 @@
 
 $apiRequest = true;
 require_once('../global.php');
-header('Content-type: text/xml');
 
 $rooms = $_GET['rooms'];
 $roomsArray = explode(',',$rooms);
@@ -29,6 +28,21 @@ $roomList = implode(',',$roomsArray);
 $resultLimit = (int) ($_GET['number'] ? $_GET['number'] : 10);
 
 
+$xmlData = array(
+  'getStats' => array(
+    'activeUser' => array(
+      'userId' => (int) $user['userId'],
+      'userName' => fim_encodeXml($user['userName']),
+    ),
+    'sentData' => array(
+       'rooms' => $roomList,
+       'resultLimit' => $resultLimit,
+    ),
+    'errorcode' => $failCode,
+    'errortext' => $failMessage,
+    'roomStats' => array(),
+  ),
+);
 
 $rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId IN ($roomList)",'roomId');
 
@@ -59,60 +73,35 @@ LIMIT $resultLimit
   $limit",'userId');
 
 
-  $roomStatsXml .= "<room>
-  <roomData>
-    <roomId>$room[roomId]</roomId>
-    <roomName>$room[name]</roomName>
-  </roomData>";
+  $xmlData['getStats']['roomStats']['room ' . $room['roomId']] = array(
+    'roomData' => array(
+      'roomId' => (int) $room['roomId'],
+      'roomName' => $room['name'],
+    ),
+    'users' => array(),
+  );
 
 
   foreach ($totalPosts AS $totalPoster) {
 
     $position++;
 
-    $roomStatsXml .= "<user>
-    <userData>
-      <userId>$totalPoster[userId]</userId>
-      <userName>$totalPoster[userName]</userName>
-      <startTag>" . fim_encodeXml($totalPoster['userFormatStart']) . "</startTag>
-      <endTag>" . fim_encodeXml($totalPoster['userFormatEnd']) . "</endTag>
-    </userData>
-    <messageCount>$totalPoster[count]</messageCount>
-    <position>$position</position>
-</user>";
+    $xmlData['getStats']['roomStats']['room ' . $room['roomId']]['users']['user ' . $totalPoster['userId']] = array(
+      'userData' => array(
+        'userId' => (int) $totalPoster['userId'],
+        'userId' => fim_encodeXml($totalPoster['userName']),
+        'userId' => fim_encodeXml($totalPoster['userFormatStart']),
+        'userId' => fim_encodeXml($totalPoster['userFormatEnd']),
+      ),
+      'messageCount' => (int) $totalPoster['count'],
+      'position' => (int) $position,
+    );
   }
-
-
-  $roomStatsXml .= "</room>";
 }
 
 
 
-///* Output *///
-echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
-<!DOCTYPE html [
-  <!ENTITY nbsp \" \">
-]>
-<getMessages>
-  <activeUser>
-    <userId>$user[userId]</userId>
-    <userName>" . fim_encodeXml($user['userName']) . "</userName>
-  </activeUser>
-
-  <sentData>
-    <rooms>$roomList</rooms>
-    <resultLimit>$resultLimit</resultLimit>
-  </sentData>
-
-  <errorcode>$failCode</errorcode>
-  <errortext>$failMessage</errortext>
-
-  <roomStats>
-    $roomStatsXml
-  </roomStats>
-</getMessages>";
-
-
+echo fim_outputXml($xmlData);
 
 
 mysqlClose();

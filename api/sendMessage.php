@@ -18,7 +18,6 @@ $apiRequest = true;
 
 require_once('../global.php');
 require_once('../functions/parserFunctions.php');
-header('Content-type: text/xml');
 
 $message = fim_urldecode($_POST['message']);
 
@@ -101,24 +100,27 @@ else {
 
 
 
-echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
-<sendMessage>
-  <activeUser>
-    <userId>$user[userId]</userId>
-    <userName>" . fim_encodeXml($user['userName']) . "</userName>
-  </activeUser>
-  <sentData>
-    <roomId>" . (int) $_POST['roomId'] . "</roomId>
-    <message>" . fim_encodeXml($_POST['message']) . "</message>
-  </sentData>
-  <errorcode>$failCode</errorcode>
-  <errortext>$failMessage</errortext>
-  <censor>
-    <word>$blockWordApi[word]</word>
-    <severity>$blockWordApi[severity]</severity>
-    <reason>$blockWordApi[reason]</reason>
-  </censor>
-</sendMessage>";
+$xmlData = array(
+  'sendMessage' => array(
+    'activeUser' => array(
+      'userId' => (int) $user['userId'],
+      'userName' => fim_encodeXml($user['userName']),
+    ),
+    'sendData' => array(
+      'roomId' => (int) $_POST['roomId'],
+      'message' => fim_encodeXml($_POST['message']),
+    ),
+    'errorcode' => fim_encodeXml($failCode),
+    'errortext' => fim_encodeXml($failMessage),
+    'censor' => array(
+      'word' => fim_encodeXml($blockWordApi['word']),
+      'severity' => fim_encodeXml($blockWordApi['severity']),
+      'reason' => fim_encodeXml($blockWordApi['reason']),
+    ),
+  ),
+);
+
+echo fim_outputXml($xmlData);
 
 mysqlClose();
 ?>
