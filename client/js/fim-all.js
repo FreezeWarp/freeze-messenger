@@ -30,7 +30,7 @@ function unxml(data) {
   return data;
 }
 
-function quickDialogue(content,title,id,width) {
+function quickDialogue(content,title,id,width,cF,oF) {
   var dialog = $('<div style="display: none;" id="' + id +  '">' + content + '</div>').appendTo('body');
 
   $('button').button();
@@ -47,6 +47,10 @@ function quickDialogue(content,title,id,width) {
     modal: true,
     close: function() {
       $('#' + id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
+
+      if (cF) {
+        cF();
+      }
     }
   });
 
@@ -505,7 +509,9 @@ $(document).ready(function() {
   /*** Online ***/
 
   $('a#online').click(function() {
-    quickDialogue('<table class="page"><thead><tr class="hrow"><th>User</th><th>Rooms</th></tr></thead><tbody id="onlineUsers"><tr><td colspan="2">Loading...</td></tr></tbody></table>','View Active Users','onlineDialogue',600);
+    quickDialogue('<table class="page"><thead><tr class="hrow"><th>User</th><th>Rooms</th></tr></thead><tbody id="onlineUsers"><tr><td colspan="2">Loading...</td></tr></tbody></table>','View Active Users','onlineDialogue',600,function() {
+      clearInterval(timer2);
+    });
 
     function updateOnline() {
       $.ajax({
