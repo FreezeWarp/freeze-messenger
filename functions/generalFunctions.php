@@ -631,6 +631,16 @@ function fim_outputXml($array,$level = 0) {
       $data .= fim_outputXml($value,$level + 1);
     }
     else {
+      if ($value === true) {
+        $value = 'true';
+      }
+      elseif ($value === false) {
+        $value = 'false';
+      }
+      elseif ($value === null) {
+        $value = 'null';
+      }
+
       $data .= "$indent  $value\n";
     }
 

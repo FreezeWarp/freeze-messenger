@@ -68,56 +68,57 @@ switch ($_GET['order']) {
 
 }
 
+$xmlData = array(
+  'getRooms' => array(
+    'activeUser' => array(
+      'userId' => (int) $user['userId'],
+      'userName' => fim_encodeXml($user['userName']),
+    ),
+    'sentData' => array(
+      'order' => (int) $order,
+      'showDeleted' => (bool) $showDeleted,
+    ),
+    'errorcode' => $failCode,
+    'errormessage' => $failMessage,
+    'rooms' => array(),
+  ),
+);
+
 
 $rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE $whereClause TRUE ORDER BY $order",'id'); // Get all rooms
 foreach ($rooms AS $id => $room2) {
-  if (fim_hasPermission($room2,$user,$permLevel)) $rooms2[] = $room2;
-}
-
-
-
-if ($rooms2) {
-  foreach ($rooms2 AS $row) {
-    $row['name'] = htmlspecialchars($row['name']);
-    $fav = (in_array($row['id'],$favRooms) ? 'true' : 'false');
-
-    $roomXML .= "    <room>
-      <roomId>$row[id]</roomId>
-      <roomName>" . fim_encodeXml($row['name']) . "</roomName>
-      <roomTopic>" . fim_encodeXml($row['title']) . "</roomTopic>
-      <owner>$row[owner]</owner>
-      <allowedUsers>$row[allowedUsers]</allowedUsers>
-      <allowedGroups>$row[allowedGroups]</allowedGroups>
-      <favorite>$fav</favorite>
-      <options>$row[options]</options>
-      <optionDefinitions>
-        <official>" . (($row['options'] & 1) ? 'true' : 'false') . "</official>
-        <deleted>" . (($row['options'] & 4) ? 'true' : 'false') . "</deleted>
-        <hidden>" . (($row['options'] & 8) ? 'true' : 'false') . "</hidden>
-        <privateIm>" . (($row['options'] & 16) ? 'true' : 'false') . "</privateIm>
-      </optionDefinitions>
-    </room>";
+  if (fim_hasPermission($room2,$user,$permLevel)) {
+    $rooms2[] = $room2;
   }
 }
 
-echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
-<getRooms>
-  <activeUser>
-    <userId>$user[userId]</userId>
-    <userName>" . fim_encodeXml($user['userName']) . "</userName>
-  </activeUser>
 
-  <sentData>
-    <order>" . htmlspecialchars($order) . "</order>
-    <showDeleted>" . ($_GET['showDeleted'] ? 'true' : 'false') . "</showDeleted>
-  </sentData>
+if ($rooms2) {
+  foreach ($rooms2 AS $room) {
+    $fav = (in_array($room['id'],$favRooms) ? 'true' : 'false');
 
-  <errorcode>$failCode</errorcode>
-  <errortext>$failMessage</errortext>
-  <rooms>
-    $roomXML
-  </rooms>
-</getRooms>";
+    $xmlData['getRooms']['rooms']['room ' . $room['messageId']] = array(
+      'roomId' => (int)$room['roomId'],
+      'roomName' => fim_encodeXml($room['name']),
+      'roomTopic' => fim_encodeXml($room['topic']),
+      'roomOwner' => (int) $room['owner'],
+      'allowedUsers' => fim_encodeXml($room['allowedUsers']),
+      'allowedGroups' => fim_encodeXml($room['allowedGroups']),
+      'moderators' => fim_encodeXml($room['moderators']),
+      'favorite' => (bool) $fav,
+      'options' => (int) $room['options'],
+      'optionDefinitions' => array(
+        'official' => (bool) ($row['options'] & 1),
+        'deleted' => (bool) ($row['options'] & 4),
+        'hidden' => (bool) ($row['options'] & 8),
+        'privateIm' => (bool) ($row['options'] & 16),
+      ),
+      'bbcode' => $room['bbcode'],
+    );
+  }
+}
+
+echo fim_outputXml($xmlData);
 
 mysqlClose();
 ?>

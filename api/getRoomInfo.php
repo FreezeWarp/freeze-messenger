@@ -21,10 +21,7 @@ require_once('../global.php');
 $roomId = (int) $_GET['roomId'];
 $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId"); // Get all rooms
 
-if (fim_hasPermission($room,$user,'view')) {
-
-}
-else {
+if (!fim_hasPermission($room,$user,'view')) {
   unset($room);
 
   $errorcode = 'noperm';
@@ -43,14 +40,20 @@ $xmlData = array(
     'errormessage' => $failMessage,
     'roomData' => array(
       'roomId' => $room['roomId'],
-      'roomName' => $room['roomName'],
-      'roomTopic' => $room['roomTopic'],
-      'roomOwner' => $room['roomOwner'],
+      'roomName' => $room['name'],
+      'roomTopic' => $room['topic'],
+      'roomOwner' => $room['owner'],
       'allowedUsers' => $room['allowedUsers'],
       'allowedGroups' => $room['allowedGroups'],
       'moderators' => $room['moderators'],
       'options' => $room['options'],
-      'bbocde' => $room['bbcode'],
+      'optionDefinitions' => array(
+        'official' => (bool) ($row['options'] & 1),
+        'deleted' => (bool) ($row['options'] & 4),
+        'hidden' => (bool) ($row['options'] & 8),
+        'privateIm' => (bool) ($row['options'] & 16),
+      ),
+      'bbcode' => $room['bbcode'],
     ),
   ),
 );
