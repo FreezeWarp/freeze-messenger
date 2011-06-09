@@ -21,6 +21,25 @@ header('Content-type: text/xml');
 
 $action = fim_urldecode($_POST['action']);
 
+
+$xmlData = array(
+  'moderaate' => array(
+    'activeUser' => array(
+      'userId' => (int) $user['userId'],
+      'userName' => fim_encodeXml($user['userName']),
+    ),
+    'sentData' => array(
+      'action' => fim_encodeXML($_POST['action']),
+      'roomId' => (int) $_POST['roomId'],
+      'userId' => (int) $_POST['userId'],
+    ),
+    'errorcode' => fim_encodeXml($failCode),
+    'errortext' => fim_encodeXml($failMessage),
+    'response' => array(),
+  ),
+);
+
+
 switch ($action) {
   case 'createRoom':
   $name = substr(mysqlEscape($_POST['name']),0,20); // Limits to 20 characters.
@@ -45,7 +64,7 @@ switch ($action) {
       $insertId = mysql_insert_id();
 
       if ($insertId) {
-        $data = "<insertId>$insertId</insertId>";
+        $xmlData['moderate']['response']['insertId'] = $insertId;
       }
       else {
         $failCode = 'unknown';
@@ -125,7 +144,7 @@ switch ($action) {
   break;
 
   case 'userOptions':
-  $userId = (int) $_GET['userId'];
+  $userId = (int) $_POST['userId'];
 
   $userData = sqlArr("SELECT * FROM {$sqlPrefix}users WHERE userId = $userId");
 
@@ -141,19 +160,21 @@ switch ($action) {
   );
 
   if ($user['adminPrivs']['modUsers'] || $user['userId'] == $userId) {
-    foreach ($settingsOfficialAjaxIndex AS $name => $val) {
-      if (isset($_GET['settingsOfficialAjax_' . $name])) {
-        if ((int) $_GET['settingsOfficialAjax_' . $name]) {
+    if (isset($_POST['settingsOfficialAjax'])) {
+      foreach ($settingsOfficialAjaxIndex AS $name => $val) {
+        if ($_POST['settingsOfficialAjax_' . $name]) {
           if ($userData['settingsOfficialAjax'] & $val) {}
           else {
             $userData['settingsOfficialAjax'] += $val;
-            $dataModified .= "<value>" . $name . "</value>";
+
+            $xmlData['moderate']['response']['modified']['value ' . $name] = $name;
           }
         }
         else {
           if ($userData['settingsOfficialAjax'] & $val) {
             $userData['settingsOfficialAjax'] -= $val;
-            $dataModified .= "<value>" . $name . "</value>";
+
+            $xmlData['moderate']['response']['modified']['value ' . $name] = $name;
           }
           else {}
         }
@@ -173,19 +194,21 @@ switch ($action) {
   );
 
   if ($user['adminPrivs']['modUsers'] || $user['userId'] == $userId) {
-    foreach ($userIndex AS $name => $val) {
-      if (isset($_GET['user_' . $name])) {
-        if ((int) $_GET['user_' . $name]) {
+    if (isset($_POST['userPrivs'])) {
+      foreach ($userIndex AS $name => $val) {
+        if ($_POST['user_' . $name]) {
           if ($userData['userPrivs'] & $val) {}
           else {
             $userData['userPrivs'] += $val;
-            $dataModified .= "<value>" . $name . "</value>";
+
+            $xmlData['moderate']['response']['modified']['value ' . $name] = $name;
           }
         }
         else {
           if ($userData['userPrivs'] & $val) {
             $userData['userPrivs'] -= $val;
-            $dataModified .= "<value>" . $name . "</value>";
+
+            $xmlData['moderate']['response']['modified']['value ' . $name] = $name;
           }
           else {}
         }
@@ -211,19 +234,21 @@ switch ($action) {
   );
 
   if ($user['adminPrivs']['modPrivs']) {
-    foreach ($adminIndex AS $name => $val) {
-      if (isset($_GET['admin_' . $name])) {
-        if ((int) $_GET['admin_' . $name]) {
+    if (isset($_POST['adminPrivs'])) {
+      foreach ($adminIndex AS $name => $val) {
+        if ($_POST['admin_' . $name]) {
           if ($userData['adminPrivs'] & $val) {}
           else {
             $userData['adminPrivs'] += $val;
-            $dataModified .= "<value>" . $name . "</value>";
+
+            $xmlData['moderate']['response']['modified']['value ' . $name] = $name;
           }
         }
         else {
           if ($userData['adminPrivs'] & $val) {
             $userData['adminPrivs'] -= $val;
-            $dataModified .= "<value>" . $name . "</value>";
+
+            $xmlData['moderate']['response']['modified']['value ' . $name] = $name;
           }
           else {}
         }
@@ -234,12 +259,33 @@ switch ($action) {
     // No Permission
   }
 
-  $data = "<modified>$dataModified</modified>";
+
+  if (isset($_POST['settingsOfficialAjax_theme'])) {
+    $theme = (int) $_POST['settingsOfficialAjax_theme'];
+
+    $userData['theme'] = $theme;
+
+    $xmlData['moderate']['response']['theme'] = $theme;
+  }
+
+
+  if (isset($_POST['settingsOfficialAjax_theme'])) {
+    $theme = (int) $_POST['settingsOfficialAjax_theme'];
+
+    $userData['theme'] = $theme;
+
+    $xmlData['moderate']['response']['theme'] = $theme;
+  }
+
+
+
+  mysqlQuery("UPDATE {$sqlPrefix}users SET themeOfficialAjax = $userData[theme], adminPrivs = $userData[adminPrivs], userPrivs = $userData[userPrivs], settingsOfficialAjax = $userData[settingsOfficialAjax]");
+
   break;
 
 
   case 'deletePost':
-  $messageId = (int) $_GET['messageId'];
+  $messageId = (int) $_POST['messageId'];
   $messageData = sqlArr("SELECT * FROM {$sqlPrefix}messages WHERE messageId = $messageId");
   $roomData = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $messageData[roomId]");
 
@@ -252,7 +298,7 @@ switch ($action) {
   break;
 
   case 'undeletePost':
-  $messageId = (int) $_GET['messageId'];
+  $messageId = (int) $_POST['messageId'];
   $messageData = sqlArr("SELECT * FROM {$sqlPrefix}messages WHERE messageId = $messageId");
   $roomData = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $messageData[roomId]");
 
@@ -331,23 +377,9 @@ switch ($action) {
   break;
 }
 
-echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
-<moderate>
-  <activeUser>
-    <userId>$user[userId]</userId>
-    <userName>" . fim_encodeXml($user['userName']) . "</userName>
-  </activeUser>
-  <sentData>
-    <action>" . fim_encodeXml($_POST['action']) . "</action>
-    <roomId>" . (int) $_POST['roomId'] . "</roomId>
-    <userId>" . (int) $_POST['userId'] . "</userId>
-  </sentData>
-  <errorcode>$failCode</errorcode>
-  <errortext>$failMessage</errortext>
-  <response>
-    $data
-  </response>
-</moderate>";
+
+echo fim_outputXml($xmlData);
+
 
 mysqlClose();
 ?>

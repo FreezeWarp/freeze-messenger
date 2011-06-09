@@ -360,11 +360,10 @@ function archive(idMax,idMin) {
         $(xml).find('messages > message').each(function() {
           var text = unxml($(this).find('htmlText').text().trim());
           var messageTime = $(this).find('messageTimeFormatted').text().trim();
-
-          var messageId = Number($(this).find('messageId').text()).trim();
+          var messageId = parseInt($(this).find('messageId').text().trim());
 
           var userName = $(this).find('userData > userName').text().trim();
-          var userId = Number($(this).find('userData > userId').text().trim());
+          var userId = parseInt($(this).find('userData > userId').text().trim());
           var groupFormatStart = unxml($(this).find('userData > startTag').text().trim());
           var groupFormatEnd = unxml($(this).find('userData > endTag').text().trim());
 
@@ -964,8 +963,9 @@ $(document).ready(function() {
 
       $("#changeSettingsForm").submit(function() {
         data = $("#changeSettingsForm").serialize(); // Serialize the form data for AJAX.
-        $.post("api/moderate.php?action=userOptions&userId=" + userId,data,function(html) {
-          quickDialogue(html,'','changeSettingsResultDialogue');
+        $.post("api/moderate.php",data + "&action=userOptions&userId=" + userId,function(xml) {
+
+          quickDialogue(xml,'','changeSettingsResultDialogue');
         }); // Send the form data via AJAX.
 
         $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
