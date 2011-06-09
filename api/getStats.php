@@ -89,9 +89,9 @@ LIMIT $resultLimit
     $xmlData['getStats']['roomStats']['room ' . $room['roomId']]['users']['user ' . $totalPoster['userId']] = array(
       'userData' => array(
         'userId' => (int) $totalPoster['userId'],
-        'userId' => fim_encodeXml($totalPoster['userName']),
-        'userId' => fim_encodeXml($totalPoster['userFormatStart']),
-        'userId' => fim_encodeXml($totalPoster['userFormatEnd']),
+        'userName' => fim_encodeXml($totalPoster['userName']),
+        'startTag' => fim_encodeXml($totalPoster['userFormatStart']),
+        'endTag' => fim_encodeXml($totalPoster['userFormatEnd']),
       ),
       'messageCount' => (int) $totalPoster['count'],
       'position' => (int) $position,

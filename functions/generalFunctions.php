@@ -632,10 +632,10 @@ function fim_outputXml($array,$level = 0) {
     }
     else {
       if ($value === true) {
-        $value = '1';
+        $value = 'true';
       }
       elseif ($value === false) {
-        $value = '0';
+        $value = 'false';
       }
 
       $data .= "$indent  $value\n";

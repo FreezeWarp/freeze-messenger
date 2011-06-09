@@ -353,20 +353,20 @@ function archive(idMax,idMin) {
     success: function (xml) {
       if ($(xml).find('messages > message').length > 0) {
         $(xml).find('messages > message').each(function() {
-          var text = unxml($(this).find('htmlText').text());
-          var messageTime = $(this).find('messageTimeFormatted').text();
+          var text = unxml($(this).find('htmlText').text().trim());
+          var messageTime = $(this).find('messageTimeFormatted').text().trim();
 
-          var messageId = Number($(this).find('messageId').text());
+          var messageId = Number($(this).find('messageId').text()).trim();
 
-          var userName = $(this).find('userData > userName').text();
-          var userId = Number($(this).find('userData > userId').text());
-          var groupFormatStart = unxml($(this).find('userData > startTag').text());
-          var groupFormatEnd = unxml($(this).find('userData > endTag').text());
+          var userName = $(this).find('userData > userName').text().trim();
+          var userId = Number($(this).find('userData > userId').text().trim());
+          var groupFormatStart = unxml($(this).find('userData > startTag').text().trim());
+          var groupFormatEnd = unxml($(this).find('userData > endTag').text().trim());
 
-          var styleColor = $(this).find('defaultFormatting > color').text();
-          var styleHighlight = $(this).find('defaultFormatting > highlight').text();
-          var styleFontface = $(this).find('defaultFormatting > fontface').text();
-          var styleGeneral = parseInt($(this).find('defaultFormatting > general').text());
+          var styleColor = $(this).find('defaultFormatting > color').text().trim();
+          var styleHighlight = $(this).find('defaultFormatting > highlight').text().trim();
+          var styleFontface = $(this).find('defaultFormatting > fontface').text().trim();
+          var styleGeneral = parseInt($(this).find('defaultFormatting > general').text().trim());
 
           var style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + styleFontface + ';';
 
@@ -509,8 +509,8 @@ $(document).ready(function() {
         var roomHtml = '';
 
         $(xml).find('room').each(function() {
-          var roomName = $(this).find('roomName').text();
-          var roomId = $(this).find('roomId').text();
+          var roomName = unxml($(this).find('roomName').text());
+          var roomId = parseInt($(this).find('roomId').text());
 
           roomHtml += '<option value="' + roomId + '">' + roomName + '</option>';
         });
@@ -531,8 +531,8 @@ $(document).ready(function() {
         var userHtml = '';
 
         $(xml).find('user').each(function() {
-          var userName = $(this).find('userName').text();
-          var userId = $(this).find('userId').text();
+          var userName = unxml($(this).find('userName').text().trim());
+          var userId = parseInt($(this).find('userId').text().trim());
 
           userHtml += '<option value="' + userId + '">' + userName + '</option>';
         });
@@ -606,15 +606,15 @@ $(document).ready(function() {
           var data = '';
 
           $(xml).find('user').each(function() {
-            var userName = $(this).find('userName').text();
-            var userId = $(this).find('userId').text();
-            var startTag = unxml($(this).find('startTag').text());
-            var endTag = unxml($(this).find('endTag').text());
+            var userName = unxml($(this).find('userName').text().trim());
+            var userId = parseInt($(this).find('userId').text().trim());
+            var startTag = unxml($(this).find('startTag').text().trim());
+            var endTag = unxml($(this).find('endTag').text().trim());
             var roomData = new Array();
 
             $(this).find('room').each(function() {
-              var roomId = $(this).find('roomId').text();
-              var roomName = $(this).find('roomName').text();
+              var roomId = parseInt($(this).find('roomId').text().trim());
+              var roomName = unxml($(this).find('roomName').text().trim());
               roomData.push('<a href="/chat.php?room=' + roomId + '">' + roomName + '</a>');
             });
             roomData = roomData.join(', ');
@@ -654,9 +654,9 @@ $(document).ready(function() {
         var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
 
         $.post("api/moderate.php",data + '&action=createRoom',function(xml) {
-          var errorCode = $(xml).find('errorcode').text();
-          var errorMessage = $(xml).find('errortext').text();
-          var newRoomId = parseInt($(xml).find('insertId').text());
+          var errorCode = unxml($(xml).find('errorcode').text().trim());
+          var errorMessage = unxml($(xml).find('errortext').text().trim());
+          var newRoomId = parseInt($(xml).find('insertId').text().trim());
 
           if (errorCode) {
             alert('An error has occured: ' + errorMessage);
@@ -696,11 +696,11 @@ $(document).ready(function() {
         success: function(xml) {
           var data = '';
 
-          var roomName = $(xml).find('roomName').text();
-          var roomId = $(xml).find('roomId').text();
-          var allowedUsers = $(xml).find('allowedUsers').text();
-          var allowedGroups = $(xml).find('allowedGroups').text();
-          var moderators = $(xml).find('moderators').text();
+          var roomName = unxml($(xml).find('roomName').text().trim());
+          var roomId = parseInt($(xml).find('roomId').text().trim());
+          var allowedUsers = $(xml).find('allowedUsers').text().trim();
+          var allowedGroups = $(xml).find('allowedGroups').text().trim();
+          var moderators = $(xml).find('moderators').text().trim();
 
           $('#name').val(roomName);
           $('#allowedUsers').val(allowedUsers);
@@ -718,9 +718,9 @@ $(document).ready(function() {
       var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
 
       $.post("api/moderate.php",data + '&action=editRoom',function(xml) {
-        var errorCode = $(xml).find('errorcode').text();
-        var errorMessage = $(xml).find('errortext').text();
-        var newRoomId = parseInt($(xml).find('insertId').text());
+        var errorCode = unxml($(xml).find('errorcode').text().trim());
+        var errorMessage = unxml($(xml).find('errortext').text().trim());
+        var newRoomId = parseInt($(xml).find('insertId').text().trim());
 
         if (errorCode) {
           alert('An error has occured: ' + errorMessage);
@@ -773,12 +773,12 @@ $(document).ready(function() {
       cache: false,
       success: function(xml) {
         $(xml).find('room').each(function() {
-          var roomName = $(this).find('roomName').text();
-          var roomId = $(this).find('roomId').text();
-          var roomTopic = $(this).find('roomTopic').text();
-          var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
-          var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
-          var isOwner = (parseInt($(this).find('owner').text()) == userId ? true : false);
+          var roomName = $(this).find('roomName').text().trim();
+          var roomId = parseInt($(this).find('roomId').text().trim());
+          var roomTopic = $(this).find('roomTopic').text().trim();
+          var isFav = ($(this).find('favorite').text().trim() == 'true' ? true : false);
+          var isPriv = ($(this).find('optionDefinitions > privateIm').text().trim() == 'true' ? true : false);
+          var isOwner = (parseInt($(this).find('owner').text().trim()) == userId ? true : false);
 
           roomHtml += '<tr id="room' + roomId + '"><td><a href="/chat.php?room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isOwner ? '<a href="#" class="editRoomMulti" data-roomId="' + roomId + '"><img src="images/document-edit.png" class="standard" alt="Configure" /></a>' : '') + '</td></tr>';
         });
@@ -812,16 +812,16 @@ $(document).ready(function() {
       cache: false,
       success: function(xml) {
         $(xml).find('room').each(function() {
-          var roomName = $(this).find('roomName').text();
-          var roomId = $(this).find('roomId').text();
+          var roomName = unxml($(this).find('roomName').text().trim());
+          var roomId = parseInt($(this).find('roomId').text().trim());
 
           $(this).find('user').each(function() {
-            var userName = $(this).find('userData > userName').text();
-            var userId = $(this).find('userData > userId').text();
-            var startTag = $(this).find('userData > startTag').text();
-            var endTag = $(this).find('userData > endTag').text();
-            var position = parseInt($(this).find('position').text());
-            var messageCount = $(this).find('messageCount').text();
+            var userName = unxml($(this).find('userData > userName').text().trim());
+            var userId = parseInt($(this).find('userData > userId').text().trim());
+            var startTag = unxml($(this).find('userData > startTag').text().trim());
+            var endTag = unxml($(this).find('userData > endTag').text().trim());
+            var position = parseInt($(this).find('position').text().trim());
+            var messageCount = parseInt($(this).find('messageCount').text().trim());
 
             statsHtml[position] += '<td>' + startTag + userName + endTag + ' (' + messageCount + ')</td>';
           });
@@ -876,10 +876,10 @@ $(document).ready(function() {
         cache: false,
         success: function(xml) {
           $(xml).find('font').each(function() {
-            var fontName = $(this).find('fontName').text();
-            var fontId = $(this).find('fontId').text();
-            var fontGroup = $(this).find('fontGroup').text();
-            var fontData = $(this).find('fontData').text();
+            var fontName = unxml($(this).find('fontName').text().trim());
+            var fontId = parseInt($(this).find('fontId').text().trim());
+            var fontGroup = unxml($(this).find('fontGroup').text().trim());
+            var fontData = unxml($(this).find('fontData').text().trim());
 
             $('#defaultFace').append('<option value="' + fontId + '" style="' + fontData + '" data-font="' + fontData + '">' + fontName + '</option>');
           });
