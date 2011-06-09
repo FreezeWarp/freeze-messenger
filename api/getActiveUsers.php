@@ -25,8 +25,26 @@ foreach ($roomsArray AS &$v) {
   $v = intval($v);
 }
 
-$time = ($_GET['time'] ?: time());
+$time = (int) ($_GET['time'] ? $_GET['time'] : time());
 $onlineThreshold = (int) ($_GET['onlineThreshold'] ? $_GET['onlineThreshold'] : $onlineThreshold);
+
+$xmlData = array(
+  'getActiveUsers' => array(
+    'activeUser' => array(
+      'userId' => $user['userId'],
+      'userName' => fim_encodeXml($user['userName']),
+    ),
+    'sentData' => array(
+      'rooms' => $rooms,
+      'roomsList' => $roomsXML,
+      'onlineThreshold' => $onlineThreshold,
+      'time' => $time,
+    ),
+    'errorcode' => $failCode,
+    'errormessage' => $failMessage,
+    'rooms' => array(),
+  ),
+);
 
 if (!$rooms) {
   $failCode = 'badroomsrequest';
@@ -37,13 +55,15 @@ if (!$roomsArray) {
   $failMessage = 'The room string was not formatted properly in Comma-Seperated notation.';
 }
 else {
-  foreach ($roomsArray AS $room) {
-    $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
+  foreach ($roomsArray AS $roomId) {
+    $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
 
-    if (!fim_hasPermission($room,$user,'know')) continue;
+    if (!fim_hasPermission($room,$user,'know')) {
+      continue;
+    }
 
-    $roomsXML .= "
-      <room>$room[id]</room>";
+    $xmlData['getActiveUsers']['sentData']['roomsList']['room ' . $room['roomId']] = $room['roomId'];
+
 
     $ausers = sqlArr("SELECT
   u.{$sqlUserTableCols[userName]} AS userName,
@@ -64,52 +84,34 @@ ORDER BY u.{$sqlUserTableCols[userName]}
   $orderby
 $query",true);
 
-    $auserXML .= "    <room>
-      <roomData>
-        <roomId>$auser[roomId]</roomId>
-        <roomName>$auser[name]</roomName>
-        <roomTopic>$auser[topic]</roomTopic>
-      </roomData>
-      <users>
-";
+    $xmlData['getActiveUsers']['rooms']['room ' . $room['roomId']] = array(
+      'roomData' => array(
+        'roomId' => (int) $auser['roomId'],
+        'roomName' => fim_encodeXml($auser['roomName']),
+        'roomTopic' => fim_encodeXml($auser['roomTopic']),
+      ),
+      'users' => array(),
+    );
+
 
     if ($ausers) {
       foreach ($ausers AS $auser) {
-        $auserXML .= "    <user>
-      <userId>$auser[userId]</userId>
-      <userName>$auser[userName]</userName>
-      <userGroup>$auser[displaygroupid]</userGroup>
-      <status>$auser[status]</status>
-      <typing>$auser[typing]</typing>
-    </user>
-";
+        $xmlData['getActiveUsers']['rooms']['room ' . $room['roomId']]['users']['user ' . $auser['userId']] = array(
+          'userId' => (int) $auser['userId'],
+          'userName' => fim_encodeXml($auser['userName']),
+          'userGroup' => (int) $auser['userGroup'],
+          'socialGroups' => fim_encodeXml($auser['socialGroups']),
+          'startTag' => fim_encodeXml($auser['startTag']),
+          'endTag' => fim_encodeXml($auser['endTag']),
+          'status' => fim_encodeXml($auser['status']),
+          'typing' => (bool) $auser['typing'],
+        );
       }
     }
-
-      $auserXML .= "      </users>
-    </room>
-";
   }
 }
 
-echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
-<getActiveUsers>
-  <activeUser>
-    <userId>$user[userId]</userId>
-    <userName>" . fim_encodeXml($user['userName']) . "</userName>
-  </activeUser>
-  <sentData>
-    <rooms>$rooms</rooms>
-    <roomsList>$roomsXML
-    </roomsList>
-    <onlineThreshold>$onlineThreshold</onlineThreshold>
-    <time>$time</time>
-  </sentData>
-  <errorcode>$failCode</errorcode>
-  <errortext>$failMessage</errortext>
-  <rooms>
-$auserXML  </rooms>
-</getActiveUsers>";
+echo fim_outputXml($xmlData);
 
 mysqlClose();
 ?>
