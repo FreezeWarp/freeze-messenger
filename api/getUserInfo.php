@@ -60,32 +60,44 @@ if ($getuser) {
   }
 }
 
-echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
-<getUserInfo>
-  <activeUser>
-    <userId>$user[userId]</userId>
-    <userName>" . fim_encodeXml($user['userName']) . "</userName>
-  </activeUser>
-  <sentData>
-    <userId>$userId</userId>
-    <userName>$userName</userName>
-  </sentData>
-  <errorcode>$failCode</errorcode>
-  <errortext>$failMessage</errortext>
-  <userData>
-    <userId>$getuser[userId]</userId>
-    <userName>$getuser[userName]</userName>
-    <settings>$getuser[settings]</settings>
-    <startTag>" . fim_encodeXml($getuser['userFormatStart']) . "</startTag>
-    <endTag>" . fim_encodeXml($getuser['userFormatEnd']) . "</endTag>
-    <favRooms>$getuser[favRooms]</favRooms>
-    <postCount>$getuserf[posts]</postCount>
-    <joinDate>$getuserf[joinDate]</joinDate>
-    <joinDateFormatted>" . fim_date(false,$getuserf['joinDate']) . "</joinDateFormatted>
-    <userTitle>$getuserf[usertitle]</userTitle>
-    <avatar>$getuserf[avatar]</avatar>
-  </userData>
-</getUserInfo>";
+
+
+$xmlData = array(
+  'getUserInfo' => array(
+    'activeUser' => array(
+      'userId' => (int) $user['userId'],
+      'userName' => fim_encodeXml($user['userName']),
+    ),
+    'sentData' => array(
+      'userId' => (int) $userId,
+      'userName' => fim_encodeXml($userName),
+    ),
+    'errorcode' => fim_encodeXml($failCode),
+    'errortext' => fim_encodeXml($failMessage),
+    'userData' => array(
+    'userName' => fim_encodeXml($user2['userName']),
+    'userId' => (int) $user2['userId'],
+    'userGroup' => (int) $user2['userGroup'],
+    'socialGroups' => fim_encodeXml($user2['socialGroups']),
+    'startTag' => fim_encodeXml($user2['userFormatStart']),
+    'endTag' => fim_encodeXml($user2['userFormatEnd']),
+    'defaultFormatting' => array(
+      'color' => fim_encodeXml($user2['defaultColour']),
+      'highlight' => fim_encodeXml($user2['defaultHighlight']),
+      'fontface' => fim_encodeXml($user2['defaultFontface']),
+      'general' => (int) $user2['defaultGeneral']
+     ),
+     'favRooms' => $getuser['favRooms'],
+     'postCount' => $getuser['posts'],
+     'joinDate' => $getuser['joinDate'],
+     'joinDateFormatted' => fim_date(false,$getuser['joinDate']),
+     'userTitle' => $getuser['usertitle'],
+     'avatar' => $getuser['avatar'],
+    ),
+  ),
+);
+
+echo fim_outputXml($xmlData);
 
 mysqlClose();
 ?>

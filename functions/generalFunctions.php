@@ -637,9 +637,6 @@ function fim_outputXml($array,$level = 0) {
       elseif ($value === false) {
         $value = 'false';
       }
-      elseif ($value === null) {
-        $value = 'null';
-      }
 
       $data .= "$indent  $value\n";
     }

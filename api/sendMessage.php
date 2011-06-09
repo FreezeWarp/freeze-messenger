@@ -106,7 +106,7 @@ $xmlData = array(
       'userId' => (int) $user['userId'],
       'userName' => fim_encodeXml($user['userName']),
     ),
-    'sendData' => array(
+    'sentData' => array(
       'roomId' => (int) $_POST['roomId'],
       'message' => fim_encodeXml($_POST['message']),
     ),

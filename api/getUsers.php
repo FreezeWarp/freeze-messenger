@@ -48,6 +48,24 @@ switch ($_GET['order']) {
 
 
 
+
+$xmlData = array(
+  'getUsers' => array(
+    'activeUser' => array(
+      'userId' => (int) $user['userId'],
+      'userName' => fim_encodeXml($user['userName']),
+    ),
+    'sentData' => array(
+      'order' => fim_encodeXML($order),
+    ),
+    'errorcode' => fim_encodeXml($failCode),
+    'errortext' => fim_encodeXml($failMessage),
+    'users' => array(),
+  ),
+);
+
+
+
 $users = sqlArr("SELECT u.userId,
  u.userName,
  u.userFormatStart,
@@ -60,34 +78,19 @@ ORDER BY {$order}",'userId'); // Get all rooms
 
 if ($users) {
   foreach ($users AS $row) {
-    $userXML .= "    <user>
-      <userId>$row[userId]</userId>
-      <userName>" . fim_encodeXML($row['userName']) . "</userName>
-      <userGroup>" . fim_encodeXML($row['userGroup']) . "</userGroup>
-      <startTag>" . fim_encodeXML($row['userFormatStart']) . "</startTag>
-      <endTag>" . fim_encodeXML($row['userFormatEnd']) . "</endTag>
-    </user>";
+    $xmlData['getUsers']['users']['user ' . $row['userId']] = array(
+      'userId' => (int) $row['userId'],
+      'userName' => fim_encodeXML($row['userName']),
+      'userGroup' => (int) $row['userGroup'],
+      'socialGroups' => fim_encodeXML($row['socialGroups']),
+      'startTag' => fim_encodeXML($row['userFormatStart']),
+      'endTag' => fim_encodeXML($row['userFormatEnd']),
+    );
   }
 }
 
 
-echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
-<getRooms>
-  <activeUser>
-    <userId>$user[userId]</userId>
-    <userName>" . fim_encodeXML($user['userName']) . "</userName>
-  </activeUser>
-
-  <sentData>
-    <order>" . fim_encodeXML($order) . "</order>
-  </sentData>
-
-  <errorcode>$failCode</errorcode>
-  <errortext>$failMessage</errortext>
-  <users>
-    $userXML
-  </users>
-</getRooms>";
+echo fim_outputXml($xmlData);
 
 
 mysqlClose();

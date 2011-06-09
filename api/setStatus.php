@@ -18,13 +18,12 @@ $apiRequest = true;
 
 require_once('../global.php');
 require_once('../functions/parserFunctions.php');
-header('Content-type: text/xml');
 
 $statusType = fim_urldecode($_POST['statusType']); // typing, status
 $statusValue = fim_urldecode($_POST['statusValue']);
 
 $roomId = (int) $_POST['roomId'];
-$room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $roomId");
+$room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
 
 
 if (!$room) { // Bad room.
@@ -57,20 +56,22 @@ else {
 }
 
 
+$xmlData = array(
+  'setStatus' => array(
+    'activeUser' => array(
+      'userId' => (int) $user['userId'],
+      'userName' => fim_encodeXml($user['userName']),
+    ),
+    'sentData' => array(
+      'roomId' => (int) $_POST['roomId'],
+      'userId' => (int) $_POST['userId'],
+    ),
+    'errorcode' => fim_encodeXml($failCode),
+    'errortext' => fim_encodeXml($failMessage),
+  ),
+);
 
-echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
-<setStatus>
-  <activeUser>
-    <userId>$user[userId]</userId>
-    <userName>" . fim_encodeXml($user['userName']) . "</userName>
-  </activeUser>
-  <sentData>
-    <roomId>" . (int) $_POST['roomId'] . "</roomId>
-    <userId>" . (int) $_POST['userId'] . "</userId>
-  </sentData>
-  <errorcode>$failCode</errorcode>
-  <errortext>$failMessage</errortext>
-</fim_sendMessage>";
+echo fim_outputXml($xmlData);
 
 mysqlClose();
 ?>
