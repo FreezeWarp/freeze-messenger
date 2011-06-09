@@ -336,7 +336,7 @@ Now that the database has been successfully installed, we must generate the conf
   break;
 
   case 'dev':
-  $mysqli = new mysqli('localhost','a','a','phpbb');
+  $mysqli = new mysqli('localhost','a','a','phpbb3');
   $mysqli->query("SET NAMES utf8");
   $prefix = 'fim_';
   $table = "{$prefix}templates";

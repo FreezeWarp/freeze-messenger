@@ -203,8 +203,75 @@ $(document).ready(function() {
 
 var roomRef = new Object;
 var roomList = new Array;
+var userRef = new Object;
+var userList = new Array;
+var groupRef = new Object;
+var groupList = new Array;
 
 
+
+$.ajax({
+  url: 'api/getUsers.php',
+  type: 'GET',
+  timeout: 2400,
+  cache: false,
+  success: function(xml) {
+    var data = '';
+
+    $(xml).find('user').each(function() {
+      var userName = $(this).find('userName').text();
+      var userId = $(this).find('userId').text();
+
+      userRef[userName] = userId;
+      userList.push(userName);
+    });
+  },
+  error: function() {
+    alert('User Not Obtained - Problems May Occur');
+  },
+});
+
+
+$.ajax({
+  url: 'api/getRooms.php?permLevel=post',
+  timeout: 5000,
+  type: 'GET',
+  async: true,
+  cache: false,
+  success: function(xml) {
+    $(xml).find('room').each(function() {
+      var roomName = $(this).find('roomName').text();
+      var roomId = $(this).find('roomId').text();
+
+      roomRef[roomName] = roomId;
+      roomList.push(roomName);
+    });
+  },
+  error: function() {
+    alert('Rooms Not Obtained - Problems May Occur');
+  }
+});
+
+
+$.ajax({
+  url: 'api/getGroups.php',
+  timeout: 5000,
+  type: 'GET',
+  async: true,
+  cache: false,
+  success: function(xml) {
+    $(xml).find('group').each(function() {
+      var groupName = $(this).find('groupName').text();
+      var groupId = $(this).find('groupId').text();
+
+      groupRef[groupName] = groupId;
+      groupList.push(groupName);
+    });
+  },
+  error: function() {
+    alert('Groups Not Obtained - Problems May Occur');
+  }
+});
 
 
 
@@ -348,29 +415,45 @@ function archive(idMax,idMin) {
 }
 
 
-function addRoom() {
-  var val = $("#watchRoomBridge").val();
-  var id = roomRef[val];
+function addEntry(type,source) {
+  var val = $("#" + type + "Bridge").val();
+  switch(type) {
+    case 'watchRooms':
+    var id = roomRef[val];
+    var type2 = 'Room';
+    break;
+
+    case 'moderators':
+    case 'allowedUsers':
+    var id = userRef[val];
+    var type2 = 'User';
+    break;
+
+    case 'allowedGroups':
+    var id = groupRef[val];
+    var type2 = 'Group';
+    break;
+  }
 
   if (!id) {
-    alert('Room does not exist.');
+    alert(type2 + ' does not exist.');
   }
   else {
-    var currentRooms = $("#watchRooms").val().split(",");
+    var currentRooms = $("#" + type).val().split(",");
     currentRooms.push(id);
 
-    $("#watchRoomsList").append("<span id=\"watchRoomSubList" + id + "\">" + val + " (<a href=\"javascript:void(0);\" onclick=\"removeRoom(" + id + ");\">x</a>), </span>");
-    $("#watchRooms").val(currentRooms.toString(","));
+    $("#" + type + "List").append("<span id=\"" + type + "SubList" + id + "\">" + val + " (<a href=\"javascript:void(0);\" onclick=\"removeEntry('" + type + "'," + id + ");\">×</a>), </span>");
+    $("#" + type).val(currentRooms.toString(","));
   }
 }
 
 
-function removeRoom(id) {
-  $("#watchRoomSubList" + id).fadeOut(500, function() {
+function removeEntry(type,id) {
+  $("#" + type + "SubList" + id).fadeOut(500, function() {
     $(this).remove();
   });
 
-  var currentRooms = $("#watchRooms").val().split(",");
+  var currentRooms = $("#" + type).val().split(",");
 
   for (var i = 0; i < currentRooms.length; i++) {
     if(currentRooms[i] == id) {
@@ -379,7 +462,7 @@ function removeRoom(id) {
     }
   }
 
-  $("#watchRooms").val(currentRooms.toString(","));
+  $("#" + type).val(currentRooms.toString(","));
 }
 
 
@@ -557,6 +640,16 @@ $(document).ready(function() {
 
   $('a#createRoom').click(function() {
     ajaxTabDialogue('template.php?template=editRoomForm&action=create','createRoomDialogue',1000,false,function() {
+      $("#moderatorsBridge").autocomplete({
+        source: userList
+      });
+      $("#allowedUsersBridge").autocomplete({
+        source: userList
+      });
+      $("#allowedGroupsBridge").autocomplete({
+        source: groupList
+      });
+
       $("#editRoomForm").submit(function() {
         var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
 
@@ -585,6 +678,15 @@ $(document).ready(function() {
 
   $('a#editRoom').click(function() {
     ajaxTabDialogue('template.php?template=editRoomForm','editRoomDialogue',1000,false,function() {
+      $("#moderatorsBridge").autocomplete({
+        source: userList
+      });
+      $("#allowedUsersBridge").autocomplete({
+        source: userList
+      });
+      $("#allowedGroupsBridge").autocomplete({
+        source: groupList
+      });
 
       $.ajax({
         url: 'api/getRoomInfo.php?roomId=' + roomId,
@@ -759,31 +861,11 @@ $(document).ready(function() {
     ajaxTabDialogue('template.php?template=userSettingsForm','changeSettingsDialogue',1000,function() {
       $('.colorpicker').empty().remove();
     }, function() {
-      $.ajax({
-        url: 'api/getRooms.php?permLevel=post',
-        timeout: 5000,
-        type: 'GET',
-        async: true,
-        cache: false,
-        success: function(xml) {
-          $(xml).find('room').each(function() {
-            var roomName = $(this).find('roomName').text();
-            var roomId = $(this).find('roomId').text();
-
-            roomRef[roomName] = roomId;
-            roomList.push(roomName);
-          });
-
-          $("#defaultRoom").autocomplete({
-            source: roomList
-          });
-          $("#watchRoomBridge").autocomplete({
-            source: roomList
-          });
-        },
-        error: function() {
-          alert('Rooms not obtained.');
-        }
+      $("#defaultRoom").autocomplete({
+        source: roomList
+      });
+      $("#watchRoomBridge").autocomplete({
+        source: roomList
       });
 
       $.ajax({

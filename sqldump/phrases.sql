@@ -169,4 +169,7 @@ INSERT INTO `{prefix}phrases` (`id`, `name`, `text_en`, `text_jp`) VALUES
 (178, 'loginSubmit', 'Launch', '行く'),
 (179, 'loginReset', 'Reset', 'リセット'),
 (180, 'loginGuestLinks', 'Guest Links', ''),
-(181, 'templateAdminTemplates', 'Modify Templates', '');
+(181, 'templateAdminTemplates', 'Modify Templates', '')
+(182, 'editRoomModeratorsCurrent', 'Current Moderators:', '')
+(183, 'editRoomModeratorsCurrent', 'Currently Allowed Users:', '')
+(184, 'editRoomModeratorsCurrent', 'Currently Allowed Groups:', '');
