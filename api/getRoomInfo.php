@@ -20,9 +20,9 @@ require_once('../global.php');
 header('Content-type: text/plain');
 
 $roomId = (int) $_GET['roomId'];
-$room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId",'id'); // Get all rooms
+$room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId"); // Get all rooms
 
-if (fim_hasPermission($room,$user) {
+if (fim_hasPermission($room,$user,'view')) {
 
 }
 else {
@@ -43,7 +43,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
   <errorcode>$failCode</errorcode>
   <errortext>$failMessage</errortext>
   <roomData>
-    <roomId>$room[id]</roomId>
+    <roomId>$room[roomId]</roomId>
     <roomName>$room[name]</roomName>
     <roomTopic>$room[topic]</roomTopic>
     <roomOwner>$room[owner]</roomOwner>

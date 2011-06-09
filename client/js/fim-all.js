@@ -33,13 +33,15 @@ function unxml(data) {
 function quickDialogue(content,title,id,width) {
   var dialog = $('<div style="display: none;" id="' + id +  '">' + content + '</div>').appendTo('body');
 
+  $('button').button();
+
   var windowWidth = document.documentElement.clientWidth;
   if (width > windowWidth || !width) {
     width = windowWidth;
   }
 
   dialog.dialog({
-    width: (width ? width: 600),
+    width: (width ? width : 600),
     title: title,
     hide: "puff",
     modal: true,
@@ -388,6 +390,8 @@ $(document).ready(function() {
 
   roomId = $('body').attr('data-roomId');
 
+  $('#uploadFileForm').attr('action','uploadFile.php?roomId=' + roomId);
+
   $('#menu').accordion({
     autoHeight: false,
     navigation: true,
@@ -575,24 +579,50 @@ $(document).ready(function() {
 
   $('a#editRoom').click(function() {
     ajaxTabDialogue('template.php?template=editRoomForm','editRoomDialogue',1000,false,function() {
-      $("#editRoomForm").submit(function() {
-        var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
 
-        $.post("api/moderate.php",data + '&action=editRoom',function(xml) {
-          var errorCode = $(xml).find('errorcode').text();
-          var errorMessage = $(xml).find('errortext').text();
-          var newRoomId = parseInt($(xml).find('insertId').text());
+      $.ajax({
+        url: 'api/getRoomInfo.php?roomId=' + roomId,
+        type: 'GET',
+        timeout: 2400,
+        cache: false,
+        success: function(xml) {
+          var data = '';
 
-          if (errorCode) {
-            alert('An error has occured: ' + errorMessage);
-          }
-          else {
-            ajaxDialogue('template.php?template=editRoomSuccess&insertId=' + newRoomId,'Room Edited!','editRoomResultDialogue',600);
-            $("#editRoomDialogue").dialog('close');
-          }
-        }); // Send the form data via AJAX.
-        return false; // Don't submit the form.
+          var roomName = $(xml).find('roomName').text();
+          var roomId = $(xml).find('roomId').text();
+          var allowedUsers = $(xml).find('allowedUsers').text();
+          var allowedGroups = $(xml).find('allowedGroups').text();
+          var moderators = $(xml).find('moderators').text();
+
+          $('#name').val(roomName);
+          $('#allowedUsers').val(allowedUsers);
+          $('#allowedGroups').val(allowedGroups);
+          $('#moderators').val(moderators);
+
+        },
+        error: function() {
+          alert('Error');
+        },
       });
+    });
+
+    $("#editRoomForm").submit(function() {
+      var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
+
+      $.post("api/moderate.php",data + '&action=editRoom',function(xml) {
+        var errorCode = $(xml).find('errorcode').text();
+        var errorMessage = $(xml).find('errortext').text();
+        var newRoomId = parseInt($(xml).find('insertId').text());
+
+        if (errorCode) {
+          alert('An error has occured: ' + errorMessage);
+        }
+        else {
+          ajaxDialogue('template.php?template=editRoomSuccess&insertId=' + newRoomId,'Room Edited!','editRoomResultDialogue',600);
+          $("#editRoomDialogue").dialog('close');
+        }
+      }); // Send the form data via AJAX.
+      return false; // Don't submit the form.
     });
   });
 

@@ -22,7 +22,7 @@ $title = 'Upload File';
 
 require_once('global.php');
 
-$room = intval($_GET['room'] ?: $_POST['room']);
+$room = intval($_GET['roomId'] ?: $_POST['roomId']);
 $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $room");
 
 eval(hook('uploadStart'));
