@@ -51,7 +51,10 @@ if ($getuser) {
     case 'phpbb':
     if ($where) {
       $getuserf = sqlArr("SELECT u.user_id, u.userName, u.user_posts AS posts, u.user_colour, u.user_avatar FROM {$sqlUserTable} AS u WHERE {$sqlUserTableCols[userId]} = $getuser[userId]");
-      $getuserf['avatar'] = $forumUrl . '/download/file.php?avatar=' . $getuserf['user_avatar'];
+
+      if ($getuserf['user_avatar']) {
+        $getuserf['avatar'] = $forumUrl . '/download/file.php?avatar=' . $getuserf['user_avatar'];
+      }
     }
     break;
   }
@@ -73,8 +76,8 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
     <userId>$getuser[userId]</userId>
     <userName>$getuser[userName]</userName>
     <settings>$getuser[settings]</settings>
-    <startTag>$getuser[userFormatStart]</startTag>
-    <endTag>$getuser[userFormatEnd]</endTag>
+    <startTag>" . fim_encodeXml($getuser['userFormatStart']) . "</startTag>
+    <endTag>" . fim_encodeXml($getuser['userFormatEnd']) . "</endTag>
     <favRooms>$getuser[favRooms]</favRooms>
     <postCount>$getuserf[posts]</postCount>
     <joinDate>$getuserf[joinDate]</joinDate>

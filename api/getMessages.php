@@ -160,18 +160,20 @@ VALUES ($user[userId],$room[roomId],CURRENT_TIMESTAMP()) ON DUPLICATE KEY UPDATE
   $messageFields
   m.iv AS iv,
   m.salt AS salt,
-  u2.userId AS userId,
-  u2.userName AS userName,
-  u2.userGroup AS userGroup,
-  u2.defaultColour AS defaultColour,
-  u2.defaultFontface AS defaultFontface,
-  u2.defaultHighlight AS defaultHighlight,
-  u2.defaultFormatting AS defaultFormatting
+  u.userId AS userId,
+  u.userName AS userName,
+  u.userGroup AS userGroup,
+  u.userFormatStart,
+  u.userFormatEnd,
+  u.defaultColour AS defaultColour,
+  u.defaultFontface AS defaultFontface,
+  u.defaultHighlight AS defaultHighlight,
+  u.defaultFormatting AS defaultFormatting
 FROM {$sqlPrefix}messages AS m,
-  {$sqlPrefix}users AS u2
+  {$sqlPrefix}users AS u
 WHERE m.roomId = $room[roomId]
   AND m.deleted != true
-  AND m.userId = u2.userId
+  AND m.userId = u.userId
 $whereClause
 ORDER BY messageId $order
 LIMIT $messageLimit";
