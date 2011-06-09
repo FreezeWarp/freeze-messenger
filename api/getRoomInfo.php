@@ -17,7 +17,6 @@
 $apiRequest = true;
 
 require_once('../global.php');
-header('Content-type: text/plain');
 
 $roomId = (int) $_GET['roomId'];
 $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId"); // Get all rooms
@@ -31,30 +30,33 @@ else {
   $errorcode = 'noperm';
 }
 
-echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
-<getRoomInfo>
-  <activeUser>
-    <userId>$user[userId]</userId>
-    <userName>" . fim_encodeXml($user['userName']) . "</userName>
-  </activeUser>
-  <sentData>
-    <roomId>$roomId</roomId>
-  </sentData>
-  <errorcode>$failCode</errorcode>
-  <errortext>$failMessage</errortext>
-  <roomData>
-    <roomId>$room[roomId]</roomId>
-    <roomName>$room[name]</roomName>
-    <roomTopic>$room[topic]</roomTopic>
-    <roomOwner>$room[owner]</roomOwner>
-    <allowedUsers>$room[allowedUsers]</allowedUsers>
-    <allowedGroups>$room[allowedGroups]</allowedGroups>
-    <moderators>$room[moderators]</moderators>
-    <options>$room[options]</options>
-    <bbcode>$room[bbcode]</bbcode>
-  </userData>
-</getRoomInfo>";
+$xmlData = array(
+  'getRoomInfo' => array(
+    'activeUser' => array(
+      'userId' => (int) $user['userId'],
+      'userName' => fim_encodeXml($user['userName']),
+    ),
+    'sentData' => array(
+      'roomId' => (int) $roomId,
+    ),
+    'errorcode' => $failCode,
+    'errormessage' => $failMessage,
+    'roomData' => array(
+      'roomId' => $room['roomId'],
+      'roomName' => $room['roomName'],
+      'roomTopic' => $room['roomTopic'],
+      'roomOwner' => $room['roomOwner'],
+      'allowedUsers' => $room['allowedUsers'],
+      'allowedGroups' => $room['allowedGroups'],
+      'moderators' => $room['moderators'],
+      'options' => $room['options'],
+      'bbocde' => $room['bbcode'],
+    ),
+  ),
+);
 
+
+echo fim_outputXml($xmlData);
 
 mysqlClose();
 ?>

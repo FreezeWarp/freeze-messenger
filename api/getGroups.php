@@ -17,7 +17,6 @@
 $apiRequest = true;
 
 require_once('../global.php');
-header('Content-type: text/xml');
 
 $xmlData = array(
   'getGroups' => array(

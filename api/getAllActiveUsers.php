@@ -17,7 +17,6 @@
 $apiRequest = true;
 
 require_once('../global.php');
-header('Content-type: text/xml');
 
 $time = (int) ($_GET['time'] ? $_GET['time'] : time());
 $onlineThreshold = (int) ($_GET['onlineThreshold'] ? $_GET['onlineThreshold'] : $onlineThreshold);

@@ -16,7 +16,6 @@
 
 $apiRequest = true;
 require_once('../global.php');
-header('Content-type: text/xml');
 
 if ($longPolling) {
   set_time_limit(0);
@@ -70,17 +69,17 @@ else {
 $xmlData = array(
   'getMessages' => array(
     'activeUser' => array(
-      'userId' => $user['userId'],
+      'userId' => (int) $user['userId'],
       'userName' => fim_encodeXml($user['userName']),
     ),
     'sentData' => array(
-      'rooms' => $rooms,
-      'roomsList' => $roomsXML,
-      'newestMessage' => $newestMessage,
-      'oldestMessage' => $oldestMessage,
-      'newestDate' => $newestDate,
-      'oldestDate' => $oldestDate,
-      'messageLimit' => $messageLimit,
+      'rooms' => fim_encodeXml($rooms),
+      'roomsList' => array(),
+      'newestMessage' => (int) $newestMessage,
+      'oldestMessage' => (int) $oldestMessage,
+      'newestDate' => (int) $newestDate,
+      'oldestDate' => (int) $oldestDate,
+      'messageLimit' => (int) $messageLimit,
     ),
     'errorcode' => $failCode,
     'errormessage' => $failMessage,

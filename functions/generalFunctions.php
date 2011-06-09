@@ -613,6 +613,8 @@ function container($title,$content,$class = 'page') {
 }
 
 function fim_outputXml($array,$level = 0) {
+  header('Content-type: text/xml');
+
   $indent = '';
 
   for($i = 0;$i<=$level;$i++) {

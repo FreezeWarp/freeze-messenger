@@ -17,7 +17,6 @@
 $apiRequest = true;
 
 require_once('../global.php');
-header('Content-type: text/xml');
 
 $rooms = $_GET['rooms'];
 $roomsArray = explode(',',$rooms);
