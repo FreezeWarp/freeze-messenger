@@ -49,7 +49,7 @@ ORDER BY f.category,
 if ($fonts) {
   foreach ($fonts AS $font) {
     $xmlData['getFonts']['fonts']['font ' . $font['fontId']] = array(
-      'userId' => (int) $font['fontId'],
+      'fontId' => (int) $font['fontId'],
       'fontName' => fim_encodeXml($font['fontName']),
       'fontGroup' => fim_encodeXml($font['fontGroup']),
       'fontData' => fim_encodeXml($font['fontData']),

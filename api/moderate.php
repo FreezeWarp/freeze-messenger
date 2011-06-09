@@ -159,24 +159,24 @@ switch ($action) {
     'audioDing' => 8192,
   );
 
-  if ($user['adminPrivs']['modUsers'] || $user['userId'] == $userId) {
-    if (isset($_POST['settingsOfficialAjax'])) {
+  if ($user['adminPrivs']['modUsers'] || $user['userId'] == $userId) { echo 5;
+    if (isset($_POST['settingsOfficialAjax'])) { echo 6;
       foreach ($settingsOfficialAjaxIndex AS $name => $val) {
         if ($_POST['settingsOfficialAjax_' . $name]) {
-          if ($userData['settingsOfficialAjax'] & $val) {}
-          else {
+          if ($userData['settingsOfficialAjax'] & $val) { echo 1;}
+          else { echo 2;
             $userData['settingsOfficialAjax'] += $val;
 
             $xmlData['moderate']['response']['modified']['value ' . $name] = $name;
           }
         }
-        else {
+        else { echo 3;
           if ($userData['settingsOfficialAjax'] & $val) {
             $userData['settingsOfficialAjax'] -= $val;
 
             $xmlData['moderate']['response']['modified']['value ' . $name] = $name;
           }
-          else {}
+          else { echo 4;}
         }
       }
     }
@@ -269,8 +269,8 @@ switch ($action) {
   }
 
 
-  if (isset($_POST['settingsOfficialAjax_theme'])) {
-    $theme = (int) $_POST['settingsOfficialAjax_theme'];
+  if (isset($_POST['defaultColor'])) {
+    $color = mysqlEscape($_POST['defaultColor']);
 
     $userData['theme'] = $theme;
 
