@@ -971,6 +971,8 @@ $(document).ready(function() {
         $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
         $(".colorpicker").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
 
+        window.reload();
+
         return false; // Don't submit the form.
       });
     });

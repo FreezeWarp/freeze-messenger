@@ -56,6 +56,9 @@ $styles = array(
   4 => 'cupertino',
   5 => 'dark-hive',
   6 => 'start',
+  7 => 'vader',
+  8 => 'trontastic',
+  9 => 'humanity',
 );
 $style = $styles[$theme];
 

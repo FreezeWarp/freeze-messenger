@@ -18,6 +18,7 @@ body {
   margin-bottom: 20px;
   padding: 0px;
   overflow-x: hidden;
+  font-family: Ubuntu, Calibria, Arial;
 }
 
 @font-face {
