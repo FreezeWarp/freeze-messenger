@@ -173,12 +173,12 @@ function contextMenuParse() {
           var userId = $(xml).find('userData > userId').text();
           var startTag = unxml($(xml).find('userData > startTag').text());
           var endTag = unxml($(xml).find('userData > endTag').text());
-          var userTitle = $(xml).find('userData > userTitle').text();
-          var posts = $(xml).find('userData > postCount').text();
+          var userTitle = $(xml).find('userData > userTitle').text().trim();
+          var posts = parseInt($(xml).find('userData > postCount').text());
           var joinDate = $(xml).find('userData > joinDateFormatted').text();
-          var avatar = $(xml).find('userData > avatar').text();
+          var avatar = $(xml).find('userData > avatar').text().trim();
 
-          content.html('<div style="width: 400px;"><img alt="" src="' + avatar + '" style="float: left;" /><span class="userName" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>' + (userTitle ? '<br />' + userTitle : '') + '<br /><em>Posts</em>: ' + posts + '<br /><em>Member Since</em>: ' + joinDate + '</div>');
+          content.html('<div style="width: 400px;">' + (avatar.length > 0 ? '<img alt="" src="' + avatar + '" style="float: left;" />' : '') + '<span class="userName" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>' + (userTitle.length > 0 ? '<br />' + userTitle : '') + '<br /><em>Posts</em>: ' + posts + '<br /><em>Member Since</em>: ' + joinDate + '</div>');
         });
       }
     }

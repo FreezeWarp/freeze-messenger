@@ -43,14 +43,14 @@ if ($getuser) {
   switch ($loginMethod) {
     case 'vbulletin':
     if ($where) {
-      $getuserf = sqlArr("SELECT * FROM {$sqlUserTable} AS u WHERE {$sqlUserTableCols[userId]} = $getuser[userId]");
+      $getuserf = sqlArr("SELECT joindate AS joinDate FROM {$sqlUserTable} AS u WHERE {$sqlUserTableCols[userId]} = $getuser[userId]");
       $getuserf['avatar'] = $forumUrl . '/image.php?u=' . $getuserf['userId'];
     }
     break;
 
     case 'phpbb':
     if ($where) {
-      $getuserf = sqlArr("SELECT u.user_id, u.userName, u.user_posts AS posts, u.user_colour, u.user_avatar FROM {$sqlUserTable} AS u WHERE {$sqlUserTableCols[userId]} = $getuser[userId]");
+      $getuserf = sqlArr("SELECT u.user_posts AS posts, u.user_colour, u.user_avatar, u.user_regdate AS joinDate FROM {$sqlUserTable} AS u WHERE {$sqlUserTableCols[userId]} = $getuser[userId]");
 
       if ($getuserf['user_avatar']) {
         $getuserf['avatar'] = $forumUrl . '/download/file.php?avatar=' . $getuserf['user_avatar'];
@@ -75,24 +75,24 @@ $xmlData = array(
     'errorcode' => fim_encodeXml($failCode),
     'errortext' => fim_encodeXml($failMessage),
     'userData' => array(
-    'userName' => fim_encodeXml($user2['userName']),
-    'userId' => (int) $user2['userId'],
-    'userGroup' => (int) $user2['userGroup'],
-    'socialGroups' => fim_encodeXml($user2['socialGroups']),
-    'startTag' => fim_encodeXml($user2['userFormatStart']),
-    'endTag' => fim_encodeXml($user2['userFormatEnd']),
-    'defaultFormatting' => array(
-      'color' => fim_encodeXml($user2['defaultColour']),
-      'highlight' => fim_encodeXml($user2['defaultHighlight']),
-      'fontface' => fim_encodeXml($user2['defaultFontface']),
-      'general' => (int) $user2['defaultGeneral']
-     ),
-     'favRooms' => $getuser['favRooms'],
-     'postCount' => $getuser['posts'],
-     'joinDate' => $getuser['joinDate'],
-     'joinDateFormatted' => fim_date(false,$getuser['joinDate']),
-     'userTitle' => $getuser['usertitle'],
-     'avatar' => $getuser['avatar'],
+      'userName' => fim_encodeXml($getuser['userName']),
+      'userId' => (int) $getuser['userId'],
+      'userGroup' => (int) $getuser['userGroup'],
+      'socialGroups' => fim_encodeXml($getuser['socialGroups']),
+      'startTag' => fim_encodeXml($getuser['userFormatStart']),
+      'endTag' => fim_encodeXml($getuser['userFormatEnd']),
+      'defaultFormatting' => array(
+        'color' => fim_encodeXml($getuser['defaultColour']),
+        'highlight' => fim_encodeXml($getuser['defaultHighlight']),
+        'fontface' => fim_encodeXml($getuser['defaultFontface']),
+        'general' => (int) $getuser['defaultGeneral']
+      ),
+      'favRooms' => fim_encodeXml($getuser['favRooms']),
+      'postCount' => (int) $getuserf['posts'],
+      'joinDate' => (int) $getuserf['joinDate'],
+      'joinDateFormatted' => fim_encodeXml(fim_date(false,$getuserf['joinDate'])),
+      'userTitle' => fim_encodeXml($getuserf['usertitle']),
+      'avatar' => fim_encodeXml($getuserf['avatar']),
     ),
   ),
 );
