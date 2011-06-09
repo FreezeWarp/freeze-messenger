@@ -45,6 +45,11 @@ function quickDialogue(content,title,id,width,cF,oF) {
     title: title,
     hide: "puff",
     modal: true,
+    open: function() {
+      if (oF) {
+        oF();
+      }
+    },
     close: function() {
       $('#' + id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
 
@@ -219,8 +224,8 @@ $.ajax({
     var data = '';
 
     $(xml).find('user').each(function() {
-      var userName = $(this).find('userName').text();
-      var userId = $(this).find('userId').text();
+      var userName = unxml($(this).find('userName').text().trim());
+      var userId = parseInt($(this).find('userId').text().trim());
 
       userRef[userName] = userId;
       userList.push(userName);
@@ -240,8 +245,8 @@ $.ajax({
   cache: false,
   success: function(xml) {
     $(xml).find('room').each(function() {
-      var roomName = $(this).find('roomName').text();
-      var roomId = $(this).find('roomId').text();
+      var roomName = unxml($(this).find('roomName').text().trim());
+      var roomId = parseInt($(this).find('roomId').text());
 
       roomRef[roomName] = roomId;
       roomList.push(roomName);
@@ -261,8 +266,8 @@ $.ajax({
   cache: false,
   success: function(xml) {
     $(xml).find('group').each(function() {
-      var groupName = $(this).find('groupName').text();
-      var groupId = $(this).find('groupId').text();
+      var groupName = unxml($(this).find('groupName').text());
+      var groupId = parseInt($(this).find('groupId').text());
 
       groupRef[groupName] = groupId;
       groupList.push(groupName);
@@ -546,7 +551,7 @@ $(document).ready(function() {
 
     $("#kickUserForm").submit(function() {
       data = $("#kickUserForm").serialize(); // Serialize the form data for AJAX.
-      $.post("content/kick.php?phase=2",data,function(html) {
+      $.post("api/moderate.php",data + '&action=kick',function(html) {
         quickDialogue(html,'','kickUserResultDialogue');
       }); // Send the form data via AJAX.
 
@@ -562,7 +567,22 @@ $(document).ready(function() {
   /*** Private Room ***/
 
   $('a#privateRoom').click(function() {
-    quickDialogue('<form action="index.php?action=privateRoom&phase=2" method="post" id="privateRoomForm"><label for="userName">Username</label>: <input type="text" name="userName" id="userName" /><br /><small><span style="margin-left: 10px;">The other user you would like to talk to.</span></small><br /><br />  <input type="submit" value="Go" /></form>','Enter Private Room','privateRoomDialogue',1000);
+    quickDialogue('<form action="index.php?action=privateRoom&phase=2" method="post" id="privateRoomForm"><label for="userName">Username</label>: <input type="text" name="userName" id="userName" /><br /><small><span style="margin-left: 10px;">The other user you would like to talk to.</span></small><br /><br />  <input type="submit" value="Go" /></form>','Enter Private Room','privateRoomDialogue',1000,false,function() {
+      $('#userName').autocomplete({
+        source: userList
+      });
+
+      $("#privateRoomForm").submit(function() {
+        data = $("#privateRoomForm").serialize(); // Serialize the form data for AJAX.
+        $.post("api/createRoom.php",data,function(html) {
+          quickDialogue(html,'','privateRoomResultDialogue');
+        }); // Send the form data via AJAX.
+
+        $("#privateRoomDialogue").dialog('close');
+
+        return false; // Don't submit the form.
+      });
+    });
   });
 
 

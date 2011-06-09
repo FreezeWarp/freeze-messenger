@@ -17,7 +17,6 @@
 $apiRequest = true;
 
 require_once('../global.php');
-header('Content-type: text/xml');
 
 $usersArray = explode(',',$_GET['rooms']);
 foreach ($usersArray AS &$v) {

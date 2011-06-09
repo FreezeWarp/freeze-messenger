@@ -107,10 +107,10 @@ if ($rooms2) {
       'favorite' => (bool) $fav,
       'options' => (int) $room['options'],
       'optionDefinitions' => array(
-        'official' => (bool) ($row['options'] & 1),
-        'deleted' => (bool) ($row['options'] & 4),
-        'hidden' => (bool) ($row['options'] & 8),
-        'privateIm' => (bool) ($row['options'] & 16),
+        'official' => (bool) ($room['options'] & 1),
+        'deleted' => (bool) ($room['options'] & 4),
+        'hidden' => (bool) ($room['options'] & 8),
+        'privateIm' => (bool) ($room['options'] & 16),
       ),
       'bbcode' => $room['bbcode'],
     );

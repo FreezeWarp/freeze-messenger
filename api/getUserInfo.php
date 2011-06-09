@@ -18,7 +18,6 @@
 $apiRequest = true;
 
 require_once('../global.php');
-header('Content-type: text/xml');
 
 $userId = (int) $_GET['userId'];
 $userName = mysqlEscape(fim_urldecode($_GET['userName']));
