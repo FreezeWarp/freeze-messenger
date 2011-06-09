@@ -90,7 +90,7 @@ elseif (strpos($message, '/topic') === 0) {
   $title = mysqlEscape(fimParse_censorParse($title)); // Parses the sources for MySQL and UTF8. We will also censor, but no BBcode.
 
   fim_sendMessage('/me changed the topic to ' . $title,$user,$room,'topic');
-  mysqlQuery("UPDATE {$sqlPrefix}rooms SET title = '$title' WHERE roomId = $room[id]");
+  mysqlQuery("UPDATE {$sqlPrefix}rooms SET topic = '$title' WHERE roomId = $room[id]");
 }
 else {
   if (strpos($message, '/me') === 0) { $flag = 'me'; }

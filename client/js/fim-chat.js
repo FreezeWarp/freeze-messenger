@@ -256,9 +256,9 @@ function getSuccess(xml) {
 
     $('#refreshStatus').html('<img src="images/dialog-ok.png" alt="Apply" class="standard" />');
 
-    var newTopic = $(xml).find('topic').html();
+    var newTopic = $(xml).find('roomData > roomTopic').text();
     if (newTopic) {
-      $('#topic' + roomId).html(newTopic);
+      $('#topic').html(newTopic);
     }
 
 

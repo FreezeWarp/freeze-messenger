@@ -234,7 +234,7 @@ else {
               'roomData' => array(
                 'roomId' => (int) $room['roomId'],
                 'roomName' => fim_encodeXml($room['name']),
-                'roomTopic' => fim_encodeXml($room['title']),
+                'roomTopic' => fim_encodeXml($room['topic']),
               ),
               'messageData' => array(
                 'messageId' => (int) $message['messageId'],
