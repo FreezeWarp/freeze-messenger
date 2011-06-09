@@ -140,8 +140,15 @@ else {
 
         if (!$noPing) {
           mysqlQuery("INSERT INTO {$sqlPrefix}ping
-(userId,roomId,time)
-VALUES ($user[userId],$room[roomId],CURRENT_TIMESTAMP()) ON DUPLICATE KEY UPDATE time = CURRENT_TIMESTAMP()");
+            (userId,
+            roomId,
+            time)
+          VALUES
+            ($user[userId],
+            $room[roomId],
+            CURRENT_TIMESTAMP())
+          ON DUPLICATE KEY
+            UPDATE time = CURRENT_TIMESTAMP()");
         }
 
         switch ($fields) {
@@ -156,47 +163,47 @@ VALUES ($user[userId],$room[roomId],CURRENT_TIMESTAMP()) ON DUPLICATE KEY UPDATE
 
         if ($archive) {
           $messageQuery = "SELECT m.messageId,
-  UNIX_TIMESTAMP(m.time) AS time,
-  $messageFields
-  m.iv AS iv,
-  m.salt AS salt,
-  u.userId AS userId,
-  u.userName AS userName,
-  u.userGroup AS userGroup,
-  u.userFormatStart,
-  u.userFormatEnd,
-  u.defaultColour AS defaultColour,
-  u.defaultFontface AS defaultFontface,
-  u.defaultHighlight AS defaultHighlight,
-  u.defaultFormatting AS defaultFormatting
-FROM {$sqlPrefix}messages AS m,
-  {$sqlPrefix}users AS u
-WHERE m.roomId = $room[roomId]
-  AND m.deleted != true
-  AND m.userId = u.userId
-$whereClause
-ORDER BY messageId $order
-LIMIT $messageLimit";
+            UNIX_TIMESTAMP(m.time) AS time,
+            $messageFields
+            m.iv AS iv,
+            m.salt AS salt,
+            u.userId AS userId,
+            u.userName AS userName,
+            u.userGroup AS userGroup,
+            u.userFormatStart,
+            u.userFormatEnd,
+            u.defaultColour AS defaultColour,
+            u.defaultFontface AS defaultFontface,
+            u.defaultHighlight AS defaultHighlight,
+            u.defaultFormatting AS defaultFormatting
+          FROM {$sqlPrefix}messages AS m,
+            {$sqlPrefix}users AS u
+          WHERE m.roomId = $room[roomId]
+            AND m.deleted != true
+            AND m.userId = u.userId
+          $whereClause
+          ORDER BY messageId $order
+          LIMIT $messageLimit";
         }
         else {
           $messageQuery = "SELECT m.messageId AS messageId,
-  UNIX_TIMESTAMP(m.time) AS time,
-  $messageFields
-  m.userId AS userId,
-  m.userName AS userName,
-  m.userGroup AS userGroup,
-  m.userFormatStart AS userFormatStart,
-  m.userFormatEnd AS userFormatEnd,
-  m.flag AS flag,
-  m.defaultColour AS defaultColour,
-  m.defaultFontface AS defaultFontface,
-  m.defaultHighlight AS defaultHighlight,
-  m.defaultFormatting AS defaultFormatting
-FROM {$sqlPrefix}messagesCached AS m
-WHERE m.roomId = $room[roomId]
-$whereClause
-ORDER BY messageId $order
-LIMIT $messageLimit";
+            UNIX_TIMESTAMP(m.time) AS time,
+            $messageFields
+            m.userId AS userId,
+            m.userName AS userName,
+            m.userGroup AS userGroup,
+            m.userFormatStart AS userFormatStart,
+            m.userFormatEnd AS userFormatEnd,
+            m.flag AS flag,
+            m.defaultColour AS defaultColour,
+            m.defaultFontface AS defaultFontface,
+            m.defaultHighlight AS defaultHighlight,
+            m.defaultFormatting AS defaultFormatting
+          FROM {$sqlPrefix}messagesCached AS m
+          WHERE m.roomId = $room[roomId]
+          $whereClause
+          ORDER BY messageId $order
+          LIMIT $messageLimit";
         }
 
         if ($longPolling) {
@@ -224,67 +231,67 @@ LIMIT $messageLimit";
               break;
             }
 
-            $messageXML .=  "    <message>
-      <roomData>
-        <roomId>$room[id]</roomId>
-        <roomName>$room[name]</roomName>
-        <roomTopic>" . fim_encodeXml($room['title']) . "</roomTopic>
-      </roomData>
-      <messageData>
-        <messageId>$message[messageId]</messageId>
-        <messageTime>$message[time]</messageTime>
-        <messageTimeFormatted>" . fim_date(false,$message['time']) . "</messageTimeFormatted>
-        <messageText>
-          <appText>$message[apiText]</appText>
-          <htmlText>$message[htmlText]</htmlText>
-        </messageText>
-        <flags>$message[flag]</flags>
-      </messageData>
-      <userData>
-        <userName>$message[userName]</userName>
-        <userId>$message[userId]</userId>
-        <userGroup>$message[userGroup]</userGroup>
-        <startTag>" . fim_encodeXml($message['userFormatStart']) . "</startTag>
-        <endTag>" . fim_encodeXml($message['userFormatEnd']) . "</endTag>
-        <defaultFormatting>
-          <color>$message[defaultColour]</color>
-          <highlight>$message[defaultHighlight]</highlight>
-          <fontface>$message[defaultFontface]</fontface>
-          <general>$message[defaultFormatting]</general>
-        </defaultFormatting>
-      </userData>
-    </message>";
+            $xmlData['getMessages']['messages']['message ' . $message['messageId']] = array(
+              'roomData' => array(
+                'roomId' => (int) $room['roomId'],
+                'roomName' => fim_encodeXml($room['name']),
+                'roomTopic' => fim_encodeXml($room['title']),
+              ),
+              'messageData' => array(
+                'messageId' => (int) $message['messageId'],
+                'messageTime' => (int) $message['time'],
+                'messageTimeFormatted' => fim_date(false,$message['time']),
+                'messageText' => array(
+                  'apiText' => fim_encodeXml($message['apiText']),
+                  'htmlText' => fim_encodeXml($message['htmlText']),
+                ),
+                'flags' => fim_encodeXml($message['flag']),
+              ),
+              'userData' => array(
+                'userName' => fim_encodeXml($message['userName']),
+                'userId' => (int) $message['userId'],
+                'userGroup' => (int) $message['userGroup'],
+                'socialGroups' => fim_encodeXml($message['socialGroups']),
+                'startTag' => fim_encodeXml($message['userFormatStart']),
+                'endTag' => fim_encodeXml($message['userFormatEnd']),
+                'defaultFormatting' => array(
+                  'color' => fim_encodeXml($message['defaultColour']),
+                  'highlight' => fim_encodeXml($message['defaultHighlight']),
+                  'fontface' => fim_encodeXml($message['defaultFontface']),
+                  'general' => (int) $message['defaultGeneral']
+                 ),
+              ),
+            );
           }
         }
 
         ///* Process Active Users
         if ($activeUsers) {
           $ausers = sqlArr("SELECT u.{$sqlUserTableCols[userName]} AS userName,
-  u.userId AS userId,
-  u.userGroup AS userGroup,
-  u.userFormatStart AS userFormatStart,
-  u.userFormatEnd AS userFormatEnd,
-  p.status,
-  p.typing
-  $cols
-FROM {$sqlPrefix}ping AS p,
-  {$sqlPrefix}users AS u
-{$join}
-WHERE p.roomId IN ($room[roomId])
-  AND p.userId = u.userId
-  AND UNIX_TIMESTAMP(p.time) >= (UNIX_TIMESTAMP(NOW()) - $onlineThreshold)
-ORDER BY u.userName
-LIMIT 500",'userId');
+            u.userId AS userId,
+            u.userGroup AS userGroup,
+            u.userFormatStart AS userFormatStart,
+            u.userFormatEnd AS userFormatEnd,
+            p.status,
+            p.typing
+            $cols
+          FROM {$sqlPrefix}ping AS p,
+            {$sqlPrefix}users AS u
+          {$join}
+          WHERE p.roomId IN ($room[roomId])
+            AND p.userId = u.userId
+            AND UNIX_TIMESTAMP(p.time) >= (UNIX_TIMESTAMP(NOW()) - $onlineThreshold)
+          ORDER BY u.userName
+          LIMIT 500",'userId');
 
           if ($ausers) {
             foreach ($ausers AS $auser) {
-              $ausersXML .= "      <user>
-                <userName>$auser[userName]</userName>
-                <userId>$auser[userId]</userId>
-                <userGroup>$auser[userGroup]</userGroup>
-                <startTag>" . fim_encodeXml($auser['userFormatStart']) . "</startTag>
-                <endTag>" . fim_encodeXml($auser['userFormatEnd']) . "</endTag>
-              </user>";
+              $xmlData['getMessages']['activeUsers']['user ' . $auser['userId']] = array(
+                'userId' => (int) $auser['userId'],
+                'userName' => fim_encodeXml($auser['userName']),
+                'userGroup' => (int) $auser['userGroup'],
+                'socialGroups' => fim_encodeXml($auser['socialGroups']),
+              );
             }
           }
         }
@@ -310,12 +317,11 @@ WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.roomId IN ($user[watchRo
         continue;
       }
 
-      $roomName = fim_encodeXml($message['name']);
-      $watchRoomsXML .= "    <room>
-      <roomId>$message[id]</roomId>
-      <roomName>$roomName</roomName>
-      <lastMessageTime>$message[lastMessageTimestamp]</lastMessageTime>
-    </room>";
+      $xmlData['getMessages']['watchRooms']['room ' . $message['roomId']] = array(
+        'roomId' => (int) $message['roomId'],
+        'roomName' => fim_encodeXml($message['roomName']),
+        'lastMessageTime' => (int) $message['lastMessageTimestamp'],
+      );
     }
   }
 }
@@ -324,42 +330,8 @@ WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.roomId IN ($user[watchRo
 
 
 ///* Output *///
-echo "
-<getMessages>
-  <activeUser>
-    <userId>$user[userId]</userId>
-    <userName>" . fim_encodeXml($user['userName']) . "</userName>
-  </activeUser>
 
-  <sentData>
-    <rooms>$rooms</rooms>
-    <roomsList>
-    $roomsXML
-    </roomsList>
-    <newestMessage>$newestMessage</newestMessage>
-    <oldestMessage>$oldestMessage</oldestMessage>
-    <newestDate>$newestDate</newestDate>
-    <oldestDate>$oldestDate</oldestDate>
-  </sentData>
-
-  <errorcode>$failCode</errorcode>
-  <errortext>$failMessage</errortext>
-
-  <messages>
-    $messageXML
-  </messages>
-
-  <watchRooms>
-    $watchRoomsXML
-  </watchRooms>
-
-  <activeUsers>
-    $ausersXML
-  </activeUsers>
-</getMessages>";
-
-
-//fim_outputXml($xmlData);
+echo fim_outputXml($xmlData);
 
 mysqlClose();
 ?>

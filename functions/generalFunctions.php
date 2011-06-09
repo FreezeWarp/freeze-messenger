@@ -555,7 +555,7 @@ function iifl($condition,$true,$false,$eval) {
   global $templates, $phrases, $title, $user, $room, $message, $template, $templateVars; // Lame approach.
   if($eval) {
     eval($eval);
-  }// echo '<<' . $condition;
+  }
 
   if (eval('return ' . $condition . ';')) {
     return $true;
@@ -612,22 +612,40 @@ function container($title,$content,$class = 'page') {
 ";
 }
 
-function fim_outputXml($array) {
-  foreach ($array AS $key => $value) {
-    echo "<$key>";
-    if (is_array($value)) {
-      echo fim_outputXml($value);
-    }
-    else {
-      echo $value;
-    }
-    echo "</$key>";
+function fim_outputXml($array,$level = 0) {
+  $indent = '';
+
+  for($i = 0;$i<=$level;$i++) {
+    $indent .= '  ';
   }
 
-  echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
+  foreach ($array AS $key => $value) {
+    $key = explode(' ',$key);
+    $key = $key[0];
+
+    $data .= "$indent<$key>\n";
+
+    if (is_array($value)) {
+      $data .= fim_outputXml($value,$level + 1);
+    }
+    else {
+      $data .= "$indent  $value\n";
+    }
+
+    $data .= "$indent</$key>\n";
+  }
+
+  if ($level == 0) {
+    return "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <!DOCTYPE html [
   <!ENTITY nbsp \" \">
-]>";
+]>
+
+$data";
+  }
+  else {
+    return $data;
+  }
 }
 
 function fim_htmlCompact($data) {
