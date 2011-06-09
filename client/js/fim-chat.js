@@ -26,6 +26,7 @@ var notify = true;
 var timeout = (window.longPolling ? 1000000 : 2400);
 var first = true;
 var favicon = $('#favicon').attr('href');
+var messageIndex = new Array;
 
 
 /***** Misc Functions *****/
@@ -328,6 +329,14 @@ function getSuccess(xml) {
 
       if (messageId > lastMessage) {
         lastMessage = messageId;
+      }
+
+      messageIndex.push(lastMessage);
+
+      if (messageIndex.length == 100) {
+        var messageOut = messageIndex[0];
+        $('#message' + messageOut).remove();
+        messageIndex = messageIndex.slice(1,99);
       }
     });
 

@@ -61,7 +61,7 @@ elseif (!$room && !$_POST['method'] && $enableGeneralUploads) { // General uploa
 
   }
 
-  $uploads = sqlArr("SELECT v.fileid, f.mime, f.size, f.name, f.rating, v.md5hash FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS v WHERE f.userId = $user[userId] AND f.id = v.fileid",'fileid');
+  $uploads = sqlArr("SELECT v.fileId, f.mime, f.size, f.name, f.rating, v.md5hash FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS v WHERE f.userId = $user[userId] AND f.id = v.fileId",'fileId');
   foreach ($uploads AS $file) {
     $file['size'] = formatSize($file['size']);
     $fileEntry = "    <tr>
@@ -323,7 +323,7 @@ elseif ($_POST['method']) { // Actual upload; process.
             $errorMessage .= $phrases['uploadErrorFileContents'];
           }
           else {
-            $prefile = sqlArr("SELECT v.id, f.fileid FROM {$sqlPrefix}fileVersions AS v, {$sqlPrefix}files AS f WHERE v.md5hash = '$md5hash' AND v.fileid = f.id AND f.userId = $user[userId]");
+            $prefile = sqlArr("SELECT v.id, v.fileId FROM {$sqlPrefix}fileVersions AS v, {$sqlPrefix}files AS f WHERE v.md5hash = '$md5hash' AND v.fileId = f.id AND f.userId = $user[userId]");
 
             if ($prefile) {
               $webLocation = "{$installUrl}file.php?hash={$prefile[md5hash]}";
@@ -337,9 +337,9 @@ elseif ($_POST['method']) { // Actual upload; process.
             }
             else {
               mysqlQuery("INSERT INTO {$sqlPrefix}files (userId, name, size, mime) VALUES ($user[userId], '$name', '$size', '$mime')");
-              $fileid = mysql_insert_id();
+              $fileId = mysql_insert_id();
 
-              mysqlQuery("INSERT INTO {$sqlPrefix}fileVersions (fileid, md5hash, salt, iv, contents) VALUES ($fileid, '$md5hash', '$saltNum', '$iv', '$contentsEncrypted')");
+              mysqlQuery("INSERT INTO {$sqlPrefix}fileVersions (fileId, md5hash, salt, iv, contents) VALUES ($fileId, '$md5hash', '$saltNum', '$iv', '$contentsEncrypted')");
 
               $webLocation = "{$installUrl}file.php?hash={$md5hash}";
 
