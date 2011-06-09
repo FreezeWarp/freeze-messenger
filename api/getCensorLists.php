@@ -20,7 +20,23 @@ require_once('../global.php');
 header('Content-type: text/xml');
 
 
-$room = (int) $_GET['roomid'];
+$roomId = (int) $_GET['roomid'];
+
+
+$xmlData = array(
+  'getCensorLists' => array(
+    'activeUser' => array(
+      'userId' => (int) $user['userId'],
+      'userName' => fim_encodeXml($user['userName']),
+    ),
+    'sentData' => array(
+      'roomId' => (int) $roomId,
+    ),
+    'errorcode' => fim_encodeXml($failCode),
+    'errormessage' => fim_encodeXml($failMessage),
+    'lists' => array(),
+  ),
+);
 
 
 $censorLists = sqlArr("SELECT c.id AS listId,
@@ -37,34 +53,17 @@ ORDER BY c.name
 
 if ($censorLists) {
   foreach ($censorLists AS $list) {
-    $listXML .= "    <list>
-      <listId>$list[listId]</listId>
-      <listName>" . fim_encodeXml($list['listName']) . "</listName>
-      <listType>" . fim_encodeXml($list['listType']) . "</listType>
-      <listOptions>$list[listOptions]</listOptions>
-    </list>";
+    $xmlData['getCensorLists']['lists']['list ' . $list['listId']] = array(
+      'listId' => (int) $list['listId'],
+      'listName' => fim_encodeXml($list['listName']),
+      'listType' => fim_encodeXml($list['listType']),
+      'listOptions' => (int) $list['listOptions'],
+    );
   }
 }
 
 
-echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
-<getFonts>
-  <activeUser>
-    <userId>$user[userId]</userId>
-    <userName>" . fim_encodeXml($user['userName']) . "</userName>
-  </activeUser>
-
-  <sentData>
-  </sentData>
-
-  <errorcode>$failCode</errorcode>
-  <errortext>$failMessage</errortext>
-
-  <lists>
-    $listXML
-  </lists>
-</getFonts>";
-
+echo fim_outputXml($xmlData);
 
 mysqlClose();
 ?>
