@@ -19,6 +19,19 @@ $apiRequest = true;
 require_once('../global.php');
 header('Content-type: text/xml');
 
+$xmlData = array(
+  'getGroups' => array(
+    'activeUser' => array(
+      'userId' => (int) $user['userId'],
+      'userName' => fim_encodeXml($user['userName']),
+    ),
+    'sentData' => array(),
+    'errorcode' => fim_encodeXml($failCode),
+    'errormessage' => fim_encodeXml($failMessage),
+    'groups' => array(),
+  ),
+);
+
 
 $groups = sqlArr("SELECT $sqlUserGroupTableCols[groupId] AS groupId,
   $sqlUserGroupTableCols[groupName] AS groupName
@@ -46,31 +59,15 @@ if ($groups) {
       break;
     }
 
-    $groupXML .= "    <group>
-      <groupId>$group[groupId]</groupId>
-      <groupName>" . fim_encodeXml($group['groupName']) . "</groupName>
-    </group>";
+    $xmlData['getGroups']['groups']['group ' . $group['groupId']] = array(
+      'groupId' => (int) $group['groupId'],
+      'groupName' => fim_encodeXml($group['groupName']),
+    );
   }
 }
 
 
-echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
-<getFonts>
-  <activeUser>
-    <userId>$user[userId]</userId>
-    <userName>" . fim_encodeXml($user['userName']) . "</userName>
-  </activeUser>
-
-  <sentData>
-  </sentData>
-
-  <errorcode>$failCode</errorcode>
-  <errortext>$failMessage</errortext>
-
-  <groups>
-    $groupXML
-  </groups>
-</getFonts>";
+echo fim_outputXml($xmlData);
 
 
 mysqlClose();
