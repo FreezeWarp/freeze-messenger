@@ -334,8 +334,8 @@ switch ($action) {
     $failCode = 'nokickuser';
     $failMessage = 'The user specified may not be kicked.';
 
-    require_once('parserFunctions.php');
-    fim_sendMessage('/me fought the law and the law won.',$user['userId'],$room['id']);
+    require_once('../functions/parserFunctions.php');
+    fim_sendMessage('/me fought the law and the law won.',$user,$room);
   }
   elseif (!fim_hasPermission($room,$user,'moderate')) {
     $failCode = 'nopermission';
@@ -344,9 +344,9 @@ switch ($action) {
   else {
     modLog('kick',"$user2[userId],$room[roomId]");
 
-    mysqlQuery("INSERT INTO {$sqlPrefix}kick (userId, kickerId, length, room) VALUES ($user2[userId], $user[userId], $time, $room[rooId])");
+    mysqlQuery("INSERT INTO {$sqlPrefix}kick (userId, kickerId, length, room) VALUES ($user2[userId], $user[userId], $time, $room[roomId])");
 
-    require_once('parserFunctions.php');
+    require_once('../functions/parserFunctions.php');
     fim_sendMessage('/me kicked ' . $user2['userName'],$user,$room);
 
     $xmlData['moderate']['response']['success'] = true;
@@ -377,6 +377,7 @@ switch ($action) {
 
     mysqlQuery("DELETE FROM {$sqlPrefix}kick WHERE userId = $user2[userId] AND room = $room[id]");
 
+    require_once('../functions/parserFunctions.php');
     fim_sendMessage('/me unkicked ' . $user2['userName'],$user,$room);
 
     $xmlData['moderate']['response']['success'] = true;

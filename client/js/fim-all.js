@@ -551,7 +551,7 @@ $(document).ready(function() {
       }
     });
 
-    $("#kickUserForm").submit(function() { alert(1);
+    $("#kickUserForm").submit(function() {
       data = $("#kickUserForm").serialize(); // Serialize the form data for AJAX.
       $.post("api/moderate.php",data + '&action=kickUser',function(xml) {
         var status = $(xml).find('errorcode').text().trim();
@@ -559,7 +559,7 @@ $(document).ready(function() {
 
         switch (status) {
           case '':
-          quickDialogue('The user has been kicked.','Error','error');
+          quickDialogue('The user has been kicked.','Success','success');
           $("#kickUserDialogue").dialog('close');
           break;
 

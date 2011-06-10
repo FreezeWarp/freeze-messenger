@@ -495,8 +495,13 @@ elseif ($valid) {
     'audioDing' => ($user['settingsOfficialAjax'] & 8192),
   );
 
+  if (in_array($user['userId'],$superUsers)) {
+    $user['adminPrivs'] = 65535;
+  }
+
   $user['adminDefs'] = array(
     'modPrivs' => ($user['adminPrivs'] & 1),
+    'modCore' => ($user['adminPrivs'] & 2),
     'modUsers' => ($user['adminPrivs'] & 16),
     'modImages' => ($user['adminPrivs'] & 64),
     'modCensorWords' => ($user['adminPrivs'] & 256),
