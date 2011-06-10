@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS `{prefix}messagesCached` (
   `userFormatEnd` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `defaultFormatting` int(10) NOT NULL,
   `defaultHighlight` varchar(20) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  `defaultColour` varchar(20) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `defaultColor` varchar(20) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `defaultFontface` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `htmlText` varchar(5000) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
