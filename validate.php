@@ -73,7 +73,8 @@ switch ($loginMethod) {
     'userGroup' => 'group_id', // The userGroup column of the user table in the login method used.
     'allGroups' => 'group_id',
     'timeZone' => 'user_timezone',
-    'colour' => 'user_colour',
+    'color' => 'user_colour',
+    'avatar' => 'user_avatar',
   );
   $sqlUserGroupTableCols = array(
     'groupId' => 'group_id',
@@ -100,6 +101,7 @@ switch ($loginMethod) {
     'userGroup' => 'userGroup', // The userGroup column of the user table in the login method used.
     'allGroups' => 'allGroups',
     'timeZone' => 'timeZone',
+    'avatar' => 'avatar',
   );
   $sqlUserGroupTableCols = array(
     'groupId' => 'groupId',
@@ -293,7 +295,8 @@ if ($valid) { // If the user is valid, process their preferrences.
       $user2['timeZone'] = $userCopy[$sqlUserTableCols['timeZone']];
       $user2['userGroup'] = $userCopy[$sqlUserTableCols['userGroup']];
       $user2['allGroups'] = $userCopy[$sqlUserTableCols['allGroups']];
-
+      $user2['color'] = $userCopy[$sqlUserTableCols['allGroups']];
+      $user2['avatar'] = $userCopy[$sqlUserTableCols['avatar']];
     }
 
     switch ($loginMethod) {
@@ -307,14 +310,17 @@ if ($valid) { // If the user is valid, process their preferrences.
 
       $user2['userFormatStart'] = $group[$sqlUserGroupTableCols['startTag']];
       $user2['userFormatEnd'] = $group[$sqlUserGroupTableCols['endTag']];
-
+      $user2['avatar'] = $forumUrl . '/image.php?u=' . $user2['userId'];
       break;
 
       case 'phpbb':
-      $user2['colour'] = $userCopy[$sqlUserTableCols['colour']];
+      $user2['color'] = $userCopy[$sqlUserTableCols['color']];
 
-      $user2['userFormatStart'] = "<span style=\"color: #$user2[colour]\">";
+      $user2['userFormatStart'] = "<span style=\"color: #$user2[color]\">";
       $user2['userFormatEnd'] = '</span>';
+      if ($user2['avatar']) {
+        $user2['avatar'] = $forumUrl . '/download/file.php?avatar=' . $user2['avatar'];
+      }
       break;
 
       default:
@@ -334,8 +340,10 @@ SET userId = ' . (int) $user2['userId'] . ',
   userGroup = ' . (int) $user2['userGroup'] . ',
   allGroups = "' . mysqlEscape($user2['allGroups']) . '",
   userFormatStart = "' . mysqlEscape($user2['userFormatStart']) . '",
+  userFormatEnd = "' . mysqlEscape($user2['userFormatEnd']) . '",
+  avatar = "' . mysqlEscape($user2['avatar']) . '",
   socialGroups = "' . mysqlEscape($socialGroups['groups']) . '",
-  userFormatEnd = "' . mysqlEscape($user2['userFormatEnd']) . '"'); // Create the new row
+  lastSync = NOW()'); // Create the new row
 
       $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
     }
@@ -350,6 +358,7 @@ SET userId = ' . (int) $user2['userId'] . ',
   allGroups = "' . mysqlEscape($user2['allGroups']) . '",
   userFormatStart = "' . mysqlEscape($user2['userFormatStart']) . '",
   userFormatEnd = "' . mysqlEscape($user2['userFormatEnd']) . '",
+  avatar = "' . mysqlEscape($user2['avatar']) . '",
   socialGroups = "' . mysqlEscape($socialGroups['groups']) . '",
   lastSync = NOW()'); // Create the new row
 
@@ -459,7 +468,7 @@ if ($api) {
     <messageFormatting>
       <standard>$user[defaultFormatting]</standard>
       <highlight>$user[defaultHighlight]</highlight>
-      <colour>$user[defaultColour]</colour>
+      <color>$user[defaultColor]</color>
       <font>$user[defaultFont]</font>
     </messageFormatting>
   </userdata>

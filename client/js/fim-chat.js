@@ -285,6 +285,7 @@ function getSuccess(xml) {
       var userId = parseInt($(this).find('userData > userId').text());
       var groupFormatStart = unxml($(this).find('userData > startTag').text());
       var groupFormatEnd = unxml($(this).find('userData > endTag').text());
+      var avatar = unxml($(this).find('userData > avatar').text());
 
       var styleColor = $(this).find('defaultFormatting > color').text();
       var styleHighlight = $(this).find('defaultFormatting > highlight').text();
@@ -308,7 +309,7 @@ function getSuccess(xml) {
 
 
       if (complex) {
-        var data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="' + userName + '" src="' + forumUrl + 'image.php?u=' + userId + '" style="max-width: 24px; max-height: 24px; padding-right: 3px;" class="userName userNameTable" data-userId="' + userId + '" /><span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
+        var data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="' + userName + '" src="' + avatar + '" style="max-width: 24px; max-height: 24px; padding-right: 3px;" class="userName userNameTable" data-userId="' + userId + '" /><span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
       }
       else {
         var data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';

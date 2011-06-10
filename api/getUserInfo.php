@@ -43,17 +43,12 @@ if ($getuser) {
     case 'vbulletin':
     if ($where) {
       $getuserf = sqlArr("SELECT joindate AS joinDate FROM {$sqlUserTable} AS u WHERE {$sqlUserTableCols[userId]} = $getuser[userId]");
-      $getuserf['avatar'] = $forumUrl . '/image.php?u=' . $getuserf['userId'];
     }
     break;
 
     case 'phpbb':
     if ($where) {
       $getuserf = sqlArr("SELECT u.user_posts AS posts, u.user_colour, u.user_avatar, u.user_regdate AS joinDate FROM {$sqlUserTable} AS u WHERE {$sqlUserTableCols[userId]} = $getuser[userId]");
-
-      if ($getuserf['user_avatar']) {
-        $getuserf['avatar'] = $forumUrl . '/download/file.php?avatar=' . $getuserf['user_avatar'];
-      }
     }
     break;
   }

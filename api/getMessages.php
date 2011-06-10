@@ -171,7 +171,7 @@ else {
             u.userGroup AS userGroup,
             u.userFormatStart,
             u.userFormatEnd,
-            u.defaultColour AS defaultColour,
+            u.defaultColor AS defaultColor,
             u.defaultFontface AS defaultFontface,
             u.defaultHighlight AS defaultHighlight,
             u.defaultFormatting AS defaultFormatting
@@ -194,7 +194,7 @@ else {
             m.userFormatStart AS userFormatStart,
             m.userFormatEnd AS userFormatEnd,
             m.flag AS flag,
-            m.defaultColour AS defaultColour,
+            m.defaultColor AS defaultColor,
             m.defaultFontface AS defaultFontface,
             m.defaultHighlight AS defaultHighlight,
             m.defaultFormatting AS defaultFormatting
@@ -250,11 +250,13 @@ else {
                 'userName' => fim_encodeXml($message['userName']),
                 'userId' => (int) $message['userId'],
                 'userGroup' => (int) $message['userGroup'],
+                'avatar' => fim_encodeXml($message['avatar']),
                 'socialGroups' => fim_encodeXml($message['socialGroups']),
                 'startTag' => fim_encodeXml($message['userFormatStart']),
                 'endTag' => fim_encodeXml($message['userFormatEnd']),
+                'avatar' => fim_encodeXml($message['userFormatEnd']),
                 'defaultFormatting' => array(
-                  'color' => fim_encodeXml($message['defaultColour']),
+                  'color' => fim_encodeXml($message['defaultColor']),
                   'highlight' => fim_encodeXml($message['defaultHighlight']),
                   'fontface' => fim_encodeXml($message['defaultFontface']),
                   'general' => (int) $message['defaultGeneral']
