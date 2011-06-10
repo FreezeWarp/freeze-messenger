@@ -72,6 +72,7 @@ $xmlData = array(
       'userName' => fim_encodeXml($getuser['userName']),
       'userId' => (int) $getuser['userId'],
       'userGroup' => (int) $getuser['userGroup'],
+      'avatar' => fim_encodeXml($getuser['avatar']),
       'socialGroups' => fim_encodeXml($getuser['socialGroups']),
       'startTag' => fim_encodeXml($getuser['userFormatStart']),
       'endTag' => fim_encodeXml($getuser['userFormatEnd']),
@@ -86,7 +87,6 @@ $xmlData = array(
       'joinDate' => (int) $getuserf['joinDate'],
       'joinDateFormatted' => fim_encodeXml(fim_date(false,$getuserf['joinDate'])),
       'userTitle' => fim_encodeXml($getuserf['usertitle']),
-      'avatar' => fim_encodeXml($getuserf['avatar']),
     ),
   ),
 );
