@@ -118,8 +118,8 @@ if ($rooms2) {
 }
 
 
-$xmlData['getRooms']['errorcode'] => fim_encodeXml($failCode),
-$xmlData['getRooms']['errortext'] => fim_encodeXml($failMessage),
+$xmlData['getRooms']['errorcode'] = fim_encodeXml($failCode);
+$xmlData['getRooms']['errortext'] = fim_encodeXml($failMessage);
 
 echo fim_outputXml($xmlData);
 

@@ -67,8 +67,8 @@ if ($groups) {
 
 
 
-$xmlData['moderate']['errorcode'] => fim_encodeXml($failCode),
-$xmlData['moderate']['errortext'] => fim_encodeXml($failMessage),
+$xmlData['moderate']['errorcode'] = fim_encodeXml($failCode);
+$xmlData['moderate']['errortext'] = fim_encodeXml($failMessage);
 
 echo fim_outputXml($xmlData);
 

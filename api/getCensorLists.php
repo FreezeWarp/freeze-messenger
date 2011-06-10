@@ -61,8 +61,8 @@ if ($censorLists) {
   }
 }
 
-$xmlData['getCensorLists']['errorcode'] => fim_encodeXml($failCode),
-$xmlData['getCensorLists']['errortext'] => fim_encodeXml($failMessage),
+$xmlData['getCensorLists']['errorcode'] = fim_encodeXml($failCode);
+$xmlData['getCensorLists']['errortext'] = fim_encodeXml($failMessage);
 
 
 echo fim_outputXml($xmlData);

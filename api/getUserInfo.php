@@ -91,8 +91,8 @@ $xmlData = array(
   ),
 );
 
-$xmlData['getUserInfo']['errorcode'] => fim_encodeXml($failCode),
-$xmlData['getUserInfo']['errortext'] => fim_encodeXml($failMessage),
+$xmlData['getUserInfo']['errorcode'] = fim_encodeXml($failCode);
+$xmlData['getUserInfo']['errortext'] = fim_encodeXml($failMessage);
 
 echo fim_outputXml($xmlData);
 

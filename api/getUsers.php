@@ -89,8 +89,8 @@ if ($users) {
 }
 
 
-$xmlData['getUsers']['errorcode'] => fim_encodeXml($failCode),
-$xmlData['getUsers']['errortext'] => fim_encodeXml($failMessage),
+$xmlData['getUsers']['errorcode'] = fim_encodeXml($failCode);
+$xmlData['getUsers']['errortext'] = fim_encodeXml($failMessage);
 
 echo fim_outputXml($xmlData);
 

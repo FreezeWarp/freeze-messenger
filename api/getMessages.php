@@ -336,8 +336,8 @@ WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.roomId IN ($user[watchRo
 ///* Output *///
 
 
-$xmlData['getMessages']['errorcode'] => fim_encodeXml($failCode),
-$xmlData['getMessages']['errortext'] => fim_encodeXml($failMessage),
+$xmlData['getMessages']['errorcode'] = fim_encodeXml($failCode);
+$xmlData['getMessages']['errortext'] = fim_encodeXml($failMessage);
 
 echo fim_outputXml($xmlData);
 

@@ -101,8 +101,8 @@ LIMIT $resultLimit
 
 
 
-$xmlData['getStats']['errorcode'] => fim_encodeXml($failCode),
-$xmlData['getStats']['errortext'] => fim_encodeXml($failMessage),
+$xmlData['getStats']['errorcode'] = fim_encodeXml($failCode);
+$xmlData['getStats']['errortext'] = fim_encodeXml($failMessage);
 
 echo fim_outputXml($xmlData);
 
