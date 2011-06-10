@@ -659,7 +659,9 @@ $data";
 
 function fim_htmlCompact($data) {
   $data = preg_replace('/\ {2,}/','',$data);
-  $data = preg_replace("/\n/",'',$data);
+  $data = preg_replace("/(\n|\n\r|\t|\r)/",'',$data);
+  $data = preg_replace("/\<\!-- (.+?) --\>/",'',$data);
+  $data = preg_replace("/\>(( )+?)\</",'><',$data);
   return $data;
 }
 

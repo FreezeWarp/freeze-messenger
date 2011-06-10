@@ -503,7 +503,6 @@ $(document).ready(function() {
     maxResults: 20   // *optional -- defined as 10 results by default
   });
 
-  windowResize();
 });
 
 
@@ -558,26 +557,6 @@ function updateVids(searchPhrase) {
 
 /***** Window Manipulation *****/
 
-function windowResize () {
-  var windowWidth = (window.innerWidth ? window.innerWidth : document.documentElement.clientWidth);
-  var windowHeight = (window.innerHeight ? window.innerHeight : document.documentElement.clientHeight);
-
-  switch (window.layout) {
-    default:
-    $('#messageList').css('height',(windowHeight - 230));
-    $('#messageList').css('max-width',((windowWidth - 10) * .75));
-  /* Body Padding: 10px
-   * Right Area Width: 75%
-   * "Enter Message" Table Padding: 10px
-   *** TD Padding: 2px (on Standard Styling)
-   * Message Input Container Padding : 3px (all padding-left)
-   * Left Button Width: 36px
-   * Message Input Text Area Padding: 6px */
-    $('#messageInput').css('width',(((windowWidth - 10) * .75) - 10 - 2 - 3 - 36 - 6 - 20));
-    break;
-  }
-}
-
 function windowBlur () {
   blur = true;
 }
@@ -588,6 +567,5 @@ function windowFocus() {
   $('#favicon').attr('href',favicon);
 }
 
-window.onresize = windowResize;
 window.onblur = windowBlur;
 window.onfocus = windowFocus;
