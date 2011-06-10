@@ -206,7 +206,7 @@ function fim_messageStyle($message) {
   global $enableDF, $user;
 
   if ($enableDF && (($user['settings'] & 512) == false) && !in_array($message['flag'],array('me','topic','kick'))) {
-    if ($message['defaultColour'] && $enableDF['colour']) $style .= "color: rgb($message[defaultColour]); ";
+    if ($message['defaultColor'] && $enableDF['colour']) $style .= "color: rgb($message[defaultColor]); ";
     if ($message['defaultFontface'] && $enableDF['font']) $style .= "font-family: $message[defaultFontface]; ";
     if ($message['defaultHighlight'] && $enableDF['highlight']) $style .= "background-color: rgb($message[defaultHighlight]); ";
     if ($message['defaultFormatting'] && $enableDF['general']) {
