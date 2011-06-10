@@ -169,14 +169,14 @@ function contextMenuParse() {
       if (thisid != $('#tooltext').attr('data-lastuserId')) {
         $('#tooltext').attr('data-lastuserId',thisid);
         $.get("api/getUserInfo.php?userId=" + thisid, function(xml) {
-          var userName = $(xml).find('userData > userName').text();
-          var userId = $(xml).find('userData > userId').text();
-          var startTag = unxml($(xml).find('userData > startTag').text());
-          var endTag = unxml($(xml).find('userData > endTag').text());
-          var userTitle = $(xml).find('userData > userTitle').text().trim();
-          var posts = parseInt($(xml).find('userData > postCount').text());
-          var joinDate = $(xml).find('userData > joinDateFormatted').text();
-          var avatar = $(xml).find('userData > avatar').text().trim();
+          var userName = unxml($(xml).find('userData > userName').text().trim());
+          var userId = parseInt($(xml).find('userData > userId').text().trim());
+          var startTag = unxml($(xml).find('userData > startTag').text().trim());
+          var endTag = unxml($(xml).find('userData > endTag').text().trim());
+          var userTitle = unxml($(xml).find('userData > userTitle').text().trim());
+          var posts = parseInt($(xml).find('userData > postCount').text().trim());
+          var joinDate = unxml($(xml).find('userData > joinDateFormatted').text().trim());
+          var avatar = unxml($(xml).find('userData > avatar').text().trim());
 
           content.html('<div style="width: 400px;">' + (avatar.length > 0 ? '<img alt="" src="' + avatar + '" style="float: left;" />' : '') + '<span class="userName" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>' + (userTitle.length > 0 ? '<br />' + userTitle : '') + '<br /><em>Posts</em>: ' + posts + '<br /><em>Member Since</em>: ' + joinDate + '</div>');
         });
@@ -261,11 +261,11 @@ function getSuccess(xml) {
     var activeUserHtml = new Array;
 
     $(xml).find('activeUsers > user').each(function() {
-     var userName = $(this).find('userName').text();
-     var userId = $(this).find('userId').text();
-     var userGroup = $(this).find('userGroup').text();
-     var startTag = unxml($(this).find('startTag').text());
-     var endTag = unxml($(this).find('endTag').text());
+     var userName = $(this).find('userName').text().trim();
+     var userId = $(this).find('userId').text().trim();
+     var userGroup = $(this).find('userGroup').text().trim();
+     var startTag = unxml($(this).find('startTag').text().trim());
+     var endTag = unxml($(this).find('endTag').text().trim());
 
      activeUserHtml.push('<span class="userName" data-userId="' + userId + '">' + startTag + '<span class="username">' + userName + '</span>' + endTag + '</span>');
     });
@@ -276,21 +276,21 @@ function getSuccess(xml) {
   if ($(xml).find('messages > message').length > 0) {
     $(xml).find('messages > message').each(function() {
 
-      var text = unxml($(this).find('htmlText').text());
-      var messageTime = $(this).find('messageTimeFormatted').text();
+      var text = unxml($(this).find('htmlText').text().trim());
+      var messageTime = unxml($(this).find('messageTimeFormatted').text().trim());
 
-      var messageId = parseInt($(this).find('messageId').text());
+      var messageId = parseInt($(this).find('messageId').text().trim());
 
-      var userName = $(this).find('userData > userName').text();
-      var userId = parseInt($(this).find('userData > userId').text());
-      var groupFormatStart = unxml($(this).find('userData > startTag').text());
-      var groupFormatEnd = unxml($(this).find('userData > endTag').text());
-      var avatar = unxml($(this).find('userData > avatar').text());
+      var userName = unxml($(this).find('userData > userName').text().trim());
+      var userId = parseInt($(this).find('userData > userId').text().trim());
+      var groupFormatStart = unxml($(this).find('userData > startTag').text().trim());
+      var groupFormatEnd = unxml($(this).find('userData > endTag').text().trim());
+      var avatar = unxml($(this).find('userData > avatar').text().trim());
 
-      var styleColor = $(this).find('defaultFormatting > color').text();
-      var styleHighlight = $(this).find('defaultFormatting > highlight').text();
-      var styleFontface = $(this).find('defaultFormatting > fontface').text();
-      var styleGeneral = parseInt($(this).find('defaultFormatting > general').text());
+      var styleColor = unxml($(this).find('defaultFormatting > color').text().trim());
+      var styleHighlight = unxml($(this).find('defaultFormatting > highlight').text().trim());
+      var styleFontface = unxml($(this).find('defaultFormatting > fontface').text().trim());
+      var styleGeneral = parseInt($(this).find('defaultFormatting > general').text().trim());
 
       var style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + styleFontface + ';';
 
@@ -395,8 +395,8 @@ function sendMessage(message,confirmed) {
     cache: false,
     timeout: 2500,
     success: function(xml) {
-      var status = $(xml).find('errorcode').text();
-      var emessage = $(xml).find('errormessage').text();
+      var status = $(xml).find('errorcode').text().trim();
+      var emessage = $(xml).find('errormessage').text().trim();
       switch (status) {
         case '':
         break;

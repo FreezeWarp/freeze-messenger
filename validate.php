@@ -319,7 +319,7 @@ if ($valid) { // If the user is valid, process their preferrences.
       $user2['userFormatStart'] = "<span style=\"color: #$user2[color]\">";
       $user2['userFormatEnd'] = '</span>';
       if ($user2['avatar']) {
-        $user2['avatar'] = $forumUrl . '/download/file.php?avatar=' . $user2['avatar'];
+        $user2['avatar'] = $forumUrl . 'download/file.php?avatar=' . $user2['avatar'];
       }
       break;
 
@@ -352,15 +352,15 @@ SET userId = ' . (int) $user2['userId'] . ',
     $socialGroups = sqlArr("SELECT GROUP_CONCAT($sqlMemberGroupTableCols[groupId] SEPARATOR ',') AS groups FROM {$sqlMemberGroupTable} WHERE {$sqlMemberGroupTableCols[userId]} = $user2[userId] AND $sqlMemberGroupTableCols[type] = '$sqlMemberGroupTableCols[validType]'");
 
       mysqlQuery('UPDATE ' . $sqlPrefix . 'users
-SET userId = ' . (int) $user2['userId'] . ',
-  userName = "' . mysqlEscape($user2['userName']) . '",
+SET userName = "' . mysqlEscape($user2['userName']) . '",
   userGroup = ' . (int) $user2['userGroup'] . ',
   allGroups = "' . mysqlEscape($user2['allGroups']) . '",
   userFormatStart = "' . mysqlEscape($user2['userFormatStart']) . '",
   userFormatEnd = "' . mysqlEscape($user2['userFormatEnd']) . '",
   avatar = "' . mysqlEscape($user2['avatar']) . '",
   socialGroups = "' . mysqlEscape($socialGroups['groups']) . '",
-  lastSync = NOW()'); // Create the new row
+  lastSync = NOW()
+WHERE userId = ' . (int) $user2['userId']); // Create the new row
 
       $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
     }
@@ -376,7 +376,7 @@ SET userId = ' . (int) $user2['userId'] . ',
     time,
     magicHash)
     VALUES ($user[userId],
-    " . (int) time() . ",
+    NOW(),
     '" . mysqlEscape($magicSessionHash) . "'
     )");
   }

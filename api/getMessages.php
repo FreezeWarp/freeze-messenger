@@ -171,6 +171,7 @@ else {
             u.userGroup AS userGroup,
             u.userFormatStart,
             u.userFormatEnd,
+            u.avatar,
             u.defaultColor AS defaultColor,
             u.defaultFontface AS defaultFontface,
             u.defaultHighlight AS defaultHighlight,
@@ -189,6 +190,7 @@ else {
             UNIX_TIMESTAMP(m.time) AS time,
             $messageFields
             m.userId AS userId,
+            m.avatar AS avatar,
             m.userName AS userName,
             m.userGroup AS userGroup,
             m.userFormatStart AS userFormatStart,
@@ -254,7 +256,6 @@ else {
                 'socialGroups' => fim_encodeXml($message['socialGroups']),
                 'startTag' => fim_encodeXml($message['userFormatStart']),
                 'endTag' => fim_encodeXml($message['userFormatEnd']),
-                'avatar' => fim_encodeXml($message['userFormatEnd']),
                 'defaultFormatting' => array(
                   'color' => fim_encodeXml($message['defaultColor']),
                   'highlight' => fim_encodeXml($message['defaultHighlight']),
