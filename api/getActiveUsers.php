@@ -110,6 +110,10 @@ $query",true);
   }
 }
 
+
+$xmlData['getActiveUsers']['errorcode'] => fim_encodeXml($failCode),
+$xmlData['getActiveUsers']['errortext'] => fim_encodeXml($failMessage),
+
 echo fim_outputXml($xmlData);
 
 mysqlClose();

@@ -551,10 +551,20 @@ $(document).ready(function() {
     $("#kickUserForm").submit(function() {
       data = $("#kickUserForm").serialize(); // Serialize the form data for AJAX.
       $.post("api/moderate.php",data + '&action=kick',function(html) {
+        var status = $(xml).find('errorcode').text().trim();
+        var emessage = $(xml).find('errormessage').text().trim();
+
+        switch (status) {
+          case '':
+          $("#kickUserDialogue").dialog('close');
+          break;
+
+          case 'badroom':
+          $('<div style="display: none;">A valid room was not provided.</div>').dialog({ title : 'Error'});
+          break;
+        }
         quickDialogue(html,'','kickUserResultDialogue');
       }); // Send the form data via AJAX.
-
-      $("#kickUserDialogue").dialog('close');
 
       return false; // Don't submit the form.
     });

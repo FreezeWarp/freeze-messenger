@@ -59,6 +59,10 @@ $xmlData = array(
 );
 
 
+$xmlData['getRoomInfo']['errorcode'] => fim_encodeXml($failCode),
+$xmlData['getRoomInfo']['errortext'] => fim_encodeXml($failMessage),
+
+
 echo fim_outputXml($xmlData);
 
 mysqlClose();

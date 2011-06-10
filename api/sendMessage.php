@@ -120,6 +120,8 @@ $xmlData = array(
   ),
 );
 
+
+
 echo fim_outputXml($xmlData);
 
 mysqlClose();

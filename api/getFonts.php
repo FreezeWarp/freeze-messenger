@@ -58,6 +58,10 @@ if ($fonts) {
 }
 
 
+$xmlData['getFonts']['errorcode'] => fim_encodeXml($failCode),
+$xmlData['getFonts']['errortext'] => fim_encodeXml($failMessage),
+
+
 echo fim_outputXml($xmlData);
 
 
