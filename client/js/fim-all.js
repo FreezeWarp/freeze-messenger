@@ -36,8 +36,11 @@ function quickDialogue(content,title,id,width,cF,oF) {
   $('button').button();
 
   var windowWidth = document.documentElement.clientWidth;
-  if (width > windowWidth || !width) {
+  if (width > windowWidth) {
     width = windowWidth;
+  }
+  else if (!width) {
+    width = 600;
   }
 
   dialog.dialog({
@@ -548,22 +551,34 @@ $(document).ready(function() {
       }
     });
 
-    $("#kickUserForm").submit(function() {
+    $("#kickUserForm").submit(function() { alert(1);
       data = $("#kickUserForm").serialize(); // Serialize the form data for AJAX.
-      $.post("api/moderate.php",data + '&action=kick',function(html) {
+      $.post("api/moderate.php",data + '&action=kickUser',function(xml) {
         var status = $(xml).find('errorcode').text().trim();
         var emessage = $(xml).find('errormessage').text().trim();
 
         switch (status) {
           case '':
+          quickDialogue('The user has been kicked.','Error','error');
           $("#kickUserDialogue").dialog('close');
           break;
 
+          case 'nopermission':
+          quickDialogue('You do not have permision to moderate this room.','Error','error');
+          break;
+
+          case 'nokickuser':
+          quickDialogue('That user may not be kicked!','Error','error');
+          break;
+
+          case 'baduser':
+          quickDialogue('The user specified does not exist.','Error','error');
+          break;
+
           case 'badroom':
-          $('<div style="display: none;">A valid room was not provided.</div>').dialog({ title : 'Error'});
+          quickDialogue('The room specified does not exist.','Error','error');
           break;
         }
-        quickDialogue(html,'','kickUserResultDialogue');
       }); // Send the form data via AJAX.
 
       return false; // Don't submit the form.

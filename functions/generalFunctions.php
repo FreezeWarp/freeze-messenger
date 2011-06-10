@@ -24,7 +24,7 @@ function fim_inArray($needle,$haystack) {
 }
 
 function fim_hasPermission($roomData,$userData,$type = 'post',$trans = false) { // The below permissions are very hierachle.
-  global $sqlPrefix, $banned;
+  global $sqlPrefix, $banned, $superUsers;
   static $isAdmin, $isModerator, $isAllowedUser, $isAllowedGroup, $isOwner, $isRoomDeleted;
 
   /* Make sure all presented data is correct. */
@@ -72,7 +72,8 @@ WHERE userId = $userData[userId] AND
     $isPrivateRoom = true;
   }
 
-  if ($userData['settings'] & 16) {
+  /* Is the user a super user? */
+  if (in_array($userData['userId'],$superUsers) || $userData['adminPrivs'] & 1) {
     $isAdmin = true;
   }
 
