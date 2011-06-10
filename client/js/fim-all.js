@@ -883,7 +883,7 @@ $(document).ready(function() {
       $("#defaultRoom").autocomplete({
         source: roomList
       });
-      $("#watchRoomBridge").autocomplete({
+      $("#watchRoomsBridge").autocomplete({
         source: roomList
       });
 
