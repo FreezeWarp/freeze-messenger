@@ -587,7 +587,7 @@ $(document).ready(function() {
 
 
 
-z
+
   /*** Private Room ***/
 
   $('a#privateRoom').click(function() {
