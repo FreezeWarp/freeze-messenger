@@ -444,44 +444,6 @@ $chatTemplate
         </form>
       </fieldset>
     </div>
-
-    <ul id="userMenu" class="contextMenu">
-      <li><a href="javascript:void(0);" data-action="private_im">Private IM</a></li>
-      <li><a href="javascript:void(0);" data-action="profile">View Profile</a></li>
-      {{if="$canModerate"}{<li><a href="javascript:void(0);" data-action="kick">Kick</a></li>}}
-      {{if="$user[''settings''] & 16"}{<li><a href="javascript:void(0);" data-action="ban">Ban</a></li>}}
-    </ul>
-
-    <ul id="messageMenu" class="contextMenu">
-      <li><a href="javascript:void(0);" data-action="link">Link To</a></li>
-      <li><a href="javascript:void(0);" data-action="delete">Delete</a></li>
-    </ul>
-
-    <ul id="messageMenuImage" class="contextMenu">
-      <li><a href="javascript:void(0);" data-action="url">Get URL</a></li>
-      <li><a href="javascript:void(0);" data-action="link">Link To</a></li>
-      <li><a href="javascript:void(0);" data-action="delete">Delete</a></li>
-    </ul>
-
-    <ul id="roomMenu" class="contextMenu">
-      <li><a href="javascript:void(0);" data-action="edit">Edit</a></li>
-      <li><a href="javascript:void(0);" data-action="delete">Delete</a></li>
-    </ul>
-
-    <div style="display: none;" id="kick">
-    <form action="/content/kick.php&phase=2" method="post" id="kickForm">
-      <label for="time">Time</label>: <input type="text" name="time" id="time" style="width: 50px;" />
-      <select name="interval">
-        <option value="1">Seconds</option>
-        <option value="60">Minutes</option>
-        <option value="3600">Hours</option>
-        <option value="86400">Days</option>
-        <option value="604800">Weeks</option>
-      </select><br /><br />
-
-      <button type="submit">Kick User</button><button type="reset">Reset</button><input type="hidden" name="room" value="$room[id]" />
-    </form>
-    </div>
   </div>
 </div>');
 

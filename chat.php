@@ -20,7 +20,6 @@ $reqPhrases = true;
 $reqHooks = true;
 
 require_once('global.php');
-require_once('functions/container.php');
 
 
 if (!$valid) {

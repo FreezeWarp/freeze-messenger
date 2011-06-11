@@ -55,13 +55,31 @@ function contextMenuParse() {
   },
   function(action, el) {
     var userId = $(el).attr('data-userId');
+    var userName = '';
+    var avatarUrl = '';
+    var profileUrl = '';
+
+    $.ajax({
+      url: 'api/getUserInfo.php?userId' = userId,
+      type: 'GET',
+      timeout: 2400,
+      cache: false,
+      success: function(xml) {
+        userName = unxml($(this).find('userName').text().trim());
+        avatarUrl = parseInt($(this).find('userId').text().trim());
+        profileUrl = parseInt($(this).find('userId').text().trim());
+      },
+      error: function() {
+        alert('User Not Obtained - Problems May Occur');
+      },
+    });
 
     switch(action) {
       case 'private_im':
       ajaxDialogue('content/privateRoom.php?phase=2&userId=' + userId,'Private IM','privateRoomDialogue',1000);
       break;
       case 'profile':
-      window.open(window.forumUrl + 'member.php?u=' + userId,'profile' + userId);
+      window.open(profileUrl + 'member.php?u=' + userId,'profile' + userId);
       break;
       case 'kick':
       ajaxDialogue('content/kick.php?userId=' + userId + '&roomId=' + $('body').attr('data-roomId'),'Kick User','kickUserDialogue',1000);
@@ -96,7 +114,7 @@ function contextMenuParse() {
       break;
 
       case 'link':
-      quickDialogue('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="http://2.vrim.victoryroad.net/archive.php?roomId=' + $('body').attr('data-roomId') + '&message=' + postid + '" />','Link to This Message','linkMessage');
+      quickDialogue('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + window.location.hostname + '/archive.php?roomId=' + $('body').attr('data-roomId') + '&message=' + postid + '" />','Link to This Message','linkMessage');
       break;
     }
   });
@@ -130,7 +148,7 @@ function contextMenuParse() {
       break;
 
       case 'link':
-      quickDialogue('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="http://2.vrim.victoryroad.net/archive.php?roomId=' + $('body').attr('data-roomId') + '&message=' + postid + '" />','Link to This Message','linkMessage');
+      quickDialogue('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="http://' + window.location.hostname + '/archive.php?roomId=' + $('body').attr('data-roomId') + '&message=' + postid + '" />','Link to This Message','linkMessage');
       break;
     }
   });

@@ -76,14 +76,22 @@ ORDER BY {$order}",'userId'); // Get all rooms
 
 
 if ($users) {
-  foreach ($users AS $row) {
-    $xmlData['getUsers']['users']['user ' . $row['userId']] = array(
-      'userId' => (int) $row['userId'],
-      'userName' => fim_encodeXML($row['userName']),
-      'userGroup' => (int) $row['userGroup'],
-      'socialGroups' => fim_encodeXML($row['socialGroups']),
-      'startTag' => fim_encodeXML($row['userFormatStart']),
-      'endTag' => fim_encodeXML($row['userFormatEnd']),
+  foreach ($users AS $userData) {
+    $xmlData['getUsers']['users']['user ' . $userData['userId']] = array(
+      'userName' => fim_encodeXml($userData['userName']),
+      'userId' => (int) $userData['userId'],
+      'userGroup' => (int) $userData['userGroup'],
+      'avatar' => fim_encodeXml($userData['avatar']),
+      'profile' => fim_encodeXml($userData['profile']),
+      'socialGroups' => fim_encodeXml($userData['socialGroups']),
+      'startTag' => fim_encodeXml($userData['userFormatStart']),
+      'endTag' => fim_encodeXml($userData['userFormatEnd']),
+      'defaultFormatting' => array(
+        'color' => fim_encodeXml($userData['defaultColor']),
+        'highlight' => fim_encodeXml($userData['defaultHighlight']),
+        'fontface' => fim_encodeXml($userData['defaultFontface']),
+        'general' => (int) $userData['defaultGeneral']
+      ),
     );
   }
 }

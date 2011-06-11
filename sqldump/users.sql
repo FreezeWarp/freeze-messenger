@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS `{prefix}users` (
   `userGroup` int(10) NOT NULL DEFAULT 1,
   `allGroups` varchar(1000) NOT NULL DEFAULT '1',
   `avatar` varchar(1000) NOT NULL,
+  `profile` varchar(1000) NOT NULL,
   `socialGroups` varchar(1000) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `userFormatStart` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `userFormatEnd` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,

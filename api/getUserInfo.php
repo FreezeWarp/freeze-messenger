@@ -73,6 +73,7 @@ $xmlData = array(
       'userId' => (int) $getuser['userId'],
       'userGroup' => (int) $getuser['userGroup'],
       'avatar' => fim_encodeXml($getuser['avatar']),
+      'profile' => fim_encodeXml($getuser['profile']),
       'socialGroups' => fim_encodeXml($getuser['socialGroups']),
       'startTag' => fim_encodeXml($getuser['userFormatStart']),
       'endTag' => fim_encodeXml($getuser['userFormatEnd']),

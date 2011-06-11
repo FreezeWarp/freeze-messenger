@@ -53,6 +53,10 @@ function mysqlQuery($query) {
 /* mysqlArray(mysql_resource($queryData))
  * return = array */
 function mysqlArray($queryData,$index = false) {
+  global $queryCounter;
+
+  $queryCounter++;
+
   if ($queryData !== false  && $queryData !== null) {
     if ($index) {
       while (false !== ($row = mysql_fetch_assoc($queryData))) {

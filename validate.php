@@ -305,6 +305,7 @@ if ($valid) { // If the user is valid, process their preferrences.
       $user2['userFormatStart'] = $group[$sqlUserGroupTableCols['startTag']];
       $user2['userFormatEnd'] = $group[$sqlUserGroupTableCols['endTag']];
       $user2['avatar'] = $forumUrl . '/image.php?u=' . $user2['userId'];
+      $user2['profile'] = $forumUrl . '/member.php?u=' . $user2['userId'];
       break;
 
       case 'phpbb':
@@ -315,6 +316,7 @@ if ($valid) { // If the user is valid, process their preferrences.
       if ($user2['avatar']) {
         $user2['avatar'] = $forumUrl . 'download/file.php?avatar=' . $user2['avatar'];
       }
+      $user2['profile'] = $forumUrl . 'memberlist.php?mode=viewprofile&u=' . $user2['userId'];
       break;
 
       default:
@@ -336,6 +338,7 @@ SET userId = ' . (int) $user2['userId'] . ',
   userFormatStart = "' . mysqlEscape($user2['userFormatStart']) . '",
   userFormatEnd = "' . mysqlEscape($user2['userFormatEnd']) . '",
   avatar = "' . mysqlEscape($user2['avatar']) . '",
+  profile = "' . mysqlEscape($user2['profile']) . '",
   socialGroups = "' . mysqlEscape($socialGroups['groups']) . '",
   lastSync = NOW()'); // Create the new row
 
@@ -352,6 +355,7 @@ SET userName = "' . mysqlEscape($user2['userName']) . '",
   userFormatStart = "' . mysqlEscape($user2['userFormatStart']) . '",
   userFormatEnd = "' . mysqlEscape($user2['userFormatEnd']) . '",
   avatar = "' . mysqlEscape($user2['avatar']) . '",
+  profile = "' . mysqlEscape($user2['profile']) . '",
   socialGroups = "' . mysqlEscape($socialGroups['groups']) . '",
   lastSync = NOW()
 WHERE userId = ' . (int) $user2['userId']); // Create the new row

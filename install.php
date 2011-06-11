@@ -20,15 +20,15 @@ switch ($_REQUEST['phase']) {
   <![endif]-->
 
   <!-- START Styles -->
-  <link rel="stylesheet" type="text/css" href="client/css/cupertino/jquery-ui-1.8.11.custom.css" media="screen" />
-  <link rel="stylesheet" type="text/css" href="client/css/cupertino/fim3.0.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="client/css/cupertino/jquery-ui-1.8.13.custom.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="client/css/cupertino/fim.css" media="screen" />
   <link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" media="screen" />
   <!-- END Styles -->
 
   <!-- START Scripts -->
   <script src="client/js/jquery-1.6.1.min.js" type="text/javascript"></script>
 
-  <script src="client/js/jquery-ui-1.8.11.custom.min.js" type="text/javascript"></script>
+  <script src="client/js/jquery-ui-1.8.13.custom.min.js" type="text/javascript"></script>
   <script src="client/js/jquery.plugins.05182011.min.js" type="text/javascript"></script>
   <script>
   function resize() {

@@ -29,7 +29,6 @@ if ($valid) {
   header('Location: chat.php');
 }
 
-require_once('functions/container.php');
 require_once('templateStart.php');
 
 if ($flag) {

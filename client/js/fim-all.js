@@ -500,6 +500,13 @@ $(document).ready(function() {
   $('button').button();
 
 
+  $('body').append('<ul id="userMenu" class="contextMenu"><li><a href="javascript:void(0);" data-action="private_im">Private IM</a></li><li><a href="javascript:void(0);" data-action="profile">View Profile</a></li><li><a href="javascript:void(0);" data-action="kick">Kick</a></li><li><a href="javascript:void(0);" data-action="ban">Ban</a></li></ul>');
+
+  $('body').append('<ul id="messageMenu" class="contextMenu"><li><a href="javascript:void(0);" data-action="link">Link To</a></li><li><a href="javascript:void(0);" data-action="delete">Delete</a></li></ul>');
+
+  $('body').append('<ul id="messageMenuImage" class="contextMenu"><li><a href="javascript:void(0);" data-action="url">Get URL</a></li><li><a href="javascript:void(0);" data-action="link">Link To</a></li><li><a href="javascript:void(0);" data-action="delete">Delete</a></li></ul>');
+
+  $('body').append('<ul id="roomMenu" class="contextMenu"><li><a href="javascript:void(0);" data-action="edit">Edit</a></li><li><a href="javascript:void(0);" data-action="delete">Delete</a></li></ul>');
 
 
   /*** Kick ***/
