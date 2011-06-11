@@ -41,22 +41,20 @@ switch ($loginMethod) {
     'userId' => 'userid', // The user ID column of the user table in the login method used.
     'userName' => 'username', // The userName column of the user table in the login method used.
     'userGroup' => 'displaygroupid', // The userGroup column of the user table in the login method used.
-    'allGroups' => 'membergroupids',
-    'timeZone' => 'timezoneoffset',
-    'options' => 'options',
+    'allGroups' => 'membergroupids', // All admin-defined groups the user is a part of.
+    'timeZone' => 'timezoneoffset', // Timezone offset
+    'options' => 'options', // Options bitfield for some rare uses.
   );
   $sqlUserGroupTableCols = array(
-    'groupId' => 'groupid',
-    'groupName' => 'name',
+    'groupId' => 'groupid', // Group ID
+    'groupName' => 'name', // Group Name
   );
   $sqlMemberGroupTableCols = array(
-    'groupId' => 'groupid',
-    'userId' => 'userid',
-    'type' => 'type',
-    'validType' => 'member',
+    'groupId' => 'groupid', // Social Group ID
+    'userId' => 'userid', // Social Group Member ID
+    'type' => 'type', // Social Group Type
+    'validType' => 'member', // Valid Social Group Type
   );
-
-  $parseGroups = true; // This still needed?
   break;
 
   case 'phpbb':
@@ -86,8 +84,6 @@ switch ($loginMethod) {
     'type' => 'user_pending',
     'validType' => '0',
   );
-
-  $parseGroups = false;
   break;
 
   case 'vanilla':
@@ -113,8 +109,6 @@ switch ($loginMethod) {
     'type' => 'user_pending',
     'validType' => '0',
   );
-
-  $parseGroups = false;
   break;
 
   default:
@@ -132,7 +126,7 @@ if (isset($_GET['userName'],$_GET['password'])) { // API.
   $apiVersion = intval($_GET['apiVersion']);
   switch($apiVersion) {
     case '1':
-    $flag = 'oldversion';
+    $flag = 'oldversion'; // Too old!
     break;
 
     case '2':
@@ -140,7 +134,7 @@ if (isset($_GET['userName'],$_GET['password'])) { // API.
     break;
 
     default:
-    $flag = 'noversion';
+    $flag = 'noversion'; // No version...
     break;
   }
 
@@ -161,7 +155,7 @@ if (isset($_GET['userName'],$_GET['password'])) { // API.
     break;
 
     default:
-    $flag = 'unrecpassencrpyt';
+    $flag = 'unrecpassencrpyt'; // No password encrypt specified.
     break;
   }
 

@@ -94,10 +94,14 @@ function mysqlReadThrough($queryData,$function) {
   return $data;
 }
 
+/* mysqlInsertId()
+ * return = integer */
 function mysqlInsertId() {
   return mysql_insert_id();
 }
 
+/* iif(code($condition),string($true),string($false)
+ * return = string */
 function iif($condition,$true,$false) {
   if (eval('return ' . stripslashes($condition) . ';')) {
     return $true;
@@ -105,9 +109,12 @@ function iif($condition,$true,$false) {
   return $false;
 }
 
+/* mysqlClose()
+ * return = void */
 function mysqlClose() {
   mysql_close();
 }
+
 
 function modLog($action,$data) {
   global $sqlPrefix, $user;

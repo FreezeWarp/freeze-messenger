@@ -587,7 +587,7 @@ $(document).ready(function() {
 
 
 
-
+z
   /*** Private Room ***/
 
   $('a#privateRoom').click(function() {
@@ -597,7 +597,10 @@ $(document).ready(function() {
       });
 
       $("#privateRoomForm").submit(function() {
-        data = $("#privateRoomForm").serialize(); // Serialize the form data for AJAX.
+        privateUserName = $("#privateRoomForm > #userName").val(); // Serialize the form data for AJAX.
+        privateUserId = userRef[data];
+
+
         $.post("api/createRoom.php",data,function(html) {
           quickDialogue(html,'','privateRoomResultDialogue');
         }); // Send the form data via AJAX.
