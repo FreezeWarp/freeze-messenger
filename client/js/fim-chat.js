@@ -60,7 +60,7 @@ function contextMenuParse() {
     var profileUrl = '';
 
     $.ajax({
-      url: 'api/getUserInfo.php?userId' = userId,
+      url: 'api/getUserInfo.php?userId=' + userId,
       type: 'GET',
       timeout: 2400,
       cache: false,
