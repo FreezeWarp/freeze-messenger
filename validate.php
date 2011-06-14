@@ -380,10 +380,11 @@ WHERE userId = ' . (int) $user2['userId']); // Create the new row
   }
 
   elseif ($session == 'update' && $magicSessionHash) {
-    die('1');
+    die('1'); // TODO!
   }
 
   else {
+    // I dunno...
   }
 
 
@@ -394,16 +395,6 @@ WHERE userId = ' . (int) $user2['userId']); // Create the new row
 
     setcookie('fim_msid',$magicSessionHash,0,'/'); // Set the cookie for the unique session.
     setcookie('fim_uid',$user['userId'],0,'/'); // Set the cookie for the unique session.
-  }
-
-
-  if ($bannedUserGroups) {
-    if (fim_inArray($bannedUserGroups,explode(',',$user['allGroups']))) {
-      $banned = true;
-    }
-  }
-  if ($user['settings'] & 2) {
-    $banned = true;
   }
 }
 
@@ -445,6 +436,8 @@ if ($api) {
     $failMessage = 'The login was incorrect.';
   }
 
+
+  // TODO: Port
   header('Content-type: text/xml');
   echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
 <login>
@@ -484,6 +477,7 @@ elseif (!$valid && !$noReqLogin && !$apiRequest) {
 elseif ($valid) {
 
   /* The following defines each individual user's options via an associative array. It is highly recommended this be used to referrence settings. */
+
   $user['optionDefs'] = array(
     'disableFormatting' => ($user['settingsOfficialAjax'] & 16),
     'disableVideos' => ($user['settingsOfficialAjax'] & 32),
@@ -493,29 +487,52 @@ elseif ($valid) {
     'audioDing' => ($user['settingsOfficialAjax'] & 8192),
   );
 
+
   if (in_array($user['userId'],$superUsers)) {
-    $user['adminPrivs'] = 65535;
+    $user['adminPrivs'] = 65535; // Super-admin, away!!!! (this defines all bitfields up to 32768)
   }
 
   $user['adminDefs'] = array(
-    'modPrivs' => ($user['adminPrivs'] & 1),
-    'modCore' => ($user['adminPrivs'] & 2),
-    'modUsers' => ($user['adminPrivs'] & 16),
-    'modImages' => ($user['adminPrivs'] & 64),
-    'modCensorWords' => ($user['adminPrivs'] & 256),
-    'modCensorLists' => ($user['adminPrivs'] & 512),
-    'modPlugins' => ($user['adminPrivs'] & 4096),
-    'modTemplates' => ($user['adminPrivs'] & 8192),
-    'modHooks' => ($user['adminPrivs'] & 16384),
-    'modTranslations' => ($user['adminPrivs'] & 32768),
+    'modPrivs' => ($user['adminPrivs'] & 1), // This effectively allows a user to give himself everything else below
+    'modCore' => ($user['adminPrivs'] & 2), // This is the "untouchable" flag, but that's more or less all it means.
+    'modUsers' => ($user['adminPrivs'] & 16), // Ban, Unban, etc.
+    'modImages' => ($user['adminPrivs'] & 64), // File Uploads
+
+    /* Should Generally Go Together */
+    'modCensorWords' => ($user['adminPrivs'] & 256), // Censor Words
+    'modCensorLists' => ($user['adminPrivs'] & 512), // Censor Lists
+
+    /* Should Generally Go Together */
+    'modPlugins' => ($user['adminPrivs'] & 4096), // Plugins
+    'modTemplates' => ($user['adminPrivs'] & 8192), // Templates
+    'modHooks' => ($user['adminPrivs'] & 16384), // Hooks
+    'modTranslations' => ($user['adminPrivs'] & 32768), // Translations
   );
+
 
   $user['userDefs'] = array(
     'allowed' => ($user['userPrivs'] & 16),
     'createRooms' => ($user['userPrivs'] & 32),
   );
 
+
+
+  /* General "Hard" Ban Generation (If $banned, the user will have no permissions) */
+  if ($bannedUserGroups) {
+    if (fim_inArray($bannedUserGroups,explode(',',$user['allGroups']))) {
+      $banned = true;
+    }
+  }
+  elseif (!$user['userDefs']['allowed']) {
+    $banned = true;
+  }
+
+  if ($user['adminDefs']['modCore']) {
+    $banned = false;
+  }
+
 }
+
 
 unset($sqlPassword); // Security!
 ?>

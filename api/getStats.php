@@ -51,69 +51,73 @@ $xmlData = array(
 $rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId IN ($roomList)",'roomId');
 
 
-foreach ($rooms AS $room) {
-  ($hook = hook('getStats_eachRoom_start') ? eval($hook) : '');
+if ($rooms) {
+  foreach ($rooms AS $room) {
+    ($hook = hook('getStats_eachRoom_start') ? eval($hook) : '');
 
-  if ($hidePostCounts) {
-    if (!fim_hasPermission($room,$user,'know')) {
-      ($hook = hook('getStats_noPerm') ? eval($hook) : '');
+    if ($hidePostCounts) {
+      if (!fim_hasPermission($room,$user,'know')) {
+        ($hook = hook('getStats_noPerm') ? eval($hook) : '');
 
-      continue;
+        continue;
+      }
     }
-  }
 
 
-  ($hook = hook('getStats_eachRoom_preRooms') ? eval($hook) : '');
+    ($hook = hook('getStats_eachRoom_preRooms') ? eval($hook) : '');
 
 
-  $totalPosts = sqlArr("SELECT m.messages AS count,
-  u.userId AS userId,
-  u.userName AS userName,
-  u.userFormatStart,
-  u.userFormatEnd
-  $cols
-FROM {$sqlPrefix}roomStats AS m,
-  {$sqlPrefix}users AS u
-  $tables
-WHERE m.roomId = $room[roomId] AND
-  u.userId = m.userId
-  $where
-ORDER BY count DESC
-  $orderby
-LIMIT $resultLimit
-  $limit",'userId');
+    $totalPosts = sqlArr("SELECT m.messages AS count,
+    u.userId AS userId,
+    u.userName AS userName,
+    u.userFormatStart,
+    u.userFormatEnd
+    $cols
+  FROM {$sqlPrefix}roomStats AS m,
+    {$sqlPrefix}users AS u
+    $tables
+  WHERE m.roomId = $room[roomId] AND
+    u.userId = m.userId
+    $where
+  ORDER BY count DESC
+    $orderby
+  LIMIT $resultLimit
+    $limit",'userId');
 
 
-  $xmlData['getStats']['roomStats']['room ' . $room['roomId']] = array(
-    'roomData' => array(
-      'roomId' => (int) $room['roomId'],
-      'roomName' => $room['name'],
-    ),
-    'users' => array(),
-  );
-
-
-  ($hook = hook('getStats_eachRoom_postRooms') ? eval($hook) : '');
-
-
-  foreach ($totalPosts AS $totalPoster) {
-    $position++;
-
-    $xmlData['getStats']['roomStats']['room ' . $room['roomId']]['users']['user ' . $totalPoster['userId']] = array(
-      'userData' => array(
-        'userId' => (int) $totalPoster['userId'],
-        'userName' => ($totalPoster['userName']),
-        'startTag' => ($totalPoster['userFormatStart']),
-        'endTag' => ($totalPoster['userFormatEnd']),
+    $xmlData['getStats']['roomStats']['room ' . $room['roomId']] = array(
+      'roomData' => array(
+        'roomId' => (int) $room['roomId'],
+        'roomName' => $room['name'],
       ),
-      'messageCount' => (int) $totalPoster['count'],
-      'position' => (int) $position,
+      'users' => array(),
     );
 
-    ($hook = hook('getStats_eachUser') ? eval($hook) : '');
-  }
 
-  ($hook = hook('getStats_eachRoom_end') ? eval($hook) : '');
+    ($hook = hook('getStats_eachRoom_postRooms') ? eval($hook) : '');
+
+
+    if ($totalPosts) {
+      foreach ($totalPosts AS $totalPoster) {
+        $position++;
+
+        $xmlData['getStats']['roomStats']['room ' . $room['roomId']]['users']['user ' . $totalPoster['userId']] = array(
+          'userData' => array(
+            'userId' => (int) $totalPoster['userId'],
+            'userName' => ($totalPoster['userName']),
+            'startTag' => ($totalPoster['userFormatStart']),
+            'endTag' => ($totalPoster['userFormatEnd']),
+          ),
+          'messageCount' => (int) $totalPoster['count'],
+          'position' => (int) $position,
+        );
+
+        ($hook = hook('getStats_eachUser') ? eval($hook) : '');
+      }
+    }
+
+    ($hook = hook('getStats_eachRoom_end') ? eval($hook) : '');
+  }
 }
 
 

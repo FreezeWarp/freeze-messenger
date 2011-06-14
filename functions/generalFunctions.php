@@ -834,4 +834,38 @@ function modLog($action,$data) {
     return false;
   }
 }
+
+
+/**
+* Pretty Size
+*
+* @param float $size
+* @return string
+* @author Joseph Todd Parsons
+*/
+
+function formatSize($size) {
+
+  $fileSuffixes = array(
+    'B',
+    'KiB',
+    'MiB',
+    'GiB',
+    'PiB',
+    'EiB',
+    'ZiB',
+    'YiB',
+  );
+
+  $suffix = 0;
+
+  // Increase the Byte Prefix, Decrease the Number (1024B = 1KiB)
+  while ($size > 1024) {
+    $suffix++;
+    $size /= 1024;
+  }
+
+  return $size . $fileSuffixes[$suffix];
+
+}
 ?>
