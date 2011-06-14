@@ -29,7 +29,10 @@ var favicon = $('#favicon').attr('href');
 var messageIndex = new Array;
 
 
+
+
 /***** Misc Functions *****/
+
 function toBottom() {
   document.getElementById('messageList').scrollTop = document.getElementById('messageList').scrollHeight;
 }

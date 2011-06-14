@@ -339,22 +339,24 @@ Now that the database has been successfully installed, we must generate the conf
   $mysqli = new mysqli('localhost','a','a','phpbb3');
   $mysqli->query("SET NAMES utf8");
   $prefix = 'fim_';
-  $table = "{$prefix}templates";
+  $tables = array("{$prefix}templates","{$prefix}phrases");
 
-  $mysqli->query("DROP TABLE {$table}");
+  for($tables AS $table) {
+    $mysqli->query("DROP TABLE {$table}");
 
-  $contents = file_get_contents("sqldump/templates.sql");
-  $contents = str_replace(array('{prefix}','{engine}'),array($prefix,'InnoDB'),$contents);;
+    $contents = file_get_contents("sqldump/templates.sql");
+    $contents = str_replace(array('{prefix}','{engine}'),array($prefix,'InnoDB'),$contents);;
 
-  $queries = explode('-- DIVIDE', $contents);
+    $queries = explode('-- DIVIDE', $contents);
 
-  foreach ($queries AS $query) {
-    if (!trim($query)) continue;
+    foreach ($queries AS $query) {
+      if (!trim($query)) continue;
 
-    if (!$mysqli->query($query)) {
-      echo $query;
-      echo $mysqli->error;
-      die('Could Not Run Query');
+      if (!$mysqli->query($query)) {
+        echo $query;
+        echo $mysqli->error;
+        die('Could Not Run Query');
+      }
     }
   }
 

@@ -72,16 +72,19 @@ $template[roomMs]
     <ul>
       <li style="border-bottom: 1px solid;"><a href="#" id="messageArchive">Message Archive</a></li>
       <li><a href="#" id="roomList">Room List</a></li>
-      <li><a href="#" id="createRoom">Create a Room</a></li>
-      <li><a href="#" id="editRoom">Edit Room</a></li>
-      <li style="border-bottom: 1px solid;"><a href="#" id="privateRoom">Enter Private IM</a></li>
-      <li><a href="#" id="online">Who''s Online</a></li>
+      {{if="$allowRoomCreation"}{<li><a href="#" id="createRoom">Create a Room</a></li>}}
+      <if condition="$allowPrivateRooms && $user[''userId'']"><li style="border-bottom: 1px solid;"><a href="#" id="privateRoom">Private IM</a></li></if>
+      <li><a href="#" id="online">Active Users</a></li>
       <li><a href="#" id="viewStats">View Stats</a></li>
-      <li><a href="#" id="manageKick"></a></li>
-      <li><a href="#" id="kick">Kick a User</a></li>
+      {{if="$user[''userId'']"}{<li style="border-bottom: 1px solid;"><a href="#" id="changeSettings">$phrases[templateChangeSettings]</a></li>}}
+      {{if="$user[''userId'']"}{<li><a href="./logout.php">$phrases[templateLogout]</a></li>}{<li><a href="./login.php">$phrases[templateLogin]</a></li>}}
     </ul>
-    <h3><a href="#">$phrases[templateUserCat]</a></h3>
+    <if condition="fim_hasPermission($room,$user,''moderate'') || $user[''adminDefs'']">
+    <h3><a href="#">$phrases[templateModerateCat]</a></h3>
     <ul>
+      <li><a href="#" id="editRoom">Edit Room</a></li></if>
+      <if condition="fim_hasPermission($room,$user,''moderate'')"><li><a href="#" id="manageKick">Manage Kicks</a></li></if>
+      <if condition="fim_hasPermission($room,$user,''moderate'')"><li><a href="#" id="kick">Kick a User</a></li></if>
       {{if="$user[''adminDefs'']"}{<li><a href="./moderate.php">$phrases[templateAdmin]</a></li>
       <ul>
         {{if="$user[''adminDefs''][''modImages'']"}{<li><a href="./moderate.php?do=showimages">$phrases[templateAdminImages]</a></li>}}
@@ -95,8 +98,6 @@ $template[roomMs]
         {{if="$user[''adminDefs''][''modTemplates'']"}{<li><a href="./moderate.php?do=templates">$phrases[templateAdminTemplates]</a></li>}}
         {{if="$user[''adminDefs''][''modCore'']"}{<li><a href="./moderate.php?do=maintenance">$phrases[templateAdminMaintenance]</a></li>}}
       </ul>}}
-      {{if="$user[''userId'']"}{<li style="border-bottom: 1px solid;"><a href="#" id="changeSettings">$phrases[templateChangeSettings]</a></li>}}
-      {{if="$user[''userId'']"}{<li><a href="./logout.php">$phrases[templateLogout]</a></li>}{<li><a href="./login.php">$phrases[templateLogin]</a></li>}}
     </ul>
     <h3><a href="#">$phrases[templateRoomListCat]</a></h3>
     <div id="rooms">

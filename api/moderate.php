@@ -139,6 +139,49 @@ switch ($action) {
   }
   break;
 
+  case 'privateRoom':
+  $userName = ($_POST['userName']);
+  $userId = (int) ($_POST['userId']);
+
+  if ($userName) {
+    $safename = mysqlEscape($_POST['userName']); // Escape the userName for MySQL.
+    $user2 = sqlArr("SELECT * FROM user WHERE userName = '$safename'"); // Get the user information.
+  }
+  elseif ($userId) {
+    $user2 = sqlArr("SELECT * FROM user WHERE userId = $userId");
+  }
+  else {
+    $failCode = 'baduser';
+    $failMessage = 'That user does not exist.';
+  }
+
+  if (!$user2) { // No user exists.
+  }
+  elseif ($user2['userId'] == $user['userId']) { // Don't allow the user to, well, talk to himself.
+    $failCode = 'sameuser';
+    $failMessage = 'The user specified is yourself.';
+  }
+  else {
+    $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE (allowedUsers = '$user[userId],$user2[userId]' OR allowedUsers = '$user2[userId],$user[userId]') AND options & 16"); // Query a group that would match the criteria for a private room.
+    if ($room) {
+      $xmlData['moderate']['response']['insertId'] = $room['roomId']; // Already exists; return ID
+    }
+    else {
+      $allowedGroups = ''; // Empty
+      $allowedUsers = "$user[userId],$user2[userId]"; // The two people who are talking!
+      $moderators = ''; // Empty
+      $options = 48; // 32 - No Moderation; 16 - Private
+      $bbcode = 1; // Everything!
+      $name = mysqlEscape("Private IM ($user[userName] and $user2[userName])");
+
+      mysqlQuery("INSERT INTO {$sqlPrefix}rooms (name,allowedGroups,allowedUsers,moderators,owner,options,bbcode) VALUES ('$name','$allowedGroups','$allowedUsers','$moderators',$user[userId],$options,$bbcode)");
+      $insertId = mysql_insert_id();
+
+      $xmlData['moderate']['response']['insertId'] = $insertId;
+    }
+  }
+  break;
+
   case 'deleteRoom':
 
   break;
