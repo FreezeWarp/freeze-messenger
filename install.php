@@ -339,13 +339,13 @@ Now that the database has been successfully installed, we must generate the conf
   $mysqli = new mysqli('localhost','a','a','phpbb3');
   $mysqli->query("SET NAMES utf8");
   $prefix = 'fim_';
-  $tables = array("{$prefix}templates","{$prefix}phrases");
+  $tables = array("templates","phrases");
 
-  for($tables AS $table) {
-    $mysqli->query("DROP TABLE {$table}");
+  foreach ($tables AS $table) {
+    $mysqli->query("DROP TABLE {$prefix}{$table}");
 
-    $contents = file_get_contents("sqldump/templates.sql");
-    $contents = str_replace(array('{prefix}','{engine}'),array($prefix,'InnoDB'),$contents);;
+    $contents = file_get_contents("sqldump/$table.sql");
+    $contents = str_replace(array('{prefix}','{engine}'),array($prefix,'InnoDB'),$contents);
 
     $queries = explode('-- DIVIDE', $contents);
 

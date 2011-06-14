@@ -51,7 +51,24 @@ if ($userList) {
 }
 
 
-$kicks = sqlArr("SELECT k.id,
+$xmlData = array(
+  'getKicks' => array(
+    'activeUser' => array(
+      'userId' => (int) $user['userId'],
+      'userName' => fim_encodeXml($user['userName']),
+    ),
+    'sentData' => array(
+      'rooms' => $roomList,
+      'users' => $userList,
+    ),
+    'errorcode' => fim_encodeXml($failCode),
+    'errormessage' => fim_encodeXml($failMessage),
+    'kicks' => array(),
+  ),
+);
+
+
+$kicks = sqlArr("SELECT k.id AS kickId,
   k.userId,
   u.userName AS userName,
   k.roomId,
@@ -63,57 +80,37 @@ $kicks = sqlArr("SELECT k.id,
 FROM {$sqlPrefix}kick AS k
   LEFT JOIN {$sqlPrefix}users AS u ON k.userId = u.userId
   LEFT JOIN {$sqlPrefix}users AS i ON k.kickerId = i.userId
-  LEFT JOIN {$sqlPrefix}rooms AS r ON k.roomId = r.id
+  LEFT JOIN {$sqlPrefix}rooms AS r ON k.roomId = r.roomId
 WHERE $where TRUE",'id');
 
 
 foreach ($kicks AS $kick) {
-  $kicksXml .= "<kick>
-    <room>
-      <roomId>$kick[roomId]</roomId>
-      <roomName>$kick[roomName]</roomName>
-    </room>
-    <user>
-      <userId>$kick[userId]</userId>
-      <userName>$kick[userName]</userName>
-    </user>
-    <kicker>
-     <userId>$kick[kickerId]</userId>
-     <userName>$kick[kickerName]</userName>
-    </kicker>
-    <length>$kick[length]</length>
-    <set>$kick[time]</set>
-    <expires>$kick[expires]</expires>
-  </kick>  ";
+  $xmlData['getKicks']['kicks']['kick ' . $kick['kickId']] = array(
+    'roomData' => array(
+      'roomId' => $kick['roomId'],
+      'roomName' => $kick['roomName'],
+    ),
+    'userData' => array(
+      'userId' => $kick['userId'],
+      'userName' => $kick['userName'],
+    ),
+    'kickerData' => array(
+      'userId' => $kick['kickerId'],
+      'userName' => $kick['kickerName'],
+    ),
+    'length' => $kick['length'],
+    'set' => $kick['time'],
+    'expires' => $kick['expires'],
+  );
 }
 
 
 
 ///* Output *///
-echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
-<!DOCTYPE html [
-  <!ENTITY nbsp \" \">
-]>
-<getKicks>
-  <activeUser>
-    <userId>$user[userId]</userId>
-    <userName>" . fim_encodeXml($user['userName']) . "</userName>
-  </activeUser>
+$xmlData['getKicks']['errorcode'] = fim_encodeXml($failCode);
+$xmlData['getKicks']['errortext'] = fim_encodeXml($failMessage);
 
-  <sentData>
-    <rooms>$roomList</rooms>
-    <users>$userList</users>
-  </sentData>
-
-  <errorcode>$failCode</errorcode>
-  <errortext>$failMessage</errortext>
-
-  <kicks>
-    $kicksXml
-  </kicks>
-</getKicks>";
-
-
+echo fim_outputXml($xmlData);
 
 
 mysqlClose();

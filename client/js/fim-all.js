@@ -625,9 +625,32 @@ $(document).ready(function() {
   /*** Manage Kick ***/
 
   $('a#manageKick').click(function() {
-    quickDialogue('<table class="page"><thead><tr class="hrow"><th>User</th><th>Kicked By</th><th>Kicked On</th><th>Expires On</th><th>Actions</th></tr>  </thead><tbody id="kickedUsers"></tbody></table>','Manage Kicked Users in This Room','manageKickDialogue',1000);
+    var kickHtml = '';
 
-   //<tr>  <td>$kickedUser[userName]</td>  <td>$kickedUser[kickername]</td>  <td>$kickedUser[kickedOn]</td>  <td>$kickedUser[expiresOn]</td>  <td>    <form action="#" method="post" data-formid="unkick">      <input type="submit" value="Unkick" />      <input type="hidden" name="userId" value="$kickedUser[userId]" />      <input type="hidden" name="roomId" value="$room[id]" />    </form>  </td></tr>
+    $.ajax({
+      url: 'api/getKicks.php?rooms=' + roomId,
+      timeout: 5000,
+      type: 'GET',
+      cache: false,
+      success: function(xml) {
+        $(xml).find('kick').each(function() {
+          var kickerId = parseInt($(this).find('kickerData > userId').text().trim());
+          var kickerName = $(this).find('kickerData > userName').text().trim();
+          var userId = parseInt($(this).find('userData > userId').text().trim());
+          var userName = $(this).find('userData > userName').text().trim();
+          var length = parseInt($(this).find('length').text().trim());
+          var set = parseInt($(this).find('set').text().trim());
+          var expires = parseInt($(this).find('expires').text().trim());
+
+          kickHtml += '<tr><td>' + userName +  '</td><td>' + kickerName + '</td><td>' + set + '</td><td>' + expires + '</td><td><button onclick="unkick(' + userId + ',' + roomId + ')>Unkick</button></td></tr>';
+        });
+
+        quickDialogue('<table class="page"><thead><tr class="hrow"><th>User</th><th>Kicked By</th><th>Kicked On</th><th>Expires On</th><th>Actions</th></tr>  </thead><tbody id="kickedUsers"></tbody></table>','Manage Kicked Users in This Room','manageKickDialogue',1000);
+      },
+      error: function() {
+        alert('Failed to list kicks.');
+      }
+    });
 
     $("form[data-formid=unkick]").submit(function() {
       data = $(this).serialize(); // Serialize the form data for AJAX.
@@ -1022,7 +1045,7 @@ function windowResize () {
 
   switch (window.layout) {
     default:
-    $('#messageList').css('height',(windowHeight - 230));
+    $('#messageList').css('height',(windowHeight - 240));
     $('#messageList').css('max-width',((windowWidth - 10) * .75));
 
   /* Body Padding: 10px

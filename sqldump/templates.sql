@@ -69,22 +69,25 @@ $template[roomMs]
       $phrases[brandingCommunityLinks]
     }}
     <h3><a href="#">$phrases[templateQuickCat]</a></h3>
+    <div>
     <ul>
-      <li style="border-bottom: 1px solid;"><a href="#" id="messageArchive">Message Archive</a></li>
-      <li><a href="#" id="roomList">Room List</a></li>
-      {{if="$allowRoomCreation"}{<li><a href="#" id="createRoom">Create a Room</a></li>}}
-      <if condition="$allowPrivateRooms && $user[''userId'']"><li style="border-bottom: 1px solid;"><a href="#" id="privateRoom">Private IM</a></li></if>
-      <li><a href="#" id="online">Active Users</a></li>
-      <li><a href="#" id="viewStats">View Stats</a></li>
-      {{if="$user[''userId'']"}{<li style="border-bottom: 1px solid;"><a href="#" id="changeSettings">$phrases[templateChangeSettings]</a></li>}}
-      {{if="$user[''userId'']"}{<li><a href="./logout.php">$phrases[templateLogout]</a></li>}{<li><a href="./login.php">$phrases[templateLogin]</a></li>}}
+      <li style="border-bottom: 1px solid;"><a href="#" id="messageArchive">$phrases[templateArchive]</a></li>
+      <li><a href="#" id="roomList">$phrases[templateRoomList]</a></li>
+      {{if="$allowRoomCreation"}{<li><a href="#" id="createRoom">$phrases[templateCreateRoom]</a></li>}}
+      {{if="$allowPrivateRooms && $user[''userId'']"}{<li style="border-bottom: 1px solid;"><a href="#" id="privateRoom">$phrases[templatePrivateIM]</a></li>}}
+      <li><a href="#" id="online">$phrases[templateActiveUsers]</a></li>
+      <li style="border-bottom: 1px solid;"><a href="#" id="viewStats">$phrases[templateStats]</a></li>
+      {{if="$user[''userId'']"}<li><a href="#" id="changeSettings">$phrases[templateChangeSettings]</a></li>
+      <li><a href="./logout.php">$phrases[templateLogout]</a></li>}{<li><a href="./login.php">$phrases[templateLogin]</a></li>}}
     </ul>
-    <if condition="fim_hasPermission($room,$user,''moderate'') || $user[''adminDefs'']">
+    </div>
+    {{if="fim_hasPermission($room,$user,''moderate'') || $user[''adminDefs'']"}{
     <h3><a href="#">$phrases[templateModerateCat]</a></h3>
+    <div>
     <ul>
-      <li><a href="#" id="editRoom">Edit Room</a></li></if>
-      <if condition="fim_hasPermission($room,$user,''moderate'')"><li><a href="#" id="manageKick">Manage Kicks</a></li></if>
-      <if condition="fim_hasPermission($room,$user,''moderate'')"><li><a href="#" id="kick">Kick a User</a></li></if>
+      <li><a href="#" id="editRoom">$phrases[templateEditRoom]</a></li></if>
+      <if condition="fim_hasPermission($room,$user,''moderate'')"><li><a href="#" id="manageKick">$phrases[templateManageKickedUsers]</a></li></if>
+      <if condition="fim_hasPermission($room,$user,''moderate'')"><li><a href="#" id="kick">$phrases[templateKickUser]</a></li></if>
       {{if="$user[''adminDefs'']"}{<li><a href="./moderate.php">$phrases[templateAdmin]</a></li>
       <ul>
         {{if="$user[''adminDefs''][''modImages'']"}{<li><a href="./moderate.php?do=showimages">$phrases[templateAdminImages]</a></li>}}
@@ -99,6 +102,8 @@ $template[roomMs]
         {{if="$user[''adminDefs''][''modCore'']"}{<li><a href="./moderate.php?do=maintenance">$phrases[templateAdminMaintenance]</a></li>}}
       </ul>}}
     </ul>
+    </div>
+    }}
     <h3><a href="#">$phrases[templateRoomListCat]</a></h3>
     <div id="rooms">
       <ul id="roomList">
@@ -107,7 +112,7 @@ $template[roomHtml]<li><a href="javascript:void(0);" onclick="showAllRooms();">$
     </div>
     {{if="$inRoom"}{
     <h3><a href="#">$phrases[templateActiveUsersCat]</a></h3>
-    <div id="activeUsers">$phrases[templateLoading]</div>}{    }}
+    <div id="activeUsers">$phrases[templateLoading]</div>}}
     <h3><a href="#">$phrases[templateCopyrightCat]</a></h3>
     <div>
       <ul>
@@ -453,8 +458,8 @@ $chatTemplate
 INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
 (28, 'copyright', '', '<ul class="tabList">
   <li><a href="#copyright1">Copyright</a></li>
-  <li><a href="#copyright2">Thanks</a></li>
-<li><a href="#copyright3">License</a></li></ul>
+  <li><a href="#copyright3">License</a></li>
+  <li><a href="#copyright2">Thanks</a></li></ul>
 
 <div style="text-align: center;" id="copyright1">
 FreezeMessenger &copy; 2010-2011 Joseph T. Parsons. Some Rights Reserved.<br /><br />
