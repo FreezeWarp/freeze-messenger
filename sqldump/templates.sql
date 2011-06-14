@@ -161,8 +161,8 @@ $phrases[hookBodyEndAll]
 $phrases[hookBodyEndFull]
 </body>
 </html>'),
-(3, 'templateRoomHtml', 'room2', '          <li><a href="./chat.php?room=$room2[id]" class="room" data-roomId="$room2[id]">$room2[name]</a></li>'),
-(4, 'templateRoomMs', 'room2', '    window.external.msSiteModeAddJumpListItem(''$room2[name]'',''{$installUrl}chat.php?room=$room2[id]'',''{$installUrl}images/favicon.ico'');'),
+(3, 'templateRoomHtml', 'room2', '          <li><a href="./index.php?room=$room2[id]" class="room" data-roomId="$room2[id]">$room2[name]</a></li>'),
+(4, 'templateRoomMs', 'room2', '    window.external.msSiteModeAddJumpListItem(''$room2[name]'',''{$installUrl}index.php?room=$room2[id]'',''{$installUrl}images/favicon.ico'');'),
 (5, 'login', '', '<div id="normalLogin">
   <br />
 
@@ -255,8 +255,8 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
 </div>'),
 (16, 'createRoomSuccess', 'installUrl,roomId', '$phrases[createRoomCreatedAt]<br /><br />
 
-<form action="{$installUrl}chat.php?room={$insertId}" method="post">
-  <input type="text" style="width: 300px;" value="{$installUrl}chat.php?room={$insertId}" name="url" />
+<form action="{$installUrl}index.php?room={$insertId}" method="post">
+  <input type="text" style="width: 300px;" value="{$installUrl}index.php?room={$insertId}" name="url" />
   <input type="submit" value="$phrases[editRoomCreatedGo]" />
 </form>'),
 (17, 'editRoomForm', 'censorLists', '<ul class="tabList">
