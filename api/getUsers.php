@@ -83,15 +83,11 @@ if ($users) {
 
     switch ($loginMethod) {
       case 'vbulletin':
-      if ($where) {
-        $getuserf = sqlArr("SELECT joindate AS joinDate FROM {$sqlUserTable} AS u WHERE {$sqlUserTableCols[userId]} = $getuser[userId]");
-      }
+      $userDataForums = sqlArr("SELECT joindate AS joinDate FROM {$sqlUserTable} AS u WHERE {$sqlUserTableCols[userId]} = $userData[userId]");
       break;
 
       case 'phpbb':
-      if ($where) {
-        $getuserf = sqlArr("SELECT u.user_posts AS posts, u.user_colour, u.user_avatar, u.user_regdate AS joinDate FROM {$sqlUserTable} AS u WHERE {$sqlUserTableCols[userId]} = $getuser[userId]");
-      }
+      $userDataForums = sqlArr("SELECT u.user_posts AS posts, u.user_colour, u.user_avatar, u.user_regdate AS joinDate FROM {$sqlUserTable} AS u WHERE {$sqlUserTableCols[userId]} = $userData[userId]");
       break;
     }
 
@@ -114,11 +110,11 @@ if ($users) {
         'fontface' => ($userData['defaultFontface']),
         'general' => (int) $userData['defaultGeneral']
       ),
-      'favRooms' => ($getuser['favRooms']),
-      'postCount' => (int) $getuserf['posts'],
-      'joinDate' => (int) $getuserf['joinDate'],
-      'joinDateFormatted' => (fim_date(false,$getuserf['joinDate'])),
-      'userTitle' => ($getuserf['usertitle']),
+      'favRooms' => ($userData['favRooms']),
+      'postCount' => (int) $userDataForums['posts'],
+      'joinDate' => (int) $userDataForums['joinDate'],
+      'joinDateFormatted' => (fim_date(false,$userDataForums['joinDate'])),
+      'userTitle' => ($userDataForums['usertitle']),
     );
 
 
