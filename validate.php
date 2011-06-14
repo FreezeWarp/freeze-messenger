@@ -58,7 +58,7 @@ switch ($loginMethod) {
   break;
 
   case 'phpbb':
-  require_once('phpbbReqs.php');
+  require_once('functions/phpbbReqs.php');
 
   $sqlUserTable = $forumPrefix . 'users'; // The user table in the login method used.
   $sqlUserGroupTable = $forumPrefix . 'groups'; // The userGroup table in the login method used.

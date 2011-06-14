@@ -14,17 +14,6 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-if (!file_exists('config.php')) {
-  if (file_exists('install.php')) {
-    header('Location: install.php');
-    die('FreezeMessenger must first be installed. <a href="install.php">Click here</a> to do so.');
-  }
-  else {
-    die('FreezeMessenger must first be installed. Please modify config-base.php and save as config.php.');
-  }
-}
-
-
 $inRoom = true;
 $title = 'Chat';
 $reqPhrases = true;
@@ -32,7 +21,7 @@ $reqHooks = true;
 
 
 
-require_once('global.php');
+require_once('../global.php');
 
 
 

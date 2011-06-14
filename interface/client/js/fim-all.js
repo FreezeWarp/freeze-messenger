@@ -57,6 +57,15 @@ $(document).ready(function() {
 
 
 
+var apiPathPre = window.location.pathname;
+apiPathPre = apiPathPre.split('/');
+apiPathPre.pop();
+apiPathPre.pop();
+apiPathPre = apiPathPre.join('/');
+
+var apiPath = apiPathPre + '/';
+
+
 var roomRef = new Object;
 var roomList = new Array;
 var userRef = new Object;
@@ -66,7 +75,7 @@ var groupList = new Array;
 
 
 $.ajax({
-  url: 'api/getUsers.php',
+  url: apiPath + 'api/getUsers.php',
   type: 'GET',
   timeout: 2400,
   cache: false,
@@ -88,7 +97,7 @@ $.ajax({
 
 
 $.ajax({
-  url: 'api/getRooms.php?permLevel=post',
+  url: apiPath + 'api/getRooms.php?permLevel=post',
   timeout: 5000,
   type: 'GET',
   async: true,
@@ -109,7 +118,7 @@ $.ajax({
 
 
 $.ajax({
-  url: 'api/getGroups.php',
+  url: apiPath + 'api/getGroups.php',
   timeout: 5000,
   type: 'GET',
   async: true,
@@ -136,7 +145,7 @@ $.ajax({
 
 function showAllRooms() {
   $.ajax({
-    url: 'api/getRooms.php',
+    url: apiPath + 'api/getRooms.php',
     timeout: 5000,
     type: 'GET',
     cache: false,
@@ -197,7 +206,7 @@ function archive(idMax,idMin) {
   $('#archiveMessageList').html('');
 
   $.ajax({
-    url: 'api/getMessages.php?rooms=' + roomId + '&archive=1&messageLimit=20&' + where,
+    url: apiPath + 'api/getMessages.php?rooms=' + roomId + '&archive=1&messageLimit=20&' + where,
     type: 'GET',
     timeout: 1000,
     async: true,
@@ -331,7 +340,7 @@ function contextMenuParse() {
     var profileUrl = '';
 
     $.ajax({
-      url: 'api/getUsers.php?users=' + userId,
+      url: apiPath + 'api/getUsers.php?users=' + userId,
       type: 'GET',
       timeout: 2400,
       cache: false,
@@ -457,7 +466,7 @@ function contextMenuParse() {
 
       if (thisid != $('#tooltext').attr('data-lastuserId')) {
         $('#tooltext').attr('data-lastuserId',thisid);
-        $.get('api/getUsers.php?users=' + thisid, function(xml) {
+        $.get(apiPath + 'api/getUsers.php?users=' + thisid, function(xml) {
           var userName = unxml($(xml).find('user > userName').text().trim());
           var userId = parseInt($(xml).find('user > userId').text().trim());
           var startTag = unxml($(xml).find('user > startTag').text().trim());
@@ -519,7 +528,7 @@ $(document).ready(function() {
     quickDialogue('<form action="#" id="kickUserForm" method="post">  <label for="userId">User</label>: <select name="userId">$userSelect</select><br />  <label for="roomId">Room</label>: <select name="roomId">$roomSelect</select><br />  <label for="time">Time</label>: <input type="text" name="time" id="time" style="width: 50px;" />  <select name="interval">    <option value="1">Seconds</option>    <option value="60">Minutes</option>    <option value="3600">Hours</option>    <option value="86400">Days</option>    <option value="604800">Weeks</option>  </select><br /><br />  <button type="submit">Kick User</button><button type="reset">Reset</button></form>','Kick User','kickUserDialogue',1000);
 
     $.ajax({
-      url: 'api/getRooms.php',
+      url: apiPath + 'api/getRooms.php',
       timeout: 5000,
       type: 'GET',
       cache: false,
@@ -541,7 +550,7 @@ $(document).ready(function() {
     });
 
     $.ajax({
-      url: 'api/getUsers.php',
+      url: apiPath + 'api/getUsers.php',
       timeout: 5000,
       type: 'GET',
       cache: false,
@@ -564,7 +573,7 @@ $(document).ready(function() {
 
     $("#kickUserForm").submit(function() {
       data = $("#kickUserForm").serialize(); // Serialize the form data for AJAX.
-      $.post("api/moderate.php",data + '&action=kickUser',function(xml) {
+      $.post(apiPath + 'api/moderate.php',data + '&action=kickUser',function(xml) {
         var status = $(xml).find('errorcode').text().trim();
         var emessage = $(xml).find('errormessage').text().trim();
 
@@ -612,7 +621,7 @@ $(document).ready(function() {
         privateUserId = userRef[data];
 
 
-        $.post("api/createRoom.php",data,function(html) {
+        $.post(apiPath + 'api/createRoom.php',data,function(html) {
           quickDialogue(html,'','privateRoomResultDialogue');
         }); // Send the form data via AJAX.
 
@@ -632,7 +641,7 @@ $(document).ready(function() {
     var kickHtml = '';
 
     $.ajax({
-      url: 'api/getKicks.php?rooms=' + roomId,
+      url: apiPath + 'api/getKicks.php?rooms=' + roomId,
       timeout: 5000,
       type: 'GET',
       cache: false,
@@ -679,7 +688,7 @@ $(document).ready(function() {
 
     function updateOnline() {
       $.ajax({
-        url: 'api/getAllActiveUsers.php',
+        url: apiPath + 'api/getAllActiveUsers.php',
         type: 'GET',
         timeout: 2400,
         cache: false,
@@ -734,7 +743,7 @@ $(document).ready(function() {
       $("#editRoomForm").submit(function() {
         var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
 
-        $.post("api/moderate.php",data + '&action=createRoom',function(xml) {
+        $.post(apiPath + 'api/moderate.php',data + '&action=createRoom',function(xml) {
           var errorCode = unxml($(xml).find('errorcode').text().trim());
           var errorMessage = unxml($(xml).find('errortext').text().trim());
           var newRoomId = parseInt($(xml).find('insertId').text().trim());
@@ -770,7 +779,7 @@ $(document).ready(function() {
       });
 
       $.ajax({
-        url: 'api/getRooms.php?rooms=' + roomId,
+        url: apiPath + 'api/getRooms.php?rooms=' + roomId,
         type: 'GET',
         timeout: 2400,
         cache: false,
@@ -798,7 +807,7 @@ $(document).ready(function() {
     $("#editRoomForm").submit(function() {
       var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
 
-      $.post("api/moderate.php",data + '&action=editRoom',function(xml) {
+      $.post(apiPath + 'api/moderate.php',data + '&action=editRoom',function(xml) {
         var errorCode = unxml($(xml).find('errorcode').text().trim());
         var errorMessage = unxml($(xml).find('errortext').text().trim());
         var newRoomId = parseInt($(xml).find('insertId').text().trim());
@@ -848,7 +857,7 @@ $(document).ready(function() {
     var roomHtml = '';
 
     $.ajax({
-      url: 'api/getRooms.php',
+      url: apiPath + 'api/getRooms.php',
       timeout: 5000,
       type: 'GET',
       cache: false,
@@ -887,7 +896,7 @@ $(document).ready(function() {
     }
 
     $.ajax({
-      url: 'api/getStats.php?rooms=' + roomId + '&maxResults=' + number,
+      url: apiPath + 'api/getStats.php?rooms=' + roomId + '&maxResults=' + number,
       timeout: 5000,
       type: 'GET',
       cache: false,
@@ -950,7 +959,7 @@ $(document).ready(function() {
       });
 
       $.ajax({
-        url: 'api/getFonts.php',
+        url: apiPath + 'api/getFonts.php',
         timeout: 5000,
         type: 'GET',
         async: true,
@@ -1025,7 +1034,7 @@ $(document).ready(function() {
 
       $("#changeSettingsForm").submit(function() {
         data = $("#changeSettingsForm").serialize(); // Serialize the form data for AJAX.
-        $.post("api/moderate.php",data + "&action=userOptions&userId=" + userId,function(xml) {
+        $.post(apiPath + 'api/moderate.php',data + "&action=userOptions&userId=" + userId,function(xml) {
 
           quickDialogue(xml,'','changeSettingsResultDialogue');
         }); // Send the form data via AJAX.

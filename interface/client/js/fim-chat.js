@@ -62,7 +62,7 @@ function updatePosts() {
   var encrypt = 'base64';
 
   $.ajax({
-    url: 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (first ? '&archive=1&messageDateMin=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdMin=' + (lastMessage)),
+    url: apiPath + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (first ? '&archive=1&messageDateMin=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdMin=' + (lastMessage)),
     type: 'GET',
     timeout: timeout,
     async: true,
@@ -245,7 +245,7 @@ function sendMessage(message,confirmed) {
   confirmed = (confirmed === 1 ? 1 : '');
 
   $.ajax({
-    url: 'api/sendMessage.php',
+    url: apiPath + 'api/sendMessage.php',
     type: 'POST',
     data: 'roomId=' + roomId + '&confirmed=' + confirmed + '&message=' + str_replace('+','%2b',str_replace('&','%26',str_replace('%','%25',message))),
     cache: false,
