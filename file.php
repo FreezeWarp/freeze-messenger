@@ -20,7 +20,7 @@ $reqHooks = true;
 require_once('global.php');
 
 
-eval(hook('fileStart'));
+eval(hook('file_start'));
 
 
 $hash = mysqlEscape($_GET['hash']);
@@ -28,7 +28,7 @@ $fileid = intval($_GET['fileid']);
 $time = intval($_GET['time']);
 
 
-eval(hook('filePrequery'));
+eval(hook('file_prequery'));
 
 
 if ($time && $fileid) {
@@ -42,18 +42,18 @@ elseif ($hash) {
 }
 
 
-eval(hook('filePostquery'));
+eval(hook('file_postquery'));
 
 
 $file = fim_decrypt($file,'contents');
 
 
-eval(hook('filePredisplay'));
+eval(hook('file_predisplay'));
 
 
 header('Content-Type: ' . $file['mime']);
 echo $file['contents'];
 
 
-eval(hook('fileEnd'));
+eval(hook('file_end'));
 ?>

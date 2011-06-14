@@ -15,32 +15,8 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 
-
-/*** Major Phrase Defaults ***/
-
-if (!$phrases['doctype']) {
-  $phrases['doctype'] = '<!DOCTYPE HTML>';
-}
-if (!$phrases['brandingTitle']) {
-  $phrases['brandingTitle'] = 'FreezeMessenger';
-}
-if (!$phrases['brandingFaviconIE'] && $phrase['brandingFavicon']) {
-  $phrases['brandingFaviconIE'] = $phrase['brandingFavicon'];
-}
-
-
-/*** Keyword Generation ***/
-
-if ($phrases['keywords']) {
-  $keyWordString .= ", $phrases[keywords]";
-}
-if ($keywords) {
-  $keyWordString .= ", $keywords";
-}
-
-
 if ($_REQUEST['layout'] == 'alt') {
-  $styleHook .= "<style>#menu { display: none; width: 0px; } #messageListContainer { float: right; width: 50%; } #textentryBoxMessage { float: left; width: 50%; } #content { width: 100%; }</style>";
+  $phrases['hookHead'] .= "<style>#menu { display: none; width: 0px; } #messageListContainer { float: right; width: 50%; } #textentryBoxMessage { float: left; width: 50%; } #content { width: 100%; }</style>";
   $layout = 'alt';
 }
 

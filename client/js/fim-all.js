@@ -197,17 +197,27 @@ function webkitNotify(icon, title, notifyData) {
  ****** Variable Setting *******
  *******************************/
 
-$(document).ready(function() {
-  window.forumUrl = 'http://www.victoryroad.net/';
+var userId;
+var roomId;
+var showAvatars;
+var reversePostOrder;
+var audioDing;
+var longPolling;
+var layout;
 
-  window.complex = ($('body').attr('data-complex') === '1' ? 1 : 0);
-  window.userId = parseInt($('body').attr('data-userId'));
-  window.roomId = parseInt($('body').attr('data-roomId'));
-  window.layout = ($('body').attr('data-layout'));
-  window.soundOn = ($('body').attr('data-ding') === '1' ? true : false);
-  window.reverse = ($('body').attr('data-reverse') === '1' ? 1 : 0);
-  window.longPolling = ($('body').attr('data-longPolling') === '1' ? 1 : 0);
+$(document).ready(function() {
+  userId = parseInt($('meta[name="fim_userId"]').attr('content'));
+  roomId = parseInt($('meta[name="fim_roomId"]').attr('content'));
+
+  showAvatars = parseInt($('meta[name="fim_showAvatars"]').attr('content'));
+  reversePostOrder = parseInt($('meta[name="fim_reversePostOrder"]').attr('content'));
+  audioDing = parseInt($('meta[name="fim_audioDing"]').attr('content'));
+  longPolling = parseInt($('meta[name="fim_longPolling"]').attr('content'));
+
+  layout = $('meta[name="fim_layout"]').attr('content');
 });
+
+
 
 var roomRef = new Object;
 var roomList = new Array;
@@ -215,7 +225,6 @@ var userRef = new Object;
 var userList = new Array;
 var groupRef = new Object;
 var groupList = new Array;
-
 
 
 $.ajax({
@@ -481,9 +490,6 @@ function removeEntry(type,id) {
  *******************************/
 
 $(document).ready(function() {
-
-  roomId = $('body').attr('data-roomId');
-
   $('#uploadFileForm').attr('action','uploadFile.php?roomId=' + roomId);
 
   $('#menu').accordion({

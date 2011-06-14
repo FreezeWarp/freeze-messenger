@@ -19,7 +19,6 @@ $reqPhrases = true;
 $reqHooks = true;
 
 require_once('global.php');
-require_once('functions/container.php');
 require_once('templateStart.php');
 
 eval(hook('moderateStart'));

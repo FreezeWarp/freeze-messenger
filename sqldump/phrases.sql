@@ -173,4 +173,20 @@ INSERT INTO `{prefix}phrases` (`id`, `name`, `text_en`, `text_jp`) VALUES
 (182, 'editRoomModeratorsCurrent', 'Current Moderators:', ''),
 (183, 'editRoomModeratorsCurrent', 'Currently Allowed Users:', ''),
 (184, 'editRoomModeratorsCurrent', 'Currently Allowed Groups:', ''),
-(185, 'templateModerateCat', 'Moderation', '');
+(185, 'templateModerateCat', 'Moderation', ''),
+(186, 'hookHead', '
+
+  <!-- START IE9 -->
+  <meta name="application-name" content="$phrases[brandingTitle]" />
+  <meta name="msapplication-tooltip" content="Launch $phrases[brandingTitle] Web Interace" />
+  <meta name="msapplication-navbutton-color" content="$phrases[brandingIE9Color]" />
+  <script type="text/javascript">
+  try {
+    window.external.msSiteModeCreateJumplist(''Favourite Rooms'');
+$template[roomMs]
+}
+  catch (ex) {
+    // Do nothing.
+  }
+  </script>
+  <!-- END IE9 -->','');

@@ -23,7 +23,7 @@ var lastMessage = 0;
 var messages;
 var activeUsers;
 var notify = true;
-var timeout = (window.longPolling ? 1000000 : 2400);
+var timeout = (longPolling ? 1000000 : 2400);
 var first = true;
 var favicon = $('#favicon').attr('href');
 var messageIndex = new Array;
@@ -205,7 +205,7 @@ function contextMenuParse() {
     }
   });
 
-  if (complex) {
+  if (showAvatars) {
     $('.messageText').tipTip({
       attribute: 'data-time'
     });
@@ -220,7 +220,7 @@ function contextMenuParse() {
 /***** AJAX Functions *****/
 
 function updatePosts() {
-  if (!window.longPolling) {
+  if (!longPolling) {
     window.clearInterval(window.timer1);
   }
 
@@ -239,7 +239,7 @@ function updatePosts() {
     error: getError,
   });
 
-  if (!window.longPolling) {
+  if (!longPolling) {
     if (totalFails > 10) {
       window.timer1 = window.setInterval(window.updatePosts,30000);
       timeout = 29900;
@@ -260,7 +260,7 @@ function updatePosts() {
 }
 
 function getError(xml) {
-  if (window.longPolling) {
+  if (longPolling) {
     setTimeout(updatePosts,50);
   }
   else {
@@ -329,7 +329,7 @@ function getSuccess(xml) {
       }
 
 
-      if (complex) {
+      if (showAvatars) {
         var data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="' + userName + '" src="' + avatar + '" style="max-width: 24px; max-height: 24px; padding-right: 3px;" class="userName userNameTable" data-userId="' + userId + '" /><span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
       }
       else {
@@ -338,7 +338,7 @@ function getSuccess(xml) {
 
       notifyData += userName + ': ' + text + "\n";
 
-      if (window.reverse) {
+      if (reversePostOrder) {
         $('#messageList').append(data);
       }
       else {
@@ -360,12 +360,12 @@ function getSuccess(xml) {
 
 
 
-    if (window.reverse) {
+    if (reversePostOrder) {
       toBottom();
     }
 
     if (blur) {
-      if (window.soundOn) {
+      if (audioDing) {
         window.beep();
 
         if (navigator.appName === 'Microsoft Internet Explorer') {
@@ -398,7 +398,7 @@ function getSuccess(xml) {
     contextMenuParse();
   }
 
-  if (window.longPolling) {
+  if (longPolling) {
     setTimeout(updatePosts,50);
   }
 
@@ -448,7 +448,7 @@ function sendMessage(message,confirmed) {
       }
     },
     error: function() {
-      if (window.reverse) {
+      if (reversePostOrder) {
         $('#messageList').append('Your message, "' + message + '", could not be sent and will be retried.');
       }
       else {
@@ -465,7 +465,7 @@ function sendMessage(message,confirmed) {
 
 /***** Initiate getMessages *****/
 
-if (window.longPolling) {
+if (longPolling) {
   $(document).ready(function() {
     updatePosts();
   });
@@ -480,7 +480,7 @@ else {
 /***** DOM Parsing *****/
 
 $(document).ready(function() {
-  $("#icon_reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (window.reverse ? 'n' : 's') } );
+  $("#icon_reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (reversePostOrder ? 'n' : 's') } );
   $("#icon_help").button({ icons: {primary:'ui-icon-help'} }).css({height: '32px', width: '32px'});
   $("#icon_note").button({ icons: {primary:'ui-icon-note'} }).css({height: '32px', width: '32px'});
   $("#icon_settings").button({ icons: {primary:'ui-icon-wrench'} }).css({height: '32px', width: '32px'});
@@ -494,26 +494,26 @@ $(document).ready(function() {
 
   $("#icon_reversePostOrder").hover(
     function() {
-      $("#icon_reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (window.reverse ? 's' : 'n') } );
+      $("#icon_reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (reversePostOrder ? 's' : 'n') } );
     },
     function () {
-      $("#icon_reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (window.reverse ? 'n' : 's') } );
+      $("#icon_reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (reversePostOrder ? 'n' : 's') } );
     }
   );
 
   $("#icon_muteSound").hover(
     function() {
-      if (window.soundOn) $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-off' } );
+      if (audioDing) $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-off' } );
       else $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-on' } );
     },
     function () {
-      if (window.soundOn) $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-on' } );
+      if (audioDing) $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-on' } );
       else $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-off' } );
     }
   );
 
   $("#icon_reversePostOrder").click(function() {
-    var value = (window.reverse ? 'false' : 'true');
+    var value = (reversePostOrder ? 'false' : 'true');
     $.cookie('vrim10-reverseOrder', value, {expires: 7 * 24 * 3600});
     location.reload(true);
   });

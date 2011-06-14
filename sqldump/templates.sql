@@ -9,55 +9,60 @@ CREATE TABLE IF NOT EXISTS `{prefix}templates` (
 -- DIVIDE
 
 INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
-(1, 'templateStart', 'allowRoomCreation,inRoom,allowPrivateRooms,bodyHook,mode,styleHook,layout,style,template', '<?xml version="1.0" encoding="UTF-8"?>$phrases[doctype]
+(1, 'templateStart', 'allowRoomCreation,inRoom,allowPrivateRooms,bodyHook,layout,style,template', '<?xml version="1.0" encoding="UTF-8"?>{{if="$phrases[''doctype'']"}{$phrases[doctype]}{<!DOCTYPE HTML>}}
+
 <!-- Original Source Code Copyright © 2011 Joseph T. Parsons. -->
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-  <title>$phrases[brandingTitle] - $title</title><meta http-equiv="Content-type" value="text/html; charset=utf-8" />
+  <title>{{if="$phrases[''brandingTitle'']"}{$phrases[brandingTitle]}{FreezeMessenger}} - $title</title>
+
+  <meta http-equiv="Content-type" value="text/html; charset=utf-8" />
   <meta name="robots" content="index, follow" />
   <meta name="author" content="Joseph T. Parsons" />
-  <meta name="keywords" content="instant messenger, im, instant message$keyWordString" />
-  <meta name="description" content="$phrases[brandingDescription]" />
-  <link rel="icon" id="favicon" type="image/png" href="$phrases[brandingFavicon]" />
-  <!--[if lte IE 9]>
-  <link rel="shortcut icon" id="faviconfallback" href="$phrases[brandingFaviconIE]" />
-  <![endif]-->
+  <meta name="keywords" content="{{if="$phrases[brandingKeywords]"}{$phrases[brandingKeywords]}{instant messenger, im, instant message}}" />
+  <meta name="description" content="{{if="$phrases[brandingDescription]"}{$phrases[brandingDescription]}{FreezeMessenger-powered chat program.}}" />
+  {{if="$phrases[brandingFavicon]"}{<link rel="icon" id="favicon" href="$phrases[brandingFavicon]" />}}
+
+
+
+  <!-- START Local Variables -->
+
+  <meta name="fim_userId" content="$user[userId]" />
+  <meta name="fim_roomId" content="$room[roomId]" />
+  <meta name="fim_audioDing" content="{{if="$user[''optionDefs''][''audioDing'']"}{1}{0}}" />
+  <meta name="fim_reversePostOrder" content="{{if="$user[''optionDefs''][''reversePostOrder'']"}{1}{0}}" />
+  <meta name="fim_showAvatars" content="{{if="$user[''optionDefs''][''showAvatars'']"}{1}{0}}" />
+  <meta name="fim_longPolling" content="{{if="$user[''optionDefs''][''longPolling'']"}{1}{0}}" />
+  <meta name="fim_layout" content="$layout" />
+
+  <!-- END Local Variables -->
+
+
 
   <!-- START Styles -->
+
   <link rel="stylesheet" type="text/css" href="client/css/$style/jquery-ui-1.8.13.custom.css" media="screen" />
   <link rel="stylesheet" type="text/css" href="client/css/$style/fim.css" media="screen" />
   <link rel="stylesheet" type="text/css" href="client/css/styles060911.min.css" media="screen" />
-  {$styleHook}
+
   <!-- END Styles -->
 
-  <!-- START Scripts -->
-  <script src="client/js/jquery-1.6.1.min.js" type="text/javascript"></script>
 
+
+  <!-- START Scripts -->
+
+  <script src="client/js/jquery-1.6.1.min.js" type="text/javascript"></script>
   <script src="client/js/jquery-ui-1.8.13.custom.min.js" type="text/javascript"></script>
   <script src="client/js/jquery.plugins.05182011.min.js" type="text/javascript"></script>
-
   <script src="client/js/fim-all.js" type="text/javascript"></script>
 
-<!-- END Scripts -->
+  <!-- END Scripts -->
 
-  <!-- IE9 Stuffz -->
-  <meta name="application-name" content="$phrases[brandingTitle]" />
-  <meta name="msapplication-tooltip" content="Launch $phrases[brandingTitle] Web Interace" />
-  <meta name="msapplication-navbutton-color" content="$phrases[brandingIE9Color]" />
-  <script type="text/javascript">
-  try {
-    window.external.msSiteModeCreateJumplist(''Favourite Rooms'');
-$template[roomMs]
-}
-  catch (ex) {
-    // Do nothing.
-  }
-  </script>
-  {$phrases[hookHeadFull]}
-  {$phrases[hookHeadAll]}
+
+  {$phrases[hookHead]}
 </head>
 
-<body{$bodyHook} data-mode="$mode" data-layout="$layout" data-userId="$user[userId]">
+<body>
 <div id="tooltext" class="tooltip-content"></div>
 <div id="page" data-role="page">
   $phrases[hookPageStartAll]

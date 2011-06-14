@@ -47,7 +47,6 @@ switch ($_GET['order']) {
 
 
 
-
 $xmlData = array(
   'getUsers' => array(
     'activeUser' => array(
