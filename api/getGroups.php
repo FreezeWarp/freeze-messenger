@@ -22,11 +22,11 @@ $xmlData = array(
   'getGroups' => array(
     'activeUser' => array(
       'userId' => (int) $user['userId'],
-      'userName' => fim_encodeXml($user['userName']),
+      'userName' => ($user['userName']),
     ),
     'sentData' => array(),
-    'errorcode' => fim_encodeXml($failCode),
-    'errormessage' => fim_encodeXml($failMessage),
+    'errorcode' => ($failCode),
+    'errormessage' => ($failMessage),
     'groups' => array(),
   ),
 );
@@ -63,7 +63,7 @@ if ($groups) {
 
     $xmlData['getGroups']['groups']['group ' . $group['groupId']] = array(
       'groupId' => (int) $group['groupId'],
-      'groupName' => fim_encodeXml($group['groupName']),
+      'groupName' => ($group['groupName']),
     );
 
     ($hook = hook('getGroups_eachGroup') ? eval($hook) : '');
@@ -72,8 +72,8 @@ if ($groups) {
 
 
 
-$xmlData['getGroups']['errorcode'] = fim_encodeXml($failCode);
-$xmlData['getGroups']['errortext'] = fim_encodeXml($failMessage);
+$xmlData['getGroups']['errorcode'] = ($failCode);
+$xmlData['getGroups']['errortext'] = ($failMessage);
 
 
 ($hook = hook('getGroups_end') ? eval($hook) : '');

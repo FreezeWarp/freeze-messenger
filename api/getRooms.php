@@ -71,7 +71,7 @@ $xmlData = array(
   'getRooms' => array(
     'activeUser' => array(
       'userId' => (int) $user['userId'],
-      'userName' => fim_encodeXml($user['userName']),
+      'userName' => ($user['userName']),
     ),
     'sentData' => array(
       'order' => (int) $order,
@@ -101,12 +101,12 @@ if ($rooms2) {
 
     $xmlData['getRooms']['rooms']['room ' . $room['messageId']] = array(
       'roomId' => (int)$room['roomId'],
-      'roomName' => fim_encodeXml($room['name']),
-      'roomTopic' => fim_encodeXml($room['topic']),
+      'roomName' => ($room['name']),
+      'roomTopic' => ($room['topic']),
       'roomOwner' => (int) $room['owner'],
-      'allowedUsers' => fim_encodeXml($room['allowedUsers']),
-      'allowedGroups' => fim_encodeXml($room['allowedGroups']),
-      'moderators' => fim_encodeXml($room['moderators']),
+      'allowedUsers' => ($room['allowedUsers']),
+      'allowedGroups' => ($room['allowedGroups']),
+      'moderators' => ($room['moderators']),
       'favorite' => (bool) $fav,
       'options' => (int) $room['options'],
       'optionDefinitions' => array(
@@ -123,8 +123,8 @@ if ($rooms2) {
 }
 
 
-$xmlData['getRooms']['errorcode'] = fim_encodeXml($failCode);
-$xmlData['getRooms']['errortext'] = fim_encodeXml($failMessage);
+$xmlData['getRooms']['errorcode'] = ($failCode);
+$xmlData['getRooms']['errortext'] = ($failMessage);
 
 
 

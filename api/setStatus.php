@@ -47,7 +47,7 @@ else {
     $value = mysqlEscape($statusValue);
 
     if (!in_array($value,array('available','away','busy','invisible','offline'))) {
-      ($hook = hook('setStatus_inner_query') ? eval($hook) : '');
+      ($hook = hook('setStatus_inner_query ') ? eval($hook) : '');
 
       mysqlQuery("UPDATE vrc_ping SET status = '$value' WHERE userId = $user[userId] AND roomId = $room[id]");
     }
@@ -69,14 +69,14 @@ $xmlData = array(
   'setStatus' => array(
     'activeUser' => array(
       'userId' => (int) $user['userId'],
-      'userName' => fim_encodeXml($user['userName']),
+      'userName' => ($user['userName']),
     ),
     'sentData' => array(
       'roomId' => (int) $_POST['roomId'],
       'userId' => (int) $_POST['userId'],
     ),
-    'errorcode' => fim_encodeXml($failCode),
-    'errortext' => fim_encodeXml($failMessage),
+    'errorcode' => ($failCode),
+    'errortext' => ($failMessage),
   ),
 );
 

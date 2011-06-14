@@ -32,7 +32,7 @@ $xmlData = array(
   'getStats' => array(
     'activeUser' => array(
       'userId' => (int) $user['userId'],
-      'userName' => fim_encodeXml($user['userName']),
+      'userName' => ($user['userName']),
     ),
     'sentData' => array(
        'rooms' => $roomList,
@@ -102,9 +102,9 @@ LIMIT $resultLimit
     $xmlData['getStats']['roomStats']['room ' . $room['roomId']]['users']['user ' . $totalPoster['userId']] = array(
       'userData' => array(
         'userId' => (int) $totalPoster['userId'],
-        'userName' => fim_encodeXml($totalPoster['userName']),
-        'startTag' => fim_encodeXml($totalPoster['userFormatStart']),
-        'endTag' => fim_encodeXml($totalPoster['userFormatEnd']),
+        'userName' => ($totalPoster['userName']),
+        'startTag' => ($totalPoster['userFormatStart']),
+        'endTag' => ($totalPoster['userFormatEnd']),
       ),
       'messageCount' => (int) $totalPoster['count'],
       'position' => (int) $position,
@@ -118,8 +118,8 @@ LIMIT $resultLimit
 
 
 
-$xmlData['getStats']['errorcode'] = fim_encodeXml($failCode);
-$xmlData['getStats']['errortext'] = fim_encodeXml($failMessage);
+$xmlData['getStats']['errorcode'] = ($failCode);
+$xmlData['getStats']['errortext'] = ($failMessage);
 
 
 ($hook = hook('getStats_end') ? eval($hook) : '');

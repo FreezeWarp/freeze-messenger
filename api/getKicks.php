@@ -90,20 +90,20 @@ WHERE $where TRUE",'id');
 foreach ($kicks AS $kick) {
   $xmlData['getKicks']['kicks']['kick ' . $kick['kickId']] = array(
     'roomData' => array(
-      'roomId' => $kick['roomId'],
+      'roomId' => (int) $kick['roomId'],
       'roomName' => $kick['roomName'],
     ),
     'userData' => array(
-      'userId' => $kick['userId'],
+      'userId' => (int) $kick['userId'],
       'userName' => $kick['userName'],
     ),
     'kickerData' => array(
-      'userId' => $kick['kickerId'],
+      'userId' => (int) $kick['kickerId'],
       'userName' => $kick['kickerName'],
     ),
-    'length' => $kick['length'],
-    'set' => $kick['time'],
-    'expires' => $kick['expires'],
+    'length' => (int) $kick['length'],
+    'set' => (int) $kick['time'],
+    'expires' => (int) $kick['expires'],
   );
 
   ($hook = hook('getKicks_eachKick') ? eval($hook) : '');

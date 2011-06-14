@@ -22,11 +22,11 @@ $xmlData = array(
   'getFonts' => array(
     'activeUser' => array(
       'userId' => (int) $user['userId'],
-      'userName' => fim_encodeXml($user['userName']),
+      'userName' => ($user['userName']),
     ),
     'sentData' => array(),
-    'errorcode' => fim_encodeXml($failCode),
-    'errormessage' => fim_encodeXml($failMessage),
+    'errorcode' => ($failCode),
+    'errormessage' => ($failMessage),
     'fonts' => array(),
   ),
 );
@@ -52,9 +52,9 @@ if ($fonts) {
   foreach ($fonts AS $font) {
     $xmlData['getFonts']['fonts']['font ' . $font['fontId']] = array(
       'fontId' => (int) $font['fontId'],
-      'fontName' => fim_encodeXml($font['fontName']),
-      'fontGroup' => fim_encodeXml($font['fontGroup']),
-      'fontData' => fim_encodeXml($font['fontData']),
+      'fontName' => ($font['fontName']),
+      'fontGroup' => ($font['fontGroup']),
+      'fontData' => ($font['fontData']),
     );
 
     ($hook = hook('getFonts_eachFont') ? eval($hook) : '');
@@ -62,8 +62,8 @@ if ($fonts) {
 }
 
 
-$xmlData['getFonts']['errorcode'] = fim_encodeXml($failCode);
-$xmlData['getFonts']['errortext'] = fim_encodeXml($failMessage);
+$xmlData['getFonts']['errorcode'] = ($failCode);
+$xmlData['getFonts']['errortext'] = ($failMessage);
 
 
 

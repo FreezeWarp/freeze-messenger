@@ -31,16 +31,16 @@ $xmlData = array(
   'getActiveUsers' => array(
     'activeUser' => array(
       'userId' => (int) $user['userId'],
-      'userName' => fim_encodeXml($user['userName']),
+      'userName' => ($user['userName']),
     ),
     'sentData' => array(
-      'rooms' => fim_encodeXml($rooms),
+      'rooms' => ($rooms),
       'roomsList' => array(),
       'onlineThreshold' => (int) $onlineThreshold,
       'time' => (int) $time,
     ),
-    'errorcode' => fim_encodeXml($failCode),
-    'errormessage' => fim_encodeXml($failMessage),
+    'errorcode' => ($failCode),
+    'errormessage' => ($failMessage),
     'rooms' => array(),
   ),
 );
@@ -91,8 +91,8 @@ $query",true);
     $xmlData['getActiveUsers']['rooms']['room ' . $room['roomId']] = array(
       'roomData' => array(
         'roomId' => (int) $auser['roomId'],
-        'roomName' => fim_encodeXml($auser['roomName']),
-        'roomTopic' => fim_encodeXml($auser['roomTopic']),
+        'roomName' => ($auser['roomName']),
+        'roomTopic' => ($auser['roomTopic']),
       ),
       'users' => array(),
     );
@@ -101,12 +101,12 @@ $query",true);
       foreach ($ausers AS $auser) {
         $xmlData['getActiveUsers']['rooms']['room ' . $room['roomId']]['users']['user ' . $auser['userId']] = array(
           'userId' => (int) $auser['userId'],
-          'userName' => fim_encodeXml($auser['userName']),
+          'userName' => ($auser['userName']),
           'userGroup' => (int) $auser['userGroup'],
-          'socialGroups' => fim_encodeXml($auser['socialGroups']),
-          'startTag' => fim_encodeXml($auser['startTag']),
-          'endTag' => fim_encodeXml($auser['endTag']),
-          'status' => fim_encodeXml($auser['status']),
+          'socialGroups' => ($auser['socialGroups']),
+          'startTag' => ($auser['startTag']),
+          'endTag' => ($auser['endTag']),
+          'status' => ($auser['status']),
           'typing' => (bool) $auser['typing'],
         );
 
@@ -119,8 +119,8 @@ $query",true);
 }
 
 
-$xmlData['getActiveUsers']['errorcode'] = fim_encodeXml($failCode);
-$xmlData['getActiveUsers']['errortext'] = fim_encodeXml($failMessage);
+$xmlData['getActiveUsers']['errorcode'] = ($failCode);
+$xmlData['getActiveUsers']['errortext'] = ($failMessage);
 
 
 ($hook = hook('getActiveUsers_end') ? eval($hook) : '');

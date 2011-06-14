@@ -70,10 +70,10 @@ $xmlData = array(
   'getMessages' => array(
     'activeUser' => array(
       'userId' => (int) $user['userId'],
-      'userName' => fim_encodeXml($user['userName']),
+      'userName' => ($user['userName']),
     ),
     'sentData' => array(
-      'rooms' => fim_encodeXml($rooms),
+      'rooms' => ($rooms),
       'roomsList' => array(),
       'newestMessage' => (int) $newestMessage,
       'oldestMessage' => (int) $oldestMessage,
@@ -239,8 +239,8 @@ else {
             $message = fim_decrypt($message);
 
             $message['userName'] = addslashes($message['userName']);
-            $message['apiText'] = fim_encodeXml($message['apiText']);
-            $message['htmlText'] = fim_encodeXml($message['htmlText']);
+            $message['apiText'] = ($message['apiText']);
+            $message['htmlText'] = ($message['htmlText']);
 
             switch ($encode) {
               case 'base64':
@@ -252,31 +252,31 @@ else {
             $xmlData['getMessages']['messages']['message ' . $message['messageId']] = array(
               'roomData' => array(
                 'roomId' => (int) $room['roomId'],
-                'roomName' => fim_encodeXml($room['name']),
-                'roomTopic' => fim_encodeXml($room['topic']),
+                'roomName' => ($room['name']),
+                'roomTopic' => ($room['topic']),
               ),
               'messageData' => array(
                 'messageId' => (int) $message['messageId'],
                 'messageTime' => (int) $message['time'],
                 'messageTimeFormatted' => fim_date(false,$message['time']),
                 'messageText' => array(
-                  'apiText' => fim_encodeXml($message['apiText']),
-                  'htmlText' => fim_encodeXml($message['htmlText']),
+                  'apiText' => ($message['apiText']),
+                  'htmlText' => ($message['htmlText']),
                 ),
-                'flags' => fim_encodeXml($message['flag']),
+                'flags' => ($message['flag']),
               ),
               'userData' => array(
-                'userName' => fim_encodeXml($message['userName']),
+                'userName' => ($message['userName']),
                 'userId' => (int) $message['userId'],
                 'userGroup' => (int) $message['userGroup'],
-                'avatar' => fim_encodeXml($message['avatar']),
-                'socialGroups' => fim_encodeXml($message['socialGroups']),
-                'startTag' => fim_encodeXml($message['userFormatStart']),
-                'endTag' => fim_encodeXml($message['userFormatEnd']),
+                'avatar' => ($message['avatar']),
+                'socialGroups' => ($message['socialGroups']),
+                'startTag' => ($message['userFormatStart']),
+                'endTag' => ($message['userFormatEnd']),
                 'defaultFormatting' => array(
-                  'color' => fim_encodeXml($message['defaultColor']),
-                  'highlight' => fim_encodeXml($message['defaultHighlight']),
-                  'fontface' => fim_encodeXml($message['defaultFontface']),
+                  'color' => ($message['defaultColor']),
+                  'highlight' => ($message['defaultHighlight']),
+                  'fontface' => ($message['defaultFontface']),
                   'general' => (int) $message['defaultGeneral']
                  ),
               ),
@@ -311,11 +311,11 @@ else {
             foreach ($ausers AS $auser) {
               $xmlData['getMessages']['activeUsers']['user ' . $auser['userId']] = array(
                 'userId' => (int) $auser['userId'],
-                'userName' => fim_encodeXml($auser['userName']),
+                'userName' => ($auser['userName']),
                 'userGroup' => (int) $auser['userGroup'],
-                'socialGroups' => fim_encodeXml($auser['socialGroups']),
-                'startTag' => fim_encodeXml($auser['userFormatStart']),
-                'endTag' => fim_encodeXml($auser['userFormatEnd']),
+                'socialGroups' => ($auser['socialGroups']),
+                'startTag' => ($auser['userFormatStart']),
+                'endTag' => ($auser['userFormatEnd']),
               );
 
               ($hook = hook('getMessages_activeUsers_eachUser') ? eval($hook) : '');
@@ -352,7 +352,7 @@ WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.roomId IN ($user[watchRo
 
       $xmlData['getMessages']['watchRooms']['room ' . $message['roomId']] = array(
         'roomId' => (int) $message['roomId'],
-        'roomName' => fim_encodeXml($message['roomName']),
+        'roomName' => ($message['roomName']),
         'lastMessageTime' => (int) $message['lastMessageTimestamp'],
       );
 
@@ -367,8 +367,8 @@ WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.roomId IN ($user[watchRo
 
 
 ///* Output *///
-$xmlData['getMessages']['errorcode'] = fim_encodeXml($failCode);
-$xmlData['getMessages']['errortext'] = fim_encodeXml($failMessage);
+$xmlData['getMessages']['errorcode'] = ($failCode);
+$xmlData['getMessages']['errortext'] = ($failMessage);
 
 
 ($hook = hook('getMessages_end') ? eval($hook) : '');

@@ -18,7 +18,7 @@ $apiRequest = true;
 
 require_once('../global.php');
 
-$usersArray = explode(',',$_GET['rooms']);
+$usersArray = explode(',',$_GET['users']);
 foreach ($usersArray AS &$v) {
   $v = (int) $v;
 }
@@ -51,13 +51,13 @@ $xmlData = array(
   'getUsers' => array(
     'activeUser' => array(
       'userId' => (int) $user['userId'],
-      'userName' => fim_encodeXml($user['userName']),
+      'userName' => ($user['userName']),
     ),
     'sentData' => array(
       'order' => fim_encodeXML($order),
     ),
-    'errorcode' => fim_encodeXml($failCode),
-    'errortext' => fim_encodeXml($failMessage),
+    'errorcode' => ($failCode),
+    'errortext' => ($failMessage),
     'users' => array(),
   ),
 );
@@ -100,25 +100,25 @@ if ($users) {
 
 
     $xmlData['getUsers']['users']['user ' . $userData['userId']] = array(
-      'userName' => fim_encodeXml($userData['userName']),
+      'userName' => ($userData['userName']),
       'userId' => (int) $userData['userId'],
       'userGroup' => (int) $userData['userGroup'],
-      'avatar' => fim_encodeXml($userData['avatar']),
-      'profile' => fim_encodeXml($userData['profile']),
-      'socialGroups' => fim_encodeXml($userData['socialGroups']),
-      'startTag' => fim_encodeXml($userData['userFormatStart']),
-      'endTag' => fim_encodeXml($userData['userFormatEnd']),
+      'avatar' => ($userData['avatar']),
+      'profile' => ($userData['profile']),
+      'socialGroups' => ($userData['socialGroups']),
+      'startTag' => ($userData['userFormatStart']),
+      'endTag' => ($userData['userFormatEnd']),
       'defaultFormatting' => array(
-        'color' => fim_encodeXml($userData['defaultColor']),
-        'highlight' => fim_encodeXml($userData['defaultHighlight']),
-        'fontface' => fim_encodeXml($userData['defaultFontface']),
+        'color' => ($userData['defaultColor']),
+        'highlight' => ($userData['defaultHighlight']),
+        'fontface' => ($userData['defaultFontface']),
         'general' => (int) $userData['defaultGeneral']
       ),
-      'favRooms' => fim_encodeXml($getuser['favRooms']),
+      'favRooms' => ($getuser['favRooms']),
       'postCount' => (int) $getuserf['posts'],
       'joinDate' => (int) $getuserf['joinDate'],
-      'joinDateFormatted' => fim_encodeXml(fim_date(false,$getuserf['joinDate'])),
-      'userTitle' => fim_encodeXml($getuserf['usertitle']),
+      'joinDateFormatted' => (fim_date(false,$getuserf['joinDate'])),
+      'userTitle' => ($getuserf['usertitle']),
     );
 
 
@@ -127,8 +127,8 @@ if ($users) {
 }
 
 
-$xmlData['getUsers']['errorcode'] = fim_encodeXml($failCode);
-$xmlData['getUsers']['errortext'] = fim_encodeXml($failMessage);
+$xmlData['getUsers']['errorcode'] = ($failCode);
+$xmlData['getUsers']['errortext'] = ($failMessage);
 
 
 ($hook = hook('getUsers_end') ? eval($hook) : '');

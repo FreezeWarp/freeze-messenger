@@ -22,171 +22,9 @@
  *******************************/
 
 function unxml(data) {
-  data = str_replace('&lt;','<',data);
-  data = str_replace('&gt;','>',data);
-  data = str_replace('&apos;',"'",data);
-  data = str_replace('&quot;','"',data);
+  data = data.replace(/\&lt\;/g,'<',data).replace(/\&gt\;/g,'>',data).replace(/\&apos\;/g,"'",data).replace(/\&quot\;/g,'"',data);
 
   return data;
-}
-
-function quickDialogue(content,title,id,width,cF,oF) {
-  var dialog = $('<div style="display: none;" id="' + id +  '">' + content + '</div>').appendTo('body');
-
-  $('button').button();
-
-  var windowWidth = document.documentElement.clientWidth;
-  if (width > windowWidth) {
-    width = windowWidth;
-  }
-  else if (!width) {
-    width = 600;
-  }
-
-  dialog.dialog({
-    width: (width ? width : 600),
-    title: title,
-    hide: "puff",
-    modal: true,
-    open: function() {
-      if (oF) {
-        oF();
-      }
-    },
-    close: function() {
-      $('#' + id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
-
-      if (cF) {
-        cF();
-      }
-    }
-  });
-
-  return false;
-}
-
-function quickConfirm(text) {
-  $('<div id="dialog-confirm"><span class="ui-icon ui-icon-alert" style="float: left; margin: 0px 7px 20px 0px;"></span>' + text + '</div>').dialog({
-    resizable: false,
-    height: 240,
-    modal: true,
-    hide: "puff",
-    buttons: {
-      Confirm: function() {
-        $(this).dialog("close");
-        return true;
-      },
-      Cancel: function() {
-        $(this).dialog("close");
-        return false;
-      }
-    }
-  });
-}
-
-function ajaxDialogue(uri,title,id,width,cF,oF) {
-  var dialog = $('<div style="display: none;" id="' + id +  '"></div>').appendTo('body');
-
-  dialog.load(
-    uri,
-    {},
-    function (responseText, textStatus, XMLHttpRequest) {
-      $('button').button();
-
-      var windowWidth = document.documentElement.clientWidth;
-      if (width > windowWidth || !width) {
-        width = windowWidth;
-      }
-
-      dialog.dialog({
-        width: (width ? width : 600),
-        title: title,
-        hide: "puff",
-        modal: true,
-        open: function() {
-          if (oF) {
-            oF();
-          }
-        },
-        close: function() {
-          $('#' + id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
-          if (cF) {
-            cF();
-          }
-        }
-      });
-    }
-  );
-
-  return false;
-}
-
-function ajaxTabDialogue(uri,id,width,cF,oF) {
-  var dialog = $('<div style="display: none;" id="' + id +  '"></div>').appendTo('body');
-  dialog.load(
-    uri,
-    {},
-    function (responseText, textStatus, XMLHttpRequest) {
-      $('button').button();
-
-      var windowWidth = document.documentElement.clientWidth;
-      if (width > windowWidth || !width) {
-        width = windowWidth;
-      }
-
-      dialog.tabbedDialog({
-        width: (width ? width : 600),
-        modal: true,
-        hide: "puff",
-        open: function() {
-          if (oF) {
-            oF();
-          }
-        },
-        close: function() {
-          $('#' + id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
-          if (cF) {
-            cF();
-          }
-        }
-      });
-    }
-  );
-
-  return false;
-}
-
-function notify(text,header,id,id2) {
-  if ($('#' + id + ' > #' + id + id2).html()) {
-    // Do nothing
-  }
-  else {
-    if ($('#' + id).html()) {
-      $('#' + id).append('<br />' + text);
-    }
-    else {
-      $.jGrowl('<div id="' + id + '"><span id="' + id + id2 + '">' + text + '</span></div>', {
-        sticky: true,
-        glue: true,
-        header: header
-      });
-    }
-  }
-}
-
-
-function webkitNotifyRequest(callback) {
-  window.webkitNotifications.requestPermission(callback);
-}
-
-function webkitNotify(icon, title, notifyData) {
-  if (window.webkitNotifications.checkPermission() > 0) {
-    webkitNotifyRequest(function() { webkitNotify(icon, title, notifyData); });
-  }
-  else {
-    notification = window.webkitNotifications.createNotification(icon, title, notifyData);
-    notification.show();
-  }
 }
 
 
@@ -482,6 +320,166 @@ function removeEntry(type,id) {
 }
 
 
+function contextMenuParse() {
+  $('.userName').contextMenu({
+    menu: 'userMenu'
+  },
+  function(action, el) {
+    var userId = $(el).attr('data-userId');
+    var userName = '';
+    var avatarUrl = '';
+    var profileUrl = '';
+
+    $.ajax({
+      url: 'api/getUsers.php?users=' + userId,
+      type: 'GET',
+      timeout: 2400,
+      cache: false,
+      success: function(xml) {
+        userName = unxml($(this).find('userName').text().trim());
+        avatarUrl = parseInt($(this).find('userId').text().trim());
+        profileUrl = parseInt($(this).find('userId').text().trim());
+      },
+      error: function() {
+        alert('User Not Obtained - Problems May Occur');
+      },
+    });
+
+    switch(action) {
+      case 'private_im':
+      ajaxDialogue('content/privateRoom.php?phase=2&userId=' + userId,'Private IM','privateRoomDialogue',1000);
+      break;
+      case 'profile':
+      window.open(profileUrl + 'member.php?u=' + userId,'profile' + userId);
+      break;
+      case 'kick':
+      ajaxDialogue('content/kick.php?userId=' + userId + '&roomId=' + $('body').attr('data-roomId'),'Kick User','kickUserDialogue',1000);
+      break;
+      case 'ban':
+      window.open('moderate.php&do=banuser2&userId=' + userId,'banuser' + userId);
+      break;
+    }
+  });
+
+  $('.messageLine .messageText').contextMenu({
+    menu: 'messageMenu'
+  },
+  function(action, el) {
+    postid = $(el).attr('data-messageid');
+
+    switch(action) {
+      case 'delete':
+      if (confirm('Are you sure you want to delete this message?')) {
+        $.ajax({
+          url: 'ajax/fim-modAction.php?action=deletepost&postid=' + postid,
+          type: 'GET',
+          cache: false,
+          success: function() {
+            $(el).parent().fadeOut();
+          },
+          error: function() {
+            quickDialogue('The message could not be deleted.','Error','message');
+          }
+        });
+      }
+      break;
+
+      case 'link':
+      quickDialogue('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + window.location.hostname + '/archive.php?roomId=' + $('body').attr('data-roomId') + '&message=' + postid + '" />','Link to This Message','linkMessage');
+      break;
+    }
+  });
+
+  $('.messageLine .messageText img').contextMenu({
+    menu: 'messageMenuImage'
+  },
+  function(action, el) {
+    postid = $(el).attr('data-messageid');
+
+    switch(action) {
+      case 'url':
+      var src= $(el).attr('src');
+
+      quickDialogue('<img src="' + src + '" style="max-width: 550px; max-height: 550px;" /><br /><br /><input type="text" value="' + src +  '" style="width: 550px;" />','Copy Image URL','getUrl');
+      break;
+      case 'delete':
+      if (confirm('Are you sure you want to delete this message?')) {
+        $.ajax({
+          url: 'ajax/fim-modAction.php?action=deletepost&postid=' + postid,
+          type: 'GET',
+          cache: false,
+          success: function() {
+            $(el).parent().fadeOut();
+          },
+          error: function() {
+            quickDialogue('The message could not be deleted.','Error','message');
+          }
+        });
+      }
+      break;
+
+      case 'link':
+      quickDialogue('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="http://' + window.location.hostname + '/archive.php?roomId=' + $('body').attr('data-roomId') + '&message=' + postid + '" />','Link to This Message','linkMessage');
+      break;
+    }
+  });
+
+  $('.room').contextMenu({
+    menu: 'roomMenu'
+  },
+  function(action, el) {
+    switch(action) {
+      case 'delete':
+      if (confirm('Are you sure you want to delete this room?')) {
+        $.ajax({
+          url: 'ajax/fim-modAction.php?action=deleteroom&roomId=' + postid,
+          type: 'GET',
+          cache: false,
+          success: function() {
+            $(el).parent().fadeOut();
+          },
+          error: function() {
+            quickDialogue('The room could not be deleted.','Error','message');
+          }
+        });
+      }
+      break;
+      case 'edit':
+      ajaxDialogue('content/editRoom.php?roomId=' + $(el).attr('data-roomId'),'Edit Room','editRoomDialogue',1000);
+      break;
+    }
+  });
+
+  $('.userName').ezpz_tooltip({
+    contentId: 'tooltext',
+    beforeShow: function(content,el) {
+      var thisid = $(el).attr('data-userId');
+
+      if (thisid != $('#tooltext').attr('data-lastuserId')) {
+        $('#tooltext').attr('data-lastuserId',thisid);
+        $.get("api/getUsers.php?users=" + thisid, function(xml) {
+          var userName = unxml($(xml).find('userData > userName').text().trim());
+          var userId = parseInt($(xml).find('userData > userId').text().trim());
+          var startTag = unxml($(xml).find('userData > startTag').text().trim());
+          var endTag = unxml($(xml).find('userData > endTag').text().trim());
+          var userTitle = unxml($(xml).find('userData > userTitle').text().trim());
+          var posts = parseInt($(xml).find('userData > postCount').text().trim());
+          var joinDate = unxml($(xml).find('userData > joinDateFormatted').text().trim());
+          var avatar = unxml($(xml).find('userData > avatar').text().trim());
+
+          content.html('<div style="width: 400px;">' + (avatar.length > 0 ? '<img alt="" src="' + avatar + '" style="float: left;" />' : '') + '<span class="userName" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>' + (userTitle.length > 0 ? '<br />' + userTitle : '') + '<br /><em>Posts</em>: ' + posts + '<br /><em>Member Since</em>: ' + joinDate + '</div>');
+        });
+      }
+    }
+  });
+
+  if (showAvatars) {
+    $('.messageText').tipTip({
+      attribute: 'data-time'
+    });
+  }
+}
+
 
 
 
@@ -772,7 +770,7 @@ $(document).ready(function() {
       });
 
       $.ajax({
-        url: 'api/getRoomInfo.php?roomId=' + roomId,
+        url: 'api/getRooms.php?rooms=' + roomId,
         type: 'GET',
         timeout: 2400,
         cache: false,

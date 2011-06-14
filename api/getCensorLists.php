@@ -26,13 +26,13 @@ $xmlData = array(
   'getCensorLists' => array(
     'activeUser' => array(
       'userId' => (int) $user['userId'],
-      'userName' => fim_encodeXml($user['userName']),
+      'userName' => ($user['userName']),
     ),
     'sentData' => array(
       'roomId' => (int) $roomId,
     ),
-    'errorcode' => fim_encodeXml($failCode),
-    'errormessage' => fim_encodeXml($failMessage),
+    'errorcode' => ($failCode),
+    'errormessage' => ($failMessage),
     'lists' => array(),
   ),
 );
@@ -56,8 +56,8 @@ if ($censorLists) {
   foreach ($censorLists AS $list) {
     $xmlData['getCensorLists']['lists']['list ' . $list['listId']] = array(
       'listId' => (int) $list['listId'],
-      'listName' => fim_encodeXml($list['listName']),
-      'listType' => fim_encodeXml($list['listType']),
+      'listName' => ($list['listName']),
+      'listType' => ($list['listType']),
       'listOptions' => (int) $list['listOptions'],
     );
 
@@ -65,8 +65,8 @@ if ($censorLists) {
   }
 }
 
-$xmlData['getCensorLists']['errorcode'] = fim_encodeXml($failCode);
-$xmlData['getCensorLists']['errortext'] = fim_encodeXml($failMessage);
+$xmlData['getCensorLists']['errorcode'] = ($failCode);
+$xmlData['getCensorLists']['errortext'] = ($failMessage);
 
 
 ($hook = hook('getCensorLists_end') ? eval($hook) : '');

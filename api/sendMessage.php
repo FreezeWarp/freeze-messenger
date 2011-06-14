@@ -117,18 +117,18 @@ $xmlData = array(
   'sendMessage' => array(
     'activeUser' => array(
       'userId' => (int) $user['userId'],
-      'userName' => fim_encodeXml($user['userName']),
+      'userName' => ($user['userName']),
     ),
     'sentData' => array(
       'roomId' => (int) $_POST['roomId'],
-      'message' => fim_encodeXml($_POST['message']),
+      'message' => ($_POST['message']),
     ),
-    'errorcode' => fim_encodeXml($failCode),
-    'errortext' => fim_encodeXml($failMessage),
+    'errorcode' => ($failCode),
+    'errortext' => ($failMessage),
     'censor' => array(
-      'word' => fim_encodeXml($blockWordApi['word']),
-      'severity' => fim_encodeXml($blockWordApi['severity']),
-      'reason' => fim_encodeXml($blockWordApi['reason']),
+      'word' => ($blockWordApi['word']),
+      'severity' => ($blockWordApi['severity']),
+      'reason' => ($blockWordApi['reason']),
     ),
   ),
 );

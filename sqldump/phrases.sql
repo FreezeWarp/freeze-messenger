@@ -1,3 +1,18 @@
+/* FreezeMessenger Copyright © 2011 Joseph Todd Parsons
+
+ * This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
 CREATE TABLE IF NOT EXISTS `{prefix}phrases` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
@@ -9,13 +24,12 @@ CREATE TABLE IF NOT EXISTS `{prefix}phrases` (
 -- DIVIDE
 
 INSERT INTO `{prefix}phrases` (`id`, `name`, `text_en`, `text_jp`) VALUES
-(1, 'brandingTitle', 'FreezeMessenger v3-r061011', 'フリーズ の メッセンジャー'),
+(1, 'brandingTitle', 'FreezeMessenger v3-r061014', 'フリーズ の メッセンジャー'),
 (2, 'brandingFavicon', 'images/favicon.png', 'images/favicon.png'),
-(3, 'brandingFaviconIE', 'images/favicon1632.ico', 'images/favicon1632.ico'),
-(4, 'doctype', '<!DOCTYPE HTML>', '<!DOCTYPE HTML>'),
+(4, 'doctype', '<!DOCTYPE HTML>', ''),
 (5, 'brandingDescription', '', ''),
 (6, 'brandingCommunityLinks', '', ''),
-(7, 'brandingIE9Color', 'blue', 'blue'),
+(7, 'brandingIE9Color', 'blue', ''),
 (27, 'chatAccessDenied', 'You see... our incredibly high standards of admittance, or perhaps just our unjust bias, has resulted in us unfairly denying you access to this probably-not-worth-your time room. We do apologize for being such snobs... but yet, we still are. So, we must now ask you to leave.', ''),
 (28, 'chatPrivateRoom', 'This room is a private room between you and another individual, and is not accessible to any other user or administrator. If you would like to ignore this person right click their userName and choose &quot;Ignore&quot;. If you are being harrassed, please contact either Cat333Pokémon or FreezeWarp.', ''),
 (29, 'chatNotModerated', 'This room is not an official room, and as such is not actively moderated. Please excercise caution when talking to people you do not know, and do not reveal personal information.', ''),
@@ -174,19 +188,4 @@ INSERT INTO `{prefix}phrases` (`id`, `name`, `text_en`, `text_jp`) VALUES
 (183, 'editRoomModeratorsCurrent', 'Currently Allowed Users:', ''),
 (184, 'editRoomModeratorsCurrent', 'Currently Allowed Groups:', ''),
 (185, 'templateModerateCat', 'Moderation', ''),
-(186, 'hookHead', '
-
-  <!-- START IE9 -->
-  <meta name="application-name" content="$phrases[brandingTitle]" />
-  <meta name="msapplication-tooltip" content="Launch $phrases[brandingTitle] Web Interace" />
-  <meta name="msapplication-navbutton-color" content="$phrases[brandingIE9Color]" />
-  <script type="text/javascript">
-  try {
-    window.external.msSiteModeCreateJumplist(''Favourite Rooms'');
-$template[roomMs]
-}
-  catch (ex) {
-    // Do nothing.
-  }
-  </script>
-  <!-- END IE9 -->','');
+(186, 'hookHead', '','');

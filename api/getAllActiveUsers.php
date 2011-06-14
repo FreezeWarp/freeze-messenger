@@ -25,14 +25,14 @@ $xmlData = array(
   'getAllActiveUsers' => array(
     'activeUser' => array(
       'userId' => (int) $user['userId'],
-      'userName' => fim_encodeXml($user['userName']),
+      'userName' => ($user['userName']),
     ),
     'sentData' => array(
       'onlineThreshold' => (int) $onlineThreshold,
       'time' => (int) $time,
     ),
-    'errorcode' => fim_encodeXml($failCode),
-    'errormessage' => fim_encodeXml($failMessage),
+    'errorcode' => ($failCode),
+    'errormessage' => ($failMessage),
     'users' => array(),
   ),
 );
@@ -72,9 +72,9 @@ if ($ausers) {
     $xmlData['getAllActiveUsers']['users']['user ' . $auser['userId']] = array(
       'userData' => array(
         'userId' => (int) $auser['userId'],
-        'userName' => fim_encodeXml($auser['userName']),
-        'startTag' => fim_encodeXml($auser['userFormatStart']),
-        'endTag' => fim_encodeXml($auser['userFormatEnd']),
+        'userName' => ($auser['userName']),
+        'startTag' => ($auser['userFormatStart']),
+        'endTag' => ($auser['userFormatEnd']),
       ),
       'rooms' => array(),
     );
@@ -84,7 +84,7 @@ if ($ausers) {
     foreach ($rooms AS $roomId => $name) {
       $xmlData['getAllActiveUsers']['users']['user ' . $auser['userId']]['rooms']['room ' . $roomId] = array(
         'roomId' => (int) $roomId,
-        'roomName' => fim_encodeXml($name),
+        'roomName' => ($name),
       );
 
       ($hook = hook('getAllActiveUsers_eachRoom') ? eval($hook) : '');
@@ -95,8 +95,8 @@ if ($ausers) {
 }
 
 
-$xmlData['getAllActiveUsers']['errorcode'] = fim_encodeXml($failCode);
-$xmlData['getAllActiveUsers']['errortext'] = fim_encodeXml($failMessage);
+$xmlData['getAllActiveUsers']['errorcode'] = ($failCode);
+$xmlData['getAllActiveUsers']['errortext'] = ($failMessage);
 
 
 ($hook = hook('getAllActiveUsers_end') ? eval($hook) : '');

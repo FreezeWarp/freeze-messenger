@@ -1,3 +1,18 @@
+/* FreezeMessenger Copyright © 2011 Joseph Todd Parsons
+
+ * This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
 CREATE TABLE IF NOT EXISTS `{prefix}templates` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
@@ -9,7 +24,8 @@ CREATE TABLE IF NOT EXISTS `{prefix}templates` (
 -- DIVIDE
 
 INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
-(1, 'templateStart', 'allowRoomCreation,inRoom,allowPrivateRooms,bodyHook,layout,style,template', '<?xml version="1.0" encoding="UTF-8"?>{{if="$phrases[''doctype'']"}{$phrases[doctype]}{<!DOCTYPE HTML>}}
+(1, 'templateStart', 'allowRoomCreation,inRoom,allowPrivateRooms,bodyHook,layout,style,template', '<?xml version="1.0" encoding="UTF-8"?>
+{{if="$phrases[''doctype'']"}{$phrases[doctype]}{<!DOCTYPE HTML>}}
 
 <!-- Original Source Code Copyright © 2011 Joseph T. Parsons. -->
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
@@ -54,7 +70,8 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
   <script src="client/js/jquery-1.6.1.min.js" type="text/javascript"></script>
   <script src="client/js/jquery-ui-1.8.13.custom.min.js" type="text/javascript"></script>
   <script src="client/js/jquery.plugins.05182011.min.js" type="text/javascript"></script>
-  <script src="client/js/fim-all.js" type="text/javascript"></script>
+  <script src="client/js/fim-all.js" type="text/javascript" async></script>
+  <script src="client/js/fim-chat.js" type="text/javascript" async></script>
 
   <!-- END Scripts -->
 
@@ -369,9 +386,7 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
   <input type="submit" value="Unkick User" /><input type="reset" value="Reset" />
 </form>'),
 (26, 'chatMatureWarning', '', '{{container}{$phrases[chatMatureTitle]}{$phrases[chatMatureMessage]}}'),
-(27, 'chatInnerTemplate', 'parseFlags,canModerate,chatTemplate', '<script src="client/js/fim-chat.js" type="text/javascript"  defer="defer"></script>
-
-<div id="roomTemplateContainer">
+(27, 'chatInnerTemplate', 'parseFlags,canModerate,chatTemplate', '<div id="roomTemplateContainer">
 $chatTemplate
 </div>
 

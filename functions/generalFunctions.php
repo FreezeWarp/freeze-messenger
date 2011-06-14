@@ -769,6 +769,9 @@ function fim_outputXml($array,$level = 0) {
       elseif ($value === false) {
         $value = 'false';
       }
+      elseif (is_string($value)) {
+        $value = fim_encodeXml($value);
+      }
 
       $data .= "$indent  $value\n";
     }
