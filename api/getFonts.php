@@ -38,14 +38,15 @@ $fonts = sqlArr("SELECT f.id AS fontId,
   f.name AS fontName,
   f.data AS fontData,
   f.category AS fontGroup
-  {$cols}
+  {$fonts_columns}
 FROM {$sqlPrefix}fonts AS f
-  {$tables}
+  {$fonts_tables}
 WHERE TRUE
-  {$where}
+  {$fonts_where}
 ORDER BY f.category,
   f.name
-  {$order}",'fontId'); // Get all fonts
+  {$fonts_order}
+{$fonts_end}",'fontId'); // Get all fonts
 
 
 if ($fonts) {

@@ -69,45 +69,45 @@ else {
 
     $xmlData['getActiveUsers']['sentData']['roomsList']['room ' . $room['roomId']] = $room['roomId'];
 
-    $ausers = sqlArr("SELECT
+    $activeUsers = sqlArr("SELECT
   u.{$sqlUserTableCols[userName]} AS userName,
   u.{$sqlUserTableCols[userId]} AS userId,
   p.status,
   p.typing
-  $cols
+  {$activeUsers_columns}
 FROM {$sqlPrefix}ping AS p,
   {$sqlPrefix}rooms AS r,
   {$sqlUserTable} AS u
-  $tables
+  {$activeUsers_tables}
 WHERE p.roomId = $room[roomId] AND
   p.roomId = r.roomId AND
   p.userId = u.$sqlUserTableCols[userId] AND
   UNIX_TIMESTAMP(p.time) >= ($time - $onlineThreshold)
-  $where
+  {$activeUsers_where}
 ORDER BY u.{$sqlUserTableCols[userName]}
-  $orderby
-$query",true);
+  {$activeUsers_order}
+{$activeUsers_end}",true);
 
     $xmlData['getActiveUsers']['rooms']['room ' . $room['roomId']] = array(
       'roomData' => array(
-        'roomId' => (int) $auser['roomId'],
-        'roomName' => ($auser['roomName']),
-        'roomTopic' => ($auser['roomTopic']),
+        'roomId' => (int) $activeUser['roomId'],
+        'roomName' => ($activeUser['roomName']),
+        'roomTopic' => ($activeUser['roomTopic']),
       ),
       'users' => array(),
     );
 
-    if ($ausers) {
-      foreach ($ausers AS $auser) {
-        $xmlData['getActiveUsers']['rooms']['room ' . $room['roomId']]['users']['user ' . $auser['userId']] = array(
-          'userId' => (int) $auser['userId'],
-          'userName' => ($auser['userName']),
-          'userGroup' => (int) $auser['userGroup'],
-          'socialGroups' => ($auser['socialGroups']),
-          'startTag' => ($auser['startTag']),
-          'endTag' => ($auser['endTag']),
-          'status' => ($auser['status']),
-          'typing' => (bool) $auser['typing'],
+    if ($activeUsers) {
+      foreach ($activeUsers AS $activeUser) {
+        $xmlData['getActiveUsers']['rooms']['room ' . $room['roomId']]['users']['user ' . $activeUser['userId']] = array(
+          'userId' => (int) $activeUser['userId'],
+          'userName' => ($activeUser['userName']),
+          'userGroup' => (int) $activeUser['userGroup'],
+          'socialGroups' => ($activeUser['socialGroups']),
+          'startTag' => ($activeUser['startTag']),
+          'endTag' => ($activeUser['endTag']),
+          'status' => ($activeUser['status']),
+          'typing' => (bool) $activeUser['typing'],
         );
 
         ($hook = hook('getActiveUsers_eachUser') ? eval($hook) : '');

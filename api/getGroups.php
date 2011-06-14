@@ -37,12 +37,14 @@ $xmlData = array(
 
 $groups = sqlArr("SELECT $sqlUserGroupTableCols[groupId] AS groupId,
   $sqlUserGroupTableCols[groupName] AS groupName
-FROM {$sqlUserGroupTable} AS g
-  {$tables}
+  {$groups_columns}
+FROM {$sqlUserGroupTable} AS
+  {$groups_tables}
 WHERE TRUE
-  {$where}
+  {$groups_where}
 ORDER BY g.{$sqlUserGroupTableCols[groupId]}
-  {$order}",'groupId'); // Get all rooms
+  {$groups_order}
+{$groups_end}",'groupId'); // Get all rooms
 
 
 if ($groups) {

@@ -17,5 +17,6 @@ CREATE TABLE IF NOT EXISTS `{prefix}hooks` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `name` varchar(40) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `code` longtext CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `state` enum('on', 'off') NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8;

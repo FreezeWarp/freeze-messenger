@@ -72,19 +72,25 @@ $xmlData = array(
 
 
 $kicks = sqlArr("SELECT k.id AS kickId,
-  k.userId,
+  k.userId AS userId,
   u.userName AS userName,
-  k.roomId,
-  k.length,
-  k.time,
-  k.kickerId,
+  k.roomId AS roomId,
+  k.length AS length,
+  k.time AS time,
+  k.kickerId AS kickerId,
   i.userName AS kickerName,
   r.name AS roomName
+  {$kicks_columns}
 FROM {$sqlPrefix}kick AS k
   LEFT JOIN {$sqlPrefix}users AS u ON k.userId = u.userId
   LEFT JOIN {$sqlPrefix}users AS i ON k.kickerId = i.userId
   LEFT JOIN {$sqlPrefix}rooms AS r ON k.roomId = r.roomId
-WHERE $where TRUE",'id');
+  {$kicks_tables}
+WHERE $where TRUE
+  {$kicks_where}
+ORDER BY
+  {$kicks_order}
+{$kicks_end}",'id');
 
 
 foreach ($kicks AS $kick) {

@@ -37,6 +37,7 @@ $xmlData = array(
   ),
 );
 
+
 ($hook = hook('getCensorLists_start') ? eval($hook) : '');
 
 
@@ -44,12 +45,14 @@ $censorLists = sqlArr("SELECT c.id AS listId,
   c.name as listName,
   c.type AS listType,
   c.options AS listOptions
+  {$censorLists_columns}
 FROM {$sqlPrefix}censorLists AS c
-  {$tables}
+  {$censorLists_tables}
 WHERE TRUE
-  {$where}
+  {$censorLists_where}
 ORDER BY c.name
-  {$order}",'groupId'); // Get all rooms
+  {$censorLists_order}
+{$censorLists_end}",'groupId'); // Get all rooms
 
 
 if ($censorLists) {

@@ -18,8 +18,11 @@ $apiRequest = true;
 
 require_once('../global.php');
 
-$time = (int) ($_GET['time'] ? $_GET['time'] : time());
-$onlineThreshold = (int) ($_GET['onlineThreshold'] ? $_GET['onlineThreshold'] : $onlineThreshold);
+
+$time = (int) ($_GET['time'] ? $_GET['time'] : time()); // The timeframe to use. While there may be rare uses for this directive, it should in almost all situations be left out or use the current time.
+
+$onlineThreshold = (int) ($_GET['onlineThreshold'] ? $_GET['onlineThreshold'] : $onlineThreshold); // The time a user may be innactive to still appear "active".
+
 
 $xmlData = array(
   'getAllActiveUsers' => array(
@@ -37,58 +40,64 @@ $xmlData = array(
   ),
 );
 
+
 ($hook = hook('getAllActiveUsers_start') ? eval($hook) : '');
 
-$ausers = sqlArr("SELECT
-  u.userName,
-  u.userId,
-  u.userFormatStart,
-  u.userFormatEnd,
+
+$activeUsers = sqlArr("SELECT
+  u.userName AS userName,
+  u.userId AS userId,
+  u.userFormatStart AS userFormatStart,
+  u.userFormatEnd AS userFormatEnd,
   GROUP_CONCAT(r.name) AS roomNames,
   GROUP_CONCAT(r.roomId) AS roomIds
-  $cols
+  {$activeUsers_columns}
 FROM
   {$sqlPrefix}users AS u,
   {$sqlPrefix}rooms AS r,
   {$sqlPrefix}ping AS p
-  $tables
+  {$activeUsers_tables}
 WHERE
   u.userId = p.userId AND
   r.roomId = p.roomId AND
-  UNIX_TIMESTAMP(p.time) > $time - $onlineThreshold
-  $where
+  UNIX_TIMESTAMP(p.time) > ($time - $onlineThreshold)
+  {$activeUsers_where}
 GROUP BY
   p.userId
-  $groupby
+  {$activeUsers_group}
 ORDER BY
   u.userName
-  $orderby
-$query",'userId');
+  {$activeUsers_order}
+{$activeUser_end}",'userId');
 
-if ($ausers) {
-  foreach ($ausers AS $auser) {
-    $rooms = array_combine(explode(',',$auser['roomIds']),explode(',',$auser['roomNames']));
+if ($activeUsers) {
+  foreach ($activeUsers AS $activeUser) {
+    $rooms = array_combine(explode(',',$activeUser['roomIds']),explode(',',$activeUser['roomNames'])); // Combine the selected roomIds with their relevant roomNames using key -> value pairs. This is a performance technique, with the consequence of preventing access to any additional roomData.
 
-    $xmlData['getAllActiveUsers']['users']['user ' . $auser['userId']] = array(
+    $xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']] = array(
       'userData' => array(
-        'userId' => (int) $auser['userId'],
-        'userName' => ($auser['userName']),
-        'startTag' => ($auser['userFormatStart']),
-        'endTag' => ($auser['userFormatEnd']),
+        'userId' => (int) $activeUser['userId'],
+        'userName' => ($activeUser['userName']),
+        'startTag' => ($activeUser['userFormatStart']),
+        'endTag' => ($activeUser['userFormatEnd']),
       ),
       'rooms' => array(),
     );
 
+
     ($hook = hook('getAllActiveUsers_eachUser_start') ? eval($hook) : '');
 
+
     foreach ($rooms AS $roomId => $name) {
-      $xmlData['getAllActiveUsers']['users']['user ' . $auser['userId']]['rooms']['room ' . $roomId] = array(
+      $xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']]['rooms']['room ' . $roomId] = array(
         'roomId' => (int) $roomId,
         'roomName' => ($name),
       );
 
+
       ($hook = hook('getAllActiveUsers_eachRoom') ? eval($hook) : '');
     }
+
 
     ($hook = hook('getAllActiveUsers_eachUser_end') ? eval($hook) : '');
   }
