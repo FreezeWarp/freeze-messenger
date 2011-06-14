@@ -27,6 +27,9 @@ error_reporting(E_ALL ^ E_NOTICE);
 date_default_timezone_set('GMT'); // Set the timezone to GMT.
 $errorHandlerOriginal = set_error_handler("errorHandler"); // Error Handler
 
+if ($compressOutput) {
+  ob_start(fim_htmlCompact);
+}
 
 
 // Connect to MySQL

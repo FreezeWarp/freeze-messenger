@@ -14,6 +14,14 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/**
+* Determines if any value in an array is found in a seperate array.
+*
+* @param array $needle - The array that contains all values that will be applied to $haystack
+* @param array $haystack - The matching array.
+* @return bool
+* @author Joseph Todd Parsons
+*/
 function fim_inArray($needle,$haystack) {
   foreach($needle AS $need) {
     if (in_array($need,$haystack)) {
@@ -23,7 +31,19 @@ function fim_inArray($needle,$haystack) {
   return false;
 }
 
-function fim_hasPermission($roomData,$userData,$type = 'post',$trans = false) { // The below permissions are very hierachle.
+/**
+* Determines if a user has permission to do an action in a room.
+*
+* @param array $roomData - An array containing the room's data; indexes allowedUsers, allowedGroups, moderators, owner, and options may be used.
+* @param array $userData - An array containing the user's data; indexes userId, adminPrivs, and userPrivs may be used.
+* @param string $type - Either "know", "view", "post", "moderate", or "admin", this defines the action the user is trying to do.
+* @param bool $trans - If true, return will be an information array; otherwise bool.
+* @global bool $banned
+* @global array $superUsers
+* @return mixed - Bool if $trans is false, array if $trans is true.
+* @author Joseph Todd Parsons
+*/
+function fim_hasPermission($roomData,$userData,$type = 'post',$trans = false) {
   global $sqlPrefix, $banned, $superUsers;
   static $isAdmin, $isModerator, $isAllowedUser, $isAllowedGroup, $isOwner, $isRoomDeleted;
 
@@ -203,29 +223,29 @@ WHERE userId = $userData[userId] AND
   }
 }
 
-function fim_messageStyle($message) {
-  global $enableDF, $user;
 
-  if ($enableDF && (($user['settings'] & 512) == false) && !in_array($message['flag'],array('me','topic','kick'))) {
-    if ($message['defaultColor'] && $enableDF['colour']) $style .= "color: rgb($message[defaultColor]); ";
-    if ($message['defaultFontface'] && $enableDF['font']) $style .= "font-family: $message[defaultFontface]; ";
-    if ($message['defaultHighlight'] && $enableDF['highlight']) $style .= "background-color: rgb($message[defaultHighlight]); ";
-    if ($message['defaultFormatting'] && $enableDF['general']) {
-      $df = $message['defaultFormatting'];
-
-      if ($df & 256) $style .= "font-weight: bold; ";
-      if ($df & 512) $style .= "font-style: italic; ";
-    }
-  }
-
-  return $style;
-}
-
+/**
+* Decodes a specifically-formatted URL string, converting entities for "+", "&", '%', and new line to their respective string value.
+*
+* @param string $str - The string to be decoded.
+* @return mixed - Bool if $trans is false, array if $trans is true.
+* @author Joseph Todd Parsons
+*/
 function fim_urldecode($str) {
-  return str_replace(array('%2b','%26','%20'),array('+','&',"\n"),$str);
+  return str_replace(array('%2b','%26','%20','%25'),array('+','&',"\n", '%'),$str);
 }
 
-function fim_decrypt($message,$index = false) {
+
+/**
+* Determines if a user has permission to do an action in a room.
+*
+* @param array $message - An array containing the message data; must include an "iv" index.
+* @param mixed $index - An array or string corrosponding to which indexes in the $message should be decrypted.
+* @global array $salts
+* @return array
+* @author Joseph Todd Parsons
+*/
+function fim_decrypt($message,$index = array('apiText','htmlText','rawText')) {
   global $salts;
 
   if ($message['salt'] && $message['iv']) {
@@ -234,23 +254,28 @@ function fim_decrypt($message,$index = false) {
     if ($index) {
       if (is_array($index)) {
         foreach ($index AS $index2) {
-          $message[$index2] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message[$index2]), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
+          if ($message[$index2]) {
+            $message[$index2] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message[$index2]), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
+          }
         }
       }
       else {
         $message[$index] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message[$index]), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
       }
     }
-    else {
-      if ($message['apiText']) $message['apiText'] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message['apiText']), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
-      if ($message['htmlText']) $message['htmlText'] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message['htmlText']), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
-      if ($message['rawText']) $message['rawText'] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message['rawText']), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
-    }
   }
 
   return $message;
 }
 
+/**
+* Encrypts a string or all values in an array.
+*
+* @param mixed $data - The data to encrypt.
+* @global array $salts
+* @return array - list($data, $iv, $saltNum)
+* @author Joseph Todd Parsons
+*/
 function fim_encrypt($data) {
   global $salts;
 
@@ -276,6 +301,14 @@ function fim_encrypt($data) {
   return array($data,$iv,$saltNum);
 }
 
+/**
+* Encodes a string as specifically-formatted XML data, converting "&", "'", '"', "<", and ">" to their equivilent values.
+*
+* @param string $data - The data to be encoded.
+* @return string
+* @author Joseph Todd Parsons
+*/
+
 function fim_encodeXml($data) {
   $ref = array(
     '&' => '&amp;', // By placing this first, we avoid accidents!
@@ -291,6 +324,15 @@ function fim_encodeXml($data) {
 
   return $data;
 }
+
+
+/**
+* Converts an HTML hexadecimal code to an array containing equivilent r-g-b values.
+*
+* @param string $color - The color, either 3 or 6 characters long with optional "#" appended.
+* @return array
+* @author Unknown
+*/
 
 function html2rgb($color) {
   if ($color[0] == '#') {
@@ -314,6 +356,17 @@ function html2rgb($color) {
   return array($r, $g, $b);
 }
 
+
+/**
+* Converts an r-g-b value array (or integer list) to equivilent hexadecimal code.
+*
+* @param mixed $r
+* @param int $g
+* @param int $b
+* @return string
+* @author Unknown
+*/
+
 function rgb2html($r, $g = false, $b = false) {
   if (is_array($r) && sizeof($r) == 3) list($r, $g, $b) = $r;
 
@@ -331,6 +384,17 @@ function rgb2html($r, $g = false, $b = false) {
 
   return '#' . $color;
 }
+
+
+/**
+* Produces a date string based on specialized conditions.
+*
+* @param string $format - The format to be used; if false a format will be generated based on the distance between the current time and the time specicied.
+* @param int $timestamp - The timestamp to be used, defaulting to the current timestamp.
+* @global $user
+* @return string
+* @author Unknown
+*/
 
 function fim_date($format,$timestamp = false) {
   global $user;
@@ -351,11 +415,14 @@ function fim_date($format,$timestamp = false) {
   return $returndate;
 }
 
-function button($text,$url,$postVars = false) {
-  return '<form method="post" action="' . $url . '" style="display: inline;">
-  <button type="submit">' . $text . '</button>
-</form>';
-}
+
+/**
+* Retrieves a hook from the database.
+*
+* @param string $name
+* @return evalcode (string)
+* @author Joseph Todd Parsons
+*/
 
 function hook($name) {
   global $hooks;
@@ -368,6 +435,15 @@ function hook($name) {
     return 'return false;';
   }
 }
+
+
+/**
+* Retrieves a template from the database.
+*
+* @param string $name
+* @return string
+* @author Joseph Todd Parsons
+*/
 
 function template($name) {
   global $templates, $phrases, $title, $user, $room, $message, $template, $templateVars; // Lame approach.
@@ -392,7 +468,19 @@ function template($name) {
   return $template2;
 }
 
-function parser1($text,$offset,$stop = false,$globalString) {
+
+/**
+* Parser for template() function.
+*
+* @param string $text
+* @param int $offset
+* @param bool $stop
+* @param string $globalString
+* @return string
+* @author Joseph Todd Parsons
+*/
+
+function parser1($text,$offset,$stop = false,$globalString = '') {
   $i = $offset;
 //  static $cValue, $cValueProc, $iValue, $iValueProc;
 
@@ -552,6 +640,18 @@ function parser1($text,$offset,$stop = false,$globalString) {
   return $str;
 }
 
+
+/**
+* Inline If
+*
+* @param string $condition
+* @param string $true
+* @param string $false
+* @param evalcode $eval
+* @return string
+* @author Joseph Todd Parsons
+*/
+
 function iifl($condition,$true,$false,$eval) {
   global $templates, $phrases, $title, $user, $room, $message, $template, $templateVars; // Lame approach.
   if($eval) {
@@ -563,6 +663,18 @@ function iifl($condition,$true,$false,$eval) {
   }
   return $false;
 }
+
+
+/**
+* General Error Handler
+*
+* @param int $errno
+* @param string $errstr
+* @param string $errfile
+* @param int $errline
+* @return true
+* @author Joseph Todd Parsons
+*/
 
 /* Note: errors should be hidden. It's sorta best practice, especially with the API. */
 function errorHandler($errno, $errstr, $errfile, $errline) {
@@ -593,6 +705,16 @@ function errorHandler($errno, $errstr, $errfile, $errline) {
   return true;
 }
 
+/**
+* Container Template
+*
+* @param string $title
+* @param string $content
+* @param string $class
+* @return string
+* @author Joseph Todd Parsons
+*/
+
 function container($title,$content,$class = 'page') {
 
   return $return = "<table class=\"$class ui-widget\">
@@ -612,6 +734,15 @@ function container($title,$content,$class = 'page') {
 
 ";
 }
+
+/**
+* XML Parser
+*
+* @param array $array
+* @param int $level
+* @return string
+* @author Joseph Todd Parsons
+*/
 
 function fim_outputXml($array,$level = 0) {
   header('Content-type: text/xml');
@@ -658,15 +789,20 @@ $data";
   }
 }
 
+
+/**
+* HTML Compact Function So Google's PageSpeed Likes FIM (also great if GZIP isn't available)
+*
+* @param string $data
+* @return string
+* @author Joseph Todd Parsons
+*/
+
 function fim_htmlCompact($data) {
   $data = preg_replace('/\ {2,}/','',$data);
   $data = preg_replace("/(\n|\n\r|\t|\r)/",'',$data);
   $data = preg_replace("/\<\!-- (.+?) --\>/",'',$data);
   $data = preg_replace("/\>(( )+?)\</",'><',$data);
   return $data;
-}
-
-if ($compressOutput) {
-  ob_start(fim_htmlCompact);
 }
 ?>
