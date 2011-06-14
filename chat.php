@@ -83,7 +83,6 @@ else {
       $chatTemplate = template('chatStopMessage');
     }
 
-    $textboxStyle = fim_messageStyle($user);
     $chatTemplate .= template('chatTemplate');
   }
 

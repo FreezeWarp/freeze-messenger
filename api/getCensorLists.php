@@ -37,6 +37,8 @@ $xmlData = array(
   ),
 );
 
+($hook = hook('getCensorLists_start') ? eval($hook) : '');
+
 
 $censorLists = sqlArr("SELECT c.id AS listId,
   c.name as listName,
@@ -58,11 +60,16 @@ if ($censorLists) {
       'listType' => fim_encodeXml($list['listType']),
       'listOptions' => (int) $list['listOptions'],
     );
+
+    ($hook = hook('getCensorLists_eachList') ? eval($hook) : '');
   }
 }
 
 $xmlData['getCensorLists']['errorcode'] = fim_encodeXml($failCode);
 $xmlData['getCensorLists']['errortext'] = fim_encodeXml($failMessage);
+
+
+($hook = hook('getCensorLists_end') ? eval($hook) : '');
 
 
 echo fim_outputXml($xmlData);

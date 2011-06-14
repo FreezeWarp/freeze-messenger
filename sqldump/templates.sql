@@ -77,8 +77,8 @@ $template[roomMs]
       {{if="$allowPrivateRooms && $user[''userId'']"}{<li style="border-bottom: 1px solid;"><a href="#" id="privateRoom">$phrases[templatePrivateIM]</a></li>}}
       <li><a href="#" id="online">$phrases[templateActiveUsers]</a></li>
       <li style="border-bottom: 1px solid;"><a href="#" id="viewStats">$phrases[templateStats]</a></li>
-      {{if="$user[''userId'']"}<li><a href="#" id="changeSettings">$phrases[templateChangeSettings]</a></li>
-      <li><a href="./logout.php">$phrases[templateLogout]</a></li>}{<li><a href="./login.php">$phrases[templateLogin]</a></li>}}
+      {{if="$user[''userId'']"}{<li><a href="#" id="changeSettings">$phrases[templateChangeSettings]</a></li>}}
+      {{if="$user[''userId'']"}{<li><a href="./logout.php">$phrases[templateLogout]</a></li>}{<li><a href="./login.php">$phrases[templateLogin]</a></li>}}
     </ul>
     </div>
     {{if="fim_hasPermission($room,$user,''moderate'') || $user[''adminDefs'']"}{

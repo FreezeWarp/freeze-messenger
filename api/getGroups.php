@@ -32,6 +32,9 @@ $xmlData = array(
 );
 
 
+($hook = hook('getGroups_start') ? eval($hook) : '');
+
+
 $groups = sqlArr("SELECT $sqlUserGroupTableCols[groupId] AS groupId,
   $sqlUserGroupTableCols[groupName] AS groupName
 FROM {$sqlUserGroupTable} AS g
@@ -62,17 +65,21 @@ if ($groups) {
       'groupId' => (int) $group['groupId'],
       'groupName' => fim_encodeXml($group['groupName']),
     );
+
+    ($hook = hook('getGroups_eachGroup') ? eval($hook) : '');
   }
 }
 
 
 
-$xmlData['moderate']['errorcode'] = fim_encodeXml($failCode);
-$xmlData['moderate']['errortext'] = fim_encodeXml($failMessage);
+$xmlData['getGroups']['errorcode'] = fim_encodeXml($failCode);
+$xmlData['getGroups']['errortext'] = fim_encodeXml($failMessage);
+
+
+($hook = hook('getGroups_end') ? eval($hook) : '');
+
 
 echo fim_outputXml($xmlData);
 
-
 mysqlClose();
-
 ?>

@@ -19,13 +19,22 @@ $apiRequest = true;
 require_once('../global.php');
 
 $roomId = (int) $_GET['roomId'];
+
+
+($hook = hook('getRoomInfo_start') ? eval($hook) : '');
+
+
 $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId"); // Get all rooms
 
+
 if (!fim_hasPermission($room,$user,'view')) {
+  ($hook = hook('getRoomInfo_noPerm') ? eval($hook) : '');
+
   unset($room);
 
   $errorcode = 'noperm';
 }
+
 
 $xmlData = array(
   'getRoomInfo' => array(
@@ -61,6 +70,9 @@ $xmlData = array(
 
 $xmlData['getRoomInfo']['errorcode'] = fim_encodeXml($failCode);
 $xmlData['getRoomInfo']['errortext'] = fim_encodeXml($failMessage);
+
+
+($hook = hook('getRoomInfo_end') ? eval($hook) : '');
 
 
 echo fim_outputXml($xmlData);

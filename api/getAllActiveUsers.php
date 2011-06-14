@@ -37,6 +37,8 @@ $xmlData = array(
   ),
 );
 
+($hook = hook('getAllActiveUsers_start') ? eval($hook) : '');
+
 $ausers = sqlArr("SELECT
   u.userName,
   u.userId,
@@ -77,18 +79,28 @@ if ($ausers) {
       'rooms' => array(),
     );
 
+    ($hook = hook('getAllActiveUsers_eachUser_start') ? eval($hook) : '');
+
     foreach ($rooms AS $roomId => $name) {
       $xmlData['getAllActiveUsers']['users']['user ' . $auser['userId']]['rooms']['room ' . $roomId] = array(
         'roomId' => (int) $roomId,
         'roomName' => fim_encodeXml($name),
       );
+
+      ($hook = hook('getAllActiveUsers_eachRoom') ? eval($hook) : '');
     }
+
+    ($hook = hook('getAllActiveUsers_eachUser_end') ? eval($hook) : '');
   }
 }
 
 
 $xmlData['getAllActiveUsers']['errorcode'] = fim_encodeXml($failCode);
 $xmlData['getAllActiveUsers']['errortext'] = fim_encodeXml($failMessage);
+
+
+($hook = hook('getAllActiveUsers_end') ? eval($hook) : '');
+
 
 echo fim_outputXml($xmlData);
 

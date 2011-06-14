@@ -68,6 +68,9 @@ $xmlData = array(
 );
 
 
+($hook = hook('getKicks_start') ? eval($hook) : '');
+
+
 $kicks = sqlArr("SELECT k.id AS kickId,
   k.userId,
   u.userName AS userName,
@@ -102,16 +105,19 @@ foreach ($kicks AS $kick) {
     'set' => $kick['time'],
     'expires' => $kick['expires'],
   );
+
+  ($hook = hook('getKicks_eachKick') ? eval($hook) : '');
 }
 
 
-
-///* Output *///
 $xmlData['getKicks']['errorcode'] = fim_encodeXml($failCode);
 $xmlData['getKicks']['errortext'] = fim_encodeXml($failMessage);
 
-echo fim_outputXml($xmlData);
 
+($hook = hook('getKicks_end') ? eval($hook) : '');
+
+
+echo fim_outputXml($xmlData);
 
 mysqlClose();
 ?>

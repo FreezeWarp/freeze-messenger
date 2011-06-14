@@ -21,7 +21,7 @@ require_once('../global.php');
 $rooms = $_GET['rooms'];
 $roomsArray = explode(',',$rooms);
 foreach ($roomsArray AS &$v) {
-  $v = intval($v);
+  $v = (int) $v;
 }
 
 $time = (int) ($_GET['time'] ? $_GET['time'] : time());
@@ -45,6 +45,8 @@ $xmlData = array(
   ),
 );
 
+($hook = hook('getActiveUsers_start') ? eval($hook) : '');
+
 if (!$rooms) {
   $failCode = 'badroomsrequest';
   $failMessage = 'The room string was not supplied or evaluated to false.';
@@ -57,12 +59,15 @@ else {
   foreach ($roomsArray AS $roomId) {
     $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
 
+    ($hook = hook('getActiveUsers_eachRoom_start') ? eval($hook) : '');
+
     if (!fim_hasPermission($room,$user,'know')) {
+      ($hook = hook('getActiveUsers_eachRoom_noPerm') ? eval($hook) : '');
+
       continue;
     }
 
     $xmlData['getActiveUsers']['sentData']['roomsList']['room ' . $room['roomId']] = $room['roomId'];
-
 
     $ausers = sqlArr("SELECT
   u.{$sqlUserTableCols[userName]} AS userName,
@@ -92,7 +97,6 @@ $query",true);
       'users' => array(),
     );
 
-
     if ($ausers) {
       foreach ($ausers AS $auser) {
         $xmlData['getActiveUsers']['rooms']['room ' . $room['roomId']]['users']['user ' . $auser['userId']] = array(
@@ -105,14 +109,22 @@ $query",true);
           'status' => fim_encodeXml($auser['status']),
           'typing' => (bool) $auser['typing'],
         );
+
+        ($hook = hook('getActiveUsers_eachUser') ? eval($hook) : '');
       }
     }
+
+    ($hook = hook('getActiveUsers_eachRoom_end') ? eval($hook) : '');
   }
 }
 
 
 $xmlData['getActiveUsers']['errorcode'] = fim_encodeXml($failCode);
 $xmlData['getActiveUsers']['errortext'] = fim_encodeXml($failMessage);
+
+
+($hook = hook('getActiveUsers_end') ? eval($hook) : '');
+
 
 echo fim_outputXml($xmlData);
 

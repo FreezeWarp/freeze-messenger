@@ -31,6 +31,8 @@ $xmlData = array(
   ),
 );
 
+($hook = hook('getFonts_start') ? eval($hook) : '');
+
 
 $fonts = sqlArr("SELECT f.id AS fontId,
   f.name AS fontName,
@@ -54,6 +56,8 @@ if ($fonts) {
       'fontGroup' => fim_encodeXml($font['fontGroup']),
       'fontData' => fim_encodeXml($font['fontData']),
     );
+
+    ($hook = hook('getFonts_eachFont') ? eval($hook) : '');
   }
 }
 
@@ -62,9 +66,11 @@ $xmlData['getFonts']['errorcode'] = fim_encodeXml($failCode);
 $xmlData['getFonts']['errortext'] = fim_encodeXml($failMessage);
 
 
+
+($hook = hook('getFonts_end') ? eval($hook) : '');
+
+
 echo fim_outputXml($xmlData);
 
-
 mysqlClose();
-
 ?>

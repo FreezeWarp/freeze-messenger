@@ -90,6 +90,9 @@ $xmlData = array(
 );
 
 
+($hook = hook('getMessages_start') ? eval($hook) : '');
+
+
 
 ///* Query Filter Generation *///
 
@@ -133,11 +136,15 @@ else {
 
     if ($room) {
       if (!fim_hasPermission($room,$user)) { // Gotta make sure the user can view that room.
+        ($hook = hook('getMessages_noPerm') ? eval($hook) : '');
+
         // Do nothing
       }
       else {
 
         if (!$noPing) {
+          ($hook = hook('getMessages_ping_start') ? eval($hook) : '');
+
           mysqlQuery("INSERT INTO {$sqlPrefix}ping
             (userId,
             roomId,
@@ -148,6 +155,8 @@ else {
             CURRENT_TIMESTAMP())
           ON DUPLICATE KEY
             UPDATE time = CURRENT_TIMESTAMP()");
+
+          ($hook = hook('getMessages_ping_end') ? eval($hook) : '');
         }
 
         switch ($fields) {
@@ -159,6 +168,8 @@ else {
             $failMessage = 'The given message fields are invalid - recognized values are "api", "html", and "both"';
           break;
         }
+
+        ($hook = hook('getMessages_preMessages') ? eval($hook) : '');
 
         if ($archive) {
           $messageQuery = "SELECT m.messageId,
@@ -208,17 +219,23 @@ else {
         }
 
         if ($longPolling) {
+          ($hook = hook('getMessages_postMessages_longPolling') ? eval($hook) : '');
+
           while (!$messages) {
             $messages = sqlArr($messageQuery,'messageId');
             sleep($longPollingWait);
           }
         }
         else {
+          ($hook = hook('getMessages_postMessages_polling') ? eval($hook) : '');
+
           $messages = sqlArr($messageQuery,'messageId');
         }
 
         if ($messages) {
           foreach ($messages AS $id => $message) {
+            ($hook = hook('getMessages_eachMessage_start') ? eval($hook) : '');
+
             $message = fim_decrypt($message);
 
             $message['userName'] = addslashes($message['userName']);
@@ -264,11 +281,15 @@ else {
                  ),
               ),
             );
+
+            ($hook = hook('getMessages_eachMessage_end') ? eval($hook) : '');
           }
         }
 
         ///* Process Active Users
         if ($activeUsers) {
+          ($hook = hook('getMessages_activeUsers_start') ? eval($hook) : '');
+
           $ausers = sqlArr("SELECT u.{$sqlUserTableCols[userName]} AS userName,
             u.userId AS userId,
             u.userGroup AS userGroup,
@@ -296,8 +317,12 @@ else {
                 'startTag' => fim_encodeXml($auser['userFormatStart']),
                 'endTag' => fim_encodeXml($auser['userFormatEnd']),
               );
+
+              ($hook = hook('getMessages_activeUsers_eachUser') ? eval($hook) : '');
             }
           }
+
+          ($hook = hook('getMessages_activeUsers_end') ? eval($hook) : '');
         }
       }
     }
@@ -308,6 +333,8 @@ else {
 
 ///* Process Watch Rooms *///
 if ($watchRooms) {
+  ($hook = hook('getMessages_watchRooms_start') ? eval($hook) : '');
+
   /* Get Missed Messages */
   $missedMessages = sqlArr("SELECT r.*,
   UNIX_TIMESTAMP(r.lastMessageTime) AS lastMessageTimestamp
@@ -318,6 +345,8 @@ WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.roomId IN ($user[watchRo
   if ($missedMessages) {
     foreach ($missedMessages AS $message) {
       if (!fim_hasPermission($message,$user,'view')) {
+        ($hook = hook('getMessages_watchRooms_noPerm') ? eval($hook) : '');
+
         continue;
       }
 
@@ -326,18 +355,24 @@ WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.roomId IN ($user[watchRo
         'roomName' => fim_encodeXml($message['roomName']),
         'lastMessageTime' => (int) $message['lastMessageTimestamp'],
       );
+
+      ($hook = hook('getMessages_watchRooms_eachRoom') ? eval($hook) : '');
     }
   }
+
+  ($hook = hook('getMessages_watchRooms_end') ? eval($hook) : '');
 }
 
 
 
 
 ///* Output *///
-
-
 $xmlData['getMessages']['errorcode'] = fim_encodeXml($failCode);
 $xmlData['getMessages']['errortext'] = fim_encodeXml($failMessage);
+
+
+($hook = hook('getMessages_end') ? eval($hook) : '');
+
 
 echo fim_outputXml($xmlData);
 
