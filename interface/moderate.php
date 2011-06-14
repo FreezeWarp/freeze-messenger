@@ -23,7 +23,7 @@ require_once('templateStart.php');
 
 eval(hook('moderateStart'));
 
-if ($user['settings'] & 16) { // Check that the user is an admin.
+if ($user['adminPrivs']) { // Check that the user is an admin.
   switch ($_GET['do']) {
     case 'phrases':
     switch ($_GET['do2']) {

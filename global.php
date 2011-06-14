@@ -18,60 +18,59 @@
  * Core MySQLLogin, Cookie/etc. Salt, and Site Data is stored here. */
 
 
+
+///* Prerequisites *///
+
 require_once('config.php'); // Configuration Variables
-require_once('functions/mysql.php');
-require_once('functions/generalFunctions.php');
+require_once('functions/mysql.php'); // MySQL Library
+require_once('functions/generalFunctions.php'); // Various Functions
 
 
-error_reporting(E_ALL ^ E_NOTICE);
+error_reporting(E_ALL ^ E_NOTICE); // Report all errors, except those of the "Notice" type.
 date_default_timezone_set('GMT'); // Set the timezone to GMT.
 $errorHandlerOriginal = set_error_handler("errorHandler"); // Error Handler
 
-if ($compressOutput) {
-  ob_start(fim_htmlCompact);
-}
 
 $continue = true; // Simple "stop" variable used throughout for hooks.
-define("FIM_VERSION","3.0");
+define("FIM_VERSION","3.0"); // Version to be used by plugins if needed.
 
 
 // Connect to MySQL
 if (!mysqlConnect($sqlHost,$sqlUser,$sqlPassword,$sqlDatabase)) {
-  die('Could not connect');
+  die('Could not connect to the database; the application has exitted.');
 }
 
 
-
-
-if ($novalidate == true) {
-  /* Do Nothing */
-}
-else {
-  require_once('validate.php');
+// Compress Output for Transfer if Configured To
+if ($compressOutput) {
+  ob_start(fim_htmlCompact);
 }
 
 
+// User Validation
+require_once('validate.php');
 
-//mysqlQuery('SET NAMES UTF8');
 
 
-/*** Get Phrases ***/
+///* Get Phrases *///
 
 if ($reqPhrases) {
   $phrases2 = sqlArr("SELECT * FROM {$sqlPrefix}phrases",'id');
 
-  if ($_GET['lang']) {
-    $lang = $_GET['lang'];
-  }
-  elseif (!$lang) {
-    $lang = 'en';
-  }
+
+  // Generate the language, based on:
+  // $_REQUEST[lang] -> $user[lang] -> $defaultLanguage -> 'en'
+  // (c/g/p spec.)      (user spec.)   (admin spec.)       (hard coded default)
+  $lang = ($_REQUEST['lang'] ? $_REQUEST['lang'] :
+    ($user['lang'] ? $user['lang'] :
+      ($defaultLanguage ? $defaultLanguage : 'en')));
+
 
   if ($phrases2) {
     foreach ($phrases2 AS $phrase) {
       $phrases[$phrase['name']] = $phrase['text_' . $lang];
 
-      if (!$phrases[$phrase['name']] && $phrase['text_en']) {
+      if (!$phrases[$phrase['name']] && $phrase['text_en']) { // If a value for the language doesn't exist, default to english.
         $phrases[$phrase['name']] = $phrase['text_en'];
       }
     }
@@ -82,7 +81,8 @@ if ($reqPhrases) {
 }
 
 
-/*** Get Code Hooks ***/
+///* Get Code Hooks *///
+
 if ($reqHooks) {
   $hooks2 = sqlArr("SELECT * FROM {$sqlPrefix}hooks",'id');
 
@@ -96,7 +96,10 @@ if ($reqHooks) {
   unset($hook);
 }
 
-/*** Get Code Hooks ***/
+
+
+///* Get Templates *///
+
 if ($reqPhrases) {
   $templates2 = sqlArr("SELECT * FROM {$sqlPrefix}templates",'id');
 
@@ -109,5 +112,6 @@ if ($reqPhrases) {
   unset($template);
 }
 
-header('Content-type: text/html; charset=utf-8');
+
+($hook = hook('global') ? eval($hook) : '');
 ?>
