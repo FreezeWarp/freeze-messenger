@@ -49,7 +49,13 @@ else {
     if (!in_array($value,array('available','away','busy','invisible','offline'))) {
       ($hook = hook('setStatus_inner_query ') ? eval($hook) : '');
 
-      mysqlQuery("UPDATE vrc_ping SET status = '$value' WHERE userId = $user[userId] AND roomId = $room[id]");
+      mysqlQuery("UPDATE vrc_ping
+      SET status = '$value'
+        {$setStatus_set}
+      WHERE userId = $user[userId] AND
+        roomId = $room[id]
+        {$setStatus_where}
+      {$setStatus_end}");
     }
     else {
       $failCode = 'badstatusvalue';

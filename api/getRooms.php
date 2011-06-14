@@ -64,8 +64,8 @@ switch ($_GET['order']) {
   default:
   $order = 'roomId ' . ($reverseOrder ? 'DESC' : 'ASC');
   break;
-
 }
+
 
 $xmlData = array(
   'getRooms' => array(
@@ -87,7 +87,14 @@ $xmlData = array(
 ($hook = hook('getRooms_start') ? eval($hook) : '');
 
 
-$rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE $whereClause TRUE ORDER BY $order",'id'); // Get all rooms
+$rooms = sqlArr("SELECT *
+FROM {$sqlPrefix}rooms
+WHERE $whereClause TRUE
+  {$messagesCached_where}
+ORDER BY $order
+  {$messagesCached_order}
+{$messagesCached_end}",'id'); // Get all rooms
+
 foreach ($rooms AS $id => $room2) {
   if (fim_hasPermission($room2,$user,$permLevel)) {
     $rooms2[] = $room2;

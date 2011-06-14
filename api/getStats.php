@@ -68,21 +68,22 @@ if ($rooms) {
 
 
     $totalPosts = sqlArr("SELECT m.messages AS count,
-    u.userId AS userId,
-    u.userName AS userName,
-    u.userFormatStart,
-    u.userFormatEnd
-    $cols
-  FROM {$sqlPrefix}roomStats AS m,
-    {$sqlPrefix}users AS u
-    $tables
-  WHERE m.roomId = $room[roomId] AND
-    u.userId = m.userId
-    $where
-  ORDER BY count DESC
-    $orderby
-  LIMIT $resultLimit
-    $limit",'userId');
+      u.userId AS userId,
+      u.userName AS userName,
+      u.userFormatStart,
+      u.userFormatEnd
+      {$totalPosts_columns}
+    FROM {$sqlPrefix}roomStats AS m,
+      {$sqlPrefix}users AS u
+      {$totalPosts_tables}
+    WHERE m.roomId = $room[roomId] AND
+      u.userId = m.userId
+      $where
+      {$totalPosts_where}
+    ORDER BY count DESC
+      {$totalPosts_order}
+    LIMIT $resultLimit
+    {$totalPosts_end}",'userId');
 
 
     $xmlData['getStats']['roomStats']['room ' . $room['roomId']] = array(

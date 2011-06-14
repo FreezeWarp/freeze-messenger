@@ -38,7 +38,7 @@ $xmlData = array(
 $groups = sqlArr("SELECT $sqlUserGroupTableCols[groupId] AS groupId,
   $sqlUserGroupTableCols[groupName] AS groupName
   {$groups_columns}
-FROM {$sqlUserGroupTable} AS
+FROM {$sqlUserGroupTable} AS g
   {$groups_tables}
 WHERE TRUE
   {$groups_where}

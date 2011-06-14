@@ -126,10 +126,6 @@ if (!$roomsArray) {
   $failMessage = 'The room string was not formatted properly in Comma-Seperated notation.';
 }
 else {
-  foreach ($roomsArray AS $roomXML) {
-    $roomsXML .= "<room>$roomXML</room>";
-  }
-
   foreach ($roomsArray AS $room2) {
     $room2 = intval($room2);
     $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $room2");
@@ -148,13 +144,18 @@ else {
           mysqlQuery("INSERT INTO {$sqlPrefix}ping
             (userId,
             roomId,
-            time)
+            time
+            {$ping_columns})
+
           VALUES
             ($user[userId],
             $room[roomId],
-            CURRENT_TIMESTAMP())
+            CURRENT_TIMESTAMP()
+            {$ping_values})
+
           ON DUPLICATE KEY
-            UPDATE time = CURRENT_TIMESTAMP()");
+            UPDATE time = CURRENT_TIMESTAMP()
+            {$ping_dupKey}");
 
           ($hook = hook('getMessages_ping_end') ? eval($hook) : '');
         }
@@ -187,14 +188,19 @@ else {
             u.defaultFontface AS defaultFontface,
             u.defaultHighlight AS defaultHighlight,
             u.defaultFormatting AS defaultFormatting
+            {$messagesArchive_columns}
           FROM {$sqlPrefix}messages AS m,
             {$sqlPrefix}users AS u
+            {$messagesArchive_tables}
           WHERE m.roomId = $room[roomId]
             AND m.deleted != true
             AND m.userId = u.userId
           $whereClause
-          ORDER BY messageId $order
-          LIMIT $messageLimit";
+          {$messagesArchive_where}
+          ORDER BY messageId
+            {$messagesArchive_order}
+          LIMIT $messageLimit
+          {$messagesArchive_end}";
         }
         else {
           $messageQuery = "SELECT m.messageId AS messageId,
@@ -211,11 +217,16 @@ else {
             m.defaultFontface AS defaultFontface,
             m.defaultHighlight AS defaultHighlight,
             m.defaultFormatting AS defaultFormatting
+            {$messagesCached_columns}
           FROM {$sqlPrefix}messagesCached AS m
+            {$messagesCached_tables}
           WHERE m.roomId = $room[roomId]
-          $whereClause
-          ORDER BY messageId $order
-          LIMIT $messageLimit";
+            $whereClause
+            {$messagesCached_where}
+          ORDER BY messageId
+            {$messagesCached_order}
+          LIMIT $messageLimit
+          {$messagesCached_end}";
         }
 
         if ($longPolling) {
@@ -270,7 +281,7 @@ else {
                 'userId' => (int) $message['userId'],
                 'userGroup' => (int) $message['userGroup'],
                 'avatar' => ($message['avatar']),
-                'socialGroups' => ($message['socialGroups']),
+                'socialGroups' => ($message['socialI forget if I watched Groups']),
                 'startTag' => ($message['userFormatStart']),
                 'endTag' => ($message['userFormatEnd']),
                 'defaultFormatting' => array(
@@ -290,32 +301,34 @@ else {
         if ($activeUsers) {
           ($hook = hook('getMessages_activeUsers_start') ? eval($hook) : '');
 
-          $ausers = sqlArr("SELECT u.{$sqlUserTableCols[userName]} AS userName,
+          $activeUsers = sqlArr("SELECT u.{$sqlUserTableCols[userName]} AS userName,
             u.userId AS userId,
             u.userGroup AS userGroup,
             u.userFormatStart AS userFormatStart,
             u.userFormatEnd AS userFormatEnd,
             p.status,
             p.typing
-            $cols
+            {$activeUser_columns}
           FROM {$sqlPrefix}ping AS p,
             {$sqlPrefix}users AS u
-          {$join}
+            {$activeUser_tables}
           WHERE p.roomId IN ($room[roomId])
             AND p.userId = u.userId
             AND UNIX_TIMESTAMP(p.time) >= (UNIX_TIMESTAMP(NOW()) - $onlineThreshold)
+            {$activeUser_where}
           ORDER BY u.userName
-          LIMIT 500",'userId');
+            {$activeUser_order}
+          {$activeUser_end}",'userId');
 
-          if ($ausers) {
-            foreach ($ausers AS $auser) {
-              $xmlData['getMessages']['activeUsers']['user ' . $auser['userId']] = array(
-                'userId' => (int) $auser['userId'],
-                'userName' => ($auser['userName']),
-                'userGroup' => (int) $auser['userGroup'],
-                'socialGroups' => ($auser['socialGroups']),
-                'startTag' => ($auser['userFormatStart']),
-                'endTag' => ($auser['userFormatEnd']),
+          if ($activeUsers) {
+            foreach ($activeUsers AS $activeUser) {
+              $xmlData['getMessages']['activeUsers']['user ' . $activeUser['userId']] = array(
+                'userId' => (int) $activeUser['userId'],
+                'userName' => ($activeUser['userName']),
+                'userGroup' => (int) $activeUser['userGroup'],
+                'socialGroups' => ($activeUser['socialGroups']),
+                'startTag' => ($activeUser['userFormatStart']),
+                'endTag' => ($activeUser['userFormatEnd']),
               );
 
               ($hook = hook('getMessages_activeUsers_eachUser') ? eval($hook) : '');

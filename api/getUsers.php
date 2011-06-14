@@ -67,13 +67,17 @@ $xmlData = array(
 
 
 $users = sqlArr("SELECT u.userId,
- u.userName,
- u.userFormatStart,
- u.userFormatEnd
+  u.userName,
+  u.userFormatStart,
+  u.userFormatEnd
+  {$users_columns}
 FROM {$sqlPrefix}users AS u
-  {$join}
-WHERE {$whereClause} TRUE
-ORDER BY {$order}",'userId'); // Get all rooms
+  {$users_tables}
+WHERE TRUE
+  {$users_where}
+ORDER BY {$order}
+  {$users_order}
+{$users_end}",'userId'); // Get all rooms
 
 
 if ($users) {
@@ -83,11 +87,23 @@ if ($users) {
 
     switch ($loginMethod) {
       case 'vbulletin':
-      $userDataForums = sqlArr("SELECT joindate AS joinDate FROM {$sqlUserTable} AS u WHERE {$sqlUserTableCols[userId]} = $userData[userId]");
+      $userDataForums = sqlArr("SELECT joindate AS joinDate
+        {$userDataForumsVBulletin_columns}
+      FROM {$sqlUserTable} AS u
+        {$userDataForumsVBulletin_tables}
+      WHERE {$sqlUserTableCols[userId]} = $userData[userId]
+        {$userDataForumsVBulletin_where}");
       break;
 
       case 'phpbb':
-      $userDataForums = sqlArr("SELECT u.user_posts AS posts, u.user_colour, u.user_avatar, u.user_regdate AS joinDate FROM {$sqlUserTable} AS u WHERE {$sqlUserTableCols[userId]} = $userData[userId]");
+      $userDataForums = sqlArr("SELECT u.user_posts AS posts,
+        u.user_regdate AS joinDate
+        {$userDataForumsPHPBB_columns}
+      FROM {$sqlUserTable} AS u
+        {$userDataForumsPHPBB_tables}
+      WHERE {$sqlUserTableCols[userId]} = $userData[userId]
+        {$userDataForumsPHPBB_where}
+      {$userDataForumsPHPBB_end}");
       break;
     }
 
