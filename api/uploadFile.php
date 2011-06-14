@@ -1,4 +1,23 @@
 <?php
+/* FreezeMessenger Copyright © 2011 Joseph Todd Parsons
+
+ * This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+$apiRequest = true;
+require_once('../global.php');
+
+
 $validTypes = ($uploadMimes ? $uploadMimes :
   array('image/gif','image/jpeg','image/png','image/pjpeg','application/octet-stream'));
 
@@ -7,19 +26,37 @@ $validExts = ($uploadExtensions ? $uploadExtensions :
 
 $uploadMethod = $_POST['uploadMethod'];
 
+
+$xmlData = array(
+  'uploadFile' => array(
+    'activeUser' => array(
+      'userId' => (int) $user['userId'],
+      'userName' => ($user['userName']),
+    ),
+    'sentData' => array(),
+    'errorcode' => $failCode,
+    'errortext' => $failMessage,
+    'upload' => array(),
+  ),
+);
+
 switch ($uploadMethod) {
   case 'file':
   if (!in_array($_FILES['fileUpload']['type'],$validTypes)) {
-    $errorMessage = $phrases['uploadErrorBadType'];
+    $failCode = 'badFileType';
+    $failMessage = $phrases['uploadErrorBadType'];
   }
   elseif (!in_array($ext,$validExts) && $_FILES['fileUpload']['type'] == 'application/octet-stream') {
-    $errorMessage = $phrases['uploadErrorBadType'];
+    $failCode = 'badFileType';
+    $failMessage = $phrases['uploadErrorBadType'];
   }
   elseif ($_FILES['fileUpload']['size'] > 4 * 1000 * 1000) {
-    $errorMessage = $phrases['uploadErrorSize'];
+    $failCode = 'badFileSize';
+    $failMessage = $phrases['uploadErrorSize'];
   }
   elseif ($_FILES['fileUpload']['error'] > 0) {
-    $errorMessage = $phrases['uploadErrorOther'] . $_FILES['fileUpload']['error'];
+    $failCode = 'badFileUnknown';
+    $failMessage = $phrases['uploadErrorOther'] . $_FILES['fileUpload']['error'];
   }
   else {
     $contents = file_get_contents($_FILES['fileUpload']['tmp_name']);
@@ -48,18 +85,27 @@ switch ($uploadMethod) {
     break;
 
     default:
+    $failCode = 'badRawEncoding';
+    $failMessage = 'The specified file content encoding was not recognized.';
+
     $continue = false;
     break;
   }
 
   if ($md5hash) {
     if (md5($rawData) != $md5hash) {
+      $failCode = 'badRawHash';
+      $failMessage = 'The included MD5 hash did not match the file content.';
+
       $continue = false;
     }
   }
 
   if ($size) {
     if (strlen(md5($rawData)) != $size) {
+      $failCode = 'badRawSize';
+      $failMessage = 'The specified content length did not match the file content.';
+
       $continue = false;
     }
   }
@@ -82,7 +128,7 @@ if ($continue) {
   }
 
   if (!$contents) {
-    $errorMessage .= $phrases['uploadErrorFileContents'];
+    $failMessage = $phrases['uploadErrorFileContents'];
   }
   else {
     $prefile = sqlArr("SELECT v.id, v.fileId FROM {$sqlPrefix}fileVersions AS v, {$sqlPrefix}files AS f WHERE v.md5hash = '$md5hash' AND v.fileId = f.id AND f.userId = $user[userId]");
@@ -90,12 +136,7 @@ if ($continue) {
     if ($prefile) {
       $webLocation = "{$installUrl}file.php?hash={$prefile[md5hash]}";
 
-      if ($parseFlags) {
-        $message = $webLocation;
-      }
-      else {
-        $message = "[img]{$webLocation}[/img]";
-      }
+      $message = "[img]{$webLocation}[/img]";
     }
     else {
       mysqlQuery("INSERT INTO {$sqlPrefix}files (userId, name, size, mime) VALUES ($user[userId], '$name', '$size', '$mime')");
@@ -108,10 +149,12 @@ if ($continue) {
       if ($parseFlags) {
         $message = $webLocation;
       }
-      else {
-        $message = "[img]{$webLocation}[/img]";
-      }
     }
   }
 }
+
+
+echo fim_outputXml($xmlData);
+
+mysqlClose();
 ?>

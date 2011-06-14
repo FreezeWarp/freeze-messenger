@@ -32,7 +32,6 @@ $enableGeneralUploads = true; // If enabled, users can upload general files to t
 $uploadMimes = array('image/gif','image/jpeg','image/png','image/pjpeg','application/octet-stream'); // Mime types which all files must be.
 $uploadExtensions = array('gif','jpg','jpeg','png'); // Files who use the octetstream mimetype will be checked against their extension instead.
 $uploadMatchBoth = true; // If enabled, files must use both a compatible extension and mimetype.
-$uploadMethod = 'database'; // Files can be uploaded both to a MySQL database and to the server. Choose either "database" or "server".
 $encryptUploads = true; // Uploads can be encrypted on the server if uploaded to the server, though it takes up considerably more CPU (and a bit more storage space).
 
 

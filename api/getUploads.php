@@ -73,3 +73,4 @@ if ($uploads) {
 echo fim_outputXml($xmlData);
 
 mysqlClose();
+?>

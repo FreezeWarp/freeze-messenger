@@ -32,6 +32,7 @@ if ($compressOutput) {
 }
 
 $continue = true; // Simple "stop" variable used throughout for hooks.
+define("FIM_VERSION","3.0");
 
 
 // Connect to MySQL
