@@ -61,6 +61,12 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
   <link rel="stylesheet" type="text/css" href="client/css/$style/fim.css" media="screen" />
   <link rel="stylesheet" type="text/css" href="client/css/styles060911.min.css" media="screen" />
 
+  {{if="$layout == ''alt''"}{<style>
+    #menu { display: none; width: 0px; }
+    #messageListContainer { float: right; width: 50%; }
+    #textentryBoxMessage { float: left; width: 50%; }
+    #content { width: 100%; }</style>}}
+
   <!-- END Styles -->
 
 
