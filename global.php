@@ -31,6 +31,8 @@ if ($compressOutput) {
   ob_start(fim_htmlCompact);
 }
 
+$continue = true; // Simple "stop" variable used throughout for hooks.
+
 
 // Connect to MySQL
 if (!mysqlConnect($sqlHost,$sqlUser,$sqlPassword,$sqlDatabase)) {

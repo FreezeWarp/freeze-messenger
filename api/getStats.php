@@ -44,15 +44,26 @@ $xmlData = array(
   ),
 );
 
+
+($hook = hook('getStats_start') ? eval($hook) : '');
+
+
 $rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId IN ($roomList)",'roomId');
 
 
 foreach ($rooms AS $room) {
+  ($hook = hook('getStats_eachRoom_start') ? eval($hook) : '');
+
   if ($hidePostCounts) {
     if (!fim_hasPermission($room,$user,'know')) {
+      ($hook = hook('getStats_noPerm') ? eval($hook) : '');
+
       continue;
     }
   }
+
+
+  ($hook = hook('getStats_eachRoom_preRooms') ? eval($hook) : '');
 
 
   $totalPosts = sqlArr("SELECT m.messages AS count,
@@ -82,8 +93,10 @@ LIMIT $resultLimit
   );
 
 
-  foreach ($totalPosts AS $totalPoster) {
+  ($hook = hook('getStats_eachRoom_postRooms') ? eval($hook) : '');
 
+
+  foreach ($totalPosts AS $totalPoster) {
     $position++;
 
     $xmlData['getStats']['roomStats']['room ' . $room['roomId']]['users']['user ' . $totalPoster['userId']] = array(
@@ -96,7 +109,11 @@ LIMIT $resultLimit
       'messageCount' => (int) $totalPoster['count'],
       'position' => (int) $position,
     );
+
+    ($hook = hook('getStats_eachUser') ? eval($hook) : '');
   }
+
+  ($hook = hook('getStats_eachRoom_end') ? eval($hook) : '');
 }
 
 
@@ -104,8 +121,11 @@ LIMIT $resultLimit
 $xmlData['getStats']['errorcode'] = fim_encodeXml($failCode);
 $xmlData['getStats']['errortext'] = fim_encodeXml($failMessage);
 
-echo fim_outputXml($xmlData);
 
+($hook = hook('getStats_end') ? eval($hook) : '');
+
+
+echo fim_outputXml($xmlData);
 
 mysqlClose();
 ?>

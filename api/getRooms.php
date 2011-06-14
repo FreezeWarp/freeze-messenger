@@ -84,6 +84,9 @@ $xmlData = array(
 );
 
 
+($hook = hook('getRooms_start') ? eval($hook) : '');
+
+
 $rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE $whereClause TRUE ORDER BY $order",'id'); // Get all rooms
 foreach ($rooms AS $id => $room2) {
   if (fim_hasPermission($room2,$user,$permLevel)) {
@@ -112,14 +115,21 @@ if ($rooms2) {
         'hidden' => (bool) ($room['options'] & 8),
         'privateIm' => (bool) ($room['options'] & 16),
       ),
-      'bbcode' => $room['bbcode'],
+      'bbcode' => (int) $room['bbcode'],
     );
+
+    ($hook = hook('getRooms_eachRoom') ? eval($hook) : '');
   }
 }
 
 
 $xmlData['getRooms']['errorcode'] = fim_encodeXml($failCode);
 $xmlData['getRooms']['errortext'] = fim_encodeXml($failMessage);
+
+
+
+($hook = hook('getRooms_end') ? eval($hook) : '');
+
 
 echo fim_outputXml($xmlData);
 

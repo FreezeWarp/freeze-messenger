@@ -26,17 +26,22 @@ $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
 $ip = mysqlEscape($_SERVER['REMOTE_ADDR']); // Get the IP address of the user.
 
 
+($hook = hook('sendMessage_start') ? eval($hook) : '');
+
 
 $words = sqlArr("SELECT w.word, w.severity, w.param
 FROM {$sqlPrefix}censorLists AS l, {$sqlPrefix}censorWords AS w
 WHERE w.listId = l.id AND (w.severity = 'warn' OR w.severity = 'confirm' OR w.severity = 'block')",'word');
 
-if (!$words) {}
-else {
+if ($words) {
+  ($hook = hook('sendMessage_censor_start') ? eval($hook) : '');
+
   foreach ($words AS $word) {
     if ($_POST['ignoreBlock'] && $word['severity'] == 'confirm') continue;
 
     $searchText[] = addcslashes(strtolower($word['word']),'^&|!$?()[]<>\\/.+*');
+
+    ($hook = hook('sendMessage_censor_eachWord') ? eval($hook) : '');
   }
 
   if ($searchText) {
@@ -48,55 +53,63 @@ else {
       $blockedWordSeverity = $words[$blockedWord]['severity'];
     }
   }
+
+  ($hook = hook('sendMessage_censor_end') ? eval($hook) : '');
 }
 
 
+($hook = hook('sendMessage_preGen') ? eval($hook) : '');
 
-if (!$room) { // Bad room.
-  $failCode = 'badroom';
-  $failMessage = 'That room could not be found.';
-}
-elseif (strlen($message) == 0 || strlen($message) > 1000) { // Too short/long.
-  $failCode = 'badmessage';
-  $failMessage = 'The message you entered is either too long or too short.';
-}
-elseif (preg_match('/^(\ |\n|\r)*$/',$message)) { // All spaces.
-  $failCode = 'spacemessage';
-  $failMessage = 'In some countries, you could be arrested for posting only spaces. Now aren\'t you glad we stopped you?';
-}
-elseif (!fim_hasPermission($room,$user)) { // Not allowed to post.
-  $failCode = 'noperm';
-  $failMessage = 'You are not allowed to post in this room.';
-}
-elseif ($blockedWordSeverity == 'block') {
-  $failCode = 'blockcensor';
-  $failMessage = 'The word ' . $blockedWordText . ' is not allowed: ' . $blockedWordReason;
+if ($continue) {
+  if (!$room) { // Bad room.
+    $failCode = 'badroom';
+    $failMessage = 'That room could not be found.';
+  }
+  elseif (strlen($message) == 0 || strlen($message) > 1000) { // Too short/long.
+    $failCode = 'badmessage';
+    $failMessage = 'The message you entered is either too long or too short.';
+  }
+  elseif (preg_match('/^(\ |\n|\r)*$/',$message)) { // All spaces.
+    $failCode = 'spacemessage';
+    $failMessage = 'In some countries, you could be arrested for posting only spaces. Now aren\'t you glad we stopped you?';
+  }
+  elseif (!fim_hasPermission($room,$user)) { // Not allowed to post.
+    $failCode = 'noperm';
+    $failMessage = 'You are not allowed to post in this room.';
+  }
+  elseif ($blockedWordSeverity == 'block') {
+    $failCode = 'blockcensor';
+    $failMessage = 'The word ' . $blockedWordText . ' is not allowed: ' . $blockedWordReason;
 
-  $blockWordApi['severity'] = 'block';
-  $blockWordApi['word'] = $blockedWordText;
-  $blockWordApi['reason'] = $blockedWordReason;
-}
-elseif ($blockedWordSeverity == 'confirm') {
-  $failCode = 'confirmcensor';
-  $failMessage = 'Warning: The word ' . $blockedWordtext . ' may not be allowed: ' . $blockedWordReason;
+    $blockWordApi['severity'] = 'block';
+    $blockWordApi['word'] = $blockedWordText;
+    $blockWordApi['reason'] = $blockedWordReason;
+  }
+  elseif ($blockedWordSeverity == 'confirm') {
+    $failCode = 'confirmcensor';
+    $failMessage = 'Warning: The word ' . $blockedWordtext . ' may not be allowed: ' . $blockedWordReason;
 
-  $blockWordApi['severity'] = 'confirm';
-  $blockWordApi['word'] = $blockedWordText;
-  $blockWordApi['reason'] = $blockedWordReason;
-}
-elseif (strpos($message, '/topic') === 0) {
-  $title = preg_replace('/^\/topic (.+?)$/i','$1',$message);
+    $blockWordApi['severity'] = 'confirm';
+    $blockWordApi['word'] = $blockedWordText;
+    $blockWordApi['reason'] = $blockedWordReason;
+  }
+  elseif (strpos($message, '/topic') === 0) {
+    $title = preg_replace('/^\/topic (.+?)$/i','$1',$message);
 
-  $title = mysqlEscape(fimParse_censorParse($title)); // Parses the sources for MySQL and UTF8. We will also censor, but no BBcode.
+    $title = mysqlEscape(fimParse_censorParse($title)); // Parses the sources for MySQL and UTF8. We will also censor, but no BBcode.
 
-  fim_sendMessage('/me changed the topic to ' . $title,$user,$room,'topic');
-  mysqlQuery("UPDATE {$sqlPrefix}rooms SET topic = '$title' WHERE roomId = $room[id]");
-}
-else {
-  if (strpos($message, '/me') === 0) { $flag = 'me'; }
+    fim_sendMessage('/me changed the topic to ' . $title,$user,$room,'topic');
+    mysqlQuery("UPDATE {$sqlPrefix}rooms SET topic = '$title' WHERE roomId = $room[id]");
+  }
+  else {
+    if (strpos($message, '/me') === 0) { $flag = 'me'; }
 
-  fim_sendMessage($message,$user,$room,$flag);
+    fim_sendMessage($message,$user,$room,$flag);
+  }
 }
+
+
+($hook = hook('sendMessage_postGen') ? eval($hook) : '');
 
 
 
@@ -120,6 +133,8 @@ $xmlData = array(
   ),
 );
 
+
+($hook = hook('sendMessage_end') ? eval($hook) : '');
 
 
 echo fim_outputXml($xmlData);

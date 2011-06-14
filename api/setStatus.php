@@ -26,6 +26,9 @@ $roomId = (int) $_POST['roomId'];
 $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
 
 
+($hook = hook('setStatus_start') ? eval($hook) : '');
+
+
 if (!$room) { // Bad room.
   $failCode = 'badroom';
   $failMessage = 'That room could not be found.';
@@ -35,6 +38,8 @@ elseif (!fim_hasPermission($room,$user,'view')) { // Not allowed to post.
   $failMessage = 'You are not allowed to post in this room.';
 }
 else {
+  ($hook = hook('setStatus_inner_start') ? eval($hook) : '');
+
   if ($statusType == 'typing') {
     $value = (int) $statusValue;
   }
@@ -42,6 +47,8 @@ else {
     $value = mysqlEscape($statusValue);
 
     if (!in_array($value,array('available','away','busy','invisible','offline'))) {
+      ($hook = hook('setStatus_inner_query') ? eval($hook) : '');
+
       mysqlQuery("UPDATE vrc_ping SET status = '$value' WHERE userId = $user[userId] AND roomId = $room[id]");
     }
     else {
@@ -53,6 +60,8 @@ else {
     $failCode = 'badstatustype';
     $failMessage = 'That status type is not recognized. Only "status" and "typing" are supported.';
   }
+
+  ($hook = hook('setStatus_inner_end') ? eval($hook) : '');
 }
 
 
@@ -70,6 +79,10 @@ $xmlData = array(
     'errortext' => fim_encodeXml($failMessage),
   ),
 );
+
+
+($hook = hook('setStatus_end') ? eval($hook) : '');
+
 
 echo fim_outputXml($xmlData);
 

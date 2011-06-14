@@ -64,6 +64,8 @@ $xmlData = array(
 );
 
 
+($hook = hook('getUsers_start') ? eval($hook) : '');
+
 
 $users = sqlArr("SELECT u.userId,
  u.userName,
@@ -77,6 +79,27 @@ ORDER BY {$order}",'userId'); // Get all rooms
 
 if ($users) {
   foreach ($users AS $userData) {
+    ($hook = hook('getUsers_eachUser_start') ? eval($hook) : '');
+
+
+    switch ($loginMethod) {
+      case 'vbulletin':
+      if ($where) {
+        $getuserf = sqlArr("SELECT joindate AS joinDate FROM {$sqlUserTable} AS u WHERE {$sqlUserTableCols[userId]} = $getuser[userId]");
+      }
+      break;
+
+      case 'phpbb':
+      if ($where) {
+        $getuserf = sqlArr("SELECT u.user_posts AS posts, u.user_colour, u.user_avatar, u.user_regdate AS joinDate FROM {$sqlUserTable} AS u WHERE {$sqlUserTableCols[userId]} = $getuser[userId]");
+      }
+      break;
+    }
+
+
+    ($hook = hook('getUsers_eachUser_postForums') ? eval($hook) : '');
+
+
     $xmlData['getUsers']['users']['user ' . $userData['userId']] = array(
       'userName' => fim_encodeXml($userData['userName']),
       'userId' => (int) $userData['userId'],
@@ -92,7 +115,15 @@ if ($users) {
         'fontface' => fim_encodeXml($userData['defaultFontface']),
         'general' => (int) $userData['defaultGeneral']
       ),
+      'favRooms' => fim_encodeXml($getuser['favRooms']),
+      'postCount' => (int) $getuserf['posts'],
+      'joinDate' => (int) $getuserf['joinDate'],
+      'joinDateFormatted' => fim_encodeXml(fim_date(false,$getuserf['joinDate'])),
+      'userTitle' => fim_encodeXml($getuserf['usertitle']),
     );
+
+
+    ($hook = hook('getUsers_eachUser_end') ? eval($hook) : '');
   }
 }
 
@@ -100,8 +131,11 @@ if ($users) {
 $xmlData['getUsers']['errorcode'] = fim_encodeXml($failCode);
 $xmlData['getUsers']['errortext'] = fim_encodeXml($failMessage);
 
-echo fim_outputXml($xmlData);
 
+($hook = hook('getUsers_end') ? eval($hook) : '');
+
+
+echo fim_outputXml($xmlData);
 
 mysqlClose();
 ?>
