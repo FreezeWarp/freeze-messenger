@@ -118,21 +118,4 @@ function iif($condition,$true,$false) {
 function mysqlClose() {
   mysql_close();
 }
-
-
-function modLog($action,$data) {
-  global $sqlPrefix, $user;
-
-  $action = mysqlEscape($action);
-  $data = mysqlEscape($data);
-  $ip = mysqlEscape($_SERVER['REMOTE_ADDR']);
-  $userId = intval($user['userId']);
-
-  if (mysqlQuery("INSERT INTO {$sqlPrefix}modlog (userId, ip, action, data) VALUES ($userId, '$ip', '$action', '$data')")) {
-    return true;
-  }
-  else {
-    return false;
-  }
-}
 ?>
