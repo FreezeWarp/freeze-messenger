@@ -101,12 +101,12 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
     <ul>
       <li style="border-bottom: 1px solid;"><a href="#" id="messageArchive">$phrases[templateArchive]</a></li>
       <li><a href="#" id="roomList">$phrases[templateRoomList]</a></li>
-      {{if="$allowRoomCreation"}{<li><a href="#" id="createRoom">$phrases[templateCreateRoom]</a></li>}}
+      {{if="$allowRoomCreation && $user[''userId'']"}{<li><a href="#" id="createRoom">$phrases[templateCreateRoom]</a></li>}}
       {{if="$allowPrivateRooms && $user[''userId'']"}{<li style="border-bottom: 1px solid;"><a href="#" id="privateRoom">$phrases[templatePrivateIM]</a></li>}}
       <li><a href="#" id="online">$phrases[templateActiveUsers]</a></li>
       <li style="border-bottom: 1px solid;"><a href="#" id="viewStats">$phrases[templateStats]</a></li>
       {{if="$user[''userId'']"}{<li><a href="#" id="changeSettings">$phrases[templateChangeSettings]</a></li>}}
-      {{if="$user[''userId'']"}{<li><a href="./logout.php">$phrases[templateLogout]</a></li>}{<li><a href="./login.php">$phrases[templateLogin]</a></li>}}
+      {{if="$user[''userId'']"}{<li><a href="#" id="logout">$phrases[templateLogout]</a></li>}{<li><a href="./index.php">$phrases[templateLogin]</a></li>}}
     </ul>
     </div>
     {{if="fim_hasPermission($room,$user,''moderate'') || $user[''adminDefs'']"}{
@@ -114,8 +114,8 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
     <div>
     <ul>
       <li><a href="#" id="editRoom">$phrases[templateEditRoom]</a></li></if>
-      <if condition="fim_hasPermission($room,$user,''moderate'')"><li><a href="#" id="manageKick">$phrases[templateManageKickedUsers]</a></li></if>
-      <if condition="fim_hasPermission($room,$user,''moderate'')"><li><a href="#" id="kick">$phrases[templateKickUser]</a></li></if>
+      {{if="fim_hasPermission($room,$user,''moderate'')"}{<li><a href="#" id="manageKick">$phrases[templateManageKickedUsers]</a></li>}}
+      {{if="fim_hasPermission($room,$user,''moderate'')"}{<li><a href="#" id="kick">$phrases[templateKickUser]</a></li>}}
       {{if="$user[''adminDefs'']"}{<li><a href="./moderate.php">$phrases[templateAdmin]</a></li>
       <ul>
         {{if="$user[''adminDefs''][''modImages'']"}{<li><a href="./moderate.php?do=showimages">$phrases[templateAdminImages]</a></li>}}
@@ -172,7 +172,7 @@ $phrases[hookBodyEndFull]
 (5, 'login', '', '<div id="normalLogin">
   <br />
 
-    <form action="login.php" method="post" style="text-align: center; display: block;">
+    <form action="index.php" method="post" style="text-align: center; display: block;">
     <label for="userName">$phrases[loginUsername]</label><br />
     <input type="text" name="userName" /><br /><br />
 
@@ -184,14 +184,6 @@ $phrases[hookBodyEndFull]
 
       <button type="submit">$phrases[loginSubmit]</button><button type="reset">$phrases[loginReset]</button></form>
 </div>'),
-(6, 'guestLinks', '', '<ul>
-  <li><a href="index.php?action=online">Who''s Online</a></li>
-  <li><a href="viewRooms.php">Room List</a></li>
-  <li><a href="archive.php">Archives</a></li>
-  <ul>
-    <li><a href="index.php?action=archive&roomId=1">Main</a></li>
-  </ul>
-</ul>'),
 (7, 'container', 'title,content,class', '<table class="$class ui-widget">
   <thead>
     <tr class="hrow ui-widget-header ui-corner-top">
@@ -510,7 +502,7 @@ Shade<br />
 Ningamer<br />
 KingOfKYA<br />
 Cat333Pokémon
-</div><div id="copyright3">FreezeMessenger is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.<br /><br />This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.<br /><br />You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.</div>'),
+</div><div id="copyright3">FreezeMessenger is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.<br /><br />This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.<br /><br />You should have received a copy of the GNU General Public License along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</div>'),
 (29, 'help', 'bbcode,parseFlags,loginMethod', '<ul>
 <li><a href="#intro">Intro</a></li>
 <li><a href="#rules">Rules</a></li>
@@ -575,4 +567,29 @@ Keep in mind all content is heavily encrytped for privacy. Private conversations
 <em>User Agent</em>: $_SERVER[HTTP_USER_AGENT]<br />
 <em>Parse Flags</em>: {{if="$parseFlags"}{On}{Off}}<br />
 <em>Login Method</em>: $loginMethod<br />
-</div>');
+</div>'),
+
+(30, 'contextMenu', '', '<ul id="userMenu" class="contextMenu">
+  <li><a href="javascript:void(0);" data-action="private_im">Private IM</a></li>
+  <li><a href="javascript:void(0);" data-action="profile">View Profile</a></li>
+  {{if="fim_hasPermission($room, $user, ''moderate'')"}{<li><a href="javascript:void(0);" data-action="kick">Kick</a></li>}}
+  {{if="$user[''adminPrivs''][''modUsers'']"}{<li><a href="javascript:void(0);" data-action="ban">Ban</a></li>}}
+</ul>
+
+<ul id="messageMenu" class="contextMenu">
+  <li><a href="javascript:void(0);" data-action="link">Link To</a></li>
+  <li><a href="javascript:void(0);" data-action="delete">Delete</a></li>
+</ul>
+
+<ul id="messageMenuImage" class="contextMenu">
+  <li><a href="javascript:void(0);" data-action="url">Get URL</a></li>
+  <li><a href="javascript:void(0);" data-action="link">Link To</a></li>
+  <li><a href="javascript:void(0);" data-action="delete">Delete</a></li>
+</ul>
+
+<ul id="roomMenu" class="contextMenu">
+  <li><a href="javascript:void(0);" data-action="enter">Enter</a></li>
+  <li><a href="javascript:void(0);" data-action="archive">View Archive</a></li>
+  <li><a href="javascript:void(0);" data-action="edit">Edit</a></li>
+  <li><a href="javascript:void(0);" data-action="delete">Delete</a></li>
+</ul>');

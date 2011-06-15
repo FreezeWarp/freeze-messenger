@@ -164,7 +164,7 @@ function showAllRooms() {
         var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
         var isOwner = (parseInt($(this).find('owner').text()) == userId ? true : false);
 
-        var text = '<li><a href="chat.php?room=' + roomId + '">' + roomName + '</a></li>';
+        var text = '<li><a href="index.php?room=' + roomId + '">' + roomName + '</a></li>';
 
         if (isFav) {
           roomFavHtml += text;
@@ -499,11 +499,20 @@ function contextMenuParse() {
 $(document).ready(function() {
   $('#uploadFileForm').attr('action','uploadFile.php?roomId=' + roomId);
 
+
+
+  /*** Turn Menu into Accordion ***/
+
   $('#menu').accordion({
     autoHeight: false,
     navigation: true,
     clearStyle: true
   });
+
+
+
+
+  /*** General Generic Styling ***/
 
   $('table > thead > tr:first-child > td:first-child, table > tr:first-child > td:first-child').addClass('ui-corner-tl');
   $('table > thead > tr:first-child > td:last-child, table > tr:first-child > td:last-child').addClass('ui-corner-tr');
@@ -513,13 +522,17 @@ $(document).ready(function() {
   $('button').button();
 
 
-  $('body').append('<ul id="userMenu" class="contextMenu"><li><a href="javascript:void(0);" data-action="private_im">Private IM</a></li><li><a href="javascript:void(0);" data-action="profile">View Profile</a></li><li><a href="javascript:void(0);" data-action="kick">Kick</a></li><li><a href="javascript:void(0);" data-action="ban">Ban</a></li></ul>');
 
-  $('body').append('<ul id="messageMenu" class="contextMenu"><li><a href="javascript:void(0);" data-action="link">Link To</a></li><li><a href="javascript:void(0);" data-action="delete">Delete</a></li></ul>');
 
-  $('body').append('<ul id="messageMenuImage" class="contextMenu"><li><a href="javascript:void(0);" data-action="url">Get URL</a></li><li><a href="javascript:void(0);" data-action="link">Link To</a></li><li><a href="javascript:void(0);" data-action="delete">Delete</a></li></ul>');
+  /*** Context Menus ***/
 
-  $('body').append('<ul id="roomMenu" class="contextMenu"><li><a href="javascript:void(0);" data-action="edit">Edit</a></li><li><a href="javascript:void(0);" data-action="delete">Delete</a></li></ul>');
+  $.get('template.php','template=contextMenu',function(data) {
+    $('body').append(data);
+
+    console.log('Appended Context Menus to DOM');
+  });
+
+
 
 
   /*** Kick ***/
@@ -705,7 +718,7 @@ $(document).ready(function() {
             $(this).find('room').each(function() {
               var roomId = parseInt($(this).find('roomId').text().trim());
               var roomName = unxml($(this).find('roomName').text().trim());
-              roomData.push('<a href="/chat.php?room=' + roomId + '">' + roomName + '</a>');
+              roomData.push('<a href="/index.php?room=' + roomId + '">' + roomName + '</a>');
             });
             roomData = roomData.join(', ');
 
@@ -870,7 +883,7 @@ $(document).ready(function() {
           var isPriv = ($(this).find('optionDefinitions > privateIm').text().trim() == 'true' ? true : false);
           var isOwner = (parseInt($(this).find('owner').text().trim()) == userId ? true : false);
 
-          roomHtml += '<tr id="room' + roomId + '"><td><a href="/chat.php?room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isOwner ? '<a href="#" class="editRoomMulti" data-roomId="' + roomId + '"><img src="images/document-edit.png" class="standard" alt="Configure" /></a>' : '') + '</td></tr>';
+          roomHtml += '<tr id="room' + roomId + '"><td><a href="/index.php?room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isOwner ? '<a href="#" class="editRoomMulti" data-roomId="' + roomId + '"><img src="images/document-edit.png" class="standard" alt="Configure" /></a>' : '') + '</td></tr>';
         });
         quickDialogue('<table><thead><tr><th>Name</th><th>Topic</th><th>Actions</th></tr></thead><tbody>' + roomHtml + '</tbody></table>','Room List','roomListDialogue',1000);
       },

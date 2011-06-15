@@ -488,7 +488,7 @@ function parser1($text,$offset,$stop = false,$globalString = '') {
     $j = $text[$i];
 
     if ($iValueProc) {
-      $str .= iifl("$cond","$iv[1]","$iv[2]","global $globalString;");
+      $str .= iifl("$cond","$iv[1]","$iv[2]",($globalString ? "global $globalString;" : ''));
       if ($stop) return array($str,$i);
 
       $iv = array(1 => '', 2 => '');
@@ -619,7 +619,7 @@ function parser1($text,$offset,$stop = false,$globalString = '') {
   }
 
   if ($iValueProc) {
-    $str .= iifl("$cond","$iv[1]","$iv[2]","global $globalString;");
+    $str .= iifl("$cond","$iv[1]","$iv[2]",($globalString ? "global $globalString;" : ''));
     if ($stop) return array($str,$i);
 
     $iv = array(1 => '', 2 => '');
