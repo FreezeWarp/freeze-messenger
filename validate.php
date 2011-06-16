@@ -24,6 +24,7 @@
 ///* Require Base *///
 
 require_once('global.php');
+require_once('functions/loginReqs.php');
 
 
 ///* Required Forum-Included Functions *///
@@ -58,8 +59,6 @@ switch ($loginMethod) {
   break;
 
   case 'phpbb':
-  require_once('functions/phpbbReqs.php');
-
   $sqlUserTable = $forumPrefix . 'users'; // The user table in the login method used.
   $sqlUserGroupTable = $forumPrefix . 'groups'; // The userGroup table in the login method used.
   $sqlMemberGroupTable = $forumPrefix . 'user_group'; // The userGroup table in the login method used.
@@ -116,6 +115,8 @@ switch ($loginMethod) {
   break;
 
 }
+
+($hook = hook('validate_start') ? eval($hook) : '');
 
 
 
@@ -184,8 +185,8 @@ elseif (isset($_POST['userName'],$_POST['password'])) { // Data is stored in a j
   }
 }
 
-elseif (isset($_COOKIE['fim_msid'])) { // Magic Session!
-  $magicSessionHash = $_COOKIE['fim_msid'];
+elseif (isset($_COOKIE[$cookiePrefix . 'sessionid'])) { // Magic Session!
+  $magicSessionHash = $_COOKIE[$cookiePrefix . 'sessionid'];
 }
 
 elseif (isset($_GET['sessionhash'])) {
@@ -198,6 +199,8 @@ else { // No login data exists.
   $userId = false;
   $sessionHash = false;
 }
+
+($hook = hook('validate_retrieval') ? eval($hook) : '');
 
 
 
@@ -237,7 +240,7 @@ else {
   elseif ($magicSessionHash) {
     $user = sqlArr("SELECT u.* FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE magicHash = '" . mysqlEscape($magicSessionHash) . "'");
 
-    if ($user['userId'] == $_COOKIE['fim_uid']) {
+    if ($user['userId'] == $_COOKIE[$cookiePrefix . 'userid']) {
       $valid = true;
       $noSync = true;
     }
@@ -266,6 +269,7 @@ else {
   }
 }
 
+($hook = hook('validate_process') ? eval($hook) : '');
 
 
 
@@ -291,9 +295,11 @@ if ($valid) { // If the user is valid, process their preferrences.
       $user2['allGroups'] = $userCopy[$sqlUserTableCols['allGroups']];
       $user2['color'] = $userCopy[$sqlUserTableCols['allGroups']];
       $user2['avatar'] = $userCopy[$sqlUserTableCols['avatar']];
+
     }
 
     switch ($loginMethod) {
+
       case 'vbulletin':
 
       if ($userCopy[$sqlUserOptionsCol] & 64) $user2['timezoneoffset']++; // DST is autodetect. We'll just set it by hand.
@@ -319,46 +325,51 @@ if ($valid) { // If the user is valid, process their preferrences.
       $user2['profile'] = $forumUrl . 'memberlist.php?mode=viewprofile&u=' . $user2['userId'];
       break;
 
-      default:
-      die('Error');
-      break;
-
     }
 
-    $userprefs = sqlArr("SELECT * FROM {$sqlPrefix}users WHERE userId = " . (int) $user2['userId']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
 
-//    $socialGroups = sqlArr("SELECT * FROM {$sqlMemberGroupTable} WHERE {$sqlMemberGroupTableCols[userId]} = $user[userId] AND $sqlMemberGroupTableCols[type] = $sqlMemberGroupTableCols[validType]");
+    ($hook = hook('validate_preprefs') ? eval($hook) : '');
+
+
+    $userprefs = sqlArr("SELECT *
+      {$userprefs_select}
+    FROM {$sqlPrefix}users
+     {$userprefs_users}
+    WHERE userId = " . (int) $user2['userId'] . "
+      {$userprefs_where}
+    {$userprefs_end}");
+
 
     if (!$userprefs) {
-      mysqlQuery('INSERT INTO ' . $sqlPrefix . 'users
-SET userId = ' . (int) $user2['userId'] . ',
-  userName = "' . mysqlEscape($user2['userName']) . '",
-  userGroup = ' . (int) $user2['userGroup'] . ',
-  allGroups = "' . mysqlEscape($user2['allGroups']) . '",
-  userFormatStart = "' . mysqlEscape($user2['userFormatStart']) . '",
-  userFormatEnd = "' . mysqlEscape($user2['userFormatEnd']) . '",
-  avatar = "' . mysqlEscape($user2['avatar']) . '",
-  profile = "' . mysqlEscape($user2['profile']) . '",
-  socialGroups = "' . mysqlEscape($socialGroups['groups']) . '",
-  lastSync = NOW()'); // Create the new row
+      mysqlQuery('INSERT INTO {$sqlPrefix}users
+      SET userId = ' . (int) $user2['userId'] . ',
+        userName = "' . mysqlEscape($user2['userName']) . '",
+        userGroup = ' . (int) $user2['userGroup'] . ',
+        allGroups = "' . mysqlEscape($user2['allGroups']) . '",
+        userFormatStart = "' . mysqlEscape($user2['userFormatStart']) . '",
+        userFormatEnd = "' . mysqlEscape($user2['userFormatEnd']) . '",
+        avatar = "' . mysqlEscape($user2['avatar']) . '",
+        profile = "' . mysqlEscape($user2['profile']) . '",
+        socialGroups = "' . mysqlEscape($socialGroups['groups']) . '",
+        lastSync = NOW()'); // Create the new row
 
       $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
     }
-    elseif ($userprefs['lastSync'] <= (time() - ($sync ? $sync : (60 * 60 * 2))) || true) {
+    elseif ($userprefs['lastSync'] <= (time() - ($sync ? $syselectnc : (60 * 60 * 2))) || true) {
 
     $socialGroups = sqlArr("SELECT GROUP_CONCAT($sqlMemberGroupTableCols[groupId] SEPARATOR ',') AS groups FROM {$sqlMemberGroupTable} WHERE {$sqlMemberGroupTableCols[userId]} = $user2[userId] AND $sqlMemberGroupTableCols[type] = '$sqlMemberGroupTableCols[validType]'");
 
       mysqlQuery('UPDATE ' . $sqlPrefix . 'users
-SET userName = "' . mysqlEscape($user2['userName']) . '",
-  userGroup = ' . (int) $user2['userGroup'] . ',
-  allGroups = "' . mysqlEscape($user2['allGroups']) . '",
-  userFormatStart = "' . mysqlEscape($user2['userFormatStart']) . '",
-  userFormatEnd = "' . mysqlEscape($user2['userFormatEnd']) . '",
-  avatar = "' . mysqlEscape($user2['avatar']) . '",
-  profile = "' . mysqlEscape($user2['profile']) . '",
-  socialGroups = "' . mysqlEscape($socialGroups['groups']) . '",
-  lastSync = NOW()
-WHERE userId = ' . (int) $user2['userId']); // Create the new row
+      SET userName = "' . mysqlEscape($user2['userName']) . '",
+        userGroup = ' . (int) $user2['userGroup'] . ',
+        allGroups = "' . mysqlEscape($user2['allGroups']) . '",
+        userFormatStart = "' . mysqlEscape($user2['userFormatStart']) . '",
+        userFormatEnd = "' . mysqlEscape($user2['userFormatEnd']) . '",
+        avatar = "' . mysqlEscape($user2['avatar']) . '",
+        profile = "' . mysqlEscape($user2['profile']) . '",
+        socialGroups = "' . mysqlEscape($socialGroups['groups']) . '",
+        lastSync = NOW()
+      WHERE userId = ' . (int) $user2['userId']); // Create the new row
 
       $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
     }
@@ -368,6 +379,8 @@ WHERE userId = ' . (int) $user2['userId']); // Create the new row
 
 
   if ($session == 'create') {
+    ($hook = hook('validate_createsession') ? eval($hook) : '');
+
     $magicSessionHash = fim_generateSession();
 
     mysqlQuery("INSERT INTO {$sqlPrefix}sessions (userId,
@@ -380,6 +393,8 @@ WHERE userId = ' . (int) $user2['userId']); // Create the new row
   }
 
   elseif ($session == 'update' && $magicSessionHash) {
+    ($hook = hook('validate_updatesession') ? eval($hook) : '');
+
     die('1'); // TODO!
   }
 
@@ -388,21 +403,21 @@ WHERE userId = ' . (int) $user2['userId']); // Create the new row
   }
 
 
+
+  /* Set Cookie */
+
   if ($setCookie) {
+    ($hook = hook('validate_setcookie') ? eval($hook) : '');
+
     if ($rememberMe) {
-      setcookie('fim_password','',0,'/');
+      setcookie($cookiePrefix . 'password','',0,'/');
     }
 
-    setcookie('fim_msid',$magicSessionHash,0,'/'); // Set the cookie for the unique session.
-    setcookie('fim_uid',$user['userId'],0,'/'); // Set the cookie for the unique session.
+    setcookie($cookiePrefix . 'sessionid',$magicSessionHash,0,'/'); // Set the cookie for the unique session.
+    setcookie($cookiePrefix . 'userid',$user['userId'],0,'/'); // Set the cookie for the unique session.
   }
-}
 
-else { // If the user is not valid, remove all user data. If a user's name is correct but not the password, the user variable could contain sensitive data which should not be seen.
-  unset($user);
-  $user['settings'] = 45; // Set the user prefs to their defaults.
-  $user['allGroups'] = '1';
-  $user['userId'] = 0;
+
 }
 
 
@@ -413,126 +428,158 @@ else { // If the user is not valid, remove all user data. If a user's name is co
 
 if ($api) {
 
-  switch ($flag) {
-    case 'unrecpassencrpyt':
+  switch (LOGIN_FLAG) { // Generate a message based no the LOGIN_FLAG constant (...this should probably be a variable since it changes, but meh - it seems more logical as such)
+
+    case 'PASSWORD_ENCRYPT':
     $failMessage = 'The password encryption used was not recognized and could not be decoded.';
     break;
-    case 'nouser':
-    $failMessage = 'No user was given.';
+
+    case 'BAD_USERNAME':
+    $failMessage = 'The user was not recognized.';
     break;
-    case 'nopass':
-    $failMessage = 'No password was given.';
+
+    case 'BAD_PASSWORD':
+    $failMessage = 'The password was not correct.';
     break;
-    case 'noversion':
-    $failMessage = 'No API version string was given. The software only supports version 2.';
+
+    case 'API_VERSION_STRING':
+    $failMessage = 'The API version string specified is not recognized.';
     break;
-    case 'oldversion':
-    $failMessage = 'An old API version string was given. The software only supports version 2.';
+
+    case 'DEPRECATED_VERSION':
+    $failMessage = 'The API version specified is deprecated and may no longer be used.';
     break;
   }
 
-  if (!$valid && !$flag) {
-    $flag = 'invalid';
+  if (!$valid && !defined('LOGIN_FLAG')) { // Generic login flag
+    define('LOGIN_FLAG',INVALID_LOGIN);
+
     $failMessage = 'The login was incorrect.';
   }
 
+  $xmlData = array(
+    'login' => array(
+      'sentData' => array(
+        'apiVersion' => $_GET['apiVersion'],
+        'passwordEncrypt' => $_GET['passwordEncrypt'],
+        'userName' => $_GET['userName'],
+        'password' => $_GET['password'],
+      ),
 
-  // TODO: Port
-  header('Content-type: text/xml');
-  echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
-<login>
-  <sentData>
-    <apiVersion>" . fim_encodeXml($_GET['apiVersion']) . "</apiVersion>
-    <passwordEncrypt>" . fim_encodeXml($_GET['passwordEncrypt']) . "</passwordEncrypt>
-    <userName>" . fim_encodeXml($_GET['userName']) . "</userName>
-    <password>" . fim_encodeXml($_GET['password']) . "</password>
-  </sentData>
-  <valid>$valid</valid>
-  <errorcode>$flag</errorcode>
-  <errortext>$failMessage</errortext>
-  <sessionhash>$sessionhash</sessionhash>
-  <userdata>
-    <userId>$user[userId]</userId>
-    <userName>$user[userName]</userName>
-    <userGroup>$user[userGroup]</userGroup>
-    <allGroups>$user[allGroups]</allGroups>
-    <messageFormatting>
-      <standard>$user[defaultFormatting]</standard>
-      <highlight>$user[defaultHighlight]</highlight>
-      <color>$user[defaultColor]</color>
-      <font>$user[defaultFont]</font>
-    </messageFormatting>
-  </userdata>
-</login>
-";
+      'valid' => (bool) $valid,
+
+      'loginFlag' => (defined('LOGIN_FLAG') ? LOGIN_FLAG : ''),
+      'loginText' => $failMessage,
+
+      'sessionHash' => $sessionHash,
+
+      'userData' => array(
+        'userName' => ($user['userName']),
+        'userId' => (int) $user['userId'],
+        'userGroup' => (int) $user['userGroup'],
+        'avatar' => ($user['avatar']),
+        'profile' => ($user['profile']),
+        'socialGroups' => ($user['socialGroups']),
+        'startTag' => ($user['userFormatStart']),
+        'endTag' => ($user['userFormatEnd']),
+        'defaultFormatting' => array(
+          'color' => ($user['defaultColor']),
+          'highlight' => ($user['defaultHighlight']),
+          'fontface' => ($user['defaultFontface']),
+          'general' => (int) $user['defaultGeneral']
+        ),
+      ),
+    ),
+  );
+
+
+  ($hook = hook('validate_api') ? eval($hook) : '');
+
+
+  fim_outputXml($xmlData);
 
   die();
 
 }
 
-elseif (!$valid && !$noReqLogin && !$apiRequest) {
+else {
 
-}
+  if ($valid) {
+    /* The following defines each individual user's options via an associative array. It is highly recommended this be used to referrence settings. */
 
-elseif ($valid) {
-
-  /* The following defines each individual user's options via an associative array. It is highly recommended this be used to referrence settings. */
-
-  $user['optionDefs'] = array(
-    'disableFormatting' => ($user['settingsOfficialAjax'] & 16),
-    'disableVideos' => ($user['settingsOfficialAjax'] & 32),
-    'disableImages' => ($user['settingsOfficialAjax'] & 64),
-    'reversePostOrder' => ($user['settingsOfficialAjax'] & 1024),
-    'showAvatars' => ($user['settingsOfficialAjax'] & 2048),
-    'audioDing' => ($user['settingsOfficialAjax'] & 8192),
-  );
+    $user['optionDefs'] = array(
+      'disableFormatting' => ($user['settingsOfficialAjax'] & 16),
+      'disableVideos' => ($user['settingsOfficialAjax'] & 32),
+      'disableImages' => ($user['settingsOfficialAjax'] & 64),
+      'reversePostOrder' => ($user['settingsOfficialAjax'] & 1024),
+      'showAvatars' => ($user['settingsOfficialAjax'] & 2048),
+      'audioDing' => ($user['settingsOfficialAjax'] & 8192),
+    );
 
 
-  if (in_array($user['userId'],$superUsers)) {
-    $user['adminPrivs'] = 65535; // Super-admin, away!!!! (this defines all bitfields up to 32768)
-  }
+    if (in_array($user['userId'],$superUsers)) {
+      $user['adminPrivs'] = 65535; // Super-admin, away!!!! (this defines all bitfields up to 32768)
+    }
 
-  $user['adminDefs'] = array(
-    'modPrivs' => ($user['adminPrivs'] & 1), // This effectively allows a user to give himself everything else below
-    'modCore' => ($user['adminPrivs'] & 2), // This is the "untouchable" flag, but that's more or less all it means.
-    'modUsers' => ($user['adminPrivs'] & 16), // Ban, Unban, etc.
-    'modImages' => ($user['adminPrivs'] & 64), // File Uploads
+    $user['adminDefs'] = array(
+      'modPrivs' => ($user['adminPrivs'] & 1), // This effectively allows a user to give himself everything else below
+      'modCore' => ($user['adminPrivs'] & 2), // This is the "untouchable" flag, but that's more or less all it means.
+      'modUsers' => ($user['adminPrivs'] & 16), // Ban, Unban, etc.
+      'modImages' => ($user['adminPrivs'] & 64), // File Uploads
 
-    /* Should Generally Go Together */
-    'modCensorWords' => ($user['adminPrivs'] & 256), // Censor Words
-    'modCensorLists' => ($user['adminPrivs'] & 512), // Censor Lists
+      /* Should Generally Go Together */
+      'modCensorWords' => ($user['adminPrivs'] & 256), // Censor Words
+      'modCensorLists' => ($user['adminPrivs'] & 512), // Censor Lists
 
-    /* Should Generally Go Together */
-    'modPlugins' => ($user['adminPrivs'] & 4096), // Plugins
-    'modTemplates' => ($user['adminPrivs'] & 8192), // Templates
-    'modHooks' => ($user['adminPrivs'] & 16384), // Hooks
-    'modTranslations' => ($user['adminPrivs'] & 32768), // Translations
-  );
+      /* Should Generally Go Together */
+      'modPlugins' => ($user['adminPrivs'] & 4096), // Plugins
+      'modTemplates' => ($user['adminPrivs'] & 8192), // Templates
+      'modHooks' => ($user['adminPrivs'] & 16384), // Hooks
+      'modTranslations' => ($user['adminPrivs'] & 32768), // Translations
+    );
 
 
-  $user['userDefs'] = array(
-    'allowed' => ($user['userPrivs'] & 16),
-    'createRooms' => ($user['userPrivs'] & 32),
-  );
+    $user['userDefs'] = array(
+      'allowed' => ($user['userPrivs'] & 16), // Is not banned
+      'createRooms' => ($user['userPrivs'] & 32), // May create rooms
+    );
 
 
 
-  /* General "Hard" Ban Generation (If $banned, the user will have no permissions) */
-  if ($bannedUserGroups) {
-    if (fim_inArray($bannedUserGroups,explode(',',$user['allGroups']))) {
+    /* General "Hard" Ban Generation (If $banned, the user will have no permissions) */
+
+    if ($bannedUserGroups) { // The user is in a usergroup that is banned.
+      if (fim_inArray($bannedUserGroups,explode(',',$user['allGroups']))) {
+        $banned = true;
+      }
+    }
+
+    elseif (!$user['userDefs']['allowed']) { // The user is not allowed to access the chat.
       $banned = true;
     }
-  }
-  elseif (!$user['userDefs']['allowed']) {
-    $banned = true;
+
+
+    if ($user['adminDefs']['modCore']) { // The user is an admin, don't give a crap about the above!
+      $banned = false;
+    }
+
+
+
+
+    ($hook = hook('validate_loginValid') ? eval($hook) : '');
   }
 
-  if ($user['adminDefs']['modCore']) {
-    $banned = false;
+  else { // If the user is not valid, remove all user data. If a user's name is correct but not the password, the user variable could contain sensitive data which should not be seen.
+
+    unset($user);
+    $user['settings'] = 45; // Set the user prefs to their defaults.
+    $user['allGroups'] = '1';
+    $user['userId'] = 0;
+
+    ($hook = hook('validate_loginInvalid') ? eval($hook) : '');
   }
 
 }
 
-
-unset($sqlPassword); // Security!
+($hook = hook('validate_end') ? eval($hook) : '');
 ?>

@@ -101,7 +101,7 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
     <ul>
       <li style="border-bottom: 1px solid;"><a href="#" id="messageArchive">$phrases[templateArchive]</a></li>
       <li><a href="#" id="roomList">$phrases[templateRoomList]</a></li>
-      {{if="$allowRoomCreation && $user[''userId'']"}{<li><a href="#" id="createRoom">$phrases[templateCreateRoom]</a></li>}}
+      {{if="$allowRoomCreation && $user[''userPrivs''][''createRooms'']"}{<li><a href="#" id="createRoom">$phrases[templateCreateRoom]</a></li>}}
       {{if="$allowPrivateRooms && $user[''userId'']"}{<li style="border-bottom: 1px solid;"><a href="#" id="privateRoom">$phrases[templatePrivateIM]</a></li>}}
       <li><a href="#" id="online">$phrases[templateActiveUsers]</a></li>
       <li style="border-bottom: 1px solid;"><a href="#" id="viewStats">$phrases[templateStats]</a></li>

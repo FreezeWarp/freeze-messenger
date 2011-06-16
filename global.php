@@ -35,20 +35,19 @@ $continue = true; // Simple "stop" variable used throughout for hooks.
 define("FIM_VERSION","3.0"); // Version to be used by plugins if needed.
 
 
-// Connect to MySQL
-if (!mysqlConnect($sqlHost,$sqlUser,$sqlPassword,$sqlDatabase)) {
-  die('Could not connect to the database; the application has exitted.');
+if (!mysqlConnect($sqlHost,$sqlUser,$sqlPassword,$sqlDatabase)) { // Connect to MySQL
+  die('Could not connect to the database; the application has exitted.'); // Die to prevent furthr execution.
 }
 
+unset($sqlPassword); // Security!
 
-// Compress Output for Transfer if Configured To
-if ($compressOutput) {
+
+if ($compressOutput) { // Compress Output for transfer if configured to.
   ob_start(fim_htmlCompact);
 }
 
 
-// User Validation
-require_once('validate.php');
+require_once('validate.php'); // User Validation
 
 
 

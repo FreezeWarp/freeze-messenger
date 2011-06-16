@@ -339,68 +339,38 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
   }
 
 
-  $messageRaw = mysqlEscape($messageRaw);
-  $messageHtml = mysqlEscape($messageHtml);
-  $messageHtmlCache = mysqlEscape($messageHtmlCache);
-  $messageApi = mysqlEscape($messageApi);
-
-
-  mysqlQuery("INSERT INTO {$sqlPrefix}messages
-(userId,
-  roomId,
-  rawText,
-  htmlText,
-  apiText,
-  salt,
-  iv,
-  ip,
-  flag)
-
-VALUES ($user[userId],
-  $room[roomId],
-  '$messageRaw',
-  '$messageHtml',
-  '$messageApi',
-  '$saltNum',
-  '$iv',
-  '$ip',
-  '$flag')");
+  mysqlInsert(array(
+    'roomId' => (int) $room['roomId'],
+    'userId' => (int) $user['userId'],
+    'rawText' => $messageRaw,
+    'htmlText' => $messageHtml,
+    'apiText' => $messageApi,
+    'salt' => $salt,
+    'iv' => $iv,
+    'ip' => $ip,
+    'flag' => $flag,
+  ),"{$sqlPrefix}messagesCached");
   $messageId = mysqlInsertId();
 
-  mysqlQuery("INSERT INTO {$sqlPrefix}messagesCached
-(messageId,
-  roomId,
-  userId,
-  userName,
-  userGroup,
-  avatar,
-  profile,
-  userFormatStart,
-  userFormatEnd,
-  defaultFormatting,
-  defaultColor,
-  defaultHighlight,
-  defaultFontface,
-  time,
-  htmlText,
-  flag)
+  mysqlInsert(array(
+    'messageId' => (int) $messageId,
+    'roomId' => (int) $room['roomId'],
+    'userId' => (int) $user['userId'],
+    'userName' => $user['userName'],
+    'userGroup' => (int) $user['userGroup']
+    'avatar' => $user['avatar'],
+    'profile' => $user['profile'],
+    'userFormatStart' => $user['userFormatStart'],
+    'userFormatEnd' => $user['userFormatEnd']
+    'defaultFormatting' => $user['defaultFormatting']
+    'defaultColor' => $user['defaultColor']
+    'defaultHighlight' => $user['defaultHighlight']
+    'defaultFontface' => $user['defaultFontface'],
+    'htmlText' => $messageHtml,
+    'apiText' => $messageApi,
+    'flag' => $flag,
+  ),"{$sqlPrefix}messagesCached");
 
-VALUES ($messageId,
-  $room[roomId],
-  $user[userId],
-  '$user[userName]',
-  $user[userGroup],
-  '" . mysqlEscape($user['avatar']) . "',
-  '" . mysqlEscape($user['profile']) . "',
-  '" . mysqlEscape($user['userFormatStart']) . "',
-  '" . mysqlEscape($user['userFormatEnd']) . "',
-  $user[defaultFormatting],
-  '" . mysqlEscape($user['defaultColor']) . "',
-  '" . mysqlEscape($user['defaultHighlight']) . "',
-  '" . mysqlEscape($user['defaultFontface']) . "',
-  NOW(),
-  '$messageHtmlCache',
-  '$flag')");
   $messageId2 = mysqlInsertId();
 
   if ($messageId2 > 100) {
@@ -412,13 +382,14 @@ SET lastMessageTime = NOW(),
   lastMessageId = $messageId
 WHERE roomId = $room[roomId]");
 
-  mysqlQuery("INSERT INTO {$sqlPrefix}roomStats (userId,
-  roomId,
-  messages)
-VALUES ($user[userId],
-  $room[roomId],
-  1)
-ON DUPLICATE KEY
-  UPDATE messages = messages + 1");
+  mysqlInsert(array(
+    'userId' => $user['userId'],
+    'roomId' => $room['roomId'],
+    'messages' => 1),"{$sqlPrefix}roomStats",array(
+    'messages' => array(
+      'type' => 'raw',
+      'data' => 'messages + 1',
+    ),
+  ));
 }
 ?>

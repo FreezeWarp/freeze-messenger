@@ -18,8 +18,17 @@
  * For instance, conversion to PDO or MySQLi should be reasonably easy at this point. Or, changing from mysql_real_escape_string to mysql_escape_string could be done by changing just this one file.
  * Ultimately, it means extra security can be added if needed. Another example would be detecting for embedded DROP queries if data is not properly sanitized. */
 
-/* mysqlConnect(string($host),string($name),string($password),string($database))
- * return = void */
+
+/**
+* Connect to a MySQL server.
+*
+* @param string $host - The host of the MySQL server.
+* @param string $user - The MySQL user
+* @param string $password - The password of the user.
+* @param string $database - The database to connect to.
+* @return void
+* @author Joseph Todd Parsons
+*/
 function mysqlConnect($host,$user,$password,$database) {
   if (!mysql_connect($host,$user,$password)) {
     return false;
@@ -35,23 +44,46 @@ function mysqlConnect($host,$user,$password,$database) {
   return true;
 }
 
+
+/**
+* Connect to a MySQL server.
+*
+* @param string $string - The data to escape.
+* @return string - The escaped data.
+* @author Joseph Todd Parsons
+*/
 function mysqlEscape($string) {
   return mysql_real_escape_string($string);
 }
 
-/* mysqlQuery(string($query))
- * return = MySQL Resource */
+
+/**
+* Performs a MySQL Query.
+*
+* @param string $query - The raw query to execute.
+* @return The object returned by the query.
+* @author Joseph Todd Parsons
+*/
 function mysqlQuery($query) {
   if ($queryData = mysql_query($query)) {
     return $queryData;
   }
   else {
-    trigger_error("MySQL Error<br />Query: $query<br />Error: " . mysql_error(),E_USER_ERROR);
+    trigger_error("MySQL Error; Query: $query; Error: " . mysql_error(),E_USER_ERROR);
   }
 }
 
-/* mysqlArray(mysql_resource($queryData))
- * return = array */
+
+/**
+* Processes an array and returns two seperate arrays containing keys and values.
+*
+* @param string $host - The host of the MySQL server.
+* @param string $user - The MySQL user
+* @param string $password - The password of the user.
+* @param string $database - The database to connect to.
+* @return void
+* @author Joseph Todd Parsons
+*/
 function mysqlArray($queryData,$index = false) {
   global $queryCounter;
 
@@ -78,34 +110,161 @@ function mysqlArray($queryData,$index = false) {
   return false;
 }
 
+
+/**
+* A shorthand function that runs a mysql query and returns an associative array of values; the key is an index and the value is a seperate associative array of a single MySQL row.
+*
+* @param string $query - The query to run.
+* @param string $index - The column to base the key values on.
+* @return void
+* @author Joseph Todd Parsons
+*/
 function sqlArr($query,$index = false) {
   return mysqlArray(mysqlQuery($query),$index);
 }
 
-/* mysqlReadThrough(mysql_resource($queryData),string($function))
- * $function uses {{{x}}} to equal $row['x']
- * return = string */
-function mysqlReadThrough($queryData,$function) {
+
+/**
+* Processes a MySQL object and returns a formatted string based of function.
+*
+* @param string $queryData - An object returned by mysqlQuery
+* @param string $format - The format each row will be processed uner.
+* @return mixed - false if $queryData is false, otherwise the formatted string.
+* @author Joseph Todd Parsons
+*/
+function mysqlReadThrough($queryData,$format) {
   $queryData2 = $queryData;
 
-  while (false != ($row = mysql_fetch_assoc($queryData2))) {
-    $uid++;
-    $row['uid'] = $uid;
-    $data2 = preg_replace('/\$([a-zA-Z0-9]+)/e','$row[$1]',$function); // the "e" flag is a PHP-only extension that allows parsing of PHP code in the replacement.
-    $data2 = preg_replace('/\{\{(.*?)\}\}\{\{(.*?)\}\{(.*?)\}\}/e','stripslashes(iif(\'$1\',\'$2\',\'$3\'))',$data2); // For some reason, slashes are appended automatically when using the /e flag, thus corrupting links.
-    $data .= $data2;
+  if ($queryData) {
+    while (false != ($row = mysql_fetch_assoc($queryData2))) {
+      $uid++;
+      $row['uid'] = $uid;
+      $data2 = preg_replace('/\$([a-zA-Z0-9]+)/e','$row[$1]',$format); // the "e" flag is a PHP-only extension that allows parsing of PHP code in the replacement.
+      $data2 = preg_replace('/\{\{(.*?)\}\}\{\{(.*?)\}\{(.*?)\}\}/e','stripslashes(iif(\'$1\',\'$2\',\'$3\'))',$data2); // For some reason, slashes are appended automatically when using the /e flag, thus corrupting links.
+      $data .= $data2;
+    }
+    return $data;
   }
-  return $data;
+  else {
+    return false;
+  }
 }
 
-/* mysqlInsertId()
- * return = integer */
-function mysqlInsertId() {
-  return mysql_insert_id();
+
+/**
+* Processes an array and returns two seperate arrays containing keys and values.
+*
+* @param array $array - The array containing relevant key -> value pairs.
+* @return array - An array containing two seperate arrays containing columns and values respectively.
+* @author Joseph Todd Parsons
+*/
+function mysqlProcessArrayVal($array) {
+  $columns = array(); // Initialize arrays
+  $values = array(); // Initialize arrays
+
+  foreach($array AS $column => $data) { // Run through each element of the $dataArray, adding escaped columns and values to the above arrays.
+    $columns[] = mysqlEscape($column);
+
+    if (is_int($data)) { // Safe integer - leave it as-is.
+      $values[] = $data;
+    }
+
+    elseif (is_bool($data)) { // In MySQL, true evals to  1, false evals to 0.
+      if ($data === true) {
+        $values[] = 1;
+      }
+      elseif ($data === false) {
+        $values[] = 0;
+      }
+    }
+
+    elseif (is_null($data)) { // Null data, simply make it empty.
+      $values[] = '""';
+    }
+
+    elseif (is_array($data)) { // This allows for some more advanced datastructures; specifically, we use it here to define metadata that prevents mysqlEscape.
+      if($data['type'] == 'raw') {
+        $values[] = $data['value'];
+      }
+      else {
+        $values[] = '"' . mysqlEscape($data['value']) . '"';
+      }
+    }
+
+    else { // String or otherwise; encode it using mysql_escape and put it in quotes
+      $values[] = '"' . mysqlEscape($data) . '"';
+    }
+  }
 }
 
-/* iif(code($condition),string($true),string($false)
- * return = string */
+
+/**
+* Inserts data based on key->value pairs, and if needed adds ON DUPLICATE KEY statement.
+*
+* @param array $dataArray - The array containing relevant key -> value pairs.
+* @param string $table - The table to insert into.
+* @param array $updateArray - The conditions for ON DUPLICATE KEY UPDATE.
+* @return bool - true on success, false on failure
+* @author Joseph Todd Parsons
+*/
+function mysqlInsert($dataArray,$table,$updateArray) {
+
+  list($columns,$data) = mysqlProcessArrayVal($dataArray);
+
+  $columns = implode(',',$columns); // Convert the column array into to a string.
+  $data = implode(',',$columns); // Convert the data array into a string.
+
+
+  $query = "INSERT INTO $table ($columns) VALUES ($values)";
+
+  if ($updateArray) { // This is used for an ON DUPLICATE KEY request.
+    list($coluns, $data) = mysqlProcessArrayVal($updateArray);
+
+    for ($i = 0; $i <= count($columns); $i++) {
+      $update[] = "{$columns[$i]} = {$data[$i]}";
+    }
+
+    $update = implode($update,',');
+
+    $query = "$query ON DUPLICATE KEY UPDATE $update";
+
+  }
+
+//  return mysqlQuery($query);
+  die($query);
+}
+
+
+function mysqlUpdate($dataArray,$table,$conditionArray = false) {
+
+}
+
+
+/**
+* Returns the insert ID of the last run query.
+*
+* @return link - A resource created by mysqlQuery
+* @author Joseph Todd Parsons
+*/
+function mysqlInsertId($link = false) {
+  if ($link) {
+    return mysql_insert_id($link);
+  }
+  else {
+    return mysql_insert_id();
+  }
+}
+
+
+/**
+* A function equvilent to an IF-statement that returns a true or false value. It is similar to the function in most spreadsheets (EXCEL, LibreOffice CALC, Lotus 123), except th
+*
+* @param string $condition - The condition that will be evaluated. It must be a string.
+* @param string $true - A string to return if the above condition evals to true.
+* @param string $false - A string to return if the above condition evals to false.
+* @return bool - true on success, false on failure
+* @author Joseph Todd Parsons
+*/
 function iif($condition,$true,$false) {
   if (eval('return ' . stripslashes($condition) . ';')) {
     return $true;
@@ -113,9 +272,20 @@ function iif($condition,$true,$false) {
   return $false;
 }
 
-/* mysqlClose()
- * return = void */
-function mysqlClose() {
-  mysql_close();
+
+/**
+* Closes a MySQL resource.
+*
+* @return link - A resource created by mysqlConnect
+* @return void - true on success, false on failure
+* @author Joseph Todd Parsons
+*/
+function mysqlClose($link = false) {
+  if ($link) {
+    mysql_close();
+  }
+  else {
+    mysql_close($link);
+ }
 }
 ?>

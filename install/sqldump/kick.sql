@@ -14,7 +14,6 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 CREATE TABLE IF NOT EXISTS `{prefix}kick` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
   `userId` int(10) NOT NULL,
   `roomId` int(10) NOT NULL,
   `kickerid` int(10) NOT NULL,

@@ -35,7 +35,6 @@ $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = '$room'"); // Dat
 
 require_once('templateStart.php');
 
-
 if ($valid) {
 
   ($hook = hook('$$ajaxOfficial_chat_start') ? eval($hook) : '');
@@ -153,8 +152,6 @@ else {
   }
 
   echo container($phrases['loginTitle'],template('login'));
-
-  echo container($phrases['loginGuestLinks'],template('guestLinks'));
 
   ($hook = hook('$$ajaxOfficial_login_end') ? eval($hook) : '');
 }
