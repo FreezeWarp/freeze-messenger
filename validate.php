@@ -27,7 +27,7 @@ require_once('global.php');
 require_once('functions/loginReqs.php');
 
 
-static $apiVersion. $goodVersion, $sqlUserTable, $sqlUserGroupTable, $sqlMemberGroupTable, $sqlSessionTable, $sqlUserTableCols, $sqlUserGroupTableCols, $sqlMemberGroupTablecols;
+static $apiVersion, $goodVersion, $sqlUserTable, $sqlUserGroupTable, $sqlMemberGroupTable, $sqlSessionTable, $sqlUserTableCols, $sqlUserGroupTableCols, $sqlMemberGroupTablecols;
 
 
 ///* Required Forum-Included Functions *///
@@ -412,11 +412,84 @@ if ($valid) { // If the user is valid, process their preferrences.
 
 
 
+if ($valid) {
+  /* The following defines each individual user's options via an associative array. It is highly recommended this be used to referrence settings. */
+
+  $user['optionDefs'] = array(
+    'disableFormatting' => ($user['settingsOfficialAjax'] & 16),
+    'disableVideos' => ($user['settingsOfficialAjax'] & 32),
+    'disableImages' => ($user['settingsOfficialAjax'] & 64),
+    'reversePostOrder' => ($user['settingsOfficialAjax'] & 1024),
+    'showAvatars' => ($user['settingsOfficialAjax'] & 2048),
+    'audioDing' => ($user['settingsOfficialAjax'] & 8192),
+  );
+
+
+  if (in_array($user['userId'],$superUsers)) {
+    $user['adminPrivs'] = 65535; // Super-admin, away!!!! (this defines all bitfields up to 32768)
+  }
+
+  $user['adminDefs'] = array(
+    'modPrivs' => ($user['adminPrivs'] & 1), // This effectively allows a user to give himself everything else below
+    'modCore' => ($user['adminPrivs'] & 2), // This is the "untouchable" flag, but that's more or less all it means.
+    'modUsers' => ($user['adminPrivs'] & 16), // Ban, Unban, etc.
+    'modImages' => ($user['adminPrivs'] & 64), // File Uploads
+
+    /* Should Generally Go Together */
+    'modCensorWords' => ($user['adminPrivs'] & 256), // Censor Words
+    'modCensorLists' => ($user['adminPrivs'] & 512), // Censor Lists
+
+    /* Should Generally Go Together */
+    'modPlugins' => ($user['adminPrivs'] & 4096), // Plugins
+    'modTemplates' => ($user['adminPrivs'] & 8192), // Templates
+    'modHooks' => ($user['adminPrivs'] & 16384), // Hooks
+    'modTranslations' => ($user['adminPrivs'] & 32768), // Translations
+  );
+
+
+  $user['userDefs'] = array(
+    'allowed' => ($user['userPrivs'] & 16), // Is not banned
+    'createRooms' => ($user['userPrivs'] & 32), // May create rooms
+  );
+
+
+
+  /* General "Hard" Ban Generation (If $banned, the user will have no permissions) */
+
+  if ($bannedUserGroups) { // The user is in a usergroup that is banned.
+    if (fim_inArray($bannedUserGroups,explode(',',$user['allGroups']))) {
+      $banned = true;
+    }
+  }
+
+  elseif (!$user['userDefs']['allowed']) { // The user is not allowed to access the chat.
+    $banned = true;
+  }
+
+
+  if ($user['adminDefs']['modCore']) { // The user is an admin, don't give a crap about the above!
+    $banned = false;
+  }
+
+  ($hook = hook('validate_loginValid') ? eval($hook) : '');
+}
+
+else { // If the user is not valid, remove all user data. If a user's name is correct but not the password, the user variable could contain sensitive data which should not be seen.
+
+  unset($user);
+  $user['settings'] = 45; // Set the user prefs to their defaults.
+  $user['allGroups'] = '1';
+  $user['userId'] = 0;
+
+  ($hook = hook('validate_loginInvalid') ? eval($hook) : '');
+
+}
+
+
 
 if ($api) {
 
   switch (LOGIN_FLAG) { // Generate a message based no the LOGIN_FLAG constant (...this should probably be a variable since it changes, but meh - it seems more logical as such)
-
     case 'PASSWORD_ENCRYPT':
     $failMessage = 'The password encryption used was not recognized and could not be decoded.';
     break;
@@ -443,6 +516,7 @@ if ($api) {
 
     $failMessage = 'The login was incorrect.';
   }
+
 
   $xmlData = array(
     'login' => array(
@@ -475,6 +549,7 @@ if ($api) {
           'fontface' => ($user['defaultFontface']),
           'general' => (int) $user['defaultGeneral']
         ),
+
       ),
     ),
   );
@@ -489,84 +564,6 @@ if ($api) {
 
 }
 
-else {
-
-  if ($valid) {
-    /* The following defines each individual user's options via an associative array. It is highly recommended this be used to referrence settings. */
-
-    $user['optionDefs'] = array(
-      'disableFormatting' => ($user['settingsOfficialAjax'] & 16),
-      'disableVideos' => ($user['settingsOfficialAjax'] & 32),
-      'disableImages' => ($user['settingsOfficialAjax'] & 64),
-      'reversePostOrder' => ($user['settingsOfficialAjax'] & 1024),
-      'showAvatars' => ($user['settingsOfficialAjax'] & 2048),
-      'audioDing' => ($user['settingsOfficialAjax'] & 8192),
-    );
-
-
-    if (in_array($user['userId'],$superUsers)) {
-      $user['adminPrivs'] = 65535; // Super-admin, away!!!! (this defines all bitfields up to 32768)
-    }
-
-    $user['adminDefs'] = array(
-      'modPrivs' => ($user['adminPrivs'] & 1), // This effectively allows a user to give himself everything else below
-      'modCore' => ($user['adminPrivs'] & 2), // This is the "untouchable" flag, but that's more or less all it means.
-      'modUsers' => ($user['adminPrivs'] & 16), // Ban, Unban, etc.
-      'modImages' => ($user['adminPrivs'] & 64), // File Uploads
-
-      /* Should Generally Go Together */
-      'modCensorWords' => ($user['adminPrivs'] & 256), // Censor Words
-      'modCensorLists' => ($user['adminPrivs'] & 512), // Censor Lists
-
-      /* Should Generally Go Together */
-      'modPlugins' => ($user['adminPrivs'] & 4096), // Plugins
-      'modTemplates' => ($user['adminPrivs'] & 8192), // Templates
-      'modHooks' => ($user['adminPrivs'] & 16384), // Hooks
-      'modTranslations' => ($user['adminPrivs'] & 32768), // Translations
-    );
-
-
-    $user['userDefs'] = array(
-      'allowed' => ($user['userPrivs'] & 16), // Is not banned
-      'createRooms' => ($user['userPrivs'] & 32), // May create rooms
-    );
-
-
-
-    /* General "Hard" Ban Generation (If $banned, the user will have no permissions) */
-
-    if ($bannedUserGroups) { // The user is in a usergroup that is banned.
-      if (fim_inArray($bannedUserGroups,explode(',',$user['allGroups']))) {
-        $banned = true;
-      }
-    }
-
-    elseif (!$user['userDefs']['allowed']) { // The user is not allowed to access the chat.
-      $banned = true;
-    }
-
-
-    if ($user['adminDefs']['modCore']) { // The user is an admin, don't give a crap about the above!
-      $banned = false;
-    }
-
-
-
-
-    ($hook = hook('validate_loginValid') ? eval($hook) : '');
-  }
-
-  else { // If the user is not valid, remove all user data. If a user's name is correct but not the password, the user variable could contain sensitive data which should not be seen.
-
-    unset($user);
-    $user['settings'] = 45; // Set the user prefs to their defaults.
-    $user['allGroups'] = '1';
-    $user['userId'] = 0;
-
-    ($hook = hook('validate_loginInvalid') ? eval($hook) : '');
-  }
-
-}
 
 ($hook = hook('validate_end') ? eval($hook) : '');
 ?>

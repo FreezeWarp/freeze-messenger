@@ -35,7 +35,7 @@ $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = '$room'"); // Dat
 
 require_once('templateStart.php');
 
-if ($valid) {
+//if ($valid) {
 
   ($hook = hook('$$ajaxOfficial_chat_start') ? eval($hook) : '');
 
@@ -44,7 +44,7 @@ if ($valid) {
    * Remove all favourite groups a user is no longer a part of.
    * TODO: Move into Javascript (already possible via API) */
 
-  if ($user['favRooms']) {
+  /*if ($user['favRooms']) {
     $stop = false;
 
     $favRooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE options & 4 = FALSE AND roomId IN ($user[favRooms])",'id');
@@ -75,12 +75,12 @@ if ($valid) {
       $template['roomHtml'] = $roomHtml;
       $template['roomMs'] = $roomMs;
     }
-  }
+  }*/
 
 
 
 
-  if ($banned) { // Check that the user isn't banned.
+/*  if ($banned) { // Check that the user isn't banned.
     ($hook = hook('$$ajaxOfficial_chat_banned') ? eval($hook) : '');
 
     echo container($phrases['chatBannedTitle'],$phrases['chatBannedMessage']);
@@ -95,8 +95,9 @@ if ($valid) {
   else {
 
     list($fim_hasPermission,$hPC,$hPT) = fim_hasPermission($room,$user,'post',true);
-
-    if (($room['options'] & 2) && (($user['settings'] & 64) == false)) {
+*/
+    // TODO: Update to New Interface
+    /*if (($room['options'] & 2) && (($user['settings'] & 64) == false)) {
       echo template('chatMatureWarning');
     }
 
@@ -127,26 +128,26 @@ if ($valid) {
       ($hook = hook('$$ajaxOfficial_chat_accessDenied') ? eval($hook) : '');
 
       $chatTemplate = container('Access Denied',$hPM);
-    }
+    }*/
 
 
-    echo template('chatInnerTemplate');
-  }
+    echo template('chatTemplate');
+  //}
 
   ($hook = hook('$$ajaxOfficial_chat_end') ? eval($hook) : '');
-}
+//}
 
-else {
-  if ($_POST['action'] == 'register') {
-    if ($loginMethod == 'vanilla') {
+//else {
+  //if ($_POST['action'] == 'register') {
+  //  if ($loginMethod == 'vanilla') {
       // TODO
-    }
+ //   }
 
-    else {
-      trigger_error('Registration disabled for this login backend.');
-    }
-  }
-}
+//    else {
+  //    trigger_error('Registration disabled for this login backend.');
+   // }
+ // }
+//}
 
 echo template('templateEnd');
 ?>

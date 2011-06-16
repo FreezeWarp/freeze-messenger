@@ -76,8 +76,7 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
   <script src="client/js/jquery-1.6.1.min.js" type="text/javascript"></script>
   <script src="client/js/jquery-ui-1.8.13.custom.min.js" type="text/javascript"></script>
   <script src="client/js/jquery.plugins.05182011.min.js" type="text/javascript"></script>
-  <script src="client/js/fim-all.js" type="text/javascript" async></script>
-  <script src="client/js/fim-chat.js" type="text/javascript" async></script>
+  <script src="client/js/fim-all.js" type="text/javascript"></script>
 
   <!-- END Scripts -->
 
@@ -172,7 +171,7 @@ $phrases[hookBodyEndFull]
 (5, 'login', '', '<div id="normalLogin">
   <br />
 
-    <form action="index.php" method="post" style="text-align: center; display: block;">
+    <form action="index.php" method="post" id="loginForm" name="loginForm" style="text-align: center; display: block;">
     <label for="userName">$phrases[loginUsername]</label><br />
     <input type="text" name="userName" /><br /><br />
 
@@ -210,47 +209,6 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
   <input type="button" onclick="window.history.back()" value="Go Back" />
 </form>}}
     </div>'),
-(13, 'chatTemplate', 'textboxStyle,stopMessage', '
-
-  <div id="chatContainer"{{if="$stopMessage"}{style="display: none;"}}>
-  {{container}{<div id="title">
-    <span id="status" class="leftPart">
-      {{if="$room[''options''] & 1"}{<img src="images/bookmarks.png" class="standard" title="This is an Official Room" alt="Official" />}}<br />
-      <span id="refreshStatus" onclick="alert(''Failed '' + totalFails + '' times. Current refreshing every '' + (timeout / 1000 + .1) + '' seconds.'');"></span>
-    </span>
-
-    <div id="rightTitle" class="rightPart">
-      <form action="#" onsubmit="return false;" class="rightPart">
-        <button type="button" class="standard" id="icon_settings"></button>
-
-        <button type="button" class="standard" id="icon_note"></button>
-
-        <button type="button" class="standard" id="icon_help"></button>
-      </form>
-    </div>
-    $room[name]<br />
-    <em id="topic$room[id]">$room[topic]</em>
-  </div>}{
-  <div id="messageListContainer">
-    <div id="messageList">
-    </div>
-  </div>}}
-  <div id="textentryBoxMessage">
-    <form onsubmit="var message = $(''textarea#messageInput'').val(); if (message.length == 0) { alert(''Please enter your message.''); } else { sendMessage(message); $(''textarea#messageInput'').val(''''); } return false;" id="sendform">{{container}{<div class="leftPart">Enter a Message</div>
-      <div class="rightPart">
-        <button type="submit" class="standard" id="icon_submit"></button>
-        <button type="reset" class="standard" id="icon_reset"></button>
-      </div>}{
-      <div id="messageInputContainer" class="middle">
-        {{if="!$light"}{<div id="buttonMenuLeft">
-          {{if="$room[''bbcode''] <= 13"}{<button type="button" onclick="$(''#textentryBoxUrl'').dialog({width : ''600px'', title : ''Insert a Linked Document''});" class="standard" id="icon_url"></button><br />}}
-          {{if="$room[''bbcode''] <= 5"}{<button type="button" onclick="$(''#textentryBoxUpload'').dialog({width : ''600px'', title : ''Insert an Image''});" class="standard" id="icon_upload"></button><br />}}
-          {{if="$room[''bbcode''] <= 2"}{<button type="button" onclick="$(''#textentryBoxYoutube'').dialog({width : ''600px'', title : ''Insert a Youtube Video''});" class="standard" id="icon_video"></button>}}
-        </div>}}
-        <textarea onkeypress="if (event.keyCode == 13 && !event.shiftKey) { $(''#sendform'').submit(); return false; }" id="messageInput" autofocus="autofocus" placeholder="Enter your text." style="$textboxStyle"></textarea>
-      </div>}}
-    </form>
-</div>'),
 (16, 'createRoomSuccess', 'installUrl,roomId', '$phrases[createRoomCreatedAt]<br /><br />
 
 <form action="{$installUrl}index.php?room={$insertId}" method="post">
@@ -317,9 +275,9 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
     <option value="4">Cupertino</option>
     <option value="5">Darkhive</option>
     <option value="6">Start</option>
-  <option value="7">Vader</option>
-  <option value="8">Trontastic</option>
-  <option value="9">Humanity</option>
+    <option value="7">Vader</option>
+    <option value="8">Trontastic</option>
+    <option value="9">Humanity</option>
   </select><br />
   <small><span style="margin-left: 10px;">Change the theming of the messenger to your liking. "Cupertino" and "jQueryUI" are good choices.</span></small><br /><br />
 
@@ -384,8 +342,46 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
   <input type="submit" value="Unkick User" /><input type="reset" value="Reset" />
 </form>'),
 (26, 'chatMatureWarning', '', '{{container}{$phrases[chatMatureTitle]}{$phrases[chatMatureMessage]}}'),
-(27, 'chatInnerTemplate', 'parseFlags,canModerate,chatTemplate', '<div id="roomTemplateContainer">
-$chatTemplate
+(27, 'chatTemplate', 'parseFlags,canModerate,chatTemplate,textboxStyle,stopMessage', '<div id="roomTemplateContainer">
+  <div id="chatContainer"{{if="$stopMessage"}{style="display: none;"}}>
+    {{container}{<div id="title">
+      <span id="status" class="leftPart">
+        {{if="$room[''options''] & 1"}{<img src="images/bookmarks.png" class="standard" title="This is an Official Room" alt="Official" />}}<br />
+        <span id="refreshStatus" onclick="alert(''Failed '' + totalFails + '' times. Current refreshing every '' + (timeout / 1000 + .1) + '' seconds.'');"></span>
+      </span>
+
+      <div id="rightTitle" class="rightPart">
+        <form action="#" onsubmit="return false;" class="rightPart">
+          <button type="button" class="standard" id="icon_settings"></button>
+
+          <button type="button" class="standard" id="icon_note"></button>
+
+          <button type="button" class="standard" id="icon_help"></button>
+        </form>
+      </div>
+      $room[name]<br />
+      <em id="topic$room[id]">$room[topic]</em>
+    </div>}{
+    <div id="messageListContainer">
+      <div id="messageList">
+      </div>
+    </div>}}
+    <div id="textentryBoxMessage">
+      <form onsubmit="var message = $(''textarea#messageInput'').val(); if (message.length == 0) { alert(''Please enter your message.''); } else { sendMessage(message); $(''textarea#messageInput'').val(''''); } return false;" id="sendform">{{container}{<div class="leftPart">Enter a Message</div>
+        <div class="rightPart">
+          <button type="submit" class="standard" id="icon_submit"></button>
+          <button type="reset" class="standard" id="icon_reset"></button>
+        </div>}{
+        <div id="messageInputContainer" class="middle">
+          {{if="!$light"}{<div id="buttonMenuLeft">
+            {{if="$room[''bbcode''] <= 13"}{<button type="button" onclick="$(''#textentryBoxUrl'').dialog({width : ''600px'', title : ''Insert a Linked Document''});" class="standard" id="icon_url"></button><br />}}
+            {{if="$room[''bbcode''] <= 5"}{<button type="button" onclick="$(''#textentryBoxUpload'').dialog({width : ''600px'', title : ''Insert an Image''});" class="standard" id="icon_upload"></button><br />}}
+            {{if="$room[''bbcode''] <= 2"}{<button type="button" onclick="$(''#textentryBoxYoutube'').dialog({width : ''600px'', title : ''Insert a Youtube Video''});" class="standard" id="icon_video"></button>}}
+          </div>}}
+          <textarea onkeypress="if (event.keyCode == 13 && !event.shiftKey) { $(''#sendform'').submit(); return false; }" id="messageInput" autofocus="autofocus" placeholder="Enter your text." style="$textboxStyle"></textarea>
+        </div>}}
+      </form>
+  </div>
 </div>
 
 <div id="dialogues">
