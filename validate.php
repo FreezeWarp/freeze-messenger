@@ -30,6 +30,7 @@ require_once('functions/loginReqs.php');
 static $apiVersion, $goodVersion, $sqlUserTable, $sqlUserGroupTable, $sqlMemberGroupTable, $sqlSessionTable, $sqlUserTableCols, $sqlUserGroupTableCols, $sqlMemberGroupTablecols;
 
 
+
 ///* Required Forum-Included Functions *///
 
 switch ($loginMethod) {
@@ -342,9 +343,37 @@ if ($valid) { // If the user is valid, process their preferrences.
 
       $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
     }
-    elseif ($userprefs['lastSync'] <= (time() - ($sync ? $syselectnc : (60 * 60 * 2))) || true) {
+    elseif ($userprefs['lastSync'] <= (time() - ($sync ? $sync : (60 * 60 * 2)))) { // This updates various caches every so often. In general, it is a rather slow process, and as such does tend to take a rather long time (that is, compared to normal - it won't exceed 500miliseconds, really).
 
-    $socialGroups = sqlArr("SELECT GROUP_CONCAT($sqlMemberGroupTableCols[groupId] SEPARATOR ',') AS groups FROM {$sqlMemberGroupTable} WHERE {$sqlMemberGroupTableCols[userId]} = $user2[userId] AND $sqlMemberGroupTableCols[type] = '$sqlMemberGroupTableCols[validType]'");
+      /* Favourite Room Cleanup
+      * Remove all favourite groups a user is no longer a part of. */
+      if ($user['favRooms']) {
+        $stop = false;
+
+        $favRooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE options & 4 = FALSE AND roomId IN ($user[favRooms])",'id');
+
+        foreach ($favRooms AS $id => $room2) {
+          eval(hook('templateFavRoomsEachStart'));
+
+          if (!fim_hasPermission($room2,$user,'view') && !$stop) {
+            $currentRooms = explode(',',$user['favRooms']);
+            foreach ($currentRooms as $room3) if ($room3 != $room2['roomId'] && $room3 != '') {
+              $currentRooms2[] = (int) $room3; // Rebuild the array without the room ID.
+            }
+
+            $newRoomString = mysqlEscape(implode(',',$currentRooms2));
+
+            mysqlQuery("UPDATE {$sqlPrefix}users SET favRooms = '$newRoomString' WHERE userId = $user[userId]");
+
+            $stop = false;
+
+            continue;
+          }
+        }
+      }
+
+      /* Update Social Groups */
+      $socialGroups = sqlArr("SELECT GROUP_CONCAT($sqlMemberGroupTableCols[groupId] SEPARATOR ',') AS groups FROM {$sqlMemberGroupTable} WHERE {$sqlMemberGroupTableCols[userId]} = $user2[userId] AND $sqlMemberGroupTableCols[type] = '$sqlMemberGroupTableCols[validType]'");
 
       mysqlQuery('UPDATE ' . $sqlPrefix . 'users
       SET userName = "' . mysqlEscape($user2['userName']) . '",
@@ -549,8 +578,10 @@ if ($api) {
           'fontface' => ($user['defaultFontface']),
           'general' => (int) $user['defaultGeneral']
         ),
-
       ),
+      'userPermissions' => $user['userDefs'],
+      'userOptions' => $user['optionDefs'],
+      'adminPermissions' => $user['adminDefs'],
     ),
   );
 

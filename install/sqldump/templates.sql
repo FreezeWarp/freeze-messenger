@@ -589,3 +589,8 @@ Keep in mind all content is heavily encrytped for privacy. Private conversations
   <li><a href="javascript:void(0);" data-action="edit">Edit</a></li>
   <li><a href="javascript:void(0);" data-action="delete">Delete</a></li>
 </ul>');
+
+-- DIVIDE
+
+INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
+(31, 'register', '', '');

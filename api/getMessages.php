@@ -260,7 +260,7 @@ else {
               break;
             }
 
-            $xmlData['getMessages']['messages']['message ' . $message['messageId']] = array(
+            $xmlData['getMessages']['messages']['message ' . (int) $message['messageId']] = array(
               'roomData' => array(
                 'roomId' => (int) $room['roomId'],
                 'roomName' => ($room['name']),
@@ -363,7 +363,7 @@ WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.roomId IN ($user[watchRo
         continue;
       }
 
-      $xmlData['getMessages']['watchRooms']['room ' . $message['roomId']] = array(
+      $xmlData['getMessages']['watchRooms']['room ' . (int) $message['roomId']] = array(
         'roomId' => (int) $message['roomId'],
         'roomName' => ($message['roomName']),
         'lastMessageTime' => (int) $message['lastMessageTimestamp'],

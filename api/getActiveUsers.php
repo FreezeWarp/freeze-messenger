@@ -70,8 +70,8 @@ else {
     $xmlData['getActiveUsers']['sentData']['roomsList']['room ' . $room['roomId']] = $room['roomId'];
 
     $activeUsers = sqlArr("SELECT
-  u.{$sqlUserTableCols[userName]} AS userName,
-  u.{$sqlUserTableCols[userId]} AS userId,
+  u.userName AS userName,
+  u.userId AS userId,
   p.status,
   p.typing
   {$activeUsers_columns}

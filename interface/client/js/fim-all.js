@@ -871,10 +871,11 @@ function contextMenuParse() {
 /*******************************
  ******* Popup Calls ***********
  *******************************/
+
 popup = {
   'login': function() {
     $.get('template.php','template=login',function(data) {
-      quickDialogue(data,'Login','loginDialogue',600,false,function() {
+      quickDialogue(data,'Login','loginDialogue',600,function() {
         $("#loginForm").submit(function() {
           userName = $('#loginForm > #userName');
           password = $('#loginForm > #password');
@@ -893,6 +894,7 @@ popup = {
     });
   },
 };
+
 
 
 

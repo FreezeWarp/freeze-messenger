@@ -50,14 +50,16 @@ switch ($_GET['permLevel']) {
 
 switch ($_GET['order']) {
   case 'id':
+  case 'roomId':
   $order = 'roomId ' . ($reverseOrder ? 'DESC' : 'ASC');
   break;
 
   case 'name':
-  $order = 'name ' . ($reverseOrder ? 'DESC' : 'ASC');
+  case 'roomName':
+  $order = 'roomName ' . ($reverseOrder ? 'DESC' : 'ASC');
   break;
 
-  case 'native':
+  case 'smart':
   $order = '(options & 1) DESC, (options & 16) ASC';
   break;
 

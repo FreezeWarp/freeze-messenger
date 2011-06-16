@@ -49,7 +49,7 @@ $activeUsers = sqlArr("SELECT
   u.userId AS userId,
   u.userFormatStart AS userFormatStart,
   u.userFormatEnd AS userFormatEnd,
-  GROUP_CONCAT(r.name) AS roomNames,
+  GROUP_CONCAT(r.roomName) AS roomNames,
   GROUP_CONCAT(r.roomId) AS roomIds
   {$activeUsers_columns}
 FROM
