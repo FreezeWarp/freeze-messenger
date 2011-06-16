@@ -27,6 +27,9 @@ require_once('global.php');
 require_once('functions/loginReqs.php');
 
 
+static $apiVersion. $goodVersion, $sqlUserTable, $sqlUserGroupTable, $sqlMemberGroupTable, $sqlSessionTable, $sqlUserTableCols, $sqlUserGroupTableCols, $sqlMemberGroupTablecols;
+
+
 ///* Required Forum-Included Functions *///
 
 switch ($loginMethod) {
@@ -123,74 +126,57 @@ switch ($loginMethod) {
 
 ///* Obtain Login Data From Different Locations *///
 
-if (isset($_GET['userName'],$_GET['password'])) { // API.
-  $apiVersion = intval($_GET['apiVersion']);
-  switch($apiVersion) {
-    case '1':
-    $flag = 'oldversion'; // Too old!
-    break;
+if (isset($_POST['userName'],$_POST['password'])) { // API.
+  $apiVersion = $_POST['apiVersion']; // Get the version of the software the client intended for.
 
-    case '2':
-    // Do nothing
-    break;
-
-    default:
-    $flag = 'noversion'; // No version...
-    break;
+  if (!$apiVersion) {
+    define('LOGIN_FLAG','API_VERSION_STRING');
   }
 
-  $userName = fim_urldecode($_GET['userName']);
-  $password = fim_urldecode($_GET['password']);
+  else {
+    $apiVersionList = explode(',',$_POST['apiVersion']); // Split for all acceptable versions of the API.
 
-  switch ($_GET['passwordEncrypt']) {
-    case 'md5':
-    // Do nothing
-    break;
+    foreach ($apiVersionList AS $version) {
+      $apiVersionSubs = explode('.',$_POST['apiVersion']); // Break it up into subversions.
+      if ($apiVersionSubs[0] == 3 && $apiVersionSubs[1] == 0 && $apiVersionSubs[2] == 0) { // This is the same as version 3.0.0.
+        $goodVersion = true;
+      }
+    }
 
-    case 'plaintext':
-    $password = md5($password);
-    break;
+    if ($goodVersion) {
+      $userName = fim_urldecode($_POST['userName']);
+      $password = fim_urldecode($_POST['password']);
 
-    case 'base64':
-    $password = md5(base64_decode($password));
-    break;
 
-    default:
-    $flag = 'unrecpassencrpyt'; // No password encrypt specified.
-    break;
+      switch ($_POST['passwordEncrypt']) {
+        case 'md5':
+        // Do nothing
+        break;
+
+        case 'plaintext':
+        $password = md5($password);
+        break;
+
+        case 'base64':
+        $password = md5(base64_decode($password));
+        break;
+
+        default:
+        define('LOGIN_FLAG','PASSWORD_ENCRYPT');
+        break;
+      }
+    }
   }
 
   $api = true;
-}
-
-elseif (isset($_POST['userName'],$_POST['password'])) { // Data is stored in a just-submitted login form.
-
-  $userName = $_POST['userName'];
-  $password = $_POST['password'];
-
-  if ($loginMethod == 'vbulletin') {
-    if ($_POST['passwordEncrypt'] == 'md5') {
-      // Do nothing
-    }
-    else {
-      $password = md5($password);
-    }
-  }
-  else {
-
-  }
-
-  if ($_POST['rememberme']) {
-    $rememberMe = true;
-  }
 }
 
 elseif (isset($_COOKIE[$cookiePrefix . 'sessionid'])) { // Magic Session!
   $magicSessionHash = $_COOKIE[$cookiePrefix . 'sessionid'];
 }
 
-elseif (isset($_GET['sessionhash'])) {
-  $magicSessionHash = fim_urldecode($_GET['sessionhash']);
+elseif (isset($_POST['sessionhash'])) { // Session hash defined via POST data.
+  $magicSessionHash = $_POST['sessionhash'];
 }
 
 else { // No login data exists.
@@ -199,6 +185,7 @@ else { // No login data exists.
   $userId = false;
   $sessionHash = false;
 }
+
 
 ($hook = hook('validate_retrieval') ? eval($hook) : '');
 
@@ -460,10 +447,10 @@ if ($api) {
   $xmlData = array(
     'login' => array(
       'sentData' => array(
-        'apiVersion' => $_GET['apiVersion'],
-        'passwordEncrypt' => $_GET['passwordEncrypt'],
-        'userName' => $_GET['userName'],
-        'password' => $_GET['password'],
+        'apiVersion' => $_POST['apiVersion'],
+        'passwordEncrypt' => $_POST['passwordEncrypt'],
+        'userName' => $_POST['userName'],
+        'password' => $_POST['password'],
       ),
 
       'valid' => (bool) $valid,

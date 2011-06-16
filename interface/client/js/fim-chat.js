@@ -247,7 +247,7 @@ function sendMessage(message,confirmed) {
   $.ajax({
     url: apiPath + 'api/sendMessage.php',
     type: 'POST',
-    data: 'roomId=' + roomId + '&confirmed=' + confirmed + '&message=' + str_replace('+','%2b',str_replace('&','%26',str_replace('%','%25',message))),
+    data: 'roomId=' + roomId + '&confirmed=' + confirmed + '&message=' + urlEncode(message),
     cache: false,
     timeout: 2500,
     success: function(xml) {

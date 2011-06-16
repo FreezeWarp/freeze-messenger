@@ -135,25 +135,17 @@ if ($valid) {
 
   ($hook = hook('$$ajaxOfficial_chat_end') ? eval($hook) : '');
 }
-else {
-  ($hook = hook('$$ajaxOfficial_login_start') ? eval($hook) : '');
 
-  if ($flag) {
-    switch($flag) {
-      case 'nouser': $message .= $phrases['loginNoUser']; break; // No user with that userName exists.
-      case 'nopass': $message .= $phrases['loginNoPass']; break; // The password is wrong.
+else {
+  if ($_POST['action'] == 'register') {
+    if ($loginMethod == 'vanilla') {
+      // TODO
     }
 
-    eval(hook('loginFlag'));
-
-    if ($message) {
-      echo container($phrases['loginBad'],$message);
+    else {
+      trigger_error('Registration disabled for this login backend.');
     }
   }
-
-  echo container($phrases['loginTitle'],template('login'));
-
-  ($hook = hook('$$ajaxOfficial_login_end') ? eval($hook) : '');
 }
 
 echo template('templateEnd');

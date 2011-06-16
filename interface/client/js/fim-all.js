@@ -14,7 +14,12 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 /* Global Definitions
- * These are used throughout all other Javascript files, so are defined before all other FIM-specific files. */
+ * These are used throughout all other Javascript files, so are defined before all other FIM-specific files.
+
+
+ * Needed Changes:
+   * Consistency in use of templates+raw HTML.
+   * General logic. */
 
 
 /*******************************
@@ -27,6 +32,9 @@ function unxml(data) {
   return data;
 }
 
+function urlEncode(data) {
+  return data.replace(/\+/g,'%2b').replace(/\&/g,'%26').replace(/\%/g,'%25');
+}
 
 
 
@@ -35,27 +43,33 @@ function unxml(data) {
  ****** Variable Setting *******
  *******************************/
 
-var userId;
-var roomId;
-var showAvatars;
-var reversePostOrder;
-var audioDing;
-var longPolling;
-var layout;
 
-$(document).ready(function() {
-  userId = parseInt($('meta[name="fim_userId"]').attr('content'));
-  roomId = parseInt($('meta[name="fim_roomId"]').attr('content'));
+/* Define Variables as Glboal */
 
-  showAvatars = parseInt($('meta[name="fim_showAvatars"]').attr('content'));
-  reversePostOrder = parseInt($('meta[name="fim_reversePostOrder"]').attr('content'));
-  audioDing = parseInt($('meta[name="fim_audioDing"]').attr('content'));
-  longPolling = parseInt($('meta[name="fim_longPolling"]').attr('content'));
-
-  layout = $('meta[name="fim_layout"]').attr('content');
-});
+var userId; // The user ID who is logged in.
+var roomId; // The ID of the room we are in.
+var anonId; // ID used to represent anonymous posters.
+var showAvatars; // Use the complex document style?
+var reversePostOrder; // Show posts in reverse?
+var audioDing; // Fire an HTML5 audio ding during each unread message?
+var longPolling; // Use experimental longPolling technology?
+var layout; // Data layout.
 
 
+
+/* Objects for cleanness. */
+
+var roomRef = new Object;
+var roomList = new Array;
+var userRef = new Object;
+var userList = new Array;
+var groupRef = new Object;
+var groupList = new Array;
+
+
+
+/* Get the absolute API path.
+ * TODO: Define this is more "sophisticated manner". */
 
 var apiPathPre = window.location.pathname;
 apiPathPre = apiPathPre.split('/');
@@ -66,13 +80,8 @@ apiPathPre = apiPathPre.join('/');
 var apiPath = apiPathPre + '/';
 
 
-var roomRef = new Object;
-var roomList = new Array;
-var userRef = new Object;
-var userList = new Array;
-var groupRef = new Object;
-var groupList = new Array;
 
+/* Populate above objects as soon as a connection is available to do so. */
 
 $.ajax({
   url: apiPath + 'api/getUsers.php',
@@ -136,6 +145,7 @@ $.ajax({
     alert('Groups Not Obtained - Problems May Occur');
   }
 });
+
 
 
 
@@ -329,6 +339,59 @@ function removeEntry(type,id) {
 }
 
 
+function login(userName,password) {
+  console.log('Login Initiated');
+
+  var password = $.md5(password); // Encrypt the password using MD5.
+  var passwordEncrypt = 'md5';
+
+  console.log('Encrypted Password: ' + passwordEncrypt);
+
+  $.ajax({
+    url: apiPath + 'validate.php',
+    type: 'POST',
+    data: 'userName=' + userName + '&password=' + password + '&passwordEncrypt=' + passwordEncrypt + '&apiVersion=3'),
+    cache: false,
+    timeout: 2500,
+    success: function(xml) {
+      var loginFlag = $(xml).find('loginFlag').text().trim();
+      var loginText = $(xml).find('loginText').text().trim();
+
+      switch (loginFlag) {
+        case 'PASSWORD_ENCRYPT':
+        alert('The form encryption used was not accepted by the server.');
+        break;
+
+        case 'BAD_USERNAME':
+        $('<div style="display: none;">A valid room was not provided.</div>').dialog({ title : 'Error'});
+        break;
+
+        case 'BAD_PASSWORD':
+        $('<div style="display: none;">A valid message was not provided.</div>').dialog({ title : 'Error'});
+        break;
+
+        case 'API_VERSION_STRING':
+        $('<div style="display: none;">The server was unable to process the API version string specified.</div>').dialog({ title : 'Error'});
+        break;
+
+        case 'DEPRECATED_VERSION':
+        $('<div style="display: none;">The server will not accept this client because it is of a newer version.</div>').dialog({ title : 'Error'});
+        break;
+
+        default:
+        $('<div style="display: none;">Other Error: "' + loginText + '"</div>').dialog({ title : 'Error'});
+        break;v
+      }
+    },
+    error: function() {
+      $('<div style="display: none;">The login request could not be sent. Please try again.</div>').dialog({ title : 'Error'});
+    }
+  });
+
+  console.log('Login Finished');
+}
+
+
 function contextMenuParse() {
   $('.userName').contextMenu({
     menu: 'userMenu'
@@ -497,6 +560,19 @@ function contextMenuParse() {
  *******************************/
 
 $(document).ready(function() {
+  userId = parseInt($('meta[name="fim_userId"]').attr('content'));
+  roomId = parseInt($('meta[name="fim_roomId"]').attr('content'));
+
+  showAvatars = parseInt($('meta[name="fim_showAvatars"]').attr('content'));
+  reversePostOrder = parseInt($('meta[name="fim_reversePostOrder"]').attr('content'));
+  audioDing = parseInt($('meta[name="fim_audioDing"]').attr('content'));
+  longPolling = parseInt($('meta[name="fim_longPolling"]').attr('content'));
+
+  layout = $('meta[name="fim_layout"]').attr('content');
+
+
+
+  // Move?
   $('#uploadFileForm').attr('action','uploadFile.php?roomId=' + roomId);
 
 
@@ -1062,7 +1138,20 @@ $(document).ready(function() {
     });
   });
 
+  if (!userId) { // The user is not actively logged in.
+    $.get('template.php','template=login',function(data) {
+      quickDialogue(data);
+
+      if (!anonId) {
+        $('#messageInput').attr("disabled","disabled");
+      }
+
+      console.log('Popup for invalid user triggered.');
+    });
+  }
+
   windowResize();
+
 });
 
 function windowResize () {
