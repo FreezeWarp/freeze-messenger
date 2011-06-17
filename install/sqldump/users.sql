@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS `{prefix}users` (
   `socialGroups` varchar(1000) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `userFormatStart` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `userFormatEnd` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  `password` varchar(300) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `password` varchar(32) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `joinDate` timestamp NOT NULL,
   `birthDate` timestamp NOT NULL,
   `lastSync` timestamp NOT NULL,

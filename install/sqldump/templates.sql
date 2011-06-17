@@ -75,7 +75,7 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
 
   <script src="client/js/jquery-1.6.1.min.js" type="text/javascript"></script>
   <script src="client/js/jquery-ui-1.8.13.custom.min.js" type="text/javascript"></script>
-  <script src="client/js/jquery.plugins.05182011.min.js" type="text/javascript"></script>
+  <script src="client/js/jquery.plugins.js" type="text/javascript"></script>
   <script src="client/js/fim-all.js" type="text/javascript"></script>
 
   <!-- END Scripts -->

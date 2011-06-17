@@ -671,8 +671,13 @@ function login(userName,password) {
     success: function(xml) {
       var loginFlag = $(xml).find('loginFlag').text().trim();
       var loginText = $(xml).find('loginText').text().trim();
+      var sessionHash = $(xml).find('sessionHash').text().trim();
 
       switch (loginFlag) {
+        case '':
+        console.log('Login valid. Session hash: ' + sessionHash);
+        break;
+
         case 'PASSWORD_ENCRYPT':
         alert('The form encryption used was not accepted by the server.');
         break;
@@ -875,10 +880,10 @@ function contextMenuParse() {
 popup = {
   'login': function() {
     $.get('template.php','template=login',function(data) {
-      quickDialogue(data,'Login','loginDialogue',600,function() {
+      quickDialogue(data,'Login','loginDialogue',600,false,function() {
         $("#loginForm").submit(function() {
-          userName = $('#loginForm > #userName');
-          password = $('#loginForm > #password');
+          var userName = $('#loginForm > #userName').val();
+          var password = $('#loginForm > #password').val();
 
           login(userName,password);
 
