@@ -792,6 +792,29 @@ $data";
   }
 }
 
+function fim_outputKeys($array, $level = 0) { // Used only for creating documentation.
+  $indent = '';
+
+  for($i = 0;$i<=$level;$i++) {
+    $indent .= '  ';
+  }
+
+  foreach ($array AS $key => $value) {
+    $key = explode(' ',$key);
+    $key = $key[0];
+
+    $data .= "$indent<li>$key</li>\n";
+
+    if (is_array($value)) {
+      $data .= $indent . '  <ul>
+' . fim_outputKeys($value,$level + 1) . $indent . '</ul>
+';
+    }
+  }
+
+  return $data;
+}
+
 
 /**
 * HTML Compact Function So Google's PageSpeed Likes FIM (also great if GZIP isn't available)

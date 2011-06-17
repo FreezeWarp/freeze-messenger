@@ -436,52 +436,64 @@ if ($valid) { // If the user is valid, process their preferrences.
 
 }
 
+else {
+  unset($user);
+
+  $user = array(
+    'userId' => ($anonymousUser ? $anonymousUser : 0),
+    'settingsOfficialAjax' => 11264,
+    'adminPrivs' => 0,
+    'userPrivs' => 16,
+  );
+
+  ($hook = hook('validate_loginInvalid') ? eval($hook) : '');
+}
 
 
 
+
+
+/* The following defines each individual user's options via an associative array. It is highly recommended this be used to referrence settings. */
+
+$user['optionDefs'] = array(
+  'disableFormatting' => ($user['settingsOfficialAjax'] & 16),
+  'disableVideos' => ($user['settingsOfficialAjax'] & 32),
+  'disableImages' => ($user['settingsOfficialAjax'] & 64),
+  'reversePostOrder' => ($user['settingsOfficialAjax'] & 1024),
+  'showAvatars' => ($user['settingsOfficialAjax'] & 2048),
+  'audioDing' => ($user['settingsOfficialAjax'] & 8192),
+);
+
+
+if (in_array($user['userId'],$superUsers)) {
+  $user['adminPrivs'] = 65535; // Super-admin, away!!!! (this defines all bitfields up to 32768)
+}
+
+$user['adminDefs'] = array(
+  'modPrivs' => ($user['adminPrivs'] & 1), // This effectively allows a user to give himself everything else below
+  'modCore' => ($user['adminPrivs'] & 2), // This is the "untouchable" flag, but that's more or less all it means.
+  'modUsers' => ($user['adminPrivs'] & 16), // Ban, Unban, etc.
+  'modImages' => ($user['adminPrivs'] & 64), // File Uploads
+
+  /* Should Generally Go Together */
+  'modCensorWords' => ($user['adminPrivs'] & 256), // Censor Words
+  'modCensorLists' => ($user['adminPrivs'] & 512), // Censor Lists
+
+  /* Should Generally Go Together */
+  'modPlugins' => ($user['adminPrivs'] & 4096), // Plugins
+  'modTemplates' => ($user['adminPrivs'] & 8192), // Templates
+  'modHooks' => ($user['adminPrivs'] & 16384), // Hooks
+  'modTranslations' => ($user['adminPrivs'] & 32768), // Translations
+);
+
+
+$user['userDefs'] = array(
+  'allowed' => ($user['userPrivs'] & 16), // Is not banned
+  'createRooms' => ($user['userPrivs'] & 32), // May create rooms
+);
 
 
 if ($valid) {
-  /* The following defines each individual user's options via an associative array. It is highly recommended this be used to referrence settings. */
-
-  $user['optionDefs'] = array(
-    'disableFormatting' => ($user['settingsOfficialAjax'] & 16),
-    'disableVideos' => ($user['settingsOfficialAjax'] & 32),
-    'disableImages' => ($user['settingsOfficialAjax'] & 64),
-    'reversePostOrder' => ($user['settingsOfficialAjax'] & 1024),
-    'showAvatars' => ($user['settingsOfficialAjax'] & 2048),
-    'audioDing' => ($user['settingsOfficialAjax'] & 8192),
-  );
-
-
-  if (in_array($user['userId'],$superUsers)) {
-    $user['adminPrivs'] = 65535; // Super-admin, away!!!! (this defines all bitfields up to 32768)
-  }
-
-  $user['adminDefs'] = array(
-    'modPrivs' => ($user['adminPrivs'] & 1), // This effectively allows a user to give himself everything else below
-    'modCore' => ($user['adminPrivs'] & 2), // This is the "untouchable" flag, but that's more or less all it means.
-    'modUsers' => ($user['adminPrivs'] & 16), // Ban, Unban, etc.
-    'modImages' => ($user['adminPrivs'] & 64), // File Uploads
-
-    /* Should Generally Go Together */
-    'modCensorWords' => ($user['adminPrivs'] & 256), // Censor Words
-    'modCensorLists' => ($user['adminPrivs'] & 512), // Censor Lists
-
-    /* Should Generally Go Together */
-    'modPlugins' => ($user['adminPrivs'] & 4096), // Plugins
-    'modTemplates' => ($user['adminPrivs'] & 8192), // Templates
-    'modHooks' => ($user['adminPrivs'] & 16384), // Hooks
-    'modTranslations' => ($user['adminPrivs'] & 32768), // Translations
-  );
-
-
-  $user['userDefs'] = array(
-    'allowed' => ($user['userPrivs'] & 16), // Is not banned
-    'createRooms' => ($user['userPrivs'] & 32), // May create rooms
-  );
-
-
 
   /* General "Hard" Ban Generation (If $banned, the user will have no permissions) */
 
@@ -501,17 +513,6 @@ if ($valid) {
   }
 
   ($hook = hook('validate_loginValid') ? eval($hook) : '');
-}
-
-else { // If the user is not valid, remove all user data. If a user's name is correct but not the password, the user variable could contain sensitive data which should not be seen.
-
-  unset($user);
-  $user['settings'] = 45; // Set the user prefs to their defaults.
-  $user['allGroups'] = '1';
-  $user['userId'] = 0;
-
-  ($hook = hook('validate_loginInvalid') ? eval($hook) : '');
-
 }
 
 
@@ -588,8 +589,7 @@ if ($api) {
 
   ($hook = hook('validate_api') ? eval($hook) : '');
 
-
-  fim_outputXml($xmlData);
+  echo fim_outputXml($xmlData);
 
   die();
 

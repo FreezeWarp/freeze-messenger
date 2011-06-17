@@ -82,7 +82,7 @@ $xmlData = array(
       'messageLimit' => (int) $messageLimit,
     ),
     'errorcode' => $failCode,
-    'errormessage' => $failMessage,
+    'errortext' => $failMessage,
     'messages' => array(),
     'watchRooms' => array(),
     'activeUsers' => array(),

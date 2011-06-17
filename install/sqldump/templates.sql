@@ -166,12 +166,10 @@ $phrases[hookBodyEndAll]
 $phrases[hookBodyEndFull]
 </body>
 </html>'),
-(3, 'templateRoomHtml', 'room2', '          <li><a href="./index.php?room=$room2[id]" class="room" data-roomId="$room2[id]">$room2[name]</a></li>'),
-(4, 'templateRoomMs', 'room2', '    window.external.msSiteModeAddJumpListItem(''$room2[name]'',''{$installUrl}index.php?room=$room2[id]'',''{$installUrl}images/favicon.ico'');'),
 (5, 'login', '', '<div id="normalLogin">
   <br />
 
-    <form action="index.php" method="post" id="loginForm" name="loginForm" style="text-align: center; display: block;">
+    <form action="#" method="post" id="loginForm" name="loginForm" style="text-align: center; display: block;">
     <label for="userName">$phrases[loginUsername]</label><br />
     <input type="text" name="userName" /><br /><br />
 
@@ -266,7 +264,7 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
   <li><a href="#settings3">General</a></li>
 </ul>
 
-<form action="index.php?action=options&phase=2" method="post" id="changeSettingsForm">
+<form action="#" method="post" id="changeSettingsForm">
   <div id="settings1">
   <label for="theme">Theme:</label> <select name="settingsOfficialAjax_theme">
     <option value="1">jQueryUI Darkness</option>
@@ -335,7 +333,7 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
 
   <button type="submit">Save Settings</button><button type="reset">Reset</button>
 <input type="hidden" name="settingsOfficialAjax" value="true" /></form>'),
-(25, 'unkickForm', '', '<form action="./index.php?action=unkick&phase=2" method="post">
+(25, 'unkickForm', '', '<form action="#" method="post">
   <label for="userId">User ID</label>: <input type="text" name="userId" id="userId" value="$userId" style="width: 50px;" /><br />
   <label for="roomId">Room ID</label>: <input type="text" name="roomId" id="roomId" value="$roomId" style="width: 50px;" /><br />
 
@@ -411,7 +409,7 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
     </div>
 
     <div id="textentryBoxUrl">
-      <form action="/uploadFile.php?room=" method="post" target="upload_target3" id="linkForm" onsubmit="$(''#textentryBoxUrl'').dialog(''close'');">
+      <form action="#" method="post" target="upload_target3" id="linkForm" onsubmit="$(''#textentryBoxUrl'').dialog(''close'');">
         <fieldset>
           <legend>Normal Link</legend>
           <label for="linkUrl">URL: </label>
@@ -441,7 +439,7 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
     <div id="textentryBoxYoutube">
       <fieldset>
         <legend>Direct Link</legend>
-        <form action="/uploadFile.php?room=$room[id]" method="post" enctype="multipart/form-data" target="upload_target2" id="uploadYoutubeForm" onsubmit="$(''#textentryBoxYoutube'').dialog(''close'');">
+        <form action="#" method="post" enctype="multipart/form-data" target="upload_target2" id="uploadYoutubeForm" onsubmit="$(''#textentryBoxYoutube'').dialog(''close'');">
           <label for="youtubeUpload">URL: </label>
           <input name="youtubeUpload" id="youtubeUpload" type="url" value="http://" /><br />
           <button onclick="$(''#textentryBoxYoutube'').dialog(''close'');" type="button">Cancel</button>
@@ -566,7 +564,7 @@ Keep in mind all content is heavily encrytped for privacy. Private conversations
 </div>'),
 
 (30, 'contextMenu', '', '<ul id="userMenu" class="contextMenu">
-  <li><a href="javascript:void(0);" data-action="private_im">Private IM</a></li>
+    <li><a href="javascript:void(0);" data-action="private_im">Private IM</a></li>
   <li><a href="javascript:void(0);" data-action="profile">View Profile</a></li>
   {{if="fim_hasPermission($room, $user, ''moderate'')"}{<li><a href="javascript:void(0);" data-action="kick">Kick</a></li>}}
   {{if="$user[''adminPrivs''][''modUsers'']"}{<li><a href="javascript:void(0);" data-action="ban">Ban</a></li>}}

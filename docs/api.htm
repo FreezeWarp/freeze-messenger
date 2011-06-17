@@ -1,0 +1,665 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <title>Introduction - FreezeMessenger Documentation</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Joseph T. Parsons" />
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+  </head>
+
+  <body>
+    <section>
+      <header>
+        <h1>Application Programming Interface</h1>
+      </header>
+      <nav>
+        <ul>
+          <li>Introduction</li>
+          <ul>
+            <li>Reading the Documentation</li>
+            <li>Future Planning</li>
+            <li>Standard Directives</li>
+          </ul>
+          <li>Establishing a Login (validate.php)</li>
+          <ul>
+            <li>Directives</li>
+            <li>XML Tree</li>
+          </ul>
+          <li>Getting Posts (~/api/getMessages.php)</li>
+          <ul>
+            <li>Directives</li>
+            <li>XML Tree</li>
+          </ul>
+          <li>Sending a Message (~/api/sendMessage.php)</li>
+          <ul>
+            <li>Directives</li>
+            <li>XML Tree</li>
+          </ul>
+          <li>Getting the Active Users (~/api/getActiveUsers.php)</li>
+          <ul>
+            <li>Directives</li>
+            <li>XML Tree</li>
+          </ul>
+          <li>Get Rooms (~/api/getRooms.php)</li>
+          <ul>
+            <li>Directives</li>
+            <li>XML Tree</li>
+          </ul>
+          <li>“Who’s Online”  (~/api/getAllActiveUsers.php)</li>
+          <ul>
+            <li>Directives</li>
+            <li>XML Tree</li>
+          </ul>
+          <li>Room Info (~/api/getUserInfo.php)</li>
+          <li>User Info (~/api/getRoomInfo.php)</li>
+          <lI>Moderate (~/api/moderate.php)</li>
+        </ul>
+      </nav>
+
+      <section>
+        <h2>Introduction</h2>
+        <p>The FIM Application Programming Interface, or API, is designed for easy Client-to-Server communication with the FreezeMessenger Server Backend. It is not, nor should it be confused with, a proper Instant Messenger Protocol, which exchanges information through a network in its own unique transport. In reality, the FIM API is merely a pipe through the Hypertext Transfer Protocol, or HTTP (and if supported by the server HTTPS), and should for the most part be treated as such.</p>
+
+        <p>In general, all communications made through the HTTP will attempt to conform as well as possible to the RESTful standards, however there are some shortcommings. The PUT and DELETE methods are not used, due to lackluster browser support that was a must, and instead POST will be the sole method for all destructive queries, and GET for all nondestructive queries.</p>
+
+        <p>The overwhelming goal of the API is to provide as comprehensive as possible access to all backend features of FreezeMessenger, ranging from getting messages to uploading files. It is not perfect, will likely change time-to-time in the future, and unfortunately may not be able to do everything one would in an ideal world want. However, server backends are able to implement comprehensives plugins into the API to extend its functionality to a much greater degree. Outside of this, by default no support exists for performing administrative tasks in the API; these will instead need to be implemented by first- and third-party interfaces.</p>
+
+        <p>The choice of XML as the default format for the API comes from its human readability, unmatched extensibility, and support for complex data structures. However, the entire API is also available in the JSON format (and in theory in other third-party created formats) that may be easier to use on certain platorms. It is, however, less tested and may have slightly more bugs as a result of different poorly placed assumptions on the part of the API developers.</p>
+
+        <p>The XML and JSON APIs are not fully of tricks, but know that the XML variation conforms solely to the XML 1.0 specification with the text/xml content-type. Both APIs solely rely on Unicode (UTF-8), and will express formatted data using (to the greatest extent possible) XHTML 5-compliant code.</p>
+
+        <p>Finally, the entirety of this documentation is official and offered by the API’s developers, but at this time is still in early work in progress (as the API itself is). It is subject to change at any time, and as such it is recommended that XML data is parsed such that the order of sister nodes and parameters do not matter (as they shouldn’t in any standards parser), that unknown nodes and parameters are allowed, and that in the case of a missing node the client application is able to ignore it whenever reasonable.</p>
+
+        <p>The author retains all copyrights of the document text, diagrams, and related content. This documentation may not be reproduced, transmitted, or sold without express written consent of the author at the present time. Write to <a href="mailto:rehtaew@gmail.com">rehtaew [at] gmail.com</a>.</p>
+
+        <section>
+          <h3>Reading the Documentation</h3>
+          <p>Each command, starting with “Establishing a Login”, lists its script location in parenthesis after the title, its directives in a separate heading entitled “Directives”, and its data tree under “Structured Data Tree”. Examples are generally not given.</p>
+        </section>
+
+        <section>
+          <h3>Standard Directives</h3>
+          <p>The following standard directives can be used in some or all of the pages, and may be required:</p>
+          <ul>
+            <li>Session Hash (sessionhash) - Obtained in “Establishing a Login”, this is a temporary hexadecimal string which corresponds to a particular login. It is required in most pages.</li>
+            <li>Stale Session (stalesession) - By setting this variable to true, the sessionhash is not renewed as a request is made. This is generally not recommended, as sessions are usually only renewed every few minutes, but can have uses.</li>
+            </li>Format (format) - The API format to return the structured data in. “xml” is default, with “json” and “phparray” also options (though the latter is solely for the purpose of understanding the internal structure).</li>
+          </ul>
+        </section>
+      </section>
+
+      <section>
+        <h2>Establishing a Login (validate.php)</h2>
+
+        <section>
+        <h3>Notes</h3>
+        <ul>
+          <li>The login script is separate from the main API because it is a are part of the core system.</li>
+          <li>Note: Any request with a referrer that of the domain specified in config.php will run via the normal login process. Requests whose origins can not be identified as such will be required to specify a valid session token.<br /><br />
+
+This behavior can change depending on the administrator’s preferences, however.</li>
+        </ul>
+        </section>
+
+        <section>
+        <h3>Directives</h3>
+        <ul>
+          <li>username - The username of the user.</li>
+          <li>password - The password of the user using the proper specified encryption.</li>
+          <li>passwordEncrypt - The encryption used on the password.</li>
+          <ul>
+            <li>base64 - The plaintext password is Base64 encoded. This is beneficial to not have to escape complex data.</li>
+            <li>md5 (recommended) - The plaintext password is encoded as MD5. Recommended for secure implementations.</li>
+            <li>plaintext - The password as-is.</li>
+          </ul>
+          <li>apiVersion - The version of the API, removing any “0” subversions. For instance, the present version, “3.0.0” is “2”, while “3.0.1” would be “3.0.1” and “3.5.0” would be “3.5”. This can be comma seperated, with each item being a version that is known to work.<br /><br />
+
+          Note: Because subversions will never move or remove elements, you will only need to specify the lowest version supported in a major version. That is, “3” will be accepted if the server is running “3.0.1” or “3.5” but need “3.0.1” if the client is running 3.0.0.</li>
+          <li>requiredPlugins - If an application requires a plugin to be installed, list these in comma-seperated notation.</li>
+        </ul>
+        </section>
+
+       <section>
+       <h3>Data Tree</h3>
+       <ul>
+        <li>login</li>
+          <ul>
+          <li>sentData</li>
+            <ul>
+            <li>apiVersion</li>
+            <li>passwordEncrypt</li>
+            <li>userName</li>
+            <li>password</li>
+          </ul>
+          <li>valid</li>
+          <li>loginFlag</li>
+          <li>loginText</li>
+          <li>sessionHash</li>
+          <li>userData</li>
+            <ul>
+            <li>userName</li>
+            <li>userId</li>
+            <li>userGroup</li>
+            <li>avatar</li>
+            <li>profile</li>
+            <li>socialGroups</li>
+            <li>startTag</li>
+            <li>endTag</li>
+            <li>defaultFormatting</li>
+              <ul>
+              <li>color</li>
+              <li>highlight</li>
+              <li>fontface</li>
+              <li>general</li>
+            </ul>
+          </ul>
+          <li>userPermissions</li>
+            <ul>
+            <li>allowed</li>
+            <li>createRooms</li>
+          </ul>
+          <li>userOptions</li>
+            <ul>
+            <li>disableFormatting</li>
+            <li>disableVideos</li>
+            <li>disableImages</li>
+            <li>reversePostOrder</li>
+            <li>showAvatars</li>
+            <li>audioDing</li>
+          </ul>
+          <li>adminPermissions</li>
+            <ul>
+            <li>modPrivs</li>
+            <li>modCore</li>
+            <li>modUsers</li>
+            <li>modImages</li>
+            <li>modCensorWords</li>
+            <li>modCensorLists</li>
+            <li>modPlugins</li>
+            <li>modTemplates</li>
+            <li>modHooks</li>
+            <li>modTranslations</li>
+          </ul>
+        </ul>
+      </ul>
+      </section>
+    </section>
+
+    <section>
+      <h2>Getting Posts (~/api/getMessages.php)</h2>
+      <section>
+        <h3>Directives</h3>
+        <ul>
+          <li>rooms - A comma seperated list of rooms. Can be a single room in integer format. Some predefined constants can also be used.</li>
+          <li>allPublic - Retrieves posts from all non-private IM rooms which the user is granted permission to acces.</li>
+          <li>allPrivate - Retrieves posts from all private IM rooms which the user is a part of.<br /><br />
+
+          Note: Using more than one room can conflict or even break the script’s execution should the watchRooms or activeUsers flags be set to true.</li>
+
+          <li>messageLimit - The maximum number of posts to receive, defaulting to the internal limit of (in most cases) 40. Specifying 0 removes any limit.</li>
+
+          <li>Note: A hardcoded maximum of 500 is in place to prevent any potential issues. This will in the future be changable by the administrator.</li>
+
+          <li>messageDateMin, messageDateMax - The earliest post could have been made and the latest respectively. Use of newestDate only makes sense with no messageLimit. Do not specify to prevent checking.</li>
+
+          <li>messageIdMin, messageIdMax - All posts must be after this ID or before this ID respectively. Use of newestMessage only makes sense with no messageLimit. Do not specify to prevent checking.</li>
+
+          <li>messageIdStart - When specified WITHOUT the above two directives, messageIdStart will return all posts from this ID to this ID plus the messageLimit directive. This is strongly encouraged for all requests to the cache, e.g. for normal instant messenging sessions.</li>
+
+          <li>noping - Disables ping; useful for archive viewing.</li>
+
+          <li>watchRooms - Get unread messages from a user’s list of watchRooms (also applies to private IMs).</li>
+
+          <li>activeUsers - Returns a list of activeUsers in the room(s) if specified. This is identical to calling the getActiveUsers script, except with less data redundancy.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3>Data Tree</h3>
+        <ul>
+          <li>getMessages</li>
+            <ul>
+            <li>activeUser</li>
+              <ul>
+              <li>userId</li>
+              <li>userName</li>
+            </ul>
+            <li>sentData</li>
+              <ul>
+              <li>rooms</li>
+              <li>roomsList</li>
+                <ul>
+              </ul>
+              <li>newestMessage</li>
+              <li>oldestMessage</li>
+              <li>newestDate</li>
+              <li>oldestDate</li>
+              <li>messageLimit</li>
+            </ul>
+            <li>errorcode</li>
+            <li>errormessage</li>
+            <li>messages</li>
+              <ul>
+              <li>message</li>
+                <ul>
+                <li>roomData</li>
+                  <ul>
+                  <li>roomId</li>
+                  <li>roomName</li>
+                  <li>roomTopic</li>
+                </ul>
+                <li>messageData</li>
+                  <ul>
+                  <li>messageId</li>
+                  <li>messageTime</li>
+                  <li>messageTimeFormatted</li>
+                  <li>messageText</li>
+                    <ul>
+                    <li>apiText</li>
+                    <li>htmlText</li>
+                  </ul>
+                  <li>flags</li>
+                </ul>
+                <li>userData</li>
+                  <ul>
+                  <li>userName</li>
+                  <li>userId</li>
+                  <li>userGroup</li>
+                  <li>avatar</li>
+                  <li>socialGroups</li>
+                  <li>startTag</li>
+                  <li>endTag</li>
+                  <li>defaultFormatting</li>
+                    <ul>
+                    <li>color</li>
+                    <li>highlight</li>
+                    <li>fontface</li>
+                    <li>general</li>
+                  </ul>
+                </ul>
+              </ul>
+            </ul>
+            <li>watchRooms</li>
+            <ul>
+              <li>roomId</li>
+              <li>roomName</li>
+              <li>lastMessageTime</li>
+            </ul>
+            <li>activeUsers</li>
+            <ul>
+              <li>userId</li>
+              <li>userName</li>
+              <li>userGroup</li>
+              <li>socialGroups</li>
+              <li>startTag</li>
+              <li>endTag</li>
+            </ul>
+          </ul>
+        </ul>
+      </section>
+    </section>
+
+    <section>
+      <h2>Sending a Message (~/api/sendMessage.php)</h2>
+      <section>
+        <h3>Directives</h3>
+        <ul>
+          <li>roomid - The room ID.</li>
+          <li>message - The message text, properly URLencoded.</li>
+        </ul>
+      </section>
+      <section>
+        <h3>XML Tree</h3>
+        <ul>
+          <li>sendMessage</li>
+          <ul>
+            <li>activeUser</li>
+            <ul>
+              <li>userId</li>
+              <li>userName</li>
+            </ul>
+            <li>sentData</li>
+            <ul>
+              <li>roomId</li>
+              <li>message</li>
+            </ul>
+            <li>errorcode</li>
+            <li>errortext</li>
+            <li>censor</li>
+            <ul>
+              <li>word</li>
+              <li>severity</li>
+              <li>reason</li>
+            </ul>
+          </ul>
+        </ul>
+      </section>
+    </section>
+
+    <section>
+      <h2>Getting the Active Users of a Single Room (~/api/getActiveUsers.php)</h2>
+      <section>
+        <h3>Directives</h3>
+        <ul>
+          <li>rooms - The rooms to query.</li>
+          <li>onlineThreshold - The period of time after which a user is no longer “active”.</li>
+        </ul>
+      </section>
+      <section>
+        <h3>XML Tree</h3>
+      </section>
+    </section>
+
+XML Tree
+
+getActiveUsers
+activeUser
+sentData
+rooms
+roomsList
+room
+onlineThreshold
+time
+errorcode
+errortext
+rooms
+room
+roomdata
+roomid
+roomname
+roomtopic
+users
+users
+userid
+username
+displaygroupid
+room
+roomid
+roomname
+roomtopic
+
+Sample
+
+http://vrim.victoryroad.net/api/getActiveUsers.php?rooms=1&maxMessages=10&sessionhash=2acc0a6540f035ef24729e82a8a24f44:
+<?xml version="1.0" encoding="UTF-8" ?>
+<getActiveUsers>
+  <activeUser>
+    <userid>65</userid>
+    <username>LiteTheIronMan</username>
+  </activeUser>
+  <sentData>
+    <rooms>1</rooms>
+    <roomsList>
+      <room>1</room>
+    </roomsList>
+    <onlineThreshold>15</onlineThreshold>
+    <time>1302664563</time>
+  </sentData>
+  <errorcode></errorcode>
+  <errortext></errortext>
+  <rooms>
+    <room>
+      <roomData>
+          <roomid></roomid>
+          <roomname></roomname>
+          <roomtopic></roomtopic>
+      </roomData>
+      <users>
+    <user>
+      <userid>4332</userid>
+      <username>chibimoondotus</username>
+      <displaygroupid></displaygroupid>
+      <status>available</status>
+      <typing>0</typing>
+    </user>
+    <user>
+      <userid>737</userid>
+      <username>Kat</username>
+      <displaygroupid></displaygroupid>
+      <status>available</status>
+      <typing>0</typing>
+    </user>
+    <user>
+      <userid>65</userid>
+      <username>LiteTheIronMan</username>
+      <displaygroupid></displaygroupid>
+      <status>available</status>
+      <typing>0</typing>
+    </user>
+      </users>
+    </room>
+  </rooms>
+</getActiveUsers>
+
+Get Rooms (~/api/getRooms.php)
+
+Directives
+
+showDeleted - Will attempt to show deleted rooms, assuming the user has access to them (that is, is an administrator). Defaults to false.
+
+showPrivate - Will show any private rooms of the user. Defaults to true.
+
+order - How the rooms should be ordered.
+id - ID (Default)
+name - Name
+vrim - VRIM Common Sort (Official -> Nonofficial -> Private)
+
+
+orderReverse - If true the above search will be descending, not ascending.
+
+rooms - If specified, only specific rooms are listed. By default, all rooms are listed.
+
+XML Tree
+
+getRooms
+sentData
+order
+showDeleted
+errorcode
+errortext
+rooms
+room
+roomid
+roomname
+roomtopic
+allowedUsers
+allowedGroups
+favoruite
+options
+optionDefinitions
+official
+deleted
+hidden
+privateim
+
+
+
+Sample
+
+http://2.vrim.victoryroad.net/api/getRooms.php?sessionhash=2acc0a6540f035ef24729e82a8a24f44&rooms=1,2,3:
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<getRooms>
+  <sentData>
+    <order>id ASC</order>
+    <showDeleted>false</showDeleted>
+  </sentData>
+
+  <errorcode></errorcode>
+  <errortext></errortext>
+  <rooms>
+        <room>
+      <roomid>1</roomid>
+      <roomname>General Chat</roomname>
+      <roomtopic>onestop.mid</roomtopic>
+      <allowedUsers>*</allowedUsers>
+      <allowedGroups>*</allowedGroups>
+      <favourite>false</favourite>
+      <options>1</options>
+      <optionDefinitions>
+        <official>true</official>
+        <deleted>false</deleted>
+        <hidden>false</hidden>
+        <privateim>false</privateim>
+      </optionDefinitions>
+    </room>    <room>
+      <roomid>2</roomid>
+      <roomname>Serious</roomname>
+      <roomtopic>Serious discussion only.</roomtopic>
+      <allowedUsers>*</allowedUsers>
+      <allowedGroups>*</allowedGroups>
+      <favourite>false</favourite>
+      <options>1</options>
+      <optionDefinitions>
+        <official>true</official>
+        <deleted>false</deleted>
+        <hidden>false</hidden>
+        <privateim>false</privateim>
+      </optionDefinitions>
+    </room>    <room>
+      <roomid>3</roomid>
+      <roomname>Lounge</roomname>
+      <roomtopic>don&apos;t touch my topic :I</roomtopic>
+      <allowedUsers>*</allowedUsers>
+      <allowedGroups>*</allowedGroups>
+      <favourite>true</favourite>
+      <options>1</options>
+      <optionDefinitions>
+        <official>true</official>
+        <deleted>false</deleted>
+        <hidden>false</hidden>
+        <privateim>false</privateim>
+      </optionDefinitions>
+    </room>
+  </rooms>
+</getRooms>
+
+“Who’s Online”  (~/api/getAllActiveUsers.php)
+
+Directives
+
+onlineThreshold - The period of time after which a user is no longer “active”.
+
+XML Tree
+
+getAllActiveUsers
+sentData
+onlineThreshold
+time
+errorcode
+errortext
+users
+user
+userdata
+userid
+username
+rooms
+room
+roomid
+roomname
+
+
+
+Sample
+
+http://vrim.victoryroad.net/api/getAllActiveUsers.php?sessionhash=2acc0a6540f035ef24729e82a8a24f44:
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<getAllActiveUsers>
+  <activeUser>
+    <userid>408</userid>
+    <username>Yoshi648</username>
+  </activeUser>
+  <sentData>
+    <onlineThreshold>15</onlineThreshold>
+    <time>1302665516</time>
+  </sentData>
+  <errorcode></errorcode>
+  <errortext></errortext>
+  <users>
+        <user>
+      <userdata>
+        <userid>1121</userid>
+        <username>A'bom</username>
+      </userdata>
+      <rooms>
+            <room>
+        <roomid>9</roomid>
+        <roomname>Roleplaying</roomname>
+      </room>      <room>
+        <roomid>276</roomid>
+        <roomname>Private IM (A'bom and SpikyEaredPichu96)</roomname>
+      </room>
+      </rooms>
+    </user>
+    <user>
+      <userdata>
+        <userid>1</userid>
+        <username>Cat333Pokémon</username>
+      </userdata>
+      <rooms>
+            <room>
+        <roomid>116</roomid>
+        <roomname>Private IM (FreezeWarp and Cat333Pokémon)</roomname>
+      </room>      <room>
+        <roomid>304</roomid>
+        <roomname>Private IM (Jenova and Cat333Pokémon)</roomname>
+      </room>      <room>
+        <roomid>412</roomid>
+        <roomname>Private IM (chibimoondotus and Cat333Pokémon)</roomname>
+      </room>      <room>
+        <roomid>214</roomid>
+        <roomname>Private IM (Cat333Pokémon and Shade)</roomname>
+      </room>      <room>
+        <roomid>8</roomid>
+        <roomname>VRPC Roleplaying</roomname>
+      </room>      <room>
+        <roomid>5</roomid>
+        <roomname>VRPC</roomname>
+      </room>      <room>
+        <roomid>197</roomid>
+        <roomname>QUGZ Club~</roomname>
+      </room>
+      </rooms>
+    </user>
+    <user>
+      <userdata>
+        <userid>4332</userid>
+        <username>chibimoondotus</username>
+      </userdata>
+      <rooms>
+            <room>
+        <roomid>1</roomid>
+        <roomname>General Chat</roomname>
+      </room>      <room>
+        <roomid>412</roomid>
+        <roomname>Private IM (chibimoondotus and Cat333Pokémon)</roomname>
+      </room>
+      </rooms>
+    </user>
+  </users>
+</getAllActiveUsers>
+
+Room Info (~/api/getUserInfo.php)
+
+
+
+
+
+NUser Info (~/api/getRoomInfo.php)
+
+
+
+
+
+Moderate (~/api/moderate.php)
+
+Not yet coded.
+
+    <footer style="text-align: right;">
+      <span style="font-style: oblique;">Document Like You Were Dieing<br />
+      (and hope someone decides to continue your legacy)</span>
+    </footer>
+  </body>
+</html>
