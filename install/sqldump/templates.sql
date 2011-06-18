@@ -105,7 +105,7 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
       <li><a href="#" id="online">$phrases[templateActiveUsers]</a></li>
       <li style="border-bottom: 1px solid;"><a href="#" id="viewStats">$phrases[templateStats]</a></li>
       {{if="$user[''userId'']"}{<li><a href="#" id="changeSettings">$phrases[templateChangeSettings]</a></li>}}
-      {{if="$user[''userId'']"}{<li><a href="#" id="logout">$phrases[templateLogout]</a></li>}{<li><a href="./index.php">$phrases[templateLogin]</a></li>}}
+      {{if="$user[''userId'']"}{<li><a href="#" id="logout">$phrases[templateLogout]</a></li>}{<li><a href="#" id="login">$phrases[templateLogin]</a></li>}}
     </ul>
     </div>
     {{if="fim_hasPermission($room,$user,''moderate'') || $user[''adminDefs'']"}{
@@ -171,10 +171,10 @@ $phrases[hookBodyEndFull]
 
     <form action="#" method="post" id="loginForm" name="loginForm" style="text-align: center; display: block;">
     <label for="userName">$phrases[loginUsername]</label><br />
-    <input type="text" name="userName" /><br /><br />
+    <input type="text" name="userName" id="userName" /><br /><br />
 
       <label for="password">$phrases[loginPassword]</label><br />
-    <input type="password" name="password" /><br /><br />
+    <input type="password" name="password" id="password" /><br /><br />
 
       <label for="rememberme">$phrases[loginRemember]</label>
     <input type="checkbox" name="rememberme" id="rememberme" /><br /><br />

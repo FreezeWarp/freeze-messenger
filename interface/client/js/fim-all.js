@@ -62,6 +62,7 @@ function faviconFlash() {
 
 var userId; // The user ID who is logged in.
 var roomId; // The ID of the room we are in.
+var sessionHash; // The session hash of the active user.
 var anonId; // ID used to represent anonymous posters.
 var showAvatars; // Use the complex document style?
 var reversePostOrder; // Show posts in reverse?
@@ -657,10 +658,12 @@ function removeEntry(type,id) {
 function login(userName,password) {
   console.log('Login Initiated');
 
-  var password = $.md5(password); // Encrypt the password using MD5.
-  var passwordEncrypt = 'md5';
+// TODO: Enable for vBulletin
+//  var password = md5(password);
+//  var passwordEncrypt = 'md5';
+  var passwordEncrypt = 'plaintext';
 
-  console.log('Encrypted Password: ' + passwordEncrypt);
+  console.log('Encrypted Password: ' + password);
 
   $.ajax({
     url: apiPath + 'validate.php',
@@ -683,11 +686,11 @@ function login(userName,password) {
         break;
 
         case 'BAD_USERNAME':
-        $('<div style="display: none;">A valid room was not provided.</div>').dialog({ title : 'Error'});
+        $('<div style="display: none;">A valid user was not provided.</div>').dialog({ title : 'Error'});
         break;
 
         case 'BAD_PASSWORD':
-        $('<div style="display: none;">A valid message was not provided.</div>').dialog({ title : 'Error'});
+        $('<div style="display: none;">The password was incorrect.</div>').dialog({ title : 'Error'});
         break;
 
         case 'API_VERSION_STRING':

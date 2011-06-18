@@ -24,10 +24,88 @@
 ///* Require Base *///
 
 require_once('global.php');
+
+
+
+
 require_once('functions/loginReqs.php');
 
 
 static $apiVersion, $goodVersion, $sqlUserTable, $sqlUserGroupTable, $sqlMemberGroupTable, $sqlSessionTable, $sqlUserTableCols, $sqlUserGroupTableCols, $sqlMemberGroupTablecols;
+
+
+
+
+
+///* Obtain Login Data From Different Locations *///
+
+if (isset($_POST['userName'],$_POST['password'])) { // API.
+  $apiVersion = $_POST['apiVersion']; // Get the version of the software the client intended for.
+
+  if (!$apiVersion) {
+    define('LOGIN_FLAG','API_VERSION_STRING');
+  }
+
+  else {
+    $apiVersionList = explode(',',$_POST['apiVersion']); // Split for all acceptable versions of the API.
+
+    foreach ($apiVersionList AS $version) {
+      $apiVersionSubs = explode('.',$_POST['apiVersion']); // Break it up into subversions.
+      if ($apiVersionSubs[0] == 3 && $apiVersionSubs[1] == 0 && $apiVersionSubs[2] == 0) { // This is the same as version 3.0.0.
+        $goodVersion = true;
+      }
+    }
+
+    if ($goodVersion) {
+      $userName = fim_urldecode($_POST['userName']);
+      $password = fim_urldecode($_POST['password']);
+      $passwordEncrypt = fim_urldecode($_POST['passwordEncrypt']);
+
+      switch ($passwordEncrypt) {
+        case 'md5':
+        case 'plaintext':
+        // Do nothing, yet.
+        break;
+
+        case 'base64':
+        $password = base64_decode($password);
+        break;
+
+        default:
+        define('LOGIN_FLAG','PASSWORD_ENCRYPT');
+        break;
+      }
+    }
+  }
+
+  $api = true;
+}
+
+elseif (isset($_COOKIE[$cookiePrefix . 'sessionid'])) { // Magic Session!
+  $magicSessionHash = $_COOKIE[$cookiePrefix . 'sessionid'];
+}
+
+elseif (isset($_POST['sessionhash'])) { // Session hash defined via POST data.
+  $magicSessionHash = $_POST['sessionhash'];
+}
+
+elseif ((int) $anonymousUser >= 1) { // Unregistered user support.
+  $userId = $anonymousUser;
+  $anonymous = true;
+}
+
+else { // No login data exists.
+  $userName = false;
+  $password = false;
+  $userId = false;
+  $sessionHash = false;
+}
+
+
+($hook = hook('validate_retrieval') ? eval($hook) : '');
+
+
+
 
 
 
@@ -125,72 +203,6 @@ switch ($loginMethod) {
 
 
 
-///* Obtain Login Data From Different Locations *///
-
-if (isset($_POST['userName'],$_POST['password'])) { // API.
-  $apiVersion = $_POST['apiVersion']; // Get the version of the software the client intended for.
-
-  if (!$apiVersion) {
-    define('LOGIN_FLAG','API_VERSION_STRING');
-  }
-
-  else {
-    $apiVersionList = explode(',',$_POST['apiVersion']); // Split for all acceptable versions of the API.
-
-    foreach ($apiVersionList AS $version) {
-      $apiVersionSubs = explode('.',$_POST['apiVersion']); // Break it up into subversions.
-      if ($apiVersionSubs[0] == 3 && $apiVersionSubs[1] == 0 && $apiVersionSubs[2] == 0) { // This is the same as version 3.0.0.
-        $goodVersion = true;
-      }
-    }
-
-    if ($goodVersion) {
-      $userName = fim_urldecode($_POST['userName']);
-      $password = fim_urldecode($_POST['password']);
-
-
-      switch ($_POST['passwordEncrypt']) {
-        case 'md5':
-        // Do nothing
-        break;
-
-        case 'plaintext':
-        $password = md5($password);
-        break;
-
-        case 'base64':
-        $password = md5(base64_decode($password));
-        break;
-
-        default:
-        define('LOGIN_FLAG','PASSWORD_ENCRYPT');
-        break;
-      }
-    }
-  }
-
-  $api = true;
-}
-
-elseif (isset($_COOKIE[$cookiePrefix . 'sessionid'])) { // Magic Session!
-  $magicSessionHash = $_COOKIE[$cookiePrefix . 'sessionid'];
-}
-
-elseif (isset($_POST['sessionhash'])) { // Session hash defined via POST data.
-  $magicSessionHash = $_POST['sessionhash'];
-}
-
-else { // No login data exists.
-  $userName = false;
-  $password = false;
-  $userId = false;
-  $sessionHash = false;
-}
-
-
-($hook = hook('validate_retrieval') ? eval($hook) : '');
-
-
 
 
 ///* Process Login Data *///
@@ -199,7 +211,20 @@ if ($flag) {
   // Do nothing.
 }
 else {
-  if ($userName && $password) {
+  if ($magicSessionHash) {
+    $user = sqlArr("SELECT u.* FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE magicHash = '" . mysqlEscape($magicSessionHash) . "'");
+
+    if ($user['userId'] == $_COOKIE[$cookiePrefix . 'userid']) {
+      $valid = true;
+      $noSync = true;
+    }
+    else {
+      $valid = false;
+    }
+
+  }
+
+  elseif ($userName && $password) {
     $user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userName] = '" . mysqlEscape($userName) . "' LIMIT 1");
 
     if (processLogin($user,$password)) {
@@ -213,7 +238,7 @@ else {
   }
 
   elseif ($userId && $password) {
-    $user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $userId . '" LIMIT 1');
+    $user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' LIMIT 1');
 
     if (processLogin($user,$password)) {
       $setCookie = true;
@@ -225,21 +250,15 @@ else {
     }
   }
 
-  elseif ($magicSessionHash) {
-    $user = sqlArr("SELECT u.* FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE magicHash = '" . mysqlEscape($magicSessionHash) . "'");
-
-    if ($user['userId'] == $_COOKIE[$cookiePrefix . 'userid']) {
-      $valid = true;
-      $noSync = true;
-    }
-    else {
-      $valid = false;
-    }
-
+  elseif ($userId && $anonymousUser) {
+    $user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' LIMIT 1');
+    $setCookie = true;
+    $valid = true;
+    $session = 'create';
   }
 
   elseif ($userId && $passwordVBulletin) {
-    $user = sqlArr("SELECT * FROM $sqlUserTable WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' AND "' . mysqlEscape($_COOKIE[$forumCookiePrefix . 'password'])  . '" = MD5(CONCAT(password,"' . mysqlEscape($forumCookieSalt) . '"))'); // Query from vBulletin user table.
+    $user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' AND "' . mysqlEscape($_COOKIE[$forumCookiePrefix . 'password'])  . '" = MD5(CONCAT(password,"' . mysqlEscape($forumCookieSalt) . '"))'); // Query from vBulletin user table.
 
     if ($user) {
       $valid = true;
@@ -329,8 +348,8 @@ if ($valid) { // If the user is valid, process their preferrences.
 
 
     if (!$userprefs) {
-      mysqlQuery('INSERT INTO {$sqlPrefix}users
-      SET userId = ' . (int) $user2['userId'] . ',
+      mysqlQuery("INSERT INTO {$sqlPrefix}users
+      SET userId = " . (int) $user2['userId'] . ',
         userName = "' . mysqlEscape($user2['userName']) . '",
         userGroup = ' . (int) $user2['userGroup'] . ',
         allGroups = "' . mysqlEscape($user2['allGroups']) . '",
@@ -341,7 +360,7 @@ if ($valid) { // If the user is valid, process their preferrences.
         socialGroups = "' . mysqlEscape($socialGroups['groups']) . '",
         lastSync = NOW()'); // Create the new row
 
-      $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
+      $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']);
     }
     elseif ($userprefs['lastSync'] <= (time() - ($sync ? $sync : (60 * 60 * 2)))) { // This updates various caches every so often. In general, it is a rather slow process, and as such does tend to take a rather long time (that is, compared to normal - it won't exceed 500miliseconds, really).
 
@@ -406,7 +425,7 @@ if ($valid) { // If the user is valid, process their preferrences.
     NOW(),
     '" . mysqlEscape($magicSessionHash) . "'
     )");
-  }
+  } // TODO: Anon Support
 
   elseif ($session == 'update' && $magicSessionHash) {
     ($hook = hook('validate_updatesession') ? eval($hook) : '');
@@ -417,26 +436,9 @@ if ($valid) { // If the user is valid, process their preferrences.
   else {
     // I dunno...
   }
-
-
-
-  /* Set Cookie */
-
-  if ($setCookie) {
-    ($hook = hook('validate_setcookie') ? eval($hook) : '');
-
-    if ($rememberMe) {
-      setcookie($cookiePrefix . 'password','',0,'/');
-    }
-
-    setcookie($cookiePrefix . 'sessionid',$magicSessionHash,0,'/'); // Set the cookie for the unique session.
-    setcookie($cookiePrefix . 'userid',$user['userId'],0,'/'); // Set the cookie for the unique session.
-  }
-
-
 }
 
-else {
+else { // TODO: Anon Support
   unset($user);
 
   $user = array(
@@ -513,6 +515,7 @@ if ($valid) {
   }
 
   ($hook = hook('validate_loginValid') ? eval($hook) : '');
+
 }
 
 
@@ -592,7 +595,6 @@ if ($api) {
   echo fim_outputXml($xmlData);
 
   die();
-
 }
 
 

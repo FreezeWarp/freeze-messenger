@@ -1,3 +1,443 @@
+/* START PHPJS Libraries
+ * See http://phpjs.org/ For More Information */
+
+function utf8_decode (str_data) {
+  // http://kevin.vanzonneveld.net
+  // +   original by: Webtoolkit.info (http://www.webtoolkit.info/)
+  // +    input by: Aman Gupta
+  // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+  // +   improved by: Norman "zEh" Fuchs
+  // +   bugfixed by: hitwork
+  // +   bugfixed by: Onno Marsman
+  // +    input by: Brett Zamir (http://brett-zamir.me)
+  // +   bugfixed by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+  // *   example 1: utf8_decode('Kevin van Zonneveld');
+  // *   returns 1: 'Kevin van Zonneveld'
+  var tmp_arr = [],
+    i = 0,
+    ac = 0,
+    c1 = 0,
+    c2 = 0,
+    c3 = 0;
+
+  str_data += '';
+
+  while (i < str_data.length) {
+    c1 = str_data.charCodeAt(i);
+    if (c1 < 128) {
+      tmp_arr[ac++] = String.fromCharCode(c1);
+      i++;
+    } else if (c1 > 191 && c1 < 224) {
+      c2 = str_data.charCodeAt(i + 1);
+      tmp_arr[ac++] = String.fromCharCode(((c1 & 31) << 6) | (c2 & 63));
+      i += 2;
+    } else {
+      c2 = str_data.charCodeAt(i + 1);
+      c3 = str_data.charCodeAt(i + 2);
+      tmp_arr[ac++] = String.fromCharCode(((c1 & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
+      i += 3;
+    }
+  }
+
+  return tmp_arr.join('');
+}
+
+
+function utf8_encode (argString) {
+  // http://kevin.vanzonneveld.net
+  // +   original by: Webtoolkit.info (http://www.webtoolkit.info/)
+  // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+  // +   improved by: sowberry
+  // +  tweaked by: Jack
+  // +   bugfixed by: Onno Marsman
+  // +   improved by: Yves Sucaet
+  // +   bugfixed by: Onno Marsman
+  // +   bugfixed by: Ulrich
+  // +   bugfixed by: Rafal Kukawski
+  // *   example 1: utf8_encode('Kevin van Zonneveld');
+  // *   returns 1: 'Kevin van Zonneveld'
+
+  if (argString === null || typeof argString === "undefined") {
+    return "";
+  }
+
+  var string = (argString + ''); // .replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  var utftext = "",
+    start, end, stringl = 0;
+
+  start = end = 0;
+  stringl = string.length;
+  for (var n = 0; n < stringl; n++) {
+    var c1 = string.charCodeAt(n);
+    var enc = null;
+
+    if (c1 < 128) {
+      end++;
+    } else if (c1 > 127 && c1 < 2048) {
+      enc = String.fromCharCode((c1 >> 6) | 192) + String.fromCharCode((c1 & 63) | 128);
+    } else {
+      enc = String.fromCharCode((c1 >> 12) | 224) + String.fromCharCode(((c1 >> 6) & 63) | 128) + String.fromCharCode((c1 & 63) | 128);
+    }
+    if (enc !== null) {
+      if (end > start) {
+        utftext += string.slice(start, end);
+      }
+      utftext += enc;
+      start = end = n + 1;
+    }
+  }
+
+  if (end > start) {
+    utftext += string.slice(start, stringl);
+  }
+
+  return utftext;
+}
+
+
+function base64_encode (data) {
+  // http://kevin.vanzonneveld.net
+  // +   original by: Tyler Akins (http://rumkin.com)
+  // +   improved by: Bayron Guevara
+  // +   improved by: Thunder.m
+  // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+  // +   bugfixed by: Pellentesque Malesuada
+  // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+  // -  depends on: utf8_encode
+  // *   example 1: base64_encode('Kevin van Zonneveld');
+  // *   returns 1: 'S2V2aW4gdmFuIFpvbm5ldmVsZA=='
+  // mozilla has this native
+  // - but breaks in 2.0.0.12!
+  //if (typeof this.window['atob'] == 'function') {
+  //  return atob(data);
+  //}
+  var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+  var o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
+    ac = 0,
+    enc = "",
+    tmp_arr = [];
+
+  if (!data) {
+    return data;
+  }
+
+  data = this.utf8_encode(data + '');
+
+  do { // pack three octets into four hexets
+    o1 = data.charCodeAt(i++);
+    o2 = data.charCodeAt(i++);
+    o3 = data.charCodeAt(i++);
+
+    bits = o1 << 16 | o2 << 8 | o3;
+
+    h1 = bits >> 18 & 0x3f;
+    h2 = bits >> 12 & 0x3f;
+    h3 = bits >> 6 & 0x3f;
+    h4 = bits & 0x3f;
+
+    // use hexets to index into b64, and append result to encoded string
+    tmp_arr[ac++] = b64.charAt(h1) + b64.charAt(h2) + b64.charAt(h3) + b64.charAt(h4);
+  } while (i < data.length);
+
+  enc = tmp_arr.join('');
+
+  switch (data.length % 3) {
+  case 1:
+    enc = enc.slice(0, -2) + '==';
+    break;
+  case 2:
+    enc = enc.slice(0, -1) + '=';
+    break;
+  }
+
+  return enc;
+}
+
+
+function base64_decode (data) {
+  // http://kevin.vanzonneveld.net
+  // +   original by: Tyler Akins (http://rumkin.com)
+  // +   improved by: Thunder.m
+  // +    input by: Aman Gupta
+  // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+  // +   bugfixed by: Onno Marsman
+  // +   bugfixed by: Pellentesque Malesuada
+  // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+  // +    input by: Brett Zamir (http://brett-zamir.me)
+  // +   bugfixed by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+  // -  depends on: utf8_decode
+  // *   example 1: base64_decode('S2V2aW4gdmFuIFpvbm5ldmVsZA==');
+  // *   returns 1: 'Kevin van Zonneveld'
+  // mozilla has this native
+  // - but breaks in 2.0.0.12!
+  //if (typeof this.window['btoa'] == 'function') {
+  //  return btoa(data);
+  //}
+  var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+  var o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
+    ac = 0,
+    dec = "",
+    tmp_arr = [];
+
+  if (!data) {
+    return data;
+  }
+
+  data += '';
+
+  do { // unpack four hexets into three octets using index points in b64
+    h1 = b64.indexOf(data.charAt(i++));
+    h2 = b64.indexOf(data.charAt(i++));
+    h3 = b64.indexOf(data.charAt(i++));
+    h4 = b64.indexOf(data.charAt(i++));
+
+    bits = h1 << 18 | h2 << 12 | h3 << 6 | h4;
+
+    o1 = bits >> 16 & 0xff;
+    o2 = bits >> 8 & 0xff;
+    o3 = bits & 0xff;
+
+    if (h3 == 64) {
+      tmp_arr[ac++] = String.fromCharCode(o1);
+    } else if (h4 == 64) {
+      tmp_arr[ac++] = String.fromCharCode(o1, o2);
+    } else {
+      tmp_arr[ac++] = String.fromCharCode(o1, o2, o3);
+    }
+  } while (i < data.length);
+
+  dec = tmp_arr.join('');
+  dec = this.utf8_decode(dec);
+
+  return dec;
+}
+
+
+function md5 (str) {
+  // http://kevin.vanzonneveld.net
+  // +   original by: Webtoolkit.info (http://www.webtoolkit.info/)
+  // + namespaced by: Michael White (http://getsprink.com)
+  // +  tweaked by: Jack
+  // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+  // +    input by: Brett Zamir (http://brett-zamir.me)
+  // +   bugfixed by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+  // -  depends on: utf8_encode
+  // *   example 1: md5('Kevin van Zonneveld');
+  // *   returns 1: '6e658d4bfcb59cc13f96c14450ac40b9'
+  var xl;
+
+  var rotateLeft = function (lValue, iShiftBits) {
+    return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits));
+  };
+
+  var addUnsigned = function (lX, lY) {
+    var lX4, lY4, lX8, lY8, lResult;
+    lX8 = (lX & 0x80000000);
+    lY8 = (lY & 0x80000000);
+    lX4 = (lX & 0x40000000);
+    lY4 = (lY & 0x40000000);
+    lResult = (lX & 0x3FFFFFFF) + (lY & 0x3FFFFFFF);
+    if (lX4 & lY4) {
+      return (lResult ^ 0x80000000 ^ lX8 ^ lY8);
+    }
+    if (lX4 | lY4) {
+      if (lResult & 0x40000000) {
+        return (lResult ^ 0xC0000000 ^ lX8 ^ lY8);
+      } else {
+        return (lResult ^ 0x40000000 ^ lX8 ^ lY8);
+      }
+    } else {
+      return (lResult ^ lX8 ^ lY8);
+    }
+  };
+
+  var _F = function (x, y, z) {
+    return (x & y) | ((~x) & z);
+  };
+  var _G = function (x, y, z) {
+    return (x & z) | (y & (~z));
+  };
+  var _H = function (x, y, z) {
+    return (x ^ y ^ z);
+  };
+  var _I = function (x, y, z) {
+    return (y ^ (x | (~z)));
+  };
+
+  var _FF = function (a, b, c, d, x, s, ac) {
+    a = addUnsigned(a, addUnsigned(addUnsigned(_F(b, c, d), x), ac));
+    return addUnsigned(rotateLeft(a, s), b);
+  };
+
+  var _GG = function (a, b, c, d, x, s, ac) {
+    a = addUnsigned(a, addUnsigned(addUnsigned(_G(b, c, d), x), ac));
+    return addUnsigned(rotateLeft(a, s), b);
+  };
+
+  var _HH = function (a, b, c, d, x, s, ac) {
+    a = addUnsigned(a, addUnsigned(addUnsigned(_H(b, c, d), x), ac));
+    return addUnsigned(rotateLeft(a, s), b);
+  };
+
+  var _II = function (a, b, c, d, x, s, ac) {
+    a = addUnsigned(a, addUnsigned(addUnsigned(_I(b, c, d), x), ac));
+    return addUnsigned(rotateLeft(a, s), b);
+  };
+
+  var convertToWordArray = function (str) {
+    var lWordCount;
+    var lMessageLength = str.length;
+    var lNumberOfWords_temp1 = lMessageLength + 8;
+    var lNumberOfWords_temp2 = (lNumberOfWords_temp1 - (lNumberOfWords_temp1 % 64)) / 64;
+    var lNumberOfWords = (lNumberOfWords_temp2 + 1) * 16;
+    var lWordArray = new Array(lNumberOfWords - 1);
+    var lBytePosition = 0;
+    var lByteCount = 0;
+    while (lByteCount < lMessageLength) {
+      lWordCount = (lByteCount - (lByteCount % 4)) / 4;
+      lBytePosition = (lByteCount % 4) * 8;
+      lWordArray[lWordCount] = (lWordArray[lWordCount] | (str.charCodeAt(lByteCount) << lBytePosition));
+      lByteCount++;
+    }
+    lWordCount = (lByteCount - (lByteCount % 4)) / 4;
+    lBytePosition = (lByteCount % 4) * 8;
+    lWordArray[lWordCount] = lWordArray[lWordCount] | (0x80 << lBytePosition);
+    lWordArray[lNumberOfWords - 2] = lMessageLength << 3;
+    lWordArray[lNumberOfWords - 1] = lMessageLength >>> 29;
+    return lWordArray;
+  };
+
+  var wordToHex = function (lValue) {
+    var wordToHexValue = "",
+      wordToHexValue_temp = "",
+      lByte, lCount;
+    for (lCount = 0; lCount <= 3; lCount++) {
+      lByte = (lValue >>> (lCount * 8)) & 255;
+      wordToHexValue_temp = "0" + lByte.toString(16);
+      wordToHexValue = wordToHexValue + wordToHexValue_temp.substr(wordToHexValue_temp.length - 2, 2);
+    }
+    return wordToHexValue;
+  };
+
+  var x = [],
+    k, AA, BB, CC, DD, a, b, c, d, S11 = 7,
+    S12 = 12,
+    S13 = 17,
+    S14 = 22,
+    S21 = 5,
+    S22 = 9,
+    S23 = 14,
+    S24 = 20,
+    S31 = 4,
+    S32 = 11,
+    S33 = 16,
+    S34 = 23,
+    S41 = 6,
+    S42 = 10,
+    S43 = 15,
+    S44 = 21;
+
+  str = this.utf8_encode(str);
+  x = convertToWordArray(str);
+  a = 0x67452301;
+  b = 0xEFCDAB89;
+  c = 0x98BADCFE;
+  d = 0x10325476;
+
+  xl = x.length;
+  for (k = 0; k < xl; k += 16) {
+    AA = a;
+    BB = b;
+    CC = c;
+    DD = d;
+    a = _FF(a, b, c, d, x[k + 0], S11, 0xD76AA478);
+    d = _FF(d, a, b, c, x[k + 1], S12, 0xE8C7B756);
+    c = _FF(c, d, a, b, x[k + 2], S13, 0x242070DB);
+    b = _FF(b, c, d, a, x[k + 3], S14, 0xC1BDCEEE);
+    a = _FF(a, b, c, d, x[k + 4], S11, 0xF57C0FAF);
+    d = _FF(d, a, b, c, x[k + 5], S12, 0x4787C62A);
+    c = _FF(c, d, a, b, x[k + 6], S13, 0xA8304613);
+    b = _FF(b, c, d, a, x[k + 7], S14, 0xFD469501);
+    a = _FF(a, b, c, d, x[k + 8], S11, 0x698098D8);
+    d = _FF(d, a, b, c, x[k + 9], S12, 0x8B44F7AF);
+    c = _FF(c, d, a, b, x[k + 10], S13, 0xFFFF5BB1);
+    b = _FF(b, c, d, a, x[k + 11], S14, 0x895CD7BE);
+    a = _FF(a, b, c, d, x[k + 12], S11, 0x6B901122);
+    d = _FF(d, a, b, c, x[k + 13], S12, 0xFD987193);
+    c = _FF(c, d, a, b, x[k + 14], S13, 0xA679438E);
+    b = _FF(b, c, d, a, x[k + 15], S14, 0x49B40821);
+    a = _GG(a, b, c, d, x[k + 1], S21, 0xF61E2562);
+    d = _GG(d, a, b, c, x[k + 6], S22, 0xC040B340);
+    c = _GG(c, d, a, b, x[k + 11], S23, 0x265E5A51);
+    b = _GG(b, c, d, a, x[k + 0], S24, 0xE9B6C7AA);
+    a = _GG(a, b, c, d, x[k + 5], S21, 0xD62F105D);
+    d = _GG(d, a, b, c, x[k + 10], S22, 0x2441453);
+    c = _GG(c, d, a, b, x[k + 15], S23, 0xD8A1E681);
+    b = _GG(b, c, d, a, x[k + 4], S24, 0xE7D3FBC8);
+    a = _GG(a, b, c, d, x[k + 9], S21, 0x21E1CDE6);
+    d = _GG(d, a, b, c, x[k + 14], S22, 0xC33707D6);
+    c = _GG(c, d, a, b, x[k + 3], S23, 0xF4D50D87);
+    b = _GG(b, c, d, a, x[k + 8], S24, 0x455A14ED);
+    a = _GG(a, b, c, d, x[k + 13], S21, 0xA9E3E905);
+    d = _GG(d, a, b, c, x[k + 2], S22, 0xFCEFA3F8);
+    c = _GG(c, d, a, b, x[k + 7], S23, 0x676F02D9);
+    b = _GG(b, c, d, a, x[k + 12], S24, 0x8D2A4C8A);
+    a = _HH(a, b, c, d, x[k + 5], S31, 0xFFFA3942);
+    d = _HH(d, a, b, c, x[k + 8], S32, 0x8771F681);
+    c = _HH(c, d, a, b, x[k + 11], S33, 0x6D9D6122);
+    b = _HH(b, c, d, a, x[k + 14], S34, 0xFDE5380C);
+    a = _HH(a, b, c, d, x[k + 1], S31, 0xA4BEEA44);
+    d = _HH(d, a, b, c, x[k + 4], S32, 0x4BDECFA9);
+    c = _HH(c, d, a, b, x[k + 7], S33, 0xF6BB4B60);
+    b = _HH(b, c, d, a, x[k + 10], S34, 0xBEBFBC70);
+    a = _HH(a, b, c, d, x[k + 13], S31, 0x289B7EC6);
+    d = _HH(d, a, b, c, x[k + 0], S32, 0xEAA127FA);
+    c = _HH(c, d, a, b, x[k + 3], S33, 0xD4EF3085);
+    b = _HH(b, c, d, a, x[k + 6], S34, 0x4881D05);
+    a = _HH(a, b, c, d, x[k + 9], S31, 0xD9D4D039);
+    d = _HH(d, a, b, c, x[k + 12], S32, 0xE6DB99E5);
+    c = _HH(c, d, a, b, x[k + 15], S33, 0x1FA27CF8);
+    b = _HH(b, c, d, a, x[k + 2], S34, 0xC4AC5665);
+    a = _II(a, b, c, d, x[k + 0], S41, 0xF4292244);
+    d = _II(d, a, b, c, x[k + 7], S42, 0x432AFF97);
+    c = _II(c, d, a, b, x[k + 14], S43, 0xAB9423A7);
+    b = _II(b, c, d, a, x[k + 5], S44, 0xFC93A039);
+    a = _II(a, b, c, d, x[k + 12], S41, 0x655B59C3);
+    d = _II(d, a, b, c, x[k + 3], S42, 0x8F0CCC92);
+    c = _II(c, d, a, b, x[k + 10], S43, 0xFFEFF47D);
+    b = _II(b, c, d, a, x[k + 1], S44, 0x85845DD1);
+    a = _II(a, b, c, d, x[k + 8], S41, 0x6FA87E4F);
+    d = _II(d, a, b, c, x[k + 15], S42, 0xFE2CE6E0);
+    c = _II(c, d, a, b, x[k + 6], S43, 0xA3014314);
+    b = _II(b, c, d, a, x[k + 13], S44, 0x4E0811A1);
+    a = _II(a, b, c, d, x[k + 4], S41, 0xF7537E82);
+    d = _II(d, a, b, c, x[k + 11], S42, 0xBD3AF235);
+    c = _II(c, d, a, b, x[k + 2], S43, 0x2AD7D2BB);
+    b = _II(b, c, d, a, x[k + 9], S44, 0xEB86D391);
+    a = addUnsigned(a, AA);
+    b = addUnsigned(b, BB);
+    c = addUnsigned(c, CC);
+    d = addUnsigned(d, DD);
+  }
+
+  var temp = wordToHex(a) + wordToHex(b) + wordToHex(c) + wordToHex(d);
+
+  return temp.toLowerCase();
+}
+
+/* End PHPJS Libraries */
+
+
+
+
+
+
+
+
+
+
+/* START jQuery Cookie Function */
+
 /**
  * Create a cookie with the given name and value and other optional parameters.
  *
@@ -44,49 +484,59 @@
  * @author Klaus Hartl/klaus.hartl@stilbuero.de
  */
 jQuery.cookie = function(name, value, options) {
-    if (typeof value != 'undefined') { // name and value given, set cookie
-        options = options || {};
-        if (value === null) {
-            value = '';
-            options.expires = -1;
-        }
-        var expires = '';
-        if (options.expires && (typeof options.expires == 'number' || options.expires.toUTCString)) {
-            var date;
-            if (typeof options.expires == 'number') {
-                date = new Date();
-                date.setTime(date.getTime() + (options.expires * 24 * 60 * 60 * 1000));
-            } else {
-                date = options.expires;
-            }
-            expires = '; expires=' + date.toUTCString(); // use expires attribute, max-age is not supported by IE
-        }
-        // CAUTION: Needed to parenthesize options.path and options.domain
-        // in the following expressions, otherwise they evaluate to undefined
-        // in the packed version for some reason...
-        var path = options.path ? '; path=' + (options.path) : '';
-        var domain = options.domain ? '; domain=' + (options.domain) : '';
-        var secure = options.secure ? '; secure' : '';
-        document.cookie = [name, '=', encodeURIComponent(value), expires, path, domain, secure].join('');
-    } else { // only name given, get cookie
-        var cookieValue = null;
-        if (document.cookie && document.cookie != '') {
-            var cookies = document.cookie.split(';');
-            for (var i = 0; i < cookies.length; i++) {
-                var cookie = jQuery.trim(cookies[i]);
-                // Does this cookie string begin with the name we want?
-                if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
+  if (typeof value != 'undefined') { // name and value given, set cookie
+    options = options || {};
+    if (value === null) {
+      value = '';
+      options.expires = -1;
     }
+    var expires = '';
+    if (options.expires && (typeof options.expires == 'number' || options.expires.toUTCString)) {
+      var date;
+      if (typeof options.expires == 'number') {
+        date = new Date();
+        date.setTime(date.getTime() + (options.expires * 24 * 60 * 60 * 1000));
+      } else {
+        date = options.expires;
+      }
+      expires = '; expires=' + date.toUTCString(); // use expires attribute, max-age is not supported by IE
+    }
+    // CAUTION: Needed to parenthesize options.path and options.domain
+    // in the following expressions, otherwise they evaluate to undefined
+    // in the packed version for some reason...
+    var path = options.path ? '; path=' + (options.path) : '';
+    var domain = options.domain ? '; domain=' + (options.domain) : '';
+    var secure = options.secure ? '; secure' : '';
+    document.cookie = [name, '=', encodeURIComponent(value), expires, path, domain, secure].join('');
+  } else { // only name given, get cookie
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+      var cookies = document.cookie.split(';');
+      for (var i = 0; i < cookies.length; i++) {
+        var cookie = jQuery.trim(cookies[i]);
+        // Does this cookie string begin with the name we want?
+        if (cookie.substring(0, name.length + 1) == (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
 };
 
+/* END jQuery Cookie Functon */
 
 
+
+
+
+
+
+
+
+
+/* START jQuery Context Menu */
 
 // jQuery Context Menu Plugin
 //
@@ -300,8 +750,18 @@ if(jQuery)( function() {
         });
 })(jQuery);
 
+/* END jQuery Context Menu */
 
 
+
+
+
+
+
+
+
+
+/* START jQuery Tooltip #1 */
 
  /*
  * TipTip
@@ -495,340 +955,18 @@ if(jQuery)( function() {
         }
 })(jQuery);
 
+/* END jQuery Tooltip #1 */
 
 
-/**
- * jGrowl 1.2.5
- *
- * Dual licensed under the MIT (http://www.opensource.org/licenses/mit-license.php)
- * and GPL (http://www.opensource.org/licenses/gpl-license.php) licenses.
- *
- * Written by Stan Lemon <stosh1985@gmail.com>
- * Last updated: 2009.12.15
- *
- * jGrowl is a jQuery plugin implementing unobtrusive userland notifications.  These
- * notifications function similarly to the Growl Framework available for
- * Mac OS X (http://growl.info).
- *
- * To Do:
- * - Move library settings to containers and allow them to be changed per container
- *
- * Changes in 1.2.5
- * - Changed wrapper jGrowl's options usage to "o" instead of $.jGrowl.defaults
- * - Added themeState option to control 'highlight' or 'error' for jQuery UI
- * - Ammended some CSS to provide default positioning for nested usage.
- * - Changed some CSS to be prefixed with jGrowl- to prevent namespacing issues
- * - Added two new options - openDuration and closeDuration to allow
- *   better control of notification open and close speeds, respectively
- *   Patch contributed by Jesse Vincet.
- * - Added afterOpen callback.  Patch contributed by Russel Branca.
- *
- * Changes in 1.2.4
- * - Fixed IE bug with the close-all button
- * - Fixed IE bug with the filter CSS attribute (special thanks to gotwic)
- * - Update IE opacity CSS
- * - Changed font sizes to use "em", and only set the base style
- *
- * Changes in 1.2.3
- * - The callbacks no longer use the container as context, instead they use the actual notification
- * - The callbacks now receive the container as a parameter after the options parameter
- * - beforeOpen and beforeClose now check the return value, if it's false - the notification does
- *   not continue.  The open callback will also halt execution if it returns false.
- * - Fixed bug where containers would get confused
- * - Expanded the pause functionality to pause an entire container.
- *
- * Changes in 1.2.2
- * - Notification can now be theme rolled for jQuery UI, special thanks to Jeff Chan!
- *
- * Changes in 1.2.1
- * - Fixed instance where the interval would fire the close method multiple times.
- * - Added CSS to hide from print media
- * - Fixed issue with closer button when div { position: relative } is set
- * - Fixed leaking issue with multiple containers.  Special thanks to Matthew Hanlon!
- *
- * Changes in 1.2.0
- * - Added message pooling to limit the number of messages appearing at a given time.
- * - Closing a notification is now bound to the notification object and triggered by the close button.
- *
- * Changes in 1.1.2
- * - Added iPhone styled example
- * - Fixed possible IE7 bug when determining if the ie6 class shoudl be applied.
- * - Added template for the close button, so that it's content could be customized.
- *
- * Changes in 1.1.1
- * - Fixed CSS styling bug for ie6 caused by a mispelling
- * - Changes height restriction on default notifications to min-height
- * - Added skinned examples using a variety of images
- * - Added the ability to customize the content of the [close all] box
- * - Added jTweet, an example of using jGrowl + Twitter
- *
- * Changes in 1.1.0
- * - Multiple container and instances.
- * - Standard $.jGrowl() now wraps $.fn.jGrowl() by first establishing a generic jGrowl container.
- * - Instance methods of a jGrowl container can be called by $.fn.jGrowl(methodName)
- * - Added glue preferenced, which allows notifications to be inserted before or after nodes in the container
- * - Added new log callback which is called before anything is done for the notification
- * - Corner's attribute are now applied on an individual notification basis.
- *
- * Changes in 1.0.4
- * - Various CSS fixes so that jGrowl renders correctly in IE6.
- *
- * Changes in 1.0.3
- * - Fixed bug with options persisting across notifications
- * - Fixed theme application bug
- * - Simplified some selectors and manipulations.
- * - Added beforeOpen and beforeClose callbacks
- * - Reorganized some lines of code to be more readable
- * - Removed unnecessary this.defaults context
- * - If corners plugin is present, it's now customizable.
- * - Customizable open animation.
- * - Customizable close animation.
- * - Customizable animation easing.
- * - Added customizable positioning (top-left, top-right, bottom-left, bottom-right, center)
- *
- * Changes in 1.0.2
- * - All CSS styling is now external.
- * - Added a theme parameter which specifies a secondary class for styling, such
- *   that notifications can be customized in appearance on a per message basis.
- * - Notification life span is now customizable on a per message basis.
- * - Added the ability to disable the global closer, enabled by default.
- * - Added callbacks for when a notification is opened or closed.
- * - Added callback for the global closer.
- * - Customizable animation speed.
- * - jGrowl now set itself up and tears itself down.
- *
- * Changes in 1.0.1:
- * - Removed dependency on metadata plugin in favor of .data()
- * - Namespaced all events
- */
-(function($) {
-
-        /** jGrowl Wrapper - Establish a base jGrowl Container for compatibility with older releases. **/
-        $.jGrowl = function( m , o ) {
-                // To maintain compatibility with older version that only supported one instance we'll create the base container.
-                if ( $('#jGrowl').size() == 0 )
-                        $('<div id="jGrowl"></div>').addClass( (o && o.position) ? o.position : $.jGrowl.defaults.position ).appendTo('body');
-
-                // Create a notification on the container.
-                $('#jGrowl').jGrowl(m,o);
-        };
 
 
-        /** Raise jGrowl Notification on a jGrowl Container **/
-        $.fn.jGrowl = function( m , o ) {
-                if ( $.isFunction(this.each) ) {
-                        var args = arguments;
-
-                        return this.each(function() {
-                                var self = this;
-
-                                /** Create a jGrowl Instance on the Container if it does not exist **/
-                                if ( $(this).data('jGrowl.instance') == undefined ) {
-                                        $(this).data('jGrowl.instance', $.extend( new $.fn.jGrowl(), { notifications: [], element: null, interval: null } ));
-                                        $(this).data('jGrowl.instance').startup( this );
-                                }
-
-                                /** Optionally call jGrowl instance methods, or just raise a normal notification **/
-                                if ( $.isFunction($(this).data('jGrowl.instance')[m]) ) {
-                                        $(this).data('jGrowl.instance')[m].apply( $(this).data('jGrowl.instance') , $.makeArray(args).slice(1) );
-                                } else {
-                                        $(this).data('jGrowl.instance').create( m , o );
-                                }
-                        });
-                };
-        };
-
-        $.extend( $.fn.jGrowl.prototype , {
-
-                /** Default JGrowl Settings **/
-                defaults: {
-                        pool:                   0,
-                        header:                 '',
-                        group:                  '',
-                        sticky:                 false,
-                        position:               'top-right',
-                        glue:                   'after',
-                        theme:                  'default',
-                        themeState:     'highlight',
-                        corners:                '10px',
-                        check:                  250,
-                        life:                   3000,
-                        closeDuration:  'normal',
-                        openDuration:   'normal',
-                        easing:                 'swing',
-                        closer:                 true,
-                        closeTemplate: '&times;',
-                        closerTemplate: '<div>[ close all ]</div>',
-                        log:                    function(e,m,o) {},
-                        beforeOpen:     function(e,m,o) {},
-                        afterOpen:              function(e,m,o) {},
-                        open:                   function(e,m,o) {},
-                        beforeClose:    function(e,m,o) {},
-                        close:                  function(e,m,o) {},
-                        animateOpen:    {
-                                opacity:        'show'
-                        },
-                        animateClose:   {
-                                opacity:        'hide'
-                        }
-                },
-
-                notifications: [],
-
-                /** jGrowl Container Node **/
-                element:        null,
-
-                /** Interval Function **/
-                interval:   null,
-
-                /** Create a Notification **/
-                create:         function( message , o ) {
-                        var o = $.extend({}, this.defaults, o);
-
-                        /* To keep backward compatibility with 1.24 and earlier, honor 'speed' if the user has set it */
-                        if (typeof o.speed !== 'undefined') {
-                                o.openDuration = o.speed;
-                                o.closeDuration = o.speed;
-                        }
-
-                        this.notifications.push({ message: message , options: o });
-
-                        o.log.apply( this.element , [this.element,message,o] );
-                },
-
-                render:                 function( notification ) {
-                        var self = this;
-                        var message = notification.message;
-                        var o = notification.options;
-
-                        var notification = $(
-                                '<div class="jGrowl-notification ' + o.themeState + ' ui-corner-all' +
-                                ((o.group != undefined && o.group != '') ? ' ' + o.group : '') + '">' +
-                                '<div class="jGrowl-close">' + o.closeTemplate + '</div>' +
-                                '<div class="jGrowl-header">' + o.header + '</div>' +
-                                '<div class="jGrowl-message">' + message + '</div></div>'
-                        ).data("jGrowl", o).addClass(o.theme).children('div.jGrowl-close').bind("click.jGrowl", function() {
-                                $(this).parent().trigger('jGrowl.close');
-                        }).parent();
 
 
-                        /** Notification Actions **/
-                        $(notification).bind("mouseover.jGrowl", function() {
-                                $('div.jGrowl-notification', self.element).data("jGrowl.pause", true);
-                        }).bind("mouseout.jGrowl", function() {
-                                $('div.jGrowl-notification', self.element).data("jGrowl.pause", false);
-                        }).bind('jGrowl.beforeOpen', function() {
-                                if ( o.beforeOpen.apply( notification , [notification,message,o,self.element] ) != false ) {
-                                        $(this).trigger('jGrowl.open');
-                                }
-                        }).bind('jGrowl.open', function() {
-                                if ( o.open.apply( notification , [notification,message,o,self.element] ) != false ) {
-                                        if ( o.glue == 'after' ) {
-                                                $('div.jGrowl-notification:last', self.element).after(notification);
-                                        } else {
-                                                $('div.jGrowl-notification:first', self.element).before(notification);
-                                        }
-
-                                        $(this).animate(o.animateOpen, o.openDuration, o.easing, function() {
-                                                // Fixes some anti-aliasing issues with IE filters.
-                                                if ($.browser.msie && (parseInt($(this).css('opacity'), 10) === 1 || parseInt($(this).css('opacity'), 10) === 0))
-                                                        this.style.removeAttribute('filter');
-
-                                                $(this).data("jGrowl").created = new Date();
-
-                                                $(this).trigger('jGrowl.afterOpen');
-                                        });
-                                }
-                        }).bind('jGrowl.afterOpen', function() {
-                                o.afterOpen.apply( notification , [notification,message,o,self.element] );
-                        }).bind('jGrowl.beforeClose', function() {
-                                if ( o.beforeClose.apply( notification , [notification,message,o,self.element] ) != false )
-                                        $(this).trigger('jGrowl.close');
-                        }).bind('jGrowl.close', function() {
-                                // Pause the notification, lest during the course of animation another close event gets called.
-                                $(this).data('jGrowl.pause', true);
-                                $(this).animate(o.animateClose, o.closeDuration, o.easing, function() {
-                                        $(this).remove();
-                                        var close = o.close.apply( notification , [notification,message,o,self.element] );
-
-                                        if ( $.isFunction(close) )
-                                                close.apply( notification , [notification,message,o,self.element] );
-                                });
-                        }).trigger('jGrowl.beforeOpen');
-
-                        /** Optional Corners Plugin **/
-                        if ( o.corners != '' && $.fn.corner != undefined ) $(notification).corner( o.corners );
-
-                        /** Add a Global Closer if more than one notification exists **/
-                        if ( $('div.jGrowl-notification:parent', self.element).size() > 1 &&
-                                 $('div.jGrowl-closer', self.element).size() == 0 && this.defaults.closer != false ) {
-                                $(this.defaults.closerTemplate).addClass('jGrowl-closer ui-state-highlight ui-corner-all').addClass(this.defaults.theme)
-                                        .appendTo(self.element).animate(this.defaults.animateOpen, this.defaults.speed, this.defaults.easing)
-                                        .bind("click.jGrowl", function() {
-                                                $(this).siblings().trigger("jGrowl.beforeClose");
-
-                                                if ( $.isFunction( self.defaults.closer ) ) {
-                                                        self.defaults.closer.apply( $(this).parent()[0] , [$(this).parent()[0]] );
-                                                }
-                                        });
-                        };
-                },
-
-                /** Update the jGrowl Container, removing old jGrowl notifications **/
-                update:  function() {
-                        $(this.element).find('div.jGrowl-notification:parent').each( function() {
-                                if ( $(this).data("jGrowl") != undefined && $(this).data("jGrowl").created != undefined &&
-                                         ($(this).data("jGrowl").created.getTime() + parseInt($(this).data("jGrowl").life))  < (new Date()).getTime() &&
-                                         $(this).data("jGrowl").sticky != true &&
-                                         ($(this).data("jGrowl.pause") == undefined || $(this).data("jGrowl.pause") != true) ) {
-
-                                        // Pause the notification, lest during the course of animation another close event gets called.
-                                        $(this).trigger('jGrowl.beforeClose');
-                                }
-                        });
-
-                        if ( this.notifications.length > 0 &&
-                                 (this.defaults.pool == 0 || $(this.element).find('div.jGrowl-notification:parent').size() < this.defaults.pool) )
-                                this.render( this.notifications.shift() );
-
-                        if ( $(this.element).find('div.jGrowl-notification:parent').size() < 2 ) {
-                                $(this.element).find('div.jGrowl-closer').animate(this.defaults.animateClose, this.defaults.speed, this.defaults.easing, function() {
-                                        $(this).remove();
-                                });
-                        }
-                },
-
-                /** Setup the jGrowl Notification Container **/
-                startup:        function(e) {
-                        this.element = $(e).addClass('jGrowl').append('<div class="jGrowl-notification"></div>');
-                        this.interval = setInterval( function() {
-                                $(e).data('jGrowl.instance').update();
-                        }, parseInt(this.defaults.check));
-
-                        if ($.browser.msie && parseInt($.browser.version) < 7 && !window["XMLHttpRequest"]) {
-                                $(this.element).addClass('ie6');
-                        }
-                },
-
-                /** Shutdown jGrowl, removing it and clearing the interval **/
-                shutdown:   function() {
-                        $(this.element).removeClass('jGrowl').find('div.jGrowl-notification').remove();
-                        clearInterval( this.interval );
-                },
-
-                close:  function() {
-                        $(this.element).find('div.jGrowl-notification').each(function(){
-                                $(this).trigger('jGrowl.beforeClose');
-                        });
-                }
-        });
-
-        /** Reference the Defaults Object for compatibility with older versions of jGrowl **/
-        $.jGrowl.defaults = $.fn.jGrowl.prototype.defaults;
-
-})(jQuery);
 
 
+
+
+/* START jQuery Tooltip #2 */
 
 // EZPZ Tooltip v1.0; Copyright (c) 2009 Mike Enriquez, http://theezpzway.com; Released under the MIT License
 (function($){
@@ -1178,11 +1316,393 @@ if(jQuery)( function() {
 
 })(jQuery);
 
+/* END jQuery Tooltip #2 */
 
 
 
 
 
+
+
+
+
+
+/* START jQuery Non-Obfusicating Alert Box (Generic Implementation) */
+
+/**
+ * jGrowl 1.2.5
+ *
+ * Dual licensed under the MIT (http://www.opensource.org/licenses/mit-license.php)
+ * and GPL (http://www.opensource.org/licenses/gpl-license.php) licenses.
+ *
+ * Written by Stan Lemon <stosh1985@gmail.com>
+ * Last updated: 2009.12.15
+ *
+ * jGrowl is a jQuery plugin implementing unobtrusive userland notifications.  These
+ * notifications function similarly to the Growl Framework available for
+ * Mac OS X (http://growl.info).
+ *
+ * To Do:
+ * - Move library settings to containers and allow them to be changed per container
+ *
+ * Changes in 1.2.5
+ * - Changed wrapper jGrowl's options usage to "o" instead of $.jGrowl.defaults
+ * - Added themeState option to control 'highlight' or 'error' for jQuery UI
+ * - Ammended some CSS to provide default positioning for nested usage.
+ * - Changed some CSS to be prefixed with jGrowl- to prevent namespacing issues
+ * - Added two new options - openDuration and closeDuration to allow
+ *   better control of notification open and close speeds, respectively
+ *   Patch contributed by Jesse Vincet.
+ * - Added afterOpen callback.  Patch contributed by Russel Branca.
+ *
+ * Changes in 1.2.4
+ * - Fixed IE bug with the close-all button
+ * - Fixed IE bug with the filter CSS attribute (special thanks to gotwic)
+ * - Update IE opacity CSS
+ * - Changed font sizes to use "em", and only set the base style
+ *
+ * Changes in 1.2.3
+ * - The callbacks no longer use the container as context, instead they use the actual notification
+ * - The callbacks now receive the container as a parameter after the options parameter
+ * - beforeOpen and beforeClose now check the return value, if it's false - the notification does
+ *   not continue.  The open callback will also halt execution if it returns false.
+ * - Fixed bug where containers would get confused
+ * - Expanded the pause functionality to pause an entire container.
+ *
+ * Changes in 1.2.2
+ * - Notification can now be theme rolled for jQuery UI, special thanks to Jeff Chan!
+ *
+ * Changes in 1.2.1
+ * - Fixed instance where the interval would fire the close method multiple times.
+ * - Added CSS to hide from print media
+ * - Fixed issue with closer button when div { position: relative } is set
+ * - Fixed leaking issue with multiple containers.  Special thanks to Matthew Hanlon!
+ *
+ * Changes in 1.2.0
+ * - Added message pooling to limit the number of messages appearing at a given time.
+ * - Closing a notification is now bound to the notification object and triggered by the close button.
+ *
+ * Changes in 1.1.2
+ * - Added iPhone styled example
+ * - Fixed possible IE7 bug when determining if the ie6 class shoudl be applied.
+ * - Added template for the close button, so that it's content could be customized.
+ *
+ * Changes in 1.1.1
+ * - Fixed CSS styling bug for ie6 caused by a mispelling
+ * - Changes height restriction on default notifications to min-height
+ * - Added skinned examples using a variety of images
+ * - Added the ability to customize the content of the [close all] box
+ * - Added jTweet, an example of using jGrowl + Twitter
+ *
+ * Changes in 1.1.0
+ * - Multiple container and instances.
+ * - Standard $.jGrowl() now wraps $.fn.jGrowl() by first establishing a generic jGrowl container.
+ * - Instance methods of a jGrowl container can be called by $.fn.jGrowl(methodName)
+ * - Added glue preferenced, which allows notifications to be inserted before or after nodes in the container
+ * - Added new log callback which is called before anything is done for the notification
+ * - Corner's attribute are now applied on an individual notification basis.
+ *
+ * Changes in 1.0.4
+ * - Various CSS fixes so that jGrowl renders correctly in IE6.
+ *
+ * Changes in 1.0.3
+ * - Fixed bug with options persisting across notifications
+ * - Fixed theme application bug
+ * - Simplified some selectors and manipulations.
+ * - Added beforeOpen and beforeClose callbacks
+ * - Reorganized some lines of code to be more readable
+ * - Removed unnecessary this.defaults context
+ * - If corners plugin is present, it's now customizable.
+ * - Customizable open animation.
+ * - Customizable close animation.
+ * - Customizable animation easing.
+ * - Added customizable positioning (top-left, top-right, bottom-left, bottom-right, center)
+ *
+ * Changes in 1.0.2
+ * - All CSS styling is now external.
+ * - Added a theme parameter which specifies a secondary class for styling, such
+ *   that notifications can be customized in appearance on a per message basis.
+ * - Notification life span is now customizable on a per message basis.
+ * - Added the ability to disable the global closer, enabled by default.
+ * - Added callbacks for when a notification is opened or closed.
+ * - Added callback for the global closer.
+ * - Customizable animation speed.
+ * - jGrowl now set itself up and tears itself down.
+ *
+ * Changes in 1.0.1:
+ * - Removed dependency on metadata plugin in favor of .data()
+ * - Namespaced all events
+ */
+(function($) {
+
+        /** jGrowl Wrapper - Establish a base jGrowl Container for compatibility with older releases. **/
+        $.jGrowl = function( m , o ) {
+                // To maintain compatibility with older version that only supported one instance we'll create the base container.
+                if ( $('#jGrowl').size() == 0 )
+                        $('<div id="jGrowl"></div>').addClass( (o && o.position) ? o.position : $.jGrowl.defaults.position ).appendTo('body');
+
+                // Create a notification on the container.
+                $('#jGrowl').jGrowl(m,o);
+        };
+
+
+        /** Raise jGrowl Notification on a jGrowl Container **/
+        $.fn.jGrowl = function( m , o ) {
+                if ( $.isFunction(this.each) ) {
+                        var args = arguments;
+
+                        return this.each(function() {
+                                var self = this;
+
+                                /** Create a jGrowl Instance on the Container if it does not exist **/
+                                if ( $(this).data('jGrowl.instance') == undefined ) {
+                                        $(this).data('jGrowl.instance', $.extend( new $.fn.jGrowl(), { notifications: [], element: null, interval: null } ));
+                                        $(this).data('jGrowl.instance').startup( this );
+                                }
+
+                                /** Optionally call jGrowl instance methods, or just raise a normal notification **/
+                                if ( $.isFunction($(this).data('jGrowl.instance')[m]) ) {
+                                        $(this).data('jGrowl.instance')[m].apply( $(this).data('jGrowl.instance') , $.makeArray(args).slice(1) );
+                                } else {
+                                        $(this).data('jGrowl.instance').create( m , o );
+                                }
+                        });
+                };
+        };
+
+        $.extend( $.fn.jGrowl.prototype , {
+
+                /** Default JGrowl Settings **/
+                defaults: {
+                        pool:                   0,
+                        header:                 '',
+                        group:                  '',
+                        sticky:                 false,
+                        position:               'top-right',
+                        glue:                   'after',
+                        theme:                  'default',
+                        themeState:     'highlight',
+                        corners:                '10px',
+                        check:                  250,
+                        life:                   3000,
+                        closeDuration:  'normal',
+                        openDuration:   'normal',
+                        easing:                 'swing',
+                        closer:                 true,
+                        closeTemplate: '&times;',
+                        closerTemplate: '<div>[ close all ]</div>',
+                        log:                    function(e,m,o) {},
+                        beforeOpen:     function(e,m,o) {},
+                        afterOpen:              function(e,m,o) {},
+                        open:                   function(e,m,o) {},
+                        beforeClose:    function(e,m,o) {},
+                        close:                  function(e,m,o) {},
+                        animateOpen:    {
+                                opacity:        'show'
+                        },
+                        animateClose:   {
+                                opacity:        'hide'
+                        }
+                },
+
+                notifications: [],
+
+                /** jGrowl Container Node **/
+                element:        null,
+
+                /** Interval Function **/
+                interval:   null,
+
+                /** Create a Notification **/
+                create:         function( message , o ) {
+                        var o = $.extend({}, this.defaults, o);
+
+                        /* To keep backward compatibility with 1.24 and earlier, honor 'speed' if the user has set it */
+                        if (typeof o.speed !== 'undefined') {
+                                o.openDuration = o.speed;
+                                o.closeDuration = o.speed;
+                        }
+
+                        this.notifications.push({ message: message , options: o });
+
+                        o.log.apply( this.element , [this.element,message,o] );
+                },
+
+                render:                 function( notification ) {
+                        var self = this;
+                        var message = notification.message;
+                        var o = notification.options;
+
+                        var notification = $(
+                                '<div class="jGrowl-notification ' + o.themeState + ' ui-corner-all' +
+                                ((o.group != undefined && o.group != '') ? ' ' + o.group : '') + '">' +
+                                '<div class="jGrowl-close">' + o.closeTemplate + '</div>' +
+                                '<div class="jGrowl-header">' + o.header + '</div>' +
+                                '<div class="jGrowl-message">' + message + '</div></div>'
+                        ).data("jGrowl", o).addClass(o.theme).children('div.jGrowl-close').bind("click.jGrowl", function() {
+                                $(this).parent().trigger('jGrowl.close');
+                        }).parent();
+
+
+                        /** Notification Actions **/
+                        $(notification).bind("mouseover.jGrowl", function() {
+                                $('div.jGrowl-notification', self.element).data("jGrowl.pause", true);
+                        }).bind("mouseout.jGrowl", function() {
+                                $('div.jGrowl-notification', self.element).data("jGrowl.pause", false);
+                        }).bind('jGrowl.beforeOpen', function() {
+                                if ( o.beforeOpen.apply( notification , [notification,message,o,self.element] ) != false ) {
+                                        $(this).trigger('jGrowl.open');
+                                }
+                        }).bind('jGrowl.open', function() {
+                                if ( o.open.apply( notification , [notification,message,o,self.element] ) != false ) {
+                                        if ( o.glue == 'after' ) {
+                                                $('div.jGrowl-notification:last', self.element).after(notification);
+                                        } else {
+                                                $('div.jGrowl-notification:first', self.element).before(notification);
+                                        }
+
+                                        $(this).animate(o.animateOpen, o.openDuration, o.easing, function() {
+                                                // Fixes some anti-aliasing issues with IE filters.
+                                                if ($.browser.msie && (parseInt($(this).css('opacity'), 10) === 1 || parseInt($(this).css('opacity'), 10) === 0))
+                                                        this.style.removeAttribute('filter');
+
+                                                $(this).data("jGrowl").created = new Date();
+
+                                                $(this).trigger('jGrowl.afterOpen');
+                                        });
+                                }
+                        }).bind('jGrowl.afterOpen', function() {
+                                o.afterOpen.apply( notification , [notification,message,o,self.element] );
+                        }).bind('jGrowl.beforeClose', function() {
+                                if ( o.beforeClose.apply( notification , [notification,message,o,self.element] ) != false )
+                                        $(this).trigger('jGrowl.close');
+                        }).bind('jGrowl.close', function() {
+                                // Pause the notification, lest during the course of animation another close event gets called.
+                                $(this).data('jGrowl.pause', true);
+                                $(this).animate(o.animateClose, o.closeDuration, o.easing, function() {
+                                        $(this).remove();
+                                        var close = o.close.apply( notification , [notification,message,o,self.element] );
+
+                                        if ( $.isFunction(close) )
+                                                close.apply( notification , [notification,message,o,self.element] );
+                                });
+                        }).trigger('jGrowl.beforeOpen');
+
+                        /** Optional Corners Plugin **/
+                        if ( o.corners != '' && $.fn.corner != undefined ) $(notification).corner( o.corners );
+
+                        /** Add a Global Closer if more than one notification exists **/
+                        if ( $('div.jGrowl-notification:parent', self.element).size() > 1 &&
+                                 $('div.jGrowl-closer', self.element).size() == 0 && this.defaults.closer != false ) {
+                                $(this.defaults.closerTemplate).addClass('jGrowl-closer ui-state-highlight ui-corner-all').addClass(this.defaults.theme)
+                                        .appendTo(self.element).animate(this.defaults.animateOpen, this.defaults.speed, this.defaults.easing)
+                                        .bind("click.jGrowl", function() {
+                                                $(this).siblings().trigger("jGrowl.beforeClose");
+
+                                                if ( $.isFunction( self.defaults.closer ) ) {
+                                                        self.defaults.closer.apply( $(this).parent()[0] , [$(this).parent()[0]] );
+                                                }
+                                        });
+                        };
+                },
+
+                /** Update the jGrowl Container, removing old jGrowl notifications **/
+                update:  function() {
+                        $(this.element).find('div.jGrowl-notification:parent').each( function() {
+                                if ( $(this).data("jGrowl") != undefined && $(this).data("jGrowl").created != undefined &&
+                                         ($(this).data("jGrowl").created.getTime() + parseInt($(this).data("jGrowl").life))  < (new Date()).getTime() &&
+                                         $(this).data("jGrowl").sticky != true &&
+                                         ($(this).data("jGrowl.pause") == undefined || $(this).data("jGrowl.pause") != true) ) {
+
+                                        // Pause the notification, lest during the course of animation another close event gets called.
+                                        $(this).trigger('jGrowl.beforeClose');
+                                }
+                        });
+
+                        if ( this.notifications.length > 0 &&
+                                 (this.defaults.pool == 0 || $(this.element).find('div.jGrowl-notification:parent').size() < this.defaults.pool) )
+                                this.render( this.notifications.shift() );
+
+                        if ( $(this.element).find('div.jGrowl-notification:parent').size() < 2 ) {
+                                $(this.element).find('div.jGrowl-closer').animate(this.defaults.animateClose, this.defaults.speed, this.defaults.easing, function() {
+                                        $(this).remove();
+                                });
+                        }
+                },
+
+                /** Setup the jGrowl Notification Container **/
+                startup:        function(e) {
+                        this.element = $(e).addClass('jGrowl').append('<div class="jGrowl-notification"></div>');
+                        this.interval = setInterval( function() {
+                                $(e).data('jGrowl.instance').update();
+                        }, parseInt(this.defaults.check));
+
+                        if ($.browser.msie && parseInt($.browser.version) < 7 && !window["XMLHttpRequest"]) {
+                                $(this.element).addClass('ie6');
+                        }
+                },
+
+                /** Shutdown jGrowl, removing it and clearing the interval **/
+                shutdown:   function() {
+                        $(this.element).removeClass('jGrowl').find('div.jGrowl-notification').remove();
+                        clearInterval( this.interval );
+                },
+
+                close:  function() {
+                        $(this.element).find('div.jGrowl-notification').each(function(){
+                                $(this).trigger('jGrowl.beforeClose');
+                        });
+                }
+        });
+
+        /** Reference the Defaults Object for compatibility with older versions of jGrowl **/
+        $.jGrowl.defaults = $.fn.jGrowl.prototype.defaults;
+
+})(jQuery);
+
+/* END jQuery Non-Obfusicating Alert Box (Generic Implementation) */
+
+
+
+
+
+
+
+
+
+
+/* START Non-Obfusicating Alert Box (Chrome Implemmentation) */
+
+/* Experimental webkitNotify Container Functions
+ * Learn More @ http://www.chromium.org/developers/design-documents/desktop-notifications,
+ * http://code.google.com/chrome/extensions/notifications.html */
+
+function webkitNotifyRequest(callback) {
+  window.webkitNotifications.requestPermission(callback);
+}
+
+function webkitNotify(icon, title, notifyData) {
+  if (window.webkitNotifications.checkPermission() > 0) {
+    webkitNotifyRequest(function() { webkitNotify(icon, title, notifyData); });
+  }
+  else {
+    notification = window.webkitNotifications.createNotification(icon, title, notifyData);
+    notification.show();
+  }
+}
+
+/* END Non-Obfusicating Alert Box (Chrome Implemmentation) */
+
+
+
+
+
+
+
+
+
+
+/* START Beepy */
 
 /*
  * RIFFWAVE.js v0.02 - Audio encoder for HTML5 <audio> elements.
@@ -1206,44 +1726,47 @@ if(jQuery)( function() {
  *
  */
 
-var FastBase64 = {
-  chars: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
-  encLookup: [],
+var riffwave = {
+  base64 : {
+    chars: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+    encLookup: [],
 
-  Init: function() {
-    for (var i=0; i<4096; i++) {
-      this.encLookup[i] = this.chars[i >> 6] + this.chars[i & 0x3F];
-    }
+    init: function() {
+      for (var i=0; i<4096; i++) {
+        this.encLookup[i] = this.chars[i >> 6] + this.chars[i & 0x3F];
+      }
+    },
+
+    encode: function(src) {
+      var len = src.length;
+      var dst = '';
+      var i = 0;
+      while (len > 2) {
+        n = (src[i] << 16) | (src[i+1]<<8) | src[i+2];
+        dst+= this.encLookup[n >> 12] + this.encLookup[n & 0xFFF];
+        len-= 3;
+        i+= 3;
+      }
+
+      if (len > 0) {
+        var n1= (src[i] & 0xFC) >> 2;
+        var n2= (src[i] & 0x03) << 4;
+        if (len > 1) n2 |= (src[++i] & 0xF0) >> 4;
+        dst+= this.chars[n1];
+        dst+= this.chars[n2];
+        if (len == 2) {
+          var n3= (src[i++] & 0x0F) << 2;
+          n3 |= (src[i] & 0xC0) >> 6;
+          dst+= this.chars[n3];
+        }
+        if (len == 1) dst+= '=';
+        dst+= '=';
+      }
+      return dst;
+    } // end Encode
   },
 
-  Encode: function(src) {
-    var len = src.length;
-    var dst = '';
-    var i = 0;
-    while (len > 2) {
-      n = (src[i] << 16) | (src[i+1]<<8) | src[i+2];
-      dst+= this.encLookup[n >> 12] + this.encLookup[n & 0xFFF];
-      len-= 3;
-      i+= 3;
-    }
-    if (len > 0) {
-      var n1= (src[i] & 0xFC) >> 2;
-      var n2= (src[i] & 0x03) << 4;
-      if (len > 1) n2 |= (src[++i] & 0xF0) >> 4;
-      dst+= this.chars[n1];
-      dst+= this.chars[n2];
-      if (len == 2) {
-        var n3= (src[i++] & 0x0F) << 2;
-        n3 |= (src[i] & 0xC0) >> 6;
-        dst+= this.chars[n3];
-      }
-      if (len == 1) dst+= '=';
-      dst+= '=';
-    }
-    return dst;
-  } // end Encode
-
-  Create: function() {
+  create : function(data) {
     this.data = [];        // Byte array containing audio samples
     this.wav = [];         // Array containing the generated wave file
     this.dataURI = '';     // http://en.wikipedia.org/wiki/Data_URI_scheme
@@ -1290,43 +1813,43 @@ var FastBase64 = {
         u32ToArray(this.header.subChunk2Size),
         this.data
       );
-      this.dataURI = 'data:audio/wav;base64,'+FastBase64.Encode(this.wav);
+      this.dataURI = 'data:audio/wav;base64,' + riffwave.base64.encode(this.wav);
     };
 
     if (data instanceof Array) {
       this.Make(data);
     }
-  }
-}
+  },
 
+  play : function() {
+    try {
+      var effect = [];
 
-jQuery.beep = function() {
-  try {
-    var effect = [];
+      for (var i = 0; i < 5000; i++) {
+        effect[i] = 64 + Math.round(32 * (Math.cos(i * i / 2000) + Math.sin(i * i / 4000)));
+      }
 
-    for (var i=0; i<35000; i++) {
-      effect[i] = 64 + Math.round(32 * (Math.cos(i * i / 2000) + Math.sin(i * i / 4000)));
+      riffwave.base64.init();
+      var wave3 = new riffwave.create();
+
+      wave3.header.sampleRate = 22000;
+      wave3.Make(effect);
+
+      var audio = new Audio(wave3.dataURI);
+      audio.volume = (window.volume ? window.volume : .5);
+      audio.play();
+
+      console.log('Audio Trigger Played');
+
+      return true;
     }
+    catch(err) {
+      console.log('Audio Trigger Failed:' + err);
 
-    var wave3 = new RIFFWAVE();
-
-    wave3.header.sampleRate = 22000;
-    wave3.Make(effect);
-    var audio = new Audio(wave3.dataURI);
-
-    audio.play();
-
-
-    console.log('Audio Trigger Played');
-
-    return true;
+      return false;
+    }
   }
-  catch(err) {
-    console.log('Audio Trigger Failed:' + err);
-
-    return false;
-  }
-}
+};
 
 
 /**
@@ -1907,233 +2430,7 @@ function notify(text,header,id,id2) {
 }
 
 
-/* Experimental webkitNotify Container Functions */
 
-function webkitNotifyRequest(callback) {
-  window.webkitNotifications.requestPermission(callback);
-}
-
-function webkitNotify(icon, title, notifyData) {
-  if (window.webkitNotifications.checkPermission() > 0) {
-    webkitNotifyRequest(function() { webkitNotify(icon, title, notifyData); });
-  }
-  else {
-    notification = window.webkitNotifications.createNotification(icon, title, notifyData);
-    notification.show();
-  }
-}
-
-function md5 (str) {
-    // http://kevin.vanzonneveld.net
-    // +   original by: Webtoolkit.info (http://www.webtoolkit.info/)
-    // + namespaced by: Michael White (http://getsprink.com)
-    // +    tweaked by: Jack
-    // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-    // +      input by: Brett Zamir (http://brett-zamir.me)
-    // +   bugfixed by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-    // -    depends on: utf8_encode
-    // *     example 1: md5('Kevin van Zonneveld');
-    // *     returns 1: '6e658d4bfcb59cc13f96c14450ac40b9'
-    var xl;
-
-    var rotateLeft = function (lValue, iShiftBits) {
-        return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits));
-    };
-
-    var addUnsigned = function (lX, lY) {
-        var lX4, lY4, lX8, lY8, lResult;
-        lX8 = (lX & 0x80000000);
-        lY8 = (lY & 0x80000000);
-        lX4 = (lX & 0x40000000);
-        lY4 = (lY & 0x40000000);
-        lResult = (lX & 0x3FFFFFFF) + (lY & 0x3FFFFFFF);
-        if (lX4 & lY4) {
-            return (lResult ^ 0x80000000 ^ lX8 ^ lY8);
-        }
-        if (lX4 | lY4) {
-            if (lResult & 0x40000000) {
-                return (lResult ^ 0xC0000000 ^ lX8 ^ lY8);
-            } else {
-                return (lResult ^ 0x40000000 ^ lX8 ^ lY8);
-            }
-        } else {
-            return (lResult ^ lX8 ^ lY8);
-        }
-    };
-
-    var _F = function (x, y, z) {
-        return (x & y) | ((~x) & z);
-    };
-    var _G = function (x, y, z) {
-        return (x & z) | (y & (~z));
-    };
-    var _H = function (x, y, z) {
-        return (x ^ y ^ z);
-    };
-    var _I = function (x, y, z) {
-        return (y ^ (x | (~z)));
-    };
-
-    var _FF = function (a, b, c, d, x, s, ac) {
-        a = addUnsigned(a, addUnsigned(addUnsigned(_F(b, c, d), x), ac));
-        return addUnsigned(rotateLeft(a, s), b);
-    };
-
-    var _GG = function (a, b, c, d, x, s, ac) {
-        a = addUnsigned(a, addUnsigned(addUnsigned(_G(b, c, d), x), ac));
-        return addUnsigned(rotateLeft(a, s), b);
-    };
-
-    var _HH = function (a, b, c, d, x, s, ac) {
-        a = addUnsigned(a, addUnsigned(addUnsigned(_H(b, c, d), x), ac));
-        return addUnsigned(rotateLeft(a, s), b);
-    };
-
-    var _II = function (a, b, c, d, x, s, ac) {
-        a = addUnsigned(a, addUnsigned(addUnsigned(_I(b, c, d), x), ac));
-        return addUnsigned(rotateLeft(a, s), b);
-    };
-
-    var convertToWordArray = function (str) {
-        var lWordCount;
-        var lMessageLength = str.length;
-        var lNumberOfWords_temp1 = lMessageLength + 8;
-        var lNumberOfWords_temp2 = (lNumberOfWords_temp1 - (lNumberOfWords_temp1 % 64)) / 64;
-        var lNumberOfWords = (lNumberOfWords_temp2 + 1) * 16;
-        var lWordArray = new Array(lNumberOfWords - 1);
-        var lBytePosition = 0;
-        var lByteCount = 0;
-        while (lByteCount < lMessageLength) {
-            lWordCount = (lByteCount - (lByteCount % 4)) / 4;
-            lBytePosition = (lByteCount % 4) * 8;
-            lWordArray[lWordCount] = (lWordArray[lWordCount] | (str.charCodeAt(lByteCount) << lBytePosition));
-            lByteCount++;
-        }
-        lWordCount = (lByteCount - (lByteCount % 4)) / 4;
-        lBytePosition = (lByteCount % 4) * 8;
-        lWordArray[lWordCount] = lWordArray[lWordCount] | (0x80 << lBytePosition);
-        lWordArray[lNumberOfWords - 2] = lMessageLength << 3;
-        lWordArray[lNumberOfWords - 1] = lMessageLength >>> 29;
-        return lWordArray;
-    };
-
-    var wordToHex = function (lValue) {
-        var wordToHexValue = "",
-            wordToHexValue_temp = "",
-            lByte, lCount;
-        for (lCount = 0; lCount <= 3; lCount++) {
-            lByte = (lValue >>> (lCount * 8)) & 255;
-            wordToHexValue_temp = "0" + lByte.toString(16);
-            wordToHexValue = wordToHexValue + wordToHexValue_temp.substr(wordToHexValue_temp.length - 2, 2);
-        }
-        return wordToHexValue;
-    };
-
-    var x = [],
-        k, AA, BB, CC, DD, a, b, c, d, S11 = 7,
-        S12 = 12,
-        S13 = 17,
-        S14 = 22,
-        S21 = 5,
-        S22 = 9,
-        S23 = 14,
-        S24 = 20,
-        S31 = 4,
-        S32 = 11,
-        S33 = 16,
-        S34 = 23,
-        S41 = 6,
-        S42 = 10,
-        S43 = 15,
-        S44 = 21;
-
-    str = this.utf8_encode(str);
-    x = convertToWordArray(str);
-    a = 0x67452301;
-    b = 0xEFCDAB89;
-    c = 0x98BADCFE;
-    d = 0x10325476;
-
-    xl = x.length;
-    for (k = 0; k < xl; k += 16) {
-        AA = a;
-        BB = b;
-        CC = c;
-        DD = d;
-        a = _FF(a, b, c, d, x[k + 0], S11, 0xD76AA478);
-        d = _FF(d, a, b, c, x[k + 1], S12, 0xE8C7B756);
-        c = _FF(c, d, a, b, x[k + 2], S13, 0x242070DB);
-        b = _FF(b, c, d, a, x[k + 3], S14, 0xC1BDCEEE);
-        a = _FF(a, b, c, d, x[k + 4], S11, 0xF57C0FAF);
-        d = _FF(d, a, b, c, x[k + 5], S12, 0x4787C62A);
-        c = _FF(c, d, a, b, x[k + 6], S13, 0xA8304613);
-        b = _FF(b, c, d, a, x[k + 7], S14, 0xFD469501);
-        a = _FF(a, b, c, d, x[k + 8], S11, 0x698098D8);
-        d = _FF(d, a, b, c, x[k + 9], S12, 0x8B44F7AF);
-        c = _FF(c, d, a, b, x[k + 10], S13, 0xFFFF5BB1);
-        b = _FF(b, c, d, a, x[k + 11], S14, 0x895CD7BE);
-        a = _FF(a, b, c, d, x[k + 12], S11, 0x6B901122);
-        d = _FF(d, a, b, c, x[k + 13], S12, 0xFD987193);
-        c = _FF(c, d, a, b, x[k + 14], S13, 0xA679438E);
-        b = _FF(b, c, d, a, x[k + 15], S14, 0x49B40821);
-        a = _GG(a, b, c, d, x[k + 1], S21, 0xF61E2562);
-        d = _GG(d, a, b, c, x[k + 6], S22, 0xC040B340);
-        c = _GG(c, d, a, b, x[k + 11], S23, 0x265E5A51);
-        b = _GG(b, c, d, a, x[k + 0], S24, 0xE9B6C7AA);
-        a = _GG(a, b, c, d, x[k + 5], S21, 0xD62F105D);
-        d = _GG(d, a, b, c, x[k + 10], S22, 0x2441453);
-        c = _GG(c, d, a, b, x[k + 15], S23, 0xD8A1E681);
-        b = _GG(b, c, d, a, x[k + 4], S24, 0xE7D3FBC8);
-        a = _GG(a, b, c, d, x[k + 9], S21, 0x21E1CDE6);
-        d = _GG(d, a, b, c, x[k + 14], S22, 0xC33707D6);
-        c = _GG(c, d, a, b, x[k + 3], S23, 0xF4D50D87);
-        b = _GG(b, c, d, a, x[k + 8], S24, 0x455A14ED);
-        a = _GG(a, b, c, d, x[k + 13], S21, 0xA9E3E905);
-        d = _GG(d, a, b, c, x[k + 2], S22, 0xFCEFA3F8);
-        c = _GG(c, d, a, b, x[k + 7], S23, 0x676F02D9);
-        b = _GG(b, c, d, a, x[k + 12], S24, 0x8D2A4C8A);
-        a = _HH(a, b, c, d, x[k + 5], S31, 0xFFFA3942);
-        d = _HH(d, a, b, c, x[k + 8], S32, 0x8771F681);
-        c = _HH(c, d, a, b, x[k + 11], S33, 0x6D9D6122);
-        b = _HH(b, c, d, a, x[k + 14], S34, 0xFDE5380C);
-        a = _HH(a, b, c, d, x[k + 1], S31, 0xA4BEEA44);
-        d = _HH(d, a, b, c, x[k + 4], S32, 0x4BDECFA9);
-        c = _HH(c, d, a, b, x[k + 7], S33, 0xF6BB4B60);
-        b = _HH(b, c, d, a, x[k + 10], S34, 0xBEBFBC70);
-        a = _HH(a, b, c, d, x[k + 13], S31, 0x289B7EC6);
-        d = _HH(d, a, b, c, x[k + 0], S32, 0xEAA127FA);
-        c = _HH(c, d, a, b, x[k + 3], S33, 0xD4EF3085);
-        b = _HH(b, c, d, a, x[k + 6], S34, 0x4881D05);
-        a = _HH(a, b, c, d, x[k + 9], S31, 0xD9D4D039);
-        d = _HH(d, a, b, c, x[k + 12], S32, 0xE6DB99E5);
-        c = _HH(c, d, a, b, x[k + 15], S33, 0x1FA27CF8);
-        b = _HH(b, c, d, a, x[k + 2], S34, 0xC4AC5665);
-        a = _II(a, b, c, d, x[k + 0], S41, 0xF4292244);
-        d = _II(d, a, b, c, x[k + 7], S42, 0x432AFF97);
-        c = _II(c, d, a, b, x[k + 14], S43, 0xAB9423A7);
-        b = _II(b, c, d, a, x[k + 5], S44, 0xFC93A039);
-        a = _II(a, b, c, d, x[k + 12], S41, 0x655B59C3);
-        d = _II(d, a, b, c, x[k + 3], S42, 0x8F0CCC92);
-        c = _II(c, d, a, b, x[k + 10], S43, 0xFFEFF47D);
-        b = _II(b, c, d, a, x[k + 1], S44, 0x85845DD1);
-        a = _II(a, b, c, d, x[k + 8], S41, 0x6FA87E4F);
-        d = _II(d, a, b, c, x[k + 15], S42, 0xFE2CE6E0);
-        c = _II(c, d, a, b, x[k + 6], S43, 0xA3014314);
-        b = _II(b, c, d, a, x[k + 13], S44, 0x4E0811A1);
-        a = _II(a, b, c, d, x[k + 4], S41, 0xF7537E82);
-        d = _II(d, a, b, c, x[k + 11], S42, 0xBD3AF235);
-        c = _II(c, d, a, b, x[k + 2], S43, 0x2AD7D2BB);
-        b = _II(b, c, d, a, x[k + 9], S44, 0xEB86D391);
-        a = addUnsigned(a, AA);
-        b = addUnsigned(b, BB);
-        c = addUnsigned(c, CC);
-        d = addUnsigned(d, DD);
-    }
-
-    var temp = wordToHex(a) + wordToHex(b) + wordToHex(c) + wordToHex(d);
-
-    return temp.toLowerCase();
-}
 
 /* FreezeMessenger Copyright © 2011 Joseph Todd Parsons
 
@@ -2149,29 +2446,95 @@ function md5 (str) {
 
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-function previewUrl(){fileContent=$('#urlUpload').val();if(fileContent&&fileContent!='http://'){fileContainer='<img src="'+fileContent+'" alt="" style="max-width: 200px; max-height: 250px; height: auto;" />';$('#preview').html(fileContainer);$('#imageUploadSubmitButton').removeAttr('disabled');$( "#imageUploadSubmitButton" ).button({ disabled: false });}
-else{$('#imageUploadSubmitButton').attr('disabled','disabled');}}
-function upFiles(id){if(!id){id='';}
-$('#imageUploadSubmitButton').attr('disabled','disabled');var fileInput=document.getElementById('fileUpload');if(typeof fileInput.files!='undefined'){var files=fileInput.files;if(files.length>0){for(var i=0;i<files.length;i++){var file=files[i];handleFile(file,id);}
-return true;}
-else{return false;}}
-else{$('#preview').html('File analysis not supported. Please upgrade to a compatible browser.');$('#imageUploadSubmitButton').removeAttr('disabled');$( "#imageUploadSubmitButton" ).button({ disabled: false });$('#urlUpload').attr('value','');}}
-function handleFile(file,id){var fileName=file.name;var fileSize=file.size;if(!fileName.match(/\.(jpg|jpeg|gif|png|svg)$/i)){$('#preview').html('Wrong file type.');}
-else if(fileSize>4*1000*1000){$('#preview').html('File too large.');}
-else if(typeof FileReader=='undefined'){$('#preview').html('Preview not supported.');$('#imageUploadSubmitButton').removeAttr('disabled');$( "#imageUploadSubmitButton" ).button({ disabled: false });$('#urlUpload').attr('value','');}
-else{var reader=new FileReader();reader.readAsDataURL(file);reader.onloadend=function(){var fileContent=reader.result;fileContainer='<img src="'+fileContent+'" alt="" style="max-width: 200px; max-height: 250px; height: auto;" />';$('#preview').html(fileContainer);};$('#imageUploadSubmitButton').removeAttr('disabled');$( "#imageUploadSubmitButton" ).button({ disabled: false });$('#urlUpload').attr('value','');}}
+function previewUrl() {
+  fileContent = $('#urlUpload').val();
+  if (fileContent && fileContent != 'http://') {
+    fileContainer = '<img src="' + fileContent + '" alt="" style="max-width: 200px; max-height: 250px; height: auto;" />';
+
+    $('#preview').html(fileContainer);
+    $('#imageUploadSubmitButton').removeAttr('disabled');
+    $("#imageUploadSubmitButton").button({
+      disabled: false
+    });
+  }
+  else {
+    $('#imageUploadSubmitButton').attr('disabled', 'disabled');
+  }
+}
+
+function upFiles(id) {
+  if (!id) {
+    id = '';
+  }
+
+  $('#imageUploadSubmitButton').attr('disabled', 'disabled');
+
+  var fileInput = document.getElementById('fileUpload');
+
+  if (typeof fileInput.files != 'undefined') {
+    var files = fileInput.files;
+
+    if (files.length > 0) {
+      for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        handleFile(file, id);
+      }
+
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+
+  else {
+    $('#preview').html('File analysis not supported. Please upgrade to a compatible browser.');
+    $('#imageUploadSubmitButton').removeAttr('disabled');
+    $("#imageUploadSubmitButton").button({
+      disabled: false
+    });
+
+    $('#urlUpload').attr('value', '');
+  }
+}
+
+function handleFile(file, id) {
+  var fileName = file.name;
+  var fileSize = file.size;
+
+  if (!fileName.match(/\.(jpg|jpeg|gif|png|svg)$/i)) {
+    $('#preview').html('Wrong file type.');
+  }
+  else if (fileSize > 4 * 1000 * 1000) {
+    $('#preview').html('File too large.');
+  }
+  else if (typeof FileReader == 'undefined') {
+    $('#preview').html('Preview not supported.');
+    $('#imageUploadSubmitButton').removeAttr('disabled');
+    $("#imageUploadSubmitButton").button({
+      disabled: false
+    });
+
+    $('#urlUpload').attr('value', '');
+  }
+  else {
+    var reader = new FileReader();
+    reader.readAsDataURL(file);
+
+    reader.onloadend = function () {
+      var fileContent = reader.result;
+      fileContainer = '<img src="' + fileContent + '" alt="" style="max-width: 200px; max-height: 250px; height: auto;" />';
+      $('#preview').html(fileContainer);
+    };
+
+    $('#imageUploadSubmitButton').removeAttr('disabled');
+
+    $("#imageUploadSubmitButton").button({
+      disabled: false
+    });
+
+    $('#urlUpload').attr('value', '');
+  }
+}
 
 
-/* PHPJS */
-function utf8_encode(argString){var string=(argString+'');var utftext="",start,end,stringl=0;start=end=0;stringl=string.length;for(var n=0;n<stringl;n++){var c1=string.charCodeAt(n);var enc=null;if(c1<128){end++;}else if(c1>127&&c1<2048){enc=String.fromCharCode((c1>>6)|192)+String.fromCharCode((c1&63)|128);}else{enc=String.fromCharCode((c1>>12)|224)+String.fromCharCode(((c1>>6)&63)|128)+String.fromCharCode((c1&63)|128);}
-if(enc!==null){if(end>start){utftext+=string.slice(start,end);}
-utftext+=enc;start=end=n+1;}}
-if(end>start){utftext+=string.slice(start,stringl);}
-return utftext;}
-function utf8_decode(str_data){var tmp_arr=[],i=0,ac=0,c1=0,c2=0,c3=0;str_data+='';while(i<str_data.length){c1=str_data.charCodeAt(i);if(c1<128){tmp_arr[ac++]=String.fromCharCode(c1);i++;}else if(c1>191&&c1<224){c2=str_data.charCodeAt(i+1);tmp_arr[ac++]=String.fromCharCode(((c1&31)<<6)|(c2&63));i+=2;}else{c2=str_data.charCodeAt(i+1);c3=str_data.charCodeAt(i+2);tmp_arr[ac++]=String.fromCharCode(((c1&15)<<12)|((c2&63)<<6)|(c3&63));i+=3;}}
-return tmp_arr.join('');}
-function base64_encode(data){var b64="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";var o1,o2,o3,h1,h2,h3,h4,bits,i=0,ac=0,enc="",tmp_arr=[];if(!data){return data;}
-data=this.utf8_encode(data+'');do{o1=data.charCodeAt(i++);o2=data.charCodeAt(i++);o3=data.charCodeAt(i++);bits=o1<<16|o2<<8|o3;h1=bits>>18&0x3f;h2=bits>>12&0x3f;h3=bits>>6&0x3f;h4=bits&0x3f;tmp_arr[ac++]=b64.charAt(h1)+b64.charAt(h2)+b64.charAt(h3)+b64.charAt(h4);}while(i<data.length);enc=tmp_arr.join('');switch(data.length%3){case 1:enc=enc.slice(0,-2)+'==';break;case 2:enc=enc.slice(0,-1)+'=';break;}
-return enc;}
-function base64_decode(data){var b64="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";var o1,o2,o3,h1,h2,h3,h4,bits,i=0,ac=0,dec="",tmp_arr=[];if(!data){return data;}
-data+='';do{h1=b64.indexOf(data.charAt(i++));h2=b64.indexOf(data.charAt(i++));h3=b64.indexOf(data.charAt(i++));h4=b64.indexOf(data.charAt(i++));bits=h1<<18|h2<<12|h3<<6|h4;o1=bits>>16&0xff;o2=bits>>8&0xff;o3=bits&0xff;if(h3==64){tmp_arr[ac++]=String.fromCharCode(o1);}else if(h4==64){tmp_arr[ac++]=String.fromCharCode(o1,o2);}else{tmp_arr[ac++]=String.fromCharCode(o1,o2,o3);}}while(i<data.length);dec=tmp_arr.join('');dec=this.utf8_decode(dec);return dec;}
