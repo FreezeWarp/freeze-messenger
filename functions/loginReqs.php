@@ -1,7 +1,31 @@
 <?php
+/* FreezeMessenger Copyright © 2011 Joseph Todd Parsons
+
+ * This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+
+
+
+
 /**
+* Database auth plug-in for phpBB3
 *
-* @package phpBB3
+* Authentication plug-ins is largely down to Sergey Kanareykin, our thanks to him.
+*
+* This is for authentication via the integrated user table
+*
+* @package login
 * @version $Id$
 * @copyright (c) 2005 phpBB Group
 * @license http://opensource.org/licenses/gpl-license.php GNU Public License
@@ -117,28 +141,10 @@ function phpbb_check_hash($password, $hash) {
 }
 
 
-if ($apiRequest) {
-  if ($_SERVER['HTTP_REFERER'] && $installUrl) {
-    if (strstr($_SERVER['HTTP_REFERER'],$installUrl)) {
-      $apiRequestCheck = false;
-    }
-  }
 
-  if ($apiRequestCheck !== false) {
-    if (!$enableForeignApi) {
-      die('Foreign API Disabled');
-    }
-    elseif ($insecureApi) {
-      $apiRequestCheck = false;
-    }
-    else {
-      $apiRequestCheck = true;
-    }
-  }
-}
-else {
-  $apiRequestCheck = false;
-}
+
+
+///* FIM *///
 
 function fim_generateSession() {
   global $salts;
@@ -179,22 +185,28 @@ function fim_generatePassword($password) {
 
 
 
+
+
+
 ///* Process Functions for Each Forum  *///
 
 /* User should be array, password md5sum of plaintext. */
 function processVBulletin($user,$password) {
   global $forumPrefix, $sqlUserTable, $sqlUserTableCols;
 
-  if (!$user[$sqlUserTableCols['userId']]) {
+  if (!$user[$sqlUserTableCols['userId']]) { // The user does not exists
+    define('LOGIN_FLAG','BAD_USERNAME');
+
     return false;
   }
 
-  if ($user['password'] === md5($password . $user['salt'])) { // The password matches.
-    global $user; // Make sure accessible elsewhere.
+  elseif ($user['password'] === md5($password . $user['salt'])) { // The password matches.
     return true;
   }
 
   else {
+    define('LOGIN_FLAG','BAD_PASSWORD');
+
     return false;
   }
 }
@@ -202,17 +214,25 @@ function processVBulletin($user,$password) {
 function processPHPBB($user, $password) {
   global $forumPrefix, $brokenUsers, $sqlUserTable, $sqlUserTableCols;
 
-  if (!$user[$sqlUserTableCols['userId']]) {
-    return false;
-  }
-  elseif (in_array($user['user_id'],$brokenUsers)) {
+  if (!$user[$sqlUserTableCols['userId']]) { // The user does not exist
+    define('LOGIN_FLAG','BAD_USERNAME');
+
     return false;
   }
 
-  if (phpbb_check_hash($password, $user['user_password'])) {
+  elseif (in_array($user['user_id'],$brokenUsers)) { // The user is flagged as a PHPBB auto user.
+    define('LOGIN_FLAG','BROKEN_USER');
+
+    return false;
+  }
+
+  elseif (phpbb_check_hash($password, $user['user_password'])) { // The password matches
     return true;
   }
+
   else {
+    define('LOGIN_FLAG','BAD_PASSWORD');
+
     return false;
   }
 }
@@ -220,19 +240,30 @@ function processPHPBB($user, $password) {
 function processVanilla($user, $password) {
   global $tablePrefix, $sqlUserTable, $sqlUserTableCols;
 
-  if (!$user[$sqlUserTableCols['userId']]) {
+  if (!$user[$sqlUserTableCols['userId']]) { // The user does not exist
+    define('LOGIN_FLAG','BAD_USERNAME');
+
     return false;
   }
+
+  else if ($something) { // TODO
+
+  }
+
   else {
 
   }
 }
 
-function processLogin($user, $password) {
+function processLogin($user, $password, $encrypt) {
   global $loginMethod;
 
   switch ($loginMethod) {
     case 'vbulletin':
+    if ($encrypt == 'plaintext') {
+      $password = md5($password);
+    }
+
     return processVBulletin($user, $password);
     break;
 

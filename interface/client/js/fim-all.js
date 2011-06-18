@@ -34,7 +34,7 @@ function unxml(data) {
 }
 
 function urlEncode(data) {
-  return data.replace(/\+/g,'%2b').replace(/\&/g,'%26').replace(/\%/g,'%25');
+  return data.replace(/\+/g,'%2b').replace(/\&/g,'%26').replace(/\%/g,'%25').replace(/\n/g,'%20');
 }
 
 function toBottom() {
@@ -328,7 +328,7 @@ function getSuccess(xml) {
 
     if (blur) {
       if (audioDing) {
-        window.beep();
+        riffwave.play();
 
         if (navigator.appName === 'Microsoft Internet Explorer') {
           timer3 = window.setInterval(faviconFlash,1000);
@@ -379,7 +379,7 @@ function sendMessage(message,confirmed) {
     timeout: 2500,
     success: function(xml) {
       var status = $(xml).find('errorcode').text().trim();
-      var emessage = $(xml).find('errormessage').text().trim();
+      var emessage = $(xml).find('errortext').text().trim();
       switch (status) {
         case '':
         break;

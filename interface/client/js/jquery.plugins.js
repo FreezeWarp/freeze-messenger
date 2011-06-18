@@ -2252,13 +2252,13 @@ $.fn.tabbedDialog = function (dialogOptions,tabOptions) {
   tabul.addClass('ui-dialog-titlebar');
 }
 
-
-
-/* Quick Dialouge
+/* Dialouge Presets
  * Joseph Todd Parsons
  * http://www.gnu.org/licenses/gpl.html */
 
-function quickDialogue(content,title,id,width,cF,oF) {
+$.fn.dialogPresets = new Object;
+
+$.fn.dialogPresets.quick = function(content,title,id,width,oF,cF) {
   var dialog = $('<div style="display: none;" id="' + id +  '">' + content + '</div>').appendTo('body');
 
   $('button').button();
@@ -2293,13 +2293,7 @@ function quickDialogue(content,title,id,width,cF,oF) {
   return false;
 }
 
-
-
-/* Quick Confirm
- * Joseph Todd Parsons
- * http://www.gnu.org/licenses/gpl.html */
-
-function quickConfirm(text) {
+$.fn.dialogPresets.confirm = function(text) {
   $('<div id="dialog-confirm"><span class="ui-icon ui-icon-alert" style="float: left; margin: 0px 7px 20px 0px;"></span>' + text + '</div>').dialog({
     resizable: false,
     height: 240,
@@ -2318,12 +2312,7 @@ function quickConfirm(text) {
   });
 }
 
-
-/* Ajax Dialogue
- * Joseph Todd Parsons
- * http://www.gnu.org/licenses/gpl.html */
-
-function ajaxDialogue(uri,title,id,width,cF,oF) {
+$.fn.dialogPresets.confirm = function(uri,title,id,width,oF,cF) {
   var dialog = $('<div style="display: none;" id="' + id +  '"></div>').appendTo('body');
 
   dialog.load(
@@ -2365,7 +2354,7 @@ function ajaxDialogue(uri,title,id,width,cF,oF) {
  * Joseph Todd Parsons
  * http://www.gnu.org/licenses/gpl.html */
 
-function ajaxTabDialogue(uri,id,width,cF,oF) {
+$.fn.dialogPresets.ajaxTabDialogue = function(uri,id,width,oF,cF) {
   var dialog = $('<div style="display: none;" id="' + id +  '"></div>').appendTo('body');
   dialog.load(
     uri,
@@ -2446,95 +2435,95 @@ function notify(text,header,id,id2) {
 
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-function previewUrl() {
-  fileContent = $('#urlUpload').val();
-  if (fileContent && fileContent != 'http://') {
-    fileContainer = '<img src="' + fileContent + '" alt="" style="max-width: 200px; max-height: 250px; height: auto;" />';
+var upload = {
+  previewUrl : function() {
+    fileContent = $('#urlUpload').val();
+    if (fileContent && fileContent != 'http://') {
+      fileContainer = '<img src="' + fileContent + '" alt="" style="max-width: 200px; max-height: 250px; height: auto;" />';
 
-    $('#preview').html(fileContainer);
-    $('#imageUploadSubmitButton').removeAttr('disabled');
-    $("#imageUploadSubmitButton").button({
-      disabled: false
-    });
-  }
-  else {
-    $('#imageUploadSubmitButton').attr('disabled', 'disabled');
-  }
-}
-
-function upFiles(id) {
-  if (!id) {
-    id = '';
-  }
-
-  $('#imageUploadSubmitButton').attr('disabled', 'disabled');
-
-  var fileInput = document.getElementById('fileUpload');
-
-  if (typeof fileInput.files != 'undefined') {
-    var files = fileInput.files;
-
-    if (files.length > 0) {
-      for (var i = 0; i < files.length; i++) {
-        var file = files[i];
-        handleFile(file, id);
-      }
-
-      return true;
+      $('#preview').html(fileContainer);
+      $('#imageUploadSubmitButton').removeAttr('disabled');
+      $("#imageUploadSubmitButton").button({
+        disabled: false
+      });
     }
     else {
-      return false;
+      $('#imageUploadSubmitButton').attr('disabled', 'disabled');
+    }
+  },
+
+  upFiles : function(id) {
+    if (!id) {
+      id = '';
+    }
+
+    $('#imageUploadSubmitButton').attr('disabled', 'disabled');
+
+    var fileInput = document.getElementById('fileUpload');
+
+    if (typeof fileInput.files != 'undefined') {
+      var files = fileInput.files;
+
+      if (files.length > 0) {
+        for (var i = 0; i < files.length; i++) {
+          var file = files[i];
+          handleFile(file, id);
+        }
+
+        return true;
+      }
+      else {
+        return false;
+      }
+    }
+
+    else {
+      $('#preview').html('File analysis not supported. Please upgrade to a compatible browser.');
+      $('#imageUploadSubmitButton').removeAttr('disabled');
+      $("#imageUploadSubmitButton").button({
+        disabled: false
+      });
+
+      $('#urlUpload').attr('value', '');
+    }
+  },
+
+  handleFile : function(file, id) {
+    var fileName = file.name;
+    var fileSize = file.size;
+
+    if (!fileName.match(/\.(jpg|jpeg|gif|png|svg)$/i)) {
+      $('#preview').html('Wrong file type.');
+    }
+    else if (fileSize > 4 * 1000 * 1000) {
+      $('#preview').html('File too large.');
+    }
+    else if (typeof FileReader == 'undefined') {
+      $('#preview').html('Preview not supported.');
+      $('#imageUploadSubmitButton').removeAttr('disabled');
+      $("#imageUploadSubmitButton").button({
+        disabled: false
+      });
+
+      $('#urlUpload').attr('value', '');
+    }
+    else {
+      var reader = new FileReader();
+      reader.readAsDataURL(file);
+
+      reader.onloadend = function () {
+        var fileContent = reader.result;
+        fileContainer = '<img src="' + fileContent + '" alt="" style="max-width: 200px; max-height: 250px; height: auto;" />';
+        $('#preview').html(fileContainer);
+      };
+
+      $('#imageUploadSubmitButton').removeAttr('disabled');
+
+      $("#imageUploadSubmitButton").button({
+        disabled: false
+      });
+
+      $('#urlUpload').attr('value', '');
     }
   }
-
-  else {
-    $('#preview').html('File analysis not supported. Please upgrade to a compatible browser.');
-    $('#imageUploadSubmitButton').removeAttr('disabled');
-    $("#imageUploadSubmitButton").button({
-      disabled: false
-    });
-
-    $('#urlUpload').attr('value', '');
-  }
 }
-
-function handleFile(file, id) {
-  var fileName = file.name;
-  var fileSize = file.size;
-
-  if (!fileName.match(/\.(jpg|jpeg|gif|png|svg)$/i)) {
-    $('#preview').html('Wrong file type.');
-  }
-  else if (fileSize > 4 * 1000 * 1000) {
-    $('#preview').html('File too large.');
-  }
-  else if (typeof FileReader == 'undefined') {
-    $('#preview').html('Preview not supported.');
-    $('#imageUploadSubmitButton').removeAttr('disabled');
-    $("#imageUploadSubmitButton").button({
-      disabled: false
-    });
-
-    $('#urlUpload').attr('value', '');
-  }
-  else {
-    var reader = new FileReader();
-    reader.readAsDataURL(file);
-
-    reader.onloadend = function () {
-      var fileContent = reader.result;
-      fileContainer = '<img src="' + fileContent + '" alt="" style="max-width: 200px; max-height: 250px; height: auto;" />';
-      $('#preview').html(fileContainer);
-    };
-
-    $('#imageUploadSubmitButton').removeAttr('disabled');
-
-    $("#imageUploadSubmitButton").button({
-      disabled: false
-    });
-
-    $('#urlUpload').attr('value', '');
-  }
-}
-
-

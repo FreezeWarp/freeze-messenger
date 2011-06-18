@@ -195,6 +195,8 @@ function mysqlProcessArrayVal($array) {
       $values[] = '"' . mysqlEscape($data) . '"';
     }
   }
+
+  return array($columns, $values);
 }
 
 
@@ -209,19 +211,18 @@ function mysqlProcessArrayVal($array) {
 */
 function mysqlInsert($dataArray,$table,$updateArray) {
 
-  list($columns,$data) = mysqlProcessArrayVal($dataArray);
+  list($columns,$values) = mysqlProcessArrayVal($dataArray);
 
   $columns = implode(',',$columns); // Convert the column array into to a string.
-  $data = implode(',',$columns); // Convert the data array into a string.
-
+  $values = implode(',',$values); // Convert the data array into a string.
 
   $query = "INSERT INTO $table ($columns) VALUES ($values)";
 
   if ($updateArray) { // This is used for an ON DUPLICATE KEY request.
-    list($coluns, $data) = mysqlProcessArrayVal($updateArray);
+    list($columns, $values) = mysqlProcessArrayVal($updateArray);
 
-    for ($i = 0; $i <= count($columns); $i++) {
-      $update[] = "{$columns[$i]} = {$data[$i]}";
+    for ($i = 0; $i < count($columns); $i++) {
+      $update[] = $columns[$i] . '=' . $values[$i];
     }
 
     $update = implode($update,',');
@@ -230,8 +231,7 @@ function mysqlInsert($dataArray,$table,$updateArray) {
 
   }
 
-//  return mysqlQuery($query);
-  die($query);
+  return mysqlQuery($query);
 }
 
 

@@ -324,6 +324,7 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
   }
 
   $messageHtmlCache = $messageHtml;
+  $messageHtmlApi = $messageHtml;
 
   if ($salts && $encrypt) {
     $salt = end($salts);
@@ -347,7 +348,7 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
     'iv' => $iv,
     'ip' => $ip,
     'flag' => $flag,
-  ),"{$sqlPrefix}messagesCached");
+  ),"{$sqlPrefix}messages");
   $messageId = mysqlInsertId();
 
   mysqlInsert(array(
@@ -355,17 +356,17 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
     'roomId' => (int) $room['roomId'],
     'userId' => (int) $user['userId'],
     'userName' => $user['userName'],
-    'userGroup' => (int) $user['userGroup']
+    'userGroup' => (int) $user['userGroup'],
     'avatar' => $user['avatar'],
     'profile' => $user['profile'],
     'userFormatStart' => $user['userFormatStart'],
-    'userFormatEnd' => $user['userFormatEnd']
-    'defaultFormatting' => $user['defaultFormatting']
-    'defaultColor' => $user['defaultColor']
-    'defaultHighlight' => $user['defaultHighlight']
+    'userFormatEnd' => $user['userFormatEnd'],
+    'defaultFormatting' => $user['defaultFormatting'],
+    'defaultColor' => $user['defaultColor'],
+    'defaultHighlight' => $user['defaultHighlight'],
     'defaultFontface' => $user['defaultFontface'],
-    'htmlText' => $messageHtml,
-    'apiText' => $messageApi,
+    'htmlText' => $messageHtmlCache,
+    'apiText' => $messageHtmlApi,
     'flag' => $flag,
   ),"{$sqlPrefix}messagesCached");
 
@@ -386,7 +387,7 @@ WHERE roomId = $room[roomId]");
     'messages' => 1),"{$sqlPrefix}roomStats",array(
     'messages' => array(
       'type' => 'raw',
-      'data' => 'messages + 1',
+      'value' => 'messages + 1',
     ),
   ));
 }
