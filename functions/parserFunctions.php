@@ -16,11 +16,20 @@
 
 require_once('generalFunctions.php');
 
-function fimParse_htmlParse($text,$bbcodeLevel = 1) {
-  global $bbcode;
 
-  global $user;
-  global $forumpath;
+
+/**
+* Parses text from defined BBCode.
+* TODO: Support DB-BBCode (likely FIM4).
+*
+* @param string $text - Text to format with HTML.
+* @param integer $bbcodeLevel - The level of bbcode to parse. See documentation for values.
+* @return string - Parsed text.
+* @author Joseph Todd Parsons
+*/
+
+function fimParse_htmlParse($text,$bbcodeLevel = 1) {
+  global $bbcode, $user, $forumpath;
 
   $search['shortCode'] = array(
     '/\+([a-zA-Z0-9\ ]+)\+/is',
@@ -128,7 +137,18 @@ function fimParse_htmlParse($text,$bbcodeLevel = 1) {
   return $text;
 }
 
-function fimParse_censorParse($text,$roomId = false) {
+
+
+/**
+* Parses and censors phrases. Requires an active MySQL connection.
+*
+* @param string $text - The text to censor.
+* @param int $roomId - The ID of the room's censors. Uses general censors if not available (thus not using any black/white lists).
+* @return string - Censored text.
+* @author Joseph Todd Parsons
+*/
+
+function fimParse_censorParse($text,$roomId = 0) {
   global $sqlPrefix;
 
   $words = sqlArr("SELECT w.word, w.severity, w.param, l.id AS listId
@@ -166,8 +186,15 @@ WHERE w.listId = l.id AND w.severity = 'replace'",'word');
   return $text;
 }
 
-/* The smilie functions bears some similiarites to its vBulletin equivilent because features used can ONLY be done in this certain way. The function is unique, and was not copylifted.
- * Also, this function sadly doesn't integrate very well into... anything. */
+
+
+/**
+* Parsers predefined smilies on vBulletin and PHPBB systems. Support planned for Vanilla.
+*
+* @param string $text - The text to parse.
+* @return string - Parsed text.
+* @author Joseph Todd Parsons
+*/
 function fimParse_smilieParse($text) {
   global $room, $loginMethod, $forumPrefix, $forumUrl;
 
@@ -212,19 +239,31 @@ function indexValue($array,$index) {
   return $array[$index];
 }
 
-function fimParse_htmlWrap($str, $maxLength = 40, $char = '<br />') { /* An adaption of a PHP.net commentor function dealing with HTML for BBCode */
+
+
+/**
+* Wraps HTML with specific support for UTF-8 and URLs.
+*
+* @param string $html - HTML text
+* @param integer $maxLength - Length after which to wrap.
+* @param string $chat - String to wrap with.
+* @return string - Formatted data.
+* @author Joseph Todd Parsons
+*/
+
+function fimParse_htmlWrap($html, $maxLength = 80, $char = '<br />') { /* An adaption of a PHP.net commentor function dealing with HTML for BBCode */
   // Configuration
   $noparseTags = array('img','a');
 
   // Initialize Variables
   $count = 0;
-  $newStr = '';
+  $newHtml = '';
   $currentTag = '';
   $openTag = false;
   $tagParams = false;
 
-  for ($i = 0; $i < mb_strlen($str,'UTF-8'); $i++) {
-   $mb = mb_substr($str,$i,1,'UTF-8');
+  for ($i = 0; $i < mb_strlen($html,'UTF-8'); $i++) {
+   $mb = mb_substr($html,$i,1,'UTF-8');
    $noAppend = false;
 
     if ($mb == '<') { // The character starts a BBcode tag - don't touch nothing.
@@ -249,7 +288,7 @@ function fimParse_htmlWrap($str, $maxLength = 40, $char = '<br />') { /* An adap
       if ($currentTag == 'a' && $count >= ($maxLength - 1)) {
         $noAppend = true;
         if (!$elipse) {
-          $newStr .= '...';
+          $newHtml .= '...';
         }
         $elipse = true;
       }
@@ -261,7 +300,7 @@ function fimParse_htmlWrap($str, $maxLength = 40, $char = '<br />') { /* An adap
            $count++; // Increment the current count.
 
            if ($count == $maxLength) { // We've reached the limit; add a break and reset the count back to 0.
-            $newStr .= $char;
+            $newHtml .= $char;
             $count = 0;
           }
         }
@@ -269,34 +308,59 @@ function fimParse_htmlWrap($str, $maxLength = 40, $char = '<br />') { /* An adap
     }
 
     if (!$noAppend) {
-      $newStr .= $mb;
+      $newHtml .= $mb;
     }
 
   }
 
-  return $newStr;
+  return $newHtml;
 }
 
-function fimParse_finalParse($message) {
+
+
+/**
+* Container for all above parsers, formatting different values (html, raw, api).
+*
+* @param string $messageText - Message string.
+* @return array - $messageRaw, $messageHtml, and $messageApi strings
+* @author Joseph Todd Parsons
+*/
+
+function fimParse_finalParse($messageText) {
   global $room;
 
-  $messageRaw = $message; // Parses the sources for MySQL.
-  $messageHtml = nl2br(fimParse_htmlWrap(fimParse_htmlParse(fimParse_censorParse(fim_encodeXml($message),$room['id']),$room['options']),30,' ')); // Parses for browser or HTML rendering.
-  $messageApi = fimParse_smilieParse($message,$room['bbcode']); // Not yet coded, you see.
+  $messageRaw = $messageText; // Parses the sources for MySQL.
+  $messageHtml = nl2br(fimParse_htmlWrap(fimParse_htmlParse(fimParse_censorParse(fim_encodeXml($messageText),$room['id']),$room['options']),30,' ')); // Parses for browser or HTML rendering.
+  $messageApi = fimParse_smilieParse($messageText,$room['bbcode']); // Not yet coded, you see.
 
   return array($messageRaw, $messageHtml, $messageApi);
 }
 
 
+
+/**
+* Sends a message to the database.
+*
+* @param string $messageText - Message to be sent.
+* @param array $user - Array of user, including at least the userId index (ideally also userName, others).
+* @param array $room - Room data, including at least the roomId index.
+* @param string $flag - Message context flag; for instance, email, image, etc..
+* @return void - true on success, false on failure
+* @author Joseph Todd Parsons
+*/
+
 function fim_sendMessage($messageText,$user,$room,$flag = '') {
   global $sqlPrefix, $parseFlags, $salts, $encrypt, $loginMethod, $sqlUserGroupTableCols, $sqlUserGroupTable;
 
-  $user['userName'] = mysqlEscape($user['userName']);
-
   $ip = mysqlEscape($_SERVER['REMOTE_ADDR']); // Get the IP address of the user.
-  $flag = mysqlEscape($flag);
 
-  if ($parseFlags && in_array($flag,array('image','video','link','email'))) {
+
+
+  // Flags allow for less hassle on some communications.
+  // Supported flags: image, video, link, email
+  // Other flags that won't be parsed here: me, topic
+
+  if (in_array($flag,array('image','video','link','email'))) {
     $messageRaw = $messageText;
     $messageApi = $messageText;
 
@@ -323,20 +387,29 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
     list($messageRaw,$messageHtml,$messageApi) = $message;
   }
 
-  $messageHtmlCache = $messageHtml;
-  $messageHtmlApi = $messageHtml;
 
-  if ($salts && $encrypt) {
-    $salt = end($salts);
-    $saltNum = key($salts);
 
-    $iv_size = mcrypt_get_iv_size(MCRYPT_3DES,MCRYPT_MODE_CBC);
-    $iv = base64_encode(mcrypt_create_iv($iv_size, MCRYPT_RAND));
+  $messageHtmlCache = $messageHtml; // Store so we don't encrypt cache
+  $messageHtmlApi = $messageHtml; // Store so we don't encrypt cache
 
-    list($messages,$iv,$saltNum) = fim_encrypt(array($messageRaw,$messageHtml,$messageApi));
-    list($messageRaw,$messageHtml,$messageApi) = $messages;
+
+
+  // Encrypt Message Data
+
+  if ($salts && $encrypt) { // Only encrypt if we have both salts and encrypt is enabled.
+    $salt = end($salts); // Get the last salt stored.
+    $saltNum = key($salts); // Key the key of the salt.
+
+    $iv_size = mcrypt_get_iv_size(MCRYPT_3DES,MCRYPT_MODE_CBC); // Get random IV size (CBC mode)
+    $iv = base64_encode(mcrypt_create_iv($iv_size, MCRYPT_RAND)); // Get random IV; base64 it
+
+    list($messages,$iv,$saltNum) = fim_encrypt(array($messageRaw,$messageHtml,$messageApi)); // Get messages array, IV, salt num
+    list($messageRaw,$messageHtml,$messageApi) = $messages; // Get messages from messages array
   }
 
+
+
+  // Insert into archive then cache storage.
 
   mysqlInsert(array(
     'roomId' => (int) $room['roomId'],
@@ -372,23 +445,34 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
 
   $messageId2 = mysqlInsertId();
 
+
+
+  // Delete old messages from the cache; do so depending on the cache limit set in config.php, or default to 100.
   if ($messageId2 > 100) {
-    mysqlQuery("DELETE FROM {$sqlPrefix}messagesCached WHERE id <= " . ($messageId2 - 100));
+    mysqlQuery("DELETE FROM {$sqlPrefix}messagesCached WHERE id <= " . ($messageId2 - ($cacheTableLimit ? $cacheTableLimit : 100)));
   }
 
+
+
+  // Update room caches.
   mysqlQuery("UPDATE {$sqlPrefix}rooms
 SET lastMessageTime = NOW(),
   lastMessageId = $messageId
 WHERE roomId = $room[roomId]");
 
+
+
+  // Insert or update a user's room stats.
   mysqlInsert(array(
     'userId' => $user['userId'],
     'roomId' => $room['roomId'],
-    'messages' => 1),"{$sqlPrefix}roomStats",array(
+    'messages' => 1),
+   "{$sqlPrefix}roomStats",
+   array(
     'messages' => array(
       'type' => 'raw',
       'value' => 'messages + 1',
-    ),
+    )
   ));
 }
 ?>

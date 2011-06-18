@@ -276,7 +276,7 @@ function iif($condition,$true,$false) {
 /**
 * Closes a MySQL resource.
 *
-* @return link - A resource created by mysqlConnect
+* @param link - A resource created by mysqlConnect
 * @return void - true on success, false on failure
 * @author Joseph Todd Parsons
 */
