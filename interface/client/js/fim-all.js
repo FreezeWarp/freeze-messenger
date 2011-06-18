@@ -115,10 +115,10 @@ var apiPath = apiPathPre + '/';
 $.ajax({
   url: apiPath + 'api/getUsers.php',
   type: 'GET',
-  timeout: 2400,
+  timeout: 5000,
   cache: false,
   success: function(xml) {
-    var data = '';
+    console.log('Users obtained.');
 
     $(xml).find('user').each(function() {
       var userName = unxml($(this).find('userName').text().trim());
@@ -141,6 +141,8 @@ $.ajax({
   async: true,
   cache: false,
   success: function(xml) {
+    console.log('Rooms obtained.');
+
     $(xml).find('room').each(function() {
       var roomName = unxml($(this).find('roomName').text().trim());
       var roomId = parseInt($(this).find('roomId').text());
@@ -162,9 +164,11 @@ $.ajax({
   async: true,
   cache: false,
   success: function(xml) {
+    console.log('Groups obtained.');
+
     $(xml).find('group').each(function() {
       var groupName = unxml($(this).find('groupName').text());
-      var groupId = parseInt($(this).find('groupId').text());
+      var groupId = parseInt($(thgetSuccessis).find('groupId').text());
 
       groupRef[groupName] = groupId;
       groupList.push(groupName);
@@ -181,248 +185,6 @@ $.ajax({
 /*******************************
  ****** Content Functions ******
  *******************************/
-function updatePosts() {
-  if (!longPolling) {
-    window.clearInterval(window.timer1);
-  }
-
-  var encrypt = 'base64';
-
-  $.ajax({
-    url: apiPath + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (first ? '&archive=1&messageDateMin=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdMin=' + (lastMessage)),
-    type: 'GET',
-    timeout: timeout,
-    async: true,
-    data: '',
-    contentType: "text/xml; charset=utf-8",
-    dataType: "xml",
-    cache: false,
-    success: getSuccess,
-    error: getError,
-  });
-
-  if (!longPolling) {
-    if (totalFails > 10) {
-      window.timer1 = window.setInterval(window.updatePosts,30000);
-      timeout = 29900;
-    }
-    else if (totalFails > 5) {
-      window.timer1 = window.setInterval(window.updatePosts,10000);
-      timeout = 9900;
-    }
-    else if (totalFails > 0) {
-      window.timer1 = window.setInterval(window.updatePosts,5000);
-      timeout = 4900;
-    }
-    else {
-      window.timer1 = window.setInterval(window.updatePosts,2500);
-      timeout = 2400;
-    }
-  }
-}
-
-function getError(xml) {
-  if (longPolling) {
-    setTimeout(updatePosts,50);
-  }
-  else {
-    totalFails += 1;
-    $('#refreshStatus').html('<img src="images/dialog-error.png" alt="Apply" class="standard" />');
-  }
-}
-
-
-function getSuccess(xml) {
-  if (xml) {
-    totalFails = 0;
-    var notifyData = '';
-
-    $('#refreshStatus').html('<img src="images/dialog-ok.png" alt="Apply" class="standard" />');
-
-
-    $('#activeUsers').html('');
-    var activeUserHtml = new Array;
-
-    $(xml).find('activeUsers > user').each(function() {
-     var userName = $(this).find('userName').text().trim();
-     var userId = $(this).find('userId').text().trim();
-     var userGroup = $(this).find('userGroup').text().trim();
-     var startTag = unxml($(this).find('startTag').text().trim());
-     var endTag = unxml($(this).find('endTag').text().trim());
-
-     activeUserHtml.push('<span class="userName" data-userId="' + userId + '">' + startTag + '<span class="username">' + userName + '</span>' + endTag + '</span>');
-    });
-
-    $('#activeUsers').html(activeUserHtml.join(', '));
-  }
-
-  if ($(xml).find('messages > message').length > 0) {
-    $(xml).find('messages > message').each(function() {
-
-      var text = unxml($(this).find('htmlText').text().trim());
-      var messageTime = unxml($(this).find('messageTimeFormatted').text().trim());
-
-      var messageId = parseInt($(this).find('messageId').text().trim());
-
-      var userName = unxml($(this).find('userData > userName').text().trim());
-      var userId = parseInt($(this).find('userData > userId').text().trim());
-      var groupFormatStart = unxml($(this).find('userData > startTag').text().trim());
-      var groupFormatEnd = unxml($(this).find('userData > endTag').text().trim());
-      var avatar = unxml($(this).find('userData > avatar').text().trim());
-
-      var styleColor = unxml($(this).find('defaultFormatting > color').text().trim());
-      var styleHighlight = unxml($(this).find('defaultFormatting > highlight').text().trim());
-      var styleFontface = unxml($(this).find('defaultFormatting > fontface').text().trim());
-      var styleGeneral = parseInt($(this).find('defaultFormatting > general').text().trim());
-
-      var style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + styleFontface + ';';
-
-      if (styleGeneral & 256) {
-        style += 'font-weight: bold;';
-      }
-      if (styleGeneral & 512) {
-        style += 'font-style: oblique;';
-      }
-      if (styleGeneral & 1024) {
-        style += 'text-decoration: underline;';
-      }
-      if (styleGeneral & 2048) {
-        style += 'text-decoration: line-through;';
-      }
-
-
-      if (showAvatars) {
-        var data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="' + userName + '" src="' + avatar + '" style="max-width: 24px; max-height: 24px; padding-right: 3px;" class="userName userNameTable" data-userId="' + userId + '" /><span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
-      }
-      else {
-        var data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
-      }
-
-      notifyData += userName + ': ' + text + "\n";
-
-      if (reversePostOrder) {
-        $('#messageList').append(data);
-      }
-      else {
-        $('#messageList').prepend(data);
-      }
-
-      if (messageId > lastMessage) {
-        lastMessage = messageId;
-      }
-
-      messageIndex.push(lastMessage);
-
-      if (messageIndex.length == 100) {
-        var messageOut = messageIndex[0];
-        $('#message' + messageOut).remove();
-        messageIndex = messageIndex.slice(1,99);
-      }
-    });
-
-
-
-    if (reversePostOrder) {
-      toBottom();
-    }
-
-    if (blur) {
-      if (audioDing) {
-        riffwave.play();
-
-        if (navigator.appName === 'Microsoft Internet Explorer') {
-          timer3 = window.setInterval(faviconFlash,1000);
-
-          window.clearInterval(timer3);
-        }
-      }
-
-      if (notify) {
-        if (window.webkitNotifications) {
-          webkitNotify('images/favicon.gif', 'New Message', notifyData);
-        }
-      }
-
-      if (navigator.appName === 'Microsoft Internet Explorer') {
-        try {
-          if (window.external.msIsSiteMode()) {
-            window.external.msSiteModeActivate();
-          }
-        }
-        catch(ex) {
-          // Supress Error
-        }
-      }
-    }
-  }
-
-  if (typeof contextMenuParse === 'function') {
-    contextMenuParse();
-  }
-
-  if (longPolling) {
-    setTimeout(updatePosts,50);
-  }
-
-  first = false;
-}
-
-
-function sendMessage(message,confirmed) {
-  confirmed = (confirmed === 1 ? 1 : '');
-
-  $.ajax({
-    url: apiPath + 'api/sendMessage.php',
-    type: 'POST',
-    data: 'roomId=' + roomId + '&confirmed=' + confirmed + '&message=' + urlEncode(message),
-    cache: false,
-    timeout: 2500,
-    success: function(xml) {
-      var status = $(xml).find('errorcode').text().trim();
-      var emessage = $(xml).find('errortext').text().trim();
-      switch (status) {
-        case '':
-        break;
-
-        case 'badroom':
-        $('<div style="display: none;">A valid room was not provided.</div>').dialog({ title : 'Error'});
-        break;
-
-        case 'badmessage':
-        $('<div style="display: none;">A valid message was not provided.</div>').dialog({ title : 'Error'});
-        break;
-
-        case 'spacemessage':
-        $('<div style="display: none;">Too... many... spaces!</div>').dialog({ title : 'Error'});
-        break;
-
-        case 'noperm':
-        $('<div style="display: none;">You do not have permission to post in this room.</div>').dialog({ title : 'Error'});
-        break;
-
-        case 'blockcensor':
-        $('<div style="display: none;">' + emessage + '</div>').dialog({ title : 'Error'});
-        break;
-
-        case 'confirmcensor':
-        $('<div style="display: none;">' + emessage + '<br /><br /><button type="button" onclick="$(this).parent().dialog(&apos;close&apos;);">No</button><button type="button" onclick="sendMessage(&apos;' + escape(message) + '&apos;,1); $(this).parent().dialog(&apos;close&apos;);">Yes</button></div>').dialog({ title : 'Error'});
-        break;
-      }
-    },
-    error: function() {
-      if (reversePostOrder) {
-        $('#messageList').append('Your message, "' + message + '", could not be sent and will be retried.');
-      }
-      else {
-        $('#messageList').prepend('Your message, "' + message + '", could not be sent and will be retried.');
-      }
-
-      sendMessage(message);
-    }
-  });
-}
-
-
 function youtubeSend(id) {
   $.ajax({
     url: 'uploadFile.php',
@@ -469,250 +231,491 @@ function updateVids(searchPhrase) {
 }
 
 
-function showAllRooms() {
-  $.ajax({
-    url: apiPath + 'api/getRooms.php',
-    timeout: 5000,
-    type: 'GET',
-    cache: false,
-    success: function(xml) {
-      var roomFavHtml = '';
-      var roomMyHtml = '';
-      var roomPrivHtml = '';
-      var roomHtml = '';
-      var text = '';
+var standard = {
+  showAllRooms : function() {
+    $.ajax({
+      url: apiPath + 'api/getRooms.php',
+      timeout: 5000,
+      type: 'GET',
+      cache: false,
+      success: function(xml) {
+        var roomFavHtml = '';
+        var roomMyHtml = '';
+        var roomPrivHtml = '';
+        var roomHtml = '';
+        var text = '';
 
-      $(xml).find('room').each(function() {
-        var roomName = $(this).find('roomName').text();
-        var roomId = $(this).find('roomId').text();
-        var roomTopic = $(this).find('roomTopic').text();
-        var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
-        var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
-        var isOwner = (parseInt($(this).find('owner').text()) == userId ? true : false);
+        $(xml).find('room').each(function() {
+          var roomName = $(this).find('roomName').text();
+          var roomId = $(this).find('roomId').text();
+          var roomTopic = $(this).find('roomTopic').text();
+          var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
+          var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
+          var isOwner = (parseInt($(this).find('owner').text()) == userId ? true : false);
 
-        var text = '<li><a href="index.php?room=' + roomId + '">' + roomName + '</a></li>';
+          var text = '<li><a href="index.php?room=' + roomId + '">' + roomName + '</a></li>';
 
-        if (isFav) {
-          roomFavHtml += text;
-        }
-        if (isOwner && !isPriv) {
-          roomMyHtml += text;
-        }
-        if (isPriv) {
-          roomPrivHtml += text;
-        }
-        if (!isFav && !isOwner && !isPriv) {
-          roomHtml += text;
-        }
-      });
-      $('#rooms').html('<li>Favourites<ul>' + roomFavHtml + '</ul></li><li>My Rooms<ul>' + roomMyHtml + '</ul></li><li>General<ul>' + roomHtml + '</ul></li><li>Private<ul>' + roomPrivHtml + '</ul></li>');
-    },
-    error: function() {
-      alert('Failed to show all rooms');
-    }
-  });
-}
-
-
-function archive(idMax,idMin) {
-  var encrypt = 'base64';
-  var lastMessage = 0;
-  var firstMessage = 0;
-
-  if (idMax) {
-    var where = 'messageIdStart=' + idMax;
-  }
-  else if (idMin) {
-    var where = 'messageIdEnd=' + idMin;
-  }
-  else {
-    var where = 'messageIdStart=0';
-  }
-
-  $('#archiveMessageList').html('');
-
-  $.ajax({
-    url: apiPath + 'api/getMessages.php?rooms=' + roomId + '&archive=1&messageLimit=20&' + where,
-    type: 'GET',
-    timeout: 1000,
-    async: true,
-    data: '',
-    contentType: "text/xml; charset=utf-8",
-    dataType: "xml",
-    cache: false,
-    success: function (xml) {
-      if ($(xml).find('messages > message').length > 0) {
-        $(xml).find('messages > message').each(function() {
-          var text = unxml($(this).find('htmlText').text().trim());
-          var messageTime = $(this).find('messageTimeFormatted').text().trim();
-          var messageId = parseInt($(this).find('messageId').text().trim());
-
-          var userName = $(this).find('userData > userName').text().trim();
-          var userId = parseInt($(this).find('userData > userId').text().trim());
-          var groupFormatStart = unxml($(this).find('userData > startTag').text().trim());
-          var groupFormatEnd = unxml($(this).find('userData > endTag').text().trim());
-
-          var styleColor = $(this).find('defaultFormatting > color').text().trim();
-          var styleHighlight = $(this).find('defaultFormatting > highlight').text().trim();
-          var styleFontface = $(this).find('defaultFormatting > fontface').text().trim();
-          var styleGeneral = parseInt($(this).find('defaultFormatting > general').text().trim());
-
-          var style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + styleFontface + ';';
-
-          if (styleGeneral & 256) {
-            style += 'font-weight: bold;';
+          if (isFav) {
+            roomFavHtml += text;
           }
-          if (styleGeneral & 512) {
-            style += 'font-style: oblique;';
+          if (isOwner && !isPriv) {
+            roomMyHtml += text;
           }
-          if (styleGeneral & 1024) {
-            style += 'text-decoration: underline;';
+          if (isPriv) {
+            roomPrivHtml += text;
           }
-          if (styleGeneral & 2048) {
-            style += 'text-decoration: line-through;';
-          }
-
-          var data = '<tr id="archiveMessage' + messageId + '"><td>' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageid="' + messageId + '">' + text + '</td></tr>';
-
-          if (window.reverse) {
-            $('#archiveMessageList').append(data);
-          }
-          else {
-            $('#archiveMessageList').prepend(data);
-          }
-
-          if (messageId > lastMessage) {
-            lastMessage = messageId;
-          }
-          if (messageId < firstMessage || !firstMessage) {
-            firstMessage = messageId;
+          if (!isFav && !isOwner && !isPriv) {
+            roomHtml += text;
           }
         });
+        $('#rooms').html('<li>Favourites<ul>' + roomFavHtml + '</ul></li><li>My Rooms<ul>' + roomMyHtml + '</ul></li><li>General<ul>' + roomHtml + '</ul></li><li>Private<ul>' + roomPrivHtml + '</ul></li>');
+      },
+      error: function() {
+        alert('Failed to show all rooms');
+      }
+    });
+  },
+
+  archive : function (idMax,idMin) {
+    var encrypt = 'base64';
+    var lastMessage = 0;
+    var firstMessage = 0;
+
+    if (idMax) {
+      var where = 'messageIdStart=' + idMax;
+    }
+    else if (idMin) {
+      var where = 'messageIdEnd=' + idMin;
+    }
+    else {
+      var where = 'messageIdStart=0';
+    }
+
+    $('#archiveMessageList').html('');
+
+    $.ajax({
+      url: apiPath + 'api/getMessages.php?rooms=' + roomId + '&archive=1&messageLimit=20&' + where,
+      type: 'GET',
+      timeout: 1000,
+      async: true,
+      data: '',
+      contentType: "text/xml; charset=utf-8",
+      dataType: "xml",
+      cache: false,
+      success: function (xml) {
+        if ($(xml).find('messages > message').length > 0) {
+          $(xml).find('messages > message').each(function() {
+            var text = unxml($(this).find('htmlText').text().trim());
+            var messageTime = $(this).find('messageTimeFormatted').text().trim();
+            var messageId = parseInt($(this).find('messageId').text().trim());
+
+            var userName = $(this).find('userData > userName').text().trim();
+            var userId = parseInt($(this).find('userData > userId').text().trim());
+            var groupFormatStart = unxml($(this).find('userData > startTag').text().trim());
+            var groupFormatEnd = unxml($(this).find('userData > endTag').text().trim());
+
+            var styleColor = $(this).find('defaultFormatting > color').text().trim();
+            var styleHighlight = $(this).find('defaultFormatting > highlight').text().trim();
+            var styleFontface = $(this).find('defaultFormatting > fontface').text().trim();
+            var styleGeneral = parseInt($(this).find('defaultFormatting > general').text().trim());
+
+            var style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + styleFontface + ';';
+
+            if (styleGeneral & 256) {
+              style += 'font-weight: bold;';
+            }
+            if (styleGeneral & 512) {
+              style += 'font-style: oblique;';
+            }
+            if (styleGeneral & 1024) {
+              style += 'text-decoration: underline;';
+            }
+            if (styleGeneral & 2048) {
+              style += 'text-decoration: line-through;';
+            }
+
+            var data = '<tr id="archiveMessage' + messageId + '"><td>' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageid="' + messageId + '">' + text + '</td></tr>';
+
+            if (window.reverse) {
+              $('#archiveMessageList').append(data);
+            }
+            else {
+              $('#archiveMessageList').prepend(data);
+            }
+
+            if (messageId > lastMessage) {
+              lastMessage = messageId;
+            }
+            if (messageId < firstMessage || !firstMessage) {
+              firstMessage = messageId;
+            }
+          });
+
+          if (typeof contextMenuParse === 'function') {
+            contextMenuParse();
+          }
+        }
+
+        $('#archiveNext').attr('onclick','archive(' + lastMessage + ',false);');
+        $('#archivePrev').attr('onclick','archive(false,' + firstMessage + ');');
+      },
+      error: function() {
+        alert('Error');
+      },
+    });
+  },
+
+  autoEntry : {
+    addEntry : function(type,source) {
+      var val = $("#" + type + "Bridge").val();
+      switch(type) {
+        case 'watchRooms':
+        var id = roomRef[val];
+        var type2 = 'Room';
+        break;
+
+        case 'moderators':
+        case 'allowedUsers':
+        var id = userRef[val];
+        var type2 = 'User';
+        break;
+
+        case 'allowedGroups':
+        var id = groupRef[val];
+        var type2 = 'Group';
+        break;
+      }
+
+      if (!id) {
+        alert(type2 + ' does not exist.');
+      }
+      else {
+        var currentRooms = $("#" + type).val().split(",");
+        currentRooms.push(id);
+
+        $("#" + type + "List").append("<span id=\"" + type + "SubList" + id + "\">" + val + " (<a href=\"javascript:void(0);\" onclick=\"removeEntry('" + type + "'," + id + ");\">×</a>), </span>");
+        $("#" + type).val(currentRooms.toString(","));
+      }
+    },
+
+    removeEntry : function(type,id) {
+      $("#" + type + "SubList" + id).fadeOut(500, function() {
+        $(this).remove();
+      });
+
+      var currentRooms = $("#" + type).val().split(",");
+
+      for (var i = 0; i < currentRooms.length; i++) {
+        if(currentRooms[i] == id) {
+          currentRooms.splice(i, 1);
+          break;
+        }
+      }
+
+      $("#" + type).val(currentRooms.toString(","));
+    }
+  },
+
+  login : function(userName,password) {
+    console.log('Login Initiated');
+
+  // TODO: Enable for vBulletin
+  //  var password = md5(password);
+  //  var passwordEncrypt = 'md5';
+    var passwordEncrypt = 'plaintext';
+
+    console.log('Encrypted Password: ' + password);
+
+    $.ajax({
+      url: apiPath + 'validate.php',
+      type: 'POST',
+      data: 'userName=' + userName + '&password=' + password + '&passwordEncrypt=' + passwordEncrypt + '&apiVersion=3',
+      cache: false,
+      timeout: 2500,
+      success: function(xml) {
+        var loginFlag = $(xml).find('loginFlag').text().trim();
+        var loginText = $(xml).find('loginText').text().trim();
+        var sessionHash = $(xml).find('sessionHash').text().trim();
+
+        switch (loginFlag) {
+          case '':
+          console.log('Login valid. Session hash: ' + sessionHash);
+          $.cookie('sessionHash',sessionHash);
+          break;
+
+          case 'PASSWORD_ENCRYPT':
+          alert('The form encryption used was not accepted by the server.');
+          break;
+
+          case 'BAD_USERNAME':
+          $('<div style="display: none;">A valid user was not provided.</div>').dialog({ title : 'Error'});
+          break;
+
+          case 'BAD_PASSWORD':
+          $('<div style="display: none;">The password was incorrect.</div>').dialog({ title : 'Error'});
+          break;
+
+          case 'API_VERSION_STRING':
+          $('<div style="display: none;">The server was unable to process the API version string specified.</div>').dialog({ title : 'Error'});
+          break;
+
+          case 'DEPRECATED_VERSION':
+          $('<div style="display: none;">The server will not accept this client because it is of a newer version.</div>').dialog({ title : 'Error'});
+          break;
+
+          default:
+          $('<div style="display: none;">Other Error: "' + loginText + '"</div>').dialog({ title : 'Error'});
+          break;
+        }
+      },
+      error: function() {
+        $('<div style="display: none;">The login request could not be sent. Please try again.</div>').dialog({ title : 'Error'});
+      }
+    });
+
+    console.log('Login Finished');
+  },
+
+  getMessages : function() {
+    if (!longPolling) {
+      window.clearInterval(window.timer1);
+    }
+
+    var encrypt = 'base64';
+
+    $.ajax({
+      url: apiPath + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (first ? '&archive=1&messageDateMin=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdMin=' + (lastMessage)),
+      type: 'GET',
+      timeout: timeout,
+      async: true,
+      data: '',
+      contentType: "text/xml; charset=utf-8",
+      dataType: "xml",
+      cache: false,
+      success: function(xml) {
+        if (xml) {
+          totalFails = 0;
+          var notifyData = '';
+
+          $('#refreshStatus').html('<img src="images/dialog-ok.png" alt="Apply" class="standard" />');
+
+
+          $('#activeUsers').html('');
+          var activeUserHtml = new Array;
+
+          $(xml).find('activeUsers > user').each(function() {
+          var userName = $(this).find('userName').text().trim();
+          var userId = $(this).find('userId').text().trim();
+          var userGroup = $(this).find('userGroup').text().trim();
+          var startTag = unxml($(this).find('startTag').text().trim());
+          var endTag = unxml($(this).find('endTag').text().trim());
+
+          activeUserHtml.push('<span class="userName" data-userId="' + userId + '">' + startTag + '<span class="username">' + userName + '</span>' + endTag + '</span>');
+          });
+
+          $('#activeUsers').html(activeUserHtml.join(', '));
+        }
+
+        if ($(xml).find('messages > message').length > 0) {
+          $(xml).find('messages > message').each(function() {
+
+            var text = unxml($(this).find('htmlText').text().trim());
+            var messageTime = unxml($(this).find('messageTimeFormatted').text().trim());
+
+            var messageId = parseInt($(this).find('messageId').text().trim());
+
+            var userName = unxml($(this).find('userData > userName').text().trim());
+            var userId = parseInt($(this).find('userData > userId').text().trim());
+            var groupFormatStart = unxml($(this).find('userData > startTag').text().trim());
+            var groupFormatEnd = unxml($(this).find('userData > endTag').text().trim());
+            var avatar = unxml($(this).find('userData > avatar').text().trim());
+
+            var styleColor = unxml($(this).find('defaultFormatting > color').text().trim());
+            var styleHighlight = unxml($(this).find('defaultFormatting > highlight').text().trim());
+            var styleFontface = unxml($(this).find('defaultFormatting > fontface').text().trim());
+            var styleGeneral = parseInt($(this).find('defaultFormatting > general').text().trim());
+
+            var style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + styleFontface + ';';
+
+            if (styleGeneral & 256) {
+              style += 'font-weight: bold;';
+            }
+            if (styleGeneral & 512) {
+              style += 'font-style: oblique;';
+            }
+            if (styleGeneral & 1024) {
+              style += 'text-decoration: underline;';
+            }
+            if (styleGeneral & 2048) {
+              style += 'text-decoration: line-through;';
+            }
+
+
+            if (showAvatars) {
+              var data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="' + userName + '" src="' + avatar + '" style="max-width: 24px; max-height: 24px; padding-right: 3px;" class="userName userNameTable" data-userId="' + userId + '" /><span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
+            }
+            else {
+              var data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
+            }
+
+            notifyData += userName + ': ' + text + "\n";
+
+            if (reversePostOrder) {
+              $('#messageList').append(data);
+            }
+            else {
+              $('#messageList').prepend(data);
+            }
+
+            if (messageId > lastMessage) {
+              lastMessage = messageId;
+            }
+
+            messageIndex.push(lastMessage);
+
+            if (messageIndex.length == 100) {
+              var messageOut = messageIndex[0];
+              $('#message' + messageOut).remove();
+              messageIndex = messageIndex.slice(1,99);
+            }
+          });
+
+
+
+          if (reversePostOrder) {
+            toBottom();
+          }
+
+          if (blur) {
+            if (audioDing) {
+              riffwave.play();
+
+              if (navigator.appName === 'Microsoft Internet Explorer') {
+                timer3 = window.setInterval(faviconFlash,1000);
+
+                window.clearInterval(timer3);
+              }
+            }
+
+            if (notify) {
+              if (window.webkitNotifications) {
+                webkitNotify('images/favicon.gif', 'New Message', notifyData);
+              }
+            }
+
+            if (navigator.appName === 'Microsoft Internet Explorer') {
+              try {
+                if (window.external.msIsSiteMode()) {
+                  window.external.msSiteModeActivate();
+                }
+              }
+              catch(ex) {
+                // Supress Error
+              }
+            }
+          }
+        }
 
         if (typeof contextMenuParse === 'function') {
           contextMenuParse();
         }
+
+        if (longPolling) {
+          setTimeout(updatePosts,50);
+        }
+
+        first = false;
+      },
+      error: function() {
+        if (longPolling) {
+          setTimeout(updatePosts,50);
+        }
+        else {
+          totalFails += 1;
+          $('#refreshStatus').html('<img src="images/dialog-error.png" alt="Apply" class="standard" />');
+        }
+      },
+    });
+
+    if (!longPolling) {
+      if (totalFails > 10) {
+        window.timer1 = window.setInterval(window.updatePosts,30000);
+        timeout = 29900;
       }
-
-      $('#archiveNext').attr('onclick','archive(' + lastMessage + ',false);');
-      $('#archivePrev').attr('onclick','archive(false,' + firstMessage + ');');
-    },
-    error: function() {
-      alert('Error');
-    },
-  });
-}
-
-
-function addEntry(type,source) {
-  var val = $("#" + type + "Bridge").val();
-  switch(type) {
-    case 'watchRooms':
-    var id = roomRef[val];
-    var type2 = 'Room';
-    break;
-
-    case 'moderators':
-    case 'allowedUsers':
-    var id = userRef[val];
-    var type2 = 'User';
-    break;
-
-    case 'allowedGroups':
-    var id = groupRef[val];
-    var type2 = 'Group';
-    break;
-  }
-
-  if (!id) {
-    alert(type2 + ' does not exist.');
-  }
-  else {
-    var currentRooms = $("#" + type).val().split(",");
-    currentRooms.push(id);
-
-    $("#" + type + "List").append("<span id=\"" + type + "SubList" + id + "\">" + val + " (<a href=\"javascript:void(0);\" onclick=\"removeEntry('" + type + "'," + id + ");\">×</a>), </span>");
-    $("#" + type).val(currentRooms.toString(","));
-  }
-}
-
-
-function removeEntry(type,id) {
-  $("#" + type + "SubList" + id).fadeOut(500, function() {
-    $(this).remove();
-  });
-
-  var currentRooms = $("#" + type).val().split(",");
-
-  for (var i = 0; i < currentRooms.length; i++) {
-    if(currentRooms[i] == id) {
-      currentRooms.splice(i, 1);
-      break;
-    }
-  }
-
-  $("#" + type).val(currentRooms.toString(","));
-}
-
-
-function login(userName,password) {
-  console.log('Login Initiated');
-
-// TODO: Enable for vBulletin
-//  var password = md5(password);
-//  var passwordEncrypt = 'md5';
-  var passwordEncrypt = 'plaintext';
-
-  console.log('Encrypted Password: ' + password);
-
-  $.ajax({
-    url: apiPath + 'validate.php',
-    type: 'POST',
-    data: 'userName=' + userName + '&password=' + password + '&passwordEncrypt=' + passwordEncrypt + '&apiVersion=3',
-    cache: false,
-    timeout: 2500,
-    success: function(xml) {
-      var loginFlag = $(xml).find('loginFlag').text().trim();
-      var loginText = $(xml).find('loginText').text().trim();
-      var sessionHash = $(xml).find('sessionHash').text().trim();
-
-      switch (loginFlag) {
-        case '':
-        console.log('Login valid. Session hash: ' + sessionHash);
-        break;
-
-        case 'PASSWORD_ENCRYPT':
-        alert('The form encryption used was not accepted by the server.');
-        break;
-
-        case 'BAD_USERNAME':
-        $('<div style="display: none;">A valid user was not provided.</div>').dialog({ title : 'Error'});
-        break;
-
-        case 'BAD_PASSWORD':
-        $('<div style="display: none;">The password was incorrect.</div>').dialog({ title : 'Error'});
-        break;
-
-        case 'API_VERSION_STRING':
-        $('<div style="display: none;">The server was unable to process the API version string specified.</div>').dialog({ title : 'Error'});
-        break;
-
-        case 'DEPRECATED_VERSION':
-        $('<div style="display: none;">The server will not accept this client because it is of a newer version.</div>').dialog({ title : 'Error'});
-        break;
-
-        default:
-        $('<div style="display: none;">Other Error: "' + loginText + '"</div>').dialog({ title : 'Error'});
-        break;
+      else if (totalFails > 5) {
+        window.timer1 = window.setInterval(window.updatePosts,10000);
+        timeout = 9900;
       }
-    },
-    error: function() {
-      $('<div style="display: none;">The login request could not be sent. Please try again.</div>').dialog({ title : 'Error'});
+      else if (totalFails > 0) {
+        window.timer1 = window.setInterval(window.updatePosts,5000);
+        timeout = 4900;
+      }
+      else {
+        window.timer1 = window.setInterval(window.updatePosts,2500);
+        timeout = 2400;
+      }
     }
-  });
+  },
 
-  console.log('Login Finished');
-}
+  sendMessage: function sendMessage(message,confirmed) {
+    confirmed = (confirmed === 1 ? 1 : '');
+
+    $.ajax({
+      url: apiPath + 'api/sendMessage.php',
+      type: 'POST',
+      data: 'roomId=' + roomId + '&confirmed=' + confirmed + '&message=' + urlEncode(message),
+      cache: false,
+      timeout: 2500,
+      success: function(xml) {
+        console.log('Message sent.');
+
+        var status = $(xml).find('errorcode').text().trim();
+        var emessage = $(xml).find('errortext').text().trim();
+        switch (status) {
+          case '':
+          break;
+
+          case 'badroom':
+          $('<div style="display: none;">A valid room was not provided.</div>').dialog({ title : 'Error'});
+          break;
+
+          case 'badmessage':
+          $('<div style="display: none;">A valid message was not provided.</div>').dialog({ title : 'Error'});
+          break;
+
+          case 'spacemessage':
+          $('<div style="display: none;">Too... many... spaces!</div>').dialog({ title : 'Error'});
+          break;
+
+          case 'noperm':
+          $('<div style="display: none;">You do not have permission to post in this room.</div>').dialog({ title : 'Error'});
+          break;
+
+          case 'blockcensor':
+          $('<div style="display: none;">' + emessage + '</div>').dialog({ title : 'Error'});
+          break;
+
+          case 'confirmcensor':
+          $('<div style="display: none;">' + emessage + '<br /><br /><button type="button" onclick="$(this).parent().dialog(&apos;close&apos;);">No</button><button type="button" onclick="sendMessage(&apos;' + escape(message) + '&apos;,1); $(this).parent().dialog(&apos;close&apos;);">Yes</button></div>').dialog({ title : 'Error'});
+          break;
+        }
+      },
+      error: function() {
+        console.log('Message error.');
+
+        if (reversePostOrder) {
+          $('#messageList').append('Your message, "' + message + '", could not be sent and will be retried.');
+        }
+        else {
+          $('#messageList').prepend('Your message, "' + message + '", could not be sent and will be retried.');
+        }
+
+        sendMessage(message);
+      }
+    });
+  },
+};
+
 
 
 function contextMenuParse() {
@@ -911,18 +914,6 @@ popup = {
  *******************************/
 
 $(document).ready(function() {
-  userId = parseInt($('meta[name="fim_userId"]').attr('content'));
-  roomId = parseInt($('meta[name="fim_roomId"]').attr('content'));
-
-  showAvatars = parseInt($('meta[name="fim_showAvatars"]').attr('content'));
-  reversePostOrder = parseInt($('meta[name="fim_reversePostOrder"]').attr('content'));
-  audioDing = parseInt($('meta[name="fim_audioDing"]').attr('content'));
-  longPolling = parseInt($('meta[name="fim_longPolling"]').attr('content'));
-
-  layout = $('meta[name="fim_layout"]').attr('content');
-
-
-
   // Move?
   $('#uploadFileForm').attr('action','uploadFile.php?roomId=' + roomId);
 
