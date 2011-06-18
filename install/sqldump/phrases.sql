@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `{prefix}phrases` (
 -- DIVIDE
 
 INSERT INTO `{prefix}phrases` (`id`, `name`, `text_en`, `text_jp`) VALUES
-(1, 'brandingTitle', 'FreezeMessenger v3-r061016', 'フリーズ の メッセンジャー'),
+(1, 'brandingTitle', 'FreezeMessenger v3-r061018 (Pre-Beta)', 'フリーズ の メッセンジャー'),
 (2, 'brandingFavicon', 'images/favicon.png', 'images/favicon.png'),
 (4, 'doctype', '<!DOCTYPE HTML>', ''),
 (5, 'brandingDescription', '', ''),

@@ -33,7 +33,9 @@ require_once('functions/loginReqs.php');
 
 static $apiVersion, $goodVersion, $sqlUserTable, $sqlUserGroupTable, $sqlMemberGroupTable, $sqlSessionTable, $sqlUserTableCols, $sqlUserGroupTableCols, $sqlMemberGroupTablecols;
 
-
+if (!isset($_COOKIE['prefix'])) {
+  $_COOKIE['prefix'] = 'fim3_';
+}
 
 
 
@@ -82,11 +84,11 @@ if (isset($_POST['userName'],$_POST['password'])) { // API.
 }
 
 elseif (isset($_COOKIE[$cookiePrefix . 'sessionid'])) { // Magic Session!
-  $magicSessionHash = $_COOKIE[$cookiePrefix . 'sessionid'];
+  $sessionHash = $_COOKIE[$cookiePrefix . 'sessionid'];
 }
 
 elseif (isset($_POST['sessionhash'])) { // Session hash defined via POST data.
-  $magicSessionHash = $_POST['sessionhash'];
+  $sessionHash = $_POST['sessionhash'];
 }
 
 elseif ((int) $anonymousUser >= 1) { // Unregistered user support.
@@ -211,8 +213,8 @@ if ($flag) {
   // Do nothing.
 }
 else {
-  if ($magicSessionHash) {
-    $user = sqlArr("SELECT u.* FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE magicHash = '" . mysqlEscape($magicSessionHash) . "'");
+  if ($sessionHash) {
+    $user = sqlArr("SELECT u.*, s.sessonId AS anonId FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE magicHash = '" . mysqlEscape($sessionHash) . "'");
 
     if ($user['userId'] == $_COOKIE[$cookiePrefix . 'userid']) {
       $valid = true;
@@ -416,18 +418,20 @@ if ($valid) { // If the user is valid, process their preferrences.
   if ($session == 'create') {
     ($hook = hook('validate_createsession') ? eval($hook) : '');
 
-    $magicSessionHash = fim_generateSession();
+    $sessionHash = fim_generateSession();
 
     mysqlQuery("INSERT INTO {$sqlPrefix}sessions (userId,
     time,
     magicHash)
     VALUES ($user[userId],
     NOW(),
-    '" . mysqlEscape($magicSessionHash) . "'
+    '" . mysqlEscape($sessionHash) . "'
     )");
+
+    $anonId = mysqlInsertId();
   } // TODO: Anon Support
 
-  elseif ($session == 'update' && $magicSessionHash) {
+  elseif ($session == 'update' && $sessionHash) {
     ($hook = hook('validate_updatesession') ? eval($hook) : '');
 
     die('1'); // TODO!
@@ -566,6 +570,7 @@ if ($api) {
       'loginText' => $failMessage,
 
       'sessionHash' => $sessionHash,
+      'anonId' => ($anonId ? $anonId : $user['anonId']),
 
       'userData' => array(
         'userName' => ($user['userName']),

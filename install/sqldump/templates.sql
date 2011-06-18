@@ -132,10 +132,17 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
     </div>
     }}
     <h3><a href="#">$phrases[templateRoomListCat]</a></h3>
-    <div id="rooms">
-      <ul id="roomList">
-$template[roomHtml]<li><a href="javascript:void(0);" onclick="showAllRooms();">$phrases[templateShowAllRooms]</a></li>
-      </ul>
+    <div>
+      <div id="roomListShort">
+        <ul id="roomList">
+          <li><a href="javascript:void(0);" id="showMoreRooms">$phrases[templateShowAllRooms]</a></li>
+        </ul>
+      </div>
+      <div id="roomListLong" style="display: none;">
+        <ul id="roomList">
+          <li><a href="javascript:void(0);" id="showFewerRooms">$phrases[templateShowAllRooms]</a></li>
+        </ul>
+      </div>
     </div>
     {{if="$inRoom"}{
     <h3><a href="#">$phrases[templateActiveUsersCat]</a></h3>
