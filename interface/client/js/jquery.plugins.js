@@ -2252,13 +2252,13 @@ $.fn.tabbedDialog = function (dialogOptions,tabOptions) {
   tabul.addClass('ui-dialog-titlebar');
 }
 
-/* Dialouge Presets
+
+
+/* Quick Dialouge
  * Joseph Todd Parsons
  * http://www.gnu.org/licenses/gpl.html */
 
-$.fn.dialogPresets = new Object;
-
-$.fn.dialogPresets.quick = function(content,title,id,width,oF,cF) {
+function quickDialogue(content,title,id,width,cF,oF) {
   var dialog = $('<div style="display: none;" id="' + id +  '">' + content + '</div>').appendTo('body');
 
   $('button').button();
@@ -2293,7 +2293,13 @@ $.fn.dialogPresets.quick = function(content,title,id,width,oF,cF) {
   return false;
 }
 
-$.fn.dialogPresets.confirm = function(text) {
+
+
+/* Quick Confirm
+ * Joseph Todd Parsons
+ * http://www.gnu.org/licenses/gpl.html */
+
+function quickConfirm(text) {
   $('<div id="dialog-confirm"><span class="ui-icon ui-icon-alert" style="float: left; margin: 0px 7px 20px 0px;"></span>' + text + '</div>').dialog({
     resizable: false,
     height: 240,
@@ -2312,7 +2318,12 @@ $.fn.dialogPresets.confirm = function(text) {
   });
 }
 
-$.fn.dialogPresets.confirm = function(uri,title,id,width,oF,cF) {
+
+/* Ajax Dialogue
+ * Joseph Todd Parsons
+ * http://www.gnu.org/licenses/gpl.html */
+
+function ajaxDialogue(uri,title,id,width,cF,oF) {
   var dialog = $('<div style="display: none;" id="' + id +  '"></div>').appendTo('body');
 
   dialog.load(
@@ -2354,7 +2365,7 @@ $.fn.dialogPresets.confirm = function(uri,title,id,width,oF,cF) {
  * Joseph Todd Parsons
  * http://www.gnu.org/licenses/gpl.html */
 
-$.fn.dialogPresets.ajaxTabDialogue = function(uri,id,width,oF,cF) {
+function ajaxTabDialogue(uri,id,width,cF,oF) {
   var dialog = $('<div style="display: none;" id="' + id +  '"></div>').appendTo('body');
   dialog.load(
     uri,
