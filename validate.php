@@ -33,8 +33,8 @@ require_once('functions/loginReqs.php');
 
 static $apiVersion, $goodVersion, $sqlUserTable, $sqlUserGroupTable, $sqlMemberGroupTable, $sqlSessionTable, $sqlUserTableCols, $sqlUserGroupTableCols, $sqlMemberGroupTablecols;
 
-if (!isset($_COOKIE['prefix'])) {
-  $_COOKIE['prefix'] = 'fim3_';
+if (!isset($cookiePrefix)) {
+  $cookiePrefix = 'fim3_';
 }
 
 
@@ -83,12 +83,8 @@ if (isset($_POST['userName'],$_POST['password'])) { // API.
   $api = true;
 }
 
-elseif (isset($_COOKIE[$cookiePrefix . 'sessionid'])) { // Magic Session!
-  $sessionHash = $_COOKIE[$cookiePrefix . 'sessionid'];
-}
-
-elseif (isset($_POST['sessionhash'])) { // Session hash defined via POST data.
-  $sessionHash = $_POST['sessionhash'];
+elseif (isset($_REQUEST['sessionhash'])) { // Session hash defined via sent data.
+  $sessionHash = $_REQUEST['sessionhash'];
 }
 
 elseif ((int) $anonymousUser >= 1) { // Unregistered user support.
@@ -213,10 +209,10 @@ if ($flag) {
   // Do nothing.
 }
 else {
-  if ($sessionHash) {
+  if ($userId && $sessionHash) {
     $user = sqlArr("SELECT u.*, s.sessonId AS anonId FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE magicHash = '" . mysqlEscape($sessionHash) . "'");
 
-    if ($user['userId'] == $_COOKIE[$cookiePrefix . 'userid']) {
+    if ($user['userId'] == $userId) {
       $valid = true;
       $noSync = true;
     }
@@ -252,25 +248,11 @@ else {
     }
   }
 
-  elseif ($userId && $anonymousUser) {
+  elseif ($anonymousUser) {
     $user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' LIMIT 1');
     $setCookie = true;
     $valid = true;
     $session = 'create';
-  }
-
-  elseif ($userId && $passwordVBulletin) {
-    $user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' AND "' . mysqlEscape($_COOKIE[$forumCookiePrefix . 'password'])  . '" = MD5(CONCAT(password,"' . mysqlEscape($forumCookieSalt) . '"))'); // Query from vBulletin user table.
-
-    if ($user) {
-      $valid = true;
-
-      $session = 'create';
-      $setCookie = true;
-    }
-    else {
-      $valid = false;
-    }
   }
 
   else {
@@ -288,7 +270,7 @@ else {
 if ($valid) { // If the user is valid, process their preferrences.
 
   if ($noSync || $loginMethod == 'vanilla') {
-
+    // TODO
   }
   else {
     if ($loginMethod == 'vbulletin' || $loginMethod == 'phpbb') {

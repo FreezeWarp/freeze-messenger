@@ -70,6 +70,10 @@ var audioDing; // Fire an HTML5 audio ding during each unread message?
 var longPolling; // Use experimental longPolling technology?
 var layout; // Data layout.
 
+//if ($.cookie('fim3_sessionHash')) {
+
+//}
+
 
 var blur = false; // By default, we assume the window is active and not blurred.
 var totalFails = 0;
@@ -113,7 +117,7 @@ var apiPath = apiPathPre + '/';
 /* Populate above objects as soon as a connection is available to do so. */
 
 $.ajax({
-  url: apiPath + 'api/getUsers.php',
+  url: apiPath + 'api/getUsers.php?sessionHash=' + sessionHash,
   type: 'GET',
   timeout: 5000,
   cache: false,
@@ -135,7 +139,7 @@ $.ajax({
 
 
 $.ajax({
-  url: apiPath + 'api/getRooms.php?permLevel=view',
+  url: apiPath + 'api/getRooms.php?permLevel=view&sessionHash=' + sessionHash,
   timeout: 5000,
   type: 'GET',
   async: true,
@@ -188,7 +192,7 @@ $.ajax({
 
 
 $.ajax({
-  url: apiPath + 'api/getGroups.php',
+  url: apiPath + 'api/getGroups.php?sessionHash=' + sessionHash,
   timeout: 5000,
   type: 'GET',
   async: true,
@@ -280,7 +284,7 @@ var standard = {
     $('#archiveMessageList').html('');
 
     $.ajax({
-      url: apiPath + 'api/getMessages.php?rooms=' + roomId + '&archive=1&messageLimit=20&' + where,
+      url: apiPath + 'api/getMessages.php?rooms=' + roomId + '&archive=1&messageLimit=20&' + where + '&sessionHash=' + sessionHash,
       type: 'GET',
       timeout: 1000,
       async: true,
@@ -389,7 +393,7 @@ var standard = {
         $(this).remove();
       });
 
-      var currentRooms = $("#" + type).val().split(",");
+      var currentRooms = $("#" + type).val().split(",");s
 
       for (var i = 0; i < currentRooms.length; i++) {
         if(currentRooms[i] == id) {
@@ -421,44 +425,52 @@ var standard = {
       success: function(xml) {
         var loginFlag = unxml($(xml).find('loginFlag').text().trim());
         var loginText = unxml($(xml).find('loginText').text().trim());
-        var sessionHash = unxml($(xml).find('sessionHash').text().trim());
+        var valid = unxml($(xml).find('valid').text().trim());
         var userName = unxml($(xml).find('userData > userName').text().trim());
         userId = parseInt($(xml).find('userData > userId').text().trim());
         anonId = parseInt($(xml).find('anonId').text().trim());
+        sessionHash = unxml($(xml).find('sessionHash').text().trim());
 
-        switch (loginFlag) {
-          case '':
-          $('<div style="display: none;">The form encryption used was not accepted by the server.</div>').dialog({ title : 'Error'});
+        if (valid === 'true') {
+          $('<div style="display: none;">You are now logged in as ' + userName + '.</div>').dialog({ title : 'Logged In '});
+          $('#loginDialogue').dialog('close');
 
           console.log('Login valid. Session hash: ' + sessionHash + '; User ID: ' + userId);
 
           $.cookie('fim3_sessionHash',sessionHash); //TODO: UPdate Prefix
           $.cookie('fim3_userId',userId);
-          break;
 
-          case 'PASSWORD_ENCRYPT':
-          $('<div style="display: none;">The form encryption used was not accepted by the server.</div>').dialog({ title : 'Error'});
-          break;
+          $('#messageInput').removeAttr("disabled"); // The user is not able to post.
+        }
+        else {
+          switch (loginFlag) {
+            case 'PASSWORD_ENCRYPT':
+            $('<div style="display: none;">The form encryption used was not accepted by the server.</div>').dialog({ title : 'Error'});
+            break;
 
-          case 'BAD_USERNAME':
-          $('<div style="display: none;">A valid user was not provided.</div>').dialog({ title : 'Error'});
-          break;
+            case 'BAD_USERNAME':
+            $('<div style="display: none;">A valid user was not provided.</div>').dialog({ title : 'Error'});
+            break;
 
-          case 'BAD_PASSWORD':
-          $('<div style="display: none;">The password was incorrect.</div>').dialog({ title : 'Error'});
-          break;
+            case 'BAD_PASSWORD':
+            $('<div style="display: none;">The password was incorrect.</div>').dialog({ title : 'Error'});
+            break;
 
-          case 'API_VERSION_STRING':
-          $('<div style="display: none;">The server was unable to process the API version string specified.</div>').dialog({ title : 'Error'});
-          break;
+            case 'API_VERSION_STRING':
+            $('<div style="display: none;">The server was unable to process the API version string specified.</div>').dialog({ title : 'Error'});
+            break;
 
-          case 'DEPRECATED_VERSION':
-          $('<div style="display: none;">The server will not accept this client because it is of a newer version.</div>').dialog({ title : 'Error'});
-          break;
+            case 'DEPRECATED_VERSION':
+            $('<div style="display: none;">The server will not accept this client because it is of a newer version.</div>').dialog({ title : 'Error'});
+            break;
 
-          default:
-          $('<div style="display: none;">Other Error: "' + loginText + '"</div>').dialog({ title : 'Error'});
-          break;
+            default:
+            break;
+          }
+        }
+
+        if (!anonId && !userId) {
+          $('#messageInput').attr("disabled","disabled"); // The user is not able to post.
         }
       },
       error: function() {
@@ -477,7 +489,7 @@ var standard = {
     var encrypt = 'base64';
 
     $.ajax({
-      url: apiPath + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (first ? '&archive=1&messageDateMin=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdMin=' + (lastMessage)),
+      url: apiPath + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (first ? '&archive=1&messageDateMin=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdMin=' + (lastMessage)) + '&sessionHash=' + sessionHash,
       type: 'GET',
       timeout: timeout,
       async: true,
@@ -654,7 +666,7 @@ var standard = {
     confirmed = (confirmed === 1 ? 1 : '');
 
     $.ajax({
-      url: apiPath + 'api/sendMessage.php',
+      url: apiPath + 'api/sendMessage.php?sessionHash=' + sessionHash,
       type: 'POST',
       data: 'roomId=' + roomId + '&confirmed=' + confirmed + '&message=' + urlEncode(message),
       cache: false,
@@ -722,7 +734,7 @@ function contextMenuParse() {
     var profileUrl = '';
 
     $.ajax({
-      url: apiPath + 'api/getUsers.php?users=' + userId,
+      url: apiPath + 'api/getUsers.php?users=' + userId + '&sessionHash=' + sessionHash,
       type: 'GET',
       timeout: 2400,
       cache: false,
@@ -747,7 +759,7 @@ function contextMenuParse() {
       ajaxDialogue('content/kick.php?userId=' + userId + '&roomId=' + $('body').attr('data-roomId'),'Kick User','kickUserDialogue',1000);
       break;
       case 'ban':
-      window.open('moderate.php&do=banuser2&userId=' + userId,'banuser' + userId);
+      window.open('moderate.php?do=banuser2&userId=' + userId,'banuser' + userId);
       break;
     }
   });
@@ -848,7 +860,7 @@ function contextMenuParse() {
 
       if (thisid != $('#tooltext').attr('data-lastuserId')) {
         $('#tooltext').attr('data-lastuserId',thisid);
-        $.get(apiPath + 'api/getUsers.php?users=' + thisid, function(xml) {
+        $.get(apiPath + 'api/getUsers.php?users=' + thisid + '&sessionHash=' + sessionHash, function(xml) {
           var userName = unxml($(xml).find('user > userName').text().trim());
           var userId = parseInt($(xml).find('user > userId').text().trim());
           var startTag = unxml($(xml).find('user > startTag').text().trim());
@@ -889,10 +901,6 @@ popup = {
           return false; // Don't submit the form.
         });
       });
-
-      if (!anonId) {
-        $('#messageInput').attr("disabled","disabled"); // The user is not able to post.
-      }
 
       console.log('Popup for un-loggedin user triggered.');
     });
@@ -1017,7 +1025,7 @@ $(document).ready(function() {
     quickDialogue('<form action="#" id="kickUserForm" method="post">  <label for="userId">User</label>: <select name="userId">$userSelect</select><br />  <label for="roomId">Room</label>: <select name="roomId">$roomSelect</select><br />  <label for="time">Time</label>: <input type="text" name="time" id="time" style="width: 50px;" />  <select name="interval">    <option value="1">Seconds</option>    <option value="60">Minutes</option>    <option value="3600">Hours</option>    <option value="86400">Days</option>    <option value="604800">Weeks</option>  </select><br /><br />  <button type="submit">Kick User</button><button type="reset">Reset</button></form>','Kick User','kickUserDialogue',1000);
 
     $.ajax({
-      url: apiPath + 'api/getRooms.php',
+      url: apiPath + 'api/getRooms.php?sessionHash=' + sessionHash,
       timeout: 5000,
       type: 'GET',
       cache: false,
@@ -1039,7 +1047,7 @@ $(document).ready(function() {
     });
 
     $.ajax({
-      url: apiPath + 'api/getUsers.php',
+      url: apiPath + 'api/getUsers.php?sessionHash=' + sessionHash,
       timeout: 5000,
       type: 'GET',
       cache: false,
@@ -1062,7 +1070,7 @@ $(document).ready(function() {
 
     $("#kickUserForm").submit(function() {
       data = $("#kickUserForm").serialize(); // Serialize the form data for AJAX.
-      $.post(apiPath + 'api/moderate.php',data + '&action=kickUser',function(xml) {
+      $.post(apiPath + 'api/moderate.php',data + '&action=kickUser&sessionHash=' + sessionHash,function(xml) {
         var status = $(xml).find('errorcode').text().trim();
         var emessage = $(xml).find('errormessage').text().trim();
 
@@ -1110,7 +1118,7 @@ $(document).ready(function() {
         privateUserId = userRef[data];
 
 
-        $.post(apiPath + 'api/createRoom.php',data,function(html) {
+        $.post(apiPath + 'api/createRoom.php?sessionHash=' + sessionHash,data,function(html) {
           quickDialogue(html,'','privateRoomResultDialogue');
         }); // Send the form data via AJAX.
 
@@ -1130,7 +1138,7 @@ $(document).ready(function() {
     var kickHtml = '';
 
     $.ajax({
-      url: apiPath + 'api/getKicks.php?rooms=' + roomId,
+      url: apiPath + 'api/getKicks.php?rooms=' + roomId + '&sessionHash=' + sessionHash,
       timeout: 5000,
       type: 'GET',
       cache: false,
@@ -1177,7 +1185,7 @@ $(document).ready(function() {
 
     function updateOnline() {
       $.ajax({
-        url: apiPath + 'api/getAllActiveUsers.php',
+        url: apiPath + 'api/getAllActiveUsers.php?sessionHash=' + sessionHash,
         type: 'GET',
         timeout: 2400,
         cache: false,
@@ -1232,7 +1240,7 @@ $(document).ready(function() {
       $("#editRoomForm").submit(function() {
         var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
 
-        $.post(apiPath + 'api/moderate.php',data + '&action=createRoom',function(xml) {
+        $.post(apiPath + 'api/moderate.php',data + '&action=createRoom&sessionHash=' + sessionHash,function(xml) {
           var errorCode = unxml($(xml).find('errorcode').text().trim());
           var errorMessage = unxml($(xml).find('errortext').text().trim());
           var newRoomId = parseInt($(xml).find('insertId').text().trim());
@@ -1268,7 +1276,7 @@ $(document).ready(function() {
       });
 
       $.ajax({
-        url: apiPath + 'api/getRooms.php?rooms=' + roomId,
+        url: apiPath + 'api/getRooms.php?rooms=' + roomId + '&sessionHash=' + sessionHash,
         type: 'GET',
         timeout: 2400,
         cache: false,
@@ -1296,7 +1304,7 @@ $(document).ready(function() {
     $("#editRoomForm").submit(function() {
       var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
 
-      $.post(apiPath + 'api/moderate.php',data + '&action=editRoom',function(xml) {
+      $.post(apiPath + 'api/moderate.php',data + '&action=editRoom&sessionHash=' + sessionHash,function(xml) {
         var errorCode = unxml($(xml).find('errorcode').text().trim());
         var errorMessage = unxml($(xml).find('errortext').text().trim());
         var newRoomId = parseInt($(xml).find('insertId').text().trim());
@@ -1346,7 +1354,7 @@ $(document).ready(function() {
     var roomHtml = '';
 
     $.ajax({
-      url: apiPath + 'api/getRooms.php',
+      url: apiPath + 'api/getRooms.php?sessionHash=' + sessionHash,
       timeout: 5000,
       type: 'GET',
       cache: false,
@@ -1385,7 +1393,7 @@ $(document).ready(function() {
     }
 
     $.ajax({
-      url: apiPath + 'api/getStats.php?rooms=' + roomId + '&maxResults=' + number,
+      url: apiPath + 'api/getStats.php?rooms=' + roomId + '&maxResults=' + number + '&sessionHash=' + sessionHash,
       timeout: 5000,
       type: 'GET',
       cache: false,
@@ -1448,7 +1456,7 @@ $(document).ready(function() {
       });
 
       $.ajax({
-        url: apiPath + 'api/getFonts.php',
+        url: apiPath + 'api/getFonts.php?sessionHash=' + sessionHash,
         timeout: 5000,
         type: 'GET',
         async: true,
@@ -1523,7 +1531,7 @@ $(document).ready(function() {
 
       $("#changeSettingsForm").submit(function() {
         data = $("#changeSettingsForm").serialize(); // Serialize the form data for AJAX.
-        $.post(apiPath + 'api/moderate.php',data + "&action=userOptions&userId=" + userId,function(xml) {
+        $.post(apiPath + 'api/moderate.php?action=userOptions&userId=' + userId + data + '&sessionHash=' + sessionHash,function(xml) {
 
           quickDialogue(xml,'','changeSettingsResultDialogue');
         }); // Send the form data via AJAX.
