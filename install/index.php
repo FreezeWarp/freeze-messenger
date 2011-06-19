@@ -20,16 +20,16 @@ switch ($_REQUEST['phase']) {
   <![endif]-->
 
   <!-- START Styles -->
-  <link rel="stylesheet" type="text/css" href="client/css/cupertino/jquery-ui-1.8.13.custom.css" media="screen" />
-  <link rel="stylesheet" type="text/css" href="client/css/cupertino/fim.css" media="screen" />
-  <link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="../interface/client/css/cupertino/jquery-ui-1.8.13.custom.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="../interface/client/css/cupertino/fim.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="../interface/client/css/stylesv2.css" media="screen" />
   <!-- END Styles -->
 
   <!-- START Scripts -->
-  <script src="client/js/jquery-1.6.1.min.js" type="text/javascript"></script>
+  <script src="../interface/client/js/jquery-1.6.1.min.js" type="text/javascript"></script>
 
-  <script src="client/js/jquery-ui-1.8.13.custom.min.js" type="text/javascript"></script>
-  <script src="client/js/jquery.plugins.05182011.min.js" type="text/javascript"></script>
+  <script src="../interface/client/js/jquery-ui-1.8.13.custom.min.js" type="text/javascript"></script>
+  <script src="../interface/client/js/jquery.plugins.05182011.min.js" type="text/javascript"></script>
   <script>
   function resize() {
     $(\'body\').css(\'height\',window.innerHeight);
@@ -95,7 +95,7 @@ First things first, please enter your MySQL connection details below:<br /><br /
 <strong>Note</strong>: You are strongly encourged to create the database and corrosponding user manually to avoid any security risks. If you want the installation script to create the database, the user you specify here must have permission to do so (usually the "root" user can do this).<br /><br />
 <form onsubmit="return false;">
 <button style="float: left;" type="button" onclick="$(\'#part2\').slideUp(); $(\'#part1\').slideDown();">&larr; Back</button>
-<button style="float: right;" type="button" onclick="$.get(\'install.php?phase=1\',$(\'#mysql_connect_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part2\').slideUp(); $(\'#part3\').slideDown(); } else { alert(\'Could not connect.\'); } } );">Verify &rarr;</button>
+<button style="float: right;" type="button" onclick="$.get(\'index.php?phase=1\',$(\'#mysql_connect_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part2\').slideUp(); $(\'#part3\').slideDown(); } else { alert(\'Could not connect.\'); } } );">Verify &rarr;</button>
 </form>
 </div>
 <div id="part3" style="display: none;">
@@ -115,7 +115,7 @@ MySQL connection successful. Next, we need to create or select the database. If 
 </form><br /><br />
 <form onsubmit="return false;">
 <button style="float: left;" type="button" onclick="$(\'#part3\').slideUp(); $(\'#part2\').slideDown();">&larr; Back</button>
-<button style="float: right;" type="button" onclick="$.get(\'install.php?phase=2\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#mysql_db_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part3\').slideUp(); $(\'#part4\').slideDown(); } else { alert(\'Could not connect.\'); } } );">Verify &rarr;</button>
+<button style="float: right;" type="button" onclick="$.get(\'index.php?phase=2\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#mysql_db_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part3\').slideUp(); $(\'#part4\').slideDown(); } else { alert(\'Could not connect.\'); } } );">Verify &rarr;</button>
 </form>
 </div>
 <div id="part4" style="display: none;">
@@ -135,7 +135,7 @@ MySQL database connection successful. Next, we need to create the tables. If the
 </form>
 <form onsubmit="return false;">
 <button style="float: left;" type="button" onclick="$(\'#part4\').slideUp(); $(\'#part3\').slideDown();">&larr; Back</button>
-<button style="float: right;" type="button" onclick="$.get(\'install.php?phase=3\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#mysql_db_form\').serialize() + \'&\' + $(\'#mysql_table_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part4\').slideUp(); $(\'#part5\').slideDown(); } else { alert(\'Could not connect.\'); } } );">Verify &rarr;</button>
+<button style="float: right;" type="button" onclick="$.get(\'index.php?phase=3\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#mysql_db_form\').serialize() + \'&\' + $(\'#mysql_table_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part4\').slideUp(); $(\'#part5\').slideDown(); } else { alert(\'Could not connect.\'); } } );">Verify &rarr;</button>
 </form>
 </div>
 
@@ -173,7 +173,7 @@ Now that the database has been successfully installed, we must generate the conf
 </form>
 <form onsubmit="return false;">
 <button style="float: left;" type="button" onclick="$(\'#part5\').slideUp(); $(\'#part4\').slideDown();">&larr; Back</button>
-<button style="float: right;" type="button" onclick="$.get(\'install.php?phase=5\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#mysql_db_form\').serialize() + \'&\' + $(\'#mysql_table_form\').serialize() + \'&\' + $(\'#config_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part4\').slideUp(); $(\'#part5\').slideDown(); } else { alert(\'Could not connect.\'); } } );">Verify &rarr;</button>
+<button style="float: right;" type="button" onclick="$.get(\'index.php?phase=5\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#mysql_db_form\').serialize() + \'&\' + $(\'#mysql_table_form\').serialize() + \'&\' + $(\'#config_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part4\').slideUp(); $(\'#part5\').slideDown(); } else { alert(\'Could not connect.\'); } } );">Verify &rarr;</button>
 </form>
 </div>
 </body>
@@ -327,7 +327,7 @@ Now that the database has been successfully installed, we must generate the conf
     '$sqlPrefix = \'' . $prefix . '\';',
     '$loginMethod = \'' . $forum . '\';',
     '$installLoc = \'' . __DIR__ . '\';',
-    '$installUrl = \'' . str_replace('install.php','',$_SERVER['HTTP_REFERER']) . '\';',
+    '$installUrl = \'' . str_replace('index.php','',$_SERVER['HTTP_REFERER']) . '\';',
     '$forumUrl = \'' . $forumUrl . '\';',
   );
 

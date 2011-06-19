@@ -214,11 +214,11 @@ if ($flag) {
   // Do nothing.
 }
 else {
-  if ($userId && $sessionHash) {
-    $user = sqlArr("SELECT u.*, s.sessonId AS anonId FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE magicHash = '" . mysqlEscape($sessionHash) . "'"); print_r($user);
+  if ($sessionHash) {
+    $user = sqlArr("SELECT u.*, s.sessionId AS anonId FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE magicHash = '" . mysqlEscape($sessionHash) . "'");
     $anonId = $user['anonId'];
     $noSync = true;
-    $value = true;
+    $valid = true;
 
 /*    if ($user['userId'] == $userId) {
       $valid = true;

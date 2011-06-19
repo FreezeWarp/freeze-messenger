@@ -34,7 +34,7 @@ $xmlData = array(
 ($hook = hook('getFonts_start') ? eval($hook) : '');
 
 
-$fonts = sqlArr("SELECT f.id AS fontId,
+$fonts = sqlArr("SELECT f.fontId AS fontId,
   f.name AS fontName,
   f.data AS fontData,
   f.category AS fontGroup

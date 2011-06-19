@@ -34,5 +34,5 @@ CREATE TABLE IF NOT EXISTS `{prefix}rooms` (
 
 -- DIVIDE
 
-INSERT INTO `{prefix}rooms` (`roomId`, `name`, `topic`, `allowedGroups`, `allowedUsers`, `options`) VALUES
+INSERT INTO `{prefix}rooms` (`roomId`, `roomName`, `roomTopic`, `allowedGroups`, `allowedUsers`, `options`) VALUES
 (1, 'Your Room!', 'Hit the Edit Room Button to Change Things or Use /topic to Change the Topic', '*', '*', 1)

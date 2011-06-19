@@ -110,8 +110,8 @@ if ($rooms2) {
 
     $xmlData['getRooms']['rooms']['room ' . $room['messageId']] = array(
       'roomId' => (int)$room['roomId'],
-      'roomName' => ($room['name']),
-      'roomTopic' => ($room['topic']),
+      'roomName' => ($room['roomName']),
+      'roomTopic' => ($room['roomTopic']),
       'roomOwner' => (int) $room['owner'],
       'allowedUsers' => ($room['allowedUsers']),
       'allowedGroups' => ($room['allowedGroups']),

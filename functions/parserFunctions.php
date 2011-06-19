@@ -151,9 +151,9 @@ function fimParse_htmlParse($text,$bbcodeLevel = 1) {
 function fimParse_censorParse($text,$roomId = 0) {
   global $sqlPrefix;
 
-  $words = sqlArr("SELECT w.word, w.severity, w.param, l.id AS listId
+  $words = sqlArr("SELECT w.word, w.severity, w.param, l.listId AS listId
 FROM {$sqlPrefix}censorLists AS l, {$sqlPrefix}censorWords AS w
-WHERE w.listId = l.id AND w.severity = 'replace'",'word');
+WHERE w.listId = l.listId AND w.severity = 'replace'",'word');
 
   if ($roomId) {
     $listsActive = sqlArr("SELECT * FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomId = $roomId",'id');

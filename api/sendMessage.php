@@ -31,7 +31,7 @@ $ip = mysqlEscape($_SERVER['REMOTE_ADDR']); // Get the IP address of the user.
 
 $words = sqlArr("SELECT w.word, w.severity, w.param
 FROM {$sqlPrefix}censorLists AS l, {$sqlPrefix}censorWords AS w
-WHERE w.listId = l.id AND (w.severity = 'warn' OR w.severity = 'confirm' OR w.severity = 'block')",'word');
+WHERE w.listId = l.listId AND (w.severity = 'warn' OR w.severity = 'confirm' OR w.severity = 'block')",'word');
 
 if ($words) {
   ($hook = hook('sendMessage_censor_start') ? eval($hook) : '');

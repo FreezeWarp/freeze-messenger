@@ -55,8 +55,7 @@ function fim_hasPermission($roomData,$userData,$type = 'post',$trans = false) {
   /* Get the User's Kick Status */
   if ($userData['userId']) {
     $kick = sqlArr("SELECT UNIX_TIMESTAMP(k.time) AS kickedOn,
-  UNIX_TIMESTAMP(k.time) + k.length AS expiresOn,
-  k.id
+  UNIX_TIMESTAMP(k.time) + k.length AS expiresOn
 FROM {$sqlPrefix}kick AS k
 WHERE userId = $userData[userId] AND
   roomId = $roomData[roomId] AND
@@ -103,7 +102,7 @@ WHERE userId = $userData[userId] AND
       $roomValid = false;
       $reason = 'banned';
     }
-    elseif ($kick['id'] && !$isAdmin) {
+    elseif ($kick && !$isAdmin) {
       $roomValid = false;
       $reason = 'kicked';
     }
@@ -145,7 +144,7 @@ WHERE userId = $userData[userId] AND
       $roomValid = false;
       $reason = 'banned';
     }
-    elseif ($kick['id'] && !$isAdmin) {
+    elseif ($kick && !$isAdmin) {
       $roomValid = false;
       $reason = 'kicked';
     }
@@ -167,7 +166,7 @@ WHERE userId = $userData[userId] AND
       $roomValid = false;
       $reason = 'banned';
     }
-    elseif ($kick['id']) {
+    elseif ($kick) {
       $roomValid = false;
       $reason = 'kicked';
     }
@@ -189,7 +188,7 @@ WHERE userId = $userData[userId] AND
       $roomValid = false;
       $reason = 'banned';
     }
-    elseif ($kick['id']) {
+    elseif ($kick) {
       $roomValid = false;
       $reason = 'kicked';
     }

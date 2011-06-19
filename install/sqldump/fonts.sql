@@ -14,16 +14,16 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 CREATE TABLE IF NOT EXISTS `{prefix}fonts` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `fontId` int(10) NOT NULL AUTO_INCREMENT,
   `name` varchar(20) NOT NULL,
   `data` varchar(500) NOT NULL,
   `category` varchar(20) NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`fontId`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8;
 
 -- DIVIDE
 
-INSERT INTO `{prefix}fonts` (`id`, `name`, `data`, `category`) VALUES
+INSERT INTO `{prefix}fonts` (`fontId`, `name`, `data`, `category`) VALUES
 (1, 'FreeMono', 'FreeMono, TwlgMono, ''Courier New'', Consolas, monospace', 'monospace'),
 (2, 'Courier New', '''Courier New'', FreeMono, TwlgMono, Consolas, Courier, monospace', 'monospace'),
 (3, 'Consolas', 'Consolas, ''Courier New'', FreeMono, TwlgMono, monospace', 'monospace'),

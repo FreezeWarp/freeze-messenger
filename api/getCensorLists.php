@@ -41,7 +41,7 @@ $xmlData = array(
 ($hook = hook('getCensorLists_start') ? eval($hook) : '');
 
 
-$censorLists = sqlArr("SELECT c.id AS listId,
+$censorLists = sqlArr("SELECT c.listId AS listId,
   c.name as listName,
   c.type AS listType,
   c.options AS listOptions
