@@ -70,7 +70,7 @@ dia = {
         }
       }
     });
-  }
+  },
 
   info : function(message, title) {
     $('<div style="display: none;">' + message + '</div>').dialog({

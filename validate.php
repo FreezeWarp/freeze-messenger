@@ -215,19 +215,14 @@ if ($flag) {
 }
 else {
   if ($sessionHash) {
-    $user = sqlArr("SELECT u.*, s.sessionId AS anonId FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE magicHash = '" . mysqlEscape($sessionHash) . "'");
+    $user = sqlArr("SELECT u.*, s.sessionId AS anonId, UNIX_TIMESTAMP(s.time) AS sessionTime FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE magicHash = '" . mysqlEscape($sessionHash) . "'");
     $anonId = $user['anonId'];
     $noSync = true;
     $valid = true;
 
-/*    if ($user['userId'] == $userId) {
-      $valid = true;
-      $noSync = true;
+    if ($user['sessionTime'] < time() - 300) {
+      $session = 'update';
     }
-    else {
-      $valid = false;
-    }*/
-
   }
 
   elseif ($userName && $password) {
@@ -423,7 +418,9 @@ if ($valid) { // If the user is valid, process their preferrences.
   elseif ($session == 'update' && $sessionHash) {
     ($hook = hook('validate_updatesession') ? eval($hook) : '');
 
-    die('1'); // TODO!
+    mysqlQuery("UPDATE {$sqlPrefix}sessions
+    SET time = NOW()
+    WHERE magicHash = '" . mysqlEscape($sessionHash) . "'");
   }
 
   else {
