@@ -83,11 +83,15 @@ if (isset($_POST['userName'],$_POST['password'])) { // API.
   $api = true;
 }
 
-elseif (isset($_REQUEST['sessionhash'])) { // Session hash defined via sent data.
-  $sessionHash = $_REQUEST['sessionhash'];
+elseif (isset($_REQUEST['sessionHash'])) { // Session hash defined via sent data.
+  $sessionHash = $_REQUEST['sessionHash'];
+
+  if (isset($_POST['apiLogin'])) {
+    $api = true;
+  }
 }
 
-elseif ((int) $anonymousUser >= 1 && isset($_POST['noLogin'])) { // Unregistered user support.
+elseif ((int) $anonymousUser >= 1 && isset($_POST['apiLogin'])) { // Unregistered user support.
   $userId = $anonymousUser;
   $anonymous = true;
   $api = true;
@@ -211,16 +215,18 @@ if ($flag) {
 }
 else {
   if ($userId && $sessionHash) {
-    $user = sqlArr("SELECT u.*, s.sessonId AS anonId FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE magicHash = '" . mysqlEscape($sessionHash) . "'");
+    $user = sqlArr("SELECT u.*, s.sessonId AS anonId FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE magicHash = '" . mysqlEscape($sessionHash) . "'"); print_r($user);
     $anonId = $user['anonId'];
+    $noSync = true;
+    $value = true;
 
-    if ($user['userId'] == $userId) {
+/*    if ($user['userId'] == $userId) {
       $valid = true;
       $noSync = true;
     }
     else {
       $valid = false;
-    }
+    }*/
 
   }
 
@@ -228,7 +234,6 @@ else {
     $user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userName] = '" . mysqlEscape($userName) . "' LIMIT 1");
 
     if (processLogin($user,$password)) {
-      $setCookie = true;
       $valid = true;
       $session = 'create';
     }
@@ -241,7 +246,6 @@ else {
     $user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' LIMIT 1');
 
     if (processLogin($user,$password)) {
-      $setCookie = true;
       $valid = true;
       $session = 'create';
     }
@@ -252,8 +256,9 @@ else {
 
   elseif ($anonymousUser && $anonymous) {
     $user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' LIMIT 1');
-    $setCookie = true;
+
     $valid = true;
+    $api = true;
     $session = 'create';
   }
 

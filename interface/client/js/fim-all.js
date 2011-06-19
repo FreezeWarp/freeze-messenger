@@ -116,6 +116,8 @@ var ulText = '';
 var roomTableHtml = '';
 var roomSelectHtml = '';
 
+var userSelectHtml = '';
+
 
 
 /* Get the absolute API path.
@@ -144,6 +146,8 @@ $.ajax({
     $(xml).find('user').each(function() {
       var userName = unxml($(this).find('userName').text().trim());
       var userId = parseInt($(this).find('userId').text().trim());
+
+      userSelectHtml += '<option value="' + userId + '">' + userName + '</option>';
 
       userRef[userName] = userId;
       userList.push(userName);
@@ -431,7 +435,7 @@ var standard = {
     $.ajax({
       url: apiPath + 'validate.php',
       type: 'POST',
-      data: (password ? 'userName=' + userName + '&password=' + password + '&passwordEncrypt=' + passwordEncrypt : 'noLogin=1') + '&apiVersion=3',
+      data: (password ? 'userName=' + userName + '&password=' + password + '&passwordEncrypt=' + passwordEncrypt : 'sessionHash=' + sessionHash + '&apiLogin=1') + '&apiVersion=3',
       cache: false,
       timeout: 2500,
       success: function(xml) {
@@ -440,11 +444,12 @@ var standard = {
         var valid = unxml($(xml).find('valid').text().trim());
         var userName = unxml($(xml).find('userData > userName').text().trim());
         var defaultRoomId = parseInt($(xml).find('defaultRoomId').text().trim());
-        userId = parseInt($(xml).find('userData > userId').text().trim());
-        anonId = parseInt($(xml).find('anonId').text().trim());
-        sessionHash = unxml($(xml).find('sessionHash').text().trim());
 
         if (valid === 'true') {
+          userId = parseInt($(xml).find('userData > userId').text().trim());
+          anonId = parseInt($(xml).find('anonId').text().trim());
+          sessionHash = unxml($(xml).find('sessionHash').text().trim());
+
           $('<div style="display: none;">You are now logged in as ' + userName + '.</div>').dialog({ title : 'Logged In '});
           $('#loginDialogue').dialog('close');
 
@@ -489,6 +494,15 @@ var standard = {
             default:
             break;
           }
+
+          if (sessionHash) {
+            sessionHash = '';
+            $.cookie('fim3_sessionHash','');
+
+            standard.login(0,'');
+          }
+
+          console.log('Login Invalid');
         }
 
         if (!anonId && !userId) {
@@ -767,6 +781,11 @@ var standard = {
 };
 
 
+console.log('Automatic Login Triggered');
+
+standard.login(0,'');
+
+
 
 function contextMenuParse() {
   $('.userName').contextMenu({
@@ -934,7 +953,7 @@ function contextMenuParse() {
  *******************************/
 
 popup = {
-  login: function() {
+  login : function() {
     $.get('template.php','template=login',function(data) {
       quickDialogue(data,'Login','loginDialogue',600,false,function() {
         $("#loginForm").submit(function() {
@@ -1135,16 +1154,7 @@ $(document).ready(function() {
       type: 'GET',
       cache: false,
       success: function(xml) {
-        var userHtml = '';
-
-        $(xml).find('user').each(function() {
-          var userName = unxml($(this).find('userName').text().trim());
-          var userId = parseInt($(this).find('userId').text().trim());
-
-          userHtml += '<option value="' + userId + '">' + userName + '</option>';
-        });
-
-        $('select[name=userId]').html(userHtml);
+        $('select[name=userId]').html(userSelectHtml);
       },
       error: function() {
         alert('Failed to show all users');
@@ -1588,13 +1598,6 @@ $(document).ready(function() {
   windowResize();
 
 });
-
-if (!sessionHash && !anonId) {
-  console.log('Automatic Login Triggered');
-
-  standard.login(0,'');
-}
-
 
 
 /*******************************
