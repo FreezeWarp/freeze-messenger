@@ -41,25 +41,12 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
 
 
 
-  <!-- START Local Variables -->
-
-  <meta name="fim_userId" content="$user[userId]" />
-  <meta name="fim_roomId" content="$room[roomId]" />
-  <meta name="fim_audioDing" content="{{if="$user[''optionDefs''][''audioDing'']"}{1}{0}}" />
-  <meta name="fim_reversePostOrder" content="{{if="$user[''optionDefs''][''reversePostOrder'']"}{1}{0}}" />
-  <meta name="fim_showAvatars" content="{{if="$user[''optionDefs''][''showAvatars'']"}{1}{0}}" />
-  <meta name="fim_longPolling" content="{{if="$user[''optionDefs''][''longPolling'']"}{1}{0}}" />
-  <meta name="fim_layout" content="$layout" />
-
-  <!-- END Local Variables -->
-
-
 
   <!-- START Styles -->
 
   <link rel="stylesheet" type="text/css" href="client/css/$style/jquery-ui-1.8.13.custom.css" media="screen" />
   <link rel="stylesheet" type="text/css" href="client/css/$style/fim.css" media="screen" />
-  <link rel="stylesheet" type="text/css" href="client/css/styles060911.min.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" media="screen" />
 
   {{if="$layout == ''alt''"}{<style>
     #menu { display: none; width: 0px; }
@@ -352,10 +339,6 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
 (27, 'chatTemplate', 'parseFlags,canModerate,chatTemplate,textboxStyle,stopMessage', '<div id="roomTemplateContainer">
   <div id="chatContainer"{{if="$stopMessage"}{style="display: none;"}}>
     {{container}{<div id="title">
-      <span id="status" class="leftPart">
-        {{if="$room[''options''] & 1"}{<img src="images/bookmarks.png" class="standard" title="This is an Official Room" alt="Official" />}}<br />
-        <span id="refreshStatus" onclick="alert(''Failed '' + totalFails + '' times. Current refreshing every '' + (timeout / 1000 + .1) + '' seconds.'');"></span>
-      </span>
 
       <div id="rightTitle" class="rightPart">
         <form action="#" onsubmit="return false;" class="rightPart">
@@ -558,7 +541,7 @@ Keep in mind all content is heavily encrytped for privacy. Private conversations
 <ul>
   <li><a href="http://www.google.com/chrome" target="_BLANK">Google Chrome / Chromium</a></li>
   <li><a href="http://windows.microsoft.com/ie9" target="_BLANK">Internet Explorer 8+</a></li>
-  <li><a href="http://www.mozilla.com/en-US/firefox/" target="_BLANK">Firefox 3.6+</a></li>
+  <li><a href="http://www.mozilla.com/en-US/firefox/" target="_BLANK">Firefox 4+</a></li>
   <li><a href="http://www.opera.com/download/" target="_BLANK">Opera 11+</a></li>
   <li><a href="http://www.apple.com/safari/" target="_BLANK">Safari 5+</a></li>
 </ul><br /><br /></div>
@@ -566,7 +549,7 @@ Keep in mind all content is heavily encrytped for privacy. Private conversations
 <div id="faqs">
 <ul>
 
-  <li><b>Where Do I Report Bugs?</b> - If possible, please PM FreezeWarp.</li>
+  <li><b>Where Do I Report Bugs?</b> - Bugs can be reported to the <a href="http://code.google.com/p/freeze-messenger/source/list">Google Code bugtracker</a>.</li>
   <li><b>Can I Donate to this Awesome Project?</b> - <a href="javascript:alert(''Donations not yet set up. But, please, if you want to, they will be shortly.'');">Please do. It really helps keep development going.</a></li>
 </ul></div>
 

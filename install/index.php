@@ -338,7 +338,7 @@ Now that the database has been successfully installed, we must generate the conf
   case 'dev': // TODO: Remove
   $mysqli = new mysqli('localhost','a','a','phpbb3');
   $mysqli->query("SET NAMES utf8");
-  $prefix = 'fim_';
+  $prefix = 'fim3_';
   $tables = array("templates","phrases");
 
   foreach ($tables AS $table) {

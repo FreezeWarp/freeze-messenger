@@ -77,14 +77,14 @@ else {
   {$activeUsers_columns}
 FROM {$sqlPrefix}ping AS p,
   {$sqlPrefix}rooms AS r,
-  {$sqlUserTable} AS u
+  {$sqlPrefix}users AS u
   {$activeUsers_tables}
 WHERE p.roomId = $room[roomId] AND
   p.roomId = r.roomId AND
-  p.userId = u.$sqlUserTableCols[userId] AND
+  p.userId = u.userId AND
   UNIX_TIMESTAMP(p.time) >= ($time - $onlineThreshold)
   {$activeUsers_where}
-ORDER BY u.{$sqlUserTableCols[userName]}
+ORDER BY u.userName
   {$activeUsers_order}
 {$activeUsers_end}",true);
 

@@ -263,8 +263,8 @@ else {
             $xmlData['getMessages']['messages']['message ' . (int) $message['messageId']] = array(
               'roomData' => array(
                 'roomId' => (int) $room['roomId'],
-                'roomName' => ($room['name']),
-                'roomTopic' => ($room['topic']),
+                'roomName' => ($room['roomName']),
+                'roomTopic' => ($room['roomTopic']),
               ),
               'messageData' => array(
                 'messageId' => (int) $message['messageId'],

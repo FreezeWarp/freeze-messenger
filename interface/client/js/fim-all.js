@@ -226,7 +226,9 @@ function populate() {
     async: true,
     cache: false,
     success: function(xml) {
-      console.log('Rooms obtained.');
+      roomList = new Array; // Clear so we don't get repeat values on regeneration.
+      roomIdRef = new Object;
+      roomRef = new Object;
 
       $(xml).find('room').each(function() {
         var roomName = unxml($(this).find('roomName').text().trim());
@@ -235,6 +237,7 @@ function populate() {
         var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
         var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
         var isOwner = (parseInt($(this).find('owner').text()) == userId ? true : false);
+        var isModerator = ($(this).find('canModerate').text().trim() === 'true' ? true : false);
 
         var ulText = '<li><a href="index.php?room=' + roomId + '">' + roomName + '</a></li>';
 
@@ -259,6 +262,8 @@ function populate() {
         roomIdRef[roomId] = roomName;
         roomList.push(roomName);
       });
+
+      console.log('Rooms obtained.');
     },
     error: function() {
       console.log('Rooms Not Obtained - Problems May Occur');
@@ -623,20 +628,18 @@ var standard = {
             totalFails = 0;
             var notifyData = '';
 
-            $('#refreshStatus').html('<img src="images/dialog-ok.png" alt="Apply" class="standard" />');
-
 
             $('#activeUsers').html('');
             var activeUserHtml = new Array;
 
             $(xml).find('activeUsers > user').each(function() {
-            var userName = $(this).find('userName').text().trim();
-            var userId = $(this).find('userId').text().trim();
-            var userGroup = $(this).find('userGroup').text().trim();
-            var startTag = unxml($(this).find('startTag').text().trim());
-            var endTag = unxml($(this).find('endTag').text().trim());
+              var userName = $(this).find('userName').text().trim();
+              var userId = $(this).find('userId').text().trim();
+              var userGroup = $(this).find('userGroup').text().trim();
+              var startTag = unxml($(this).find('startTag').text().trim());
+              var endTag = unxml($(this).find('endTag').text().trim());
 
-            activeUserHtml.push('<span class="userName" data-userId="' + userId + '">' + startTag + '<span class="username">' + userName + '</span>' + endTag + '</span>');
+              activeUserHtml.push('<span class="userName" data-userId="' + userId + '">' + startTag + '<span class="username">' + userName + '</span>' + endTag + '</span>');
             });
 
             $('#activeUsers').html(activeUserHtml.join(', '));
@@ -704,6 +707,11 @@ var standard = {
                 $('#message' + messageOut).remove();
                 messageIndex = messageIndex.slice(1,99);
               }
+
+              var roomTopic = $(this).find('roomData > roomTopic').text().trim();
+              if (roomTopic) {
+                $('#topic').html(roomTopic);
+              }
             });
 
 
@@ -760,7 +768,7 @@ var standard = {
           }
           else {
             totalFails += 1;
-            $('#refreshStatus').html('<img src="images/dialog-error.png" alt="Apply" class="standard" />');
+            $('#roomName').append('<span class="ui-icon ui-icon-info"></span>');
           }
         },
       });
@@ -1800,7 +1808,7 @@ $(document).ready(function() {
   /*** Stats ***/
 
   $('#viewStats').click(function() {
-    popup.showStats();
+    popup.viewStats();
   });
 
 

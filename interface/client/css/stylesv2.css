@@ -111,6 +111,14 @@ body {
   overflow: auto;
 }
 
+#status {
+  position: relative;
+  bottom: 0px;
+  right: 3px;
+  float: right;
+  opacity: .8;
+}
+
 
 
 /***** Other Crap *****/

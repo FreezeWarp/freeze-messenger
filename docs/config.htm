@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <title>Configuration - FreezeMessenger Documentation</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Joseph T. Parsons" />
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+  </head>
+
+  <body>
+    <section>
+      <header>
+        <h1>Configuration</h1>
+      </header>
+      <nav>
+      </nav>
+      <section>
+        <h2>Quick Notes</h2>
+        <ul>
+          <li>The following define each type of variable the below can be categorized as. This type represents a variable’s syntax (or how it looks within the file) and its possible values, listed respectively.</li>
+          <ul>
+            <li>BOOL or Boolean - A true/false value. All possible values are:</li>
+            <ul>
+              <li>true</li>
+              <li>false</li>
+            </ul>
+
+            <li>STR or String - A string of text, characters, and numbers. It will usually have a single apostrophe both before and after its value, and any apostrophies within its value must have a backslash “/” before them. For instance:</li>
+            <ul>
+              <li>‘hello’</li>
+              <li>‘I\’m fine’</li>
+              <li>‘Never gonna give you up.’</li>
+            </ul>
+
+            <li>INT or Integer - A whole number value that is in most cases positive. Example values below might include:</li>
+            <ul>
+              <li>149</li>
+              <li>10000</li>
+              <li>0</li>
+            </ul>
+
+            <li>ARRAY - A list of any of the above. Arrays must be formatted properly in order for the product to work. The general syntax is:
+
+            array(
+              1,
+              ‘2’,
+              true
+            );</li>
+          </ul>
+
+          <li>In general installation and configuration of FIM does not require any programming expertise; all of the values detailed within can be modified without worry using the supplied creation script (see INSTALLATION). However, advanced configurations may require tweaking these. Always create a backup of the file before editing unless you are experienced.</li>
+
+          <li>Where possible, the config file itself attempts to explain each value, noting important things that should accommodate most users, inexperienced and experienced alike. However, the following data attepts to explain all data, and may become rather verbose.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>All Directives</h2>
+
+        <section>
+          <h3>MySQL Configuration</h3>
+          <ul class="directives">
+            <li>sqlHost (STR) - The location of the MySQL host. In most cases this is simply “localhost” but it may also be a web address or IP address, such as “12.134.16.1” or “http://www.google.com/”. If unsure, “localhost” will work in most situations.</li>
+
+
+            <li>sqlUser (STR) - The user of the MySQL account that will be used to run FIM. If unsure and integrating with a forum, it is most likely the same value used by the forum (vBulletin’s configuration can be found in includes/config.php and PHPBB’s under config.php).<br /><br />
+
+            Note: This user must be created or already exist. Most webserver control panels can create MySQL users under a “databases” section.<br /><br />
+
+            Note2: This user must be able to run DELETE, UPDATE, INSERT, and SELECT queries on all installed tables, as well as a forum’s user, group, emoticon, and socialgroup tables. Additionally, CREATE is requried to use the login script.</li>
+
+
+            <li>sqlPassword (STR) - The password of the above MySQL user account. If possible use a random password.</li>
+
+
+            <li>sqlDatabase (STR) - The database all of FIM’s data will be stored in. If you are integrating with a forum (such as PHPBB or vBulletin), it MUST be the same database.</li>
+
+            <li>sqlPrefix (STR) - The prefix of all tables installed by FIM. If integrating with a forum, it MUST differ from the prefix of the forum.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Forum Integration</h3>
+          <ul class="directives">
+            <li>loginMethod (STR)  - The method used for login. Supported values are (case sensitive):
+            <ul>
+              <li>vbulletin - Support for vBulletin 3.8</li>
+              <li>vbulletin4 - Support for vBulletin 4</li>
+              <li>phpbb3 - Support for PHPBB 3.0</li>
+              <li>vanilla - No Intergration</li>
+            </ul><br />
+
+            Support for other products may be trivially added by anyone experienced with the product they wish to integrate; see ADDON DEVELOPMENT.</li>
+
+
+            <li>installLoc (STR) - The location the product is installed to. Assuming you are using a Linux system, this will often be something similar to:
+            <ul>
+              <li>/var/www/</li>
+              <li>/var/www/product/htdocs/
+            </ul><br />
+
+            Note: By default, this value is left out of the configuration file. However, it is recognized and may be used, and in the stock configuration is not included at all.</li>
+
+
+            <li>installUrl (STR) - The URL the product will be installed to. This should contain the “index.php” and “chat.php” files, the “client” directory, and so-on.<br /><br />
+
+            Note: This value is, for the most part, no longer used, but may be used by plugins. In general, it can be safely left blank, and in the stock configuration is not included at all.</li>
+
+
+            <li>forumUrl (STR) - The URL of a forum if used for integration. This will be used to link to user profiles, avatars, smilies, and so-on.<br /><br />
+
+            Note: This value is only required for avatars and profile. It is however recommended you specify a valid link, unless you are using vanilla logins.</li>
+
+
+            <li>forumSalt (STR) - Some forums (including vBulletin and PHPBB) use a specific “cookie salt” that varies installation-to-installation. This must be retrieved and set equal tot he forum’s value in order for cross-domain cookie support. It is only used if useSameCookies is TRUE.</li>
+
+
+            <li>forumCookiePrefix (STR) - The prefix of cookies used by the integrated product.  It is only used if useSameCookies is TRUE.</li>
+
+            <li>forumTablePrefix (STR) - The prefix of tables within the forum.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Encryption</h3>
+          <ul class="directives">
+            <li>salts (ARRAY) - An array of salts that will be used to encrypt messages in addition to the randomly generated IVs. A key should be a positive integer value starting with one and the value should be a corresponding salt. To change the salt, add a new entry with a greater key value; if old entries are removed, older messages will not be able to be unencrypted.</li>
+
+            <li>encrypt (BOOL) - Whether or not encryption is enabled. Set to false while keeping any prior salts to disable encryption without losing old encrypted data.
+
+            Note: The message reparsing script in the Admin Control Panel can be used to eliminate all database encryption if this is set to false, all messages are reparsed, and then the salts are removed. However, for even medium (~100,000) databases, this may take a matter of days to complete.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>File Uploads</h3>
+          <ul class="directives">
+            <li>enableUploads - Whether or not to enable any form of file uploads.</li>
+
+            <li>enableGeneralUploads - Whether or not general, hosted uploads should be enabled. If dissabled, files can only be uploaded as a part of sending a message.</li>
+
+            <li>uploadMimes - The valid mime types all files must conform to.</li>
+
+            <li>uploadExtensions - The valid extensions all files must conform to.</li>
+
+            <li>uploadMatchBoth - Whether files must both be a valid mime type and extension.</li>
+
+            <li>uploadMethod - DO NOT USE. Will be removed in the near future.</li>
+
+            <li>encryptUploads - Whether or not uploads should be encrypted like messages normally are.</li>
+          </ul>
+        </section>
+      </section>
+    </section>
+
+    <footer style="text-align: right;">
+      <span style="font-style: oblique;">Document Like You Were Dieing<br />
+      (and hope someone decides to continue your legacy)</span>
+    </footer>
+  </body>
+</html>

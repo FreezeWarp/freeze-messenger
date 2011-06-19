@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <title>Database - FreezeMessenger Documentation</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Joseph T. Parsons" />
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+  </head>
+
+  <body>
+    <section>
+      <header>
+        <h1>Database</h1>
+      </header>
+
+      <section>
+        <h2>Table Structure</h2>
+        <ul>
+          <li>table "messages"</li>
+          <ul>
+            <li>column "messageId" - includes unique ID for all messages.</li>
+            <li>column "roomId" - Defines unique ID for room. These will exceed triple digits ideally.</li>
+            <li>column "rawText" - contains raw text of what the user entered. Censor, smilies, etc. not yet applied.</li>
+            <li>column "htmlText" - contains HTML formatted text of message, including rich text formatting, parsed images and URLs (such as smilies), and censored text. Any necessary characters are escaped; e.g. "<" is transcoded into "lt;".</li>
+            <li>column "apiText" - contains visual basic formatted text of message, including escaping any needed characters, parsing any text preemtively (such as URLs and images), and so-on.</li>
+            <li>column "deleted" - deleted (can be seen by moderators)</li>
+            <li>column "time" - post time.</li>
+            <li>column “microtime” - used for retrieiving newest posts precisely.</li>
+            <li>column "ip" - user's post IP.</li>
+            <li>column “salt” - The salt ID used for encryption.</li>
+            <li>column “iv” - The IV used for encryption.</li>
+            <li>column “flags”</li>
+            <ul>
+              <li>“topic” - Used for topic change.</li>
+              <li>“kick” - Used for kick notice.</li>
+              <li>“me” - Used for me command.</li>
+              <li>“video” - Source contains video URL.</li>
+              <li>“image” - Source contains image URL.</li>
+              <li>“link” - Source contains link URL.</li>
+            </ul>
+          </ul>
+
+          <li>table "rooms"</li>
+          <ul>
+            <li>column "id" - room ID.</li>
+            <li>column "name" - room name.</li>
+            <li>column “title” - the room’s title/topic.</li>
+            <li>column "allowedGroups" - comma-separated list of allowed usergroups. "", NULL, false, and true all assume no group restrictions.</li>
+            <li>column "allowedUsers" - comma-separated list of allowed users. These users override the allowed groups, so it does not matter which group(s) they are in.</li>
+            <li>column "owner" - the owner and group administrator. This user can a column "totalMessages" - total messages posted in the chat.dd or remove moderators, allowedGroups, allowedUsers, and delete posts*</li>
+            <li>column "moderators" - any additional moderators. These users can add or remove allowedGroups, allowedUsers, and delete posts.</li>
+            <li>column “bbcode” - Value for allowed BB code level.</li>
+            <ul>
+              <li>1 - Everything</li>
+              <li>3 - Only B, S, I, U, Url, Email, Colour, Highlight, Image, Video</li>
+              <li>5 - Only B, S, I, U, Url, Email, Colour, Highlight, Image</li>
+              <li>7 - Only B, S, I, U, Url, Email, Colour, Highlight</li>
+              <li>9 - Only B, S, I, U, Url, Email</li>
+              <li>16 - Only B, S, I, U</li>
+              <li>19 - Nothing</li>
+            </ul>
+
+            <li>column "options" - bitfield containing various options.</li>
+            <ul>
+              <li>1 - Official Group</li>
+              <li>2 - Mature (PG-13+)</li>
+              <li>4 - Deleted (can not be accessed by non-admins).</li>
+              <li>8 - Unlisted</li>
+              <li>16 - Private</li>
+              <li>32 - No Moderation</li>
+            </ul>
+          </ul>
+
+          <li> table "users"</li>
+          <ul>
+            <li>column "userId" - The user’s ID number.</li>
+            <li>column "settings" - User settings that apply to the core API.</li>
+            <ul>
+              <li>1 - Reserved</li>
+              <li>2 - Reserved</li>
+              <li>4 - Reserved</li>
+              <li>8 - Reserved</li>
+              <li>16 - Reserved</li>
+              <li>32 -Reserved</li>
+              <li>64 - Reserved</li>
+              <li>128 - Reserved</li>
+              <li>256 - Disable Parental Controls</li>
+            </ul>
+
+            <li>column “adminPrivs” - Admin-related priviledges.</li>
+            <ul>
+              <li>1 - Modify Admin Priviledges</li>
+              <li>2 - Reserved</li>
+              <li>4 - Reserved</li>
+              <li>8 - Reserved</li>
+              <li>16 - Moderate Users (Ban, Unban, etc.)</li>
+              <li>32 - Reserved</li>
+              <li>64 - Moderate Images</li>
+              <li>128 - Reserved</li>
+              <li>256 - Modify Censor Words</li>
+              <li>512 - Modify Censor Lists</li>
+              <li>1024 - Reserved</li>
+              <li>2048 - Reserved</li>
+              <li>4096 - Modify Plugins</li>
+              <li>8192 - Modify Templates</li>
+              <li>16384 - Modify Hooks</li>
+              <li>32768 - Modify Translations</li>
+            </ul>
+
+            <li>column “userPrivs” - User-related priviledges.</li>
+            <ul>
+              <li>1 - Reserved</li>
+              <li>2 - Reserved</li>
+              <li>4 - Reserved</li>
+              <li>8 - Reserved</li>
+              <li>16 - General Access (w/o = Ban)</li>
+              <li>32 - Create Rooms</li>
+              <li>64 - Create Private Rooms</li>
+            </ul>
+
+            <li>column “settingsOfficialAjax”</li>
+            <ul>
+              <li>1 - Reserved</li>
+              <li>2 - Reserved</li>
+              <li>4 - Reserved</li>
+              <li>8 - Reserved</li>
+              <li>16 - Disable Formatting</li>
+              <li>32 - Disable Video</li>
+              <li>64 - Disable Images</li>
+              <li>128 - Reserved</li>
+              <li>256 - Reserved</li>
+              <li>512 - Reserved</li>
+              <li>1024 - Reverse Post Order</li>
+              <li>2048 - Show Avatars</li>
+              <li>4096 - Reserved</li>
+              <li>8192 - Audible Ding</li>
+            </ul>
+
+            <li>column “defaultRoom” - The default room when no other is specified. It can only be read via the login API.</li>
+            <li>column “defaultFormatting” - A bitfield for a user’s default message formatting.</li>
+            <ul>
+              <li>1 - Reserved</li>
+              <li>2 - Reserved</li>
+              <li>4 - Reserved</li>
+              <li>8 - Reserved</li>
+              <li>16 - Reserved</li>
+              <li>32 - Reserved</li>
+              <li>64 - Reserved</li>
+              <li>128 - Reserved</li>
+              <li>256 - Bold</li>
+              <li>512 - Italics</li>
+              <li>1024 - Underline</li>
+              <li>2056 - Strikethrough</li>
+            </ul>
+
+            <li>column “defaultHighlight” - A user’s default highlight for message formatting.</li>
+            <li>column “defaultColor” - A user’s default color for message formatting.</li>
+            <li>coulmn “defaultFontface” - A user’s default font for message formatting.</li>
+            <li>column “favRooms” - Favourite rooms to show on homepage.</li>
+          </ul>
+
+          <li>table “ping” - A cache used for determining active users.</li>
+          <ul>
+            <li>*column “userId” - The userid.</li>
+            <li>*column “roomId” - The roomid.</li>
+            <li>column “status” - The user’s status in this room.</li>
+            <li>column “typing” - Whether or not the user is typing in this room.</li>
+            <li>column “time” - The last time.</li>
+          </ul>
+
+          <li>table “modlog”</li>
+          <ul>
+            <li>column “id” - A unique identifier for the action.</li>
+            <li>column “userId” - The ID of the user who performed the action.</li>
+            <li>column “time” - The time the action was performed.</li>
+            <li>column “ip” - The IP address of the user when performed.</li>
+            <li>column “action” - The action that was performed.</li>
+            <li>column “data” - Additional data of the action.</li>
+          </ul>
+
+          <li>table “kick”</li>
+          <ul>
+            <li>*column “userId” - The user who has been kicked.</li>
+            <li>*column “roomId” - The room the user was kicked in.</li>
+            <li>column “kickerid” - The user who did the kicking.</li>
+            <li>column “time” - The time the user was kicked.</li>
+            <li>column “length” - The time the kick is to last for.</li>
+          </ul>
+
+          <li>table “files”</li>
+          <ul>
+            <li>column “id” int(10) - The file ID.</li>
+            <li>column “name” varchar(255) - The name of the file.</li>
+            <li>column “type” varchar(255) - The source of the file (“upload” usually).</li>
+            <li>column “mime” varchar(255) - The mime type.</li>
+            <li>column “userid” int(10) - The user who posted the file, or “0” if not a user-contributed file.</li>
+            <li>column “rating” enum(‘6’,’10’,’13’,’16’,’18’) - The parental content rating of the file.</li>
+            <ul>
+              <li>“6” - Your basic “E” or “G” rating.</li>
+              <li>“10” - Your basic “E10+” or “PG” rating.</li>
+              <li>2. Working Moderation of Image Uploads on  (Filesystem Only)</li>
+              <li>“13” - Your basic “T” or “PG-13” rating.</li>
+              <li>“16” - Your basic “M” or “R” rating.</li>
+              <li>“18” - Your basic “A/O” or “NC-17” rating.</li>
+            </ul>
+
+            <li>column “flags” varchar(255) - A comma-separated list of parental content flags that can describe the file. It is not currently used by the backend for getting permission, but can be set/retrieved. Possible flags may include:</li>
+            <ul>
+              <li>“violence”</li>
+              <li>“nudity”</li>
+              <li>“sexual”</li>
+              <li>“drug”</li>
+              <li>“language”</li>
+            </ul>
+
+            <li>column “deleted” enum(“on”,”off”) - “on” or “off”. If “on”, the file will be inaccessible.</li>
+          </ul>
+
+          <li>table “fileVersions</li>
+          <ul>
+            <li>column “id” int(10) - The version of the file, unique to each fileid (the primary will essentially be a combination of this and the fileid). It will increment with new versions.</li>
+            <li>column “fileId” int(10) - The file being referenced. Note that all files must have constant mime-types across versions.</li>
+            <li>column “time” timestamp - The time the file was uploaded/created.</li>
+            <li>column “md5hash” varchar(32) - The MD5 hash of the file, unencrypted.</li>
+            <li>column “salt” int(10) - The salt ID.</li>
+            <li>column “iv” varchar(255) - The associated crytograhic initialization value</li>
+            <li>column “contents” longtext - The file contents, encrypted using 3DES with the above salt and IV, and stored using base64 encoding.</li>
+          </ul>
+          <li>table censorLists - A list of different censors.</li>
+          <ul>
+            <li>id</li>
+            <li>name</li>
+            <li>type</li>
+            <ul>
+              <li>“black” - Only block certain rooms.</li>
+              <li>“white” - Only allow certain rooms.</li>
+            </ul>
+
+            <li>options</li>
+            <ul>
+              <li>1 (enabled) - Turns the list on and off.</li>
+              <li>2 (allowDisable) - Allows rooms to add themselves to the above whitelist.</li>
+              <li>4 (privateDisable) - Disable in Private IMs.</li>
+              <li>8 (mature) - If set, any area which disables the list will invoke parental controls.</li>
+            </ul>
+
+            <li>table censorWords - A list of included words in the censor.</li>
+            <ul>
+              <li>id</li>
+              <li>word</li>
+              <li>listid</li>
+
+              <li>severity - A string (in general the severity is not linear) that expresses how the list works.</li>
+              <ul>
+                <li>“replace” - Replaces string with new string.</li>
+                <li>“warn” - Warns a user and submits message.</li>
+                <li>“confirm” - Warns a user and confirms resubmission, but does not block.</li>
+                <li>“block” - Blocks the message.</li>
+              <ul>
+
+              <li>param - The replaced text if severity is “replace”, or the message to show if notice/warn/block.</li>
+            </ul>
+
+            <li>censorBlackWhiteLists</li>
+            <ul>
+              <li>id</li>
+              <li>listid - The list ID.</li>
+              <li>roomid - The room ID.</li>
+              <li>-</li>
+            </ul>
+          </ul>
+        </ul>
+      </section>
+    </section>
+  </body>
+</htmtl>
