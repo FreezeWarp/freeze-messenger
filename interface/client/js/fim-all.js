@@ -567,31 +567,37 @@ var standard = {
 
           /* Show and Hide Links Based on Permissions */
           if (!userPermissions.createRoom) {
-            $('#createRooms').hide();
+            $('li > #createRoom').parent().hide();
           }
           if (!userPermissions.privateRoom) {
-            $('#privateRoom').hide();
+            $('li > #privateRoom').parent().hide();
           }
           if (!adminPermissions) {
             //
           }
           if (!adminPermissions.modUsers) {
-            $('#modUsers').hide();
+            $('li > #modUsers').parent().hide();
+          }
+          if (!adminPermissions.modImages) {
+            $('li > #modImages').parent().hide();
           }
           if (!adminPermissions.modCensor) {
-            $('#modCensor').hide();
+            $('li > #modCensor').parent().hide();
           }
           if (!adminPermissions.modTemplates) {
-            $('#modTemplates').hide();
+            $('li > #modPhrases').parent().hide();
+          }
+          if (!adminPermissions.modTemplates) {
+            $('li > #modTemplates').parent().hide();
           }
           if (!adminPermissions.modPrivs) {
-            $('#modPrivs').hide();
+            $('li > #modPrivs').parent().hide();
           }
           if (!adminPermissions.modHooks) {
-            $('#modHooks').hide();
+            $('li > #modHooks').parent().hide();
           }
           if (!adminPermissions.modCore) {
-            $('#modCore').hide();
+            $('li > #modCore').parent().hide();
           }
 
 

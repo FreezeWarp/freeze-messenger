@@ -492,7 +492,6 @@ $user['adminDefs'] = array(
   'modPlugins' => ($user['adminPrivs'] & 4096), // Plugins
   'modTemplates' => ($user['adminPrivs'] & 8192), // Templates
   'modHooks' => ($user['adminPrivs'] & 16384), // Hooks
-  'modTranslations' => ($user['adminPrivs'] & 32768), // Translations
 );
 
 
