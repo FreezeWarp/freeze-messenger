@@ -77,6 +77,8 @@ if ($.cookie('fim3_sessionHash')) {
 
 if ($.cookie('fim3_defaultRoomId')) {
   roomId = $.cookie('fim3_defaultRoomId');
+
+  standard.changeRoom(roomId);
 }
 
 
@@ -98,6 +100,7 @@ var messageIndex = new Array;
 /* Objects for cleanness. */
 
 var roomRef = new Object;
+var roomIdRef = new Object;
 var roomList = new Array;
 var userRef = new Object;
 var userList = new Array;
@@ -184,11 +187,12 @@ $.ajax({
         roomUlHtml += ulText;
       }
 
-      roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#" onclick="changeRoom(' + roomId + ');">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isOwner ? '<a href="#" class="editRoomMulti" data-roomId="' + roomId + '"><img src="images/document-edit.png" class="standard" alt="Configure" /></a>' : '') + '</td></tr>';
+      roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#" onclick="standard.changeRoom(' + roomId + ');">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isOwner ? '<a href="#" class="editRoomMulti" data-roomId="' + roomId + '"><img src="images/document-edit.png" class="standard" alt="Configure" /></a>' : '') + '</td></tr>';
 
       roomSelectHtml += '<option value="' + roomId + '">' + roomName + '</option>';
 
       roomRef[roomName] = roomId;
+      roomIdRef[roomId] = roomName;
       roomList.push(roomName);
     });
 
@@ -230,6 +234,7 @@ $.ajax({
 /*******************************
  ****** Content Functions ******
  *******************************/
+
 function youtubeSend(id) {
   $.ajax({
     url: 'uploadFile.php',
@@ -434,6 +439,7 @@ var standard = {
         var loginText = unxml($(xml).find('loginText').text().trim());
         var valid = unxml($(xml).find('valid').text().trim());
         var userName = unxml($(xml).find('userData > userName').text().trim());
+        var defaultRoomId = parseInt($(xml).find('defaultRoomId').text().trim());
         userId = parseInt($(xml).find('userData > userId').text().trim());
         anonId = parseInt($(xml).find('anonId').text().trim());
         sessionHash = unxml($(xml).find('sessionHash').text().trim());
@@ -450,7 +456,12 @@ var standard = {
           $('#messageInput').removeAttr("disabled"); // The user is not able to post.
 
           if (!roomId) {
-            popup.selectRoom();
+            if (!defaultRoomId) {
+              popup.selectRoom();
+            }
+            else {
+              standard.changeRoom(defaultRoomId);
+            }
           }
         }
         else {
@@ -493,183 +504,194 @@ var standard = {
   },
 
   getMessages : function() {
-    if (!longPolling) {
-      window.clearInterval(window.timer1);
-    }
+    if (roomId) {
+      console.log('Requesting messages for ' + roomId);
 
-    var encrypt = 'base64';
+      if (!longPolling) {
+        window.clearInterval(window.timer1);
+      }
 
-    $.ajax({
-      url: apiPath + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (first ? '&archive=1&messageDateMin=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdMin=' + (lastMessage)) + '&sessionHash=' + sessionHash,
-      type: 'GET',
-      timeout: timeout,
-      async: true,
-      data: '',
-      contentType: "text/xml; charset=utf-8",
-      dataType: "xml",
-      cache: false,
-      success: function(xml) {
-        if (xml) {
-          totalFails = 0;
-          var notifyData = '';
+      var encrypt = 'base64';
 
-          $('#refreshStatus').html('<img src="images/dialog-ok.png" alt="Apply" class="standard" />');
+      $.ajax({
+        url: apiPath + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (first ? '&archive=1&messageDateMin=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdMin=' + (lastMessage)) + '&sessionHash=' + sessionHash,
+        type: 'GET',
+        timeout: timeout,
+        async: true,
+        data: '',
+        contentType: "text/xml; charset=utf-8",
+        dataType: "xml",
+        cache: false,
+        success: function(xml) {
+          console.log('Requesting messages for ' + roomId + '; success.');
 
+          if (xml) {
+            totalFails = 0;
+            var notifyData = '';
 
-          $('#activeUsers').html('');
-          var activeUserHtml = new Array;
-
-          $(xml).find('activeUsers > user').each(function() {
-          var userName = $(this).find('userName').text().trim();
-          var userId = $(this).find('userId').text().trim();
-          var userGroup = $(this).find('userGroup').text().trim();
-          var startTag = unxml($(this).find('startTag').text().trim());
-          var endTag = unxml($(this).find('endTag').text().trim());
-
-          activeUserHtml.push('<span class="userName" data-userId="' + userId + '">' + startTag + '<span class="username">' + userName + '</span>' + endTag + '</span>');
-          });
-
-          $('#activeUsers').html(activeUserHtml.join(', '));
-        }
-
-        if ($(xml).find('messages > message').length > 0) {
-          $(xml).find('messages > message').each(function() {
-
-            var text = unxml($(this).find('htmlText').text().trim());
-            var messageTime = unxml($(this).find('messageTimeFormatted').text().trim());
-
-            var messageId = parseInt($(this).find('messageId').text().trim());
-
-            var userName = unxml($(this).find('userData > userName').text().trim());
-            var userId = parseInt($(this).find('userData > userId').text().trim());
-            var groupFormatStart = unxml($(this).find('userData > startTag').text().trim());
-            var groupFormatEnd = unxml($(this).find('userData > endTag').text().trim());
-            var avatar = unxml($(this).find('userData > avatar').text().trim());
-
-            var styleColor = unxml($(this).find('defaultFormatting > color').text().trim());
-            var styleHighlight = unxml($(this).find('defaultFormatting > highlight').text().trim());
-            var styleFontface = unxml($(this).find('defaultFormatting > fontface').text().trim());
-            var styleGeneral = parseInt($(this).find('defaultFormatting > general').text().trim());
-
-            var style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + styleFontface + ';';
-
-            if (styleGeneral & 256) {
-              style += 'font-weight: bold;';
-            }
-            if (styleGeneral & 512) {
-              style += 'font-style: oblique;';
-            }
-            if (styleGeneral & 1024) {
-              style += 'text-decoration: underline;';
-            }
-            if (styleGeneral & 2048) {
-              style += 'text-decoration: line-through;';
-            }
+            $('#refreshStatus').html('<img src="images/dialog-ok.png" alt="Apply" class="standard" />');
 
 
-            if (showAvatars) {
-              var data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="' + userName + '" src="' + avatar + '" style="max-width: 24px; max-height: 24px; padding-right: 3px;" class="userName userNameTable" data-userId="' + userId + '" /><span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
-            }
-            else {
-              var data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
-            }
+            $('#activeUsers').html('');
+            var activeUserHtml = new Array;
 
-            notifyData += userName + ': ' + text + "\n";
+            $(xml).find('activeUsers > user').each(function() {
+            var userName = $(this).find('userName').text().trim();
+            var userId = $(this).find('userId').text().trim();
+            var userGroup = $(this).find('userGroup').text().trim();
+            var startTag = unxml($(this).find('startTag').text().trim());
+            var endTag = unxml($(this).find('endTag').text().trim());
+
+            activeUserHtml.push('<span class="userName" data-userId="' + userId + '">' + startTag + '<span class="username">' + userName + '</span>' + endTag + '</span>');
+            });
+
+            $('#activeUsers').html(activeUserHtml.join(', '));
+          }
+
+          if ($(xml).find('messages > message').length > 0) {
+            $(xml).find('messages > message').each(function() {
+
+              var text = unxml($(this).find('htmlText').text().trim());
+              var messageTime = unxml($(this).find('messageTimeFormatted').text().trim());
+
+              var messageId = parseInt($(this).find('messageId').text().trim());
+
+              var userName = unxml($(this).find('userData > userName').text().trim());
+              var userId = parseInt($(this).find('userData > userId').text().trim());
+              var groupFormatStart = unxml($(this).find('userData > startTag').text().trim());
+              var groupFormatEnd = unxml($(this).find('userData > endTag').text().trim());
+              var avatar = unxml($(this).find('userData > avatar').text().trim());
+
+              var styleColor = unxml($(this).find('defaultFormatting > color').text().trim());
+              var styleHighlight = unxml($(this).find('defaultFormatting > highlight').text().trim());
+              var styleFontface = unxml($(this).find('defaultFormatting > fontface').text().trim());
+              var styleGeneral = parseInt($(this).find('defaultFormatting > general').text().trim());
+
+              var style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + styleFontface + ';';
+
+              if (styleGeneral & 256) {
+                style += 'font-weight: bold;';
+              }
+              if (styleGeneral & 512) {
+                style += 'font-style: oblique;';
+              }
+              if (styleGeneral & 1024) {
+                style += 'text-decoration: underline;';
+              }
+              if (styleGeneral & 2048) {
+                style += 'text-decoration: line-through;';
+              }
+
+
+              if (showAvatars) {
+                var data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="' + userName + '" src="' + avatar + '" style="max-width: 24px; max-height: 24px; padding-right: 3px;" class="userName userNameTable" data-userId="' + userId + '" /><span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
+              }
+              else {
+                var data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
+              }
+
+              notifyData += userName + ': ' + text + "\n";
+
+              if (reversePostOrder) {
+                $('#messageList').append(data);
+              }
+              else {
+                $('#messageList').prepend(data);
+              }
+
+              if (messageId > lastMessage) {
+                lastMessage = messageId;
+              }
+
+              messageIndex.push(lastMessage);
+
+              if (messageIndex.length == 100) {
+                var messageOut = messageIndex[0];
+                $('#message' + messageOut).remove();
+                messageIndex = messageIndex.slice(1,99);
+              }
+            });
+
+
 
             if (reversePostOrder) {
-              $('#messageList').append(data);
-            }
-            else {
-              $('#messageList').prepend(data);
+              toBottom();
             }
 
-            if (messageId > lastMessage) {
-              lastMessage = messageId;
-            }
+            if (blur) {
+              if (audioDing) {
+                riffwave.play();
 
-            messageIndex.push(lastMessage);
+                if (navigator.appName === 'Microsoft Internet Explorer') {
+                  timer3 = window.setInterval(faviconFlash,1000);
 
-            if (messageIndex.length == 100) {
-              var messageOut = messageIndex[0];
-              $('#message' + messageOut).remove();
-              messageIndex = messageIndex.slice(1,99);
-            }
-          });
-
-
-
-          if (reversePostOrder) {
-            toBottom();
-          }
-
-          if (blur) {
-            if (audioDing) {
-              riffwave.play();
-
-              if (navigator.appName === 'Microsoft Internet Explorer') {
-                timer3 = window.setInterval(faviconFlash,1000);
-
-                window.clearInterval(timer3);
-              }
-            }
-
-            if (notify) {
-              if (window.webkitNotifications) {
-                webkitNotify('images/favicon.gif', 'New Message', notifyData);
-              }
-            }
-
-            if (navigator.appName === 'Microsoft Internet Explorer') {
-              try {
-                if (window.external.msIsSiteMode()) {
-                  window.external.msSiteModeActivate();
+                  window.clearInterval(timer3);
                 }
               }
-              catch(ex) {
-                // Supress Error
+
+              if (notify) {
+                if (window.webkitNotifications) {
+                  webkitNotify('images/favicon.gif', 'New Message', notifyData);
+                }
+              }
+
+              if (navigator.appName === 'Microsoft Internet Explorer') {
+                try {
+                  if (window.external.msIsSiteMode()) {
+                    window.external.msSiteModeActivate();
+                  }
+                }
+                catch(ex) {
+                  // Supress Error
+                }
               }
             }
           }
-        }
 
-        if (typeof contextMenuParse === 'function') {
-          contextMenuParse();
-        }
+          if (typeof contextMenuParse === 'function') {
+            contextMenuParse();
+          }
 
-        if (longPolling) {
-          setTimeout(standard.getMessages,50);
-        }
+          if (longPolling) {
+            setTimeout(standard.getMessages,50);
+          }
 
-        first = false;
-      },
-      error: function() {
-        if (longPolling) {
-          setTimeout(standard.getMessages,50);
+          first = false;
+        },
+        error: function(err) {
+          console.log('Requesting messages for ' + roomId + '; failed: ' + err + '.');
+
+          if (longPolling) {
+            setTimeout(standard.getMessages,50);
+          }
+          else {
+            totalFails += 1;
+            $('#refreshStatus').html('<img src="images/dialog-error.png" alt="Apply" class="standard" />');
+          }
+        },
+      });
+
+      if (!longPolling) {
+        if (totalFails > 10) {
+          window.timer1 = window.setInterval(window.standard.getMessages,30000);
+          timeout = 29900;
+        }
+        else if (totalFails > 5) {
+          window.timer1 = window.setInterval(window.standard.getMessages,10000);
+          timeout = 9900;
+        }
+        else if (totalFails > 0) {
+          window.timer1 = window.setInterval(window.standard.getMessages,5000);
+          timeout = 4900;
         }
         else {
-          totalFails += 1;
-          $('#refreshStatus').html('<img src="images/dialog-error.png" alt="Apply" class="standard" />');
+          window.timer1 = window.setInterval(window.standard.getMessages,2500);
+          timeout = 2400;
         }
-      },
-    });
-
-    if (!longPolling) {
-      if (totalFails > 10) {
-        window.timer1 = window.setInterval(window.standard.getMessages,30000);
-        timeout = 29900;
       }
-      else if (totalFails > 5) {
-        window.timer1 = window.setInterval(window.standard.getMessages,10000);
-        timeout = 9900;
-      }
-      else if (totalFails > 0) {
-        window.timer1 = window.setInterval(window.standard.getMessages,5000);
-        timeout = 4900;
-      }
-      else {
-        window.timer1 = window.setInterval(window.standard.getMessages,2500);
-        timeout = 2400;
-      }
+    }
+    else {
+      console.log('Not requesting messages; room undefined.');
     }
   },
 
@@ -736,8 +758,11 @@ var standard = {
     }
   },
 
-  changeRoom : function(roomId) {
-    console.log('WIP');
+  changeRoom : function(roomLocalId) {
+    console.log('Changing Room: ' + roomLocalId + '; Detected Name: ' + roomIdRef[roomId]);
+
+    roomId = roomLocalId;
+    $('#roomName').html(roomIdRef[roomId]);
   },
 };
 

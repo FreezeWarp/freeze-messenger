@@ -25,14 +25,6 @@ require_once('../global.php');
 
 
 
-/* Get the room we're in */
-$room = (int) ($_GET['room'] ? $_GET['room'] :
-  ($user['defaultRoom'] ? $user['defaultRoom'] :
-    ($defaultRoom ? $defaultRoom : 1))); // Get the room we're on. If there is a $_GET variable, use it, otherwise the user's "default", or finally just main.
-$room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = '$room'"); // Data on the room.
-
-
-
 require_once('templateStart.php');
 
 //if ($valid) {

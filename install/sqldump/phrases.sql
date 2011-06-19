@@ -188,5 +188,5 @@ INSERT INTO `{prefix}phrases` (`id`, `name`, `text_en`, `text_jp`) VALUES
 (184, 'editRoomModeratorsCurrent', 'Currently Allowed Groups:', ''),
 (185, 'templateModerateCat', 'Moderation', ''),
 (186, 'hookHead', '',''),
-(187, 'templateShowLessRooms', 'Show Fewer', '')
-(187, 'templateShowMoreRooms', 'Show More', '');
+(187, 'templateShowLessRooms', 'Show Fewer', ''),
+(188, 'templateShowMoreRooms', 'Show More', '');

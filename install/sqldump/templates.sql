@@ -364,8 +364,12 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
           <button type="button" class="standard" id="icon_help"></button>
         </form>
       </div>
-      $room[name]<br />
-      <em id="topic$room[id]">$room[topic]</em>
+
+      <span id="roomName">
+
+      </span><br />
+
+      <em id="topic"></em>
     </div>}{
     <div id="messageListContainer">
       <div id="messageList">

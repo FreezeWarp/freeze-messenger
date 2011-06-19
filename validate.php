@@ -555,6 +555,9 @@ if ($api) {
 
       'sessionHash' => $sessionHash,
       'anonId' => $anonId,
+      'defaultRoomId' => (int) ($_GET['room'] ? $_GET['room'] :
+        ($user['defaultRoom'] ? $user['defaultRoom'] :
+          ($defaultRoom ? $defaultRoom : 1))), // Get the room we're on. If there is a $_GET variable, use it, otherwise the user's "default", or finally just main.
 
       'userData' => array(
         'userName' => ($user['userName']),
