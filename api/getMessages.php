@@ -17,11 +17,6 @@
 $apiRequest = true;
 require_once('../global.php');
 
-if ($longPolling) {
-  set_time_limit(0);
-  ini_set('max_execution_time',0);
-}
-
 
 
 ///* Variable Setting *///
@@ -52,6 +47,11 @@ if ($longPolling && $_GET['longPolling']) {
 }
 else {
   $longPolling = false;
+}
+
+if ($longPolling) {
+  set_time_limit(0);
+  ini_set('max_execution_time',0);
 }
 
 
