@@ -565,42 +565,6 @@ var standard = {
           userPermissions.general = (parseInt($(xml).find('userPermissions > allowed').text().trim()) > 0 ? true : false);
 
 
-          /* Show and Hide Links Based on Permissions */
-          if (!userPermissions.createRoom) {
-            $('li > #createRoom').parent().hide();
-          }
-          if (!userPermissions.privateRoom) {
-            $('li > #privateRoom').parent().hide();
-          }
-          if (!adminPermissions) {
-            //
-          }
-          if (!adminPermissions.modUsers) {
-            $('li > #modUsers').parent().hide();
-          }
-          if (!adminPermissions.modImages) {
-            $('li > #modImages').parent().hide();
-          }
-          if (!adminPermissions.modCensor) {
-            $('li > #modCensor').parent().hide();
-          }
-          if (!adminPermissions.modTemplates) {
-            $('li > #modPhrases').parent().hide();
-          }
-          if (!adminPermissions.modTemplates) {
-            $('li > #modTemplates').parent().hide();
-          }
-          if (!adminPermissions.modPrivs) {
-            $('li > #modPrivs').parent().hide();
-          }
-          if (!adminPermissions.modHooks) {
-            $('li > #modHooks').parent().hide();
-          }
-          if (!adminPermissions.modCore) {
-            $('li > #modCore').parent().hide();
-          }
-
-
           /* Display Dialog to Notify User of Being Logged In */
           if (!userPermissions.general) {
             dia.info('You are now logged in as ' + userName + '. However, you are not allowed to post and have been banned by an administrator..','Logged In');
@@ -1557,6 +1521,50 @@ function windowDraw() {
   windowResize();
 }
 
+function windowDynaLinks() {
+  /* Show and Hide Links Based on Permissions */
+  if (!userPermissions.createRoom) {
+    $('li > #createRoom').parent().hide();
+  }
+  if (!userPermissions.privateRoom) {
+    $('li > #privateRoom').parent().hide();
+  }
+  if (!adminPermissions) {
+    //
+  }
+  if (!adminPermissions.modUsers) {
+    $('li > #modUsers').parent().hide();
+  }
+  if (!adminPermissions.modImages) {
+    $('li > #modImages').parent().hide();
+  }
+  if (!adminPermissions.modCensor) {
+    $('li > #modCensor').parent().hide();
+  }
+  if (!adminPermissions.modTemplates) {
+    $('li > #modPhrases').parent().hide();
+  }
+  if (!adminPermissions.modTemplates) {
+    $('li > #modTemplates').parent().hide();
+  }
+  if (!adminPermissions.modPrivs) {
+    $('li > #modPrivs').parent().hide();
+  }
+  if (!adminPermissions.modHooks) {
+    $('li > #modHooks').parent().hide();
+  }
+  if (!adminPermissions.modCore) {
+    $('li > #modCore').parent().hide();
+  }
+
+  if (!userId) {
+    $('li > #logout').parent().hide(); //TODO: Anon
+  }
+  else {
+    $('li > #login').parent().hide();
+  }
+}
+
 
 function contextMenuParse() {
   $('.userName').contextMenu({
@@ -1728,6 +1736,7 @@ $(document).ready(function() {
 
 
   windowDraw();
+  windowDynaLinks();
 
 
 
@@ -1761,7 +1770,7 @@ $(document).ready(function() {
 
 
 
-
+  /*** ??? ***/
 
   $("#icon_settings.reversePostOrder").click(function() {
     var value = (settings.reversePostOrder ? 'false' : 'true');
@@ -1786,7 +1795,6 @@ $(document).ready(function() {
 
 
 
-
   /*** Private Room ***/
 
   $('a#privateRoom').click(function() {
@@ -1795,13 +1803,11 @@ $(document).ready(function() {
 
 
 
-
   /*** Manage Kick ***/
 
   $('a#manageKick').click(function() {
     popup.manageKick();
   });
-
 
 
 
@@ -1821,15 +1827,11 @@ $(document).ready(function() {
 
 
 
-
   /*** Online ***/
 
   $('a#online').click(function() {
     popup.online();
-
-
   });
-
 
 
 
@@ -1838,7 +1840,6 @@ $(document).ready(function() {
   $('a#createRoom').click(function() {
     popup.createRoom();
   });
-
 
 
 
@@ -1854,13 +1855,11 @@ $(document).ready(function() {
 
 
 
-
   /*** Help ***/
 
   $('#icon_help').click(function() {
     popup.help();
   });
-
 
 
 
@@ -1872,13 +1871,11 @@ $(document).ready(function() {
 
 
 
-
   /*** Room List ***/
 
   $('#roomList').click(function() {
     popup.selectRoom();
   });
-
 
 
 
@@ -1890,13 +1887,11 @@ $(document).ready(function() {
 
 
 
-
   /*** Copyright & Credits ***/
 
   $('#copyrightLink').click(function() {
     ajaxTabDialogue('template.php?template=copyright','copyrightDialogue',600);
   });
-
 
 
 
@@ -1908,7 +1903,6 @@ $(document).ready(function() {
 
 
 
-
   /*** Trigger Login ***/
 
   if (!userId) { // The user is not actively logged in.
@@ -1917,7 +1911,6 @@ $(document).ready(function() {
   $('#login').click(function() {
     popup.login();
   });
-
 
 
 
