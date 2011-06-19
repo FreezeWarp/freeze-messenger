@@ -123,7 +123,7 @@ $xmlData['getKicks']['errortext'] = fim_encodeXml($failMessage);
 ($hook = hook('getKicks_end') ? eval($hook) : '');
 
 
-echo fim_outputXml($xmlData);
+echo fim_outputApi($xmlData);
 
 mysqlClose();
 ?>

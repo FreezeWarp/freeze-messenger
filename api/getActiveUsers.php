@@ -126,7 +126,7 @@ $xmlData['getActiveUsers']['errortext'] = ($failMessage);
 ($hook = hook('getActiveUsers_end') ? eval($hook) : '');
 
 
-echo fim_outputXml($xmlData);
+echo fim_outputApi($xmlData);
 
 mysqlClose();
 ?>

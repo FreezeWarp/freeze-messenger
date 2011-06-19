@@ -140,7 +140,7 @@ $xmlData['getRooms']['errortext'] = ($failMessage);
 ($hook = hook('getRooms_end') ? eval($hook) : '');
 
 
-echo fim_outputXml($xmlData);
+echo fim_outputApi($xmlData);
 
 mysqlClose();
 ?>

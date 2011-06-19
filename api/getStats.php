@@ -130,7 +130,7 @@ $xmlData['getStats']['errortext'] = ($failMessage);
 ($hook = hook('getStats_end') ? eval($hook) : '');
 
 
-echo fim_outputXml($xmlData);
+echo fim_outputApi($xmlData);
 
 mysqlClose();
 ?>

@@ -70,7 +70,7 @@ if ($uploads) {
 ($hook = hook('getUploads_end') ? eval($hook) : '');
 
 
-echo fim_outputXml($xmlData);
+echo fim_outputApi($xmlData);
 
 mysqlClose();
 ?>

@@ -387,7 +387,7 @@ $xmlData['getMessages']['errortext'] = ($failMessage);
 ($hook = hook('getMessages_end') ? eval($hook) : '');
 
 
-echo fim_outputXml($xmlData);
+echo fim_outputApi($xmlData);
 
 mysqlClose();
 ?>

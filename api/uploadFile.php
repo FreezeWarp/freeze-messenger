@@ -154,7 +154,7 @@ if ($continue) {
 }
 
 
-echo fim_outputXml($xmlData);
+echo fim_outputApi($xmlData);
 
 mysqlClose();
 ?>

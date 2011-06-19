@@ -606,7 +606,7 @@ if ($api) {
 
   ($hook = hook('validate_api') ? eval($hook) : '');
 
-  echo fim_outputXml($xmlData);
+  echo fim_outputApi($xmlData);
 
   die();
 }

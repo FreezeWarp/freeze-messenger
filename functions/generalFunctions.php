@@ -744,7 +744,7 @@ function container($title,$content,$class = 'page') {
 */
 
 function fim_outputXml($array,$level = 0) {
-  header('Content-type: text/xml');
+  header('Content-type: application/xml');
 
   $indent = '';
 
@@ -785,6 +785,63 @@ function fim_outputXml($array,$level = 0) {
 ]>
 
 $data";
+  }
+  else {
+    return $data;
+  }
+}
+
+function fim_outputApi($data) {
+  switch ($_REQUEST['format']) {
+    case 'json':
+    return fim_outputJson($data);
+    break;
+
+    case 'xml':
+    default:
+    return fim_outputXml($data);
+    break;
+  }
+}
+
+function fim_outputJson($array, $level = 0) {
+  header('Content-type: application/json');
+
+  $indent = '';
+
+  for($i = 0;$i<=$level;$i++) {
+    $indent .= '  ';
+  }
+
+  foreach ($array AS $key => $value) {
+    $key = explode(' ',$key);
+    $key = $key[0];
+
+    $data .= "$indent\"$key\":\n";
+
+    if (is_array($value)) {
+      $data .= '{' . fim_outputJson($value,$level + 1) . '}';
+    }
+    else {
+      if ($value === true) {
+        $value = 'true';
+      }
+      elseif ($value === false) {
+        $value = 'false';
+      }
+      elseif (is_string($value)) {
+        $value = '"' . addslashes($value) . '",';
+      }
+      if ($value == '') {
+        $value = '""';
+      }
+
+      $data .= "$indent  $value,\n";
+    }
+  }
+
+  if ($level == 0) {
+    return "{ $data }";
   }
   else {
     return $data;

@@ -53,7 +53,7 @@ $xmlData = array(
 ($hook = hook('getServerStatus') ? eval($hook) : '');
 
 
-echo fim_outputXml($xmlData);
+echo fim_outputApi($xmlData);
 
 mysqlClose();
 ?>

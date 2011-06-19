@@ -137,7 +137,7 @@ $xmlData = array(
 ($hook = hook('sendMessage_end') ? eval($hook) : '');
 
 
-echo fim_outputXml($xmlData);
+echo fim_outputApi($xmlData);
 
 mysqlClose();
 ?>
