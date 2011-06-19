@@ -561,9 +561,17 @@ var standard = {
 
           /* Update Permissions */
           userPermissions.createRoom = (parseInt($(xml).find('userPermissions > createRooms').text().trim()) > 0 ? true : false);
-          userPermissions.privateRoom = (parseInt($(xml).find('userPermissions > privateRooms').text().trim()) > 0 ? true : false);;
+          userPermissions.privateRoom = (parseInt($(xml).find('userPermissions > privateRooms').text().trim()) > 0 ? true : false);
           userPermissions.general = (parseInt($(xml).find('userPermissions > allowed').text().trim()) > 0 ? true : false);
 
+
+          adminPermissions.modPrivs = (parseInt($(xml).find('adminPermissions > modPrivs').text().trim()) > 0 ? true : false);
+          adminPermissions.modCore = (parseInt($(xml).find('adminPermissions > modCore').text().trim()) > 0 ? true : false);
+          adminPermissions.modUsers = (parseInt($(xml).find('adminPermissions > modUsers').text().trim()) > 0 ? true : false);
+          adminPermissions.modTemplates = (parseInt($(xml).find('adminPermissions > modTemplates').text().trim()) > 0 ? true : false);
+          adminPermissions.modImages = (parseInt($(xml).find('adminPermissions > modImages').text().trim()) > 0 ? true : false);
+          adminPermissions.modCensor = (parseInt($(xml).find('adminPermissions > modCensor').text().trim()) > 0 ? true : false);
+          adminPermissions.modHooks = (parseInt($(xml).find('adminPermissions > modHooks').text().trim()) > 0 ? true : false);
 
           /* Display Dialog to Notify User of Being Logged In */
           if (!userPermissions.general) {
@@ -625,6 +633,8 @@ var standard = {
         if (!anonId && !userId) {
           $('#messageInput').attr("disabled","disabled"); // The user is not able to post.
         }
+
+        windowDynaLinks();
       },
       error: function() {
         dia.error("The login request could not be sent. Please try again.");
@@ -1736,7 +1746,6 @@ $(document).ready(function() {
 
 
   windowDraw();
-  windowDynaLinks();
 
 
 
