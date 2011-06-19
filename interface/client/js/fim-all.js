@@ -105,6 +105,15 @@ var groupRef = new Object;
 var groupList = new Array;
 
 
+var roomUlFavHtml = '';
+var roomUlMyHtml = '';
+var roomUlPrivHtml = '';
+var roomUlHtml = '';
+var ulText = '';
+var roomTableHtml = '';
+var roomSelectHtml = '';
+
+
 
 /* Get the absolute API path.
  * TODO: Define this is more "sophisticated manner". */
@@ -153,42 +162,39 @@ $.ajax({
     console.log('Rooms obtained.');
 
     $(xml).find('room').each(function() {
-      var roomFavHtml = '';
-      var roomMyHtml = '';
-      var roomPrivHtml = '';
-      var roomHtml = '';
-      var text = '';
+      var roomName = unxml($(this).find('roomName').text().trim());
+      var roomId = parseInt($(this).find('roomId').text().trim());
+      var roomTopic = unxml($(this).find('roomTopic').text().trim());
+      var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
+      var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
+      var isOwner = (parseInt($(this).find('owner').text()) == userId ? true : false);
 
-      $(xml).find('room').each(function() {
-        var roomName = unxml($(this).find('roomName').text().trim());
-        var roomId = parseInt($(this).find('roomId').text().trim());
-        var roomTopic = unxml($(this).find('roomTopic').text().trim());
-        var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
-        var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
-        var isOwner = (parseInt($(this).find('owner').text()) == userId ? true : false);
+      var ulText = '<li><a href="index.php?room=' + roomId + '">' + roomName + '</a></li>';
 
-        var text = '<li><a href="index.php?room=' + roomId + '">' + roomName + '</a></li>';
+      if (isFav) {
+        roomUlFavHtml += ulText;
+      }
+      if (isOwner && !isPriv) {
+        roomUlMyHtml += ulText;
+      }
+      if (isPriv) {
+        roomUlPrivHtml += ulText;
+      }
+      if (!isFav && !isOwner && !isPriv) {
+        roomUlHtml += ulText;
+      }
 
-        if (isFav) {
-          roomFavHtml += text;
-        }
-        if (isOwner && !isPriv) {
-          roomMyHtml += text;
-        }
-        if (isPriv) {
-          roomPrivHtml += text;
-        }
-        if (!isFav && !isOwner && !isPriv) {
-          roomHtml += text;
-        }
+      roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#" onclick="changeRoom(' + roomId + ');">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isOwner ? '<a href="#" class="editRoomMulti" data-roomId="' + roomId + '"><img src="images/document-edit.png" class="standard" alt="Configure" /></a>' : '') + '</td></tr>';
 
-        roomRef[roomName] = roomId;
-        roomList.push(roomName);
-      });
-      $('#roomListLong').html('<li>Favourites<ul>' + roomFavHtml + '</ul></li><li>My Rooms<ul>' + roomMyHtml + '</ul></li><li>General<ul>' + roomHtml + '</ul></li><li>Private<ul>' + roomPrivHtml + '</ul></li>');
+      roomSelectHtml += '<option value="' + roomId + '">' + roomName + '</option>';
 
-      $('#roomListShort').html('<li>Favourites<ul>' + roomFavHtml + '</ul></li>');
+      roomRef[roomName] = roomId;
+      roomList.push(roomName);
     });
+
+    $('#roomListLong > ul').append('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li><li>My Rooms<ul>' + roomUlMyHtml + '</ul></li><li>General<ul>' + roomUlHtml + '</ul></li><li>Private<ul>' + roomUlPrivHtml + '</ul></li>');
+
+    $('#roomListShort > ul').append('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li>');
   },
   error: function() {
     alert('Rooms Not Obtained - Problems May Occur');
@@ -420,7 +426,7 @@ var standard = {
     $.ajax({
       url: apiPath + 'validate.php',
       type: 'POST',
-      data: 'userName=' + userName + (password ? '&password=' + password + '&passwordEncrypt=' + passwordEncrypt : '') + '&apiVersion=3',
+      data: (password ? 'userName=' + userName + '&password=' + password + '&passwordEncrypt=' + passwordEncrypt : 'noLogin=1') + '&apiVersion=3',
       cache: false,
       timeout: 2500,
       success: function(xml) {
@@ -442,6 +448,10 @@ var standard = {
           $.cookie('fim3_userId',userId);
 
           $('#messageInput').removeAttr("disabled"); // The user is not able to post.
+
+          if (!roomId) {
+            popup.selectRoom();
+          }
         }
         else {
           switch (loginFlag) {
@@ -664,61 +674,70 @@ var standard = {
   },
 
   sendMessage: function(message,confirmed) {
-    confirmed = (confirmed === 1 ? 1 : '');
+    if (!roomId) {
+      popup.selectRoom();
+    }
+    else {
+      confirmed = (confirmed === 1 ? 1 : '');
 
-    $.ajax({
-      url: apiPath + 'api/sendMessage.php?sessionHash=' + sessionHash,
-      type: 'POST',
-      data: 'roomId=' + roomId + '&confirmed=' + confirmed + '&message=' + urlEncode(message),
-      cache: false,
-      timeout: 2500,
-      success: function(xml) {
-        console.log('Message sent.');
+      $.ajax({
+        url: apiPath + 'api/sendMessage.php?sessionHash=' + sessionHash,
+        type: 'POST',
+        data: 'roomId=' + roomId + '&confirmed=' + confirmed + '&message=' + urlEncode(message),
+        cache: false,
+        timeout: 2500,
+        success: function(xml) {
+          console.log('Message sent.');
 
-        var status = $(xml).find('errorcode').text().trim();
-        var emessage = $(xml).find('errortext').text().trim();
-        switch (status) {
-          case '':
-          break;
+          var status = $(xml).find('errorcode').text().trim();
+          var emessage = $(xml).find('errortext').text().trim();
+          switch (status) {
+            case '':
+            break;
 
-          case 'badroom':
-          $('<div style="display: none;">A valid room was not provided.</div>').dialog({ title : 'Error'});
-          break;
+            case 'badroom':
+            $('<div style="display: none;">A valid room was not provided.</div>').dialog({ title : 'Error'});
+            break;
 
-          case 'badmessage':
-          $('<div style="display: none;">A valid message was not provided.</div>').dialog({ title : 'Error'});
-          break;
+            case 'badmessage':
+            $('<div style="display: none;">A valid message was not provided.</div>').dialog({ title : 'Error'});
+            break;
 
-          case 'spacemessage':
-          $('<div style="display: none;">Too... many... spaces!</div>').dialog({ title : 'Error'});
-          break;
+            case 'spacemessage':
+            $('<div style="display: none;">Too... many... spaces!</div>').dialog({ title : 'Error'});
+            break;
 
-          case 'noperm':
-          $('<div style="display: none;">You do not have permission to post in this room.</div>').dialog({ title : 'Error'});
-          break;
+            case 'noperm':
+            $('<div style="display: none;">You do not have permission to post in this room.</div>').dialog({ title : 'Error'});
+            break;
 
-          case 'blockcensor':
-          $('<div style="display: none;">' + emessage + '</div>').dialog({ title : 'Error'});
-          break;
+            case 'blockcensor':
+            $('<div style="display: none;">' + emessage + '</div>').dialog({ title : 'Error'});
+            break;
 
-          case 'confirmcensor':
-          $('<div style="display: none;">' + emessage + '<br /><br /><button type="button" onclick="$(this).parent().dialog(&apos;close&apos;);">No</button><button type="button" onclick="standard.standard.sendMessage(&apos;' + escape(message) + '&apos;,1); $(this).parent().dialog(&apos;close&apos;);">Yes</button></div>').dialog({ title : 'Error'});
-          break;
+            case 'confirmcensor':
+            $('<div style="display: none;">' + emessage + '<br /><br /><button type="button" onclick="$(this).parent().dialog(&apos;close&apos;);">No</button><button type="button" onclick="standard.standard.sendMessage(&apos;' + escape(message) + '&apos;,1); $(this).parent().dialog(&apos;close&apos;);">Yes</button></div>').dialog({ title : 'Error'});
+            break;
+          }
+        },
+        error: function() {
+          console.log('Message error.');
+
+          if (reversePostOrder) {
+            $('#messageList').append('Your message, "' + message + '", could not be sent and will be retried.');
+          }
+          else {
+            $('#messageList').prepend('Your message, "' + message + '", could not be sent and will be retried.');
+          }
+
+          standard.standard.sendMessage(message);
         }
-      },
-      error: function() {
-        console.log('Message error.');
+      });
+    }
+  },
 
-        if (reversePostOrder) {
-          $('#messageList').append('Your message, "' + message + '", could not be sent and will be retried.');
-        }
-        else {
-          $('#messageList').prepend('Your message, "' + message + '", could not be sent and will be retried.');
-        }
-
-        standard.standard.sendMessage(message);
-      }
-    });
+  changeRoom : function(roomId) {
+    console.log('WIP');
   },
 };
 
@@ -890,7 +909,7 @@ function contextMenuParse() {
  *******************************/
 
 popup = {
-  'login': function() {
+  login: function() {
     $.get('template.php','template=login',function(data) {
       quickDialogue(data,'Login','loginDialogue',600,false,function() {
         $("#loginForm").submit(function() {
@@ -906,6 +925,58 @@ popup = {
       console.log('Popup for un-loggedin user triggered.');
     });
   },
+
+  selectRoom : function() {
+    quickDialogue('<table><thead><tr><th>Name</th><th>Topic</th><th>Actions</th></tr></thead><tbody>' + roomTableHtml + '</tbody></table>','Room List','roomListDialogue',1000);
+  },
+
+  viewStats : function() {
+    var statsHtml = new Object;
+    var statsHtml2 = '';
+    var roomHtml = '';
+    var number = 10;
+
+    for (var i = 1; i <= number; i++) {
+      statsHtml[i] = '';
+    }
+
+    $.ajax({
+      url: apiPath + 'api/getStats.php?rooms=' + roomId + '&maxResults=' + number + '&sessionHash=' + sessionHash,
+      timeout: 5000,
+      type: 'GET',
+      cache: false,
+      success: function(xml) {
+        $(xml).find('room').each(function() {
+          var roomName = unxml($(this).find('roomName').text().trim());
+          var roomId = parseInt($(this).find('roomId').text().trim());
+
+          $(this).find('user').each(function() {
+            var userName = unxml($(this).find('userData > userName').text().trim());
+            var userId = parseInt($(this).find('userData > userId').text().trim());
+            var startTag = unxml($(this).find('userData > startTag').text().trim());
+            var endTag = unxml($(this).find('userData > endTag').text().trim());
+            var position = parseInt($(this).find('position').text().trim());
+            var messageCount = parseInt($(this).find('messageCount').text().trim());
+
+            statsHtml[position] += '<td>' + startTag + userName + endTag + ' (' + messageCount + ')</td>';
+          });
+
+
+          roomHtml += '<th>' + roomName + '</th>';
+
+        });
+
+        for (var i = 1; i <= number; i++) {
+          statsHtml2 += '<tr><th>' + i + '</th>' + statsHtml[i] + '</tr>';
+        }
+
+        quickDialogue('<table><thead><tr><th>Position</th>' + roomHtml + '</tr></thead><tbody>' + statsHtml2 + '</tbody></table>','Room Stats','roomStatsDialogue',600);
+      },
+      error: function() {
+        alert('Failed to show all rooms');
+      }
+    });
+  },
 };
 
 
@@ -918,9 +989,15 @@ popup = {
 $(document).ready(function() {
   // Move?
   $('#uploadFileForm').attr('action','uploadFile.php?roomId=' + roomId);
+
   $('#showMoreRooms').click(function() {
-    $('#roomListShort').slideup();
-    $('#roomListLong').slidedown();
+    $('#roomListShort').slideUp();
+    $('#roomListLong').slideDown();
+  });
+
+  $('#showFewerRooms').click(function() {
+    $('#roomListLong').slideUp();
+    $('#roomListShort').slideDown();
   });
 
 
@@ -1025,27 +1102,7 @@ $(document).ready(function() {
   $('a#kick').click(function() {
     quickDialogue('<form action="#" id="kickUserForm" method="post">  <label for="userId">User</label>: <select name="userId">$userSelect</select><br />  <label for="roomId">Room</label>: <select name="roomId">$roomSelect</select><br />  <label for="time">Time</label>: <input type="text" name="time" id="time" style="width: 50px;" />  <select name="interval">    <option value="1">Seconds</option>    <option value="60">Minutes</option>    <option value="3600">Hours</option>    <option value="86400">Days</option>    <option value="604800">Weeks</option>  </select><br /><br />  <button type="submit">Kick User</button><button type="reset">Reset</button></form>','Kick User','kickUserDialogue',1000);
 
-    $.ajax({
-      url: apiPath + 'api/getRooms.php?sessionHash=' + sessionHash,
-      timeout: 5000,
-      type: 'GET',
-      cache: false,
-      success: function(xml) {
-        var roomHtml = '';
-
-        $(xml).find('room').each(function() {
-          var roomName = unxml($(this).find('roomName').text());
-          var roomId = parseInt($(this).find('roomId').text());
-
-          roomHtml += '<option value="' + roomId + '">' + roomName + '</option>';
-        });
-
-        $('select[name=roomId]').html(roomHtml);
-      },
-      error: function() {
-        alert('Failed to show all rooms');
-      }
-    });
+   $('select[name=roomId]').html(roomSelectHtml);
 
     $.ajax({
       url: apiPath + 'api/getUsers.php?sessionHash=' + sessionHash,
@@ -1366,30 +1423,7 @@ $(document).ready(function() {
   /*** Room List ***/
 
   $('#roomList').click(function() {
-    var roomHtml = '';
-
-    $.ajax({
-      url: apiPath + 'api/getRooms.php?sessionHash=' + sessionHash,
-      timeout: 5000,
-      type: 'GET',
-      cache: false,
-      success: function(xml) {
-        $(xml).find('room').each(function() {
-          var roomName = $(this).find('roomName').text().trim();
-          var roomId = parseInt($(this).find('roomId').text().trim());
-          var roomTopic = $(this).find('roomTopic').text().trim();
-          var isFav = ($(this).find('favorite').text().trim() == 'true' ? true : false);
-          var isPriv = ($(this).find('optionDefinitions > privateIm').text().trim() == 'true' ? true : false);
-          var isOwner = (parseInt($(this).find('owner').text().trim()) == userId ? true : false);
-
-          roomHtml += '<tr id="room' + roomId + '"><td><a href="/index.php?room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isOwner ? '<a href="#" class="editRoomMulti" data-roomId="' + roomId + '"><img src="images/document-edit.png" class="standard" alt="Configure" /></a>' : '') + '</td></tr>';
-        });
-        quickDialogue('<table><thead><tr><th>Name</th><th>Topic</th><th>Actions</th></tr></thead><tbody>' + roomHtml + '</tbody></table>','Room List','roomListDialogue',1000);
-      },
-      error: function() {
-        alert('Failed to show all rooms');
-      }
-    });
+    popup.selectRoom();
   });
 
 
@@ -1398,51 +1432,7 @@ $(document).ready(function() {
   /*** Stats ***/
 
   $('#viewStats').click(function() {
-    var statsHtml = new Object;
-    var statsHtml2 = '';
-    var roomHtml = '';
-    var number = 10;
-
-    for (var i = 1; i <= number; i++) {
-      statsHtml[i] = '';
-    }
-
-    $.ajax({
-      url: apiPath + 'api/getStats.php?rooms=' + roomId + '&maxResults=' + number + '&sessionHash=' + sessionHash,
-      timeout: 5000,
-      type: 'GET',
-      cache: false,
-      success: function(xml) {
-        $(xml).find('room').each(function() {
-          var roomName = unxml($(this).find('roomName').text().trim());
-          var roomId = parseInt($(this).find('roomId').text().trim());
-
-          $(this).find('user').each(function() {
-            var userName = unxml($(this).find('userData > userName').text().trim());
-            var userId = parseInt($(this).find('userData > userId').text().trim());
-            var startTag = unxml($(this).find('userData > startTag').text().trim());
-            var endTag = unxml($(this).find('userData > endTag').text().trim());
-            var position = parseInt($(this).find('position').text().trim());
-            var messageCount = parseInt($(this).find('messageCount').text().trim());
-
-            statsHtml[position] += '<td>' + startTag + userName + endTag + ' (' + messageCount + ')</td>';
-          });
-
-
-          roomHtml += '<th>' + roomName + '</th>';
-
-        });
-
-        for (var i = 1; i <= number; i++) {
-          statsHtml2 += '<tr><th>' + i + '</th>' + statsHtml[i] + '</tr>';
-        }
-
-        quickDialogue('<table><thead><tr><th>Position</th>' + roomHtml + '</tr></thead><tbody>' + statsHtml2 + '</tbody></table>','Room Stats','roomStatsDialogue',600);
-      },
-      error: function() {
-        alert('Failed to show all rooms');
-      }
-    });
+    popup.showStats();
   });
 
 

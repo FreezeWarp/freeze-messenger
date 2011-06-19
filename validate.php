@@ -87,9 +87,10 @@ elseif (isset($_REQUEST['sessionhash'])) { // Session hash defined via sent data
   $sessionHash = $_REQUEST['sessionhash'];
 }
 
-elseif ((int) $anonymousUser >= 1) { // Unregistered user support.
+elseif ((int) $anonymousUser >= 1 && isset($_POST['noLogin'])) { // Unregistered user support.
   $userId = $anonymousUser;
   $anonymous = true;
+  $api = true;
 }
 
 else { // No login data exists.
@@ -211,6 +212,7 @@ if ($flag) {
 else {
   if ($userId && $sessionHash) {
     $user = sqlArr("SELECT u.*, s.sessonId AS anonId FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE magicHash = '" . mysqlEscape($sessionHash) . "'");
+    $anonId = $user['anonId'];
 
     if ($user['userId'] == $userId) {
       $valid = true;
@@ -248,7 +250,7 @@ else {
     }
   }
 
-  elseif ($anonymousUser) {
+  elseif ($anonymousUser && $anonymous) {
     $user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' LIMIT 1');
     $setCookie = true;
     $valid = true;
@@ -552,7 +554,7 @@ if ($api) {
       'loginText' => $failMessage,
 
       'sessionHash' => $sessionHash,
-      'anonId' => ($anonId ? $anonId : $user['anonId']),
+      'anonId' => $anonId,
 
       'userData' => array(
         'userName' => ($user['userName']),

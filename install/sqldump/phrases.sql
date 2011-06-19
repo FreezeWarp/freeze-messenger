@@ -90,7 +90,6 @@ INSERT INTO `{prefix}phrases` (`id`, `name`, `text_en`, `text_jp`) VALUES
 (84, 'statsChooseSettingsSubmit', 'Go', '行く'),
 (85, 'statsChooseSettingsReset', 'Reset', 'リセット'),
 (86, 'statsPlace', '#', ''),
-(87, 'templateShowAllRooms', 'Show All', ''),
 (88, 'templateAllCopyrights', 'See All Copyrights', ''),
 (89, 'archiveChooseSettings', 'The Archives: Select a Room', ''),
 (90, 'chatRoomDoesNotExist', 'After hours of intense computation, we have failed to locate the room you selected.', ''),
@@ -188,4 +187,6 @@ INSERT INTO `{prefix}phrases` (`id`, `name`, `text_en`, `text_jp`) VALUES
 (183, 'editRoomModeratorsCurrent', 'Currently Allowed Users:', ''),
 (184, 'editRoomModeratorsCurrent', 'Currently Allowed Groups:', ''),
 (185, 'templateModerateCat', 'Moderation', ''),
-(186, 'hookHead', '','');
+(186, 'hookHead', '',''),
+(187, 'templateShowLessRooms', 'Show Fewer', '')
+(187, 'templateShowMoreRooms', 'Show More', '');
