@@ -334,6 +334,23 @@ if ($valid) { // If the user is valid, process their preferrences.
 
 
     if (!$userprefs) {
+      // Get Default Priviledges
+      $priviledges = 16; // Can post
+
+      if ($userPermissions['roomCreation']) {
+        $priviledges += 32;
+      }
+      if ($userPermissions['privateRoomCreation']) {
+        $priviledges += 64;
+      }
+      if ($userPermissions['roomsOnline']) {
+        $priviledges += 1024;
+      }
+      if ($userPermissions['postCounts']) {
+        $priviledges += 2048;
+      }
+
+
       mysqlQuery("INSERT INTO {$sqlPrefix}users
       SET userId = " . (int) $user2['userId'] . ',
         userName = "' . mysqlEscape($user2['userName']) . '",
@@ -344,6 +361,7 @@ if ($valid) { // If the user is valid, process their preferrences.
         avatar = "' . mysqlEscape($user2['avatar']) . '",
         profile = "' . mysqlEscape($user2['profile']) . '",
         socialGroups = "' . mysqlEscape($socialGroups['groups']) . '",
+        userPrivs = ' . (int) $priviledges . ',
         lastSync = NOW()'); // Create the new row
 
       $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']);
@@ -433,9 +451,9 @@ else { // TODO: Anon Support
 
   $user = array(
     'userId' => ($anonymousUser ? $anonymousUser : 0),
-    'settingsOfficialAjax' => 11264,
-    'adminPrivs' => 0,
-    'userPrivs' => 16,
+    'settingsOfficialAjax' => 11264, // Default. TODO: Update w/ config defaults.
+    'adminPrivs' => 0, // Nothing
+    'userPrivs' => 16, // Allowed, but nothing else.
   );
 
   ($hook = hook('validate_loginInvalid') ? eval($hook) : '');
@@ -468,8 +486,7 @@ $user['adminDefs'] = array(
   'modImages' => ($user['adminPrivs'] & 64), // File Uploads
 
   /* Should Generally Go Together */
-  'modCensorWords' => ($user['adminPrivs'] & 256), // Censor Words
-  'modCensorLists' => ($user['adminPrivs'] & 512), // Censor Lists
+  'modCensor' => ($user['adminPrivs'] & 256), // Censor
 
   /* Should Generally Go Together */
   'modPlugins' => ($user['adminPrivs'] & 4096), // Plugins
@@ -482,6 +499,10 @@ $user['adminDefs'] = array(
 $user['userDefs'] = array(
   'allowed' => ($user['userPrivs'] & 16), // Is not banned
   'createRooms' => ($user['userPrivs'] & 32), // May create rooms
+  'privateRooms' => ($user['userPrivs'] & 64), // May create private rooms
+
+  'roomsOnline' => ($user['userPrivs'] & 1024), // May see rooms online (API-handled).
+  'postCounts' => ($user['userPrivs'] & 2048), // May see post counts (API-handled).
 );
 
 

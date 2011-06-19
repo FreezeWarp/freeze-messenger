@@ -189,4 +189,5 @@ INSERT INTO `{prefix}phrases` (`id`, `name`, `text_en`, `text_jp`) VALUES
 (185, 'templateModerateCat', 'Moderation', ''),
 (186, 'hookHead', '',''),
 (187, 'templateShowLessRooms', 'Show Fewer', ''),
-(188, 'templateShowMoreRooms', 'Show More', '');
+(188, 'templateShowMoreRooms', 'Show More', ''),
+(189, 'templateAdminPrivs', 'Moderate Admins', '');

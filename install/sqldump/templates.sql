@@ -102,19 +102,21 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
       <li><a href="#" id="manageKick">$phrases[templateManageKickedUsers]</a></li>
       <li><a href="#" id="kick">$phrases[templateKickUser]</a></li>
 
-      <li><a href="./moderate.php">$phrases[templateAdmin]</a></li>
+      <li><a href="./moderate.php" id="modGeneral">$phrases[templateAdmin]</a></li>
       <ul>
         <li><a href="./moderate.php?do=showimages">$phrases[templateAdminImages]</a></li>
-        <li><a href="./moderate.php?do=listusers">$phrases[templateAdminUsers]</a></li>
-        <ul>
-          <li><a href="./moderate.php?do=banuser">$phrases[templateAdminBanUser]</a></li>
-          <li><a href="./moderate.php?do=unbanuser">$phrases[templateAdminUnbanUser]</a></li>
-        </ul>
-        <li><a href="./moderate.php?do=censor">$phrases[templateAdminCensor]</a></li>
-        <li><a href="./moderate.php?do=phrases">$phrases[templateAdminPhrases]</a></li>
-        <li><a href="./moderate.php?do=hooks">$phrases[templateAdminHooks]</a></li>
-        <li><a href="./moderate.php?do=templates">$phrases[templateAdminTemplates]</a></li>
-        <li><a href="./moderate.php?do=maintenance">$phrases[templateAdminMaintenance]</a></li>
+        <li><a href="./moderate.php?do=listusers" id="modUsers">$phrases[templateAdminUsers]</a>
+          <ul>
+            <li><a href="./moderate.php?do=banuser" id="banUser">$phrases[templateAdminBanUser]</a></li>
+            <li><a href="./moderate.php?do=unbanuser" id="unbanUser">$phrases[templateAdminUnbanUser]</a></li>
+          </ul>
+        </li>
+        <li id="modPrivs"><a href="./moderate.php?do=privs">$phrases[templateAdminPrivs]</a></li>
+        <li id="modCensor"><a href="./moderate.php?do=censor">$phrases[templateAdminCensor]</a></li>
+        <li id="modPhrases"><a href="./moderate.php?do=phrases">$phrases[templateAdminPhrases]</a></li>
+        <li id="modHooks"><a href="./moderate.php?do=hooks">$phrases[templateAdminHooks]</a></li>
+        <li id="modTemplates"><a href="./moderate.php?do=templates">$phrases[templateAdminTemplates]</a></li>
+        <li id="modCore"><a href="./moderate.php?do=maintenance">$phrases[templateAdminMaintenance]</a></li>
       </ul>
     </ul>
     </div>

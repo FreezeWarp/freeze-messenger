@@ -109,11 +109,6 @@ var userId; // The user ID who is logged in.
 var roomId; // The ID of the room we are in.
 var sessionHash; // The session hash of the active user.
 var anonId; // ID used to represent anonymous posters.
-var showAvatars; // Use the complex document style?
-var reversePostOrder; // Show posts in reverse?
-var audioDing; // Fire an HTML5 audio ding during each unread message?
-var longPolling; // Use experimental longPolling technology?
-var layout; // Data layout.
 
 
 if ($.cookie('fim3_sessionHash')) {
@@ -139,6 +134,34 @@ var notify = true;
 var timeout = (longPolling ? 1000000 : 2400);
 var first = true;
 var favicon = $('#favicon').attr('href');
+var longPolling; // Use experimental longPolling technology?
+var layout; // Data layout.
+
+var userPermissions = {
+  createRoom : false,
+  privateRoom : false,
+};
+
+var adminPermissions = {
+  modPrivs : false,
+  modCore : false,
+  modUsers : false,
+  modImages : false,
+  modCensor : false,
+  modPlugins : false,
+  modTemplates: false,
+  modHooks : false,
+  modTranslations : false,
+};
+
+var settings = {
+  showAvatars : false, // Use the complex document style?
+  reversePostOrder : false, // Show posts in reverse?
+  audioDing : false, // Fire an HTML5 audio ding during each unread message?
+  disableImages : false,
+  disableVideos : false,
+  disableFormatting : false,
+};
 
 
 
@@ -520,22 +543,70 @@ var standard = {
         var defaultRoomId = parseInt($(xml).find('defaultRoomId').text().trim());
 
         if (valid === 'true') {
-          populate();
+          populate(); // Update users/groups/rooms/etc. based on new credentials.
 
           userId = parseInt($(xml).find('userData > userId').text().trim());
           anonId = parseInt($(xml).find('anonId').text().trim());
           sessionHash = unxml($(xml).find('sessionHash').text().trim());
 
-          dia.info('You are now logged in as ' + userName + '.','Logged In');
-          console.log('Login valid. Session hash: ' + sessionHash + '; User ID: ' + userId);
 
-          $('#loginDialogue').dialog('close');
+          $('#loginDialogue').dialog('close'); // Close any open login forms.
 
-          $.cookie('fim3_sessionHash',sessionHash); //TODO: UPdate Prefix
+
+          $.cookie('fim3_sessionHash',sessionHash); // Set cookies.
           $.cookie('fim3_userId',userId);
 
-          $('#messageInput').removeAttr("disabled"); // The user is not able to post.
 
+          $('#messageInput').removeAttr("disabled"); // The user is able to post.
+
+          /* Update Permissions */
+          userPermissions.createRoom = (parseInt($(xml).find('userPermissions > createRooms').text().trim()) > 0 ? true : false);
+          userPermissions.privateRoom = (parseInt($(xml).find('userPermissions > privateRooms').text().trim()) > 0 ? true : false);;
+          userPermissions.general = (parseInt($(xml).find('userPermissions > allowed').text().trim()) > 0 ? true : false);
+
+
+          /* Show and Hide Links Based on Permissions */
+          if (!userPermissions.createRoom) {
+            $('#createRooms').hide();
+          }
+          if (!userPermissions.privateRoom) {
+            $('#privateRoom').hide();
+          }
+          if (!adminPermissions) {
+            //
+          }
+          if (!adminPermissions.modUsers) {
+            $('#modUsers').hide();
+          }
+          if (!adminPermissions.modCensor) {
+            $('#modCensor').hide();
+          }
+          if (!adminPermissions.modTemplates) {
+            $('#modTemplates').hide();
+          }
+          if (!adminPermissions.modPrivs) {
+            $('#modPrivs').hide();
+          }
+          if (!adminPermissions.modHooks) {
+            $('#modHooks').hide();
+          }
+          if (!adminPermissions.modCore) {
+            $('#modCore').hide();
+          }
+
+
+          /* Display Dialog to Notify User of Being Logged In */
+          if (!userPermissions.general) {
+            dia.info('You are now logged in as ' + userName + '. However, you are not allowed to post and have been banned by an administrator..','Logged In');
+          }
+          else {
+            dia.info('You are now logged in as ' + userName + '.','Logged In');
+          }
+
+          console.log('Login valid. Session hash: ' + sessionHash + '; User ID: ' + userId);
+
+
+          /* Select Room */
           if (!roomId) {
             if (!defaultRoomId) {
               popup.selectRoom();
@@ -680,7 +751,7 @@ var standard = {
               }
 
 
-              if (showAvatars) {
+              if (settings.showAvatars) {
                 var data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="' + userName + '" src="' + avatar + '" style="max-width: 24px; max-height: 24px; padding-right: 3px;" class="userName userNameTable" data-userId="' + userId + '" /><span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
               }
               else {
@@ -689,7 +760,7 @@ var standard = {
 
               notifyData += userName + ': ' + text + "\n";
 
-              if (reversePostOrder) {
+              if (settings.reversePostOrder) {
                 $('#messageList').append(data);
               }
               else {
@@ -716,12 +787,12 @@ var standard = {
 
 
 
-            if (reversePostOrder) {
+            if (settings.reversePostOrder) {
               toBottom();
             }
 
             if (blur) {
-              if (audioDing) {
+              if (settings.audioDing) {
                 riffwave.play();
 
                 if (navigator.appName === 'Microsoft Internet Explorer') {
@@ -847,7 +918,7 @@ var standard = {
         error: function() {
           console.log('Message error.');
 
-          if (reversePostOrder) {
+          if (settings.reversePostOrder) {
             $('#messageList').append('Your message, "' + message + '", could not be sent and will be retried.');
           }
           else {
@@ -1445,7 +1516,7 @@ function windowDraw() {
 
   /*** Draw the chatbox. ***/
 
-  $("#icon_reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (reversePostOrder ? 'n' : 's') } );
+  $("#icon_settings.reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (settings.reversePostOrder ? 'n' : 's') } );
   $("#icon_help").button({ icons: {primary:'ui-icon-help'} }).css({height: '32px', width: '32px'});
   $("#icon_note").button({ icons: {primary:'ui-icon-note'} }).css({height: '32px', width: '32px'});
   $("#icon_settings").button({ icons: {primary:'ui-icon-wrench'} }).css({height: '32px', width: '32px'});
@@ -1457,22 +1528,22 @@ function windowDraw() {
   $("#icon_reset").button( "option", "icons", { primary: 'ui-icon-circle-close' } );
   $("#imageUploadSubmitButton").button( "option", "disabled", true);
 
-  $("#icon_reversePostOrder").hover(
+  $("#icon_settings.reversePostOrder").hover(
     function() {
-      $("#icon_reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (reversePostOrder ? 's' : 'n') } );
+      $("#icon_settings.reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (settings.reversePostOrder ? 's' : 'n') } );
     },
     function () {
-      $("#icon_reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (reversePostOrder ? 'n' : 's') } );
+      $("#icon_settings.reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (settings.reversePostOrder ? 'n' : 's') } );
     }
   );
 
   $("#icon_muteSound").hover(
     function() {
-      if (audioDing) $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-off' } );
+      if (settings.audioDing) $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-off' } );
       else $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-on' } );
     },
     function () {
-      if (audioDing) $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-on' } );
+      if (settings.audioDing) $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-on' } );
       else $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-off' } );
     }
   );
@@ -1634,7 +1705,7 @@ function contextMenuParse() {
     }
   });
 
-  if (showAvatars) {
+  if (settings.showAvatars) {
     $('.messageText').tipTip({
       attribute: 'data-time'
     });
@@ -1686,8 +1757,8 @@ $(document).ready(function() {
 
 
 
-  $("#icon_reversePostOrder").click(function() {
-    var value = (reversePostOrder ? 'false' : 'true');
+  $("#icon_settings.reversePostOrder").click(function() {
+    var value = (settings.reversePostOrder ? 'false' : 'true');
     $.cookie('vrim10-reverseOrder', value, {expires: 7 * 24 * 3600});
     location.reload(true);
   });
