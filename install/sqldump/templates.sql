@@ -372,7 +372,7 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
       </div>
     </div>}}
     <div id="textentryBoxMessage">
-      <form onsubmit="var message = $(''textarea#messageInput'').val(); if (message.length == 0) { alert(''Please enter your message.''); } else { sendMessage(message); $(''textarea#messageInput'').val(''''); } return false;" id="sendform">{{container}{<div class="leftPart">Enter a Message</div>
+      <form id="sendForm" action="#" method="post">{{container}{<div class="leftPart">Enter a Message</div>
         <div class="rightPart">
           <button type="submit" class="standard" id="icon_submit"></button>
           <button type="reset" class="standard" id="icon_reset"></button>
@@ -383,7 +383,7 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
             {{if="$room[''bbcode''] <= 5"}{<button type="button" onclick="$(''#textentryBoxUpload'').dialog({width : ''600px'', title : ''Insert an Image''});" class="standard" id="icon_upload"></button><br />}}
             {{if="$room[''bbcode''] <= 2"}{<button type="button" onclick="$(''#textentryBoxYoutube'').dialog({width : ''600px'', title : ''Insert a Youtube Video''});" class="standard" id="icon_video"></button>}}
           </div>}}
-          <textarea onkeypress="if (event.keyCode == 13 && !event.shiftKey) { $(''#sendform'').submit(); return false; }" id="messageInput" autofocus="autofocus" placeholder="Enter your text." style="$textboxStyle"></textarea>
+          <textarea onkeypress="if (event.keyCode == 13 && !event.shiftKey) { $(''#sendForm'').trigger(''submit''); return false; }" id="messageInput" autofocus="autofocus" placeholder="Enter your text." style="$textboxStyle"></textarea>
         </div>}}
       </form>
   </div>

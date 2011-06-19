@@ -70,9 +70,14 @@ var audioDing; // Fire an HTML5 audio ding during each unread message?
 var longPolling; // Use experimental longPolling technology?
 var layout; // Data layout.
 
-//if ($.cookie('fim3_sessionHash')) {
+if ($.cookie('fim3_sessionHash')) {
+  sessionHash = $.cookie('fim3_sessionHash');
+  userId = $.cookie('fim3_userId');
+}
 
-//}
+if ($.cookie('fim3_defaultRoomId')) {
+  roomId = $.cookie('fim3_defaultRoomId');
+}
 
 
 var blur = false; // By default, we assume the window is active and not blurred.
@@ -233,35 +238,31 @@ function youtubeSend(id) {
 }
 
 
-callbackFunction = function(response) {
-  var html = "";
-  var num = 0;
+function updateVids(searchPhrase) {
+  jQTubeUtil.search(searchPhrase, function(response) {
+    var html = "";
+    var num = 0;
 
-  for (vid in response.videos) {
-    var video = response.videos[vid];
-    num ++;
+    for (vid in response.videos) {
+      var video = response.videos[vid];
+      num ++;
 
-    if (num % 3 === 1) {
-      html += '<tr>';
+      if (num % 3 === 1) {
+        html += '<tr>';
+      }
+      html += '<td><img src="http://i2.ytimg.com/vi/' + video.videoId + '/default.jpg" style="width: 80px; height: 60px;" /><br /><small><a href="javascript: void(0);" onclick="youtubeSend(&apos;' + video.videoId + '&apos;)">' + video.title + '</a></small></td>';
+
+      if (num % 3 === 0) {
+        html += '</tr>';
+      }
     }
 
-    html += '<td><img src="http://i2.ytimg.com/vi/' + video.videoId + '/default.jpg" style="width: 80px; height: 60px;" /><br /><small><a href="javascript: void(0);" onclick="youtubeSend(&apos;' + video.videoId + '&apos;)">' + video.title + '</a></small></td>';
-
-    if (num % 3 === 0) {
+    if (num % 3 !== 0) {
       html += '</tr>';
     }
-  }
 
-  if (num % 3 !== 0) {
-    html += '</tr>';
-  }
-
-  $('#youtubeResults').html(html);
-}
-
-
-function updateVids(searchPhrase) {
-  jQTubeUtil.search(searchPhrase, callbackFunction);
+    $('#youtubeResults').html(html);
+  });
 }
 
 
@@ -701,7 +702,7 @@ var standard = {
           break;
 
           case 'confirmcensor':
-          $('<div style="display: none;">' + emessage + '<br /><br /><button type="button" onclick="$(this).parent().dialog(&apos;close&apos;);">No</button><button type="button" onclick="standard.sendMessage(&apos;' + escape(message) + '&apos;,1); $(this).parent().dialog(&apos;close&apos;);">Yes</button></div>').dialog({ title : 'Error'});
+          $('<div style="display: none;">' + emessage + '<br /><br /><button type="button" onclick="$(this).parent().dialog(&apos;close&apos;);">No</button><button type="button" onclick="standard.standard.sendMessage(&apos;' + escape(message) + '&apos;,1); $(this).parent().dialog(&apos;close&apos;);">Yes</button></div>').dialog({ title : 'Error'});
           break;
         }
       },
@@ -715,7 +716,7 @@ var standard = {
           $('#messageList').prepend('Your message, "' + message + '", could not be sent and will be retried.');
         }
 
-        standard.sendMessage(message);
+        standard.standard.sendMessage(message);
       }
     });
   },
@@ -1173,6 +1174,20 @@ $(document).ready(function() {
     });
   });
 
+  $('#sendForm').submit(function() {
+    var message = $('textarea#messageInput').val();
+
+    if (message.length == 0) {
+      alert('Please enter your message.');
+    }
+    else {
+      standard.sendMessage(message);
+      $('textarea#messageInput').val('');
+    }
+
+    return false;
+  });
+
 
 
 
@@ -1559,8 +1574,11 @@ $(document).ready(function() {
 
 });
 
+if (!sessionHash && !anonId) {
+  console.log('Automatic Login Triggered');
 
-standard.login(0,'');
+  standard.login(0,'');
+}
 
 
 

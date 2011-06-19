@@ -109,10 +109,10 @@ else { // No login data exists.
 
 ///* Required Forum-Included Functions *///
 
+/* Set Relevant Column Data */
 switch ($loginMethod) {
 
   case 'vbulletin':
-  /* Set Relevant Column Data */
   $sqlUserTable = $forumPrefix . 'user'; // The user table in the login method used.
   $sqlUserGroupTable = $forumPrefix . 'socialgroup'; // The userGroup table in the login method used.
   $sqlMemberGroupTable = $forumPrefix . 'socialgroupmember'; // The userGroup table in the login method used.
