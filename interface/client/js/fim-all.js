@@ -139,7 +139,6 @@ var notify = true;
 var timeout = (longPolling ? 1000000 : 2400);
 var first = true;
 var favicon = $('#favicon').attr('href');
-var messageIndex = new Array;
 
 
 
@@ -152,6 +151,7 @@ var userRef = new Object;
 var userList = new Array;
 var groupRef = new Object;
 var groupList = new Array;
+var messageIndex = new Array;
 
 
 var roomUlFavHtml = '';

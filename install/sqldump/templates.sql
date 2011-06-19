@@ -91,46 +91,47 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
   $phrases[hookPageStartFull]
   <!-- START links -->
   <div id="menu" data-role="header">
-    {{if="$phrases[''brandingCommunityLinks'']"}{
-      <h3><a href="#">$phrases[templateCommunityLinksCat]</a></h3>
-      $phrases[brandingCommunityLinks]
-    }}
     <h3><a href="#">$phrases[templateQuickCat]</a></h3>
     <div>
     <ul>
       <li style="border-bottom: 1px solid;"><a href="#" id="messageArchive">$phrases[templateArchive]</a></li>
       <li><a href="#" id="roomList">$phrases[templateRoomList]</a></li>
-      {{if="$allowRoomCreation && $user[''userPrivs''][''createRooms'']"}{<li><a href="#" id="createRoom">$phrases[templateCreateRoom]</a></li>}}
-      {{if="$allowPrivateRooms && $user[''userId'']"}{<li style="border-bottom: 1px solid;"><a href="#" id="privateRoom">$phrases[templatePrivateIM]</a></li>}}
+      <li><a href="#" id="createRoom">$phrases[templateCreateRoom]</a></li>
+      <li style="border-bottom: 1px solid;"><a href="#" id="privateRoom">$phrases[templatePrivateIM]</a></li>
+
       <li><a href="#" id="online">$phrases[templateActiveUsers]</a></li>
       <li style="border-bottom: 1px solid;"><a href="#" id="viewStats">$phrases[templateStats]</a></li>
-      {{if="$user[''userId'']"}{<li><a href="#" id="changeSettings">$phrases[templateChangeSettings]</a></li>}}
-      {{if="$user[''userId'']"}{<li><a href="#" id="logout">$phrases[templateLogout]</a></li>}{<li><a href="#" id="login">$phrases[templateLogin]</a></li>}}
+
+      <li><a href="#" id="changeSettings">$phrases[templateChangeSettings]</a></li>
+      <li><a href="#" id="logout">$phrases[templateLogout]</a></li>
+      <li><a href="#" id="login">$phrases[templateLogin]</a></li>
     </ul>
     </div>
-    {{if="fim_hasPermission($room,$user,''moderate'') || $user[''adminDefs'']"}{
+
     <h3><a href="#">$phrases[templateModerateCat]</a></h3>
     <div>
     <ul>
-      <li><a href="#" id="editRoom">$phrases[templateEditRoom]</a></li></if>
-      {{if="fim_hasPermission($room,$user,''moderate'')"}{<li><a href="#" id="manageKick">$phrases[templateManageKickedUsers]</a></li>}}
-      {{if="fim_hasPermission($room,$user,''moderate'')"}{<li><a href="#" id="kick">$phrases[templateKickUser]</a></li>}}
-      {{if="$user[''adminDefs'']"}{<li><a href="./moderate.php">$phrases[templateAdmin]</a></li>
+      <li><a href="#" id="editRoom">$phrases[templateEditRoom]</a></li>
+      <li><a href="#" id="manageKick">$phrases[templateManageKickedUsers]</a></li>
+      <li><a href="#" id="kick">$phrases[templateKickUser]</a></li>
+
+      <li><a href="./moderate.php">$phrases[templateAdmin]</a></li>
       <ul>
-        {{if="$user[''adminDefs''][''modImages'']"}{<li><a href="./moderate.php?do=showimages">$phrases[templateAdminImages]</a></li>}}
-        {{if="$user[''adminDefs''][''modUsers'']"}{<li><a href="./moderate.php?do=listusers">$phrases[templateAdminUsers]</a></li>
+        <li><a href="./moderate.php?do=showimages">$phrases[templateAdminImages]</a></li>
+        <li><a href="./moderate.php?do=listusers">$phrases[templateAdminUsers]</a></li>
         <ul>
           <li><a href="./moderate.php?do=banuser">$phrases[templateAdminBanUser]</a></li>
-          <li><a href="./moderate.php?do=unbanuser">$phrases[templateAdminUnbanUser]</a></li></ul>}}
-        {{if="$user[''adminDefs''][''modImages'']"}{<li><a href="./moderate.php?do=censor">$phrases[templateAdminCensor]</a></li>}}
-        {{if="$user[''adminDefs''][''modPhrases'']"}{<li><a href="./moderate.php?do=phrases">$phrases[templateAdminPhrases]</a></li>}}
-        {{if="$user[''adminDefs''][''modHooks'']"}{<li><a href="./moderate.php?do=hooks">$phrases[templateAdminHooks]</a></li>}}
-        {{if="$user[''adminDefs''][''modTemplates'']"}{<li><a href="./moderate.php?do=templates">$phrases[templateAdminTemplates]</a></li>}}
-        {{if="$user[''adminDefs''][''modCore'']"}{<li><a href="./moderate.php?do=maintenance">$phrases[templateAdminMaintenance]</a></li>}}
-      </ul>}}
+          <li><a href="./moderate.php?do=unbanuser">$phrases[templateAdminUnbanUser]</a></li>
+        </ul>
+        <li><a href="./moderate.php?do=censor">$phrases[templateAdminCensor]</a></li>
+        <li><a href="./moderate.php?do=phrases">$phrases[templateAdminPhrases]</a></li>
+        <li><a href="./moderate.php?do=hooks">$phrases[templateAdminHooks]</a></li>
+        <li><a href="./moderate.php?do=templates">$phrases[templateAdminTemplates]</a></li>
+        <li><a href="./moderate.php?do=maintenance">$phrases[templateAdminMaintenance]</a></li>
+      </ul>
     </ul>
     </div>
-    }}
+
     <h3><a href="#">$phrases[templateRoomListCat]</a></h3>
     <div>
       <div id="roomListShort">
@@ -144,9 +145,10 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
         </ul>
       </div>
     </div>
-    {{if="$inRoom"}{
+
     <h3><a href="#">$phrases[templateActiveUsersCat]</a></h3>
-    <div id="activeUsers">$phrases[templateLoading]</div>}}
+    <div id="activeUsers">$phrases[templateLoading]</div>
+
     <h3><a href="#">$phrases[templateCopyrightCat]</a></h3>
     <div>
       <ul>
