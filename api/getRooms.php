@@ -125,6 +125,8 @@ if ($rooms2) {
         'privateIm' => (bool) ($room['options'] & 16),
       ),
       'bbcode' => (int) $room['bbcode'],
+      'canModerate' => fim_hasPermission($room,$user,'moderate'),
+      'canAdmin' => fim_hasPermission($room,$user,'admin'),
     );
 
     ($hook = hook('getRooms_eachRoom') ? eval($hook) : '');

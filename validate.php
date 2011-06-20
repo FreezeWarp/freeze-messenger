@@ -83,7 +83,7 @@ if (isset($_POST['userName'],$_POST['password'])) { // API.
   $api = true;
 }
 
-elseif (isset($_REQUEST['sessionHash'])) { // Session hash defined via sent data.
+elseif (isset($_REQUEST['sessionHash'])) { // Session hash defined via sent data.z
   $sessionHash = $_REQUEST['sessionHash'];
 
   if (isset($_POST['apiLogin'])) {
@@ -215,10 +215,14 @@ if ($flag) {
 }
 else {
   if ($sessionHash) { //TODO: Security Improvements
-    $user = dbRows("SELECT u.*, s.anonId, UNIX_TIMESTAMP(s.time) AS sessionTime FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE magicHash = '" . dbEscape($sessionHash) . "'");
+    $user = dbRows("SELECT u.*, s.anonId, UNIX_TIMESTAMP(s.time) AS sessionTime FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE s.magicHash = '" . dbEscape($sessionHash) . "' AND u.userId = s.userId");
 
     if ($user) {
-      $anonId = $user['anonId'];
+      if ($user['anonId']) {
+        $anonId = $user['anonId'];
+        $anonymous = true;
+      }
+
       $noSync = true;
       $valid = true;
 
@@ -279,7 +283,7 @@ else {
 if ($valid) { // If the user is valid, process their preferrences.
 
   if ($noSync || $loginMethod == 'vanilla') {
-    // TODO
+
   }
   else {
     if ($loginMethod == 'vbulletin' || $loginMethod == 'phpbb') {
@@ -419,7 +423,7 @@ if ($valid) { // If the user is valid, process their preferrences.
       $socialGroups = dbRows("SELECT GROUP_CONCAT($sqlMemberGroupTableCols[groupId] SEPARATOR ',') AS groups FROM {$sqlMemberGroupTable} WHERE {$sqlMemberGroupTableCols[userId]} = $user2[userId] AND $sqlMemberGroupTableCols[type] = '$sqlMemberGroupTableCols[validType]'");
 
       dbUpdate(array(
-        'userName' => $user2['usernName'],
+        'userName' => $user2['userName'],
         'userGroup' => $user2['userGroup'],
         'allGroups' => $user2['allGroups'],
         'userFormatStart' => $user2['userFormatStart'],
@@ -455,7 +459,7 @@ if ($valid) { // If the user is valid, process their preferrences.
 
     dbInsert(array(
       'userId' => $user['userId'],
-      'anonId' => $anonId,
+      'anonId' => ($anonymous ? $anonId : 0),
       'time' => array(
         'type' => 'raw',
         'value' => 'NOW()',
@@ -496,7 +500,7 @@ if ($valid) { // If the user is valid, process their preferrences.
 
 
 
-  if ($anonId) {
+  if ($anonymous) {
     $user['userName'] .= $anonId;
   }
 
@@ -627,7 +631,7 @@ if ($api) {
       'loginText' => $failMessage,
 
       'sessionHash' => $sessionHash,
-      'anonId' => $anonId,
+      'anonId' => ($anonymous ? $anonId : 0),
       'defaultRoomId' => (int) ($_GET['room'] ? $_GET['room'] :
         ($user['defaultRoom'] ? $user['defaultRoom'] :
           ($defaultRoom ? $defaultRoom : 1))), // Get the room we're on. If there is a $_GET variable, use it, otherwise the user's "default", or finally just main.

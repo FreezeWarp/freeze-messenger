@@ -398,6 +398,8 @@ function populate() {
       roomList = new Array; // Clear so we don't get repeat values on regeneration.
       roomIdRef = new Object;
       roomRef = new Object;
+      roomTableHtml = '';
+      roomSelectHtml = '';
 
       $(xml).find('room').each(function() {
         var roomName = unxml($(this).find('roomName').text().trim());
@@ -405,8 +407,9 @@ function populate() {
         var roomTopic = unxml($(this).find('roomTopic').text().trim());
         var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
         var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
-        var isOwner = (parseInt($(this).find('owner').text()) == userId ? true : false);
+        var isAdmin = ($(this).find('canAdmin').text().trim() === 'true' ? true : false);
         var isModerator = ($(this).find('canModerate').text().trim() === 'true' ? true : false);
+        var isOwner = (parseInt($(this).find('owner').text()) == userId ? true : false);
 
         var ulText = '<li><a href="index.php?room=' + roomId + '">' + roomName + '</a></li>';
 
@@ -423,7 +426,7 @@ function populate() {
           roomUlHtml += ulText;
         }
 
-        roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#" onclick="standard.changeRoom(' + roomId + ');">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isOwner ? '<a href="#" class="editRoomMulti" data-roomId="' + roomId + '"><img src="images/document-edit.png" class="standard" alt="Configure" /></a>' : '') + '</td></tr>';
+        roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#" onclick="standard.changeRoom(' + roomId + ');">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isAdmin ? '<button onclick="popup.editRoom(' + roomId + ');"></button>' : '') + '</td></tr>';
 
         roomSelectHtml += '<option value="' + roomId + '">' + roomName + '</option>';
 
@@ -664,6 +667,8 @@ var standard = {
   login : function(options) {
     console.log('Login Initiated');
     var data = '';
+    sessionHash = '';
+    $.cookie('fim3_sessionHash','');
 
     console.log('Encrypted Password: ' + options.password);
 
@@ -727,12 +732,14 @@ var standard = {
           adminPermissions.modHooks = (parseInt($(xml).find('adminPermissions > modHooks').text().trim()) > 0 ? true : false);
 
 
-          /* Display Dialog to Notify User of Being Logged In */
-          if (!userPermissions.general) {
-            dia.info('You are now logged in as ' + userName + '. However, you are not allowed to post and have been banned by an administrator.','Logged In');
-          }
-          else {
-            dia.info('You are now logged in as ' + userName + '.','Logged In');
+          if (!options.silent) {
+            /* Display Dialog to Notify User of Being Logged In */
+            if (!userPermissions.general) {
+              dia.info('You are now logged in as ' + userName + '. However, you are not allowed to post and have been banned by an administrator.','Logged In');
+            }
+            else {
+              dia.info('You are now logged in as ' + userName + '.','Logged In');
+            }
           }
 
           console.log('Login valid. Session hash: ' + sessionHash + '; User ID: ' + userId);
@@ -804,6 +811,8 @@ var standard = {
 
     userId = 0;
     sessionHash = '';
+
+    windowDynaLinks();
   },
 
 
@@ -1852,11 +1861,11 @@ function windowDynaLinks() {
     $('li > #modCore').parent().hide();
   }
 
-  if (!userId) {
-    $('li > #logout').parent().hide(); //TODO: Anon
+  if (userId && !anonId) {
+    $('li > #login').parent().hide();
   }
   else {
-    $('li > #login').parent().hide();
+    $('li > #logout').parent().hide();
   }
 }
 
@@ -2052,7 +2061,9 @@ $(document).ready(function() {
     });
   }
   else {
-    standard.login({}); // Get a sessionhash for guest navigation.
+    standard.login({
+      silent : true,
+    }); // Get a sessionhash for guest navigation.
   }
 
 
