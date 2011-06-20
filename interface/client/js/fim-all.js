@@ -256,10 +256,10 @@ var lastMessage = 0;
 var messages;
 var activeUsers;
 var notify = true;
-var timeout = (longPolling ? 1000000 : 2400);
 var first = true;
 var favicon = $('#favicon').attr('href');
 var longPolling; // Use experimental longPolling technology?
+var timeout = (longPolling ? 1000000 : 2400);
 var layout = $.cookie('fim3_layout'); // TODO
 var settingsBitfield = parseInt($.cookie('fim3_settings'));
 var themeId = parseInt($.cookie('fim3_themeId'));
