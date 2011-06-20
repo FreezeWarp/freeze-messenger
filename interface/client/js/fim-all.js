@@ -291,6 +291,7 @@ var settings = {
   disableFormatting : (settingsBitfield & 16 ? true : false),
 };
 
+
 var themes = {
   1 : 'ui-darkness',
   2 : 'ui-lightness',
@@ -305,8 +306,8 @@ var themes = {
 
 var themeName = (themeId ? themes[themeId] : 'cupertino');
 
-$('head').append('<link rel="stylesheet" type="text/css" href="client/css/' + themeName + '/jquery-ui-1.8.13.custom.css" media="screen" />');
-$('head').append('<link rel="stylesheet" type="text/css" href="client/css/' + themeName + '/fim.css" media="screen" />');
+$('head').append('<link rel="stylesheet" type="text/css" id="stylesjQ" href="client/css/' + themeName + '/jquery-ui-1.8.13.custom.css" media="screen" />');
+$('head').append('<link rel="stylesheet" type="text/css" id="stylesFIM" href="client/css/' + themeName + '/fim.css" media="screen" />');
 $('head').append('<link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" media="screen" />');
 
 
@@ -741,17 +742,6 @@ var standard = {
           }
 
           console.log('Login valid. Session hash: ' + sessionHash + '; User ID: ' + userId);
-
-
-          /* Select Room */
-          if (!roomId) {
-            if (!defaultRoomId) {
-              popup.selectRoom();
-            }
-            else {
-              standard.changeRoom(defaultRoomId);
-            }
-          }
         }
         else {
           switch (loginFlag) {
@@ -793,6 +783,16 @@ var standard = {
           $('#messageInput').attr("disabled","disabled"); // The user is not able to post.
         }
 
+        /* Select Room */
+        if (!roomId) {
+          if (!defaultRoomId) {
+            popup.selectRoom();
+          }
+          else {
+            standard.changeRoom(defaultRoomId);
+          }
+        }
+
         windowDynaLinks();
       },
       error: function() {
@@ -816,8 +816,6 @@ var standard = {
 
   getMessages : function() {
     if (roomId) {
-      console.log('Requesting messages for ' + roomId);
-
       if (!longPolling) {
         window.clearInterval(window.timer1);
       }
@@ -834,8 +832,6 @@ var standard = {
         dataType: "xml",
         cache: false,
         success: function(xml) {
-          console.log('Requesting messages for ' + roomId + '; success.');
-
           if (xml) {
             totalFails = 0;
             var notifyData = '';
@@ -1316,6 +1312,13 @@ popup = {
         $('.colorpicker').empty().remove();
       },
       oF : function() {
+        $('#settingsOfficialAjax_theme').change(function() {
+          $('#stylesjQ').attr('href','client/css/' + themes[this.value] + '/jquery-ui-1.8.13.custom.css');
+          $('#stylesFIM').attr('href','client/css/' + themes[this.value] + '/fim.css');
+
+          $.cookie('fim3_themeId',this.value);
+        });
+
         $("#defaultRoom").autocomplete({
           source: roomList
         });
@@ -1387,7 +1390,7 @@ popup = {
           $('#fontPreview').css('font-style','italic');
         }
         else {
-          $('#fontPreview').css('font-style','normal');
+          $('#fontPreview').css('messageIdfont-style','normal');
         }
 
         if ($('#defaultBold').is(':checked')) {
@@ -1837,7 +1840,7 @@ function windowDraw() {
 
 
   /*** Draw the chatbox. ***/
-  if (roomId) {
+  if (roomId && (userId | anonId)) {
     $('#messageInput').removeAttr("disabled"); // The user is able to post.
   }
   else {
@@ -1868,12 +1871,20 @@ function windowDraw() {
 
   $("#icon_muteSound").hover(
     function() {
-      if (settings.audioDing) $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-off' } );
-      else $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-on' } );
+      if (settings.audioDing) {
+        $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-off' } );
+      }
+      else {
+        $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-on' } );
+      }
     },
     function () {
-      if (settings.audioDing) $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-on' } );
-      else $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-off' } );
+      if (settings.audioDing) {
+        $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-on' } );
+      }
+      else {
+        $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-off' } );
+      }
     }
   );
 
@@ -1885,9 +1896,13 @@ function windowDynaLinks() {
   if (!userPermissions.createRoom) {
     $('li > #createRoom').parent().hide();
   }
+  if (!isMod) {
+    $('li > #editRoom').parent().hide();
+  }
   if (!userPermissions.privateRoom) {
     $('li > #privateRoom').parent().hide();
   }
+
   if (!adminPermissions) {
     //
   }
@@ -2004,7 +2019,7 @@ function contextMenuParse() {
 
       case 'link':
         // TODO
-//      quickDialogue('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + window.location.hostname + '/archive.php?roomId=' + $('body').attr('data-roomId') + '&message=' + postid + '" />','Link to This Message','linkMessage');
+      dia.info('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + window.location.hostname + '/archive.php?roomId=' + $('body').attr('data-roomId') + '&message=' + postid + '" />','Link to This Message');
       break;
     }
   });
@@ -2204,7 +2219,7 @@ $(document).ready(function() {
   /*** Manage Kick ***/
 
   $('a#manageKick').click(function() {
-    popup.manageKick();
+    popup.manageKicks();
   });
 
 

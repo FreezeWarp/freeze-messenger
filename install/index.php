@@ -169,6 +169,10 @@ Now that the database has been successfully installed, we must generate the conf
   <td>Encryption Phrase</td>
   <td><input type="text" name="encrypt_salt" /></td>
 </tr>
+<tr>
+  <td>Enable Encryption?</td>
+  <td><select name="enable_encrypt"><option value="3">For Everything</option><option value="2">For Uploads Only</option><option value="1">For Messages Only</option><option value="0">For Nothing</option></select></td>
+</tr>
 </table><br /><br />
 </form>
 <form onsubmit="return false;">
@@ -301,7 +305,6 @@ Now that the database has been successfully installed, we must generate the conf
   $forum = $_GET['forum'];
   $forumUrl = $_GET['forum_url'];
   $forumTablePrefix = $_GET['forum_tableprefix'];
-  $forumCookiePrefix = $_GET['forum_tableprefix'];
   $forumSalt = $_GET['forum_salt'];
   $encryptSalt = $_GET['encrypt_salt'];
 
@@ -317,6 +320,12 @@ Now that the database has been successfully installed, we must generate the conf
     '$installLoc = \'\';',
     '$installUrl = \'\';',
     '$forumUrl = \'\';',
+    '$forumTablePrefix = \'\';',
+    '$forumSalt = \'\';',
+    '$superUsers = array();',
+    '$salts = array(
+  101 => \'xxx\',
+);',
   );
 
   $replace = array(
@@ -329,7 +338,15 @@ Now that the database has been successfully installed, we must generate the conf
     '$installLoc = \'' . __DIR__ . '\';',
     '$installUrl = \'' . str_replace('index.php','',$_SERVER['HTTP_REFERER']) . '\';',
     '$forumUrl = \'' . $forumUrl . '\';',
+    '$forumTablePrefix = \'' . $forumTablePrefix . '\';',
+    '$forumSalt = \'' . $forumSalt . '\';',
+    '$superUsers = array(' . ($forum == 'phpbb' ? 2 : 1) . ');',
+    '$salts = array(
+  101 => \'xxx\',
+);',
   );
+
+
 
   $baseNew = str_replace($find,$replace,$base);
   echo $baseNew;

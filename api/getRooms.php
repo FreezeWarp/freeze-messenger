@@ -106,7 +106,7 @@ foreach ($rooms AS $id => $room2) {
 
 if ($rooms2) {
   foreach ($rooms2 AS $room) {
-    $fav = (in_array($room['id'],$favRooms) ? 'true' : 'false');
+    $fav = (in_array($room['roomId'],$favRooms) ? 'true' : 'false');
 
     $xmlData['getRooms']['rooms']['room ' . $room['messageId']] = array(
       'roomId' => (int)$room['roomId'],

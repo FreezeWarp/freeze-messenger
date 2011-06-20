@@ -255,7 +255,7 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
 
 <form action="#" method="post" id="changeSettingsForm">
   <div id="settings1">
-  <label for="theme">Theme:</label> <select name="settingsOfficialAjax_theme">
+  <label for="theme">Theme:</label> <select name="settingsOfficialAjax_theme" id="settingsOfficialAjax_theme">
     <option value="1">jQueryUI Darkness</option>
     <option value="2">jQueryUI Lightness</option>
     <option value="3">High Contrast Blue</option>
