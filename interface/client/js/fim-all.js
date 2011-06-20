@@ -82,6 +82,33 @@ dia = {
         }
       }
     });
+  },
+
+  dyna : function(content,title,id,width) {
+    var dialog = $('<div style="display: none;" id="' + id +  '">' + content + '</div>').appendTo('body');
+
+    $('button').button();
+
+    var windowWidth = document.documentElement.clientWidth;
+    if (width > windowWidth) {
+      width = windowWidth;
+    }
+    else if (!width) {
+      width = 600;
+    }
+
+    dialog.dialog({
+      width: (width ? width : 600),
+      title: title,
+      hide: "puff",
+      modal: true,
+      autoOpen: false,
+      close: function() {
+        $('#' + id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
+      }
+    });
+
+    return dialog;
   }
 }
 
@@ -379,25 +406,24 @@ function updateVids(searchPhrase) {
 
 
 var standard = {
-  archive : function (idMax,idMin) {
+  archive : function (options) {
     var encrypt = 'base64';
     var lastMessage = 0;
     var firstMessage = 0;
+    var data = '';
 
-    if (idMax) {
-      var where = 'messageIdStart=' + idMax;
+    if (options.idMax) {
+      var where = 'messageIdStart=' + options.idMax;
     }
-    else if (idMin) {
-      var where = 'messageIdEnd=' + idMin;
+    else if (options.idMin) {
+      var where = 'messageIdEnd=' + options.idMin;
     }
     else {
       var where = 'messageIdStart=0';
     }
 
-    $('#archiveMessageList').html('');
-
-    $.ajax({
-      url: apiPath + 'api/getMessages.php?rooms=' + roomId + '&archive=1&messageLimit=20&' + where + '&sessionHash=' + sessionHash,
+    $.when( $.ajax({
+      url: apiPath + 'api/getMessages.php?rooms=' + options.roomId + '&archive=1&messageLimit=20&' + where + '&sessionHash=' + sessionHash,
       type: 'GET',
       timeout: 1000,
       async: true,
@@ -406,6 +432,7 @@ var standard = {
       dataType: "xml",
       cache: false,
       success: function (xml) {
+
         if ($(xml).find('messages > message').length > 0) {
           $(xml).find('messages > message').each(function() {
             var text = unxml($(this).find('htmlText').text().trim());
@@ -437,14 +464,7 @@ var standard = {
               style += 'text-decoration: line-through;';
             }
 
-            var data = '<tr id="archiveMessage' + messageId + '"><td>' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageid="' + messageId + '">' + text + '</td></tr>';
-
-            if (window.reverse) {
-              $('#archiveMessageList').append(data);
-            }
-            else {
-              $('#archiveMessageList').prepend(data);
-            }
+            data += '<tr id="archiveMessage' + messageId + '"><td>' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageid="' + messageId + '">' + text + '</td></tr>';
 
             if (messageId > lastMessage) {
               lastMessage = messageId;
@@ -458,13 +478,12 @@ var standard = {
             contextMenuParse();
           }
         }
-
-        $('#archiveNext').attr('onclick','standard.archive(' + lastMessage + ',false);');
-        $('#archivePrev').attr('onclick','standard.archive(false,' + firstMessage + ');');
       },
       error: function() {
         dia.error('Archive failed to obtain results from server.');
       },
+    })).then(function() {
+      options.callback(data);
     });
   },
 
@@ -1229,9 +1248,24 @@ popup = {
   /*** START Archive ***/
 
   archive : function(roomLocalId) {
-    quickDialogue('<table><thead><tr><th>User</th><th>Time</th><th>Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><button id="archivePrev"><< Prev</button><button id="archiveNext">Next >></button>','Archive','archiveDialogue',1000);
+    dia.dyna('<table><thead><tr><th>User</th><th>Time</th><th>Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><button id="archivePrev"><< Prev</button><button id="archiveNext">Next >></button>','Archive','archiveDialogue',1000);
 
-    var lastMessage = standard.archive(roomLocalId);
+    var lastMessage = standard.archive({
+      roomId: roomLocalId,
+      callback: function(data) {
+        $('#archiveMessageList').html(data);
+
+        $('#archiveNext').click(function() {
+          standard.archive(lastMessage,false);
+        });
+
+        $('#archivePrev').click(function() {
+          standard.archive(false,firstMessage);
+        });
+
+        $('#archiveDialogue').dialog('open');
+      }
+    });
   },
 
   /*** END Archive ***/
