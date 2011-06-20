@@ -119,7 +119,7 @@ switch ($loginMethod) {
 
   case 'vbulletin':
   $sqlUserTable = $forumPrefix . 'user'; // The user table in the login method used.
-  $sqlUserGroupTable = $forumPrefix . 'socialgroup'; // The userGroup table in the login method used.
+  $sqlUserGroupTable = $forumPrefix . 'usergroup'; // The userGroup table in the login method used.
   $sqlMemberGroupTable = $forumPrefix . 'socialgroupmember'; // The userGroup table in the login method used.
   $sqlSessionTable = $forumPrefix . 'session'; // The sessions table in the login method used.
 
@@ -132,8 +132,8 @@ switch ($loginMethod) {
     'options' => 'options', // Options bitfield for some rare uses.
   );
   $sqlUserGroupTableCols = array(
-    'groupId' => 'groupid', // Group ID
-    'groupName' => 'name', // Group Name
+    'groupId' => 'usergroupid', // Group ID
+    'groupName' => 'title', // Group Name
   );
   $sqlMemberGroupTableCols = array(
     'groupId' => 'groupid', // Social Group ID
