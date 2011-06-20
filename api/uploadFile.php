@@ -16,6 +16,7 @@
 
 $apiRequest = true;
 require_once('../global.php');
+require_once('../functions/parserFunctions.php');
 
 
 $validTypes = ($uploadMimes ? $uploadMimes :
@@ -63,9 +64,9 @@ switch ($uploadMethod) {
     $contents = file_get_contents($_FILES['fileUpload']['tmp_name']);
     $md5hash = md5($contents);
 
-    $name = dbEscape($_FILES['fileUpload']['name']);
+    $name = $_FILES['fileUpload']['name'];
     $size = intval(strlen($contents));
-    $mime = dbEscape($_FILES['fileUpload']['type']);
+    $mime = $_FILES['fileUpload']['type'];
 
     $extParts = explode('.',$_FILES['fileUpload']['name']);
     $ext = $extParts[count($extParts) - 1];
@@ -74,15 +75,15 @@ switch ($uploadMethod) {
 
   case 'raw':
   $name = $_POST['file_name'];
-  $data = $_POST['file_data'];
+  $data = fim_urldecode($_POST['file_data']);
   $size = (int) $_POST['file_size'];
-  $md5hash = $_POST['file_md5hash'];
+  $md5hashComp = $_POST['file_md5hash'];
 
   $dataEncode = $_POST['dataEncode'];
 
   switch($dataEncode) {
     case 'base64':
-    $rawData = base64decode($data);
+    $rawData = base64_decode($data);
     break;
 
     default:
@@ -103,7 +104,7 @@ switch ($uploadMethod) {
   }
 
   if ($size) {
-    if (strlen(md5($rawData)) != $size) {
+    if (strlen($rawData) != $size) {
       $failCode = 'badRawSize';
       $failMessage = 'The specified content length did not match the file content.';
 
@@ -115,40 +116,57 @@ switch ($uploadMethod) {
 }
 
 if ($continue) {
+  $md5hash = md5($rawData);
 
   if ($encryptUploads) {
-    list($contentsEncrypted,$iv,$saltNum) = fim_encrypt($contents);
-    $contentsEncrypted = dbEscape($contentsEncrypted);
+    list($contentsEncrypted,$iv,$saltNum) = fim_encrypt($rawData);
     $iv = dbEscape($iv);
     $saltNum = intval($saltNum);
   }
   else {
-    $contentsEncrypted = dbEscape(base64_encode($contents));
+    $contentsEncrypted = base64_encode($rawData);
     $iv = '';
     $saltNum = '';
   }
 
-  if (!$contents) {
+  if (!$rawData) {
     $failMessage = $phrases['uploadErrorFileContents'];
   }
   else {
-    $prefile = dbRows("SELECT v.id, v.fileId FROM {$sqlPrefix}fileVersions AS v, {$sqlPrefix}files AS f WHERE v.md5hash = '$md5hash' AND v.fileId = f.id AND f.userId = $user[userId]");
+    $prefile = dbRows("SELECT v.versionId, v.fileId, v.md5hash FROM {$sqlPrefix}fileVersions AS v, {$sqlPrefix}files AS f WHERE v.md5hash = '$md5hash' AND v.fileId = f.fileId AND f.userId = $user[userId]");
 
     if ($prefile) {
       $webLocation = "{$installUrl}file.php?hash={$prefile[md5hash]}";
 
-      $message = "[img]{$webLocation}[/img]";
+      if (isset($_POST['autoInsert'])) {
+        $room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = " . (int) $_POST['roomId']);
+
+        fim_sendMessage($webLocation,$user,$room,'image');
+      }
     }
     else {
-      dbQuery("INSERT INTO {$sqlPrefix}files (userId, name, size, mime) VALUES ($user[userId], '$name', '$size', '$mime')");
-      $fileId = mysql_insert_id();
+      dbInsert(array(
+        'userId' => $user['userId'],
+        'name' => $name,
+        'mime' => $mime,
+      ),"{$sqlPrefix}files");
 
-      dbQuery("INSERT INTO {$sqlPrefix}fileVersions (fileId, md5hash, salt, iv, contents) VALUES ($fileId, '$md5hash', '$saltNum', '$iv', '$contentsEncrypted')");
+      $fileId = dbInsertId();
+
+      dbInsert(array(
+        'fileId' => $fileId,
+        'md5hash' => $md5hash,
+        'salt' => $saltNum,
+        'iv' => $iv,
+        'contents' => $contentsEncrypted,
+      ),"{$sqlPrefix}fileVersions");
 
       $webLocation = "{$installUrl}file.php?hash={$md5hash}";
 
-      if ($parseFlags) {
-        $message = $webLocation;
+      if (isset($_POST['autoInsert'])) {
+        $room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = " . (int) $_POST['roomId']);
+
+        fim_sendMessage($webLocation,$user,$room,'image');
       }
     }
   }

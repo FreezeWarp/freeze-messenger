@@ -24,29 +24,31 @@ eval(hook('file_start'));
 
 
 $hash = dbEscape($_GET['hash']);
-$fileid = intval($_GET['fileid']);
-$time = intval($_GET['time']);
+$fileid = (int) $_GET['fileid'];
+$time = (int) $_GET['time'];
 
 
 eval(hook('file_prequery'));
 
 
 if ($time && $fileid) {
-  $file = dbRows("SELECT f.size, f.mime, v.salt, v.iv, v.contents, v.time FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS v WHERE v.fileid = $fileid AND UNIX_TIMESTAMP(v.time) = $time AND f.id = v.fileid LIMIT 1");
+  $file = dbRows("SELECT f.mime, v.salt, v.iv, v.contents, v.time FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS v WHERE v.fileid = $fileid AND UNIX_TIMESTAMP(v.time) = $time AND f.fileId = v.fileid LIMIT 1");
 }
 elseif ($fileid) {
-  $file = dbRows("SELECT f.size, f.mime, v.salt, v.iv, v.contents, v.time FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS v WHERE v.fileid = $fileid AND f.id = v.fileid ORDER BY v.time DESC LIMIT 1");
+  $file = dbRows("SELECT f.mime, v.salt, v.iv, v.contents, v.time FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS v WHERE v.fileid = $fileid AND f.fileId = v.fileid ORDER BY v.time DESC LIMIT 1");
 }
 elseif ($hash) {
-  $file = dbRows("SELECT f.size, f.mime, v.salt, v.iv, v.contents, v.time FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS v WHERE v.md5hash = '$hash' AND f.id = v.fileid LIMIT 1");
+  $file = dbRows("SELECT f.mime, v.salt, v.iv, v.contents, v.time FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS v WHERE v.md5hash = '$hash' AND f.fileId = v.fileid LIMIT 1");
 }
-
 
 eval(hook('file_postquery'));
 
-
-$file = fim_decrypt($file,'contents');
-
+if ($file['salt']) {
+  $file = fim_decrypt($file,'contents');
+}
+else {
+  $file['contents'] = base64_decode($file['contents']);
+}
 
 eval(hook('file_predisplay'));
 

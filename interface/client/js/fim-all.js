@@ -715,8 +715,6 @@ var standard = {
           $.cookie('fim3_userId',userId);
 
 
-          $('#messageInput').removeAttr("disabled"); // The user is able to post.
-
           /* Update Permissions */
           userPermissions.createRoom = (parseInt($(xml).find('userPermissions > createRooms').text().trim()) > 0 ? true : false);
           userPermissions.privateRoom = (parseInt($(xml).find('userPermissions > privateRooms').text().trim()) > 0 ? true : false);
@@ -1081,6 +1079,8 @@ var standard = {
     $('#roomName').html(roomIdRef[roomId]);
     $('#messageList').html('');
 
+    windowDraw();
+
     /*** Get Messages ***/
 
     $(document).ready(function() {
@@ -1166,6 +1166,8 @@ popup = {
   /*** START Insert Docs ***/
 
   insertDoc : function(preselect) {
+    var fileContent;
+
     switch(preselect) {
       case 'video':
       var selectTab = 2;
@@ -1186,6 +1188,53 @@ popup = {
       id : 'insertDoc',
       width: 600,
       tabs : true,
+      oF : function() {
+        if (typeof FileReader == 'undefined') {
+          dia.error('Your browser does not support file uploads.');
+          $('#fileUpload').attr('disabled','disabled');
+        }
+        else {
+          $('#fileUpload').change(function() {
+            console.log('FileReader triggered.');
+
+            var reader = new FileReader();
+            files = this.files;
+
+            if (files.length == 0) {
+              dia.error('No files selected!');
+            }
+            else if (files.length > 1) {
+              dia.error('Too many files selected!');
+            }
+            else {
+              console.log('FileReader started.');
+
+              var file = files[0];
+
+              reader.readAsBinaryString(file);
+              reader.onloadend = function() {
+                fileContent = window.btoa(reader.result);
+
+                console.log(fileContent);
+              };
+
+              $('#imageUploadSubmitButton').removeAttr('disabled');
+            }
+          });
+
+
+          $('#uploadFileForm').submit(function() {
+            $.ajax({
+              url: apiPath + 'api/uploadFile.php',
+              type: 'POST',
+              data : 'dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&file_data=' + urlEncode(fileContent) + '&sessionHash=' + sessionHash,
+              cache : false,
+            });
+
+            return false;
+          });
+        }
+      },
       selectTab : selectTab,
     });
   },
@@ -1788,6 +1837,12 @@ function windowDraw() {
 
 
   /*** Draw the chatbox. ***/
+  if (roomId) {
+    $('#messageInput').removeAttr("disabled"); // The user is able to post.
+  }
+  else {
+    $('#messageInput').attr("disabled","disabled"); // The user is able to post.
+  }
 
   $("#icon_settings.reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (settings.reversePostOrder ? 'n' : 's') } );
   $("#icon_help").button({ icons: {primary:'ui-icon-help'} });
