@@ -817,10 +817,14 @@ function fim_outputJson($array, $level = 0) {
     $key = explode(' ',$key);
     $key = $key[0];
 
-    $data .= "$indent\"$key\":\n";
+    $data .= "$indent\"$key\":";
 
     if (is_array($value)) {
-      $data .= '{' . fim_outputJson($value,$level + 1) . '}';
+      $data .= " {
+" . fim_outputJson($value,$level + 1) . "
+$indent},
+
+";
     }
     else {
       if ($value === true) {
@@ -830,18 +834,20 @@ function fim_outputJson($array, $level = 0) {
         $value = 'false';
       }
       elseif (is_string($value)) {
-        $value = '"' . addslashes($value) . '",';
+        $value = '"' . addcslashes($value,"\"\\") . '"';
       }
       if ($value == '') {
         $value = '""';
       }
 
-      $data .= "$indent  $value,\n";
+      $data .= " $value,\n";
     }
   }
 
   if ($level == 0) {
-    return "{ $data }";
+    return "{
+$data
+}";
   }
   else {
     return $data;
