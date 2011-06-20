@@ -371,6 +371,10 @@ function populate() {
     timeout: 5000,
     cache: false,
     success: function(xml) {
+      userList = new Array; // Clear so we don't get repeat values on regeneration.
+      userRef = new Object;
+      userSelectHtml = '';
+
       console.log('Users obtained.');
 
       $(xml).find('user').each(function() {
@@ -401,6 +405,10 @@ function populate() {
       roomRef = new Object;
       roomTableHtml = '';
       roomSelectHtml = '';
+      roomUlHtml = '';
+      roomUlPrivHtml = '';
+      roomUlMyHtml = '';
+      roomUlFavHtml = '';
 
       $(xml).find('room').each(function() {
         var roomName = unxml($(this).find('roomName').text().trim());
@@ -436,6 +444,12 @@ function populate() {
         roomList.push(roomName);
       });
 
+      $('#roomListLong > ul').append('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li><li>My Rooms<ul>' + roomUlMyHtml + '</ul></li><li>General<ul>' + roomUlHtml + '</ul></li><li>Private<ul>' + roomUlPrivHtml + '</ul></li>');
+
+      $('#roomListShort > ul').append('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li>');
+
+      $('#roomName').html(roomIdRef[roomId]);
+
       console.log('Rooms obtained.');
     },
     error: function() {
@@ -466,8 +480,6 @@ function populate() {
     }
   });
 }
-
-populate();
 
 /*********************************************************
  ************************* END ***************************
@@ -640,7 +652,7 @@ var standard = {
         var currentRooms = $("#" + type).val().split(",");
         currentRooms.push(id);
 
-        $("#" + type + "List").append("<span id=\"" + type + "SubList" + id + "\">" + val + " (<a href=\"javascript:void(0);\" onclick=\"removeEntry('" + type + "'," + id + ");\">×</a>), </span>");
+        $("#" + type + "List").append("<span id=\"" + type + "SubList" + id + "\">" + val + " (<a href=\"javascript:void(0);\" onclick=\"autoEntry.removeEntry('" + type + "'," + id + ");\">×</a>), </span>");
         $("#" + type).val(currentRooms.toString(","));
       }
     },
@@ -702,8 +714,6 @@ var standard = {
         var defaultRoomId = parseInt($(xml).find('defaultRoomId').text().trim());
 
         if (valid === 'true') {
-          populate(); // Update users/groups/rooms/etc. based on new credentials.
-
           userId = parseInt($(xml).find('userData > userId').text().trim());
           anonId = parseInt($(xml).find('anonId').text().trim());
           sessionHash = unxml($(xml).find('sessionHash').text().trim());
@@ -793,6 +803,8 @@ var standard = {
           }
         }
 
+        populate();
+        windowDraw();
         windowDynaLinks();
       },
       error: function() {
@@ -1317,6 +1329,22 @@ popup = {
           $('#stylesFIM').attr('href','client/css/' + themes[this.value] + '/fim.css');
 
           $.cookie('fim3_themeId',this.value);
+        });
+
+        $('#settingsOfficialAjax_showAvatars').change(function() {
+          if (this.val() == 'true' && !settings.showAvatars) {
+            settings.showAvatars = true;
+            $('#messageList').html('');
+            $.cookie('fim3_settings',$.cookie('fim3_settings') + 2048);
+
+            first = true;
+          }
+          else if (this.val() != 'true' && settings.showAvatars) {
+            settings.showAvatars = false;
+            $('#messageList').html('');
+            $.cookie('fim3_settings',$.cookie('fim3_settings') - 2048);
+            first = true;
+          }
         });
 
         $("#defaultRoom").autocomplete({
@@ -2135,16 +2163,8 @@ $(document).ready(function() {
 
 
 
-  windowDraw();
-
-
-
 
   /*** WIP ***/
-
-  $('#roomListLong > ul').append('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li><li>My Rooms<ul>' + roomUlMyHtml + '</ul></li><li>General<ul>' + roomUlHtml + '</ul></li><li>Private<ul>' + roomUlPrivHtml + '</ul></li>');
-
-  $('#roomListShort > ul').append('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li>');
 
   $('#showMoreRooms').click(function() {
     $('#roomListShort').slideUp();

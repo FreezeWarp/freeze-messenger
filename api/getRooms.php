@@ -31,7 +31,7 @@ $favRooms = explode(',',$user['favRooms']);
 
 
 $whereClause = ($showDeleted ? '' : '(options & 4 = FALSE) AND ');
-if ($rooms) $whereClause .= ' id IN (' . implode(',',$roomsArray) . ') AND ';
+if ($rooms) $whereClause .= ' roomId IN (' . implode(',',$roomsArray) . ') AND ';
 
 
 switch ($_GET['permLevel']) {
@@ -106,8 +106,6 @@ foreach ($rooms AS $id => $room2) {
 
 if ($rooms2) {
   foreach ($rooms2 AS $room) {
-    $fav = (in_array($room['roomId'],$favRooms) ? 'true' : 'false');
-
     $xmlData['getRooms']['rooms']['room ' . $room['messageId']] = array(
       'roomId' => (int)$room['roomId'],
       'roomName' => ($room['roomName']),
@@ -116,7 +114,7 @@ if ($rooms2) {
       'allowedUsers' => ($room['allowedUsers']),
       'allowedGroups' => ($room['allowedGroups']),
       'moderators' => ($room['moderators']),
-      'favorite' => (bool) $fav,
+      'favorite' => (bool) (in_array($room['roomId'],$favRooms) ? true : false),
       'options' => (int) $room['options'],
       'optionDefinitions' => array(
         'official' => (bool) ($room['options'] & 1),
