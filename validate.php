@@ -214,8 +214,8 @@ if ($flag) {
   // Do nothing.
 }
 else {
-  if ($sessionHash) {
-    $user = dbRows("SELECT u.*, s.sessionId AS anonId, UNIX_TIMESTAMP(s.time) AS sessionTime FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE magicHash = '" . dbEscape($sessionHash) . "'");
+  if ($sessionHash) { //TODO: Security Improvements
+    $user = dbRows("SELECT u.*, s.anonId, UNIX_TIMESTAMP(s.time) AS sessionTime FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE magicHash = '" . dbEscape($sessionHash) . "'");
 
     if ($user) {
       $anonId = $user['anonId'];
@@ -439,11 +439,14 @@ if ($valid) { // If the user is valid, process their preferrences.
 
     dbInsert(array(
       'userId' => $user['userId'],
+      'anonId' => rand(1,10000),
       'time' => array(
         'type' => 'raw',
         'value' => 'NOW()',
       ),
       'magicHash' => dbEscape($sessionHash),
+      'browser' => $_SERVER['HTTP_USER_AGENT'],
+      'ip' => $_SERVER['REMOTE_ADDR'],
     ),"{$sqlPrefix}sessions");
 
     dbDelete("{$sqlPrefix}sessions",array(
@@ -472,7 +475,7 @@ if ($valid) { // If the user is valid, process their preferrences.
 
 
 
-  if ($anonymous) { echo 1;
+  if ($anonId) {
     $user['userName'] .= $anonId;
   }
 

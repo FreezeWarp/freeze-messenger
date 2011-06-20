@@ -24,8 +24,8 @@ foreach ($usersArray AS &$v) {
 }
 
 
-if ($users) {
-  $whereClause .= ' userId IN (' . implode(',',$usersArray) . ') AND ';
+if ($usersArray) {
+  $whereClause .= ' AND userId IN (' . implode(',',$usersArray) . ')';
 }
 
 
@@ -73,7 +73,7 @@ $users = dbRows("SELECT u.userId,
   {$users_columns}
 FROM {$sqlPrefix}users AS u
   {$users_tables}
-WHERE TRUE
+WHERE TRUE {$whereClause}
   {$users_where}
 ORDER BY {$order}
   {$users_order}
