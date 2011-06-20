@@ -350,19 +350,22 @@ if ($valid) { // If the user is valid, process their preferrences.
         $priviledges += 2048;
       }
 
-
-      mysqlQuery("INSERT INTO {$sqlPrefix}users
-      SET userId = " . (int) $user2['userId'] . ',
-        userName = "' . mysqlEscape($user2['userName']) . '",
-        userGroup = ' . (int) $user2['userGroup'] . ',
-        allGroups = "' . mysqlEscape($user2['allGroups']) . '",
-        userFormatStart = "' . mysqlEscape($user2['userFormatStart']) . '",
-        userFormatEnd = "' . mysqlEscape($user2['userFormatEnd']) . '",
-        avatar = "' . mysqlEscape($user2['avatar']) . '",
-        profile = "' . mysqlEscape($user2['profile']) . '",
-        socialGroups = "' . mysqlEscape($socialGroups['groups']) . '",
-        userPrivs = ' . (int) $priviledges . ',
-        lastSync = NOW()'); // Create the new row
+      mysqlInsert(array(
+        'userId' => (int) $user2['userId'],
+        'userName' => mysqlEscape($user2['userName']),
+        'userGroup' => (int) $user2['userGroup'],
+        'allGroups' => mysqlEscape($user2['allGroups']),
+        'userFormatStart' => mysqlEscape($user2['userFormatStart']),
+        'userFormatEnd' => mysqlEscape($user2['userFormatEnd']),
+        'avatar' => mysqlEscape($user2['avatar']),
+        'profile' => mysqlEscape($user2['profile']),
+        'socialGroups' => mysqlEscape($socialGroups['groups']),
+        'userPrivs' => (int) $priviledges,
+        'lastSync' => array(
+          'type' => 'raw',
+          'value' => 'NOW()',
+        ),
+      ),"{$sqlPrefix}users");
 
       $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']);
     }
@@ -422,13 +425,14 @@ if ($valid) { // If the user is valid, process their preferrences.
 
     $sessionHash = fim_generateSession();
 
-    mysqlQuery("INSERT INTO {$sqlPrefix}sessions (userId,
-    time,
-    magicHash)
-    VALUES ($user[userId],
-    NOW(),
-    '" . mysqlEscape($sessionHash) . "'
-    )");
+    mysqlInsert(array(
+      'userId' => $user['userId'],
+      'time' => array(
+        'type' => 'raw',
+        'value' => 'NOW()',
+      ),
+      'magicHash' => mysqlEscape($sessionHash),
+    ),"{$sqlPrefix}sessions");
 
     $anonId = mysqlInsertId();
   } // TODO: Anon Support
