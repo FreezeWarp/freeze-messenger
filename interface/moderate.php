@@ -19,7 +19,8 @@ $reqPhrases = true;
 $reqHooks = true;
 
 require_once('../global.php');
-require_once('templateStart.php');
+
+echo template('templateStart');
 
 eval(hook('moderateStart'));
 
@@ -50,47 +51,46 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
   ' . $rows . '
     </tbody>
   </table>');
-        }
         break;
 
         case 'edit':
         if (in_array($_GET['lang'],array('en','es','jp'))) {
-        $phraseID = intval($_GET['phraseId']);
-        $lang = $_GET['lang'];
+          $phraseID = intval($_GET['phraseId']);
+          $lang = $_GET['lang'];
 
-        $phrase = dbRows("SELECT * FROM {$sqlPrefix}phrases WHERE id = $phraseID");
-        $phrase['text'] = $phrase['text_' . $lang];
+          $phrase = dbRows("SELECT * FROM {$sqlPrefix}phrases WHERE id = $phraseID");
+          $phrase['text'] = $phrase['text_' . $lang];
 
-        echo container("Edit Phrase '$phrase[name]'","
+          echo container("Edit Phrase '$phrase[name]'","
 
-  <link rel=\"stylesheet\" href=\"./client/codemirror/lib/codemirror.css\">
-  <link rel=\"stylesheet\" href=\"./client/codemirror/mode/xml/xml.css\">
-  <script src=\"./client/codemirror/lib/codemirror.js\"></script>
-  <script src=\"./client/codemirror/mode/xml/xml.js\"></script>
+    <link rel=\"stylesheet\" href=\"./client/codemirror/lib/codemirror.css\">
+    <link rel=\"stylesheet\" href=\"./client/codemirror/mode/xml/xml.css\">
+    <script src=\"./client/codemirror/lib/codemirror.js\"></script>
+    <script src=\"./client/codemirror/mode/xml/xml.js\"></script>
 
 
-  <script>
-  $(document).ready(function() {
-    var editor = CodeMirror.fromTextArea(document.getElementById(\"text\"),{
-      mode:  \"xml\"
+    <script>
+    $(document).ready(function() {
+      var editor = CodeMirror.fromTextArea(document.getElementById(\"text\"),{
+        mode:  \"xml\"
+      });
     });
-  });
-  </script>
-  <style type=\"text/css\">
-  .CodeMirror {
-    border: 1px solid white;
-    background-color: white;
-    color: black;
-  }
-  </style>
+    </script>
+    <style type=\"text/css\">
+    .CodeMirror {
+      border: 1px solid white;
+      background-color: white;
+      color: black;
+    }
+    </style>
 
-  <form action=\"./moderate.php?do=phrases&do2=edit2&phraseId=$phrase[id]\" method=\"post\">
-    <label for=\"text\">New Value:</label><br />
-    <textarea name=\"text\" id=\"text\" style=\"width: 100%; height: 300px;\">$phrase[text_en]</textarea><br /><br />
+    <form action=\"./moderate.php?do=phrases&do2=edit2&phraseId=$phrase[id]\" method=\"post\">
+      <label for=\"text\">New Value:</label><br />
+      <textarea name=\"text\" id=\"text\" style=\"width: 100%; height: 300px;\">$phrase[text_en]</textarea><br /><br />
 
-    <button type=\"submit\">Update</button>
-    <input type=\"hidden\" name=\"lang\" value=\"$lang\" />
-  </form>");
+      <button type=\"submit\">Update</button>
+      <input type=\"hidden\" name=\"lang\" value=\"$lang\" />
+    </form>");
         }
         else {
           trigger_error('Language not found.',E_USER_ERROR);
@@ -277,11 +277,7 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
         break;
       }
     }
-    else
-      trigger_error('No permission.');
-    }
     break;
-
 
     case 'censor':
     if ($user['adminPrivs']['modCensor']) {
