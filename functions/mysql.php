@@ -163,13 +163,18 @@ function dbProcessArrayVal($array) {
   $values = array(); // Initialize arrays
 
   foreach($array AS $column => $data) { // Run through each element of the $dataArray, adding escaped columns and values to the above arrays.
-    $columns[] = dbEscape($column);
 
     if (is_int($data)) { // Safe integer - leave it as-is.
+      $columns[] = dbEscape($column);
+      $context[] = 'e';
+
       $values[] = $data;
     }
 
     elseif (is_bool($data)) { // In MySQL, true evals to  1, false evals to 0.
+      $columns[] = dbEscape($column);
+      $context[] = 'e';
+
       if ($data === true) {
         $values[] = 1;
       }
@@ -179,24 +184,45 @@ function dbProcessArrayVal($array) {
     }
 
     elseif (is_null($data)) { // Null data, simply make it empty.
+      $columns[] = dbEscape($column);
+      $context[] = 'e';
+
       $values[] = '""';
     }
 
     elseif (is_array($data)) { // This allows for some more advanced datastructures; specifically, we use it here to define metadata that prevents dbEscape.
-      if($data['type'] == 'raw') {
+      switch($data['context']) {
+        case 'time':
+        $columns[] = 'UNIX_TIMESTAMP(' . dbEscape($column) . ')';
+        break;
+
+        default:
+        $columns[] = dbEscape($column);
+        break;
+      }
+
+      switch($data['type']) {
+        case 'raw':
         $values[] = $data['value'];
-      }
-      else {
+        break;
+
+        default:
         $values[] = '"' . dbEscape($data['value']) . '"';
+        break;
       }
+
+      $context[] = $data['cond'];
     }
 
     else { // String or otherwise; encode it using mysql_escape and put it in quotes
+      $columns[] = dbEscape($column);
+      $context[] = 'e';
+
       $values[] = '"' . dbEscape($data) . '"';
     }
   }
 
-  return array($columns, $values);
+  return array($columns, $values, $context);
 }
 
 
@@ -241,6 +267,42 @@ function dbUpdate($dataArray,$table,$conditionArray = false) {
 
 
 function dbDelete($table,$conditionArray = false) {
+  list($columns,$values,$conditions) = dbProcessArrayVal($conditionArray);
+
+  for ($i = 0; $i < count($columns); $i++) {
+    switch ($conditions[$i]) {
+      case 'e':
+      $csym = '=';
+      break;
+
+      case 'lt':
+      $csym = '<';
+      break;
+
+      case 'gt':
+      $csym = '>';
+      break;
+
+      case 'lte':
+      $csym = '<=';
+      break;
+
+      case 'gte':
+      $csym = '>=';
+      break;
+
+      default:
+      $csym = '=';
+      break;
+    }
+
+    $delete[] = $columns[$i] . $csym . $values[$i];
+  }
+
+  $delete = implode($delete,' AND ');
+
+  $query = "DELETE FROM $table WHERE $delete";
+
   return dbQuery($query);
 }
 

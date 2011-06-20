@@ -450,7 +450,7 @@ if ($valid) { // If the user is valid, process their preferrences.
         'context' => 'time', // We are comparing two times; the column should be processed as a timestamp.
         'value' => 'UNIX_TIMESTAMP(NOW()) - 900',
       ),
-    );
+    ));
 
     $anonId = dbInsertId();
   }

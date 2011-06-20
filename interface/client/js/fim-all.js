@@ -546,7 +546,7 @@ var standard = {
     console.log('Login Initiated');
     var data = '';
 
-    console.log('Encrypted Password: ' + password);
+    console.log('Encrypted Password: ' + options.password);
 
     if (options.userName && options.password) {
       var passwordEncrypt = 'plaintext';
