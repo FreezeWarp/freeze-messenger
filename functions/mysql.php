@@ -236,7 +236,12 @@ function dbInsert($dataArray,$table,$updateArray) {
 
 
 function dbUpdate($dataArray,$table,$conditionArray = false) {
+  return dbQuery($query);
+}
 
+
+function dbDelete($table,$conditionArray = false) {
+  return dbQuery($query);
 }
 
 

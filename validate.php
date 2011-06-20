@@ -216,12 +216,18 @@ if ($flag) {
 else {
   if ($sessionHash) {
     $user = dbRows("SELECT u.*, s.sessionId AS anonId, UNIX_TIMESTAMP(s.time) AS sessionTime FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE magicHash = '" . dbEscape($sessionHash) . "'");
-    $anonId = $user['anonId'];
-    $noSync = true;
-    $valid = true;
 
-    if ($user['sessionTime'] < time() - 300) {
-      $session = 'update';
+    if ($user) {
+      $anonId = $user['anonId'];
+      $noSync = true;
+      $valid = true;
+
+      if ($user['sessionTime'] < time() - 300) {
+        $session = 'update';
+      }
+    }
+    else {
+      define('LOGIN_FLAG','INVALID_SESSION');
     }
   }
 
@@ -263,6 +269,7 @@ else {
 }
 
 ($hook = hook('validate_process') ? eval($hook) : '');
+
 
 
 
@@ -420,7 +427,7 @@ if ($valid) { // If the user is valid, process their preferrences.
   }
 
 
-  if ($session == 'create') {
+  if ($session == 'create') { // TODO: Anon Support
     ($hook = hook('validate_createsession') ? eval($hook) : '');
 
     $sessionHash = fim_generateSession();
@@ -434,8 +441,19 @@ if ($valid) { // If the user is valid, process their preferrences.
       'magicHash' => dbEscape($sessionHash),
     ),"{$sqlPrefix}sessions");
 
+//    dbQuery("DELETE FROM {$sqlPrefix}sessions
+
+    dbDelete("{$sqlPrefix}sessions",array(
+      'time' => array(
+        'type' => 'raw', // Data in the value column should not be escaped.
+        'cond' => 'lte', // Comparison is "<="
+        'context' => 'time', // We are comparing two times; the column should be processed as a timestamp.
+        'value' => 'UNIX_TIMESTAMP(NOW()) - 900',
+      ),
+    );
+
     $anonId = dbInsertId();
-  } // TODO: Anon Support
+  }
 
   elseif ($session == 'update' && $sessionHash) {
     ($hook = hook('validate_updatesession') ? eval($hook) : '');
@@ -555,6 +573,10 @@ if ($api) {
 
     case 'DEPRECATED_VERSION':
     $failMessage = 'The API version specified is deprecated and may no longer be used.';
+    break;
+
+    case 'INVALID_SESSION':
+    $failMessage = 'The specified session is no longer valid.';
     break;
   }
 

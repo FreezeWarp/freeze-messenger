@@ -487,6 +487,8 @@ var standard = {
     });
   },
 
+
+  // TODO
   autoEntry : {
     addEntry : function(type,source) {
       var val = $("#" + type + "Bridge").val();
@@ -538,20 +540,33 @@ var standard = {
     }
   },
 
-  login : function(userName,password) {
-    console.log('Login Initiated');
 
-  // TODO: Enable for vBulletin
-  //  var password = md5(password);
-  //  var passwordEncrypt = 'md5';
-    var passwordEncrypt = 'plaintext';
+
+  login : function(options) {
+    console.log('Login Initiated');
+    var data = '';
 
     console.log('Encrypted Password: ' + password);
+
+    if (options.userName && options.password) {
+      var passwordEncrypt = 'plaintext';
+      // TODO: Enable for vBulletin
+      //  var password = md5(password);
+      //  var passwordEncrypt = 'md5';
+
+      data = 'userName=' + options.userName + '&password=' + options.password + '&passwordEncrypt=' + passwordEncrypt;
+    }
+    else if (options.sessionHash) {
+      data = 'sessionHash=' + options.sessionHash + '&apiLogin=1';
+    }
+    else {
+      data = 'apiLogin=1';
+    }
 
     $.ajax({
       url: apiPath + 'validate.php',
       type: 'POST',
-      data: (password ? 'userName=' + userName + '&password=' + password + '&passwordEncrypt=' + passwordEncrypt : 'sessionHash=' + sessionHash + '&apiLogin=1') + '&apiVersion=3',
+      data: data + '&apiVersion=3',
       cache: false,
       timeout: 2500,
       success: function(xml) {
@@ -635,15 +650,15 @@ var standard = {
             dia.error("The server will not accept this client because it is of a newer version.");
             break;
 
-            default:
-            break;
-          }
-
-          if (sessionHash) {
+            case 'INVALID_SESSION':
             sessionHash = '';
             $.cookie('fim3_sessionHash','');
 
-            standard.login(0,'');
+            dia.error("You have been logged out. Please log-in.");
+            break;
+
+            default:
+            break;
           }
 
           console.log('Login Invalid');
@@ -979,7 +994,10 @@ popup = {
           var userName = $('#loginForm > #userName').val();
           var password = $('#loginForm > #password').val();
 
-          standard.login(userName,password);
+          standard.login({
+            userName : userName,
+            password : password,
+          });
 
           return false; // Don't submit the form.
         });
@@ -1775,7 +1793,14 @@ function contextMenuParse() {
 $(document).ready(function() {
   console.log('Automatic Login Triggered');
 
-  standard.login(0,'');
+  if (sessionHash) {
+    standard.login({
+      sessionHash : sessionHash, // Use existing sessionhash (we can track the user by this if they aren't logged in).
+    });
+  }
+  else {
+    standard.login({}); // Get a sessionhash for guest navigation.
+  }
 
 
 
