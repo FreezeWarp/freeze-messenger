@@ -134,6 +134,8 @@ switch ($loginMethod) {
   $sqlUserGroupTableCols = array(
     'groupId' => 'usergroupid', // Group ID
     'groupName' => 'title', // Group Name
+    'startTag' => 'opentag',
+    'endTag' => 'closetag',
   );
   $sqlMemberGroupTableCols = array(
     'groupId' => 'groupid', // Social Group ID
