@@ -502,15 +502,6 @@ else {
 
 /* The following defines each individual user's options via an associative array. It is highly recommended this be used to referrence settings. */
 
-$user['optionDefs'] = array(
-  'disableFormatting' => ($user['settingsOfficialAjax'] & 16),
-  'disableVideos' => ($user['settingsOfficialAjax'] & 32),
-  'disableImages' => ($user['settingsOfficialAjax'] & 64),
-  'reversePostOrder' => ($user['settingsOfficialAjax'] & 1024),
-  'showAvatars' => ($user['settingsOfficialAjax'] & 2048),
-  'audioDing' => ($user['settingsOfficialAjax'] & 8192),
-);
-
 
 if (in_array($user['userId'],$superUsers)) {
   $user['adminPrivs'] = 65535; // Super-admin, away!!!! (this defines all bitfields up to 32768)
@@ -638,8 +629,8 @@ if ($api) {
           'general' => (int) $user['defaultGeneral']
         ),
       ),
+
       'userPermissions' => $user['userDefs'],
-      'userOptions' => $user['optionDefs'],
       'adminPermissions' => $user['adminDefs'],
     ),
   );

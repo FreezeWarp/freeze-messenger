@@ -162,7 +162,10 @@ var timeout = (longPolling ? 1000000 : 2400);
 var first = true;
 var favicon = $('#favicon').attr('href');
 var longPolling; // Use experimental longPolling technology?
-var layout; // Data layout.
+var layout = $.cookie('fim3_layout').trim(); // TODO
+var settingsBitfield = parseInt($.cookie('fim3_settings'));
+var themeId = parseInt($.cookie('fim3_themeId'));
+
 
 var userPermissions = {
   createRoom : false,
@@ -182,13 +185,27 @@ var adminPermissions = {
 };
 
 var settings = {
-  showAvatars : false, // Use the complex document style?
-  reversePostOrder : false, // Show posts in reverse?
-  audioDing : false, // Fire an HTML5 audio ding during each unread message?
-  disableImages : false,
-  disableVideos : false,
-  disableFormatting : false,
+  showAvatars : (settingsBitfield & 2048 ? true : false), // Use the complex document style?
+  reversePostOrder : (settingsBitfield & 1024 ? true : false), // Show posts in reverse?
+  audioDing : (settingsBitfield & 8192 ? true : false), // Fire an HTML5 audio ding during each unread message?
+  disableImages : (settingsBitfield & 32 ? true : false),
+  disableVideos : (settingsBitfield & 64 ? true : false),
+  disableFormatting : (settingsBitfield & 16 ? true : false),
 };
+
+var themes = {
+  1 : 'ui-darkness',
+  2 : 'ui-lightness',
+  3 : 'redmond',
+  4 : 'cupertino',
+  5 : 'dark-hive',
+  6 : 'start',
+  7 : 'vader',
+  8 : 'trontastic',
+  9 : 'humanity',
+);
+
+var themeName = themes[themeId];
 
 
 

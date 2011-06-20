@@ -16,41 +16,5 @@
 
 
 
-//Layout-Specific Processing, Mainly the Creation of Specific Stylings to be Used
-$layout = $_REQUEST['layout'];
-
-
-
-// Generate the theme, based on:
-// $_REQUEST[style] -> $_REQUST[s][style] -> $user[themeOfficialAjax] -> $defaultTheme -> 4
-// (cookie/get/post specified)               (user specified)            (admin spec.)    (hard coded default)
-
-$theme = ($_REQUEST['style'] ? $_REQUEST['style']
-  : ($_REQUEST['s']['style'] ? $_REQUEST['s']['style']
-    : ($user['themeOfficialAjax'] ? $user['themeOfficialAjax']
-      : ($defaultTheme ? $defaultTheme : 4))));
-
-$styles = array(
-  1 => 'ui-darkness',
-  2 => 'ui-lightness',
-  3 => 'redmond',
-  4 => 'cupertino',
-  5 => 'dark-hive',
-  6 => 'start',
-  7 => 'vader',
-  8 => 'trontastic',
-  9 => 'humanity',
-);
-
-$style = $styles[$theme];
-
-
-
-// Output Headers
-header('Content-type: text/html; charset=utf-8');
-
-
-
-// And, We're Off
 echo template('templateStart');
 ?>

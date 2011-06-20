@@ -36,8 +36,6 @@ CREATE TABLE IF NOT EXISTS `{prefix}users` (
   `defaultColor` varchar(20) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `defaultFontface` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `settings` int(10) NOT NULL DEFAULT 0,
-  `settingsOfficialAjax` int(10) NOT NULL DEFAULT 11264,
-  `themeOfficialAjax` int(10) NOT NULL,
   `userPrivs` int(10) NOT NULL DEFAULT 16,
   `adminPrivs` int(10) NOT NULL,
   PRIMARY KEY (`userId`)
