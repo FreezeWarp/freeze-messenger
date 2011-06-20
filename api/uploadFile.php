@@ -40,6 +40,7 @@ $xmlData = array(
   ),
 );
 
+
 switch ($uploadMethod) {
   case 'file':
   if (!in_array($_FILES['fileUpload']['type'],$validTypes)) {

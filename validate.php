@@ -451,9 +451,11 @@ if ($valid) { // If the user is valid, process their preferrences.
 
     $sessionHash = fim_generateSession();
 
+    $anonId = rand(1,10000);
+
     dbInsert(array(
       'userId' => $user['userId'],
-      'anonId' => rand(1,10000),
+      'anonId' => $anonId,
       'time' => array(
         'type' => 'raw',
         'value' => 'NOW()',
@@ -471,8 +473,6 @@ if ($valid) { // If the user is valid, process their preferrences.
         'value' => 'UNIX_TIMESTAMP(NOW()) - 900',
       ),
     ));
-
-    $anonId = dbInsertId();
   }
 
   elseif ($session == 'update' && $sessionHash) {

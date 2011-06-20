@@ -354,103 +354,20 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
       </div>
     </div>}}
     <div id="textentryBoxMessage">
-      <form id="sendForm" action="#" method="post">{{container}{<div class="leftPart">Enter a Message</div>
+      <form id="sendForm" action="#" method="post">{{container}{
+        <div class="leftPart">
+            {{if="$room[''bbcode''] <= 13"}{<button type="button" class="standard" id="icon_url"></button>}}
+            {{if="$room[''bbcode''] <= 5"}{<button type="button" class="standard" id="icon_image"></button>}}
+            {{if="$room[''bbcode''] <= 2"}{<button type="button" class="standard" id="icon_video"></button>}}
+        </div>
         <div class="rightPart">
           <button type="submit" class="standard" id="icon_submit"></button>
           <button type="reset" class="standard" id="icon_reset"></button>
         </div>}{
         <div id="messageInputContainer" class="middle">
-          {{if="!$light"}{<div id="buttonMenuLeft">
-            {{if="$room[''bbcode''] <= 13"}{<button type="button" onclick="$(''#textentryBoxUrl'').dialog({width : ''600px'', title : ''Insert a Linked Document''});" class="standard" id="icon_url"></button><br />}}
-            {{if="$room[''bbcode''] <= 5"}{<button type="button" onclick="$(''#textentryBoxUpload'').dialog({width : ''600px'', title : ''Insert an Image''});" class="standard" id="icon_upload"></button><br />}}
-            {{if="$room[''bbcode''] <= 2"}{<button type="button" onclick="$(''#textentryBoxYoutube'').dialog({width : ''600px'', title : ''Insert a Youtube Video''});" class="standard" id="icon_video"></button>}}
-          </div>}}
           <textarea onkeypress="if (event.keyCode == 13 && !event.shiftKey) { $(''#sendForm'').trigger(''submit''); return false; }" id="messageInput" autofocus="autofocus" placeholder="Enter your text." style="$textboxStyle"></textarea>
         </div>}}
       </form>
-  </div>
-</div>
-
-<div id="dialogues">
-  <div id="textentryBox">
-    <div id="textentryBoxUpload">
-      <form method="post" enctype="multipart/form-data" target="upload_target" id="uploadFileForm" onsubmit="$(''#textentryBoxUpload'').dialog(''close'');">
-        <fieldset>
-          <legend>Upload from Computer</legend>
-          <label for="fileUpload">File: </label>
-          <input name="fileUpload" id="fileUpload" type="file" onChange="upFiles()" /><br /><br />
-        </fieldset>
-        <fieldset>
-          <legend>Embed from Internet</legend>
-          <label for="urlUpload">URL: </label>
-          <input name="urlUpload" id="urlUpload" type="url" value="http://" onchange="previewUrl()" /></span><br />
-        </fieldset>
-        <fieldset>
-          <legend>Preview & Submit</legend>
-          <div id="preview"></div><br /><br />
-
-          <button onclick="$(''#textentryBoxUpload'').dialog(''close'');" type="button">Cancel</button>
-          <button type="submit" id="imageUploadSubmitButton">Upload</button>
-        </fieldset>
-        <iframe id="upload_target" name="upload_target" class="nodisplay"></iframe>
-        <input type="hidden" name="method" value="image" />
-      </form>
-    </div>
-
-    <div id="textentryBoxUrl">
-      <form action="#" method="post" target="upload_target3" id="linkForm" onsubmit="$(''#textentryBoxUrl'').dialog(''close'');">
-        <fieldset>
-          <legend>Normal Link</legend>
-          <label for="linkUrl">URL: </label>
-          <input name="linkUrl" id="linkUrl" type="url" /><br /><br />
-          {{if="$parseFlags"}{
-          <label for="linkText">Text: </label>
-          <input name="linkText" id="linkText" type="text" /><br /><br />}}
-        </fieldset>
-
-        <fieldset>
-          <legend>eMail Link</legend>
-          <label for="linkEmail">eMail: </label>
-          <input name="linkEmail" id="linkEmail" type="email" /></span><br />
-        </fieldset>
-        <fieldset>
-          <legend>Preview & Submit</legend>
-
-          <button onclick="$(''#textentryBoxUrl'').dialog(''close'');" type="button">Cancel</button>
-          <button type="submit" id="linkSubmitButton">Link</button>
-        </fieldset>
-
-        <iframe id="upload_target3" name="upload_target3" class="nodisplay"></iframe>
-        <input type="hidden" name="method" value="url" />
-      </form>
-    </div>
-
-    <div id="textentryBoxYoutube">
-      <fieldset>
-        <legend>Direct Link</legend>
-        <form action="#" method="post" enctype="multipart/form-data" target="upload_target2" id="uploadYoutubeForm" onsubmit="$(''#textentryBoxYoutube'').dialog(''close'');">
-          <label for="youtubeUpload">URL: </label>
-          <input name="youtubeUpload" id="youtubeUpload" type="url" value="http://" /><br />
-          <button onclick="$(''#textentryBoxYoutube'').dialog(''close'');" type="button">Cancel</button>
-          <button type="submit">Upload</button>
-          <iframe id="upload_target2" name="upload_target2" class="nodisplay"></iframe>
-          <input type="hidden" name="method" value="youtube" />
-        </form>
-      </fieldset>
-      <fieldset>
-        <legend>Search for Videos</legend>
-        <form action="#" onsubmit="return false;">
-          <input type="text" onkeyup="updateVids(this.value);" />
-          <div id="youtubeResultsContainer">
-            <table id="youtubeResults">
-              <tr>
-                <td>Results will appear here...</td>
-              </tr>
-            </table>
-          </div>
-        </form>
-      </fieldset>
-    </div>
   </div>
 </div>');
 
@@ -575,7 +492,97 @@ Keep in mind all content is heavily encrytped for privacy. Private conversations
   <li><a href="javascript:void(0);" data-action="archive">View Archive</a></li>
   <li><a href="javascript:void(0);" data-action="edit">Edit</a></li>
   <li><a href="javascript:void(0);" data-action="delete">Delete</a></li>
-</ul>');
+</ul>'),
+
+(32, 'insertDoc', '', '
+<ul class="tabList">
+  <li><a href="#insertDocLink">Link</a></li>
+  <li><a href="#insertDocImage">Image</a></li>
+  <li><a href="#insertDocVideo">Video</a></li>
+</ul>
+
+<div id="insertDocLink">
+  <form method="post" enctype="multipart/form-data" target="upload_target" id="uploadFileForm" onsubmit="$(''#textentryBoxUpload'').dialog(''close'');">
+    <fieldset>
+      <legend>Upload from Computer</legend>
+      <label for="fileUpload">File: </label>
+      <input name="fileUpload" id="fileUpload" type="file" onChange="upFiles()" /><br /><br />
+    </fieldset><br />
+
+    <fieldset>
+      <legend>Embed from Internet</legend>
+      <label for="urlUpload">URL: </label>
+      <input name="urlUpload" id="urlUpload" type="url" value="http://" onchange="previewUrl()" /></span><br />
+    </fieldset><br />
+
+    <fieldset>
+      <legend>Preview & Submit</legend>
+      <div id="preview"></div><br /><br />
+
+      <button onclick="$(''#textentryBoxUpload'').dialog(''close'');" type="button">Cancel</button>
+      <button type="submit" id="imageUploadSubmitButton">Upload</button>
+    </fieldset>
+    <iframe id="upload_target" name="upload_target" class="nodisplay"></iframe>
+    <input type="hidden" name="method" value="image" />
+  </form>
+</div>
+
+<div id="insertDocImage">
+  <form action="#" method="post" target="upload_target3" id="linkForm" onsubmit="$(''#textentryBoxUrl'').dialog(''close'');">
+    <fieldset>
+      <legend>Normal Link</legend>
+      <label for="linkUrl">URL: </label>
+      <input name="linkUrl" id="linkUrl" type="url" /><br /><br />
+      {{if="$parseFlags"}{
+      <label for="linkText">Text: </label>
+      <input name="linkText" id="linkText" type="text" /><br /><br />}}
+    </fieldset><br />
+
+    <fieldset>
+      <legend>eMail Link</legend>
+      <label for="linkEmail">eMail: </label>
+      <input name="linkEmail" id="linkEmail" type="email" /></span><br />
+    </fieldset><br />
+
+    <fieldset>
+      <legend>Preview & Submit</legend>
+
+      <button onclick="$(''#textentryBoxUrl'').dialog(''close'');" type="button">Cancel</button>
+      <button type="submit" id="linkSubmitButton">Link</button>
+    </fieldset>
+
+    <iframe id="upload_target3" name="upload_target3" class="nodisplay"></iframe>
+    <input type="hidden" name="method" value="url" />
+  </form>
+</div>
+
+<div id="insertDocVideo">
+  <fieldset>
+    <legend>Direct Link</legend>
+    <form action="#" method="post" enctype="multipart/form-data" target="upload_target2" id="uploadYoutubeForm" onsubmit="$(''#textentryBoxYoutube'').dialog(''close'');">
+      <label for="youtubeUpload">URL: </label>
+      <input name="youtubeUpload" id="youtubeUpload" type="url" value="http://" /><br />
+      <button onclick="$(''#textentryBoxYoutube'').dialog(''close'');" type="button">Cancel</button>
+      <button type="submit">Upload</button>
+      <iframe id="upload_target2" name="upload_target2" class="nodisplay"></iframe>
+      <input type="hidden" name="method" value="youtube" />
+    </form>
+  </fieldset><br />
+
+  <fieldset>
+    <legend>Search for Videos (Youtube)</legend>
+    <form action="#" onsubmit="return false;">
+      <input type="text" onkeyup="updateVids(this.value);" />
+      <div id="youtubeResultsContainer">
+        <table id="youtubeResults">
+          <tr>
+            <td>Results will appear here...</td>
+          </tr>
+        </table>
+      </div>
+    </form>
+  </fieldset>
+</div>');
 
 -- DIVIDE
 

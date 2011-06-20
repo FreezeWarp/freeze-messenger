@@ -2252,6 +2252,9 @@ $.fn.tabbedDialog = function (dialogOptions,tabOptions) {
   tabul.addClass('ui-dialog-titlebar');
 }
 
+
+
+
 /* Generic Notify
  * Joseph Todd Parsons
  * http://www.gnu.org/licenses/gpl.html */

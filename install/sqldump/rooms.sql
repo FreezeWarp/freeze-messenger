@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS `{prefix}rooms` (
   `allowedUsers` TEXT(10000) NOT NULL,
   `moderators` TEXT(10000) NOT NULL,
   `options` int(10) NOT NULL,
-  `bbcode` int(2) NOT NULL,
+  `bbcode` int(1) NOT NULL,
   `lastMessageTime` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `lastMessageId` int(10) NOT NULL,
   PRIMARY KEY (`roomId`),

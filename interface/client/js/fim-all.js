@@ -154,6 +154,10 @@ dia = {
       }
     };
 
+    var tabsOptions = {
+      selected : options.selectTab,
+    };
+
 
     var dialog = $('<div style="display: none;" id="' + options.id +  '">' + options.content + '</div>').appendTo('body');
 
@@ -175,13 +179,13 @@ dia = {
           dialog.html(content);
 
           if (options.tabs) {
-            dialog.tabbedDialog(dialogOptions);
+            dialog.tabbedDialog(dialogOptions,tabsOptions);
           }
           else {
             dialog.dialog(dialogOptions);
           }
 
-          $('button').button();
+          windowDraw();
         },
         error : function() {
           overlay.empty().remove();
@@ -195,13 +199,13 @@ dia = {
     }
     else {
       if (options.tabs) {
-        dialog.tabbedDialog(dialogOptions);
+        dialog.tabbedDialog(dialogOptions,tabsOptions);
       }
       else {
         dialog.dialog(dialogOptions);
       }
 
-      $('button').button();
+      windowDraw();
     }
   },
 };
@@ -1150,7 +1154,39 @@ popup = {
 
 
 
-  /*** START Stats***/
+  /*** START Insert Docs ***/
+
+  insertDoc : function(preselect) {
+    switch(preselect) {
+      case 'video':
+      var selectTab = 2;
+      break;
+
+      case 'image':
+      var selectTab = 1;
+      break;
+
+      case 'link':
+      default:
+      var selectTab = 0;
+      break;
+    }
+
+    dia.full({
+      uri : 'template.php?template=insertDoc',
+      id : 'insertDoc',
+      width: 600,
+      tabs : true,
+      selectTab : selectTab,
+    });
+  },
+
+  /*** END Insert Docs ***/
+
+
+
+
+  /*** START Stats ***/
 
   viewStats : function() {
     var statsHtml = new Object;
@@ -1736,6 +1772,8 @@ function windowDraw() {
   $('table > tbody > tr:last-child > td:last-child, table > tr:last-child > td:last-child').addClass('ui-corner-br');
 
   $('button').button();
+  $('legend').addClass('ui-widget-header').addClass('ui-corner-all'); // Can these combine?
+  $('fieldset').addClass('ui-widget ui-widget-content');
 
 
 
@@ -1748,10 +1786,11 @@ function windowDraw() {
   $("#icon_settings").button({ icons: {primary:'ui-icon-wrench'} });
   $("#icon_muteSound").button( "option", "icons", { primary: 'ui-icon-volume-on' } );
   $("#icon_url").button( "option", "icons", { primary: 'ui-icon-link' } );
-  $("#icon_upload").button( "option", "icons", { primary: 'ui-icon-image' } );
+  $("#icon_image").button( "option", "icons", { primary: 'ui-icon-image' } );
   $("#icon_video").button( "option", "icons", { primary: 'ui-icon-video' } );
   $("#icon_submit").button( "option", "icons", { primary: 'ui-icon-circle-check' } );
   $("#icon_reset").button( "option", "icons", { primary: 'ui-icon-circle-close' } );
+
   $("#imageUploadSubmitButton").button( "option", "disabled", true);
 
   $("#icon_settings.reversePostOrder").hover(
@@ -2054,16 +2093,27 @@ $(document).ready(function() {
 
   /*** ??? ***/
 
-  $("#icon_settings.reversePostOrder").click(function() { // TODO
-    var value = (settings.reversePostOrder ? 'false' : 'true');
-
-    location.reload(true);
+  $('#icon_settings.reversePostOrder').click(function() { // TODO
   });
 
+
+  $('#icon_url').click(function() {
+    popup.insertDoc('url');
+  });
+
+  $('#icon_image').click(function() {
+    popup.insertDoc('image');
+  });
+
+  $('#icon_video').click(function() {
+    popup.insertDoc('video');
+  });
+
+
   jQTubeUtil.init({
-    key: "AI39si5_Dbv6rqUPbSe8e4RZyXkDM3X0MAAtOgCuqxg_dvGTWCPzrtN_JLh9HlTaoC01hCLZCxeEDOaxsjhnH5p7HhZVnah2iQ",
-    orderby: "relevance",  // *optional -- "viewCount" is set by default
-    time: "this_month",   // *optional -- "this_month" is set by default
+    key: 'AI39si5_Dbv6rqUPbSe8e4RZyXkDM3X0MAAtOgCuqxg_dvGTWCPzrtN_JLh9HlTaoC01hCLZCxeEDOaxsjhnH5p7HhZVnah2iQ',
+    orderby: 'relevance',  // *optional -- 'viewCount' is set by default
+    time: 'this_month',   // *optional -- 'this_month' is set by default
     maxResults: 20   // *optional -- defined as 10 results by default
   });
 
@@ -2241,9 +2291,8 @@ function windowResize () {
      * "Enter Message" Table Padding: 10px
      *** TD Padding: 2px (on Standard Styling)
      * Message Input Container Padding : 3px (all padding-left)
-     * Left Button Width: 36px
      * Message Input Text Area Padding: 6px */
-    $('#messageInput').css('width',(((windowWidth - 10) * .75) - 10 - 2 - 3 - 36 - 6 - 20)); // Set the messageInput box to fill width.
+    $('#messageInput').css('width',(((windowWidth - 10) * .75) - 10 - 2 - 3 - 6)); // Set the messageInput box to fill width.
 
 
     $('body').css('height',window.innerHeight); // Set the body height to equal that of the window; this fixes many gradient issues in theming.

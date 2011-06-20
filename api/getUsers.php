@@ -15,12 +15,15 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 $apiRequest = true;
+static $usersArray, $reverseOrder;
 
 require_once('../global.php');
 
-$usersArray = explode(',',$_GET['users']);
-foreach ($usersArray AS &$v) {
-  $v = (int) $v;
+if (isset($_GET['users'])) {
+  $usersArray = explode(',',$_GET['users']);
+  foreach ($usersArray AS &$v) {
+    $v = (int) $v;
+  }
 }
 
 
@@ -78,7 +81,6 @@ WHERE TRUE {$whereClause}
 ORDER BY {$order}
   {$users_order}
 {$users_end}",'userId'); // Get all rooms
-
 
 if ($users) {
   foreach ($users AS $userData) {

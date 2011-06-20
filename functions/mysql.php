@@ -84,7 +84,7 @@ function dbQuery($query) {
 * @return void
 * @author Joseph Todd Parsons
 */
-function mydbRowsay($queryData,$index = false) {
+function dbArray($queryData,$index = false) {
   global $queryCounter;
 
   $queryCounter++;
@@ -120,7 +120,7 @@ function mydbRowsay($queryData,$index = false) {
 * @author Joseph Todd Parsons
 */
 function dbRows($query,$index = false) {
-  return mydbRowsay(dbQuery($query),$index);
+  return dbArray(dbQuery($query),$index);
 }
 
 
