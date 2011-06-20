@@ -2244,7 +2244,7 @@ $(document).ready(function() {
   /*** Edit Room ***/
 
   $('a#editRoom').click(function() {
-    popup.editRoom(roomIdLocal);
+    popup.editRoom(roomId);
   });
 
   $('a.editRoomMulti').click(function() {

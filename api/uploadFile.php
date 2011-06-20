@@ -74,11 +74,10 @@ switch ($uploadMethod) {
   break;
 
   case 'raw':
-  $name = $_POST['file_name'];
+  $name = fim_urldecode($_POST['file_name']);
   $data = fim_urldecode($_POST['file_data']);
   $size = (int) $_POST['file_size'];
   $md5hashComp = $_POST['file_md5hash'];
-
   $dataEncode = $_POST['dataEncode'];
 
   switch($dataEncode) {
