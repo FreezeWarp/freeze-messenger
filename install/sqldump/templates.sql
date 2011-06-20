@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `{prefix}templates` (
 -- DIVIDE
 
 INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
-(1, 'templateStart', 'allowRoomCreation,inRoom,allowPrivateRooms,bodyHook,layout,style,template', '<?xml version="1.0" encoding="UTF-8"?>
+(1, 'templateStart', '', '<?xml version="1.0" encoding="UTF-8"?>
 {{if="$phrases[''doctype'']"}{$phrases[doctype]}{<!DOCTYPE HTML>}}
 
 <!-- Original Source Code Copyright © 2011 Joseph T. Parsons. -->
@@ -39,14 +39,6 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
   <meta name="description" content="{{if="$phrases[brandingDescription]"}{$phrases[brandingDescription]}{FreezeMessenger-powered chat program.}}" />
   {{if="$phrases[brandingFavicon]"}{<link rel="icon" id="favicon" href="$phrases[brandingFavicon]" />}}
 
-
-
-
-  <!-- START Styles -->
-
-  <link rel="stylesheet" type="text/css" href="client/css/$style/jquery-ui-1.8.13.custom.css" media="screen" />
-  <link rel="stylesheet" type="text/css" href="client/css/$style/fim.css" media="screen" />
-  <link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" media="screen" />
 
   {{if="$layout == ''alt''"}{<style>
     #menu { display: none; width: 0px; }

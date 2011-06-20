@@ -162,7 +162,7 @@ var timeout = (longPolling ? 1000000 : 2400);
 var first = true;
 var favicon = $('#favicon').attr('href');
 var longPolling; // Use experimental longPolling technology?
-var layout = $.cookie('fim3_layout').trim(); // TODO
+var layout = $.cookie('fim3_layout'); // TODO
 var settingsBitfield = parseInt($.cookie('fim3_settings'));
 var themeId = parseInt($.cookie('fim3_themeId'));
 
@@ -203,9 +203,13 @@ var themes = {
   7 : 'vader',
   8 : 'trontastic',
   9 : 'humanity',
-);
+};
 
-var themeName = themes[themeId];
+var themeName = (themeId ? themes[themeId] : 'cupertino');
+
+$('head').append('<link rel="stylesheet" type="text/css" href="client/css/' + themeName + '/jquery-ui-1.8.13.custom.css" media="screen" />');
+$('head').append('<link rel="stylesheet" type="text/css" href="client/css/' + themeName + '/fim.css" media="screen" />');
+$('head').append('<link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" media="screen" />');
 
 
 
@@ -1567,9 +1571,9 @@ function windowDraw() {
   /*** Draw the chatbox. ***/
 
   $("#icon_settings.reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (settings.reversePostOrder ? 'n' : 's') } );
-  $("#icon_help").button({ icons: {primary:'ui-icon-help'} }).css({height: '32px', width: '32px'});
-  $("#icon_note").button({ icons: {primary:'ui-icon-note'} }).css({height: '32px', width: '32px'});
-  $("#icon_settings").button({ icons: {primary:'ui-icon-wrench'} }).css({height: '32px', width: '32px'});
+  $("#icon_help").button({ icons: {primary:'ui-icon-help'} });
+  $("#icon_note").button({ icons: {primary:'ui-icon-note'} });
+  $("#icon_settings").button({ icons: {primary:'ui-icon-wrench'} });
   $("#icon_muteSound").button( "option", "icons", { primary: 'ui-icon-volume-on' } );
   $("#icon_url").button( "option", "icons", { primary: 'ui-icon-link' } );
   $("#icon_upload").button( "option", "icons", { primary: 'ui-icon-image' } );
