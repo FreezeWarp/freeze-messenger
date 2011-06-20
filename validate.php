@@ -347,17 +347,19 @@ if ($valid) { // If the user is valid, process their preferrences.
       // Get Default Priviledges
       $priviledges = 16; // Can post
 
-      if ($userPermissions['roomCreation']) {
-        $priviledges += 32;
-      }
-      if ($userPermissions['privateRoomCreation']) {
-        $priviledges += 64;
-      }
-      if ($userPermissions['roomsOnline']) {
-        $priviledges += 1024;
-      }
-      if ($userPermissions['postCounts']) {
-        $priviledges += 2048;
+      if (!$anonymous) { // In theory, you can still manually allow anon users to do the other things.
+        if ($userPermissions['roomCreation']) {
+          $priviledges += 32;
+        }
+        if ($userPermissions['privateRoomCreation']) {
+          $priviledges += 64;
+        }
+        if ($userPermissions['roomsOnline']) {
+          $priviledges += 1024;
+        }
+        if ($userPermissions['postCounts']) {
+          $priviledges += 2048;
+        }
       }
 
       dbInsert(array(
@@ -481,7 +483,7 @@ if ($valid) { // If the user is valid, process their preferrences.
 
 }
 
-else { // TODO: Anon Support
+else {
   unset($user);
 
   $user = array(

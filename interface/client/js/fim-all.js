@@ -607,6 +607,7 @@ var standard = {
           adminPermissions.modCensor = (parseInt($(xml).find('adminPermissions > modCensor').text().trim()) > 0 ? true : false);
           adminPermissions.modHooks = (parseInt($(xml).find('adminPermissions > modHooks').text().trim()) > 0 ? true : false);
 
+
           /* Display Dialog to Notify User of Being Logged In */
           if (!userPermissions.general) {
             dia.info('You are now logged in as ' + userName + '. However, you are not allowed to post and have been banned by an administrator.','Logged In');
