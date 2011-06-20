@@ -127,8 +127,6 @@ dia = {
       var autoOpen = true;
     }
 
-    $('button').button();
-
     var windowWidth = document.documentElement.clientWidth;
     if (options.width > windowWidth) {
       options.width = windowWidth;
@@ -182,6 +180,8 @@ dia = {
           else {
             dialog.dialog(dialogOptions);
           }
+
+          $('button').button();
         },
         error : function() {
           overlay.empty().remove();
@@ -200,6 +200,8 @@ dia = {
       else {
         dialog.dialog(dialogOptions);
       }
+
+      $('button').button();
     }
   },
 };
@@ -1423,6 +1425,7 @@ popup = {
       title : 'Archive',
       id : 'archiveDialogue',
       width : 1000,
+      autoOpen : false,
     });
 
     var lastMessage = standard.archive({
