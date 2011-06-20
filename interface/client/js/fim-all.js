@@ -1896,9 +1896,6 @@ function windowDynaLinks() {
   if (!userPermissions.createRoom) {
     $('li > #createRoom').parent().hide();
   }
-  if (!isMod) {
-    $('li > #editRoom').parent().hide();
-  }
   if (!userPermissions.privateRoom) {
     $('li > #privateRoom').parent().hide();
   }
