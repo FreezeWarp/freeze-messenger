@@ -907,12 +907,12 @@ function fim_htmlCompact($data) {
 function modLog($action,$data) {
   global $sqlPrefix, $user;
 
-  $action = dbEscape($action);
-  $data = dbEscape($data);
-  $ip = dbEscape($_SERVER['REMOTE_ADDR']);
-  $userId = intval($user['userId']);
-
-  if (dbQuery("INSERT INTO {$sqlPrefix}modlog (userId, ip, action, data) VALUES ($userId, '$ip', '$action', '$data')")) {
+  if (dbInsert(array(
+    'userId' => (int) $user['userId'],
+    'ip' => $_SERVER['REMOTE_ADDR'],
+    'action' => $action,
+    'data' => $data,
+  ),"{$sqlPrefix}modlog")) {
     return true;
   }
   else {

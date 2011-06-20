@@ -34,6 +34,8 @@ $oldestDate = (int) $_GET['messageDateMin']; // INT
 $messageStart = (int) $_GET['messageIdStart']; // INT
 $messageEnd = (int) $_GET['messageIdEnd']; // INT
 
+$search = $_GET['search']; // STRING
+
 $watchRooms = (bool) $_GET['watchRooms']; // BOOL
 $activeUsers = (bool) $_GET['activeUsers']; // BOOL
 $archive = (bool) $_GET['archive']; // BOOL

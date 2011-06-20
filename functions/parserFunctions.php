@@ -448,17 +448,29 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
 
 
   // Delete old messages from the cache; do so depending on the cache limit set in config.php, or default to 100.
-  if ($messageId2 > 100) {
-    dbQuery("DELETE FROM {$sqlPrefix}messagesCached WHERE id <= " . ($messageId2 - ($cacheTableLimit ? $cacheTableLimit : 100)));
+  $cacheTableLimit = ($cacheTableLimit ? $cacheTableLimit : 100);
+  if ($messageId2 > $cacheTableLimit) {
+    dbDelete("{$sqlPrefix}messagesCached",
+    array('id' => array(
+      'cond' => 'lte',
+      'type' => 'raw',
+      'value' => ($messageId2 - $cacheTableLimit)
+    )));
   }
 
 
 
   // Update room caches.
-  dbQuery("UPDATE {$sqlPrefix}rooms
-SET lastMessageTime = NOW(),
-  lastMessageId = $messageId
-WHERE roomId = $room[roomId]");
+  dbUpdate(array(
+    'lastMessageTime' => array(
+      'type' => 'raw',
+      'value' => 'NOW()',
+    ),
+  ),
+  "{$sqlPrefix}rooms",
+  array(
+     'roomId' => $room['roomId'],
+  ));
 
 
 

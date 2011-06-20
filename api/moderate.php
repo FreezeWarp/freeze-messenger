@@ -341,6 +341,7 @@ switch ($action) {
   }
   break;
 
+
   case 'undeletePost':
   $messageId = (int) $_POST['messageId'];
   $messageData = dbRows("SELECT * FROM {$sqlPrefix}messages WHERE messageId = $messageId");
@@ -396,6 +397,7 @@ switch ($action) {
   }
   break;
 
+
   case 'unkickuser':
   $userId = intval($_POST['userId']);
   $user2 = dbRows("SELECT u1.settings, u2.userId, u2.userName FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userId = $userId AND u2.userId = u1.userId");
@@ -426,6 +428,7 @@ switch ($action) {
     $xmlData['moderate']['response']['success'] = true;
   }
   break;
+
 
   default:
 

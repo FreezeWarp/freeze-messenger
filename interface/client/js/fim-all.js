@@ -521,7 +521,7 @@ function updateVids(searchPhrase) {
 
 
 var standard = {
-  archive : function (options) {
+  archive : function (options,searchText) {
     var encrypt = 'base64';
     var lastMessage = 0;
     var firstMessage = 0;
@@ -1421,7 +1421,7 @@ popup = {
 
   archive : function(roomLocalId) {
     dia.full({
-      content : '<table><thead><tr><th>User</th><th>Time</th><th>Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><button id="archivePrev"><< Prev</button><button id="archiveNext">Next >></button>',
+      content : '<form id="archiveSearch" action="#" method="get"><input type="text" name="searchText" /></form> <table><thead><tr><th>User</th><th>Time</th><th>Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><button id="archivePrev"><< Prev</button><button id="archiveNext">Next >></button>',
       title : 'Archive',
       id : 'archiveDialogue',
       width : 1000,

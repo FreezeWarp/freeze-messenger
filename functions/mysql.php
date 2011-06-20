@@ -261,7 +261,55 @@ function dbInsert($dataArray,$table,$updateArray) {
 
 
 function dbUpdate($dataArray,$table,$conditionArray = false) {
+  list($columns, $values) = dbProcessArrayVal($dataArray);
+
+  for ($i = 0; $i < count($columns); $i++) {
+    $update[] = $columns[$i] . ' = ' . $values[$i];
+  }
+
+  $update = implode($update,', ');
+
+  $query = "UPDATE {$table} SET {$update}";
+
+  if ($conditionArray) {
+    list($columns,$values,$conditions) = dbProcessArrayVal($conditionArray);
+
+    for ($i = 0; $i < count($columns); $i++) {
+      switch ($conditions[$i]) {
+        case 'e':
+        $csym = '=';
+        break;
+
+        case 'lt':
+        $csym = '<';
+        break;
+
+        case 'gt':
+        $csym = '>';
+        break;
+
+        case 'lte':
+        $csym = '<=';
+        break;
+
+        case 'gte':
+        $csym = '>=';
+        break;
+
+        default:
+        $csym = '=';
+        break;
+      }
+
+      $cond[] = $columns[$i] . $csym . $values[$i];
+    }
+
+    $query .= ' WHERE ' . implode($cond,' AND ');
+  }
+
+
   return dbQuery($query);
+
 }
 
 

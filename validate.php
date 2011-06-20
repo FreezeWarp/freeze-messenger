@@ -399,9 +399,14 @@ if ($valid) { // If the user is valid, process their preferrences.
               $currentRooms2[] = (int) $room3; // Rebuild the array without the room ID.
             }
 
-            $newRoomString = dbEscape(implode(',',$currentRooms2));
 
-            dbQuery("UPDATE {$sqlPrefix}users SET favRooms = '$newRoomString' WHERE userId = $user[userId]");
+            dbUpdate(array(
+              'favRooms' => $newRoomString
+            ),
+            "{$sqlPrefix}users",
+            array(
+              'userId' => $user['userId'],
+            ));
 
             $stop = false;
 
@@ -413,17 +418,24 @@ if ($valid) { // If the user is valid, process their preferrences.
       /* Update Social Groups */
       $socialGroups = dbRows("SELECT GROUP_CONCAT($sqlMemberGroupTableCols[groupId] SEPARATOR ',') AS groups FROM {$sqlMemberGroupTable} WHERE {$sqlMemberGroupTableCols[userId]} = $user2[userId] AND $sqlMemberGroupTableCols[type] = '$sqlMemberGroupTableCols[validType]'");
 
-      dbQuery('UPDATE ' . $sqlPrefix . 'users
-      SET userName = "' . dbEscape($user2['userName']) . '",
-        userGroup = ' . (int) $user2['userGroup'] . ',
-        allGroups = "' . dbEscape($user2['allGroups']) . '",
-        userFormatStart = "' . dbEscape($user2['userFormatStart']) . '",
-        userFormatEnd = "' . dbEscape($user2['userFormatEnd']) . '",
-        avatar = "' . dbEscape($user2['avatar']) . '",
-        profile = "' . dbEscape($user2['profile']) . '",
-        socialGroups = "' . dbEscape($socialGroups['groups']) . '",
-        lastSync = NOW()
-      WHERE userId = ' . (int) $user2['userId']); // Create the new row
+      dbUpdate(array(
+        'userName' => $user2['usernName'],
+        'userGroup' => $user2['userGroup'],
+        'allGroups' => $user2['allGroups'],
+        'userFormatStart' => $user2['userFormatStart'],
+        'userFormatStart' => $user2['userFormatStart'],
+        'avatar' => $user2['avatar'],
+        'profile' => $user2['profile'],
+        'socialGroups' => $socialGroups['groups'],
+        'lastSync' => array(
+          'type' => 'raw',
+          'value' => 'NOW()',
+        ),
+      ),
+      "{$sqlPrefix}users",
+      array(
+        'userId' => (int) $user2['userId'],
+      ));
 
       $userprefs = dbRows('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
     }
@@ -466,9 +478,16 @@ if ($valid) { // If the user is valid, process their preferrences.
   elseif ($session == 'update' && $sessionHash) {
     ($hook = hook('validate_updatesession') ? eval($hook) : '');
 
-    dbQuery("UPDATE {$sqlPrefix}sessions
-    SET time = NOW()
-    WHERE magicHash = '" . dbEscape($sessionHash) . "'");
+    dbUpdate(array(
+      'time' => array(
+        'type' => 'raw',
+        'value' => 'NOW()',
+      ),
+    ),
+    "{$sqlPrefix}sessions",
+    array(
+      "magicHash" => $sessionHash,
+    ));
   }
 
   else {
