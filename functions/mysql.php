@@ -29,7 +29,7 @@
 * @return void
 * @author Joseph Todd Parsons
 */
-function mysqlConnect($host,$user,$password,$database) {
+function dbConnect($host,$user,$password,$database) {
   if (!mysql_connect($host,$user,$password)) {
     return false;
   }
@@ -52,7 +52,7 @@ function mysqlConnect($host,$user,$password,$database) {
 * @return string - The escaped data.
 * @author Joseph Todd Parsons
 */
-function mysqlEscape($string) {
+function dbEscape($string) {
   return mysql_real_escape_string($string);
 }
 
@@ -64,7 +64,7 @@ function mysqlEscape($string) {
 * @return The object returned by the query.
 * @author Joseph Todd Parsons
 */
-function mysqlQuery($query) {
+function dbQuery($query) {
   if ($queryData = mysql_query($query)) {
     return $queryData;
   }
@@ -84,7 +84,7 @@ function mysqlQuery($query) {
 * @return void
 * @author Joseph Todd Parsons
 */
-function mysqlArray($queryData,$index = false) {
+function mydbRowsay($queryData,$index = false) {
   global $queryCounter;
 
   $queryCounter++;
@@ -119,20 +119,20 @@ function mysqlArray($queryData,$index = false) {
 * @return void
 * @author Joseph Todd Parsons
 */
-function sqlArr($query,$index = false) {
-  return mysqlArray(mysqlQuery($query),$index);
+function dbRows($query,$index = false) {
+  return mydbRowsay(dbQuery($query),$index);
 }
 
 
 /**
 * Processes a MySQL object and returns a formatted string based of function.
 *
-* @param string $queryData - An object returned by mysqlQuery
+* @param string $queryData - An object returned by dbQuery
 * @param string $format - The format each row will be processed uner.
 * @return mixed - false if $queryData is false, otherwise the formatted string.
 * @author Joseph Todd Parsons
 */
-function mysqlReadThrough($queryData,$format) {
+function dbReadThrough($queryData,$format) {
   $queryData2 = $queryData;
 
   if ($queryData) {
@@ -158,12 +158,12 @@ function mysqlReadThrough($queryData,$format) {
 * @return array - An array containing two seperate arrays containing columns and values respectively.
 * @author Joseph Todd Parsons
 */
-function mysqlProcessArrayVal($array) {
+function dbProcessArrayVal($array) {
   $columns = array(); // Initialize arrays
   $values = array(); // Initialize arrays
 
   foreach($array AS $column => $data) { // Run through each element of the $dataArray, adding escaped columns and values to the above arrays.
-    $columns[] = mysqlEscape($column);
+    $columns[] = dbEscape($column);
 
     if (is_int($data)) { // Safe integer - leave it as-is.
       $values[] = $data;
@@ -182,17 +182,17 @@ function mysqlProcessArrayVal($array) {
       $values[] = '""';
     }
 
-    elseif (is_array($data)) { // This allows for some more advanced datastructures; specifically, we use it here to define metadata that prevents mysqlEscape.
+    elseif (is_array($data)) { // This allows for some more advanced datastructures; specifically, we use it here to define metadata that prevents dbEscape.
       if($data['type'] == 'raw') {
         $values[] = $data['value'];
       }
       else {
-        $values[] = '"' . mysqlEscape($data['value']) . '"';
+        $values[] = '"' . dbEscape($data['value']) . '"';
       }
     }
 
     else { // String or otherwise; encode it using mysql_escape and put it in quotes
-      $values[] = '"' . mysqlEscape($data) . '"';
+      $values[] = '"' . dbEscape($data) . '"';
     }
   }
 
@@ -209,9 +209,9 @@ function mysqlProcessArrayVal($array) {
 * @return bool - true on success, false on failure
 * @author Joseph Todd Parsons
 */
-function mysqlInsert($dataArray,$table,$updateArray) {
+function dbInsert($dataArray,$table,$updateArray) {
 
-  list($columns,$values) = mysqlProcessArrayVal($dataArray);
+  list($columns,$values) = dbProcessArrayVal($dataArray);
 
   $columns = implode(',',$columns); // Convert the column array into to a string.
   $values = implode(',',$values); // Convert the data array into a string.
@@ -219,7 +219,7 @@ function mysqlInsert($dataArray,$table,$updateArray) {
   $query = "INSERT INTO $table ($columns) VALUES ($values)";
 
   if ($updateArray) { // This is used for an ON DUPLICATE KEY request.
-    list($columns, $values) = mysqlProcessArrayVal($updateArray);
+    list($columns, $values) = dbProcessArrayVal($updateArray);
 
     for ($i = 0; $i < count($columns); $i++) {
       $update[] = $columns[$i] . '=' . $values[$i];
@@ -231,11 +231,11 @@ function mysqlInsert($dataArray,$table,$updateArray) {
 
   }
 
-  return mysqlQuery($query);
+  return dbQuery($query);
 }
 
 
-function mysqlUpdate($dataArray,$table,$conditionArray = false) {
+function dbUpdate($dataArray,$table,$conditionArray = false) {
 
 }
 
@@ -243,10 +243,10 @@ function mysqlUpdate($dataArray,$table,$conditionArray = false) {
 /**
 * Returns the insert ID of the last run query.
 *
-* @return link - A resource created by mysqlQuery
+* @return link - A resource created by dbQuery
 * @author Joseph Todd Parsons
 */
-function mysqlInsertId($link = false) {
+function dbInsertId($link = false) {
   if ($link) {
     return mysql_insert_id($link);
   }
@@ -276,11 +276,11 @@ function iif($condition,$true,$false) {
 /**
 * Closes a MySQL resource.
 *
-* @param link - A resource created by mysqlConnect
+* @param link - A resource created by dbConnect
 * @return void - true on success, false on failure
 * @author Joseph Todd Parsons
 */
-function mysqlClose($link = false) {
+function dbClose($link = false) {
   if ($link) {
     mysql_close();
   }

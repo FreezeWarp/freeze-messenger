@@ -34,7 +34,7 @@ $xmlData = array(
 ($hook = hook('getFonts_start') ? eval($hook) : '');
 
 
-$fonts = sqlArr("SELECT f.fontId AS fontId,
+$fonts = dbRows("SELECT f.fontId AS fontId,
   f.name AS fontName,
   f.data AS fontData,
   f.category AS fontGroup
@@ -73,5 +73,5 @@ $xmlData['getFonts']['errortext'] = ($failMessage);
 
 echo fim_outputApi($xmlData);
 
-mysqlClose();
+dbClose();
 ?>

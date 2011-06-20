@@ -55,5 +55,5 @@ $xmlData = array(
 
 echo fim_outputApi($xmlData);
 
-mysqlClose();
+dbClose();
 ?>

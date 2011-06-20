@@ -46,7 +46,7 @@ $xmlData = array(
 ($hook = hook('getUploads_eachUpload_start') ? eval($hook) : '');
 
 
-$uploads = sqlArr("SELECT v.fileId, f.mime, f.size, f.name, f.rating, v.md5hash
+$uploads = dbRows("SELECT v.fileId, f.mime, f.size, f.name, f.rating, v.md5hash
   FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS v
   WHERE f.userId = $user[userId] AND f.id = v.fileId",'fileId');
 
@@ -72,5 +72,5 @@ if ($uploads) {
 
 echo fim_outputApi($xmlData);
 
-mysqlClose();
+dbClose();
 ?>

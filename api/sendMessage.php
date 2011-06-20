@@ -22,14 +22,14 @@ require_once('../functions/parserFunctions.php');
 $message = fim_urldecode($_POST['message']);
 
 $roomId = (int) $_POST['roomId'];
-$room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
-$ip = mysqlEscape($_SERVER['REMOTE_ADDR']); // Get the IP address of the user.
+$room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
+$ip = dbEscape($_SERVER['REMOTE_ADDR']); // Get the IP address of the user.
 
 
 ($hook = hook('sendMessage_start') ? eval($hook) : '');
 
 
-$words = sqlArr("SELECT w.word, w.severity, w.param
+$words = dbRows("SELECT w.word, w.severity, w.param
 FROM {$sqlPrefix}censorLists AS l, {$sqlPrefix}censorWords AS w
 WHERE w.listId = l.listId AND (w.severity = 'warn' OR w.severity = 'confirm' OR w.severity = 'block')",'word');
 
@@ -96,10 +96,10 @@ if ($continue) {
   elseif (strpos($message, '/topic') === 0) {
     $title = preg_replace('/^\/topic (.+?)$/i','$1',$message);
 
-    $title = mysqlEscape(fimParse_censorParse($title)); // Parses the sources for MySQL and UTF8. We will also censor, but no BBcode.
+    $title = dbEscape(fimParse_censorParse($title)); // Parses the sources for MySQL and UTF8. We will also censor, but no BBcode.
 
     fim_sendMessage('/me changed the topic to ' . $title,$user,$room,'topic');
-    mysqlQuery("UPDATE {$sqlPrefix}rooms SET topic = '$title' WHERE roomId = $room[id]");
+    dbQuery("UPDATE {$sqlPrefix}rooms SET topic = '$title' WHERE roomId = $room[id]");
   }
   else {
     if (strpos($message, '/me') === 0) { $flag = 'me'; }
@@ -139,5 +139,5 @@ $xmlData = array(
 
 echo fim_outputApi($xmlData);
 
-mysqlClose();
+dbClose();
 ?>

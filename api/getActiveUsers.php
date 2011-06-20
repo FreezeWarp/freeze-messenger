@@ -57,7 +57,7 @@ if (!$roomsArray) {
 }
 else {
   foreach ($roomsArray AS $roomId) {
-    $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
+    $room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
 
     ($hook = hook('getActiveUsers_eachRoom_start') ? eval($hook) : '');
 
@@ -69,7 +69,7 @@ else {
 
     $xmlData['getActiveUsers']['sentData']['roomsList']['room ' . $room['roomId']] = $room['roomId'];
 
-    $activeUsers = sqlArr("SELECT
+    $activeUsers = dbRows("SELECT
   u.userName AS userName,
   u.userId AS userId,
   p.status,
@@ -128,5 +128,5 @@ $xmlData['getActiveUsers']['errortext'] = ($failMessage);
 
 echo fim_outputApi($xmlData);
 
-mysqlClose();
+dbClose();
 ?>

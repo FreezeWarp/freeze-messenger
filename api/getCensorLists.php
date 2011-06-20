@@ -41,7 +41,7 @@ $xmlData = array(
 ($hook = hook('getCensorLists_start') ? eval($hook) : '');
 
 
-$censorLists = sqlArr("SELECT c.listId AS listId,
+$censorLists = dbRows("SELECT c.listId AS listId,
   c.name as listName,
   c.type AS listType,
   c.options AS listOptions
@@ -77,5 +77,5 @@ $xmlData['getCensorLists']['errortext'] = ($failMessage);
 
 echo fim_outputApi($xmlData);
 
-mysqlClose();
+dbClose();
 ?>

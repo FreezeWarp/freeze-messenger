@@ -25,7 +25,7 @@ if (isset($_GET['rooms'])) {
 if ($roomsArray) {
   foreach ($roomsArray AS &$v) {
     $v = intval($v);
-    $roomData = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $v");
+    $roomData = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE id = $v");
     if (!hasPermission($roomData,$user,'moderate')) unset($v);
   }
   $roomList = implode(',',$roomsArray);
@@ -71,7 +71,7 @@ $xmlData = array(
 ($hook = hook('getKicks_start') ? eval($hook) : '');
 
 
-$kicks = sqlArr("SELECT k.id AS kickId,
+$kicks = dbRows("SELECT k.id AS kickId,
   k.userId AS userId,
   u.userName AS userName,
   k.roomId AS roomId,
@@ -125,5 +125,5 @@ $xmlData['getKicks']['errortext'] = fim_encodeXml($failMessage);
 
 echo fim_outputApi($xmlData);
 
-mysqlClose();
+dbClose();
 ?>

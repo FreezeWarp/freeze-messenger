@@ -42,25 +42,25 @@ $xmlData = array(
 
 switch ($action) {
   case 'createRoom':
-  $name = substr(mysqlEscape($_POST['name']),0,20); // Limits to 20 characters.
+  $name = substr(dbEscape($_POST['name']),0,20); // Limits to 20 characters.
 
   if (!$name) {
     $failCode = 'noName';
     $failMessage = 'A room name was not supplied.';
   }
   else {
-    if (sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE name = '$name'")) {
+    if (dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE name = '$name'")) {
       $failCode = 'exists';
       $failMessage = 'The room specified already exists.';
     }
     else {
-      $allowedGroups = mysqlEscape($_POST['allowedGroups']);
-      $allowedUsers = mysqlEscape($_POST['allowedUsers']);
-      $moderators = mysqlEscape($_POST['moderators']);
+      $allowedGroups = dbEscape($_POST['allowedGroups']);
+      $allowedUsers = dbEscape($_POST['allowedUsers']);
+      $moderators = dbEscape($_POST['moderators']);
       $options = ($_POST['mature'] ? 2 : 0);
       $bbcode = intval($_POST['bbcode']);
 
-      mysqlQuery("INSERT INTO {$sqlPrefix}rooms (name,allowedGroups,allowedUsers,moderators,owner,options,bbcode) VALUES ('$name','$allowedGroups','$allowedUsers','$moderators',$user[userId],$options,$bbcode)");
+      dbQuery("INSERT INTO {$sqlPrefix}rooms (name,allowedGroups,allowedUsers,moderators,owner,options,bbcode) VALUES ('$name','$allowedGroups','$allowedUsers','$moderators',$user[userId],$options,$bbcode)");
       $insertId = mysql_insert_id();
 
       if ($insertId) {
@@ -75,7 +75,7 @@ switch ($action) {
   break;
 
   case 'editRoom':
-  $name = substr(mysqlEscape($_POST['name']),0,20); // Limits to 20 characters.
+  $name = substr(dbEscape($_POST['name']),0,20); // Limits to 20 characters.
 
   if (!$name) {
     $failCode = 'noName';
@@ -90,14 +90,14 @@ switch ($action) {
     $failMessage = 'The room has been deleted - it can not be edited.';
   }
   else {
-    $data = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE name = '$name'"); // Get existing data.
+    $data = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE name = '$name'"); // Get existing data.
 
     if ($data && $data['id'] != $room['id']) {
       $failCode = 'exists';
       $failMessage = 'The room name specified already exists.';
     }
     else {
-      $listsActive = sqlArr("SELECT * FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomId = $room[id]",'id');
+      $listsActive = dbRows("SELECT * FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomId = $room[id]",'id');
       if ($listsActive) {
         foreach ($listsActive AS $active) {
           $listStatus[$active['listId']] = $active['status'];
@@ -109,7 +109,7 @@ switch ($action) {
         $listsNew[$id] = $list;
       }
 
-      $lists = sqlArr("SELECT * FROM {$sqlPrefix}censorLists AS l WHERE options & 2",'id');
+      $lists = dbRows("SELECT * FROM {$sqlPrefix}censorLists AS l WHERE options & 2",'id');
       foreach ($lists AS $list) {
         if ($list['type'] == 'black' && $listStatus[$list['id']] == 'block') {
           $checked = true;
@@ -122,19 +122,19 @@ switch ($action) {
         }
 
         if ($checked == true && !$listsNew[$list['id']]) {
-          mysqlQuery("INSERT INTO ${sqlPrefix}censorBlackWhiteLists (roomId, listId, status) VALUES ($room[id], $id, 'unblock') ON DUPLICATE KEY UPDATE status = 'unblock'");
+          dbQuery("INSERT INTO ${sqlPrefix}censorBlackWhiteLists (roomId, listId, status) VALUES ($room[id], $id, 'unblock') ON DUPLICATE KEY UPDATE status = 'unblock'");
         }
         elseif ($checked == false && $listsNew[$list['id']]) {
-          mysqlQuery("INSERT INTO ${sqlPrefix}censorBlackWhiteLists (roomId, listId, status) VALUES ($room[id], $id, 'block') ON DUPLICATE KEY UPDATE status = 'block'");
+          dbQuery("INSERT INTO ${sqlPrefix}censorBlackWhiteLists (roomId, listId, status) VALUES ($room[id], $id, 'block') ON DUPLICATE KEY UPDATE status = 'block'");
         }
       }
 
-      $allowedGroups = mysqlEscape($_POST['allowedGroups']);
-      $allowedUsers = mysqlEscape($_POST['allowedUsers']);
-      $moderators = mysqlEscape($_POST['moderators']);
+      $allowedGroups = dbEscape($_POST['allowedGroups']);
+      $allowedUsers = dbEscape($_POST['allowedUsers']);
+      $moderators = dbEscape($_POST['moderators']);
       $options = ($room['options'] & 1) + ($_POST['mature'] ? 2 : 0) + ($room['options'] & 4) + ($room['options'] & 8) + ($_POST['disableModeration'] ? 32 + 0 : 0);
       $bbcode = intval($_POST['bbcode']);
-      mysqlQuery("UPDATE {$sqlPrefix}rooms SET name = '$name', allowedGroups = '$allowedGroups', allowedUsers = '$allowedUsers', moderators = '$moderators', options = '$options', bbcode = '$bbcode' WHERE id = $room[id]");
+      dbQuery("UPDATE {$sqlPrefix}rooms SET name = '$name', allowedGroups = '$allowedGroups', allowedUsers = '$allowedUsers', moderators = '$moderators', options = '$options', bbcode = '$bbcode' WHERE id = $room[id]");
     }
   }
   break;
@@ -144,11 +144,11 @@ switch ($action) {
   $userId = (int) ($_POST['userId']);
 
   if ($userName) {
-    $safename = mysqlEscape($_POST['userName']); // Escape the userName for MySQL.
-    $user2 = sqlArr("SELECT * FROM user WHERE userName = '$safename'"); // Get the user information.
+    $safename = dbEscape($_POST['userName']); // Escape the userName for MySQL.
+    $user2 = dbRows("SELECT * FROM user WHERE userName = '$safename'"); // Get the user information.
   }
   elseif ($userId) {
-    $user2 = sqlArr("SELECT * FROM user WHERE userId = $userId");
+    $user2 = dbRows("SELECT * FROM user WHERE userId = $userId");
   }
   else {
     $failCode = 'baduser';
@@ -162,7 +162,7 @@ switch ($action) {
     $failMessage = 'The user specified is yourself.';
   }
   else {
-    $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE (allowedUsers = '$user[userId],$user2[userId]' OR allowedUsers = '$user2[userId],$user[userId]') AND options & 16"); // Query a group that would match the criteria for a private room.
+    $room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE (allowedUsers = '$user[userId],$user2[userId]' OR allowedUsers = '$user2[userId],$user[userId]') AND options & 16"); // Query a group that would match the criteria for a private room.
     if ($room) {
       $xmlData['moderate']['response']['insertId'] = $room['roomId']; // Already exists; return ID
     }
@@ -172,9 +172,9 @@ switch ($action) {
       $moderators = ''; // Empty
       $options = 48; // 32 - No Moderation; 16 - Private
       $bbcode = 1; // Everything!
-      $name = mysqlEscape("Private IM ($user[userName] and $user2[userName])");
+      $name = dbEscape("Private IM ($user[userName] and $user2[userName])");
 
-      mysqlQuery("INSERT INTO {$sqlPrefix}rooms (name,allowedGroups,allowedUsers,moderators,owner,options,bbcode) VALUES ('$name','$allowedGroups','$allowedUsers','$moderators',$user[userId],$options,$bbcode)");
+      dbQuery("INSERT INTO {$sqlPrefix}rooms (name,allowedGroups,allowedUsers,moderators,owner,options,bbcode) VALUES ('$name','$allowedGroups','$allowedUsers','$moderators',$user[userId],$options,$bbcode)");
       $insertId = mysql_insert_id();
 
       $xmlData['moderate']['response']['insertId'] = $insertId;
@@ -189,7 +189,7 @@ switch ($action) {
   case 'userOptions':
   $userId = (int) $_POST['userId'];
 
-  $userData = sqlArr("SELECT * FROM {$sqlPrefix}users WHERE userId = $userId");
+  $userData = dbRows("SELECT * FROM {$sqlPrefix}users WHERE userId = $userId");
 
   /*** Web Interface Options ***/
 
@@ -313,7 +313,7 @@ switch ($action) {
 
 
   if (isset($_POST['defaultColor'])) {
-    $color = mysqlEscape($_POST['defaultColor']);
+    $color = dbEscape($_POST['defaultColor']);
 
     $userData['theme'] = $theme;
 
@@ -322,15 +322,15 @@ switch ($action) {
 
 
 
-  mysqlQuery("UPDATE {$sqlPrefix}users SET themeOfficialAjax = $userData[theme], adminPrivs = $userData[adminPrivs], userPrivs = $userData[userPrivs], settingsOfficialAjax = $userData[settingsOfficialAjax]");
+  dbQuery("UPDATE {$sqlPrefix}users SET themeOfficialAjax = $userData[theme], adminPrivs = $userData[adminPrivs], userPrivs = $userData[userPrivs], settingsOfficialAjax = $userData[settingsOfficialAjax]");
 
   break;
 
 
   case 'deletePost':
   $messageId = (int) $_POST['messageId'];
-  $messageData = sqlArr("SELECT * FROM {$sqlPrefix}messages WHERE messageId = $messageId");
-  $roomData = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $messageData[roomId]");
+  $messageData = dbRows("SELECT * FROM {$sqlPrefix}messages WHERE messageId = $messageId");
+  $roomData = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $messageData[roomId]");
 
   if (fim_hasPermission($roomData,$user,'moderate')) {
     $xmlData['moderate']['response']['success'] = true;
@@ -343,8 +343,8 @@ switch ($action) {
 
   case 'undeletePost':
   $messageId = (int) $_POST['messageId'];
-  $messageData = sqlArr("SELECT * FROM {$sqlPrefix}messages WHERE messageId = $messageId");
-  $roomData = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $messageData[roomId]");
+  $messageData = dbRows("SELECT * FROM {$sqlPrefix}messages WHERE messageId = $messageId");
+  $roomData = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $messageData[roomId]");
 
   if (fim_hasPermission($roomData,$user,'moderate')) {
     $xmlData['moderate']['response']['success'] = true;
@@ -358,10 +358,10 @@ switch ($action) {
 
   case 'kickUser':
   $userId = (int) $_POST['userId'];
-  $user2 = sqlArr("SELECT * FROM {$sqlPrefix}users WHERE userId = $userId");
+  $user2 = dbRows("SELECT * FROM {$sqlPrefix}users WHERE userId = $userId");
 
   $roomId = (int) $_POST['roomId'];
-  $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
+  $room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
 
   $time = (int) floor($_POST['time'] * $_POST['interval']);
 
@@ -387,7 +387,7 @@ switch ($action) {
   else {
     modLog('kick',"$user2[userId],$room[roomId]");
 
-    mysqlQuery("INSERT INTO {$sqlPrefix}kick (userId, kickerId, length, room) VALUES ($user2[userId], $user[userId], $time, $room[roomId])");
+    dbQuery("INSERT INTO {$sqlPrefix}kick (userId, kickerId, length, room) VALUES ($user2[userId], $user[userId], $time, $room[roomId])");
 
     require_once('../functions/parserFunctions.php');
     fim_sendMessage('/me kicked ' . $user2['userName'],$user,$room);
@@ -398,10 +398,10 @@ switch ($action) {
 
   case 'unkickuser':
   $userId = intval($_POST['userId']);
-  $user2 = sqlArr("SELECT u1.settings, u2.userId, u2.userName FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userId = $userId AND u2.userId = u1.userId");
+  $user2 = dbRows("SELECT u1.settings, u2.userId, u2.userName FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userId = $userId AND u2.userId = u1.userId");
 
   $room = intval($_POST['roomId']);
-  $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
+  $room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
 
   if (!$user2['userId']) {
     $failCode = 'baduser';
@@ -418,7 +418,7 @@ switch ($action) {
   else {
     modLog('unkick',"$user2[userId],$room[id]");
 
-    mysqlQuery("DELETE FROM {$sqlPrefix}kick WHERE userId = $user2[userId] AND room = $room[id]");
+    dbQuery("DELETE FROM {$sqlPrefix}kick WHERE userId = $user2[userId] AND room = $room[id]");
 
     require_once('../functions/parserFunctions.php');
     fim_sendMessage('/me unkicked ' . $user2['userName'],$user,$room);
@@ -440,5 +440,5 @@ $xmlData['moderate']['errortext'] = fim_encodeXml($failMessage);
 echo fim_outputApi($xmlData);
 
 
-mysqlClose();
+dbClose();
 ?>

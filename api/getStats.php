@@ -48,7 +48,7 @@ $xmlData = array(
 ($hook = hook('getStats_start') ? eval($hook) : '');
 
 
-$rooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId IN ($roomList)",'roomId');
+$rooms = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId IN ($roomList)",'roomId');
 
 
 if ($rooms) {
@@ -67,7 +67,7 @@ if ($rooms) {
     ($hook = hook('getStats_eachRoom_preRooms') ? eval($hook) : '');
 
 
-    $totalPosts = sqlArr("SELECT m.messages AS count,
+    $totalPosts = dbRows("SELECT m.messages AS count,
       u.userId AS userId,
       u.userName AS userName,
       u.userFormatStart,
@@ -132,5 +132,5 @@ $xmlData['getStats']['errortext'] = ($failMessage);
 
 echo fim_outputApi($xmlData);
 
-mysqlClose();
+dbClose();
 ?>

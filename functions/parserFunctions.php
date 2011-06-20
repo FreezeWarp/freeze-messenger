@@ -151,12 +151,12 @@ function fimParse_htmlParse($text,$bbcodeLevel = 1) {
 function fimParse_censorParse($text,$roomId = 0) {
   global $sqlPrefix;
 
-  $words = sqlArr("SELECT w.word, w.severity, w.param, l.listId AS listId
+  $words = dbRows("SELECT w.word, w.severity, w.param, l.listId AS listId
 FROM {$sqlPrefix}censorLists AS l, {$sqlPrefix}censorWords AS w
 WHERE w.listId = l.listId AND w.severity = 'replace'",'word');
 
   if ($roomId) {
-    $listsActive = sqlArr("SELECT * FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomId = $roomId",'id');
+    $listsActive = dbRows("SELECT * FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomId = $roomId",'id');
 
     if ($listsActive) {
       foreach ($listsActive AS $active) {
@@ -200,7 +200,7 @@ function fimParse_smilieParse($text) {
 
   switch($loginMethod) {
     case 'vbulletin':
-    $smilies = sqlArr("SELECT smilietext, smiliepath, smilieid FROM {$forumPrefix}smilie",'smilieid');
+    $smilies = dbRows("SELECT smilietext, smiliepath, smilieid FROM {$forumPrefix}smilie",'smilieid');
 
     if (!$smilies) return $text;
 
@@ -213,7 +213,7 @@ function fimParse_smilieParse($text) {
      break;
 
     case 'phpbb':
-    $smilies = sqlArr("SELECT code, smiley_url, smiley_id FROM {$forumPrefix}smilies",'smiley_id');
+    $smilies = dbRows("SELECT code, smiley_url, smiley_id FROM {$forumPrefix}smilies",'smiley_id');
 
     if (!$smilies) return $text;
 
@@ -352,7 +352,7 @@ function fimParse_finalParse($messageText) {
 function fim_sendMessage($messageText,$user,$room,$flag = '') {
   global $sqlPrefix, $parseFlags, $salts, $encrypt, $loginMethod, $sqlUserGroupTableCols, $sqlUserGroupTable;
 
-  $ip = mysqlEscape($_SERVER['REMOTE_ADDR']); // Get the IP address of the user.
+  $ip = dbEscape($_SERVER['REMOTE_ADDR']); // Get the IP address of the user.
 
 
 
@@ -411,7 +411,7 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
 
   // Insert into archive then cache storage.
 
-  mysqlInsert(array(
+  dbInsert(array(
     'roomId' => (int) $room['roomId'],
     'userId' => (int) $user['userId'],
     'rawText' => $messageRaw,
@@ -422,9 +422,9 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
     'ip' => $ip,
     'flag' => $flag,
   ),"{$sqlPrefix}messages");
-  $messageId = mysqlInsertId();
+  $messageId = dbInsertId();
 
-  mysqlInsert(array(
+  dbInsert(array(
     'messageId' => (int) $messageId,
     'roomId' => (int) $room['roomId'],
     'userId' => (int) $user['userId'],
@@ -443,19 +443,19 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
     'flag' => $flag,
   ),"{$sqlPrefix}messagesCached");
 
-  $messageId2 = mysqlInsertId();
+  $messageId2 = dbInsertId();
 
 
 
   // Delete old messages from the cache; do so depending on the cache limit set in config.php, or default to 100.
   if ($messageId2 > 100) {
-    mysqlQuery("DELETE FROM {$sqlPrefix}messagesCached WHERE id <= " . ($messageId2 - ($cacheTableLimit ? $cacheTableLimit : 100)));
+    dbQuery("DELETE FROM {$sqlPrefix}messagesCached WHERE id <= " . ($messageId2 - ($cacheTableLimit ? $cacheTableLimit : 100)));
   }
 
 
 
   // Update room caches.
-  mysqlQuery("UPDATE {$sqlPrefix}rooms
+  dbQuery("UPDATE {$sqlPrefix}rooms
 SET lastMessageTime = NOW(),
   lastMessageId = $messageId
 WHERE roomId = $room[roomId]");
@@ -463,7 +463,7 @@ WHERE roomId = $room[roomId]");
 
 
   // Insert or update a user's room stats.
-  mysqlInsert(array(
+  dbInsert(array(
     'userId' => $user['userId'],
     'roomId' => $room['roomId'],
     'messages' => 1),

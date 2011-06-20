@@ -35,7 +35,7 @@ $continue = true; // Simple "stop" variable used throughout for hooks.
 define("FIM_VERSION","3.0"); // Version to be used by plugins if needed.
 
 
-if (!mysqlConnect($sqlHost,$sqlUser,$sqlPassword,$sqlDatabase)) { // Connect to MySQL
+if (!dbConnect($sqlHost,$sqlUser,$sqlPassword,$sqlDatabase)) { // Connect to MySQL
   die('Could not connect to the database; the application has exitted.'); // Die to prevent furthr execution.
 }
 
@@ -54,7 +54,7 @@ require_once('validate.php'); // User Validation
 ///* Get Phrases *///
 
 if ($reqPhrases) {
-  $phrases2 = sqlArr("SELECT * FROM {$sqlPrefix}phrases",'id');
+  $phrases2 = dbRows("SELECT * FROM {$sqlPrefix}phrases",'id');
 
 
   // Generate the language, based on:
@@ -83,7 +83,7 @@ if ($reqPhrases) {
 ///* Get Code Hooks *///
 
 if ($reqHooks) {
-  $hooks2 = sqlArr("SELECT * FROM {$sqlPrefix}hooks",'id');
+  $hooks2 = dbRows("SELECT * FROM {$sqlPrefix}hooks",'id');
 
   if ($hooks2) {
     foreach ($hooks2 AS $hook) {
@@ -100,7 +100,7 @@ if ($reqHooks) {
 ///* Get Templates *///
 
 if ($reqPhrases) {
-  $templates2 = sqlArr("SELECT * FROM {$sqlPrefix}templates",'id');
+  $templates2 = dbRows("SELECT * FROM {$sqlPrefix}templates",'id');
 
   foreach ($templates2 AS $template) {
     $templates[$template['name']] = $template['data'];

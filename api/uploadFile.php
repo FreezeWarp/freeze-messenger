@@ -62,9 +62,9 @@ switch ($uploadMethod) {
     $contents = file_get_contents($_FILES['fileUpload']['tmp_name']);
     $md5hash = md5($contents);
 
-    $name = mysqlEscape($_FILES['fileUpload']['name']);
+    $name = dbEscape($_FILES['fileUpload']['name']);
     $size = intval(strlen($contents));
-    $mime = mysqlEscape($_FILES['fileUpload']['type']);
+    $mime = dbEscape($_FILES['fileUpload']['type']);
 
     $extParts = explode('.',$_FILES['fileUpload']['name']);
     $ext = $extParts[count($extParts) - 1];
@@ -117,12 +117,12 @@ if ($continue) {
 
   if ($encryptUploads) {
     list($contentsEncrypted,$iv,$saltNum) = fim_encrypt($contents);
-    $contentsEncrypted = mysqlEscape($contentsEncrypted);
-    $iv = mysqlEscape($iv);
+    $contentsEncrypted = dbEscape($contentsEncrypted);
+    $iv = dbEscape($iv);
     $saltNum = intval($saltNum);
   }
   else {
-    $contentsEncrypted = mysqlEscape(base64_encode($contents));
+    $contentsEncrypted = dbEscape(base64_encode($contents));
     $iv = '';
     $saltNum = '';
   }
@@ -131,7 +131,7 @@ if ($continue) {
     $failMessage = $phrases['uploadErrorFileContents'];
   }
   else {
-    $prefile = sqlArr("SELECT v.id, v.fileId FROM {$sqlPrefix}fileVersions AS v, {$sqlPrefix}files AS f WHERE v.md5hash = '$md5hash' AND v.fileId = f.id AND f.userId = $user[userId]");
+    $prefile = dbRows("SELECT v.id, v.fileId FROM {$sqlPrefix}fileVersions AS v, {$sqlPrefix}files AS f WHERE v.md5hash = '$md5hash' AND v.fileId = f.id AND f.userId = $user[userId]");
 
     if ($prefile) {
       $webLocation = "{$installUrl}file.php?hash={$prefile[md5hash]}";
@@ -139,10 +139,10 @@ if ($continue) {
       $message = "[img]{$webLocation}[/img]";
     }
     else {
-      mysqlQuery("INSERT INTO {$sqlPrefix}files (userId, name, size, mime) VALUES ($user[userId], '$name', '$size', '$mime')");
+      dbQuery("INSERT INTO {$sqlPrefix}files (userId, name, size, mime) VALUES ($user[userId], '$name', '$size', '$mime')");
       $fileId = mysql_insert_id();
 
-      mysqlQuery("INSERT INTO {$sqlPrefix}fileVersions (fileId, md5hash, salt, iv, contents) VALUES ($fileId, '$md5hash', '$saltNum', '$iv', '$contentsEncrypted')");
+      dbQuery("INSERT INTO {$sqlPrefix}fileVersions (fileId, md5hash, salt, iv, contents) VALUES ($fileId, '$md5hash', '$saltNum', '$iv', '$contentsEncrypted')");
 
       $webLocation = "{$installUrl}file.php?hash={$md5hash}";
 
@@ -156,5 +156,5 @@ if ($continue) {
 
 echo fim_outputApi($xmlData);
 
-mysqlClose();
+dbClose();
 ?>

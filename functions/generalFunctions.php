@@ -54,7 +54,7 @@ function fim_hasPermission($roomData,$userData,$type = 'post',$trans = false) {
 
   /* Get the User's Kick Status */
   if ($userData['userId']) {
-    $kick = sqlArr("SELECT UNIX_TIMESTAMP(k.time) AS kickedOn,
+    $kick = dbRows("SELECT UNIX_TIMESTAMP(k.time) AS kickedOn,
   UNIX_TIMESTAMP(k.time) + k.length AS expiresOn
 FROM {$sqlPrefix}kick AS k
 WHERE userId = $userData[userId] AND
@@ -907,12 +907,12 @@ function fim_htmlCompact($data) {
 function modLog($action,$data) {
   global $sqlPrefix, $user;
 
-  $action = mysqlEscape($action);
-  $data = mysqlEscape($data);
-  $ip = mysqlEscape($_SERVER['REMOTE_ADDR']);
+  $action = dbEscape($action);
+  $data = dbEscape($data);
+  $ip = dbEscape($_SERVER['REMOTE_ADDR']);
   $userId = intval($user['userId']);
 
-  if (mysqlQuery("INSERT INTO {$sqlPrefix}modlog (userId, ip, action, data) VALUES ($userId, '$ip', '$action', '$data')")) {
+  if (dbQuery("INSERT INTO {$sqlPrefix}modlog (userId, ip, action, data) VALUES ($userId, '$ip', '$action', '$data')")) {
     return true;
   }
   else {

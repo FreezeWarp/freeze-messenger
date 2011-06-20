@@ -66,7 +66,7 @@ $xmlData = array(
 ($hook = hook('getUsers_start') ? eval($hook) : '');
 
 
-$users = sqlArr("SELECT u.userId,
+$users = dbRows("SELECT u.userId,
   u.userName,
   u.userFormatStart,
   u.userFormatEnd
@@ -87,7 +87,7 @@ if ($users) {
 
     switch ($loginMethod) {
       case 'vbulletin':
-      $userDataForums = sqlArr("SELECT joindate AS joinDate
+      $userDataForums = dbRows("SELECT joindate AS joinDate
         {$userDataForumsVBulletin_columns}
       FROM {$sqlUserTable} AS u
         {$userDataForumsVBulletin_tables}
@@ -96,7 +96,7 @@ if ($users) {
       break;
 
       case 'phpbb':
-      $userDataForums = sqlArr("SELECT u.user_posts AS posts,
+      $userDataForums = dbRows("SELECT u.user_posts AS posts,
         u.user_regdate AS joinDate
         {$userDataForumsPHPBB_columns}
       FROM {$sqlUserTable} AS u
@@ -148,5 +148,5 @@ $xmlData['getUsers']['errortext'] = ($failMessage);
 
 echo fim_outputApi($xmlData);
 
-mysqlClose();
+dbClose();
 ?>

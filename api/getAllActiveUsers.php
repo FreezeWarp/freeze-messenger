@@ -44,7 +44,7 @@ $xmlData = array(
 ($hook = hook('getAllActiveUsers_start') ? eval($hook) : '');
 
 
-$activeUsers = sqlArr("SELECT
+$activeUsers = dbRows("SELECT
   u.userName AS userName,
   u.userId AS userId,
   u.userFormatStart AS userFormatStart,
@@ -113,5 +113,5 @@ $xmlData['getAllActiveUsers']['errortext'] = ($failMessage);
 
 echo fim_outputApi($xmlData);
 
-mysqlClose();
+dbClose();
 ?>

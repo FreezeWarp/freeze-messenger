@@ -89,7 +89,7 @@ $xmlData = array(
 ($hook = hook('getRooms_start') ? eval($hook) : '');
 
 
-$rooms = sqlArr("SELECT *
+$rooms = dbRows("SELECT *
 FROM {$sqlPrefix}rooms
 WHERE $whereClause TRUE
   {$messagesCached_where}
@@ -142,5 +142,5 @@ $xmlData['getRooms']['errortext'] = ($failMessage);
 
 echo fim_outputApi($xmlData);
 
-mysqlClose();
+dbClose();
 ?>

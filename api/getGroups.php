@@ -35,7 +35,7 @@ $xmlData = array(
 ($hook = hook('getGroups_start') ? eval($hook) : '');
 
 
-$groups = sqlArr("SELECT $sqlUserGroupTableCols[groupId] AS groupId,
+$groups = dbRows("SELECT $sqlUserGroupTableCols[groupId] AS groupId,
   $sqlUserGroupTableCols[groupName] AS groupName
   {$groups_columns}
 FROM {$sqlUserGroupTable} AS g
@@ -83,5 +83,5 @@ $xmlData['getGroups']['errortext'] = ($failMessage);
 
 echo fim_outputApi($xmlData);
 
-mysqlClose();
+dbClose();
 ?>

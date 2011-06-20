@@ -23,7 +23,7 @@ $statusType = fim_urldecode($_POST['statusType']); // typing, status
 $statusValue = fim_urldecode($_POST['statusValue']);
 
 $roomId = (int) $_POST['roomId'];
-$room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
+$room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
 
 
 ($hook = hook('setStatus_start') ? eval($hook) : '');
@@ -44,12 +44,12 @@ else {
     $value = (int) $statusValue;
   }
   elseif ($statusType == 'status') {
-    $value = mysqlEscape($statusValue);
+    $value = dbEscape($statusValue);
 
     if (!in_array($value,array('available','away','busy','invisible','offline'))) {
       ($hook = hook('setStatus_inner_query ') ? eval($hook) : '');
 
-      mysqlQuery("UPDATE vrc_ping
+      dbQuery("UPDATE vrc_ping
       SET status = '$value'
         {$setStatus_set}
       WHERE userId = $user[userId] AND
@@ -92,5 +92,5 @@ $xmlData = array(
 
 echo fim_outputApi($xmlData);
 
-mysqlClose();
+dbClose();
 ?>

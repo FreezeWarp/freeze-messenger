@@ -30,7 +30,7 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
       switch ($_GET['do2']) {
         case false:
         case 'view':
-        $phrases2 = sqlArr("SELECT * FROM {$sqlPrefix}phrases",'id');
+        $phrases2 = dbRows("SELECT * FROM {$sqlPrefix}phrases",'id');
 
         foreach ($phrases2 AS $phrase) {
           $phrase['text_en'] = nl2br(htmlentities($phrase['text_en']));
@@ -58,7 +58,7 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
         $phraseID = intval($_GET['phraseId']);
         $lang = $_GET['lang'];
 
-        $phrase = sqlArr("SELECT * FROM {$sqlPrefix}phrases WHERE id = $phraseID");
+        $phrase = dbRows("SELECT * FROM {$sqlPrefix}phrases WHERE id = $phraseID");
         $phrase['text'] = $phrase['text_' . $lang];
 
         echo container("Edit Phrase '$phrase[name]'","
@@ -100,9 +100,9 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
         case 'edit2':
         if (in_array($_POST['lang'],array('en','es','jp'))) {
           $phraseID = intval($_GET['phraseId']);
-          $text = mysqlEscape($_POST['text']);
+          $text = dbEscape($_POST['text']);
 
-          mysqlQuery("UPDATE {$sqlPrefix}phrases SET text_$lang = '$text' WHERE id = $phraseID");
+          dbQuery("UPDATE {$sqlPrefix}phrases SET text_$lang = '$text' WHERE id = $phraseID");
 
           modLog('phraseEdit',$phraseID);
 
@@ -125,7 +125,7 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
       switch ($_GET['do2']) {
         case false:
         case 'view':
-        $hooks2 = sqlArr("SELECT * FROM {$sqlPrefix}hooks",'id');
+        $hooks2 = dbRows("SELECT * FROM {$sqlPrefix}hooks",'id');
 
         foreach ($hooks2 AS $hook) {
           $hook['code'] = nl2br(htmlentities($hook['code']));
@@ -150,7 +150,7 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
         case 'edit':
         $hookID = intval($_GET['hookId']);
 
-        $hook = sqlArr("SELECT * FROM {$sqlPrefix}hooks WHERE id = $hookID");
+        $hook = dbRows("SELECT * FROM {$sqlPrefix}hooks WHERE id = $hookID");
 
         echo container("Edit Hook '$hook[name]'","
 
@@ -185,9 +185,9 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
 
         case 'edit2':
         $hookID = intval($_GET['hookId']);
-        $text = mysqlEscape($_POST['text']);
+        $text = dbEscape($_POST['text']);
 
-        mysqlQuery("UPDATE {$sqlPrefix}hooks SET code = '$text' WHERE id = $hookID");
+        dbQuery("UPDATE {$sqlPrefix}hooks SET code = '$text' WHERE id = $hookID");
 
         modLog('hookEdit',$hookID);
 
@@ -205,7 +205,7 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
       switch ($_GET['do2']) {
         case false:
         case 'view':
-        $templates2 = sqlArr("SELECT * FROM {$sqlPrefix}templates",'id');
+        $templates2 = dbRows("SELECT * FROM {$sqlPrefix}templates",'id');
 
         foreach ($templates2 AS $template) {
           $template['code'] = nl2br(htmlentities($template['code']));
@@ -229,7 +229,7 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
         case 'edit':
         $templateID = intval($_GET['templateId']);
 
-        $template = sqlArr("SELECT * FROM {$sqlPrefix}templates WHERE id = $templateID");
+        $template = dbRows("SELECT * FROM {$sqlPrefix}templates WHERE id = $templateID");
 
         echo container("Edit Hook '$template[name]'","
   <link rel=\"stylesheet\" href=\"./client/codemirror/lib/codemirror.css\">
@@ -266,10 +266,10 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
 
         case 'edit2':
         $templateID = intval($_GET['templateId']);
-        $text = mysqlEscape($_POST['text']);
-        $vars = mysqlEscape($_POST['vars']);
+        $text = dbEscape($_POST['text']);
+        $vars = dbEscape($_POST['vars']);
 
-        mysqlQuery("UPDATE {$sqlPrefix}templates SET data = '$text', vars = '$vars' WHERE id = $templateID");
+        dbQuery("UPDATE {$sqlPrefix}templates SET data = '$text', vars = '$vars' WHERE id = $templateID");
 
         modLog('templateEdit',$templateID);
 
@@ -288,7 +288,7 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
       switch($_GET['do2']) {
         case false:
         case 'viewLists':
-        $lists = sqlArr("SELECT * FROM {$sqlPrefix}censorLists WHERE options & 1",'id');
+        $lists = dbRows("SELECT * FROM {$sqlPrefix}censorLists WHERE options & 1",'id');
 
         foreach ($lists AS $list) {
           $options = array();
@@ -353,18 +353,18 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
         case 'addList2':
         $options = array('white','black');
 
-        $listname = mysqlEscape($_POST['name']);
+        $listname = dbEscape($_POST['name']);
         $listtype = (in_array($_POST['name'],$options) ? $_POST['name'] : 'white');
         $listoptions = 1 + ($_POST['candis'] ? 2 : 0) + ($_POST['privdis'] ? 4 : 0) + ($_POST['mature'] ? 8 : 0);
 
-        mysqlQuery("INSERT INTO {$sqlPrefix}censorLists (name, type, options) VALUES ('$listname', '$listtype', '$listoptions')");
+        dbQuery("INSERT INTO {$sqlPrefix}censorLists (name, type, options) VALUES ('$listname', '$listtype', '$listoptions')");
 
         echo container('List Added','The list has been added.<br /><br />' . button('Return to Viewing Lists','./moderate.php?do=censor&do2=viewLists'));
         break;
 
         case 'editList':
         $listId = intval($_GET['listId']);
-        $list = sqlArr("SELECT * FROM {$sqlPrefix}censorLists WHERE id = $listId");
+        $list = dbRows("SELECT * FROM {$sqlPrefix}censorLists WHERE id = $listId");
 
         echo container('Edit Censor List','<form action="./moderate.php?do=censor&do2=editList2&listId=' . $list['id'] . '" method="post">
     <table>
@@ -403,11 +403,11 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
         $options = array('white','black');
 
         $listId = intval($_GET['listId']);
-        $listname = mysqlEscape($_POST['name']);
+        $listname = dbEscape($_POST['name']);
         $listtype = (in_array($_POST['name'],$options) ? $_POST['name'] : 'white');
         $listoptions = 1 + ($_POST['candis'] ? 2 : 0) + ($_POST['privdis'] ? 4 : 0) + ($_POST['mature'] ? 8 : 0);
 
-        mysqlQuery("UPDATE {$sqlPrefix}censorLists SET name = '$listname', type = '$listtype', options = '$listoptions' WHERE id = $listId");
+        dbQuery("UPDATE {$sqlPrefix}censorLists SET name = '$listname', type = '$listtype', options = '$listoptions' WHERE id = $listId");
 
         echo container('List Updated','The list has been updated.<br /><br />' . button('Return to Viewing Lists','./moderate.php?do=censor&do2=viewLists'));
         break;
@@ -417,15 +417,15 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
 
         modLog('deleteCensorList',$listId);
 
-        mysqlQuery("DELETE FROM {$sqlPrefix}censorLists WHERE id = $listId");
-        mysqlQuery("DELETE FROM {$sqlPrefix}censorWords WHERE listId = $listId");
+        dbQuery("DELETE FROM {$sqlPrefix}censorLists WHERE id = $listId");
+        dbQuery("DELETE FROM {$sqlPrefix}censorWords WHERE listId = $listId");
 
         echo container('List Deleted','The list and its words have been deleted.<br /><br />' . button('Return to Viewing Lists','./moderate.php?do=censor&do2=viewLists'));
         break;
 
         case 'viewWords':
         $listId = intval($_GET['listId']);
-        $words = sqlArr("SELECT * FROM {$sqlPrefix}censorWords WHERE listId = $listId",'id');
+        $words = dbRows("SELECT * FROM {$sqlPrefix}censorWords WHERE listId = $listId",'id');
         if ($words) {
           foreach ($words AS $word) {
             $rows .= '    <tr><td>' . $word['word'] . '</td><td>' . $word['severity'] . '</td><td>' . $word['param'] . '</td><td><a href="./moderate.php?do=censor&do2=deleteWord&wordid=' . $word['id'] . '"><img src="images/edit-delete.png" /></a><a href="./moderate.php?do=censor&do2=editWord&wordid=' . $word['id'] . '"><img src="images/document-edit.png" /></a></td></tr>
@@ -485,19 +485,19 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
         case 'addWord2':
         $options = array('replace','warn','confirm','block');
 
-        $wordtext = mysqlEscape($_POST['text']);
+        $wordtext = dbEscape($_POST['text']);
         $wordsev = (in_array($_POST['severity'],$options) ? $_POST['severity'] : 'replace');
-        $wordparam = mysqlEscape($_POST['param']);
+        $wordparam = dbEscape($_POST['param']);
         $listId = intval($_POST['listId']);
 
-        mysqlQuery("INSERT INTO {$sqlPrefix}censorWords (listId, word, severity, param) VALUES ($listId, '$wordtext', '$wordsev', '$wordparam')");
+        dbQuery("INSERT INTO {$sqlPrefix}censorWords (listId, word, severity, param) VALUES ($listId, '$wordtext', '$wordsev', '$wordparam')");
 
         echo container('Word Added','The word has been added.<br /><br />' . button('Return to Viewing Words','./moderate.php?do=censor&do2=viewWords&listId=' . $listId));
         break;
 
         case 'editWord':
         $wordid = intval($_GET['wordid']);
-        $word = sqlArr("SELECT * FROM {$sqlPrefix}censorWords WHERE id = $wordid");
+        $word = dbRows("SELECT * FROM {$sqlPrefix}censorWords WHERE id = $wordid");
 
         echo container('Edit Word "' . $word['word'] . '"','<form action="./moderate.php?do=censor&do2=editWord2" method="post">
   <table>
@@ -531,15 +531,15 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
         $options = array('replace','warn','confirm','block');
 
         $wordid = intval($_POST['wordid']);
-        $word = sqlArr("SELECT * FROM {$sqlPrefix}censorWords WHERE id = $wordid");
+        $word = dbRows("SELECT * FROM {$sqlPrefix}censorWords WHERE id = $wordid");
 
-        $wordtext = mysqlEscape($_POST['text']);
+        $wordtext = dbEscape($_POST['text']);
         $wordsev = (in_array($_POST['severity'],$options) ? $_POST['severity'] : 'replace');
-        $wordparam = mysqlEscape($_POST['param']);
+        $wordparam = dbEscape($_POST['param']);
 
         modLog('editCensorWord',$wordid);
 
-        mysqlQuery("UPDATE {$sqlPrefix}censorWords SET word = '$wordtext', severity = '$wordsev', param = '$wordparam' WHERE id = $wordid");
+        dbQuery("UPDATE {$sqlPrefix}censorWords SET word = '$wordtext', severity = '$wordsev', param = '$wordparam' WHERE id = $wordid");
 
         echo container('Word Changed','The word has been changed.<br /><br />' . button('Return to Viewing Words','./moderate.php?do=censor&do2=viewWords&listId=' . $word['listId']));
         break;
@@ -547,7 +547,7 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
         case 'deleteWord':
         $wordid = intval($_GET['wordid']);
 
-        mysqlQuery("DELETE FROM {$sqlPrefix}censorWords WHERE id = $wordid");
+        dbQuery("DELETE FROM {$sqlPrefix}censorWords WHERE id = $wordid");
 
         modLog('deleteCensorWord',$wordid);
 
@@ -565,7 +565,7 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
       $userId = intval($_GET['userId']);
 
       if ($userId) {
-        $tableCode = mysqlReadThrough(mysqlQuery("SELECT f.id, md5hash, name, deleted FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS fv WHERE userId = $userId AND f.id = fv.fileid AND f.deleted != 1"),'<tr><td><a href="./file.php?hash=$md5hash"><img src="./file.php?hash=$md5hash" style="max-width: 200px; max-height: 200px;" /></a></td><td>$name</td><td><a href="./moderate.php?do=deleteimage&img=$id"><img src="images/edit-delete.png" /></a></td></tr>'); // This process a basic MySQL query, and returns the results as a set of table rows.
+        $tableCode = dbReadThrough(dbQuery("SELECT f.id, md5hash, name, deleted FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS fv WHERE userId = $userId AND f.id = fv.fileid AND f.deleted != 1"),'<tr><td><a href="./file.php?hash=$md5hash"><img src="./file.php?hash=$md5hash" style="max-width: 200px; max-height: 200px;" /></a></td><td>$name</td><td><a href="./moderate.php?do=deleteimage&img=$id"><img src="images/edit-delete.png" /></a></td></tr>'); // This process a basic MySQL query, and returns the results as a set of table rows.
 
         echo container('Moderate and Delete Images','<table class="page rowHover">
     <thead>
@@ -580,7 +580,7 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
   </table>');
       }
       else {
-        $users = mysqlReadThrough(mysqlQuery("SELECT u1.userId, userName FROM user AS u1, {$sqlPrefix}users AS u2 WHERE u2.userId = u1.userId"),'<tr><td>$userId</td><td><a href="./moderate.php?do=showimages&userId=$userId">$userName</a></td></tr>'); // This process a basic MySQL query, and returns the results as a set of table rows.
+        $users = dbReadThrough(dbQuery("SELECT u1.userId, userName FROM user AS u1, {$sqlPrefix}users AS u2 WHERE u2.userId = u1.userId"),'<tr><td>$userId</td><td><a href="./moderate.php?do=showimages&userId=$userId">$userName</a></td></tr>'); // This process a basic MySQL query, and returns the results as a set of table rows.
       }
 
       echo container('Select a User','<table class="page rowHover">
@@ -602,7 +602,7 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
 
       modLog('deleteImage',$id);
 
-      mysqlQuery("UPDATE {$sqlPrefix}files SET deleted = 1 WHERE id = $id");
+      dbQuery("UPDATE {$sqlPrefix}files SET deleted = 1 WHERE id = $id");
 
       echo container('Deleted','The image has been deleted.');
     }
@@ -614,7 +614,7 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
 
       modLog('undeleteImage',$id);
 
-      mysqlQuery("UPDATE {$sqlPrefix}files SET deleted = 0 WHERE id = $id");
+      dbQuery("UPDATE {$sqlPrefix}files SET deleted = 0 WHERE id = $id");
 
       echo container('Deleted','The image has been deleted.');
     }
@@ -622,7 +622,7 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
 
     case 'banuser':
     if ($user['adminPrivs']['modUsers']) {
-      $userTable = mysqlReadThrough(mysqlQuery("SELECT u.userId, u.userName, u2.settings FROM user AS u, {$sqlPrefix}users AS u2 WHERE u2.userId = u.userId AND (u2.settings & 1 = false)"),'<tr><td>$userId</td><td>$userName</td><td><a href="./moderate.php?do=banuser2&userId=$userId">Ban</a></td></tr>');
+      $userTable = dbReadThrough(dbQuery("SELECT u.userId, u.userName, u2.settings FROM user AS u, {$sqlPrefix}users AS u2 WHERE u2.userId = u.userId AND (u2.settings & 1 = false)"),'<tr><td>$userId</td><td>$userName</td><td><a href="./moderate.php?do=banuser2&userId=$userId">Ban</a></td></tr>');
 
       echo container('Ban a User','<table class="page rowHover">
     <thead>
@@ -647,7 +647,7 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
 
       modLog('banuser',$userId);
 
-      mysqlQuery("UPDATE {$sqlPrefix}users SET settings = IF(settings & 1 = false,settings + 1,settings) WHERE userId = $userId");
+      dbQuery("UPDATE {$sqlPrefix}users SET settings = IF(settings & 1 = false,settings + 1,settings) WHERE userId = $userId");
 
       echo container('User Banned','The user has been banned.');
     }
@@ -655,7 +655,7 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
 
     case 'unbanuser':
     if ($user['adminPrivs']['modUsers']) {
-      $userTable = mysqlReadThrough(mysqlQuery("SELECT u.userId, u.userName, u2.settings FROM user AS u, {$sqlPrefix}users AS u2 WHERE u2.userId = u.userId AND u2.settings & 1"),'<tr><td>$userId</td><td>$userName</td><td><a href="./moderate.php?do=unbanuser2&userId=$userId">Unban</a></td></tr>');
+      $userTable = dbReadThrough(dbQuery("SELECT u.userId, u.userName, u2.settings FROM user AS u, {$sqlPrefix}users AS u2 WHERE u2.userId = u.userId AND u2.settings & 1"),'<tr><td>$userId</td><td>$userName</td><td><a href="./moderate.php?do=unbanuser2&userId=$userId">Unban</a></td></tr>');
 
       echo container('Unban a User','<table class="page rowHover">
     <thead>
@@ -677,7 +677,7 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
 
       modLog('unbanuser',$userId);
 
-      mysqlQuery("UPDATE {$sqlPrefix}users SET settings = IF(settings & 1,settings - 1,settings) WHERE userId = $userId");
+      dbQuery("UPDATE {$sqlPrefix}users SET settings = IF(settings & 1,settings - 1,settings) WHERE userId = $userId");
 
       echo container('User Unbanned','The user has been unbanned.');
     }
@@ -729,11 +729,11 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
         $offset = intval($_GET['page']) * $limit;
         $nextpage = intval($_GET['page']) + 1;
 
-        $records = sqlArr("SELECT * FROM {$sqlPrefix}ping LIMIT $limit OFFSET $offset",'id');
+        $records = dbRows("SELECT * FROM {$sqlPrefix}ping LIMIT $limit OFFSET $offset",'id');
         foreach ($records AS $id => $record) {
-          $totalPosts = sqlArr("SELECT COUNT(m.id) AS count FROM {$sqlPrefix}messages AS m WHERE room = $record[roomId] AND user = $record[userId] AND m.deleted = false GROUP BY m.user");
+          $totalPosts = dbRows("SELECT COUNT(m.id) AS count FROM {$sqlPrefix}messages AS m WHERE room = $record[roomId] AND user = $record[userId] AND m.deleted = false GROUP BY m.user");
           $totalPosts = intval($totalPosts['count']);
-          mysqlQuery("UPDATE {$sqlPrefix}ping SET messages = $totalPosts WHERE id = $record[id]");
+          dbQuery("UPDATE {$sqlPrefix}ping SET messages = $totalPosts WHERE id = $record[id]");
         }
 
         if ($records) {
@@ -742,16 +742,16 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
         break;
 
         case 'privateroomcache':
-        $rooms = mysqlQuery("SELECT * FROM {$sqlPrefix}rooms WHERE options & 16");
-        while (false !== ($room = (mysqlArray($rooms)))) {
+        $rooms = dbQuery("SELECT * FROM {$sqlPrefix}rooms WHERE options & 16");
+        while (false !== ($room = (mydbRowsay($rooms)))) {
           list($user1id,$user2id) = explode(',',$room['allowedUsers']);
 
           if (!$user1id || !$user2id) {
             $results .= "Failed to Process Room ID $room[id]; Bad allowedUsers definition '$room[allowedUsers]'.<br />";
           }
           else {
-            $user1 = sqlArr("SELECT * FROM user WHERE userId = $user1id");
-            $user2 = sqlArr("SELECT * FROM user WHERE userId = $user2id");
+            $user1 = dbRows("SELECT * FROM user WHERE userId = $user1id");
+            $user2 = dbRows("SELECT * FROM user WHERE userId = $user2id");
 
             if (!$user1['userName']) {
               $results .= "Failed to Process Room ID $room[id]; User ID $user1id no longer exists.<br />";
@@ -760,8 +760,8 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
               $results .= "Failed to Process Room ID $room[id]; User ID $user2id no longer exists.<br />";
             }
             else {
-              $name = mysqlEscape("Private IM ($user1[userName] and $user2[userName])");
-              if (mysqlQuery("UPDATE {$sqlPrefix}rooms SET name = '$name', bbcode = 1, options = 48 WHERE id = $room[id]")) {
+              $name = dbEscape("Private IM ($user1[userName] and $user2[userName])");
+              if (dbQuery("UPDATE {$sqlPrefix}rooms SET name = '$name', bbcode = 1, options = 48 WHERE id = $room[id]")) {
                 $results .= "Processed Room ID $room[id]; Users $user1[userName], $user2[userName]<br />";
               }
               else {
@@ -779,7 +779,7 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
           trigger_error('A default group was not specified in the config.php file.',E_USER_ERROR);
         }
         elseif (!$_GET['confirm']) {
-          $table = mysqlReadThrough(mysqlQuery("SELECT * FROM {$sqlUserTable} WHERE {$sqlUserTableCols[userGroup]} = 0"),'<tr><td>$userId</td><td>$userName</td></tr>');
+          $table = dbReadThrough(dbQuery("SELECT * FROM {$sqlUserTable} WHERE {$sqlUserTableCols[userGroup]} = 0"),'<tr><td>$userId</td><td>$userName</td></tr>');
           echo container('Warning','The following users will be affected: <table border="1"><thead><tr><td>UserID</td><td>Username</td></tr></thead><tbody>' . $table . '</tbody></table><br /><br /><form action="moderate.php" method="get"><button type="submit">Confirm</button><input type="hidden" name="do2" value="defaultgroup" /><input type="hidden" name="confirm" value="true" /></form><form action="moderate.php" method="get"><button type="submit">Go Back</button></form>');
         }
         else {
@@ -818,8 +818,8 @@ if ($user['adminPrivs']) { // Check that the user is an admin.
 
 
     default:
-    $activeUsers = sqlArr("SELECT COUNT(userId) AS count, userId FROM {$sqlPrefix}ping WHERE UNIX_TIMESTAMP(time) > UNIX_TIMESTAMP(NOW()) - 60 GROUP BY userId",'userId');
-    $bannedUsers = sqlArr("SELECT userId FROM {$sqlPrefix}users WHERE settings & 1",'userId');
+    $activeUsers = dbRows("SELECT COUNT(userId) AS count, userId FROM {$sqlPrefix}ping WHERE UNIX_TIMESTAMP(time) > UNIX_TIMESTAMP(NOW()) - 60 GROUP BY userId",'userId');
+    $bannedUsers = dbRows("SELECT userId FROM {$sqlPrefix}users WHERE settings & 1",'userId');
     $status = (file_exists('.tempStop')) ? 'Stopped' : 'Running';
     echo container('Welcome','<script type="text/javascript">$(document).ready(function() { $(\'#moderateRight\').animate({\'height\' : window.innerHeight - 50},1750); });</script><div style="height: 0px; overflow: hidden;" id="moderateRight"><div style="text-align: center; font-size: 40px; font-weight: bold;">Welcome~~</div><br /><br />
 

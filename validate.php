@@ -215,7 +215,7 @@ if ($flag) {
 }
 else {
   if ($sessionHash) {
-    $user = sqlArr("SELECT u.*, s.sessionId AS anonId, UNIX_TIMESTAMP(s.time) AS sessionTime FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE magicHash = '" . mysqlEscape($sessionHash) . "'");
+    $user = dbRows("SELECT u.*, s.sessionId AS anonId, UNIX_TIMESTAMP(s.time) AS sessionTime FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE magicHash = '" . dbEscape($sessionHash) . "'");
     $anonId = $user['anonId'];
     $noSync = true;
     $valid = true;
@@ -226,7 +226,7 @@ else {
   }
 
   elseif ($userName && $password) {
-    $user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userName] = '" . mysqlEscape($userName) . "' LIMIT 1");
+    $user = dbRows("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userName] = '" . dbEscape($userName) . "' LIMIT 1");
 
     if (processLogin($user,$password)) {
       $valid = true;
@@ -238,7 +238,7 @@ else {
   }
 
   elseif ($userId && $password) {
-    $user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' LIMIT 1');
+    $user = dbRows("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' LIMIT 1');
 
     if (processLogin($user,$password)) {
       $valid = true;
@@ -250,7 +250,7 @@ else {
   }
 
   elseif ($anonymousUser && $anonymous) {
-    $user = sqlArr("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' LIMIT 1');
+    $user = dbRows("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' LIMIT 1');
 
     $valid = true;
     $api = true;
@@ -299,7 +299,7 @@ if ($valid) { // If the user is valid, process their preferrences.
       elseif ($userCopy[$sqlUserOptionsCol] & 128) $user2['timezoneoffset']++; // DST is on, add an hour
       else $user2['timezoneoffset']; // DST is off
 
-      $group = sqlArr("SELECT * FROM $sqlUserGroupTable WHERE $sqlUserGroupTableCols[groupId] = $user2[userGroup]");
+      $group = dbRows("SELECT * FROM $sqlUserGroupTable WHERE $sqlUserGroupTableCols[groupId] = $user2[userGroup]");
 
       $user2['userFormatStart'] = $group[$sqlUserGroupTableCols['startTag']];
       $user2['userFormatEnd'] = $group[$sqlUserGroupTableCols['endTag']];
@@ -324,7 +324,7 @@ if ($valid) { // If the user is valid, process their preferrences.
     ($hook = hook('validate_preprefs') ? eval($hook) : '');
 
 
-    $userprefs = sqlArr("SELECT *
+    $userprefs = dbRows("SELECT *
       {$userprefs_select}
     FROM {$sqlPrefix}users
      {$userprefs_users}
@@ -350,16 +350,16 @@ if ($valid) { // If the user is valid, process their preferrences.
         $priviledges += 2048;
       }
 
-      mysqlInsert(array(
+      dbInsert(array(
         'userId' => (int) $user2['userId'],
-        'userName' => mysqlEscape($user2['userName']),
+        'userName' => dbEscape($user2['userName']),
         'userGroup' => (int) $user2['userGroup'],
-        'allGroups' => mysqlEscape($user2['allGroups']),
-        'userFormatStart' => mysqlEscape($user2['userFormatStart']),
-        'userFormatEnd' => mysqlEscape($user2['userFormatEnd']),
-        'avatar' => mysqlEscape($user2['avatar']),
-        'profile' => mysqlEscape($user2['profile']),
-        'socialGroups' => mysqlEscape($socialGroups['groups']),
+        'allGroups' => dbEscape($user2['allGroups']),
+        'userFormatStart' => dbEscape($user2['userFormatStart']),
+        'userFormatEnd' => dbEscape($user2['userFormatEnd']),
+        'avatar' => dbEscape($user2['avatar']),
+        'profile' => dbEscape($user2['profile']),
+        'socialGroups' => dbEscape($socialGroups['groups']),
         'userPrivs' => (int) $priviledges,
         'lastSync' => array(
           'type' => 'raw',
@@ -367,7 +367,7 @@ if ($valid) { // If the user is valid, process their preferrences.
         ),
       ),"{$sqlPrefix}users");
 
-      $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']);
+      $userprefs = dbRows('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']);
     }
     elseif ($userprefs['lastSync'] <= (time() - ($sync ? $sync : (60 * 60 * 2)))) { // This updates various caches every so often. In general, it is a rather slow process, and as such does tend to take a rather long time (that is, compared to normal - it won't exceed 500miliseconds, really).
 
@@ -376,7 +376,7 @@ if ($valid) { // If the user is valid, process their preferrences.
       if ($user['favRooms']) {
         $stop = false;
 
-        $favRooms = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE options & 4 = FALSE AND roomId IN ($user[favRooms])",'id');
+        $favRooms = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE options & 4 = FALSE AND roomId IN ($user[favRooms])",'id');
 
         foreach ($favRooms AS $id => $room2) {
           eval(hook('templateFavRoomsEachStart'));
@@ -387,9 +387,9 @@ if ($valid) { // If the user is valid, process their preferrences.
               $currentRooms2[] = (int) $room3; // Rebuild the array without the room ID.
             }
 
-            $newRoomString = mysqlEscape(implode(',',$currentRooms2));
+            $newRoomString = dbEscape(implode(',',$currentRooms2));
 
-            mysqlQuery("UPDATE {$sqlPrefix}users SET favRooms = '$newRoomString' WHERE userId = $user[userId]");
+            dbQuery("UPDATE {$sqlPrefix}users SET favRooms = '$newRoomString' WHERE userId = $user[userId]");
 
             $stop = false;
 
@@ -399,21 +399,21 @@ if ($valid) { // If the user is valid, process their preferrences.
       }
 
       /* Update Social Groups */
-      $socialGroups = sqlArr("SELECT GROUP_CONCAT($sqlMemberGroupTableCols[groupId] SEPARATOR ',') AS groups FROM {$sqlMemberGroupTable} WHERE {$sqlMemberGroupTableCols[userId]} = $user2[userId] AND $sqlMemberGroupTableCols[type] = '$sqlMemberGroupTableCols[validType]'");
+      $socialGroups = dbRows("SELECT GROUP_CONCAT($sqlMemberGroupTableCols[groupId] SEPARATOR ',') AS groups FROM {$sqlMemberGroupTable} WHERE {$sqlMemberGroupTableCols[userId]} = $user2[userId] AND $sqlMemberGroupTableCols[type] = '$sqlMemberGroupTableCols[validType]'");
 
-      mysqlQuery('UPDATE ' . $sqlPrefix . 'users
-      SET userName = "' . mysqlEscape($user2['userName']) . '",
+      dbQuery('UPDATE ' . $sqlPrefix . 'users
+      SET userName = "' . dbEscape($user2['userName']) . '",
         userGroup = ' . (int) $user2['userGroup'] . ',
-        allGroups = "' . mysqlEscape($user2['allGroups']) . '",
-        userFormatStart = "' . mysqlEscape($user2['userFormatStart']) . '",
-        userFormatEnd = "' . mysqlEscape($user2['userFormatEnd']) . '",
-        avatar = "' . mysqlEscape($user2['avatar']) . '",
-        profile = "' . mysqlEscape($user2['profile']) . '",
-        socialGroups = "' . mysqlEscape($socialGroups['groups']) . '",
+        allGroups = "' . dbEscape($user2['allGroups']) . '",
+        userFormatStart = "' . dbEscape($user2['userFormatStart']) . '",
+        userFormatEnd = "' . dbEscape($user2['userFormatEnd']) . '",
+        avatar = "' . dbEscape($user2['avatar']) . '",
+        profile = "' . dbEscape($user2['profile']) . '",
+        socialGroups = "' . dbEscape($socialGroups['groups']) . '",
         lastSync = NOW()
       WHERE userId = ' . (int) $user2['userId']); // Create the new row
 
-      $userprefs = sqlArr('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
+      $userprefs = dbRows('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']); // Should be merged into the above $user query, but because the two don't automatically sync for now it can't be. A manual sync, plus setting up the userpref row in the first event would fix this.
     }
 
     $user = array_merge($user2,$userprefs); // Merge userprefs into user for future referrence.
@@ -425,24 +425,24 @@ if ($valid) { // If the user is valid, process their preferrences.
 
     $sessionHash = fim_generateSession();
 
-    mysqlInsert(array(
+    dbInsert(array(
       'userId' => $user['userId'],
       'time' => array(
         'type' => 'raw',
         'value' => 'NOW()',
       ),
-      'magicHash' => mysqlEscape($sessionHash),
+      'magicHash' => dbEscape($sessionHash),
     ),"{$sqlPrefix}sessions");
 
-    $anonId = mysqlInsertId();
+    $anonId = dbInsertId();
   } // TODO: Anon Support
 
   elseif ($session == 'update' && $sessionHash) {
     ($hook = hook('validate_updatesession') ? eval($hook) : '');
 
-    mysqlQuery("UPDATE {$sqlPrefix}sessions
+    dbQuery("UPDATE {$sqlPrefix}sessions
     SET time = NOW()
-    WHERE magicHash = '" . mysqlEscape($sessionHash) . "'");
+    WHERE magicHash = '" . dbEscape($sessionHash) . "'");
   }
 
   else {

@@ -128,7 +128,7 @@ if (!$roomsArray) {
 else {
   foreach ($roomsArray AS $room2) {
     $room2 = intval($room2);
-    $room = sqlArr("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $room2");
+    $room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $room2");
 
     if ($room) {
       if (!fim_hasPermission($room,$user)) { // Gotta make sure the user can view that room.
@@ -141,7 +141,7 @@ else {
         if (!$noPing) {
           ($hook = hook('getMessages_ping_start') ? eval($hook) : '');
 
-          mysqlQuery("INSERT INTO {$sqlPrefix}ping
+          dbQuery("INSERT INTO {$sqlPrefix}ping
             (userId,
             roomId,
             time
@@ -233,14 +233,14 @@ else {
           ($hook = hook('getMessages_postMessages_longPolling') ? eval($hook) : '');
 
           while (!$messages) {
-            $messages = sqlArr($messageQuery,'messageId');
+            $messages = dbRows($messageQuery,'messageId');
             sleep($longPollingWait);
           }
         }
         else {
           ($hook = hook('getMessages_postMessages_polling') ? eval($hook) : '');
 
-          $messages = sqlArr($messageQuery,'messageId');
+          $messages = dbRows($messageQuery,'messageId');
         }
 
         if ($messages) {
@@ -301,7 +301,7 @@ else {
         if ($activeUsers) {
           ($hook = hook('getMessages_activeUsers_start') ? eval($hook) : '');
 
-          $activeUsers = sqlArr("SELECT u.{$sqlUserTableCols[userName]} AS userName,
+          $activeUsers = dbRows("SELECT u.{$sqlUserTableCols[userName]} AS userName,
             u.userId AS userId,
             u.userGroup AS userGroup,
             u.userFormatStart AS userFormatStart,
@@ -349,7 +349,7 @@ if ($watchRooms) {
   ($hook = hook('getMessages_watchRooms_start') ? eval($hook) : '');
 
   /* Get Missed Messages */
-  $missedMessages = sqlArr("SELECT r.*,
+  $missedMessages = dbRows("SELECT r.*,
   UNIX_TIMESTAMP(r.lastMessageTime) AS lastMessageTimestamp
 FROM {$sqlPrefix}rooms AS r
   LEFT JOIN {$sqlPrefix}ping AS p ON (p.userId = $user[userId] AND p.roomId = r.roomId)
@@ -389,5 +389,5 @@ $xmlData['getMessages']['errortext'] = ($failMessage);
 
 echo fim_outputApi($xmlData);
 
-mysqlClose();
+dbClose();
 ?>
