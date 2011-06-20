@@ -105,7 +105,20 @@ dia = {
 
   // Supported options: autoShow (true), id, content, width (600), oF, cF
   full : function(options) {
-    var dialog = $('<div style="display: none;" id="' + options.id +  '">' + options.content + '</div>').appendTo('body');
+    var ajax;
+
+    if (options.uri) {
+      options.content = '<img src="images/ajax-loader.gif" align="center" />';
+
+      ajax = true;
+    }
+    else if (options.content) {
+    }
+    else {
+      console.log('No content found for dialog; exiting.');
+
+      return false;
+    }
 
     if (typeof options.autoOpen != 'undefined' && options.autoOpen == false) {
       var autoOpen = false;
@@ -143,67 +156,52 @@ dia = {
       }
     };
 
-    if (options.tabs) {
-      dialog.tabbedDialog(dialogOptions);
+
+    var dialog = $('<div style="display: none;" id="' + options.id +  '">' + options.content + '</div>').appendTo('body');
+
+
+
+    if (ajax) {
+      var overlay = $('<div class="ui-widget-overlay"></div>').appendTo('body').width($(document).width()).height($(document).height());
+      var throbber = $('<img src="images/ajax-loader.gif" />').appendTo('body').css('position','absolute').offset({ left : (($(window).width() - 220) / 2), top : (($(window).height() - 19) / 2)});
+
+      $.ajax({
+        url : options.uri,
+        type : "GET",
+        timeout : 5000,
+        cache : true,
+        success : function(content) {
+          overlay.empty().remove();
+          throbber.empty().remove();
+
+          dialog.html(content);
+
+          if (options.tabs) {
+            dialog.tabbedDialog(dialogOptions);
+          }
+          else {
+            dialog.dialog(dialogOptions);
+          }
+        },
+        error : function() {
+          overlay.empty().remove();
+          throbber.empty().remove();
+
+          dialog.dialog('close');
+
+          dia.error('Could not request dialog URI.');
+        }
+      });
     }
     else {
-      dialog.dialog(dialogOptions);
+      if (options.tabs) {
+        dialog.tabbedDialog(dialogOptions);
+      }
+      else {
+        dialog.dialog(dialogOptions);
+      }
     }
   },
-
-  // Supported options: autoShow (true), id, uri, width (600), oF, cF
-  ajax : function(options) {
-    var dialog = $('<div style="display: none;" id="' + options.id +  '"></div>').appendTo('body');
-
-    if (typeof options.autoOpen != 'undefined' && options.autoOpen == false) {
-      var autoOpen = false;
-    }
-    else {
-      var autoOpen = true;
-    }
-
-    dialog.load(
-      options.uri,
-      {},
-      function (responseText, textStatus, XMLHttpRequest) {
-        $('button').button();
-
-        var windowWidth = document.documentElement.clientWidth;
-        if (options.width > windowWidth) {
-          options.width = windowWidth;
-        }
-        else if (!options.width) {
-          options.width = 600;
-        }
-
-        var dialogOptions = {
-          width: options.width,
-          title: options.title,
-          hide: "puff",
-          modal: true,
-          autoOpen: autoOpen,
-          open: function() {
-            if (options.oF) {
-              options.oF();
-            }
-          },
-          close: function() {
-            $('#' + options.id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
-            if (options.cF) {
-              options.cF();
-            }
-          }
-        };
-
-        if (options.tabs) {
-          dialog.tabbedDialog(dialogOptions);
-        }
-        else {
-          dialog.dialog(dialogOptions);
-        }
-      }
-    );
-  }
 };
 
 /*********************************************************
@@ -1213,7 +1211,7 @@ popup = {
   /*** START User Settings ***/
 
   userSettings : function() {
-    dia.ajax({
+    dia.full({
       uri : 'template.php?template=userSettingsForm',
       title : 'changeSettingsDialogue',
       tabs : true,
@@ -1328,7 +1326,7 @@ popup = {
   /*** START Help ***/
 
   editRoom : function(roomIdLocal) {
-    dia.ajax({
+    dia.full({
       uri : 'template.php?template=editRoomForm',
       tabs : true,
       id : 'editRoomDialogue',
@@ -1383,7 +1381,7 @@ popup = {
           dia.error('An error has occured: ' + errorMessage);
         }
         else { // TODO
-          dia.ajax({
+          dia.full({
             uri : 'template.php?template=editRoomSuccess&insertId=' + newRoomId,
             title : 'Room Edited!',
             id : 'editRoomResultDialogue',
@@ -1404,7 +1402,7 @@ popup = {
   /*** START Help ***/
 
   help : function() {
-    dia.ajax({
+    dia.full({
       uri : 'template.php?template=help',
       title : 'helpDialogue',
       width : 1000,
@@ -1453,7 +1451,7 @@ popup = {
   /*** START Create Room ***/
 
   createRoom : function() {
-    dia.ajax({
+    dia.full({
       uri : 'template.php?template=editRoomForm&action=create',
       id : 'createRoomDialogue',
       width : 1000,
@@ -1481,7 +1479,7 @@ popup = {
               dia.error('An error has occured: ' + errorMessage);
             }
             else {
-              dia.ajax({
+              dia.full({
                 uri : 'template.php?template=createRoomSuccess&insertId=' + newRoomId,
                 title : 'Room Created!',
                 id : 'createRoomResultDialogue',
@@ -1848,7 +1846,7 @@ function contextMenuParse() {
 
     switch(action) {
       case 'private_im':
-      dia.ajax({
+      dia.full({
         uri : 'content/privateRoom.php?phase=2&userId=' + userId,
         title : 'Private IM',
         id : 'privateRoomDialogue',
@@ -1861,7 +1859,7 @@ function contextMenuParse() {
       break;
 
       case 'kick':
-      dia.ajax({
+      dia.full({
         uri : 'content/kick.php?userId=' + userId + '&roomId=' + $('body').attr('data-roomId'),
         title : 'Kick User',
         id : 'kickUserDialogue',
@@ -1961,7 +1959,7 @@ function contextMenuParse() {
       }
       break;
       case 'edit':
-      dia.ajax({
+      dia.full({
         uri : 'content/editRoom.php?roomId=' + $(el).attr('data-roomId'),
         title : 'Edit Room',
         id : 'editRoomDialogue',
@@ -2171,7 +2169,7 @@ $(document).ready(function() {
   /*** Copyright & Credits ***/
 
   $('#copyrightLink').click(function() {
-    dia.ajax({
+    dia.full({
       uri : 'template.php?template=copyright',
       title : 'copyrightDialogue',
       width : 600,
