@@ -254,7 +254,6 @@ function dbInsert($dataArray,$table,$updateArray) {
     $update = implode($update,',');
 
     $query = "$query ON DUPLICATE KEY UPDATE $update";
-
   }
 
   return dbQuery($query);

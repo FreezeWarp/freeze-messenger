@@ -16,7 +16,9 @@
 CREATE TABLE IF NOT EXISTS `{prefix}sessions` (
   `sessionId` int(10) NOT NULL AUTO_INCREMENT,
   `userId` int(10) NOT NULL,
+  `anonId` int(10) NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `ip` varchar(100) NOT NULL,
   `browser` varchar(300) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `magicHash` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   PRIMARY KEY (`sessionId`),

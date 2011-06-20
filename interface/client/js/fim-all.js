@@ -609,7 +609,7 @@ var standard = {
 
           /* Display Dialog to Notify User of Being Logged In */
           if (!userPermissions.general) {
-            dia.info('You are now logged in as ' + userName + '. However, you are not allowed to post and have been banned by an administrator..','Logged In');
+            dia.info('You are now logged in as ' + userName + '. However, you are not allowed to post and have been banned by an administrator.','Logged In');
           }
           else {
             dia.info('You are now logged in as ' + userName + '.','Logged In');

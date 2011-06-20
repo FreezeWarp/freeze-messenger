@@ -298,6 +298,9 @@ if ($valid) { // If the user is valid, process their preferrences.
 
     }
 
+
+
+
     switch ($loginMethod) {
 
       case 'vbulletin':
@@ -427,7 +430,9 @@ if ($valid) { // If the user is valid, process their preferrences.
   }
 
 
-  if ($session == 'create') { // TODO: Anon Support
+
+
+  if ($session == 'create') {
     ($hook = hook('validate_createsession') ? eval($hook) : '');
 
     $sessionHash = fim_generateSession();
@@ -440,8 +445,6 @@ if ($valid) { // If the user is valid, process their preferrences.
       ),
       'magicHash' => dbEscape($sessionHash),
     ),"{$sqlPrefix}sessions");
-
-//    dbQuery("DELETE FROM {$sqlPrefix}sessions
 
     dbDelete("{$sqlPrefix}sessions",array(
       'time' => array(
@@ -466,6 +469,13 @@ if ($valid) { // If the user is valid, process their preferrences.
   else {
     // I dunno...
   }
+
+
+
+  if ($anonymous) { echo 1;
+    $user['userName'] .= $anonId;
+  }
+
 }
 
 else { // TODO: Anon Support

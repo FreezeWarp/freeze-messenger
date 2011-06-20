@@ -339,7 +339,7 @@ Now that the database has been successfully installed, we must generate the conf
   $mysqli = new mysqli('localhost','a','a','phpbb3');
   $mysqli->query("SET NAMES utf8");
   $prefix = 'fim3_';
-  $tables = array("templates","phrases");
+  $tables = array("templates","phrases","sessions");
 
   foreach ($tables AS $table) {
     $mysqli->query("DROP TABLE {$prefix}{$table}");
