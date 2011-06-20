@@ -84,33 +84,127 @@ dia = {
     });
   },
 
-  dyna : function(content,title,id,width) {
-    var dialog = $('<div style="display: none;" id="' + id +  '">' + content + '</div>').appendTo('body');
+  confirm : function(text) {
+    $('<div id="dialog-confirm"><span class="ui-icon ui-icon-alert" style="float: left; margin: 0px 7px 20px 0px;"></span>' + text + '</div>').dialog({
+      resizable: false,
+      height: 240,
+      modal: true,
+      hide: "puff",
+      buttons: {
+        Confirm: function() {
+          $(this).dialog("close");
+          return true;
+        },
+        Cancel: function() {
+          $(this).dialog("close");
+          return false;
+        }
+      }
+    });
+  },
+
+  // Supported options: autoShow (true), id, content, width (600), oF, cF
+  full : function(options) {
+    var dialog = $('<div style="display: none;" id="' + options.id +  '">' + options.content + '</div>').appendTo('body');
+
+    if (typeof options.autoOpen != 'undefined' && options.autoOpen == false) {
+      var autoOpen = false;
+    }
+    else {
+      var autoOpen = true;
+    }
 
     $('button').button();
 
     var windowWidth = document.documentElement.clientWidth;
-    if (width > windowWidth) {
-      width = windowWidth;
+    if (options.width > windowWidth) {
+      options.width = windowWidth;
     }
-    else if (!width) {
-      width = 600;
+    else if (!options.width) {
+      options.widthwidth = 600;
     }
 
-    dialog.dialog({
-      width: (width ? width : 600),
-      title: title,
+    var dialogOptions = {
+      width: options.width,
+      title: options.title,
       hide: "puff",
       modal: true,
-      autoOpen: false,
+      autoOpen: autoOpen,
+      open: function() {
+        if (options.oF) {
+          options.oF();
+        }
+      },
       close: function() {
-        $('#' + id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
+        $('#' + options.id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
+        if (options.cF) {
+          options.cF();
+        }
       }
-    });
+    };
 
-    return dialog;
+    if (options.tabs) {
+      dialog.tabbedDialog(dialogOptions);
+    }
+    else {
+      dialog.dialog(dialogOptions);
+    }
+  },
+
+  // Supported options: autoShow (true), id, uri, width (600), oF, cF
+  ajax : function(options) {
+    var dialog = $('<div style="display: none;" id="' + options.id +  '"></div>').appendTo('body');
+
+    if (typeof options.autoOpen != 'undefined' && options.autoOpen == false) {
+      var autoOpen = false;
+    }
+    else {
+      var autoOpen = true;
+    }
+
+    dialog.load(
+      options.uri,
+      {},
+      function (responseText, textStatus, XMLHttpRequest) {
+        $('button').button();
+
+        var windowWidth = document.documentElement.clientWidth;
+        if (options.width > windowWidth) {
+          options.width = windowWidth;
+        }
+        else if (!options.width) {
+          options.width = 600;
+        }
+
+        var dialogOptions = {
+          width: options.width,
+          title: options.title,
+          hide: "puff",
+          modal: true,
+          autoOpen: autoOpen,
+          open: function() {
+            if (options.oF) {
+              options.oF();
+            }
+          },
+          close: function() {
+            $('#' + options.id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
+            if (options.cF) {
+              options.cF();
+            }
+          }
+        };
+
+        if (options.tabs) {
+          dialog.tabbedDialog(dialogOptions);
+        }
+        else {
+          dialog.dialog(dialogOptions);
+        }
+      }
+    );
   }
-}
+};
 
 /*********************************************************
  ************************* END ***************************
@@ -1011,18 +1105,24 @@ popup = {
 
   login : function() {
     $.get('template.php','template=login',function(data) {
-      quickDialogue(data,'Login','loginDialogue',600,false,function() {
-        $("#loginForm").submit(function() {
-          var userName = $('#loginForm > #userName').val();
-          var password = $('#loginForm > #password').val();
+      dia.full({
+        content : data,
+        title : 'Login',
+        id : 'loginDialogue',
+        width : 600,
+        oF : function() {
+          $("#loginForm").submit(function() {
+            var userName = $('#loginForm > #userName').val();
+            var password = $('#loginForm > #password').val();
 
-          standard.login({
-            userName : userName,
-            password : password,
+            standard.login({
+              userName : userName,
+              password : password,
+            });
+
+            return false; // Don't submit the form.
           });
-
-          return false; // Don't submit the form.
-        });
+        }
       });
 
       console.log('Popup for un-loggedin user triggered.');
@@ -1037,7 +1137,12 @@ popup = {
   /*** START Help ***/
 
   selectRoom : function() {
-    quickDialogue('<table><thead><tr><th>Name</th><th>Topic</th><th>Actions</th></tr></thead><tbody>' + roomTableHtml + '</tbody></table>','Room List','roomListDialogue',1000);
+    dia.full({
+      content : '<table><thead><tr><th>Name</th><th>Topic</th><th>Actions</th></tr></thead><tbody>' + roomTableHtml + '</tbody></table>',
+      title : 'Room List',
+      id : 'roomListDialogue',
+      width: 1000,
+    });
   },
 
   /*** END Room List ***/
@@ -1087,7 +1192,12 @@ popup = {
           statsHtml2 += '<tr><th>' + i + '</th>' + statsHtml[i] + '</tr>';
         }
 
-        quickDialogue('<table><thead><tr><th>Position</th>' + roomHtml + '</tr></thead><tbody>' + statsHtml2 + '</tbody></table>','Room Stats','roomStatsDialogue',600);
+        dia.full({
+          content : '<table><thead><tr><th>Position</th>' + roomHtml + '</tr></thead><tbody>' + statsHtml2 + '</tbody></table>',
+          title : 'Room Stats',
+          id : 'roomStatsDialogue',
+          width : 600,
+        });
       },
       error: function() {
         dia.error('Failed to show all rooms');
@@ -1103,104 +1213,110 @@ popup = {
   /*** START User Settings ***/
 
   userSettings : function() {
-    ajaxTabDialogue('template.php?template=userSettingsForm','changeSettingsDialogue',1000,function() {
-      $('.colorpicker').empty().remove();
-    }, function() {
-      $("#defaultRoom").autocomplete({
-        source: roomList
-      });
-      $("#watchRoomsBridge").autocomplete({
-        source: roomList
-      });
+    dia.ajax({
+      uri : 'template.php?template=userSettingsForm',
+      title : 'changeSettingsDialogue',
+      tabs : true,
+      width : 1000,
+      cF : function() {
+        $('.colorpicker').empty().remove();
+      },
+      oF : function() {
+        $("#defaultRoom").autocomplete({
+          source: roomList
+        });
+        $("#watchRoomsBridge").autocomplete({
+          source: roomList
+        });
 
-      $.ajax({
-        url: apiPath + 'api/getFonts.php?sessionHash=' + sessionHash,
-        timeout: 5000,
-        type: 'GET',
-        async: true,
-        cache: false,
-        success: function(xml) {
-          $(xml).find('font').each(function() {
-            var fontName = unxml($(this).find('fontName').text().trim());
-            var fontId = parseInt($(this).find('fontId').text().trim());
-            var fontGroup = unxml($(this).find('fontGroup').text().trim());
-            var fontData = unxml($(this).find('fontData').text().trim());
+        $.ajax({
+          url: apiPath + 'api/getFonts.php?sessionHash=' + sessionHash,
+          timeout: 5000,
+          type: 'GET',
+          async: true,
+          cache: false,
+          success: function(xml) {
+            $(xml).find('font').each(function() {
+              var fontName = unxml($(this).find('fontName').text().trim());
+              var fontId = parseInt($(this).find('fontId').text().trim());
+              var fontGroup = unxml($(this).find('fontGroup').text().trim());
+              var fontData = unxml($(this).find('fontData').text().trim());
 
-            $('#defaultFace').append('<option value="' + fontId + '" style="' + fontData + '" data-font="' + fontData + '">' + fontName + '</option>');
-          });
-        },
-        error: function() {
-          dia.error('The list of fonts could not be obtained from the server.');
+              $('#defaultFace').append('<option value="' + fontId + '" style="' + fontData + '" data-font="' + fontData + '">' + fontName + '</option>');
+            });
+          },
+          error: function() {
+            dia.error('The list of fonts could not be obtained from the server.');
+          }
+        });
+
+        $('#defaultHighlight').ColorPicker({
+          color: '',
+          onShow: function (colpkr) {
+            $(colpkr).fadeIn(500);
+            return false;
+          },
+          onHide: function (colpkr) {
+            $(colpkr).fadeOut(500);
+            return false;
+          },
+          onChange: function(hsb, hex, rgb) {
+            $('#defaultHighlight').css('background-color','#' + hex);
+            $('#defaultHighlight').val(hex);
+            $('#fontPreview').css('background-color','#' + hex);
+          }
+        });
+
+        $('#defaultColour').ColorPicker({
+          color: '',
+          onShow: function (colpkr) {
+            $(colpkr).fadeIn(500);
+            return false;
+          },
+          onHide: function (colpkr) {
+            $(colpkr).fadeOut(500);
+            return false;
+          },
+          onChange: function(hsb, hex, rgb) {
+            $('#defaultColour').css('background-color','#' + hex);
+            $('#defaultColour').val(hex);
+            $('#fontPreview').css('color','#' + hex);
+          }
+        });
+
+        $('#fontPreview').css('color','');
+        $('#defaultColour').css('background-color','');
+        $('#fontPreview').css('background-color','');
+        $('#defaultHighlight').css('background-color','');
+
+        if ($('#defaultItalics').is(':checked')) {
+          $('#fontPreview').css('font-style','italic');
         }
-      });
-
-      $('#defaultHighlight').ColorPicker({
-        color: '',
-        onShow: function (colpkr) {
-          $(colpkr).fadeIn(500);
-          return false;
-        },
-        onHide: function (colpkr) {
-          $(colpkr).fadeOut(500);
-          return false;
-        },
-        onChange: function(hsb, hex, rgb) {
-          $('#defaultHighlight').css('background-color','#' + hex);
-          $('#defaultHighlight').val(hex);
-          $('#fontPreview').css('background-color','#' + hex);
+        else {
+          $('#fontPreview').css('font-style','normal');
         }
-      });
 
-      $('#defaultColour').ColorPicker({
-        color: '',
-        onShow: function (colpkr) {
-          $(colpkr).fadeIn(500);
-          return false;
-        },
-        onHide: function (colpkr) {
-          $(colpkr).fadeOut(500);
-          return false;
-        },
-        onChange: function(hsb, hex, rgb) {
-          $('#defaultColour').css('background-color','#' + hex);
-          $('#defaultColour').val(hex);
-          $('#fontPreview').css('color','#' + hex);
+        if ($('#defaultBold').is(':checked')) {
+          $('#fontPreview').css('font-weight','bold');
         }
-      });
+        else {
+          $('#fontPreview').css('font-style','normal');
+        }
 
-      $('#fontPreview').css('color','');
-      $('#defaultColour').css('background-color','');
-      $('#fontPreview').css('background-color','');
-      $('#defaultHighlight').css('background-color','');
+        $("#changeSettingsForm").submit(function() { // TODO
+          data = $("#changeSettingsForm").serialize(); // Serialize the form data for AJAX.
+          $.post(apiPath + 'api/moderate.php?action=userOptions&userId=' + userId + data + '&sessionHash=' + sessionHash,function(xml) {
+            // TODO
+          }); // Send the form data via AJAX.
 
-      if ($('#defaultItalics').is(':checked')) {
-        $('#fontPreview').css('font-style','italic');
-      }
-      else {
-        $('#fontPreview').css('font-style','normal');
-      }
+          $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
+          $(".colorpicker").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
 
-      if ($('#defaultBold').is(':checked')) {
-        $('#fontPreview').css('font-weight','bold');
-      }
-      else {
-        $('#fontPreview').css('font-style','normal');
-      }
+          window.reload();
 
-      $("#changeSettingsForm").submit(function() {
-        data = $("#changeSettingsForm").serialize(); // Serialize the form data for AJAX.
-        $.post(apiPath + 'api/moderate.php?action=userOptions&userId=' + userId + data + '&sessionHash=' + sessionHash,function(xml) {
-
-          quickDialogue(xml,'','changeSettingsResultDialogue');
-        }); // Send the form data via AJAX.
-
-        $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
-        $(".colorpicker").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
-
-        window.reload();
-
-        return false; // Don't submit the form.
-      });
+          return false; // Don't submit the form.
+        });
+      },
     });
   },
 
@@ -1212,41 +1328,47 @@ popup = {
   /*** START Help ***/
 
   editRoom : function(roomIdLocal) {
-    ajaxTabDialogue('template.php?template=editRoomForm','editRoomDialogue',1000,false,function() {
-      $("#moderatorsBridge").autocomplete({
-        source: userList
-      });
-      $("#allowedUsersBridge").autocomplete({
-        source: userList
-      });
-      $("#allowedGroupsBridge").autocomplete({
-        source: groupList
-      });
+    dia.ajax({
+      uri : 'template.php?template=editRoomForm',
+      tabs : true,
+      id : 'editRoomDialogue',
+      width : 1000,
+      oF: function() {
+        $("#moderatorsBridge").autocomplete({
+          source: userList
+        });
+        $("#allowedUsersBridge").autocomplete({
+          source: userList
+        });
+        $("#allowedGroupsBridge").autocomplete({
+          source: groupList
+        });
 
-      $.ajax({
-        url: apiPath + 'api/getRooms.php?rooms=' + roomIdLocal + '&sessionHash=' + sessionHash,
-        type: 'GET',
-        timeout: 2400,
-        cache: false,
-        success: function(xml) {
-          var data = '';
+        $.ajax({
+          url: apiPath + 'api/getRooms.php?rooms=' + roomIdLocal + '&sessionHash=' + sessionHash,
+          type: 'GET',
+          timeout: 2400,
+          cache: false,
+          success: function(xml) {
+            var data = '';
 
-          var roomName = unxml($(xml).find('roomName').text().trim());
-          var roomId = parseInt($(xml).find('roomId').text().trim());
-          var allowedUsers = $(xml).find('allowedUsers').text().trim();
-          var allowedGroups = $(xml).find('allowedGroups').text().trim();
-          var moderators = $(xml).find('moderators').text().trim();
+            var roomName = unxml($(xml).find('roomName').text().trim());
+            var roomId = parseInt($(xml).find('roomId').text().trim());
+            var allowedUsers = $(xml).find('allowedUsers').text().trim();
+            var allowedGroups = $(xml).find('allowedGroups').text().trim();
+            var moderators = $(xml).find('moderators').text().trim();
 
-          $('#name').val(roomName);
-          $('#allowedUsers').val(allowedUsers);
-          $('#allowedGroups').val(allowedGroups);
-          $('#moderators').val(moderators);
+            $('#name').val(roomName);
+            $('#allowedUsers').val(allowedUsers);
+            $('#allowedGroups').val(allowedGroups);
+            $('#moderators').val(moderators);
 
-        },
-        error: function() {
-          dia.error('Failed to obtain current room settings from server.');
-        },
-      });
+          },
+          error: function() {
+            dia.error('Failed to obtain current room settings from server.');
+          },
+        });
+      },
     });
 
     $("#editRoomForm").submit(function() {
@@ -1260,8 +1382,13 @@ popup = {
         if (errorCode) {
           dia.error('An error has occured: ' + errorMessage);
         }
-        else {
-          ajaxDialogue('template.php?template=editRoomSuccess&insertId=' + newRoomId,'Room Edited!','editRoomResultDialogue',600);
+        else { // TODO
+          dia.ajax({
+            uri : 'template.php?template=editRoomSuccess&insertId=' + newRoomId,
+            title : 'Room Edited!',
+            id : 'editRoomResultDialogue',
+            width : 600,
+          });
           $("#editRoomDialogue").dialog('close');
         }
       }); // Send the form data via AJAX.
@@ -1277,7 +1404,12 @@ popup = {
   /*** START Help ***/
 
   help : function() {
-    ajaxTabDialogue('template.php?template=help','helpDialogue',1000);
+    dia.ajax({
+      uri : 'template.php?template=help',
+      title : 'helpDialogue',
+      width : 1000,
+      tabs : true,
+    });
   },
 
   /*** END Help ***/
@@ -1288,7 +1420,12 @@ popup = {
   /*** START Archive ***/
 
   archive : function(roomLocalId) {
-    dia.dyna('<table><thead><tr><th>User</th><th>Time</th><th>Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><button id="archivePrev"><< Prev</button><button id="archiveNext">Next >></button>','Archive','archiveDialogue',1000);
+    dia.full({
+      content : '<table><thead><tr><th>User</th><th>Time</th><th>Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><button id="archivePrev"><< Prev</button><button id="archiveNext">Next >></button>',
+      title : 'Archive',
+      id : 'archiveDialogue',
+      width : 1000,
+    });
 
     var lastMessage = standard.archive({
       roomId: roomLocalId,
@@ -1316,35 +1453,46 @@ popup = {
   /*** START Create Room ***/
 
   createRoom : function() {
-      ajaxTabDialogue('template.php?template=editRoomForm&action=create','createRoomDialogue',1000,false,function() {
-      $("#moderatorsBridge").autocomplete({
-        source: userList
-      });
-      $("#allowedUsersBridge").autocomplete({
-        source: userList
-      });
-      $("#allowedGroupsBridge").autocomplete({
-        source: groupList
-      });
+    dia.ajax({
+      uri : 'template.php?template=editRoomForm&action=create',
+      id : 'createRoomDialogue',
+      width : 1000,
+      tabs : true,
+      oF : function() {
+        $("#moderatorsBridge").autocomplete({
+          source: userList
+        });
+        $("#allowedUsersBridge").autocomplete({
+          source: userList
+        });
+        $("#allowedGroupsBridge").autocomplete({
+          source: groupList
+        });
 
-      $("#editRoomForm").submit(function() {
-        var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
+        $("#editRoomForm").submit(function() {
+          var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
 
-        $.post(apiPath + 'api/moderate.php',data + '&action=createRoom&sessionHash=' + sessionHash,function(xml) {
-          var errorCode = unxml($(xml).find('errorcode').text().trim());
-          var errorMessage = unxml($(xml).find('errortext').text().trim());
-          var newRoomId = parseInt($(xml).find('insertId').text().trim());
+          $.post(apiPath + 'api/moderate.php',data + '&action=createRoom&sessionHash=' + sessionHash,function(xml) {
+            var errorCode = unxml($(xml).find('errorcode').text().trim());
+            var errorMessage = unxml($(xml).find('errortext').text().trim());
+            var newRoomId = parseInt($(xml).find('insertId').text().trim());
 
-          if (errorCode) {
-            dia.error('An error has occured: ' + errorMessage);
-          }
-          else {
-            ajaxDialogue('template.php?template=createRoomSuccess&insertId=' + newRoomId,'Room Created!','createRoomResultDialogue',600);
-            $("#editRoomDialogue").dialog('close');
-          }
-        }); // Send the form data via AJAX.
-        return false; // Don't submit the form.
-      });
+            if (errorCode) {
+              dia.error('An error has occured: ' + errorMessage);
+            }
+            else {
+              dia.ajax({
+                uri : 'template.php?template=createRoomSuccess&insertId=' + newRoomId,
+                title : 'Room Created!',
+                id : 'createRoomResultDialogue',
+                width : 600
+              });
+              $("#editRoomDialogue").dialog('close');
+            }
+          }); // Send the form data via AJAX.
+          return false; // Don't submit the form.
+        });
+      },
     });
   },
 
@@ -1356,8 +1504,14 @@ popup = {
   /*** START Online ***/
 
   online : function() {
-    quickDialogue('<table class="page"><thead><tr class="hrow"><th>User</th><th>Rooms</th></tr></thead><tbody id="onlineUsers"><tr><td colspan="2">Loading...</td></tr></tbody></table>','View Active Users','onlineDialogue',600,function() {
-      clearInterval(timer2);
+    dia.full({
+      content : '<table class="page"><thead><tr class="hrow"><th>User</th><th>Rooms</th></tr></thead><tbody id="onlineUsers"><tr><td colspan="2">Loading...</td></tr></tbody></table>',
+      title : 'Active Users',
+      id : 'onlineDialogue',
+      width : 600,
+      cF : function() {
+        clearInterval(timer2);
+      },
     });
 
     function updateOnline() {
@@ -1425,7 +1579,11 @@ popup = {
           kickHtml += '<tr><td>' + userName +  '</td><td>' + kickerName + '</td><td>' + set + '</td><td>' + expires + '</td><td><button onclick="unkick(' + userId + ',' + roomId + ')>Unkick</button></td></tr>';
         });
 
-        quickDialogue('<table class="page"><thead><tr class="hrow"><th>User</th><th>Kicked By</th><th>Kicked On</th><th>Expires On</th><th>Actions</th></tr>  </thead><tbody id="kickedUsers"></tbody></table>','Manage Kicked Users in This Room','manageKickDialogue',1000);
+        dia.full({
+          content : '<table class="page"><thead><tr class="hrow"><th>User</th><th>Kicked By</th><th>Kicked On</th><th>Expires On</th><th>Actions</th></tr>  </thead><tbody id="kickedUsers"></tbody></table>',
+          title : 'Manage Kicked Users in This Room',
+          width : 1000,
+        });
       },
       error: function() {
         dia.error('The list of currently kicked users could not be obtained from the serveer.');
@@ -1434,9 +1592,10 @@ popup = {
 
     $("form[data-formid=unkick]").submit(function() {
       data = $(this).serialize(); // Serialize the form data for AJAX.
-      $.post("content/unkick.php?phase=2",data,function(html) {
-        quickDialogue(html,'','unkickDialogue');
-      }); // Send the form data via AJAX.
+      // TODO
+//      $.post("content/unkick.php?phase=2",data,function(html) {
+//        quickDialogue(html,'','unkickDialogue');
+//      }); // Send the form data via AJAX.
 
       $("#manageKickDialogue").dialog('destroy');
       return false; // Don\\''t submit the form.
@@ -1451,29 +1610,40 @@ popup = {
   /*** START Private Rooms ***/
 
   privateRoom : function() {
-    quickDialogue('<form action="index.php?action=privateRoom&phase=2" method="post" id="privateRoomForm"><label for="userName">Username</label>: <input type="text" name="userName" id="userName" /><br /><small><span style="margin-left: 10px;">The other user you would like to talk to.</span></small><br /><br />  <input type="submit" value="Go" /></form>','Enter Private Room','privateRoomDialogue',1000,false,function() {
-      $('#userName').autocomplete({
-        source: userList
-      });
+    dia.full({
+      content : '<form action="index.php?action=privateRoom&phase=2" method="post" id="privateRoomForm"><label for="userName">Username</label>: <input type="text" name="userName" id="userName" /><br /><small><span style="margin-left: 10px;">The other user you would like to talk to.</span></small><br /><br />  <input type="submit" value="Go" /></form>',
+      title : 'Enter Private Room',
+      id : 'privateRoomDialogue',
+      width : 1000,
+      oF : function() {
+        $('#userName').autocomplete({
+          source: userList
+        });
 
-      $("#privateRoomForm").submit(function() {
-        privateUserName = $("#privateRoomForm > #userName").val(); // Serialize the form data for AJAX.
-        privateUserId = userRef[data];
+        $("#privateRoomForm").submit(function() {
+          privateUserName = $("#privateRoomForm > #userName").val(); // Serialize the form data for AJAX.
+          privateUserId = userRef[data];
 
+//TODO
+//          $.post(apiPath + 'api/createRoom.php?sessionHash=' + sessionHash,data,function(html) {
+//            quickDialogue(html,'','privateRoomResultDialogue');
+//          }); // Send the form data via AJAX.
 
-        $.post(apiPath + 'api/createRoom.php?sessionHash=' + sessionHash,data,function(html) {
-          quickDialogue(html,'','privateRoomResultDialogue');
-        }); // Send the form data via AJAX.
+          $("#privateRoomDialogue").dialog('close');
 
-        $("#privateRoomDialogue").dialog('close');
-
-        return false; // Don't submit the form.
-      });
+          return false; // Don't submit the form.
+        });
+      }
     });
   },
 
   kick : function() {
-    quickDialogue('<form action="#" id="kickUserForm" method="post">  <label for="userId">User</label>: <select name="userId">$userSelect</select><br />  <label for="roomId">Room</label>: <select name="roomId">$roomSelect</select><br />  <label for="time">Time</label>: <input type="text" name="time" id="time" style="width: 50px;" />  <select name="interval">    <option value="1">Seconds</option>    <option value="60">Minutes</option>    <option value="3600">Hours</option>    <option value="86400">Days</option>    <option value="604800">Weeks</option>  </select><br /><br />  <button type="submit">Kick User</button><button type="reset">Reset</button></form>','Kick User','kickUserDialogue',1000);
+    dia.full({
+      content : '<form action="#" id="kickUserForm" method="post">  <label for="userId">User</label>: <select name="userId">$userSelect</select><br />  <label for="roomId">Room</label>: <select name="roomId">$roomSelect</select><br />  <label for="time">Time</label>: <input type="text" name="time" id="time" style="width: 50px;" />  <select name="interval">    <option value="1">Seconds</option>    <option value="60">Minutes</option>    <option value="3600">Hours</option>    <option value="86400">Days</option>    <option value="604800">Weeks</option>  </select><br /><br />  <button type="submit">Kick User</button><button type="reset">Reset</button></form>',
+      title : 'Kick User',
+      id : 'kickUserDialogue',
+      width : 1000,
+    });
 
     $('select[name=roomId]').html(roomSelectHtml);
 
@@ -1498,24 +1668,25 @@ popup = {
 
         switch (status) {
           case '':
-          quickDialogue('The user has been kicked.','Success','success');
+          dia.info('The user has been kicked.','Success');
+
           $("#kickUserDialogue").dialog('close');
           break;
 
           case 'nopermission':
-          quickDialogue('You do not have permision to moderate this room.','Error','error');
+          dia.error('You do not have permision to moderate this room.');
           break;
 
           case 'nokickuser':
-          quickDialogue('That user may not be kicked!','Error','error');
+          dia.error('That user may not be kicked!');
           break;
 
           case 'baduser':
-          quickDialogue('The user specified does not exist.','Error','error');
+          dia.error('The user specified does not exist.');
           break;
 
           case 'badroom':
-          quickDialogue('The room specified does not exist.','Error','error');
+          dia.error('The room specified does not exist.');
           break;
         }
       }); // Send the form data via AJAX.
@@ -1677,15 +1848,28 @@ function contextMenuParse() {
 
     switch(action) {
       case 'private_im':
-      ajaxDialogue('content/privateRoom.php?phase=2&userId=' + userId,'Private IM','privateRoomDialogue',1000);
+      dia.ajax({
+        uri : 'content/privateRoom.php?phase=2&userId=' + userId,
+        title : 'Private IM',
+        id : 'privateRoomDialogue',
+        width : 1000,
+      });
       break;
+
       case 'profile':
       window.open(profileUrl + 'member.php?u=' + userId,'profile' + userId);
       break;
+
       case 'kick':
-      ajaxDialogue('content/kick.php?userId=' + userId + '&roomId=' + $('body').attr('data-roomId'),'Kick User','kickUserDialogue',1000);
+      dia.ajax({
+        uri : 'content/kick.php?userId=' + userId + '&roomId=' + $('body').attr('data-roomId'),
+        title : 'Kick User',
+        id : 'kickUserDialogue',
+        width : 1000
+      });
       break;
-      case 'ban':
+
+      case 'ban': // TODO?
       window.open('moderate.php?do=banuser2&userId=' + userId,'banuser' + userId);
       break;
     }
@@ -1708,14 +1892,15 @@ function contextMenuParse() {
             $(el).parent().fadeOut();
           },
           error: function() {
-            quickDialogue('The message could not be deleted.','Error','message');
+            dia.error('The message could not be deleted.');
           }
         });
       }
       break;
 
       case 'link':
-      quickDialogue('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + window.location.hostname + '/archive.php?roomId=' + $('body').attr('data-roomId') + '&message=' + postid + '" />','Link to This Message','linkMessage');
+        // TODO
+//      quickDialogue('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + window.location.hostname + '/archive.php?roomId=' + $('body').attr('data-roomId') + '&message=' + postid + '" />','Link to This Message','linkMessage');
       break;
     }
   });
@@ -1730,10 +1915,11 @@ function contextMenuParse() {
       case 'url':
       var src= $(el).attr('src');
 
-      quickDialogue('<img src="' + src + '" style="max-width: 550px; max-height: 550px;" /><br /><br /><input type="text" value="' + src +  '" style="width: 550px;" />','Copy Image URL','getUrl');
+      dia.info('<img src="' + src + '" style="max-width: 550px; max-height: 550px;" /><br /><br /><input type="text" value="' + src +  '" style="width: 550px;" />','Copy Image URL');
       break;
+
       case 'delete':
-      if (confirm('Are you sure you want to delete this message?')) {
+      if (dia.confirm('Are you sure you want to delete this message?')) {
         $.ajax({
           url: 'ajax/fim-modAction.php?action=deletepost&postid=' + postid,
           type: 'GET',
@@ -1742,14 +1928,14 @@ function contextMenuParse() {
             $(el).parent().fadeOut();
           },
           error: function() {
-            quickDialogue('The message could not be deleted.','Error','message');
+            dia.error('The message could not be deleted.');
           }
         });
       }
       break;
 
-      case 'link':
-      quickDialogue('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="http://' + window.location.hostname + '/archive.php?roomId=' + $('body').attr('data-roomId') + '&message=' + postid + '" />','Link to This Message','linkMessage');
+      case 'link': // TODO
+      dia.info('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="http://' + window.location.hostname + '/archive.php?roomId=' + $('body').attr('data-roomId') + '&message=' + postid + '" />','Link to This Message');
       break;
     }
   });
@@ -1769,13 +1955,18 @@ function contextMenuParse() {
             $(el).parent().fadeOut();
           },
           error: function() {
-            quickDialogue('The room could not be deleted.','Error','message');
+            dia.error('The room could not be deleted.');
           }
         });
       }
       break;
       case 'edit':
-      ajaxDialogue('content/editRoom.php?roomId=' + $(el).attr('data-roomId'),'Edit Room','editRoomDialogue',1000);
+      dia.ajax({
+        uri : 'content/editRoom.php?roomId=' + $(el).attr('data-roomId'),
+        title : 'Edit Room',
+        id : 'editRoomDialogue',
+        width : 1000
+      });
       break;
     }
   });
@@ -1862,9 +2053,9 @@ $(document).ready(function() {
 
   /*** ??? ***/
 
-  $("#icon_settings.reversePostOrder").click(function() {
+  $("#icon_settings.reversePostOrder").click(function() { // TODO
     var value = (settings.reversePostOrder ? 'false' : 'true');
-    $.cookie('vrim10-reverseOrder', value, {expires: 7 * 24 * 3600});
+
     location.reload(true);
   });
 
@@ -1980,7 +2171,12 @@ $(document).ready(function() {
   /*** Copyright & Credits ***/
 
   $('#copyrightLink').click(function() {
-    ajaxTabDialogue('template.php?template=copyright','copyrightDialogue',600);
+    dia.ajax({
+      uri : 'template.php?template=copyright',
+      title : 'copyrightDialogue',
+      width : 600,
+      tabs : true,
+    });
   });
 
 
