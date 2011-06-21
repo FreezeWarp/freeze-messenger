@@ -265,20 +265,6 @@ var settingsBitfield = parseInt($.cookie('fim3_settings'));
 var themeId = parseInt($.cookie('fim3_themeId'));
 
 
-$.ajax({
-  url: apiPath + 'api/getServerStatus.php',
-  type: 'GET',
-  timeout: 5000,
-  cache: false,
-  success: function(xml) {
-    longPolling = ($('serverStatus > requestMethods > longPoll').text().trim() == 'true' ? true : false);
-  },
-  error: function() {
-    longPolling = false;
-  },
-});
-
-
 
 var userPermissions = {
   createRoom : false,
@@ -361,6 +347,20 @@ apiPathPre.pop();
 apiPathPre = apiPathPre.join('/');
 
 var apiPath = apiPathPre + '/';
+
+
+$.ajax({
+  url: apiPath + 'api/getServerStatus.php',
+  type: 'GET',
+  timeout: 5000,
+  cache: false,
+  success: function(xml) {
+    longPolling = ($('serverStatus > requestMethods > longPoll').text().trim() == 'true' ? true : false);
+  },
+  error: function() {
+    longPolling = false;
+  },
+});
 
 /*********************************************************
  ************************* END ***************************
@@ -450,8 +450,9 @@ function populate() {
           roomUlHtml += ulText;
         }
 
-        roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#" onclick="standard.changeRoom(' + roomId + ');">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isAdmin ? '<button onclick="popup.editRoom(' + roomId + ');"></button>' : '') + '</td></tr>';
+        roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#" onclick="standard.changeRoom(' + roomId + ');">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isAdmin ? '<button onclick="popup.editRoom(' + roomId + ');" class="editRoomMulti standard"></button>' : '') + '</td></tr>';
 
+        $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}});
         roomSelectHtml += '<option value="' + roomId + '">' + roomName + '</option>';
 
         roomRef[roomName] = roomId;
@@ -556,17 +557,17 @@ function updateVids(searchPhrase) {
 
 
 var standard = {
-  archive : function (options,searchText) {
+  archive : function (options) {
     var encrypt = 'base64';
     var lastMessage = 0;
     var firstMessage = 0;
     var data = '';
 
     if (options.idMax) {
-      var where = 'messageIdStart=' + options.idMax;
+      var where = 'messageIdEnd=' + options.idMax;
     }
     else if (options.idMin) {
-      var where = 'messageIdEnd=' + options.idMin;
+      var where = 'messageIdStart=' + options.idMin;
     }
     else {
       var where = 'messageIdStart=0';
@@ -633,7 +634,13 @@ var standard = {
         dia.error('Archive failed to obtain results from server.');
       },
     })).then(function() {
-      options.callback(data);
+      $('#archiveMessageList').html(data);
+      $('#archiveNext').attr('onclick','standard.archive({idMin : ' + lastMessage + ', roomId: ' + options.roomId + '});');
+      $('#archivePrev').attr('onclick','standard.archive({idMax : ' + firstMessage + ', roomId: ' + options.roomId + '});');
+
+      if (options.callback) {
+        options.callback(data);
+      }
     });
   },
 
@@ -1615,21 +1622,11 @@ popup = {
       autoOpen : false,
     });
 
-    var lastMessage = standard.archive({
+    standard.archive({
       roomId: roomLocalId,
       callback: function(data) {
-        $('#archiveMessageList').html(data);
-
-        $('#archiveNext').click(function() {
-          standard.archive(lastMessage,false);
-        });
-
-        $('#archivePrev').click(function() {
-          standard.archive(false,firstMessage);
-        });
-
         $('#archiveDialogue').dialog('open');
-      }
+      },
     });
   },
 
