@@ -444,9 +444,9 @@ function populate() {
         roomList.push(roomName);
       });
 
-      $('#roomListLong > ul').append('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li><li>My Rooms<ul>' + roomUlMyHtml + '</ul></li><li>General<ul>' + roomUlHtml + '</ul></li><li>Private<ul>' + roomUlPrivHtml + '</ul></li>');
+      $('#roomListLong > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li><li>My Rooms<ul>' + roomUlMyHtml + '</ul></li><li>General<ul>' + roomUlHtml + '</ul></li><li>Private<ul>' + roomUlPrivHtml + '</ul></li>');
 
-      $('#roomListShort > ul').append('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li>');
+      $('#roomListShort > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li>');
 
       $('#roomName').html(roomIdRef[roomId]);
 
@@ -796,7 +796,7 @@ var standard = {
         /* Select Room */
         if (!roomId) {
           if (!defaultRoomId) {
-            popup.selectRoom();
+            standard.changeRoom(1);
           }
           else {
             standard.changeRoom(defaultRoomId);
@@ -1331,18 +1331,65 @@ popup = {
           $.cookie('fim3_themeId',this.value);
         });
 
-        $('#settingsOfficialAjax_showAvatars').change(function() {
-          if (this.val() == 'true' && !settings.showAvatars) {
+
+        if (settings.reversePostOrder) {
+          $('#reversePostOrder').attr('checked','checked');
+        }
+        if (settings.showAvatars) {
+          $('#showAvatars').attr('checked','checked');
+        }
+        if (settings.audioDing) {
+          $('#audioDing').attr('checked','checked');
+        }
+
+
+        $('#showAvatars').change(function() {
+          if ($(this).val() == 'true' && !settings.showAvatars) {
             settings.showAvatars = true;
             $('#messageList').html('');
             $.cookie('fim3_settings',$.cookie('fim3_settings') + 2048);
 
             first = true;
           }
-          else if (this.val() != 'true' && settings.showAvatars) {
+          else if ($(this).val() != 'true' && settings.showAvatars) {
             settings.showAvatars = false;
             $('#messageList').html('');
             $.cookie('fim3_settings',$.cookie('fim3_settings') - 2048);
+
+            first = true;
+          }
+        });
+
+        $('#reversePostOrder').change(function() {
+          if ($(this).val() == 'true' && !settings.reversePostOrder) {
+            settings.reversePostOrder = true;
+            $('#messageList').html('');
+            $.cookie('fim3_settings',$.cookie('fim3_settings') + 1024);
+
+            first = true;
+          }
+          else if ($(this).val() != 'true' && settings.reversePostOrder) {
+            settings.reversePostOrder = false;
+            $('#messageList').html('');
+            $.cookie('fim3_settings',$.cookie('fim3_settings') - 1024);
+
+            first = true;
+          }
+        });
+
+        $('#audioDing').change(function() {
+          if ($(this).val() == 'true' && !settings.audioDing) {
+            settings.audioDing = true;
+            $('#messageList').html('');
+            $.cookie('fim3_settings',$.cookie('fim3_settings') + 8192);
+
+            first = true;
+          }
+          else if ($(this).val() != 'true' && settings.audioDing) {
+            settings.audioDing = false;
+            $('#messageList').html('');
+            $.cookie('fim3_settings',$.cookie('fim3_settings') - 8192);
+
             first = true;
           }
         });

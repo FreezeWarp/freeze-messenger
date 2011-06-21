@@ -44,7 +44,7 @@ function fim_inArray($needle,$haystack) {
 * @author Joseph Todd Parsons
 */
 function fim_hasPermission($roomData,$userData,$type = 'post',$trans = false) {
-  global $sqlPrefix, $banned, $superUsers;
+  global $sqlPrefix, $banned, $superUsers, $valid;
   static $isAdmin, $isModerator, $isAllowedUser, $isAllowedGroup, $isOwner, $isRoomDeleted;
 
   /* Make sure all presented data is correct. */
@@ -102,6 +102,10 @@ WHERE userId = $userData[userId] AND
       $roomValid = false;
       $reason = 'banned';
     }
+    elseif (!$valid) {
+      $roomValid = false;
+      $reason = 'invalid';
+    }
     elseif ($kick && !$isAdmin) {
       $roomValid = false;
       $reason = 'kicked';
@@ -144,6 +148,10 @@ WHERE userId = $userData[userId] AND
       $roomValid = false;
       $reason = 'banned';
     }
+    elseif (!$valid) {
+      $roomValid = false;
+      $reason = 'invalid';
+    }
     elseif ($kick && !$isAdmin) {
       $roomValid = false;
       $reason = 'kicked';
@@ -165,6 +173,10 @@ WHERE userId = $userData[userId] AND
     if ($banned) {
       $roomValid = false;
       $reason = 'banned';
+    }
+    elseif (!$valid) {
+      $roomValid = false;
+      $reason = 'invalid';
     }
     elseif ($kick) {
       $roomValid = false;
