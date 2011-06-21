@@ -38,10 +38,6 @@ $xmlData = array(
         'poll' => (bool) true,
         'push' => (bool) false,
       ),
-      'devParams' => array(
-        'foreignApi' => (bool) $enableForeignApi,
-        'insecureApi' => (bool) $insecureApi,
-      ),
       'outputBuffer' => array(
         'comressOutput' => (bool) $compressOutput,
       ),

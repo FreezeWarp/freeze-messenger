@@ -25,6 +25,7 @@ $roomId = (int) $_POST['roomId'];
 $room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
 $ip = dbEscape($_SERVER['REMOTE_ADDR']); // Get the IP address of the user.
 
+$flag = $_GET['flag'];
 
 ($hook = hook('sendMessage_start') ? eval($hook) : '');
 
@@ -102,7 +103,9 @@ if ($continue) {
     dbQuery("UPDATE {$sqlPrefix}rooms SET topic = '$title' WHERE roomId = $room[id]");
   }
   else {
-    if (strpos($message, '/me') === 0) { $flag = 'me'; }
+    if (strpos($message, '/me') === 0) {
+      $flag = 'me';
+    }
 
     fim_sendMessage($message,$user,$room,$flag);
   }

@@ -258,11 +258,26 @@ var activeUsers;
 var notify = true;
 var first = true;
 var favicon = $('#favicon').attr('href');
-var longPolling = true; // Use experimental longPolling technology?
+var longPolling; // Use experimental longPolling technology?
 var timeout = (longPolling ? 1000000 : 2400);
 var layout = $.cookie('fim3_layout'); // TODO
 var settingsBitfield = parseInt($.cookie('fim3_settings'));
 var themeId = parseInt($.cookie('fim3_themeId'));
+
+
+$.ajax({
+  url: apiPath + 'api/getServerStatus.php',
+  type: 'GET',
+  timeout: 5000,
+  cache: false,
+  success: function(xml) {
+    longPolling = ($('serverStatus > requestMethods > longPoll').text().trim() == 'true' ? true : false);
+  },
+  error: function() {
+    longPolling = false;
+  },
+});
+
 
 
 var userPermissions = {
