@@ -227,8 +227,7 @@ dia = {
  ******************* Variable Setting ********************
  *********************************************************/
 
-
-/* Define Variables as Glboal */
+/* Common Variables */
 
 var userId; // The user ID who is logged in.
 var roomId; // The ID of the room we are in.
@@ -236,17 +235,8 @@ var sessionHash; // The session hash of the active user.
 var anonId; // ID used to represent anonymous posters.
 
 
-if ($.cookie('fim3_sessionHash')) {
-  sessionHash = $.cookie('fim3_sessionHash');
-  userId = $.cookie('fim3_userId');
-}
 
-if ($.cookie('fim3_defaultRoomId')) {
-  roomId = $.cookie('fim3_defaultRoomId');
-
-  standard.changeRoom(roomId);
-}
-
+/* Function-Specific Variables */
 
 var blur = false; // By default, we assume the window is active and not blurred.
 var totalFails = 0;
@@ -260,12 +250,82 @@ var first = true;
 var favicon = $('#favicon').attr('href');
 var longPolling; // Use experimental longPolling technology?
 var timeout = (longPolling ? 1000000 : 2400);
+
+
+
+/* Get the absolute API path.
+ * TODO: Define this in a more "sophisticated manner". */
+
+var apiPathPre = window.location.pathname;
+apiPathPre = apiPathPre.split('/');
+apiPathPre.pop();
+apiPathPre.pop();
+apiPathPre = apiPathPre.join('/');
+
+var apiPath = apiPathPre + '/';
+
+
+
+/* Get Server-Specific Variables
+ * We Should Not Call This Again */
+$.ajax({
+  url: apiPath + 'api/getServerStatus.php',
+  type: 'GET',
+  timeout: 5000,
+  cache: false,
+  success: function(xml) {
+    longPolling = ($('serverStatus > requestMethods > longPoll').text().trim() == 'true' ? true : false);
+  },
+  error: function() {
+    longPolling = false;
+  },
+});
+
+
+
+/* URL-Defined Actions
+ * TODO */
+var urlHash = window.location.hash;
+var urlHashComponents = urlHash.split('#');
+for (i = 0; i < urlHashComponents.length; i++) {
+  if (!urlHashComponents[i]) {
+    continue;
+  }
+
+  var componentPieces = urlHashComponents.split('=');
+  switch (componentPieces[0]) {
+    case 'room':
+
+    break;
+
+    case 'message':
+
+    break;
+  }
+}
+
+
+/* Get Cookies */
+
 var layout = $.cookie('fim3_layout'); // TODO
 var settingsBitfield = parseInt($.cookie('fim3_settings'));
 var themeId = parseInt($.cookie('fim3_themeId'));
 
+if ($.cookie('fim3_sessionHash')) {
+  sessionHash = $.cookie('fim3_sessionHash');
+  userId = $.cookie('fim3_userId');
+}
+
+if ($.cookie('fim3_defaultRoomId')) {
+  roomId = $.cookie('fim3_defaultRoomId');
+
+  standard.changeRoom(roomId);
+}
 
 
+
+/* Permission Dead Defaults
+ * Specifically, These All Start False then Change on-Login */
 var userPermissions = {
   createRoom : false,
   privateRoom : false,
@@ -283,6 +343,10 @@ var adminPermissions = {
   modTranslations : false,
 };
 
+
+
+/* Settings
+ * These Are Set Based on Cookies */
 var settings = {
   showAvatars : (settingsBitfield & 2048 ? true : false), // Use the complex document style?
   reversePostOrder : (settingsBitfield & 1024 ? true : false), // Show posts in reverse?
@@ -293,6 +357,9 @@ var settings = {
 };
 
 
+
+/* Apply CSS Styling Dynamically
+ * Added Bonus: It's Hard Not To Know When the Script is Broken */
 var themes = {
   1 : 'ui-darkness',
   2 : 'ui-lightness',
@@ -313,11 +380,13 @@ $('head').append('<link rel="stylesheet" type="text/css" href="client/css/styles
 
 
 
-/* Objects for cleanness. */
+/* Objects for Cleanness, Caching. */
 
 var roomRef = new Object;
 var roomIdRef = new Object;
 var roomList = new Array;
+var modRooms = new Object; // Rooms which the user has special permissions in.
+
 var userRef = new Object;
 var userList = new Array;
 var groupRef = new Object;
@@ -336,32 +405,6 @@ var roomSelectHtml = '';
 var userSelectHtml = '';
 
 
-
-/* Get the absolute API path.
- * TODO: Define this is more "sophisticated manner". */
-
-var apiPathPre = window.location.pathname;
-apiPathPre = apiPathPre.split('/');
-apiPathPre.pop();
-apiPathPre.pop();
-apiPathPre = apiPathPre.join('/');
-
-var apiPath = apiPathPre + '/';
-
-
-$.ajax({
-  url: apiPath + 'api/getServerStatus.php',
-  type: 'GET',
-  timeout: 5000,
-  cache: false,
-  success: function(xml) {
-    longPolling = ($('serverStatus > requestMethods > longPoll').text().trim() == 'true' ? true : false);
-  },
-  error: function() {
-    longPolling = false;
-  },
-});
-
 /*********************************************************
  ************************* END ***************************
  ******************* Variable Setting ********************
@@ -379,121 +422,134 @@ $.ajax({
  ******************** Data Population ********************
  *********************************************************/
 
-function populate() {
-  $.ajax({
-    url: apiPath + 'api/getUsers.php?sessionHash=' + sessionHash,
-    type: 'GET',
-    timeout: 5000,
-    cache: false,
-    success: function(xml) {
-      userList = new Array; // Clear so we don't get repeat values on regeneration.
-      userRef = new Object;
-      userSelectHtml = '';
+function populate(options) {
+  $.when(
+    $.ajax({
+      url: apiPath + 'api/getUsers.php?sessionHash=' + sessionHash,
+      type: 'GET',
+      timeout: 5000,
+      cache: false,
+      success: function(xml) {
+        userList = new Array; // Clear so we don't get repeat values on regeneration.
+        userRef = new Object;
+        userSelectHtml = '';
 
-      console.log('Users obtained.');
+        console.log('Users obtained.');
 
-      $(xml).find('user').each(function() {
-        var userName = unxml($(this).find('userName').text().trim());
-        var userId = parseInt($(this).find('userId').text().trim());
+        $(xml).find('user').each(function() {
+          var userName = unxml($(this).find('userName').text().trim());
+          var userId = parseInt($(this).find('userId').text().trim());
 
-        userSelectHtml += '<option value="' + userId + '">' + userName + '</option>';
+          userSelectHtml += '<option value="' + userId + '">' + userName + '</option>';
 
-        userRef[userName] = userId;
-        userList.push(userName);
-      });
-    },
-    error: function() {
-      console.log('Users Not Obtained - Problems May Occur');
-    },
-  });
-
-
-  $.ajax({
-    url: apiPath + 'api/getRooms.php?permLevel=view&sessionHash=' + sessionHash,
-    timeout: 5000,
-    type: 'GET',
-    async: true,
-    cache: false,
-    success: function(xml) {
-      roomList = new Array; // Clear so we don't get repeat values on regeneration.
-      roomIdRef = new Object;
-      roomRef = new Object;
-      roomTableHtml = '';
-      roomSelectHtml = '';
-      roomUlHtml = '';
-      roomUlPrivHtml = '';
-      roomUlMyHtml = '';
-      roomUlFavHtml = '';
-
-      $(xml).find('room').each(function() {
-        var roomName = unxml($(this).find('roomName').text().trim());
-        var roomId = parseInt($(this).find('roomId').text().trim());
-        var roomTopic = unxml($(this).find('roomTopic').text().trim());
-        var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
-        var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
-        var isAdmin = ($(this).find('canAdmin').text().trim() === 'true' ? true : false);
-        var isModerator = ($(this).find('canModerate').text().trim() === 'true' ? true : false);
-        var isOwner = (parseInt($(this).find('owner').text()) == userId ? true : false);
-
-        var ulText = '<li><a href="index.php?room=' + roomId + '">' + roomName + '</a></li>';
-
-        if (isFav) {
-          roomUlFavHtml += ulText;
-        }
-        if (isOwner && !isPriv) {
-          roomUlMyHtml += ulText;
-        }
-        if (isPriv) {
-          roomUlPrivHtml += ulText;
-        }
-        if (!isFav && !isOwner && !isPriv) {
-          roomUlHtml += ulText;
-        }
-
-        roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#" onclick="standard.changeRoom(' + roomId + ');">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isAdmin ? '<button onclick="popup.editRoom(' + roomId + ');" class="editRoomMulti standard"></button>' : '') + '</td></tr>';
-
-        $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}});
-        roomSelectHtml += '<option value="' + roomId + '">' + roomName + '</option>';
-
-        roomRef[roomName] = roomId;
-        roomIdRef[roomId] = roomName;
-        roomList.push(roomName);
-      });
-
-      $('#roomListLong > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li><li>My Rooms<ul>' + roomUlMyHtml + '</ul></li><li>General<ul>' + roomUlHtml + '</ul></li><li>Private<ul>' + roomUlPrivHtml + '</ul></li>');
-
-      $('#roomListShort > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li>');
-
-      $('#roomName').html(roomIdRef[roomId]);
-
-      console.log('Rooms obtained.');
-    },
-    error: function() {
-      console.log('Rooms Not Obtained - Problems May Occur');
-    }
-  });
+          userRef[userName] = userId;
+          userList.push(userName);
+        });
+      },
+      error: function() {
+        console.log('Users Not Obtained - Problems May Occur');
+      },
+    }),
 
 
-  $.ajax({
-    url: apiPath + 'api/getGroups.php?sessionHash=' + sessionHash,
-    timeout: 5000,
-    type: 'GET',
-    async: true,
-    cache: false,
-    success: function(xml) {
-      console.log('Groups obtained.');
+    $.ajax({
+      url: apiPath + 'api/getRooms.php?permLevel=view&sessionHash=' + sessionHash,
+      timeout: 5000,
+      type: 'GET',
+      async: true,
+      cache: false,
+      success: function(xml) {
+        roomList = new Array; // Clear so we don't get repeat values on regeneration.
+        roomIdRef = new Object;
+        roomRef = new Object;
+        roomTableHtml = '';
+        roomSelectHtml = '';
+        roomUlHtml = '';
+        roomUlPrivHtml = '';
+        roomUlMyHtml = '';
+        roomUlFavHtml = '';
 
-      $(xml).find('group').each(function() {
-        var groupName = unxml($(this).find('groupName').text());
-        var groupId = parseInt($(this).find('groupId').text());
+        $(xml).find('room').each(function() {
+          var roomName = unxml($(this).find('roomName').text().trim());
+          var roomId = parseInt($(this).find('roomId').text().trim());
+          var roomTopic = unxml($(this).find('roomTopic').text().trim());
+          var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
+          var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
+          var isAdmin = ($(this).find('canAdmin').text().trim() === 'true' ? true : false);
+          var isModerator = ($(this).find('canModerate').text().trim() === 'true' ? true : false);
+          var isOwner = (parseInt($(this).find('owner').text()) == userId ? true : false);
 
-        groupRef[groupName] = groupId;
-        groupList.push(groupName);
-      });
-    },
-    error: function() {
-      console.log('Groups Not Obtained - Problems May Occur');
-    }
+          var ulText = '<li><a href="index.php?room=' + roomId + '">' + roomName + '</a></li>';
+
+          if (isFav) {
+            roomUlFavHtml += ulText;
+          }
+          if (isOwner && !isPriv) {
+            roomUlMyHtml += ulText;
+          }
+          if (isPriv) {
+            roomUlPrivHtml += ulText;
+          }
+          if (!isFav && !isOwner && !isPriv) {
+            roomUlHtml += ulText;
+          }
+
+          roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#" onclick="standard.changeRoom(' + roomId + ');">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isAdmin ? '<button onclick="popup.editRoom(' + roomId + ');" class="editRoomMulti standard"></button>' : '') + '</td></tr>';
+
+          $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}});
+          roomSelectHtml += '<option value="' + roomId + '">' + roomName + '</option>';
+
+          roomRef[roomName] = roomId;
+          roomIdRef[roomId] = roomName;
+          roomList.push(roomName);
+
+          if (isAdmin) {
+            modRooms[roomId] = 2;
+          }
+          else if (isModerator) {
+            modRooms[roomId] = 1;
+          }
+        });
+
+        $('#roomListLong > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li><li>My Rooms<ul>' + roomUlMyHtml + '</ul></li><li>General<ul>' + roomUlHtml + '</ul></li><li>Private<ul>' + roomUlPrivHtml + '</ul></li>');
+
+        $('#roomListShort > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li>');
+
+        $('#roomName').html(roomIdRef[roomId]);
+
+        console.log('Rooms obtained.');
+      },
+      error: function() {
+        console.log('Rooms Not Obtained - Problems May Occur');
+      }
+    }),
+
+
+    $.ajax({
+      url: apiPath + 'api/getGroups.php?sessionHash=' + sessionHash,
+      timeout: 5000,
+      type: 'GET',
+      async: true,
+      cache: false,
+      success: function(xml) {
+        console.log('Groups obtained.');
+
+        $(xml).find('group').each(function() {
+          var groupName = unxml($(this).find('groupName').text());
+          var groupId = parseInt($(this).find('groupId').text());
+
+          groupRef[groupName] = groupId;
+          groupList.push(groupName);
+        });
+      },
+      error: function() {
+        console.log('Groups Not Obtained - Problems May Occur');
+      }
+    })
+  ).done(function() {
+     if (options.callback) {
+       options.callback();
+     }
   });
 }
 
@@ -707,6 +763,10 @@ var standard = {
 
     console.log('Encrypted Password: ' + options.password);
 
+    if (options.start) {
+      options.start();
+    }
+
     if (options.userName && options.password) {
       var passwordEncrypt = 'plaintext';
       // TODO: Enable for vBulletin
@@ -722,7 +782,7 @@ var standard = {
       data = 'apiLogin=1';
     }
 
-    $.ajax({
+    $.when($.ajax({
       url: apiPath + 'validate.php',
       type: 'POST',
       data: data + '&apiVersion=3',
@@ -825,26 +885,29 @@ var standard = {
           }
         }
 
-        populate();
-        windowDraw();
-        windowDynaLinks();
+        populate({
+          callback : function() {
+            windowDraw();
+            windowDynaLinks();
+          },
+        });
       },
       error: function() {
         dia.error("The login request could not be sent. Please try again.");
       }
+    })).done(function() {
+      if (options.finish) {
+        options.finish();
+      }
+      console.log('Login Finished');
     });
-
-    console.log('Login Finished');
   },
 
 
   logout : function() {
     $.cookie('fim3_sessionHash','');
 
-    userId = 0;
-    sessionHash = '';
-
-    windowDynaLinks();
+    standard.login({});
   },
 
 
@@ -1164,6 +1227,17 @@ popup = {
             });
 
             return false; // Don't submit the form.
+          });
+        },
+        cF : function() {
+          standard.login({
+            start : function() {
+              $('<div class="ui-widget-overlay" id="loginWaitOverlay"></div>').appendTo('body').width($(document).width()).height($(document).height());
+              $('<img src="images/ajax-loader.gif" id="loginWaitThrobber" />').appendTo('body').css('position','absolute').offset({ left : (($(window).width() - 220) / 2), top : (($(window).height() - 19) / 2)});
+            },
+            finish : function() {
+              $('#loginWaitOverlay, #loginWaitThrobber').empty().remove();
+            }
           });
         }
       });
@@ -1667,7 +1741,7 @@ popup = {
             }
             else {
               dia.full({
-                uri : 'template.php?template=createRoomSuccess&insertId=' + newRoomId,
+                content : 'The room has been created at the following URL:<br /><br /><form action="' + window.location.hostname + '#room=' + privateRoomId + '" method="post"><input type="text" style="width: 300px;" value="' + window.location.hostname + '#room=' + privateRoomId + '" name="url" /><button type="subit">Go There!</submit></form>',
                 title : 'Room Created!',
                 id : 'createRoomResultDialogue',
                 width : 600
@@ -1796,7 +1870,7 @@ popup = {
 
   privateRoom : function() {
     dia.full({
-      content : '<form action="index.php?action=privateRoom&phase=2" method="post" id="privateRoomForm"><label for="userName">Username</label>: <input type="text" name="userName" id="userName" /><br /><small><span style="margin-left: 10px;">The other user you would like to talk to.</span></small><br /><br />  <input type="submit" value="Go" /></form>',
+      content : '<form action="index.php?action=privateRoom&phase=2" method="post" id="privateRoomForm"><label for="userName">Username</label>: <input type="text" name="userName" id="userName" /><br /><small><span style="margin-left: 10px;">The other user you would like to talk to.</span></small><br /><br />  <button type="submit">Go</button></form>',
       title : 'Enter Private Room',
       id : 'privateRoomDialogue',
       width : 1000,
@@ -1807,12 +1881,13 @@ popup = {
 
         $("#privateRoomForm").submit(function() {
           privateUserName = $("#privateRoomForm > #userName").val(); // Serialize the form data for AJAX.
-          privateUserId = userRef[data];
+          privateUserId = userRef[privateUserName];
 
-//TODO
-//          $.post(apiPath + 'api/createRoom.php?sessionHash=' + sessionHash,data,function(html) {
-//            quickDialogue(html,'','privateRoomResultDialogue');
-//          }); // Send the form data via AJAX.
+          $.post(apiPath + 'api/moderate.php?action=privateRoom&userId=' + privateUserId + '?sessionHash=' + sessionHash,data,function(xml) {
+            var privateRoomId = parseInt($(xml).find('insertId').text().trim());
+
+            dia.info('The room has been created at the following link: <form action="' + window.location.hostname + '#room=' + privateRoomId + '" method="post"><input type="text" style="width: 300px;" value="' + window.location.hostname + '#room=' + privateRoomId + '" name="url" /><button type="submit">Open</button></form>','');
+          }); // Send the form data via AJAX.
 
           $("#privateRoomDialogue").dialog('close');
 
@@ -2015,6 +2090,14 @@ function windowDynaLinks() {
     $('li > #modCore').parent().hide();
   }
 
+  if (modRooms[roomId] < 1) {
+    $('li > #kick').parent().hide();
+    $('li > #manageKick').parent().hide();
+  }
+  if (modRooms[roomId] < 2) {
+    $('li > #editRoom').parent().hide();
+  }
+
   if (userId && !anonId) {
     $('li > #login').parent().hide();
   }
@@ -2207,18 +2290,22 @@ function contextMenuParse() {
 
 
 $(document).ready(function() {
-  console.log('Automatic Login Triggered');
 
-  if (sessionHash) {
-    standard.login({
-      sessionHash : sessionHash, // Use existing sessionhash (we can track the user by this if they aren't logged in).
-    });
+  /*** Trigger Login ***/
+
+  if (!userId) { // The user is not actively logged in.
+    popup.login();
   }
-  else {
-    standard.login({
-      silent : true,
-    }); // Get a sessionhash for guest navigation.
-  }
+  $('#login').click(function() {
+    popup.login();
+  });
+
+
+
+  /*** Trigger Logout */
+  $('#logout').click(function() {
+    popup.login();
+  });
 
 
 
@@ -2393,24 +2480,6 @@ $(document).ready(function() {
 
   $('#icon_settings, #changeSettings, a.changeSettingsMulti').click(function() {
     popup.userSettings();
-  });
-
-
-
-  /*** Trigger Login ***/
-
-  if (!userId) { // The user is not actively logged in.
-    popup.login();
-  }
-  $('#login').click(function() {
-    popup.login();
-  });
-
-
-
-  /*** Trigger Logout */
-  $('#logout').click(function() {
-    popup.login();
   });
 
 });

@@ -196,12 +196,6 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
   <input type="button" onclick="window.history.back()" value="Go Back" />
 </form>}}
     </div>'),
-(16, 'createRoomSuccess', 'installUrl,roomId', '$phrases[createRoomCreatedAt]<br /><br />
-
-<form action="{$installUrl}index.php?room={$insertId}" method="post">
-  <input type="text" style="width: 300px;" value="{$installUrl}index.php?room={$insertId}" name="url" />
-  <input type="submit" value="$phrases[editRoomCreatedGo]" />
-</form>'),
 (17, 'editRoomForm', 'censorLists', '<ul class="tabList">
   <li><a href="#editRoom1">General</a></li>
   <li><a href="#editRoom2">Permissions</a></li>

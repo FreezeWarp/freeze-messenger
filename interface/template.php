@@ -65,6 +65,7 @@ switch ($template) {
   case 'register':
   case 'editRoomForm':
   case 'insertDoc':
+  case 'createRoomSuccess':
   echo template($template);
   break;
 
