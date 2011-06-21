@@ -71,7 +71,7 @@ $xmlData = array(
 ($hook = hook('getKicks_start') ? eval($hook) : '');
 
 
-$kicks = dbRows("SELECT k.id AS kickId,
+$kicks = dbRows("SELECT CONCAT(k.userId, '-', k.roomId) AS id,
   k.userId AS userId,
   u.userName AS userName,
   k.roomId AS roomId,
@@ -79,7 +79,7 @@ $kicks = dbRows("SELECT k.id AS kickId,
   k.time AS time,
   k.kickerId AS kickerId,
   i.userName AS kickerName,
-  r.name AS roomName
+  r.roomName AS roomName
   {$kicks_columns}
 FROM {$sqlPrefix}kick AS k
   LEFT JOIN {$sqlPrefix}users AS u ON k.userId = u.userId
@@ -88,7 +88,7 @@ FROM {$sqlPrefix}kick AS k
   {$kicks_tables}
 WHERE $where TRUE
   {$kicks_where}
-ORDER BY
+ORDER BY k.roomId
   {$kicks_order}
 {$kicks_end}",'id');
 
