@@ -2248,7 +2248,7 @@ $.fn.tabbedDialog = function (dialogOptions,tabOptions) {
   var tabul = this.find('ul:first');
   this.parent().addClass('ui-tabs').prepend(tabul).draggable('option','handle',tabul);
   tabul.append($('a.ui-dialog-titlebar-close'));
-  this.siblings('.ui-dialog-titlebar').remove();
+  this.prev().remove();
   tabul.addClass('ui-dialog-titlebar');
 }
 

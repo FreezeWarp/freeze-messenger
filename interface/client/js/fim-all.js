@@ -255,6 +255,23 @@ var timeout = (longPolling ? 1000000 : 2400);
 
 
 
+/* Get Cookies */
+
+var layout = $.cookie('fim3_layout'); // TODO
+var settingsBitfield = parseInt($.cookie('fim3_settings'));
+var themeId = parseInt($.cookie('fim3_themeId'));
+
+if ($.cookie('fim3_sessionHash')) {
+  sessionHash = $.cookie('fim3_sessionHash');
+  userId = $.cookie('fim3_userId');
+}
+
+if ($.cookie('fim3_defaultRoomId')) {
+  roomId = $.cookie('fim3_defaultRoomId');
+}
+
+
+
 /* Get the absolute API path.
  * TODO: Define this in a more "sophisticated manner". */
 
@@ -295,34 +312,16 @@ for (var i = 0; i < urlHashComponents.length; i++) {
     continue;
   }
 
-  var componentPieces = urlHashComponents.split('=');
+  var componentPieces = urlHashComponents[i].split('=');
   switch (componentPieces[0]) {
     case 'room':
-
+    roomId = componentPieces[1];
     break;
 
     case 'message':
 
     break;
   }
-}
-
-
-/* Get Cookies */
-
-var layout = $.cookie('fim3_layout'); // TODO
-var settingsBitfield = parseInt($.cookie('fim3_settings'));
-var themeId = parseInt($.cookie('fim3_themeId'));
-
-if ($.cookie('fim3_sessionHash')) {
-  sessionHash = $.cookie('fim3_sessionHash');
-  userId = $.cookie('fim3_userId');
-}
-
-if ($.cookie('fim3_defaultRoomId')) {
-  roomId = $.cookie('fim3_defaultRoomId');
-
-  standard.changeRoom(roomId);
 }
 
 
@@ -1207,6 +1206,7 @@ var standard = {
     }
   },
 
+
   sendMessage: function(message,confirmed) {
     if (!roomId) {
       popup.selectRoom();
@@ -1270,6 +1270,7 @@ var standard = {
     }
   },
 
+
   changeRoom : function(roomLocalId) {
     console.log('Changing Room: ' + roomLocalId + '; Detected Name: ' + roomIdRef[roomLocalId]);
 
@@ -1292,6 +1293,7 @@ var standard = {
       }
     });
   },
+
 
   kick : function(userId, roomId, length) {
     $.post(directory + 'api/moderate.php','action=kickUser&userId=' + userId + '&roomId=' + roomId + '&length=' + length + '&sessionHash=' + sessionHash,function(xml) {
@@ -1323,6 +1325,7 @@ var standard = {
       }
     }); // Send the form data via AJAX.
   },
+
 
   unkick : function(userId, roomId) {
     $.post(directory + 'api/moderate.php','action=unkickUser&userId=' + userId + '&roomId=' + roomId + '&sessionHash=' + sessionHash,function(xml) {
@@ -1357,6 +1360,25 @@ var standard = {
  ******************* Content Functions *******************
  *********************************************************/
 
+
+
+
+
+
+
+/*********************************************************
+ ************************ START **************************
+ ********** Silent Init Uses of Standard Methods *********
+ *********************************************************/
+
+if (roomId > 0) {
+  standard.changeRoom(roomId);
+}
+
+/*********************************************************
+ ************************* END ***************************
+ ********** Silent Init Uses of Standard Methods *********
+ *********************************************************/
 
 
 
@@ -1421,7 +1443,7 @@ popup = {
 
   selectRoom : function() {
     dia.full({
-      content : '<table class="center"><thead><tr><th>Name</th><th>Topic</th><th>Actions</th></tr></thead><tbody>' + roomTableHtml + '</tbody></table>',
+      content : '<table class="center"><thead><tr><th style="width: 20%;">Name</th><th style="width: 60%;">Topic</th><th style="width: 20%;">Actions</th></tr></thead><tbody>' + roomTableHtml + '</tbody></table>',
       title : 'Room List',
       id : 'roomListDialogue',
       width: 1000,
@@ -1435,7 +1457,7 @@ popup = {
         });
 
         $('button.archiveMulti').button({icons : {primary : 'ui-icon-note'}}).click(function() {
-          standard.archive($(this).attr('data-roomId'));
+          popup.archive($(this).attr('data-roomId'));
         });
 
         $('button.deleteRoomMulti').button({icons : {primary : 'ui-icon-trash'}}).click(function() {
@@ -1574,7 +1596,7 @@ popup = {
         }
 
         dia.full({
-          content : '<table><thead><tr><th>Position</th>' + roomHtml + '</tr></thead><tbody>' + statsHtml2 + '</tbody></table>',
+          content : '<table class="center"><thead><tr><th>Position</th>' + roomHtml + '</tr></thead><tbody>' + statsHtml2 + '</tbody></table>',
           title : 'Room Stats',
           id : 'roomStatsDialogue',
           width : 600,
@@ -2019,7 +2041,7 @@ popup = {
 
   online : function() {
     dia.full({
-      content : '<table class="page"><thead><tr class="hrow"><th>User</th><th>Rooms</th></tr></thead><tbody id="onlineUsers"><tr><td colspan="2">Loading...</td></tr></tbody></table>',
+      content : '<table class="center"><thead><tr class="hrow"><th>User</th><th>Rooms</th></tr></thead><tbody id="onlineUsers"><tr><td colspan="2">Loading...</td></tr></tbody></table>',
       title : 'Active Users',
       id : 'onlineDialogue',
       width : 600,
@@ -2098,7 +2120,7 @@ popup = {
         });
 
         dia.full({
-          content : '<table class="page"><thead><tr class="hrow"><th>User</th><th>Kicked By</th><th>Kicked On</th><th>Expires On</th><th>Actions</th></tr>  </thead><tbody id="kickedUsers">' + kickHtml + '</tbody></table>',
+          content : '<table class="center"><thead><tr class="hrow"><th>User</th><th>Kicked By</th><th>Kicked On</th><th>Expires On</th><th>Actions</th></tr>  </thead><tbody id="kickedUsers">' + kickHtml + '</tbody></table>',
           title : 'Manage Kicked Users in This Room',
           width : 1000,
         });
@@ -2191,7 +2213,7 @@ popup = {
 
   archive : function(roomLocalId) {
     dia.full({
-      content : '<form id="archiveSearch" action="#" method="get"><input type="text" name="searchText" /></form> <table><thead><tr><th>User</th><th>Time</th><th>Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><button id="archivePrev"><< Prev</button><button id="archiveNext">Next >></button>',
+      content : '<form id="archiveSearch" action="#" method="get"><input type="text" name="searchText" /></form> <table class="center"><thead><tr><th>User</th><th>Time</th><th>Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><button id="archivePrev"><< Prev</button><button id="archiveNext">Next >></button>',
       title : 'Archive',
       id : 'archiveDialogue',
       width : 1000,

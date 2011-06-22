@@ -193,6 +193,12 @@ table.page {
 }
 
 table.center {
+  width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+table.center td {
   text-align: center;
 }
 
