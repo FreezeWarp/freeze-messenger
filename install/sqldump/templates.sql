@@ -121,7 +121,7 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
         </ul>
       </div>
       <div id="roomListLong" style="display: none;">
-        <a href="javascript:void(0);" id="showFewerRooms">$phrases[templateShowLessRooms]</a><br />
+        <li><a href="javascript:void(0);" id="showFewerRooms">$phrases[templateShowLessRooms]</a><br />
 
         <ul>
         </ul>
@@ -186,6 +186,44 @@ $phrases[hookBodyEndFull]
     </tr>
   </tbody>
 </table>');
+
+-- DIVIDE
+
+INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
+(17, 'editRoomForm', 'censorLists', '<ul class="tabList">
+  <li><a href="#editRoom1">General</a></li>
+  <li><a href="#editRoom2">Permissions</a></li>
+</ul><form action="#" method="post" id="editRoomForm"><div id="editRoom1">
+  <label for="name">$phrases[editRoomNameLabel]</label>: <input type="text" name="name" id="name" /><br />
+  <small><span style="margin-left: 10px;">$phrases[editRoomNameBlurb]</span></small><br /><br />
+
+  <label for="mature"  d="bbcode">$phrases[editRoomMatureLabel]</label>: <input type="checkbox" name="mature" id="mature" /><br />
+  <small><span style="margin-left: 10px;">$phrases[editRoomMatureBlurb]</strong></small><br /><br />
+
+  <label for="bbcode">$phrases[editRoomBBCode]</label>: <select name="bbcode" id="bbcode">
+    <option value="1" selected="selected">$phrases[editRoomBBCodeAll]</option>
+    <option value="5">$phrases[editRoomBBCodeNoMulti]</option>
+    <option value="9">$phrases[editRoomBBCodeNoImg]</option>
+    <option value="13">$phrases[editRoomBBCodeLink]</option>
+    <option value="16">$phrases[editRoomBBCodeBasic]</option>
+    <option>$phrases[editRoomBBCodeNothing]</option>
+  </select><br />
+
+  <small style="margin-left: 10px;">$phrases[editRoomBBCodeBlurb]</small><br /><br />
+
+  <label>$phrases[editRoomCensorLabel]</label>:<br /><div style="margin-left: 10px;">{$censorLists}</div><br />
+
+  <button type="submit">{{if="$_GET[''action''] == ''create''"}{$phrases[createRoomSubmit]}{$phrases[editRoomSubmit]}}</button><button type="reset">$phrases[editRoomReset]</button></div><div id="editRoom2"><label for="allowedUsers">$phrases[editRoomAllowedUsersLabel]</label> <input type="text" name="allowedUsersBridge" id="allowedUsersBridge" /><input type="button" value="Add" onclick="autoEntry.addEntry(''allowedUsers'');" /><input type="hidden" name="allowedUsers" id="allowedUsers" /><br />
+  <small><span style="margin-left: 10px;">$phrases[editRoomAllowedUsersCurrent]<span id="allowedUsersList"></span></span></small><br /><br />
+
+  <label for="allowedGroups">$phrases[editRoomAllowedGroupsLabel]</label> <input type="text" name="allowedGroupsBridge" id="allowedGroupsBridge" /><input type="button" value="Add" onclick="autoEntry.addEntry(''allowedGroups'');" /><input type="hidden" name="allowedGroups" id="allowedGroups" /><br />
+  <small><span style="margin-left: 10px;">$phrases[editRoomAllowedGroupsCurrent]<span id="allowedGroupsList"></span></span></small><br /><br />
+
+  <label for="moderators">$phrases[editRoomModeratorsLabel]</label> <input type="text" name="moderatorsBridge" id="moderatorsBridge" /><input type="button" value="Add" onclick="autoEntry.addEntry(''moderators'');" /><input type="hidden" name="moderators" id="moderators" /><br />
+  <small><span style="margin-left: 10px;">$phrases[editRoomModeratorsCurrent]<span id="moderatorsList"></span></span></small><br /><br />
+
+  <button type="submit">{{if="$_GET[''action''] == ''create''"}{$phrases[createRoomSubmit]}{$phrases[editRoomSubmit]}}</button><button type="reset">$phrases[editRoomReset]</button></div>
+</form>');
 
 -- DIVIDE
 
@@ -275,7 +313,6 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
 
   <input type="submit" value="Unkick User" /><input type="reset" value="Reset" />
 </form>'),
-(26, 'chatMatureWarning', '', '{{container}{$phrases[chatMatureTitle]}{$phrases[chatMatureMessage]}}'),
 (27, 'chatTemplate', 'parseFlags,canModerate,chatTemplate,textboxStyle,stopMessage', '<div id="roomTemplateContainer">
   <div id="chatContainer"{{if="$stopMessage"}{style="display: none;"}}>
     {{container}{<div id="title">

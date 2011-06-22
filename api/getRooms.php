@@ -90,7 +90,7 @@ $xmlData = array(
 ($hook = hook('getRooms_start') ? eval($hook) : '');
 
 
-$rooms = dbRows("SELECT *
+$rooms = dbRows("SELECT roomId, roomName, options, allowedUsers, allowedGroups, moderators, owner, bbcode, roomTopic
 FROM {$sqlPrefix}rooms
 WHERE $whereClause TRUE
   {$messagesCached_where}
@@ -118,16 +118,19 @@ if ($rooms) {
       'options' => (int) $room['options'],
       'optionDefinitions' => array(
         'official' => (bool) ($room['options'] & 1),
+        'mature' => (bool) ($room['options'] & 2),
         'deleted' => (bool) ($room['options'] & 4),
         'hidden' => (bool) ($room['options'] & 8),
         'privateIm' => (bool) ($room['options'] & 16),
       ),
       'bbcode' => (int) $room['bbcode'],
-      'canModerate' => $permissions[0]['moderate'],
-      'canAdmin' => $permissions[0]['admin'],
-      'canPost' => $permissions[0]['post'],
-      'canView' => $permissions[0]['view'],
-      'canKnow' => $permissions[0]['know'],
+      'permissions' => array(
+        'canModerate' => (bool) $permissions[0]['moderate'],
+        'canAdmin' => (bool) $permissions[0]['admin'],
+        'canPost' => (bool) $permissions[0]['post'],
+        'canView' => (bool) $permissions[0]['view'],
+        'canKnow' => (bool) $permissions[0]['know'],
+      ),
     );
 
     ($hook = hook('getRooms_eachRoom') ? eval($hook) : '');

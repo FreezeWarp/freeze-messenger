@@ -63,13 +63,13 @@ switch ($action) {
       $bbcode = intval($_POST['bbcode']);
 
       dbInsert(array(
-          'roomName' => $name,
-          'allowedGroups' => $allowedGroups,
-          'allowedUsers' => $allowedUsers,
-          'moderators' => $moderators,
-          'owner' => $user['userId'],
-          'options' => (int) $options,
-          'bbcode' => (int) $bbcode,
+        'roomName' => $name,
+        'allowedGroups' => $allowedGroups,
+        'allowedUsers' => $allowedUsers,
+        'moderators' => $moderators,
+        'owner' => $user['userId'],
+        'options' => (int) $options,
+        'bbcode' => (int) $bbcode,
         ),"{$sqlPrefix}rooms"
       );
       $insertId = mysql_insert_id();
@@ -87,6 +87,7 @@ switch ($action) {
 
   case 'editRoom':
   $name = substr(dbEscape($_POST['name']),0,20); // Limits to 20 characters.
+  $room = dbRows("SELECT roomId, roomName, options, allowedUsers, allowedGroups, moderators FROM {$sqlPrefix}rooms WHERE roomId = " . (int) $_POST['roomId']);
 
   if (!$name) {
     $failCode = 'noName';
@@ -101,14 +102,15 @@ switch ($action) {
     $failMessage = 'The room has been deleted - it can not be edited.';
   }
   else {
-    $data = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE name = '$name'"); // Get existing data.
+    $data = dbRows("SELECT roomId FROM {$sqlPrefix}rooms WHERE roomName = '$name'"); // Get existing data.
 
-    if ($data && $data['id'] != $room['id']) {
+    if ($data && $data['roomId'] != $room['roomId']) {
       $failCode = 'exists';
       $failMessage = 'The room name specified already exists.';
     }
     else {
-      $listsActive = dbRows("SELECT * FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomId = $room[id]",'id');
+      $listsActive = dbRows("SELECT listId, status FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomId = $room[roomId]",'listId');
+
       if ($listsActive) {
         foreach ($listsActive AS $active) {
           $listStatus[$active['listId']] = $active['status'];
@@ -120,32 +122,58 @@ switch ($action) {
         $listsNew[$id] = $list;
       }
 
-      $lists = dbRows("SELECT * FROM {$sqlPrefix}censorLists AS l WHERE options & 2",'id');
+      $lists = dbRows("SELECT listId, type FROM {$sqlPrefix}censorLists AS l WHERE options & 2",'listId');
+
       foreach ($lists AS $list) {
-        if ($list['type'] == 'black' && $listStatus[$list['id']] == 'block') {
+        if ($list['type'] == 'black' && $listStatus[$list['listId']] == 'block') {
           $checked = true;
         }
-        elseif ($list['type'] == 'white' && $listStatus[$list['id']] != 'unblock') {
+        elseif ($list['type'] == 'white' && $listStatus[$list['listId']] != 'unblock') {
           $checked = true;
         }
         else {
           $checked = false;
         }
 
-        if ($checked == true && !$listsNew[$list['id']]) {
-          dbQuery("INSERT INTO ${sqlPrefix}censorBlackWhiteLists (roomId, listId, status) VALUES ($room[id], $id, 'unblock') ON DUPLICATE KEY UPDATE status = 'unblock'");
+        if ($checked == true && !$listsNew[$list['listId']]) {
+          dbInsert(array(
+            'roomId' => $room['roomId'],
+            'listId' => $list['listId'],
+            'status' => 'unblock'
+          ),"{$sqlPrefix}censorBlackWhiteLists",array(
+            'status' => 'unblock',
+          ));
         }
-        elseif ($checked == false && $listsNew[$list['id']]) {
-          dbQuery("INSERT INTO ${sqlPrefix}censorBlackWhiteLists (roomId, listId, status) VALUES ($room[id], $id, 'block') ON DUPLICATE KEY UPDATE status = 'block'");
+        elseif ($checked == false && $listsNew[$list['listId']]) {
+          dbInsert(array(
+            'roomId' => $room['roomId'],
+            'listId' => $list['listId'],
+            'status' => 'block'
+          ),"{$sqlPrefix}censorBlackWhiteLists",array(
+            'status' => 'block',
+          ));
         }
       }
 
-      $allowedGroups = dbEscape($_POST['allowedGroups']);
-      $allowedUsers = dbEscape($_POST['allowedUsers']);
-      $moderators = dbEscape($_POST['moderators']);
-      $options = ($room['options'] & 1) + ($_POST['mature'] ? 2 : 0) + ($room['options'] & 4) + ($room['options'] & 8) + ($_POST['disableModeration'] ? 32 + 0 : 0);
+      $allowedGroups = $_POST['allowedGroups'];
+      $allowedUsers = $_POST['allowedUsers'];
+      $moderators = $_POST['moderators'];
+      $options = ($room['options'] & 1) + ($_POST['mature'] ? 2 : 0) + ($room['options'] & 4) + ($room['options'] & 8) + ($room['options'] & 16);
       $bbcode = intval($_POST['bbcode']);
-      dbQuery("UPDATE {$sqlPrefix}rooms SET name = '$name', allowedGroups = '$allowedGroups', allowedUsers = '$allowedUsers', moderators = '$moderators', options = '$options', bbcode = '$bbcode' WHERE id = $room[id]");
+
+      dbUpdate(array(
+          'roomName' => $name,
+          'allowedGroups' => $allowedGroups,
+          'allowedUsers' => $allowedUsers,
+          'moderators' => $moderators,
+          'options' => (int) $options,
+          'bbcode' => (int) $_POST['bbcode'],
+        ),
+        "{$sqlPrefix}rooms",
+        array(
+          'roomId' => $room['roomId'],
+        )
+      );
     }
   }
   break;
@@ -194,7 +222,22 @@ switch ($action) {
   break;
 
   case 'deleteRoom':
+  $room = dbRows("SELECT roomId, roomName, options, allowedUsers, allowedGroups, moderators FROM {$sqlPrefix}rooms WHERE roomId = " . (int) $_POST['roomId']);
 
+  if ($room['options'] & 4) {
+    $failCode = 'alreadydeleted';
+    $failMessage = 'The room is already deleted.';
+  }
+  else {
+    $room['options'] += 4; // options & 4 = deleted
+
+    dbUpdate(array(
+        'options' => (int) $room['options'],
+      ),"{$sqlPrefix}rooms",array(
+        'roomId' => (int) $room['roomId'],
+      )
+    );
+  }
   break;
 
   case 'userOptions':
