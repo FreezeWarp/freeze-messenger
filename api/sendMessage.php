@@ -95,12 +95,12 @@ if ($continue) {
     $blockWordApi['reason'] = $blockedWordReason;
   }
   elseif (strpos($message, '/topic') === 0) {
-    $title = preg_replace('/^\/topic (.+?)$/i','$1',$message);
+    $topic = preg_replace('/^\/topic (.+?)$/i','$1',$message);
 
-    $title = dbEscape(fimParse_censorParse($title)); // Parses the sources for MySQL and UTF8. We will also censor, but no BBcode.
+    $topic = dbEscape(fimParse_censorParse($topic)); // Parses the sources for MySQL and UTF8. We will also censor, but no BBcode.
 
-    fim_sendMessage('/me changed the topic to ' . $title,$user,$room,'topic');
-    dbQuery("UPDATE {$sqlPrefix}rooms SET topic = '$title' WHERE roomId = $room[id]");
+    fim_sendMessage('/me changed the topic to ' . $topic,$user,$room,'topic');
+    dbQuery("UPDATE {$sqlPrefix}rooms SET roomTopic = '$topic' WHERE roomId = $room[roomId]");
   }
   else {
     if (strpos($message, '/me') === 0) {
