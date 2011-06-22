@@ -120,7 +120,7 @@ switch ($loginMethod) {
   case 'vbulletin':
   $sqlUserTable = $forumPrefix . 'user'; // The user table in the login method used.
   $sqlAdminGroupTable = $forumPrefix . 'usergroup'; // The adminGroup table in the login method used.
-    $sqlUserGroupTable = $forumPrefix . 'socialgroup';
+  $sqlUserGroupTable = $forumPrefix . 'socialgroup';
   $sqlMemberGroupTable = $forumPrefix . 'socialgroupmember'; // The userGroup table in the login method used.
   $sqlSessionTable = $forumPrefix . 'session'; // The sessions table in the login method used.
 
@@ -303,14 +303,14 @@ if ($valid) { // If the user is valid, process their preferrences.
       unset($user);
 
       /* Set Relevant User Data */
+
       $user2['userName'] = $userCopy[$sqlUserTableCols['userName']];
       $user2['userId'] = $userCopy[$sqlUserTableCols['userId']];
       $user2['timeZone'] = $userCopy[$sqlUserTableCols['timeZone']];
       $user2['userGroup'] = $userCopy[$sqlUserTableCols['userGroup']];
       $user2['allGroups'] = $userCopy[$sqlUserTableCols['allGroups']];
-      $user2['color'] = $userCopy[$sqlUserTableCols['allGroups']];
+      $user2['color'] = $userCopy[$sqlUserTableCols['color']];
       $user2['avatar'] = $userCopy[$sqlUserTableCols['avatar']];
-
     }
 
 
@@ -333,7 +333,9 @@ if ($valid) { // If the user is valid, process their preferrences.
       break;
 
       case 'phpbb':
-      $group = dbRows("SELECT * FROM $sqlUserGroupTable WHERE $sqlUserGroupTableCols[groupId] = $user2[userGroup]");
+      if ($user2['userGroup']) {
+        $group = dbRows("SELECT * FROM $sqlUserGroupTable WHERE $sqlUserGroupTableCols[groupId] = $user2[userGroup]");
+      }
 
       if (!$user2['color']) {
         $user2['color'] = $group[$sqlUserTableCols['color']];

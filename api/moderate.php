@@ -449,7 +449,7 @@ switch ($action) {
         'roomId' => (int) $roomData['roomId'],
       ),"{$sqlPrefix}kick",array(
         'length' => (int) $time,
-        'kickerId' => (int) $user['kickerId'],
+        'kickerId' => (int) $user['userId'],
         'time' => array(
           'type' => 'raw',
           'value' => 'NOW()',
@@ -465,7 +465,7 @@ switch ($action) {
   break;
 
 
-  case 'unkickuser':
+  case 'unkickUser':
   $userId = (int) $_POST['userId'];
   $userData = dbRows("SELECT * FROM {$sqlPrefix}users WHERE userId = $userId");
 

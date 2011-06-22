@@ -20,17 +20,22 @@ header('Content-type: text/xml');
 
 if (isset($_GET['rooms'])) {
   $rooms = (string) $_GET['rooms'];
-  $roomsArray = explode(',',$rooms);
+  $roomsArray3 = explode(',',$rooms);
 }
 if ($roomsArray) {
-  foreach ($roomsArray AS &$v) {
+  foreach ($roomsArray3 AS &$v) {
     $v = intval($v);
-    $roomData = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE id = $v");
-    if (!hasPermission($roomData,$user,'moderate',true)) {
-      unset($v);
+  }
+  $roomList2 = implode(',',$roomsArray2);
+
+  $roomRows = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId IN ($roomList)");
+  foreach ($roomRows AS $roomData) {
+    if (hasPermission($roomData,$user,'moderate',true)) {
+      $roomArray[] = $roomData['roomId'];
     }
   }
-  $roomList = implode(',',$roomsArray);
+
+  $roomList = implode(',',$roomArray);
 }
 
 if (isset($_GET['users'])) {
@@ -76,11 +81,15 @@ $xmlData = array(
 $kicks = dbRows("SELECT CONCAT(k.userId, '-', k.roomId) AS id,
   k.userId AS userId,
   u.userName AS userName,
+  u.userFormatStart AS userFormatStart,
+  u.userFormatEnd AS userFormatEnd,
   k.roomId AS roomId,
   k.length AS length,
-  k.time AS time,
+  UNIX_TIMESTAMP(k.time) AS time,
   k.kickerId AS kickerId,
   i.userName AS kickerName,
+  i.userFormatStart AS kickerFormatStart,
+  i.userFormatEnd AS kickerFormatEnd,
   r.roomName AS roomName
   {$kicks_columns}
 FROM {$sqlPrefix}kick AS k
@@ -104,14 +113,21 @@ foreach ($kicks AS $kick) {
     'userData' => array(
       'userId' => (int) $kick['userId'],
       'userName' => $kick['userName'],
+      'userFormatStart' => $kick['userFormatStart'],
+      'userFormatEnd' => $kick['userFormatEnd'],
     ),
     'kickerData' => array(
       'userId' => (int) $kick['kickerId'],
       'userName' => $kick['kickerName'],
+      'userFormatStart' => $kick['kickerFormatStart'],
+      'userFormatEnd' => $kick['kickerFormatEnd'],
     ),
     'length' => (int) $kick['length'],
+
     'set' => (int) $kick['time'],
-    'expires' => (int) $kick['expires'],
+    'setFormatted' => fim_date(false,$kick['time']),
+    'expires' => (int) ($kick['set'] + $kick['length']),
+    'expiresFormatted' => fim_date(false,$kick['time'] + $kick['length']),
   );
 
   ($hook = hook('getKicks_eachKick') ? eval($hook) : '');

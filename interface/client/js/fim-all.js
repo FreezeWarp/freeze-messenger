@@ -1289,6 +1289,64 @@ var standard = {
       }
     });
   },
+
+  kick : function(userId, roomId, length) {
+    $.post(directory + 'api/moderate.php','action=kickUser&userId=' + userId + '&roomId=' + roomId + '&length=' + length + '&sessionHash=' + sessionHash,function(xml) {
+      var errorcode = $(xml).find('errorcode').text().trim();
+      var errortext = $(xml).find('errortext').text().trim();
+
+      switch (errorcode) {
+        case '':
+        dia.info('The user has been kicked.','Success');
+
+        $("#kickUserDialogue").dialog('close');
+        break;
+
+        case 'nopermission':
+        dia.error('You do not have permision to moderate this room.');
+        break;
+
+        case 'nokickuser':
+        dia.error('That user may not be kicked!');
+        break;
+
+        case 'baduser':
+        dia.error('The user specified does not exist.');
+        break;
+
+        case 'badroom':
+        dia.error('The room specified does not exist.');
+        break;
+      }
+    }); // Send the form data via AJAX.
+  },
+
+  unkick : function(userId, roomId) {
+    $.post(directory + 'api/moderate.php','action=unkickUser&userId=' + userId + '&roomId=' + roomId + '&sessionHash=' + sessionHash,function(xml) {
+      var errorcode = $(xml).find('errorcode').text().trim();
+      var errortext = $(xml).find('errortext').text().trim();
+
+      switch (errorcode) {
+        case '':
+        dia.info('The user has been unkicked.','Success');
+
+        $("#kickUserDialogue").dialog('close');
+        break;
+
+        case 'nopermission':
+        dia.error('You do not have permision to moderate this room.');
+        break;
+
+        case 'baduser':
+        dia.error('The user specified does not exist.');
+        break;
+
+        case 'badroom':
+        dia.error('The room specified does not exist.');
+        break;
+      }
+    }); // Send the form data via AJAX.
+  }
 };
 
 /*********************************************************
@@ -2012,17 +2070,21 @@ popup = {
         $(xml).find('kick').each(function() {
           var kickerId = parseInt($(this).find('kickerData > userId').text().trim());
           var kickerName = $(this).find('kickerData > userName').text().trim();
+          var kickerFormatStart = $(this).find('kickerData > userFormatStart').text().trim();
+          var kickerFormatEnd = $(this).find('kickerData > userFormatEnd').text().trim();
           var userId = parseInt($(this).find('userData > userId').text().trim());
           var userName = $(this).find('userData > userName').text().trim();
+          var userFormatStart = $(this).find('userData > userFormatStart').text().trim();
+          var userFormatEnd = $(this).find('userData > userFormatEnd').text().trim();
           var length = parseInt($(this).find('length').text().trim());
-          var set = parseInt($(this).find('set').text().trim());
-          var expires = parseInt($(this).find('expires').text().trim());
+          var set = unxml($(this).find('setFormatted').text().trim());
+          var expires = unxml($(this).find('expiresFormatted').text().trim());
 
-          kickHtml += '<tr><td>' + userName +  '</td><td>' + kickerName + '</td><td>' + set + '</td><td>' + expires + '</td><td><button onclick="unkick(' + userId + ',' + roomId + ')>Unkick</button></td></tr>';
+          kickHtml += '<tr><td>' + userFormatStart + userName + userFormatEnd + '</td><td>' + kickerFormatStart + kickerName + kickerFormatEnd + '</td><td>' + set + '</td><td>' + expires + '</td><td><button onclick="standard.unkick(' + userId + ',' + roomId + ')">Unkick</button></td></tr>';
         });
 
         dia.full({
-          content : '<table class="page"><thead><tr class="hrow"><th>User</th><th>Kicked By</th><th>Kicked On</th><th>Expires On</th><th>Actions</th></tr>  </thead><tbody id="kickedUsers"></tbody></table>',
+          content : '<table class="page"><thead><tr class="hrow"><th>User</th><th>Kicked By</th><th>Kicked On</th><th>Expires On</th><th>Actions</th></tr>  </thead><tbody id="kickedUsers">' + kickHtml + '</tbody></table>',
           title : 'Manage Kicked Users in This Room',
           width : 1000,
         });
@@ -2082,34 +2144,7 @@ popup = {
 
           var length = Math.floor(parseInt($('#time').val() * parseInt($('#interval > option:selected').attr('value'))));
 
-          $.post(directory + 'api/moderate.php','action=kickUser&userId=' + userId + '&roomId=' + roomId + '&length=' + length + '&sessionHash=' + sessionHash,function(xml) {
-            var errorcode = $(xml).find('errorcode').text().trim();
-            var errortext = $(xml).find('errortext').text().trim();
-
-            switch (errorcode) {
-              case '':
-              dia.info('The user has been kicked.','Success');
-
-              $("#kickUserDialogue").dialog('close');
-              break;
-
-              case 'nopermission':
-              dia.error('You do not have permision to moderate this room.');
-              break;
-
-              case 'nokickuser':
-              dia.error('That user may not be kicked!');
-              break;
-
-              case 'baduser':
-              dia.error('The user specified does not exist.');
-              break;
-
-              case 'badroom':
-              dia.error('The room specified does not exist.');
-              break;
-            }
-          }); // Send the form data via AJAX.
+          standard.kick(userId,roomId,length);
 
           return false; // Don't submit the form.
         });
