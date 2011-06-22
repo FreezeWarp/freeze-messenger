@@ -72,7 +72,15 @@ $xmlData = array(
 $users = dbRows("SELECT u.userId,
   u.userName,
   u.userFormatStart,
-  u.userFormatEnd
+  u.userFormatEnd,
+  u.profile,
+  u.avatar,
+  u.socialGroups,
+  u.defaultColor,
+  u.defaultHighlight,
+  u.defaultFontface,
+  u.defaultFormatting,
+  u.favRooms
   {$users_columns}
 FROM {$sqlPrefix}users AS u
   {$users_tables}
@@ -126,7 +134,7 @@ if ($users) {
         'color' => ($userData['defaultColor']),
         'highlight' => ($userData['defaultHighlight']),
         'fontface' => ($userData['defaultFontface']),
-        'general' => (int) $userData['defaultGeneral']
+        'general' => (int) $userData['defaultFormatting']
       ),
       'favRooms' => ($userData['favRooms']),
       'postCount' => (int) $userDataForums['posts'],

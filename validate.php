@@ -217,6 +217,7 @@ if ($flag) {
 }
 else {
   if ($sessionHash) { //TODO: Security Improvements
+
     $user = dbRows("SELECT u.*, s.anonId, UNIX_TIMESTAMP(s.time) AS sessionTime FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE s.magicHash = '" . dbEscape($sessionHash) . "' AND u.userId = s.userId");
 
     if ($user) {
@@ -295,6 +296,8 @@ if ($valid) { // If the user is valid, process their preferrences.
       $userCopy = $user;
       unset($user);
 
+
+
       /* Set Relevant User Data */
 
       $user2['userName'] = $userCopy[$sqlUserTableCols['userName']];
@@ -343,6 +346,7 @@ if ($valid) { // If the user is valid, process their preferrences.
       break;
 
     }
+
 
 
     ($hook = hook('validate_preprefs') ? eval($hook) : '');
@@ -395,7 +399,7 @@ if ($valid) { // If the user is valid, process their preferrences.
 
       $userprefs = dbRows('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']);
     }
-    elseif ($userprefs['lastSync'] <= (time() - ($sync ? $sync : (60 * 60 * 2)))) { // This updates various caches every so often. In general, it is a rather slow process, and as such does tend to take a rather long time (that is, compared to normal - it won't exceed 500miliseconds, really).
+    elseif ($userprefs['lastSync'] <= (time() - ($sync ? $sync : (0)))) { // This updates various caches every so often. In general, it is a rather slow process, and as such does tend to take a rather long time (that is, compared to normal - it won't exceed 500miliseconds, really).
 
       /* Favourite Room Cleanup
       * Remove all favourite groups a user is no longer a part of. */

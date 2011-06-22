@@ -331,11 +331,6 @@ function hashParse() {
   }
 }
 
-if ("onhashchange" in window) {
-  window.onhashchange = hashParse;
-}
-hashParse();
-
 
 
 /* Permission Dead Defaults
@@ -528,7 +523,7 @@ function populate(options) {
           }
         });
 
-        $('#roomListLong > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li><li>My Rooms<ul>' + roomUlMyHtml + '</ul></li><li>General<ul>' + roomUlHtml + '</ul></li><li>Private<ul>' + roomUlPrivHtml + '</ul></li>');
+        $('#roomListLong > li > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li><li>My Rooms<ul>' + roomUlMyHtml + '</ul></li><li>General<ul>' + roomUlHtml + '</ul></li><li>Private<ul>' + roomUlPrivHtml + '</ul></li>');
 
         $('#roomListShort > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li>');
 
@@ -1329,6 +1324,43 @@ var standard = {
   },
 
 
+  privateRoom : function(userLocalId) {
+    if (userLocalId == userId) {
+      dia.error('You can\'t talk to yourself...');
+    }
+    else {
+      $.post(directory + 'api/moderate.php','action=privateRoom&userId=' + userLocalId + '&sessionHash=' + sessionHash,function(xml) {
+        var privateRoomId = parseInt($(xml).find('insertId').text().trim());
+        var errorcode = unxml($(xml).find('errorcode').text().trim());
+        var errortext = unxml($(xml).find('errorcode').text().trim());
+
+        if (errorcode) {
+          switch (errorcode) {
+            case 'baduser':
+            dia.error('The user specified does not exist.');
+            break;
+          }
+        }
+        else {
+          dia.full({
+            content : 'You may talk to this person privately at this link: <form method="post" onsubmit="return false;"><input type="text" style="width: 300px;" value="' + currentLocation + '#room=' + privateRoomId + '" name="url" /></form>',
+            id : 'privateRoomSucessDialogue',
+            buttons : {
+              Open : function() {
+                standard.selectRoom(privateRoomId);
+              },
+              Okay : function() {
+                $('#privateRoomSucessDialogue').dialog('close');
+              }
+            },
+            width: 600,
+          });
+        }
+      }); // Send the form data via AJAX.
+    }
+  },
+
+
   kick : function(userId, roomId, length) {
     $.post(directory + 'api/moderate.php','action=kickUser&userId=' + userId + '&roomId=' + roomId + '&length=' + length + '&sessionHash=' + sessionHash,function(xml) {
       var errorcode = $(xml).find('errorcode').text().trim();
@@ -1347,34 +1379,6 @@ var standard = {
 
         case 'nokickuser':
         dia.error('That user may not be kicked!');
-        break;
-
-        case 'baduser':
-        dia.error('The user specified does not exist.');
-        break;
-
-        case 'badroom':
-        dia.error('The room specified does not exist.');
-        break;
-      }
-    }); // Send the form data via AJAX.
-  },
-
-
-  unkick : function(userId, roomId) {
-    $.post(directory + 'api/moderate.php','action=unkickUser&userId=' + userId + '&roomId=' + roomId + '&sessionHash=' + sessionHash,function(xml) {
-      var errorcode = $(xml).find('errorcode').text().trim();
-      var errortext = $(xml).find('errortext').text().trim();
-
-      switch (errorcode) {
-        case '':
-        dia.info('The user has been unkicked.','Success');
-
-        $("#kickUserDialogue").dialog('close');
-        break;
-
-        case 'nopermission':
-        dia.error('You do not have permision to moderate this room.');
         break;
 
         case 'baduser':
@@ -1411,7 +1415,6 @@ var standard = {
   },
 
 
-
 };
 
 /*********************************************************
@@ -1430,9 +1433,10 @@ var standard = {
  ********** Silent Init Uses of Standard Methods *********
  *********************************************************/
 
-if (roomId > 0) {
-  standard.changeRoom(roomId);
+if ("onhashchange" in window) {
+  window.onhashchange = hashParse;
 }
+hashParse();
 
 /*********************************************************
  ************************* END ***************************
@@ -1498,7 +1502,7 @@ popup = {
 
 
 
-  /*** START Help ***/
+  /*** START Room Select ***/
 
   selectRoom : function() {
     dia.full({
@@ -1999,20 +2003,20 @@ popup = {
             $.post(directory + 'api/moderate.php','action=createRoom&name=' + urlEncode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&sessionHash=' + sessionHash,function(xml) {
               var errorCode = unxml($(xml).find('errorcode').text().trim());
               var errorMessage = unxml($(xml).find('errortext').text().trim());
-              var privateRoomId = parseInt($(xml).find('insertId').text().trim());
+              var createRoomId = parseInt($(xml).find('insertId').text().trim());
 
               if (errorCode) {
                 dia.error('An error has occured: ' + errorMessage);
               }
               else {
                 dia.full({
-                  content : 'The room has been created at the following URL:<br /><br /><form action="' + window.location.hostname + '#room=' + privateRoomId + '" method="post"><input type="text" style="width: 300px;" value="' + window.location.hostname + '#room=' + privateRoomId + '" name="url" /><button type="subit">Go There!</submit></form>',
+                  content : 'The room has been created at the following URL:<br /><br /><form action="' + currentLocation + '#room=' + createRoomId + '" method="post"><input type="text" style="width: 300px;" value="' + currentLocation + '#room=' + createRoomId + '" name="url" /></form>',
                   title : 'Room Created!',
                   id : 'createRoomResultDialogue',
                   width : 600,
                   buttons : {
                     Open : function() {
-                      standard.selectRoom(privateRoomId);
+                      standard.changeRoom(createRoomId);
                     },
                     Okay : function() {
                       $('#createRoomResultsDialogue').dialog('close');
@@ -2051,39 +2055,7 @@ popup = {
           privateUserName = $("#privateRoomForm > #userName").val(); // Serialize the form data for AJAX.
           privateUserId = userRef[privateUserName];
 
-          if (privateUserId == userId) {
-            dia.error('You can\'t talk to yourself...');
-          }
-          else {
-            $.post(directory + 'api/moderate.php','action=privateRoom&userId=' + privateUserId + '&sessionHash=' + sessionHash,function(xml) {
-              var privateRoomId = parseInt($(xml).find('insertId').text().trim());
-              var errorcode = unxml($(xml).find('errorcode').text().trim());
-              var errortext = unxml($(xml).find('errorcode').text().trim());
-
-              if (errorcode) {
-                switch (errorcode) {
-                  case 'baduser':
-                  dia.error('The user specified does not exist.');
-                  break;
-                }
-              }
-              else {
-                dia.full({
-                  content : 'The room has been created at the following link: <form method="post" onsubmit="return false;"><input type="text" style="width: 300px;" value="' + currentLocation + '#room=' + privateRoomId + '" name="url" /></form>',
-                  id : 'privateRoomSucessDialogue',
-                  buttons : {
-                    Open : function() {
-                      standard.selectRoom(privateRoomId);
-                    },
-                    Okay : function() {
-                      $('#privateRoomSucessDialogue').dialog('close');
-                    }
-                  },
-                  width: 600,
-                });
-              }
-            }); // Send the form data via AJAX.
-          }
+          standard.privateRoom(privateUserId);
 
           return false; // Don't submit the form.
         });
@@ -2272,7 +2244,7 @@ popup = {
 
   archive : function(roomLocalId) {
     dia.full({
-      content : '<form id="archiveSearch" action="#" method="get"><input type="text" name="searchText" /></form> <table class="center"><thead><tr><th>User</th><th>Time</th><th>Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><button id="archivePrev"><< Prev</button><button id="archiveNext">Next >></button>',
+      content : '<form id="archiveSearch" action="#" method="get"><input type="text" name="searchText" /></form> <table class="center"><thead><tr><th style="width: 20%;">User</th><th style="width: 20%;">Time</th><th style="width: 60%;">Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><button id="archivePrev"><< Prev</button><button id="archiveNext">Next >></button>',
       title : 'Archive',
       id : 'archiveDialogue',
       width : 1000,
@@ -2402,6 +2374,25 @@ function windowDraw() {
     }
   );
 
+
+
+
+  /*** Archive ***/
+
+  $('#icon_note, #messageArchive').click(function() {
+    popup.archive(roomId);
+  });
+
+
+
+  /*** Edit Room ***/
+
+  $('a#editRoom').click(function() {
+    popup.editRoom(roomId);
+  });
+
+
+
   windowResize();
 }
 
@@ -2521,8 +2512,8 @@ function contextMenuParse() {
       cache: false,
       success: function(xml) {
         userName = unxml($(this).find('userName').text().trim());
-        avatarUrl = parseInt($(this).find('userId').text().trim());
-        profileUrl = parseInt($(this).find('userId').text().trim());
+        avatarUrl = parseInt($(this).find('avatar').text().trim());
+        profileUrl = parseInt($(this).find('profile').text().trim());
       },
       error: function() {
         dia.error('The information of this user could not be retrieved.');
@@ -2531,12 +2522,7 @@ function contextMenuParse() {
 
     switch(action) {
       case 'private_im':
-      dia.full({
-        uri : 'content/privateRoom.php?phase=2&userId=' + userId,
-        title : 'Private IM',
-        id : 'privateRoomDialogue',
-        width : 1000,
-      });
+      standard.privateRoom(userId);
       break;
 
       case 'profile':
@@ -2544,12 +2530,7 @@ function contextMenuParse() {
       break;
 
       case 'kick':
-      dia.full({
-        uri : 'content/kick.php?userId=' + userId + '&roomId=' + $('body').attr('data-roomId'),
-        title : 'Kick User',
-        id : 'kickUserDialogue',
-        width : 1000
-      });
+      popup.kick(userId, roomId);
       break;
 
       case 'ban': // TODO?
@@ -2578,7 +2559,7 @@ function contextMenuParse() {
 
       case 'link':
         // TODO
-      dia.info('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + window.location.hostname + '/archive.php?roomId=' + $('body').attr('data-roomId') + '&message=' + postid + '" />','Link to This Message');
+        dia.info('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + $('body').attr('data-roomId') + '#message=' + postid + '" />','Link to This Message');
       break;
     }
   });
@@ -2597,23 +2578,18 @@ function contextMenuParse() {
       break;
 
       case 'delete':
-      if (dia.confirm('Are you sure you want to delete this message?')) {
-        $.ajax({
-          url: 'ajax/fim-modAction.php?action=deletepost&postid=' + postid,
-          type: 'GET',
-          cache: false,
-          success: function() {
-            $(el).parent().fadeOut();
-          },
-          error: function() {
-            dia.error('The message could not be deleted.');
-          }
-        });
-      }
+      dia.confirm({
+        text : 'Are you sure you want to delete this message?',
+        true : function() {
+          standard.deleteMessage(postid);
+
+          $(el).parent().fadeOut();
+        }
+      });
       break;
 
       case 'link': // TODO
-      dia.info('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="http://' + window.location.hostname + '/archive.php?roomId=' + $('body').attr('data-roomId') + '&message=' + postid + '" />','Link to This Message');
+      dia.info('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + $('body').attr('data-roomId') + '#message=' + postid + '" />','Link to This Message');
       break;
     }
   });
@@ -2624,27 +2600,17 @@ function contextMenuParse() {
   function(action, el) {
     switch(action) {
       case 'delete':
-      if (confirm('Are you sure you want to delete this room?')) {
-        $.ajax({
-          url: 'ajax/fim-modAction.php?action=deleteroom&roomId=' + postid,
-          type: 'GET',
-          cache: false,
-          success: function() {
-            $(el).parent().fadeOut();
-          },
-          error: function() {
-            dia.error('The room could not be deleted.');
-          }
-        });
-      }
+      dia.confirm({
+        text : 'Are you sure you want to delete this room?',
+        true : function() {
+          standard.deleteRoom($(el).attr('data-roomId'));
+
+          $(el).parent().fadeOut();
+        }
+      });
       break;
       case 'edit':
-      dia.full({
-        uri : 'content/editRoom.php?roomId=' + $(el).attr('data-roomId'),
-        title : 'Edit Room',
-        id : 'editRoomDialogue',
-        width : 1000
-      });
+      popup.editRoom($(el).attr('data-roomId'));
       break;
     }
   });
@@ -2816,10 +2782,6 @@ $(document).ready(function() {
 
   /*** Edit Room ***/
 
-  $('a#editRoom').click(function() {
-    popup.editRoom(roomId);
-  });
-
   $('a.editRoomMulti').click(function() {
     popup.editRoom($(this).attr('data-roomId'));
   });
@@ -2830,14 +2792,6 @@ $(document).ready(function() {
 
   $('#icon_help').click(function() {
     popup.help();
-  });
-
-
-
-  /*** Archive ***/
-
-  $('#icon_note, #messageArchive').click(function() {
-    popup.archive(roomId);
   });
 
 
