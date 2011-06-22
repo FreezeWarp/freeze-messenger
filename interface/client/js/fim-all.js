@@ -475,11 +475,11 @@ function populate(options) {
           var roomName = unxml($(this).find('roomName').text().trim());
           var roomId = parseInt($(this).find('roomId').text().trim());
           var roomTopic = unxml($(this).find('roomTopic').text().trim());
-          var isFav = ($(this).find('favorite').text() == 'true' ? true : false);
-          var isPriv = ($(this).find('optionDefinitions > privateIm').text() == 'true' ? true : false);
+          var isFav = ($(this).find('favorite').text().trim() == 'true' ? true : false);
+          var isPriv = ($(this).find('optionDefinitions > privateIm').text().trim() == 'true' ? true : false);
           var isAdmin = ($(this).find('canAdmin').text().trim() === 'true' ? true : false);
           var isModerator = ($(this).find('canModerate').text().trim() === 'true' ? true : false);
-          var isOwner = (parseInt($(this).find('owner').text()) == userId ? true : false);
+          var isOwner = (parseInt($(this).find('owner').text().trim()) == userId ? true : false);
 
           var ulText = '<li><a href="index.php?room=' + roomId + '">' + roomName + '</a></li>';
 
@@ -540,8 +540,8 @@ function populate(options) {
         console.log('Groups obtained.');
 
         $(xml).find('group').each(function() {
-          var groupName = unxml($(this).find('groupName').text());
-          var groupId = parseInt($(this).find('groupId').text());
+          var groupName = unxml($(this).find('groupName').text().trim());
+          var groupId = parseInt($(this).find('groupId').text().trim());
 
           groupRef[groupName] = groupId;
           groupList.push(groupName);
@@ -615,6 +615,59 @@ function updateVids(searchPhrase) {
     $('#youtubeResults').html(html);
   });
 }
+
+
+
+autoEntry = {
+  addEntry : function(type,source) {
+    var val = $("#" + type + "Bridge").val();
+    switch(type) {
+      case 'watchRooms':
+      var id = roomRef[val];
+      var type2 = 'Room';
+      break;
+
+      case 'moderators':
+      case 'allowedUsers':
+      var id = userRef[val];
+      var type2 = 'User';
+      break;
+
+      case 'allowedGroups':
+      var id = groupRef[val];
+      var type2 = 'Group';
+      break;
+    }
+
+    if (!id) {
+      dia.error(type2 + ' does not exist.');
+    }
+    else {
+      var currentRooms = $("#" + type).val().split(",");
+      currentRooms.push(id);
+
+      $("#" + type + "List").append("<span id=\"" + type + "SubList" + id + "\">" + val + " (<a href=\"javascript:void(0);\" onclick=\"autoEntry.removeEntry('" + type + "'," + id + ");\">×</a>), </span>");
+      $("#" + type).val(currentRooms.toString(","));
+    }
+  },
+
+  removeEntry : function(type,id) {
+    $("#" + type + "SubList" + id).fadeOut(500, function() {
+      $(this).remove();
+    });
+
+    var currentRooms = $("#" + type).val().split(",");
+
+    for (var i = 0; i < currentRooms.length; i++) {
+      if(currentRooms[i] == id) {
+        currentRooms.splice(i, 1);
+        break;
+      }
+    }
+
+    $("#" + type).val(currentRooms.toString(","));
+  }
+};
 
 
 var standard = {
@@ -703,59 +756,6 @@ var standard = {
         options.callback(data);
       }
     });
-  },
-
-
-  // TODO
-  autoEntry : {
-    addEntry : function(type,source) {
-      var val = $("#" + type + "Bridge").val();
-      switch(type) {
-        case 'watchRooms':
-        var id = roomRef[val];
-        var type2 = 'Room';
-        break;
-
-        case 'moderators':
-        case 'allowedUsers':
-        var id = userRef[val];
-        var type2 = 'User';
-        break;
-
-        case 'allowedGroups':
-        var id = groupRef[val];
-        var type2 = 'Group';
-        break;
-      }
-
-      if (!id) {
-        dia.error(type2 + ' does not exist.');
-      }
-      else {
-        var currentRooms = $("#" + type).val().split(",");
-        currentRooms.push(id);
-
-        $("#" + type + "List").append("<span id=\"" + type + "SubList" + id + "\">" + val + " (<a href=\"javascript:void(0);\" onclick=\"autoEntry.removeEntry('" + type + "'," + id + ");\">×</a>), </span>");
-        $("#" + type).val(currentRooms.toString(","));
-      }
-    },
-
-    removeEntry : function(type,id) {
-      $("#" + type + "SubList" + id).fadeOut(500, function() {
-        $(this).remove();
-      });
-
-      var currentRooms = $("#" + type).val().split(",");s
-
-      for (var i = 0; i < currentRooms.length; i++) {
-        if(currentRooms[i] == id) {
-          currentRooms.splice(i, 1);
-          break;
-        }
-      }
-
-      $("#" + type).val(currentRooms.toString(","));
-    }
   },
 
 

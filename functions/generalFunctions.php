@@ -45,7 +45,13 @@ function fim_inArray($needle,$haystack) {
 */
 function fim_hasPermission($roomData,$userData,$type = 'post',$quick = false) {
   global $sqlPrefix, $banned, $superUsers, $valid;
-  static $isAdmin, $isModerator, $isAllowedUser, $isAllowedGroup, $isOwner, $isRoomDeleted;
+
+  $isAdmin = false;
+  $isModerator = false;
+  $isAllowedUser = false;
+  $isAllowedGroup = false;
+  $isOwner = false;
+  $isRoomDeleted = false;
 
 
   /* Make sure all presented data is correct. */
@@ -86,7 +92,8 @@ WHERE userId = $userData[userId] AND
 
   if ((fim_inArray(explode(',',$userData['socialGroups']),explode(',',$roomData['allowedGroups']))
     || $roomData['allowedGroups'] == '*')
-  && $roomData['allowedGroups']) {
+  && $roomData['allowedGroups']
+  && $userData['socialGroups']) {
     $isAllowedGroup = true;
   }
 
@@ -502,7 +509,11 @@ function template($name) {
 
 function parser1($text,$offset,$stop = false,$globalString = '') {
   $i = $offset;
-//  static $cValue, $cValueProc, $iValue, $iValueProc;
+
+  $cValue = false;
+  $cValueProc = false;
+  $iValue = false;
+  $iValueProc = false;
 
   while ($i < strlen($text)) {
     $j = $text[$i];
