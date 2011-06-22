@@ -94,7 +94,7 @@ if ($continue) {
     $blockWordApi['word'] = $blockedWordText;
     $blockWordApi['reason'] = $blockedWordReason;
   }
-  elseif (strpos($message, '/topic') === 0) {
+  elseif (strpos($message, '/topic') === 0 && !$disableTopic) {
     $topic = preg_replace('/^\/topic (.+?)$/i','$1',$message);
 
     $topic = dbEscape(fimParse_censorParse($topic)); // Parses the sources for MySQL and UTF8. We will also censor, but no BBcode.

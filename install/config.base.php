@@ -237,6 +237,10 @@ $cacheTableLimit = 100;
  * This is great for servers that don't have GZIP enabled, and still beneficial otherwise. It does, however, result in slightly increased server load. */
 $compressOutput = true; // Set this to off to avoid compacting PHP-generated HTML and XML output.
 
+/* $disableTopic
+ * Set to true to disable the changing of room topics.
+ * Not well integrated yet, but it still does the job. */
+$disableTopic = true;
 
 
 
