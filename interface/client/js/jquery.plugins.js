@@ -2236,20 +2236,21 @@ var riffwave = {
 
 /*
  * Tabbed Dialogue
- * Source Unknown
+ * Based on http://forum.jquery.com/topic/combining-ui-dialog-and-tabs
+ * Modified to Work by Joseph T. Parsons
+ * Browser Status: Chrome (+), Firefox (?), IE 8 (?), IE 9 (?), Opera (?), Safari (?)
  */
 $.fn.tabbedDialog = function (dialogOptions,tabOptions) {
   this.tabs(tabOptions);
   this.dialog(dialogOptions);
 
-  this.find('.ui-tab-dialog-close').append($('a.ui-dialog-titlebar-close'));
-  this.find('.ui-tab-dialog-close').css({'position':'absolute','right':'0', 'top':'23px'});
-  this.find('.ui-tab-dialog-close > a').css({'float':'none','padding':'0'});
 
   var tabul = this.find('ul:first');
   this.parent().addClass('ui-tabs').prepend(tabul).draggable('option','handle',tabul);
-  this.siblings('.ui-dialog-titlebar').remove();
+  tabul.append($('a.ui-dialog-titlebar-close'));
   tabul.addClass('ui-dialog-titlebar');
+
+  this.siblings('.ui-dialog-titlebar').remove();
 }
 
 

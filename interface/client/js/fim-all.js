@@ -860,33 +860,33 @@ var standard = {
           var userName = unxml($(xml).find('userData > userName').text().trim());
           var defaultRoomId = parseInt($(xml).find('defaultRoomId').text().trim());
 
+          userId = parseInt($(xml).find('userData > userId').text().trim());
+          anonId = parseInt($(xml).find('anonId').text().trim());
+          sessionHash = unxml($(xml).find('sessionHash').text().trim());
+
+          $.cookie('fim3_sessionHash',sessionHash); // Set cookies.
+          $.cookie('fim3_userId',userId);
+
+
+
+          /* Update Permissions */
+
+          userPermissions.createRoom = (parseInt($(xml).find('userPermissions > createRooms').text().trim()) > 0 ? true : false);
+          userPermissions.privateRoom = (parseInt($(xml).find('userPermissions > privateRooms').text().trim()) > 0 ? true : false);
+          userPermissions.general = (parseInt($(xml).find('userPermissions > allowed').text().trim()) > 0 ? true : false);
+
+
+          adminPermissions.modPrivs = (parseInt($(xml).find('adminPermissions > modPrivs').text().trim()) > 0 ? true : false);
+          adminPermissions.modCore = (parseInt($(xml).find('adminPermissions > modCore').text().trim()) > 0 ? true : false);
+          adminPermissions.modUsers = (parseInt($(xml).find('adminPermissions > modUsers').text().trim()) > 0 ? true : false);
+          adminPermissions.modTemplates = (parseInt($(xml).find('adminPermissions > modTemplates').text().trim()) > 0 ? true : false);
+          adminPermissions.modImages = (parseInt($(xml).find('adminPermissions > modImages').text().trim()) > 0 ? true : false);
+          adminPermissions.modCensor = (parseInt($(xml).find('adminPermissions > modCensor').text().trim()) > 0 ? true : false);
+          adminPermissions.modHooks = (parseInt($(xml).find('adminPermissions > modHooks').text().trim()) > 0 ? true : false);
+
+
 
           if (valid === 'true') {
-            userId = parseInt($(xml).find('userData > userId').text().trim());
-            anonId = parseInt($(xml).find('anonId').text().trim());
-            sessionHash = unxml($(xml).find('sessionHash').text().trim());
-
-            $.cookie('fim3_sessionHash',sessionHash); // Set cookies.
-            $.cookie('fim3_userId',userId);
-
-
-
-            /* Update Permissions */
-
-            userPermissions.createRoom = (parseInt($(xml).find('userPermissions > createRooms').text().trim()) > 0 ? true : false);
-            userPermissions.privateRoom = (parseInt($(xml).find('userPermissions > privateRooms').text().trim()) > 0 ? true : false);
-            userPermissions.general = (parseInt($(xml).find('userPermissions > allowed').text().trim()) > 0 ? true : false);
-
-
-            adminPermissions.modPrivs = (parseInt($(xml).find('adminPermissions > modPrivs').text().trim()) > 0 ? true : false);
-            adminPermissions.modCore = (parseInt($(xml).find('adminPermissions > modCore').text().trim()) > 0 ? true : false);
-            adminPermissions.modUsers = (parseInt($(xml).find('adminPermissions > modUsers').text().trim()) > 0 ? true : false);
-            adminPermissions.modTemplates = (parseInt($(xml).find('adminPermissions > modTemplates').text().trim()) > 0 ? true : false);
-            adminPermissions.modImages = (parseInt($(xml).find('adminPermissions > modImages').text().trim()) > 0 ? true : false);
-            adminPermissions.modCensor = (parseInt($(xml).find('adminPermissions > modCensor').text().trim()) > 0 ? true : false);
-            adminPermissions.modHooks = (parseInt($(xml).find('adminPermissions > modHooks').text().trim()) > 0 ? true : false);
-
-
 
             if (options.showMessage) {
               /* Display Dialog to Notify User of Being Logged In */
@@ -906,6 +906,7 @@ var standard = {
           }
 
           else {
+
             switch (loginFlag) {
               case 'PASSWORD_ENCRYPT':
               dia.error("The form encryption used was not accepted by the server.");
@@ -947,7 +948,9 @@ var standard = {
           }
 
 
+
           /* Select Room */
+
           if (!roomId) {
             if (!defaultRoomId) {
               standard.changeRoom(1);
