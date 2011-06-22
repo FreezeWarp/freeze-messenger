@@ -1,37 +1,35 @@
 /* FreezeMessenger Copyright © 2011 Joseph Todd Parsons
 
- * This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
+* This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
- * This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+* This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
- * You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+* You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 /* Global Definitions
- * These are used throughout all other Javascript files, so are defined before all other FIM-specific files.
+* These are used throughout all other Javascript files, so are defined before all other FIM-specific files.
 
 
- * Needed Changes:
-   * Consistency in use of templates+raw HTML. */
+* Needed Changes:
+  * Consistency in use of templates+raw HTML. */
 
 
 
 
 /*********************************************************
- ************************ START **************************
- ******************* Static Functions ********************
- *********************************************************/
+************************ START **************************
+******************* Static Functions ********************
+*********************************************************/
 
 function unxml(data) {
-  data = data.replace(/\&lt\;/g,'<',data).replace(/\&gt\;/g,'>',data).replace(/\&apos\;/g,"'",data).replace(/\&quot\;/g,'"',data);
-
-  return data;
+  return data.replace(/\&lt\;/g,'<',data).replace(/\&gt\;/g,'>',data).replace(/\&apos\;/g,"'",data).replace(/\&quot\;/g,'"',data);
 }
 
 function urlEncode(data) {
@@ -55,12 +53,12 @@ if (typeof console != 'object' || typeof console.log != 'function') {
   console = {
     log : function() {
       // Do nothing?
-    },
+    }
   };
 }
 
 
-dia = {
+  dia = {
   error : function(message) {
     $('<div style="display: none;">' + message + '</div>').dialog({
       title : 'Error',
@@ -93,16 +91,16 @@ dia = {
       hide: "puff",
       buttons: {
         Confirm: function() {
-          if (options.true) {
-            options.true();
+          if ('true' in options) {
+            options['true']();
           }
 
           $(this).dialog("close");
           return true;
         },
         Cancel: function() {
-          if (options.false) {
-            options.false();
+          if ('false' in options) {
+            options['false']();
           }
 
           $(this).dialog("close");
@@ -152,20 +150,20 @@ dia = {
       buttons : options.buttons,
       autoOpen: autoOpen,
       open: function() {
-        if (options.oF) {
-          options.oF();
+        if (oF in options) {
+          options['oF']();
         }
       },
       close: function() {
         $('#' + options.id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
-        if (options.cF) {
-          options.cF();
+        if (cF in options) {
+          options['cF']();
         }
       }
     };
 
     var tabsOptions = {
-      selected : options.selectTab,
+      selected : options.selectTab
     };
 
 
@@ -217,13 +215,13 @@ dia = {
 
       windowDraw();
     }
-  },
+  }
 };
 
 /*********************************************************
- ************************* END ***************************
- ******************* Static Functions ********************
- *********************************************************/
+************************* END ***************************
+******************* Static Functions ********************
+*********************************************************/
 
 
 
@@ -233,9 +231,9 @@ dia = {
 
 
 /*********************************************************
- ************************ START **************************
- ******************* Variable Setting ********************
- *********************************************************/
+************************ START **************************
+******************* Variable Setting ********************
+*********************************************************/
 
 /* Common Variables */
 
@@ -248,18 +246,20 @@ var anonId; // ID used to represent anonymous posters.
 
 /* Function-Specific Variables */
 
-var blur = false; // By default, we assume the window is active and not blurred.
-var totalFails = 0;
-var timer3;
+window.isBlurred = false; // By default, we assume the window is active and not blurred.
 var topic;
-var lastMessage = 0;
-var messages;
-var activeUsers;
 var notify = true;
-var first = true;
 var favicon = $('#favicon').attr('href');
-var longPolling; // Use experimental longPolling technology?
-var timeout = (longPolling ? 1000000 : 2400);
+
+var uploadSettings = new Object;
+var requestSettings = {
+  longPolling : false, // We may set this to true if the server supports it.
+  timeout : 2400, // We may increase this dramatically if the server supports longPolling.
+  firstRequest : true,
+  totalFails : 0,
+  lastMessage : 0
+};
+var timers = new Object;
 
 
 
@@ -277,7 +277,7 @@ if ($.cookie('fim3_sessionHash')) {
 
 
 /* Get the absolute API path.
- * TODO: Define this in a more "sophisticated manner". */
+* TODO: Define this in a more "sophisticated manner". */
 
 var directoryPre = window.location.pathname;
 directoryPre = directoryPre.split('/');
@@ -291,24 +291,28 @@ var currentLocation = window.location.origin + directory + 'interface/';
 
 
 /* Get Server-Specific Variables
- * We Should Not Call This Again */
+* We Should Not Call This Again */
 $.ajax({
   url: directory + 'api/getServerStatus.php',
   type: 'GET',
   timeout: 5000,
   cache: false,
   success: function(xml) {
-    longPolling = ($('serverStatus > requestMethods > longPoll').text().trim() == 'true' ? true : false);
+    requestSettings.longPolling = ($('serverStatus > requestMethods > longPoll').text().trim() == 'true' ? true : false);
+
+    return false;
   },
   error: function() {
-    longPolling = false;
-  },
+    requestSettings.longPolling = false;
+
+    return false;
+  }
 });
 
 
 
 /* URL-Defined Actions
- * TODO */
+* TODO */
 function hashParse() {
   var urlHash = window.location.hash;
   var urlHashComponents = urlHash.split('#');
@@ -334,10 +338,11 @@ function hashParse() {
 
 
 /* Permission Dead Defaults
- * Specifically, These All Start False then Change on-Login */
+* Specifically, These All Start False then Change on-Login */
+
 var userPermissions = {
   createRoom : false,
-  privateRoom : false,
+  privateRoom : false
 };
 
 var adminPermissions = {
@@ -349,26 +354,28 @@ var adminPermissions = {
   modPlugins : false,
   modTemplates: false,
   modHooks : false,
-  modTranslations : false,
+  modTranslations : false
 };
 
 
 
 /* Settings
- * These Are Set Based on Cookies */
+* These Are Set Based on Cookies */
+
 var settings = {
   showAvatars : (settingsBitfield & 2048 ? true : false), // Use the complex document style?
   reversePostOrder : (settingsBitfield & 1024 ? true : false), // Show posts in reverse?
   audioDing : (settingsBitfield & 8192 ? true : false), // Fire an HTML5 audio ding during each unread message?
   disableImages : (settingsBitfield & 32 ? true : false),
   disableVideos : (settingsBitfield & 64 ? true : false),
-  disableFormatting : (settingsBitfield & 16 ? true : false),
+  disableFormatting : (settingsBitfield & 16 ? true : false)
 };
 
 
 
 /* Apply CSS Styling Dynamically
- * Added Bonus: It's Hard Not To Know When the Script is Broken */
+* Added Bonus: It's Hard Not To Know When the Script is Broken */
+
 var themes = {
   1 : 'ui-darkness',
   2 : 'ui-lightness',
@@ -378,7 +385,7 @@ var themes = {
   6 : 'start',
   7 : 'vader',
   8 : 'trontastic',
-  9 : 'humanity',
+  9 : 'humanity'
 };
 
 var themeName = (themeId ? themes[themeId] : 'cupertino');
@@ -419,9 +426,9 @@ var userSelectHtml = '';
 
 
 /*********************************************************
- ************************* END ***************************
- ******************* Variable Setting ********************
- *********************************************************/
+************************* END ***************************
+******************* Variable Setting ********************
+*********************************************************/
 
 
 
@@ -431,9 +438,9 @@ var userSelectHtml = '';
 
 
 /*********************************************************
- ************************ START **************************
- ******************** Data Population ********************
- *********************************************************/
+************************ START **************************
+******************** Data Population ********************
+*********************************************************/
 
 function populate(options) {
   $.when(
@@ -457,10 +464,14 @@ function populate(options) {
           userIdRef[userId] = userName;
           userList.push(userName);
         });
+
+        return false;
       },
       error: function() {
         console.log('Users Not Obtained - Problems May Occur');
-      },
+
+        return false;
+      }
     }),
 
 
@@ -530,9 +541,13 @@ function populate(options) {
         $('#roomName').html(roomIdRef[roomId]);
 
         console.log('Rooms obtained.');
+
+        return false;
       },
       error: function() {
         console.log('Rooms Not Obtained - Problems May Occur');
+
+        return false;
       }
     }),
 
@@ -554,24 +569,30 @@ function populate(options) {
           groupIdRef[groupId] = groupName;
           groupList.push(groupName);
         });
+
+        return false;
       },
       error: function() {
         console.log('Groups Not Obtained - Problems May Occur');
+
+        return false;
       }
     })
   ).done(function() {
-     if (options.callback) {
-       options.callback();
-     }
+      if (typeof options.callback === 'function') {
+        options.callback();
+      }
 
-     return true;
+      return true;
   });
+
+  return false;
 }
 
 /*********************************************************
- ************************* END ***************************
- ******************** Data Population ********************
- *********************************************************/
+************************* END ***************************
+******************** Data Population ********************
+*********************************************************/
 
 
 
@@ -581,11 +602,11 @@ function populate(options) {
 
 
 /*********************************************************
- ************************ START **************************
- ******************* Content Functions *******************
- *********************************************************/
+************************ START **************************
+******************* Content Functions *******************
+*********************************************************/
 
-function youtubeSend(id) {
+function youtubeSend(id) { // TODO
   $.ajax({
     url: 'uploadFile.php',
     type: 'POST',
@@ -599,7 +620,7 @@ function youtubeSend(id) {
 }
 
 
-function updateVids(searchPhrase) {
+  function updateVids(searchPhrase) {
   jQTubeUtil.search(searchPhrase, function(response) {
     var html = "";
     var num = 0;
@@ -611,7 +632,7 @@ function updateVids(searchPhrase) {
       if (num % 3 === 1) {
         html += '<tr>';
       }
-      html += '<td><img src="http://i2.ytimg.com/vi/' + video.videoId + '/default.jpg" style="width: 80px; height: 60px;" /><br /><small><a href="javascript: void(0);" onclick="youtubeSend(&apos;' + video.videoId + '&apos;)">' + video.title + '</a></small></td>';
+      html += '<td><img src="http://i2.ytimg.com/vi/' + video.videoId + '/default.jpg" style="width: 80px; height: 60px;" /><br /><small><a href="javascript: false(0);" onclick="youtubeSend(&apos;' + video.videoId + '&apos;)">' + video.title + '</a></small></td>';
 
       if (num % 3 === 0) {
         html += '</tr>';
@@ -677,9 +698,11 @@ autoEntry = {
       var currentRooms = $("#" + type).val().split(",");
       currentRooms.push(id);
 
-      $("#" + type + "List").append("<span id=\"" + type + "SubList" + id + "\">" + val + " (<a href=\"javascript:void(0);\" onclick=\"autoEntry.removeEntry('" + type + "'," + id + ");\">×</a>), </span>");
+      $("#" + type + "List").append("<span id=\"" + type + "SubList" + id + "\">" + val + " (<a href=\"javascript:false(0);\" onclick=\"autoEntry.removeEntry('" + type + "'," + id + ");\">×</a>), </span>");
       $("#" + type).val(currentRooms.toString(","));
     }
+
+    return false;
   },
 
   removeEntry : function(type,id) {
@@ -697,6 +720,8 @@ autoEntry = {
     }
 
     $("#" + type).val(currentRooms.toString(","));
+
+    return false;
   },
 
   showEntries : function(type,string) {
@@ -726,6 +751,8 @@ autoEntry = {
 
       autoEntry.addEntry(type,source,entryList[i]);
     }
+
+    return false;
   }
 };
 
@@ -803,10 +830,14 @@ var standard = {
             contextMenuParse();
           }
         }
+
+        return false;
       },
       error: function() {
         dia.error('Archive failed to obtain results from server.');
-      },
+
+        return false;
+      }
     })).done(function() {
       $('#archiveMessageList').html(data);
       $('#archiveNext').attr('onclick','standard.archive({idMin : ' + lastMessage + ', roomId: ' + options.roomId + '});');
@@ -816,7 +847,7 @@ var standard = {
         options.callback(data);
       }
 
-      return true;
+      return false;
     });
   },
 
@@ -965,9 +996,13 @@ var standard = {
               standard.changeRoom(defaultRoomId);
             }
           }
+
+          return false;
         },
         error: function() {
           dia.error("The login request could not be sent. Please try again.");
+
+          return false;
         }
       })
     ).done(function() {
@@ -979,13 +1014,17 @@ var standard = {
         callback : function() {
           windowDraw();
           windowDynaLinks();
-        },
+
+          return false;
+        }
       });
 
       console.log('Login Finished');
 
-      return true;
+      return false;
     });
+
+    return false;
   },
 
 
@@ -998,16 +1037,16 @@ var standard = {
 
   getMessages : function() {
     if (roomId) {
-      if (!longPolling) {
-        window.clearInterval(window.timer1);
+      if (!requestSettings.longPolling) {
+        window.clearInterval(timers.t1);
       }
 
       var encrypt = 'base64';
 
       $.ajax({
-        url: directory + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (first ? '&archive=1&messageDateMin=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdMin=' + (lastMessage)) + (longPolling ? '&longPolling=true' : '') + '&sessionHash=' + sessionHash,
+        url: directory + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest? '&archive=1&messageDateMin=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdMin=' + (requestSettings.lastMessage)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&sessionHash=' + sessionHash,
         type: 'GET',
-        timeout: timeout,
+        timeout: requestSettings.timeout,
         async: true,
         data: '',
         contentType: "text/xml; charset=utf-8",
@@ -1040,7 +1079,7 @@ var standard = {
             }
           }
           else {
-            totalFails = 0;
+            requestSettings.totalFails = 0;
             var notifyData = '';
 
 
@@ -1111,11 +1150,11 @@ var standard = {
                   $('#messageList').prepend(data);
                 }
 
-                if (messageId > lastMessage) {
-                  lastMessage = messageId;
+                if (messageId > requestSettings.lastMessage) {
+                  requestSettings.lastMessage = messageId;
                 }
 
-                messageIndex.push(lastMessage);
+                messageIndex.push(requestSettings.lastMessage);
 
                 if (messageIndex.length == 100) {
                   var messageOut = messageIndex[0];
@@ -1135,14 +1174,14 @@ var standard = {
                 toBottom();
               }
 
-              if (blur) {
+              if (window.isBlurred) {
                 if (settings.audioDing) {
                   riffwave.play();
 
                   if (navigator.appName === 'Microsoft Internet Explorer') {
-                    timer3 = window.setInterval(faviconFlash,1000);
+                    timers.t3 = window.setInterval(faviconFlash,1000);
 
-                    window.clearInterval(timer3);
+                    window.clearInterval(timers.t3);
                   }
                 }
 
@@ -1169,48 +1208,55 @@ var standard = {
               contextMenuParse();
             }
 
-            if (longPolling) {
+            if (requestSettings.longPolling) {
               setTimeout(standard.getMessages,50);
             }
           }
 
-          first = false;
+          requestSettings.firstRequest = false;
+
+          return false;
         },
         error: function(err) {
           console.log('Requesting messages for ' + roomId + '; failed: ' + err + '.');
 
-          if (longPolling) {
+          if (requestSettings.longPolling) {
             setTimeout(standard.getMessages,50);
           }
           else {
-            totalFails += 1;
+            requestSettings.totalFails += 1;
             $('#roomName').append('<span class="ui-icon ui-icon-info"></span>');
           }
-        },
+
+          return false;
+        }
       });
 
-      if (!longPolling) {
-        if (totalFails > 10) {
-          window.timer1 = window.setInterval(window.standard.getMessages,30000);
-          timeout = 29900;
+      if (!requestSettings.longPolling) {
+        if (requestSettings.totalFails > 10) {
+          timers.t1 = window.setInterval(standard.getMessages,30000);
+          requestSettings.timeout = 29900;
         }
-        else if (totalFails > 5) {
-          window.timer1 = window.setInterval(window.standard.getMessages,10000);
-          timeout = 9900;
+        else if (requestSettings.totalFails > 5) {
+          timers.t1 = window.setInterval(standard.getMessages,10000);
+          requestSettings.timeout = 9900;
         }
-        else if (totalFails > 0) {
-          window.timer1 = window.setInterval(window.standard.getMessages,5000);
-          timeout = 4900;
+        else if (requestSettings.totalFails > 0) {
+          timers.t1 = window.setInterval(standard.getMessages,5000);
+          requestSettings.timeout = 4900;
         }
         else {
-          window.timer1 = window.setInterval(window.standard.getMessages,2500);
-          timeout = 2400;
+          timers.t1 = window.setInterval(standard.getMessages,2500);
+          requestSettings.timeout = 2400;
         }
       }
     }
     else {
       console.log('Not requesting messages; room undefined.');
     }
+
+
+    return false;
   },
 
 
@@ -1260,6 +1306,8 @@ var standard = {
             dia.error(errormessage + '<br /><br /><button type="button" onclick="$(this).parent().dialog(&apos;close&apos;);">No</button><button type="button" onclick="standard.standard.sendMessage(&apos;' + escape(message) + '&apos;,1); $(this).parent().dialog(&apos;close&apos;);">Yes</button>');
             break;
           }
+
+          return false;
         },
         error: function() {
           console.log('Message error.');
@@ -1272,9 +1320,13 @@ var standard = {
           }
 
           standard.standard.sendMessage(message);
+
+          return false;
         }
       });
     }
+
+    return false;
   },
 
 
@@ -1287,18 +1339,23 @@ var standard = {
 
     windowDraw();
 
+
     /*** Get Messages ***/
 
     $(document).ready(function() {
-      if (longPolling) {
+      if (requestSettings.longPolling) {
         $(document).ready(function() {
           standard.getMessages();
         });
       }
       else {
-        window.timer1 = window.setInterval(standard.getMessages,2500);
+        timers.t1 = window.setInterval(standard.getMessages,2500);
       }
+
+      return false;
     });
+
+    return false;
   },
 
 
@@ -1320,6 +1377,8 @@ var standard = {
         dia.error('The specified room does not exist.');
         break;
       }
+
+      return false;
     }); // Send the form data via AJAX.
   },
 
@@ -1353,11 +1412,15 @@ var standard = {
                 $('#privateRoomSucessDialogue').dialog('close');
               }
             },
-            width: 600,
+            width: 600
           });
         }
+
+        return false;
       }); // Send the form data via AJAX.
     }
+
+    return false;
   },
 
 
@@ -1389,7 +1452,11 @@ var standard = {
         dia.error('The room specified does not exist.');
         break;
       }
+
+      return false;
     }); // Send the form data via AJAX.
+
+    return false;
   },
 
 
@@ -1411,16 +1478,20 @@ var standard = {
         dia.error('The message does not exist.');
         break;
       }
+
+      return false;
     }); // Send the form data via AJAX.
-  },
+
+    return false;
+  }
 
 
 };
 
 /*********************************************************
- ************************* END ***************************
- ******************* Content Functions *******************
- *********************************************************/
+************************* END ***************************
+******************* Content Functions *******************
+*********************************************************/
 
 
 
@@ -1429,9 +1500,9 @@ var standard = {
 
 
 /*********************************************************
- ************************ START **************************
- ********** Silent Init Uses of Standard Methods *********
- *********************************************************/
+************************ START **************************
+********** Silent Init Uses of Standard Methods *********
+*********************************************************/
 
 if ("onhashchange" in window) {
   window.onhashchange = hashParse;
@@ -1439,9 +1510,9 @@ if ("onhashchange" in window) {
 hashParse();
 
 /*********************************************************
- ************************* END ***************************
- ********** Silent Init Uses of Standard Methods *********
- *********************************************************/
+************************* END ***************************
+********** Silent Init Uses of Standard Methods *********
+*********************************************************/
 
 
 
@@ -1450,9 +1521,9 @@ hashParse();
 
 
 /*********************************************************
- ************************ START **************************
- ************** Repeat-Action Popup Methods **************
- *********************************************************/
+************************ START **************************
+************** Repeat-Action Popup Methods **************
+*********************************************************/
 
 popup = {
   /*** START Login ***/
@@ -1472,7 +1543,7 @@ popup = {
             standard.login({
               userName : userName,
               password : password,
-              showMessage : true,
+              showMessage : true
             });
 
             return false; // Don't submit the form.
@@ -1490,10 +1561,14 @@ popup = {
               }
             });
           }
+
+          return false;
         }
       });
 
       console.log('Popup for un-loggedin user triggered.');
+
+      return false;
     });
   },
 
@@ -1513,21 +1588,31 @@ popup = {
       oF : function() {
         $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}}).click(function() {
           popup.editRoom($(this).attr('data-roomId'));
+
+          return false;
         });
 
         $('button.favRoomMulti').button({icons : {primary : 'ui-icon-star'}}).click(function() {
           standard.favRoom($(this).attr('data-roomId'));
+
+          return false;
         });
 
         $('button.archiveMulti').button({icons : {primary : 'ui-icon-note'}}).click(function() {
           popup.archive($(this).attr('data-roomId'));
+
+          return false;
         });
 
         $('button.deleteRoomMulti').button({icons : {primary : 'ui-icon-trash'}}).click(function() {
           standard.deleteRoom($(this).attr('data-roomId'));
+
+          return false;
         });
       }
     });
+
+    return false;
   },
 
   /*** END Room List ***/
@@ -1561,9 +1646,11 @@ popup = {
       width: 600,
       tabs : true,
       oF : function() {
+
+        $('#fileUpload').attr('disabled','disabled').button({disabled: true});
+
         if (typeof FileReader == 'undefined') {
           dia.error('Your browser does not support file uploads.');
-          $('#fileUpload').attr('disabled','disabled');
         }
         else {
           $('#fileUpload').change(function() {
@@ -1590,7 +1677,36 @@ popup = {
                 console.log(fileContent);
               };
 
-              $('#imageUploadSubmitButton').removeAttr('disabled');
+              var fileName = file.name;
+              var fileSize = file.size;
+
+              if (!fileName.match(/\.(jpg|jpeg|gif|png|svg)$/i)) {
+                $('#preview').html('Wrong file type.');
+              }
+              else if (fileSize > 4 * 1000 * 1000) {
+                $('#preview').html('File too large.');
+              }
+              else {
+                var reader = new FileReader();
+                reader.readAsDataURL(file);
+
+                reader.onloadend = function () {
+                  var fileContent = reader.result;
+                  fileContainer = '<img src="' + fileContent + '" alt="" style="max-width: 200px; max-height: 250px; height: auto;" />';
+                  $('#preview').html(fileContainer);
+
+                  return false;
+                };
+              }
+
+              fileContent = $('#urlUpload').val();
+              if (fileContent && fileContent != 'http://') {
+                fileContainer = '<img src="' + fileContent + '" alt="" style="max-width: 200px; max-height: 250px; height: auto;" />';
+
+                $('#preview').html(fileContainer);
+              }
+
+              $('#imageUploadSubmitButton').removeAttr('disabled').button({disabled: false});
             }
           });
 
@@ -1600,15 +1716,19 @@ popup = {
               url: directory + 'api/uploadFile.php',
               type: 'POST',
               data : 'dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&file_data=' + urlEncode(fileContent) + '&sessionHash=' + sessionHash,
-              cache : false,
+              cache : false
             });
 
             return false;
           });
         }
+
+        return false;
       },
-      selectTab : selectTab,
+      selectTab : selectTab
     });
+
+    return false;
   },
 
   /*** END Insert Docs ***/
@@ -1662,13 +1782,19 @@ popup = {
           content : '<table class="center"><thead><tr><th>Position</th>' + roomHtml + '</tr></thead><tbody>' + statsHtml2 + '</tbody></table>',
           title : 'Room Stats',
           id : 'roomStatsDialogue',
-          width : 600,
+          width : 600
         });
+
+        return false;
       },
       error: function() {
         dia.error('Failed to show all rooms');
+
+        return false;
       }
     });
+
+    return false;
   },
 
   /*** END Stats ***/
@@ -1686,6 +1812,8 @@ popup = {
       width : 1000,
       cF : function() {
         $('.colorpicker').empty().remove();
+
+        return false;
       },
       oF : function() {
         $('#settingsOfficialAjax_theme').change(function() {
@@ -1693,6 +1821,8 @@ popup = {
           $('#stylesFIM').attr('href','client/css/' + themes[this.value] + '/fim.css');
 
           $.cookie('fim3_themeId',this.value);
+
+          return false;
         });
 
 
@@ -1713,15 +1843,17 @@ popup = {
             $('#messageList').html('');
             $.cookie('fim3_settings',$.cookie('fim3_settings') + 2048);
 
-            first = true;
+            requestSettings.firstRequest= true;
           }
           else if ($(this).val() != 'true' && settings.showAvatars) {
             settings.showAvatars = false;
             $('#messageList').html('');
             $.cookie('fim3_settings',$.cookie('fim3_settings') - 2048);
 
-            first = true;
+            requestSettings.firstRequest= true;
           }
+
+          return false;
         });
 
         $('#reversePostOrder').change(function() {
@@ -1730,15 +1862,17 @@ popup = {
             $('#messageList').html('');
             $.cookie('fim3_settings',$.cookie('fim3_settings') + 1024);
 
-            first = true;
+            requestSettings.firstRequest= true;
           }
           else if ($(this).val() != 'true' && settings.reversePostOrder) {
             settings.reversePostOrder = false;
             $('#messageList').html('');
             $.cookie('fim3_settings',$.cookie('fim3_settings') - 1024);
 
-            first = true;
+            requestSettings.firstRequest= true;
           }
+
+          return false;
         });
 
         $('#audioDing').change(function() {
@@ -1747,15 +1881,17 @@ popup = {
             $('#messageList').html('');
             $.cookie('fim3_settings',$.cookie('fim3_settings') + 8192);
 
-            first = true;
+            requestSettings.firstRequest= true;
           }
           else if ($(this).val() != 'true' && settings.audioDing) {
             settings.audioDing = false;
             $('#messageList').html('');
             $.cookie('fim3_settings',$.cookie('fim3_settings') - 8192);
 
-            first = true;
+            requestSettings.firstRequest= true;
           }
+
+          return false;
         });
 
         $("#defaultRoom").autocomplete({
@@ -1779,10 +1915,16 @@ popup = {
               var fontData = unxml($(this).find('fontData').text().trim());
 
               $('#defaultFace').append('<option value="' + fontId + '" style="' + fontData + '" data-font="' + fontData + '">' + fontName + '</option>');
+
+              return false;
             });
+
+            return false;
           },
           error: function() {
             dia.error('The list of fonts could not be obtained from the server.');
+
+            return false;
           }
         });
 
@@ -1790,10 +1932,12 @@ popup = {
           color: '',
           onShow: function (colpkr) {
             $(colpkr).fadeIn(500);
+
             return false;
           },
           onHide: function (colpkr) {
             $(colpkr).fadeOut(500);
+
             return false;
           },
           onChange: function(hsb, hex, rgb) {
@@ -1807,10 +1951,12 @@ popup = {
           color: '',
           onShow: function (colpkr) {
             $(colpkr).fadeIn(500);
+
             return false;
           },
           onHide: function (colpkr) {
             $(colpkr).fadeOut(500);
+
             return false;
           },
           onChange: function(hsb, hex, rgb) {
@@ -1852,8 +1998,12 @@ popup = {
 
           return false; // Don't submit the form.
         });
-      },
+
+        return false;
+      }
     });
+
+    return false;
   },
 
   /*** END User Settings ***/
@@ -1914,10 +2064,14 @@ popup = {
             if (mature) {
               $('#mature').attr('checked','checked');
             }
+
+            return false;
           },
           error: function() {
             dia.error('Failed to obtain current room settings from server.');
-          },
+
+            return false;
+          }
         });
 
         $("#editRoomForm").submit(function() {
@@ -1948,19 +2102,25 @@ popup = {
                   buttons : {
                     Open : function() {
                       standard.selectRoom(roomIdLocal);
+
+                      return false;
                     },
                     Okay : function() {
                       $('#editRoomResultsDialogue').dialog('close');
+
+                      return false;
                     }
-                  },
+                  }
                 });
                 $("#editRoomDialogue").dialog('close');
               }
+
+              return false;
             }); // Send the form data via AJAX.
           }
           return false; // Don't submit the form.
         });
-      },
+      }
     });
   },
 
@@ -2017,20 +2177,29 @@ popup = {
                   buttons : {
                     Open : function() {
                       standard.changeRoom(createRoomId);
+
+                      return false;
                     },
                     Okay : function() {
                       $('#createRoomResultsDialogue').dialog('close');
+
+                      return false;
                     }
-                  },
+                  }
                 });
                 $("#editRoomDialogue").dialog('close');
               }
             }); // Send the form data via AJAX.
           }
+
           return false; // Don't submit the form.
         });
-      },
+
+        return false;
+      }
     });
+
+    return false;
   },
 
   /*** END Create Room ***/
@@ -2059,8 +2228,12 @@ popup = {
 
           return false; // Don't submit the form.
         });
+
+        return false;
       }
     });
+
+    return false;
   },
 
   /*** END Private Rooms ***/
@@ -2077,8 +2250,8 @@ popup = {
       id : 'onlineDialogue',
       width : 600,
       cF : function() {
-        clearInterval(timer2);
-      },
+        clearInterval(timers.t2);
+      }
     });
 
     function updateOnline() {
@@ -2108,14 +2281,20 @@ popup = {
           });
 
           $('#onlineUsers').html(data);
+
+          return false;
         },
         error: function() {
           $('#onlineUsers').html('Refresh Failed');
-        },
+        }
       });
+
+      return false;
     }
 
-    var timer2 = setInterval(updateOnline,2500);
+    timers.t2 = setInterval(updateOnline,2500);
+
+    return false;
   },
 
   /*** END Online ***/
@@ -2148,29 +2327,37 @@ popup = {
           var expires = unxml($(this).find('expiresFormatted').text().trim());
 
           kickHtml += '<tr><td>' + userFormatStart + userName + userFormatEnd + '</td><td>' + kickerFormatStart + kickerName + kickerFormatEnd + '</td><td>' + set + '</td><td>' + expires + '</td><td><button onclick="standard.unkick(' + userId + ',' + roomId + ')">Unkick</button></td></tr>';
+
+          return false;
         });
 
         dia.full({
           content : '<table class="center"><thead><tr class="hrow"><th>User</th><th>Kicked By</th><th>Kicked On</th><th>Expires On</th><th>Actions</th></tr>  </thead><tbody id="kickedUsers">' + kickHtml + '</tbody></table>',
           title : 'Manage Kicked Users in This Room',
-          width : 1000,
+          width : 1000
         });
+
+        return false;
       },
       error: function() {
-        dia.error('The list of currently kicked users could not be obtained from the serveer.');
+        dia.error('The list of currently kicked users could not be obtained from the server.');
+
+        return false;
       }
     });
 
     $("form[data-formid=unkick]").submit(function() {
       data = $(this).serialize(); // Serialize the form data for AJAX.
       // TODO
-//      $.post("content/unkick.php?phase=2",data,function(html) {
-//        quickDialogue(html,'','unkickDialogue');
-//      }); // Send the form data via AJAX.
+  //      $.post("content/unkick.php?phase=2",data,function(html) {
+  //        quickDialogue(html,'','unkickDialogue');
+  //      }); // Send the form data via AJAX.
 
       $("#manageKickDialogue").dialog('destroy');
       return false; // Don\\''t submit the form.
     });
+
+    return false;
   },
 
   /*** END Kick Manager ***/
@@ -2215,8 +2402,12 @@ popup = {
 
           return false; // Don't submit the form.
         });
-      },
+
+        return false;
+      }
     });
+
+    return false;
   },
 
   /*** END Kick ***/
@@ -2231,8 +2422,10 @@ popup = {
       uri : 'template.php?template=help',
       title : 'helpDialogue',
       width : 1000,
-      tabs : true,
+      tabs : true
     });
+
+    return false;
   },
 
   /*** END Help ***/
@@ -2248,15 +2441,19 @@ popup = {
       title : 'Archive',
       id : 'archiveDialogue',
       width : 1000,
-      autoOpen : false,
+      autoOpen : false
     });
 
     standard.archive({
       roomId: roomLocalId,
       callback: function(data) {
         $('#archiveDialogue').dialog('open');
-      },
+
+        return false;
+      }
     });
+
+    return false;
   },
 
   /*** END Archive ***/
@@ -2271,17 +2468,19 @@ popup = {
       uri : 'template.php?template=copyright',
       title : 'copyrightDialogue',
       width : 600,
-      tabs : true,
+      tabs : true
     });
-  },
+
+    return false;
+  }
 
   /*** END Copyright ***/
 };
 
 /*********************************************************
- ************************* END ***************************
- ************** Repeat-Action Popup Methods **************
- *********************************************************/
+************************* END ***************************
+************** Repeat-Action Popup Methods **************
+*********************************************************/
 
 
 
@@ -2291,9 +2490,9 @@ popup = {
 
 
 /*********************************************************
- ************************ START **************************
- ********* DOM Event Handling & Window Painting **********
- *********************************************************/
+************************ START **************************
+********* DOM Event Handling & Window Painting **********
+*********************************************************/
 
 function windowDraw() {
   /*** Create the Accordion Menu ***/
@@ -2349,9 +2548,13 @@ function windowDraw() {
   $("#icon_settings.reversePostOrder").hover(
     function() {
       $("#icon_settings.reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (settings.reversePostOrder ? 's' : 'n') } );
+
+      return false;
     },
     function () {
       $("#icon_settings.reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (settings.reversePostOrder ? 'n' : 's') } );
+
+      return false;
     }
   );
 
@@ -2363,6 +2566,8 @@ function windowDraw() {
       else {
         $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-on' } );
       }
+
+      return false;
     },
     function () {
       if (settings.audioDing) {
@@ -2371,6 +2576,8 @@ function windowDraw() {
       else {
         $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-off' } );
       }
+
+      return false;
     }
   );
 
@@ -2381,6 +2588,8 @@ function windowDraw() {
 
   $('#icon_note, #messageArchive').click(function() {
     popup.archive(roomId);
+
+    return false;
   });
 
 
@@ -2389,11 +2598,16 @@ function windowDraw() {
 
   $('a#editRoom').click(function() {
     popup.editRoom(roomId);
+
+    return false;
   });
 
 
 
   windowResize();
+
+
+  return false;
 }
 
 function windowDynaLinks() {
@@ -2476,7 +2690,7 @@ function windowDynaLinks() {
   /* Remove Link Categories */
 
   if (noAdminCounter === 8) {
-     $('li > #modGeneral').parent().hide();
+      $('li > #modGeneral').parent().hide();
   }
 
   if (noModCounter === 3 && noAdminCounter === 8) {
@@ -2514,10 +2728,14 @@ function contextMenuParse() {
         userName = unxml($(this).find('userName').text().trim());
         avatarUrl = parseInt($(this).find('avatar').text().trim());
         profileUrl = parseInt($(this).find('profile').text().trim());
+
+        return false;
       },
       error: function() {
         dia.error('The information of this user could not be retrieved.');
-      },
+
+        return false;
+      }
     });
 
     switch(action) {
@@ -2537,6 +2755,8 @@ function contextMenuParse() {
       window.open('moderate.php?do=banuser2&userId=' + userId,'banuser' + userId);
       break;
     }
+
+    return false;
   });
 
   $('.messageLine .messageText').contextMenu({
@@ -2549,10 +2769,12 @@ function contextMenuParse() {
       case 'delete':
       dia.confirm({
         text : 'Are you sure you want to delete this message?',
-        true : function() {
+        'true' : function() {
           standard.deleteMessage(postid);
 
           $(el).parent().fadeOut();
+
+          return false;
         }
       });
       break;
@@ -2562,6 +2784,8 @@ function contextMenuParse() {
         dia.info('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + $('body').attr('data-roomId') + '#message=' + postid + '" />','Link to This Message');
       break;
     }
+
+    return false;
   });
 
   $('.messageLine .messageText img').contextMenu({
@@ -2580,7 +2804,7 @@ function contextMenuParse() {
       case 'delete':
       dia.confirm({
         text : 'Are you sure you want to delete this message?',
-        true : function() {
+        'true' : function() {
           standard.deleteMessage(postid);
 
           $(el).parent().fadeOut();
@@ -2592,6 +2816,8 @@ function contextMenuParse() {
       dia.info('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + $('body').attr('data-roomId') + '#message=' + postid + '" />','Link to This Message');
       break;
     }
+
+    return false;
   });
 
   $('.room').contextMenu({
@@ -2602,10 +2828,12 @@ function contextMenuParse() {
       case 'delete':
       dia.confirm({
         text : 'Are you sure you want to delete this room?',
-        true : function() {
+        'true' : function() {
           standard.deleteRoom($(el).attr('data-roomId'));
 
           $(el).parent().fadeOut();
+
+          return false;
         }
       });
       break;
@@ -2613,6 +2841,8 @@ function contextMenuParse() {
       popup.editRoom($(el).attr('data-roomId'));
       break;
     }
+
+    return false;
   });
 
   $('.userName').ezpz_tooltip({
@@ -2633,8 +2863,12 @@ function contextMenuParse() {
           var avatar = unxml($(xml).find('user > avatar').text().trim());
 
           content.html('<div style="width: 400px;">' + (avatar.length > 0 ? '<img alt="" src="' + avatar + '" style="float: left;" />' : '') + '<span class="userName" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>' + (userTitle.length > 0 ? '<br />' + userTitle : '') + '<br /><em>Posts</em>: ' + posts + '<br /><em>Member Since</em>: ' + joinDate + '</div>');
+
+          return false;
         });
       }
+
+      return false;
     }
   });
 
@@ -2643,13 +2877,15 @@ function contextMenuParse() {
       attribute: 'data-time'
     });
   }
+
+  return false;
 }
 
 
 
 $(document).ready(function() {
   standard.login({
-    sessionHash: sessionHash,
+    sessionHash: sessionHash
   });
 
   /*** Trigger Login ***/
@@ -2659,6 +2895,8 @@ $(document).ready(function() {
   }
   $('#login').click(function() {
     popup.login();
+
+    return false;
   });
 
 
@@ -2666,6 +2904,8 @@ $(document).ready(function() {
   /*** Trigger Logout */
   $('#logout').click(function() {
     popup.login();
+
+    return false;
   });
 
 
@@ -2676,11 +2916,15 @@ $(document).ready(function() {
   $('#showMoreRooms').click(function() {
     $('#roomListShort').slideUp();
     $('#roomListLong').slideDown();
+
+    return false;
   });
 
   $('#showFewerRooms').click(function() {
     $('#roomListLong').slideUp();
     $('#roomListShort').slideDown();
+
+    return false;
   });
 
 
@@ -2692,26 +2936,18 @@ $(document).ready(function() {
     $('body').append(data);
 
     console.log('Appended Context Menus to DOM');
+
+    return false;
   });
 
 
 
   /*** ??? ***/
 
-  $('#icon_settings.reversePostOrder').click(function() { // TODO
-  });
-
-
   $('#icon_url').click(function() {
     popup.insertDoc('url');
-  });
 
-  $('#icon_image').click(function() {
-    popup.insertDoc('image');
-  });
-
-  $('#icon_video').click(function() {
-    popup.insertDoc('video');
+    return false;
   });
 
 
@@ -2728,6 +2964,8 @@ $(document).ready(function() {
 
   $('a#kick').click(function() {
     popup.kick();
+
+    return false;
   });
 
 
@@ -2736,6 +2974,8 @@ $(document).ready(function() {
 
   $('a#privateRoom').click(function() {
     popup.privateRoom();
+
+    return false;
   });
 
 
@@ -2744,6 +2984,8 @@ $(document).ready(function() {
 
   $('a#manageKick').click(function() {
     popup.manageKicks();
+
+    return false;
   });
 
 
@@ -2768,6 +3010,8 @@ $(document).ready(function() {
 
   $('a#online').click(function() {
     popup.online();
+
+    return false;
   });
 
 
@@ -2776,6 +3020,8 @@ $(document).ready(function() {
 
   $('a#createRoom').click(function() {
     popup.createRoom();
+
+    return false;
   });
 
 
@@ -2784,6 +3030,8 @@ $(document).ready(function() {
 
   $('a.editRoomMulti').click(function() {
     popup.editRoom($(this).attr('data-roomId'));
+
+    return false;
   });
 
 
@@ -2792,6 +3040,8 @@ $(document).ready(function() {
 
   $('#icon_help').click(function() {
     popup.help();
+
+    return false;
   });
 
 
@@ -2800,6 +3050,8 @@ $(document).ready(function() {
 
   $('#roomList').click(function() {
     popup.selectRoom();
+
+    return false;
   });
 
 
@@ -2808,6 +3060,8 @@ $(document).ready(function() {
 
   $('#viewStats').click(function() {
     popup.viewStats();
+
+    return false;
   });
 
 
@@ -2816,6 +3070,8 @@ $(document).ready(function() {
 
   $('#copyrightLink').click(function() {
     popup.copyright();
+
+    return false;
   });
 
 
@@ -2824,14 +3080,17 @@ $(document).ready(function() {
 
   $('#icon_settings, #changeSettings, a.changeSettingsMulti').click(function() {
     popup.userSettings();
+
+    return false;
   });
 
+  return false;
 });
 
 /*********************************************************
- ************************* END ***************************
- ********* DOM Event Handling & Window Painting **********
- *********************************************************/
+************************* END ***************************
+********* DOM Event Handling & Window Painting **********
+*********************************************************/
 
 
 
@@ -2841,13 +3100,13 @@ $(document).ready(function() {
 
 
 /*********************************************************
- ************************ START **************************
- ***** Window Manipulation and Multi-Window Handling *****
- *********************************************************/
+************************ START **************************
+***** Window Manipulation and Multi-Window Handling *****
+*********************************************************/
 
 function windowResize () {
-  var windowWidth = (window.innerWidth ? window.innerWidth : document.documentElement.clientWidth); // Get the browser window "viewport" width.
-  var windowHeight = (window.innerHeight ? window.innerHeight : document.documentElement.clientHeight); // Get the browser window "viewport" height.
+  var windowWidth = document.documentElement.clientWidth; // Get the browser window "viewport" width, excluding scrollbars.
+  var windowHeight = document.documentElement.clientHeight; // Get the browser window "viewport" height, excluding scrollbars.
 
 
   switch (window.layout) { // Determine which layout we are using.
@@ -2857,10 +3116,10 @@ function windowResize () {
 
 
     /* Body Padding: 10px
-     * Right Area Width: 75%
-     * "Enter Message" Table Padding: 10px
-     *** TD Padding: 2px (on Standard Styling)
-     * Message Input Text Area Padding: 3px */
+      * Right Area Width: 75%
+      * "Enter Message" Table Padding: 10px
+      *** TD Padding: 2px (on Standard Styling)
+      * Message Input Text Area Padding: 3px */
       $('#messageInput').css('width',(((windowWidth - 10) * .75) - 10 - 2)); // Set the messageInput box to fill width.
 
 
@@ -2869,16 +3128,22 @@ function windowResize () {
 
     // TODO
   }
+
+  return false;
 }
 
 function windowBlur () {
-  blur = true;
+  window.isBlurred = true;
+
+  return false;
 }
 
 function windowFocus() {
-  blur = false;
-  window.clearInterval(timer3);
+  window.isBlurred = false;
+  window.clearInterval(timers.t3);
   $('#favicon').attr('href',favicon);
+
+  return false;
 }
 
 
@@ -2887,6 +3152,6 @@ window.onblur = windowBlur;
 window.onfocus = windowFocus;
 
 /*********************************************************
- ************************* END ***************************
- ***** Window Manipulation and Multi-Window Handling *****
- *********************************************************/
+************************* END ***************************
+***** Window Manipulation and Multi-Window Handling *****
+*********************************************************/

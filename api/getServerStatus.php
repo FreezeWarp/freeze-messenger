@@ -38,6 +38,14 @@ $xmlData = array(
         'poll' => (bool) true,
         'push' => (bool) false,
       ),
+      'fileUploads' => array(
+        'enabled' => (bool) $enableUploads,
+        'generalEnabled' => (bool) $enableGeneralUploads,
+        'maxSize' => (int) $uploadMaxSize,
+        'maxAll' => (int) $uploadMaxFiles,
+        'maxUser' => (int) $uploadUserMaxFiles,
+        'extensions' => implode(',',array_keys($uploadExtensions)),
+      ),
       'outputBuffer' => array(
         'comressOutput' => (bool) $compressOutput,
       ),

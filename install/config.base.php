@@ -164,12 +164,12 @@ $uploadMaxSize = 1024 * 1024;
 /* $uploadUserMaxFiles
  * The total number of files a user may upload.
  * "-1" means there is no limit. */
-$uploadUserTotalSize = -1;
+$uploadUserMaxFiles = -1;
 
 /* $uploadMaxFiles
  * The total number of files that may be stored by the server.
  * "-1" means there is no limit. */
-$uploadTotalSize = 1024 * 1024 * 1024;
+$uploadMaxFiles = -1;
 
 
 
