@@ -241,6 +241,8 @@ else {
     }
     else {
       define('LOGIN_FLAG','INVALID_SESSION');
+
+      $valid = false;
     }
   }
 

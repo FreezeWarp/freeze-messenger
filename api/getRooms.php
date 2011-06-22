@@ -39,11 +39,12 @@ switch ($_GET['permLevel']) {
   case 'view':
   case 'moderate':
   case 'know':
+  case 'admin':
   $permLevel = $_GET['permLevel'];
   break;
 
   default:
-  $permLevel = 'post';
+  $permLevel = 'view';
   break;
 }
 
@@ -95,18 +96,17 @@ WHERE $whereClause TRUE
   {$messagesCached_where}
 ORDER BY $order
   {$messagesCached_order}
-{$messagesCached_end}",'id'); // Get all rooms
-
-foreach ($rooms AS $id => $room2) {
-  if (fim_hasPermission($room2,$user,$permLevel,true)) {
-    $rooms2[] = $room2;
-  }
-}
+{$messagesCached_end}",'roomId'); // Get all rooms
 
 
-if ($rooms2) {
-  foreach ($rooms2 AS $room) {
-    $xmlData['getRooms']['rooms']['room ' . $room['messageId']] = array(
+if ($rooms) {
+  foreach ($rooms AS $room) {
+    $permissions = fim_hasPermission($room,$user,'all',false);
+    if (!$permissions[0][$permLevel]) {
+      continue;
+    }
+
+    $xmlData['getRooms']['rooms']['room ' . $room['roomId']] = array(
       'roomId' => (int)$room['roomId'],
       'roomName' => ($room['roomName']),
       'roomTopic' => ($room['roomTopic']),
@@ -123,9 +123,11 @@ if ($rooms2) {
         'privateIm' => (bool) ($room['options'] & 16),
       ),
       'bbcode' => (int) $room['bbcode'],
-      'canModerate' => fim_hasPermission($room,$user,'moderate'),
-      'canAdmin' => fim_hasPermission($room,$user,'admin'),
-      'canPost' => fim_hasPermission($room,$user,'post'),
+      'canModerate' => $permissions[0]['moderate'],
+      'canAdmin' => $permissions[0]['admin'],
+      'canPost' => $permissions[0]['post'],
+      'canView' => $permissions[0]['view'],
+      'canKnow' => $permissions[0]['know'],
     );
 
     ($hook = hook('getRooms_eachRoom') ? eval($hook) : '');

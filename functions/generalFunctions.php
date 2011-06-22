@@ -107,129 +107,127 @@ WHERE userId = $userData[userId] AND
     $isAdmin = true;
   }
 
-  switch ($type) {
-    case 'post':
+  if ($type == 'post' || $type == 'all') {
     if ($banned) {
-      $roomValid = false;
+      $roomValid['post'] = false;
       $reason = 'banned';
     }
     elseif (!$valid) {
-      $roomValid = false;
+      $roomValid['post'] = false;
       $reason = 'invalid';
     }
     elseif ($kick && !$isAdmin) {
-      $roomValid = false;
+      $roomValid['post'] = false;
       $reason = 'kicked';
     }
     elseif ($isAdmin && !$isPrivateRoom) {
-      $roomValid = true;
+      $roomValid['post'] = true;
     }
     elseif ($isRoomDeleted) {
-      $roomValid = false;
+      $roomValid['post'] = false;
       $reason = 'deleted';
     }
     elseif ($isAllowedUser || $isAllowedGroup || $isOwner) {
-      $roomValid = true;
+      $roomValid['post'] = true;
     }
     else {
-      $roomValid = false;
+      $roomValid['post'] = false;
       $reason = 'general';
     }
-    break;
+  }
 
-    case 'view':
+  if ($type == 'view' || $type == 'all') {
     if ($isAdmin && !$isPrivateRoom) {
-      $roomValid = true;
+      $roomValid['view'] = true;
     }
     elseif ($isRoomDeleted) {
-      $roomValid = false;
+      $roomValid['view'] = false;
       $reason = 'deleted';
     }
     elseif ($isAllowedUser || $isAllowedGroup || $isOwner) {
-      $roomValid = true;
+      $roomValid['view'] = true;
     }
     else {
-      $roomValid = false;
+      $roomValid['view'] = false;
       $reason = 'general';
     }
-    break;
+  }
 
-    case 'moderate':
+  if ($type == 'moderate' || $type == 'all') {
     if ($banned) {
-      $roomValid = false;
+      $roomValid['moderate'] = false;
       $reason = 'banned';
     }
     elseif (!$valid) {
-      $roomValid = false;
+      $roomValid['moderate'] = false;
       $reason = 'invalid';
     }
     elseif ($kick && !$isAdmin) {
-      $roomValid = false;
+      $roomValid['moderate'] = false;
       $reason = 'kicked';
     }
     elseif ($isPrivateRoom) {
-      $roomValid = false;
+      $roomValid['moderate'] = false;
       $reason = 'private';
     }
     elseif ($isOwner || $isModerator || $isAdmin) {
-      $roomValid = true;
+      $roomValid['moderate'] = true;
     }
     else {
-      $roomValid = false;
+      $roomValid['moderate'] = false;
       $reason = 'general';
     }
-    break;
+  }
 
-    case 'admin':
+  if ($type == 'admin' || $type == 'all') {
     if ($banned) {
-      $roomValid = false;
+      $roomValid['admin'] = false;
       $reason = 'banned';
     }
     elseif (!$valid) {
-      $roomValid = false;
+      $roomValid['admin'] = false;
       $reason = 'invalid';
     }
     elseif ($kick) {
-      $roomValid = false;
+      $roomValid['admin'] = false;
       $reason = 'kicked';
     }
     elseif ($isPrivateRoom) {
-      $roomValid = false;
+      $roomValid['admin'] = false;
       $reason = 'private';
     }
     elseif ($isAdmin) {
-      $roomValid = true;
+      $roomValid['admin'] = true;
     }
     else {
-      $roomValid = false;
+      $roomValid['admin'] = false;
       $reason = 'general';
     }
-    break;
+  }
 
-    case 'know':
+  if ($type == 'know' || $type == 'all') {
     if ($banned) {
-      $roomValid = false;
+      $roomValid['know'] = false;
       $reason = 'banned';
     }
     elseif ($kick) {
-      $roomValid = false;
+      $roomValid['know'] = false;
       $reason = 'kicked';
     }
     elseif ($isAdmin) {
-      $roomValid = true;
+      $roomValid['know'] = true;
     }
     elseif ($isRoomDeleted) {
-      $roomValid = false;
+      $roomValid['know'] = false;
       $reason = 'deleted';
     }
     elseif ($isAllowedUser || $isAllowedGroup || $isOwner) {
-      $roomValid = true;
+      $roomValid['know'] = true;
     }
     else {
-      $roomValid = false;
+      $roomValid['know'] = false;
       $reason = 'general';
     }
-    break;
   }
 
 
@@ -238,7 +236,7 @@ WHERE userId = $userData[userId] AND
   }
   else {
     return array(
-      $roomValid,
+      ($type == 'all' ? $roomValid : $roomValid[$type]),
       $reason,
       $kick['expiresOn']
     );
