@@ -115,13 +115,15 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
     <h3 id="roomCat"><a href="#">$phrases[templateRoomListCat]</a></h3>
     <div>
       <div id="roomListShort">
+        <a href="javascript:void(0);" id="showMoreRooms">$phrases[templateShowMoreRooms]</a><br />
+
         <ul>
-          <li><a href="javascript:void(0);" id="showMoreRooms">$phrases[templateShowMoreRooms]</a></li>
         </ul>
       </div>
       <div id="roomListLong" style="display: none;">
+        <a href="javascript:void(0);" id="showFewerRooms">$phrases[templateShowLessRooms]</a><br />
+
         <ul>
-          <li><a href="javascript:void(0);" id="showFewerRooms">$phrases[templateShowLessRooms]</a></li>
         </ul>
       </div>
     </div>

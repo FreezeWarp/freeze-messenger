@@ -684,7 +684,7 @@ var standard = {
             }
           });
 
-          if (typeof contextMenuParse === 'function') {
+          if (typeof contextMenuParse === 'function') { // TODO
             contextMenuParse();
           }
         }
@@ -766,9 +766,11 @@ var standard = {
 
     console.log('Encrypted Password: ' + options.password);
 
+
     if (options.start) {
       options.start();
     }
+
 
     if (options.userName && options.password) {
       var passwordEncrypt = 'plaintext';
@@ -785,120 +787,130 @@ var standard = {
       data = 'apiLogin=1';
     }
 
-    $.when($.ajax({
-      url: apiPath + 'validate.php',
-      type: 'POST',
-      data: data + '&apiVersion=3',
-      cache: false,
-      timeout: 2500,
-      success: function(xml) {
-        var loginFlag = unxml($(xml).find('loginFlag').text().trim());
-        var loginText = unxml($(xml).find('loginText').text().trim());
-        var valid = unxml($(xml).find('valid').text().trim());
-        var userName = unxml($(xml).find('userData > userName').text().trim());
-        var defaultRoomId = parseInt($(xml).find('defaultRoomId').text().trim());
 
-        if (valid === 'true') {
-          userId = parseInt($(xml).find('userData > userId').text().trim());
-          anonId = parseInt($(xml).find('anonId').text().trim());
-          sessionHash = unxml($(xml).find('sessionHash').text().trim());
+    $.when(
+      $.ajax({
+        url: apiPath + 'validate.php',
+        type: 'POST',
+        data: data + '&apiVersion=3',
+        cache: false,
+        timeout: 2500,
+        success: function(xml) {
+          var loginFlag = unxml($(xml).find('loginFlag').text().trim());
+          var loginText = unxml($(xml).find('loginText').text().trim());
+          var valid = unxml($(xml).find('valid').text().trim());
+          var userName = unxml($(xml).find('userData > userName').text().trim());
+          var defaultRoomId = parseInt($(xml).find('defaultRoomId').text().trim());
 
 
-          $('#loginDialogue').dialog('close'); // Close any open login forms.
+          if (valid === 'true') {
+            userId = parseInt($(xml).find('userData > userId').text().trim());
+            anonId = parseInt($(xml).find('anonId').text().trim());
+            sessionHash = unxml($(xml).find('sessionHash').text().trim());
+
+            $.cookie('fim3_sessionHash',sessionHash); // Set cookies.
+            $.cookie('fim3_userId',userId);
 
 
-          $.cookie('fim3_sessionHash',sessionHash); // Set cookies.
-          $.cookie('fim3_userId',userId);
+
+            /* Update Permissions */
+
+            userPermissions.createRoom = (parseInt($(xml).find('userPermissions > createRooms').text().trim()) > 0 ? true : false);
+            userPermissions.privateRoom = (parseInt($(xml).find('userPermissions > privateRooms').text().trim()) > 0 ? true : false);
+            userPermissions.general = (parseInt($(xml).find('userPermissions > allowed').text().trim()) > 0 ? true : false);
 
 
-          /* Update Permissions */
-          userPermissions.createRoom = (parseInt($(xml).find('userPermissions > createRooms').text().trim()) > 0 ? true : false);
-          userPermissions.privateRoom = (parseInt($(xml).find('userPermissions > privateRooms').text().trim()) > 0 ? true : false);
-          userPermissions.general = (parseInt($(xml).find('userPermissions > allowed').text().trim()) > 0 ? true : false);
+            adminPermissions.modPrivs = (parseInt($(xml).find('adminPermissions > modPrivs').text().trim()) > 0 ? true : false);
+            adminPermissions.modCore = (parseInt($(xml).find('adminPermissions > modCore').text().trim()) > 0 ? true : false);
+            adminPermissions.modUsers = (parseInt($(xml).find('adminPermissions > modUsers').text().trim()) > 0 ? true : false);
+            adminPermissions.modTemplates = (parseInt($(xml).find('adminPermissions > modTemplates').text().trim()) > 0 ? true : false);
+            adminPermissions.modImages = (parseInt($(xml).find('adminPermissions > modImages').text().trim()) > 0 ? true : false);
+            adminPermissions.modCensor = (parseInt($(xml).find('adminPermissions > modCensor').text().trim()) > 0 ? true : false);
+            adminPermissions.modHooks = (parseInt($(xml).find('adminPermissions > modHooks').text().trim()) > 0 ? true : false);
 
 
-          adminPermissions.modPrivs = (parseInt($(xml).find('adminPermissions > modPrivs').text().trim()) > 0 ? true : false);
-          adminPermissions.modCore = (parseInt($(xml).find('adminPermissions > modCore').text().trim()) > 0 ? true : false);
-          adminPermissions.modUsers = (parseInt($(xml).find('adminPermissions > modUsers').text().trim()) > 0 ? true : false);
-          adminPermissions.modTemplates = (parseInt($(xml).find('adminPermissions > modTemplates').text().trim()) > 0 ? true : false);
-          adminPermissions.modImages = (parseInt($(xml).find('adminPermissions > modImages').text().trim()) > 0 ? true : false);
-          adminPermissions.modCensor = (parseInt($(xml).find('adminPermissions > modCensor').text().trim()) > 0 ? true : false);
-          adminPermissions.modHooks = (parseInt($(xml).find('adminPermissions > modHooks').text().trim()) > 0 ? true : false);
+
+            if (options.showMessage) {
+              /* Display Dialog to Notify User of Being Logged In */
+              if (!userPermissions.general) {
+                dia.info('You are now logged in as ' + userName + '. However, you are not allowed to post and have been banned by an administrator.','Logged In');
+              }
+              else {
+                dia.info('You are now logged in as ' + userName + '.','Logged In');
+              }
+            }
 
 
-          if (!options.silent) {
-            /* Display Dialog to Notify User of Being Logged In */
-            if (!userPermissions.general) {
-              dia.info('You are now logged in as ' + userName + '. However, you are not allowed to post and have been banned by an administrator.','Logged In');
+
+            $('#loginDialogue').dialog('close'); // Close any open login forms.
+
+            console.log('Login valid. Session hash: ' + sessionHash + '; User ID: ' + userId);
+          }
+
+          else {
+            switch (loginFlag) {
+              case 'PASSWORD_ENCRYPT':
+              dia.error("The form encryption used was not accepted by the server.");
+              break;
+
+              case 'BAD_USERNAME':
+              dia.error("A valid user was not provided.");
+              break;
+
+              case 'BAD_PASSWORD':
+              dia.error("The password was incorrect.");
+              break;
+
+              case 'API_VERSION_STRING':
+              dia.error("The server was unable to process the API version string specified.");
+              break;
+
+              case 'DEPRECATED_VERSION':
+              dia.error("The server will not accept this client because it is of a newer version.");
+              break;
+
+              case 'INVALID_SESSION':
+              sessionHash = '';
+              $.cookie('fim3_sessionHash','');
+
+              dia.error("You have been logged out. Please log-in.");
+              break;
+
+              default:
+              break;
+            }
+
+            console.log('Login Invalid');
+          }
+
+
+          if (!anonId && !userId) {
+            $('#messageInput').attr("disabled","disabled"); // The user is not able to post.
+          }
+
+
+          /* Select Room */
+          if (!roomId) {
+            if (!defaultRoomId) {
+              standard.changeRoom(1);
             }
             else {
-              dia.info('You are now logged in as ' + userName + '.','Logged In');
+              standard.changeRoom(defaultRoomId);
             }
           }
 
-          console.log('Login valid. Session hash: ' + sessionHash + '; User ID: ' + userId);
+          populate({
+            callback : function() {
+              windowDraw();
+              windowDynaLinks();
+            },
+          });
+        },
+        error: function() {
+          dia.error("The login request could not be sent. Please try again.");
         }
-        else {
-          switch (loginFlag) {
-            case 'PASSWORD_ENCRYPT':
-            dia.error("The form encryption used was not accepted by the server.");
-            break;
-
-            case 'BAD_USERNAME':
-            dia.error("A valid user was not provided.");
-            break;
-
-            case 'BAD_PASSWORD':
-            dia.error("The password was incorrect.");
-            break;
-
-            case 'API_VERSION_STRING':
-            dia.error("The server was unable to process the API version string specified.");
-            break;
-
-            case 'DEPRECATED_VERSION':
-            dia.error("The server will not accept this client because it is of a newer version.");
-            break;
-
-            case 'INVALID_SESSION':
-            sessionHash = '';
-            $.cookie('fim3_sessionHash','');
-
-            dia.error("You have been logged out. Please log-in.");
-            break;
-
-            default:
-            break;
-          }
-
-          console.log('Login Invalid');
-        }
-
-        if (!anonId && !userId) {
-          $('#messageInput').attr("disabled","disabled"); // The user is not able to post.
-        }
-
-        /* Select Room */
-        if (!roomId) {
-          if (!defaultRoomId) {
-            standard.changeRoom(1);
-          }
-          else {
-            standard.changeRoom(defaultRoomId);
-          }
-        }
-
-        populate({
-          callback : function() {
-            windowDraw();
-            windowDynaLinks();
-          },
-        });
-      },
-      error: function() {
-        dia.error("The login request could not be sent. Please try again.");
-      }
-    })).done(function() {
+      })
+    ).done(function() {
       if (options.finish) {
         options.finish();
       }
@@ -923,7 +935,7 @@ var standard = {
       var encrypt = 'base64';
 
       $.ajax({
-        url: apiPath + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (first ? '&archive=1&messageDateMin=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdMin=' + (lastMessage)) + '&longPolling=' + (longPolling ? 'true' : 'false') + '&sessionHash=' + sessionHash,
+        url: apiPath + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (first ? '&archive=1&messageDateMin=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdMin=' + (lastMessage)) + (longPolling ? '&longPolling=true' : '') + '&sessionHash=' + sessionHash,
         type: 'GET',
         timeout: timeout,
         async: true,
@@ -932,7 +944,32 @@ var standard = {
         dataType: "xml",
         cache: false,
         success: function(xml) {
-          if (xml) {
+          var status = $(xml).find('errorcode').text().trim();
+          var emessage = $(xml).find('errortext').text().trim();
+
+          if (status) {
+            var sentUserId = $(xml).find('activeUser > userId');
+
+            if (status == 'noperm') {
+              roomId = false;
+
+              if (sentUserId) {
+                popup.selectRoom();
+
+                dia.error('You have been restricted access from this room. Please select a new room.');
+              }
+              else {
+                popup.login();
+
+                dia.error('You are no longer logged in. Please log-in.');
+              }
+            }
+            else {
+              roomId = false;
+              dia.error(emessage);
+            }
+          }
+          else {
             totalFails = 0;
             var notifyData = '';
 
@@ -951,119 +988,120 @@ var standard = {
             });
 
             $('#activeUsers').html(activeUserHtml.join(', '));
-          }
-
-          if ($(xml).find('messages > message').length > 0) {
-            $(xml).find('messages > message').each(function() {
-
-              var text = unxml($(this).find('htmlText').text().trim());
-              var messageTime = unxml($(this).find('messageTimeFormatted').text().trim());
-
-              var messageId = parseInt($(this).find('messageId').text().trim());
-
-              var userName = unxml($(this).find('userData > userName').text().trim());
-              var userId = parseInt($(this).find('userData > userId').text().trim());
-              var groupFormatStart = unxml($(this).find('userData > startTag').text().trim());
-              var groupFormatEnd = unxml($(this).find('userData > endTag').text().trim());
-              var avatar = unxml($(this).find('userData > avatar').text().trim());
-
-              var styleColor = unxml($(this).find('defaultFormatting > color').text().trim());
-              var styleHighlight = unxml($(this).find('defaultFormatting > highlight').text().trim());
-              var styleFontface = unxml($(this).find('defaultFormatting > fontface').text().trim());
-              var styleGeneral = parseInt($(this).find('defaultFormatting > general').text().trim());
-
-              var style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + styleFontface + ';';
-
-              if (styleGeneral & 256) {
-                style += 'font-weight: bold;';
-              }
-              if (styleGeneral & 512) {
-                style += 'font-style: oblique;';
-              }
-              if (styleGeneral & 1024) {
-                style += 'text-decoration: underline;';
-              }
-              if (styleGeneral & 2048) {
-                style += 'text-decoration: line-through;';
-              }
 
 
-              if (settings.showAvatars) {
-                var data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="' + userName + '" src="' + avatar + '" style="max-width: 24px; max-height: 24px; padding-right: 3px;" class="userName userNameTable" data-userId="' + userId + '" /><span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
-              }
-              else {
-                var data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
-              }
+            if ($(xml).find('messages > message').length > 0) {
+              $(xml).find('messages > message').each(function() {
 
-              notifyData += userName + ': ' + text + "\n";
+                var text = unxml($(this).find('htmlText').text().trim());
+                var messageTime = unxml($(this).find('messageTimeFormatted').text().trim());
+
+                var messageId = parseInt($(this).find('messageId').text().trim());
+
+                var userName = unxml($(this).find('userData > userName').text().trim());
+                var userId = parseInt($(this).find('userData > userId').text().trim());
+                var groupFormatStart = unxml($(this).find('userData > startTag').text().trim());
+                var groupFormatEnd = unxml($(this).find('userData > endTag').text().trim());
+                var avatar = unxml($(this).find('userData > avatar').text().trim());
+
+                var styleColor = unxml($(this).find('defaultFormatting > color').text().trim());
+                var styleHighlight = unxml($(this).find('defaultFormatting > highlight').text().trim());
+                var styleFontface = unxml($(this).find('defaultFormatting > fontface').text().trim());
+                var styleGeneral = parseInt($(this).find('defaultFormatting > general').text().trim());
+
+                var style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + styleFontface + ';';
+
+                if (styleGeneral & 256) {
+                  style += 'font-weight: bold;';
+                }
+                if (styleGeneral & 512) {
+                  style += 'font-style: oblique;';
+                }
+                if (styleGeneral & 1024) {
+                  style += 'text-decoration: underline;';
+                }
+                if (styleGeneral & 2048) {
+                  style += 'text-decoration: line-through;';
+                }
+
+
+                if (settings.showAvatars) {
+                  var data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="' + userName + '" src="' + avatar + '" style="max-width: 24px; max-height: 24px; padding-right: 3px;" class="userName userNameTable" data-userId="' + userId + '" /><span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
+                }
+                else {
+                  var data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
+                }
+
+                notifyData += userName + ': ' + text + "\n";
+
+                if (settings.reversePostOrder) {
+                  $('#messageList').append(data);
+                }
+                else {
+                  $('#messageList').prepend(data);
+                }
+
+                if (messageId > lastMessage) {
+                  lastMessage = messageId;
+                }
+
+                messageIndex.push(lastMessage);
+
+                if (messageIndex.length == 100) {
+                  var messageOut = messageIndex[0];
+                  $('#message' + messageOut).remove();
+                  messageIndex = messageIndex.slice(1,99);
+                }
+
+                var roomTopic = $(this).find('roomData > roomTopic').text().trim();
+                if (roomTopic) {
+                  $('#topic').html(roomTopic);
+                }
+              });
+
+
 
               if (settings.reversePostOrder) {
-                $('#messageList').append(data);
-              }
-              else {
-                $('#messageList').prepend(data);
+                toBottom();
               }
 
-              if (messageId > lastMessage) {
-                lastMessage = messageId;
-              }
+              if (blur) {
+                if (settings.audioDing) {
+                  riffwave.play();
 
-              messageIndex.push(lastMessage);
+                  if (navigator.appName === 'Microsoft Internet Explorer') {
+                    timer3 = window.setInterval(faviconFlash,1000);
 
-              if (messageIndex.length == 100) {
-                var messageOut = messageIndex[0];
-                $('#message' + messageOut).remove();
-                messageIndex = messageIndex.slice(1,99);
-              }
-
-              var roomTopic = $(this).find('roomData > roomTopic').text().trim();
-              if (roomTopic) {
-                $('#topic').html(roomTopic);
-              }
-            });
-
-
-
-            if (settings.reversePostOrder) {
-              toBottom();
-            }
-
-            if (blur) {
-              if (settings.audioDing) {
-                riffwave.play();
-
-                if (navigator.appName === 'Microsoft Internet Explorer') {
-                  timer3 = window.setInterval(faviconFlash,1000);
-
-                  window.clearInterval(timer3);
-                }
-              }
-
-              if (notify) {
-                if (window.webkitNotifications) {
-                  webkitNotify('images/favicon.gif', 'New Message', notifyData);
-                }
-              }
-
-              if (navigator.appName === 'Microsoft Internet Explorer') {
-                try {
-                  if (window.external.msIsSiteMode()) {
-                    window.external.msSiteModeActivate();
+                    window.clearInterval(timer3);
                   }
                 }
-                catch(ex) {
-                  // Supress Error
+
+                if (notify) {
+                  if (window.webkitNotifications) {
+                    webkitNotify('images/favicon.gif', 'New Message', notifyData);
+                  }
+                }
+
+                if (navigator.appName === 'Microsoft Internet Explorer') {
+                  try {
+                    if (window.external.msIsSiteMode()) {
+                      window.external.msSiteModeActivate();
+                    }
+                  }
+                  catch(ex) {
+                    // Supress Error
+                  }
                 }
               }
             }
-          }
 
-          if (typeof contextMenuParse === 'function') {
-            contextMenuParse();
-          }
+            if (typeof contextMenuParse === 'function') {
+              contextMenuParse();
+            }
 
-          if (longPolling) {
-            setTimeout(standard.getMessages,50);
+            if (longPolling) {
+              setTimeout(standard.getMessages,50);
+            }
           }
 
           first = false;
@@ -1227,21 +1265,24 @@ popup = {
             standard.login({
               userName : userName,
               password : password,
+              showMessage : true,
             });
 
             return false; // Don't submit the form.
           });
         },
         cF : function() {
-          standard.login({
-            start : function() {
-              $('<div class="ui-widget-overlay" id="loginWaitOverlay"></div>').appendTo('body').width($(document).width()).height($(document).height());
-              $('<img src="images/ajax-loader.gif" id="loginWaitThrobber" />').appendTo('body').css('position','absolute').offset({ left : (($(window).width() - 220) / 2), top : (($(window).height() - 19) / 2)});
-            },
-            finish : function() {
-              $('#loginWaitOverlay, #loginWaitThrobber').empty().remove();
-            }
-          });
+          if (!userId) {
+            standard.login({
+              start : function() {
+                $('<div class="ui-widget-overlay" id="loginWaitOverlay"></div>').appendTo('body').width($(document).width()).height($(document).height());
+                $('<img src="images/ajax-loader.gif" id="loginWaitThrobber" />').appendTo('body').css('position','absolute').offset({ left : (($(window).width() - 220) / 2), top : (($(window).height() - 19) / 2)});
+              },
+              finish : function() {
+                $('#loginWaitOverlay, #loginWaitThrobber').empty().remove();
+              }
+            });
+          }
         }
       });
 
@@ -2063,7 +2104,6 @@ function windowDynaLinks() {
 
   /* Show All Links */
   $('#moderateCat').show();
-  $('#moderateCat').next().show();
   $('#moderateCat').next().children().show();
 
 
@@ -2140,7 +2180,6 @@ function windowDynaLinks() {
 
   if (noModCounter === 3 && noAdminCounter === 8) {
     $('#moderateCat').hide();
-    $('#moderateCat').next().hide();
   }
 
 
@@ -2338,6 +2377,9 @@ function contextMenuParse() {
 
 
 $(document).ready(function() {
+  standard.login({
+    sessionHash: sessionHash,
+  });
 
   /*** Trigger Login ***/
 

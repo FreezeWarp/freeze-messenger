@@ -119,7 +119,8 @@ switch ($loginMethod) {
 
   case 'vbulletin':
   $sqlUserTable = $forumPrefix . 'user'; // The user table in the login method used.
-  $sqlUserGroupTable = $forumPrefix . 'usergroup'; // The userGroup table in the login method used.
+  $sqlAdminGroupTable = $forumPrefix . 'usergroup'; // The adminGroup table in the login method used.
+    $sqlUserGroupTable = $forumPrefix . 'socialgroup';
   $sqlMemberGroupTable = $forumPrefix . 'socialgroupmember'; // The userGroup table in the login method used.
   $sqlSessionTable = $forumPrefix . 'session'; // The sessions table in the login method used.
 
@@ -131,11 +132,15 @@ switch ($loginMethod) {
     'timeZone' => 'timezoneoffset', // Timezone offset
     'options' => 'options', // Options bitfield for some rare uses.
   );
-  $sqlUserGroupTableCols = array(
+  $sqlAdminGroupTableCols = array(
     'groupId' => 'usergroupid', // Group ID
     'groupName' => 'title', // Group Name
     'startTag' => 'opentag',
     'endTag' => 'closetag',
+  );
+  $sqlUserGroupTableCols = array(
+    'groupId' => 'groupid', // Group ID
+    'groupName' => 'name', // Group Name
   );
   $sqlMemberGroupTableCols = array(
     'groupId' => 'groupid', // Social Group ID
@@ -159,6 +164,8 @@ switch ($loginMethod) {
     'timeZone' => 'user_timezone',
     'color' => 'user_colour',
     'avatar' => 'user_avatar',
+  );
+  $sqlAdminGroupTableCols = array(
   );
   $sqlUserGroupTableCols = array(
     'groupId' => 'group_id',
@@ -315,16 +322,20 @@ if ($valid) { // If the user is valid, process their preferrences.
       elseif ($userCopy[$sqlUserOptionsCol] & 128) $user2['timezoneoffset']++; // DST is on, add an hour
       else $user2['timezoneoffset']; // DST is off
 
-      $group = dbRows("SELECT * FROM $sqlUserGroupTable WHERE $sqlUserGroupTableCols[groupId] = $user2[userGroup]");
+      $group = dbRows("SELECT * FROM $sqlAdminGroupTable WHERE $sqlAdminGroupTableCols[groupId] = $user2[userGroup]");
 
-      $user2['userFormatStart'] = $group[$sqlUserGroupTableCols['startTag']];
-      $user2['userFormatEnd'] = $group[$sqlUserGroupTableCols['endTag']];
+      $user2['userFormatStart'] = $group[$sqlAdminGroupTableCols['startTag']];
+      $user2['userFormatEnd'] = $group[$sqlAdminGroupTableCols['endTag']];
       $user2['avatar'] = $forumUrl . '/image.php?u=' . $user2['userId'];
       $user2['profile'] = $forumUrl . '/member.php?u=' . $user2['userId'];
       break;
 
       case 'phpbb':
-      $user2['color'] = $userCopy[$sqlUserTableCols['color']];
+      $group = dbRows("SELECT * FROM $sqlUserGroupTable WHERE $sqlUserGroupTableCols[groupId] = $user2[userGroup]");
+
+      if (!$user2['color']) {
+        $user2['color'] = $group[$sqlUserTableCols['color']];
+      }
 
       $user2['userFormatStart'] = "<span style=\"color: #$user2[color]\">";
       $user2['userFormatEnd'] = '</span>';

@@ -61,7 +61,7 @@ else {
 
     ($hook = hook('getActiveUsers_eachRoom_start') ? eval($hook) : '');
 
-    if (!fim_hasPermission($room,$user,'know')) {
+    if (!fim_hasPermission($room,$user,'know',true)) {
       ($hook = hook('getActiveUsers_eachRoom_noPerm') ? eval($hook) : '');
 
       continue;

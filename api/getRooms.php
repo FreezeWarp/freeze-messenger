@@ -98,7 +98,7 @@ ORDER BY $order
 {$messagesCached_end}",'id'); // Get all rooms
 
 foreach ($rooms AS $id => $room2) {
-  if (fim_hasPermission($room2,$user,$permLevel)) {
+  if (fim_hasPermission($room2,$user,$permLevel,true)) {
     $rooms2[] = $room2;
   }
 }
@@ -125,6 +125,7 @@ if ($rooms2) {
       'bbcode' => (int) $room['bbcode'],
       'canModerate' => fim_hasPermission($room,$user,'moderate'),
       'canAdmin' => fim_hasPermission($room,$user,'admin'),
+      'canPost' => fim_hasPermission($room,$user,'post'),
     );
 
     ($hook = hook('getRooms_eachRoom') ? eval($hook) : '');

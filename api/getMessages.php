@@ -133,10 +133,21 @@ else {
     $room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $room2");
 
     if ($room) {
-      if (!fim_hasPermission($room,$user)) { // Gotta make sure the user can view that room.
+      $permission = fim_hasPermission($room,$user,'view',false);
+      if (!$permission[0]) { // Gotta make sure the user can view that room.
         ($hook = hook('getMessages_noPerm') ? eval($hook) : '');
 
-        // Do nothing
+        switch($permission[1]) {
+          case 'kick':
+          $failCode = 'kicked';
+          $failMessage = 'You have been kicked untl ' . fim_date($permission[3]) . '.';
+          break;
+
+          default:
+          $failCode = 'noperm';
+          $failMessage = 'You do not have permission to view the room you are trying to view.';
+          break;
+        }
       }
       else {
 
@@ -359,7 +370,7 @@ WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.roomId IN ($user[watchRo
 
   if ($missedMessages) {
     foreach ($missedMessages AS $message) {
-      if (!fim_hasPermission($message,$user,'view')) {
+      if (!fim_hasPermission($message,$user,'view',true)) {
         ($hook = hook('getMessages_watchRooms_noPerm') ? eval($hook) : '');
 
         continue;

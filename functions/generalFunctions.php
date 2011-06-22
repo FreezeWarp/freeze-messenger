@@ -43,14 +43,25 @@ function fim_inArray($needle,$haystack) {
 * @return mixed - Bool if $trans is false, array if $trans is true.
 * @author Joseph Todd Parsons
 */
-function fim_hasPermission($roomData,$userData,$type = 'post',$trans = false) {
+function fim_hasPermission($roomData,$userData,$type = 'post',$quick = false) {
   global $sqlPrefix, $banned, $superUsers, $valid;
   static $isAdmin, $isModerator, $isAllowedUser, $isAllowedGroup, $isOwner, $isRoomDeleted;
 
+
   /* Make sure all presented data is correct. */
   if (!$roomData['roomId']) {
-    return false;
+    if ($quick) {
+      return false;
+    }
+    else {
+      return array(
+        false,
+        'invalidRoom',
+        0
+      );
+    }
   }
+
 
   /* Get the User's Kick Status */
   if ($userData['userId']) {
@@ -221,16 +232,16 @@ WHERE userId = $userData[userId] AND
     break;
   }
 
-  if ($trans) {
+
+  if ($quick) {
+    return $roomValid;
+  }
+  else {
     return array(
       $roomValid,
       $reason,
       $kick['expiresOn']
     );
-  }
-
-  else {
-    return $roomValid;
   }
 }
 

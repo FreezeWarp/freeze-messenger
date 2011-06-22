@@ -74,7 +74,7 @@ if ($continue) {
     $failCode = 'spacemessage';
     $failMessage = 'In some countries, you could be arrested for posting only spaces. Now aren\'t you glad we stopped you?';
   }
-  elseif (!fim_hasPermission($room,$user,'post')) { // Not allowed to post.
+  elseif (!fim_hasPermission($room,$user,'post',true)) { // Not allowed to post.
     $failCode = 'noperm';
     $failMessage = 'You are not allowed to post in this room.';
   }

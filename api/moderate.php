@@ -332,7 +332,7 @@ switch ($action) {
   $messageData = dbRows("SELECT * FROM {$sqlPrefix}messages WHERE messageId = $messageId");
   $roomData = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $messageData[roomId]");
 
-  if (fim_hasPermission($roomData,$user,'moderate')) {
+  if (fim_hasPermission($roomData,$user,'moderate',true)) {
     $xmlData['moderate']['response']['success'] = true;
   }
   else {
@@ -374,14 +374,14 @@ switch ($action) {
     $failCode = 'badroom';
     $failMessage = 'The room specified is not valid.';
   }
-  elseif (fim_hasPermission($room,$user2,'moderate')) { // You can't kick admins.
+  elseif (fim_hasPermission($room,$user2,'moderate',true)) { // You can't kick admins.
     $failCode = 'nokickuser';
     $failMessage = 'The user specified may not be kicked.';
 
     require_once('../functions/parserFunctions.php');
     fim_sendMessage('/me fought the law and the law won.',$user,$room);
   }
-  elseif (!fim_hasPermission($room,$user,'moderate')) {
+  elseif (!fim_hasPermission($room,$user,'moderate',true)) {
     $failCode = 'nopermission';
     $failMessage = 'You are not allowed to moderate this room.';
   }
@@ -413,7 +413,7 @@ switch ($action) {
     $failCode = 'badroom';
     $failMessage = 'The room specified is not valid.';
   }
-  elseif (!fim_hasPermission($room,$user,'moderate')) {
+  elseif (!fim_hasPermission($room,$user,'moderate',true)) {
     $failCode = 'nopermission';
     $failMessage = 'You are not allowed to moderate this room.';
   }

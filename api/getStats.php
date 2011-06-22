@@ -56,7 +56,7 @@ if ($rooms) {
     ($hook = hook('getStats_eachRoom_start') ? eval($hook) : '');
 
     if ($hidePostCounts) {
-      if (!fim_hasPermission($room,$user,'know')) {
+      if (!fim_hasPermission($room,$user,'know',true)) {
         ($hook = hook('getStats_noPerm') ? eval($hook) : '');
 
         continue;
