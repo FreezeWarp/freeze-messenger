@@ -413,39 +413,52 @@ switch ($action) {
 
   case 'kickUser':
   $userId = (int) $_POST['userId'];
-  $user2 = dbRows("SELECT * FROM {$sqlPrefix}users WHERE userId = $userId");
+  $userData = dbRows("SELECT * FROM {$sqlPrefix}users WHERE userId = $userId");
 
   $roomId = (int) $_POST['roomId'];
-  $room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
+  $roomData = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
 
-  $time = (int) floor($_POST['time'] * $_POST['interval']);
+  $time = (int) $_POST['length'];
 
-  if (!$user2['userId']) {
+  if (!$userData['userId']) {
     $failCode = 'baduser';
     $failMessage = 'The room specified is not valid.';
   }
-  elseif (!$room['roomId']) {
+  elseif (!$roomData['roomId']) {
     $failCode = 'badroom';
     $failMessage = 'The room specified is not valid.';
   }
-  elseif (fim_hasPermission($room,$user2,'moderate',true)) { // You can't kick admins.
+  elseif (fim_hasPermission($roomData,$userData,'moderate',true)) { // You can't kick other moderators.
     $failCode = 'nokickuser';
     $failMessage = 'The user specified may not be kicked.';
 
     require_once('../functions/parserFunctions.php');
-    fim_sendMessage('/me fought the law and the law won.',$user,$room);
+    fim_sendMessage('/me fought the law and the law won.',$user,$roomData);
   }
-  elseif (!fim_hasPermission($room,$user,'moderate',true)) {
+  elseif (!fim_hasPermission($roomData,$user,'moderate',true)) { // You have to be a mod yourself.
     $failCode = 'nopermission';
     $failMessage = 'You are not allowed to moderate this room.';
   }
   else {
-    modLog('kick',"$user2[userId],$room[roomId]");
+    modLog('kick',"$userData[userId],$roomData[roomId]");
 
-    dbQuery("INSERT INTO {$sqlPrefix}kick (userId, kickerId, length, room) VALUES ($user2[userId], $user[userId], $time, $room[roomId])");
+    dbInsert(array(
+        'userId' => (int) $userData['userId'],
+        'kickerId' => (int) $user['userId'],
+        'length' => (int) $time,
+        'roomId' => (int) $roomData['roomId'],
+      ),"{$sqlPrefix}kick",array(
+        'length' => (int) $time,
+        'kickerId' => (int) $user['kickerId'],
+        'time' => array(
+          'type' => 'raw',
+          'value' => 'NOW()',
+        ),
+      )
+    );
 
     require_once('../functions/parserFunctions.php');
-    fim_sendMessage('/me kicked ' . $user2['userName'],$user,$room);
+    fim_sendMessage('/me kicked ' . $userData['userName'],$user,$room);
 
     $xmlData['moderate']['response']['success'] = true;
   }
@@ -453,31 +466,34 @@ switch ($action) {
 
 
   case 'unkickuser':
-  $userId = intval($_POST['userId']);
-  $user2 = dbRows("SELECT u1.settings, u2.userId, u2.userName FROM {$sqlPrefix}users AS u1, user AS u2 WHERE u2.userId = $userId AND u2.userId = u1.userId");
+  $userId = (int) $_POST['userId'];
+  $userData = dbRows("SELECT * FROM {$sqlPrefix}users WHERE userId = $userId");
 
-  $room = intval($_POST['roomId']);
-  $room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE id = $room");
+  $roomId = (int) $_POST['roomId'];
+  $roomData = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
 
-  if (!$user2['userId']) {
+  if (!$userData['userId']) {
     $failCode = 'baduser';
     $failMessage = 'The room specified is not valid.';
   }
-  elseif (!$room['id']) {
+  elseif (!$roomData['roomId']) {
     $failCode = 'badroom';
     $failMessage = 'The room specified is not valid.';
   }
-  elseif (!fim_hasPermission($room,$user,'moderate',true)) {
+  elseif (!fim_hasPermission($roomData,$user,'moderate',true)) {
     $failCode = 'nopermission';
     $failMessage = 'You are not allowed to moderate this room.';
   }
   else {
-    modLog('unkick',"$user2[userId],$room[id]");
+    modLog('unkick',"$userData[userId],$roomData[roomId]");
 
-    dbQuery("DELETE FROM {$sqlPrefix}kick WHERE userId = $user2[userId] AND room = $room[id]");
+    dbDelete("{$sqlPrefix}kick",array(
+      'userId' => $userData['userId'],
+      'roomId' => $roomData['roomId'],
+    ));
 
     require_once('../functions/parserFunctions.php');
-    fim_sendMessage('/me unkicked ' . $user2['userName'],$user,$room);
+    fim_sendMessage('/me unkicked ' . $userData['userName'],$user,$roomData);
 
     $xmlData['moderate']['response']['success'] = true;
   }

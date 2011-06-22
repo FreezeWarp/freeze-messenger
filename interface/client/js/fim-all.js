@@ -290,7 +290,7 @@ $.ajax({
  * TODO */
 var urlHash = window.location.hash;
 var urlHashComponents = urlHash.split('#');
-for (i = 0; i < urlHashComponents.length; i++) {
+for (var i = 0; i < urlHashComponents.length; i++) {
   if (!urlHashComponents[i]) {
     continue;
   }
@@ -447,8 +447,6 @@ function populate(options) {
           var userName = unxml($(this).find('userName').text().trim());
           var userId = parseInt($(this).find('userId').text().trim());
 
-          userSelectHtml += '<option value="' + userId + '">' + userName + '</option>';
-
           userRef[userName] = userId;
           userIdRef[userId] = userName;
           userList.push(userName);
@@ -503,8 +501,6 @@ function populate(options) {
           }
 
           roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#" onclick="standard.changeRoom(' + roomId + ');">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isAdmin ? '<button onclick="popup.editRoom(' + roomId + ');" class="editRoomMulti standard"></button>' : '') + '</td></tr>';
-
-          roomSelectHtml += '<option value="' + roomId + '">' + roomName + '</option>';
 
           roomRef[roomName] = roomId;
           roomIdRef[roomId] = roomName;
@@ -960,13 +956,6 @@ var standard = {
               standard.changeRoom(defaultRoomId);
             }
           }
-
-          populate({
-            callback : function() {
-              windowDraw();
-              windowDynaLinks();
-            },
-          });
         },
         error: function() {
           dia.error("The login request could not be sent. Please try again.");
@@ -976,6 +965,14 @@ var standard = {
       if (options.finish) {
         options.finish();
       }
+
+      populate({
+        callback : function() {
+          windowDraw();
+          windowDynaLinks();
+        },
+      });
+
       console.log('Login Finished');
 
       return true;
@@ -2056,59 +2053,67 @@ popup = {
 
   kick : function() {
     dia.full({
-      content : '<form action="#" id="kickUserForm" method="post">  <label for="userId">User</label>: <select name="userId">$userSelect</select><br />  <label for="roomId">Room</label>: <select name="roomId">$roomSelect</select><br />  <label for="time">Time</label>: <input type="text" name="time" id="time" style="width: 50px;" />  <select name="interval">    <option value="1">Seconds</option>    <option value="60">Minutes</option>    <option value="3600">Hours</option>    <option value="86400">Days</option>    <option value="604800">Weeks</option>  </select><br /><br />  <button type="submit">Kick User</button><button type="reset">Reset</button></form>',
+      content : '<form action="#" id="kickUserForm" method="post">  <label for="userName">User</label>: <input type="text" name="userName" id="userName" /><br />  <label for="roomNameKick">Room</label>: <input type="text" id="roomNameKick" name="roomNameKick" /> <br />  <label for="time">Time</label>: <input type="text" name="time" id="time" style="width: 50px;" />  <select name="interval" id="interval">    <option value="1">Seconds</option>    <option value="60">Minutes</option>    <option value="3600">Hours</option>    <option value="86400">Days</option>    <option value="604800">Weeks</option>  </select><br /><br />  <button type="submit">Kick User</button><button type="reset">Reset</button></form>',
       title : 'Kick User',
       id : 'kickUserDialogue',
       width : 1000,
-    });
+      oF : function() {
+        roomModList = new Array();
 
-    $('select[name=roomId]').html(roomSelectHtml);
-
-    $.ajax({
-      url: directory + 'api/getUsers.php?sessionHash=' + sessionHash,
-      timeout: 5000,
-      type: 'GET',
-      cache: false,
-      success: function(xml) {
-        $('select[name=userId]').html(userSelectHtml);
-      },
-      error: function() {
-        dia.error('The list of users could not be obtained from the server.');
-      }
-    });
-
-    $("#kickUserForm").submit(function() {
-      data = $("#kickUserForm").serialize(); // Serialize the form data for AJAX.
-      $.post(directory + 'api/moderate.php',data + '&action=kickUser&sessionHash=' + sessionHash,function(xml) {
-        var errorcode = $(xml).find('errorcode').text().trim();
-        var errormessage = $(xml).find('errormessage').text().trim();
-
-        switch (errorcode) {
-          case '':
-          dia.info('The user has been kicked.','Success');
-
-          $("#kickUserDialogue").dialog('close');
-          break;
-
-          case 'nopermission':
-          dia.error('You do not have permision to moderate this room.');
-          break;
-
-          case 'nokickuser':
-          dia.error('That user may not be kicked!');
-          break;
-
-          case 'baduser':
-          dia.error('The user specified does not exist.');
-          break;
-
-          case 'badroom':
-          dia.error('The room specified does not exist.');
-          break;
+        for (var i = 0; i < roomList.length; i++) {
+          if (modRooms[roomRef[roomList[i]]] > 0) {
+            roomModList.push(roomIdRef[roomRef[roomList[i]]]);
+          }
         }
-      }); // Send the form data via AJAX.
 
-      return false; // Don't submit the form.
+        $('#userName').autocomplete({
+          source: userList
+        });
+        $('#roomNameKick').autocomplete({
+          source: roomModList
+        });
+
+        $("#kickUserForm").submit(function() {
+          var roomNameKick = $('#roomNameKick').val();
+          var roomId = roomRef[roomNameKick];
+
+          var userName = $('#userName').val();
+          var userId = userRef[userName];
+
+          var length = Math.floor(parseInt($('#time').val() * parseInt($('#interval > option:selected').attr('value'))));
+
+          $.post(directory + 'api/moderate.php','action=kickUser&userId=' + userId + '&roomId=' + roomId + '&length=' + length + '&sessionHash=' + sessionHash,function(xml) {
+            var errorcode = $(xml).find('errorcode').text().trim();
+            var errortext = $(xml).find('errortext').text().trim();
+
+            switch (errorcode) {
+              case '':
+              dia.info('The user has been kicked.','Success');
+
+              $("#kickUserDialogue").dialog('close');
+              break;
+
+              case 'nopermission':
+              dia.error('You do not have permision to moderate this room.');
+              break;
+
+              case 'nokickuser':
+              dia.error('That user may not be kicked!');
+              break;
+
+              case 'baduser':
+              dia.error('The user specified does not exist.');
+              break;
+
+              case 'badroom':
+              dia.error('The room specified does not exist.');
+              break;
+            }
+          }); // Send the form data via AJAX.
+
+          return false; // Don't submit the form.
+        });
+      },
     });
   },
 
@@ -2273,7 +2278,9 @@ function windowDynaLinks() {
 
   /* Show All Links */
   $('#moderateCat').show();
-  $('#moderateCat').next().children().show();
+  $('#moderateCat').next().children().children().show(); // LIs
+  $('#quickCat').next().children().children().show(); // LIs
+  $('#moderateCat').next().children().children().children().show(); // Admin LIs
 
 
   /* Remove Links if Not Available */

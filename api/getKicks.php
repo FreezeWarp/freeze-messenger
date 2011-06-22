@@ -26,7 +26,9 @@ if ($roomsArray) {
   foreach ($roomsArray AS &$v) {
     $v = intval($v);
     $roomData = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE id = $v");
-    if (!hasPermission($roomData,$user,'moderate',true)) unset($v);
+    if (!hasPermission($roomData,$user,'moderate',true)) {
+      unset($v);
+    }
   }
   $roomList = implode(',',$roomsArray);
 }

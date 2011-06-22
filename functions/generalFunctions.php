@@ -239,7 +239,7 @@ WHERE userId = $userData[userId] AND
 
 
   if ($quick) {
-    return $roomValid;
+    return ($type == 'all' ? $roomValid : $roomValid[$type]);
   }
   else {
     return array(
