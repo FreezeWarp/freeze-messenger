@@ -70,7 +70,7 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
   $phrases[hookPageStartFull]
   <!-- START links -->
   <div id="menu" data-role="header">
-    <h3><a href="#">$phrases[templateQuickCat]</a></h3>
+    <h3 id="quickCat"><a href="#">$phrases[templateQuickCat]</a></h3>
     <div>
     <ul>
       <li style="border-bottom: 1px solid;"><a href="#" id="messageArchive">$phrases[templateArchive]</a></li>
@@ -87,7 +87,7 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
     </ul>
     </div>
 
-    <h3><a href="#">$phrases[templateModerateCat]</a></h3>
+    <h3 id="moderateCat"><a href="#">$phrases[templateModerateCat]</a></h3>
     <div>
     <ul>
       <li><a href="#" id="editRoom">$phrases[templateEditRoom]</a></li>
@@ -112,7 +112,7 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
     </ul>
     </div>
 
-    <h3><a href="#">$phrases[templateRoomListCat]</a></h3>
+    <h3 id="roomCat"><a href="#">$phrases[templateRoomListCat]</a></h3>
     <div>
       <div id="roomListShort">
         <ul>
@@ -126,10 +126,10 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
       </div>
     </div>
 
-    <h3><a href="#">$phrases[templateActiveUsersCat]</a></h3>
+    <h3 id="activeCat"><a href="#">$phrases[templateActiveUsersCat]</a></h3>
     <div id="activeUsers">$phrases[templateLoading]</div>
 
-    <h3><a href="#">$phrases[templateCopyrightCat]</a></h3>
+    <h3 id="copyCat"><a href="#">$phrases[templateCopyrightCat]</a></h3>
     <div>
       <ul>
         <li>FIM © 2010-2011 Joseph Parsons<br /></li>

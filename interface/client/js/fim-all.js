@@ -509,6 +509,9 @@ function populate(options) {
           else if (isModerator) {
             modRooms[roomId] = 1;
           }
+          else {
+            modRooms[roomId] = 0;
+          }
         });
 
         $('#roomListLong > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li><li>My Rooms<ul>' + roomUlMyHtml + '</ul></li><li>General<ul>' + roomUlHtml + '</ul></li><li>Private<ul>' + roomUlPrivHtml + '</ul></li>');
@@ -2054,7 +2057,18 @@ function windowDraw() {
 }
 
 function windowDynaLinks() {
-  /* Show and Hide Links Based on Permissions */
+  var noAdminCounter = 0; // This is probably a bad way of doing what we'll do, but meh.
+  var noModCounter = 0; // Same as above...
+
+
+  /* Show All Links */
+  $('#moderateCat').show();
+  $('#moderateCat').next().show();
+  $('#moderateCat').next().children().show();
+
+
+  /* Remove Links if Not Available */
+
   if (!userPermissions.createRoom) {
     $('li > #createRoom').parent().hide();
   }
@@ -2062,42 +2076,76 @@ function windowDynaLinks() {
     $('li > #privateRoom').parent().hide();
   }
 
-  if (!adminPermissions) {
-    //
-  }
+
   if (!adminPermissions.modUsers) {
     $('li > #modUsers').parent().hide();
+
+    noAdminCounter += 1;
   }
   if (!adminPermissions.modImages) {
     $('li > #modImages').parent().hide();
+
+    noAdminCounter += 1;
   }
   if (!adminPermissions.modCensor) {
     $('li > #modCensor').parent().hide();
+
+    noAdminCounter += 1;
   }
   if (!adminPermissions.modTemplates) {
     $('li > #modPhrases').parent().hide();
+
+    noAdminCounter += 1;
   }
   if (!adminPermissions.modTemplates) {
     $('li > #modTemplates').parent().hide();
+
+    noAdminCounter += 1;
   }
   if (!adminPermissions.modPrivs) {
     $('li > #modPrivs').parent().hide();
+
+    noAdminCounter += 1;
   }
   if (!adminPermissions.modHooks) {
     $('li > #modHooks').parent().hide();
+
+    noAdminCounter += 1;
   }
   if (!adminPermissions.modCore) {
     $('li > #modCore').parent().hide();
+
+    noAdminCounter += 1;
   }
 
   if (modRooms[roomId] < 1) {
     $('li > #kick').parent().hide();
     $('li > #manageKick').parent().hide();
+
+    noModCounter += 2;
   }
   if (modRooms[roomId] < 2) {
     $('li > #editRoom').parent().hide();
+
+    noModCounter += 1;
   }
 
+
+
+  /* Remove Link Categories */
+
+  if (noAdminCounter === 8) {
+     $('li > #modGeneral').parent().hide();
+  }
+
+  if (noModCounter === 3 && noAdminCounter === 8) {
+    $('#moderateCat').hide();
+    $('#moderateCat').next().hide();
+  }
+
+
+
+  /* Show Login or Logout Only */
   if (userId && !anonId) {
     $('li > #login').parent().hide();
   }
