@@ -67,13 +67,11 @@ body {
 #messageInput {
   display: block;
   height: 100px;
-  padding: 3px;
   float: right;
-}
-
-#messageInputContainer {
   white-space: nowrap;
-  padding-left: 3px;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  border: transparent;
 }
 
 #youtubeResultsContainer {
@@ -183,9 +181,6 @@ iframe.nodisplay {
   display: none; /* The above are probably redundant, I suppose. */
 }
 
-table.rowHover tr:hover { /* This is used in the AdminCP as a quick hack to make things easier to understand. */
-  opacity: .8;
-}
 table.page {
   border-spacing: 0px;
   width: 100%;
@@ -197,24 +192,8 @@ table.page {
   display: block;
 }
 
-h2, h3, h4 {
-  margin: 0px;
-}
-
-table.leftright tr td:first-child {
-  text-align: left;
-}
-table.leftright tr td:last-child {
-  text-align: right;
-}
-table.leftright tr td[colspan='2'] {
-  text-align: center;
-}
-
 table.center {
-  margin-left: auto;
-  margin-right: auto;
-  display: table;
+  text-align: center;
 }
 
 
@@ -353,8 +332,6 @@ div.center div.jGrowl-notification, div.center div.jGrowl-closer {
 div.jGrowl div.jGrowl-notification, div.jGrowl div.jGrowl-closer {
   background-color: #000;
   opacity: .85;
-  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=85)";
-  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=85);
   zoom: 1;
   width: 235px;
   padding: 10px;
@@ -364,8 +341,6 @@ div.jGrowl div.jGrowl-notification, div.jGrowl div.jGrowl-closer {
   font-size: 1em;
   text-align: left;
   display: none;
-  -moz-border-radius:     5px;
-  -webkit-border-radius:  5px;
 }
 
 div.jGrowl div.jGrowl-notification {

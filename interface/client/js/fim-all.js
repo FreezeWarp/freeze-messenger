@@ -500,7 +500,7 @@ function populate(options) {
             roomUlHtml += ulText;
           }
 
-          roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#" onclick="standard.changeRoom(' + roomId + ');">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isAdmin ? '<button onclick="popup.editRoom(' + roomId + ');" class="editRoomMulti standard"></button>' : '') + '</td></tr>';
+          roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#" onclick="standard.changeRoom(' + roomId + ');">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isAdmin ? '<button data-roomId="' + roomId + '" class="editRoomMulti standard"></button><button data-roomId="' + roomId + '" class="deleteRoomMulti standard"></button>' : '') + '<button data-roomId="' + roomId + '" class="archiveMulti standard"></button><button data-roomId="' + roomId + '" class="favRoomMulti standard"></button></td></tr>';
 
           roomRef[roomName] = roomId;
           roomIdRef[roomId] = roomName;
@@ -1421,15 +1421,26 @@ popup = {
 
   selectRoom : function() {
     dia.full({
-      content : '<table><thead><tr><th>Name</th><th>Topic</th><th>Actions</th></tr></thead><tbody>' + roomTableHtml + '</tbody></table>',
+      content : '<table class="center"><thead><tr><th>Name</th><th>Topic</th><th>Actions</th></tr></thead><tbody>' + roomTableHtml + '</tbody></table>',
       title : 'Room List',
       id : 'roomListDialogue',
       width: 1000,
       oF : function() {
-        $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}});
-        $('button.favRoomMulti').button({icons : {primary : 'ui-icon-star'}}); // TODO
-        $('button.archiveMulti').button({icons : {primary : 'ui-icon-note'}}); // TODO
-        $('button.deleteRoomMulti').button({icons : {primary : 'ui-icon-trash'}}); // TODO
+        $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}}).click(function() {
+          popup.editRoom($(this).attr('data-roomId'));
+        });
+
+        $('button.favRoomMulti').button({icons : {primary : 'ui-icon-star'}}).click(function() {
+          standard.favRoom($(this).attr('data-roomId'));
+        });
+
+        $('button.archiveMulti').button({icons : {primary : 'ui-icon-note'}}).click(function() {
+          standard.archive($(this).attr('data-roomId'));
+        });
+
+        $('button.deleteRoomMulti').button({icons : {primary : 'ui-icon-trash'}}).click(function() {
+          standard.deleteRoom($(this).attr('data-roomId'))
+        });
       }
     });
   },
@@ -2254,6 +2265,10 @@ function windowDraw() {
   $('legend').addClass('ui-widget-header').addClass('ui-corner-all'); // Can these combine?
   $('fieldset').addClass('ui-widget ui-widget-content');
 
+  $('thead').addClass('ui-widget-header');
+  $('tbody').addClass('widget ui-widget-content');
+
+
 
 
 
@@ -2817,7 +2832,7 @@ function windowResize () {
      *** TD Padding: 2px (on Standard Styling)
      * Message Input Container Padding : 3px (all padding-left)
      * Message Input Text Area Padding: 6px */
-    $('#messageInput').css('width',(((windowWidth - 10) * .75) - 10 - 2 - 3 - 6)); // Set the messageInput box to fill width.
+    $('#messageInput').css('width',(((windowWidth - 10) * .75) - 10 - 2)); // Set the messageInput box to fill width.
 
 
     $('body').css('height',window.innerHeight); // Set the body height to equal that of the window; this fixes many gradient issues in theming.
