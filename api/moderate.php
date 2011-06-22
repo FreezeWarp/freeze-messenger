@@ -42,14 +42,16 @@ $xmlData = array(
 
 switch ($action) {
   case 'createRoom':
-  $name = substr(dbEscape($_POST['name']),0,20); // Limits to 20 characters.
+  $name = substr($_POST['name'],0,20); // Limits to 20 characters.
 
   if (!$name) {
-    $failCode = 'noName';
+    $failCode = 'noname';
     $failMessage = 'A room name was not supplied.';
   }
   else {
-    if (dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE name = '$name'")) {
+    $safeName = dbEscape($name);
+
+    if (dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomName = '$safeName'")) {
       $failCode = 'exists';
       $failMessage = 'The room specified already exists.';
     }
@@ -60,7 +62,16 @@ switch ($action) {
       $options = ($_POST['mature'] ? 2 : 0);
       $bbcode = intval($_POST['bbcode']);
 
-      dbQuery("INSERT INTO {$sqlPrefix}rooms (name,allowedGroups,allowedUsers,moderators,owner,options,bbcode) VALUES ('$name','$allowedGroups','$allowedUsers','$moderators',$user[userId],$options,$bbcode)");
+      dbInsert(array(
+          'roomName' => $name,
+          'allowedGroups' => $allowedGroups,
+          'allowedUsers' => $allowedUsers,
+          'moderators' => $moderators,
+          'owner' => $user['userId'],
+          'options' => (int) $options,
+          'bbcode' => (int) $bbcode,
+        ),"{$sqlPrefix}rooms"
+      );
       $insertId = mysql_insert_id();
 
       if ($insertId) {

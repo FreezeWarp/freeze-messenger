@@ -1775,26 +1775,36 @@ popup = {
         });
 
         $("#editRoomForm").submit(function() {
-          var data = $("#editRoomForm").serialize(); // Serialize the form data for AJAX.
+          var bbcode = parseInt($('#bbcode').val());
+          var name = $('#name').val();
+          var mature = ($('#mature').is(':checked') ? true : false);
+          var allowedUsers = $('#allowedUsersBridge').val();
+          var allowedGroups = $('#allowedGroupsBridge').val();
+          var moderators = $('#moderatorsBridge').val()
 
-          $.post(directory + 'api/moderate.php',data + '&action=createRoom&sessionHash=' + sessionHash,function(xml) {
-            var errorCode = unxml($(xml).find('errorcode').text().trim());
-            var errorMessage = unxml($(xml).find('errortext').text().trim());
-            var privateRoomId = parseInt($(xml).find('insertId').text().trim());
+          if (name.length > 20) {
+            dia.error('The roomname is too long.');
+          }
+          else {
+            $.post(directory + 'api/moderate.php','action=createRoom&name=' + urlEncode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&sessionHash=' + sessionHash,function(xml) {
+              var errorCode = unxml($(xml).find('errorcode').text().trim());
+              var errorMessage = unxml($(xml).find('errortext').text().trim());
+              var privateRoomId = parseInt($(xml).find('insertId').text().trim());
 
-            if (errorCode) {
-              dia.error('An error has occured: ' + errorMessage);
-            }
-            else {
-              dia.full({
-                content : 'The room has been created at the following URL:<br /><br /><form action="' + window.location.hostname + '#room=' + privateRoomId + '" method="post"><input type="text" style="width: 300px;" value="' + window.location.hostname + '#room=' + privateRoomId + '" name="url" /><button type="subit">Go There!</submit></form>',
-                title : 'Room Created!',
-                id : 'createRoomResultDialogue',
-                width : 600
-              });
-              $("#editRoomDialogue").dialog('close');
-            }
-          }); // Send the form data via AJAX.
+              if (errorCode) {
+                dia.error('An error has occured: ' + errorMessage);
+              }
+              else {
+                dia.full({
+                  content : 'The room has been created at the following URL:<br /><br /><form action="' + window.location.hostname + '#room=' + privateRoomId + '" method="post"><input type="text" style="width: 300px;" value="' + window.location.hostname + '#room=' + privateRoomId + '" name="url" /><button type="subit">Go There!</submit></form>',
+                  title : 'Room Created!',
+                  id : 'createRoomResultDialogue',
+                  width : 600
+                });
+                $("#editRoomDialogue").dialog('close');
+              }
+            }); // Send the form data via AJAX.
+          }
           return false; // Don't submit the form.
         });
       },

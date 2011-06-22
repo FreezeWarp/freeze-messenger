@@ -190,55 +190,6 @@ $phrases[hookBodyEndFull]
 -- DIVIDE
 
 INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
-(12, 'chatStopMessage', 'stopMessage', '<div id="stopMessage">
-    {{container}{Warning}{$stopMessage<br /><br />
-
-<form action="#" method="post">
-  <input type="button" onclick="$(''#stopMessage'').slideUp(); $(''#chatContainer'').slideDown();" value="Continue." />
-  <input type="button" onclick="window.history.back()" value="Go Back" />
-</form>}}
-    </div>'),
-(17, 'editRoomForm', 'censorLists', '<ul class="tabList">
-  <li><a href="#editRoom1">General</a></li>
-  <li><a href="#editRoom2">Permissions</a></li>
-</ul><form action="#" method="post" id="editRoomForm"><div id="editRoom1">
-  <label for="name">$phrases[editRoomNameLabel]</label>: <input type="text" name="name" id="name" value="$room[name]" /><br />
-  <small><span style="margin-left: 10px;">$phrases[editRoomNameBlurb]</span></small><br /><br />
-
-  <label for="mature">$phrases[editRoomMatureLabel]</label>: <input type="checkbox" name="mature" id="mature" /><br />
-  <small><span style="margin-left: 10px;">$phrases[editRoomMatureBlurb]</strong></small><br /><br />
-
-  <label for="bbcode">$phrases[editRoomBBCode]</label>: <select name="bbcode">
-    <option value="1" selected="selected">$phrases[editRoomBBCodeAll]</option>
-    <option value="5">$phrases[editRoomBBCodeNoMulti]</option>
-    <option value="9">$phrases[editRoomBBCodeNoImg]</option>
-    <option value="13">$phrases[editRoomBBCodeLink]</option>
-    <option value="16">$phrases[editRoomBBCodeBasic]</option>
-    <option>$phrases[editRoomBBCodeNothing]</option>
-  </select><br />
-
-  <small style="margin-left: 10px;">$phrases[editRoomBBCodeBlurb]</small><br /><br />
-
-  <label>$phrases[editRoomCensorLabel]</label>:<br /><div style="margin-left: 10px;">{$censorLists}</div><br />
-
-  <button type="submit">{{if="$_GET[''action''] == ''create''"}{$phrases[createRoomSubmit]}{$phrases[editRoomSubmit]}}</button><button type="reset">$phrases[editRoomReset]</button></div><div id="editRoom2"><label for="allowedUsers">$phrases[editRoomAllowedUsersLabel]</label> <input type="text" name="allowedUsersBridge" id="allowedUsersBridge" /><input type="button" value="Add" onclick="autoEntry.addEntry(''allowedUsers'');" /><input type="hidden" name="allowedUsers" id="allowedUsers" /><br />
-  <small><span style="margin-left: 10px;">$phrases[editRoomAllowedUsersCurrent]<span id="allowedUsersList"></span></span></small><br /><br />
-
-  <label for="allowedGroups">$phrases[editRoomAllowedGroupsLabel]</label> <input type="text" name="allowedGroupsBridge" id="allowedGroupsBridge" /><input type="button" value="Add" onclick="autoEntry.addEntry(''allowedGroups'');" /><input type="hidden" name="allowedGroups" id="allowedGroups" /><br />
-  <small><span style="margin-left: 10px;">$phrases[editRoomAllowedGroupsCurrent]<span id="allowedGroupsList"></span></span></small><br /><br />
-
-  <label for="moderators">$phrases[editRoomModeratorsLabel]</label> <input type="text" name="moderatorsBridge" id="moderatorsBridge" /><input type="button" value="Add" onclick="autoEntry.addEntry(''moderators'');" /><input type="hidden" name="moderators" id="moderators" /><br />
-  <small><span style="margin-left: 10px;">$phrases[editRoomModeratorsCurrent]<span id="moderatorsList"></span></span></small><br /><br />
-
-  <button type="submit">{{if="$_GET[''action''] == ''create''"}{$phrases[createRoomSubmit]}{$phrases[editRoomSubmit]}}</button><button type="reset">$phrases[editRoomReset]</button></div>
-</form>'),
-(18, 'editRoomSuccess', 'roomId', 'Your group was successfully edited.<br /><br />
-
-<button onclick="window.location=''index.php?room=$roomId">Go To It</button>');
-
--- DIVIDE
-
-INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
 (23, 'userSettingsForm', 'enableDF', '<link rel="stylesheet" media="screen" type="text/css" href="client/colorpicker/css/colorpicker.css" />
 <script type="text/javascript" src="client/colorpicker/js/colorpicker.js"></script>
 
