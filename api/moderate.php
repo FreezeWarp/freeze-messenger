@@ -145,10 +145,10 @@ switch ($action) {
 
   if ($userName) {
     $safename = dbEscape($_POST['userName']); // Escape the userName for MySQL.
-    $user2 = dbRows("SELECT * FROM user WHERE userName = '$safename'"); // Get the user information.
+    $user2 = dbRows("SELECT * FROM {$sqlPrefix}users WHERE userName = '$safename'"); // Get the user information.
   }
   elseif ($userId) {
-    $user2 = dbRows("SELECT * FROM user WHERE userId = $userId");
+    $user2 = dbRows("SELECT * FROM {$sqlPrefix}users WHERE userId = $userId");
   }
   else {
     $failCode = 'baduser';
@@ -167,14 +167,14 @@ switch ($action) {
       $xmlData['moderate']['response']['insertId'] = $room['roomId']; // Already exists; return ID
     }
     else {
-      $allowedGroups = ''; // Empty
-      $allowedUsers = "$user[userId],$user2[userId]"; // The two people who are talking!
-      $moderators = ''; // Empty
-      $options = 48; // 32 - No Moderation; 16 - Private
-      $bbcode = 1; // Everything!
-      $name = dbEscape("Private IM ($user[userName] and $user2[userName])");
+      dbInsert(array(
+          'roomName' => "Private IM ($user[userName] and $user2[userName])",
+          'allowedUsers' => "$user[userId],$user2[userId]",
+          'options' => 48,
+          'bbcode' => 1,
+        ),"{$sqlPrefix}rooms"
+      );
 
-      dbQuery("INSERT INTO {$sqlPrefix}rooms (name,allowedGroups,allowedUsers,moderators,owner,options,bbcode) VALUES ('$name','$allowedGroups','$allowedUsers','$moderators',$user[userId],$options,$bbcode)");
       $insertId = mysql_insert_id();
 
       $xmlData['moderate']['response']['insertId'] = $insertId;
