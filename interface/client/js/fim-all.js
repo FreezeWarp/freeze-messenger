@@ -59,16 +59,6 @@ if (typeof console != 'object' || typeof console.log != 'function') {
   };
 }
 
-/*$.ajax($.extend({}, settings, { // jQuery Memory Link Confirmed in IE8 (http://bugs.jquery.com/ticket/6242), Chrome (self-testing)
-
-complete: function (xhr, status) {
-
-  alert(1);
-xhr.onreadystatechange = null; xhr.abort = null; xhr = null;
-
-}
-
-}));*/
 
 dia = {
   error : function(message) {
@@ -571,6 +561,8 @@ function populate(options) {
      if (options.callback) {
        options.callback();
      }
+
+     return true;
   });
 }
 
@@ -813,7 +805,7 @@ var standard = {
       error: function() {
         dia.error('Archive failed to obtain results from server.');
       },
-    })).then(function() {
+    })).done(function() {
       $('#archiveMessageList').html(data);
       $('#archiveNext').attr('onclick','standard.archive({idMin : ' + lastMessage + ', roomId: ' + options.roomId + '});');
       $('#archivePrev').attr('onclick','standard.archive({idMax : ' + firstMessage + ', roomId: ' + options.roomId + '});');
@@ -821,6 +813,8 @@ var standard = {
       if (options.callback) {
         options.callback(data);
       }
+
+      return true;
     });
   },
 
