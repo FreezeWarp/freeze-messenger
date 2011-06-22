@@ -85,18 +85,26 @@ dia = {
     });
   },
 
-  confirm : function(text) {
-    $('<div id="dialog-confirm"><span class="ui-icon ui-icon-alert" style="float: left; margin: 0px 7px 20px 0px;"></span>' + text + '</div>').dialog({
+  confirm : function(options) {
+    $('<div id="dialog-confirm"><span class="ui-icon ui-icon-alert" style="float: left; margin: 0px 7px 20px 0px;"></span>' + options.text + '</div>').dialog({
       resizable: false,
       height: 240,
       modal: true,
       hide: "puff",
       buttons: {
         Confirm: function() {
+          if (options.true) {
+            options.true();
+          }
+
           $(this).dialog("close");
           return true;
         },
         Cancel: function() {
+          if (options.false) {
+            options.false();
+          }
+
           $(this).dialog("close");
           return false;
         }
@@ -266,10 +274,6 @@ if ($.cookie('fim3_sessionHash')) {
   userId = $.cookie('fim3_userId');
 }
 
-if ($.cookie('fim3_defaultRoomId')) {
-  roomId = $.cookie('fim3_defaultRoomId');
-}
-
 
 
 /* Get the absolute API path.
@@ -305,24 +309,32 @@ $.ajax({
 
 /* URL-Defined Actions
  * TODO */
-var urlHash = window.location.hash;
-var urlHashComponents = urlHash.split('#');
-for (var i = 0; i < urlHashComponents.length; i++) {
-  if (!urlHashComponents[i]) {
-    continue;
-  }
+function hashParse() {
+  var urlHash = window.location.hash;
+  var urlHashComponents = urlHash.split('#');
+  for (var i = 0; i < urlHashComponents.length; i++) {
+    if (!urlHashComponents[i]) {
+      continue;
+    }
 
-  var componentPieces = urlHashComponents[i].split('=');
-  switch (componentPieces[0]) {
-    case 'room':
-    roomId = componentPieces[1];
-    break;
+    var componentPieces = urlHashComponents[i].split('=');
+    switch (componentPieces[0]) {
+      case 'room':
+      roomId = componentPieces[1];
+      standard.changeRoom(roomId);
+      break;
 
-    case 'message':
+      case 'message':
 
-    break;
+      break;
+    }
   }
 }
+
+if ("onhashchange" in window) {
+  window.onhashchange = hashParse;
+}
+hashParse();
 
 
 
@@ -484,7 +496,7 @@ function populate(options) {
           var isModerator = ($(this).find('canModerate').text().trim() === 'true' ? true : false);
           var isOwner = (parseInt($(this).find('owner').text().trim()) == userId ? true : false);
 
-          var ulText = '<li><a href="index.php?room=' + roomId + '">' + roomName + '</a></li>';
+          var ulText = '<li><a href="#room=' + roomId + '">' + roomName + '</a></li>';
 
           if (isFav) {
             roomUlFavHtml += ulText;
@@ -1295,6 +1307,28 @@ var standard = {
   },
 
 
+  deleteRoom : function(roomLocalId) {
+    $.post(directory + 'api/moderate.php','action=deleteRoom&messageId=' + messageId + '&sessionHash=' + sessionHash,function(xml) {
+      var errorcode = $(xml).find('errorcode').text().trim();
+      var errortext = $(xml).find('errortext').text().trim();
+
+      switch (errorcode) {
+        case '':
+        console.log('Message ' + messageId + ' deleted.');
+        break;
+
+        case 'nopermission':
+        dia.error('You do not have permision to administer this room.');
+        break;
+
+        case 'badroom':
+        dia.error('The specified room does not exist.');
+        break;
+      }
+    }); // Send the form data via AJAX.
+  },
+
+
   kick : function(userId, roomId, length) {
     $.post(directory + 'api/moderate.php','action=kickUser&userId=' + userId + '&roomId=' + roomId + '&length=' + length + '&sessionHash=' + sessionHash,function(xml) {
       var errorcode = $(xml).find('errorcode').text().trim();
@@ -1352,7 +1386,32 @@ var standard = {
         break;
       }
     }); // Send the form data via AJAX.
-  }
+  },
+
+
+  deleteMessage : function(messageId) {
+    $.post(directory + 'api/moderate.php','action=deleteMessage&messageId=' + messageId + '&sessionHash=' + sessionHash,function(xml) {
+      var errorcode = $(xml).find('errorcode').text().trim();
+      var errortext = $(xml).find('errortext').text().trim();
+
+      switch (errorcode) {
+        case '':
+        console.log('Message ' + messageId + ' deleted.');
+        break;
+
+        case 'nopermission':
+        dia.error('You do not have permision to moderate this room.');
+        break;
+
+        case 'badmessage':
+        dia.error('The message does not exist.');
+        break;
+      }
+    }); // Send the form data via AJAX.
+  },
+
+
+
 };
 
 /*********************************************************
@@ -1461,7 +1520,7 @@ popup = {
         });
 
         $('button.deleteRoomMulti').button({icons : {primary : 'ui-icon-trash'}}).click(function() {
-          standard.deleteRoom($(this).attr('data-roomId'))
+          standard.deleteRoom($(this).attr('data-roomId'));
         });
       }
     });
@@ -2069,7 +2128,7 @@ popup = {
             $(this).find('room').each(function() {
               var roomId = parseInt($(this).find('roomId').text().trim());
               var roomName = unxml($(this).find('roomName').text().trim());
-              roomData.push('<a href="/index.php?room=' + roomId + '">' + roomName + '</a>');
+              roomData.push('<a href="#room=' + roomId + '">' + roomName + '</a>');
             });
             roomData = roomData.join(', ');
 
@@ -2507,19 +2566,14 @@ function contextMenuParse() {
 
     switch(action) {
       case 'delete':
-      if (confirm('Are you sure you want to delete this message?')) {
-        $.ajax({
-          url: 'ajax/fim-modAction.php?action=deletepost&postid=' + postid,
-          type: 'GET',
-          cache: false,
-          success: function() {
-            $(el).parent().fadeOut();
-          },
-          error: function() {
-            dia.error('The message could not be deleted.');
-          }
-        });
-      }
+      dia.confirm({
+        text : 'Are you sure you want to delete this message?',
+        true : function() {
+          standard.deleteMessage(postid);
+
+          $(el).parent().fadeOut();
+        }
+      });
       break;
 
       case 'link':
@@ -2852,9 +2906,8 @@ function windowResize () {
      * Right Area Width: 75%
      * "Enter Message" Table Padding: 10px
      *** TD Padding: 2px (on Standard Styling)
-     * Message Input Container Padding : 3px (all padding-left)
-     * Message Input Text Area Padding: 6px */
-    $('#messageInput').css('width',(((windowWidth - 10) * .75) - 10 - 2)); // Set the messageInput box to fill width.
+     * Message Input Text Area Padding: 3px */
+      $('#messageInput').css('width',(((windowWidth - 10) * .75) - 10 - 2)); // Set the messageInput box to fill width.
 
 
     $('body').css('height',window.innerHeight); // Set the body height to equal that of the window; this fixes many gradient issues in theming.

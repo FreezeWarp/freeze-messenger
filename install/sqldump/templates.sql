@@ -193,11 +193,13 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
 (17, 'editRoomForm', 'censorLists', '<ul class="tabList">
   <li><a href="#editRoom1">General</a></li>
   <li><a href="#editRoom2">Permissions</a></li>
-</ul><form action="#" method="post" id="editRoomForm"><div id="editRoom1">
+</ul>
+
+<form action="#" method="post" id="editRoomForm"><div id="editRoom1">
   <label for="name">$phrases[editRoomNameLabel]</label>: <input type="text" name="name" id="name" /><br />
   <small><span style="margin-left: 10px;">$phrases[editRoomNameBlurb]</span></small><br /><br />
 
-  <label for="mature"  d="bbcode">$phrases[editRoomMatureLabel]</label>: <input type="checkbox" name="mature" id="mature" /><br />
+  <label for="mature">$phrases[editRoomMatureLabel]</label>: <input type="checkbox" name="mature" id="mature" /><br />
   <small><span style="margin-left: 10px;">$phrases[editRoomMatureBlurb]</strong></small><br /><br />
 
   <label for="bbcode">$phrases[editRoomBBCode]</label>: <select name="bbcode" id="bbcode">
@@ -340,9 +342,7 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
     <div id="textentryBoxMessage">
       <form id="sendForm" action="#" method="post">{{container}{
         <div class="leftPart">
-            {{if="$room[''bbcode''] <= 13"}{<button type="button" class="standard" id="icon_url"></button>}}
-            {{if="$room[''bbcode''] <= 5"}{<button type="button" class="standard" id="icon_image"></button>}}
-            {{if="$room[''bbcode''] <= 2"}{<button type="button" class="standard" id="icon_video"></button>}}
+            <button type="button" class="standard" id="icon_url"></button>
         </div>
         <div class="rightPart">
           <button type="submit" class="standard" id="icon_submit"></button>
@@ -486,6 +486,35 @@ Keep in mind all content is heavily encrytped for privacy. Private conversations
 </ul>
 
 <div id="insertDocLink">
+  <form action="#" method="post" target="upload_target3" id="linkForm" onsubmit="$(''#textentryBoxUrl'').dialog(''close'');">
+    <fieldset>
+      <legend>Normal Link</legend>
+      <label for="linkUrl">URL: </label>
+      <input name="linkUrl" id="linkUrl" type="url" /><br /><br />
+      {{if="$parseFlags"}{
+      <label for="linkText">Text: </label>
+      <input name="linkText" id="linkText" type="text" /><br /><br />}}
+    </fieldset><br />
+
+    <fieldset>
+      <legend>eMail Link</legend>
+      <label for="linkEmail">eMail: </label>
+      <input name="linkEmail" id="linkEmail" type="email" /></span><br />
+    </fieldset><br />
+
+    <fieldset>
+      <legend>Preview & Submit</legend>
+
+      <button onclick="$(''#textentryBoxUrl'').dialog(''close'');" type="button">Cancel</button>
+      <button type="submit" id="linkSubmitButton">Link</button>
+    </fieldset>
+
+    <iframe id="upload_target3" name="upload_target3" class="nodisplay"></iframe>
+    <input type="hidden" name="method" value="url" />
+  </form>
+</div>
+
+<div id="insertDocImage">
   <form method="post" enctype="multipart/form-data" id="uploadFileForm">
     <fieldset>
       <legend>Upload from Computer</legend>
@@ -515,35 +544,6 @@ Keep in mind all content is heavily encrytped for privacy. Private conversations
       <legend>Preview & Submit</legend>
       <div id="preview"></div><br /><br />
     </fieldset>
-  </form>
-</div>
-
-<div id="insertDocImage">
-  <form action="#" method="post" target="upload_target3" id="linkForm" onsubmit="$(''#textentryBoxUrl'').dialog(''close'');">
-    <fieldset>
-      <legend>Normal Link</legend>
-      <label for="linkUrl">URL: </label>
-      <input name="linkUrl" id="linkUrl" type="url" /><br /><br />
-      {{if="$parseFlags"}{
-      <label for="linkText">Text: </label>
-      <input name="linkText" id="linkText" type="text" /><br /><br />}}
-    </fieldset><br />
-
-    <fieldset>
-      <legend>eMail Link</legend>
-      <label for="linkEmail">eMail: </label>
-      <input name="linkEmail" id="linkEmail" type="email" /></span><br />
-    </fieldset><br />
-
-    <fieldset>
-      <legend>Preview & Submit</legend>
-
-      <button onclick="$(''#textentryBoxUrl'').dialog(''close'');" type="button">Cancel</button>
-      <button type="submit" id="linkSubmitButton">Link</button>
-    </fieldset>
-
-    <iframe id="upload_target3" name="upload_target3" class="nodisplay"></iframe>
-    <input type="hidden" name="method" value="url" />
   </form>
 </div>
 

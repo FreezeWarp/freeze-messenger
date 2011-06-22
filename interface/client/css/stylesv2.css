@@ -21,7 +21,7 @@ body {
   font-family: Ubuntu, Calibria, Arial;
 }
 
-@font-face {
+/*@font-face {
   font-family: 'Ubuntu';
   font-style: normal;
   font-weight: bold;
@@ -32,7 +32,7 @@ body {
   font-style: normal;
   font-weight: normal;
   src: local('Ubuntu'), url('http://themes.googleusercontent.com/font?kit=_xyN3apAT_yRRDeqB3sPRg') format('woff');
-}
+}*/
 
 
 

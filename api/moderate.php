@@ -381,12 +381,21 @@ switch ($action) {
   break;
 
 
-  case 'deletePost':
+  case 'deleteMessage':
   $messageId = (int) $_POST['messageId'];
   $messageData = dbRows("SELECT * FROM {$sqlPrefix}messages WHERE messageId = $messageId");
   $roomData = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $messageData[roomId]");
 
   if (fim_hasPermission($roomData,$user,'moderate',true)) {
+    dbUpdate(array(
+      'deleted' => 1
+      ),
+      "{$sqlPrefix}messages",
+      array(
+        "messageId" => $messageId
+      )
+    );
+
     $xmlData['moderate']['response']['success'] = true;
   }
   else {
@@ -396,12 +405,21 @@ switch ($action) {
   break;
 
 
-  case 'undeletePost':
+  case 'undeleteMessage':
   $messageId = (int) $_POST['messageId'];
   $messageData = dbRows("SELECT * FROM {$sqlPrefix}messages WHERE messageId = $messageId");
   $roomData = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $messageData[roomId]");
 
   if (fim_hasPermission($roomData,$user,'moderate')) {
+    dbUpdate(array(
+      'deleted' => 0
+      ),
+      "{$sqlPrefix}messages",
+      array(
+        "messageId" => $messageId
+      )
+    );
+
     $xmlData['moderate']['response']['success'] = true;
   }
   else {

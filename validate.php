@@ -97,13 +97,6 @@ elseif ((int) $anonymousUser >= 1 && isset($_POST['apiLogin'])) { // Unregistere
   $api = true;
 }
 
-else { // No login data exists.
-  $userName = false;
-  $password = false;
-  $userId = false;
-  $sessionHash = false;
-}
-
 
 ($hook = hook('validate_retrieval') ? eval($hook) : '');
 
