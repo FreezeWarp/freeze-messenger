@@ -80,8 +80,8 @@ $xmlData = array(
       'order' => (int) $order,
       'showDeleted' => (bool) $showDeleted,
     ),
-    'errorcode' => $failCode,
-    'errormessage' => $failMessage,
+    'errStr' => $errStr,
+    'errDesc' => $errDesc,
     'rooms' => array(),
   ),
 );
@@ -138,8 +138,8 @@ if ($rooms) {
 }
 
 
-$xmlData['getRooms']['errorcode'] = ($failCode);
-$xmlData['getRooms']['errortext'] = ($failMessage);
+$xmlData['getRooms']['errStr'] = ($errStr);
+$xmlData['getRooms']['errDesc'] = ($errDesc);
 
 
 

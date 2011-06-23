@@ -39,8 +39,8 @@ $xmlData = array(
       'onlineThreshold' => (int) $onlineThreshold,
       'time' => (int) $time,
     ),
-    'errorcode' => ($failCode),
-    'errormessage' => ($failMessage),
+    'errStr' => ($errStr),
+    'errDesc' => ($errDesc),
     'rooms' => array(),
   ),
 );
@@ -48,12 +48,12 @@ $xmlData = array(
 ($hook = hook('getActiveUsers_start') ? eval($hook) : '');
 
 if (!$rooms) {
-  $failCode = 'badroomsrequest';
-  $failMessage = 'The room string was not supplied or evaluated to false.';
+  $errStr = 'badroomsrequest';
+  $errDesc = 'The room string was not supplied or evaluated to false.';
 }
 if (!$roomsArray) {
-  $failCode = 'badroomsrequest';
-  $failMessage = 'The room string was not formatted properly in Comma-Seperated notation.';
+  $errStr = 'badroomsrequest';
+  $errDesc = 'The room string was not formatted properly in Comma-Seperated notation.';
 }
 else {
   foreach ($roomsArray AS $roomId) {
@@ -119,8 +119,8 @@ ORDER BY u.userName
 }
 
 
-$xmlData['getActiveUsers']['errorcode'] = ($failCode);
-$xmlData['getActiveUsers']['errortext'] = ($failMessage);
+$xmlData['getActiveUsers']['errStr'] = ($errStr);
+$xmlData['getActiveUsers']['errDesc'] = ($errDesc);
 
 
 ($hook = hook('getActiveUsers_end') ? eval($hook) : '');

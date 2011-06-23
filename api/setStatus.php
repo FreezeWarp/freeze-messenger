@@ -30,12 +30,12 @@ $room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
 
 
 if (!$room) { // Bad room.
-  $failCode = 'badroom';
-  $failMessage = 'That room could not be found.';
+  $errStr = 'badroom';
+  $errDesc = 'That room could not be found.';
 }
 elseif (!fim_hasPermission($room,$user,'view',true)) { // Not allowed to post.
-  $failCode = 'noperm';
-  $failMessage = 'You are not allowed to post in this room.';
+  $errStr = 'noperm';
+  $errDesc = 'You are not allowed to post in this room.';
 }
 else {
   ($hook = hook('setStatus_inner_start') ? eval($hook) : '');
@@ -59,13 +59,13 @@ else {
       ),array());
     }
     else {
-      $failCode = 'badstatusvalue';
-      $failMessage = 'That status value is not recognized. Only "available", "away", "busy", "invisible", "offline" are supported.';
+      $errStr = 'badstatusvalue';
+      $errDesc = 'That status value is not recognized. Only "available", "away", "busy", "invisible", "offline" are supported.';
     }
   }
   else {
-    $failCode = 'badstatustype';
-    $failMessage = 'That status type is not recognized. Only "status" and "typing" are supported.';
+    $errStr = 'badstatustype';
+    $errDesc = 'That status type is not recognized. Only "status" and "typing" are supported.';
   }
 
   ($hook = hook('setStatus_inner_end') ? eval($hook) : '');
@@ -82,8 +82,8 @@ $xmlData = array(
       'roomId' => (int) $_POST['roomId'],
       'userId' => (int) $_POST['userId'],
     ),
-    'errorcode' => ($failCode),
-    'errortext' => ($failMessage),
+    'errStr' => ($errStr),
+    'errDesc' => ($errDesc),
   ),
 );
 

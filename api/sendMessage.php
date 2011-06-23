@@ -63,32 +63,32 @@ if ($words) {
 
 if ($continue) {
   if (!$room) { // Bad room.
-    $failCode = 'badroom';
-    $failMessage = 'That room could not be found.';
+    $errStr = 'badroom';
+    $errDesc = 'That room could not be found.';
   }
   elseif (strlen($message) == 0 || strlen($message) > 1000) { // Too short/long.
-    $failCode = 'badmessage';
-    $failMessage = 'The message you entered is either too long or too short.';
+    $errStr = 'badmessage';
+    $errDesc = 'The message you entered is either too long or too short.';
   }
   elseif (preg_match('/^(\ |\n|\r)*$/',$message)) { // All spaces.
-    $failCode = 'spacemessage';
-    $failMessage = 'In some countries, you could be arrested for posting only spaces. Now aren\'t you glad we stopped you?';
+    $errStr = 'spacemessage';
+    $errDesc = 'In some countries, you could be arrested for posting only spaces. Now aren\'t you glad we stopped you?';
   }
   elseif (!fim_hasPermission($room,$user,'post',true)) { // Not allowed to post.
-    $failCode = 'noperm';
-    $failMessage = 'You are not allowed to post in this room.';
+    $errStr = 'noperm';
+    $errDesc = 'You are not allowed to post in this room.';
   }
   elseif ($blockedWordSeverity == 'block') {
-    $failCode = 'blockcensor';
-    $failMessage = 'The word ' . $blockedWordText . ' is not allowed: ' . $blockedWordReason;
+    $errStr = 'blockcensor';
+    $errDesc = 'The word ' . $blockedWordText . ' is not allowed: ' . $blockedWordReason;
 
     $blockWordApi['severity'] = 'block';
     $blockWordApi['word'] = $blockedWordText;
     $blockWordApi['reason'] = $blockedWordReason;
   }
   elseif ($blockedWordSeverity == 'confirm') {
-    $failCode = 'confirmcensor';
-    $failMessage = 'Warning: The word ' . $blockedWordtext . ' may not be allowed: ' . $blockedWordReason;
+    $errStr = 'confirmcensor';
+    $errDesc = 'Warning: The word ' . $blockedWordtext . ' may not be allowed: ' . $blockedWordReason;
 
     $blockWordApi['severity'] = 'confirm';
     $blockWordApi['word'] = $blockedWordText;
@@ -126,8 +126,8 @@ $xmlData = array(
       'roomId' => (int) $_POST['roomId'],
       'message' => ($_POST['message']),
     ),
-    'errorcode' => ($failCode),
-    'errortext' => ($failMessage),
+    'errStr' => ($errStr),
+    'errDesc' => ($errDesc),
     'censor' => array(
       'word' => ($blockWordApi['word']),
       'severity' => ($blockWordApi['severity']),

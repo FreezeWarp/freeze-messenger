@@ -35,8 +35,8 @@ $xmlData = array(
       'userName' => ($user['userName']),
     ),
     'sentData' => array(),
-    'errorcode' => $failCode,
-    'errortext' => $failMessage,
+    'errStr' => $errStr,
+    'errDesc' => $errDesc,
     'upload' => array(),
   ),
 );
@@ -45,20 +45,20 @@ $xmlData = array(
 switch ($uploadMethod) {
   case 'file':
   if (!in_array($_FILES['fileUpload']['type'],$validTypes)) {
-    $failCode = 'badFileType';
-    $failMessage = $phrases['uploadErrorBadType'];
+    $errStr = 'badFileType';
+    $errDesc = $phrases['uploadErrorBadType'];
   }
   elseif (!in_array($ext,$validExts) && $_FILES['fileUpload']['type'] == 'application/octet-stream') {
-    $failCode = 'badFileType';
-    $failMessage = $phrases['uploadErrorBadType'];
+    $errStr = 'badFileType';
+    $errDesc = $phrases['uploadErrorBadType'];
   }
   elseif ($_FILES['fileUpload']['size'] > 4 * 1000 * 1000) {
-    $failCode = 'badFileSize';
-    $failMessage = $phrases['uploadErrorSize'];
+    $errStr = 'badFileSize';
+    $errDesc = $phrases['uploadErrorSize'];
   }
   elseif ($_FILES['fileUpload']['error'] > 0) {
-    $failCode = 'badFileUnknown';
-    $failMessage = $phrases['uploadErrorOther'] . $_FILES['fileUpload']['error'];
+    $errStr = 'badFileUnknown';
+    $errDesc = $phrases['uploadErrorOther'] . $_FILES['fileUpload']['error'];
   }
   else {
     $contents = file_get_contents($_FILES['fileUpload']['tmp_name']);
@@ -86,8 +86,8 @@ switch ($uploadMethod) {
     break;
 
     default:
-    $failCode = 'badRawEncoding';
-    $failMessage = 'The specified file content encoding was not recognized.';
+    $errStr = 'badRawEncoding';
+    $errDesc = 'The specified file content encoding was not recognized.';
 
     $continue = false;
     break;
@@ -95,8 +95,8 @@ switch ($uploadMethod) {
 
   if ($md5hash) {
     if (md5($rawData) != $md5hash) {
-      $failCode = 'badRawHash';
-      $failMessage = 'The included MD5 hash did not match the file content.';
+      $errStr = 'badRawHash';
+      $errDesc = 'The included MD5 hash did not match the file content.';
 
       $continue = false;
     }
@@ -104,8 +104,8 @@ switch ($uploadMethod) {
 
   if ($size) {
     if (strlen($rawData) != $size) {
-      $failCode = 'badRawSize';
-      $failMessage = 'The specified content length did not match the file content.';
+      $errStr = 'badRawSize';
+      $errDesc = 'The specified content length did not match the file content.';
 
       $continue = false;
     }
@@ -129,7 +129,7 @@ if ($continue) {
   }
 
   if (!$rawData) {
-    $failMessage = $phrases['uploadErrorFileContents'];
+    $errDesc = $phrases['uploadErrorFileContents'];
   }
   else {
     $prefile = dbRows("SELECT v.versionId, v.fileId, v.md5hash FROM {$sqlPrefix}fileVersions AS v, {$sqlPrefix}files AS f WHERE v.md5hash = '$md5hash' AND v.fileId = f.fileId AND f.userId = $user[userId]");

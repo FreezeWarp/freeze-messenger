@@ -25,8 +25,8 @@ $xmlData = array(
       'userName' => ($user['userName']),
     ),
     'sentData' => array(),
-    'errorcode' => ($failCode),
-    'errormessage' => ($failMessage),
+    'errStr' => ($errStr),
+    'errDesc' => ($errDesc),
     'fonts' => array(),
   ),
 );
@@ -63,8 +63,8 @@ if ($fonts) {
 }
 
 
-$xmlData['getFonts']['errorcode'] = ($failCode);
-$xmlData['getFonts']['errortext'] = ($failMessage);
+$xmlData['getFonts']['errStr'] = ($errStr);
+$xmlData['getFonts']['errDesc'] = ($errDesc);
 
 
 

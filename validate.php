@@ -599,34 +599,34 @@ if ($api) {
 
   switch (LOGIN_FLAG) { // Generate a message based no the LOGIN_FLAG constant (...this should probably be a variable since it changes, but meh - it seems more logical as such)
     case 'PASSWORD_ENCRYPT':
-    $failMessage = 'The password encryption used was not recognized and could not be decoded.';
+    $errDesc = 'The password encryption used was not recognized and could not be decoded.';
     break;
 
     case 'BAD_USERNAME':
-    $failMessage = 'The user was not recognized.';
+    $errDesc = 'The user was not recognized.';
     break;
 
     case 'BAD_PASSWORD':
-    $failMessage = 'The password was not correct.';
+    $errDesc = 'The password was not correct.';
     break;
 
     case 'API_VERSION_STRING':
-    $failMessage = 'The API version string specified is not recognized.';
+    $errDesc = 'The API version string specified is not recognized.';
     break;
 
     case 'DEPRECATED_VERSION':
-    $failMessage = 'The API version specified is deprecated and may no longer be used.';
+    $errDesc = 'The API version specified is deprecated and may no longer be used.';
     break;
 
     case 'INVALID_SESSION':
-    $failMessage = 'The specified session is no longer valid.';
+    $errDesc = 'The specified session is no longer valid.';
     break;
   }
 
   if (!$valid && !defined('LOGIN_FLAG')) { // Generic login flag
     define('LOGIN_FLAG',INVALID_LOGIN);
 
-    $failMessage = 'The login was incorrect.';
+    $errDesc = 'The login was incorrect.';
   }
 
 
@@ -642,7 +642,7 @@ if ($api) {
       'valid' => (bool) $valid,
 
       'loginFlag' => (defined('LOGIN_FLAG') ? LOGIN_FLAG : ''),
-      'loginText' => $failMessage,
+      'loginText' => $errDesc,
 
       'sessionHash' => $sessionHash,
       'anonId' => ($anonymous ? $anonId : 0),

@@ -28,8 +28,8 @@ $xmlData = array(
       'userName' => ($user['userName']),
     ),
     'sentData' => array(),
-    'errorcode' => ($failCode),
-    'errortext' => ($failMessage),
+    'errStr' => ($errStr),
+    'errDesc' => ($errDesc),
     'serverStatus' => array(
       'fim_version' => FIM_VERSION,
       'installedPlugins' => array(),

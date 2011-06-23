@@ -85,8 +85,8 @@ $xmlData = array(
       'oldestDate' => (int) $oldestDate,
       'messageLimit' => (int) $messageLimit,
     ),
-    'errorcode' => $failCode,
-    'errortext' => $failMessage,
+    'errStr' => $errStr,
+    'errDesc' => $errDesc,
     'messages' => array(),
     'watchRooms' => array(),
     'activeUsers' => array(),
@@ -126,12 +126,12 @@ if (!$showDeleted && $archive) {
 
 ///* Error Checking *///
 if (!$rooms) {
-  $failCode = 'badroomsrequest';
-  $failMessage = 'The room string was not supplied or evaluated to false.';
+  $errStr = 'badroomsrequest';
+  $errDesc = 'The room string was not supplied or evaluated to false.';
 }
 if (!$roomsArray) {
-  $failCode = 'badroomsrequest';
-  $failMessage = 'The room string was not formatted properly in Comma-Seperated notation.';
+  $errStr = 'badroomsrequest';
+  $errDesc = 'The room string was not formatted properly in Comma-Seperated notation.';
 }
 else {
   foreach ($roomsArray AS $room2) {
@@ -145,13 +145,13 @@ else {
 
         switch($permission[1]) {
           case 'kick':
-          $failCode = 'kicked';
-          $failMessage = 'You have been kicked untl ' . fim_date($permission[3]) . '.';
+          $errStr = 'kicked';
+          $errDesc = 'You have been kicked untl ' . fim_date($permission[3]) . '.';
           break;
 
           default:
-          $failCode = 'noperm';
-          $failMessage = 'You do not have permission to view the room you are trying to view.';
+          $errStr = 'noperm';
+          $errDesc = 'You do not have permission to view the room you are trying to view.';
           break;
         }
       }
@@ -184,8 +184,8 @@ else {
           case 'api': $messageFields = 'm.apiText AS apiText,'; break;
           case 'html': $messageFields = 'm.htmlText AS htmlText,'; break;
           default:
-            $failCode = 'badFields';
-            $failMessage = 'The given message fields are invalid - recognized values are "api", "html", and "both"';
+            $errStr = 'badFields';
+            $errDesc = 'The given message fields are invalid - recognized values are "api", "html", and "both"';
           break;
         }
 
@@ -398,8 +398,8 @@ WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.roomId IN ($user[watchRo
 
 
 ///* Output *///
-$xmlData['getMessages']['errorcode'] = ($failCode);
-$xmlData['getMessages']['errortext'] = ($failMessage);
+$xmlData['getMessages']['errStr'] = ($errStr);
+$xmlData['getMessages']['errDesc'] = ($errDesc);
 
 
 ($hook = hook('getMessages_end') ? eval($hook) : '');

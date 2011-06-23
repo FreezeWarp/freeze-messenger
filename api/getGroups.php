@@ -25,8 +25,8 @@ $xmlData = array(
       'userName' => ($user['userName']),
     ),
     'sentData' => array(),
-    'errorcode' => ($failCode),
-    'errormessage' => ($failMessage),
+    'errStr' => ($errStr),
+    'errDesc' => ($errDesc),
     'groups' => array(),
   ),
 );
@@ -74,8 +74,8 @@ if ($groups) {
 
 
 
-$xmlData['getGroups']['errorcode'] = ($failCode);
-$xmlData['getGroups']['errortext'] = ($failMessage);
+$xmlData['getGroups']['errStr'] = ($errStr);
+$xmlData['getGroups']['errDesc'] = ($errDesc);
 
 
 ($hook = hook('getGroups_end') ? eval($hook) : '');

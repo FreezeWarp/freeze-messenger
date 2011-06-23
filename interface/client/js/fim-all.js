@@ -1093,13 +1093,13 @@ var standard = {
         dataType: "xml",
         cache: false,
         success: function(xml) {
-          var errorcode = $(xml).find('errorcode').text().trim();
-          var errormessage = $(xml).find('errortext').text().trim();
+          var errStr = $(xml).find('errStr').text().trim();
+          var errDesc = $(xml).find('errDesc').text().trim();
 
-          if (errorcode) {
+          if (errStr) {
             var sentUserId = $(xml).find('activeUser > userId');
 
-            if (errorcode == 'noperm') {
+            if (errStr == 'noperm') {
               roomId = false;
 
               if (sentUserId) {
@@ -1115,7 +1115,7 @@ var standard = {
             }
             else {
               roomId = false;
-              dia.error(errormessage);
+              dia.error(errDesc);
             }
           }
           else {
@@ -1325,9 +1325,9 @@ var standard = {
         success: function(xml) {
           console.log('Message sent.');
 
-          var errorcode = $(xml).find('errorcode').text().trim();
-          var errormessage = $(xml).find('errortext').text().trim();
-          switch (errorcode) {
+          var errStr = $(xml).find('errStr').text().trim();
+          var errDesc = $(xml).find('errDesc').text().trim();
+          switch (errStr) {
             case '':
             break;
 
@@ -1339,7 +1339,7 @@ var standard = {
             dia.error("A valid message was not provided.");
             break;
 
-            case 'spacerrormessage':
+            case 'spacerrDesc':
             dia.error("Too... many... spaces!");
             break;
 
@@ -1348,11 +1348,11 @@ var standard = {
             break;
 
             case 'blockcensor':
-            dia.error(errormessage);
+            dia.error(errDesc);
             break;
 
             case 'confirmcensor':
-            dia.error(errormessage + '<br /><br /><button type="button" onclick="$(this).parent().dialog(&apos;close&apos;);">No</button><button type="button" onclick="standard.standard.sendMessage(&apos;' + escape(message) + '&apos;,1); $(this).parent().dialog(&apos;close&apos;);">Yes</button>');
+            dia.error(errDesc + '<br /><br /><button type="button" onclick="$(this).parent().dialog(&apos;close&apos;);">No</button><button type="button" onclick="standard.standard.sendMessage(&apos;' + escape(message) + '&apos;,1); $(this).parent().dialog(&apos;close&apos;);">Yes</button>');
             break;
           }
 
@@ -1405,10 +1405,10 @@ var standard = {
 
   deleteRoom : function(roomLocalId) {
     $.post(directory + 'api/moderate.php','action=deleteRoom&messageId=' + messageId + '&sessionHash=' + sessionHash,function(xml) {
-      var errorcode = $(xml).find('errorcode').text().trim();
-      var errortext = $(xml).find('errortext').text().trim();
+      var errStr = $(xml).find('errStr').text().trim();
+      var errDesc = $(xml).find('errDesc').text().trim();
 
-      switch (errorcode) {
+      switch (errStr) {
         case '':
         console.log('Message ' + messageId + ' deleted.');
         break;
@@ -1434,11 +1434,11 @@ var standard = {
     else {
       $.post(directory + 'api/moderate.php','action=privateRoom&userId=' + userLocalId + '&sessionHash=' + sessionHash,function(xml) {
         var privateRoomId = parseInt($(xml).find('insertId').text().trim());
-        var errorcode = unxml($(xml).find('errorcode').text().trim());
-        var errortext = unxml($(xml).find('errorcode').text().trim());
+        var errStr = unxml($(xml).find('errStr').text().trim());
+        var errDesc = unxml($(xml).find('errStr').text().trim());
 
-        if (errorcode) {
-          switch (errorcode) {
+        if (errStr) {
+          switch (errStr) {
             case 'baduser':
             dia.error('The user specified does not exist.');
             break;
@@ -1470,10 +1470,10 @@ var standard = {
 
   kick : function(userId, roomId, length) {
     $.post(directory + 'api/moderate.php','action=kickUser&userId=' + userId + '&roomId=' + roomId + '&length=' + length + '&sessionHash=' + sessionHash,function(xml) {
-      var errorcode = $(xml).find('errorcode').text().trim();
-      var errortext = $(xml).find('errortext').text().trim();
+      var errStr = $(xml).find('errStr').text().trim();
+      var errDesc = $(xml).find('errDesc').text().trim();
 
-      switch (errorcode) {
+      switch (errStr) {
         case '':
         dia.info('The user has been kicked.','Success');
 
@@ -1506,10 +1506,10 @@ var standard = {
 
   deleteMessage : function(messageId) {
     $.post(directory + 'api/moderate.php','action=deleteMessage&messageId=' + messageId + '&sessionHash=' + sessionHash,function(xml) {
-      var errorcode = $(xml).find('errorcode').text().trim();
-      var errortext = $(xml).find('errortext').text().trim();
+      var errStr = $(xml).find('errStr').text().trim();
+      var errDesc = $(xml).find('errDesc').text().trim();
 
-      switch (errorcode) {
+      switch (errStr) {
         case '':
         console.log('Message ' + messageId + ' deleted.');
         break;
@@ -2136,8 +2136,8 @@ popup = {
           }
           else {
             $.post(directory + 'api/moderate.php','action=editRoom&roomId=' + roomIdLocal + '&name=' + urlEncode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&sessionHash=' + sessionHash,function(xml) {
-              var errorCode = unxml($(xml).find('errorcode').text().trim());
-              var errorMessage = unxml($(xml).find('errortext').text().trim());
+              var errorCode = unxml($(xml).find('errStr').text().trim());
+              var errorMessage = unxml($(xml).find('errDesc').text().trim());
 
               if (errorCode) {
                 dia.error('An error has occured: ' + errorMessage);
@@ -2210,8 +2210,8 @@ popup = {
           }
           else {
             $.post(directory + 'api/moderate.php','action=createRoom&name=' + urlEncode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&sessionHash=' + sessionHash,function(xml) {
-              var errorCode = unxml($(xml).find('errorcode').text().trim());
-              var errorMessage = unxml($(xml).find('errortext').text().trim());
+              var errorCode = unxml($(xml).find('errStr').text().trim());
+              var errorMessage = unxml($(xml).find('errDesc').text().trim());
               var createRoomId = parseInt($(xml).find('insertId').text().trim());
 
               if (errorCode) {

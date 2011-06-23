@@ -34,8 +34,8 @@ $xmlData = array(
       'onlineThreshold' => (int) $onlineThreshold,
       'time' => (int) $time,
     ),
-    'errorcode' => ($failCode),
-    'errormessage' => ($failMessage),
+    'errStr' => ($errStr),
+    'errDesc' => ($errDesc),
     'users' => array(),
   ),
 );
@@ -104,8 +104,8 @@ if ($activeUsers) {
 }
 
 
-$xmlData['getAllActiveUsers']['errorcode'] = ($failCode);
-$xmlData['getAllActiveUsers']['errortext'] = ($failMessage);
+$xmlData['getAllActiveUsers']['errStr'] = ($errStr);
+$xmlData['getAllActiveUsers']['errDesc'] = ($errDesc);
 
 
 ($hook = hook('getAllActiveUsers_end') ? eval($hook) : '');

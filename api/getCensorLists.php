@@ -31,8 +31,8 @@ $xmlData = array(
     'sentData' => array(
       'roomId' => (int) $roomId,
     ),
-    'errorcode' => ($failCode),
-    'errormessage' => ($failMessage),
+    'errStr' => ($errStr),
+    'errDesc' => ($errDesc),
     'lists' => array(),
   ),
 );
@@ -68,8 +68,8 @@ if ($censorLists) {
   }
 }
 
-$xmlData['getCensorLists']['errorcode'] = ($failCode);
-$xmlData['getCensorLists']['errortext'] = ($failMessage);
+$xmlData['getCensorLists']['errStr'] = ($errStr);
+$xmlData['getCensorLists']['errDesc'] = ($errDesc);
 
 
 ($hook = hook('getCensorLists_end') ? eval($hook) : '');

@@ -59,8 +59,8 @@ $xmlData = array(
     'sentData' => array(
       'order' => fim_encodeXML($order),
     ),
-    'errorcode' => ($failCode),
-    'errortext' => ($failMessage),
+    'errStr' => ($errStr),
+    'errDesc' => ($errDesc),
     'users' => array(),
   ),
 );
@@ -149,8 +149,8 @@ if ($users) {
 }
 
 
-$xmlData['getUsers']['errorcode'] = ($failCode);
-$xmlData['getUsers']['errortext'] = ($failMessage);
+$xmlData['getUsers']['errStr'] = ($errStr);
+$xmlData['getUsers']['errDesc'] = ($errDesc);
 
 
 ($hook = hook('getUsers_end') ? eval($hook) : '');

@@ -36,8 +36,8 @@ $xmlData = array(
       'rooms' => $userList,
       'resultLimit' => $resultLimit,
     ),
-    'errorcode' => $failCode,
-    'errortext' => $failMessage,
+    'errStr' => $errStr,
+    'errDesc' => $errDesc,
     'uploads' => array(),
   ),
 );

@@ -68,8 +68,8 @@ $xmlData = array(
       'rooms' => $roomList,
       'users' => $userList,
     ),
-    'errorcode' => fim_encodeXml($failCode),
-    'errormessage' => fim_encodeXml($failMessage),
+    'errStr' => fim_encodeXml($errStr),
+    'errDesc' => fim_encodeXml($errDesc),
     'kicks' => array(),
   ),
 );
@@ -134,8 +134,8 @@ foreach ($kicks AS $kick) {
 }
 
 
-$xmlData['getKicks']['errorcode'] = fim_encodeXml($failCode);
-$xmlData['getKicks']['errortext'] = fim_encodeXml($failMessage);
+$xmlData['getKicks']['errStr'] = fim_encodeXml($errStr);
+$xmlData['getKicks']['errDesc'] = fim_encodeXml($errDesc);
 
 
 ($hook = hook('getKicks_end') ? eval($hook) : '');

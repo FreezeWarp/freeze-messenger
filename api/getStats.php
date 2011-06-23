@@ -38,8 +38,8 @@ $xmlData = array(
        'rooms' => $roomList,
        'resultLimit' => $resultLimit,
     ),
-    'errorcode' => $failCode,
-    'errortext' => $failMessage,
+    'errStr' => $errStr,
+    'errDesc' => $errDesc,
     'roomStats' => array(),
   ),
 );
@@ -123,8 +123,8 @@ if ($rooms) {
 
 
 
-$xmlData['getStats']['errorcode'] = ($failCode);
-$xmlData['getStats']['errortext'] = ($failMessage);
+$xmlData['getStats']['errStr'] = ($errStr);
+$xmlData['getStats']['errDesc'] = ($errDesc);
 
 
 ($hook = hook('getStats_end') ? eval($hook) : '');

@@ -33,8 +33,8 @@ $xmlData = array(
       'roomId' => (int) $_POST['roomId'],
       'userId' => (int) $_POST['userId'],
     ),
-    'errorcode' => fim_encodeXml($failCode),
-    'errortext' => fim_encodeXml($failMessage),
+    'errStr' => fim_encodeXml($errStr),
+    'errDesc' => fim_encodeXml($errDesc),
     'response' => array(),
   ),
 );
@@ -47,15 +47,15 @@ switch ($action) {
   $name = substr($_POST['name'],0,$roomLengthLimit); // Limits to x characters.
 
   if (!$name) {
-    $failCode = 'noname';
-    $failMessage = 'A room name was not supplied.';
+    $errStr = 'noname';
+    $errDesc = 'A room name was not supplied.';
   }
   else {
     $safeName = dbEscape($name);
 
     if (dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomName = '$safeName'")) {
-      $failCode = 'exists';
-      $failMessage = 'The room specified already exists.';
+      $errStr = 'exists';
+      $errDesc = 'The room specified already exists.';
     }
     else {
       $allowedGroups = dbEscape($_POST['allowedGroups']);
@@ -80,8 +80,8 @@ switch ($action) {
         $xmlData['moderate']['response']['insertId'] = $insertId;
       }
       else {
-        $failCode = 'unknown';
-        $failMessage = 'Room created failed for unknown reasons.';
+        $errStr = 'unknown';
+        $errDesc = 'Room created failed for unknown reasons.';
       }
     }
   }
@@ -95,23 +95,23 @@ switch ($action) {
   $room = dbRows("SELECT roomId, roomName, options, allowedUsers, allowedGroups, moderators FROM {$sqlPrefix}rooms WHERE roomId = " . (int) $_POST['roomId']);
 
   if (!$name) {
-    $failCode = 'noName';
-    $failMessage = 'A room name was not supplied.';
+    $errStr = 'noName';
+    $errDesc = 'A room name was not supplied.';
   }
   elseif ($user['userId'] != $room['owner'] && !($user['settings'] & 16)) { // Again, check to make sure the user is the group's owner or an admin.
-    $failCode = 'noperm';
-    $failMessage = 'You do not have permission to edit this room.';
+    $errStr = 'noperm';
+    $errDesc = 'You do not have permission to edit this room.';
   }
   elseif ($room['settings'] & 4) { // Make sure the room hasn't been deleted.
-    $failCode = 'deleted';
-    $failMessage = 'The room has been deleted - it can not be edited.';
+    $errStr = 'deleted';
+    $errDesc = 'The room has been deleted - it can not be edited.';
   }
   else {
     $data = dbRows("SELECT roomId FROM {$sqlPrefix}rooms WHERE roomName = '$name'"); // Get existing data.
 
     if ($data && $data['roomId'] != $room['roomId']) {
-      $failCode = 'exists';
-      $failMessage = 'The room name specified already exists.';
+      $errStr = 'exists';
+      $errDesc = 'The room name specified already exists.';
     }
     else {
       $listsActive = dbRows("SELECT listId, status FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomId = $room[roomId]",'listId');
@@ -195,15 +195,15 @@ switch ($action) {
     $user2 = dbRows("SELECT * FROM {$sqlPrefix}users WHERE userId = $userId");
   }
   else {
-    $failCode = 'baduser';
-    $failMessage = 'That user does not exist.';
+    $errStr = 'baduser';
+    $errDesc = 'That user does not exist.';
   }
 
   if (!$user2) { // No user exists.
   }
   elseif ($user2['userId'] == $user['userId']) { // Don't allow the user to, well, talk to himself.
-    $failCode = 'sameuser';
-    $failMessage = 'The user specified is yourself.';
+    $errStr = 'sameuser';
+    $errDesc = 'The user specified is yourself.';
   }
   else {
     $room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE (allowedUsers = '$user[userId],$user2[userId]' OR allowedUsers = '$user2[userId],$user[userId]') AND options & 16"); // Query a group that would match the criteria for a private room.
@@ -230,8 +230,8 @@ switch ($action) {
   $room = dbRows("SELECT roomId, roomName, options, allowedUsers, allowedGroups, moderators FROM {$sqlPrefix}rooms WHERE roomId = " . (int) $_POST['roomId']);
 
   if ($room['options'] & 4) {
-    $failCode = 'alreadydeleted';
-    $failMessage = 'The room is already deleted.';
+    $errStr = 'alreadydeleted';
+    $errDesc = 'The room is already deleted.';
   }
   else {
     $room['options'] += 4; // options & 4 = deleted
@@ -277,8 +277,8 @@ switch ($action) {
       }
       else {
         $xmlData['moderate']['response']['defaultRoom']['status'] = false;
-        $xmlData['moderate']['response']['defaultRoom']['errorcode'] = 'outofrange1';
-        $xmlData['moderate']['response']['defaultRoom']['errortext'] = 'The first value ("red") was out of range.';
+        $xmlData['moderate']['response']['defaultRoom']['errStr'] = 'outofrange1';
+        $xmlData['moderate']['response']['defaultRoom']['errDesc'] = 'The first value ("red") was out of range.';
       }
     }
 
@@ -312,18 +312,18 @@ switch ($action) {
         if (count($rgb) === 3) { // Too many entries.
           if ($rgb[0] < 0 || $rgb[0] > 255) { // First val out of range.
             $xmlData['moderate']['response'][$value]['status'] = false;
-            $xmlData['moderate']['response'][$value]['errorcode'] = 'outofrange1';
-            $xmlData['moderate']['response'][$value]['errortext'] = 'The first value ("red") was out of range.';
+            $xmlData['moderate']['response'][$value]['errStr'] = 'outofrange1';
+            $xmlData['moderate']['response'][$value]['errDesc'] = 'The first value ("red") was out of range.';
           }
           elseif ($rgb[1] < 0 || $rgb[1] > 255) { // Second val out of range.
             $xmlData['moderate']['response'][$value]['status'] = false;
-            $xmlData['moderate']['response'][$value]['errorcode'] = 'outofrange2';
-            $xmlData['moderate']['response'][$value]['errortext'] = 'The first value ("green") was out of range.';
+            $xmlData['moderate']['response'][$value]['errStr'] = 'outofrange2';
+            $xmlData['moderate']['response'][$value]['errDesc'] = 'The first value ("green") was out of range.';
           }
           elseif ($rgb[2] < 0 || $rgb[2] > 255) { // Third val out of range.
             $xmlData['moderate']['response'][$value]['status'] = false;
-            $xmlData['moderate']['response'][$value]['errorcode'] = 'outofrange3';
-            $xmlData['moderate']['response'][$value]['errortext'] = 'The third value ("blue") was out of range.';
+            $xmlData['moderate']['response'][$value]['errStr'] = 'outofrange3';
+            $xmlData['moderate']['response'][$value]['errDesc'] = 'The third value ("blue") was out of range.';
           }
           else {
             $updateArray[$value] = implode(',',$rgb);
@@ -334,8 +334,8 @@ switch ($action) {
         }
         else {
           $xmlData['moderate']['response'][$value]['status'] = false;
-          $xmlData['moderate']['response'][$value]['errorcode'] = 'badformat';
-          $xmlData['moderate']['response'][$value]['errortext'] = 'The default highlight value was not properly formatted.';
+          $xmlData['moderate']['response'][$value]['errStr'] = 'badformat';
+          $xmlData['moderate']['response'][$value]['errDesc'] = 'The default highlight value was not properly formatted.';
         }
       }
     }
@@ -355,8 +355,8 @@ switch ($action) {
       }
       else {
         $xmlData['moderate']['response']['defaultHighlight']['status'] = false;
-        $xmlData['moderate']['response']['defaultHighlight']['errorcode'] = 'nofont';
-        $xmlData['moderate']['response']['defaultHighlight']['errortext'] = 'The specified font does not exist.';
+        $xmlData['moderate']['response']['defaultHighlight']['errStr'] = 'nofont';
+        $xmlData['moderate']['response']['defaultHighlight']['errDesc'] = 'The specified font does not exist.';
       }
     }
 
@@ -370,8 +370,8 @@ switch ($action) {
 
   }
   else {
-    $failCode = 'usermismatch';
-    $failMessage = 'The specified user is not the currently logged in one.'; // We do this because, unlike other things, it is reasonably possible two people may switch off at the same terminal and not realize the other one is logged in, thus inadvertently changing the wrong user's settings.
+    $errStr = 'usermismatch';
+    $errDesc = 'The specified user is not the currently logged in one.'; // We do this because, unlike other things, it is reasonably possible two people may switch off at the same terminal and not realize the other one is logged in, thus inadvertently changing the wrong user's settings.
   }
 
   break;
@@ -404,8 +404,8 @@ switch ($action) {
     $xmlData['moderate']['response']['success'] = true;
   }
   else {
-    $failCode = 'nopermission';
-    $failMessage = 'You are not allowed to moderate this room.';
+    $errStr = 'nopermission';
+    $errDesc = 'You are not allowed to moderate this room.';
   }
   break;
 
@@ -428,8 +428,8 @@ switch ($action) {
     $xmlData['moderate']['response']['success'] = true;
   }
   else {
-    $failCode = 'nopermission';
-    $failMessage = 'You are not allowed to moderate this room.';
+    $errStr = 'nopermission';
+    $errDesc = 'You are not allowed to moderate this room.';
   }
   break;
 
@@ -444,23 +444,23 @@ switch ($action) {
   $time = (int) $_POST['length'];
 
   if (!$userData['userId']) {
-    $failCode = 'baduser';
-    $failMessage = 'The room specified is not valid.';
+    $errStr = 'baduser';
+    $errDesc = 'The room specified is not valid.';
   }
   elseif (!$roomData['roomId']) {
-    $failCode = 'badroom';
-    $failMessage = 'The room specified is not valid.';
+    $errStr = 'badroom';
+    $errDesc = 'The room specified is not valid.';
   }
   elseif (fim_hasPermission($roomData,$userData,'moderate',true)) { // You can't kick other moderators.
-    $failCode = 'nokickuser';
-    $failMessage = 'The user specified may not be kicked.';
+    $errStr = 'nokickuser';
+    $errDesc = 'The user specified may not be kicked.';
 
     require_once('../functions/parserFunctions.php');
     fim_sendMessage('/me fought the law and the law won.',$user,$roomData);
   }
   elseif (!fim_hasPermission($roomData,$user,'moderate',true)) { // You have to be a mod yourself.
-    $failCode = 'nopermission';
-    $failMessage = 'You are not allowed to moderate this room.';
+    $errStr = 'nopermission';
+    $errDesc = 'You are not allowed to moderate this room.';
   }
   else {
     modLog('kick',"$userData[userId],$roomData[roomId]");
@@ -496,16 +496,16 @@ switch ($action) {
   $roomData = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
 
   if (!$userData['userId']) {
-    $failCode = 'baduser';
-    $failMessage = 'The room specified is not valid.';
+    $errStr = 'baduser';
+    $errDesc = 'The room specified is not valid.';
   }
   elseif (!$roomData['roomId']) {
-    $failCode = 'badroom';
-    $failMessage = 'The room specified is not valid.';
+    $errStr = 'badroom';
+    $errDesc = 'The room specified is not valid.';
   }
   elseif (!fim_hasPermission($roomData,$user,'moderate',true)) {
-    $failCode = 'nopermission';
-    $failMessage = 'You are not allowed to moderate this room.';
+    $errStr = 'nopermission';
+    $errDesc = 'You are not allowed to moderate this room.';
   }
   else {
     modLog('unkick',"$userData[userId],$roomData[roomId]");
@@ -530,8 +530,8 @@ switch ($action) {
 
 
 
-$xmlData['moderate']['errorcode'] = fim_encodeXml($failCode);
-$xmlData['moderate']['errortext'] = fim_encodeXml($failMessage);
+$xmlData['moderate']['errStr'] = fim_encodeXml($errStr);
+$xmlData['moderate']['errDesc'] = fim_encodeXml($errDesc);
 
 echo fim_outputApi($xmlData);
 
