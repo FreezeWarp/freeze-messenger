@@ -1229,19 +1229,21 @@ var standard = {
                 }
 
                 if (notify) {
-                  if (window.webkitNotifications) {
-                    webkitNotify('images/favicon.gif', 'New Message', notifyData);
+                  if ('webkitNotifications' in window) {
+                    notify.webkitNotifyRequest('images/favicon.gif', 'New Message', notifyData);
                   }
                 }
 
-                if (navigator.appName === 'Microsoft Internet Explorer') {
-                  try {
-                    if (window.external.msIsSiteMode()) {
-                      window.external.msSiteModeActivate();
+                if ('external' in window) {
+                  if ('msIsSiteMode' in window.external && 'msSiteModeActivate' in window.external) {
+                    try {
+                      if (window.external.msIsSiteMode()) {
+                        window.external.msSiteModeActivate();
+                      }
                     }
-                  }
-                  catch(ex) {
-                    // Supress Error
+                    catch(ex) {
+                      // Ya know, its very weird IE insists on this when the "in" statement works just as well...
+                    }
                   }
                 }
               }
