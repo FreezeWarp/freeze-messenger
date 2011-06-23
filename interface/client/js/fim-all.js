@@ -1207,8 +1207,6 @@ var standard = {
                 if (roomTopic) {
                   $('#topic').html(roomTopic);
                 }
-
-                return false;
               });
 
 
@@ -1258,7 +1256,7 @@ var standard = {
             }
             else {
               requestSettings.timeout = 2400;
-              setTimeout(standard.getMessages,0);
+              setTimeout(standard.getMessages,500);
             }
           }
 
@@ -2553,6 +2551,35 @@ function windowDraw() {
     });
   }
 
+
+  $('.userName').ezpz_tooltip({
+    contentId: 'tooltext',
+    beforeShow: function(content,el) {
+      var thisid = $(el).attr('data-userId');
+
+      if (thisid != $('#tooltext').attr('data-lastuserId')) {
+        $('#tooltext').attr('data-lastuserId',thisid);
+        $.get(directory + 'api/getUsers.php?users=' + thisid + '&sessionHash=' + sessionHash, function(xml) {
+          var userName = unxml($(xml).find('user > userName').text().trim());
+          var userId = parseInt($(xml).find('user > userId').text().trim());
+          var startTag = unxml($(xml).find('user > startTag').text().trim());
+          var endTag = unxml($(xml).find('user > endTag').text().trim());
+          var userTitle = unxml($(xml).find('user > userTitle').text().trim());
+          var posts = parseInt($(xml).find('user > postCount').text().trim());
+          var joinDate = unxml($(xml).find('user > joinDateFormatted').text().trim());
+          var avatar = unxml($(xml).find('user > avatar').text().trim());
+
+          content.html('<div style="width: 400px;">' + (avatar.length > 0 ? '<img alt="" src="' + avatar + '" style="float: left;" />' : '') + '<span class="userName" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>' + (userTitle.length > 0 ? '<br />' + userTitle : '') + '<br /><em>Posts</em>: ' + posts + '<br /><em>Member Since</em>: ' + joinDate + '</div>');
+
+          return false;
+        });
+      }
+
+      return false;
+    }
+  });
+
+
   /*** Create the Accordion Menu ***/
 
   $('#menu').accordion({
@@ -2902,34 +2929,6 @@ function contextMenuParse() {
 
     return false;
   });*/
-
-
-  $('.userName').ezpz_tooltip({
-    contentId: 'tooltext',
-    beforeShow: function(content,el) {
-      var thisid = $(el).attr('data-userId');
-
-      if (thisid != $('#tooltext').attr('data-lastuserId')) {
-        $('#tooltext').attr('data-lastuserId',thisid);
-        $.get(directory + 'api/getUsers.php?users=' + thisid + '&sessionHash=' + sessionHash, function(xml) {
-          var userName = unxml($(xml).find('user > userName').text().trim());
-          var userId = parseInt($(xml).find('user > userId').text().trim());
-          var startTag = unxml($(xml).find('user > startTag').text().trim());
-          var endTag = unxml($(xml).find('user > endTag').text().trim());
-          var userTitle = unxml($(xml).find('user > userTitle').text().trim());
-          var posts = parseInt($(xml).find('user > postCount').text().trim());
-          var joinDate = unxml($(xml).find('user > joinDateFormatted').text().trim());
-          var avatar = unxml($(xml).find('user > avatar').text().trim());
-
-          content.html('<div style="width: 400px;">' + (avatar.length > 0 ? '<img alt="" src="' + avatar + '" style="float: left;" />' : '') + '<span class="userName" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>' + (userTitle.length > 0 ? '<br />' + userTitle : '') + '<br /><em>Posts</em>: ' + posts + '<br /><em>Member Since</em>: ' + joinDate + '</div>');
-
-          return false;
-        });
-      }
-
-      return false;
-    }
-  });
 
   return false;
 }
