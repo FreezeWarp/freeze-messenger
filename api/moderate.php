@@ -396,6 +396,15 @@ switch ($action) {
       )
     );
 
+    dbUpdate(array(
+      'deleted' => 1
+      ),
+      "{$sqlPrefix}messagesCached",
+      array(
+        "messageId" => $messageId
+      )
+    );
+
     $xmlData['moderate']['response']['success'] = true;
   }
   else {

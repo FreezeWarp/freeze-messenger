@@ -36,6 +36,8 @@ $messageEnd = (int) $_GET['messageIdEnd']; // INT
 
 $search = $_GET['search']; // STRING
 
+$showDeleted = (bool) $_GET['showDeleted'];
+
 $watchRooms = (bool) $_GET['watchRooms']; // BOOL
 $activeUsers = (bool) $_GET['activeUsers']; // BOOL
 $archive = (bool) $_GET['archive']; // BOOL
@@ -99,22 +101,26 @@ $xmlData = array(
 ///* Query Filter Generation *///
 
 if ($newestMessage) {
-  $whereClause .= "AND messageId < $newestMessage ";
+  $whereClause .= " AND messageId < $newestMessage ";
 }
 if ($oldestMessage) {
-  $whereClause .= "AND messageId > $oldestMessage ";
+  $whereClause .= " AND messageId > $oldestMessage ";
 }
 if ($newestDate) {
-  $whereClause .= "AND UNIX_TIMESTAMP(m.time) < $newestDate ";
+  $whereClause .= " AND UNIX_TIMESTAMP(m.time) < $newestDate ";
 }
 if ($oldestDate) {
-  $whereClause .= "AND UNIX_TIMESTAMP(m.time) > $oldestDate ";
+  $whereClause .= " AND UNIX_TIMESTAMP(m.time) > $oldestDate ";
 }
 if (!$whereClause && $messageStart) {
-  $whereClause .= "AND messageId > $messageStart AND messageId < " . ($messageStart + $messageLimit);
+  $whereClause .= " AND messageId > $messageStart AND messageId < " . ($messageStart + $messageLimit);
 }
 if (!$whereClause && $messageEnd) {
-  $whereClause .= "AND messageId < $messageEnd AND messageId > " . ($messageEnd - $messageLimit);
+  $whereClause .= " AND messageId < $messageEnd AND messageId > " . ($messageEnd - $messageLimit);
+}
+
+if (!$showDeleted && $archive) {
+  $whereClause .= " AND m.deleted = FALSE";
 }
 
 
@@ -206,7 +212,6 @@ else {
             {$sqlPrefix}users AS u
             {$messagesArchive_tables}
           WHERE m.roomId = $room[roomId]
-            AND m.deleted != true
             AND m.userId = u.userId
           $whereClause
           {$messagesArchive_where}

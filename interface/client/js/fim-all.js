@@ -150,13 +150,13 @@ if (typeof console != 'object' || typeof console.log != 'function') {
       buttons : options.buttons,
       autoOpen: autoOpen,
       open: function() {
-        if (oF in options) {
+        if ('oF' in options) {
           options['oF']();
         }
       },
       close: function() {
         $('#' + options.id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
-        if (cF in options) {
+        if ('cF' in options) {
           options['cF']();
         }
       }
@@ -517,7 +517,7 @@ function populate(options) {
             roomUlHtml += ulText;
           }
 
-          roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#" onclick="standard.changeRoom(' + roomId + ');">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isAdmin ? '<button data-roomId="' + roomId + '" class="editRoomMulti standard"></button><button data-roomId="' + roomId + '" class="deleteRoomMulti standard"></button>' : '') + '<button data-roomId="' + roomId + '" class="archiveMulti standard"></button><button data-roomId="' + roomId + '" class="favRoomMulti standard"></button></td></tr>';
+          roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#" onclick="standard.changeRoom(' + roomId + ');">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isAdmin ? '<button data-roomId="' + roomId + '" class="editRoomMulti standard"></button><button data-roomId="' + roomId + '" class="deleteRoomMulti standard"></button>' : '') + '<button data-roomId="' + roomId + '" class="archiveMulti standard"></button><input type="checkbox" ' + (isFav ? 'checked="checked" ' : '') + ' data-roomId="' + roomId + '" class="favRoomMulti standard" /></td></tr>';
 
           roomRef[roomName] = roomId;
           roomIdRef[roomId] = roomName;
@@ -1037,9 +1037,6 @@ var standard = {
 
   getMessages : function() {
     if (roomId) {
-      if (!requestSettings.longPolling) {
-        window.clearInterval(timers.t1);
-      }
 
       var encrypt = 'base64';
 
@@ -1085,6 +1082,7 @@ var standard = {
 
             $('#activeUsers').html('');
             var activeUserHtml = new Array;
+
 
             $(xml).find('activeUsers > user').each(function() {
               var userName = $(this).find('userName').text().trim();
@@ -1211,6 +1209,10 @@ var standard = {
             if (requestSettings.longPolling) {
               setTimeout(standard.getMessages,50);
             }
+            else {
+              requestSettings.timeout = 5000;
+              setTimeout(standard.getMessages,5000);
+            }
           }
 
           requestSettings.firstRequest = false;
@@ -1225,31 +1227,32 @@ var standard = {
           }
           else {
             requestSettings.totalFails += 1;
-            $('#roomName').append('<span class="ui-icon ui-icon-info"></span>');
+
+            if (!requestSettings.longPolling) {
+              if (requestSettings.totalFails > 10) {
+                var wait = 30000;
+                requestSettings.timeout = 29900;
+
+                // TODO: Add indicator.
+              }
+              else if (requestSettings.totalFails > 5) {
+                var wait = 10000;
+                requestSettings.timeout = 9900;
+
+                // TODO: Add indicator.
+              }
+              else {
+                var wait = 5000;
+                requestSettings.timeout = 4900;
+              }
+            }
+
+            setTimeout(standard.getMessages,wait);
           }
 
           return false;
         }
       });
-
-      if (!requestSettings.longPolling) {
-        if (requestSettings.totalFails > 10) {
-          timers.t1 = window.setInterval(standard.getMessages,30000);
-          requestSettings.timeout = 29900;
-        }
-        else if (requestSettings.totalFails > 5) {
-          timers.t1 = window.setInterval(standard.getMessages,10000);
-          requestSettings.timeout = 9900;
-        }
-        else if (requestSettings.totalFails > 0) {
-          timers.t1 = window.setInterval(standard.getMessages,5000);
-          requestSettings.timeout = 4900;
-        }
-        else {
-          timers.t1 = window.setInterval(standard.getMessages,2500);
-          requestSettings.timeout = 2400;
-        }
-      }
     }
     else {
       console.log('Not requesting messages; room undefined.');
@@ -1343,14 +1346,9 @@ var standard = {
     /*** Get Messages ***/
 
     $(document).ready(function() {
-      if (requestSettings.longPolling) {
-        $(document).ready(function() {
-          standard.getMessages();
-        });
-      }
-      else {
-        timers.t1 = window.setInterval(standard.getMessages,2500);
-      }
+      $(document).ready(function() {
+        standard.getMessages();
+      });
 
       return false;
     });
@@ -1592,8 +1590,13 @@ popup = {
           return false;
         });
 
-        $('button.favRoomMulti').button({icons : {primary : 'ui-icon-star'}}).click(function() {
-          standard.favRoom($(this).attr('data-roomId'));
+        $('input[type=checkbox].favRoomMulti').button({icons : {primary : 'ui-icon-star'}}).change(function() {
+          if ($(this).is(':checked')) {
+            standard.favRoom($(this).attr('data-roomId'));
+          }
+          else {
+            standard.unfavRoom($(this).attr('data-roomId'));
+          }
 
           return false;
         });
