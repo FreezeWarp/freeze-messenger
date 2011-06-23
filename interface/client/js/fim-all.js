@@ -38,6 +38,8 @@ function urlEncode(data) {
 
 function toBottom() {
   document.getElementById('messageList').scrollTop = document.getElementById('messageList').scrollHeight;
+
+  return false;
 }
 
 function faviconFlash() {
@@ -47,12 +49,14 @@ function faviconFlash() {
   else {
     $('#favicon').attr('href',favicon);
   }
+
+  return false;
 }
 
 if (typeof console != 'object' || typeof console.log != 'function') {
   console = {
     log : function() {
-      // Do nothing?
+      return false;
     }
   };
 }
@@ -66,6 +70,8 @@ dia = {
       buttons: {
         Close: function() {
           $( this ).dialog( "close" );
+
+          return false;
         }
       }
     });
@@ -78,6 +84,8 @@ dia = {
       buttons: {
         Okay : function() {
           $(this).dialog( "close" );
+
+          return false;
         }
       }
     });
@@ -153,12 +161,16 @@ dia = {
         if ('oF' in options) {
           options['oF']();
         }
+
+        return false
       },
       close: function() {
         $('#' + options.id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
         if ('cF' in options) {
           options['cF']();
         }
+
+        return false
       }
     };
 
@@ -194,6 +206,8 @@ dia = {
           }
 
           windowDraw();
+
+          return false;
         },
         error : function() {
           overlay.empty().remove();
@@ -202,6 +216,8 @@ dia = {
           dialog.dialog('close');
 
           dia.error('Could not request dialog URI.');
+
+          return false;
         }
       });
     }
@@ -538,7 +554,7 @@ function populate(options) {
             roomUlHtml += ulText;
           }
 
-          roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#" onclick="standard.changeRoom(' + roomId + ');">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isAdmin ? '<button data-roomId="' + roomId + '" class="editRoomMulti standard"></button><button data-roomId="' + roomId + '" class="deleteRoomMulti standard"></button>' : '') + '<button data-roomId="' + roomId + '" class="archiveMulti standard"></button><input type="checkbox" ' + (isFav ? 'checked="checked" ' : '') + ' data-roomId="' + roomId + '" class="favRoomMulti standard" /></td></tr>';
+          roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isAdmin ? '<button data-roomId="' + roomId + '" class="editRoomMulti standard"></button><button data-roomId="' + roomId + '" class="deleteRoomMulti standard"></button>' : '') + '<button data-roomId="' + roomId + '" class="archiveMulti standard"></button><input type="checkbox" ' + (isFav ? 'checked="checked" ' : '') + ' data-roomId="' + roomId + '" class="favRoomMulti standard" /></td></tr>';
 
           roomRef[roomName] = roomId;
           roomIdRef[roomId] = roomName;
@@ -553,6 +569,8 @@ function populate(options) {
           else {
             modRooms[roomId] = 0;
           }
+
+          return false;
         });
 
         $('#roomListLong > li > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li><li>My Rooms<ul>' + roomUlMyHtml + '</ul></li><li>General<ul>' + roomUlHtml + '</ul></li><li>Private<ul>' + roomUlPrivHtml + '</ul></li>');
@@ -641,7 +659,7 @@ function youtubeSend(id) { // TODO
 }
 
 
-  function updateVids(searchPhrase) {
+function updateVids(searchPhrase) {
   jQTubeUtil.search(searchPhrase, function(response) {
     var html = "";
     var num = 0;
@@ -665,7 +683,11 @@ function youtubeSend(id) { // TODO
     }
 
     $('#youtubeResults').html(html);
+
+    return false;
   });
+
+  return false;
 }
 
 
@@ -1185,6 +1207,8 @@ var standard = {
                 if (roomTopic) {
                   $('#topic').html(roomTopic);
                 }
+
+                return false;
               });
 
 
@@ -1192,6 +1216,8 @@ var standard = {
               if (settings.reversePostOrder) {
                 toBottom();
               }
+
+
 
               if (window.isBlurred) {
                 if (settings.audioDing) {
@@ -1231,8 +1257,8 @@ var standard = {
               setTimeout(standard.getMessages,50);
             }
             else {
-              requestSettings.timeout = 5000;
-              setTimeout(standard.getMessages,5000);
+              requestSettings.timeout = 2400;
+              setTimeout(standard.getMessages,0);
             }
           }
 
@@ -1278,7 +1304,6 @@ var standard = {
     else {
       console.log('Not requesting messages; room undefined.');
     }
-
 
     return false;
   },
@@ -2520,6 +2545,14 @@ popup = {
 *********************************************************/
 
 function windowDraw() {
+  console.log('Redrawing window.');
+
+  if (settings.showAvatars) {
+    $('.messageText').tipTip({
+      attribute: 'data-time'
+    });
+  }
+
   /*** Create the Accordion Menu ***/
 
   $('#menu').accordion({
@@ -2735,7 +2768,7 @@ function windowDynaLinks() {
 
 
 function contextMenuParse() {
-  $('.userName').contextMenu({
+/*  $('.userName').contextMenu({
     menu: 'userMenu'
   },
   function(action, el) {
@@ -2870,6 +2903,7 @@ function contextMenuParse() {
     return false;
   });
 
+
   $('.userName').ezpz_tooltip({
     contentId: 'tooltext',
     beforeShow: function(content,el) {
@@ -2895,13 +2929,7 @@ function contextMenuParse() {
 
       return false;
     }
-  });
-
-  if (settings.showAvatars) {
-    $('.messageText').tipTip({
-      attribute: 'data-time'
-    });
-  }
+  });*/
 
   return false;
 }
