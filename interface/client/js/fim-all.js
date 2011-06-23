@@ -2136,11 +2136,11 @@ popup = {
           }
           else {
             $.post(directory + 'api/moderate.php','action=editRoom&roomId=' + roomIdLocal + '&name=' + urlEncode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&sessionHash=' + sessionHash,function(xml) {
-              var errorCode = unxml($(xml).find('errStr').text().trim());
-              var errorMessage = unxml($(xml).find('errDesc').text().trim());
+              var errStr = unxml($(xml).find('errStr').text().trim());
+              var errDesc = unxml($(xml).find('errDesc').text().trim());
 
-              if (errorCode) {
-                dia.error('An error has occured: ' + errorMessage);
+              if (errStr) {
+                dia.error('An error has occured: ' + errDesc);
               }
               else {
                 dia.full({
@@ -2210,12 +2210,12 @@ popup = {
           }
           else {
             $.post(directory + 'api/moderate.php','action=createRoom&name=' + urlEncode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&sessionHash=' + sessionHash,function(xml) {
-              var errorCode = unxml($(xml).find('errStr').text().trim());
-              var errorMessage = unxml($(xml).find('errDesc').text().trim());
+              var errStr = unxml($(xml).find('errStr').text().trim());
+              var errDesc = unxml($(xml).find('errDesc').text().trim());
               var createRoomId = parseInt($(xml).find('insertId').text().trim());
 
-              if (errorCode) {
-                dia.error('An error has occured: ' + errorMessage);
+              if (errStr) {
+                dia.error('An error has occured: ' + errDesc);
               }
               else {
                 dia.full({
