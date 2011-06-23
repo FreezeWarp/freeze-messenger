@@ -2901,7 +2901,7 @@ function contextMenuParse() {
     }
 
     return false;
-  });
+  });*/
 
 
   $('.userName').ezpz_tooltip({
@@ -2929,7 +2929,7 @@ function contextMenuParse() {
 
       return false;
     }
-  });*/
+  });
 
   return false;
 }
