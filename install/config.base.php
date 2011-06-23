@@ -274,5 +274,6 @@ $anonymousUser = 1;
 
 
 
-// Unlisted variables: $messageLimit, $onlineThreshold, $installUrl, $installLoc, $sessionExpire
+// Unlisted variables: $messageLimit, $onlineThreshold, $installUrl, $installLoc, $sessionExpire, $roomLengthLimit
+// Learn about them in the documentation.
 ?>

@@ -32,6 +32,36 @@ function fim_inArray($needle,$haystack) {
 }
 
 /**
+* Returns a "safe" array based on parameters.
+*
+* @param array $array - The array to be processed.
+* @param string $type - The variable type all entries in the returned array should corrospond to.
+* @param bool $preserveAll - Whether false, 0, and empty strings should be returned as a part of the array.
+* @return array
+* @author Joseph Todd Parsons
+*/
+function arrayValidate($array,$type = 'int',$preserveAll = false) {
+  $arrayValidated = array();
+
+  foreach ($array AS $value) {
+    switch ($type) {
+      case 'int':
+      if ($preserveAll) {
+        $arrayValidated[] = (int) $value;
+      }
+      else {
+        $preValue = (int) $value;
+
+        if ($preValue) {
+          $arrayValidateed[] = $preValue;
+        }
+      }
+      break;
+    }
+  }
+}
+
+/**
 * Determines if a user has permission to do an action in a room.
 *
 * @param array $roomData - An array containing the room's data; indexes allowedUsers, allowedGroups, moderators, owner, and options may be used.

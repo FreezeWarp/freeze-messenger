@@ -58,7 +58,7 @@ if (typeof console != 'object' || typeof console.log != 'function') {
 }
 
 
-  dia = {
+dia = {
   error : function(message) {
     $('<div style="display: none;">' + message + '</div>').dialog({
       title : 'Error',
@@ -241,7 +241,7 @@ var userId; // The user ID who is logged in.
 var roomId; // The ID of the room we are in.
 var sessionHash; // The session hash of the active user.
 var anonId; // ID used to represent anonymous posters.
-
+var prepopup;
 
 
 /* Function-Specific Variables */
@@ -316,6 +316,8 @@ $.ajax({
 function hashParse() {
   var urlHash = window.location.hash;
   var urlHashComponents = urlHash.split('#');
+  var page = '';
+
   for (var i = 0; i < urlHashComponents.length; i++) {
     if (!urlHashComponents[i]) {
       continue;
@@ -323,15 +325,34 @@ function hashParse() {
 
     var componentPieces = urlHashComponents[i].split('=');
     switch (componentPieces[0]) {
+      case 'page':
+      page = componentPieces[1]
+      break;
+
       case 'room':
       roomId = componentPieces[1];
-      standard.changeRoom(roomId);
       break;
 
       case 'message':
-
+      messageId = componentPieces[1];
       break;
     }
+  }
+
+  switch (page) {
+    case 'archive':
+    prepopup = function() {
+      popup.archive({
+        'roomId' : roomId,
+        'idMin' : messageId - 1,
+      });
+    };
+    break;
+    default:
+    if (roomId) {
+      standard.changeRoom(roomId);
+    }
+    break;
   }
 }
 
@@ -2438,7 +2459,7 @@ popup = {
 
   /*** START Archive ***/
 
-  archive : function(roomLocalId) {
+  archive : function(options) {
     dia.full({
       content : '<form id="archiveSearch" action="#" method="get"><input type="text" name="searchText" /></form> <table class="center"><thead><tr><th style="width: 20%;">User</th><th style="width: 20%;">Time</th><th style="width: 60%;">Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><button id="archivePrev"><< Prev</button><button id="archiveNext">Next >></button>',
       title : 'Archive',
@@ -2448,7 +2469,8 @@ popup = {
     });
 
     standard.archive({
-      roomId: roomLocalId,
+      roomId: options.roomId,
+      idMin: options.idMin,
       callback: function(data) {
         $('#archiveDialogue').dialog('open');
 
@@ -3086,6 +3108,10 @@ $(document).ready(function() {
 
     return false;
   });
+
+  if (typeof prepopup == "function") {
+    prepopup();
+  }
 
   return false;
 });

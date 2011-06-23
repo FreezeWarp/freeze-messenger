@@ -65,11 +65,19 @@ function dbEscape($string) {
 * @author Joseph Todd Parsons
 */
 function dbQuery($query) {
+  $startTime = microtime(true);
+
   if ($queryData = mysql_query($query)) {
     return $queryData;
   }
   else {
     trigger_error("MySQL Error; Query: $query; Error: " . mysql_error(),E_USER_ERROR);
+  }
+
+  $endTime = microtime(true);
+
+  if (($endTime - $startTime) > 2) {
+    file_put_contents('query_log.txt',"Spent " . ($endTime - $startTime) . " on: $queryData",FILE_APPEND);
   }
 }
 

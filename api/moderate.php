@@ -42,7 +42,9 @@ $xmlData = array(
 
 switch ($action) {
   case 'createRoom':
-  $name = substr($_POST['name'],0,20); // Limits to 20 characters.
+  $roomLengthLimit = ($roomLengthLimit ? $roomLengthLimit : 20)
+
+  $name = substr($_POST['name'],0,$roomLengthLimit); // Limits to x characters.
 
   if (!$name) {
     $failCode = 'noname';
@@ -86,7 +88,10 @@ switch ($action) {
   break;
 
   case 'editRoom':
-  $name = substr(dbEscape($_POST['name']),0,20); // Limits to 20 characters.
+  $roomLengthLimit = ($roomLengthLimit ? $roomLengthLimit : 20)
+
+  $name = substr($_POST['name'],0,$roomLengthLimit); // Limits to x characters.
+
   $room = dbRows("SELECT roomId, roomName, options, allowedUsers, allowedGroups, moderators FROM {$sqlPrefix}rooms WHERE roomId = " . (int) $_POST['roomId']);
 
   if (!$name) {
@@ -243,140 +248,131 @@ switch ($action) {
   case 'userOptions':
   $userId = (int) $_POST['userId'];
 
-  $userData = dbRows("SELECT * FROM {$sqlPrefix}users WHERE userId = $userId");
+  $userData = dbRows("SELECT *
+  FROM {$sqlPrefix}users
+  WHERE userId = $userId
+  LIMIT 1");
 
-  /*** Web Interface Options ***/
+  if ($user['userId'] == $userData['userId']) {
 
-  $settingsOfficialAjaxIndex = array(
-    'disableFormatting' => 16,
-    'disableVideos' => 32,
-    'disableImages' => 64,
-    'reversePostOrder' => 1024,
-    'showAvatars' => 2048,
-    'audioDing' => 8192,
-  );
+    if (isset($_POST['defaultColor'])) {
+      $color = dbEscape($_POST['defaultColor']);
 
-  if ($user['adminPrivs']['modUsers'] || $user['userId'] == $userId) { echo 5;
-    if (isset($_POST['settingsOfficialAjax'])) { echo 6;
-      foreach ($settingsOfficialAjaxIndex AS $name => $val) {
-        if ($_POST['settingsOfficialAjax_' . $name]) {
-          if ($userData['settingsOfficialAjax'] & $val) { echo 1;}
-          else { echo 2;
-            $userData['settingsOfficialAjax'] += $val;
+      $userData['theme'] = $theme;
 
-            $xmlData['moderate']['response']['modified']['value ' . $name] = $name;
-          }
-        }
-        else { echo 3;
-          if ($userData['settingsOfficialAjax'] & $val) {
-            $userData['settingsOfficialAjax'] -= $val;
+      $xmlData['moderate']['response']['theme'] = $theme;
+    }
 
-            $xmlData['moderate']['response']['modified']['value ' . $name] = $name;
-          }
-          else { echo 4;}
-        }
+    if ($_POST['defaultRoomId']) {
+      $defaultRoomData = dbRows("SELECT *
+      FROM {$sqlPrefix}rooms
+      WHERE roomId = " . (int) $_POST['defaultRoomId'] . "
+      LIMIT 1");
+
+      if (fim_hasPermission($defaultRoomData,$user,'view')) {
+        $updateArray['defaultRoom'] = (int) $_POST['defaultRoomId'];
+
+        $xmlData['moderate']['response']['defaultRoom']['status'] = true;
+        $xmlData['moderate']['response']['defaultRoom']['newValue'] = (int) $_POST['defaultRoomId'];
+      }
+      else {
+        $xmlData['moderate']['response']['defaultRoom']['status'] = false;
+        $xmlData['moderate']['response']['defaultRoom']['errorcode'] = 'outofrange1';
+        $xmlData['moderate']['response']['defaultRoom']['errortext'] = 'The first value ("red") was out of range.';
       }
     }
-  }
-  else {
-    // No Permission
-  }
 
+    if ($_POST['favRooms']) {
+      $favRooms = arrayValidate(explode(',',$_POST['favRooms']),'int',false);
+      $updateArray['favRooms'] = (string) implode(',',$favRooms);
 
-  /*** User Options ***/
+      $xmlData['moderate']['response']['favRooms']['status'] = true;
+      $xmlData['moderate']['response']['favRooms']['newValue'] = (string) implode(',',$favRooms);
+    }
 
-  $userIndex = array(
-    'modPrivs' => 16,
-    'modUsers' => 32,
-  );
+    if ($_POST['watchRooms']) {
+      $watchRooms = arrayValidate(explode(',',$_POST['watchRooms']),'int',false);
+      $updateArray['watchRooms'] = (string) implode(',',$watchRooms);
 
-  if ($user['adminPrivs']['modUsers'] || $user['userId'] == $userId) {
-    if (isset($_POST['userPrivs'])) {
-      foreach ($userIndex AS $name => $val) {
-        if ($_POST['user_' . $name]) {
-          if ($userData['userPrivs'] & $val) {}
+      $xmlData['moderate']['response']['watchRooms']['status'] = true;
+      $xmlData['moderate']['response']['watchRooms']['newValue'] = (string) implode(',',$watchRooms);
+    }
+
+    if ($_POST['defaultFormatting']) {
+      $updateArray['defaultFormatting'] = (int) $_POST['defaultFormatting'];
+
+      $xmlData['moderate']['response']['defaultFormatting']['status'] = true;
+      $xmlData['moderate']['response']['defaultFormatting']['newValue'] = (string) implode(',',$defaultFormatting);
+    }
+
+    foreach (array('defaultHighlight','defaultColor') AS $value) {
+      if ($_POST[$value]) {
+        $rgb = arrayValidate(explode(',',$_POST[$value]),'int',true);
+
+        if (count($rgb) === 3) { // Too many entries.
+          if ($rgb[0] < 0 || $rgb[0] > 255) { // First val out of range.
+            $xmlData['moderate']['response'][$value]['status'] = false;
+            $xmlData['moderate']['response'][$value]['errorcode'] = 'outofrange1';
+            $xmlData['moderate']['response'][$value]['errortext'] = 'The first value ("red") was out of range.';
+          }
+          elseif ($rgb[1] < 0 || $rgb[1] > 255) { // Second val out of range.
+            $xmlData['moderate']['response'][$value]['status'] = false;
+            $xmlData['moderate']['response'][$value]['errorcode'] = 'outofrange2';
+            $xmlData['moderate']['response'][$value]['errortext'] = 'The first value ("green") was out of range.';
+          }
+          elseif ($rgb[2] < 0 || $rgb[2] > 255) { // Third val out of range.
+            $xmlData['moderate']['response'][$value]['status'] = false;
+            $xmlData['moderate']['response'][$value]['errorcode'] = 'outofrange3';
+            $xmlData['moderate']['response'][$value]['errortext'] = 'The third value ("blue") was out of range.';
+          }
           else {
-            $userData['userPrivs'] += $val;
+            $updateArray[$value] = implode(',',$rgb);
 
-            $xmlData['moderate']['response']['modified']['value ' . $name] = $name;
+            $xmlData['moderate']['response'][$value]['status'] = true;
+            $xmlData['moderate']['response'][$value]['newValue'] = (string) implode(',',$rgb);
           }
         }
         else {
-          if ($userData['userPrivs'] & $val) {
-            $userData['userPrivs'] -= $val;
-
-            $xmlData['moderate']['response']['modified']['value ' . $name] = $name;
-          }
-          else {}
+          $xmlData['moderate']['response'][$value]['status'] = false;
+          $xmlData['moderate']['response'][$value]['errorcode'] = 'badformat';
+          $xmlData['moderate']['response'][$value]['errortext'] = 'The default highlight value was not properly formatted.';
         }
       }
     }
-  }
-  else {
-    // No Permission
-  }
 
-  /*** Admin Options ***/
+    if ($_POST['defaultFontface']) {
+      $fontData = dbRows("SELECT fontId,
+        name,
+        data,
+        category
+      FROM {$sqlPrefix}fonts
+      WHERE fontId = " . (int) $_POST['defaultFontface'] . "
+      LIMIT 1");
 
-  $adminIndex = array(
-    'modPrivs' => 1,
-    'modUsers' => 16,
-    'modImages' => 64,
-    'modCensorWords' => 256,
-    'modCensorLists' => 512,
-    'modPlugins' => 4096,
-    'modTemplates' => 8192,
-    'modHooks' => 16384,
-    'modTranslations' => 32768,
-  );
-
-  if ($user['adminPrivs']['modPrivs']) {
-    if (isset($_POST['adminPrivs'])) {
-      foreach ($adminIndex AS $name => $val) {
-        if ($_POST['admin_' . $name]) {
-          if ($userData['adminPrivs'] & $val) {}
-          else {
-            $userData['adminPrivs'] += $val;
-
-            $xmlData['moderate']['response']['modified']['value ' . $name] = $name;
-          }
-        }
-        else {
-          if ($userData['adminPrivs'] & $val) {
-            $userData['adminPrivs'] -= $val;
-
-            $xmlData['moderate']['response']['modified']['value ' . $name] = $name;
-          }
-          else {}
-        }
+      if ((int) $fontData['fontId']) {
+        $xmlData['moderate']['response'][$value]['status'] = true;
+        $xmlData['moderate']['response'][$value]['newValue'] = (int) $fontData['fontId'];
+      }
+      else {
+        $xmlData['moderate']['response']['defaultHighlight']['status'] = false;
+        $xmlData['moderate']['response']['defaultHighlight']['errorcode'] = 'nofont';
+        $xmlData['moderate']['response']['defaultHighlight']['errortext'] = 'The specified font does not exist.';
       }
     }
+
+    dbUpdate(
+      $updateArray,
+      "{$sqlPrefix}users",
+      array(
+        'userId' => $user['userId'],
+      )
+    );
+
   }
   else {
-    // No Permission
+    $failCode = 'usermismatch';
+    $failMessage = 'The specified user is not the currently logged in one.'; // We do this because, unlike other things, it is reasonably possible two people may switch off at the same terminal and not realize the other one is logged in, thus inadvertently changing the wrong user's settings.
   }
-
-
-  if (isset($_POST['settingsOfficialAjax_theme'])) {
-    $theme = (int) $_POST['settingsOfficialAjax_theme'];
-
-    $userData['theme'] = $theme;
-
-    $xmlData['moderate']['response']['theme'] = $theme;
-  }
-
-
-  if (isset($_POST['defaultColor'])) {
-    $color = dbEscape($_POST['defaultColor']);
-
-    $userData['theme'] = $theme;
-
-    $xmlData['moderate']['response']['theme'] = $theme;
-  }
-
-
-
-  dbQuery("UPDATE {$sqlPrefix}users SET themeOfficialAjax = $userData[theme], adminPrivs = $userData[adminPrivs], userPrivs = $userData[userPrivs], settingsOfficialAjax = $userData[settingsOfficialAjax]");
 
   break;
 
