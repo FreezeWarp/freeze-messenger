@@ -632,7 +632,10 @@ if(jQuery)(function() {
                   }
                   else {
                     $(menu).find('li.hover').removeClass('hover').prevAll('li:not(.disabled)').eq(0).addClass('hover');
-                    if ($(menu).find('li.hover').size() == 0) $(menu).find('li:last').addClass('hover');
+
+                    if ($(menu).find('li.hover').size() == 0) {
+                      $(menu).find('li:last').addClass('hover');
+                    }
                   }
                   break;
 
@@ -642,7 +645,10 @@ if(jQuery)(function() {
                   }
                   else {
                     $(menu).find('li.hover').removeClass('hover').nextAll('li:not(.disabled)').eq(0).addClass('hover');
-                    if ($(menu).find('li.hover').size() == 0) $(menu).find('li:first').addClass('hover');
+
+                    if ($(menu).find('li.hover').size() == 0) {
+                      $(menu).find('li:first').addClass('hover');
+                    }
                   }
                   break;
 
@@ -663,12 +669,15 @@ if(jQuery)(function() {
                 $(".contextMenu").hide();
 
                 // Callback
-                if (callback) callback($(this).attr('data-action'), $(srcElement), {x: x - offset.left, y: y - offset.top, docX: x, docY: y});
+                if (callback) {
+                  callback($(this).attr('data-action'), $(srcElement), {x: x - offset.left, y: y - offset.top, docX: x, docY: y});
+                }
+
                 return false;
               });
 
               // Hide bindings
-              setTimeout(function() { // Delay for Mozilla
+              setTimeout(function() { // Delay for Mozilla; TODO: Confirm still a problem
                 $(document).click(function() {
                   $(document).unbind('click').unbind('keypress');
                   $(menu).fadeOut(o.outSpeed);
