@@ -283,8 +283,16 @@ var timers = new Object;
 /* Get Cookies */
 
 var layout = $.cookie('fim3_layout'); // TODO
-var settingsBitfield = parseInt($.cookie('fim3_settings'));
 var themeId = parseInt($.cookie('fim3_themeId'));
+
+
+if (parseInt($.cookie('fim3_settings'))) {
+  var settingsBitfield = parseInt($.cookie('fim3_settings'));
+}
+else {
+  var settingsBitfield = 0;
+  $.cookie('fim3_settings',0);
+}
 
 if ($.cookie('fim3_sessionHash')) {
   sessionHash = $.cookie('fim3_sessionHash');
@@ -914,7 +922,7 @@ var standard = {
       data = 'userName=' + options.userName + '&password=' + options.password + '&passwordEncrypt=' + passwordEncrypt;
     }
     else if (options.sessionHash) {
-      data = 'sessionHash=' + options.sessionHash + '&apiLogin=1';
+      data = 'fim3_sessionHash=' + options.sessionHash + '&apiLogin=1&fim3_userId=' + $.cookie('fim3_userId');
     }
     else {
       data = 'apiLogin=1';
@@ -1377,6 +1385,7 @@ var standard = {
     $('#messageList').html('');
 
     windowDraw();
+    windowDynaLinks();
 
 
     /*** Get Messages ***/
@@ -1421,6 +1430,12 @@ var standard = {
     if (userLocalId == userId) {
       dia.error('You can\'t talk to yourself...');
     }
+    else if (!userLocalId) {
+      dia.error('You have not specified a user.');
+    }
+    else if (!userPermissions.privateRoom) {
+      dia.error('You do not have permission to talk to users privately.');
+    }
     else {
       $.post(directory + 'api/moderate.php','action=privateRoom&userId=' + userLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
         var privateRoomId = parseInt($(xml).find('insertId').text().trim());
@@ -1436,7 +1451,7 @@ var standard = {
         }
         else {
           dia.full({
-            content : 'You may talk to this person privately at this link: <form method="post" onsubmit="return false;"><input type="text" style="width: 300px;" value="' + currentLocation + '#room=' + privateRoomId + '" name="url" /></form>',
+            content : 'You may talk to this person privately at the following link: <form method="post" onsubmit="return false;"><input type="text" style="width: 300px;" value="' + currentLocation + '#room=' + privateRoomId + '" name="url" /></form>',
             id : 'privateRoomSucessDialogue',
             buttons : {
               Open : function() {
@@ -1855,6 +1870,10 @@ popup = {
         return false;
       },
       oF : function() {
+        var defaultColour;
+        var defaultHighlight;
+        var defaultFontface;
+
         $('#theme').change(function() {
           $('#stylesjQ').attr('href','client/css/' + themes[this.value] + '/jquery-ui-1.8.13.custom.css');
           $('#stylesFIM').attr('href','client/css/' + themes[this.value] + '/fim.css');
@@ -1874,20 +1893,23 @@ popup = {
         if (settings.audioDing) {
           $('#audioDing').attr('checked','checked');
         }
+        if (settings.disableFx) {
+          $('#disableFx').attr('checked','checked');
+        }
 
 
         $('#showAvatars').change(function() {
           if ($(this).val() == 'true' && !settings.showAvatars) {
             settings.showAvatars = true;
             $('#messageList').html('');
-            $.cookie('fim3_settings',$.cookie('fim3_settings') + 2048);
+            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) + 2048);
 
             requestSettings.firstRequest= true;
           }
           else if ($(this).val() != 'true' && settings.showAvatars) {
             settings.showAvatars = false;
             $('#messageList').html('');
-            $.cookie('fim3_settings',$.cookie('fim3_settings') - 2048);
+            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) - 2048);
 
             requestSettings.firstRequest= true;
           }
@@ -1899,14 +1921,14 @@ popup = {
           if ($(this).val() == 'true' && !settings.reversePostOrder) {
             settings.reversePostOrder = true;
             $('#messageList').html('');
-            $.cookie('fim3_settings',$.cookie('fim3_settings') + 1024);
+            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) + 1024);
 
             requestSettings.firstRequest= true;
           }
           else if ($(this).val() != 'true' && settings.reversePostOrder) {
             settings.reversePostOrder = false;
             $('#messageList').html('');
-            $.cookie('fim3_settings',$.cookie('fim3_settings') - 1024);
+            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) - 1024);
 
             requestSettings.firstRequest= true;
           }
@@ -1918,14 +1940,14 @@ popup = {
           if ($(this).val() == 'true' && !settings.audioDing) {
             settings.audioDing = true;
             $('#messageList').html('');
-            $.cookie('fim3_settings',$.cookie('fim3_settings') + 8192);
+            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) + 8192);
 
             requestSettings.firstRequest= true;
           }
           else if ($(this).val() != 'true' && settings.audioDing) {
             settings.audioDing = false;
             $('#messageList').html('');
-            $.cookie('fim3_settings',$.cookie('fim3_settings') - 8192);
+            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) - 8192);
 
             requestSettings.firstRequest= true;
           }
@@ -1937,14 +1959,14 @@ popup = {
           if ($(this).val() == 'true' && !settings.disableFx) {
             settings.disableFx = true;
             $('#disableFx').html('');
-            $.cookie('fim3_settings',$.cookie('fim3_settings') + 16384);
+            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) + 16384);
 
             requestSettings.firstRequest= true;
           }
           else if ($(this).val() != 'true' && settings.disableFx) {
             settings.disableFx = false;
             $('#disableFx').html('');
-            $.cookie('fim3_settings',$.cookie('fim3_settings') - 16384);
+            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) - 16384);
 
             requestSettings.firstRequest= true;
           }
@@ -1996,9 +2018,10 @@ popup = {
             return false;
           },
           onChange: function(hsb, hex, rgb) {
-            $('#defaultHighlight').css('background-color','#' + hex);
-            $('#defaultHighlight').val(hex);
-            $('#fontPreview').css('background-color','#' + hex);
+            defaultHighlight = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
+
+            $('#defaultHighlight').css('background-color','rgb(' + defaultHighlight + ')');
+            $('#fontPreview').css('color','rgb(' + defaultHighlight + ')');
           }
         });
 
@@ -2015,9 +2038,10 @@ popup = {
             return false;
           },
           onChange: function(hsb, hex, rgb) {
-            $('#defaultColour').css('background-color','#' + hex);
-            $('#defaultColour').val(hex);
-            $('#fontPreview').css('color','#' + hex);
+            defaultColor = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
+
+            $('#defaultColour').css('background-color','rgb(' + defaultColour + ')');
+            $('#fontPreview').css('color','rgb(' + defaultColour + ')');
           }
         });
 
@@ -2040,9 +2064,8 @@ popup = {
           $('#fontPreview').css('font-style','normal');
         }
 
-        $("#changeSettingsForm").submit(function() { // TODO
-          data = $("#changeSettingsForm").serialize(); // Serialize the form data for AJAX.
-          $.post(directory + 'api/moderate.php?action=userOptions&userId=' + userId + data + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
+        $("#changeSettingsForm").submit(function() {
+          $.post(directory + 'api/moderate.php?action=userOptions&userId=' + userId + '&defaultColor=' + defaultColour + '&defaultHighlight=' + defaultHighlight + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
             // TODO
           }); // Send the form data via AJAX.
 
@@ -2589,6 +2612,7 @@ function windowDraw() {
     }
   });
 
+
   contextMenuParse();
 
 
@@ -2717,7 +2741,7 @@ function windowDynaLinks() {
   $('#moderateCat').next().children().children().show(); // LIs
   $('#quickCat').next().children().children().show(); // LIs
   $('#moderateCat').next().children().children().children().show(); // Admin LIs
-
+  $('#userMenu li').show(); // Context LIs
 
   /* Remove Links if Not Available */
 
@@ -2726,6 +2750,7 @@ function windowDynaLinks() {
   }
   if (!userPermissions.privateRoom) {
     $('li > #privateRoom').parent().hide();
+    $('#userMenu a[data-action="private_im"]').parent().hide();
   }
 
 
@@ -2773,6 +2798,7 @@ function windowDynaLinks() {
   if (modRooms[roomId] < 1) {
     $('li > #kick').parent().hide();
     $('li > #manageKick').parent().hide();
+    $('#userMenu a[data-action="kick"]').parent().hide();
 
     noModCounter += 2;
   }
@@ -2822,9 +2848,27 @@ function contextMenuParse() {
       timeout: 2400,
       cache: false,
       success: function(xml) {
-        userName = unxml($(this).find('userName').text().trim());
-        avatarUrl = parseInt($(this).find('avatar').text().trim());
-        profileUrl = parseInt($(this).find('profile').text().trim());
+        userName = unxml($(xml).find('userName').text().trim());
+        avatarUrl = unxml($(xml).find('avatar').text().trim());
+        profileUrl = unxml($(xml).find('profile').text().trim());
+
+        switch(action) {
+          case 'private_im':
+          standard.privateRoom(userId);
+          break;
+
+          case 'profile':
+          window.open(profileUrl);
+          break;
+
+          case 'kick':
+          popup.kick(userId, roomId);
+          break;
+
+          case 'ban': // TODO?
+          window.open('moderate.php?do=banuser2&userId=' + userId,'banuser' + userId);
+          break;
+        }
 
         return false;
       },
@@ -2834,24 +2878,6 @@ function contextMenuParse() {
         return false;
       }
     });
-
-    switch(action) {
-      case 'private_im':
-      standard.privateRoom(userId);
-      break;
-
-      case 'profile':
-      window.open(profileUrl + 'member.php?u=' + userId,'profile' + userId);
-      break;
-
-      case 'kick':
-      popup.kick(userId, roomId);
-      break;
-
-      case 'ban': // TODO?
-      window.open('moderate.php?do=banuser2&userId=' + userId,'banuser' + userId);
-      break;
-    }
 
     return false;
   });

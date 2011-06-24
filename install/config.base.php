@@ -37,6 +37,8 @@
 /* If you do... sorry 'bout all the verboisity. */
 
 
+
+
 ///* MySQL Login *///
 
 /* $sqlHost
@@ -107,6 +109,7 @@ $superUsers = array();
 
 
 
+
 ///* Encryption *///
 
 /* $salts
@@ -127,6 +130,7 @@ $encrypt = true;
  * Whether or not uploaded files should be encrypted.
  * Doing so is encouraged, but not required. It does mean greater CPU stress. */
 $encryptUploads = true;
+
 
 
 
@@ -170,7 +174,6 @@ $uploadUserMaxFiles = -1;
  * The total number of files that may be stored by the server.
  * "-1" means there is no limit. */
 $uploadMaxFiles = -1;
-
 
 
 
@@ -243,6 +246,9 @@ $disableTopic = true;
  * NOTE: The archive search feature is not yet stable. It will be in the FIM3 stable release ("FIM3GOLD"). */
 $searchWordLength = 4;
 
+/* $searchWordOmissions
+ * This eliminates certain words from the search archive, good if they are especially common. */
+$searchWordOmissions = array();
 
 
 
@@ -250,7 +256,6 @@ $searchWordLength = 4;
 ///* Bleeding-Edge *///
 ///* These are provided to enable technology that may help considerably but may also screw things up. *///
 ///* Change at your own risk. *///
-
 
 /* $longPolling
  * If enabled, experimental $longPolling support will be used instead of normal polling.
@@ -269,4 +274,7 @@ $anonymousUser = 1;
 
 // Unlisted variables: $messageLimit, $onlineThreshold, $installUrl, $installLoc, $sessionExpire, $roomLengthLimit
 // Learn about them in the documentation.
+
+
+// In future versions, many configuration variables may be moved to the DB. But, as of now, this is significantly faster.
 ?>

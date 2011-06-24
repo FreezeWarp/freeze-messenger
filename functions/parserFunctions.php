@@ -317,6 +317,23 @@ function fimParse_htmlWrap($html, $maxLength = 80, $char = '<br />') { /* An ada
 }
 
 
+/**
+* Generates keywords to enter into the archive search store.
+*
+* @param string $text - The text to generate the big keywords from.
+* @global int
+* @global
+* @return array - The keywords found.
+* @author Joseph Todd Parsons
+*/
+
+fim3parse_keyWords($string) {
+  $string = preg_replace('/()/',' ',$string) // Replace a variety of special symbols with plain spaces.
+
+  $string
+}
+
+
 
 /**
 * Container for all above parsers, formatting different values (html, raw, api).

@@ -255,17 +255,18 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
   </select><br />
   <small><span style="margin-left: 10px;">$phrases[settingsThemeBlurb]</span></small><br /><br />
 
-  <label for="avatars">$phrases[settingsDisableFxLabel]</label> <input type="checkbox" name="showAvatars" id="showAvatars" value="true" /><br />
-  <small><span style="margin-left: 10px;">>$phrases[settingsDisableFxBlurb]</span></small><br /><br />
+  <label for="avatars">$phrases[settingsShowAvatarsLabel]</label> <input type="checkbox" name="showAvatars" id="showAvatars" value="true" /><br />
+  <small><span style="margin-left: 10px;">$phrases[settingsShowAvatarsBlurb]</span></small><br /><br />
 
   <label for="reverse">$phrases[settingsReversePostOrderLabel]</label> <input type="checkbox" name="reversePostOrder" id="reversePostOrder" value="true" /><br />
   <small><span style="margin-left: 10px;">$phrases[settingsReversePostOrderBlurb]</span></small><br /><br />
 
   <label for="audioDing">$phrases[settingsAudioDingLabel]</label> <input type="checkbox" name="audioDing" id="audioDing" value="true" /><br />
-  <small><span style="margin-left: 10px;">$phrases[settingsDisableDingBlurb]</span></small><br /><br />
+  <small><span style="margin-left: 10px;">$phrases[settingsAudioDingBlurb]</span></small><br /><br />
 
   <label for="disableFx">$phrases[settingsDisableFxLabel]</label> <input type="checkbox" name="disableFx" id="disableFx" value="true" /><br />
   <small><span style="margin-left: 10px;">$phrases[settingsDisableFxBlurb]</span></small><br /><br />
+  </div>
 
   <div id="settings2">
   {{if="$enableDF"}{
@@ -279,9 +280,9 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
   {{if="$enableDF[''highlight'']"}{<input style="width: 40px;" id="defaultHighlight" name="defaultHighlight" />}}
 
   {{if="$enableDF[''general'']"}{
-  <label for="defaultBold">Bold</label><input type="checkbox" name="defaultBold" id="defaultBold" onchange="if ($(this).is('':checked'')) { $(''#fontPreview'').css(''font-weight'',''bold''); } else { $(''#fontPreview'').css(*{-webkit-box-sizing:border-box;-moz-box-sizing:border-box;-ms-box-sizing:border-box;-o-box-sizing:border-box;box-sizing:border-box;} body{overflow-x:hidden;font-family:Ubuntu, Calibria, Arial;margin:3px 5px 20px;padding:0;} @font-face{font-family:Ubuntu;font-style:normal;font-weight:400;src:local(Ubuntu), url(http://themes.googleusercontent.com/font?kit=_xyN3apAT_yRRDeqB3sPRg) format(woff);} #menu{float:left;width:25%;} #menu div,#menu ul{width:100%;} #rooms{max-height:300px;overflow:auto;} #content{float:right;width:75%;} #buttonMenuLeft{float:left;width:36px;display:block;} #messageInput{display:block;height:100px;float:right;padding:3px;} #messageInputContainer{white-space:nowrap;padding-left:3px;} #youtubeResultsContainer{height:320px;overflow:auto;} #textentryBoxUpload,#textentryBoxYoutube,#textentryBoxUrl{display:none;text-align:center;} #fileUpload,#urlUpload{width:300px;} #activeUsers{min-height:20px;max-height:250px;overflow-x:hidden;overflow-y:auto;} #rightTitle{width:30%;min-width:140px;} #messageList{height:440px;overflow:auto;} .leftPart{float:left;text-align:left;} .rightPart{float:right;text-align:right;} .userName{font-weight:700;} .userNameTable{width:150px;overflow:hidden;display:inline-block;word-wrap:normal;white-space:nowrap;} .inline{display:inline;} .inlineBlock{display:inline-block;} .hidden{display:none;} .embedImage{max-width:300px;max-height:300px;border:none;} a img:hover{opacity:.5;} img.standard{height:16px;width:16px;} button.standard{height:32px;width:32px;padding:7px!important;} select.standard{height:28px;} iframe.nodisplay{width:0;height:0;border:0;display:none;} table.rowHover tr:hover{opacity:.8;} table.page{border-spacing:0;width:100%;padding:5px;} .messageLine{display:block;margin:4px 0;} h2,h3,h4{margin:0;} .ui-button-icon-only .ui-icon,.ui-button-text-icon-primary .ui-icon,.ui-button-text-icon-secondary .ui-icon,.ui-button-text-icons .ui-icon,.ui-button-icons-only .ui-icon{top:0!important;left:0!important;position:relative;margin:0 auto!important;} table.leftright tr td:last-child{text-align:right;} table.leftright tr td[colspan=2]{text-align:center;} table.center{margin-left:auto;margin-right:auto;display:table;} .contextMenu{position:absolute;width:120px;z-index:99999;display:none;margin:0;padding:0;} .contextMenu li{list-style:none;margin:0;padding:0 0 3px;} .contextMenu a{text-decoration:none;display:block;line-height:20px;height:20px;border:none;padding-left:10px;} .contextMenu li.disabled a{cursor:default;} .frameBody{font-family:sans-serif;font-size:12px;width:100%;height:100%;margin:0;} .frameBody p{border:1px #bbb solid;padding:2px;} .rte-zone{width:500px;border:1px #999 solid;clear:both;height:200px;display:block;margin:0;padding:0;} div.jGrowl{z-index:9999;color:#fff;font-size:12px;position:absolute;padding:10px;} body > div.jGrowl{position:fixed;} div.jGrowl.top-left{left:0;top:0;} div.jGrowl.top-right{right:0;top:0;} div.jGrowl.bottom-left{left:0;bottom:0;} div.jGrowl.bottom-right{right:0;bottom:0;} div.jGrowl.center{top:0;width:50%;left:25%;} div.center div.jGrowl-notification,div.center div.jGrowl-closer{margin-left:auto;margin-right:auto;} div.jGrowl div.jGrowl-notification,div.jGrowl div.jGrowl-closer{background-color:#000;opacity:.85;-ms-filter:progid:DXImageTransform.Microsoft.Alpha(Opacity=85);filter:progid:DXImageTransform.Microsoft.Alpha(Opacity=85);zoom:1;width:235px;margin-top:5px;margin-bottom:5px;font-family:Tahoma, Arial, Helvetica, sans-serif;font-size:1em;text-align:left;display:none;-moz-border-radius:5px;-webkit-border-radius:5px;padding:10px;} div.jGrowl div.jGrowl-notification{min-height:40px;} div.jGrowl div.jGrowl-notification div.jGrowl-header{font-weight:700;font-size:.85em;} div.jGrowl div.jGrowl-notification div.jGrowl-close{z-index:99;float:right;font-weight:700;font-size:1em;cursor:pointer;} div.jGrowl div.jGrowl-closer{padding-top:4px;padding-bottom:4px;cursor:pointer;font-size:.9em;font-weight:700;text-align:center;} .tooltip-content{display:none;position:absolute;z-index:3000;padding:10px;} #tiptip_holder{display:none;position:absolute;top:0;left:0;z-index:99999;} #tiptip_holder.tip_top{padding-bottom:5px;} #tiptip_holder.tip_bottom{padding-top:5px;} #tiptip_holder.tip_right{padding-left:5px;} #tiptip_holder.tip_left{padding-right:5px;} #tiptip_arrow,#tiptip_arrow_inner{position:absolute;height:0;width:0;border-color:transparent;border-style:solid;border-width:6px;} #tiptip_holder.tip_top #tiptip_arrow_inner{margin-top:-7px;margin-left:-6px;} #tiptip_holder.tip_bottom #tiptip_arrow_inner{margin-top:-5px;margin-left:-6px;} #tiptip_holder.tip_right #tiptip_arrow_inner{margin-top:-6px;margin-left:-5px;} #tiptip_holder.tip_left #tiptip_arrow_inner{margin-top:-6px;margin-left:-7px;} #title,table.leftright tr td:first-child{text-align:left;} @media print { div.jGrowl{display:none;} }''font-weight'',''normal''); }" value="true"{{if="$user[''defaultFormatting''] & 256"}{ checked="checked"}} />
+  <label for="defaultBold">Bold</label><input type="checkbox" name="defaultBold" id="defaultBold" onchange="if ($(this).is('':checked'')) { $(''#fontPreview'').css(''font-weight'',''bold''); } else { $(''#fontPreview'').css(''font-weight'',''normal''); }" value="true"{{if="$user[''defaultFormatting''] & 256"}{ checked="checked"}} />
 
-  <label for="defaultItalics">Italics</label><input type="checkbox" name="defaultItalics" id="defaultItalics" value="true"{{if="$user[''defaultFormatting''] & 512"}{ checked="checked"}} onchange="if ($(this).is('':checked'')) { $(''#fontPreview'').css(''font-style'',''italic''); } else { $(''#fontPreview'').css(''font-style'',''normal''); }" /><br />}}
+  <label for="defaultItalics">Italics</label><input type="checkbox" name="defaultItalics" id="defaultItalics" value="true"{{if="$user[''defaultFormatting''] & 512"}{ checked="checked"}} onchange="if ($(this).is('':checked'')) { $(''#fontPreview'').css(''font-style'',''italic''); } else { $(''#fontPreview'').css(''font-style'',''normal''); }" /><br /><br />}}
 
   <label for="disableFormatting">$phrases[settingsDisableFormattingLabel]</label> <input type="checkbox" name="settingsOfficialAjax_disableFormatting" id="disableFormatting" value="true"{{if="$user[''optionDefs''][''disableFormatting'']"}{ checked="checked"}} /><br />
   <small><span style="margin-left: 10px;">$phrases[settingsDisableFormattingBlurb]</span></small><br /><br />
@@ -291,7 +292,6 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
 
   <label for="disableImage">$phrases[settingsDisableImageLabel]</label> <input type="checkbox" name="settingsOfficialAjax_disableImage" id="disableImage" value="true"{{if="$user[''optionDefs''][''disableImages'']"}{ checked="checked"}} /><br />
   <small><span style="margin-left: 10px;">$phrases[settingsDisableImageBlurb]</span></small><br /><br />
-  </div>
 
   <small><span style="margin-left: 10px;" id="fontPreview">$phrases[settingsDefaultFormattingPreview]</span></small><br /><br />}}
   </div>
@@ -457,7 +457,7 @@ Keep in mind all content is heavily encrytped for privacy. Private conversations
 </div>'),
 
 (30, 'contextMenu', '', '<ul id="userMenu" class="contextMenu">
-    <li><a href="javascript:void(0);" data-action="private_im">Private IM</a></li>
+  <li><a href="javascript:void(0);" data-action="private_im">Private IM</a></li>
   <li><a href="javascript:void(0);" data-action="profile">View Profile</a></li>
   {{if="fim_hasPermission($room, $user, ''moderate'')"}{<li><a href="javascript:void(0);" data-action="kick">Kick</a></li>}}
   {{if="$user[''adminPrivs''][''modUsers'']"}{<li><a href="javascript:void(0);" data-action="ban">Ban</a></li>}}
