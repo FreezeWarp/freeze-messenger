@@ -616,38 +616,38 @@ if(jQuery)(function() {
               $(menu).css({ top: y, left: x }).fadeIn(o.inSpeed);
 
               // Hover events
-              $(menu).find('A').mouseover(function() {
-                $(menu).find('LI.hover').removeClass('hover');
+              $(menu).find('a').mouseover(function() {
+                $(menu).find('li.hover').removeClass('hover');
                 $(this).parent().addClass('hover');
               }).mouseout(function() {
-                $(menu).find('LI.hover').removeClass('hover');
+                $(menu).find('li.hover').removeClass('hover');
               });
 
               // Keyboard
               $(document).keypress(function(e) {
                 switch(e.keyCode) {
                   case 38: // up
-                  if ($(menu).find('LI.hover').size() == 0) {
-                    $(menu).find('LI:last').addClass('hover');
+                  if ($(menu).find('li.hover').size() == 0) {
+                    $(menu).find('li:last').addClass('hover');
                   }
                   else {
-                    $(menu).find('LI.hover').removeClass('hover').prevAll('LI:not(.disabled)').eq(0).addClass('hover');
-                    if ($(menu).find('LI.hover').size() == 0) $(menu).find('LI:last').addClass('hover');
+                    $(menu).find('li.hover').removeClass('hover').prevAll('li:not(.disabled)').eq(0).addClass('hover');
+                    if ($(menu).find('li.hover').size() == 0) $(menu).find('li:last').addClass('hover');
                   }
                   break;
 
                   case 40: // down
-                  if ($(menu).find('LI.hover').size() == 0) {
-                    $(menu).find('LI:first').addClass('hover');
+                  if ($(menu).find('li.hover').size() == 0) {
+                    $(menu).find('li:first').addClass('hover');
                   }
                   else {
-                    $(menu).find('LI.hover').removeClass('hover').nextAll('LI:not(.disabled)').eq(0).addClass('hover');
-                    if ($(menu).find('LI.hover').size() == 0) $(menu).find('LI:first').addClass('hover');
+                    $(menu).find('li.hover').removeClass('hover').nextAll('li:not(.disabled)').eq(0).addClass('hover');
+                    if ($(menu).find('li.hover').size() == 0) $(menu).find('li:first').addClass('hover');
                   }
                   break;
 
                   case 13: // enter
-                  $(menu).find('LI.hover A').trigger('click');
+                  $(menu).find('li.hover a').trigger('click');
                   break;
 
                   case 27: // esc
@@ -657,8 +657,8 @@ if(jQuery)(function() {
               });
 
               // When items are selected
-              $('#' + o.menu).find('A').unbind('click');
-              $('#' + o.menu).find('LI:not(.disabled) A').click(function() {
+              $('#' + o.menu).find('a').unbind('click');
+              $('#' + o.menu).find('li:not(.disabled) a').click(function() {
                 $(document).unbind('click').unbind('keypress');
                 $(".contextMenu").hide();
 
