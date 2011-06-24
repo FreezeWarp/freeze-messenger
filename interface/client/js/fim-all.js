@@ -877,12 +877,12 @@ var standard = {
           });
         }
 
-        return false;
+        return true;
       },
       error: function() {
         dia.error('Archive failed to obtain results from server.');
 
-        return false;
+        return true;
       }
     })).done(function() {
       $('#archiveMessageList').html(data);
@@ -893,7 +893,7 @@ var standard = {
         options.callback(data);
       }
 
-      return false;
+      return true;
     });
   },
 
@@ -1256,7 +1256,7 @@ var standard = {
             }
             else {
               requestSettings.timeout = 2400;
-              setTimeout(standard.getMessages,500);
+              setTimeout(standard.getMessages,2500);
             }
           }
 

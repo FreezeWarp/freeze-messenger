@@ -184,7 +184,7 @@ $uploadMaxFiles = -1;
 /* $bannedUserGroups
  * Users that are a part of any of these groups are treated as automatically banned.
  * This is generally only used for forum integration. However, it must also be implemented if you wish to add a BANNED usergroup on Vanilla. */
-$bannedUserGroups = array(8);
+$bannedUserGroups = array();
 
 /* $enableDF
  * Set values here to true/false to disable "categories" of default formatting that users may use.
@@ -237,7 +237,7 @@ $compressOutput = true; // Set this to off to avoid compacting PHP-generated HTM
 /* $disableTopic
  * Set to true to disable the changing of room topics.
  * Not well integrated yet, but it still does the job. */
-$disableTopic = true;
+$disableTopic = false;
 
 /* $searchWordLength
  * This alters the minimum length of search in the archives.
@@ -250,6 +250,53 @@ $searchWordLength = 4;
  * This eliminates certain words from the search archive, good if they are especially common. */
 $searchWordOmissions = array();
 
+/* $searchWordPunctuation
+ * These are symbols that are ignored in the archive search index.
+ * The default works fairly good for most Latin an Japanese texts. */
+$searchWordPunctuation = array(
+  ',', '.', ';', ':', '-',
+  '"', '\'',
+  '=', '?', '\\', '/', '[',
+  ']', '^', '&', '#', '@',
+  '!', '%', '*', '(', ')',
+
+  '。', '？', '、', '！',
+  '；', '「', '」', '｛', '｝',
+  '：', '”', '’', '（', '）',
+
+  '‘', '’','¡','¿','¦',
+);
+
+/* $searchWordConverts
+ * These are character(s) that will be converted to other characters when stored in the search archival database.
+ * By default, both common European symbols and Japanese punctuation are included. */
+$searchWordConverts = array(
+  // European Conversions (i.e. Latin, French, German, Spanish)
+  'é' => 'e', 'ë' => 'e',
+  'É' => 'E', 'Ë' => 'E',
+  'ó' => 'o', 'ö' => 'o',
+  'ø' => 'o', 'Ó' => 'O',
+  'Ö' => 'O', 'Ø' => 'O',
+  'í' => 'i', 'ï' => 'i',
+  'Í' => 'I', 'Ï' => 'I',
+  'ú' => 'u', 'ü' => 'u',
+  'Ú' => 'U', 'Ü' => 'U',
+  'ñ' => 'n',
+
+  // Japanese Conversions
+  '？' => '?', '！' => '!',
+  '。' => '.', '、' => ',',
+  '；' => ';', '：' => ':',
+  '／' => '/', '｜' => '|',
+  '＠' => '@', '＃' => '#',
+  '＄' => '$', '％' => '%',
+  '＾' => '^', '＆' => '&',
+  '＊' => '*',
+  '（' => '(', '）' => ')',
+  '「' => '[', '」' => ']',
+  '｛' => '{', '｝' => '}',
+  '＜' => '<', '＞' => '>',
+);
 
 
 
