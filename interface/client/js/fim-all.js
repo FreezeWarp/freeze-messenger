@@ -516,7 +516,6 @@ function populate(options) {
       url: directory + 'api/getRooms.php?permLevel=view&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
       timeout: 5000,
       type: 'GET',
-      async: true,
       cache: false,
       success: function(xml) {
         roomList = new Array; // Clear so we don't get repeat values on regeneration.
@@ -569,8 +568,6 @@ function populate(options) {
           else {
             modRooms[roomId] = 0;
           }
-
-          return false;
         });
 
         $('#roomListLong > li > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li><li>My Rooms<ul>' + roomUlMyHtml + '</ul></li><li>General<ul>' + roomUlHtml + '</ul></li><li>Private<ul>' + roomUlPrivHtml + '</ul></li>');
@@ -595,7 +592,6 @@ function populate(options) {
       url: directory + 'api/getGroups.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
       timeout: 5000,
       type: 'GET',
-      async: true,
       cache: false,
       success: function(xml) {
         console.log('Groups obtained.');
@@ -821,7 +817,6 @@ var standard = {
       url: directory + 'api/getMessages.php?rooms=' + options.roomId + '&archive=1&messageLimit=20&' + where + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
       type: 'GET',
       timeout: 1000,
-      async: true,
       data: '',
       contentType: "text/xml; charset=utf-8",
       dataType: "xml",
@@ -1087,7 +1082,6 @@ var standard = {
         url: directory + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest? '&archive=1&messageDateMin=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdMin=' + (requestSettings.lastMessage)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
         type: 'GET',
         timeout: requestSettings.timeout,
-        async: true,
         data: '',
         contentType: "text/xml; charset=utf-8",
         dataType: "xml",
@@ -1954,7 +1948,6 @@ popup = {
           url: directory + 'api/getFonts.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
           timeout: 5000,
           type: 'GET',
-          async: true,
           cache: false,
           success: function(xml) {
             $(xml).find('font').each(function() {
@@ -1964,8 +1957,6 @@ popup = {
               var fontData = unxml($(this).find('fontData').text().trim());
 
               $('#defaultFace').append('<option value="' + fontId + '" style="' + fontData + '" data-font="' + fontData + '">' + fontName + '</option>');
-
-              return false;
             });
 
             return false;
@@ -2376,8 +2367,6 @@ popup = {
           var expires = unxml($(this).find('expiresFormatted').text().trim());
 
           kickHtml += '<tr><td>' + userFormatStart + userName + userFormatEnd + '</td><td>' + kickerFormatStart + kickerName + kickerFormatEnd + '</td><td>' + set + '</td><td>' + expires + '</td><td><button onclick="standard.unkick(' + userId + ',' + roomId + ')">Unkick</button></td></tr>';
-
-          return false;
         });
 
         dia.full({

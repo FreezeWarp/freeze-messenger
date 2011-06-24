@@ -342,7 +342,7 @@ switch ($action) {
 
     if ($_POST['defaultFontface']) {
       $fontData = dbRows("SELECT fontId,
-        name,
+        name,        $updateArray['defaultRoom'] = (int) $_POST['defaultRoomId'];
         data,
         category
       FROM {$sqlPrefix}fonts
@@ -350,13 +350,15 @@ switch ($action) {
       LIMIT 1");
 
       if ((int) $fontData['fontId']) {
-        $xmlData['moderate']['response'][$value]['status'] = true;
-        $xmlData['moderate']['response'][$value]['newValue'] = (int) $fontData['fontId'];
+        $updateArray['defaultFontface'] = (int) $fontData['fontId'];
+
+        $xmlData['moderate']['response']['defaultFontface']['status'] = true;
+        $xmlData['moderate']['response']['defaultFontface']['newValue'] = (int) $fontData['fontId'];
       }
       else {
-        $xmlData['moderate']['response']['defaultHighlight']['status'] = false;
-        $xmlData['moderate']['response']['defaultHighlight']['errStr'] = 'nofont';
-        $xmlData['moderate']['response']['defaultHighlight']['errDesc'] = 'The specified font does not exist.';
+        $xmlData['moderate']['response']['defaultFontface']['status'] = false;
+        $xmlData['moderate']['response']['defaultFontface']['errStr'] = 'nofont';
+        $xmlData['moderate']['response']['defaultFontface']['errDesc'] = 'The specified font does not exist.';
       }
     }
 
