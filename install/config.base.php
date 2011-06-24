@@ -123,6 +123,11 @@ $salts = array(
  * You are free to change this at any time, as long as no values are removed in the $salts entry above. */
 $encrypt = true;
 
+/* $encryptUploads
+ * Whether or not uploaded files should be encrypted.
+ * Doing so is encouraged, but not required. It does mean greater CPU stress. */
+$encryptUploads = true;
+
 
 
 ///* Uploads *///
@@ -150,11 +155,6 @@ $uploadExtensions = array(
   'jpeg' => 'image/jpeg',
   'png' => 'image/png',
 );
-
-/* $encryptUploads
- * Whether or not uploaded files should be encrypted.
- * Doing so is encouraged, but not required. It does mean greater CPU stress. */
-$encryptUploads = true;
 
 /* $uploadMaxSize
  * The maximum size in bytes of all uploaded files.
@@ -203,7 +203,6 @@ $userPermissions = array(
   'postCounts' => true, // The user can view the post totals made by another user in a room they don't have access to.
 );
 
-
 /* $bbcode
  * This defines which BBCodes are enabled and disabled. */
 $bbcode = array(
@@ -222,11 +221,6 @@ $bbcode = array(
 ///* Defaults *///
 ///* You do not need to edit this section, but you can for nit-picky reasons. *///
 
-/* $cookiePrefix
- * The prefix to be used with cookies.
- * This can be whatever, but you are recommended to leave it unchanged. */
-$cookiePrefix = 'fim3_';
-
 /* $cacheTableLimit
  * This is the maximum number of messages that will be stored in the table at one time.
  * Note that increasing this can mean faster performance in many situations, but may lead to errors if the MySQL server is not properly configured. */
@@ -242,12 +236,12 @@ $compressOutput = true; // Set this to off to avoid compacting PHP-generated HTM
  * Not well integrated yet, but it still does the job. */
 $disableTopic = true;
 
-
-
-///* jQueryUI Interface Defaults *////
-///* These are special directives for the included jQueryUI Interface. *///
-
-$defaultTheme = 4;
+/* $searchWordLength
+ * This alters the minimum length of search in the archives.
+ * Smaller lengths will dramatically increase the server power needed.
+ * Specify "-1" to disable archive searching entirely (this may be useful if you are worried about its lack of encryption).
+ * NOTE: The archive search feature is not yet stable. It will be in the FIM3 stable release ("FIM3GOLD"). */
+$searchWordLength = 4;
 
 
 
@@ -263,7 +257,6 @@ $defaultTheme = 4;
  * This has several benefits: it places less load on the server, less load on the user, allows for far faster connections, and is generally smoother.
  * However, at the same time, many (if not most) server configurations will have issues with this. */
 $longPolling = false; // If true, experimental longpolling support will be enabled. In general, it is recommended you NOT set this to true.
-
 
 /* $anonymousUser
  * If specified, a single user can be used to allow all unregistered / not-logged in to post messages.

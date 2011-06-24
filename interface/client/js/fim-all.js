@@ -260,6 +260,7 @@ var anonId; // ID used to represent anonymous posters.
 var prepopup;
 
 
+
 /* Function-Specific Variables */
 
 window.isBlurred = false; // By default, we assume the window is active and not blurred.
@@ -308,6 +309,7 @@ var currentLocation = window.location.origin + directory + 'interface/';
 
 /* Get Server-Specific Variables
 * We Should Not Call This Again */
+
 $.ajax({
   url: directory + 'api/getServerStatus.php',
   type: 'GET',
@@ -328,7 +330,8 @@ $.ajax({
 
 
 /* URL-Defined Actions
-* TODO */
+ * TODO */
+
 function hashParse() {
   var urlHash = window.location.hash;
   var urlHashComponents = urlHash.split('#');
@@ -400,9 +403,10 @@ var adminPermissions = {
 * These Are Set Based on Cookies */
 
 var settings = {
+  disableFx : (settingsBitfield & 16384 ? true : false), // Disable jQuery Effects?
+  audioDing : (settingsBitfield & 8192 ? true : false), // Fire an HTML5 audio ding during each unread message?
   showAvatars : (settingsBitfield & 2048 ? true : false), // Use the complex document style?
   reversePostOrder : (settingsBitfield & 1024 ? true : false), // Show posts in reverse?
-  audioDing : (settingsBitfield & 8192 ? true : false), // Fire an HTML5 audio ding during each unread message?
   disableImages : (settingsBitfield & 32 ? true : false),
   disableVideos : (settingsBitfield & 64 ? true : false),
   disableFormatting : (settingsBitfield & 16 ? true : false)
@@ -863,10 +867,6 @@ var standard = {
               firstMessage = messageId;
             }
           });
-
-          if (typeof contextMenuParse === 'function') { // TODO
-            contextMenuParse();
-          }
         }
 
         return false;
@@ -1241,10 +1241,6 @@ var standard = {
                   }
                 }
               }
-            }
-
-            if (typeof contextMenuParse === 'function') {
-              contextMenuParse();
             }
 
             if (requestSettings.longPolling) {
@@ -1859,7 +1855,7 @@ popup = {
         return false;
       },
       oF : function() {
-        $('#settingsOfficialAjax_theme').change(function() {
+        $('#theme').change(function() {
           $('#stylesjQ').attr('href','client/css/' + themes[this.value] + '/jquery-ui-1.8.13.custom.css');
           $('#stylesFIM').attr('href','client/css/' + themes[this.value] + '/fim.css');
 
@@ -1930,6 +1926,25 @@ popup = {
             settings.audioDing = false;
             $('#messageList').html('');
             $.cookie('fim3_settings',$.cookie('fim3_settings') - 8192);
+
+            requestSettings.firstRequest= true;
+          }
+
+          return false;
+        });
+
+        $('#disableFx').change(function() {
+          if ($(this).val() == 'true' && !settings.disableFx) {
+            settings.disableFx = true;
+            $('#disableFx').html('');
+            $.cookie('fim3_settings',$.cookie('fim3_settings') + 16384);
+
+            requestSettings.firstRequest= true;
+          }
+          else if ($(this).val() != 'true' && settings.disableFx) {
+            settings.disableFx = false;
+            $('#disableFx').html('');
+            $.cookie('fim3_settings',$.cookie('fim3_settings') - 16384);
 
             requestSettings.firstRequest= true;
           }
@@ -2536,6 +2551,10 @@ popup = {
 function windowDraw() {
   console.log('Redrawing window.');
 
+  if (settings.disableFx) {
+    jQuery.fx.off = true;
+  }
+
   if (settings.showAvatars) {
     $('.messageText').tipTip({
       attribute: 'data-time'
@@ -2569,6 +2588,8 @@ function windowDraw() {
       return false;
     }
   });
+
+  contextMenuParse();
 
 
   /*** Create the Accordion Menu ***/

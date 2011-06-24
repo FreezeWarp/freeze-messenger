@@ -565,154 +565,147 @@ if(jQuery)(function() {
       if (o.inSpeed == 0) o.inSpeed = -1;
       if (o.outSpeed == 0) o.outSpeed = -1;
 
-      $(this).each(function() { // Loop each context menu
-        var el = $(this);
-        var offset = $(el).offset();
+      $(this).die('mousedown');
+      $(this).live({
+        /*mousedown : function() { // Loop each context menu
+          if (event.which == 3) {
+            var offset = $(this).offset();
 
-        $('#' + o.menu).addClass('contextMenu'); // Add contextMenu class
+            $('#' + o.menu).addClass('contextMenu'); // Add contextMenu class
+          }
+        },*/
+        mouseup : function() {
+//          $(this).stopPropagation();
+          var srcElement = $(this);
+alert(1);
+          if (event.button == 3) { alert(3);
+            $(".contextMenu").hide(); // Hide context menus that may be showing
 
-        $(this).mousedown(function(e) { // Simulate a true right clickasync
-          var evt = e;
-          evt.stopPropagation();
+            var menu = $('#' + o.menu); // Get this context menu
 
-          $(this).mouseup(function(e) {
-            e.stopPropagation();
-            var srcElement = $(this);
-            $(this).unbind('mouseup');
+            // Detect mouse position
+            var d = {}, x, y;
+            if (self.innerHeight) {
+              d.pageYOffset = self.pageYOffset;
+              d.pageXOffset = self.pageXOffset;
+              d.innerHeight = self.innerHeight;
+              d.innerWidth = self.innerWidth;
+            }
+            else if (document.documentElement && document.documentElement.clientHeight) {
+              d.pageYOffset = document.documentElement.scrollTop;
+              d.pageXOffset = document.documentElement.scrollLeft;
+              d.innerHeight = document.documentElement.clientHeight;
+              d.innerWidth = document.documentElement.clientWidth;
+            }
+            else if (document.body) {
+              d.pageYOffset = document.body.scrollTop;
+              d.pageXOffset = document.body.scrollLeft;
+              d.innerHeight = document.body.clientHeight;
+              d.innerWidth = document.body.clientWidth;
+            }
 
-            if (evt.button == 2) {
-              $(".contextMenu").hide(); // Hide context menus that may be showing
+            x = (e.pageX ? e.pageX : e.clientX + d.scrollLeft);
+            y = (e.pageY ? e.pageY : e.clientY + d.scrollTop);
 
-              var menu = $('#' + o.menu); // Get this context menu
 
-              if ($(el).hasClass('disabled')) return false;
+            // Show the menu
+            //$(document).die('click');
+            $(menu).css({ top: y, left: x }).fadeIn(o.inSpeed);
 
-              // Detect mouse position
-              var d = {}, x, y;
-              if (self.innerHeight) {
-                d.pageYOffset = self.pageYOffset;
-                d.pageXOffset = self.pageXOffset;
-                d.innerHeight = self.innerHeight;
-                d.innerWidth = self.innerWidth;
-              }
-              else if (document.documentElement && document.documentElement.clientHeight) {
-                d.pageYOffset = document.documentElement.scrollTop;
-                d.pageXOffset = document.documentElement.scrollLeft;
-                d.innerHeight = document.documentElement.clientHeight;
-                d.innerWidth = document.documentElement.clientWidth;
-              }
-              else if (document.body) {
-                d.pageYOffset = document.body.scrollTop;
-                d.pageXOffset = document.body.scrollLeft;
-                d.innerHeight = document.body.clientHeight;
-                d.innerWidth = document.body.clientWidth;
-              }
 
-              x = (e.pageX ? e.pageX : e.clientX + d.scrollLeft);
-              y = (e.pageY ? e.pageY : e.clientY + d.scrollTop);
+            // Hover events
+            $(menu).find('a').mouseover(function() {
+              $(menu).find('li.hover').removeClass('hover');
+              $(this).parent().addClass('hover');
+            }).mouseout(function() {
+              $(menu).find('li.hover').removeClass('hover');
+            });
 
-              // Show the menu
-              $(document).unbind('click');
-              $(menu).css({ top: y, left: x }).fadeIn(o.inSpeed);
 
-              // Hover events
-              $(menu).find('a').mouseover(function() {
-                $(menu).find('li.hover').removeClass('hover');
-                $(this).parent().addClass('hover');
-              }).mouseout(function() {
-                $(menu).find('li.hover').removeClass('hover');
-              });
+            // Keyboard
+            $(document).keypress(function(e) {
+              switch(e.keyCode) {
+                case 38: // up
+                if ($(menu).find('li.hover').size() == 0) {
+                  $(menu).find('li:last').addClass('hover');
+                }
+                else {
+                  $(menu).find('li.hover').removeClass('hover').prevAll('li:not(.disabled)').eq(0).addClass('hover');
 
-              // Keyboard
-              $(document).keypress(function(e) {
-                switch(e.keyCode) {
-                  case 38: // up
                   if ($(menu).find('li.hover').size() == 0) {
                     $(menu).find('li:last').addClass('hover');
                   }
-                  else {
-                    $(menu).find('li.hover').removeClass('hover').prevAll('li:not(.disabled)').eq(0).addClass('hover');
+                }
+                break;
 
-                    if ($(menu).find('li.hover').size() == 0) {
-                      $(menu).find('li:last').addClass('hover');
-                    }
-                  }
-                  break;
+                case 40: // down
+                if ($(menu).find('li.hover').size() == 0) {
+                  $(menu).find('li:first').addClass('hover');
+                }
+                else {
+                  $(menu).find('li.hover').removeClass('hover').nextAll('li:not(.disabled)').eq(0).addClass('hover');
 
-                  case 40: // down
                   if ($(menu).find('li.hover').size() == 0) {
                     $(menu).find('li:first').addClass('hover');
                   }
-                  else {
-                    $(menu).find('li.hover').removeClass('hover').nextAll('li:not(.disabled)').eq(0).addClass('hover');
-
-                    if ($(menu).find('li.hover').size() == 0) {
-                      $(menu).find('li:first').addClass('hover');
-                    }
-                  }
-                  break;
-
-                  case 13: // enter
-                  $(menu).find('li.hover a').trigger('click');
-                  break;
-
-                  case 27: // esc
-                  $(document).trigger('click');
-                  break
                 }
-              });
+                break;
 
-              // When items are selected
-              $('#' + o.menu).find('a').unbind('click');
-              $('#' + o.menu).find('li:not(.disabled) a').click(function() {
+                case 13: // enter
+                $(menu).find('li.hover a').trigger('click');
+                break;
+
+                case 27: // esc
+                $(document).trigger('click');
+                break
+              }
+            });
+
+            // When items are selected
+            $('#' + o.menu).find('a').unbind('click');
+            $('#' + o.menu).find('li:not(.disabled) a').click(function() {
+              $(document).unbind('click').unbind('keypress');
+              $(".contextMenu").hide();
+
+              // Callback
+              if (callback) {
+                callback($(this).attr('data-action'), $(srcElement), {x: x - offset.left, y: y - offset.top, docX: x, docY: y});
+              }
+
+              return false;
+            });
+
+            // Hide bindings
+            setTimeout(function() { // Delay for Mozilla; TODO: Confirm still a problem
+              $(document).click(function() {
                 $(document).unbind('click').unbind('keypress');
-                $(".contextMenu").hide();
-
-                // Callback
-                if (callback) {
-                  callback($(this).attr('data-action'), $(srcElement), {x: x - offset.left, y: y - offset.top, docX: x, docY: y});
-                }
-
+                $(menu).fadeOut(o.outSpeed);
                 return false;
               });
+            }, 0);
 
-              // Hide bindings
-              setTimeout(function() { // Delay for Mozilla; TODO: Confirm still a problem
-                $(document).click(function() {
-                  $(document).unbind('click').unbind('keypress');
-                  $(menu).fadeOut(o.outSpeed);
-                  return false;
-                });
-              }, 0);
+            // Disable text selection
+            if ($.browser.mozilla) {
+              $('#' + o.menu).each(function() { $(this).css({ 'MozUserSelect' : 'none' }); });
             }
-          });
-        });
+            else if ($.browser.msie) {
+              $('#' + o.menu).each(function() { $(this).bind('selectstart.disableTextSelect', function() { return false; }); });
+            }
+            else {
+              $('#' + o.menu).each(function() { $(this).bind('mousedown.disableTextSelect', function() { return false; }); });
+            }
 
-        // Disable text selection
-        if ($.browser.mozilla) {
-          $('#' + o.menu).each(function() { $(this).css({ 'MozUserSelect' : 'none' }); });
+            $(this).add($('ul.contextMenu')).bind('contextmenu', function() { return false; }); // Disable browser context menu (requires both selectors to work in IE/Safari + FF/Chrome)
+          }
         }
-        else if ($.browser.msie) {
-          $('#' + o.menu).each(function() { $(this).bind('selectstart.disableTextSelect', function() { return false; }); });
-        }
-        else {
-          $('#' + o.menu).each(function() { $(this).bind('mousedown.disableTextSelect', function() { return false; }); });
-        }
-
-        // Disable browser context menu (requires both selectors to work in IE/Safari + FF/Chrome)
-        $(el).add($('UL.contextMenu')).bind('contextmenu', function() { return false; });
-
       });
 
       return $(this);
     },
 
-    // Destroy context menu(s)
-    destroyContextMenu: function() {
-      // Destroy specified context menus
-      $(this).each(function() {
-        // Disable action
-        $(this).unbind('mousedown').unbind('mouseup');
+    destroyContextMenu: function() { // Destroy context menu(s)
+      $(this).each(function() { // Destroy specified context menus
+        $(this).unbind('mousedown').unbind('mouseup'); // Disable action
       });
 
       return($(this));

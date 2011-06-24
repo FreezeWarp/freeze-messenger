@@ -190,4 +190,10 @@ INSERT INTO `{prefix}phrases` (`id`, `name`, `text_en`, `text_jp`) VALUES
 (186, 'hookHead', '',''),
 (187, 'templateShowLessRooms', 'Show Fewer', ''),
 (188, 'templateShowMoreRooms', 'Show More', ''),
-(189, 'templateAdminPrivs', 'Moderate Admins', '');
+(189, 'templateAdminPrivs', 'Moderate Admins', ''),
+(190, 'settingsDisableFxBlurb', 'Disale Effects:', ''),
+(191, 'settingsDisableFxBlurb', 'Disabling effects can lead to a performance and a reduction of "client-side" lag (that not related to the server). It has no side-effects, aside from not looking as pretty.', ''),
+(192, 'settingsShowAvatarsLabel', 'Show Avatars:', ''),
+(192, 'settingsShowAvatarsBlurb', 'Showing avatars will reduce the overall amount of text by hiding post times and userNames with a small avatar to represent users. Times can be viewed by moving the mouse over each message.', ''),
+(193, 'settingsThemeLabel', 'Theme:', ''),
+(194, 'settingsThemeBlurb', 'Change the theming of the messenger to your liking. "Cupertino" and "jQueryUI" are good choices.', '');

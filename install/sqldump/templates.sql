@@ -242,7 +242,7 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
 
 <form action="#" method="post" id="changeSettingsForm">
   <div id="settings1">
-  <label for="theme">Theme:</label> <select name="settingsOfficialAjax_theme" id="settingsOfficialAjax_theme">
+  <label for="theme">$phrases[settingsThemeLabel]</label> <select name="theme" id="theme">
     <option value="1">jQueryUI Darkness</option>
     <option value="2">jQueryUI Lightness</option>
     <option value="3">High Contrast Blue</option>
@@ -253,40 +253,19 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
     <option value="8">Trontastic</option>
     <option value="9">Humanity</option>
   </select><br />
-  <small><span style="margin-left: 10px;">Change the theming of the messenger to your liking. "Cupertino" and "jQueryUI" are good choices.</span></small><br /><br />
+  <small><span style="margin-left: 10px;">$phrases[settingsThemeBlurb]</span></small><br /><br />
 
-  <label for="avatars">Show Avatars</label> <input type="checkbox" name="settingsOfficialAjax_showAvatars" id="showAvatars" value="true"{{if="$user[''optionDefs''][''showAvatars'']"}{ checked="checked"}} /><br />
-  <small><span style="margin-left: 10px;">Showing avatars will reduce the overall amount of text by hiding post times and userNames with a small avatar to represent users. Times can be viewed by moving the mouse over each message.</span></small><br /><br />
+  <label for="avatars">$phrases[settingsDisableFxLabel]</label> <input type="checkbox" name="showAvatars" id="showAvatars" value="true" /><br />
+  <small><span style="margin-left: 10px;">>$phrases[settingsDisableFxBlurb]</span></small><br /><br />
 
-  <label for="reverse">$phrases[settingsReversePostOrderLabel]</label> <input type="checkbox" name="settingsOfficialAjax_reversePostOrder" id="reversePostOrder" value="true"{{if="$user[''optionDefs''][''reversePostOrder'']"}{ checked="checked"}} /><br />
+  <label for="reverse">$phrases[settingsReversePostOrderLabel]</label> <input type="checkbox" name="reversePostOrder" id="reversePostOrder" value="true" /><br />
   <small><span style="margin-left: 10px;">$phrases[settingsReversePostOrderBlurb]</span></small><br /><br />
 
-  <label for="settingsOfficialAjax_audioDing">$phrases[settingsAudioDingLabel]</label> <input type="checkbox" name="settingsOfficialAjax_audioDing" id="audioDing" value="true"{{if="$user[''optionDefs''][''audioDing'']"}{ checked="checked"}} /><br />
+  <label for="audioDing">$phrases[settingsAudioDingLabel]</label> <input type="checkbox" name="audioDing" id="audioDing" value="true" /><br />
   <small><span style="margin-left: 10px;">$phrases[settingsDisableDingBlurb]</span></small><br /><br />
 
-  <label for="disableFormatting">$phrases[settingsDisableFormattingLabel]</label> <input type="checkbox" name="settingsOfficialAjax_disableFormatting" id="disableFormatting" value="true"{{if="$user[''optionDefs''][''disableFormatting'']"}{ checked="checked"}} /><br />
-  <small><span style="margin-left: 10px;">$phrases[settingsDisableFormattingBlurb]</span></small><br /><br />
-
-  <label for="disableVideo">$phrases[settingsDisableVideoLabel]</label> <input type="checkbox" name="settingsOfficialAjax_disableVideo" id="disableVideo" value="true"{{if="$user[''optionDefs''][''disableVideo'']"}{ checked="checked"}} /><br />
-  <small><span style="margin-left: 10px;">$phrases[settingsDisableVideoBlurb]</span></small><br /><br />
-
-  <label for="disableImage">$phrases[settingsDisableImageLabel]</label> <input type="checkbox" name="settingsOfficialAjax_disableImage" id="disableImage" value="true"{{if="$user[''optionDefs''][''disableImages'']"}{ checked="checked"}} /><br />
-  <small><span style="margin-left: 10px;">$phrases[settingsDisableImageBlurb]</span></small><br /><br />
-  </div>
-
-  <div id="settings3">
-  <label for="mature">$phrases[settingsParentalControlsLabel]</label> <input type="checkbox" name="mature" id="mature" value="true"{{if="$user[''settings''] & 64"}{ checked="checked"}} /><br />
-  <small><span style="margin-left: 10px;">$phrases[settingsParentalControlsBlurb]</span></small><br /><br />
-
-  <label for="defaultRoom">$phrases[settingsDefaultRoomLabel]</label> <input type="text" name="defaultRoom" id="defaultRoom" /><br />
-  <small><span style="margin-left: 10px;">$phrases[settingsDefaultRoomBlurb]</span></small><br /><br />
-
-  <label for="watchRooms">$phrases[settingsWatchRoomsLabel]</label> <input type="text" name="watchRoomsBridge" id="watchRoomsBridge" /><input type="button" value="Add" onclick="autoEntry.addEntry(''watchRooms'');" /><br />
-  <small><span style="margin-left: 10px;">$phrases[settingsWatchRoomsBlurb]</span></small><br />
-  <small><span style="margin-left: 10px;">$phrases[settingsWatchRoomsCurrentRooms]<span id="watchRoomsList"></span></span></small><br /><br />
-
-  <input type="hidden" name="watchRooms" id="watchRooms" value="$user[watchRooms]" />
-  </div>
+  <label for="disableFx">$phrases[settingsDisableFxLabel]</label> <input type="checkbox" name="disableFx" id="disableFx" value="true" /><br />
+  <small><span style="margin-left: 10px;">$phrases[settingsDisableFxBlurb]</span></small><br /><br />
 
   <div id="settings2">
   {{if="$enableDF"}{
@@ -304,7 +283,31 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
 
   <label for="defaultItalics">Italics</label><input type="checkbox" name="defaultItalics" id="defaultItalics" value="true"{{if="$user[''defaultFormatting''] & 512"}{ checked="checked"}} onchange="if ($(this).is('':checked'')) { $(''#fontPreview'').css(''font-style'',''italic''); } else { $(''#fontPreview'').css(''font-style'',''normal''); }" /><br />}}
 
+  <label for="disableFormatting">$phrases[settingsDisableFormattingLabel]</label> <input type="checkbox" name="settingsOfficialAjax_disableFormatting" id="disableFormatting" value="true"{{if="$user[''optionDefs''][''disableFormatting'']"}{ checked="checked"}} /><br />
+  <small><span style="margin-left: 10px;">$phrases[settingsDisableFormattingBlurb]</span></small><br /><br />
+
+  <label for="disableVideo">$phrases[settingsDisableVideoLabel]</label> <input type="checkbox" name="settingsOfficialAjax_disableVideo" id="disableVideo" value="true"{{if="$user[''optionDefs''][''disableVideo'']"}{ checked="checked"}} /><br />
+  <small><span style="margin-left: 10px;">$phrases[settingsDisableVideoBlurb]</span></small><br /><br />
+
+  <label for="disableImage">$phrases[settingsDisableImageLabel]</label> <input type="checkbox" name="settingsOfficialAjax_disableImage" id="disableImage" value="true"{{if="$user[''optionDefs''][''disableImages'']"}{ checked="checked"}} /><br />
+  <small><span style="margin-left: 10px;">$phrases[settingsDisableImageBlurb]</span></small><br /><br />
+  </div>
+
   <small><span style="margin-left: 10px;" id="fontPreview">$phrases[settingsDefaultFormattingPreview]</span></small><br /><br />}}
+  </div>
+
+  <div id="settings3">
+  <label for="mature">$phrases[settingsParentalControlsLabel]</label> <input type="checkbox" name="mature" id="mature" value="true"{{if="$user[''settings''] & 64"}{ checked="checked"}} /><br />
+  <small><span style="margin-left: 10px;">$phrases[settingsParentalControlsBlurb]</span></small><br /><br />
+
+  <label for="defaultRoom">$phrases[settingsDefaultRoomLabel]</label> <input type="text" name="defaultRoom" id="defaultRoom" /><br />
+  <small><span style="margin-left: 10px;">$phrases[settingsDefaultRoomBlurb]</span></small><br /><br />
+
+  <label for="watchRooms">$phrases[settingsWatchRoomsLabel]</label> <input type="text" name="watchRoomsBridge" id="watchRoomsBridge" /><input type="button" value="Add" onclick="autoEntry.addEntry(''watchRooms'');" /><br />
+  <small><span style="margin-left: 10px;">$phrases[settingsWatchRoomsBlurb]</span></small><br />
+  <small><span style="margin-left: 10px;">$phrases[settingsWatchRoomsCurrentRooms]<span id="watchRoomsList"></span></span></small><br /><br />
+
+  <input type="hidden" name="watchRooms" id="watchRooms" value="$user[watchRooms]" />
   </div>
 
   <button type="submit">Save Settings</button><button type="reset">Reset</button>
