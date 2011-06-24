@@ -20,6 +20,12 @@
  * Magic Session Hash (DB Check): hash('sha256',hash('sha256',hash('sha256',uniqid('',true)) . salt) . userId)
  * Password Hash: sha1(sha1(password) . user_iv) */
 
+/* Useful Links:
+ **** Session Security ****
+ * http://phpsec.org/projects/guide/4.html
+ * http://www.devshed.com/c/a/PHP/Creating-a-Secure-PHP-Login-Script/
+ * */
+
 
 ///* Require Base *///
 
@@ -83,8 +89,16 @@ if (isset($_POST['userName'],$_POST['password'])) { // API.
   $api = true;
 }
 
-elseif (isset($_REQUEST['sessionHash'])) { // Session hash defined via sent data.z
-  $sessionHash = $_REQUEST['sessionHash'];
+elseif (isset($_GET['fim3_sessionHash'])) { // Session hash defined via sent data.
+  $sessionHash = $_GET['fim3_sessionHash'];
+
+  $userIdComp = $_GET['fim3_userId'];
+}
+
+elseif (isset($_POST['fim3_sessionHash'])) { // Session hash defined via sent data.
+  $sessionHash = $_POST['fim3_sessionHash'];
+
+  $userIdComp = $_POST['fim3_userId'];
 
   if (isset($_POST['apiLogin'])) {
     $api = true;
@@ -216,21 +230,39 @@ if ($flag) {
   // Do nothing.
 }
 else {
-  if ($sessionHash) { //TODO: Security Improvements
+  if ($sessionHash) {
 
-    $user = dbRows("SELECT u.*, s.anonId, UNIX_TIMESTAMP(s.time) AS sessionTime FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE s.magicHash = '" . dbEscape($sessionHash) . "' AND u.userId = s.userId");
+    $user = dbRows("SELECT u.*, s.anonId, UNIX_TIMESTAMP(s.time) AS sessionTime, s.ip AS sessionIp, s.browser AS sessionBrowser FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE s.magicHash = '" . dbEscape($sessionHash) . "' AND u.userId = s.userId");
 
     if ($user) {
-      if ($user['anonId']) {
-        $anonId = $user['anonId'];
-        $anonymous = true;
+      if ((int) $user['userId'] !== (int) $userIdComp) { // The userid sent has to be the same one in the DB. In theory we could just not require a userId be specified, but there are benefits to this alternative. For instance, this eliminates some forms of injection-based session fixation.
+
+        define('LOGIN_FLAG','INVALID_SESSION');
+
+        $valid = false;
       }
+      elseif ($user['sessionBrowser'] !== $_SERVER['HTTP_USER_AGENT']) { // Require the UA match that of the the one used to establish the session. Smart clients are encouraged to specify there own with their client name and vers
+        define('LOGIN_FLAG','INVALID_SESSION');
 
-      $noSync = true;
-      $valid = true;
+        $valid = false;
+      }
+      elseif ($user['sessionIp'] !== $_SERVER['REMOTE_ADDR']) {
+        define('LOGIN_FLAG','INVALID_SESSION');
 
-      if ($user['sessionTime'] < time() - 300) {
-        $session = 'update';
+        $valid = false;
+      }
+      else {
+        if ($user['anonId']) {
+          $anonId = $user['anonId'];
+          $anonymous = true;
+        }
+
+        $noSync = true;
+        $valid = true;
+
+        if ($user['sessionTime'] < time() - 300) { // If five minutes have passed since the session has been generated, update ift.
+          $session = 'update';
+        }
       }
     }
     else {
@@ -483,6 +515,7 @@ if ($valid) { // If the user is valid, process their preferrences.
       'ip' => $_SERVER['REMOTE_ADDR'],
     ),"{$sqlPrefix}sessions");
 
+    // Whenever a new user logs in, delete all sessions from 15 or more minutes in the past.
     dbDelete("{$sqlPrefix}sessions",array(
       'time' => array(
         'type' => 'raw', // Data in the value column should not be escaped.

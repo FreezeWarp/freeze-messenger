@@ -482,7 +482,7 @@ var userSelectHtml = '';
 function populate(options) {
   $.when(
     $.ajax({
-      url: directory + 'api/getUsers.php?sessionHash=' + sessionHash,
+      url: directory + 'api/getUsers.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
       type: 'GET',
       timeout: 5000,
       cache: false,
@@ -513,7 +513,7 @@ function populate(options) {
 
 
     $.ajax({
-      url: directory + 'api/getRooms.php?permLevel=view&sessionHash=' + sessionHash,
+      url: directory + 'api/getRooms.php?permLevel=view&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
       timeout: 5000,
       type: 'GET',
       async: true,
@@ -592,7 +592,7 @@ function populate(options) {
 
 
     $.ajax({
-      url: directory + 'api/getGroups.php?sessionHash=' + sessionHash,
+      url: directory + 'api/getGroups.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
       timeout: 5000,
       type: 'GET',
       async: true,
@@ -818,7 +818,7 @@ var standard = {
     }
 
     $.when( $.ajax({
-      url: directory + 'api/getMessages.php?rooms=' + options.roomId + '&archive=1&messageLimit=20&' + where + '&sessionHash=' + sessionHash,
+      url: directory + 'api/getMessages.php?rooms=' + options.roomId + '&archive=1&messageLimit=20&' + where + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
       type: 'GET',
       timeout: 1000,
       async: true,
@@ -1084,7 +1084,7 @@ var standard = {
       var encrypt = 'base64';
 
       $.ajax({
-        url: directory + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest? '&archive=1&messageDateMin=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdMin=' + (requestSettings.lastMessage)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&sessionHash=' + sessionHash,
+        url: directory + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest? '&archive=1&messageDateMin=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdMin=' + (requestSettings.lastMessage)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
         type: 'GET',
         timeout: requestSettings.timeout,
         async: true,
@@ -1317,7 +1317,7 @@ var standard = {
       confirmed = (confirmed === 1 ? 1 : '');
 
       $.ajax({
-        url: directory + 'api/sendMessage.php?sessionHash=' + sessionHash,
+        url: directory + 'api/sendMessage.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
         type: 'POST',
         data: 'roomId=' + roomId + '&confirmed=' + confirmed + '&message=' + urlEncode(message),
         cache: false,
@@ -1404,7 +1404,7 @@ var standard = {
 
 
   deleteRoom : function(roomLocalId) {
-    $.post(directory + 'api/moderate.php','action=deleteRoom&messageId=' + messageId + '&sessionHash=' + sessionHash,function(xml) {
+    $.post(directory + 'api/moderate.php','action=deleteRoom&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
       var errStr = $(xml).find('errStr').text().trim();
       var errDesc = $(xml).find('errDesc').text().trim();
 
@@ -1432,7 +1432,7 @@ var standard = {
       dia.error('You can\'t talk to yourself...');
     }
     else {
-      $.post(directory + 'api/moderate.php','action=privateRoom&userId=' + userLocalId + '&sessionHash=' + sessionHash,function(xml) {
+      $.post(directory + 'api/moderate.php','action=privateRoom&userId=' + userLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
         var privateRoomId = parseInt($(xml).find('insertId').text().trim());
         var errStr = unxml($(xml).find('errStr').text().trim());
         var errDesc = unxml($(xml).find('errStr').text().trim());
@@ -1469,7 +1469,7 @@ var standard = {
 
 
   kick : function(userId, roomId, length) {
-    $.post(directory + 'api/moderate.php','action=kickUser&userId=' + userId + '&roomId=' + roomId + '&length=' + length + '&sessionHash=' + sessionHash,function(xml) {
+    $.post(directory + 'api/moderate.php','action=kickUser&userId=' + userId + '&roomId=' + roomId + '&length=' + length + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
       var errStr = $(xml).find('errStr').text().trim();
       var errDesc = $(xml).find('errDesc').text().trim();
 
@@ -1505,7 +1505,7 @@ var standard = {
 
 
   deleteMessage : function(messageId) {
-    $.post(directory + 'api/moderate.php','action=deleteMessage&messageId=' + messageId + '&sessionHash=' + sessionHash,function(xml) {
+    $.post(directory + 'api/moderate.php','action=deleteMessage&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
       var errStr = $(xml).find('errStr').text().trim();
       var errDesc = $(xml).find('errDesc').text().trim();
 
@@ -1764,7 +1764,7 @@ popup = {
             $.ajax({
               url: directory + 'api/uploadFile.php',
               type: 'POST',
-              data : 'dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&file_data=' + urlEncode(fileContent) + '&sessionHash=' + sessionHash,
+              data : 'dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&file_data=' + urlEncode(fileContent) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
               cache : false
             });
 
@@ -1798,7 +1798,7 @@ popup = {
     }
 
     $.ajax({
-      url: directory + 'api/getStats.php?rooms=' + roomId + '&maxResults=' + number + '&sessionHash=' + sessionHash,
+      url: directory + 'api/getStats.php?rooms=' + roomId + '&maxResults=' + number + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
       timeout: 5000,
       type: 'GET',
       cache: false,
@@ -1951,7 +1951,7 @@ popup = {
         });
 
         $.ajax({
-          url: directory + 'api/getFonts.php?sessionHash=' + sessionHash,
+          url: directory + 'api/getFonts.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
           timeout: 5000,
           type: 'GET',
           async: true,
@@ -2036,7 +2036,7 @@ popup = {
 
         $("#changeSettingsForm").submit(function() { // TODO
           data = $("#changeSettingsForm").serialize(); // Serialize the form data for AJAX.
-          $.post(directory + 'api/moderate.php?action=userOptions&userId=' + userId + data + '&sessionHash=' + sessionHash,function(xml) {
+          $.post(directory + 'api/moderate.php?action=userOptions&userId=' + userId + data + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
             // TODO
           }); // Send the form data via AJAX.
 
@@ -2080,7 +2080,7 @@ popup = {
         });
 
         $.ajax({
-          url: directory + 'api/getRooms.php?rooms=' + roomIdLocal + '&sessionHash=' + sessionHash,
+          url: directory + 'api/getRooms.php?rooms=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
           type: 'GET',
           timeout: 2400,
           cache: false,
@@ -2135,7 +2135,7 @@ popup = {
             dia.error('The roomname is too long.');
           }
           else {
-            $.post(directory + 'api/moderate.php','action=editRoom&roomId=' + roomIdLocal + '&name=' + urlEncode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&sessionHash=' + sessionHash,function(xml) {
+            $.post(directory + 'api/moderate.php','action=editRoom&roomId=' + roomIdLocal + '&name=' + urlEncode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
               var errStr = unxml($(xml).find('errStr').text().trim());
               var errDesc = unxml($(xml).find('errDesc').text().trim());
 
@@ -2209,7 +2209,7 @@ popup = {
             dia.error('The roomname is too long.');
           }
           else {
-            $.post(directory + 'api/moderate.php','action=createRoom&name=' + urlEncode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&sessionHash=' + sessionHash,function(xml) {
+            $.post(directory + 'api/moderate.php','action=createRoom&name=' + urlEncode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
               var errStr = unxml($(xml).find('errStr').text().trim());
               var errDesc = unxml($(xml).find('errDesc').text().trim());
               var createRoomId = parseInt($(xml).find('insertId').text().trim());
@@ -2305,7 +2305,7 @@ popup = {
 
     function updateOnline() {
       $.ajax({
-        url: directory + 'api/getAllActiveUsers.php?sessionHash=' + sessionHash,
+        url: directory + 'api/getAllActiveUsers.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
         type: 'GET',
         timeout: 2400,
         cache: false,
@@ -2357,7 +2357,7 @@ popup = {
     var kickHtml = '';
 
     $.ajax({
-      url: directory + 'api/getKicks.php?rooms=' + roomId + '&sessionHash=' + sessionHash,
+      url: directory + 'api/getKicks.php?rooms=' + roomId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
       timeout: 5000,
       type: 'GET',
       cache: false,
@@ -2561,7 +2561,7 @@ function windowDraw() {
 
       if (thisid != $('#tooltext').attr('data-lastuserId')) {
         $('#tooltext').attr('data-lastuserId',thisid);
-        $.get(directory + 'api/getUsers.php?users=' + thisid + '&sessionHash=' + sessionHash, function(xml) {
+        $.get(directory + 'api/getUsers.php?users=' + thisid + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId, function(xml) {
           var userName = unxml($(xml).find('user > userName').text().trim());
           var userId = parseInt($(xml).find('user > userId').text().trim());
           var startTag = unxml($(xml).find('user > startTag').text().trim());
@@ -2807,7 +2807,7 @@ function contextMenuParse() {
     var profileUrl = '';
 
     $.ajax({
-      url: directory + 'api/getUsers.php?users=' + userId + '&sessionHash=' + sessionHash,
+      url: directory + 'api/getUsers.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
       type: 'GET',
       timeout: 2400,
       cache: false,

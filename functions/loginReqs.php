@@ -149,22 +149,22 @@ function phpbb_check_hash($password, $hash) {
 function fim_generateSession() {
   global $salts;
 
+  /* The algorithm below may not be ideal (or moreover redundant). It is intended to minimize the ability to guess a hash via a bruteforce mechanism (and does so using the 256-bit SHA256 hash, a random value using the relatively good mt_rand generator that varies between 1 and a billion, and the salt specified by the site operator). */
+
   $salt = end($salts);
 
   if (function_exists('mt_rand')) {
-    $rand = mt_rand(1,100000000);
+    $rand = mt_rand(1,1000000000);
   }
   elseif (function_exists('rand')) {
-    $rand = rand(1,100000000);
+    $rand = rand(1,1000000000);
   }
-
-  /* The algorithm below may not be ideal. It is intended to minimize the ability to guess a hash via a bruteforce mechanism. To do so, we both require that the userId is correct later on (though doing so would make little difference if a hacker is attempting to breach a certain user) and that they know the salt used in the system (without knowing this, it is impossible to attempt to attack by guessing the uniqid - something that is possible). The additional rand is most likely redundant, but for the sake of paranoi it doesn't neccissarly hurt. */
 
   if (function_exists('hash')) {
-    return uniqid('',true) . hash('sha256',hash('sha256',$rand) . $salt);
+    return str_replace('.','',uniqid('',true)) . hash('sha256',hash('sha256',$rand) . $salt);
   }
   else {
-    return uniqid('',true) . md5(md5($rand) . $salt);
+    return str_replace('.',uniqid('',true)) . md5(md5($rand) . $salt);
   }
 }
 
