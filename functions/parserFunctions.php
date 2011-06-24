@@ -328,68 +328,31 @@ function fimParse_htmlWrap($html, $maxLength = 80, $char = '<br />') { /* An ada
 */
 
 function fim3parse_keyWords($string) {
+  global $searchWordConverts, $searchWordPunctuation, $searchWordLength, $searchWordOmissions;
 
-$entries = array(
-',',
-'.',
-';',
-':',
-'-',
-'=',
-'?',
-'\\',
-'/',
-'[',
-']',
-'^',
-'&',
-'#',
-'@',
-'!',
-'%',
-'*',
-'(',
-')',
-'。',
-'？',
-'、',
-'！',
-'‘',
-'’',
-'"',
-'\'',
-);
-
-$strings = array(
-  'I killed a man. Put a gun again his head. Pulled the trigger now he\'s dead... Mama... Life has just begun... And now I\'ve gone, and thrown it all away!',
-  '   IT WAS the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light, it was the season of Darkness, it was the spring of hope, it was the winter of despair, we had everything before us, we had nothing before us, we were all going direct to Heaven, we were all going direct the other way -- in short, the period was so far like the present period, that some of its noisiest authorities insisted on its being received, for good or for evil, in the superlative degree of comparison only.
-
-   There were a king with a large jaw and a queen with a plain face, on the throne of England; there were a king with a large jaw and a queen with a fair face, on the throne of France. In both countries it was clearer than crystal to the lords of the State preserves of loaves and fishes, that things in general were settled for ever.
-
-   It was the year of Our Lord one thousand seven hundred and seventy- five. Spiritual revelations were conceded to England at that favoured period, as at this. Mrs. Southcott had recently attained her five-and- twentieth blessed birthday, of whom a prophetic private in the Life Guards had heralded the sublime appearance by announcing that arrangements were made for the swallowing up of London and Westminster. Even the Cock-lane ghost had been laid only a round dozen of years, after rapping out its messages, as the spirits of this very year last past (supernaturally deficient in originality) rapped out theirs. Mere messages in the earthly order of events had lately come to the English Crown and People, from a congress of British subjects in America: ',
-);
-
-foreach ($entries AS &$entry) {
-  $entry = addcslashes($entry,'"\'|(){}[]<>.?!@#$%^&*/\\');
-}
-
-//echo '/(' . implode('|',$entries) . ')/is';
-foreach ($strings AS $string) {
-  $string2 = preg_replace('/(' . implode('|',$entries) . ')/is','',$string);
-  $strings2 = array();
-
-  while (strpos($string2,'  ') !== false) {
-    $string2 = str_replace('  ',' ',$string2);
+  foreach ($searchWordPunctuation AS $punc) {
+    $puncList[] = addcslashes($punc,'"\'|(){}[]<>.,~-?!@#$%^&*/\\'); // Dunno if this is the best approach.
   }
 
-  $string2 = strtolower($string2);
+  $string = preg_replace('/(' . implode('|',$entries) . ')/is','',$string);
 
-  $strings3 = explode(' ',$string2);
+  while (strpos($string,'  ') !== false) {
+    $string = str_replace('  ',' ',$string);
+  }
 
-  foreach ($strings3 AS $string3) {
-    if (strlen($string3) >= 4) {
-      $strings2[] = $string3;
+  $string = strtolower($string);
+
+
+  $stringPieces = explode(' ',$string);
+
+  foreach ($stringPieces AS $piece) {
+      if (strlen($piece) >= $searchWordLength && !in_array($piece,$searchWordOmissions)) {
+      $stringPiecesAdd[] = $piece;
     }
+  }
+
+  foreach ($stringPiecesAdd AS $piece) {
+    // TODO
   }
 }
 

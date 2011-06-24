@@ -178,6 +178,27 @@ $uploadMaxFiles = -1;
 
 
 
+///* Interfaces *///
+
+/* $enabledInterfaces
+ * Public interfaces that are set up on this server.
+ * Currently, "webpro" is the only interface packaged.
+ * Other interfaces may be found at http://code.google.com/p/freeze-messenger/downloads/list */
+$enabledInterfaces = array(
+  'webpro',
+);
+
+/* $defaultInterface
+ * THe default interface used when no other is found. */
+$defaultInterface = 'webpro';
+
+/* $disableWeb
+ * This will disable all public interfaces.
+ * Instead, users will be required to use third-party interfaces set up to use the FreezeMessenger API. */
+$disableWeb = false;
+
+
+
 ///* Permissions *///
 ///* The defaults here will usually work for most chats. *///
 
@@ -260,10 +281,6 @@ $searchWordPunctuation = array(
   ']', '^', '&', '#', '@',
   '!', '%', '*', '(', ')',
 
-  '。', '？', '、', '！',
-  '；', '「', '」', '｛', '｝',
-  '：', '”', '’', '（', '）',
-
   '‘', '’','¡','¿','¦',
 );
 
@@ -313,7 +330,7 @@ $longPolling = false; // If true, experimental longpolling support will be enabl
 /* $anonymousUser
  * If specified, a single user can be used to allow all unregistered / not-logged in to post messages.
  * These users will be appended a number (stored in their session hash) to distinguish between themselves.
- * Leave false to not enable this feature.*/
+ * Leave false to not enable this feature. */
 $anonymousUser = 1;
 
 

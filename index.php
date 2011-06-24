@@ -20,27 +20,30 @@ if (!file_exists('config.php')) {
 else {
   require('config.php');
 
+  if ($disableWeb) {
+    die('Web interfaces have been disabled on this server.');
+  }
+  else {
+    $interface = (isset($_REQUEST['interface']) ? $_REQUEST['interface'] :
+      (isset($user['interface']) ? $user['interface']));
 
-  $interface = ($_REQUEST['interface'] ? $_REQUEST['interface'] :
-    ($user['interface'] ? $user['interface'] :
-      ($defaultInterface ? $defaultInterface : 'interface')));
 
-
-  if (is_array($enabledInterfaces)) {
-    if (!in_array($interface, $enabledInterfaces)) {
+    if (is_array($enabledInterfaces)) {
+      if (!in_array($interface, $enabledInterfaces)) {
+        $interface = $defaultInterface; // If the interface is not enabled, use the default.
+      }
+    }
+    else {
       $interface = $defaultInterface; // If the interface is not enabled, use the default.
     }
-  }
-  else {
-      $interface = $defaultInterface; // If the interface is not enabled, use the default.
-  }
 
 
-  if ($interface) {
-    header("Location: $interface");
-  }
-  else {
-    die('No public interface found.');
+    if ($interface) {
+      header("Location: $interface/");
+    }
+    else {
+      die('No web-accessible interface found.');
+    }
   }
 }
 
