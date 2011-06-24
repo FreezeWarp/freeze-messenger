@@ -2786,7 +2786,7 @@ function windowDynaLinks() {
 
 
 function contextMenuParse() {
-/*  $('.userName').contextMenu({
+  $('.userName').contextMenu({
     menu: 'userMenu'
   },
   function(action, el) {
@@ -2919,7 +2919,7 @@ function contextMenuParse() {
     }
 
     return false;
-  });*/
+  });
 
   return false;
 }
