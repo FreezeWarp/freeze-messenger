@@ -40,7 +40,7 @@ function fim_inArray($needle,$haystack) {
 * @return array
 * @author Joseph Todd Parsons
 */
-function arrayValidate($array,$type = 'int',$preserveAll = false) {
+function fim_arrayValidate($array,$type = 'int',$preserveAll = false) {
   $arrayValidated = array();
 
   foreach ($array AS $value) {
@@ -53,12 +53,14 @@ function arrayValidate($array,$type = 'int',$preserveAll = false) {
         $preValue = (int) $value;
 
         if ($preValue) {
-          $arrayValidateed[] = $preValue;
+          $arrayValidated[] = $preValue;
         }
       }
       break;
     }
   }
+
+  return $arrayValidated;
 }
 
 /**

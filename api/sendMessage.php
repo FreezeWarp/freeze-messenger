@@ -25,7 +25,7 @@ $roomId = (int) $_POST['roomId'];
 $room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
 $ip = dbEscape($_SERVER['REMOTE_ADDR']); // Get the IP address of the user.
 
-$flag = $_GET['flag'];
+$flag = $_POST['flag'];
 
 ($hook = hook('sendMessage_start') ? eval($hook) : '');
 

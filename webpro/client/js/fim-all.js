@@ -654,14 +654,7 @@ function populate(options) {
 *********************************************************/
 
 function youtubeSend(id) { // TODO
-  $.ajax({
-    url: 'uploadFile.php',
-    type: 'POST',
-    contentType: 'application/x-www-form-urlencoded;charset=UTF-8',
-    cache: false,
-    data: 'method=youtube&room=' + roomId + '&youtubeUpload=' + escape('http://www.youtube.com/?v=' + id),
-    success: function(html) { /*standard.getMessages();*/ }
-  });
+  standard.sendMessage('http://www.youtube.com/watch?v=' + id,0,'video');
 
   $('#textentryBoxYoutube').dialog('close');
 }
@@ -1249,6 +1242,8 @@ var standard = {
                   }
                 }
               }
+
+              contextMenuParse();
             }
 
             if (requestSettings.longPolling) {
@@ -1307,7 +1302,7 @@ var standard = {
   },
 
 
-  sendMessage: function(message,confirmed) {
+  sendMessage : function(message,confirmed,flag) {
     if (!roomId) {
       popup.selectRoom();
     }
@@ -1317,7 +1312,7 @@ var standard = {
       $.ajax({
         url: directory + 'api/sendMessage.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
         type: 'POST',
-        data: 'roomId=' + roomId + '&confirmed=' + confirmed + '&message=' + urlEncode(message),
+        data: 'roomId=' + roomId + '&confirmed=' + confirmed + '&message=' + urlEncode(message) + '&flag=' + flag,
         cache: false,
         timeout: 2500,
         success: function(xml) {
@@ -1350,7 +1345,7 @@ var standard = {
             break;
 
             case 'confirmcensor':
-            dia.error(errDesc + '<br /><br /><button type="button" onclick="$(this).parent().dialog(&apos;close&apos;);">No</button><button type="button" onclick="standard.standard.sendMessage(&apos;' + escape(message) + '&apos;,1); $(this).parent().dialog(&apos;close&apos;);">Yes</button>');
+            dia.error(errDesc + '<br /><br /><button type="button" onclick="$(this).parent().dialog(&apos;close&apos;);">No</button><button type="button" onclick="standard.standard.sendMessage(&apos;' + escape(message) + '&apos;,1' + (flag ? ',' + flag : '') + '); $(this).parent().dialog(&apos;close&apos;);">Yes</button>');
             break;
           }
 
@@ -1703,8 +1698,8 @@ popup = {
 
         $('#fileUpload').attr('disabled','disabled').button({disabled: true});
 
-        if (typeof FileReader == 'undefined') {
-          dia.error('Your browser does not support file uploads.');
+        if (true) {
+          $('#uploadFileForm').html('Your device does not support file uploads.<br /><br />');
         }
         else {
           $('#fileUpload').change(function() {
@@ -1724,43 +1719,40 @@ popup = {
 
               var file = files[0];
 
-              reader.readAsBinaryString(file);
-              reader.onloadend = function() {
-                fileContent = window.btoa(reader.result);
-
-                console.log(fileContent);
-              };
-
               var fileName = file.name;
               var fileSize = file.size;
 
-              if (!fileName.match(/\.(jpg|jpeg|gif|png|svg)$/i)) {
+              if (!fileName.match(/\.(jpg|jpeg|gif|png|svg)$/i)) { // TODO
                 $('#preview').html('Wrong file type.');
               }
-              else if (fileSize > 4 * 1000 * 1000) {
+              else if (fileSize > 4 * 1000 * 1000) { // TODO
                 $('#preview').html('File too large.');
               }
               else {
+                reader.readAsBinaryString(file);
+                reader.onloadend = function() {
+                  fileContent = window.btoa(reader.result);
+                };
+
+                reader2.readAsDataUrl(file);
+                reader.onloadend = function() {
+                  $('#uploadUrlFormPreview').html('<img src="' + reader2.result + '" style="max-height: 200px; max-width: 200px;" />');
+                };
+
                 var reader = new FileReader();
                 reader.readAsDataURL(file);
-
-                reader.onloadend = function () {
-                  var fileContent = reader.result;
-                  fileContainer = '<img src="' + fileContent + '" alt="" style="max-width: 200px; max-height: 250px; height: auto;" />';
-                  $('#preview').html(fileContainer);
-
-                  return false;
-                };
-              }
-
-              fileContent = $('#urlUpload').val();
-              if (fileContent && fileContent != 'http://') {
-                fileContainer = '<img src="' + fileContent + '" alt="" style="max-width: 200px; max-height: 250px; height: auto;" />';
-
-                $('#preview').html(fileContainer);
               }
 
               $('#imageUploadSubmitButton').removeAttr('disabled').button({disabled: false});
+            }
+          });
+
+          $('#urlUpload').change(function() {
+            fileContent = $('#urlUpload').val();
+            if (fileContent && fileContent != 'http://') {
+              fileContainer = '<img src="' + fileContent + '" alt="" style="max-width: 200px; max-height: 250px; height: auto;" />';
+
+              $('#uploadUrlFormPreview').html(fileContainer);
             }
           });
 
@@ -1776,6 +1768,51 @@ popup = {
             return false;
           });
         }
+
+
+        $('#uploadUrlForm').submit(function() {
+          var linkImage = $('#urlUpload').val();
+
+          if (linkImage) {
+            standard.sendMessage(linkImage,0,'image');
+          }
+
+          return false;
+        });
+
+
+        $('#linkForm').submit(function() {
+          var linkUrl = $('#linkUrl').val();
+          var linkMail = $('#linkEmail').val();
+
+          if (!linkUrl && !linkMail) {
+            dia.error('No Link Was Specified');
+          }
+          else if (linkUrl) {
+            standard.sendMessage(linkUrl,0,'url');
+          }
+          else if (linkMail) {
+            standard.sendMessage(linkMail,0,'email');
+          }
+          else {
+            dia.error('Logic Error');
+          }
+
+          return false;
+        });
+
+        $('#uploadYoutubeForm').submit(function() {
+          linkVideo = $('#youtubeUpload');
+
+          if (linkVideo.search(/^http\:\/\/(www\.|)youtube\.com\/(.*?)?v=(.+?)(&|)(.*?)$/) === 0) {
+            dia.error('No Video Specified');
+          }
+          else {
+            standard.sendMessage(linkVideo,0,'video');
+          }
+
+          return false;
+        });
 
         return false;
       },
@@ -1861,7 +1898,7 @@ popup = {
   userSettings : function() {
     dia.full({
       uri : 'template.php?template=userSettingsForm',
-      title : 'changeSettingsDialogue',
+      id : 'changeSettingsDialogue',
       tabs : true,
       width : 1000,
       cF : function() {
@@ -1870,9 +1907,9 @@ popup = {
         return false;
       },
       oF : function() {
-        var defaultColour;
-        var defaultHighlight;
-        var defaultFontface;
+        var defaultColour = false;
+        var defaultHighlight = false;
+        var defaultFontface = false;
 
         $('#theme').change(function() {
           $('#stylesjQ').attr('href','client/css/' + themes[this.value] + '/jquery-ui-1.8.13.custom.css');
@@ -2021,7 +2058,7 @@ popup = {
             defaultHighlight = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
 
             $('#defaultHighlight').css('background-color','rgb(' + defaultHighlight + ')');
-            $('#fontPreview').css('color','rgb(' + defaultHighlight + ')');
+            $('#fontPreview').css('background-color','rgb(' + defaultHighlight + ')');
           }
         });
 
@@ -2038,7 +2075,7 @@ popup = {
             return false;
           },
           onChange: function(hsb, hex, rgb) {
-            defaultColor = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
+            defaultColour = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
 
             $('#defaultColour').css('background-color','rgb(' + defaultColour + ')');
             $('#fontPreview').css('color','rgb(' + defaultColour + ')');
@@ -2065,14 +2102,17 @@ popup = {
         }
 
         $("#changeSettingsForm").submit(function() {
-          $.post(directory + 'api/moderate.php?action=userOptions&userId=' + userId + '&defaultColor=' + defaultColour + '&defaultHighlight=' + defaultHighlight + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
-            // TODO
+          var watchRooms = $('#watchRooms').val();
+          var defaultRoom = $('#defaultRoom').val();
+          var defaultRoomId = (defaultRoom ? roomRef[defaultRoom] : 0);
+          var fontId = $('#defaultFace option:selected').val();
+
+          $.post(directory + 'api/moderate.php','action=userOptions&userId=' + userId + (defaultColour ? '&defaultColor=' + defaultColour : '') + (defaultHighlight ? '&defaultHighlight=' + defaultHighlight : '') + (defaultRoomId ? '&defaultRoomId=' + defaultRoomId : '') + (watchRooms ? '&watchRooms=' + watchRooms : '') + (fontId ? '&defaultFontface=' + fontId : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
+            dia.info('Your settings may or may not have been updated.');
           }); // Send the form data via AJAX.
 
           $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
           $(".colorpicker").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
-
-          window.reload();
 
           return false; // Don't submit the form.
         });
@@ -2708,7 +2748,7 @@ function windowDraw() {
   /*** Archive ***/
 
   $('#icon_note, #messageArchive').click(function() {
-    popup.archive(roomId);
+    popup.archive({roomId : roomId});
 
     return false;
   });

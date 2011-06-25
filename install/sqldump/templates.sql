@@ -37,7 +37,7 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
   <meta name="author" content="Joseph T. Parsons" />
   <meta name="keywords" content="{{if="$phrases[brandingKeywords]"}{$phrases[brandingKeywords]}{instant messenger, im, instant message}}" />
   <meta name="description" content="{{if="$phrases[brandingDescription]"}{$phrases[brandingDescription]}{FreezeMessenger-powered chat program.}}" />
-  {{if="$phrases[brandingFavicon]"}{<link rel="icon" id="favicon" href="$phrases[brandingFavicon]" />}}
+  {{if="$phrases[brandingFavicon]"}{<link rel="icon" id="favicon" type="image/png" href="$phrases[brandingFavicon]" />}}
 
 
   {{if="$layout == ''alt''"}{<style>
@@ -521,24 +521,28 @@ Keep in mind all content is heavily encrytped for privacy. Private conversations
   <form method="post" enctype="multipart/form-data" id="uploadFileForm">
     <fieldset>
       <legend>Upload from Computer</legend>
+      <div id="uploadFileFormPreview"></div>
+
       <label for="fileUpload">File: </label>
       <input name="fileUpload" id="fileUpload" type="file" /><br /><br />
 
 
-      <button onclick="$(''#textentryBoxUpload'').dialog(''close'');" type="button">Cancel</button>
+      <button onclick="$(''#insertDoc'').dialog(''close'');" type="button">Cancel</button>
       <button type="submit" id="imageUploadSubmitButton">Upload</button>
     </fieldset><br />
   </form>
 
-  <form>
+  <form method="post" id="uploadUrlForm">
     <fieldset>
       <legend>Embed from Internet</legend>
+      <div id="uploadUrlFormPreview"></div>
+
       <label for="urlUpload">URL: </label>
       <input name="urlUpload" id="urlUpload" type="url" value="http://" /></span><br />
 
 
-      <button onclick="$(''#textentryBoxUpload'').dialog(''close'');" type="button">Cancel</button>
-      <button type="submit" id="imageUploadSubmitButton">Upload</button>
+      <button onclick="$(''insertDoc'').dialog(''close'');" type="button">Cancel</button>
+      <button type="submit" id="imageEmbedSubmitButton">Upload</button>
     </fieldset><br />
   </form>
 

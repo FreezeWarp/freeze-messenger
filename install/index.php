@@ -20,16 +20,16 @@ switch ($_REQUEST['phase']) {
   <![endif]-->
 
   <!-- START Styles -->
-  <link rel="stylesheet" type="text/css" href="../interface/client/css/cupertino/jquery-ui-1.8.13.custom.css" media="screen" />
-  <link rel="stylesheet" type="text/css" href="../interface/client/css/cupertino/fim.css" media="screen" />
-  <link rel="stylesheet" type="text/css" href="../interface/client/css/stylesv2.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="../webpro/client/css/cupertino/jquery-ui-1.8.13.custom.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="../webpro/client/css/cupertino/fim.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="../webpro/client/css/stylesv2.css" media="screen" />
   <!-- END Styles -->
 
   <!-- START Scripts -->
-  <script src="../interface/client/js/jquery-1.6.1.min.js" type="text/javascript"></script>
+  <script src="../webpro/client/js/jquery-1.6.1.min.js" type="text/javascript"></script>
 
-  <script src="../interface/client/js/jquery-ui-1.8.13.custom.min.js" type="text/javascript"></script>
-  <script src="../interface/client/js/jquery.plugins.05182011.min.js" type="text/javascript"></script>
+  <script src="../webpro/client/js/jquery-ui-1.8.13.custom.min.js" type="text/javascript"></script>
+  <script src="../webpro/client/js/jquery.plugins.05182011.min.js" type="text/javascript"></script>
   <script>
   function resize() {
     $(\'body\').css(\'height\',window.innerHeight);
@@ -57,11 +57,20 @@ Thank you for downloading FreezeMessenger! FreezeMessenger is a new, easy-to-use
 Still, there are some server requirements to using FreezeMessenger. Make sure all of the following are installed, then click "Next" below:<br />
 
 <ul>
-  <li>MySQL 5.0+
+  <li>MySQL 5.0+</li>
   <li>PHP 5.0+ (' . (floatval(phpversion()) > 5.0 ? 'Looks Good' : 'Not Detected - Version ' . phpversion() . ' Installed') . ')</li>
   <ul>
     <li>Multibyte String Extension (' . (function_exists('mb_get_info') ? 'Looks Good' : 'Not Detected') . ')</li>
     <li>MySQLi Extension (' . (function_exists('mysqli_connect') ? 'Looks Good' : 'Not Detected') . ')</li>
+    <li>MySQL Extension (' . (function_exists('mysql_connect') ? 'Looks Good' : 'Not Detected') . ')</li>
+    <li>Hash Extension (' . (function_exists('hash') ? 'Looks Good' : 'Not Detected') . ')</li>
+    <li>Date/Time Extension (' . (function_exists('date') ? 'Looks Good' : 'Not Detected') . ')</li>
+    <li>MCrypt Extension (' . (function_exists('mcrypt_encrypt') ? 'Looks Good' : 'Not Detected') . ')</li>
+    <li>Multibyte String Extension (' . (function_exists('mb_get_info') ? 'Looks Good' : 'Not Detected') . ')</li>
+  </ul>
+  <li>Proper Permissions (for automatic configuration file generation)</li>
+  <ul>
+    <li>Origin Directory Writable (' . (is_writable('../') ? 'Looks Good' : 'Nope') . ')</li>
   </ul>
 </ul><br />
 
@@ -156,14 +165,6 @@ Now that the database has been successfully installed, we must generate the conf
 <tr>
   <td>Forum Table Prefix</td>
   <td><input type="text" name="forum_tableprefix" /></td>
-</tr>
-<tr>
-  <td>Forum Cookie Prefix</td>
-  <td><input type="text" name="forum_cookieprefix" /></td>
-</tr>
-<tr>
-  <td>Forum Salt</td>
-  <td><input type="text" name="forum_salt" /></td>
 </tr>
 <tr>
   <td>Encryption Phrase</td>
@@ -302,11 +303,13 @@ Now that the database has been successfully installed, we must generate the conf
   $database = urldecode($_GET['mysql_database']);
   $prefix = urldecode($_GET['mysql_tableprefix']);
 
-  $forum = $_GET['forum'];
-  $forumUrl = $_GET['forum_url'];
-  $forumTablePrefix = $_GET['forum_tableprefix'];
-  $forumSalt = $_GET['forum_salt'];
-  $encryptSalt = $_GET['encrypt_salt'];
+  $forum = urldecode($_GET['forum']);
+  $forumUrl = urldecode($_GET['forum_url']);
+  $forumTablePrefix = urldecode($_GET['forum_tableprefix']);
+  $forumSalt = urldecode($_GET['forum_salt']);
+  $encryptSalt = urldecode($_GET['encrypt_salt']);
+
+  $enableEncrypt = (int) $_GET['enable_encrypt'];
 
   $base = file_get_contents('config.base.php');
 
@@ -316,7 +319,7 @@ Now that the database has been successfully installed, we must generate the conf
     '$sqlPassword = \'\';',
     '$sqlDatabase = \'\';',
     '$sqlPrefix = \'\';',
-    '$loginMethod = \'vbulletin\';',
+    '$loginMethod = \'vanilla\';',
     '$installLoc = \'\';',
     '$installUrl = \'\';',
     '$forumUrl = \'\';',
@@ -326,6 +329,8 @@ Now that the database has been successfully installed, we must generate the conf
     '$salts = array(
   101 => \'xxx\',
 );',
+     '$encrypt = true;',
+     '$encryptUploads = true;',
   );
 
   $replace = array(
@@ -342,14 +347,17 @@ Now that the database has been successfully installed, we must generate the conf
     '$forumSalt = \'' . $forumSalt . '\';',
     '$superUsers = array(' . ($forum == 'phpbb' ? 2 : 1) . ');',
     '$salts = array(
-  101 => \'xxx\',
+  101 => \'' . $encryptSalt . '\',
 );',
+    '$encrypt = ' . ($enableEncrypt & 1 ? 'true' : 'false') . ';',
+    '$encryptUploads = ' . ($enableEncrypt & 2 ? 'true' : 'false') . ';',
   );
 
 
 
   $baseNew = str_replace($find,$replace,$base);
-  echo $baseNew;
+
+  file_put_contents('../config.php',$baseNew);
   break;
 
   case 'dev': // TODO: Remove

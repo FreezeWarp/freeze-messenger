@@ -125,11 +125,11 @@ elseif ((int) $anonymousUser >= 1 && isset($_POST['apiLogin'])) { // Unregistere
 switch ($loginMethod) {
 
   case 'vbulletin':
-  $sqlUserTable = $forumPrefix . 'user'; // The user table in the login method used.
-  $sqlAdminGroupTable = $forumPrefix . 'usergroup'; // The adminGroup table in the login method used.
-  $sqlUserGroupTable = $forumPrefix . 'socialgroup';
-  $sqlMemberGroupTable = $forumPrefix . 'socialgroupmember'; // The userGroup table in the login method used.
-  $sqlSessionTable = $forumPrefix . 'session'; // The sessions table in the login method used.
+  $sqlUserTable = $forumTablePrefix . 'user'; // The user table in the login method used.
+  $sqlAdminGroupTable = $forumTablePrefix . 'usergroup'; // The adminGroup table in the login method used.
+  $sqlUserGroupTable = $forumTablePrefix . 'socialgroup';
+  $sqlMemberGroupTable = $forumTablePrefix . 'socialgroupmember'; // The userGroup table in the login method used.
+  $sqlSessionTable = $forumTablePrefix . 'session'; // The sessions table in the login method used.
 
   $sqlUserTableCols = array(
     'userId' => 'userid', // The user ID column of the user table in the login method used.
@@ -158,10 +158,10 @@ switch ($loginMethod) {
   break;
 
   case 'phpbb':
-  $sqlUserTable = $forumPrefix . 'users'; // The user table in the login method used.
-  $sqlUserGroupTable = $forumPrefix . 'groups'; // The userGroup table in the login method used.
-  $sqlMemberGroupTable = $forumPrefix . 'user_group'; // The userGroup table in the login method used.
-  $sqlSessionTable = $forumPrefix . 'sessions'; // The sessions table in the login method used.
+  $sqlUserTable = $forumTablePrefix . 'users'; // The user table in the login method used.
+  $sqlUserGroupTable = $forumTablePrefix . 'groups'; // The userGroup table in the login method used.
+  $sqlMemberGroupTable = $forumTablePrefix . 'user_group'; // The userGroup table in the login method used.
+  $sqlSessionTable = $forumTablePrefix . 'sessions'; // The sessions table in the login method used.
 
   $sqlUserTableCols = array(
     'userId' => 'user_id', // The user ID column of the user table in the login method used.

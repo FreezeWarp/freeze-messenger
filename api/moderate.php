@@ -42,7 +42,7 @@ $xmlData = array(
 
 switch ($action) {
   case 'createRoom':
-  $roomLengthLimit = ($roomLengthLimit ? $roomLengthLimit : 20)
+  $roomLengthLimit = ($roomLengthLimit ? $roomLengthLimit : 20);
 
   $name = substr($_POST['name'],0,$roomLengthLimit); // Limits to x characters.
 
@@ -88,7 +88,7 @@ switch ($action) {
   break;
 
   case 'editRoom':
-  $roomLengthLimit = ($roomLengthLimit ? $roomLengthLimit : 20)
+  $roomLengthLimit = ($roomLengthLimit ? $roomLengthLimit : 20);
 
   $name = substr($_POST['name'],0,$roomLengthLimit); // Limits to x characters.
 
@@ -283,7 +283,7 @@ switch ($action) {
     }
 
     if ($_POST['favRooms']) {
-      $favRooms = arrayValidate(explode(',',$_POST['favRooms']),'int',false);
+      $favRooms = fim_arrayValidate(explode(',',$_POST['favRooms']),'int',false);
       $updateArray['favRooms'] = (string) implode(',',$favRooms);
 
       $xmlData['moderate']['response']['favRooms']['status'] = true;
@@ -291,7 +291,7 @@ switch ($action) {
     }
 
     if ($_POST['watchRooms']) {
-      $watchRooms = arrayValidate(explode(',',$_POST['watchRooms']),'int',false);
+      $watchRooms = fim_arrayValidate(explode(',',$_POST['watchRooms']),'int',false);
       $updateArray['watchRooms'] = (string) implode(',',$watchRooms);
 
       $xmlData['moderate']['response']['watchRooms']['status'] = true;
@@ -306,8 +306,8 @@ switch ($action) {
     }
 
     foreach (array('defaultHighlight','defaultColor') AS $value) {
-      if ($_POST[$value]) {
-        $rgb = arrayValidate(explode(',',$_POST[$value]),'int',true);
+      if (isset($_POST[$value])) {
+        $rgb = fim_arrayValidate(explode(',',$_POST[$value]),'int',true);
 
         if (count($rgb) === 3) { // Too many entries.
           if ($rgb[0] < 0 || $rgb[0] > 255) { // First val out of range.
@@ -342,7 +342,7 @@ switch ($action) {
 
     if ($_POST['defaultFontface']) {
       $fontData = dbRows("SELECT fontId,
-        name,        $updateArray['defaultRoom'] = (int) $_POST['defaultRoomId'];
+        name,
         data,
         category
       FROM {$sqlPrefix}fonts

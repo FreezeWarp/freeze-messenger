@@ -38,5 +38,6 @@ CREATE TABLE IF NOT EXISTS `{prefix}users` (
   `settings` int(10) NOT NULL DEFAULT 0,
   `userPrivs` int(10) NOT NULL DEFAULT 16,
   `adminPrivs` int(10) NOT NULL,
+  `interface` varchar(50) NOT NULL,
   PRIMARY KEY (`userId`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8;

@@ -192,7 +192,7 @@ function fim_generatePassword($password) {
 
 /* User should be array, password md5sum of plaintext. */
 function processVBulletin($user,$password) {
-  global $forumPrefix, $sqlUserTable, $sqlUserTableCols;
+  global $forumTablePrefix, $sqlUserTable, $sqlUserTableCols;
 
   if (!$user[$sqlUserTableCols['userId']]) { // The user does not exists
     define('LOGIN_FLAG','BAD_USERNAME');
@@ -212,7 +212,7 @@ function processVBulletin($user,$password) {
 }
 
 function processPHPBB($user, $password) {
-  global $forumPrefix, $brokenUsers, $sqlUserTable, $sqlUserTableCols;
+  global $forumTablePrefix, $brokenUsers, $sqlUserTable, $sqlUserTableCols;
 
   if (!$user[$sqlUserTableCols['userId']]) { // The user does not exist
     define('LOGIN_FLAG','BAD_USERNAME');

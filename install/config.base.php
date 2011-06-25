@@ -84,11 +84,6 @@ $loginMethod = 'vanilla';
  * Otherwise, you are strongly encouraged to specify the accurate URL (such as http://example.com/forums/). */
 $forumUrl = 'http://example.com/forums/'; // The URL of the forum being used.
 
-/* $forumSalt
- * For vBulletin, this can be found at the top of most files.
- * For PHPBB */
-$forumSalt = ''; // The cookie salt used with vBulletin
-
 /* $forumTablePrefix
  * The table prefix used by all forum tables.
  * If unsure, the forum configuration file will most likely specify which one you used. */
@@ -99,8 +94,9 @@ $forumTablePrefix = '';
  * This is mainly used because of PHPBB's several pre-added users such as bots.
  * All autoadded users, aside from yourself, should be on this list.
  * As of version 3.0.8 (and possibly others), the default will work.
- * For vBulletin and Vanilla, this does not need to be changed. */
-$brokenUsers = array(3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30);
+ * For vBulletin and Vanilla, this does not need to be changed.
+ * Finally, note that this may not really be needed. We're not sure yet. */
+$brokenUsers = array();
 
 /* $superUsers
  * A list of userIds who have full control over the software.

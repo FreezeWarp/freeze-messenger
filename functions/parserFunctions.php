@@ -196,11 +196,11 @@ WHERE w.listId = l.listId AND w.severity = 'replace'",'word');
 * @author Joseph Todd Parsons
 */
 function fimParse_smilieParse($text) {
-  global $room, $loginMethod, $forumPrefix, $forumUrl;
+  global $room, $loginMethod, $forumTablePrefix, $forumUrl;
 
   switch($loginMethod) {
     case 'vbulletin':
-    $smilies = dbRows("SELECT smilietext, smiliepath, smilieid FROM {$forumPrefix}smilie",'smilieid');
+    $smilies = dbRows("SELECT smilietext, smiliepath, smilieid FROM {$forumTablePrefix}smilie",'smilieid');
 
     if (!$smilies) return $text;
 
@@ -213,7 +213,7 @@ function fimParse_smilieParse($text) {
      break;
 
     case 'phpbb':
-    $smilies = dbRows("SELECT code, smiley_url, smiley_id FROM {$forumPrefix}smilies",'smiley_id');
+    $smilies = dbRows("SELECT code, smiley_url, smiley_id FROM {$forumTablePrefix}smilies",'smiley_id');
 
     if (!$smilies) return $text;
 
@@ -410,7 +410,7 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
       break;
 
       case 'video':
-      $messageHtml = preg_replace('/^http\:\/\/(www\.|)youtube\.com\/(.*?)?v=(.+)(&|)(.*?)$/',($bbcode <= 3 ? '<object width="420" height="255" wmode="opaque"><param name="movie" value="http://www.youtube.com/v/$3=en&amp;fs=1&amp;rel=0&amp;border=0"></param><param name="allowFullScreen" value="true"></param><embed src="http://www.youtube.com/v/$3&amp;hl=en&amp;fs=1&amp;rel=0&amp;border=0" type="application/x-shockwave-flash" allowfullscreen="true" width="420" height="255" wmode="opaque"></embed></object>' : ($bbcode <= 13 ? '<a href="http://www.youtube.com/watch?v=$3" target="_BLANK">[Youtube Video]</a>' : '$3')),$messageText);
+      $messageHtml = preg_replace('/^http\:\/\/(www\.|)youtube\.com\/(.*?)?v=([^&]+)(&|)(.*?)$/',($bbcode <= 3 ? '<object width="420" height="255" wmode="opaque"><param name="movie" value="http://www.youtube.com/v/$3=en&amp;fs=1&amp;rel=0&amp;border=0"></param><param name="allowFullScreen" value="true"></param><embed src="http://www.youtube.com/v/$3&amp;hl=en&amp;fs=1&amp;rel=0&amp;border=0" type="application/x-shockwave-flash" allowfullscreen="true" width="420" height="255" wmode="opaque"></embed></object>' : ($bbcode <= 13 ? '<a href="http://www.youtube.com/watch?v=$3" target="_BLANK">[Youtube Video]</a>' : '$3')),$messageText);
       break;
 
       case 'link':

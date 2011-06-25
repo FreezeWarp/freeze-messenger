@@ -25,7 +25,7 @@ else {
   }
   else {
     $interface = (isset($_REQUEST['interface']) ? $_REQUEST['interface'] :
-      (isset($user['interface']) ? $user['interface']));
+      (isset($user['interface']) ? $user['interface'] : ''));
 
 
     if (is_array($enabledInterfaces)) {
