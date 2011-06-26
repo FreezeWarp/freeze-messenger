@@ -191,6 +191,23 @@ else {
 
         ($hook = hook('getMessages_preMessages') ? eval($hook) : '');
 
+        if ($search) {
+          $searchArray = explode(',',$search);
+
+          foreach ($searchArray AS $searchVal) {
+            $searchArray2[] = '"' . dbEscape( str_replace(array_keys($searchWordConverts),array_values($searchWordConverts),$searchVal)) . '"';
+          }
+
+          $search2 = implode(',',$searchArray2);
+
+          $searchMessageIds = dbRows("SELECT GROUP_CONCAT(messageId SEPARATOR ',') AS messages
+          FROM {$sqlPrefix}searchPhrases AS p,
+          {$sqlPrefix}searchMessages AS m
+          WHERE p.phraseId = m.phraseId AND p.phraseName IN ($search2)");
+
+          $whereClause .= " AND messageId IN ($searchMessageIds[messages]) ";
+        }
+
         if ($archive) {
           $messageQuery = "SELECT m.messageId,
             UNIX_TIMESTAMP(m.time) AS time,

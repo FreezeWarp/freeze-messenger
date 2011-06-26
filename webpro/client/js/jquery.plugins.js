@@ -1839,13 +1839,13 @@ $.fn.tabbedDialog = function (dialogOptions,tabOptions) {
  * Joseph Todd Parsons
  * http://www.gnu.org/licenses/gpl.html */
 var notify = {
-  webkitNotifyRequest : function(callback) {
-    window.webkitNotifications.requestPermission(callback);
+  webkitNotifyRequest : function() {
+      window.webkitNotifications.requestPermission();
   },
 
   webkitNotify : function(icon, title, notifyData) {
     if (window.webkitNotifications.checkPermission() > 0) {
-      webkitNotifyRequest(function() { webkitNotify(icon, title, notifyData); });
+      notify.webkitNotifyRequest();
     }
     else {
       notification = window.webkitNotifications.createNotification(icon, title, notifyData);
@@ -1867,12 +1867,6 @@ var notify = {
           glue: true,
           header: header
         });
-      }
-
-      if (notify) {
-        if (window.webkitNotifications) {
-          webkitNotify('images/favicon.gif', 'New Message', notifyData);
-        }
       }
     }
   }

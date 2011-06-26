@@ -157,6 +157,111 @@ $phrases[hookBodyEndAll]
 $phrases[hookBodyEndFull]
 </body>
 </html>'),
+(3, 'webLite_templateStart', '', '<?xml version="1.0" encoding="UTF-8"?>
+{{if="$phrases[''doctype'']"}{$phrases[doctype]}{<!DOCTYPE HTML>}}
+
+<!-- Original Source Code Copyright © 2011 Joseph T. Parsons. -->
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+  <title>{{if="$phrases[''brandingTitle'']"}{$phrases[brandingTitle]}{FreezeMessenger}} - $title</title>
+
+  <meta http-equiv="Content-type" value="text/html; charset=utf-8" />
+  <meta name="robots" content="index, follow" />
+  <meta name="author" content="Joseph T. Parsons" />
+  <meta name="keywords" content="{{if="$phrases[brandingKeywords]"}{$phrases[brandingKeywords]}{instant messenger, im, instant message}}" />
+  <meta name="description" content="{{if="$phrases[brandingDescription]"}{$phrases[brandingDescription]}{FreezeMessenger-powered chat program.}}" />
+  {{if="$phrases[brandingFavicon]"}{<link rel="icon" id="favicon" type="image/png" href="$phrases[brandingFavicon]" />}}
+
+
+  {{if="$layout == ''alt''"}{<style>
+    #menu { display: none; width: 0px; }
+    #messageListContainer { float: right; width: 50%; }
+    #textentryBoxMessage { float: left; width: 50%; }
+    #content { width: 100%; }</style>}}
+
+  <!-- END Styles -->
+
+
+
+  <!-- START Scripts -->
+
+  <script src="client/js/jquery-1.6.1.min.js" type="text/javascript"></script>
+  <script src="client/js/jquery.plugins.js" type="text/javascript"></script>
+  <script src="client/js/fim-all.js" type="text/javascript"></script>
+
+  <!-- END Scripts -->
+
+
+  {$phrases[hookHead]}
+</head>
+
+<body>
+<div id="tooltext" class="tooltip-content"></div>
+<div id="page" data-role="page">
+  $phrases[hookPageStartAll]
+  $phrases[hookPageStartFull]
+  <!-- START links -->
+  <div id="menu" data-role="header">
+    <h3 id="quickCat"><a href="#">$phrases[templateQuickCat]</a></h3>
+    <div>
+    <ul>
+      <li style="border-bottom: 1px solid;"><a href="#" id="messageArchive">$phrases[templateArchive]</a></li>
+      <li><a href="#" id="roomList">$phrases[templateRoomList]</a></li>
+      <li style="border-bottom: 1px solid;"><a href="#" id="privateRoom">$phrases[templatePrivateIM]</a></li>
+
+      <li><a href="#" id="online">$phrases[templateActiveUsers]</a></li>
+
+      <li><a href="#" id="changeSettings">$phrases[templateChangeSettings]</a></li>
+      <li><a href="#" id="logout">$phrases[templateLogout]</a></li>
+      <li><a href="#" id="login">$phrases[templateLogin]</a></li>
+    </ul>
+    </div>
+
+    <h3 id="roomCat"><a href="#">$phrases[templateRoomListCat]</a></h3>
+    <div>
+      <div id="roomListShort">
+        <a href="javascript:void(0);" id="showMoreRooms">$phrases[templateShowMoreRooms]</a><br />
+
+        <ul>
+        </ul>
+      </div>
+      <div id="roomListLong" style="display: none;">
+        <li><a href="javascript:void(0);" id="showFewerRooms">$phrases[templateShowLessRooms]</a><br />
+
+        <ul>
+        </ul>
+      </div>
+    </div>
+
+    <h3 id="activeCat"><a href="#">$phrases[templateActiveUsersCat]</a></h3>
+    <div id="activeUsers">$phrases[templateLoading]</div>
+
+    <h3 id="copyCat"><a href="#">$phrases[templateCopyrightCat]</a></h3>
+    <div>
+      <ul>
+        <li>FIM © 2010-2011 Joseph Parsons<br /></li>
+        <li>jQuery Plugins © Their Respective Owners.</li>
+        <li><a href="#" id="copyrightLink">$phrases[templateAllCopyrights]</a></li>
+      </ul>
+    </div>
+
+  </div>
+  <!-- END links -->
+
+  <div id="content" data-role="content">
+  <!-- START content -->
+    $phrases[hookContentStartAll]
+    $phrases[hookContentStartFull]'),
+(4, 'webLite_templateEnd', '', '
+    $phrases[hookContentEndAll]
+    $phrases[hookContentEndFull]
+    <!-- END content -->
+  </div>
+
+$phrases[hookBodyEndAll]
+$phrases[hookBodyEndFull]
+</body>
+</html>'),
 (5, 'login', '', '<div id="normalLogin">
   <br />
 

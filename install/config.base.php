@@ -249,7 +249,7 @@ $cacheTableLimit = 100;
 /* $compressOutput
  * Set this to true to enable "shrunk" output.
  * This is great for servers that don't have GZIP enabled, and still beneficial otherwise. It does, however, result in slightly increased server load. */
-$compressOutput = true; // Set this to off to avoid compacting PHP-generated HTML and XML output.
+$compressOutput = false; // Set this to off to avoid compacting PHP-generated HTML and XML output.
 
 /* $disableTopic
  * Set to true to disable the changing of room topics.
@@ -327,7 +327,7 @@ $longPolling = false; // If true, experimental longpolling support will be enabl
  * If specified, a single user can be used to allow all unregistered / not-logged in to post messages.
  * These users will be appended a number (stored in their session hash) to distinguish between themselves.
  * Leave false to not enable this feature. */
-$anonymousUser = 1;
+$anonymousUser = 0;
 
 
 

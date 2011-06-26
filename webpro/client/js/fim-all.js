@@ -23,17 +23,128 @@
 
 
 
+
+
+/*********************************************************
+************************ START **************************
+******************** Base Variables *********************
+*********************************************************/
+
+
+/* Common Variables */
+
+var userId, // The user ID who is logged in.
+  roomId, // The ID of the room we are in.
+  sessionHash, // The session hash of the active user.
+  anonId, // ID used to represent anonymous posters.
+  prepopup;
+
+
+
+/* Function-Specific Variables */
+
+window.isBlurred = false; // By default, we assume the window is active and not blurred.
+var topic,
+  favicon = $('#favicon').attr('href'),
+  uploadSettings = {}, // Object
+  requestSettings = {
+    longPolling : false, // We may set this to true if the server supports it.
+    timeout : 2400, // We may increase this dramatically if the server supports longPolling.
+    firstRequest : true,
+    totalFails : 0,
+    lastMessage : 0
+  },
+  timers = {}; // Object
+
+
+
+/* Objects for Cleanness, Caching. */
+
+var roomRef = {}, // Object
+  roomIdRef = {}, // Object
+  roomList = [], // Array
+  modRooms = {}, // Object // Rooms which the user has special permissions in.
+
+  userRef = {}, // Object
+  userIdRef = {}, // Object
+  userList = [], // Array
+
+  groupRef = {}, // Object
+  groupList = [], // Array
+  groupIdRef = {}, // Object
+
+  messageIndex = []; // Array
+
+
+var roomUlFavHtml = '',
+  roomUlMyHtml = '',
+  roomUlPrivHtml = '',
+  roomUlHtml = '',
+  ulText = '',
+  roomTableHtml = '',
+  roomSelectHtml = '',
+
+  userSelectHtml = '';
+
+
+
+/* Get Cookies */
+
+var layout = $.cookie('fim3_layout'), // TODO
+  themeId = Number($.cookie('fim3_themeId'));
+
+
+if (Number($.cookie('fim3_settings'))) {
+  var settingsBitfield = Number($.cookie('fim3_settings'));
+}
+else {
+  var settingsBitfield = 0;
+  $.cookie('fim3_settings',0);
+}
+
+if ($.cookie('fim3_sessionHash')) {
+  sessionHash = $.cookie('fim3_sessionHash');
+  userId = $.cookie('fim3_userId');
+}
+
+
+
+/* Get the absolute API path.
+* TODO: Define this in a more "sophisticated manner". */
+
+var directoryPre = window.location.pathname;
+directoryPre = directoryPre.split('/');
+directoryPre.pop();
+directoryPre.pop();
+directoryPre = directoryPre.join('/');
+
+var directory = directoryPre + '/';
+var currentLocation = window.location.origin + directory + 'interface/';
+
+
+/*********************************************************
+************************* END ***************************
+******************** Base Variables *********************
+*********************************************************/
+
+
+
+
+
+
+
+
 /*********************************************************
 ************************ START **************************
 ******************* Static Functions ********************
 *********************************************************/
 
 function unxml(data) {
-  return data.replace(/\&lt\;/g,'<',data).replace(/\&gt\;/g,'>',data).replace(/\&apos\;/g,"'",data).replace(/\&quot\;/g,'"',data);
+  return data.replace(/\&lt\;/g, '<', data).replace(/\&gt\;/g, '>', data).replace(/\&apos\;/g, "'", data).replace(/\&quot\;/g, '"', data);
 }
 
 function urlEncode(data) {
-  return data.replace(/\+/g,'%2b').replace(/\&/g,'%26').replace(/\%/g,'%25').replace(/\n/g,'%20');
+  return data.replace(/\+/g, '%2b').replace(/\&/g, '%26').replace(/\%/g, '%25').replace(/\n/g, '%20');
 }
 
 function toBottom() {
@@ -53,16 +164,59 @@ function faviconFlash() {
   return false;
 }
 
-if (typeof console != 'object' || typeof console.log != 'function') {
-  console = {
-    log : function() {
-      return false;
+
+/* URL-Defined Actions
+ * TODO */
+
+function hashParse() {
+  var urlHash = window.location.hash,
+    urlHashComponents = urlHash.split('#'),
+    page = '', // String
+    i = 0,
+    componentPieces = [],
+    messageId = 0;
+
+  for (i; i < urlHashComponents.length; i += 1) {
+    if (urlHashComponents[i]) {
+      componentPieces = urlHashComponents[i].split('=');
+      switch (componentPieces[0]) {
+        case 'page':
+        page = componentPieces[1];
+        break;
+
+        case 'room':
+        roomId = componentPieces[1];
+        break;
+
+        case 'message':
+        messageId = componentPieces[1];
+        break;
+      }
     }
-  };
+  }
+
+  switch (page) {
+    case 'archive':
+    prepopup = function() {
+      popup.archive({
+        'roomId' : roomId,
+        'idMin' : messageId - 1
+      });
+    };
+    break;
+    default:
+    if (roomId) {
+      standard.changeRoom(roomId);
+    }
+    break;
+  }
 }
 
 
-dia = {
+
+/* Dia Object for jQueryUI */
+
+var dia = {
   error : function(message) {
     $('<div style="display: none;">' + message + '</div>').dialog({
       title : 'Error',
@@ -99,7 +253,7 @@ dia = {
       hide: "puff",
       buttons: {
         Confirm: function() {
-          if ('true' in options) {
+          if (typeof options['true'] !== 'undefined') {
             options['true']();
           }
 
@@ -107,7 +261,7 @@ dia = {
           return true;
         },
         Cancel: function() {
-          if ('false' in options) {
+          if (typeof options['false'] !== 'undefined') {
             options['false']();
           }
 
@@ -120,29 +274,33 @@ dia = {
 
   // Supported options: autoShow (true), id, content, width (600), oF, cF
   full : function(options) {
-    var ajax;
+    var ajax,
+      autoOpen,
+      windowWidth = document.documentElement.clientWidth,
+      dialog,
+      dialogOptions,
+      tabsOptions,
+      overlay,
+      throbber;
 
     if (options.uri) {
       options.content = '<img src="images/ajax-loader.gif" align="center" />';
 
       ajax = true;
     }
-    else if (options.content) {
-    }
-    else {
+    else if (!options.content) {
       console.log('No content found for dialog; exiting.');
 
       return false;
     }
 
-    if (typeof options.autoOpen != 'undefined' && options.autoOpen == false) {
-      var autoOpen = false;
+    if (typeof options.autoOpen !== 'undefined' && options.autoOpen === false) {
+      autoOpen = false;
     }
     else {
-      var autoOpen = true;
+      autoOpen = true;
     }
 
-    var windowWidth = document.documentElement.clientWidth;
     if (options.width > windowWidth) {
       options.width = windowWidth;
     }
@@ -150,7 +308,7 @@ dia = {
       options.widthwidth = 600;
     }
 
-    var dialogOptions = {
+    dialogOptions = {
       width: options.width,
       title: options.title,
       hide: "puff",
@@ -158,34 +316,34 @@ dia = {
       buttons : options.buttons,
       autoOpen: autoOpen,
       open: function() {
-        if ('oF' in options) {
-          options['oF']();
+        if (typeof options.oF !== 'undefined') {
+          options.oF();
         }
 
-        return false
+        return false;
       },
       close: function() {
         $('#' + options.id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
-        if ('cF' in options) {
-          options['cF']();
+        if (typeof options.cF !== 'undefined') {
+          options.cF();
         }
 
-        return false
+        return false;
       }
     };
 
-    var tabsOptions = {
+    tabsOptions = {
       selected : options.selectTab
     };
 
 
-    var dialog = $('<div style="display: none;" id="' + options.id +  '">' + options.content + '</div>').appendTo('body');
+    dialog = $('<div style="display: none;" id="' + options.id +  '">' + options.content + '</div>').appendTo('body');
 
 
 
     if (ajax) {
-      var overlay = $('<div class="ui-widget-overlay"></div>').appendTo('body').width($(document).width()).height($(document).height());
-      var throbber = $('<img src="images/ajax-loader.gif" />').appendTo('body').css('position','absolute').offset({ left : (($(window).width() - 220) / 2), top : (($(window).height() - 19) / 2)});
+      overlay = $('<div class="ui-widget-overlay"></div>').appendTo('body').width($(document).width()).height($(document).height());
+      throbber = $('<img src="images/ajax-loader.gif" />').appendTo('body').css('position','absolute').offset({ left : (($(window).width() - 220) / 2), top : (($(window).height() - 19) / 2)});
 
       $.ajax({
         url : options.uri,
@@ -234,6 +392,18 @@ dia = {
   }
 };
 
+if (typeof console !== 'object' || typeof console.log !== 'function') {
+  var console = {
+    log : function() {
+      return false;
+    }
+  };
+}
+
+var alert = function(text) {
+  dia.info(text,"Alert");
+}
+
 /*********************************************************
 ************************* END ***************************
 ******************* Static Functions ********************
@@ -251,70 +421,6 @@ dia = {
 ******************* Variable Setting ********************
 *********************************************************/
 
-/* Common Variables */
-
-var userId; // The user ID who is logged in.
-var roomId; // The ID of the room we are in.
-var sessionHash; // The session hash of the active user.
-var anonId; // ID used to represent anonymous posters.
-var prepopup;
-
-
-
-/* Function-Specific Variables */
-
-window.isBlurred = false; // By default, we assume the window is active and not blurred.
-var topic;
-var notify = true;
-var favicon = $('#favicon').attr('href');
-
-var uploadSettings = new Object;
-var requestSettings = {
-  longPolling : false, // We may set this to true if the server supports it.
-  timeout : 2400, // We may increase this dramatically if the server supports longPolling.
-  firstRequest : true,
-  totalFails : 0,
-  lastMessage : 0
-};
-var timers = new Object;
-
-
-
-/* Get Cookies */
-
-var layout = $.cookie('fim3_layout'); // TODO
-var themeId = parseInt($.cookie('fim3_themeId'));
-
-
-if (parseInt($.cookie('fim3_settings'))) {
-  var settingsBitfield = parseInt($.cookie('fim3_settings'));
-}
-else {
-  var settingsBitfield = 0;
-  $.cookie('fim3_settings',0);
-}
-
-if ($.cookie('fim3_sessionHash')) {
-  sessionHash = $.cookie('fim3_sessionHash');
-  userId = $.cookie('fim3_userId');
-}
-
-
-
-/* Get the absolute API path.
-* TODO: Define this in a more "sophisticated manner". */
-
-var directoryPre = window.location.pathname;
-directoryPre = directoryPre.split('/');
-directoryPre.pop();
-directoryPre.pop();
-directoryPre = directoryPre.join('/');
-
-var directory = directoryPre + '/';
-var currentLocation = window.location.origin + directory + 'interface/';
-
-
-
 /* Get Server-Specific Variables
 * We Should Not Call This Again */
 
@@ -324,7 +430,7 @@ $.ajax({
   timeout: 5000,
   cache: false,
   success: function(xml) {
-    requestSettings.longPolling = ($('serverStatus > requestMethods > longPoll').text().trim() == 'true' ? true : false);
+    requestSettings.longPolling = ($(xml).find('serverStatus > requestMethods > longPoll').text().trim() === 'true' ? true : false);
 
     return false;
   },
@@ -334,54 +440,6 @@ $.ajax({
     return false;
   }
 });
-
-
-
-/* URL-Defined Actions
- * TODO */
-
-function hashParse() {
-  var urlHash = window.location.hash;
-  var urlHashComponents = urlHash.split('#');
-  var page = '';
-
-  for (var i = 0; i < urlHashComponents.length; i++) {
-    if (!urlHashComponents[i]) {
-      continue;
-    }
-
-    var componentPieces = urlHashComponents[i].split('=');
-    switch (componentPieces[0]) {
-      case 'page':
-      page = componentPieces[1]
-      break;
-
-      case 'room':
-      roomId = componentPieces[1];
-      break;
-
-      case 'message':
-      messageId = componentPieces[1];
-      break;
-    }
-  }
-
-  switch (page) {
-    case 'archive':
-    prepopup = function() {
-      popup.archive({
-        'roomId' : roomId,
-        'idMin' : messageId - 1,
-      });
-    };
-    break;
-    default:
-    if (roomId) {
-      standard.changeRoom(roomId);
-    }
-    break;
-  }
-}
 
 
 
@@ -444,36 +502,6 @@ $('head').append('<link rel="stylesheet" type="text/css" id="stylesFIM" href="cl
 $('head').append('<link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" media="screen" />');
 
 
-
-/* Objects for Cleanness, Caching. */
-
-var roomRef = new Object;
-var roomIdRef = new Object;
-var roomList = new Array;
-var modRooms = new Object; // Rooms which the user has special permissions in.
-
-var userRef = new Object;
-var userIdRef = new Object;
-var userList = new Array;
-
-var groupRef = new Object;
-var groupList = new Array;
-var groupIdRef = new Object;
-
-var messageIndex = new Array;
-
-
-var roomUlFavHtml = '';
-var roomUlMyHtml = '';
-var roomUlPrivHtml = '';
-var roomUlHtml = '';
-var ulText = '';
-var roomTableHtml = '';
-var roomSelectHtml = '';
-
-var userSelectHtml = '';
-
-
 /*********************************************************
 ************************* END ***************************
 ******************* Variable Setting ********************
@@ -499,15 +527,15 @@ function populate(options) {
       timeout: 5000,
       cache: false,
       success: function(xml) {
-        userList = new Array; // Clear so we don't get repeat values on regeneration.
-        userRef = new Object;
+        userList = []; // Array // Clear so we don't get repeat values on regeneration.
+        userRef = {}; // Object
         userSelectHtml = '';
 
         console.log('Users obtained.');
 
         $(xml).find('user').each(function() {
-          var userName = unxml($(this).find('userName').text().trim());
-          var userId = parseInt($(this).find('userId').text().trim());
+          var userName = unxml($(this).find('userName').text().trim()),
+            userId = Number($(this).find('userId').text().trim());
 
           userRef[userName] = userId;
           userIdRef[userId] = userName;
@@ -530,9 +558,9 @@ function populate(options) {
       type: 'GET',
       cache: false,
       success: function(xml) {
-        roomList = new Array; // Clear so we don't get repeat values on regeneration.
-        roomIdRef = new Object;
-        roomRef = new Object;
+        roomList = []; // Array // Clear so we don't get repeat values on regeneration.
+        roomIdRef = {}; // Object
+        roomRef = {}; // Object
         roomTableHtml = '';
         roomSelectHtml = '';
         roomUlHtml = '';
@@ -541,16 +569,15 @@ function populate(options) {
         roomUlFavHtml = '';
 
         $(xml).find('room').each(function() {
-          var roomName = unxml($(this).find('roomName').text().trim());
-          var roomId = parseInt($(this).find('roomId').text().trim());
-          var roomTopic = unxml($(this).find('roomTopic').text().trim());
-          var isFav = ($(this).find('favorite').text().trim() == 'true' ? true : false);
-          var isPriv = ($(this).find('optionDefinitions > privateIm').text().trim() == 'true' ? true : false);
-          var isAdmin = ($(this).find('canAdmin').text().trim() === 'true' ? true : false);
-          var isModerator = ($(this).find('canModerate').text().trim() === 'true' ? true : false);
-          var isOwner = (parseInt($(this).find('owner').text().trim()) == userId ? true : false);
-
-          var ulText = '<li><a href="#room=' + roomId + '">' + roomName + '</a></li>';
+          var roomName = unxml($(this).find('roomName').text().trim()),
+            roomId = Number($(this).find('roomId').text().trim()),
+            roomTopic = unxml($(this).find('roomTopic').text().trim()),
+            isFav = ($(this).find('favorite').text().trim() === 'true' ? true : false),
+            isPriv = ($(this).find('optionDefinitions > privateIm').text().trim() === 'true' ? true : false),
+            isAdmin = ($(this).find('canAdmin').text().trim() === 'true' ? true : false),
+            isModerator = ($(this).find('canModerate').text().trim() === 'true' ? true : false),
+            isOwner = (Number($(this).find('owner').text().trim()) === userId ? true : false),
+            ulText = '<li><a href="#room=' + roomId + '">' + roomName + '</a></li>';
 
           if (isFav) {
             roomUlFavHtml += ulText;
@@ -609,8 +636,8 @@ function populate(options) {
         console.log('Groups obtained.');
 
         $(xml).find('group').each(function() {
-          var groupName = unxml($(this).find('groupName').text().trim());
-          var groupId = parseInt($(this).find('groupId').text().trim());
+          var groupName = unxml($(this).find('groupName').text().trim()),
+            groupId = Number($(this).find('groupId').text().trim());
 
           groupRef[groupName] = groupId;
           groupIdRef[groupId] = groupName;
@@ -662,12 +689,13 @@ function youtubeSend(id) { // TODO
 
 function updateVids(searchPhrase) {
   jQTubeUtil.search(searchPhrase, function(response) {
-    var html = "";
-    var num = 0;
+    var html = "",
+      num = 0,
+      video;
 
     for (vid in response.videos) {
-      var video = response.videos[vid];
-      num ++;
+      video = response.videos[vid];
+      num += 1;
 
       if (num % 3 === 1) {
         html += '<tr>';
@@ -694,43 +722,47 @@ function updateVids(searchPhrase) {
 
 
 autoEntry = {
-  addEntry : function(type,source,id) {
+  addEntry : function(type, source, id) {
+    var val,
+      id,
+      type2;
+
     if (!id) {
-      var val = $("#" + type + "Bridge").val();
+      val = $("#" + type + "Bridge").val();
       switch(type) {
         case 'watchRooms':
-        var id = roomRef[val];
-        var type2 = 'Room';
+        id = roomRef[val];
+        type2 = 'Room';
         break;
 
         case 'moderators':
         case 'allowedUsers':
-        var id = userRef[val];
-        var type2 = 'User';
+        id = userRef[val];
+        type2 = 'User';
         break;
 
         case 'allowedGroups':
-        var id = groupRef[val];
-        var type2 = 'Group';
+        id = groupRef[val];
+        type2 = 'Group';
         break;
       }
     }
     else {
       switch(type) {
         case 'watchRooms':
-        var val = roomIdRef[id];
-        var type2 = 'Room';
+        val = roomIdRef[id];
+        type2 = 'Room';
         break;
 
         case 'moderators':
         case 'allowedUsers':
-        var val = userIdRef[id];
-        var type2 = 'User';
+        val = userIdRef[id];
+        type2 = 'User';
         break;
 
         case 'allowedGroups':
-        var val = groupIdRef[id];
-        var type2 = 'Group';
+        val = groupIdRef[id];
+        type2 = 'Group';
         break;
       }
     }
@@ -749,14 +781,11 @@ autoEntry = {
     return false;
   },
 
-  removeEntry : function(type,id) {
-    $("#" + type + "SubList" + id).fadeOut(500, function() {
-      $(this).remove();
-    });
+  removeEntry : function(type, id) {
+    var currentRooms = $("#" + type).val().split(","),
+      i = 0;
 
-    var currentRooms = $("#" + type).val().split(",");
-
-    for (var i = 0; i < currentRooms.length; i++) {
+    for (i; i < currentRooms.length; i += 1) {
       if(currentRooms[i] == id) {
         currentRooms.splice(i, 1);
         break;
@@ -765,30 +794,37 @@ autoEntry = {
 
     $("#" + type).val(currentRooms.toString(","));
 
+    $("#" + type + "SubList" + id).fadeOut(500, function() {
+      $(this).remove();
+    });
+
     return false;
   },
 
-  showEntries : function(type,string) {
+  showEntries : function(type, string) {
+    var source,
+      i = 0;
+
     entryList = string.split(',');
 
 
     switch(type) {
       case 'watchRooms':
-      var source = roomRef;
+      source = roomRef;
       break;
 
       case 'moderators':
       case 'allowedUsers':
-      var source = userRef;
+      source = userRef;
       break;
 
       case 'allowedGroups':
-      var source = groupRef;
+      source = groupRef;
       break;
     }
 
 
-    for (var i = 0; i < entryList.length; i++) {
+    for (i = 0; i < entryList.length; i += 1) {
       if (entryList[i] == '') {
         continue;
       }
@@ -803,25 +839,47 @@ autoEntry = {
 
 var standard = {
   archive : function (options) {
-    var encrypt = 'base64';
-    var lastMessage = 0;
-    var firstMessage = 0;
-    var data = '';
+    var encrypt = 'base64',
+      lastMessage = 0,
+      firstMessage = 0,
+      data = '',
+      where;
 
     if (options.idMax) {
-      var where = 'messageIdEnd=' + options.idMax;
+      where = 'messageIdEnd=' + options.idMax;
     }
     else if (options.idMin) {
-      var where = 'messageIdStart=' + options.idMin;
+      where = 'messageIdStart=' + options.idMin;
     }
     else {
-      var where = 'messageIdStart=0';
+      where = 'messageIdStart=0';
     }
 
+
+    $('#searchText').change(function() {
+      standard.archive({
+        idMax : options.idMax,
+        idMin : options.idMin,
+        roomId : options.roomId,
+        search : $(this).val()
+      });
+    });
+
+    $('#archiveSearch').submit(function() {
+      standard.archive({
+        idMax : options.idMax,
+        idMin : options.idMin,
+        roomId : options.roomId,
+        search : $(this).val()
+      });
+
+      return false;
+    });
+
     $.when( $.ajax({
-      url: directory + 'api/getMessages.php?rooms=' + options.roomId + '&archive=1&messageLimit=20&' + where + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+      url: directory + 'api/getMessages.php?rooms=' + options.roomId + '&archive=1&messageLimit=20&' + where + (options.search ? '&search=' + urlEncode(options.search) : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
       type: 'GET',
-      timeout: 1000,
+      timeout: 5000,
       data: '',
       contentType: "text/xml; charset=utf-8",
       dataType: "xml",
@@ -830,21 +888,21 @@ var standard = {
 
         if ($(xml).find('messages > message').length > 0) {
           $(xml).find('messages > message').each(function() {
-            var text = unxml($(this).find('htmlText').text().trim());
-            var messageTime = $(this).find('messageTimeFormatted').text().trim();
-            var messageId = parseInt($(this).find('messageId').text().trim());
+            var text = unxml($(this).find('htmlText').text().trim()),
+              messageTime = $(this).find('messageTimeFormatted').text().trim(),
+              messageId = Number($(this).find('messageId').text().trim()),
 
-            var userName = $(this).find('userData > userName').text().trim();
-            var userId = parseInt($(this).find('userData > userId').text().trim());
-            var groupFormatStart = unxml($(this).find('userData > startTag').text().trim());
-            var groupFormatEnd = unxml($(this).find('userData > endTag').text().trim());
+              userName = $(this).find('userData > userName').text().trim(),
+              userId = Number($(this).find('userData > userId').text().trim()),
+              groupFormatStart = unxml($(this).find('userData > startTag').text().trim()),
+              groupFormatEnd = unxml($(this).find('userData > endTag').text().trim()),
 
-            var styleColor = $(this).find('defaultFormatting > color').text().trim();
-            var styleHighlight = $(this).find('defaultFormatting > highlight').text().trim();
-            var styleFontface = $(this).find('defaultFormatting > fontface').text().trim();
-            var styleGeneral = parseInt($(this).find('defaultFormatting > general').text().trim());
+              styleColor = $(this).find('defaultFormatting > color').text().trim(),
+              styleHighlight = $(this).find('defaultFormatting > highlight').text().trim(),
+              styleFontface = $(this).find('defaultFormatting > fontface').text().trim(),
+              styleGeneral = Number($(this).find('defaultFormatting > general').text().trim()),
 
-            var style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + styleFontface + ';';
+              style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + styleFontface + ';';
 
             if (styleGeneral & 256) {
               style += 'font-weight: bold;';
@@ -869,11 +927,6 @@ var standard = {
             }
           });
         }
-
-        return true;
-      },
-      error: function() {
-        dia.error('Archive failed to obtain results from server.');
 
         return true;
       }
@@ -909,8 +962,8 @@ var standard = {
     if (options.userName && options.password) {
       var passwordEncrypt = 'plaintext';
       // TODO: Enable for vBulletin
-      //  var password = md5(password);
-      //  var passwordEncrypt = 'md5';
+      // var password = md5(password);
+      // var passwordEncrypt = 'md5';
 
       data = 'userName=' + options.userName + '&password=' + options.password + '&passwordEncrypt=' + passwordEncrypt;
     }
@@ -930,14 +983,14 @@ var standard = {
         cache: false,
         timeout: 2500,
         success: function(xml) {
-          var loginFlag = unxml($(xml).find('loginFlag').text().trim());
-          var loginText = unxml($(xml).find('loginText').text().trim());
-          var valid = unxml($(xml).find('valid').text().trim());
-          var userName = unxml($(xml).find('userData > userName').text().trim());
-          var defaultRoomId = parseInt($(xml).find('defaultRoomId').text().trim());
+          var loginFlag = unxml($(xml).find('loginFlag').text().trim()),
+            loginText = unxml($(xml).find('loginText').text().trim()),
+            valid = unxml($(xml).find('valid').text().trim()),
+            userName = unxml($(xml).find('userData > userName').text().trim()),
+            defaultRoomId = Number($(xml).find('defaultRoomId').text().trim());
 
-          userId = parseInt($(xml).find('userData > userId').text().trim());
-          anonId = parseInt($(xml).find('anonId').text().trim());
+          userId = Number($(xml).find('userData > userId').text().trim());
+          anonId = Number($(xml).find('anonId').text().trim());
           sessionHash = unxml($(xml).find('sessionHash').text().trim());
 
           $.cookie('fim3_sessionHash',sessionHash); // Set cookies.
@@ -947,18 +1000,18 @@ var standard = {
 
           /* Update Permissions */
 
-          userPermissions.createRoom = (parseInt($(xml).find('userPermissions > createRooms').text().trim()) > 0 ? true : false);
-          userPermissions.privateRoom = (parseInt($(xml).find('userPermissions > privateRooms').text().trim()) > 0 ? true : false);
-          userPermissions.general = (parseInt($(xml).find('userPermissions > allowed').text().trim()) > 0 ? true : false);
+          userPermissions.createRoom = (Number($(xml).find('userPermissions > createRooms').text().trim()) > 0 ? true : false);
+          userPermissions.privateRoom = (Number($(xml).find('userPermissions > privateRooms').text().trim()) > 0 ? true : false);
+          userPermissions.general = (Number($(xml).find('userPermissions > allowed').text().trim()) > 0 ? true : false);
 
 
-          adminPermissions.modPrivs = (parseInt($(xml).find('adminPermissions > modPrivs').text().trim()) > 0 ? true : false);
-          adminPermissions.modCore = (parseInt($(xml).find('adminPermissions > modCore').text().trim()) > 0 ? true : false);
-          adminPermissions.modUsers = (parseInt($(xml).find('adminPermissions > modUsers').text().trim()) > 0 ? true : false);
-          adminPermissions.modTemplates = (parseInt($(xml).find('adminPermissions > modTemplates').text().trim()) > 0 ? true : false);
-          adminPermissions.modImages = (parseInt($(xml).find('adminPermissions > modImages').text().trim()) > 0 ? true : false);
-          adminPermissions.modCensor = (parseInt($(xml).find('adminPermissions > modCensor').text().trim()) > 0 ? true : false);
-          adminPermissions.modHooks = (parseInt($(xml).find('adminPermissions > modHooks').text().trim()) > 0 ? true : false);
+          adminPermissions.modPrivs = (Number($(xml).find('adminPermissions > modPrivs').text().trim()) > 0 ? true : false);
+          adminPermissions.modCore = (Number($(xml).find('adminPermissions > modCore').text().trim()) > 0 ? true : false);
+          adminPermissions.modUsers = (Number($(xml).find('adminPermissions > modUsers').text().trim()) > 0 ? true : false);
+          adminPermissions.modTemplates = (Number($(xml).find('adminPermissions > modTemplates').text().trim()) > 0 ? true : false);
+          adminPermissions.modImages = (Number($(xml).find('adminPermissions > modImages').text().trim()) > 0 ? true : false);
+          adminPermissions.modCensor = (Number($(xml).find('adminPermissions > modCensor').text().trim()) > 0 ? true : false);
+          adminPermissions.modHooks = (Number($(xml).find('adminPermissions > modHooks').text().trim()) > 0 ? true : false);
 
 
 
@@ -1088,13 +1141,13 @@ var standard = {
         dataType: "xml",
         cache: false,
         success: function(xml) {
-          var errStr = $(xml).find('errStr').text().trim();
-          var errDesc = $(xml).find('errDesc').text().trim();
+          var errStr = $(xml).find('errStr').text().trim(),
+            errDesc = $(xml).find('errDesc').text().trim();
 
           if (errStr) {
             var sentUserId = $(xml).find('activeUser > userId');
 
-            if (errStr == 'noperm') {
+            if (errStr === 'noperm') {
               roomId = false;
 
               if (sentUserId) {
@@ -1119,15 +1172,15 @@ var standard = {
 
 
             $('#activeUsers').html('');
-            var activeUserHtml = new Array;
+            var activeUserHtml = []; // Array
 
 
             $(xml).find('activeUsers > user').each(function() {
-              var userName = $(this).find('userName').text().trim();
-              var userId = $(this).find('userId').text().trim();
-              var userGroup = $(this).find('userGroup').text().trim();
-              var startTag = unxml($(this).find('startTag').text().trim());
-              var endTag = unxml($(this).find('endTag').text().trim());
+              var userName = $(this).find('userName').text().trim(),
+                userId = $(this).find('userId').text().trim(),
+                userGroup = $(this).find('userGroup').text().trim(),
+                startTag = unxml($(this).find('startTag').text().trim()),
+                endTag = unxml($(this).find('endTag').text().trim());
 
               activeUserHtml.push('<span class="userName" data-userId="' + userId + '">' + startTag + '<span class="username">' + userName + '</span>' + endTag + '</span>');
             });
@@ -1138,23 +1191,23 @@ var standard = {
             if ($(xml).find('messages > message').length > 0) {
               $(xml).find('messages > message').each(function() {
 
-                var text = unxml($(this).find('htmlText').text().trim());
-                var messageTime = unxml($(this).find('messageTimeFormatted').text().trim());
+                var text = unxml($(this).find('htmlText').text().trim()),
+                  messageTime = unxml($(this).find('messageTimeFormatted').text().trim()),
 
-                var messageId = parseInt($(this).find('messageId').text().trim());
+                  messageId = Number($(this).find('messageId').text().trim()),
 
-                var userName = unxml($(this).find('userData > userName').text().trim());
-                var userId = parseInt($(this).find('userData > userId').text().trim());
-                var groupFormatStart = unxml($(this).find('userData > startTag').text().trim());
-                var groupFormatEnd = unxml($(this).find('userData > endTag').text().trim());
-                var avatar = unxml($(this).find('userData > avatar').text().trim());
+                  userName = unxml($(this).find('userData > userName').text().trim()),
+                  userId = Number($(this).find('userData > userId').text().trim()),
+                  groupFormatStart = unxml($(this).find('userData > startTag').text().trim()),
+                  groupFormatEnd = unxml($(this).find('userData > endTag').text().trim()),
+                  avatar = unxml($(this).find('userData > avatar').text().trim()),
 
-                var styleColor = unxml($(this).find('defaultFormatting > color').text().trim());
-                var styleHighlight = unxml($(this).find('defaultFormatting > highlight').text().trim());
-                var styleFontface = unxml($(this).find('defaultFormatting > fontface').text().trim());
-                var styleGeneral = parseInt($(this).find('defaultFormatting > general').text().trim());
+                  styleColor = unxml($(this).find('defaultFormatting > color').text().trim()),
+                  styleHighlight = unxml($(this).find('defaultFormatting > highlight').text().trim()),
+                  styleFontface = unxml($(this).find('defaultFormatting > fontface').text().trim()),
+                  styleGeneral = Number($(this).find('defaultFormatting > general').text().trim()),
 
-                var style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + styleFontface + ';';
+                  style = 'color: rgb(' + styleColor + '), background: rgb(' + styleHighlight + '), font-family: ' + styleFontface + ',';
 
                 if (styleGeneral & 256) {
                   style += 'font-weight: bold;';
@@ -1192,7 +1245,7 @@ var standard = {
 
                 messageIndex.push(requestSettings.lastMessage);
 
-                if (messageIndex.length == 100) {
+                if (messageIndex.length === 100) {
                   var messageOut = messageIndex[0];
                   $('#message' + messageOut).remove();
                   messageIndex = messageIndex.slice(1,99);
@@ -1225,7 +1278,7 @@ var standard = {
 
                 if (notify) {
                   if ('webkitNotifications' in window) {
-                    notify.webkitNotifyRequest('images/favicon.gif', 'New Message', notifyData);
+                    notify.webkitNotify('images/favicon.gif', 'New Message', notifyData);
                   }
                 }
 
@@ -1270,19 +1323,19 @@ var standard = {
 
             if (!requestSettings.longPolling) {
               if (requestSettings.totalFails > 10) {
-                var wait = 30000;
+                wait = 30000;
                 requestSettings.timeout = 29900;
 
                 // TODO: Add indicator.
               }
               else if (requestSettings.totalFails > 5) {
-                var wait = 10000;
+                wait = 10000;
                 requestSettings.timeout = 9900;
 
                 // TODO: Add indicator.
               }
               else {
-                var wait = 5000;
+                wait = 5000;
                 requestSettings.timeout = 4900;
               }
             }
@@ -1399,8 +1452,8 @@ var standard = {
 
   deleteRoom : function(roomLocalId) {
     $.post(directory + 'api/moderate.php','action=deleteRoom&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
-      var errStr = $(xml).find('errStr').text().trim();
-      var errDesc = $(xml).find('errDesc').text().trim();
+      var errStr = $(xml).find('errStr').text().trim(),
+        errDesc = $(xml).find('errDesc').text().trim();
 
       switch (errStr) {
         case '':
@@ -1422,7 +1475,9 @@ var standard = {
 
 
   privateRoom : function(userLocalId) {
-    if (userLocalId == userId) {
+    userLocalId = Number(userLocalId);
+
+    if (userLocalId === userId) {
       dia.error('You can\'t talk to yourself...');
     }
     else if (!userLocalId) {
@@ -1433,9 +1488,9 @@ var standard = {
     }
     else {
       $.post(directory + 'api/moderate.php','action=privateRoom&userId=' + userLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
-        var privateRoomId = parseInt($(xml).find('insertId').text().trim());
-        var errStr = unxml($(xml).find('errStr').text().trim());
-        var errDesc = unxml($(xml).find('errStr').text().trim());
+        var privateRoomId = Number($(xml).find('insertId').text().trim()),
+          errStr = unxml($(xml).find('errStr').text().trim()),
+          errDesc = unxml($(xml).find('errStr').text().trim());
 
         if (errStr) {
           switch (errStr) {
@@ -1470,8 +1525,8 @@ var standard = {
 
   kick : function(userId, roomId, length) {
     $.post(directory + 'api/moderate.php','action=kickUser&userId=' + userId + '&roomId=' + roomId + '&length=' + length + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
-      var errStr = $(xml).find('errStr').text().trim();
-      var errDesc = $(xml).find('errDesc').text().trim();
+      var errStr = $(xml).find('errStr').text().trim(),
+        errDesc = $(xml).find('errDesc').text().trim();
 
       switch (errStr) {
         case '':
@@ -1506,8 +1561,8 @@ var standard = {
 
   deleteMessage : function(messageId) {
     $.post(directory + 'api/moderate.php','action=deleteMessage&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
-      var errStr = $(xml).find('errStr').text().trim();
-      var errDesc = $(xml).find('errDesc').text().trim();
+      var errStr = $(xml).find('errStr').text().trim(),
+        errDesc = $(xml).find('errDesc').text().trim();
 
       switch (errStr) {
         case '':
@@ -1581,8 +1636,8 @@ popup = {
         width : 600,
         oF : function() {
           $("#loginForm").submit(function() {
-            var userName = $('#loginForm > #userName').val();
-            var password = $('#loginForm > #password').val();
+            var userName = $('#loginForm > #userName').val(),
+              password = $('#loginForm > #password').val();
 
             standard.login({
               userName : userName,
@@ -1672,20 +1727,21 @@ popup = {
   /*** START Insert Docs ***/
 
   insertDoc : function(preselect) {
-    var fileContent;
+    var fileContent,
+      selectTab;
 
     switch(preselect) {
       case 'video':
-      var selectTab = 2;
+      selectTab = 2;
       break;
 
       case 'image':
-      var selectTab = 1;
+      selectTab = 1;
       break;
 
       case 'link':
       default:
-      var selectTab = 0;
+      selectTab = 0;
       break;
     }
 
@@ -1719,8 +1775,8 @@ popup = {
 
               var file = files[0];
 
-              var fileName = file.name;
-              var fileSize = file.size;
+              var fileName = file.name,
+                fileSize = file.size;
 
               if (!fileName.match(/\.(jpg|jpeg|gif|png|svg)$/i)) { // TODO
                 $('#preview').html('Wrong file type.');
@@ -1749,7 +1805,7 @@ popup = {
 
           $('#urlUpload').change(function() {
             fileContent = $('#urlUpload').val();
-            if (fileContent && fileContent != 'http://') {
+            if (fileContent && fileContent !== 'http://') {
               fileContainer = '<img src="' + fileContent + '" alt="" style="max-width: 200px; max-height: 250px; height: auto;" />';
 
               $('#uploadUrlFormPreview').html(fileContainer);
@@ -1782,8 +1838,8 @@ popup = {
 
 
         $('#linkForm').submit(function() {
-          var linkUrl = $('#linkUrl').val();
-          var linkMail = $('#linkEmail').val();
+          var linkUrl = $('#linkUrl').val(),
+            linkMail = $('#linkEmail').val();
 
           if (!linkUrl && !linkMail) {
             dia.error('No Link Was Specified');
@@ -1830,12 +1886,13 @@ popup = {
   /*** START Stats ***/
 
   viewStats : function() {
-    var statsHtml = new Object;
-    var statsHtml2 = '';
-    var roomHtml = '';
-    var number = 10;
+    var statsHtml = {}, // Object
+      statsHtml2 = '',
+      roomHtml = '',
+      number = 10,
+      i = 1;
 
-    for (var i = 1; i <= number; i++) {
+    for (i = 1; i <= number; i += 1) {
       statsHtml[i] = '';
     }
 
@@ -1846,16 +1903,16 @@ popup = {
       cache: false,
       success: function(xml) {
         $(xml).find('room').each(function() {
-          var roomName = unxml($(this).find('roomName').text().trim());
-          var roomId = parseInt($(this).find('roomId').text().trim());
+          var roomName = unxml($(this).find('roomName').text().trim()),
+            roomId = Number($(this).find('roomId').text().trim());
 
           $(this).find('user').each(function() {
-            var userName = unxml($(this).find('userData > userName').text().trim());
-            var userId = parseInt($(this).find('userData > userId').text().trim());
-            var startTag = unxml($(this).find('userData > startTag').text().trim());
-            var endTag = unxml($(this).find('userData > endTag').text().trim());
-            var position = parseInt($(this).find('position').text().trim());
-            var messageCount = parseInt($(this).find('messageCount').text().trim());
+            var userName = unxml($(this).find('userData > userName').text().trim()),
+              userId = Number($(this).find('userData > userId').text().trim()),
+              startTag = unxml($(this).find('userData > startTag').text().trim()),
+              endTag = unxml($(this).find('userData > endTag').text().trim()),
+              position = Number($(this).find('position').text().trim()),
+              messageCount = Number($(this).find('messageCount').text().trim());
 
             statsHtml[position] += '<td>' + startTag + userName + endTag + ' (' + messageCount + ')</td>';
           });
@@ -1865,7 +1922,7 @@ popup = {
 
         });
 
-        for (var i = 1; i <= number; i++) {
+        for (i = 1; i <= number; i += 1) {
           statsHtml2 += '<tr><th>' + i + '</th>' + statsHtml[i] + '</tr>';
         }
 
@@ -1907,9 +1964,9 @@ popup = {
         return false;
       },
       oF : function() {
-        var defaultColour = false;
-        var defaultHighlight = false;
-        var defaultFontface = false;
+        var defaultColour = false,
+          defaultHighlight = false,
+          defaultFontface = false;
 
         $('#theme').change(function() {
           $('#stylesjQ').attr('href','client/css/' + themes[this.value] + '/jquery-ui-1.8.13.custom.css');
@@ -1936,17 +1993,17 @@ popup = {
 
 
         $('#showAvatars').change(function() {
-          if ($(this).val() == 'true' && !settings.showAvatars) {
+          if ($(this).val() === 'true' && !settings.showAvatars) {
             settings.showAvatars = true;
             $('#messageList').html('');
-            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) + 2048);
+            $.cookie('fim3_settings',Number($.cookie('fim3_settings')) + 2048);
 
             requestSettings.firstRequest= true;
           }
-          else if ($(this).val() != 'true' && settings.showAvatars) {
+          else if ($(this).val() !== 'true' && settings.showAvatars) {
             settings.showAvatars = false;
             $('#messageList').html('');
-            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) - 2048);
+            $.cookie('fim3_settings',Number($.cookie('fim3_settings')) - 2048);
 
             requestSettings.firstRequest= true;
           }
@@ -1955,17 +2012,17 @@ popup = {
         });
 
         $('#reversePostOrder').change(function() {
-          if ($(this).val() == 'true' && !settings.reversePostOrder) {
+          if ($(this).val() === 'true' && !settings.reversePostOrder) {
             settings.reversePostOrder = true;
             $('#messageList').html('');
-            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) + 1024);
+            $.cookie('fim3_settings',Number($.cookie('fim3_settings')) + 1024);
 
             requestSettings.firstRequest= true;
           }
-          else if ($(this).val() != 'true' && settings.reversePostOrder) {
+          else if ($(this).val() !== 'true' && settings.reversePostOrder) {
             settings.reversePostOrder = false;
             $('#messageList').html('');
-            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) - 1024);
+            $.cookie('fim3_settings',Number($.cookie('fim3_settings')) - 1024);
 
             requestSettings.firstRequest= true;
           }
@@ -1974,17 +2031,17 @@ popup = {
         });
 
         $('#audioDing').change(function() {
-          if ($(this).val() == 'true' && !settings.audioDing) {
+          if ($(this).val() === 'true' && !settings.audioDing) {
             settings.audioDing = true;
             $('#messageList').html('');
-            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) + 8192);
+            $.cookie('fim3_settings',Number($.cookie('fim3_settings')) + 8192);
 
             requestSettings.firstRequest= true;
           }
-          else if ($(this).val() != 'true' && settings.audioDing) {
+          else if ($(this).val() !== 'true' && settings.audioDing) {
             settings.audioDing = false;
             $('#messageList').html('');
-            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) - 8192);
+            $.cookie('fim3_settings',Number($.cookie('fim3_settings')) - 8192);
 
             requestSettings.firstRequest= true;
           }
@@ -1993,17 +2050,17 @@ popup = {
         });
 
         $('#disableFx').change(function() {
-          if ($(this).val() == 'true' && !settings.disableFx) {
+          if ($(this).val() === 'true' && !settings.disableFx) {
             settings.disableFx = true;
             $('#disableFx').html('');
-            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) + 16384);
+            $.cookie('fim3_settings',Number($.cookie('fim3_settings')) + 16384);
 
             requestSettings.firstRequest= true;
           }
-          else if ($(this).val() != 'true' && settings.disableFx) {
+          else if ($(this).val() !== 'true' && settings.disableFx) {
             settings.disableFx = false;
             $('#disableFx').html('');
-            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) - 16384);
+            $.cookie('fim3_settings',Number($.cookie('fim3_settings')) - 16384);
 
             requestSettings.firstRequest= true;
           }
@@ -2025,10 +2082,10 @@ popup = {
           cache: false,
           success: function(xml) {
             $(xml).find('font').each(function() {
-              var fontName = unxml($(this).find('fontName').text().trim());
-              var fontId = parseInt($(this).find('fontId').text().trim());
-              var fontGroup = unxml($(this).find('fontGroup').text().trim());
-              var fontData = unxml($(this).find('fontData').text().trim());
+              var fontName = unxml($(this).find('fontName').text().trim()),
+                fontId = Number($(this).find('fontId').text().trim()),
+                fontGroup = unxml($(this).find('fontGroup').text().trim()),
+                fontData = unxml($(this).find('fontData').text().trim());
 
               $('#defaultFace').append('<option value="' + fontId + '" style="' + fontData + '" data-font="' + fontData + '">' + fontName + '</option>');
             });
@@ -2102,10 +2159,10 @@ popup = {
         }
 
         $("#changeSettingsForm").submit(function() {
-          var watchRooms = $('#watchRooms').val();
-          var defaultRoom = $('#defaultRoom').val();
-          var defaultRoomId = (defaultRoom ? roomRef[defaultRoom] : 0);
-          var fontId = $('#defaultFace option:selected').val();
+          var watchRooms = $('#watchRooms').val(),
+            defaultRoom = $('#defaultRoom').val(),
+            defaultRoomId = (defaultRoom ? roomRef[defaultRoom] : 0),
+            fontId = $('#defaultFace option:selected').val();
 
           $.post(directory + 'api/moderate.php','action=userOptions&userId=' + userId + (defaultColour ? '&defaultColor=' + defaultColour : '') + (defaultHighlight ? '&defaultHighlight=' + defaultHighlight : '') + (defaultRoomId ? '&defaultRoomId=' + defaultRoomId : '') + (watchRooms ? '&watchRooms=' + watchRooms : '') + (fontId ? '&defaultFontface=' + fontId : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
             dia.info('Your settings may or may not have been updated.');
@@ -2154,14 +2211,13 @@ popup = {
           timeout: 2400,
           cache: false,
           success: function(xml) {
-            var data = '';
-
-            var roomName = unxml($(xml).find('roomName').text().trim());
-            var roomId = parseInt($(xml).find('roomId').text().trim());
-            var allowedUsers = $(xml).find('allowedUsers').text().trim();
-            var allowedGroups = $(xml).find('allowedGroups').text().trim();
-            var moderators = $(xml).find('moderators').text().trim();
-            var mature = ($(xml).find('optionDefinitions > mature').text().trim() === 'true' ? true : false);
+            var data = '',
+              roomName = unxml($(xml).find('roomName').text().trim()),
+              roomId = Number($(xml).find('roomId').text().trim()),
+              allowedUsers = $(xml).find('allowedUsers').text().trim(),
+              allowedGroups = $(xml).find('allowedGroups').text().trim(),
+              moderators = $(xml).find('moderators').text().trim(),
+              mature = ($(xml).find('optionDefinitions > mature').text().trim() === 'true' ? true : false);
 
             $('#name').val(roomName);
 
@@ -2193,20 +2249,20 @@ popup = {
         });
 
         $("#editRoomForm").submit(function() {
-          var bbcode = parseInt($('#bbcode > option:selected').val());
-          var name = $('#name').val();
-          var mature = ($('#mature').is(':checked') ? true : false);
-          var allowedUsers = $('#allowedUsers').val();
-          var allowedGroups = $('#allowedGroups').val();
-          var moderators = $('#moderators').val()
+          var bbcode = Number($('#bbcode > option:selected').val()),
+            name = $('#name').val(),
+            mature = ($('#mature').is(':checked') ? true : false),
+            allowedUsers = $('#allowedUsers').val(),
+            allowedGroups = $('#allowedGroups').val(),
+            moderators = $('#moderators').val();
 
           if (name.length > 20) {
             dia.error('The roomname is too long.');
           }
           else {
             $.post(directory + 'api/moderate.php','action=editRoom&roomId=' + roomIdLocal + '&name=' + urlEncode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
-              var errStr = unxml($(xml).find('errStr').text().trim());
-              var errDesc = unxml($(xml).find('errDesc').text().trim());
+              var errStr = unxml($(xml).find('errStr').text().trim()),
+                errDesc = unxml($(xml).find('errDesc').text().trim());
 
               if (errStr) {
                 dia.error('An error has occured: ' + errDesc);
@@ -2267,7 +2323,7 @@ popup = {
         });
 
         $("#editRoomForm").submit(function() {
-          var bbcode = parseInt($('#bbcode').val());
+          var bbcode = Number($('#bbcode').val());
           var name = $('#name').val();
           var mature = ($('#mature').is(':checked') ? true : false);
           var allowedUsers = $('#allowedUsersBridge').val();
@@ -2281,7 +2337,7 @@ popup = {
             $.post(directory + 'api/moderate.php','action=createRoom&name=' + urlEncode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
               var errStr = unxml($(xml).find('errStr').text().trim());
               var errDesc = unxml($(xml).find('errDesc').text().trim());
-              var createRoomId = parseInt($(xml).find('insertId').text().trim());
+              var createRoomId = Number($(xml).find('insertId').text().trim());
 
               if (errStr) {
                 dia.error('An error has occured: ' + errDesc);
@@ -2383,13 +2439,13 @@ popup = {
 
           $(xml).find('user').each(function() {
             var userName = unxml($(this).find('userName').text().trim());
-            var userId = parseInt($(this).find('userId').text().trim());
+            var userId = Number($(this).find('userId').text().trim());
             var startTag = unxml($(this).find('startTag').text().trim());
             var endTag = unxml($(this).find('endTag').text().trim());
-            var roomData = new Array();
+            var roomData = []();
 
             $(this).find('room').each(function() {
-              var roomId = parseInt($(this).find('roomId').text().trim());
+              var roomId = Number($(this).find('roomId').text().trim());
               var roomName = unxml($(this).find('roomName').text().trim());
               roomData.push('<a href="#room=' + roomId + '">' + roomName + '</a>');
             });
@@ -2432,15 +2488,15 @@ popup = {
       cache: false,
       success: function(xml) {
         $(xml).find('kick').each(function() {
-          var kickerId = parseInt($(this).find('kickerData > userId').text().trim());
+          var kickerId = Number($(this).find('kickerData > userId').text().trim());
           var kickerName = $(this).find('kickerData > userName').text().trim();
           var kickerFormatStart = $(this).find('kickerData > userFormatStart').text().trim();
           var kickerFormatEnd = $(this).find('kickerData > userFormatEnd').text().trim();
-          var userId = parseInt($(this).find('userData > userId').text().trim());
+          var userId = Number($(this).find('userData > userId').text().trim());
           var userName = $(this).find('userData > userName').text().trim();
           var userFormatStart = $(this).find('userData > userFormatStart').text().trim();
           var userFormatEnd = $(this).find('userData > userFormatEnd').text().trim();
-          var length = parseInt($(this).find('length').text().trim());
+          var length = Number($(this).find('length').text().trim());
           var set = unxml($(this).find('setFormatted').text().trim());
           var expires = unxml($(this).find('expiresFormatted').text().trim());
 
@@ -2465,9 +2521,9 @@ popup = {
     $("form[data-formid=unkick]").submit(function() {
       data = $(this).serialize(); // Serialize the form data for AJAX.
       // TODO
-  //      $.post("content/unkick.php?phase=2",data,function(html) {
-  //        quickDialogue(html,'','unkickDialogue');
-  //      }); // Send the form data via AJAX.
+  // $.post("content/unkick.php?phase=2",data,function(html) {
+  // quickDialogue(html,'','unkickDialogue');
+  // }); // Send the form data via AJAX.
 
       $("#manageKickDialogue").dialog('destroy');
       return false; // Don\\''t submit the form.
@@ -2490,7 +2546,7 @@ popup = {
       id : 'kickUserDialogue',
       width : 1000,
       oF : function() {
-        roomModList = new Array();
+        roomModList = []();
 
         for (var i = 0; i < roomList.length; i++) {
           if (modRooms[roomRef[roomList[i]]] > 0) {
@@ -2512,7 +2568,7 @@ popup = {
           var userName = $('#userName').val();
           var userId = userRef[userName];
 
-          var length = Math.floor(parseInt($('#time').val() * parseInt($('#interval > option:selected').attr('value'))));
+          var length = Math.floor(Number($('#time').val() * Number($('#interval > option:selected').attr('value'))));
 
           standard.kick(userId,roomId,length);
 
@@ -2553,7 +2609,7 @@ popup = {
 
   archive : function(options) {
     dia.full({
-      content : '<form id="archiveSearch" action="#" method="get"><input type="text" name="searchText" /></form> <table class="center"><thead><tr><th style="width: 20%;">User</th><th style="width: 20%;">Time</th><th style="width: 60%;">Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><button id="archivePrev"><< Prev</button><button id="archiveNext">Next >></button>',
+      content : '<form id="archiveSearch" action="#" method="get" style="text-align: center;"><input type="text" id="searchText" name="searchText" style="margin-left: auto; margin-right: auto; text-align: left;" /><button type="submit">Search</button></form><br /><br /><table class="center"><thead><tr><th style="width: 20%;">User</th><th style="width: 20%;">Time</th><th style="width: 60%;">Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><button id="archivePrev"><< Prev</button><button id="archiveNext">Next >></button>',
       title : 'Archive',
       id : 'archiveDialogue',
       width : 1000,
@@ -2634,11 +2690,11 @@ function windowDraw() {
         $('#tooltext').attr('data-lastuserId',thisid);
         $.get(directory + 'api/getUsers.php?users=' + thisid + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId, function(xml) {
           var userName = unxml($(xml).find('user > userName').text().trim());
-          var userId = parseInt($(xml).find('user > userId').text().trim());
+          var userId = Number($(xml).find('user > userId').text().trim());
           var startTag = unxml($(xml).find('user > startTag').text().trim());
           var endTag = unxml($(xml).find('user > endTag').text().trim());
           var userTitle = unxml($(xml).find('user > userTitle').text().trim());
-          var posts = parseInt($(xml).find('user > postCount').text().trim());
+          var posts = Number($(xml).find('user > postCount').text().trim());
           var joinDate = unxml($(xml).find('user > joinDateFormatted').text().trim());
           var avatar = unxml($(xml).find('user > avatar').text().trim());
 
