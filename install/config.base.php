@@ -182,6 +182,8 @@ $uploadMaxFiles = -1;
  * Other interfaces may be found at http://code.google.com/p/freeze-messenger/downloads/list */
 $enabledInterfaces = array(
   'webpro',
+  'liteiron',
+  'choose',
 );
 
 /* $defaultInterface
@@ -207,7 +209,7 @@ $bannedUserGroups = array();
  * Set values here to true/false to disable "categories" of default formatting that users may use.
  * The "general" entry encompasses underline, bold, strikethrough, and italics. */
 $enableDF = array( // Default formatting users can user to differentiate their text.
-  'colour' => true,
+  'color' => true,
   'font' => true,
   'highlight' => true,
   'general' => true, // Bold, italics, etc.
@@ -229,7 +231,7 @@ $bbcode = array(
   'shortCode' => false, // ++ == __ //
   'buis' => true, // [b] [u] [i] [s]
   'link' => true, // [url] [email]
-  'colour' => true, // [color] [colour] [highlight] [hl] [background] [bg]
+  'color' => true, // [color] [colour] [highlight] [hl] [background] [bg]
   'image' => true, // [image]
   'video' => true, // [youtube]
   'emoticon' => true, // :D =) :P

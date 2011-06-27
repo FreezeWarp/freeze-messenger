@@ -53,7 +53,7 @@ function fimParse_htmlParse($text,$bbcodeLevel = 1) {
     '/\[email\](.*?)\[\/email\]/is',
   );
 
-  $search['colour'] = array(
+  $search['color'] = array(
     '/\[(color|colour)=("|)(.*?)("|)\](.*?)\[\/(color|colour)\]/is',
     '/\[(hl|highlight|bg|background)=("|)(.*?)("|)\](.*?)\[\/(hl|highlight|bg|background)\]/is',
   );
@@ -83,7 +83,7 @@ function fimParse_htmlParse($text,$bbcodeLevel = 1) {
     '<a href="mailto:$1">$1</a>',
   );
 
-  $replace['colour'] = array(
+  $replace['color'] = array(
     '<span style="color: $3;">$5</span>',
     '<span style="background-color: $3;">$5</span>',
   );
@@ -104,8 +104,8 @@ function fimParse_htmlParse($text,$bbcodeLevel = 1) {
   if ($bbcode['buis'] && $bbcodeLevel <= 16) {
     $text = preg_replace($search['buis'],$replace['buis'],$text);
   }
-  if ($bbcode['colour'] && $bbcodeLevel <= 11) {
-    $text = preg_replace($search['colour'],$replace['colour'],$text);
+  if ($bbcode['color'] && $bbcodeLevel <= 11) {
+    $text = preg_replace($search['color'],$replace['color'],$text);
   }
   if ($bbcode['link'] && $bbcodeLevel <= 9) {
     $text = preg_replace($search['link'],$replace['link'],$text);

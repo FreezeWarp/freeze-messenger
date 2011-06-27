@@ -130,26 +130,110 @@
             <li>encrypt (BOOL) - Whether or not encryption is enabled. Set to false while keeping any prior salts to disable encryption without losing old encrypted data.
 
             Note: The message reparsing script in the Admin Control Panel can be used to eliminate all database encryption if this is set to false, all messages are reparsed, and then the salts are removed. However, for even medium (~100,000) databases, this may take a matter of days to complete.</li>
+
+            <li>encryptUploads (BOOL) - Whether or not uploads should be encrypted like messages normally are.</li>
           </ul>
         </section>
 
         <section>
           <h3>File Uploads</h3>
           <ul class="directives">
-            <li>enableUploads - Whether or not to enable any form of file uploads.</li>
+            <li>enableUploads (BOOL) - Whether or not to enable any form of file uploads.</li>
 
-            <li>enableGeneralUploads - Whether or not general, hosted uploads should be enabled. If dissabled, files can only be uploaded as a part of sending a message.</li>
+            <li>enableGeneralUploads (BOOL) - Whether or not general, hosted uploads should be enabled. If dissabled, files can only be uploaded as a part of sending a message.</li>
 
-            <li>uploadMimes - The valid mime types all files must conform to.</li>
+            <li>uploadExtensions (ARRAY) - An array containing key-value pairs that corrospond to mime types. If a file's extension is not in this array, it can not be uploaded. Note:</li>
+            <ul>
+              <li>In general, it is possible to upload malicious content using "fake" file extensions. For instance, a file could be uploaded as "data.png" and contain an executable virus. However, uploaded files can never be executed on the server and will only be sent to the user with the specifed mime. ONLY if a mimetype corrosponds to an "insecure" file does any risk exist.</li>
+              <li>Among common "insecure" mime types, "application/octet-stream" is the most common. It is required for many files that don't othrewise corrospond to a mimetype, but has an added risk: it may allow users to upload malicious content under unrepresented mimetypes. For instance, "virus.pdf" poses a risk if the "pdf" extension corrosponds to "application/octet-stream."</li>
+            </ul>
 
-            <li>uploadExtensions - The valid extensions all files must conform to.</li>
+            <li>uploadMaxSize (INT) - The maximum size of all uploads in bytes. "1024" corrosponds to a Kilobyte while "1048576" corrosponds to Megabyte.</li>
 
-            <li>uploadMatchBoth - Whether files must both be a valid mime type and extension.</li>
+            <li>uploadUserMaxFiles (INT) - The maximum number of files any user may upload.</li>
 
-            <li>uploadMethod - DO NOT USE. Will be removed in the near future.</li>
-
-            <li>encryptUploads - Whether or not uploads should be encrypted like messages normally are.</li>
+            <li>uploadMaxFiles (INT) - The maximum number of uploads that may be stored on the server at any time.</li>
           </ul>
+        </section>
+
+        <section>
+          <h3>Interfaces</h3>
+          <ul class="directives">
+            <li>enabledInterfaces (ARRAY) - Enabled server-facing interfaces. The packaged interfaces 'webpro' and 'liteiron' are included by defaults, while the "fake" interface 'choose' is also included.</li>
+
+            <li>defaultInterface (STRING) - The default interface if a server visits FIM's root without having set their own. The only packaged interface that allows users to specify their own is 'webpro', though the "fake" interface 'choose' explictly asks the specify, but does nothing else.</li>
+
+            <li>disableWeb (BOOL) - Whether or not to allow redirects for web interfaces. If disabled, only third-party clients can be used.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Permissions</h3>
+          <ul class="directives">
+            <li>bannedUserGroups (ARRAY) - A list of admin-set user groups (see the distinction in CORE) that are automatically banned.</li>
+
+            <li>enableDF (ARRAY) - Enable or disable user-default formatting. These can be specified independent of BBCode, just like the flag system (see CORE) allows for images and videos to be used in spite of not being allowed in BBCode. The following keys should corrospond to BOOL values for each portion of default formatting:</li>
+            <ul>
+              <li>general - Bold and/or italics. Other general features, such as underline and strikethrough, can not be used as they are counterintuitive in general text.</li>
+              <li>color - The foreground colour of the user's text.</li>
+              <li>highlight - The highlight/background colour of the user's text.</li>
+              <li>font - The fontface used, among those found in the database.</li>
+            </ul>
+
+            <li>userPermissions (ARRAY) - Defaults for users when added to the system.</li>
+            <ul>
+              <li>roomCreation</li>
+              <li>privateRoomCreation</li>
+              <li>roomsOnline</li>
+              <li>postCounts</li>
+            </ul>
+
+            <li>bbcode (ARRAY) - Whether or not to enable predefined BBCode.</li>
+            <ul>
+              <li>shortCode</li>
+              <li>buis</li>
+              <li>link</li>
+              <li>color</li>
+              <li>image</li>
+              <li>video</li>
+              <li>emoticon</li>
+            </ul>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Defaults</h3>
+          <ul class="directives">
+            <li>cacheTableLimit (INT) - The maximum number of messages that can be stored in the cache table.</li>
+
+            <li>compressOutput (BOOL) - Enable or disable output compression. It may (or will) break file uploads, but is included since it can be good in a tight spot.</li>
+
+            <li>disableTopic (BOOL) - Enable or disable room topics. We don't know why it exists, but it works.</li>
+
+            <li>searchWordLength (INT) - The minimum length of keywords used for archive searching (see CORE for more information on this feature).</li>
+
+            <li>searchWordOmissions (ARRAY) - An array of words to omit from the archive, which can be useful if they are overly common. For instance, if you decrease the normal searchWordLength you may want to use this for especially common words (like "they", "us", "who", "are", etc.)</li>
+
+            <li>searchWordPunctuation (ARRAY) - An array of characters that are considered punctuation and will be internally be replaced with spaces to determine a message's keywords. For instance, if this includes ":", "hello:my name is bob" would result in the keywords (assuming the searchWordLength is in this case 2) "hello", "my", "name", "is", and "bob".
+
+            <li>searchWordConverts (ARRAY) - An array of key-value pairs that converts character variations to the "common" script. For instance, the entry "é" => "e" allows for "café" to be matched in a search for "cafe" (or vice-versa). Replacements can be made with more than one unicode character, for instance replacing "æ" with "ae".</li>
+        </section>
+
+        <section>
+          <h3>Experimental Features</h3>
+          <ul class="directives">
+            <li>longPolling (BOOL) - Whether or not to enable experimental longpolling support. IIS and Apache web servers are likely to have severe issues, but it is relatively simple to safely enable this flag (and benefit from the speed boost) by using one of these configurations:</li>
+            <ul>
+              <li>LigHTTPD Web Server</li>
+              <li>nginx Web Server</li>
+            </ul>
+
+            <li>anonymousUser (INT) - The user ID of a user that is treated as an "anonymous" or "unregistered" user. If specified (and greater than 0) this allows for users to talk without registering, though several issues exist that make it somewhat stable:</li>
+            <ul>
+              <li>Users can not be identified by other users. The usernames of anonymous users are appended with a unique ID when the username is added to the message cache, but the archive does not store this data. However, IP addresses are logged in the permanent message storage, which could be used in the future in a non-reverse engineerable way.
+              <li>User message permissions are not well tested. It is possible certain security risks exist in allowing anonymous users to post, though these are likely minor and will be fixed if reported in FIMv3 bugfix releases.
+              <li>Anonymous users can not be moderated effectively. If kicked, all are kicked. If allowed access to a room, all are allowed access to a room.</li>
+            </ul>
         </section>
       </section>
     </section>
