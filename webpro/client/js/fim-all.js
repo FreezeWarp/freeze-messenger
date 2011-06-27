@@ -1685,13 +1685,16 @@ popup = {
       id : 'roomListDialogue',
       width: 1000,
       oF : function() {
-        $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}}).click(function() {
+        $('button.editRoomMulti, input[type=checkbox].favRoomMulti, button.archiveMulti, button.deleteRoomMulti').unbind('click'); // Prevent the below from being binded multiple times.
+
+
+        $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}}).bind('click',function() {
           popup.editRoom($(this).attr('data-roomId'));
 
           return false;
         });
 
-        $('input[type=checkbox].favRoomMulti').button({icons : {primary : 'ui-icon-star'}}).change(function() {
+        $('input[type=checkbox].favRoomMulti').button({icons : {primary : 'ui-icon-star'}}).bind('click',function() {
           if ($(this).is(':checked')) {
             standard.favRoom($(this).attr('data-roomId'));
           }
@@ -1702,13 +1705,13 @@ popup = {
           return false;
         });
 
-        $('button.archiveMulti').button({icons : {primary : 'ui-icon-note'}}).click(function() {
-          popup.archive($(this).attr('data-roomId'));
+        $('button.archiveMulti').button({icons : {primary : 'ui-icon-note'}}).bind('click',function() {
+          popup.archive({roomId : $(this).attr('data-roomId')});
 
           return false;
         });
 
-        $('button.deleteRoomMulti').button({icons : {primary : 'ui-icon-trash'}}).click(function() {
+        $('button.deleteRoomMulti').button({icons : {primary : 'ui-icon-trash'}}).bind('click',function() {
           standard.deleteRoom($(this).attr('data-roomId'));
 
           return false;
@@ -1752,13 +1755,20 @@ popup = {
       tabs : true,
       oF : function() {
 
-        $('#fileUpload').attr('disabled','disabled').button({disabled: true});
+        $('#fileUpload').attr('disabled','disabled').button({
+          disabled: true
+        });
 
-        if (true) {
+
+        if (typeof FileReader !== 'function') {
           $('#uploadFileForm').html('Your device does not support file uploads.<br /><br />');
         }
         else {
-          $('#fileUpload').change(function() {
+          $('#fileUpload, #urlUpload').unbind('change'); // Prevent duplicate binds.
+          $('#uploadFileForm, #uploadUrlForm, #linkForm. #uploadYoutubeForm').unbind('submit');
+
+
+          $('#fileUpload').bind('change',function() {
             console.log('FileReader triggered.');
 
             var reader = new FileReader();
@@ -1803,7 +1813,7 @@ popup = {
             }
           });
 
-          $('#urlUpload').change(function() {
+          $('#urlUpload').bind('change',function() {
             fileContent = $('#urlUpload').val();
             if (fileContent && fileContent !== 'http://') {
               fileContainer = '<img src="' + fileContent + '" alt="" style="max-width: 200px; max-height: 250px; height: auto;" />';
@@ -1813,7 +1823,7 @@ popup = {
           });
 
 
-          $('#uploadFileForm').submit(function() {
+          $('#uploadFileForm').bind('submit',function() {
             $.ajax({
               url: directory + 'api/uploadFile.php',
               type: 'POST',
@@ -1826,7 +1836,7 @@ popup = {
         }
 
 
-        $('#uploadUrlForm').submit(function() {
+        $('#uploadUrlForm').bind('submit',function() {
           var linkImage = $('#urlUpload').val();
 
           if (linkImage) {
@@ -1837,7 +1847,7 @@ popup = {
         });
 
 
-        $('#linkForm').submit(function() {
+        $('#linkForm').bind('submit',function() {
           var linkUrl = $('#linkUrl').val(),
             linkMail = $('#linkEmail').val();
 
@@ -1857,7 +1867,7 @@ popup = {
           return false;
         });
 
-        $('#uploadYoutubeForm').submit(function() {
+        $('#uploadYoutubeForm').bind('submit',function() {
           linkVideo = $('#youtubeUpload');
 
           if (linkVideo.search(/^http\:\/\/(www\.|)youtube\.com\/(.*?)?v=(.+?)(&|)(.*?)$/) === 0) {
@@ -2221,17 +2231,17 @@ popup = {
 
             $('#name').val(roomName);
 
-            if (allowedUsers != '*' && allowedUsers != '') {
+            if (allowedUsers !== '*' && allowedUsers !== '') {
               autoEntry.showEntries('allowedUsers',allowedUsers);
             }
 
 
-            if (moderators != '*' && moderators != '') {
+            if (moderators !== '*' && moderators !== '') {
               autoEntry.showEntries('moderators',moderators);
             }
 
 
-            if (allowedGroups != '*' && allowedGroups != '') {
+            if (allowedGroups !== '*' && allowedGroups !== '') {
               autoEntry.showEntries('allowedGroups',allowedGroups);
             }
 
@@ -2323,21 +2333,21 @@ popup = {
         });
 
         $("#editRoomForm").submit(function() {
-          var bbcode = Number($('#bbcode').val());
-          var name = $('#name').val();
-          var mature = ($('#mature').is(':checked') ? true : false);
-          var allowedUsers = $('#allowedUsersBridge').val();
-          var allowedGroups = $('#allowedGroupsBridge').val();
-          var moderators = $('#moderatorsBridge').val()
+          var bbcode = Number($('#bbcode').val()),
+            name = $('#name').val(),
+            mature = ($('#mature').is(':checked') ? true : false),
+            allowedUsers = $('#allowedUsersBridge').val(),
+            allowedGroups = $('#allowedGroupsBridge').val(),
+            moderators = $('#moderatorsBridge').val();
 
           if (name.length > 20) {
             dia.error('The roomname is too long.');
           }
           else {
             $.post(directory + 'api/moderate.php','action=createRoom&name=' + urlEncode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
-              var errStr = unxml($(xml).find('errStr').text().trim());
-              var errDesc = unxml($(xml).find('errDesc').text().trim());
-              var createRoomId = Number($(xml).find('insertId').text().trim());
+              var errStr = unxml($(xml).find('errStr').text().trim()),
+                errDesc = unxml($(xml).find('errDesc').text().trim()),
+                createRoomId = Number($(xml).find('insertId').text().trim());
 
               if (errStr) {
                 dia.error('An error has occured: ' + errDesc);
@@ -2488,17 +2498,17 @@ popup = {
       cache: false,
       success: function(xml) {
         $(xml).find('kick').each(function() {
-          var kickerId = Number($(this).find('kickerData > userId').text().trim());
-          var kickerName = $(this).find('kickerData > userName').text().trim();
-          var kickerFormatStart = $(this).find('kickerData > userFormatStart').text().trim();
-          var kickerFormatEnd = $(this).find('kickerData > userFormatEnd').text().trim();
-          var userId = Number($(this).find('userData > userId').text().trim());
-          var userName = $(this).find('userData > userName').text().trim();
-          var userFormatStart = $(this).find('userData > userFormatStart').text().trim();
-          var userFormatEnd = $(this).find('userData > userFormatEnd').text().trim();
-          var length = Number($(this).find('length').text().trim());
-          var set = unxml($(this).find('setFormatted').text().trim());
-          var expires = unxml($(this).find('expiresFormatted').text().trim());
+          var kickerId = Number($(this).find('kickerData > userId').text().trim()),
+            kickerName = $(this).find('kickerData > userName').text().trim(),
+            kickerFormatStart = $(this).find('kickerData > userFormatStart').text().trim(),
+            kickerFormatEnd = $(this).find('kickerData > userFormatEnd').text().trim(),
+            userId = Number($(this).find('userData > userId').text().trim()),
+            userName = $(this).find('userData > userName').text().trim(),
+            userFormatStart = $(this).find('userData > userFormatStart').text().trim(),
+            userFormatEnd = $(this).find('userData > userFormatEnd').text().trim(),
+            length = Number($(this).find('length').text().trim()),
+            set = unxml($(this).find('setFormatted').text().trim()),
+            expires = unxml($(this).find('expiresFormatted').text().trim());
 
           kickHtml += '<tr><td>' + userFormatStart + userName + userFormatEnd + '</td><td>' + kickerFormatStart + kickerName + kickerFormatEnd + '</td><td>' + set + '</td><td>' + expires + '</td><td><button onclick="standard.unkick(' + userId + ',' + roomId + ')">Unkick</button></td></tr>';
         });
@@ -2670,9 +2680,11 @@ popup = {
 function windowDraw() {
   console.log('Redrawing window.');
 
+
   if (settings.disableFx) {
     jQuery.fx.off = true;
   }
+
 
   if (settings.showAvatars) {
     $('.messageText').tipTip({
@@ -2689,14 +2701,14 @@ function windowDraw() {
       if (thisid != $('#tooltext').attr('data-lastuserId')) {
         $('#tooltext').attr('data-lastuserId',thisid);
         $.get(directory + 'api/getUsers.php?users=' + thisid + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId, function(xml) {
-          var userName = unxml($(xml).find('user > userName').text().trim());
-          var userId = Number($(xml).find('user > userId').text().trim());
-          var startTag = unxml($(xml).find('user > startTag').text().trim());
-          var endTag = unxml($(xml).find('user > endTag').text().trim());
-          var userTitle = unxml($(xml).find('user > userTitle').text().trim());
-          var posts = Number($(xml).find('user > postCount').text().trim());
-          var joinDate = unxml($(xml).find('user > joinDateFormatted').text().trim());
-          var avatar = unxml($(xml).find('user > avatar').text().trim());
+          var userName = unxml($(xml).find('user > userName').text().trim()),
+            userId = Number($(xml).find('user > userId').text().trim()),
+            startTag = unxml($(xml).find('user > startTag').text().trim()),
+            endTag = unxml($(xml).find('user > endTag').text().trim()),
+            userTitle = unxml($(xml).find('user > userTitle').text().trim()),
+            posts = Number($(xml).find('user > postCount').text().trim()),
+            joinDate = unxml($(xml).find('user > joinDateFormatted').text().trim()),
+            avatar = unxml($(xml).find('user > avatar').text().trim());
 
           content.html('<div style="width: 400px;">' + (avatar.length > 0 ? '<img alt="" src="' + avatar + '" style="float: left;" />' : '') + '<span class="userName" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>' + (userTitle.length > 0 ? '<br />' + userTitle : '') + '<br /><em>Posts</em>: ' + posts + '<br /><em>Member Since</em>: ' + joinDate + '</div>');
 
@@ -2800,10 +2812,13 @@ function windowDraw() {
 
 
 
+  $('#icon_note, #messageArchive, a#editRoom').unbind('click'); // Cleanup
+
+
 
   /*** Archive ***/
 
-  $('#icon_note, #messageArchive').click(function() {
+  $('#icon_note, #messageArchive').bind('click',function() {
     popup.archive({roomId : roomId});
 
     return false;
@@ -2813,7 +2828,7 @@ function windowDraw() {
 
   /*** Edit Room ***/
 
-  $('a#editRoom').click(function() {
+  $('a#editRoom').bind('click',function() {
     popup.editRoom(roomId);
 
     return false;
@@ -3056,6 +3071,7 @@ function contextMenuParse() {
         }
       });
       break;
+
       case 'edit':
       popup.editRoom($(el).attr('data-roomId'));
       break;
@@ -3074,12 +3090,14 @@ $(document).ready(function() {
     sessionHash: sessionHash
   });
 
+
+
   /*** Trigger Login ***/
 
   if (!userId) { // The user is not actively logged in.
     popup.login();
   }
-  $('#login').click(function() {
+  $('#login').bind('click',function() {
     popup.login();
 
     return false;
@@ -3088,7 +3106,8 @@ $(document).ready(function() {
 
 
   /*** Trigger Logout */
-  $('#logout').click(function() {
+
+  $('#logout').bind('click',function() {
     popup.login();
 
     return false;
@@ -3096,17 +3115,16 @@ $(document).ready(function() {
 
 
 
-
   /*** WIP ***/
 
-  $('#showMoreRooms').click(function() {
+  $('#showMoreRooms').bind('click',function() {
     $('#roomListShort').slideUp();
     $('#roomListLong').slideDown();
 
     return false;
   });
 
-  $('#showFewerRooms').click(function() {
+  $('#showFewerRooms').bind('click',function() {
     $('#roomListLong').slideUp();
     $('#roomListShort').slideDown();
 
@@ -3128,9 +3146,9 @@ $(document).ready(function() {
 
 
 
-  /*** ??? ***/
+  /*** Upload ***/
 
-  $('#icon_url').click(function() {
+  $('#icon_url').bind('click',function() {
     popup.insertDoc('url');
 
     return false;
@@ -3148,7 +3166,7 @@ $(document).ready(function() {
 
   /*** Kick ***/
 
-  $('a#kick').click(function() {
+  $('a#kick').bind('click',function() {
     popup.kick();
 
     return false;
@@ -3158,7 +3176,7 @@ $(document).ready(function() {
 
   /*** Private Room ***/
 
-  $('a#privateRoom').click(function() {
+  $('a#privateRoom').bind('click',function() {
     popup.privateRoom();
 
     return false;
@@ -3168,7 +3186,7 @@ $(document).ready(function() {
 
   /*** Manage Kick ***/
 
-  $('a#manageKick').click(function() {
+  $('a#manageKick').bind('click',function() {
     popup.manageKicks();
 
     return false;
@@ -3176,7 +3194,7 @@ $(document).ready(function() {
 
 
 
-  $('#sendForm').submit(function() {
+  $('#sendForm').bind('submit',function() {
     var message = $('textarea#messageInput').val();
 
     if (message.length == 0) {
@@ -3194,7 +3212,7 @@ $(document).ready(function() {
 
   /*** Online ***/
 
-  $('a#online').click(function() {
+  $('a#online').bind('click',function() {
     popup.online();
 
     return false;
@@ -3204,7 +3222,7 @@ $(document).ready(function() {
 
   /* Create Room */
 
-  $('a#createRoom').click(function() {
+  $('a#createRoom').bind('click',function() {
     popup.createRoom();
 
     return false;
@@ -3214,7 +3232,7 @@ $(document).ready(function() {
 
   /*** Edit Room ***/
 
-  $('a.editRoomMulti').click(function() {
+  $('a.editRoomMulti').bind('click',function() {
     popup.editRoom($(this).attr('data-roomId'));
 
     return false;
@@ -3224,7 +3242,7 @@ $(document).ready(function() {
 
   /*** Help ***/
 
-  $('#icon_help').click(function() {
+  $('#icon_help').bind('click',function() {
     popup.help();
 
     return false;
@@ -3234,7 +3252,7 @@ $(document).ready(function() {
 
   /*** Room List ***/
 
-  $('#roomList').click(function() {
+  $('#roomList').bind('click',function() {
     popup.selectRoom();
 
     return false;
@@ -3244,7 +3262,7 @@ $(document).ready(function() {
 
   /*** Stats ***/
 
-  $('#viewStats').click(function() {
+  $('#viewStats').bind('click',function() {
     popup.viewStats();
 
     return false;
@@ -3254,7 +3272,7 @@ $(document).ready(function() {
 
   /*** Copyright & Credits ***/
 
-  $('#copyrightLink').click(function() {
+  $('#copyrightLink').bind('click',function() {
     popup.copyright();
 
     return false;
@@ -3264,7 +3282,7 @@ $(document).ready(function() {
 
   /*** User Settings ***/
 
-  $('#icon_settings, #changeSettings, a.changeSettingsMulti').click(function() {
+  $('#icon_settings, #changeSettings, a.changeSettingsMulti').bind('click',function() {
     popup.userSettings();
 
     return false;

@@ -334,7 +334,7 @@ function fim3parse_keyWords($string,$messageId) {
     $puncList[] = addcslashes($punc,'"\'|(){}[]<>.,~-?!@#$%^&*/\\'); // Dunno if this is the best approach.
   }
 
-  $string = preg_replace('/(' . implode('|',$puncList) . ')/is','',$string);
+  $string = preg_replace('/(' . implode('|',$puncList) . ')/is',' ',$string);
 
   while (strpos($string,'  ') !== false) {
     $string = str_replace('  ',' ',$string);

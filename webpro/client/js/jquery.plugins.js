@@ -793,6 +793,10 @@ if(jQuery)(function() {
 
     var timeout = false;
 
+
+    $(this).die('mouseover');
+    $(this).die('mouseout');
+
     $(this).live({
       mouseover : function() {
         if (opts.content) {
@@ -938,6 +942,10 @@ if(jQuery)(function() {
  *
  * Modified to support live() handler, eliminate code unneeded for FIM. */
 (function($){
+  $(this).die('mouseover');
+  $(this).die('mousemove');
+  $(this).die('mouseout');
+
   $.fn.ezpz_tooltip = function(options) {
     var settings = $.extend({}, $.fn.ezpz_tooltip.defaults, options);
     var content = $("#" + settings.contentId);
