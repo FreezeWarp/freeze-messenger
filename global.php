@@ -46,7 +46,6 @@ if ($compressOutput) { // Compress Output for transfer if configured to.
   ob_start(fim_htmlCompact);
 }
 
-
 require_once('validate.php'); // User Validation
 
 

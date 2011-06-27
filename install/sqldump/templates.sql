@@ -626,7 +626,7 @@ Keep in mind all content is heavily encrytped for privacy. Private conversations
   <form method="post" enctype="multipart/form-data" id="uploadFileForm">
     <fieldset>
       <legend>Upload from Computer</legend>
-      <div id="uploadFileFormPreview"></div>
+      <div id="uploadFileFormPreview" style="float: left;"></div>
 
       <label for="fileUpload">File: </label>
       <input name="fileUpload" id="fileUpload" type="file" /><br /><br />
@@ -640,7 +640,7 @@ Keep in mind all content is heavily encrytped for privacy. Private conversations
   <form method="post" id="uploadUrlForm">
     <fieldset>
       <legend>Embed from Internet</legend>
-      <div id="uploadUrlFormPreview"></div>
+      <div id="uploadUrlFormPreview" style="float: left;"></div>
 
       <label for="urlUpload">URL: </label>
       <input name="urlUpload" id="urlUpload" type="url" value="http://" /></span><br />

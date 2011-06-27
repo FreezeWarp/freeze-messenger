@@ -53,7 +53,13 @@
           </ul>
           <li>Room Info (~/api/getUserInfo.php)</li>
           <li>User Info (~/api/getRoomInfo.php)</li>
-          <lI>Moderate (~/api/moderate.php)</li>
+          <li>Get Groups (~/api/getGroups.php)</li>
+          <li>Get Kicks (~/api/getKicks.php)</li>
+          <li>Get Server Status (~/api/getServerStatus.php)</li>
+          <li>Get Stats (~/api/getStats.php)</li>
+          <li>Moderate (~/api/moderate.php)</li>
+          <li>Set Status (~/api/setStatus.php)</li>
+          <li>Upload File (~/api/moderate.php)</li>
         </ul>
       </nav>
 
@@ -76,15 +82,20 @@
         <section>
           <h3>Reading the Documentation</h3>
           <p>Each command, starting with “Establishing a Login”, lists its script location in parenthesis after the title, its directives in a separate heading entitled “Directives”, and its data tree under “Structured Data Tree”. Examples are generally not given.</p>
+          <p>All requests must be made using a valid login. In future versions of the API (starting with version 4), all requests made without a login will automatically fail. As of now, requests should only be made without a valid session hash if the user is anonymous (though they will still not be granted any POST priviledges).</p>
         </section>
 
         <section>
           <h3>Standard Directives</h3>
           <p>The following standard directives can be used in some or all of the pages, and may be required:</p>
           <ul class="directives">
-            <li>Session Hash (sessionhash) - Obtained in “Establishing a Login”, this is a temporary hexadecimal string which corresponds to a particular login. It is required in most pages.</li>
-            <li>Stale Session (stalesession) - By setting this variable to true, the sessionhash is not renewed as a request is made. This is generally not recommended, as sessions are usually only renewed every few minutes, but can have uses.</li>
-            </li>Format (format) - The API format to return the structured data in. “xml” is default, with “json” and “phparray” also options (though the latter is solely for the purpose of understanding the internal structure).</li>
+            <li>Session Hash (fim3_sessionHash) - Obtained in “Establishing a Login”, this is a temporary string which corresponds to a particular login. It <strong>MUST</strong> be specified for all requests made by a client.</li>
+            <li>User ID (fim3_userId) - The corrosponding user for the session hash. It is required for a valid session.</li>
+            <li>Format (fim3_format) - The API format to return the structured data in. “xml” is default, with “json” and “phparray” also options (though the latter is solely for the purpose of understanding the internal structure).</li>
+            <ul>
+              <li>xml - Requests will be output using the Extensible Markup Language.</li>
+              <li>json - Requests will be output using the Javascript Object Notation. This means a smaller transfer.</li>
+            </ul>
           </ul>
         </section>
       </section>
@@ -237,8 +248,8 @@ This behavior can change depending on the administrator’s preferences, however
                 <li>oldestDate</li>
                 <li>messageLimit</li>
               </ul>
-              <li>errorcode</li>
-              <li>errormessage</li>
+              <li>errorStr</li>
+              <li>errorDesc</li>
               <li>messages</li>
                 <ul>
                 <li>message</li>
@@ -324,7 +335,7 @@ This behavior can change depending on the administrator’s preferences, however
                 <li>roomId</li>
                 <li>message</li>
               </ul>
-              <li>errorcode</li>
+              <li>errorStr</li>
               <li>errortext</li>
               <li>censor</li>
               <ul>
@@ -366,8 +377,8 @@ This behavior can change depending on the administrator’s preferences, however
                 <li>onlineThreshold</li>
                 <li>time</li>
               </ul>
-              <li>errorcode</li>
-              <li>errormessage</li>
+              <li>errorStr</li>
+              <li>errorDesc</li>
               <li>rooms</li>
                 <ul>
                 <li>room</li>
@@ -437,8 +448,8 @@ This behavior can change depending on the administrator’s preferences, however
                 <li>order</li>
                 <li>showDeleted</li>
               </ul>
-              <li>errorcode</li>
-              <li>errormessage</li>
+              <li>errorStr</li>
+              <li>errorDesc</li>
               <li>rooms</li>
                 <ul>
                 <li>room</li>
@@ -492,8 +503,8 @@ This behavior can change depending on the administrator’s preferences, however
                 <li>onlineThreshold</li>
                 <li>time</li>
               </ul>
-              <li>errorcode</li>
-              <li>errormessage</li>
+              <li>errorStr</li>
+              <li>errorDesc</li>
               <li>users</li>
                 <ul>
                 <li>user</li>
@@ -523,12 +534,137 @@ This behavior can change depending on the administrator’s preferences, however
 
       <section>
         <h2>Get Rooms (~/api/getRooms.php)</h2>
+        <section>
+          <h3>Directives</h3>
+          <ul class="directives">
+            <li>rooms - A comma-seperated list of room IDs to get. If not specified, all rooms will be obtained.</li>
+            <li>showDeleted - If the user has permission, rooms that are deleted will also be retrieved.</li>
+            <li>reverseOrder - A comma-seperated list of room IDs to get. If not specified, all rooms will be obtained.</li>
+            <li>permLevel - Rooms will only be obtained if the user has this permission in regards to them.</li>
+            <ul>
+              <li>post - The user can post in the room.</li>
+              <li>view - The user can see posts made in the room.</li>
+              <li>moderate - The user can perform moderation on the room, such as deleting posts from within it.</li>
+              <li>know - The user is able to know of the room's existence. Depending on the product configuration, nearly all users may have this priviledge.</li>
+              <li>admin - The user is able to perform administrative tasks on the room, such as deleting it. Only admins and room owners have this priviledge.</li>
+            </ul>
+          </ul>
+        </section>
 
+        <section>
+          <h3>XML Tree</h3>
+          <ul>
+            <li>getRooms</li>
+              <ul>
+              <li>activeUser</li>
+                <ul>
+                <li>userId</li>
+                <li>userName</li>
+              </ul>
+              <li>sentData</li>
+                <ul>
+                <li>order</li>
+                <li>showDeleted</li>
+              </ul>
+              <li>errStr</li>
+              <li>errDesc</li>
+              <li>rooms</li>
+                <ul>
+                <li>room</li>
+                  <ul>
+                  <li>roomId</li>
+                  <li>roomName</li>
+                  <li>roomTopic</li>
+                  <li>roomOwner</li>
+                  <li>allowedUsers</li>
+                  <li>allowedGroups</li>
+                  <li>moderators</li>
+                  <li>favorite</li>
+                  <li>options</li>
+                  <li>optionDefinitions</li>
+                    <ul>
+                    <li>official</li>
+                    <li>mature</li>
+                    <li>deleted</li>
+                    <li>hidden</li>
+                    <li>privateIm</li>
+                  </ul>
+                  <li>bbcode</li>
+                  <li>permissions</li>
+                    <ul>
+                    <li>canModerate</li>
+                    <li>canAdmin</li>
+                    <li>canPost</li>
+                    <li>canView</li>
+                    <li>canKnow</li>
+                  </ul>
+                </ul>
+              </ul>
+            </ul>
+          </ul>
+        </section>
       </section>
 
       <section>
         <h2>Get Users (~/api/getUsers.php)</h2>
 
+        <section>
+          <h3>Directives</h3>
+          <ul class="directives">
+            <li>users - A comma-seperated list of user IDs to get. If not specified, all users will be obtained.</li>
+            <li>order - The method of sorting the users.</li>
+            <ul>
+              <li>userId - The user's ID.</li>
+              <li>userName - The user's name.</li>
+            </ul>
+          </ul>
+        </section>
+
+        <section>
+          <h3>XML Tree</h3>
+          <ul>
+            <li>getUsers</li>
+              <ul>
+              <li>activeUser</li>
+                <ul>
+                <li>userId</li>
+                <li>userName</li>
+              </ul>
+              <li>sentData</li>
+                <ul>
+                <li>order</li>
+              </ul>
+              <li>errStr</li>
+              <li>errDesc</li>
+              <li>users</li>
+                <ul>
+                <li>user</li>
+                  <ul>
+                  <li>userName</li>
+                  <li>userId</li>
+                  <li>userGroup</li>
+                  <li>avatar</li>
+                  <li>profile</li>
+                  <li>socialGroups</li>
+                  <li>startTag</li>
+                  <li>endTag</li>
+                  <li>defaultFormatting</li>
+                    <ul>
+                    <li>color</li>
+                    <li>highlight</li>
+                    <li>fontface</li>
+                    <li>general</li>
+                  </ul>
+                  <li>favRooms</li>
+                  <li>postCount</li>
+                  <li>joinDate</li>
+                  <li>joinDateFormatted</li>
+                  <li>userTitle</li>
+                </ul>
+              </ul>
+            </ul>
+          </ul>
+        </section>
       </section>
 
       <section>
@@ -543,23 +679,219 @@ This behavior can change depending on the administrator’s preferences, however
 
       <section>
         <h2>Get Room Stats (~/api/getStats.php)</h2>
+        <section>
+          <h3>Directives</h3>
+          <ul class="directives">
+            <li>rooms - A comma-seperated list of room IDs to get.</li>
+            <li>number - The number of ranks to get.</li>
+          </ul>
+        </section>
 
+        <section>
+          <h3>XML Tree</h3>
+          <ul>
+            <li>getStats</li>
+              <ul>
+              <li>activeUser</li>
+                <ul>
+                <li>userId</li>
+                <li>userName</li>
+              </ul>
+              <li>sentData</li>
+                <ul>
+                <li>rooms</li>
+                <li>resultLimit</li>
+              </ul>
+              <li>errStr</li>
+              <li>errDesc</li>
+              <li>roomStats</li>
+                <ul>
+                <li>room</li>
+                  <ul>
+                  <li>roomData</li>
+                    <ul>
+                    <li>roomId</li>
+                    <li>roomName</li>
+                  </ul>
+                  <li>users</li>
+                    <ul>
+                    <li>user</li>
+                      <ul>
+                      <li>userData</li>
+                        <ul>
+                        <li>userId</li>
+                        <li>userName</li>
+                        <li>startTag</li>
+                        <li>endTag</li>
+                      </ul>
+                      <li>messageCount</li>
+                      <li>position</li>
+                    </ul>
+                  </ul>
+                </ul>
+              </ul>
+            </ul>
+          </ul>
+        </section>
       </section>
 
       <section>
         <h2>Get Censor Lists (~/api/getCensorLists.php)</h2>
-        --Incomplete--
 
+        <section>
+          <h3>Directives</h3>
+          <ul class="directives">
+            <li>room - A room to get list status on.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>XML Tree</h3>
+          <ul>
+            <li>getCensorLists</li>
+              <ul>
+              <li>activeUser</li>
+                <ul>
+                <li>userId</li>
+                <li>userName</li>
+              </ul>
+              <li>sentData</li>
+                <ul>
+                <li>roomId</li>
+              </ul>
+              <li>errStr</li>
+              <li>errDesc</li>
+              <li>lists</li>
+                <ul>
+                <li>list</li>
+                  <ul>
+                  <li>listId</li>
+                  <li>listName</li>
+                  <li>listType</li>
+                  <li>listOptions</li>
+                </ul>
+              </ul>
+            </ul>
+          </ul>
+        </section>
       </section>
 
       <section>
-        <h2>Get Kicks (~/api/getKicks.php</h2>
+        <h2>Get Kicks (~/api/getKicks.php)</h2>
 
+        <section>
+          <h3>Directives</h3>
+          <ul class="directives">
+            <li>rooms - A comma-seperated list of room IDs to get.</li>
+            <li>users - A comma-seperated list of user IDs to get.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>XML Tree</h3>
+          <ul>
+            <li>getKicks</li>
+              <ul>
+              <li>activeUser</li>
+                <ul>
+                <li>userId</li>
+                <li>userName</li>
+              </ul>
+              <li>sentData</li>
+                <ul>
+                <li>rooms</li>
+                <li>users</li>
+              </ul>
+              <li>errStr</li>
+              <li>errDesc</li>
+              <li>kicks</li>
+                <ul>
+                <li>kick</li>
+                  <ul>
+                  <li>roomData</li>
+                    <ul>
+                    <li>roomId</li>
+                    <li>roomName</li>
+                  </ul>
+                  <li>userData</li>
+                    <ul>
+                    <li>userId</li>
+                    <li>userName</li>
+                    <li>userFormatStart</li>
+                    <li>userFormatEnd</li>
+                  </ul>
+                  <li>kickerData</li>
+                    <ul>
+                    <li>userId</li>
+                    <li>userName</li>
+                    <li>userFormatStart</li>
+                    <li>userFormatEnd</li>
+                  </ul>
+                  <li>length</li>
+                  <li>set</li>
+                  <li>setFormatted</li>
+                  <li>expires</li>
+                  <li>expiresFormatted</li>
+                </ul>
+              </ul>
+            </ul>
+          </ul>
+        </section>
       </section>
 
       <section>
         <h2>Get Server Status (~/api/getServerStatus.php)</h2>
 
+        <section>
+          <h3>Directives</h3>
+          <p>None</p>
+        </section>
+
+        <section>
+          <h3>XML Tree</h3>
+          <ul>
+            <li>getServerStatus</li>
+              <ul>
+              <li>activeUser</li>
+                <ul>
+                <li>userId</li>
+                <li>userName</li>
+              </ul>
+              <li>sentData</li>
+                <ul>
+              </ul>
+              <li>errStr</li>
+              <li>errDesc</li>
+              <li>serverStatus</li>
+                <ul>
+                <li>fim_version</li>
+                <li>installedPlugins</li>
+                  <ul>
+                </ul>
+                <li>requestMethods</li>
+                  <ul>
+                  <li>longPoll</li>
+                  <li>poll</li>
+                  <li>push</li>
+                </ul>
+                <li>fileUploads</li>
+                  <ul>
+                  <li>enabled</li>
+                  <li>generalEnabled</li>
+                  <li>maxSize</li>
+                  <li>maxAll</li>
+                  <li>maxUser</li>
+                  <li>extensions</li>
+                </ul>
+                <li>outputBuffer</li>
+                  <ul>
+                  <li>comressOutput</li>
+                </ul>
+                <li>phpVersion</li>
+              </ul>
+            </ul>
+          </ul>
+        </section>
       </section>
 
       <section>

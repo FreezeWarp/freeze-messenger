@@ -1755,7 +1755,7 @@ popup = {
       tabs : true,
       oF : function() {
 
-        $('#fileUpload').attr('disabled','disabled').button({
+        $('#imageUploadSubmitButton').attr('disabled','disabled').button({
           disabled: true
         });
 
@@ -1771,7 +1771,9 @@ popup = {
           $('#fileUpload').bind('change',function() {
             console.log('FileReader triggered.');
 
-            var reader = new FileReader();
+            var reader = new FileReader(),
+              reader2 = new FileReader();
+
             files = this.files;
 
             if (files.length == 0) {
@@ -1783,10 +1785,8 @@ popup = {
             else {
               console.log('FileReader started.');
 
-              var file = files[0];
-
-              var fileName = file.name,
-                fileSize = file.size;
+              var fileName = files[0].name,
+                fileSize = files[0].size;
 
               if (!fileName.match(/\.(jpg|jpeg|gif|png|svg)$/i)) { // TODO
                 $('#preview').html('Wrong file type.');
@@ -1795,18 +1795,15 @@ popup = {
                 $('#preview').html('File too large.');
               }
               else {
-                reader.readAsBinaryString(file);
+                reader.readAsBinaryString(files[0]);
                 reader.onloadend = function() {
                   fileContent = window.btoa(reader.result);
                 };
 
-                reader2.readAsDataUrl(file);
-                reader.onloadend = function() {
-                  $('#uploadUrlFormPreview').html('<img src="' + reader2.result + '" style="max-height: 200px; max-width: 200px;" />');
+                reader2.readAsDataURL(files[0]);
+                reader2.onloadend = function() {
+                  $('#uploadFileFormPreview').html('<img src="' + reader2.result + '" style="max-height: 200px; max-width: 200px;" />');
                 };
-
-                var reader = new FileReader();
-                reader.readAsDataURL(file);
               }
 
               $('#imageUploadSubmitButton').removeAttr('disabled').button({disabled: false});

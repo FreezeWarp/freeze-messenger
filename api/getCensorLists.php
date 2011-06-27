@@ -19,7 +19,7 @@ $apiRequest = true;
 require_once('../global.php');
 
 
-$roomId = (int) $_GET['roomid'];
+$roomId = (int) $_GET['roomId'];
 
 
 $xmlData = array(
@@ -75,7 +75,7 @@ $xmlData['getCensorLists']['errDesc'] = ($errDesc);
 ($hook = hook('getCensorLists_end') ? eval($hook) : '');
 
 
-echo fim_outputApi($xmlData);
+echo fim_outputKeys($xmlData);
 
 dbClose();
 ?>

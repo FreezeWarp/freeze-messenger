@@ -32,14 +32,14 @@ if ($usersArray) {
 }
 
 
-switch ($_GET['order']) {
+switch (strtolower($_GET['order'])) {
   case 'id':
-  case 'userId':
+  case 'userid':
   $order = 'userId ' . ($reverseOrder ? 'DESC' : 'ASC');
   break;
 
   case 'name':
-  case 'userName':
+  case 'username':
   $order = 'userName ' . ($reverseOrder ? 'DESC' : 'ASC');
   break;
 
