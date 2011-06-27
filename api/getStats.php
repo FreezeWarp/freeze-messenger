@@ -130,7 +130,7 @@ $xmlData['getStats']['errDesc'] = ($errDesc);
 ($hook = hook('getStats_end') ? eval($hook) : '');
 
 
-echo fim_outputKeys($xmlData);
+echo fim_outputApi($xmlData);
 
 dbClose();
 ?>

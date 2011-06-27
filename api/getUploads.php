@@ -33,8 +33,7 @@ $xmlData = array(
       'userName' => ($user['userName']),
     ),
     'sentData' => array(
-      'rooms' => $userList,
-      'resultLimit' => $resultLimit,
+      'users' => '',
     ),
     'errStr' => $errStr,
     'errDesc' => $errDesc,
@@ -46,14 +45,14 @@ $xmlData = array(
 ($hook = hook('getUploads_eachUpload_start') ? eval($hook) : '');
 
 
-$uploads = dbRows("SELECT v.fileId, f.mime, f.size, f.name, f.rating, v.md5hash
+$uploads = dbRows("SELECT v.fileId, f.mime, f.name, f.rating, v.md5hash
   FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS v
-  WHERE f.userId = $user[userId] AND f.id = v.fileId",'fileId');
+  WHERE f.userId = $user[userId] AND f.fileId = v.fileId",'fileId');
 
 
 if ($uploads) {
   foreach ($uploads AS $file) {
-    $xmlData['getUploads']['uploads']['upload ' + $file['fileId']] = array(
+    $xmlData['getUploads']['uploads']['upload ' . $file['fileId']] = array(
       'size' => (int) $file['size'],
       'sizeFormatted' => formatSize($file['size']),
       'name' => $file['name'],

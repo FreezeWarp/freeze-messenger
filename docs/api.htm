@@ -844,7 +844,11 @@ This behavior can change depending on the administrator’s preferences, however
 
         <section>
           <h3>Directives</h3>
-          <p>None</p>
+
+          <ul class="directives">
+            <li>rooms - A comma-seperated list of room IDs to get.</li>
+            <li>users - A comma-seperated list of user IDs to get.</li>
+          </ul>
         </section>
 
         <section>
@@ -896,8 +900,46 @@ This behavior can change depending on the administrator’s preferences, however
 
       <section>
         <h2>Get Uploads (~/api/getUploads.php)</h2>
-        --Incomplete--
 
+        <section>
+          <h3>Directives</h3>
+
+          <ul class="directives">
+            <li>users - A comma-seperated list of user IDs to get.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>XML Tree</h3>
+          <ul>
+            <li>getUploads</li>
+              <ul>
+              <li>activeUser</li>
+                <ul>
+                <li>userId</li>
+                <li>userName</li>
+              </ul>
+              <li>sentData</li>
+                <ul>
+                <li>users</li>
+              </ul>
+              <li>errStr</li>
+              <li>errDesc</li>
+              <li>uploads</li>
+                <ul>
+                <li>upload</li>
+                  <ul>
+                  <li>size</li>
+                  <li>sizeFormatted</li>
+                  <li>name</li>
+                  <li>mime</li>
+                  <li>rating</li>
+                  <li>md5hash</li>
+                </ul>
+              </ul>
+            </ul>
+          </ul>
+        </section>
       </section>
 
       <section>

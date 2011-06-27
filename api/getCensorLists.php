@@ -75,7 +75,7 @@ $xmlData['getCensorLists']['errDesc'] = ($errDesc);
 ($hook = hook('getCensorLists_end') ? eval($hook) : '');
 
 
-echo fim_outputKeys($xmlData);
+echo fim_outputApi($xmlData);
 
 dbClose();
 ?>
