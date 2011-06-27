@@ -199,4 +199,5 @@ INSERT INTO `{prefix}phrases` (`id`, `name`, `text_en`, `text_jp`) VALUES
 (192, 'settingsShowAvatarsLabel', 'Show Avatars:', ''),
 (193, 'settingsShowAvatarsBlurb', 'Showing avatars will reduce the overall amount of text by hiding post times and userNames with a small avatar to represent users. Times can be viewed by moving the mouse over each message.', ''),
 (194, 'settingsThemeLabel', 'Theme:', ''),
-(195, 'settingsThemeBlurb', 'Change the theming of the messenger to your liking. "Cupertino" and "jQueryUI" are good choices.', '');
+(195, 'settingsThemeBlurb', 'Change the theming of the messenger to your liking. "Cupertino" and "jQueryUI" are good choices.', ''),
+(196, 'templateViewUploads', 'View My Uploads', '');

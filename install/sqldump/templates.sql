@@ -81,6 +81,7 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
       <li><a href="#" id="online">$phrases[templateActiveUsers]</a></li>
       <li style="border-bottom: 1px solid;"><a href="#" id="viewStats">$phrases[templateStats]</a></li>
 
+      <li><a href="#" id="viewUploads">$phrases[templateViewUploads]</a></li>
       <li><a href="#" id="changeSettings">$phrases[templateChangeSettings]</a></li>
       <li><a href="#" id="logout">$phrases[templateLogout]</a></li>
       <li><a href="#" id="login">$phrases[templateLogin]</a></li>

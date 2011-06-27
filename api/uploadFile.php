@@ -43,36 +43,6 @@ $xmlData = array(
 
 
 switch ($uploadMethod) {
-  case 'file':
-  if (!in_array($_FILES['fileUpload']['type'],$validTypes)) {
-    $errStr = 'badFileType';
-    $errDesc = $phrases['uploadErrorBadType'];
-  }
-  elseif (!in_array($ext,$validExts) && $_FILES['fileUpload']['type'] == 'application/octet-stream') {
-    $errStr = 'badFileType';
-    $errDesc = $phrases['uploadErrorBadType'];
-  }
-  elseif ($_FILES['fileUpload']['size'] > 4 * 1000 * 1000) {
-    $errStr = 'badFileSize';
-    $errDesc = $phrases['uploadErrorSize'];
-  }
-  elseif ($_FILES['fileUpload']['error'] > 0) {
-    $errStr = 'badFileUnknown';
-    $errDesc = $phrases['uploadErrorOther'] . $_FILES['fileUpload']['error'];
-  }
-  else {
-    $contents = file_get_contents($_FILES['fileUpload']['tmp_name']);
-    $md5hash = md5($contents);
-
-    $name = $_FILES['fileUpload']['name'];
-    $size = intval(strlen($contents));
-    $mime = $_FILES['fileUpload']['type'];
-
-    $extParts = explode('.',$_FILES['fileUpload']['name']);
-    $ext = $extParts[count($extParts) - 1];
-  }
-  break;
-
   case 'raw':
   $name = fim_urldecode($_POST['file_name']);
   $data = fim_urldecode($_POST['file_data']);

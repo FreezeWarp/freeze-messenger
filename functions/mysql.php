@@ -240,7 +240,7 @@ function dbProcessArrayVal($array) {
 * @param array $dataArray - The array containing relevant key -> value pairs.
 * @param string $table - The table to insert into.
 * @param array $updateArray - The conditions for ON DUPLICATE KEY UPDATE.
-* @return bool - true on success, false on failure
+* @return link - Database result link.
 * @author Joseph Todd Parsons
 */
 function dbInsert($dataArray,$table,$updateArray) {
@@ -268,6 +268,15 @@ function dbInsert($dataArray,$table,$updateArray) {
 }
 
 
+/**
+* Updates existing data using key->value pairs.
+*
+* @param array $dataArray - The array containing relevant key -> value pairs.
+* @param string $table - The table to update.
+* @param array $conditionArray - The conditions for which rows should be updated.
+* @return link - Database result link.
+* @author Joseph Todd Parsons
+*/
 function dbUpdate($dataArray,$table,$conditionArray = false) {
   list($columns, $values) = dbProcessArrayVal($dataArray);
 
@@ -321,6 +330,14 @@ function dbUpdate($dataArray,$table,$conditionArray = false) {
 }
 
 
+/**
+* Deletes data from a table.
+*
+* @param string $table - The table to deleted from.
+* @param array $conditionArray - The conditions for which rows should be deleted.
+* @return link - Database result link.
+* @author Joseph Todd Parsons
+*/
 function dbDelete($table,$conditionArray = false) {
   list($columns,$values,$conditions) = dbProcessArrayVal($conditionArray);
 
