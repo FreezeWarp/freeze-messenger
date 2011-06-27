@@ -14,8 +14,8 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 CREATE TABLE IF NOT EXISTS `{prefix}searchPhrases` (
-  `phraseId` int(10) NOT NULL AUTO_INCREMENT,
-  `phraseName` varchar(50) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `phraseId` int(10) NOT NULL AUTO_INCREMENT COMMENT 'A unique ID corrosponding to the phrase name/text.',
+  `phraseName` varchar(50) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The name/text of the phrase.',
   PRIMARY KEY (`phraseId`)
   UNIQUE KEY (`phraseName`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8 COLLATE=utf8_bin;

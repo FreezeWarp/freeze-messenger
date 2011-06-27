@@ -14,11 +14,11 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 CREATE TABLE IF NOT EXISTS `{prefix}modlog` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `userId` int(10) NOT NULL,
-  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `ip` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  `action` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  `data` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `id` int(10) NOT NULL AUTO_INCREMENT COMMENT 'A unique ID for the log entry.',
+  `userId` int(10) NOT NULL COMMENT 'The user ID who performed the action.',
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The time the action was performed on.',
+  `ip` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The IP of the user when the action was performed.',
+  `action` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The action performed.',
+  `data` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The associated data of the action.',
   PRIMARY KEY (`id`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8;

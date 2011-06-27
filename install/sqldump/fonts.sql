@@ -14,10 +14,10 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 CREATE TABLE IF NOT EXISTS `{prefix}fonts` (
-  `fontId` int(10) NOT NULL AUTO_INCREMENT,
-  `name` varchar(20) NOT NULL,
-  `data` varchar(500) NOT NULL,
-  `category` varchar(20) NOT NULL,
+  `fontId` int(10) NOT NULL AUTO_INCREMENT COMMENT 'The unique ID of the font.',
+  `name` varchar(20) NOT NULL COMMENT 'The font''s name.',
+  `data` varchar(500) NOT NULL COMMENT 'The font''s data.',
+  `category` varchar(20) NOT NULL COMMENT 'The font''s category (e.g. monospace, serif, sans-serif, etc).',
   PRIMARY KEY (`fontId`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8;
 

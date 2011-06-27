@@ -14,10 +14,13 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 CREATE TABLE IF NOT EXISTS `{prefix}phrases` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) NOT NULL,
-  `text_en` longtext CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  `text_jp` longtext CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `id` int(10) NOT NULL AUTO_INCREMENT COMMENT 'A unique ID for the phrase',
+  `name` varchar(50) NOT NULL COMMENT 'The unique phrase name.',
+  `text_en` longtext CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The text of the message in English.',
+  `text_jp` longtext CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The text of the message in Japanese.',
+  `text_sp` longtext CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The text of the message in Spanish.',
+  `text_fr` longtext CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The text of the message in French.',
+  `text_ge` longtext CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The text of the message in German.',
   PRIMARY KEY (`id`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8;
 

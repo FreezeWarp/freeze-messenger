@@ -14,10 +14,10 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 CREATE TABLE IF NOT EXISTS `{prefix}templates` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  `vars` varchar(1000) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  `data` longtext CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `id` int(10) NOT NULL AUTO_INCREMENT COMMENT 'The ID of the template.',
+  `name` varchar(50) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The name of the template, used for its retrievel.',
+  `vars` varchar(1000) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'PHP variables that need to be accessed by the template.',
+  `data` longtext CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The text/data associated with the template.',
   PRIMARY KEY (`id`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8;
 

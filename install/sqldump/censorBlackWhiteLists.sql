@@ -14,8 +14,8 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 CREATE TABLE IF NOT EXISTS {prefix}censorBlackWhiteLists(
-  `listId` int(10) NOT NULL,
-  `roomId` int(10) NOT NULL,
-  `status` enum('block','unblock') NOT NULL,
+  `listId` int(10) NOT NULL COMMENT 'The unique ID of the censor list.',
+  `roomId` int(10) NOT NULL COMMENT 'The room ID the status is being applied to.',
+  `status` enum('block','unblock') NOT NULL COMMENT 'The status of the list in regards to the room - either explicit block or explicit unblock.',
   PRIMARY KEY (`listId`,`roomId`)
 ) ENGINE={engine}  DEFAULT CHARSET=utf8;

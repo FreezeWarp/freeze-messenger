@@ -14,11 +14,11 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 CREATE TABLE IF NOT EXISTS `{prefix}kick` (
-  `userId` int(10) NOT NULL,
-  `roomId` int(10) NOT NULL,
-  `kickerid` int(10) NOT NULL,
-  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `length` int(10) NOT NULL,
+  `userId` int(10) NOT NULL COMMENT 'The ID of the user who has been kicked.',
+  `roomId` int(10) NOT NULL COMMENT 'The ID of the room the kick is active in.',
+  `kickerid` int(10) NOT NULL COMMENT 'The ID of the user who made the kick.',
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The time the kick was made on.',
+  `length` int(10) NOT NULL COMMENT 'The time the kick will remain active for.',
   PRIMARY KEY (`userId`,`roomId`),
   KEY `time` (`time`),
   KEY `length` (`length`)

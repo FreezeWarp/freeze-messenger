@@ -14,8 +14,8 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 CREATE TABLE IF NOT EXISTS `{prefix}roomStats` (
-  `userId` int(10) NOT NULL,
-  `roomId` int(10) NOT NULL,
-  `messages` int(10) NOT NULL,
+  `userId` int(10) NOT NULL COMMENT 'The ID of the user.',
+  `roomId` int(10) NOT NULL COMMENT 'The ID of the room.',
+  `messages` int(10) NOT NULL COMMENT 'The number of messages made by the user in the room.',
   PRIMARY KEY (`userId`,`roomId`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8;

@@ -14,11 +14,11 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 CREATE TABLE IF NOT EXISTS `{prefix}censorWords` (
-  `wordId` int(10) NOT NULL AUTO_INCREMENT,
-  `listId` int(10) NOT NULL,
-  `word` varchar(1000) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  `severity` enum('replace','warn','confirm','block') NOT NULL DEFAULT 'replace',
-  `param` varchar(1000) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `wordId` int(10) NOT NULL AUTO_INCREMENT COMMENT 'A unique identifier for the word.',
+  `listId` int(10) NOT NULL COMMENT 'The ID of the list the word is filed under.',
+  `word` varchar(1000) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The word text.',
+  `severity` enum('replace','warn','confirm','block') NOT NULL DEFAULT 'replace' COMMENT 'The severity/type of word.',
+  `param` varchar(1000) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The action data for the word, used in multiple ways based on the word''s severity.',
   PRIMARY KEY (`wordId`),
   KEY `listId` (`listId`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8;

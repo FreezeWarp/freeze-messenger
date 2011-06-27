@@ -14,7 +14,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 CREATE TABLE IF NOT EXISTS `{prefix}searchMessages` (
-  `messageId` int(10) NOT NULL AUTO_INCREMENT,
-  `phraseId` varchar(50) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `messageId` int(10) NOT NULL AUTO_INCREMENT COMMENT 'The ID of the message.',
+  `phraseId` varchar(50) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The ID of the phrase found in the message.',
   PRIMARY KEY (`messageId`, `phraseId`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8 COLLATE=utf8_bin;

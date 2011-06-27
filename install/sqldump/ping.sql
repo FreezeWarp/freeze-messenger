@@ -14,11 +14,11 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 CREATE TABLE IF NOT EXISTS `{prefix}ping` (
-  `userId` int(10) NOT NULL,
-  `roomId` int(10) NOT NULL,
-  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `status` enum('away','busy','available','invisible','offline','') NOT NULL DEFAULT '',
-  `typing` enum('1','0') NOT NULL DEFAULT '0',
+  `userId` int(10) NOT NULL COMMENT 'The ID of the user.',
+  `roomId` int(10) NOT NULL COMMENT 'The ID of the room.',
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The time of the ping.',
+  `status` enum('away','busy','available','invisible','offline','') NOT NULL DEFAULT '' COMMENT 'The user''s status.',
+  `typing` enum('1','0') NOT NULL DEFAULT '0' COMMENT 'Whether or not the user is typing.',
   PRIMARY KEY (`userId`,`roomId`),
   KEY `time` (`time`),
   KEY `userId` (`userId`),

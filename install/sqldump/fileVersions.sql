@@ -14,15 +14,15 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 CREATE TABLE IF NOT EXISTS `{prefix}fileVersions` (
-  `versionId` int(10) NOT NULL AUTO_INCREMENT,
-  `fileId` int(10) NOT NULL,
-  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `size` int(10) NOT NULL,
-  `md5hash` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  `sha256hash` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  `salt` int(10) NOT NULL,
-  `iv` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  `contents` longtext NOT NULL,
-  PRIMARY KEY (`versionId`),
+  `versionId` int(10) NOT NULL AUTO_INCREMENT COMMENT 'A unique identifier for all file versions, regardless of each file.',
+  `fileId` int(10) NOT NULL COMMENT 'The ID of the parent file.',
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The time of the revision of the file was uploaded.',
+  `size` int(10) NOT NULL COMMENT 'The size of the revision.',
+  `md5hash` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The MD5 hash of the file''s binary data.',
+  `sha256hash` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The SHA256 hash of the file''s binary data.',
+  `salt` int(10) NOT NULL COMMENT 'The salt number (stored in the product configuration) used for encryption.',
+  `iv` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The base64-encoded IV used for encryption.',
+  `contents` longtext NOT NULL COMMENT 'The base64-encoded binary data of the file.',
+  PRIMARY KEY (`fileId`,`versionId`),
   KEY `fileId` (`fileId`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8;

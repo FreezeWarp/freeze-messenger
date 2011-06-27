@@ -14,10 +14,10 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 CREATE TABLE IF NOT EXISTS `{prefix}groups` (
-  `groupId` int(10) NOT NULL,
-  `groupName` varchar(300) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  `memberIds` int(10) NOT NULL DEFAULT 1,
-  `userFormatStart` varchar(300) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  `userFormatEnd` varchar(300) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `groupId` int(10) NOT NULL COMMENT 'The unique ID of the group.',
+  `groupName` varchar(300) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The name of the group.',
+  `memberIds` int(10) NOT NULL DEFAULT '' COMMENT 'A comma-seperated list of members.',
+  `userFormatStart` varchar(300) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'Username formatted to be prepended to the username.',
+  `userFormatEnd` varchar(300) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'Username formatted to be appended to the username.',
   PRIMARY KEY (`groupId`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8;
