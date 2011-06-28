@@ -323,7 +323,7 @@ else {
                   'color' => ($message['defaultColor']),
                   'highlight' => ($message['defaultHighlight']),
                   'fontface' => ($message['defaultFontface']),
-                  'general' => (int) $message['defaultGeneral']
+                  'general' => (int) $message['defaultFormatting']
                  ),
               ),
             );

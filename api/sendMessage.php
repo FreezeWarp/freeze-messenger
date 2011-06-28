@@ -101,7 +101,25 @@ if ($continue) {
 
     fim_sendMessage('/me changed the topic to ' . $topic,$user,$room,'topic');
     dbQuery("UPDATE {$sqlPrefix}rooms SET roomTopic = '$topic' WHERE roomId = $room[roomId]");
-  }
+  }/*
+  elseif (strpos($message, '/kick') === 0) {
+    $kickData = preg_replace('/^\/kick (.+?)(| ([0-9]+?))$/i','$1,$2',$message);
+    $kickData = explode(',',$kickData);
+
+    $userData =
+
+    $ch = curl_init('./');
+    $fp = fopen("moderate.php", "w");
+
+    curl_setopt($ch, CURLOPT_FILE, $fp);
+    curl_setopt($ch, CURLOPT_HEADER, 0);
+    curl_setopt($agent, CURLOPT_POST, true);
+    curl_setopt($agent, CURLOPT_POSTFIELDS, 'action=kickUser&userId=&roomId=' . $roomId . '&fim3_userId=&fim3_sessionHash=');
+
+    curl_exec($ch);
+    curl_close($ch);
+    fclose($fp);
+  }*/
   else {
     if (strpos($message, '/me') === 0) {
       $flag = 'me';

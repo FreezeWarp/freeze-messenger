@@ -525,6 +525,67 @@ switch ($action) {
   break;
 
 
+  case 'favRoom':
+  $roomId = (int) $_POST['roomId'];
+
+  $currentRooms = explode(',',$user['favRooms']); // Get an array of the user's current rooms.
+
+  if (!in_array($roomId,$currentRooms)) { // Make sure the room is not already a favourite.
+    $currentRooms[] = $roomId;
+
+    foreach ($currentRooms as $room2) {
+      if ((int) $room2) {
+        $currentRooms2[] = (int) $room2;
+      }
+    } // Rebuild the array without the room ID.
+
+    $newRoomString = implode(',',$currentRooms2);
+
+    dbUpdate(array(
+      'favRooms' => (string) $newRoomString,
+    ),"{$sqlPrefix}users",array(
+      'userId' => (int) $user['userId'],
+    ));
+
+    $xmlData['moderate']['response']['success'] = true;
+  }
+  else {
+    $errStr = 'nothingtodo';
+
+    $xmlData['moderate']['response']['success'] = false;
+  }
+  break;
+
+  case 'unfavRoom':
+  $roomId = (int) $_POST['roomId'];
+
+  $currentRooms = explode(',',$user['favRooms']); // Get an array of the user's current rooms.
+
+  if (in_array($roomId,$currentRooms)) { // Make sure the room is already a favourite.
+    foreach ($currentRooms as $room2) { // Run through each room.
+      if ($room2 != $roomId && (int) $room2) { // If the room is not invalid and is not the one we are trying to remove, add it to the new list.
+        $currentRooms2[] = (int) $room2;
+      }
+    }
+
+    $newRoomString = implode(',',$currentRooms2);
+
+    dbUpdate(array(
+      'favRooms' => (string) $newRoomString,
+    ),"{$sqlPrefix}users",array(
+      'userId' => (int) $user['userId'],
+    ));
+
+    $xmlData['moderate']['response']['success'] = true;
+  }
+  else {
+    $errStr = 'nothingtodo';
+
+    $xmlData['moderate']['response']['success'] = false;
+  }
+  break;
+
+
   default:
 
   break;

@@ -70,8 +70,10 @@ function fim_arrayValidate($array,$type = 'int',$preserveAll = false) {
 * @param array $userData - An array containing the user's data; indexes userId, adminPrivs, and userPrivs may be used.
 * @param string $type - Either "know", "view", "post", "moderate", or "admin", this defines the action the user is trying to do.
 * @param bool $trans - If true, return will be an information array; otherwise bool.
-* @global bool $banned
-* @global array $superUsers
+* @global bool $banned - Whether or not the user is banned outright.
+* @global array $superUsers - The list of superUsers.
+* @global bool $valid - Whether or not the user has a valid login (required for posting, etc.)
+* @global string $sqlPrefix
 * @return mixed - Bool if $trans is false, array if $trans is true.
 * @author Joseph Todd Parsons
 */
@@ -287,7 +289,7 @@ WHERE userId = $userData[userId] AND
 * Decodes a specifically-formatted URL string, converting entities for "+", "&", '%', and new line to their respective string value.
 *
 * @param string $str - The string to be decoded.
-* @return mixed - Bool if $trans is false, array if $trans is true.
+* @return string - The decoded text.
 * @author Joseph Todd Parsons
 */
 function fim_urldecode($str) {
@@ -296,11 +298,11 @@ function fim_urldecode($str) {
 
 
 /**
-* Determines if a user has permission to do an action in a room.
+* Decrypts data.
 *
 * @param array $message - An array containing the message data; must include an "iv" index.
 * @param mixed $index - An array or string corrosponding to which indexes in the $message should be decrypted.
-* @global array $salts
+* @global array $salts - Key-value pairs used for encryption.
 * @return array
 * @author Joseph Todd Parsons
 */
@@ -331,7 +333,7 @@ function fim_decrypt($message,$index = array('apiText','htmlText','rawText')) {
 * Encrypts a string or all values in an array.
 *
 * @param mixed $data - The data to encrypt.
-* @global array $salts
+* @global array $salts - Key-value pairs used for encryption.
 * @return array - list($data, $iv, $saltNum)
 * @author Joseph Todd Parsons
 */
@@ -364,7 +366,7 @@ function fim_encrypt($data) {
 * Encodes a string as specifically-formatted XML data, converting "&", "'", '"', "<", and ">" to their equivilent values.
 *
 * @param string $data - The data to be encoded.
-* @return string
+* @return string - Encoded data.
 * @author Joseph Todd Parsons
 */
 
@@ -768,6 +770,7 @@ function errorHandler($errno, $errstr, $errfile, $errline) {
   return true;
 }
 
+
 /**
 * Container Template
 *
@@ -797,6 +800,7 @@ function container($title,$content,$class = 'page') {
 
 ";
 }
+
 
 /**
 * XML Parser
@@ -855,6 +859,16 @@ $data";
   }
 }
 
+
+/**
+* XML Parser
+*
+* @param array $array
+* @param int $level
+* @return string
+* @author Joseph Todd Parsons
+*/
+
 function fim_outputApi($data) {
   switch ($_REQUEST['format']) {
     case 'json':
@@ -867,6 +881,16 @@ function fim_outputApi($data) {
     break;
   }
 }
+
+
+/**
+* JSON Parser
+*
+* @param array $array
+* @param int $level
+* @return string
+* @author Joseph Todd Parsons
+*/
 
 function fim_outputJson($array, $level = 0) {
   header('Content-type: application/json');
@@ -917,6 +941,16 @@ $data
     return $data;
   }
 }
+
+
+/**
+* Key Parser
+*
+* @param array $array
+* @param int $level
+* @return string
+* @author Joseph Todd Parsons
+*/
 
 function fim_outputKeys($array, $level = 0) { // Used only for creating documentation.
   $indent = '';

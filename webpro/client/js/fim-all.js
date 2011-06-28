@@ -122,7 +122,7 @@ directoryPre.pop();
 directoryPre = directoryPre.join('/');
 
 var directory = directoryPre + '/';
-var currentLocation = window.location.origin + directory + 'interface/';
+var currentLocation = window.location.origin + directory + 'webpro/';
 
 
 /*********************************************************
@@ -596,7 +596,7 @@ function populate(options) {
             roomUlHtml += ulText;
           }
 
-          roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isAdmin ? '<button data-roomId="' + roomId + '" class="editRoomMulti standard"></button><button data-roomId="' + roomId + '" class="deleteRoomMulti standard"></button>' : '') + '<button data-roomId="' + roomId + '" class="archiveMulti standard"></button><input type="checkbox" ' + (isFav ? 'checked="checked" ' : '') + ' data-roomId="' + roomId + '" class="favRoomMulti standard" /></td></tr>';
+          roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isAdmin ? '<button data-roomId="' + roomId + '" class="editRoomMulti standard"></button><button data-roomId="' + roomId + '" class="deleteRoomMulti standard"></button>' : '') + '<button data-roomId="' + roomId + '" class="archiveMulti standard"></button><input type="checkbox" ' + (isFav ? 'checked="checked" ' : '') + ' data-roomId="' + roomId + '" class="favRoomMulti" id="favRoom' + roomId + '" /><label for="favRoom' + roomId + '" class="standard"></label></td></tr>';
 
           roomRef[roomName] = roomId;
           roomIdRef[roomId] = roomName;
@@ -1238,19 +1238,23 @@ var standard = {
                   styleHighlight = ($(this).find('defaultFormatting > highlight').text().trim()),
                   styleFontface = ($(this).find('defaultFormatting > fontface').text().trim()),
                   styleGeneral = Number($(this).find('defaultFormatting > general').text().trim()),
+                  style = '';
+
+                if (!settings.disableFormatting) {
                   style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + fontIdRef[styleFontface] + ';';
 
-                if (styleGeneral & 256) {
-                  style += 'font-weight: bold;';
-                }
-                if (styleGeneral & 512) {
-                  style += 'font-style: oblique;';
-                }
-                if (styleGeneral & 1024) {
-                  style += 'text-decoration: underline;';
-                }
-                if (styleGeneral & 2048) {
-                  style += 'text-decoration: line-through;';
+                  if (styleGeneral & 256) {
+                    style += 'font-weight: bold;';
+                  }
+                  if (styleGeneral & 512) {
+                    style += 'font-style: oblique;';
+                  }
+                  if (styleGeneral & 1024) {
+                    style += 'text-decoration: underline;';
+                  }
+                  if (styleGeneral & 2048) {
+                    style += 'text-decoration: line-through;';
+                  }
                 }
 
 
@@ -1502,6 +1506,22 @@ var standard = {
     }); // Send the form data via AJAX.
   },
 
+  favRoom : function(roomLocalId) {
+    $.post(directory + 'api/moderate.php','action=favRoom&roomId=' + roomLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
+      return false;
+    });
+
+    return false;
+  },
+
+  unfavRoom : function(roomLocalId) {
+    $.post(directory + 'api/moderate.php','action=unfavRoom&roomId=' + roomLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
+      return false;
+    });
+
+    return false;
+  },
+
 
   privateRoom : function(userLocalId) {
     userLocalId = Number(userLocalId);
@@ -1723,7 +1743,7 @@ popup = {
           return false;
         });
 
-        $('input[type=checkbox].favRoomMulti').button({icons : {primary : 'ui-icon-star'}}).bind('click',function() {
+        $('input[type=checkbox].favRoomMulti').button({icons : {primary : 'ui-icon-star'}, text : false}).bind('change',function() {
           if ($(this).is(':checked')) {
             standard.favRoom($(this).attr('data-roomId'));
           }
@@ -2035,6 +2055,38 @@ popup = {
         if (settings.disableImage) {
           $('#disableImage').attr('checked','checked');
         }
+        if (themeId) {
+          $('#theme > option[value=' + themeId + ']').attr('selected','selected');
+        }
+
+
+        $.get(directory + 'api/getUsers.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId, function(xml) {
+          var defaultColour = $(xml).find('defaultFormatting > color').text().trim(),
+            defaultHighlight = $(xml).find('defaultFormatting > highlight').text().trim(),
+            defaultFontface = $(xml).find('defaultFormatting > fontface').text().trim(),
+            defaultGeneral = Number($(xml).find('defaultFormatting > general').text().trim());
+
+          if (defaultGeneral & 256) {
+            $('#fontPreview').css('font-weight','bold');
+            $('#defaultBold').attr('checked','checked');
+          }
+          if (defaultGeneral & 512) {
+            $('#fontPreview').css('font-style','italic');
+            $('#defaultItalics').attr('checked','checked');
+          }
+
+          if (defaultColour) {
+            $('#defaultColour').css('background-color','rgb(' + defaultColour + ')');
+          }
+          if (defaultHighlight) {
+            $('#defaultHighlight').css('background-color','rgb(' + defaultHighlight + ')');
+          }
+          if (defaultFontface) {
+            $('#defaultFace > option[value=' + defaultFontface + ']').attr('selected','selected');
+          }
+
+          return false;
+        });
 
 
         $("#defaultRoom").autocomplete({
@@ -2059,14 +2111,14 @@ popup = {
         $('#showAvatars, #reversePostOrder, #disableFormatting, #disableVideo, #disableImage').change(function() {
           var localId = $(this).attr('id');
 
-          if ($(this).val() === 'true' && !settings[localId]) {
+          if ($(this).is(':checked') && !settings[localId]) {
             settings[localId] = true;
             $('#messageList').html('');
             $.cookie('fim3_settings',Number($.cookie('fim3_settings')) + idMap[localId]);
 
             requestSettings.firstRequest = true;
           }
-          else if ($(this).val() !== 'true' && settings[localId]) {
+          else if (!$(this).is(':checked') && settings[localId]) {
             settings[localId] = false;
             $('#messageList').html('');
             $.cookie('fim3_settings',Number($.cookie('fim3_settings')) - idMap[localId]);
@@ -2080,11 +2132,11 @@ popup = {
         $('#audioDing, #disableFx').change(function() {
           var localId = $(this).attr('id');
 
-          if ($(this).val() === 'true' && !settings[localId]) {
+          if ($(this).is(':checked') && !settings[localId]) {
             settings[localId] = true;
             $.cookie('fim3_settings',Number($.cookie('fim3_settings')) + idMap[localId]);
           }
-          else if ($(this).val() !== 'true' && settings[localId]) {
+          else if (!$(this).is(':checked') && settings[localId]) {
             settings[localId] = false;
             $.cookie('fim3_settings',Number($.cookie('fim3_settings')) - idMap[localId]);
           }
@@ -2135,29 +2187,15 @@ popup = {
         $('#fontPreview').css('color','');
         $('#defaultColour').css('background-color','');
         $('#fontPreview').css('background-color','');
-        $('#defaultHighlight').css('background-color','');
-
-        if ($('#defaultItalics').is(':checked')) {
-          $('#fontPreview').css('font-style','italic');
-        }
-        else {
-          $('#fontPreview').css('messageIdfont-style','normal');
-        }
-
-        if ($('#defaultBold').is(':checked')) {
-          $('#fontPreview').css('font-weight','bold');
-        }
-        else {
-          $('#fontPreview').css('font-style','normal');
-        }
 
         $("#changeSettingsForm").submit(function() {
           var watchRooms = $('#watchRooms').val(),
             defaultRoom = $('#defaultRoom').val(),
             defaultRoomId = (defaultRoom ? roomRef[defaultRoom] : 0),
-            fontId = $('#defaultFace option:selected').val();
+            fontId = $('#defaultFace option:selected').val(),
+            defaultFormatting = ($('#defaultBold').is(':checked') ? 256 : 0) + ($('#defaultItalics').is(':checked') ? 512 : 0);
 
-          $.post(directory + 'api/moderate.php','action=userOptions&userId=' + userId + (defaultColour ? '&defaultColor=' + defaultColour : '') + (defaultHighlight ? '&defaultHighlight=' + defaultHighlight : '') + (defaultRoomId ? '&defaultRoomId=' + defaultRoomId : '') + (watchRooms ? '&watchRooms=' + watchRooms : '') + (fontId ? '&defaultFontface=' + fontId : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
+          $.post(directory + 'api/moderate.php','action=userOptions&userId=' + userId + '&defaultFormatting=' + defaultFormatting + '&defaultColor=' + defaultColour + '&defaultHighlight=' + defaultHighlight + '&defaultRoomId=' + defaultRoomId + '&watchRooms=' + watchRooms + '&defaultFontface=' + fontId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
             dia.info('Your settings may or may not have been updated.');
           }); // Send the form data via AJAX.
 

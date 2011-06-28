@@ -165,7 +165,7 @@ img.standard {
   width: 16px;
 }
 
-button.standard {
+label.standard, button.standard {
   width: 32px;
   padding: 7px !important;
   margin: 2px;
