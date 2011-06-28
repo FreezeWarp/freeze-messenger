@@ -136,6 +136,7 @@ if ($users) {
         'fontface' => ($userData['defaultFontface']),
         'general' => (int) $userData['defaultFormatting']
       ),
+      'ignoreList' => ($userData['ignoreList']),
       'favRooms' => ($userData['favRooms']),
       'postCount' => (int) $userDataForums['posts'],
       'joinDate' => (int) $userDataForums['joinDate'],

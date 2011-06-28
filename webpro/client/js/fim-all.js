@@ -766,6 +766,7 @@ autoEntry = {
 
         case 'moderators':
         case 'allowedUsers':
+        case 'ignoreList':
         id = userRef[val];
         type2 = 'User';
         break;
@@ -2065,6 +2066,7 @@ popup = {
             defaultHighlight = $(xml).find('defaultFormatting > highlight').text().trim(),
             defaultFontface = $(xml).find('defaultFormatting > fontface').text().trim(),
             defaultGeneral = Number($(xml).find('defaultFormatting > general').text().trim()),
+            ignoreList = ($(xml).find('ignoreList').text().trim()),
             defaultHighlightHashPre = [],
             defaultHighlightHash = {r:0,g:0,b:0},
             defaultColourHashPre = [],
@@ -2138,6 +2140,9 @@ popup = {
             }
           });
 
+
+          autoEntry.showEntries('ignoreList',ignoreList);
+
           return false;
         });
 
@@ -2151,6 +2156,7 @@ popup = {
         $("#ignoreListBridge").autocomplete({
           source: userList
         });
+
         $('#defaultFace').html(fontSelectHtml);
 
 

@@ -322,7 +322,7 @@ Now that the database has been successfully installed, we must generate the conf
     '$loginMethod = \'vanilla\';',
     '$installLoc = \'\';',
     '$installUrl = \'\';',
-    '$forumUrl = \'\';',
+    '$forumUrl = \'http://example.com/forums/\';',
     '$forumTablePrefix = \'\';',
     '$forumSalt = \'\';',
     '$superUsers = array();',
