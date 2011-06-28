@@ -31,13 +31,14 @@ CREATE TABLE IF NOT EXISTS `{prefix}users` (
   `interface` varchar(50) NOT NULL COMMENT 'The web-accessible interface the user prefers to default to.',
   `favRooms` varchar(1000) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL DEFAULT '1' COMMENT 'A comma-seperated list of rooms the user has ranked as being favourites.',
   `watchRooms` varchar(1000) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'A comma-seperated list of rooms the user would like to be notified about when new messages are made',
+  `ignoreList` varchar(1000) NOT NULL COMMENT 'A list of user IDs to be ignored. Ignoring a user will block all private contacts.',
   `status` int(3) NOT NULL COMMENT 'The user''s activity status.',
   `defaultFormatting` int(10) NOT NULL COMMENT 'A bitfield corrosponding to the user''s defaulting formatting (e.g. bold, italics) of all messages.',
   `defaultHighlight` varchar(20) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The user''s default highlight colour used for all messages.',
-  `defaultColor` varchar(20) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The user''s default foreground colour used for all messages.',,
+  `defaultColor` varchar(20) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The user''s default foreground colour used for all messages.',
   `defaultFontface` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The fontface ID used for all of the user''s messages.',
   `settings` int(10) NOT NULL DEFAULT 0 COMMENT 'A bitfield corrosponding to different user settings.',
   `userPrivs` int(10) NOT NULL DEFAULT 16 COMMENT 'A bitfield corrosponding to admin-set user priviledges.',
-  `adminPrivs` int(10) NOT NULL COMMENT 'A bitfield corrosponding to admin-set administrative priviledges.',,
+  `adminPrivs` int(10) NOT NULL COMMENT 'A bitfield corrosponding to admin-set administrative priviledges.',
   PRIMARY KEY (`userId`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8;

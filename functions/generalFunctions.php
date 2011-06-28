@@ -23,7 +23,18 @@
 * @author Joseph Todd Parsons
 */
 function fim_inArray($needle,$haystack) {
+  if (!$haystack) {
+    return false;
+  }
+  if (!$needle) {
+    return false;
+  }
+
   foreach($needle AS $need) {
+    if (!$need) {
+      continue;
+    }
+
     if (in_array($need,$haystack)) {
       return true;
     }
@@ -103,6 +114,20 @@ function fim_hasPermission($roomData,$userData,$type = 'post',$quick = false) {
   }
 
 
+  $allowedGroups = explode(',',$roomData['allowedGroups']);
+  foreach ($allowedGroups AS $groupId) {
+    if (!$groupId) {
+      continue;
+    }
+
+    if (strpos($groupId, 'a') === 0) {
+      $roomData['allowedAdminGroups'][] = (int) substr($groupId,1);
+    }
+    else {
+      $roomData['allowedSocialGroups'][] = (int) $groupId;
+    }
+  }
+
   /* Get the User's Kick Status */
   if ($userData['userId']) {
     $kick = dbRows("SELECT UNIX_TIMESTAMP(k.time) AS kickedOn,
@@ -119,15 +144,13 @@ WHERE userId = $userData[userId] AND
     $isAllowedUser = true;
   }
 
-  if (in_array($userData['userId'],explode(',',$roomData['moderators']))
-  && $roomData['moderators']) {
+  if (in_array($userData['userId'],explode(',',$roomData['moderators']))) {
     $isModerator = true; // The user is one of the chat moderators (and it is not deleted).
   }
 
-  if ((fim_inArray(explode(',',$userData['socialGroups']),explode(',',$roomData['allowedGroups']))
-    || $roomData['allowedGroups'] == '*')
-  && $roomData['allowedGroups']
-  && $userData['socialGroups']) {
+  if ((fim_inArray(explode(',',$userData['socialGroups']),$roomData['allowedSocialGroups'])
+    || (fim_inArray(explode(',',$userData['allGroups']),$roomData['allowedAdminGroups']))
+    || $roomData['allowedGroups'] == '*')) {
     $isAllowedGroup = true;
   }
 

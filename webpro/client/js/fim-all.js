@@ -2064,7 +2064,11 @@ popup = {
           var defaultColour = $(xml).find('defaultFormatting > color').text().trim(),
             defaultHighlight = $(xml).find('defaultFormatting > highlight').text().trim(),
             defaultFontface = $(xml).find('defaultFormatting > fontface').text().trim(),
-            defaultGeneral = Number($(xml).find('defaultFormatting > general').text().trim());
+            defaultGeneral = Number($(xml).find('defaultFormatting > general').text().trim()),
+            defaultHighlightHashPre = [],
+            defaultHighlightHash = {r:0,g:0,b:0},
+            defaultColourHashPre = [],
+            defaultColourHash = {r:0,g:0,b:0};
 
           if (defaultGeneral & 256) {
             $('#fontPreview').css('font-weight','bold');
@@ -2076,14 +2080,63 @@ popup = {
           }
 
           if (defaultColour) {
+            $('#fontPreview').css('color','rgb(' + defaultColour + ')');
             $('#defaultColour').css('background-color','rgb(' + defaultColour + ')');
+
+            defaultColourHashPre = defaultColour.split(',');
+            defaultColourHash = {r : defaultColourHashPre[0], g : defaultColourHashPre[1], b : defaultColourHashPre[2] }
           }
           if (defaultHighlight) {
+            $('#fontPreview').css('background-color','rgb(' + defaultColour + ')');
             $('#defaultHighlight').css('background-color','rgb(' + defaultHighlight + ')');
+
+            defaultHighlightHashPre = defaultHighlight.split(',');
+            defaultHighlightHash = {r : defaultHighlightHashPre[0], g : defaultHighlightHashPre[1], b : defaultHighlightHashPre[2] }
           }
           if (defaultFontface) {
             $('#defaultFace > option[value=' + defaultFontface + ']').attr('selected','selected');
           }
+
+
+          $('#defaultHighlight').ColorPicker({
+            color: defaultHighlightHash,
+              onShow: function (colpkr) {
+              $(colpkr).fadeIn(500);
+
+              return false;
+            },
+            onHide: function (colpkr) {
+              $(colpkr).fadeOut(500);
+
+              return false;
+            },
+            onChange: function(hsb, hex, rgb) {
+              defaultHighlight = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
+
+              $('#defaultHighlight').css('background-color','rgb(' + defaultHighlight + ')');
+              $('#fontPreview').css('background-color','rgb(' + defaultHighlight + ')');
+            }
+          });
+
+          $('#defaultColour').ColorPicker({
+            color: defaultColourHash,
+            onShow: function (colpkr) {
+              $(colpkr).fadeIn(500);
+
+              return false;
+            },
+            onHide: function (colpkr) {
+              $(colpkr).fadeOut(500);
+
+              return false;
+            },
+            onChange: function(hsb, hex, rgb) {
+              defaultColour = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
+
+              $('#defaultColour').css('background-color','rgb(' + defaultColour + ')');
+              $('#fontPreview').css('color','rgb(' + defaultColour + ')');
+            }
+          });
 
           return false;
         });
@@ -2094,6 +2147,9 @@ popup = {
         });
         $("#watchRoomsBridge").autocomplete({
           source: roomList
+        });
+        $("#ignoreListBridge").autocomplete({
+          source: userList
         });
         $('#defaultFace').html(fontSelectHtml);
 
@@ -2144,58 +2200,15 @@ popup = {
           return false;
         });
 
-        $('#defaultHighlight').ColorPicker({
-          color: '',
-          onShow: function (colpkr) {
-            $(colpkr).fadeIn(500);
-
-            return false;
-          },
-          onHide: function (colpkr) {
-            $(colpkr).fadeOut(500);
-
-            return false;
-          },
-          onChange: function(hsb, hex, rgb) {
-            defaultHighlight = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
-
-            $('#defaultHighlight').css('background-color','rgb(' + defaultHighlight + ')');
-            $('#fontPreview').css('background-color','rgb(' + defaultHighlight + ')');
-          }
-        });
-
-        $('#defaultColour').ColorPicker({
-          color: '',
-          onShow: function (colpkr) {
-            $(colpkr).fadeIn(500);
-
-            return false;
-          },
-          onHide: function (colpkr) {
-            $(colpkr).fadeOut(500);
-
-            return false;
-          },
-          onChange: function(hsb, hex, rgb) {
-            defaultColour = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
-
-            $('#defaultColour').css('background-color','rgb(' + defaultColour + ')');
-            $('#fontPreview').css('color','rgb(' + defaultColour + ')');
-          }
-        });
-
-        $('#fontPreview').css('color','');
-        $('#defaultColour').css('background-color','');
-        $('#fontPreview').css('background-color','');
-
         $("#changeSettingsForm").submit(function() {
           var watchRooms = $('#watchRooms').val(),
             defaultRoom = $('#defaultRoom').val(),
+            ignoreList = $('#ignoreList').val(),
             defaultRoomId = (defaultRoom ? roomRef[defaultRoom] : 0),
             fontId = $('#defaultFace option:selected').val(),
             defaultFormatting = ($('#defaultBold').is(':checked') ? 256 : 0) + ($('#defaultItalics').is(':checked') ? 512 : 0);
 
-          $.post(directory + 'api/moderate.php','action=userOptions&userId=' + userId + '&defaultFormatting=' + defaultFormatting + '&defaultColor=' + defaultColour + '&defaultHighlight=' + defaultHighlight + '&defaultRoomId=' + defaultRoomId + '&watchRooms=' + watchRooms + '&defaultFontface=' + fontId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
+          $.post(directory + 'api/moderate.php','action=userOptions&userId=' + userId + '&defaultFormatting=' + defaultFormatting + '&defaultColor=' + defaultColour + '&defaultHighlight=' + defaultHighlight + '&defaultRoomId=' + defaultRoomId + '&watchRooms=' + watchRooms + '&ignoreList=' + ignoreList + '&defaultFontface=' + fontId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
             dia.info('Your settings may or may not have been updated.');
           }); // Send the form data via AJAX.
 

@@ -341,8 +341,7 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
 
 <ul class="tabList">
   <li><a href="#settings1">Chat Display</a></li>
-  {{if="$enableDF"}{
-  <li><a href="#settings2">Message Formatting</span></a></li>}}
+  <li><a href="#settings2">Message Formatting</span></a></li>
   <li><a href="#settings3">General</a></li>
 </ul>
 
@@ -381,7 +380,7 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
   {{if="$enableDF[''font'']"}{
   <select name="defaultFace" id="defaultFace" onchange="var fontFace = $(''#defaultFace option:selected'').attr(''data-font''); $(''#fontPreview'').css(''font-family'',fontFace);" style="margin-left: 10px;">$fontBox</select>}}
 
-  {{if="$enableDF[''colour'']"}{<input style="width: 40px;" id="defaultColour" name="defaultColour" />}}
+  {{if="$enableDF[''color'']"}{<input style="width: 40px;" id="defaultColour" name="defaultColour" />}}
 
   {{if="$enableDF[''highlight'']"}{<input style="width: 40px;" id="defaultHighlight" name="defaultHighlight" />}}
 
@@ -409,11 +408,16 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
   <label for="defaultRoom">$phrases[settingsDefaultRoomLabel]</label> <input type="text" name="defaultRoom" id="defaultRoom" /><br />
   <small><span style="margin-left: 10px;">$phrases[settingsDefaultRoomBlurb]</span></small><br /><br />
 
-  <label for="watchRooms">$phrases[settingsWatchRoomsLabel]</label> <input type="text" name="watchRoomsBridge" id="watchRoomsBridge" /><input type="button" value="Add" onclick="autoEntry.addEntry(''watchRooms'');" /><br />
+  <label for="watchRoomsBridge">$phrases[settingsWatchRoomsLabel]</label> <input type="text" name="watchRoomsBridge" id="watchRoomsBridge" /><input type="button" value="Add" onclick="autoEntry.addEntry(''watchRooms'');" /><br />
   <small><span style="margin-left: 10px;">$phrases[settingsWatchRoomsBlurb]</span></small><br />
-  <small><span style="margin-left: 10px;">$phrases[settingsWatchRoomsCurrentRooms]<span id="watchRoomsList"></span></span></small><br /><br />
+  <small><span style="margin-left: 10px;"><span id="watchRoomsList"></span></span></small><br /><br />
+
+  <label for="ignoreListBridge">$phrases[settingsIgnoreListLabel]</label> <input type="text" name="ignoreListBridge" id="ignoreListBridge" /><input type="button" value="Add" onclick="autoEntry.addEntry(''ignoreList'');" /><br />
+  <small><span style="margin-left: 10px;">$phrases[settingsIgnoreListBlurb]</span></small><br />
+  <small><span style="margin-left: 10px;"><span id="ignoreListList"></span></span></small><br /><br />
 
   <input type="hidden" name="watchRooms" id="watchRooms" value="$user[watchRooms]" />
+  <input type="hidden" name="ignoreList" id="ignoreList" value="$user[ignoreList]" />
   </div>
 
   <button type="submit">Save Settings</button><button type="reset">Reset</button>

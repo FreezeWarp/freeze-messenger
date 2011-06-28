@@ -23,6 +23,6 @@ CREATE TABLE IF NOT EXISTS `{prefix}fileVersions` (
   `salt` int(10) NOT NULL COMMENT 'The salt number (stored in the product configuration) used for encryption.',
   `iv` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The base64-encoded IV used for encryption.',
   `contents` longtext NOT NULL COMMENT 'The base64-encoded binary data of the file.',
-  PRIMARY KEY (`fileId`,`versionId`),
+  PRIMARY KEY (`versionId`),
   KEY `fileId` (`fileId`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8;

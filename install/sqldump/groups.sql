@@ -15,8 +15,8 @@
 
 CREATE TABLE IF NOT EXISTS `{prefix}groups` (
   `groupId` int(10) NOT NULL COMMENT 'The unique ID of the group.',
-  `groupName` varchar(300) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The name of the group.',
-  `memberIds` int(10) NOT NULL DEFAULT '' COMMENT 'A comma-seperated list of members.',
+  `groupName` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The name of the group.',
+  `memberIds` varchar(1000) NOT NULL COMMENT 'A comma-seperated list of members.',
   `userFormatStart` varchar(300) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'Username formatted to be prepended to the username.',
   `userFormatEnd` varchar(300) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'Username formatted to be appended to the username.',
   PRIMARY KEY (`groupId`)

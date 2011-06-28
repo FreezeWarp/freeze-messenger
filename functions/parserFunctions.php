@@ -419,7 +419,7 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
   // Supported flags: image, video, link, email
   // Other flags that won't be parsed here: me, topic
 
-  if (in_array($flag,array('image','video','link','email'))) {
+  if (in_array($flag,array('image','video','link','email','youtube','text','audio','text'))) {
     $messageRaw = $messageText;
     $messageApi = $messageText;
 
@@ -428,8 +428,24 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
       $messageHtml = "<a href=\"$messageText\"><img src=\"$messageText\" alt=\"\" style=\"max-height: 300px; max-width: 300px;\" /></a>";
       break;
 
-      case 'video':
+      case 'youtube':
       $messageHtml = preg_replace('/^http\:\/\/(www\.|)youtube\.com\/(.*?)?v=([^&]+)(&|)(.*?)$/',($bbcode <= 3 ? '<object width="420" height="255" wmode="opaque"><param name="movie" value="http://www.youtube.com/v/$3=en&amp;fs=1&amp;rel=0&amp;border=0"></param><param name="allowFullScreen" value="true"></param><embed src="http://www.youtube.com/v/$3&amp;hl=en&amp;fs=1&amp;rel=0&amp;border=0" type="application/x-shockwave-flash" allowfullscreen="true" width="420" height="255" wmode="opaque"></embed></object>' : ($bbcode <= 13 ? '<a href="http://www.youtube.com/watch?v=$3" target="_BLANK">[Youtube Video]</a>' : '$3')),$messageText);
+      break;
+
+      case 'text':
+      $messageHtml = "<a href=\"$messageText\">Open Text Document</a>";
+      break;
+
+      case 'video':
+      $messageHtml = "<video src=\"$messageText\" controls=\"controls\"></video>";
+      break;
+
+      case 'audio':
+      $messageHtml = "<audio src=\"$messageText\" controls=\"controls\"></audio>";
+      break;
+
+      case 'html':
+      $messageHtml = "<span>HTML Content: <a href=\"$('span.iframeHolder').html('<iframe src=&quot;$messageText&quot;></iframe>');\">Display Iframe</a> <span class='iframeHolder'></span> | <a href=\"$messageText\">Open</a></span>";
       break;
 
       case 'link':

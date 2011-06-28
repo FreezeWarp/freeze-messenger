@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS `{prefix}messages` (
   `deleted` int(1) NOT NULL COMMENT 'Whether or not the message has been deleted by an administrator.',
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The time the message was made on.',
   `ip` varchar(20) CHARACTER SET utf8 COLLATE utf8_bin  NOT NULL COMMENT 'The IP of the user who made the message.',
-  `flag` varchar(10) CHARACTER SET utf8 COLLATE utf8_bin  NOT NULL COMMENT 'The content-type flag of the message (e.g. video, image, url, email).',
+  `flag` varchar(10) CHARACTER SET utf8 COLLATE utf8_bin  NOT NULL COMMENT 'The content-type flag of the message (e.g. video, image, text, archive, html, url, email).',
   PRIMARY KEY (`messageId`),
   KEY `deleted` (`deleted`),
   KEY `time` (`time`),

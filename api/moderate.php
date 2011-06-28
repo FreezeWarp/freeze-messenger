@@ -298,6 +298,14 @@ switch ($action) {
       $xmlData['moderate']['response']['watchRooms']['newValue'] = (string) implode(',',$watchRooms);
     }
 
+    if ($_POST['ignoreList']) {
+      $ignoreList = fim_arrayValidate(explode(',',$_POST['ignoreList']),'int',false);
+      $updateArray['ignoreList'] = (string) implode(',',$ignoreList);
+
+      $xmlData['moderate']['response']['ignoreList']['status'] = true;
+      $xmlData['moderate']['response']['ignoreList']['newValue'] = (string) implode(',',$ignoreList);
+    }
+
     if ($_POST['defaultFormatting']) {
       $updateArray['defaultFormatting'] = (int) $_POST['defaultFormatting'];
 

@@ -357,13 +357,15 @@ Now that the database has been successfully installed, we must generate the conf
 
   $baseNew = str_replace($find,$replace,$base);
 
-  file_put_contents('../config.php',$baseNew);
+  if (file_put_contents('../config.php',$baseNew)) {
+    echo 'success';
+  }
   break;
 
   case 'dev': // TODO: Remove
   $mysqli = new mysqli('localhost','a','a','phpbb3');
   $mysqli->query("SET NAMES utf8");
-  $prefix = 'fim3_';
+  $prefix = 'himom_';
   $tables = array("templates","phrases","sessions");
 
   foreach ($tables AS $table) {

@@ -65,7 +65,7 @@ $sqlDatabase = '';
  * A prefix used for all tables.
  * If uncertain, a random string is often the best bet.
  * If you are integrating with a forum, it is imperative you not leave this blank. */
-$sqlPrefix = 'fim3_';
+$sqlPrefix = '';
 
 
 
@@ -145,22 +145,6 @@ $enableUploads = true;
  * Disable this to require that all file uploads be within messages. */
 $enableGeneralUploads = true;
 
-/* $uploadExtensions
- * An associative array corrosponding to file extensions and their mimetypes.
- * All files listed in here are allowed if they include the associated extension and will be output with the specified mimetype.
- * For security details, see the configuration documentation. */
-$uploadExtensions = array(
-  'gif' => 'image/gif',
-  'jpg' => 'image/jpg',
-  'jpeg' => 'image/jpeg',
-  'png' => 'image/png',
-);
-
-/* $uploadMaxSize
- * The maximum size in bytes of all uploaded files.
- * "-1" means there is no limit. */
-$uploadMaxSize = 1024 * 1024;
-
 /* $uploadUserMaxFiles
  * The total number of files a user may upload.
  * "-1" means there is no limit. */
@@ -170,6 +154,9 @@ $uploadUserMaxFiles = -1;
  * The total number of files that may be stored by the server.
  * "-1" means there is no limit. */
 $uploadMaxFiles = -1;
+
+/* $installUrl */
+$installUrl = '';
 
 
 

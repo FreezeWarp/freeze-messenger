@@ -20,8 +20,10 @@ require_once('../global.php');
 
 $rooms = $_GET['rooms'];
 $roomsArray = explode(',',$rooms);
-foreach ($roomsArray AS &$v) {
-  $v = (int) $v;
+if ($roomsArray) {
+  foreach ($roomsArray AS &$v) {
+    $v = (int) $v;
+  }
 }
 
 $time = (int) ($_GET['time'] ? $_GET['time'] : time());

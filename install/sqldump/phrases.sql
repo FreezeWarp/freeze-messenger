@@ -200,4 +200,7 @@ INSERT INTO `{prefix}phrases` (`id`, `name`, `text_en`, `text_jp`) VALUES
 (193, 'settingsShowAvatarsBlurb', 'Showing avatars will reduce the overall amount of text by hiding post times and userNames with a small avatar to represent users. Times can be viewed by moving the mouse over each message.', ''),
 (194, 'settingsThemeLabel', 'Theme:', ''),
 (195, 'settingsThemeBlurb', 'Change the theming of the messenger to your liking. "Cupertino" and "jQueryUI" are good choices.', ''),
-(196, 'templateViewUploads', 'View My Uploads', '');
+(196, 'templateViewUploads', 'View My Uploads', ''),
+(197, 'settingsIgnoreListLabel', 'Ignored Users', ''),
+(198, 'settingsIgnoreListBlurb', 'Users included here will be unable to contact you using private messaging.', ''),
+(199, 'settingsIgnoreListCurrentUsers', 'Current Users', '');

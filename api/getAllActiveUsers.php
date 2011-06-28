@@ -87,15 +87,16 @@ if ($activeUsers) {
 
     ($hook = hook('getAllActiveUsers_eachUser_start') ? eval($hook) : '');
 
+    if ($rooms) {
+      foreach ($rooms AS $roomId => $name) {
+        $xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']]['rooms']['room ' . $roomId] = array(
+          'roomId' => (int) $roomId,
+          'roomName' => ($name),
+        );
 
-    foreach ($rooms AS $roomId => $name) {
-      $xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']]['rooms']['room ' . $roomId] = array(
-        'roomId' => (int) $roomId,
-        'roomName' => ($name),
-      );
 
-
-      ($hook = hook('getAllActiveUsers_eachRoom') ? eval($hook) : '');
+        ($hook = hook('getAllActiveUsers_eachRoom') ? eval($hook) : '');
+      }
     }
 
 
