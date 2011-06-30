@@ -14,264 +14,2985 @@
         <h1>Database</h1>
       </header>
 
-      <section>
-        <h2>Table Structure</h2>
-        <ul>
-          <li>table "messages"</li>
-          <ul>
-            <li>column "messageId" - includes unique ID for all messages.</li>
-            <li>column "roomId" - Defines unique ID for room. These will exceed triple digits ideally.</li>
-            <li>column "rawText" - contains raw text of what the user entered. Censor, smilies, etc. not yet applied.</li>
-            <li>column "htmlText" - contains HTML formatted text of message, including rich text formatting, parsed images and URLs (such as smilies), and censored text. Any necessary characters are escaped; e.g. "<" is transcoded into "lt;".</li>
-            <li>column "apiText" - contains visual basic formatted text of message, including escaping any needed characters, parsing any text preemtively (such as URLs and images), and so-on.</li>
-            <li>column "deleted" - deleted (can be seen by moderators)</li>
-            <li>column "time" - post time.</li>
-            <li>column “microtime” - used for retrieiving newest posts precisely.</li>
-            <li>column "ip" - user's post IP.</li>
-            <li>column “salt” - The salt ID used for encryption.</li>
-            <li>column “iv” - The IV used for encryption.</li>
-            <li>column “flags”</li>
-            <ul>
-              <li>“topic” - Used for topic change.</li>
-              <li>“kick” - Used for kick notice.</li>
-              <li>“me” - Used for me command.</li>
-              <li>“video” - Source contains video URL.</li>
-              <li>“image” - Source contains image URL.</li>
-              <li>“link” - Source contains link URL.</li>
-            </ul>
-          </ul>
 
-          <li>table "rooms"</li>
-          <ul>
-            <li>column "id" - room ID.</li>
-            <li>column "name" - room name.</li>
-            <li>column “title” - the room’s title/topic.</li>
-            <li>column "allowedGroups" - comma-separated list of allowed usergroups. "", NULL, false, and true all assume no group restrictions.</li>
-            <li>column "allowedUsers" - comma-separated list of allowed users. These users override the allowed groups, so it does not matter which group(s) they are in.</li>
-            <li>column "owner" - the owner and group administrator. This user can a column "totalMessages" - total messages posted in the chat.dd or remove moderators, allowedGroups, allowedUsers, and delete posts*</li>
-            <li>column "moderators" - any additional moderators. These users can add or remove allowedGroups, allowedUsers, and delete posts.</li>
-            <li>column “bbcode” - Value for allowed BB code level.</li>
-            <ul>
-              <li>1 - Everything</li>
-              <li>3 - Only B, S, I, U, Url, Email, Colour, Highlight, Image, Video</li>
-              <li>5 - Only B, S, I, U, Url, Email, Colour, Highlight, Image</li>
-              <li>7 - Only B, S, I, U, Url, Email, Colour, Highlight</li>
-              <li>9 - Only B, S, I, U, Url, Email</li>
-              <li>16 - Only B, S, I, U</li>
-              <li>19 - Nothing</li>
-            </ul>
+       <section>
+       <h2><a name="censorBlackWhiteLists">Table : censorBlackWhiteLists</a></h2>
+       <span class="note mysqlColMeta"></span>
 
-            <li>column "options" - bitfield containing various options.</li>
-            <ul>
-              <li>1 - Official Group</li>
-              <li>2 - Mature (PG-13+)</li>
-              <li>4 - Deleted (can not be accessed by non-admins).</li>
-              <li>8 - Unlisted</li>
-              <li>16 - Private</li>
-              <li>32 - No Moderation</li>
-            </ul>
-          </ul>
 
-          <li> table "users"</li>
-          <ul>
-            <li>column "userId" - The user’s ID number.</li>
-            <li>column "settings" - User settings that apply to the core API.</li>
-            <ul>
-              <li>1 - Reserved</li>
-              <li>2 - Reserved</li>
-              <li>4 - Reserved</li>
-              <li>8 - Reserved</li>
-              <li>16 - Reserved</li>
-              <li>32 -Reserved</li>
-              <li>64 - Reserved</li>
-              <li>128 - Reserved</li>
-              <li>256 - Disable Parental Controls</li>
-            </ul>
 
-            <li>column “adminPrivs” - Admin-related priviledges.</li>
-            <ul>
-              <li>1 - Modify Admin Priviledges</li>
-              <li>2 - Reserved</li>
-              <li>4 - Reserved</li>
-              <li>8 - Reserved</li>
-              <li>16 - Moderate Users (Ban, Unban, etc.)</li>
-              <li>32 - Reserved</li>
-              <li>64 - Moderate Images</li>
-              <li>128 - Reserved</li>
-              <li>256 - Modify Censor Words</li>
-              <li>512 - Modify Censor Lists</li>
-              <li>1024 - Reserved</li>
-              <li>2048 - Reserved</li>
-              <li>4096 - Modify Plugins</li>
-              <li>8192 - Modify Templates</li>
-              <li>16384 - Modify Hooks</li>
-              <li>32768 - Modify Translations</li>
-            </ul>
+       <section>
+       <h3>Structure of censorBlackWhiteLists</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblKey">F-Key</th>
+            <th class="mysqlTblName">Name</th>
+            <th class="mysqlTblType">Type</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
 
-            <li>column “userPrivs” - User-related priviledges.</li>
-            <ul>
-              <li>1 - Reserved</li>
-              <li>2 - Reserved</li>
-              <li>4 - Reserved</li>
-              <li>8 - Reserved</li>
-              <li>16 - General Access (w/o = Ban)</li>
-              <li>32 - Create Rooms</li>
-              <li>64 - Create Private Rooms</li>
-            </ul>
+          <tr>
+            <td></td>
+            <td>listId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
 
-            <li>column “settingsOfficialAjax”</li>
-            <ul>
-              <li>1 - Reserved</li>
-              <li>2 - Reserved</li>
-              <li>4 - Reserved</li>
-              <li>8 - Reserved</li>
-              <li>16 - Disable Formatting</li>
-              <li>32 - Disable Video</li>
-              <li>64 - Disable Images</li>
-              <li>128 - Reserved</li>
-              <li>256 - Reserved</li>
-              <li>512 - Reserved</li>
-              <li>1024 - Reverse Post Order</li>
-              <li>2048 - Show Avatars</li>
-              <li>4096 - Reserved</li>
-              <li>8192 - Audible Ding</li>
-            </ul>
+               </span>
+              <div>The unique ID of the censor list.</div>
+            </td>
+          </tr>
 
-            <li>column “defaultRoom” - The default room when no other is specified. It can only be read via the login API.</li>
-            <li>column “defaultFormatting” - A bitfield for a user’s default message formatting.</li>
-            <ul>
-              <li>1 - Reserved</li>
-              <li>2 - Reserved</li>
-              <li>4 - Reserved</li>
-              <li>8 - Reserved</li>
-              <li>16 - Reserved</li>
-              <li>32 - Reserved</li>
-              <li>64 - Reserved</li>
-              <li>128 - Reserved</li>
-              <li>256 - Bold</li>
-              <li>512 - Italics</li>
-              <li>1024 - Underline</li>
-              <li>2056 - Strikethrough</li>
-            </ul>
+          <tr>
+            <td></td>
+            <td>roomId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
 
-            <li>column “defaultHighlight” - A user’s default highlight for message formatting.</li>
-            <li>column “defaultColor” - A user’s default color for message formatting.</li>
-            <li>coulmn “defaultFontface” - A user’s default font for message formatting.</li>
-            <li>column “favRooms” - Favourite rooms to show on homepage.</li>
-          </ul>
+               </span>
+              <div>The room ID the status is being applied to.</div>
+            </td>
+          </tr>
 
-          <li>table “ping” - A cache used for determining active users.</li>
-          <ul>
-            <li>*column “userId” - The userid.</li>
-            <li>*column “roomId” - The roomid.</li>
-            <li>column “status” - The user’s status in this room.</li>
-            <li>column “typing” - Whether or not the user is typing in this room.</li>
-            <li>column “time” - The last time.</li>
-          </ul>
+          <tr>
+            <td></td>
+            <td>status</td>
+            <td>enum('block','unblock')</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The status of the list in regards to the room - either explicit block or explicit unblock.</div>
+            </td>
+          </tr>
 
-          <li>table “modlog”</li>
-          <ul>
-            <li>column “id” - A unique identifier for the action.</li>
-            <li>column “userId” - The ID of the user who performed the action.</li>
-            <li>column “time” - The time the action was performed.</li>
-            <li>column “ip” - The IP address of the user when performed.</li>
-            <li>column “action” - The action that was performed.</li>
-            <li>column “data” - Additional data of the action.</li>
-          </ul>
+         </tbody>
+       </table>
 
-          <li>table “kick”</li>
-          <ul>
-            <li>*column “userId” - The user who has been kicked.</li>
-            <li>*column “roomId” - The room the user was kicked in.</li>
-            <li>column “kickerid” - The user who did the kicking.</li>
-            <li>column “time” - The time the user was kicked.</li>
-            <li>column “length” - The time the kick is to last for.</li>
-          </ul>
 
-          <li>table “files”</li>
-          <ul>
-            <li>column “id” int(10) - The file ID.</li>
-            <li>column “name” varchar(255) - The name of the file.</li>
-            <li>column “type” varchar(255) - The source of the file (“upload” usually).</li>
-            <li>column “mime” varchar(255) - The mime type.</li>
-            <li>column “userid” int(10) - The user who posted the file, or “0” if not a user-contributed file.</li>
-            <li>column “rating” enum(‘6’,’10’,’13’,’16’,’18’) - The parental content rating of the file.</li>
-            <ul>
-              <li>“6” - Your basic “E” or “G” rating.</li>
-              <li>“10” - Your basic “E10+” or “PG” rating.</li>
-              <li>2. Working Moderation of Image Uploads on  (Filesystem Only)</li>
-              <li>“13” - Your basic “T” or “PG-13” rating.</li>
-              <li>“16” - Your basic “M” or “R” rating.</li>
-              <li>“18” - Your basic “A/O” or “NC-17” rating.</li>
-            </ul>
 
-            <li>column “flags” varchar(255) - A comma-separated list of parental content flags that can describe the file. It is not currently used by the backend for getting permission, but can be set/retrieved. Possible flags may include:</li>
-            <ul>
-              <li>“violence”</li>
-              <li>“nudity”</li>
-              <li>“sexual”</li>
-              <li>“drug”</li>
-              <li>“language”</li>
-            </ul>
+       </section>
 
-            <li>column “deleted” enum(“on”,”off”) - “on” or “off”. If “on”, the file will be inaccessible.</li>
-          </ul>
 
-          <li>table “fileVersions</li>
-          <ul>
-            <li>column “id” int(10) - The version of the file, unique to each fileid (the primary will essentially be a combination of this and the fileid). It will increment with new versions.</li>
-            <li>column “fileId” int(10) - The file being referenced. Note that all files must have constant mime-types across versions.</li>
-            <li>column “time” timestamp - The time the file was uploaded/created.</li>
-            <li>column “md5hash” varchar(32) - The MD5 hash of the file, unencrypted.</li>
-            <li>column “salt” int(10) - The salt ID.</li>
-            <li>column “iv” varchar(255) - The associated crytograhic initialization value</li>
-            <li>column “contents” longtext - The file contents, encrypted using 3DES with the above salt and IV, and stored using base64 encoding.</li>
-          </ul>
-          <li>table censorLists - A list of different censors.</li>
-          <ul>
-            <li>id</li>
-            <li>name</li>
-            <li>type</li>
-            <ul>
-              <li>“black” - Only block certain rooms.</li>
-              <li>“white” - Only allow certain rooms.</li>
-            </ul>
+       <section>
+       <h3>Indexes of censorBlackWhiteLists</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblName">Name</th>
+            <th>Column</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
 
-            <li>options</li>
-            <ul>
-              <li>1 (enabled) - Turns the list on and off.</li>
-              <li>2 (allowDisable) - Allows rooms to add themselves to the above whitelist.</li>
-              <li>4 (privateDisable) - Disable in Private IMs.</li>
-              <li>8 (mature) - If set, any area which disables the list will invoke parental controls.</li>
-            </ul>
+          <tr>
+            <td>PRIMARY</td>
+            <td>listId</td>
+            <td>BTREE </td>
+          </tr>
 
-            <li>table censorWords - A list of included words in the censor.</li>
-            <ul>
-              <li>id</li>
-              <li>word</li>
-              <li>listid</li>
 
-              <li>severity - A string (in general the severity is not linear) that expresses how the list works.</li>
+          <tr>
+            <td></td>
+            <td>roomId</td>
+            <td>BTREE </td>
+          </tr>
+
+
+        </tbody>
+       </table>
+
+        <p class="returnToTop">Return to Top</p>
+
+
+
+       </section>
+
+
+       </section>
+
+
+       <section>
+       <h2><a name="censorLists">Table : censorLists</a></h2>
+       <span class="note mysqlColMeta"></span>
+
+
+       <section>
+       <h3>Structure of censorLists</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblKey">F-Key</th>
+            <th class="mysqlTblName">Name</th>
+            <th class="mysqlTblType">Type</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>listId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>The unique ID of the list.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>name</td>
+            <td>varchar(400)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The name of the list. It is only used for user identification.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>type</td>
+            <td>enum('black','white')</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The list type - black to apply to no rooms automatically, and white to apply to all rooms automatically (opt-in vs. opt-out)</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>options</td>
+            <td>int(4)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT '3'</span>
+              <div>A bitfield of specific options for the list.<br /><br />
+                <ul>
+                  <li>1 (enabled) - Turns the list on and off.</li>
+                  <li>2 (allowDisable) - Allows rooms to add themselves to the above whitelist.</li>
+                  <li>4 (privateDisable) - Disable in Private IMs.</li>
+                  <li>8 (mature) - If set, any area which disables the list will invoke parental controls.</li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+
+         </tbody>
+       </table>
+
+
+
+       </section>
+
+
+       <section>
+       <h3>Indexes of censorLists</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblName">Name</th>
+            <th>Column</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td>PRIMARY</td>
+            <td>listId</td>
+            <td>BTREE </td>
+          </tr>
+
+
+        </tbody>
+       </table>
+
+        <p class="returnToTop">Return to Top</p>
+
+
+
+       </section>
+
+
+       </section>
+
+
+       <section>
+       <h2><a name="censorWords">Table : censorWords</a></h2>
+       <span class="note mysqlColMeta"></span>
+
+
+       <section>
+       <h3>Structure of censorWords</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblKey">F-Key</th>
+            <th class="mysqlTblName">Name</th>
+            <th class="mysqlTblType">Type</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>wordId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>A unique identifier for the word.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>listId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The ID of the list the word is filed under.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>word</td>
+            <td>varchar(1000)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The word text.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>severity</td>
+            <td>enum('replace','warn','confirm','block')</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT 'replace'</span>
+              <div>The severity/type of word.<br /><br />
+                <ul>
+                  <li>“replace” - Replaces string with new string.</li>
+                  <li>“warn” - Warns a user and submits message.</li>
+                  <li>“confirm” - Warns a user and confirms resubmission, but does not block.</li>
+                  <li>“block” - Blocks the message.</li>
+                <ul>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>param</td>
+            <td>varchar(1000)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The action data for the word, used in multiple ways based on the word's severity.</div>
+            </td>
+          </tr>
+
+         </tbody>
+       </table>
+
+
+
+       </section>
+
+
+       <section>
+       <h3>Indexes of censorWords</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblName">Name</th>
+            <th>Column</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td>PRIMARY</td>
+            <td>wordId</td>
+            <td>BTREE </td>
+          </tr>
+
+
+          <tr>
+            <td>listId</td>
+            <td>listId</td>
+            <td>BTREE </td>
+          </tr>
+
+
+        </tbody>
+       </table>
+
+        <p class="returnToTop">Return to Top</p>
+
+
+
+       </section>
+
+
+       </section>
+
+
+       <section>
+       <h2><a name="files">Table : files</a></h2>
+       <span class="note mysqlColMeta"></span>
+
+
+       <section>
+       <h3>Structure of files</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblKey">F-Key</th>
+            <th class="mysqlTblName">Name</th>
+            <th class="mysqlTblType">Type</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>fileId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>A unique ID for the file.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>name</td>
+            <td>varchar(255)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The file's name to be sent for downloading.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>type</td>
+            <td>varchar(255)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT 'upload'</span>
+              <div>The file's source - in most cases "upload".</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>mime</td>
+            <td>varchar(255)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The file's mime-type/content-type.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>userId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The ID of the user who uploaded the file.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>rating</td>
+            <td>enum('6','10','13','16','18')</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The file's parental content age rating.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>flags</td>
+            <td>varchar(255)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>A comma-seperated list of parent content flags to apply to the file.<br /><br />
+                <ul>
+                  <li>“6” - Your basic “E” or “G” rating.</li>
+                  <li>“10” - Your basic “E10+” or “PG” rating.</li>
+                  <li>2. Working Moderation of Image Uploads on  (Filesystem Only)</li>
+                  <li>“13” - Your basic “T” or “PG-13” rating.</li>
+                  <li>“16” - Your basic “M” or “R” rating.</li>
+                  <li>“18” - Your basic “A/O” or “NC-17” rating.</li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>date</td>
+            <td>timestamp</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT 'CURRENT_TIMESTAMP'</span>
+              <div>The date the file was uploaded.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>deleted</td>
+            <td>enum('yes','no')</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT 'no'</span>
+              <div>Whether or not the file in question is deleted.</div>
+            </td>
+          </tr>
+
+         </tbody>
+       </table>
+
+
+
+       </section>
+
+
+       <section>
+       <h3>Indexes of files</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblName">Name</th>
+            <th>Column</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td>PRIMARY</td>
+            <td>fileId</td>
+            <td>BTREE </td>
+          </tr>
+
+
+        </tbody>
+       </table>
+
+        <p class="returnToTop">Return to Top</p>
+
+
+
+       </section>
+
+
+       </section>
+
+
+       <section>
+       <h2><a name="fileVersions">Table : fileVersions</a></h2>
+       <span class="note mysqlColMeta"></span>
+
+
+       <section>
+       <h3>Structure of fileVersions</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblKey">F-Key</th>
+            <th class="mysqlTblName">Name</th>
+            <th class="mysqlTblType">Type</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>versionId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>A unique identifier for all file versions, regardless of each file.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>fileId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The ID of the parent file.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>time</td>
+            <td>timestamp</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT 'CURRENT_TIMESTAMP'</span>
+              <div>The time of the revision of the file was uploaded.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>size</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The size of the revision.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>md5hash</td>
+            <td>varchar(255)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The MD5 hash of the file's binary data.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>sha256hash</td>
+            <td>varchar(255)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The SHA256 hash of the file's binary data.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>salt</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The salt number (stored in the product configuration) used for encryption.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>iv</td>
+            <td>varchar(255)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The base64-encoded IV used for encryption.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>contents</td>
+            <td>longtext</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The base64-encoded binary data of the file.</div>
+            </td>
+          </tr>
+
+         </tbody>
+       </table>
+
+
+
+       </section>
+
+
+       <section>
+       <h3>Indexes of fileVersions</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblName">Name</th>
+            <th>Column</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td>PRIMARY</td>
+            <td>versionId</td>
+            <td>BTREE </td>
+          </tr>
+
+
+          <tr>
+            <td>fileId</td>
+            <td>fileId</td>
+            <td>BTREE </td>
+          </tr>
+
+
+        </tbody>
+       </table>
+
+        <p class="returnToTop">Return to Top</p>
+
+
+
+       </section>
+
+
+       </section>
+
+
+       <section>
+       <h2><a name="fonts">Table : fonts</a></h2>
+       <span class="note mysqlColMeta"></span>
+
+
+       <section>
+       <h3>Structure of fonts</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblKey">F-Key</th>
+            <th class="mysqlTblName">Name</th>
+            <th class="mysqlTblType">Type</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>fontId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>The unique ID of the font.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>name</td>
+            <td>varchar(20)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The font's name.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>data</td>
+            <td>varchar(500)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The font's data.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>category</td>
+            <td>varchar(20)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The font's category (e.g. monospace, serif, sans-serif, etc).</div>
+            </td>
+          </tr>
+
+         </tbody>
+       </table>
+
+
+
+       </section>
+
+
+       <section>
+       <h3>Indexes of fonts</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblName">Name</th>
+            <th>Column</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td>PRIMARY</td>
+            <td>fontId</td>
+            <td>BTREE </td>
+          </tr>
+
+
+        </tbody>
+       </table>
+
+        <p class="returnToTop">Return to Top</p>
+
+
+
+       </section>
+
+
+       </section>
+
+
+       <section>
+       <h2><a name="groups">Table : groups</a></h2>
+       <span class="note mysqlColMeta"></span>
+
+
+       <section>
+       <h3>Structure of groups</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblKey">F-Key</th>
+            <th class="mysqlTblName">Name</th>
+            <th class="mysqlTblType">Type</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>groupId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>The unique ID of the group.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>groupName</td>
+            <td>varchar(100)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The name of the group.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>memberIds</td>
+            <td>varchar(1000)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>A comma-seperated list of members.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>userFormatStart</td>
+            <td>varchar(300)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>Username formatted to be prepended to the username.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>userFormatEnd</td>
+            <td>varchar(300)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>Username formatted to be appended to the username.</div>
+            </td>
+          </tr>
+
+         </tbody>
+       </table>
+
+
+
+       </section>
+
+
+       <section>
+       <h3>Indexes of groups</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblName">Name</th>
+            <th>Column</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td>PRIMARY</td>
+            <td>groupId</td>
+            <td>BTREE </td>
+          </tr>
+
+
+        </tbody>
+       </table>
+
+        <p class="returnToTop">Return to Top</p>
+
+
+
+       </section>
+
+
+       </section>
+
+
+       <section>
+       <h2><a name="hooks">Table : hooks</a></h2>
+       <span class="note mysqlColMeta"></span>
+
+
+       <section>
+       <h3>Structure of hooks</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblKey">F-Key</th>
+            <th class="mysqlTblName">Name</th>
+            <th class="mysqlTblType">Type</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>hookId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>A unique ID corrosponding to the hook.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>name</td>
+            <td>varchar(40)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The hook's name, which will be used for most identification. These can be compounded if multiple entries exist for the hook.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>code</td>
+            <td>longtext</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The code of the particular hook. It will be executed using PHP's EVAL.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>state</td>
+            <td>enum('on','off')</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>Whether or not the hook is active.</div>
+            </td>
+          </tr>
+
+         </tbody>
+       </table>
+
+
+
+       </section>
+
+
+       <section>
+       <h3>Indexes of hooks</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblName">Name</th>
+            <th>Column</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td>PRIMARY</td>
+            <td>hookId</td>
+            <td>BTREE </td>
+          </tr>
+
+
+        </tbody>
+       </table>
+
+        <p class="returnToTop">Return to Top</p>
+
+
+
+       </section>
+
+
+       </section>
+
+
+       <section>
+       <h2><a name="kick">Table : kick</a></h2>
+       <span class="note mysqlColMeta"></span>
+
+
+       <section>
+       <h3>Structure of kick</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblKey">F-Key</th>
+            <th class="mysqlTblName">Name</th>
+            <th class="mysqlTblType">Type</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>userId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>The ID of the user who has been kicked.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>roomId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>The ID of the room the kick is active in.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>kickerid</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The ID of the user who made the kick.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>time</td>
+            <td>timestamp</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT 'CURRENT_TIMESTAMP'</span>
+              <div>The time the kick was made on.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>length</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The time the kick will remain active for.</div>
+            </td>
+          </tr>
+
+         </tbody>
+       </table>
+
+
+
+       </section>
+
+
+       <section>
+       <h3>Indexes of kick</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblName">Name</th>
+            <th>Column</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td>PRIMARY</td>
+            <td>userId</td>
+            <td>HASH </td>
+          </tr>
+
+
+          <tr>
+            <td></td>
+            <td>roomId</td>
+            <td>HASH </td>
+          </tr>
+
+
+          <tr>
+            <td>time</td>
+            <td>time</td>
+            <td>HASH </td>
+          </tr>
+
+
+          <tr>
+            <td>length</td>
+            <td>length</td>
+            <td>HASH </td>
+          </tr>
+
+
+        </tbody>
+       </table>
+
+        <p class="returnToTop">Return to Top</p>
+
+
+
+       </section>
+
+
+       </section>
+
+
+       <section>
+       <h2><a name="messages">Table : messages</a></h2>
+       <span class="note mysqlColMeta"></span>
+
+
+       <section>
+       <h3>Structure of messages</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblKey">F-Key</th>
+            <th class="mysqlTblName">Name</th>
+            <th class="mysqlTblType">Type</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>messageId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>The unique ID of the message.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>userId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The ID of the user who made the message.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>roomId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The ID of the room the message was made in.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>rawText</td>
+            <td>varchar(5000)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The raw (uncensored, unformatted) text of the message.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>htmlText</td>
+            <td>varchar(5000)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The HTML-formatted text of the message.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>apiText</td>
+            <td>varchar(5000)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The API-formatted text of the message.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>salt</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file).</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>iv</td>
+            <td>varchar(15)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The base64-encoded IV used for encryption.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>deleted</td>
+            <td>int(1)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>Whether or not the message has been deleted by an administrator.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>time</td>
+            <td>timestamp</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT 'CURRENT_TIMESTAMP'</span>
+              <div>The time the message was made on.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>ip</td>
+            <td>varchar(20)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The IP of the user who made the message.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>flag</td>
+            <td>varchar(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The content-type flag of the message (e.g. video, image, text, archive, html, url, email).<br /><br />
+Pre-defined Flags:<br /><br />
+
               <ul>
-                <li>“replace” - Replaces string with new string.</li>
-                <li>“warn” - Warns a user and submits message.</li>
-                <li>“confirm” - Warns a user and confirms resubmission, but does not block.</li>
-                <li>“block” - Blocks the message.</li>
-              <ul>
+                <li>“topic” - Used for topic change.</li>
+                <li>“kick” - Used for kick notice.</li>
+                <li>“me” - Used for me command.</li>
+                <li>“video” - Source contains video URL.</li>
+                <li>“image” - Source contains image URL.</li>
+                <li>“link” - Source contains link URL.</li>
+              </ul></div>
+          </tr>
 
-              <li>param - The replaced text if severity is “replace”, or the message to show if notice/warn/block.</li>
-            </ul>
+         </tbody>
+       </table>
 
-            <li>censorBlackWhiteLists</li>
-            <ul>
-              <li>id</li>
-              <li>listid - The list ID.</li>
-              <li>roomid - The room ID.</li>
-              <li>-</li>
-            </ul>
-          </ul>
-        </ul>
+
+
+       </section>
+
+
+       <section>
+       <h3>Indexes of messages</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblName">Name</th>
+            <th>Column</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td>PRIMARY</td>
+            <td>messageId</td>
+            <td>BTREE </td>
+          </tr>
+
+
+          <tr>
+            <td>deleted</td>
+            <td>deleted</td>
+            <td>BTREE </td>
+          </tr>
+
+
+          <tr>
+            <td>time</td>
+            <td>time</td>
+            <td>BTREE </td>
+          </tr>
+
+
+          <tr>
+            <td>roomId</td>
+            <td>roomId</td>
+            <td>BTREE </td>
+          </tr>
+
+
+          <tr>
+            <td>userId</td>
+            <td>userId</td>
+            <td>BTREE </td>
+          </tr>
+
+
+        </tbody>
+       </table>
+
+        <p class="returnToTop">Return to Top</p>
+
+
+
+       </section>
+
+
+       </section>
+
+
+       <section>
+       <h2><a name="messagesCached">Table : messagesCached</a></h2>
+       <span class="note mysqlColMeta"></span>
+
+
+       <section>
+       <h3>Structure of messagesCached</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblKey">F-Key</th>
+            <th class="mysqlTblName">Name</th>
+            <th class="mysqlTblType">Type</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>id</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>A unique (temporary) ID for the message cache entry.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>messageId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The ID of the message.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>roomId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The ID of the room the message is in.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>userId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The ID of the user who made the message.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>userName</td>
+            <td>varchar(300)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The name of the user who made the message.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>avatar</td>
+            <td>varchar(1000)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The URL of the avatar of the user who made the message.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>profile</td>
+            <td>varchar(1000)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The profile URL of the user who made the message.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>userGroup</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT '1'</span>
+              <div>The ID of the admin-defined usergroup of the user.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>allGroups</td>
+            <td>varchar(300)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>A comma-seperated list of admin-set groups the user is a part of.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>socialGroups</td>
+            <td>varchar(300)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>A comma-seperated list of groups the user has joined.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>userFormatStart</td>
+            <td>varchar(100)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>Formatting to be prepended to the user's name.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>userFormatEnd</td>
+            <td>varchar(100)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>Formatting to be appended to the user's name.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>defaultFormatting</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The default formatting of the user's text (bitfield).<br /><br />
+                <ul>
+                  <li>1 - Reserved</li>
+                  <li>2 - Reserved</li>
+                  <li>4 - Reserved</li>
+                  <li>8 - Reserved</li>
+                  <li>16 - Reserved</li>
+                  <li>32 - Reserved</li>
+                  <li>64 - Reserved</li>
+                  <li>128 - Reserved</li>
+                  <li>256 - Bold</li>
+                  <li>512 - Italics</li>
+                  <li>1024 - Underline</li>
+                  <li>2056 - Strikethrough</li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>defaultHighlight</td>
+            <td>varchar(20)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The default highlight of the user's text.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>defaultColor</td>
+            <td>varchar(20)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The default color of the user's text.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>defaultFontface</td>
+            <td>varchar(100)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The default fontface of the user's text.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>time</td>
+            <td>timestamp</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT 'CURRENT_TIMESTAMP'</span>
+              <div>The time the message was made on.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>htmlText</td>
+            <td>varchar(5000)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The HTML-formatted text of the message.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>apiText</td>
+            <td>varchar(5000)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The API-formatted text of the message.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>flag</td>
+            <td>varchar(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The content-type flag set for the message.</div>
+            </td>
+          </tr>
+
+         </tbody>
+       </table>
+
+
+
+       </section>
+
+
+       <section>
+       <h3>Indexes of messagesCached</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblName">Name</th>
+            <th>Column</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td>PRIMARY</td>
+            <td>id</td>
+            <td>HASH </td>
+          </tr>
+
+
+        </tbody>
+       </table>
+
+        <p class="returnToTop">Return to Top</p>
+
+
+
+       </section>
+
+
+       </section>
+
+
+       <section>
+       <h2><a name="modlog">Table : modlog</a></h2>
+       <span class="note mysqlColMeta"></span>
+
+
+       <section>
+       <h3>Structure of modlog</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblKey">F-Key</th>
+            <th class="mysqlTblName">Name</th>
+            <th class="mysqlTblType">Type</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>id</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>A unique ID for the log entry.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>userId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The user ID who performed the action.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>time</td>
+            <td>timestamp</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT 'CURRENT_TIMESTAMP'</span>
+              <div>The time the action was performed on.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>ip</td>
+            <td>varchar(255)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The IP of the user when the action was performed.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>action</td>
+            <td>varchar(255)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The action performed.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>data</td>
+            <td>varchar(255)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The associated data of the action.</div>
+            </td>
+          </tr>
+
+         </tbody>
+       </table>
+
+
+
+       </section>
+
+
+       <section>
+       <h3>Indexes of modlog</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblName">Name</th>
+            <th>Column</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td>PRIMARY</td>
+            <td>id</td>
+            <td>BTREE </td>
+          </tr>
+
+
+        </tbody>
+       </table>
+
+        <p class="returnToTop">Return to Top</p>
+
+
+
+       </section>
+
+
+       </section>
+
+
+       <section>
+       <h2><a name="phrases">Table : phrases</a></h2>
+       <span class="note mysqlColMeta"></span>
+
+
+       <section>
+       <h3>Structure of phrases</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblKey">F-Key</th>
+            <th class="mysqlTblName">Name</th>
+            <th class="mysqlTblType">Type</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>id</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>A unique ID for the phrase</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>name</td>
+            <td>varchar(50)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The unique phrase name.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>text_en</td>
+            <td>longtext</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The text of the message in English.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>text_jp</td>
+            <td>longtext</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The text of the message in Japanese.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>text_sp</td>
+            <td>longtext</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The text of the message in Spanish.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>text_fr</td>
+            <td>longtext</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The text of the message in French.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>text_ge</td>
+            <td>longtext</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The text of the message in German.</div>
+            </td>
+          </tr>
+
+         </tbody>
+       </table>
+
+
+
+       </section>
+
+
+       <section>
+       <h3>Indexes of phrases</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblName">Name</th>
+            <th>Column</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td>PRIMARY</td>
+            <td>id</td>
+            <td>BTREE </td>
+          </tr>
+
+
+        </tbody>
+       </table>
+
+        <p class="returnToTop">Return to Top</p>
+
+
+
+       </section>
+
+
+       </section>
+
+
+       <section>
+       <h2><a name="ping">Table : ping</a></h2>
+       <span class="note mysqlColMeta"></span>
+
+
+       <section>
+       <h3>Structure of ping</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblKey">F-Key</th>
+            <th class="mysqlTblName">Name</th>
+            <th class="mysqlTblType">Type</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>userId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>The ID of the user.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>roomId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>The ID of the room.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>time</td>
+            <td>timestamp</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT 'CURRENT_TIMESTAMP'</span>
+              <div>The time of the ping.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>status</td>
+            <td>enum('away','busy','available','invisible','offline','')</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The user's status.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>typing</td>
+            <td>enum('1','0')</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT '0'</span>
+              <div>Whether or not the user is typing.</div>
+            </td>
+          </tr>
+
+         </tbody>
+       </table>
+
+
+
+       </section>
+
+
+       <section>
+       <h3>Indexes of ping</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblName">Name</th>
+            <th>Column</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td>PRIMARY</td>
+            <td>userId</td>
+            <td>HASH </td>
+          </tr>
+
+
+          <tr>
+            <td></td>
+            <td>roomId</td>
+            <td>HASH </td>
+          </tr>
+
+
+          <tr>
+            <td>time</td>
+            <td>time</td>
+            <td>HASH </td>
+          </tr>
+
+
+          <tr>
+            <td>userId</td>
+            <td>userId</td>
+            <td>HASH </td>
+          </tr>
+
+
+          <tr>
+            <td>roomId</td>
+            <td>roomId</td>
+            <td>HASH </td>
+          </tr>
+
+
+        </tbody>
+       </table>
+
+        <p class="returnToTop">Return to Top</p>
+
+
+
+       </section>
+
+
+       </section>
+
+
+       <section>
+       <h2><a name="rooms">Table : rooms</a></h2>
+       <span class="note mysqlColMeta"></span>
+
+
+       <section>
+       <h3>Structure of rooms</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblKey">F-Key</th>
+            <th class="mysqlTblName">Name</th>
+            <th class="mysqlTblType">Type</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>roomId</td>
+            <td>int(11)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>The unique ID for the room.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>roomName</td>
+            <td>varchar(50)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The name of the room.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>roomTopic</td>
+            <td>varchar(200)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The current topic of the room.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>owner</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The owner/creator of the room.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>allowedGroups</td>
+            <td>text</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>A comma-seperated list of the IDs of the allowed groups in the room.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>allowedUsers</td>
+            <td>text</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>A comma-seperated list of the IDs of the allowed users in the room.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>moderators</td>
+            <td>text</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>A comma-seperated list of the IDs of the moderators of the room.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>options</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>A bitfield corrosponding to certain room options.<br /><br />
+                <ul>
+                  <li>1 - Official Group</li>
+                  <li>2 - Mature (PG-13+)</li>
+                  <li>4 - Deleted (can not be accessed by non-admins).</li>
+                  <li>8 - Unlisted</li>
+                  <li>16 - Private</li>
+                  <li>32 - No Moderation</li>
+                </ul>
+            </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>bbcode</td>
+            <td>int(1)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>A bitfield of bbcode allowed in the room. The first 16-bits are predefined or reserved, while bits 17-32 can be occupied by user and plugin defined BBcode.<br /><br />
+                <ul>
+                  <li>1 - Reserved</li>
+                  <li>2 - Reserved</li>
+                  <li>4 - Reserved</li>
+                  <li>8 - Reserved</li>
+                  <li>16 - [Predefined] B/S/I/U</li>
+                  <li>32 - [Predefined] Url/Email</li>
+                  <li>64 - [Predefined] Colour</li>
+                  <li>128 - [Predefined] Highlight</li>
+                  <li>256 - [Predefined] Image</li>
+                  <li>512 - [Predefined] Video</li>
+                  <li>512 - Reserved</li>
+                  <li>1024 - Reserved</li>
+                  <li>2048 - Reserved</li>
+                  <li>4096 - Reserved</li>
+                  <li>8192 - Reserved</li>
+                  <li>16384 - Reserved</li>
+                  <li>32768 - Reserved</li>
+                  <li>65536 - Reserved</li>
+                  <li>Positions to 9,223,372,036,854,775,807 - User-Set</li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>lastMessageTime</td>
+            <td>timestamp</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT '0000-00-00 00:00:00'</span>
+              <div>The time of the last message made in the room.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>lastMessageId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The ID of the last message made in the room.</div>
+            </td>
+          </tr>
+
+         </tbody>
+       </table>
+
+
+
+       </section>
+
+
+       <section>
+       <h3>Indexes of rooms</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblName">Name</th>
+            <th>Column</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td>PRIMARY</td>
+            <td>roomId</td>
+            <td>BTREE </td>
+          </tr>
+
+
+          <tr>
+            <td>options</td>
+            <td>options</td>
+            <td>BTREE </td>
+          </tr>
+
+
+          <tr>
+            <td>owner</td>
+            <td>owner</td>
+            <td>BTREE </td>
+          </tr>
+
+
+          <tr>
+            <td>lastMessageId</td>
+            <td>lastMessageId</td>
+            <td>BTREE </td>
+          </tr>
+
+
+          <tr>
+            <td>lastMessageTime</td>
+            <td>lastMessageTime</td>
+            <td>BTREE </td>
+          </tr>
+
+
+        </tbody>
+       </table>
+
+        <p class="returnToTop">Return to Top</p>
+
+
+
+       </section>
+
+
+       </section>
+
+
+       <section>
+       <h2><a name="roomStats">Table : roomStats</a></h2>
+       <span class="note mysqlColMeta"></span>
+
+
+       <section>
+       <h3>Structure of roomStats</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblKey">F-Key</th>
+            <th class="mysqlTblName">Name</th>
+            <th class="mysqlTblType">Type</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>userId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>The ID of the user.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>roomId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>The ID of the room.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>messages</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The number of messages made by the user in the room.</div>
+            </td>
+          </tr>
+
+         </tbody>
+       </table>
+
+
+
+       </section>
+
+
+       <section>
+       <h3>Indexes of roomStats</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblName">Name</th>
+            <th>Column</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td>PRIMARY</td>
+            <td>userId</td>
+            <td>BTREE </td>
+          </tr>
+
+
+          <tr>
+            <td></td>
+            <td>roomId</td>
+            <td>BTREE </td>
+          </tr>
+
+
+        </tbody>
+       </table>
+
+        <p class="returnToTop">Return to Top</p>
+
+
+
+       </section>
+
+
+       </section>
+
+
+       <section>
+       <h2><a name="searchMessages">Table : searchMessages</a></h2>
+       <span class="note mysqlColMeta"></span>
+
+
+       <section>
+       <h3>Structure of searchMessages</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblKey">F-Key</th>
+            <th class="mysqlTblName">Name</th>
+            <th class="mysqlTblType">Type</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>messageId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>The ID of the message.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>phraseId</td>
+            <td>varchar(50)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>The ID of the phrase found in the message.</div>
+            </td>
+          </tr>
+
+         </tbody>
+       </table>
+
+
+
+       </section>
+
+
+       <section>
+       <h3>Indexes of searchMessages</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblName">Name</th>
+            <th>Column</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td>PRIMARY</td>
+            <td>messageId</td>
+            <td>BTREE </td>
+          </tr>
+
+
+          <tr>
+            <td></td>
+            <td>phraseId</td>
+            <td>BTREE </td>
+          </tr>
+
+
+        </tbody>
+       </table>
+
+        <p class="returnToTop">Return to Top</p>
+
+
+
+       </section>
+
+
+       </section>
+
+
+       <section>
+       <h2><a name="searchPhrases">Table : searchPhrases</a></h2>
+       <span class="note mysqlColMeta"></span>
+
+
+       <section>
+       <h3>Structure of searchPhrases</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblKey">F-Key</th>
+            <th class="mysqlTblName">Name</th>
+            <th class="mysqlTblType">Type</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>phraseId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>A unique ID corrosponding to the phrase name/text.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>phraseName</td>
+            <td>varchar(50)</td>
+            <td><span class="note mysqlColMeta">
+
+                  UN_IQUE
+                  NOT NULL</span>
+              <div>The name/text of the phrase.</div>
+            </td>
+          </tr>
+
+         </tbody>
+       </table>
+
+
+
+       </section>
+
+
+       <section>
+       <h3>Indexes of searchPhrases</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblName">Name</th>
+            <th>Column</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td>PRIMARY</td>
+            <td>phraseId</td>
+            <td>BTREE </td>
+          </tr>
+
+
+          <tr>
+            <td>phraseName</td>
+            <td>phraseName</td>
+            <td>BTREE </td>
+          </tr>
+
+
+        </tbody>
+       </table>
+
+        <p class="returnToTop">Return to Top</p>
+
+
+
+       </section>
+
+
+       </section>
+
+
+       <section>
+       <h2><a name="sessions">Table : sessions</a></h2>
+       <span class="note mysqlColMeta"></span>
+
+
+       <section>
+       <h3>Structure of sessions</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblKey">F-Key</th>
+            <th class="mysqlTblName">Name</th>
+            <th class="mysqlTblType">Type</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>sessionId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>A unique ID corrosponding to all sessions. It is largely unused.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>userId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The ID of the user the session belongs to.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>anonId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>A unique ID that can be used for anonymous users.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>time</td>
+            <td>timestamp</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT 'CURRENT_TIMESTAMP'</span>
+              <div>The time the session was last renewed.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>ip</td>
+            <td>varchar(100)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The IP address of the user of the session.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>browser</td>
+            <td>varchar(300)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The useragent of the user of the session.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>magicHash</td>
+            <td>varchar(100)</td>
+            <td><span class="note mysqlColMeta">
+
+                  UN_IQUE
+                  NOT NULL</span>
+              <div>The session hash itself.</div>
+            </td>
+          </tr>
+
+         </tbody>
+       </table>
+
+
+
+       </section>
+
+
+       <section>
+       <h3>Indexes of sessions</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblName">Name</th>
+            <th>Column</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td>PRIMARY</td>
+            <td>sessionId</td>
+            <td>HASH </td>
+          </tr>
+
+
+          <tr>
+            <td>magicHash</td>
+            <td>magicHash</td>
+            <td>HASH </td>
+          </tr>
+
+
+        </tbody>
+       </table>
+
+        <p class="returnToTop">Return to Top</p>
+
+
+
+       </section>
+
+
+       </section>
+
+
+       <section>
+       <h2><a name="templates">Table : templates</a></h2>
+       <span class="note mysqlColMeta"></span>
+
+
+       <section>
+       <h3>Structure of templates</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblKey">F-Key</th>
+            <th class="mysqlTblName">Name</th>
+            <th class="mysqlTblType">Type</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>id</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>The ID of the template.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>name</td>
+            <td>varchar(50)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The name of the template, used for its retrievel.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>vars</td>
+            <td>varchar(1000)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>PHP variables that need to be accessed by the template.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>data</td>
+            <td>longtext</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The text/data associated with the template.</div>
+            </td>
+          </tr>
+
+         </tbody>
+       </table>
+
+
+
+       </section>
+
+
+       <section>
+       <h3>Indexes of templates</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblName">Name</th>
+            <th>Column</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td>PRIMARY</td>
+            <td>id</td>
+            <td>BTREE </td>
+          </tr>
+
+
+        </tbody>
+       </table>
+
+        <p class="returnToTop">Return to Top</p>
+
+
+
+       </section>
+
+
+       </section>
+
+
+       <section>
+       <h2><a name="uploadTypes">Table : uploadTypes</a></h2>
+       <span class="note mysqlColMeta"></span>
+
+
+       <section>
+       <h3>Structure of uploadTypes</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblKey">F-Key</th>
+            <th class="mysqlTblName">Name</th>
+            <th class="mysqlTblType">Type</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>typeId</td>
+            <td>int(11)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>The unique ID for the room.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>extension</td>
+            <td>varchar(10)</td>
+            <td><span class="note mysqlColMeta">
+
+                  UN_IQUE
+                  NOT NULL</span>
+              <div>The extension that will allow upload of files using these settings.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>mime</td>
+            <td>varchar(200)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The content type to output files of this type as.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>maxSize</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The maximum size (in bytes) files of this type can be.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>container</td>
+            <td>enum('video','image','audio','text','html','archive','other')</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The container that should be used to output the file. This is recognized by clients for best viewing.</div>
+            </td>
+          </tr>
+
+         </tbody>
+       </table>
+
+
+
+       </section>
+
+
+       <section>
+       <h3>Indexes of uploadTypes</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblName">Name</th>
+            <th>Column</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td>PRIMARY</td>
+            <td>typeId</td>
+            <td>BTREE </td>
+          </tr>
+
+
+          <tr>
+            <td>extension</td>
+            <td>extension</td>
+            <td>BTREE </td>
+          </tr>
+
+
+        </tbody>
+       </table>
+
+        <p class="returnToTop">Return to Top</p>
+
+
+
+       </section>
+
+
+       </section>
+
+
+       <section>
+       <h2><a name="users">Table : users</a></h2>
+       <span class="note mysqlColMeta"></span>
+
+
+       <section>
+       <h3>Structure of users</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblKey">F-Key</th>
+            <th class="mysqlTblName">Name</th>
+            <th class="mysqlTblType">Type</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>userId</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">
+                PRIMARY KEY
+
+               </span>
+              <div>The unique ID of the user.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>userName</td>
+            <td>varchar(300)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The user's name.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>userGroup</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT '1'</span>
+              <div>The admin-set usergroup ID of the user.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>allGroups</td>
+            <td>varchar(1000)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT '1'</span>
+              <div>A comma-seperated list of the IDs of all admin-set groups the user is a part of. This is not used on PHPBB and Vanilla logins (both instead use socialGroups).</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>avatar</td>
+            <td>varchar(1000)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The URL of the user's avatar.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>profile</td>
+            <td>varchar(1000)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The URL of the user's profile or website.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>socialGroups</td>
+            <td>varchar(1000)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>A comma-seperated list of the ids of all groups the user has joined.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>userFormatStart</td>
+            <td>varchar(100)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>HTML-formatting to be prepended to the user's name for its display.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>userFormatEnd</td>
+            <td>varchar(100)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>HTML-formatting to be appended to the user's name for its display.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>password</td>
+            <td>varchar(32)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The hashed password of the user. It is only used on vanilla logins.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>joinDate</td>
+            <td>timestamp</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT 'CURRENT_TIMESTAMP'</span>
+              <div>The date the user joined. It may not be used on logins other than vanilla.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>birthDate</td>
+            <td>timestamp</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT '0000-00-00 00:00:00'</span>
+              <div>The date of the user's birth, used for parental control settings.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>lastSync</td>
+            <td>timestamp</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT '0000-00-00 00:00:00'</span>
+              <div>The date the userdata was last synced. This is not applicable for vanilla logins.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>defaultRoom</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT '1'</span>
+              <div>The user's default room.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>interface</td>
+            <td>varchar(50)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The web-accessible interface the user prefers to default to.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>favRooms</td>
+            <td>varchar(1000)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT '1'</span>
+              <div>A comma-seperated list of rooms the user has ranked as being favourites.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>watchRooms</td>
+            <td>varchar(1000)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>A comma-seperated list of rooms the user would like to be notified about when new messages are made</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>ignoreList</td>
+            <td>varchar(1000)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>A list of user IDs to be ignored. Ignoring a user will block all private contacts.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>status</td>
+            <td>int(3)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The user's activity status.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>defaultFormatting</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>A bitfield corrosponding to the user's defaulting formatting (e.g. bold, italics) of all messages.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>defaultHighlight</td>
+            <td>varchar(20)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The user's default highlight colour used for all messages.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>defaultColor</td>
+            <td>varchar(20)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The user's default foreground colour used for all messages.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>defaultFontface</td>
+            <td>varchar(100)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>The fontface ID used for all of the user's messages.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>settings</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT '0'</span>
+              <div>A bitfield corrosponding to different user settings.<br /><br />
+                <ul>
+                  <li>1 - Reserved</li>
+                  <li>2 - Reserved</li>
+                  <li>4 - Reserved</li>
+                  <li>8 - Reserved</li>
+                  <li>16 - Reserved</li>
+                  <li>32 -Reserved</li>
+                  <li>64 - Reserved</li>
+                  <li>128 - Reserved</li>
+                  <li>256 - Disable Parental Controls</li>
+                </ul>
+            </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>userPrivs</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span><span class="note mysqlColDefault">DEFAULT '16'</span>
+              <div>A bitfield corrosponding to admin-set user priviledges.<br /><br />
+                <ul>
+                  <li>1 - Reserved</li>
+                  <li>2 - Reserved</li>
+                  <li>4 - Reserved</li>
+                  <li>8 - Reserved</li>
+                  <li>16 - General Access (w/o = Ban)</li>
+                  <li>32 - Create Rooms</li>
+                  <li>64 - Create Private Rooms</li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td>adminPrivs</td>
+            <td>int(10)</td>
+            <td><span class="note mysqlColMeta">NOT NULL</span>
+              <div>A bitfield corrosponding to admin-set administrative priviledges.<br /><br />
+                <ul>
+                  <li>1 - Modify Admin Priviledges</li>
+                  <li>2 - Reserved</li>
+                  <li>4 - Reserved</li>
+                  <li>8 - Reserved</li>
+                  <li>16 - Moderate Users (Ban, Unban, etc.)</li>
+                  <li>32 - Reserved</li>
+                  <li>64 - Moderate Images</li>
+                  <li>128 - Reserved</li>
+                  <li>256 - Modify Censor Words</li>
+                  <li>512 - Modify Censor Lists</li>
+                  <li>1024 - Reserved</li>
+                  <li>2048 - Reserved</li>
+                  <li>4096 - Modify Plugins</li>
+                  <li>8192 - Modify Templates</li>
+                  <li>16384 - Modify Hooks</li>
+                  <li>32768 - Modify Translations</li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+
+         </tbody>
+       </table>
+
+
+
+       </section>
+
+
+       <section>
+       <h3>Indexes of users</h3>
+       <table class="data">
+         <tbody>
+          <tr>
+            <th class="mysqlTblName">Name</th>
+            <th>Column</th>
+            <th class="mysqlTblDesc">Description</th>
+          </tr>
+
+          <tr>
+            <td>PRIMARY</td>
+            <td>userId</td>
+            <td>BTREE </td>
+          </tr>
+
+
+        </tbody>
+      </table>
+
+
+        <p class="returnToTop">Return to Top</p>
+      </section>
       </section>
     </section>
+
+    <br />
+    <p>Generated by <a href="http://bitbucket.org/ferranp/mysql-autodoc">mysql-autodoc</a></p>
   </body>
 </htmtl>

@@ -275,7 +275,7 @@ else {
   elseif ($userName && $password) {
     $user = dbRows("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userName] = '" . dbEscape($userName) . "' LIMIT 1");
 
-    if (processLogin($user,$password)) {
+    if (processLogin($user,$password,'plaintext')) {
       $valid = true;
       $session = 'create';
     }
@@ -287,7 +287,7 @@ else {
   elseif ($userId && $password) {
     $user = dbRows("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' LIMIT 1');
 
-    if (processLogin($user,$password)) {
+    if (processLogin($user,$password,'plaintext')) {
       $valid = true;
       $session = 'create';
     }
@@ -348,11 +348,11 @@ if ($valid) { // If the user is valid, process their preferrences.
 
       case 'vbulletin':
 
-      if ($userCopy[$sqlUserOptionsCol] & 64) $user2['timezoneoffset']++; // DST is autodetect. We'll just set it by hand.
-      elseif ($userCopy[$sqlUserOptionsCol] & 128) $user2['timezoneoffset']++; // DST is on, add an hour
-      else $user2['timezoneoffset']; // DST is off
+      if ($userCopy[$sqlUserTableCols['options']] & 64) $user2[$sqlAdminGroupTableCols['timeZone']]++; // DST is autodetect. We'll just set it by hand.
+      elseif ($userCopy[$sqlUserTableCols['options']] & 128) $user2[$sqlAdminGroupTableCols['timeZone']]++; // DST is on, add an hour
+      else $user2[$sqlAdminGroupTableCols['timeZone']]; // DST is off
 
-      $group = dbRows("SELECT * FROM $sqlAdminGroupTable WHERE $sqlAdminGroupTableCols[groupId] = $user2[userGroup]");
+      $group = dbRows("SELECT * FROM $sqlAdminGroupTable WHERE $sqlAdminGroupTableCols[groupId] = " . $user2[$sqlUserTableCols['userGroup']]);
 
       $user2['userFormatStart'] = $group[$sqlAdminGroupTableCols['startTag']];
       $user2['userFormatEnd'] = $group[$sqlAdminGroupTableCols['endTag']];
@@ -582,8 +582,6 @@ $user['adminDefs'] = array(
   'modCore' => ($user['adminPrivs'] & 2), // This is the "untouchable" flag, but that's more or less all it means.
   'modUsers' => ($user['adminPrivs'] & 16), // Ban, Unban, etc.
   'modImages' => ($user['adminPrivs'] & 64), // File Uploads
-
-  /* Should Generally Go Together */
   'modCensor' => ($user['adminPrivs'] & 256), // Censor
 
   /* Should Generally Go Together */

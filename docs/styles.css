@@ -65,3 +65,39 @@ section {
 nav {
   padding-bottom: 20px;
 }
+
+table.data {
+  width: 100%;
+}
+
+table.data tbody tr:nth-child(2n+0) {
+  background-color: #aaaaff;
+}
+table.data tbody tr:nth-child(2n+1) {
+  background-color: #aaffaa;
+}
+table.data tbody tr:nth-child(1) {
+  background-color: #000000;
+  color: #ffffff;
+}
+table {
+  border: 3px black solid;
+}
+table tr:hover {
+  opacity: .8;
+}
+
+.mysqlColMeta {
+  border: 1px solid black;
+  float: left;
+  background-color: #0000ff;
+  margin-right: 3px;
+  color: #ffffff;
+}
+.mysqlColDefault {
+  border: 1px solid black;
+  float: left;
+  background-color: #00ff00;
+  margin-right: 3px;
+  color: #000000;
+}

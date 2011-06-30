@@ -32,6 +32,7 @@ $xmlData = array(
     'errDesc' => ($errDesc),
     'serverStatus' => array(
       'fim_version' => FIM_VERSION,
+      'loginMethod' => $loginMethod,
       'installedPlugins' => array(),
       'requestMethods' => array(
         'longPoll' => (bool) $longPolling,
@@ -57,7 +58,7 @@ $xmlData = array(
 ($hook = hook('getServerStatus') ? eval($hook) : '');
 
 
-echo fim_outputApi($xmlData);
-
+//echo fim_outputApi($xmlData);
+echo 1;
 dbClose();
 ?>

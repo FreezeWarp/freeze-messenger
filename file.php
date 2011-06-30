@@ -23,7 +23,7 @@ require_once('global.php');
 eval(hook('file_start'));
 
 
-$hash = dbEscape($_GET['hash']);
+$hash = dbEscape($_GET['sha256hash']);
 $fileid = (int) $_GET['fileid'];
 $time = (int) $_GET['time'];
 
@@ -38,7 +38,7 @@ elseif ($fileid) {
   $file = dbRows("SELECT f.mime, v.salt, v.iv, v.contents, v.time FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS v WHERE v.fileid = $fileid AND f.fileId = v.fileid ORDER BY v.time DESC LIMIT 1");
 }
 elseif ($hash) {
-  $file = dbRows("SELECT f.mime, v.salt, v.iv, v.contents, v.time FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS v WHERE v.md5hash = '$hash' AND f.fileId = v.fileid LIMIT 1");
+  $file = dbRows("SELECT f.mime, v.salt, v.iv, v.contents, v.time FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS v WHERE v.sha256hash = '$hash' AND f.fileId = v.fileid LIMIT 1");
 }
 
 eval(hook('file_postquery'));
@@ -51,6 +51,7 @@ else {
 }
 
 eval(hook('file_predisplay'));
+
 
 
 header('Content-Type: ' . $file['mime']);

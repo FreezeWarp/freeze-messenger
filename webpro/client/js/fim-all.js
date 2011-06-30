@@ -179,7 +179,7 @@ function hashParse() {
     componentPieces = [],
     messageId = 0;
 
-  for (i; i < urlHashComponents.length; i += 1) {
+  for (i = 0; i < urlHashComponents.length; i += 1) {
     if (urlHashComponents[i]) {
       componentPieces = urlHashComponents[i].split('=');
       switch (componentPieces[0]) {
@@ -406,7 +406,7 @@ if (typeof console !== 'object' || typeof console.log !== 'function') {
 
 var alert = function(text) {
   dia.info(text,"Alert");
-}
+};
 
 /*********************************************************
 ************************* END ***************************
@@ -431,8 +431,8 @@ var alert = function(text) {
 $.ajax({
   url: directory + 'api/getServerStatus.php',
   type: 'GET',
-  timeout: 5000,
-  cache: false,
+  timeout: 1000,
+  dataType: 'xml',
   success: function(xml) {
     requestSettings.longPolling = ($(xml).find('serverStatus > requestMethods > longPoll').text().trim() === 'true' ? true : false);
 
@@ -479,7 +479,7 @@ var settings = {
   reversePostOrder : (settingsBitfield & 1024 ? true : false), // Show posts in reverse?
   disableFormatting : (settingsBitfield & 16 ? true : false),
   disableImage : (settingsBitfield & 32 ? true : false),
-  disableVideos : (settingsBitfield & 64 ? true : false),
+  disableVideos : (settingsBitfield & 64 ? true : false)
 };
 
 
@@ -500,10 +500,6 @@ var themes = {
 };
 
 var themeName = (themeId ? themes[themeId] : 'cupertino');
-
-$('head').append('<link rel="stylesheet" type="text/css" id="stylesjQ" href="client/css/' + themeName + '/jquery-ui-1.8.13.custom.css" media="screen" />');
-$('head').append('<link rel="stylesheet" type="text/css" id="stylesFIM" href="client/css/' + themeName + '/fim.css" media="screen" />');
-$('head').append('<link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" media="screen" />');
 
 
 /*********************************************************
@@ -753,7 +749,6 @@ function updateVids(searchPhrase) {
 autoEntry = {
   addEntry : function(type, source, id) {
     var val,
-      id,
       type2;
 
     if (!id) {
@@ -815,7 +810,7 @@ autoEntry = {
     var currentRooms = $("#" + type).val().split(","),
       i = 0;
 
-    for (i; i < currentRooms.length; i += 1) {
+    for (i = 0; i < currentRooms.length; i += 1) {
       if(currentRooms[i] == id) {
         currentRooms.splice(i, 1);
         break;
@@ -855,7 +850,7 @@ autoEntry = {
 
 
     for (i = 0; i < entryList.length; i += 1) {
-      if (entryList[i] == '') {
+      if (!entryList[i]) {
         continue;
       }
 
@@ -929,10 +924,9 @@ var standard = {
 
               styleColor = $(this).find('defaultFormatting > color').text().trim(),
               styleHighlight = $(this).find('defaultFormatting > highlight').text().trim(),
-              styleFontface = $(this).find('defaultFormatting > fontface').text().trim(),
+              styleFontface = Number($(this).find('defaultFormatting > fontface').text().trim()),
               styleGeneral = Number($(this).find('defaultFormatting > general').text().trim()),
-
-              style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: "' + fontIdRef[styleFontface] + '";';
+              style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + fontIdRef[styleFontface] + ';';
 
             if (styleGeneral & 256) {
               style += 'font-weight: bold;';
@@ -977,7 +971,8 @@ var standard = {
 
   login : function(options) {
     console.log('Login Initiated');
-    var data = '';
+    var data = '',
+      passwordEncrypt = '';
     sessionHash = '';
     $.cookie('fim3_sessionHash','');
 
@@ -990,7 +985,7 @@ var standard = {
 
 
     if (options.userName && options.password) {
-      var passwordEncrypt = 'plaintext';
+      passwordEncrypt = 'plaintext';
       // TODO: Enable for vBulletin
       // var password = md5(password);
       // var passwordEncrypt = 'md5';
@@ -1120,8 +1115,8 @@ var standard = {
 
           return false;
         },
-        error: function() {
-          dia.error("The login request could not be sent. Please try again.");
+        error: function(err,err2,err3) {
+          dia.error("The login request could not be sent. Please try again.<br /><br />" + err3 + "<br /><br />" + directory + "validate.php<br /><br />" + data + '&apiVersion=3');
 
           return false;
         }
@@ -1239,7 +1234,8 @@ var standard = {
                   styleHighlight = ($(this).find('defaultFormatting > highlight').text().trim()),
                   styleFontface = ($(this).find('defaultFormatting > fontface').text().trim()),
                   styleGeneral = Number($(this).find('defaultFormatting > general').text().trim()),
-                  style = '';
+                  style = '',
+                  data = '';
 
                 if (!settings.disableFormatting) {
                   style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + fontIdRef[styleFontface] + ';';
@@ -1260,10 +1256,10 @@ var standard = {
 
 
                 if (settings.showAvatars) {
-                  var data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="' + userName + '" src="' + avatar + '" style="max-width: 24px; max-height: 24px; padding-right: 3px;" class="userName userNameTable" data-userId="' + userId + '" /><span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
+                  data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="' + userName + '" src="' + avatar + '" style="max-width: 24px; max-height: 24px; padding-right: 3px;" class="userName userNameTable" data-userId="' + userId + '" /><span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
                 }
                 else {
-                  var data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
+                  data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
                 }
 
                 notifyData += userName + ': ' + text + "\n";
@@ -1350,6 +1346,7 @@ var standard = {
         },
         error: function(err) {
           console.log('Requesting messages for ' + roomId + '; failed: ' + err + '.');
+          var wait;
 
           if (requestSettings.longPolling) {
             setTimeout(standard.getMessages,50);
@@ -2031,7 +2028,7 @@ popup = {
             reversePostOrder : 1024, // Show posts in reverse?
             disableFormatting : 16,
             disableImage : 32,
-            disableVideos : 64,
+            disableVideos : 64
           };
 
 
@@ -2062,10 +2059,11 @@ popup = {
 
 
         $.get(directory + 'api/getUsers.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId, function(xml) {
-          var defaultColour = $(xml).find('defaultFormatting > color').text().trim(),
-            defaultHighlight = $(xml).find('defaultFormatting > highlight').text().trim(),
-            defaultFontface = $(xml).find('defaultFormatting > fontface').text().trim(),
-            defaultGeneral = Number($(xml).find('defaultFormatting > general').text().trim()),
+          defaultColour = $(xml).find('defaultFormatting > color').text().trim();
+          defaultHighlight = $(xml).find('defaultFormatting > highlight').text().trim();
+          defaultFontface = $(xml).find('defaultFormatting > fontface').text().trim();
+
+          var defaultGeneral = Number($(xml).find('defaultFormatting > general').text().trim()),
             ignoreList = ($(xml).find('ignoreList').text().trim()),
             defaultHighlightHashPre = [],
             defaultHighlightHash = {r:0,g:0,b:0},
@@ -2089,7 +2087,7 @@ popup = {
             defaultColourHash = {r : defaultColourHashPre[0], g : defaultColourHashPre[1], b : defaultColourHashPre[2] }
           }
           if (defaultHighlight) {
-            $('#fontPreview').css('background-color','rgb(' + defaultColour + ')');
+            $('#fontPreview').css('background-color','rgb(' + defaultHighlight + ')');
             $('#defaultHighlight').css('background-color','rgb(' + defaultHighlight + ')');
 
             defaultHighlightHashPre = defaultHighlight.split(',');
@@ -2240,13 +2238,13 @@ popup = {
 
   /*** START View My Uploads ***/
 
-  viewMyUploads : function() {
+  viewUploads : function() {
     dia.full({
       content : '<table><thead><tr><td>Preview</td><td>File Name</td><td>File Size</td></tr></thead><tbody id="viewUploadsBody"></tbody></table>',
       width: 1000,
       oF : function() {
         $.ajax({
-          url: directory + 'api/getAllActiveUsers.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+          url: directory + 'api/getUploads.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
           type: 'GET',
           timeout: 2400,
           cache: false,
@@ -2645,7 +2643,7 @@ popup = {
         var roomModList = [],
           i = 0;
 
-        for (i = 0; i < roomList.length; i++) {
+        for (i = 0; i < roomList.length; i += 1) {
           if (modRooms[roomRef[roomList[i]]] > 0) {
             roomModList.push(roomIdRef[roomRef[roomList[i]]]);
           }
@@ -3111,11 +3109,12 @@ function contextMenuParse() {
     menu: 'messageMenuImage'
   },
   function(action, el) {
-    var postid = $(el).attr('data-messageid');
+    var postid = $(el).attr('data-messageid'),
+      src = '';
 
     switch(action) {
       case 'url':
-      var src= $(el).attr('src');
+      src = $(el).attr('src');
 
       dia.info('<img src="' + src + '" style="max-width: 550px; max-height: 550px;" /><br /><br /><input type="text" value="' + src +  '" style="width: 550px;" />','Copy Image URL');
       break;
@@ -3171,6 +3170,10 @@ function contextMenuParse() {
 
 
 $(document).ready(function() {
+
+  $('head').append('<link rel="stylesheet" type="text/css" href="/freeze-messenger/webpro/client/css/cupertino/jquery-ui-1.8.13.custom.css" /><link rel="stylesheet" type="text/css" href="/freeze-messenger/webpro/client/css/cupertino/fim.css" /><link rel="stylesheet" type="text/css" href="/freeze-messenger/webpro/client/css/stylesv2.css" />');
+
+
   standard.login({
     sessionHash: sessionHash
   });
@@ -3454,9 +3457,9 @@ function windowFocus() {
 }
 
 
-window.onresize = windowResize;
+/*window.onresize = windowResize;
 window.onblur = windowBlur;
-window.onfocus = windowFocus;
+window.onfocus = windowFocus;*/
 
 /*********************************************************
 ************************* END ***************************

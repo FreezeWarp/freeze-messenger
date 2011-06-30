@@ -57,8 +57,6 @@ body {
   border-radius: 3px;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
-
-  color: #0000ff;
 }
 
 .contextMenu li.hover.disabled a {

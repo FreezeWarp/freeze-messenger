@@ -39,7 +39,6 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
   <meta name="description" content="{{if="$phrases[brandingDescription]"}{$phrases[brandingDescription]}{FreezeMessenger-powered chat program.}}" />
   {{if="$phrases[brandingFavicon]"}{<link rel="icon" id="favicon" type="image/png" href="$phrases[brandingFavicon]" />}}
 
-
   {{if="$layout == ''alt''"}{<style>
     #menu { display: none; width: 0px; }
     #messageListContainer { float: right; width: 50%; }
@@ -58,7 +57,6 @@ INSERT INTO `{prefix}templates` (`id`, `name`, `vars`, `data`) VALUES
   <script src="client/js/fim-all.js" type="text/javascript"></script>
 
   <!-- END Scripts -->
-
 
   {$phrases[hookHead]}
 </head>

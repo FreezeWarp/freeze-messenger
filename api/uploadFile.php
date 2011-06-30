@@ -19,14 +19,8 @@ require_once('../global.php');
 require_once('../functions/parserFunctions.php');
 
 
-$validTypes = ($uploadMimes ? $uploadMimes :
-  array('image/gif','image/jpeg','image/png','image/pjpeg','application/octet-stream'));
-
-$validExts = ($uploadExtensions ? $uploadExtensions :
-  array('gif','jpg','jpeg','png'));
-
 $uploadMethod = $_POST['uploadMethod'];
-
+die(); // Unimplemented
 
 $xmlData = array(
   'uploadFile' => array(
@@ -40,6 +34,9 @@ $xmlData = array(
     'upload' => array(),
   ),
 );
+
+$mimes = dbRows("SELECT typeId, extension, mime, maxSize
+  FROM {$sqlPrefix}uploadTypes",'extension');
 
 
 switch ($uploadMethod) {
@@ -85,57 +82,84 @@ switch ($uploadMethod) {
 }
 
 if ($continue) {
-  $md5hash = md5($rawData);
-
-  if ($encryptUploads) {
-    list($contentsEncrypted,$iv,$saltNum) = fim_encrypt($rawData);
-    $iv = dbEscape($iv);
-    $saltNum = intval($saltNum);
+  if (!$name) {
+    $errStr = 'badName';
+    $errDesc = 'A name was not specified for the file.';
   }
   else {
-    $contentsEncrypted = base64_encode($rawData);
-    $iv = '';
-    $saltNum = '';
-  }
+    $nameParts = explode($name);
 
-  if (!$rawData) {
-    $errDesc = $phrases['uploadErrorFileContents'];
-  }
-  else {
-    $prefile = dbRows("SELECT v.versionId, v.fileId, v.md5hash FROM {$sqlPrefix}fileVersions AS v, {$sqlPrefix}files AS f WHERE v.md5hash = '$md5hash' AND v.fileId = f.fileId AND f.userId = $user[userId]");
-
-    if ($prefile) {
-      $webLocation = "{$installUrl}file.php?hash={$prefile[md5hash]}";
-
-      if (isset($_POST['autoInsert'])) {
-        $room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = " . (int) $_POST['roomId']);
-
-        fim_sendMessage($webLocation,$user,$room,'image');
-      }
+    if (count($nameParts) == 2) {
+      $errStr = 'badNameParts';
+      $errDesc = 'There was an improper number of "periods" in the file name - the extension could not be obtained.';
     }
     else {
-      dbInsert(array(
-        'userId' => $user['userId'],
-        'name' => $name,
-        'mime' => $mime,
-      ),"{$sqlPrefix}files");
+      if (isset($mimes[$nameParts[1]])) {
+        $mime = $mimes[$nameParts[1]]['mime'];
 
-      $fileId = dbInsertId();
+        $sha256hash = hash('sha256',$rawData);
 
-      dbInsert(array(
-        'fileId' => $fileId,
-        'md5hash' => $md5hash,
-        'salt' => $saltNum,
-        'iv' => $iv,
-        'contents' => $contentsEncrypted,
-      ),"{$sqlPrefix}fileVersions");
+        if ($encryptUploads) {
+          list($contentsEncrypted,$iv,$saltNum) = fim_encrypt($rawData);
+          $iv = dbEscape($iv);
+          $saltNum = intval($saltNum);
+        }
+        else {
+          $contentsEncrypted = base64_encode($rawData);
+          $iv = '';
+          $saltNum = '';
+        }
 
-      $webLocation = "{$installUrl}file.php?hash={$md5hash}";
+        if (!$rawData) {
+          $errStr = 'emptyFile';
+          $errDesc = $phrases['uploadErrorFileContents'];
+        }
+        elseif (strlen($rawData) > ) { // Note: Data is stored as base64 because its easier to handle; thus, the data will be about 33% larger than the normal (thus, if a limit is normally 400KB the file must be smaller than 300KB).
+          $errStr = 'empty';
+          $errDesc = 'The file uploaded is too large.';
+        }
+        else {
+          $prefile = dbRows("SELECT v.versionId, v.fileId, v.sha256hash FROM {$sqlPrefix}fileVersions AS v, {$sqlPrefix}files AS f WHERE v.sha256hash = '" . dbEscape($sha256hash) . "' AND v.fileId = f.fileId AND f.userId = $user[userId]");
 
-      if (isset($_POST['autoInsert'])) {
-        $room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = " . (int) $_POST['roomId']);
+          if ($prefile) {
+            $webLocation = "{$installUrl}file.php?hash={$prefile[sha256hash]}";
 
-        fim_sendMessage($webLocation,$user,$room,'image');
+            if (isset($_POST['autoInsert'])) {
+              $room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = " . (int) $_POST['roomId']);
+
+              fim_sendMessage($webLocation,$user,$room,'image');
+            }
+          }
+          else {
+            dbInsert(array(
+              'userId' => $user['userId'],
+              'name' => $name,
+              'mime' => $mime,
+            ),"{$sqlPrefix}files");
+
+            $fileId = dbInsertId();
+
+            dbInsert(array(
+              'fileId' => $fileId,
+              'sha256hash' => $sha256hash,
+              'salt' => $saltNum,
+              'iv' => $iv,
+              'contents' => $contentsEncrypted,
+            ),"{$sqlPrefix}fileVersions");
+
+            $webLocation = "{$installUrl}file.php?hash={$md5hash}";
+
+            if (isset($_POST['autoInsert'])) {
+              $room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = " . (int) $_POST['roomId']);
+
+              fim_sendMessage($webLocation,$user,$room,'image');
+            }
+          }
+        }
+      }
+      else {
+        $errStr = 'unrecExt';
+        $errDesc = 'The extension was not recognized.';
       }
     }
   }
