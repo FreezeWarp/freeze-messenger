@@ -160,21 +160,19 @@ else {
         if (!$noPing) {
           ($hook = hook('getMessages_ping_start') ? eval($hook) : '');
 
-          dbQuery("INSERT INTO {$sqlPrefix}ping
-            (userId,
-            roomId,
-            time
-            {$ping_columns})
-
-          VALUES
-            ($user[userId],
-            $room[roomId],
-            CURRENT_TIMESTAMP()
-            {$ping_values})
-
-          ON DUPLICATE KEY
-            UPDATE time = CURRENT_TIMESTAMP()
-            {$ping_dupKey}");
+          dbInsert(array(
+            'userId' => $user['userId'],
+            'roomId' => $room['roomId'],
+            'time' => array(
+              'type' => 'raw',
+              'value' => 'CURRENT_TIMESTAMP()',
+            ),
+          ),"{$sqlPrefix}ping",array(
+            'time' => array(
+              'type' => 'raw',
+              'value' => 'CURRENT_TIMESTAMP()',
+            )
+          ));
 
           ($hook = hook('getMessages_ping_end') ? eval($hook) : '');
         }

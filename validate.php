@@ -430,6 +430,28 @@ if ($valid) { // If the user is valid, process their preferrences.
       ),"{$sqlPrefix}users");
 
       $userprefs = dbRows('SELECT * FROM ' . $sqlPrefix . 'users WHERE userId = ' . (int) $user2['userId']);
+
+      /* Update Social Groups */
+      $socialGroups = dbRows("SELECT GROUP_CONCAT($sqlMemberGroupTableCols[groupId] SEPARATOR ',') AS groups FROM {$sqlMemberGroupTable} WHERE {$sqlMemberGroupTableCols[userId]} = $user2[userId] AND $sqlMemberGroupTableCols[type] = '$sqlMemberGroupTableCols[validType]'");
+
+      dbUpdate(array(
+        'userName' => $user2['userName'],
+        'userGroup' => $user2['userGroup'],
+        'allGroups' => $user2['allGroups'],
+        'userFormatStart' => $user2['userFormatStart'],
+        'userFormatStart' => $user2['userFormatStart'],
+        'avatar' => $user2['avatar'],
+        'profile' => $user2['profile'],
+        'socialGroups' => $socialGroups['groups'],
+        'lastSync' => array(
+          'type' => 'raw',
+          'value' => 'NOW()',
+        ),
+      ),
+      "{$sqlPrefix}users",
+      array(
+        'userId' => (int) $user2['userId'],
+      ));
     }
     elseif ($userprefs['lastSync'] <= (time() - ($sync ? $sync : (0)))) { // This updates various caches every so often. In general, it is a rather slow process, and as such does tend to take a rather long time (that is, compared to normal - it won't exceed 500miliseconds, really).
 

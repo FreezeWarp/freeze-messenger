@@ -67,8 +67,6 @@ body {
 #messageInput {
   display: block;
   height: 100px;
-  float: right;
-  white-space: nowrap;
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
   border: transparent;

@@ -147,7 +147,7 @@ function unxml(data) {
 }
 
 function urlEncode(data) {
-  return data.replace(/\+/g, '%2b').replace(/\&/g, '%26').replace(/\%/g, '%25').replace(/\n/g, '%20');
+  return data.replace(/\+/g, '%2b').replace(/\&/g, '%26').replace(/\%/g, '%25').replace(/\n/g, '%0a').replace(/ /g, '%20', data);
 }
 
 function toBottom() {
@@ -1402,7 +1402,7 @@ var standard = {
         type: 'POST',
         data: 'roomId=' + roomId + '&confirmed=' + confirmed + '&message=' + urlEncode(message) + '&flag=' + flag,
         cache: false,
-        timeout: 2500,
+        timeout: 5000,
         success: function(xml) {
           console.log('Message sent.');
 
@@ -1433,7 +1433,7 @@ var standard = {
             break;
 
             case 'confirmcensor':
-            dia.error(errDesc + '<br /><br /><button type="button" onclick="$(this).parent().dialog(&apos;close&apos;);">No</button><button type="button" onclick="standard.standard.sendMessage(&apos;' + escape(message) + '&apos;,1' + (flag ? ',' + flag : '') + '); $(this).parent().dialog(&apos;close&apos;);">Yes</button>');
+            dia.error(errDesc + '<br /><br /><button type="button" onclick="$(this).parent().dialog(&apos;close&apos;);">No</button><button type="button" onclick="standard.sendMessage(&apos;' + escape(message) + '&apos;,1' + (flag ? ',' + flag : '') + '); $(this).parent().dialog(&apos;close&apos;);">Yes</button>');
             break;
           }
 
@@ -1449,7 +1449,7 @@ var standard = {
             $('#messageList').prepend('Your message, "' + message + '", could not be sent and will be retried.');
           }
 
-          standard.standard.sendMessage(message);
+          standard.sendMessage(message);
 
           return false;
         }
@@ -2196,11 +2196,18 @@ popup = {
 
           if ($(this).is(':checked') && !settings[localId]) {
             settings[localId] = true;
-            $.cookie('fim3_settings',Number($.cookie('fim3_settings')) + idMap[localId]);
+
+            if (localId === 'disableFx') {
+              jQuery.fx.off = true;
+            }
           }
           else if (!$(this).is(':checked') && settings[localId]) {
             settings[localId] = false;
             $.cookie('fim3_settings',Number($.cookie('fim3_settings')) - idMap[localId]);
+
+            if (localId === 'disableFx') {
+              jQuery.fx.off = false;
+            }
           }
 
           return false;
@@ -3173,7 +3180,7 @@ function contextMenuParse() {
 
 $(document).ready(function() {
 
-  $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/cupertino/jquery-ui-1.8.13.custom.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/cupertino/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
+  $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/' + themeName + '/jquery-ui-1.8.13.custom.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/' + themeName + '/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
 
 
   standard.login({
@@ -3459,9 +3466,9 @@ function windowFocus() {
 }
 
 
-/*window.onresize = windowResize;
+window.onresize = windowResize;
 window.onblur = windowBlur;
-window.onfocus = windowFocus;*/
+window.onfocus = windowFocus;
 
 /*********************************************************
 ************************* END ***************************

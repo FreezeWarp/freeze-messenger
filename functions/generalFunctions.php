@@ -316,7 +316,7 @@ WHERE userId = $userData[userId] AND
 * @author Joseph Todd Parsons
 */
 function fim_urldecode($str) {
-  return str_replace(array('%2b','%26','%20','%25'),array('+','&',"\n", '%'),$str);
+  return str_ireplace(array('%2b','%26','%20','%25','%0a'),array('+','&',' ', '%',"\n"),$str);
 }
 
 
