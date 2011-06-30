@@ -976,7 +976,7 @@ var standard = {
     sessionHash = '',
     cookieOptions = {};
 
-    if (rememberMe) {
+    if (options.rememberMe) {
       cookieOptions = {expires: 14};
     }
 
