@@ -14,33 +14,101 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/**
+ * Get Rooms from the Server
+ *
+ * @package fim3
+ * @version 3.0
+ * @author Jospeph T. Parsons <rehtaew@gmail.com>
+ * @copyright Joseph T. Parsons 2011
+ * @param bool showDeleted - Will attempt to show deleted rooms, assuming the user has access to them (that is, is an administrator). Defaults to false.
+ * @param bool showPrivate - Will show any private rooms of the user. Defaults to true.
+ * @param string order - How the rooms should be ordered. Options include:
+ * <ul>
+ * <li>roomId - ID (Default)</li>
+ * <li>roomName - Name</li>
+ * <li>smart - Smart Sort (Official -> Nonofficial -> Private)</li>
+ * </ul>
+ * @param bool orderReverse - If true the above search will be descending, not ascending.
+ * @param string rooms - If specified, only specific rooms are listed. By default, all rooms are listed.
+*/
+
 $apiRequest = true;
 
 require_once('../global.php');
 
-$rooms = $_GET['rooms'];
-$roomsArray = explode(',',$rooms);
-foreach ($roomsArray AS &$v) $v = intval($v);
+$request = fim_sanitizeGPCS(array(
+  'get' => array(
+    'permLevel' => array(
+      'type' => 'string',
+      'valid' => array(
+        'post',
+        'view',
+        'moderate',
+        'know',
+        'admin',
+      ),
+      'require' => false,
+    ),
 
+    'rooms' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => '',
+      'context' => array(
+         'type' => 'csv',
+         'filter' => 'int',
+         'evaltrue' => true,
+      ),
+    ),
 
-$showDeleted = (bool) $_GET['showDeleted'];
-$reverseOrder = (bool) $_GET['reverseOrder'];
+    'order' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => '',
+      'context' => '',
+    ),
+
+    'showDeleted' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => false,
+      'context' => array(
+
+      ),
+    ),
+
+    'reverseOrder' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => false,
+    ),
+  ),
+));
+
+$roomsArray = fim_arrayValidate(explode(',',$request['rooms']),'int',false);
+
 
 
 $favRooms = explode(',',$user['favRooms']);
 
 
-$whereClause = ($showDeleted ? '' : '(options & 4 = FALSE) AND ');
-if ($rooms) $whereClause .= ' roomId IN (' . implode(',',$roomsArray) . ') AND ';
+$whereClause = ($request['showDeleted'] ? '' : '(options & 4 = FALSE) AND ');
+if ($rooms) {
+  $whereClause .= ' roomId IN (' . implode(',',$roomsArray) . ') AND ';
+}
 
 
+
+/* Room Permission Filtering
+ * post, view*, moderate, know, admin */
 switch ($_GET['permLevel']) {
   case 'post':
   case 'view':
   case 'moderate':
   case 'know':
   case 'admin':
-  $permLevel = $_GET['permLevel'];
+  $permLevel = $_GET['permLevel"hasPe'];
   break;
 
   default:
@@ -49,15 +117,16 @@ switch ($_GET['permLevel']) {
 }
 
 
+
+/* Query Results Order
+ * roomId*, roomName, smart */
 switch ($_GET['order']) {
-  case 'id':
   case 'roomId':
-  $order = 'roomId ' . ($reverseOrder ? 'DESC' : 'ASC');
+  $order = 'roomId ' . ($request['reverseOrder'] ? 'DESC' : 'ASC');
   break;
 
-  case 'name':
   case 'roomName':
-  $order = 'roomName ' . ($reverseOrder ? 'DESC' : 'ASC');
+  $order = 'roomName ' . ($request['reverseOrder'] ? 'DESC' : 'ASC');
   break;
 
   case 'smart':
@@ -65,20 +134,17 @@ switch ($_GET['order']) {
   break;
 
   default:
-  $order = 'roomId ' . ($reverseOrder ? 'DESC' : 'ASC');
+  $order = 'roomId ' . ($request['reverseOrder'] ? 'DESC' : 'ASC');
   break;
 }
 
 
+/* Data Predefine */
 $xmlData = array(
   'getRooms' => array(
     'activeUser' => array(
       'userId' => (int) $user['userId'],
       'userName' => ($user['userName']),
-    ),
-    'sentData' => array(
-      'order' => (int) $order,
-      'showDeleted' => (bool) $showDeleted,
     ),
     'errStr' => $errStr,
     'errDesc' => $errDesc,
@@ -87,9 +153,12 @@ $xmlData = array(
 );
 
 
+/* Plugin Hook Start */
 ($hook = hook('getRooms_start') ? eval($hook) : '');
 
 
+
+/* SELECT Rooms From Database */
 $rooms = dbRows("SELECT roomId, roomName, options, allowedUsers, allowedGroups, moderators, owner, bbcode, roomTopic
 FROM {$sqlPrefix}rooms
 WHERE $whereClause TRUE
@@ -98,7 +167,29 @@ ORDER BY $order
   {$messagesCached_order}
 {$messagesCached_end}",'roomId'); // Get all rooms
 
+$rooms = dbSelect(
+  array(
+    "{$sqlPrefix}rooms" => array(
+      'roomId',
+      'roomName',
+      'options',
+      'allowedUsers',
+      'allowedGroups',
+      'moderators',
+      'owner',
+      'bbcode',
+      'roomTopic',
+    ),
+  ),
 
+  array(
+    "{$sqlPrefix}rooms",
+  ),
+);
+
+
+
+/* Process Rooms Obtained from Database */
 if ($rooms) {
   foreach ($rooms AS $room) {
     $permissions = fim_hasPermission($room,$user,'all',false);
@@ -138,15 +229,23 @@ if ($rooms) {
 }
 
 
+
+/* Errors */
 $xmlData['getRooms']['errStr'] = ($errStr);
 $xmlData['getRooms']['errDesc'] = ($errDesc);
 
 
 
+/* Plugin Hook End */
 ($hook = hook('getRooms_end') ? eval($hook) : '');
 
 
+
+/* Output Data Structure */
 echo fim_outputApi($xmlData);
 
+
+
+/* Close Database (Should be Automatic) */
 dbClose();
 ?>

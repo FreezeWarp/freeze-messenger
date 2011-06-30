@@ -1074,4 +1074,116 @@ function formatSize($size) {
   return $size . $fileSuffixes[$suffix];
 
 }
+
+function fim_sanitizeGPCS($data) {
+  $metaDataDefaults = array(
+    'type' => 'string',
+    'require' => false,
+  );
+
+  foreach ($data AS $type => $entry) {
+    $activeGlobal = array(); // Clear after each run.
+
+    switch ($type) { // Set the GLOBAL to a local var for processing.
+      case 'get':
+      $activeGlobal = $_GET;
+      break;
+
+      case 'post':
+      $activeGlobal = $_POST;
+      break;
+
+      case 'cookie':
+      $activeGlobal = $_COOKIE;
+      break;
+    }
+
+    if (count($activeGlobal) > 0 && is_array($activeGlobal)) { // Make sure the active global is populated with data.
+      foreach ($entry AS $indexName => $indexData) {
+        $indexMetaData = $metaDataDefaults; // Store indexMetaData with the defaults.
+
+        foreach ($entry AS $metaname => $metadata) {
+          switch ($metaname) {
+            case 'type':
+
+            switch ($metaData) {
+              case 'string':
+              $indexMetaData['type'] = 'string';
+              break;
+
+              case 'bool':
+              $indexMetaData['type'] = 'bool';
+              break;
+
+              case 'int':
+              $indexMetaData['type'] = 'int';
+              break;
+            }
+
+            break;
+
+            case 'valid':
+
+            break;
+
+            case 'require':
+
+            break;
+
+            case 'context':
+            foreach ($metadata AS $contextname => $contextdata) {
+              switch ($contextname) {
+                case 'type':
+
+                break;
+                case 'filter':
+
+                break;
+                case 'evaltrue':
+
+                break;
+              }
+            }
+            break;
+
+            case 'default':
+            $indexMetaData['default'] = $metadata;
+            break;
+          }
+        }
+
+        if (isset($activeGlobal[$indexName])) {
+          if (isset($indexMetaData['valid'])) {
+            if (is_array($indexMetaData['default'])) {
+              if (in_array($activeGlobal[$indexName],$indexMetaData['valid'])) {
+
+              }
+              else {
+                if ($indexMetaData['require']) {
+                  throw new Exception('Required data not valid.');
+                }
+                elseif (isset($indexMetaData['default'])) {
+                  $activeGlobal[$indexName] = $indexMetaData['default'];
+                }
+              }
+            }
+            else {
+              throw new Exception('Defined valid values do not corrospond to recognized data type (array).');
+            }
+          }
+        }
+        else {
+          if ($indexMetaData['require']) {
+            throw new Exception('Required data not present.');
+          }
+          elseif (isset($indexMetaData['default'])) {
+            $activeGlobal[$indexName] = $indexMetaData['default'];
+          }
+        }
+      }
+    }
+  }
+
+  return $newData;
+}
 ?>

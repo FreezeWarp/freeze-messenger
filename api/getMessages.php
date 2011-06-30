@@ -14,6 +14,28 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/**
+ * Get Messages from the Server
+ * @package fim3
+ * @version 3.0
+ * @author Jospeph T. Parsons <rehtaew@gmail.com>
+ * @copyright Joseph T. Parsons 2011
+ *
+ * @param string rooms - A comma seperated list of rooms. Can be a single room in integer format. Some predefined constants can also be used.
+ * Note: Using more than one room can conflict or even break the script’s execution should the watchRooms or activeUsers flags be set to true.
+ * @param messageLimit - The maximum number of posts to receive, defaulting to the internal limit of (in most cases) 40. Specifying 0 removes any limit.
+ * Note: A hardcoded maximum of 500 is in place to prevent any potential issues. This will in the future be changable by the administrator.
+ * @param timestamp messageDateMin - The earliest a post could have been made. Use of newestDate only makes sense with no messageLimit. Do not specify to prevent checking.
+ * @param timestamp messageDateMax - The latest a post could have been made. Use of newestDate only makes sense with no messageLimit. Do not specify to prevent checking.
+ * @param int messageIdMin - All posts must be after this ID. Use of newestMessage only makes sense with no messageLimit. Do not specify to prevent checking.
+ * @param int messageIdMax - All posts must be before this ID. Use of newestMessage only makes sense with no messageLimit. Do not specify to prevent checking.
+ * @param int messageIdStart - When specified WITHOUT the above two directives, messageIdStart will return all posts from this ID to this ID plus the messageLimit directive. This is strongly encouraged for all requests to the cache, e.g. for normal instant messenging sessions.
+ * @param bool noping - Disables ping; useful for archive viewing.
+ * @param bool watchRooms - Get unread messages from a user’s list of watchRooms (also applies to private IMs).
+ * @param bool activeUsers - Returns a list of activeUsers in the room(s) if specified. This is identical to calling the getActiveUsers script, except with less data redundancy.
+*/
+
+
 $apiRequest = true;
 require_once('../global.php');
 

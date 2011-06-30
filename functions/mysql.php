@@ -234,6 +234,18 @@ function dbProcessArrayVal($array) {
 }
 
 
+
+/**
+* Builds a database "SELECT" query
+*
+* @param array $dataArray - The array containing relevant key -> value pairs.
+* @param string $table - The table to insert into.
+* @param array $updateArray - The conditions for ON DUPLICATE KEY UPDATE.
+* @return link - Database result link.
+* @author Joseph Todd Parsons
+*/
+function dbSelect($dataArray) {}
+
 /**
 * Inserts data based on key->value pairs, and if needed adds ON DUPLICATE KEY statement.
 *
@@ -427,4 +439,7 @@ function dbClose($link = false) {
     mysql_close($link);
  }
 }
+
+
+require_once('mysqlOOP.php');
 ?>
