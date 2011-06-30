@@ -54,7 +54,7 @@ var topic,
     totalFails : 0,
     lastMessage : 0
   },
-  timers = {}; // Object
+  timers = {t1 : false}; // Object
 
 
 
@@ -1155,6 +1155,8 @@ var standard = {
 
 
   getMessages : function() {
+    clearInterval(timers.t1);
+
     if (roomId) {
 
       var encrypt = 'base64';
@@ -1332,11 +1334,11 @@ var standard = {
             }
 
             if (requestSettings.longPolling) {
-              setTimeout(standard.getMessages,50);
+              timers.t1 = setTimeout(standard.getMessages,50);
             }
             else {
               requestSettings.timeout = 2400;
-              setTimeout(standard.getMessages,2500);
+              timers.t1 = setTimeout(standard.getMessages,2500);
             }
           }
 
@@ -1349,7 +1351,7 @@ var standard = {
           var wait;
 
           if (requestSettings.longPolling) {
-            setTimeout(standard.getMessages,50);
+            timers.t1 = setTimeout(standard.getMessages,50);
           }
           else {
             requestSettings.totalFails += 1;
@@ -1373,7 +1375,7 @@ var standard = {
               }
             }
 
-            setTimeout(standard.getMessages,wait);
+            timers.t1 = setTimeout(standard.getMessages,wait);
           }
 
           return false;
@@ -3171,7 +3173,7 @@ function contextMenuParse() {
 
 $(document).ready(function() {
 
-  $('head').append('<link rel="stylesheet" type="text/css" href="client/css/cupertino/jquery-ui-1.8.13.custom.css" /><link rel="stylesheet" type="text/css" href="client/css/cupertino/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
+  $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/cupertino/jquery-ui-1.8.13.custom.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/cupertino/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
 
 
   standard.login({
