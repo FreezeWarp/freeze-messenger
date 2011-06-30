@@ -26,9 +26,9 @@ require_once('functions/mysql.php'); // MySQL Library
 require_once('functions/generalFunctions.php'); // Various Functions
 
 
-error_reporting(E_ALL ^ E_NOTICE); // Report all errors, except those of the "Notice" type.
+//error_reporting(E_ALL ^ E_NOTICE); // Report all errors, except those of the "Notice" type.
 date_default_timezone_set('GMT'); // Set the timezone to GMT.
-$errorHandlerOriginal = set_error_handler("errorHandler"); // Error Handler
+//$errorHandlerOriginal = set_error_handler("errorHandler"); // Error Handler
 
 
 $continue = true; // Simple "stop" variable used throughout for hooks.

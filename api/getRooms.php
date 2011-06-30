@@ -65,8 +65,7 @@ $request = fim_sanitizeGPCS(array(
     'order' => array(
       'type' => 'string',
       'require' => false,
-      'default' => '',
-      'context' => '',
+      'default' => 'roomId',
     ),
 
     'showDeleted' => array(
@@ -74,7 +73,7 @@ $request = fim_sanitizeGPCS(array(
       'require' => false,
       'default' => false,
       'context' => array(
-
+        'type' => 'bool',
       ),
     ),
 
@@ -82,9 +81,14 @@ $request = fim_sanitizeGPCS(array(
       'type' => 'string',
       'require' => false,
       'default' => false,
+      'context' => array(
+        'type' => 'bool',
+      ),
     ),
   ),
 ));
+
+die(var_dump($request,true));
 
 $roomsArray = fim_arrayValidate(explode(',',$request['rooms']),'int',false);
 
@@ -184,7 +188,7 @@ $rooms = dbSelect(
 
   array(
     "{$sqlPrefix}rooms",
-  ),
+  )
 );
 
 

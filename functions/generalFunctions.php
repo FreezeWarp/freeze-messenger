@@ -1075,6 +1075,13 @@ function formatSize($size) {
 
 }
 
+/**
+* Strict Sanitization of GET/POST/COOKIE Globals
+*
+* @param array data
+* @return array
+* @author Joseph Todd Parsons
+*/
 function fim_sanitizeGPCS($data) {
   $metaDataDefaults = array(
     'type' => 'string',
@@ -1096,13 +1103,18 @@ function fim_sanitizeGPCS($data) {
       case 'cookie':
       $activeGlobal = $_COOKIE;
       break;
+
+      case 'request':
+      $activeGlobal = $_REQUEST;
+      break;
     }
+
 
     if (count($activeGlobal) > 0 && is_array($activeGlobal)) { // Make sure the active global is populated with data.
       foreach ($entry AS $indexName => $indexData) {
         $indexMetaData = $metaDataDefaults; // Store indexMetaData with the defaults.
 
-        foreach ($entry AS $metaname => $metadata) {
+        foreach ($indexData AS $metaname => $metadata) {
           switch ($metaname) {
             case 'type':
 
@@ -1123,24 +1135,48 @@ function fim_sanitizeGPCS($data) {
             break;
 
             case 'valid':
-
+            $indexMetaData['valid'] = $metadata;
             break;
 
             case 'require':
-
+            $indexMetaData['require'] = $metadata;
             break;
 
             case 'context':
             foreach ($metadata AS $contextname => $contextdata) {
+              $indexMetaData['context'] = array(
+                'cast' => '',
+                'filter' => '',
+                'evaltrue' => false,
+              );
+
               switch ($contextname) {
-                case 'type':
+                case 'type': // This is the original typecast, with some special types defined. While GPC variables are best interpretted as strings, this goes further and converts the string to a more proper format.
+                switch ($contextdata) {
+                  case 'csv': // e.g. "1,2,3" "1,ab3,455"
+                  $indexMetaData['context']['cast'] = 'csv';
+                  break;
 
+                  case 'bool':
+                  $indexMetaData['context']['cast'] = 'bool';
+                  break;
+
+                  case 'int':
+                  $indexMetaData['context']['cast'] = 'int';
+                  break;
+                }
                 break;
-                case 'filter':
 
+                case 'filter': // This is an additional filter applied to data that uses the "csv" context type (and possibly more in the future).
+                switch ($contextData) {
+                  case 'int':
+                  $indexMetaData['context']['filter'] = 'int';
+                  break;
+                }
                 break;
-                case 'evaltrue':
 
+                case 'evaltrue': // This specifies whether all subvalus of a context must be true. For instance, assuming we use an integer filter 0 would be removed if this was true.
+                  $indexMetaData['context']['evaltrue'] = $contextdata;
                 break;
               }
             }
@@ -1152,11 +1188,26 @@ function fim_sanitizeGPCS($data) {
           }
         }
 
+
         if (isset($activeGlobal[$indexName])) {
+          switch ($indexMetaData['type']) {
+            case 'int':
+            $activeGlobal[$indexName] = (int) $activeGlobal[$indexName];
+            break;
+
+            case 'bool':
+            $activeGlobal[$indexName] = (bool) $activeGlobal[$indexName];
+            break;
+
+            case 'string':
+            $activeGlobal[$indexName] = (string) $activeGlobal[$indexName];
+            break;
+          }
+
           if (isset($indexMetaData['valid'])) {
             if (is_array($indexMetaData['default'])) {
               if (in_array($activeGlobal[$indexName],$indexMetaData['valid'])) {
-
+                // Do Nothing Yet
               }
               else {
                 if ($indexMetaData['require']) {
@@ -1179,6 +1230,16 @@ function fim_sanitizeGPCS($data) {
           elseif (isset($indexMetaData['default'])) {
             $activeGlobal[$indexName] = $indexMetaData['default'];
           }
+        }
+
+        switch($indexMetaData['context']['cast']) {
+          case 'csv':
+          $newData[$indexName] = fim_arrayValidate(explode($activeGlobal[$indexName]),$indexMetaData['context']['filter'],$indexMetaData['context']['evaltrue']);
+          break;
+
+          default:
+          $newData[$indexName] = $activeGlobal[$indexName];
+          break;
         }
       }
     }
