@@ -3171,7 +3171,7 @@ function contextMenuParse() {
 
 $(document).ready(function() {
 
-  $('head').append('<link rel="stylesheet" type="text/css" href="/freeze-messenger/webpro/client/css/cupertino/jquery-ui-1.8.13.custom.css" /><link rel="stylesheet" type="text/css" href="/freeze-messenger/webpro/client/css/cupertino/fim.css" /><link rel="stylesheet" type="text/css" href="/freeze-messenger/webpro/client/css/stylesv2.css" />');
+  $('head').append('<link rel="stylesheet" type="text/css" href="client/css/cupertino/jquery-ui-1.8.13.custom.css" /><link rel="stylesheet" type="text/css" href="client/css/cupertino/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
 
 
   standard.login({

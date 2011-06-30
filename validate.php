@@ -352,7 +352,7 @@ if ($valid) { // If the user is valid, process their preferrences.
       elseif ($userCopy[$sqlUserTableCols['options']] & 128) $user2[$sqlAdminGroupTableCols['timeZone']]++; // DST is on, add an hour
       else $user2[$sqlAdminGroupTableCols['timeZone']]; // DST is off
 
-      $group = dbRows("SELECT * FROM $sqlAdminGroupTable WHERE $sqlAdminGroupTableCols[groupId] = " . $user2[$sqlUserTableCols['userGroup']]);
+      $group = dbRows("SELECT * FROM $sqlAdminGroupTable WHERE $sqlAdminGroupTableCols[groupId] = $user2[userGroup]");
 
       $user2['userFormatStart'] = $group[$sqlAdminGroupTableCols['startTag']];
       $user2['userFormatEnd'] = $group[$sqlAdminGroupTableCols['endTag']];
