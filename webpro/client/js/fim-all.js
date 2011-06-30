@@ -972,7 +972,7 @@ var standard = {
   login : function(options) {
     console.log('Login Initiated');
     var data = '',
-      passwordEncrypt = '';
+      passwordEncrypt = '',
     sessionHash = '',
     cookieOptions = {};
 
