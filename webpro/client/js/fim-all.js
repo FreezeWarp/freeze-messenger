@@ -973,7 +973,13 @@ var standard = {
     console.log('Login Initiated');
     var data = '',
       passwordEncrypt = '';
-    sessionHash = '';
+    sessionHash = '',
+    cookieOptions = {};
+
+    if (rememberMe) {
+      cookieOptions = {expires: 14},
+    }
+
     $.cookie('fim3_sessionHash','');
 
     console.log('Encrypted Password: ' + options.password);
@@ -1266,28 +1272,33 @@ var standard = {
 
                 notifyData += userName + ': ' + text + "\n";
 
-                if (settings.reversePostOrder) {
-                  $('#messageList').append(data);
+                if (messageIndex[messageId]) {
+                   // Double post hack
                 }
                 else {
-                  $('#messageList').prepend(data);
-                }
+                  if (settings.reversePostOrder) {
+                    $('#messageList').append(data);
+                  }
+                  else {
+                    $('#messageList').prepend(data);
+                  }
 
-                if (messageId > requestSettings.lastMessage) {
-                  requestSettings.lastMessage = messageId;
-                }
+                  if (messageId > requestSettings.lastMessage) {
+                    requestSettings.lastMessage = messageId;
+                  }
 
-                messageIndex.push(requestSettings.lastMessage);
+                  messageIndex.push(requestSettings.lastMessage);
 
-                if (messageIndex.length === 100) {
-                  var messageOut = messageIndex[0];
-                  $('#message' + messageOut).remove();
-                  messageIndex = messageIndex.slice(1,99);
-                }
+                  if (messageIndex.length === 100) {
+                    var messageOut = messageIndex[0];
+                    $('#message' + messageOut).remove();
+                    messageIndex = messageIndex.slice(1,99);
+                  }
 
-                var roomTopic = $(this).find('roomData > roomTopic').text().trim();
-                if (roomTopic) {
-                  $('#topic').html(roomTopic);
+                  var roomTopic = $(this).find('roomData > roomTopic').text().trim();
+                  if (roomTopic) {
+                    $('#topic').html(roomTopic);
+                  }
                 }
               });
 
@@ -1686,12 +1697,14 @@ popup = {
         oF : function() {
           $("#loginForm").submit(function() {
             var userName = $('#loginForm > #userName').val(),
-              password = $('#loginForm > #password').val();
+              password = $('#loginForm > #password').val(),
+              rememberMe = $('#loginForm > #rememberme').is('checked');
 
             standard.login({
               userName : userName,
               password : password,
-              showMessage : true
+              showMessage : true,
+              rememberMe : rememberMe
             });
 
             return false; // Don't submit the form.

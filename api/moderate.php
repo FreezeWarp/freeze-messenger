@@ -263,7 +263,7 @@ switch ($action) {
       $xmlData['moderate']['response']['theme'] = $theme;
     }
 
-    if ($_POST['defaultRoomId']) {
+    if (isset($_POST['defaultRoomId'])) {
       $defaultRoomData = dbRows("SELECT *
       FROM {$sqlPrefix}rooms
       WHERE roomId = " . (int) $_POST['defaultRoomId'] . "
@@ -282,7 +282,7 @@ switch ($action) {
       }
     }
 
-    if ($_POST['favRooms']) {
+    if (isset($_POST['favRooms'])) {
       $favRooms = fim_arrayValidate(explode(',',$_POST['favRooms']),'int',false);
       $updateArray['favRooms'] = (string) implode(',',$favRooms);
 
@@ -306,7 +306,7 @@ switch ($action) {
       $xmlData['moderate']['response']['ignoreList']['newValue'] = (string) implode(',',$ignoreList);
     }
 
-    if ($_POST['defaultFormatting']) {
+    if (isset($_POST['defaultFormatting'])) {
       $updateArray['defaultFormatting'] = (int) $_POST['defaultFormatting'];
 
       $xmlData['moderate']['response']['defaultFormatting']['status'] = true;
@@ -348,7 +348,7 @@ switch ($action) {
       }
     }
 
-    if ($_POST['defaultFontface']) {
+    if (isset($_POST['defaultFontface'])) {
       $fontData = dbRows("SELECT fontId,
         name,
         data,

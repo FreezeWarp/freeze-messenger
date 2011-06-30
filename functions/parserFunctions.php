@@ -46,9 +46,8 @@ function fimParse_htmlParse($text,$bbcodeLevel = 1) {
   );
 
   $search['link'] = array(
-    "/(?<!(\[noparse\]))(?<!(\[img\]))(?<!(\[url\]))((http|https|ftp|data|gopher|sftp|ssh):(\/\/|)(.+?\.|)([a-zA-Z\-]+)\.(aero|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|xxx|ac|ad|ae|af|ag|ai|al|am|an|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|cg|ci|ck|cl|cm|cn|co|cr|cs|cu|cv|cx|cy|cz|de|dj|dk|dm|do|dz|ec|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr||ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|st|su|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|za|zm|ze|中国|中國|香港|भारत|భారత్|ભારત|ਭਾਰਤ|ভারত|рф|新加坡|한국|ලංකා|台湾|台灣|ไทย|)((\/)([^ \n]*)([^\?\.\! \n])|))(?!\[\/url\])(?!\[\/img\])(?!\[\/noparse\])/", // The regex is naturally selective; it improves slightly with each FIM version, but I don't really know how to do it, so I only add to it piece by piece to prevent regressions.
-    '/\[url=("|)(.*?)("|)\](.*?)\[\/url\]/is',
-    '/\[url\](.*?)\[\/url\]/is',
+    "/(?<!(\[noparse\]))(?<!(\[img\]))(?<!(\[url\]))((http|https|ftp|data|gopher|sftp|ssh):(\/\/|)(.+?\.|)([a-zA-Z\-]+)\.(aero|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|xxx)((\/)([^ \n\<\>\"]*)([^\?\.\! \n])|))(?!\")(?!\])/", // The regex is naturally selective; it improves slightly with each FIM version, but I don't really know how to do it, so I only add to it piece by piece to prevent regressions.
+    '/\[url\]([^\"\<\>]*?)\[\/url\]/is',
     '/\[email=("|)(.*?)("|)\](.*?)\[\/email\]/is',
     '/\[email\](.*?)\[\/email\]/is',
   );
@@ -77,7 +76,6 @@ function fimParse_htmlParse($text,$bbcodeLevel = 1) {
 
   $replace['link'] = array(
     '<a href="$4" target="_BLANK">$4</a>',
-    '<a href="$2" target="_BLANK">$4</a>',
     '<a href="$1" target="_BLANK">$1</a>',
     '<a href="mailto:$2">$4</a>',
     '<a href="mailto:$1">$1</a>',
@@ -389,7 +387,7 @@ function fimParse_finalParse($messageText) {
   global $room;
 
   $messageRaw = $messageText; // Parses the sources for MySQL.
-  $messageHtml = nl2br(fimParse_htmlWrap(fimParse_htmlParse(fimParse_censorParse(fim_encodeXml($messageText),$room['id']),$room['options']),30,' ')); // Parses for browser or HTML rendering.
+  $messageHtml = nl2br(fimParse_htmlWrap(fimParse_htmlParse(fimParse_censorParse(fim_encodeXml($messageText),$room['id']),$room['options']),80,' ')); // Parses for browser or HTML rendering.
   $messageApi = fimParse_smilieParse($messageText,$room['bbcode']); // Not yet coded, you see.
 
   return array($messageRaw, $messageHtml, $messageApi);
