@@ -977,7 +977,7 @@ var standard = {
     cookieOptions = {};
 
     if (rememberMe) {
-      cookieOptions = {expires: 14},
+      cookieOptions = {expires: 14};
     }
 
     $.cookie('fim3_sessionHash','');
