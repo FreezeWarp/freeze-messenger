@@ -31,8 +31,15 @@ date_default_timezone_set('GMT'); // Set the timezone to GMT.
 //$errorHandlerOriginal = set_error_handler("errorHandler"); // Error Handler
 
 
-$continue = true; // Simple "stop" variable used throughout for hooks.
+$continue = true; // Simple "stop" variable used throughout for hooks and live code. (Not neccissarly best practice, but it works better than most of the alternatives.)
+$hook = false;
+
 define("FIM_VERSION","3.0"); // Version to be used by plugins if needed.
+define("DB_BACKEND","MYSQL"); // Database backend to be used by plugins if needed; in the future other backends will be supported, and if the defined database class for whatever reason won't do, this can be used to also support others. At present, PostGreSQL is the only for-sure future backend to be supported. Definite values, if they are to be supported: "MSSQL", "ORACLE", "POSTGRESQL"
+define("DB_DRIVER","MYSQL"); // Drive used for connection to the database. This may be totally useless to plugins, but again for future compatibility is included; other possible example values: "MYSQLi", "PDO" (actually, it would prolly be more useful to plugin authors of a future version wishing to support old versions)
+
+$sqlPrefix = $dbConfig['vanilla']['tablePrefix']; // It's more sane this way...
+$forumTablePrefix = $dbConfig['integration']['tablePreix'];
 
 
 
@@ -86,7 +93,21 @@ require_once('validate.php'); // User Validation
 ///* Get Phrases *///
 
 if ($reqPhrases) {
-  $phrases2 = dbRows("SELECT * FROM {$sqlPrefix}phrases",'id');
+  $phrases2 = dbRows("SELECT * FROM {$sqlPrefix}phrases",'phraseId');
+
+  $phrases2 = database->select(
+    array(
+      'phrases' => array(
+        'phraseId' => 'phraseId',
+        'name' => 'name',
+        'text_en' => 'text_en',
+        'text_jp' => 'text_jp',
+        'text_sp' => 'text_sp',
+        'text_fr' => 'text_fr',
+        'text_ge' => 'text_ge'
+      ),
+    )
+  );
 
 
   // Generate the language, based on:
@@ -115,16 +136,17 @@ if ($reqPhrases) {
 ///* Get Code Hooks *///
 
 if ($reqHooks) {
-  $hooks2 = dbRows("SELECT * FROM {$sqlPrefix}hooks",'id');
+  $hooks2 = dbRows("SELECT * FROM {$sqlPrefix}hooks",'hookId');
 
   if ($hooks2) {
     foreach ($hooks2 AS $hook) {
       $hooks[$hook['name']] = $hook['code'];
     }
+
+    unset($hook);
   }
 
   unset($hooks2);
-  unset($hook);
 }
 
 
@@ -132,15 +154,18 @@ if ($reqHooks) {
 ///* Get Templates *///
 
 if ($reqPhrases) {
-  $templates2 = dbRows("SELECT * FROM {$sqlPrefix}templates",'id');
+  $templates2 = dbRows("SELECT * FROM {$sqlPrefix}templates",'templateId');
 
-  foreach ($templates2 AS $template) {
-    $templates[$template['name']] = $template['data'];
-    $templateVars[$template['name']] = $template['vars'];
+  if ($templates2) {
+    foreach ($templates2 AS $template) {
+      $templates[$template['name']] = $template['data'];
+      $templateVars[$template['name']] = $template['vars'];
+    }
+
+    unset($template);
   }
 
   unset($templates2);
-  unset($template);
 }
 
 

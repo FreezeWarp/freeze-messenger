@@ -334,9 +334,8 @@ switch ($_REQUEST['phase']) {
   $forum = urldecode($_GET['forum']);
   $forumUrl = urldecode($_GET['forum_url']);
   $forumTablePrefix = urldecode($_GET['forum_tableprefix']);
-  $forumSalt = urldecode($_GET['forum_salt']);
-  $encryptSalt = urldecode($_GET['encrypt_salt']);
 
+  $encryptSalt = urldecode($_GET['encrypt_salt']);
   $enableEncrypt = (int) $_GET['enable_encrypt'];
 
   $base = file_get_contents('config.base.php');
@@ -381,8 +380,8 @@ $dbConnect[\'integration\'][\'password\'] = \'' . $password . '\';',
     '$dbConnect[\'core\'][\'database\'] = \'' . $database . '\';
 $dbConnect[\'slave\'][\'database\'] = \'' . $database . '\';
 $dbConnect[\'integration\'][\'database\'] = \'' . $database . '\';',
-    '$dbConfig[\'vanilla\'][\'tablePrefix\'] = \'\';
-$dbConfig[\'integration\'][\'tablePreix\'] = \'\';',
+    '$dbConfig[\'vanilla\'][\'tablePrefix\'] = \'' . $prefix . '\';
+$dbConfig[\'integration\'][\'tablePreix\'] = \'' . $forumTablePrefix . '\';',
     '$loginConfig[\'method\'] = \'' . $forum . '\';',
     '$loginConfig[\'url\'] = \'' . $forumUrl . '\';',
     '$loginConfig[\'superUsers\'] = array(' . ($forum == 'phpbb' ? 2 : 1) . ');',

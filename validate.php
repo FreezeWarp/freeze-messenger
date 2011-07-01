@@ -34,14 +34,22 @@ require_once('global.php');
 
 
 
+
+
+
+///* Some Pre-Stuff *///
+
 require_once('functions/loginReqs.php');
 
 
-static $apiVersion, $goodVersion, $sqlUserTable, $sqlUserGroupTable, $sqlMemberGroupTable, $sqlSessionTable, $sqlUserTableCols, $sqlUserGroupTableCols, $sqlMemberGroupTablecols;
+static $apiVersion, $goodVersion, $sqlUserTable, $sqlUserGroupTable, $sqlMemberGroupTable, $sqlSessionTable, $sqlUserTableCols, $sqlUserGroupTableCols, $sqlMemberGroupTablecols, $api, $userName, $userId, $password, $sessionHssh;
 
 if (!isset($cookiePrefix)) {
   $cookiePrefix = 'fim3_';
 }
+
+
+
 
 
 

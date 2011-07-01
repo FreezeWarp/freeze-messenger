@@ -14,7 +14,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 CREATE TABLE IF NOT EXISTS `{prefix}phrases` (
-  `id` int(10) NOT NULL AUTO_INCREMENT COMMENT 'A unique ID for the phrase',
+  `phraseId` int(10) NOT NULL AUTO_INCREMENT COMMENT 'A unique ID for the phrase',
   `name` varchar(50) NOT NULL COMMENT 'The unique phrase name.',
   `text_en` longtext CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The text of the message in English.',
   `text_jp` longtext CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The text of the message in Japanese.',
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `{prefix}phrases` (
 
 -- DIVIDE
 
-INSERT INTO `{prefix}phrases` (`id`, `name`, `text_en`, `text_jp`) VALUES
+INSERT INTO `{prefix}phrases` (`phraseId`, `name`, `text_en`, `text_jp`) VALUES
 (1, 'brandingTitle', 'FreezeMessenger v3-r062211 (Pre-Beta)', 'フリーズ の メッセンジャー'),
 (2, 'brandingFavicon', 'images/favicon.png', 'images/favicon.png'),
 (4, 'doctype', '<!DOCTYPE HTML>', ''),

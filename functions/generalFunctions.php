@@ -516,7 +516,7 @@ function hook($name) {
     return $hook;
   }
   else {
-    return 'return false;';
+    return false;
   }
 }
 
