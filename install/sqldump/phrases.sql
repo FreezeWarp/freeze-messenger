@@ -15,18 +15,19 @@
 
 CREATE TABLE IF NOT EXISTS `{prefix}phrases` (
   `phraseId` int(10) NOT NULL AUTO_INCREMENT COMMENT 'A unique ID for the phrase',
-  `name` varchar(50) NOT NULL COMMENT 'The unique phrase name.',
+  `phraseName` varchar(50) NOT NULL COMMENT 'The unique phrase name.',
   `text_en` longtext CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The text of the message in English.',
   `text_jp` longtext CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The text of the message in Japanese.',
   `text_sp` longtext CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The text of the message in Spanish.',
   `text_fr` longtext CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The text of the message in French.',
   `text_ge` longtext CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The text of the message in German.',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`phraseId`),
+  KEY (`phraseName`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8;
 
 -- DIVIDE
 
-INSERT INTO `{prefix}phrases` (`phraseId`, `name`, `text_en`, `text_jp`) VALUES
+INSERT INTO `{prefix}phrases` (`phraseId`, `phraseName`, `text_en`, `text_jp`) VALUES
 (1, 'brandingTitle', 'FreezeMessenger v3-r062211 (Pre-Beta)', 'フリーズ の メッセンジャー'),
 (2, 'brandingFavicon', 'images/favicon.png', 'images/favicon.png'),
 (4, 'doctype', '<!DOCTYPE HTML>', ''),

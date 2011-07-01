@@ -40,5 +40,6 @@ CREATE TABLE IF NOT EXISTS `{prefix}users` (
   `settings` int(10) NOT NULL DEFAULT 0 COMMENT 'A bitfield corrosponding to different user settings.',
   `userPrivs` int(10) NOT NULL DEFAULT 16 COMMENT 'A bitfield corrosponding to admin-set user priviledges.',
   `adminPrivs` int(10) NOT NULL COMMENT 'A bitfield corrosponding to admin-set administrative priviledges.',
+  `lang` varchar(5) NOT NULL COMMENT 'The language code the user uses by default. It is not well implemented at the current time.',
   PRIMARY KEY (`userId`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8;

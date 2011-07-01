@@ -15,15 +15,16 @@
 
 CREATE TABLE IF NOT EXISTS `{prefix}templates` (
   `templateId` int(10) NOT NULL AUTO_INCREMENT COMMENT 'The ID of the template.',
-  `name` varchar(50) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The name of the template, used for its retrievel.',
+  `templateName` varchar(50) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The name of the template, used for its retrievel.',
   `vars` varchar(1000) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'PHP variables that need to be accessed by the template.',
   `data` longtext CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The text/data associated with the template.',
-  PRIMARY KEY (`templateId`)
+  PRIMARY KEY (`templateId`),
+  KEY (`templateName`)
 ) ENGINE={engine} DEFAULT CHARSET=utf8;
 
 -- DIVIDE
 
-INSERT INTO `{prefix}templates` (`templateId`, `name`, `vars`, `data`) VALUES
+INSERT INTO `{prefix}templates` (`templateId`, `templateName`, `vars`, `data`) VALUES
 (1, 'templateStart', '', '<?xml version="1.0" encoding="UTF-8"?>
 {{if="$phrases[''doctype'']"}{$phrases[doctype]}{<!DOCTYPE HTML>}}
 
@@ -293,7 +294,7 @@ $phrases[hookBodyEndFull]
 
 -- DIVIDE
 
-INSERT INTO `{prefix}templates` (`templateId`, `name`, `vars`, `data`) VALUES
+INSERT INTO `{prefix}templates` (`templateId`, `templateName`, `vars`, `data`) VALUES
 (17, 'editRoomForm', 'censorLists', '<ul class="tabList">
   <li><a href="#editRoom1">General</a></li>
   <li><a href="#editRoom2">Permissions</a></li>
@@ -333,7 +334,7 @@ INSERT INTO `{prefix}templates` (`templateId`, `name`, `vars`, `data`) VALUES
 
 -- DIVIDE
 
-INSERT INTO `{prefix}templates` (`templateId`, `name`, `vars`, `data`) VALUES
+INSERT INTO `{prefix}templates` (`templateId`, `templateName`, `vars`, `data`) VALUES
 (23, 'userSettingsForm', 'enableDF', '<link rel="stylesheet" media="screen" type="text/css" href="client/colorpicker/css/colorpicker.css" />
 <script type="text/javascript" src="client/colorpicker/js/colorpicker.js"></script>
 
@@ -468,7 +469,7 @@ INSERT INTO `{prefix}templates` (`templateId`, `name`, `vars`, `data`) VALUES
 
 -- DIVIDE
 
-INSERT INTO `{prefix}templates` (`templateId`, `name`, `vars`, `data`) VALUES
+INSERT INTO `{prefix}templates` (`templateId`, `templateName`, `vars`, `data`) VALUES
 (28, 'copyright', '', '<ul class="tabList">
   <li><a href="#copyright1">Copyright</a></li>
   <li><a href="#copyright3">License</a></li>
@@ -692,5 +693,5 @@ Keep in mind all content is heavily encrytped for privacy. Private conversations
 
 -- DIVIDE
 
-INSERT INTO `{prefix}templates` (`templateId`, `name`, `vars`, `data`) VALUES
+INSERT INTO `{prefix}templates` (`templateId`, `templateName`, `vars`, `data`) VALUES
 (31, 'register', '', '');

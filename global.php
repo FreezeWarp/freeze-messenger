@@ -37,10 +37,14 @@ $hook = false;
 define("FIM_VERSION","3.0"); // Version to be used by plugins if needed.
 define("DB_BACKEND","MYSQL"); // Database backend to be used by plugins if needed; in the future other backends will be supported, and if the defined database class for whatever reason won't do, this can be used to also support others. At present, PostGreSQL is the only for-sure future backend to be supported. Definite values, if they are to be supported: "MSSQL", "ORACLE", "POSTGRESQL"
 define("DB_DRIVER","MYSQL"); // Drive used for connection to the database. This may be totally useless to plugins, but again for future compatibility is included; other possible example values: "MYSQLi", "PDO" (actually, it would prolly be more useful to plugin authors of a future version wishing to support old versions)
+define("FIM_LANGUAGE","EN_US"); // No plans to change this exist, but again, just in case...
 
 $sqlPrefix = $dbConfig['vanilla']['tablePrefix']; // It's more sane this way...
 $forumTablePrefix = $dbConfig['integration']['tablePreix'];
 
+if (!isset($defaultLanguage)) { // The defaultLanguage flag was created with the WebPro interface in mind, however it's a good one for all people to have (as with the template and phrase tables). Likewise, it could even be used in the API in theory, but... meh. Anyway, even if set to anything other than en, don't expect much (so far as the WebPro interface goes).
+  $defaultLanguage = 'en';
+}
 
 
 if ($dbConnect['core'] == $dbConnect['integration']) {
@@ -93,13 +97,11 @@ require_once('validate.php'); // User Validation
 ///* Get Phrases *///
 
 if ($reqPhrases) {
-  $phrases2 = dbRows("SELECT * FROM {$sqlPrefix}phrases",'phraseId');
-
-  $phrases2 = database->select(
+  $phrases2 = $slaveDatabase->select(
     array(
-      'phrases' => array(
+      "{$sqlPrefix}phrases" => array(
         'phraseId' => 'phraseId',
-        'name' => 'name',
+        'phraseName' => 'phraseName',
         'text_en' => 'text_en',
         'text_jp' => 'text_jp',
         'text_sp' => 'text_sp',
@@ -108,6 +110,7 @@ if ($reqPhrases) {
       ),
     )
   );
+  $phrases2 = $phrases2->getAsArray('phraseId');
 
 
   // Generate the language, based on:
@@ -120,10 +123,10 @@ if ($reqPhrases) {
 
   if ($phrases2) {
     foreach ($phrases2 AS $phrase) {
-      $phrases[$phrase['name']] = $phrase['text_' . $lang];
+      $phrases[$phrase['phraseName']] = $phrase['text_' . $lang];
 
-      if (!$phrases[$phrase['name']] && $phrase['text_en']) { // If a value for the language doesn't exist, default to english.
-        $phrases[$phrase['name']] = $phrase['text_en'];
+      if (!$phrases[$phrase['phraseName']] && $phrase['text_en']) { // If a value for the language doesn't exist, default to english.
+        $phrases[$phrase['phraseName']] = $phrase['text_en'];
       }
     }
   }
@@ -136,11 +139,22 @@ if ($reqPhrases) {
 ///* Get Code Hooks *///
 
 if ($reqHooks) {
-  $hooks2 = dbRows("SELECT * FROM {$sqlPrefix}hooks",'hookId');
+
+  $hooks2 = $slaveDatabase->select(
+    array(
+      "{$sqlPrefix}hooks" => array(
+        'hookId' => 'hookId',
+        'hookName' => 'hookName',
+        'code' => 'code',
+      ),
+    )
+  );
+  $hooks2 = $hooks2->getAsArray('hookId');
+
 
   if ($hooks2) {
     foreach ($hooks2 AS $hook) {
-      $hooks[$hook['name']] = $hook['code'];
+      $hooks[$hook['hookName']] = $hook['code'];
     }
 
     unset($hook);
@@ -154,12 +168,23 @@ if ($reqHooks) {
 ///* Get Templates *///
 
 if ($reqPhrases) {
-  $templates2 = dbRows("SELECT * FROM {$sqlPrefix}templates",'templateId');
+
+  $templates2 = $slaveDatabase->select(
+    array(
+      "{$sqlPrefix}templates" => array(
+        'templateId' => 'templateId',
+        'templateName' => 'templateName',
+        'data' => 'data',
+        'vars' => 'vars',
+      ),
+    )
+  );
+  $templates2 = $templates2->getAsArray('templateId');
 
   if ($templates2) {
     foreach ($templates2 AS $template) {
-      $templates[$template['name']] = $template['data'];
-      $templateVars[$template['name']] = $template['vars'];
+      $templates[$template['templateName']] = $template['data'];
+      $templateVars[$template['templateName']] = $template['vars'];
     }
 
     unset($template);

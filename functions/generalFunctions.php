@@ -532,24 +532,28 @@ function hook($name) {
 function template($name) {
   global $templates, $phrases, $title, $user, $room, $message, $template, $templateVars; // Lame approach.
 
-  if($templateVars[$name]) {
-    $vars = explode(',',$templateVars[$name]);
-    foreach ($vars AS $var) {
-      $globalVars[] = '$' . $var;
-    }
-    $globalString = implode(',',$globalVars);
+  if (isset($templateVars[$name])) {
+    if($templateVars[$name]) {
+      $vars = explode(',',$templateVars[$name]);
+      foreach ($vars AS $var) {
+        $globalVars[] = '$' . $var;
+      }
+      $globalString = implode(',',$globalVars);
 
-    eval("global $globalString;");
+      eval("global $globalString;");
+
+      $template2 = $templates[$name];
+
+      $template2 = parser1($template2,0,false,$globalString);
+
+
+      $template2 = preg_replace('/(.+)/e','stripslashes("\\1")',$template2);
+
+      return $template2;
+    }
   }
 
-  $template2 = $templates[$name];
-
-  $template2 = parser1($template2,0,false,$globalString);
-
-
-  $template2 = preg_replace('/(.+)/e','stripslashes("\\1")',$template2);
-
-  return $template2;
+  return '';
 }
 
 
@@ -571,6 +575,7 @@ function parser1($text,$offset,$stop = false,$globalString = '') {
   $cValueProc = false;
   $iValue = false;
   $iValueProc = false;
+  $str = '';
 
   while ($i < strlen($text)) {
     $j = $text[$i];
