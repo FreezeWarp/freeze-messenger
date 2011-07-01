@@ -91,7 +91,7 @@ function dbQuery($query) {
 * @param string $database - The database to connect to.
 * @return void
 * @author Joseph Todd Parsons
-*/
+*//*
 function dbArray($queryData,$index = false) {
   global $queryCounter;
 
@@ -116,7 +116,7 @@ function dbArray($queryData,$index = false) {
     }
   }
   return false;
-}
+}*/
 
 
 /**

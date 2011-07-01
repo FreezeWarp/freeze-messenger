@@ -178,7 +178,7 @@ Now that the database has been successfully installed, we must generate the conf
 </form>
 <form onsubmit="return false;">
 <button style="float: left;" type="button" onclick="$(\'#part5\').slideUp(); $(\'#part4\').slideDown();">&larr; Back</button>
-<button style="float: right;" type="button" onclick="$.get(\'index.php?phase=5\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#mysql_db_form\').serialize() + \'&\' + $(\'#mysql_table_form\').serialize() + \'&\' + $(\'#config_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part4\').slideUp(); $(\'#part5\').slideDown(); } else { alert(\'Could not connect.\'); } } );">Verify &rarr;</button>
+<button style="float: right;" type="button" onclick="$.get(\'index.php?phase=5\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#mysql_db_form\').serialize() + \'&\' + $(\'#mysql_table_form\').serialize() + \'&\' + $(\'#config_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part5\').slideUp(); $(\'#part6\').slideDown(); } else { alert(\'Could not create configuration file. Is the server allowed to write to it?\'); } } );">Verify &rarr;</button>
 </form>
 </div>
 </body>
@@ -314,18 +314,26 @@ Now that the database has been successfully installed, we must generate the conf
   $base = file_get_contents('config.base.php');
 
   $find = array(
-    '$sqlHost = \'localhost\';',
-    '$sqlUser = \'\';',
-    '$sqlPassword = \'\';',
-    '$sqlDatabase = \'\';',
-    '$sqlPrefix = \'\';',
-    '$loginMethod = \'vanilla\';',
+    '$dbConnect[\'core\'][\'host\'] = \'localhost\';
+$dbConnect[\'slave\'][\'host\'] = \'localhost\';
+$dbConnect[\'integration\'][\'host\'] = \'localhost\';',
+    '$dbConnect[\'core\'][\'username\'] = \'\';
+$dbConnect[\'slave\'][\'username\'] = \'\';
+$dbConnect[\'integration\'][\'username\'] = \'\';',
+    '$dbConnect[\'core\'][\'password\'] = \'\';
+$dbConnect[\'slave\'][\'password\'] = \'\';
+$dbConnect[\'integration\'][\'password\'] = \'\';',
+    '$dbConnect[\'core\'][\'database\'] = \'\';
+$dbConnect[\'slave\'][\'database\'] = \'\';
+$dbConnect[\'integration\'][\'database\'] = \'\';',
+    '$dbConfig[\'vanilla\'][\'tablePrefix\'] = \'\';
+$dbConfig[\'integration\'][\'tablePreix\'] = \'\';',
+    '$loginConfig[\'method\'] = \'vanilla\';',
+    '$loginConfig[\'url\'] = \'http://example.com/forums/\';',
+    '$loginConfig[\'superUsers\'] = array()',
     '$installLoc = \'\';',
     '$installUrl = \'\';',
-    '$forumUrl = \'http://example.com/forums/\';',
-    '$forumTablePrefix = \'\';',
     '$forumSalt = \'\';',
-    '$superUsers = array();',
     '$salts = array(
   101 => \'xxx\',
 );',
@@ -339,13 +347,26 @@ Now that the database has been successfully installed, we must generate the conf
     '$sqlPassword = \'' . $password . '\';',
     '$sqlDatabase = \'' . $database . '\';',
     '$sqlPrefix = \'' . $prefix . '\';',
-    '$loginMethod = \'' . $forum . '\';',
+
+    '$dbConnect[\'core\'][\'host\'] = \'' . $host . '\';
+$dbConnect[\'slave\'][\'host\'] = \'' . $host . '\';
+$dbConnect[\'integration\'][\'host\'] = \'' . $host . '\';',
+    '$dbConnect[\'core\'][\'username\'] = \'' . $userName . '\';
+$dbConnect[\'slave\'][\'username\'] = \'' . $userName . '\';
+$dbConnect[\'integration\'][\'username\'] = \'' . $userName . '\';',
+    '$dbConnect[\'core\'][\'password\'] = \'' . $password . '\';
+$dbConnect[\'slave\'][\'password\'] = \'' . $password . '\';
+$dbConnect[\'integration\'][\'password\'] = \'' . $password . '\';',
+    '$dbConnect[\'core\'][\'database\'] = \'' . $database . '\';
+$dbConnect[\'slave\'][\'database\'] = \'' . $database . '\';
+$dbConnect[\'integration\'][\'database\'] = \'' . $database . '\';',
+    '$dbConfig[\'vanilla\'][\'tablePrefix\'] = \'\';
+$dbConfig[\'integration\'][\'tablePreix\'] = \'\';',
+    '$loginConfig[\'method\'] = \'' . $forum . '\';',
+    '$loginConfig[\'url\'] = \'' . $forumUrl . '\';',
+    '$loginConfig[\'superUsers\'] = array(' . ($forum == 'phpbb' ? 2 : 1) . ');',
     '$installLoc = \'' . __DIR__ . '\';',
     '$installUrl = \'' . str_replace('index.php','',$_SERVER['HTTP_REFERER']) . '\';',
-    '$forumUrl = \'' . $forumUrl . '\';',
-    '$forumTablePrefix = \'' . $forumTablePrefix . '\';',
-    '$forumSalt = \'' . $forumSalt . '\';',
-    '$superUsers = array(' . ($forum == 'phpbb' ? 2 : 1) . ');',
     '$salts = array(
   101 => \'' . $encryptSalt . '\',
 );',

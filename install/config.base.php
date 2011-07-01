@@ -44,28 +44,37 @@
 /* $sqlHost
  * Defines the MySQL server to be connected to, with an optional port attached.
  * If unsure, "localhost" will work if you are connecting to a local server (which is the case most of the time) */
-$sqlHost = 'localhost';
+$dbConnect['core']['host'] = 'localhost';
+$dbConnect['slave']['host'] = 'localhost';
+$dbConnect['integration']['host'] = 'localhost';
 
 /* $sqlUser
  * Defines the user of the MySQL connection to be used.
  * If unsure, PHPMyAdmin can be used to create new users, or ask your webhost/geeky friend for help. */
-$sqlUser = '';
+$dbConnect['core']['username'] = '';
+$dbConnect['slave']['username'] = '';
+$dbConnect['integration']['username'] = '';
 
 /* $sqlPassword
  * Defines the password associated with the user specified above. */
-$sqlPassword = '';
+$dbConnect['core']['password'] = '';
+$dbConnect['slave']['password'] = '';
+$dbConnect['integration']['password'] = '';
 
 /* $sqlDatabase
  * Defines the database to connect to.
  * The above user must have permission to SELECT, INSERT, DELETE, and UPDATE in this database.
  * Note that, when integrating with forums, you __MUST__ use the same database as the forum. */
-$sqlDatabase = '';
+$dbConnect['core']['database'] = '';
+$dbConnect['slave']['database'] = '';
+$dbConnect['integration']['database'] = '';
 
 /* $sqlPrefix
  * A prefix used for all tables.
  * If uncertain, a random string is often the best bet.
  * If you are integrating with a forum, it is imperative you not leave this blank. */
-$sqlPrefix = '';
+$dbConfig['vanilla']['tablePrefix'] = '';
+$dbConfig['integration']['tablePreix'] = '';
 
 
 
@@ -76,18 +85,13 @@ $sqlPrefix = '';
  * The method used for forum-integration.
  * If you are not integrating with a forum, use "vanilla".
  * Otherwise, "phpbb" and "vbulletin" are supported by default. */
-$loginMethod = 'vanilla';
+$loginConfig['method'] = 'vanilla';
 
 /* $forumUrl
  * The URL of the forum you will be integrating with.
  * If not using integration (login method vanilla), you may leave this blank.
  * Otherwise, you are strongly encouraged to specify the accurate URL (such as http://example.com/forums/). */
-$forumUrl = 'http://example.com/forums/'; // The URL of the forum being used.
-
-/* $forumTablePrefix
- * The table prefix used by all forum tables.
- * If unsure, the forum configuration file will most likely specify which one you used. */
-$forumTablePrefix = '';
+$loginConfig['url'] = 'http://example.com/forums/'; // The URL of the forum being used.
 
 /* $brokenUsers
  * An array of userIds whom are considered "broken" or not allowed authentication.
@@ -96,12 +100,12 @@ $forumTablePrefix = '';
  * As of version 3.0.8 (and possibly others), the default will work.
  * For vBulletin and Vanilla, this does not need to be changed.
  * Finally, note that this may not really be needed. We're not sure yet. */
-$brokenUsers = array();
+$loginConfig['brokenUsers'] = array();
 
 /* $superUsers
  * A list of userIds who have full control over the software.
  * In general, this should include at least yourself. Thus, 1 for vBulletin and Vanilla, and 2 for PHPBB. */
-$superUsers = array();
+$loginConfig['superUsers'] = array();
 
 
 

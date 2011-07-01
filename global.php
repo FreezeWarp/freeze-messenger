@@ -35,12 +35,44 @@ $continue = true; // Simple "stop" variable used throughout for hooks.
 define("FIM_VERSION","3.0"); // Version to be used by plugins if needed.
 
 
-$database = new database;
-if (!$database->connect($sqlHost,$sqlUser,$sqlPassword,$sqlDatabase)) { // Connect to MySQL
-  die('Could not connect to the database; the application has exitted.'); // Die to prevent furthr execution.
+
+if ($dbConnect['core'] == $dbConnect['integration']) {
+  $integrationConnect = false;
+}
+if ($dbConnect['core'] == $dbConnect['slave']) {
+  $slaveConnect = false;
 }
 
-unset($sqlPassword); // Security!
+
+$database = new database;
+if (!$database->connect($dbConnect['core']['host'],$dbConnect['core']['username'],$dbConnect['core']['password'],$dbConnect['core']['database'])) { // Connect to MySQL
+  die('Could not connect to the database; the application has exitted.'); // Die to prevent further execution.
+}
+
+if ($integrationConnect) {
+  $integrationDatabase = new database;
+
+  if (!$database->connect($dbConnect['integration']['host'],$dbConnect['integration']['username'],$dbConnect['integration']['password'],$dbConnect['integration']['database'])) { // Connect to MySQL
+    die('Could not connect to the integration database; the application has exitted.'); // Die to prevent further execution.
+  }
+}
+else {
+  $integrationDatabase = $database;
+}
+
+if ($slaveConnect) {
+  $slaveDatabase = new database;
+
+  if (!$database->connect($dbConnect['slave']['host'],$dbConnect['slave']['username'],$dbConnect['slave']['password'],$dbConnect['slave']['database'])) { // Connect to MySQL
+    die('Could not connect to the slave database; the application has exitted.'); // Die to prevent further execution.
+  }
+}
+else {
+  $slaveDatabase = $database;
+}
+
+
+unset($dbConnect); // Security!
 
 
 if ($compressOutput) { // Compress Output for transfer if configured to.

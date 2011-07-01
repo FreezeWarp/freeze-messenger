@@ -40,6 +40,7 @@ $apiRequest = true;
 require_once('../global.php');
 
 
+$longPollingWait = .25;
 
 ///* Variable Setting *///
 

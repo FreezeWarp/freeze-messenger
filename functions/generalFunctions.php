@@ -1190,7 +1190,7 @@ function fim_sanitizeGPC($data) {
         }
 
 
-        if (isset($activeGlobal[$indexName])) {
+        if (isset($activeGlobal[$indexName])) { // Only typecast if the global is present.
           switch ($indexMetaData['type']) {
             case 'int':
             $activeGlobal[$indexName] = (int) $activeGlobal[$indexName];
@@ -1205,51 +1205,51 @@ function fim_sanitizeGPC($data) {
             break;
           }
 
-          if (isset($indexMetaData['valid'])) {
-            if (is_array($indexMetaData['valid'])) {
-              if (in_array($activeGlobal[$indexName],$indexMetaData['valid'])) {
-                // Do Nothing Yet
+          if (isset($indexMetaData['valid'])) { // If a list of valid values is specified...
+            if (is_array($indexMetaData['valid'])) { // And if that list is an array...
+              if (in_array($activeGlobal[$indexName],$indexMetaData['valid'])) { // And if the value specified is in the list of valid values...
+                // Do Nothing; We're Good
               }
               else {
-                if ($indexMetaData['require']) {
-                  throw new Exception('Required data not valid.');
+                if ($indexMetaData['require']) { // If the value is required but not valid...
+                  throw new Exception('Required data not valid.'); // Throw an exception.integer
                 }
-                elseif (isset($indexMetaData['default'])) {
-                  $activeGlobal[$indexName] = $indexMetaData['default'];
+                elseif (isset($indexMetaData['default'])) { // If the value has a default but is not valid...
+                  $activeGlobal[$indexName] = $indexMetaData['default']; // Set the value to the default.
                 }
               }
             }
             else {
-              throw new Exception('Defined valid values do not corrospond to recognized data type (array).');
+              throw new Exception('Defined valid values do not corrospond to recognized data type (array).'); // Throw an exception since valid values are not properly defined.
             }
           }
         }
         else {
-          if ($indexMetaData['require']) {
-            throw new Exception('Required data not present.');
+          if ($indexMetaData['require']) { // If the value is required but not specified...
+            throw new Exception('Required data not present.'); // Throw an exception.
           }
-          elseif (isset($indexMetaData['default'])) {
-            $activeGlobal[$indexName] = $indexMetaData['default'];
+          elseif (isset($indexMetaData['default'])) { // If the value has a default and is not specified...
+            $activeGlobal[$indexName] = $indexMetaData['default']; // Set the value to the default.
           }
         }
 
         switch($indexMetaData['context']['cast']) {
           case 'csv':
-          $newData[$indexName] = fim_arrayValidate(explode(',',$activeGlobal[$indexName]),$indexMetaData['context']['filter'],($indexMetaData['context']['evaltrue'] ? false : true));
+          $newData[$indexName] = fim_arrayValidate(explode(',',$activeGlobal[$indexName]),$indexMetaData['context']['filter'],($indexMetaData['context']['evaltrue'] ? false : true)); // If a cast is set for a CSV list, explode with a comma seperator, make sure all values corrosponding to the filter (int, bool, or string - the latter pretty much changes nothing), and if evaltrue is true, then the preserveAll flag would be false, and vice-versa.
           break;
 
           case 'int':
-          if ($indexMetaData['context']['evaltrue']) {
-            if ((int) $activeGlobal[$indexName]) {
-              $newData[$indexName] = (int) $activeGlobal[$indexName];
+          if ($indexMetaData['context']['evaltrue']) { // Only include the value if it is true.
+            if ((int) $activeGlobal[$indexName]) { // If true/non-zero...
+              $newData[$indexName] = (int) $activeGlobal[$indexName]; // Append value as integer-cast.
             }
           }
-          else {
-            $newData[$indexName] = (int) $activeGlobal[$indexName];
+          else { // Include the value whether true or false.
+            $newData[$indexName] = (int) $activeGlobal[$indexName]; // Append value as integer-cast.
           }
           break;
 
-          case 'bool':
+          case 'bool': // I'm not sure what to do here yet, really...
           if ($activeGlobal[$indexName] === 'true') {
             $newData[$indexName] = true;
           }
@@ -1264,8 +1264,8 @@ function fim_sanitizeGPC($data) {
           }
           break;
 
-          default:
-          $newData[$indexName] = $activeGlobal[$indexName];
+          default: // String or otherwise.
+          $newData[$indexName] = (string) $activeGlobal[$indexName]; // Append value as string-cast.
           break;
         }
       }

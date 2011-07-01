@@ -232,7 +232,77 @@ if ($flag) {
 else {
   if ($sessionHash) {
 
-    $user = dbRows("SELECT u.*, s.anonId, UNIX_TIMESTAMP(s.time) AS sessionTime, s.ip AS sessionIp, s.browser AS sessionBrowser FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE s.magicHash = '" . dbEscape($sessionHash) . "' AND u.userId = s.userId");
+//    $user = dbRows("SELECT u.*, s.anonId, UNIX_TIMESTAMP(s.time) AS sessionTime, s.ip AS sessionIp, s.browser AS sessionBrowser FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE s.magicHash = '" . dbEscape($sessionHash) . "' AND u.userId = s.userId");
+
+    $user = $database->select(
+      array( // Columns
+        "{$sqlPrefix}users" => array(
+          'userId' => 'userId',
+          'userName' => 'userName',
+          'userGroup' => 'userGroup',
+          'allGroups' => 'allGroups',
+          'avatar' => 'avatar',
+          'profile' => 'profile',
+          'socialGroups' => 'socialGroups',
+          'userFormatStart' => 'userFormatStart',
+          'userFormatEnd' => 'userFormatEnd',
+          'password' => 'password',
+          'joinDate' => 'joinDate',
+          'birthDate' => 'birthDate',
+          'lastSync' => 'lastSync',
+          'defaultRoom' => 'defaultRoom',
+          'interface' => 'interface',
+          'favRooms' => 'favRooms',
+          'watchRooms' => 'watchRooms',
+          'ignoreList' => 'ignoreList',
+          'status' => 'status',
+          'defaultHighlight' => 'defaultHighlight',
+          'defaultColor' => 'defaultColor',
+          'defaultFontface' => 'defaultFontface',
+          'defaultFormatting' => 'defaultFormatting',
+          'settings' => 'settings',
+          'userPrivs' => 'userPrivs',
+          'adminPrivs' => 'adminPrivs',
+        ),
+        "{$sqlPrefix}sessions" => array(
+          'anonId' => 'anonId',
+          'magicHash' => 'magicHash',
+          'userId' => 'suserId',
+          'time' => array(
+            'name' => 'sessionTime',
+            'context' => 'time',
+          ),
+          'ip' => 'sessionIp',
+          'browser' => 'sessionBrowser',
+        ),
+      ),
+      array( // Conditions
+        'both' => array(
+          array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'userId',
+            ),
+            'right' => array(
+              'type' => 'column',
+              'value' => 'suserId',
+            ),
+          ),
+          array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'magicHash',
+            ),
+            'right' => array(
+              'type' => 'string',
+              'value' => $sessionHash,
+            ),
+          ),
+        ),
+      ),
+    );
 
     if ($user) {
       if ((int) $user['userId'] !== (int) $userIdComp) { // The userid sent has to be the same one in the DB. In theory we could just not require a userId be specified, but there are benefits to this alternative. For instance, this eliminates some forms of injection-based session fixation.
