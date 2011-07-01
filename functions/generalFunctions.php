@@ -1082,7 +1082,7 @@ function formatSize($size) {
 * @return array
 * @author Joseph Todd Parsons
 */
-function fim_sanitizeGPCS($data) {
+function fim_sanitizeGPC($data) {
   $metaDataDefaults = array(
     'type' => 'string',
     'require' => false,
@@ -1143,12 +1143,13 @@ function fim_sanitizeGPCS($data) {
             break;
 
             case 'context':
+            $indexMetaData['context'] = array(
+              'cast' => '',
+              'filter' => '',
+              'evaltrue' => false,
+            );
+
             foreach ($metadata AS $contextname => $contextdata) {
-              $indexMetaData['context'] = array(
-                'cast' => '',
-                'filter' => '',
-                'evaltrue' => false,
-              );
 
               switch ($contextname) {
                 case 'type': // This is the original typecast, with some special types defined. While GPC variables are best interpretted as strings, this goes further and converts the string to a more proper format.
@@ -1168,7 +1169,7 @@ function fim_sanitizeGPCS($data) {
                 break;
 
                 case 'filter': // This is an additional filter applied to data that uses the "csv" context type (and possibly more in the future).
-                switch ($contextData) {
+                switch ($contextdata) {
                   case 'int':
                   $indexMetaData['context']['filter'] = 'int';
                   break;
@@ -1176,7 +1177,7 @@ function fim_sanitizeGPCS($data) {
                 break;
 
                 case 'evaltrue': // This specifies whether all subvalus of a context must be true. For instance, assuming we use an integer filter 0 would be removed if this was true.
-                  $indexMetaData['context']['evaltrue'] = $contextdata;
+                $indexMetaData['context']['evaltrue'] = (bool) $contextdata;
                 break;
               }
             }
@@ -1205,7 +1206,7 @@ function fim_sanitizeGPCS($data) {
           }
 
           if (isset($indexMetaData['valid'])) {
-            if (is_array($indexMetaData['default'])) {
+            if (is_array($indexMetaData['valid'])) {
               if (in_array($activeGlobal[$indexName],$indexMetaData['valid'])) {
                 // Do Nothing Yet
               }
@@ -1234,7 +1235,33 @@ function fim_sanitizeGPCS($data) {
 
         switch($indexMetaData['context']['cast']) {
           case 'csv':
-          $newData[$indexName] = fim_arrayValidate(explode($activeGlobal[$indexName]),$indexMetaData['context']['filter'],$indexMetaData['context']['evaltrue']);
+          $newData[$indexName] = fim_arrayValidate(explode(',',$activeGlobal[$indexName]),$indexMetaData['context']['filter'],($indexMetaData['context']['evaltrue'] ? false : true));
+          break;
+
+          case 'int':
+          if ($indexMetaData['context']['evaltrue']) {
+            if ((int) $activeGlobal[$indexName]) {
+              $newData[$indexName] = (int) $activeGlobal[$indexName];
+            }
+          }
+          else {
+            $newData[$indexName] = (int) $activeGlobal[$indexName];
+          }
+          break;
+
+          case 'bool':
+          if ($activeGlobal[$indexName] === 'true') {
+            $newData[$indexName] = true;
+          }
+          elseif ($activeGlobal[$indexName] === 1) {
+            $newData[$indexName] = true;
+          }
+          elseif ($activeGlobal[$indexName] === true) {
+            $newData[$indexName] = true;
+          }
+          else {
+            $newData[$indexName] = false;
+          }
           break;
 
           default:

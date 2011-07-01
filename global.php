@@ -35,7 +35,8 @@ $continue = true; // Simple "stop" variable used throughout for hooks.
 define("FIM_VERSION","3.0"); // Version to be used by plugins if needed.
 
 
-if (!dbConnect($sqlHost,$sqlUser,$sqlPassword,$sqlDatabase)) { // Connect to MySQL
+$database = new database;
+if (!$database->connect($sqlHost,$sqlUser,$sqlPassword,$sqlDatabase)) { // Connect to MySQL
   die('Could not connect to the database; the application has exitted.'); // Die to prevent furthr execution.
 }
 

@@ -37,10 +37,14 @@ $apiRequest = true;
 
 require_once('../global.php');
 
-$request = fim_sanitizeGPCS(array(
+
+
+/* Get Request Data */
+$request = fim_sanitizeGPC(array(
   'get' => array(
     'permLevel' => array(
       'type' => 'string',
+      'default' => 'view',
       'valid' => array(
         'post',
         'view',
@@ -62,8 +66,13 @@ $request = fim_sanitizeGPCS(array(
       ),
     ),
 
-    'order' => array(
+    'sort' => array(
       'type' => 'string',
+      'valid' => array(
+        'roomId',
+        'roomName',
+        'smart',
+      ),
       'require' => false,
       'default' => 'roomId',
     ),
@@ -88,15 +97,14 @@ $request = fim_sanitizeGPCS(array(
   ),
 ));
 
-die(var_dump($request,true));
-
-$roomsArray = fim_arrayValidate(explode(',',$request['rooms']),'int',false);
 
 
+/* Get User's Favourite Rooms as Array */
+$favRooms = fim_arrayValidate(explode(',',$user['favRooms']),'int',false); // All entries cast as integers, will not preserve entries of zero.
 
-$favRooms = explode(',',$user['favRooms']);
 
 
+/* Filter */
 $whereClause = ($request['showDeleted'] ? '' : '(options & 4 = FALSE) AND ');
 if ($rooms) {
   $whereClause .= ' roomId IN (' . implode(',',$roomsArray) . ') AND ';
@@ -104,27 +112,9 @@ if ($rooms) {
 
 
 
-/* Room Permission Filtering
- * post, view*, moderate, know, admin */
-switch ($_GET['permLevel']) {
-  case 'post':
-  case 'view':
-  case 'moderate':
-  case 'know':
-  case 'admin':
-  $permLevel = $_GET['permLevel"hasPe'];
-  break;
-
-  default:
-  $permLevel = 'view';
-  break;
-}
-
-
-
 /* Query Results Order
  * roomId*, roomName, smart */
-switch ($_GET['order']) {
+switch ($request['sort']) {
   case 'roomId':
   $order = 'roomId ' . ($request['reverseOrder'] ? 'DESC' : 'ASC');
   break;
@@ -163,16 +153,8 @@ $xmlData = array(
 
 
 /* SELECT Rooms From Database */
-$rooms = dbRows("SELECT roomId, roomName, options, allowedUsers, allowedGroups, moderators, owner, bbcode, roomTopic
-FROM {$sqlPrefix}rooms
-WHERE $whereClause TRUE
-  {$messagesCached_where}
-ORDER BY $order
-  {$messagesCached_order}
-{$messagesCached_end}",'roomId'); // Get all rooms
-
-$rooms = dbSelect(
-  array(
+$rooms = $database->select(
+  array( // Columns
     "{$sqlPrefix}rooms" => array(
       'roomId',
       'roomName',
@@ -184,6 +166,9 @@ $rooms = dbSelect(
       'bbcode',
       'roomTopic',
     ),
+    array( // Tables
+      "{$sqlPrefix}rooms",
+    )
   ),
 
   array(
@@ -197,7 +182,7 @@ $rooms = dbSelect(
 if ($rooms) {
   foreach ($rooms AS $room) {
     $permissions = fim_hasPermission($room,$user,'all',false);
-    if (!$permissions[0][$permLevel]) {
+    if (!$permissions[0][$request['permLevel']]) {
       continue;
     }
 
