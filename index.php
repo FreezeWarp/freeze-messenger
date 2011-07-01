@@ -3,10 +3,10 @@
 ///* Handle FIM Installation *///
 
 if (!file_exists('config.php')) {
-  if (file_exists('install/')) {
-    header('Location: install/');
+  if (file_exists('install/index.php')) {
+    header('Location: install/index.php');
 
-    die('FreezeMessenger must first be installed. <a href="install/">Click here</a> to do so.');
+    die('FreezeMessenger must first be installed. <a href="install/index.php">Click here</a> to do so.');
   }
   else {
     die('FreezeMessenger must first be installed. Please modify install/config-base.php and save as config.php in the base directory.');

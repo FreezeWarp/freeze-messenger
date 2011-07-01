@@ -122,7 +122,7 @@ elseif ((int) $anonymousUser >= 1 && isset($_POST['apiLogin'])) { // Unregistere
 ///* Required Forum-Included Functions *///
 
 /* Set Relevant Column Data */
-switch ($loginMethod) {
+switch ($loginConfig['method']) {
 
   case 'vbulletin':
   $sqlUserTable = $forumTablePrefix . 'user'; // The user table in the login method used.
@@ -212,7 +212,7 @@ switch ($loginMethod) {
   break;
 
   default:
-  trigger_error("Login method '$loginMethod' unrecognized.",E_USER_ERROR);
+  trigger_error("Login method '$loginConfig[method]' unrecognized.",E_USER_ERROR);
   break;
 
 }
@@ -301,8 +301,8 @@ else {
             ),
           ),
         ),
-      ),
-    );
+      )
+    ); die($user);
 
     if ($user) {
       if ((int) $user['userId'] !== (int) $userIdComp) { // The userid sent has to be the same one in the DB. In theory we could just not require a userId be specified, but there are benefits to this alternative. For instance, this eliminates some forms of injection-based session fixation.
@@ -389,11 +389,11 @@ else {
 
 if ($valid) { // If the user is valid, process their preferrences.
 
-  if ($noSync || $loginMethod == 'vanilla') {
+  if ($noSync || $loginConfig['method'] == 'vanilla') {
 
   }
   else {
-    if ($loginMethod == 'vbulletin' || $loginMethod == 'phpbb') {
+    if ($loginConfig['method'] == 'vbulletin' || $loginConfig['method'] == 'phpbb') {
 
       $userCopy = $user;
       unset($user);
@@ -414,7 +414,7 @@ if ($valid) { // If the user is valid, process their preferrences.
 
 
 
-    switch ($loginMethod) {
+    switch ($loginConfig['method']) {
 
       case 'vbulletin':
 
@@ -665,8 +665,10 @@ else {
 /* The following defines each individual user's options via an associative array. It is highly recommended this be used to referrence settings. */
 
 
-if (in_array($user['userId'],$superUsers)) {
-  $user['adminPrivs'] = 65535; // Super-admin, away!!!! (this defines all bitfields up to 32768)
+if (is_array($loginConfig['superUsers'])) {
+  if (in_array($user['userId'],$loginConfig['superUsers'])) {
+    $user['adminPrivs'] = 65535; // Super-admin, away!!!! (this defines all bitfields up to 32768)
+  }
 }
 
 $user['adminDefs'] = array(
@@ -755,13 +757,6 @@ if ($api) {
 
   $xmlData = array(
     'login' => array(
-      'sentData' => array(
-        'apiVersion' => $_POST['apiVersion'],
-        'passwordEncrypt' => $_POST['passwordEncrypt'],
-        'userName' => $_POST['userName'],
-        'password' => $_POST['password'],
-      ),
-
       'valid' => (bool) $valid,
 
       'loginFlag' => (defined('LOGIN_FLAG') ? LOGIN_FLAG : ''),
