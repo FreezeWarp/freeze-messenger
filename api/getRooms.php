@@ -156,23 +156,16 @@ $xmlData = array(
 $rooms = $database->select(
   array( // Columns
     "{$sqlPrefix}rooms" => array(
-      'roomId',
-      'roomName',
-      'options',
-      'allowedUsers',
-      'allowedGroups',
-      'moderators',
-      'owner',
-      'bbcode',
-      'roomTopic',
-    ),
-    array( // Tables
-      "{$sqlPrefix}rooms",
+      'roomId' => 'roomId',
+      'roomName' => 'roomName',
+      'options' => 'options',
+      'allowedUsers' => 'allowedUsers',
+      'allowedGroups' => 'allowedGroups',
+      'moderators' => 'moderators',
+      'owner' => 'owner',
+      'bbcode' => 'bbcode',
+      'roomTopic' => 'roomTopic',
     )
-  ),
-
-  array(
-    "{$sqlPrefix}rooms",
   )
 );
 

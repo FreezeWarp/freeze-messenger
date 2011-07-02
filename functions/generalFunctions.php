@@ -531,6 +531,7 @@ function hook($name) {
 
 function template($name) {
   global $templates, $phrases, $title, $user, $room, $message, $template, $templateVars; // Lame approach.
+  static $globalString;
 
   if (isset($templateVars[$name])) {
     if($templateVars[$name]) {
@@ -541,16 +542,17 @@ function template($name) {
       $globalString = implode(',',$globalVars);
 
       eval("global $globalString;");
-
-      $template2 = $templates[$name];
-
-      $template2 = parser1($template2,0,false,$globalString);
-
-
-      $template2 = preg_replace('/(.+)/e','stripslashes("\\1")',$template2);
-
-      return $template2;
     }
+
+
+    $template2 = $templates[$name];
+
+    $template2 = parser1($template2,0,false,$globalString);
+
+
+    $template2 = preg_replace('/(.+)/e','stripslashes("\\1")',$template2);
+
+    return $template2;
   }
 
   return '';

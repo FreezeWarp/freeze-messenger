@@ -310,7 +310,7 @@ else {
           ),
         ),
       )
-    ); die($user);
+    )->getAsArray();
 
     if ($user) {
       if ((int) $user['userId'] !== (int) $userIdComp) { // The userid sent has to be the same one in the DB. In theory we could just not require a userId be specified, but there are benefits to this alternative. For instance, this eliminates some forms of injection-based session fixation.
