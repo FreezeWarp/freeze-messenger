@@ -168,45 +168,45 @@ $rooms = $database->select(
     )
   )
 );
-
-
+$rooms = $rooms->getAsArray();
 
 /* Process Rooms Obtained from Database */
 if ($rooms) {
   foreach ($rooms AS $room) {
     $permissions = fim_hasPermission($room,$user,'all',false);
-    if (!$permissions[0][$request['permLevel']]) {
+    if ($permissions[0][$request['permLevel']] === false) {
       continue;
     }
+    else {
+      $xmlData['getRooms']['rooms']['room ' . $room['roomId']] = array(
+        'roomId' => (int)$room['roomId'],
+        'roomName' => ($room['roomName']),
+        'roomTopic' => ($room['roomTopic']),
+        'roomOwner' => (int) $room['owner'],
+        'allowedUsers' => ($room['allowedUsers']),
+        'allowedGroups' => ($room['allowedGroups']),
+        'moderators' => ($room['moderators']),
+        'favorite' => (bool) (in_array($room['roomId'],$favRooms) ? true : false),
+        'options' => (int) $room['options'],
+        'optionDefinitions' => array(
+          'official' => (bool) ($room['options'] & 1),
+          'mature' => (bool) ($room['options'] & 2),
+          'deleted' => (bool) ($room['options'] & 4),
+          'hidden' => (bool) ($room['options'] & 8),
+          'privateIm' => (bool) ($room['options'] & 16),
+        ),
+        'bbcode' => (int) $room['bbcode'],
+        'permissions' => array(
+          'canModerate' => (bool) $permissions[0]['moderate'],
+          'canAdmin' => (bool) $permissions[0]['admin'],
+          'canPost' => (bool) $permissions[0]['post'],
+          'canView' => (bool) $permissions[0]['view'],
+          'canKnow' => (bool) $permissions[0]['know'],
+        ),
+      );
 
-    $xmlData['getRooms']['rooms']['room ' . $room['roomId']] = array(
-      'roomId' => (int)$room['roomId'],
-      'roomName' => ($room['roomName']),
-      'roomTopic' => ($room['roomTopic']),
-      'roomOwner' => (int) $room['owner'],
-      'allowedUsers' => ($room['allowedUsers']),
-      'allowedGroups' => ($room['allowedGroups']),
-      'moderators' => ($room['moderators']),
-      'favorite' => (bool) (in_array($room['roomId'],$favRooms) ? true : false),
-      'options' => (int) $room['options'],
-      'optionDefinitions' => array(
-        'official' => (bool) ($room['options'] & 1),
-        'mature' => (bool) ($room['options'] & 2),
-        'deleted' => (bool) ($room['options'] & 4),
-        'hidden' => (bool) ($room['options'] & 8),
-        'privateIm' => (bool) ($room['options'] & 16),
-      ),
-      'bbcode' => (int) $room['bbcode'],
-      'permissions' => array(
-        'canModerate' => (bool) $permissions[0]['moderate'],
-        'canAdmin' => (bool) $permissions[0]['admin'],
-        'canPost' => (bool) $permissions[0]['post'],
-        'canView' => (bool) $permissions[0]['view'],
-        'canKnow' => (bool) $permissions[0]['know'],
-      ),
-    );
-
-    ($hook = hook('getRooms_eachRoom') ? eval($hook) : '');
+      ($hook = hook('getRooms_eachRoom') ? eval($hook) : '');
+    }
   }
 }
 

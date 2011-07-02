@@ -212,8 +212,6 @@ $enableDF = array( // Default formatting users can user to differentiate their t
 $userPermissions = array(
   'roomCreation' => true, // The user can create rooms.
   'privateRoomCreation' => true, // The user can create private rooms.
-  'roomsOnline' => true, // The user can view all rooms another user is in, even if they don't have access to that room.
-  'postCounts' => true, // The user can view the post totals made by another user in a room they don't have access to.
 );
 
 /* $bbcode

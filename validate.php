@@ -482,12 +482,6 @@ if ($valid) { // If the user is valid, process their preferrences.
         if ($userPermissions['privateRoomCreation']) {
           $priviledges += 64;
         }
-        if ($userPermissions['roomsOnline']) {
-          $priviledges += 1024;
-        }
-        if ($userPermissions['postCounts']) {
-          $priviledges += 2048;
-        }
       }
 
       dbInsert(array(
