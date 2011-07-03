@@ -14,6 +14,18 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/**
+ * Obtains User Post Counts in Specified Rooms
+ *
+ * @package fim3
+ * @version 3.0
+ * @author Jospeph T. Parsons <rehtaew@gmail.com>
+ * @copyright Joseph T. Parsons 2011
+ *
+ * @param string rooms - A comma-seperated list of room IDs to get.
+ * @param int [number = 10] - The number of top posters to obtain.
+*/
+
 $apiRequest = true;
 require_once('../global.php');
 

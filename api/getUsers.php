@@ -14,6 +14,17 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/**
+ * Get Data on One or More Users
+ *
+ * @package fim3
+ * @version 3.0
+ * @author Jospeph T. Parsons <rehtaew@gmail.com>
+ * @copyright Joseph T. Parsons 2011
+ *
+ * @param users - A comma-seperated list of user IDs to get. If not specified, all users will be retrieved.
+*/
+
 $apiRequest = true;
 static $usersArray, $reverseOrder;
 

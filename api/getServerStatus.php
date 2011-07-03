@@ -14,6 +14,15 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/**
+ * Obtains Prouct Configuration and Related Information That May Alter API Behavior
+ *
+ * @package fim3
+ * @version 3.0
+ * @author Jospeph T. Parsons <rehtaew@gmail.com>
+ * @copyright Joseph T. Parsons 2011
+*/
+
 $apiRequest = true;
 
 require_once('../global.php');

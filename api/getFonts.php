@@ -14,10 +14,21 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/**
+ * Get all Installed Fonts
+ * @package fim3
+ * @version 3.0
+ * @author Jospeph T. Parsons <rehtaew@gmail.com>
+ * @copyright Joseph T. Parsons 2011
+*/
+
 $apiRequest = true;
 
 require_once('../global.php');
 
+
+
+/* Data Predefine */
 $xmlData = array(
   'getFonts' => array(
     'activeUser' => array(
@@ -31,6 +42,9 @@ $xmlData = array(
   ),
 );
 
+
+
+/* Plugin Hook Start */
 ($hook = hook('getFonts_start') ? eval($hook) : '');
 
 
@@ -49,6 +63,8 @@ ORDER BY f.category,
 {$fonts_end}",'fontId'); // Get all fonts
 
 
+
+/* Start Processing */
 if ($fonts) {
   foreach ($fonts AS $font) {
     $xmlData['getFonts']['fonts']['font ' . $font['fontId']] = array(
@@ -63,8 +79,8 @@ if ($fonts) {
 }
 
 
-$xmlData['getFonts']['errStr'] = ($errStr);
-$xmlData['getFonts']['errDesc'] = ($errDesc);
+$xmlData['getFonts']['errStr'] = (string) $errStr;
+$xmlData['getFonts']['errDesc'] = (string) $errDesc;
 
 
 

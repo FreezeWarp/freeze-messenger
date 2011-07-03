@@ -15,14 +15,15 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 /**
- * Get Messages from the Server
+ * Get the Active Users of a Single Room
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <rehtaew@gmail.com>
  * @copyright Joseph T. Parsons 2011
  *
- * @param string rooms - The rooms to query.
- * @param int onlineThreshold - The period of time after which a user is no longer “active”.
+ * @param string rooms - A comma-seperated list of room IDs to query.
+ * @param int [time = time()] - Time in which to determine user activity. Default is the current time.
+ * @param int [onlineThreshold = 15] - The period of time after which a user is no longer “active”. Default is 15, which may be overriden in the product configuration.
 */
 
 $apiRequest = true;
@@ -36,7 +37,7 @@ $request = fim_sanitizeGPC(array(
   'get' => array(
     'rooms' => array(
       'type' => 'string',
-      'require' => false,
+      'require' => true,
       'default' => '',
       'context' => array(
          'type' => 'csv',
@@ -246,14 +247,23 @@ else { // All is good so far.
 }
 
 
+
+/* Update Data for Errors */
 $xmlData['getActiveUsers']['errStr'] = (string) $errStr;
 $xmlData['getActiveUsers']['errDesc'] = (string) $errDesc;
 
 
+
+/* Plugin Hook End */
 ($hook = hook('getActiveUsers_end') ? eval($hook) : '');
 
 
+
+/* Output Data */
 echo fim_outputApi($xmlData);
 
+
+
+/* Close Database */
 dbClose();
 ?>

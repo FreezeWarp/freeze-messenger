@@ -14,6 +14,17 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/**
+ * Obtains One or More User's Uploads
+ *
+ * @package fim3
+ * @version 3.0
+ * @author Jospeph T. Parsons <rehtaew@gmail.com>
+ * @copyright Joseph T. Parsons 2011
+ *
+ * @param string users - A comma-seperated list of user IDs to get.
+*/
+
 $apiRequest = true;
 require_once('../global.php');
 

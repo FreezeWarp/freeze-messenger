@@ -15,8 +15,8 @@
 
 CREATE TABLE IF NOT EXISTS `{prefix}censorLists` (
   `listId` int(10) NOT NULL AUTO_INCREMENT COMMENT 'The unique ID of the list.',
-  `name` varchar(400) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The name of the list. It is only used for user identification.',
-  `type` enum('black','white') NOT NULL COMMENT 'The list type - black to apply to no rooms automatically, and white to apply to all rooms automatically (opt-in vs. opt-out)',
+  `listName` varchar(400) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The name of the list. It is only used for user identification.',
+  `listType` enum('black','white') NOT NULL COMMENT 'The list type - black to apply to no rooms automatically, and white to apply to all rooms automatically (opt-in vs. opt-out)',
   `options` int(4) NOT NULL DEFAULT '3' COMMENT 'A bitfield of specific options for the list.',
   PRIMARY KEY (`listId`)
 ) ENGINE={engine}  DEFAULT CHARSET=utf8;

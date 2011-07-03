@@ -14,6 +14,17 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/**
+ * Get the Active Users of All Rooms
+ * @package fim3
+ * @version 3.0
+ * @author Jospeph T. Parsons <rehtaew@gmail.com>
+ * @copyright Joseph T. Parsons 2011
+ *
+ * @param int [time = time()] - Time in which to determine user activity. Default is the current time.
+ * @param int [onlineThreshold = 15] - The period of time after which a user is no longer “active”. Default is 15, which may be overriden in the product configuration.
+*/
+
 $apiRequest = true;
 
 require_once('../global.php');
@@ -70,32 +81,6 @@ $xmlData = array(
 
 
 /* Get Active Users */
-$activeUsers = dbRows("SELECT
-  u.userName AS userName,
-  u.userId AS userId,
-  u.userFormatStart AS userFormatStart,
-  u.userFormatEnd AS userFormatEnd,
-  GROUP_CONCAT(r.roomName) AS roomNames,
-  GROUP_CONCAT(r.roomId) AS roomIds
-  {$activeUsers_columns}
-FROM
-  {$sqlPrefix}users AS u,
-  {$sqlPrefix}rooms AS r,
-  {$sqlPrefix}ping AS p
-  {$activeUsers_tables}
-WHERE
-  u.userId = p.userId AND
-  r.roomId = p.roomId AND
-  UNIX_TIMESTAMP(p.time) >
-  {$activeUsers_where}
-GROUP BY
-  p.userId
-  {$activeUsers_group}
-ORDER BY
-  u.userName
-  {$activeUsers_order}
-{$activeUser_end}",'userId');
-
 $activeUsers = $database->select(
   array(
     "{$sqlPRefix}users" => array(
@@ -159,7 +144,10 @@ $activeUsers = $database->select(
       ),
     ),
   ),
-
+  array(
+    'userName',
+  ),
+  'puserId'
 );
 $activeUsers = $activeUsers->getAsArray('userId');
 
@@ -201,14 +189,23 @@ if ($activeUsers) {
 }
 
 
+
+/* Update Data for Errors */
 $xmlData['getAllActiveUsers']['errStr'] = (string) $errStr;
 $xmlData['getAllActiveUsers']['errDesc'] = (string) $errDesc;
 
 
+
+/* Plugin Hook End */
 ($hook = hook('getAllActiveUsers_end') ? eval($hook) : '');
 
 
+
+/* Output Data */
 echo fim_outputApi($xmlData);
 
+
+
+/* Close Database */
 dbClose();
 ?>

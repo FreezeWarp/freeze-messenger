@@ -14,9 +14,23 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/**
+ * Get the Kicks of One or More Rooms, Optionally Restricted To One or More Users
+ *
+ * You must have moderator permission of the room for successful retrieval!
+ *
+ * @package fim3
+ * @version 3.0
+ * @author Jospeph T. Parsons <rehtaew@gmail.com>
+ * @copyright Joseph T. Parsons 2011
+ *
+ * @param string rooms - A comma-seperated list of room IDs to get.
+ * @param string users - A comma-seperated list of user IDs to get.
+*/
+
 $apiRequest = true;
+
 require_once('../global.php');
-header('Content-type: text/xml');
 
 if (isset($_GET['rooms'])) {
   $rooms = (string) $_GET['rooms'];
