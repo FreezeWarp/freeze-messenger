@@ -46,10 +46,6 @@ $xmlData = array(
       'userId' => (int) $user['userId'],
       'userName' => ($user['userName']),
     ),
-    'sentData' => array(
-       'rooms' => $roomList,
-       'resultLimit' => $resultLimit,
-    ),
     'errStr' => $errStr,
     'errDesc' => $errDesc,
     'roomStats' => array(),

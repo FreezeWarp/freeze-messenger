@@ -30,19 +30,40 @@
 
 $apiRequest = true;
 
+
+
+/* Get Request Data */
+$request = fim_sanitizeGPC(array(
+  'get' => array(
+    'rooms' => array(
+      'type' => 'string',
+      'require' => true,
+      'default' => '',
+      'context' => array(
+         'type' => 'csv',
+         'filter' => 'int',
+         'evaltrue' => true,
+      ),
+    ),
+
+    'users' => array(
+      'type' => 'string',
+      'require' => true,
+      'default' => '',
+      'context' => array(
+         'type' => 'csv',
+         'filter' => 'int',
+         'evaltrue' => true,
+      ),
+    ),
+  ),
+));
+
 require_once('../global.php');
 
-if (isset($_GET['rooms'])) {
-  $rooms = (string) $_GET['rooms'];
-  $roomsArray3 = explode(',',$rooms);
-}
-if ($roomsArray) {
-  foreach ($roomsArray3 AS &$v) {
-    $v = intval($v);
-  }
-  $roomList2 = implode(',',$roomsArray2);
-
+if (count($request['rooms']) > 0) {
   $roomRows = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId IN ($roomList)");
+
   foreach ($roomRows AS $roomData) {
     if (hasPermission($roomData,$user,'moderate',true)) {
       $roomArray[] = $roomData['roomId'];
@@ -50,17 +71,6 @@ if ($roomsArray) {
   }
 
   $roomList = implode(',',$roomArray);
-}
-
-if (isset($_GET['users'])) {
-  $users = (string) $_GET['users'];
-  $usersArray = explode(',',$users);
-}
-if ($usersArray) {
-  foreach ($usersArray AS &$v) {
-    $v = intval($v);
-  }
-  $userList = implode(',',$usersArray);
 }
 
 
@@ -72,15 +82,13 @@ if ($userList) {
 }
 
 
+
+/* Data Predefine */
 $xmlData = array(
   'getKicks' => array(
     'activeUser' => array(
       'userId' => (int) $user['userId'],
       'userName' => fim_encodeXml($user['userName']),
-    ),
-    'sentData' => array(
-      'rooms' => $roomList,
-      'users' => $userList,
     ),
     'errStr' => fim_encodeXml($errStr),
     'errDesc' => fim_encodeXml($errDesc),
@@ -89,9 +97,13 @@ $xmlData = array(
 );
 
 
+
+/* Plugin Hook Start */
 ($hook = hook('getKicks_start') ? eval($hook) : '');
 
 
+
+/* Get Kicks from Database */
 $kicks = dbRows("SELECT CONCAT(k.userId, '-', k.roomId) AS id,
   k.userId AS userId,
   u.userName AS userName,
@@ -118,6 +130,8 @@ ORDER BY k.roomId
 {$kicks_end}",'id');
 
 
+
+/* Start Processing */
 foreach ($kicks AS $kick) {
   $xmlData['getKicks']['kicks']['kick ' . $kick['kickId']] = array(
     'roomData' => array(
@@ -148,14 +162,23 @@ foreach ($kicks AS $kick) {
 }
 
 
+
+/* Update Data for Errors */
 $xmlData['getKicks']['errStr'] = fim_encodeXml($errStr);
 $xmlData['getKicks']['errDesc'] = fim_encodeXml($errDesc);
 
 
+
+/* Plugin Hook End */
 ($hook = hook('getKicks_end') ? eval($hook) : '');
 
 
+
+/* Output Data */
 echo fim_outputApi($xmlData);
 
+
+
+/* Close Database Connection */
 dbClose();
 ?>

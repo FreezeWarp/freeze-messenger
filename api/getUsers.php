@@ -67,9 +67,6 @@ $xmlData = array(
       'userId' => (int) $user['userId'],
       'userName' => ($user['userName']),
     ),
-    'sentData' => array(
-      'order' => fim_encodeXML($order),
-    ),
     'errStr' => ($errStr),
     'errDesc' => ($errDesc),
     'users' => array(),

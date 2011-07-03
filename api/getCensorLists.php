@@ -55,9 +55,6 @@ $xmlData = array(
       'userId' => (int) $user['userId'],
       'userName' => ($user['userName']),
     ),
-    'sentData' => array(
-      'roomId' => (int) $roomId,
-    ),
     'errStr' => ($errStr),
     'errDesc' => ($errDesc),
     'lists' => array(),

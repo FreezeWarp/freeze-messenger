@@ -36,7 +36,6 @@ $xmlData = array(
       'userId' => (int) $user['userId'],
       'userName' => ($user['userName']),
     ),
-    'sentData' => array(),
     'errStr' => ($errStr),
     'errDesc' => ($errDesc),
     'serverStatus' => array(

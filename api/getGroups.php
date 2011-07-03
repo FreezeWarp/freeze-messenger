@@ -26,13 +26,15 @@ $apiRequest = true;
 
 require_once('../global.php');
 
+
+
+/* Data Predefine */
 $xmlData = array(
   'getGroups' => array(
     'activeUser' => array(
       'userId' => (int) $user['userId'],
       'userName' => ($user['userName']),
     ),
-    'sentData' => array(),
     'errStr' => ($errStr),
     'errDesc' => ($errDesc),
     'groups' => array(),
@@ -40,9 +42,13 @@ $xmlData = array(
 );
 
 
+
+/* Plugin Hook Start */
 ($hook = hook('getGroups_start') ? eval($hook) : '');
 
 
+
+/* Get Groups from Database */
 $groups = dbRows("SELECT $sqlUserGroupTableCols[groupId] AS groupId,
   $sqlUserGroupTableCols[groupName] AS groupName
   {$groups_columns}
@@ -55,6 +61,8 @@ ORDER BY g.{$sqlUserGroupTableCols[groupId]}
 {$groups_end}",'groupId'); // Get all rooms
 
 
+
+/* Start Processing */
 if ($groups) {
   foreach ($groups AS $group) {
     switch ($loginMethod) {
@@ -82,14 +90,22 @@ if ($groups) {
 
 
 
+/* Update Data for Errors */
 $xmlData['getGroups']['errStr'] = ($errStr);
 $xmlData['getGroups']['errDesc'] = ($errDesc);
 
 
+
+/* Plugin Hook End */
 ($hook = hook('getGroups_end') ? eval($hook) : '');
 
 
+
+/* Output Data */
 echo fim_outputApi($xmlData);
 
+
+
+/* Close Database Connection */
 dbClose();
 ?>

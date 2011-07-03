@@ -151,10 +151,6 @@ $xmlData = array(
       'userId' => (int) $user['userId'],
       'userName' => ($user['userName']),
     ),
-    'sentData' => array(
-      'roomId' => (int) $_POST['roomId'],
-      'message' => ($_POST['message']),
-    ),
     'errStr' => ($errStr),
     'errDesc' => ($errDesc),
     'censor' => array(

@@ -91,10 +91,6 @@ $xmlData = array(
       'userId' => (int) $user['userId'],
       'userName' => ($user['userName']),
     ),
-    'sentData' => array(
-      'roomId' => (int) $_POST['roomId'],
-      'userId' => (int) $_POST['userId'],
-    ),
     'errStr' => ($errStr),
     'errDesc' => ($errDesc),
   ),

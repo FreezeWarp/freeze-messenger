@@ -37,11 +37,6 @@ $xmlData = array(
       'userId' => (int) $user['userId'],
       'userName' => fim_encodeXml($user['userName']),
     ),
-    'sentData' => array(
-      'action' => fim_encodeXML($_POST['action']),
-      'roomId' => (int) $_POST['roomId'],
-      'userId' => (int) $_POST['userId'],
-    ),
     'errStr' => fim_encodeXml($errStr),
     'errDesc' => fim_encodeXml($errDesc),
     'response' => array(),

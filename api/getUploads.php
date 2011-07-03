@@ -43,9 +43,6 @@ $xmlData = array(
       'userId' => (int) $user['userId'],
       'userName' => ($user['userName']),
     ),
-    'sentData' => array(
-      'users' => '',
-    ),
     'errStr' => $errStr,
     'errDesc' => $errDesc,
     'uploads' => array(),

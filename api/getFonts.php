@@ -35,7 +35,6 @@ $xmlData = array(
       'userId' => (int) $user['userId'],
       'userName' => ($user['userName']),
     ),
-    'sentData' => array(),
     'errStr' => ($errStr),
     'errDesc' => ($errDesc),
     'fonts' => array(),
@@ -79,15 +78,23 @@ if ($fonts) {
 }
 
 
+
+/* Update Data for Errors */
 $xmlData['getFonts']['errStr'] = (string) $errStr;
 $xmlData['getFonts']['errDesc'] = (string) $errDesc;
 
 
 
+/* Plugin Hook End */
 ($hook = hook('getFonts_end') ? eval($hook) : '');
 
 
+
+/* Output Data */
 echo fim_outputApi($xmlData);
 
+
+
+/* Close Database Connection */
 dbClose();
 ?>
