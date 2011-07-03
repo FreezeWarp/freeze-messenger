@@ -49,16 +49,19 @@ $xmlData = array(
 
 
 /* Get Groups from Database */
-$groups = dbRows("SELECT $sqlUserGroupTableCols[groupId] AS groupId,
-  $sqlUserGroupTableCols[groupName] AS groupName
-  {$groups_columns}
-FROM {$sqlUserGroupTable} AS g
-  {$groups_tables}
-WHERE TRUE
-  {$groups_where}
-ORDER BY g.{$sqlUserGroupTableCols[groupId]}
-  {$groups_order}
-{$groups_end}",'groupId'); // Get all rooms
+$groups = $integrationDatabase->select(
+  array(
+    "{$sqlUserGroupTable}" => array(
+      "$sqlUserGroupTableCols[groupId]" => 'groupId',
+      "$sqlUserGroupTableCols[groupName]" => 'groupName',
+    ),
+  ),
+  false,
+  array(
+    'groupId' => 'asc',
+  )
+);
+$groups = $groups->getAsArray('groupId');
 
 
 

@@ -43,33 +43,178 @@ require_once('../global.php');
 $longPollingWait = .25;
 
 ///* Variable Setting *///
+$request = fim_sanitizeGPC(array(
+  'get' => array(
+    'rooms' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => '',
+      'context' => array(
+         'type' => 'csv',
+         'filter' => 'int',
+         'evaltrue' => true,
+      ),
+    ),
 
-$rooms = $_GET['rooms'];
-$roomsArray = explode(',',$rooms);
-foreach ($roomsArray AS &$v) $v = intval($v);
+    'sort' => array(
+      'type' => 'string',
+      'valid' => array(
+        'roomId',
+        'roomName',
+        'smart',
+      ),
+      'require' => false,
+      'default' => 'roomId',
+    ),
 
-$newestMessage = (int) $_GET['messageIdMax']; // INT
-$oldestMessage = (int) $_GET['messageIdMin']; // INT
+    'showDeleted' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => false,
+      'context' => array(
+        'type' => 'bool',
+      ),
+    ),
 
-$newestDate = (int) $_GET['messageDateMax']; // INT
-$oldestDate = (int) $_GET['messageDateMin']; // INT
+    'watchRooms' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => false,
+      'context' => array(
+        'type' => 'bool',
+      ),
+    ),
 
-$messageStart = (int) $_GET['messageIdStart']; // INT
-$messageEnd = (int) $_GET['messageIdEnd']; // INT
+    'activeUsers' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => false,
+      'context' => array(
+        'type' => 'bool',
+      ),
+    ),
 
-$search = $_GET['search']; // STRING
+    'archive' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => false,
+      'context' => array(
+        'type' => 'bool',
+      ),
+    ),
 
-$showDeleted = (bool) $_GET['showDeleted'];
+    'noping' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => false,
+      'context' => array(
+        'type' => 'bool',
+      ),
+    ),
 
-$watchRooms = (bool) $_GET['watchRooms']; // BOOL
-$activeUsers = (bool) $_GET['activeUsers']; // BOOL
-$archive = (bool) $_GET['archive']; // BOOL
-$noPing = (bool) $_GET['noping']; // BOOL
+    'longPolling' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => false,
+      'context' => array(
+        'type' => 'bool',
+      ),
+    ),
 
-$encode = ($_GET['encode']); // String - 'base64', 'plaintext'
-$fields = ($_GET['messageFields']); // String - 'api', 'html', or 'both'
+    'messageIdMax' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => false,
+      'context' => array(
+        'type' => 'int',
+      ),
+    ),
 
-if ($longPolling && $_GET['longPolling']) {
+    'messageIdMin' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => false,
+      'context' => array(
+        'type' => 'int',
+      ),
+    ),
+
+    'messageDateMax' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => false,
+      'context' => array(
+        'type' => 'int',
+      ),
+    ),
+
+    'messageDateMin' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => false,
+      'context' => array(
+        'type' => 'int',
+      ),
+    ),
+
+    'messageIdStart' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => false,
+      'context' => array(
+        'type' => 'int',
+      ),
+    ),
+
+    'messageIdEnd' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => false,
+      'context' => array(
+        'type' => 'int',
+      ),
+    ),
+
+    'onlineThreshold' => array(
+      'type' => 'int',
+      'require' => false,
+      'default' => ($onlineThreshold ? $onlineThreshold : 15),
+      'context' => array(
+        'type' => 'int',
+      ),
+    ),
+
+    'messageLimit' => array(
+      'type' => 'int',
+      'require' => false,
+      'default' => ($messageLimit ? $messageLimit : 50),
+      'context' => array(
+        'type' => 'int',
+      ),
+    ),
+
+    'search' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => false,
+    ),
+
+    'encode' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => 'plaintext',
+    ),
+
+    'fields' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => 'both',
+    ),
+  ),
+));
+
+
+if ($longPolling && $request['longPolling']) {
   $longPolling = true;
 }
 else {
@@ -82,15 +227,10 @@ if ($longPolling) {
 }
 
 
-$onlineThreshold = (int) ($_GET['onlineThreshold'] ? $_GET['onlineThreshold'] : $onlineThreshold); // INT - Only if activeUsers = TRUE
 
 
-if ($_GET['messageLimit'] == '0') {
+if ($messageLimit > 500) {
   $messageLimit = 500; // Sane maximum.
-}
-else {
-  $messageLimit = (int) ($_GET['messageLimit'] ? $_GET['messageLimit'] : ($messageLimit ? $messageLimit : 40));
-  if ($messageLimit > 500) $messageLimit = 500; // Sane maximum.
 }
 
 $xmlData = array(

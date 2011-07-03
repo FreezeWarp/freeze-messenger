@@ -62,7 +62,29 @@ $request = fim_sanitizeGPC(array(
 ));
 
 if (count($request['rooms']) > 0) {
-  $roomRows = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId IN ($roomList)");
+  $roomRows = $database->select(
+    array(
+      "{$sqlPrefix}rooms" => array(
+        'roomId' => 'roomId',
+        'owner' => 'owner',
+        'allowedUsers' => 'allowedUsers',
+        'allowedGroups' => 'allowedGroups',
+        'moderators' => 'moderators',
+      ),
+    ),
+    array(
+      'type' => 'in',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'roomId',
+      ),
+      array(
+        'type' => 'array',
+        'value' => $request['rooms'],
+      ),
+    )
+  );
+  $roomRows->getAsArray();
 
   foreach ($roomRows AS $roomData) {
     if (hasPermission($roomData,$user,'moderate',true)) {
@@ -104,7 +126,7 @@ $xmlData = array(
 
 
 /* Get Kicks from Database */
-$kicks = dbRows("SELECT CONCAT(k.userId, '-', k.roomId) AS id,
+/*$kicks = dbRows("SELECT CONCAT(k.userId, '-', k.roomId) AS id,
   k.userId AS userId,
   u.userName AS userName,
   u.userFormatStart AS userFormatStart,
@@ -127,7 +149,80 @@ WHERE $where TRUE
   {$kicks_where}
 ORDER BY k.roomId
   {$kicks_order}
-{$kicks_end}",'id');
+{$kicks_end}",'id');*/
+
+$kicks = $database->select(
+  array(
+    "{$sqlPrefix}kick" => array(
+      'kickerId' => 'kkickerId',
+      'userId' => 'kuserId',
+      'roomId' => 'kroomId',
+      'length' => 'klength',
+      'time' => array(
+        'name' => 'ktime',
+        'context' => 'time',
+      ),
+    ),
+    "{$sqlPrefix}users user" => array(
+      'userId' => 'userId',
+      'userName' => 'userName',
+      'userFormatStart' => 'userFormatStart',
+      'userFormatEnd' => 'userFormatEnd',
+    ),
+    "{$sqlPrefix}users kicker" => array(
+      'userId' => 'kickerId',
+      'userName' => 'kickerName',
+      'userFormatStart' => 'kickerFormatStart',
+      'userFormatEnd' => 'kickerFormatEnd',
+    ),
+    "{$sqlPrefix}rooms" => array(
+      'roomId' => 'roomId',
+      'roomName' => 'roomName',
+    ),
+  ),
+  array(
+    'both' => array(
+      array(
+        'type' => 'e',
+        'left' => array(
+          'type' => 'column',
+          'value' => 'kuserId',
+        ),
+        'right' => array(
+          'type' => 'column',
+          'value' => 'userId',
+        ),
+      ),
+      array(
+        'type' => 'e',
+        'left' => array(
+          'type' => 'column',
+          'value' => 'kroomId',
+        ),
+        'right' => array(
+          'type' => 'column',
+          'value' => 'roomId',
+        ),
+      ),
+      array(
+        'type' => 'e',
+        'left' => array(
+          'type' => 'column',
+          'value' => 'kkickerId',
+        ),
+        'right' => array(
+          'type' => 'column',
+          'value' => 'kickerId',
+        ),
+      ),
+    ),
+  ),
+  array(
+    'roomId' => 'asc',
+    'userId' => 'asc'
+  )
+);
+$kicks = $kicks->getAsArray(true);
 
 
 
@@ -136,19 +231,19 @@ foreach ($kicks AS $kick) {
   $xmlData['getKicks']['kicks']['kick ' . $kick['kickId']] = array(
     'roomData' => array(
       'roomId' => (int) $kick['roomId'],
-      'roomName' => $kick['roomName'],
+      'roomName' => (string) $kick['roomName'],
     ),
     'userData' => array(
       'userId' => (int) $kick['userId'],
-      'userName' => $kick['userName'],
-      'userFormatStart' => $kick['userFormatStart'],
-      'userFormatEnd' => $kick['userFormatEnd'],
+      'userName' => (string) $kick['userName'],
+      'userFormatStart' => (string) $kick['userFormatStart'],
+      'userFormatEnd' => (string) $kick['userFormatEnd'],
     ),
     'kickerData' => array(
       'userId' => (int) $kick['kickerId'],
-      'userName' => $kick['kickerName'],
-      'userFormatStart' => $kick['kickerFormatStart'],
-      'userFormatEnd' => $kick['kickerFormatEnd'],
+      'userName' => (string) $kick['kickerName'],
+      'userFormatStart' => (string) $kick['kickerFormatStart'],
+      'userFormatEnd' => (string) $kick['kickerFormatEnd'],
     ),
     'length' => (int) $kick['length'],
 
@@ -164,8 +259,8 @@ foreach ($kicks AS $kick) {
 
 
 /* Update Data for Errors */
-$xmlData['getKicks']['errStr'] = fim_encodeXml($errStr);
-$xmlData['getKicks']['errDesc'] = fim_encodeXml($errDesc);
+$xmlData['getKicks']['errStr'] = $errStr;
+$xmlData['getKicks']['errDesc'] = $errDesc;
 
 
 
