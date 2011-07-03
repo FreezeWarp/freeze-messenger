@@ -152,7 +152,7 @@ $xmlData = array(
 
 
 
-/* SELECT Rooms From Database */
+/* Get Rooms From Database */
 $rooms = $database->select(
   array( // Columns
     "{$sqlPrefix}rooms" => array(
@@ -169,6 +169,8 @@ $rooms = $database->select(
   )
 );
 $rooms = $rooms->getAsArray();
+
+
 
 /* Process Rooms Obtained from Database */
 if ($rooms) {

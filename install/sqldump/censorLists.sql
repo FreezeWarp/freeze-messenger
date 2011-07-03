@@ -23,5 +23,5 @@ CREATE TABLE IF NOT EXISTS `{prefix}censorLists` (
 
 -- DIVIDE
 
-INSERT INTO `{prefix}censorLists` (`listId`, `name`, `type`) VALUES
+INSERT INTO `{prefix}censorLists` (`listId`, `listName`, `listType`) VALUES
 (1, 'Example Censor', 'black');

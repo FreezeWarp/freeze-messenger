@@ -15,7 +15,7 @@
 
 CREATE TABLE IF NOT EXISTS `{prefix}fonts` (
   `fontId` int(10) NOT NULL AUTO_INCREMENT COMMENT 'The unique ID of the font.',
-  `name` varchar(20) NOT NULL COMMENT 'The font''s name.',
+  `fontName` varchar(20) NOT NULL COMMENT 'The font''s name.',
   `data` varchar(500) NOT NULL COMMENT 'The font''s data.',
   `category` varchar(20) NOT NULL COMMENT 'The font''s category (e.g. monospace, serif, sans-serif, etc).',
   PRIMARY KEY (`fontId`)
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS `{prefix}fonts` (
 
 -- DIVIDE
 
-INSERT INTO `{prefix}fonts` (`fontId`, `name`, `data`, `category`) VALUES
+INSERT INTO `{prefix}fonts` (`fontId`, `fontName`, `data`, `category`) VALUES
 (1, 'FreeMono', 'FreeMono, TwlgMono, ''Courier New'', Consolas, monospace', 'monospace'),
 (2, 'Courier New', '''Courier New'', FreeMono, TwlgMono, Consolas, Courier, monospace', 'monospace'),
 (3, 'Consolas', 'Consolas, ''Courier New'', FreeMono, TwlgMono, monospace', 'monospace'),

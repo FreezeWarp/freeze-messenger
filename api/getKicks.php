@@ -30,6 +30,8 @@
 
 $apiRequest = true;
 
+require_once('../global.php');
+
 
 
 /* Get Request Data */
@@ -58,8 +60,6 @@ $request = fim_sanitizeGPC(array(
     ),
   ),
 ));
-
-require_once('../global.php');
 
 if (count($request['rooms']) > 0) {
   $roomRows = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId IN ($roomList)");

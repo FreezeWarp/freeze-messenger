@@ -47,19 +47,24 @@ $xmlData = array(
 ($hook = hook('getFonts_start') ? eval($hook) : '');
 
 
-$fonts = dbRows("SELECT f.fontId AS fontId,
-  f.name AS fontName,
-  f.data AS fontData,
-  f.category AS fontGroup
-  {$fonts_columns}
-FROM {$sqlPrefix}fonts AS f
-  {$fonts_tables}
-WHERE TRUE
-  {$fonts_where}
-ORDER BY f.category,
-  f.name
-  {$fonts_order}
-{$fonts_end}",'fontId'); // Get all fonts
+
+/* Get Fonts from Database */
+$fonts = $database->select(
+  array(
+    "{$sqlPrefix}fonts" => array(
+      'fontId' => 'fontId',
+      'fontName' => 'fontName',
+      'data' => 'fontData',
+      'category' => 'fontGroup',
+    ),
+  ),
+  false,
+  array(
+    'fontGroup' => 'asc',
+    'fontName' => 'asc',
+  )
+);
+$fonts = $fonts->getAsArray('fontId');
 
 
 
