@@ -27,19 +27,39 @@
 */
 
 $apiRequest = true;
+
 require_once('../global.php');
 
-$rooms = $_GET['rooms'];
-$roomsArray = explode(',',$rooms);
-foreach ($roomsArray AS &$v) {
-  $v = intval($v);
-}
-$roomList = implode(',',$roomsArray);
 
 
-$resultLimit = (int) ($_GET['number'] ? $_GET['number'] : 10);
+/* Get Request */
+$request = fim_sanitizeGPC(array(
+  'get' => array(
+    'rooms' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => '',
+      'context' => array(
+         'type' => 'csv',
+         'filter' => 'int',
+         'evaltrue' => true,
+      ),
+    ),
+
+    'number' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => 10,
+      'context' => array(
+        'type' => 'int',
+      ),
+    ),
+  ),
+));
 
 
+
+/* Data Predefine */
 $xmlData = array(
   'getStats' => array(
     'activeUser' => array(
@@ -53,13 +73,16 @@ $xmlData = array(
 );
 
 
+
+/* Plugin Hook Start */
 ($hook = hook('getStats_start') ? eval($hook) : '');
 
 
-$rooms = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId IN ($roomList)",'roomId');
 
+/* Start Processing */
+if (count($request['rooms']) > 0) {
+  $rooms = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId IN ($roomList)",'roomId');
 
-if ($rooms) {
   foreach ($rooms AS $room) {
     ($hook = hook('getStats_eachRoom_start') ? eval($hook) : '');
 
@@ -131,14 +154,22 @@ if ($rooms) {
 
 
 
+/* Update Data for Errors */
 $xmlData['getStats']['errStr'] = ($errStr);
 $xmlData['getStats']['errDesc'] = ($errDesc);
 
 
+
+/* Plugin Hook End */
 ($hook = hook('getStats_end') ? eval($hook) : '');
 
 
+
+/* Output Data */
 echo fim_outputApi($xmlData);
 
+
+
+/* Close Database Connection */
 dbClose();
 ?>

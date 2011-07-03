@@ -145,6 +145,7 @@ if ($continue) {
 
 
 
+/* Data Define */
 $xmlData = array(
   'sendMessage' => array(
     'activeUser' => array(
@@ -162,10 +163,17 @@ $xmlData = array(
 );
 
 
+
+/* Plugin Hook End */
 ($hook = hook('sendMessage_end') ? eval($hook) : '');
 
 
+
+/* Output Data */
 echo fim_outputApi($xmlData);
 
+
+
+/* Close Database Connection */
 dbClose();
 ?>

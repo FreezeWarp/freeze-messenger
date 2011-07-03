@@ -26,41 +26,42 @@
 */
 
 $apiRequest = true;
+
 static $usersArray, $reverseOrder;
 
 require_once('../global.php');
 
-if (isset($_GET['users'])) {
-  $usersArray = explode(',',$_GET['users']);
-  foreach ($usersArray AS &$v) {
-    $v = (int) $v;
-  }
-}
 
 
-if ($usersArray) {
-  $whereClause .= ' AND userId IN (' . implode(',',$usersArray) . ')';
-}
+/* Get Request Data */
+$request = fim_sanitizeGPC(array(
+  'get' => array(
+    'users' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => '',
+      'context' => array(
+         'type' => 'csv',
+         'filter' => 'int',
+         'evaltrue' => true,
+      ),
+    ),
+
+    'sort' => array(
+      'type' => 'string',
+      'valid' => array(
+        'userId',
+        'userName',
+      ),
+      'require' => false,
+      'default' => 'userId',
+    ),
+  ),
+));
 
 
-switch (strtolower($_GET['order'])) {
-  case 'id':
-  case 'userid':
-  $order = 'userId ' . ($reverseOrder ? 'DESC' : 'ASC');
-  break;
 
-  case 'name':
-  case 'username':
-  $order = 'userName ' . ($reverseOrder ? 'DESC' : 'ASC');
-  break;
-
-  default:
-  $order = 'userId ' . ($reverseOrder ? 'DESC' : 'ASC');
-  break;
-}
-
-
-
+/* Data Predefine */
 $xmlData = array(
   'getUsers' => array(
     'activeUser' => array(
@@ -74,9 +75,13 @@ $xmlData = array(
 );
 
 
+
+/* Plugin Hook Start */
 ($hook = hook('getUsers_start') ? eval($hook) : '');
 
 
+
+/* Get Users from Database */
 $users = dbRows("SELECT u.userId,
   u.userName,
   u.userFormatStart,
@@ -98,6 +103,9 @@ ORDER BY {$order}
   {$users_order}
 {$users_end}",'userId'); // Get all rooms
 
+
+
+/* Start Processing */
 if ($users) {
   foreach ($users AS $userData) {
     ($hook = hook('getUsers_eachUser_start') ? eval($hook) : '');
@@ -158,14 +166,23 @@ if ($users) {
 }
 
 
+
+/* Update Data for Errors */
 $xmlData['getUsers']['errStr'] = ($errStr);
 $xmlData['getUsers']['errDesc'] = ($errDesc);
 
 
+
+/* Plugin Hook End */
 ($hook = hook('getUsers_end') ? eval($hook) : '');
 
 
+
+/* Output Data */
 echo fim_outputApi($xmlData);
 
+
+
+/* Close Database Connection */
 dbClose();
 ?>
