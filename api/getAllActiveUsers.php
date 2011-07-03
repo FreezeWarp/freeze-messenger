@@ -19,11 +19,33 @@ $apiRequest = true;
 require_once('../global.php');
 
 
-$time = (int) ($_GET['time'] ? $_GET['time'] : time()); // The timeframe to use. While there may be rare uses for this directive, it should in almost all situations be left out or use the current time.
 
-$onlineThreshold = (int) ($_GET['onlineThreshold'] ? $_GET['onlineThreshold'] : $onlineThreshold); // The time a user may be innactive to still appear "active".
+/* Get Request Data */
+$request = fim_sanitizeGPC(array(
+  'get' => array(
+    'onlineThreshold' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => ($onlineThreshold ? $onlineThreshold : 15),
+      'context' => array(
+        'type' => 'int',
+      ),
+    ),
+
+    'time' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => (int) time(),
+      'context' => array(
+        'type' => 'int',
+      ),
+    ),
+  ),
+));
 
 
+
+/* Data Predefine */
 $xmlData = array(
   'getAllActiveUsers' => array(
     'activeUser' => array(
@@ -31,7 +53,7 @@ $xmlData = array(
       'userName' => ($user['userName']),
     ),
     'sentData' => array(
-      'onlineThreshold' => (int) $onlineThreshold,
+      'onlineThreshold' => (int) $ewonlineThreshold,
       'time' => (int) $time,
     ),
     'errStr' => ($errStr),
@@ -41,9 +63,13 @@ $xmlData = array(
 );
 
 
+
+/* Plugin Hook Start */
 ($hook = hook('getAllActiveUsers_start') ? eval($hook) : '');
 
 
+
+/* Get Active Users */
 $activeUsers = dbRows("SELECT
   u.userName AS userName,
   u.userId AS userId,
@@ -60,7 +86,7 @@ FROM
 WHERE
   u.userId = p.userId AND
   r.roomId = p.roomId AND
-  UNIX_TIMESTAMP(p.time) > ($time - $onlineThreshold)
+  UNIX_TIMESTAMP(p.time) >
   {$activeUsers_where}
 GROUP BY
   p.userId
@@ -70,6 +96,76 @@ ORDER BY
   {$activeUsers_order}
 {$activeUser_end}",'userId');
 
+$activeUsers = $database->select(
+  array(
+    "{$sqlPRefix}users" => array(
+      'userName' => 'userName',
+      'userId' => 'userId',
+      'userFormatStart' => 'userFormatStart',
+      'userFormatEnd' => 'userFormatEnd',
+    ),
+    "{$sqlPrefix}rooms" => array(
+      'roomName' => array(
+        'context' => 'join',
+        'separator' => ',',
+        'name' => 'roomNames',
+      ),
+      'roomId' => array(
+        'context' => 'join',
+        'separator' => ',',
+        'name' => 'roomIds',
+      ),
+    ),
+    "{$sqlPrefix}ping" => array(
+      'time' => 'ptime',
+      'userId' => 'puserId',
+      'roomId' => 'proomId',
+    ),
+  ),
+  array(
+    'both' => array(
+      array(
+        'type' => 'e',
+        'left' => array(
+          'type' => 'column',
+          'value' => 'userId',
+        ),
+        'right' => array(
+          'type' => 'column',
+          'value' => 'puserId',
+        ),
+      ),
+      array(
+        'type' => 'e',
+        'left' => array(
+          'type' => 'column',
+          'value' => 'roomId',
+        ),
+        'right' => array(
+          'type' => 'column',
+          'value' => 'proomId',
+        ),
+      ),
+      array(
+        'type' => 'e',
+        'left' => array(
+          'type' => 'column',
+          'value' => 'ptime',
+        ),
+        'right' => array(
+          'type' => 'int',
+          'value' => (int) ($request['time'] - $request['onlineThreshold'])
+        ),
+      ),
+    ),
+  ),
+
+);
+$activeUsers = $activeUsers->getAsArray('userId');
+
+
+
+/* Start Processing */
 if ($activeUsers) {
   foreach ($activeUsers AS $activeUser) {
     $rooms = array_combine(explode(',',$activeUser['roomIds']),explode(',',$activeUser['roomNames'])); // Combine the selected roomIds with their relevant roomNames using key -> value pairs. This is a performance technique, with the consequence of preventing access to any additional roomData.
@@ -105,8 +201,8 @@ if ($activeUsers) {
 }
 
 
-$xmlData['getAllActiveUsers']['errStr'] = ($errStr);
-$xmlData['getAllActiveUsers']['errDesc'] = ($errDesc);
+$xmlData['getAllActiveUsers']['errStr'] = (string) $errStr;
+$xmlData['getAllActiveUsers']['errDesc'] = (string) $errDesc;
 
 
 ($hook = hook('getAllActiveUsers_end') ? eval($hook) : '');

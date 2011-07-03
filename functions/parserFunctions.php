@@ -525,11 +525,12 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
   $cacheTableLimit = ($cacheTableLimit ? $cacheTableLimit : 100);
   if ($messageId2 > $cacheTableLimit) {
     dbDelete("{$sqlPrefix}messagesCached",
-    array('id' => array(
-      'cond' => 'lte',
-      'type' => 'raw',
-      'value' => ($messageId2 - $cacheTableLimit)
-    )));
+      array('id' => array(
+        'cond' => 'lte',
+        'type' => 'raw',
+        'value' => ($messageId2 - $cacheTableLimit)
+      )
+    ));
   }
 
   // Add message to archive search store.
