@@ -81,7 +81,27 @@ $xmlData = array(
 
 /* Start Processing */
 if (count($request['rooms']) > 0) {
-  $rooms = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId IN ($roomList)",'roomId');
+  $rooms = $database->select(
+    array(
+      "{$sqlPrefix}rooms" => array(
+        'roomId' => 'roomId',
+        'roomName' => 'roomName',
+      ),
+    ),
+    array(
+      'type' => 'in',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'roomId',
+      ),
+      'right' => array(
+        'type' => 'array',
+        'value' => $request['rooms'],
+      ),
+    )
+  );
+  $rooms = $rooms->getAsArray('roomId');
+
 
   foreach ($rooms AS $room) {
     ($hook = hook('getStats_eachRoom_start') ? eval($hook) : '');
@@ -98,23 +118,53 @@ if (count($request['rooms']) > 0) {
     ($hook = hook('getStats_eachRoom_preRooms') ? eval($hook) : '');
 
 
-    $totalPosts = dbRows("SELECT m.messages AS count,
-      u.userId AS userId,
-      u.userName AS userName,
-      u.userFormatStart,
-      u.userFormatEnd
-      {$totalPosts_columns}
-    FROM {$sqlPrefix}roomStats AS m,
-      {$sqlPrefix}users AS u
-      {$totalPosts_tables}
-    WHERE m.roomId = $room[roomId] AND
-      u.userId = m.userId
-      $where
-      {$totalPosts_where}
-    ORDER BY count DESC
-      {$totalPosts_order}
-    LIMIT $resultLimit
-    {$totalPosts_end}",'userId');
+
+    $totalPosts = $database->select(
+      array(
+        "{$sqlPrefix}roomStats" => array(
+          'roomId' => 'sroomId',
+          'userId' => 'suserId',
+        ),
+        "{$sqlPrefix}users" => array(
+          'userId' => 'userId',
+          'userName' => 'userName',
+          'userFormatStart' => 'userFormatStart',
+          'userFormatEnd' => 'userFormatEnd',
+        ),
+      ),
+      array(
+        'both' => array(
+          array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'suserId',
+            ),
+            'right' => array(
+              'type' => 'column',
+              'value' => 'userId',
+            ),
+          ),
+          array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'sroomId',
+            ),
+            'right' => array(
+              'type' => 'int',
+              'value' => (int) $room['roomId'],
+            ),
+          ),
+        ),
+      ),
+      array(
+        'count' => 'desc',
+      ),
+      false,
+      $request['number']
+    );
+    $totalPosts = $totalPosts->getAsArray('userId');
 
 
     $xmlData['getStats']['roomStats']['room ' . $room['roomId']] = array(

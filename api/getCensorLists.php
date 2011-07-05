@@ -21,7 +21,8 @@
  * @author Jospeph T. Parsons <rehtaew@gmail.com>
  * @copyright Joseph T. Parsons 2011
  *
- * @param string rooms - A comma-seperated list of room IDs to query.
+ * @param string rooms - A comma-seperated list of room IDs to query for whether or not the list is active in that room.
+ * @param string lists - A comma-seperated list of list IDs to filter by. If not specified all lists will be retrieved.
  *
  * @todo Implement room status.
 */
@@ -35,12 +36,24 @@ require_once('../global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC(array(
   'get' => array(
-    'roomId' => array(
+    'rooms' => array(
       'type' => 'string',
       'require' => false,
-      'default' => 0,
+      'default' => '',
       'context' => array(
-        'type' => 'int',
+         'type' => 'csv',
+         'filter' => 'int',
+         'evaltrue' => true,
+      ),
+    ),
+    'lists' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => '',
+      'context' => array(
+         'type' => 'csv',
+         'filter' => 'int',
+         'evaltrue' => true,
       ),
     ),
   ),
@@ -61,6 +74,37 @@ $xmlData = array(
   ),
 );
 
+$queryParts['censorListsSelect']['columns'] = array(
+  "{$sqlPrefix}censorLists" => array(
+    'listId' => 'listId',
+    'listName' => 'listName',
+    'listType' => 'listType',
+    'options' => 'listOptions',
+  ),
+);
+$queryParts['censorListsSelect']['conditions'] = array(
+);
+$queryParts['censorListsSelect']['sort'] = array(
+  'listName' => 'asc',
+);
+
+
+
+/* Modify Query Data for Directives */
+if (count($request['lists']) > 0) {
+  $queryParts['censorListsSelect']['conditions']['both'][] = array(
+    'type' => 'in',
+    'left' => array(
+      'type' => 'column',
+      'value' => 'listId',
+    ),
+    'right' => array(
+       'type' => 'array',
+       'value' => (array) $request['lists'],
+    ),
+  );
+}
+
 
 
 /* Plugin Hook Start */
@@ -69,25 +113,15 @@ $xmlData = array(
 
 
 /* Get Censor Lists from Slave Database */
-$censorLists = $slaveDatabase->select(
-  array(
-    "{$sqlPrefix}censorLists" => array(
-      'listName' => 'listName',
-      'listType' => 'listType',
-      'options' => 'listOptions',
-    ),
-  ),
-  false,
-  array(
-    'listName',
-  )
-);
+$censorLists = $slaveDatabase->select($queryParts['censorListsSelect']['columns'],
+  $queryParts['censorListsSelect']['conditions'],
+  $queryParts['censorListsSelect']['sort']);
 $censorLists = $censorLists->getAsArray('listId');
 
 
 
 /* Start Processing */
-if ($censorLists) {
+if (count($censorLists) > 0) {
   foreach ($censorLists AS $list) { // Run through each censor list retrieved.
     $xmlData['getCensorLists']['lists']['list ' . $list['listId']] = array(
       'listId' => (int) $list['listId'],

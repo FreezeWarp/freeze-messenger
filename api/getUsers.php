@@ -102,6 +102,25 @@ WHERE TRUE {$whereClause}
 ORDER BY {$order}
   {$users_order}
 {$users_end}",'userId'); // Get all rooms
+$users = $slaveDatabase->select(
+  array(
+    "{$sqlPrefix}users" => array(
+      'userId' => 'userId',
+      'userName' => 'userName',
+      'userFormatStart' => 'userFormatStart',
+      'userFormatEnd' => 'userFormatEnd',
+      'profile' => 'profile',
+      'avatar' => 'avatar',
+      'socialGroups' => 'socialGroups',
+      'defaultColor' => 'defaultColor',
+      'defaultHighlight' => 'defaultHighlight',
+      'defaultFontface' => 'defaultFontface',
+      'defaultFormatting' => 'defaultFormatting',
+      'favRooms' => 'favRooms',
+    ),
+  ),
+);
+$users = $users->getAsArray();
 
 
 

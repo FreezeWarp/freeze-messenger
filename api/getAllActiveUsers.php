@@ -23,6 +23,7 @@
  *
  * @param int [time = time()] - Time in which to determine user activity. Default is the current time.
  * @param int [onlineThreshold = 15] - The period of time after which a user is no longer “active”. Default is 15, which may be overriden in the product configuration.
+ * @param string [users = ''] - A comma-sperated list of user IDs to filter by. If not specified, all users will be shown.
 */
 
 $apiRequest = true;
@@ -51,6 +52,17 @@ $request = fim_sanitizeGPC(array(
         'type' => 'int',
       ),
     ),
+
+    'users' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => '',
+      'context' => array(
+         'type' => 'csv',
+         'filter' => 'int',
+         'evaltrue' => true,
+      ),
+    ),
   ),
 ));
 
@@ -73,6 +85,90 @@ $xmlData = array(
   ),
 );
 
+$queryParts['activeUsersSelect']['columns'] = array(
+  "{$sqlPrefix}users" => array(
+    'userName' => 'userName',
+    'userId' => 'userId',
+    'userFormatStart' => 'userFormatStart',
+    'userFormatEnd' => 'userFormatEnd',
+  ),
+  "{$sqlPrefix}rooms" => array(
+    'roomName' => array(
+      'context' => 'join',
+      'separator' => ',',
+      'name' => 'roomNames',
+    ),
+    'roomId' => array(
+      'context' => 'join',
+      'separator' => ',',
+      'name' => 'roomIds',
+    ),
+  ),
+  "{$sqlPrefix}ping" => array(
+    'time' => 'ptime',
+    'userId' => 'puserId',
+    'roomId' => 'proomId',
+  ),
+);
+$queryParts['activeUsersSelect']['conditions'] = array(
+  'both' => array(
+    array(
+      'type' => 'e',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'userId',
+      ),
+      'right' => array(
+        'type' => 'column',
+        'value' => 'puserId',
+      ),
+    ),
+    array(
+      'type' => 'e',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'roomId',
+      ),
+      'right' => array(
+        'type' => 'column',
+        'value' => 'proomId',
+      ),
+    ),
+    array(
+      'type' => 'e',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'ptime',
+      ),
+      'right' => array(
+        'type' => 'int',
+        'value' => (int) ($request['time'] - $request['onlineThreshold'])
+      ),
+    ),
+  ),
+);
+$queryParts['activeUsersSelect']['sort'] = array(
+  'userName' => 'asc',
+);
+$queryParts['activeUsersSelect']['group'] = 'puserId';
+
+
+
+/* Modify Query Data for Directives */
+if (count($request['users']) > 0) {
+  $queryParts['activeUsersSelect']['conditions']['both'][] = array(
+    'type' => 'in',
+    'left' => array(
+      'type' => 'column',
+      'value' => 'puserId',
+    ),
+    'right' => array(
+       'type' => 'array',
+       'value' => (array) $request['users'],
+    ),
+  );
+}
+
 
 
 /* Plugin Hook Start */
@@ -81,110 +177,51 @@ $xmlData = array(
 
 
 /* Get Active Users */
-$activeUsers = $database->select(
-  array(
-    "{$sqlPRefix}users" => array(
-      'userName' => 'userName',
-      'userId' => 'userId',
-      'userFormatStart' => 'userFormatStart',
-      'userFormatEnd' => 'userFormatEnd',
-    ),
-    "{$sqlPrefix}rooms" => array(
-      'roomName' => array(
-        'context' => 'join',
-        'separator' => ',',
-        'name' => 'roomNames',
-      ),
-      'roomId' => array(
-        'context' => 'join',
-        'separator' => ',',
-        'name' => 'roomIds',
-      ),
-    ),
-    "{$sqlPrefix}ping" => array(
-      'time' => 'ptime',
-      'userId' => 'puserId',
-      'roomId' => 'proomId',
-    ),
-  ),
-  array(
-    'both' => array(
-      array(
-        'type' => 'e',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'userId',
-        ),
-        'right' => array(
-          'type' => 'column',
-          'value' => 'puserId',
-        ),
-      ),
-      array(
-        'type' => 'e',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'roomId',
-        ),
-        'right' => array(
-          'type' => 'column',
-          'value' => 'proomId',
-        ),
-      ),
-      array(
-        'type' => 'e',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'ptime',
-        ),
-        'right' => array(
-          'type' => 'int',
-          'value' => (int) ($request['time'] - $request['onlineThreshold'])
-        ),
-      ),
-    ),
-  ),
-  array(
-    'userName',
-  ),
-  'puserId'
-);
+$activeUsers = $database->select($queryParts['activeUsersSelect']['columns'],
+  $queryParts['activeUsersSelect']['conditions'],
+  $queryParts['activeUsersSelect']['sort'],
+  $queryParts['activeUsersSelect']['group']);
 $activeUsers = $activeUsers->getAsArray('userId');
 
 
 
 /* Start Processing */
-if ($activeUsers) {
-  foreach ($activeUsers AS $activeUser) {
-    $rooms = array_combine(explode(',',$activeUser['roomIds']),explode(',',$activeUser['roomNames'])); // Combine the selected roomIds with their relevant roomNames using key -> value pairs. This is a performance technique, with the consequence of preventing access to any additional roomData.
+if (is_array($activeUsers)) {
+  if (count($activeUsers) > 0) {
+    foreach ($activeUsers AS $activeUser) {
+      $rooms = array_combine(explode(',',$activeUser['roomIds']),
+        explode(',',$activeUser['roomNames'])); // Combine the selected roomIds with their relevant roomNames using key -> value pairs. This is a performance technique, with the consequence of preventing access to any additional roomData.
 
-    $xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']] = array(
-      'userData' => array(
-        'userId' => (int) $activeUser['userId'],
-        'userName' => ($activeUser['userName']),
-        'startTag' => ($activeUser['userFormatStart']),
-        'endTag' => ($activeUser['userFormatEnd']),
-      ),
-      'rooms' => array(),
-    );
-
-
-    ($hook = hook('getAllActiveUsers_eachUser_start') ? eval($hook) : '');
-
-    if ($rooms) {
-      foreach ($rooms AS $roomId => $name) {
-        $xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']]['rooms']['room ' . $roomId] = array(
-          'roomId' => (int) $roomId,
-          'roomName' => ($name),
-        );
+      $xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']] = array(
+        'userData' => array(
+          'userId' => (int) $activeUser['userId'],
+          'userName' => (string) $activeUser['userName'],
+          'startTag' => (string) $activeUser['userFormatStart'],
+          'endTag' => (string) $activeUser['userFormatEnd'],
+        ),
+        'rooms' => array(),
+      );
 
 
-        ($hook = hook('getAllActiveUsers_eachRoom') ? eval($hook) : '');
+      ($hook = hook('getAllActiveUsers_eachUser_start') ? eval($hook) : '');
+
+      if (is_array($rooms)) {
+        if (count($rooms) > 0) {
+          foreach ($rooms AS $roomId => $name) {
+            $xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']]['rooms']['room ' . $roomId] = array(
+              'roomId' => (int) $roomId,
+              'roomName' => (string) $name,
+            );
+
+
+            ($hook = hook('getAllActiveUsers_eachRoom') ? eval($hook) : '');
+          }
+        }
       }
+
+
+      ($hook = hook('getAllActiveUsers_eachUser_end') ? eval($hook) : '');
     }
-
-
-    ($hook = hook('getAllActiveUsers_eachUser_end') ? eval($hook) : '');
   }
 }
 
