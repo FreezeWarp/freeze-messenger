@@ -1,0 +1,483 @@
+/********************************
+ *** FreezeMessenger Styling ****
+ ********************************/
+
+/* General */
+* { /* This sets the box model to border-box, which is defined in CSS3 and supported by every browser. Border-box defines widths as including the border, which makes percentages like 20% and 80% work when one of the elements has a border. */
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+body {
+  padding-top: 3px;
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-bottom: 20px;
+  margin: 0px;
+  overflow-x: hidden;
+  font-family: Ubuntu, Calibria, Arial;
+}
+
+/*@font-face {
+  font-family: 'Ubuntu';
+  font-style: normal;
+  font-weight: bold;
+  src: local('Ubuntu Bold'), local('Ubuntu-Bold'), url('http://themes.googleusercontent.com/font?kit=0ihfXUL2emPh0ROJezvraD8E0i7KZn-EPnyo3HZu7kw') format('woff');
+}
+@font-face {
+  font-family: 'Ubuntu';
+  font-style: normal;
+  font-weight: normal;
+  src: local('Ubuntu'), url('http://themes.googleusercontent.com/font?kit=_xyN3apAT_yRRDeqB3sPRg') format('woff');
+}*/
+
+
+
+/***** Menu *****/
+
+#menu {
+  float: left;
+  width: 25%;
+}
+#menu div, #menu ul {
+  width: 100%;
+}
+#rooms {
+  max-height: 300px;
+  overflow: auto;
+}
+
+
+/***** Content *****/
+
+#content {
+  float: right;
+  width: 75%;
+}
+
+#buttonMenuLeft {
+  float: left;
+  width: 36px;
+  display: block;
+}
+
+#messageInput {
+  display: block;
+  height: 100px;
+  float: right;
+  white-space: nowrap;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  border: transparent;
+}
+
+#youtubeResultsContainer {
+  height: 320px;
+  overflow: auto;
+}
+
+#textentryBoxUpload, #textentryBoxYoutube, #textentryBoxUrl {
+  display: none;
+  text-align: center;
+}
+
+#fileUpload, #urlUpload {
+  width: 300px;
+}
+
+#activeUsers {
+  min-height: 20px;
+  max-height: 250px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+#title {
+  text-align: left;
+}
+
+#rightTitle {
+  width: 30%;
+  min-width: 140px;
+}
+
+#messageList {
+  height: 440px;
+  overflow: auto;
+}
+
+#status {
+  position: relative;
+  bottom: 0px;
+  right: 3px;
+  float: right;
+  opacity: .8;
+}
+
+
+
+/***** Other Crap *****/
+
+.leftPart {
+  float: left;
+  text-align: left;
+}
+.rightPart {
+  float: right;
+  text-align: right;
+}
+
+.userName {
+  font-weight: bold;
+}
+.userNameTable {
+  width: 150px;
+  overflow: hidden;
+  display: inline-block;
+  word-wrap: normal;
+  white-space: nowrap;
+}
+
+.inline {
+  display: inline;
+}
+.inlineBlock {
+  display: inline-block;
+}
+.hidden {
+  display: none;
+}
+
+.embedImage {
+  max-width: 300px;
+  max-height: 300px;
+  border: none;
+}
+
+a img:hover {
+  opacity: .5;
+}
+img.standard {
+  height: 16px;
+  width: 16px;
+}
+
+button.standard {
+  width: 32px;
+  padding: 7px !important;
+  margin: 2px;
+}
+select.standard {
+  height: 28px;
+}
+
+iframe.nodisplay {
+  width: 0px;
+  height: 0px;
+  border: 0px;
+  display: none; /* The above are probably redundant, I suppose. */
+}
+
+table.page {
+  border-spacing: 0px;
+  width: 100%;
+  padding: 5px;
+}
+
+.messageLine {
+  margin: 4px 0px;
+  display: block;
+}
+
+table.center {
+  width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+table.center td {
+  text-align: center;
+}
+
+
+
+
+
+/********************************
+ ***** Context Menu Styling *****
+ ********************************/
+
+.contextMenu {
+  position: absolute;
+  width: 120px;
+  z-index: 99999;
+  padding: 0px;
+  margin: 0px;
+  display: none;
+}
+
+.contextMenu li {
+  list-style: none;
+  padding: 0px;
+  padding-bottom: 3px;
+  margin: 0px;
+}
+
+.contextMenu a {
+  text-decoration: none;
+  display: block;
+  line-height: 20px;
+  height: 20px;
+  border: none;
+  padding-left: 10px;
+}
+
+.contextMenu li.hover a { }
+
+.contextMenu li.disabled a {
+  cursor: default;
+}
+
+
+
+
+
+
+
+/********************************
+ *** Richtext Editor Styling ****
+ ********************************/
+
+.frameBody {
+  font-family: sans-serif;
+  font-size: 12px;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.frameBody p {
+  border: 1px #bbb solid;
+  padding: 2px;
+}
+
+.rte-zone {
+  width: 500px;
+  margin: 0;
+  padding: 0;
+  border: 1px #999 solid;
+  clear: both;
+  height: 200px;
+  display: block;
+}
+
+
+
+
+
+
+/********************************
+ ******** jGrowl Styling ********
+ ********************************/
+
+div.jGrowl {
+  padding: 10px;
+  z-index: 9999;
+  color: #fff;
+  font-size: 12px;
+}
+
+
+/***** Normal Style Positions *****/
+
+div.jGrowl {
+  position: absolute;
+}
+
+body > div.jGrowl {
+  position: fixed;
+}
+
+div.jGrowl.top-left {
+  left: 0px;
+  top: 0px;
+}
+
+div.jGrowl.top-right {
+  right: 0px;
+  top: 0px;
+}
+
+div.jGrowl.bottom-left {
+  left: 0px;
+  bottom: 0px;
+}
+
+div.jGrowl.bottom-right {
+  right: 0px;
+  bottom: 0px;
+}
+
+div.jGrowl.center {
+  top: 0px;
+  width: 50%;
+  left: 25%;
+}
+
+
+/***** Cross Browser Styling *****/
+
+div.center div.jGrowl-notification, div.center div.jGrowl-closer {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+div.jGrowl div.jGrowl-notification, div.jGrowl div.jGrowl-closer {
+  background-color: #000;
+  opacity: .85;
+  zoom: 1;
+  width: 235px;
+  padding: 10px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  font-family: Tahoma, Arial, Helvetica, sans-serif;
+  font-size: 1em;
+  text-align: left;
+  display: none;
+}
+
+div.jGrowl div.jGrowl-notification {
+  min-height: 40px;
+}
+
+div.jGrowl div.jGrowl-notification div.jGrowl-header {
+  font-weight: bold;
+  font-size: .85em;
+}
+
+div.jGrowl div.jGrowl-notification div.jGrowl-close {
+  z-index: 99;
+  float: right;
+  font-weight: bold;
+  font-size: 1em;
+  cursor: pointer;
+}
+
+div.jGrowl div.jGrowl-closer {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  cursor: pointer;
+  font-size: .9em;
+  font-weight: bold;
+  text-align: center;
+}
+
+
+/***** Hide jGrowl when printing *****/
+
+@media print {
+  div.jGrowl {
+    display: none;
+  }
+}
+
+
+
+
+
+
+/********************************
+ ***** EZPZ Tooltip Styling *****
+ ********************************/
+
+.tooltip-content {
+  display: none;
+  position: absolute;
+  padding: 10px;
+  z-index: 3000;
+}
+
+
+
+
+
+
+/********************************
+ ******** TipTip Styling ********
+ ********************************/
+
+#tiptip_holder {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 99999;
+}
+
+#tiptip_holder.tip_top {
+  padding-bottom: 5px;
+}
+
+#tiptip_holder.tip_bottom {
+  padding-top: 5px;
+}
+
+#tiptip_holder.tip_right {
+  padding-left: 5px;
+}
+
+#tiptip_holder.tip_left {
+  padding-right: 5px;
+}
+
+#tiptip_content {
+  /* Unstyled */
+}
+
+#tiptip_arrow, #tiptip_arrow_inner {
+  position: absolute;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 6px;
+  height: 0;
+  width: 0;
+}
+
+#tiptip_holder.tip_top #tiptip_arrow {
+  /* Unstyled */
+}
+
+#tiptip_holder.tip_bottom #tiptip_arrow {
+  /* Unstyled */
+}
+
+#tiptip_holder.tip_right #tiptip_arrow {
+  /* Unstyled */
+}
+
+#tiptip_holder.tip_left #tiptip_arrow {
+  /* Unstyled */
+}
+
+#tiptip_holder.tip_top #tiptip_arrow_inner {
+  margin-top: -7px;
+  margin-left: -6px;
+}
+
+#tiptip_holder.tip_bottom #tiptip_arrow_inner {
+  margin-top: -5px;
+  margin-left: -6px;
+}
+
+#tiptip_holder.tip_right #tiptip_arrow_inner {
+  margin-top: -6px;
+  margin-left: -5px;
+}
+
+#tiptip_holder.tip_left #tiptip_arrow_inner {
+  margin-top: -6px;
+  margin-left: -7px;
+}
