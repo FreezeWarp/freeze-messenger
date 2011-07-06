@@ -209,6 +209,11 @@ $request = fim_sanitizeGPC(array(
 
     'fields' => array(
       'type' => 'string',
+      'valid' => array(
+        'both',
+        'api',
+        'html',
+      ),
       'require' => false,
       'default' => 'both',
     ),
@@ -385,7 +390,7 @@ if ($newestDate) {
     ),
     'right' => array(
       'type' => 'int',
-      'value' => (int) $request['newestDate'],
+      'value' => (int) $request['newestDate'],'CURRENT_TIMESTAMP()',
     ),
   );
 }
@@ -453,7 +458,7 @@ if (!$whereClause && $messageEnd) {
   );
 }
 
-if (!$showDeleted && $archive) {
+if (!$showDeleted && $request['archive']) {
   $queryParts['messagesSelect']['conditions']['both'][] = array(
     'type' => 'lt',
     'left' => array(
@@ -465,6 +470,43 @@ if (!$showDeleted && $archive) {
       'value' => false,
     ),
   );
+}
+
+switch ($fields) {
+  case 'both':
+  $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"][] = 'apiText';
+  $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"][] = 'htmlText';
+  break;
+
+  case 'api':
+  $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"][] = 'apiText';
+  break;
+
+  case 'html':
+  $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"][] = 'htmlText';
+  break;
+
+  default:
+  $errStr = 'badFields';
+  $errDesc = 'The given message fields are invalid - recognized values are "api", "html", and "both"';
+  break;
+}
+
+if ((strlen($request['search']) > 0) && $request['archive']) {
+  $searchArray = explode(',',$search);
+
+  foreach ($searchArray AS $searchVal) {
+    $searchArray2[] = '"' . dbEscape(str_replace(array_keys($searchWordConverts),array_values($searchWordConverts),$searchVal)) . '"';
+  }
+
+  $search2 = implode(',',$searchArray2);
+
+  $searchMessageIds = dbRows("SELECT GROUP_CONCAT(messageId SEPARATOR ',') AS messages
+  FROM {$sqlPrefix}searchPhrases AS p,
+  {$sqlPrefix}searchMessages AS m
+  WHERE p.phraseId = m.phraseId AND p.phraseName IN ($search2)");
+
+  $whereClause .= " AND messageId IN ($searchMessageIds[messages]) ";
 }
 
 
@@ -513,11 +555,11 @@ if (is_array($request['rooms'])) {
       );
       $room->getAsArray();
 
-      if ($room) {
+      if ($room) { // The Room Has to be Valid
+
         /* Make sure the user has permission to view posts from the room */
         $permission = fim_hasPermission($room,$user,'view',false);
         if (!$permission[0]) { // No Permission
-          ($hook = hook('getMessages_noPerm') ? eval($hook) : '');
 
           switch($permission[1]) {
             case 'kick':
@@ -530,11 +572,14 @@ if (is_array($request['rooms'])) {
             $errDesc = 'You do not have permission to view the room you are trying to view.';
             break;
           }
+
+          ($hook = hook('getMessages_noPerm') ? eval($hook) : '');
+
         }
         else { // Has Permission
-          if (!$noPing) {
-            ($hook = hook('getMessages_ping_start') ? eval($hook) : '');
 
+          /* Process Ping */
+          if (!$noPing) {
             dbInsert(array(
               'userId' => $user['userId'],
               'roomId' => $room['roomId'],
@@ -549,45 +594,12 @@ if (is_array($request['rooms'])) {
               )
             ));
 
-            ($hook = hook('getMessages_ping_end') ? eval($hook) : '');
+            ($hook = hook('getMessages_ping') ? eval($hook) : '');
           }
-
-          switch ($fields) {
-            case 'both': case '': $messageFields = 'm.apiText AS apiText, m.htmlText AS htmlText,'; break;
-            case 'api': $messageFields = 'm.apiText AS apiText,'; break;
-            case 'html': $messageFields = 'm.htmlText AS htmlText,'; break;
-            default:
-              $errStr = 'badFields';
-              $errDesc = 'The given message fields are invalid - recognized values are "api", "html", and "both"';
-            break;
-          }
-
-          ($hook = hook('getMessages_preMessages') ? eval($hook) : '');
-
-          if ($search) {
-            $searchArray = explode(',',$search);
-
-            foreach ($searchArray AS $searchVal) {
-              $searchArray2[] = '"' . dbEscape(str_replace(array_keys($searchWordConverts),array_values($searchWordConverts),$searchVal)) . '"';
-            }
-
-            $search2 = implode(',',$searchArray2);
-
-            $searchMessageIds = dbRows("SELECT GROUP_CONCAT(messageId SEPARATOR ',') AS messages
-            FROM {$sqlPrefix}searchPhrases AS p,
-            {$sqlPrefix}searchMessages AS m
-            WHERE p.phraseId = m.phraseId AND p.phraseName IN ($search2)");
-
-            $whereClause .= " AND messageId IN ($searchMessageIds[messages]) ";
-          }
-
-
-
 
 
           /* Get Messages from Database */
           if ($longPolling) {
-            ($hook = hook('getMessages_postMessages_longPolling') ? eval($hook) : '');
 
             while (!$messages) {
               $messages = $database->select($queryParts['messagesSelect']['columns'],
@@ -595,77 +607,89 @@ if (is_array($request['rooms'])) {
                 $queryParts['messagesSelect']['columns']);
               $messages->getAsArray('messageId');
 
+              ($hook = hook('getMessages_postMessages_longPolling_repeat') ? eval($hook) : '');
+
               sleep($longPollingWait);
             }
+
+            ($hook = hook('getMessages_postMessages_longPolling') ? eval($hook) : '');
+
           }
           else {
+
+            $messages = $database->select($queryParts['messagesSelect']['columns'],
+              $queryParts['messagesSelect']['conditions'],
+              $queryParts['messagesSelect']['columns']);
+            $messages->getAsArray('messageId');
+
             ($hook = hook('getMessages_postMessages_polling') ? eval($hook) : '');
 
-              $messages = $database->select($queryParts['messagesSelect']['columns'],
-                $queryParts['messagesSelect']['conditions'],
-                $queryParts['messagesSelect']['columns']);
-              $messages->getAsArray('messageId');
           }
 
+
           /* Process Messages */
-          if ($messages) {
-            foreach ($messages AS $id => $message) {
-              ($hook = hook('getMessages_eachMessage_start') ? eval($hook) : '');
+          if (is_array($messages)) {
+            if (count($messages) > 0) {
+              foreach ($messages AS $id => $message) {
 
-              $message = fim_decrypt($message);
+                $message = fim_decrypt($message);
 
-              $message['userName'] = addslashes($message['userName']);
-              $message['apiText'] = ($message['apiText']);
-              $message['htmlText'] = ($message['htmlText']);
+                $message['userName'] = addslashes($message['userName']);
+                $message['apiText'] = ($message['apiText']);
+                $message['htmlText'] = ($message['htmlText']);
 
-              switch ($encode) {
-                case 'base64':
-                $message['apiText'] = base64_encode($message['apiText']);
-                $message['htmlText'] = base64_encode($message['htmlText']);
-                break;
+
+                switch ($encode) {
+                  case 'base64':
+                  $message['apiText'] = base64_encode($message['apiText']);
+                  $message['htmlText'] = base64_encode($message['htmlText']);
+                  break;
+                }
+
+
+                $xmlData['getMessages']['messages']['message ' . (int) $message['messageId']] = array(
+                  'roomData' => array(
+                    'roomId' => (int) $room['roomId'],
+                    'roomName' => ($room['roomName']),
+                    'roomTopic' => ($room['roomTopic']),
+                  ),
+                  'messageData' => array(
+                    'messageId' => (int) $message['messageId'],
+                    'messageTime' => (int) $message['time'],
+                    'messageTimeFormatted' => fim_date(false,$message['time']),
+                    'messageText' => array(
+                      'apiText' => ($message['apiText']),
+                      'htmlText' => ($message['htmlText']),
+                    ),
+                    'flags' => ($message['flag']),
+                  ),
+                  'userData' => array(
+                    'userName' => ($message['userName']),
+                    'userId' => (int) $message['userId'],
+                    'userGroup' => (int) $message['userGroup'],
+                    'avatar' => ($message['avatar']),
+                    'socialGroups' => ($message['socialGroups']),
+                    'startTag' => ($message['userFormatStart']),
+                    'endTag' => ($message['userFormatEnd']),
+                    'defaultFormatting' => array(
+                      'color' => ($message['defaultColor']),
+                      'highlight' => ($message['defaultHighlight']),
+                      'fontface' => ($message['defaultFontface']),
+                      'general' => (int) $message['defaultFormatting']
+                    ),
+                  ),
+                );
+
+
+                ($hook = hook('getMessages_eachMessage') ? eval($hook) : ''); // Useful for running code that requires the specific message array to still be present, or otherwise for convience sake.
+
               }
-
-              $xmlData['getMessages']['messages']['message ' . (int) $message['messageId']] = array(
-                'roomData' => array(
-                  'roomId' => (int) $room['roomId'],
-                  'roomName' => ($room['roomName']),
-                  'roomTopic' => ($room['roomTopic']),
-                ),
-                'messageData' => array(
-                  'messageId' => (int) $message['messageId'],
-                  'messageTime' => (int) $message['time'],
-                  'messageTimeFormatted' => fim_date(false,$message['time']),
-                  'messageText' => array(
-                    'apiText' => ($message['apiText']),
-                    'htmlText' => ($message['htmlText']),
-                  ),
-                  'flags' => ($message['flag']),
-                ),
-                'userData' => array(
-                  'userName' => ($message['userName']),
-                  'userId' => (int) $message['userId'],
-                  'userGroup' => (int) $message['userGroup'],
-                  'avatar' => ($message['avatar']),
-                  'socialGroups' => ($message['socialI forget if I watched Groups']),
-                  'startTag' => ($message['userFormatStart']),
-                  'endTag' => ($message['userFormatEnd']),
-                  'defaultFormatting' => array(
-                    'color' => ($message['defaultColor']),
-                    'highlight' => ($message['defaultHighlight']),
-                    'fontface' => ($message['defaultFontface']),
-                    'general' => (int) $message['defaultFormatting']
-                  ),
-                ),
-              );
-
-              ($hook = hook('getMessages_eachMessage_end') ? eval($hook) : '');
             }
           }
 
-          ///* Process Active Users
-          if ($activeUsers) {
-            ($hook = hook('getMessages_activeUsers_start') ? eval($hook) : '');
 
+          /* Process Active Users */
+          if ($activeUsers) {
             $activeUsers = dbRows("SELECT u.{$sqlUserTableCols[userName]} AS userName,
               u.userId AS userId,
               u.userGroup AS userGroup,
@@ -685,22 +709,27 @@ if (is_array($request['rooms'])) {
               {$activeUser_order}
             {$activeUser_end}",'userId');
 
-            if ($activeUsers) {
-              foreach ($activeUsers AS $activeUser) {
-                $xmlData['getMessages']['activeUsers']['user ' . $activeUser['userId']] = array(
-                  'userId' => (int) $activeUser['userId'],
-                  'userName' => ($activeUser['userName']),
-                  'userGroup' => (int) $activeUser['userGroup'],
-                  'socialGroups' => ($activeUser['socialGroups']),
-                  'startTag' => ($activeUser['userFormatStart']),
-                  'endTag' => ($activeUser['userFormatEnd']),
-                );
 
-                ($hook = hook('getMessages_activeUsers_eachUser') ? eval($hook) : '');
+            if (is_array($activeUsers)) {
+              if (count($activeUsers) > 0) {
+                foreach ($activeUsers AS $activeUser) {
+                  $xmlData['getMessages']['activeUsers']['user ' . $activeUser['userId']] = array(
+                    'userId' => (int) $activeUser['userId'],
+                    'userName' => ($activeUser['userName']),
+                    'userGroup' => (int) $activeUser['userGroup'],
+                    'socialGroups' => ($activeUser['socialGroups']),
+                    'startTag' => ($activeUser['userFormatStart']),
+                    'endTag' => ($activeUser['userFormatEnd']),
+                  );
+
+
+                  ($hook = hook('getMessages_activeUsers_eachUser') ? eval($hook) : '');
+                }
               }
             }
 
-            ($hook = hook('getMessages_activeUsers_end') ? eval($hook) : '');
+
+            ($hook = hook('getMessages_activeUsers') ? eval($hook) : '');
           }
         }
       }
@@ -709,8 +738,6 @@ if (is_array($request['rooms'])) {
 }
 
 
-
-///* Process Watch Rooms *///
 if ($watchRooms) {
   ($hook = hook('getMessages_watchRooms_start') ? eval($hook) : '');
 
@@ -742,7 +769,6 @@ WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.roomId IN ($user[watchRo
 
   ($hook = hook('getMessages_watchRooms_end') ? eval($hook) : '');
 }
-
 
 
 
