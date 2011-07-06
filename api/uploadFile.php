@@ -139,7 +139,7 @@ if ($continue) {
             }
           }
           else {
-            dbInsert(array(
+            $database->insert(array(
               'userId' => $user['userId'],
               'name' => $name,
               'mime' => $mime,
@@ -147,7 +147,7 @@ if ($continue) {
 
             $fileId = dbInsertId();
 
-            dbInsert(array(
+            $database->insert(array(
               'fileId' => $fileId,
               'sha256hash' => $sha256hash,
               'salt' => $saltNum,

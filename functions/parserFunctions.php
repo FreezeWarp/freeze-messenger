@@ -395,7 +395,7 @@ function fimParse_htmlWrap($html, $maxLength = 80, $char = '<br />') { /* An ada
 */
 
 function fim3parse_keyWords($string,$messageId) {
-  global $searchWordConverts, $searchWordPunctuation, $searchWordLength, $searchWordOmissions, $sqlPrefix;
+  global $searchWordConverts, $searchWordPunctuation, $searchWordLength, $searchWordOmissions, $sqlPrefix, $database;
 
   foreach ($searchWordPunctuation AS $punc) {
     $puncList[] = addcslashes($punc,'"\'|(){}[]<>.,~-?!@#$%^&*/\\'); // Dunno if this is the best approach.
@@ -424,7 +424,7 @@ function fim3parse_keyWords($string,$messageId) {
     $phraseData = dbRows("SELECT * FROM {$sqlPrefix}searchPhrases WHERE phraseName = '" . dbEscape($piece) . "'");
 
     if (!$phraseData) {
-      dbInsert(array(
+      $database->insert(array(
         'phraseName' => $piece,
       ),
       "{$sqlPrefix}searchPhrases");
@@ -435,7 +435,7 @@ function fim3parse_keyWords($string,$messageId) {
       $phraseId = $phraseData['phraseId'];
     }
 
-    dbInsert(array(
+    $database->insert(array(
       'phraseId' => (int) $phraseId,
       'messageId' => (int) $messageId,
     ),"{$sqlPrefix}searchMessages");
@@ -476,7 +476,7 @@ function fimParse_finalParse($messageText) {
 */
 
 function fim_sendMessage($messageText,$user,$room,$flag = '') {
-  global $sqlPrefix, $parseFlags, $salts, $encrypt, $loginMethod, $sqlUserGroupTableCols, $sqlUserGroupTable;
+  global $sqlPrefix, $parseFlags, $salts, $encrypt, $loginMethod, $sqlUserGroupTableCols, $sqlUserGroupTable, $database;
 
   $ip = dbEscape($_SERVER['REMOTE_ADDR']); // Get the IP address of the user.
 
@@ -554,7 +554,7 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
 
   // Insert into archive then cache storage.
 
-  dbInsert(array(
+  $database->insert(array(
     'roomId' => (int) $room['roomId'],
     'userId' => (int) $user['userId'],
     'rawText' => $messageRaw,
@@ -567,7 +567,7 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
   ),"{$sqlPrefix}messages");
   $messageId = dbInsertId();
 
-  dbInsert(array(
+  $database->insert(array(
     'messageId' => (int) $messageId,
     'roomId' => (int) $room['roomId'],
     'userId' => (int) $user['userId'],
@@ -593,7 +593,7 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
   // Delete old messages from the cache; do so depending on the cache limit set in config.php, or default to 100.
   $cacheTableLimit = ($cacheTableLimit ? $cacheTableLimit : 100);
   if ($messageId2 > $cacheTableLimit) {
-    dbDelete("{$sqlPrefix}messagesCached",
+    $database->delete("{$sqlPrefix}messagesCached",
       array('id' => array(
         'cond' => 'lte',
         'type' => 'raw',
@@ -608,7 +608,7 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
 
 
   // Update room caches.
-  dbUpdate(array(
+  $database->update(array(
     'lastMessageTime' => array(
       'type' => 'raw',
       'value' => 'NOW()',
@@ -622,7 +622,7 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
 
 
   // Insert or update a user's room stats.
-  dbInsert(array(
+  $database->insert(array(
     'userId' => $user['userId'],
     'roomId' => $room['roomId'],
     'messages' => 1),

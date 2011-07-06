@@ -60,7 +60,7 @@ else {
     if (!in_array($value,array('available','away','busy','invisible','offline'))) {
       ($hook = hook('setStatus_inner_query ') ? eval($hook) : '');
 
-      dbUpdate(array(
+      $database->update(array(
         'status' => $value,
       ),
       "{$sqlPrefix}ping",

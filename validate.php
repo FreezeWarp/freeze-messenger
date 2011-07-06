@@ -484,7 +484,7 @@ if ($valid) { // If the user is valid, process their preferrences.
         }
       }
 
-      dbInsert(array(
+      $database->insert(array(
         'userId' => (int) $user2['userId'],
         'userName' => dbEscape($user2['userName']),
         'userGroup' => (int) $user2['userGroup'],
@@ -506,7 +506,7 @@ if ($valid) { // If the user is valid, process their preferrences.
       /* Update Social Groups */
       $socialGroups = dbRows("SELECT GROUP_CONCAT($sqlMemberGroupTableCols[groupId] SEPARATOR ',') AS groups FROM {$sqlMemberGroupTable} WHERE {$sqlMemberGroupTableCols[userId]} = $user2[userId] AND $sqlMemberGroupTableCols[type] = '$sqlMemberGroupTableCols[validType]'");
 
-      dbUpdate(array(
+      $database->update(array(
         'userName' => $user2['userName'],
         'userGroup' => $user2['userGroup'],
         'allGroups' => $user2['allGroups'],
@@ -544,7 +544,7 @@ if ($valid) { // If the user is valid, process their preferrences.
             }
 
 
-            dbUpdate(array(
+            $database->update(array(
               'favRooms' => $newRoomString
             ),
             "{$sqlPrefix}users",
@@ -562,7 +562,7 @@ if ($valid) { // If the user is valid, process their preferrences.
       /* Update Social Groups */
       $socialGroups = dbRows("SELECT GROUP_CONCAT($sqlMemberGroupTableCols[groupId] SEPARATOR ',') AS groups FROM {$sqlMemberGroupTable} WHERE {$sqlMemberGroupTableCols[userId]} = $user2[userId] AND $sqlMemberGroupTableCols[type] = '$sqlMemberGroupTableCols[validType]'");
 
-      dbUpdate(array(
+      $database->update(array(
         'userName' => $user2['userName'],
         'userGroup' => $user2['userGroup'],
         'allGroups' => $user2['allGroups'],
@@ -597,7 +597,7 @@ if ($valid) { // If the user is valid, process their preferrences.
 
     $anonId = rand(1,10000);
 
-    dbInsert(array(
+    $database->insert(array(
       'userId' => $user['userId'],
       'anonId' => ($anonymous ? $anonId : 0),
       'time' => array(
@@ -610,7 +610,7 @@ if ($valid) { // If the user is valid, process their preferrences.
     ),"{$sqlPrefix}sessions");
 
     // Whenever a new user logs in, delete all sessions from 15 or more minutes in the past.
-    dbDelete("{$sqlPrefix}sessions",array(
+    $database->delete("{$sqlPrefix}sessions",array(
       'time' => array(
         'type' => 'raw', // Data in the value column should not be escaped.
         'cond' => 'lte', // Comparison is "<="
@@ -623,7 +623,7 @@ if ($valid) { // If the user is valid, process their preferrences.
   elseif ($session == 'update' && $sessionHash) {
     ($hook = hook('validate_updatesession') ? eval($hook) : '');
 
-    dbUpdate(array(
+    $database->update(array(
       'time' => array(
         'type' => 'raw',
         'value' => 'NOW()',

@@ -628,7 +628,7 @@ if (is_array($request['rooms'])) {
 
         /* Process Ping */
         if (!$noPing) {
-          dbInsert(array(
+          $database->insert(array(
             'userId' => $user['userId'],
             'roomId' => $room['roomId'],
             'time' => array(

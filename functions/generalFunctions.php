@@ -1086,9 +1086,9 @@ function fim_htmlCompact($data) {
 */
 
 function modLog($action,$data) {
-  global $sqlPrefix, $user;
+  global $sqlPrefix, $user, $database;
 
-  if (dbInsert(array(
+  if ($database->insert(array(
     'userId' => (int) $user['userId'],
     'ip' => $_SERVER['REMOTE_ADDR'],
     'action' => $action,

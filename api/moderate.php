@@ -68,7 +68,7 @@ switch ($action) {
       $options = ($_POST['mature'] ? 2 : 0);
       $bbcode = intval($_POST['bbcode']);
 
-      dbInsert(array(
+      $database->insert(array(
         'roomName' => $name,
         'allowedGroups' => $allowedGroups,
         'allowedUsers' => $allowedUsers,
@@ -145,7 +145,7 @@ switch ($action) {
         }
 
         if ($checked == true && !$listsNew[$list['listId']]) {
-          dbInsert(array(
+          $database->insert(array(
             'roomId' => $room['roomId'],
             'listId' => $list['listId'],
             'status' => 'unblock'
@@ -154,7 +154,7 @@ switch ($action) {
           ));
         }
         elseif ($checked == false && $listsNew[$list['listId']]) {
-          dbInsert(array(
+          $database->insert(array(
             'roomId' => $room['roomId'],
             'listId' => $list['listId'],
             'status' => 'block'
@@ -170,7 +170,7 @@ switch ($action) {
       $options = ($room['options'] & 1) + ($_POST['mature'] ? 2 : 0) + ($room['options'] & 4) + ($room['options'] & 8) + ($room['options'] & 16);
       $bbcode = intval($_POST['bbcode']);
 
-      dbUpdate(array(
+      $database->update(array(
           'roomName' => $name,
           'allowedGroups' => $allowedGroups,
           'allowedUsers' => $allowedUsers,
@@ -215,7 +215,7 @@ switch ($action) {
       $xmlData['moderate']['response']['insertId'] = $room['roomId']; // Already exists; return ID
     }
     else {
-      dbInsert(array(
+      $database->insert(array(
           'roomName' => "Private IM ($user[userName] and $user2[userName])",
           'allowedUsers' => "$user[userId],$user2[userId]",
           'options' => 48,
@@ -240,7 +240,7 @@ switch ($action) {
   else {
     $room['options'] += 4; // options & 4 = deleted
 
-    dbUpdate(array(
+    $database->update(array(
         'options' => (int) $room['options'],
       ),"{$sqlPrefix}rooms",array(
         'roomId' => (int) $room['roomId'],
@@ -374,7 +374,7 @@ switch ($action) {
       }
     }
 
-    dbUpdate(
+    $database->update(
       $updateArray,
       "{$sqlPrefix}users",
       array(
@@ -397,7 +397,7 @@ switch ($action) {
   $roomData = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $messageData[roomId]");
 
   if (fim_hasPermission($roomData,$user,'moderate',true)) {
-    dbUpdate(array(
+    $database->update(array(
       'deleted' => 1
       ),
       "{$sqlPrefix}messages",
@@ -406,7 +406,7 @@ switch ($action) {
       )
     );
 
-    dbUpdate(array(
+    $database->update(array(
       'deleted' => 1
       ),
       "{$sqlPrefix}messagesCached",
@@ -430,7 +430,7 @@ switch ($action) {
   $roomData = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $messageData[roomId]");
 
   if (fim_hasPermission($roomData,$user,'moderate')) {
-    dbUpdate(array(
+    $database->update(array(
       'deleted' => 0
       ),
       "{$sqlPrefix}messages",
@@ -479,7 +479,7 @@ switch ($action) {
   else {
     modLog('kick',"$userData[userId],$roomData[roomId]");
 
-    dbInsert(array(
+    $database->insert(array(
         'userId' => (int) $userData['userId'],
         'kickerId' => (int) $user['userId'],
         'length' => (int) $time,
@@ -524,7 +524,7 @@ switch ($action) {
   else {
     modLog('unkick',"$userData[userId],$roomData[roomId]");
 
-    dbDelete("{$sqlPrefix}kick",array(
+    $database->delete("{$sqlPrefix}kick",array(
       'userId' => $userData['userId'],
       'roomId' => $roomData['roomId'],
     ));
@@ -553,7 +553,7 @@ switch ($action) {
 
     $newRoomString = implode(',',$currentRooms2);
 
-    dbUpdate(array(
+    $database->update(array(
       'favRooms' => (string) $newRoomString,
     ),"{$sqlPrefix}users",array(
       'userId' => (int) $user['userId'],
@@ -582,7 +582,7 @@ switch ($action) {
 
     $newRoomString = implode(',',$currentRooms2);
 
-    dbUpdate(array(
+    $database->update(array(
       'favRooms' => (string) $newRoomString,
     ),"{$sqlPrefix}users",array(
       'userId' => (int) $user['userId'],
