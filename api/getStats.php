@@ -179,22 +179,24 @@ if (count($request['rooms']) > 0) {
     ($hook = hook('getStats_eachRoom_postRooms') ? eval($hook) : '');
 
 
-    if ($totalPosts) {
-      foreach ($totalPosts AS $totalPoster) {
-        $position++;
+    if (is_array($totalPosts)) {
+      if (count($totalPosts) > 0) {
+        foreach ($totalPosts AS $totalPoster) {
+          $position++;
 
-        $xmlData['getStats']['roomStats']['room ' . $room['roomId']]['users']['user ' . $totalPoster['userId']] = array(
-          'userData' => array(
-            'userId' => (int) $totalPoster['userId'],
-            'userName' => ($totalPoster['userName']),
-            'startTag' => ($totalPoster['userFormatStart']),
-            'endTag' => ($totalPoster['userFormatEnd']),
-          ),
-          'messageCount' => (int) $totalPoster['count'],
-          'position' => (int) $position,
-        );
+          $xmlData['getStats']['roomStats']['room ' . $room['roomId']]['users']['user ' . $totalPoster['userId']] = array(
+            'userData' => array(
+              'userId' => (int) $totalPoster['userId'],
+              'userName' => ($totalPoster['userName']),
+              'startTag' => ($totalPoster['userFormatStart']),
+              'endTag' => ($totalPoster['userFormatEnd']),
+            ),
+            'messageCount' => (int) $totalPoster['count'],
+            'position' => (int) $position,
+          );
 
-        ($hook = hook('getStats_eachUser') ? eval($hook) : '');
+          ($hook = hook('getStats_eachUser') ? eval($hook) : '');
+        }
       }
     }
 

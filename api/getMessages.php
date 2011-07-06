@@ -350,7 +350,7 @@ else {
   );
 }
 
-$queryParts['getRooms']['columns'] = array(
+$queryParts['roomsSelect']['columns'] = array(
   "{$sqlPrefix}rooms" => array(
     'roomId' => 'roomId',
     'roomName' => 'roomName',
@@ -361,7 +361,7 @@ $queryParts['getRooms']['columns'] = array(
     'moderators' => 'moderators',
   ),
 );
-$queryParts['getRooms']['conditions'] = array(
+$queryParts['roomsSelect']['conditions'] = array(
   'type' => 'in',
   'left' => array(
     'type' => 'column',
@@ -372,8 +372,77 @@ $queryParts['getRooms']['conditions'] = array(
     'value' => $request['rooms'],
   ),
 );
-$queryParts['getRooms']['sort'] = array(
+$queryParts['roomsSelect']['sort'] = array(
   'roomId' => 'asc',
+);
+
+$queryParts['activeUsersSelect']['columns'] = array(
+  "{$sqlPrefix}ping" => array(
+    'status' => 'status',
+    'typing' => 'typing'
+    'time' => 'ptime'
+    'roomId' => 'proomId',
+    'userId' => 'puserId',
+  ),
+  "{$sqlPrefix}rooms" => array(
+    'roomId' => 'roomId',
+  ),
+  "{$sqlPrefix}users" => array(
+    'userId' => 'userId',
+    'userName' => 'userName',
+  ),
+);
+$queryParts['activeUsersSelect']['conditions'] = array(
+  'both' => array(
+    array(
+      'type' => 'e',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'roomId',
+      ),
+      'right' => array(
+        'type' => 'int',
+        'value' => (int) $room['roomId'],
+      ),
+    ),
+    array(
+      'type' => 'e',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'proomId',
+      ),
+      'right' => array(
+        'type' => 'column',
+        'value' => 'roomId',
+      ),
+    ),
+    array(
+      'type' => 'e',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'puserId',
+      ),
+      'right' => array(
+        'type' => 'column',
+        'value' => 'userId',
+      ),
+    ),
+    array(
+      'type' => 'gte',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'ptime',
+        'context' => 'time',
+      ),
+      'right' => array(
+        'type' => 'int',
+        'value' => (int) ($request['time'] - $request['onlineThreshold']),
+      ),
+    ),
+  ),
+);
+$queryParts['activeUsersSelect']['sort'] = array(
+  'userName' => 'asc',
 );
 
 
@@ -532,7 +601,14 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
 
   $searchMessageIds = $database->select(
     array(
-      "" =>
+      "{$sqlPrefix}searchPhrases" => array(
+        'phraseName' => 'phraseName',
+        'phraseId' => 'pphraseId',
+      ),
+      "{$sqlPrefix}searchMessages" => array(
+        'phraseId' => 'mphraseId',
+        'messageId' => 'messageId',
+      ),
     ),
     array(
       'both' => array(
@@ -577,9 +653,9 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
 /* Start Crazy Shit */
 if (is_array($request['rooms'])) {
   if (count($request['rooms']) > 0) {
-    $rooms = $database->select($queryParts['getRooms']['columns'],
-      $queryParts['getRooms']['conditions'],
-      $queryParts['getRooms']['sort']);
+    $rooms = $database->select($queryParts['roomsSelect']['columns'],
+      $queryParts['roomsSelect']['conditions'],
+      $queryParts['roomsSelect']['sort']);
     $rooms = $rooms->getAsArray('roomId');
 
     foreach ($rooms AS $roomId => $roomData) { // We will run through each room.
