@@ -412,20 +412,18 @@ if (is_array($request['rooms'])) {
             ),
           ),
         );
-        $queryParts['messagesSelect']['order'] = array(
+        $queryParts['messagesSelect']['sort'] = array(
           'messageId' => 'asc',
         );
       }
       else {
         $queryParts['messagesSelect']['columns'] = array(
-          "{$sqlPrefix}messages" => array(
+          "{$sqlPrefix}messagesCached" => array(
             'messageId' => 'messageId',
             'time' => array(
               'context' => 'time',
               'name' => 'time',
             ),
-            'iv' => 'iv',
-            'salt' => 'salt',
             'flag' => 'flag',
             'userId' => 'userId',
             'userName' => 'userName',
@@ -454,7 +452,7 @@ if (is_array($request['rooms'])) {
             ),
           ),
         );
-        $queryParts['messagesSelect']['order'] = array(
+        $queryParts['messagesSelect']['sort'] = array(
           'messageId' => 'asc',
         );
       }
@@ -583,16 +581,16 @@ if (is_array($request['rooms'])) {
 
       switch ($request['fields']) {
         case 'both':
-        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"][] = 'apiText';
-        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"][] = 'htmlText';
+        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"]['apiText'] = 'apiText';
+        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"]['htmlText'] = 'htmlText';
         break;
 
         case 'api':
-        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"][] = 'apiText';
+        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"]['apiText'] = 'apiText';
         break;
 
         case 'html':
-        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"][] = 'htmlText';
+        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"]['htmlText'] = 'htmlText';
         break;
 
         default:
@@ -652,7 +650,7 @@ if (is_array($request['rooms'])) {
           while (!$messages) {
             $messages = $database->select($queryParts['messagesSelect']['columns'],
               $queryParts['messagesSelect']['conditions'],
-              $queryParts['messagesSelect']['columns']);
+              $queryParts['messagesSelect']['sort']);
             $messages->getAsArray('messageId');
 
             ($hook = hook('getMessages_postMessages_longPolling_repeat') ? eval($hook) : '');
@@ -667,7 +665,7 @@ if (is_array($request['rooms'])) {
 
           $messages = $database->select($queryParts['messagesSelect']['columns'],
             $queryParts['messagesSelect']['conditions'],
-            $queryParts['messagesSelect']['columns']);
+            $queryParts['messagesSelect']['sort']);
           $messages->getAsArray('messageId');
 
           ($hook = hook('getMessages_postMessages_polling') ? eval($hook) : '');
@@ -824,11 +822,11 @@ if (is_array($request['rooms'])) {
             {$activeUser_where}
           ORDER BY u.userName
             {$activeUser_order}
-          {$activeUser_end}",'userId');*/
+          {$activeUser_end}",'userId');*//*
           $activeUsers = $database->select($queryParts['activeUsersSelect']['columns'],
             $queryParts['activeUsersSelect']['conditions'],
             $queryParts['activeUsersSelect']['sort']);
-          $activeUsers = $activeUsers->getAsArray();
+          $activeUsers = $activeUsers->getAsArray();*/
 
 
           if (is_array($activeUsers)) {
