@@ -61,6 +61,8 @@ $request = fim_sanitizeGPC(array(
   ),
 ));
 
+
+/* Confirm that the Active User Has Moderation Permission for Each Room */
 if (count($request['rooms']) > 0) {
   $roomRows = $database->select(
     array(
@@ -84,23 +86,16 @@ if (count($request['rooms']) > 0) {
       ),
     )
   );
-  $roomRows->getAsArray();
+  $roomRows->getAsArray('roomId');
 
-  foreach ($roomRows AS $roomData) {
+
+  foreach ($roomRows AS $roomId => $roomData) {
     if (hasPermission($roomData,$user,'moderate',true)) {
       $roomArray[] = $roomData['roomId'];
     }
   }
 
-  $roomList = implode(',',$roomArray);
-}
-
-
-if ($roomList) {
-  $where .= "roomId IN ($roomList)";
-}
-if ($userList) {
-  $where .= "userId IN ($userList)";
+  $request['rooms'] = $roomArray;
 }
 
 
@@ -118,6 +113,105 @@ $xmlData = array(
   ),
 );
 
+$queryParts['kicksSelect']['columns'] = array(
+  "{$sqlPrefix}kick" => array(
+    'kickerId' => 'kkickerId',
+    'userId' => 'kuserId',
+    'roomId' => 'kroomId',
+    'length' => 'klength',
+    'time' => array(
+      'name' => 'ktime',
+      'context' => 'time',
+    ),
+  ),
+  "{$sqlPrefix}users user" => array(
+    'userId' => 'userId',
+    'userName' => 'userName',
+    'userFormatStart' => 'userFormatStart',
+    'userFormatEnd' => 'userFormatEnd',
+  ),
+  "{$sqlPrefix}users kicker" => array(
+    'userId' => 'kickerId',
+    'userName' => 'kickerName',
+    'userFormatStart' => 'kickerFormatStart',
+    'userFormatEnd' => 'kickerFormatEnd',
+  ),
+  "{$sqlPrefix}rooms" => array(
+    'roomId' => 'roomId',
+    'roomName' => 'roomName',
+  ),
+);
+$queryParts['kicksSelect']['conditions'] = array(
+  'both' => array(
+    array(
+      'type' => 'in',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'kroomId',
+      ),
+      'right' => array(
+        'type' => 'array',
+        'value' => (array) $request['rooms'],
+      ),
+    ),
+
+    array(
+      'type' => 'e',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'kuserId',
+      ),
+      'right' => array(
+        'type' => 'column',
+        'value' => 'userId',
+      ),
+    ),
+    array(
+      'type' => 'e',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'kroomId',
+      ),
+      'right' => array(
+        'type' => 'column',
+        'value' => 'roomId',
+      ),
+    ),
+    array(
+      'type' => 'e',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'kkickerId',
+      ),
+      'right' => array(
+        'type' => 'column',
+        'value' => 'kickerId',
+      ),
+    ),
+  ),
+);
+$queryParts['kicksSelect']['sort'] = array(
+  'roomId' => 'asc',
+  'userId' => 'asc'
+);
+
+
+
+/* Modify Query Data for Directives */
+if (count($request['users']) > 0) {
+  $queryParts['usersSelect']['conditions']['both'][] = array(
+    'type' => 'in',
+    'left' => array(
+      'type' => 'column',
+      'value' => 'kuserId',
+    ),
+    'right' => array(
+       'type' => 'array',
+       'value' => (array) $request['users'],
+    ),
+  );
+}
+
 
 
 /* Plugin Hook Start */
@@ -126,102 +220,9 @@ $xmlData = array(
 
 
 /* Get Kicks from Database */
-/*$kicks = dbRows("SELECT CONCAT(k.userId, '-', k.roomId) AS id,
-  k.userId AS userId,
-  u.userName AS userName,
-  u.userFormatStart AS userFormatStart,
-  u.userFormatEnd AS userFormatEnd,
-  k.roomId AS roomId,
-  k.length AS length,
-  UNIX_TIMESTAMP(k.time) AS time,
-  k.kickerId AS kickerId,
-  i.userName AS kickerName,
-  i.userFormatStart AS kickerFormatStart,
-  i.userFormatEnd AS kickerFormatEnd,
-  r.roomName AS roomName
-  {$kicks_columns}
-FROM {$sqlPrefix}kick AS k
-  LEFT JOIN {$sqlPrefix}users AS u ON k.userId = u.userId
-  LEFT JOIN {$sqlPrefix}users AS i ON k.kickerId = i.userId
-  LEFT JOIN {$sqlPrefix}rooms AS r ON k.roomId = r.roomId
-  {$kicks_tables}
-WHERE $where TRUE
-  {$kicks_where}
-ORDER BY k.roomId
-  {$kicks_order}
-{$kicks_end}",'id');*/
-
-$kicks = $database->select(
-  array(
-    "{$sqlPrefix}kick" => array(
-      'kickerId' => 'kkickerId',
-      'userId' => 'kuserId',
-      'roomId' => 'kroomId',
-      'length' => 'klength',
-      'time' => array(
-        'name' => 'ktime',
-        'context' => 'time',
-      ),
-    ),
-    "{$sqlPrefix}users user" => array(
-      'userId' => 'userId',
-      'userName' => 'userName',
-      'userFormatStart' => 'userFormatStart',
-      'userFormatEnd' => 'userFormatEnd',
-    ),
-    "{$sqlPrefix}users kicker" => array(
-      'userId' => 'kickerId',
-      'userName' => 'kickerName',
-      'userFormatStart' => 'kickerFormatStart',
-      'userFormatEnd' => 'kickerFormatEnd',
-    ),
-    "{$sqlPrefix}rooms" => array(
-      'roomId' => 'roomId',
-      'roomName' => 'roomName',
-    ),
-  ),
-  array(
-    'both' => array(
-      array(
-        'type' => 'e',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'kuserId',
-        ),
-        'right' => array(
-          'type' => 'column',
-          'value' => 'userId',
-        ),
-      ),
-      array(
-        'type' => 'e',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'kroomId',
-        ),
-        'right' => array(
-          'type' => 'column',
-          'value' => 'roomId',
-        ),
-      ),
-      array(
-        'type' => 'e',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'kkickerId',
-        ),
-        'right' => array(
-          'type' => 'column',
-          'value' => 'kickerId',
-        ),
-      ),
-    ),
-  ),
-  array(
-    'roomId' => 'asc',
-    'userId' => 'asc'
-  )
-);
+$kicks = $database->select($queryParts['kicksSelect']['columns'],
+  $queryParts['kicksSelect']['conditions'],
+  $queryParts['kicksSelect']['sort']);
 $kicks = $kicks->getAsArray(true);
 
 
@@ -248,9 +249,9 @@ foreach ($kicks AS $kick) {
     'length' => (int) $kick['length'],
 
     'set' => (int) $kick['time'],
-    'setFormatted' => fim_date(false,$kick['time']),
+    'setFormatted' => (string) fim_date(false,$kick['time']),
     'expires' => (int) ($kick['set'] + $kick['length']),
-    'expiresFormatted' => fim_date(false,$kick['time'] + $kick['length']),
+    'expiresFormatted' => (string) fim_date(false,$kick['time'] + $kick['length']),
   );
 
   ($hook = hook('getKicks_eachKick') ? eval($hook) : '');
@@ -259,8 +260,8 @@ foreach ($kicks AS $kick) {
 
 
 /* Update Data for Errors */
-$xmlData['getKicks']['errStr'] = $errStr;
-$xmlData['getKicks']['errDesc'] = $errDesc;
+$xmlData['getKicks']['errStr'] = (string) $errStr;
+$xmlData['getKicks']['errDesc'] = (string) $errDesc;
 
 
 

@@ -1219,7 +1219,7 @@ function fim_sanitizeGPC($data) {
               }
               else {
                 if ($indexMetaData['require']) { // If the value is required but not valid...
-                  throw new Exception('Required data not valid.'); // Throw an exception.integer
+                  throw new Exception('Required data not valid.'); // Throw an exception.
                 }
                 elseif (isset($indexMetaData['default'])) { // If the value has a default but is not valid...
                   $activeGlobal[$indexName] = $indexMetaData['default']; // Set the value to the default.

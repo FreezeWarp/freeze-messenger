@@ -82,8 +82,7 @@ $queryParts['censorListsSelect']['columns'] = array(
     'options' => 'listOptions',
   ),
 );
-$queryParts['censorListsSelect']['conditions'] = array(
-);
+$queryParts['censorListsSelect']['conditions'] = array();
 $queryParts['censorListsSelect']['sort'] = array(
   'listName' => 'asc',
 );

@@ -20,11 +20,31 @@
  * @version 3.0
  * @author Jospeph T. Parsons <rehtaew@gmail.com>
  * @copyright Joseph T. Parsons 2011
+ *
+ * @param string groups - A comma-seperated list of group IDs to filter by. If not specified all groups will be retrieved.
 */
 
 $apiRequest = true;
 
 require_once('../global.php');
+
+
+
+/* Get Request Data */
+$request = fim_sanitizeGPC(array(
+  'get' => array(
+    'groups' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => '',
+      'context' => array(
+         'type' => 'csv',
+         'filter' => 'int',
+         'evaltrue' => true,
+      ),
+    ),
+  ),
+));
 
 
 
@@ -41,6 +61,34 @@ $xmlData = array(
   ),
 );
 
+$queryParts['groupsSelect']['columns'] = array(
+  "{$sqlUserGroupTable}" => array(
+    "$sqlUserGroupTableCols[groupId]" => 'groupId',
+    "$sqlUserGroupTableCols[groupName]" => 'groupName',
+  ),
+),
+$queryParts['groupsSelect']['conditions'] = array();
+$queryParts['groupsSelect']['sort'] = array(
+  'groupId' => 'asc',
+);
+
+
+
+/* Modify Query Data for Directives */
+if (count($request['groups']) > 0) {
+  $queryParts['groupsSelect']['conditions']['both'][] = array(
+    'type' => 'in',
+    'left' => array(
+      'type' => 'column',
+      'value' => 'groupId',
+    ),
+    'right' => array(
+       'type' => 'array',
+       'value' => (array) $request['groups'],
+    ),
+  );
+}
+
 
 
 /* Plugin Hook Start */
@@ -49,45 +97,46 @@ $xmlData = array(
 
 
 /* Get Groups from Database */
-$groups = $integrationDatabase->select(
-  array(
-    "{$sqlUserGroupTable}" => array(
-      "$sqlUserGroupTableCols[groupId]" => 'groupId',
-      "$sqlUserGroupTableCols[groupName]" => 'groupName',
-    ),
-  ),
-  false,
-  array(
-    'groupId' => 'asc',
-  )
-);
+$groups = $integrationDatabase->select($queryParts['groupsSelect']['columns'],
+  $queryParts['groupsSelect']['conditions'],
+  $queryParts['groupsSelect']['sort']);
 $groups = $groups->getAsArray('groupId');
 
 
 
 /* Start Processing */
-if ($groups) {
-  foreach ($groups AS $group) {
-    switch ($loginMethod) {
-      case 'phpbb':
-      if (function_exists('mb_convert_case')) {
-        $group['groupName'] = mb_convert_case(str_replace('_',' ',$group['groupName']), MB_CASE_TITLE, "UTF-8");
+if (is_array($groups)) {
+  if (count($groups) > 0) {
+    foreach ($groups AS $group) {
+      /* Integration-Specific Conversion
+      /* TODO: Move to Hooks */
+      if ($loginMethod == 'phpbb') {
+        if (function_exists('mb_convert_case')) {
+          $group['groupName'] = mb_convert_case(
+            str_replace('_',' ',$group['groupName']), // PHPBB replaces spaces with underscores - revert this.
+            MB_CASE_TITLE, // Specifies that the first letter of each word should be capitalized, all the rest should not be.
+            "UTF-8" // Unicode
+          );
+        }
+        elseif (function_exists('uc_words')) {
+          $group['groupName'] = ucwords( // Finally, captilize the first letter of each word.
+            strtolower( // Next, convert the entire string to lower case.
+              str_replace('_',' ',$group['groupName']) // First, replace underscores (see above)
+            )
+          );
+        }
+        else {
+          $group['groupName'] = str_replace('_',' ',$group['groupName']); // Just replace underscores (see above).
+        }
       }
-      elseif (function_exists('uc_words')) {
-        $group['groupName'] = ucwords(str_replace('_',' ',$group['groupName']));
-      }
-      else {
-        $group['groupName'] = str_replace('_',' ',$group['groupName']);
-      }
-      break;
+
+      $xmlData['getGroups']['groups']['group ' . $group['groupId']] = array(
+        'groupId' => (int) $group['groupId'],
+        'groupName' => (string) $group['groupName'],
+      );
+
+      ($hook = hook('getGroups_eachGroup') ? eval($hook) : '');
     }
-
-    $xmlData['getGroups']['groups']['group ' . $group['groupId']] = array(
-      'groupId' => (int) $group['groupId'],
-      'groupName' => ($group['groupName']),
-    );
-
-    ($hook = hook('getGroups_eachGroup') ? eval($hook) : '');
   }
 }
 

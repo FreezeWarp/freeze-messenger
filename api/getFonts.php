@@ -20,11 +20,31 @@
  * @version 3.0
  * @author Jospeph T. Parsons <rehtaew@gmail.com>
  * @copyright Joseph T. Parsons 2011
+ *
+ * @param string fonts - A comma-seperated list of font IDs to filter by. If not specified all fonts will be retrieved.
 */
 
 $apiRequest = true;
 
 require_once('../global.php');
+
+
+
+/* Get Request Data */
+$request = fim_sanitizeGPC(array(
+  'get' => array(
+    'fonts' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => '',
+      'context' => array(
+         'type' => 'csv',
+         'filter' => 'int',
+         'evaltrue' => true,
+      ),
+    ),
+  ),
+));
 
 
 
@@ -41,6 +61,37 @@ $xmlData = array(
   ),
 );
 
+$queryParts['fontsSelect']['columns'] = array(
+  "{$sqlPrefix}fonts" => array(
+    'fontId' => 'fontId',
+    'fontName' => 'fontName',
+    'data' => 'fontData',
+    'category' => 'fontGroup',
+  ),
+);
+$queryParts['fontsSelect']['conditions'] = array();
+$queryParts['fontsSelect']['sort'] = array(
+  'fontGroup' => 'asc',
+  'fontName' => 'asc',
+);
+
+
+
+/* Modify Query Data for Directives */
+if (count($request['fonts']) > 0) {
+  $queryParts['fontsSelect']['conditions']['both'][] = array(
+    'type' => 'in',
+    'left' => array(
+      'type' => 'column',
+      'value' => 'fontId',
+    ),
+    'right' => array(
+       'type' => 'array',
+       'value' => (array) $request['fonts'],
+    ),
+  );
+}
+
 
 
 /* Plugin Hook Start */
@@ -49,36 +100,26 @@ $xmlData = array(
 
 
 /* Get Fonts from Database */
-$fonts = $database->select(
-  array(
-    "{$sqlPrefix}fonts" => array(
-      'fontId' => 'fontId',
-      'fontName' => 'fontName',
-      'data' => 'fontData',
-      'category' => 'fontGroup',
-    ),
-  ),
-  false,
-  array(
-    'fontGroup' => 'asc',
-    'fontName' => 'asc',
-  )
-);
+$fonts = $database->select($queryParts['fontsSelect']['columns'],
+  $queryParts['fontsSelect']['conditions'],
+  $queryParts['fontsSelect']['sort']);
 $fonts = $fonts->getAsArray('fontId');
 
 
 
 /* Start Processing */
-if ($fonts) {
-  foreach ($fonts AS $font) {
-    $xmlData['getFonts']['fonts']['font ' . $font['fontId']] = array(
-      'fontId' => (int) $font['fontId'],
-      'fontName' => ($font['fontName']),
-      'fontGroup' => ($font['fontGroup']),
-      'fontData' => ($font['fontData']),
-    );
+if (is_array($fonts)) {
+  if (count($fonts) > 0) {
+    foreach ($fonts AS $font) {
+      $xmlData['getFonts']['fonts']['font ' . $font['fontId']] = array(
+        'fontId' => (int) $font['fontId'],
+        'fontName' => (string) $font['fontName'],
+        'fontGroup' => (string) $font['fontGroup'],
+        'fontData' => (string) $font['fontData'],
+      );
 
-    ($hook = hook('getFonts_eachFont') ? eval($hook) : '');
+      ($hook = hook('getFonts_eachFont') ? eval($hook) : '');
+    }
   }
 }
 
