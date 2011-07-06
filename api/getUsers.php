@@ -134,7 +134,7 @@ if ($users) {
               'value' => (int) $userData['userId'],
             ),
           ),
-        ),
+        )
       );
       $userDataForums = $userDataForums->getAsArray();
       break;
@@ -159,7 +159,7 @@ if ($users) {
               'value' => (int) $userData['userId'],
             ),
           ),
-        ),
+        )
       );
       $userDataForums = $userDataForums->getAsArray();
       break;

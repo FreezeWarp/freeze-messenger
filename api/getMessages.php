@@ -25,10 +25,10 @@
  * Note: Using more than one room can conflict or even break the script’s execution should the watchRooms or activeUsers flags be set to true.
  * @param messageLimit - The maximum number of posts to receive, defaulting to the internal limit of (in most cases) 40. Specifying 0 removes any limit.
  * Note: A hardcoded maximum of 500 is in place to prevent any potential issues. This will in the future be changable by the administrator.
- * @param timestamp messageDateMin - The earliest a post could have been made. Use of newestDate only makes sense with no messageLimit. Do not specify to prevent checking.
- * @param timestamp messageDateMax - The latest a post could have been made. Use of newestDate only makes sense with no messageLimit. Do not specify to prevent checking.
- * @param int messageIdMin - All posts must be after this ID. Use of newestMessage only makes sense with no messageLimit. Do not specify to prevent checking.
- * @param int messageIdMax - All posts must be before this ID. Use of newestMessage only makes sense with no messageLimit. Do not specify to prevent checking.
+ * @param timestamp messageDateMin - The earliest a post could have been made. Use of messageDateMax only makes sense with no messageLimit. Do not specify to prevent checking.
+ * @param timestamp messageDateMax - The latest a post could have been made. Use of messageDateMax only makes sense with no messageLimit. Do not specify to prevent checking.
+ * @param int messageIdMin - All posts must be after this ID. Use of messageDateMax only makes sense with no messageLimit. Do not specify to prevent checking.
+ * @param int messageIdMax - All posts must be before this ID. Use of messageDateMax only makes sense with no messageLimit. Do not specify to prevent checking.
  * @param int messageIdStart - When specified WITHOUT the above two directives, messageIdStart will return all posts from this ID to this ID plus the messageLimit directive. This is strongly encouraged for all requests to the cache, e.g. for normal instant messenging sessions.
  * @param bool noping - Disables ping; useful for archive viewing.
  * @param bool watchRooms - Get unread messages from a user’s list of watchRooms (also applies to private IMs).
@@ -180,7 +180,7 @@ $request = fim_sanitizeGPC(array(
     'onlineThreshold' => array(
       'type' => 'int',
       'require' => false,
-      'default' => ($onlineThreshold ? $onlineThreshold : 15),
+      'default' => (isset($onlineThreshold) ? $onlineThreshold : 15),
       'context' => array(
         'type' => 'int',
       ),
@@ -189,7 +189,7 @@ $request = fim_sanitizeGPC(array(
     'messageLimit' => array(
       'type' => 'int',
       'require' => false,
-      'default' => ($messageLimit ? $messageLimit : 50),
+      'default' => (isset($messageLimit) ? $messageLimit : 50),
       'context' => array(
         'type' => 'int',
       ),
@@ -253,103 +253,6 @@ $xmlData = array(
   ),
 );
 
-if ($request['archive']) {
-  $queryParts['messagesSelect']['columns'] = array(
-    "{$sqlPrefix}messages" => array(
-      'messageId' => 'messageId',
-      'time' => array(
-        'context' => 'time',
-        'name' => 'time',
-      ),
-      'iv' => 'iv',
-      'salt' => 'salt',
-    ),
-    "{$sqlPrefix}users" => array(
-      'userId' => 'userId',
-      'userName' => 'userName',
-      'userGroup' => 'userGroup',
-      'userFormatStart' => 'userFormatStart',
-      'userFormatEnd' => 'userFormatEnd',
-      'avatar' => 'avatar',
-      'defaultColor' => 'defaultColor',
-      'defaultFontface' => 'defaultFontface',
-      'defaultHighlight' => 'defaultHighlight',
-      'defaultFormatting' => 'defaultFormatting',
-    ),
-  );
-  $queryParts['messagesSelect']['conditions'] = array(
-    'both' => array(
-      array(
-        'type' => 'e',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'roomId',
-        ),
-        'right' => array(
-          'type' => 'int',
-          'value' => (int) $request['roomId'],
-        ),
-      ),
-      array(
-        'type' => 'e',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'muserId',
-        ),
-        'right' => array(
-          'type' => 'column',
-          'value' => 'userId',
-        ),
-      ),
-    ),
-  );
-  $queryParts['messagesSelect']['order'] = array(
-    'messageId' => 'asc',
-  );
-}
-else {
-  $queryParts['messagesSelect']['columns'] = array(
-    "{$sqlPrefix}messages" => array(
-      'messageId' => 'messageId',
-      'time' => array(
-        'context' => 'time',
-        'name' => 'time',
-      ),
-      'iv' => 'iv',
-      'salt' => 'salt',
-      'flag' => 'flag',
-      'userId' => 'userId',
-      'userName' => 'userName',
-      'userGroup' => 'userGroup',
-      'userFormatStart' => 'userFormatStart',
-      'userFormatEnd' => 'userFormatEnd',
-      'avatar' => 'avatar',
-      'defaultColor' => 'defaultColor',
-      'defaultFontface' => 'defaultFontface',
-      'defaultHighlight' => 'defaultHighlight',
-      'defaultFormatting' => 'defaultFormatting',
-    ),
-  );
-  $queryParts['messagesSelect']['conditions'] = array(
-    'both' => array(
-      array(
-        'type' => 'e',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'roomId',
-        ),
-        'right' => array(
-          'type' => 'int',
-          'value' => (int) $request['roomId'],
-        ),
-      ),
-    ),
-  );
-  $queryParts['messagesSelect']['order'] = array(
-    'messageId' => 'asc',
-  );
-}
-
 $queryParts['roomsSelect']['columns'] = array(
   "{$sqlPrefix}rooms" => array(
     'roomId' => 'roomId',
@@ -362,230 +265,23 @@ $queryParts['roomsSelect']['columns'] = array(
   ),
 );
 $queryParts['roomsSelect']['conditions'] = array(
-  'type' => 'in',
-  'left' => array(
-    'type' => 'column',
-    'value' => 'roomId'
-  ),
-  'right' => array(
-    'type' => 'array',
-    'value' => $request['rooms'],
+  'both' => array(
+    'type' => 'in',
+    'left' => array(
+      'type' => 'column',
+      'value' => 'roomId'
+    ),
+    'right' => array(
+      'type' => 'array',
+      'value' => $request['rooms'],
+    ),
   ),
 );
 $queryParts['roomsSelect']['sort'] = array(
   'roomId' => 'asc',
 );
 
-$queryParts['activeUsersSelect']['columns'] = array(
-  "{$sqlPrefix}ping" => array(
-    'status' => 'status',
-    'typing' => 'typing'
-    'time' => 'ptime'
-    'roomId' => 'proomId',
-    'userId' => 'puserId',
-  ),
-  "{$sqlPrefix}rooms" => array(
-    'roomId' => 'roomId',
-  ),
-  "{$sqlPrefix}users" => array(
-    'userId' => 'userId',
-    'userName' => 'userName',
-  ),
-);
-$queryParts['activeUsersSelect']['conditions'] = array(
-  'both' => array(
-    array(
-      'type' => 'e',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'roomId',
-      ),
-      'right' => array(
-        'type' => 'int',
-        'value' => (int) $room['roomId'],
-      ),
-    ),
-    array(
-      'type' => 'e',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'proomId',
-      ),
-      'right' => array(
-        'type' => 'column',
-        'value' => 'roomId',
-      ),
-    ),
-    array(
-      'type' => 'e',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'puserId',
-      ),
-      'right' => array(
-        'type' => 'column',
-        'value' => 'userId',
-      ),
-    ),
-    array(
-      'type' => 'gte',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'ptime',
-        'context' => 'time',
-      ),
-      'right' => array(
-        'type' => 'int',
-        'value' => (int) ($request['time'] - $request['onlineThreshold']),
-      ),
-    ),
-  ),
-);
-$queryParts['activeUsersSelect']['sort'] = array(
-  'userName' => 'asc',
-);
 
-
-
-/* Modify Query Data for Directives */
-if ($newestMessage) {
-  $queryParts['messagesSelect']['conditions']['both'][] = array(
-    'type' => 'lt',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'messageId',
-    ),
-    'right' => array(
-      'type' => 'int',
-      'value' => (int) $request['newestMessage'],
-    ),
-  );
-}
-if ($oldestMessage) {
-  $queryParts['messagesSelect']['conditions']['both'][] = array(
-    'type' => 'gt',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'messageId',
-    ),
-    'right' => array(
-      'type' => 'int',
-      'value' => (int) $request['oldestMessage'],
-    ),
-  );
-}
-
-if ($newestDate) {
-  $queryParts['messagesSelect']['conditions']['both'][] = array(
-    'type' => 'lt',
-    'left' => array(
-      'type' => 'column',
-      'context' => 'time'
-      'value' => 'time',
-    ),
-    'right' => array(
-      'type' => 'int',
-      'value' => (int) $request['newestDate'],'CURRENT_TIMESTAMP()',
-    ),
-  );
-}
-if ($oldestDate) {
-  $queryParts['messagesSelect']['conditions']['both'][] = array(
-    'type' => 'gt',
-    'left' => array(
-      'type' => 'column',
-      'context' => 'time'
-      'value' => 'time',
-    ),
-    'right' => array(
-      'type' => 'int',
-      'value' => (int) $request['oldestDate'],
-    ),
-  );
-}
-
-if (!$whereClause && $messageStart) {
-  $queryParts['messagesSelect']['conditions']['both'][] = array(
-    'type' => 'gt',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'messageId',
-    ),
-    'right' => array(
-      'type' => 'int',
-      'value' => (int) $request['messageStart'],
-    ),
-  );
-  $queryParts['messagesSelect']['conditions']['both'][] = array(
-    'type' => 'lt',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'messageId',
-    ),
-    'right' => array(
-      'type' => 'int',
-      'value' => (int) ($request['messageStart'] + $request['messageLimit']),
-    ),
-  );
-}
-if (!$whereClause && $messageEnd) {
-  $queryParts['messagesSelect']['conditions']['both'][] = array(
-    'type' => 'lt',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'messageId',
-    ),
-    'right' => array(
-      'type' => 'int',
-      'value' => (int) $request['messageEnd'],
-    ),
-  );
-  $queryParts['messagesSelect']['conditions']['both'][] = array(
-    'type' => 'gt',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'messageId',
-    ),
-    'right' => array(
-      'type' => 'int',
-      'value' => (int) ($request['messageEnd'] - $request['messageLimit']),
-    ),
-  );
-}
-
-if (!$showDeleted && $request['archive']) {
-  $queryParts['messagesSelect']['conditions']['both'][] = array(
-    'type' => 'lt',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'deleted',
-    ),
-    'right' => array(
-      'type' => 'bool',
-      'value' => false,
-    ),
-  );
-}
-
-switch ($fields) {
-  case 'both':
-  $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"][] = 'apiText';
-  $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"][] = 'htmlText';
-  break;
-
-  case 'api':
-  $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"][] = 'apiText';
-  break;
-
-  case 'html':
-  $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"][] = 'htmlText';
-  break;
-
-  default:
-  $errStr = 'badFields';
-  $errDesc = 'The given message fields are invalid - recognized values are "api", "html", and "both"';
-  break;
-}
 
 if ((strlen($request['search']) > 0) && $request['archive']) {
   $searchArray = explode(',',$search);
@@ -594,10 +290,10 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
     $searchArray2[] = str_replace(array_keys($searchWordConverts),array_values($searchWordConverts),$searchVal);
   }
 
-  $searchMessageIds = dbRows("SELECT GROUP_CONCAT(messageId SEPARATOR ',') AS messages
+/*  $searchMessageIds = dbRows("SELECT GROUP_CONCAT(messageId SEPARATOR ',') AS messages
   FROM {$sqlPrefix}searchPhrases AS p,
   {$sqlPrefix}searchMessages AS m
-  WHERE p.phraseId = m.phraseId AND p.phraseName IN ($search2)");
+  WHERE p.phraseId = m.phraseId AND p.phraseName IN ($search2)");*/
 
   $searchMessageIds = $database->select(
     array(
@@ -636,7 +332,7 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
         ),
       ),
     ),
-    false,
+    false
   );
 
   $whereClause .= " AND messageId IN ($searchMessageIds[messages]) ";
@@ -649,7 +345,6 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
 
 
 
-
 /* Start Crazy Shit */
 if (is_array($request['rooms'])) {
   if (count($request['rooms']) > 0) {
@@ -659,6 +354,247 @@ if (is_array($request['rooms'])) {
     $rooms = $rooms->getAsArray('roomId');
 
     foreach ($rooms AS $roomId => $roomData) { // We will run through each room.
+      /* Date Predefine */
+      if ($request['archive']) {
+        $queryParts['messagesSelect']['columns'] = array(
+          "{$sqlPrefix}messages" => array(
+            'messageId' => 'messageId',
+            'time' => array(
+              'context' => 'time',
+              'name' => 'time',
+            ),
+            'iv' => 'iv',
+            'salt' => 'salt',
+          ),
+          "{$sqlPrefix}users" => array(
+            'userId' => 'userId',
+            'userName' => 'userName',
+            'userGroup' => 'userGroup',
+            'userFormatStart' => 'userFormatStart',
+            'userFormatEnd' => 'userFormatEnd',
+            'avatar' => 'avatar',
+            'defaultColor' => 'defaultColor',
+            'defaultFontface' => 'defaultFontface',
+            'defaultHighlight' => 'defaultHighlight',
+            'defaultFormatting' => 'defaultFormatting',
+          ),
+        );
+        $queryParts['messagesSelect']['conditions'] = array(
+          'both' => array(
+            array(
+              'type' => 'e',
+              'left' => array(
+                'type' => 'column',
+                'value' => 'roomId',
+              ),
+              'right' => array(
+                'type' => 'int',
+                'value' => (int) $request['roomId'],
+              ),
+            ),
+            array(
+              'type' => 'e',
+              'left' => array(
+                'type' => 'column',
+                'value' => 'muserId',
+              ),
+              'right' => array(
+                'type' => 'column',
+                'value' => 'userId',
+              ),
+            ),
+          ),
+        );
+        $queryParts['messagesSelect']['order'] = array(
+          'messageId' => 'asc',
+        );
+      }
+      else {
+        $queryParts['messagesSelect']['columns'] = array(
+          "{$sqlPrefix}messages" => array(
+            'messageId' => 'messageId',
+            'time' => array(
+              'context' => 'time',
+              'name' => 'time',
+            ),
+            'iv' => 'iv',
+            'salt' => 'salt',
+            'flag' => 'flag',
+            'userId' => 'userId',
+            'userName' => 'userName',
+            'userGroup' => 'userGroup',
+            'userFormatStart' => 'userFormatStart',
+            'userFormatEnd' => 'userFormatEnd',
+            'avatar' => 'avatar',
+            'defaultColor' => 'defaultColor',
+            'defaultFontface' => 'defaultFontface',
+            'defaultHighlight' => 'defaultHighlight',
+            'defaultFormatting' => 'defaultFormatting',
+          ),
+        );
+        $queryParts['messagesSelect']['conditions'] = array(
+          'both' => array(
+            array(
+              'type' => 'e',
+              'left' => array(
+                'type' => 'column',
+                'value' => 'roomId',
+              ),
+              'right' => array(
+                'type' => 'int',
+                'value' => (int) $room['roomId'],
+              ),
+            ),
+          ),
+        );
+        $queryParts['messagesSelect']['order'] = array(
+          'messageId' => 'asc',
+        );
+      }
+
+
+
+      /* Modify Query Data for Directives */
+      if ($request['messageDateMax']) {
+        $queryParts['messagesSelect']['conditions']['both'][] = array(
+          'type' => 'lt',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'messageId',
+          ),
+          'right' => array(
+            'type' => 'int',
+            'value' => (int) $request['messageDateMax'],
+          ),
+        );
+      }
+      if ($request['messageDateMin']) {
+        $queryParts['messagesSelect']['conditions']['both'][] = array(
+          'type' => 'gt',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'messageId',
+          ),
+          'right' => array(
+            'type' => 'int',
+            'value' => (int) $request['messageDateMin'],
+          ),
+        );
+      }
+
+      if ($request['messageDateMax']) {
+        $queryParts['messagesSelect']['conditions']['both'][] = array(
+          'type' => 'lt',
+          'left' => array(
+            'type' => 'column',
+            'context' => 'time',
+            'value' => 'time',
+          ),
+          'right' => array(
+            'type' => 'int',
+            'value' => (int) $request['messageDateMax'],'CURRENT_TIMESTAMP()',
+          ),
+        );
+      }
+      if ($request['messageDateMin']) {
+        $queryParts['messagesSelect']['conditions']['both'][] = array(
+          'type' => 'gt',
+          'left' => array(
+            'type' => 'column',
+            'context' => 'time',
+            'value' => 'time',
+          ),
+          'right' => array(
+            'type' => 'int',
+            'value' => (int) $request['messageDateMin'],
+          ),
+        );
+      }
+
+      if ($request['messageIdStart']) {
+        $queryParts['messagesSelect']['conditions']['both'][] = array(
+          'type' => 'gt',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'messageId',
+          ),
+          'right' => array(
+            'type' => 'int',
+            'value' => (int) $request['messageIdStart'],
+          ),
+        );
+        $queryParts['messagesSelect']['conditions']['both'][] = array(
+          'type' => 'lt',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'messageId',
+          ),
+          'right' => array(
+            'type' => 'int',
+            'value' => (int) ($request['messageIdStart'] + $request['messageLimit']),
+          ),
+        );
+      }
+      if ($request['messageIdEnd']) {
+        $queryParts['messagesSelect']['conditions']['both'][] = array(
+          'type' => 'lt',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'messageId',
+          ),
+          'right' => array(
+            'type' => 'int',
+            'value' => (int) $request['messageIdEnd'],
+          ),
+        );
+        $queryParts['messagesSelect']['conditions']['both'][] = array(
+          'type' => 'gt',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'messageId',
+          ),
+          'right' => array(
+            'type' => 'int',
+            'value' => (int) ($request['messageIdEnd'] - $request['messageLimit']),
+          ),
+        );
+      }
+
+      if (!$request['showDeleted'] && $request['archive']) {
+        $queryParts['messagesSelect']['conditions']['both'][] = array(
+          'type' => 'lt',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'deleted',
+          ),
+          'right' => array(
+            'type' => 'bool',
+            'value' => false,
+          ),
+        );
+      }
+
+      switch ($request['fields']) {
+        case 'both':
+        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"][] = 'apiText';
+        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"][] = 'htmlText';
+        break;
+
+        case 'api':
+        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"][] = 'apiText';
+        break;
+
+        case 'html':
+        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"][] = 'htmlText';
+        break;
+
+        default:
+        $errStr = 'badFields';
+        $errDesc = 'The given message fields are invalid - recognized values are "api", "html", and "both"';
+        break;
+      }
+
+
 
       /* Make sure the user has permission to view posts from the room
        * TODO: make work with multiple rooms */
@@ -794,8 +730,77 @@ if (is_array($request['rooms'])) {
 
 
         /* Process Active Users */
-        if ($activeUsers) {
-          $activeUsers = dbRows("SELECT u.{$sqlUserTableCols[userName]} AS userName,
+        if ($request['activeUsers']) {
+          $queryParts['activeUsersSelect']['columns'] = array(
+            "{$sqlPrefix}ping" => array(
+              'status' => 'status',
+              'typing' => 'typing',
+              'time' => 'ptime',
+              'roomId' => 'proomId',
+              'userId' => 'puserId',
+            ),
+            "{$sqlPrefix}rooms" => array(
+              'roomId' => 'roomId',
+            ),
+            "{$sqlPrefix}users" => array(
+              'userId' => 'userId',
+              'userName' => 'userName',
+            ),
+          );
+          $queryParts['activeUsersSelect']['conditions'] = array(
+            'both' => array(
+              array(
+                'type' => 'e',
+                'left' => array(
+                  'type' => 'column',
+                  'value' => 'roomId',
+                ),
+                'right' => array(
+                  'type' => 'int',
+                  'value' => (int) $room['roomId'],
+                ),
+              ),
+              array(
+                'type' => 'e',
+                'left' => array(
+                  'type' => 'column',
+                  'value' => 'proomId',
+                ),
+                'right' => array(
+                  'type' => 'column',
+                  'value' => 'roomId',
+                ),
+              ),
+              array(
+                'type' => 'e',
+                'left' => array(
+                  'type' => 'column',
+                  'value' => 'puserId',
+                ),
+                'right' => array(
+                  'type' => 'column',
+                  'value' => 'userId',
+                ),
+              ),
+              array(
+                'type' => 'gte',
+                'left' => array(
+                  'type' => 'column',
+                  'value' => 'ptime',
+                  'context' => 'time',
+                ),
+                'right' => array(
+                  'type' => 'int',
+                  'value' => (int) ($request['time'] - $request['onlineThreshold']),
+                ),
+              ),
+            ),
+          );
+          $queryParts['activeUsersSelect']['sort'] = array(
+            'userName' => 'asc',
+          );
+
+/*          $activeUsers = dbRows("SELECT u.{$sqlUserTableCols[userName]} AS userName,
             u.userId AS userId,
             u.userGroup AS userGroup,
             u.userFormatStart AS userFormatStart,
@@ -812,7 +817,11 @@ if (is_array($request['rooms'])) {
             {$activeUser_where}
           ORDER BY u.userName
             {$activeUser_order}
-          {$activeUser_end}",'userId');
+          {$activeUser_end}",'userId');*/
+          $activeUsers = $database->select($queryParts['activeUsersSelect']['columns'],
+            $queryParts['activeUsersSelect']['conditions'],
+            $queryParts['activeUsersSelect']['sort']);
+          $activeUsers = $activeUsers->getAsArray();
 
 
           if (is_array($activeUsers)) {
@@ -841,8 +850,8 @@ if (is_array($request['rooms'])) {
   }
 }
 
-
-if ($watchRooms) {
+$request['watchRooms'] = false;
+if ($request['watchRooms']) {
   ($hook = hook('getMessages_watchRooms_start') ? eval($hook) : '');
 
   /* Get Missed Messages */

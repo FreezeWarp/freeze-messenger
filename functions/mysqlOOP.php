@@ -96,6 +96,7 @@ class database {
       'tables' => array(),
       'where' => '',
       'sort' => array(),
+      'group' => '',
       'limit' => 0
     );
     $reverseAlias = array();
@@ -229,6 +230,9 @@ GROUP BY
    * @author Joseph Todd Parsons
    */
   private function recurseBothEither($conditionArray,$reverseAlias) {
+    $i = 0;
+    $h = 0;
+
     foreach ($conditionArray AS $type => $cond) {
 
       foreach ($cond AS $recKey => $data) {
@@ -275,14 +279,19 @@ GROUP BY
               break;
 
               case 'column':
-              switch ($data[$side]['context']) {
-                case 'time':
-                $sideText[$side] = 'UNIX_TIMESTAMP(' . $reverseAlias[$data[$side]['value']] . ')';
-                break;
+              if (isset($data[$side]['context'])) {
+                switch ($data[$side]['context']) {
+                  case 'time':
+                  $sideText[$side] = 'UNIX_TIMESTAMP(' . $reverseAlias[$data[$side]['value']] . ')';
+                  break;
 
-                default:
+                  default:
+                  throw new Exception('Unrecognized column context'); // Throw an exception.
+                  break;
+                }
+              }
+              else {
                 $sideText[$side] = $reverseAlias[$data[$side]['value']];
-                break;
               }
               break;
             }
@@ -305,7 +314,7 @@ GROUP BY
 
           /* Generate Comparison Part */
           if ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
-            $sideTextFull[$i] = "{$sideText[left]} {$symbol} {$sideText[right]}";
+            $sideTextFull[$i] = "{$sideText['left']} {$symbol} {$sideText['right']}";
           }
           else {
             $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
@@ -568,9 +577,9 @@ class databaseResult {
   }
 
   public function getAsArray($index = true) {
-    static $data;
+    $data = array();
 
-    if ($this->queryData !== false  && $this->queryData !== null) {
+    if ($this->queryData !== false) {
       if ($index) { // An index is specified, generate & return a multidimensional array. (index => [key => value], index being the value of the index for the row, key being the column name, and value being the corrosponding value).
         while (false !== ($row = mysql_fetch_assoc($this->queryData))) {
           if ($index === true) { // If the index is boolean "true", we simply create numbered rows to use. (1,2,3,4,5)

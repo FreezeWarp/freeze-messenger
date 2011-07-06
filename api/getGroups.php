@@ -66,7 +66,7 @@ $queryParts['groupsSelect']['columns'] = array(
     "$sqlUserGroupTableCols[groupId]" => 'groupId',
     "$sqlUserGroupTableCols[groupName]" => 'groupName',
   ),
-),
+);
 $queryParts['groupsSelect']['conditions'] = array();
 $queryParts['groupsSelect']['sort'] = array(
   'groupId' => 'asc',
@@ -110,7 +110,7 @@ if (is_array($groups)) {
     foreach ($groups AS $group) {
       /* Integration-Specific Conversion
       /* TODO: Move to Hooks */
-      if ($loginMethod == 'phpbb') {
+      if ($loginConfig['method'] == 'phpbb') {
         if (function_exists('mb_convert_case')) {
           $group['groupName'] = mb_convert_case(
             str_replace('_',' ',$group['groupName']), // PHPBB replaces spaces with underscores - revert this.

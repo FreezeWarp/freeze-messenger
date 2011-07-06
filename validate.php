@@ -42,7 +42,7 @@ require_once('global.php');
 require_once('functions/loginReqs.php');
 
 
-static $apiVersion, $goodVersion, $sqlUserTable, $sqlUserGroupTable, $sqlMemberGroupTable, $sqlSessionTable, $sqlUserTableCols, $sqlUserGroupTableCols, $sqlMemberGroupTablecols, $api, $userName, $userId, $password, $sessionHssh;
+static $apiVersion, $goodVersion, $sqlUserTable, $sqlUserGroupTable, $sqlMemberGroupTable, $sqlSessionTable, $sqlUserTableCols, $sqlUserGroupTableCols, $sqlMemberGroupTablecols, $api, $userName, $userId, $password, $sessionHssh, $flag;
 
 if (!isset($cookiePrefix)) {
   $cookiePrefix = 'fim3_';
@@ -651,7 +651,8 @@ else {
   unset($user);
 
   $user = array(
-    'userId' => ($anonymousUser ? $anonymousUser : 0),
+    'userId' => ($anonymousUser ? $anonymousUser : 0), // TODO: Is this handled elsewhere?
+    'userName' => '',
     'settingsOfficialAjax' => 11264, // Default. TODO: Update w/ config defaults.
     'adminPrivs' => 0, // Nothing
     'userPrivs' => 16, // Allowed, but nothing else.

@@ -89,7 +89,7 @@ function fim_arrayValidate($array,$type = 'int',$preserveAll = false) {
 * @author Joseph Todd Parsons
 */
 function fim_hasPermission($roomData,$userData,$type = 'post',$quick = false) {
-  global $sqlPrefix, $banned, $superUsers, $valid;
+  global $sqlPrefix, $banned, $superUsers, $valid, $database;
 
   $isAdmin = false;
   $isModerator = false;
@@ -97,6 +97,7 @@ function fim_hasPermission($roomData,$userData,$type = 'post',$quick = false) {
   $isAllowedGroup = false;
   $isOwner = false;
   $isRoomDeleted = false;
+  $kick = false;
 
 
   /* Make sure all presented data is correct. */
@@ -114,62 +115,97 @@ function fim_hasPermission($roomData,$userData,$type = 'post',$quick = false) {
   }
 
 
-  $allowedGroups = explode(',',$roomData['allowedGroups']);
-  foreach ($allowedGroups AS $groupId) {
-    if (!$groupId) {
-      continue;
-    }
+  if (isset($roomData['allowedGroups'])) {
+    $allowedGroups = explode(',',$roomData['allowedGroups']);
+    foreach ($allowedGroups AS $groupId) {
+      if (!$groupId) {
+        continue;
+      }
 
-    if (strpos($groupId, 'a') === 0) {
-      $roomData['allowedAdminGroups'][] = (int) substr($groupId,1);
-    }
-    else {
-      $roomData['allowedSocialGroups'][] = (int) $groupId;
+      if (strpos($groupId, 'a') === 0) {
+        $roomData['allowedAdminGroups'][] = (int) substr($groupId,1);
+      }
+      else {
+        $roomData['allowedSocialGroups'][] = (int) $groupId;
+      }
     }
   }
+
 
   /* Get the User's Kick Status */
-  if ($userData['userId']) {
-    $kick = dbRows("SELECT UNIX_TIMESTAMP(k.time) AS kickedOn,
-  UNIX_TIMESTAMP(k.time) + k.length AS expiresOn
-FROM {$sqlPrefix}kick AS k
-WHERE userId = $userData[userId] AND
-  roomId = $roomData[roomId] AND
-  UNIX_TIMESTAMP(NOW()) <= (UNIX_TIMESTAMP(time) + length)");
+  if (isset($userData['userId'])) {
+    if ($userData['userId'] > 0) {
+      $kick = dbRows("SELECT UNIX_TIMESTAMP(k.time) AS kickedOn,
+      UNIX_TIMESTAMP(k.time) + k.length AS expiresOn
+    FROM {$sqlPrefix}kick AS k
+    WHERE userId = $userData[userId] AND
+      roomId = $roomData[roomId] AND
+      UNIX_TIMESTAMP(NOW()) <= (UNIX_TIMESTAMP(time) + length)");
+    }
   }
 
-  if ((in_array($userData['userId'],explode(',',$roomData['allowedUsers']))
-    || $roomData['allowedUsers'] == '*')
-  && $roomData['allowedUsers']) {
-    $isAllowedUser = true;
+
+  /* Is the User an Allowed User? */
+  if (isset($userData['userId']) && isset($roomData['allowedUsers'])) {
+    if ((in_array($userData['userId'],explode(',',$roomData['allowedUsers']))
+      || $roomData['allowedUsers'] == '*')
+    && $roomData['allowedUsers']) {
+      $isAllowedUser = true;
+    }
   }
 
-  if (in_array($userData['userId'],explode(',',$roomData['moderators']))) {
-    $isModerator = true; // The user is one of the chat moderators (and it is not deleted).
+
+  /* Is the User a Moderator of the Room? */
+  if (isset($userData['userId']) && isset($roomData['moderators'])) {
+    if (in_array($userData['userId'],explode(',',$roomData['moderators']))) {
+      $isModerator = true; // The user is one of the chat moderators (and it is not deleted).
+    }
   }
 
-  if ((fim_inArray(explode(',',$userData['socialGroups']),$roomData['allowedSocialGroups'])
-    || (fim_inArray(explode(',',$userData['allGroups']),$roomData['allowedAdminGroups']))
-    || $roomData['allowedGroups'] == '*')) {
-    $isAllowedGroup = true;
+
+  /* Is the User Part of an Allowed Group? */
+  if (isset($roomData['allowedSocialGroups']) && isset($roomData['allowedAdminGroups'])) {
+    if ((fim_inArray(explode(',',$userData['socialGroups']),$roomData['allowedSocialGroups'])
+      || (fim_inArray(explode(',',$userData['allGroups']),$roomData['allowedAdminGroups']))
+      || $roomData['allowedGroups'] == '*')) {
+      $isAllowedGroup = true;
+    }
   }
 
-  if ($roomData['owner'] == $userData['userId'] && $roomData['owner'] > 0) {
-    $isOwner = true;
+
+  /* Is the User the Room's Owner/Creator */
+  if (isset($roomData['owner']) && isset($roomData['owner'])) {
+    if ($roomData['owner'] == $userData['userId']
+      && $roomData['owner'] > 0) {
+      $isOwner = true;
+    }
   }
 
-  if ($roomData['options'] & 4) {
-    $isRoomDeleted = false; // The room is deleted.
+
+  /* Is the Room a Private Room or Deleted? */
+  if (isset($roomData['options'])) {
+    if ($roomData['options'] & 4) {
+      $isRoomDeleted = true; // The room is deleted.
+    }
+
+    if ($roomData['options'] & 16) {
+      $isPrivateRoom = true;
+    }
+  }
+  else {
+    throw new Exception('Room data invalid (options index missing)');
   }
 
-  if ($roomData['options'] & 16) {
-    $isPrivateRoom = true;
-  }
 
   /* Is the user a super user? */
-  if (in_array($userData['userId'],$superUsers) || $userData['adminPrivs'] & 1) {
-    $isAdmin = true;
+  if (isset($userData['userId']) && isset($userData['adminPrivs']) && isset($superUsers)) {
+    if (is_array($superUsers)) {
+      if (in_array($userData['userId'],$superUsers) || $userData['adminPrivs'] & 1) {
+        $isAdmin = true;
+      }
+    }
   }
+
 
   if ($type == 'post' || $type == 'all') {
     if ($banned) {
@@ -676,7 +712,12 @@ function parser1($text,$offset,$stop = false,$globalString = '') {
       }
 
       else {
-        $iv[$iValueI] .= $j;
+        if (isset($iv[$iValueI])) {
+          $iv[$iValueI] .= $j;
+        }
+        else {
+          $iv[$iValueI] = $j;
+        }
       }
     }
 
@@ -684,7 +725,13 @@ function parser1($text,$offset,$stop = false,$globalString = '') {
       if (substr($text,$i,6) == '{{if="') {
         $i += 6;
         while ($text[$i] != '"') {
-          $cond .= $text[$i];
+          if (isset($cond)) {
+            $cond .= $text[$i];
+          }
+          else {
+            $cond = $text[$i];
+          }
+
           $i++;
         }
 
@@ -845,6 +892,7 @@ function fim_outputXml($array,$level = 0) {
   header('Content-type: application/xml');
 
   $indent = '';
+  $data = '';
 
   for($i = 0;$i<=$level;$i++) {
     $indent .= '  ';
@@ -900,15 +948,20 @@ $data";
 */
 
 function fim_outputApi($data) {
-  switch ($_REQUEST['format']) {
-    case 'json':
-    return fim_outputJson($data);
-    break;
+  if (isset($_REQUEST['format'])) {
+    switch ($_REQUEST['format']) {
+      case 'json':
+      return fim_outputJson($data);
+      break;
 
-    case 'xml':
-    default:
+      case 'xml':
+      default:
+      return fim_outputXml($data);
+      break;
+    }
+  }
+  else {
     return fim_outputXml($data);
-    break;
   }
 }
 
@@ -1093,6 +1146,7 @@ function fim_sanitizeGPC($data) {
   $metaDataDefaults = array(
     'type' => 'string',
     'require' => false,
+    'context' => false,
   );
 
   foreach ($data AS $type => $entry) {
@@ -1121,8 +1175,8 @@ function fim_sanitizeGPC($data) {
       foreach ($entry AS $indexName => $indexData) {
         $indexMetaData = $metaDataDefaults; // Store indexMetaData with the defaults.
 
-        foreach ($indexData AS $metaname => $metadata) {
-          switch ($metaname) {
+        foreach ($indexData AS $metaName => $metaData) {
+          switch ($metaName) {
             case 'type':
 
             switch ($metaData) {
@@ -1142,11 +1196,11 @@ function fim_sanitizeGPC($data) {
             break;
 
             case 'valid':
-            $indexMetaData['valid'] = $metadata;
+            $indexMetaData['valid'] = $metaData;
             break;
 
             case 'require':
-            $indexMetaData['require'] = $metadata;
+            $indexMetaData['require'] = $metaData;
             break;
 
             case 'context':
@@ -1156,7 +1210,7 @@ function fim_sanitizeGPC($data) {
               'evaltrue' => false,
             );
 
-            foreach ($metadata AS $contextname => $contextdata) {
+            foreach ($metaData AS $contextname => $contextdata) {
 
               switch ($contextname) {
                 case 'type': // This is the original typecast, with some special types defined. While GPC variables are best interpretted as strings, this goes further and converts the string to a more proper format.
@@ -1191,7 +1245,7 @@ function fim_sanitizeGPC($data) {
             break;
 
             case 'default':
-            $indexMetaData['default'] = $metadata;
+            $indexMetaData['default'] = $metaData;
             break;
           }
         }

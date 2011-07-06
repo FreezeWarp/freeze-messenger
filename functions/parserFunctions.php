@@ -147,25 +147,94 @@ function fimParse_htmlParse($text,$bbcodeLevel = 1) {
 */
 
 function fimParse_censorParse($text,$roomId = 0) {
-  global $sqlPrefix;
+  global $sqlPrefix, $slaveDatabase;
 
   $words = dbRows("SELECT w.word, w.severity, w.param, l.listId AS listId
 FROM {$sqlPrefix}censorLists AS l, {$sqlPrefix}censorWords AS w
 WHERE w.listId = l.listId AND w.severity = 'replace'",'word');
 
-  if ($roomId) {
-    $listsActive = dbRows("SELECT * FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomId = $roomId",'id');
+  $words = $slaveDatabase(
+    array(
+      "{$sqlPrefix}censorLists" => array(
+        'listId' => 'llistId',
+      ),
+      "{$sqlPrefix}censorWords" => array(
+        'listId' => 'listId',
+        'word' => 'word',
+        'severity' => 'severity',
+        'param' => 'param',
+      ),
+    ),
+    array(
+      'both' => array(
+        array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'listId',
+          ),
+          'right' => array(
+            'type' => 'column',
+            'value' => 'llistId',
+          ),
+        ),
+        array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'severity',
+          ),
+          'right' => array(
+            'type' => 'string',
+            'value' => 'replace',
+          ),
+        ),
+      ),
+    )
+  );
+  $words = $words->getAsArray('word');
 
-    if ($listsActive) {
-      foreach ($listsActive AS $active) {
-        if ($active['status'] == 'unblock') {
-          $noBlock[] = $active['listId'];
+
+  if ($roomId > 0) {
+    $listsActive = $slaveDatabase->select(
+      array(
+        "{$sqlPrefix}censorBlackWhiteLists" => array(
+          'status' => 'status',
+          'roomId' => 'roomId',
+          'listId' => 'listId',
+        ),
+      ),
+      array(
+        'both' => array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'roomId',
+          ),
+          'right' => array(
+            'type' => 'int',
+            'value' => (int) $roomId,
+          ),
+        ),
+      ),
+    );
+    $listsActive->getAsArray();
+
+
+    if (is_array($listsActive)) {
+      if (count($listsActive) > 0) {
+        foreach ($listsActive AS $active) {
+          if ($active['status'] == 'unblock') {
+            $noBlock[] = $active['listId'];
+          }
         }
       }
     }
   }
 
-  if (!$words) return $text;
+  if (!$words) {
+    return $text;
+  }
 
 
   foreach ($words AS $word) {

@@ -100,21 +100,26 @@ $request = fim_sanitizeGPC(array(
 
 
 /* Get User's Favourite Rooms as Array */
-$favRooms = fim_arrayValidate(explode(',',$user['favRooms']),'int',false); // All entries cast as integers, will not preserve entries of zero.
+if (isset($user['favRooms'])) {
+  $favRooms = fim_arrayValidate(explode(',',$user['favRooms']),'int',false); // All entries cast as integers, will not preserve entries of zero.
+}
+else {
+  $favRooms = array();
+}
 
 
 
 /* Filter */
-$whereClause = ($request['showDeleted'] ? '' : '(options & 4 = FALSE) AND ');
+/*$whereClause = ($request['showDeleted'] ? '' : '(options & 4 = FALSE) AND ');
 if ($rooms) {
   $whereClause .= ' roomId IN (' . implode(',',$roomsArray) . ') AND ';
-}
+}*/
 
 
 
 /* Query Results Order
  * roomId*, roomName, smart */
-switch ($request['sort']) {
+/*switch ($request['sort']) {
   case 'roomId':
   $order = 'roomId ' . ($request['reverseOrder'] ? 'DESC' : 'ASC');
   break;
@@ -130,7 +135,7 @@ switch ($request['sort']) {
   default:
   $order = 'roomId ' . ($request['reverseOrder'] ? 'DESC' : 'ASC');
   break;
-}
+}*/
 
 
 /* Data Predefine */
