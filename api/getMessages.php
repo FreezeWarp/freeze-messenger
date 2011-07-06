@@ -262,6 +262,7 @@ $queryParts['roomsSelect']['columns'] = array(
     'allowedUsers' => 'allowedUsers',
     'allowedGroups' => 'allowedGroups',
     'moderators' => 'moderators',
+    'options' => 'options',
   ),
 );
 $queryParts['roomsSelect']['conditions'] = array(
