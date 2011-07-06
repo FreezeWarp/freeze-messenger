@@ -82,26 +82,6 @@ $xmlData = array(
 
 
 /* Get Users from Database */
-$users = dbRows("SELECT u.userId,
-  u.userName,
-  u.userFormatStart,
-  u.userFormatEnd,
-  u.profile,
-  u.avatar,
-  u.socialGroups,
-  u.defaultColor,
-  u.defaultHighlight,
-  u.defaultFontface,
-  u.defaultFormatting,
-  u.favRooms
-  {$users_columns}
-FROM {$sqlPrefix}users AS u
-  {$users_tables}
-WHERE TRUE {$whereClause}
-  {$users_where}
-ORDER BY {$order}
-  {$users_order}
-{$users_end}",'userId'); // Get all rooms
 $users = $slaveDatabase->select(
   array(
     "{$sqlPrefix}users" => array(
@@ -119,6 +99,10 @@ $users = $slaveDatabase->select(
       'favRooms' => 'favRooms',
     ),
   ),
+  false,
+  array(
+    'userId' => 'asc',
+  )
 );
 $users = $users->getAsArray();
 
@@ -132,23 +116,52 @@ if ($users) {
 
     switch ($loginMethod) {
       case 'vbulletin':
-      $userDataForums = dbRows("SELECT joindate AS joinDate
-        {$userDataForumsVBulletin_columns}
-      FROM {$sqlUserTable} AS u
-        {$userDataForumsVBulletin_tables}
-      WHERE {$sqlUserTableCols[userId]} = $userData[userId]
-        {$userDataForumsVBulletin_where}");
+      $userDataForums = $integrationDatabase->select(
+        array(
+          $sqlUserTable => array(
+            'joindate' => 'joinDate',
+          ),
+        ),
+        array(
+          'both' => array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column',
+              'value' => $sqlUserTableCols['userId']
+            ),
+            'right' => array(
+              'type' => 'int',
+              'value' => (int) $userData['userId'],
+            ),
+          ),
+        ),
+      );
+      $userDataForums = $userDataForums->getAsArray();
       break;
 
       case 'phpbb':
-      $userDataForums = dbRows("SELECT u.user_posts AS posts,
-        u.user_regdate AS joinDate
-        {$userDataForumsPHPBB_columns}
-      FROM {$sqlUserTable} AS u
-        {$userDataForumsPHPBB_tables}
-      WHERE {$sqlUserTableCols[userId]} = $userData[userId]
-        {$userDataForumsPHPBB_where}
-      {$userDataForumsPHPBB_end}");
+      $userDataForums = $integrationDatabase->select(
+        array(
+          $sqlUserTable => array(
+            'user_posts' => 'posts',
+            'user_regdate' => 'joinDate',
+          ),
+        ),
+        array(
+          'both' => array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column',
+              'value' => $sqlUserTableCols['userId']
+            ),
+            'right' => array(
+              'type' => 'int',
+              'value' => (int) $userData['userId'],
+            ),
+          ),
+        ),
+      );
+      $userDataForums = $userDataForums->getAsArray();
       break;
     }
 

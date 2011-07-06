@@ -350,6 +350,32 @@ else {
   );
 }
 
+$queryParts['getRooms']['columns'] = array(
+  "{$sqlPrefix}rooms" => array(
+    'roomId' => 'roomId',
+    'roomName' => 'roomName',
+    'roomTopic' => 'roomTopic',
+    'owner' => 'owner',
+    'allowedUsers' => 'allowedUsers',
+    'allowedGroups' => 'allowedGroups',
+    'moderators' => 'moderators',
+  ),
+);
+$queryParts['getRooms']['conditions'] = array(
+  'type' => 'in',
+  'left' => array(
+    'type' => 'column',
+    'value' => 'roomId'
+  ),
+  'right' => array(
+    'type' => 'array',
+    'value' => $request['rooms'],
+  ),
+);
+$queryParts['getRooms']['sort'] = array(
+  'roomId' => 'asc',
+);
+
 
 
 /* Modify Query Data for Directives */
@@ -496,15 +522,46 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
   $searchArray = explode(',',$search);
 
   foreach ($searchArray AS $searchVal) {
-    $searchArray2[] = '"' . dbEscape(str_replace(array_keys($searchWordConverts),array_values($searchWordConverts),$searchVal)) . '"';
+    $searchArray2[] = str_replace(array_keys($searchWordConverts),array_values($searchWordConverts),$searchVal);
   }
-
-  $search2 = implode(',',$searchArray2);
 
   $searchMessageIds = dbRows("SELECT GROUP_CONCAT(messageId SEPARATOR ',') AS messages
   FROM {$sqlPrefix}searchPhrases AS p,
   {$sqlPrefix}searchMessages AS m
   WHERE p.phraseId = m.phraseId AND p.phraseName IN ($search2)");
+
+  $searchMessageIds = $database->select(
+    array(
+      "" =>
+    ),
+    array(
+      'both' => array(
+        array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'mphraseId',
+          ),
+          'right' => array(
+            'type' => 'column',
+            'value' => 'pphraseId',
+          ),
+        ),
+        array(
+          'type' => 'in',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'phraseName',
+          ),
+          'right' => array(
+            'type' => 'array',
+            'value' => $searchArray2,
+          ),
+        ),
+      ),
+    ),
+    false,
+  );
 
   $whereClause .= " AND messageId IN ($searchMessageIds[messages]) ";
 }
@@ -517,220 +574,191 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
 
 
 
-
-
-
 /* Start Crazy Shit */
 if (is_array($request['rooms'])) {
   if (count($request['rooms']) > 0) {
-    foreach ($request['rooms'] AS $roomId) { // We will run through each room.
-      /* Get Room Data
-       * TODO: Run through this in a single query. */
-      $room = $database->select(
-        array(
-          "{$sqlPrefix}rooms" => array(
-            'roomId' => 'roomId',
-            'roomName' => 'roomName',
-            'roomTopic' => 'roomTopic',
-            'owner' => 'owner',
-            'allowedUsers' => 'allowedUsers',
-            'allowedGroups' => 'allowedGroups',
-            'moderators' => 'moderators',
-          ),
-        ),
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'roomId',
-          ),
-          'right' => array(
-            'type' => 'int',
-            'value' => (int) $roomId,
-          ),
-        ),
-        false,
-        false,
-        1
-      );
-      $room->getAsArray();
+    $rooms = $database->select($queryParts['getRooms']['columns'],
+      $queryParts['getRooms']['conditions'],
+      $queryParts['getRooms']['sort']);
+    $rooms = $rooms->getAsArray('roomId');
 
-      if ($room) { // The Room Has to be Valid
+    foreach ($rooms AS $roomId => $roomData) { // We will run through each room.
 
-        /* Make sure the user has permission to view posts from the room */
-        $permission = fim_hasPermission($room,$user,'view',false);
-        if (!$permission[0]) { // No Permission
+      /* Make sure the user has permission to view posts from the room
+       * TODO: make work with multiple rooms */
+      $permission = fim_hasPermission($roomData,$user,'view',false);
 
-          switch($permission[1]) {
-            case 'kick':
-            $errStr = 'kicked';
-            $errDesc = 'You have been kicked untl ' . fim_date($permission[3]) . '.';
-            break;
+      if (!$permission[0]) { // No Permission
 
-            default:
-            $errStr = 'noperm';
-            $errDesc = 'You do not have permission to view the room you are trying to view.';
-            break;
-          }
+        switch($permission[1]) {
+          case 'kick':
+          $errStr = 'kicked';
+          $errDesc = 'You have been kicked untl ' . fim_date($permission[3]) . '.';
+          break;
 
-          ($hook = hook('getMessages_noPerm') ? eval($hook) : '');
-
+          default:
+          $errStr = 'noperm';
+          $errDesc = 'You do not have permission to view the room you are trying to view.';
+          break;
         }
-        else { // Has Permission
 
-          /* Process Ping */
-          if (!$noPing) {
-            dbInsert(array(
-              'userId' => $user['userId'],
-              'roomId' => $room['roomId'],
-              'time' => array(
-                'type' => 'raw',
-                'value' => 'CURRENT_TIMESTAMP()',
-              ),
-            ),"{$sqlPrefix}ping",array(
-              'time' => array(
-                'type' => 'raw',
-                'value' => 'CURRENT_TIMESTAMP()',
-              )
-            ));
+        ($hook = hook('getMessages_noPerm') ? eval($hook) : '');
 
-            ($hook = hook('getMessages_ping') ? eval($hook) : '');
-          }
+      }
+      else { // Has Permission
+
+        /* Process Ping */
+        if (!$noPing) {
+          dbInsert(array(
+            'userId' => $user['userId'],
+            'roomId' => $room['roomId'],
+            'time' => array(
+              'type' => 'raw',
+              'value' => 'CURRENT_TIMESTAMP()',
+            ),
+          ),"{$sqlPrefix}ping",array(
+            'time' => array(
+              'type' => 'raw',
+              'value' => 'CURRENT_TIMESTAMP()',
+            )
+          ));
+
+          ($hook = hook('getMessages_ping') ? eval($hook) : '');
+        }
 
 
-          /* Get Messages from Database */
-          if ($longPolling) {
+        /* Get Messages from Database */
+        if ($longPolling) {
 
-            while (!$messages) {
-              $messages = $database->select($queryParts['messagesSelect']['columns'],
-                $queryParts['messagesSelect']['conditions'],
-                $queryParts['messagesSelect']['columns']);
-              $messages->getAsArray('messageId');
-
-              ($hook = hook('getMessages_postMessages_longPolling_repeat') ? eval($hook) : '');
-
-              sleep($longPollingWait);
-            }
-
-            ($hook = hook('getMessages_postMessages_longPolling') ? eval($hook) : '');
-
-          }
-          else {
-
+          while (!$messages) {
             $messages = $database->select($queryParts['messagesSelect']['columns'],
               $queryParts['messagesSelect']['conditions'],
               $queryParts['messagesSelect']['columns']);
             $messages->getAsArray('messageId');
 
-            ($hook = hook('getMessages_postMessages_polling') ? eval($hook) : '');
+            ($hook = hook('getMessages_postMessages_longPolling_repeat') ? eval($hook) : '');
 
+            sleep($longPollingWait);
           }
 
+          ($hook = hook('getMessages_postMessages_longPolling') ? eval($hook) : '');
 
-          /* Process Messages */
-          if (is_array($messages)) {
-            if (count($messages) > 0) {
-              foreach ($messages AS $id => $message) {
+        }
+        else {
 
-                $message = fim_decrypt($message);
+          $messages = $database->select($queryParts['messagesSelect']['columns'],
+            $queryParts['messagesSelect']['conditions'],
+            $queryParts['messagesSelect']['columns']);
+          $messages->getAsArray('messageId');
 
-                $message['userName'] = addslashes($message['userName']);
-                $message['apiText'] = ($message['apiText']);
-                $message['htmlText'] = ($message['htmlText']);
+          ($hook = hook('getMessages_postMessages_polling') ? eval($hook) : '');
 
-
-                switch ($encode) {
-                  case 'base64':
-                  $message['apiText'] = base64_encode($message['apiText']);
-                  $message['htmlText'] = base64_encode($message['htmlText']);
-                  break;
-                }
+        }
 
 
-                $xmlData['getMessages']['messages']['message ' . (int) $message['messageId']] = array(
-                  'roomData' => array(
-                    'roomId' => (int) $room['roomId'],
-                    'roomName' => ($room['roomName']),
-                    'roomTopic' => ($room['roomTopic']),
+        /* Process Messages */
+        if (is_array($messages)) {
+          if (count($messages) > 0) {
+            foreach ($messages AS $id => $message) {
+
+              $message = fim_decrypt($message);
+
+              $message['userName'] = addslashes($message['userName']);
+              $message['apiText'] = ($message['apiText']);
+              $message['htmlText'] = ($message['htmlText']);
+
+
+              switch ($encode) {
+                case 'base64':
+                $message['apiText'] = base64_encode($message['apiText']);
+                $message['htmlText'] = base64_encode($message['htmlText']);
+                break;
+              }
+
+
+              $xmlData['getMessages']['messages']['message ' . (int) $message['messageId']] = array(
+                'roomData' => array(
+                  'roomId' => (int) $room['roomId'],
+                  'roomName' => ($room['roomName']),
+                  'roomTopic' => ($room['roomTopic']),
+                ),
+                'messageData' => array(
+                  'messageId' => (int) $message['messageId'],
+                  'messageTime' => (int) $message['time'],
+                  'messageTimeFormatted' => fim_date(false,$message['time']),
+                  'messageText' => array(
+                    'apiText' => ($message['apiText']),
+                    'htmlText' => ($message['htmlText']),
                   ),
-                  'messageData' => array(
-                    'messageId' => (int) $message['messageId'],
-                    'messageTime' => (int) $message['time'],
-                    'messageTimeFormatted' => fim_date(false,$message['time']),
-                    'messageText' => array(
-                      'apiText' => ($message['apiText']),
-                      'htmlText' => ($message['htmlText']),
-                    ),
-                    'flags' => ($message['flag']),
+                  'flags' => ($message['flag']),
+                ),
+                'userData' => array(
+                  'userName' => ($message['userName']),
+                  'userId' => (int) $message['userId'],
+                  'userGroup' => (int) $message['userGroup'],
+                  'avatar' => ($message['avatar']),
+                  'socialGroups' => ($message['socialGroups']),
+                  'startTag' => ($message['userFormatStart']),
+                  'endTag' => ($message['userFormatEnd']),
+                  'defaultFormatting' => array(
+                    'color' => ($message['defaultColor']),
+                    'highlight' => ($message['defaultHighlight']),
+                    'fontface' => ($message['defaultFontface']),
+                    'general' => (int) $message['defaultFormatting']
                   ),
-                  'userData' => array(
-                    'userName' => ($message['userName']),
-                    'userId' => (int) $message['userId'],
-                    'userGroup' => (int) $message['userGroup'],
-                    'avatar' => ($message['avatar']),
-                    'socialGroups' => ($message['socialGroups']),
-                    'startTag' => ($message['userFormatStart']),
-                    'endTag' => ($message['userFormatEnd']),
-                    'defaultFormatting' => array(
-                      'color' => ($message['defaultColor']),
-                      'highlight' => ($message['defaultHighlight']),
-                      'fontface' => ($message['defaultFontface']),
-                      'general' => (int) $message['defaultFormatting']
-                    ),
-                  ),
+                ),
+              );
+
+
+              ($hook = hook('getMessages_eachMessage') ? eval($hook) : ''); // Useful for running code that requires the specific message array to still be present, or otherwise for convience sake.
+
+            }
+          }
+        }
+
+
+        /* Process Active Users */
+        if ($activeUsers) {
+          $activeUsers = dbRows("SELECT u.{$sqlUserTableCols[userName]} AS userName,
+            u.userId AS userId,
+            u.userGroup AS userGroup,
+            u.userFormatStart AS userFormatStart,
+            u.userFormatEnd AS userFormatEnd,
+            p.status,
+            p.typing
+            {$activeUser_columns}
+          FROM {$sqlPrefix}ping AS p,
+            {$sqlPrefix}users AS u
+            {$activeUser_tables}
+          WHERE p.roomId IN ($room[roomId])
+            AND p.userId = u.userId
+            AND UNIX_TIMESTAMP(p.time) >= (UNIX_TIMESTAMP(NOW()) - $onlineThreshold)
+            {$activeUser_where}
+          ORDER BY u.userName
+            {$activeUser_order}
+          {$activeUser_end}",'userId');
+
+
+          if (is_array($activeUsers)) {
+            if (count($activeUsers) > 0) {
+              foreach ($activeUsers AS $activeUser) {
+                $xmlData['getMessages']['activeUsers']['user ' . $activeUser['userId']] = array(
+                  'userId' => (int) $activeUser['userId'],
+                  'userName' => ($activeUser['userName']),
+                  'userGroup' => (int) $activeUser['userGroup'],
+                  'socialGroups' => ($activeUser['socialGroups']),
+                  'startTag' => ($activeUser['userFormatStart']),
+                  'endTag' => ($activeUser['userFormatEnd']),
                 );
 
 
-                ($hook = hook('getMessages_eachMessage') ? eval($hook) : ''); // Useful for running code that requires the specific message array to still be present, or otherwise for convience sake.
-
+                ($hook = hook('getMessages_activeUsers_eachUser') ? eval($hook) : '');
               }
             }
           }
 
 
-          /* Process Active Users */
-          if ($activeUsers) {
-            $activeUsers = dbRows("SELECT u.{$sqlUserTableCols[userName]} AS userName,
-              u.userId AS userId,
-              u.userGroup AS userGroup,
-              u.userFormatStart AS userFormatStart,
-              u.userFormatEnd AS userFormatEnd,
-              p.status,
-              p.typing
-              {$activeUser_columns}
-            FROM {$sqlPrefix}ping AS p,
-              {$sqlPrefix}users AS u
-              {$activeUser_tables}
-            WHERE p.roomId IN ($room[roomId])
-              AND p.userId = u.userId
-              AND UNIX_TIMESTAMP(p.time) >= (UNIX_TIMESTAMP(NOW()) - $onlineThreshold)
-              {$activeUser_where}
-            ORDER BY u.userName
-              {$activeUser_order}
-            {$activeUser_end}",'userId');
-
-
-            if (is_array($activeUsers)) {
-              if (count($activeUsers) > 0) {
-                foreach ($activeUsers AS $activeUser) {
-                  $xmlData['getMessages']['activeUsers']['user ' . $activeUser['userId']] = array(
-                    'userId' => (int) $activeUser['userId'],
-                    'userName' => ($activeUser['userName']),
-                    'userGroup' => (int) $activeUser['userGroup'],
-                    'socialGroups' => ($activeUser['socialGroups']),
-                    'startTag' => ($activeUser['userFormatStart']),
-                    'endTag' => ($activeUser['userFormatEnd']),
-                  );
-
-
-                  ($hook = hook('getMessages_activeUsers_eachUser') ? eval($hook) : '');
-                }
-              }
-            }
-
-
-            ($hook = hook('getMessages_activeUsers') ? eval($hook) : '');
-          }
+          ($hook = hook('getMessages_activeUsers') ? eval($hook) : '');
         }
       }
     }
@@ -742,32 +770,142 @@ if ($watchRooms) {
   ($hook = hook('getMessages_watchRooms_start') ? eval($hook) : '');
 
   /* Get Missed Messages */
-  $missedMessages = dbRows("SELECT r.*,
-  UNIX_TIMESTAMP(r.lastMessageTime) AS lastMessageTimestamp
-FROM {$sqlPrefix}rooms AS r
-  LEFT JOIN {$sqlPrefix}ping AS p ON (p.userId = $user[userId] AND p.roomId = r.roomId)
-WHERE (r.options & 16 " . ($user['watchRooms'] ? " OR r.roomId IN ($user[watchRooms])" : '') . ") AND (r.allowedUsers REGEXP '({$user[userId]},)|{$user[userId]}$' OR r.allowedUsers = '*') AND IF(p.time, UNIX_TIMESTAMP(r.lastMessageTime) > (UNIX_TIMESTAMP(p.time) + 10), TRUE)",'id');
+  $missedMessages = $database->select(
+    array(
+      "{$sqlPrefix}rooms" => array(
+        'roomId' => 'roomId',
+        'options' => 'options',
+        'allowedUsers' => 'allowedUsers',
+        'lastMessageTime' => array(
+          'context' => 'time',
+          'name' => 'lastMessageTime',
+        ),
+      ),
+      "{$sqlPrefix}ping" => array(
+        'time' => array(
+          'context' => 'time',
+          'name' => 'pingTime',
+        ),
+        'userId' => 'puserId',
+        'roomId' => 'proomId',
+      ),
+    ),
+    array(
+      'both' => array(
+        array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'userId',
+          ),
+          'right' => array(
+            'type' => 'int',
+            'value' => (int) $user['userId'],
+          ),
+        ),
+        array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'roomId',
+          ),
+          'right' => array(
+            'type' => 'column',
+            'value' => 'proomId',
+          ),
+        ),
+        'either' => array(
+          array(
+            'type' => 'bitwise',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'options',
+            ),
+            'right' => array(
+              'type' => 'int',
+              'value' => 16,
+            ),
+          ),
+          array(
+            'type' => 'in',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'roomId',
+            ),
+            'right' => array(
+              'type' => 'array',
+              'value' => fim_arrayValidate(explode(',',$user['watchRooms']),'int',false),
+            ),
+          ),
+        ),
+        'either' => array(
+          array(
+            'type' => 'regexp',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'allowedUsers',
+            ),
+            'right' => array(
+              'type' => 'regexp',
+              'value' => '(' . (int) $user['userId'] . ',|' . (int) $user['userId'] . ')$',
+            ),
+          ),
+          array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'allowedUsers',
+            ),
+            'right' => array(
+              'type' => 'string',
+              'value' => '*',
+            ),
+          ),
+        ),
+        array(
+          'type' => 'if',
+          'condition' => 'p.time',
+          'true' => array(
+            'type' => 'gt',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'time',
+            ),
+            'right' => array(
+              'type' => 'equation',
+              'value' => '$time + 10',
+            ),
+          ),
+          'false' => array(
+            'type' => 'true',
+          ),
+        ),
+      ),
+    )
+  );
+  $missedMessages = $missedMessages->getAsArray();// AND (r.allowedUsers REGEXP  OR r.allowedUsers = '*') AND IF(p.time, UNIX_TIMESTAMP(r.lastMessageTime) > (UNIX_TIMESTAMP(p.time) + 10), TRUE)
 
+  if (is_array($missedMessages)) {
+    if (count($missedMessages) > 0) {
+      foreach ($missedMessages AS $message) {
+        if (!fim_hasPermission($message,$user,'view',true)) {
+          ($hook = hook('getMessages_watchRooms_noPerm') ? eval($hook) : '');
 
-  if ($missedMessages) {
-    foreach ($missedMessages AS $message) {
-      if (!fim_hasPermission($message,$user,'view',true)) {
-        ($hook = hook('getMessages_watchRooms_noPerm') ? eval($hook) : '');
+          continue;
+        }
 
-        continue;
+        $xmlData['getMessages']['watchRooms']['room ' . (int) $message['roomId']] = array(
+          'roomId' => (int) $message['roomId'],
+          'roomName' => ($message['roomName']),
+          'lastMessageTime' => (int) $message['lastMessageTimestamp'],
+        );
+
+        ($hook = hook('getMessages_watchRooms_eachRoom') ? eval($hook) : '');
       }
-
-      $xmlData['getMessages']['watchRooms']['room ' . (int) $message['roomId']] = array(
-        'roomId' => (int) $message['roomId'],
-        'roomName' => ($message['roomName']),
-        'lastMessageTime' => (int) $message['lastMessageTimestamp'],
-      );
-
-      ($hook = hook('getMessages_watchRooms_eachRoom') ? eval($hook) : '');
     }
   }
 
-  ($hook = hook('getMessages_watchRooms_end') ? eval($hook) : '');
+  ($hook = hook('getMessages_watchRooms') ? eval($hook) : '');
 }
 
 
