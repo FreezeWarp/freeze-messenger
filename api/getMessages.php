@@ -266,14 +266,16 @@ $queryParts['roomsSelect']['columns'] = array(
 );
 $queryParts['roomsSelect']['conditions'] = array(
   'both' => array(
-    'type' => 'in',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'roomId'
-    ),
-    'right' => array(
-      'type' => 'array',
-      'value' => $request['rooms'],
+    array(
+      'type' => 'in',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'roomId'
+      ),
+      'right' => array(
+        'type' => 'array',
+        'value' => $request['rooms'],
+      ),
     ),
   ),
 );
@@ -287,7 +289,11 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
   $searchArray = explode(',',$search);
 
   foreach ($searchArray AS $searchVal) {
-    $searchArray2[] = str_replace(array_keys($searchWordConverts),array_values($searchWordConverts),$searchVal);
+    $searchArray2[] = str_replace(
+      array_keys($searchWordConverts),
+      array_values($searchWordConverts),
+      $searchVal
+    );
   }
 
 /*  $searchMessageIds = dbRows("SELECT GROUP_CONCAT(messageId SEPARATOR ',') AS messages
