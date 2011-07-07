@@ -192,9 +192,9 @@ function fim_generatePassword($password) {
 
 /* User should be array, password md5sum of plaintext. */
 function processVBulletin($user,$password) {
-  global $forumTablePrefix, $sqlUserTable, $sqlUserTableCols;
+  global $forumTablePrefix;
 
-  if (!$user[$sqlUserTableCols['userId']]) { // The user does not exists
+  if (!$user['userId']) { // The user does not exists
     define('LOGIN_FLAG','BAD_USERNAME');
 
     return false;
@@ -212,21 +212,22 @@ function processVBulletin($user,$password) {
 }
 
 function processPHPBB($user, $password) {
-  global $forumTablePrefix, $brokenUsers, $sqlUserTable, $sqlUserTableCols;
+  global $forumTablePrefix, $brokenUsers;
 
-  if (!$user[$sqlUserTableCols['userId']]) { // The user does not exist
+  if (!$user['userId']) { // The user does not exist
+
     define('LOGIN_FLAG','BAD_USERNAME');
 
     return false;
   }
 
-  elseif (in_array($user['user_id'],$brokenUsers)) { // The user is flagged as a PHPBB auto user.
+  elseif (in_array($user['userId'],$brokenUsers)) { // The user is flagged as a PHPBB auto user.
     define('LOGIN_FLAG','BROKEN_USER');
 
     return false;
   }
 
-  elseif (phpbb_check_hash($password, $user['user_password'])) { // The password matches
+  elseif (phpbb_check_hash($password, $user['password'])) { // The password matches
     return true;
   }
 
@@ -240,7 +241,7 @@ function processPHPBB($user, $password) {
 function processVanilla($user, $password) {
   global $tablePrefix, $sqlUserTable, $sqlUserTableCols;
 
-  if (!$user[$sqlUserTableCols['userId']]) { // The user does not exist
+  if (!$user['userId']) { // The user does not exist
     define('LOGIN_FLAG','BAD_USERNAME');
 
     return false;
@@ -256,9 +257,9 @@ function processVanilla($user, $password) {
 }
 
 function processLogin($user, $password, $encrypt) {
-  global $loginMethod;
+  global $loginConfig;
 
-  switch ($loginMethod) {
+  switch ($loginConfig['method']) {
     case 'vbulletin':
     if ($encrypt == 'plaintext') {
       $password = md5($password);

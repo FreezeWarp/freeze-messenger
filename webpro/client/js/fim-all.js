@@ -969,7 +969,7 @@ var standard = {
 
 
 
-  login : function(options) {
+  login : function(options) { console.log(options);
     console.log('Login Initiated');
     var data = '',
       passwordEncrypt = '',
@@ -1068,6 +1068,10 @@ var standard = {
           else {
 
             switch (loginFlag) {
+              case 'INVALID_LOGIN':
+              dia.error("The server did not accept the login, but did not specify why.")
+              break;
+
               case 'PASSWORD_ENCRYPT':
               dia.error("The form encryption used was not accepted by the server.");
               break;

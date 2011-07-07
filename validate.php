@@ -65,8 +65,17 @@ if (isset($_POST['userName'],$_POST['password'])) { // API.
   else {
     $apiVersionList = explode(',',$_POST['apiVersion']); // Split for all acceptable versions of the API.
 
+
     foreach ($apiVersionList AS $version) {
       $apiVersionSubs = explode('.',$_POST['apiVersion']); // Break it up into subversions.
+      if (!isset($apiVersionSubs[1])) {
+        $apiVersionSubs[1] = 0;
+      }
+
+      if (!isset($apiVersionSubs[2])) {
+        $apiVersionSubs[2] = 0;
+      }
+
       if ($apiVersionSubs[0] == 3 && $apiVersionSubs[1] == 0 && $apiVersionSubs[2] == 0) { // This is the same as version 3.0.0.
         $goodVersion = true;
       }
@@ -146,6 +155,7 @@ switch ($loginConfig['method']) {
     'allGroups' => 'membergroupids', // All admin-defined groups the user is a part of.
     'timeZone' => 'timezoneoffset', // Timezone offset
     'options' => 'options', // Options bitfield for some rare uses.
+    'password' => 'password',
   );
   $sqlAdminGroupTableCols = array(
     'groupId' => 'usergroupid', // Group ID
@@ -179,6 +189,7 @@ switch ($loginConfig['method']) {
     'timeZone' => 'user_timezone',
     'color' => 'user_colour',
     'avatar' => 'user_avatar',
+    'password' => 'user_password',
   );
   $sqlAdminGroupTableCols = array(
   );
@@ -206,6 +217,7 @@ switch ($loginConfig['method']) {
     'allGroups' => 'allGroups',
     'timeZone' => 'timeZone',
     'avatar' => 'avatar',
+    'password' => 'password',
   );
   $sqlUserGroupTableCols = array(
     'groupId' => 'groupId',
@@ -240,7 +252,7 @@ if ($flag) {
 else {
   if (isset($sessionHash)) {
 
-//    $user = dbRows("SELECT u.*, s.anonId, UNIX_TIMESTAMP(s.time) AS sessionTime, s.ip AS sessionIp, s.browser AS sessionBrowser FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE s.magicHash = '" . dbEscape($sessionHash) . "' AND u.userId = s.userId");
+//    $user = dbRows("SELECT u.*, s.anonId, UNIX_TIMESTAMP(s.time) AS sessionTime, s.ip AS sessionIp, s.browser AS sessionBrowser FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE s.magicHash = '" . ($sessionHash) . "' AND u.userId = s.userId");
 
     $user = $database->select(
       array( // Columns
@@ -311,7 +323,7 @@ else {
         ),
       )
     );
-    $user = $user->getAsArray();
+    $user = $user->getAsArray(false);
 
     if ($user) {
       if ((int) $user['userId'] !== (int) $userIdComp) { // The userid sent has to be the same one in the DB. In theory we could just not require a userId be specified, but there are benefits to this alternative. For instance, this eliminates some forms of injection-based session fixation.
@@ -375,7 +387,7 @@ else {
       false,
       1
     );
-    $user = $user->getAsArray();
+    $user = $user->getAsArray(false);
 
     if (processLogin($user,$password,'plaintext')) {
       $valid = true;
@@ -387,7 +399,33 @@ else {
   }
 
   elseif ($userId && $password) {
-    $user = dbRows("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' LIMIT 1');
+//    $user = dbRows("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' LIMIT 1');
+
+    $user = $integrationDatabase->select(
+      array(
+        $sqlUserTable => array_flip($sqlUserTableCols),
+      ),
+      array(
+        'both' => array(
+          array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'userId',
+            ),
+            'right' => array(
+              'type' => 'int',
+              'value' => (int) $userId,
+            ),
+          ),
+        ),
+      ),
+      false,
+      false,
+      1
+    );
+    $user = $user->getAsArray(false);
+
 
     if (processLogin($user,$password,'plaintext')) {
       $valid = true;
@@ -399,7 +437,31 @@ else {
   }
 
   elseif ($anonymousUser && $anonymous) {
-    $user = dbRows("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' LIMIT 1');
+//    $user = dbRows("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' LIMIT 1');\Z
+    $user = $integrationDatabase->select(
+      array(
+        $sqlUserTable => array_flip($sqlUserTableCols),
+      ),
+      array(
+        'both' => array(
+          array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'userId',
+            ),
+            'right' => array(
+              'type' => 'int',
+              'value' => (int) $userId,
+            ),
+          ),
+        ),
+      ),
+      false,
+      false,
+      1
+    );
+    $user = $user->getAsArray(false);
 
     $valid = true;
     $api = true;
@@ -431,16 +493,14 @@ if ($valid) { // If the user is valid, process their preferrences.
       unset($user);
 
 
-
       /* Set Relevant User Data */
-
-      $user2['userName'] = $userCopy[$sqlUserTableCols['userName']];
-      $user2['userId'] = $userCopy[$sqlUserTableCols['userId']];
-      $user2['timeZone'] = $userCopy[$sqlUserTableCols['timeZone']];
-      $user2['userGroup'] = $userCopy[$sqlUserTableCols['userGroup']];
-      $user2['allGroups'] = $userCopy[$sqlUserTableCols['allGroups']];
-      $user2['color'] = $userCopy[$sqlUserTableCols['color']];
-      $user2['avatar'] = $userCopy[$sqlUserTableCols['avatar']];
+      $user2['userName'] = $userCopy['userName'];
+      $user2['userId'] = $userCopy['userId'];
+      $user2['timeZone'] = $userCopy['timeZone'];
+      $user2['userGroup'] = $userCopy['userGroup'];
+      $user2['allGroups'] = $userCopy['allGroups'];
+      $user2['color'] = $userCopy['color'];
+      $user2['avatar'] = $userCopy['avatar'];
     }
 
 
@@ -449,11 +509,42 @@ if ($valid) { // If the user is valid, process their preferrences.
     switch ($loginConfig['method']) {
 
       case 'vbulletin':
-      if ($userCopy[$sqlUserTableCols['options']] & 64) $user2[$sqlAdminGroupTableCols['timeZone']]++; // DST is autodetect. We'll just set it by hand.
-      elseif ($userCopy[$sqlUserTableCols['options']] & 128) $user2[$sqlAdminGroupTableCols['timeZone']]++; // DST is on, add an hour
-      else $user2[$sqlAdminGroupTableCols['timeZone']]; // DST is off
+      if ($userCopy['options'] & 64) {
+        $user2['timeZone']++; // DST is autodetect. We'll just set it by hand.
+      }
+      elseif ($userCopy['options'] & 128) {
+        $user2['timeZone']++; // DST is on, add an hour
+      }
+      else {
+        $user2['timeZone']; // DST is off
+      }
 
-      $group = dbRows("SELECT * FROM $sqlAdminGroupTable WHERE $sqlAdminGroupTableCols[groupId] = $user2[userGroup]");
+//      $group = dbRows("SELECT * FROM $sqlAdminGroupTable WHERE $sqlAdminGroupTableCols[groupId] = ");
+
+      $group = $integrationDatabase->select(
+        array(
+          $sqlAdminGroupTable => array_flip($sqlAdminGroupTableCols),
+        ),
+        array(
+          'both' => array(
+            array(
+              'type' => 'e',
+              'left' => array(
+                'type' => 'column',
+                'value' => 'groupId',
+              ),
+              'right' => array(
+                'type' => 'int',
+                'value' => (int) $user2['userGroup']
+              ),
+            ),
+          ),
+        ),
+        false,
+        false,
+        1
+      );
+      $group = $group->getAsArray(false);
 
       $user2['userFormatStart'] = $group[$sqlAdminGroupTableCols['startTag']];
       $user2['userFormatEnd'] = $group[$sqlAdminGroupTableCols['endTag']];
@@ -463,15 +554,41 @@ if ($valid) { // If the user is valid, process their preferrences.
 
       case 'phpbb':
       if ($user2['userGroup']) {
-        $group = dbRows("SELECT * FROM $sqlUserGroupTable WHERE $sqlUserGroupTableCols[groupId] = $user2[userGroup]");
+//        $group = dbRows("SELECT * FROM $sqlUserGroupTable WHERE $sqlUserGroupTableCols[groupId] = $user2[userGroup]");
+
+        $group = $integrationDatabase->select(
+          array(
+            $sqlAdminGroupTable => array_flip($sqlAdminGroupTableCols),
+          ),
+          array(
+            'both' => array(
+              array(
+                'type' => 'e',
+                'left' => array(
+                  'type' => 'column',
+                  'value' => 'groupId',
+                ),
+                'right' => array(
+                  'type' => 'int',
+                  'value' => (int) $user2['userGroup']
+                ),
+              ),
+            ),
+          ),
+          false,
+          false,
+          1
+        );
+        $group = $group->getAsArray(false);
       }
 
       if (!$user2['color']) {
-        $user2['color'] = $group[$sqlUserTableCols['color']];
+        $user2['color'] = $group['color'];
       }
 
       $user2['userFormatStart'] = "<span style=\"color: #$user2[color]\">";
       $user2['userFormatEnd'] = '</span>';
+
       if ($user2['avatar']) {
         $user2['avatar'] = $forumUrl . 'download/file.php?avatar=' . $user2['avatar'];
       }
@@ -485,13 +602,57 @@ if ($valid) { // If the user is valid, process their preferrences.
     ($hook = hook('validate_preprefs') ? eval($hook) : '');
 
 
-    $userprefs = dbRows("SELECT *
-      {$userprefs_select}
-    FROM {$sqlPrefix}users
-     {$userprefs_users}
-    WHERE userId = " . (int) $user2['userId'] . "
-      {$userprefs_where}
-    {$userprefs_end}");
+      $userprefs = $integrationDatabase->select(
+        array(
+          "{$sqlPrefix}users" => array(
+            'userId' => 'userId',
+            'userName' => 'userName',
+            'userFormatStart' => 'userFormatStart',
+            'userFormatEnd' => 'userFormatEnd',
+            'userGroup' => 'userGroup',
+            'allGroups' => 'allGroups',
+            'avatar' => 'avatar',
+            'profile' => 'profile',
+            'socialGroups' => 'socialGroups',
+            'joinDate' => 'joinDate',
+            'birthDate' => 'birthDate',
+            'lastSync' => 'lastSync',
+            'defaultRoom' => 'defaultRoom',
+            'interface' => 'interface',
+            'favRooms' => 'favRooms',
+            'watchRooms' => 'watchRooms',
+            'ignoreList' => 'ignoreList',
+            'status' => 'status',
+            'defaultFormatting' => 'defaultFormatting',
+            'defaultHighlight' => 'defaultHighlight',
+            'defaultColor' => 'defaultColor',
+            'defaultFontface' => 'defaultFontface',
+            'settings' => 'settings',
+            'userPrivs' => 'userPrivs',
+            'adminPrivs' => 'adminPrivs',
+            'lang' => 'lang',
+          ),
+        ),
+        array(
+          'both' => array(
+            array(
+              'type' => 'e',
+              'left' => array(
+                'type' => 'column',
+                'value' => 'userId',
+              ),
+              'right' => array(
+                'type' => 'int',
+                'value' => (int) $user2['userId'],
+              ),
+            ),
+          ),
+        ),
+        false,
+        false,
+        1
+      );
+      $userprefs = $userprefs->getAsArray(false);
 
 
     if (!$userprefs) {
@@ -509,14 +670,14 @@ if ($valid) { // If the user is valid, process their preferrences.
 
       $database->insert(array(
         'userId' => (int) $user2['userId'],
-        'userName' => dbEscape($user2['userName']),
+        'userName' => ($user2['userName']),
         'userGroup' => (int) $user2['userGroup'],
-        'allGroups' => dbEscape($user2['allGroups']),
-        'userFormatStart' => dbEscape($user2['userFormatStart']),
-        'userFormatEnd' => dbEscape($user2['userFormatEnd']),
-        'avatar' => dbEscape($user2['avatar']),
-        'profile' => dbEscape($user2['profile']),
-        'socialGroups' => dbEscape($socialGroups['groups']),
+        'allGroups' => ($user2['allGroups']),
+        'userFormatStart' => ($user2['userFormatStart']),
+        'userFormatEnd' => ($user2['userFormatEnd']),
+        'avatar' => ($user2['avatar']),
+        'profile' => ($user2['profile']),
+        'socialGroups' => ($socialGroups['groups']),
         'userPrivs' => (int) $priviledges,
         'lastSync' => array(
           'type' => 'raw',
@@ -748,34 +909,36 @@ if ($valid) {
 
 if ($api) {
 
-  switch (LOGIN_FLAG) { // Generate a message based no the LOGIN_FLAG constant (...this should probably be a variable since it changes, but meh - it seems more logical as such)
-    case 'PASSWORD_ENCRYPT':
-    $errDesc = 'The password encryption used was not recognized and could not be decoded.';
-    break;
+  if (defined('LOGIN_FLAG')) {
+    switch (LOGIN_FLAG) { // Generate a message based no the LOGIN_FLAG constant (...this should probably be a variable since it changes, but meh - it seems more logical as such)
+      case 'PASSWORD_ENCRYPT':
+      $errDesc = 'The password encryption used was not recognized and could not be decoded.';
+      break;
 
-    case 'BAD_USERNAME':
-    $errDesc = 'The user was not recognized.';
-    break;
+      case 'BAD_USERNAME':
+      $errDesc = 'The user was not recognized.';
+      break;
 
-    case 'BAD_PASSWORD':
-    $errDesc = 'The password was not correct.';
-    break;
+      case 'BAD_PASSWORD':
+      $errDesc = 'The password was not correct.';
+      break;
 
-    case 'API_VERSION_STRING':
-    $errDesc = 'The API version string specified is not recognized.';
-    break;
+      case 'API_VERSION_STRING':
+      $errDesc = 'The API version string specified is not recognized.';
+      break;
 
-    case 'DEPRECATED_VERSION':
-    $errDesc = 'The API version specified is deprecated and may no longer be used.';
-    break;
+      case 'DEPRECATED_VERSION':
+      $errDesc = 'The API version specified is deprecated and may no longer be used.';
+      break;
 
-    case 'INVALID_SESSION':
-    $errDesc = 'The specified session is no longer valid.';
-    break;
+      case 'INVALID_SESSION':
+      $errDesc = 'The specified session is no longer valid.';
+      break;
+    }
   }
 
   if (!$valid && !defined('LOGIN_FLAG')) { // Generic login flag
-    define('LOGIN_FLAG',INVALID_LOGIN);
+    define('LOGIN_FLAG','INVALID_LOGIN');
 
     $errDesc = 'The login was incorrect.';
   }
@@ -790,16 +953,17 @@ if ($api) {
 
       'sessionHash' => $sessionHash,
       'anonId' => ($anonymous ? $anonId : 0),
-      'defaultRoomId' => (int) ($_GET['room'] ? $_GET['room'] :
-        ($user['defaultRoom'] ? $user['defaultRoom'] :
-          ($defaultRoom ? $defaultRoom : 1))), // Get the room we're on. If there is a $_GET variable, use it, otherwise the user's "default", or finally just main.
+      'defaultRoomId' => (int) (isset($_GET['room']) ? $_GET['room'] :
+        (isset($user['defaultRoom']) ? $user['defaultRoom'] :
+          (isset($defaultRoom) ? $defaultRoom : 1))), // Get the room we're on. If there is a $_GET variable, use it, otherwise the user's "default", or finally just main.
 
       'userData' => array(
         'userName' => ($user['userName']),
         'userId' => (int) $user['userId'],
         'userGroup' => (int) $user['userGroup'],
-        'avatar' => ($user['avatar']),
-        'profile' => ($user['profile']),
+        'avatar' => (isset($user['avatar']) ? $user['avatar'] :
+          (isset($avatarBase) ? $avatarBase : '')),
+        'profile' => (isset($user['profile']) ? $user['profile'] : ''),
         'socialGroups' => ($user['socialGroups']),
         'startTag' => ($user['userFormatStart']),
         'endTag' => ($user['userFormatEnd']),
