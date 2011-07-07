@@ -405,7 +405,7 @@ $dbConfig[\'integration\'][\'tablePreix\'] = \'' . $forumTablePrefix . '\';',
   case 'dev': // TODO: Remove
   $mysqli = new mysqli('localhost','a','a','phpbb3');
   $mysqli->query("SET NAMES utf8");
-  $prefix = 'himom_';
+  $prefix = 'a_';
   $tables = array("templates","phrases","sessions");
 
   foreach ($tables AS $table) {

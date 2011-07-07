@@ -99,6 +99,8 @@ function fim_hasPermission($roomData,$userData,$type = 'post',$quick = false) {
   $isRoomDeleted = false;
   $kick = false;
 
+  $reason = '';
+
 
   /* Make sure all presented data is correct. */
   if (!$roomData['roomId']) {
@@ -619,7 +621,11 @@ function parser1($text,$offset,$stop = false,$globalString = '') {
     $j = $text[$i];
 
     if ($iValueProc) {
-      $str .= iifl("$cond","$iv[1]","$iv[2]",($globalString ? "global $globalString;" : ''));
+      $str .= iifl($cond,
+        (isset($iv[1]) ? $iv[1] : ''),
+        (isset($iv[2]) ? $iv[2] : ''),
+        ($globalString ? "global $globalString;" : '')
+      );
       if ($stop) return array($str,$i);
 
       $iv = array(1 => '', 2 => '');
@@ -675,7 +681,12 @@ function parser1($text,$offset,$stop = false,$globalString = '') {
 
       else {
         $escape = false;
-        $cv[$cValueI] .= $j;
+        if (isset($cv[$cValueI])) {
+          $cv[$cValueI] .= $j;
+        }
+        else {
+          $cv[$cValueI] = $j;
+        }
       }
     }
 

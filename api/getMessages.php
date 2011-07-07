@@ -360,7 +360,7 @@ if (is_array($request['rooms'])) {
       $queryParts['roomsSelect']['sort']);
     $rooms = $rooms->getAsArray('roomId');
 
-    foreach ($rooms AS $roomId => $roomData) { // We will run through each room.
+    foreach ($rooms AS $roomId => $room) { // We will run through each room.
       /* Date Predefine */
       if ($request['archive']) {
         $queryParts['messagesSelect']['columns'] = array(
@@ -372,6 +372,7 @@ if (is_array($request['rooms'])) {
             ),
             'iv' => 'iv',
             'salt' => 'salt',
+            'roomId' => 'roomId',
           ),
           "{$sqlPrefix}users" => array(
             'userId' => 'userId',
@@ -420,6 +421,7 @@ if (is_array($request['rooms'])) {
         $queryParts['messagesSelect']['columns'] = array(
           "{$sqlPrefix}messagesCached" => array(
             'messageId' => 'messageId',
+            'roomId' => 'roomId',
             'time' => array(
               'context' => 'time',
               'name' => 'time',
@@ -603,7 +605,7 @@ if (is_array($request['rooms'])) {
 
       /* Make sure the user has permission to view posts from the room
        * TODO: make work with multiple rooms */
-      $permission = fim_hasPermission($roomData,$user,'view',false);
+      $permission = fim_hasPermission($room,$user,'view',false);
 
       if (!$permission[0]) { // No Permission
 
@@ -625,7 +627,7 @@ if (is_array($request['rooms'])) {
       else { // Has Permission
 
         /* Process Ping */
-        if (!$noPing) {
+        if (!$request['noping']) {
           $database->insert(array(
             'userId' => $user['userId'],
             'roomId' => $room['roomId'],
@@ -805,28 +807,11 @@ if (is_array($request['rooms'])) {
             'userName' => 'asc',
           );
 
-/*          $activeUsers = dbRows("SELECT u.{$sqlUserTableCols[userName]} AS userName,
-            u.userId AS userId,
-            u.userGroup AS userGroup,
-            u.userFormatStart AS userFormatStart,
-            u.userFormatEnd AS userFormatEnd,
-            p.status,
-            p.typing
-            {$activeUser_columns}
-          FROM {$sqlPrefix}ping AS p,
-            {$sqlPrefix}users AS u
-            {$activeUser_tables}
-          WHERE p.roomId IN ($room[roomId])
-            AND p.userId = u.userId
-            AND UNIX_TIMESTAMP(p.time) >= (UNIX_TIMESTAMP(NOW()) - $onlineThreshold)
-            {$activeUser_where}
-          ORDER BY u.userName
-            {$activeUser_order}
-          {$activeUser_end}",'userId');*//*
+
           $activeUsers = $database->select($queryParts['activeUsersSelect']['columns'],
             $queryParts['activeUsersSelect']['conditions'],
             $queryParts['activeUsersSelect']['sort']);
-          $activeUsers = $activeUsers->getAsArray();*/
+          $activeUsers = $activeUsers->getAsArray();
 
 
           if (is_array($activeUsers)) {

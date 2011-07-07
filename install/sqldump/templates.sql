@@ -36,9 +36,9 @@ INSERT INTO `{prefix}templates` (`templateId`, `templateName`, `vars`, `data`) V
   <meta http-equiv="Content-type" value="text/html; charset=utf-8" />
   <meta name="robots" content="index, follow" />
   <meta name="author" content="Joseph T. Parsons" />
-  <meta name="keywords" content="{{if="$phrases[brandingKeywords]"}{$phrases[brandingKeywords]}{instant messenger, im, instant message}}" />
-  <meta name="description" content="{{if="$phrases[brandingDescription]"}{$phrases[brandingDescription]}{FreezeMessenger-powered chat program.}}" />
-  {{if="$phrases[brandingFavicon]"}{<link rel="icon" id="favicon" type="image/png" href="$phrases[brandingFavicon]" />}}
+  <meta name="keywords" content="{{if="$phrases[''brandingKeywords'']"}{$phrases[brandingKeywords]}{instant messenger, im, instant message}}" />
+  <meta name="description" content="{{if="$phrases[''brandingDescription'']"}{$phrases[brandingDescription]}{FreezeMessenger-powered chat program.}}" />
+  {{if="$phrases[''brandingFavicon'']"}{<link rel="icon" id="favicon" type="image/png" href="$phrases[brandingFavicon]" />}}
 
   {{if="$layout == ''alt''"}{<style>
     #menu { display: none; width: 0px; }
@@ -58,15 +58,11 @@ INSERT INTO `{prefix}templates` (`templateId`, `templateName`, `vars`, `data`) V
   <script src="client/js/fim-all.js" type="text/javascript"></script>
 
   <!-- END Scripts -->
-
-  {$phrases[hookHead]}
 </head>
 
 <body>
 <div id="tooltext" class="tooltip-content"></div>
 <div id="page" data-role="page">
-  $phrases[hookPageStartAll]
-  $phrases[hookPageStartFull]
   <!-- START links -->
   <div id="menu" data-role="header">
     <h3 id="quickCat"><a href="#">$phrases[templateQuickCat]</a></h3>
@@ -144,17 +140,10 @@ INSERT INTO `{prefix}templates` (`templateId`, `templateName`, `vars`, `data`) V
   <!-- END links -->
 
   <div id="content" data-role="content">
-  <!-- START content -->
-    $phrases[hookContentStartAll]
-    $phrases[hookContentStartFull]'),
+  <!-- START content -->'),
 (2, 'templateEnd', '', '
-    $phrases[hookContentEndAll]
-    $phrases[hookContentEndFull]
     <!-- END content -->
   </div>
-
-$phrases[hookBodyEndAll]
-$phrases[hookBodyEndFull]
 </body>
 </html>'),
 (3, 'webLite_templateStart', '', '<?xml version="1.0" encoding="UTF-8"?>
@@ -168,9 +157,9 @@ $phrases[hookBodyEndFull]
   <meta http-equiv="Content-type" value="text/html; charset=utf-8" />
   <meta name="robots" content="index, follow" />
   <meta name="author" content="Joseph T. Parsons" />
-  <meta name="keywords" content="{{if="$phrases[brandingKeywords]"}{$phrases[brandingKeywords]}{instant messenger, im, instant message}}" />
-  <meta name="description" content="{{if="$phrases[brandingDescription]"}{$phrases[brandingDescription]}{FreezeMessenger-powered chat program.}}" />
-  {{if="$phrases[brandingFavicon]"}{<link rel="icon" id="favicon" type="image/png" href="$phrases[brandingFavicon]" />}}
+  <meta name="keywords" content="{{if="$phrases[''brandingKeywords'']"}{$phrases[brandingKeywords]}{instant messenger, im, instant message}}" />
+  <meta name="description" content="{{if="$phrases[''brandingDescription'']"}{$phrases[brandingDescription]}{FreezeMessenger-powered chat program.}}" />
+  {{if="$phrases[''brandingFavicon'']"}{<link rel="icon" id="favicon" type="image/png" href="$phrases[brandingFavicon]" />}}
 
 
   {{if="$layout == ''alt''"}{<style>
@@ -190,16 +179,11 @@ $phrases[hookBodyEndFull]
   <script src="client/js/fim-all.js" type="text/javascript"></script>
 
   <!-- END Scripts -->
-
-
-  {$phrases[hookHead]}
 </head>
 
 <body>
 <div id="tooltext" class="tooltip-content"></div>
 <div id="page" data-role="page">
-  $phrases[hookPageStartAll]
-  $phrases[hookPageStartFull]
   <!-- START links -->
   <div id="menu" data-role="header">
     <h3 id="quickCat"><a href="#">$phrases[templateQuickCat]</a></h3>
@@ -249,17 +233,10 @@ $phrases[hookBodyEndFull]
   <!-- END links -->
 
   <div id="content" data-role="content">
-  <!-- START content -->
-    $phrases[hookContentStartAll]
-    $phrases[hookContentStartFull]'),
+  <!-- START content -->'),
 (4, 'webLite_templateEnd', '', '
-    $phrases[hookContentEndAll]
-    $phrases[hookContentEndFull]
     <!-- END content -->
   </div>
-
-$phrases[hookBodyEndAll]
-$phrases[hookBodyEndFull]
 </body>
 </html>'),
 (5, 'login', '', '<div id="normalLogin">

@@ -54,7 +54,7 @@ class database {
     }
 
 
-    if (!@mysql_query('SET NAMES "utf8"',$this->dbLink)) { // Sets the database encoding to utf8 (unicode).
+    if (!mysql_query('SET NAMES "utf8"',$this->dbLink)) { // Sets the database encoding to utf8 (unicode).
       return false;
     }
 
@@ -291,7 +291,12 @@ GROUP BY
                 }
               }
               else {
-                $sideText[$side] = $reverseAlias[$data[$side]['value']];
+                if (isset($reverseAlias[$data[$side]['value']])) {
+                  $sideText[$side] = $reverseAlias[$data[$side]['value']];
+                }
+                else {
+                  throw new Exception('Unrecognized column: ' . $data[$side]['value']);
+                }
               }
               break;
             }
@@ -506,14 +511,14 @@ GROUP BY
     foreach($array AS $column => $data) { // Run through each element of the $dataArray, adding escaped columns and values to the above arrays.
 
       if (is_int($data)) { // Safe integer - leave it as-is.
-        $columns[] = dbEscape($column);
+        $columns[] = $this->escape($column);
         $context[] = 'e'; // Equals
 
         $values[] = $data;
       }
 
       elseif (is_bool($data)) { // In MySQL, true evals to  1, false evals to 0.
-        $columns[] = dbEscape($column);
+        $columns[] = $this->escape($column);
         $context[] = 'e'; // Equals
 
         if ($data === true) {
@@ -525,41 +530,56 @@ GROUP BY
       }
 
       elseif (is_null($data)) { // Null data, simply make it empty.
-        $columns[] = dbEscape($column);
+        $columns[] = $this->escape($column);
         $context[] = 'e';
 
         $values[] = '""';
       }
 
-      elseif (is_array($data)) { // This allows for some more advanced datastructures; specifically, we use it here to define metadata that prevents dbEscape.
-        switch($data['context']) {
-          case 'time':
-          $columns[] = 'UNIX_TIMESTAMP(' . dbEscape($column) . ')';
-          break;
+      elseif (is_array($data)) { // This allows for some more advanced datastructures; specifically, we use it here to define metadata that prevents $this->escape.
+        if (isset($data['context'])) {
+          switch($data['context']) {
+            case 'time':
+            $columns[] = 'UNIX_TIMESTAMP(' . $this->escape($column) . ')';
+            break;
 
-          default:
-          $columns[] = dbEscape($column);
-          break;
+            default:
+            $columns[] = $this->escape($column); // Maybe throw an exception instead?
+            break;
+          }
+        }
+        else {
+          $columns[] = $this->escape($column);
         }
 
-        switch($data['type']) {
-          case 'raw':
-          $values[] = $data['value'];
-          break;
+        if (isset($data['type'])) {
+          switch($data['type']) {
+            case 'raw':
+            $values[] = $data['value'];
+            break;
 
-          default:
-          $values[] = '"' . dbEscape($data['value']) . '"';
-          break;
+            default:
+            $values[] = '"' . $this->escape($data['value']) . '"'; // Maybe throw an exception instead?
+            break;
+          }
+        }
+        else {
+          $values[] = '"' . $this->escape($data['value']) . '"';
         }
 
-        $context[] = $data['cond'];
+        if (isset($data['cond'])) {
+          $context[] = $data['cond'];
+        }
+        else {
+          $context[] = 'e';
+        }
       }
 
       else { // String or otherwise; encode it using mysql_escape and put it in quotes
-        $columns[] = dbEscape($column);
+        $columns[] = $this->escape($column);
         $context[] = 'e'; // Equals
 
-        $values[] = '"' . dbEscape($data) . '"';
+        $values[] = '"' . $this->escape($data) . '"';
       }
     }
 
@@ -578,6 +598,7 @@ class databaseResult {
 
   public function getAsArray($index = true) {
     $data = array();
+    $indexV = 0;
 
     if ($this->queryData !== false) {
       if ($index) { // An index is specified, generate & return a multidimensional array. (index => [key => value], index being the value of the index for the row, key being the column name, and value being the corrosponding value).

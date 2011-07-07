@@ -238,7 +238,7 @@ if ($flag) {
   // Do nothing.
 }
 else {
-  if ($sessionHash) {
+  if (isset($sessionHash)) {
 
 //    $user = dbRows("SELECT u.*, s.anonId, UNIX_TIMESTAMP(s.time) AS sessionTime, s.ip AS sessionIp, s.browser AS sessionBrowser FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE s.magicHash = '" . dbEscape($sessionHash) . "' AND u.userId = s.userId");
 
@@ -310,7 +310,8 @@ else {
           ),
         ),
       )
-    )->getAsArray();
+    );
+    $user = $user->getAsArray();
 
     if ($user) {
       if ((int) $user['userId'] !== (int) $userIdComp) { // The userid sent has to be the same one in the DB. In theory we could just not require a userId be specified, but there are benefits to this alternative. For instance, this eliminates some forms of injection-based session fixation.
@@ -351,7 +352,30 @@ else {
   }
 
   elseif ($userName && $password) {
-    $user = dbRows("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userName] = '" . dbEscape($userName) . "' LIMIT 1");
+    $user = $integrationDatabase->select(
+      array(
+        $sqlUserTable => array_flip($sqlUserTableCols),
+      ),
+      array(
+        'both' => array(
+          array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'userName',
+            ),
+            'right' => array(
+              'type' => 'string',
+              'value' => $userName,
+            ),
+          ),
+        ),
+      ),
+      false,
+      false,
+      1
+    );
+    $user = $user->getAsArray();
 
     if (processLogin($user,$password,'plaintext')) {
       $valid = true;
@@ -425,7 +449,6 @@ if ($valid) { // If the user is valid, process their preferrences.
     switch ($loginConfig['method']) {
 
       case 'vbulletin':
-
       if ($userCopy[$sqlUserTableCols['options']] & 64) $user2[$sqlAdminGroupTableCols['timeZone']]++; // DST is autodetect. We'll just set it by hand.
       elseif ($userCopy[$sqlUserTableCols['options']] & 128) $user2[$sqlAdminGroupTableCols['timeZone']]++; // DST is on, add an hour
       else $user2[$sqlAdminGroupTableCols['timeZone']]; // DST is off
@@ -604,7 +627,7 @@ if ($valid) { // If the user is valid, process their preferrences.
         'type' => 'raw',
         'value' => 'NOW()',
       ),
-      'magicHash' => dbEscape($sessionHash),
+      'magicHash' => $sessionHash,
       'browser' => $_SERVER['HTTP_USER_AGENT'],
       'ip' => $_SERVER['REMOTE_ADDR'],
     ),"{$sqlPrefix}sessions");

@@ -20,18 +20,6 @@
 
 
 /**
-* Connect to a MySQL server. TRANSITIONAL
-*
-* @param string $string - The data to escape.
-* @return string - The escaped data.
-* @author Joseph Todd Parsons
-*/
-function dbEscape($string) {
-  return mysql_real_escape_string($string);
-}
-
-
-/**
 * Performs a MySQL Query. TRANSITIONAL
 *
 * @param string $query - The raw query to execute.
@@ -53,43 +41,6 @@ function dbQuery($query) {
   if (($endTime - $startTime) > 2) {
     file_put_contents('query_log.txt',"Spent " . ($endTime - $startTime) . " on: $queryData",FILE_APPEND);
   }
-}
-
-
-/**
-* Processes an array and returns two seperate arrays containing keys and values. TRANSITIONAL [...Also bad doc]
-*
-* @param string $host - The host of the MySQL server.
-* @param string $user - The MySQL user
-* @param string $password - The password of the user.
-* @param string $database - The database to connect to.
-* @return void
-* @author Joseph Todd Parsons
-*/
-function dbArray($queryData,$index = false) {
-  global $queryCounter;
-
-  $queryCounter++;
-
-  if ($queryData !== false  && $queryData !== null) {
-    if ($index) {
-      while (false !== ($row = mysql_fetch_assoc($queryData))) {
-        if ($index === true) {
-          $indexV++;
-        }
-        else {
-          $indexV = $row[$index];
-        }
-
-        $data[$indexV] = $row;
-      }
-      return $data;
-    }
-    else {
-      return mysql_fetch_assoc($queryData);
-    }
-  }
-  return false;
 }
 
 
@@ -137,8 +88,8 @@ function dbClose($link = false) {
   global $database, $integrationDatabase, $slaveDatabase;
 
   $database->close();
-  $integrationDatabase->close();
-  $slaveDatabase->close();
+//  $integrationDatabase->close();
+//  $slaveDatabase->close();
 }
 
 
