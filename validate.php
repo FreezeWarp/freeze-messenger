@@ -42,7 +42,9 @@ require_once('global.php');
 require_once('functions/loginReqs.php');
 
 
-static $apiVersion, $goodVersion, $sqlUserTable, $sqlUserGroupTable, $sqlMemberGroupTable, $sqlSessionTable, $sqlUserTableCols, $sqlUserGroupTableCols, $sqlMemberGroupTablecols, $api, $userName, $userId, $password, $sessionHssh, $flag;
+static $api, $userName, $userId, $password, $sessionHssh, $flag;
+$goodVersion = false;
+
 
 if (!isset($cookiePrefix)) {
   $cookiePrefix = 'fim3_';
@@ -142,49 +144,49 @@ elseif ((int) $anonymousUser >= 1 && isset($_POST['apiLogin'])) { // Unregistere
 switch ($loginConfig['method']) {
 
   case 'vbulletin':
-  $sqlUserTable = $forumTablePrefix . 'user'; // The user table in the login method used.
-  $sqlAdminGroupTable = $forumTablePrefix . 'usergroup'; // The adminGroup table in the login method used.
+  $sqlUserTable = $forumTablePrefix . 'user';
+  $sqlAdminGroupTable = $forumTablePrefix . 'usergroup';
   $sqlUserGroupTable = $forumTablePrefix . 'socialgroup';
-  $sqlMemberGroupTable = $forumTablePrefix . 'socialgroupmember'; // The userGroup table in the login method used.
-  $sqlSessionTable = $forumTablePrefix . 'session'; // The sessions table in the login method used.
+  $sqlMemberGroupTable = $forumTablePrefix . 'socialgroupmember';
+  $sqlSessionTable = $forumTablePrefix . 'session';
 
   $sqlUserTableCols = array(
-    'userId' => 'userid', // The user ID column of the user table in the login method used.
-    'userName' => 'username', // The userName column of the user table in the login method used.
-    'userGroup' => 'displaygroupid', // The userGroup column of the user table in the login method used.
-    'allGroups' => 'membergroupids', // All admin-defined groups the user is a part of.
-    'timeZone' => 'timezoneoffset', // Timezone offset
-    'options' => 'options', // Options bitfield for some rare uses.
+    'userId' => 'userid',
+    'userName' => 'username',
+    'userGroup' => 'displaygroupid',
+    'allGroups' => 'membergroupids',
+    'timeZone' => 'timezoneoffset',
+    'options' => 'options',
     'password' => 'password',
   );
   $sqlAdminGroupTableCols = array(
-    'groupId' => 'usergroupid', // Group ID
-    'groupName' => 'title', // Group Name
+    'groupId' => 'usergroupid',
+    'groupName' => 'title',
     'startTag' => 'opentag',
     'endTag' => 'closetag',
   );
   $sqlUserGroupTableCols = array(
-    'groupId' => 'groupid', // Group ID
-    'groupName' => 'name', // Group Name
+    'groupId' => 'groupid',
+    'groupName' => 'name',
   );
   $sqlMemberGroupTableCols = array(
-    'groupId' => 'groupid', // Social Group ID
-    'userId' => 'userid', // Social Group Member ID
-    'type' => 'type', // Social Group Type
-    'validType' => 'member', // Valid Social Group Type
+    'groupId' => 'groupid',
+    'userId' => 'userid',
+    'type' => 'type',
+    'validType' => 'member',
   );
   break;
 
   case 'phpbb':
-  $sqlUserTable = $forumTablePrefix . 'users'; // The user table in the login method used.
-  $sqlUserGroupTable = $forumTablePrefix . 'groups'; // The userGroup table in the login method used.
-  $sqlMemberGroupTable = $forumTablePrefix . 'user_group'; // The userGroup table in the login method used.
-  $sqlSessionTable = $forumTablePrefix . 'sessions'; // The sessions table in the login method used.
+  $sqlUserTable = $forumTablePrefix . 'users';
+  $sqlUserGroupTable = $forumTablePrefix . 'groups';
+  $sqlMemberGroupTable = $forumTablePrefix . 'user_group';
+  $sqlSessionTable = $forumTablePrefix . 'sessions';
 
   $sqlUserTableCols = array(
-    'userId' => 'user_id', // The user ID column of the user table in the login method used.
-    'userName' => 'username', // The userName column of the user table in the login method used.
-    'userGroup' => 'group_id', // The userGroup column of the user table in the login method used.
+    'userId' => 'user_id',
+    'userName' => 'username',
+    'userGroup' => 'group_id',
     'allGroups' => 'group_id',
     'timeZone' => 'user_timezone',
     'color' => 'user_colour',
@@ -206,14 +208,14 @@ switch ($loginConfig['method']) {
   break;
 
   case 'vanilla':
-  $sqlUserTable = $tablePrefix . 'users'; // The user table in the login method used.
-  $sqlUserGroupTable = $tablePrefix . 'groups'; // The userGroup table in the login method used.
-  $sqlSessionTable = $tablePrefix . 'sessions'; // The sessions table in the login method used.
+  $sqlUserTable = $tablePrefix . 'users';
+  $sqlUserGroupTable = $tablePrefix . 'groups';
+  $sqlSessionTable = $tablePrefix . 'sessions';
 
   $sqlUserTableCols = array(
-    'userId' => 'userId', // The user ID column of the user table in the login method used.
-    'userName' => 'userName', // The userName column of the user table in the login method used.
-    'userGroup' => 'userGroup', // The userGroup column of the user table in the login method used.
+    'userId' => 'userId',
+    'userName' => 'userName',
+    'userGroup' => 'userGroup',
     'allGroups' => 'allGroups',
     'timeZone' => 'timeZone',
     'avatar' => 'avatar',
@@ -237,6 +239,109 @@ switch ($loginConfig['method']) {
 
 }
 
+$queryParts['userSelect']['columns'] = array(
+  "{$sqlPrefix}users" => array(
+    'userId' => 'userId',
+    'userName' => 'userName',
+    'userGroup' => 'userGroup',
+    'allGroups' => 'allGroups',
+    'avatar' => 'avatar',
+    'profile' => 'profile',
+    'socialGroups' => 'socialGroups',
+    'userFormatStart' => 'userFormatStart',
+    'userFormatEnd' => 'userFormatEnd',
+    'password' => 'password',
+    'joinDate' => 'joinDate',
+    'birthDate' => 'birthDate',
+    'lastSync' => 'lastSync',
+    'defaultRoom' => 'defaultRoom',
+    'interface' => 'interface',
+    'favRooms' => 'favRooms',
+    'watchRooms' => 'watchRooms',
+    'ignoreList' => 'ignoreList',
+    'status' => 'status',
+    'defaultHighlight' => 'defaultHighlight',
+    'defaultColor' => 'defaultColor',
+    'defaultFontface' => 'defaultFontface',
+    'defaultFormatting' => 'defaultFormatting',
+    'settings' => 'settings',
+    'userPrivs' => 'userPrivs',
+    'adminPrivs' => 'adminPrivs',
+    'lang' => 'lang',
+  ),
+);
+$queryParts['userSelectFromSessionHash']['columns'] = array(
+  "{$sqlPrefix}sessions" => array(
+    'anonId' => 'anonId',
+    'magicHash' => 'magicHash',
+    'userId' => 'suserId',
+    'time' => array(
+      'name' => 'sessionTime',
+      'context' => 'time',
+    ),
+    'ip' => 'sessionIp',
+    'browser' => 'sessionBrowser',
+  ),
+);
+$queryParts['userSelectFromUserName']['conditions'] = array(
+  'both' => array(
+    array(
+      'type' => 'e',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'userName',
+      ),
+      'right' => array(
+        'type' => 'string',
+        'value' => $userName,
+      ),
+    ),
+  ),
+);
+$queryParts['userSelectFromUserId']['conditions'] = array(
+  'both' => array(
+    array(
+      'type' => 'e',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'userId',
+      ),
+      'right' => array(
+        'type' => 'int',
+        'value' => (int) $userId,
+      ),
+    ),
+  ),
+);
+$queryParts['userSelectFromSessionHash']['conditions'] = array(
+  array( // Conditions
+    'both' => array(
+      array(
+        'type' => 'e',
+        'left' => array(
+          'type' => 'column',
+          'value' => 'userId',
+        ),
+        'right' => array(
+          'type' => 'column',
+          'value' => 'suserId',
+        ),
+      ),
+      array(
+        'type' => 'e',
+        'left' => array(
+          'type' => 'column',
+          'value' => 'magicHash',
+        ),
+        'right' => array(
+          'type' => 'string',
+          'value' => $sessionHash,
+        ),
+      ),
+    ),
+  ),
+);
+
 ($hook = hook('validate_start') ? eval($hook) : '');
 
 
@@ -251,79 +356,15 @@ if ($flag) {
 }
 else {
   if (isset($sessionHash)) {
-
-//    $user = dbRows("SELECT u.*, s.anonId, UNIX_TIMESTAMP(s.time) AS sessionTime, s.ip AS sessionIp, s.browser AS sessionBrowser FROM {$sqlPrefix}sessions AS s, {$sqlPrefix}users AS u WHERE s.magicHash = '" . ($sessionHash) . "' AND u.userId = s.userId");
-
     $user = $database->select(
       array( // Columns
-        "{$sqlPrefix}users" => array(
-          'userId' => 'userId',
-          'userName' => 'userName',
-          'userGroup' => 'userGroup',
-          'allGroups' => 'allGroups',
-          'avatar' => 'avatar',
-          'profile' => 'profile',
-          'socialGroups' => 'socialGroups',
-          'userFormatStart' => 'userFormatStart',
-          'userFormatEnd' => 'userFormatEnd',
-          'password' => 'password',
-          'joinDate' => 'joinDate',
-          'birthDate' => 'birthDate',
-          'lastSync' => 'lastSync',
-          'defaultRoom' => 'defaultRoom',
-          'interface' => 'interface',
-          'favRooms' => 'favRooms',
-          'watchRooms' => 'watchRooms',
-          'ignoreList' => 'ignoreList',
-          'status' => 'status',
-          'defaultHighlight' => 'defaultHighlight',
-          'defaultColor' => 'defaultColor',
-          'defaultFontface' => 'defaultFontface',
-          'defaultFormatting' => 'defaultFormatting',
-          'settings' => 'settings',
-          'userPrivs' => 'userPrivs',
-          'adminPrivs' => 'adminPrivs',
-        ),
-        "{$sqlPrefix}sessions" => array(
-          'anonId' => 'anonId',
-          'magicHash' => 'magicHash',
-          'userId' => 'suserId',
-          'time' => array(
-            'name' => 'sessionTime',
-            'context' => 'time',
-          ),
-          'ip' => 'sessionIp',
-          'browser' => 'sessionBrowser',
-        ),
+        "{$sqlPrefix}users" => $queryParts['userSelect']['columns']["{$sqlPrefix}users"],
+        "{$sqlPrefix}sessions" => $queryParts['userSelectFromSessionHash']['columns']["{$sqlPrefix}sessions"]
       ),
-      array( // Conditions
-        'both' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'userId',
-            ),
-            'right' => array(
-              'type' => 'column',
-              'value' => 'suserId',
-            ),
-          ),
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'magicHash',
-            ),
-            'right' => array(
-              'type' => 'string',
-              'value' => $sessionHash,
-            ),
-          ),
-        ),
-      )
+      $queryParts['userSelectFromSessionHash']['conditions'],
     );
     $user = $user->getAsArray(false);
+
 
     if ($user) {
       if ((int) $user['userId'] !== (int) $userIdComp) { // The userid sent has to be the same one in the DB. In theory we could just not require a userId be specified, but there are benefits to this alternative. For instance, this eliminates some forms of injection-based session fixation.
@@ -363,26 +404,13 @@ else {
     }
   }
 
+
   elseif ($userName && $password) {
     $user = $integrationDatabase->select(
       array(
         $sqlUserTable => array_flip($sqlUserTableCols),
       ),
-      array(
-        'both' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'userName',
-            ),
-            'right' => array(
-              'type' => 'string',
-              'value' => $userName,
-            ),
-          ),
-        ),
-      ),
+      $queryParts['userSelectFromUserName']['conditions'],
       false,
       false,
       1
@@ -399,27 +427,11 @@ else {
   }
 
   elseif ($userId && $password) {
-//    $user = dbRows("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' LIMIT 1');
-
     $user = $integrationDatabase->select(
       array(
         $sqlUserTable => array_flip($sqlUserTableCols),
       ),
-      array(
-        'both' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'userId',
-            ),
-            'right' => array(
-              'type' => 'int',
-              'value' => (int) $userId,
-            ),
-          ),
-        ),
-      ),
+      $queryParts['userSelectFromUserId']['conditions'],
       false,
       false,
       1
@@ -437,26 +449,11 @@ else {
   }
 
   elseif ($anonymousUser && $anonymous) {
-//    $user = dbRows("SELECT * FROM {$sqlUserTable} WHERE $sqlUserTableCols[userId] = " . (int) $userId . ' LIMIT 1');\Z
     $user = $integrationDatabase->select(
       array(
         $sqlUserTable => array_flip($sqlUserTableCols),
       ),
-      array(
-        'both' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'userId',
-            ),
-            'right' => array(
-              'type' => 'int',
-              'value' => (int) $userId,
-            ),
-          ),
-        ),
-      ),
+      $queryParts['userSelectFromUserId']['conditions'],
       false,
       false,
       1
@@ -489,18 +486,26 @@ if ($valid) { // If the user is valid, process their preferrences.
   else {
     if ($loginConfig['method'] == 'vbulletin' || $loginConfig['method'] == 'phpbb') {
 
-      $userCopy = $user;
-      unset($user);
+      $user2 = $user; // Create a copy of user, which will later be unset.
+      unset($user); // Unset user, so we don't have to worry about collision.
 
 
-      /* Set Relevant User Data */
-      $user2['userName'] = $userCopy['userName'];
-      $user2['userId'] = $userCopy['userId'];
-      $user2['timeZone'] = $userCopy['timeZone'];
-      $user2['userGroup'] = $userCopy['userGroup'];
-      $user2['allGroups'] = $userCopy['allGroups'];
-      $user2['color'] = $userCopy['color'];
-      $user2['avatar'] = $userCopy['avatar'];
+
+      $queryParts['adminGroupConditions'] = array(
+        'both' => array(
+          array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'groupId',
+            ),
+            'right' => array(
+              'type' => 'int',
+              'value' => (int) $user2['userGroup']
+            ),
+          ),
+        ),
+      );
     }
 
 
@@ -509,10 +514,10 @@ if ($valid) { // If the user is valid, process their preferrences.
     switch ($loginConfig['method']) {
 
       case 'vbulletin':
-      if ($userCopy['options'] & 64) {
+      if ($user2['options'] & 64) {
         $user2['timeZone']++; // DST is autodetect. We'll just set it by hand.
       }
-      elseif ($userCopy['options'] & 128) {
+      elseif ($user2['options'] & 128) {
         $user2['timeZone']++; // DST is on, add an hour
       }
       else {
@@ -525,21 +530,7 @@ if ($valid) { // If the user is valid, process their preferrences.
         array(
           $sqlAdminGroupTable => array_flip($sqlAdminGroupTableCols),
         ),
-        array(
-          'both' => array(
-            array(
-              'type' => 'e',
-              'left' => array(
-                'type' => 'column',
-                'value' => 'groupId',
-              ),
-              'right' => array(
-                'type' => 'int',
-                'value' => (int) $user2['userGroup']
-              ),
-            ),
-          ),
-        ),
+        $queryParts['adminGroupConditions'],
         false,
         false,
         1
@@ -554,27 +545,11 @@ if ($valid) { // If the user is valid, process their preferrences.
 
       case 'phpbb':
       if ($user2['userGroup']) {
-//        $group = dbRows("SELECT * FROM $sqlUserGroupTable WHERE $sqlUserGroupTableCols[groupId] = $user2[userGroup]");
-
         $group = $integrationDatabase->select(
           array(
             $sqlAdminGroupTable => array_flip($sqlAdminGroupTableCols),
           ),
-          array(
-            'both' => array(
-              array(
-                'type' => 'e',
-                'left' => array(
-                  'type' => 'column',
-                  'value' => 'groupId',
-                ),
-                'right' => array(
-                  'type' => 'int',
-                  'value' => (int) $user2['userGroup']
-                ),
-              ),
-            ),
-          ),
+          $queryParts['adminGroupConditions'],
           false,
           false,
           1
@@ -603,36 +578,7 @@ if ($valid) { // If the user is valid, process their preferrences.
 
 
       $userprefs = $integrationDatabase->select(
-        array(
-          "{$sqlPrefix}users" => array(
-            'userId' => 'userId',
-            'userName' => 'userName',
-            'userFormatStart' => 'userFormatStart',
-            'userFormatEnd' => 'userFormatEnd',
-            'userGroup' => 'userGroup',
-            'allGroups' => 'allGroups',
-            'avatar' => 'avatar',
-            'profile' => 'profile',
-            'socialGroups' => 'socialGroups',
-            'joinDate' => 'joinDate',
-            'birthDate' => 'birthDate',
-            'lastSync' => 'lastSync',
-            'defaultRoom' => 'defaultRoom',
-            'interface' => 'interface',
-            'favRooms' => 'favRooms',
-            'watchRooms' => 'watchRooms',
-            'ignoreList' => 'ignoreList',
-            'status' => 'status',
-            'defaultFormatting' => 'defaultFormatting',
-            'defaultHighlight' => 'defaultHighlight',
-            'defaultColor' => 'defaultColor',
-            'defaultFontface' => 'defaultFontface',
-            'settings' => 'settings',
-            'userPrivs' => 'userPrivs',
-            'adminPrivs' => 'adminPrivs',
-            'lang' => 'lang',
-          ),
-        ),
+        $queryParts['userSelect']['columns'],
         array(
           'both' => array(
             array(
