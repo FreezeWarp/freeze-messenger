@@ -275,6 +275,12 @@ GROUP BY
               case 'array': // Used for IN clauses, mainly.
               if (is_array($data[$side])) {
                 if (count($data[$side]['value']) > 0) {
+                  foreach ($data[$side]['value'] AS &$entry) {
+                    if (is_string($entry)) {
+                      $entry = '\'' . $this->escape($entry) . '\'';
+                    }
+                  }
+
                   $sideText[$side] = "(" . implode(',',$data[$side]['value']) . ")";
                 }
               }

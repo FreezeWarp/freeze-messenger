@@ -71,14 +71,16 @@ $room = $database->select(
   ),
   array(
     'both' => array(
-      'type' => 'e',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'roomId',
-      ),
-      'right' => array(
-        'type' => 'int',
-        'value' => (int) $request['roomId'],
+      array(
+        'type' => 'e',
+        'left' => array(
+          'type' => 'column',
+          'value' => 'roomId',
+        ),
+        'right' => array(
+          'type' => 'int',
+          'value' => (int) $request['roomId'],
+        ),
       ),
     ),
   )
@@ -88,30 +90,55 @@ $room = $room->getAsArray(false);
 ($hook = hook('sendMessage_start') ? eval($hook) : '');
 
 
-$words = dbRows("SELECT w.word, w.severity, w.param
+/*$words = dbRows("SELECT w.word, w.severity, w.param
 FROM {$sqlPrefix}censorLists AS l, {$sqlPrefix}censorWords AS w
-WHERE w.listId = l.listId AND (w.severity = 'warn' OR w.severity = 'confirm' OR w.severity = 'block')",'word');
+WHERE w.listId = l.listId AND (w.severity = 'warn' OR w.severity = 'confirm' OR w.severity = 'block')",'word');*/
 
 $words = $slaveDatabase->select(
   array(
-
+    "{$sqlPrefix}censorLists" => array(
+      'listId' => 'listId',
+    ),
+    "{$sqlPrefix}censorWords" => array(
+      'severity' => 'severity',
+      'listId' => 'wlistId',
+      'word' => 'word',
+      'severity' => 'severity',
+      'param' => 'param',
+    ),
   ),
   array(
     'both' => array(
       array(
-
-      ),
-      'either' => array(
-        array(
-
+        'type' => 'e',
+        'left' => array(
+          'type' => 'column',
+          'value' => 'listId',
         ),
-        array(
-
+        'right' => array(
+          'type' => 'column',
+          'value' => 'wlistId',
+        ),
+      ),
+      array(
+        'type' => 'in',
+        'left' => array(
+          'type' => 'column',
+          'value' => 'severity',
+        ),
+        'right' => array(
+          'type' => 'array',
+          'value' => array(
+            'warn',
+            'confirm',
+            'block',
+          ),
         ),
       ),
     ),
   )
 );
+$words = $words->getAsArray('word');
 
 if ($words) {
   ($hook = hook('sendMessage_censor_start') ? eval($hook) : '');
@@ -125,7 +152,7 @@ if ($words) {
   }
 
   if ($searchText) {
-    preg_match('/(' . implode('|',$searchText) . ')/i',$message,$matches);
+    preg_match('/(' . implode('|',$searchText) . ')/i',$request['message'],$matches);
     if ($matches[1]) {
       $blockedWord = strtolower($matches[1]);
       $blockedWordText = $words[$blockedWord]['word'];
@@ -138,18 +165,20 @@ if ($words) {
 }
 
 
+
 ($hook = hook('sendMessage_preGen') ? eval($hook) : '');
+
 
 if ($continue) {
   if (!$room) { // Bad room.
     $errStr = 'badroom';
     $errDesc = 'That room could not be found.';
   }
-  elseif (strlen($message) == 0 || strlen($message) > 1000) { // Too short/long.
+  elseif (strlen($request['message']) == 0 || strlen($request['message']) > (isset($config['maxMessageLength']) ? $config['maxMessageLength'] : 1000)) { // Too short/long.
     $errStr = 'badmessage';
     $errDesc = 'The message you entered is either too long or too short.';
   }
-  elseif (preg_match('/^(\ |\n|\r)*$/',$message)) { // All spaces.
+  elseif (preg_match('/^(\ |\n|\r)*$/',$request['message'])) { // All spaces.
     $errStr = 'spacemessage';
     $errDesc = 'In some countries, you could be arrested for posting only spaces. Now aren\'t you glad we stopped you?';
   }
@@ -173,16 +202,16 @@ if ($continue) {
     $blockWordApi['word'] = $blockedWordText;
     $blockWordApi['reason'] = $blockedWordReason;
   }
-  elseif (strpos($message, '/topic') === 0 && !$disableTopic) {
-    $topic = preg_replace('/^\/topic (.+?)$/i','$1',$message);
+  elseif (strpos($request['message'], '/topic') === 0 && !$disableTopic) {
+    $topic = preg_replace('/^\/topic (.+?)$/i','$1',$request['message']);
 
-    $topic = dbEscape(fimParse_censorParse($topic)); // Parses the sources for MySQL and UTF8. We will also censor, but no BBcode.
+    $topic = fimParse_censorParse($topic); // Parses the sources for MySQL and UTF8. We will also censor, but no BBcode.
 
     fim_sendMessage('/me changed the topic to ' . $topic,$user,$room,'topic');
     dbQuery("UPDATE {$sqlPrefix}rooms SET roomTopic = '$topic' WHERE roomId = $room[roomId]");
   }/*
-  elseif (strpos($message, '/kick') === 0) {
-    $kickData = preg_replace('/^\/kick (.+?)(| ([0-9]+?))$/i','$1,$2',$message);
+  elseif (strpos($request['message'], '/kick') === 0) {
+    $kickData = preg_replace('/^\/kick (.+?)(| ([0-9]+?))$/i','$1,$2',$request['message']);
     $kickData = explode(',',$kickData);
 
     $userData =
@@ -200,11 +229,11 @@ if ($continue) {
     fclose($fp);
   }*/
   else {
-    if (strpos($message, '/me') === 0) {
+    if (strpos($request['message'], '/me') === 0) {
       $flag = 'me';
     }
 
-    fim_sendMessage($message,$user,$room,$flag);
+    fim_sendMessage($request['message'],$user,$room,$flag);
   }
 }
 

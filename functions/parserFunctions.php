@@ -149,9 +149,9 @@ function fimParse_htmlParse($text,$bbcodeLevel = 1) {
 function fimParse_censorParse($text,$roomId = 0) {
   global $sqlPrefix, $slaveDatabase;
 
-  $words = dbRows("SELECT w.word, w.severity, w.param, l.listId AS listId
+/*  $words = dbRows("SELECT w.word, w.severity, w.param, l.listId AS listId
 FROM {$sqlPrefix}censorLists AS l, {$sqlPrefix}censorWords AS w
-WHERE w.listId = l.listId AND w.severity = 'replace'",'word');
+WHERE w.listId = l.listId AND w.severity = 'replace'",'word');*/
 
   $words = $slaveDatabase(
     array(
@@ -206,17 +206,19 @@ WHERE w.listId = l.listId AND w.severity = 'replace'",'word');
       ),
       array(
         'both' => array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'roomId',
-          ),
-          'right' => array(
-            'type' => 'int',
-            'value' => (int) $roomId,
+          array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'roomId',
+            ),
+            'right' => array(
+              'type' => 'int',
+              'value' => (int) $roomId,
+            ),
           ),
         ),
-      ),
+      )
     );
     $listsActive->getAsArray();
 
@@ -267,9 +269,11 @@ function fimParse_smilieParse($text) {
 
   switch($loginMethod) {
     case 'vbulletin':
-    $smilies = dbRows("SELECT smilietext, smiliepath, smilieid FROM {$forumTablePrefix}smilie",'smilieid');
+//    $smilies = dbRows("SELECT smilietext, smiliepath, smilieid FROM {$forumTablePrefix}smilie",'smilieid');
 
-    if (!$smilies) return $text;
+    if (!$smilies) {
+      return $text;
+    }
 
     foreach ($smilies AS $id => $smilie) {
       $smilies2[strtolower($smilie['smilietext'])] = $smilie['smiliepath'];
@@ -280,9 +284,11 @@ function fimParse_smilieParse($text) {
      break;
 
     case 'phpbb':
-    $smilies = dbRows("SELECT code, smiley_url, smiley_id FROM {$forumTablePrefix}smilies",'smiley_id');
+//    $smilies = dbRows("SELECT code, smiley_url, smiley_id FROM {$forumTablePrefix}smilies",'smiley_id');
 
-    if (!$smilies) return $text;
+    if (!$smilies) {
+      return $text;
+    }
 
     foreach ($smilies AS $id => $smilie) {
       $smilies2[strtolower($smilie['code'])] = $smilie['smiley_url'];
@@ -421,7 +427,31 @@ function fim3parse_keyWords($string,$messageId) {
   sort($stringPiecesAdd);
 
   foreach ($stringPiecesAdd AS $piece) {
-    $phraseData = dbRows("SELECT * FROM {$sqlPrefix}searchPhrases WHERE phraseName = '" . dbEscape($piece) . "'");
+    $phraseData = $database->select(
+      array(
+        "{$sqlPrefix}searchPhrases" => array(
+          'phraseName' => 'phraseName',
+        ),
+      ),
+      array(
+        'both' => array(
+          array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'phraseName',
+            ),
+            'right' => array(
+              'type' => 'string',
+              'value' => $piece,
+            ),
+          ),
+        ),
+      )
+    );
+    $phraseData = $phraseData->getAsArray(false);
+
+
 
     if (!$phraseData) {
       $database->insert(array(
