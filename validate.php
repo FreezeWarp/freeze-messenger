@@ -39,7 +39,7 @@ require_once('global.php');
 
 ///* Some Pre-Stuff *///
 
-require_once('functions/loginReqs.php');
+require('functions/loginReqs.php');
 
 
 static $api, $goodVersion;
@@ -50,11 +50,6 @@ $userName = '';
 $password = '';
 $sessionHash = '';
 $session = '';
-
-
-if (!isset($cookiePrefix)) {
-  $cookiePrefix = 'fim3_';
-}
 
 
 
@@ -114,23 +109,17 @@ if (isset($_POST['userName'],$_POST['password'])) { // API.
   $api = true;
 }
 
-elseif (isset($_GET['fim3_sessionHash'])) { // Session hash defined via sent data.
-  $sessionHash = $_GET['fim3_sessionHash'];
+elseif (isset($_REQUEST['fim3_sessionHash'])) { // Session hash defined via sent data.
+  $sessionHash = $_REQUEST['fim3_sessionHash'];
 
-  $userIdComp = $_GET['fim3_userId'];
-}
-
-elseif (isset($_POST['fim3_sessionHash'])) { // Session hash defined via sent data.
-  $sessionHash = $_POST['fim3_sessionHash'];
-
-  $userIdComp = $_POST['fim3_userId'];
+  $userIdComp = $_REQUEST['fim3_userId'];
 
   if (isset($_POST['apiLogin'])) {
     $api = true;
   }
 }
 
-elseif ((int) $anonymousUser >= 1 && isset($_POST['apiLogin'])) { // Unregistered user support.
+elseif ((int) $anonymousUser >= 1 && isset($_REQUEST['apiLogin'])) { // Unregistered user support.
   $userId = $anonymousUser;
   $anonymous = true;
   $api = true;
@@ -322,29 +311,27 @@ $queryParts['userSelectFromUserId']['conditions'] = array(
   ),
 );
 $queryParts['userSelectFromSessionHash']['conditions'] = array(
-  array( // Conditions
-    'both' => array(
-      array(
-        'type' => 'e',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'userId',
-        ),
-        'right' => array(
-          'type' => 'column',
-          'value' => 'suserId',
-        ),
+  'both' => array(
+    array(
+      'type' => 'e',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'userId',
       ),
-      array(
-        'type' => 'e',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'magicHash',
-        ),
-        'right' => array(
-          'type' => 'string',
-          'value' => $sessionHash,
-        ),
+      'right' => array(
+        'type' => 'column',
+        'value' => 'suserId',
+      ),
+    ),
+    array(
+      'type' => 'e',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'magicHash',
+      ),
+      'right' => array(
+        'type' => 'string',
+        'value' => $sessionHash,
       ),
     ),
   ),
@@ -361,7 +348,7 @@ $queryParts['userSelectFromSessionHash']['conditions'] = array(
 
 ///* Generate Proper Table Names for Integration *///
 
-if (isset($tableDefinitions['user'][$loginConfig['method']])) {
+if (isset($tableDefinitions['users'][$loginConfig['method']])) {
   $sqlUserTable = $forumTablePrefix . $tableDefinitions['users'][$loginConfig['method']];
   $sqlAdminGroupTable = $forumTablePrefix . $tableDefinitions['adminGroups'][$loginConfig['method']];
   $sqlUserGroupTable = $forumTablePrefix . $tableDefinitions['socialGroups'][$loginConfig['method']];
@@ -383,13 +370,13 @@ else {
 
 ///* Process Login Data *///
 
-if (isset($sessionHash)) {
+if (strlen($sessionHash) > 0) {
   $user = $database->select(
     array( // Columns
       "{$sqlPrefix}users" => $queryParts['userSelect']['columns']["{$sqlPrefix}users"],
       "{$sqlPrefix}sessions" => $queryParts['userSelectFromSessionHash']['columns']["{$sqlPrefix}sessions"]
     ),
-    $queryParts['userSelectFromSessionHash']['conditions'],
+    $queryParts['userSelectFromSessionHash']['conditions']
   );
   $user = $user->getAsArray(false);
 
@@ -618,8 +605,8 @@ if ($valid) { // If the user is valid, process their preferrences.
 
       $user2['userFormatStart'] = $group[$sqlAdminGroupTableCols['startTag']];
       $user2['userFormatEnd'] = $group[$sqlAdminGroupTableCols['endTag']];
-      $user2['avatar'] = $forumUrl . '/image.php?u=' . $user2['userId'];
-      $user2['profile'] = $forumUrl . '/member.php?u=' . $user2['userId'];
+      $user2['avatar'] = $loginConfig['url'] . '/image.php?u=' . $user2['userId'];
+      $user2['profile'] = $loginConfig['url'] . '/member.php?u=' . $user2['userId'];
       break;
 
 
@@ -648,10 +635,10 @@ if ($valid) { // If the user is valid, process their preferrences.
 
 
       if ($user2['avatar']) {
-        $user2['avatar'] = $forumUrl . 'download/file.php?avatar=' . $user2['avatar'];
+        $user2['avatar'] = $loginConfig['url'] . 'download/file.php?avatar=' . $user2['avatar'];
       }
 
-      $user2['profile'] = $forumUrl . 'memberlist.php?mode=viewprofile&u=' . $user2['userId'];
+      $user2['profile'] = $loginConfig['url'] . 'memberlist.php?mode=viewprofile&u=' . $user2['userId'];
       break;
 
     }
@@ -660,17 +647,17 @@ if ($valid) { // If the user is valid, process their preferrences.
     ($hook = hook('validate_preprefs') ? eval($hook) : '');
 
 
-    $userprefs = $integrationDatabase->select(
+    $userPrefs = $integrationDatabase->select(
       $queryParts['userSelect']['columns'],
       $queryParts['userPrefsSelect']['conditions'],
       false,
       false,
       1
     );
-    $userprefs = $userprefs->getAsArray(false);
+    $userPrefs = $userPrefs->getAsArray(false);
 
 
-    if (!$userprefs) {
+    if (!$userPrefs) {
 
       /* Generate Default User Permissions */
       $priviledges = 16; // Can post
@@ -707,14 +694,14 @@ if ($valid) { // If the user is valid, process their preferrences.
 
 
       /* Re-Obtain the User Settings */
-      $userprefs = $integrationDatabase->select(
+      $userPrefs = $integrationDatabase->select(
         $queryParts['userSelect']['columns'],
         $queryParts['userPrefsSelect']['conditions'],
         false,
         false,
         1
       );
-      $userprefs = $userprefs->getAsArray(false);
+      $userPrefs = $userPrefs->getAsArray(false);
 
 
 
@@ -745,11 +732,11 @@ if ($valid) { // If the user is valid, process their preferrences.
       ));
     }
 
-    elseif ($userprefs['lastSync'] <= (time() - ($sync ? $sync : (0)))) { // This updates various caches every so often. In general, it is a rather slow process, and as such does tend to take a rather long time (that is, compared to normal - it won't exceed 500miliseconds, really).
+    elseif ($userPrefs['lastSync'] <= (time() - (isset($config['userSyncThreshold']) ? $config['userSyncThreshold'] : 0))) { // This updates various caches every so often. In general, it is a rather slow process, and as such does tend to take a rather long time (that is, compared to normal - it won't exceed 500miliseconds, really).
 
       /* Favourite Room Cleanup
       * Remove all favourite groups a user is no longer a part of. */
-      if (strlen($user['favRooms']) > 0) {
+      if (strlen($userPrefs['favRooms']) > 0) {
         $favRooms = $database->select(
           array(
             'roomId',
@@ -780,11 +767,11 @@ if ($valid) { // If the user is valid, process their preferrences.
                 ),
                 'right' => array(
                   'type' => 'array',
-                  'value' => fim_arrayValidate($user['favRooms'],'int',false),
+                  'value' => fim_arrayValidate($userPrefs['favRooms'],'int',false),
                 ),
               ),
             ),
-          ),
+          )
         );
         $favRooms = $favRooms->getAsArray('roomId');
 
@@ -794,8 +781,8 @@ if ($valid) { // If the user is valid, process their preferrences.
             foreach ($favRooms AS $roomId => $room) {
               eval(hook('templateFavRoomsEachStart'));
 
-              if (!fim_hasPermission($room,$user,'view')) {
-                $currentRooms = fim_arrayValidate(explode(',',$user['favRooms']),'int',false);
+              if (!fim_hasPermission($room,$userPrefs,'view')) {
+                $currentRooms = fim_arrayValidate(explode(',',$userPrefs['favRooms']),'int',false);
 
                 foreach ($currentRooms as $room2) {
                   if ($room2 != $room['roomId']) { // Rebuild the array without the room ID.
@@ -811,7 +798,7 @@ if ($valid) { // If the user is valid, process their preferrences.
               ),
               "{$sqlPrefix}users",
               array(
-                'userId' => $user['userId'],
+                'userId' => $userPrefs['userId'],
               ));
             }
 
@@ -850,17 +837,17 @@ if ($valid) { // If the user is valid, process their preferrences.
     }
 
 
-    $userprefs = $integrationDatabase->select(
+    $userPrefs = $integrationDatabase->select(
       $queryParts['userSelect']['columns'],
       $queryParts['userPrefsSelect']['conditions'],
       false,
       false,
       1
     );
-    $userprefs = $userprefs->getAsArray(false);
+    $userPrefs = $userPrefs->getAsArray(false);
 
-    $user = array_merge($user2,$userprefs); // Merge userprefs into user for future referrence.
 
+    $user = $userPrefs; // Set user to userPrefs.
   }
   else {
     die('Login Subsystem Unconfigured');

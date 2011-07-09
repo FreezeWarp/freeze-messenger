@@ -37,6 +37,7 @@ $errStr = '';
 $errDesc = '';
 $templates = array();
 $templateVars = array();
+$config = array(); // Database configuration for the future. Plugins can fill the gaps right now, though.
 
 define("FIM_VERSION","3.0"); // Version to be used by plugins if needed.
 define("DB_BACKEND","MYSQL"); // Database backend to be used by plugins if needed; in the future other backends will be supported, and if the defined database class for whatever reason won't do, this can be used to also support others. At present, PostGreSQL is the only for-sure future backend to be supported. Definite values, if they are to be supported: "MSSQL", "ORACLE", "POSTGRESQL"
