@@ -520,9 +520,10 @@ function rgb2html($r, $g = false, $b = false) {
 
 function fim_date($format,$timestamp = false) {
   global $user;
+
   $timestamp = ($timestamp ?: time());
 
-  $hourdiff = (date('Z', $timestamp) / 3600 - $user['timezoneoffset']) * 3600;
+  $hourdiff = ((date('Z', $timestamp) / 3600) - (isset($user['timeZone']) ? $user['timeZone'] : 0)) * 3600;
 
   $timestamp_adjusted = $timestamp - $hourdiff;
 

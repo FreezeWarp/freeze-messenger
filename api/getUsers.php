@@ -27,8 +27,6 @@
 
 $apiRequest = true;
 
-static $usersArray, $reverseOrder;
-
 require_once('../global.php');
 
 
@@ -97,6 +95,8 @@ $users = $slaveDatabase->select(
       'defaultFontface' => 'defaultFontface',
       'defaultFormatting' => 'defaultFormatting',
       'favRooms' => 'favRooms',
+      'ignoreList' => 'ignoreList',
+      'userGroup' => 'userGroup',
     ),
   ),
   false,
@@ -109,91 +109,114 @@ $users = $users->getAsArray();
 
 
 /* Start Processing */
-if ($users) {
-  foreach ($users AS $userData) {
-    ($hook = hook('getUsers_eachUser_start') ? eval($hook) : '');
+if (is_array($users)) {
+  if (count($users) > 0) {
+    foreach ($users AS $userData) {
+      ($hook = hook('getUsers_eachUser_start') ? eval($hook) : '');
 
 
-    switch ($loginMethod) {
-      case 'vbulletin':
-      $userDataForums = $integrationDatabase->select(
-        array(
-          $sqlUserTable => array(
-            'joindate' => 'joinDate',
+      switch ($loginConfig['method']) {
+        case 'vbulletin':
+        $userDataForums = $integrationDatabase->select(
+          array(
+            $sqlUserTable => array(
+              'joindate' => 'joinDate',
+              'posts' => 'posts',
+              'usertitle' => 'userTitle',
+              'lastvisit' => 'lastVisit',
+              $sqlUserTableCols['userId'] => 'userId',
+            ),
           ),
+          array(
+            'both' => array(
+              array(
+                'type' => 'e',
+                'left' => array(
+                  'type' => 'column',
+                  'value' => 'userId',
+                ),
+                'right' => array(
+                  'type' => 'int',
+                  'value' => (int) $userData['userId'],
+                ),
+              ),
+            ),
+          )
+        );
+        $userDataForums = $userDataForums->getAsArray(false);
+        break;
+
+        case 'phpbb':
+        $userDataForums = $integrationDatabase->select(
+          array(
+            $sqlUserTable => array(
+              'user_posts' => 'posts',
+              'user_regdate' => 'joinDate',
+              $sqlUserTableCols['userId'] => 'userId',
+            ),
+          ),
+          array(
+            'both' => array(
+              array(
+                'type' => 'e',
+                'left' => array(
+                  'type' => 'column',
+                  'value' => 'userId',
+                ),
+                'right' => array(
+                  'type' => 'int',
+                  'value' => (int) $userData['userId'],
+                ),
+              ),
+            ),
+          )
+        );
+        $userDataForums = $userDataForums->getAsArray(false);
+        break;
+
+        case 'vanilla':
+        $userDataForums = array(
+          'joinDate' => false,
+          'posts' => false,
+        );
+        break;
+
+        default:
+        $userDataForums = array();
+        break;
+      }
+
+
+      ($hook = hook('getUsers_eachUser_postForums') ? eval($hook) : '');
+
+
+      $xmlData['getUsers']['users']['user ' . $userData['userId']] = array(
+        'userName' => ($userData['userName']),
+        'userId' => (int) $userData['userId'],
+        'userGroup' => (int) $userData['userGroup'],
+        'avatar' => ($userData['avatar']),
+        'profile' => ($userData['profile']),
+        'socialGroups' => ($userData['socialGroups']),
+        'startTag' => ($userData['userFormatStart']),
+        'endTag' => ($userData['userFormatEnd']),
+        'defaultFormatting' => array(
+          'color' => ($userData['defaultColor']),
+          'highlight' => ($userData['defaultHighlight']),
+          'fontface' => ($userData['defaultFontface']),
+          'general' => (int) $userData['defaultFormatting']
         ),
-        array(
-          'both' => array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => $sqlUserTableCols['userId']
-            ),
-            'right' => array(
-              'type' => 'int',
-              'value' => (int) $userData['userId'],
-            ),
-          ),
-        )
+        'ignoreList' => ($userData['ignoreList']),
+        'favRooms' => ($userData['favRooms']),
+        'postCount' => (int) $userDataForums['posts'],
+        'joinDate' => (int) $userDataForums['joinDate'],
+        'joinDateFormatted' => (fim_date(false,$userDataForums['joinDate'])),
+        'userTitle' => (isset($userDataForums['userTitle']) ? $userDataForums['userTitle'] :
+          (isset($config['defaultUserTitle']) ? $config['defaultUserTitle'] :  '')),
       );
-      $userDataForums = $userDataForums->getAsArray();
-      break;
 
-      case 'phpbb':
-      $userDataForums = $integrationDatabase->select(
-        array(
-          $sqlUserTable => array(
-            'user_posts' => 'posts',
-            'user_regdate' => 'joinDate',
-          ),
-        ),
-        array(
-          'both' => array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => $sqlUserTableCols['userId']
-            ),
-            'right' => array(
-              'type' => 'int',
-              'value' => (int) $userData['userId'],
-            ),
-          ),
-        )
-      );
-      $userDataForums = $userDataForums->getAsArray();
-      break;
+
+      ($hook = hook('getUsers_eachUser_end') ? eval($hook) : '');
     }
-
-
-    ($hook = hook('getUsers_eachUser_postForums') ? eval($hook) : '');
-
-
-    $xmlData['getUsers']['users']['user ' . $userData['userId']] = array(
-      'userName' => ($userData['userName']),
-      'userId' => (int) $userData['userId'],
-      'userGroup' => (int) $userData['userGroup'],
-      'avatar' => ($userData['avatar']),
-      'profile' => ($userData['profile']),
-      'socialGroups' => ($userData['socialGroups']),
-      'startTag' => ($userData['userFormatStart']),
-      'endTag' => ($userData['userFormatEnd']),
-      'defaultFormatting' => array(
-        'color' => ($userData['defaultColor']),
-        'highlight' => ($userData['defaultHighlight']),
-        'fontface' => ($userData['defaultFontface']),
-        'general' => (int) $userData['defaultFormatting']
-      ),
-      'ignoreList' => ($userData['ignoreList']),
-      'favRooms' => ($userData['favRooms']),
-      'postCount' => (int) $userDataForums['posts'],
-      'joinDate' => (int) $userDataForums['joinDate'],
-      'joinDateFormatted' => (fim_date(false,$userDataForums['joinDate'])),
-      'userTitle' => ($userDataForums['usertitle']),
-    );
-
-
-    ($hook = hook('getUsers_eachUser_end') ? eval($hook) : '');
   }
 }
 

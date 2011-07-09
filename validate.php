@@ -45,6 +45,7 @@ require('functions/loginReqs.php');
 static $api, $goodVersion;
 
 $banned = false;
+$anonymous = false;
 $userId = 0;
 $userName = '';
 $password = '';
@@ -541,7 +542,7 @@ if ($valid) { // If the user is valid, process their preferrences.
         $sqlMemberGroupTableCols['groupId'] => array(
           'context' => 'join',
           'name' => 'groups',
-          'seperator' => ',',
+          'separator' => ',',
         ),
         $sqlMemberGroupTableCols['userId'] => 'userId',
         $sqlMemberGroupTableCols['type'] => 'groupType',
@@ -739,12 +740,15 @@ if ($valid) { // If the user is valid, process their preferrences.
       if (strlen($userPrefs['favRooms']) > 0) {
         $favRooms = $database->select(
           array(
-            'roomId',
-            'roomName',
-            'owner',
-            'allowedUsers',
-            'allowedGroups',
-            'moderators',
+            "{$sqlPrefix}rooms" => array(
+              'roomId' => 'roomId',
+              'roomName' => 'roomName',
+              'owner' => 'owner',
+              'allowedUsers' => 'allowedUsers',
+              'allowedGroups' => 'allowedGroups',
+              'moderators' => 'moderators',
+              'options' => 'options',
+            ),
           ),
           array(
             'both' => array(

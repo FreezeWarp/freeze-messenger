@@ -106,47 +106,52 @@ class database {
     if (is_array($columns)) {
       if (count($columns) > 0) {
         foreach ($columns AS $tableName => $tableCols) {
-          if (strstr($tableName,' ') !== false) { // A space can be used to create a table alias, which is sometimes required for different queries.
-            $tableParts = explode(' ',$tableName);
+          if (strlen($tableName) > 0) {
+            if (strstr($tableName,' ') !== false) { // A space can be used to create a table alias, which is sometimes required for different queries.
+              $tableParts = explode(' ',$tableName);
 
-            $finalQuery['tables'][] = "`$tableParts[0]` AS $tableParts[1]";
+              $finalQuery['tables'][] = "`$tableParts[0]` AS $tableParts[1]";
 
-            $tableName = $tableParts[1];
-          }
-          else {
-            $finalQuery['tables'][] = "`$tableName`";
-          }
+              $tableName = $tableParts[1];
+            }
+            else {
+              $finalQuery['tables'][] = "`$tableName`";
+            }
 
-          foreach($tableCols AS $colName => $colAlias) {
-            if (is_array($colAlias)) { // Used for advance structures and function calls.
-              if (isset($colAlias['context'])) {
-                switch($colAlias['context']) {
-                  case 'time':
-                  $colName = "UNIX_TIMESTAMP(`$tableName`.`$colName`)";
-                  break;
-                  case 'join':
-                  $colName = "GROUP_CONCAT(`$tableName`.`$colName` SEPARATOR $colAlias[separator])";
-                  break;
+            foreach($tableCols AS $colName => $colAlias) {
+              if (is_array($colAlias)) { // Used for advance structures and function calls.
+                if (isset($colAlias['context'])) {
+                  switch($colAlias['context']) {
+                    case 'time':
+                    $colName = "UNIX_TIMESTAMP(`$tableName`.`$colName`)";
+                    break;
+                    case 'join':
+                    $colName = "GROUP_CONCAT(`$tableName`.`$colName` SEPARATOR '$colAlias[separator]')";
+                    break;
+                  }
                 }
+
+                $finalQuery['columns'][] = "$colName AS $colAlias[name]";
+                $reverseAlias[$colAlias['name']] = $colName;
               }
 
-              $finalQuery['columns'][] = "$colName AS $colAlias[name]";
-              $reverseAlias[$colAlias['name']] = $colName;
+              else {
+                $finalQuery['columns'][] = "`$tableName`.`$colName` AS $colAlias";
+                $reverseAlias[$colAlias] = "`$tableName`.`$colName`";
+              }
             }
-
-            else {
-              $finalQuery['columns'][] = "`$tableName`.`$colName` AS $colAlias";
-              $reverseAlias[$colAlias] = "`$tableName`.`$colName`";
-            }
+          }
+          else {
+            throw new Exception('Invalid select array: table name empty'); // Throw an exception.
           }
         }
       }
       else {
-        throw new Exception('Invalid array'); // Throw an exception.
+        throw new Exception('Invalid select array: no entries'); // Throw an exception.
       }
     }
     else {
-      throw new Exception('Invalid array'); // Throw an exception.
+      throw new Exception('Invalid select array'); // Throw an exception.
     }
 
 
@@ -269,7 +274,7 @@ GROUP BY
 
               case 'array': // Used for IN clauses, mainly.
               if (is_array($data[$side])) {
-                if (count($data[$side]) > 0) {
+                if (count($data[$side]['value']) > 0) {
                   $sideText[$side] = "(" . implode(',',$data[$side]['value']) . ")";
                 }
               }

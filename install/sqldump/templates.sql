@@ -40,15 +40,6 @@ INSERT INTO `{prefix}templates` (`templateId`, `templateName`, `vars`, `data`) V
   <meta name="description" content="{{if="$phrases[''brandingDescription'']"}{$phrases[brandingDescription]}{FreezeMessenger-powered chat program.}}" />
   {{if="$phrases[''brandingFavicon'']"}{<link rel="icon" id="favicon" type="image/png" href="$phrases[brandingFavicon]" />}}
 
-  {{if="$layout == ''alt''"}{<style>
-    #menu { display: none; width: 0px; }
-    #messageListContainer { float: right; width: 50%; }
-    #textentryBoxMessage { float: left; width: 50%; }
-    #content { width: 100%; }</style>}}
-
-  <!-- END Styles -->
-
-
 
   <!-- START Scripts -->
 

@@ -677,7 +677,7 @@ function populate(options) {
         return false;
       }
     })
-  ).done(function() {
+  ).then(function() {
       if (typeof options.callback === 'function') {
         options.callback();
       }
@@ -969,7 +969,7 @@ var standard = {
 
 
 
-  login : function(options) { console.log(options);
+  login : function(options) {
     console.log('Login Initiated');
     var data = '',
       passwordEncrypt = '',
