@@ -462,7 +462,7 @@ if (is_array($request['rooms'])) {
 
 
       /* Modify Query Data for Directives */
-      if ($request['messageDateMax']) {
+      if ($request['messageIdMax']) {
         $queryParts['messagesSelect']['conditions']['both'][] = array(
           'type' => 'lt',
           'left' => array(
@@ -471,11 +471,11 @@ if (is_array($request['rooms'])) {
           ),
           'right' => array(
             'type' => 'int',
-            'value' => (int) $request['messageDateMax'],
+            'value' => (int) $request['messageIdMax'],
           ),
         );
       }
-      if ($request['messageDateMin']) {
+      if ($request['messageIdMin']) {
         $queryParts['messagesSelect']['conditions']['both'][] = array(
           'type' => 'gt',
           'left' => array(
@@ -484,7 +484,7 @@ if (is_array($request['rooms'])) {
           ),
           'right' => array(
             'type' => 'int',
-            'value' => (int) $request['messageDateMin'],
+            'value' => (int) $request['messageIdMin'],
           ),
         );
       }
@@ -499,7 +499,7 @@ if (is_array($request['rooms'])) {
           ),
           'right' => array(
             'type' => 'int',
-            'value' => (int) $request['messageDateMax'],'CURRENT_TIMESTAMP()',
+            'value' => (int) $request['messageDateMax'],
           ),
         );
       }
@@ -945,6 +945,7 @@ if ($request['watchRooms']) {
             'left' => array(
               'type' => 'column',
               'value' => 'time',
+              'context' => 'time',
             ),
             'right' => array(
               'type' => 'equation',

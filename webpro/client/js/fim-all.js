@@ -677,7 +677,7 @@ function populate(options) {
         return false;
       }
     })
-  ).then(function() {
+  ).then(function() { console.log(1);
       if (typeof options.callback === 'function') {
         options.callback();
       }

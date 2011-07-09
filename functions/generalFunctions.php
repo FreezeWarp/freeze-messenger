@@ -137,12 +137,57 @@ function fim_hasPermission($roomData,$userData,$type = 'post',$quick = false) {
   /* Get the User's Kick Status */
   if (isset($userData['userId'])) {
     if ($userData['userId'] > 0) {
-      $kick = dbRows("SELECT UNIX_TIMESTAMP(k.time) AS kickedOn,
-      UNIX_TIMESTAMP(k.time) + k.length AS expiresOn
-    FROM {$sqlPrefix}kick AS k
-    WHERE userId = $userData[userId] AND
-      roomId = $roomData[roomId] AND
-      UNIX_TIMESTAMP(NOW()) <= (UNIX_TIMESTAMP(time) + length)");
+      $kick = $database->select(
+        array(
+          "{$sqlPrefix}kick" => array(
+            'time' => array(
+              'context' => 'time',
+              'name' => 'kickedOn',
+            ),
+            'userId' => 'userId',
+            'roomid' => 'roomId',
+            'length' => 'length',
+          ),
+        ),
+        array(
+          'both' => array(
+            array(
+              'type' => 'gt',
+              'left' => array(
+                'type' => 'equation',
+                'value' => '$kickedOn + $length',
+              ),
+              'right' => array(
+                'type' => 'int',
+                'value' => (int) time(),
+              ),
+            ),
+            array(
+              'type' => 'e',
+              'left' => array(
+                'type' => 'column',
+                'value' => 'userId',
+              ),
+              'right' => array(
+                'type' => 'int',
+                'value' => (int) $userData['userId'],
+              ),
+            ),
+            array(
+              'type' => 'e',
+              'left' => array(
+                'type' => 'column',
+                'value' => 'roomId',
+              ),
+              'right' => array(
+                'type' => 'int',
+                'value' => (int) $roomData['roomId'],
+              ),
+            ),
+          ),
+        )
+      );
+      $kick = $kick->getAsArray(false);
     }
   }
 
