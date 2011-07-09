@@ -30,13 +30,60 @@ $apiRequest = true;
 require_once('../global.php');
 require_once('../functions/parserFunctions.php');
 
-$message = fim_urldecode($_POST['message']);
 
-$roomId = (int) $_POST['roomId'];
-$room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
-$ip = dbEscape($_SERVER['REMOTE_ADDR']); // Get the IP address of the user.
 
-$flag = $_POST['flag'];
+/* Get Request Data */
+$request = fim_sanitizeGPC(array(
+  'post' => array(
+    'roomId' => array(
+      'type' => 'int',
+      'require' => true,
+      'context' => array(
+         'type' => 'int',
+         'evaltrue' => true,
+      ),
+    ),
+    'message' => array(
+      'type' => 'string',
+      'require' => false,
+    ),
+    'flag' => array(
+      'type' => 'string',
+      'require' => false,
+    ),
+  ),
+));
+$ip = $_SERVER['REMOTE_ADDR']; // Get the IP address of the user.
+
+$room = $database->select(
+  array( // Columns
+    "{$sqlPrefix}rooms" => array(
+      'roomId' => 'roomId',
+      'roomName' => 'roomName',
+      'options' => 'options',
+      'allowedUsers' => 'allowedUsers',
+      'allowedGroups' => 'allowedGroups',
+      'moderators' => 'moderators',
+      'owner' => 'owner',
+      'bbcode' => 'bbcode',
+      'roomTopic' => 'roomTopic',
+    )
+  ),
+  array(
+    'both' => array(
+      'type' => 'e',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'roomId',
+      ),
+      'right' => array(
+        'type' => 'int',
+        'value' => (int) $request['roomId'],
+      ),
+    ),
+  )
+);
+$room = $room->getAsArray(false);
 
 ($hook = hook('sendMessage_start') ? eval($hook) : '');
 
@@ -44,6 +91,27 @@ $flag = $_POST['flag'];
 $words = dbRows("SELECT w.word, w.severity, w.param
 FROM {$sqlPrefix}censorLists AS l, {$sqlPrefix}censorWords AS w
 WHERE w.listId = l.listId AND (w.severity = 'warn' OR w.severity = 'confirm' OR w.severity = 'block')",'word');
+
+$words = $slaveDatabase->select(
+  array(
+
+  ),
+  array(
+    'both' => array(
+      array(
+
+      ),
+      'either' => array(
+        array(
+
+        ),
+        array(
+
+        ),
+      ),
+    ),
+  )
+);
 
 if ($words) {
   ($hook = hook('sendMessage_censor_start') ? eval($hook) : '');

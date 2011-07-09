@@ -283,6 +283,14 @@ GROUP BY
               }
               break;
 
+              case 'regexp': // Whatever Note: This will eventually be implemented server-side where not supported. That said, support is in PostgreSQL
+              $sideText[$side] = '"' . $data[$side]['value'] . '"';
+              break;
+
+              case 'equation':
+              $sideText[$side] = preg_replace('/\$([a-zA-Z\_]+)/e','$reverseAlias[\'\\1\']',$data[$side]['value']);
+              break;
+
               case 'column':
               if (isset($data[$side]['context'])) {
                 switch ($data[$side]['context']) {
@@ -317,8 +325,9 @@ GROUP BY
             case 'gt': $symbol = '>'; break;
             case 'lte': $symbol = '<='; break;
             case 'gte': $symbol = '>='; break;
-            case 'in': $symbol = 'IN'; break;
             case 'bitwise': $symbol = '&'; break;
+            case 'in': $symbol = 'IN'; break;
+            case 'regexp': $symbol = 'REGEXP'; break;
           }
 
 
@@ -328,6 +337,7 @@ GROUP BY
           }
           else {
             $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
+            trigger_error('Query nullified; data: ' . print_r($data,true),E_USER_WARNING);
           }
         }
       }
@@ -335,13 +345,14 @@ GROUP BY
       switch($type) {
         case 'both': $condSymbol = ' AND '; break;
         case 'either': $condSymbol = ' OR '; break;
-        default: $condSymbol = ' AND '; break; // We may wish to throw an exception instead.
+        default: throw new Exception('Unrecognized condition join type: ' . $type); break;
       }
 
       $whereText[$h] = implode($condSymbol,$sideTextFull);
     }
 
 
+    // TODO: Rewrite/comment so this makes friggin' sense...
     if (count($whereText) == 1) {
       foreach ($whereText AS $data) { // Yeah, no idea what I did here either...
         $whereText = $data;

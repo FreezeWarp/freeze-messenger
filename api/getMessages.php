@@ -938,22 +938,15 @@ if ($request['watchRooms']) {
           ),
         ),
         array(
-          'type' => 'if',
-          'condition' => 'p.time',
-          'true' => array(
-            'type' => 'gt',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'time',
-              'context' => 'time',
-            ),
-            'right' => array(
-              'type' => 'equation',
-              'value' => '$time + 10',
-            ),
+          'type' => 'gt',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'time',
+            'context' => 'time',
           ),
-          'false' => array(
-            'type' => 'true',
+          'right' => array(
+            'type' => 'equation',
+            'value' => '$time + 10',
           ),
         ),
       ),
