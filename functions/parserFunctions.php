@@ -153,7 +153,7 @@ function fimParse_censorParse($text,$roomId = 0) {
 FROM {$sqlPrefix}censorLists AS l, {$sqlPrefix}censorWords AS w
 WHERE w.listId = l.listId AND w.severity = 'replace'",'word');*/
 
-  $words = $slaveDatabase(
+  $words = $slaveDatabase->select(
     array(
       "{$sqlPrefix}censorLists" => array(
         'listId' => 'llistId',
@@ -417,6 +417,7 @@ function fim3parse_keyWords($string,$messageId) {
 
 
   $stringPieces = array_unique(explode(' ',$string));
+  $stringPiecesAdd = array();
 
   foreach ($stringPieces AS $piece) {
     if (strlen($piece) >= $searchWordLength && !in_array($piece,$searchWordOmissions)) {
@@ -424,51 +425,53 @@ function fim3parse_keyWords($string,$messageId) {
     }
   }
 
-  sort($stringPiecesAdd);
+  if (count($stringPiecesAdd) > 0) {
+    sort($stringPiecesAdd);
 
-  foreach ($stringPiecesAdd AS $piece) {
-    $phraseData = $database->select(
-      array(
-        "{$sqlPrefix}searchPhrases" => array(
-          'phraseName' => 'phraseName',
-        ),
-      ),
-      array(
-        'both' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'phraseName',
-            ),
-            'right' => array(
-              'type' => 'string',
-              'value' => $piece,
-            ),
+    foreach ($stringPiecesAdd AS $piece) {
+      $phraseData = $database->select(
+        array(
+          "{$sqlPrefix}searchPhrases" => array(
+            'phraseName' => 'phraseName',
           ),
         ),
-      )
-    );
-    $phraseData = $phraseData->getAsArray(false);
+        array(
+          'both' => array(
+            array(
+              'type' => 'e',
+              'left' => array(
+                'type' => 'column',
+                'value' => 'phraseName',
+              ),
+              'right' => array(
+                'type' => 'string',
+                'value' => $piece,
+              ),
+            ),
+          ),
+        )
+      );
+      $phraseData = $phraseData->getAsArray(false);
 
 
 
-    if (!$phraseData) {
+      if (!$phraseData) {
+        $database->insert(array(
+          'phraseName' => $piece,
+        ),
+        "{$sqlPrefix}searchPhrases");
+
+        $phraseId = dbInsertId();
+      }
+      else {
+        $phraseId = $phraseData['phraseId'];
+      }
+
       $database->insert(array(
-        'phraseName' => $piece,
-      ),
-      "{$sqlPrefix}searchPhrases");
-
-      $phraseId = dbInsertId();
+        'phraseId' => (int) $phraseId,
+        'messageId' => (int) $messageId,
+      ),"{$sqlPrefix}searchMessages");
     }
-    else {
-      $phraseId = $phraseData['phraseId'];
-    }
-
-    $database->insert(array(
-      'phraseId' => (int) $phraseId,
-      'messageId' => (int) $messageId,
-    ),"{$sqlPrefix}searchMessages");
   }
 }
 
@@ -486,7 +489,7 @@ function fimParse_finalParse($messageText) {
   global $room;
 
   $messageRaw = $messageText; // Parses the sources for MySQL.
-  $messageHtml = nl2br(fimParse_htmlWrap(fimParse_htmlParse(fimParse_censorParse(fim_encodeXml($messageText),$room['id']),$room['options']),80,' ')); // Parses for browser or HTML rendering.
+  $messageHtml = nl2br(fimParse_htmlWrap(fimParse_htmlParse(fimParse_censorParse(fim_encodeXml($messageText),$room['roomId']),$room['options']),80,' ')); // Parses for browser or HTML rendering.
   $messageApi = fimParse_smilieParse($messageText,$room['bbcode']); // Not yet coded, you see.
 
   return array($messageRaw, $messageHtml, $messageApi);
@@ -507,8 +510,6 @@ function fimParse_finalParse($messageText) {
 
 function fim_sendMessage($messageText,$user,$room,$flag = '') {
   global $sqlPrefix, $parseFlags, $salts, $encrypt, $loginMethod, $sqlUserGroupTableCols, $sqlUserGroupTable, $database;
-
-  $ip = dbEscape($_SERVER['REMOTE_ADDR']); // Get the IP address of the user.
 
 
 
@@ -591,8 +592,8 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
     'htmlText' => $messageHtml,
     'apiText' => $messageApi,
     'salt' => $saltNum,
-    'iv' => $iv,
-    'ip' => $ip,
+    'iv' => (isset($iv) ? $iv : ''),
+    'ip' => $_SERVER['REMOTE_ADDR'],
     'flag' => $flag,
   ),"{$sqlPrefix}messages");
   $messageId = dbInsertId();
@@ -621,7 +622,7 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
 
 
   // Delete old messages from the cache; do so depending on the cache limit set in config.php, or default to 100.
-  $cacheTableLimit = ($cacheTableLimit ? $cacheTableLimit : 100);
+  $cacheTableLimit = (isset($config['cacheTableMaxRows']) ? $config['cacheTableMaxRows'] : 100);
   if ($messageId2 > $cacheTableLimit) {
     $database->delete("{$sqlPrefix}messagesCached",
       array('id' => array(

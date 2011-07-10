@@ -93,26 +93,30 @@ $xmlData = array(
   ),
 );
 
-$queryParts['roomSelect']['columns'] = array(
-  "{$sqlPrefix}rooms" => array(
-    'roomId' => 'roomId',
-    'roomName' => 'roomName',
-    'roomTopic' => 'roomTopic',
-    'allowedUsers' => 'allowedUsers',
-    'allowedGroups' => 'allowedGroups',
-    'moderators' => 'moderators',
-  ),
-);
-$queryParts['roomSelect']['conditions'] = array(
-  array(
-    'type' => 'e',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'roomId',
+$queryParts['roomSelect'] = array(
+  'columns' => array(
+    "{$sqlPrefix}rooms" => array(
+      'roomId' => 'roomId',
+      'roomName' => 'roomName',
+      'roomTopic' => 'roomTopic',
+      'allowedUsers' => 'allowedUsers',
+      'allowedGroups' => 'allowedGroups',
+      'moderators' => 'moderators',
     ),
-    'right' => array(
-      'type' => 'int',
-      'value' => (int) $roomId,
+  ),
+  'conditions' => array(
+    'both' => array(
+      array(
+        'type' => 'e',
+        'left' => array(
+          'type' => 'column',
+          'value' => 'roomId',
+        ),
+        'right' => array(
+          'type' => 'int',
+          'value' => (int) $roomId,
+        ),
+      ),
     ),
   ),
 );

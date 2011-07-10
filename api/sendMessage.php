@@ -140,6 +140,16 @@ $words = $slaveDatabase->select(
 );
 $words = $words->getAsArray('word');
 
+$blockedWord = false;
+$blockedWordText = false;
+$blockedWordReason = false;
+$blockedWordSeverity = false;
+$blockWordApi = array(
+  'word' => '',
+  'severity' => '',
+  'reason' => '',
+);
+
 if ($words) {
   ($hook = hook('sendMessage_censor_start') ? eval($hook) : '');
 
@@ -168,7 +178,7 @@ if ($words) {
 
 ($hook = hook('sendMessage_preGen') ? eval($hook) : '');
 
-
+// trigger_error(print_r($user,true),E_USER_NOTICE);
 if ($continue) {
   if (!$room) { // Bad room.
     $errStr = 'badroom';

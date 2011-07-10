@@ -98,24 +98,61 @@ $request = fim_sanitizeGPC(array(
 ));
 
 
+/* Data Predefine */
+$xmlData = array(
+  'getRooms' => array(
+    'activeUser' => array(
+      'userId' => (int) $user['userId'],
+      'userName' => ($user['userName']),
+    ),
+    'errStr' => $errStr,
+    'errDesc' => $errDesc,
+    'rooms' => array(),
+  ),
+);
 
-/* Get User's Favourite Rooms as Array */
-if (isset($user['favRooms'])) {
-  $favRooms = fim_arrayValidate(explode(',',$user['favRooms']),'int',false); // All entries cast as integers, will not preserve entries of zero.
-}
-else {
-  $favRooms = array();
-}
+$queryParts['roomSelect'] = array(
+  'columns' => array(
+    "{$sqlPrefix}rooms" => array(
+      'roomId' => 'roomId',
+      'roomName' => 'roomName',
+      'options' => 'options',
+      'allowedUsers' => 'allowedUsers',
+      'allowedGroups' => 'allowedGroups',
+      'moderators' => 'moderators',
+      'owner' => 'owner',
+      'bbcode' => 'bbcode',
+      'roomTopic' => 'roomTopic',
+    )
+  ),
+  'conditions' => array(
+    'both' => array(
+
+     ),
+  ),
+);
 
 
 
-/* Filter */
+/* Modify Query Data for Directives */
 /*$whereClause = ($request['showDeleted'] ? '' : '(options & 4 = FALSE) AND ');
 if ($rooms) {
   $whereClause .= ' roomId IN (' . implode(',',$roomsArray) . ') AND ';
 }*/
 
-
+if ($request['showDeleted'] !== true) { // We will also check to make sure the user has moderation priviledges after the select.
+  $queryParts['roomSelect']['both'][] = array(
+    'type' => '!bitwise',
+    'left' => array(
+      'type' => 'column',
+      'value' => 'options',
+    ),
+    'right' => array(
+      'type' => 'int',
+      'value' => 4,
+    ),
+  );
+}
 
 /* Query Results Order
  * roomId*, roomName, smart */
@@ -138,18 +175,15 @@ if ($rooms) {
 }*/
 
 
-/* Data Predefine */
-$xmlData = array(
-  'getRooms' => array(
-    'activeUser' => array(
-      'userId' => (int) $user['userId'],
-      'userName' => ($user['userName']),
-    ),
-    'errStr' => $errStr,
-    'errDesc' => $errDesc,
-    'rooms' => array(),
-  ),
-);
+
+/* Get User's Favourite Rooms as Array */
+if (isset($user['favRooms'])) {
+  $favRooms = fim_arrayValidate(explode(',',$user['favRooms']),'int',false); // All entries cast as integers, will not preserve entries of zero.
+}
+else {
+  $favRooms = array();
+}
+
 
 
 /* Plugin Hook Start */
@@ -159,21 +193,10 @@ $xmlData = array(
 
 /* Get Rooms From Database */
 $rooms = $database->select(
-  array( // Columns
-    "{$sqlPrefix}rooms" => array(
-      'roomId' => 'roomId',
-      'roomName' => 'roomName',
-      'options' => 'options',
-      'allowedUsers' => 'allowedUsers',
-      'allowedGroups' => 'allowedGroups',
-      'moderators' => 'moderators',
-      'owner' => 'owner',
-      'bbcode' => 'bbcode',
-      'roomTopic' => 'roomTopic',
-    )
-  )
+  $queryParts['roomSelect']['columns'],
+  $queryParts['roomSelect']['conditions']
 );
-$rooms = $rooms->getAsArray();
+$rooms = $rooms->getAsArray(true);
 
 
 

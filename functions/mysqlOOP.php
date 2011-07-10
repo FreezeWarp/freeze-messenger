@@ -239,143 +239,175 @@ GROUP BY
     $h = 0;
 
     foreach ($conditionArray AS $type => $cond) {
+      if (count($cond) > 0) {
+        foreach ($cond AS $recKey => $data) {
+          $i++;
+          $sideTextFull[$i] = '';
 
-      foreach ($cond AS $recKey => $data) {
-        $i++;
-        $sideTextFull[$i] = '';
-
-        if ($recKey === 'both' || $recKey === 'either') {
-          $sideTextFull[$i] = $this->recurseBothEither($data,$reverseAlias);
-        }
-        else {
-          /* Define Sides Array */
-          $sideText = array('left','right');
-
-
-          /* Properly Format Left & Right Sides */
-          foreach (array('left', 'right') AS $side) { // We do the same thing for the left and right indexes, so this reduces code redundancy. Not sure if it's good practice, though...
-            switch($data[$side]['type']) {
-              case 'string': // Strings should never be escaped before hand, otherwise values come out looking funny (and innacurate).
-              $sideText[$side] = '"' . $this->escape($data[$side]['value']) . '"';
-              break;
-
-              case 'int': // Best Practice Note: The value should __always__ be typed as an INTEGER (or possibly BOOL) anyway before sending it to the select method. Using "int" as the type really only means the database sees it as such, useful for databases that may in fact use such information (say, even, a spreadsheet).
-              $sideText[$side] = (int) $data[$side]['value'];
-              break;
-
-              case 'bool': // Best practice note: bool should only be used with values that are compared (e.g. pi = TRUE). Not that anything else is possible at the moment...
-              if (is_bool($data[$side]['value'])) { // We force bool here, since there is really no way of properly inferring what someone might have meant in a number of cases (e.g. "false", "0" - both common over HTTP).
-                $sideText[$side] = ($data[$side]['value'] ? 'TRUE' : 'FALSE');
-              }
-              else {
-                throw new Exception('Type mismatch ("bool")'); // Throw an exception.
-              }
-              break;
-
-              case 'array': // Used for IN clauses, mainly.
-              if (is_array($data[$side])) {
-                if (count($data[$side]['value']) > 0) {
-                  foreach ($data[$side]['value'] AS &$entry) {
-                    if (is_string($entry)) {
-                      $entry = '\'' . $this->escape($entry) . '\'';
-                    }
-                  }
-
-                  $sideText[$side] = "(" . implode(',',$data[$side]['value']) . ")";
-                }
-              }
-              else {
-                throw new Exception('Type mismatch ("array")'); // Throw an exception.
-              }
-              break;
-
-              case 'regexp': // Whatever Note: This will eventually be implemented server-side where not supported. That said, support is in PostgreSQL
-              $sideText[$side] = '"' . $data[$side]['value'] . '"';
-              break;
-
-              case 'equation':
-              $sideText[$side] = preg_replace('/\$([a-zA-Z\_]+)/e','$reverseAlias[\'\\1\']',$data[$side]['value']);
-              break;
-
-              case 'column':
-              if (isset($data[$side]['context'])) {
-                switch ($data[$side]['context']) {
-                  case 'time':
-                  $sideText[$side] = 'UNIX_TIMESTAMP(' . $reverseAlias[$data[$side]['value']] . ')';
-                  break;
-
-                  default:
-                  throw new Exception('Unrecognized column context'); // Throw an exception.
-                  break;
-                }
-              }
-              else {
-                if (isset($reverseAlias[$data[$side]['value']])) {
-                  $sideText[$side] = $reverseAlias[$data[$side]['value']];
-                }
-                else {
-                  throw new Exception('Unrecognized column: ' . $data[$side]['value']);
-                }
-              }
-              break;
-            }
-          }
-
-
-          /* Get the Proper Comparison Operator
-           * TODO: Move to array. */
-          switch ($data['type']) {
-            case 'e': $symbol = '='; break;
-            case 'ne': $symbol = '!='; break;
-            case 'lt': $symbol = '<'; break;
-            case 'gt': $symbol = '>'; break;
-            case 'lte': $symbol = '<='; break;
-            case 'gte': $symbol = '>='; break;
-            case 'bitwise': $symbol = '&'; break;
-            case 'in': $symbol = 'IN'; break;
-            case 'regexp': $symbol = 'REGEXP'; break;
-          }
-
-
-          /* Generate Comparison Part */
-          if ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
-            $sideTextFull[$i] = "{$sideText['left']} {$symbol} {$sideText['right']}";
+          if ($recKey === 'both' || $recKey === 'either') {
+            $sideTextFull[$i] = $this->recurseBothEither($data,$reverseAlias);
           }
           else {
-            $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
-            trigger_error('Query nullified; data: ' . print_r($data,true),E_USER_WARNING);
+            /* Define Sides Array */
+            $sideText = array('left','right');
+
+
+            /* Properly Format Left & Right Sides */
+            foreach (array('left', 'right') AS $side) { // We do the same thing for the left and right indexes, so this reduces code redundancy. Not sure if it's good practice, though...
+              switch($data[$side]['type']) {
+                case 'string': // Strings should never be escaped before hand, otherwise values come out looking funny (and innacurate).
+                $sideText[$side] = '"' . $this->escape($data[$side]['value']) . '"';
+                break;
+
+                case 'int': // Best Practice Note: The value should __always__ be typed as an INTEGER (or possibly BOOL) anyway before sending it to the select method. Using "int" as the type really only means the database sees it as such, useful for databases that may in fact use such information (say, even, a spreadsheet).
+                $sideText[$side] = (int) $data[$side]['value'];
+                break;
+
+                case 'bool': // Best practice note: bool should only be used with values that are compared (e.g. pi = TRUE). Not that anything else is possible at the moment...
+                if (is_bool($data[$side]['value'])) { // We force bool here, since there is really no way of properly inferring what someone might have meant in a number of cases (e.g. "false", "0" - both common over HTTP).
+                  $sideText[$side] = ($data[$side]['value'] ? 'TRUE' : 'FALSE');
+                }
+                else {
+                  throw new Exception('Type mismatch ("bool")'); // Throw an exception.
+                }
+                break;
+
+                case 'array': // Used for IN clauses, mainly.
+                if (is_array($data[$side])) {
+                  if (count($data[$side]['value']) > 0) {
+                    foreach ($data[$side]['value'] AS &$entry) {
+                      if (is_string($entry)) {
+                        $entry = '\'' . $this->escape($entry) . '\'';
+                      }
+                    }
+
+                    $sideText[$side] = "(" . implode(',',$data[$side]['value']) . ")";
+                  }
+                }
+                else {
+                  throw new Exception('Type mismatch ("array")'); // Throw an exception.
+                }
+                break;
+
+                case 'regexp': // Whatever Note: This will eventually be implemented server-side where not supported. That said, support is in PostgreSQL
+                $sideText[$side] = '"' . $data[$side]['value'] . '"';
+                break;
+
+                case 'equation':
+                $sideText[$side] = preg_replace('/\$([a-zA-Z\_]+)/e','$reverseAlias[\'\\1\']',$data[$side]['value']);
+                break;
+
+                case 'column':
+                if (isset($data[$side]['context'])) {
+                  switch ($data[$side]['context']) {
+                    case 'time':
+                    $sideText[$side] = 'UNIX_TIMESTAMP(' . $reverseAlias[$data[$side]['value']] . ')';
+                    break;
+
+                    default:
+                    throw new Exception('Unrecognized column context'); // Throw an exception.
+                    break;
+                  }
+                }
+                else {
+                  if (isset($reverseAlias[$data[$side]['value']])) {
+                    $sideText[$side] = $reverseAlias[$data[$side]['value']];
+                  }
+                  else {
+                    throw new Exception('Unrecognized column: ' . $data[$side]['value']);
+                  }
+                }
+                break;
+              }
+            }
+
+
+            /* Get the Proper Comparison Operator */
+            $comparisonTypes = array(
+              'e' => '=',
+              'ne' => '!=',
+              '!e' => '!=', // Alias of "ne"
+              'lt' => '<',
+              '!gte' => '>', // Alias of "lt"
+              'gt' => '>',
+              '!lte' => '>', // Alias of "gt"
+              'lte' => '<=',
+              '!gt' => '>=', // Alias of "lte"
+              'gte' => '>=',
+              '!lt' => '>=', // Alias of "gte"
+
+              'and' => '&',
+              '!xor' => '&', // Alias of "and"
+              'xor' => '^',
+              '!and' => '^', // Alias of "xorg"
+
+              'bitwise' => '&', // DEPRECATED
+              '!bitwise' => '^', // DEPRECATED
+
+              'in' => 'IN',
+              '!notin' => 'IN', // Alias of "in"
+              'notin' => 'NOT IN',
+              '!in' => 'NOT IN', // Alias of "notin"
+
+              'regexp' => 'REGEXP', // Applies extended POSIX regular expression to index. It is natively implemented in MySQL, PostGreSQL, and Oracle SQL databases. It is absent in MSSQL, and the status in VoltDB and SQLite is unknown.
+              'regex' => 'REGEXP', // Alias of "regexp"
+            );
+
+            if (isset($comparisonTypes[$data['type']])) {
+              $symbol = $comparisonTypes[$data['type']];
+            }
+            else {
+              throw new Exception('Unrecognized type operator.');
+            }
+
+
+            /* Generate Comparison Part */
+            if ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
+              $sideTextFull[$i] = "{$sideText['left']} {$symbol} {$sideText['right']}";
+            }
+            else {
+              $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
+              trigger_error('Query nullified; data: ' . print_r($data,true),E_USER_WARNING);
+            }
           }
         }
-      }
 
-      switch($type) {
-        case 'both': $condSymbol = ' AND '; break;
-        case 'either': $condSymbol = ' OR '; break;
-        default: throw new Exception('Unrecognized condition join type: ' . $type); break;
-      }
 
-      $whereText[$h] = implode($condSymbol,$sideTextFull);
+        $concatTypes = array(
+          'both' => ' AND ',
+          'either' => ' OR ',
+        );
+
+        if (isset($concatTypes[$type])) {
+          $condSymbol = $concatTypes[$type];
+        }
+        else {
+          throw new Exception('Unrecognized concatenation operator');
+        }
+
+
+        $whereText[$h] = implode($condSymbol,$sideTextFull);
+      }
     }
 
 
-    // TODO: Rewrite/comment so this makes friggin' sense...
-    if (count($whereText) == 1) {
-      foreach ($whereText AS $data) { // Yeah, no idea what I did here either...
-        $whereText = $data;
-
-        break;
-      }
+    // Combine the query array if multiple entries exist, or just get the first entry.
+    if (count($whereText) === 0) {
+      return false;
+    }
+    elseif (count($whereText) === 1) {
+      $whereText = $whereText[0]; // Get the query string from the first (and only) index.
     }
     else {
       $whereText = implode(' AND ',$whereText);
     }
 
 
-    return "($whereText)";
+    return "($whereText)"; // Return condition string. We wrap parens around to support multiple levels of conditions/recursion.
   }
 
 
-  public function insert($dataArray,$table,$updateArray) {
+  public function insert($dataArray,$table,$updateArray = false) {
     list($columns, $values) = $this->splitArray($dataArray);
 
     $columns = implode(',',$columns); // Convert the column array into to a string.
