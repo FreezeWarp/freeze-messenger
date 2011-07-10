@@ -151,7 +151,13 @@ function fim_generateSession() {
 
   /* The algorithm below may not be ideal (or moreover redundant). It is intended to minimize the ability to guess a hash via a bruteforce mechanism (and does so using the 256-bit SHA256 hash, a random value using the relatively good mt_rand generator that varies between 1 and a billion, and the salt specified by the site operator). */
 
-  $salt = end($salts);
+  if (count($salts) > 0) {
+    $salt = end($salts);
+  }
+  else {
+    $salt = rand(1,100000000);
+  }
+
 
   if (function_exists('mt_rand')) {
     $rand = mt_rand(1,1000000000);

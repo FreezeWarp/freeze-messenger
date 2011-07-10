@@ -204,5 +204,5 @@ INSERT INTO `{prefix}phrases` (`phraseId`, `phraseName`, `text_en`, `text_jp`) V
 (196, 'templateViewUploads', 'View My Uploads', ''),
 (197, 'settingsIgnoreListLabel', 'Ignored Users', ''),
 (198, 'settingsIgnoreListBlurb', 'Users included here will be unable to contact you using private messaging.', ''),
-(199, 'settingsIgnoreListCurrentUsers', 'Current Users', '');
-(200, 'brandingKeywords', '', ''),
+(199, 'settingsIgnoreListCurrentUsers', 'Current Users', ''),
+(200, 'brandingKeywords', '', '');

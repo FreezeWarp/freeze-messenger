@@ -238,6 +238,8 @@ GROUP BY
     $i = 0;
     $h = 0;
 
+    $whereText = array();
+
     foreach ($conditionArray AS $type => $cond) {
       if (count($cond) > 0) {
         foreach ($cond AS $recKey => $data) {

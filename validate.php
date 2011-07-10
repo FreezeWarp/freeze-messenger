@@ -381,7 +381,6 @@ if (strlen($sessionHash) > 0) {
   );
   $user = $user->getAsArray(false);
 
-
   if ($user) {
     if ((int) $user['userId'] !== (int) $userIdComp) { // The userid sent has to be the same one in the DB. In theory we could just not require a userId be specified, but there are benefits to this alternative. For instance, this eliminates some forms of injection-based session fixation.
 
@@ -442,6 +441,7 @@ elseif ($userName && $password) {
   }
 }
 
+
 elseif ($userId && $password) {
   $user = $integrationDatabase->select(
     array(
@@ -463,6 +463,7 @@ elseif ($userId && $password) {
     $valid = false;
   }
 }
+
 
 elseif ($anonymousUser && $anonymous) {
   $user = $integrationDatabase->select(

@@ -359,7 +359,6 @@ $dbConfig[\'integration\'][\'tablePreix\'] = \'\';',
     '$loginConfig[\'url\'] = \'http://example.com/forums/\';',
     '$loginConfig[\'superUsers\'] = array()',
     '$installUrl = \'\';',
-    '$forumSalt = \'\';',
     '$salts = array(
   101 => \'xxx\',
 );',
