@@ -110,7 +110,7 @@ class database {
             if (strstr($tableName,' ') !== false) { // A space can be used to create a table alias, which is sometimes required for different queries.
               $tableParts = explode(' ',$tableName);
 
-              $finalQuery['tables'][] = "`$tableParts[0]` AS $tableParts[1]";
+              $finalQuery['tables'][] = "`$tableParts[0]` AS `$tableParts[1]`";
 
               $tableName = $tableParts[1];
             }
@@ -131,12 +131,12 @@ class database {
                   }
                 }
 
-                $finalQuery['columns'][] = "$colName AS $colAlias[name]";
+                $finalQuery['columns'][] = "$colName AS `$colAlias[name]`";
                 $reverseAlias[$colAlias['name']] = $colName;
               }
 
               else {
-                $finalQuery['columns'][] = "`$tableName`.`$colName` AS $colAlias";
+                $finalQuery['columns'][] = "`$tableName`.`$colName` AS `$colAlias`";
                 $reverseAlias[$colAlias] = "`$tableName`.`$colName`";
               }
             }
@@ -548,7 +548,6 @@ GROUP BY
 
       $this->queryCounter++;
 
-trigger_error($query,E_USER_WARNING);
       return new databaseResult($queryData); // Return link resource.
     }
     else {

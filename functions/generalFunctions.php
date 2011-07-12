@@ -22,6 +22,7 @@
 * @return bool
 * @author Joseph Todd Parsons
 */
+
 function fim_inArray($needle,$haystack) {
   if (!$haystack) {
     return false;
@@ -42,6 +43,7 @@ function fim_inArray($needle,$haystack) {
   return false;
 }
 
+
 /**
 * Returns a "safe" array based on parameters.
 *
@@ -51,6 +53,7 @@ function fim_inArray($needle,$haystack) {
 * @return array
 * @author Joseph Todd Parsons
 */
+
 function fim_arrayValidate($array,$type = 'int',$preserveAll = false) {
   $arrayValidated = array();
 
@@ -74,6 +77,7 @@ function fim_arrayValidate($array,$type = 'int',$preserveAll = false) {
   return $arrayValidated;
 }
 
+
 /**
 * Determines if a user has permission to do an action in a room.
 *
@@ -88,6 +92,7 @@ function fim_arrayValidate($array,$type = 'int',$preserveAll = false) {
 * @return mixed - Bool if $trans is false, array if $trans is true.
 * @author Joseph Todd Parsons
 */
+
 function fim_hasPermission($roomData,$userData,$type = 'post',$quick = false) {
   global $sqlPrefix, $banned, $superUsers, $valid, $database;
 
@@ -398,6 +403,7 @@ function fim_hasPermission($roomData,$userData,$type = 'post',$quick = false) {
 * @return string - The decoded text.
 * @author Joseph Todd Parsons
 */
+
 function fim_urldecode($str) {
   return str_ireplace(array('%2b','%26','%20','%25','%0a'),array('+','&',' ', '%',"\n"),$str);
 }
@@ -412,6 +418,7 @@ function fim_urldecode($str) {
 * @return array
 * @author Joseph Todd Parsons
 */
+
 function fim_decrypt($message,$index = array('apiText','htmlText','rawText')) {
   global $salts;
 
@@ -435,6 +442,7 @@ function fim_decrypt($message,$index = array('apiText','htmlText','rawText')) {
   return $message;
 }
 
+
 /**
 * Encrypts a string or all values in an array.
 *
@@ -443,6 +451,7 @@ function fim_decrypt($message,$index = array('apiText','htmlText','rawText')) {
 * @return array - list($data, $iv, $saltNum)
 * @author Joseph Todd Parsons
 */
+
 function fim_encrypt($data) {
   global $salts;
 
@@ -467,6 +476,7 @@ function fim_encrypt($data) {
 
   return array($data,$iv,$saltNum);
 }
+
 
 /**
 * Encodes a string as specifically-formatted XML data, converting "&", "'", '"', "<", and ">" to their equivilent values.
@@ -851,15 +861,17 @@ function parser1($text,$offset,$stop = false,$globalString = '') {
 * @author Joseph Todd Parsons
 */
 
-function iifl($condition,$true,$false,$eval) {
+function iifl($condition,$true = '',$false = '',$eval = '') {
   global $templates, $phrases, $title, $user, $room, $message, $template, $templateVars; // Lame approach.
-  if($eval) {
+
+  if (strlen($eval) > 0) {
     eval($eval);
   }
 
   if (eval('return ' . $condition . ';')) {
     return $true;
   }
+
   return $false;
 }
 
@@ -1368,14 +1380,17 @@ function fim_sanitizeGPC($data) {
           break;
 
           case 'bool': // I'm not sure what to do here yet, really...
-          if ($activeGlobal[$indexName] === 'true') {
+          $trueValues = array('true',1,true,'1');
+          $falseValues = array('false',0,false,'0');
+
+          if (in_array($activeGlobal[$indexName],$trueValues,true)) {
             $newData[$indexName] = true;
           }
-          elseif ($activeGlobal[$indexName] === 1) {
-            $newData[$indexName] = true;
+          elseif (in_array($activeGlobal[$indexName],$falseValues,true)) {
+            $newData[$indexName] = false;
           }
-          elseif ($activeGlobal[$indexName] === true) {
-            $newData[$indexName] = true;
+          elseif (isset($indexMetaData['default'])) {
+            $newData[$indexName] = (bool) $indexMetaData['default'];
           }
           else {
             $newData[$indexName] = false;

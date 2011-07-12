@@ -20,7 +20,6 @@ require_once('generalFunctions.php');
 
 /**
 * Parses text from defined BBCode.
-* TODO: Support DB-BBCode (likely FIM4).
 *
 * @param string $text - Text to format with HTML.
 * @param integer $bbcodeLevel - The level of bbcode to parse. See documentation for values.

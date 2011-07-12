@@ -868,7 +868,7 @@ var standard = {
       lastMessage = 0,
       firstMessage = 0,
       data = '',
-      where;
+      where = '';
 
     if (options.idMax) {
       where = 'messageIdEnd=' + options.idMax;
@@ -895,7 +895,7 @@ var standard = {
         idMax : options.idMax,
         idMin : options.idMin,
         roomId : options.roomId,
-        search : $(this).val()
+        search : $('#searchText').val()
       });
 
       return false;

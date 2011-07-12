@@ -220,14 +220,10 @@ $userPermissions = array(
 ///* Defaults *///
 ///* You do not need to edit this section, but you can for nit-picky reasons. *///
 
-/* $cacheTableLimit
- * This is the maximum number of messages that will be stored in the table at one time.
- * Note that increasing this can mean faster performance in many situations, but may lead to errors if the MySQL server is not properly configured. */
-$cacheTableLimit = 100;
-
 /* $compressOutput
  * Set this to true to enable "shrunk" output.
- * This is great for servers that don't have GZIP enabled, and still beneficial otherwise. It does, however, result in slightly increased server load. */
+ * This is great for servers that don't have GZIP enabled, and still beneficial otherwise. It does, however, result in slightly increased server load.
+ * Note: Setting this to true will inevitably break some file downloads (file.php). This will be fixed if the directive is supported in a future version. */
 $compressOutput = false; // Set this to off to avoid compacting PHP-generated HTML and XML output.
 
 /* $disableTopic

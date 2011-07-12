@@ -23,7 +23,15 @@
 
 require_once('config.php'); // Configuration Variables
 require_once('functions/mysql.php'); // MySQL Library
+require_once('functions/commonQueries.php');
 require_once('functions/generalFunctions.php'); // Various Functions
+
+
+if (isset($apiRequest)) {
+  if ($apiRequest === true) {
+    sleep((isset($config['apiPause']) ? $config['apiPause'] : .125)); // This prevents flooding the server/DoSing. It's included since I've done it to myself during development...
+  }
+}
 
 
 //error_reporting(E_ALL ^ E_NOTICE); // Report all errors, except those of the "Notice" type.
@@ -60,13 +68,13 @@ if ($dbConnect['core'] == $dbConnect['slave']) {
 }
 
 
-$database = new database;
+$database = new fimDatabase;
 if (!$database->connect($dbConnect['core']['host'],$dbConnect['core']['username'],$dbConnect['core']['password'],$dbConnect['core']['database'])) { // Connect to MySQL
   die('Could not connect to the database; the application has exitted.'); // Die to prevent further execution.
 }
 
 if ($integrationConnect) {
-  $integrationDatabase = new database;
+  $integrationDatabase = new fimDatabase;
 
   if (!$database->connect($dbConnect['integration']['host'],$dbConnect['integration']['username'],$dbConnect['integration']['password'],$dbConnect['integration']['database'])) { // Connect to MySQL
     die('Could not connect to the integration database; the application has exitted.'); // Die to prevent further execution.
@@ -77,7 +85,7 @@ else {
 }
 
 if ($slaveConnect) {
-  $slaveDatabase = new database;
+  $slaveDatabase = new fimDatabase;
 
   if (!$database->connect($dbConnect['slave']['host'],$dbConnect['slave']['username'],$dbConnect['slave']['password'],$dbConnect['slave']['database'])) { // Connect to MySQL
     die('Could not connect to the slave database; the application has exitted.'); // Die to prevent further execution.

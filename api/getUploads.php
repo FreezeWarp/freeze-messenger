@@ -69,9 +69,9 @@ $xmlData = array(
 
 
 /* Get Uploads from Database */
-$uploads = dbRows("SELECT v.fileId, f.mime, f.name, f.rating, v.md5hash
+/*$uploads = dbRows("SELECT v.fileId, f.mime, f.name, f.rating, v.md5hash
   FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS v
-  WHERE f.userId = $user[userId] AND f.fileId = v.fileId",'fileId');
+  WHERE f.userId = $user[userId] AND f.fileId = v.fileId",'fileId');*/
 $uploads = $database->select(
   array(
     "{$sqlPrefix}files" => array(

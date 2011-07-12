@@ -373,9 +373,11 @@ if (is_array($request['rooms'])) {
             'iv' => 'iv',
             'salt' => 'salt',
             'roomId' => 'roomId',
+            'userId' => 'userId',
+            'deleted' => 'deleted',
           ),
           "{$sqlPrefix}users" => array(
-            'userId' => 'userId',
+            'userId' => 'muserId',
             'userName' => 'userName',
             'userGroup' => 'userGroup',
             'userFormatStart' => 'userFormatStart',
@@ -397,7 +399,7 @@ if (is_array($request['rooms'])) {
               ),
               'right' => array(
                 'type' => 'int',
-                'value' => (int) $request['roomId'],
+                'value' => (int) $room['roomId'],
               ),
             ),
             array(
@@ -750,6 +752,10 @@ if (is_array($request['rooms'])) {
             "{$sqlPrefix}users" => array(
               'userId' => 'userId',
               'userName' => 'userName',
+              'userFormatStart' => 'userFormatStart',
+              'userFormatEnd' => 'userFormatEnd',
+              'userGroup' => 'userGroup',
+              'socialGroups' => 'socialGroups',
             ),
           );
           $queryParts['activeUsersSelect']['conditions'] = array(
