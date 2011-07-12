@@ -581,16 +581,16 @@ if (is_array($request['rooms'])) {
 
       switch ($request['fields']) {
         case 'both':
-        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"]['apiText'] = 'apiText';
-        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"]['htmlText'] = 'htmlText';
+        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages" . (!$request['archive'] ? 'Cached' : '')]['apiText'] = 'apiText';
+        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages" . (!$request['archive'] ? 'Cached' : '')]['htmlText'] = 'htmlText';
         break;
 
         case 'api':
-        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"]['apiText'] = 'apiText';
+        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages" . (!$request['archive'] ? 'Cached' : '')]['apiText'] = 'apiText';
         break;
 
         case 'html':
-        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages"]['htmlText'] = 'htmlText';
+        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages" . (!$request['archive'] ? 'Cached' : '')]['htmlText'] = 'htmlText';
         break;
 
         default:
