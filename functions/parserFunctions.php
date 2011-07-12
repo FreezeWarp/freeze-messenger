@@ -26,74 +26,16 @@ require_once('generalFunctions.php');
 * @param integer $bbcodeLevel - The level of bbcode to parse. See documentation for values.
 * @return string - Parsed text.
 * @author Joseph Todd Parsons
+* @todo Port to new engine.
 */
 
 function fimParse_htmlParse($text,$bbcodeLevel = 1) {
-  global $bbcode, $user, $forumpath;
+  global $user, $forumpath;
 
-  $search['shortCode'] = array(
-    '/\+([a-zA-Z0-9\ ]+)\+/is',
-    '/\=([a-zA-Z0-9\ ]+)\=/is',
-    '/\/([a-zA-Z0-9\ ]+)\//is',
-    '/\_([a-zA-Z0-9\ ]+)\_/is',
-  );
-
-  $search['buis'] = array(
-    '/\[(b|strong)\](.+?)\[\/(b|strong)\]/is',
-    '/\[(s|strike)\](.+?)\[\/(s|strike)\]/is',
-    '/\[(i|em)\](.+?)\[\/(i|em)\]/is',
-    '/\[(u)\](.+?)\[\/(u)\]/is',
-  );
+  return $text; // Temp
 
   $search['link'] = array(
     "/(?<!(\[noparse\]))(?<!(\[img\]))(?<!(\[url\]))((http|https|ftp|data|gopher|sftp|ssh):(\/\/|)(.+?\.|)([a-zA-Z\-]+)\.(aero|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|xxx)((\/)([^ \n\<\>\"]*)([^\?\.\! \n])|))(?!\")(?!\])/", // The regex is naturally selective; it improves slightly with each FIM version, but I don't really know how to do it, so I only add to it piece by piece to prevent regressions.
-    '/\[url\]([^\"\<\>]*?)\[\/url\]/is',
-    '/\[email=("|)(.*?)("|)\](.*?)\[\/email\]/is',
-    '/\[email\](.*?)\[\/email\]/is',
-  );
-
-  $search['color'] = array(
-    '/\[(color|colour)=("|)(.*?)("|)\](.*?)\[\/(color|colour)\]/is',
-    '/\[(hl|highlight|bg|background)=("|)(.*?)("|)\](.*?)\[\/(hl|highlight|bg|background)\]/is',
-  );
-
-  $search['image'] = array(
-    '/\[img\](.*?)\[\/img\]/is',
-    '/\[img=("|)(.*?)("|)\](.*?)\[\/img\]/is',
-  );
-
-  $search['video'] = array(
-    '/\[youtubewide\](.*?)\[\/youtubewide\]/is',
-    '/\[youtube\](.*?)\[\/youtube\]/is',
-  );
-
-  $replace['buis'] = array(
-    '<span style="font-weight: bold;">$2</span>',
-    '<span style="text-decoration: line-through;">$2</span>',
-    '<span style="font-style: oblique;">$2</span>',
-    '<span style="text-decoration: underline;">$2</span>',
-  );
-
-  $replace['link'] = array(
-    '<a href="$4" target="_BLANK">$4</a>',
-    '<a href="$1" target="_BLANK">$1</a>',
-    '<a href="mailto:$2">$4</a>',
-    '<a href="mailto:$1">$1</a>',
-  );
-
-  $replace['color'] = array(
-    '<span style="color: $3;">$5</span>',
-    '<span style="background-color: $3;">$5</span>',
-  );
-
-  $replace['image'] = array(
-    ($bbcodeLevel <= 5 ? '<a href="$1" target="_BLANK"><img src="$1" alt="image" class="embedImage" /></a>' : ($bbcodeLevel <= 13 ? '<a href="$1" target="_BLANK">$1</a>' : '$1')),
-    ($bbcodeLevel <= 13 ? '<a href="$4" target="_BLANK"><img src="$4" alt="$2" class="embedImage" /></a>' : ($bbcodeLevel <= 13 ? '<a href="$2" target="_BLANK">$4</a>' : '$2')),
-  );
-
-  $replace['video'] = array(
-    ($bbcode <= 3 ? '<object width="420" height="255" wmode="transparent"><param name="movie" value="http://www.youtube.com/v/$1=en&amp;fs=1&amp;rel=0&amp;border=0"></param><param name="allowFullScreen" value="true"></param><embed src="http://www.youtube.com/v/$1&amp;hl=en&amp;fs=1&amp;rel=0&amp;border=0" type="application/x-shockwave-flash" allowfullscreen="true" width="420" height="255" wmode="opaque"></embed></object>' : ($bbcode <= 13 ? '<a href="http://www.youtube.com/watch?v=$1" target="_BLANK">[Youtube Video]</a>' : '$1')),
-    ($bbcode <= 3 ? '<object width="425" height="349" wmode="transparent"><param name="movie" value="http://www.youtube.com/v/$1=en&amp;rel=0&amp;border=0"></param><param name="allowFullScreen" value="true"></param><embed src="http://www.youtube.com/v/$1&amp;hl=en&amp;rel=0&amp;border=0" type="application/x-shockwave-flash" allowfullscreen="true" width="310" height="255" wmode="opaque"></embed></object>' : ($bbcode <= 13 ? '<a href="http://www.youtube.com/watch?v=$1" target="_BLANK">[Youtube Video]</a>' : '$1')),
   );
 
   if ($bbcode['shortCode'] && $bbcodeLevel <= 16) {

@@ -214,18 +214,6 @@ $userPermissions = array(
   'privateRoomCreation' => true, // The user can create private rooms.
 );
 
-/* $bbcode
- * This defines which BBCodes are enabled and disabled. */
-$bbcode = array(
-  'shortCode' => false, // ++ == __ //
-  'buis' => true, // [b] [u] [i] [s]
-  'link' => true, // [url] [email]
-  'color' => true, // [color] [colour] [highlight] [hl] [background] [bg]
-  'image' => true, // [image]
-  'video' => true, // [youtube]
-  'emoticon' => true, // :D =) :P
-);
-
 
 
 

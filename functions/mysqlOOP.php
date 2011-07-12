@@ -169,19 +169,19 @@ class database {
     if ($sort !== false) {
       if (is_array($sort)) {
         if (count($sort) > 0) {
-          foreach ($sort AS $sortCol => $dir) {
-            switch (strtolower($dir)) {
+          foreach ($sort AS $sortCol => $direction) {
+            switch (strtolower($direction)) {
               case 'asc':
-              $dirSym = 'ASC';
+              $directionSym = 'ASC';
               break;
               case 'desc':
-              $dirSym = 'DESC';
+              $directionSym = 'DESC';
               break;
               default:
-              $dirSym = 'ASC';
+              $directionSym = 'ASC';
               break;
             }
-            $finalQuery['sort'][] = "$sortCol $dirSym";
+            $finalQuery['sort'][] = $reverseAlias[$sortCol] . " $directionSym";
           }
 
           $finalQuery['sort'] = implode(', ',$finalQuery['sort']);
@@ -548,7 +548,7 @@ GROUP BY
 
       $this->queryCounter++;
 
-
+trigger_error($query,E_USER_WARNING);
       return new databaseResult($queryData); // Return link resource.
     }
     else {

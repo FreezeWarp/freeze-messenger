@@ -492,9 +492,8 @@ if (is_array($request['rooms'])) {
       if ($request['messageDateMax']) {
         $queryParts['messagesSelect']['conditions']['both'][] = array(
           'type' => 'lt',
-          'left' => array(
+          'left' => array( // Quick Note: Context: time is redunant and will cause issues if defined.
             'type' => 'column',
-            'context' => 'time',
             'value' => 'time',
           ),
           'right' => array(
@@ -506,9 +505,8 @@ if (is_array($request['rooms'])) {
       if ($request['messageDateMin']) {
         $queryParts['messagesSelect']['conditions']['both'][] = array(
           'type' => 'gt',
-          'left' => array(
+          'left' => array( // Quick Note: Context: time is redunant and will cause issues if defined.
             'type' => 'column',
-            'context' => 'time',
             'value' => 'time',
           ),
           'right' => array(
@@ -569,7 +567,7 @@ if (is_array($request['rooms'])) {
 
       if (!$request['showDeleted'] && $request['archive']) {
         $queryParts['messagesSelect']['conditions']['both'][] = array(
-          'type' => 'lt',
+          'type' => 'e',
           'left' => array(
             'type' => 'column',
             'value' => 'deleted',
@@ -653,7 +651,7 @@ if (is_array($request['rooms'])) {
             $messages = $database->select($queryParts['messagesSelect']['columns'],
               $queryParts['messagesSelect']['conditions'],
               $queryParts['messagesSelect']['sort']);
-            $messages->getAsArray('messageId');
+            $messages = $messages->getAsArray('messageId');
 
             ($hook = hook('getMessages_postMessages_longPolling_repeat') ? eval($hook) : '');
 
@@ -668,7 +666,7 @@ if (is_array($request['rooms'])) {
           $messages = $database->select($queryParts['messagesSelect']['columns'],
             $queryParts['messagesSelect']['conditions'],
             $queryParts['messagesSelect']['sort']);
-          $messages->getAsArray('messageId');
+          $messages = $messages->getAsArray('messageId');
 
           ($hook = hook('getMessages_postMessages_polling') ? eval($hook) : '');
 
@@ -939,10 +937,9 @@ if ($request['watchRooms']) {
         ),
         array(
           'type' => 'gt',
-          'left' => array(
+          'left' => array( // Quick Note: Context: time is redunant and will cause issues if defined.
             'type' => 'column',
             'value' => 'time',
-            'context' => 'time',
           ),
           'right' => array(
             'type' => 'equation',
