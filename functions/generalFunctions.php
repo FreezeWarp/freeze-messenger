@@ -20,7 +20,7 @@
 * @param array $needle - The array that contains all values that will be applied to $haystack
 * @param array $haystack - The matching array.
 * @return bool
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function fim_inArray($needle,$haystack) {
@@ -51,7 +51,7 @@ function fim_inArray($needle,$haystack) {
 * @param string $type - The variable type all entries in the returned array should corrospond to.
 * @param bool $preserveAll - Whether false, 0, and empty strings should be returned as a part of the array.
 * @return array
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function fim_arrayValidate($array,$type = 'int',$preserveAll = false) {
@@ -90,7 +90,7 @@ function fim_arrayValidate($array,$type = 'int',$preserveAll = false) {
 * @global bool $valid - Whether or not the user has a valid login (required for posting, etc.)
 * @global string $sqlPrefix
 * @return mixed - Bool if $trans is false, array if $trans is true.
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function fim_hasPermission($roomData,$userData,$type = 'post',$quick = false) {
@@ -401,7 +401,7 @@ function fim_hasPermission($roomData,$userData,$type = 'post',$quick = false) {
 *
 * @param string $str - The string to be decoded.
 * @return string - The decoded text.
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function fim_urldecode($str) {
@@ -416,7 +416,7 @@ function fim_urldecode($str) {
 * @param mixed $index - An array or string corrosponding to which indexes in the $message should be decrypted.
 * @global array $salts - Key-value pairs used for encryption.
 * @return array
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function fim_decrypt($message,$index = array('apiText','htmlText','rawText')) {
@@ -449,7 +449,7 @@ function fim_decrypt($message,$index = array('apiText','htmlText','rawText')) {
 * @param mixed $data - The data to encrypt.
 * @global array $salts - Key-value pairs used for encryption.
 * @return array - list($data, $iv, $saltNum)
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function fim_encrypt($data) {
@@ -477,13 +477,26 @@ function fim_encrypt($data) {
   return array($data,$iv,$saltNum);
 }
 
+/**
+* Generates a SHA256 using whatever methods are available.
+*
+* @param mixed
+*/
+function fim_sha256($data) {
+  if (function_exists('hash')) {
+    return hash('sha256',$data);
+  }
+  elseif (function_exists('mhash')) {
+    return mhash(MHASH_SHA256,$data);
+  }
+}
 
 /**
 * Encodes a string as specifically-formatted XML data, converting "&", "'", '"', "<", and ">" to their equivilent values.
 *
 * @param string $data - The data to be encoded.
 * @return string - Encoded data.
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function fim_encodeXml($data) {
@@ -599,7 +612,7 @@ function fim_date($format,$timestamp = false) {
 *
 * @param string $name
 * @return evalcode (string)
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function hook($name) {
@@ -620,7 +633,7 @@ function hook($name) {
 *
 * @param string $name
 * @return string
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function template($name) {
@@ -661,7 +674,7 @@ function template($name) {
 * @param bool $stop
 * @param string $globalString
 * @return string
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function parser1($text,$offset,$stop = false,$globalString = '') {
@@ -858,7 +871,7 @@ function parser1($text,$offset,$stop = false,$globalString = '') {
 * @param string $false
 * @param evalcode $eval
 * @return string
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function iifl($condition,$true = '',$false = '',$eval = '') {
@@ -884,7 +897,7 @@ function iifl($condition,$true = '',$false = '',$eval = '') {
 * @param string $errfile
 * @param int $errline
 * @return true
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 /* Note: errors should be hidden. It's sorta best practice, especially with the API. */
@@ -924,7 +937,7 @@ function errorHandler($errno, $errstr, $errfile, $errline) {
 * @param string $content
 * @param string $class
 * @return string
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function container($title,$content,$class = 'page') {
@@ -949,12 +962,39 @@ function container($title,$content,$class = 'page') {
 
 
 /**
+* API Layer
+*
+* @param array $array
+* @return string
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
+*/
+
+function fim_outputApi($data) {
+  if (isset($_REQUEST['format'])) {
+    switch ($_REQUEST['format']) {
+      case 'json':
+      return fim_outputJson($data);
+      break;
+
+      case 'xml':
+      default:
+      return fim_outputXml($data);
+      break;
+    }
+  }
+  else {
+    return fim_outputXml($data);
+  }
+}
+
+
+/**
 * XML Parser
 *
 * @param array $array
 * @param int $level
 * @return string
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function fim_outputXml($array,$level = 0) {
@@ -1008,40 +1048,12 @@ $data";
 
 
 /**
-* XML Parser
-*
-* @param array $array
-* @param int $level
-* @return string
-* @author Joseph Todd Parsons
-*/
-
-function fim_outputApi($data) {
-  if (isset($_REQUEST['format'])) {
-    switch ($_REQUEST['format']) {
-      case 'json':
-      return fim_outputJson($data);
-      break;
-
-      case 'xml':
-      default:
-      return fim_outputXml($data);
-      break;
-    }
-  }
-  else {
-    return fim_outputXml($data);
-  }
-}
-
-
-/**
 * JSON Parser
 *
 * @param array $array
 * @param int $level
 * @return string
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function fim_outputJson($array, $level = 0) {
@@ -1101,7 +1113,7 @@ $data
 * @param array $array
 * @param int $level
 * @return string
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function fim_outputKeys($array, $level = 0) { // Used only for creating documentation.
@@ -1133,7 +1145,7 @@ function fim_outputKeys($array, $level = 0) { // Used only for creating document
 *
 * @param string $data
 * @return string
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function fim_htmlCompact($data) {
@@ -1151,7 +1163,7 @@ function fim_htmlCompact($data) {
 * @param string $action
 * @param string $data
 * @return bool
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function modLog($action,$data) {
@@ -1176,7 +1188,7 @@ function modLog($action,$data) {
 *
 * @param float $size
 * @return string
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function formatSize($size) {
@@ -1209,9 +1221,23 @@ function formatSize($size) {
 *
 * @param array data
 * @return array
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 function fim_sanitizeGPC($data) {
+  /* Get the Content Type Encoding
+   * See http://www.xml.com/pub/a/2004/08/11/rest.html for REST-related information on this; main points: should be possible via a header */
+  if (isset($_SERVER['CONTENT_TYPE'])) {
+    $contentType = explode(';',$_SERVER['CONTENT_TYPE']); // Divide the subsections of the content_type
+    $contentType = $contentType[0]; // Get the first of these subsections; RFC 3875 [4.1.3] explains this well, and defines the format as: type "/" subtype *( ";" parameter )
+  }
+  elseif (isset($_REQUEST['fim3_dataEncoding'])) {
+    $contentType = fim_urldecode($_REQUEST['fim3_dataEncoding']); // Gets rid of encoded slashes, if needed.
+  }
+  else {
+    $contentType = false;
+  }
+
+
   $metaDataDefaults = array(
     'type' => 'string',
     'require' => false,
@@ -1236,6 +1262,32 @@ function fim_sanitizeGPC($data) {
 
       case 'request':
       $activeGlobal = $_REQUEST;
+      break;
+    }
+
+
+    /* Unencode the Global Based on the Above Content Type Encoding
+    * see http://pseudo-flaw.net/content/web-browsers/form-data-encoding-roundup/ for browser-related issues, etc. with this
+    * see http://pseudo-flaw.net/form-data-encoding-roundup/submit.cgi for sample data
+    * see http://www.w3.org/TR/html4/interact/forms.html#h-17.13.4 for the HTML specification
+    *
+    * Note: PHP does NOT support text/plain. More critically, NO ONE should use this mimetype for submitted data. To avoid issues, we will throw an exception if it is the case.
+    * Note: The custom method, and the default, is a simplified version of URLEncode that only removes incompatible data ("+", "?", "&", and "%").
+    * */
+
+    switch ($contentType) {
+      case 'multipart/form-data': // Nothing encoded
+      break;
+
+      case 'text/plain': // Spaces converted to "+"
+      throw new Exception('Invalid/blacklisted mimetype specified in request: text/plain'); // Throw an exception
+      break;
+
+      case 'application/x-www-form-urlencoded': // Everything Encoded
+      default:
+      foreach ($activeGlobal AS &$value) {
+        $value = urldecode($value);
+      }
       break;
     }
 
@@ -1406,5 +1458,23 @@ function fim_sanitizeGPC($data) {
   }
 
   return $newData;
+}
+
+
+/**
+* A function equvilent to an IF-statement that returns a true or false value. It is similar to the function in most spreadsheets (EXCEL, LibreOffice CALC, Lotus 123). TRANSITIONAL
+*
+* @param string $condition - The condition that will be evaluated. It must be a string.
+* @param string $true - A string to return if the above condition evals to true.
+* @param string $false - A string to return if the above condition evals to false.
+* @return bool - true on success, false on failure
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
+*/
+
+function iif($condition,$true,$false) {
+  if (eval('return ' . stripslashes($condition) . ';')) {
+    return $true;
+  }
+  return $false;
 }
 ?>

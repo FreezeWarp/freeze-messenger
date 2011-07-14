@@ -90,10 +90,6 @@ $room = $room->getAsArray(false);
 ($hook = hook('sendMessage_start') ? eval($hook) : '');
 
 
-/*$words = dbRows("SELECT w.word, w.severity, w.param
-FROM {$sqlPrefix}censorLists AS l, {$sqlPrefix}censorWords AS w
-WHERE w.listId = l.listId AND (w.severity = 'warn' OR w.severity = 'confirm' OR w.severity = 'block')",'word');*/
-
 $words = $slaveDatabase->select(
   array(
     "{$sqlPrefix}censorLists" => array(

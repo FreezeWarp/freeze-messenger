@@ -24,7 +24,7 @@ require_once('generalFunctions.php');
 * @param string $text - Text to format with HTML.
 * @param integer $bbcodeLevel - The level of bbcode to parse. See documentation for values.
 * @return string - Parsed text.
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 * @todo Port to new engine.
 */
 
@@ -84,7 +84,7 @@ function fimParse_htmlParse($text,$bbcodeLevel = 1) {
 * @param string $text - The text to censor.
 * @param int $roomId - The ID of the room's censors. Uses general censors if not available (thus not using any black/white lists).
 * @return string - Censored text.
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function fimParse_censorParse($text,$roomId = 0) {
@@ -203,7 +203,7 @@ WHERE w.listId = l.listId AND w.severity = 'replace'",'word');*/
 *
 * @param string $text - The text to parse.
 * @return string - Parsed text.
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 function fimParse_smilieParse($text) {
   global $room, $loginMethod, $forumTablePrefix, $forumUrl;
@@ -262,7 +262,7 @@ function indexValue($array,$index) {
 * @param integer $maxLength - Length after which to wrap.
 * @param string $chat - String to wrap with.
 * @return string - Formatted data.
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function fimParse_htmlWrap($html, $maxLength = 80, $char = '<br />') { /* An adaption of a PHP.net commentor function dealing with HTML for BBCode */
@@ -338,7 +338,7 @@ function fimParse_htmlWrap($html, $maxLength = 80, $char = '<br />') { /* An ada
 * @global int
 * @global
 * @return array - The keywords found.
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function fim3parse_keyWords($string,$messageId) {
@@ -423,7 +423,7 @@ function fim3parse_keyWords($string,$messageId) {
 *
 * @param string $messageText - Message string.
 * @return array - $messageRaw, $messageHtml, and $messageApi strings
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function fimParse_finalParse($messageText) {
@@ -446,7 +446,7 @@ function fimParse_finalParse($messageText) {
 * @param array $room - Room data, including at least the roomId index.
 * @param string $flag - Message context flag; for instance, email, image, etc..
 * @return void - true on success, false on failure
-* @author Joseph Todd Parsons
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function fim_sendMessage($messageText,$user,$room,$flag = '') {

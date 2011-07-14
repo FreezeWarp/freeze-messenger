@@ -23,10 +23,11 @@ class database {
    * Construct
    *
    * @return void
-   * @author Joseph Todd Parsons
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   public function __construct() {
     $this->queryCounter = 0;
+    $this->insertId = 0;
   }
 
 
@@ -38,7 +39,7 @@ class database {
    * @param string $password - The password of the user.
    * @param string $database - The database to connect to.
    * @return bool - True if a connection was successfully established, false otherwise.
-   * @author Joseph Todd Parsons
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   public function connect($host,$user,$password,$database) {
     if (!$link = mysql_connect($host,$user,$password)) { // Make the connection.
@@ -67,7 +68,7 @@ class database {
    * Closes a connection to a database server.
    *
    * @return void
-   * @author Joseph Todd Parsons
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function close() {
     mysql_close($this->dbLink); // Close the database link.
@@ -77,7 +78,7 @@ class database {
   /**
    * Returns a string properly escaped for raw queries.
    * @return string
-   * @author Joseph Todd Parsons
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function escape($string) {
     return mysql_real_escape_string($string,$this->dbLink); // Retrun the escaped string.
@@ -88,7 +89,7 @@ class database {
    * Retrieves data from the active database connection.
    *
    * @return object
-   * @author Joseph Todd Parsons
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function select($columns,$conditionArray = false,$sort = false,$group = false,$limit = false) {
     $finalQuery = array(
@@ -119,25 +120,45 @@ class database {
             }
 
             foreach($tableCols AS $colName => $colAlias) {
-              if (is_array($colAlias)) { // Used for advance structures and function calls.
-                if (isset($colAlias['context'])) {
-                  switch($colAlias['context']) {
-                    case 'time':
-                    $colName = "UNIX_TIMESTAMP(`$tableName`.`$colName`)";
-                    break;
-                    case 'join':
-                    $colName = "GROUP_CONCAT(`$tableName`.`$colName` SEPARATOR '$colAlias[separator]')";
-                    break;
-                  }
+              if (strlen($colName) > 0) {
+                if (strstr($colName,' ') !== false) { // A space can be used to create identical columns in different contexts, which is sometimes required for different queries.
+                  $colParts = explode(' ',$colName);
+                  $colName = $colParts[0];
                 }
 
-                $finalQuery['columns'][] = "$colName AS `$colAlias[name]`";
-                $reverseAlias[$colAlias['name']] = $colName;
-              }
+                if (is_array($colAlias)) { // Used for advance structures and function calls.
+                  if (isset($colAlias['context'])) {
+                    switch($colAlias['context']) {
+                      case 'time': // This is used when we need to retrieve a time as a UNIX TIMESTAMP integer value. On some systems, we may wish to generate it on the fly via the "since the epoch" method.
+                      $colName = "UNIX_TIMESTAMP(`$tableName`.`$colName`)";
+                      break;
 
+                      // This is used for group by queries, though is not yet very well tested.
+                      case 'join':
+                      $colName = "GROUP_CONCAT(`$tableName`.`$colName` SEPARATOR '$colAlias[separator]')";
+                      break;
+                      case 'sum':
+                      $colName = "SUM(`$tableName`.`$colName`)";
+                      break;
+
+                      case 'silent': // This is used when we don't want to select the actual value. In practice, it should only [currently] be used with group by queries.
+                      $reverseAlias[$colAlias['name']] = "`$tableName`.`$colName`";
+                      continue 2;
+                      break;
+                    }
+                  }
+
+                  $finalQuery['columns'][] = "$colName AS `$colAlias[name]`";
+                  $reverseAlias[$colAlias['name']] = $colName;
+                }
+
+                else {
+                  $finalQuery['columns'][] = "`$tableName`.`$colName` AS `$colAlias`";
+                  $reverseAlias[$colAlias] = "`$tableName`.`$colName`";
+                }
+              }
               else {
-                $finalQuery['columns'][] = "`$tableName`.`$colName` AS `$colAlias`";
-                $reverseAlias[$colAlias] = "`$tableName`.`$colName`";
+                throw new Exception('Invalid select array: column name empty'); // Throw an exception.
               }
             }
           }
@@ -197,18 +218,14 @@ class database {
      * Allowed aggregate functions (see "context"): Join (group_concat), Sum (sum),
      * Product (simulated in MySQL), Average (avg), Minimum (min), Maximum (max), Count (count) */
     if ($group !== false) {
-      if (is_array($group)) {
-        if (count($group) > 0) {
-          $finalQuery['group'] = $reverseAlias[$group];
-        }
-      }
+      $finalQuery['group'] = $reverseAlias[$group];
     }
 
 
     /* Process Limit (Must be Integer) */
     if ($limit !== false) {
       if (is_int($limit)) {
-        $finalQuery['group'] = (int) $limit;
+        $finalQuery['limit'] = (int) $limit;
       }
     }
 
@@ -219,11 +236,13 @@ class database {
 FROM
   ' . implode(', ',$finalQuery['tables']) . ($finalQuery['where'] ? '
 WHERE
-  ' . $finalQuery['where'] : '') . ($finalQuery['sort'] ? '
-ORDER BY
-  ' . $finalQuery['sort'] : '') . ($finalQuery['group'] ? '
+  ' . $finalQuery['where'] : '') . ($finalQuery['group'] ? '
 GROUP BY
-  ' . $finalQuery['group'] : '');
+  ' . $finalQuery['group'] : '') . ($finalQuery['sort'] ? '
+ORDER BY
+  ' . $finalQuery['sort'] : '') . ($finalQuery['limit'] ? '
+LIMIT
+  ' . $finalQuery['limit'] : '');
 
     return $this->rawQuery($finalQueryText);
   }
@@ -232,7 +251,7 @@ GROUP BY
    * Recurses over a specified "where" array, returning a valid where clause.
    *
    * @return string
-   * @author Joseph Todd Parsons
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   private function recurseBothEither($conditionArray,$reverseAlias) {
     $i = 0;
@@ -429,7 +448,14 @@ GROUP BY
       $query = "$query ON DUPLICATE KEY UPDATE $update";
     }
 
-    return $this->rawQuery($query);
+    if ($queryData = $this->rawQuery($query)) {
+      $this->insertId = mysql_insert_id();
+
+      return $queryData;
+    }
+    else {
+      return false;
+    }
   }
 
 
@@ -523,7 +549,7 @@ GROUP BY
 
     $query = "DELETE FROM $table WHERE $delete";
 
-    return dbQuery($query);
+    return $this->rawQuery($query);
   }
 
 
@@ -533,7 +559,7 @@ GROUP BY
    *
    * @param string $query - The raw query to execute.
    * @return resource|bool - The database resource returned by the query, or false on failure.
-   * @author Joseph Todd Parsons
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   private function rawQuery($query) {
     $startTime = microtime(true); // Get time in milliseconds (as a float) to determine if the query took too long.
@@ -548,7 +574,7 @@ GROUP BY
 
       $this->queryCounter++;
 
-      return new databaseResult($queryData); // Return link resource.
+      return new databaseResult($queryData,$query); // Return link resource.
     }
     else {
       trigger_error("MySQL Error; Query: $query; Error: " . mysql_error($this->dbLink),E_USER_ERROR); // The query could not complete.
@@ -559,6 +585,13 @@ GROUP BY
   }
 
 
+  /**
+   * Divides a multidimensional array into three seperate two-dimensional arrays, and performs some additional processing as defined in the passed array.
+   *
+   * @param string $array - The source array
+   * @return array - An array containing three seperate arrays.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
   private function splitArray($array) {
     $columns = array(); // Initialize arrays
     $values = array(); // Initialize arrays
@@ -643,14 +676,37 @@ GROUP BY
 }
 
 class databaseResult {
-  public function __construct($queryData) {
+  /**
+   * Construct
+   *
+   * @param object $queryData - The database object.
+   * @param string $sourceQuery - The source query, which can be stored for referrence.
+   * @return void
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
+  public function __construct($queryData,$sourceQuery) {
     $this->queryData = $queryData;
+    $this->sourceQuery = $sourceQuery;
   }
 
+  /**
+   * Replaces Query Data
+   *
+   * @param object $queryData - The database object.
+   * @return void
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
   public function setQuery($queryData) {
     $this->queryData = $queryData;
   }
 
+  /**
+   * Get Database Object as an Associative Array
+   *
+   * @param mixed $index
+   * @return mixed
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
   public function getAsArray($index = true) {
     $data = array();
     $indexV = 0;
@@ -680,6 +736,14 @@ class databaseResult {
     }
   }
 
+
+  /**
+   * Get the database object as a string, using the specified format/template. Each result will be passed to this template and stored in a string, which will be appended to the entire result.
+   *
+   * @param string $format
+   * @return mixed
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
   public function getAsTemplate($format) {
     static $data;
 

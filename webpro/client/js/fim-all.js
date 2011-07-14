@@ -35,7 +35,7 @@
 
 var userId, // The user ID who is logged in.
   roomId, // The ID of the room we are in.
-  sessionHash, // The session hash of the active user.
+  sessionHash = 'a', // The session hash of the active user.
   anonId, // ID used to represent anonymous posters.
   prepopup;
 
@@ -144,10 +144,6 @@ var currentLocation = window.location.origin + directory + 'webpro/';
 
 function unxml(data) {
   return data.replace(/\&lt\;/g, '<', data).replace(/\&gt\;/g, '>', data).replace(/\&apos\;/g, "'", data).replace(/\&quot\;/g, '"', data);
-}
-
-function urlEncode(data) {
-  return data.replace(/\+/g, '%2b').replace(/\&/g, '%26').replace(/\%/g, '%25').replace(/\n/g, '%0a').replace(/ /g, '%20', data);
 }
 
 function toBottom() {
@@ -677,7 +673,7 @@ function populate(options) {
         return false;
       }
     })
-  ).then(function() { console.log(1);
+  ).then(function() {
       if (typeof options.callback === 'function') {
         options.callback();
       }
@@ -902,7 +898,7 @@ var standard = {
     });
 
     $.when( $.ajax({
-      url: directory + 'api/getMessages.php?rooms=' + options.roomId + '&archive=1&messageLimit=20&' + where + (options.search ? '&search=' + urlEncode(options.search) : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+      url: directory + 'api/getMessages.php?rooms=' + options.roomId + '&archive=1&messageLimit=20&' + where + (options.search ? '&search=' + urlencode(options.search) : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
       type: 'GET',
       timeout: 5000,
       data: '',
@@ -973,8 +969,8 @@ var standard = {
     console.log('Login Initiated');
     var data = '',
       passwordEncrypt = '',
-    sessionHash = '',
-    cookieOptions = {};
+      cookieOptions = {};
+
 
     if (options.rememberMe) {
       cookieOptions = {expires: 14};
@@ -996,7 +992,7 @@ var standard = {
       // var password = md5(password);
       // var passwordEncrypt = 'md5';
 
-      data = 'userName=' + options.userName + '&password=' + options.password + '&passwordEncrypt=' + passwordEncrypt;
+      data = 'userName=' + urlencode(options.userName) + '&password=' + urlencode(options.password) + '&passwordEncrypt=' + passwordEncrypt;
     }
     else if (options.sessionHash) {
       data = 'fim3_sessionHash=' + options.sessionHash + '&apiLogin=1&fim3_userId=' + $.cookie('fim3_userId');
@@ -1159,6 +1155,7 @@ var standard = {
 
   logout : function() {
     $.cookie('fim3_sessionHash','');
+    $.cookie('fim3_userId','');
 
     standard.login({});
   },
@@ -1415,7 +1412,7 @@ var standard = {
       $.ajax({
         url: directory + 'api/sendMessage.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
         type: 'POST',
-        data: 'roomId=' + roomId + '&confirmed=' + confirmed + '&message=' + urlEncode(message) + '&flag=' + flag,
+        data: 'roomId=' + roomId + '&confirmed=' + confirmed + '&message=' + urlencode(message) + '&flag=' + flag,
         cache: false,
         timeout: 5000,
         success: function(xml) {
@@ -1890,7 +1887,7 @@ popup = {
             $.ajax({
               url: directory + 'api/uploadFile.php',
               type: 'POST',
-              data : 'dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&file_data=' + urlEncode(fileContent) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+              data : 'dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&file_data=' + urlencode(fileContent) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
               cache : false
             });
 
@@ -2380,7 +2377,7 @@ popup = {
             dia.error('The roomname is too long.');
           }
           else {
-            $.post(directory + 'api/moderate.php','action=editRoom&roomId=' + roomIdLocal + '&name=' + urlEncode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
+            $.post(directory + 'api/moderate.php','action=editRoom&roomId=' + roomIdLocal + '&name=' + urlencode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
               var errStr = unxml($(xml).find('errStr').text().trim()),
                 errDesc = unxml($(xml).find('errDesc').text().trim());
 
@@ -2454,7 +2451,7 @@ popup = {
             dia.error('The roomname is too long.');
           }
           else {
-            $.post(directory + 'api/moderate.php','action=createRoom&name=' + urlEncode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
+            $.post(directory + 'api/moderate.php','action=createRoom&name=' + urlencode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
               var errStr = unxml($(xml).find('errStr').text().trim()),
                 errDesc = unxml($(xml).find('errDesc').text().trim()),
                 createRoomId = Number($(xml).find('insertId').text().trim());
@@ -3196,6 +3193,7 @@ function contextMenuParse() {
 
 
 $(document).ready(function() {
+  console.log('bb');
 
   $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/' + themeName + '/jquery-ui-1.8.13.custom.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/' + themeName + '/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
 
@@ -3222,6 +3220,7 @@ $(document).ready(function() {
   /*** Trigger Logout */
 
   $('#logout').bind('click',function() {
+    standard.logout();
     popup.login();
 
     return false;

@@ -652,7 +652,9 @@ if (is_array($request['rooms'])) {
           while (!$messages) {
             $messages = $database->select($queryParts['messagesSelect']['columns'],
               $queryParts['messagesSelect']['conditions'],
-              $queryParts['messagesSelect']['sort']);
+              $queryParts['messagesSelect']['sort'],
+              false,
+              $request['messageLimit']);
             $messages = $messages->getAsArray('messageId');
 
             ($hook = hook('getMessages_postMessages_longPolling_repeat') ? eval($hook) : '');
@@ -667,7 +669,9 @@ if (is_array($request['rooms'])) {
 
           $messages = $database->select($queryParts['messagesSelect']['columns'],
             $queryParts['messagesSelect']['conditions'],
-            $queryParts['messagesSelect']['sort']);
+            $queryParts['messagesSelect']['sort'],
+            false,
+            $request['messageLimit']);
           $messages = $messages->getAsArray('messageId');
 
           ($hook = hook('getMessages_postMessages_polling') ? eval($hook) : '');
@@ -802,7 +806,7 @@ if (is_array($request['rooms'])) {
                 ),
                 'right' => array(
                   'type' => 'int',
-                  'value' => (int) ($request['time'] - $request['onlineThreshold']),
+                  'value' => (int) (time() - $request['onlineThreshold']),
                 ),
               ),
             ),

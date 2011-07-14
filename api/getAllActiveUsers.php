@@ -76,7 +76,7 @@ $xmlData = array(
       'userName' => ($user['userName']),
     ),
     'sentData' => array(
-      'onlineThreshold' => (int) $ewonlineThreshold,
+      'onlineThreshold' => (int) $request['onlineThreshold'],
       'time' => (int) $time,
     ),
     'errStr' => ($errStr),
@@ -103,6 +103,10 @@ $queryParts['activeUsersSelect']['columns'] = array(
       'separator' => ',',
       'name' => 'roomIds',
     ),
+    'roomId roomIdRef' => array(
+      'context' => 'silent',
+      'name' => 'roomIdRef',
+    ),
   ),
   "{$sqlPrefix}ping" => array(
     'time' => 'ptime',
@@ -127,7 +131,7 @@ $queryParts['activeUsersSelect']['conditions'] = array(
       'type' => 'e',
       'left' => array(
         'type' => 'column',
-        'value' => 'roomId',
+        'value' => 'roomIdRef',
       ),
       'right' => array(
         'type' => 'column',
@@ -135,14 +139,14 @@ $queryParts['activeUsersSelect']['conditions'] = array(
       ),
     ),
     array(
-      'type' => 'e',
+      'type' => 'gt',
       'left' => array(
         'type' => 'column',
         'value' => 'ptime',
       ),
       'right' => array(
         'type' => 'int',
-        'value' => (int) ($request['time'] - $request['onlineThreshold'])
+        'value' => (int) ($request['time'] - $request['onlineThreshold']),
       ),
     ),
   ),
@@ -163,8 +167,8 @@ if (count($request['users']) > 0) {
       'value' => 'puserId',
     ),
     'right' => array(
-       'type' => 'array',
-       'value' => (array) $request['users'],
+      'type' => 'array',
+      'value' => (array) $request['users'],
     ),
   );
 }
@@ -182,8 +186,6 @@ $activeUsers = $database->select($queryParts['activeUsersSelect']['columns'],
   $queryParts['activeUsersSelect']['sort'],
   $queryParts['activeUsersSelect']['group']);
 $activeUsers = $activeUsers->getAsArray('userId');
-
-
 
 /* Start Processing */
 if (is_array($activeUsers)) {

@@ -24,13 +24,67 @@
 */
 
 $apiRequest = true;
+
 require_once('../global.php');
 require_once('../functions/parserFunctions.php');
 
 
-$uploadMethod = $_POST['uploadMethod'];
-die(); // Unimplemented
 
+/* Get Request Data */
+$request = fim_sanitizeGPC(array(
+  'post' => array(
+    'uploadMethod' => array(
+      'type' => 'string',
+      'default' => 'raw',
+      'valid' => array(
+        'raw',
+      ),
+      'require' => false,
+    ),
+
+    'file_name' => array(
+      'type' => 'string',
+      'require' => true,
+    ),
+
+    'file_data' => array(
+      'type' => 'string',
+      'require' => true,
+    ),
+
+    'file_size' => array(
+      'type' => 'string',
+      'require' => false,
+    ),
+
+    'file_md5hash' => array(
+      'type' => 'string',
+      'require' => false,
+    ),
+
+    'file_sha256hash' => array(
+      'type' => 'string',
+      'require' => false,
+    ),
+
+    'dataEncode' => array(
+      'type' => 'string',
+      'require' => true,
+      'valid' => array(
+        'base64',
+      ),
+    ),
+  ),
+));
+
+
+
+/* Plugin Hook End */
+($hook = hook('uploadFile_end') ? eval($hook) : '');
+
+
+
+/* Data Predefine */
 $xmlData = array(
   'uploadFile' => array(
     'activeUser' => array(
@@ -43,21 +97,58 @@ $xmlData = array(
   ),
 );
 
-$mimes = dbRows("SELECT typeId, extension, mime, maxSize
-  FROM {$sqlPrefix}uploadTypes",'extension');
 
 
-switch ($uploadMethod) {
+/* Get Mime Types from the Database */
+$mimes = $slaveDatabase->select(
+  array(
+    "{$sqlPrefix}uploadTypes" => array(
+      'typeId' => 'typeId',
+      'extesion' => 'extesion',
+      'mime' => 'mime',
+      'maxSize' => 'maxSize',
+    ),
+  )
+);
+$mimes = $mimes->getAsArray('extension');
+
+
+
+
+if ($request['uploadMethod'] == 'put') { // This is an unsupported alternate upload method. It will not be documented until it is known to work.
+  $putResource = fopen("php://input", "r"); // file data is from stdin
+  $request['file_data'] = ''; // The only real change is that we're getting things from stdin as opposed to from the headers. Thus, we'll just translate the two here.
+
+  while ($fileContents = fread($putResource, (isset($config['fileUploadChunkSize']) ? $config['fileUploadChunkSize'] : 1024))) { // Read the resource using 1KB chunks. This is slower than a higher chunk, but also avoids issues for now. It can be overridden with the config directive fileUploadChunkSize.
+    $request['file_data'] = $fileContents; // We're not sure if this will work, since there are indications you have to write to a file instead.
+  }
+
+  fclose($putResource);
+}
+
+
+
+/* Verify the Data, Preprocess */
+switch ($request['uploadMethod']) {
   case 'raw':
-  $name = fim_urldecode($_POST['file_name']);
-  $data = fim_urldecode($_POST['file_data']);
-  $size = (int) $_POST['file_size'];
-  $md5hashComp = $_POST['file_md5hash'];
-  $dataEncode = $_POST['dataEncode'];
+  case 'put':
+  $fileName = ($request['file_name']);
+  $fileContents = ($request['file_data']);
+  $fileSize = (int) $request['file_size'];
 
-  switch($dataEncode) {
+  $md5hashComp = $request['file_md5hash'];
+  $sha256hashComp = $request['file_sha256hash'];
+
+  $fileContentsEncode = $request['dataEncode'];
+
+
+  switch($fileContentsEncode) {
     case 'base64':
-    $rawData = base64_decode($data);
+    $rawData = base64_decode($fileContents);
+    break;
+
+    case 'binary': // Binary is buggy and far from confirmed to work. That said... if you're lucky? MDN has some useful information on this type of thing: https://developer.mozilla.org/En/Using_XMLHttpRequest
+    $rawData = $fileContents;
     break;
 
     default:
@@ -68,7 +159,8 @@ switch ($uploadMethod) {
     break;
   }
 
-  if ($md5hash) {
+
+  if ($md5hash) { // This will allow us to verify that the upload worked.
     if (md5($rawData) != $md5hash) {
       $errStr = 'badRawHash';
       $errDesc = 'The included MD5 hash did not match the file content.';
@@ -77,39 +169,49 @@ switch ($uploadMethod) {
     }
   }
 
-  if ($size) {
-    if (strlen($rawData) != $size) {
+  if ($sha256hash) { // This will allow us to verify that the upload worked.
+    if (hash('sha256',$rawData) != $sha256hash) {
+      $errStr = 'badRawHash';
+      $errDesc = 'The included MD5 hash did not match the file content.';
+
+      $continue = false;
+    }
+  }
+
+  if ($fileSize) { // This will allow us to verify that the upload worked as well, can be easier to implement, but doesn't serve the primary purpose of making sure the file upload wasn't intercepted.
+    if (strlen($rawData) != $fileSize) {
       $errStr = 'badRawSize';
       $errDesc = 'The specified content length did not match the file content.';
 
       $continue = false;
     }
   }
-
   break;
 }
 
+
+
+/* Start Processing */
 if ($continue) {
-  if (!$name) {
+  if (!$fileName) {
     $errStr = 'badName';
     $errDesc = 'A name was not specified for the file.';
   }
   else {
-    $nameParts = explode($name);
+    $fileNameParts = explode($fileName);
 
-    if (count($nameParts) == 2) {
+    if (count($fileNameParts) == 2) {
       $errStr = 'badNameParts';
       $errDesc = 'There was an improper number of "periods" in the file name - the extension could not be obtained.';
     }
     else {
-      if (isset($mimes[$nameParts[1]])) {
-        $mime = $mimes[$nameParts[1]]['mime'];
+      if (isset($mimes[$fileNameParts[1]])) {
+        $mime = $mimes[$fileNameParts[1]]['mime'];
 
         $sha256hash = hash('sha256',$rawData);
 
         if ($encryptUploads) {
           list($contentsEncrypted,$iv,$saltNum) = fim_encrypt($rawData);
-          $iv = dbEscape($iv);
           $saltNum = intval($saltNum);
         }
         else {
@@ -127,27 +229,64 @@ if ($continue) {
           $errDesc = 'The file uploaded is too large.';
         }
         else {
-          $prefile = dbRows("SELECT v.versionId, v.fileId, v.sha256hash FROM {$sqlPrefix}fileVersions AS v, {$sqlPrefix}files AS f WHERE v.sha256hash = '" . dbEscape($sha256hash) . "' AND v.fileId = f.fileId AND f.userId = $user[userId]");
+          $prefile = $database->select(
+            array(
+              "{$sqlPrefix}fileVersions" => array(
+                'versionId',
+                'fileId',
+                'sha256hash',
+              ),
+              "{$sqlPrefix}files" => array(
+                'fileId' => 'vfileId',
+              ),
+            ),
+            array(
+              'both' => array(
+                array(
+                  'type' => 'e',
+                  'left' => array(
+                    'type' => 'column',
+                    'value' => 'sha256hash',
+                  ),
+                  'right' => array(
+                    'type' => 'string',
+                    'value' => $sha256hash,
+                  ),
+                ),
+                array(
+                  'type' => 'e',
+                  'left' => array(
+                    'type' => 'column',
+                    'value' => 'fileId',
+                  ),
+                  'right' => array(
+                    'type' => 'column',
+                    'value' => 'vfileId',
+                  ),
+                ),
+              ),
+            )
+          );
 
           if ($prefile) {
             $webLocation = "{$installUrl}file.php?hash={$prefile[sha256hash]}";
 
-            if (isset($_POST['autoInsert'])) {
-              $room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = " . (int) $_POST['roomId']);
+            if ($request['autoInsert']) {
+              $room = $slaveDatabase->getRoom($request['roomId']);
 
               fim_sendMessage($webLocation,$user,$room,'image');
             }
           }
           else {
-            $database->insert(array(
+            $fileContentsbase->insert(array(
               'userId' => $user['userId'],
-              'name' => $name,
+              'name' => $fileName,
               'mime' => $mime,
             ),"{$sqlPrefix}files");
 
             $fileId = dbInsertId();
 
-            $database->insert(array(
+            $fileContentsbase->insert(array(
               'fileId' => $fileId,
               'sha256hash' => $sha256hash,
               'salt' => $saltNum,
@@ -157,8 +296,8 @@ if ($continue) {
 
             $webLocation = "{$installUrl}file.php?hash={$md5hash}";
 
-            if (isset($_POST['autoInsert'])) {
-              $room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = " . (int) $_POST['roomId']);
+            if ($request['autoInsert']) {
+              $room = $slaveDatabase->getRoom($request['roomId']);
 
               fim_sendMessage($webLocation,$user,$room,'image');
             }
@@ -174,7 +313,23 @@ if ($continue) {
 }
 
 
+
+/* Update Data for Errors */
+$xmlData['uploadFile']['errStr'] = ($errStr);
+$xmlData['uploadFile']['errDesc'] = ($errDesc);
+
+
+
+/* Plugin Hook End */
+($hook = hook('uploadFile_end') ? eval($hook) : '');
+
+
+
+/* Output Data */
 echo fim_outputApi($xmlData);
 
+
+
+/* Close Database Connection */
 dbClose();
 ?>

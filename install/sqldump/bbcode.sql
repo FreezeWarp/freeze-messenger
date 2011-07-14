@@ -16,11 +16,13 @@
 CREATE TABLE IF NOT EXISTS `{prefix}bbcode` (
   `bbcodeId` int(10) NOT NULL AUTO_INCREMENT COMMENT 'A unique identifier for the word.',
   `bbcodeName` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The name of the BBcode for display purposes.',
-  `options` int(4) NOT NULL DEFAULT 1 COMMENT 'A bitfield containing column options:\n\n1 - Enabled (TRUE) | Disabled (FALSE)\n2 - Can be Toggled by Rooms (TRUE) | Cannot be Toggled by Rooms (FALSE)\n4 - Default to On For Rooms (TRUE) | Default to Off for Rooms (FALSE)'
+  `options` int(4) NOT NULL DEFAULT 1 COMMENT 'A bitfield containing column options:\n\n1 - Enabled (TRUE) | Disabled (FALSE)\n2 - Can be Toggled by Rooms (TRUE) | Cannot be Toggled by Rooms (FALSE)\n4 - Default to On For Rooms (TRUE) | Default to Off for Rooms (FALSE)',
   `searchRegex` varchar(1000) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The regex to use for BBcode searching.',
   `replacement` varchar(1000) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'The replacement text to be used.',
   PRIMARY KEY (`bbcodeId`)
-) ENGINE={engine} COMMENT '' DEFAULT CHARSET=utf8;
+) ENGINE={engine} DEFAULT CHARSET=utf8;
+
+-- DIVIDE
 
 INSERT INTO `{prefix}bbcode` (`bbcodeName`, `searchRegex`, `replacement`) VALUES
 ('Bold', '/\[(b|strong)\](.+?)\[\/(b|strong)\]/is', '<span style="font-weight: bold;">$2</span>'),
@@ -30,10 +32,7 @@ INSERT INTO `{prefix}bbcode` (`bbcodeName`, `searchRegex`, `replacement`) VALUES
 ('Link','/\[url\]([^\"\<\>]*?)\[\/url\]/is', '<a href="$1" target="_BLANK">$1</a>'),
 ('Email', '/\[email\](.*?)\[\/email\]/is', '<a href="mailto:$1">$1</a>'),
 ('Colour', '/\[(color|colour)=("|)(.*?)("|)\](.*?)\[\/(color|colour)\]/is', '<span style="color: $3;">$5</span>'),
-('Highlight', '/\[(hl|highlight|bg|background)=("|)(.*?)("|)\](.*?)\[\/(hl|highlight|bg|background)\]/is', '<span style="background-color: $3;">$5</span>')
+('Highlight', '/\[(hl|highlight|bg|background)=("|)(.*?)("|)\](.*?)\[\/(hl|highlight|bg|background)\]/is', '<span style="background-color: $3;">$5</span>'),
 ('Image', '/\[img\](.*?)\[\/img\]/is', '<a href="$1" target="_BLANK"><img src="$1" alt="image" class="embedImage" /></a>'),
 ('Image (with Alternate Text)', '/\[img=("|)(.*?)("|)\](.*?)\[\/img\]/is','<a href="$4" target="_BLANK"><img src="$4" alt="$2" class="embedImage" /></a>'),
 ('Youtube Embed', '/\[youtube\](.*?)\[\/youtube\]/is', '<object width="420" height="255" wmode="transparent"><param name="movie" value="http://www.youtube.com/v/$1=en&amp;fs=1&amp;rel=0&amp;border=0"></param><param name="allowFullScreen" value="true"></param><embed src="http://www.youtube.com/v/$1&amp;hl=en&amp;fs=1&amp;rel=0&amp;border=0" type="application/x-shockwave-flash" allowfullscreen="true" width="420" height="255" wmode="opaque"></embed></object>');
-
-    ,
-    ,

@@ -32,21 +32,50 @@ $apiRequest = true;
 require_once('../global.php');
 require_once('../functions/parserFunctions.php');
 
-$statusType = fim_urldecode($_POST['statusType']); // typing, status
-$statusValue = fim_urldecode($_POST['statusValue']);
-
-$roomId = (int) $_POST['roomId'];
-$room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE roomId = $roomId");
 
 
+/* Get Request Data */
+$request = fim_sanitizeGPC(array(
+  'post' => array(
+    'roomId' => array(
+      'type' => 'string',
+      'default' => 'raw',
+      'context' => array(
+         'type' => 'int',
+      ),
+      'require' => false,
+    ),
+
+    'statusType' => array(
+      'type' => 'string',
+      'require' => false,
+    ),
+
+    'statusValue' => array(
+      'type' => 'string',
+      'require' => false,
+    ),
+  ),
+));
+
+
+
+/* Get Room Data */
+$room = $slaveDatabase->getRoom($request['roomId']);
+
+
+
+/* Plugin Hook Start */
 ($hook = hook('setStatus_start') ? eval($hook) : '');
 
 
+
+/* Start Processing */
 if (!$room) { // Bad room.
   $errStr = 'badroom';
   $errDesc = 'That room could not be found.';
 }
-elseif (!fim_hasPermission($room,$user,'view',true)) { // Not allowed to post.
+elseif (!fim_hasPermission($room,$user,'view',true)) { // Not allowed to see room.
   $errStr = 'noperm';
   $errDesc = 'You are not allowed to post in this room.';
 }
@@ -57,7 +86,7 @@ else {
     $value = (int) $statusValue;
   }
   elseif ($statusType == 'status') {
-    if (!in_array($value,array('available','away','busy','invisible','offline'))) {
+    if (in_array($value,array('available','away','busy','invisible','offline'))) {
       ($hook = hook('setStatus_inner_query ') ? eval($hook) : '');
 
       $database->update(array(
