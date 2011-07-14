@@ -1,0 +1,10 @@
+========FreezeMessenger========
+>>Copyright (c) 2011 Joseph T. Parsons <josephtparsons@gmail.com>
+>>Licensed under the GPLv3 (see LICENSE)
+
+>>PHP 5.2, a capable server (Apache, nginx), MySQL required.
+>>PHP's MCrypt, Hash, MBString, MySQL Libraries Required
+
+>>To upload, use FTP or another means of uploading the files here.
+>>To install, navigate to the directory install/ and proceed from there.
+>>To get further help, navigate to the docs/ directory, which contains extensive help.
