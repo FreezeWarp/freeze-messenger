@@ -71,12 +71,19 @@ elseif (floatval(PHP_VERSION) <= 5.3) { // Removed outright in 5.4, may as well 
   }
 }
 
+// Remove in FIM4
+if(!defined('__DIR__')) {
+  $iPos = strrpos(__FILE__, "/");
+  define("__DIR__", substr(__FILE__, 0, $iPos) . "/");
+}
+
 
 /* Require Libraries */
-require_once('config.php'); // Configuration Variables
-require_once('functions/mysql.php'); // MySQL Library
-require_once('functions/commonQueries.php');
-require_once('functions/generalFunctions.php'); // Various Functions
+require(__DIR__ . '/config.php'); // Configuration Variables
+require(__DIR__ . '/functions/mysql.php'); // MySQL Library (DEPRECATED)
+require(__DIR__ . '/functions/mysqlOOP.php'); // MySQL OOP Library
+require(__DIR__ . '/functions/commonQueries.php'); // FIM-specific Extension to MySQL OOP Library
+require(__DIR__ . '/functions/generalFunctions.php'); // Various Functions
 
 
 /* Other Stuff */
@@ -157,7 +164,7 @@ if ($compressOutput) { // Compress Output for transfer if configured to.
   ob_start(fim_htmlCompact);
 }
 
-require_once('validate.php'); // User Validation
+require_once(__DIR__ . '/validate.php'); // User Validation
 
 
 

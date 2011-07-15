@@ -49,7 +49,4 @@ function dbClose($link = false) {
 //  $integrationDatabase->close();
 //  $slaveDatabase->close();
 }
-
-
-require_once('mysqlOOP.php');
 ?>

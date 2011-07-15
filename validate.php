@@ -29,7 +29,7 @@
 
 ///* Require Base *///
 
-require_once('global.php');
+require_once(dirname(__FILE__) . '/global.php');
 
 
 
@@ -39,7 +39,7 @@ require_once('global.php');
 
 ///* Some Pre-Stuff *///
 
-require('functions/loginReqs.php');
+require(dirname(__FILE__) . '/functions/loginReqs.php');
 
 
 static $api, $goodVersion;
