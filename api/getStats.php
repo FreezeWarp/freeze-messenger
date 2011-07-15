@@ -89,14 +89,18 @@ if (count($request['rooms']) > 0) {
       ),
     ),
     array(
-      'type' => 'in',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'roomId',
-      ),
-      'right' => array(
-        'type' => 'array',
-        'value' => $request['rooms'],
+      'both' => array(
+        array(
+          'type' => 'in',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'roomId',
+          ),
+          'right' => array(
+            'type' => 'array',
+            'value' => $request['rooms'],
+          ),
+        ),
       ),
     )
   );
@@ -124,6 +128,7 @@ if (count($request['rooms']) > 0) {
         "{$sqlPrefix}roomStats" => array(
           'roomId' => 'sroomId',
           'userId' => 'suserId',
+          'messages' => 'messages',
         ),
         "{$sqlPrefix}users" => array(
           'userId' => 'userId',
@@ -159,7 +164,7 @@ if (count($request['rooms']) > 0) {
         ),
       ),
       array(
-        'count' => 'desc',
+        'messages' => 'desc',
       ),
       false,
       $request['number']

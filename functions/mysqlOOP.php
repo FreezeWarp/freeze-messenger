@@ -191,18 +191,23 @@ class database {
       if (is_array($sort)) {
         if (count($sort) > 0) {
           foreach ($sort AS $sortCol => $direction) {
-            switch (strtolower($direction)) {
-              case 'asc':
-              $directionSym = 'ASC';
-              break;
-              case 'desc':
-              $directionSym = 'DESC';
-              break;
-              default:
-              $directionSym = 'ASC';
-              break;
+            if (isset($reverseAlias[$sortCol])) {
+              switch (strtolower($direction)) {
+                case 'asc':
+                $directionSym = 'ASC';
+                break;
+                case 'desc':
+                $directionSym = 'DESC';
+                break;
+                default:
+                $directionSym = 'ASC';
+                break;
+              }
+              $finalQuery['sort'][] = $reverseAlias[$sortCol] . " $directionSym";
             }
-            $finalQuery['sort'][] = $reverseAlias[$sortCol] . " $directionSym";
+            else {
+              throw new Exception('Unrecognized sort column: ' . $sortCol);
+            }
           }
 
           $finalQuery['sort'] = implode(', ',$finalQuery['sort']);

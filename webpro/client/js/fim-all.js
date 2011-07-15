@@ -2006,7 +2006,7 @@ popup = {
         return false;
       },
       error: function() {
-        dia.error('Failed to show all rooms');
+        dia.error('Failed to obtain stats.');
 
         return false;
       }

@@ -47,15 +47,18 @@ $xmlData = array(
         'poll' => (bool) true,
         'push' => (bool) false,
       ),
+
       'fileUploads' => array(
         'enabled' => (bool) $enableUploads,
         'generalEnabled' => (bool) $enableGeneralUploads,
         'maxAll' => (int) $uploadMaxFiles,
         'maxUser' => (int) $uploadUserMaxFiles,
       ),
+
       'outputBuffer' => array(
         'comressOutput' => (bool) $compressOutput,
       ),
+
       'phpVersion' => (float) phpversion(), // We won't display the full version as it could pose an unneccessary security risk.
     ),
   ),

@@ -21,12 +21,65 @@
 
 ///* Prerequisites *///
 
+/* Load All Needed Modules */
+if (ini_get('enable_dl') == true && function_exists('dl')) {
+  $dlEnabled = true;
+}
+else {
+  $dlEnabled = false;
+}
+
+foreach (array('mysql','json','mbstring','mcrypt','pcre','apc') AS $module) {
+  if (!extension_loaded($module)) {
+    if (!$dlEnabled) {
+      die("The module $module could not be found or loaded (loading is disabled). Please install PHP mysql compatibility.");
+    }
+    elseif (!dl($module . PHP_SHLIB_SUFFIX)) {
+      die("The module $module could not be found or loaded. Please install PHP mysql compatibility.");
+    }
+  }
+}
+
+
+/* Version Requirement, Magic Quotes */
+$magicQuotesExist = false; // So we can keep track.
+
+/*if (apc_fetch('fim_sanity') === true) {
+  die('Hello');
+}
+else*/if (floatval(PHP_VERSION) <= 5.1) { // We won't bother supporting older PHP; too much hassle. We will also raise this to 5.3 in the next version.
+  die('The installed version of PHP is out of date. Only PHP versions 5.2 and above are supported. Contact your server host for more information if possible.');
+}
+elseif (floatval(PHP_VERSION) <= 5.3) { // Removed outright in 5.4, may as well save a CPU cycle or two.
+  if (function_exists('get_magic_quotes_runtime')) { // Really, in the future, even this function will be removed as well, but it is still there in 5.4 for all the good scripts that use it to disable 'em.
+    if (get_magic_quotes_runtime()) {
+      $magicQuotesExist = true;
+
+      if (ini_set('magic_quotes_runtime', 0)) {
+        set_magic_quotes_runtime(false);
+      }
+      else {
+        die('Magic Quotes is enabled and it was not possible to disable this "feature". Please disable magic quotes in php.ini. More information can be found in the <a href="http://php.net/manual/en/security.magicquotes.disabling.php">PHP manual</a>.');
+      }
+    }
+
+    if (get_magic_quotes_gpc()) { // Note: We will also assume the above function_exists counts for this one.
+      $magicQuotesExist = true;
+
+      die('Magic Quotes is enabled and it was not possible to disable this "feature". Please disable magic quotes in php.ini. More information can be found in the <a href="http://php.net/manual/en/security.magicquotes.disabling.php">PHP manual</a>.'); // In theory, we could just strip the globals, but is it really worth the CPU cycles?
+    }
+  }
+}
+
+
+/* Require Libraries */
 require_once('config.php'); // Configuration Variables
 require_once('functions/mysql.php'); // MySQL Library
 require_once('functions/commonQueries.php');
 require_once('functions/generalFunctions.php'); // Various Functions
 
 
+/* Other Stuff */
 if (isset($apiRequest)) {
   if ($apiRequest === true) {
     sleep((isset($config['apiPause']) ? $config['apiPause'] : .125)); // This prevents flooding the server/DoSing. It's included since I've done it to myself during development...
