@@ -35,7 +35,7 @@ $request = fim_sanitizeGPC(array(
   'get' => array(
     'users' => array(
       'type' => 'string',
-      'require' => true,
+      'require' => false,
       'default' => '',
       'context' => array(
          'type' => 'csv',
@@ -82,16 +82,17 @@ $uploads = $database->select(
       'userId' => 'userId',
       'rating' => 'rating',
       'flags' => 'flags',
-      'sha256hash' => 'sha256hash',
     ),
     "{$sqlPrefix}fileVersions" => array(
-      'vfileId' => 'vfileId',
+      'fileId' => 'vfileId',
+      'md5hash' => 'md5hash',
+      'sha256hash' => 'sha256hash',
     ),
   ),
   array(
     'both' => array(
       array(
-        'type' => 'e'
+        'type' => 'e',
         'left' => array(
           'type' => 'column',
           'value' => 'fileId',

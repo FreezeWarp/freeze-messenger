@@ -21,7 +21,7 @@
 
 ///* Prerequisites *///
 
-foreach (array('mysql','json','mbstring','mcrypt','pcre') AS $module) {
+foreach (array('mysql','json','mbstring','mcrypt','hash','pcre') AS $module) {
   if (!extension_loaded($module)) {
     die("The module $module could not be found or loaded (loading is disabled). Please install PHP $module compatibility. See the documetation for help.");
   }

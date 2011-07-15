@@ -57,20 +57,21 @@ switch ($_REQUEST['phase']) {
   Still, there are some server requirements to using FreezeMessenger. Make sure all of the following are installed, then click "Next" below:<br />
 
   <ul>
-    <li>MySQL 5.0+</li>
+    <li>MySQL</li>
     <li>PHP 5.0+ (' . (floatval(phpversion()) > 5.0 ? 'Looks Good' : 'Not Detected - Version ' . phpversion() . ' Installed') . ')</li>
     <ul>
-      <li>Multibyte String Extension (' . (function_exists('mb_get_info') ? 'Looks Good' : 'Not Detected') . ')</li>
-      <li>MySQLi Extension (' . (function_exists('mysqli_connect') ? 'Looks Good' : 'Not Detected') . ')</li>
-      <li>MySQL Extension (' . (function_exists('mysql_connect') ? 'Looks Good' : 'Not Detected') . ')</li>
-      <li>Hash Extension (' . (function_exists('hash') ? 'Looks Good' : 'Not Detected') . ')</li>
-      <li>Date/Time Extension (' . (function_exists('date') ? 'Looks Good' : 'Not Detected') . ')</li>
-      <li>MCrypt Extension (' . (function_exists('mcrypt_encrypt') ? 'Looks Good' : 'Not Detected') . ')</li>
-      <li>Multibyte String Extension (' . (function_exists('mb_get_info') ? 'Looks Good' : 'Not Detected') . ')</li>
+      <li>MySQL Extension (' . (function_exists('mysql_connect') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+      <li>Hash Extension (' . (function_exists('hash') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+      <li>Date/Time Extension (' . (function_exists('date') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+      <li>MCrypt Extension (' . (function_exists('mcrypt_encrypt') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+      <li>Multibyte String Extension (' . (function_exists('mb_get_info') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+      <li>Optional: APC Extension (' . (function_exists('apc_add') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+      <li>Optional, but Required for Installation: MySQLi Extension (' . (function_exists('mysqli_connect') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
     </ul>
     <li>Proper Permissions (for automatic configuration file generation)</li>
     <ul>
-      <li>Origin Directory Writable (' . (is_writable('../') ? 'Looks Good' : 'Nope') . ')</li>
+      <li>Origin Directory Writable (' . (is_writable('../') ? 'Looks Good' : '<strong>Nope</strong>') . ')</li>
+      <li>Config File Absent (' . (!file_exists('../config.php') ? 'Looks Good' : '<strong>Nope</strong>') . ')</li>
     </ul>
   </ul><br />
 
