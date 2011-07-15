@@ -65,10 +65,10 @@ elseif (floatval(PHP_VERSION) <= 5.3) { // Removed outright in 5.4, may as well 
   if (ini_get('register_globals') === true) { // Note: This can not be altered with ini_set, so... we won't even bother.
     die('Register Globals is enabled. Please disable register_globals in php.ini. More information can be found in the <a href="http://www.php.net/manual/en/security.globals.php">PHP manual</a>, and in the documentation.');
   }
-}
 
-if (!$magicQuotesExist) {
-  apc_store('fim_sanity',true,0); // Avoid future slowdown (though it is rather negligible).
+  if (!$magicQuotesExist) {
+    apc_store('fim_sanity',true,0); // Avoid future slowdown (though it is rather negligible).
+  }
 }
 
 
@@ -249,7 +249,10 @@ if (isset($reqHooks)) {
 
 if (isset($reqPhrases)) {
   if ($reqPhrases === true) {
-    if (!$templates = apc_fetch('fim_templates')) {
+    $templates = apc_fetch('fim_templates');
+    $templateVars = apc_fetch('fim_templateVars');
+
+    if (!$templates || !$templateVars) {
       $templates2 = $slaveDatabase->select(
         array(
           "{$sqlPrefix}templates" => array(
@@ -275,6 +278,7 @@ if (isset($reqPhrases)) {
 
       unset($templates2);
       apc_store('fim_templates',$templates,0);
+      apc_store('fim_templateVars',$templateVars,0);
     }
   }
 }
