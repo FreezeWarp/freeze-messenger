@@ -877,16 +877,18 @@ var standard = {
     }
 
 
-    $('#searchText').change(function() {
+    $('#archiveSearch').unbind('change');
+    $('#searchText').bind('change',function() {
       standard.archive({
         idMax : options.idMax,
         idMin : options.idMin,
         roomId : options.roomId,
-        search : $(this).val()
+        search : $('#searchText').val()
       });
     });
 
-    $('#archiveSearch').submit(function() {
+    $('#archiveSearch').unbind('submit');
+    $('#archiveSearch').bind('submit',function() {
       standard.archive({
         idMax : options.idMax,
         idMin : options.idMin,
@@ -952,8 +954,22 @@ var standard = {
       }
     })).done(function() {
       $('#archiveMessageList').html(data);
-      $('#archiveNext').attr('onclick','standard.archive({idMin : ' + lastMessage + ', roomId: ' + options.roomId + '});');
-      $('#archivePrev').attr('onclick','standard.archive({idMax : ' + firstMessage + ', roomId: ' + options.roomId + '});');
+
+      $('#archiveNext').unbind('click');
+      $('#archivePrev').unbind('click');
+
+      $('#archiveNext').bind('click',function() {
+        standard.archive({
+          idMin : lastMessage,
+          roomId: options.roomId
+        })
+      });
+      $('#archivePrev').bind('click',function() {
+        standard.archive({
+          idMax : firstMessage,
+          roomId: options.roomId
+        })
+      });
 
       if (options.callback) {
         options.callback(data);

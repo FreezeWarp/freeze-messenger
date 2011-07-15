@@ -296,18 +296,32 @@ $searchWordConverts = array(
  * If enabled, experimental $longPolling support will be used instead of normal polling.
  * This has several benefits: it places less load on the server, less load on the user, allows for far faster connections, and is generally smoother.
  * However, at the same time, many (if not most) server configurations will have issues with this. */
-$longPolling = false; // If true, experimental longpolling support will be enabled. In general, it is recommended you NOT set this to true.
+$longPolling = false;
 
 /* $anonymousUser
  * If specified, a single user can be used to allow all unregistered / not-logged in to post messages.
- * These users will be appended a number (stored in their session hash) to distinguish between themselves.
+ * These users will be appended a number (stored in their session hash but lost quickly) to distinguish between themselves.
  * Leave false to not enable this feature. */
 $anonymousUser = 0;
 
+/* $config['fullTextArchive']
+ * This enables full text archive searching.
+ * Like all $config directives, it will be moved to the database in v4.
+ * This feature is completely stable, but is also VERY slow on large installations. It is not optimized, but could still work. */
+$config['fullTextArchive'] = false;
+
+/* $config['cacheKicks']
+ * This enables APC caching of kicked users.
+ * This feature is mostly stable, SIGNIFICANTLY reduces the number of queries required at each page load, but on large installations could fill up the APC cache, or be used as an attack vector to do so (we're not sure). */
+$config['cacheKicks'] = false;
+
+/* $config['cacheKicksRefresh']
+ * This is the time (in seconds) after which the kicks will be refreshed if cached.
+ * 60 seconds is a fairly sane default. */
+$config['cacheKicksRefresh'] = 60;
 
 
-
-// Unlisted variables: $messageLimit, $onlineThreshold, $installUrl, $installLoc, $sessionExpire, $roomLengthLimit
+// Unlisted variables: $config['defaultMessageLimit'], $config['defaultOnlineThreshold'], $installUrl, $installLoc, $sessionExpire, $roomLengthLimit
 // Learn about them in the documentation.
 
 

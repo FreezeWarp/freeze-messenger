@@ -369,43 +369,28 @@ function fim3parse_keyWords($string,$messageId) {
   if (count($stringPiecesAdd) > 0) {
     sort($stringPiecesAdd);
 
-    foreach ($stringPiecesAdd AS $piece) {
-      $phraseData = $database->select(
-        array(
-          "{$sqlPrefix}searchPhrases" => array(
-            'phraseName' => 'phraseName',
-          ),
+
+    $phraseData = $database->select(
+      array(
+        "{$sqlPrefix}searchPhrases" => array(
+          'phraseName' => 'phraseName',
+          'phraseId' => 'phraseId',
         ),
-        array(
-          'both' => array(
-            array(
-              'type' => 'e',
-              'left' => array(
-                'type' => 'column',
-                'value' => 'phraseName',
-              ),
-              'right' => array(
-                'type' => 'string',
-                'value' => $piece,
-              ),
-            ),
-          ),
-        )
-      );
-      $phraseData = $phraseData->getAsArray(false);
+      )
+    );
+    $phraseData = $phraseData->getAsArray('phraseName');
 
 
-
-      if (!$phraseData) {
+    foreach ($stringPiecesAdd AS $piece) {
+      if (!isset($phraseData[$piece])) {
         $database->insert(array(
           'phraseName' => $piece,
         ),
         "{$sqlPrefix}searchPhrases");
-
-        $phraseId = dbInsertId();
+        $phraseId = $database->insertId;
       }
       else {
-        $phraseId = $phraseData['phraseId'];
+        $phraseId = $phraseData[$piece]['phraseId'];
       }
 
       $database->insert(array(
@@ -537,7 +522,7 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
     'ip' => $_SERVER['REMOTE_ADDR'],
     'flag' => $flag,
   ),"{$sqlPrefix}messages");
-  $messageId = dbInsertId();
+  $messageId = $database->insertId;
 
   $database->insert(array(
     'messageId' => (int) $messageId,
@@ -558,7 +543,7 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
     'flag' => $flag,
   ),"{$sqlPrefix}messagesCached");
 
-  $messageId2 = dbInsertId();
+  $messageId2 = $database->insertId;
 
 
 

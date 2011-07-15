@@ -200,7 +200,7 @@ $request = fim_sanitizeGPC(array(
     'onlineThreshold' => array(
       'type' => 'int',
       'require' => false,
-      'default' => (isset($onlineThreshold) ? $onlineThreshold : 15),
+      'default' => (isset($config['defaultOnlineThreshold']) ? $config['defaultOnlineThreshold'] : 15),
       'context' => array(
         'type' => 'int',
       ),
@@ -209,7 +209,7 @@ $request = fim_sanitizeGPC(array(
     'messageLimit' => array(
       'type' => 'int',
       'require' => false,
-      'default' => (isset($messageLimit) ? $messageLimit : 50),
+      'default' => (isset($config['defaultMessageLimit']) ? $config['defaultMessageLimit'] : 50),
       'context' => array(
         'type' => 'int',
       ),
@@ -332,11 +332,6 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
     "{$sqlPrefix}searchMessages" => array(
       'phraseId' => 'mphraseId',
       'messageId' => 'messageId',
-      'messageId 2' => array(
-        'context' => 'join',
-        'separator' => ',',
-        'name' => 'messageIds',
-      ),
     ),
   );
   $queryParts['searchSelect']['conditions'] = array(
@@ -352,21 +347,38 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
           'value' => 'pphraseId',
         ),
       ),
-      array(
-        'type' => 'in',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'phraseName',
-        ),
-        'right' => array(
-          'type' => 'array',
-          'value' => $searchArray2,
-        ),
-      ),
     ),
   );
+  $queryParts['searchSelect']['join'] = false;
 
-  if (true) {
+  if (!$config['fullTextArchive']) { // Original, Fastest Algorithm
+    $queryParts['searchSelect']['columns']["{$sqlPrefix}searchMessages"]['messageId 2'] = array(
+      'context' => 'join',
+      'separator' => ',',
+      'name' => 'messageIds',
+    );
+    $queryParts['searchSelect']['conditions']['both'][] = array(
+      'type' => 'in',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'phraseName',
+      ),
+      'right' => array(
+        'type' => 'array',
+        'value' => $searchArray2,
+      ),
+    );
+
+    $queryParts['searchSelect']['join'] = 'messageId';
+  }
+  else { // Slower Algorithm
+    $queryParts['searchSelect']['columns']["{$sqlPrefix}searchMessages"]['messageId 2'] = array(
+      'context' => 'join',
+      'separator' => ',',
+      'name' => 'messageIds',
+    );
+
+    $queryParts['searchSelect']['join'] = 'mphraseId';
   }
 
   $searchMessageIds = $database->select(
@@ -375,9 +387,32 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
     false,
     $queryParts['searchSelect']['join']
   );
-  $searchMessageIds = $searchMessageIds->getAsArray(false);
 
-  $request['messages'] = fim_arrayValidate(explode(',',$searchMessageIds['messageIds']),'int',true);
+  if (!$config['fullTextArchive']) {
+    $searchMessageIds = $searchMessageIds->getAsArray(false);
+    $searchMessages = explode(',',$searchMessageIds['messageIds']);
+  }
+  else {
+    $searchMessageIds = $searchMessageIds->getAsArray('mphraseId');
+
+    foreach ($searchMessageIds AS &$phrase) {
+      foreach($searchArray2 AS $arrayPiece) {
+        if (strpos($phrase['phraseName'],$arrayPiece) !== false) {
+          $searchMessageIds2[] = $phrase;
+        }
+      }
+    }
+
+    foreach ($searchMessageIds2 AS $phrase) {
+      foreach (explode(',',$phrase['messageIds']) AS $message) {
+        $searchMessageIds3[] = $message;
+      }
+    }
+
+    $searchMessages = $searchMessageIds3;
+  }
+
+  $request['messages'] = fim_arrayValidate($searchMessages,'int',true);
 }
 
 
@@ -735,15 +770,14 @@ if (is_array($request['rooms'])) {
         if (is_array($messages)) {
           if (count($messages) > 0) {
             foreach ($messages AS $id => $message) {
-
               $message = fim_decrypt($message);
 
-              $message['userName'] = addslashes($message['userName']);
-              $message['apiText'] = ($message['apiText']);
-              $message['htmlText'] = ($message['htmlText']);
 
+              switch ($requst['encode']) {
+                case 'plaintext':
+                // All Good
+                break;
 
-              switch ($encode) {
                 case 'base64':
                 $message['apiText'] = base64_encode($message['apiText']);
                 $message['htmlText'] = base64_encode($message['htmlText']);

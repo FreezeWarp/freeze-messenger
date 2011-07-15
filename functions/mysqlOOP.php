@@ -319,8 +319,27 @@ LIMIT
                 $sideText[$side] = '"' . $data[$side]['value'] . '"';
                 break;
 
-                case 'equation':
-                $sideText[$side] = preg_replace('/\$([a-zA-Z\_]+)/e','$reverseAlias[\'\\1\']',$data[$side]['value']);
+                case 'equation': // This is a specific format useful for various conversions. More documentation needs to be created, but in a nutshell: $aaa = column aaa; ()+-*/ supported mathematical operators; use ',' for concatenation; use double quotes for strings.
+                // Valid equations: $aa + $bb; "b",$b,"c"
+                $equation = $data[$side]['value'];
+                $equation = preg_replace('/\$([a-zA-Z\_]+)/e','$reverseAlias[\'\\1\']',$equation);
+
+
+                $equationPieces = array();
+                if (strpos(',',$equation) !== false) { // If commas exist for concatenation...
+                  foreach(explode(',',$equation) AS $piece) { // Run through each comma-seperated part of the equation (this is used for concatenation).
+                    if (preg_match('/"([a-zA-Z0-9\*\?]+?)"/',trim($piece))) { // Yes, you can't use many things in strings. Nor should you.
+                      $piece = str_replace(array('*','?'),array('%','_'),trim($piece)); // Replace glob pieces with SQL equivs
+                    }
+                    $equationPieces[] = trim($piece); // Spaces can get in the way, but this is likely redundant with the twim two lines up.
+                  }
+
+                  if (count($equationPieces) > 0) { // Only replace the equation if things worked.
+                    $equation = 'CONCAT(' . implode(',',$equationPieces) . ')'; // Replace the equation and wrap concat for the commas (if concat used another symbol, we'd need to replace our implode accordingly).
+                  }
+                }
+
+                $sideText[$side] = $equation;
                 break;
 
                 case 'column':
@@ -377,6 +396,9 @@ LIMIT
 
               'regexp' => 'REGEXP', // Applies extended POSIX regular expression to index. It is natively implemented in MySQL, PostGreSQL, and Oracle SQL databases. It is absent in MSSQL, and the status in VoltDB and SQLite is unknown.
               'regex' => 'REGEXP', // Alias of "regexp"
+
+              'glob' => 'LIKE',
+              'like' => 'LIKE', // Alias of "glob"
             );
 
             if (isset($comparisonTypes[$data['type']])) {
