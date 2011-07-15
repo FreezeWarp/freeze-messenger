@@ -286,7 +286,7 @@ if (isset($reqPhrases)) {
 
 
 ///* Cached Directives *///
-if ($config['cacheKicks']) {
+/*if ($config['cacheKicks']) {
   if (!$cacheKicks = apc_fetch('fim_kickCache')) {
     $queryParts['cacheKicksSelect']['columns'] = array(
       "{$sqlPrefix}kick" => array(
@@ -329,7 +329,7 @@ if ($config['cacheKicks']) {
     apc_set('fim_kickCache',time(),$cacheKicks);
   }
 }
-
+*/
 
 ($hook = hook('global') ? eval($hook) : '');
 ?>
