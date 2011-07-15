@@ -21,22 +21,9 @@
 
 ///* Prerequisites *///
 
-/* Load All Needed Modules */
-if (ini_get('enable_dl') == true && function_exists('dl')) {
-  $dlEnabled = true;
-}
-else {
-  $dlEnabled = false;
-}
-
 foreach (array('mysql','json','mbstring','mcrypt','pcre','apc') AS $module) {
   if (!extension_loaded($module)) {
-    if (!$dlEnabled) {
-      die("The module $module could not be found or loaded (loading is disabled). Please install PHP mysql compatibility.");
-    }
-    elseif (!dl($module . PHP_SHLIB_SUFFIX)) {
-      die("The module $module could not be found or loaded. Please install PHP mysql compatibility.");
-    }
+    die("The module $module could not be found or loaded (loading is disabled). Please install PHP mysql compatibility.");
   }
 }
 
