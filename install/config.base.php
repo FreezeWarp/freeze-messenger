@@ -312,12 +312,13 @@ $config['fullTextArchive'] = false;
 
 /* $config['cacheKicks']
  * This enables APC caching of kicked users.
- * This feature is mostly stable, SIGNIFICANTLY reduces the number of queries required at each page load, but on large installations could fill up the APC cache, or be used as an attack vector to do so (we're not sure). */
+ * This feature is mostly stable, SIGNIFICANTLY reduces the number of queries required at each page load, but on large installations could fill up the APC cache, or be used as an attack vector to do so (we're not sure).
+ * Note that this is normally stored in a memory table anyway, and thus the speed boost is normally not that noticable. */
 $config['cacheKicks'] = false;
 
 /* $config['cacheKicksRefresh']
  * This is the time (in seconds) after which the kicks will be refreshed if cached.
- * 60 seconds is a fairly sane default. */
+ * 60 seconds is a fairly sane default.*/
 $config['cacheKicksRefresh'] = 60;
 
 

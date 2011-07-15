@@ -99,6 +99,7 @@ $errDesc = '';
 $templates = array();
 $templateVars = array();
 $config = array(); // Database configuration for the future. Plugins can fill the gaps right now, though.
+$cacheKicks = array();
 
 define("FIM_VERSION","3.0"); // Version to be used by plugins if needed.
 define("DB_BACKEND","MYSQL"); // Database backend to be used by plugins if needed; in the future other backends will be supported, and if the defined database class for whatever reason won't do, this can be used to also support others. At present, PostGreSQL is the only for-sure future backend to be supported. Definite values, if they are to be supported: "MSSQL", "ORACLE", "POSTGRESQL"
@@ -280,6 +281,52 @@ if (isset($reqPhrases)) {
       apc_store('fim_templates',$templates,0);
       apc_store('fim_templateVars',$templateVars,0);
     }
+  }
+}
+
+
+///* Cached Directives *///
+if ($config['cacheKicks']) {
+  if (!$cacheKicks = apc_fetch('fim_kickCache')) {
+    $queryParts['cacheKicksSelect']['columns'] = array(
+      "{$sqlPrefix}kick" => array(
+        'kickerId' => 'kkickerId',
+        'userId' => 'kuserId',
+        'roomId' => 'kroomId',
+        'length' => 'klength',
+        'time' => array(
+          'name' => 'ktime',
+          'context' => 'time',
+        ),
+      ),
+      "{$sqlPrefix}users user" => array(
+        'userId' => 'userId',
+        'userName' => 'userName',
+        'userFormatStart' => 'userFormatStart',
+        'userFormatEnd' => 'userFormatEnd',
+      ),
+      "{$sqlPrefix}users kicker" => array(
+        'userId' => 'kickerId',
+        'userName' => 'kickerName',
+        'userFormatStart' => 'kickerFormatStart',
+        'userFormatEnd' => 'kickerFormatEnd',
+      ),
+      "{$sqlPrefix}rooms" => array(
+        'roomId' => 'roomId',
+        'roomName' => 'roomName',
+      ),
+    );
+    $queryParts['cacheKicksSelect']['conditions'] = false;
+    $queryParts['cacheKicksSelect']['sort'] = array(
+      'roomId' => 'asc',
+      'userId' => 'asc'
+    );
+
+    $cacheKicksPre = $database->select($queryParts['cacheKicksSelect']['columns'],
+      $queryParts['cacheKicksSelect']['conditions'],
+      $queryParts['cacheKicksSelect']['sort']);
+
+    apc_set('fim_kickCache',time(),$cacheKicks);
   }
 }
 
