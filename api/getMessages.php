@@ -23,16 +23,25 @@
  *
  * @param string rooms - A comma seperated list of rooms. Can be a single room in integer format. Some predefined constants can also be used.
  * Note: Using more than one room can conflict or even break the script’s execution should the watchRooms or activeUsers flags be set to true.
- * @param messageLimit - The maximum number of posts to receive, defaulting to the internal limit of (in most cases) 40. Specifying 0 removes any limit.
+ * @param int [messageLimit=40] - The maximum number of posts to receive, defaulting to the internal limit of (in most cases) 40. Specifying 0 removes any limit.
  * Note: A hardcoded maximum of 500 is in place to prevent any potential issues. This will in the future be changable by the administrator.
- * @param timestamp messageDateMin - The earliest a post could have been made. Use of messageDateMax only makes sense with no messageLimit. Do not specify to prevent checking.
- * @param timestamp messageDateMax - The latest a post could have been made. Use of messageDateMax only makes sense with no messageLimit. Do not specify to prevent checking.
- * @param int messageIdMin - All posts must be after this ID. Use of messageDateMax only makes sense with no messageLimit. Do not specify to prevent checking.
- * @param int messageIdMax - All posts must be before this ID. Use of messageDateMax only makes sense with no messageLimit. Do not specify to prevent checking.
- * @param int messageIdStart - When specified WITHOUT the above two directives, messageIdStart will return all posts from this ID to this ID plus the messageLimit directive. This is strongly encouraged for all requests to the cache, e.g. for normal instant messenging sessions.
- * @param bool noping - Disables ping; useful for archive viewing.
- * @param bool watchRooms - Get unread messages from a user’s list of watchRooms (also applies to private IMs).
- * @param bool activeUsers - Returns a list of activeUsers in the room(s) if specified. This is identical to calling the getActiveUsers script, except with less data redundancy.
+ * @param timestamp [messageDateMin=null] - The earliest a post could have been made. Use of messageDateMax only makes sense with no messageLimit. Do not specify to prevent checking.
+ * @param timestamp [messageDateMax=null] - The latest a post could have been made. Use of messageDateMax only makes sense with no messageLimit. Do not specify to prevent checking.
+ * @param int [messageIdMin=null] - All posts must be after this ID. Use of messageDateMax only makes sense with no messageLimit. Do not specify to prevent checking.
+ * @param int [messageIdMax=null] - All posts must be before this ID. Use of messageDateMax only makes sense with no messageLimit. Do not specify to prevent checking.
+ * @param int [messageIdStart=null] - When specified WITHOUT the above two directives, messageIdStart will return all posts from this ID to this ID plus the messageLimit directive. This is strongly encouraged for all requests to the cache, e.g. for normal instant messenging sessions.
+ * @param bool [noping=false] - Disables ping; useful for archive viewing.
+ * @param bool [watchRooms=false] - Get unread messages from a user’s list of watchRooms (also applies to private IMs).
+ * @param bool [activeUsers=false] - Returns a list of activeUsers in the room(s) if specified. This is identical to calling the getActiveUsers script, except with less data redundancy.
+ * @param bool [longPolling=false] - Whether or not to enable experimental longPolling. It will be replaced with "pollMethod=push|poll|longPoll" in version 4 when all three methods will be supported (though will be backwards compatible).
+ * @param bool [showDeleted=false] - Whether or not to show deleted messages. You will need to be a room moderator.
+ * @param int [onlineThreshold=15] - If using the activeUsers functionality, this will alter the effective onlineThreshold to be used.
+ * @param string [search=null] - A keyword that can be used for searching through the archive. It will overwrite messages.
+ * @param string [encode=plaintext] - The encoding of messages to be used on retrieval. "plaintext" is the only accepted format currently.
+ * @param string [fields=api|html|both] - The message fields to obtain: "api", "html", or "both". The "html" result returns data preformatted using BBcode and other functionality, while the API field is mostly untouched.
+ * @param string [messages=null] - A comma seperated list of message IDs that the results will be limited to. It is only intended for use with the archive, and will be over-written with the results of search.
+ *
+ * @todo Add back unread message retrieval.
 */
 
 
@@ -48,6 +57,17 @@ $longPollingWait = .25;
 $request = fim_sanitizeGPC(array(
   'get' => array(
     'rooms' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => '',
+      'context' => array(
+         'type' => 'csv',
+         'filter' => 'int',
+         'evaltrue' => true,
+      ),
+    ),
+
+    'messages' => array(
       'type' => 'string',
       'require' => false,
       'default' => '',
@@ -213,6 +233,8 @@ $request = fim_sanitizeGPC(array(
         'both',
         'api',
         'html',
+        'api,html',
+        'html,api',
       ),
       'require' => false,
       'default' => 'both',
@@ -221,7 +243,7 @@ $request = fim_sanitizeGPC(array(
 ));
 
 
-if ($longPolling && $request['longPolling']) {
+if ($longPolling && $request['longPolling'] === true) {
   $longPolling = true;
 
   set_time_limit(0);
@@ -287,7 +309,7 @@ $queryParts['roomsSelect']['sort'] = array(
 
 
 if ((strlen($request['search']) > 0) && $request['archive']) {
-  $searchArray = explode(',',$search);
+  $searchArray = explode(',',$request['search']);
 
   foreach ($searchArray AS $searchVal) {
     $searchArray2[] = str_replace(
@@ -302,47 +324,60 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
   {$sqlPrefix}searchMessages AS m
   WHERE p.phraseId = m.phraseId AND p.phraseName IN ($search2)");*/
 
-  $searchMessageIds = $database->select(
-    array(
-      "{$sqlPrefix}searchPhrases" => array(
-        'phraseName' => 'phraseName',
-        'phraseId' => 'pphraseId',
-      ),
-      "{$sqlPrefix}searchMessages" => array(
-        'phraseId' => 'mphraseId',
-        'messageId' => 'messageId',
+  $queryParts['searchSelect']['columns'] = array(
+    "{$sqlPrefix}searchPhrases" => array(
+      'phraseName' => 'phraseName',
+      'phraseId' => 'pphraseId',
+    ),
+    "{$sqlPrefix}searchMessages" => array(
+      'phraseId' => 'mphraseId',
+      'messageId' => 'messageId',
+      'messageId 2' => array(
+        'context' => 'join',
+        'separator' => ',',
+        'name' => 'messageIds',
       ),
     ),
-    array(
-      'both' => array(
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'mphraseId',
-          ),
-          'right' => array(
-            'type' => 'column',
-            'value' => 'pphraseId',
-          ),
+  );
+  $queryParts['searchSelect']['conditions'] = array(
+    'both' => array(
+      array(
+        'type' => 'e',
+        'left' => array(
+          'type' => 'column',
+          'value' => 'mphraseId',
         ),
-        array(
-          'type' => 'in',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'phraseName',
-          ),
-          'right' => array(
-            'type' => 'array',
-            'value' => $searchArray2,
-          ),
+        'right' => array(
+          'type' => 'column',
+          'value' => 'pphraseId',
+        ),
+      ),
+      array(
+        'type' => 'in',
+        'left' => array(
+          'type' => 'column',
+          'value' => 'phraseName',
+        ),
+        'right' => array(
+          'type' => 'array',
+          'value' => $searchArray2,
         ),
       ),
     ),
-    false
   );
 
-  $whereClause .= " AND messageId IN ($searchMessageIds[messages]) ";
+  if (true) {
+  }
+
+  $searchMessageIds = $database->select(
+    $queryParts['searchSelect']['columns'],
+    $queryParts['searchSelect']['conditions'],
+    false,
+    $queryParts['searchSelect']['join']
+  );
+  $searchMessageIds = $searchMessageIds->getAsArray(false);
+
+  $request['messages'] = fim_arrayValidate(explode(',',$searchMessageIds['messageIds']),'int',true);
 }
 
 
@@ -567,7 +602,7 @@ if (is_array($request['rooms'])) {
         );
       }
 
-      if (!$request['showDeleted'] && $request['archive']) {
+      if (!$request['showDeleted'] === true && $request['archive'] === true) {
         $queryParts['messagesSelect']['conditions']['both'][] = array(
           'type' => 'e',
           'left' => array(
@@ -581,8 +616,25 @@ if (is_array($request['rooms'])) {
         );
       }
 
+      if (count($request['messages']) > 0) {
+        $queryParts['messagesSelect']['conditions']['both'][] = array(
+          'type' => 'in',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'messageId',
+          ),
+          'right' => array(
+            'type' => 'array',
+            'value' => $request['messages'],
+          ),
+        );
+      }
+
+
       switch ($request['fields']) {
         case 'both':
+        case 'api,html': // In the future we may introduce more fields that will require using comma-values.
+        case 'html,api': // Same thing.
         $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages" . (!$request['archive'] ? 'Cached' : '')]['apiText'] = 'apiText';
         $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages" . (!$request['archive'] ? 'Cached' : '')]['htmlText'] = 'htmlText';
         break;

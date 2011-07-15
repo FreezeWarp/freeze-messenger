@@ -196,7 +196,7 @@ if (count($request['rooms']) > 0) {
               'startTag' => ($totalPoster['userFormatStart']),
               'endTag' => ($totalPoster['userFormatEnd']),
             ),
-            'messageCount' => (int) $totalPoster['count'],
+            'messageCount' => (int) $totalPoster['messages'],
             'position' => (int) $position,
           );
 
