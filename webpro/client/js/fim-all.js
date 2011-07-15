@@ -1091,8 +1091,6 @@ var standard = {
               case 'INVALID_SESSION':
               sessionHash = '';
               $.cookie('fim3_sessionHash','');
-
-              dia.error("You have been logged out. Please log-in.");
               break;
 
               default:

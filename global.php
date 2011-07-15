@@ -21,9 +21,19 @@
 
 ///* Prerequisites *///
 
-foreach (array('mysql','json','mbstring','mcrypt','pcre','apc') AS $module) {
+foreach (array('mysql','json','mbstring','mcrypt','pcre') AS $module) {
   if (!extension_loaded($module)) {
-    die("The module $module could not be found or loaded (loading is disabled). Please install PHP mysql compatibility.");
+    die("The module $module could not be found or loaded (loading is disabled). Please install PHP $module compatibility. See the documetation for help.");
+  }
+}
+
+if (!extension_loaded('apc')) { // APC is strongly recommended, but at least in version 3 not required. Instead, we simply use wrappers that do nothing.
+  function apc_fetch() {
+    return false;
+  }
+
+  function apc_store() {
+    return false;
   }
 }
 
@@ -31,31 +41,34 @@ foreach (array('mysql','json','mbstring','mcrypt','pcre','apc') AS $module) {
 /* Version Requirement, Magic Quotes */
 $magicQuotesExist = false; // So we can keep track.
 
-/*if (apc_fetch('fim_sanity') === true) {
-  die('Hello');
+if (apc_fetch('fim_sanity') === true) { // Avoid some CPU cycles.
+  // Do Nothing
 }
-else*/if (floatval(PHP_VERSION) <= 5.1) { // We won't bother supporting older PHP; too much hassle. We will also raise this to 5.3 in the next version.
+elseif (floatval(PHP_VERSION) <= 5.1) { // We won't bother supporting older PHP; too much hassle. We will also raise this to 5.3 in the next version.
   die('The installed version of PHP is out of date. Only PHP versions 5.2 and above are supported. Contact your server host for more information if possible.');
 }
 elseif (floatval(PHP_VERSION) <= 5.3) { // Removed outright in 5.4, may as well save a CPU cycle or two.
   if (function_exists('get_magic_quotes_runtime')) { // Really, in the future, even this function will be removed as well, but it is still there in 5.4 for all the good scripts that use it to disable 'em.
-    if (get_magic_quotes_runtime()) {
+    if (get_magic_quotes_runtime()) { // Note: We should consider removing the set_magic_quotes_runtime to false; it is deprecated in 5.3, so if we make that the baseline in version 4 we will do it then.
       $magicQuotesExist = true;
 
-      if (ini_set('magic_quotes_runtime', 0)) {
-        set_magic_quotes_runtime(false);
-      }
-      else {
-        die('Magic Quotes is enabled and it was not possible to disable this "feature". Please disable magic quotes in php.ini. More information can be found in the <a href="http://php.net/manual/en/security.magicquotes.disabling.php">PHP manual</a>.');
+      if (!set_magic_quotes_runtime(false)) {
+        die('Magic Quotes is enabled and it was not possible to disable this "feature". Please disable magic quotes in php.ini. More information can be found in the <a href="http://php.net/manual/en/security.magicquotes.disabling.php">PHP manual</a>, and in the documentation.');
       }
     }
 
     if (get_magic_quotes_gpc()) { // Note: We will also assume the above function_exists counts for this one.
-      $magicQuotesExist = true;
-
-      die('Magic Quotes is enabled and it was not possible to disable this "feature". Please disable magic quotes in php.ini. More information can be found in the <a href="http://php.net/manual/en/security.magicquotes.disabling.php">PHP manual</a>.'); // In theory, we could just strip the globals, but is it really worth the CPU cycles?
+      die('Magic Quotes is enabled and it was not possible to disable this "feature". Please disable magic quotes in php.ini. More information can be found in the <a href="http://php.net/manual/en/security.magicquotes.disabling.php">PHP manual</a>, and in the documentation.'); // In theory, we could just strip the globals, but is it really worth the CPU cycles?
     }
   }
+
+  if (ini_get('register_globals') === true) { // Note: This can not be altered with ini_set, so... we won't even bother.
+    die('Register Globals is enabled. Please disable register_globals in php.ini. More information can be found in the <a href="http://www.php.net/manual/en/security.globals.php">PHP manual</a>, and in the documentation.');
+  }
+}
+
+if (!$magicQuotesExist) {
+  apc_store('fim_sanity',true,0); // Avoid future slowdown (though it is rather negligible).
 }
 
 
@@ -151,44 +164,48 @@ require_once('validate.php'); // User Validation
 
 if (isset($reqPhrases)) {
   if ($reqPhrases === true) {
-    $phrases2 = $slaveDatabase->select(
-      array(
-        "{$sqlPrefix}phrases" => array(
-          'phraseId' => 'phraseId',
-          'phraseName' => 'phraseName',
-          'text_en' => 'text_en',
-          'text_jp' => 'text_jp',
-          'text_sp' => 'text_sp',
-          'text_fr' => 'text_fr',
-          'text_ge' => 'text_ge'
-        ),
-      )
-    );
-    $phrases2 = $phrases2->getAsArray('phraseId');
+    if (!$phrases = apc_fetch('fim_phrases')) {
+      $phrases2 = $slaveDatabase->select(
+        array(
+          "{$sqlPrefix}phrases" => array(
+            'phraseId' => 'phraseId',
+            'phraseName' => 'phraseName',
+            'text_en' => 'text_en',
+            'text_jp' => 'text_jp',
+            'text_sp' => 'text_sp',
+            'text_fr' => 'text_fr',
+            'text_ge' => 'text_ge'
+          ),
+        )
+      );
+      $phrases2 = $phrases2->getAsArray('phraseId');
 
 
-    // Generate the language, based on:
-    // $_REQUEST[lang] -> $user[lang] -> $defaultLanguage -> 'en'
-    // (c/g/p spec.)      (user spec.)   (admin spec.)       (hard coded default)
-    $lang = (isset($_REQUEST['lang']) ? $_REQUEST['lang'] :
-      (isset($user['lang']) ? $user['lang'] :
-        (isset($defaultLanguage) ? $defaultLanguage : 'en')));
+      // Generate the language, based on:
+      // $_REQUEST[lang] -> $user[lang] -> $defaultLanguage -> 'en'
+      // (c/g/p spec.)      (user spec.)   (admin spec.)       (hard coded default)
+      $lang = (isset($_REQUEST['lang']) ? $_REQUEST['lang'] :
+        (isset($user['lang']) ? $user['lang'] :
+          (isset($defaultLanguage) ? $defaultLanguage : 'en')));
 
-    if (isset($phrases2)) {
-      if (count($phrases2) > 0) {
-        foreach ($phrases2 AS $phrase) {
-          $phrases[$phrase['phraseName']] = $phrase['text_' . $lang];
+      if (isset($phrases2)) {
+        if (count($phrases2) > 0) {
+          foreach ($phrases2 AS $phrase) {
+            $phrases[$phrase['phraseName']] = $phrase['text_' . $lang];
 
-          if (!$phrases[$phrase['phraseName']] && $phrase['text_en']) { // If a value for the language doesn't exist, default to english.
-            $phrases[$phrase['phraseName']] = $phrase['text_en'];
+            if (!$phrases[$phrase['phraseName']] && $phrase['text_en']) { // If a value for the language doesn't exist, default to english.
+              $phrases[$phrase['phraseName']] = $phrase['text_en'];
+            }
           }
+
+          unset($phrase);
         }
-
-        unset($phrase);
       }
-    }
 
-    unset($phrases2);
+      unset($phrases2);
+
+      apc_store('fim_phrases',$phrases,0);
+    }
   }
 }
 
@@ -197,29 +214,32 @@ if (isset($reqPhrases)) {
 
 if (isset($reqHooks)) {
   if ($reqHooks === true) {
-    $hooks2 = $slaveDatabase->select(
-      array(
-        "{$sqlPrefix}hooks" => array(
-          'hookId' => 'hookId',
-          'hookName' => 'hookName',
-          'code' => 'code',
-        ),
-      )
-    );
-    $hooks2 = $hooks2->getAsArray('hookId');
+    if (!$hooks = apc_fetch('fim_hooks')) {
+      $hooks2 = $slaveDatabase->select(
+        array(
+          "{$sqlPrefix}hooks" => array(
+            'hookId' => 'hookId',
+            'hookName' => 'hookName',
+            'code' => 'code',
+          ),
+        )
+      );
+      $hooks2 = $hooks2->getAsArray('hookId');
 
 
-    if (is_array($hooks2)) {
-      if (count($hooks2) > 0) {
-        foreach ($hooks2 AS $hook) {
-          $hooks[$hook['hookName']] = $hook['code'];
+      if (is_array($hooks2)) {
+        if (count($hooks2) > 0) {
+          foreach ($hooks2 AS $hook) {
+            $hooks[$hook['hookName']] = $hook['code'];
+          }
+
+          unset($hook);
         }
-
-        unset($hook);
       }
-    }
 
-    unset($hooks2);
+      unset($hooks2);
+      apc_store('fim_hooks',$hooks,0);
+    }
   }
 }
 
@@ -229,30 +249,33 @@ if (isset($reqHooks)) {
 
 if (isset($reqPhrases)) {
   if ($reqPhrases === true) {
-    $templates2 = $slaveDatabase->select(
-      array(
-        "{$sqlPrefix}templates" => array(
-          'templateId' => 'templateId',
-          'templateName' => 'templateName',
-          'vars' => 'vars',
-          'data' => 'data',
-        ),
-      )
-    );
-    $templates2 = $templates2->getAsArray('templateId');
+    if (!$templates = apc_fetch('fim_templates')) {
+      $templates2 = $slaveDatabase->select(
+        array(
+          "{$sqlPrefix}templates" => array(
+            'templateId' => 'templateId',
+            'templateName' => 'templateName',
+            'vars' => 'vars',
+            'data' => 'data',
+          ),
+        )
+      );
+      $templates2 = $templates2->getAsArray('templateId');
 
-    if (is_array($templates2)) {
-      if (count($templates2) > 0) {
-        foreach ($templates2 AS $template) {
-          $templates[$template['templateName']] = $template['data'];
-          $templateVars[$template['templateName']] = $template['vars'];
+      if (is_array($templates2)) {
+        if (count($templates2) > 0) {
+          foreach ($templates2 AS $template) {
+            $templates[$template['templateName']] = $template['data'];
+            $templateVars[$template['templateName']] = $template['vars'];
+          }
+
+          unset($template);
         }
-
-        unset($template);
       }
-    }
 
-    unset($templates2);
+      unset($templates2);
+      apc_store('fim_templates',$templates,0);
+    }
   }
 }
 
