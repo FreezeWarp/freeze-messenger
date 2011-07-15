@@ -43,6 +43,8 @@ class database {
   */
   public function connect($host,$user,$password,$database) {
     if (!$link = mysql_connect($host,$user,$password)) { // Make the connection.
+      $this->error = 'The connection was refused: ' . mysql_error();
+
       return false;
     }
     else {
@@ -51,11 +53,15 @@ class database {
 
 
     if (!mysql_select_db($database,$this->dbLink)) { // Select the database.
+      $this->error = 'Could not select database: ' . $database;
+
       return false;
     }
 
 
     if (!mysql_query('SET NAMES "utf8"',$this->dbLink)) { // Sets the database encoding to utf8 (unicode).
+      $this->error = 'Could not run SET NAMES query.';
+
       return false;
     }
 

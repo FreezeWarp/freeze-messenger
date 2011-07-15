@@ -124,14 +124,14 @@ if ($dbConnect['core'] == $dbConnect['slave']) {
 
 $database = new fimDatabase;
 if (!$database->connect($dbConnect['core']['host'],$dbConnect['core']['username'],$dbConnect['core']['password'],$dbConnect['core']['database'])) { // Connect to MySQL
-  die('Could not connect to the database; the application has exitted.'); // Die to prevent further execution.
+  die('Could not connect to the database: ' . $database->error . '; the application has exitted.'); // Die to prevent further execution.
 }
 
 if ($integrationConnect) {
   $integrationDatabase = new fimDatabase;
 
   if (!$database->connect($dbConnect['integration']['host'],$dbConnect['integration']['username'],$dbConnect['integration']['password'],$dbConnect['integration']['database'])) { // Connect to MySQL
-    die('Could not connect to the integration database; the application has exitted.'); // Die to prevent further execution.
+    die('Could not connect to the integration database: ' . $database->error . '; the application has exitted.'); // Die to prevent further execution.
   }
 }
 else {
@@ -142,7 +142,7 @@ if ($slaveConnect) {
   $slaveDatabase = new fimDatabase;
 
   if (!$database->connect($dbConnect['slave']['host'],$dbConnect['slave']['username'],$dbConnect['slave']['password'],$dbConnect['slave']['database'])) { // Connect to MySQL
-    die('Could not connect to the slave database; the application has exitted.'); // Die to prevent further execution.
+    die('Could not connect to the slave database: ' . $database->error . '; the application has exitted.'); // Die to prevent further execution.
   }
 }
 else {
