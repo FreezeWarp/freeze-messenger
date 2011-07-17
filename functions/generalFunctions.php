@@ -525,6 +525,30 @@ function fim_encodeXml($data) {
   return $data;
 }
 
+/**
+* Encodes a string as specifically-formatted XML data attribute.
+*
+* @param string $data - The data to be encoded.
+* @return string - Encoded data.
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
+*/
+
+function fim_encodeXmlAttr($data) {
+  $ref = array(
+    '&' => '&amp;', // By placing this first, we avoid accidents!
+    '\'' => '&apos;',
+    '<' => '&lt;',
+    '>' => '&gt;',
+    '"' => '&quot;',
+  );
+
+  foreach ($ref AS $search => $replace) {
+    $data = str_replace($search, $replace, $data);
+  }
+
+  return $data;
+}
+
 
 /**
 * Converts an HTML hexadecimal code to an array containing equivilent r-g-b values.
@@ -986,6 +1010,19 @@ function fim_outputApi($data) {
       return fim_outputJson($data);
       break;
 
+      case 'phparray':
+      return fim_outputArray($data);
+      break;
+
+      case 'keys':
+      return fim_outputKeys($data);
+      break;
+
+      case 'xml2':
+      default:
+      return fim_outputXml2($data);
+      break;
+
       case 'xml':
       default:
       return fim_outputXml($data);
@@ -1013,7 +1050,7 @@ function fim_outputXml($array, $level = 0) {
   $indent = '';
   $data = '';
 
-  for($i = 0;$i<=$level;$i++) {
+  for ($i = 0; $i < $level; $i++) {
     $indent .= '  ';
   }
 
@@ -1058,6 +1095,77 @@ $data";
 
 
 /**
+* XML Alternate Parser
+*
+* @param array $array
+* @param int $level
+* @return string
+* @author Joseph Todd Parsons <josephtparsons@gmail.com>
+*/
+
+function fim_outputXml2($array, $level = 0) {
+  header('Content-type: application/xml');
+
+  $indent = '';
+  $data = '';
+
+  for ($i = 0; $i < $level; $i++) {
+    $indent .= '  ';
+  }
+
+  foreach ($array AS $key => $value) {
+    $key = explode(' ', $key);
+    $key = $key[0];
+
+    if (is_array($value)) {
+      if (hasArray($value)) {
+        $data .= "$indent<$key>\n" . fim_outputXml2($value, $level + 1) . "$indent</$key>\n";
+      }
+      else {
+        $data .= "$indent<$key";
+
+        foreach ($value AS $key => $value2) {
+          $data .= " $key=\"" . fim_encodeXmlAttr($value2) . "\"";
+        }
+
+        $data .= " />\n";
+      }
+    }
+    else {
+      if (empty($value)) {
+        $data .= "{$indent}<$key />\n";
+      }
+      else {
+        if ($value === true) {
+          $value = 'true';
+        }
+        elseif ($value === false) {
+          $value = 'false';
+        }
+        elseif (is_string($value)) {
+          $value = fim_encodeXml($value);
+        }
+
+        $data .= "{$indent}<{$key}>{$value}</{$key}>\n";
+      }
+    }
+  }
+
+  if ($level == 0) {
+    return "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>
+<!DOCTYPE html [
+  <!ENTITY nbsp \" \">
+]>
+
+$data";
+  }
+  else {
+    return $data;
+  }
+}
+
+
+/**
 * JSON Parser
 *
 * @param array $array
@@ -1066,12 +1174,13 @@ $data";
 * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
+
 function fim_outputJson($array, $level = 0) {
   header('Content-type: application/json');
 
   $indent = '';
 
-  for($i = 0;$i<=$level;$i++) {
+  for ($i = 0; $i <= $level; $i++) {
     $indent .= '  ';
   }
 
@@ -1129,7 +1238,7 @@ $data
 function fim_outputKeys($array, $level = 0) { // Used only for creating documentation.
   $indent = '';
 
-  for($i = 0;$i<=$level;$i++) {
+  for ($i = 0; $i < $level; $i++) {
     $indent .= '  ';
   }
 
@@ -1147,6 +1256,15 @@ function fim_outputKeys($array, $level = 0) { // Used only for creating document
   }
 
   return $data;
+}
+
+
+/**
+ * Output Using print_r
+ * @param array $array */
+
+function fim_outputArray() {
+  print_r($array);
 }
 
 
@@ -1486,5 +1604,23 @@ function iif($condition, $true, $false) {
     return $true;
   }
   return $false;
+}
+
+
+/**
+ * Determines if an array contains an array.
+ *
+ * @param array $array
+ * @return bool - True if the array contains array, false otherwise.
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com> */
+
+function hasArray($array) {
+  foreach ($array AS $key => $value) {
+    if (is_array($value)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 ?>
