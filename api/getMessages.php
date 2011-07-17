@@ -313,8 +313,8 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
 
   foreach ($searchArray AS $searchVal) {
     $searchArray2[] = str_replace(
-      array_keys($searchWordConverts),
-      array_values($searchWordConverts),
+      array_keys($config['searchWordConverts']),
+      array_values($config['searchWordConverts']),
       $searchVal
     );
   }

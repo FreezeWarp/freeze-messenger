@@ -1650,6 +1650,8 @@ popup = {
       width: 600,
       tabs : true,
       oF : function() {
+        var fileName,
+          fileSize;
 
         $('#imageUploadSubmitButton').attr('disabled','disabled').button({
           disabled: true
@@ -1681,7 +1683,7 @@ popup = {
             else {
               console.log('FileReader started.');
 
-              var fileName = files[0].name,
+              fileName = files[0].name,
                 fileSize = files[0].size;
 
               if (!fileName.match(/\.(jpg|jpeg|gif|png|svg)$/i)) { // TODO
@@ -1718,10 +1720,18 @@ popup = {
 
           $('#uploadFileForm').bind('submit',function() {
             $.ajax({
-              url: directory + 'api/uploadFile.php',
+              url: directory + 'api/sendFile.php',
               type: 'POST',
-              data : 'dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&file_data=' + urlencode(fileContent) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
-              cache : false
+              data : 'dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&fileName=' + fileName + '&fileData=' + urlencode(fileContent) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+              cache : false,
+              success : function(xml) {
+                var errStr = unxml($(xml).find('errStr').text().trim()),
+                  errDesc = unxml($(xml).find('errDesc').text().trim());
+
+                if (errStr) {
+                  dia.error(errDesc);
+                }
+              }
             });
 
             return false;

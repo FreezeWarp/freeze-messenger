@@ -374,9 +374,9 @@ function fimParse_htmlWrap($html, $maxLength = 80, $char = '<br />') { /* An ada
 */
 
 function fim3parse_keyWords($string, $messageId) {
-  global $searchWordConverts, $searchWordPunctuation, $searchWordLength, $searchWordOmissions, $sqlPrefix, $database;
+  global $config['searchWordConverts'], $config['searchWordPunctuation'], $config['searchWordMinimum'], $config['searchWordOmissions'], $sqlPrefix, $database;
 
-  foreach ($searchWordPunctuation AS $punc) {
+  foreach ($config['searchWordPunctuation'] AS $punc) {
     $puncList[] = addcslashes($punc,'"\'|(){}[]<>.,~-?!@#$%^&*/\\'); // Dunno if this is the best approach.
   }
 
@@ -393,8 +393,8 @@ function fim3parse_keyWords($string, $messageId) {
   $stringPiecesAdd = array();
 
   foreach ($stringPieces AS $piece) {
-    if (strlen($piece) >= $searchWordLength && !in_array($piece, $searchWordOmissions)) {
-      $stringPiecesAdd[] = str_replace(array_keys($searchWordConverts),array_values($searchWordConverts), $piece);
+    if (strlen($piece) >= $config['searchWordMinimum'] && !in_array($piece, $config['searchWordOmissions'])) {
+      $stringPiecesAdd[] = str_replace(array_keys($config['searchWordConverts']),array_values($config['searchWordConverts']), $piece);
     }
   }
 

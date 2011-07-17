@@ -231,61 +231,6 @@ $compressOutput = false; // Set this to off to avoid compacting PHP-generated HT
  * Not well integrated yet, but it still does the job. */
 $disableTopic = false;
 
-/* $searchWordLength
- * This alters the minimum length of search in the archives.
- * Smaller lengths will dramatically increase the server power needed.
- * Specify "-1" to disable archive searching entirely (this may be useful if you are worried about its lack of encryption).
- * NOTE: The archive search feature is not yet stable. It will be in the FIM3 stable release ("FIM3GOLD"). */
-$searchWordLength = 4;
-
-/* $searchWordOmissions
- * This eliminates certain words from the search archive, good if they are especially common. */
-$searchWordOmissions = array();
-
-/* $searchWordPunctuation
- * These are symbols that are ignored in the archive search index.
- * The default works fairly good for most Latin an Japanese texts. */
-$searchWordPunctuation = array(
-  ',', '.', ';', ':', '-',
-  '"', '\'',
-  '=', '?', '\\', '/', '[',
-  ']', '^', '&', '#', '@',
-  '!', '%', '*', '(', ')',
-
-  '‘', '’','¡','¿','¦',
-);
-
-/* $searchWordConverts
- * These are character(s) that will be converted to other characters when stored in the search archival database.
- * By default, both common European symbols and Japanese punctuation are included. */
-$searchWordConverts = array(
-  // European Conversions (i.e. Latin, French, German, Spanish)
-  'é' => 'e', 'ë' => 'e',
-  'É' => 'E', 'Ë' => 'E',
-  'ó' => 'o', 'ö' => 'o',
-  'ø' => 'o', 'Ó' => 'O',
-  'Ö' => 'O', 'Ø' => 'O',
-  'í' => 'i', 'ï' => 'i',
-  'Í' => 'I', 'Ï' => 'I',
-  'ú' => 'u', 'ü' => 'u',
-  'Ú' => 'U', 'Ü' => 'U',
-  'ñ' => 'n',
-
-  // Japanese Conversions
-  '？' => '?', '！' => '!',
-  '。' => '.', '、' => ',',
-  '；' => ';', '：' => ':',
-  '／' => '/', '｜' => '|',
-  '＠' => '@', '＃' => '#',
-  '＄' => '$', '％' => '%',
-  '＾' => '^', '＆' => '&',
-  '＊' => '*',
-  '（' => '(', '）' => ')',
-  '「' => '[', '」' => ']',
-  '｛' => '{', '｝' => '}',
-  '＜' => '<', '＞' => '>',
-);
-
 
 
 ///* Bleeding-Edge *///
@@ -320,6 +265,71 @@ $config['cacheKicks'] = false;
  * This is the time (in seconds) after which the kicks will be refreshed if cached.
  * 60 seconds is a fairly sane default.*/
 $config['cacheKicksRefresh'] = 60;
+
+/* $config['searchWordMinimum']
+ * This alters the minimum length of search in the archives.
+ * Smaller lengths will dramatically increase the server power needed.
+ * Specify "-1" to disable archive searching entirely (this may be useful if you are worried about its lack of encryption).
+ * NOTE: The archive search feature is not yet stable. It will be in the FIM3 stable release ("FIM3GOLD"). */
+$config['searchWordMinimum'] = 4;
+
+$config['searchWordMaximum'] = 10;
+
+/* $config['searchWordOmissions']
+ * This eliminates certain words from the search archive, good if they are especially common. */
+$config['searchWordOmissions'] = array(
+  'that','them','then','than','thus',
+  'have','with','will','would','there',
+  'their','what','about','when','make',
+  'like','also','think','over','into',
+  'time','year','just','know','take',
+  'which','about','back','after','well',
+  'even','want','because','these','most'
+);
+
+/* $config['searchWordPunctuation']
+ * These are symbols that are ignored in the archive search index.
+ * The default works fairly good for most Latin an Japanese texts. */
+$config['searchWordPunctuation'] = array(
+  ',', '.', ';', ':', '-',
+  '"', '\'', '=', '?', '\\',
+  '/', '[', ']', '^', '&',
+  '#', '@', '!', '%', '*',
+  '(', ')',
+
+  '‘', '’','¡','¿','¦',
+);
+
+/* $config['searchWordConverts']
+ * These are character(s) that will be converted to other characters when stored in the search archival database.
+ * By default, both common European symbols and Japanese punctuation are included. */
+$config['searchWordConverts'] = array(
+  // European Diacritic Conversions (i.e. Latin, French, German, Spanish)
+  'é' => 'e', 'É' => 'E', // pokémon café
+  'ë' => 'e', 'Ë' => 'E', // noël
+  'ó' => 'o', 'Ó' => 'O',
+  'ö' => 'o', 'Ö' => 'O',
+  'ø' => 'o', 'Ø' => 'O',
+  'í' => 'i', 'Í' => 'I',
+  'ï' => 'i', 'Ï' => 'I',
+      'ú' => 'u', 'Ú' => 'U',
+  'ü' => 'u', 'Ü' => 'U', // über
+  'ñ' => 'n', // piñata
+
+  // Japanese Punctual Conversions
+  '？' => '?', '！' => '!',
+  '。' => '.', '、' => ',',
+  '；' => ';', '：' => ':',
+  '／' => '/', '｜' => '|',
+  '＠' => '@', '＃' => '#',
+  '＄' => '$', '％' => '%',
+  '＾' => '^', '＆' => '&',
+  '＊' => '*',
+  '（' => '(', '）' => ')',
+  '「' => '[', '」' => ']',
+  '｛' => '{', '｝' => '}',
+  '＜' => '<', '＞' => '>',
+);
 
 
 // Unlisted variables: $config['defaultMessageLimit'], $config['defaultOnlineThreshold'], $installUrl, $installLoc, $sessionExpire, $roomLengthLimit

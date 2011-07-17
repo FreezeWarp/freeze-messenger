@@ -21,6 +21,15 @@
  * @version 3.0
  * @author Jospeph T. Parsons <rehtaew@gmail.com>
  * @copyright Joseph T. Parsons 2011
+ *
+ * @param string uploadMethod -
+ * @param string fileName -
+ * @param string fileData -
+ * @param string fileSize -
+ * @param string fileMd5hash -
+ * @param string fileSha256hash -
+ * @param string roomId -
+ * @param string dataEncode -
 */
 
 $apiRequest = true;
@@ -42,29 +51,38 @@ $request = fim_sanitizeGPC(array(
       'require' => false,
     ),
 
-    'file_name' => array(
+    'fileName' => array(
       'type' => 'string',
       'require' => true,
     ),
 
-    'file_data' => array(
+    'fileData' => array(
       'type' => 'string',
       'require' => true,
     ),
 
-    'file_size' => array(
+    'fileSize' => array(
       'type' => 'string',
       'require' => false,
     ),
 
-    'file_md5hash' => array(
+    'fileMd5hash' => array(
       'type' => 'string',
       'require' => false,
     ),
 
-    'file_sha256hash' => array(
+    'fileSha256hash' => array(
       'type' => 'string',
       'require' => false,
+    ),
+
+    'roomId' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => 0,
+      'context' => array(
+        'type' => 'int',
+      ),
     ),
 
     'dataEncode' => array(
@@ -104,7 +122,7 @@ $mimes = $slaveDatabase->select(
   array(
     "{$sqlPrefix}uploadTypes" => array(
       'typeId' => 'typeId',
-      'extesion' => 'extesion',
+      'extension' => 'extension',
       'mime' => 'mime',
       'maxSize' => 'maxSize',
     ),
@@ -117,38 +135,28 @@ $mimes = $mimes->getAsArray('extension');
 
 if ($request['uploadMethod'] == 'put') { // This is an unsupported alternate upload method. It will not be documented until it is known to work.
   $putResource = fopen("php://input", "r"); // file data is from stdin
-  $request['file_data'] = ''; // The only real change is that we're getting things from stdin as opposed to from the headers. Thus, we'll just translate the two here.
+  $request['fileData'] = ''; // The only real change is that we're getting things from stdin as opposed to from the headers. Thus, we'll just translate the two here.
 
   while ($fileContents = fread($putResource, (isset($config['fileUploadChunkSize']) ? $config['fileUploadChunkSize'] : 1024))) { // Read the resource using 1KB chunks. This is slower than a higher chunk, but also avoids issues for now. It can be overridden with the config directive fileUploadChunkSize.
-    $request['file_data'] = $fileContents; // We're not sure if this will work, since there are indications you have to write to a file instead.
+    $request['fileData'] = $fileContents; // We're not sure if this will work, since there are indications you have to write to a file instead.
   }
 
   fclose($putResource);
 }
 
-
+$continue = true;
 
 /* Verify the Data, Preprocess */
 switch ($request['uploadMethod']) {
   case 'raw':
   case 'put':
-  $fileName = ($request['file_name']);
-  $fileContents = ($request['file_data']);
-  $fileSize = (int) $request['file_size'];
-
-  $md5hashComp = $request['file_md5hash'];
-  $sha256hashComp = $request['file_sha256hash'];
-
-  $fileContentsEncode = $request['dataEncode'];
-
-
-  switch($fileContentsEncode) {
+  switch($request['dataEncode']) {
     case 'base64':
-    $rawData = base64_decode($fileContents);
+    $rawData = base64_decode($request['fileData']);
     break;
 
     case 'binary': // Binary is buggy and far from confirmed to work. That said... if you're lucky? MDN has some useful information on this type of thing: https://developer.mozilla.org/En/Using_XMLHttpRequest
-    $rawData = $fileContents;
+    $rawData = $request['fileData'];
     break;
 
     default:
@@ -160,8 +168,8 @@ switch ($request['uploadMethod']) {
   }
 
 
-  if ($md5hash) { // This will allow us to verify that the upload worked.
-    if (md5($rawData) != $md5hash) {
+  if ($request['md5hash']) { // This will allow us to verify that the upload worked.
+    if (md5($rawData) != $request['md5hash']) {
       $errStr = 'badRawHash';
       $errDesc = 'The included MD5 hash did not match the file content.';
 
@@ -169,8 +177,8 @@ switch ($request['uploadMethod']) {
     }
   }
 
-  if ($sha256hash) { // This will allow us to verify that the upload worked.
-    if (hash('sha256',$rawData) != $sha256hash) {
+  if ($request['sha256hash']) { // This will allow us to verify that the upload worked.
+    if (hash('sha256',$rawData) != $request['sha256hash']) {
       $errStr = 'badRawHash';
       $errDesc = 'The included MD5 hash did not match the file content.';
 
@@ -178,8 +186,8 @@ switch ($request['uploadMethod']) {
     }
   }
 
-  if ($fileSize) { // This will allow us to verify that the upload worked as well, can be easier to implement, but doesn't serve the primary purpose of making sure the file upload wasn't intercepted.
-    if (strlen($rawData) != $fileSize) {
+  if ($request['fileSize']) { // This will allow us to verify that the upload worked as well, can be easier to implement, but doesn't serve the primary purpose of making sure the file upload wasn't intercepted.
+    if (strlen($rawData) != $request['fileSize']) {
       $errStr = 'badRawSize';
       $errDesc = 'The specified content length did not match the file content.';
 
@@ -193,14 +201,14 @@ switch ($request['uploadMethod']) {
 
 /* Start Processing */
 if ($continue) {
-  if (!$fileName) {
+  if (!$request['fileData']) {
     $errStr = 'badName';
     $errDesc = 'A name was not specified for the file.';
   }
   else {
-    $fileNameParts = explode($fileName);
+    $fileNameParts = explode('.',$request['fileName']);
 
-    if (count($fileNameParts) == 2) {
+    if (count($fileNameParts) != 2) {
       $errStr = 'badNameParts';
       $errDesc = 'There was an improper number of "periods" in the file name - the extension could not be obtained.';
     }
@@ -224,7 +232,7 @@ if ($continue) {
           $errStr = 'emptyFile';
           $errDesc = $phrases['uploadErrorFileContents'];
         }
-        elseif (strlen($rawData) > ) { // Note: Data is stored as base64 because its easier to handle; thus, the data will be about 33% larger than the normal (thus, if a limit is normally 400KB the file must be smaller than 300KB).
+        elseif (strlen($rawData) == 0) { // Note: Data is stored as base64 because its easier to handle; thus, the data will be about 33% larger than the normal (thus, if a limit is normally 400KB the file must be smaller than 300KB).
           $errStr = 'empty';
           $errDesc = 'The file uploaded is too large.';
         }
@@ -232,9 +240,9 @@ if ($continue) {
           $prefile = $database->select(
             array(
               "{$sqlPrefix}fileVersions" => array(
-                'versionId',
-                'fileId',
-                'sha256hash',
+                'versionId' => 'versionId',
+                'fileId' => 'fileId',
+                'sha256hash' => 'sha256hash',
               ),
               "{$sqlPrefix}files" => array(
                 'fileId' => 'vfileId',
@@ -266,27 +274,27 @@ if ($continue) {
                 ),
               ),
             )
-          );
+          )->getAsArray(false);
 
           if ($prefile) {
-            $webLocation = "{$installUrl}file.php?hash={$prefile[sha256hash]}";
+            $webLocation = "{$installUrl}file.php?hash={$prefile['sha256hash']}";
 
-            if ($request['autoInsert']) {
+            if ($request['roomId']) {
               $room = $slaveDatabase->getRoom($request['roomId']);
 
               fim_sendMessage($webLocation,$user,$room,'image');
             }
           }
           else {
-            $fileContentsbase->insert(array(
+            $database->insert(array(
               'userId' => $user['userId'],
-              'name' => $fileName,
-              'mime' => $mime,
+              'fileName' => $request['fileData'],
+              'fileType' => $mime,
             ),"{$sqlPrefix}files");
 
             $fileId = dbInsertId();
 
-            $fileContentsbase->insert(array(
+            $database->insert(array(
               'fileId' => $fileId,
               'sha256hash' => $sha256hash,
               'salt' => $saltNum,
@@ -296,7 +304,7 @@ if ($continue) {
 
             $webLocation = "{$installUrl}file.php?hash={$md5hash}";
 
-            if ($request['autoInsert']) {
+            if ($request['roomId']) {
               $room = $slaveDatabase->getRoom($request['roomId']);
 
               fim_sendMessage($webLocation,$user,$room,'image');
