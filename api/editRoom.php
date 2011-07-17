@@ -158,7 +158,7 @@ switch($request['action']) {
       //$bbcode = intval($_POST['bbcode']);
 
       $database->insert(array(
-        'roomName' => $roomName,
+        'roomName' => $request['roomName'],
         'allowedGroups' => implode(',',$request['allowedGroups']),
         'allowedUsers' => implode(',',$request['$allowedUsers']),
         'moderators' => implode(',',$request['$moderators']),
