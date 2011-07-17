@@ -29,7 +29,7 @@ switch ($_REQUEST['phase']) {
   <script src="../webpro/client/js/jquery-1.6.1.min.js" type="text/javascript"></script>
 
   <script src="../webpro/client/js/jquery-ui-1.8.13.custom.min.js" type="text/javascript"></script>
-  <script src="../webpro/client/js/jquery.plugins.05182011.min.js" type="text/javascript"></script>
+  <script src="../webpro/client/js/jquery.plugins.js" type="text/javascript"></script>
   <script>
   function resize() {
     $(\'body\').css(\'height\',window.innerHeight);
@@ -38,6 +38,9 @@ switch ($_REQUEST['phase']) {
   $(document).ready(resize);
   window.onresize = resize;
 
+  var alert = function(text) {
+    dia.info(text,"Alert");
+  };
   </script>
   <!-- END Scripts -->
 </head>

@@ -1916,3 +1916,184 @@ var notify = {
     }
   }
 }
+
+
+
+/* Dia -- Simplified jQueryUI Dialogues
+ * Joseph T. Parsons
+ * http://www.gnu.org/licenses/gpl.html */
+var dia = {
+  error : function(message) {
+    $('<div style="display: none;">' + message + '</div>').dialog({
+      title : 'Error',
+      modal : true,
+      buttons: {
+        Close: function() {
+          $( this ).dialog( "close" );
+
+          return false;
+        }
+      }
+    });
+  },
+
+  info : function(message, title) {
+    $('<div style="display: none;">' + message + '</div>').dialog({
+      title : title,
+      modal : true,
+      buttons: {
+        Okay : function() {
+          $(this).dialog( "close" );
+
+          return false;
+        }
+      }
+    });
+  },
+
+  confirm : function(options) {
+    $('<div id="dialog-confirm"><span class="ui-icon ui-icon-alert" style="float: left; margin: 0px 7px 20px 0px;"></span>' + options.text + '</div>').dialog({
+      resizable: false,
+      height: 240,
+      modal: true,
+      hide: "puff",
+      buttons: {
+        Confirm: function() {
+          if (typeof options['true'] !== 'undefined') {
+            options['true']();
+          }
+
+          $(this).dialog("close");
+          return true;
+        },
+        Cancel: function() {
+          if (typeof options['false'] !== 'undefined') {
+            options['false']();
+          }
+
+          $(this).dialog("close");
+          return false;
+        }
+      }
+    });
+  },
+
+  // Supported options: autoShow (true), id, content, width (600), oF, cF
+  full : function(options) {
+    var ajax,
+      autoOpen,
+      windowWidth = document.documentElement.clientWidth,
+      dialog,
+      dialogOptions,
+      tabsOptions,
+      overlay,
+      throbber;
+
+    if (options.uri) {
+      options.content = '<img src="images/ajax-loader.gif" align="center" />';
+
+      ajax = true;
+    }
+    else if (!options.content) {
+      console.log('No content found for dialog; exiting.');
+
+      return false;
+    }
+
+    if (typeof options.autoOpen !== 'undefined' && options.autoOpen === false) {
+      autoOpen = false;
+    }
+    else {
+      autoOpen = true;
+    }
+
+    if (options.width > windowWidth) {
+      options.width = windowWidth;
+    }
+    else if (!options.width) {
+      options.widthwidth = 600;
+    }
+
+    dialogOptions = {
+      width: options.width,
+      title: options.title,
+      hide: "puff",
+      modal: true,
+      buttons : options.buttons,
+      autoOpen: autoOpen,
+      open: function() {
+        if (typeof options.oF !== 'undefined') {
+          options.oF();
+        }
+
+        return false;
+      },
+      close: function() {
+        $('#' + options.id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
+        if (typeof options.cF !== 'undefined') {
+          options.cF();
+        }
+
+        return false;
+      }
+    };
+
+    tabsOptions = {
+      selected : options.selectTab
+    };
+
+
+    dialog = $('<div style="display: none;" id="' + options.id +  '">' + options.content + '</div>').appendTo('body');
+
+
+
+    if (ajax) {
+      overlay = $('<div class="ui-widget-overlay"></div>').appendTo('body').width($(document).width()).height($(document).height());
+      throbber = $('<img src="images/ajax-loader.gif" />').appendTo('body').css('position','absolute').offset({ left : (($(window).width() - 220) / 2), top : (($(window).height() - 19) / 2)});
+
+      $.ajax({
+        url : options.uri,
+        type : "GET",
+        timeout : 5000,
+        cache : true,
+        success : function(content) {
+          overlay.empty().remove();
+          throbber.empty().remove();
+
+          dialog.html(content);
+
+          if (options.tabs) {
+            dialog.tabbedDialog(dialogOptions,tabsOptions);
+          }
+          else {
+            dialog.dialog(dialogOptions);
+          }
+
+          windowDraw();
+
+          return false;
+        },
+        error : function() {
+          overlay.empty().remove();
+          throbber.empty().remove();
+
+          dialog.dialog('close');
+
+          dia.error('Could not request dialog URI.');
+
+          return false;
+        }
+      });
+    }
+    else {
+      if (options.tabs) {
+        dialog.tabbedDialog(dialogOptions,tabsOptions);
+      }
+      else {
+        dialog.dialog(dialogOptions);
+      }
+
+      windowDraw();
+    }
+  }
+};
