@@ -266,7 +266,7 @@ function processLogin($user, $password, $encrypt) {
   global $loginConfig;
 
   switch ($loginConfig['method']) {
-    case 'vbulletin':
+    case 'vbulletin3':
     if ($encrypt == 'plaintext') {
       $password = md5($password);
     }

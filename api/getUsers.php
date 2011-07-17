@@ -116,7 +116,7 @@ if (is_array($users)) {
 
 
       switch ($loginConfig['method']) {
-        case 'vbulletin':
+        case 'vbulletin3':
         $userDataForums = $integrationDatabase->select(
           array(
             $sqlUserTable => array(

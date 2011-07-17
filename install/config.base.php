@@ -84,7 +84,7 @@ $dbConfig['integration']['tablePreix'] = '';
 /* $loginMethod
  * The method used for forum-integration.
  * If you are not integrating with a forum, use "vanilla".
- * Otherwise, "phpbb" and "vbulletin" are supported by default. */
+ * Otherwise, "phpbb" and "vbulletin3" are supported by default. */
 $loginConfig['method'] = 'vanilla';
 
 /* $forumUrl

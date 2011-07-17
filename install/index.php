@@ -168,7 +168,7 @@ switch ($_REQUEST['phase']) {
     <table>
       <tr>
         <td>Forum Integration</td>
-        <td><select name="forum"><option value="vanilla">No Integration</option><option value="vbulletin">vBulletin 3.8</option><option value="phpbb">PHPBB 3</option></select></td>
+        <td><select name="forum"><option value="vanilla">No Integration</option><option value="vbulletin3">vBulletin 3.8</option><option value="phpbb">PHPBB 3</option></select></td>
       </tr>
       <tr>
         <td>Forum URL</td>
