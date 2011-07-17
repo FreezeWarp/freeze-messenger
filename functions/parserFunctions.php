@@ -195,49 +195,77 @@ WHERE w.listId = l.listId AND w.severity = 'replace'",'word');*/
 
 
 /**
-* Parsers predefined smilies on vBulletin and PHPBB systems. Support planned for Vanilla.
+* Parsers database-stored smilies.
 *
 * @param string $text - The text to parse.
 * @return string - Parsed text.
 * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 function fimParse_smilieParse($text) {
-  global $room, $loginMethod, $forumTablePrefix, $forumUrl;
+  global $room, $loginMethod, $forumTablePrefix, $forumUrl, $integrationDatabase, $integrationDatabase;
 
   switch($loginMethod) {
-    case 'vbulletin':
-//    $smilies = dbRows("SELECT smilietext, smiliepath, smilieid FROM {$forumTablePrefix}smilie",'smilieid');
-
-    if (!$smilies) {
-      return $text;
-    }
-
-    foreach ($smilies AS $id => $smilie) {
-      $smilies2[strtolower($smilie['smilietext'])] = $smilie['smiliepath'];
-      $searchText[] = addcslashes(strtolower($smilie['smilietext']),'^&|!$?()[]<>\\/.+*');
-    }
-
-     $forumUrlS = $forumUrl;
-     break;
+    case 'vbulletin3':
+    case 'vbulletin4':
+    $smilies = $integrationDatabase->select(
+      array(
+        "{$forumTablePrefix}smilie" => array(
+          'smilietext' => 'emoticonText',
+          'smiliepath' => 'emoticonFile',
+        ),
+      )
+    );
+    $smilies = $smilies->getAsArray(true);
 
     case 'phpbb':
-//    $smilies = dbRows("SELECT code, smiley_url, smiley_id FROM {$forumTablePrefix}smilies",'smiley_id');
-
-    if (!$smilies) {
-      return $text;
-    }
-
-    foreach ($smilies AS $id => $smilie) {
-      $smilies2[strtolower($smilie['code'])] = $smilie['smiley_url'];
-      $searchText[] = addcslashes(strtolower($smilie['code']),'^&|!$?()[]<>\\/.+*');
-    }
-
-    $forumUrlS = $forumUrl . 'images/smilies/';
+    $smilies = $integrationDatabase->select(
+      array(
+        "{$forumTablePrefix}smilies" => array(
+          'code' => 'emoticonText',
+          'smilie_url' => 'emoticonFile',
+        ),
+      )
+    );
+    $smilies = $smilies->getAsArray(true);
     break;
 
-    default:
+    case 'vanilla':
+    $smilies = $slaveDatabase->select(
+      array(
+        "{$sqlPrefix}emoticons" => array(
+          'emoticonText' => 'emoticonText',
+          'emoticonFile' => 'emoticonFile',
+          'context' => 'context',
+        ),
+      )
+    );
+    $smilies = $smilies->getAsArray(true);
+    break;
+  }
+
+  if (!is_array($smilies)) {
     return $text;
-    break;
+  }
+  elseif (count($smilies) == 0) {
+    return $text;
+  }
+  else {
+    foreach ($smilies AS $smilie) {
+      $smilies2[strtolower($smilie['emoticonText'])] = $smilie['emoticonFile'];
+      $searchText[] = addcslashes(strtolower($smilie['emoticonText']),'^&|!$?()[]<>\\/.+*');
+    }
+
+    switch ($loginMethod) {
+      case 'phpbb':
+      $forumUrlS = $forumUrl . 'images/smilies/';
+      break;
+
+      case 'vanilla':
+      case 'vbulletin3':
+      case 'vbulletin4':
+      $forumUrlS = $forumUrl;
+      break;
+    }
   }
 
   $searchText2 = implode('|', $searchText);
@@ -245,6 +273,11 @@ function fimParse_smilieParse($text) {
   return preg_replace("/(?<!(\[noparse\]))(?<!(quot))(?<!(gt))(?<!(lt))(?<!(apos))(?<!(amp))($searchText2)(?!\[\/noparse\])/ie","'[img=\\3]$forumUrlS' . indexValue(\$smilies2,strtolower('\\7')) . '[/img]'", $text);
 }
 
+
+
+/**
+ * NEEDS DOCUMENTATION
+ */
 function indexValue($array, $index) {
   return $array[$index];
 }
@@ -325,6 +358,7 @@ function fimParse_htmlWrap($html, $maxLength = 80, $char = '<br />') { /* An ada
 
   return $newHtml;
 }
+
 
 
 /**
@@ -442,40 +476,6 @@ function fim_sendMessage($messageText, $user, $room, $flag = '') {
   if (in_array($flag,array('image','video','link','email','youtube','text','audio','text'))) {
     $messageRaw = $messageText;
     $messageApi = $messageText;
-
-    switch ($flag) {
-      case 'image':
-      $messageHtml = "<a href=\"$messageText\"><img src=\"$messageText\" alt=\"\" style=\"max-height: 300px; max-width: 300px;\" /></a>";
-      break;
-
-      case 'youtube':
-      $messageHtml = preg_replace('/^http\:\/\/(www\.|)youtube\.com\/(.*?)?v=([^&]+)(&|)(.*?)$/',($bbcode <= 3 ? '<object width="420" height="255" wmode="opaque"><param name="movie" value="http://www.youtube.com/v/$3=en&amp;fs=1&amp;rel=0&amp;border=0"></param><param name="allowFullScreen" value="true"></param><embed src="http://www.youtube.com/v/$3&amp;hl=en&amp;fs=1&amp;rel=0&amp;border=0" type="application/x-shockwave-flash" allowfullscreen="true" width="420" height="255" wmode="opaque"></embed></object>' : ($bbcode <= 13 ? '<a href="http://www.youtube.com/watch?v=$3" target="_BLANK">[Youtube Video]</a>' : '$3')), $messageText);
-      break;
-
-      case 'text':
-      $messageHtml = "<a href=\"$messageText\">Open Text Document</a>";
-      break;
-
-      case 'video':
-      $messageHtml = "<video src=\"$messageText\" controls=\"controls\"></video>";
-      break;
-
-      case 'audio':
-      $messageHtml = "<audio src=\"$messageText\" controls=\"controls\"></audio>";
-      break;
-
-      case 'html':
-      $messageHtml = "<span>HTML Content: <a href=\"$('span.iframeHolder').html('<iframe src=&quot;$messageText&quot;></iframe>');\">Display Iframe</a> <span class='iframeHolder'></span> | <a href=\"$messageText\">Open</a></span>";
-      break;
-
-      case 'link':
-      $messageHtml = "<a href=\"$messageText\">$messageText</a>";
-      break;
-
-      case 'email':
-      $messageHtml = "<a href=\"mailto:$messageText\">$messageText</a>";
-      break;
-    }
   }
   else {
     $message = fimParse_finalParse($messageText);
