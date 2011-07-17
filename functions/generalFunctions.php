@@ -1119,13 +1119,20 @@ function fim_outputXml2($array, $level = 0) {
 
     if (is_array($value)) {
       if (hasArray($value)) {
-        $data .= "$indent<$key>\n" . fim_outputXml2($value, $level + 1) . "$indent</$key>\n";
+        $data2 = '';
+        foreach ($value AS $key2 => $value2) {
+          if (!is_array($value2)) {
+            $data2 .= " {$key2}=\"" . fim_encodeXmlAttr($value2) . "\"";
+            unset($value[$key2]);
+          }
+        }
+        $data .= "{$indent}<{$key}{$data2}>\n" . fim_outputXml2($value, $level + 1) . "{$indent}</{$key}>\n";
       }
       else {
-        $data .= "$indent<$key";
+        $data .= "{$indent}<{$key}";
 
         foreach ($value AS $key => $value2) {
-          $data .= " $key=\"" . fim_encodeXmlAttr($value2) . "\"";
+          $data .= " {$key}=\"" . fim_encodeXmlAttr($value2) . "\"";
         }
 
         $data .= " />\n";
