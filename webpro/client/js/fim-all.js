@@ -1003,7 +1003,7 @@ var standard = {
       var encrypt = 'base64';
 
       $.ajax({
-        url: directory + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest? '&archive=1&messageDateMin=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdMin=' + (requestSettings.lastMessage + 1)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+        url: directory + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest? '&archive=1&messageIdStart=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdStart=' + (requestSettings.lastMessage + 1)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
         type: 'GET',
         timeout: requestSettings.timeout,
         data: '',
@@ -1330,7 +1330,7 @@ var standard = {
 
 
   deleteRoom : function(roomLocalId) {
-    $.post(directory + 'api/moderate.php','action=deleteRoom&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
+    $.post(directory + 'api/editUser.php','action=delete&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
       var errStr = $(xml).find('errStr').text().trim(),
         errDesc = $(xml).find('errDesc').text().trim();
 
@@ -1368,7 +1368,6 @@ var standard = {
     return false;
   },
 
-
   privateRoom : function(userLocalId) {
     userLocalId = Number(userLocalId);
 
@@ -1382,7 +1381,7 @@ var standard = {
       dia.error('You do not have permission to talk to users privately.');
     }
     else {
-      $.post(directory + 'api/moderate.php','action=privateRoom&userId=' + userLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
+      $.post(directory + 'api/editRoom.php','action=private&userId=' + userLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
         var privateRoomId = Number($(xml).find('insertId').text().trim()),
           errStr = unxml($(xml).find('errStr').text().trim()),
           errDesc = unxml($(xml).find('errStr').text().trim());
@@ -1455,7 +1454,7 @@ var standard = {
 
 
   deleteMessage : function(messageId) {
-    $.post(directory + 'api/moderate.php','action=deleteMessage&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
+    $.post(directory + 'api/editMessage.php','action=deleteMessage&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
       var errStr = $(xml).find('errStr').text().trim(),
         errDesc = $(xml).find('errDesc').text().trim();
 
@@ -2211,7 +2210,7 @@ popup = {
             dia.error('The roomname is too long.');
           }
           else {
-            $.post(directory + 'api/moderate.php','action=editRoom&roomId=' + roomIdLocal + '&name=' + urlencode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
+            $.post(directory + 'api/editRoom.php','action=edit&roomId=' + roomIdLocal + '&name=' + urlencode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
               var errStr = unxml($(xml).find('errStr').text().trim()),
                 errDesc = unxml($(xml).find('errDesc').text().trim());
 
@@ -2285,7 +2284,7 @@ popup = {
             dia.error('The roomname is too long.');
           }
           else {
-            $.post(directory + 'api/moderate.php','action=createRoom&name=' + urlencode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
+            $.post(directory + 'api/editRoom.php','action=create&roomName=' + urlencode(name) + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
               var errStr = unxml($(xml).find('errStr').text().trim()),
                 errDesc = unxml($(xml).find('errDesc').text().trim()),
                 createRoomId = Number($(xml).find('insertId').text().trim());
@@ -2350,6 +2349,8 @@ popup = {
           privateUserId = userRef[privateUserName];
 
           standard.privateRoom(privateUserId);
+
+
 
           return false; // Don't submit the form.
         });
@@ -2916,8 +2917,8 @@ function contextMenuParse() {
           popup.kick(userId, roomId);
           break;
 
-          case 'ban': // TODO?
-          window.open('moderate.php?do=banuser2&userId=' + userId,'banuser' + userId);
+          case 'ban': // TODO
+          standard.banUser(userId);
           break;
         }
 

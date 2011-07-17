@@ -21,6 +21,9 @@
  * @version 3.0
  * @author Jospeph T. Parsons <rehtaew@gmail.com>
  * @copyright Joseph T. Parsons 2011
+ *
+ * @param string action - "create", "edit", "delete", or "private"
+ * Note for FIMv4: This will add several additional methods ("contact" being the main one) that allow for improved IM-like communication. This will essentially return any stream that has x users involved, and will replace private for the most part (private will instead be used for OTR communication).
 */
 
 $apiRequest = true;
@@ -31,7 +34,7 @@ require_once('../global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC(array(
-  'get' => array(
+  'post' => array(
     'action' => array(
       'type' => 'string',
       'valid' => array(

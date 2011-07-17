@@ -32,39 +32,6 @@
 *
 */
 
-function phpbb_hash($password) {
-  $itoa64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-
-  $random_state = unique_id();
-  $random = '';
-  $count = 6;
-
-  if (($fh = @fopen('/dev/urandom', 'rb'))) {
-    $random = fread($fh, $count);
-    fclose($fh);
-  }
-
-  if (strlen($random) < $count) {
-    $random = '';
-
-    for ($i = 0; $i < $count; $i += 16) {
-      $random_state = md5(unique_id() . $random_state);
-      $random .= pack('H*', md5($random_state));
-    }
-    $random = substr($random, 0, $count);
-  }
-
-  $hash = _hash_crypt_private($password, _hash_gensalt_private($random, $itoa64), $itoa64);
-
-  if (strlen($hash) == 34) {
-    return $hash;
-  }
-
-  return md5($password);
-}
-
-
-
 function _hash_crypt_private($password, $setting, &$itoa64) {
   $itoa64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
   $output = '*';
@@ -142,6 +109,37 @@ function phpbb_check_hash($password, $hash) {
 
 
 
+function phpbb_hash($password) {
+  $itoa64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+
+  $random_state = unique_id();
+  $random = '';
+  $count = 6;
+
+  if (($fh = @fopen('/dev/urandom', 'rb'))) {
+    $random = fread($fh, $count);
+    fclose($fh);
+  }
+
+  if (strlen($random) < $count) {
+    $random = '';
+
+    for ($i = 0; $i < $count; $i += 16) {
+      $random_state = md5(unique_id() . $random_state);
+      $random .= pack('H*', md5($random_state));
+    }
+    $random = substr($random, 0, $count);
+  }
+
+  $hash = _hash_crypt_private($password, _hash_gensalt_private($random, $itoa64), $itoa64);
+
+  if (strlen($hash) == 34) {
+    return $hash;
+  }
+
+  return md5($password);
+}
+
 
 
 ///* FIM *///
@@ -181,11 +179,9 @@ function fim_generatePassword($password) {
 
   /* Similar to generateSession, the algorthim used below is possibly inferrior, but still will withstand most basic methods, including rainbow tables and in many cases bruteforce (though this may not be true if an attacker is able to gain access to the associated config.php file; in this case, it still will be impossible to decipher anything more advanced than dictionary passwords). */
 
-  if (function_exists('hash')) {
-    return hash('sha256',hash('sha256',$password) . $salt);
-  }
-  else {
-    return md5(md5($password) . $salt);
+
+  for ($i; $i < 5000; $i++) {
+    $password = hash('sha256',hash('sha256',$password) . $salt);
   }
 }
 

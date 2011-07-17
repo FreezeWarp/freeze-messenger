@@ -1,6 +1,8 @@
 <?php
 class fimDatabase extends database {
   public function getRoom($roomId, $roomName = false) {
+    global $sqlPrefix;
+
     $queryParts['roomSelect']['columns'] = array(
       "{$sqlPrefix}rooms" => array(
         'roomId' => 'roomId',
@@ -65,6 +67,8 @@ class fimDatabase extends database {
 
 
   public function getUser($userId, $userName = false) {
+    global $sqlPrefix;
+
     $queryParts['userSelect']['columns'] = array(
       "{$sqlPrefix}users" => array(
         'userId' => 'userId',
@@ -128,6 +132,8 @@ class fimDatabase extends database {
 
 
   public function getFont($fontId) {
+    global $sqlPrefix;
+
     $queryParts['fontSelect']['columns'] = array(
       "{$sqlPrefix}fonts" => array(
         'fontId' => 'fontId',
@@ -168,6 +174,8 @@ class fimDatabase extends database {
 
 
   public function getCensorList($listId) {
+    global $sqlPrefix;
+
     $queryParts['listSelect']['columns'] = array(
       "{$sqlPrefix}lists" => array(
         'listId' => 'listId',
@@ -208,6 +216,8 @@ class fimDatabase extends database {
 
 
   public function getMessage($messageId) {
+    global $sqlPrefix;
+
     $queryParts['messageSelect']['columns'] = array(
       "{$sqlPrefix}messages" => array(
         'messageId' => 'messageId',
