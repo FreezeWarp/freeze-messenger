@@ -15,16 +15,19 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 
-/* Quick Notes:
- * Magic Session Hash (Cookie Store): hash('sha256',hash('sha256',uniqid('',true)) . salt)
- * Magic Session Hash (DB Check): hash('sha256',hash('sha256',hash('sha256',uniqid('',true)) . salt) . userId)
- * Password Hash: sha1(sha1(password) . user_iv) */
+/**
+ * Establishing a Login
 
-/* Useful Links:
- **** Session Security ****
- * http://phpsec.org/projects/guide/4.html
- * http://www.devshed.com/c/a/PHP/Creating-a-Secure-PHP-Login-Script/
- * */
+ * Directives Used Specifically for Obtaining a SessionHash via This Script:
+ * @param string userName - The username of the user.
+ * @param string password - The password of the user.
+ * @param string passwordEncrypt - The encryption used for obtaining a login. "plaintext" and "md5" are both accepted, but the latter can only be used with vBulletin v3. Other forms of encryption will be possible soon.
+ * @param string apiVersion - The version of the API being used to login. It can be comma-seperated if multiple versions will work with the client. 3.0.0 is the only currently accepted version.
+ * @param bool apiLogin - Pass this when you are trying to obtain a sessionhash from this script. Otherwise, nothing will output.
+
+ * Standard Directives Required for __ALL__ API Calls:
+ * @param string fim3_userId
+ * @param string fim3_sessionHash
 
 
 ///* Require Base *///
