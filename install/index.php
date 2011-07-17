@@ -215,8 +215,8 @@ switch ($_REQUEST['phase']) {
     <li><a href="../docs/">Go to the Documentation</a></li>
     <li><a href="../docs/interfaces.htm">Learn About Interfaces</a></li>
     <li><a href="../docs/configuration.htm">Learn About More Advance Configuration</a></li>
-    <li><a href="http://">Go to The Creator\'s Website</a></li>
-    <li><a href="http://">Donate</a></li>
+    <li><a href="http://www.josephtparsons.com/">Go to The Creator\'s Website</a></li>
+    <li><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=YL7K2CY59P9S6&lc=US&item_name=FreezeMessenger%20Development&item_number=freezemessenger&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted">Help Development with Some Money (The Whole Package is Free, but We Work More with Money!)</a></li>
   </ul>
 </div>
 

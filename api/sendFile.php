@@ -302,7 +302,7 @@ if ($continue) {
               'contents' => $contentsEncrypted,
             ),"{$sqlPrefix}fileVersions");
 
-            $webLocation = "{$installUrl}file.php?hash={$md5hash}";
+            $webLocation = "{$installUrl}file.php?hash={$sha256hash}";
 
             if ($request['roomId']) {
               $room = $slaveDatabase->getRoom($request['roomId']);

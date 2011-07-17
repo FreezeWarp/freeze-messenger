@@ -374,7 +374,7 @@ function fimParse_htmlWrap($html, $maxLength = 80, $char = '<br />') { /* An ada
 */
 
 function fim3parse_keyWords($string, $messageId) {
-  global $config['searchWordConverts'], $config['searchWordPunctuation'], $config['searchWordMinimum'], $config['searchWordOmissions'], $sqlPrefix, $database;
+  global $config, $sqlPrefix, $database;
 
   foreach ($config['searchWordPunctuation'] AS $punc) {
     $puncList[] = addcslashes($punc,'"\'|(){}[]<>.,~-?!@#$%^&*/\\'); // Dunno if this is the best approach.

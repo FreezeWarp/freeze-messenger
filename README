@@ -1,6 +1,7 @@
 ========FreezeMessenger========
 >>Copyright (c) 2011 Joseph T. Parsons <josephtparsons@gmail.com>
 >>Licensed under the GPLv3 (see LICENSE)
+>>We Love Money (and it really helps, seriously): https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=YL7K2CY59P9S6&item_name=FreezeMessenger%20Development&item_number=freezemessenger&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted
 
 >>PHP 5.2, a capable server (Apache, nginx), MySQL required.
 >>PHP's MCrypt, Hash, MBString, MySQL Libraries Required
