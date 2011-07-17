@@ -23,7 +23,7 @@
 * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
-function fim_inArray($needle,$haystack) {
+function fim_inArray($needle, $haystack) {
   if (!$haystack) {
     return false;
   }
@@ -36,7 +36,7 @@ function fim_inArray($needle,$haystack) {
       continue;
     }
 
-    if (in_array($need,$haystack)) {
+    if (in_array($need, $haystack)) {
       return true;
     }
   }
@@ -54,7 +54,7 @@ function fim_inArray($needle,$haystack) {
 * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
-function fim_arrayValidate($array,$type = 'int',$preserveAll = false) {
+function fim_arrayValidate($array, $type = 'int', $preserveAll = false) {
   $arrayValidated = array();
 
   foreach ($array AS $value) {
@@ -93,7 +93,7 @@ function fim_arrayValidate($array,$type = 'int',$preserveAll = false) {
 * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
-function fim_hasPermission($roomData,$userData,$type = 'post',$quick = false) {
+function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false) {
   global $sqlPrefix, $banned, $superUsers, $valid, $database, $config, $cachedKicks;
 
   $isAdmin = false;
@@ -123,7 +123,7 @@ function fim_hasPermission($roomData,$userData,$type = 'post',$quick = false) {
 
 
   if (isset($roomData['allowedGroups'])) {
-    $allowedGroups = explode(',',$roomData['allowedGroups']);
+    $allowedGroups = explode(',', $roomData['allowedGroups']);
     foreach ($allowedGroups AS $groupId) {
       if (!$groupId) {
         continue;
@@ -209,7 +209,7 @@ function fim_hasPermission($roomData,$userData,$type = 'post',$quick = false) {
 
   /* Is the User an Allowed User? */
   if (isset($userData['userId']) && isset($roomData['allowedUsers'])) {
-    if ((in_array($userData['userId'],explode(',',$roomData['allowedUsers']))
+    if ((in_array($userData['userId'],explode(',', $roomData['allowedUsers']))
       || $roomData['allowedUsers'] == '*')
     && $roomData['allowedUsers']) {
       $isAllowedUser = true;
@@ -219,7 +219,7 @@ function fim_hasPermission($roomData,$userData,$type = 'post',$quick = false) {
 
   /* Is the User a Moderator of the Room? */
   if (isset($userData['userId']) && isset($roomData['moderators'])) {
-    if (in_array($userData['userId'],explode(',',$roomData['moderators']))) {
+    if (in_array($userData['userId'],explode(',', $roomData['moderators']))) {
       $isModerator = true; // The user is one of the chat moderators (and it is not deleted).
     }
   }
@@ -227,8 +227,8 @@ function fim_hasPermission($roomData,$userData,$type = 'post',$quick = false) {
 
   /* Is the User Part of an Allowed Group? */
   if (isset($roomData['allowedSocialGroups']) && isset($roomData['allowedAdminGroups'])) {
-    if ((fim_inArray(explode(',',$userData['socialGroups']),$roomData['allowedSocialGroups'])
-      || (fim_inArray(explode(',',$userData['allGroups']),$roomData['allowedAdminGroups']))
+    if ((fim_inArray(explode(',', $userData['socialGroups']), $roomData['allowedSocialGroups'])
+      || (fim_inArray(explode(',', $userData['allGroups']), $roomData['allowedAdminGroups']))
       || $roomData['allowedGroups'] == '*')) {
       $isAllowedGroup = true;
     }
@@ -262,7 +262,7 @@ function fim_hasPermission($roomData,$userData,$type = 'post',$quick = false) {
   /* Is the user a super user? */
   if (isset($userData['userId']) && isset($userData['adminPrivs']) && isset($superUsers)) {
     if (is_array($superUsers)) {
-      if (in_array($userData['userId'],$superUsers) || $userData['adminPrivs'] & 1) {
+      if (in_array($userData['userId'], $superUsers) || $userData['adminPrivs'] & 1) {
         $isAdmin = true;
       }
     }
@@ -415,7 +415,7 @@ function fim_hasPermission($roomData,$userData,$type = 'post',$quick = false) {
 */
 
 function fim_urldecode($str) {
-  return str_ireplace(array('%2b','%26','%20','%25','%0a'),array('+','&',' ', '%',"\n"),$str);
+  return str_ireplace(array('%2b','%26','%20','%25','%0a'),array('+','&',' ', '%',"\n"), $str);
 }
 
 
@@ -429,7 +429,7 @@ function fim_urldecode($str) {
 * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
-function fim_decrypt($message,$index = array('apiText','htmlText','rawText')) {
+function fim_decrypt($message, $index = array('apiText','htmlText','rawText')) {
   global $salts;
 
   if ($message['salt'] && $message['iv']) {
@@ -484,7 +484,7 @@ function fim_encrypt($data) {
     $data = base64_encode(rtrim(mcrypt_encrypt(MCRYPT_3DES, $salt, $data, MCRYPT_MODE_CBC, base64_decode($iv)),"\0"));
   }
 
-  return array($data,$iv,$saltNum);
+  return array($data, $iv, $saltNum);
 }
 
 /**
@@ -494,10 +494,10 @@ function fim_encrypt($data) {
 */
 function fim_sha256($data) {
   if (function_exists('hash')) {
-    return hash('sha256',$data);
+    return hash('sha256', $data);
   }
   elseif (function_exists('mhash')) {
-    return mhash(MHASH_SHA256,$data);
+    return mhash(MHASH_SHA256, $data);
   }
 }
 
@@ -519,7 +519,7 @@ function fim_encodeXml($data) {
   );
 
   foreach ($ref AS $search => $replace) {
-    $data = str_replace($search,$replace,$data);
+    $data = str_replace($search, $replace, $data);
   }
 
   return $data;
@@ -596,7 +596,7 @@ function rgb2html($r, $g = false, $b = false) {
 * @author Unknown
 */
 
-function fim_date($format,$timestamp = false) {
+function fim_date($format, $timestamp = false) {
   global $user;
 
   $timestamp = ($timestamp ?: time());
@@ -652,11 +652,11 @@ function template($name) {
 
   if (isset($templateVars[$name])) {
     if($templateVars[$name]) {
-      $vars = explode(',',$templateVars[$name]);
+      $vars = explode(',', $templateVars[$name]);
       foreach ($vars AS $var) {
         $globalVars[] = '$' . $var;
       }
-      $globalString = implode(',',$globalVars);
+      $globalString = implode(',', $globalVars);
 
       eval("global $globalString;");
     }
@@ -664,10 +664,10 @@ function template($name) {
 
     $template2 = $templates[$name];
 
-    $template2 = parser1($template2,0,false,$globalString);
+    $template2 = parser1($template2,0,false, $globalString);
 
 
-    $template2 = preg_replace('/(.+)/e','stripslashes("\\1")',$template2);
+    $template2 = preg_replace('/(.+)/e','stripslashes("\\1")', $template2);
 
     return $template2;
   }
@@ -687,7 +687,7 @@ function template($name) {
 * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
-function parser1($text,$offset,$stop = false,$globalString = '') {
+function parser1($text, $offset, $stop = false, $globalString = '') {
   $i = $offset;
 
   $cValue = false;
@@ -705,7 +705,7 @@ function parser1($text,$offset,$stop = false,$globalString = '') {
         (isset($iv[2]) ? $iv[2] : ''),
         ($globalString ? "global $globalString;" : '')
       );
-      if ($stop) return array($str,$i);
+      if ($stop) return array($str, $i);
 
       $iv = array(1 => '', 2 => '');
       $cond = '';
@@ -717,7 +717,7 @@ function parser1($text,$offset,$stop = false,$globalString = '') {
 
     elseif ($cValueProc) {
       $str .= container("$cv[1]","$cv[2]");
-      if ($stop) return array($str,$i);
+      if ($stop) return array($str, $i);
 
       $cv = array(1 => '', 2 => '');
       $cValueProc = false;
@@ -727,14 +727,14 @@ function parser1($text,$offset,$stop = false,$globalString = '') {
     }
 
     elseif ($cValue) {
-      if (substr($text,$i,2) == '}{' && $cValueI == 1) {
+      if (substr($text, $i,2) == '}{' && $cValueI == 1) {
         $cValueI = 2;
 
         $i += 2;
         continue;
       }
 
-      elseif (substr($text,$i,2) == '}}') {
+      elseif (substr($text, $i,2) == '}}') {
         $cValue = false;
         $cValueProc = true;
         $i += 2;
@@ -742,16 +742,16 @@ function parser1($text,$offset,$stop = false,$globalString = '') {
         continue;
       }
 
-      elseif (substr($text,$i,13) == '{{container}{') {
-        list($nstr,$offset) = parser1($text,$i,true,$globalString);
+      elseif (substr($text, $i,13) == '{{container}{') {
+        list($nstr, $offset) = parser1($text, $i,true, $globalString);
         $i = $offset;
         $cv[$cValueI] .= $nstr;
 
         continue;
       }
 
-      elseif (substr($text,$i,6) == '{{if="') {// die('<<<' . $text . '>>>');
-        list($nstr,$offset) = parser1($text,$i,true,$globalString);
+      elseif (substr($text, $i,6) == '{{if="') {// die('<<<' . $text . '>>>');
+        list($nstr, $offset) = parser1($text, $i,true, $globalString);
         $i = $offset;
         $cv[$cValueI] .= $nstr;
 
@@ -770,14 +770,14 @@ function parser1($text,$offset,$stop = false,$globalString = '') {
     }
 
     elseif ($iValue) {
-      if ((substr($text,$i,2) == '}{') && ($iValueI == 1)) {
+      if ((substr($text, $i,2) == '}{') && ($iValueI == 1)) {
         $iValueI = 2;
 
         $i += 2;
         continue;
       }
 
-      elseif (substr($text,$i,2) == '}}') {
+      elseif (substr($text, $i,2) == '}}') {
         $iValue = false;
         $iValueProc = true;
         $i += 2;
@@ -785,16 +785,16 @@ function parser1($text,$offset,$stop = false,$globalString = '') {
         continue;
       }
 
-      elseif (substr($text,$i,13) == '{{container}{') {
-        list($nstr,$offset) = parser1($text,$i,true,$globalString);
+      elseif (substr($text, $i,13) == '{{container}{') {
+        list($nstr, $offset) = parser1($text, $i,true, $globalString);
         $i = $offset;
         $iv[$iValueI] .= $nstr;
 
         continue;
       }
 
-      elseif (substr($text,$i,6) == '{{if="') {
-        list($nstr,$offset) = parser1($text,$i,true,$globalString);
+      elseif (substr($text, $i,6) == '{{if="') {
+        list($nstr, $offset) = parser1($text, $i,true, $globalString);
         $i = $offset;
         $iv[$iValueI] .= $nstr;
 
@@ -812,7 +812,7 @@ function parser1($text,$offset,$stop = false,$globalString = '') {
     }
 
     else {
-      if (substr($text,$i,6) == '{{if="') {
+      if (substr($text, $i,6) == '{{if="') {
         $i += 6;
         while ($text[$i] != '"') {
           if (isset($cond)) {
@@ -833,7 +833,7 @@ function parser1($text,$offset,$stop = false,$globalString = '') {
         continue;
       }
 
-      elseif (substr($text,$i,13) == '{{container}{') {
+      elseif (substr($text, $i,13) == '{{container}{') {
         $cValue = true;
         $cValueI = 1;
 
@@ -852,7 +852,7 @@ function parser1($text,$offset,$stop = false,$globalString = '') {
 
   if ($iValueProc) {
     $str .= iifl("$cond","$iv[1]","$iv[2]",($globalString ? "global $globalString;" : ''));
-    if ($stop) return array($str,$i);
+    if ($stop) return array($str, $i);
 
     $iv = array(1 => '', 2 => '');
     $cond = '';
@@ -862,7 +862,7 @@ function parser1($text,$offset,$stop = false,$globalString = '') {
 
   elseif ($cValueProc) {
     $str .= container("$cv[1]","$cv[2]");
-    if ($stop) return array($str,$i);
+    if ($stop) return array($str, $i);
 
     $cv = array(1 => '', 2 => '');
     $cValueProc = false;
@@ -884,7 +884,7 @@ function parser1($text,$offset,$stop = false,$globalString = '') {
 * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
-function iifl($condition,$true = '',$false = '',$eval = '') {
+function iifl($condition, $true = '', $false = '', $eval = '') {
   global $templates, $phrases, $title, $user, $room, $message, $template, $templateVars; // Lame approach.
 
   if (strlen($eval) > 0) {
@@ -917,21 +917,21 @@ function errorHandler($errno, $errstr, $errfile, $errline) {
 
   switch ($errno) {
     case E_USER_ERROR:
-    error_log("User Error in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr\n",3,$errorFile);
+    error_log("User Error in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr\n",3, $errorFile);
     die("An error has occured: $errstr. \n\nThe application has terminated.");
     break;
 
     case E_USER_WARNING:
-    error_log("User Warning in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr\n",3,$errorFile);
+    error_log("User Warning in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr\n",3, $errorFile);
     break;
 
     case E_ERROR:
-    error_log("System Error in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr\n",3,$errorFile);
+    error_log("System Error in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr\n",3, $errorFile);
     die("An error has occured: $errstr. \n\nThe application has terminated.");
     break;
 
     case E_WARNING:
-    error_log("System Warning in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr\n",3,$errorFile);
+    error_log("System Warning in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr\n",3, $errorFile);
     break;
   }
 
@@ -950,7 +950,7 @@ function errorHandler($errno, $errstr, $errfile, $errline) {
 * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
-function container($title,$content,$class = 'page') {
+function container($title, $content, $class = 'page') {
 
   return $return = "<table class=\"$class ui-widget\">
   <thead>
@@ -1007,7 +1007,7 @@ function fim_outputApi($data) {
 * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
-function fim_outputXml($array,$level = 0) {
+function fim_outputXml($array, $level = 0) {
   header('Content-type: application/xml');
 
   $indent = '';
@@ -1018,13 +1018,13 @@ function fim_outputXml($array,$level = 0) {
   }
 
   foreach ($array AS $key => $value) {
-    $key = explode(' ',$key);
+    $key = explode(' ', $key);
     $key = $key[0];
 
     $data .= "$indent<$key>\n";
 
     if (is_array($value)) {
-      $data .= fim_outputXml($value,$level + 1);
+      $data .= fim_outputXml($value, $level + 1);
     }
     else {
       if ($value === true) {
@@ -1076,14 +1076,14 @@ function fim_outputJson($array, $level = 0) {
   }
 
   foreach ($array AS $key => $value) {
-    $key = explode(' ',$key);
+    $key = explode(' ', $key);
     $key = $key[0];
 
     $data .= "$indent\"$key\":";
 
     if (is_array($value)) {
       $data .= " {
-" . fim_outputJson($value,$level + 1) . "
+" . fim_outputJson($value, $level + 1) . "
 $indent},
 
 ";
@@ -1134,14 +1134,14 @@ function fim_outputKeys($array, $level = 0) { // Used only for creating document
   }
 
   foreach ($array AS $key => $value) {
-    $key = explode(' ',$key);
+    $key = explode(' ', $key);
     $key = $key[0];
 
     $data .= "$indent<li>$key</li>\n";
 
     if (is_array($value)) {
       $data .= $indent . '  <ul>
-' . fim_outputKeys($value,$level + 1) . $indent . '</ul>
+' . fim_outputKeys($value, $level + 1) . $indent . '</ul>
 ';
     }
   }
@@ -1159,10 +1159,10 @@ function fim_outputKeys($array, $level = 0) { // Used only for creating document
 */
 
 function fim_htmlCompact($data) {
-  $data = preg_replace('/\ {2,}/','',$data);
-  $data = preg_replace("/(\n|\n\r|\t|\r)/",'',$data);
-  $data = preg_replace("/\<\!-- (.+?) --\>/",'',$data);
-  $data = preg_replace("/\>(( )+?)\</",'><',$data);
+  $data = preg_replace('/\ {2,}/','', $data);
+  $data = preg_replace("/(\n|\n\r|\t|\r)/",'', $data);
+  $data = preg_replace("/\<\!-- (.+?) --\>/",'', $data);
+  $data = preg_replace("/\>(( )+?)\</",'><', $data);
   return $data;
 }
 
@@ -1176,7 +1176,7 @@ function fim_htmlCompact($data) {
 * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
-function modLog($action,$data) {
+function modLog($action, $data) {
   global $sqlPrefix, $user, $database;
 
   if ($database->insert(array(
@@ -1237,7 +1237,7 @@ function fim_sanitizeGPC($data) {
   /* Get the Content Type Encoding
    * See http://www.xml.com/pub/a/2004/08/11/rest.html for REST-related information on this; main points: should be possible via a header */
   if (isset($_SERVER['CONTENT_TYPE'])) {
-    $contentType = explode(';',$_SERVER['CONTENT_TYPE']); // Divide the subsections of the content_type
+    $contentType = explode(';', $_SERVER['CONTENT_TYPE']); // Divide the subsections of the content_type
     $contentType = $contentType[0]; // Get the first of these subsections; RFC 3875 [4.1.3] explains this well, and defines the format as: type "/" subtype *( ";" parameter )
   }
   elseif (isset($_REQUEST['fim3_dataEncoding'])) {
@@ -1399,7 +1399,7 @@ function fim_sanitizeGPC($data) {
 
           if (isset($indexMetaData['valid'])) { // If a list of valid values is specified...
             if (is_array($indexMetaData['valid'])) { // And if that list is an array...
-              if (in_array($activeGlobal[$indexName],$indexMetaData['valid'])) { // And if the value specified is in the list of valid values...
+              if (in_array($activeGlobal[$indexName], $indexMetaData['valid'])) { // And if the value specified is in the list of valid values...
                 // Do Nothing; We're Good
               }
               else {
@@ -1427,7 +1427,7 @@ function fim_sanitizeGPC($data) {
 
         switch($indexMetaData['context']['cast']) {
           case 'csv':
-          $newData[$indexName] = fim_arrayValidate(explode(',',$activeGlobal[$indexName]),$indexMetaData['context']['filter'],($indexMetaData['context']['evaltrue'] ? false : true)); // If a cast is set for a CSV list, explode with a comma seperator, make sure all values corrosponding to the filter (int, bool, or string - the latter pretty much changes nothing), and if evaltrue is true, then the preserveAll flag would be false, and vice-versa.
+          $newData[$indexName] = fim_arrayValidate(explode(',', $activeGlobal[$indexName]), $indexMetaData['context']['filter'],($indexMetaData['context']['evaltrue'] ? false : true)); // If a cast is set for a CSV list, explode with a comma seperator, make sure all values corrosponding to the filter (int, bool, or string - the latter pretty much changes nothing), and if evaltrue is true, then the preserveAll flag would be false, and vice-versa.
           break;
 
           case 'int':
@@ -1445,10 +1445,10 @@ function fim_sanitizeGPC($data) {
           $trueValues = array('true',1,true,'1');
           $falseValues = array('false',0,false,'0');
 
-          if (in_array($activeGlobal[$indexName],$trueValues,true)) {
+          if (in_array($activeGlobal[$indexName], $trueValues,true)) {
             $newData[$indexName] = true;
           }
-          elseif (in_array($activeGlobal[$indexName],$falseValues,true)) {
+          elseif (in_array($activeGlobal[$indexName], $falseValues,true)) {
             $newData[$indexName] = false;
           }
           elseif (isset($indexMetaData['default'])) {
@@ -1481,7 +1481,7 @@ function fim_sanitizeGPC($data) {
 * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
-function iif($condition,$true,$false) {
+function iif($condition, $true, $false) {
   if (eval('return ' . stripslashes($condition) . ';')) {
     return $true;
   }

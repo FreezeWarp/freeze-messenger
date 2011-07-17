@@ -24,7 +24,7 @@
 * @todo Port to new engine.
 */
 
-function fimParse_htmlParse($text,$bbcodeLevel = 1) {
+function fimParse_htmlParse($text, $bbcodeLevel = 1) {
   global $user, $forumpath;
 
   return $text; // Temp
@@ -34,24 +34,24 @@ function fimParse_htmlParse($text,$bbcodeLevel = 1) {
   );
 
   if ($bbcode['shortCode'] && $bbcodeLevel <= 16) {
-    $text = preg_replace($search['shortCode'],$replace['buis'],$text);
+    $text = preg_replace($search['shortCode'], $replace['buis'], $text);
   }
   if ($bbcode['buis'] && $bbcodeLevel <= 16) {
-    $text = preg_replace($search['buis'],$replace['buis'],$text);
+    $text = preg_replace($search['buis'], $replace['buis'], $text);
   }
   if ($bbcode['color'] && $bbcodeLevel <= 11) {
-    $text = preg_replace($search['color'],$replace['color'],$text);
+    $text = preg_replace($search['color'], $replace['color'], $text);
   }
   if ($bbcode['link'] && $bbcodeLevel <= 9) {
-    $text = preg_replace($search['link'],$replace['link'],$text);
+    $text = preg_replace($search['link'], $replace['link'], $text);
   }
   if ($bbcode['image'] && $bbcodeLevel <= 5) {
     if ($bbcode['emoticon']) $text = fimParse_smilieParse($text);
 
-    $text = preg_replace($search['image'],$replace['image'],$text);
+    $text = preg_replace($search['image'], $replace['image'], $text);
   }
   if ($bbcode['video'] && $bbcodeLevel <= 3) {
-    $text = preg_replace($search['video'],$replace['video'],$text);
+    $text = preg_replace($search['video'], $replace['video'], $text);
   }
 
   $search2 = array(
@@ -67,7 +67,7 @@ function fimParse_htmlParse($text,$bbcodeLevel = 1) {
   );
 
   // Parse BB Code
-  $text = preg_replace($search2,$replace2,$text);
+  $text = preg_replace($search2, $replace2, $text);
 
   return $text;
 }
@@ -83,7 +83,7 @@ function fimParse_htmlParse($text,$bbcodeLevel = 1) {
 * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
-function fimParse_censorParse($text,$roomId = 0) {
+function fimParse_censorParse($text, $roomId = 0) {
   global $sqlPrefix, $slaveDatabase;
 
 /*  $words = dbRows("SELECT w.word, w.severity, w.param, l.listId AS listId
@@ -178,16 +178,16 @@ WHERE w.listId = l.listId AND w.severity = 'replace'",'word');*/
 
   foreach ($words AS $word) {
     if ($noBlock) {
-      if (in_array($word['listId'],$noBlock)) continue;
+      if (in_array($word['listId'], $noBlock)) continue;
     }
 
     $words2[strtolower($word['word'])] = $word['param'];
     $searchText[] = addcslashes(strtolower($word['word']),'^&|!$?()[]<>\\/.+*');
   }
 
-  $searchText2 = implode('|',$searchText);
+  $searchText2 = implode('|', $searchText);
 
-  return preg_replace("/(?<!(\[noparse\]))(?<!(\quot))($searchText2)(?!\[\/noparse\])/ie","indexValue(\$words2,strtolower('\\3'))",$text);
+  return preg_replace("/(?<!(\[noparse\]))(?<!(\quot))($searchText2)(?!\[\/noparse\])/ie","indexValue(\$words2,strtolower('\\3'))", $text);
 
   return $text;
 }
@@ -240,12 +240,12 @@ function fimParse_smilieParse($text) {
     break;
   }
 
-  $searchText2 = implode('|',$searchText);
+  $searchText2 = implode('|', $searchText);
 
-  return preg_replace("/(?<!(\[noparse\]))(?<!(quot))(?<!(gt))(?<!(lt))(?<!(apos))(?<!(amp))($searchText2)(?!\[\/noparse\])/ie","'[img=\\3]$forumUrlS' . indexValue(\$smilies2,strtolower('\\7')) . '[/img]'",$text);
+  return preg_replace("/(?<!(\[noparse\]))(?<!(quot))(?<!(gt))(?<!(lt))(?<!(apos))(?<!(amp))($searchText2)(?!\[\/noparse\])/ie","'[img=\\3]$forumUrlS' . indexValue(\$smilies2,strtolower('\\7')) . '[/img]'", $text);
 }
 
-function indexValue($array,$index) {
+function indexValue($array, $index) {
   return $array[$index];
 }
 
@@ -273,7 +273,7 @@ function fimParse_htmlWrap($html, $maxLength = 80, $char = '<br />') { /* An ada
   $tagParams = false;
 
   for ($i = 0; $i < mb_strlen($html,'UTF-8'); $i++) {
-   $mb = mb_substr($html,$i,1,'UTF-8');
+   $mb = mb_substr($html, $i,1,'UTF-8');
    $noAppend = false;
 
     if ($mb == '<') { // The character starts a BBcode tag - don't touch nothing.
@@ -337,28 +337,28 @@ function fimParse_htmlWrap($html, $maxLength = 80, $char = '<br />') { /* An ada
 * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
-function fim3parse_keyWords($string,$messageId) {
+function fim3parse_keyWords($string, $messageId) {
   global $searchWordConverts, $searchWordPunctuation, $searchWordLength, $searchWordOmissions, $sqlPrefix, $database;
 
   foreach ($searchWordPunctuation AS $punc) {
     $puncList[] = addcslashes($punc,'"\'|(){}[]<>.,~-?!@#$%^&*/\\'); // Dunno if this is the best approach.
   }
 
-  $string = preg_replace('/(' . implode('|',$puncList) . ')/is',' ',$string);
+  $string = preg_replace('/(' . implode('|', $puncList) . ')/is',' ', $string);
 
   while (strpos($string,'  ') !== false) {
-    $string = str_replace('  ',' ',$string);
+    $string = str_replace('  ',' ', $string);
   }
 
   $string = strtolower($string);
 
 
-  $stringPieces = array_unique(explode(' ',$string));
+  $stringPieces = array_unique(explode(' ', $string));
   $stringPiecesAdd = array();
 
   foreach ($stringPieces AS $piece) {
-    if (strlen($piece) >= $searchWordLength && !in_array($piece,$searchWordOmissions)) {
-      $stringPiecesAdd[] = str_replace(array_keys($searchWordConverts),array_values($searchWordConverts),$piece);
+    if (strlen($piece) >= $searchWordLength && !in_array($piece, $searchWordOmissions)) {
+      $stringPiecesAdd[] = str_replace(array_keys($searchWordConverts),array_values($searchWordConverts), $piece);
     }
   }
 
@@ -411,8 +411,8 @@ function fimParse_finalParse($messageText) {
   global $room;
 
   $messageRaw = $messageText; // Parses the sources for MySQL.
-  $messageHtml = nl2br(fimParse_htmlWrap(fimParse_htmlParse(fimParse_censorParse(fim_encodeXml($messageText),$room['roomId']),$room['options']),80,' ')); // Parses for browser or HTML rendering.
-  $messageApi = fimParse_smilieParse($messageText,$room['bbcode']); // Not yet coded, you see.
+  $messageHtml = nl2br(fimParse_htmlWrap(fimParse_htmlParse(fimParse_censorParse(fim_encodeXml($messageText), $room['roomId']), $room['options']),80,' ')); // Parses for browser or HTML rendering.
+  $messageApi = fimParse_smilieParse($messageText, $room['bbcode']); // Not yet coded, you see.
 
   return array($messageRaw, $messageHtml, $messageApi);
 }
@@ -430,7 +430,7 @@ function fimParse_finalParse($messageText) {
 * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
-function fim_sendMessage($messageText,$user,$room,$flag = '') {
+function fim_sendMessage($messageText, $user, $room, $flag = '') {
   global $sqlPrefix, $parseFlags, $salts, $encrypt, $loginMethod, $sqlUserGroupTableCols, $sqlUserGroupTable, $database;
 
 
@@ -449,7 +449,7 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
       break;
 
       case 'youtube':
-      $messageHtml = preg_replace('/^http\:\/\/(www\.|)youtube\.com\/(.*?)?v=([^&]+)(&|)(.*?)$/',($bbcode <= 3 ? '<object width="420" height="255" wmode="opaque"><param name="movie" value="http://www.youtube.com/v/$3=en&amp;fs=1&amp;rel=0&amp;border=0"></param><param name="allowFullScreen" value="true"></param><embed src="http://www.youtube.com/v/$3&amp;hl=en&amp;fs=1&amp;rel=0&amp;border=0" type="application/x-shockwave-flash" allowfullscreen="true" width="420" height="255" wmode="opaque"></embed></object>' : ($bbcode <= 13 ? '<a href="http://www.youtube.com/watch?v=$3" target="_BLANK">[Youtube Video]</a>' : '$3')),$messageText);
+      $messageHtml = preg_replace('/^http\:\/\/(www\.|)youtube\.com\/(.*?)?v=([^&]+)(&|)(.*?)$/',($bbcode <= 3 ? '<object width="420" height="255" wmode="opaque"><param name="movie" value="http://www.youtube.com/v/$3=en&amp;fs=1&amp;rel=0&amp;border=0"></param><param name="allowFullScreen" value="true"></param><embed src="http://www.youtube.com/v/$3&amp;hl=en&amp;fs=1&amp;rel=0&amp;border=0" type="application/x-shockwave-flash" allowfullscreen="true" width="420" height="255" wmode="opaque"></embed></object>' : ($bbcode <= 13 ? '<a href="http://www.youtube.com/watch?v=$3" target="_BLANK">[Youtube Video]</a>' : '$3')), $messageText);
       break;
 
       case 'text':
@@ -479,7 +479,7 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
   }
   else {
     $message = fimParse_finalParse($messageText);
-    list($messageRaw,$messageHtml,$messageApi) = $message;
+    list($messageRaw, $messageHtml, $messageApi) = $message;
   }
 
 
@@ -499,8 +499,8 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
     $iv_size = mcrypt_get_iv_size(MCRYPT_3DES,MCRYPT_MODE_CBC); // Get random IV size (CBC mode)
     $iv = base64_encode(mcrypt_create_iv($iv_size, MCRYPT_RAND)); // Get random IV; base64 it
 
-    list($messages,$iv,$saltNum) = fim_encrypt(array($messageRaw,$messageHtml,$messageApi)); // Get messages array, IV, salt num
-    list($messageRaw,$messageHtml,$messageApi) = $messages; // Get messages from messages array
+    list($messages, $iv, $saltNum) = fim_encrypt(array($messageRaw, $messageHtml, $messageApi)); // Get messages array, IV, salt num
+    list($messageRaw, $messageHtml, $messageApi) = $messages; // Get messages from messages array
   }
 
 
@@ -556,7 +556,7 @@ function fim_sendMessage($messageText,$user,$room,$flag = '') {
   }
 
   // Add message to archive search store.
-  fim3parse_keyWords($messageRawCache,$messageId);
+  fim3parse_keyWords($messageRawCache, $messageId);
 
 
 

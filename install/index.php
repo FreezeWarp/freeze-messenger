@@ -107,7 +107,7 @@ switch ($_REQUEST['phase']) {
   <strong>Note</strong>: You are strongly encourged to create the database and corrosponding user manually to avoid any security risks. If you want the installation script to create the database, the user you specify here must have permission to do so (usually the "root" user can do this).<br /><br />
   <form onsubmit="return false;">
   <button style="float: left;" type="button" onclick="$(\'#part2\').slideUp(); $(\'#part1\').slideDown();">&larr; Back</button>
-  <button style="float: right;" type="button" onclick="$.get(\'index.php?phase=1\',$(\'#mysql_connect_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part2\').slideUp(); $(\'#part3\').slideDown(); } else { alert(\'Could not connect.\'); } } );">Verify &rarr;</button>
+  <button style="float: right;" type="button" onclick="$.get(\'index.php?phase=1\',$(\'#mysql_connect_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part2\').slideUp(); $(\'#part3\').slideDown(); } else { alert(data); } } );">Verify &rarr;</button>
   </form>
 </div>
 
@@ -131,7 +131,7 @@ switch ($_REQUEST['phase']) {
 
   <form onsubmit="return false;">
     <button style="float: left;" type="button" onclick="$(\'#part3\').slideUp(); $(\'#part2\').slideDown();">&larr; Back</button>
-    <button style="float: right;" type="button" onclick="$.get(\'index.php?phase=2\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#mysql_db_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part3\').slideUp(); $(\'#part4\').slideDown(); } else { alert(\'Could not connect.\'); } } );">Connect &rarr;</button>
+    <button style="float: right;" type="button" onclick="$.get(\'index.php?phase=2\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#mysql_db_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part3\').slideUp(); $(\'#part4\').slideDown(); } else { alert(data); } } );">Connect &rarr;</button>
   </form>
 </div>
 
@@ -155,7 +155,7 @@ switch ($_REQUEST['phase']) {
 
   <form onsubmit="return false;">
     <button style="float: left;" type="button" onclick="$(\'#part4\').slideUp(); $(\'#part3\').slideDown();">&larr; Back</button>
-    <button style="float: right;" type="button" onclick="$.get(\'index.php?phase=3\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#mysql_db_form\').serialize() + \'&\' + $(\'#mysql_table_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part4\').slideUp(); $(\'#part5\').slideDown(); } else { alert(\'Could not connect.\'); } } );">Create Tables &rarr;</button>
+    <button style="float: right;" type="button" onclick="$.get(\'index.php?phase=3\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#mysql_db_form\').serialize() + \'&\' + $(\'#mysql_table_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part4\').slideUp(); $(\'#part5\').slideDown(); } else { alert(data); } } );">Create Tables &rarr;</button>
   </form>
 </div>
 
@@ -168,7 +168,14 @@ switch ($_REQUEST['phase']) {
     <table>
       <tr>
         <td>Forum Integration</td>
-        <td><select name="forum"><option value="vanilla">No Integration</option><option value="vbulletin3">vBulletin 3.8</option><option value="phpbb">PHPBB 3</option></select></td>
+        <td>
+          <select name="forum">
+            <option value="vanilla">No Integration</option>
+            <option value="vbulletin3">vBulletin 3.8</option>
+            <option value="vbulletin4">vBulletin 4.1</option>
+            <option value="phpbb">PHPBB 3</option>
+          </select>
+        </td>
       </tr>
       <tr>
         <td>Forum URL</td>

@@ -41,8 +41,8 @@ class database {
    * @return bool - True if a connection was successfully established, false otherwise.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
-  public function connect($host,$user,$password,$database) {
-    if (!$link = mysql_connect($host,$user,$password)) { // Make the connection.
+  public function connect($host, $user, $password, $database) {
+    if (!$link = mysql_connect($host, $user, $password)) { // Make the connection.
       $this->error = 'The connection was refused: ' . mysql_error();
 
       return false;
@@ -52,14 +52,14 @@ class database {
     }
 
 
-    if (!mysql_select_db($database,$this->dbLink)) { // Select the database.
+    if (!mysql_select_db($database, $this->dbLink)) { // Select the database.
       $this->error = 'Could not select database: ' . $database;
 
       return false;
     }
 
 
-    if (!mysql_query('SET NAMES "utf8"',$this->dbLink)) { // Sets the database encoding to utf8 (unicode).
+    if (!mysql_query('SET NAMES "utf8"', $this->dbLink)) { // Sets the database encoding to utf8 (unicode).
       $this->error = 'Could not run SET NAMES query.';
 
       return false;
@@ -87,7 +87,7 @@ class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function escape($string) {
-    return mysql_real_escape_string($string,$this->dbLink); // Retrun the escaped string.
+    return mysql_real_escape_string($string, $this->dbLink); // Retrun the escaped string.
   }
 
 
@@ -97,7 +97,7 @@ class database {
    * @return object
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  public function select($columns,$conditionArray = false,$sort = false,$group = false,$limit = false) {
+  public function select($columns, $conditionArray = false, $sort = false, $group = false, $limit = false) {
     $finalQuery = array(
       'columns' => array(),
       'tables' => array(),
@@ -115,7 +115,7 @@ class database {
         foreach ($columns AS $tableName => $tableCols) {
           if (strlen($tableName) > 0) {
             if (strstr($tableName,' ') !== false) { // A space can be used to create a table alias, which is sometimes required for different queries.
-              $tableParts = explode(' ',$tableName);
+              $tableParts = explode(' ', $tableName);
 
               $finalQuery['tables'][] = "`$tableParts[0]` AS `$tableParts[1]`";
 
@@ -128,7 +128,7 @@ class database {
             foreach($tableCols AS $colName => $colAlias) {
               if (strlen($colName) > 0) {
                 if (strstr($colName,' ') !== false) { // A space can be used to create identical columns in different contexts, which is sometimes required for different queries.
-                  $colParts = explode(' ',$colName);
+                  $colParts = explode(' ', $colName);
                   $colName = $colParts[0];
                 }
 
@@ -186,7 +186,7 @@ class database {
     if ($conditionArray !== false) {
       if (is_array($conditionArray)) {
         if (count($conditionArray) > 0) {
-          $finalQuery['where'] = $this->recurseBothEither($conditionArray,$reverseAlias);
+          $finalQuery['where'] = $this->recurseBothEither($conditionArray, $reverseAlias);
         }
       }
     }
@@ -216,7 +216,7 @@ class database {
             }
           }
 
-          $finalQuery['sort'] = implode(', ',$finalQuery['sort']);
+          $finalQuery['sort'] = implode(', ', $finalQuery['sort']);
         }
       }
     }
@@ -243,9 +243,9 @@ class database {
 
     /* Run Generated Query */
     $finalQueryText = 'SELECT
-  ' . implode(', ',$finalQuery['columns']) . '
+  ' . implode(', ', $finalQuery['columns']) . '
 FROM
-  ' . implode(', ',$finalQuery['tables']) . ($finalQuery['where'] ? '
+  ' . implode(', ', $finalQuery['tables']) . ($finalQuery['where'] ? '
 WHERE
   ' . $finalQuery['where'] : '') . ($finalQuery['group'] ? '
 GROUP BY
@@ -264,7 +264,7 @@ LIMIT
    * @return string
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  private function recurseBothEither($conditionArray,$reverseAlias) {
+  private function recurseBothEither($conditionArray, $reverseAlias) {
     $i = 0;
     $h = 0;
 
@@ -277,7 +277,7 @@ LIMIT
           $sideTextFull[$i] = '';
 
           if ($recKey === 'both' || $recKey === 'either') {
-            $sideTextFull[$i] = $this->recurseBothEither($data,$reverseAlias);
+            $sideTextFull[$i] = $this->recurseBothEither($data, $reverseAlias);
           }
           else {
             /* Define Sides Array */
@@ -313,7 +313,7 @@ LIMIT
                       }
                     }
 
-                    $sideText[$side] = "(" . implode(',',$data[$side]['value']) . ")";
+                    $sideText[$side] = "(" . implode(',', $data[$side]['value']) . ")";
                   }
                 }
                 else {
@@ -326,14 +326,14 @@ LIMIT
                 break;
 
                 case 'equation': // This is a specific format useful for various conversions. More documentation needs to be created, but in a nutshell: $aaa = column aaa; ()+-*/ supported mathematical operators; use ',' for concatenation; use double quotes for strings.
-                // Valid equations: $aa + $bb; "b",$b,"c"
+                // Valid equations: $aa + $bb; "b", $b,"c"
                 $equation = $data[$side]['value'];
-                $equation = preg_replace('/\$([a-zA-Z\_]+)/e','$reverseAlias[\'\\1\']',$equation);
+                $equation = preg_replace('/\$([a-zA-Z\_]+)/e','$reverseAlias[\'\\1\']', $equation);
 
 
                 $equationPieces = array();
-                if (strpos(',',$equation) !== false) { // If commas exist for concatenation...
-                  foreach(explode(',',$equation) AS $piece) { // Run through each comma-seperated part of the equation (this is used for concatenation).
+                if (strpos(',', $equation) !== false) { // If commas exist for concatenation...
+                  foreach(explode(',', $equation) AS $piece) { // Run through each comma-seperated part of the equation (this is used for concatenation).
                     if (preg_match('/"([a-zA-Z0-9\*\?]+?)"/',trim($piece))) { // Yes, you can't use many things in strings. Nor should you.
                       $piece = str_replace(array('*','?'),array('%','_'),trim($piece)); // Replace glob pieces with SQL equivs
                     }
@@ -341,7 +341,7 @@ LIMIT
                   }
 
                   if (count($equationPieces) > 0) { // Only replace the equation if things worked.
-                    $equation = 'CONCAT(' . implode(',',$equationPieces) . ')'; // Replace the equation and wrap concat for the commas (if concat used another symbol, we'd need to replace our implode accordingly).
+                    $equation = 'CONCAT(' . implode(',', $equationPieces) . ')'; // Replace the equation and wrap concat for the commas (if concat used another symbol, we'd need to replace our implode accordingly).
                   }
                 }
 
@@ -440,7 +440,7 @@ LIMIT
         }
 
 
-        $whereText[$h] = implode($condSymbol,$sideTextFull);
+        $whereText[$h] = implode($condSymbol, $sideTextFull);
       }
     }
 
@@ -453,7 +453,7 @@ LIMIT
       $whereText = $whereText[0]; // Get the query string from the first (and only) index.
     }
     else {
-      $whereText = implode(' AND ',$whereText);
+      $whereText = implode(' AND ', $whereText);
     }
 
 
@@ -461,11 +461,11 @@ LIMIT
   }
 
 
-  public function insert($dataArray,$table,$updateArray = false) {
+  public function insert($dataArray, $table, $updateArray = false) {
     list($columns, $values) = $this->splitArray($dataArray);
 
-    $columns = implode(',',$columns); // Convert the column array into to a string.
-    $values = implode(',',$values); // Convert the data array into a string.
+    $columns = implode(',', $columns); // Convert the column array into to a string.
+    $values = implode(',', $values); // Convert the data array into a string.
 
     $query = "INSERT INTO $table ($columns) VALUES ($values)";
 
@@ -492,7 +492,7 @@ LIMIT
   }
 
 
-  public function update($dataArray,$table,$conditionArray = false) {
+  public function update($dataArray, $table, $conditionArray = false) {
     list($columns, $values) = $this->splitArray($dataArray);
 
     for ($i = 0; $i < count($columns); $i++) {
@@ -545,7 +545,7 @@ LIMIT
   }
 
 
-  public function delete($table,$conditionArray = false) {
+  public function delete($table, $conditionArray = false) {
     list($columns, $values, $conditions) = $this->splitArray($conditionArray);
 
     for ($i = 0; $i < count($columns); $i++) {
@@ -598,7 +598,7 @@ LIMIT
     $startTime = microtime(true); // Get time in milliseconds (as a float) to determine if the query took too long.
 
 
-    if ($queryData = mysql_query($query,$this->dbLink)) {
+    if ($queryData = mysql_query($query, $this->dbLink)) {
       $endTime = microtime(true); // Get time in milliseconds (as a float) to determine if the query took too long.
 
       if (($endTime - $startTime) > 2) {
@@ -607,7 +607,7 @@ LIMIT
 
       $this->queryCounter++;
 
-      return new databaseResult($queryData,$query); // Return link resource.
+      return new databaseResult($queryData, $query); // Return link resource.
     }
     else {
       trigger_error("MySQL Error; Query: $query; Error: " . mysql_error($this->dbLink),E_USER_ERROR); // The query could not complete.
@@ -717,7 +717,7 @@ class databaseResult {
    * @return void
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
-  public function __construct($queryData,$sourceQuery) {
+  public function __construct($queryData, $sourceQuery) {
     $this->queryData = $queryData;
     $this->sourceQuery = $sourceQuery;
   }
@@ -785,8 +785,8 @@ class databaseResult {
         $uid++;
         $row['uid'] = $uid; // UID is a variable that can be used as the row number in the template.
 
-        $data2 = preg_replace('/\$([a-zA-Z0-9]+)/e','$row[$1]',$format); // the "e" flag is a PHP-only extension that allows parsing of PHP code in the replacement.
-        $data2 = preg_replace('/\{\{(.*?)\}\}\{\{(.*?)\}\{(.*?)\}\}/e','stripslashes(iif(\'$1\',\'$2\',\'$3\'))',$data2); // Slashes are appended automatically when using the /e flag, thus corrupting links.
+        $data2 = preg_replace('/\$([a-zA-Z0-9]+)/e','$row[$1]', $format); // the "e" flag is a PHP-only extension that allows parsing of PHP code in the replacement.
+        $data2 = preg_replace('/\{\{(.*?)\}\}\{\{(.*?)\}\{(.*?)\}\}/e','stripslashes(iif(\'$1\',\'$2\',\'$3\'))', $data2); // Slashes are appended automatically when using the /e flag, thus corrupting links.
         $data .= $data2;
       }
 

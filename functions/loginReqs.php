@@ -196,8 +196,27 @@ function fim_generatePassword($password) {
 
 ///* Process Functions for Each Forum  *///
 
-/* User should be array, password md5sum of plaintext. */
-function processVBulletin($user,$password) {
+function processVBulletin3($user,$password) {
+  global $forumTablePrefix;
+
+  if (!$user['userId']) { // The user does not exists
+    define('LOGIN_FLAG','BAD_USERNAME');
+
+    return false;
+  }
+
+  elseif ($user['password'] === md5($password . $user['salt'])) { // The password matches.
+    return true;
+  }
+
+  else {
+    define('LOGIN_FLAG','BAD_PASSWORD');
+
+    return false;
+  }
+}
+
+function processVBulletin4($user,$password) {
   global $forumTablePrefix;
 
   if (!$user['userId']) { // The user does not exists
@@ -271,7 +290,16 @@ function processLogin($user, $password, $encrypt) {
       $password = md5($password);
     }
 
-    return processVBulletin($user, $password);
+    return processVBulletin3($user, $password);
+    break;
+
+    case 'vbulletin4':
+    // WIP
+    if ($encrypt == 'plaintext') {
+      $password = md5($password);
+    }
+
+    return processVBulletin4($user, $password);
     break;
 
     case 'phpbb':
@@ -279,6 +307,7 @@ function processLogin($user, $password, $encrypt) {
     break;
 
     case 'vanilla':
+    // WIP
     return processVanilla($user, $password);
     break;
   }

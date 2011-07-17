@@ -1,6 +1,6 @@
 <?php
 class fimDatabase extends database {
-  public function getRoom($roomId,$roomName = false) {
+  public function getRoom($roomId, $roomName = false) {
     $queryParts['roomSelect']['columns'] = array(
       "{$sqlPrefix}rooms" => array(
         'roomId' => 'roomId',
@@ -64,7 +64,7 @@ class fimDatabase extends database {
   }
 
 
-  public function getUser($userId,$userName = false) {
+  public function getUser($userId, $userName = false) {
     $queryParts['userSelect']['columns'] = array(
       "{$sqlPrefix}users" => array(
         'userId' => 'userId',
