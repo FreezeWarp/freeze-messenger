@@ -536,7 +536,7 @@ if (is_array($request['rooms'])) {
       /* Modify Query Data for Directives */
       if ($request['messageIdMax']) {
         $queryParts['messagesSelect']['conditions']['both'][] = array(
-          'type' => 'lt',
+          'type' => 'lte',
           'left' => array(
             'type' => 'column',
             'value' => 'messageId',
@@ -549,7 +549,7 @@ if (is_array($request['rooms'])) {
       }
       if ($request['messageIdMin']) {
         $queryParts['messagesSelect']['conditions']['both'][] = array(
-          'type' => 'gt',
+          'type' => 'gte',
           'left' => array(
             'type' => 'column',
             'value' => 'messageId',
@@ -563,7 +563,7 @@ if (is_array($request['rooms'])) {
 
       if ($request['messageDateMax']) {
         $queryParts['messagesSelect']['conditions']['both'][] = array(
-          'type' => 'lt',
+          'type' => 'lte',
           'left' => array( // Quick Note: Context: time is redunant and will cause issues if defined.
             'type' => 'column',
             'value' => 'time',
@@ -576,7 +576,7 @@ if (is_array($request['rooms'])) {
       }
       if ($request['messageDateMin']) {
         $queryParts['messagesSelect']['conditions']['both'][] = array(
-          'type' => 'gt',
+          'type' => 'gte',
           'left' => array( // Quick Note: Context: time is redunant and will cause issues if defined.
             'type' => 'column',
             'value' => 'time',
@@ -590,7 +590,7 @@ if (is_array($request['rooms'])) {
 
       if ($request['messageIdStart']) {
         $queryParts['messagesSelect']['conditions']['both'][] = array(
-          'type' => 'gt',
+          'type' => 'gte',
           'left' => array(
             'type' => 'column',
             'value' => 'messageId',
@@ -614,7 +614,7 @@ if (is_array($request['rooms'])) {
       }
       if ($request['messageIdEnd']) {
         $queryParts['messagesSelect']['conditions']['both'][] = array(
-          'type' => 'lt',
+          'type' => 'lte',
           'left' => array(
             'type' => 'column',
             'value' => 'messageId',

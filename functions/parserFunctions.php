@@ -15,13 +15,15 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 /**
-* Parses text from defined BBCode.
-*
-* @param string $text - Text to format with HTML.
-* @param integer $bbcodeLevel - The level of bbcode to parse. See documentation for values.
-* @return string - Parsed text.
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-* @todo Port to new engine.
+ * Parses text from defined BBCode.
+ *
+ * @param string $text - Text to format with HTML.
+ * @param integer $bbcodeLevel - The level of bbcode to parse. See documentation for values.
+ * @return string - Parsed text.
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ * @todo Port to new engine.
+
+ * Some notes: The reworked BBCode engine removes all predefined BBcode, and replaces it with a broad anything-goes regex system. It will allow for nearly anything (including advanced hacks), but also means the system will simply not play nice with anything else. As such, a few things to note: smilies and valid links will be parsed solely for the HTML field, directly converted to proper IMG tags; [we're not sure what else yet].
 */
 
 function fimParse_htmlParse($text, $bbcodeLevel = 1) {
