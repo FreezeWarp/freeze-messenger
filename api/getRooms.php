@@ -21,16 +21,10 @@
  * @version 3.0
  * @author Jospeph T. Parsons <rehtaew@gmail.com>
  * @copyright Joseph T. Parsons 2011
- * @param bool showDeleted - Will attempt to show deleted rooms, assuming the user has access to them (that is, is an administrator). Defaults to false.
- * @param bool showPrivate - Will show any private rooms of the user. Defaults to true.
- * @param string order - How the rooms should be ordered. Options include:
- * <ul>
- * <li>roomId - ID (Default)</li>
- * <li>roomName - Name</li>
- * <li>smart - Smart Sort (Official -> Nonofficial -> Private)</li>
- * </ul>
- * @param bool orderReverse - If true the above search will be descending, not ascending.
- * @param string rooms - If specified, only specific rooms are listed. By default, all rooms are listed.
+ * @param bool [showDeleted=false] - Will attempt to show deleted rooms, assuming the user has access to them (that is, is an administrator). Defaults to false.
+ * @param bool [showPrivate=true] - Will show any private rooms of the user. Defaults to true.
+ * @param string [order=roomId] - How the rooms should be ordered (either roomId or roomName).
+ * @param string [rooms] - If specified, only specific rooms are listed. By default, all rooms are listed.
 */
 
 $apiRequest = true;
@@ -85,15 +79,6 @@ $request = fim_sanitizeGPC(array(
         'type' => 'bool',
       ),
     ),
-
-    'reverseOrder' => array(
-      'type' => 'string',
-      'require' => false,
-      'default' => false,
-      'context' => array(
-        'type' => 'bool',
-      ),
-    ),
   ),
 ));
 
@@ -135,11 +120,6 @@ $queryParts['roomSelect'] = array(
 
 
 /* Modify Query Data for Directives */
-/*$whereClause = ($request['showDeleted'] ? '' : '(options & 4 = FALSE) AND ');
-if ($rooms) {
-  $whereClause .= ' roomId IN (' . implode(',',$roomsArray) . ') AND ';
-}*/
-
 if ($request['showDeleted'] !== true) { // We will also check to make sure the user has moderation priviledges after the select.
   $queryParts['roomSelect']['both'][] = array(
     'type' => '!bitwise',
@@ -153,26 +133,38 @@ if ($request['showDeleted'] !== true) { // We will also check to make sure the u
     ),
   );
 }
+if (count($request['rooms']) > 0) {
+  $queryParts['roomSelect']['both'][] = array(
+    'type' => 'in',
+    'left' => array(
+      'type' => 'column',
+      'value' => 'roomId',
+    ),
+    'right' => array(
+      'type' => 'array',
+      'value' => $request['rooms'],
+    ),
+  );
+}
+
+
 
 /* Query Results Order
- * roomId*, roomName, smart */
-/*switch ($request['sort']) {
-  case 'roomId':
-  $order = 'roomId ' . ($request['reverseOrder'] ? 'DESC' : 'ASC');
-  break;
-
+ * roomId*, roomName */
+switch ($request['sort']) {
   case 'roomName':
-  $order = 'roomName ' . ($request['reverseOrder'] ? 'DESC' : 'ASC');
+  $queryParts['roomSelect']['sort'] = array(
+    'roomName' => 'asc',
+  );
   break;
 
-  case 'smart':
-  $order = '(options & 1) DESC, (options & 16) ASC';
-  break;
-
+  case 'roomId':
   default:
-  $order = 'roomId ' . ($request['reverseOrder'] ? 'DESC' : 'ASC');
+  $queryParts['roomSelect']['sort'] = array(
+    'roomId' => 'asc',
+  );
   break;
-}*/
+}
 
 
 
@@ -194,7 +186,8 @@ else {
 /* Get Rooms From Database */
 $rooms = $database->select(
   $queryParts['roomSelect']['columns'],
-  $queryParts['roomSelect']['conditions']
+  $queryParts['roomSelect']['conditions'],
+  $queryParts['roomSelect']['sort']
 );
 $rooms = $rooms->getAsArray(true);
 

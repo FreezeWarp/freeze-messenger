@@ -110,6 +110,12 @@ $request = fim_sanitizeGPC(array(
       'type' => 'string',
       'require' => false,
     ),
+
+    'otr' => array( // This will be used in v4.
+      'type' => 'string',
+      'require' => false,
+      'default' => false,
+    ),
   ),
 ));
 
@@ -154,17 +160,12 @@ switch($request['action']) {
       $errDesc = 'The room specified already exists.';
     }
     else {
-      //$options = ($_POST['mature'] ? 2 : 0);
-      //$bbcode = intval($_POST['bbcode']);
-
       $database->insert(array(
         'roomName' => $request['roomName'],
         'allowedGroups' => implode(',',$request['allowedGroups']),
         'allowedUsers' => implode(',',$request['$allowedUsers']),
         'moderators' => implode(',',$request['$moderators']),
         'owner' => (int) $user['userId'],
-//        'options' => (int) $options,
-//        'bbcode' => (int) $bbcode,
         ),"{$sqlPrefix}rooms"
       );
 
@@ -181,20 +182,17 @@ switch($request['action']) {
 
   case 'edit':
   $roomLengthLimit = ($config['roomLengthLimit'] ? $config['roomLengthLimit'] : 20);
-
-  $roomName = substr($_POST['name'],0,$roomLengthLimit); // Limits to x characters.
-
   $room = $slaveDatabase->getRoom($request['roomId']);
 
-  if (strlen($request['roomName']) == 0) {
+  if (strlen($request['roomName']) == 0) { // The name must exist :P
     $errStr = 'noName';
     $errDesc = 'A room name was not supplied.';
   }
-  elseif (strlen($request['roomName'] > $roomLengthLimit)) {
+  elseif (strlen($request['roomName'] > $roomLengthLimit)) { // The name must be short :P
     $errStr = 'longName';
     $errDesc = 'The room name specified is too long.';
   }
-  elseif (hasPermission($room,$user,'admin')) {
+  elseif (hasPermission($room,$user,'admin')) { // The user must be an admin (or, inherently, the room's owner) to edit rooms.
     $errStr = 'noPerm';
     $errDesc = 'You do not have permission to edit this room.';
   }
@@ -205,7 +203,7 @@ switch($request['action']) {
   else {
     $data = $slaveDatabase->getRoom(false,$request['roomName']);
 
-    if ((count($data) > 0) && $data['roomId'] != $room['roomId']) {
+    if ($data !== false && $data['roomId'] != $room['roomId']) { // Make sure no other room with that name exists (if no room is found, the result is false), and that, of course, this only applies if the user just specified the current room's existing name.
       $errStr = 'exists';
       $errDesc = 'The room name specified already exists.';
     }
@@ -220,12 +218,12 @@ switch($request['action']) {
         }
       }
 
-      $censorLists = $_POST['censor'];
+      $censorLists = $_POST['censor']; // TODO
       foreach($censorLists AS $id => $list) {
         $listsNew[$id] = $list;
       }
 
-      $lists = dbRows("SELECT listId, type FROM {$sqlPrefix}censorLists AS l WHERE options & 2",'listId'); /// TODO
+      $lists = dbRows("SELECT listId, type FROM {$sqlPrefix}censorLists AS l WHERE options & 2",'listId'); // TODO
 
       foreach ($lists AS $list) {
         if ($list['type'] == 'black' && $listStatus[$list['listId']] == 'block') {
@@ -258,16 +256,11 @@ switch($request['action']) {
         }
       }
 
-      //$options = ($room['options'] & 1) + ($_POST['mature'] ? 2 : 0) + ($room['options'] & 4) + ($room['options'] & 8) + ($room['options'] & 16);
-      //$bbcode = intval($_POST['bbcode']);
-
       $database->update(array(
           'roomName' => $roomName,
           'allowedGroups' => implode(',',$request['allowedGroups']),
           'allowedUsers' => implode(',',$request['allowedUsers']),
           'moderators' => implode(',',$request['moderators']),
-          //'options' => (int) $options,
-          //'bbcode' => (int) $_POST['bbcode'],
         ),
         "{$sqlPrefix}rooms",
         array(
@@ -315,6 +308,10 @@ switch($request['action']) {
       $xmlData['editRoom']['response']['insertId'] = $database->insertId;
     }
   }
+  break;
+
+  case 'contact':
+  // FIMv4
   break;
 
   case 'delete':
@@ -367,6 +364,8 @@ switch($request['action']) {
   }
   break;
 }
+
+
 
 /* Update Data for Errors */
 $xmlData['editRoom']['errStr'] = (string) $errStr;

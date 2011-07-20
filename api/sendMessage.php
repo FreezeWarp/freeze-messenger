@@ -23,6 +23,8 @@
  *
  * @param int roomId - The room ID.
  * @param string message - The message text, properly URLencoded.
+ * @param string flag - A message content-type/context flag, used for sending images, urls, etc.
+ * @param bool ignoreBlock - If true, the system will ignore censor warnings. You must pass this to resend a message that was denied because of a censor warning.
 */
 
 $apiRequest = true;
@@ -50,6 +52,14 @@ $request = fim_sanitizeGPC(array(
     'flag' => array(
       'type' => 'string',
       'require' => false,
+    ),
+    'ignoreBlock' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => false,
+      'context' => array(
+        'type' => 'bool',
+      ),
     ),
   ),
 ));
@@ -150,7 +160,7 @@ if ($words) {
   ($hook = hook('sendMessage_censor_start') ? eval($hook) : '');
 
   foreach ($words AS $word) {
-    if ($_POST['ignoreBlock'] && $word['severity'] == 'confirm') continue;
+    if ($request['ignoreBlock'] && $word['severity'] == 'confirm') continue;
 
     $searchText[] = addcslashes(strtolower($word['word']),'^&|!$?()[]<>\\/.+*');
 
@@ -174,7 +184,8 @@ if ($words) {
 
 ($hook = hook('sendMessage_preGen') ? eval($hook) : '');
 
-// trigger_error(print_r($user,true),E_USER_NOTICE);
+
+
 if ($continue) {
   if (!$room) { // Bad room.
     $errStr = 'badroom';

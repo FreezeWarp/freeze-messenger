@@ -22,7 +22,9 @@
  * @author Jospeph T. Parsons <rehtaew@gmail.com>
  * @copyright Joseph T. Parsons 2011
  *
- * @param users - A comma-seperated list of user IDs to get. If not specified, all users will be retrieved.
+ * @param string [users] - A comma-seperated list of user IDs to get. If not specified, all users will be retrieved.
+ * @param string [sort=userId] - How to sort the users, either by userId or userName.
+ * @param string [showOnly] - A specific filter to apply to users that may be used for certain special tasks. "banned" specifies to show only users who have been banned. Prepending a bang ("!") to any value will reverse the filter - thus, "!banned" will only show users who have not been banned. It is possible to apply multiple filters by comma-seperating values.
 */
 
 $apiRequest = true;
@@ -53,6 +55,14 @@ $request = fim_sanitizeGPC(array(
       ),
       'require' => false,
       'default' => 'userId',
+    ),
+
+    'showOnly' => array(
+      'type' => 'string',
+      'valid' => array(
+        'banned',
+      ),
+      'require' => false,
     ),
   ),
 ));

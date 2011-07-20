@@ -21,6 +21,10 @@
  * @version 3.0
  * @author Jospeph T. Parsons <rehtaew@gmail.com>
  * @copyright Joseph T. Parsons 2011
+ *
+ * @param string action
+ * @param integer userId
+ * @param integer roomId
 */
 
 $apiRequest = true;
@@ -30,28 +34,37 @@ require_once('../global.php');
 
 
 /* Get Request Data */
-$action = fim_urldecode($_POST['action']);
 $request = fim_sanitizeGPC(array(
   'post' => array(
     'action' => array(
       'type' => 'string',
       'require' => true,
       'valid' => array(
-        'deleteMessage',
-        'undeleteMessage',
         'kickUser',
         'unkickUser',
         'favRoom',
         'unfavRoom',
+        'banUser',
+        'unbanUser',
       ),
     ),
-    'message' => array(
+
+    'roomId' => array(
       'type' => 'string',
       'require' => false,
+      'default' => 0,
+      'context' => array(
+        'type' => 'int',
+      ),
     ),
-    'flag' => array(
+
+    'userId' => array(
       'type' => 'string',
       'require' => false,
+      'default' => 0,
+      'context' => array(
+        'type' => 'int',
+      ),
     ),
   ),
 ));
@@ -74,62 +87,7 @@ $xmlData = array(
 
 
 /* Start Processing */
-switch ($action) {
-  case 'deleteMessage':
-  $messageData = $slaveDatabase->getMessage($request['messageId']);
-  $roomData = $slaveDatabase->getRoom($messageData['roomId']);
-
-  if (fim_hasPermission($roomData,$user,'moderate',true)) {
-    $database->update(array(
-      'deleted' => 1
-      ),
-      "{$sqlPrefix}messages",
-      array(
-        "messageId" => $messageId
-      )
-    );
-
-    $database->update(array(
-      'deleted' => 1
-      ),
-      "{$sqlPrefix}messagesCached",
-      array(
-        "messageId" => $messageId
-      )
-    );
-
-    $xmlData['moderate']['response']['success'] = true;
-  }
-  else {
-    $errStr = 'nopermission';
-    $errDesc = 'You are not allowed to moderate this room.';
-  }
-  break;
-
-
-  case 'undeleteMessage':
-  $messageData = $slaveDatabase->getMessage($request['messageId']);
-  $roomData = $slaveDatabase->getRoom($messageData['roomId']);
-
-  if (fim_hasPermission($roomData,$user,'moderate')) {
-    $database->update(array(
-      'deleted' => 0
-      ),
-      "{$sqlPrefix}messages",
-      array(
-        "messageId" => $messageId
-      )
-    );
-
-    $xmlData['moderate']['response']['success'] = true;
-  }
-  else {
-    $errStr = 'nopermission';
-    $errDesc = 'You are not allowed to moderate this room.';
-  }
-  break;
-
-
+switch ($request['action']) {
   case 'kickUser':
   $userData = $slaveDatabase->getRoom($request['userId']);
   $roomData = $slaveDatabase->getRoom($request['roomId']);
@@ -271,6 +229,29 @@ switch ($action) {
   }
   break;
 
+  case 'banUser':
+  if ($user['adminDefs']['modUsers']) {
+    $userId = intval($_GET['userId']);
+
+    modLog('banuser',$userId);
+
+    dbQuery("UPDATE {$sqlPrefix}users SET settings = IF(settings & 1 = false,settings + 1,settings) WHERE userId = $userId");
+
+    echo container('User Banned','The user has been banned.');
+  }
+  break;
+
+  case 'unbanUser':
+  if ($user['adminDefs']['modImages']) {
+    $userId = intval($_GET['userId']);
+
+    modLog('unbanuser',$userId);
+
+    dbQuery("UPDATE {$sqlPrefix}users SET settings = IF(settings & 1,settings - 1,settings) WHERE userId = $userId");
+
+    echo container('User Unbanned','The user has been unbanned.');
+  }
+  break;
 
   default:
 
