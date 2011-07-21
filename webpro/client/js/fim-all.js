@@ -1088,7 +1088,7 @@ var standard = {
       var encrypt = 'base64';
 
       $.ajax({
-        url: directory + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest? '&archive=1&messageIdStart=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdStart=' + (requestSettings.lastMessage + 1)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionfHash=' + sessionHash + '&fim3_userId=' + userId,
+        url: directory + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest? '&archive=1&messageIdStart=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdStart=' + (requestSettings.lastMessage + 1)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
         type: 'GET',
         timeout: requestSettings.timeout,
         data: '',

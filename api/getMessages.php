@@ -52,7 +52,6 @@ require_once('../global.php');
 $longPollingWait = .25;
 
 
-
 /* Get Request Data */
 $request = fim_sanitizeGPC(array(
   'get' => array(
@@ -832,7 +831,10 @@ if (is_array($request['rooms'])) {
             "{$sqlPrefix}ping" => array(
               'status' => 'status',
               'typing' => 'typing',
-              'time' => 'ptime',
+              'time' => array(
+                'name' => 'ptime',
+                'context' => 'time',
+              ),
               'roomId' => 'proomId',
               'userId' => 'puserId',
             ),
@@ -888,7 +890,7 @@ if (is_array($request['rooms'])) {
                 'left' => array(
                   'type' => 'column',
                   'value' => 'ptime',
-                  'context' => 'time',
+//                  'context' => 'time',
                 ),
                 'right' => array(
                   'type' => 'int',
@@ -904,8 +906,8 @@ if (is_array($request['rooms'])) {
 
           $activeUsers = $database->select($queryParts['activeUsersSelect']['columns'],
             $queryParts['activeUsersSelect']['conditions'],
-            $queryParts['activeUsersSelect']['sort']);
-          $activeUsers = $activeUsers->getAsArray();
+            $queryParts['activeUsersSelect']['sort']);// echo $activeUsers->sourceQuery;
+          $activeUsers = $activeUsers->getAsArray(true);
 
 
           if (is_array($activeUsers)) {
