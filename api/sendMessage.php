@@ -247,10 +247,10 @@ if ($continue) {
   }*/
   else {
     if (strpos($request['message'], '/me') === 0) {
-      $flag = 'me';
+      $request['flag'] = 'me';
     }
 
-    fim_sendMessage($request['message'],$user,$room,$flag);
+    fim_sendMessage($request['message'],$user,$room,$request['flag']);
   }
 }
 

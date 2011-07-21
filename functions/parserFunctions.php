@@ -475,9 +475,10 @@ function fim_sendMessage($messageText, $user, $room, $flag = '') {
   // Supported flags: image, video, link, email
   // Other flags that won't be parsed here: me, topic
 
-  if (in_array($flag,array('image','video','link','email','youtube','text','audio','text'))) {
+  if (in_array($flag,array('image','video','link','email','youtube','html','audio','text'))) {
     $messageRaw = $messageText;
     $messageApi = $messageText;
+    $messageHtml = $messageText;
   }
   else {
     $message = fimParse_finalParse($messageText);

@@ -66,6 +66,15 @@ $request = fim_sanitizeGPC(array(
         'type' => 'int',
       ),
     ),
+
+    'quiet' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => false,
+      'context' => array(
+        'type' => 'bool',
+      ),
+    ),
   ),
 ));
 
@@ -135,7 +144,6 @@ switch ($request['action']) {
     $xmlData['moderate']['response']['success'] = true;
   }
   break;
-
 
   case 'unkickUser':
   $userData = $slaveDatabase->getUser($request['userId']);
@@ -228,6 +236,7 @@ switch ($request['action']) {
     $xmlData['moderate']['response']['success'] = false;
   }
   break;
+
 
   case 'banUser':
   if ($user['adminDefs']['modUsers']) {

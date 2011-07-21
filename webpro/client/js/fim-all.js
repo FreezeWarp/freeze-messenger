@@ -163,6 +163,99 @@ function faviconFlash() {
   return false;
 }
 
+function messageFormat(entryXml, format) {
+  var data,
+    text = unxml($(entryXml).find('htmlText').text().trim()),
+    messageTime = $(entryXml).find('messageTimeFormatted').text().trim(),
+    messageId = Number($(entryXml).find('messageId').text().trim()),
+
+    userName = $(entryXml).find('userData > userName').text().trim(),
+    userId = Number($(entryXml).find('userData > userId').text().trim()),
+    groupFormatStart = unxml($(entryXml).find('userData > startTag').text().trim()),
+    groupFormatEnd = unxml($(entryXml).find('userData > endTag').text().trim()),
+
+    styleColor = $(entryXml).find('defaultFormatting > color').text().trim(),
+    styleHighlight = $(entryXml).find('defaultFormatting > highlight').text().trim(),
+    styleFontface = Number($(entryXml).find('defaultFormatting > fontface').text().trim()),
+    styleGeneral = Number($(entryXml).find('defaultFormatting > general').text().trim()),
+    style = '',
+
+    flag = unxml($(entryXml).find('flags').text().trim());
+
+  switch (flag) {
+    case 'image':
+    text = '<img src="' + text + '" />';
+    break;
+
+    case 'video':
+      // WIP
+    break;
+
+    case 'audio':
+      // WIP
+    break;
+
+    case 'youtube':
+    if (text.match(/http\:\/\/(www\.|)youtu\.be\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/) !== null) {
+      var code = text.replace(/http\:\/\/(www\.|)youtube\.com\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/i, '$4');
+      text = '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0" frameborder="0" allowfullscreen></iframe>';
+    }
+    else if (text.match(/http\:\/\/(www\.|)youtu\.be\/([a-zA-Z0-9]+)/) !== null) {
+      var code = text.replace(/http\:\/\/(www\.|)youtu\.be\/([a-zA-Z0-9]+)/i, '$4');
+      text = '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0" frameborder="0" allowfullscreen></iframe>';
+    }
+    else {
+      text = '<span style="color: red; font-style: oblique;">[Invalid Youtube Video]</span>';
+    }
+    break;
+
+    case 'email':
+    text = '<a href="mailto: ' + text + '">' + text + '</a>';
+    break;
+
+    case 'url':
+    text = '<a href="' + text + '">' + text + '</a>';
+    break;
+
+    case '':
+    if (!settings.disableFormatting) {
+      style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + fontIdRef[styleFontface] + ';';
+
+      if (styleGeneral & 256) {
+        style += 'font-weight: bold;';
+      }
+      if (styleGeneral & 512) {
+        style += 'font-style: oblique;';
+      }
+      if (styleGeneral & 1024) {
+        style += 'text-decoration: underline;';
+      }
+      if (styleGeneral & 2048) {
+        style += 'text-decoration: line-through;';
+      }
+    }
+    break;
+  }
+
+  switch (format) {
+    case 'table':
+    data = '<tr id="archiveMessage' + messageId + '"><td>' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageid="' + messageId + '">' + text + '</td></tr>';
+    break;
+
+    case 'list':
+    if (settings.showAvatars) {
+      data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="' + userName + '" src="' + avatar + '" style="max-width: 24px; max-height: 24px; padding-right: 3px;" class="userName userNameTable" data-userId="' + userId + '" /><span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
+    }
+    else {
+      data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
+    }
+    break;
+  }
+
+
+  return data;
+}
+
 
 /* URL-Defined Actions
 * TODO */
@@ -697,7 +790,7 @@ var standard = {
     }
 
 
-    $('#archiveSearch').unbind('change');
+    $('#searchText').unbind('change');
     $('#searchText').bind('change',function() {
       standard.archive({
         idMax : options.idMax,
@@ -731,35 +824,9 @@ var standard = {
 
         if ($(xml).find('messages > message').length > 0) {
           $(xml).find('messages > message').each(function() {
-            var text = unxml($(this).find('htmlText').text().trim()),
-              messageTime = $(this).find('messageTimeFormatted').text().trim(),
-              messageId = Number($(this).find('messageId').text().trim()),
+            var messageId = Number($(this).find('messageId').text().trim());
 
-              userName = $(this).find('userData > userName').text().trim(),
-              userId = Number($(this).find('userData > userId').text().trim()),
-              groupFormatStart = unxml($(this).find('userData > startTag').text().trim()),
-              groupFormatEnd = unxml($(this).find('userData > endTag').text().trim()),
-
-              styleColor = $(this).find('defaultFormatting > color').text().trim(),
-              styleHighlight = $(this).find('defaultFormatting > highlight').text().trim(),
-              styleFontface = Number($(this).find('defaultFormatting > fontface').text().trim()),
-              styleGeneral = Number($(this).find('defaultFormatting > general').text().trim()),
-              style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + fontIdRef[styleFontface] + ';';
-
-            if (styleGeneral & 256) {
-              style += 'font-weight: bold;';
-            }
-            if (styleGeneral & 512) {
-              style += 'font-style: oblique;';
-            }
-            if (styleGeneral & 1024) {
-              style += 'text-decoration: underline;';
-            }
-            if (styleGeneral & 2048) {
-              style += 'text-decoration: line-through;';
-            }
-
-            data += '<tr id="archiveMessage' + messageId + '"><td>' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageid="' + messageId + '">' + text + '</td></tr>';
+            data += messageFormat($(this), 'table');
 
             if (messageId > lastMessage) {
               lastMessage = messageId;
@@ -1061,51 +1128,8 @@ var standard = {
 
             if ($(xml).find('messages > message').length > 0) {
               $(xml).find('messages > message').each(function() {
-
-                var text = unxml($(this).find('htmlText').text().trim()),
-                  messageTime = unxml($(this).find('messageTimeFormatted').text().trim()),
-
-                  messageId = Number($(this).find('messageId').text().trim()),
-
-                  userName = unxml($(this).find('userData > userName').text().trim()),
-                  userId = Number($(this).find('userData > userId').text().trim()),
-                  groupFormatStart = unxml($(this).find('userData > startTag').text().trim()),
-                  groupFormatEnd = unxml($(this).find('userData > endTag').text().trim()),
-                  avatar = unxml($(this).find('userData > avatar').text().trim()),
-
-                  styleColor = ($(this).find('defaultFormatting > color').text().trim()),
-                  styleHighlight = ($(this).find('defaultFormatting > highlight').text().trim()),
-                  styleFontface = ($(this).find('defaultFormatting > fontface').text().trim()),
-                  styleGeneral = Number($(this).find('defaultFormatting > general').text().trim()),
-                  style = '',
-                  data = '';
-
-                if (!settings.disableFormatting) {
-                  style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + fontIdRef[styleFontface] + ';';
-
-                  if (styleGeneral & 256) {
-                    style += 'font-weight: bold;';
-                  }
-                  if (styleGeneral & 512) {
-                    style += 'font-style: oblique;';
-                  }
-                  if (styleGeneral & 1024) {
-                    style += 'text-decoration: underline;';
-                  }
-                  if (styleGeneral & 2048) {
-                    style += 'text-decoration: line-through;';
-                  }
-                }
-
-
-                if (settings.showAvatars) {
-                  data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="' + userName + '" src="' + avatar + '" style="max-width: 24px; max-height: 24px; padding-right: 3px;" class="userName userNameTable" data-userId="' + userId + '" /><span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
-                }
-                else {
-                  data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
-                }
-
-                notifyData += userName + ': ' + text + "\n";
+                var messageId = Number($(this).find('messageId').text().trim());
+                data = messageFormat($(this), 'list');
 
                 if (messageIndex[messageId]) {
                    // Double post hack
@@ -1237,6 +1261,15 @@ var standard = {
 
 
   sendMessage : function(message,confirmed,flag) {
+    if (!flag) {
+      if (message.match(/http\:\/\/(www\.|)youtu\.be\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/) !== null) {
+        flag = 'youtube';
+      }
+      else if (message.match(/http\:\/\/(www\.|)youtu\.be\/([a-zA-Z0-9]+)/) !== null) {
+        flag = 'youtube';
+      }
+    }
+
     if (!roomId) {
       popup.selectRoom();
     }
@@ -1720,8 +1753,8 @@ popup = {
 
           $('#uploadFileForm').bind('submit',function() {
             $.ajax({
-              url: directory + 'api/sendFile.php',
-              type: 'POST',
+              url : directory + 'api/sendFile.php',
+              type : 'POST',
               data : 'dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&fileName=' + fileName + '&fileData=' + urlencode(fileContent) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
               cache : false,
               success : function(xml) {
@@ -2110,7 +2143,7 @@ popup = {
       width: 1000,
       oF : function() {
         $.ajax({
-          url: directory + 'api/getUploads.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+          url: directory + 'api/getFiles.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
           type: 'GET',
           timeout: 2400,
           cache: false,

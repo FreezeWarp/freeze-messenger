@@ -38,7 +38,7 @@ $request = fim_sanitizeGPC(array(
       'valid' => array(
         'delete',
         'undelete',
-        'edit', // Future!
+        'edit', // FIMv4
       ),
     ),
 

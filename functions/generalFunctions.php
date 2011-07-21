@@ -1419,10 +1419,10 @@ function fim_sanitizeGPC($data) {
       break;
 
       case 'application/x-www-form-urlencoded': // Everything Encoded
-      default:
-      foreach ($activeGlobal AS &$value) {
-        $value = urldecode($value);
-      }
+      default: // PHP seems to do this anyway. We're confus.
+//      foreach ($activeGlobal AS &$value) {
+//        $value = urldecode($value);
+//      }
       break;
     }
 

@@ -96,7 +96,6 @@ $request = fim_sanitizeGPC(array(
 ));
 
 
-
 /* Plugin Hook End */
 ($hook = hook('uploadFile_end') ? eval($hook) : '');
 
@@ -129,7 +128,6 @@ $mimes = $slaveDatabase->select(
   )
 );
 $mimes = $mimes->getAsArray('extension');
-
 
 
 
@@ -217,16 +215,17 @@ if ($continue) {
         $mime = $mimes[$fileNameParts[1]]['mime'];
 
         $sha256hash = hash('sha256',$rawData);
+        $md5hash = hash('md5',$rawData);
 
-        if ($encryptUploads) {
+/*        if ($encryptUploads) {
           list($contentsEncrypted,$iv,$saltNum) = fim_encrypt($rawData);
           $saltNum = intval($saltNum);
         }
-        else {
+        else {*/
           $contentsEncrypted = base64_encode($rawData);
           $iv = '';
           $saltNum = '';
-        }
+//        }
 
         if (!$rawData) {
           $errStr = 'emptyFile';
@@ -277,7 +276,7 @@ if ($continue) {
           )->getAsArray(false);
 
           if ($prefile) {
-            $webLocation = "{$installUrl}file.php?hash={$prefile['sha256hash']}";
+            $webLocation = "{$installUrl}file.php?sha256hash={$prefile['sha256hash']}";
 
             if ($request['roomId']) {
               $room = $slaveDatabase->getRoom($request['roomId']);
@@ -288,7 +287,7 @@ if ($continue) {
           else {
             $database->insert(array(
               'userId' => $user['userId'],
-              'fileName' => $request['fileData'],
+              'fileName' => $request['fileName'],
               'fileType' => $mime,
             ),"{$sqlPrefix}files");
 
@@ -297,12 +296,13 @@ if ($continue) {
             $database->insert(array(
               'fileId' => $fileId,
               'sha256hash' => $sha256hash,
+              'md5hash' => $md5hash,
               'salt' => $saltNum,
               'iv' => $iv,
               'contents' => $contentsEncrypted,
             ),"{$sqlPrefix}fileVersions");
 
-            $webLocation = "{$installUrl}file.php?hash={$sha256hash}";
+            $webLocation = "{$installUrl}file.php?sha256hash={$sha256hash}";
 
             if ($request['roomId']) {
               $room = $slaveDatabase->getRoom($request['roomId']);
@@ -314,7 +314,7 @@ if ($continue) {
       }
       else {
         $errStr = 'unrecExt';
-        $errDesc = 'The extension was not recognized.';
+        $errDesc = 'The extension .' . $fileNameParts[1] . ' was not recognized.';
       }
     }
   }

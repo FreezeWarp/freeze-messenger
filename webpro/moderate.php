@@ -17,11 +17,12 @@
 $title = 'Moderate';
 $reqPhrases = true;
 $reqHooks = true;
+die('Not available until Beta 3.');
 
 $sessionHash = $_COOKIE['fim3_sessionHash'];
 require_once('../global.php');
 
-echo template('templateStart');
+echo template('templateAdminStart');
 
 eval(hook('moderateStart'));
 
@@ -562,125 +563,6 @@ if ($user['adminDefs']) { // Check that the user is an admin.
     }
     break;
 
-    case 'maintenance':
-    if ($user['adminDefs']['modCore']) {
-      switch ($_GET['do2']) {
-        case 'disable':
-        if (file_exists('.tempStop')) {
-          echo container('Stop/Start FIM','FIM is currently stopped. Would you like to start it?:<br /><br /><form action="Enable" method="POST"><button type="submit">Enable</button></form>');
-        }
-
-        else {
-          echo container('Stop/Start FIM','FIM is currently running. Would you like to stop it?:<br /><br /><form action="Disable" method="POST"><button type="submit">Disable</button></form>');
-        }
-        break;
-
-        case 'disable2-disable':
-        if (file_exists('.tempStop')) {
-          echo container('Error','FIM has already been stopped.');
-        }
-        else {
-          modLog('disable','');
-
-          touch('.tempStop');
-          echo container('','FIM has been stopped.');
-        }
-        break;
-
-        case 'disable2-enable':
-        if (file_exists('.tempStop')) {
-          modLog('enable','');
-
-          unlink('.tempStop');
-          echo container('','FIM has been re-enabled.');
-        }
-        else {
-          echo container('Error','FIM is already running.');
-        }
-        break;
-
-        case 'postcache':
-        echo container('Error','Not yet coded.');
-        break;
-
-        case 'postcountcache':
-        $limit = 20;
-        $offset = intval($_GET['page']) * $limit;
-        $nextpage = intval($_GET['page']) + 1;
-
-        $records = dbRows("SELECT * FROM {$sqlPrefix}ping LIMIT $limit OFFSET $offset",'id');
-        foreach ($records AS $id => $record) {
-          $totalPosts = dbRows("SELECT COUNT(m.id) AS count FROM {$sqlPrefix}messages AS m WHERE room = $record[roomId] AND user = $record[userId] AND m.deleted = false GROUP BY m.user");
-          $totalPosts = intval($totalPosts['count']);
-          dbQuery("UPDATE {$sqlPrefix}ping SET messages = $totalPosts WHERE id = $record[id]");
-        }
-
-        if ($records) {
-          echo "<script type=\"text/javascript\">window.location = './moderate.php?do=maintenance&do2=postcountcache&page=$nextpage';</script>";
-        }
-        break;
-
-        case 'privateroomcache':
-        $rooms = dbQuery("SELECT * FROM {$sqlPrefix}rooms WHERE options & 16");
-        while (false !== ($room = (mydbRowsay($rooms)))) {
-          list($user1id,$user2id) = explode(',',$room['allowedUsers']);
-
-          if (!$user1id || !$user2id) {
-            $results .= "Failed to Process Room ID $room[id]; Bad allowedUsers definition '$room[allowedUsers]'.<br />";
-          }
-          else {
-            $user1 = dbRows("SELECT * FROM user WHERE userId = $user1id");
-            $user2 = dbRows("SELECT * FROM user WHERE userId = $user2id");
-
-            if (!$user1['userName']) {
-              $results .= "Failed to Process Room ID $room[id]; User ID $user1id no longer exists.<br />";
-            }
-            elseif (!$user2['userName']) {
-              $results .= "Failed to Process Room ID $room[id]; User ID $user2id no longer exists.<br />";
-            }
-            else {
-              $name = dbEscape("Private IM ($user1[userName] and $user2[userName])");
-              if (dbQuery("UPDATE {$sqlPrefix}rooms SET name = '$name', bbcode = 1, options = 48 WHERE id = $room[id]")) {
-                $results .= "Processed Room ID $room[id]; Users $user1[userName], $user2[userName]<br />";
-              }
-              else {
-                $results .= "Failed to Process Room ID $room[id]; MySQL Query Failed";
-              }
-            }
-          }
-        }
-
-        echo container('Updating Private Room Cache',"$results");
-        break;
-
-        default:
-        echo '<table class="page">
-    <thead>
-      <tr class="hrow ui-widget-header">
-        <td>System Maintenance</td>
-      </tr>
-    </thead>
-    <tbody class="ui-widget-content">
-      <tr>
-        <td>
-          <ul>
-            <li><a href="./moderate.php?do=maintenance&do2=postcache">Regenerate Post Cache</a></li>
-            <li><a href="./moderate.php?do=maintenance&do2=privateroomcache">Regenerate Private Room Cache</a></li>
-            <li><a href="./moderate.php?do=maintenance&do2=disable">Regenerate Post Counts (WARNING: This Takes a Long Time)</a></li>
-            <li><a href="./moderate.php?do=maintenance&do2=disable">Disable/Enable VRIM</a></li>
-          </ul>
-        </td>
-      </tr>
-    </tbody>
-  </table>';
-        break;
-      }
-    }
-    else {
-      trigger_error('No permission.',E_USER_ERROR);
-    }
-    break;
-
 
     default:
     $activeUsers = dbRows("SELECT COUNT(userId) AS count, userId FROM {$sqlPrefix}ping WHERE UNIX_TIMESTAMP(time) > UNIX_TIMESTAMP(NOW()) - 60 GROUP BY userId",'userId');
@@ -706,5 +588,5 @@ else {
 
 eval(hook('moderateEnd'));
 
-echo template('templateEnd');
+echo template('templateAdminEnd');
 ?>

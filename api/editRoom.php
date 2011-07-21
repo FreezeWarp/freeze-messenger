@@ -40,8 +40,9 @@ $request = fim_sanitizeGPC(array(
       'valid' => array(
         'create',
         'edit',
-        'private',
         'delete',
+        'private',
+        'contact', // FIMv4
       ),
       'require' => true,
     ),

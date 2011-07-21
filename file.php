@@ -14,6 +14,15 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/**
+ * Displays an Database-Stored File
+ * Though it follows much of the same logic, this is not part of the standard API as it does not return data in the standard way, and thus some global directives do not work.
+ *
+ * @param timestamp time
+ * @param string md5hash
+ * @param string sha256hash
+ * @param string fileId
+*/
 
 $reqPhrases = true;
 $reqHooks = true;
@@ -34,7 +43,12 @@ $request = fim_sanitizeGPC(array(
       ),
     ),
 
-    'hash' => array(
+    'md5hash' => array(
+      'type' => 'string',
+      'require' => false,
+    ),
+
+    'sha256hash' => array(
       'type' => 'string',
       'require' => false,
     ),
@@ -50,168 +64,122 @@ $request = fim_sanitizeGPC(array(
   ),
 ));
 
+$queryParts['fileSelect']['columns'] = array(
+  "{$sqlPrefix}files" => array(
+    'fileId' => 'ffileId',
+    'fileType' => 'fileType',
+  ),
+  "{$sqlPrefix}fileVersions" => array(
+    'fileId' => 'vfileId',
+    'salt' => 'salt',
+    'iv' => 'iv',
+    'contents' => 'contents',
+    'md5hash' => 'md5hash',
+    'sha256hash' => 'sha256hash',
+    'time' => array(
+      'context' => 'time',
+      'name' => 'time',
+    ),
+  ),
+);
+$queryParts['fileSelect']['conditions'] = array(
+  'both' => array(
+    array(
+      'type' => 'e',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'ffileId',
+      ),
+      'right' => array(
+        'type' => 'column',
+        'value' => 'vfileId',
+      ),
+    ),
+  ),
+);
 
 
 /* Get File from Database */
 if ($request['time'] && $request['fileId']) {
   //$file = dbRows("SELECT f.mime, v.salt, v.iv, v.contents, v.time FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS v WHERE v.fileid = $fileid AND UNIX_TIMESTAMP(v.time) = $time AND f.fileId = v.fileid LIMIT 1");
-  $file = $database->select(
-    array(
-      "{$sqlPrefix}files" => array(
-        'fileId' => 'ffileId',
-        'fileType' => 'fileType',
-      ),
-      "{$sqlPrefix}fileVersions" => array(
-        'fileId' => 'vfileId',
-        'salt' => 'salt',
-        'iv' => 'iv',
-        'contents' => 'contents',
-        'md5hash' => 'md5hash',
-        'sha256hash' => 'sha256hash',
-        'time' => array(
-          'context' => 'time',
-          'name' => 'time',
-        ),
-      ),
+
+  $queryParts['fileSelect']['conditions']['both'][] = array(
+    'type' => 'e',
+    'left' => array(
+      'type' => 'column',
+      'value' => 'time'
     ),
-    array(
-      'both' => array(
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'time'
-          ),
-          'right' => array(
-            'type' => 'int',
-            'value' => (int) $request['time'],
-          ),
-        ),
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'ffileId',
-          ),
-          'right' => array(
-            'type' => 'column',
-            'value' => 'vfileId',
-          ),
-        ),
-      ),
+    'right' => array(
+      'type' => 'int',
+      'value' => (int) $request['time'],
     ),
-    false,
-    false,
-    1
+  );
+  $queryParts['fileSelect']['conditions']['both'][] = array(
+    'type' => 'e',
+    'left' => array(
+      'type' => 'column',
+      'value' => 'vfileId'
+    ),
+    'right' => array(
+      'type' => 'int',
+      'value' => (int) $request['fileId'],
+    ),
   );
 }
 elseif ($request['fileId']) {
 //  $file = dbRows("SELECT f.mime, v.salt, v.iv, v.contents, v.time FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS v WHERE v.fileid = $fileid AND f.fileId = v.fileid ORDER BY v.time DESC LIMIT 1");
 
-  $file = $database->select(
-    array(
-      "{$sqlPrefix}files" => array(
-        'fileId' => 'ffileId',
-        'fileType' => 'fileType',
-      ),
-      "{$sqlPrefix}fileVersions" => array(
-        'fileId' => 'vfileId',
-        'salt' => 'salt',
-        'iv' => 'iv',
-        'md5hash' => 'md5hash',
-        'sha256hash' => 'sha256hash',
-        'contents' => 'contents',
-        'time' => array(
-          'context' => 'time',
-          'name' => 'time',
-        ),
-      ),
+  $queryParts['fileSelect']['conditions']['both'][] = array(
+    'type' => 'e',
+    'left' => array(
+      'type' => 'column',
+      'value' => 'vfileId'
     ),
-    array(
-      'both' => array(
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'vfileId'
-          ),
-          'right' => array(
-            'type' => 'int',
-            'value' => (int) $request['fileId'],
-          ),
-        ),
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'ffileId',
-          ),
-          'right' => array(
-            'type' => 'column',
-            'value' => 'vfileId',
-          ),
-        ),
-      ),
+    'right' => array(
+      'type' => 'int',
+      'value' => (int) $request['fileId'],
     ),
-    false,
-    false,
-    1
   );
 }
-elseif ($request['hash']) {
-  $file = $database->select(
-    array(
-      "{$sqlPrefix}files" => array(
-        'fileId' => 'ffileId',
-        'fileType' => 'fileType',
-      ),
-      "{$sqlPrefix}fileVersions" => array(
-        'fileId' => 'vfileId',
-        'salt' => 'salt',
-        'iv' => 'iv',
-        'md5hash' => 'md5hash',
-        'sha256hash' => 'sha256hash',
-        'contents' => 'contents',
-        'time' => array(
-          'context' => 'time',
-          'name' => 'time',
-        ),
-      ),
+elseif ($request['sha256hash']) {
+  $queryParts['fileSelect']['conditions']['both'][] = array(
+    'type' => 'e',
+    'left' => array(
+      'type' => 'column',
+      'value' => 'sha256hash'
     ),
-    array(
-      'both' => array(
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'sha256hash'
-          ),
-          'right' => array(
-            'type' => 'string',
-            'value' => $request['hash'],
-          ),
-        ),
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'ffileId',
-          ),
-          'right' => array(
-            'type' => 'column',
-            'value' => 'vfileId',
-          ),
-        ),
-      ),
+    'right' => array(
+      'type' => 'string',
+      'value' => $request['sha256hash'],
     ),
-    false,
-    false,
-    1
-  )->getAsArray(false);
+  );
+}
+elseif ($request['md5hash']) {
+  $queryParts['fileSelect']['conditions']['both'][] = array(
+    'type' => 'e',
+    'left' => array(
+      'type' => 'column',
+      'value' => 'md5hash'
+    ),
+    'right' => array(
+      'type' => 'string',
+      'value' => $request['sha256hash'],
+    ),
+  );
 }
 else {
   die('No criteria specified');
 }
+
+
+$file = $database->select(
+  $queryParts['fileSelect']['columns'],
+  $queryParts['fileSelect']['conditions'],
+  false,
+  false,
+  1
+);
+$file = $file->getAsArray(false);
 
 
 
