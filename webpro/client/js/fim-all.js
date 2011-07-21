@@ -196,13 +196,13 @@ function messageFormat(entryXml, format) {
     break;
 
     case 'youtube':
-    if (text.match(/http\:\/\/(www\.|)youtu\.be\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/) !== null) {
-      var code = text.replace(/http\:\/\/(www\.|)youtube\.com\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/i, '$4');
-      text = '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0" frameborder="0" allowfullscreen></iframe>';
+    if (text.match(/http\:\/\/(www\.|)youtube\.com\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/) !== null) {
+      var code = text.replace(/http\:\/\/(www\.|)youtube\.com\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/i, "$4");
+      text = '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>';
     }
     else if (text.match(/http\:\/\/(www\.|)youtu\.be\/([a-zA-Z0-9]+)/) !== null) {
-      var code = text.replace(/http\:\/\/(www\.|)youtu\.be\/([a-zA-Z0-9]+)/i, '$4');
-      text = '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0" frameborder="0" allowfullscreen></iframe>';
+      var code = text.replace(/http\:\/\/(www\.|)youtu\.be\/([a-zA-Z0-9]+)/i, "$2");
+      text = '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>';
     }
     else {
       text = '<span style="color: red; font-style: oblique;">[Invalid Youtube Video]</span>';
