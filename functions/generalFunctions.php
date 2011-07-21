@@ -433,19 +433,21 @@ function fim_urldecode($str) {
 function fim_decrypt($message, $index = array('apiText','htmlText','rawText')) {
   global $salts;
 
-  if ($message['salt'] && $message['iv']) {
-    $salt = $salts[$message['salt']];
+  if (isset($message['salt'],$message['iv'])) { // May not be for e.g. messages
+    if ($message['salt'] && $message['iv']) {
+      $salt = $salts[$message['salt']];
 
-    if ($index) {
-      if (is_array($index)) {
-        foreach ($index AS $index2) {
-          if ($message[$index2]) {
-            $message[$index2] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message[$index2]), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
+      if ($index) {
+        if (is_array($index)) {
+          foreach ($index AS $index2) {
+            if ($message[$index2]) {
+              $message[$index2] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message[$index2]), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
+            }
           }
         }
-      }
-      else {
-        $message[$index] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message[$index]), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
+        else {
+          $message[$index] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message[$index]), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
+        }
       }
     }
   }

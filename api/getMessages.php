@@ -447,6 +447,7 @@ if (is_array($request['rooms'])) {
             'userId' => 'muserId',
             'userName' => 'userName',
             'userGroup' => 'userGroup',
+            'socialGroups' => 'socialGroups',
             'userFormatStart' => 'userFormatStart',
             'userFormatEnd' => 'userFormatEnd',
             'avatar' => 'avatar',
@@ -770,7 +771,7 @@ if (is_array($request['rooms'])) {
               $message = fim_decrypt($message);
 
 
-              switch ($requst['encode']) {
+              switch ($request['encode']) {
                 case 'plaintext':
                 // All Good
                 break;

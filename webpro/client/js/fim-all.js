@@ -168,6 +168,7 @@ function messageFormat(entryXml, format) {
     userId = Number($(entryXml).find('userData > userId').text().trim()),
     groupFormatStart = unxml($(entryXml).find('userData > startTag').text().trim()),
     groupFormatEnd = unxml($(entryXml).find('userData > endTag').text().trim()),
+    avatar = unxml($(entryXml).find('userData > avatar').text().trim()),
 
     styleColor = $(entryXml).find('defaultFormatting > color').text().trim(),
     styleHighlight = $(entryXml).find('defaultFormatting > highlight').text().trim(),
@@ -1088,7 +1089,7 @@ var standard = {
       var encrypt = 'base64';
 
       $.ajax({
-        url: directory + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest? '&archive=1&messageIdStart=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdStart=' + (requestSettings.lastMessage + 1)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+        url: directory + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest ? '&archive=1&messageIdStart=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdStart=' + (requestSettings.lastMessage + 1)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
         type: 'GET',
         timeout: requestSettings.timeout,
         data: '',
@@ -1104,9 +1105,9 @@ var standard = {
             sentUserId = Number($(xml).find('activeUser > userId'));
 
             if (errStr === 'noperm') {
-              roomId = false;
+//              roomId = false;
 
-              if (sentUserId) {
+/*              if (sentUserId) {
                 popup.selectRoom();
 
                 dia.error('You have been restricted access from this room. Please select a new room.');
@@ -1115,7 +1116,7 @@ var standard = {
                 popup.login();
 
                 dia.error('You are no longer logged in. Please log-in.');
-              }
+              }*/
             }
             else {
               roomId = false;
@@ -1280,6 +1281,8 @@ var standard = {
 
   sendMessage : function(message,confirmed,flag) {
     if (!flag) {
+      flag = '';
+
       if (message.match(/http\:\/\/(www\.|)youtu\.be\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/) !== null) {
         flag = 'youtube';
       }
@@ -1371,7 +1374,7 @@ var standard = {
     /*** Get Messages ***/
 
     $(document).ready(function() {
-        standard.getMessages();
+      standard.getMessages();
 
       return false;
     });
@@ -1930,13 +1933,13 @@ popup = {
           defaultHighlight = false,
           defaultFontface = false,
           idMap = {
-            disableFx : 16384, // Disable jQuery Effects?
-            audioDing : 8192, // Fire an HTML5 audio ding during each unread message?
-            showAvatars : 2048, // Use the complex document style?
-            reversePostOrder : 1024, // Show posts in reverse?
             disableFormatting : 16,
             disableImage : 32,
-            disableVideos : 64
+            disableVideos : 64,
+            reversePostOrder : 1024, // Show posts in reverse?
+            showAvatars : 2048, // Use the complex document style?
+            audioDing : 8192, // Fire an HTML5 audio ding during each unread message?
+            disableFx : 16384 // Disable jQuery Effects?
           };
 
 
@@ -2093,8 +2096,6 @@ popup = {
 
             requestSettings.firstRequest = true;
           }
-
-          return false;
         });
 
         $('#audioDing, #disableFx').change(function() {
@@ -2102,6 +2103,7 @@ popup = {
 
           if ($(this).is(':checked') && !settings[localId]) {
             settings[localId] = true;
+            $.cookie('fim3_settings', Number($.cookie('fim3_settings')) + idMap[localId], { expires : 14 });
 
             if (localId === 'disableFx') {
               jQuery.fx.off = true;
@@ -2115,8 +2117,6 @@ popup = {
               jQuery.fx.off = false;
             }
           }
-
-          return false;
         });
 
         $("#changeSettingsForm").submit(function() {
@@ -3329,7 +3329,7 @@ $(document).ready(function() {
 
   /* Window Manipulation (see below) */
 
-  window.onresize = windowResize;
+  $(window).bind('resize',windowResize);
   window.onblur = windowBlur;
   window.onfocus = windowFocus;
 });

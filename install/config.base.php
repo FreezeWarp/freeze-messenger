@@ -240,7 +240,7 @@ $disableTopic = false;
 /* $longPolling
  * If enabled, experimental $longPolling support will be used instead of normal polling.
  * This has several benefits: it places less load on the server, less load on the user, allows for far faster connections, and is generally smoother.
- * However, at the same time, many (if not most) server configurations will have issues with this. */
+ * However, at the same time, a number of servers will have issues with this. Similarly, by default, far more MySQL queries will be executed than normal (roughly one every 1½ per second per user for message retrieval only). */
 $longPolling = false;
 
 /* $anonymousUser

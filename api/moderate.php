@@ -123,6 +123,12 @@ switch ($request['action']) {
   else {
     modLog('kick',"$userData[userId],$roomData[roomId]");
 
+    // Delete any preexisting entries
+    $database->delete("{$sqlPrefix}kick",array(
+      'userId' => $userData['userId'],
+      'roomId' => $roomData['roomId'],
+    ));
+
     $database->insert(array(
         'userId' => (int) $userData['userId'],
         'kickerId' => (int) $user['userId'],

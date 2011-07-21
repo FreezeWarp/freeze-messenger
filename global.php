@@ -293,7 +293,9 @@ if (isset($reqPhrases)) {
 
 ///* Cached Directives *///
 if ($config['cacheKicks']) {
-  if (!$cacheKicks = apc_fetch('fim_kickCache')) {
+  $cacheKicks = apc_fetch('fim_kickCache');
+  if ($cacheKicks === null || $cacheKicks === false) {
+trigger_error('Getting Kicks',E_USER_NOTICE);
     $queryParts['cacheKicksSelect']['columns'] = array(
       "{$sqlPrefix}kick" => array(
         'kickerId' => 'kkickerId',
@@ -331,11 +333,25 @@ if ($config['cacheKicks']) {
     $cacheKicksPre = $database->select($queryParts['cacheKicksSelect']['columns'],
       $queryParts['cacheKicksSelect']['conditions'],
       $queryParts['cacheKicksSelect']['sort']);
+    $cacheKicksPre = $cacheKicksPre->getAsArray(true);
+
+    $cacheKicks = array();
+
+    foreach ($cacheKicksPre AS $cacheKick) {
+      if ($cacheKick['time'] + $cacheKick['length'] < time()) {
+        $database->delete("{$sqlPrefix}kick",array(
+          'userId' => $cacheKick['userId'],
+          'roomId' => $cacheKick['roomId'],
+        ));
+      }
+      else {
+        $cacheKicks[$cacheKicks['roomId']][$cacheKicks['userId']] = true;
+      }
+    }
 
     apc_add('fim_kickCache',$cacheKicks,(isset($config['cacheKicksRefresh']) ? $config['cacheKicksRefresh'] : 60));
   }
 }
-
 
 ($hook = hook('global') ? eval($hook) : '');
 ?>
