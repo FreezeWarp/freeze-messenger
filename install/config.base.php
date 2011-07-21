@@ -258,7 +258,7 @@ $config['fullTextArchive'] = false;
 /* $config['cacheKicks']
  * This enables APC caching of kicked users.
  * This feature is mostly stable, SIGNIFICANTLY reduces the number of queries required at each page load, but on large installations could fill up the APC cache, or be used as an attack vector to do so (we're not sure).
- * Note that this is normally stored in a memory table anyway, and thus the speed boost is normally not that noticable. */
+ * Note that this is normally stored in a memory table anyway, and thus the speed boost is normally not that noticable. However, the reduction of queries can be very helpful for large installations.  */
 $config['cacheKicks'] = false;
 
 /* $config['cacheKicksRefresh']

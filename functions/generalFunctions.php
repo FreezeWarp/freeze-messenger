@@ -143,7 +143,7 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
   /* Get the User's Kick Status */
   if (isset($userData['userId'])) {
     if ($userData['userId'] > 0) {
-/*      if (count($cachedKicks) > 0) {
+      if (count($cachedKicks) > 0) {
         if (isset($cachedKicks[$roomData['roomId']][$userData['userId']])) {
           $kick = true;
         }
@@ -151,7 +151,7 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
           $kick = false;
         }
       }
-      else {*/
+      else {
         $kick = $database->select(
           array(
             "{$sqlPrefix}kick" => array(
@@ -203,7 +203,7 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
           )
         );
         $kick = ($kick->getAsArray(false) ? true : false);
-      //}
+      }
     }
   }
 

@@ -105,7 +105,6 @@ $errStr = '';
 $errDesc = '';
 $templates = array();
 $templateVars = array();
-$config = array(); // Database configuration for the future. Plugins can fill the gaps right now, though.
 $cacheKicks = array();
 
 define("FIM_VERSION","3.0"); // Version to be used by plugins if needed.
@@ -293,7 +292,7 @@ if (isset($reqPhrases)) {
 
 
 ///* Cached Directives *///
-/*if ($config['cacheKicks']) {
+if ($config['cacheKicks']) {
   if (!$cacheKicks = apc_fetch('fim_kickCache')) {
     $queryParts['cacheKicksSelect']['columns'] = array(
       "{$sqlPrefix}kick" => array(
@@ -333,10 +332,10 @@ if (isset($reqPhrases)) {
       $queryParts['cacheKicksSelect']['conditions'],
       $queryParts['cacheKicksSelect']['sort']);
 
-    apc_set('fim_kickCache',time(),$cacheKicks);
+    apc_add('fim_kickCache',$cacheKicks,(isset($config['cacheKicksRefresh']) ? $config['cacheKicksRefresh'] : 60));
   }
 }
-*/
+
 
 ($hook = hook('global') ? eval($hook) : '');
 ?>
