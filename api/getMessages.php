@@ -500,6 +500,7 @@ if (is_array($request['rooms'])) {
             'userId' => 'userId',
             'userName' => 'userName',
             'userGroup' => 'userGroup',
+            'socialGroups' => 'socialGroups',
             'userFormatStart' => 'userFormatStart',
             'userFormatEnd' => 'userFormatEnd',
             'avatar' => 'avatar',

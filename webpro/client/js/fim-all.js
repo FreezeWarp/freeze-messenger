@@ -238,6 +238,8 @@ function messageFormat(entryXml, format) {
     break;
 
     case '':
+    text = text.replace(/((http|https|ftp|data|gopher|sftp|ssh):(\/\/|)(.+?\.|)([a-zA-Z\-]+)\.(aero|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|xxx)((\/)([^ \n\<\>\"]*)([^\?\.\! \n])|))(?!\")(?!\])/,'<a href="$1">$1</a>');
+
     if (!settings.disableFormatting) {
       style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + fontIdRef[styleFontface] + ';';
 
@@ -1349,7 +1351,9 @@ var standard = {
             $('#messageList').prepend('Your message, "' + message + '", could not be sent and will be retried.');
           }
 
-          standard.sendMessage(message);
+          window.setTimeout(function() {
+            standard.sendMessage(message)
+          },5000);
 
           return false;
         }

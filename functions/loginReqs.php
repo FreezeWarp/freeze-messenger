@@ -242,11 +242,11 @@ function processPHPBB($user, $password) {
     return false;
   }
 
-  elseif (in_array($user['userId'],$brokenUsers)) { // The user is flagged as a PHPBB auto user.
-    define('LOGIN_FLAG','BROKEN_USER');
+//  elseif (in_array($user['userId'],$brokenUsers)) { // The user is flagged as a PHPBB auto user.
+//    define('LOGIN_FLAG','BROKEN_USER');
 
-    return false;
-  }
+//    return false;
+//  }
 
   elseif (phpbb_check_hash($password, $user['password'])) { // The password matches
     return true;

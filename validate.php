@@ -781,7 +781,7 @@ if ($valid) { // If the user is valid, process their preferrences.
                 ),
                 'right' => array(
                   'type' => 'array',
-                  'value' => fim_arrayValidate($userPrefs['favRooms'],'int',false),
+                  'value' => fim_arrayValidate(explode(',',$userPrefs['favRooms']),'int',false),
                 ),
               ),
             ),
@@ -1076,7 +1076,7 @@ if ($api) {
           'color' => ($user['defaultColor']),
           'highlight' => ($user['defaultHighlight']),
           'fontface' => ($user['defaultFontface']),
-          'general' => (int) $user['defaultGeneral']
+          'general' => (int) $user['defaultFormatting']
         ),
       ),
 

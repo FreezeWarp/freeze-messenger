@@ -27,39 +27,12 @@
 */
 
 function fimParse_htmlParse($text, $bbcodeLevel = 1) {
-  global $user, $forumpath;
-
-  return $text; // Temp
-
-  $search['link'] = array(
-    "/(?<!(\[noparse\]))(?<!(\[img\]))(?<!(\[url\]))((http|https|ftp|data|gopher|sftp|ssh):(\/\/|)(.+?\.|)([a-zA-Z\-]+)\.(aero|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|xxx)((\/)([^ \n\<\>\"]*)([^\?\.\! \n])|))(?!\")(?!\])/", // The regex is naturally selective; it improves slightly with each FIM version, but I don't really know how to do it, so I only add to it piece by piece to prevent regressions.
-  );
-
-  if ($bbcode['shortCode'] && $bbcodeLevel <= 16) {
-    $text = preg_replace($search['shortCode'], $replace['buis'], $text);
-  }
-  if ($bbcode['buis'] && $bbcodeLevel <= 16) {
-    $text = preg_replace($search['buis'], $replace['buis'], $text);
-  }
-  if ($bbcode['color'] && $bbcodeLevel <= 11) {
-    $text = preg_replace($search['color'], $replace['color'], $text);
-  }
-  if ($bbcode['link'] && $bbcodeLevel <= 9) {
-    $text = preg_replace($search['link'], $replace['link'], $text);
-  }
-  if ($bbcode['image'] && $bbcodeLevel <= 5) {
-    if ($bbcode['emoticon']) $text = fimParse_smilieParse($text);
-
-    $text = preg_replace($search['image'], $replace['image'], $text);
-  }
-  if ($bbcode['video'] && $bbcodeLevel <= 3) {
-    $text = preg_replace($search['video'], $replace['video'], $text);
-  }
+  global $user, $loginConfig, $slaveDatabase, $sqlPrefix;
 
   $search2 = array(
-    '/^\/me (.+?)$/i',
+    '/^\/me (.+?)$/i', // Remove in B3
     '/\[noparse\](.*?)\[\/noparse\]/is',
-    '/\[room\]([0-9]+?)\[\/room\]/is',
+    '/\[room\]([0-9]+?)\[\/room\]/is', // Remove in B3
   );
 
   $replace2 = array(
@@ -70,6 +43,24 @@ function fimParse_htmlParse($text, $bbcodeLevel = 1) {
 
   // Parse BB Code
   $text = preg_replace($search2, $replace2, $text);
+
+  $bbcode = $slaveDatabase->select(
+    array(
+      "{$sqlPrefix}bbcode" => array(
+        'options' => 'options',
+        'searchRegex' => 'searchRegex',
+        'replacement' => 'replacement',
+      ),
+    )
+  );
+  $bbcode = $bbcode->getAsArray(true);
+
+  foreach ($bbcode AS $code) {
+    $search3[] = $code['searchRegex'];
+    $replace3[] = $code['replacement'];
+  }
+
+//  $text = preg_replace($search3, $replace3, $text);
 
   return $text;
 }
@@ -204,9 +195,9 @@ WHERE w.listId = l.listId AND w.severity = 'replace'",'word');*/
 * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 function fimParse_smilieParse($text) {
-  global $room, $loginMethod, $forumTablePrefix, $forumUrl, $integrationDatabase, $integrationDatabase;
+  global $room, $forumTablePrefix, $slaveDatabase, $integrationDatabase, $loginConfig;
 
-  switch($loginMethod) {
+  switch($loginConfig['method']) {
     case 'vbulletin3':
     case 'vbulletin4':
     $smilies = $integrationDatabase->select(
@@ -224,7 +215,7 @@ function fimParse_smilieParse($text) {
       array(
         "{$forumTablePrefix}smilies" => array(
           'code' => 'emoticonText',
-          'smilie_url' => 'emoticonFile',
+          'smiley_url' => 'emoticonFile',
         ),
       )
     );
@@ -257,22 +248,22 @@ function fimParse_smilieParse($text) {
       $searchText[] = addcslashes(strtolower($smilie['emoticonText']),'^&|!$?()[]<>\\/.+*');
     }
 
-    switch ($loginMethod) {
+    switch ($loginConfig['method']) {
       case 'phpbb':
-      $forumUrlS = $forumUrl . 'images/smilies/';
+      $forumUrlS = $loginConfig['url'] . 'images/smilies/';
       break;
 
       case 'vanilla':
       case 'vbulletin3':
       case 'vbulletin4':
-      $forumUrlS = $forumUrl;
+      $forumUrlS = $loginConfig['url'];
       break;
     }
   }
 
   $searchText2 = implode('|', $searchText);
 
-  return preg_replace("/(?<!(\[noparse\]))(?<!(quot))(?<!(gt))(?<!(lt))(?<!(apos))(?<!(amp))($searchText2)(?!\[\/noparse\])/ie","'[img=\\3]$forumUrlS' . indexValue(\$smilies2,strtolower('\\7')) . '[/img]'", $text);
+  return preg_replace("/(?<!(\[noparse\]))(?<!(quot))(?<!(gt))(?<!(lt))(?<!(apos))(?<!(amp))($searchText2)(?!\[\/noparse\])/ie","'<img src=\"$forumUrlS' . indexValue(\$smilies2,strtolower('\\7')) . '\" alt=\"\\3\" />'", $text);
 }
 
 
@@ -504,6 +495,9 @@ function fim_sendMessage($messageText, $user, $room, $flag = '') {
 
     list($messages, $iv, $saltNum) = fim_encrypt(array($messageRaw, $messageHtml, $messageApi)); // Get messages array, IV, salt num
     list($messageRaw, $messageHtml, $messageApi) = $messages; // Get messages from messages array
+  }
+  else {
+    $saltNum = 0;
   }
 
 

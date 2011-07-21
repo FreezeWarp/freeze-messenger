@@ -421,7 +421,7 @@ LIMIT
             }
             else {
               $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
-              trigger_error('Query nullified; data: ' . print_r($data,true),E_USER_WARNING);
+              trigger_error('Query nullified; backtrace: ' . print_r(debug_backtrace(),true),E_USER_WARNING);
             }
           }
         }
