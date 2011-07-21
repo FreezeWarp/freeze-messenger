@@ -169,7 +169,7 @@ class fimDatabase extends database {
       false,
       1
     );
-    return $room->getAsArray(false);
+    return $font->getAsArray(false);
   }
 
 
@@ -221,6 +221,9 @@ class fimDatabase extends database {
     $queryParts['messageSelect']['columns'] = array(
       "{$sqlPrefix}messages" => array(
         'messageId' => 'messageId',
+        'roomId' => 'roomId',
+        'iv' => 'iv',
+        'salt' => 'salt',
         'htmlText' => 'htmlText',
         'apiText' => 'apiText',
         'rawText' => 'rawText',
@@ -256,7 +259,7 @@ class fimDatabase extends database {
       false,
       1
     );
-    return $room->getAsArray(false);
+    return $message->getAsArray(false);
   }
 }
 ?>

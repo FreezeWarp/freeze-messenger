@@ -49,8 +49,6 @@ $apiRequest = true;
 
 require_once('../global.php');
 
-$longPollingWait = .25;
-
 
 /* Get Request Data */
 $request = fim_sanitizeGPC(array(
@@ -745,7 +743,7 @@ if (is_array($request['rooms'])) {
 
             ($hook = hook('getMessages_postMessages_longPolling_repeat') ? eval($hook) : '');
 
-            sleep($longPollingWait);
+            sleep(isset($config['longPollingWait']) ? $config['longPollingWait'] : 2);
           }
 
           ($hook = hook('getMessages_postMessages_longPolling') ? eval($hook) : '');

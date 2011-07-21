@@ -45,7 +45,7 @@ $xmlData = array(
       'requestMethods' => array(
         'longPoll' => (bool) $longPolling,
         'poll' => (bool) true,
-        'push' => (bool) false,
+        'serverSentEvents' => (bool) false,
       ),
 
       'fileUploads' => array(

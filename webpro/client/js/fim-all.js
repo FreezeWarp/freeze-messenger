@@ -1505,7 +1505,7 @@ var standard = {
 
 
   deleteMessage : function(messageId) {
-    $.post(directory + 'api/editMessage.php','action=deleteMessage&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
+    $.post(directory + 'api/editMessage.php','action=delete&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
       var errStr = $(xml).find('errStr').text().trim(),
         errDesc = $(xml).find('errDesc').text().trim();
 

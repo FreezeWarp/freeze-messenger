@@ -94,7 +94,7 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false) {
 */
 
 function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false) {
-  global $sqlPrefix, $banned, $superUsers, $valid, $database, $config, $cachedKicks;
+  global $sqlPrefix, $banned, $loginConfig, $valid, $database, $config, $cachedKicks;
 
   $isAdmin = false;
   $isModerator = false;
@@ -102,6 +102,7 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
   $isAllowedGroup = false;
   $isOwner = false;
   $isRoomDeleted = false;
+  $isPrivateRoom = false;
   $kick = false;
 
   $reason = '';
@@ -260,9 +261,9 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
 
 
   /* Is the user a super user? */
-  if (isset($userData['userId']) && isset($userData['adminPrivs']) && isset($superUsers)) {
-    if (is_array($superUsers)) {
-      if (in_array($userData['userId'], $superUsers) || $userData['adminPrivs'] & 1) {
+  if (isset($userData['userId']) && isset($userData['adminPrivs']) && isset($loginConfig['superUsers'])) {
+    if (is_array($loginConfig['superUsers'])) {
+      if (in_array($userData['userId'], $loginConfig['superUsers']) || $userData['adminPrivs'] & 1) {
         $isAdmin = true;
       }
     }
@@ -1397,32 +1398,6 @@ function fim_sanitizeGPC($data) {
 
       case 'request':
       $activeGlobal = $_REQUEST;
-      break;
-    }
-
-
-    /* Unencode the Global Based on the Above Content Type Encoding
-    * see http://pseudo-flaw.net/content/web-browsers/form-data-encoding-roundup/ for browser-related issues, etc. with this
-    * see http://pseudo-flaw.net/form-data-encoding-roundup/submit.cgi for sample data
-    * see http://www.w3.org/TR/html4/interact/forms.html#h-17.13.4 for the HTML specification
-    *
-    * Note: PHP does NOT support text/plain. More critically, NO ONE should use this mimetype for submitted data. To avoid issues, we will throw an exception if it is the case.
-    * Note: The custom method, and the default, is a simplified version of URLEncode that only removes incompatible data ("+", "?", "&", and "%").
-    * */
-
-    switch ($contentType) {
-      case 'multipart/form-data': // Nothing encoded
-      break;
-
-      case 'text/plain': // Spaces converted to "+"
-      throw new Exception('Invalid/blacklisted mimetype specified in request: text/plain'); // Throw an exception
-      break;
-
-      case 'application/x-www-form-urlencoded': // Everything Encoded
-      default: // PHP seems to do this anyway. We're confus.
-//      foreach ($activeGlobal AS &$value) {
-//        $value = urldecode($value);
-//      }
       break;
     }
 

@@ -44,8 +44,7 @@ $request = fim_sanitizeGPC(array(
 
     'messageId' => array(
       'type' => 'string',
-      'require' => false,
-      'default' => 0,
+      'require' => true,
       'context' => array(
         'type' => 'int',
       ),
@@ -81,22 +80,19 @@ switch ($request['action']) {
   $messageData = $slaveDatabase->getMessage($request['messageId']);
   $roomData = $slaveDatabase->getRoom($messageData['roomId']);
 
-  if (fim_hasPermission($roomData,$user,'editMessage',true)) {
+  if (fim_hasPermission($roomData,$user,'moderate',true)) {
     $database->update(array(
       'deleted' => 1
       ),
       "{$sqlPrefix}messages",
       array(
-        "messageId" => $messageId
+        "messageId" => (int) $request['messageId']
       )
     );
 
-    $database->update(array(
-      'deleted' => 1
-      ),
-      "{$sqlPrefix}messagesCached",
+    $database->delete("{$sqlPrefix}messagesCached",
       array(
-        "messageId" => $messageId
+        "messageId" => (int) $request['messageId']
       )
     );
 
@@ -113,13 +109,13 @@ switch ($request['action']) {
   $messageData = $slaveDatabase->getMessage($request['messageId']);
   $roomData = $slaveDatabase->getRoom($messageData['roomId']);
 
-  if (fim_hasPermission($roomData,$user,'editMessage')) {
+  if (fim_hasPermission($roomData,$user,'moderate',true)) {
     $database->update(array(
       'deleted' => 0
       ),
       "{$sqlPrefix}messages",
       array(
-        "messageId" => $messageId
+        "messageId" => (int) $request['messageId']
       )
     );
 

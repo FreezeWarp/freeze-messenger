@@ -125,7 +125,10 @@ $queryParts['activeUsersSelect']['columns'] = array(
   "{$sqlPrefix}ping" => array(
     'status' => 'status',
     'typing' => 'typing'
-    'time' => 'ptime'
+    'time' => array(
+      'name' => 'ptime',
+      'context' => 'time',
+    ),
     'roomId' => 'proomId',
     'userId' => 'puserId',
   ),
@@ -177,7 +180,6 @@ $queryParts['activeUsersSelect']['conditions'] = array(
       'left' => array(
         'type' => 'column',
         'value' => 'ptime',
-        'context' => 'time',
       ),
       'right' => array(
         'type' => 'int',
