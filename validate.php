@@ -62,7 +62,7 @@ $session = '';
 
 ///* Obtain Login Data From Different Locations *///
 
-if (isset($_POST['userName'],$_POST['password'])) { // API.
+if (isset($_POST['userName'],$_POST['password']) || isset($_POST['userId'],$_POST['password'])) { // API.
   $apiVersion = $_POST['apiVersion']; // Get the version of the software the client intended for.
 
   if (!$apiVersion) {
@@ -89,7 +89,13 @@ if (isset($_POST['userName'],$_POST['password'])) { // API.
     }
 
     if ($goodVersion) {
-      $userName = fim_urldecode($_POST['userName']);
+      if (isset($_POST['userName'])) {
+        $userName = fim_urldecode($_POST['userName']);
+      }
+      elseif (isset($_POST['userId'])) {
+        $userId = fim_urldecode($_POST['userId']);
+      }
+
       $password = fim_urldecode($_POST['password']);
       $passwordEncrypt = fim_urldecode($_POST['passwordEncrypt']);
 

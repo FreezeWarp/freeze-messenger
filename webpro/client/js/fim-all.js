@@ -18,7 +18,8 @@
 
 
 * Needed Changes:
-  * Consistency in use of templates+raw HTML. */
+  * Consistency in use of templates+raw HTML.
+  * Password Encryption */
 
 
 
@@ -35,7 +36,7 @@
 
 var userId, // The user ID who is logged in.
   roomId, // The ID of the room we are in.
-  sessionHash = 'a', // The session hash of the active user.
+  sessionHash, // The session hash of the active user.
   anonId, // ID used to represent anonymous posters.
   prepopup;
 
@@ -103,11 +104,6 @@ if (Number($.cookie('fim3_settings'))) {
 else {
   var settingsBitfield = 0;
   $.cookie('fim3_settings',0);
-}
-
-if ($.cookie('fim3_sessionHash')) {
-  sessionHash = $.cookie('fim3_sessionHash');
-  userId = $.cookie('fim3_userId');
 }
 
 
@@ -184,37 +180,61 @@ function messageFormat(entryXml, format) {
 
   switch (flag) {
     case 'image':
-    text = '<img src="' + text + '" />';
+    if (settings.disableImage) {
+      text = '<a href="' + text + '" target="_BLANK">[Image]</a>';
+    }
+    else {
+      text = '<img src="' + text + '" />';
+    }
     break;
 
     case 'video':
-      // WIP
+    if (settings.disableVideo) {
+      text = '<a href="' + text + '" target="_BLANK">[Video]</a>';
+    }
+    else {
+      text = '<video src="' + text + '" controls></video><br /><small><a href="'+ text + '">If you can not see the above link, click here.</a></small>';
+    }
     break;
 
     case 'audio':
-      // WIP
+    if (settings.disableVideo) {
+      text = '<a href="' + text + '" target="_BLANK">[Video]</a>';
+    }
+    else {
+      text = '<audio src="' + text + '" controls></video><br /><small><a href="'+ text + '">If you can not see the above link, click here.</a></small>';
+    }
     break;
 
     case 'youtube':
     if (text.match(/http\:\/\/(www\.|)youtube\.com\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/) !== null) {
       var code = text.replace(/http\:\/\/(www\.|)youtube\.com\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/i, "$4");
-      text = '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>';
     }
     else if (text.match(/http\:\/\/(www\.|)youtu\.be\/([a-zA-Z0-9]+)/) !== null) {
       var code = text.replace(/http\:\/\/(www\.|)youtu\.be\/([a-zA-Z0-9]+)/i, "$2");
-      text = '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>';
     }
     else {
+      var code = false;
       text = '<span style="color: red; font-style: oblique;">[Invalid Youtube Video]</span>';
+    }
+
+
+    if (code) {
+      if (settings.disableVideo) {
+        text = '<a href="https://www.youtu.be/' + code + '" target="_BLANK">[Youtube Video]</a>';
+      }
+      else {
+        text = '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>';
+      }
     }
     break;
 
     case 'email':
-    text = '<a href="mailto: ' + text + '">' + text + '</a>';
+    text = '<a href="mailto: ' + text + '" target="_BLANK">' + text + '</a>';
     break;
 
     case 'url':
-    text = '<a href="' + text + '">' + text + '</a>';
+    text = '<a href="' + text + '" target="_BLANK">' + text + '</a>';
     break;
 
     case '':
@@ -358,7 +378,6 @@ $.ajax({
 
 /* Permission Dead Defaults
 * Specifically, These All Start False then Change on-Login */
-
 var userPermissions = {
   createRoom : false,
   privateRoom : false
@@ -380,7 +399,6 @@ var adminPermissions = {
 
 /* Settings
 * These Are Set Based on Cookies */
-
 var settings = {
   disableFx : (settingsBitfield & 16384 ? true : false), // Disable jQuery Effects?
   audioDing : (settingsBitfield & 8192 ? true : false), // Fire an HTML5 audio ding during each unread message?
@@ -871,15 +889,8 @@ var standard = {
   login : function(options) {
     console.log('Login Initiated');
     var data = '',
-      passwordEncrypt = '',
-      cookieOptions = {};
+      passwordEncrypt = '';
 
-
-    if (options.rememberMe) {
-      cookieOptions = {expires: 14};
-    }
-
-    $.cookie('fim3_sessionHash','');
 
     console.log('Encrypted Password: ' + options.password);
 
@@ -897,8 +908,13 @@ var standard = {
 
       data = 'userName=' + urlencode(options.userName) + '&password=' + urlencode(options.password) + '&passwordEncrypt=' + passwordEncrypt;
     }
-    else if (options.sessionHash) {
-      data = 'fim3_sessionHash=' + options.sessionHash + '&apiLogin=1&fim3_userId=' + $.cookie('fim3_userId');
+    else if (options.userId && options.password) {
+      passwordEncrypt = 'plaintext';
+      // TODO: Enable for vBulletin
+      // var password = md5(password);
+      // var passwordEncrypt = 'md5';
+
+      data = 'userId=' + urlencode(options.userId) + '&password=' + urlencode(options.password) + '&passwordEncrypt=' + passwordEncrypt;
     }
     else {
       data = 'apiLogin=1';
@@ -923,8 +939,10 @@ var standard = {
           anonId = Number($(xml).find('anonId').text().trim());
           sessionHash = unxml($(xml).find('sessionHash').text().trim());
 
-          $.cookie('fim3_sessionHash',sessionHash); // Set cookies.
-          $.cookie('fim3_userId',userId);
+
+
+          $.cookie('fim3_userId', userId, { expires : 14 });
+          $.cookie('fim3_password', options.password, { expires : 14 }); // We will encrypt this in B3 or later -- it wasn't a priority for now.
 
 
 
@@ -993,7 +1011,6 @@ var standard = {
 
               case 'INVALID_SESSION':
               sessionHash = '';
-              $.cookie('fim3_sessionHash','');
               break;
 
               default:
@@ -1055,8 +1072,10 @@ var standard = {
 
 
   logout : function() {
-    $.cookie('fim3_sessionHash','');
     $.cookie('fim3_userId','');
+    $.cookie('fim3_password','');
+    $.cookie('fim3_themeId','');
+    $.cookie('fim3_settings','');
 
     standard.login({});
   },
@@ -1070,7 +1089,7 @@ var standard = {
       var encrypt = 'base64';
 
       $.ajax({
-        url: directory + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest? '&archive=1&messageIdStart=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdStart=' + (requestSettings.lastMessage + 1)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+        url: directory + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest? '&archive=1&messageIdStart=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdStart=' + (requestSettings.lastMessage + 1)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionfHash=' + sessionHash + '&fim3_userId=' + userId,
         type: 'GET',
         timeout: requestSettings.timeout,
         data: '',
@@ -1594,8 +1613,6 @@ popup = {
         }
       });
 
-      console.log('Popup for un-loggedin user triggered.');
-
       return false;
     });
   },
@@ -2054,7 +2071,7 @@ popup = {
           $('#stylesjQ').attr('href','client/css/' + themes[this.value] + '/jquery-ui-1.8.13.custom.css');
           $('#stylesFIM').attr('href','client/css/' + themes[this.value] + '/fim.css');
 
-          $.cookie('fim3_themeId',this.value);
+          $.cookie('fim3_themeId', this.value, { expires : 14 });
 
           return false;
         });
@@ -2066,14 +2083,14 @@ popup = {
           if ($(this).is(':checked') && !settings[localId]) {
             settings[localId] = true;
             $('#messageList').html('');
-            $.cookie('fim3_settings',Number($.cookie('fim3_settings')) + idMap[localId]);
+            $.cookie('fim3_settings', Number($.cookie('fim3_settings')) + idMap[localId], { expires : 14 });
 
             requestSettings.firstRequest = true;
           }
           else if (!$(this).is(':checked') && settings[localId]) {
             settings[localId] = false;
             $('#messageList').html('');
-            $.cookie('fim3_settings',Number($.cookie('fim3_settings')) - idMap[localId]);
+            $.cookie('fim3_settings', Number($.cookie('fim3_settings')) - idMap[localId], { expires : 14 });
 
             requestSettings.firstRequest = true;
           }
@@ -2093,7 +2110,7 @@ popup = {
           }
           else if (!$(this).is(':checked') && settings[localId]) {
             settings[localId] = false;
-            $.cookie('fim3_settings',Number($.cookie('fim3_settings')) - idMap[localId]);
+            $.cookie('fim3_settings', Number($.cookie('fim3_settings')) - idMap[localId], { expires : 14 });
 
             if (localId === 'disableFx') {
               jQuery.fx.off = false;
@@ -3076,17 +3093,25 @@ $(document).ready(function() {
   $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/' + themeName + '/jquery-ui-1.8.13.custom.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/' + themeName + '/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
 
 
-  standard.login({
-    sessionHash: sessionHash
-  });
+  if ($.cookie('fim3_userId') > 0) {
+    standard.login({
+      userId : $.cookie('fim3_userId'),
+      password : $.cookie('fim3_password'),
+      finish : function() {
+        if (!userId) { // The user is not actively logged in.
+          popup.login();
+        }
+      }
+    });
+  }
+  else {
+    popup.login();
+  }
 
 
 
   /*** Trigger Login ***/
 
-  if (!userId) { // The user is not actively logged in.
-    popup.login();
-  }
   $('#login').bind('click',function() {
     popup.login();
 
