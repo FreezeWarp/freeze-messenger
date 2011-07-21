@@ -114,12 +114,13 @@ if (is_array($uploads)) {
   if (count($uploads) > 0) {
     foreach ($uploads AS $file) {
       $xmlData['getUploads']['uploads']['upload ' . $file['fileId']] = array(
-        'size' => (int) $file['size'],
-        'sizeFormatted' => formatSize($file['size']),
-        'name' => $file['name'],
+        'fileSize' => (int) $file['fileSize'],
+        'fileSizeFormatted' => formatSize($file['fileSize']),
+        'fileName' => $file['fileName'],
         'mime' => $file['mime'],
         'rating' => $file['rating'],
         'md5hash' => $file['md5hash'],
+        'sha256hash' => $file['sha256hash'],
       );
 
       ($hook = hook('getUploads_eachUpload') ? eval($hook) : '');

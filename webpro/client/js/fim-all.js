@@ -94,8 +94,7 @@ var roomRef = {}, // Object
 
 /* Get Cookies */
 
-var layout = $.cookie('fim3_layout'), // TODO
-  themeId = Number($.cookie('fim3_themeId'));
+var themeId = Number($.cookie('fim3_themeId'));
 
 
 if (Number($.cookie('fim3_settings'))) {
@@ -1072,10 +1071,10 @@ var standard = {
 
 
   logout : function() {
-    $.cookie('fim3_userId','');
-    $.cookie('fim3_password','');
-    $.cookie('fim3_themeId','');
-    $.cookie('fim3_settings','');
+    $.cookie('fim3_userId', null);
+    $.cookie('fim3_password', null);
+    $.cookie('fim3_themeId', null);
+    $.cookie('fim3_settings', null);
 
     standard.login({});
   },
@@ -2168,11 +2167,12 @@ popup = {
             var data = '';
 
             $(xml).find('upload').each(function() {
-              var fileName = unxml($(this).find('name').text().trim()),
+              var fileName = unxml($(this).find('fileName').text().trim()),
                 md5hash = $(this).find('md5hash').text().trim(),
+                sha256hash = $(this).find('sha256hash').text().trim(),
                 fileSize = unxml($(this).find('sizeFormatted').text().trim());
 
-                data += '<tr><td><img src="' + directory + 'file.php" /></td><td>' + fileName + '</td><td>' + fileSize + '</td></tr>';
+                data += '<tr><td><img src="' + directory + 'file.php?sha256hash=' + sha256hash + '" style="max-width: 200px; max-height: 200px;" /></td><td>' + fileName + '</td><td>' + fileSize + '</td></tr>';
             });
 
             $('#viewUploadsBody').html(data);
@@ -3323,6 +3323,15 @@ $(document).ready(function() {
   }
 
   return false;
+
+
+
+
+  /* Window Manipulation (see below) */
+
+  window.onresize = windowResize;
+  window.onblur = windowBlur;
+  window.onfocus = windowFocus;
 });
 
 /*********************************************************
@@ -3342,35 +3351,31 @@ $(document).ready(function() {
 ***** Window Manipulation and Multi-Window Handling *****
 *********************************************************/
 
-function windowResize () {
+function windowResize() {
   var windowWidth = document.documentElement.clientWidth; // Get the browser window "viewport" width, excluding scrollbars.
   var windowHeight = document.documentElement.clientHeight; // Get the browser window "viewport" height, excluding scrollbars.
 
 
-  switch (window.layout) { // Determine which layout we are using.
-    default: // The main layout.
-    $('#messageList').css('height',(windowHeight - 240)); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
-    $('#messageList').css('max-width',((windowWidth - 10) * .75)); // Prevent box-stretching. This is common on... many chats.
+  $('#messageList').css('height',(windowHeight - 240)); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
+//  $('#messageList').css('width',((windowWidth - 10) * .75)); // Prevent box-stretching. This is common on... many chats.
+  $('#messageList').css('max-width',((windowWidth - 10) * .75)); // Prevent box-stretching. This is common on... many chats.
 
 
-    /* Body Padding: 10px
-      * Right Area Width: 75%
-      * "Enter Message" Table Padding: 10px
-      *** TD Padding: 2px (on Standard Styling)
-      * Message Input Text Area Padding: 3px */
-      $('#messageInput').css('width',(((windowWidth - 10) * .75) - 10 - 2)); // Set the messageInput box to fill width.
+  /* Body Padding: 10px
+    * Right Area Width: 75%
+    * "Enter Message" Table Padding: 10px
+    *** TD Padding: 2px (on Standard Styling)
+    * Message Input Text Area Padding: 3px */
+  $('#messageInput').css('width',(((windowWidth - 10) * .75) - 10 - 2)); // Set the messageInput box to fill width.
 
 
-    $('body').css('height',window.innerHeight); // Set the body height to equal that of the window; this fixes many gradient issues in theming.
-    break;
+  $('body').css('height',windowHeight); // Set the body height to equal that of the window; this fixes many gradient issues in theming.
 
-    // TODO
-  }
 
   return false;
 }
 
-function windowBlur () {
+function windowBlur() {
   window.isBlurred = true;
 
   return false;
@@ -3383,11 +3388,6 @@ function windowFocus() {
 
   return false;
 }
-
-
-window.onresize = windowResize;
-window.onblur = windowBlur;
-window.onfocus = windowFocus;
 
 /*********************************************************
 ************************* END ***************************
