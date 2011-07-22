@@ -39,7 +39,7 @@ $request = fim_sanitizeGPC(array(
   'get' => array(
     'rooms' => array(
       'type' => 'string',
-      'require' => true,
+      'require' => false,
       'default' => '',
       'context' => array(
          'type' => 'csv',
@@ -50,7 +50,7 @@ $request = fim_sanitizeGPC(array(
 
     'users' => array(
       'type' => 'string',
-      'require' => true,
+      'require' => false,
       'default' => '',
       'context' => array(
          'type' => 'csv',
@@ -72,25 +72,30 @@ if (count($request['rooms']) > 0) {
         'allowedUsers' => 'allowedUsers',
         'allowedGroups' => 'allowedGroups',
         'moderators' => 'moderators',
+        'options' => 'options',
       ),
     ),
     array(
-      'type' => 'in',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'roomId',
-      ),
-      array(
-        'type' => 'array',
-        'value' => $request['rooms'],
+      'both' => array(
+        array(
+          'type' => 'in',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'roomId',
+          ),
+          'right' => array(
+            'type' => 'array',
+            'value' => $request['rooms'],
+          ),
+        ),
       ),
     )
   );
-  $roomRows->getAsArray('roomId');
+  $roomRows = $roomRows->getAsArray('roomId');
 
 
   foreach ($roomRows AS $roomId => $roomData) {
-    if (hasPermission($roomData,$user,'moderate',true)) {
+    if (fim_hasPermission($roomData,$user,'moderate',true)) {
       $roomArray[] = $roomData['roomId'];
     }
   }
@@ -222,7 +227,7 @@ if (count($request['users']) > 0) {
 /* Get Kicks from Database */
 $kicks = $database->select($queryParts['kicksSelect']['columns'],
   $queryParts['kicksSelect']['conditions'],
-  $queryParts['kicksSelect']['sort']);
+  $queryParts['kicksSelect']['sort']); error_log($kicks->sourceQuery);
 $kicks = $kicks->getAsArray(true);
 
 

@@ -67,6 +67,15 @@ $request = fim_sanitizeGPC(array(
       ),
     ),
 
+    'length' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => 0,
+      'context' => array(
+        'type' => 'int',
+      ),
+    ),
+
     'quiet' => array(
       'type' => 'string',
       'require' => false,
@@ -98,7 +107,7 @@ $xmlData = array(
 /* Start Processing */
 switch ($request['action']) {
   case 'kickUser':
-  $userData = $slaveDatabase->getRoom($request['userId']);
+  $userData = $slaveDatabase->getUser($request['userId']);
   $roomData = $slaveDatabase->getRoom($request['roomId']);
 
   if (!$userData) {
@@ -123,19 +132,19 @@ switch ($request['action']) {
   else {
     modLog('kick',"$userData[userId],$roomData[roomId]");
 
-    // Delete any preexisting entries
-    $database->delete("{$sqlPrefix}kick",array(
-      'userId' => $userData['userId'],
-      'roomId' => $roomData['roomId'],
-    ));
+    // Delete any preexisting entries - the replace prolly negates this, but I'm not sure; is one query better than two?
+//    $database->delete("{$sqlPrefix}kick",array(
+//      'userId' => $userData['userId'],
+//      'roomId' => $roomData['roomId'],
+//    ));
 
     $database->insert(array(
         'userId' => (int) $userData['userId'],
         'kickerId' => (int) $user['userId'],
-        'length' => (int) $time,
+        'length' => (int) $request['length'],
         'roomId' => (int) $roomData['roomId'],
       ),"{$sqlPrefix}kick",array(
-        'length' => (int) $time,
+        'length' => (int) $request['length'],
         'kickerId' => (int) $user['userId'],
         'time' => array(
           'type' => 'raw',

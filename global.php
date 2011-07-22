@@ -295,7 +295,6 @@ if (isset($reqPhrases)) {
 if ($config['cacheKicks']) {
   $cacheKicks = apc_fetch('fim_kickCache');
   if ($cacheKicks === null || $cacheKicks === false) {
-trigger_error('Getting Kicks',E_USER_NOTICE);
     $queryParts['cacheKicksSelect']['columns'] = array(
       "{$sqlPrefix}kick" => array(
         'kickerId' => 'kkickerId',
@@ -324,7 +323,43 @@ trigger_error('Getting Kicks',E_USER_NOTICE);
         'roomName' => 'roomName',
       ),
     );
-    $queryParts['cacheKicksSelect']['conditions'] = false;
+    $queryParts['cacheKicksSelect']['conditions'] = array(
+      'both' => array(
+        array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'kuserId',
+          ),
+          'right' => array(
+            'type' => 'column',
+            'value' => 'userId',
+          ),
+        ),
+        array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'kroomId',
+          ),
+          'right' => array(
+            'type' => 'column',
+            'value' => 'roomId',
+          ),
+        ),
+        array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'kkickerId',
+          ),
+          'right' => array(
+            'type' => 'column',
+            'value' => 'kickerId',
+          ),
+        ),
+      ),
+    );
     $queryParts['cacheKicksSelect']['sort'] = array(
       'roomId' => 'asc',
       'userId' => 'asc'
@@ -338,20 +373,21 @@ trigger_error('Getting Kicks',E_USER_NOTICE);
     $cacheKicks = array();
 
     foreach ($cacheKicksPre AS $cacheKick) {
-      if ($cacheKick['time'] + $cacheKick['length'] < time()) {
+      if ($cacheKick['ktime'] + $cacheKick['klength'] < time()) {
         $database->delete("{$sqlPrefix}kick",array(
           'userId' => $cacheKick['userId'],
           'roomId' => $cacheKick['roomId'],
         ));
       }
       else {
-        $cacheKicks[$cacheKicks['roomId']][$cacheKicks['userId']] = true;
+        $cacheKicks[$cacheKick['roomId']][$cacheKick['userId']] = true;
       }
     }
 
     apc_add('fim_kickCache',$cacheKicks,(isset($config['cacheKicksRefresh']) ? $config['cacheKicksRefresh'] : 60));
   }
 }
+//error_log(print_r($cacheKicks,true));
 
 ($hook = hook('global') ? eval($hook) : '');
 ?>

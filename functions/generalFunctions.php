@@ -421,8 +421,7 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
 */
 
 function fim_urldecode($str) {
-  return str_ireplace(array('%2b','%26','%20','%25','%0a'),array('+','&',' ', '%',"
-"), $str);
+  return str_ireplace(array('%2b','%26','%20','%25','%0a'),array('+','&',' ', '%',"\n"), $str);
 }
 
 
@@ -950,29 +949,21 @@ function errorHandler($errno, $errstr, $errfile, $errline) {
 
   switch ($errno) {
     case E_USER_ERROR:
-    error_log("User Error in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr
-",3, $errorFile);
-    die("An error has occured: $errstr. 
-
-The application has terminated.");
+    error_log("User Error in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr\n",3, $errorFile);
+    die("An error has occured: $errstr. \n\nThe application has terminated.");
     break;
 
     case E_USER_WARNING:
-    error_log("User Warning in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr
-",3, $errorFile);
+    error_log("User Warning in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr\n",3, $errorFile);
     break;
 
     case E_ERROR:
-    error_log("System Error in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr
-",3, $errorFile);
-    die("An error has occured: $errstr. 
-
-The application has terminated.");
+    error_log("System Error in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr\n",3, $errorFile);
+    die("An error has occured: $errstr. \n\nThe application has terminated.");
     break;
 
     case E_WARNING:
-    error_log("System Warning in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr
-",3, $errorFile);
+    error_log("System Warning in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr\n",3, $errorFile);
     break;
   }
 
@@ -1075,8 +1066,7 @@ function fim_outputXml($array, $level = 0) {
     $key = explode(' ', $key);
     $key = $key[0];
 
-    $data .= "$indent<$key>
-";
+    $data .= "$indent<$key>\n";
 
     if (is_array($value)) {
       $data .= fim_outputXml($value, $level + 1);
@@ -1092,12 +1082,10 @@ function fim_outputXml($array, $level = 0) {
         $value = fim_encodeXml($value);
       }
 
-      $data .= "$indent  $value
-";
+      $data .= "$indent  $value\n";
     }
 
-    $data .= "$indent</$key>
-";
+    $data .= "$indent</$key>\n";
   }
 
   if ($level == 0) {
@@ -1146,9 +1134,7 @@ function fim_outputXml2($array, $level = 0) {
             unset($value[$key2]);
           }
         }
-        $data .= "{$indent}<{$key}{$data2}>
-" . fim_outputXml2($value, $level + 1) . "{$indent}</{$key}>
-";
+        $data .= "{$indent}<{$key}{$data2}>\n" . fim_outputXml2($value, $level + 1) . "{$indent}</{$key}>\n";
       }
       else {
         $data .= "{$indent}<{$key}";
@@ -1157,14 +1143,12 @@ function fim_outputXml2($array, $level = 0) {
           $data .= " {$key}=\"" . fim_encodeXmlAttr($value2) . "\"";
         }
 
-        $data .= " />
-";
+        $data .= " />\n";
       }
     }
     else {
       if (empty($value)) {
-        $data .= "{$indent}<$key />
-";
+        $data .= "{$indent}<$key />\n";
       }
       else {
         if ($value === true) {
@@ -1177,8 +1161,7 @@ function fim_outputXml2($array, $level = 0) {
           $value = fim_encodeXml($value);
         }
 
-        $data .= "{$indent}<{$key}>{$value}</{$key}>
-";
+        $data .= "{$indent}<{$key}>{$value}</{$key}>\n";
       }
     }
   }
@@ -1243,8 +1226,7 @@ $indent},
         $value = '""';
       }
 
-      $data .= " $value,
-";
+      $data .= " $value,\n";
     }
   }
 
@@ -1279,8 +1261,7 @@ function fim_outputKeys($array, $level = 0) { // Used only for creating document
     $key = explode(' ', $key);
     $key = $key[0];
 
-    $data .= "$indent<li>$key</li>
-";
+    $data .= "$indent<li>$key</li>\n";
 
     if (is_array($value)) {
       $data .= $indent . '  <ul>
@@ -1312,9 +1293,7 @@ function fim_outputArray() {
 
 function fim_htmlCompact($data) {
   $data = preg_replace('/\ {2,}/','', $data);
-  $data = preg_replace("/(
-|
-\r|\t|\r)/",'', $data);
+  $data = preg_replace("/(\n|\n\r|\t|\r)/",'', $data);
   $data = preg_replace("/\<\!-- (.+?) --\>/",'', $data);
   $data = preg_replace("/\>(( )+?)\</",'><', $data);
   return $data;
