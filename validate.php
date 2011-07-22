@@ -1048,7 +1048,6 @@ if ($api) {
   }
 
 
-
   $xmlData = array(
     'login' => array(
       'valid' => (bool) $valid,

@@ -82,7 +82,6 @@ $request = fim_sanitizeGPC(array(
   ),
 ));
 
-
 /* Data Predefine */
 $xmlData = array(
   'getRooms' => array(
@@ -108,6 +107,8 @@ $queryParts['roomSelect'] = array(
       'owner' => 'owner',
       'bbcode' => 'bbcode',
       'roomTopic' => 'roomTopic',
+      'lastMessageId' => 'lastMessageId',
+      'lastMessageTime' => 'lastMessageTime',
     )
   ),
   'conditions' => array(
@@ -121,7 +122,7 @@ $queryParts['roomSelect'] = array(
 
 /* Modify Query Data for Directives */
 if ($request['showDeleted'] !== true) { // We will also check to make sure the user has moderation priviledges after the select.
-  $queryParts['roomSelect']['both'][] = array(
+  $queryParts['roomSelect']['conditions']['both'][] = array(
     'type' => '!bitwise',
     'left' => array(
       'type' => 'column',
@@ -134,7 +135,7 @@ if ($request['showDeleted'] !== true) { // We will also check to make sure the u
   );
 }
 if (count($request['rooms']) > 0) {
-  $queryParts['roomSelect']['both'][] = array(
+  $queryParts['roomSelect']['conditions']['both'][] = array(
     'type' => 'in',
     'left' => array(
       'type' => 'column',
@@ -220,6 +221,8 @@ if (is_array($rooms)) {
             'hidden' => (bool) ($room['options'] & 8),
             'privateIm' => (bool) ($room['options'] & 16),
           ),
+          'lastMessageId' => $room['lastMessageId'],
+          'lastMessageTime' => $room['lastMessageTime'],
           'bbcode' => (int) $room['bbcode'],
           'permissions' => array(
             'canModerate' => (bool) $permissions[0]['moderate'],

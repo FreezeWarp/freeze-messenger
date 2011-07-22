@@ -263,7 +263,9 @@ function fimParse_smilieParse($text) {
 
   $searchText2 = implode('|', $searchText);
 
-  return preg_replace("/(?<!(\[noparse\]))(?<!(quot))(?<!(gt))(?<!(lt))(?<!(apos))(?<!(amp))($searchText2)(?!\[\/noparse\])/ie","'<img src=\"$forumUrlS' . indexValue(\$smilies2,strtolower('\\7')) . '\" alt=\"\\3\" />'", $text);
+  $text = preg_replace("/(?<!(\[noparse\]))(?<!(quot))(?<!(gt))(?<!(lt))(?<!(apos))(?<!(amp))($searchText2)(?!\[\/noparse\])/ie","'<img src=\"$forumUrlS' . indexValue(\$smilies2,strtolower('\\7')) . '\" alt=\"\\7\" />'", $text);
+
+  return $text;
 }
 
 
@@ -438,8 +440,8 @@ function fimParse_finalParse($messageText) {
   global $room;
 
   $messageRaw = $messageText; // Parses the sources for MySQL.
-  $messageHtml = nl2br(fimParse_htmlWrap(fimParse_htmlParse(fimParse_censorParse(fim_encodeXml($messageText), $room['roomId']), $room['options']),80,' ')); // Parses for browser or HTML rendering.
-  $messageApi = fimParse_smilieParse($messageText, $room['bbcode']); // Not yet coded, you see.
+  $messageHtml = nl2br(fimParse_smilieParse(fimParse_htmlWrap(fimParse_htmlParse(fimParse_censorParse($messageText, $room['roomId']), $room['options']),80,' '))); // Parses for browser or HTML rendering.
+  $messageApi = fimParse_censorParse($messageText); // Not yet coded, you see.
 
   return array($messageRaw, $messageHtml, $messageApi);
 }
@@ -563,6 +565,7 @@ function fim_sendMessage($messageText, $user, $room, $flag = '') {
       'type' => 'raw',
       'value' => 'NOW()',
     ),
+    'lastMessageId' => $messageId2
   ),
   "{$sqlPrefix}rooms",
   array(

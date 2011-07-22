@@ -321,7 +321,9 @@ function hashParse() {
 
     default:
     if (roomId) {
-      standard.changeRoom(roomId);
+      if (!requestSettings.firstRequest) {
+        standard.changeRoom(roomId); // We only need to call this if we have already obtained messages.
+      }
     }
     break;
   }
@@ -833,7 +835,7 @@ var standard = {
     });
 
     $.when( $.ajax({
-      url: directory + 'api/getMessages.php?rooms=' + options.roomId + '&archive=1&messageLimit=20&' + where + (options.search ? '&search=' + urlencode(options.search) : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+      url: directory + 'api/getMessages.php?rooms=' + options.roomId + '&archive=1&messageLimit=10000&messageHardLimit=50&' + where + (options.search ? '&search=' + urlencode(options.search) : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
       type: 'GET',
       timeout: 5000,
       data: '',
@@ -1065,7 +1067,7 @@ var standard = {
         callback : function() {
           windowDraw();
           windowDynaLinks();
-
+console.log(3);
           /* Select Room */
           standard.changeRoom(roomId);
 
@@ -1097,10 +1099,31 @@ var standard = {
 
     if (roomId) {
 
-      var encrypt = 'base64';
+      var encrypt = 'base64',
+        lastMessageId;
+
+      if (requestSettings.firstRequest) {
+        $.ajax({
+          url: directory + 'api/getRooms.php?rooms=' + roomId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+          type: 'GET',
+          timeout: 2400,
+          cache: false,
+          async : false, // We need to complete this request before the next
+          success: function(xml) {
+            lastMessageId = $(xml).find('lastMessageId').text().trim();
+
+            return false;
+          },
+          error: function() {
+            dia.error('Failed to obtain current room settings from server.');
+
+            return false;
+          }
+        });
+      }
 
       $.ajax({
-        url: directory + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest ? '&archive=1&messageIdStart=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdStart=' + (requestSettings.lastMessage + 1)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+        url: directory + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest ? '&archive=1&messageIdEnd=' + lastMessageId : '&messageIdStart=' + (requestSettings.lastMessage + 1)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
         type: 'GET',
         timeout: requestSettings.timeout,
         data: '',
@@ -3223,8 +3246,6 @@ function contextMenuParse() {
 
 
 $(document).ready(function() {
-  console.log('bb');
-
   $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/' + themeName + '/jquery-ui-1.8.13.custom.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/' + themeName + '/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
 
 

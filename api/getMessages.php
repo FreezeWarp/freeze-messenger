@@ -23,8 +23,8 @@
  *
  * @param string rooms - A comma seperated list of rooms. Can be a single room in integer format. Some predefined constants can also be used.
  * Note: Using more than one room can conflict or even break the script’s execution should the watchRooms or activeUsers flags be set to true.
- * @param int [messageLimit=40] - The maximum number of posts to receive, defaulting to the internal limit of (in most cases) 40. Specifying 0 removes any limit.
- * Note: A hardcoded maximum of 500 is in place to prevent any potential issues. This will in the future be changable by the administrator.
+ * @param int [messageLimit=1000] - The maximum number of posts to receive, defaulting to the internal limit of (in most cases) 1000. This should be high, as all other conditions (roomId, deleted, etc.) are applied after this limit.
+ * @param int [messageHardLimit=40] - An alternative, generally lower limit applied once all messages are obtained from the server (or via the LIMIT clause of applicable). In other words, this limits the number of results AFTER roomId, etc. restrictions have been applied.
  * @param timestamp [messageDateMin=null] - The earliest a post could have been made. Use of messageDateMax only makes sense with no messageLimit. Do not specify to prevent checking.
  * @param timestamp [messageDateMax=null] - The latest a post could have been made. Use of messageDateMax only makes sense with no messageLimit. Do not specify to prevent checking.
  * @param int [messageIdMin=null] - All posts must be after this ID. Use of messageDateMax only makes sense with no messageLimit. Do not specify to prevent checking.
@@ -42,6 +42,13 @@
  * @param string [messages=null] - A comma seperated list of message IDs that the results will be limited to. It is only intended for use with the archive, and will be over-written with the results of search.
  *
  * @todo Add back unread message retrieval.
+ *
+ * -- Notes on Scalability --
+ * As FreezeMessenger attempts to ecourage broad scalability wherever possible, sacrifices are at times made to prevent badness from happening. getMessages illustrates one of the best examples of this:
+ * the use of indexes is a must for any reliable message retrieval. As such, a standard "SELECT * WHERE roomId = xxx ORDER BY messageId DESC LIMIT 10" (the easiest way of getting the last 10 messages) is simply impossible. Instead, a few alternatives are recommended:
+ ** Specify a "messageIdEnd" as the last message obtained from the room.
+ * similarly, the messageLimit and messageHardLimit directives are applied for the sake of scalibility. messageHardLimit is after results have been retrieved and filtered by, say, the roomId, and messageLimit is a limit on messages retrieved from all rooms, etc.
+ * a message cache is maintained, and it is the default means of obtaining messages. Specifying archive will be far slower, but is required for searching, and generally is recommended at other times as well (e.g. getting initial posts).
 */
 
 
@@ -206,7 +213,16 @@ $request = fim_sanitizeGPC(array(
     'messageLimit' => array(
       'type' => 'int',
       'require' => false,
-      'default' => (isset($config['defaultMessageLimit']) ? $config['defaultMessageLimit'] : 50),
+      'default' => (isset($config['defaultMessageLimit']) ? $config['defaultMessageLimit'] : 10000),
+      'context' => array(
+        'type' => 'int',
+      ),
+    ),
+
+    'messageHardLimit' => array(
+      'type' => 'int',
+      'require' => false,
+      'default' => (isset($config['defaultMessageHardLimit']) ? $config['defaultMessageHardLimit'] : 50),
       'context' => array(
         'type' => 'int',
       ),
@@ -251,8 +267,11 @@ else {
 }
 
 
-if ($request['messageLimit'] > 500) {
-  $request['messageLimit'] = 500; // Sane maximum.
+if ($request['messageLimit'] > 10000) {
+  $request['messageLimit'] = 10000; // Sane maximum.
+}
+if ($request['messageHardLimit'] > 500) {
+  $request['messageHardLimit'] = 500; // Sane maximum.
 }
 
 
@@ -740,7 +759,7 @@ if (is_array($request['rooms'])) {
               $queryParts['messagesSelect']['conditions'],
               $queryParts['messagesSelect']['sort'],
               false,
-              $request['messageLimit']);
+              $request['messageHardLimit']);
             $messages = $messages->getAsArray('messageId');
 
             ($hook = hook('getMessages_postMessages_longPolling_repeat') ? eval($hook) : '');
@@ -757,7 +776,7 @@ if (is_array($request['rooms'])) {
             $queryParts['messagesSelect']['conditions'],
             $queryParts['messagesSelect']['sort'],
             false,
-            $request['messageLimit']);
+            $request['messageHardLimit']);// echo $messages->sourceQuery;
           $messages = $messages->getAsArray('messageId');
 
           ($hook = hook('getMessages_postMessages_polling') ? eval($hook) : '');

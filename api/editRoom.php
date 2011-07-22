@@ -336,7 +336,7 @@ switch($request['action']) {
               ),
             ),
           ),
-        ),
+        )
       );
       $room = $room->getAsArray(false);
 
