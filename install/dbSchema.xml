@@ -5,7 +5,7 @@
     <table name="bbcode" type="general" comment="Admin-defined regexes to use for formatting the HTML cache of messages.">
       <column name="bbcodeId" type="int" maxlen="10" autoincrement="true" comment="A unique identifier for the word." />
       <column name="bbcodeName" type="string" maxlen="100" comment="The name of the BBcode for display purposes." />
-      <column name="options" type="bitfield" bits="16" comment="A bitfield containing column options:\n\n1 - Enabled (TRUE) | Disabled (FALSE)\n2 - Can be Toggled by Rooms (TRUE) | Cannot be Toggled by Rooms (FALSE)\n4 - Default to On For Rooms (TRUE) | Default to Off for Rooms (FALSE)" />
+      <column name="options" type="bitfield" bits="3" comment="A bitfield containing column options." />
       <column name="searchRegex" type="string" comment="The regex to use for BBcode searching." />
       <column name="replacement" type="string" comment="The replacement text to be used." />
 
@@ -26,7 +26,7 @@
       <column name="listId" type="int" maxlen="10" autoincrement="true" comment="The unique ID of the list." />
       <column name="listName" type="string" maxlen="400" comment="The name of the list. It is only used for user identification." />
       <column name="listType" type="string" restrict="'black','white'" comment="The list type - black to apply to no rooms automatically, and white to apply to all rooms automatically (opt-in vs. opt-out)" />
-      <column name="options" type="int" maxlen="4" default="3" comment="A bitfield of specific options for the list." />
+      <column name="options" type="bitfield" bits="6" default="3" comment="A bitfield of specific options for the list (6 bits are alotted, but only three are used by default)." />
 
       <key name="listId" type="primary" />
       <key name="options" type="index" />
@@ -116,7 +116,7 @@
       <column name="time" type="time" default="__TIME__" comment="The time the kick was made on." />
       <column name="length" type="int" maxlen="10" comment="The time the kick will remain active for." />
 
-      <key name="userId`,`roomId" type="primary" />
+      <key name="userId,roomId" type="primary" />
       <key name="time" type="index" />
       <key name="length" type="index" />
     </table>
@@ -157,7 +157,7 @@
       <column name="socialGroups" type="string" maxlen="300" comment="A comma-seperated list of groups the user has joined." />
       <column name="userFormatStart" type="string" maxlen="100" comment="Formatting to be prepended to the user's name." />
       <column name="userFormatEnd" type="string" maxlen="100" comment="Formatting to be appended to the user's name." />
-      <column name="defaultFormatting" type="int" maxlen="10" comment="The default formatting of the user's text (bitfield)." />
+      <column name="defaultFormatting" type="bitfield" bits="16" comment="A bitfield corrosponding to the default formatting of the user's text." />
       <column name="defaultHighlight" type="string" maxlen="20" comment="The default highlight of the user's text." />
       <column name="defaultColor" type="string" maxlen="20" comment="The default color of the user's text." />
       <column name="defaultFontface" type="string" maxlen="100" comment="The default fontface of the user's text." />
@@ -167,6 +167,9 @@
       <column name="flag" type="string" maxlen="10" comment="The content-type flag set for the message." />
 
       <key name="id" type="primary" />
+      <key name="messageId" type="index" />
+      <key name="roomId" type="index" />
+      <key name="time" type="index" />
     </table>
 
 
@@ -203,7 +206,7 @@
       <column name="status" type="string" restrict="'away','busy','available','invisible','offline','" comment="The user's status." />
       <column name="typing" type="string" restrict="'1','0'" default="0" comment="Whether or not the user is typing." />
 
-      <key name="userId`,`roomId" type="primary" />
+      <key name="userId,roomId" type="primary" />
       <key name="time" type="index" />
       <key name="userId" type="index" />
       <key name="roomId" type="index" />
@@ -218,7 +221,7 @@
       <column name="allowedGroups" type="string" maxlen="65536" comment="A comma-seperated list of the IDs of the allowed groups in the room." />
       <column name="allowedUsers" type="string" maxlen="65536" comment="A comma-seperated list of the IDs of the allowed users in the room." />
       <column name="moderators" type="string" maxlen="65536" comment="A comma-seperated list of the IDs of the moderators of the room." />
-      <column name="options" type="int" maxlen="10" comment="A bitfield corrosponding to certain room options." />
+      <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options." />
       <column name="bbcode" type="int" maxlen="1" comment="The level of bbcode allowed in the room." />
       <column name="lastMessageTime" type="time" default="0" comment="The time of the last message made in the room." />
       <column name="lastMessageId" type="int" maxlen="10" comment="The ID of the last message made in the room." />
@@ -314,16 +317,30 @@
       <column name="watchRooms" type="string" maxlen="1000" comment="A comma-seperated list of rooms the user would like to be notified about when new messages are made" />
       <column name="ignoreList" type="string" maxlen="1000" comment="4" />
       <column name="status" type="int" maxlen="3" comment="The user's activity status." />
-      <column name="defaultFormatting" type="int" maxlen="10" comment="A bitfield corrosponding to the user's defaulting formatting (e.g. bold, italics) of all messages." />
+      <column name="defaultFormatting" type="bitfield" bits="16" comment="A bitfield corrosponding to the user's defaulting formatting (e.g. bold, italics) of all messages." />
       <column name="defaultHighlight" type="string" maxlen="20" comment="The user's default highlight colour used for all messages." />
       <column name="defaultColor" type="string" maxlen="20" comment="The user's default foreground colour used for all messages." />
       <column name="defaultFontface" type="string" maxlen="100" comment="The fontface ID used for all of the user's messages." />
-      <column name="settings" type="int" maxlen="10" default="0" comment="A bitfield corrosponding to different user settings." />
-      <column name="userPrivs" type="int" maxlen="10" default="16" comment="A bitfield corrosponding to admin-set user priviledges." />
-      <column name="adminPrivs" type="int" maxlen="10" comment="A bitfield corrosponding to admin-set administrative priviledges." />
+      <column name="userPrivs" type="bitfield" bits="16" default="16" comment="A bitfield corrosponding to admin-set user priviledges." />
+      <column name="adminPrivs" type="bitfield" bits="16" comment="A bitfield corrosponding to admin-set administrative priviledges." />
       <column name="lang" type="string" maxlen="5" comment="4" />
 
       <key name="userId" type="primary" />
+      <key name="userGroup" type="index" />
+      <key name="allGroups" type="index" />
+      <key name="interface" type="index" />
+      <key name="lastSync" type="index" />
+      <key name="userPrivs" type="index" />
+      <key name="adminPrivs" type="index" />
+      <key name="lang" type="index" />
     </table>
   </database>
+
+  <definitions>
+    <bitfield name="options" table="bbcode">
+      <def bit="1">Enabled</def>
+      <def bit="2">Can Be Toggled by Rooms</def>
+      <def bit="4">Default to On</def>
+    </bitfield>
+  </definitions>
 </dbSchema>

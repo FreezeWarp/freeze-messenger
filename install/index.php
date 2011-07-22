@@ -4,6 +4,25 @@ error_reporting(E_ALL ^ E_NOTICE);
   die('The configuration file (config.php) exists. Please remove it before attempting reinstallation.');
 }*/
 
+
+// http://www.php.net/manual/en/ref.simplexml.php#103617
+// Modified for addition recursion needed for the specific code used.
+function xml2array($xmlObject, $out = array()) {
+  foreach ((array) $xmlObject as $index => $node) {
+    if (is_array($node)) {
+      foreach ($node AS $index2 => $node2) {
+        $node[$index2] = (is_object($node2)) ? xml2array($node2) : $node2;
+      }
+    }
+
+    $out[$index] = (is_object($node)) ? xml2array($node) : $node;
+  }
+
+  return $out;
+}
+
+
+
 switch ($_REQUEST['phase']) {
   case false:
   default:
@@ -91,81 +110,56 @@ switch ($_REQUEST['phase']) {
 <div id="part2" style="display: none;">
   <h1>FreezeMessenger Installation: MySQL Setup</h1><hr />
 
-  First things first, please enter your MySQL connection details below:<br /><br />
+  First things first, please enter your MySQL connection details below, as well as a database (we can try to create the database ourselves, as well). If you are unable to proceed, try contacting your web host, or anyone who has helped you set up other things like this before.<br /><br />
   <form onsubmit="return false;" name="mysql_connect_form" id="mysql_connect_form">
-  <table>
-  <tr>
-    <td>Host</td>
-    <td><input type="text" name="mysql_host" value="' . $_SERVER['SERVER_NAME'] . '" /></td>
-  </tr>
-  <tr>
-    <td>Username</td>
-    <td><input type="text" name="mysql_userName" /></td>
-  </tr>
-  <tr>
-    <td>Password</td>
-    <td><input type="text" name="mysql_password" /></td>
-  </tr>
-  </table>
-  </form><br /><br />
-
-  <strong>Note</strong>: You are strongly encourged to create the database and corrosponding user manually to avoid any security risks. If you want the installation script to create the database, the user you specify here must have permission to do so (usually the "root" user can do this).<br /><br />
-  <form onsubmit="return false;">
-  <button style="float: left;" type="button" onclick="$(\'#part2\').slideUp(); $(\'#part1\').slideDown();">&larr; Back</button>
-  <button style="float: right;" type="button" onclick="$.get(\'index.php?phase=1\',$(\'#mysql_connect_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part2\').slideUp(); $(\'#part3\').slideDown(); } else { alert(data); } } );">Verify &rarr;</button>
-  </form>
-</div>
-
-
-<div id="part3" style="display: none;">
-  <h1>FreezeMessenger Installation: MySQL Setup</h1><hr />
-  MySQL connection successful. Next, we need to create or select the database. If you are integrating with a forum, leave "create database" unchecked and enter the database name. If you are not integrating with a forum, you will most likely want to create a new database, though an existing one can be used.
-
-  <form onsubmit="return false;" name="mysql_db_form" id="mysql_db_form">
-    <table>
-      <tr>
-        <td>Database Name</td>
-        <td><input type="text" name="mysql_database" /></td>
+    <table border="1" class="page">
+      <tr class="ui-widget-header">
+        <th colspan="2">Connection Settings</th>
       </tr>
       <tr>
-        <td>Create Database?</td>
-        <td><input type="checkbox" name="mysql_createdb" /></td>
+        <td><strong>Host</strong></td>
+        <td><input type="text" name="mysql_host" value="' . $_SERVER['SERVER_NAME'] . '" /><br /><small>The host of the MySQL server. In most cases, the default shown here /should/ work.</td>
+      </tr>
+      <tr>
+        <td><strong>Username</strong></td>
+        <td><input type="text" name="mysql_userName" /><br /><small>The username of the user you will be connecting to the database with.</small></td>
+      </tr>
+      <tr>
+        <td><strong>Password</strong></td>
+        <td><input id="password" type="password" name="mysql_password" /><input type="button" onclick="$(\'<input type=\\\'text\\\' name=\\\'mysql_password\\\' />\').val($(\'#password\').val()).prependTo($(\'#password\').parent());$(\'#password\').remove();$(this).remove();" value="Show" /><br /><small>The password of the user you will be connecting to the database with.</small></td>
+      </tr>
+      <tr class="ui-widget-header">
+        <th colspan="2">Database Settings</th>
+      </tr>
+      <tr>
+        <td><strong>Database Name</strong></td>
+        <td><input type="text" name="mysql_database" /><br /><small>The name of the database FreezeMessenger\'s data will be stored in.</small></td>
+      </tr>
+      <tr>
+        <td><strong>Create Database?<strong></td>
+        <td><input type="checkbox" name="mysql_createdb" /><br /><small>This will not overwrite existing databases. You are encouraged to create the database yourself, as otherwise default permissions, etc. will be used (which is rarely ideal).</td>
+      </tr>
+      <tr class="ui-widget-header">
+        <th colspan="2">Table Settings</th>
+      </tr>
+      <tr>
+        <td><strong>Table Prefix</strong></td>
+        <td><input type="text" name="mysql_tableprefix" /><br /><small>The prefix that FreezeMessenger\'s tables should use. This can be left blank (or with the default), but if the database contains any other products you must use a <strong>different</strong> prefix than all other products.</small></td>
+      </tr>
+      <tr>
+        <td><strong>Prevent Overwrite</strong></td>
+        <td><input type="checkbox" name="mysql_nooverwrite" /><br /><small>This will prevent tables that exist from being touched (normally, they are renamed to a backup table just in case -- no data is ever deleted). You should rarely wish to use this setting.</small></td>
       </tr>
     </table>
   </form><br /><br />
 
   <form onsubmit="return false;">
-    <button style="float: left;" type="button" onclick="$(\'#part3\').slideUp(); $(\'#part2\').slideDown();">&larr; Back</button>
-    <button style="float: right;" type="button" onclick="$.get(\'index.php?phase=2\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#mysql_db_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part3\').slideUp(); $(\'#part4\').slideDown(); } else { alert(data); } } );">Connect &rarr;</button>
+    <button style="float: left;" type="button" onclick="$(\'#part2\').slideUp(); $(\'#part1\').slideDown();">&larr; Back</button>
+    <button style="float: right;" type="button" onclick="$.get(\'index.php?phase=1\',$(\'#mysql_connect_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part2\').slideUp(); $(\'#part3\').slideDown(); } else { alert(data); } } );">Verify & Connect &rarr;</button>
   </form>
 </div>
 
-
-<div id="part4" style="display: none;">
-  <h1>FreezeMessenger Installation: MySQL Setup</h1><hr />
-  MySQL database connection successful. Next, we need to create the tables. If these already exist (for instance, if you are in some way reinstalling), check "Do not create tables if they exist." Otherwise, leave this unchecked and they will be renamed (you will need to DROP them manually later). In addition, specify a table prefix if you are using forum integration. This is very important to avoid any potential issues.
-
-  <form onsubmit="return false;" name="mysql_table_form" id="mysql_table_form">
-    <table>
-      <tr>
-        <td>Do not create tables if they exist.</td>
-        <td><input type="checkbox" name="mysql_nooverwrite" /></td>
-      </tr>
-      <tr>
-        <td>Table Prefix</td>
-        <td><input type="text" name="mysql_tableprefix" /></td>
-      </tr>
-    </table><br /><br />
-  </form>
-
-  <form onsubmit="return false;">
-    <button style="float: left;" type="button" onclick="$(\'#part4\').slideUp(); $(\'#part3\').slideDown();">&larr; Back</button>
-    <button style="float: right;" type="button" onclick="$.get(\'index.php?phase=3\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#mysql_db_form\').serialize() + \'&\' + $(\'#mysql_table_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part4\').slideUp(); $(\'#part5\').slideDown(); } else { alert(data); } } );">Create Tables &rarr;</button>
-  </form>
-</div>
-
-
-<div id="part5" style="display: none;">
+<div id="part3" style="display: none;">
   <h1>FreezeMessenger Installation: Generate Configuration File</h1><hr />
   Now that the database has been successfully installed, we must generate the configuration file. There are two ways of doing this: either modify config.base.php and save it as config.php or enter the details below. You are recommended to do this manually, though.<br /><br />
 
@@ -202,13 +196,13 @@ switch ($_REQUEST['phase']) {
   </form>
 
   <form onsubmit="return false;">
-    <button style="float: left;" type="button" onclick="$(\'#part5\').slideUp(); $(\'#part4\').slideDown();">&larr; Back</button>
-    <button style="float: right;" type="button" onclick="$.get(\'index.php?phase=5\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#mysql_db_form\').serialize() + \'&\' + $(\'#mysql_table_form\').serialize() + \'&\' + $(\'#config_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part5\').slideUp(); $(\'#part6\').slideDown(); } else { alert(\'Could not create configuration file. Is the server allowed to write to it?\'); } } );">Finish &rarr;</button>
+    <button style="float: left;" type="button" onclick="$(\'#part3\').slideUp(); $(\'#part2\').slideDown();">&larr; Back</button>
+    <button style="float: right;" type="button" onclick="$.get(\'index.php?phase=2\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#config_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part3\').slideUp(); $(\'#part4\').slideDown(); } else { alert(\'Could not create configuration file. Is the server allowed to write to it?\'); } } );">Finish &rarr;</button>
   </form>
 </div>
 
 
-<div id="part6" style="display: none;">
+<div id="part4" style="display: none;">
   <h1>Freezemessenger Installation: All Done!</h1>
 
   FreezeMessenger Installation is now complete. You\'re free to go wander (once you delete the install/ directory), though to put you in the right direction:<br />
@@ -226,15 +220,27 @@ switch ($_REQUEST['phase']) {
 </html>';
   break;
 
-  case 1: // MySQL Check
+  case 1: // Table Check
+  // If tables do not exist, import them from SQL dump files.
+  // If tables do exist, recreate if specified or leave alone.
+
   $host = urldecode($_GET['mysql_host']);
   $userName = urldecode($_GET['mysql_userName']);
   $password = urldecode($_GET['mysql_password']);
+  $database = urldecode($_GET['mysql_database']);
+  $createdb = urldecode($_GET['mysql_createdb']);
+  $prefix = urldecode($_GET['mysql_tableprefix']);
+  $nooverwrite = urldecode($_GET['mysql_nooverwrite']);
+
+
+
+
+  /* Part 1 : Connect to the Database, Create a New Database If Needed */
 
   $mysqli = new mysqli($host,$userName,$password);
 
   if (mysqli_connect_error()) {
-    echo 'Connection Error: ' . mysqli_connect_error();
+    die('Connection Error: ' . mysqli_connect_error());
   }
   else {
     // Get the MySQL version -- We will also check this when we create the tables.
@@ -242,7 +248,7 @@ switch ($_REQUEST['phase']) {
     $version = $version->fetch_row();
     $version = $version[0];
     $version->free_result();
-    $strippedVersion = '';
+    $strippedVersion = ''; // We'll use this briefly.
 
 
     // Get Only The Good Parts of the Version (we could also use a REGEX, but meh)
@@ -264,63 +270,31 @@ switch ($_REQUEST['phase']) {
       die('You have attempted to connect to an incompatible version of a MySQL version 5 database (MySQL 5.0.0-5.0.4). MySQL 5.0.5+ is required for FreezeMessenger.');
     }
 
-    echo 'success';
-  }
-  break;
 
-  case 2: // Database Check
-  $host = urldecode($_GET['mysql_host']);
-  $userName = urldecode($_GET['mysql_userName']);
-  $password = urldecode($_GET['mysql_password']);
-  $database = urldecode($_GET['mysql_database']);
-  $createdb = urldecode($_GET['mysql_createdb']);
+    $databaseSafe = $mysqli->real_escape_string($database); // We will need to referrence the database safely in a number of queries.
 
-  $mysqli = new mysqli($host,$userName,$password);
 
-  if (mysqli_connect_error()) {
-    echo 'Connection Error: ' . mysqli_connect_error();
-  }
-  else {
-    if ($mysqli->select_db($database)) {
-      echo 'success';
-    }
-    elseif ($createdb) {
-      $databaseSafe = $mysqli->real_escape_string($database);
-
-      if ($mysqli->query("CREATE DATABASE {$database}")) {
-        echo 'success';
-      }
-      else {
-        echo 'Database Creation Unsuccessful';
+    // I Think This Could be Rewritten with Better Flow, but I Dunno How
+    if ($mysqli->select_db($database)) { // Select the database (see if it exists, etc.)
+      if (!$createdb) { // We're supposed to create it, but it already exists, so... (we could just ignore this fact and move on, but if the user assumes that no __table__ data would be overwritten by creating a new database, we could give him or her a bad surprise)
+        die('The MySQL database already exists, and can not be created.');
       }
     }
-    else {
-      echo 'Invalid Database';
+    elseif ($createdb) { // We're supposed to create it, let's try.
+      if (!$mysqli->query("CREATE DATABASE {$databaseSafe}")) {
+        die('The database could not be created. We are not sure why.');
+      }
     }
-  }
-  break;
+    else { // Doesn't exist, won't be created.
+      die('You specified an invalid database.');
+    }
 
-  case 3: // Table Check
-  // If tables do not exist, import them from SQL dump files.
-  // If tables do exist, recreate if specified or leave alone.
+    // Set Proper Encoding
+    $mysqli->query("SET NAMES utf8") or die('The database was unable to set the UTF-8 encoding.');
 
-  $host = urldecode($_GET['mysql_host']);
-  $userName = urldecode($_GET['mysql_userName']);
-  $password = urldecode($_GET['mysql_password']);
-  $database = urldecode($_GET['mysql_database']);
-  $createdb = urldecode($_GET['mysql_createdb']);
-  $prefix = urldecode($_GET['mysql_tableprefix']);
-  $nooverwrite = urldecode($_GET['mysql_nooverwrite']);
 
-  $mysqli = new mysqli($host,$userName,$password,$database);
-  $mysqli->query("SET NAMES utf8") or die('Could not Set UTF8 Encoding');
-
-  if (mysqli_connect_error()) {
-    echo 'Connection Error: ' . mysqli_connect_error();
-  }
-  else {
-    $databaseSafe = $mysqli->real_escape_string($database); // Escape the Database to Avoid any Mishaps
-
+    /* Prequisits */
+    $skipTables = array(); // This will be used to skip insert queries where the CREATE TABLE was also skipped.
 
     // Get Pre-Existing Tables So We Don't Overwrite Any of Them Later
     $showTables = $mysqli->query("SHOW TABLES FROM $databaseSafe", MYSQLI_USE_RESULT);
@@ -332,28 +306,14 @@ switch ($_REQUEST['phase']) {
     $showTables->free_result();
 
 
-    // Process the XML Data
-    $xmlData = new SimpleXMLElement(file_get_contents('dbSchema.xml'));
+   die('Happy!');
 
-    // http://www.php.net/manual/en/ref.simplexml.php#103617
-    // Modified for addition recursion needed for the specific code used.
-    function xml2array($xmlObject, $out = array()) {
-      foreach ((array) $xmlObject as $index => $node) {
-        if (is_array($node)) {
-          foreach ($node AS $index2 => $node2) {
-            $node[$index2] = (is_object($node2)) ? xml2array($node2) : $node2;
-          }
-        }
+    /* Part Two: Create Tables */
 
-        $out[$index] = (is_object($node)) ? xml2array($node) : $node;
-      }
+    $xmlData = new SimpleXMLElement(file_get_contents('dbSchema.xml')); // Get the XML Data from the dbSchema.xml file
+    $xmlData = xml2array($xmlData); // Convert the data to pure array, since I don't want to deal with SimpleXML's methods (...why learn new things when you don't have to?) If anyone is wondering, XML is specifically used instead of JSON because it is easier to modify (you can skim and find what you want much quicklier).
 
-      return $out;
-    }
-
-    $xmlData = xml2array($xmlData);
-
-    if ((int) $xmlData['@attributes']['version'] != 3) {
+    if ((int) $xmlData['@attributes']['version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
       die('The XML Data Source if For An Improper Version');
     }
     else {
@@ -428,18 +388,7 @@ switch ($_REQUEST['phase']) {
               $typePiece = 'BIT(8)'; // Sane default
             }
             else {
-              $rounds = 0;
-
-              for ($i = (int) $column['bits']; $i >= 1; $i /= 2) {
-                if (!is_int($i)) {
-                  die('(Developer Issues - Please Report) Invalid Bitfield');
-                }
-                else {
-                  $rounds++;
-                }
-              }
-
-              $typePiece = 'BIT(' . $rounds . ')'; // This is new to MySQL 5.0.5 (5.0.3 for MySIAM). In theory, INT would be just as good (but unoptimized), but meh.
+              $typePiece = 'BIT(' . (int) $column['bits'] . ')'; // This is new to MySQL 5.0.5 (5.0.3 for MySIAM). In theory, INT would be just as good (though unoptimized), but meh.
             }
             break;
 
@@ -449,38 +398,66 @@ switch ($_REQUEST['phase']) {
           }
 
           if (isset($column['default'])) {
-            $typePiece .= 'DEFAULT "' . $mysqli->real_escape_string($column['comment']) . '"';
+            $typePiece .= 'DEFAULT "' . $mysqli->real_escape_string($column['default']) . '"';
           }
 
           $columns[] = '`' . $column['name'] . '` ' . $typePiece . ' NOT NULL' . (isset($column['comment']) ? ' COMMENT "' . $mysqli->real_escape_string($column['comment']) . '"' : '');
         }
 
-        $queries[] = 'CREATE TABLE IF NOT EXISTS `' . $prefix . $table['@attributes']['name']'` (
-  ' . implode("\n  ",$columns) . '
-  PRIMARY KEY (`bbcodeId`)
-) ENGINE="' . $engine . '" COMMENT="' . $mysqli-real_escape_string($table['@attributes']['comment']) . '" DEFAULT CHARSET="utf8";';*/
-      }
 
-      $importFiles = scandir('sqldump');
-      foreach ($importFiles AS $file) {
-        $queries = array();
+        foreach ($table['key'] AS $key) {
+          $keys = array(); // We will use this to store the column fragments that will be implode()d into the final query.
+          $key = $key['@attributes'];
 
-        if ($file == '.' || $file == '..') continue;
+          switch ($key['type']) {
+            case 'primary':
+            $typePiece = "PRIMARY KEY";
+            break;
 
-        $contents = file_get_contents("sqldump/{$file}");
-        $contents = str_replace(array('{prefix}','{engine}'),array($prefix,'InnoDB'),$contents);
-        $table = $prefix . str_replace('.sql','',$file);
+            case 'unique':
+            $typePiece = "UNIQUE KEY";
+            break;
 
-        if (@in_array($table,$mysqlTables) && $nooverwrite) continue;
-        elseif (@in_array($table,$mysqlTables)) {
-          $newTable = $table . '~' . time();
-
-          if (!$mysqli->query("RENAME TABLE `$table` TO `$newTable`")) {
-            die("Could Not Rename Table '$table'");
+            case 'index':
+            $typePiece = "KEY";
+            break;
           }
+
+          if (strstr(',',$key['name'])) {
+            $keyCols = explode(',',$key['name']);
+
+            foreach ($keyCols AS &$keyCol) {
+              $keyCol = "`$keyCol`";
+            }
+
+            $key['name'] = implode(',',$keyCols);
+          }
+          else {
+            $key['name'] = "`{$key['name']}`";
+          }
+
+          $keys[] = "{$typePiece} ({$key['name']})";
         }
 
-        $queries = explode('-- DIVIDE', $contents);
+
+          $queries[$prefix . $table['@attributes']['name']] = 'CREATE TABLE IF NOT EXISTS `' . $prefix . $table['@attributes']['name'] . '` (
+  ' . implode("\n  ",$columns) . '
+  ' . implode("\n  ",$keys) . '
+) ENGINE="' . $engine . '" COMMENT="' . $mysqli-real_escape_string($table['@attributes']['comment']) . '" DEFAULT CHARSET="utf8";';
+      }
+
+      foreach ($queries AS $tableName => $query) {
+        if (@in_array($tableName,$mysqlTables) && $nooverwrite) {
+          $skipTables[] = $tableName;
+          continue; // Don't create the table, since we shouldn't overwrite.
+        }
+        elseif (@in_array($tableName,$mysqlTables)) { // We are overwriting, so rename the old table to a backup. Someone else can clean it up later, but its for the best.
+          $newTable = $tableName . '~' . time();
+
+          if (!$mysqli->query("RENAME TABLE `$tableName` TO `$newTable`")) {
+            die("Could Not Rename Table '$tableName'");
+          }
+        }
 
         foreach ($queries AS $query) {
           if (!trim($query)) continue;
@@ -493,12 +470,17 @@ switch ($_REQUEST['phase']) {
         }
       }
     }
+
+    /* Part 3: Insert Data */
+
     echo 'success';
+
+    $mysqli->close();
   }
 
   break;
 
-  case 5: // Config File
+  case 2: // Config File
   $host = urldecode($_GET['mysql_host']);
   $userName = urldecode($_GET['mysql_userName']);
   $password = urldecode($_GET['mysql_password']);
@@ -573,34 +555,6 @@ $dbConnect[\'integration\'][\'database\'] = \'' . $database . '\';',
   if (file_put_contents('../config.php',$baseNew)) {
     echo 'success';
   }
-  break;
-
-  case 'dev': // TODO: Remove
-  $mysqli = new mysqli('localhost','a','a','phpbb3');
-  $mysqli->query("SET NAMES utf8");
-  $prefix = 'a_';
-  $tables = array("templates","phrases","sessions");
-
-  foreach ($tables AS $table) {
-    $mysqli->query("DROP TABLE {$prefix}{$table}");
-
-    $contents = file_get_contents("sqldump/$table.sql");
-    $contents = str_replace(array('{prefix}','{engine}'),array($prefix,'InnoDB'),$contents);
-
-    $queries = explode('-- DIVIDE', $contents);
-
-    foreach ($queries AS $query) {
-      if (!trim($query)) continue;
-
-      if (!$mysqli->query($query)) {
-        echo $query;
-        echo $mysqli->error;
-        die('Could Not Run Query');
-      }
-    }
-  }
-
-  echo 'success';
   break;
 }
 ?>

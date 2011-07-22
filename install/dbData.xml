@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <dbData version="3.0">
-  <database name="fimraw">
+  <database>
+
     <!-- Table bbcode -->
     <table name="bbcode">
       <column name="bbcodeId">1</column>
@@ -80,7 +81,12 @@
       <column name="searchRegex">/[youtube](.*?)[/youtube]/is</column>
       <column name="replacement">&lt;object width="420" height="255" wmode="transparent"&gt;&lt;param name="movie" value="http://www.youtube.com/v/$1=en&amp;amp;fs=1&amp;amp;rel=0&amp;amp;border=0"&gt;&lt;/param&gt;&lt;param name="allowFullScreen" value="true"&gt;&lt;/param&gt;&lt;embed src="http://www.youtube.com/v/$1&amp;amp;hl=en&amp;amp;fs=1&amp;amp;rel=0&amp;amp;border=0" type="application/x-shockwave-flash" allowfullscreen="true" width="420" height="255" wmode="opaque"&gt;&lt;/embed&gt;&lt;/object&gt;</column>
     </table>
+
+
     <!-- Table censorBlackWhiteLists -->
+
+
+
     <!-- Table censorLists -->
     <table name="censorLists">
       <column name="listId">1</column>
@@ -88,9 +94,21 @@
       <column name="listType">black</column>
       <column name="options">3</column>
     </table>
+
+
+
     <!-- Table censorWords -->
+
+
+
     <!-- Table files -->
+
+
+
     <!-- Table fileVersions -->
+
+
+
     <!-- Table fonts -->
     <table name="fonts">
       <column name="fontId">1</column>
@@ -278,14 +296,40 @@
       <column name="data">'Edwardian Script ITC', cursive</column>
       <column name="category">cursive</column>
     </table>
+
+
     <!-- Table groups -->
+
+
+
     <!-- Table hooks -->
+
+
+
     <!-- Table kick -->
+
+
+
     <!-- Table messages -->
+
+
+
     <!-- Table messagesCached -->
+
+
+
     <!-- Table modlog -->
+
+
+
     <!-- Table phrases -->
+
+
+
     <!-- Table ping -->
+
+
+
     <!-- Table rooms -->
     <table name="rooms">
       <column name="roomId">1</column>
@@ -300,10 +344,24 @@
       <column name="lastMessageTime">0000-00-00 00:00:00</column>
       <column name="lastMessageId">0</column>
     </table>
+
+
     <!-- Table roomStats -->
+
+
+
     <!-- Table searchMessages -->
+
+
+
     <!-- Table searchPhrases -->
+
+
+
     <!-- Table sessions -->
+
+
+
     <!-- Table templates -->
     <table name="templates">
       <column name="templateId">1</column>
@@ -1000,6 +1058,8 @@ Keep in mind all content is heavily encrytped for privacy. Private conversations
 &lt;/fieldset&gt;
 &lt;/div&gt;</column>
     </table>
+
+
     <!-- Table uploadTypes -->
     <table name="uploadTypes">
       <column name="typeId">1</column>
@@ -1029,6 +1089,9 @@ Keep in mind all content is heavily encrytped for privacy. Private conversations
       <column name="maxSize">1048576</column>
       <column name="container">image</column>
     </table>
+
+
     <!-- Table users -->
+
   </database>
 </dbData>
