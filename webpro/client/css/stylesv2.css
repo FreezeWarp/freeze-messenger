@@ -138,6 +138,11 @@ body {
   word-wrap: normal;
   white-space: nowrap;
 }
+.userNameAvatar {
+  max-width: 24px;
+  max-height: 24px;
+  padding-right: 3px;
+}
 
 .inline {
   display: inline;
@@ -188,6 +193,16 @@ table.page {
 .messageLine {
   margin: 4px 0px;
   display: block;
+}
+
+.messageLineAvatar {
+  padding-bottom: 3px;
+  padding-top: 3px;
+  vertical-align: middle;
+}
+
+.messageText {
+  padding: 2px;
 }
 
 table.center {

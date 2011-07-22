@@ -266,10 +266,10 @@ function messageFormat(entryXml, format) {
 
     case 'list':
     if (settings.showAvatars) {
-      data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="' + userName + '" src="' + avatar + '" style="max-width: 24px; max-height: 24px; padding-right: 3px;" class="userName userNameTable" data-userId="' + userId + '" /><span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
+      data = '<span id="message' + messageId + '" class="messageLine messageLineAvatar"><img alt="' + userName + '" src="' + avatar + '" class="userName userNameTable userNameAvatar" data-userId="' + userId + '" /><span style="' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
     }
     else {
-      data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
+      data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
     }
     break;
   }
@@ -2516,7 +2516,7 @@ popup = {
             set = unxml($(this).find('setFormatted').text().trim()),
             expires = unxml($(this).find('expiresFormatted').text().trim());
 
-          kickHtml += '<tr><td>' + userFormatStart + userName + userFormatEnd + '</td><td>' + kickerFormatStart + kickerName + kickerFormatEnd + '</td><td>' + set + '</td><td>' + expires + '</td><td><button onclick="standard.unkick(' + userId + ',' + roomId + ')">Unkick</button></td></tr>';
+          kickHtml += '<tr><td>' + userFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + userFormatEnd + '</td><td>' + kickerFormatStart + '<span class="userName userNameTable" data-userId="' + kickerId + '">' + kickerName + '</span>' + kickerFormatEnd + '</td><td>' + set + '</td><td>' + expires + '</td><td><button onclick="standard.unkick(' + userId + ',' + roomId + ')">Unkick</button></td></tr>';
         });
 
         dia.full({
@@ -2534,15 +2534,54 @@ popup = {
       }
     });
 
-    $("form[data-formid=unkick]").submit(function() {
-      data = $(this).serialize(); // Serialize the form data for AJAX.
-      // TODO
-  // $.post("content/unkick.php?phase=2",data,function(html) {
-  // quickDialogue(html,'','unkickDialogue');
-  // }); // Send the form data via AJAX.
+    return false;
+  },
 
-      $("#manageKickDialogue").dialog('destroy');
-      return false; // Don\\''t submit the form.
+  /*** END Kick Manager ***/
+
+
+
+
+  /*** START My Kicks ***/
+
+  myKicks : function() {
+    var kickHtml = '';
+
+    $.ajax({
+      url: directory + 'api/getKicks.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+      timeout: 5000,
+      type: 'GET',
+      cache: false,
+      success: function(xml) {
+        $(xml).find('kick').each(function() {
+          var kickerId = Number($(this).find('kickerData > userId').text().trim()),
+            kickerName = $(this).find('kickerData > userName').text().trim(),
+            kickerFormatStart = $(this).find('kickerData > userFormatStart').text().trim(),
+            kickerFormatEnd = $(this).find('kickerData > userFormatEnd').text().trim(),
+            userId = Number($(this).find('userData > userId').text().trim()),
+            userName = $(this).find('userData > userName').text().trim(),
+            userFormatStart = $(this).find('userData > userFormatStart').text().trim(),
+            userFormatEnd = $(this).find('userData > userFormatEnd').text().trim(),
+            length = Number($(this).find('length').text().trim()),
+            set = unxml($(this).find('setFormatted').text().trim()),
+            expires = unxml($(this).find('expiresFormatted').text().trim());
+
+          kickHtml += '<tr><td>' + userFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + userFormatEnd + '</td><td>' + kickerFormatStart + '<span class="userName userNameTable" data-userId="' + kickerId + '">' + kickerName + '</span>' + kickerFormatEnd + '</td><td>' + set + '</td><td>' + expires + '</td></tr>';
+        });
+
+        dia.full({
+          content : '<table class="center"><thead><tr class="hrow"><th>User</th><th>Kicked By</th><th>Kicked On</th><th>Expires On</th></tr>  </thead><tbody id="kickedUsers">' + kickHtml + '</tbody></table>',
+          title : 'You Have Been Kicked From The Following Rooms',
+          width : 1000
+        });
+
+        return false;
+      },
+      error: function() {
+        dia.error('The list of currently kicked users could not be obtained from the server.');
+
+        return false;
+      }
     });
 
     return false;

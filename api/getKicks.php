@@ -62,48 +62,6 @@ $request = fim_sanitizeGPC(array(
 ));
 
 
-/* Confirm that the Active User Has Moderation Permission for Each Room */
-if (count($request['rooms']) > 0) {
-  $roomRows = $database->select(
-    array(
-      "{$sqlPrefix}rooms" => array(
-        'roomId' => 'roomId',
-        'owner' => 'owner',
-        'allowedUsers' => 'allowedUsers',
-        'allowedGroups' => 'allowedGroups',
-        'moderators' => 'moderators',
-        'options' => 'options',
-      ),
-    ),
-    array(
-      'both' => array(
-        array(
-          'type' => 'in',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'roomId',
-          ),
-          'right' => array(
-            'type' => 'array',
-            'value' => $request['rooms'],
-          ),
-        ),
-      ),
-    )
-  );
-  $roomRows = $roomRows->getAsArray('roomId');
-
-
-  foreach ($roomRows AS $roomId => $roomData) {
-    if (fim_hasPermission($roomData,$user,'moderate',true)) {
-      $roomArray[] = $roomData['roomId'];
-    }
-  }
-
-  $request['rooms'] = $roomArray;
-}
-
-
 
 /* Data Predefine */
 $xmlData = array(
@@ -144,22 +102,15 @@ $queryParts['kicksSelect']['columns'] = array(
   "{$sqlPrefix}rooms" => array(
     'roomId' => 'roomId',
     'roomName' => 'roomName',
+    'owner' => 'owner',
+    'allowedUsers' => 'allowedUsers',
+    'allowedGroups' => 'allowedGroups',
+    'moderators' => 'moderators',
+    'options' => 'options',
   ),
 );
 $queryParts['kicksSelect']['conditions'] = array(
   'both' => array(
-    array(
-      'type' => 'in',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'kroomId',
-      ),
-      'right' => array(
-        'type' => 'array',
-        'value' => (array) $request['rooms'],
-      ),
-    ),
-
     array(
       'type' => 'e',
       'left' => array(
@@ -217,6 +168,20 @@ if (count($request['users']) > 0) {
   );
 }
 
+if (count($request['rooms']) > 0) {
+  $queryParts['usersSelect']['conditions']['both'][] = array(
+    'type' => 'in',
+    'left' => array(
+      'type' => 'column',
+      'value' => 'kroomId',
+    ),
+    'right' => array(
+       'type' => 'array',
+       'value' => (array) $request['rooms'],
+    ),
+  );
+}
+
 
 
 /* Plugin Hook Start */
@@ -233,33 +198,39 @@ $kicks = $kicks->getAsArray(true);
 
 
 /* Start Processing */
-foreach ($kicks AS $kick) {
-  $xmlData['getKicks']['kicks']['kick ' . $kick['kickId']] = array(
-    'roomData' => array(
-      'roomId' => (int) $kick['roomId'],
-      'roomName' => (string) $kick['roomName'],
-    ),
-    'userData' => array(
-      'userId' => (int) $kick['userId'],
-      'userName' => (string) $kick['userName'],
-      'userFormatStart' => (string) $kick['userFormatStart'],
-      'userFormatEnd' => (string) $kick['userFormatEnd'],
-    ),
-    'kickerData' => array(
-      'userId' => (int) $kick['kickerId'],
-      'userName' => (string) $kick['kickerName'],
-      'userFormatStart' => (string) $kick['kickerFormatStart'],
-      'userFormatEnd' => (string) $kick['kickerFormatEnd'],
-    ),
-    'length' => (int) $kick['length'],
+if (is_array($kicks)) {
+  if (count($kicks) > 0) {
+    foreach ($kicks AS $kick) {
+      if (fim_hasPermission($kick,$user,'moderate') || $kick['userId'] == $user['userId']) { // The user is allowed to know of all kicks they are subject to, and of all kicks in any rooms they moderate.
+        $xmlData['getKicks']['kicks']['kick ' . $kick['kickId']] = array(
+          'roomData' => array(
+            'roomId' => (int) $kick['roomId'],
+            'roomName' => (string) $kick['roomName'],
+          ),
+          'userData' => array(
+            'userId' => (int) $kick['userId'],
+            'userName' => (string) $kick['userName'],
+            'userFormatStart' => (string) $kick['userFormatStart'],
+            'userFormatEnd' => (string) $kick['userFormatEnd'],
+          ),
+          'kickerData' => array(
+            'userId' => (int) $kick['kickerId'],
+            'userName' => (string) $kick['kickerName'],
+            'userFormatStart' => (string) $kick['kickerFormatStart'],
+            'userFormatEnd' => (string) $kick['kickerFormatEnd'],
+          ),
+          'length' => (int) $kick['length'],
 
-    'set' => (int) $kick['time'],
-    'setFormatted' => (string) fim_date(false,$kick['time']),
-    'expires' => (int) ($kick['set'] + $kick['length']),
-    'expiresFormatted' => (string) fim_date(false,$kick['time'] + $kick['length']),
-  );
+          'set' => (int) $kick['time'],
+          'setFormatted' => (string) fim_date(false,$kick['time']),
+          'expires' => (int) ($kick['set'] + $kick['length']),
+          'expiresFormatted' => (string) fim_date(false,$kick['time'] + $kick['length']),
+        );
 
-  ($hook = hook('getKicks_eachKick') ? eval($hook) : '');
+        ($hook = hook('getKicks_eachKick') ? eval($hook) : '');
+      }
+    }
+  }
 }
 
 
