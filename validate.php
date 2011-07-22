@@ -687,7 +687,10 @@ if ($valid) { // If the user is valid, process their preferrences.
 
       $user2['profile'] = $loginConfig['url'] . 'memberlist.php?mode=viewprofile&u=' . $user2['userId'];
       break;
+    }
 
+    if (!$user2['avatar'] && isset($config['defaultAvatar'])) {
+      $user2['avatar'] = $config['defaultAvatar'];
     }
 
 
