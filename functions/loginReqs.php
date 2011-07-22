@@ -212,7 +212,7 @@ function processVBulletin3($user,$password) {
   }
 }
 
-function processVBulletin4($user,$password) {
+function processVBulletin4($user,$password) {error_log(print_r($user,true));
   global $forumTablePrefix;
 
   if (!$user['userId']) { // The user does not exists

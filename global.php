@@ -218,7 +218,7 @@ if ($banned && $apiRequest) { // A blanket die for the API when the user is bann
 }
 
 if ($compressOutput && $apiRequest) { // Compress Output for transfer if configured to, and if we are outputting data from the API (file downloads, interfaces, etc. don't apply).
-  ob_start(fim_htmlCompact);
+  ob_start('fim_htmlCompact');
 }
 
 

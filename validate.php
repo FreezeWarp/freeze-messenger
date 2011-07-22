@@ -55,7 +55,11 @@ $password = '';
 $sessionHash = '';
 $session = '';
 
-
+$loginDefs['syncMethods'] = array(
+  'phpbb',
+  'vbulletin3',
+  'vbulletin4',
+);
 
 
 
@@ -147,22 +151,26 @@ elseif ((int) $anonymousUser >= 1 && isset($_REQUEST['apiLogin'])) { // Unregist
 
 $tableDefinitions = array(
   'users' => array(
-    'vbulletin' => 'user',
+    'vbulletin3' => 'user',
+    'vbulletin4' => 'user',
     'phpbb' => 'users',
     'vanilla' => '',
   ),
   'adminGroups' => array(
-    'vbulletin' => 'usergroup',
+    'vbulletin3' => 'usergroup',
+    'vbulletin4' => 'usergroup',
     'phpbb' => '',
     'vanilla' => '',
   ),
   'socialGroups' => array(
-    'vbulletin' => 'socialgroup',
+    'vbulletin3' => 'socialgroup',
+    'vbulletin4' => 'socialgroup',
     'phpbb' => 'groups',
     'vanilla' => '',
   ),
   'socialGroupMembers' => array(
-    'vbulletin' => 'socialgroupmember',
+    'vbulletin3' => 'socialgroupmember',
+    'vbulletin4' => 'socialgroupmember',
     'phpbb' => 'user_group',
     'vanilla' => '',
   ),
@@ -170,7 +178,7 @@ $tableDefinitions = array(
 
 $columnDefinitions = array(
   'users' => array(
-    'vbulletin' => array(
+    'vbulletin3' => array(
       'userId' => 'userid',
       'userName' => 'username',
       'userGroup' => 'displaygroupid',
@@ -178,6 +186,17 @@ $columnDefinitions = array(
       'timeZone' => 'timezoneoffset',
       'options' => 'options',
       'password' => 'password',
+      'salt' => 'salt',
+    ),
+    'vbulletin4' => array(
+      'userId' => 'userid',
+      'userName' => 'username',
+      'userGroup' => 'displaygroupid',
+      'allGroups' => 'membergroupids',
+      'timeZone' => 'timezoneoffset',
+      'options' => 'options',
+      'password' => 'password',
+      'salt' => 'salt',
     ),
     'phpbb' => array(
       'userId' => 'user_id',
@@ -200,7 +219,13 @@ $columnDefinitions = array(
     ),
   ),
   'adminGroups' => array(
-    'vbulletin' => array(
+    'vbulletin3' => array(
+      'groupId' => 'usergroupid',
+      'groupName' => 'title',
+      'startTag' => 'opentag',
+      'endTag' => 'closetag',
+    ),
+    'vbulletin4' => array(
       'groupId' => 'usergroupid',
       'groupName' => 'title',
       'startTag' => 'opentag',
@@ -214,7 +239,11 @@ $columnDefinitions = array(
     ),
   ),
   'socialGroups' => array(
-    'vbulletin' => array(
+    'vbulletin3' => array(
+      'groupId' => 'groupid',
+      'groupName' => 'name',
+    ),
+    'vbulletin4' => array(
       'groupId' => 'groupid',
       'groupName' => 'name',
     ),
@@ -227,7 +256,13 @@ $columnDefinitions = array(
     ),
   ),
   'socialGroupMembers' => array(
-    'vbulletin' => array(
+    'vbulletin3' => array(
+      'groupId' => 'groupid',
+      'userId' => 'userid',
+      'type' => 'type',
+      'validType' => 'member',
+    ),
+    'vbulletin4' => array(
       'groupId' => 'groupid',
       'userId' => 'userid',
       'type' => 'type',
@@ -509,7 +544,7 @@ if ($valid) { // If the user is valid, process their preferrences.
   if ($noSync || $loginConfig['method'] == 'vanilla') {
 
   }
-  elseif ($loginConfig['method'] == 'phpbb' || $loginConfig['method'] == 'vbulletin') {
+  elseif (in_array($loginConfig['method'],$loginDefs['syncMethods'])) {
     $user2 = $user; // Create a copy of user, which will later be unset.
     unset($user); // Unset user, so we don't have to worry about collision.
 
@@ -591,7 +626,8 @@ if ($valid) { // If the user is valid, process their preferrences.
 
     switch ($loginConfig['method']) {
 
-      case 'vbulletin':
+      case 'vbulletin3':
+      case 'vbulletin4':
       if ($user2['options'] & 64) {
         if (date('I')) {
           $user2['timeZone']++; // DST is autodetect. We'll just set it by hand.
