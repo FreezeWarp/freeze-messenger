@@ -110,11 +110,11 @@ switch ($request['action']) {
   $userData = $slaveDatabase->getUser($request['userId']);
   $roomData = $slaveDatabase->getRoom($request['roomId']);
 
-  if (!$userData) {
+  if (!$userData['userId']) {
     $errStr = 'baduser';
     $errDesc = 'The room specified is not valid.';
   }
-  elseif (!$roomData) {
+  elseif (!$roomData['roomId']) {
     $errStr = 'badroom';
     $errDesc = 'The room specified is not valid.';
   }
@@ -154,7 +154,7 @@ switch ($request['action']) {
     );
 
     require_once('../functions/parserFunctions.php');
-    fim_sendMessage('/me kicked ' . $userData['userName'],$user,$room);
+    fim_sendMessage('/me kicked ' . $userData['userName'],$user,$roomData);
 
     $xmlData['moderate']['response']['success'] = true;
   }

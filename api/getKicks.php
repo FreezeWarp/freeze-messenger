@@ -219,12 +219,12 @@ if (is_array($kicks)) {
             'userFormatStart' => (string) $kick['kickerFormatStart'],
             'userFormatEnd' => (string) $kick['kickerFormatEnd'],
           ),
-          'length' => (int) $kick['length'],
+          'length' => (int) $kick['klength'],
 
-          'set' => (int) $kick['time'],
-          'setFormatted' => (string) fim_date(false,$kick['time']),
-          'expires' => (int) ($kick['set'] + $kick['length']),
-          'expiresFormatted' => (string) fim_date(false,$kick['time'] + $kick['length']),
+          'set' => (int) $kick['ktime'],
+          'setFormatted' => (string) fim_date(false,$kick['ktime']),
+          'expires' => (int) ($kick['ktime'] + $kick['klength']),
+          'expiresFormatted' => (string) fim_date(false,$kick['ktime'] + $kick['klength']),
         );
 
         ($hook = hook('getKicks_eachKick') ? eval($hook) : '');

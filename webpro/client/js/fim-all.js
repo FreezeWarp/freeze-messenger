@@ -1510,6 +1510,34 @@ var standard = {
     return false;
   },
 
+  unkick : function(userId, roomId) {
+    $.post(directory + 'api/moderate.php','action=unkickUser&userId=' + userId + '&roomId=' + roomId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
+      var errStr = $(xml).find('errStr').text().trim(),
+        errDesc = $(xml).find('errDesc').text().trim();
+
+      switch (errStr) {
+        case '':
+        dia.info('The user has been unkicked.','Success');
+
+        $("#kickUserDialogue").dialog('close');
+        break;
+
+        case 'nopermission':
+        dia.error('You do not have permision to moderate this room.');
+        break;
+
+        case 'baduser':
+        case 'badroom':
+        dia.error('Odd error: the user or room sent do not seem to exist.');
+        break;
+      }
+
+      return false;
+    }); // Send the form data via AJAX.
+
+    return false;
+  },
+
 
   deleteMessage : function(messageId) {
     $.post(directory + 'api/editMessage.php','action=delete&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
@@ -2160,7 +2188,9 @@ popup = {
   viewUploads : function() {
     dia.full({
       content : '<table><thead><tr><td>Preview</td><td>File Name</td><td>File Size</td></tr></thead><tbody id="viewUploadsBody"></tbody></table>',
-      width: 1000,
+      width : 1000,
+      title : 'View My Uploads',
+      position : 'top',
       oF : function() {
         $.ajax({
           url: directory + 'api/getFiles.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
@@ -2438,6 +2468,7 @@ popup = {
       content : '<table class="center"><thead><tr class="hrow"><th>User</th><th>Rooms</th></tr></thead><tbody id="onlineUsers"><tr><td colspan="2">Loading...</td></tr></tbody></table>',
       title : 'Active Users',
       id : 'onlineDialogue',
+      position : 'top',
       width : 600,
       cF : function() {
         clearInterval(timers.t2);
@@ -2666,6 +2697,7 @@ popup = {
       content : '<form id="archiveSearch" action="#" method="get" style="text-align: center;"><input type="text" id="searchText" name="searchText" style="margin-left: auto; margin-right: auto; text-align: left;" /><button type="submit">Search</button></form><br /><br /><table class="center"><thead><tr><th style="width: 20%;">User</th><th style="width: 20%;">Time</th><th style="width: 60%;">Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><button id="archivePrev"><< Prev</button><button id="archiveNext">Next >></button>',
       title : 'Archive',
       id : 'archiveDialogue',
+      position : 'top',
       width : 1000,
       autoOpen : false
     });

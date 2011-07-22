@@ -2014,12 +2014,17 @@ var dia = {
       options.widthwidth = 600;
     }
 
+    if (!options.position) {
+      options.position = 'center';
+    }
+
     dialogOptions = {
       width: options.width,
       title: options.title,
       hide: "puff",
       modal: true,
       buttons : options.buttons,
+      position : options.position,
       autoOpen: autoOpen,
       open: function() {
         if (typeof options.oF !== 'undefined') {
