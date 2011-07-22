@@ -209,6 +209,7 @@ function fimParse_smilieParse($text) {
       )
     );
     $smilies = $smilies->getAsArray(true);
+    break;
 
     case 'phpbb':
     $smilies = $integrationDatabase->select(
@@ -234,7 +235,13 @@ function fimParse_smilieParse($text) {
     );
     $smilies = $smilies->getAsArray(true);
     break;
+
+    default:
+    $smilies = false;
+    break;
   }
+
+
 
   if (!is_array($smilies)) {
     return $text;
