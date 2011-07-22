@@ -280,8 +280,52 @@ LIMIT
             $sideTextFull[$i] = $this->recurseBothEither($data, $reverseAlias);
           }
           else {
+            /* Get the Proper Comparison Operator */
+            $comparisonTypes = array(
+              'e' => '=',
+              'ne' => '!=',
+              '!e' => '!=', // Alias of "ne"
+              'lt' => '<',
+              '!gte' => '>', // Alias of "lt"
+              'gt' => '>',
+              '!lte' => '>', // Alias of "gt"
+              'lte' => '<=',
+              '!gt' => '>=', // Alias of "lte"
+              'gte' => '>=',
+              '!lt' => '>=', // Alias of "gte"
+
+              'and' => '&',
+              '!xor' => '&', // Alias of "and"
+              'xor' => '^',
+              '!and' => '^', // Alias of "xorg"
+
+              'bitwise' => '&', // DEPRECATED
+              '!bitwise' => '^', // DEPRECATED
+
+              'in' => 'IN',
+              '!notin' => 'IN', // Alias of "in"
+              'notin' => 'NOT IN',
+              '!in' => 'NOT IN', // Alias of "notin"
+
+              'regexp' => 'REGEXP', // Applies extended POSIX regular expression to index. It is natively implemented in MySQL, PostGreSQL, and Oracle SQL databases. It is absent in MSSQL, and the status in VoltDB and SQLite is unknown.
+              'regex' => 'REGEXP', // Alias of "regexp"
+
+              'glob' => 'LIKE',
+              'like' => 'LIKE', // Alias of "glob"
+            );
+
+            if (isset($comparisonTypes[$data['type']])) {
+              $symbol = $comparisonTypes[$data['type']];
+            }
+            else {
+              throw new Exception('Unrecognized type operator.');
+            }
+
+
+
             /* Define Sides Array */
             $sideText = array('left','right');
+            $hackz = array();
 
 
             /* Properly Format Left & Right Sides */
@@ -362,7 +406,15 @@ LIMIT
                 }
                 else {
                   if (isset($reverseAlias[$data[$side]['value']])) {
-                    $sideText[$side] = $reverseAlias[$data[$side]['value']];
+                    if ($symbol == 'IN' && $data['left']['type'] == 'int' && $data['right']['type'] == 'column') { // This is just a quick hack. It will be rewritten in the future.
+                      $sideText[$side] = $reverseAlias[$data[$side]['value']];
+
+                      $hackz[($side == 'left' ? 'right' : 'left')] = '(' . $data[$side]['value'] . ',|' . $data[$side]['value'] . ')$';
+                      $hackz['symbol'] = 'REGEXP';
+                    }
+                    else {
+                      $sideText[$side] = $reverseAlias[$data[$side]['value']];
+                    }
                   }
                   else {
                     throw new Exception('Unrecognized column: ' . $data[$side]['value']);
@@ -372,46 +424,14 @@ LIMIT
               }
             }
 
-
-            /* Get the Proper Comparison Operator */
-            $comparisonTypes = array(
-              'e' => '=',
-              'ne' => '!=',
-              '!e' => '!=', // Alias of "ne"
-              'lt' => '<',
-              '!gte' => '>', // Alias of "lt"
-              'gt' => '>',
-              '!lte' => '>', // Alias of "gt"
-              'lte' => '<=',
-              '!gt' => '>=', // Alias of "lte"
-              'gte' => '>=',
-              '!lt' => '>=', // Alias of "gte"
-
-              'and' => '&',
-              '!xor' => '&', // Alias of "and"
-              'xor' => '^',
-              '!and' => '^', // Alias of "xorg"
-
-              'bitwise' => '&', // DEPRECATED
-              '!bitwise' => '^', // DEPRECATED
-
-              'in' => 'IN',
-              '!notin' => 'IN', // Alias of "in"
-              'notin' => 'NOT IN',
-              '!in' => 'NOT IN', // Alias of "notin"
-
-              'regexp' => 'REGEXP', // Applies extended POSIX regular expression to index. It is natively implemented in MySQL, PostGreSQL, and Oracle SQL databases. It is absent in MSSQL, and the status in VoltDB and SQLite is unknown.
-              'regex' => 'REGEXP', // Alias of "regexp"
-
-              'glob' => 'LIKE',
-              'like' => 'LIKE', // Alias of "glob"
-            );
-
-            if (isset($comparisonTypes[$data['type']])) {
-              $symbol = $comparisonTypes[$data['type']];
+            if (isset($hackz['left'])) {
+              $sideText['left'] = $hackz['left'];
             }
-            else {
-              throw new Exception('Unrecognized type operator.');
+            if (isset($hackz['right'])) {
+              $sideText['right'] = $hackz['right'];
+            }
+            if (isset($hackz['symbol'])) {
+              $symbol = $hackz['symbol'];
             }
 
 

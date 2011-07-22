@@ -145,40 +145,46 @@ $xmlData = array(
 /* Start Processing */
 switch($request['action']) {
   case 'create':
-  $roomLengthLimit = ($config['roomLengthLimit'] ? $config['roomLengthLimit'] : 20);
-
-  if (strlen($request['roomName']) == 0) {
-    $errStr = 'noName';
-    $errDesc = 'A room name was not supplied.';
-  }
-  elseif (strlen($request['roomName'] > $roomLengthLimit)) {
-    $errStr = 'longName';
-    $errDesc = 'The room name specified is too long.';
+  if (!$user['userDefs']['createRooms']) {
+      $errStr = 'sameUser';
+      $errDesc = 'The user specified is yourself.';
   }
   else {
-    if ($slaveDatabase->getRoom(false,$request['roomName']) !== false) {
-      $errStr = 'exists';
-      $errDesc = 'The room specified already exists.';
+    $roomLengthLimit = ($config['roomLengthLimit'] ? $config['roomLengthLimit'] : 20);
+
+    if (strlen($request['roomName']) == 0) {
+      $errStr = 'noName';
+      $errDesc = 'A room name was not supplied.';
+    }
+    elseif (strlen($request['roomName'] > $roomLengthLimit)) {
+      $errStr = 'longName';
+      $errDesc = 'The room name specified is too long.';
     }
     else {
-      $database->insert(array(
-        'roomName' => $request['roomName'],
-        'allowedGroups' => implode(',',$request['allowedGroups']),
-        'allowedUsers' => implode(',',$request['$allowedUsers']),
-        'moderators' => implode(',',$request['$moderators']),
-        'owner' => (int) $user['userId'],
-        ),"{$sqlPrefix}rooms"
-      );
-
-      if ((int) $database->insertId) {
-        $xmlData['editRoom']['response']['insertId'] = $database->insertId;
+      if ($slaveDatabase->getRoom(false,$request['roomName']) !== false) {
+        $errStr = 'exists';
+        $errDesc = 'The room specified already exists.';
       }
       else {
-        $errStr = 'unknown';
-        $errDesc = 'Room created failed for unknown reasons.';
+        $database->insert(array(
+          'roomName' => $request['roomName'],
+          'allowedGroups' => implode(',',$request['allowedGroups']),
+          'allowedUsers' => implode(',',$request['$allowedUsers']),
+          'moderators' => implode(',',$request['$moderators']),
+          'owner' => (int) $user['userId'],
+          ),"{$sqlPrefix}rooms"
+        );
+
+        if ((int) $database->insertId) {
+          $xmlData['editRoom']['response']['insertId'] = $database->insertId;
+        }
+        else {
+          $errStr = 'unknown';
+          $errDesc = 'Room created failed for unknown reasons.';
+        }
       }
     }
-  }
+    }
   break;
 
   case 'edit':
@@ -273,40 +279,81 @@ switch($request['action']) {
   break;
 
   case 'private':
-  if (strlen($request['userName']) > 0) {
-    $user2 = $slaveDatabase->getUser(false,$request['userName']); // Get the user information.
-  }
-  elseif ($reqest['userId'] > 0) {
-    $user2 = $slaveDatabase->getUser($request['userId']); // Get the user information.
+  if (!$user['userDefs']['privateRooms']) {
+    $errStr = 'nopermission';
+    $errDesc = 'You do not have permission to create private rooms.';
   }
   else {
-    $errStr = 'baduser';
-    $errDesc = 'That user does not exist.';
-  }
-
-  if (!$user2) { // No user exists.
-    $errStr = 'badUser';
-    $errDesc = 'That user does not exist.';
-  }
-  elseif ($user2['userId'] == $user['userId']) { // Don't allow the user to, well, talk to himself.
-    $errStr = 'sameUser';
-    $errDesc = 'The user specified is yourself.';
-  }
-  else {
-    $room = dbRows("SELECT * FROM {$sqlPrefix}rooms WHERE (allowedUsers = '$user[userId],$user2[userId]' OR allowedUsers = '$user2[userId],$user[userId]') AND options & 16"); // Query a group that would match the criteria for a private room. // TODO
-    if ($room) {
-      $xmlData['editRoom']['response']['insertId'] = $room['roomId']; // Already exists; return ID
+    if (strlen($request['userName']) > 0) {
+      $user2 = $slaveDatabase->getUser(false,$request['userName']); // Get the user information.
+    }
+    elseif ($reqest['userId'] > 0) {
+      $user2 = $slaveDatabase->getUser($request['userId']); // Get the user information.
     }
     else {
-      $database->insert(array(
-          'roomName' => "Private IM ($user[userName] and $user2[userName])",
-          'allowedUsers' => "$user[userId],$user2[userId]",
-          'options' => 48,
-          'bbcode' => 1,
-        ),"{$sqlPrefix}rooms"
-      );
+      $errStr = 'baduser';
+      $errDesc = 'That user does not exist.';
+    }
 
-      $xmlData['editRoom']['response']['insertId'] = $database->insertId;
+    if (!$user2['userId']) { // No user exists.
+      $errStr = 'badUser';
+      $errDesc = 'That user does not exist.';
+    }
+    elseif ($user2['userId'] == $user['userId']) { // Don't allow the user to, well, talk to himself.
+      $errStr = 'sameUser';
+      $errDesc = 'The user specified is yourself.';
+    }
+    else {
+      $room = $database->select(
+        array(
+          "{$sqlPrefix}rooms" => array(
+            'roomId',
+            'roomName',
+          ),
+        ),
+        array(
+          'both' => array(
+            array(
+              'type' => 'in',
+              'left' => array(
+                'type' => 'int',
+                'value' => $user['userId'],
+              ),
+              'right' => array(
+                'type' => 'column',
+                'value' => 'allowedUsers',
+              ),
+            ),
+            array(
+              'type' => 'in',
+              'left' => array(
+                'type' => 'int',
+                'value' => $user2['userId'],
+              ),
+              'right' => array(
+                'type' => 'column',
+                'value' => 'allowedUsers',
+              ),
+            ),
+          ),
+        ),
+      );
+      $room = $room->getAsArray(false);
+
+      if ($room) {
+        $xmlData['editRoom']['response']['insertId'] = $room['roomId']; // Already exists; return ID
+      }
+      else {
+        $database->insert(array(
+            'roomName' => "Private IM ($user[userName] and $user2[userName])",
+            'allowedUsers' => "$user[userId],$user2[userId]",
+            'options' => 48,
+            'bbcode' => 1,
+          ),"{$sqlPrefix}rooms"
+        );
+
+        $xmlData['editRoom']['response']['insertId'] = $database->insertId;
+      }
     }
   }
   break;

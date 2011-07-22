@@ -123,7 +123,7 @@ switch ($request['action']) {
     $errDesc = 'The user specified may not be kicked.';
 
     require_once('../functions/parserFunctions.php');
-    fim_sendMessage('/me fought the law and the law won.',$user,$roomData);
+    fim_sendMessage('/me fought the law and the law won.',$user,$roomData,'me');
   }
   elseif (!fim_hasPermission($roomData,$user,'moderate',true)) { // You have to be a mod yourself.
     $errStr = 'nopermission';
@@ -154,7 +154,7 @@ switch ($request['action']) {
     );
 
     require_once('../functions/parserFunctions.php');
-    fim_sendMessage('/me kicked ' . $userData['userName'],$user,$roomData);
+    fim_sendMessage('/me kicked ' . $userData['userName'],$user,$roomData,'me');
 
     $xmlData['moderate']['response']['success'] = true;
   }
@@ -185,7 +185,7 @@ switch ($request['action']) {
     ));
 
     require_once('../functions/parserFunctions.php');
-    fim_sendMessage('/me unkicked ' . $userData['userName'],$user,$roomData);
+    fim_sendMessage('/me unkicked ' . $userData['userName'],$user,$roomData,'me');
 
     $xmlData['moderate']['response']['success'] = true;
   }

@@ -38,6 +38,9 @@ if (!extension_loaded('apc')) { // APC is strongly recommended, but at least in 
 }
 
 
+ini_set('display_errors',0); // Ideally we would never have to worry about this, but sadly that's not the case. FIMv4 will hopefully make improvements.
+
+
 /* Version Requirement, Magic Quotes */
 $magicQuotesExist = false; // So we can keep track.
 
@@ -62,17 +65,19 @@ elseif (floatval(PHP_VERSION) <= 5.3) { // Removed outright in 5.4, may as well 
     }
   }
 
+
   if (ini_get('register_globals') === true) { // Note: This can not be altered with ini_set, so... we won't even bother.
     die('Register Globals is enabled. Please disable register_globals in php.ini. More information can be found in the <a href="http://www.php.net/manual/en/security.globals.php">PHP manual</a>, and in the documentation.');
   }
+
 
   if (!$magicQuotesExist) {
     apc_store('fim_sanity',true,0); // Avoid future slowdown (though it is rather negligible).
   }
 }
 
-// Remove in FIM4
-if(!defined('__DIR__')) {
+
+if(!defined('__DIR__')) { // Remove in FIM4
   $iPos = strrpos(__FILE__, "/");
   define("__DIR__", substr(__FILE__, 0, $iPos) . "/");
 }
@@ -94,7 +99,10 @@ if (isset($apiRequest)) {
 }
 
 
-//error_reporting(E_ALL ^ E_NOTICE); // Report all errors, except those of the "Notice" type.
+
+/* Blanket Defaults
+ * Some of these really don't belong here... */
+
 date_default_timezone_set('GMT'); // Set the timezone to GMT.
 //$errorHandlerOriginal = set_error_handler("errorHandler"); // Error Handler
 
@@ -107,48 +115,85 @@ $templates = array();
 $templateVars = array();
 $cacheKicks = array();
 
+
+
+/* Constants
+ * These are most beneficial to third-party plugins. */
+
 define("FIM_VERSION","3.0"); // Version to be used by plugins if needed.
 define("DB_BACKEND","MYSQL"); // Database backend to be used by plugins if needed; in the future other backends will be supported, and if the defined database class for whatever reason won't do, this can be used to also support others. At present, PostGreSQL is the only for-sure future backend to be supported. Definite values, if they are to be supported: "MSSQL", "ORACLE", "POSTGRESQL"
 define("DB_DRIVER","MYSQL"); // Drive used for connection to the database. This may be totally useless to plugins, but again for future compatibility is included; other possible example values: "MYSQLi", "PDO" (actually, it would prolly be more useful to plugin authors of a future version wishing to support old versions)
 define("FIM_LANGUAGE","EN_US"); // No plans to change this exist, but again, just in case...
 
+
+
+
+/* Legacy Code
+ * I was too laxy to rewrite stuff. */
+
 $sqlPrefix = $dbConfig['vanilla']['tablePrefix']; // It's more sane this way...
 $forumTablePrefix = $dbConfig['integration']['tablePreix'];
+
+
+
+
+/* Language */
 
 if (!isset($defaultLanguage)) { // The defaultLanguage flag was created with the WebPro interface in mind, however it's a good one for all people to have (as with the template and phrase tables). Likewise, it could even be used in the API in theory, but... meh. Anyway, even if set to anything other than en, don't expect much (so far as the WebPro interface goes).
   $defaultLanguage = 'en';
 }
 
 
+
+
+
+///* Database Stuff *///
+
+/* If the connections are the same, do not make multiple below. */
 if ($dbConnect['core'] == $dbConnect['integration']) {
   $integrationConnect = false;
 }
+else {
+  $integrationConnect = true;
+}
+
 if ($dbConnect['core'] == $dbConnect['slave']) {
   $slaveConnect = false;
 }
+else {
+  $slaveConnect = true;
+}
 
 
+/* Connect to the Main Database */
 $database = new fimDatabase;
-if (!$database->connect($dbConnect['core']['host'],$dbConnect['core']['username'],$dbConnect['core']['password'],$dbConnect['core']['database'])) { // Connect to MySQL
+if (!$database->connect($dbConnect['core']['host'],$dbConnect['core']['username'],$dbConnect['core']['password'],$dbConnect['core']['database'])) {
   die('Could not connect to the database: ' . $database->error . '; the application has exitted.'); // Die to prevent further execution.
 }
 
+
+/* Connect to the Integration DB
+ * On the whole, the product was designed such that all tables are in one database, but for the advanced users out there... */
 if ($integrationConnect) {
   $integrationDatabase = new fimDatabase;
 
   if (!$database->connect($dbConnect['integration']['host'],$dbConnect['integration']['username'],$dbConnect['integration']['password'],$dbConnect['integration']['database'])) { // Connect to MySQL
-    die('Could not connect to the integration database: ' . $database->error . '; the application has exitted.'); // Die to prevent further execution.
+    die('Could not connect to the integration database: ' . $database->error . '; the application has exitted.');
   }
 }
 else {
   $integrationDatabase = $database;
 }
 
+
+/* Connect to the DB Slave
+ * Unfortunately, this can not be reliably used in v3. It will more of a focus in the future.
+ * Still, if you do use it, it can ease load. */
 if ($slaveConnect) {
   $slaveDatabase = new fimDatabase;
 
   if (!$database->connect($dbConnect['slave']['host'],$dbConnect['slave']['username'],$dbConnect['slave']['password'],$dbConnect['slave']['database'])) { // Connect to MySQL
-    die('Could not connect to the slave database: ' . $database->error . '; the application has exitted.'); // Die to prevent further execution.
+    die('Could not connect to the slave database: ' . $database->error . '; the application has exitted.');
   }
 }
 else {
@@ -156,14 +201,27 @@ else {
 }
 
 
-unset($dbConnect); // Security!
+
+unset($dbConnect); // There is no reason the login credentials should still be active. A variety of exploits could take advantage of this otherwise -- buffer overflow, issues in plugins, templates, and so-fourth. If anyone knows about the vBulletin 3.8.6 mess... you know what I'm talking about.
 
 
-if ($compressOutput) { // Compress Output for transfer if configured to.
+
+
+
+///* Other Stuff *///
+
+require_once(__DIR__ . '/validate.php'); // This is where all the user validation stuff occurs.
+
+
+if ($banned && $apiRequest) { // A blanket die for the API when the user is banned.
+  die();
+}
+
+if ($compressOutput && $apiRequest) { // Compress Output for transfer if configured to, and if we are outputting data from the API (file downloads, interfaces, etc. don't apply).
   ob_start(fim_htmlCompact);
 }
 
-require_once(__DIR__ . '/validate.php'); // User Validation
+
 
 
 
@@ -217,6 +275,8 @@ if (isset($reqPhrases)) {
 }
 
 
+
+
 ///* Get Code Hooks *///
 
 if (isset($reqHooks)) {
@@ -249,6 +309,8 @@ if (isset($reqHooks)) {
     }
   }
 }
+
+
 
 
 

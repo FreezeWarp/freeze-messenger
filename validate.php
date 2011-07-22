@@ -1082,6 +1082,7 @@ if ($api) {
 
       'userPermissions' => $user['userDefs'],
       'adminPermissions' => $user['adminDefs'],
+      'banned' => $banned,
     ),
   );
 

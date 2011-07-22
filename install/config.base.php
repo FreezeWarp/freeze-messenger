@@ -16,29 +16,6 @@
 
 
 
-
-/* If you have no idea what "PHP" or "MySQL" is...
- * We strongly encourage you to ask a friend who may know a thing or two to help.
- * Or, better yet, why not just use that handy-dandy installation tool?
- * If you are editing post-installation or for some reason trying without the tool, a few pointers:
- -- Arrays must be formatted properly. They will generally look something like this:
-  array(
-    'a' => 1,
-    3 => 'b',
-    '22' => 99,
-  );
-
-  Using a "=" in place of a "=>" won't work, and forgetting to add a comma is a big no-no.
-
- --
-*/
-
-
-/* If you do... sorry 'bout all the verboisity. */
-
-
-
-
 ///* MySQL Login *///
 
 /* $sqlHost
@@ -81,28 +58,19 @@ $dbConfig['integration']['tablePreix'] = '';
 
 ///* Forum Integration *///
 
-/* $loginMethod
+/* $loginConfig['method']
  * The method used for forum-integration.
  * If you are not integrating with a forum, use "vanilla".
  * Otherwise, "phpbb", "vbulletin3", and "vbulletin4" are supported by default. */
 $loginConfig['method'] = 'vanilla';
 
-/* $forumUrl
+/* $loginConfig['url']
  * The URL of the forum you will be integrating with.
  * If not using integration (login method vanilla), you may leave this blank.
  * Otherwise, you are strongly encouraged to specify the accurate URL (such as http://example.com/forums/). */
 $loginConfig['url'] = 'http://example.com/forums/'; // The URL of the forum being used.
 
-/* $brokenUsers
- * An array of userIds whom are considered "broken" or not allowed authentication.
- * This is mainly used because of PHPBB's several pre-added users such as bots.
- * All autoadded users, aside from yourself, should be on this list.
- * As of version 3.0.8 (and possibly others), the default will work.
- * For vBulletin and Vanilla, this does not need to be changed.
- * Finally, note that this may not really be needed. We're not sure yet. */
-$loginConfig['brokenUsers'] = array();
-
-/* $superUsers
+/* $loginConfig['superUsers']
  * A list of userIds who have full control over the software.
  * In general, this should include at least yourself. Thus, 1 for vBulletin and Vanilla, and 2 for PHPBB. */
 $loginConfig['superUsers'] = array();
@@ -178,7 +146,7 @@ $enabledInterfaces = array(
 );
 
 /* $defaultInterface
- * THe default interface used when no other is found. */
+ * The default interface used when no other is found. */
 $defaultInterface = 'webpro';
 
 /* $disableWeb
@@ -222,9 +190,8 @@ $userPermissions = array(
 
 /* $compressOutput
  * Set this to true to enable "shrunk" output.
- * This is great for servers that don't have GZIP enabled, and still beneficial otherwise. It does, however, result in slightly increased server load.
- * Note: Setting this to true will inevitably break some file downloads (file.php). This will be fixed if the directive is supported in a future version. */
-$compressOutput = false; // Set this to off to avoid compacting PHP-generated HTML and XML output.
+ * This is great for servers that don't have GZIP enabled, and still beneficial otherwise. It does, however, result in slightly increased server load. */
+$compressOutput = true; // Set this to off to avoid compacting PHP-generated HTML and XML output.
 
 /* $disableTopic
  * Set to true to disable the changing of room topics.
@@ -246,31 +213,31 @@ $longPolling = false;
 /* $anonymousUser
  * If specified, a single user can be used to allow all unregistered / not-logged in to post messages.
  * These users will be appended a number (stored in their session hash but lost quickly) to distinguish between themselves.
- * Leave false to not enable this feature. */
+ * Leave false to not enable this feature.
+ * This feature will become first-rate in FIMv5, or possibly as soon as FIMv4. */
 $anonymousUser = 0;
 
 /* $config['fullTextArchive']
  * This enables full text archive searching.
  * Like all $config directives, it will be moved to the database in v4.
- * This feature is completely stable, but is also VERY slow on large installations. It is not optimized, but could still work. */
+ * This feature is completely stable, but is also VERY slow on large installations. It is not optimized, but could still work. FIMv4 will most likely land full optimization of this feature, and use it by default. */
 $config['fullTextArchive'] = false;
 
 /* $config['cacheKicks']
- * This enables APC caching of kicked users.
+ * This enables APC caching of kicked users, and is a preview of FIMv4's use of APC.
  * This feature is mostly stable, SIGNIFICANTLY reduces the number of queries required at each page load, but on large installations could fill up the APC cache, or be used as an attack vector to do so (we're not sure).
  * Note that this is normally stored in a memory table anyway, and thus the speed boost is normally not that noticable. However, the reduction of queries can be very helpful for large installations.  */
 $config['cacheKicks'] = false;
 
 /* $config['cacheKicksRefresh']
  * This is the time (in seconds) after which the kicks will be refreshed if cached.
- * 60 seconds is a fairly sane default.*/
+ * 60 seconds is a fairly sane default. */
 $config['cacheKicksRefresh'] = 60;
 
 /* $config['searchWordMinimum']
  * This alters the minimum length of search in the archives.
  * Smaller lengths will dramatically increase the server power needed.
- * Specify "-1" to disable archive searching entirely (this may be useful if you are worried about its lack of encryption).
- * NOTE: The archive search feature is not yet stable. It will be in the FIM3 stable release ("FIM3GOLD"). */
+ * Specify "-1" to disable archive searching entirely (this may be useful if you are worried about its lack of encryption). */
 $config['searchWordMinimum'] = 4;
 
 $config['searchWordMaximum'] = 10;

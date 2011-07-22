@@ -935,7 +935,8 @@ var standard = {
             loginText = unxml($(xml).find('loginText').text().trim()),
             valid = unxml($(xml).find('valid').text().trim()),
             userName = unxml($(xml).find('userData > userName').text().trim()),
-            defaultRoomId = Number($(xml).find('defaultRoomId').text().trim());
+            defaultRoomId = Number($(xml).find('defaultRoomId').text().trim()),
+            banned = (Number($(xml).find('banned').text().trim()) > 0 ? true : false);
 
           userId = Number($(xml).find('userData > userId').text().trim());
           anonId = Number($(xml).find('anonId').text().trim());
@@ -954,7 +955,6 @@ var standard = {
           userPermissions.privateRoom = (Number($(xml).find('userPermissions > privateRooms').text().trim()) > 0 ? true : false);
           userPermissions.general = (Number($(xml).find('userPermissions > allowed').text().trim()) > 0 ? true : false);
 
-
           adminPermissions.modPrivs = (Number($(xml).find('adminPermissions > modPrivs').text().trim()) > 0 ? true : false);
           adminPermissions.modCore = (Number($(xml).find('adminPermissions > modCore').text().trim()) > 0 ? true : false);
           adminPermissions.modUsers = (Number($(xml).find('adminPermissions > modUsers').text().trim()) > 0 ? true : false);
@@ -964,11 +964,24 @@ var standard = {
           adminPermissions.modHooks = (Number($(xml).find('adminPermissions > modHooks').text().trim()) > 0 ? true : false);
 
 
+          if (banned) { // The user has been banned, so pretty much nothing will work. In some respects, this really only exists for IP bans, but meh.
+            dia.error('You have been banned. You will not be able to do anything.');
 
-          if (valid === 'true') {
+            userPermissions.createRoom = false;
+            userPermissions.privateRoom = false;
+            userPermissions.general = false;
 
+            adminPermissions.modPrivs = false;
+            adminPermissions.modCore = false;
+            adminPermissions.modUsers = false;
+            adminPermissions.modTemplates = false;
+            adminPermissions.modImages = false;
+            adminPermissions.modCensor = false;
+            adminPermissions.modHooks = false;
+          }
+          else if (valid === 'true') {
             if (options.showMessage) {
-              /* Display Dialog to Notify User of Being Logged In */
+              // Display Dialog to Notify User of Being Logged In
               if (!userPermissions.general) {
                 dia.info('You are now logged in as ' + userName + '. However, you are not allowed to post and have been banned by an administrator.','Logged In');
               }
@@ -977,15 +990,11 @@ var standard = {
               }
             }
 
-
-
             $('#loginDialogue').dialog('close'); // Close any open login forms.
 
             console.log('Login valid. Session hash: ' + sessionHash + '; User ID: ' + userId);
           }
-
           else {
-
             switch (loginFlag) {
               case 'INVALID_LOGIN':
               dia.error("The server did not accept the login, but did not specify why.")
@@ -3109,7 +3118,58 @@ function contextMenuParse() {
       case 'url':
       src = $(el).attr('src');
 
-      dia.info('<img src="' + src + '" style="max-width: 550px; max-height: 550px;" /><br /><br /><input type="text" value="' + src +  '" style="width: 550px;" />','Copy Image URL');
+      dia.full({
+        title : 'Copy Image URL',
+        content : '<img src="' + src + '" style="max-width: 550px; max-height: 550px;" /><br /><br /><input type="text" value="' + src +  '" style="width: 550px;" />',
+        width : 800
+      });
+      break;
+
+      case 'delete':
+      dia.confirm({
+        text : 'Are you sure you want to delete this message?',
+        'true' : function() {
+          standard.deleteMessage(postid);
+
+          $(el).parent().fadeOut();
+        }
+      });
+      break;
+
+      case 'link': // TODO
+      dia.info('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + $('body').attr('data-roomId') + '#message=' + postid + '" />','Link to This Message');
+      break;
+    }
+
+    return false;
+  });
+
+  $('.messageLine .messageText a').contextMenu({
+    menu: 'messageMenu'
+  },
+  function(action, el) {
+    var postid = $(el).attr('data-messageid'),
+      src = '';
+
+    switch(action) {
+      case 'url':
+      src = $(el).attr('href');
+
+      dia.full({
+        title : 'Copy URL',
+        content : '<img src="' + src + '" style="max-width: 550px; max-height: 550px;" /><br /><br /><input type="text" value="' + src +  '" style="width: 550px;" />',
+        width : 800
+      });
+      break;
+
+      case 'sandbox':
+      src = $(el).attr('href');
+
+      dia.full({
+        title : 'View Sandboxed',
+        content : '<img src="' + src + '" style="max-width: 550px; max-height: 550px;" /><br /><br /><input type="text" value="' + src +  '" style="width: 550px;" />',
+        width : 800
+      });
       break;
 
       case 'delete':
