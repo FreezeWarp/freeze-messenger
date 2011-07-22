@@ -54,13 +54,21 @@ switch ($_REQUEST['phase']) {
     $(\'body\').css(\'height\',window.innerHeight);
   }
 
-  $(document).ready(resize);
+  $(document).ready(function() {
+    resize();
+    $(\'button, input[type=button], input[type=submit]\').button();
+  });
   window.onresize = resize;
 
   var alert = function(text) {
     dia.info(text,"Alert");
   };
   </script>
+  <style>
+  .ui-widget {
+    font-size: 12px;
+  }
+  </style>
   <!-- END Scripts -->
 </head>
 <body>
@@ -244,16 +252,16 @@ switch ($_REQUEST['phase']) {
   }
   else {
     // Get the MySQL version -- We will also check this when we create the tables.
-    $version = $mysqli->query('SELECT VERSION()',MYSQLI_USE_RESULT);
-    $version = $version->fetch_row();
-    $version = $version[0];
+    $version = $mysqli->query('SELECT VERSION()',MYSQLI_USE_RESULT) or die('Could not obtain MySQL version.');
+    $versionRow = $version->fetch_row();
     $version->free_result();
+    $version = $versionRow[0];
     $strippedVersion = ''; // We'll use this briefly.
 
 
     // Get Only The Good Parts of the Version (we could also use a REGEX, but meh)
     for ($i = 0; $i < strlen($version); $i++) {
-      if (is_int($version[$i]) || $version[$i] == '.') {
+      if (in_array($version[$i],array(0,1,2,3,4,5,6,7,8,9)) || $version[$i] == '.') {
         $strippedVersion .= $version[$i];
       }
       else {
@@ -262,7 +270,6 @@ switch ($_REQUEST['phase']) {
     }
 
     $strippedVersionParts = explode('.',$strippedVersion); // Divide the decimal versions into an array; e.g. 5.0.1 becomes [0] => 5, [1] => 0, [2] => 1
-
     if ($strippedVersionParts[0] <= 4) { // MySQL 4 is a no-go.
       die('You have attempted to connect to a MySQL version 4 database. MySQL 5.0.5+ is required for FreezeMessenger.');
     }
@@ -276,7 +283,7 @@ switch ($_REQUEST['phase']) {
 
     // I Think This Could be Rewritten with Better Flow, but I Dunno How
     if ($mysqli->select_db($database)) { // Select the database (see if it exists, etc.)
-      if (!$createdb) { // We're supposed to create it, but it already exists, so... (we could just ignore this fact and move on, but if the user assumes that no __table__ data would be overwritten by creating a new database, we could give him or her a bad surprise)
+      if ($createdb) { // We're supposed to create it, but it already exists, so... (we could just ignore this fact and move on, but if the user assumes that no __table__ data would be overwritten by creating a new database, we could give him or her a bad surprise)
         die('The MySQL database already exists, and can not be created.');
       }
     }
