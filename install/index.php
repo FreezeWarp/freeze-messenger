@@ -60,16 +60,18 @@ switch ($_REQUEST['phase']) {
   Still, there are some server requirements to using FreezeMessenger. Make sure all of the following are installed, then click "Next" below:<br />
 
   <ul>
-    <li>MySQL</li>
-    <li>PHP 5.0+ (' . (floatval(phpversion()) > 5.0 ? 'Looks Good' : 'Not Detected - Version ' . phpversion() . ' Installed') . ')</li>
+    <li>MySQL 5.0.5+</li>
+    <li>PHP 5.2+ (' . (floatval(phpversion()) > 5.2 ? 'Looks Good' : 'Not Detected - Version ' . phpversion() . ' Installed') . ')</li>
     <ul>
-      <li>MySQL Extension (' . (function_exists('mysql_connect') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
-      <li>Hash Extension (' . (function_exists('hash') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
-      <li>Date/Time Extension (' . (function_exists('date') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
-      <li>MCrypt Extension (' . (function_exists('mcrypt_encrypt') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
-      <li>Multibyte String Extension (' . (function_exists('mb_get_info') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
-      <li>Optional: APC Extension (' . (function_exists('apc_add') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
-      <li>Optional, but Required for Installation: MySQLi Extension (' . (function_exists('mysqli_connect') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+      <li>MySQL Extension (' . (extension_loaded('mysql') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+      <li>Hash Extension (' . (extension_loaded('hash') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+      <li>Date/Time Extension (' . (extension_loaded('date') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+      <li>MCrypt Extension (' . (extension_loaded('mcrypt') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+      <li>PCRE Extension (' . (extension_loaded('pcre') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+      <li>Multibyte String Extension (' . (extension_loaded('mbstring') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+      <li>SimpleXML Extension (' . (extension_loaded('simplexml') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+      <li>Optional, but Required in the Future: APC Extension (' . (extension_loaded('apc') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+      <li>Optional, but Required for Installation: MySQLi Extension (' . (extension_loaded('mysqli') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
     </ul>
     <li>Proper Permissions (for automatic configuration file generation)</li>
     <ul>
@@ -235,6 +237,33 @@ switch ($_REQUEST['phase']) {
     echo 'Connection Error: ' . mysqli_connect_error();
   }
   else {
+    // Get the MySQL version -- We will also check this when we create the tables.
+    $version = $mysqli->query('SELECT VERSION()',MYSQLI_USE_RESULT);
+    $version = $version->fetch_row();
+    $version = $version[0];
+    $version->free_result();
+    $strippedVersion = '';
+
+
+    // Get Only The Good Parts of the Version (we could also use a REGEX, but meh)
+    for ($i = 0; $i < strlen($version); $i++) {
+      if (is_int($version[$i]) || $version[$i] == '.') {
+        $strippedVersion .= $version[$i];
+      }
+      else {
+        break;
+      }
+    }
+
+    $strippedVersionParts = explode('.',$strippedVersion); // Divide the decimal versions into an array; e.g. 5.0.1 becomes [0] => 5, [1] => 0, [2] => 1
+
+    if ($strippedVersionParts[0] <= 4) { // MySQL 4 is a no-go.
+      die('You have attempted to connect to a MySQL version 4 database. MySQL 5.0.5+ is required for FreezeMessenger.');
+    }
+    elseif ($strippedVersionParts[0] == 5 && $strippedVersionParts[1] == 0 && $strippedVersionParts[2] <= 4) { // MySQL 5.0.0-5.0.4 is also a no-go (we require the BIT type, even though in theory we could work without it)
+      die('You have attempted to connect to an incompatible version of a MySQL version 5 database (MySQL 5.0.0-5.0.4). MySQL 5.0.5+ is required for FreezeMessenger.');
+    }
+
     echo 'success';
   }
   break;
@@ -284,14 +313,17 @@ switch ($_REQUEST['phase']) {
   $nooverwrite = urldecode($_GET['mysql_nooverwrite']);
 
   $mysqli = new mysqli($host,$userName,$password,$database);
-  $mysqli->query("SET NAMES utf8") or die('Hello');
+  $mysqli->query("SET NAMES utf8") or die('Could not Set UTF8 Encoding');
 
   if (mysqli_connect_error()) {
     echo 'Connection Error: ' . mysqli_connect_error();
   }
   else {
-    $databaseSafe = $mysqli->real_escape_string($database);
-    $showTables = $mysqli->query("SHOW TABLES FROM $databaseSafe",MYSQLI_USE_RESULT);
+    $databaseSafe = $mysqli->real_escape_string($database); // Escape the Database to Avoid any Mishaps
+
+
+    // Get Pre-Existing Tables So We Don't Overwrite Any of Them Later
+    $showTables = $mysqli->query("SHOW TABLES FROM $databaseSafe", MYSQLI_USE_RESULT);
 
     while ($table = $showTables->fetch_row()) {
       $mysqlTables[] = $table[0];
@@ -299,34 +331,165 @@ switch ($_REQUEST['phase']) {
 
     $showTables->free_result();
 
-    $importFiles = scandir('sqldump');
-    foreach ($importFiles AS $file) {
-      $queries = array();
 
-      if ($file == '.' || $file == '..') continue;
+    // Process the XML Data
+    $xmlData = new SimpleXMLElement(file_get_contents('dbSchema.xml'));
 
-      $contents = file_get_contents("sqldump/{$file}");
-      $contents = str_replace(array('{prefix}','{engine}'),array($prefix,'InnoDB'),$contents);
-      $table = $prefix . str_replace('.sql','',$file);
-
-      if (@in_array($table,$mysqlTables) && $nooverwrite) continue;
-      elseif (@in_array($table,$mysqlTables)) {
-        $newTable = $table . '~' . time();
-
-        if (!$mysqli->query("RENAME TABLE `$table` TO `$newTable`")) {
-          die("Could Not Rename Table '$table'");
+    // http://www.php.net/manual/en/ref.simplexml.php#103617
+    // Modified for addition recursion needed for the specific code used.
+    function xml2array($xmlObject, $out = array()) {
+      foreach ((array) $xmlObject as $index => $node) {
+        if (is_array($node)) {
+          foreach ($node AS $index2 => $node2) {
+            $node[$index2] = (is_object($node2)) ? xml2array($node2) : $node2;
+          }
         }
+
+        $out[$index] = (is_object($node)) ? xml2array($node) : $node;
       }
 
-      $queries = explode('-- DIVIDE', $contents);
+      return $out;
+    }
 
-      foreach ($queries AS $query) {
-        if (!trim($query)) continue;
+    $xmlData = xml2array($xmlData);
 
-        if (!$mysqli->query($query)) {
-          echo $query;
-          echo $mysqli->error;
-          die('Could Not Run Query');
+    if ((int) $xmlData['@attributes']['version'] != 3) {
+      die('The XML Data Source if For An Improper Version');
+    }
+    else {
+      $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
+
+      foreach ($xmlData['database']['table'] AS $table) { // Run through each table from the XML
+        switch ($table['@attributes']['type']) {
+          case 'general': // Use this normally, and for all perm. data
+          $engine = 'InnoDB';
+          break;
+          case 'memory': // Use this for data that is transient.
+          $engine = 'MEMORY';
+          break;
+        }
+
+        foreach ($table['column'] AS $column) {
+          $columns = array(); // We will use this to store the column fragments that will be implode()d into the final query.
+          $column = $column['@attributes'];
+
+          switch ($column['type']) {
+            case 'int':
+            $typePiece = 'INT(' . (int) $column['maxlen'] . ')';
+
+            if (!isset($column['maxlen'])) {
+              $typePiece = 'INT(8)'; // Sane default, really.
+            }
+            elseif ($coulmn['maxlen'] > 9) {// If the maxlen is greater than 9, we use LONGINT (0 - 9,223,372,036,854,775,807; 64 Bits / 8 Bytes)
+              $typePiece = 'BIGINT(' . (int) $column['maxlen'] . ')';
+            }
+            elseif ($column['maxlen'] > 7) { // If the maxlen is greater than 7, we use INT (0 - 4,294,967,295; 32 Bits / 4 Bytes)
+              $typePiece = 'INT(' . (int) $column['maxlen'] . ')';
+            }
+            elseif ($column['maxlen'] > 4) { // If the maxlen is greater than 4, we use MEDIUMINT (0 - 16,777,215; 24 Bits / 3 Bytes)
+              $typePiece = 'MEDIUMINT(' . (int) $column['maxlen'] . ')';
+            }
+            elseif ($column['maxlen'] > 2) { // If the maxlen is greater than 2, we use SMALLINT (0 - 65,535; 16 Bits / 2 Bytes)
+              $typePiece = 'SMALLINT(' . (int) $column['maxlen'] . ')';
+            }
+            else {
+              $typePiece = 'TINYINT(' . (int) $column['maxlen'] . ')';
+            }
+
+            if (isset($column['autoincrement'])) {
+              if ($column['autoincrement'] == true) {
+                $typePiece .= ' AUTO_INCREMENT'; // Ya know, that thing where it sets itself.
+              }
+            }
+            break;
+
+            case 'string':
+            if (!isset($column['maxlen'])) {
+              $typePiece = 'TEXT';
+            }
+            elseif ($coulmn['maxlen'] > 2097151) { // If the maxlen is greater than (16MB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
+              $typePiece = 'LONGTEXT(' . (int) $column['maxlen'] . ')';
+            }
+            elseif ($column['maxlen'] > 8191) { // If the maxlen is greater than (64KB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
+              $typePiece = 'MEDIUMTEXT(' . (int) $column['maxlen'] . ')';
+            }
+            elseif ($column['maxlen'] > 100) { // If the maxlen is greater than 100, we use TEXT since it is most likely more optimized.
+              $typePiece = 'TEXT(' . (int) $column['maxlen'] . ')';
+            }
+            else {
+              $typePiece = 'VARCHAR(' . (int) $column['maxlen'] . ')';
+            }
+
+            $typePiece .= ' CHARACTER SET utf8 COLLATE utf8_bin';
+            break;
+
+            case 'bitfield':
+            if (!isset($column['bits'])) {
+              $typePiece = 'BIT(8)'; // Sane default
+            }
+            else {
+              $rounds = 0;
+
+              for ($i = (int) $column['bits']; $i >= 1; $i /= 2) {
+                if (!is_int($i)) {
+                  die('(Developer Issues - Please Report) Invalid Bitfield');
+                }
+                else {
+                  $rounds++;
+                }
+              }
+
+              $typePiece = 'BIT(' . $rounds . ')'; // This is new to MySQL 5.0.5 (5.0.3 for MySIAM). In theory, INT would be just as good (but unoptimized), but meh.
+            }
+            break;
+
+            case 'time':
+            $typePiece = 'TIMESTAMP';
+            break;
+          }
+
+          if (isset($column['default'])) {
+            $typePiece .= 'DEFAULT "' . $mysqli->real_escape_string($column['comment']) . '"';
+          }
+
+          $columns[] = '`' . $column['name'] . '` ' . $typePiece . ' NOT NULL' . (isset($column['comment']) ? ' COMMENT "' . $mysqli->real_escape_string($column['comment']) . '"' : '');
+        }
+
+        $queries[] = 'CREATE TABLE IF NOT EXISTS `' . $prefix . $table['@attributes']['name']'` (
+  ' . implode("\n  ",$columns) . '
+  PRIMARY KEY (`bbcodeId`)
+) ENGINE="' . $engine . '" COMMENT="' . $mysqli-real_escape_string($table['@attributes']['comment']) . '" DEFAULT CHARSET="utf8";';*/
+      }
+
+      $importFiles = scandir('sqldump');
+      foreach ($importFiles AS $file) {
+        $queries = array();
+
+        if ($file == '.' || $file == '..') continue;
+
+        $contents = file_get_contents("sqldump/{$file}");
+        $contents = str_replace(array('{prefix}','{engine}'),array($prefix,'InnoDB'),$contents);
+        $table = $prefix . str_replace('.sql','',$file);
+
+        if (@in_array($table,$mysqlTables) && $nooverwrite) continue;
+        elseif (@in_array($table,$mysqlTables)) {
+          $newTable = $table . '~' . time();
+
+          if (!$mysqli->query("RENAME TABLE `$table` TO `$newTable`")) {
+            die("Could Not Rename Table '$table'");
+          }
+        }
+
+        $queries = explode('-- DIVIDE', $contents);
+
+        foreach ($queries AS $query) {
+          if (!trim($query)) continue;
+
+          if (!$mysqli->query($query)) {
+            echo $query;
+            echo $mysqli->error;
+            die('Could Not Run Query');
+          }
         }
       }
     }

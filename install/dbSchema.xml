@@ -2,38 +2,38 @@
 
 <dbSchema version="3.0">
   <database name="fimraw" charset="utf8">
-    <table name="bbcode" type="general">
+    <table name="bbcode" type="general" comment="Admin-defined regexes to use for formatting the HTML cache of messages.">
       <column name="bbcodeId" type="int" maxlen="10" autoincrement="true" comment="A unique identifier for the word." />
       <column name="bbcodeName" type="string" maxlen="100" comment="The name of the BBcode for display purposes." />
       <column name="options" type="bitfield" bits="16" comment="A bitfield containing column options:\n\n1 - Enabled (TRUE) | Disabled (FALSE)\n2 - Can be Toggled by Rooms (TRUE) | Cannot be Toggled by Rooms (FALSE)\n4 - Default to On For Rooms (TRUE) | Default to Off for Rooms (FALSE)" />
-      <column name="searchRegex" comment="The regex to use for BBcode searching." />
-      <column name="replacement" comment="The replacement text to be used." />
+      <column name="searchRegex" type="string" comment="The regex to use for BBcode searching." />
+      <column name="replacement" type="string" comment="The replacement text to be used." />
 
       <key name="bbcodeId" type="primary" />
     </table>
 
 
-    <table name="censorBlackWhiteLists" type="general">
-      <column name="listId" type="int" comment="The unique ID of the censor list." />
-      <column name="listId" type="int" maxlen="10" comment="The list ID which is being affected." />
+    <table name="censorBlackWhiteLists" type="general" comment="Room-defined censor list 'on/off'.">
+      <column name="listId" type="int" comment="The unique ID of the censor list being disabled/enabled." />
       <column name="roomId" type="int" maxlen="10" comment="The room ID the status is being applied to." />
       <column name="status" type="string" restrict="'block','unblock'" comment="The status of the list in regards to the room - either explicit block or explicit unblock." />
 
-      <key name="listId`,`roomId" type="primary" />
+      <key name="listId,roomId" type="primary" />
     </table>
 
 
-    <table name="censorLists">
+    <table name="censorLists" type="general" comment="Admin-defined text censor categories.">
       <column name="listId" type="int" maxlen="10" autoincrement="true" comment="The unique ID of the list." />
       <column name="listName" type="string" maxlen="400" comment="The name of the list. It is only used for user identification." />
       <column name="listType" type="string" restrict="'black','white'" comment="The list type - black to apply to no rooms automatically, and white to apply to all rooms automatically (opt-in vs. opt-out)" />
       <column name="options" type="int" maxlen="4" default="3" comment="A bitfield of specific options for the list." />
 
       <key name="listId" type="primary" />
+      <key name="options" type="index" />
     </table>
 
 
-    <table name="censorWords">
+    <table name="censorWords" type="general" comment="Admin-defined text censor items.">
       <column name="wordId" type="int" maxlen="10" autoincrement="true" comment="A unique identifier for the word." />
       <column name="listId" type="int" maxlen="10" comment="The ID of the list the word is filed under." />
       <column name="word" type="string" maxlen="1000" comment="The word text." />
@@ -45,7 +45,7 @@
     </table>
 
 
-    <table name="files">
+    <table name="files" type="general" comment="User-created files.">
       <column name="fileId" type="int" maxlen="10" autoincrement="true" comment="A unique ID for the file." />
       <column name="fileName" type="string" maxlen="255" comment="The file's name to be sent for downloading." />
       <column name="fileType" type="string" maxlen="255" comment="The file's mime-type/content-type." />
@@ -57,10 +57,11 @@
       <column name="deleted" type="string" restrict="'yes','no'" default="no" comment="Whether or not the file in question is deleted." />
 
       <key name="fileId" type="primary" />
+      <key name="userId" type="index" />
     </table>
 
 
-    <table name="fileVersions">
+    <table name="fileVersions" type="general" comment="User-created file contents and revisions.">
       <column name="versionId" type="int" maxlen="10" autoincrement="true" comment="A unique identifier for all file versions, regardless of each file." />
       <column name="fileId" type="int" maxlen="10" comment="The ID of the parent file." />
       <column name="time" type="time" default="__TIME__" update="__TIME__" comment="The time of the revision of the file was uploaded." />
@@ -76,7 +77,7 @@
     </table>
 
 
-    <table name="fonts">
+    <table name="fonts" type="general" comment="Admin-created fonts for use with default formatting.">
       <column name="fontId" type="int" maxlen="10" autoincrement="true" comment="The unique ID of the font." />
       <column name="fontName" type="string" maxlen="20" comment="4" />
       <column name="data" type="string" maxlen="500" comment="4" />
@@ -86,7 +87,7 @@
     </table>
 
 
-    <table name="groups">
+    <table name="groups" type="general" comment="Admin-created usergroups that can be used with vanilla logins.">
       <column name="groupId" type="int" maxlen="10" comment="The unique ID of the group." />
       <column name="groupName" type="string" maxlen="100" comment="The name of the group." />
       <column name="memberIds" type="string" maxlen="1000" comment="4" />
@@ -97,7 +98,7 @@
     </table>
 
 
-    <table name="hooks">
+    <table name="hooks" type="general" comment="Plugin-created code hooks.">
       <column name="hookId" type="int" maxlen="10" autoincrement="true" comment="A unique ID corrosponding to the hook. It is not used in retrieving hook contents (and thus could, for whatever reason, be changed on a dime)." />
       <column name="hookName" type="string" maxlen="40" comment="The hook's name, which will be used for most identification. These can be compounded (multiple rows with the same hookname can exist) if multiple entries exist for the hook." />
       <column name="code" type="string" maxlen="4294967296" comment="The code of the particular hook. It will be executed using PHP's EVAL." />
@@ -108,7 +109,7 @@
     </table>
 
 
-    <table name="kick">
+    <table name="kick" type="memory" note="This will be made a standard table in FIMv4 so that kicks don't get reset on system restart. We will instead use APC for proper caching." comment="Room-created temporary user bans.">
       <column name="userId" type="int" maxlen="10" comment="The ID of the user who has been kicked." />
       <column name="roomId" type="int" maxlen="10" comment="The ID of the room the kick is active in." />
       <column name="kickerid" type="int" maxlen="10" comment="The ID of the user who made the kick." />
@@ -121,7 +122,7 @@
     </table>
 
 
-    <table name="messages">
+    <table name="messages" type="general" comment="User-created messages.">
       <column name="messageId" type="int" maxlen="10" autoincrement="true" comment="The unique ID of the message." />
       <column name="userId" type="int" maxlen="10" comment="The ID of the user who made the message." />
       <column name="roomId" type="int" maxlen="10" comment="The ID of the room the message was made in." />
@@ -143,7 +144,7 @@
     </table>
 
 
-    <table name="messagesCached">
+    <table name="messagesCached" type="memory" comment="A cache of user-created messages for scalibility.">
       <column name="id" type="int" maxlen="10" autoincrement="true" comment="A unique (temporary) ID for the message cache entry." />
       <column name="messageId" type="int" maxlen="10" comment="The ID of the message." />
       <column name="roomId" type="int" maxlen="10" comment="The ID of the room the message is in." />
@@ -169,7 +170,7 @@
     </table>
 
 
-    <table name="modlog">
+    <table name="modlog" type="general" comment="A log of moderator actions.">
       <column name="id" type="int" maxlen="10" autoincrement="true" comment="A unique ID for the log entry." />
       <column name="userId" type="int" maxlen="10" comment="The user ID who performed the action." />
       <column name="time" type="time" default="__TIME__" comment="The time the action was performed on." />
@@ -181,7 +182,7 @@
     </table>
 
 
-    <table name="phrases">
+    <table name="phrases" type="general" comment="Phrases used by interface templates for smooth translations.">
       <column name="phraseId" type="int" maxlen="10" autoincrement="true" comment="A unique ID for the phrase" />
       <column name="phraseName" type="string" maxlen="50" comment="4" />
       <column name="text_en" type="string" maxlen="4294967296" comment="The text of the message in English." />
@@ -195,7 +196,7 @@
     </table>
 
 
-    <table name="ping">
+    <table name="ping" type="memory" comment="User online statuses.">
       <column name="userId" type="int" maxlen="10" comment="The ID of the user." />
       <column name="roomId" type="int" maxlen="10" comment="The ID of the room." />
       <column name="time" type="time" default="__TIME__" update="__TIME__" comment="The time of the ping." />
@@ -209,7 +210,7 @@
     </table>
 
 
-    <table name="rooms">
+    <table name="rooms" type="general" note="This will be partially overhauled in FIMv4 to seperate rooms and groups, the former represented by a unique ID and the latter specific between a small group of users." comment="User-created rooms/groups.">
       <column name="roomId" type="int" maxlen="11" autoincrement="true" comment="The unique ID for the room." />
       <column name="roomName" type="string" maxlen="50" comment="The name of the room." />
       <column name="roomTopic" type="string" maxlen="200" comment="The current topic of the room." />
@@ -230,99 +231,99 @@
     </table>
 
 
-    <table name="roomStats">
+    <table name="roomStats" type="general" comment="A cache for the number of posts made by different users in rooms.">
       <column name="userId" type="int" maxlen="10" comment="The ID of the user." />
       <column name="roomId" type="int" maxlen="10" comment="The ID of the room." />
       <column name="messages" type="int" maxlen="10" comment="The number of messages made by the user in the room." />
 
-        <key name="userId`,`roomId" type="primary" />
-      </table>
+      <key name="userId,roomId" type="primary" />
+    </table>
 
 
-      <table name="searchMessages">
-        <column name="messageId" type="int" maxlen="10" autoincrement="true" comment="The ID of the message." />
-        <column name="phraseId" type="string" maxlen="50" comment="The ID of the phrase found in the message." />
+    <table name="searchMessages" type="general" note="As of FIMv3B3 this is not as scalible as one might have hoped, though changes may be made further into the future, or at the latest in FIMv4" comment="A cache of messages containing search phrases.">
+      <column name="messageId" type="int" maxlen="10" autoincrement="true" comment="The ID of the message." />
+      <column name="phraseId" type="string" maxlen="50" comment="The ID of the phrase found in the message." />
 
-        <key name="messageId`,`phraseId" type="primary" />
-      </table>
-
-
-      <table name="searchPhrases">
-        <column name="phraseId" type="int" maxlen="10" autoincrement="true" comment="A unique ID corrosponding to the phrase name/text." />
-        <column name="phraseName" type="string" maxlen="50" comment="The name/text of the phrase." />
-
-        <key name="phraseId" type="primary" />
-        <key name="phraseName" type="unique" />
-      </table>
+      <key name="messageId,phraseId" type="primary" />
+    </table>
 
 
-      <table name="sessions">
-        <column name="sessionId" type="int" maxlen="10" autoincrement="true" comment="A unique ID corrosponding to all sessions. It is largely unused." />
-        <column name="userId" type="int" maxlen="10" comment="The ID of the user the session belongs to." />
-        <column name="anonId" type="int" maxlen="10" comment="A unique ID that can be used for anonymous users." />
-        <column name="time" type="time" default="__TIME__" comment="The time the session was last renewed." />
-        <column name="ip" type="string" maxlen="100" comment="4" />
-        <column name="browser" type="string" maxlen="300" comment="The useragent of the user of the session." />
-        <column name="magicHash" type="string" maxlen="100" comment="The session hash itself." />
+    <table name="searchPhrases" type="general" note="As of FIMv3B3 this is not as scalible as one might have hoped, though changes may be made further into the future, or at the latest in FIMv4" comment="A cache of search phrases to ease message searching in a scalible way.">
+      <column name="phraseId" type="int" maxlen="10" autoincrement="true" comment="A unique ID corrosponding to the phrase name/text." />
+      <column name="phraseName" type="string" maxlen="50" comment="The name/text of the phrase." />
 
-        <key name="sessionId" type="primary" />
-        <key name="magicHash" type="unique" />
-      </table>
+      <key name="phraseId" type="primary" />
+      <key name="phraseName" type="unique" />
+    </table>
 
 
-      <table name="templates">
-        <column name="templateId" type="int" maxlen="10" autoincrement="true" comment="The ID of the template." />
-        <column name="templateName" type="string" maxlen="50" comment="The name of the template, used for its retrievel." />
-        <column name="vars" type="string" maxlen="1000" comment="PHP variables that need to be accessed by the template." />
-        <column name="data" type="string" maxlen="4294967296" comment="The text/data associated with the template." />
+    <table name="sessions" type="memory" comment="Active user credentials.">
+      <column name="sessionId" type="int" maxlen="10" autoincrement="true" comment="A unique ID corrosponding to all sessions. It is largely unused." />
+      <column name="userId" type="int" maxlen="10" comment="The ID of the user the session belongs to." />
+      <column name="anonId" type="int" maxlen="10" comment="A unique ID that can be used for anonymous users." />
+      <column name="time" type="time" default="__TIME__" comment="The time the session was last renewed." />
+      <column name="ip" type="string" maxlen="100" comment="4" />
+      <column name="browser" type="string" maxlen="300" comment="The useragent of the user of the session." />
+      <column name="magicHash" type="string" maxlen="100" comment="The session hash itself." />
 
-        <key name="templateId" type="primary" />
-        <key name="templateName" type="index" />
-      </table>
-
-
-      <table name="uploadTypes">
-        <column name="typeId" type="int" maxlen="11" autoincrement="true" comment="The unique ID for the room." />
-        <column name="extension" type="string" maxlen="10" comment="The extension that will allow upload of files using these settings." />
-        <column name="mime" type="string" maxlen="200" comment="The content type to output files of this type as." />
-        <column name="maxSize" type="int" maxlen="10" comment="The maximum size (in bytes) files of this type can be." />
-        <column name="container" type="string" restrict="'video','image','audio','text','html','archive','other'" comment="The container that should be used to output the file. This is recognized by clients for best viewing." />
-
-        <key name="typeId" type="primary" />
-        <key name="extension" type="unique" />
-      </table>
+      <key name="sessionId" type="primary" />
+      <key name="magicHash" type="unique" />
+    </table>
 
 
-      <table name="users">
-        <column name="userId" type="int" maxlen="10" comment="The unique ID of the user." />
-        <column name="userName" type="string" maxlen="300" comment="The user's name." />
-        <column name="userGroup" type="int" maxlen="10" default="1" comment="The admin-set usergroup ID of the user." />
-        <column name="allGroups" type="string" maxlen="1000" comment="A comma-seperated list of the IDs of all admin-set groups the user is a part of. This is not used on PHPBB and Vanilla logins (both instead use socialGroups)." />
-        <column name="avatar" type="string" maxlen="1000" comment="4" />
-        <column name="profile" type="string" maxlen="1000" comment="4" />
-        <column name="socialGroups" type="string" maxlen="1000" comment="A comma-seperated list of the ids of all groups the user has joined." />
-        <column name="userFormatStart" type="string" maxlen="100" comment="HTML-formatting to be prepended to the user's name for its display." />
-        <column name="userFormatEnd" type="string" maxlen="100" comment="HTML-formatting to be appended to the user's name for its display." />
-        <column name="password" type="string" maxlen="32" comment="The hashed password of the user. It is only used on vanilla logins." />
-        <column name="joinDate" type="time" default="__TIME__" update="__TIME__" comment="The date the user joined. It may not be used on logins other than vanilla." />
-        <column name="birthDate" type="time" default="0" comment="The date of the user's birth, used for parental control settings." />
-        <column name="lastSync" type="time" default="0" comment="The date the userdata was last synced. This is not applicable for vanilla logins." />
-        <column name="defaultRoom" type="int" maxlen="10" default="1" comment="The user's default room." />
-        <column name="interface" type="string" maxlen="50" comment="4" />
-        <column name="favRooms" type="string" maxlen="1000" default="1" comment="A comma-seperated list of rooms the user has ranked as being favourites." />
-        <column name="watchRooms" type="string" maxlen="1000" comment="A comma-seperated list of rooms the user would like to be notified about when new messages are made" />
-        <column name="ignoreList" type="string" maxlen="1000" comment="4" />
-        <column name="status" type="int" maxlen="3" comment="The user's activity status." />
-        <column name="defaultFormatting" type="int" maxlen="10" comment="A bitfield corrosponding to the user's defaulting formatting (e.g. bold, italics) of all messages." />
-        <column name="defaultHighlight" type="string" maxlen="20" comment="The user's default highlight colour used for all messages." />
-        <column name="defaultColor" type="string" maxlen="20" comment="The user's default foreground colour used for all messages." />
-        <column name="defaultFontface" type="string" maxlen="100" comment="The fontface ID used for all of the user's messages." />
-        <column name="settings" type="int" maxlen="10" default="0" comment="A bitfield corrosponding to different user settings." />
-        <column name="userPrivs" type="int" maxlen="10" default="16" comment="A bitfield corrosponding to admin-set user priviledges." />
-        <column name="adminPrivs" type="int" maxlen="10" comment="A bitfield corrosponding to admin-set administrative priviledges." />
-        <column name="lang" type="string" maxlen="5" comment="4" />
+    <table name="templates" type="general" comment="Interface-defined templates.">
+      <column name="templateId" type="int" maxlen="10" autoincrement="true" comment="The ID of the template." />
+      <column name="templateName" type="string" maxlen="50" comment="The name of the template, used for its retrievel." />
+      <column name="vars" type="string" maxlen="1000" comment="PHP variables that need to be accessed by the template." />
+      <column name="data" type="string" maxlen="4294967296" comment="The text/data associated with the template." />
 
-        <key name="userId" type="primary" />
-      </table>
-    </database>
+      <key name="templateId" type="primary" />
+      <key name="templateName" type="index" />
+    </table>
+
+
+    <table name="uploadTypes" type="general" comment="Admin-defined mime types to corrospond to file types of uploaded files.">
+      <column name="typeId" type="int" maxlen="11" autoincrement="true" comment="The unique ID for the room." />
+      <column name="extension" type="string" maxlen="10" comment="The extension that will allow upload of files using these settings." />
+      <column name="mime" type="string" maxlen="200" comment="The content type to output files of this type as." />
+      <column name="maxSize" type="int" maxlen="10" comment="The maximum size (in bytes) files of this type can be." />
+      <column name="container" type="string" restrict="'video','image','audio','text','html','archive','other'" comment="The container that should be used to output the file. This is recognized by clients for best viewing." />
+
+      <key name="typeId" type="primary" />
+      <key name="extension" type="unique" />
+    </table>
+
+
+    <table name="users" type="general">
+      <column name="userId" type="int" maxlen="10" comment="The unique ID of the user." />
+      <column name="userName" type="string" maxlen="300" comment="The user's name." />
+      <column name="userGroup" type="int" maxlen="10" default="1" comment="The admin-set usergroup ID of the user." />
+      <column name="allGroups" type="string" maxlen="1000" comment="A comma-seperated list of the IDs of all admin-set groups the user is a part of. This is not used on PHPBB and Vanilla logins (both instead use socialGroups)." />
+      <column name="avatar" type="string" maxlen="1000" comment="4" />
+      <column name="profile" type="string" maxlen="1000" comment="4" />
+      <column name="socialGroups" type="string" maxlen="1000" comment="A comma-seperated list of the ids of all groups the user has joined." />
+      <column name="userFormatStart" type="string" maxlen="100" comment="HTML-formatting to be prepended to the user's name for its display." />
+      <column name="userFormatEnd" type="string" maxlen="100" comment="HTML-formatting to be appended to the user's name for its display." />
+      <column name="password" type="string" maxlen="32" comment="The hashed password of the user. It is only used on vanilla logins." />
+      <column name="joinDate" type="time" default="__TIME__" update="__TIME__" comment="The date the user joined. It may not be used on logins other than vanilla." />
+      <column name="birthDate" type="time" default="0" comment="The date of the user's birth, used for parental control settings." />
+      <column name="lastSync" type="time" default="0" comment="The date the userdata was last synced. This is not applicable for vanilla logins." />
+      <column name="defaultRoom" type="int" maxlen="10" default="1" comment="The user's default room." />
+      <column name="interface" type="string" maxlen="50" comment="4" />
+      <column name="favRooms" type="string" maxlen="1000" default="1" comment="A comma-seperated list of rooms the user has ranked as being favourites." />
+      <column name="watchRooms" type="string" maxlen="1000" comment="A comma-seperated list of rooms the user would like to be notified about when new messages are made" />
+      <column name="ignoreList" type="string" maxlen="1000" comment="4" />
+      <column name="status" type="int" maxlen="3" comment="The user's activity status." />
+      <column name="defaultFormatting" type="int" maxlen="10" comment="A bitfield corrosponding to the user's defaulting formatting (e.g. bold, italics) of all messages." />
+      <column name="defaultHighlight" type="string" maxlen="20" comment="The user's default highlight colour used for all messages." />
+      <column name="defaultColor" type="string" maxlen="20" comment="The user's default foreground colour used for all messages." />
+      <column name="defaultFontface" type="string" maxlen="100" comment="The fontface ID used for all of the user's messages." />
+      <column name="settings" type="int" maxlen="10" default="0" comment="A bitfield corrosponding to different user settings." />
+      <column name="userPrivs" type="int" maxlen="10" default="16" comment="A bitfield corrosponding to admin-set user priviledges." />
+      <column name="adminPrivs" type="int" maxlen="10" comment="A bitfield corrosponding to admin-set administrative priviledges." />
+      <column name="lang" type="string" maxlen="5" comment="4" />
+
+      <key name="userId" type="primary" />
+    </table>
+  </database>
 </dbSchema>
