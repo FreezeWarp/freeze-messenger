@@ -380,20 +380,31 @@ switch ($_REQUEST['phase']) {
             break;
 
             case 'string':
-            if (!isset($column['@attributes']['maxlen'])) {
-              $typePiece = 'TEXT';
-            }
-            elseif ($coulmn['maxlen'] > 2097151) { // If the maxlen is greater than (16MB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
-              $typePiece = 'LONGTEXT(' . (int) $column['@attributes']['maxlen'] . ')';
-            }
-            elseif ($column['@attributes']['maxlen'] > 8191) { // If the maxlen is greater than (64KB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
-              $typePiece = 'MEDIUMTEXT(' . (int) $column['@attributes']['maxlen'] . ')';
-            }
-            elseif ($column['@attributes']['maxlen'] > 100) { // If the maxlen is greater than 100, we use TEXT since it is most likely more optimized.
-              $typePiece = 'TEXT(' . (int) $column['@attributes']['maxlen'] . ')';
+            if (isset($column['@attributes']['restrict'])) {
+              $restrictValues = array();
+
+              foreach ((array) explode(',',$column['@attributes']['restrict']) AS $value) {
+                $restrictValues[] = '"' . $mysqli->real_escape_string($value) . '"';
+              }
+
+              $typePiece = 'ENUM(' . implode(',',$restrictValues) . ')';
             }
             else {
-              $typePiece = 'VARCHAR(' . (int) $column['@attributes']['maxlen'] . ')';
+              if (!isset($column['@attributes']['maxlen'])) {
+                $typePiece = 'TEXT';
+              }
+              elseif ($coulmn['maxlen'] > 2097151) { // If the maxlen is greater than (16MB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
+                $typePiece = 'LONGTEXT(' . (int) $column['@attributes']['maxlen'] . ')';
+              }
+              elseif ($column['@attributes']['maxlen'] > 8191) { // If the maxlen is greater than (64KB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
+                $typePiece = 'MEDIUMTEXT(' . (int) $column['@attributes']['maxlen'] . ')';
+              }
+              elseif ($column['@attributes']['maxlen'] > 100) { // If the maxlen is greater than 100, we use TEXT since it is most likely more optimized.
+                $typePiece = 'TEXT(' . (int) $column['@attributes']['maxlen'] . ')';
+              }
+              else {
+                $typePiece = 'VARCHAR(' . (int) $column['@attributes']['maxlen'] . ')';
+              }
             }
 
             $typePiece .= ' CHARACTER SET utf8 COLLATE utf8_bin';
@@ -414,7 +425,25 @@ switch ($_REQUEST['phase']) {
           }
 
           if (isset($column['@attributes']['default'])) {
-            $typePiece .= 'DEFAULT "' . $mysqli->real_escape_string($column['@attributes']['default']) . '"';
+            if ($column['@attributes']['default'] == '__TIME__') {
+              $column['@attributes']['default'] = 'NOW()';
+            }
+            else {
+              $column['@attributes']['default'] = '"' . $mysqli->real_escape_string($column['@attributes']['default']) . '"';
+            }
+
+            $typePiece .= " DEFAULT {$column['@attributes']['default']}";
+          }
+
+          if (isset($column['@attributes']['update'])) {
+            if ($column['@attributes']['update'] == '__TIME__') {
+              $column['@attributes']['update'] = 'NOW()';
+            }
+            else {
+              $column['@attributes']['update'] = '"' . $mysqli->real_escape_string($column['@attributes']['update']) . '"';
+            }
+
+            $typePiece .= " ON UPDATE {$column['@attributes']['update']}";
           }
 
           $columns[] = "`{$column['@attributes']['name']}` {$typePiece} NOT NULL" . (isset($column['@attributes']['comment']) ? ' COMMENT "' . $mysqli->real_escape_string($column['@attributes']['comment']) . '"' : '');

@@ -3,29 +3,29 @@
 <dbSchema version="3.0">
   <database name="fimraw" charset="utf8">
     <table name="bbcode" type="general" comment="Admin-defined regexes to use for formatting the HTML cache of messages.">
-      <column name="bbcodeId" type="int" maxlen="10" autoincrement="true" comment="A unique identifier for the word." />
-      <column name="bbcodeName" type="string" maxlen="100" comment="The name of the BBcode for display purposes." />
+      <column name="bbcodeId" type="int" maxlen="6" autoincrement="true" comment="A unique identifier for the word." />
+      <column name="bbcodeName" type="string" maxlen="40" comment="The name of the BBcode for display purposes." />
       <column name="options" type="bitfield" bits="3" comment="A bitfield containing column options." />
-      <column name="searchRegex" type="string" comment="The regex to use for BBcode searching." />
-      <column name="replacement" type="string" comment="The replacement text to be used." />
+      <column name="searchRegex" type="string" maxlen="1000" comment="The regex to use for BBcode searching." />
+      <column name="replacement" type="string" maxlen="1000" comment="The replacement text to be used." />
 
       <key name="bbcodeId" type="primary" />
     </table>
 
 
     <table name="censorBlackWhiteLists" type="general" comment="Room-defined censor list 'on/off'.">
-      <column name="listId" type="int" comment="The unique ID of the censor list being disabled/enabled." />
-      <column name="roomId" type="int" maxlen="10" comment="The room ID the status is being applied to." />
-      <column name="status" type="string" restrict="'block','unblock'" comment="The status of the list in regards to the room - either explicit block or explicit unblock." />
+      <column name="listId" type="int" maxlen="6" comment="The unique ID of the censor list being disabled/enabled." />
+      <column name="roomId" type="int" maxlen="6" comment="The room ID the status is being applied to." />
+      <column name="status" type="string" restrict="block,unblock" comment="The status of the list in regards to the room - either explicit block or explicit unblock." />
 
       <key name="listId,roomId" type="primary" />
     </table>
 
 
     <table name="censorLists" type="general" comment="Admin-defined text censor categories.">
-      <column name="listId" type="int" maxlen="10" autoincrement="true" comment="The unique ID of the list." />
-      <column name="listName" type="string" maxlen="400" comment="The name of the list. It is only used for user identification." />
-      <column name="listType" type="string" restrict="'black','white'" comment="The list type - black to apply to no rooms automatically, and white to apply to all rooms automatically (opt-in vs. opt-out)" />
+      <column name="listId" type="int" maxlen="6" autoincrement="true" comment="The unique ID of the list." />
+      <column name="listName" type="string" maxlen="40" comment="The name of the list. It is only used for user identification." />
+      <column name="listType" type="string" restrict="black,white" comment="The list type - black to apply to no rooms automatically, and white to apply to all rooms automatically (opt-in vs. opt-out)" />
       <column name="options" type="bitfield" bits="6" default="3" comment="A bitfield of specific options for the list (6 bits are alotted, but only three are used by default)." />
 
       <key name="listId" type="primary" />
@@ -34,11 +34,11 @@
 
 
     <table name="censorWords" type="general" comment="Admin-defined text censor items.">
-      <column name="wordId" type="int" maxlen="10" autoincrement="true" comment="A unique identifier for the word." />
-      <column name="listId" type="int" maxlen="10" comment="The ID of the list the word is filed under." />
-      <column name="word" type="string" maxlen="1000" comment="The word text." />
-      <column name="severity" type="string" restrict="'replace','warn','confirm','block'" default="replace" comment="The severity/type of word." />
-      <column name="param" type="string" maxlen="1000" comment="The action data for the word, used in multiple ways based on the word's severity." />
+      <column name="wordId" type="int" maxlen="6" autoincrement="true" comment="A unique identifier for the word." />
+      <column name="listId" type="int" maxlen="6" comment="The ID of the list the word is filed under." />
+      <column name="word" type="string" maxlen="100" comment="The word text." />
+      <column name="severity" type="string" restrict="replace,warn,confirm,block" default="replace" comment="The severity/type of word." />
+      <column name="param" type="string" maxlen="100" comment="The action data for the word, used in multiple ways based on the word's severity." />
 
       <key name="wordId" type="primary" />
       <key name="listId" type="index" />
@@ -46,15 +46,15 @@
 
 
     <table name="files" type="general" comment="User-created files.">
-      <column name="fileId" type="int" maxlen="10" autoincrement="true" comment="A unique ID for the file." />
+      <column name="fileId" type="int" maxlen="6" autoincrement="true" comment="A unique ID for the file." />
       <column name="fileName" type="string" maxlen="255" comment="The file's name to be sent for downloading." />
       <column name="fileType" type="string" maxlen="255" comment="The file's mime-type/content-type." />
       <column name="creationTime" type="time" default="__TIME__" comment="The date the file was uploaded." />
       <column name="userId" type="int" maxlen="10" comment="The ID of the user who uploaded the file." />
       <column name="source" type="string" maxlen="255" default="upload" comment="The file's source - in most cases upload." />
-      <column name="rating" type="string" restrict="'6','10','13','16','18'" comment="The file's parental content age rating." />
+      <column name="rating" type="string" restrict="6,10,13,16,18" comment="The file's parental content age rating." />
       <column name="flags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the file." />
-      <column name="deleted" type="string" restrict="'yes','no'" default="no" comment="Whether or not the file in question is deleted." />
+      <column name="deleted" type="string" restrict="yes,no" default="no" comment="Whether or not the file in question is deleted." />
 
       <key name="fileId" type="primary" />
       <key name="userId" type="index" />
@@ -66,9 +66,9 @@
       <column name="fileId" type="int" maxlen="10" comment="The ID of the parent file." />
       <column name="time" type="time" default="__TIME__" update="__TIME__" comment="The time of the revision of the file was uploaded." />
       <column name="size" type="int" maxlen="10" comment="The size of the revision." />
-      <column name="md5hash" type="string" maxlen="255" comment="The MD5 hash of the file's binary data." />
-      <column name="sha256hash" type="string" maxlen="255" comment="The SHA256 hash of the file's binary data." />
-      <column name="salt" type="int" maxlen="10" comment="The salt number (stored in the product configuration) used for encryption." />
+      <column name="md5hash" type="string" maxlen="32" comment="The MD5 hash of the file's binary data." />
+      <column name="sha256hash" type="string" maxlen="64" comment="The SHA256 hash of the file's binary data." />
+      <column name="salt" type="int" maxlen="6" comment="The salt number (stored in the product configuration) used for encryption." />
       <column name="iv" type="string" maxlen="255" comment="The base64-encoded IV used for encryption." />
       <column name="contents" type="string" maxlen="4294967296" comment="The base64-encoded binary data of the file." />
 
@@ -78,10 +78,10 @@
 
 
     <table name="fonts" type="general" comment="Admin-created fonts for use with default formatting.">
-      <column name="fontId" type="int" maxlen="10" autoincrement="true" comment="The unique ID of the font." />
-      <column name="fontName" type="string" maxlen="20" comment="4" />
-      <column name="data" type="string" maxlen="500" comment="4" />
-      <column name="category" type="string" maxlen="20" comment="4" />
+      <column name="fontId" type="int" maxlen="6" autoincrement="true" comment="The unique ID of the font." />
+      <column name="fontName" type="string" maxlen="40" comment="The name of the font for display." />
+      <column name="data" type="string" maxlen="40" comment="The name font code for use in CSS" />
+      <column name="category" type="string" maxlen="40" comment="A named category the font is placed under (e.g. monospace)." />
 
       <key name="fontId" type="primary" />
     </table>
@@ -90,7 +90,7 @@
     <table name="groups" type="general" comment="Admin-created usergroups that can be used with vanilla logins.">
       <column name="groupId" type="int" maxlen="10" comment="The unique ID of the group." />
       <column name="groupName" type="string" maxlen="100" comment="The name of the group." />
-      <column name="memberIds" type="string" maxlen="1000" comment="4" />
+      <column name="memberIds" type="string" maxlen="100000" comment="A list " />
       <column name="userFormatStart" type="string" maxlen="300" comment="Username formatted to be prepended to the username." />
       <column name="userFormatEnd" type="string" maxlen="300" comment="Username formatted to be appended to the username." />
 
@@ -102,7 +102,7 @@
       <column name="hookId" type="int" maxlen="10" autoincrement="true" comment="A unique ID corrosponding to the hook. It is not used in retrieving hook contents (and thus could, for whatever reason, be changed on a dime)." />
       <column name="hookName" type="string" maxlen="40" comment="The hook's name, which will be used for most identification. These can be compounded (multiple rows with the same hookname can exist) if multiple entries exist for the hook." />
       <column name="code" type="string" maxlen="4294967296" comment="The code of the particular hook. It will be executed using PHP's EVAL." />
-      <column name="state" type="string" restrict="'on','off'" comment="Whether or not the hook is active." />
+      <column name="state" type="string" restrict="on,off" comment="Whether or not the hook is active." />
 
       <key name="hookId" type="primary" />
       <key name="hookName" type="index" />
@@ -203,8 +203,8 @@
       <column name="userId" type="int" maxlen="10" comment="The ID of the user." />
       <column name="roomId" type="int" maxlen="10" comment="The ID of the room." />
       <column name="time" type="time" default="__TIME__" update="__TIME__" comment="The time of the ping." />
-      <column name="status" type="string" restrict="'away','busy','available','invisible','offline','" comment="The user's status." />
-      <column name="typing" type="string" restrict="'1','0'" default="0" comment="Whether or not the user is typing." />
+      <column name="status" type="string" restrict="away,busy,available,invisible,offline," comment="The user's status." />
+      <column name="typing" type="string" restrict="1,0" default="0" comment="Whether or not the user is typing." />
 
       <key name="userId,roomId" type="primary" />
       <key name="time" type="index" />
@@ -290,7 +290,7 @@
       <column name="extension" type="string" maxlen="10" comment="The extension that will allow upload of files using these settings." />
       <column name="mime" type="string" maxlen="200" comment="The content type to output files of this type as." />
       <column name="maxSize" type="int" maxlen="10" comment="The maximum size (in bytes) files of this type can be." />
-      <column name="container" type="string" restrict="'video','image','audio','text','html','archive','other'" comment="The container that should be used to output the file. This is recognized by clients for best viewing." />
+      <column name="container" type="string" restrict="video,image,audio,text,html,archive,other" comment="The container that should be used to output the file. This is recognized by clients for best viewing." />
 
       <key name="typeId" type="primary" />
       <key name="extension" type="unique" />
