@@ -8,14 +8,20 @@ error_reporting(E_ALL ^ E_NOTICE);
 // http://www.php.net/manual/en/ref.simplexml.php#103617
 // Modified for addition recursion needed for the specific code used.
 function xml2array($xmlObject, $out = array()) {
-  foreach ((array) $xmlObject as $index => $node) {
+  $xmlObject = (array) $xmlObject;
+  foreach ($xmlObject as $index => $node) {
     if (is_array($node)) {
       foreach ($node AS $index2 => $node2) {
         $node[$index2] = (is_object($node2)) ? xml2array($node2) : $node2;
       }
     }
 
-    $out[$index] = (is_object($node)) ? xml2array($node) : $node;
+    if (is_object($node)) {
+      $out[$index][0] = xml2array($node);
+    }
+    else {
+      $out[$index] = $node;
+    }
   }
 
   return $out;
@@ -74,7 +80,7 @@ switch ($_REQUEST['phase']) {
 <body>
 
 <div id="part1">
-  <h1>FreezeMessenger Installation: Introduction</h1><hr />
+  <h1>FreezeMessenger Installation: Introduction</h1><hr class="ui-widget-header" />
 
   Thank you for downloading FreezeMessenger! FreezeMessenger is a new, easy-to-use, and highly powerful messenger backend (with included frontend) intended for sites which want an easy yet powerful means to allow users to quickly communicate with each other. Unlike other solutions, FreezeMessenger has numerous benefits:<br />
 
@@ -116,7 +122,7 @@ switch ($_REQUEST['phase']) {
 
 
 <div id="part2" style="display: none;">
-  <h1>FreezeMessenger Installation: MySQL Setup</h1><hr />
+  <h1>FreezeMessenger Installation: MySQL Setup</h1><hr class="ui-widget-header" />
 
   First things first, please enter your MySQL connection details below, as well as a database (we can try to create the database ourselves, as well). If you are unable to proceed, try contacting your web host, or anyone who has helped you set up other things like this before.<br /><br />
   <form onsubmit="return false;" name="mysql_connect_form" id="mysql_connect_form">
@@ -168,7 +174,7 @@ switch ($_REQUEST['phase']) {
 </div>
 
 <div id="part3" style="display: none;">
-  <h1>FreezeMessenger Installation: Generate Configuration File</h1><hr />
+  <h1>FreezeMessenger Installation: Generate Configuration File</h1><hr class="ui-widget-header" />
   Now that the database has been successfully installed, we must generate the configuration file. There are two ways of doing this: either modify config.base.php and save it as config.php or enter the details below. You are recommended to do this manually, though.<br /><br />
 
   <form onsubmit="return false;" name="config_form" id="config_form">
@@ -211,7 +217,7 @@ switch ($_REQUEST['phase']) {
 
 
 <div id="part4" style="display: none;">
-  <h1>Freezemessenger Installation: All Done!</h1>
+  <h1>Freezemessenger Installation: All Done!</h1><hr class="ui-widget-header" />
 
   FreezeMessenger Installation is now complete. You\'re free to go wander (once you delete the install/ directory), though to put you in the right direction:<br />
   <ul>
@@ -313,7 +319,6 @@ switch ($_REQUEST['phase']) {
     $showTables->free_result();
 
 
-   die('Happy!');
 
     /* Part Two: Create Tables */
 
@@ -326,7 +331,11 @@ switch ($_REQUEST['phase']) {
     else {
       $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
 
-      foreach ($xmlData['database']['table'] AS $table) { // Run through each table from the XML
+      foreach ($xmlData['database'][0]['table'] AS $table) { // Run through each table from the XML
+        $columns = array(); // We will use this to store the column fragments that will be implode()d into the final query.
+        $keys = array(); // We will use this to store the column fragments that will be implode()d into the final query.
+
+
         switch ($table['@attributes']['type']) {
           case 'general': // Use this normally, and for all perm. data
           $engine = 'InnoDB';
@@ -336,66 +345,66 @@ switch ($_REQUEST['phase']) {
           break;
         }
 
+
         foreach ($table['column'] AS $column) {
-          $columns = array(); // We will use this to store the column fragments that will be implode()d into the final query.
-          $column = $column['@attributes'];
+          $typePiece = '';
 
-          switch ($column['type']) {
+          switch ($column['@attributes']['type']) {
             case 'int':
-            $typePiece = 'INT(' . (int) $column['maxlen'] . ')';
+            $typePiece = 'INT(' . (int) $column['@attributes']['maxlen'] . ')';
 
-            if (!isset($column['maxlen'])) {
+            if (!isset($column['@attributes']['maxlen'])) {
               $typePiece = 'INT(8)'; // Sane default, really.
             }
             elseif ($coulmn['maxlen'] > 9) {// If the maxlen is greater than 9, we use LONGINT (0 - 9,223,372,036,854,775,807; 64 Bits / 8 Bytes)
-              $typePiece = 'BIGINT(' . (int) $column['maxlen'] . ')';
+              $typePiece = 'BIGINT(' . (int) $column['@attributes']['maxlen'] . ')';
             }
-            elseif ($column['maxlen'] > 7) { // If the maxlen is greater than 7, we use INT (0 - 4,294,967,295; 32 Bits / 4 Bytes)
-              $typePiece = 'INT(' . (int) $column['maxlen'] . ')';
+            elseif ($column['@attributes']['maxlen'] > 7) { // If the maxlen is greater than 7, we use INT (0 - 4,294,967,295; 32 Bits / 4 Bytes)
+              $typePiece = 'INT(' . (int) $column['@attributes']['maxlen'] . ')';
             }
-            elseif ($column['maxlen'] > 4) { // If the maxlen is greater than 4, we use MEDIUMINT (0 - 16,777,215; 24 Bits / 3 Bytes)
-              $typePiece = 'MEDIUMINT(' . (int) $column['maxlen'] . ')';
+            elseif ($column['@attributes']['maxlen'] > 4) { // If the maxlen is greater than 4, we use MEDIUMINT (0 - 16,777,215; 24 Bits / 3 Bytes)
+              $typePiece = 'MEDIUMINT(' . (int) $column['@attributes']['maxlen'] . ')';
             }
-            elseif ($column['maxlen'] > 2) { // If the maxlen is greater than 2, we use SMALLINT (0 - 65,535; 16 Bits / 2 Bytes)
-              $typePiece = 'SMALLINT(' . (int) $column['maxlen'] . ')';
+            elseif ($column['@attributes']['maxlen'] > 2) { // If the maxlen is greater than 2, we use SMALLINT (0 - 65,535; 16 Bits / 2 Bytes)
+              $typePiece = 'SMALLINT(' . (int) $column['@attributes']['maxlen'] . ')';
             }
             else {
-              $typePiece = 'TINYINT(' . (int) $column['maxlen'] . ')';
+              $typePiece = 'TINYINT(' . (int) $column['@attributes']['maxlen'] . ')';
             }
 
-            if (isset($column['autoincrement'])) {
-              if ($column['autoincrement'] == true) {
+            if (isset($column['@attributes']['autoincrement'])) {
+              if ($column['@attributes']['autoincrement'] == true) {
                 $typePiece .= ' AUTO_INCREMENT'; // Ya know, that thing where it sets itself.
               }
             }
             break;
 
             case 'string':
-            if (!isset($column['maxlen'])) {
+            if (!isset($column['@attributes']['maxlen'])) {
               $typePiece = 'TEXT';
             }
             elseif ($coulmn['maxlen'] > 2097151) { // If the maxlen is greater than (16MB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
-              $typePiece = 'LONGTEXT(' . (int) $column['maxlen'] . ')';
+              $typePiece = 'LONGTEXT(' . (int) $column['@attributes']['maxlen'] . ')';
             }
-            elseif ($column['maxlen'] > 8191) { // If the maxlen is greater than (64KB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
-              $typePiece = 'MEDIUMTEXT(' . (int) $column['maxlen'] . ')';
+            elseif ($column['@attributes']['maxlen'] > 8191) { // If the maxlen is greater than (64KB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
+              $typePiece = 'MEDIUMTEXT(' . (int) $column['@attributes']['maxlen'] . ')';
             }
-            elseif ($column['maxlen'] > 100) { // If the maxlen is greater than 100, we use TEXT since it is most likely more optimized.
-              $typePiece = 'TEXT(' . (int) $column['maxlen'] . ')';
+            elseif ($column['@attributes']['maxlen'] > 100) { // If the maxlen is greater than 100, we use TEXT since it is most likely more optimized.
+              $typePiece = 'TEXT(' . (int) $column['@attributes']['maxlen'] . ')';
             }
             else {
-              $typePiece = 'VARCHAR(' . (int) $column['maxlen'] . ')';
+              $typePiece = 'VARCHAR(' . (int) $column['@attributes']['maxlen'] . ')';
             }
 
             $typePiece .= ' CHARACTER SET utf8 COLLATE utf8_bin';
             break;
 
             case 'bitfield':
-            if (!isset($column['bits'])) {
+            if (!isset($column['@attributes']['bits'])) {
               $typePiece = 'BIT(8)'; // Sane default
             }
             else {
-              $typePiece = 'BIT(' . (int) $column['bits'] . ')'; // This is new to MySQL 5.0.5 (5.0.3 for MySIAM). In theory, INT would be just as good (though unoptimized), but meh.
+              $typePiece = 'BIT(' . (int) $column['@attributes']['bits'] . ')'; // This is new to MySQL 5.0.5 (5.0.3 for MySIAM). In theory, INT would be just as good (though unoptimized), but meh.
             }
             break;
 
@@ -404,19 +413,18 @@ switch ($_REQUEST['phase']) {
             break;
           }
 
-          if (isset($column['default'])) {
-            $typePiece .= 'DEFAULT "' . $mysqli->real_escape_string($column['default']) . '"';
+          if (isset($column['@attributes']['default'])) {
+            $typePiece .= 'DEFAULT "' . $mysqli->real_escape_string($column['@attributes']['default']) . '"';
           }
 
-          $columns[] = '`' . $column['name'] . '` ' . $typePiece . ' NOT NULL' . (isset($column['comment']) ? ' COMMENT "' . $mysqli->real_escape_string($column['comment']) . '"' : '');
+          $columns[] = "`{$column['@attributes']['name']}` {$typePiece} NOT NULL" . (isset($column['@attributes']['comment']) ? ' COMMENT "' . $mysqli->real_escape_string($column['@attributes']['comment']) . '"' : '');
         }
 
 
         foreach ($table['key'] AS $key) {
-          $keys = array(); // We will use this to store the column fragments that will be implode()d into the final query.
-          $key = $key['@attributes'];
+          $typePiece = '';
 
-          switch ($key['type']) {
+          switch ($key['@attributes']['type']) {
             case 'primary':
             $typePiece = "PRIMARY KEY";
             break;
@@ -430,28 +438,28 @@ switch ($_REQUEST['phase']) {
             break;
           }
 
-          if (strstr(',',$key['name'])) {
-            $keyCols = explode(',',$key['name']);
+          if (strstr(',',$key['@attributes']['name'])) {
+            $keyCols = explode(',',$key['@attributes']['name']);
 
             foreach ($keyCols AS &$keyCol) {
               $keyCol = "`$keyCol`";
             }
 
-            $key['name'] = implode(',',$keyCols);
+            $key['@attributes']['name'] = implode(',',$keyCols);
           }
           else {
-            $key['name'] = "`{$key['name']}`";
+            $key['@attributes']['name'] = "`{$key['@attributes']['name']}`";
           }
 
-          $keys[] = "{$typePiece} ({$key['name']})";
+          $keys[] = "{$typePiece} ({$key['@attributes']['name']})";
         }
 
-
-          $queries[$prefix . $table['@attributes']['name']] = 'CREATE TABLE IF NOT EXISTS `' . $prefix . $table['@attributes']['name'] . '` (
+        $queries[$prefix . $table['@attributes']['name']] = 'CREATE TABLE IF NOT EXISTS `' . $prefix . $table['@attributes']['name'] . '` (
   ' . implode("\n  ",$columns) . '
   ' . implode("\n  ",$keys) . '
-) ENGINE="' . $engine . '" COMMENT="' . $mysqli-real_escape_string($table['@attributes']['comment']) . '" DEFAULT CHARSET="utf8";';
+) ENGINE="' . $engine . '" COMMENT="' . $mysqli->real_escape_string($table['@attributes']['comment']) . '" DEFAULT CHARSET="utf8";';
       }
+die(print_r($queries,true));
 
       foreach ($queries AS $tableName => $query) {
         if (@in_array($tableName,$mysqlTables) && $nooverwrite) {
@@ -466,7 +474,7 @@ switch ($_REQUEST['phase']) {
           }
         }
 
-        foreach ($queries AS $query) {
+        foreach ($queries AS $query) { die($query);
           if (!trim($query)) continue;
 
           if (!$mysqli->query($query)) {
