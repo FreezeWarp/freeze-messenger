@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<addon version="3.0">
+  <metadata>
+    <title>Internet Explorer 9 Customizations</title>
+    <description>Add Internet Explorer 9 menus to WebPro.</description>
+  </metadata>
+
+  <templateMods>
+    <templateMod template="templateStart" vars="">
+      <search>
+
+      </search>
+      <replace>
+        &lt;!-- START IE9 --&gt;
+        &lt;meta name="application-name" content="$phrases[brandingTitle]" /&gt;
+        &lt;meta name="msapplication-tooltip" content="Launch $phrases[brandingTitle] Web Interace" /&gt;
+        &lt;meta name="msapplication-navbutton-color" content="$phrases[brandingIE9Color]" /&gt;
+        &lt;script type="text/javascript"&gt;
+        try {
+          window.external.msSiteModeCreateJumplist(''Favourite Rooms'');
+      $template[roomMs]
+      }
+        catch (ex) {
+          // Do nothing.
+        }
+        &lt;/script&gt;
+        &lt;!-- END IE9 --&gt;
+      </replace>
+    </templateMod>
+  </templateMods>
+
+  <hookMods>
+
+  </hookMods>
+</addon>
