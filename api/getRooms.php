@@ -105,7 +105,6 @@ $queryParts['roomSelect'] = array(
       'allowedGroups' => 'allowedGroups',
       'moderators' => 'moderators',
       'owner' => 'owner',
-      'bbcode' => 'bbcode',
       'roomTopic' => 'roomTopic',
       'lastMessageId' => 'lastMessageId',
       'lastMessageTime' => 'lastMessageTime',

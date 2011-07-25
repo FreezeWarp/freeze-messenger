@@ -306,7 +306,6 @@ $queryParts['userSelect']['columns'] = array(
     'defaultColor' => 'defaultColor',
     'defaultFontface' => 'defaultFontface',
     'defaultFormatting' => 'defaultFormatting',
-    'settings' => 'settings',
     'userPrivs' => 'userPrivs',
     'adminPrivs' => 'adminPrivs',
     'lang' => 'lang',
