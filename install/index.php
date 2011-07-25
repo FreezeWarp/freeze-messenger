@@ -132,7 +132,7 @@ switch ($_REQUEST['phase']) {
       </tr>
       <tr>
         <td><strong>Host</strong></td>
-        <td><input type="text" name="mysql_host" value="' . $_SERVER['SERVER_NAME'] . '" /><br /><small>The host of the MySQL server. In most cases, the default shown here /should/ work.</td>
+        <td><input type="text" name="mysql_host" value="' . $_SERVER['SERVER_NAME'] . '" /><br /><small>The host of the MySQL server. In most cases, the default shown here <em>should</em> work.</td>
       </tr>
       <tr>
         <td><strong>Username</strong></td>
@@ -244,7 +244,7 @@ switch ($_REQUEST['phase']) {
   $database = urldecode($_GET['mysql_database']);
   $createdb = urldecode($_GET['mysql_createdb']);
   $prefix = urldecode($_GET['mysql_tableprefix']);
-  $nooverwrite = urldecode($_GET['mysql_nooverwrite']);
+  $noOverwrite = urldecode($_GET['mysql_nooverwrite']);
 
 
 
@@ -325,7 +325,26 @@ switch ($_REQUEST['phase']) {
     $xmlData = new SimpleXMLElement(file_get_contents('dbSchema.xml')); // Get the XML Data from the dbSchema.xml file
     $xmlData = xml2array($xmlData); // Convert the data to pure array, since I don't want to deal with SimpleXML's methods (...why learn new things when you don't have to?) If anyone is wondering, XML is specifically used instead of JSON because it is easier to modify (you can skim and find what you want much quicklier).
 
+    $xmlData2 = new SimpleXMLElement(file_get_contents('dbData.xml')); // Get the XML Data from the webProLangEns.xml file
+    $xmlData2 = xml2array($xmlData2); // Convert the data to pure array.
+
+    $xmlData3 = new SimpleXMLElement(file_get_contents('webProTemplate.xml')); // Get the XML Data from the webProTemplate.xml file
+    $xmlData3 = xml2array($xmlData3); // Convert the data to pure array.
+
+    $xmlData4 = new SimpleXMLElement(file_get_contents('webProLangEn.xml')); // Get the XML Data from the webProLangEns.xml file
+    $xmlData4 = xml2array($xmlData4); // Convert the data to pure array.
+
+
     if ((int) $xmlData['@attributes']['version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
+      die('The XML Data Source if For An Improper Version');
+    }
+    elseif ((int) $xmlData2['@attributes']['version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
+      die('The XML Data Source if For An Improper Version');
+    }
+    elseif ((int) $xmlData3['@attributes']['version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
+      die('The XML Data Source if For An Improper Version');
+    }
+    elseif ((int) $xmlData4['@attributes']['version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
       die('The XML Data Source if For An Improper Version');
     }
     else {
@@ -393,17 +412,20 @@ switch ($_REQUEST['phase']) {
               if (!isset($column['@attributes']['maxlen'])) {
                 $typePiece = 'TEXT';
               }
-              elseif ($coulmn['maxlen'] > 2097151) { // If the maxlen is greater than (16MB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
-                $typePiece = 'LONGTEXT(' . (int) $column['@attributes']['maxlen'] . ')';
+              elseif ($column['@attributes']['maxlen'] > 2097151) { // If the maxlen is greater than (16MB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
+                $typePiece = 'LONGTEXT';
               }
               elseif ($column['@attributes']['maxlen'] > 8191) { // If the maxlen is greater than (64KB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
-                $typePiece = 'MEDIUMTEXT(' . (int) $column['@attributes']['maxlen'] . ')';
+                $typePiece = 'MEDIUMTEXT';
               }
-              elseif ($column['@attributes']['maxlen'] > 100) { // If the maxlen is greater than 100, we use TEXT since it is most likely more optimized.
+              elseif ($column['@attributes']['maxlen'] > 5000) { // If the maxlen is greater than 1000, we use TEXT since it is most likely more optimized. VARCHAR itself limits to roughly 65,535 length, or less if using UTF8.
                 $typePiece = 'TEXT(' . (int) $column['@attributes']['maxlen'] . ')';
               }
-              else {
+              elseif ($column['@attributes']['maxlen'] > 100) { // If the maxlen is greater than 1000, we use TEXT since it is most likely more optimized. VARCHAR itself limits to roughly 65,535 length, or less if using UTF8.
                 $typePiece = 'VARCHAR(' . (int) $column['@attributes']['maxlen'] . ')';
+              }
+              else {
+                $typePiece = 'CHAR(' . (int) $column['@attributes']['maxlen'] . ')';
               }
             }
 
@@ -426,7 +448,7 @@ switch ($_REQUEST['phase']) {
 
           if (isset($column['@attributes']['default'])) {
             if ($column['@attributes']['default'] == '__TIME__') {
-              $column['@attributes']['default'] = 'NOW()';
+              $column['@attributes']['default'] = 'CURRENT_TIMESTAMP';
             }
             else {
               $column['@attributes']['default'] = '"' . $mysqli->real_escape_string($column['@attributes']['default']) . '"';
@@ -437,7 +459,7 @@ switch ($_REQUEST['phase']) {
 
           if (isset($column['@attributes']['update'])) {
             if ($column['@attributes']['update'] == '__TIME__') {
-              $column['@attributes']['update'] = 'NOW()';
+              $column['@attributes']['update'] = 'CURRENT_TIMESTAMP';
             }
             else {
               $column['@attributes']['update'] = '"' . $mysqli->real_escape_string($column['@attributes']['update']) . '"';
@@ -467,7 +489,7 @@ switch ($_REQUEST['phase']) {
             break;
           }
 
-          if (strstr(',',$key['@attributes']['name'])) {
+          if (strpos($key['@attributes']['name'],',') !== false) {
             $keyCols = explode(',',$key['@attributes']['name']);
 
             foreach ($keyCols AS &$keyCol) {
@@ -484,18 +506,17 @@ switch ($_REQUEST['phase']) {
         }
 
         $queries[$prefix . $table['@attributes']['name']] = 'CREATE TABLE IF NOT EXISTS `' . $prefix . $table['@attributes']['name'] . '` (
-  ' . implode("\n  ",$columns) . '
-  ' . implode("\n  ",$keys) . '
+  ' . implode(",\n  ",$columns) . ',
+  ' . implode(",\n  ",$keys) . '
 ) ENGINE="' . $engine . '" COMMENT="' . $mysqli->real_escape_string($table['@attributes']['comment']) . '" DEFAULT CHARSET="utf8";';
       }
-die(print_r($queries,true));
 
       foreach ($queries AS $tableName => $query) {
-        if (@in_array($tableName,$mysqlTables) && $nooverwrite) {
+        if (in_array($tableName,(array) $mysqlTables) && $noOverwrite) {
           $skipTables[] = $tableName;
           continue; // Don't create the table, since we shouldn't overwrite.
         }
-        elseif (@in_array($tableName,$mysqlTables)) { // We are overwriting, so rename the old table to a backup. Someone else can clean it up later, but its for the best.
+        elseif (in_array($tableName,(array) $mysqlTables)) { // We are overwriting, so rename the old table to a backup. Someone else can clean it up later, but its for the best.
           $newTable = $tableName . '~' . time();
 
           if (!$mysqli->query("RENAME TABLE `$tableName` TO `$newTable`")) {
@@ -503,13 +524,11 @@ die(print_r($queries,true));
           }
         }
 
-        foreach ($queries AS $query) { die($query);
+        foreach ($queries AS $query) {
           if (!trim($query)) continue;
 
-          if (!$mysqli->query($query)) {
-            echo $query;
-            echo $mysqli->error;
-            die('Could Not Run Query');
+          if (!$mysqli->query(trim($query))) {
+            die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $mysqli->error);
           }
         }
       }
