@@ -109,7 +109,7 @@
     </table>
 
 
-    <table name="kick" type="memory" note="This will be made a standard table in FIMv4 so that kicks don't get reset on system restart. We will instead use APC for proper caching." comment="Room-created temporary user bans.">
+    <table name="kicks" type="memory" note="This will be made a standard table in FIMv4 so that kicks don't get reset on system restart. We will instead use APC for proper caching." comment="Room-created temporary user bans.">
       <column name="userId" type="int" maxlen="8" comment="The ID of the user who has been kicked." />
       <column name="roomId" type="int" maxlen="6" comment="The ID of the room the kick is active in." />
       <column name="kickerid" type="int" maxlen="8" comment="The ID of the user who made the kick." />
@@ -336,6 +336,14 @@
       <key name="userPrivs" type="index" />
       <key name="adminPrivs" type="index" />
       <key name="lang" type="index" />
+    </table>
+
+    <table name="configuration" type="general">
+      <column name="directive" type="string" maxlen="50" comment="The configuration directive." />
+      <column name="value" type="string" maxlen="1000" comment="The current value of the configuration directive." />
+      <column name="type" type="string" restrict="integer,float,string,bool,array" comment="A typecast to be applied to the value after being retrieved. Bool and array behave slightly different, however: bool converts 'true' and '1' to true but everything else to false, while array splits a string using an escape-capable string split function." />
+
+      <key name="directive" type="primary" />
     </table>
   </database>
 

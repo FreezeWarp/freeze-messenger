@@ -166,7 +166,8 @@ $bannedUserGroups = array();
 
 /* $enableDF
  * Set values here to true/false to disable "categories" of default formatting that users may use.
- * The "general" entry encompasses underline, bold, strikethrough, and italics. */
+ * The "general" entry encompasses underline, bold, strikethrough, and italics.
+ * This directive is deprecated. It will be removed in the future. */
 $enableDF = array( // Default formatting users can user to differentiate their text.
   'color' => true,
   'font' => true,
@@ -217,87 +218,19 @@ $longPolling = false;
  * This feature will become first-rate in FIMv5, or possibly as soon as FIMv4. */
 $anonymousUser = 0;
 
-/* $config['fullTextArchive']
- * This enables full text archive searching.
- * Like all $config directives, it will be moved to the database in v4.
- * This feature is completely stable, but is also VERY slow on large installations. It is not optimized, but could still work. FIMv4 will most likely land full optimization of this feature, and use it by default. */
-$config['fullTextArchive'] = false;
 
-/* $config['cacheKicks']
- * This enables APC caching of kicked users, and is a preview of FIMv4's use of APC.
- * This feature is mostly stable, SIGNIFICANTLY reduces the number of queries required at each page load, but on large installations could fill up the APC cache, or be used as an attack vector to do so (we're not sure).
- * Note that this is normally stored in a memory table anyway, and thus the speed boost is normally not that noticable. However, the reduction of queries can be very helpful for large installations.  */
-$config['cacheKicks'] = false;
 
-/* $config['cacheKicksRefresh']
- * This is the time (in seconds) after which the kicks will be refreshed if cached.
- * 60 seconds is a fairly sane default. */
-$config['cacheKicksRefresh'] = 60;
+///* Save Me! *///
+///* These disable certain customizations in case things go horribly wrong. *///
+/* $disableHooks
+ * Disable code hooks, used by plugins.
+ * If you add a plugin and things break so much that you can't disable the plugin, set this to true. */
+$disableHooks = false;
 
-/* $config['searchWordMinimum']
- * This alters the minimum length of search in the archives.
- * Smaller lengths will dramatically increase the server power needed.
- * Specify "-1" to disable archive searching entirely (this may be useful if you are worried about its lack of encryption). */
-$config['searchWordMinimum'] = 4;
-
-$config['searchWordMaximum'] = 10;
-
-/* $config['searchWordOmissions']
- * This eliminates certain words from the search archive, good if they are especially common. */
-$config['searchWordOmissions'] = array(
-  'that','them','then','than','thus',
-  'have','with','will','would','there',
-  'their','what','about','when','make',
-  'like','also','think','over','into',
-  'time','year','just','know','take',
-  'which','about','back','after','well',
-  'even','want','because','these','most'
-);
-
-/* $config['searchWordPunctuation']
- * These are symbols that are ignored in the archive search index.
- * The default works fairly good for most Latin an Japanese texts. */
-$config['searchWordPunctuation'] = array(
-  ',', '.', ';', ':', '-',
-  '"', '\'', '=', '?', '\\',
-  '/', '[', ']', '^', '&',
-  '#', '@', '!', '%', '*',
-  '(', ')',
-
-  '‘', '’','¡','¿','¦',
-);
-
-/* $config['searchWordConverts']
- * These are character(s) that will be converted to other characters when stored in the search archival database.
- * By default, both common European symbols and Japanese punctuation are included. */
-$config['searchWordConverts'] = array(
-  // European Diacritic Conversions (i.e. Latin, French, German, Spanish)
-  'é' => 'e', 'É' => 'E', // pokémon café
-  'ë' => 'e', 'Ë' => 'E', // noël
-  'ó' => 'o', 'Ó' => 'O',
-  'ö' => 'o', 'Ö' => 'O',
-  'ø' => 'o', 'Ø' => 'O',
-  'í' => 'i', 'Í' => 'I',
-  'ï' => 'i', 'Ï' => 'I',
-      'ú' => 'u', 'Ú' => 'U',
-  'ü' => 'u', 'Ü' => 'U', // über
-  'ñ' => 'n', // piñata
-
-  // Japanese Punctual Conversions
-  '？' => '?', '！' => '!',
-  '。' => '.', '、' => ',',
-  '；' => ';', '：' => ':',
-  '／' => '/', '｜' => '|',
-  '＠' => '@', '＃' => '#',
-  '＄' => '$', '％' => '%',
-  '＾' => '^', '＆' => '&',
-  '＊' => '*',
-  '（' => '(', '）' => ')',
-  '「' => '[', '」' => ']',
-  '｛' => '{', '｝' => '}',
-  '＜' => '<', '＞' => '>',
-);
-
+/* $disableConfig
+ * Disables config modifications read from the database, instead forcing the default configuration.
+ * Use this if a configuration change makes it impossible to revert said change. */
+$disableConfig = false;
 
 // Unlisted variables: $config['defaultMessageLimit'], $config['defaultOnlineThreshold'], $installUrl, $installLoc, $sessionExpire, $roomLengthLimit
 // Learn about them in the documentation.

@@ -19,14 +19,51 @@
 
 
 
-///* Prerequisites *///
+///* PREREQUISITES *///
 
+/* Default Configuration Settings
+ * These are the simplified defaults of the configuration directives stored in the database.
+ * Unlike the standard database defaults, these only include the barebones data (e.g. searchWord directives). */
+$defaultConfig = array(
+  'defaultMessageHardLimit' => 50,
+  'defaultMessageLimit' => 10000,
+  'defaultOnlineThreshold' => 15,
+  'fullTextArchive' => false,
+  'searchWordMinimum' => 4,
+  'searchWordMaximum' => 10,
+  'searchWordOmissions' => array(),
+  'searchWordPunctuation' => array(),
+  'searchWordConvertsFind' => array(),
+  'searchWordConvertsReplace' => array(),
+  'cacheKicksRefresh' => 60,
+  'cacheKicks' => false,
+  'cachePhrasesRefresh' => 3600,
+  'cacheTemplatesRefresh' => 3600,
+  'cacheConfigRefresh' => 3600,
+);
+
+
+
+/* Make Sure Required PHP Extensions are Present
+ * Note that:
+ * MySQL is present in all versions since PHP 4
+ * JSON is present in all versions of PHP since 5.2 (but is not actually used in FIMv3)
+ * MBString is present in all versions of PHP since 4.3
+ * MCrypt is present in all versions since PHP 4
+ * Hash is present in all versions since PHP 5.1.2
+ * PCRE is present in all versions since PHP 4
+ */
 foreach (array('mysql','json','mbstring','mcrypt','hash','pcre') AS $module) {
   if (!extension_loaded($module)) {
     die("The module $module could not be found or loaded (loading is disabled). Please install PHP $module compatibility. See the documetation for help.");
   }
 }
 
+
+
+/* Define Void Functions if APC is not present
+ * APC is used for caching many directives, but is generally not required.
+ * It will be included by default in PHP 5.4, and is already easy to install in a number of Linux repositories (e.g. Ubuntu = php-apc). */
 if (!extension_loaded('apc')) { // APC is strongly recommended, but at least in version 3 not required. Instead, we simply use wrappers that do nothing.
   function apc_fetch() {
     return false;
@@ -38,23 +75,16 @@ if (!extension_loaded('apc')) { // APC is strongly recommended, but at least in 
 }
 
 
+
+/* Version Requirement, Magic Quotes, Display Errors and Register Globals */
 ini_set('display_errors',0); // Ideally we would never have to worry about this, but sadly that's not the case. FIMv4 will hopefully make improvements.
 
-
-/* Version Requirement, Magic Quotes */
-$magicQuotesExist = false; // So we can keep track.
-
-if (apc_fetch('fim_sanity') === true) { // Avoid some CPU cycles.
-  // Do Nothing
-}
-elseif (floatval(PHP_VERSION) <= 5.1) { // We won't bother supporting older PHP; too much hassle. We will also raise this to 5.3 in the next version.
+if (floatval(PHP_VERSION) < 5.2) { // We won't bother supporting older PHP; too much hassle. We will also raise this to 5.3 in the next version.
   die('The installed version of PHP is out of date. Only PHP versions 5.2 and above are supported. Contact your server host for more information if possible.');
 }
 elseif (floatval(PHP_VERSION) <= 5.3) { // Removed outright in 5.4, may as well save a CPU cycle or two.
   if (function_exists('get_magic_quotes_runtime')) { // Really, in the future, even this function will be removed as well, but it is still there in 5.4 for all the good scripts that use it to disable 'em.
     if (get_magic_quotes_runtime()) { // Note: We should consider removing the set_magic_quotes_runtime to false; it is deprecated in 5.3, so if we make that the baseline in version 4 we will do it then.
-      $magicQuotesExist = true;
-
       if (!set_magic_quotes_runtime(false)) {
         die('Magic Quotes is enabled and it was not possible to disable this "feature". Please disable magic quotes in php.ini. More information can be found in the <a href="http://php.net/manual/en/security.magicquotes.disabling.php">PHP manual</a>, and in the documentation.');
       }
@@ -65,30 +95,20 @@ elseif (floatval(PHP_VERSION) <= 5.3) { // Removed outright in 5.4, may as well 
     }
   }
 
-
-  if (ini_get('register_globals') === true) { // Note: This can not be altered with ini_set, so... we won't even bother.
+  if (ini_get('register_globals') === true) { // Note: This can not be altered with ini_set, so... we won't even bother. We will remove it in the next version most likely, as no one really uses it anyway.
     die('Register Globals is enabled. Please disable register_globals in php.ini. More information can be found in the <a href="http://www.php.net/manual/en/security.globals.php">PHP manual</a>, and in the documentation.');
   }
-
-
-  if (!$magicQuotesExist) {
-    apc_store('fim_sanity',true,0); // Avoid future slowdown (though it is rather negligible).
-  }
 }
 
-
-if(!defined('__DIR__')) { // Remove in FIM4
-  $iPos = strrpos(__FILE__, "/");
-  define("__DIR__", substr(__FILE__, 0, $iPos) . "/");
-}
 
 
 /* Require Libraries */
-require(__DIR__ . '/config.php'); // Configuration Variables
-require(__DIR__ . '/functions/mysql.php'); // MySQL Library (DEPRECATED)
-require(__DIR__ . '/functions/mysqlOOP.php'); // MySQL OOP Library
-require(__DIR__ . '/functions/commonQueries.php'); // FIM-specific Extension to MySQL OOP Library
-require(__DIR__ . '/functions/generalFunctions.php'); // Various Functions
+require(dirname(__FILE__) . '/config.php'); // Configuration Variables
+require(dirname(__FILE__) . '/functions/mysql.php'); // MySQL Library (DEPRECATED)
+require(dirname(__FILE__) . '/functions/mysqlOOP.php'); // MySQL OOP Library
+require(dirname(__FILE__) . '/functions/commonQueries.php'); // FIM-specific Extension to MySQL OOP Library
+require(dirname(__FILE__) . '/functions/generalFunctions.php'); // Various Functions
+
 
 
 /* Other Stuff */
@@ -100,46 +120,39 @@ if (isset($apiRequest)) {
 
 
 
-/* Blanket Defaults
- * Some of these really don't belong here... */
-
+/* Blanket Defaults */
 date_default_timezone_set('GMT'); // Set the timezone to GMT.
-//$errorHandlerOriginal = set_error_handler("errorHandler"); // Error Handler
-
 
 $continue = true; // Simple "stop" variable used throughout for hooks and live code. (Not neccissarly best practice, but it works better than most of the alternatives.)
 $hook = false;
 $errStr = '';
 $errDesc = '';
-$templates = array();
-$templateVars = array();
-$cacheKicks = array();
+
 
 
 
 /* Constants
  * These are most beneficial to third-party plugins. */
-
 define("FIM_VERSION","3.0"); // Version to be used by plugins if needed.
-define("DB_BACKEND","MYSQL"); // Database backend to be used by plugins if needed; in the future other backends will be supported, and if the defined database class for whatever reason won't do, this can be used to also support others. At present, PostGreSQL is the only for-sure future backend to be supported. Definite values, if they are to be supported: "MSSQL", "ORACLE", "POSTGRESQL"
-define("DB_DRIVER","MYSQL"); // Drive used for connection to the database. This may be totally useless to plugins, but again for future compatibility is included; other possible example values: "MYSQLi", "PDO" (actually, it would prolly be more useful to plugin authors of a future version wishing to support old versions)
 define("FIM_LANGUAGE","EN_US"); // No plans to change this exist, but again, just in case...
+define("FIMDB_BACKEND","MYSQL"); // Database backend to be used by plugins if needed; in the future other backends will be supported, and if the defined database class for whatever reason won't do, this can be used to also support others. At present, PostGreSQL is the only for-sure future backend to be supported. Definite values, if they are to be supported: "MSSQL", "ORACLE", "POSTGRESQL"
+define("FIMDB_DRIVER","MYSQL"); // Drive used for connection to the database. This may be totally useless to plugins, but again for future compatibility is included; other possible example values: "MYSQLi", "PDO" (actually, it would prolly be more useful to plugin authors of a future version wishing to support old versions)
 
 
 
 
 /* Legacy Code
  * I was too laxy to rewrite stuff. */
-
 $sqlPrefix = $dbConfig['vanilla']['tablePrefix']; // It's more sane this way...
 $forumTablePrefix = $dbConfig['integration']['tablePreix'];
 
 
 
 
-/* Language */
-
-if (!isset($defaultLanguage)) { // The defaultLanguage flag was created with the WebPro interface in mind, however it's a good one for all people to have (as with the template and phrase tables). Likewise, it could even be used in the API in theory, but... meh. Anyway, even if set to anything other than en, don't expect much (so far as the WebPro interface goes).
+/* Language
+ * The defaultLanguage flag was created with the WebPro interface in mind, however it's a good one for all people to have (as with the template and phrase tables). Likewise, it could even be used in the API in theory, but... meh. Anyway, even if set to anything other than en, don't expect much (so far as the WebPro interface goes).
+ * Sadly, the entire language backend more or less is broken in FIMv3. */
+if (!isset($defaultLanguage)) {
   $defaultLanguage = 'en';
 }
 
@@ -207,25 +220,95 @@ unset($dbConnect); // There is no reason the login credentials should still be a
 
 
 
+///* USER LOGIN (REQUIRES DATABASE) *///
 
-///* Other Stuff *///
-
-require_once(__DIR__ . '/validate.php'); // This is where all the user validation stuff occurs.
+require_once(dirname(__FILE__) . '/validate.php'); // This is where all the user validation stuff occurs.
 
 
-if ($banned && $apiRequest) { // A blanket die for the API when the user is banned.
-  die();
+
+
+
+///* OTHER STUFF *///
+
+
+if (isset($banned,$apiRequest)) { // A blanket die for the API when the user is banned.
+  if ($apiRequest == true && $banned == true) {
+    die();
+  }
 }
 
-if ($compressOutput && $apiRequest) { // Compress Output for transfer if configured to, and if we are outputting data from the API (file downloads, interfaces, etc. don't apply).
-  ob_start('fim_htmlCompact');
+if (isset($compressOutput,$apiRequest)) { // Compress Output for transfer if configured to, and if we are outputting data from the API (file downloads, interfaces, etc. don't apply).
+  if ($apiRequest == true && $compressOutput == true) {
+    ob_start('fim_htmlCompact');
+  }
 }
 
 
 
 
+///* GET DATABASE-STORED CONFIGURATION *///
+if (!$config = apc_fetch('fim_config') || $disableConfig) {
+  $config2 = $slaveDatabase->select(
+    array(
+      "{$sqlPrefix}configuration" => array(
+        'directive' => 'directive',
+        'value' => 'value',
+        'type' => 'type',
+      ),
+    )
+  );
+  $config2 = $config2->getAsArray(true);
 
-///* Get Phrases *///
+  if (is_array($config2)) {
+    if (count($config2) > 0) {
+      foreach ($config2 AS $config3) {
+        switch ($config3['type']) {
+          case 'int':
+          $config[$config3['directive']] = (int) $config3['value'];
+          break;
+
+          case 'string':
+          $config[$config3['directive']] = (string) $config3['value'];
+          break;
+
+          case 'array':
+          $config[$config3['directive']] = (array) fim_explodeEscaped(',',$config3['value']);
+          break;
+
+          case 'bool':
+          if (in_array($config3['value'],array('true','1',true,1),true)) { // We include the non-string counterparts here on the off-chance the database driver supports returning non-strings. The third parameter in the in_array makes it a strict comparison.
+            $config[$config3['directive']] = true;
+          }
+          else {
+            $config[$config3['directive']] = false;
+          }
+          break;
+
+          case 'float':
+          $config[$config3['directive']] = (float) $config3['value'];
+          break;
+        }
+      }
+
+      unset($config3);
+    }
+  }
+
+  unset($config2);
+
+  foreach ($defaultConfig AS $key => $value) {
+    if (!isset($config[$key])) {
+      $config[$key] = $value;
+    }
+  }
+
+  $config['searchWordConverts'] = array_combine($config['searchWordConvertsFind'],$config['searchWordConvertsReplace']);
+
+  apc_store('fim_config',$config,$config['cacheConfigRefresh']);
+}
+
+
+///* GET PHRASES *///
 
 if (isset($reqPhrases)) {
   if ($reqPhrases === true) {
@@ -260,12 +343,7 @@ if (isset($reqPhrases)) {
       );
       $phrases2 = $phrases2->getAsArray(true);
 
-
-      // Generate the language, based on:
-      // $_REQUEST[lang] -> $user[lang] -> $defaultLanguage -> 'en'
-      // (c/g/p spec.)      (user spec.)   (admin spec.)       (hard coded default)
-
-      if (isset($phrases2)) {
+      if (is_array($phrases2)) {
         if (count($phrases2) > 0) {
           foreach ($phrases2 AS $phrase) {
             $phrases[$phrase['phraseName']] = $phrase['text'];
@@ -281,7 +359,7 @@ if (isset($reqPhrases)) {
 
       unset($phrases2);
 
-      apc_store('fim_phrases',$phrases,0);
+      apc_store('fim_phrases',$config['cachePhrasesRefresh'],0);
     }
   }
 }
@@ -289,7 +367,7 @@ if (isset($reqPhrases)) {
 
 
 
-///* Get Code Hooks *///
+///* GET CODE HOOKS *///
 
 if (isset($reqHooks)) {
   if ($reqHooks === true) {
@@ -317,7 +395,7 @@ if (isset($reqHooks)) {
       }
 
       unset($hooks2);
-      apc_store('fim_hooks',$hooks,0);
+      apc_store('fim_hooks',$hooks,$config['cacheHooksRefresh']);
     }
   }
 }
@@ -326,7 +404,7 @@ if (isset($reqHooks)) {
 
 
 
-///* Get Templates *///
+///* GET TEMPLATES *///
 
 if (isset($reqPhrases)) {
   if ($reqPhrases === true) {
@@ -334,6 +412,9 @@ if (isset($reqPhrases)) {
     $templateVars = apc_fetch('fim_templateVars');
 
     if (!$templates || !$templateVars) {
+      $templates = array();
+      $templateVars = array();
+
       $templates2 = $slaveDatabase->select(
         array(
           "{$sqlPrefix}templates" => array(
@@ -358,19 +439,24 @@ if (isset($reqPhrases)) {
       }
 
       unset($templates2);
-      apc_store('fim_templates',$templates,0);
-      apc_store('fim_templateVars',$templateVars,0);
+      apc_store('fim_templates',$templates,$config['cacheTemplatesRefresh']);
+      apc_store('fim_templateVars',$templateVars,$config['cacheTemplatesRefresh']);
     }
   }
 }
 
 
-///* Cached Directives *///
+
+///* CACHED DIRECTIVES (REQUIRES APC) *///
+
 if ($config['cacheKicks']) {
   $cacheKicks = apc_fetch('fim_kickCache');
+
   if ($cacheKicks === null || $cacheKicks === false) {
+    $cacheKicks = array();
+
     $queryParts['cacheKicksSelect']['columns'] = array(
-      "{$sqlPrefix}kick" => array(
+      "{$sqlPrefix}kicks" => array(
         'kickerId' => 'kkickerId',
         'userId' => 'kuserId',
         'roomId' => 'kroomId',
@@ -448,7 +534,7 @@ if ($config['cacheKicks']) {
 
     foreach ($cacheKicksPre AS $cacheKick) {
       if ($cacheKick['ktime'] + $cacheKick['klength'] < time()) {
-        $database->delete("{$sqlPrefix}kick",array(
+        $database->delete("{$sqlPrefix}kicks",array(
           'userId' => $cacheKick['userId'],
           'roomId' => $cacheKick['roomId'],
         ));
@@ -458,10 +544,11 @@ if ($config['cacheKicks']) {
       }
     }
 
-    apc_add('fim_kickCache',$cacheKicks,(isset($config['cacheKicksRefresh']) ? $config['cacheKicksRefresh'] : 60));
+    apc_add('fim_kickCache',$cacheKicks,$config['cacheKicksRefresh']);
   }
 }
-//error_log(print_r($cacheKicks,true));
+
+
 
 ($hook = hook('global') ? eval($hook) : '');
 ?>

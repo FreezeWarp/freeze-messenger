@@ -77,7 +77,7 @@ $xmlData = array(
 );
 
 $queryParts['kicksSelect']['columns'] = array(
-  "{$sqlPrefix}kick" => array(
+  "{$sqlPrefix}kicks" => array(
     'kickerId' => 'kkickerId',
     'userId' => 'kuserId',
     'roomId' => 'kroomId',

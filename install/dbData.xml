@@ -8,77 +8,77 @@
       <column name="bbcodeId" value="1" />
       <column name="bbcodeName" value="Bold" />
       <column name="options" value="1" />
-      <column name="searchRegex" value="/[(b|strong)](.+?)[/(b|strong)]/is" />
+      <column name="searchRegex" value=" /[(b|strong)](.+?)[/(b|strong)]/is" />
       <column name="replacement" value="&lt;span style=&quot;font-weight: bold;&quot;&gt;$2&lt;/span&gt;" />
     </table>
     <table name="bbcode">
       <column name="bbcodeId" value="2" />
       <column name="bbcodeName" value="Strikethrough" />
       <column name="options" value="1" />
-      <column name="searchRegex" value="/[(s|strike)](.+?)[/(s|strike)]/is" />
+      <column name="searchRegex" value=" /[(s|strike)](.+?)[/(s|strike)]/is" />
       <column name="replacement" value="&lt;span style=&quot;text-decoration: line-through;&quot;&gt;$2&lt;/span&gt;" />
     </table>
     <table name="bbcode">
       <column name="bbcodeId" value="3" />
       <column name="bbcodeName" value="Italics" />
       <column name="options" value="1" />
-      <column name="searchRegex" value="/[(i|em)](.+?)[/(i|em)]/is" />
+      <column name="searchRegex" value=" /[(i|em)](.+?)[/(i|em)]/is" />
       <column name="replacement" value="&lt;span style=&quot;font-style: oblique;&quot;&gt;$2&lt;/span&gt;" />
     </table>
     <table name="bbcode">
       <column name="bbcodeId" value="4" />
       <column name="bbcodeName" value="Underline" />
       <column name="options" value="1" />
-      <column name="searchRegex" value="/[(u)](.+?)[/(u)]/is" />
+      <column name="searchRegex" value=" /[(u)](.+?)[/(u)]/is" />
       <column name="replacement" value="&lt;span style=&quot;text-decoration: underline;&quot;&gt;$2&lt;/span&gt;" />
     </table>
     <table name="bbcode">
       <column name="bbcodeId" value="5" />
       <column name="bbcodeName" value="Link" />
       <column name="options" value="1" />
-      <column name="searchRegex" value="/[url]([^&quot;&lt;&gt;]*?)[/url]/is" />
+      <column name="searchRegex" value=" /[url]([^&quot;&lt;&gt;]*?)[/url]/is" />
       <column name="replacement" value="&lt;a href=&quot;$1&quot; target=&quot;_BLANK&quot;&gt;$1&lt;/a&gt;" />
     </table>
     <table name="bbcode">
       <column name="bbcodeId" value="6" />
       <column name="bbcodeName" value="Email" />
       <column name="options" value="1" />
-      <column name="searchRegex" value="/[email](.*?)[/email]/is" />
+      <column name="searchRegex" value=" /[email](.*?)[/email]/is" />
       <column name="replacement" value="&lt;a href=&quot;mailto:$1&quot;&gt;$1&lt;/a&gt;" />
     </table>
     <table name="bbcode">
       <column name="bbcodeId" value="7" />
       <column name="bbcodeName" value="Colour" />
       <column name="options" value="1" />
-      <column name="searchRegex" value="/[(color|colour)=(&quot;|)(.*?)(&quot;|)](.*?)[/(color|colour)]/is" />
+      <column name="searchRegex" value=" /[(color|colour)=(&quot;|)(.*?)(&quot;|)](.*?)[/(color|colour)]/is" />
       <column name="replacement" value="&lt;span style=&quot;color: $3;&quot;&gt;$5&lt;/span&gt;" />
     </table>
     <table name="bbcode">
       <column name="bbcodeId" value="8" />
       <column name="bbcodeName" value="Highlight" />
       <column name="options" value="1" />
-      <column name="searchRegex" value="/[(hl|highlight|bg|background)=(&quot;|)(.*?)(&quot;|)](.*?)[/(hl|highlight|bg|background)]/is" />
+      <column name="searchRegex" value=" /[(hl|highlight|bg|background)=(&quot;|)(.*?)(&quot;|)](.*?)[/(hl|highlight|bg|background)]/is" />
       <column name="replacement" value="&lt;span style=&quot;background-color: $3;&quot;&gt;$5&lt;/span&gt;" />
     </table>
     <table name="bbcode">
       <column name="bbcodeId" value="9" />
       <column name="bbcodeName" value="Image" />
       <column name="options" value="1" />
-      <column name="searchRegex" value="/[img](.*?)[/img]/is" />
+      <column name="searchRegex" value=" /[img](.*?)[/img]/is" />
       <column name="replacement" value="&lt;a href=&quot;$1&quot; target=&quot;_BLANK&quot;&gt;&lt;img src=&quot;$1&quot; alt=&quot;image&quot; class=&quot;embedImage&quot; /&gt;&lt;/a&gt;" />
     </table>
     <table name="bbcode">
       <column name="bbcodeId" value="10" />
       <column name="bbcodeName" value="Image (with Alternate Text)" />
       <column name="options" value="1" />
-      <column name="searchRegex" value="/[img=(&quot;|)(.*?)(&quot;|)](.*?)[/img]/is" />
+      <column name="searchRegex" value=" /[img=(&quot;|)(.*?)(&quot;|)](.*?)[/img]/is" />
       <column name="replacement" value="&lt;a href=&quot;$4&quot; target=&quot;_BLANK&quot;&gt;&lt;img src=&quot;$4&quot; alt=&quot;$2&quot; class=&quot;embedImage&quot; /&gt;&lt;/a&gt;" />
     </table>
     <table name="bbcode">
       <column name="bbcodeId" value="11" />
       <column name="bbcodeName" value="Youtube Embed" />
       <column name="options" value="1" />
-      <column name="searchRegex" value="/[youtube](.*?)[/youtube]/is" />
+      <column name="searchRegex" value=" /[youtube](.*?)[/youtube]/is" />
       <column name="replacement" value="&lt;object width=&quot;420&quot; height=&quot;255&quot; wmode=&quot;transparent&quot;&gt;&lt;param name=&quot;movie&quot; value=&quot;http://www.youtube.com/v/$1=en&amp;amp;fs=1&amp;amp;rel=0&amp;amp;border=0&quot;&gt;&lt;/param&gt;&lt;param name=&quot;allowFullScreen&quot; value=&quot;true&quot;&gt;&lt;/param&gt;&lt;embed src=&quot;http://www.youtube.com/v/$1&amp;amp;hl=en&amp;amp;fs=1&amp;amp;rel=0&amp;amp;border=0&quot; type=&quot;application/x-shockwave-flash&quot; allowfullscreen=&quot;true&quot; width=&quot;420&quot; height=&quot;255&quot; wmode=&quot;opaque&quot;&gt;&lt;/embed&gt;&lt;/object&gt;" />
     </table>
 
@@ -395,5 +395,68 @@
       <column name="container" value="image" />
     </table>
 
+
+
+    <!-- Table configuration -->
+    <table name="configuration">
+      <column name="directive" value="defaultMessageHardLimit" />
+      <column name="value" value="50" />
+      <column name="type" value="int" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="defaultMessageLimit" />
+      <column name="value" value="10000" />
+      <column name="type" value="int" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="defaultOnlineThreshold" />
+      <column name="value" value="15" />
+      <column name="type" value="int" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="fullTextArchive" />
+      <column name="value" value="false" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="searchWordMinimum" />
+      <column name="value" value="4" />
+      <column name="type" value="int" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="searchWordMaximum" />
+      <column name="value" value="10" />
+      <column name="type" value="int" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="searchWordOmissions" />
+      <column name="value" value="that,them,then,than,thus,have,with,will,would,there,their,what,about,when,make,like,also,think,over,into,time,year,just,know,take,which,about,back,after,well,even,want,because,these,most" />
+      <column name="type" value="array" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="searchWordPunctuation" />
+      <column name="value" value=",,'.,;,:,-,&quot;,\',=,?,\\,/,[,],^,&amp;,#,@,!,%,*,(,),‘,’,¡,¿,¦" />
+      <column name="type" value="array" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="searchWordConvertsFind" />
+      <column name="value" value="é,É,ë,Ë,ó,Ó,ö,Ö,ø,Ø,í,Í,ï,Ï,ú,Ú,ü,Ü,ñ,？,！,。,、,；,：,／,｜,＠,＃,＄,％,＾,＆,＊,（,）,「,」,｛,｝,＜,＞" />
+      <column name="type" value="array" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="searchWordConvertsReplace" />
+      <column name="value" value="e,E,e,E,o,O,o,O,o,O,i,I,i,I,u,U,u,U,n,?,!,.,\,,;,:,/,|,@,#,$,%,^,&amp;,*,(,),[,],{,},&lt;,&gt;" />
+      <column name="type" value="array" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="cacheKicksRefresh" />
+      <column name="value" value="60" />
+      <column name="type" value="int" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="cacheKicks" />
+      <column name="value" value="false" />
+      <column name="type" value="bool" />
+    </table>
   </database>
 </dbData>

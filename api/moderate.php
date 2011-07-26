@@ -133,7 +133,7 @@ switch ($request['action']) {
     modLog('kick',"$userData[userId],$roomData[roomId]");
 
     // Delete any preexisting entries - the replace prolly negates this, but I'm not sure; is one query better than two?
-//    $database->delete("{$sqlPrefix}kick",array(
+//    $database->delete("{$sqlPrefix}kicks",array(
 //      'userId' => $userData['userId'],
 //      'roomId' => $roomData['roomId'],
 //    ));
@@ -143,7 +143,7 @@ switch ($request['action']) {
         'kickerId' => (int) $user['userId'],
         'length' => (int) $request['length'],
         'roomId' => (int) $roomData['roomId'],
-      ),"{$sqlPrefix}kick",array(
+      ),"{$sqlPrefix}kicks",array(
         'length' => (int) $request['length'],
         'kickerId' => (int) $user['userId'],
         'time' => array(
@@ -179,7 +179,7 @@ switch ($request['action']) {
   else {
     modLog('unkick',"$userData[userId],$roomData[roomId]");
 
-    $database->delete("{$sqlPrefix}kick",array(
+    $database->delete("{$sqlPrefix}kicks",array(
       'userId' => $userData['userId'],
       'roomId' => $roomData['roomId'],
     ));

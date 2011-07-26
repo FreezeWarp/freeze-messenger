@@ -58,7 +58,7 @@ function xml2array($obj, &$arr)
     }
     return;
 }  */
-require_once('../functions/simpleXml.php');
+require('../functions/simpleXml.php');
 
 
 
@@ -89,15 +89,15 @@ switch ($_REQUEST['phase']) {
   <script src="../webpro/client/js/jquery-ui-1.8.13.custom.min.js" type="text/javascript"></script>
   <script src="../webpro/client/js/jquery.plugins.js" type="text/javascript"></script>
   <script>
-  function resize() {
+  function windowDraw() {
     $(\'body\').css(\'min-height\',window.innerHeight);
   }
 
   $(document).ready(function() {
-    resize();
+    windowDraw();
     $(\'button, input[type=button], input[type=submit]\').button();
   });
-  window.onresize = resize;
+  window.onwindowDraw = windowDraw;
 
   var alert = function(text) {
     dia.info(text,"Alert");
@@ -149,7 +149,7 @@ switch ($_REQUEST['phase']) {
   If the MySQLi Extension is not present, you can still use FreezeMessenger, but will need to install it manually.<br /><br />
 
   <form onsubmit="return false;">
-    <button style="float: right;" type="button" onclick="$(\'#part1\').slideUp(); $(\'#part2\').slideDown(); resize();">Start &rarr;</button>
+    <button style="float: right;" type="button" onclick="$(\'#part1\').slideUp(); $(\'#part2\').slideDown(); windowDraw();">Start &rarr;</button>
   </form>
 </div>
 
@@ -197,50 +197,63 @@ switch ($_REQUEST['phase']) {
   </form><br /><br />
 
   <form onsubmit="return false;">
-    <button style="float: left;" type="button" onclick="$(\'#part2\').slideUp(); $(\'#part1\').slideDown(); resize();">&larr; Back</button>
-    <button style="float: right;" type="button" onclick="$.get(\'index.php?phase=1\',$(\'#mysql_connect_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part2\').slideUp(); $(\'#part3\').slideDown(); } else { alert(data); } } ); resize();">Setup &rarr;</button>
+    <button style="float: left;" type="button" onclick="$(\'#part2\').slideUp(); $(\'#part1\').slideDown(); windowDraw();">&larr; Back</button>
+    <button style="float: right;" type="button" onclick="dia.full({ title : \'Installing\', content : \'<div style=&quot;text-align: center;&quot;>Installing now. Please wait a few moments. <img src=&quot;../webpro/images/ajax-loader.gif&quot; /></div>\', id : \'installingDia\'}); $.get(\'index.php?phase=1\',$(\'#mysql_connect_form\').serialize(),function(data) { $(\'#installingDia\').remove(); if (data == \'success\') { $(\'#part2\').slideUp(); $(\'#part3\').slideDown(); } else { dia.error(data); } } ); windowDraw();">Setup &rarr;</button>
   </form>
 </div>
 
 <div id="part3" style="display: none;">
   <h1>FreezeMessenger Installation: Generate Configuration File</h1><hr class="ui-widget-header" />
-  Now that the database has been successfully installed, we must generate the configuration file. There are two ways of doing this: either modify config.base.php and save it as config.php or enter the details below. You are recommended to do this manually, though.<br /><br />
+  Now that the database has been successfully installed, we must generate the configuration file. You can do this in a couple of ways: we would recommend simply entering the data below and you\'ll be on your way, though you can also do it manually by getting config.base.php from the install/ directory and saving it as config.php in the main directory.<br /><br />
 
   <form onsubmit="return false;" name="config_form" id="config_form">
-    <table>
+    <table border="1" class="page">
+      <tr class="ui-widget-header">
+        <th colspan="2">Forum Integration</th>
+      </tr>
       <tr>
-        <td>Forum Integration</td>
+        <td><strong>Forum Integration</strong></td>
         <td>
           <select name="forum">
-            <option value="vanilla">No Integration</option>
+            <option value="vanilla">No Integration (Broken)</option>
             <option value="vbulletin3">vBulletin 3.8</option>
             <option value="vbulletin4">vBulletin 4.1</option>
             <option value="phpbb">PHPBB 3</option>
-          </select>
+          </select><br /><small>If you have a forum, you can enable more advanced features than without one, and prevent users from having to instll more than one account.</small>
         </td>
       </tr>
       <tr>
-        <td>Forum URL</td>
-        <td><input type="text" name="forum_url" /></td>
+        <td><strong>Forum URL</strong></td>
+        <td><input type="text" name="forum_url" /><br /><small>The URL your forum is installed on.</small></td>
       </tr>
       <tr>
-        <td>Forum Table Prefix</td>
-        <td><input type="text" name="forum_tableprefix" /></td>
+        <td><strong>Forum Table Prefix</strong></td>
+        <td><input type="text" name="forum_tableprefix" /><br /><small>The prefix of all tables the forum uses. You most likely defined this when you installed it. If unsure, check your forum\'s configuration file.</small></td>
+      </tr>
+      <tr class="ui-widget-header">
+        <th colspan="2">Encryption</th>
       </tr>
       <tr>
-        <td>Encryption Phrase</td>
-        <td><input type="text" name="encrypt_salt" /></td>
+        <td><strong>Enable Encryption?</strong></td>
+        <td><select name="enable_encrypt"><option value="3">For Everything</option><option value="2">For Uploads Only</option><option value="1">For Messages Only</option><option value="0">For Nothing</option></select><br /><small>Encryption is strongly encouraged, though it will cause slight slowdown.</small></td>
       </tr>
       <tr>
-        <td>Enable Encryption?</td>
-        <td><select name="enable_encrypt"><option value="3">For Everything</option><option value="2">For Uploads Only</option><option value="1">For Messages Only</option><option value="0">For Nothing</option></select></td>
+        <td><strong>Encryption Phrase</strong></td>
+        <td><input type="text" name="encrypt_salt" /><br /><small>This is a phrase used to encrypt the data. You can change this later as long as you don\'t remove referrences to this one.</td>
+      </tr>
+      <tr class="ui-widget-header">
+        <th colspan="2">Uploads</th>
+      </tr>
+      <tr>
+        <td><strong>Enable Uploads?</strong></td>
+        <td><select name="enable_uploads"><option value="3">General Uploads and In-Post Uploads</option><option value="1">Disable General Uploads</option><option value="0">Disable All Uploads</option></select><br /><small>Uploads can add to server load, though enabling them allows for much more effective communication. Note that disabling In-Post Uploads doesn\'t neccissarily change anything (but discourages using uploads for general storage).</td>
       </tr>
     </table><br /><br />
   </form>
 
   <form onsubmit="return false;">
-    <button style="float: left;" type="button" onclick="$(\'#part3\').slideUp(); $(\'#part2\').slideDown(); resize();">&larr; Back</button>
-    <button style="float: right;" type="button" onclick="$.get(\'index.php?phase=2\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#config_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part3\').slideUp(); $(\'#part4\').slideDown(); } else { alert(\'Could not create configuration file. Is the server allowed to write to it?\'); } } ); resize();">Finish &rarr;</button>
+    <button style="float: left;" type="button" onclick="$(\'#part3\').slideUp(); $(\'#part2\').slideDown(); windowDraw();">&larr; Back</button>
+    <button style="float: right;" type="button" onclick="$.get(\'index.php?phase=2\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#config_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part3\').slideUp(); $(\'#part4\').slideDown(); } else { alert(\'Could not create configuration file. Is the server allowed to write to it?\'); } } ); windowDraw();">Finish &rarr;</button>
   </form>
 </div>
 
@@ -351,15 +364,15 @@ switch ($_REQUEST['phase']) {
     $xmlData = $xmlData->getAsArray(); // Get the XML data as an array
     $xmlData = $xmlData['dbSchema']; // Get the contents of the root node
 
-    $xmlData2 = new Xml2Array(file_get_contents('dbData.xml')); // Get the XML Data from the dbSchema.xml file, and feed it to the Xml2Array class
+    $xmlData2 = new Xml2Array(file_get_contents('dbData.xml')); // Get the XML Data from the dbData.xml file, and feed it to the Xml2Array class
     $xmlData2 = $xmlData2->getAsArray(); // Get the XML data as an array
     $xmlData2 = $xmlData2['dbData']; // Get the contents of the root node
 
-    $xmlData3 = new Xml2Array(file_get_contents('webProTemplate.xml')); // Get the XML Data from the dbSchema.xml file, and feed it to the Xml2Array class
+    $xmlData3 = new Xml2Array(file_get_contents('webProTemplate.xml')); // Get the XML Data from the webProTemplate.xml file, and feed it to the Xml2Array class
     $xmlData3 = $xmlData3->getAsArray(); // Get the XML data as an array
     $xmlData3 = $xmlData3['interface']; // Get the contents of the root node
 
-    $xmlData4 = new Xml2Array(file_get_contents('webProLangEn.xml')); // Get the XML Data from the dbSchema.xml file, and feed it to the Xml2Array class
+    $xmlData4 = new Xml2Array(file_get_contents('webProLangEn.xml')); // Get the XML Data from the webProLangEn.xml file, and feed it to the Xml2Array class
     $xmlData4 = $xmlData4->getAsArray(); // Get the XML data as an array
     $xmlData4 = $xmlData4['languagePack']; // Get the contents of the root node
 
@@ -663,6 +676,7 @@ switch ($_REQUEST['phase']) {
 
   $encryptSalt = urldecode($_GET['encrypt_salt']);
   $enableEncrypt = (int) $_GET['enable_encrypt'];
+  $enableUploads = (int) $_GET['enable_uploads'];
 
   $base = file_get_contents('config.base.php');
 
@@ -690,6 +704,8 @@ $dbConnect[\'integration\'][\'database\'] = \'\';',
 );',
      '$encrypt = true;',
      '$encryptUploads = true;',
+     '$enableUploads = true;',
+     '$enableGeneralUploads = true;',
   );
 
   $replace = array(
@@ -716,6 +732,8 @@ $dbConnect[\'integration\'][\'database\'] = \'' . $database . '\';',
 );',
     '$encrypt = ' . ($enableEncrypt & 1 ? 'true' : 'false') . ';',
     '$encryptUploads = ' . ($enableEncrypt & 2 ? 'true' : 'false') . ';',
+    '$enableUploads = ' . ($enableUploads & 1 ? 'true' : 'false') . ';',
+    '$enableGeneralUploads = ' . ($enableUploads & 2 ? 'true' : 'false') . ';',
   );
 
 

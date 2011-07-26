@@ -159,7 +159,7 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
       else {
         $kick = $database->select(
           array(
-            "{$sqlPrefix}kick" => array(
+            "{$sqlPrefix}kicks" => array(
               'time' => array(
                 'context' => 'time',
                 'name' => 'kickedOn',
@@ -658,10 +658,14 @@ function fim_date($format, $timestamp = false) {
 */
 
 function hook($name) {
-  global $hooks;
+  global $hooks, $disableHooks;
+
   $hook = $hooks[$name];
 
-  if ($hook) {
+  if ($disableHooks) {
+    return false;
+  }
+  elseif ($hook) {
     return $hook;
   }
   else {
@@ -1611,5 +1615,36 @@ function hasArray($array) {
   }
 
   return false;
+}
+
+
+/**
+ * Implements PHP's explode with support for escaped delimeters.
+ *
+ * @param string delimiter
+ * @param string string
+ * @return array
+ * @author <adrian@bilsoftware.com>
+ * @source http://www.php.net/manual/en/function.explode.php#89138 */
+function fim_explodeEscaped($delimiter, $string) {
+  $exploded = explode($delimiter, $string);
+  $fixed = array();
+  for ($k = 0, $l = count($exploded); $k < $l; ++$k) {
+    if ($exploded[$k][strlen($exploded[$k]) - 1] == '\\') {
+      if ($k + 1 >= $l) {
+        $fixed[] = trim($exploded[$k]);
+        break;
+      }
+      $exploded[$k][strlen($exploded[$k]) - 1] = $delimiter;
+      $exploded[$k] .= $exploded[$k + 1];
+      array_splice($exploded, $k + 1, 1);
+      --$l;
+      --$k;
+    }
+    else {
+      $fixed[] = trim($exploded[$k]);
+    }
+  }
+  return $fixed;
 }
 ?>
