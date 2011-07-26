@@ -88,7 +88,9 @@ var roomRef = {}, // Object
 
   userSelectHtml = '',
 
-  fontSelectHtml = '';
+  fontSelectHtml = '',
+
+  active = {}; // Object which will be used to store various JSON results
 
 
 
@@ -453,25 +455,25 @@ var themeName = (themeId ? themes[themeId] : 'cupertino');
 function populate(options) {
   $.when(
     $.ajax({
-      url: directory + 'api/getUsers.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+      url: directory + 'api/getUsers.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
       type: 'GET',
       timeout: 5000,
       cache: false,
-      success: function(xml) {
+      success: function(json) {
         userList = []; // Array // Clear so we don't get repeat values on regeneration.
         userRef = {}; // Object
         userSelectHtml = '';
+        active = json.getUsers.users;
 
         console.log('Users obtained.');
-
-        $(xml).find('user').each(function() {
-          var userName = unxml($(this).find('userName').text().trim()),
-            userId = Number($(this).find('userId').text().trim());
+        for (i in active) {
+          var userName = active[i].userName,
+            userId = active[i].userId;
 
           userRef[userName] = userId;
           userIdRef[userId] = userName;
           userList.push(userName);
-        });
+        }
 
         return false;
       },
@@ -484,11 +486,11 @@ function populate(options) {
 
 
     $.ajax({
-      url: directory + 'api/getRooms.php?permLevel=view&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+      url: directory + 'api/getRooms.php?permLevel=view&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
       timeout: 5000,
       type: 'GET',
       cache: false,
-      success: function(xml) {
+      success: function(json) {
         roomList = []; // Array // Clear so we don't get repeat values on regeneration.
         roomIdRef = {}; // Object
         roomRef = {}; // Object
@@ -499,15 +501,17 @@ function populate(options) {
         roomUlMyHtml = '';
         roomUlFavHtml = '';
 
-        $(xml).find('room').each(function() {
-          var roomName = unxml($(this).find('roomName').text().trim()),
-            roomId = Number($(this).find('roomId').text().trim()),
-            roomTopic = unxml($(this).find('roomTopic').text().trim()),
-            isFav = ($(this).find('favorite').text().trim() === 'true' ? true : false),
-            isPriv = ($(this).find('optionDefinitions > privateIm').text().trim() === 'true' ? true : false),
-            isAdmin = ($(this).find('canAdmin').text().trim() === 'true' ? true : false),
-            isModerator = ($(this).find('canModerate').text().trim() === 'true' ? true : false),
-            isOwner = (Number($(this).find('owner').text().trim()) === userId ? true : false),
+        active = json.getRooms.rooms;
+
+        for (i in active) {
+          var roomName = active[i].roomName,
+            roomId = active[i].roomId,
+            roomTopic = active[i].roomTopic,
+            isFav = active[i].favorite,
+            isPriv = active[i].optionDefinitions.privateIm,
+            isAdmin = active[i].canAdmin,
+            isModerator = active[i].canModerate,
+            isOwner = (active[i].owner === userId ? true : false),
             ulText = '<li><a href="#room=' + roomId + '">' + roomName + '</a></li>';
 
           if (isFav) {
@@ -538,7 +542,7 @@ function populate(options) {
           else {
             modRooms[roomId] = 0;
           }
-        });
+        }
 
         $('#roomListLong > li > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li><li>My Rooms<ul>' + roomUlMyHtml + '</ul></li><li>General<ul>' + roomUlHtml + '</ul></li><li>Private<ul>' + roomUlPrivHtml + '</ul></li>');
 
@@ -559,21 +563,22 @@ function populate(options) {
 
 
     $.ajax({
-      url: directory + 'api/getGroups.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+      url: directory + 'api/getGroups.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
       timeout: 5000,
       type: 'GET',
       cache: false,
-      success: function(xml) {
+      success: function(json) {
         console.log('Groups obtained.');
 
-        $(xml).find('group').each(function() {
-          var groupName = unxml($(this).find('groupName').text().trim()),
-            groupId = Number($(this).find('groupId').text().trim());
+        active = json.getGroups.groups;
+        for (i in active) {
+          var groupName = active[i].groupName,
+            groupId = active[i].groupId;
 
           groupRef[groupName] = groupId;
           groupIdRef[groupId] = groupName;
           groupList.push(groupName);
-        });
+        }
 
         return false;
       },
@@ -585,20 +590,22 @@ function populate(options) {
     }),
 
     $.ajax({
-      url: directory + 'api/getFonts.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+      url: directory + 'api/getFonts.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
       timeout: 5000,
       type: 'GET',
       cache: false,
-      success: function(xml) {
-        $(xml).find('font').each(function() {
-          var fontName = unxml($(this).find('fontName').text().trim()),
-            fontId = Number($(this).find('fontId').text().trim()),
-            fontGroup = unxml($(this).find('fontGroup').text().trim()),
-            fontData = unxml($(this).find('fontData').text().trim());
+      success: function(json) {
+        active = json.getFonts.fonts;
 
-            fontSelectHtml += '<option value="' + fontId + '" style="' + fontData + '" data-font="' + fontData + '">' + fontName + '</option>';
-            fontIdRef[fontId] = fontName;
-        });
+        for (i in active) {
+          var fontName = active[i].fontName,
+            fontId = active[i].fontId,
+            fontGroup = active[i].fontGroup,
+            fontData = active[i].fontData;
+
+          fontSelectHtml += '<option value="' + fontId + '" style="' + fontData + '" data-font="' + fontData + '">' + fontName + '</option>';
+          fontIdRef[fontId] = fontName;
+        }
 
         return false;
       },
@@ -929,20 +936,21 @@ var standard = {
       $.ajax({
         url: directory + 'validate.php',
         type: 'POST',
-        data: data + '&apiVersion=3',
+        data: data + '&apiVersion=3&fim3_format=json',
         cache: false,
         timeout: 2500,
-        success: function(xml) {
-          var loginFlag = unxml($(xml).find('loginFlag').text().trim()),
-            loginText = unxml($(xml).find('loginText').text().trim()),
-            valid = unxml($(xml).find('valid').text().trim()),
-            userName = unxml($(xml).find('userData > userName').text().trim()),
-            defaultRoomId = Number($(xml).find('defaultRoomId').text().trim()),
-            banned = (Number($(xml).find('banned').text().trim()) > 0 ? true : false);
+        success: function(json) {
+          active = json.login;
+          var loginFlag = active.loginFlag,
+            loginText = active.loginText,
+            valid = active.valid,
+            userName = active.userData.userName,
+            defaultRoomId = active.defaultRoomId,
+            banned = active.banned;
 
-          userId = Number($(xml).find('userData > userId').text().trim());
-          anonId = Number($(xml).find('anonId').text().trim());
-          sessionHash = unxml($(xml).find('sessionHash').text().trim());
+          userId = active.userData.userId;
+          anonId = active.anonId;
+          sessionHash = active.sessionHash;
 
 
 
@@ -953,33 +961,41 @@ var standard = {
 
           /* Update Permissions */
 
-          userPermissions.createRoom = (Number($(xml).find('userPermissions > createRooms').text().trim()) > 0 ? true : false);
-          userPermissions.privateRoom = (Number($(xml).find('userPermissions > privateRooms').text().trim()) > 0 ? true : false);
-          userPermissions.general = (Number($(xml).find('userPermissions > allowed').text().trim()) > 0 ? true : false);
+          userPermissions = {
+            createRoom : active.userPermissions.createRooms,
+            privateRoom : active.userPermissions.privateRooms,
+            general : active.userPermissions.allowed
+          }
 
-          adminPermissions.modPrivs = (Number($(xml).find('adminPermissions > modPrivs').text().trim()) > 0 ? true : false);
-          adminPermissions.modCore = (Number($(xml).find('adminPermissions > modCore').text().trim()) > 0 ? true : false);
-          adminPermissions.modUsers = (Number($(xml).find('adminPermissions > modUsers').text().trim()) > 0 ? true : false);
-          adminPermissions.modTemplates = (Number($(xml).find('adminPermissions > modTemplates').text().trim()) > 0 ? true : false);
-          adminPermissions.modImages = (Number($(xml).find('adminPermissions > modImages').text().trim()) > 0 ? true : false);
-          adminPermissions.modCensor = (Number($(xml).find('adminPermissions > modCensor').text().trim()) > 0 ? true : false);
-          adminPermissions.modHooks = (Number($(xml).find('adminPermissions > modHooks').text().trim()) > 0 ? true : false);
+          adminPermissions = {
+            modPrivs : active.adminPermissions.modPrivs,
+            modCore : active.adminPermissions.modCore,
+            modUsers : active.adminPermissions.modUsers,
+            modTemplates : active.adminPermissions.modTemplates,
+            modImages : active.adminPermissions.modImages,
+            modCensor : active.adminPermissions.modCensor,
+            modHooks : active.adminPermissions.modHooks
+          }
 
 
           if (banned) { // The user has been banned, so pretty much nothing will work. In some respects, this really only exists for IP bans, but meh.
             dia.error('You have been banned. You will not be able to do anything.');
 
-            userPermissions.createRoom = false;
-            userPermissions.privateRoom = false;
-            userPermissions.general = false;
+            userPermissions = {
+              createRoom : false,
+              privateRoom : false,
+              general : false
+            }
 
-            adminPermissions.modPrivs = false;
-            adminPermissions.modCore = false;
-            adminPermissions.modUsers = false;
-            adminPermissions.modTemplates = false;
-            adminPermissions.modImages = false;
-            adminPermissions.modCensor = false;
-            adminPermissions.modHooks = false;
+            adminPermissions = {
+              modPrivs : false,
+              modCore : false,
+              modUsers : false,
+              modTemplates : false,
+              modImages : false,
+              modCensor : false,
+              modHooks : false
+            }
           }
           else if (valid === 'true') {
             if (options.showMessage) {
@@ -1067,7 +1083,7 @@ var standard = {
         callback : function() {
           windowDraw();
           windowDynaLinks();
-console.log(3);
+
           /* Select Room */
           standard.changeRoom(roomId);
 
@@ -3119,6 +3135,10 @@ function contextMenuParse() {
           case 'ban': // TODO
           standard.banUser(userId);
           break;
+
+          case 'ignore': // TODO
+          standard.ignoreUser(userId);
+          break;
         }
 
         return false;
@@ -3200,7 +3220,7 @@ function contextMenuParse() {
   });
 
   $('.messageLine .messageText a').contextMenu({
-    menu: 'messageMenu'
+    menu: 'messageMenuLink'
   },
   function(action, el) {
     var postid = $(el).attr('data-messageid'),

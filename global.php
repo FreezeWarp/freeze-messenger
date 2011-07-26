@@ -310,7 +310,7 @@ if (!$config = apc_fetch('fim_config') || $disableConfig) {
 
 ///* GET PHRASES *///
 
-if (isset($reqPhrases)) {
+if (isset($reqPhrases)) { // TODO Languages currently overwrite eachother
   if ($reqPhrases === true) {
     if (!$phrases = apc_fetch('fim_phrases')) {
       $lang = (isset($_REQUEST['lang']) ? $_REQUEST['lang'] :
@@ -359,7 +359,7 @@ if (isset($reqPhrases)) {
 
       unset($phrases2);
 
-      apc_store('fim_phrases',$config['cachePhrasesRefresh'],0);
+      apc_store('fim_phrases',$phrases,$config['cachePhrasesRefresh']);
     }
   }
 }

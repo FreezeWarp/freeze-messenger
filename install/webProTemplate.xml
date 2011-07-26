@@ -461,7 +461,7 @@ Cat333Pokémon
 
 &lt;div id="help" style="height: 400px;"&gt;
 &lt;div id="intro"&gt;
-FreezeMessenger 2.0 (FIM or FIM2) is an advanced AJAX-based online webmessenger and Instant Messenger substitute created to allow anybody to easily communicate with anybody else all across the web. It is highly sophisticated, supporting all modern browsers and utilizing various cutting-edge features in each. It was written from scratch by Joseph T. Parsons ("FreezeWarp") with PHP, MySQL, and other tricks along the way.
+FreezeMessenger 3.0 (FIM, FIM3, or FIMv3) is an advanced AJAX-based online webmessenger and Instant Messenger substitute created to allow anybody to easily communicate with anybody else all across the web. It is highly sophisticated, supporting all modern browsers and utilizing various cutting-edge features in each. It was written from scratch by Joseph T. Parsons ("FreezeWarp") with PHP, MySQL, and other tricks along the way.
 &lt;/div&gt;
 
 &lt;div id="rules"&gt;In no part of the chat, whether it be in a public, private, official, or nonofficial room, are you allowed to:
@@ -519,6 +519,7 @@ Keep in mind all content is heavily encrytped for privacy. Private conversations
     <template name="contextMenu" vars="">&lt;ul id="userMenu" class="contextMenu"&gt;
 &lt;li&gt;&lt;a href="javascript:void(0);" data-action="private_im"&gt;Private IM&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="javascript:void(0);" data-action="profile"&gt;View Profile&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="ignore"&gt;Un/Ignore User&lt;/a&gt;&lt;/li&gt;
 {{if="fim_hasPermission($room, $user, 'moderate')"}{&lt;li&gt;&lt;a href="javascript:void(0);" data-action="kick"&gt;Kick&lt;/a&gt;&lt;/li&gt;}}
 {{if="$user['adminPrivs']['modUsers']"}{&lt;li&gt;&lt;a href="javascript:void(0);" data-action="ban"&gt;Ban&lt;/a&gt;&lt;/li&gt;}}
 &lt;/ul&gt;
@@ -530,6 +531,13 @@ Keep in mind all content is heavily encrytped for privacy. Private conversations
 
 &lt;ul id="messageMenuImage" class="contextMenu"&gt;
 &lt;li&gt;&lt;a href="javascript:void(0);" data-action="url"&gt;Get URL&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="link"&gt;Link To&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;Delete&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul id="messageMenuLink" class="contextMenu"&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="url"&gt;Get URL&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="sandbox"&gt;View in Sandbox&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="javascript:void(0);" data-action="link"&gt;Link To&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;Delete&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;

@@ -18,7 +18,7 @@
     <phrase name="brandingCommunityLinks"></phrase>
     <phrase name="brandingIE9Color">blue</phrase>
     <phrase name="chatAccessDenied">You see... our incredibly high standards of admittance, or perhaps just our unjust bias, has resulted in us unfairly denying you access to this probably-not-worth-your time room. We do apologize for being such snobs... but yet, we still are. So, we must now ask you to leave.</phrase>
-    <phrase name="chatPrivateRoom">This room is a private room between you and another individual, and is not accessible to any other user or administrator. If you would like to ignore this person right click their userName and choose &amp;quot;Ignore&amp;quot;. If you are being harrassed, please contact either Cat333Pokémon or FreezeWarp.</phrase>
+    <phrase name="chatPrivateRoom">This room is a private room between you and another individual, and is not accessible to any other user or administrator. If you would like to ignore this person right click their userName and choose &amp;quot;Ignore&amp;quot;.</phrase>
     <phrase name="chatNotModerated">This room is not an official room, and as such is not actively moderated. Please excercise caution when talking to people you do not know, and do not reveal personal information.</phrase>
     <phrase name="chatAdminAccess">You are not a part of this group, rather you are only granted access because you are an administrator. Please respect user privacy: do not post in this group unwanted, and moreover do not spy without due reason.</phrase>
     <phrase name="settingsParentalControlsLabel">Disable Parental Controls:</phrase>
