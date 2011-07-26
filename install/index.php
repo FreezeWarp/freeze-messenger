@@ -193,10 +193,6 @@ switch ($_REQUEST['phase']) {
         <td><strong>Table Prefix</strong></td>
         <td><input type="text" name="mysql_tableprefix" /><br /><small>The prefix that FreezeMessenger\'s tables should use. This can be left blank (or with the default), but if the database contains any other products you must use a <strong>different</strong> prefix than all other products.</small></td>
       </tr>
-      <tr>
-        <td><strong>Prevent Overwrite</strong></td>
-        <td><input type="checkbox" name="mysql_nooverwrite" /><br /><small>This will prevent tables that exist from being touched (normally, they are renamed to a backup table just in case -- no data is ever deleted). You should rarely wish to use this setting.</small></td>
-      </tr>
     </table>
   </form><br /><br />
 
@@ -276,8 +272,6 @@ switch ($_REQUEST['phase']) {
   $password = urldecode($_GET['mysql_password']);
   $database = urldecode($_GET['mysql_database']);
   $createdb = urldecode($_GET['mysql_createdb']);
-  $prefix = urldecode($_GET['mysql_tableprefix']);
-  $noOverwrite = urldecode($_GET['mysql_nooverwrite']);
 
 
 
@@ -558,11 +552,7 @@ switch ($_REQUEST['phase']) {
       }
 
       foreach ($queries AS $tableName => $query) {
-        if (in_array($tableName,(array) $mysqlTables) && $noOverwrite) {
-          $skipTables[] = $tableName;
-          continue; // Don't create the table, since we shouldn't overwrite.
-        }
-        elseif (in_array($tableName,(array) $mysqlTables)) { // We are overwriting, so rename the old table to a backup. Someone else can clean it up later, but its for the best.
+        if (in_array($tableName,(array) $mysqlTables)) { // We are overwriting, so rename the old table to a backup. Someone else can clean it up later, but its for the best.
           $newTable = $tableName . '~' . time();
 
           if (!$mysqli->query("RENAME TABLE `$tableName` TO `$newTable`")) {
@@ -621,20 +611,18 @@ switch ($_REQUEST['phase']) {
 
       $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
 
-      if (!in_array($prefix . 'templates',$skipTables)) {
-        foreach ($xmlData3['templates'][0]['template'] AS $template) { // Run through each template from the XML
-          $queries[] = "INSERT INTO `{$prefix}templates` (`templateName`,`data`,`vars`) VALUES
-    ('" . $mysqli->real_escape_string($template['@name']) . "','" . $mysqli->real_escape_string($template['#text']) . "','" . $mysqli->real_escape_string($template['@vars']) . "')";
+      foreach ($xmlData3['templates'][0]['template'] AS $template) { // Run through each template from the XML
+        $queries[] = "INSERT INTO `{$prefix}templates` (`templateName`,`data`,`vars`) VALUES
+  ('" . $mysqli->real_escape_string($template['@name']) . "','" . $mysqli->real_escape_string($template['#text']) . "','" . $mysqli->real_escape_string($template['@vars']) . "')";
+      }
+
+      foreach ($queries AS $query) {
+        if (!trim($query)) {
+          continue;
         }
 
-        foreach ($queries AS $query) {
-          if (!trim($query)) {
-            continue;
-          }
-
-          if (!$mysqli->query(trim($query))) {
-            die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $mysqli->error);
-          }
+        if (!$mysqli->query(trim($query))) {
+          die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $mysqli->error);
         }
       }
 
@@ -646,22 +634,20 @@ switch ($_REQUEST['phase']) {
 
       $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
 
-      if (!in_array($prefix . 'phrases',$skipTables)) {
-        $queries[] = "INSERT INTO `{$sqlPrefix}languages` (`languageCode`, `languageName`) VALUES ('" . $mysqli->real_escape_string($xmlData4['@languageCode']) . "','" . $mysqli->real_escape_string($xmlData4['@languageName']) . "')";
+      $queries[] = "INSERT INTO `{$sqlPrefix}languages` (`languageCode`, `languageName`) VALUES ('" . $mysqli->real_escape_string($xmlData4['@languageCode']) . "','" . $mysqli->real_escape_string($xmlData4['@languageName']) . "')";
 
-        foreach ($xmlData4['phrases'][0]['phrase'] AS $phrase) { // Run through each template from the XML
-          $queries[] = "INSERT INTO `{$prefix}phrases` (`phraseName`,`languageCode`,`text`) VALUES
-    ('" . $mysqli->real_escape_string($phrase['@name']) . "','" . $mysqli->real_escape_string($xmlData4['@languageCode']) . "','" . $mysqli->real_escape_string($phrase['#text']) . "')";
+      foreach ($xmlData4['phrases'][0]['phrase'] AS $phrase) { // Run through each template from the XML
+        $queries[] = "INSERT INTO `{$prefix}phrases` (`phraseName`,`languageCode`,`text`) VALUES
+  ('" . $mysqli->real_escape_string($phrase['@name']) . "','" . $mysqli->real_escape_string($xmlData4['@languageCode']) . "','" . $mysqli->real_escape_string($phrase['#text']) . "')";
+      }
+
+      foreach ($queries AS $query) {
+        if (!trim($query)) {
+          continue;
         }
 
-        foreach ($queries AS $query) {
-          if (!trim($query)) {
-            continue;
-          }
-
-          if (!$mysqli->query(trim($query))) {
-            die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $mysqli->error);
-          }
+        if (!$mysqli->query(trim($query))) {
+          die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $mysqli->error);
         }
       }
     }
