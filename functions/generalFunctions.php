@@ -1030,8 +1030,11 @@ function fim_outputApi($data) {
       return fim_outputKeys($data);
       break;
 
+      case 'eventstream':
+
+      break;
+
       case 'xml2':
-      default:
       return fim_outputXml2($data);
       break;
 

@@ -205,12 +205,6 @@ $disableTopic = false;
 ///* These are provided to enable technology that may help considerably but may also screw things up. *///
 ///* Change at your own risk. *///
 
-/* $longPolling
- * If enabled, experimental $longPolling support will be used instead of normal polling.
- * This has several benefits: it places less load on the server, less load on the user, allows for far faster connections, and is generally smoother.
- * However, at the same time, a number of servers will have issues with this. Similarly, by default, far more MySQL queries will be executed than normal (roughly one every 1½ per second per user for message retrieval only). */
-$longPolling = false;
-
 /* $anonymousUser
  * If specified, a single user can be used to allow all unregistered / not-logged in to post messages.
  * These users will be appended a number (stored in their session hash but lost quickly) to distinguish between themselves.

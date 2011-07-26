@@ -43,9 +43,9 @@ $xmlData = array(
       'loginMethod' => $loginConfig['method'],
       'installedPlugins' => array(),
       'requestMethods' => array(
-        'longPoll' => (bool) $longPolling,
+        'longPoll' => (bool) $config['longPolling'],
         'poll' => (bool) true,
-        'serverSentEvents' => (bool) false,
+        'serverSentEvents' => (bool) $config['serverSentEvents'],
       ),
 
       'fileUploads' => array(

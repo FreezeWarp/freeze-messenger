@@ -307,6 +307,47 @@ function messageFormat(json, format) {
 }
 
 
+/* ? */
+function newMessage() {
+  if (settings.reversePostOrder) {
+    toBottom();
+  }
+
+  if (window.isBlurred) {
+    if (settings.audioDing) {
+      riffwave.play();
+
+      if (navigator.appName === 'Microsoft Internet Explorer') {
+        timers.t3 = window.setInterval(faviconFlash,1000);
+
+        window.clearInterval(timers.t3);
+      }
+    }
+
+    if (notify) {
+      if (typeof window.webkitNotifications === 'object') {
+        notify.webkitNotify('images/favicon.gif', 'New Message', notifyData);
+      }
+    }
+
+    if (typeof window.external === 'object') {
+      if (typeof window.external.msIsSiteMode !== 'undefined' && typeof window.external.msSiteModeActivate !== 'undefined') {
+        try {
+          if (window.external.msIsSiteMode()) {
+            window.external.msSiteModeActivate();
+          }
+        }
+        catch(ex) {
+          // Ya know, its very weird IE insists on this when the "in" statement works just as well...
+        }
+      }
+    }
+  }
+
+  contextMenuParse();
+}
+
+
 /* URL-Defined Actions
 * TODO */
 
@@ -393,14 +434,22 @@ $.ajax({
   url: directory + 'api/getServerStatus.php?fim3_format=json',
   type: 'GET',
   timeout: 1000,
-  dataType: 'json',
+//  dataType: 'json',
   success: function(json) {
     requestSettings.longPolling = json.getServerStatus.serverStatus.requestMethods.longPoll;
+
+    if (typeof window.EventSource == 'undefined') {
+      requestSettings.serverSentEvents = false;
+    }
+    else {
+      requestSettings.serverSentEvents = json.getServerStatus.serverStatus.requestMethods.serverSentEvents;
+    }
 
     return false;
   },
   error: function() {
     requestSettings.longPolling = false;
+    requestSettings.serverSentEvents = false;
 
     return false;
   }
@@ -1167,190 +1216,206 @@ var standard = {
         });
       }
 
-      $.ajax({
-        url: directory + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest ? '&archive=1&messageIdEnd=' + lastMessageId : '&messageIdStart=' + (requestSettings.lastMessage + 1)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-        type: 'GET',
-        timeout: requestSettings.timeout,
-        contentType: "text/json; charset=utf-8",
-        dataType: "json",
-        cache: false,
-        success: function(json) {
-          var errStr = json.getMessages.errStr,
-            errDesc = json.getMessages.errDesc,
-            sentUserId = 0,
-            messageCount = 0;
+      if (requestSettings.serverSentEvents) {
+        var source = new EventSource(directory + 'eventStream.php?roomId=' + roomId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
 
-          if (errStr) {
-            sentUserId = json.getMessages.activeUser.userId;
+        source.addEventListener('message', function(e) {
+          var active = JSON.parse(e.data);
 
-            if (errStr === 'noperm') {
-              roomId = false;
+          for (var i = 0; i < active.length; i++) {
+            var messageId = Number(active[i].messageData.messageId);
+            data = messageFormat(active[i], 'list');
 
-              if (sentUserId) {
-                popup.selectRoom();
-
-                dia.error('You have been restricted access from this room. Please select a new room.');
+            if (messageIndex[messageId]) {
+              // Double post hack
+            }
+            else {
+              if (settings.reversePostOrder) {
+                $('#messageList').append(data);
               }
               else {
-                popup.login();
+                $('#messageList').prepend(data);
+              }
 
-                dia.error('You are no longer logged in. Please log-in.');
+              if (messageId > requestSettings.lastMessage) {
+                requestSettings.lastMessage = messageId;
+              }
+
+              messageIndex.push(requestSettings.lastMessage);
+
+              if (messageIndex.length === 100) {
+                var messageOut = messageIndex[0];
+                $('#message' + messageOut).remove();
+                messageIndex = messageIndex.slice(1,99);
+              }
+            }
+          }
+
+          newMessage();
+
+          return false;
+        }, false);
+
+        source.addEventListener('open', function(e) {
+          // Connection was opened.
+        }, false);
+
+        source.addEventListener('error', function(e) {
+          if (e.eventPhase == EventSource.CLOSED) {
+            // Connection was closed.
+          }
+        }, false);
+
+      }
+      else {
+        $.ajax({
+          url: directory + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest ? '&archive=1&messageIdEnd=' + lastMessageId : '&messageIdStart=' + (requestSettings.lastMessage + 1)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+          type: 'GET',
+          timeout: requestSettings.timeout,
+          contentType: "text/json; charset=utf-8",
+          dataType: "json",
+          cache: false,
+          success: function(json) {
+            var errStr = json.getMessages.errStr,
+              errDesc = json.getMessages.errDesc,
+              sentUserId = 0,
+              messageCount = 0;
+
+            if (errStr) {
+              sentUserId = json.getMessages.activeUser.userId;
+
+              if (errStr === 'noperm') {
+                roomId = false;
+
+                if (sentUserId) {
+                  popup.selectRoom();
+
+                  dia.error('You have been restricted access from this room. Please select a new room.');
+                }
+                else {
+                  popup.login();
+
+                  dia.error('You are no longer logged in. Please log-in.');
+                }
+              }
+              else {
+                roomId = false;
+                dia.error(errDesc);
               }
             }
             else {
-              roomId = false;
-              dia.error(errDesc);
-            }
-          }
-          else {
-            requestSettings.totalFails = 0;
-            var notifyData = '',
-              activeUserHtml = [];
+              requestSettings.totalFails = 0;
+              var notifyData = '',
+                activeUserHtml = [];
 
 
 
 
-            $('#activeUsers').html('');
+              $('#activeUsers').html('');
 
-            active = json.getMessages.activeUsers;
+              active = json.getMessages.activeUsers;
 
-            for (i in active) {
-              var userName = active[i].userName,
-                userId = active[i].userId,
-                userGroup = active[i].userGroup,
-                startTag = active[i].startTag,
-                endTag = active[i].endTag;
+              for (i in active) {
+                var userName = active[i].userName,
+                  userId = active[i].userId,
+                  userGroup = active[i].userGroup,
+                  startTag = active[i].startTag,
+                  endTag = active[i].endTag;
 
-              activeUserHtml.push('<span class="userName" data-userId="' + userId + '">' + startTag + '<span class="username">' + userName + '</span>' + endTag + '</span>');
-            }
-
-            $('#activeUsers').html(activeUserHtml.join(', '));
-
-
-
-            active = json.getMessages.messages;
-
-            for (i in active) {
-              var messageId = Number(active[i].messageData.messageId);
-              data = messageFormat(active[i], 'list');
-
-              if (messageIndex[messageId]) {
-                // Double post hack
+                activeUserHtml.push('<span class="userName" data-userId="' + userId + '">' + startTag + '<span class="username">' + userName + '</span>' + endTag + '</span>');
               }
-              else {
-                if (settings.reversePostOrder) {
-                  $('#messageList').append(data);
+
+              $('#activeUsers').html(activeUserHtml.join(', '));
+
+
+
+              active = json.getMessages.messages;
+
+              for (i in active) {
+                var messageId = Number(active[i].messageData.messageId);
+                data = messageFormat(active[i], 'list');
+
+                if (messageIndex[messageId]) {
+                  // Double post hack
                 }
                 else {
-                  $('#messageList').prepend(data);
+                  if (settings.reversePostOrder) {
+                    $('#messageList').append(data);
+                  }
+                  else {
+                    $('#messageList').prepend(data);
+                  }
+
+                  if (messageId > requestSettings.lastMessage) {
+                    requestSettings.lastMessage = messageId;
+                  }
+
+                  messageIndex.push(requestSettings.lastMessage);
+
+                  if (messageIndex.length === 100) {
+                    var messageOut = messageIndex[0];
+                    $('#message' + messageOut).remove();
+                    messageIndex = messageIndex.slice(1,99);
+                  }
                 }
 
-                if (messageId > requestSettings.lastMessage) {
-                  requestSettings.lastMessage = messageId;
-                }
-
-                messageIndex.push(requestSettings.lastMessage);
-
-                if (messageIndex.length === 100) {
-                  var messageOut = messageIndex[0];
-                  $('#message' + messageOut).remove();
-                  messageIndex = messageIndex.slice(1,99);
-                }
+                messageCount++;
               }
 
-              messageCount++;
+
+              if (messageCount > 0) {
+                newMessage();
+              }
+
+              if (requestSettings.longPolling) {
+                timers.t1 = setTimeout(standard.getMessages,50);
+              }
+              else {
+                requestSettings.timeout = 2400;
+                timers.t1 = setTimeout(standard.getMessages,2500);
+              }
             }
 
+            requestSettings.firstRequest = false;
 
-            if (messageCount > 0) {
-              if (settings.reversePostOrder) {
-                toBottom();
-              }
-
-
-
-              if (window.isBlurred) {
-                if (settings.audioDing) {
-                  riffwave.play();
-
-                  if (navigator.appName === 'Microsoft Internet Explorer') {
-                    timers.t3 = window.setInterval(faviconFlash,1000);
-
-                    window.clearInterval(timers.t3);
-                  }
-                }
-
-                if (notify) {
-                  if (typeof window.webkitNotifications === 'object') {
-                    notify.webkitNotify('images/favicon.gif', 'New Message', notifyData);
-                  }
-                }
-
-                if (typeof window.external === 'object') {
-                  if (typeof window.external.msIsSiteMode !== 'undefined' && typeof window.external.msSiteModeActivate !== 'undefined') {
-                    try {
-                      if (window.external.msIsSiteMode()) {
-                        window.external.msSiteModeActivate();
-                      }
-                    }
-                    catch(ex) {
-                      // Ya know, its very weird IE insists on this when the "in" statement works just as well...
-                    }
-                  }
-                }
-              }
-
-              contextMenuParse();
-            }
+            return false;
+          },
+          error: function(err) {
+            console.log('Requesting messages for ' + roomId + '; failed: ' + err + '.');
+            var wait;
 
             if (requestSettings.longPolling) {
               timers.t1 = setTimeout(standard.getMessages,50);
             }
             else {
-              requestSettings.timeout = 2400;
-              timers.t1 = setTimeout(standard.getMessages,2500);
-            }
-          }
+              requestSettings.totalFails += 1;
 
-          requestSettings.firstRequest = false;
+              if (!requestSettings.longPolling) {
+                if (requestSettings.totalFails > 10) {
+                  wait = 30000;
+                  requestSettings.timeout = 29900;
 
-          return false;
-        },
-        error: function(err) {
-          console.log('Requesting messages for ' + roomId + '; failed: ' + err + '.');
-          var wait;
+                  // TODO: Add indicator.
+                }
+                else if (requestSettings.totalFails > 5) {
+                  wait = 10000;
+                  requestSettings.timeout = 9900;
 
-          if (requestSettings.longPolling) {
-            timers.t1 = setTimeout(standard.getMessages,50);
-          }
-          else {
-            requestSettings.totalFails += 1;
-
-            if (!requestSettings.longPolling) {
-              if (requestSettings.totalFails > 10) {
-                wait = 30000;
-                requestSettings.timeout = 29900;
-
-                // TODO: Add indicator.
+                  // TODO: Add indicator.
+                }
+                else {
+                  wait = 5000;
+                  requestSettings.timeout = 4900;
+                }
               }
-              else if (requestSettings.totalFails > 5) {
-                wait = 10000;
-                requestSettings.timeout = 9900;
 
-                // TODO: Add indicator.
-              }
-              else {
-                wait = 5000;
-                requestSettings.timeout = 4900;
-              }
+              timers.t1 = setTimeout(standard.getMessages,wait);
             }
 
-            timers.t1 = setTimeout(standard.getMessages,wait);
+            return false;
           }
-
-          return false;
-        }
-      });
+        });
+      }
     }
     else {
       console.log('Not requesting messages; room undefined.');
@@ -1458,7 +1523,8 @@ var standard = {
     /*** Get Messages ***/
 
     $(document).ready(function() {
-      standard.getMessages();
+      // If getMessages is called before the document is loaded, and we are using server-sent events or longpolling, then WebKit browsers will go beserk. It's an annoying bug, and the setTimeout merely serves as an inconsistent hack, but meh.
+      timers.t1 = setTimeout(standard.getMessages,500);
 
       return false;
     });

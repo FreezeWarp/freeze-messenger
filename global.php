@@ -40,6 +40,10 @@ $defaultConfig = array(
   'cachePhrasesRefresh' => 3600,
   'cacheTemplatesRefresh' => 3600,
   'cacheConfigRefresh' => 3600,
+  'longPollingWait' => 2,
+  'longPolling' => false,
+  'serverSentEventsWait' => .5, // Server sent events are more controlled, so we can call them at a greater frequency.
+  'serverSentEvents' => false,
 );
 
 
@@ -239,7 +243,7 @@ if (isset($banned,$apiRequest)) { // A blanket die for the API when the user is 
 
 if (isset($compressOutput,$apiRequest)) { // Compress Output for transfer if configured to, and if we are outputting data from the API (file downloads, interfaces, etc. don't apply).
   if ($apiRequest == true && $compressOutput == true) {
-    ob_start('fim_htmlCompact');
+//    ob_start('fim_htmlCompact');
   }
 }
 

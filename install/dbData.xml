@@ -458,5 +458,25 @@
       <column name="value" value="false" />
       <column name="type" value="bool" />
     </table>
+    <table name="configuration">
+      <column name="directive" value="longPolling" />
+      <column name="value" value="false" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="longPollingWait" />
+      <column name="value" value="2" />
+      <column name="type" value="float" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="serverSentEvents" />
+      <column name="value" value="false" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="serverSentEventsWait" />
+      <column name="value" value=".5" />
+      <column name="type" value="float" />
+    </table>
   </database>
 </dbData>

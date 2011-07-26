@@ -256,14 +256,14 @@ $request = fim_sanitizeGPC(array(
 ));
 
 
-if ($longPolling && $request['longPolling'] === true) {
-  $longPolling = true;
+if ($config['longPolling'] && $request['longPolling'] === true) {
+  $config['longPolling'] = true;
 
   set_time_limit(0);
   ini_set('max_execution_time',0);
 }
 else {
-  $longPolling = false;
+  $config['longPolling'] = false;
 }
 
 
@@ -752,7 +752,8 @@ if (is_array($request['rooms'])) {
 
 
         /* Get Messages from Database */
-        if ($longPolling) {
+
+        if ($config['longPolling']) {
 
           while (!$messages) {
             $messages = $database->select($queryParts['messagesSelect']['columns'],
