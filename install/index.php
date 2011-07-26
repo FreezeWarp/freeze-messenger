@@ -7,8 +7,12 @@ error_reporting(E_ALL ^ E_NOTICE);
 
 // http://www.php.net/manual/en/ref.simplexml.php#103617
 // Modified for addition recursion needed for the specific code used.
-function xml2array($xmlObject, $out = array()) {
-  $xmlObject = (array) $xmlObject;
+/*function xml2array($xmlObject, $out = array()) {
+//return $xmlObject;
+  foreach ($xmlObject->children() AS $node) {
+    $out
+  }
+/*  $xmlObject = (array) $xmlObject;
   foreach ($xmlObject as $index => $node) {
     if (is_array($node)) {
       foreach ($node AS $index2 => $node2) {
@@ -16,7 +20,7 @@ function xml2array($xmlObject, $out = array()) {
       }
     }
 
-    if (is_object($node)) {
+    if (is_object($node)) { var_dump($node->attributes());
       $out[$index][0] = xml2array($node);
     }
     else {
@@ -25,7 +29,36 @@ function xml2array($xmlObject, $out = array()) {
   }
 
   return $out;
-}
+return $out;
+}*//*
+function xml2array($obj, &$arr)
+{
+    $children = $obj->children();
+    foreach ($children as $elementName => $node)
+    {
+        $nextIdx = count($arr);
+        $arr[$nextIdx] = array();
+        $arr[$nextIdx]['@name'] = strtolower((string)$elementName);
+        $arr[$nextIdx]['@attributes'] = array();
+        $attributes = $node->attributes();
+        foreach ($attributes as $attributeName => $attributeValue)
+        {
+            $attribName = strtolower(trim((string)$attributeName));
+            $attribVal = trim((string)$attributeValue);
+            $arr[$nextIdx]['@attributes'][$attribName] = $attribVal;
+        }
+        $text = (string)$node;
+        $text = trim($text);
+        if (strlen($text) > 0)
+        {
+            $arr[$nextIdx]['@text'] = $text;
+        }
+        $arr[$nextIdx]['@children'] = array();
+        xml2array($node, $arr[$nextIdx]['@children']);
+    }
+    return;
+}  */
+require_once('../functions/simpleXml.php');
 
 
 
@@ -57,7 +90,7 @@ switch ($_REQUEST['phase']) {
   <script src="../webpro/client/js/jquery.plugins.js" type="text/javascript"></script>
   <script>
   function resize() {
-    $(\'body\').css(\'height\',window.innerHeight);
+    $(\'body\').css(\'min-height\',window.innerHeight);
   }
 
   $(document).ready(function() {
@@ -116,7 +149,7 @@ switch ($_REQUEST['phase']) {
   If the MySQLi Extension is not present, you can still use FreezeMessenger, but will need to install it manually.<br /><br />
 
   <form onsubmit="return false;">
-    <button style="float: right;" type="button" onclick="$(\'#part1\').slideUp(); $(\'#part2\').slideDown();">Start &rarr;</button>
+    <button style="float: right;" type="button" onclick="$(\'#part1\').slideUp(); $(\'#part2\').slideDown(); resize();">Start &rarr;</button>
   </form>
 </div>
 
@@ -168,8 +201,8 @@ switch ($_REQUEST['phase']) {
   </form><br /><br />
 
   <form onsubmit="return false;">
-    <button style="float: left;" type="button" onclick="$(\'#part2\').slideUp(); $(\'#part1\').slideDown();">&larr; Back</button>
-    <button style="float: right;" type="button" onclick="$.get(\'index.php?phase=1\',$(\'#mysql_connect_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part2\').slideUp(); $(\'#part3\').slideDown(); } else { alert(data); } } );">Verify & Connect &rarr;</button>
+    <button style="float: left;" type="button" onclick="$(\'#part2\').slideUp(); $(\'#part1\').slideDown(); resize();">&larr; Back</button>
+    <button style="float: right;" type="button" onclick="$.get(\'index.php?phase=1\',$(\'#mysql_connect_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part2\').slideUp(); $(\'#part3\').slideDown(); } else { alert(data); } } ); resize();">Setup &rarr;</button>
   </form>
 </div>
 
@@ -210,8 +243,8 @@ switch ($_REQUEST['phase']) {
   </form>
 
   <form onsubmit="return false;">
-    <button style="float: left;" type="button" onclick="$(\'#part3\').slideUp(); $(\'#part2\').slideDown();">&larr; Back</button>
-    <button style="float: right;" type="button" onclick="$.get(\'index.php?phase=2\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#config_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part3\').slideUp(); $(\'#part4\').slideDown(); } else { alert(\'Could not create configuration file. Is the server allowed to write to it?\'); } } );">Finish &rarr;</button>
+    <button style="float: left;" type="button" onclick="$(\'#part3\').slideUp(); $(\'#part2\').slideDown(); resize();">&larr; Back</button>
+    <button style="float: right;" type="button" onclick="$.get(\'index.php?phase=2\',$(\'#mysql_connect_form\').serialize() + \'&\' + $(\'#config_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part3\').slideUp(); $(\'#part4\').slideDown(); } else { alert(\'Could not create configuration file. Is the server allowed to write to it?\'); } } ); resize();">Finish &rarr;</button>
   </form>
 </div>
 
@@ -320,34 +353,47 @@ switch ($_REQUEST['phase']) {
 
 
 
-    /* Part Two: Create Tables */
+//    $xmlData = new SimpleXMLElement(file_get_contents('dbSchema.xml'));
+//    $xmlData = xml2array($xmlData); // Convert the data to pure array, since I don't want to deal with SimpleXML's methods (...why learn new things when you don't have to?) If anyone is wondering, XML is specifically used instead of JSON because it is easier to modify (you can skim and find what you want much quicklier).
 
-    $xmlData = new SimpleXMLElement(file_get_contents('dbSchema.xml')); // Get the XML Data from the dbSchema.xml file
-    $xmlData = xml2array($xmlData); // Convert the data to pure array, since I don't want to deal with SimpleXML's methods (...why learn new things when you don't have to?) If anyone is wondering, XML is specifically used instead of JSON because it is easier to modify (you can skim and find what you want much quicklier).
+    $xmlData = new Xml2Array(file_get_contents('dbSchema.xml')); // Get the XML Data from the dbSchema.xml file, and feed it to the Xml2Array class
+    $xmlData = $xmlData->getAsArray(); // Get the XML data as an array
+    $xmlData = $xmlData['dbSchema']; // Get the contents of the root node
 
-    $xmlData2 = new SimpleXMLElement(file_get_contents('dbData.xml')); // Get the XML Data from the webProLangEns.xml file
-    $xmlData2 = xml2array($xmlData2); // Convert the data to pure array.
+    $xmlData2 = new Xml2Array(file_get_contents('dbData.xml')); // Get the XML Data from the dbSchema.xml file, and feed it to the Xml2Array class
+    $xmlData2 = $xmlData2->getAsArray(); // Get the XML data as an array
+    $xmlData2 = $xmlData2['dbData']; // Get the contents of the root node
 
-    $xmlData3 = new SimpleXMLElement(file_get_contents('webProTemplate.xml')); // Get the XML Data from the webProTemplate.xml file
-    $xmlData3 = xml2array($xmlData3); // Convert the data to pure array.
+    $xmlData3 = new Xml2Array(file_get_contents('webProTemplate.xml')); // Get the XML Data from the dbSchema.xml file, and feed it to the Xml2Array class
+    $xmlData3 = $xmlData3->getAsArray(); // Get the XML data as an array
+    $xmlData3 = $xmlData3['interface']; // Get the contents of the root node
 
-    $xmlData4 = new SimpleXMLElement(file_get_contents('webProLangEn.xml')); // Get the XML Data from the webProLangEns.xml file
-    $xmlData4 = xml2array($xmlData4); // Convert the data to pure array.
+    $xmlData4 = new Xml2Array(file_get_contents('webProLangEn.xml')); // Get the XML Data from the dbSchema.xml file, and feed it to the Xml2Array class
+    $xmlData4 = $xmlData4->getAsArray(); // Get the XML data as an array
+    $xmlData4 = $xmlData4['languagePack']; // Get the contents of the root node
 
 
-    if ((int) $xmlData['@attributes']['version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
-      die('The XML Data Source if For An Improper Version');
+    if ((float) $xmlData['@version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
+      die('The XML Schema Data Source if For An Improper Version');
     }
-    elseif ((int) $xmlData2['@attributes']['version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
-      die('The XML Data Source if For An Improper Version');
+    elseif ((float) $xmlData2['@version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
+      die('The XML Insert Data Source if For An Improper Version');
     }
-    elseif ((int) $xmlData3['@attributes']['version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
-      die('The XML Data Source if For An Improper Version');
+    elseif ((float) $xmlData3['@version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
+      die('The XML Interface Data Source if For An Improper Version');
     }
-    elseif ((int) $xmlData4['@attributes']['version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
-      die('The XML Data Source if For An Improper Version');
+    elseif ((float) $xmlData4['@version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
+      die('The XML Language Data Source if For An Improper Version');
+    }
+    elseif (!$xmlData4['@languageName']) {
+      die('Language name not specified.');
+    }
+    elseif (!$xmlData4['@languageCode']) {
+      die('Language code not specified.');
     }
     else {
+      /* Part 2: Create the Tables */
+
       $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
 
       foreach ($xmlData['database'][0]['table'] AS $table) { // Run through each table from the XML
@@ -355,7 +401,7 @@ switch ($_REQUEST['phase']) {
         $keys = array(); // We will use this to store the column fragments that will be implode()d into the final query.
 
 
-        switch ($table['@attributes']['type']) {
+        switch ($table['@type']) {
           case 'general': // Use this normally, and for all perm. data
           $engine = 'InnoDB';
           break;
@@ -368,64 +414,64 @@ switch ($_REQUEST['phase']) {
         foreach ($table['column'] AS $column) {
           $typePiece = '';
 
-          switch ($column['@attributes']['type']) {
+          switch ($column['@type']) {
             case 'int':
-            $typePiece = 'INT(' . (int) $column['@attributes']['maxlen'] . ')';
+            $typePiece = 'INT(' . (int) $column['@maxlen'] . ')';
 
-            if (!isset($column['@attributes']['maxlen'])) {
+            if (!isset($column['@maxlen'])) {
               $typePiece = 'INT(8)'; // Sane default, really.
             }
             elseif ($coulmn['maxlen'] > 9) {// If the maxlen is greater than 9, we use LONGINT (0 - 9,223,372,036,854,775,807; 64 Bits / 8 Bytes)
-              $typePiece = 'BIGINT(' . (int) $column['@attributes']['maxlen'] . ')';
+              $typePiece = 'BIGINT(' . (int) $column['@maxlen'] . ')';
             }
-            elseif ($column['@attributes']['maxlen'] > 7) { // If the maxlen is greater than 7, we use INT (0 - 4,294,967,295; 32 Bits / 4 Bytes)
-              $typePiece = 'INT(' . (int) $column['@attributes']['maxlen'] . ')';
+            elseif ($column['@maxlen'] > 7) { // If the maxlen is greater than 7, we use INT (0 - 4,294,967,295; 32 Bits / 4 Bytes)
+              $typePiece = 'INT(' . (int) $column['@maxlen'] . ')';
             }
-            elseif ($column['@attributes']['maxlen'] > 4) { // If the maxlen is greater than 4, we use MEDIUMINT (0 - 16,777,215; 24 Bits / 3 Bytes)
-              $typePiece = 'MEDIUMINT(' . (int) $column['@attributes']['maxlen'] . ')';
+            elseif ($column['@maxlen'] > 4) { // If the maxlen is greater than 4, we use MEDIUMINT (0 - 16,777,215; 24 Bits / 3 Bytes)
+              $typePiece = 'MEDIUMINT(' . (int) $column['@maxlen'] . ')';
             }
-            elseif ($column['@attributes']['maxlen'] > 2) { // If the maxlen is greater than 2, we use SMALLINT (0 - 65,535; 16 Bits / 2 Bytes)
-              $typePiece = 'SMALLINT(' . (int) $column['@attributes']['maxlen'] . ')';
+            elseif ($column['@maxlen'] > 2) { // If the maxlen is greater than 2, we use SMALLINT (0 - 65,535; 16 Bits / 2 Bytes)
+              $typePiece = 'SMALLINT(' . (int) $column['@maxlen'] . ')';
             }
             else {
-              $typePiece = 'TINYINT(' . (int) $column['@attributes']['maxlen'] . ')';
+              $typePiece = 'TINYINT(' . (int) $column['@maxlen'] . ')';
             }
 
-            if (isset($column['@attributes']['autoincrement'])) {
-              if ($column['@attributes']['autoincrement'] == true) {
+            if (isset($column['@autoincrement'])) {
+              if ($column['@autoincrement'] == true) {
                 $typePiece .= ' AUTO_INCREMENT'; // Ya know, that thing where it sets itself.
               }
             }
             break;
 
             case 'string':
-            if (isset($column['@attributes']['restrict'])) {
+            if (isset($column['@restrict'])) {
               $restrictValues = array();
 
-              foreach ((array) explode(',',$column['@attributes']['restrict']) AS $value) {
+              foreach ((array) explode(',',$column['@restrict']) AS $value) {
                 $restrictValues[] = '"' . $mysqli->real_escape_string($value) . '"';
               }
 
               $typePiece = 'ENUM(' . implode(',',$restrictValues) . ')';
             }
             else {
-              if (!isset($column['@attributes']['maxlen'])) {
+              if (!isset($column['@maxlen'])) {
                 $typePiece = 'TEXT';
               }
-              elseif ($column['@attributes']['maxlen'] > 2097151) { // If the maxlen is greater than (16MB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
+              elseif ($column['@maxlen'] > 2097151) { // If the maxlen is greater than (16MB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
                 $typePiece = 'LONGTEXT';
               }
-              elseif ($column['@attributes']['maxlen'] > 8191) { // If the maxlen is greater than (64KB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
+              elseif ($column['@maxlen'] > 8191) { // If the maxlen is greater than (64KB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
                 $typePiece = 'MEDIUMTEXT';
               }
-              elseif ($column['@attributes']['maxlen'] > 5000) { // If the maxlen is greater than 1000, we use TEXT since it is most likely more optimized. VARCHAR itself limits to roughly 65,535 length, or less if using UTF8.
-                $typePiece = 'TEXT(' . (int) $column['@attributes']['maxlen'] . ')';
+              elseif ($column['@maxlen'] > 5000) { // If the maxlen is greater than 1000, we use TEXT since it is most likely more optimized. VARCHAR itself limits to roughly 65,535 length, or less if using UTF8.
+                $typePiece = 'TEXT(' . (int) $column['@maxlen'] . ')';
               }
-              elseif ($column['@attributes']['maxlen'] > 100) { // If the maxlen is greater than 1000, we use TEXT since it is most likely more optimized. VARCHAR itself limits to roughly 65,535 length, or less if using UTF8.
-                $typePiece = 'VARCHAR(' . (int) $column['@attributes']['maxlen'] . ')';
+              elseif ($column['@maxlen'] > 100) { // If the maxlen is greater than 1000, we use TEXT since it is most likely more optimized. VARCHAR itself limits to roughly 65,535 length, or less if using UTF8.
+                $typePiece = 'VARCHAR(' . (int) $column['@maxlen'] . ')';
               }
               else {
-                $typePiece = 'CHAR(' . (int) $column['@attributes']['maxlen'] . ')';
+                $typePiece = 'CHAR(' . (int) $column['@maxlen'] . ')';
               }
             }
 
@@ -433,11 +479,11 @@ switch ($_REQUEST['phase']) {
             break;
 
             case 'bitfield':
-            if (!isset($column['@attributes']['bits'])) {
+            if (!isset($column['@bits'])) {
               $typePiece = 'BIT(8)'; // Sane default
             }
             else {
-              $typePiece = 'BIT(' . (int) $column['@attributes']['bits'] . ')'; // This is new to MySQL 5.0.5 (5.0.3 for MySIAM). In theory, INT would be just as good (though unoptimized), but meh.
+              $typePiece = 'BIT(' . (int) $column['@bits'] . ')'; // This is new to MySQL 5.0.5 (5.0.3 for MySIAM). In theory, INT would be just as good (though unoptimized), but meh.
             }
             break;
 
@@ -446,36 +492,36 @@ switch ($_REQUEST['phase']) {
             break;
           }
 
-          if (isset($column['@attributes']['default'])) {
-            if ($column['@attributes']['default'] == '__TIME__') {
-              $column['@attributes']['default'] = 'CURRENT_TIMESTAMP';
+          if (isset($column['@default'])) {
+            if ($column['@default'] == '__TIME__') {
+              $column['@default'] = 'CURRENT_TIMESTAMP';
             }
             else {
-              $column['@attributes']['default'] = '"' . $mysqli->real_escape_string($column['@attributes']['default']) . '"';
+              $column['@default'] = '"' . $mysqli->real_escape_string($column['@default']) . '"';
             }
 
-            $typePiece .= " DEFAULT {$column['@attributes']['default']}";
+            $typePiece .= " DEFAULT {$column['@default']}";
           }
 
-          if (isset($column['@attributes']['update'])) {
-            if ($column['@attributes']['update'] == '__TIME__') {
-              $column['@attributes']['update'] = 'CURRENT_TIMESTAMP';
+          if (isset($column['@update'])) {
+            if ($column['@update'] == '__TIME__') {
+              $column['@update'] = 'CURRENT_TIMESTAMP';
             }
             else {
-              $column['@attributes']['update'] = '"' . $mysqli->real_escape_string($column['@attributes']['update']) . '"';
+              $column['@update'] = '"' . $mysqli->real_escape_string($column['@update']) . '"';
             }
 
-            $typePiece .= " ON UPDATE {$column['@attributes']['update']}";
+            $typePiece .= " ON UPDATE {$column['@update']}";
           }
 
-          $columns[] = "`{$column['@attributes']['name']}` {$typePiece} NOT NULL" . (isset($column['@attributes']['comment']) ? ' COMMENT "' . $mysqli->real_escape_string($column['@attributes']['comment']) . '"' : '');
+          $columns[] = "`{$column['@name']}` {$typePiece} NOT NULL" . (isset($column['@comment']) ? ' COMMENT "' . $mysqli->real_escape_string($column['@comment']) . '"' : '');
         }
 
 
         foreach ($table['key'] AS $key) {
           $typePiece = '';
 
-          switch ($key['@attributes']['type']) {
+          switch ($key['@type']) {
             case 'primary':
             $typePiece = "PRIMARY KEY";
             break;
@@ -489,26 +535,26 @@ switch ($_REQUEST['phase']) {
             break;
           }
 
-          if (strpos($key['@attributes']['name'],',') !== false) {
-            $keyCols = explode(',',$key['@attributes']['name']);
+          if (strpos($key['@name'],',') !== false) {
+            $keyCols = explode(',',$key['@name']);
 
             foreach ($keyCols AS &$keyCol) {
               $keyCol = "`$keyCol`";
             }
 
-            $key['@attributes']['name'] = implode(',',$keyCols);
+            $key['@name'] = implode(',',$keyCols);
           }
           else {
-            $key['@attributes']['name'] = "`{$key['@attributes']['name']}`";
+            $key['@name'] = "`{$key['@name']}`";
           }
 
-          $keys[] = "{$typePiece} ({$key['@attributes']['name']})";
+          $keys[] = "{$typePiece} ({$key['@name']})";
         }
 
-        $queries[$prefix . $table['@attributes']['name']] = 'CREATE TABLE IF NOT EXISTS `' . $prefix . $table['@attributes']['name'] . '` (
+        $queries[$prefix . $table['@name']] = 'CREATE TABLE IF NOT EXISTS `' . $prefix . $table['@name'] . '` (
   ' . implode(",\n  ",$columns) . ',
   ' . implode(",\n  ",$keys) . '
-) ENGINE="' . $engine . '" COMMENT="' . $mysqli->real_escape_string($table['@attributes']['comment']) . '" DEFAULT CHARSET="utf8";';
+) ENGINE="' . $engine . '" COMMENT="' . $mysqli->real_escape_string($table['@comment']) . '" DEFAULT CHARSET="utf8";';
       }
 
       foreach ($queries AS $tableName => $query) {
@@ -532,9 +578,94 @@ switch ($_REQUEST['phase']) {
           }
         }
       }
+
+
+
+
+
+      /* Part 3: Insert Predefined Data */
+
+      $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
+
+      foreach ($xmlData2['database'][0]['table'] AS $table) { // Run through each table from the XML
+        $columns = array(); // We will use this to store the column fragments that will be implode()d into the final query.
+        $values = array(); // We will use this to store the column fragments that will be implode()d into the final query.
+
+        if (in_array($table['@name'],$skipTables)) {
+          continue;
+        }
+
+        foreach ($table['column'] AS $column) {
+          $columns[] = '`' . $mysqli->real_escape_string($column['@name']) . '`';
+          $values[] = '"' . $mysqli->real_escape_string($column['@value']) . '"';
+        }
+
+        $queries[] = "INSERT INTO `{$prefix}{$table['@name']}` (" . implode(', ',$columns) . ") VALUES
+  (" . implode(', ',$values) . ")";
+      }
+
+      foreach ($queries AS $query) {
+        if (!trim($query)) {
+          continue;
+        }
+
+        if (!$mysqli->query(trim($query))) {
+          die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $mysqli->error);
+        }
+      }
+
+
+
+
+      /* Part 4: Insert WebPro Templates */
+
+      $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
+
+      if (!in_array($prefix . 'templates',$skipTables)) {
+        foreach ($xmlData3['templates'][0]['template'] AS $template) { // Run through each template from the XML
+          $queries[] = "INSERT INTO `{$prefix}templates` (`templateName`,`data`,`vars`) VALUES
+    ('" . $mysqli->real_escape_string($template['@name']) . "','" . $mysqli->real_escape_string($template['#text']) . "','" . $mysqli->real_escape_string($template['@vars']) . "')";
+        }
+
+        foreach ($queries AS $query) {
+          if (!trim($query)) {
+            continue;
+          }
+
+          if (!$mysqli->query(trim($query))) {
+            die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $mysqli->error);
+          }
+        }
+      }
+
+
+
+
+
+      /* Part 5: Insert WebPro Phrases */
+
+      $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
+
+      if (!in_array($prefix . 'phrases',$skipTables)) {
+        $queries[] = "INSERT INTO `{$sqlPrefix}languages` (`languageCode`, `languageName`) VALUES ('" . $mysqli->real_escape_string($xmlData4['@languageCode']) . "','" . $mysqli->real_escape_string($xmlData4['@languageName']) . "')";
+
+        foreach ($xmlData4['phrases'][0]['phrase'] AS $phrase) { // Run through each template from the XML
+          $queries[] = "INSERT INTO `{$prefix}phrases` (`phraseName`,`languageCode`,`text`) VALUES
+    ('" . $mysqli->real_escape_string($phrase['@name']) . "','" . $mysqli->real_escape_string($xmlData4['@languageCode']) . "','" . $mysqli->real_escape_string($phrase['#text']) . "')";
+        }
+
+        foreach ($queries AS $query) {
+          if (!trim($query)) {
+            continue;
+          }
+
+          if (!$mysqli->query(trim($query))) {
+            die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $mysqli->error);
+          }
+        }
+      }
     }
 
-    /* Part 3: Insert Data */
 
     echo 'success';
 

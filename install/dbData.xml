@@ -5,81 +5,81 @@
 
     <!-- Table bbcode -->
     <table name="bbcode">
-      <column name="bbcodeId">1</column>
-      <column name="bbcodeName">Bold</column>
-      <column name="options">1</column>
-      <column name="searchRegex">/[(b|strong)](.+?)[/(b|strong)]/is</column>
-      <column name="replacement">&lt;span style="font-weight: bold;"&gt;$2&lt;/span&gt;</column>
+      <column name="bbcodeId" value="1" />
+      <column name="bbcodeName" value="Bold" />
+      <column name="options" value="1" />
+      <column name="searchRegex" value="/[(b|strong)](.+?)[/(b|strong)]/is" />
+      <column name="replacement" value="&lt;span style=&quot;font-weight: bold;&quot;&gt;$2&lt;/span&gt;" />
     </table>
     <table name="bbcode">
-      <column name="bbcodeId">2</column>
-      <column name="bbcodeName">Strikethrough</column>
-      <column name="options">1</column>
-      <column name="searchRegex">/[(s|strike)](.+?)[/(s|strike)]/is</column>
-      <column name="replacement">&lt;span style="text-decoration: line-through;"&gt;$2&lt;/span&gt;</column>
+      <column name="bbcodeId" value="2" />
+      <column name="bbcodeName" value="Strikethrough" />
+      <column name="options" value="1" />
+      <column name="searchRegex" value="/[(s|strike)](.+?)[/(s|strike)]/is" />
+      <column name="replacement" value="&lt;span style=&quot;text-decoration: line-through;&quot;&gt;$2&lt;/span&gt;" />
     </table>
     <table name="bbcode">
-      <column name="bbcodeId">3</column>
-      <column name="bbcodeName">Italics</column>
-      <column name="options">1</column>
-      <column name="searchRegex">/[(i|em)](.+?)[/(i|em)]/is</column>
-      <column name="replacement">&lt;span style="font-style: oblique;"&gt;$2&lt;/span&gt;</column>
+      <column name="bbcodeId" value="3" />
+      <column name="bbcodeName" value="Italics" />
+      <column name="options" value="1" />
+      <column name="searchRegex" value="/[(i|em)](.+?)[/(i|em)]/is" />
+      <column name="replacement" value="&lt;span style=&quot;font-style: oblique;&quot;&gt;$2&lt;/span&gt;" />
     </table>
     <table name="bbcode">
-      <column name="bbcodeId">4</column>
-      <column name="bbcodeName">Underline</column>
-      <column name="options">1</column>
-      <column name="searchRegex">/[(u)](.+?)[/(u)]/is</column>
-      <column name="replacement">&lt;span style="text-decoration: underline;"&gt;$2&lt;/span&gt;</column>
+      <column name="bbcodeId" value="4" />
+      <column name="bbcodeName" value="Underline" />
+      <column name="options" value="1" />
+      <column name="searchRegex" value="/[(u)](.+?)[/(u)]/is" />
+      <column name="replacement" value="&lt;span style=&quot;text-decoration: underline;&quot;&gt;$2&lt;/span&gt;" />
     </table>
     <table name="bbcode">
-      <column name="bbcodeId">5</column>
-      <column name="bbcodeName">Link</column>
-      <column name="options">1</column>
-      <column name="searchRegex">/[url]([^"&lt;&gt;]*?)[/url]/is</column>
-      <column name="replacement">&lt;a href="$1" target="_BLANK"&gt;$1&lt;/a&gt;</column>
+      <column name="bbcodeId" value="5" />
+      <column name="bbcodeName" value="Link" />
+      <column name="options" value="1" />
+      <column name="searchRegex" value="/[url]([^&quot;&lt;&gt;]*?)[/url]/is" />
+      <column name="replacement" value="&lt;a href=&quot;$1&quot; target=&quot;_BLANK&quot;&gt;$1&lt;/a&gt;" />
     </table>
     <table name="bbcode">
-      <column name="bbcodeId">6</column>
-      <column name="bbcodeName">Email</column>
-      <column name="options">1</column>
-      <column name="searchRegex">/[email](.*?)[/email]/is</column>
-      <column name="replacement">&lt;a href="mailto:$1"&gt;$1&lt;/a&gt;</column>
+      <column name="bbcodeId" value="6" />
+      <column name="bbcodeName" value="Email" />
+      <column name="options" value="1" />
+      <column name="searchRegex" value="/[email](.*?)[/email]/is" />
+      <column name="replacement" value="&lt;a href=&quot;mailto:$1&quot;&gt;$1&lt;/a&gt;" />
     </table>
     <table name="bbcode">
-      <column name="bbcodeId">7</column>
-      <column name="bbcodeName">Colour</column>
-      <column name="options">1</column>
-      <column name="searchRegex">/[(color|colour)=("|)(.*?)("|)](.*?)[/(color|colour)]/is</column>
-      <column name="replacement">&lt;span style="color: $3;"&gt;$5&lt;/span&gt;</column>
+      <column name="bbcodeId" value="7" />
+      <column name="bbcodeName" value="Colour" />
+      <column name="options" value="1" />
+      <column name="searchRegex" value="/[(color|colour)=(&quot;|)(.*?)(&quot;|)](.*?)[/(color|colour)]/is" />
+      <column name="replacement" value="&lt;span style=&quot;color: $3;&quot;&gt;$5&lt;/span&gt;" />
     </table>
     <table name="bbcode">
-      <column name="bbcodeId">8</column>
-      <column name="bbcodeName">Highlight</column>
-      <column name="options">1</column>
-      <column name="searchRegex">/[(hl|highlight|bg|background)=("|)(.*?)("|)](.*?)[/(hl|highlight|bg|background)]/is</column>
-      <column name="replacement">&lt;span style="background-color: $3;"&gt;$5&lt;/span&gt;</column>
+      <column name="bbcodeId" value="8" />
+      <column name="bbcodeName" value="Highlight" />
+      <column name="options" value="1" />
+      <column name="searchRegex" value="/[(hl|highlight|bg|background)=(&quot;|)(.*?)(&quot;|)](.*?)[/(hl|highlight|bg|background)]/is" />
+      <column name="replacement" value="&lt;span style=&quot;background-color: $3;&quot;&gt;$5&lt;/span&gt;" />
     </table>
     <table name="bbcode">
-      <column name="bbcodeId">9</column>
-      <column name="bbcodeName">Image</column>
-      <column name="options">1</column>
-      <column name="searchRegex">/[img](.*?)[/img]/is</column>
-      <column name="replacement">&lt;a href="$1" target="_BLANK"&gt;&lt;img src="$1" alt="image" class="embedImage" /&gt;&lt;/a&gt;</column>
+      <column name="bbcodeId" value="9" />
+      <column name="bbcodeName" value="Image" />
+      <column name="options" value="1" />
+      <column name="searchRegex" value="/[img](.*?)[/img]/is" />
+      <column name="replacement" value="&lt;a href=&quot;$1&quot; target=&quot;_BLANK&quot;&gt;&lt;img src=&quot;$1&quot; alt=&quot;image&quot; class=&quot;embedImage&quot; /&gt;&lt;/a&gt;" />
     </table>
     <table name="bbcode">
-      <column name="bbcodeId">10</column>
-      <column name="bbcodeName">Image (with Alternate Text)</column>
-      <column name="options">1</column>
-      <column name="searchRegex">/[img=("|)(.*?)("|)](.*?)[/img]/is</column>
-      <column name="replacement">&lt;a href="$4" target="_BLANK"&gt;&lt;img src="$4" alt="$2" class="embedImage" /&gt;&lt;/a&gt;</column>
+      <column name="bbcodeId" value="10" />
+      <column name="bbcodeName" value="Image (with Alternate Text)" />
+      <column name="options" value="1" />
+      <column name="searchRegex" value="/[img=(&quot;|)(.*?)(&quot;|)](.*?)[/img]/is" />
+      <column name="replacement" value="&lt;a href=&quot;$4&quot; target=&quot;_BLANK&quot;&gt;&lt;img src=&quot;$4&quot; alt=&quot;$2&quot; class=&quot;embedImage&quot; /&gt;&lt;/a&gt;" />
     </table>
     <table name="bbcode">
-      <column name="bbcodeId">11</column>
-      <column name="bbcodeName">Youtube Embed</column>
-      <column name="options">1</column>
-      <column name="searchRegex">/[youtube](.*?)[/youtube]/is</column>
-      <column name="replacement">&lt;object width="420" height="255" wmode="transparent"&gt;&lt;param name="movie" value="http://www.youtube.com/v/$1=en&amp;amp;fs=1&amp;amp;rel=0&amp;amp;border=0"&gt;&lt;/param&gt;&lt;param name="allowFullScreen" value="true"&gt;&lt;/param&gt;&lt;embed src="http://www.youtube.com/v/$1&amp;amp;hl=en&amp;amp;fs=1&amp;amp;rel=0&amp;amp;border=0" type="application/x-shockwave-flash" allowfullscreen="true" width="420" height="255" wmode="opaque"&gt;&lt;/embed&gt;&lt;/object&gt;</column>
+      <column name="bbcodeId" value="11" />
+      <column name="bbcodeName" value="Youtube Embed" />
+      <column name="options" value="1" />
+      <column name="searchRegex" value="/[youtube](.*?)[/youtube]/is" />
+      <column name="replacement" value="&lt;object width=&quot;420&quot; height=&quot;255&quot; wmode=&quot;transparent&quot;&gt;&lt;param name=&quot;movie&quot; value=&quot;http://www.youtube.com/v/$1=en&amp;amp;fs=1&amp;amp;rel=0&amp;amp;border=0&quot;&gt;&lt;/param&gt;&lt;param name=&quot;allowFullScreen&quot; value=&quot;true&quot;&gt;&lt;/param&gt;&lt;embed src=&quot;http://www.youtube.com/v/$1&amp;amp;hl=en&amp;amp;fs=1&amp;amp;rel=0&amp;amp;border=0&quot; type=&quot;application/x-shockwave-flash&quot; allowfullscreen=&quot;true&quot; width=&quot;420&quot; height=&quot;255&quot; wmode=&quot;opaque&quot;&gt;&lt;/embed&gt;&lt;/object&gt;" />
     </table>
 
 
@@ -89,10 +89,10 @@
 
     <!-- Table censorLists -->
     <table name="censorLists">
-      <column name="listId">1</column>
-      <column name="listName">Example Censor</column>
-      <column name="listType">black</column>
-      <column name="options">3</column>
+      <column name="listId" value="1" />
+      <column name="listName" value="Example Censor" />
+      <column name="listType" value="black" />
+      <column name="options" value="3" />
     </table>
 
 
@@ -111,190 +111,190 @@
 
     <!-- Table fonts -->
     <table name="fonts">
-      <column name="fontId">1</column>
-      <column name="fontName">FreeMono</column>
-      <column name="data">FreeMono, TwlgMono, 'Courier New', Consolas, monospace</column>
-      <column name="category">monospace</column>
+      <column name="fontId" value="1" />
+      <column name="fontName" value="FreeMono" />
+      <column name="data" value="FreeMono, TwlgMono, 'Courier New', Consolas, monospace" />
+      <column name="category" value="monospace" />
     </table>
     <table name="fonts">
-      <column name="fontId">2</column>
-      <column name="fontName">Courier New</column>
-      <column name="data">'Courier New', FreeMono, TwlgMono, Consolas, Courier, monospace</column>
-      <column name="category">monospace</column>
+      <column name="fontId" value="2" />
+      <column name="fontName" value="Courier New" />
+      <column name="data" value="'Courier New', FreeMono, TwlgMono, Consolas, Courier, monospace" />
+      <column name="category" value="monospace" />
     </table>
     <table name="fonts">
-      <column name="fontId">3</column>
-      <column name="fontName">Consolas</column>
-      <column name="data">Consolas, 'Courier New', FreeMono, TwlgMono, monospace</column>
-      <column name="category">monospace</column>
+      <column name="fontId" value="3" />
+      <column name="fontName" value="Consolas" />
+      <column name="data" value="Consolas, 'Courier New', FreeMono, TwlgMono, monospace" />
+      <column name="category" value="monospace" />
     </table>
     <table name="fonts">
-      <column name="fontId">4</column>
-      <column name="fontName">Courier</column>
-      <column name="data">Courier, 'Courier New', Consolas, monospace</column>
-      <column name="category">monospace</column>
+      <column name="fontId" value="4" />
+      <column name="fontName" value="Courier" />
+      <column name="data" value="Courier, 'Courier New', Consolas, monospace" />
+      <column name="category" value="monospace" />
     </table>
     <table name="fonts">
-      <column name="fontId">5</column>
-      <column name="fontName">Liberation Mono</column>
-      <column name="data">'Liberation Mono', monospace</column>
-      <column name="category">monospace</column>
+      <column name="fontId" value="5" />
+      <column name="fontName" value="Liberation Mono" />
+      <column name="data" value="'Liberation Mono', monospace" />
+      <column name="category" value="monospace" />
     </table>
     <table name="fonts">
-      <column name="fontId">6</column>
-      <column name="fontName">Lucida Console</column>
-      <column name="data">'Lucida Console', 'Lucida Sans Typewriter', monospace</column>
-      <column name="category">monospace</column>
+      <column name="fontId" value="6" />
+      <column name="fontName" value="Lucida Console" />
+      <column name="data" value="'Lucida Console', 'Lucida Sans Typewriter', monospace" />
+      <column name="category" value="monospace" />
     </table>
     <table name="fonts">
-      <column name="fontId">7</column>
-      <column name="fontName">Times New Roman</column>
-      <column name="data">'Times New Roman', 'Liberation Serif', Georgia, FreeSerif, Cambria, serif</column>
-      <column name="category">serif</column>
+      <column name="fontId" value="7" />
+      <column name="fontName" value="Times New Roman" />
+      <column name="data" value="'Times New Roman', 'Liberation Serif', Georgia, FreeSerif, Cambria, serif" />
+      <column name="category" value="serif" />
     </table>
     <table name="fonts">
-      <column name="fontId">8</column>
-      <column name="fontName">Liberation Serif</column>
-      <column name="data">'Liberation Serif', FreeSerif, 'Times New Roman', Georgia, Cambria, serif</column>
-      <column name="category">serif</column>
+      <column name="fontId" value="8" />
+      <column name="fontName" value="Liberation Serif" />
+      <column name="data" value="'Liberation Serif', FreeSerif, 'Times New Roman', Georgia, Cambria, serif" />
+      <column name="category" value="serif" />
     </table>
     <table name="fonts">
-      <column name="fontId">9</column>
-      <column name="fontName">Georgia</column>
-      <column name="data">Georgia, Cambria, 'Liberation Serif', 'Times New Roman', serif</column>
-      <column name="category">serif</column>
+      <column name="fontId" value="9" />
+      <column name="fontName" value="Georgia" />
+      <column name="data" value="Georgia, Cambria, 'Liberation Serif', 'Times New Roman', serif" />
+      <column name="category" value="serif" />
     </table>
     <table name="fonts">
-      <column name="fontId">10</column>
-      <column name="fontName">Cambria</column>
-      <column name="data">Cambria, Georgia, 'Liberation Serif', 'Times New Roman', serif</column>
-      <column name="category">serif</column>
+      <column name="fontId" value="10" />
+      <column name="fontName" value="Cambria" />
+      <column name="data" value="Cambria, Georgia, 'Liberation Serif', 'Times New Roman', serif" />
+      <column name="category" value="serif" />
     </table>
     <table name="fonts">
-      <column name="fontId">11</column>
-      <column name="fontName">Segoe UI</column>
-      <column name="data">'Segoe UI', serif</column>
-      <column name="category">serif</column>
+      <column name="fontId" value="11" />
+      <column name="fontName" value="Segoe UI" />
+      <column name="data" value="'Segoe UI', serif" />
+      <column name="category" value="serif" />
     </table>
     <table name="fonts">
-      <column name="fontId">12</column>
-      <column name="fontName">Garamond</column>
-      <column name="data">Garamond, serif</column>
-      <column name="category">serif</column>
+      <column name="fontId" value="12" />
+      <column name="fontName" value="Garamond" />
+      <column name="data" value="Garamond, serif" />
+      <column name="category" value="serif" />
     </table>
     <table name="fonts">
-      <column name="fontId">13</column>
-      <column name="fontName">Century Gothic</column>
-      <column name="data">'Century Gothic', Ubuntu, sans-serif</column>
-      <column name="category">sans-serif</column>
+      <column name="fontId" value="13" />
+      <column name="fontName" value="Century Gothic" />
+      <column name="data" value="'Century Gothic', Ubuntu, sans-serif" />
+      <column name="category" value="sans-serif" />
     </table>
     <table name="fonts">
-      <column name="fontId">14</column>
-      <column name="fontName">Trebuchet MS</column>
-      <column name="data">'Trebuchet MS', Arial, Tahoma, Verdana, FreeSans, sans-serif</column>
-      <column name="category">sans-serif</column>
+      <column name="fontId" value="14" />
+      <column name="fontName" value="Trebuchet MS" />
+      <column name="data" value="'Trebuchet MS', Arial, Tahoma, Verdana, FreeSans, sans-serif" />
+      <column name="category" value="sans-serif" />
     </table>
     <table name="fonts">
-      <column name="fontId">15</column>
-      <column name="fontName">Arial</column>
-      <column name="data">Arial, 'Trebuchet MS', Tahoma, Verdana, FreeSans, sans-serif</column>
-      <column name="category">sans-serif</column>
+      <column name="fontId" value="15" />
+      <column name="fontName" value="Arial" />
+      <column name="data" value="Arial, 'Trebuchet MS', Tahoma, Verdana, FreeSans, sans-serif" />
+      <column name="category" value="sans-serif" />
     </table>
     <table name="fonts">
-      <column name="fontId">16</column>
-      <column name="fontName">Verdana</column>
-      <column name="data">Arial, Verdana, 'Trebuchet MS', Tahoma, Arial, sans-serif</column>
-      <column name="category">sans-serif</column>
+      <column name="fontId" value="16" />
+      <column name="fontName" value="Verdana" />
+      <column name="data" value="Arial, Verdana, 'Trebuchet MS', Tahoma, Arial, sans-serif" />
+      <column name="category" value="sans-serif" />
     </table>
     <table name="fonts">
-      <column name="fontId">17</column>
-      <column name="fontName">Tahoma</column>
-      <column name="data">Tahoma, Verdana, 'Trebuchet MS', Arial, FreeSans, sans-serif</column>
-      <column name="category">sans-serif</column>
+      <column name="fontId" value="17" />
+      <column name="fontName" value="Tahoma" />
+      <column name="data" value="Tahoma, Verdana, 'Trebuchet MS', Arial, FreeSans, sans-serif" />
+      <column name="category" value="sans-serif" />
     </table>
     <table name="fonts">
-      <column name="fontId">18</column>
-      <column name="fontName">Ubuntu</column>
-      <column name="data">Ubuntu, FreeSans, Tahoma, sans-serif</column>
-      <column name="category">sans-serif</column>
+      <column name="fontId" value="18" />
+      <column name="fontName" value="Ubuntu" />
+      <column name="data" value="Ubuntu, FreeSans, Tahoma, sans-serif" />
+      <column name="category" value="sans-serif" />
     </table>
     <table name="fonts">
-      <column name="fontId">19</column>
-      <column name="fontName">Liberation Sans</column>
-      <column name="data">Liberation Sans, sans-serif</column>
-      <column name="category">sans-serif</column>
+      <column name="fontId" value="19" />
+      <column name="fontName" value="Liberation Sans" />
+      <column name="data" value="Liberation Sans, sans-serif" />
+      <column name="category" value="sans-serif" />
     </table>
     <table name="fonts">
-      <column name="fontId">20</column>
-      <column name="fontName">Bauhaus 93</column>
-      <column name="data">'Bauhaus 93', fantasy</column>
-      <column name="category">fantasy</column>
+      <column name="fontId" value="20" />
+      <column name="fontName" value="Bauhaus 93" />
+      <column name="data" value="'Bauhaus 93', fantasy" />
+      <column name="category" value="fantasy" />
     </table>
     <table name="fonts">
-      <column name="fontId">21</column>
-      <column name="fontName">Jokerman</column>
-      <column name="data">Jokerman, fantasy</column>
-      <column name="category">fantasy</column>
+      <column name="fontId" value="21" />
+      <column name="fontName" value="Jokerman" />
+      <column name="data" value="Jokerman, fantasy" />
+      <column name="category" value="fantasy" />
     </table>
     <table name="fonts">
-      <column name="fontId">22</column>
-      <column name="fontName">Impact</column>
-      <column name="data">Impact, fantasy</column>
-      <column name="category">fantasy</column>
+      <column name="fontId" value="22" />
+      <column name="fontName" value="Impact" />
+      <column name="data" value="Impact, fantasy" />
+      <column name="category" value="fantasy" />
     </table>
     <table name="fonts">
-      <column name="fontId">23</column>
-      <column name="fontName">Papyrus</column>
-      <column name="data">Papyrus, fantasy</column>
-      <column name="category">fantasy</column>
+      <column name="fontId" value="23" />
+      <column name="fontName" value="Papyrus" />
+      <column name="data" value="Papyrus, fantasy" />
+      <column name="category" value="fantasy" />
     </table>
     <table name="fonts">
-      <column name="fontId">24</column>
-      <column name="fontName">Copperplate Gothic B</column>
-      <column name="data">'Copperplate Gothic Bold', fantasy</column>
-      <column name="category">fantasy</column>
+      <column name="fontId" value="24" />
+      <column name="fontName" value="Copperplate Gothic B" />
+      <column name="data" value="'Copperplate Gothic Bold', fantasy" />
+      <column name="category" value="fantasy" />
     </table>
     <table name="fonts">
-      <column name="fontId">25</column>
-      <column name="fontName">Rockwell Extra Bold</column>
-      <column name="data">'Rockwell Extra Bold', fantasy</column>
-      <column name="category">fantasy</column>
+      <column name="fontId" value="25" />
+      <column name="fontName" value="Rockwell Extra Bold" />
+      <column name="data" value="'Rockwell Extra Bold', fantasy" />
+      <column name="category" value="fantasy" />
     </table>
     <table name="fonts">
-      <column name="fontId">67</column>
-      <column name="fontName">Lucida Sans Handwrit</column>
-      <column name="data">'Lucida Sans Handwritten', cursive</column>
-      <column name="category">cursive</column>
+      <column name="fontId" value="67" />
+      <column name="fontName" value="Lucida Sans Handwrit" />
+      <column name="data" value="'Lucida Sans Handwritten', cursive" />
+      <column name="category" value="cursive" />
     </table>
     <table name="fonts">
-      <column name="fontId">68</column>
-      <column name="fontName">Comic Sans MS</column>
-      <column name="data">'Comic Sans MS', cursive</column>
-      <column name="category">cursive</column>
+      <column name="fontId" value="68" />
+      <column name="fontName" value="Comic Sans MS" />
+      <column name="data" value="'Comic Sans MS', cursive" />
+      <column name="category" value="cursive" />
     </table>
     <table name="fonts">
-      <column name="fontId">69</column>
-      <column name="fontName">Lucida Sans Handwrit</column>
-      <column name="data">'Lucida Sans Handwritten', cursive</column>
-      <column name="category">cursive</column>
+      <column name="fontId" value="69" />
+      <column name="fontName" value="Lucida Sans Handwrit" />
+      <column name="data" value="'Lucida Sans Handwritten', cursive" />
+      <column name="category" value="cursive" />
     </table>
     <table name="fonts">
-      <column name="fontId">70</column>
-      <column name="fontName">Curlz MT</column>
-      <column name="data">'Curlz MT', cursive</column>
-      <column name="category">cursive</column>
+      <column name="fontId" value="70" />
+      <column name="fontName" value="Curlz MT" />
+      <column name="data" value="'Curlz MT', cursive" />
+      <column name="category" value="cursive" />
     </table>
     <table name="fonts">
-      <column name="fontId">71</column>
-      <column name="fontName">Freestyle Script</column>
-      <column name="data">'Freestyle Script', cursive</column>
-      <column name="category">cursive</column>
+      <column name="fontId" value="71" />
+      <column name="fontName" value="Freestyle Script" />
+      <column name="data" value="'Freestyle Script', cursive" />
+      <column name="category" value="cursive" />
     </table>
     <table name="fonts">
-      <column name="fontId">72</column>
-      <column name="fontName">Edwardian Script ITC</column>
-      <column name="data">'Edwardian Script ITC', cursive</column>
-      <column name="category">cursive</column>
+      <column name="fontId" value="72" />
+      <column name="fontName" value="Edwardian Script ITC" />
+      <column name="data" value="'Edwardian Script ITC', cursive" />
+      <column name="category" value="cursive" />
     </table>
 
 
@@ -308,6 +308,57 @@
 
     <!-- Table kick -->
 
+
+
+    <!-- Table languages -->
+    <table name="languages">
+      <column name="languageName" value="English" />
+      <column name="languageCode" value="en" />
+    </table>
+    <table name="languages">
+      <column name="languageName" value="English (United Kingdom)" />
+      <column name="languageCode" value="en-gb" />
+    </table>
+    <table name="languages">
+      <column name="languageName" value="English (United States)" />
+      <column name="languageCode" value="en-us" />
+    </table>
+    <table name="languages">
+      <column name="languageName" value="English (Canada)" />
+      <column name="languageCode" value="en-ca" />
+    </table>
+    <table name="languages">
+      <column name="languageName" value="English (Australia)" />
+      <column name="languageCode" value="en-au" />
+    </table>
+    <table name="languages">
+      <column name="languageName" value="Spanish" />
+      <column name="languageCode" value="es" />
+    </table>
+    <table name="languages">
+      <column name="languageName" value="German" />
+      <column name="languageCode" value="de" />
+    </table>
+    <table name="languages">
+      <column name="languageName" value="French" />
+      <column name="languageCode" value="fr" />
+    </table>
+    <table name="languages">
+      <column name="languageName" value="Italian" />
+      <column name="languageCode" value="it" />
+    </table>
+    <table name="languages">
+      <column name="languageName" value="Russian" />
+      <column name="languageCode" value="ru" />
+    </table>
+    <table name="languages">
+      <column name="languageName" value="Japanese" />
+      <column name="languageCode" value="ja" />
+    </table>
+    <table name="languages">
+      <column name="languageName" value="Korean" />
+      <column name="languageCode" value="ko" />
+    </table>
 
 
     <!-- Table messages -->
@@ -332,17 +383,16 @@
 
     <!-- Table rooms -->
     <table name="rooms">
-      <column name="roomId">1</column>
-      <column name="roomName">Your Room!</column>
-      <column name="roomTopic">Hit the Edit Room Button to Change Things or Use /topic to Change the Topic</column>
-      <column name="owner">0</column>
-      <column name="allowedGroups">*</column>
-      <column name="allowedUsers">*</column>
-      <column name="moderators"></column>
-      <column name="options">1</column>
-      <column name="bbcode">0</column>
-      <column name="lastMessageTime">0000-00-00 00:00:00</column>
-      <column name="lastMessageId">0</column>
+      <column name="roomId" value="1" />
+      <column name="roomName" value="Your Room!" />
+      <column name="roomTopic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
+      <column name="owner" value="0" />
+      <column name="allowedGroups" value="*" />
+      <column name="allowedUsers" value="*" />
+      <column name="moderators" value="" />
+      <column name="options" value="1" />
+      <column name="lastMessageTime" value="0000-00-00 00:00:00" />
+      <column name="lastMessageId" value="0" />
     </table>
 
 
@@ -368,32 +418,32 @@
 
     <!-- Table uploadTypes -->
     <table name="uploadTypes">
-      <column name="typeId">1</column>
-      <column name="extension">png</column>
-      <column name="mime">image/png</column>
-      <column name="maxSize">1048576</column>
-      <column name="container">image</column>
+      <column name="typeId" value="1" />
+      <column name="extension" value="png" />
+      <column name="mime" value="image/png" />
+      <column name="maxSize" value="1048576" />
+      <column name="container" value="image" />
     </table>
     <table name="uploadTypes">
-      <column name="typeId">2</column>
-      <column name="extension">jpg</column>
-      <column name="mime">image/jpeg</column>
-      <column name="maxSize">1048576</column>
-      <column name="container">image</column>
+      <column name="typeId" value="2" />
+      <column name="extension" value="jpg" />
+      <column name="mime" value="image/jpeg" />
+      <column name="maxSize" value="1048576" />
+      <column name="container" value="image" />
     </table>
     <table name="uploadTypes">
-      <column name="typeId">3</column>
-      <column name="extension">jpeg</column>
-      <column name="mime">image/jpeg</column>
-      <column name="maxSize">1048576</column>
-      <column name="container">image</column>
+      <column name="typeId" value="3" />
+      <column name="extension" value="jpeg" />
+      <column name="mime" value="image/jpeg" />
+      <column name="maxSize" value="1048576" />
+      <column name="container" value="image" />
     </table>
     <table name="uploadTypes">
-      <column name="typeId">4</column>
-      <column name="extension">gif</column>
-      <column name="mime">image/gif</column>
-      <column name="maxSize">1048576</column>
-      <column name="container">image</column>
+      <column name="typeId" value="4" />
+      <column name="extension" value="gif" />
+      <column name="mime" value="image/gif" />
+      <column name="maxSize" value="1048576" />
+      <column name="container" value="image" />
     </table>
 
   </database>

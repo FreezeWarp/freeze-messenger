@@ -1,894 +1,193 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<languagePack version="3.0" product="webro">
-  <table name="phrases">
-    <column name="phraseId">1</column>
-    <column name="phraseName">brandingTitle</column>
-    <column name="text_jp">フリーズ の メッセンジャー</column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">2</column>
-    <column name="phraseName">brandingFavicon</column>
-    <column name="text_jp">images/favicon.png</column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">4</column>
-    <column name="phraseName">doctype</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">5</column>
-    <column name="phraseName">brandingDescription</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">6</column>
-    <column name="phraseName">brandingCommunityLinks</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">7</column>
-    <column name="phraseName">brandingIE9Color</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">27</column>
-    <column name="phraseName">chatAccessDenied</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">28</column>
-    <column name="phraseName">chatPrivateRoom</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">29</column>
-    <column name="phraseName">chatNotModerated</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">30</column>
-    <column name="phraseName">chatAdminAccess</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">31</column>
-    <column name="phraseName">settingsParentalControlsLabel</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">32</column>
-    <column name="phraseName">settingsParentalControlsBlurb</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">33</column>
-    <column name="phraseName">settingsAudioDingLabel</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">34</column>
-    <column name="phraseName">settingsAudioDingBlurb</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">35</column>
-    <column name="phraseName">settingsDisableFormattingLabel</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">36</column>
-    <column name="phraseName">settingsDisableFormattingBlurb</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">37</column>
-    <column name="phraseName">settingsDisableVideoLabel</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">38</column>
-    <column name="phraseName">settingsDisableVideoBlurb</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">39</column>
-    <column name="phraseName">settingsDisableImageLabel</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">40</column>
-    <column name="phraseName">settingsDisableImageBlurb</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">41</column>
-    <column name="phraseName">settingsReversePostOrderLabel</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">42</column>
-    <column name="phraseName">settingsReversePostOrderBlurb</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">43</column>
-    <column name="phraseName">settingsDefaultRoomLabel</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">44</column>
-    <column name="phraseName">settingsDefaultRoomBlurb</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">45</column>
-    <column name="phraseName">settingsWatchRoomsLabel</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">46</column>
-    <column name="phraseName">settingsWatchRoomsBlurb</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">47</column>
-    <column name="phraseName">settingsWatchRoomsCurrentRooms</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">48</column>
-    <column name="phraseName">settingsDefaultFormattingPreview</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">49</column>
-    <column name="phraseName">chatBannedMessage</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">50</column>
-    <column name="phraseName">archiveNumResultsLabel</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">51</column>
-    <column name="phraseName">archiveRoomLabel</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">52</column>
-    <column name="phraseName">archiveMessage</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">53</column>
-    <column name="phraseName">archiveReversePostOrderLabel</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">54</column>
-    <column name="phraseName">archiveUserIdsLabel</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">55</column>
-    <column name="phraseName">templateAdmin</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">56</column>
-    <column name="phraseName">templateAdminImages</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">57</column>
-    <column name="phraseName">templateAdminUsers</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">58</column>
-    <column name="phraseName">templateAdminBanUser</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">59</column>
-    <column name="phraseName">templateAdminUnbanUser</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">60</column>
-    <column name="phraseName">templateAdminCensor</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">61</column>
-    <column name="phraseName">templateAdminPhrases</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">62</column>
-    <column name="phraseName">templateAdminMaintenance</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">63</column>
-    <column name="phraseName">templateLogin</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">64</column>
-    <column name="phraseName">templateLogout</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">65</column>
-    <column name="phraseName">templateChangeSettings</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">66</column>
-    <column name="phraseName">templateKickUser</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">67</column>
-    <column name="phraseName">templateUnkickUser</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">68</column>
-    <column name="phraseName">templateManageKickedUsers</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">69</column>
-    <column name="phraseName">templateStats</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">70</column>
-    <column name="phraseName">templateActiveUsers</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">71</column>
-    <column name="phraseName">templatePrivateIM</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">72</column>
-    <column name="phraseName">templateEditRoom</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">73</column>
-    <column name="phraseName">templateCreateRoom</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">74</column>
-    <column name="phraseName">templateRoomList</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">75</column>
-    <column name="phraseName">templateArchive</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">76</column>
-    <column name="phraseName">templateCommunityLinksCat</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">77</column>
-    <column name="phraseName">templateUserCat</column>
-    <column name="text_jp">私</column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">78</column>
-    <column name="phraseName">templateRoomListCat</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">79</column>
-    <column name="phraseName">templateActiveUsersCat</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">80</column>
-    <column name="phraseName">templateCopyrightCat</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">81</column>
-    <column name="phraseName">statsNumResults</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">82</column>
-    <column name="phraseName">statsRoomList</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">83</column>
-    <column name="phraseName">statsChooseSettings</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">84</column>
-    <column name="phraseName">statsChooseSettingsSubmit</column>
-    <column name="text_jp">行く</column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">85</column>
-    <column name="phraseName">statsChooseSettingsReset</column>
-    <column name="text_jp">リセット</column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">86</column>
-    <column name="phraseName">statsPlace</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">88</column>
-    <column name="phraseName">templateAllCopyrights</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">89</column>
-    <column name="phraseName">archiveChooseSettings</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">90</column>
-    <column name="phraseName">chatRoomDoesNotExist</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">91</column>
-    <column name="phraseName">archiveHeaderUser</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">92</column>
-    <column name="phraseName">archiveHeaderTime</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">93</column>
-    <column name="phraseName">archiveHeaderMessage</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">94</column>
-    <column name="phraseName">archivePageSelect</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">95</column>
-    <column name="phraseName">archiveViewAs</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">96</column>
-    <column name="phraseName">archiveFormatHTML</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">97</column>
-    <column name="phraseName">archiveFormatBBCode</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">99</column>
-    <column name="phraseName">templateLoading</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">100</column>
-    <column name="phraseName">templateQuickCat</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">101</column>
-    <column name="phraseName">templateAdminHooks</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">102</column>
-    <column name="phraseName">chatBannedTitle</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">103</column>
-    <column name="phraseName">chatMatureTitle</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">104</column>
-    <column name="phraseName">chatMatureMessage</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">105</column>
-    <column name="phraseName">archiveNoMessages</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">106</column>
-    <column name="phraseName">archiveTitle</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">107</column>
-    <column name="phraseName">archiveSubmit</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">108</column>
-    <column name="phraseName">archiveNumResultsHook</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">109</column>
-    <column name="phraseName">statsNumResultsHook</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">110</column>
-    <column name="phraseName">uploadHeaderPreview</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">111</column>
-    <column name="phraseName">uploadHeaderName</column>
-    <column name="text_jp">名前</column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">112</column>
-    <column name="phraseName">uploadHeaderSize</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">113</column>
-    <column name="phraseName">uploadHeaderMime</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">114</column>
-    <column name="phraseName">uploadHeaderActions</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">115</column>
-    <column name="phraseName">uploadRating6</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">116</column>
-    <column name="phraseName">uploadRating10</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">117</column>
-    <column name="phraseName">uploadRating13</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">118</column>
-    <column name="phraseName">uploadRating16</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">119</column>
-    <column name="phraseName">uploadRating18</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">120</column>
-    <column name="phraseName">uploadNewFileTitle</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">121</column>
-    <column name="phraseName">uploadNewFileComputer</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">122</column>
-    <column name="phraseName">uploadNewFilePreview</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">123</column>
-    <column name="phraseName">uploadNewFileSubmitButton</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">124</column>
-    <column name="phraseName">uploadErrorNoUrl</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">125</column>
-    <column name="phraseName">uploadErrorNoYoutube</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">126</column>
-    <column name="phraseName">uploadErrorNoExist</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">127</column>
-    <column name="phraseName">uploadErrorBadType</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">128</column>
-    <column name="phraseName">uploadErrorSize</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">129</column>
-    <column name="phraseName">uploadErrorOther</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">130</column>
-    <column name="phraseName">uploadErrorFinal</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">131</column>
-    <column name="phraseName">uploadErrorFileContents</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">132</column>
-    <column name="phraseName">uploadErrorMethod</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">133</column>
-    <column name="phraseName">editRoomNameLabel</column>
-    <column name="text_jp">名前</column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">134</column>
-    <column name="phraseName">editRoomNameBlurb</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">135</column>
-    <column name="phraseName">editRoomAllowedUsersLabel</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">136</column>
-    <column name="phraseName">editRoomAllowedUsersBlurb</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">137</column>
-    <column name="phraseName">editRoomAllowedGroupsLabel</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">138</column>
-    <column name="phraseName">editRoomAllowedGroupsBlurb</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">139</column>
-    <column name="phraseName">editRoomModeratorsLabel</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">140</column>
-    <column name="phraseName">editRoomModeratorsBlurb</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">141</column>
-    <column name="phraseName">editRoomMatureLabel</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">142</column>
-    <column name="phraseName">editRoomMatureBlurb</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">143</column>
-    <column name="phraseName">editRoomBBCode</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">144</column>
-    <column name="phraseName">editRoomBBCodeAll</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">145</column>
-    <column name="phraseName">editRoomBBCodeNoMulti</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">146</column>
-    <column name="phraseName">editRoomBBCodeNoImg</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">147</column>
-    <column name="phraseName">editRoomBBCodeLink</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">148</column>
-    <column name="phraseName">editRoomBBCodeBasic</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">149</column>
-    <column name="phraseName">editRoomBBCodeNothing</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">150</column>
-    <column name="phraseName">editRoomBBCodeBlurb</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">151</column>
-    <column name="phraseName">createRoomSubmit</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">152</column>
-    <column name="phraseName">createRoomReset</column>
-    <column name="text_jp">リセット</column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">153</column>
-    <column name="phraseName">editRoomSubmit</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">154</column>
-    <column name="phraseName">editRoomReset</column>
-    <column name="text_jp">リセット</column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">155</column>
-    <column name="phraseName">createRoomCreatedAt</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">156</column>
-    <column name="phraseName">createRoomFail</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">157</column>
-    <column name="phraseName">editRoomNoName</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">158</column>
-    <column name="phraseName">createRoomUnknownAction</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">159</column>
-    <column name="phraseName">editRoomUnknownAction</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">160</column>
-    <column name="phraseName">editRoomNameTaken</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">161</column>
-    <column name="phraseName">createRoomDisabled</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">162</column>
-    <column name="phraseName">createRoomBanned</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">163</column>
-    <column name="phraseName">editRoomCreatedGo</column>
-    <column name="text_jp">そこに行く!</column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">164</column>
-    <column name="phraseName">editRoomNotOwner</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">165</column>
-    <column name="phraseName">editRoomDeleted</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">166</column>
-    <column name="phraseName">editRoomCensorLabel</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">167</column>
-    <column name="phraseName">onlineUsername</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">168</column>
-    <column name="phraseName">onlineRoom</column>
-    <column name="text_jp">へや</column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">169</column>
-    <column name="phraseName">onlineLoading</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">170</column>
-    <column name="phraseName">loginNoUser</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">171</column>
-    <column name="phraseName">loginNoPass</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">172</column>
-    <column name="phraseName">loginBad</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">173</column>
-    <column name="phraseName">loginTitle</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">174</column>
-    <column name="phraseName">loginIntro</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">175</column>
-    <column name="phraseName">loginUsername</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">176</column>
-    <column name="phraseName">loginPassword</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">177</column>
-    <column name="phraseName">loginRemember</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">178</column>
-    <column name="phraseName">loginSubmit</column>
-    <column name="text_jp">行く</column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">179</column>
-    <column name="phraseName">loginReset</column>
-    <column name="text_jp">リセット</column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">180</column>
-    <column name="phraseName">loginGuestLinks</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">181</column>
-    <column name="phraseName">templateAdminTemplates</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">182</column>
-    <column name="phraseName">editRoomModeratorsCurrent</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">183</column>
-    <column name="phraseName">editRoomModeratorsCurrent</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">184</column>
-    <column name="phraseName">editRoomModeratorsCurrent</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">185</column>
-    <column name="phraseName">templateModerateCat</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">186</column>
-    <column name="phraseName">hookHead</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">187</column>
-    <column name="phraseName">templateShowLessRooms</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">188</column>
-    <column name="phraseName">templateShowMoreRooms</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">189</column>
-    <column name="phraseName">templateAdminPrivs</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">190</column>
-    <column name="phraseName">settingsDisableFxLabel</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">191</column>
-    <column name="phraseName">settingsDisableFxBlurb</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">192</column>
-    <column name="phraseName">settingsShowAvatarsLabel</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">193</column>
-    <column name="phraseName">settingsShowAvatarsBlurb</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">194</column>
-    <column name="phraseName">settingsThemeLabel</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">195</column>
-    <column name="phraseName">settingsThemeBlurb</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">196</column>
-    <column name="phraseName">templateViewUploads</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">197</column>
-    <column name="phraseName">settingsIgnoreListLabel</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">198</column>
-    <column name="phraseName">settingsIgnoreListBlurb</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">199</column>
-    <column name="phraseName">settingsIgnoreListCurrentUsers</column>
-    <column name="text_jp"></column>
-  </table>
-  <table name="phrases">
-    <column name="phraseId">200</column>
-    <column name="phraseName">brandingKeywords</column>
-    <column name="text_jp"></column>
-  </table>
+<languagePack version="3.0" product="webro" languageCode="jp" languageName="Japanese">
+  <metadata>
+    <title>WebPro Japanese Translation (Incomplete)</title>
+    <summary>A Japanese WebPro translation that, unfortunately, is basically empty. Though, I will work on it as I slowly learn the language itself.</summary>
+
+    <copyright>Joseph T. Parsons 2011</copyright>
+    <license>Creative Commons BY-SA</license>
+    <version>3.0</version>
+  </metadata>
+
+  <phrases>
+    <phrase name="brandingTitle">フリーズ の メッセンジャー</phrase>
+    <phrase name="brandingFavicon">images/favicon.png</phrase>
+    <phrase name="doctype"></phrase>
+    <phrase name="brandingDescription"></phrase>
+    <phrase name="brandingCommunityLinks"></phrase>
+    <phrase name="brandingIE9Color"></phrase>
+    <phrase name="chatAccessDenied"></phrase>
+    <phrase name="chatPrivateRoom"></phrase>
+    <phrase name="chatNotModerated"></phrase>
+    <phrase name="chatAdminAccess"></phrase>
+    <phrase name="settingsParentalControlsLabel"></phrase>
+    <phrase name="settingsParentalControlsBlurb"></phrase>
+    <phrase name="settingsAudioDingLabel"></phrase>
+    <phrase name="settingsAudioDingBlurb"></phrase>
+    <phrase name="settingsDisableFormattingLabel"></phrase>
+    <phrase name="settingsDisableFormattingBlurb"></phrase>
+    <phrase name="settingsDisableVideoLabel"></phrase>
+    <phrase name="settingsDisableVideoBlurb"></phrase>
+    <phrase name="settingsDisableImageLabel"></phrase>
+    <phrase name="settingsDisableImageBlurb"></phrase>
+    <phrase name="settingsReversePostOrderLabel"></phrase>
+    <phrase name="settingsReversePostOrderBlurb"></phrase>
+    <phrase name="settingsDefaultRoomLabel"></phrase>
+    <phrase name="settingsDefaultRoomBlurb"></phrase>
+    <phrase name="settingsWatchRoomsLabel"></phrase>
+    <phrase name="settingsWatchRoomsBlurb"></phrase>
+    <phrase name="settingsWatchRoomsCurrentRooms"></phrase>
+    <phrase name="settingsDefaultFormattingPreview"></phrase>
+    <phrase name="chatBannedMessage"></phrase>
+    <phrase name="archiveNumResultsLabel"></phrase>
+    <phrase name="archiveRoomLabel"></phrase>
+    <phrase name="archiveMessage"></phrase>
+    <phrase name="archiveReversePostOrderLabel"></phrase>
+    <phrase name="archiveUserIdsLabel"></phrase>
+    <phrase name="templateAdmin"></phrase>
+    <phrase name="templateAdminImages"></phrase>
+    <phrase name="templateAdminUsers"></phrase>
+    <phrase name="templateAdminBanUser"></phrase>
+    <phrase name="templateAdminUnbanUser"></phrase>
+    <phrase name="templateAdminCensor"></phrase>
+    <phrase name="templateAdminPhrases"></phrase>
+    <phrase name="templateAdminMaintenance"></phrase>
+    <phrase name="templateLogin"></phrase>
+    <phrase name="templateLogout"></phrase>
+    <phrase name="templateChangeSettings"></phrase>
+    <phrase name="templateKickUser"></phrase>
+    <phrase name="templateUnkickUser"></phrase>
+    <phrase name="templateManageKickedUsers"></phrase>
+    <phrase name="templateStats"></phrase>
+    <phrase name="templateActiveUsers"></phrase>
+    <phrase name="templatePrivateIM"></phrase>
+    <phrase name="templateEditRoom"></phrase>
+    <phrase name="templateCreateRoom"></phrase>
+    <phrase name="templateRoomList"></phrase>
+    <phrase name="templateArchive"></phrase>
+    <phrase name="templateCommunityLinksCat"></phrase>
+    <phrase name="templateUserCat">私</phrase>
+    <phrase name="templateRoomListCat"></phrase>
+    <phrase name="templateActiveUsersCat"></phrase>
+    <phrase name="templateCopyrightCat"></phrase>
+    <phrase name="statsNumResults"></phrase>
+    <phrase name="statsRoomList"></phrase>
+    <phrase name="statsChooseSettings"></phrase>
+    <phrase name="statsChooseSettingsSubmit">行く</phrase>
+    <phrase name="statsChooseSettingsReset">リセット</phrase>
+    <phrase name="statsPlace"></phrase>
+    <phrase name="templateAllCopyrights"></phrase>
+    <phrase name="archiveChooseSettings"></phrase>
+    <phrase name="chatRoomDoesNotExist"></phrase>
+    <phrase name="archiveHeaderUser"></phrase>
+    <phrase name="archiveHeaderTime"></phrase>
+    <phrase name="archiveHeaderMessage"></phrase>
+    <phrase name="archivePageSelect"></phrase>
+    <phrase name="archiveViewAs"></phrase>
+    <phrase name="archiveFormatHTML"></phrase>
+    <phrase name="archiveFormatBBCode"></phrase>
+    <phrase name="templateLoading"></phrase>
+    <phrase name="templateQuickCat"></phrase>
+    <phrase name="templateAdminHooks"></phrase>
+    <phrase name="chatBannedTitle"></phrase>
+    <phrase name="chatMatureTitle"></phrase>
+    <phrase name="chatMatureMessage"></phrase>
+    <phrase name="archiveNoMessages"></phrase>
+    <phrase name="archiveTitle"></phrase>
+    <phrase name="archiveSubmit"></phrase>
+    <phrase name="archiveNumResultsHook"></phrase>
+    <phrase name="statsNumResultsHook"></phrase>
+    <phrase name="uploadHeaderPreview"></phrase>
+    <phrase name="uploadHeaderName">名前</phrase>
+    <phrase name="uploadHeaderSize"></phrase>
+    <phrase name="uploadHeaderMime"></phrase>
+    <phrase name="uploadHeaderActions"></phrase>
+    <phrase name="uploadRating6"></phrase>
+    <phrase name="uploadRating10"></phrase>
+    <phrase name="uploadRating13"></phrase>
+    <phrase name="uploadRating16"></phrase>
+    <phrase name="uploadRating18"></phrase>
+    <phrase name="uploadNewFileTitle"></phrase>
+    <phrase name="uploadNewFileComputer"></phrase>
+    <phrase name="uploadNewFilePreview"></phrase>
+    <phrase name="uploadNewFileSubmitButton"></phrase>
+    <phrase name="uploadErrorNoUrl"></phrase>
+    <phrase name="uploadErrorNoYoutube"></phrase>
+    <phrase name="uploadErrorNoExist"></phrase>
+    <phrase name="uploadErrorBadType"></phrase>
+    <phrase name="uploadErrorSize"></phrase>
+    <phrase name="uploadErrorOther"></phrase>
+    <phrase name="uploadErrorFinal"></phrase>
+    <phrase name="uploadErrorFileContents"></phrase>
+    <phrase name="uploadErrorMethod"></phrase>
+    <phrase name="editRoomNameLabel">名前</phrase>
+    <phrase name="editRoomNameBlurb"></phrase>
+    <phrase name="editRoomAllowedUsersLabel"></phrase>
+    <phrase name="editRoomAllowedUsersBlurb"></phrase>
+    <phrase name="editRoomAllowedGroupsLabel"></phrase>
+    <phrase name="editRoomAllowedGroupsBlurb"></phrase>
+    <phrase name="editRoomModeratorsLabel"></phrase>
+    <phrase name="editRoomModeratorsBlurb"></phrase>
+    <phrase name="editRoomMatureLabel"></phrase>
+    <phrase name="editRoomMatureBlurb"></phrase>
+    <phrase name="editRoomBBCode"></phrase>
+    <phrase name="editRoomBBCodeAll"></phrase>
+    <phrase name="editRoomBBCodeNoMulti"></phrase>
+    <phrase name="editRoomBBCodeNoImg"></phrase>
+    <phrase name="editRoomBBCodeLink"></phrase>
+    <phrase name="editRoomBBCodeBasic"></phrase>
+    <phrase name="editRoomBBCodeNothing"></phrase>
+    <phrase name="editRoomBBCodeBlurb"></phrase>
+    <phrase name="createRoomSubmit"></phrase>
+    <phrase name="createRoomReset">リセット</phrase>
+    <phrase name="editRoomSubmit"></phrase>
+    <phrase name="editRoomReset">リセット</phrase>
+    <phrase name="createRoomCreatedAt"></phrase>
+    <phrase name="createRoomFail"></phrase>
+    <phrase name="editRoomNoName"></phrase>
+    <phrase name="createRoomUnknownAction"></phrase>
+    <phrase name="editRoomUnknownAction"></phrase>
+    <phrase name="editRoomNameTaken"></phrase>
+    <phrase name="createRoomDisabled"></phrase>
+    <phrase name="createRoomBanned"></phrase>
+    <phrase name="editRoomCreatedGo">そこに行く!</phrase>
+    <phrase name="editRoomNotOwner"></phrase>
+    <phrase name="editRoomDeleted"></phrase>
+    <phrase name="editRoomCensorLabel"></phrase>
+    <phrase name="onlineUsername"></phrase>
+    <phrase name="onlineRoom">へや</phrase>
+    <phrase name="onlineLoading"></phrase>
+    <phrase name="loginNoUser"></phrase>
+    <phrase name="loginNoPass"></phrase>
+    <phrase name="loginBad"></phrase>
+    <phrase name="loginTitle"></phrase>
+    <phrase name="loginIntro"></phrase>
+    <phrase name="loginUsername"></phrase>
+    <phrase name="loginPassword"></phrase>
+    <phrase name="loginRemember"></phrase>
+    <phrase name="loginSubmit">行く</phrase>
+    <phrase name="loginReset">リセット</phrase>
+    <phrase name="loginGuestLinks"></phrase>
+    <phrase name="templateAdminTemplates"></phrase>
+    <phrase name="editRoomModeratorsCurrent"></phrase>
+    <phrase name="editRoomModeratorsCurrent"></phrase>
+    <phrase name="editRoomModeratorsCurrent"></phrase>
+    <phrase name="templateModerateCat"></phrase>
+    <phrase name="hookHead"></phrase>
+    <phrase name="templateShowLessRooms"></phrase>
+    <phrase name="templateShowMoreRooms"></phrase>
+    <phrase name="templateAdminPrivs"></phrase>
+    <phrase name="settingsDisableFxLabel"></phrase>
+    <phrase name="settingsDisableFxBlurb"></phrase>
+    <phrase name="settingsShowAvatarsLabel"></phrase>
+    <phrase name="settingsShowAvatarsBlurb"></phrase>
+    <phrase name="settingsThemeLabel"></phrase>
+    <phrase name="settingsThemeBlurb"></phrase>
+    <phrase name="templateViewUploads"></phrase>
+    <phrase name="settingsIgnoreListLabel"></phrase>
+    <phrase name="settingsIgnoreListBlurb"></phrase>
+    <phrase name="settingsIgnoreListCurrentUsers"></phrase>
+    <phrase name="brandingKeywords"></phrase>
+  </phrases>
 </languagePack>

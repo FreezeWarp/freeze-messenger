@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <dbSchema version="3.0">
-  <database name="fimraw" charset="utf8">
+  <database name="__CORE__" charset="utf8">
     <table name="bbcode" type="general" comment="Admin-defined regexes to use for formatting the HTML cache of messages.">
       <column name="bbcodeId" type="int" maxlen="6" autoincrement="true" comment="A unique identifier for the word." />
       <column name="bbcodeName" type="string" maxlen="40" comment="The name of the BBcode for display purposes." />
@@ -186,16 +186,22 @@
 
 
     <table name="phrases" type="general" comment="Phrases used by interface templates for smooth translations.">
-      <column name="phraseId" type="int" maxlen="8" autoincrement="true" comment="A unique ID for the phrase" />
+      <column name="id" type="int" maxlen="8" comment="An unimportant ID used for editing phrases and as a primary key." />
       <column name="phraseName" type="string" maxlen="50" comment="The name of the phrase." />
-      <column name="text_en" type="string" maxlen="4294967296" comment="The text of the message in English." />
-      <column name="text_jp" type="string" maxlen="4294967296" comment="The text of the message in Japanese." />
-      <column name="text_sp" type="string" maxlen="4294967296" comment="The text of the message in Spanish." />
-      <column name="text_fr" type="string" maxlen="4294967296" comment="The text of the message in French." />
-      <column name="text_ge" type="string" maxlen="4294967296" comment="The text of the message in German." />
+      <column name="languageCode" type="string" maxlen="10" comment="The language code corrosponding to the language of the phrase." />
+      <column name="text" type="string" maxlen="4294967296" comment="The phrase text." />
 
-      <key name="phraseId" type="primary" />
-      <key name="phraseName" type="index" />
+      <key name="id" type="primary" />
+      <key name="languageCode" type="index" />
+    </table>
+
+
+    <table name="languages" type="general" comment="A list of languages that corrospond to the languageCodes found in phrases.">
+      <column name="languageId" type="int" maxlen="6" autoincrement="true" comment="The ID of the langauge." />
+      <column name="languageCode" type="string" maxlen="10" comment="The IETF language tag of the language." />
+      <column name="languageName" type="string" maxlen="50" comment="The name of the language" />
+
+      <key name="languageId" type="primary" />
     </table>
 
 
@@ -222,7 +228,7 @@
       <column name="allowedUsers" type="string" maxlen="65536" comment="A comma-seperated list of the IDs of the allowed users in the room." />
       <column name="moderators" type="string" maxlen="65536" comment="A comma-seperated list of the IDs of the moderators of the room." />
       <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options." />
-      <column name="lastMessageTime" type="time" comment="The time of the last message made in the room." />
+      <column name="lastMessageTime" type="time" default="0000-00-00 00:00:00" comment="The time of the last message made in the room." />
       <column name="lastMessageId" type="int" maxlen="15" comment="The ID of the last message made in the room." />
 
       <key name="roomId" type="primary" />
@@ -308,8 +314,8 @@
       <column name="userFormatEnd" type="string" maxlen="300" comment="HTML-formatting to be appended to the user's name for its display." />
       <column name="password" type="string" maxlen="32" comment="The hashed password of the user. It is only used on vanilla logins." />
       <column name="joinDate" type="time" default="__TIME__" update="__TIME__" comment="The date the user joined. It may not be used on logins other than vanilla." />
-      <column name="birthDate" type="time" comment="The date of the user's birth, used for parental control settings." />
-      <column name="lastSync" type="time" comment="The date the userdata was last synced. This is not applicable for vanilla logins." />
+      <column name="birthDate" type="time" default="0000-00-00 00:00:00" comment="The date of the user's birth, used for parental control settings." />
+      <column name="lastSync" type="time" default="0000-00-00 00:00:00" comment="The date the userdata was last synced. This is not applicable for vanilla logins." />
       <column name="defaultRoom" type="int" maxlen="6" default="1" comment="The user's default room." />
       <column name="interface" type="string" maxlen="50" comment="The user's default interface." />
       <column name="favRooms" type="string" maxlen="1000" default="1" comment="A comma-seperated list of rooms the user has ranked as being favourites." />
