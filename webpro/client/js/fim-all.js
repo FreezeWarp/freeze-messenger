@@ -796,7 +796,6 @@ autoEntry = {
 
     entryList = string.split(',');
 
-
     switch(type) {
       case 'watchRooms':
       source = roomRef;
@@ -1887,11 +1886,11 @@ popup = {
             $.ajax({
               url : directory + 'api/sendFile.php',
               type : 'POST',
-              data : 'dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&fileName=' + fileName + '&fileData=' + urlencode(fileContent) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+              data : 'dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&fileName=' + fileName + '&fileData=' + urlencode(fileContent) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
               cache : false,
-              success : function(xml) {
-                var errStr = unxml($(xml).find('errStr').text().trim()),
-                  errDesc = unxml($(xml).find('errDesc').text().trim());
+              success : function(json) {
+                var errStr = json.uploadFile.errStr,
+                  errDesc = json.uploadFile.errDesc;
 
                 if (errStr) {
                   dia.error(errDesc);
@@ -1975,30 +1974,30 @@ popup = {
     }
 
     $.ajax({
-      url: directory + 'api/getStats.php?rooms=' + roomId + '&maxResults=' + number + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+      url: directory + 'api/getStats.php?rooms=' + roomId + '&maxResults=' + number + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
       timeout: 5000,
       type: 'GET',
       cache: false,
-      success: function(xml) {
-        $(xml).find('room').each(function() {
-          var roomName = unxml($(this).find('roomName').text().trim()),
-            roomId = Number($(this).find('roomId').text().trim());
+      success: function(json) {
+        for (i in json.getStats.roomStats) {
+          var roomName = json.getStats.roomStats[i].roomData.roomName,
+            roomId = json.getStats.roomStats[i].roomData.roomId;
 
-          $(this).find('user').each(function() {
-            var userName = unxml($(this).find('userData > userName').text().trim()),
-              userId = Number($(this).find('userData > userId').text().trim()),
-              startTag = unxml($(this).find('userData > startTag').text().trim()),
-              endTag = unxml($(this).find('userData > endTag').text().trim()),
-              position = Number($(this).find('position').text().trim()),
-              messageCount = Number($(this).find('messageCount').text().trim());
+          for (j in json.getStats.roomStats[i].users) {
+            var userName = json.getStats.roomStats[i].users[j].userData.userName,
+              userId = json.getStats.roomStats[i].users[j].userData.userId,
+              startTag = json.getStats.roomStats[i].users[j].userData.startTag,
+              endTag = json.getStats.roomStats[i].users[j].userData.endTag,
+              position = json.getStats.roomStats[i].users[j].position,
+              messageCount = json.getStats.roomStats[i].users[j].messageCount;
 
-            statsHtml[position] += '<td>' + startTag + userName + endTag + ' (' + messageCount + ')</td>';
-          });
+            statsHtml[position] += '<td><span class="userName userNameTable" data-userId="' + userId + '">' + startTag + userName + endTag + '</span> (' + messageCount + ')</td>';
+          };
 
 
           roomHtml += '<th>' + roomName + '</th>';
 
-        });
+        }
 
         for (i = 1; i <= number; i += 1) {
           statsHtml2 += '<tr><th>' + i + '</th>' + statsHtml[i] + '</tr>';
@@ -2082,90 +2081,94 @@ popup = {
         }
 
 
-        $.get(directory + 'api/getUsers.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId, function(xml) {
-          defaultColour = $(xml).find('defaultFormatting > color').text().trim();
-          defaultHighlight = $(xml).find('defaultFormatting > highlight').text().trim();
-          defaultFontface = $(xml).find('defaultFormatting > fontface').text().trim();
+        $.get(directory + 'api/getUsers.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
+          active = json.getUsers.users;
 
-          var defaultGeneral = Number($(xml).find('defaultFormatting > general').text().trim()),
-            ignoreList = ($(xml).find('ignoreList').text().trim()),
-            defaultHighlightHashPre = [],
-            defaultHighlightHash = {r:0,g:0,b:0},
-            defaultColourHashPre = [],
-            defaultColourHash = {r:0,g:0,b:0};
+          for (i in active) {
+            defaultColour = active[i].defaultFormatting.color;
+            defaultHighlight = active[i].defaultFormatting.highlight;
+            defaultFontface = active[i].defaultFormatting.fontface;
 
-          if (defaultGeneral & 256) {
-            $('#fontPreview').css('font-weight','bold');
-            $('#defaultBold').attr('checked','checked');
-          }
-          if (defaultGeneral & 512) {
-            $('#fontPreview').css('font-style','italic');
-            $('#defaultItalics').attr('checked','checked');
-          }
+            var defaultGeneral = active[i].defaultFormatting.general,
+              ignoreList = active[i].ignoreList,
+              defaultHighlightHashPre = [],
+              defaultHighlightHash = {r:0,g:0,b:0},
+              defaultColourHashPre = [],
+              defaultColourHash = {r:0,g:0,b:0};
 
-          if (defaultColour) {
-            $('#fontPreview').css('color','rgb(' + defaultColour + ')');
-            $('#defaultColour').css('background-color','rgb(' + defaultColour + ')');
-
-            defaultColourHashPre = defaultColour.split(',');
-            defaultColourHash = {r : defaultColourHashPre[0], g : defaultColourHashPre[1], b : defaultColourHashPre[2] }
-          }
-          if (defaultHighlight) {
-            $('#fontPreview').css('background-color','rgb(' + defaultHighlight + ')');
-            $('#defaultHighlight').css('background-color','rgb(' + defaultHighlight + ')');
-
-            defaultHighlightHashPre = defaultHighlight.split(',');
-            defaultHighlightHash = {r : defaultHighlightHashPre[0], g : defaultHighlightHashPre[1], b : defaultHighlightHashPre[2] }
-          }
-          if (defaultFontface) {
-            $('#defaultFace > option[value=' + defaultFontface + ']').attr('selected','selected');
-          }
-
-
-          $('#defaultHighlight').ColorPicker({
-            color: defaultHighlightHash,
-              onShow: function (colpkr) {
-              $(colpkr).fadeIn(500);
-
-              return false;
-            },
-            onHide: function (colpkr) {
-              $(colpkr).fadeOut(500);
-
-              return false;
-            },
-            onChange: function(hsb, hex, rgb) {
-              defaultHighlight = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
-
-              $('#defaultHighlight').css('background-color','rgb(' + defaultHighlight + ')');
-              $('#fontPreview').css('background-color','rgb(' + defaultHighlight + ')');
+            if (defaultGeneral & 256) {
+              $('#fontPreview').css('font-weight','bold');
+              $('#defaultBold').attr('checked','checked');
             }
-          });
+            if (defaultGeneral & 512) {
+              $('#fontPreview').css('font-style','italic');
+              $('#defaultItalics').attr('checked','checked');
+            }
 
-          $('#defaultColour').ColorPicker({
-            color: defaultColourHash,
-            onShow: function (colpkr) {
-              $(colpkr).fadeIn(500);
-
-              return false;
-            },
-            onHide: function (colpkr) {
-              $(colpkr).fadeOut(500);
-
-              return false;
-            },
-            onChange: function(hsb, hex, rgb) {
-              defaultColour = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
-
-              $('#defaultColour').css('background-color','rgb(' + defaultColour + ')');
+            if (defaultColour) {
               $('#fontPreview').css('color','rgb(' + defaultColour + ')');
+              $('#defaultColour').css('background-color','rgb(' + defaultColour + ')');
+
+              defaultColourHashPre = defaultColour.split(',');
+              defaultColourHash = {r : defaultColourHashPre[0], g : defaultColourHashPre[1], b : defaultColourHashPre[2] }
             }
-          });
+            if (defaultHighlight) {
+              $('#fontPreview').css('background-color','rgb(' + defaultHighlight + ')');
+              $('#defaultHighlight').css('background-color','rgb(' + defaultHighlight + ')');
+
+              defaultHighlightHashPre = defaultHighlight.split(',');
+              defaultHighlightHash = {r : defaultHighlightHashPre[0], g : defaultHighlightHashPre[1], b : defaultHighlightHashPre[2] }
+            }
+            if (defaultFontface) {
+              $('#defaultFace > option[value=' + defaultFontface + ']').attr('selected','selected');
+            }
 
 
-          autoEntry.showEntries('ignoreList',ignoreList);
+            $('#defaultHighlight').ColorPicker({
+              color: defaultHighlightHash,
+                onShow: function (colpkr) {
+                $(colpkr).fadeIn(500);
 
-          return false;
+                return false;
+              },
+              onHide: function (colpkr) {
+                $(colpkr).fadeOut(500);
+
+                return false;
+              },
+              onChange: function(hsb, hex, rgb) {
+                defaultHighlight = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
+
+                $('#defaultHighlight').css('background-color','rgb(' + defaultHighlight + ')');
+                $('#fontPreview').css('background-color','rgb(' + defaultHighlight + ')');
+              }
+            });
+
+            $('#defaultColour').ColorPicker({
+              color: defaultColourHash,
+              onShow: function (colpkr) {
+                $(colpkr).fadeIn(500);
+
+                return false;
+              },
+              onHide: function (colpkr) {
+                $(colpkr).fadeOut(500);
+
+                return false;
+              },
+              onChange: function(hsb, hex, rgb) {
+                defaultColour = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
+
+                $('#defaultColour').css('background-color','rgb(' + defaultColour + ')');
+                $('#fontPreview').css('color','rgb(' + defaultColour + ')');
+              }
+            });
+
+
+            autoEntry.showEntries('ignoreList', ignoreList);
+
+            return false;
+          }
         });
 
 
@@ -2240,7 +2243,7 @@ popup = {
             fontId = $('#defaultFace option:selected').val(),
             defaultFormatting = ($('#defaultBold').is(':checked') ? 256 : 0) + ($('#defaultItalics').is(':checked') ? 512 : 0);
 
-          $.post(directory + 'api/editUserOptions.php','defaultFormatting=' + defaultFormatting + '&defaultColor=' + defaultColour + '&defaultHighlight=' + defaultHighlight + '&defaultRoomId=' + defaultRoomId + '&watchRooms=' + watchRooms + '&ignoreList=' + ignoreList + '&defaultFontface=' + fontId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
+          $.post(directory + 'api/editUserOptions.php','defaultFormatting=' + defaultFormatting + '&defaultColor=' + defaultColour + '&defaultHighlight=' + defaultHighlight + '&defaultRoomId=' + defaultRoomId + '&watchRooms=' + watchRooms + '&ignoreList=' + ignoreList + '&defaultFontface=' + fontId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
             dia.info('Your settings may or may not have been updated.');
           }); // Send the form data via AJAX.
 
