@@ -178,7 +178,7 @@
     <phrase name="templateShowLessRooms">Show Fewer</phrase>
     <phrase name="templateShowMoreRooms">Show More</phrase>
     <phrase name="templateAdminPrivs">Moderate Admins</phrase>
-    <phrase name="settingsDisableFxLabel">Disale Effects:</phrase>
+    <phrase name="settingsDisableFxLabel">Disable Effects:</phrase>
     <phrase name="settingsDisableFxBlurb">Disabling effects can lead to a performance and a reduction of "client-side" lag (that not related to the server). It has no side-effects, aside from not looking as pretty.</phrase>
     <phrase name="settingsShowAvatarsLabel">Show Avatars:</phrase>
     <phrase name="settingsShowAvatarsBlurb">Showing avatars will reduce the overall amount of text by hiding post times and userNames with a small avatar to represent users. Times can be viewed by moving the mouse over each message.</phrase>

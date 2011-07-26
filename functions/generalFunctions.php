@@ -1197,6 +1197,7 @@ $data";
 function fim_outputJson($array, $level = 0) {
   header('Content-type: application/json');
 
+  $data = array();
   $indent = '';
 
   for ($i = 0; $i <= $level; $i++) {
@@ -1234,15 +1235,17 @@ $indent}
     }
   }
 
-  $data = implode(",\n",$data);
+  if (count($data) > 0) {
+    $data = implode(",\n",$data);
 
-  if ($level == 0) {
-    return "{
-$data
-}";
-  }
-  else {
-    return $data;
+    if ($level == 0) {
+      return "{
+  $data
+  }";
+    }
+    else {
+      return $data;
+    }
   }
 }
 

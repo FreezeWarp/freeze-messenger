@@ -403,13 +403,6 @@ switch ($_REQUEST['phase']) {
         $columns = array(); // We will use this to store the column fragments that will be implode()d into the final query.
         $keys = array(); // We will use this to store the column fragments that will be implode()d into the final query.
 
-
-        if ($_COOKIE['dev']) {
-          if (!in_array($table['@name'],array('templates','phrases','languages'))) {
-            continue;
-          }
-        }
-
         switch ($table['@type']) {
           case 'general': // Use this normally, and for all perm. data
           $engine = 'InnoDB';
@@ -592,12 +585,6 @@ switch ($_REQUEST['phase']) {
       foreach ($xmlData2['database'][0]['table'] AS $table) { // Run through each table from the XML
         $columns = array(); // We will use this to store the column fragments that will be implode()d into the final query.
         $values = array(); // We will use this to store the column fragments that will be implode()d into the final query.
-
-        if ($_COOKIE['dev']) {
-          if (!in_array($table['@name'],array('templates','phrases','languages'))) {
-            continue;
-          }
-        }
 
 
         foreach ($table['column'] AS $column) {

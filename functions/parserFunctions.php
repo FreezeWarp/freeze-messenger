@@ -52,11 +52,8 @@ function fimParse_htmlParse($text) {
   $bbcode = $bbcode->getAsArray(true);
 
   foreach ($bbcode AS $code) {
-    $search3[] = $code['searchRegex'];
-    $replace3[] = $code['replacement'];
+    $text = preg_replace($code['searchRegex'], $code['replacement'], $text);
   }
-
-//  $text = preg_replace($search3, $replace3, $text);
 
   return $text;
 }
