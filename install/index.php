@@ -272,6 +272,7 @@ switch ($_REQUEST['phase']) {
   $password = urldecode($_GET['mysql_password']);
   $database = urldecode($_GET['mysql_database']);
   $createdb = urldecode($_GET['mysql_createdb']);
+  $prefix = urldecode($_GET['mysql_tableprefix']);
 
 
 
@@ -331,10 +332,6 @@ switch ($_REQUEST['phase']) {
 
     // Set Proper Encoding
     $mysqli->query("SET NAMES utf8") or die('The database was unable to set the UTF-8 encoding.');
-
-
-    /* Prequisits */
-    $skipTables = array(); // This will be used to skip insert queries where the CREATE TABLE was also skipped.
 
     // Get Pre-Existing Tables So We Don't Overwrite Any of Them Later
     $showTables = $mysqli->query("SHOW TABLES FROM $databaseSafe", MYSQLI_USE_RESULT);
@@ -560,15 +557,12 @@ switch ($_REQUEST['phase']) {
           }
         }
 
-        foreach ($queries AS $query) {
-          if (!trim($query)) continue;
+        if (!trim($query)) continue;
 
-          if (!$mysqli->query(trim($query))) {
-            die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $mysqli->error);
-          }
+        if (!$mysqli->query(trim($query))) {
+          die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $mysqli->error);
         }
       }
-
 
 
 
@@ -580,10 +574,6 @@ switch ($_REQUEST['phase']) {
       foreach ($xmlData2['database'][0]['table'] AS $table) { // Run through each table from the XML
         $columns = array(); // We will use this to store the column fragments that will be implode()d into the final query.
         $values = array(); // We will use this to store the column fragments that will be implode()d into the final query.
-
-        if (in_array($table['@name'],$skipTables)) {
-          continue;
-        }
 
         foreach ($table['column'] AS $column) {
           $columns[] = '`' . $mysqli->real_escape_string($column['@name']) . '`';
@@ -634,7 +624,7 @@ switch ($_REQUEST['phase']) {
 
       $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
 
-      $queries[] = "INSERT INTO `{$sqlPrefix}languages` (`languageCode`, `languageName`) VALUES ('" . $mysqli->real_escape_string($xmlData4['@languageCode']) . "','" . $mysqli->real_escape_string($xmlData4['@languageName']) . "')";
+      $queries[] = "INSERT INTO `{$prefix}languages` (`languageCode`, `languageName`) VALUES ('" . $mysqli->real_escape_string($xmlData4['@languageCode']) . "','" . $mysqli->real_escape_string($xmlData4['@languageName']) . "')";
 
       foreach ($xmlData4['phrases'][0]['phrase'] AS $phrase) { // Run through each template from the XML
         $queries[] = "INSERT INTO `{$prefix}phrases` (`phraseName`,`languageCode`,`text`) VALUES

@@ -171,8 +171,8 @@
     <phrase name="loginGuestLinks">Guest Links</phrase>
     <phrase name="templateAdminTemplates">Modify Templates</phrase>
     <phrase name="editRoomModeratorsCurrent">Current Moderators:</phrase>
-    <phrase name="editRoomModeratorsCurrent">Currently Allowed Users:</phrase>
-    <phrase name="editRoomModeratorsCurrent">Currently Allowed Groups:</phrase>
+    <phrase name="editRoomAllowedUsersCurrent">Currently Allowed Users:</phrase>
+    <phrase name="editRoomAllowedGroupsCurrent">Currently Allowed Groups:</phrase>
     <phrase name="templateModerateCat">Moderation</phrase>
     <phrase name="hookHead"></phrase>
     <phrase name="templateShowLessRooms">Show Fewer</phrase>

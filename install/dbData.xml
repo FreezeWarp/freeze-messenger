@@ -310,57 +310,6 @@
 
 
 
-    <!-- Table languages -->
-    <table name="languages">
-      <column name="languageName" value="English" />
-      <column name="languageCode" value="en" />
-    </table>
-    <table name="languages">
-      <column name="languageName" value="English (United Kingdom)" />
-      <column name="languageCode" value="en-gb" />
-    </table>
-    <table name="languages">
-      <column name="languageName" value="English (United States)" />
-      <column name="languageCode" value="en-us" />
-    </table>
-    <table name="languages">
-      <column name="languageName" value="English (Canada)" />
-      <column name="languageCode" value="en-ca" />
-    </table>
-    <table name="languages">
-      <column name="languageName" value="English (Australia)" />
-      <column name="languageCode" value="en-au" />
-    </table>
-    <table name="languages">
-      <column name="languageName" value="Spanish" />
-      <column name="languageCode" value="es" />
-    </table>
-    <table name="languages">
-      <column name="languageName" value="German" />
-      <column name="languageCode" value="de" />
-    </table>
-    <table name="languages">
-      <column name="languageName" value="French" />
-      <column name="languageCode" value="fr" />
-    </table>
-    <table name="languages">
-      <column name="languageName" value="Italian" />
-      <column name="languageCode" value="it" />
-    </table>
-    <table name="languages">
-      <column name="languageName" value="Russian" />
-      <column name="languageCode" value="ru" />
-    </table>
-    <table name="languages">
-      <column name="languageName" value="Japanese" />
-      <column name="languageCode" value="ja" />
-    </table>
-    <table name="languages">
-      <column name="languageName" value="Korean" />
-      <column name="languageCode" value="ko" />
-    </table>
-
-
     <!-- Table messages -->
 
 

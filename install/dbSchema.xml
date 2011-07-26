@@ -186,22 +186,20 @@
 
 
     <table name="phrases" type="general" comment="Phrases used by interface templates for smooth translations.">
-      <column name="id" type="int" maxlen="8" comment="An unimportant ID used for editing phrases and as a primary key." />
       <column name="phraseName" type="string" maxlen="50" comment="The name of the phrase." />
       <column name="languageCode" type="string" maxlen="10" comment="The language code corrosponding to the language of the phrase." />
       <column name="text" type="string" maxlen="4294967296" comment="The phrase text." />
 
-      <key name="id" type="primary" />
+      <key name="phraseName,languageCode" type="primary" />
       <key name="languageCode" type="index" />
     </table>
 
 
     <table name="languages" type="general" comment="A list of languages that corrospond to the languageCodes found in phrases.">
-      <column name="languageId" type="int" maxlen="6" autoincrement="true" comment="The ID of the langauge." />
       <column name="languageCode" type="string" maxlen="10" comment="The IETF language tag of the language." />
       <column name="languageName" type="string" maxlen="50" comment="The name of the language" />
 
-      <key name="languageId" type="primary" />
+      <key name="languageCode" type="primary" />
     </table>
 
 

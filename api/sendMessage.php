@@ -65,37 +65,7 @@ $request = fim_sanitizeGPC(array(
 ));
 $ip = $_SERVER['REMOTE_ADDR']; // Get the IP address of the user.
 
-$room = $database->select(
-  array( // Columns
-    "{$sqlPrefix}rooms" => array(
-      'roomId' => 'roomId',
-      'roomName' => 'roomName',
-      'options' => 'options',
-      'allowedUsers' => 'allowedUsers',
-      'allowedGroups' => 'allowedGroups',
-      'moderators' => 'moderators',
-      'owner' => 'owner',
-      'bbcode' => 'bbcode',
-      'roomTopic' => 'roomTopic',
-    )
-  ),
-  array(
-    'both' => array(
-      array(
-        'type' => 'e',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'roomId',
-        ),
-        'right' => array(
-          'type' => 'int',
-          'value' => (int) $request['roomId'],
-        ),
-      ),
-    ),
-  )
-);
-$room = $room->getAsArray(false);
+$room = $database->getRoom($request['roomId']);
 
 ($hook = hook('sendMessage_start') ? eval($hook) : '');
 

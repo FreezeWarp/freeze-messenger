@@ -230,36 +230,48 @@ if ($compressOutput && $apiRequest) { // Compress Output for transfer if configu
 if (isset($reqPhrases)) {
   if ($reqPhrases === true) {
     if (!$phrases = apc_fetch('fim_phrases')) {
+      $lang = (isset($_REQUEST['lang']) ? $_REQUEST['lang'] :
+        (isset($user['lang']) ? $user['lang'] :
+          (isset($defaultLanguage) ? $defaultLanguage : 'en')));
+
       $phrases2 = $slaveDatabase->select(
         array(
           "{$sqlPrefix}phrases" => array(
-            'phraseId' => 'phraseId',
             'phraseName' => 'phraseName',
-            'text_en' => 'text_en',
-            'text_jp' => 'text_jp',
-            'text_sp' => 'text_sp',
-            'text_fr' => 'text_fr',
-            'text_ge' => 'text_ge'
+            'languageCode' => 'languageCode',
+            'text' => 'text',
+          ),
+        ),
+        array(
+          'both' => array(
+            array(
+              'left' => array(
+                'type' => 'column',
+                'value' => 'languageCode',
+              ),
+              'right' => array(
+                'type' => 'string',
+                'value' => $lang,
+              ),
+              'type' => 'e',
+            ),
           ),
         )
       );
-      $phrases2 = $phrases2->getAsArray('phraseId');
+      $phrases2 = $phrases2->getAsArray(true);
 
 
       // Generate the language, based on:
       // $_REQUEST[lang] -> $user[lang] -> $defaultLanguage -> 'en'
       // (c/g/p spec.)      (user spec.)   (admin spec.)       (hard coded default)
-      $lang = (isset($_REQUEST['lang']) ? $_REQUEST['lang'] :
-        (isset($user['lang']) ? $user['lang'] :
-          (isset($defaultLanguage) ? $defaultLanguage : 'en')));
 
       if (isset($phrases2)) {
         if (count($phrases2) > 0) {
           foreach ($phrases2 AS $phrase) {
-            $phrases[$phrase['phraseName']] = $phrase['text_' . $lang];
+            $phrases[$phrase['phraseName']] = $phrase['text'];
 
-            if (!$phrases[$phrase['phraseName']] && $phrase['text_en']) { // If a value for the language doesn't exist, default to english.
-              $phrases[$phrase['phraseName']] = $phrase['text_en'];
+            if (!$phrases[$phrase['phraseName']] && $phrase['text']) { // If a value for the language doesn't exist, default to english.
+              $phrases[$phrase['phraseName']] = $phrase['text'];
             }
           }
 
