@@ -1204,13 +1204,13 @@ function fim_outputJson($array, $level = 0) {
   }
 
   foreach ($array AS $key => $value) {
-    $key = explode(' ', $key);
-    $key = $key[0];
+//    $key = explode(' ', $key);
+//    $key = $key[0];
 
     $datapre = "$indent\"$key\":";
 
     if (is_array($value)) {
-      $data[] = "$datapre {
+      $data[] = "$datapre  {
 " . fim_outputJson($value, $level + 1) . "
 $indent}
 
@@ -1230,7 +1230,7 @@ $indent}
         $value = '""';
       }
 
-      $data[] = "$datapre $value";
+      $data[] = "$datapre  $value";
     }
   }
 
@@ -1290,7 +1290,7 @@ function fim_outputArray() {
 
 
 /**
-* HTML Compact Function So Google's PageSpeed Likes FIM (also great if GZIP isn't available)
+* HTML+XML Compact Function So Google's PageSpeed Likes FIM (also great if GZIP isn't available)
 *
 * @param string $data
 * @return string

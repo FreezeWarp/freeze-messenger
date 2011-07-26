@@ -804,12 +804,8 @@ if (is_array($request['rooms'])) {
 
 
               $xmlData['getMessages']['messages']['message ' . (int) $message['messageId']] = array(
-                'roomData' => array(
-                  'roomId' => (int) $room['roomId'],
-                  'roomName' => ($room['roomName']),
-                  'roomTopic' => ($room['roomTopic']),
-                ),
                 'messageData' => array(
+                  'roomId' => (int) $room['roomId'],
                   'messageId' => (int) $message['messageId'],
                   'messageTime' => (int) $message['time'],
                   'messageTimeFormatted' => fim_date(false,$message['time']),

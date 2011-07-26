@@ -107,7 +107,7 @@
 &lt;h3 id="copyCat"&gt;&lt;a href="#"&gt;$phrases[templateCopyrightCat]&lt;/a&gt;&lt;/h3&gt;
 &lt;div&gt;
   &lt;ul&gt;
-    &lt;li&gt;FIM © 2010-2011 Joseph Parsons&lt;br /&gt;&lt;/li&gt;
+    &lt;li&gt;FIM © 2010-2011 &lt;a href="http://josephtparsons.com/"&gt;Joseph Parsons&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
     &lt;li&gt;jQuery Plugins © Their Respective Owners.&lt;/li&gt;
     &lt;li&gt;&lt;a href="#" id="copyrightLink"&gt;$phrases[templateAllCopyrights]&lt;/a&gt;&lt;/li&gt;
   &lt;/ul&gt;
@@ -424,9 +424,9 @@ Default Formatting:&lt;br /&gt;
 &lt;li&gt;&lt;a href="#copyright2"&gt;Thanks&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;
 
 &lt;div style="text-align: center;" id="copyright1"&gt;
-FreezeMessenger &amp;copy; 2010-2011 Joseph T. Parsons. Some Rights Reserved.&lt;br /&gt;&lt;br /&gt;
+FreezeMessenger &amp;copy; 2010-2011 &lt;a href="http://josephtparsons.com/" target="_BLANK"&gt;>Joseph T. Parsons&lt;/a&gt;. Some Rights Reserved.&lt;br /&gt;&lt;br /&gt;
 
-jQuery, jQueryUI, and all jQueryUI Themeroller Themes &amp;copy; The jQuery Project.&lt;br /&gt;&lt;br /&gt;
+ jQuery, jQueryUI, and all jQueryUI Themeroller Themes &amp;copy; &lt;a href="http://jquery.org/" target="_BLANK"&gt;>The jQuery Project.&lt;/a&gt;&lt;br /&gt;&lt;br /&gt;
 
 jGrowl &amp;copy; 2009 Stan Lemon.&lt;br /&gt;
 jQuery Cookie Plugin &amp;copy; 2006 Klaus Hartl&lt;br /&gt;
@@ -456,7 +456,6 @@ Cat333Pokémon
 &lt;li&gt;&lt;a href="#age"&gt;Age&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#browser"&gt;Reqs&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#faqs"&gt;FAQs&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#bugs"&gt;Bugs&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;div id="help" style="height: 400px;"&gt;
@@ -506,14 +505,8 @@ Keep in mind all content is heavily encrytped for privacy. Private conversations
 &lt;ul&gt;
 
 &lt;li&gt;&lt;b&gt;Where Do I Report Bugs?&lt;/b&gt; - Bugs can be reported to the &lt;a href="http://code.google.com/p/freeze-messenger/source/list"&gt;Google Code bugtracker&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;b&gt;Can I Donate to this Awesome Project?&lt;/b&gt; - &lt;a href="javascript:alert('Donations not yet set up. But, please, if you want to, they will be shortly.');"&gt;Please do. It really helps keep development going.&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;Can I Donate to this Awesome Project?&lt;/b&gt; - &lt;a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=YL7K2CY59P9S6&lc=US&item_name=FreezeMessenger%20Development&item_number=freezemessenger&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted"&gt;Please do. It really helps keep development going.&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/div&gt;
-
-&lt;div id="bugs"&gt;Below is basic information useful for submitting bug reports:&lt;br /&gt;&lt;br /&gt;
-&lt;em&gt;User Agent&lt;/em&gt;: $_SERVER[HTTP_USER_AGENT]&lt;br /&gt;
-&lt;em&gt;Parse Flags&lt;/em&gt;: {{if="$parseFlags"}{On}{Off}}&lt;br /&gt;
-&lt;em&gt;Login Method&lt;/em&gt;: $loginMethod&lt;br /&gt;
-&lt;/div&gt;
     </template>
 
     <template name="contextMenu" vars="">&lt;ul id="userMenu" class="contextMenu"&gt;

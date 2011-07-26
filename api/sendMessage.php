@@ -194,8 +194,14 @@ if ($continue) {
 
     $topic = fimParse_censorParse($topic); // Parses the sources for MySQL and UTF8. We will also censor, but no BBcode.
 
-    fim_sendMessage('/me changed the topic to ' . $topic,$user,$room,'topic');
-    dbQuery("UPDATE {$sqlPrefix}rooms SET roomTopic = '$topic' WHERE roomId = $room[roomId]");
+    fim_sendMessage($topic,$user,$room,'topic');
+//    $database->update("UPDATE {$sqlPrefix}rooms SET roomTopic = '$topic' WHERE roomId = $room[roomId]");
+
+    $database->update(array(
+      'roomTopic' => $topic,
+    ),"{$sqlPrefix}rooms",array(
+     'roomId' => $room['roomId'],
+    ));
   }/*
   elseif (strpos($request['message'], '/kick') === 0) {
     $kickData = preg_replace('/^\/kick (.+?)(| ([0-9]+?))$/i','$1,$2',$request['message']);

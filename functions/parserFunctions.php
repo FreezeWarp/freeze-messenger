@@ -26,19 +26,15 @@
  * Some notes: The reworked BBCode engine removes all predefined BBcode, and replaces it with a broad anything-goes regex system. It will allow for nearly anything (including advanced hacks), but also means the system will simply not play nice with anything else. As such, a few things to note: smilies and valid links will be parsed solely for the HTML field, directly converted to proper IMG tags; [we're not sure what else yet].
 */
 
-function fimParse_htmlParse($text, $bbcodeLevel = 1) {
+function fimParse_htmlParse($text) {
   global $user, $loginConfig, $slaveDatabase, $sqlPrefix;
 
   $search2 = array(
-    '/^\/me (.+?)$/i', // Remove in B3
     '/\[noparse\](.*?)\[\/noparse\]/is',
-    '/\[room\]([0-9]+?)\[\/room\]/is', // Remove in B3
   );
 
   $replace2 = array(
-    ($bbcodeLevel <= 9 ? '<span style="color: red; padding: 10px;">* ' . $user['userName'] . ' $1</span>' : '<span>* ' . $user['userName'] . ' $1</span>'),
     '$1',
-    '<a href="http://vrim.victoryroad.net/?room=$1">Room $1</a>',
   );
 
   // Parse BB Code

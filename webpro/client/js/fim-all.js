@@ -160,27 +160,53 @@ function faviconFlash() {
   return false;
 }
 
-function messageFormat(entryXml, format) {
-  var data,
-    text = unxml($(entryXml).find('htmlText').text().trim()),
-    messageTime = $(entryXml).find('messageTimeFormatted').text().trim(),
-    messageId = Number($(entryXml).find('messageId').text().trim()),
+function messageFormat(json, format) {
+  var mjson = json.messageData,
+    ujson = json.userData,
+    data,
+    text = mjson.messageText.htmlText,
+    messageTime = mjson.messageTimeFormatted,
+    messageId = mjson.messageId,
 
-    userName = $(entryXml).find('userData > userName').text().trim(),
-    userId = Number($(entryXml).find('userData > userId').text().trim()),
-    groupFormatStart = unxml($(entryXml).find('userData > startTag').text().trim()),
-    groupFormatEnd = unxml($(entryXml).find('userData > endTag').text().trim()),
-    avatar = unxml($(entryXml).find('userData > avatar').text().trim()),
+    userName = ujson.userName,
+    userId = ujson.userId,
+    groupFormatStart = ujson.startTag,
+    groupFormatEnd = ujson.endTag,
+    avatar = ujson.avatar,
 
-    styleColor = $(entryXml).find('defaultFormatting > color').text().trim(),
-    styleHighlight = $(entryXml).find('defaultFormatting > highlight').text().trim(),
-    styleFontface = Number($(entryXml).find('defaultFormatting > fontface').text().trim()),
-    styleGeneral = Number($(entryXml).find('defaultFormatting > general').text().trim()),
+    styleColor = ujson.defaultFormatting.color,
+    styleHighlight = ujson.defaultFormatting.highlight,
+    styleFontface = ujson.defaultFormatting.fontface,
+    styleGeneral = ujson.defaultFormatting.general,
     style = '',
 
-    flag = unxml($(entryXml).find('flags').text().trim());
+    flag = mjson.flags;
 
   switch (flag) {
+    case 'me':
+    text = text.replace(/^\/me/,'');
+
+    if (settings.disableFormatting) {
+      text = '<span style="padding: 10px;">* ' + userName + ' ' + text + '</span>';
+    }
+    else {
+      text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' ' + text + '</span>';
+    }
+    break;
+
+    case 'topic':
+    text = text.replace(/^\/me/,'');
+
+    $('#topic').html(text);
+
+    if (settings.disableFormatting) {
+      text = '<span style="padding: 10px;">* ' + userName + ' ' + text + '</span>';
+    }
+    else {
+      text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' ' + text + '</span>';
+    }
+    break;
+
     case 'image':
     if (settings.disableImage) {
       text = '<a href="' + text + '" target="_BLANK">[Image]</a>';
@@ -509,8 +535,8 @@ function populate(options) {
             roomTopic = active[i].roomTopic,
             isFav = active[i].favorite,
             isPriv = active[i].optionDefinitions.privateIm,
-            isAdmin = active[i].canAdmin,
-            isModerator = active[i].canModerate,
+            isAdmin = active[i].permissions.canAdmin,
+            isModerator = active[i].permissions.canModerate,
             isOwner = (active[i].owner === userId ? true : false),
             ulText = '<li><a href="#room=' + roomId + '">' + roomName + '</a></li>';
 
@@ -842,28 +868,27 @@ var standard = {
     });
 
     $.when( $.ajax({
-      url: directory + 'api/getMessages.php?rooms=' + options.roomId + '&archive=1&messageLimit=10000&messageHardLimit=50&' + where + (options.search ? '&search=' + urlencode(options.search) : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+      url: directory + 'api/getMessages.php?rooms=' + options.roomId + '&archive=1&messageLimit=10000&messageHardLimit=50&' + where + (options.search ? '&search=' + urlencode(options.search) : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
       type: 'GET',
       timeout: 5000,
-      data: '',
-      contentType: "text/xml; charset=utf-8",
-      dataType: "xml",
+//      data: '',
+//      contentType: "text/xml; charset=utf-8",
+//      dataType: "xml",
       cache: false,
-      success: function (xml) {
+      success: function (json) {
+        active = json.getMessages.messages;
 
-        if ($(xml).find('messages > message').length > 0) {
-          $(xml).find('messages > message').each(function() {
-            var messageId = Number($(this).find('messageId').text().trim());
+        for (i in active) {
+          var messageId = active[i].messageData.messageId;
 
-            data += messageFormat($(this), 'table');
+          data += messageFormat(active[i], 'table');
 
-            if (messageId > lastMessage) {
-              lastMessage = messageId;
-            }
-            if (messageId < firstMessage || !firstMessage) {
-              firstMessage = messageId;
-            }
-          });
+          if (messageId > lastMessage) {
+            lastMessage = messageId;
+          }
+          if (messageId < firstMessage || !firstMessage) {
+            firstMessage = messageId;
+          }
         }
 
         return true;
@@ -1120,13 +1145,19 @@ var standard = {
 
       if (requestSettings.firstRequest) {
         $.ajax({
-          url: directory + 'api/getRooms.php?rooms=' + roomId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+          url: directory + 'api/getRooms.php?rooms=' + roomId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
           type: 'GET',
           timeout: 2400,
           cache: false,
           async : false, // We need to complete this request before the next
-          success: function(xml) {
-            lastMessageId = $(xml).find('lastMessageId').text().trim();
+          success: function(json) {
+            active = json.getRooms.rooms;
+
+            for (i in active) {
+              lastMessageId = active[i].lastMessageId;
+
+              break;
+            }
 
             return false;
           },
@@ -1139,25 +1170,26 @@ var standard = {
       }
 
       $.ajax({
-        url: directory + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest ? '&archive=1&messageIdEnd=' + lastMessageId : '&messageIdStart=' + (requestSettings.lastMessage + 1)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+        url: directory + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest ? '&archive=1&messageIdEnd=' + lastMessageId : '&messageIdStart=' + (requestSettings.lastMessage + 1)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
         type: 'GET',
         timeout: requestSettings.timeout,
-        data: '',
-        contentType: "text/xml; charset=utf-8",
-        dataType: "xml",
+//        data: '',
+//        contentType: "text/xml; charset=utf-8",
+//        dataType: "xml",
         cache: false,
-        success: function(xml) {
-          var errStr = $(xml).find('errStr').text().trim(),
-            errDesc = $(xml).find('errDesc').text().trim(),
-            sentUserId = 0;
+        success: function(json) {
+          var errStr = json.getMessages.errStr,
+            errDesc = json.getMessages.errDesc,
+            sentUserId = 0,
+            messageCount = 0;
 
           if (errStr) {
-            sentUserId = Number($(xml).find('activeUser > userId'));
+            sentUserId = json.getMessages.activeUser.userId;
 
             if (errStr === 'noperm') {
-//              roomId = false;
+              roomId = false;
 
-/*              if (sentUserId) {
+              if (sentUserId) {
                 popup.selectRoom();
 
                 dia.error('You have been restricted access from this room. Please select a new room.');
@@ -1166,7 +1198,7 @@ var standard = {
                 popup.login();
 
                 dia.error('You are no longer logged in. Please log-in.');
-              }*/
+              }
             }
             else {
               roomId = false;
@@ -1179,59 +1211,61 @@ var standard = {
               activeUserHtml = [];
 
 
+
+
             $('#activeUsers').html('');
 
+            active = json.getMessages.activeUsers;
 
-            $(xml).find('activeUsers > user').each(function() {
-              var userName = $(this).find('userName').text().trim(),
-                userId = $(this).find('userId').text().trim(),
-                userGroup = $(this).find('userGroup').text().trim(),
-                startTag = unxml($(this).find('startTag').text().trim()),
-                endTag = unxml($(this).find('endTag').text().trim());
+            for (i in active) {
+              var userName = active[i].userName,
+                userId = active[i].userId,
+                userGroup = active[i].userGroup,
+                startTag = active[i].startTag,
+                endTag = active[i].endTag;
 
               activeUserHtml.push('<span class="userName" data-userId="' + userId + '">' + startTag + '<span class="username">' + userName + '</span>' + endTag + '</span>');
-            });
+            }
 
             $('#activeUsers').html(activeUserHtml.join(', '));
 
 
-            if ($(xml).find('messages > message').length > 0) {
-              $(xml).find('messages > message').each(function() {
-                var messageId = Number($(this).find('messageId').text().trim());
-                data = messageFormat($(this), 'list');
 
-                if (messageIndex[messageId]) {
-                   // Double post hack
+            active = json.getMessages.messages;
+
+            for (i in active) {
+              var messageId = Number(active[i].messageData.messageId);
+              data = messageFormat(active[i], 'list');
+
+              if (messageIndex[messageId]) {
+                // Double post hack
+              }
+              else {
+                if (settings.reversePostOrder) {
+                  $('#messageList').append(data);
                 }
                 else {
-                  if (settings.reversePostOrder) {
-                    $('#messageList').append(data);
-                  }
-                  else {
-                    $('#messageList').prepend(data);
-                  }
-
-                  if (messageId > requestSettings.lastMessage) {
-                    requestSettings.lastMessage = messageId;
-                  }
-
-                  messageIndex.push(requestSettings.lastMessage);
-
-                  if (messageIndex.length === 100) {
-                    var messageOut = messageIndex[0];
-                    $('#message' + messageOut).remove();
-                    messageIndex = messageIndex.slice(1,99);
-                  }
-
-                  var roomTopic = $(this).find('roomData > roomTopic').text().trim();
-                  if (roomTopic) {
-                    $('#topic').html(roomTopic);
-                  }
+                  $('#messageList').prepend(data);
                 }
-              });
+
+                if (messageId > requestSettings.lastMessage) {
+                  requestSettings.lastMessage = messageId;
+                }
+
+                messageIndex.push(requestSettings.lastMessage);
+
+                if (messageIndex.length === 100) {
+                  var messageOut = messageIndex[0];
+                  $('#message' + messageOut).remove();
+                  messageIndex = messageIndex.slice(1,99);
+                }
+              }
+
+              messageCount++;
+            }
 
 
-
+            if (messageCount > 0) {
               if (settings.reversePostOrder) {
                 toBottom();
               }
