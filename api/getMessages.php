@@ -20,7 +20,8 @@
  * @version 3.0
  * @author Jospeph T. Parsons <rehtaew@gmail.com>
  * @copyright Joseph T. Parsons 2011
- *
+
+ * Primary Directives:
  * @param string rooms - A comma seperated list of rooms. Can be a single room in integer format. Some predefined constants can also be used.
  * Note: Using more than one room can conflict or even break the script’s execution should the watchRooms or activeUsers flags be set to true.
  * @param int [messageLimit=1000] - The maximum number of posts to receive, defaulting to the internal limit of (in most cases) 1000. This should be high, as all other conditions (roomId, deleted, etc.) are applied after this limit.
@@ -30,16 +31,23 @@
  * @param int [messageIdMin=null] - All posts must be after this ID. Use of messageDateMax only makes sense with no messageLimit. Do not specify to prevent checking.
  * @param int [messageIdMax=null] - All posts must be before this ID. Use of messageDateMax only makes sense with no messageLimit. Do not specify to prevent checking.
  * @param int [messageIdStart=null] - When specified WITHOUT the above two directives, messageIdStart will return all posts from this ID to this ID plus the messageLimit directive. This is strongly encouraged for all requests to the cache, e.g. for normal instant messenging sessions.
+
+ * Misc Directives:
  * @param bool [noping=false] - Disables ping; useful for archive viewing.
+ * @param bool [longPolling=false] - Whether or not to enable experimental longPolling. It will be replaced with "pollMethod=push|poll|longPoll" in version 4 when all three methods will be supported (though will be backwards compatible).
+ * @param string [fields=api|html|both] - The message fields to obtain: "api", "html", or "both". The "html" result returns data preformatted using BBcode and other functionality, while the API field is mostly untouched.
+ * @param string [encode=plaintext] - The encoding of messages to be used on retrieval. "plaintext" is the only accepted format currently.
+
+ * Extra Data:
  * @param bool [watchRooms=false] - Get unread messages from a user’s list of watchRooms (also applies to private IMs).
  * @param bool [activeUsers=false] - Returns a list of activeUsers in the room(s) if specified. This is identical to calling the getActiveUsers script, except with less data redundancy.
- * @param bool [longPolling=false] - Whether or not to enable experimental longPolling. It will be replaced with "pollMethod=push|poll|longPoll" in version 4 when all three methods will be supported (though will be backwards compatible).
- * @param bool [showDeleted=false] - Whether or not to show deleted messages. You will need to be a room moderator.
  * @param int [onlineThreshold=15] - If using the activeUsers functionality, this will alter the effective onlineThreshold to be used.
+
+ * Filters:
+ * @param bool [showDeleted=false] - Whether or not to show deleted messages. You will need to be a room moderator. This directive only has an effect on the archive, as the cache does not retain deleted messages.
  * @param string [search=null] - A keyword that can be used for searching through the archive. It will overwrite messages.
- * @param string [encode=plaintext] - The encoding of messages to be used on retrieval. "plaintext" is the only accepted format currently.
- * @param string [fields=api|html|both] - The message fields to obtain: "api", "html", or "both". The "html" result returns data preformatted using BBcode and other functionality, while the API field is mostly untouched.
- * @param string [messages=null] - A comma seperated list of message IDs that the results will be limited to. It is only intended for use with the archive, and will be over-written with the results of search.
+ * @param string [messages=null] - A comma seperated list of message IDs that the results will be limited to. It is only intended for use with the archive, and will be over-written with the results of the search directive if specified.
+ * @param string users - A comma seperated list of users to restrict message retrieval to. This is most useful for archive scanning, though can in theory be used with the message cache as well.
  *
  * @todo Add back unread message retrieval.
  *
@@ -61,6 +69,17 @@ require_once('../global.php');
 $request = fim_sanitizeGPC(array(
   'get' => array(
     'rooms' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => '',
+      'context' => array(
+         'type' => 'csv',
+         'filter' => 'int',
+         'evaltrue' => true,
+      ),
+    ),
+
+    'users' => array(
       'type' => 'string',
       'require' => false,
       'default' => '',
@@ -275,7 +294,6 @@ if ($request['messageHardLimit'] > 500) {
 }
 
 
-
 /* Data Predefine */
 $xmlData = array(
   'getMessages' => array(
@@ -340,6 +358,7 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
   {$sqlPrefix}searchMessages AS m
   WHERE p.phraseId = m.phraseId AND p.phraseName IN ($search2)");*/
 
+  /* Establish Base Data */
   $queryParts['searchSelect']['columns'] = array(
     "{$sqlPrefix}searchPhrases" => array(
       'phraseName' => 'phraseName',
@@ -348,6 +367,8 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
     "{$sqlPrefix}searchMessages" => array(
       'phraseId' => 'mphraseId',
       'messageId' => 'messageId',
+      'userId' => 'userId',
+      'roomId' => 'roomId',
     ),
   );
   $queryParts['searchSelect']['conditions'] = array(
@@ -367,7 +388,11 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
   );
   $queryParts['searchSelect']['join'] = false;
 
+
+  /* Determine Whether to Use the Fast or Slow Algorithms */
+
   if (!$config['fullTextArchive']) { // Original, Fastest Algorithm
+
     $queryParts['searchSelect']['columns']["{$sqlPrefix}searchMessages"]['messageId 2'] = array(
       'context' => 'join',
       'separator' => ',',
@@ -395,6 +420,36 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
     );
 
     $queryParts['searchSelect']['join'] = 'mphraseId';
+  }
+
+
+  /* Apply User and Room Filters */
+  if (count($request['rooms']) > 0) { // Dunno if its possible for it not to be...
+    $queryParts['searchSelect']['conditions']['both'][] = array(
+      'type' => 'in',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'roomId',
+      ),
+      'right' => array(
+        'type' => 'array',
+        'value' => $request['rooms'],
+      ),
+    );
+  }
+
+  if (count($request['users']) > 0) {
+    $queryParts['searchSelect']['conditions']['both'][] = array(
+      'type' => 'in',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'userId',
+      ),
+      'right' => array(
+        'type' => 'array',
+        'value' => $request['users'],
+      ),
+    );
   }
 
   $searchMessageIds = $database->select(
@@ -679,6 +734,20 @@ if (is_array($request['rooms'])) {
           'right' => array(
             'type' => 'array',
             'value' => $request['messages'],
+          ),
+        );
+      }
+
+      if (count($request['users']) > 0) {
+        $queryParts['messagesSelect']['conditions']['both'][] = array(
+          'type' => 'in',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'userId',
+          ),
+          'right' => array(
+            'type' => 'array',
+            'value' => $request['users'],
           ),
         );
       }

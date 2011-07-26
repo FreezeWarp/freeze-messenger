@@ -366,15 +366,15 @@ function fimParse_htmlWrap($html, $maxLength = 80, $char = '<br />') { /* An ada
 * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
-function fim3parse_keyWords($string, $messageId) {
-  global $config, $sqlPrefix, $database;
+function fim3parse_keyWords($string, $messageId, $roomId) {
+  global $config, $sqlPrefix, $database, $user;
 
   foreach ($config['searchWordPunctuation'] AS $punc) {
     $puncList[] = addcslashes($punc,'"\'|(){}[]<>.,~-?!@#$%^&*/\\'); // Dunno if this is the best approach.
   }
 
   $string = preg_replace('/(' . implode('|', $puncList) . ')/is',' ', $string);
-
+error_log($string);
   while (strpos($string,'  ') !== false) {
     $string = str_replace('  ',' ', $string);
   }
@@ -421,6 +421,8 @@ function fim3parse_keyWords($string, $messageId) {
       $database->insert(array(
         'phraseId' => (int) $phraseId,
         'messageId' => (int) $messageId,
+        'userId' => (int) $user['userId'],
+        'roomId' => (int) $roomId,
       ),"{$sqlPrefix}searchMessages");
     }
   }
@@ -555,7 +557,7 @@ function fim_sendMessage($messageText, $user, $room, $flag = '') {
   }
 
   // Add message to archive search store.
-  fim3parse_keyWords($messageRawCache, $messageId);
+  fim3parse_keyWords($messageRawCache, $messageId, $room['roomId']);
 
 
 

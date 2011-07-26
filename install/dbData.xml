@@ -435,7 +435,7 @@
     </table>
     <table name="configuration">
       <column name="directive" value="searchWordPunctuation" />
-      <column name="value" value=",,'.,;,:,-,&quot;,\',=,?,\\,/,[,],^,&amp;,#,@,!,%,*,(,),‘,’,¡,¿,¦" />
+      <column name="value" value="\,,.,;,:,-,&quot;,',=,?,\\,/,[,],^,&amp;,#,@,!,%,*,(,),‘,’,¡,¿,¦" />
       <column name="type" value="array" />
     </table>
     <table name="configuration">
@@ -477,6 +477,36 @@
       <column name="directive" value="serverSentEventsWait" />
       <column name="value" value=".5" />
       <column name="type" value="float" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="compressOutput" />
+      <column name="value" value="true" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="disableTopic" />
+      <column name="value" value="false" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="enableUploads" />
+      <column name="value" value="true" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="enableGeneralUploads" />
+      <column name="value" value="true" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="uploadUserMaxFiles" />
+      <column name="value" value="-1" />
+      <column name="type" value="int" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="uploadMaxFiles" />
+      <column name="value" value="-1" />
+      <column name="type" value="int" />
     </table>
   </database>
 </dbData>

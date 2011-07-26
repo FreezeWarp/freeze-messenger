@@ -44,6 +44,10 @@ $defaultConfig = array(
   'longPolling' => false,
   'serverSentEventsWait' => .5, // Server sent events are more controlled, so we can call them at a greater frequency.
   'serverSentEvents' => false,
+  'compressOutput' => true,
+  'disableTopic' => false,
+  'enableUploads' => false,
+  'enableGeneralUploads' => false,
 );
 
 
@@ -131,8 +135,6 @@ $continue = true; // Simple "stop" variable used throughout for hooks and live c
 $hook = false;
 $errStr = '';
 $errDesc = '';
-
-
 
 
 /* Constants
@@ -232,26 +234,8 @@ require_once(dirname(__FILE__) . '/validate.php'); // This is where all the user
 
 
 
-///* OTHER STUFF *///
-
-
-if (isset($banned,$apiRequest)) { // A blanket die for the API when the user is banned.
-  if ($apiRequest == true && $banned == true) {
-    die();
-  }
-}
-
-if (isset($compressOutput,$apiRequest)) { // Compress Output for transfer if configured to, and if we are outputting data from the API (file downloads, interfaces, etc. don't apply).
-  if ($apiRequest == true && $compressOutput == true) {
-//    ob_start('fim_htmlCompact');
-  }
-}
-
-
-
-
 ///* GET DATABASE-STORED CONFIGURATION *///
-if (!$config = apc_fetch('fim_config') || $disableConfig) {
+if (!($config = apc_fetch('fim_config')) || $disableConfig) {
   $config2 = $slaveDatabase->select(
     array(
       "{$sqlPrefix}configuration" => array(
@@ -312,36 +296,20 @@ if (!$config = apc_fetch('fim_config') || $disableConfig) {
 }
 
 
+
+
+
 ///* GET PHRASES *///
 
 if (isset($reqPhrases)) { // TODO Languages currently overwrite eachother
   if ($reqPhrases === true) {
     if (!$phrases = apc_fetch('fim_phrases')) {
-      $lang = (isset($_REQUEST['lang']) ? $_REQUEST['lang'] :
-        (isset($user['lang']) ? $user['lang'] :
-          (isset($defaultLanguage) ? $defaultLanguage : 'en')));
-
       $phrases2 = $slaveDatabase->select(
         array(
           "{$sqlPrefix}phrases" => array(
             'phraseName' => 'phraseName',
             'languageCode' => 'languageCode',
             'text' => 'text',
-          ),
-        ),
-        array(
-          'both' => array(
-            array(
-              'left' => array(
-                'type' => 'column',
-                'value' => 'languageCode',
-              ),
-              'right' => array(
-                'type' => 'string',
-                'value' => $lang,
-              ),
-              'type' => 'e',
-            ),
           ),
         )
       );
@@ -350,11 +318,7 @@ if (isset($reqPhrases)) { // TODO Languages currently overwrite eachother
       if (is_array($phrases2)) {
         if (count($phrases2) > 0) {
           foreach ($phrases2 AS $phrase) {
-            $phrases[$phrase['phraseName']] = $phrase['text'];
-
-            if (!$phrases[$phrase['phraseName']] && $phrase['text']) { // If a value for the language doesn't exist, default to english.
-              $phrases[$phrase['phraseName']] = $phrase['text'];
-            }
+            $phrases[$phrase['languageCode']][$phrase['phraseName']] = $phrase['text'];
           }
 
           unset($phrase);
@@ -365,6 +329,11 @@ if (isset($reqPhrases)) { // TODO Languages currently overwrite eachother
 
       apc_store('fim_phrases',$phrases,$config['cachePhrasesRefresh']);
     }
+
+    $lang = (isset($_REQUEST['lang']) ? $_REQUEST['lang'] :
+      (isset($user['lang']) ? $user['lang'] :
+        (isset($defaultLanguage) ? $defaultLanguage : 'en')));
+    $phrases = $phrases[$lang];
   }
 }
 
@@ -448,6 +417,7 @@ if (isset($reqPhrases)) {
     }
   }
 }
+
 
 
 
@@ -553,6 +523,27 @@ if ($config['cacheKicks']) {
 }
 
 
-
 ($hook = hook('global') ? eval($hook) : '');
+
+
+
+
+
+///* OTHER STUFF *///
+
+
+if (isset($banned,$apiRequest)) { // A blanket die for the API when the user is banned.
+  if ($apiRequest && $banned) {
+    die();
+  }
+}
+
+if ($apiRequest) { // Compress Output for transfer if configured to, and if we are outputting data from the API (file downloads, interfaces, etc. don't apply).
+  if ($apiRequest && $config['compressOutput']) {
+    ob_start('fim_htmlCompact');
+  }
+}
+
+
+$config['serverSentEvents'] = true; // TODO REMOVE AFTER DEV
 ?>

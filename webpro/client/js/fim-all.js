@@ -875,7 +875,7 @@ autoEntry = {
 
 
 var standard = {
-  archive : function (options) {
+  archive : function (options) { console.log(1);
     var encrypt = 'base64',
       lastMessage = 0,
       firstMessage = 0,
@@ -899,6 +899,7 @@ var standard = {
         idMax : options.idMax,
         idMin : options.idMin,
         roomId : options.roomId,
+        userId : userRef[$('#searchUser').val()],
         search : $('#searchText').val()
       });
     });
@@ -909,18 +910,19 @@ var standard = {
         idMax : options.idMax,
         idMin : options.idMin,
         roomId : options.roomId,
+        userId : userRef[$('#searchUser').val()],
         search : $('#searchText').val()
       });
 
       return false;
-    });
+    }); console.log(2);
 
     $.when( $.ajax({
-      url: directory + 'api/getMessages.php?rooms=' + options.roomId + '&archive=1&messageLimit=10000&messageHardLimit=50&' + where + (options.search ? '&search=' + urlencode(options.search) : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+      url: directory + 'api/getMessages.php?rooms=' + options.roomId + '&' + (options.userId ? '&users=' + options.userId : '') + '&archive=1&messageLimit=10000&messageHardLimit=50&' + where + (options.search ? '&search=' + urlencode(options.search) : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
       type: 'GET',
       timeout: 5000,
-      contentType: "text/json; charset=utf-8",
-      dataType: "json",
+//      contentType: "text/json; charset=utf-8",
+//      dataType: "json",
       cache: false,
       success: function (json) {
         active = json.getMessages.messages;
@@ -965,6 +967,7 @@ var standard = {
 
       return true;
     });
+     console.log(3);
   },
 
 
@@ -1069,7 +1072,7 @@ var standard = {
               modHooks : false
             }
           }
-          else if (valid === 'true') {
+          else if (valid === true) {
             if (options.showMessage) {
               // Display Dialog to Notify User of Being Logged In
               if (!userPermissions.general) {
@@ -2876,7 +2879,7 @@ popup = {
 
   archive : function(options) {
     dia.full({
-      content : '<form id="archiveSearch" action="#" method="get" style="text-align: center;"><input type="text" id="searchText" name="searchText" style="margin-left: auto; margin-right: auto; text-align: left;" /><button type="submit">Search</button></form><br /><br /><table class="center"><thead><tr><th style="width: 20%;">User</th><th style="width: 20%;">Time</th><th style="width: 60%;">Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><button id="archivePrev"><< Prev</button><button id="archiveNext">Next >></button>',
+      content : '<form id="archiveSearch" action="#" method="get" style="text-align: center;"><table style="text-align: center; margin-left: auto; margin-right: auto;"><tr><td align="center"><small>Search Text:</small></td><td><small>Filter by User:</td></tr><tr><td><input type="text" id="searchText" name="searchText" style="margin-left: auto; margin-right: auto; text-align: left;" /></td><td><input type="text" id="searchUser" name="searchUser" style="margin-left: auto; margin-right: auto; text-align: left;" /></td><td rowspan="2" valign="middle"><button type="submit">Search</button></td></tr></table></form><br /><br /><table class="center"><thead><tr><th style="width: 20%;">User</th><th style="width: 20%;">Time</th><th style="width: 60%;">Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><button id="archivePrev"><< Prev</button><button id="archiveNext">Next >></button>',
       title : 'Archive',
       id : 'archiveDialogue',
       position : 'top',
@@ -2889,6 +2892,9 @@ popup = {
       idMin: options.idMin,
       callback: function(data) {
         $('#archiveDialogue').dialog('open');
+        $("#searchUser").autocomplete({
+          source: userList
+        });
 
         return false;
       }
@@ -3666,8 +3672,7 @@ function windowResize() {
   var windowHeight = document.documentElement.clientHeight; // Get the browser window "viewport" height, excluding scrollbars.
 
 
-  $('#messageList').css('height',(windowHeight - 240)); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
-//  $('#messageList').css('width',((windowWidth - 10) * .75)); // Prevent box-stretching. This is common on... many chats.
+  $('#messageList').css('min-height',(windowHeight - 240)); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
   $('#messageList').css('max-width',((windowWidth - 10) * .75)); // Prevent box-stretching. This is common on... many chats.
 
 

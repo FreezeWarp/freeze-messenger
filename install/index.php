@@ -241,13 +241,6 @@ switch ($_REQUEST['phase']) {
         <td><strong>Encryption Phrase</strong></td>
         <td><input type="text" name="encrypt_salt" /><br /><small>This is a phrase used to encrypt the data. You can change this later as long as you don\'t remove referrences to this one.</td>
       </tr>
-      <tr class="ui-widget-header">
-        <th colspan="2">Uploads</th>
-      </tr>
-      <tr>
-        <td><strong>Enable Uploads?</strong></td>
-        <td><select name="enable_uploads"><option value="3">General Uploads and In-Post Uploads</option><option value="1">Disable General Uploads</option><option value="0">Disable All Uploads</option></select><br /><small>Uploads can add to server load, though enabling them allows for much more effective communication. Note that disabling In-Post Uploads doesn\'t neccissarily change anything (but discourages using uploads for general storage).</td>
-      </tr>
     </table><br /><br />
   </form>
 
@@ -675,7 +668,6 @@ switch ($_REQUEST['phase']) {
 
   $encryptSalt = urldecode($_GET['encrypt_salt']);
   $enableEncrypt = (int) $_GET['enable_encrypt'];
-  $enableUploads = (int) $_GET['enable_uploads'];
 
   $base = file_get_contents('config.base.php');
 

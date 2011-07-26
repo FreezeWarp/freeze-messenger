@@ -99,34 +99,6 @@ $encrypt = true;
  * Doing so is encouraged, but not required. It does mean greater CPU stress. */
 $encryptUploads = true;
 
-
-
-
-///* Uploads *///
-
-/* $enableUploads
- * Disable or enable file uploads.
- * Set this to false to disale file uploading.
- * For the most part you are recommended to keep this enabled, unless you are low on bandwidth.
- * If disabled, the remaining upload parameters are ignored. */
-$enableUploads = true;
-
-/* $enableGeneralUploads
- * Disable or enable general file uploads.
- * By default files can be uploaded to the server without being embedded in a message.
- * Disable this to require that all file uploads be within messages. */
-$enableGeneralUploads = true;
-
-/* $uploadUserMaxFiles
- * The total number of files a user may upload.
- * "-1" means there is no limit. */
-$uploadUserMaxFiles = -1;
-
-/* $uploadMaxFiles
- * The total number of files that may be stored by the server.
- * "-1" means there is no limit. */
-$uploadMaxFiles = -1;
-
 /* $installUrl */
 $installUrl = '';
 
@@ -182,22 +154,6 @@ $userPermissions = array(
   'roomCreation' => true, // The user can create rooms.
   'privateRoomCreation' => true, // The user can create private rooms.
 );
-
-
-
-
-///* Defaults *///
-///* You do not need to edit this section, but you can for nit-picky reasons. *///
-
-/* $compressOutput
- * Set this to true to enable "shrunk" output.
- * This is great for servers that don't have GZIP enabled, and still beneficial otherwise. It does, however, result in slightly increased server load. */
-$compressOutput = true; // Set this to off to avoid compacting PHP-generated HTML and XML output.
-
-/* $disableTopic
- * Set to true to disable the changing of room topics.
- * Not well integrated yet, but it still does the job. */
-$disableTopic = false;
 
 
 

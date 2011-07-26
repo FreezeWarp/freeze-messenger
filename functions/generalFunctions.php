@@ -1637,8 +1637,17 @@ function hasArray($array) {
 function fim_explodeEscaped($delimiter, $string) {
   $exploded = explode($delimiter, $string);
   $fixed = array();
+
   for ($k = 0, $l = count($exploded); $k < $l; ++$k) {
     if ($exploded[$k][strlen($exploded[$k]) - 1] == '\\') {
+      if (isset($exploded[$k][strlen($exploded[$k - 1]) - 1])) {
+        if ($exploded[$k][strlen($exploded[$k - 1]) - 1] == '\\') {
+          $fixed[] = '\\';
+
+          continue;
+        }
+      }
+
       if ($k + 1 >= $l) {
         $fixed[] = trim($exploded[$k]);
         break;

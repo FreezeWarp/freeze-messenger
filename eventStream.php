@@ -17,7 +17,7 @@
 
 require_once('global.php');
 
-if (!$serverSentEvents) {
+if (!$config['serverSentEvents']) {
   die('Not Supported');
 }
 else {
