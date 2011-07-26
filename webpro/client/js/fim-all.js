@@ -390,12 +390,12 @@ var alert = function(text) {
 * We Should Not Call This Again */
 
 $.ajax({
-  url: directory + 'api/getServerStatus.php',
+  url: directory + 'api/getServerStatus.php?fim3_format=json',
   type: 'GET',
   timeout: 1000,
-  dataType: 'xml',
-  success: function(xml) {
-    requestSettings.longPolling = ($(xml).find('serverStatus > requestMethods > longPoll').text().trim() === 'true' ? true : false);
+  dataType: 'json',
+  success: function(json) {
+    requestSettings.longPolling = json.getServerStatus.serverStatus.requestMethods.longPoll;
 
     return false;
   },
@@ -871,9 +871,8 @@ var standard = {
       url: directory + 'api/getMessages.php?rooms=' + options.roomId + '&archive=1&messageLimit=10000&messageHardLimit=50&' + where + (options.search ? '&search=' + urlencode(options.search) : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
       type: 'GET',
       timeout: 5000,
-//      data: '',
-//      contentType: "text/xml; charset=utf-8",
-//      dataType: "xml",
+      contentType: "text/json; charset=utf-8",
+      dataType: "json",
       cache: false,
       success: function (json) {
         active = json.getMessages.messages;
@@ -1173,9 +1172,8 @@ var standard = {
         url: directory + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest ? '&archive=1&messageIdEnd=' + lastMessageId : '&messageIdStart=' + (requestSettings.lastMessage + 1)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
         type: 'GET',
         timeout: requestSettings.timeout,
-//        data: '',
-//        contentType: "text/xml; charset=utf-8",
-//        dataType: "xml",
+        contentType: "text/json; charset=utf-8",
+        dataType: "json",
         cache: false,
         success: function(json) {
           var errStr = json.getMessages.errStr,
@@ -1382,16 +1380,17 @@ var standard = {
       confirmed = (confirmed === 1 ? 1 : '');
 
       $.ajax({
-        url: directory + 'api/sendMessage.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+        url: directory + 'api/sendMessage.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json's,
         type: 'POST',
         data: 'roomId=' + roomId + '&confirmed=' + confirmed + '&message=' + urlencode(message) + '&flag=' + flag,
         cache: false,
         timeout: 5000,
-        success: function(xml) {
+        success: function(json) {
           console.log('Message sent.');
 
-          var errStr = $(xml).find('errStr').text().trim();
-          var errDesc = $(xml).find('errDesc').text().trim();
+          var errStr = json.sendMessage.errStr,
+            errDesc = json.sendMessage.errDesc;
+
           switch (errStr) {
             case '':
             break;
@@ -1470,9 +1469,9 @@ var standard = {
 
 
   deleteRoom : function(roomLocalId) {
-    $.post(directory + 'api/editUser.php','action=delete&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
-      var errStr = $(xml).find('errStr').text().trim(),
-        errDesc = $(xml).find('errDesc').text().trim();
+    $.post(directory + 'api/editRoom.php','action=delete&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
+      var errStr = json.editRoom.errStr,
+        errDesc = json.editRoom.errDesc;
 
       switch (errStr) {
         case '':
@@ -1493,7 +1492,7 @@ var standard = {
   },
 
   favRoom : function(roomLocalId) {
-    $.post(directory + 'api/moderate.php','action=favRoom&roomId=' + roomLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
+    $.post(directory + 'api/moderate.php','action=favRoom&roomId=' + roomLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
       return false;
     });
 
@@ -1501,7 +1500,7 @@ var standard = {
   },
 
   unfavRoom : function(roomLocalId) {
-    $.post(directory + 'api/moderate.php','action=unfavRoom&roomId=' + roomLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
+    $.post(directory + 'api/moderate.php','action=unfavRoom&roomId=' + roomLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
       return false;
     });
 
@@ -1521,10 +1520,10 @@ var standard = {
       dia.error('You do not have permission to talk to users privately.');
     }
     else {
-      $.post(directory + 'api/editRoom.php','action=private&userId=' + userLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
-        var privateRoomId = Number($(xml).find('insertId').text().trim()),
-          errStr = unxml($(xml).find('errStr').text().trim()),
-          errDesc = unxml($(xml).find('errStr').text().trim());
+      $.post(directory + 'api/editRoom.php','action=private&userId=' + userLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
+        var privateRoomId = json.editRoom.insertId,
+          errStr = json.editRoom.errStr,
+          errDesc = json.editRoom.errDesc;
 
         if (errStr) {
           switch (errStr) {
@@ -1558,9 +1557,9 @@ var standard = {
 
 
   kick : function(userId, roomId, length) {
-    $.post(directory + 'api/moderate.php','action=kickUser&userId=' + userId + '&roomId=' + roomId + '&length=' + length + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
-      var errStr = $(xml).find('errStr').text().trim(),
-        errDesc = $(xml).find('errDesc').text().trim();
+    $.post(directory + 'api/moderate.php','action=kickUser&userId=' + userId + '&roomId=' + roomId + '&length=' + length + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
+      var errStr = json.moderaate.errStr,
+        errDesc = json.moderaate.errDesc;
 
       switch (errStr) {
         case '':
@@ -1593,9 +1592,9 @@ var standard = {
   },
 
   unkick : function(userId, roomId) {
-    $.post(directory + 'api/moderate.php','action=unkickUser&userId=' + userId + '&roomId=' + roomId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
-      var errStr = $(xml).find('errStr').text().trim(),
-        errDesc = $(xml).find('errDesc').text().trim();
+    $.post(directory + 'api/moderate.php','action=unkickUser&userId=' + userId + '&roomId=' + roomId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(json) {
+      var errStr = json.moderaate.errStr,
+        errDesc = json.moderaate.errDesc;
 
       switch (errStr) {
         case '':
@@ -1622,9 +1621,9 @@ var standard = {
 
 
   deleteMessage : function(messageId) {
-    $.post(directory + 'api/editMessage.php','action=delete&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
-      var errStr = $(xml).find('errStr').text().trim(),
-        errDesc = $(xml).find('errDesc').text().trim();
+    $.post(directory + 'api/editMessage.php','action=delete&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + 'fim3_format=json',function(json) {
+      var errStr = json.moderaate.errStr,
+        errDesc = json.moderaate.errDesc;
 
       switch (errStr) {
         case '':
