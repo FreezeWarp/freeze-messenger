@@ -138,7 +138,7 @@ var currentLocation = window.location.origin + directory + 'webpro/';
 *********************************************************/
 
 function unxml(data) {
-  return data.replace(/\&lt\;/g, '<', data).replace(/\&gt\;/g, '>', data).replace(/\&apos\;/g, "'", data).replace(/\&quot\;/g, '"', data);
+  return data.replace(/\&lt\;/g, '<').replace(/\&gt\;/g, '>').replace(/\&apos\;/g, "'").replace(/\&quot\;/g, '"');
 }
 
 function toBottom() {
@@ -2282,18 +2282,21 @@ popup = {
         });
 
         $.ajax({
-          url: directory + 'api/getRooms.php?rooms=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+          url: directory + 'api/getRooms.php?rooms=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
           type: 'GET',
           timeout: 2400,
           cache: false,
-          success: function(xml) {
-            var data = '',
-              roomName = unxml($(xml).find('roomName').text().trim()),
-              roomId = Number($(xml).find('roomId').text().trim()),
-              allowedUsers = $(xml).find('allowedUsers').text().trim(),
-              allowedGroups = $(xml).find('allowedGroups').text().trim(),
-              moderators = $(xml).find('moderators').text().trim(),
-              mature = ($(xml).find('optionDefinitions > mature').text().trim() === 'true' ? true : false);
+          success: function(json) {
+            for (var i in json.getRooms.rooms) {
+              var data = '',
+                roomName = json.getRooms.rooms[i].roomName,
+                roomId = json.getRooms.rooms[i].roomId,
+                allowedUsers = json.getRooms.rooms[i].allowedUsers
+                allowedGroups = json.getRooms.rooms[i].allowedGroups,
+                moderators = json.getRooms.rooms[i].moderators;
+
+              break;
+            }
 
             $('#name').val(roomName);
 
@@ -2319,6 +2322,35 @@ popup = {
           },
           error: function() {
             dia.error('Failed to obtain current room settings from server.');
+
+            return false;
+          }
+        });
+
+        $.ajax({
+          url: directory + 'api/getCensorLists.php?rooms=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+          type: 'GET',
+          timeout: 2400,
+          cache: false,
+          success: function(json) {
+            var data = '';
+
+            for (var i in json.getCensorLists.lists) {
+              var listId = json.getCensorLists.lists[i].listId,
+                listName = json.getCensorLists.lists[i].listName,
+                listType = json.getCensorLists.lists[i].listType,
+                listOptions = json.getCensorLists.lists[i].listOptions,
+                isActive = json.getCensorLists.lists[i].isActive;
+
+              data += '<label><input type="checkbox" name="list' + listId + '" data-listId="' + listId + '" value="true" ' + (listOptions & 2 ? '' : ' disabled="disabled"') + (isActive ? ' checked="checked"' : '') + ' />' + listName + '</label>';
+            };
+
+            $('#censorLists').append(data);
+
+            return false;
+          },
+          error: function() {
+            dia.error('Failed to obtain current censor list settings from server.');
 
             return false;
           }

@@ -257,7 +257,7 @@
 &lt;/table&gt;
     </template>
 
-    <template name="editRoomForm" vars="censorLists">&lt;ul class="tabList"&gt;
+    <template name="editRoomForm">&lt;ul class="tabList"&gt;
 &lt;li&gt;&lt;a href="#editRoom1"&gt;General&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#editRoom2"&gt;Permissions&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
@@ -266,21 +266,7 @@
 &lt;label for="name"&gt;$phrases[editRoomNameLabel]&lt;/label&gt;: &lt;input type="text" name="name" id="name" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[editRoomNameBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
 
-&lt;label for="mature"&gt;$phrases[editRoomMatureLabel]&lt;/label&gt;: &lt;input type="checkbox" name="mature" id="mature" /&gt;&lt;br /&gt;
-&lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[editRoomMatureBlurb]&lt;/strong&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
-
-&lt;label for="bbcode"&gt;$phrases[editRoomBBCode]&lt;/label&gt;: &lt;select name="bbcode" id="bbcode"&gt;
-&lt;option value="1" selected="selected"&gt;$phrases[editRoomBBCodeAll]&lt;/option&gt;
-&lt;option value="5"&gt;$phrases[editRoomBBCodeNoMulti]&lt;/option&gt;
-&lt;option value="9"&gt;$phrases[editRoomBBCodeNoImg]&lt;/option&gt;
-&lt;option value="13"&gt;$phrases[editRoomBBCodeLink]&lt;/option&gt;
-&lt;option value="16"&gt;$phrases[editRoomBBCodeBasic]&lt;/option&gt;
-&lt;option&gt;$phrases[editRoomBBCodeNothing]&lt;/option&gt;
-&lt;/select&gt;&lt;br /&gt;
-
-&lt;small style="margin-left: 10px;"&gt;$phrases[editRoomBBCodeBlurb]&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
-
-&lt;label&gt;$phrases[editRoomCensorLabel]&lt;/label&gt;:&lt;br /&gt;&lt;div style="margin-left: 10px;"&gt;{$censorLists}&lt;/div&gt;&lt;br /&gt;
+&lt;label&gt;$phrases[editRoomCensorLabel]&lt;/label&gt;:&lt;br /&gt;&lt;div style="margin-left: 10px;" id="censorLists"&gt;&lt;/div&gt;&lt;br /&gt;
 
 &lt;button type="submit"&gt;{{if="$_GET['action'] == 'create'"}{$phrases[createRoomSubmit]}{$phrases[editRoomSubmit]}}&lt;/button&gt;&lt;button type="reset"&gt;$phrases[editRoomReset]&lt;/button&gt;&lt;/div&gt;&lt;div id="editRoom2"&gt;&lt;label for="allowedUsers"&gt;$phrases[editRoomAllowedUsersLabel]&lt;/label&gt; &lt;input type="text" name="allowedUsersBridge" id="allowedUsersBridge" /&gt;&lt;input type="button" value="Add" onclick="autoEntry.addEntry('allowedUsers');" /&gt;&lt;input type="hidden" name="allowedUsers" id="allowedUsers" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[editRoomAllowedUsersCurrent]&lt;span id="allowedUsersList"&gt;&lt;/span&gt;&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;

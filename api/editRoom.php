@@ -215,7 +215,57 @@ switch($request['action']) {
       $errDesc = 'The room name specified already exists.';
     }
     else {
-      $listsActive = dbRows("SELECT listId, status FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomId = $room[roomId]",'listId'); // TODO
+//      $listsActive = dbRows("SELECT listId, status FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomId = $room[roomId]",'listId'); // TODO
+      $lists = $slaveDatabase->select(
+        array(
+          "{$sqlPrefix}censorBlackWhiteLists" => array(
+            'type' => 'type',
+            'listId' => 'listId',
+          ),
+        ),
+        array(
+          'both' => array(
+            array(
+              'type' => 'bitwise',
+              'left' => array(
+                'type' => 'column',
+                'value' => 'options',
+              ),
+              'right' => array(
+                'type' => 'int',
+                'value' => 2,
+              ),
+            ),
+          ),
+        )
+      );
+      $lists = $lists->getAsArray(true);
+
+      $listsActive = $slaveDatabase->select(
+        array(
+          "{$sqlPrefix}censorBlackWhiteLists" => array(
+            'status' => 'status',
+            'roomId' => 'roomId',
+            'listId' => 'listId',
+          ),
+        ),
+        array(
+          'both' => array(
+            array(
+              'type' => 'e',
+              'left' => array(
+                'type' => 'column',
+                'value' => 'roomId',
+              ),
+              'right' => array(
+                'type' => 'int',
+                'value' => (int) $room['roomId'],
+              ),
+            ),
+          ),
+        )
+      );
+      $listsActive = $listsActive->getAsArray(true);
 
       if (is_array($listsActive)) {
         if (count($listsActive) > 0) {
@@ -225,12 +275,10 @@ switch($request['action']) {
         }
       }
 
-      $censorLists = $_POST['censor']; // TODO
+      $censorLists = $request['censor']; // TODO
       foreach($censorLists AS $id => $list) {
         $listsNew[$id] = $list;
       }
-
-      $lists = dbRows("SELECT listId, type FROM {$sqlPrefix}censorLists AS l WHERE options & 2",'listId'); // TODO
 
       foreach ($lists AS $list) {
         if ($list['type'] == 'black' && $listStatus[$list['listId']] == 'block') {

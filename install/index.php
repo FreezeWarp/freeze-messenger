@@ -376,7 +376,6 @@ switch ($_REQUEST['phase']) {
     $xmlData4 = $xmlData4->getAsArray(); // Get the XML data as an array
     $xmlData4 = $xmlData4['languagePack']; // Get the contents of the root node
 
-
     if ((float) $xmlData['@version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
       die('The XML Schema Data Source if For An Improper Version');
     }
@@ -404,6 +403,12 @@ switch ($_REQUEST['phase']) {
         $columns = array(); // We will use this to store the column fragments that will be implode()d into the final query.
         $keys = array(); // We will use this to store the column fragments that will be implode()d into the final query.
 
+
+        if ($_COOKIE['dev']) {
+          if (!in_array($table['@name'],array('templates','phrases','languages'))) {
+            continue;
+          }
+        }
 
         switch ($table['@type']) {
           case 'general': // Use this normally, and for all perm. data
@@ -588,6 +593,13 @@ switch ($_REQUEST['phase']) {
         $columns = array(); // We will use this to store the column fragments that will be implode()d into the final query.
         $values = array(); // We will use this to store the column fragments that will be implode()d into the final query.
 
+        if ($_COOKIE['dev']) {
+          if (!in_array($table['@name'],array('templates','phrases','languages'))) {
+            continue;
+          }
+        }
+
+
         foreach ($table['column'] AS $column) {
           $columns[] = '`' . $mysqli->real_escape_string($column['@name']) . '`';
           $values[] = '"' . $mysqli->real_escape_string($column['@value']) . '"';
@@ -742,6 +754,56 @@ $dbConnect[\'integration\'][\'database\'] = \'' . $database . '\';',
 
   if (file_put_contents('../config.php',$baseNew)) {
     echo 'success';
+  }
+  break;
+
+  case 'dev':
+  $mysqli = new mysqli('localhost','a','a','vb414');
+
+  $prefix = 'a_';
+
+  $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
+
+  $xmlData3 = new Xml2Array(file_get_contents('webProTemplate.xml')); // Get the XML Data from the webProTemplate.xml file, and feed it to the Xml2Array class
+  $xmlData3 = $xmlData3->getAsArray(); // Get the XML data as an array
+  $xmlData3 = $xmlData3['interface']; // Get the contents of the root node
+
+  $xmlData4 = new Xml2Array(file_get_contents('webProLangEn.xml')); // Get the XML Data from the webProLangEn.xml file, and feed it to the Xml2Array class
+  $xmlData4 = $xmlData4->getAsArray(); // Get the XML data as an array
+  $xmlData4 = $xmlData4['languagePack']; // Get the contents of the root node
+
+
+  foreach (array("{$prefix}phrases","{$prefix}templates") AS $tableName) {
+    $newTable = $tableName . '~' . time();
+
+    $queries[] = "RENAME TABLE `$tableName` TO `$newTable`";
+  }
+
+
+  /* Part 4: Insert WebPro Templates */
+
+  foreach ($xmlData3['templates'][0]['template'] AS $template) { // Run through each template from the XML
+    $queries[] = "INSERT INTO `{$prefix}templates` (`templateName`,`data`,`vars`) VALUES
+  ('" . $mysqli->real_escape_string($template['@name']) . "','" . $mysqli->real_escape_string($template['#text']) . "','" . $mysqli->real_escape_string($template['@vars']) . "')";
+  }
+
+
+  /* Part 5: Insert WebPro Phrases */
+
+
+  foreach ($xmlData4['phrases'][0]['phrase'] AS $phrase) { // Run through each template from the XML
+    $queries[] = "INSERT INTO `{$prefix}phrases` (`phraseName`,`languageCode`,`text`) VALUES
+  ('" . $mysqli->real_escape_string($phrase['@name']) . "','" . $mysqli->real_escape_string($xmlData4['@languageCode']) . "','" . $mysqli->real_escape_string($phrase['#text']) . "')";
+  }
+
+  foreach ($queries AS $query) {
+    if (!trim($query)) {
+      continue;
+    }
+
+    if (!$mysqli->query(trim($query))) {
+      die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $mysqli->error);
+    }
   }
   break;
 }

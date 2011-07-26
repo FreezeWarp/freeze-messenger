@@ -1016,8 +1016,8 @@ function container($title, $content, $class = 'page') {
 */
 
 function fim_outputApi($data) {
-  if (isset($_REQUEST['format'])) {
-    switch ($_REQUEST['format']) {
+  if (isset($_REQUEST['fim3_format'])) {
+    switch ($_REQUEST['fim3_format']) {
       case 'json':
       return fim_outputJson($data);
       break;
@@ -1207,12 +1207,12 @@ function fim_outputJson($array, $level = 0) {
     $key = explode(' ', $key);
     $key = $key[0];
 
-    $data .= "$indent\"$key\":";
+    $datapre = "$indent\"$key\":";
 
     if (is_array($value)) {
-      $data .= " {
+      $data[] = "$datapre {
 " . fim_outputJson($value, $level + 1) . "
-$indent},
+$indent}
 
 ";
     }
@@ -1230,9 +1230,11 @@ $indent},
         $value = '""';
       }
 
-      $data .= " $value,\n";
+      $data[] = "$datapre $value";
     }
   }
+
+  $data = implode(",\n",$data);
 
   if ($level == 0) {
     return "{

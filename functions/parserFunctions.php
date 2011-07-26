@@ -150,7 +150,7 @@ WHERE w.listId = l.listId AND w.severity = 'replace'",'word');*/
         ),
       )
     );
-    $listsActive->getAsArray();
+    $listsActive = $listsActive->getAsArray();
 
 
     if (is_array($listsActive)) {
