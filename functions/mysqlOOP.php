@@ -28,6 +28,62 @@ class database {
   public function __construct() {
     $this->queryCounter = 0;
     $this->insertId = 0;
+
+    $this->setLanguage('mysqli');
+  }
+
+
+  private function setLanguage($language) {
+    $this->language = $language;
+  }
+
+  /**
+   * Calls a database function, such as mysql_connect or mysql_query, using lookup tables
+   *
+   * Native Argument Ref:
+   * connect - host user password
+   * selectdb - database
+   * error - void
+   *
+   * Driver Argument Ref
+   * mysql_connect - host user passwod
+   * mysql_select_db - database
+   * mysql_error - void
+   */
+  public function functionMap($operation) {
+    $args = func_get_args();
+
+    switch ($this->language) {
+      case 'mysql':
+      switch ($operation) {
+        case 'connect': return mysql_connect($args[1], $args[2], $args[3]); break;
+        case 'selectdb': return mysql_select_db($args[1], $this->dbLink); break;
+        case 'error': return mysql_error($this->dbLink); break;
+        case 'close': return mysql_close($this->dbLink); break;
+        case 'escape': return mysql_real_escape_string($args[1], $this->dbLink); break;
+        case 'query': return mysql_query($args[1], $this->dbLink); break;
+        case 'insertId': return mysql_insert_id($this->dbLink); break;
+        default: throw new Exception('Unrecognized Operation: ' . $operation); break;
+      }
+      break;
+
+      case 'mysqli':
+      switch ($operation) {
+        case 'connect': return mysqli_connect($args[1], $args[2], $args[3], $args[4]); break;
+        case 'selectdb': return mysqli_select_db($this->dbLink, $args[1]); break;
+        case 'error': return mysqli_error($this->dbLink); break;
+        case 'close': return mysqli_close($this->dbLink); break;
+        case 'escape': return mysqli_real_escape_string($this->dbLink, $args[1]); break;
+        case 'query': return mysqli_query($this->dbLink, $args[1]); break;
+        case 'insertId': return mysqli_insert_id($this->dbLink); break;
+        default: throw new Exception('Unrecognized Operation: ' . $operation); break;
+      }
+      break;
+
+      case 'postgresql':
+
+      break;
+    }
   }
 
 
@@ -42,8 +98,8 @@ class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   public function connect($host, $user, $password, $database) {
-    if (!$link = mysql_connect($host, $user, $password)) { // Make the connection.
-      $this->error = 'The connection was refused: ' . mysql_error();
+    if (!$link = $this->functionMap('connect', $host, $user, $password, $database)) { // Make the connection.
+      $this->error = 'The connection was refused: ' . $this->functionMap('error');
 
       return false;
     }
@@ -52,18 +108,18 @@ class database {
     }
 
 
-    if (!mysql_select_db($database, $this->dbLink)) { // Select the database.
+    if (!$this->functionMap('selectdb', $database)) { // Select the database.
       $this->error = 'Could not select database: ' . $database;
 
       return false;
     }
 
 
-    if (!mysql_query('SET NAMES "utf8"', $this->dbLink)) { // Sets the database encoding to utf8 (unicode).
-      $this->error = 'Could not run SET NAMES query.';
+//    if (!mysql_query('SET NAMES "utf8"', $this->dbLink)) { // Sets the database encoding to utf8 (unicode).
+//      $this->error = 'Could not run SET NAMES query.';
 
-      return false;
-    }
+//      return false;
+//    }
 
 
     return true;
@@ -77,7 +133,7 @@ class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function close() {
-    mysql_close($this->dbLink); // Close the database link.
+    return $this->functionMap('close');
   }
 
 
@@ -87,7 +143,7 @@ class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function escape($string) {
-    return mysql_real_escape_string($string, $this->dbLink); // Retrun the escaped string.
+    return $this->functionMap('escape', $string); // Retrun the escaped string.
   }
 
 
@@ -502,7 +558,7 @@ LIMIT
     }
 
     if ($queryData = $this->rawQuery($query)) {
-      $this->insertId = mysql_insert_id();
+      $this->insertId = $this->functionMap('insertId');
 
       return $queryData;
     }
@@ -615,23 +671,22 @@ LIMIT
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   private function rawQuery($query) {
-    $startTime = microtime(true); // Get time in milliseconds (as a float) to determine if the query took too long.
+//    $startTime = microtime(true); // Get time in milliseconds (as a float) to determine if the query took too long.
 
 
-    if ($queryData = mysql_query($query, $this->dbLink)) {
-      $endTime = microtime(true); // Get time in milliseconds (as a float) to determine if the query took too long.
+    if ($queryData = $this->functionMap('query', $query)) {
+//      $endTime = microtime(true); // Get time in milliseconds (as a float) to determine if the query took too long.
 
-      if (($endTime - $startTime) > 2) {
-        file_put_contents('query_log.txt',"Spent " . ($endTime - $startTime) . " on: $queryData",FILE_APPEND); // Log the query if it took over two seconds.
-      }
+//      if (($endTime - $startTime) > 2) {
+//        file_put_contents('query_log.txt',"Spent " . ($endTime - $startTime) . " on: $queryData",FILE_APPEND); // Log the query if it took over two seconds.
+//      }
 
       $this->queryCounter++;
 
-      return new databaseResult($queryData, $query); // Return link resource.
+      return new databaseResult($queryData, $query, $this->language); // Return link resource.
     }
     else {
-      trigger_error("MySQL Error; Query: $query; Error: " . mysql_error($this->dbLink),E_USER_ERROR); // The query could not complete.
-
+      trigger_error("Database Error;\n\nQuery: $query;\n\nError: " . $this->functionMap('error'),E_USER_ERROR); // The query could not complete.
 
       return false;
     }
@@ -737,9 +792,28 @@ class databaseResult {
    * @return void
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
-  public function __construct($queryData, $sourceQuery) {
+  public function __construct($queryData, $sourceQuery, $language) {
     $this->queryData = $queryData;
     $this->sourceQuery = $sourceQuery;
+    $this->language = $language;
+  }
+
+  public function functionMap($operation) {
+    $args = func_get_args();
+
+    switch ($this->language) {
+      case 'mysql':
+      switch ($operation) {
+        case 'fetchAsArray' : return mysql_fetch_assoc($args[1]); break;
+      }
+      break;
+
+      case 'mysqli':
+      switch ($operation) {
+        case 'fetchAsArray' : return mysqli_fetch_assoc($args[1]); break;
+      }
+      break;
+    }
   }
 
   /**
@@ -766,7 +840,11 @@ class databaseResult {
 
     if ($this->queryData !== false) {
       if ($index) { // An index is specified, generate & return a multidimensional array. (index => [key => value], index being the value of the index for the row, key being the column name, and value being the corrosponding value).
-        while (false !== ($row = mysql_fetch_assoc($this->queryData))) {
+        while ($row = $this->functionMap('fetchAsArray', $this->queryData)) {
+          if ($row === null || $row === false) {
+            break;
+          }
+
           if ($index === true) { // If the index is boolean "true", we simply create numbered rows to use. (1,2,3,4,5)
             $indexV++;
           }
@@ -780,7 +858,7 @@ class databaseResult {
         return $data; // All rows fetched, return the data.
       }
       else { // No index is present, generate a two-dimensional array (key => value, key being the column name, value being the corrosponding value).
-        return mysql_fetch_assoc($this->queryData);
+        return $this->functionMap('fetchAsArray', $this->queryData);
       }
     }
 
@@ -801,7 +879,7 @@ class databaseResult {
     static $data;
 
     if ($this->queryData !== false && $this->queryData !== null) {
-      while (false !== ($row = mysql_fetch_assoc($this->queryData))) { // Process through all rows.
+      while (false !== ($row = $this->functionMap('fetchAsArray', $this->queryData))) { // Process through all rows.
         $uid++;
         $row['uid'] = $uid; // UID is a variable that can be used as the row number in the template.
 

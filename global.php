@@ -69,21 +69,6 @@ foreach (array('mysql','json','mbstring','mcrypt','hash','pcre') AS $module) {
 
 
 
-/* Define Void Functions if APC is not present
- * APC is used for caching many directives, but is generally not required.
- * It will be included by default in PHP 5.4, and is already easy to install in a number of Linux repositories (e.g. Ubuntu = php-apc). */
-if (!extension_loaded('apc')) { // APC is strongly recommended, but at least in version 3 not required. Instead, we simply use wrappers that do nothing.
-  function apc_fetch() {
-    return false;
-  }
-
-  function apc_store() {
-    return false;
-  }
-}
-
-
-
 /* Version Requirement, Magic Quotes, Display Errors and Register Globals */
 ini_set('display_errors',0); // Ideally we would never have to worry about this, but sadly that's not the case. FIMv4 will hopefully make improvements.
 
@@ -114,6 +99,7 @@ elseif (floatval(PHP_VERSION) <= 5.3) { // Removed outright in 5.4, may as well 
 require(dirname(__FILE__) . '/config.php'); // Configuration Variables
 require(dirname(__FILE__) . '/functions/mysql.php'); // MySQL Library (DEPRECATED)
 require(dirname(__FILE__) . '/functions/mysqlOOP.php'); // MySQL OOP Library
+require(dirname(__FILE__) . '/functions/cacheVars.php'); // APC Wrapper (may use for alteratives like memcached later)
 require(dirname(__FILE__) . '/functions/commonQueries.php'); // FIM-specific Extension to MySQL OOP Library
 require(dirname(__FILE__) . '/functions/generalFunctions.php'); // Various Functions
 
@@ -235,7 +221,7 @@ require_once(dirname(__FILE__) . '/validate.php'); // This is where all the user
 
 
 ///* GET DATABASE-STORED CONFIGURATION *///
-if (!($config = apc_fetch('fim_config')) || $disableConfig) {
+if (!($config = fim_getCachedVar('fim_config')) || $disableConfig) {
   $config2 = $slaveDatabase->select(
     array(
       "{$sqlPrefix}configuration" => array(
@@ -292,7 +278,7 @@ if (!($config = apc_fetch('fim_config')) || $disableConfig) {
 
   $config['searchWordConverts'] = array_combine($config['searchWordConvertsFind'],$config['searchWordConvertsReplace']);
 
-  apc_store('fim_config',$config,$config['cacheConfigRefresh']);
+  fim_setCachedVar('fim_config',$config,$config['cacheConfigRefresh']);
 }
 
 
@@ -303,7 +289,7 @@ if (!($config = apc_fetch('fim_config')) || $disableConfig) {
 
 if (isset($reqPhrases)) { // TODO Languages currently overwrite eachother
   if ($reqPhrases === true) {
-    if (!$phrases = apc_fetch('fim_phrases')) {
+    if (!$phrases = fim_getCachedVar('fim_phrases')) {
       $phrases2 = $slaveDatabase->select(
         array(
           "{$sqlPrefix}phrases" => array(
@@ -327,7 +313,7 @@ if (isset($reqPhrases)) { // TODO Languages currently overwrite eachother
 
       unset($phrases2);
 
-      apc_store('fim_phrases',$phrases,$config['cachePhrasesRefresh']);
+      fim_setCachedVar('fim_phrases',$phrases,$config['cachePhrasesRefresh']);
     }
 
     $lang = (isset($_REQUEST['lang']) ? $_REQUEST['lang'] :
@@ -344,7 +330,7 @@ if (isset($reqPhrases)) { // TODO Languages currently overwrite eachother
 
 if (isset($reqHooks)) {
   if ($reqHooks === true) {
-    if (!$hooks = apc_fetch('fim_hooks')) {
+    if (!$hooks = fim_getCachedVar('fim_hooks')) {
       $hooks2 = $slaveDatabase->select(
         array(
           "{$sqlPrefix}hooks" => array(
@@ -368,7 +354,7 @@ if (isset($reqHooks)) {
       }
 
       unset($hooks2);
-      apc_store('fim_hooks',$hooks,$config['cacheHooksRefresh']);
+      fim_setCachedVar('fim_hooks',$hooks,$config['cacheHooksRefresh']);
     }
   }
 }
@@ -381,8 +367,8 @@ if (isset($reqHooks)) {
 
 if (isset($reqPhrases)) {
   if ($reqPhrases === true) {
-    $templates = apc_fetch('fim_templates');
-    $templateVars = apc_fetch('fim_templateVars');
+    $templates = fim_getCachedVar('fim_templates');
+    $templateVars = fim_getCachedVar('fim_templateVars');
 
     if (!$templates || !$templateVars) {
       $templates = array();
@@ -412,8 +398,8 @@ if (isset($reqPhrases)) {
       }
 
       unset($templates2);
-      apc_store('fim_templates',$templates,$config['cacheTemplatesRefresh']);
-      apc_store('fim_templateVars',$templateVars,$config['cacheTemplatesRefresh']);
+      fim_setCachedVar('fim_templates',$templates,$config['cacheTemplatesRefresh']);
+      fim_setCachedVar('fim_templateVars',$templateVars,$config['cacheTemplatesRefresh']);
     }
   }
 }
@@ -424,7 +410,7 @@ if (isset($reqPhrases)) {
 ///* CACHED DIRECTIVES (REQUIRES APC) *///
 
 if ($config['cacheKicks']) {
-  $cacheKicks = apc_fetch('fim_kickCache');
+  $cacheKicks = fim_getCachedVar('fim_kickCache');
 
   if ($cacheKicks === null || $cacheKicks === false) {
     $cacheKicks = array();
@@ -518,7 +504,7 @@ if ($config['cacheKicks']) {
       }
     }
 
-    apc_add('fim_kickCache',$cacheKicks,$config['cacheKicksRefresh']);
+    fim_setCachedVar('fim_kickCache',$cacheKicks,$config['cacheKicksRefresh']);
   }
 }
 

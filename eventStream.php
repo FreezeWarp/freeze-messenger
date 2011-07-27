@@ -144,7 +144,10 @@ else {
         echo "event: message\n";
         echo "data: " . json_encode($messagesOutput) . "\n\n";
         flush();
-        ob_flush();
+
+        if (ob_get_level()) {
+          ob_flush();
+        }
       }
     }
 

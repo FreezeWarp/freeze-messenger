@@ -20,22 +20,6 @@
 
 
 /**
-* Returns the insert ID of the last run query. TRANSITIONAL
-*
-* @return link - A resource created by dbQuery
-* @author Joseph Todd Parsons
-*/
-function dbInsertId($link = false) {
-  if ($link) {
-    return mysql_insert_id($link);
-  }
-  else {
-    return mysql_insert_id();
-  }
-}
-
-
-/**
 * Closes a MySQL resource. TRANSITIONAL
 *
 * @param link - A resource created by dbConnect

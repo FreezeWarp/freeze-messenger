@@ -921,8 +921,8 @@ var standard = {
       url: directory + 'api/getMessages.php?rooms=' + options.roomId + '&' + (options.userId ? '&users=' + options.userId : '') + '&archive=1&messageLimit=10000&messageHardLimit=50&' + where + (options.search ? '&search=' + urlencode(options.search) : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
       type: 'GET',
       timeout: 5000,
-//      contentType: "text/json; charset=utf-8",
-//      dataType: "json",
+      contentType: "text/json; charset=utf-8",
+      dataType: "json",
       cache: false,
       success: function (json) {
         active = json.getMessages.messages;
