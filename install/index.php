@@ -717,7 +717,7 @@ $dbConnect[\'integration\'][\'database\'] = \'' . $database . '\';',
     '$loginConfig[\'method\'] = \'' . $forum . '\';',
     '$loginConfig[\'url\'] = \'' . $forumUrl . '\';',
     '$loginConfig[\'superUsers\'] = array(' . ($forum == 'phpbb' ? 2 : 1) . ');',
-    '$installUrl = \'' . str_replace('/install/index.php','',$_SERVER['HTTP_REFERER']) . '\';',
+    '$installUrl = \'' . str_replace(array('install/index.php','install/'),array('',''),$_SERVER['HTTP_REFERER']) . '\';',
     '$salts = array(
   101 => \'' . $encryptSalt . '\',
 );',

@@ -291,7 +291,7 @@ if ($continue) {
               'fileType' => $mime,
             ),"{$sqlPrefix}files");
 
-            $fileId = dbInsertId();
+            $fileId = $database->insertId;
 
             $database->insert(array(
               'fileId' => $fileId,

@@ -115,11 +115,13 @@ class database {
     }
 
 
-//    if (!mysql_query('SET NAMES "utf8"', $this->dbLink)) { // Sets the database encoding to utf8 (unicode).
-//      $this->error = 'Could not run SET NAMES query.';
+    if ($this->language == 'mysql' || $this->language == 'mysqli') {
+      if (!$this->rawQuery('SET NAMES "utf8"')) { // Sets the database encoding to utf8 (unicode).
+        $this->error = 'Could not run SET NAMES query.';
 
-//      return false;
-//    }
+        return false;
+      }
+    }
 
 
     return true;

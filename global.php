@@ -279,7 +279,6 @@ if (!($config = fim_getCachedVar('fim_config')) || $disableConfig) {
     }
   }
 
-  $config['searchWordConverts'] = array_combine($config['searchWordConvertsFind'],$config['searchWordConvertsReplace']);
 
   fim_setCachedVar('fim_config',$config,$config['cacheConfigRefresh']);
 }

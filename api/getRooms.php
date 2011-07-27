@@ -222,7 +222,6 @@ if (is_array($rooms)) {
           ),
           'lastMessageId' => $room['lastMessageId'],
           'lastMessageTime' => $room['lastMessageTime'],
-          'bbcode' => (int) $room['bbcode'],
           'permissions' => array(
             'canModerate' => (bool) $permissions[0]['moderate'],
             'canAdmin' => (bool) $permissions[0]['admin'],

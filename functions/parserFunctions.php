@@ -387,7 +387,7 @@ error_log($string);
 
   foreach ($stringPieces AS $piece) {
     if (strlen($piece) >= $config['searchWordMinimum'] && !in_array($piece, $config['searchWordOmissions'])) {
-      $stringPiecesAdd[] = str_replace(array_keys($config['searchWordConverts']),array_values($config['searchWordConverts']), $piece);
+      $stringPiecesAdd[] = str_replace($config['searchWordConvertsFind'], $config['searchWordConvertsReplace'], $piece);
     }
   }
 

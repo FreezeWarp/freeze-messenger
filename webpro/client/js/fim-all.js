@@ -212,7 +212,7 @@ function messageFormat(json, format) {
       text = '<a href="' + text + '" target="_BLANK">[Image]</a>';
     }
     else {
-      text = '<img src="' + text + '" />';
+      text = '<a href="' + text + '" target="_BLANK"><img src="' + text + '" style="max-width: 250px; max-height: 250px;" /></a>';
     }
     break;
 
