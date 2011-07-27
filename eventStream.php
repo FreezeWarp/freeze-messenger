@@ -109,7 +109,7 @@ else {
       foreach ($messages AS $message) {
         $messagesOutput[] = array(
           'messageData' => array(
-            'roomId' => (int) $room['roomId'],
+            'roomId' => (int) $message['roomId'],
             'messageId' => (int) $message['messageId'],
             'messageTime' => (int) $message['time'],
             'messageTimeFormatted' => fim_date(false,$message['time']),

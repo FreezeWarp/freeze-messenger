@@ -268,11 +268,17 @@
 
 &lt;label&gt;$phrases[editRoomCensorLabel]&lt;/label&gt;:&lt;br /&gt;&lt;div style="margin-left: 10px;" id="censorLists"&gt;&lt;/div&gt;&lt;br /&gt;
 
-&lt;button type="submit"&gt;{{if="$_GET['action'] == 'create'"}{$phrases[createRoomSubmit]}{$phrases[editRoomSubmit]}}&lt;/button&gt;&lt;button type="reset"&gt;$phrases[editRoomReset]&lt;/button&gt;&lt;/div&gt;&lt;div id="editRoom2"&gt;&lt;label for="allowedUsers"&gt;$phrases[editRoomAllowedUsersLabel]&lt;/label&gt; &lt;input type="text" name="allowedUsersBridge" id="allowedUsersBridge" /&gt;&lt;input type="button" value="Add" onclick="autoEntry.addEntry('allowedUsers');" /&gt;&lt;input type="hidden" name="allowedUsers" id="allowedUsers" /&gt;&lt;br /&gt;
+&lt;button type="submit"&gt;{{if="$_GET['action'] == 'create'"}{$phrases[createRoomSubmit]}{$phrases[editRoomSubmit]}}&lt;/button&gt;&lt;button type="reset"&gt;$phrases[editRoomReset]&lt;/button&gt;&lt;/div&gt;
+
+&lt;div id="editRoom2"&gt;
+&lt;fieldset&gt;
+&lt;legend&gt;&lt;label&gt;&lt;input type="checkbox" id="allowAllUsers" name="allowAllUsers" /&gt; Allow All Users&lt;/label&gt;&lt;/legend&gt;
+&lt;label for="allowedUsers"&gt;$phrases[editRoomAllowedUsersLabel]&lt;/label&gt; &lt;input type="text" name="allowedUsersBridge" id="allowedUsersBridge" /&gt;&lt;input type="button" value="Add" onclick="autoEntry.addEntry('allowedUsers');" /&gt;&lt;input type="hidden" name="allowedUsers" id="allowedUsers" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[editRoomAllowedUsersCurrent]&lt;span id="allowedUsersList"&gt;&lt;/span&gt;&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
 
 &lt;label for="allowedGroups"&gt;$phrases[editRoomAllowedGroupsLabel]&lt;/label&gt; &lt;input type="text" name="allowedGroupsBridge" id="allowedGroupsBridge" /&gt;&lt;input type="button" value="Add" onclick="autoEntry.addEntry('allowedGroups');" /&gt;&lt;input type="hidden" name="allowedGroups" id="allowedGroups" /&gt;&lt;br /&gt;
-&lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[editRoomAllowedGroupsCurrent]&lt;span id="allowedGroupsList"&gt;&lt;/span&gt;&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
+&lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[editRoomAllowedGroupsCurrent]&lt;span id="allowedGroupsList"&gt;&lt;/span&gt;&lt;/span&gt;&lt;/small&gt;
+&lt;/fieldset&gt;&lt;br /&gt;
 
 &lt;label for="moderators"&gt;$phrases[editRoomModeratorsLabel]&lt;/label&gt; &lt;input type="text" name="moderatorsBridge" id="moderatorsBridge" /&gt;&lt;input type="button" value="Add" onclick="autoEntry.addEntry('moderators');" /&gt;&lt;input type="hidden" name="moderators" id="moderators" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[editRoomModeratorsCurrent]&lt;span id="moderatorsList"&gt;&lt;/span&gt;&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;

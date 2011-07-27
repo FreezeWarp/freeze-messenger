@@ -212,6 +212,7 @@ unset($dbConnect); // There is no reason the login credentials should still be a
 
 
 
+
 ///* USER LOGIN (REQUIRES DATABASE) *///
 
 require_once(dirname(__FILE__) . '/validate.php'); // This is where all the user validation stuff occurs.
@@ -220,7 +221,9 @@ require_once(dirname(__FILE__) . '/validate.php'); // This is where all the user
 
 
 
+
 ///* GET DATABASE-STORED CONFIGURATION *///
+
 if (!($config = fim_getCachedVar('fim_config')) || $disableConfig) {
   $config2 = $slaveDatabase->select(
     array(
@@ -516,7 +519,6 @@ if ($config['cacheKicks']) {
 
 
 ///* OTHER STUFF *///
-
 
 if (isset($banned,$apiRequest)) { // A blanket die for the API when the user is banned.
   if ($apiRequest && $banned) {

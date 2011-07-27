@@ -2551,6 +2551,21 @@ popup = {
           source: groupList
         });
 
+        $('#allowAllUsers').change(function() {
+          if ($(this).is(':checked')) {
+            $('#allowedUsersBridge').attr('disabled','disabled');
+            $('#allowedGroupsBridge').attr('disabled','disabled');
+            $('#allowedUsersBridge').next().attr('disabled','disabled');
+            $('#allowedGroupsBridge').next().attr('disabled','disabled');
+          }
+          else {
+            $('#allowedUsersBridge').removeAttr('disabled');
+            $('#allowedGroupsBridge').removeAttr('disabled');
+            $('#allowedUsersBridge').next().removeAttr('disabled');
+            $('#allowedGroupsBridge').next().removeAttr('disabled');
+          }
+        });
+
         $("#editRoomForm").submit(function() {
           var bbcode = Number($('#bbcode').val()),
             name = $('#name').val(),
@@ -2563,7 +2578,7 @@ popup = {
             dia.error('The roomname is too long.');
           }
           else {
-            $.post(directory + 'api/editRoom.php','action=create&roomName=' + urlencode(name) + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
+            $.post(directory + 'api/editRoom.php','action=create&roomName=' + urlencode(name) + ($('#allowAllUsers').is(':checked') ? '&allowedUsers=*' : '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups) + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
               var errStr = unxml($(xml).find('errStr').text().trim()),
                 errDesc = unxml($(xml).find('errDesc').text().trim()),
                 createRoomId = Number($(xml).find('insertId').text().trim());
