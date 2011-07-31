@@ -49,6 +49,7 @@ static $api, $goodVersion;
 
 $banned = false;
 $anonymous = false;
+$noSync = false;
 $userId = 0;
 $userName = '';
 $password = '';
@@ -137,6 +138,28 @@ elseif ((int) $anonymousUser >= 1 && isset($_REQUEST['apiLogin'])) { // Unregist
   $userId = $anonymousUser;
   $anonymous = true;
   $api = true;
+}
+
+elseif (isset($hookLogin)) {
+  if (is_array($hookLogin)) {
+    if (count($hookLogin) > 0) {
+      if (isset($hookLogin['userName'])) {
+        $userName = $hookLogin['userName'];
+      }
+
+      if (isset($hookLogin['password'])) {
+        $password = $hookLogin['password'];
+      }
+
+      if (isset($hookLogin['sessionHash'])) {
+        $sessionHash = $hookLogin['sessionHash'];
+      }
+
+      if (isset($hookLogin['userIdComp'])) {
+        $userIdComp = $hookLogin['userIdComp'];
+      }
+    }
+  }
 }
 
 
@@ -999,8 +1022,9 @@ $user['adminDefs'] = array(
   'modPrivs' => ($user['adminPrivs'] & 1), // This effectively allows a user to give himself everything else below
   'modCore' => ($user['adminPrivs'] & 2), // This is the "untouchable" flag, but that's more or less all it means.
   'modUsers' => ($user['adminPrivs'] & 16), // Ban, Unban, etc.
-  'modImages' => ($user['adminPrivs'] & 64), // File Uploads
+  'modFiles' => ($user['adminPrivs'] & 64), // File Uploads
   'modCensor' => ($user['adminPrivs'] & 256), // Censor
+  'modBBCode' => ($user['adminPrivs'] & 1024), // BBCode
 
   /* Should Generally Go Together */
   'modPlugins' => ($user['adminPrivs'] & 4096), // Plugins

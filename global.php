@@ -39,6 +39,7 @@ $defaultConfig = array(
   'cacheKicks' => false,
   'cachePhrasesRefresh' => 3600,
   'cacheTemplatesRefresh' => 3600,
+  'cacheHooksRefresh' => 60,
   'cacheConfigRefresh' => 3600,
   'longPollingWait' => 2,
   'longPolling' => false,

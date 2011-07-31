@@ -14,18 +14,142 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-$title = 'Moderate';
 $reqPhrases = true;
 $reqHooks = true;
 
-$sessionHash = $_COOKIE['fim3_sessionHash'];
+
+/* This below bit hooks into the validate.php script to facilitate a seperate login. It is a bit cooky, though, and will need to be further tested. */
+if (isset($_POST['webproModerate_userName'])) {
+  $hookLogin['userName'] = $_POST['webproModerate_userName'];
+  $hookLogin['password'] = $_POST['webproModerate_password'];
+}
+elseif (isset($_COOKIE['webproModerate_sessionHash'])) {
+  $hookLogin['sessionHash'] = $_COOKIE['webproModerate_sessionHash'];
+  $hookLogin['userIdComp'] = $_COOKIE['webproModerate_userId'];
+}
+
+
+/* Here we require the backend. */
 require_once('../global.php');
 
-echo template('templateAdminStart');
+
+/* And this sets the cookie with the session hash if possible. */
+if (isset($sessionHash)) {
+  if (strlen($sessionHash) > 0) {
+    setcookie('webproModerate_sessionHash',$sessionHash);
+    setcookie('webproModerate_userId',$user['userId']);
+  }
+}
+
+
+/* And this is the template. We should move it into the DB at some point. */
+echo '<!DOCTYPE HTML>
+<!-- Original Source Code Copyright © 2011 Joseph T. Parsons. -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Freeze Messenger AdminCP</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="author" content="Joseph T. Parsons" />
+  <link rel="icon" id="favicon" type="image/png" href="images/favicon.png" />
+  <!--[if lte IE 9]>
+  <link rel="shortcut icon" id="faviconfallback" href="images/favicon1632.ico" />
+  <![endif]-->
+
+  <!-- START Styles -->
+  <link rel="stylesheet" type="text/css" href="../webpro/client/css/cupertino/jquery-ui-1.8.13.custom.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="../webpro/client/css/cupertino/fim.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="../webpro/client/css/stylesv2.css" media="screen" />
+  <!-- END Styles -->
+
+  <!-- START Scripts -->
+  <script src="../webpro/client/js/jquery-1.6.1.min.js" type="text/javascript"></script>
+
+  <script src="../webpro/client/js/jquery-ui-1.8.13.custom.min.js" type="text/javascript"></script>
+  <script src="../webpro/client/js/jquery.plugins.js" type="text/javascript"></script>
+  <script>
+  function windowDraw() {
+    $(\'body\').css(\'min-height\',window.innerHeight);
+    $(\'#moderateRight\').css(\'height\',window.innerHeight);
+    $(\'#moderateLeft\').css(\'height\',window.innerHeight);
+    $(\'button, input[type=button], input[type=submit]\').button();
+
+    $(\'#mainMenu\').accordion({
+      autoHeight : false
+    });
+  }
+
+  $(document).ready(function() {
+    windowDraw();
+  });
+
+  window.onwindowDraw = windowDraw;
+
+  var alert = function(text) {
+    dia.info(text,"Alert");
+  };
+  </script>
+  <style>
+  #moderateRight {
+    float: right;
+    width: 75%;
+  }
+  #moderateLeft {
+    float: left;
+    width: 25%;
+  }
+  </style>
+  <!-- END Scripts -->
+</head>
+<body>
+<div id="moderateLeft">
+  <div id="mainMenu">
+    <h3>Manage Customizations</h3>
+    <ul>
+      ' . ($user['adminDefs']['modTemplates'] ? '<li><a href="moderate.php?do=phrases">Modify Phrases</a></li>' : '') . '
+      ' . ($user['adminDefs']['modTemplates'] ? '<li><a href="moderate.php?do=templates">Modify Templates</a></li>' : '') . '
+      ' . ($user['adminDefs']['modPlugins'] ? '<li><a href="moderate.php?do=plugins">Modify Plugins</a></li>' : '') . '
+      ' . ($user['adminDefs']['modHooks'] ? '<li><a href="moderate.php?do=hooks">Modify Hooks</a></li>' : '') . '
+    </ul>
+
+    <h3>Manage Engines</h3>
+    <ul>
+      ' . ($user['adminDefs']['modBBCode'] ? '<li><a href="moderate.php?do=bbcode">Modify BBCode</a></li>' : '') . '
+      ' . ($user['adminDefs']['modCensor'] ? '<li><a href="moderate.php?do=censor">Modify Censor</a></li>' : '') . '
+      ' . ($user['adminDefs']['modFiles'] ? '<li><a href="moderate.php?do=censor">Modify File Types</a></li>' : '') . '
+    </ul>
+
+    <h3>Manage Advanced</h3>
+    <ul>
+      ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=conf">Configuration Editor</a></li>' : '') . '
+      ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=sys">System Check</a></li>' : '') . '
+      ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=phpinfo">PHP Info</a></li>' : '') . '
+    </ul>
+  </div>
+</div>
+<div id="moderateRight" class="ui-widget">';
 
 eval(hook('moderateStart'));
 
-if ($user['adminDefs']) { // Check that the user is an admin.
+if (!$user['userId']) {
+  echo container('Please Login','You have not logged in. Please login:<br /><br />
+
+  <form action="moderate.php" method="post">
+    <table>
+      <tr>
+        <td>Username: </td>
+        <td><input type="text" name="webproModerate_userName" /></td>
+      </tr>
+      <tr>
+        <td>Password: </td>
+        <td><input type="password" name="webproModerate_password" /></td>
+      </tr>
+      <tr>
+        <td colspan="2" align="center"><input type="submit" value="Login" /></td>
+      </tr>
+    </table>
+  </form>');
+}
+elseif ($user['adminDefs']) { // Check that the user is an admin.
   switch ($_GET['do']) {
     case 'phrases':
     if ($user['adminDefs']['modPhrases']) {
@@ -94,7 +218,7 @@ if ($user['adminDefs']) { // Check that the user is an admin.
     </form>");
         }
         else {
-          trigger_error('Language not found.',E_USER_ERROR);
+          echo 'Languge not found.';
         }
         break;
 
@@ -110,13 +234,13 @@ if ($user['adminDefs']) { // Check that the user is an admin.
           echo container('Updated','The phrase has been updated.<br /><br /><form action="./moderate.php?do=phrases" method="POST"><button type="submit">Return</button></form>');
         }
         else {
-          trigger_error('Language not found.',E_USER_ERROR);
+          echo 'Languge not found.';
         }
         break;
       }
     }
     else {
-      trigger_error('No permission',E_USER_ERROR);
+      echo 'You do not have permission to modify phrases.';
     }
     break;
 
@@ -563,23 +687,57 @@ if ($user['adminDefs']) { // Check that the user is an admin.
     break;
 
 
+    case 'phpinfo':
+    if ($user['adminDefs']['modCore']) {
+      phpinfo();
+    }
+    else {
+      echo 'You do not have permission to view PHP info.';
+    }
+    break;
+
+
+    case 'sys':
+    if ($user['adminDefs']['modCore']) {
+      echo container('System Requirements & Status','<ul>
+        <li>MySQL 5.0.5+</li>
+        <li>PHP 5.2+ (' . (floatval(phpversion()) > 5.2 ? 'Looks Good' : 'Not Detected - Version ' . phpversion() . ' Installed') . ')</li>
+        <ul>
+          <li>MySQL Extension (' . (extension_loaded('mysql') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+          <li>Hash Extension (' . (extension_loaded('hash') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+          <li>Date/Time Extension (' . (extension_loaded('date') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+          <li>MCrypt Extension (' . (extension_loaded('mcrypt') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+          <li>PCRE Extension (' . (extension_loaded('pcre') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+          <li>Multibyte String Extension (' . (extension_loaded('mbstring') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+          <li>SimpleXML Extension (' . (extension_loaded('simplexml') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+          <li>Optional, but Required in the Future: APC Extension (' . (extension_loaded('apc') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+          <li>Optional, but Required for Installation: MySQLi Extension (' . (extension_loaded('mysqli') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+        </ul>
+        <li>Proper Permissions (for automatic configuration file generation)</li>
+        <ul>
+          <li>Origin Directory Writable (' . (is_writable('../') ? 'Looks Good' : '<strong>Nope</strong>') . ')</li>
+          <li>Config File Absent (' . (!file_exists('../config.php') ? 'Looks Good' : '<strong>Nope</strong>') . ')</li>
+        </ul>
+      </ul>');
+    }
+    else {
+      echo 'You do not have permission to view PHP info.';
+    }
+    break;
+
+
+    case 'conf':
+    break;
+
+
     default:
-    $activeUsers = dbRows("SELECT COUNT(userId) AS count, userId FROM {$sqlPrefix}ping WHERE UNIX_TIMESTAMP(time) > UNIX_TIMESTAMP(NOW()) - 60 GROUP BY userId",'userId');
-    $bannedUsers = dbRows("SELECT userId FROM {$sqlPrefix}users WHERE settings & 1",'userId');
-    $status = (file_exists('.tempStop')) ? 'Stopped' : 'Running';
-    echo container('Welcome','<script type="text/javascript">$(document).ready(function() { $(\'#moderateRight\').animate({\'height\' : window.innerHeight - 50},1750); });</script><div style="height: 0px; overflow: hidden;" id="moderateRight"><div style="text-align: center; font-size: 40px; font-weight: bold;">Welcome</div><br /><br />
+    echo container('Welcome','<div style="text-align: center; font-size: 40px; font-weight: bold;">Welcome</div><br /><br />
 
-Welcome to the FreezeMessenger control panel. Here you, as one of our grandé and spectacular administrative staff, can perform every task needed to you during any given day.<br /><br />
+Welcome to the FreezeMessenger control panel. Here you, as one of our well-served grandé and spectacular administrative staff, can perform every task needed to you during normal operation. Still, be careful: you can mess things up here!<br /><br />
 
-Server Time: ' . date('h:ia') . '<br />
-Your Time: ' . fim_date('h:ia') . '<br />
-Active Users in Last Minute: ' . count($activeUsers) . '<br />
-Banned Users: <a href="./moderate.php?do=unbanuser">' . count($bannedUsers) . '</a><br />
-Status: <a href="./moderate.php?do=maintenance&do2=disable">' . $status . '</a><br /><br /><br />
-</div>');
+To perform an action, click a link on the sidebar. Further instructions can be found in the documentation.');
     break;
   }
-  echo '</div>';
 }
 else {
   trigger_error('You do not have permission to access this page. Please login on the main chat and refresh.',E_USER_ERROR);
@@ -587,5 +745,7 @@ else {
 
 eval(hook('moderateEnd'));
 
-echo template('templateAdminEnd');
+echo '</div>
+</body>
+</html>';
 ?>
