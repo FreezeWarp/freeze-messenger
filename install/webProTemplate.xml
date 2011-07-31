@@ -68,20 +68,6 @@
   &lt;li&gt;&lt;a href="#" id="kick"&gt;$phrases[templateKickUser]&lt;/a&gt;&lt;/li&gt;
 
   &lt;li&gt;&lt;a href="./moderate.php" id="modGeneral"&gt;$phrases[templateAdmin]&lt;/a&gt;&lt;/li&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;a href="./moderate.php?do=showimages" id="modImages"&gt;$phrases[templateAdminImages]&lt;/a&gt;&lt;/li&gt;
-    &lt;li&gt;&lt;a href="./moderate.php?do=listusers" id="modUsers"&gt;$phrases[templateAdminUsers]&lt;/a&gt;
-    &lt;ul&gt;
-      &lt;li&gt;&lt;a href="./moderate.php?do=banuser" id="banUser"&gt;$phrases[templateAdminBanUser]&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href="./moderate.php?do=unbanuser" id="unbanUser"&gt;$phrases[templateAdminUnbanUser]&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;&lt;/li&gt;
-    &lt;li&gt;&lt;a href="./moderate.php?do=privs" id="modPrivs"&gt;$phrases[templateAdminPrivs]&lt;/a&gt;&lt;/li&gt;
-    &lt;li&gt;&lt;a href="./moderate.php?do=censor" id="modCensor"&gt;$phrases[templateAdminCensor]&lt;/a&gt;&lt;/li&gt;
-    &lt;li&gt;&lt;a href="./moderate.php?do=phrases" id="modPhrases"&gt;$phrases[templateAdminPhrases]&lt;/a&gt;&lt;/li&gt;
-    &lt;li&gt;&lt;a href="./moderate.php?do=hooks" id="modHooks"&gt;$phrases[templateAdminHooks]&lt;/a&gt;&lt;/li&gt;
-    &lt;li&gt;&lt;a href="./moderate.php?do=templates" id="modTemplates"&gt;$phrases[templateAdminTemplates]&lt;/a&gt;&lt;/li&gt;
-    &lt;li&gt;&lt;a href="./moderate.php?do=maintenance" id="modCore"&gt;$phrases[templateAdminMaintenance]&lt;/a&gt;&lt;/li&gt;
-  &lt;/ul&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
 
@@ -435,7 +421,6 @@ jGrowl &amp;copy; 2009 Stan Lemon.&lt;br /&gt;
 jQuery Cookie Plugin &amp;copy; 2006 Klaus Hartl&lt;br /&gt;
 EZPZ Tooltip &amp;copy; 2009 Mike Enriquez&lt;br /&gt;
 Beeper &amp;copy; 2009 Patrick Mueller&lt;br /&gt;
-Error Logger Utility &amp;copy; Ben Alman&lt;br /&gt;
 Context Menu &amp;copy; 2008 Cory S.N. LaViska&lt;br /&gt;
 jQTubeUtil &amp;copy; 2010 Nirvana Tikku
 &lt;/div&gt;
