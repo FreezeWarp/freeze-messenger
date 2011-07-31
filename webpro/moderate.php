@@ -65,18 +65,22 @@ echo '<!DOCTYPE HTML>
   <link rel="stylesheet" type="text/css" href="./client/codemirror/mode/clike/clike.css">
 
   <style>
+  body {
+    overflow: hidden;
+    padding: 5px;
+    margin: 5px;
+  }
   #moderateRight {
     float: right;
-    width: 75%;
   }
   #moderateLeft {
     float: left;
-    width: 25%;
   }
   .CodeMirror {
     border: 1px solid white;
     background-color: white;
     color: black;
+    width: 800px;
   }
   </style>
   <!-- END Styles -->
@@ -98,6 +102,8 @@ echo '<!DOCTYPE HTML>
     $(\'body\').css(\'min-height\',window.innerHeight);
     $(\'#moderateRight\').css(\'height\',window.innerHeight);
     $(\'#moderateLeft\').css(\'height\',window.innerHeight);
+    $(\'#moderateRight\').css(\'width\',Math.floor(window.innerWidth * .74 - 10));
+    $(\'#moderateLeft\').css(\'width\',Math.floor(window.innerWidth * .25 - 10));
     $(\'button, input[type=button], input[type=submit]\').button();
 
     $(\'#mainMenu\').accordion({
@@ -288,12 +294,15 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
       switch ($_GET['do2']) {
         case false:
         case 'view':
-        $hooks2 = dbRows("SELECT * FROM {$sqlPrefix}hooks",'id');
+        $hooks2 = $database->select(array(
+          "{$sqlPrefix}hooks" => "hookId, hookName, code, state",
+        ));
+        $hooks2 = $hooks2->getAsArray(true);
 
         foreach ($hooks2 AS $hook) {
           $hook['code'] = nl2br(htmlentities($hook['code']));
 
-          $rows .= "<tr><td>$hook[name]</td><td>$hook[code]</td><td><a href=\"./moderate.php?do=hooks&do2=edit&hookId=$hook[id]\">Edit</td></tr>";
+          $rows .= "<tr><td>$hook[hookName]</td><td>$hook[code]</td><td><a href=\"./moderate.php?do=hooks&do2=edit&hookId=$hook[hookId]\">Edit</a> | <a href=\"./moderate.php?do=hooks&do2=state&hookId=$hook[hookId]\">" . ($hook['state'] == 'on' ? 'Deactivate' : 'Activate') . "</a></td></tr>";
         }
 
         echo container('Hooks','<table class="page rowHover" border="1">
@@ -324,14 +333,20 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
         break;
 
         case 'edit2':
-        $hookID = intval($_GET['hookId']);
-        $text = dbEscape($_POST['text']);
+        $hookId = $_GET['hookId'];
+        $text = $_POST['text'];
 
-        dbQuery("UPDATE {$sqlPrefix}hooks SET code = '$text' WHERE id = $hookID");
+        $database->update(array(
+          'code' => $text,
+        ),
+        "{$sqlPrefix}phrases",
+        array(
+          'hookId' => (int) $hookId,
+        ));
 
         modLog('hookEdit',$hookID);
 
-        echo container('Updated','The hook has been updated.<br /><br /><form action="Return" method="POST"><button type="submit">Return</button></form>');
+        echo container('Updated','The hook has been updated.<br /><br /><form action="moderate.php?do=hooks" method="POST"><button type="submit">Return</button></form>');
         break;
       }
     }
@@ -345,18 +360,19 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
       switch ($_GET['do2']) {
         case false:
         case 'view':
-        $templates2 = dbRows("SELECT * FROM {$sqlPrefix}templates",'id');
+        $templates2 = $database->select(array(
+          "{$sqlPrefix}templates" => "templateId, templateName, vars, data",
+        ));
+        $templates2 = $templates2->getAsArray(true);
 
         foreach ($templates2 AS $template) {
-          $template['code'] = nl2br(htmlentities($template['code']));
-
-          $rows .= "<tr><td>$template[name]</td><td><a href=\"./moderate.php?do=templates&do2=edit&templateId=$template[id]\">Edit</td></tr>";
+          $rows .= "<tr><td>$template[templateName]</td><td><a href=\"./moderate.php?do=templates&do2=edit&templateId=$template[templateId]\">Edit</td></tr>";
         }
 
-        echo container('Hooks','<table class="page rowHover" border="1">
+        echo container('Templates','<table class="page rowHover" border="1">
     <thead>
       <tr class="hrow ui-widget-header">
-        <td>Hook</td>
+        <td>Template</td>
         <td>Actions</td>
       </tr>
     </thead>
@@ -367,13 +383,33 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
         break;
 
         case 'edit':
-        $templateID = intval($_GET['templateId']);
+        $template = $database->select(array(
+            "{$sqlPrefix}templates" => "templateId, templateName, vars, data",
+          ),
+          array(
+            'both' => array(
+              array(
+                'type' => 'e',
+                'left' => array(
+                  'type' => 'column',
+                  'value' => 'templateId',
+                ),
+                'right' => array(
+                  'type' => 'int',
+                  'value' => (int) $_GET['templateId'],
+                ),
+              ),
+            ),
+          ),
+          false,
+          false,
+          1
+        );
+        $template = $template->getAsArray(false);
 
-        $template = dbRows("SELECT * FROM {$sqlPrefix}templates WHERE id = $templateID");
-
-        echo container("Edit Hook '$template[name]'","<form action=\"./moderate.php?do=templates&do2=edit2&templateId=$template[id]\" method=\"post\">
+        echo container("Edit Hook '$template[templateName]'","<form action=\"./moderate.php?do=templates&do2=edit2&templateId=$template[templateId]\" method=\"post\">
     <label for=\"vars\">Vars:</label><br />
-    <input type=\"text\" name=\"vars\" value=\"$template[vars]\" />
+    <input type=\"text\" name=\"vars\" value=\"$template[vars]\" /><br /><br />
 
     <label for=\"text\">New Value:</label><br />
     <textarea name=\"text\" id=\"textXml\" style=\"width: 100%; height: 300px;\">$template[data]</textarea><br /><br />
@@ -383,13 +419,20 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
         break;
 
         case 'edit2':
-        $templateID = intval($_GET['templateId']);
-        $text = dbEscape($_POST['text']);
-        $vars = dbEscape($_POST['vars']);
+        $templateId = $_GET['templateId'];
+        $text = $_POST['text'];
+        $vars = $_POST['vars'];
 
-        dbQuery("UPDATE {$sqlPrefix}templates SET data = '$text', vars = '$vars' WHERE id = $templateID");
+        $database->update(array(
+          'text' => $text,
+          'vars' => $vars
+        ),
+        "{$sqlPrefix}templates",
+        array(
+          'templateId' => (int) $templateId,
+        ));
 
-        modLog('templateEdit',$templateID);
+        modLog('templateEdit',$templateId);
 
         echo container('Updated','The template has been updated.<br /><br /><form action="Return" method="POST"><button type="submit">Return</button></form>');
         break;
@@ -684,7 +727,29 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
 
 
     case 'bbcode':
+    if ($user['adminDefs']['modBBCode']) {
+      switch ($_GET['do2']) {
+        case 'view':
+        false:
 
+        break;
+        case 'add':
+
+        break;
+        case 'add2':
+
+        break;
+        case 'edit':
+
+        break;
+        case 'edit2':
+
+        break;
+      }
+    }
+    else {
+      echo 'You do not have permission to manage BBCodes.';
+    }
     break;
 
 
@@ -726,6 +791,11 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
 
 
     case 'conf':
+    break;
+
+
+    case 'plugins':
+    echo container('To Be Continued...','Plugins will be added in FIMv3 Beta 4.');
     break;
 
 
