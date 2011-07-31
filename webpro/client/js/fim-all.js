@@ -306,6 +306,10 @@ function messageFormat(json, format) {
   return data;
 }
 
+function fileFormat(container, file) {
+
+}
+
 
 /* ? */
 function newMessage() {
@@ -947,6 +951,7 @@ var standard = {
 
       $('#archiveNext').unbind('click');
       $('#archivePrev').unbind('click');
+      $('#export').unbind('click');
 
       $('#archiveNext').bind('click',function() {
         standard.archive({
@@ -959,6 +964,13 @@ var standard = {
           idMax : firstMessage,
           roomId: options.roomId
         })
+      });
+      $('#export').bind('click',function() {
+        dia.full({
+          id : 'exportDia',
+          content : 'How would you like to export the data?<br /><br /><table align="center"><tr><td>Format</td><td><select><option value="bbcodetable">BBCode Table</option><option value="csv">CSV List (Excel, etc.)</option><option value="xml">XML Data</option></select></td></tr><tr><td colspan="2" align="center"><button type="submit">Export</button></td></tr></table>',
+          width: 600,
+        });
       });
 
       if (options.callback) {
@@ -2340,7 +2352,7 @@ popup = {
 
   viewUploads : function() {
     dia.full({
-      content : '<table><thead><tr><td>Preview</td><td>File Name</td><td>File Size</td></tr></thead><tbody id="viewUploadsBody"></tbody></table>',
+      content : '<table align="center"><thead><tr><td>Preview</td><td>File Name</td></tr></thead><tbody id="viewUploadsBody"></tbody></table>',
       width : 1000,
       title : 'View My Uploads',
       position : 'top',
@@ -2359,7 +2371,7 @@ popup = {
                 sha256hash = $(this).find('sha256hash').text().trim(),
                 fileSize = unxml($(this).find('sizeFormatted').text().trim());
 
-                data += '<tr><td><img src="' + directory + 'file.php?sha256hash=' + sha256hash + '" style="max-width: 200px; max-height: 200px;" /></td><td>' + fileName + '</td><td>' + fileSize + '</td></tr>';
+                data += '<tr><td><img src="' + directory + 'file.php?sha256hash=' + sha256hash + '" style="max-width: 200px; max-height: 200px;" /></td><td>' + fileName + '</td></tr>';
             });
 
             $('#viewUploadsBody').html(data);
@@ -2894,7 +2906,7 @@ popup = {
 
   archive : function(options) {
     dia.full({
-      content : '<form id="archiveSearch" action="#" method="get" style="text-align: center;"><table style="text-align: center; margin-left: auto; margin-right: auto;"><tr><td align="center"><small>Search Text:</small></td><td><small>Filter by User:</td></tr><tr><td><input type="text" id="searchText" name="searchText" style="margin-left: auto; margin-right: auto; text-align: left;" /></td><td><input type="text" id="searchUser" name="searchUser" style="margin-left: auto; margin-right: auto; text-align: left;" /></td><td rowspan="2" valign="middle"><button type="submit">Search</button></td></tr></table></form><br /><br /><table class="center"><thead><tr><th style="width: 20%;">User</th><th style="width: 20%;">Time</th><th style="width: 60%;">Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><button id="archivePrev"><< Prev</button><button id="archiveNext">Next >></button>',
+      content : '<form id="archiveSearch" action="#" method="get" style="text-align: center;"><table style="text-align: center; margin-left: auto; margin-right: auto;"><tr><td align="center"><small>Search Text:</small></td><td><small>Filter by User:</small></td><td><small>Results per Page:</small></td></tr><tr><td><input type="text" id="searchText" name="searchText" style="margin-left: auto; margin-right: auto; text-align: left;" /></td><td><input type="text" id="searchUser" name="searchUser" style="margin-left: auto; margin-right: auto; text-align: left;" /></td><td><select id="resultLimit" name="resultLimit" style="margin-left: auto; margin-right: auto; text-align: left;"><option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option><option value="500">500</option></select></td><td rowspan="2" valign="middle"><button type="submit">Search</button></td></tr></table></form><br /><br /><table class="center"><thead><tr><th style="width: 20%;">User</th><th style="width: 20%;">Time</th><th style="width: 60%;">Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><div align="center"><button id="archivePrev"><< Prev</button><button id="export">Export</button><button id="archiveNext">Next >></button></div>',
       title : 'Archive',
       id : 'archiveDialogue',
       position : 'top',

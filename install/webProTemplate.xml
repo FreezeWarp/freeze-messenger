@@ -440,7 +440,7 @@ Cat333Pokémon
     <template name="help" vars="bbcode,parseFlags,loginMethod">&lt;ul&gt;
 &lt;li&gt;&lt;a href="#intro"&gt;Intro&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#rules"&gt;Rules&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#age"&gt;Age&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#help"&gt;Help&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#browser"&gt;Reqs&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#faqs"&gt;FAQs&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
@@ -457,9 +457,7 @@ FreezeMessenger 3.0 (FIM, FIM3, or FIMv3) is an advanced AJAX-based online webme
 &lt;li&gt;Encourage or enable another member to do any of the above.&lt;/li&gt;
 &lt;/ul&gt;&lt;/div&gt;
 
-&lt;div id="age"&gt;We take no responsibility for any harrassment, hate speach, or other issues users may encounter, however we will do our best to stop them if they are reported to proper administrative staff.&lt;br /&gt;&lt;br /&gt;
-
-Keep in mind all content is heavily encrytped for privacy. Private conversations may only be viewed by server administration when neccessary, but can not be accessed by chat staff.&lt;/div&gt;
+&lt;div id="help"&gt;[WIP]&lt;/div&gt;
 
 &lt;div id="browser"&gt;FIM's WebPro Interface will work decently with any of the following browsers:
 &lt;ul&gt;
