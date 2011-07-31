@@ -56,16 +56,43 @@ echo '<!DOCTYPE HTML>
   <![endif]-->
 
   <!-- START Styles -->
-  <link rel="stylesheet" type="text/css" href="../webpro/client/css/cupertino/jquery-ui-1.8.13.custom.css" media="screen" />
-  <link rel="stylesheet" type="text/css" href="../webpro/client/css/cupertino/fim.css" media="screen" />
-  <link rel="stylesheet" type="text/css" href="../webpro/client/css/stylesv2.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="./client/css/cupertino/jquery-ui-1.8.13.custom.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="./client/css/cupertino/fim.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="./client/css/stylesv2.css" media="screen" />
+
+  <link rel="stylesheet" type="text/css" href="./client/codemirror/lib/codemirror.css">
+  <link rel="stylesheet" type="text/css" href="./client/codemirror/mode/xml/xml.css">
+  <link rel="stylesheet" type="text/css" href="./client/codemirror/mode/clike/clike.css">
+
+  <style>
+  #moderateRight {
+    float: right;
+    width: 75%;
+  }
+  #moderateLeft {
+    float: left;
+    width: 25%;
+  }
+  .CodeMirror {
+    border: 1px solid white;
+    background-color: white;
+    color: black;
+  }
+  </style>
   <!-- END Styles -->
 
-  <!-- START Scripts -->
-  <script src="../webpro/client/js/jquery-1.6.1.min.js" type="text/javascript"></script>
 
-  <script src="../webpro/client/js/jquery-ui-1.8.13.custom.min.js" type="text/javascript"></script>
-  <script src="../webpro/client/js/jquery.plugins.js" type="text/javascript"></script>
+  <!-- START Scripts -->
+  <script src="./client/js/jquery-1.6.1.min.js" type="text/javascript"></script>
+
+  <script src="./client/js/jquery-ui-1.8.13.custom.min.js" type="text/javascript"></script>
+  <script src="./client/js/jquery.plugins.js" type="text/javascript"></script>
+
+
+  <script src="./client/codemirror/lib/codemirror.js"></script>
+  <script src="./client/codemirror/mode/xml/xml.js"></script>
+  <script src="./client/codemirror/mode/clike/clike.js"></script>
+
   <script>
   function windowDraw() {
     $(\'body\').css(\'min-height\',window.innerHeight);
@@ -80,25 +107,26 @@ echo '<!DOCTYPE HTML>
 
   $(document).ready(function() {
     windowDraw();
+
+    var editorXml = CodeMirror.fromTextArea(document.getElementById("textXml"), {
+      mode:  "xml"
+    });
+
+    var editorClike = CodeMirror.fromTextArea(document.getElementById("textClike"),{
+      mode:  "clike"
+    });
   });
 
-  window.onwindowDraw = windowDraw;
+
+  window.onresize = windowDraw;
+
 
   var alert = function(text) {
     dia.info(text,"Alert");
   };
   </script>
-  <style>
-  #moderateRight {
-    float: right;
-    width: 75%;
-  }
-  #moderateLeft {
-    float: left;
-    width: 25%;
-  }
-  </style>
   <!-- END Scripts -->
+
 </head>
 <body>
 <div id="moderateLeft">
@@ -186,30 +214,7 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
           $phrase = dbRows("SELECT * FROM {$sqlPrefix}phrases WHERE id = $phraseID");
           $phrase['text'] = $phrase['text_' . $lang];
 
-          echo container("Edit Phrase '$phrase[name]'","
-
-    <link rel=\"stylesheet\" href=\"./client/codemirror/lib/codemirror.css\">
-    <link rel=\"stylesheet\" href=\"./client/codemirror/mode/xml/xml.css\">
-    <script src=\"./client/codemirror/lib/codemirror.js\"></script>
-    <script src=\"./client/codemirror/mode/xml/xml.js\"></script>
-
-
-    <script>
-    $(document).ready(function() {
-      var editor = CodeMirror.fromTextArea(document.getElementById(\"text\"),{
-        mode:  \"xml\"
-      });
-    });
-    </script>
-    <style type=\"text/css\">
-    .CodeMirror {
-      border: 1px solid white;
-      background-color: white;
-      color: black;
-    }
-    </style>
-
-    <form action=\"./moderate.php?do=phrases&do2=edit2&phraseId=$phrase[id]\" method=\"post\">
+          echo container("Edit Phrase '$phrase[name]'","<form action=\"./moderate.php?do=phrases&do2=edit2&phraseId=$phrase[id]\" method=\"post\">
       <label for=\"text\">New Value:</label><br />
       <textarea name=\"text\" id=\"text\" style=\"width: 100%; height: 300px;\">$phrase[text_en]</textarea><br /><br />
 
@@ -277,32 +282,9 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
 
         $hook = dbRows("SELECT * FROM {$sqlPrefix}hooks WHERE id = $hookID");
 
-        echo container("Edit Hook '$hook[name]'","
-
-  <link rel=\"stylesheet\" href=\"./client/codemirror/lib/codemirror.css\">
-  <link rel=\"stylesheet\" href=\"./client/codemirror/mode/clike/clike.css\">
-  <script src=\"./client/codemirror/lib/codemirror.js\"></script>
-  <script src=\"./client/codemirror/mode/clike/clike.js\"></script>
-
-
-  <script>
-  $(document).ready(function() {
-    var editor = CodeMirror.fromTextArea(document.getElementById(\"text\"),{
-      mode:  \"clike\"
-    });
-  });
-  </script>
-  <style type=\"text/css\">
-  .CodeMirror {
-    border: 1px solid white;
-    background-color: white;
-    color: black;
-  }
-  </style>
-
-  <form action=\"./moderate.php?do=hooks&do2=edit2&hookId=$hook[id]\" method=\"post\">
+        echo container("Edit Hook '$hook[name]'","<form action=\"./moderate.php?do=hooks&do2=edit2&hookId=$hook[id]\" method=\"post\">
     <label for=\"text\">New Value:</label><br />
-    <textarea name=\"text\" id=\"text\" style=\"width: 100%; height: 300px;\">$hook[code]</textarea><br /><br />
+    <textarea name=\"text\" id=\"textClike\" style=\"width: 100%; height: 300px;\">$hook[code]</textarea><br /><br />
 
     <button type=\"submit\">Update</button>
   </form>");
@@ -321,7 +303,7 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
       }
     }
     else {
-      trigger_error('No permission.',E_USER_ERROR);
+      echo 'You do not have permission to modify hooks.';
     }
     break;
 
@@ -356,34 +338,12 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
 
         $template = dbRows("SELECT * FROM {$sqlPrefix}templates WHERE id = $templateID");
 
-        echo container("Edit Hook '$template[name]'","
-  <link rel=\"stylesheet\" href=\"./client/codemirror/lib/codemirror.css\">
-  <link rel=\"stylesheet\" href=\"./client/codemirror/mode/xml/xml.css\">
-  <script src=\"./client/codemirror/lib/codemirror.js\"></script>
-  <script src=\"./client/codemirror/mode/xml/xml.js\"></script>
-
-
-  <script>
-  $(document).ready(function() {
-    var editor = CodeMirror.fromTextArea(document.getElementById(\"text\"),{
-      mode:  \"clike\"
-    });
-  });
-  </script>
-  <style type=\"text/css\">
-  .CodeMirror {
-    border: 1px solid white;
-    background-color: white;
-    color: black;
-  }
-  </style>
-
-  <form action=\"./moderate.php?do=templates&do2=edit2&templateId=$template[id]\" method=\"post\">
+        echo container("Edit Hook '$template[name]'","<form action=\"./moderate.php?do=templates&do2=edit2&templateId=$template[id]\" method=\"post\">
     <label for=\"vars\">Vars:</label><br />
     <input type=\"text\" name=\"vars\" value=\"$template[vars]\" />
 
     <label for=\"text\">New Value:</label><br />
-    <textarea name=\"text\" id=\"text\" style=\"width: 100%; height: 300px;\">$template[data]</textarea><br /><br />
+    <textarea name=\"text\" id=\"textXml\" style=\"width: 100%; height: 300px;\">$template[data]</textarea><br /><br />
 
     <button type=\"submit\">Update</button>
   </form>");
@@ -401,6 +361,9 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
         echo container('Updated','The template has been updated.<br /><br /><form action="Return" method="POST"><button type="submit">Return</button></form>');
         break;
       }
+    }
+    else {
+      echo 'You do not have permission to modify templates.';
     }
     break;
 
@@ -682,8 +645,13 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
       }
     }
     else {
-      trigger_error('No permission.',E_USER_ERROR);
+      echo 'You do not have permission to modify the censor.';
     }
+    break;
+
+
+    case 'bbcode':
+
     break;
 
 
@@ -700,7 +668,11 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
     case 'sys':
     if ($user['adminDefs']['modCore']) {
       echo container('System Requirements & Status','<ul>
-        <li>MySQL 5.0.5+</li>
+        <li>Database</li>
+        <ul>
+          <li>MySQL 5.0.5+</li>
+          <li>MySQLi Extension (' . (extension_loaded('mysqli') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+        </ul>
         <li>PHP 5.2+ (' . (floatval(phpversion()) > 5.2 ? 'Looks Good' : 'Not Detected - Version ' . phpversion() . ' Installed') . ')</li>
         <ul>
           <li>MySQL Extension (' . (extension_loaded('mysql') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
@@ -710,18 +682,12 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
           <li>PCRE Extension (' . (extension_loaded('pcre') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
           <li>Multibyte String Extension (' . (extension_loaded('mbstring') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
           <li>SimpleXML Extension (' . (extension_loaded('simplexml') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
-          <li>Optional, but Required in the Future: APC Extension (' . (extension_loaded('apc') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
-          <li>Optional, but Required for Installation: MySQLi Extension (' . (extension_loaded('mysqli') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
-        </ul>
-        <li>Proper Permissions (for automatic configuration file generation)</li>
-        <ul>
-          <li>Origin Directory Writable (' . (is_writable('../') ? 'Looks Good' : '<strong>Nope</strong>') . ')</li>
-          <li>Config File Absent (' . (!file_exists('../config.php') ? 'Looks Good' : '<strong>Nope</strong>') . ')</li>
+          <li>APC Extension (' . (extension_loaded('apc') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
         </ul>
       </ul>');
     }
     else {
-      echo 'You do not have permission to view PHP info.';
+      echo 'You do not have permission to view system info.';
     }
     break;
 
