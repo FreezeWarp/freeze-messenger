@@ -213,12 +213,42 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
         $phraseName = $_GET['phraseName'];
         $languageCode = $_GET['languageCode'];
 
-        $phrases2 = $database->select(array(
-          "{$sqlPrefix}phrases" => "phraseName, languageCode, text",
-        ));
-        $phrases2 = $phrases2->getAsArray(true);
+        $phrase = $database->select(array(
+            "{$sqlPrefix}phrases" => "phraseName, languageCode, text",
+          ),
+          array(
+            'both' => array(
+              array(
+                'type' => 'e',
+                'left' => array(
+                  'type' => 'column',
+                  'value' => 'phraseName',
+                ),
+                'right' => array(
+                  'type' => 'string',
+                  'value' => $phraseName,
+                ),
+              ),
+              array(
+                'type' => 'e',
+                'left' => array(
+                  'type' => 'column',
+                  'value' => 'languageCode',
+                ),
+                'right' => array(
+                  'type' => 'string',
+                  'value' => $languageCode,
+                ),
+              ),
+            ),
+          ),
+          false,
+          false,
+          1
+        );
+        $phrase = $phrase->getAsArray(false);
 
-        echo container("Edit Phrase '$phrase[name]'","<form action=\"./moderate.php?do=phrases&do2=edit2&phraseName=$phrase[phraseName]&languageCode=$phrase[languageCode]\" method=\"post\">
+        echo container("Edit Phrase '$phrase[phraseName]'","<form action=\"./moderate.php?do=phrases&do2=edit2&phraseName=$phrase[phraseName]&languageCode=$phrase[languageCode]\" method=\"post\">
   <label for=\"text\">New Value:</label><br />
   <textarea name=\"text\" id=\"text\" style=\"width: 100%; height: 300px;\">$phrase[text]</textarea><br /><br />
 
@@ -228,19 +258,22 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
         break;
 
         case 'edit2':
-        if (in_array($_POST['lang'],array('en','es','jp'))) {
-          $phraseID = intval($_GET['phraseId']);
-          $text = dbEscape($_POST['text']);
+        $phraseName = $_GET['phraseName'];
+        $languageCode = $_GET['languageCode'];
+        $newValue = $_POST['text'];
 
-          dbQuery("UPDATE {$sqlPrefix}phrases SET text_$lang = '$text' WHERE id = $phraseID");
+        $database->update(array(
+          'text' => $newValue
+        ),
+        "{$sqlPrefix}phrases",
+        array(
+          'phraseName' => $phraseName,
+          'languageCode' => $languageCode,
+        ));
 
-          modLog('phraseEdit',$phraseID);
+        modLog('phraseEdit',$phraseID);
 
-          echo container('Updated','The phrase has been updated.<br /><br /><form action="./moderate.php?do=phrases" method="POST"><button type="submit">Return</button></form>');
-        }
-        else {
-          echo 'Languge not found.';
-        }
+        echo container('Updated','The phrase has been updated.<br /><br /><form action="./moderate.php?do=phrases" method="POST"><button type="submit">Return</button></form>');
         break;
       }
     }
