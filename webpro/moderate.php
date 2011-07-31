@@ -17,7 +17,6 @@
 $title = 'Moderate';
 $reqPhrases = true;
 $reqHooks = true;
-die('Not available until Beta 3.');
 
 $sessionHash = $_COOKIE['fim3_sessionHash'];
 require_once('../global.php');

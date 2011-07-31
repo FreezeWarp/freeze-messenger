@@ -60,10 +60,11 @@ $defaultConfig = array(
  * MCrypt is present in all versions since PHP 4
  * Hash is present in all versions since PHP 5.1.2
  * PCRE is present in all versions since PHP 4
+ * APC is present in PHP 5.4, Ubuntu's php-apc packge, and easily installed from PECL.net.
  */
-foreach (array('mysql','json','mbstring','mcrypt','hash','pcre') AS $module) {
+foreach (array('mysql', 'json', 'mbstring', 'mcrypt', 'hash', 'pcre', 'apc') AS $module) {
   if (!extension_loaded($module)) {
-    die("The module $module could not be found or loaded (loading is disabled). Please install PHP $module compatibility. See the documetation for help.");
+    die("The module $module could not be found. Please install PHP $module compatibility. See the documentation for help.");
   }
 }
 
@@ -525,12 +526,9 @@ if (isset($banned,$apiRequest)) { // A blanket die for the API when the user is 
   }
 }
 
-if ($apiRequest) { // Compress Output for transfer if configured to, and if we are outputting data from the API (file downloads, interfaces, etc. don't apply).
+if (isset($apiRequest)) { // Compress Output for transfer if configured to, and if we are outputting data from the API (file downloads, interfaces, etc. don't apply).
   if ($apiRequest && $config['compressOutput']) {
     ob_start('fim_htmlCompact');
   }
 }
-
-
-$config['serverSentEvents'] = true; // TODO REMOVE AFTER DEV
 ?>

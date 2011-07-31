@@ -1379,20 +1379,6 @@ function formatSize($size) {
 * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 function fim_sanitizeGPC($data) {
-  /* Get the Content Type Encoding
-   * See http://www.xml.com/pub/a/2004/08/11/rest.html for REST-related information on this; main points: should be possible via a header */
-  if (isset($_SERVER['CONTENT_TYPE'])) {
-    $contentType = explode(';', $_SERVER['CONTENT_TYPE']); // Divide the subsections of the content_type
-    $contentType = $contentType[0]; // Get the first of these subsections; RFC 3875 [4.1.3] explains this well, and defines the format as: type "/" subtype *( ";" parameter )
-  }
-  elseif (isset($_REQUEST['fim3_dataEncoding'])) {
-    $contentType = fim_urldecode($_REQUEST['fim3_dataEncoding']); // Gets rid of encoded slashes, if needed.
-  }
-  else {
-    $contentType = false;
-  }
-
-
   $metaDataDefaults = array(
     'type' => 'string',
     'require' => false,
