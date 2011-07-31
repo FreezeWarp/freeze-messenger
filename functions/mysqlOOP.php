@@ -215,46 +215,69 @@ class database {
               $finalQuery['tables'][] = "`$tableName`";
             }
 
-            foreach($tableCols AS $colName => $colAlias) {
-              if (strlen($colName) > 0) {
-                if (strstr($colName,' ') !== false) { // A space can be used to create identical columns in different contexts, which is sometimes required for different queries.
-                  $colParts = explode(' ', $colName);
-                  $colName = $colParts[0];
-                }
-
-                if (is_array($colAlias)) { // Used for advance structures and function calls.
-                  if (isset($colAlias['context'])) {
-                    switch($colAlias['context']) {
-                      case 'time': // This is used when we need to retrieve a time as a UNIX TIMESTAMP integer value. On some systems, we may wish to generate it on the fly via the "since the epoch" method.
-                      $colName = "UNIX_TIMESTAMP(`$tableName`.`$colName`)";
-                      break;
-
-                      // This is used for group by queries, though is not yet very well tested.
-                      case 'join':
-                      $colName = "GROUP_CONCAT(`$tableName`.`$colName` SEPARATOR '$colAlias[separator]')";
-                      break;
-                      case 'sum':
-                      $colName = "SUM(`$tableName`.`$colName`)";
-                      break;
-
-                      case 'silent': // This is used when we don't want to select the actual value. In practice, it should only [currently] be used with group by queries.
-                      $reverseAlias[$colAlias['name']] = "`$tableName`.`$colName`";
-                      continue 2; // Is this DEPRECATED?
-                      break;
-                    }
+            if (is_array($tableCols)) {
+              foreach($tableCols AS $colName => $colAlias) {
+                if (strlen($colName) > 0) {
+                  if (strstr($colName,' ') !== false) { // A space can be used to create identical columns in different contexts, which is sometimes required for different queries.
+                    $colParts = explode(' ', $colName);
+                    $colName = $colParts[0];
                   }
 
-                  $finalQuery['columns'][] = "$colName AS `$colAlias[name]`";
-                  $reverseAlias[$colAlias['name']] = $colName;
-                }
+                  if (is_array($colAlias)) { // Used for advance structures and function calls.
+                    if (isset($colAlias['context'])) {
+                      switch($colAlias['context']) {
+                        case 'time': // This is used when we need to retrieve a time as a UNIX TIMESTAMP integer value. On some systems, we may wish to generate it on the fly via the "since the epoch" method.
+                        $colName = "UNIX_TIMESTAMP(`$tableName`.`$colName`)";
+                        break;
 
+                        // This is used for group by queries, though is not yet very well tested.
+                        case 'join':
+                        $colName = "GROUP_CONCAT(`$tableName`.`$colName` SEPARATOR '$colAlias[separator]')";
+                        break;
+                        case 'sum':
+                        $colName = "SUM(`$tableName`.`$colName`)";
+                        break;
+
+                        case 'silent': // This is used when we don't want to select the actual value. In practice, it should only [currently] be used with group by queries.
+                        $reverseAlias[$colAlias['name']] = "`$tableName`.`$colName`";
+                        continue 2; // Is this DEPRECATED?
+                        break;
+                      }
+                    }
+
+                    $finalQuery['columns'][] = "$colName AS `$colAlias[name]`";
+                    $reverseAlias[$colAlias['name']] = $colName;
+                  }
+
+                  else {
+                    $finalQuery['columns'][] = "`$tableName`.`$colName` AS `$colAlias`";
+                    $reverseAlias[$colAlias] = "`$tableName`.`$colName`";
+                  }
+                }
                 else {
-                  $finalQuery['columns'][] = "`$tableName`.`$colName` AS `$colAlias`";
-                  $reverseAlias[$colAlias] = "`$tableName`.`$colName`";
+                  throw new Exception('Invalid select array: column name empty'); // Throw an exception.
                 }
               }
-              else {
-                throw new Exception('Invalid select array: column name empty'); // Throw an exception.
+            }
+            elseif (is_string($tableCols)) {
+              $columnParts = explode(',',$tableCols); // Split the list into an array, delimited by commas
+
+              foreach ($columnParts AS $columnPart) { // Run through each list item
+                $columnPart = trim($columnPart); // Remove outside whitespace from the item
+
+                if (strpos($columnPart,' ') !== false) { // If a space is within the part, then the part is formatted as "columnName columnAlias"
+                  $columnPartParts = explode(' ',$columnPart); // Divide the piece
+
+                  $columnPartName = $columnPartParts[0]; // Set the name equal to the first part of the piece
+                  $columnPartAlias = $columnPartParts[1]; // Set the alias equal to the second part of the piece
+                }
+                else { // Otherwise, the column name and alias are one in the same.
+                  $columnPartName = $columnPart; // Set the name and alias equal to the piece
+                  $columnPartAlias = $columnPart;
+                }
+
+                $finalQuery['columns'][] = "`$tableName`.`$columnPartName` AS `$columnPartAlias`";
+                $reverseAlias[$colAlias] = "`$tableName`.`$columnPartName`";
               }
             }
           }
@@ -267,31 +290,9 @@ class database {
         throw new Exception('Invalid select array: no entries'); // Throw an exception.
       }
     }
-    elseif (is_string($columns)) { // Columns are defined in a delimited string
-      $columnParts = explode(',',$columns); // Split the list into an array, delimited by commas
-
-      foreach ($columnParts AS $columnPart) { // Run through each list item
-        $columnPart = trim($columnPart); // Remove outside whitespace from the item
-
-        if (strpos($columnPart,' ') !== false) { // If a space is within the part, then the part is formatted as "columnName columnAlias"
-          $columnPartParts = explode(' ',$columnPart); // Divide the piece
-
-          $columnPartName = $columnPartParts[0]; // Set the name equal to the first part of the piece
-          $columnPartAlias = $columnPartParts[1]; // Set the alias equal to the second part of the piece
-        }
-        else { // Otherwise, the column name and alias are one in the same.
-          $columnPartName = $columnPart; // Set the name and alias equal to the piece
-          $columnPartAlias = $columnPart;
-        }
-
-        $finalQuery['columns'][] = "`$tableName`.`$columnPartName` AS `$columnPartAlias`";
-        $reverseAlias[$colAlias] = "`$tableName`.`$columnPartName`";
-      }
-    }
     else {
       throw new Exception('Invalid select array'); // Throw an exception.
     }
-
 
     /* Process Conditions (Must be Array) */
     if ($conditionArray !== false) {

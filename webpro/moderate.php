@@ -180,23 +180,26 @@ if (!$user['userId']) {
 elseif ($user['adminDefs']) { // Check that the user is an admin.
   switch ($_GET['do']) {
     case 'phrases':
-    if ($user['adminDefs']['modPhrases']) {
+    if ($user['adminDefs']['modTemplates']) {
       switch ($_GET['do2']) {
         case false:
         case 'view':
-        $phrases2 = dbRows("SELECT * FROM {$sqlPrefix}phrases",'id');
+        $phrases2 = $database->select(array(
+          "{$sqlPrefix}phrases" => "phraseName, languageCode, text",
+        ));
+        $phrases2 = $phrases2->getAsArray(true);
 
         foreach ($phrases2 AS $phrase) {
-          $phrase['text_en'] = nl2br(htmlentities($phrase['text_en']));
+          $phrase['text'] = nl2br(htmlentities($phrase['text']));
 
-          $rows .= "<tr><td>$phrase[name]</td><td>$phrase[text_en]</td><td><a href=\"./moderate.php?do=phrases&do2=edit&phraseId=$phrase[id]&lang=en\">Edit</td></tr>";
+          $rows .= "<tr><td>$phrase[phraseName] ($phrase[languageCode])</td><td>$phrase[text]</td><td><a href=\"./moderate.php?do=phrases&do2=edit&phraseName=$phrase[phraseName]&languageCode=$phrase[languageCode]\">Edit</td></tr>";
         }
 
         echo container('Phrases','<table class="page rowHover" border="1">
     <thead>
       <tr class="hrow ui-widget-header">
         <td>Phrase</td>
-        <td>Current Value (English)</td>
+        <td>Current Value</td>
         <td>Actions</td>
       </tr>
     </thead>
@@ -207,24 +210,21 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
         break;
 
         case 'edit':
-        if (in_array($_GET['lang'],array('en','es','jp'))) {
-          $phraseID = intval($_GET['phraseId']);
-          $lang = $_GET['lang'];
+        $phraseName = $_GET['phraseName'];
+        $languageCode = $_GET['languageCode'];
 
-          $phrase = dbRows("SELECT * FROM {$sqlPrefix}phrases WHERE id = $phraseID");
-          $phrase['text'] = $phrase['text_' . $lang];
+        $phrases2 = $database->select(array(
+          "{$sqlPrefix}phrases" => "phraseName, languageCode, text",
+        ));
+        $phrases2 = $phrases2->getAsArray(true);
 
-          echo container("Edit Phrase '$phrase[name]'","<form action=\"./moderate.php?do=phrases&do2=edit2&phraseId=$phrase[id]\" method=\"post\">
-      <label for=\"text\">New Value:</label><br />
-      <textarea name=\"text\" id=\"text\" style=\"width: 100%; height: 300px;\">$phrase[text_en]</textarea><br /><br />
+        echo container("Edit Phrase '$phrase[name]'","<form action=\"./moderate.php?do=phrases&do2=edit2&phraseName=$phrase[phraseName]&languageCode=$phrase[languageCode]\" method=\"post\">
+  <label for=\"text\">New Value:</label><br />
+  <textarea name=\"text\" id=\"text\" style=\"width: 100%; height: 300px;\">$phrase[text]</textarea><br /><br />
 
-      <button type=\"submit\">Update</button>
-      <input type=\"hidden\" name=\"lang\" value=\"$lang\" />
-    </form>");
-        }
-        else {
-          echo 'Languge not found.';
-        }
+  <button type=\"submit\">Update</button>
+  <input type=\"hidden\" name=\"lang\" value=\"$lang\" />
+</form>");
         break;
 
         case 'edit2':
