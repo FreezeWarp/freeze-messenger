@@ -156,6 +156,7 @@ class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function select($columns, $conditionArray = false, $sort = false, $group = false, $limit = false) {
+    /* Define Variables */
     $finalQuery = array(
       'columns' => array(),
       'tables' => array(),
@@ -165,6 +166,37 @@ class database {
       'limit' => 0
     );
     $reverseAlias = array();
+
+
+   /* Driver Definitions
+    * These are primarily SQL-oriented; we'll need to figure out how to handle more complicated stuff later. */
+  $sortOrder = array(
+    'mysql' => array(
+      'asc' => 'ASC',
+      'desc' => 'DESC',
+    ),
+    'mysqli' => array(
+      'asc' => 'ASC',
+      'desc' => 'DESC',
+    ),
+    'postgresql' => array(
+      'asc' => 'ASC',
+      'desc' => 'DESC',
+    ),
+  );
+
+  $funtions = array(
+    'mysql' => array(
+      'time' => 'UNIX_TIMESTAMP(##COLUMN##)',
+      'group' => 'GROUP_CONCAT(##COLUMN## SEPARATOR ##SEPARATOR##)',
+      'sum' => 'SUM(##COLUMN##)',
+    ),
+    'mysqli' => array(
+      'time' => 'UNIX_TIMESTAMP(##COLUMN##)',
+      'group' => 'GROUP_CONCAT(##COLUMN## SEPARATOR ##SEPARATOR##)',
+      'sum' => 'SUM(##COLUMN##)',
+    ),
+  );
 
 
     /* Process Columns (Must be Array) */
@@ -207,7 +239,7 @@ class database {
 
                       case 'silent': // This is used when we don't want to select the actual value. In practice, it should only [currently] be used with group by queries.
                       $reverseAlias[$colAlias['name']] = "`$tableName`.`$colName`";
-                      continue 2;
+                      continue 2; // Is this DEPRECATED?
                       break;
                     }
                   }
@@ -235,6 +267,27 @@ class database {
         throw new Exception('Invalid select array: no entries'); // Throw an exception.
       }
     }
+    elseif (is_string($columns)) { // Columns are defined in a delimited string
+      $columnParts = explode(',',$columns); // Split the list into an array, delimited by commas
+
+      foreach ($columnParts AS $columnPart) { // Run through each list item
+        $columnPart = trim($columnPart); // Remove outside whitespace from the item
+
+        if (strpos($columnPart,' ') !== false) { // If a space is within the part, then the part is formatted as "columnName columnAlias"
+          $columnPartParts = explode(' ',$columnPart); // Divide the piece
+
+          $columnPartName = $columnPartParts[0]; // Set the name equal to the first part of the piece
+          $columnPartAlias = $columnPartParts[1]; // Set the alias equal to the second part of the piece
+        }
+        else { // Otherwise, the column name and alias are one in the same.
+          $columnPartName = $columnPart; // Set the name and alias equal to the piece
+          $columnPartAlias = $columnPart;
+        }
+
+        $finalQuery['columns'][] = "`$tableName`.`$columnPartName` AS `$columnPartAlias`";
+        $reverseAlias[$colAlias] = "`$tableName`.`$columnPartName`";
+      }
+    }
     else {
       throw new Exception('Invalid select array'); // Throw an exception.
     }
@@ -250,7 +303,8 @@ class database {
     }
 
 
-    /* Process Sorting (Must be Array) */
+    /* Process Sorting (Must be Array)
+     * TODO: Combine the array and string routines to be more effective. */
     if ($sort !== false) {
       if (is_array($sort)) {
         if (count($sort) > 0) {
@@ -277,6 +331,37 @@ class database {
           $finalQuery['sort'] = implode(', ', $finalQuery['sort']);
         }
       }
+      elseif (is_string($sort)) {
+        $sortParts = explode(',',$sort); // Split the list into an array, delimited by commas
+
+        foreach ($sortParts AS $sortPart) { // Run through each list item
+          $sortPart = trim($sortPart); // Remove outside whitespace from the item
+
+          if (strpos($sortPart,' ') !== false) { // If a space is within the part, then the part is formatted as "columnName direction"
+            $sortPartParts = explode(' ',$sortPart); // Divide the piece
+
+            $sortCol = $sortPartParts[0]; // Set the name equal to the first part of the piece
+
+            switch (strtolower($sortPartParts[0])) {
+              case 'asc':
+              $directionSym = 'ASC';
+              break;
+              case 'desc':
+              $directionSym = 'DESC';
+              break;
+              default:
+              $directionSym = 'ASC';
+              break;
+            }
+          }
+          else { // Otherwise, we assume asscending
+            $sortCol = $sortPart; // Set the name equal to the sort part.
+            $directionSym = 'ASC'; // Set the alias equal to the default, ascending.
+          }
+
+          $finalQuery['sort'][] = $reverseAlias[$sortCol] . " $directionSym";
+        }
+      }
     }
 
 
@@ -299,7 +384,7 @@ class database {
     }
 
 
-    /* Run Generated Query */
+    /* Generate Final Query */
     $finalQueryText = 'SELECT
   ' . implode(', ', $finalQuery['columns']) . '
 FROM
@@ -313,7 +398,26 @@ ORDER BY
 LIMIT
   ' . $finalQuery['limit'] : '');
 
+
+    /* And Run the Query */
     return $this->rawQuery($finalQueryText);
+  }
+
+
+  /* INCOMPLETE */
+  public function createTable($tableName, $columns) {
+
+  }
+
+
+  /* INCOMPLETE */
+  public function deleteTable($tableName) {
+
+  }
+
+  /* INCOMPLETE */
+  private function driverFunction($funtion, $params) {
+
   }
 
   /**
