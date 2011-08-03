@@ -28,8 +28,6 @@ class database {
   public function __construct() {
     $this->queryCounter = 0;
     $this->insertId = 0;
-
-    $this->setLanguage('mysqli');
   }
 
 
@@ -97,7 +95,10 @@ class database {
    * @return bool - True if a connection was successfully established, false otherwise.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
-  public function connect($host, $user, $password, $database) {
+  public function connect($host, $user, $password, $database, $driver) {
+    $this->setLanguage($driver);
+
+
     if (!$link = $this->functionMap('connect', $host, $user, $password, $database)) { // Make the connection.
       $this->error = 'The connection was refused: ' . $this->functionMap('error');
 

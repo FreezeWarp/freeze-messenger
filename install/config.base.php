@@ -18,33 +18,40 @@
 
 ///* MySQL Login *///
 
-/* $sqlHost
+/* $dbConnect['core']['host']
  * Defines the MySQL server to be connected to, with an optional port attached.
  * If unsure, "localhost" will work if you are connecting to a local server (which is the case most of the time) */
 $dbConnect['core']['host'] = 'localhost';
 $dbConnect['slave']['host'] = 'localhost';
 $dbConnect['integration']['host'] = 'localhost';
 
-/* $sqlUser
+/* $dbConnect['core']['username']
  * Defines the user of the MySQL connection to be used.
  * If unsure, PHPMyAdmin can be used to create new users, or ask your webhost/geeky friend for help. */
 $dbConnect['core']['username'] = '';
 $dbConnect['slave']['username'] = '';
 $dbConnect['integration']['username'] = '';
 
-/* $sqlPassword
+/* $dbConnect['core']['password']
  * Defines the password associated with the user specified above. */
 $dbConnect['core']['password'] = '';
 $dbConnect['slave']['password'] = '';
 $dbConnect['integration']['password'] = '';
 
-/* $sqlDatabase
+/* $dbConnect['core']['database']
  * Defines the database to connect to.
  * The above user must have permission to SELECT, INSERT, DELETE, and UPDATE in this database.
  * Note that, when integrating with forums, you __MUST__ use the same database as the forum. */
 $dbConnect['core']['database'] = '';
 $dbConnect['slave']['database'] = '';
 $dbConnect['integration']['database'] = '';
+
+/* $dbConnect['core']['driver']
+ * Defines the driver to use for database connections.
+ * "mysql" and "mysqli" are both acceptable */
+$dbConnect['core']['driver'] = 'mysqli';
+$dbConnect['slave']['driver'] = 'mysqli';
+$dbConnect['integration']['driver'] = 'mysqli';
 
 /* $sqlPrefix
  * A prefix used for all tables.
