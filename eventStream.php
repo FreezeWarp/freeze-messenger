@@ -27,6 +27,7 @@ else {
 
 
   $lastMessage = 0;
+  $lastEvent = 0;
 
 
   /* Get Request Data */
@@ -119,7 +120,6 @@ else {
         'roomId' => 'proomId',
       ),
     );
-
     $queryParts['missedMessages']['conditions'] = array(
       'both' => array(
         array(
@@ -171,46 +171,44 @@ else {
 
 
 
+    $queryParts['eventSelect']['columns'] = array(
+      "{$sqlPrefix}events" => array(
+        'eventId' => 'eventId',
+        'eventName' => 'eventName',
+        'roomId' => 'roomId',
+        'userId' => 'userId',
+        'messageId' => 'messageId',
+        'param1' => 'param1',
+        'param2' => 'param2',
+        'param3' => 'param3',
+      ),
+    );
+    $queryParts['eventSelect']['conditions'] = array(
+      'both' => array(
+        array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'roomId',
+          ),
+          'right' => array(
+            'type' => 'int',
+            'value' => (int) $request['roomId'],
+          ),
+        ),
+      ),
+    );
+
+
+
+    /* Get Messages */
+
     $messages = $database->select($queryParts['messagesSelect']['columns'],
       $queryParts['messagesSelect']['conditions'],
       $queryParts['messagesSelect']['sort']);
     $messages = $messages->getAsArray('messageId');
+
     $messagesOutput = array();
-
-    $missedMessages = $database->select(
-      $queryParts['missedMessages']['columns'],
-      $queryParts['missedMessages']['conditions']);
-    $missedMessages = $missedMessages->getAsArray();// AND (r.allowedUsers REGEXP  OR r.allowedUsers = '*') AND IF(p.time, UNIX_TIMESTAMP(r.lastMessageTime) > (UNIX_TIMESTAMP(p.time) + 10), TRUE)
-
-
-    if (is_array($missedMessages)) {
-      if (count($missedMessages) > 0) {
-        foreach ($missedMessages AS $message) {
-          if (!fim_hasPermission($message,$user,'view',true)) {
-            ($hook = hook('getMessages_watchRooms_noPerm') ? eval($hook) : '');
-
-            continue;
-          }
-
-          $missedMessagesOutput = array(
-            'roomId' => (int) $message['roomId'],
-            'roomName' => ($message['roomName']),
-            'lastMessageTime' => (int) $message['lastMessageTimestamp'],
-          );
-
-          echo "event: missedMessage\n";
-          echo "data: " . json_encode($missedMessagesOutput) . "\n\n";
-          flush();
-
-          if (ob_get_level()) {
-            ob_flush();
-          }
-
-          ($hook = hook('getMessages_watchRooms_eachRoom') ? eval($hook) : '');
-        }
-      }
-    }
-
 
     if (is_array($messages)) {
       if (count($messages) > 0) {
@@ -261,9 +259,54 @@ else {
     }
 
 
+
+
+    /* Get New Message Alerts from Watched Rooms */
+
+    if (count(fim_arrayValidate(explode(',',$user['watchRooms']),'int',false)) > 0) {
+      $missedMessages = $database->select(
+        $queryParts['missedMessages']['columns'],
+        $queryParts['missedMessages']['conditions']);
+      $missedMessages = $missedMessages->getAsArray();
+
+      $missedMessagesOutput = array();
+
+      if (is_array($missedMessages)) {
+        if (count($missedMessages) > 0) {
+          foreach ($missedMessages AS $message) {
+            if (!fim_hasPermission($message,$user,'view',true)) {
+              ($hook = hook('getMessages_watchRooms_noPerm') ? eval($hook) : '');
+
+              continue;
+            }
+
+            $missedMessagesOutput[] = array(
+              'roomId' => (int) $message['roomId'],
+              'roomName' => ($message['roomName']),
+              'lastMessageTime' => (int) $message['lastMessageTimestamp'],
+            );
+
+            echo "event: missedMessage\n";
+            echo "data: " . json_encode($missedMessagesOutput) . "\n\n";
+            flush();
+
+            if (ob_get_level()) {
+              ob_flush();
+            }
+
+            ($hook = hook('getMessages_watchRooms_eachRoom') ? eval($hook) : '');
+          }
+        }
+      }
+    }
+
+
+    /* Get Events */
+
+
     ($hook = hook('getMessages_postMessages_serverSentEvents_repeat') ? eval($hook) : '');
 
-    sleep(isset($config['serverSentEventsWait']) ? $config['serverSentEventsWait'] : 2);
+    sleep($config['serverSentEventsWait']); // Wait before re-requesting.
   }
 }
 ?>

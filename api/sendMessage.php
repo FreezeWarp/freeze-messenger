@@ -195,7 +195,12 @@ if ($continue) {
     $topic = fimParse_censorParse($topic); // Parses the sources for MySQL and UTF8. We will also censor, but no BBcode.
 
     fim_sendMessage($topic,$user,$room,'topic');
-//    $database->update("UPDATE {$sqlPrefix}rooms SET roomTopic = '$topic' WHERE roomId = $room[roomId]");
+
+    $database->insert(array(
+      'eventName' => 'topicChange',
+      'roomId' => $room['roomId']
+      'param1' => $topic),
+    "{$sqlPrefix}events");
 
     $database->update(array(
       'roomTopic' => $topic,

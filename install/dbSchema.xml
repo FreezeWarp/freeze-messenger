@@ -322,6 +322,19 @@
     </table>
 
 
+    <table name="unreadMessages" type="general" comment="Unread private messages.">
+      <column name="userId" type="int" maxlen="8" autoincrement="true" comment="The ID of the user who has yet to read the message." />
+      <column name="senderId" type="int" maxlen="8" autoincrement="true" comment="The ID of the user who sent the message." />
+      <column name="roomId" type="int" maxlen="8" autoincrement="true" comment="The ID of the room in question." />
+      <column name="messageId" type="string" maxlen="50" comment="The ID of the message." />
+      <column name="time" type="int" maxlen="8" autoincrement="true" comment="The time the message was made." />
+
+      <key name="userId,messageId" type="primary" />
+      <key name="userId" type="index" />
+      <key name="time" type="index" />
+    </table>
+
+
     <table name="uploadTypes" type="general" comment="Admin-defined mime types to corrospond to file types of uploaded files.">
       <column name="typeId" type="int" maxlen="6" autoincrement="true" comment="The unique ID for the room." />
       <column name="extension" type="string" maxlen="8" comment="The extension that will allow upload of files using these settings." />
