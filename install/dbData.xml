@@ -332,9 +332,7 @@
       <column name="roomName" value="Your Room!" />
       <column name="roomTopic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
       <column name="owner" value="0" />
-      <column name="allowedGroups" value="*" />
-      <column name="allowedUsers" value="*" />
-      <column name="moderators" value="" />
+      <column name="defaultPermissions" value="7" />
       <column name="options" value="1" />
       <column name="lastMessageTime" value="0000-00-00 00:00:00" />
       <column name="lastMessageId" value="0" />
