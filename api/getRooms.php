@@ -206,7 +206,7 @@ if (is_array($rooms)) {
           'roomName' => ($room['roomName']),
           'roomTopic' => ($room['roomTopic']),
           'roomOwner' => (int) $room['owner'],
-          'defaultPermissions' => (int) $room['defaultPermissions']
+          'defaultPermissions' => (int) $room['defaultPermissions'],
           'favorite' => (bool) (in_array($room['roomId'],$favRooms) ? true : false),
           'options' => (int) $room['options'],
           'optionDefinitions' => array(
