@@ -40,7 +40,6 @@ $defaultConfig = array(
   'searchWordConvertsReplace' => array(),
   'kicksCacheRefresh' => 60,
   'permissionsCacheRefresh' => 300,
-  'kicksCache' => false,
   'cachePhrasesRefresh' => 3600,
   'cacheTemplatesRefresh' => 3600,
   'cacheHooksRefresh' => 60,
