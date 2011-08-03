@@ -315,9 +315,7 @@ $queryParts['roomsSelect']['columns'] = array(
     'roomId' => 'roomId',
     'roomName' => 'roomName',
     'owner' => 'owner',
-    'allowedUsers' => 'allowedUsers',
-    'allowedGroups' => 'allowedGroups',
-    'moderators' => 'moderators',
+    'defaultPermissions' => 'defaultPermissions',
     'options' => 'options',
   ),
 );

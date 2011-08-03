@@ -111,7 +111,7 @@ if (count($request['rooms']) > 0) {
     ($hook = hook('getStats_eachRoom_start') ? eval($hook) : '');
 
     if ($hidePostCounts) {
-      if (!fim_hasPermission($room,$user,'know',true)) {
+      if (!fim_hasPermission($room,$user,'view',true)) {
         ($hook = hook('getStats_noPerm') ? eval($hook) : '');
 
         continue;

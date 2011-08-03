@@ -99,9 +99,7 @@ $queryParts['roomSelect'] = array(
       'roomId' => 'roomId',
       'roomName' => 'roomName',
       'roomTopic' => 'roomTopic',
-      'allowedUsers' => 'allowedUsers',
-      'allowedGroups' => 'allowedGroups',
-      'moderators' => 'moderators',
+      'defaultPermissions' => 'defaultPermissions',
     ),
   ),
   'conditions' => array(
