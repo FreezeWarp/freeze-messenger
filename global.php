@@ -114,15 +114,6 @@ require(dirname(__FILE__) . '/functions/generalFunctions.php'); // Various Funct
 
 
 
-/* Other Stuff */
-if (isset($apiRequest)) {
-  if ($apiRequest === true) {
-    sleep((isset($config['apiPause']) ? $config['apiPause'] : .125)); // This prevents flooding the server/DoSing. It's included since I've done it to myself during development...
-  }
-}
-
-
-
 /* Blanket Defaults */
 date_default_timezone_set('GMT'); // Set the timezone to GMT.
 
@@ -130,6 +121,7 @@ $continue = true; // Simple "stop" variable used throughout for hooks and live c
 $hook = false;
 $errStr = '';
 $errDesc = '';
+
 
 
 /* Constants
@@ -290,6 +282,17 @@ if (!($config = fim_getCachedVar('fim_config')) || $disableConfig) {
 
 
   fim_setCachedVar('fim_config',$config,$config['cacheConfigRefresh']);
+}
+
+
+
+
+///* Things That Require Config *///
+
+if (isset($apiRequest)) {
+  if ($apiRequest === true) {
+    sleep($config['apiPause']); // This prevents flooding the server/DoSing. It's included since I've done it to myself during development...
+  }
 }
 
 
