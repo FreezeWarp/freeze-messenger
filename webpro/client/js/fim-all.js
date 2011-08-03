@@ -1956,11 +1956,14 @@ popup = {
               fileName = files[0].name,
                 fileSize = files[0].size;
 
-              if (!fileName.match(/\.(jpg|jpeg|gif|png|svg)$/i)) { // TODO
-                $('#preview').html('Wrong file type.');
+              var fileParts = fileName.split('.');
+              var filePartsLast = fileParts[filePartsLast.length - 1];
+
+              if (!filePartsLast in uploadFileTypes) {
+                $('#preview').html('The specified file type can not be uploaded.');
               }
-              else if (fileSize > 4 * 1000 * 1000) { // TODO
-                $('#preview').html('File too large.');
+              else if (fileSize > uploadFileTypes[filePartsLast].maxSize) {
+                $('#preview').html('The specified file type must not be larger than ' + uploadFileTypes[filePartsLast].maxSize + ' bytes');
               }
               else {
                 reader.readAsBinaryString(files[0]);
@@ -1970,7 +1973,35 @@ popup = {
 
                 reader2.readAsDataURL(files[0]);
                 reader2.onloadend = function() {
-                  $('#uploadFileFormPreview').html('<img src="' + reader2.result + '" style="max-height: 200px; max-width: 200px;" />');
+                  switch (uploadFileTypes[filePartsLast].container) {
+                    case 'image':
+                    $('#uploadFileFormPreview').html('<img src="' + reader2.result + '" style="max-height: 200px; max-width: 200px;" />');
+                    break;
+
+                    case 'video':
+                    $('#uploadFileFormPreview').html('No Preview Available');
+                    break;
+
+                    case 'audio':
+                    $('#uploadFileFormPreview').html('No Preview Available');
+                    break;
+
+                    case 'text':
+                    $('#uploadFileFormPreview').html('No Preview Available');
+                    break;
+
+                    case 'html':
+                    $('#uploadFileFormPreview').html('No Preview Available');
+                    break;
+
+                    case 'archive':
+                    $('#uploadFileFormPreview').html('No Preview Available');
+                    break;
+
+                    case 'other':
+                    $('#uploadFileFormPreview').html('No Preview Available');
+                    break;
+                  }
                 };
               }
 
