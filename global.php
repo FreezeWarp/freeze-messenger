@@ -38,8 +38,8 @@ $defaultConfig = array(
   'searchWordPunctuation' => array(),
   'searchWordConvertsFind' => array(),
   'searchWordConvertsReplace' => array(),
-  'cacheKicksRefresh' => 60,
-  'cacheKicks' => false,
+  'kicksCacheRefresh' => 60,
+  'kicksCache' => false,
   'cachePhrasesRefresh' => 3600,
   'cacheTemplatesRefresh' => 3600,
   'cacheHooksRefresh' => 60,
@@ -419,12 +419,12 @@ if (isset($reqPhrases)) {
 ///* CACHED DIRECTIVES (REQUIRES APC) *///
 
 if ($config['cacheKicks']) {
-  $cacheKicks = fim_getCachedVar('fim_kickCache');
+  $kicksCache = fim_getCachedVar('fim_kickCache');
 
-  if ($cacheKicks === null || $cacheKicks === false) {
-    $cacheKicks = array();
+  if ($kicksCache === null || $kicksCache === false) {
+    $kicksCache = array();
 
-    $queryParts['cacheKicksSelect']['columns'] = array(
+    $queryParts['kicksCacheSelect']['columns'] = array(
       "{$sqlPrefix}kicks" => array(
         'kickerId' => 'kkickerId',
         'userId' => 'kuserId',
@@ -452,7 +452,7 @@ if ($config['cacheKicks']) {
         'roomName' => 'roomName',
       ),
     );
-    $queryParts['cacheKicksSelect']['conditions'] = array(
+    $queryParts['kicksCacheSelect']['conditions'] = array(
       'both' => array(
         array(
           'type' => 'e',
@@ -489,31 +489,63 @@ if ($config['cacheKicks']) {
         ),
       ),
     );
-    $queryParts['cacheKicksSelect']['sort'] = array(
+    $queryParts['kicksCacheSelect']['sort'] = array(
       'roomId' => 'asc',
       'userId' => 'asc'
     );
 
-    $cacheKicksPre = $database->select($queryParts['cacheKicksSelect']['columns'],
-      $queryParts['cacheKicksSelect']['conditions'],
-      $queryParts['cacheKicksSelect']['sort']);
-    $cacheKicksPre = $cacheKicksPre->getAsArray(true);
+    $kickCachesPre = $database->select($queryParts['kicksCacheSelect']['columns'],
+      $queryParts['kicksCacheSelect']['conditions'],
+      $queryParts['kicksCacheSelect']['sort']);
+    $kickCachesPre = $kickCachesPre->getAsArray(true);
 
-    $cacheKicks = array();
+    $kicksCache = array();
 
-    foreach ($cacheKicksPre AS $cacheKick) {
-      if ($cacheKick['ktime'] + $cacheKick['klength'] < time()) {
+    foreach ($kickCachesPre AS $kickCache) {
+      if ($kickCache['ktime'] + $kickCache['klength'] < time()) {
         $database->delete("{$sqlPrefix}kicks",array(
-          'userId' => $cacheKick['userId'],
-          'roomId' => $cacheKick['roomId'],
+          'userId' => $kickCache['userId'],
+          'roomId' => $kickCache['roomId'],
         ));
       }
       else {
-        $cacheKicks[$cacheKick['roomId']][$cacheKick['userId']] = true;
+        $kicksCache[$kickCache['roomId']][$kickCache['userId']] = true;
       }
     }
 
-    fim_setCachedVar('fim_kickCache',$cacheKicks,$config['cacheKicksRefresh']);
+    fim_setCachedVar('fim_kickCache',$kicksCache,$config['kicksCacheRefresh']);
+  }
+}
+
+if ($config['cachePermissions']) {
+  $permissionsCache = fim_getCachedVar('fim_permissionsCache');
+
+  if ($permissionsCache === null || $permissionsCache === false) {
+    $permissionsCache = array();
+
+    $queryParts['permissionsCacheSelect']['columns'] = array(
+      "{$sqlPrefix}roomPermissions" => array(
+        'roomId' => 'roomId',
+        'attribute' => 'attribute',
+        'param' => 'param',
+        'permissions' => 'permissions',
+      ),
+    );
+
+    $permissionsCachePre = $database->select($queryParts['permissionsCacheSelect']['columns']);
+    $permissionsCachePre = $permissionsCachePre->getAsArray(true);
+
+    $permissionsCache = array(
+      'user' => array(),
+      'group' => array(),
+      'admingroup' => array(),
+    );
+
+    foreach ($permissionsCachePre AS $cachePerm) {
+      $permissionsCache[$cachePerm['roomId']][$cachePerm['attribute']][$cachePerm['param']] = $cachePerm['permissions'];
+    }
+
+    fim_setCachedVar('fim_permissionCache',$permissionsCache,$config['permissionsCacheRefresh']);
   }
 }
 
