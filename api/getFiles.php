@@ -64,7 +64,7 @@ $xmlData = array(
 
 
 /* Plugin Hook Start */
-($hook = hook('getUploads_eachUpload_start') ? eval($hook) : '');
+($hook = hook('getUploads_start') ? eval($hook) : '');
 
 
 
