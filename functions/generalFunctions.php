@@ -88,7 +88,7 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false) {
 *
 * @param array $roomData - An array containing the room's data; indexes allowedUsers, allowedGroups, moderators, owner, and options may be used.
 * @param array $userData - An array containing the user's data; indexes userId, adminPrivs, and userPrivs may be used.
-* @param string $type - Either "know", "view", "post", "moderate", or "admin", this defines the action the user is trying to do.
+* @param string $type - Either "topic", "view", "post", "moderate", or "admin", this defines the action the user is trying to do.
 * @param bool $trans - If true, return will be an information array; otherwise bool.
 * @global bool $banned - Whether or not the user is banned outright.
 * @global array $superUsers - The list of superUsers.
@@ -112,6 +112,14 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
 
   $reason = '';
 
+  $permMap = array(
+    'view' => 1,
+    'post' => 2,
+    'topic' => 4,
+    'moderate' => 8,
+    'admin' => 128,
+  );
+
 
   /* Make sure all presented data is correct. */
   if (!$roomData['roomId']) {
@@ -126,22 +134,11 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
       );
     }
   }
-
-
-  if (isset($roomData['allowedGroups'])) {
-    $allowedGroups = explode(',', $roomData['allowedGroups']);
-    foreach ($allowedGroups AS $groupId) {
-      if (!$groupId) {
-        continue;
-      }
-
-      if (strpos($groupId, 'a') === 0) {
-        $roomData['allowedAdminGroups'][] = (int) substr($groupId,1);
-      }
-      else {
-        $roomData['allowedSocialGroups'][] = (int) $groupId;
-      }
-    }
+  elseif (!isset($roomData['defaultPermissions'])) {
+    throw new Exception('Room data invalid (defaultPermissions index missing)');
+  }
+  elseif ($type == 'know') { // Remove
+    throw new Exception('Room data invalid (type of "know")');
   }
 
 
@@ -161,35 +158,34 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
 
 
   /* Is the User an Allowed User? */
-  if (isset($userData['userId']) && isset($roomData['allowedUsers'])) {
-    if ((in_array($userData['userId'],explode(',', $roomData['allowedUsers']))
-      || $roomData['allowedUsers'] == '*')
-    && $roomData['allowedUsers']) {
+  if (isset($permissionsCache[$roomData['roomId']],$permissionsCache[$roomData['roomId']]['user'],$permissionsCache[$roomData['roomId']]['user'][$userData['userId']])) {
+    if ($permissionsCache[$roomData['roomId']]['user'][$userData['userId']] & $permMap[$type]) {
+      $isAllowedUser = true;
+    }
+  }
+  else {
+    if ($roomData['defaultPermissions'] & $permMap[$type]) {
       $isAllowedUser = true;
     }
   }
 
 
-  /* Is the User a Moderator of the Room? */
-  if (isset($userData['userId']) && isset($roomData['moderators'])) {
-    if (in_array($userData['userId'],explode(',', $roomData['moderators']))) {
-      $isModerator = true; // The user is one of the chat moderators (and it is not deleted).
+  /* Is the User Part of an Allowed Group? */
+  if (isset($permissionsCache[$roomData['roomId']],$permissionsCache[$roomData['roomId']]['group'],$permissionsCache[$roomData['roomId']]['group'][$userData['userId']])) {
+    if ($permissionsCache[$roomData['roomId']]['group'][$userData['userId']] & $permMap[$type]) {
+      $isAllowedGroup = true;
     }
   }
 
-
-  /* Is the User Part of an Allowed Group? */
-  if (isset($roomData['allowedSocialGroups']) && isset($roomData['allowedAdminGroups'])) {
-    if ((fim_inArray(explode(',', $userData['socialGroups']), $roomData['allowedSocialGroups'])
-      || (fim_inArray(explode(',', $userData['allGroups']), $roomData['allowedAdminGroups']))
-      || $roomData['allowedGroups'] == '*')) {
+  if (isset($permissionsCache[$roomData['roomId']],$permissionsCache[$roomData['roomId']]['admingroup'],$permissionsCache[$roomData['roomId']]['admingroup'][$userData['userId']])) {
+    if ($permissionsCache[$roomData['roomId']]['admingroup'][$userData['userId']] & $permMap[$type]) {
       $isAllowedGroup = true;
     }
   }
 
 
   /* Is the User the Room's Owner/Creator */
-  if (isset($roomData['owner']) && isset($roomData['owner'])) {
+  if (isset($roomData['owner'])) {
     if ($roomData['owner'] == $userData['userId']
       && $roomData['owner'] > 0) {
       $isOwner = true;
@@ -316,31 +312,6 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
     }
     else {
       $roomValid['admin'] = false;
-      $reason = 'general';
-    }
-  }
-
-  if ($type == 'know' || $type == 'all') {
-    if ($banned) {
-      $roomValid['know'] = false;
-      $reason = 'banned';
-    }
-    elseif ($kick) {
-      $roomValid['know'] = false;
-      $reason = 'kicked';
-    }
-    elseif ($isAdmin) {
-      $roomValid['know'] = true;
-    }
-    elseif ($isRoomDeleted) {
-      $roomValid['know'] = false;
-      $reason = 'deleted';
-    }
-    elseif ($isAllowedUser || $isAllowedGroup || $isOwner) {
-      $roomValid['know'] = true;
-    }
-    else {
-      $roomValid['know'] = false;
       $reason = 'general';
     }
   }
