@@ -509,5 +509,20 @@
       <column name="value" value="-1" />
       <column name="type" value="int" />
     </table>
+    <table name="configuration">
+      <column name="directive" value="defaultLanguage" />
+      <column name="value" value="en" />
+      <column name="type" value="string" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="roomLengthMinimum" />
+      <column name="value" value="5" />
+      <column name="type" value="int" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="roomLengthMaximum" />
+      <column name="value" value="20" />
+      <column name="type" value="int" />
+    </table>
   </database>
 </dbData>

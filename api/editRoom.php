@@ -146,18 +146,22 @@ $xmlData = array(
 switch($request['action']) {
   case 'create':
   if (!$user['userDefs']['createRooms']) {
-      $errStr = 'sameUser';
-      $errDesc = 'The user specified is yourself.';
+      $errStr = 'noPerm';
+      $errDesc = 'You do not have permission to create rooms.';
   }
   else {
-    $roomLengthLimit = ($config['roomLengthLimit'] ? $config['roomLengthLimit'] : 20);
-
     if (strlen($request['roomName']) == 0) {
       $errStr = 'noName';
       $errDesc = 'A room name was not supplied.';
     }
-    elseif (strlen($request['roomName'] > $roomLengthLimit)) {
+    elseif (strlen($request['roomName']) < $config['roomLengthMinimum']) {
+      $errStr = 'shortName';
+      $errParam = $config['roomLengthMinimum'];
+      $errDesc = 'The room name specified is too short.';
+    }
+    elseif (strlen($request['roomName']) > $config['roomLengthMaximum']) {
       $errStr = 'longName';
+      $errParam = $config['roomLengthMaximum'];
       $errDesc = 'The room name specified is too long.';
     }
     else {
@@ -188,10 +192,9 @@ switch($request['action']) {
   break;
 
   case 'edit':
-  $roomLengthLimit = ($config['roomLengthLimit'] ? $config['roomLengthLimit'] : 20);
   $room = $slaveDatabase->getRoom($request['roomId']);
 
-  if (!$room) {
+  if ($room === false) {
     $errStr = 'noRoom';
     $errDesc = 'The room specified does not exist.';
   }
@@ -199,8 +202,14 @@ switch($request['action']) {
     $errStr = 'noName';
     $errDesc = 'A room name was not supplied.';
   }
-  elseif (strlen($request['roomName'] > $roomLengthLimit)) { // The name must be short :P
+  elseif (strlen($request['roomName']) < $config['roomLengthMinimum']) {
+    $errStr = 'shortName';
+    $errParam = $config['roomLengthMinimum'];
+    $errDesc = 'The room name specified is too short.';
+  }
+  elseif (strlen($request['roomName']) > $config['roomLengthMaximum']) {
     $errStr = 'longName';
+    $errParam = $config['roomLengthMaximum'];
     $errDesc = 'The room name specified is too long.';
   }
   elseif (!fim_hasPermission($room, $user, 'admin', true)) { // The user must be an admin (or, inherently, the room's owner) to edit rooms.
@@ -334,22 +343,22 @@ switch($request['action']) {
 
   case 'private':
   if (!$user['userDefs']['privateRooms']) {
-    $errStr = 'nopermission';
+    $errStr = 'noPerm';
     $errDesc = 'You do not have permission to create private rooms.';
   }
   else {
     if (strlen($request['userName']) > 0) {
       $user2 = $slaveDatabase->getUser(false,$request['userName']); // Get the user information.
     }
-    elseif ($reqest['userId'] > 0) {
+    elseif ((int) $reqest['userId'] > 0) {
       $user2 = $slaveDatabase->getUser($request['userId']); // Get the user information.
     }
     else {
-      $errStr = 'baduser';
-      $errDesc = 'That user does not exist.';
+      $errStr = 'noUser';
+      $errDesc = 'You did not specify a user.';
     }
 
-    if (!$user2['userId']) { // No user exists.
+    if ($user2 === false) { // No user exists.
       $errStr = 'badUser';
       $errDesc = 'That user does not exist.';
     }
@@ -360,10 +369,7 @@ switch($request['action']) {
     else {
       $room = $database->select(
         array(
-          "{$sqlPrefix}rooms" => array(
-            'roomId',
-            'roomName',
-          ),
+          "{$sqlPrefix}rooms" => 'roomId, roomName, allowedUsers',
         ),
         array(
           'both' => array(
@@ -421,7 +427,7 @@ switch($request['action']) {
 
   if (fim_hasPermission($room, $user, 'admin', true)) {
     if ($room['options'] & 4) {
-      $errStr = 'alreadydeleted';
+      $errStr = 'nothingToDo';
       $errDesc = 'The room is already deleted.';
     }
     else {
@@ -446,7 +452,7 @@ switch($request['action']) {
 
   if (fim_hasPermission($room, $user, 'admin', true)) {
     if ($room['options'] & 4) {
-      $errStr = 'alreadydeleted';
+      $errStr = 'nothingToDo';
       $errDesc = 'The room is already deleted.';
     }
     else {

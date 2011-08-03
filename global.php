@@ -25,6 +25,9 @@
  * These are the simplified defaults of the configuration directives stored in the database.
  * Unlike the standard database defaults, these only include the barebones data (e.g. searchWord directives). */
 $defaultConfig = array(
+  'roomLengthMinimum' => 5,
+  'roomLengthMaximum' => 20,
+  'defaultLanguage' => 'en',
   'defaultMessageHardLimit' => 50,
   'defaultMessageLimit' => 10000,
   'defaultOnlineThreshold' => 15,
@@ -322,8 +325,7 @@ if (isset($reqPhrases)) { // TODO Languages currently overwrite eachother
     }
 
     $lang = (isset($_REQUEST['lang']) ? $_REQUEST['lang'] :
-      (isset($user['lang']) ? $user['lang'] :
-        (isset($defaultLanguage) ? $defaultLanguage : 'en')));
+      (isset($user['lang']) ? $user['lang'] : $config['defaultLanguage']));
     $phrases = $phrases[$lang];
   }
 }
