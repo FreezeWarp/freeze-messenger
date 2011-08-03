@@ -246,9 +246,7 @@
       <column name="roomName" type="string" maxlen="50" comment="The name of the room." />
       <column name="roomTopic" type="string" maxlen="200" comment="The current topic of the room." />
       <column name="owner" type="int" maxlen="10" comment="The owner/creator of the room." />
-      <column name="allowedGroups" type="string" maxlen="65536" comment="A comma-seperated list of the IDs of the allowed groups in the room." />
-      <column name="allowedUsers" type="string" maxlen="65536" comment="A comma-seperated list of the IDs of the allowed users in the room." />
-      <column name="moderators" type="string" maxlen="65536" comment="A comma-seperated list of the IDs of the moderators of the room." />
+      <column name="defaultPermissions" type="bitfield" bits="8" comment="A bitfield corrosponding to permissions users are granted if they do not exist in the roomPermissions table." />
       <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options." />
       <column name="lastMessageTime" type="time" default="0000-00-00 00:00:00" comment="The time of the last message made in the room." />
       <column name="lastMessageId" type="int" maxlen="15" comment="The ID of the last message made in the room." />
@@ -258,6 +256,16 @@
       <key name="owner" type="index" />
       <key name="lastMessageId" type="index" />
       <key name="lastMessageTime" type="index" />
+    </table>
+
+
+    <table name="roomPermissions" type="general" content="Groups and users who are granted access to rooms.">
+      <column name="roomId" type="int" maxlen="6" autoincrement="true" comment="The room ID." />
+      <column name="attribute" type="string" restrict="user,group,admingroup" comment="Whether the param column corrosponds to a user, group, or admin-defined group." />
+      <column name="param" type="int" maxlen="8" autoincrement="true" comment="The user ID, group ID, or admin-defined group ID being affected." />
+      <column name="permissions" type="bitfield" bits="8" comment="The permissions granted in the room to the affected user or group." />
+
+      <key name="roomId,attribute,param" type="primary" />
     </table>
 
 
@@ -371,6 +379,24 @@
       <def bit="1">Enabled</def>
       <def bit="2">Can Be Toggled by Rooms</def>
       <def bit="4">Default to On</def>
+    </bitfield>
+
+    <bitfield name="defaultPermissions" table="rooms">
+      <def bit="1">Can View</def>
+      <def bit="2">Can Post</def>
+      <def bit="4">Can Change the Topic</def>
+      <def bit="8">Can Modify and Delete Posts</def>
+      <def bit="16">Can Edit Room Properties (e.g. name)</def>
+      <def bit="128">Can Grant</def>
+    </bitfield>
+
+    <bitfield name="permissions" table="roomPermissions">
+      <def bit="1">Can View</def>
+      <def bit="2">Can Post</def>
+      <def bit="4">Can Change the Topic</def>
+      <def bit="8">Can Modify and Delete Posts</def>
+      <def bit="16">Can Edit Room Properties (e.g. name)</def>
+      <def bit="128">Can Grant</def>
     </bitfield>
   </definitions>
 </dbSchema>
