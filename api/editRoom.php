@@ -22,7 +22,22 @@
  * @author Jospeph T. Parsons <rehtaew@gmail.com>
  * @copyright Joseph T. Parsons 2011
  *
- * @param string action - "create", "edit", "delete", or "private"
+ * @param string action - "create", "edit", "delete", "undelete", or "private"
+ *
+ * Create, Edit Room Parameters:
+ * @param int defaultPermissions
+ * @param csv allowedUsers
+ * @param csv allowedGroups
+ * @param csv moderators
+ * @param string roomName
+ *
+ * Edit, Delete, Undelete Room Parameters:
+ * @param int roomId
+ *
+ * Private Room Parameters:
+ * @param int userId
+ * @param string userName
+ *
  * Note for FIMv4: This will add several additional methods ("contact" being the main one) that allow for improved IM-like communication. This will essentially return any stream that has x users involved, and will replace private for the most part (private will instead be used for OTR communication).
 */
 
@@ -58,6 +73,15 @@ $request = fim_sanitizeGPC(array(
     'roomName' => array(
       'type' => 'string',
       'require' => false,
+    ),
+
+    'defaultPermissions' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => 0,
+      'context' => array(
+        'type' => 'int',
+      ),
     ),
 
     'moderators' => array(
@@ -146,8 +170,8 @@ $xmlData = array(
 switch($request['action']) {
   case 'create':
   if (!$user['userDefs']['createRooms']) {
-      $errStr = 'noPerm';
-      $errDesc = 'You do not have permission to create rooms.';
+    $errStr = 'noPerm';
+    $errDesc = 'You do not have permission to create rooms.';
   }
   else {
     if (strlen($request['roomName']) == 0) {
@@ -172,15 +196,63 @@ switch($request['action']) {
       else {
         $database->insert(array(
           'roomName' => $request['roomName'],
-          'allowedGroups' => implode(',',$request['allowedGroups']),
-          'allowedUsers' => implode(',',$request['$allowedUsers']),
-          'moderators' => implode(',',$request['$moderators']),
           'owner' => (int) $user['userId'],
           ),"{$sqlPrefix}rooms"
         );
+        $roomId = $database->insertId;
 
-        if ((int) $database->insertId) {
-          $xmlData['editRoom']['response']['insertId'] = $database->insertId;
+        if ((int) $roomId) {
+          foreach ($request['allowedUsers'] AS &$allowedUser) {
+            if (in_array($allowedUser,$request['moderators'])) {
+              unset($allowedUser);
+            }
+            else {
+              $database->insert(
+                array(
+                  'roomId' => $roomId,
+                  'attribute' => 'user',
+                  'param' => $allowedUser,
+                  'permissions' => 7,
+                ),
+                "{$sqlPrefix}roomPermissions",
+                array(
+                  'permissions' => 7,
+                )
+              );
+            }
+          }
+
+          foreach ($request['allowedGroups'] AS &$allowedGroup) {
+            $database->insert(
+              array(
+                'roomId' => $roomId,
+                'attribute' => 'group',
+                'param' => $allowedGroup,
+                'permissions' => 7,
+              ),
+              "{$sqlPrefix}roomPermissions",
+              array(
+                'permissions' => 7,
+              )
+            );
+          }
+
+          foreach ($request['moderators'] AS &$moderator) {
+            $database->insert(
+              array(
+                'roomId' => $roomId,
+                'attribute' => 'user',
+                'param' => $moderator,
+                'permissions' => 15,
+              ),
+              "{$sqlPrefix}roomPermissions",
+              array(
+                'permissions' => 15,
+              )
+            );
+          }
+
+          $xmlData['editRoom']['response']['insertId'] = $roomId;
         }
         else {
           $errStr = 'unknown';
@@ -188,7 +260,7 @@ switch($request['action']) {
         }
       }
     }
-    }
+  }
   break;
 
   case 'edit':
