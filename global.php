@@ -27,34 +27,48 @@
 $defaultConfig = array(
   'roomLengthMinimum' => 5,
   'roomLengthMaximum' => 20,
+
   'defaultLanguage' => 'en',
+
   'defaultMessageHardLimit' => 50,
   'defaultMessageLimit' => 10000,
   'defaultOnlineThreshold' => 15,
+
   'fullTextArchive' => false,
+
   'searchWordMinimum' => 4,
   'searchWordMaximum' => 10,
   'searchWordOmissions' => array(),
   'searchWordPunctuation' => array(),
   'searchWordConvertsFind' => array(),
   'searchWordConvertsReplace' => array(),
+
   'kicksCacheRefresh' => 60,
   'permissionsCacheRefresh' => 300,
-  'cachePhrasesRefresh' => 3600,
-  'cacheTemplatesRefresh' => 3600,
-  'cacheHooksRefresh' => 60,
-  'cacheConfigRefresh' => 3600,
+  'roomsCacheRefresh' => 300,
+  'phrasesCacheRefresh' => 3600,
+  'templatesCacheRefresh' => 3600,
+  'hooksCacheRefresh' => 60,
+  'configCacheRefresh' => 3600,
+
   'longPollingWait' => 2,
+  'longPollingMaxRetries' => 50,
   'longPolling' => false,
   'serverSentEventsWait' => .5, // Server sent events are more controlled, so we can call them at a greater frequency.
   'serverSentEvents' => false,
+
   'compressOutput' => true,
+
   'disableTopic' => false,
+
   'enableUploads' => false,
   'enableGeneralUploads' => false,
   'fileUploadChunkSize' => 1024,
+
   'maxMessageLength' => 1000,
+
   'apiPause' => .125,
+
   'dev' => false,
 );
 
@@ -281,7 +295,7 @@ if (!($config = fim_getCachedVar('fim_config')) || $disableConfig) {
   }
 
 
-  fim_setCachedVar('fim_config',$config,$config['cacheConfigRefresh']);
+  fim_setCachedVar('fim_config',$config,$config['configCacheRefresh']);
 }
 
 
@@ -327,7 +341,7 @@ if (isset($reqPhrases)) { // TODO Languages currently overwrite eachother
 
       unset($phrases2);
 
-      fim_setCachedVar('fim_phrases',$phrases,$config['cachePhrasesRefresh']);
+      fim_setCachedVar('fim_phrases',$phrases,$config['phrasesCacheRefresh']);
     }
 
     $lang = (isset($_REQUEST['lang']) ? $_REQUEST['lang'] :
@@ -424,6 +438,7 @@ if (isset($reqPhrases)) {
 
 $kicksCache = fim_getCachedVar('fim_kickCache');
 $permissionsCache = fim_getCachedVar('fim_permissionsCache');
+$roomsCache = fim_getCachedVar('fim_roomsCache');
 
 if ($kicksCache === null || $kicksCache === false) {
   $kicksCache = array();

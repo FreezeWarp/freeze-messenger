@@ -374,7 +374,7 @@ function fim3parse_keyWords($string, $messageId, $roomId) {
   }
 
   $string = preg_replace('/(' . implode('|', $puncList) . ')/is',' ', $string);
-error_log($string);
+
   while (strpos($string,'  ') !== false) {
     $string = str_replace('  ',' ', $string);
   }
@@ -567,7 +567,7 @@ function fim_sendMessage($messageText, $user, $room, $flag = '') {
       'type' => 'raw',
       'value' => 'NOW()',
     ),
-    'lastMessageId' => $messageId2
+    'lastMessageId' => $messageId
   ),
   "{$sqlPrefix}rooms",
   array(
@@ -588,5 +588,16 @@ function fim_sendMessage($messageText, $user, $room, $flag = '') {
       'value' => 'messages + 1',
     )
   ));
+
+
+  // Create an event if the room is private (options & 16). This allows us to bypass what would otherwise be a very compliated query, and improves scalibility.
+  if ($room['options'] & 16) {
+    $database->insert(array(
+      'eventName' => 'privateMessage',
+      'userId' => $user['userId'],
+      'roomId' => $room['roomId'],
+      'messageId' => $messageId),
+    "{$sqlPrefix}events");
+  }
 }
 ?>

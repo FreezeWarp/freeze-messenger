@@ -441,7 +441,7 @@ LIMIT
           $sideTextFull[$i] = '';
 
           if ($recKey === 'both' || $recKey === 'either') {
-            $sideTextFull[$i] = $this->recurseBothEither($data, $reverseAlias);
+            $sideTextFull[$i] = $this->recurseBothEither(array($data), $reverseAlias);
           }
           else {
             /* Get the Proper Comparison Operator */
@@ -482,7 +482,7 @@ LIMIT
               $symbol = $comparisonTypes[$data['type']];
             }
             else {
-              throw new Exception('Unrecognized type operator.');
+              throw new Exception('Unrecognized type operator "' . $data['type'] . '". Data: ' . print_r($data,true));
             }
 
 
@@ -610,7 +610,7 @@ LIMIT
             }
             else {
               $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
-              trigger_error('Query nullified; backtrace: ' . print_r(debug_backtrace(),true),E_USER_WARNING);
+              trigger_error('Query nullified; backtrace: ' . print_r(debug_backtrace(), true), E_USER_WARNING);
             }
           }
         }

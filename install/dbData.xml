@@ -412,6 +412,7 @@
       <column name="value" value="false" />
       <column name="type" value="bool" />
     </table>
+
     <table name="configuration">
       <column name="directive" value="searchWordMinimum" />
       <column name="value" value="4" />
@@ -442,6 +443,7 @@
       <column name="value" value="e,E,e,E,o,O,o,O,o,O,i,I,i,I,u,U,u,U,n,?,!,.,\,,;,:,/,|,@,#,$,%,^,&amp;,*,(,),[,],{,},&lt;,&gt;" />
       <column name="type" value="array" />
     </table>
+
     <table name="configuration">
       <column name="directive" value="kicksCacheRefresh" />
       <column name="value" value="60" />
@@ -452,6 +454,32 @@
       <column name="value" value="300" />
       <column name="type" value="int" />
     </table>
+    <table name="configuration">
+      <column name="directive" value="roomsCacheRefresh" />
+      <column name="value" value="300" />
+      <column name="type" value="int" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="phrasesCacheRefresh" />
+      <column name="value" value="300" />
+      <column name="type" value="int" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="hooksCacheRefresh" />
+      <column name="value" value="300" />
+      <column name="type" value="int" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="templatesCacheRefresh" />
+      <column name="value" value="300" />
+      <column name="type" value="int" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="configCacheRefresh" />
+      <column name="value" value="300" />
+      <column name="type" value="int" />
+    </table>
+
     <table name="configuration">
       <column name="directive" value="longPolling" />
       <column name="value" value="false" />
@@ -477,6 +505,7 @@
       <column name="value" value=".5" />
       <column name="type" value="float" />
     </table>
+
     <table name="configuration">
       <column name="directive" value="compressOutput" />
       <column name="value" value="true" />

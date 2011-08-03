@@ -105,7 +105,6 @@ else {
       "{$sqlPrefix}rooms" => array(
         'roomId' => 'roomId',
         'options' => 'options',
-        'allowedUsers' => 'allowedUsers',
         'lastMessageTime' => array(
           'context' => 'time',
           'name' => 'lastMessageTime',
@@ -127,7 +126,7 @@ else {
           'type' => 'e',
           'left' => array(
             'type' => 'column',
-            'value' => 'userId',
+            'value' => 'puserId',
           ),
           'right' => array(
             'type' => 'int',
@@ -145,66 +144,29 @@ else {
             'value' => 'proomId',
           ),
         ),
-        'either' => array(
-          array(
-            'type' => 'bitwise',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'options',
-            ),
-            'right' => array(
-              'type' => 'int',
-              'value' => 16,
-            ),
+        array(
+          'type' => 'in',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'roomId',
           ),
-          array(
-            'type' => 'in',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'roomId',
-            ),
-            'right' => array(
-              'type' => 'array',
-              'value' => fim_arrayValidate(explode(',',$user['watchRooms']),'int',false),
-            ),
-          ),
-        ),
-        'either' => array(
-          array(
-            'type' => 'regexp',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'allowedUsers',
-            ),
-            'right' => array(
-              'type' => 'regexp',
-              'value' => '(' . (int) $user['userId'] . ',|' . (int) $user['userId'] . ')$',
-            ),
-          ),
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'allowedUsers',
-            ),
-            'right' => array(
-              'type' => 'string',
-              'value' => '*',
-            ),
+          'right' => array(
+            'type' => 'array',
+            'value' => fim_arrayValidate(explode(',',$user['watchRooms']),'int',false),
           ),
         ),
         array(
           'type' => 'gt',
           'left' => array( // Quick Note: Context: time is redunant and will cause issues if defined.
             'type' => 'column',
-            'value' => 'time',
+            'value' => 'lastMessageTime',
           ),
           'right' => array(
             'type' => 'equation',
-            'value' => '$time + 10',
+            'value' => '$pingTime + 10',
           ),
         ),
-      ),
+      )
     );
 
 
