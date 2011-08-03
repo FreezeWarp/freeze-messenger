@@ -100,7 +100,10 @@ var roomRef = {}, // Object
 var themeId = Number($.cookie('fim3_themeId'));
 
 
-if (Number($.cookie('fim3_settings'))) {
+if ($.cookie('fim3_setting') == undefined) {
+  settingsBitfield = 8192;
+}
+else if (Number($.cookie('fim3_settings'))) {
   var settingsBitfield = Number($.cookie('fim3_settings'));
 }
 else {
