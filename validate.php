@@ -898,10 +898,7 @@ if ($valid) { // If the user is valid, process their preferrences.
         'avatar' => $user2['avatar'],
         'profile' => $user2['profile'],
         'socialGroups' => $socialGroups['groups'],
-        'lastSync' => array(
-          'type' => 'raw',
-          'value' => 'NOW()',
-        ),
+        'lastSync' => '__TIME__'
       ),
       "{$sqlPrefix}users",
       array(
@@ -940,10 +937,7 @@ if ($valid) { // If the user is valid, process their preferrences.
     $database->insert(array(
       'userId' => $user['userId'],
       'anonId' => ($anonymous ? $anonId : 0),
-      'time' => array(
-        'type' => 'raw',
-        'value' => 'NOW()',
-      ),
+      'time' => '__TIME__',
       'magicHash' => $sessionHash,
       'browser' => $_SERVER['HTTP_USER_AGENT'],
       'ip' => $_SERVER['REMOTE_ADDR'],
@@ -952,10 +946,10 @@ if ($valid) { // If the user is valid, process their preferrences.
     // Whenever a new user logs in, delete all sessions from 15 or more minutes in the past.
     $database->delete("{$sqlPrefix}sessions",array(
       'time' => array(
-        'type' => 'raw', // Data in the value column should not be escaped.
+        'type' => 'equation', // Data in the value column should not be escaped.
         'cond' => 'lte', // Comparison is "<="
         'context' => 'time', // We are comparing two times; the column should be processed as a timestamp.
-        'value' => 'UNIX_TIMESTAMP(NOW()) - 900',
+        'value' => '__TIME__ - 900',
       ),
     ));
   }
@@ -964,10 +958,7 @@ if ($valid) { // If the user is valid, process their preferrences.
     ($hook = hook('validate_updatesession') ? eval($hook) : '');
 
     $database->update(array(
-      'time' => array(
-        'type' => 'raw',
-        'value' => 'NOW()',
-      ),
+      'time' => '__TIME__'
     ),
     "{$sqlPrefix}sessions",
     array(

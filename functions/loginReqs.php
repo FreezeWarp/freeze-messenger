@@ -17,186 +17,46 @@
 
 
 
-
 /**
-* Database auth plug-in for phpBB3
-*
-* Authentication plug-ins is largely down to Sergey Kanareykin, our thanks to him.
-*
-* This is for authentication via the integrated user table
-*
-* @package login
-* @version $Id$
-* @copyright (c) 2005 phpBB Group
-* @license http://opensource.org/licenses/gpl-license.php GNU Public License
-*
+ * Creates a new session identifier that is highly random (so high that bruteforce would be virtually impossible), encrypted based on config salts (to reduce any chance of being able to guess the randomizer).
+ *
+ * @global array $salts - Key-value pairs used for encryption.
+ * @return string - The generated session hash
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
-
-function _hash_crypt_private($password, $setting, &$itoa64) {
-  $itoa64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-  $output = '*';
-
-  // Check for correct hash
-  if (substr($setting, 0, 3) != '$H$') {
-    return $output;
-  }
-
-  $count_log2 = strpos($itoa64, $setting[3]);
-
-  if ($count_log2 < 7 || $count_log2 > 30) {
-    return $output;
-  }
-
-  $count = 1 << $count_log2;
-  $salt = substr($setting, 4, 8);
-
-  if (strlen($salt) != 8) {
-    return $output;
-  }
-
-  $hash = md5($salt . $password, true);
-  do {
-    $hash = md5($hash . $password, true);
-  } while (--$count);
-
-  $output = substr($setting, 0, 12);
-  $output .= _hash_encode64($hash, 16, $itoa64);
-
-  return $output;
-}
-
-function _hash_encode64($input, $count, &$itoa64) {
-  $output = '';
-  $i = 0;
-
-  do {
-    $value = ord($input[$i++]);
-    $output .= $itoa64[$value & 0x3f];
-
-    if ($i < $count) {
-      $value |= ord($input[$i]) << 8;
-    }
-
-    $output .= $itoa64[($value >> 6) & 0x3f];
-
-    if ($i++ >= $count) {
-      break;
-    }
-
-    if ($i < $count) {
-      $value |= ord($input[$i]) << 16;
-    }
-
-    $output .= $itoa64[($value >> 12) & 0x3f];
-
-    if ($i++ >= $count) {
-      break;
-    }
-
-    $output .= $itoa64[($value >> 18) & 0x3f];
-  } while ($i < $count);
-
-  return $output;
-}
-
-function phpbb_check_hash($password, $hash) {
-  if (strlen($hash) == 34) {
-    return (_hash_crypt_private($password, $hash, $itoa64) === $hash) ? true : false;
-  }
-
-  return (md5($password) === $hash) ? true : false;
-}
-
-
-
-function phpbb_hash($password) {
-  $itoa64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-
-  $random_state = unique_id();
-  $random = '';
-  $count = 6;
-
-  if (($fh = @fopen('/dev/urandom', 'rb'))) {
-    $random = fread($fh, $count);
-    fclose($fh);
-  }
-
-  if (strlen($random) < $count) {
-    $random = '';
-
-    for ($i = 0; $i < $count; $i += 16) {
-      $random_state = md5(unique_id() . $random_state);
-      $random .= pack('H*', md5($random_state));
-    }
-    $random = substr($random, 0, $count);
-  }
-
-  $hash = _hash_crypt_private($password, _hash_gensalt_private($random, $itoa64), $itoa64);
-
-  if (strlen($hash) == 34) {
-    return $hash;
-  }
-
-  return md5($password);
-}
-
-
-
-///* FIM *///
-
 function fim_generateSession() {
   global $salts;
 
-  /* The algorithm below may not be ideal (or moreover redundant). It is intended to minimize the ability to guess a hash via a bruteforce mechanism (and does so using the 256-bit SHA256 hash, a random value using the relatively good mt_rand generator that varies between 1 and a billion, and the salt specified by the site operator). */
-
-  if (count($salts) > 0) {
-    $salt = end($salts);
+  if (count($salts) > 0) { // Check to see if any salts exist.
+    $salt = end($salts); // If so, get the last entry.
   }
   else {
-    $salt = rand(1,100000000);
+    $salt = mt_rand(1,1000000000); // If not, we will generate a second random integer, hopefully reducing any chance of guessing.
   }
 
+  $rand = mt_rand(1,1000000000); // Generate a random integer that will be used to prevent guessing.
 
-  if (function_exists('mt_rand')) {
-    $rand = mt_rand(1,1000000000);
-  }
-  elseif (function_exists('rand')) {
-    $rand = rand(1,1000000000);
-  }
+  $hash = str_replace('.', '', // Remove the period from the generated unique id
+    uniqid('', true) // Generate a unique ID based on the current time, using extra entropy (see http://php.net/manual/en/function.uniqid.php)
+  ) . fim_sha256(fim_sha256($rand) . $salt); // Create a sha256 hash of the random value, then hash that with the added user salt. Append this to $hash and the possibility of strategically guessing the sessionhash (which is, in truth, by far the lowest risk from the get-go) becomes nonexistent.
 
-  if (function_exists('hash')) {
-    return str_replace('.','',uniqid('',true)) . hash('sha256',hash('sha256',$rand) . $salt);
-  }
-  else {
-    return str_replace('.',uniqid('',true)) . md5(md5($rand) . $salt);
-  }
-}
-
-function fim_generatePassword($password) {
-  global $salts;
-
-  $salt = end($salts);
-
-  /* Similar to generateSession, the algorthim used below is possibly inferrior, but still will withstand most basic methods, including rainbow tables and in many cases bruteforce (though this may not be true if an attacker is able to gain access to the associated config.php file; in this case, it still will be impossible to decipher anything more advanced than dictionary passwords). */
-
-
-  for ($i; $i < 5000; $i++) {
-    $password = hash('sha256',hash('sha256',$password) . $salt);
-  }
+  return $hash; // Return the generated session hash.
 }
 
 
 
+/**
+ * Verify a login using a vBulletin database. vBulletin3 and vBulletin4 appear to be identical.
+ *
+ * @param array user - The userdata array.
+ * @param string password - The submitted password (usually via a form).
 
-
-
-///* Process Functions for Each Forum  *///
-
-function processVBulletin3($user,$password) {
-  global $forumTablePrefix;
-
+ * @return bool - Whether or not the user is valid.
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+*/
+function processVBulletin($user, $password) {
   if (!$user['userId']) { // The user does not exists
-    define('LOGIN_FLAG','BAD_USERNAME');
+    define('LOGIN_FLAG', 'BAD_USERNAME');
 
     return false;
   }
@@ -205,105 +65,111 @@ function processVBulletin3($user,$password) {
     return true;
   }
 
-  else {
-    define('LOGIN_FLAG','BAD_PASSWORD');
+  else { // The password does not match.
+    define('LOGIN_FLAG', 'BAD_PASSWORD');
 
     return false;
   }
 }
 
-function processVBulletin4($user,$password) {
-  global $forumTablePrefix;
 
-  if (!$user['userId']) { // The user does not exists
-    define('LOGIN_FLAG','BAD_USERNAME');
 
-    return false;
-  }
+/**
+ * Verify a login using a PHPBB3 database.
+ *
+ * @param array user - The userdata array.
+ * @param string password - The submitted password (usually via a form).
 
-  elseif ($user['password'] === md5($password . $user['salt'])) { // The password matches.
-    return true;
-  }
-
-  else {
-    define('LOGIN_FLAG','BAD_PASSWORD');
-
-    return false;
-  }
-}
-
+ * @return bool - Whether or not the user is valid.
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+*/
 function processPHPBB($user, $password) {
-  global $forumTablePrefix, $brokenUsers;
-
   if (!$user['userId']) { // The user does not exist
-
-    define('LOGIN_FLAG','BAD_USERNAME');
+    define('LOGIN_FLAG', 'BAD_USERNAME');
 
     return false;
   }
 
-//  elseif (in_array($user['userId'],$brokenUsers)) { // The user is flagged as a PHPBB auto user.
-//    define('LOGIN_FLAG','BROKEN_USER');
+  elseif (strlen($user['password']) === 0) { // PHPBB often stores passwords empty when the user shouldn't be able to login.'
+    return false;
+  }
 
-//    return false;
-//  }
-
-  elseif (phpbb_check_hash($password, $user['password'])) { // The password matches
+  elseif (phpbb_check_hash($password, $user['password'])) { // The password matches.
     return true;
   }
 
-  else {
-    define('LOGIN_FLAG','BAD_PASSWORD');
+  else { // The pasword does not match.
+    define('LOGIN_FLAG', 'BAD_PASSWORD');
 
     return false;
   }
 }
 
+
+
+/**
+ * Verify a login using a FIM's database.
+ * @todo Make work
+ *
+ * @param array user - The userdata array.
+ * @param string password - The submitted password (usually via a form).
+
+ * @return bool - Whether or not the user is valid.
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+*/
 function processVanilla($user, $password) {
-  global $tablePrefix, $sqlUserTable, $sqlUserTableCols;
-
-  if (!$user['userId']) { // The user does not exist
-    define('LOGIN_FLAG','BAD_USERNAME');
+  if (!$user['userId']) { // The user does not exist.
+    define('LOGIN_FLAG', 'BAD_USERNAME');
 
     return false;
   }
 
-  else if ($something) { // TODO
-
+  else if (fim_generatePassword($password, $user['salt']) === $user['password']) { // The password is correct.
+    return true;
   }
 
-  else {
+  else { // The password is not correct.
+    define('LOGIN_FLAG', 'BAD_PASSWORD');
 
+    return false;
   }
 }
 
+
+
+/**
+ * Generic validation wrapper.
+ *
+ * @param array user - The userdata array.
+ * @param string password - The submitted password (usually via a form).
+
+ * @return bool - Whether or not the user is valid.
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+*/
 function processLogin($user, $password, $encrypt) {
   global $loginConfig;
 
   switch ($loginConfig['method']) {
     case 'vbulletin3':
-    if ($encrypt == 'plaintext') {
-      $password = md5($password);
-    }
-
-    return processVBulletin3($user, $password);
-    break;
-
     case 'vbulletin4':
-    // WIP
     if ($encrypt == 'plaintext') {
       $password = md5($password);
     }
 
-    return processVBulletin4($user, $password);
+    return processVBulletin($user, $password);
     break;
+
 
     case 'phpbb':
+    require(dirname(__FILE__) . 'loginReqsPHPBB3.php'); // Require PHPBB3 Library
+
     return processPHPBB($user, $password);
     break;
 
-    case 'vanilla':
-    // WIP
+
+    case 'vanilla': // TODO
+    require(dirname(__FILE__) . 'loginReqsVanilla.php'); // Require Vanilla Library
+
     return processVanilla($user, $password);
     break;
   }

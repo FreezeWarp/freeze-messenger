@@ -56,7 +56,7 @@ $xmlData = array(
       ),
 
       'outputBuffer' => array(
-        'comressOutput' => (bool) $compressOutput,
+        'comressOutput' => (bool) $config['compressOutput'],
       ),
 
       'phpVersion' => (float) phpversion(), // We won't display the full version as it could pose an unneccessary security risk.

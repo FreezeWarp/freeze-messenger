@@ -43,13 +43,12 @@ $defaultConfig = array(
   'searchWordConvertsFind' => array(),
   'searchWordConvertsReplace' => array(),
 
-  'kicksCacheRefresh' => 60,
-  'permissionsCacheRefresh' => 300,
-  'roomsCacheRefresh' => 300,
-  'phrasesCacheRefresh' => 3600,
-  'templatesCacheRefresh' => 3600,
-  'hooksCacheRefresh' => 60,
-  'configCacheRefresh' => 3600,
+  'kicksCacheRefresh' => 30,
+  'permissionsCacheRefresh' => 30,
+  'phrasesCacheRefresh' => 600,
+  'templatesCacheRefresh' => 600,
+  'hooksCacheRefresh' => 600,
+  'configCacheRefresh' => 600,
 
   'longPollingWait' => 2,
   'longPollingMaxRetries' => 50,
@@ -68,6 +67,8 @@ $defaultConfig = array(
   'maxMessageLength' => 1000,
 
   'apiPause' => .125,
+
+  'cacheTableMaxRows' => 100,
 
   'dev' => false,
 );
@@ -381,7 +382,7 @@ if (isset($reqHooks)) {
       }
 
       unset($hooks2);
-      fim_setCachedVar('fim_hooks',$hooks,$config['cacheHooksRefresh']);
+      fim_setCachedVar('fim_hooks',$hooks,$config['hooksCacheRefresh']);
     }
   }
 }
@@ -425,8 +426,8 @@ if (isset($reqPhrases)) {
       }
 
       unset($templates2);
-      fim_setCachedVar('fim_templates',$templates,$config['cacheTemplatesRefresh']);
-      fim_setCachedVar('fim_templateVars',$templateVars,$config['cacheTemplatesRefresh']);
+      fim_setCachedVar('fim_templates',$templates,$config['templatesCacheRefresh']);
+      fim_setCachedVar('fim_templateVars',$templateVars,$config['templatesCacheRefresh']);
     }
   }
 }
@@ -438,7 +439,6 @@ if (isset($reqPhrases)) {
 
 $kicksCache = fim_getCachedVar('fim_kickCache');
 $permissionsCache = fim_getCachedVar('fim_permissionsCache');
-$roomsCache = fim_getCachedVar('fim_roomsCache');
 
 if ($kicksCache === null || $kicksCache === false) {
   $kicksCache = array();

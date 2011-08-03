@@ -72,16 +72,8 @@ $room = $database->getRoom($request['roomId']);
 
 $words = $slaveDatabase->select(
   array(
-    "{$sqlPrefix}censorLists" => array(
-      'listId' => 'listId',
-    ),
-    "{$sqlPrefix}censorWords" => array(
-      'severity' => 'severity',
-      'listId' => 'wlistId',
-      'word' => 'word',
-      'severity' => 'severity',
-      'param' => 'param',
-    ),
+    "{$sqlPrefix}censorLists" => 'listId',
+    "{$sqlPrefix}censorWords" => 'severity, listId wlistId, word, severity, param',
   ),
   array(
     'both' => array(
@@ -189,18 +181,14 @@ if ($continue) {
     $blockWordApi['word'] = $blockedWordText;
     $blockWordApi['reason'] = $blockedWordReason;
   }
-  elseif (strpos($request['message'], '/topic') === 0 && !$disableTopic) {
-    $topic = preg_replace('/^\/topic (.+?)$/i','$1',$request['message']);
-
-    $topic = fimParse_censorParse($topic); // Parses the sources for MySQL and UTF8. We will also censor, but no BBcode.
+  elseif (strpos($request['message'], '/topic') === 0 && !$config['disableTopic']) {
+    $topic = fimParse_censorParse( // Censor the topic using global settings.
+      preg_replace('/^\/topic (.+?)$/i', '$1', $request['message']) // Strip the "/topic" from the message.
+    );
 
     fim_sendMessage($topic,$user,$room,'topic');
 
-    $database->insert(array(
-      'eventName' => 'topicChange',
-      'roomId' => $room['roomId']
-      'param1' => $topic),
-    "{$sqlPrefix}events");
+    $database->createEvent('topicChange', false, $room['roomId'], false, $topic, false, false); // name, user, room, message, p1, p2, p3
 
     $database->update(array(
       'roomTopic' => $topic,

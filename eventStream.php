@@ -29,7 +29,6 @@ else {
   $lastMessage = 0;
   $lastEvent = 0;
 
-
   /* Get Request Data */
   $request = fim_sanitizeGPC(array(
     'get' => array(
@@ -152,7 +151,7 @@ else {
           ),
           'right' => array(
             'type' => 'array',
-            'value' => fim_arrayValidate(explode(',',$user['watchRooms']),'int',false),
+            'value' => fim_arrayValidate(explode(',', $user['watchRooms']), 'int', false),
           ),
         ),
         array(
@@ -171,20 +170,11 @@ else {
 
 
 
-    $queryParts['eventSelect']['columns'] = array(
-      "{$sqlPrefix}events" => array(
-        'eventId' => 'eventId',
-        'eventName' => 'eventName',
-        'roomId' => 'roomId',
-        'userId' => 'userId',
-        'messageId' => 'messageId',
-        'param1' => 'param1',
-        'param2' => 'param2',
-        'param3' => 'param3',
-      ),
+    $queryParts['eventsSelect']['columns'] = array(
+      "{$sqlPrefix}events" => 'eventId, eventName, roomId, userId, messageId, param1, param2, param3',
     );
-    $queryParts['eventSelect']['conditions'] = array(
-      'both' => array(
+    $queryParts['eventsSelect']['conditions'] = array(
+      'either' => array(
         array(
           'type' => 'e',
           'left' => array(
@@ -194,6 +184,17 @@ else {
           'right' => array(
             'type' => 'int',
             'value' => (int) $request['roomId'],
+          ),
+        ),
+        array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'userId',
+          ),
+          'right' => array(
+            'type' => 'int',
+            'value' => (int) $user['userId'],
           ),
         ),
       ),
@@ -263,7 +264,7 @@ else {
 
     /* Get New Message Alerts from Watched Rooms */
 
-    if (count(fim_arrayValidate(explode(',',$user['watchRooms']),'int',false)) > 0) {
+    if (count(fim_arrayValidate(explode(',', $user['watchRooms']), 'int', false)) > 0) {
       $missedMessages = $database->select(
         $queryParts['missedMessages']['columns'],
         $queryParts['missedMessages']['conditions']);
@@ -301,7 +302,37 @@ else {
     }
 
 
+
+
     /* Get Events */
+
+    $events = $database->select($queryParts['eventsSelect']['columns'],
+      $queryParts['eventsSelect']['conditions']);
+    $events = $events->getAsArray('eventId');
+
+    $eventsOutput = array();
+
+    if (is_array($events)) {
+      if (count($events) > 0) {
+        foreach ($events AS $event) {
+          $eventsOutput[] = array(
+            'roomId' => (int) $message['roomId'],
+            'roomName' => ($message['roomName']),
+            'lastMessageTime' => (int) $message['lastMessageTimestamp'],
+          );
+
+          echo "event: event\n";
+          echo "data: " . json_encode($eventsOutput) . "\n\n";
+          flush();
+
+          if (ob_get_level()) {
+            ob_flush();
+          }
+
+          ($hook = hook('getMessages_watchRooms_eachRoom') ? eval($hook) : '');
+        }
+      }
+    }
 
 
     ($hook = hook('getMessages_postMessages_serverSentEvents_repeat') ? eval($hook) : '');

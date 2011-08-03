@@ -861,20 +861,43 @@ LIMIT
           $columns[] = $this->escape($column);
         }
 
-        if (isset($data['type'])) {
-          switch($data['type']) {
-            case 'raw':
-            $values[] = $data['value'];
-            break;
 
-            default:
-            $values[] = '"' . $this->escape($data['value']) . '"'; // Maybe throw an exception instead?
-            break;
+        if (!isset($data['type'])) {
+          if ($data['value'] === '__TIME__') {
+            $data['type'] = 'time';
+          }
+          else {
+            $data['type'] = 'string';
           }
         }
-        else {
+
+
+        switch($data['type']) {
+          case 'raw':
+          throw new exception('Raw data type.');
+          break;
+
+          case 'equation':
+          $equation = preg_replace('/\$([a-zA-Z\_]+)/', '\\1', $data['value']);
+          $equation = str_replace('__TIME__', 'UNIX_TIMESTAMP(NOW())', $equation);
+
+          $values[] = $equation;
+          break;
+
+          case 'int':
+          $values[] = (int) $data['value'];
+          break;
+
+          case 'time':
+          $values[] = "UNIX_TIMESTAMP(NOW())";
+          break;
+
+          case 'string':
+          default:
           $values[] = '"' . $this->escape($data['value']) . '"';
+          break;
         }
+
 
         if (isset($data['cond'])) {
           $context[] = $data['cond'];

@@ -15,10 +15,11 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 
-class fimDatabase extends database {
-  public function getRoom($roomId, $roomName = false) {
-    global $sqlPrefix;
+global $sqlPrefix, $config, $user;
 
+class fimDatabase extends database {
+
+  public function getRoom($roomId, $roomName = false) {
     $queryParts['roomSelect']['columns'] = array(
       "{$sqlPrefix}rooms" => array(
         'roomId' => 'roomId',
@@ -81,8 +82,6 @@ class fimDatabase extends database {
 
 
   public function getUser($userId, $userName = false) {
-    global $sqlPrefix;
-
     $queryParts['userSelect']['columns'] = array(
       "{$sqlPrefix}users" => array(
         'userId' => 'userId',
@@ -146,8 +145,6 @@ class fimDatabase extends database {
 
 
   public function getFont($fontId) {
-    global $sqlPrefix;
-
     $queryParts['fontSelect']['columns'] = array(
       "{$sqlPrefix}fonts" => array(
         'fontId' => 'fontId',
@@ -188,8 +185,6 @@ class fimDatabase extends database {
 
 
   public function getCensorList($listId) {
-    global $sqlPrefix;
-
     $queryParts['listSelect']['columns'] = array(
       "{$sqlPrefix}lists" => array(
         'listId' => 'listId',
@@ -230,8 +225,6 @@ class fimDatabase extends database {
 
 
   public function getMessage($messageId) {
-    global $sqlPrefix;
-
     $queryParts['messageSelect']['columns'] = array(
       "{$sqlPrefix}messages" => array(
         'messageId' => 'messageId',
@@ -274,6 +267,127 @@ class fimDatabase extends database {
       1
     );
     return $message->getAsArray(false);
+  }
+
+
+  public function markMessageRead($messageId, $userId) {
+    $this->delete("{$sqlPrefix}unreadMessages",array(
+      'messageId' => $messageId,
+      'userId' => $userId),
+    "{$sqlPrefix}events");
+  }
+
+
+  public function createEvent($eventName, $userId, $roomId, $messageId, $param1, $param2, $param3) {
+    $this->insert(array(
+      'eventName' => $eventName,
+      'userId' => $userId,
+      'roomId' => $roomId,
+      'messageId' => $messageId,
+      'param1' => $param1,
+      'param2' => $param2,
+      'param3' => $param3),
+    "{$sqlPrefix}events");
+  }
+
+
+  public function storeMessage($userData, $roomData, $messageDataPlain, $messageDataEncrypted, $flag) {
+    // Insert into permenant datastore.
+    $this->insert(array(
+      'roomId' => (int) $roomData['roomId'],
+      'userId' => (int) $userData['userId'],
+      'rawText' => $messageDataEncrypted['rawText'],
+      'htmlText' => $messageDataEncrypted['htmlText'],
+      'apiText' => $messageDataEncrypted['apiText'],
+      'salt' => $messageDataEncrypted['saltNum'],
+      'iv' => $messageDataEncrypted['iv'],
+      'ip' => $_SERVER['REMOTE_ADDR'],
+      'flag' => $flag,
+    ),"{$sqlPrefix}messages");
+    $messageId = $this->insertId;
+
+
+   // Insert into cache/memory datastore.
+    $this->insert(array(
+      'messageId' => (int) $messageId,
+      'roomId' => (int) $roomData['roomId'],
+      'userId' => (int) $userData['userId'],
+      'userName' => $userData['userName'],
+      'userGroup' => (int) $userData['userGroup'],
+      'avatar' => $userData['avatar'],
+      'profile' => $userData['profile'],
+      'userFormatStart' => $userData['userFormatStart'],
+      'userFormatEnd' => $userData['userFormatEnd'],
+      'defaultFormatting' => $userData['defaultFormatting'],
+      'defaultColor' => $userData['defaultColor'],
+      'defaultHighlight' => $userData['defaultHighlight'],
+      'defaultFontface' => $userData['defaultFontface'],
+      'htmlText' => $messageDataPlain['htmlText'],
+      'apiText' => $messageDataPlain['apiText'],
+      'flag' => $flag,
+    ),"{$sqlPrefix}messagesCached");
+    $messageId2 = $this->insertId;
+
+
+    // Delete old messages from the cache, based on the maximum allowed rows.
+    if ($messageId2 > $config['cacheTableMaxRows']) {
+      $this->delete("{$sqlPrefix}messagesCached",
+        array('id' => array(
+          'cond' => 'lte',
+          'value' => (int) ($messageId2 - $config['cacheTableMaxRows'])
+        )
+      ));
+    }
+
+
+    // Update room caches.
+    $this->update(array(
+      'lastMessageTime' => '__TIME__',
+      'lastMessageId' => $messageId,
+    ), "{$sqlPrefix}rooms", array(
+      'roomId' => $roomData['roomId'],
+    ));
+
+
+    // Insert or update a user's room stats.
+    $this->insert(array(
+      'userId' => $userData['userId'],
+      'roomId' => $roomData['roomId'],
+      'messages' => 1
+    ), "{$sqlPrefix}roomStats", array(
+      'messages' => array(
+        'type' => 'equation',
+        'value' => '$messages + 1',
+      )
+    ));
+
+
+    // Return the ID of the inserted message.
+    return $messageId;
+  }
+
+
+  /**
+  * MySQL modLog container
+  *
+  * @param string $action
+  * @param string $data
+  * @return bool
+  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
+
+  function modLog($action, $data) {
+    if ($this->insert(array(
+      'userId' => (int) $user['userId'],
+      'ip' => $_SERVER['REMOTE_ADDR'],
+      'action' => $action,
+      'data' => $data,
+    ),"{$sqlPrefix}modlog")) {
+      return true;
+    }
+    else {
+      return false;
+    }
   }
 }
 ?>

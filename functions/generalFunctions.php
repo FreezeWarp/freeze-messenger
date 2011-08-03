@@ -383,37 +383,54 @@ function fim_decrypt($message, $index = array('apiText','htmlText','rawText')) {
 
 
 /**
-* Encrypts a string or all values in an array.
-*
-* @param mixed $data - The data to encrypt.
-* @global array $salts - Key-value pairs used for encryption.
-* @return array - list($data, $iv, $saltNum)
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ * Encrypts a string or all values in an array. Data is encrypted using 3DES and CBC.
+ * The returned data will contain the encrypted $data value (as an array with key->value pairs left intact, or as a string, depending on how it was passed), the base64_encoded IV, and the number of the salt used for encryption (the corrosponding salt needed for unencrypted should be stored in config.php).
+ *
+ * @param mixed $data - The data to encrypt.
+ * @global array $salts - Key-value pairs used for encryption.
+ * @return array - list($data, $iv, $saltNum)
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
 function fim_encrypt($data) {
   global $salts;
 
-  if (!function_exists('mcrypt_encrypt')) {
-    return $data;
-  }
+  $salt = end($salts); // Move the file pointer to the last entry in the array (and return its value)
+  $saltNum = key($salts); // Get the key/id of the corrosponding salt.
 
-  $salt = end($salts);
-  $saltNum = key($salts);
+  $iv_size = mcrypt_get_iv_size(MCRYPT_3DES, MCRYPT_MODE_CBC); // Get the length of the IV for the method used
+  $iv = base64_encode( // Encode the IV using Base64 encoding (to avoid any datastore headaches).
+    mcrypt_create_iv($iv_size, MCRYPT_RAND) // Generate an encryption Initilization Vector (see http://en.wikipedia.org/wiki/Initialization_vector)
+  );
 
-  $iv_size = mcrypt_get_iv_size(MCRYPT_3DES,MCRYPT_MODE_CBC);
-  $iv = base64_encode(mcrypt_create_iv($iv_size, MCRYPT_RAND));
+  if (is_array($data)) { // If $data is an array, we will encrypt each value, and retain the key->value structure.
+    $newData = array(); // Create the array, since we will be adding key=>value pairs to it briefly.
 
-  if (is_array($data)) {
-    foreach ($data AS &$data2) {
-      $data2 = base64_encode(rtrim(mcrypt_encrypt(MCRYPT_3DES, $salt, $data2, MCRYPT_MODE_CBC, base64_decode($iv)),"\0"));
+    foreach ($data AS $key => $value) { // Run through the data array...
+      $newData[$key] = base64_encode( // Encode the data as Base64.
+        rtrim( // Trim \0 bytes from the _right_ of the encrypted value (see http://php.net/rtrim).
+          mcrypt_encrypt( // Encrypt the $value.
+            MCRYPT_3DES, // Encrypt the data using 3DES/Triple DES (see http://en.wikipedia.org/wiki/Triple_DES).
+            $salt, // The salt we obtained from the system configuration earlier...
+            $value, // Our value to encrypt.
+            MCRYPT_MODE_CBC, // Use Mcrypt CBC mode (see http://php.net/manual/en/function.mcrypt-cbc.php and http://www.php.net/manual/en/mcrypt.constants.php).
+            base64_decode($iv) // We need to use the raw IV, so we decode the earlier encoded value.
+          )
+        ,"\0")
+      );
     }
   }
   else {
-    $data = base64_encode(rtrim(mcrypt_encrypt(MCRYPT_3DES, $salt, $data, MCRYPT_MODE_CBC, base64_decode($iv)),"\0"));
+    $newData = base64_encode( // See comments above.
+      rtrim(
+        mcrypt_encrypt(
+          MCRYPT_3DES, $salt, $data, MCRYPT_MODE_CBC, base64_decode($iv)
+        ),"\0"
+      )
+    );
   }
 
-  return array($data, $iv, $saltNum);
+  return array($newData, $iv, $saltNum); // Return the data.
 }
 
 /**
@@ -1230,32 +1247,6 @@ function fim_htmlCompact($data) {
   $data = preg_replace("/\<\!-- (.+?) --\>/",'', $data);
   $data = preg_replace("/\>(( )+?)\</",'><', $data);
   return $data;
-}
-
-
-/**
-* MySQL modLog container
-*
-* @param string $action
-* @param string $data
-* @return bool
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
-
-function modLog($action, $data) {
-  global $sqlPrefix, $user, $database;
-
-  if ($database->insert(array(
-    'userId' => (int) $user['userId'],
-    'ip' => $_SERVER['REMOTE_ADDR'],
-    'action' => $action,
-    'data' => $data,
-  ),"{$sqlPrefix}modlog")) {
-    return true;
-  }
-  else {
-    return false;
-  }
 }
 
 

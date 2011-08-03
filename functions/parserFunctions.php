@@ -187,7 +187,7 @@ WHERE w.listId = l.listId AND w.severity = 'replace'",'word');*/
 * @return string - Parsed text.
 * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
-function fimParse_smilieParse($text) {
+function fimParse_emotiParse($text) {
   global $room, $forumTablePrefix, $slaveDatabase, $integrationDatabase, $loginConfig;
 
   switch($loginConfig['method']) {
@@ -291,7 +291,7 @@ function indexValue($array, $index) {
 
 function fimParse_htmlWrap($html, $maxLength = 80, $char = '<br />') { /* An adaption of a PHP.net commentor function dealing with HTML for BBCode */
   // Configuration
-  $noparseTags = array('img','a');
+  $noparseTags = array('img', 'a');
 
   // Initialize Variables
   $count = 0;
@@ -373,10 +373,10 @@ function fim3parse_keyWords($string, $messageId, $roomId) {
     $puncList[] = addcslashes($punc,'"\'|(){}[]<>.,~-?!@#$%^&*/\\'); // Dunno if this is the best approach.
   }
 
-  $string = preg_replace('/(' . implode('|', $puncList) . ')/is',' ', $string);
+  $string = preg_replace('/(' . implode('|', $puncList) . ')/is', ' ', $string);
 
   while (strpos($string,'  ') !== false) {
-    $string = str_replace('  ',' ', $string);
+    $string = str_replace('  ', ' ', $string);
   }
 
   $string = strtolower($string);
@@ -431,26 +431,6 @@ function fim3parse_keyWords($string, $messageId, $roomId) {
 
 
 /**
-* Container for all above parsers, formatting different values (html, raw, api).
-*
-* @param string $messageText - Message string.
-* @return array - $messageRaw, $messageHtml, and $messageApi strings
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
-
-function fimParse_finalParse($messageText) {
-  global $room;
-
-  $messageRaw = $messageText; // Parses the sources for MySQL.
-  $messageHtml = nl2br(fimParse_smilieParse(fimParse_htmlWrap(fimParse_htmlParse(fimParse_censorParse($messageText, $room['roomId']), $room['options']),80,' '))); // Parses for browser or HTML rendering.
-  $messageApi = fimParse_censorParse($messageText); // Not yet coded, you see.
-
-  return array($messageRaw, $messageHtml, $messageApi);
-}
-
-
-
-/**
 * Sends a message to the database.
 *
 * @param string $messageText - Message to be sent.
@@ -461,7 +441,7 @@ function fimParse_finalParse($messageText) {
 * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
-function fim_sendMessage($messageText, $user, $room, $flag = '') {
+function fim_sendMessage($messageText, $userData, $roomData, $flag = '') {
   global $sqlPrefix, $parseFlags, $salts, $encrypt, $loginMethod, $sqlUserGroupTableCols, $sqlUserGroupTable, $database;
 
 
@@ -470,134 +450,65 @@ function fim_sendMessage($messageText, $user, $room, $flag = '') {
   // Supported flags: image, video, link, email
   // Other flags that won't be parsed here: me, topic
 
-  if (in_array($flag,array('image','video','link','email','youtube','html','audio','text'))) {
-    $messageRaw = $messageText;
-    $messageApi = $messageText;
-    $messageHtml = $messageText;
+  if (in_array($flag, array('image', 'video', 'link', 'email', 'youtube', 'html', 'audio', 'text'))) {
+    $messageData = array(
+      'rawText' => $messageText,
+      'apiText' => $messageText,
+      'htmlText' => $messageText,
+    );
   }
   else {
-    $message = fimParse_finalParse($messageText);
-    list($messageRaw, $messageHtml, $messageApi) = $message;
+    $messageData = array(
+      'rawText' => $messageText; // Parses the sources for MySQL.
+      'htmlText' => nl2br( // Converts \n characters to HTML <br />s.
+        fimParse_emotiParse( // Converts emoticons (e.g. ":D", ":P", "o.O") to HTML <img /> tags based on database-stored conversions.
+          fimParse_htmlWrap( // Forces a space to be placed every 80 non-breaking characters, in order to prevent HTML stretching.
+            fimParse_htmlParse( // Parses database-stored BBCode (e.g. "[b]Hello[/b]") to their HTML equivilents (e.g. "<b>Hello</b>").
+              fimParse_censorParse($messageText, $roomData['roomId']), // Censors text based on database-stored filters, which may be activated or deactivted by the room itself.
+              $roomData['options']
+            ), 80, ' '
+          )
+        )
+      ),
+      'apiText' => fimParse_censorParse($messageText); // Censors text (see above).
+    );
   }
-
-
-
-  $messageHtmlCache = $messageHtml; // Store so we don't encrypt cache
-  $messageApiCache = $messageApi; // Store so we don't encrypt cache
-  $messageRawCache = $messageRaw; // Store so we don't encrypt cache
 
 
 
   // Encrypt Message Data
-
-  if ($salts && $encrypt) { // Only encrypt if we have both salts and encrypt is enabled.
-    $salt = end($salts); // Get the last salt stored.
-    $saltNum = key($salts); // Key the key of the salt.
-
-    $iv_size = mcrypt_get_iv_size(MCRYPT_3DES,MCRYPT_MODE_CBC); // Get random IV size (CBC mode)
-    $iv = base64_encode(mcrypt_create_iv($iv_size, MCRYPT_RAND)); // Get random IV; base64 it
-
-    list($messages, $iv, $saltNum) = fim_encrypt(array($messageRaw, $messageHtml, $messageApi)); // Get messages array, IV, salt num
-    list($messageRaw, $messageHtml, $messageApi) = $messages; // Get messages from messages array
-  }
-  else {
-    $saltNum = 0;
-  }
-
-
-
-  // Insert into archive then cache storage.
-
-  $database->insert(array(
-    'roomId' => (int) $room['roomId'],
-    'userId' => (int) $user['userId'],
-    'rawText' => $messageRaw,
-    'htmlText' => $messageHtml,
-    'apiText' => $messageApi,
-    'salt' => $saltNum,
-    'iv' => (isset($iv) ? $iv : ''),
-    'ip' => $_SERVER['REMOTE_ADDR'],
-    'flag' => $flag,
-  ),"{$sqlPrefix}messages");
-  $messageId = $database->insertId;
-
-  $database->insert(array(
-    'messageId' => (int) $messageId,
-    'roomId' => (int) $room['roomId'],
-    'userId' => (int) $user['userId'],
-    'userName' => $user['userName'],
-    'userGroup' => (int) $user['userGroup'],
-    'avatar' => $user['avatar'],
-    'profile' => $user['profile'],
-    'userFormatStart' => $user['userFormatStart'],
-    'userFormatEnd' => $user['userFormatEnd'],
-    'defaultFormatting' => $user['defaultFormatting'],
-    'defaultColor' => $user['defaultColor'],
-    'defaultHighlight' => $user['defaultHighlight'],
-    'defaultFontface' => $user['defaultFontface'],
-    'htmlText' => $messageHtmlCache,
-    'apiText' => $messageApiCache,
-    'flag' => $flag,
-  ),"{$sqlPrefix}messagesCached");
-
-  $messageId2 = $database->insertId;
-
-
-
-  // Delete old messages from the cache; do so depending on the cache limit set in config.php, or default to 100.
-  $cacheTableLimit = (isset($config['cacheTableMaxRows']) ? $config['cacheTableMaxRows'] : 100);
-  if ($messageId2 > $cacheTableLimit) {
-    $database->delete("{$sqlPrefix}messagesCached",
-      array('id' => array(
-        'cond' => 'lte',
-        'type' => 'raw',
-        'value' => ($messageId2 - $cacheTableLimit)
+  if ($salts && $encrypt) { // Only encrypt if we have both set salts and encrypt is enabled.
+    list($messageDataEncrypted, $iv, $saltNum) = fim_encrypt( // Encrypt the values and return the new data, IV, and saltNum.
+      array('messageRaw' => $messageRaw,
+            'messageHtml' => $messageHtml,
+            'messageApi' => $messageApi
       )
-    ));
+    );
+
+    $messageDataEncrypted['iv'] = $iv; // Append the base64-encoded IV to the encrypted message data array.
+    $messageDataEncrypted['saltNum'] = $saltNum; // Append the salt referrence to the encrypted message data array.
   }
+  else { // No encyption
+    $messageDataEncrypted = $messageData;
+    $messageDataEncrypted['iv'] = ''; // Use an empty IV - it will be ignored by the decryptor.
+    $messageDataEncrypted['saltNum'] = 0; // Same as with the IV, salt keys of "0" are ignored.
+  }
+
+
+
+  // Add the data to the datastore.
+  $database->messageStore($userData, $roomData, $messageData, $messageDataEncrypted, $flag);
+
+
 
   // Add message to archive search store.
-  fim3parse_keyWords($messageRawCache, $messageId, $room['roomId']);
+  fim3parse_keyWords($messageRawCache, $messageId, $roomData['roomId']);
 
-
-
-  // Update room caches.
-  $database->update(array(
-    'lastMessageTime' => array(
-      'type' => 'raw',
-      'value' => 'NOW()',
-    ),
-    'lastMessageId' => $messageId
-  ),
-  "{$sqlPrefix}rooms",
-  array(
-     'roomId' => $room['roomId'],
-  ));
-
-
-
-  // Insert or update a user's room stats.
-  $database->insert(array(
-    'userId' => $user['userId'],
-    'roomId' => $room['roomId'],
-    'messages' => 1),
-   "{$sqlPrefix}roomStats",
-   array(
-    'messages' => array(
-      'type' => 'raw',
-      'value' => 'messages + 1',
-    )
-  ));
 
 
   // Create an event if the room is private (options & 16). This allows us to bypass what would otherwise be a very compliated query, and improves scalibility.
-  if ($room['options'] & 16) {
-    $database->insert(array(
-      'eventName' => 'privateMessage',
-      'userId' => $user['userId'],
-      'roomId' => $room['roomId'],
-      'messageId' => $messageId),
-    "{$sqlPrefix}events");
+  if ($roomData['options'] & 16) {
+
   }
 }
 ?>

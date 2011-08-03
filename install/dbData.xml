@@ -446,37 +446,32 @@
 
     <table name="configuration">
       <column name="directive" value="kicksCacheRefresh" />
-      <column name="value" value="60" />
+      <column name="value" value="30" />
       <column name="type" value="int" />
     </table>
     <table name="configuration">
       <column name="directive" value="permissionsCacheRefresh" />
-      <column name="value" value="300" />
-      <column name="type" value="int" />
-    </table>
-    <table name="configuration">
-      <column name="directive" value="roomsCacheRefresh" />
-      <column name="value" value="300" />
+      <column name="value" value="30" />
       <column name="type" value="int" />
     </table>
     <table name="configuration">
       <column name="directive" value="phrasesCacheRefresh" />
-      <column name="value" value="300" />
+      <column name="value" value="600" />
       <column name="type" value="int" />
     </table>
     <table name="configuration">
       <column name="directive" value="hooksCacheRefresh" />
-      <column name="value" value="300" />
+      <column name="value" value="600" />
       <column name="type" value="int" />
     </table>
     <table name="configuration">
       <column name="directive" value="templatesCacheRefresh" />
-      <column name="value" value="300" />
+      <column name="value" value="600" />
       <column name="type" value="int" />
     </table>
     <table name="configuration">
       <column name="directive" value="configCacheRefresh" />
-      <column name="value" value="300" />
+      <column name="value" value="600" />
       <column name="type" value="int" />
     </table>
 
@@ -555,6 +550,11 @@
       <column name="directive" value="apiPause" />
       <column name="value" value=".125" />
       <column name="type" value="float" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="cacheTableMaxRows" />
+      <column name="value" value="100" />
+      <column name="type" value="int" />
     </table>
   </database>
 </dbData>
