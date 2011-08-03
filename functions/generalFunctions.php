@@ -111,6 +111,7 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
   $kick = false;
 
   $reason = '';
+  $type = (array) $type;
 
   $permMap = array(
     'view' => 1,
@@ -142,187 +143,189 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
   }
 
 
-  /* Get the User's Kick Status */
-  if (isset($userData['userId'])) {
-    if ($userData['userId'] > 0) {
-      if (count($kicksCache) > 0) {
-        if (isset($kicksCache[$roomData['roomId']][$userData['userId']])) {
-          $kick = true;
-        }
-        else {
-          $kick = false;
+  foreach ((array) $type AS $type2) {
+    /* Get the User's Kick Status */
+    if (isset($userData['userId'])) {
+      if ($userData['userId'] > 0) {
+        if (count($kicksCache) > 0) {
+          if (isset($kicksCache[$roomData['roomId']][$userData['userId']])) {
+            $kick = true;
+          }
+          else {
+            $kick = false;
+          }
         }
       }
     }
-  }
 
 
-  /* Is the User an Allowed User? */
-  if (isset($permissionsCache[$roomData['roomId']],$permissionsCache[$roomData['roomId']]['user'],$permissionsCache[$roomData['roomId']]['user'][$userData['userId']])) {
-    if ($permissionsCache[$roomData['roomId']]['user'][$userData['userId']] & $permMap[$type]) {
-      $isAllowedUser = true;
-    }
-  }
-  else {
-    if ($roomData['defaultPermissions'] & $permMap[$type]) {
-      $isAllowedUser = true;
-    }
-  }
-
-
-  /* Is the User Part of an Allowed Group? */
-  if (isset($permissionsCache[$roomData['roomId']],$permissionsCache[$roomData['roomId']]['group'],$permissionsCache[$roomData['roomId']]['group'][$userData['userId']])) {
-    if ($permissionsCache[$roomData['roomId']]['group'][$userData['userId']] & $permMap[$type]) {
-      $isAllowedGroup = true;
-    }
-  }
-
-  if (isset($permissionsCache[$roomData['roomId']],$permissionsCache[$roomData['roomId']]['admingroup'],$permissionsCache[$roomData['roomId']]['admingroup'][$userData['userId']])) {
-    if ($permissionsCache[$roomData['roomId']]['admingroup'][$userData['userId']] & $permMap[$type]) {
-      $isAllowedGroup = true;
-    }
-  }
-
-
-  /* Is the User the Room's Owner/Creator */
-  if (isset($roomData['owner'])) {
-    if ($roomData['owner'] == $userData['userId']
-      && $roomData['owner'] > 0) {
-      $isOwner = true;
-    }
-  }
-
-
-  /* Is the Room a Private Room or Deleted? */
-  if (isset($roomData['options'])) {
-    if ($roomData['options'] & 4) {
-      $isRoomDeleted = true; // The room is deleted.
-    }
-
-    if ($roomData['options'] & 16) {
-      $isPrivateRoom = true;
-    }
-  }
-  else {
-    throw new Exception('Room data invalid (options index missing)');
-  }
-
-
-  /* Is the user a super user? */
-  if (isset($userData['userId']) && isset($userData['adminPrivs']) && isset($loginConfig['superUsers'])) {
-    if (is_array($loginConfig['superUsers'])) {
-      if (in_array($userData['userId'], $loginConfig['superUsers']) || $userData['adminPrivs'] & 1) {
-        $isAdmin = true;
+    /* Is the User an Allowed User? */
+    if (isset($permissionsCache[$roomData['roomId']],$permissionsCache[$roomData['roomId']]['user'],$permissionsCache[$roomData['roomId']]['user'][$userData['userId']])) {
+      if ($permissionsCache[$roomData['roomId']]['user'][$userData['userId']] & $permMap[$type2]) {
+        $isAllowedUser = true;
       }
     }
-  }
+    else {
+      if ($roomData['defaultPermissions'] & $permMap[$type2]) {
+        $isAllowedUser = true;
+      }
+    }
 
 
-  if ($type == 'post' || $type == 'all') {
-    if ($banned) {
-      $roomValid['post'] = false;
-      $reason = 'banned';
+    /* Is the User Part of an Allowed Group? */
+    if (isset($permissionsCache[$roomData['roomId']],$permissionsCache[$roomData['roomId']]['group'],$permissionsCache[$roomData['roomId']]['group'][$userData['userId']])) {
+      if ($permissionsCache[$roomData['roomId']]['group'][$userData['userId']] & $permMap[$type2]) {
+        $isAllowedGroup = true;
+      }
     }
-    elseif (!$valid) {
-      $roomValid['post'] = false;
-      $reason = 'invalid';
+
+    if (isset($permissionsCache[$roomData['roomId']],$permissionsCache[$roomData['roomId']]['admingroup'],$permissionsCache[$roomData['roomId']]['admingroup'][$userData['userId']])) {
+      if ($permissionsCache[$roomData['roomId']]['admingroup'][$userData['userId']] & $permMap[$type2]) {
+        $isAllowedGroup = true;
+      }
     }
-    elseif ($kick && !$isAdmin) {
-      $roomValid['post'] = false;
-      $reason = 'kicked';
+
+
+    /* Is the User the Room's Owner/Creator */
+    if (isset($roomData['owner'])) {
+      if ($roomData['owner'] == $userData['userId']
+        && $roomData['owner'] > 0) {
+        $isOwner = true;
+      }
     }
-    elseif ($isAdmin && !$isPrivateRoom) {
-      $roomValid['post'] = true;
-    }
-    elseif ($isRoomDeleted) {
-      $roomValid['post'] = false;
-      $reason = 'deleted';
-    }
-    elseif ($isAllowedUser || $isAllowedGroup || $isOwner) {
-      $roomValid['post'] = true;
+
+
+    /* Is the Room a Private Room or Deleted? */
+    if (isset($roomData['options'])) {
+      if ($roomData['options'] & 4) {
+        $isRoomDeleted = true; // The room is deleted.
+      }
+
+      if ($roomData['options'] & 16) {
+        $isPrivateRoom = true;
+      }
     }
     else {
-      $roomValid['post'] = false;
-      $reason = 'general';
+      throw new Exception('Room data invalid (options index missing)');
     }
-  }
 
-  if ($type == 'view' || $type == 'all') {
-    if ($isAdmin && !$isPrivateRoom) {
-      $roomValid['view'] = true;
-    }
-    elseif ($isRoomDeleted) {
-      $roomValid['view'] = false;
-      $reason = 'deleted';
-    }
-    elseif ($isAllowedUser || $isAllowedGroup || $isOwner) {
-      $roomValid['view'] = true;
-    }
-    else {
-      $roomValid['view'] = false;
-      $reason = 'general';
-    }
-  }
 
-  if ($type == 'moderate' || $type == 'all') {
-    if ($banned) {
-      $roomValid['moderate'] = false;
-      $reason = 'banned';
+    /* Is the user a super user? */
+    if (isset($userData['userId']) && isset($userData['adminPrivs']) && isset($loginConfig['superUsers'])) {
+      if (is_array($loginConfig['superUsers'])) {
+        if (in_array($userData['userId'], $loginConfig['superUsers']) || $userData['adminPrivs'] & 1) {
+          $isAdmin = true;
+        }
+      }
     }
-    elseif (!$valid) {
-      $roomValid['moderate'] = false;
-      $reason = 'invalid';
-    }
-    elseif ($kick && !$isAdmin) {
-      $roomValid['moderate'] = false;
-      $reason = 'kicked';
-    }
-    elseif ($isPrivateRoom) {
-      $roomValid['moderate'] = false;
-      $reason = 'private';
-    }
-    elseif ($isOwner || $isModerator || $isAdmin) {
-      $roomValid['moderate'] = true;
-    }
-    else {
-      $roomValid['moderate'] = false;
-      $reason = 'general';
-    }
-  }
 
-  if ($type == 'admin' || $type == 'all') {
-    if ($banned) {
-      $roomValid['admin'] = false;
-      $reason = 'banned';
+
+    if ($type2 == 'post') {
+      if ($banned) {
+        $roomValid['post'] = false;
+        $reason = 'banned';
+      }
+      elseif (!$valid) {
+        $roomValid['post'] = false;
+        $reason = 'invalid';
+      }
+      elseif ($kick && !$isAdmin) {
+        $roomValid['post'] = false;
+        $reason = 'kicked';
+      }
+      elseif ($isAdmin && !$isPrivateRoom) {
+        $roomValid['post'] = true;
+      }
+      elseif ($isRoomDeleted) {
+        $roomValid['post'] = false;
+        $reason = 'deleted';
+      }
+      elseif ($isAllowedUser || $isAllowedGroup || $isOwner) {
+        $roomValid['post'] = true;
+      }
+      else {
+        $roomValid['post'] = false;
+        $reason = 'general';
+      }
     }
-    elseif (!$valid) {
-      $roomValid['admin'] = false;
-      $reason = 'invalid';
+
+    if ($type2 == 'view') {
+      if ($isAdmin && !$isPrivateRoom) {
+        $roomValid['view'] = true;
+      }
+      elseif ($isRoomDeleted) {
+        $roomValid['view'] = false;
+        $reason = 'deleted';
+      }
+      elseif ($isAllowedUser || $isAllowedGroup || $isOwner) {
+        $roomValid['view'] = true;
+      }
+      else {
+        $roomValid['view'] = false;
+        $reason = 'general';
+      }
     }
-    elseif ($kick) {
-      $roomValid['admin'] = false;
-      $reason = 'kicked';
+
+    if ($type2 == 'moderate') {
+      if ($banned) {
+        $roomValid['moderate'] = false;
+        $reason = 'banned';
+      }
+      elseif (!$valid) {
+        $roomValid['moderate'] = false;
+        $reason = 'invalid';
+      }
+      elseif ($kick && !$isAdmin) {
+        $roomValid['moderate'] = false;
+        $reason = 'kicked';
+      }
+      elseif ($isPrivateRoom) {
+        $roomValid['moderate'] = false;
+        $reason = 'private';
+      }
+      elseif ($isOwner || $isModerator || $isAdmin) {
+        $roomValid['moderate'] = true;
+      }
+      else {
+        $roomValid['moderate'] = false;
+        $reason = 'general';
+      }
     }
-    elseif ($isPrivateRoom) {
-      $roomValid['admin'] = false;
-      $reason = 'private';
-    }
-    elseif ($isAdmin) {
-      $roomValid['admin'] = true;
-    }
-    else {
-      $roomValid['admin'] = false;
-      $reason = 'general';
+
+    if ($type2 == 'admin') {
+      if ($banned) {
+        $roomValid['admin'] = false;
+        $reason = 'banned';
+      }
+      elseif (!$valid) {
+        $roomValid['admin'] = false;
+        $reason = 'invalid';
+      }
+      elseif ($kick) {
+        $roomValid['admin'] = false;
+        $reason = 'kicked';
+      }
+      elseif ($isPrivateRoom) {
+        $roomValid['admin'] = false;
+        $reason = 'private';
+      }
+      elseif ($isAdmin) {
+        $roomValid['admin'] = true;
+      }
+      else {
+        $roomValid['admin'] = false;
+        $reason = 'general';
+      }
     }
   }
 
 
   if ($quick) {
-    return ($type == 'all' ? $roomValid : $roomValid[$type]);
+    return (count($type) > 1 ? $roomValid : $roomValid[$type[0]]);
   }
   else {
     return array(
-      ($type == 'all' ? $roomValid : $roomValid[$type]),
+      (count($type) > 1 ? $roomValid : $roomValid[$type[0]]),
       $reason,
       $kick['expiresOn']
     );

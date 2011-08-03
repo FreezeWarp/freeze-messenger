@@ -195,7 +195,7 @@ $rooms = $rooms->getAsArray(true);
 if (is_array($rooms)) {
   if (count($rooms) > 0) {
     foreach ($rooms AS $room) {
-      $permissions = fim_hasPermission($room,$user,'all',false);
+      $permissions = fim_hasPermission($room,$user,array('post','view','topic','moderate','admin'),false);
 
       if ($permissions[0][$request['permLevel']] === false) {
         continue;
@@ -223,7 +223,6 @@ if (is_array($rooms)) {
             'canAdmin' => (bool) $permissions[0]['admin'],
             'canPost' => (bool) $permissions[0]['post'],
             'canView' => (bool) $permissions[0]['view'],
-            'canKnow' => (bool) $permissions[0]['know'],
           ),
         );
 
