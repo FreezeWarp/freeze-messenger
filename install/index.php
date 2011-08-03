@@ -418,10 +418,21 @@ switch ($_REQUEST['phase']) {
 
             case 'bitfield':
             if (!isset($column['@bits'])) {
-              $typePiece = 'BIT(8)'; // Sane default
+              $typePiece = 'TINYINT UNSIGNED'; // Sane default
             }
             else {
-              $typePiece = 'BIT(' . (int) $column['@bits'] . ')'; // This is new to MySQL 5.0.5 (5.0.3 for MySIAM). In theory, INT would be just as good (though unoptimized), but meh.
+              if ($column['@bits'] <= 8) {
+                $typePiece = 'TINYINT UNSIGNED';
+              }
+              elseif ($column['@bits'] <= 16) {
+                $typePiece = 'SMALLINT UNSIGNED';
+              }
+              elseif ($column['@bits'] <= 24) {
+                $typePiece = 'MEDIUMINT UNSIGNED';
+              }
+              elseif ($column['@bits'] <= 32) {
+                $typePiece = 'INTEGER UNSIGNED';
+              }
             }
             break;
 
