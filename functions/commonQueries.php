@@ -25,9 +25,7 @@ class fimDatabase extends database {
         'roomName' => 'roomName',
         'roomTopic' => 'roomTopic',
         'owner' => 'owner',
-        'allowedUsers' => 'allowedUsers',
-        'allowedGroups' => 'allowedGroups',
-        'moderators' => 'moderators',
+        'defaultPermissions' => 'defaultPermissions',
         'options' => 'options',
       ),
     );
