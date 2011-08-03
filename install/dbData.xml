@@ -445,14 +445,14 @@
       <column name="type" value="array" />
     </table>
     <table name="configuration">
-      <column name="directive" value="cacheKicksRefresh" />
+      <column name="directive" value="kicksCacheRefresh" />
       <column name="value" value="60" />
       <column name="type" value="int" />
     </table>
     <table name="configuration">
-      <column name="directive" value="cacheKicks" />
-      <column name="value" value="false" />
-      <column name="type" value="bool" />
+      <column name="directive" value="permissionsCacheRefresh" />
+      <column name="value" value="300" />
+      <column name="type" value="int" />
     </table>
     <table name="configuration">
       <column name="directive" value="longPolling" />
