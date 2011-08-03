@@ -161,7 +161,7 @@ if ($continue) {
     $errStr = 'badroom';
     $errDesc = 'That room could not be found.';
   }
-  elseif (strlen($request['message']) == 0 || strlen($request['message']) > (isset($config['maxMessageLength']) ? $config['maxMessageLength'] : 1000)) { // Too short/long.
+  elseif (strlen($request['message']) == 0 || strlen($request['message']) > $config['maxMessageLength']) { // Too short/long.
     $errStr = 'badmessage';
     $errDesc = 'The message you entered is either too long or too short.';
   }

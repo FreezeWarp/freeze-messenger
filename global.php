@@ -52,6 +52,8 @@ $defaultConfig = array(
   'disableTopic' => false,
   'enableUploads' => false,
   'enableGeneralUploads' => false,
+  'fileUploadChunkSize' => 1024,
+  'maxMessageLength' => 1000,
   'dev' => false,
 );
 

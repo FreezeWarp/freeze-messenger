@@ -223,7 +223,7 @@ $request = fim_sanitizeGPC(array(
     'onlineThreshold' => array(
       'type' => 'int',
       'require' => false,
-      'default' => (isset($config['defaultOnlineThreshold']) ? $config['defaultOnlineThreshold'] : 15),
+      'default' => $config['defaultOnlineThreshold'],
       'context' => array(
         'type' => 'int',
       ),
@@ -232,7 +232,7 @@ $request = fim_sanitizeGPC(array(
     'messageLimit' => array(
       'type' => 'int',
       'require' => false,
-      'default' => (isset($config['defaultMessageLimit']) ? $config['defaultMessageLimit'] : 10000),
+      'default' => 10000,
       'context' => array(
         'type' => 'int',
       ),
@@ -241,7 +241,7 @@ $request = fim_sanitizeGPC(array(
     'messageHardLimit' => array(
       'type' => 'int',
       'require' => false,
-      'default' => (isset($config['defaultMessageHardLimit']) ? $config['defaultMessageHardLimit'] : 50),
+      'default' => 50,
       'context' => array(
         'type' => 'int',
       ),
@@ -837,7 +837,7 @@ if (is_array($request['rooms'])) {
             ($hook = hook('getMessages_postMessages_longPolling_repeat') ? eval($hook) : '');
 
             if ($longPollingRetries <= $config['longPollingMaxRetries']) {
-              sleep(isset($config['longPollingWait']) ? $config['longPollingWait'] : 2);
+              sleep($config['longPollingWait']);
             }
           }
 

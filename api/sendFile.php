@@ -135,7 +135,7 @@ if ($request['uploadMethod'] == 'put') { // This is an unsupported alternate upl
   $putResource = fopen("php://input", "r"); // file data is from stdin
   $request['fileData'] = ''; // The only real change is that we're getting things from stdin as opposed to from the headers. Thus, we'll just translate the two here.
 
-  while ($fileContents = fread($putResource, (isset($config['fileUploadChunkSize']) ? $config['fileUploadChunkSize'] : 1024))) { // Read the resource using 1KB chunks. This is slower than a higher chunk, but also avoids issues for now. It can be overridden with the config directive fileUploadChunkSize.
+  while ($fileContents = fread($putResource, $config['fileUploadChunkSize'])) { // Read the resource using 1KB chunks. This is slower than a higher chunk, but also avoids issues for now. It can be overridden with the config directive fileUploadChunkSize.
     $request['fileData'] = $fileContents; // We're not sure if this will work, since there are indications you have to write to a file instead.
   }
 
