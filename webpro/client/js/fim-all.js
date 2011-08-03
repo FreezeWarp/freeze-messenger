@@ -90,7 +90,8 @@ var roomRef = {}, // Object
 
   fontSelectHtml = '',
 
-  active = {}; // Object which will be used to store various JSON results
+  active = {}, // Object which will be used to store various JSON results
+  uploadFileTypes = {};
 
 
 
@@ -456,6 +457,30 @@ $.ajax({
     requestSettings.serverSentEvents = false;
 
     return false;
+  }
+});
+
+$.ajax({
+  url: directory + 'api/getFileTypes.php?fim3_format=json',
+  type: 'GET',
+  timeout: 1000,
+//  dataType: 'json',
+  success: function(json) {
+    console.log('Upload file types obtained.');
+
+    active = json.getFileTypes.fileTypes;
+
+    for (i in active) {
+      uploadFileTypes[active[i].extension] = {
+        extension : active[i].extension,
+        maxSize : active[i].maxSize,
+        mime : active[i].mime,
+        container : active[i].container,
+      }
+    }
+  },
+  error: function() {
+    dia.error('Warning','Upload file types not retrieved.')
   }
 });
 

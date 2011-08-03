@@ -213,27 +213,33 @@ if ($continue) {
     else {
       if (isset($mimes[$fileNameParts[1]])) {
         $mime = $mimes[$fileNameParts[1]]['mime'];
+        $container = $mimes[$fileNameParts[1]]['container'];
+        $maxSize = $mimes[$fileNameParts[1]]['maxSize'];
 
         $sha256hash = hash('sha256',$rawData);
         $md5hash = hash('md5',$rawData);
 
-/*        if ($encryptUploads) {
+        if ($encryptUploads) {
           list($contentsEncrypted,$iv,$saltNum) = fim_encrypt($rawData);
           $saltNum = intval($saltNum);
         }
-        else {*/
+        else {
           $contentsEncrypted = base64_encode($rawData);
           $iv = '';
           $saltNum = '';
-//        }
+        }
 
         if (!$rawData) {
           $errStr = 'emptyFile';
           $errDesc = $phrases['uploadErrorFileContents'];
         }
-        elseif (strlen($rawData) == 0) { // Note: Data is stored as base64 because its easier to handle; thus, the data will be about 33% larger than the normal (thus, if a limit is normally 400KB the file must be smaller than 300KB).
-          $errStr = 'empty';
-          $errDesc = 'The file uploaded is too large.';
+        elseif (strlen($rawData) == 0) {
+          $errStr = 'emptyFile';
+          $errDesc = $phrases['uploadErrorFileContents'];
+        }
+        elseif (strlen($rawData) > $maxSize) { // Note: Data is stored as base64 because its easier to handle; thus, the data will be about 33% larger than the normal (thus, if a limit is normally 400KB the file must be smaller than 300KB).
+          $errStr = 'tooLarge';
+          $errDesc = $phrases['uploadErrorFileSize'];
         }
         else {
           $prefile = $database->select(
@@ -307,7 +313,7 @@ if ($continue) {
             if ($request['roomId']) {
               $room = $slaveDatabase->getRoom($request['roomId']);
 
-              fim_sendMessage($webLocation,$user,$room,'image');
+              fim_sendMessage($webLocation, $user, $room, $container);
             }
           }
         }
