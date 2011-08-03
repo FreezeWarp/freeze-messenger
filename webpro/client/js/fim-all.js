@@ -596,13 +596,13 @@ function populate(options) {
           if (isFav) {
             roomUlFavHtml += ulText;
           }
-          if (isOwner && !isPriv) {
+          else if (isOwner && !isPriv) {
             roomUlMyHtml += ulText;
           }
-          if (isPriv) {
+          else if (isPriv) {
             roomUlPrivHtml += ulText;
           }
-          if (!isFav && !isOwner && !isPriv) {
+          else {
             roomUlHtml += ulText;
           }
 

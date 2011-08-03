@@ -54,6 +54,21 @@
     </table>
 
 
+    <table name="events" type="memory" comment="Events that can be queried by event scripts.">
+      <column name="eventId" type="int" maxlen="8" autoincrement="true" comment="A unique identifier for the event." />
+      <column name="eventName" type="string" maxlen="10" autoincrement="true" comment="The name of the event (e.g. topic-change)." />
+      <column name="userId" type="int" maxlen="8" comment="The user ID, if applicable." />
+      <column name="roomId" type="int" maxlen="8" comment="The room ID, if applicable." />
+      <column name="messageId" type="int" maxlen="8" comment="The message ID, if applicable." />
+      <column name="param1" type="string" maxlen="20" comment="An addition parameter." />
+      <column name="param2" type="string" maxlen="20" comment="An addition parameter." />
+      <column name="param3" type="string" maxlen="20" comment="An addition parameter." />
+
+      <key name="eventId" type="primary" />
+      <key name="eventName" type="index" />
+    </table>
+
+
     <table name="files" type="general" comment="User-created files.">
       <column name="fileId" type="int" maxlen="6" autoincrement="true" comment="A unique ID for the file." />
       <column name="fileName" type="string" maxlen="255" comment="The file's name to be sent for downloading." />

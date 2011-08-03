@@ -99,54 +99,201 @@ else {
       'messageId' => 'asc',
     );
 
+
+
+    $queryParts['missedMessages']['columns'] = array(
+      "{$sqlPrefix}rooms" => array(
+        'roomId' => 'roomId',
+        'options' => 'options',
+        'allowedUsers' => 'allowedUsers',
+        'lastMessageTime' => array(
+          'context' => 'time',
+          'name' => 'lastMessageTime',
+        ),
+      ),
+      "{$sqlPrefix}ping" => array(
+        'time' => array(
+          'context' => 'time',
+          'name' => 'pingTime',
+        ),
+        'userId' => 'puserId',
+        'roomId' => 'proomId',
+      ),
+    );
+
+    $queryParts['missedMessages']['conditions'] = array(
+      'both' => array(
+        array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'userId',
+          ),
+          'right' => array(
+            'type' => 'int',
+            'value' => (int) $user['userId'],
+          ),
+        ),
+        array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'roomId',
+          ),
+          'right' => array(
+            'type' => 'column',
+            'value' => 'proomId',
+          ),
+        ),
+        'either' => array(
+          array(
+            'type' => 'bitwise',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'options',
+            ),
+            'right' => array(
+              'type' => 'int',
+              'value' => 16,
+            ),
+          ),
+          array(
+            'type' => 'in',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'roomId',
+            ),
+            'right' => array(
+              'type' => 'array',
+              'value' => fim_arrayValidate(explode(',',$user['watchRooms']),'int',false),
+            ),
+          ),
+        ),
+        'either' => array(
+          array(
+            'type' => 'regexp',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'allowedUsers',
+            ),
+            'right' => array(
+              'type' => 'regexp',
+              'value' => '(' . (int) $user['userId'] . ',|' . (int) $user['userId'] . ')$',
+            ),
+          ),
+          array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'allowedUsers',
+            ),
+            'right' => array(
+              'type' => 'string',
+              'value' => '*',
+            ),
+          ),
+        ),
+        array(
+          'type' => 'gt',
+          'left' => array( // Quick Note: Context: time is redunant and will cause issues if defined.
+            'type' => 'column',
+            'value' => 'time',
+          ),
+          'right' => array(
+            'type' => 'equation',
+            'value' => '$time + 10',
+          ),
+        ),
+      ),
+    );
+
+
+
     $messages = $database->select($queryParts['messagesSelect']['columns'],
       $queryParts['messagesSelect']['conditions'],
       $queryParts['messagesSelect']['sort']);
     $messages = $messages->getAsArray('messageId');
     $messagesOutput = array();
 
-    if (count($messages) > 0) {
-      foreach ($messages AS $message) {
-        $messagesOutput[] = array(
-          'messageData' => array(
+    $missedMessages = $database->select(
+      $queryParts['missedMessages']['columns'],
+      $queryParts['missedMessages']['conditions']);
+    $missedMessages = $missedMessages->getAsArray();// AND (r.allowedUsers REGEXP  OR r.allowedUsers = '*') AND IF(p.time, UNIX_TIMESTAMP(r.lastMessageTime) > (UNIX_TIMESTAMP(p.time) + 10), TRUE)
+
+
+    if (is_array($missedMessages)) {
+      if (count($missedMessages) > 0) {
+        foreach ($missedMessages AS $message) {
+          if (!fim_hasPermission($message,$user,'view',true)) {
+            ($hook = hook('getMessages_watchRooms_noPerm') ? eval($hook) : '');
+
+            continue;
+          }
+
+          $missedMessagesOutput = array(
             'roomId' => (int) $message['roomId'],
-            'messageId' => (int) $message['messageId'],
-            'messageTime' => (int) $message['time'],
-            'messageTimeFormatted' => fim_date(false,$message['time']),
-            'messageText' => array(
-              'apiText' => ($message['apiText']),
-              'htmlText' => ($message['htmlText']),
-            ),
-            'flags' => ($message['flag']),
-          ),
-          'userData' => array(
-            'userName' => ($message['userName']),
-            'userId' => (int) $message['userId'],
-            'userGroup' => (int) $message['userGroup'],
-            'avatar' => ($message['avatar']),
-            'socialGroups' => ($message['socialGroups']),
-            'startTag' => ($message['userFormatStart']),
-            'endTag' => ($message['userFormatEnd']),
-            'defaultFormatting' => array(
-              'color' => ($message['defaultColor']),
-              'highlight' => ($message['defaultHighlight']),
-              'fontface' => ($message['defaultFontface']),
-              'general' => (int) $message['defaultFormatting']
-            ),
+            'roomName' => ($message['roomName']),
+            'lastMessageTime' => (int) $message['lastMessageTimestamp'],
+          );
 
-          )
-        );
+          echo "event: missedMessage\n";
+          echo "data: " . json_encode($missedMessagesOutput) . "\n\n";
+          flush();
 
-        if ($message['messageId'] > $lastMessage) {
-          $lastMessage = $message['messageId'];
+          if (ob_get_level()) {
+            ob_flush();
+          }
+
+          ($hook = hook('getMessages_watchRooms_eachRoom') ? eval($hook) : '');
         }
+      }
+    }
 
-        echo "event: message\n";
-        echo "data: " . json_encode($messagesOutput) . "\n\n";
-        flush();
 
-        if (ob_get_level()) {
-          ob_flush();
+    if (is_array($messages)) {
+      if (count($messages) > 0) {
+        foreach ($messages AS $message) {
+          $messagesOutput[] = array(
+            'messageData' => array(
+              'roomId' => (int) $message['roomId'],
+              'messageId' => (int) $message['messageId'],
+              'messageTime' => (int) $message['time'],
+              'messageTimeFormatted' => fim_date(false,$message['time']),
+              'messageText' => array(
+                'apiText' => ($message['apiText']),
+                'htmlText' => ($message['htmlText']),
+              ),
+              'flags' => ($message['flag']),
+            ),
+            'userData' => array(
+              'userName' => ($message['userName']),
+              'userId' => (int) $message['userId'],
+              'userGroup' => (int) $message['userGroup'],
+              'avatar' => ($message['avatar']),
+              'socialGroups' => ($message['socialGroups']),
+              'startTag' => ($message['userFormatStart']),
+              'endTag' => ($message['userFormatEnd']),
+              'defaultFormatting' => array(
+                'color' => ($message['defaultColor']),
+                'highlight' => ($message['defaultHighlight']),
+                'fontface' => ($message['defaultFontface']),
+                'general' => (int) $message['defaultFormatting']
+              ),
+
+            )
+          );
+
+          if ($message['messageId'] > $lastMessage) {
+            $lastMessage = $message['messageId'];
+          }
+
+          echo "event: message\n";
+          echo "data: " . json_encode($messagesOutput) . "\n\n";
+          flush();
+
+          if (ob_get_level()) {
+            ob_flush();
+          }
         }
       }
     }
