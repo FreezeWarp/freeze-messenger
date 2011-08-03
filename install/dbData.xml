@@ -465,8 +465,13 @@
       <column name="type" value="float" />
     </table>
     <table name="configuration">
+      <column name="directive" value="longPollingMaxRetries" />
+      <column name="value" value="100" />
+      <column name="type" value="int" />
+    </table>
+    <table name="configuration">
       <column name="directive" value="serverSentEvents" />
-      <column name="value" value="false" />
+      <column name="value" value="true" />
       <column name="type" value="bool" />
     </table>
     <table name="configuration">

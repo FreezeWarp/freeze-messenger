@@ -277,6 +277,7 @@ $request = fim_sanitizeGPC(array(
 
 if ($config['longPolling'] && $request['longPolling'] === true) {
   $config['longPolling'] = true;
+  $longPollingRetries = 0;
 
   set_time_limit(0);
   ini_set('max_execution_time',0);
@@ -824,6 +825,8 @@ if (is_array($request['rooms'])) {
         if ($config['longPolling']) {
 
           while (!$messages) {
+            $longPollingRetries++;
+
             $messages = $database->select($queryParts['messagesSelect']['columns'],
               $queryParts['messagesSelect']['conditions'],
               $queryParts['messagesSelect']['sort'],
@@ -833,7 +836,9 @@ if (is_array($request['rooms'])) {
 
             ($hook = hook('getMessages_postMessages_longPolling_repeat') ? eval($hook) : '');
 
-            sleep(isset($config['longPollingWait']) ? $config['longPollingWait'] : 2);
+            if ($longPollingRetries <= $config['longPollingMaxRetries']) {
+              sleep(isset($config['longPollingWait']) ? $config['longPollingWait'] : 2);
+            }
           }
 
           ($hook = hook('getMessages_postMessages_longPolling') ? eval($hook) : '');
