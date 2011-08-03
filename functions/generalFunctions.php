@@ -99,7 +99,7 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false) {
 */
 
 function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false) {
-  global $sqlPrefix, $banned, $loginConfig, $valid, $database, $config, $cachedKicks;
+  global $sqlPrefix, $banned, $loginConfig, $valid, $database, $config, $kicksCache, $permissionsCache;
 
   $isAdmin = false;
   $isModerator = false;
@@ -148,66 +148,13 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
   /* Get the User's Kick Status */
   if (isset($userData['userId'])) {
     if ($userData['userId'] > 0) {
-      if (count($cachedKicks) > 0) {
-        if (isset($cachedKicks[$roomData['roomId']][$userData['userId']])) {
+      if (count($kicksCache) > 0) {
+        if (isset($kicksCache[$roomData['roomId']][$userData['userId']])) {
           $kick = true;
         }
         else {
           $kick = false;
         }
-      }
-      else {
-        $kick = $database->select(
-          array(
-            "{$sqlPrefix}kicks" => array(
-              'time' => array(
-                'context' => 'time',
-                'name' => 'kickedOn',
-              ),
-              'userId' => 'userId',
-              'roomid' => 'roomId',
-              'length' => 'length',
-            ),
-          ),
-          array(
-            'both' => array(
-              array(
-                'type' => 'gt',
-                'left' => array(
-                  'type' => 'equation',
-                  'value' => '$kickedOn + $length',
-                ),
-                'right' => array(
-                  'type' => 'int',
-                  'value' => (int) time(),
-                ),
-              ),
-              array(
-                'type' => 'e',
-                'left' => array(
-                  'type' => 'column',
-                  'value' => 'userId',
-                ),
-                'right' => array(
-                  'type' => 'int',
-                  'value' => (int) $userData['userId'],
-                ),
-              ),
-              array(
-                'type' => 'e',
-                'left' => array(
-                  'type' => 'column',
-                  'value' => 'roomId',
-                ),
-                'right' => array(
-                  'type' => 'int',
-                  'value' => (int) $roomData['roomId'],
-                ),
-              ),
-            ),
-          )
-        );
-        $kick = ($kick->getAsArray(false) ? true : false);
       }
     }
   }
