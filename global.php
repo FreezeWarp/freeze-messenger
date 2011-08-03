@@ -564,9 +564,4 @@ if (isset($apiRequest)) { // Compress Output for transfer if configured to, and 
     ob_start('fim_htmlCompact');
   }
 }
-
-/* Establish Dev/Non-Dev Bits */
-if ($config['dev'] !== true) {
-  error_reporting(E_ALL ^ E_NOTICE);
-}
 ?>
