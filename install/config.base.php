@@ -177,8 +177,10 @@ $anonymousUser = 0;
 
 
 
+
 ///* Save Me! *///
 ///* These disable certain customizations in case things go horribly wrong. *///
+
 /* $disableHooks
  * Disable code hooks, used by plugins.
  * If you add a plugin and things break so much that you can't disable the plugin, set this to true. */
@@ -189,9 +191,6 @@ $disableHooks = false;
  * Use this if a configuration change makes it impossible to revert said change. */
 $disableConfig = false;
 
-// Unlisted variables: $config['defaultMessageLimit'], $config['defaultOnlineThreshold'], $installUrl, $installLoc, $sessionExpire, $roomLengthLimit
+// Unlisted variables: $installUrl, $installLoc, $sessionExpire
 // Learn about them in the documentation.
-
-
-// In future versions, many configuration variables may be moved to the DB. But, as of now, this is significantly faster.
 ?>

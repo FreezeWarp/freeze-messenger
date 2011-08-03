@@ -524,5 +524,10 @@
       <column name="value" value="20" />
       <column name="type" value="int" />
     </table>
+    <table name="configuration">
+      <column name="directive" value="apiPause" />
+      <column name="value" value=".125" />
+      <column name="type" value="float" />
+    </table>
   </database>
 </dbData>
