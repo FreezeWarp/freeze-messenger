@@ -260,9 +260,9 @@
 
 
     <table name="roomPermissions" type="general" content="Groups and users who are granted access to rooms.">
-      <column name="roomId" type="int" maxlen="6" autoincrement="true" comment="The room ID." />
+      <column name="roomId" type="int" maxlen="6" comment="The room ID." />
       <column name="attribute" type="string" restrict="user,group,admingroup" comment="Whether the param column corrosponds to a user, group, or admin-defined group." />
-      <column name="param" type="int" maxlen="8" autoincrement="true" comment="The user ID, group ID, or admin-defined group ID being affected." />
+      <column name="param" type="int" maxlen="8" comment="The user ID, group ID, or admin-defined group ID being affected." />
       <column name="permissions" type="bitfield" bits="8" comment="The permissions granted in the room to the affected user or group." />
 
       <key name="roomId,attribute,param" type="primary" />
