@@ -2501,7 +2501,7 @@ popup = {
             dia.error('The roomname is too long.');
           }
           else {
-            $.post(directory + 'api/editRoom.php','action=edit&roomId=' + roomIdLocal + '&name=' + urlencode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
+            $.post(directory + 'api/editRoom.php','action=edit&roomId=' + roomIdLocal + '&roomName=' + urlencode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
               var errStr = unxml($(xml).find('errStr').text().trim()),
                 errDesc = unxml($(xml).find('errDesc').text().trim());
 

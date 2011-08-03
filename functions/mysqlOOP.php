@@ -916,13 +916,13 @@ class databaseResult {
     switch ($this->language) {
       case 'mysql':
       switch ($operation) {
-        case 'fetchAsArray' : return mysql_fetch_assoc($args[1]); break;
+        case 'fetchAsArray' : return (($data = mysql_fetch_assoc($args[1])) === false ? false : $data); break;
       }
       break;
 
       case 'mysqli':
       switch ($operation) {
-        case 'fetchAsArray' : return mysqli_fetch_assoc($args[1]); break;
+        case 'fetchAsArray' : return (($data = mysqli_fetch_assoc($args[1])) === null ? false : $data); break;
       }
       break;
     }

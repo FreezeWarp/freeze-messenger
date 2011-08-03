@@ -1,63 +1,6 @@
 <?php
 error_reporting(E_ALL ^ E_NOTICE);
-/*if (file_exists('config.php')) {
-  die('The configuration file (config.php) exists. Please remove it before attempting reinstallation.');
-}*/
 
-
-// http://www.php.net/manual/en/ref.simplexml.php#103617
-// Modified for addition recursion needed for the specific code used.
-/*function xml2array($xmlObject, $out = array()) {
-//return $xmlObject;
-  foreach ($xmlObject->children() AS $node) {
-    $out
-  }
-/*  $xmlObject = (array) $xmlObject;
-  foreach ($xmlObject as $index => $node) {
-    if (is_array($node)) {
-      foreach ($node AS $index2 => $node2) {
-        $node[$index2] = (is_object($node2)) ? xml2array($node2) : $node2;
-      }
-    }
-
-    if (is_object($node)) { var_dump($node->attributes());
-      $out[$index][0] = xml2array($node);
-    }
-    else {
-      $out[$index] = $node;
-    }
-  }
-
-  return $out;
-return $out;
-}*//*
-function xml2array($obj, &$arr)
-{
-    $children = $obj->children();
-    foreach ($children as $elementName => $node)
-    {
-        $nextIdx = count($arr);
-        $arr[$nextIdx] = array();
-        $arr[$nextIdx]['@name'] = strtolower((string)$elementName);
-        $arr[$nextIdx]['@attributes'] = array();
-        $attributes = $node->attributes();
-        foreach ($attributes as $attributeName => $attributeValue)
-        {
-            $attribName = strtolower(trim((string)$attributeName));
-            $attribVal = trim((string)$attributeValue);
-            $arr[$nextIdx]['@attributes'][$attribName] = $attribVal;
-        }
-        $text = (string)$node;
-        $text = trim($text);
-        if (strlen($text) > 0)
-        {
-            $arr[$nextIdx]['@text'] = $text;
-        }
-        $arr[$nextIdx]['@children'] = array();
-        xml2array($node, $arr[$nextIdx]['@children']);
-    }
-    return;
-}  */
 require('../functions/simpleXml.php');
 
 

@@ -49,6 +49,7 @@ $defaultConfig = array(
   'disableTopic' => false,
   'enableUploads' => false,
   'enableGeneralUploads' => false,
+  'dev' => false,
 );
 
 
@@ -531,5 +532,10 @@ if (isset($apiRequest)) { // Compress Output for transfer if configured to, and 
   if ($apiRequest && $config['compressOutput']) {
     ob_start('fim_htmlCompact');
   }
+}
+
+/* Establish Dev/Non-Dev Bits */
+if ($config['dev'] !== true) {
+  error_reporting(E_ALL ^ E_NOTICE);
 }
 ?>

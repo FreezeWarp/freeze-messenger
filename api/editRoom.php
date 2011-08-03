@@ -191,7 +191,11 @@ switch($request['action']) {
   $roomLengthLimit = ($config['roomLengthLimit'] ? $config['roomLengthLimit'] : 20);
   $room = $slaveDatabase->getRoom($request['roomId']);
 
-  if (strlen($request['roomName']) == 0) { // The name must exist :P
+  if (!$room) {
+    $errStr = 'noRoom';
+    $errDesc = 'The room specified does not exist.';
+  }
+  elseif (strlen($request['roomName']) == 0) { // The name must exist :P
     $errStr = 'noName';
     $errDesc = 'A room name was not supplied.';
   }
@@ -199,7 +203,7 @@ switch($request['action']) {
     $errStr = 'longName';
     $errDesc = 'The room name specified is too long.';
   }
-  elseif (hasPermission($room,$user,'admin')) { // The user must be an admin (or, inherently, the room's owner) to edit rooms.
+  elseif (!fim_hasPermission($room, $user, 'admin', true)) { // The user must be an admin (or, inherently, the room's owner) to edit rooms.
     $errStr = 'noPerm';
     $errDesc = 'You do not have permission to edit this room.';
   }
@@ -218,9 +222,11 @@ switch($request['action']) {
 //      $listsActive = dbRows("SELECT listId, status FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomId = $room[roomId]",'listId'); // TODO
       $lists = $slaveDatabase->select(
         array(
-          "{$sqlPrefix}censorBlackWhiteLists" => array(
-            'type' => 'type',
+          "{$sqlPrefix}censorLists" => array(
             'listId' => 'listId',
+            'listName' => 'listName',
+            'listType' => 'listType',
+            'options' => 'options',
           ),
         ),
         array(
@@ -233,7 +239,7 @@ switch($request['action']) {
               ),
               'right' => array(
                 'type' => 'int',
-                'value' => 2,
+                'value' => 1,
               ),
             ),
           ),
@@ -312,7 +318,7 @@ switch($request['action']) {
       }
 
       $database->update(array(
-          'roomName' => $roomName,
+          'roomName' => $request['roomName'],
           'allowedGroups' => implode(',',$request['allowedGroups']),
           'allowedUsers' => implode(',',$request['allowedUsers']),
           'moderators' => implode(',',$request['moderators']),
@@ -413,7 +419,7 @@ switch($request['action']) {
   case 'delete':
   $room = $slaveDatabase->getRoom($request['roomId']);
 
-  if (hasPermission($room,$user,'admin')) {
+  if (fim_hasPermission($room, $user, 'admin', true)) {
     if ($room['options'] & 4) {
       $errStr = 'alreadydeleted';
       $errDesc = 'The room is already deleted.';
@@ -438,7 +444,7 @@ switch($request['action']) {
   case 'undelete':
   $room = $slaveDatabase->getRoom($request['roomId']);
 
-  if (hasPermission($room,$user,'admin')) {
+  if (fim_hasPermission($room, $user, 'admin', true)) {
     if ($room['options'] & 4) {
       $errStr = 'alreadydeleted';
       $errDesc = 'The room is already deleted.';
