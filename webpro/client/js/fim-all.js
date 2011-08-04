@@ -2417,21 +2417,22 @@ popup = {
       position : 'top',
       oF : function() {
         $.ajax({
-          url: directory + 'api/getFiles.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+          url: directory + 'api/getFiles.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
           type: 'GET',
           timeout: 2400,
           cache: false,
-          success: function(xml) {
+          success: function(json) {
             var data = '';
+            active = json.getFiles.files;
 
-            $(xml).find('upload').each(function() {
-              var fileName = unxml($(this).find('fileName').text().trim()),
-                md5hash = $(this).find('md5hash').text().trim(),
-                sha256hash = $(this).find('sha256hash').text().trim(),
-                fileSize = unxml($(this).find('sizeFormatted').text().trim());
+            for (i in active) {
+              var fileName = active[i].fileName,
+                md5hash = active[i].md5hash,
+                sha256hash = active[i].sha256hash,
+                fileSize = active[i].fileSize;
 
-                data += '<tr><td><img src="' + directory + 'file.php?sha256hash=' + sha256hash + '" style="max-width: 200px; max-height: 200px;" /></td><td>' + fileName + '</td></tr>';
-            });
+              data += '<tr><td><img src="' + directory + 'file.php?sha256hash=' + sha256hash + '" style="max-width: 200px; max-height: 200px;" /></td><td>' + fileName + '</td></tr>';
+            }
 
             $('#viewUploadsBody').html(data);
 
@@ -3724,16 +3725,17 @@ $(document).ready(function() {
     prepopup();
   }
 
-  return false;
-
-
 
 
   /* Window Manipulation (see below) */
 
   $(window).bind('resize',windowResize);
-  window.onblur = windowBlur;
-  window.onfocus = windowFocus;
+  window.onblur = function() { windowBlur(); }
+  window.onfocus = function() { windowFocus(); }
+
+
+
+  return false;
 });
 
 /*********************************************************

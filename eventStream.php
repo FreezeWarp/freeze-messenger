@@ -25,7 +25,6 @@ else {
   header('Content-Type: text/event-stream');
   header('Cache-Control: no-cache'); // recommended to prevent caching of event data.
 
-  $lastMessage = 0;
   $lastEvent = 0;
 
   /* Get Request Data */
@@ -38,6 +37,15 @@ else {
         'context' => array(
           'type' => 'int',
           'evaltrue' => true,
+        ),
+      ),
+      'lastMessage' => array(
+        'type' => 'string',
+        'require' => false,
+        'default' => 0,
+        'context' => array(
+          'type' => 'int',
+          'evaltrue' => false,
         ),
       ),
     ),
@@ -89,7 +97,7 @@ else {
           ),
           'right' => array(
             'type' => 'int',
-            'value' => (int) $lastMessage,
+            'value' => (int) $request['lastMessage'],
           ),
         ),
       ),
@@ -243,8 +251,8 @@ else {
             )
           );
 
-          if ($message['messageId'] > $lastMessage) {
-            $lastMessage = $message['messageId'];
+          if ($message['messageId'] > $request['lastMessage']) {
+            $request['lastMessage'] = $message['messageId'];
           }
 
           echo "event: message\n";

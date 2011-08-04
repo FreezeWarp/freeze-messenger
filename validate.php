@@ -731,8 +731,8 @@ if ($valid) { // If the user is valid, process their preferrences.
         'socialGroups' => ($socialGroups['groups']),
         'userPrivs' => (int) $priviledges,
         'lastSync' => array(
-          'type' => 'raw',
-          'value' => 'NOW()',
+          'type' => 'time',
+          'value' => '__TIME__',
         ),
       ),"{$sqlPrefix}users");
 
@@ -767,8 +767,8 @@ if ($valid) { // If the user is valid, process their preferrences.
         'profile' => $user2['profile'],
         'socialGroups' => $socialGroups['groups'],
         'lastSync' => array(
-          'type' => 'raw',
-          'value' => 'NOW()',
+          'type' => 'time',
+          'value' => '__TIME__',
         ),
       ),
       "{$sqlPrefix}users",

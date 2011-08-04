@@ -323,11 +323,11 @@
 
 
     <table name="unreadMessages" type="general" comment="Unread private messages.">
-      <column name="userId" type="int" maxlen="8" autoincrement="true" comment="The ID of the user who has yet to read the message." />
-      <column name="senderId" type="int" maxlen="8" autoincrement="true" comment="The ID of the user who sent the message." />
-      <column name="roomId" type="int" maxlen="6" autoincrement="true" comment="The ID of the room in question." />
+      <column name="userId" type="int" maxlen="8" comment="The ID of the user who has yet to read the message." />
+      <column name="senderId" type="int" maxlen="8" comment="The ID of the user who sent the message." />
+      <column name="roomId" type="int" maxlen="6" comment="The ID of the room in question." />
       <column name="messageId" type="int" maxlen="15" comment="The ID of the message." />
-      <column name="time" type="int" maxlen="8" default="__TIME__" update="__TIME__" comment="The time the message was made." />
+      <column name="time" type="time" default="__TIME__" update="__TIME__" comment="The time the message was made." />
 
       <key name="userId,messageId" type="primary" />
       <key name="userId" type="index" />

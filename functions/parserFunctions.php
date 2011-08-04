@@ -479,9 +479,9 @@ function fim_sendMessage($messageText, $userData, $roomData, $flag = '') {
   // Encrypt Message Data
   if ($salts && $encrypt) { // Only encrypt if we have both set salts and encrypt is enabled.
     list($messageDataEncrypted, $iv, $saltNum) = fim_encrypt( // Encrypt the values and return the new data, IV, and saltNum.
-      array('messageRaw' => $messageRaw,
-            'messageHtml' => $messageHtml,
-            'messageApi' => $messageApi
+      array('messageRaw' => $messageData['rawText'],
+            'messageHtml' => $messageData['htmlText'],
+            'messageApi' => $messageData['apiText'],
       )
     );
 

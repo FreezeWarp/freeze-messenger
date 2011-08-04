@@ -50,29 +50,29 @@ $request = fim_sanitizeGPC(array(
 
 /* Data Pre-Define */
 $xmlData = array(
-  'getUploads' => array(
+  'getFiles' => array(
     'activeUser' => array(
       'userId' => (int) $user['userId'],
       'userName' => ($user['userName']),
     ),
     'errStr' => $errStr,
     'errDesc' => $errDesc,
-    'uploads' => array(),
+    'files' => array(),
   ),
 );
 
 
 
 /* Plugin Hook Start */
-($hook = hook('getUploads_start') ? eval($hook) : '');
+($hook = hook('getFiles_start') ? eval($hook) : '');
 
 
 
 /* Get Uploads from Database */
-/*$uploads = dbRows("SELECT v.fileId, f.mime, f.name, f.rating, v.md5hash
+/*$files = dbRows("SELECT v.fileId, f.mime, f.name, f.rating, v.md5hash
   FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS v
   WHERE f.userId = $user[userId] AND f.fileId = v.fileId",'fileId');*/
-$uploads = $database->select(
+$files = $database->select(
   array(
     "{$sqlPrefix}files" => array(
       'fileId' => 'fileId',
@@ -105,15 +105,15 @@ $uploads = $database->select(
     ),
   )
 );
-$uploads = $uploads->getAsArray('fileId');
+$files = $files->getAsArray('fileId');
 
 
 
 /* Start Processing */
-if (is_array($uploads)) {
-  if (count($uploads) > 0) {
-    foreach ($uploads AS $file) {
-      $xmlData['getUploads']['uploads']['upload ' . $file['fileId']] = array(
+if (is_array($files)) {
+  if (count($files) > 0) {
+    foreach ($files AS $file) {
+      $xmlData['getFiles']['files']['file ' . $file['fileId']] = array(
         'fileSize' => (int) $file['fileSize'],
         'fileSizeFormatted' => formatSize($file['fileSize']),
         'fileName' => $file['fileName'],
@@ -123,7 +123,7 @@ if (is_array($uploads)) {
         'sha256hash' => $file['sha256hash'],
       );
 
-      ($hook = hook('getUploads_eachUpload') ? eval($hook) : '');
+      ($hook = hook('getFiles_eachUpload') ? eval($hook) : '');
     }
   }
 }
@@ -131,7 +131,7 @@ if (is_array($uploads)) {
 
 
 /* Plugin Hook End */
-($hook = hook('getUploads_end') ? eval($hook) : '');
+($hook = hook('getFiles_end') ? eval($hook) : '');
 
 
 
