@@ -15,11 +15,11 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 
-global $sqlPrefix, $config, $user;
-
 class fimDatabase extends database {
 
   public function getRoom($roomId, $roomName = false) {
+    global $sqlPrefix, $config, $user;
+
     $queryParts['roomSelect']['columns'] = array(
       "{$sqlPrefix}rooms" => array(
         'roomId' => 'roomId',
@@ -70,18 +70,20 @@ class fimDatabase extends database {
     }
 
 
-    $room = $this->select(
+    $roomData = $this->select(
       $queryParts['roomSelect']['columns'],
       $queryParts['roomSelect']['conditions'],
       false,
       false,
       1
     );
-    return $room->getAsArray(false);
+    return $roomData->getAsArray(false);
   }
 
 
   public function getUser($userId, $userName = false) {
+    global $sqlPrefix, $config, $user;
+
     $queryParts['userSelect']['columns'] = array(
       "{$sqlPrefix}users" => array(
         'userId' => 'userId',
@@ -133,18 +135,20 @@ class fimDatabase extends database {
     }
 
 
-    $user = $this->select(
+    $userData = $this->select(
       $queryParts['userSelect']['columns'],
       $queryParts['userSelect']['conditions'],
       false,
       false,
       1
     );
-    return $user->getAsArray(false);
+    return $userData->getAsArray(false);
   }
 
 
   public function getFont($fontId) {
+    global $sqlPrefix, $config, $user;
+
     $queryParts['fontSelect']['columns'] = array(
       "{$sqlPrefix}fonts" => array(
         'fontId' => 'fontId',
@@ -173,18 +177,20 @@ class fimDatabase extends database {
       return false;
     }
 
-    $font = $this->select(
+    $fontData = $this->select(
       $queryParts['fontSelect']['columns'],
       $queryParts['fontSelect']['conditions'],
       false,
       false,
       1
     );
-    return $font->getAsArray(false);
+    return $fontData->getAsArray(false);
   }
 
 
   public function getCensorList($listId) {
+    global $sqlPrefix, $config, $user;
+
     $queryParts['listSelect']['columns'] = array(
       "{$sqlPrefix}lists" => array(
         'listId' => 'listId',
@@ -213,18 +219,20 @@ class fimDatabase extends database {
       return false;
     }
 
-    $list = $this->select(
+    $listData = $this->select(
       $queryParts['listSelect']['columns'],
       $queryParts['listSelect']['conditions'],
       false,
       false,
       1
     );
-    return $list->getAsArray(false);
+    return $listData->getAsArray(false);
   }
 
 
   public function getMessage($messageId) {
+    global $sqlPrefix, $config, $user;
+
     $queryParts['messageSelect']['columns'] = array(
       "{$sqlPrefix}messages" => array(
         'messageId' => 'messageId',
@@ -259,18 +267,20 @@ class fimDatabase extends database {
       return false;
     }
 
-    $message = $this->select(
+    $messageData = $this->select(
       $queryParts['messageSelect']['columns'],
       $queryParts['messageSelect']['conditions'],
       false,
       false,
       1
     );
-    return $message->getAsArray(false);
+    return $messageDaata->getAsArray(false);
   }
 
 
   public function markMessageRead($messageId, $userId) {
+    global $sqlPrefix, $config, $user;
+
     $this->delete("{$sqlPrefix}unreadMessages",array(
       'messageId' => $messageId,
       'userId' => $userId),
@@ -279,6 +289,8 @@ class fimDatabase extends database {
 
 
   public function createEvent($eventName, $userId, $roomId, $messageId, $param1, $param2, $param3) {
+    global $sqlPrefix, $config, $user;
+
     $this->insert(array(
       'eventName' => $eventName,
       'userId' => $userId,
@@ -292,6 +304,8 @@ class fimDatabase extends database {
 
 
   public function storeMessage($userData, $roomData, $messageDataPlain, $messageDataEncrypted, $flag) {
+    global $sqlPrefix, $config, $user;
+
     // Insert into permenant datastore.
     $this->insert(array(
       'roomId' => (int) $roomData['roomId'],
@@ -342,7 +356,10 @@ class fimDatabase extends database {
 
     // Update room caches.
     $this->update(array(
-      'lastMessageTime' => '__TIME__',
+      'lastMessageTime' => array(
+        'type' => 'time',
+        'value' => '__TIME__',
+      ),
       'lastMessageId' => $messageId,
     ), "{$sqlPrefix}rooms", array(
       'roomId' => $roomData['roomId'],
@@ -362,6 +379,21 @@ class fimDatabase extends database {
     ));
 
 
+    // If the contact is a private communication, create an event and add to the message unread table.
+    if ($roomData['options'] & 16) {
+      foreach ($permissionsCache[$room['roomId']]['user'] AS $sendToUserId) {
+        $database->createEvent('missedMessage', $sendToUserId, $room['roomId'], $messageId, false, false, false); // name, user, room, message, p1, p2, p3
+
+        $this->insert(array(
+          'userId' => $sendToUserId,
+          'senderId' => $userData['userId'],
+          'roomId' => $roomData['roomId'],
+          'messageId' => $messageId
+        ), "{$sqlPrefix}unreadMessages");
+      }
+    }
+
+
     // Return the ID of the inserted message.
     return $messageId;
   }
@@ -377,6 +409,8 @@ class fimDatabase extends database {
   */
 
   function modLog($action, $data) {
+    global $sqlPrefix, $config, $user;
+
     if ($this->insert(array(
       'userId' => (int) $user['userId'],
       'ip' => $_SERVER['REMOTE_ADDR'],

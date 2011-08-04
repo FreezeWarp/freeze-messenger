@@ -62,6 +62,7 @@ function processVBulletin($user, $password) {
   }
 
   elseif ($user['password'] === md5($password . $user['salt'])) { // The password matches.
+
     return true;
   }
 

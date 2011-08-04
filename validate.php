@@ -115,7 +115,7 @@ if (isset($_POST['userName'],$_POST['password']) || isset($_POST['userId'],$_POS
         break;
 
         default:
-        define('LOGIN_FLAG','PASSWORD_ENCRYPT');
+        define('LOGIN_FLAG', 'PASSWORD_ENCRYPT');
         break;
       }
     }
@@ -305,34 +305,7 @@ $columnDefinitions = array(
 
 
 $queryParts['userSelect']['columns'] = array(
-  "{$sqlPrefix}users" => array(
-    'userId' => 'userId',
-    'userName' => 'userName',
-    'userGroup' => 'userGroup',
-    'allGroups' => 'allGroups',
-    'avatar' => 'avatar',
-    'profile' => 'profile',
-    'socialGroups' => 'socialGroups',
-    'userFormatStart' => 'userFormatStart',
-    'userFormatEnd' => 'userFormatEnd',
-    'password' => 'password',
-    'joinDate' => 'joinDate',
-    'birthDate' => 'birthDate',
-    'lastSync' => 'lastSync',
-    'defaultRoom' => 'defaultRoom',
-    'interface' => 'interface',
-    'favRooms' => 'favRooms',
-    'watchRooms' => 'watchRooms',
-    'ignoreList' => 'ignoreList',
-    'status' => 'status',
-    'defaultHighlight' => 'defaultHighlight',
-    'defaultColor' => 'defaultColor',
-    'defaultFontface' => 'defaultFontface',
-    'defaultFormatting' => 'defaultFormatting',
-    'userPrivs' => 'userPrivs',
-    'adminPrivs' => 'adminPrivs',
-    'lang' => 'lang',
-  ),
+  "{$sqlPrefix}users" => 'userId, userName, userGroup, allGroups, avatar, profile, socialGroups, userFormatStart, userFormatEnd, password, joinDate, birthDate, lastSync, defaultRoom, interface, favRooms, watchRooms, ignoreList, status, defaultHighlight, defaultColor, defaultFontface, defaultFormatting, userPrivs, adminPrivs, lang',
 );
 $queryParts['userSelectFromSessionHash']['columns'] = array(
   "{$sqlPrefix}sessions" => array(
@@ -566,7 +539,7 @@ if ($valid) { // If the user is valid, process their preferrences.
   if ($noSync || $loginConfig['method'] == 'vanilla') {
 
   }
-  elseif (in_array($loginConfig['method'],$loginDefs['syncMethods'])) {
+  elseif (in_array($loginConfig['method'], $loginDefs['syncMethods'])) {
     $user2 = $user; // Create a copy of user, which will later be unset.
     unset($user); // Unset user, so we don't have to worry about collision.
 
@@ -898,7 +871,10 @@ if ($valid) { // If the user is valid, process their preferrences.
         'avatar' => $user2['avatar'],
         'profile' => $user2['profile'],
         'socialGroups' => $socialGroups['groups'],
-        'lastSync' => '__TIME__'
+        'lastSync' => array(
+          'type' => 'time',
+          'value' => '__TIME__',
+        ),
       ),
       "{$sqlPrefix}users",
       array(
@@ -937,11 +913,14 @@ if ($valid) { // If the user is valid, process their preferrences.
     $database->insert(array(
       'userId' => $user['userId'],
       'anonId' => ($anonymous ? $anonId : 0),
-      'time' => '__TIME__',
+      'time' => array(
+        'type' => 'time',
+        'value' => '__TIME__',
+      ),
       'magicHash' => $sessionHash,
       'browser' => $_SERVER['HTTP_USER_AGENT'],
       'ip' => $_SERVER['REMOTE_ADDR'],
-    ),"{$sqlPrefix}sessions");
+      ), "{$sqlPrefix}sessions");
 
     // Whenever a new user logs in, delete all sessions from 15 or more minutes in the past.
     $database->delete("{$sqlPrefix}sessions",array(
@@ -958,7 +937,10 @@ if ($valid) { // If the user is valid, process their preferrences.
     ($hook = hook('validate_updatesession') ? eval($hook) : '');
 
     $database->update(array(
-      'time' => '__TIME__'
+      'time' => array(
+        'type' => 'time',
+        'value' => '__TIME__',
+      ),
     ),
     "{$sqlPrefix}sessions",
     array(

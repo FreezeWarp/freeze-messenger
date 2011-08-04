@@ -459,7 +459,7 @@ function fim_sendMessage($messageText, $userData, $roomData, $flag = '') {
   }
   else {
     $messageData = array(
-      'rawText' => $messageText; // Parses the sources for MySQL.
+      'rawText' => $messageText, // Parses the sources for MySQL.
       'htmlText' => nl2br( // Converts \n characters to HTML <br />s.
         fimParse_emotiParse( // Converts emoticons (e.g. ":D", ":P", "o.O") to HTML <img /> tags based on database-stored conversions.
           fimParse_htmlWrap( // Forces a space to be placed every 80 non-breaking characters, in order to prevent HTML stretching.
@@ -470,7 +470,7 @@ function fim_sendMessage($messageText, $userData, $roomData, $flag = '') {
           )
         )
       ),
-      'apiText' => fimParse_censorParse($messageText); // Censors text (see above).
+      'apiText' => fimParse_censorParse($messageText), // Censors text (see above).
     );
   }
 
@@ -497,18 +497,11 @@ function fim_sendMessage($messageText, $userData, $roomData, $flag = '') {
 
 
   // Add the data to the datastore.
-  $database->messageStore($userData, $roomData, $messageData, $messageDataEncrypted, $flag);
+  $database->storeMessage($userData, $roomData, $messageData, $messageDataEncrypted, $flag);
 
 
 
   // Add message to archive search store.
   fim3parse_keyWords($messageRawCache, $messageId, $roomData['roomId']);
-
-
-
-  // Create an event if the room is private (options & 16). This allows us to bypass what would otherwise be a very compliated query, and improves scalibility.
-  if ($roomData['options'] & 16) {
-
-  }
 }
 ?>

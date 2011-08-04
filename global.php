@@ -63,6 +63,8 @@ $defaultConfig = array(
   'enableUploads' => false,
   'enableGeneralUploads' => false,
   'fileUploadChunkSize' => 1024,
+  'uploadMaxFiles' => -1,
+  'uploadMaxUserFiles' => -1,
 
   'maxMessageLength' => 1000,
 

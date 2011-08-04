@@ -217,9 +217,9 @@ if (is_array($users)) {
         ),
         'ignoreList' => ($userData['ignoreList']),
         'favRooms' => ($userData['favRooms']),
-        'postCount' => (int) $userDataForums['posts'],
-        'joinDate' => (int) $userDataForums['joinDate'],
-        'joinDateFormatted' => (fim_date(false,$userDataForums['joinDate'])),
+        'postCount' => (int) (isset($userDataForums['posts']) ? $userDataForums['posts'] : 0),
+        'joinDate' => (int) (isset($userDataForums['joinDate']) ? $userDataForums['joinDate'] : 0),
+        'joinDateFormatted' => (fim_date(false,(isset($userDataForums['joinDate']) ? $userDataForums['joinDate'] : 0))),
         'userTitle' => (isset($userDataForums['userTitle']) ? $userDataForums['userTitle'] :
           (isset($config['defaultUserTitle']) ? $config['defaultUserTitle'] :  '')),
       );

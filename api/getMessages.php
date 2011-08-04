@@ -804,13 +804,13 @@ if (is_array($request['rooms'])) {
             'userId' => $user['userId'],
             'roomId' => $room['roomId'],
             'time' => array(
-              'type' => 'raw',
-              'value' => 'CURRENT_TIMESTAMP()',
+              'type' => 'time',
+              'value' => '__TIME__',
             ),
           ),"{$sqlPrefix}ping",array(
             'time' => array(
-              'type' => 'raw',
-              'value' => 'CURRENT_TIMESTAMP()',
+              'type' => 'time',
+              'value' => '__TIME__',
             )
           ));
 

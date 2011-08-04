@@ -25,7 +25,6 @@ else {
   header('Content-Type: text/event-stream');
   header('Cache-Control: no-cache'); // recommended to prevent caching of event data.
 
-
   $lastMessage = 0;
   $lastEvent = 0;
 
@@ -275,7 +274,7 @@ else {
       if (is_array($missedMessages)) {
         if (count($missedMessages) > 0) {
           foreach ($missedMessages AS $message) {
-            if (!fim_hasPermission($message,$user,'view',true)) {
+            if (!fim_hasPermission($message, $user, 'view', true)) {
               ($hook = hook('getMessages_watchRooms_noPerm') ? eval($hook) : '');
 
               continue;

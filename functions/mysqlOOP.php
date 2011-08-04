@@ -784,6 +784,7 @@ LIMIT
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   private function rawQuery($query) {
+    $this->sourceQuery = $query;
 //    $startTime = microtime(true); // Get time in milliseconds (as a float) to determine if the query took too long.
 
 
@@ -863,12 +864,7 @@ LIMIT
 
 
         if (!isset($data['type'])) {
-          if ($data['value'] === '__TIME__') {
-            $data['type'] = 'time';
-          }
-          else {
-            $data['type'] = 'string';
-          }
+          $data['type'] = 'string';
         }
 
 
@@ -889,7 +885,7 @@ LIMIT
           break;
 
           case 'time':
-          $values[] = "UNIX_TIMESTAMP(NOW())";
+          $values[] = "NOW()";
           break;
 
           case 'string':
