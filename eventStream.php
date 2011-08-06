@@ -48,6 +48,15 @@ else {
           'evaltrue' => false,
         ),
       ),
+      'lastEvent' => array(
+        'type' => 'string',
+        'require' => false,
+        'default' => 0,
+        'context' => array(
+          'type' => 'int',
+          'evaltrue' => false,
+        ),
+      ),
     ),
   ));
 
@@ -181,27 +190,42 @@ else {
       "{$sqlPrefix}events" => 'eventId, eventName, roomId, userId, messageId, param1, param2, param3',
     );
     $queryParts['eventsSelect']['conditions'] = array(
-      'either' => array(
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'roomId',
+      'both' => array(
+        'either' => array(
+          array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'roomId',
+            ),
+            'right' => array(
+              'type' => 'int',
+              'value' => (int) $request['roomId'],
+            ),
           ),
-          'right' => array(
-            'type' => 'int',
-            'value' => (int) $request['roomId'],
+          array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'userId',
+            ),
+            'right' => array(
+              'type' => 'int',
+              'value' => (int) $user['userId'],
+            ),
           ),
         ),
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'userId',
-          ),
-          'right' => array(
-            'type' => 'int',
-            'value' => (int) $user['userId'],
+        'both' => array(
+          array(
+            'type' => 'gt',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'eventId',
+            ),
+            'right' => array(
+              'type' => 'int',
+              'value' => (int) $request['lastEvent'],
+            ),
           ),
         ),
       ),
@@ -322,14 +346,11 @@ else {
     if (is_array($events)) {
       if (count($events) > 0) {
         foreach ($events AS $event) {
-          $eventsOutput[] = array(
-            'roomId' => (int) $message['roomId'],
-            'roomName' => ($message['roomName']),
-            'lastMessageTime' => (int) $message['lastMessageTimestamp'],
-          );
+          echo "event: " . $event['eventName'] . "\n";
+          echo "data: " . json_encode($event) . "\n\n";
 
-          echo "event: event\n";
-          echo "data: " . json_encode($eventsOutput) . "\n\n";
+          $request['lastEvent'] = $event['eventId'];
+
           flush();
 
           if (ob_get_level()) {

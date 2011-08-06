@@ -53,7 +53,8 @@ var topic,
     timeout : 2400, // We may increase this dramatically if the server supports longPolling.
     firstRequest : true,
     totalFails : 0,
-    lastMessage : 0
+    lastMessage : 0,
+    lastEvent : 0
   },
   timers = {t1 : false}; // Object
 
@@ -332,12 +333,6 @@ function newMessage() {
       }
     }
 
-    if (notify) {
-      if (typeof window.webkitNotifications === 'object') {
-        notify.webkitNotify('images/favicon.gif', 'New Message', notifyData);
-      }
-    }
-
     if (typeof window.external === 'object') {
       if (typeof window.external.msIsSiteMode !== 'undefined' && typeof window.external.msSiteModeActivate !== 'undefined') {
         try {
@@ -353,6 +348,15 @@ function newMessage() {
   }
 
   contextMenuParse();
+}
+
+
+function messagePopup(data) {
+  if (typeof notify != 'undefined') {
+    if (typeof window.webkitNotifications === 'object') {
+      notify.webkitNotify('images/favicon.gif', 'New Message', data);
+    }
+  }
 }
 
 
@@ -1260,7 +1264,7 @@ var standard = {
       }
 
       if (requestSettings.serverSentEvents) {
-        var source = new EventSource(directory + 'eventStream.php?roomId=' + roomId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
+        var source = new EventSource(directory + 'eventStream.php?roomId=' + roomId + '&lastEvent=' + requestSettings.lastEvent + '&lastMessage=' + requestSettings.lastMessage + 'fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
 
         source.addEventListener('message', function(e) {
           var active = JSON.parse(e.data);
@@ -1268,6 +1272,9 @@ var standard = {
           for (var i = 0; i < active.length; i++) {
             var messageId = Number(active[i].messageData.messageId);
             data = messageFormat(active[i], 'list');
+
+            messagePopup(data)
+
 
             if (messageIndex[messageId]) {
               // Double post hack
@@ -1295,6 +1302,38 @@ var standard = {
           }
 
           newMessage();
+
+          return false;
+        }, false);
+
+        source.addEventListener('topicChange', function(e) {
+          var active = JSON.parse(e.data);
+
+          $('#topic').html(active.param1);
+          console.log('Event (Topic Change): ' + active.param1);
+
+          requestSettings.lastEvent = active.eventId;
+
+          return false;
+        }, false);
+
+        source.addEventListener('missedMessage', function(e) {
+          var active = JSON.parse(e.data);
+
+          requestSettings.lastEvent = active.eventId;
+          $.jGrowl('Missed Message','<a href="#room=' + active.roomId + '">' + active.roomId + '</a>');
+          console.log('Event (Missed Message): ' + active.messageId);
+
+          return false;
+        }, false);
+
+        source.addEventListener('deletedMessage', function(e) {
+          var active = JSON.parse(e.data);
+
+          $('#topic').html(active.param1);
+          console.log('Event (Topic Change): ' + active.param1);
+
+          requestSettings.lastEvent = active.eventId;
 
           return false;
         }, false);

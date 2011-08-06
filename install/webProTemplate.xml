@@ -93,7 +93,7 @@
 &lt;h3 id="copyCat"&gt;&lt;a href="#"&gt;$phrases[templateCopyrightCat]&lt;/a&gt;&lt;/h3&gt;
 &lt;div&gt;
   &lt;ul&gt;
-    &lt;li&gt;FIM © 2010-2011 &lt;a href="http://josephtparsons.com/"&gt;Joseph Parsons&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
+    &lt;li&gt;FIM © 2010-2011 &lt;a href="http://josephtparsons.com/"&gt;Joseph T. Parsons&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
     &lt;li&gt;jQuery Plugins © Their Respective Owners.&lt;/li&gt;
     &lt;li&gt;&lt;a href="#" id="copyrightLink"&gt;$phrases[templateAllCopyrights]&lt;/a&gt;&lt;/li&gt;
   &lt;/ul&gt;
@@ -413,9 +413,9 @@ Default Formatting:&lt;br /&gt;
 &lt;li&gt;&lt;a href="#copyright2"&gt;Thanks&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;
 
 &lt;div style="text-align: center;" id="copyright1"&gt;
-FreezeMessenger &amp;copy; 2010-2011 &lt;a href="http://josephtparsons.com/" target="_BLANK"&gt;>Joseph T. Parsons&lt;/a&gt;. Some Rights Reserved.&lt;br /&gt;&lt;br /&gt;
+FreezeMessenger &amp;copy; 2010-2011 &lt;a href="http://josephtparsons.com/" target="_BLANK"&gt;Joseph T. Parsons&lt;/a&gt;. Some Rights Reserved.&lt;br /&gt;&lt;br /&gt;
 
- jQuery, jQueryUI, and all jQueryUI Themeroller Themes &amp;copy; &lt;a href="http://jquery.org/" target="_BLANK"&gt;>The jQuery Project.&lt;/a&gt;&lt;br /&gt;&lt;br /&gt;
+ jQuery, jQueryUI, and all jQueryUI Themeroller Themes &amp;copy; &lt;a href="http://jquery.org/" target="_BLANK"&gt;The jQuery Project.&lt;/a&gt;&lt;br /&gt;&lt;br /&gt;
 
 jGrowl &amp;copy; 2009 Stan Lemon.&lt;br /&gt;
 jQuery Cookie Plugin &amp;copy; 2006 Klaus Hartl&lt;br /&gt;

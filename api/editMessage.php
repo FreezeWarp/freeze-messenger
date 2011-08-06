@@ -96,6 +96,8 @@ switch ($request['action']) {
       )
     );
 
+    $database->createEvent('deletedMessage', $user['userId'], $roomData['roomId'], $messageData['messageId'], false, false, false); // name, user, room, message, p1, p2, p3
+
     $xmlData['editMessage']['response']['success'] = true;
   }
   else {

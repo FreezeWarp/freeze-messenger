@@ -56,13 +56,14 @@
 
     <table name="events" type="memory" comment="Events that can be queried by event scripts.">
       <column name="eventId" type="int" maxlen="8" autoincrement="true" comment="A unique identifier for the event." />
-      <column name="eventName" type="string" maxlen="10" autoincrement="true" comment="The name of the event (e.g. topic-change)." />
+      <column name="eventName" type="string" maxlen="20" autoincrement="true" comment="The name of the event (e.g. topic-change)." />
       <column name="userId" type="int" maxlen="8" comment="The user ID, if applicable." />
       <column name="roomId" type="int" maxlen="6" comment="The room ID, if applicable." />
       <column name="messageId" type="int" maxlen="15" comment="The message ID, if applicable." />
       <column name="param1" type="string" maxlen="20" comment="An addition parameter." />
       <column name="param2" type="string" maxlen="20" comment="An addition parameter." />
       <column name="param3" type="string" maxlen="20" comment="An addition parameter." />
+      <column name="time" type="time" default="__TIME__" comment="The time of the event's occurence, primarily for maintence." />
 
       <key name="eventId" type="primary" />
       <key name="eventName" type="index" />
@@ -325,7 +326,11 @@
     <table name="unreadMessages" type="general" comment="Unread private messages.">
       <column name="userId" type="int" maxlen="8" comment="The ID of the user who has yet to read the message." />
       <column name="senderId" type="int" maxlen="8" comment="The ID of the user who sent the message." />
+      <column name="senderName" type="string" maxlen="50" comment="The name of the user who sent the message." />
+      <column name="senderFormatStart" type="string" maxlen="300" comment="The start formatting of the user who sent the message." />
+      <column name="senderFormatEnd" type="string" maxlen="300" comment="The end formatting of the user who sent the message." />
       <column name="roomId" type="int" maxlen="6" comment="The ID of the room in question." />
+      <column name="roomName" type="string" maxlen="50" comment="The name of the room in question." />
       <column name="messageId" type="int" maxlen="15" comment="The ID of the message." />
       <column name="time" type="time" default="__TIME__" update="__TIME__" comment="The time the message was made." />
 

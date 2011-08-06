@@ -428,7 +428,7 @@ LIMIT
    * @return string
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  private function recurseBothEither($conditionArray, $reverseAlias) {
+  private function recurseBothEither($conditionArray, $reverseAlias, $d = 0) {
     $i = 0;
     $h = 0;
 
@@ -441,7 +441,7 @@ LIMIT
           $sideTextFull[$i] = '';
 
           if ($recKey === 'both' || $recKey === 'either') {
-            $sideTextFull[$i] = $this->recurseBothEither(array($data), $reverseAlias);
+            $sideTextFull[$i] = $this->recurseBothEither(array($recKey => $data), $reverseAlias, $d+1);
           }
           else {
             /* Get the Proper Comparison Operator */
@@ -625,7 +625,7 @@ LIMIT
           $condSymbol = $concatTypes[$type];
         }
         else {
-          throw new Exception('Unrecognized concatenation operator');
+          throw new Exception('Unrecognized concatenation operator: ' . $type . '; d: ' . $d . '; ' . print_r($data,true));
         }
 
 

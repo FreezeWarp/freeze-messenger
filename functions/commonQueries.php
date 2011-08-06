@@ -283,8 +283,7 @@ class fimDatabase extends database {
 
     $this->delete("{$sqlPrefix}unreadMessages",array(
       'messageId' => $messageId,
-      'userId' => $userId),
-    "{$sqlPrefix}events");
+      'userId' => $userId));
   }
 
 
@@ -382,7 +381,7 @@ class fimDatabase extends database {
     // If the contact is a private communication, create an event and add to the message unread table.
     if ($roomData['options'] & 16) {
       foreach ($permissionsCache[$room['roomId']]['user'] AS $sendToUserId) {
-        $database->createEvent('missedMessage', $sendToUserId, $room['roomId'], $messageId, false, false, false); // name, user, room, message, p1, p2, p3
+        $this->createEvent('missedMessage', $sendToUserId, $room['roomId'], $messageId, false, false, false); // name, user, room, message, p1, p2, p3
 
         $this->insert(array(
           'userId' => $sendToUserId,
