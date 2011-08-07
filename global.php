@@ -91,7 +91,7 @@ $defaultConfig = array(
  * MCrypt is present in all versions since PHP 4
  * Hash is present in all versions since PHP 5.1.2
  * PCRE is present in all versions since PHP 4
- * APC is present in PHP 5.4, Ubuntu's php-apc packge, and easily installed from PECL.net.
+ * APC is present in PHP 5.4, Ubuntu's php-apc packge, and easily installed from PECL.net. It simply has to be a requirement for may of the functions (as far as the way they are designed).
  */
 foreach (array('mysql', 'json', 'mbstring', 'mcrypt', 'hash', 'pcre', 'apc') AS $module) {
   if (!extension_loaded($module)) {

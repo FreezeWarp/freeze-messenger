@@ -22,7 +22,6 @@ class fimDatabase extends database {
 
     $queryParts['roomSelect']['columns'] = array(
       "{$sqlPrefix}rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, options',
-      ),
     );
 
     if ($roomId) {
@@ -218,7 +217,6 @@ class fimDatabase extends database {
 
     $queryParts['messageSelect']['columns'] = array(
       "{$sqlPrefix}messages" => 'messageId, roomId, iv, salt, htmlText, apiText, rawText, deleted',
-      ),
     );
 
     if ($messageId) {
