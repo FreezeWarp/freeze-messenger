@@ -50,11 +50,13 @@ $defaultConfig = array(
   'hooksCacheRefresh' => 600,
   'configCacheRefresh' => 600,
 
+  'longPolling' => false,
   'longPollingWait' => 2,
   'longPollingMaxRetries' => 50,
-  'longPolling' => false,
-  'serverSentEventsWait' => .5, // Server sent events are more controlled, so we can call them at a greater frequency.
+
   'serverSentEvents' => false,
+  'serverSentEventsWait' => .5, // Server sent events are more controlled, so we can call them at a greater frequency.
+  'serverSentMaxRetries' => 50,
 
   'compressOutput' => true,
 
@@ -71,6 +73,10 @@ $defaultConfig = array(
   'apiPause' => .125,
 
   'cacheTableMaxRows' => 100,
+
+  'enableUnreadMessages' => true,
+  'enableWatchRooms' => true,
+  'enableEvents' => true,
 
   'dev' => false,
 );

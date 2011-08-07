@@ -1321,7 +1321,7 @@ var standard = {
           var active = JSON.parse(e.data);
 
           requestSettings.lastEvent = active.eventId;
-          $.jGrowl('Missed Message','<a href="#room=' + active.roomId + '">' + active.roomId + '</a>');
+          $.jGrowl('Missed Message','New messages have been made in:<br /><br /><a href="#room=' + active.roomId + '">' + active.roomName + '</a>');
           console.log('Event (Missed Message): ' + active.messageId);
 
           return false;
