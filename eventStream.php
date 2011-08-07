@@ -25,7 +25,8 @@ else {
   header('Content-Type: text/event-stream');
   header('Cache-Control: no-cache'); // recommended to prevent caching of event data.
 
-  $lastEvent = 0;
+  $serverSentRetries = 0;
+
 
   /* Get Request Data */
   $request = fim_sanitizeGPC(array(
@@ -61,6 +62,9 @@ else {
   ));
 
   while (true) {
+    $serverSentRetries++;
+
+
     $queryParts['messagesSelect']['columns'] = array(
       "{$sqlPrefix}messagesCached" => array(
         'messageId' => 'messageId',
@@ -234,7 +238,6 @@ else {
 
 
     /* Get Messages */
-
     $messages = $database->select($queryParts['messagesSelect']['columns'],
       $queryParts['messagesSelect']['conditions'],
       $queryParts['messagesSelect']['sort']);
@@ -294,8 +297,48 @@ else {
 
 
     /* Get New Message Alerts from Watched Rooms */
+    if ($config['enableWatchRooms'] && count(fim_arrayValidate(explode(',', $user['watchRooms']), 'int', false)) > 0) {
+      $missedMessages = $database->select(
+        $queryParts['missedMessages']['columns'],
+        $queryParts['missedMessages']['conditions']);
+      $missedMessages = $missedMessages->getAsArray();
 
-    if (count(fim_arrayValidate(explode(',', $user['watchRooms']), 'int', false)) > 0) {
+      $missedMessagesOutput = array();
+
+      if (is_array($missedMessages)) {
+        if (count($missedMessages) > 0) {
+          foreach ($missedMessages AS $message) {
+            if (!fim_hasPermission($message, $user, 'view', true)) {
+              ($hook = hook('getMessages_watchRooms_noPerm') ? eval($hook) : '');
+
+              continue;
+            }
+
+            $missedMessagesOutput[] = array(
+              'roomId' => (int) $message['roomId'],
+              'roomName' => ($message['roomName']),
+              'lastMessageTime' => (int) $message['lastMessageTimestamp'],
+            );
+
+            echo "event: missedMessage\n";
+            echo "data: " . json_encode($missedMessagesOutput) . "\n\n";
+            flush();
+
+            if (ob_get_level()) {
+              ob_flush();
+            }
+
+            ($hook = hook('getMessages_watchRooms_eachRoom') ? eval($hook) : '');
+          }
+        }
+      }
+    }
+
+
+
+
+    /* Get Unread Private Messages */
+    if ($config['enableUnreadMessages']) {
       $missedMessages = $database->select(
         $queryParts['missedMessages']['columns'],
         $queryParts['missedMessages']['conditions']);
@@ -336,36 +379,40 @@ else {
 
 
     /* Get Events */
+    if ($config['enableEvents']) {
+      $events = $database->select($queryParts['eventsSelect']['columns'],
+        $queryParts['eventsSelect']['conditions']);
+      $events = $events->getAsArray('eventId');
 
-    $events = $database->select($queryParts['eventsSelect']['columns'],
-      $queryParts['eventsSelect']['conditions']);
-    $events = $events->getAsArray('eventId');
+      $eventsOutput = array();
 
-    $eventsOutput = array();
+      if (is_array($events)) {
+        if (count($events) > 0) {
+          foreach ($events AS $event) {
+            echo "event: " . $event['eventName'] . "\n";
+            echo "data: " . json_encode($event) . "\n\n";
 
-    if (is_array($events)) {
-      if (count($events) > 0) {
-        foreach ($events AS $event) {
-          echo "event: " . $event['eventName'] . "\n";
-          echo "data: " . json_encode($event) . "\n\n";
+            $request['lastEvent'] = $event['eventId'];
 
-          $request['lastEvent'] = $event['eventId'];
+            flush();
 
-          flush();
+            if (ob_get_level()) {
+              ob_flush();
+            }
 
-          if (ob_get_level()) {
-            ob_flush();
+            ($hook = hook('getMessages_watchRooms_eachRoom') ? eval($hook) : '');
           }
-
-          ($hook = hook('getMessages_watchRooms_eachRoom') ? eval($hook) : '');
         }
       }
     }
 
 
-    ($hook = hook('getMessages_postMessages_serverSentEvents_repeat') ? eval($hook) : '');
 
-    sleep($config['serverSentEventsWait']); // Wait before re-requesting.
+    if ($serverSentRetries <= $config['serverSentMaxRetries']) {
+      ($hook = hook('getMessages_postMessages_serverSentEvents_repeat') ? eval($hook) : '');
+
+      sleep($config['serverSentEventsWait']); // Wait before re-requesting.
+    }
   }
 }
 ?>

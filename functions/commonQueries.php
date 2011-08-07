@@ -21,13 +21,7 @@ class fimDatabase extends database {
     global $sqlPrefix, $config, $user;
 
     $queryParts['roomSelect']['columns'] = array(
-      "{$sqlPrefix}rooms" => array(
-        'roomId' => 'roomId',
-        'roomName' => 'roomName',
-        'roomTopic' => 'roomTopic',
-        'owner' => 'owner',
-        'defaultPermissions' => 'defaultPermissions',
-        'options' => 'options',
+      "{$sqlPrefix}rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, options',
       ),
     );
 
@@ -85,15 +79,7 @@ class fimDatabase extends database {
     global $sqlPrefix, $config, $user;
 
     $queryParts['userSelect']['columns'] = array(
-      "{$sqlPrefix}users" => array(
-        'userId' => 'userId',
-        'userName' => 'userName',
-        'userFormatStart' => 'userFormatStart',
-        'userFormatEnd' => 'userFormatEnd',
-        'userGroup' => 'userGroup',
-        'allGroups' => 'allGroups',
-        'socialGroups' => 'socialGroups',
-      ),
+      "{$sqlPrefix}users" => 'userId, userName, userFormatStart, userFormatEnd, userGroup, allGroups, socialGroups',
     );
 
     if ($userId) {
@@ -150,10 +136,7 @@ class fimDatabase extends database {
     global $sqlPrefix, $config, $user;
 
     $queryParts['fontSelect']['columns'] = array(
-      "{$sqlPrefix}fonts" => array(
-        'fontId' => 'fontId',
-        'fontName' => 'fontName',
-      ),
+      "{$sqlPrefix}fonts" => 'fontId, fontName',
     );
 
     if ($fontId) {
@@ -234,15 +217,7 @@ class fimDatabase extends database {
     global $sqlPrefix, $config, $user;
 
     $queryParts['messageSelect']['columns'] = array(
-      "{$sqlPrefix}messages" => array(
-        'messageId' => 'messageId',
-        'roomId' => 'roomId',
-        'iv' => 'iv',
-        'salt' => 'salt',
-        'htmlText' => 'htmlText',
-        'apiText' => 'apiText',
-        'rawText' => 'rawText',
-        'deleted' => 'deleted',
+      "{$sqlPrefix}messages" => 'messageId, roomId, iv, salt, htmlText, apiText, rawText, deleted',
       ),
     );
 
@@ -281,24 +256,28 @@ class fimDatabase extends database {
   public function markMessageRead($messageId, $userId) {
     global $sqlPrefix, $config, $user;
 
-    $this->delete("{$sqlPrefix}unreadMessages",array(
-      'messageId' => $messageId,
-      'userId' => $userId));
+    if ($config['enableUnreadMessages']) {
+      $this->delete("{$sqlPrefix}unreadMessages",array(
+        'messageId' => $messageId,
+        'userId' => $userId));
+    }
   }
 
 
   public function createEvent($eventName, $userId, $roomId, $messageId, $param1, $param2, $param3) {
     global $sqlPrefix, $config, $user;
 
-    $this->insert(array(
-      'eventName' => $eventName,
-      'userId' => $userId,
-      'roomId' => $roomId,
-      'messageId' => $messageId,
-      'param1' => $param1,
-      'param2' => $param2,
-      'param3' => $param3),
-    "{$sqlPrefix}events");
+    if ($config['enableEvents']) {
+      $this->insert(array(
+        'eventName' => $eventName,
+        'userId' => $userId,
+        'roomId' => $roomId,
+        'messageId' => $messageId,
+        'param1' => $param1,
+        'param2' => $param2,
+        'param3' => $param3),
+      "{$sqlPrefix}events");
+    }
   }
 
 
@@ -383,12 +362,14 @@ class fimDatabase extends database {
       foreach ($permissionsCache[$room['roomId']]['user'] AS $sendToUserId) {
         $this->createEvent('missedMessage', $sendToUserId, $room['roomId'], $messageId, false, false, false); // name, user, room, message, p1, p2, p3
 
-        $this->insert(array(
-          'userId' => $sendToUserId,
-          'senderId' => $userData['userId'],
-          'roomId' => $roomData['roomId'],
-          'messageId' => $messageId
-        ), "{$sqlPrefix}unreadMessages");
+        if ($config['enableUnreadMessages']) {
+          $this->insert(array(
+            'userId' => $sendToUserId,
+            'senderId' => $userData['userId'],
+            'roomId' => $roomData['roomId'],
+            'messageId' => $messageId
+          ), "{$sqlPrefix}unreadMessages");
+        }
       }
     }
 
