@@ -479,9 +479,9 @@ function fim_sendMessage($messageText, $userData, $roomData, $flag = '') {
   // Encrypt Message Data
   if ($salts && $encrypt) { // Only encrypt if we have both set salts and encrypt is enabled.
     list($messageDataEncrypted, $iv, $saltNum) = fim_encrypt( // Encrypt the values and return the new data, IV, and saltNum.
-      array('messageRaw' => $messageData['rawText'],
-            'messageHtml' => $messageData['htmlText'],
-            'messageApi' => $messageData['apiText'],
+      array('rawText' => $messageData['rawText'],
+            'htmlText' => $messageData['htmlText'],
+            'apiText' => $messageData['apiText'],
       )
     );
 
@@ -495,13 +495,12 @@ function fim_sendMessage($messageText, $userData, $roomData, $flag = '') {
   }
 
 
-
   // Add the data to the datastore.
   $database->storeMessage($userData, $roomData, $messageData, $messageDataEncrypted, $flag);
 
 
 
   // Add message to archive search store.
-  fim3parse_keyWords($messageRawCache, $messageId, $roomData['roomId']);
+  fim3parse_keyWords($messageData['rawText'], $messageId, $roomData['roomId']);
 }
 ?>

@@ -280,7 +280,7 @@
 
 
     <table name="searchMessages" type="general" note="As of FIMv3B3 this is not as scalable as one might have hoped, though changes may be made further into the future, or at the latest in FIMv4" comment="A cache of messages containing search phrases.">
-      <column name="messageId" type="int" maxlen="15" autoincrement="true" comment="The ID of the message." />
+      <column name="messageId" type="int" maxlen="15" comment="The ID of the message." />
       <column name="userId" type="int" maxlen="8" comment="The user who made the above post." />
       <column name="roomId" type="int" maxlen="6" comment="The room the above post is contained in." />
       <column name="phraseId" type="int" maxlen="15" comment="The ID of the phrase found in the message." />

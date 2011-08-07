@@ -437,7 +437,7 @@ Cat333Pokémon
 &lt;/div&gt;&lt;div id="copyright3"&gt;FreezeMessenger is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.&lt;br /&gt;&lt;br /&gt;This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.&lt;br /&gt;&lt;br /&gt;You should have received a copy of the GNU General Public License along with this program.  If not, see &amp;lt;http://www.gnu.org/licenses/&amp;gt;.&lt;/div&gt;
     </template>
 
-    <template name="help" vars="bbcode,parseFlags,loginMethod">&lt;ul&gt;
+    <template name="help">&lt;ul&gt;
 &lt;li&gt;&lt;a href="#intro"&gt;Intro&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#rules"&gt;Rules&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#help"&gt;Help&lt;/a&gt;&lt;/li&gt;
@@ -445,7 +445,6 @@ Cat333Pokémon
 &lt;li&gt;&lt;a href="#faqs"&gt;FAQs&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;div id="help" style="height: 400px;"&gt;
 &lt;div id="intro"&gt;
 FreezeMessenger 3.0 (FIM, FIM3, or FIMv3) is an advanced AJAX-based online webmessenger and Instant Messenger substitute created to allow anybody to easily communicate with anybody else all across the web. It is highly sophisticated, supporting all modern browsers and utilizing various cutting-edge features in each. It was written from scratch by Joseph T. Parsons ("FreezeWarp") with PHP, MySQL, and other tricks along the way.
 &lt;/div&gt;
@@ -457,15 +456,17 @@ FreezeMessenger 3.0 (FIM, FIM3, or FIMv3) is an advanced AJAX-based online webme
 &lt;li&gt;Encourage or enable another member to do any of the above.&lt;/li&gt;
 &lt;/ul&gt;&lt;/div&gt;
 
-&lt;div id="help"&gt;[WIP]&lt;/div&gt;
+&lt;div id="help"&gt;
+[WIP]
+&lt;/div&gt;
 
 &lt;div id="browser"&gt;FIM's WebPro Interface will work decently with any of the following browsers:
 &lt;ul&gt;
-&lt;li&gt;&lt;a href="http://www.google.com/chrome" target="_BLANK"&gt;Google Chrome / Chromium (Latest)&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="http://windows.microsoft.com/ie9" target="_BLANK"&gt;Internet Explorer 8+&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="http://www.mozilla.com/en-US/firefox/" target="_BLANK"&gt;Firefox (Latest)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://www.google.com/chrome" target="_BLANK"&gt;Google Chrome / Chromium (Latest) [RECOMMENDED]&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://www.mozilla.com/en-US/firefox/" target="_BLANK"&gt;Firefox (Latest) [RECOMMENDED]&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="http://www.opera.com/download/" target="_BLANK"&gt;Opera 11+&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="http://www.apple.com/safari/" target="_BLANK"&gt;Safari 5+&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://windows.microsoft.com/ie9" target="_BLANK"&gt;Internet Explorer 8+&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;br /&gt;&lt;br /&gt;
 
 Some features are currently not available for all browsers, however:
@@ -480,10 +481,10 @@ Some features are currently not available for all browsers, however:
 
 &lt;div id="faqs"&gt;
 &lt;ul&gt;
-
-&lt;li&gt;&lt;b&gt;Where Do I Report Bugs?&lt;/b&gt; - Bugs can be reported to the &lt;a href="http://code.google.com/p/freeze-messenger/source/list"&gt;Google Code bugtracker&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Where Do I Report Bugs?&lt;/strong&gt; - Bugs can be reported to the &lt;a href="http://code.google.com/p/freeze-messenger/source/list"&gt;Google Code bugtracker&lt;/a&gt;.&lt;/li&gt;
 &lt;li&gt;&lt;b&gt;Can I Donate to this Awesome Project?&lt;/b&gt; - &lt;a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=YL7K2CY59P9S6&amp;lc=US&amp;item_name=FreezeMessenger%20Development&amp;item_number=freezemessenger&amp;currency_code=USD&amp;bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted"&gt;Please do. It really helps keep development going.&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
     </template>
 
     <template name="contextMenu" vars="">&lt;ul id="userMenu" class="contextMenu"&gt;

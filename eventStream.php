@@ -49,6 +49,15 @@ else {
           'evaltrue' => false,
         ),
       ),
+      'lastUnreadMessage' => array(
+        'type' => 'string',
+        'require' => false,
+        'default' => 0,
+        'context' => array(
+          'type' => 'int',
+          'evaltrue' => false,
+        ),
+      ),
       'lastEvent' => array(
         'type' => 'string',
         'require' => false,
@@ -121,7 +130,7 @@ else {
 
 
 
-    $queryParts['missedMessages']['columns'] = array(
+    $queryParts['missedSelect']['columns'] = array(
       "{$sqlPrefix}rooms" => array(
         'roomId' => 'roomId',
         'options' => 'options',
@@ -139,7 +148,7 @@ else {
         'roomId' => 'proomId',
       ),
     );
-    $queryParts['missedMessages']['conditions'] = array(
+    $queryParts['missedSelect']['conditions'] = array(
       'both' => array(
         array(
           'type' => 'e',
@@ -171,7 +180,7 @@ else {
           ),
           'right' => array(
             'type' => 'array',
-            'value' => fim_arrayValidate(explode(',', $user['watchRooms']), 'int', false),
+            'value' => (isset($user['watchRooms']) ? fim_arrayValidate(explode(',', $user['watchRooms']), 'int', false) : array()),
           ),
         ),
         array(
@@ -237,6 +246,38 @@ else {
 
 
 
+    $queryParts['unreadSelect']['columns'] = array(
+      "{$sqlPrefix}unreadMessages" => 'userId, senderId, senderName, senderFormatStart, senderFormatEnd, roomId, roomName, messageId',
+    );
+    $queryParts['unreadSelect']['conditions'] = array(
+      'both' => array(
+        array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'roomId',
+          ),
+          'right' => array(
+            'type' => 'int',
+            'value' => (int) $request['roomId'],
+          ),
+        ),
+        array(
+          'type' => 'gt',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'messageId',
+          ),
+          'right' => array(
+            'type' => 'int',
+            'value' => (int) $request['lastUnreadMessage'],
+          ),
+        ),
+      ),
+    );
+
+
+
     /* Get Messages */
     $messages = $database->select($queryParts['messagesSelect']['columns'],
       $queryParts['messagesSelect']['conditions'],
@@ -248,7 +289,7 @@ else {
     if (is_array($messages)) {
       if (count($messages) > 0) {
         foreach ($messages AS $message) {
-          $messagesOutput[] = array(
+          $messagesOutput = array(
             'messageData' => array(
               'roomId' => (int) $message['roomId'],
               'messageId' => (int) $message['messageId'],
@@ -284,6 +325,8 @@ else {
 
           echo "event: message\n";
           echo "data: " . json_encode($messagesOutput) . "\n\n";
+
+
           flush();
 
           if (ob_get_level()) {
@@ -297,38 +340,30 @@ else {
 
 
     /* Get New Message Alerts from Watched Rooms */
-    if ($config['enableWatchRooms'] && count(fim_arrayValidate(explode(',', $user['watchRooms']), 'int', false)) > 0) {
-      $missedMessages = $database->select(
-        $queryParts['missedMessages']['columns'],
-        $queryParts['missedMessages']['conditions']);
-      $missedMessages = $missedMessages->getAsArray();
+    if ($config['enableWatchRooms'] && isset($user['watchRooms'])) {
+      if (count(fim_arrayValidate(explode(',', $user['watchRooms']), 'int', false)) > 0) {
+        $missedMessages = $database->select(
+          $queryParts['missedSelect']['columns'],
+          $queryParts['missedSelect']['conditions']);
+        $missedMessages = $missedMessages->getAsArray();
 
-      $missedMessagesOutput = array();
+        if (is_array($missedMessages)) {
+          if (count($missedMessages) > 0) {
+            foreach ($missedMessages AS $message) {
+              if (!fim_hasPermission($message, $user, 'view', true)) {
+                continue;
+              }
 
-      if (is_array($missedMessages)) {
-        if (count($missedMessages) > 0) {
-          foreach ($missedMessages AS $message) {
-            if (!fim_hasPermission($message, $user, 'view', true)) {
-              ($hook = hook('getMessages_watchRooms_noPerm') ? eval($hook) : '');
+              echo "event: missedMessage\n";
+              echo "data: " . json_encode($message) . "\n\n";
 
-              continue;
+
+              flush();
+
+              if (ob_get_level()) {
+                ob_flush();
+              }
             }
-
-            $missedMessagesOutput[] = array(
-              'roomId' => (int) $message['roomId'],
-              'roomName' => ($message['roomName']),
-              'lastMessageTime' => (int) $message['lastMessageTimestamp'],
-            );
-
-            echo "event: missedMessage\n";
-            echo "data: " . json_encode($missedMessagesOutput) . "\n\n";
-            flush();
-
-            if (ob_get_level()) {
-              ob_flush();
-            }
-
-            ($hook = hook('getMessages_watchRooms_eachRoom') ? eval($hook) : '');
           }
         }
       }
@@ -338,31 +373,21 @@ else {
 
 
     /* Get Unread Private Messages */
-    if ($config['enableUnreadMessages']) {
-      $missedMessages = $database->select(
-        $queryParts['missedMessages']['columns'],
-        $queryParts['missedMessages']['conditions']);
-      $missedMessages = $missedMessages->getAsArray();
+    if ($config['enableUnreadMessages'] && $user['userId'] > 0) {
+      $unreadMessages = $database->select(
+        $queryParts['unreadSelect']['columns'],
+        $queryParts['unreadSelect']['conditions']);
+      $unreadMessages = $unreadMessages->getAsArray();
 
-      $missedMessagesOutput = array();
+      if (is_array($unreadMessages)) {
+        if (count($unreadMessages) > 0) {
+          foreach ($unreadMessages AS $message) {
+            echo "event: privateMessage\n";
+            echo "data: " . json_encode($message) . "\n\n";
 
-      if (is_array($missedMessages)) {
-        if (count($missedMessages) > 0) {
-          foreach ($missedMessages AS $message) {
-            if (!fim_hasPermission($message, $user, 'view', true)) {
-              ($hook = hook('getMessages_watchRooms_noPerm') ? eval($hook) : '');
+            $request['lastUnreadMessage'] = $message['messageId'];
 
-              continue;
-            }
 
-            $missedMessagesOutput[] = array(
-              'roomId' => (int) $message['roomId'],
-              'roomName' => ($message['roomName']),
-              'lastMessageTime' => (int) $message['lastMessageTimestamp'],
-            );
-
-            echo "event: missedMessage\n";
-            echo "data: " . json_encode($missedMessagesOutput) . "\n\n";
             flush();
 
             if (ob_get_level()) {
@@ -405,6 +430,7 @@ else {
         }
       }
     }
+
 
 
 
