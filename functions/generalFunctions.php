@@ -15,14 +15,13 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 /**
-* Determines if any value in an array is found in a seperate array.
-*
-* @param array $needle - The array that contains all values that will be applied to $haystack
-* @param array $haystack - The matching array.
-* @return bool
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
-
+ * Determines if any value in an array is found in a seperate array.
+ *
+ * @param array $needle - The array that contains all values that will be applied to $haystack
+ * @param array $haystack - The matching array.
+ * @return bool
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function fim_inArray($needle, $haystack) {
   if (!$haystack) {
     return false;
@@ -44,16 +43,16 @@ function fim_inArray($needle, $haystack) {
 }
 
 
-/**
-* Returns a "safe" array based on parameters.
-*
-* @param array $array - The array to be processed.
-* @param string $type - The variable type all entries in the returned array should corrospond to.
-* @param bool $preserveAll - Whether false, 0, and empty strings should be returned as a part of the array.
-* @return array
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
 
+/**
+ * Returns a "safe" array based on parameters.
+ *
+ * @param array $array - The array to be processed.
+ * @param string $type - The variable type all entries in the returned array should corrospond to.
+ * @param bool $preserveAll - Whether false, 0, and empty strings should be returned as a part of the array.
+ * @return array
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function fim_arrayValidate($array, $type = 'int', $preserveAll = false) {
   $arrayValidated = array();
 
@@ -83,21 +82,21 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false) {
 }
 
 
-/**
-* Determines if a user has permission to do an action in a room.
-*
-* @param array $roomData - An array containing the room's data; indexes allowedUsers, allowedGroups, moderators, owner, and options may be used.
-* @param array $userData - An array containing the user's data; indexes userId, adminPrivs, and userPrivs may be used.
-* @param string $type - Either "topic", "view", "post", "moderate", or "admin", this defines the action the user is trying to do.
-* @param bool $trans - If true, return will be an information array; otherwise bool.
-* @global bool $banned - Whether or not the user is banned outright.
-* @global array $superUsers - The list of superUsers.
-* @global bool $valid - Whether or not the user has a valid login (required for posting, etc.)
-* @global string $sqlPrefix
-* @return mixed - Bool if $trans is false, array if $trans is true.
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
 
+/**
+ * Determines if a user has permission to do an action in a room.
+ *
+ * @param array $roomData - An array containing the room's data; indexes allowedUsers, allowedGroups, moderators, owner, and options may be used.
+ * @param array $userData - An array containing the user's data; indexes userId, adminPrivs, and userPrivs may be used.
+ * @param string $type - Either "topic", "view", "post", "moderate", or "admin", this defines the action the user is trying to do.
+ * @param bool $trans - If true, return will be an information array; otherwise bool.
+ * @global bool $banned - Whether or not the user is banned outright.
+ * @global array $superUsers - The list of superUsers.
+ * @global bool $valid - Whether or not the user has a valid login (required for posting, etc.)
+ * @global string $sqlPrefix
+ * @return mixed - Bool if $trans is false, array if $trans is true.
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false) {
   global $sqlPrefix, $banned, $loginConfig, $valid, $database, $config, $kicksCache, $permissionsCache;
 
@@ -333,31 +332,31 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
 }
 
 
-/**
-* Decodes a specifically-formatted URL string, converting entities for "+", "&", '%', and new line to their respective string value.
-*
-* @param string $str - The string to be decoded.
-* @return string - The decoded text.
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
 
+/**
+ * Decodes a specifically-formatted URL string, converting entities for "+", "&", '%', and new line to their respective string value.
+ *
+ * @param string $str - The string to be decoded.
+ * @return string - The decoded text.
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function fim_urldecode($str) {
   return str_ireplace(array('%2b','%26','%20','%25','%0a'),array('+','&',' ', '%',"\n"), $str);
 }
 
 
-/**
-* Decrypts data.
-*
-* @param array $message - An array containing the message data; must include an "iv" index.
-* @param mixed $index - An array or string corrosponding to which indexes in the $message should be decrypted.
-* @global array $salts - Key-value pairs used for encryption.
-* @return array
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
 
+/**
+ * Decrypts data.
+ *
+ * @param array $message - An array containing the message data; must include an "iv" index.
+ * @param mixed $index - An array or string corrosponding to which indexes in the $message should be decrypted.
+ * @global array $salts - Key-value pairs used for encryption.
+ * @return array
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function fim_decrypt($message, $index = array('apiText','htmlText','rawText')) {
-  global $salts;
+  global $salts, $config;
 
   if (isset($message['salt'],$message['iv'])) { // May not be for e.g. messages
     if ($message['salt'] && $message['iv']) {
@@ -366,13 +365,34 @@ function fim_decrypt($message, $index = array('apiText','htmlText','rawText')) {
       if ($index) {
         if (is_array($index)) {
           foreach ($index AS $index2) {
-            if ($message[$index2]) {
-              $message[$index2] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message[$index2]), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
+            if (isset($message[$index2])) {
+              throw new Exception('Index not found: ' . $index2);
+            }
+
+            else {
+              $message[$index2] = rtrim(
+                mcrypt_decrypt(
+                  MCRYPT_3DES,
+                  $salt,
+                  base64_decode($message[$index2]),
+                  MCRYPT_MODE_CBC,
+                  base64_decode($message['iv'])
+                ),
+              "\0");
             }
           }
         }
+
         else {
-          $message[$index] = rtrim(mcrypt_decrypt(MCRYPT_3DES, $salt, base64_decode($message[$index]), MCRYPT_MODE_CBC,base64_decode($message['iv'])),"\0");
+          $message[$index] = rtrim(
+            mcrypt_decrypt(
+              MCRYPT_3DES,
+              $salt,
+              base64_decode($message[$index]),
+              MCRYPT_MODE_CBC,
+              base64_decode($message['iv'])
+            ),
+          "\0");
         }
       }
     }
@@ -380,6 +400,7 @@ function fim_decrypt($message, $index = array('apiText','htmlText','rawText')) {
 
   return $message;
 }
+
 
 
 /**
@@ -390,10 +411,9 @@ function fim_decrypt($message, $index = array('apiText','htmlText','rawText')) {
  * @global array $salts - Key-value pairs used for encryption.
  * @return array - list($data, $iv, $saltNum)
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
-
+ */
 function fim_encrypt($data) {
-  global $salts;
+  global $salts, $config;
 
   $salt = end($salts); // Move the file pointer to the last entry in the array (and return its value)
   $saltNum = key($salts); // Get the key/id of the corrosponding salt.
@@ -433,29 +453,39 @@ function fim_encrypt($data) {
   return array($newData, $iv, $saltNum); // Return the data.
 }
 
+
+
 /**
-* Generates a SHA256 using whatever methods are available.
-*
-* @param mixed
-*/
+ * Generates a SHA256 using whatever methods are available. If no valid function can be found, the data will be returned unhashed.
+ *
+ * @param mixed
+ */
 function fim_sha256($data) {
+  global $config;
+
   if (function_exists('hash')) {
     return hash('sha256', $data);
   }
   elseif (function_exists('mhash')) {
     return mhash(MHASH_SHA256, $data);
   }
+  else {
+    return $data;
+  }
 }
 
-/**
-* Encodes a string as specifically-formatted XML data, converting "&", "'", '"', "<", and ">" to their equivilent values.
-*
-* @param string $data - The data to be encoded.
-* @return string - Encoded data.
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
 
+
+/**
+ * Encodes a string as specifically-formatted XML data, converting "&", "'", '"', "<", and ">" to their equivilent values.
+ *
+ * @param string $data - The data to be encoded.
+ * @return string - Encoded data.
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function fim_encodeXml($data) {
+  global $config;
+
   $ref = array(
     '&' => '&amp;', // By placing this first, we avoid accidents!
     '\'' => '&apos;',
@@ -471,15 +501,18 @@ function fim_encodeXml($data) {
   return $data;
 }
 
-/**
-* Encodes a string as specifically-formatted XML data attribute.
-*
-* @param string $data - The data to be encoded.
-* @return string - Encoded data.
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
 
+/**
+ * Encodes a string as specifically-formatted XML data attribute.
+ *
+ * @param string $data - The data to be encoded.
+ * @return string - Encoded data.
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function fim_encodeXmlAttr($data) {
+  global $config;
+
+
   $ref = array(
     '&' => '&amp;', // By placing this first, we avoid accidents!
     '\'' => '&apos;',
@@ -487,6 +520,7 @@ function fim_encodeXmlAttr($data) {
     '>' => '&gt;',
     '"' => '&quot;',
   );
+
 
   foreach ($ref AS $search => $replace) {
     $data = str_replace($search, $replace, $data);
@@ -497,77 +531,99 @@ function fim_encodeXmlAttr($data) {
 
 
 /**
-* Converts an HTML hexadecimal code to an array containing equivilent r-g-b values.
-*
-* @param string $color - The color, either 3 or 6 characters long with optional "#" appended.
-* @return array
-* @author Unknown
-*/
-
+ * Converts an HTML hexadecimal code to an array containing equivilent r-g-b values.
+ *
+ * @param string $color - The color, either 3 or 6 characters long with optional "#" appended.
+ * @return array
+ * @author Unknown
+ */
 function html2rgb($color) {
-  if ($color[0] == '#') {
+  global $config;
+
+
+  if ($color[0] === '#') { // Strip a prepended "#" if it exists.
     $color = substr($color, 1);
   }
 
-  if (strlen($color) == 6) {
+
+  // Get the RGB colour as an array
+  if (strlen($color) === 6) { // Data is stored as a six-character hexadecimal string (e.g. FFFFFF)
     list($r, $g, $b) = array($color[0] . $color[1], $color[2] . $color[3], $color[4] . $color[5]);
   }
-  elseif (strlen($color) == 3) {
-    list($r, $g, $b) = array($color[0].$color[0], $color[1].$color[1], $color[2].$color[2]);
+  elseif (strlen($color) === 3) { // Data is stored as a three-character hexadecimal string (e.g. FFF)
+    list($r, $g, $b) = array($color[0] . $color[0], $color[1] . $color[1], $color[2].$color[2]);
   }
   else {
-    return false;
+    throw new Exception('Invalid color: ' . $color);
   }
 
+
+  // Convert hexadecimal values to decimalvalues
   $r = hexdec($r);
   $g = hexdec($g);
   $b = hexdec($b);
 
-  return array($r, $g, $b);
+
+  return array($r, $g, $b); // Return as an array.
 }
 
 
+
 /**
-* Converts an r-g-b value array (or integer list) to equivilent hexadecimal code.
-*
-* @param mixed $r
-* @param int $g
-* @param int $b
-* @return string
-* @author Unknown
-*/
-
+ * Converts an r-g-b value array (or integer list) to equivilent hexadecimal code.
+ *
+ * @param mixed $r
+ * @param int $g
+ * @param int $b
+ * @return string
+ * @author Unknown
+ */
 function rgb2html($r, $g = false, $b = false) {
-  if (is_array($r) && sizeof($r) == 3) list($r, $g, $b) = $r;
+  global $config;
 
-  $r = intval($r);
-  $g = intval($g);
-  $b = intval($b);
 
+  // Support the first parameter as being an array of the three.
+  if (is_array($r) && sizeof($r) === 3) {
+    list($r, $g, $b) = $r;
+  }
+
+
+  // Cast the values as integers.
+  $r = (int) $r;
+  $g = (int) $g;
+  $b = (int) $b;
+
+
+  // Restrict the value to a range of 0-255, then convert the value from decimal to hexadecimal.
   $r = dechex($r < 0 ? 0 : ($r > 255 ? 255 : $r));
   $g = dechex($g < 0 ? 0 : ($g > 255 ? 255 : $g));
   $b = dechex($b < 0 ? 0 : ($b > 255 ? 255 : $b));
 
+
+  // Create the color. If a hexadecimal value is only one character in length, prepend a "0" to it (e.g. "3" becomes "03").
   $color = (strlen($r) < 2 ? '0' : '') . $r;
   $color .= (strlen($g) < 2 ? '0' : '') . $g;
   $color .= (strlen($b) < 2 ? '0' : '') . $b;
 
+
+  // Return the value, prepended with a "#" to signify an HTML colour.
   return '#' . $color;
 }
 
 
-/**
-* Produces a date string based on specialized conditions.
-*
-* @param string $format - The format to be used; if false a format will be generated based on the distance between the current time and the time specicied.
-* @param int $timestamp - The timestamp to be used, defaulting to the current timestamp.
-* @global $user
-* @return string
-* @author Unknown
-*/
 
+/**
+ * Produces a date string based on specialized conditions.
+ *
+ * @param string $format - The format to be used; if false a format will be generated based on the distance between the current time and the time specicied.
+ * @param int $timestamp - The timestamp to be used, defaulting to the current timestamp.
+ * @global $user
+ * @return string
+ * @author Unknown
+ */
 function fim_date($format, $timestamp = false) {
-  global $user;
+  global $user, $config;
+
 
   $timestamp = ($timestamp ?: time());
 
@@ -587,14 +643,14 @@ function fim_date($format, $timestamp = false) {
 }
 
 
-/**
-* Retrieves a hook from the database.
-*
-* @param string $name
-* @return evalcode (string)
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
 
+/**
+ * Retrieves a hook from the database.
+ *
+ * @param string $name
+ * @return evalcode (string)
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function hook($name) {
   global $hooks, $disableHooks;
 
@@ -612,14 +668,14 @@ function hook($name) {
 }
 
 
-/**
-* Retrieves a template from the database.
-*
-* @param string $name
-* @return string
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
 
+/**
+ * Retrieves a template from the database.
+ *
+ * @param string $name
+ * @return string
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function template($name) {
   global $templates, $phrases, $title, $user, $room, $message, $template, $templateVars; // Lame approach.
   static $globalString;
@@ -650,17 +706,17 @@ function template($name) {
 }
 
 
-/**
-* Parser for template() function.
-*
-* @param string $text
-* @param int $offset
-* @param bool $stop
-* @param string $globalString
-* @return string
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
 
+/**
+ * Parser for template() function.
+ *
+ * @param string $text
+ * @param int $offset
+ * @param bool $stop
+ * @param string $globalString
+ * @return string
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function parser1($text, $offset, $stop = false, $globalString = '') {
   $i = $offset;
 
@@ -847,17 +903,17 @@ function parser1($text, $offset, $stop = false, $globalString = '') {
 }
 
 
-/**
-* Inline If
-*
-* @param string $condition
-* @param string $true
-* @param string $false
-* @param evalcode $eval
-* @return string
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
 
+/**
+ * Inline If
+ *
+ * @param string $condition
+ * @param string $true
+ * @param string $false
+ * @param evalcode $eval
+ * @return string
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function iifl($condition, $true = '', $false = '', $eval = '') {
   global $templates, $phrases, $title, $user, $room, $message, $template, $templateVars; // Lame approach.
 
@@ -873,18 +929,17 @@ function iifl($condition, $true = '', $false = '', $eval = '') {
 }
 
 
-/**
-* General Error Handler
-*
-* @param int $errno
-* @param string $errstr
-* @param string $errfile
-* @param int $errline
-* @return true
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
 
-/* Note: errors should be hidden. It's sorta best practice, especially with the API. */
+/**
+ * General Error Handler
+ *
+ * @param int $errno
+ * @param string $errstr
+ * @param string $errfile
+ * @param int $errline
+ * @return true
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function errorHandler($errno, $errstr, $errfile, $errline) {
   global $errorFile, $installLoc;
   $errorFile = ($errorFile ? $errorFile : $installLoc . 'error_log.txt');
@@ -914,16 +969,16 @@ function errorHandler($errno, $errstr, $errfile, $errline) {
 }
 
 
-/**
-* Container Template
-*
-* @param string $title
-* @param string $content
-* @param string $class
-* @return string
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
 
+/**
+ * Container Template
+ *
+ * @param string $title
+ * @param string $content
+ * @param string $class
+ * @return string
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function container($title, $content, $class = 'page') {
 
   return $return = "<table class=\"$class ui-widget\">
@@ -945,14 +1000,14 @@ function container($title, $content, $class = 'page') {
 }
 
 
-/**
-* API Layer
-*
-* @param array $array
-* @return string
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
 
+/**
+ * API Layer
+ *
+ * @param array $array
+ * @return string
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function fim_outputApi($data) {
   if (isset($_REQUEST['fim3_format'])) {
     switch ($_REQUEST['fim3_format']) {
@@ -988,15 +1043,15 @@ function fim_outputApi($data) {
 }
 
 
-/**
-* XML Parser
-*
-* @param array $array
-* @param int $level
-* @return string
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
 
+/**
+ * XML Parser
+ *
+ * @param array $array
+ * @param int $level
+ * @return string
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function fim_outputXml($array, $level = 0) {
   header('Content-type: application/xml');
 
@@ -1047,15 +1102,15 @@ $data";
 }
 
 
-/**
-* XML Alternate Parser
-*
-* @param array $array
-* @param int $level
-* @return string
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
 
+/**
+ * XML Alternate Parser
+ *
+ * @param array $array
+ * @param int $level
+ * @return string
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function fim_outputXml2($array, $level = 0) {
   header('Content-type: application/xml');
 
@@ -1125,16 +1180,15 @@ $data";
 }
 
 
+
 /**
-* JSON Parser
-*
-* @param array $array
-* @param int $level
-* @return string
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
-
-
+ * JSON Parser
+ *
+ * @param array $array
+ * @param int $level
+ * @return string
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function fim_outputJson($array, $level = 0) {
   header('Content-type: application/json');
 
@@ -1191,15 +1245,15 @@ $indent}
 }
 
 
-/**
-* Key Parser
-*
-* @param array $array
-* @param int $level
-* @return string
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
 
+/**
+ * Key Parser
+ *
+ * @param array $array
+ * @param int $level
+ * @return string
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function fim_outputKeys($array, $level = 0) { // Used only for creating documentation.
   $indent = '';
 
@@ -1224,23 +1278,24 @@ function fim_outputKeys($array, $level = 0) { // Used only for creating document
 }
 
 
+
 /**
  * Output Using print_r
- * @param array $array */
-
+ * @param array $array
+ */
 function fim_outputArray() {
   print_r($array);
 }
 
 
-/**
-* HTML+XML Compact Function So Google's PageSpeed Likes FIM (also great if GZIP isn't available)
-*
-* @param string $data
-* @return string
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
 
+/**
+ * HTML+XML Compact Function So Google's PageSpeed Likes FIM (also great if GZIP isn't available)
+ *
+ * @param string $data
+ * @return string
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function fim_htmlCompact($data) {
   $data = preg_replace('/\ {2,}/','', $data);
   $data = preg_replace("/(\n|\n\r|\t|\r)/",'', $data);
@@ -1250,14 +1305,14 @@ function fim_htmlCompact($data) {
 }
 
 
-/**
-* Pretty Size
-*
-* @param float $size
-* @return string
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
 
+/**
+ * Pretty Size
+ *
+ * @param float $size
+ * @return string
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function formatSize($size) {
 
   $fileSuffixes = array(
@@ -1280,16 +1335,17 @@ function formatSize($size) {
   }
 
   return $size . $fileSuffixes[$suffix];
-
 }
 
+
+
 /**
-* Strict Sanitization of GET/POST/COOKIE Globals
-*
-* @param array data
-* @return array
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
+ * Strict Sanitization of GET/POST/COOKIE Globals
+ *
+ * @param array data
+ * @return array
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function fim_sanitizeGPC($data) {
   $metaDataDefaults = array(
     'type' => 'string',
@@ -1488,16 +1544,16 @@ function fim_sanitizeGPC($data) {
 }
 
 
-/**
-* A function equvilent to an IF-statement that returns a true or false value. It is similar to the function in most spreadsheets (EXCEL, LibreOffice CALC, Lotus 123). TRANSITIONAL
-*
-* @param string $condition - The condition that will be evaluated. It must be a string.
-* @param string $true - A string to return if the above condition evals to true.
-* @param string $false - A string to return if the above condition evals to false.
-* @return bool - true on success, false on failure
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
 
+/**
+ * A function equvilent to an IF-statement that returns a true or false value. It is similar to the function in most spreadsheets (EXCEL, LibreOffice CALC, Lotus 123). TRANSITIONAL
+ *
+ * @param string $condition - The condition that will be evaluated. It must be a string.
+ * @param string $true - A string to return if the above condition evals to true.
+ * @param string $false - A string to return if the above condition evals to false.
+ * @return bool - true on success, false on failure
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function iif($condition, $true, $false) {
   if (eval('return ' . stripslashes($condition) . ';')) {
     return $true;
@@ -1506,13 +1562,14 @@ function iif($condition, $true, $false) {
 }
 
 
+
 /**
  * Determines if an array contains an array.
  *
  * @param array $array
  * @return bool - True if the array contains array, false otherwise.
- * @author Joseph Todd Parsons <josephtparsons@gmail.com> */
-
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function hasArray($array) {
   foreach ($array AS $key => $value) {
     if (is_array($value)) {
@@ -1524,6 +1581,7 @@ function hasArray($array) {
 }
 
 
+
 /**
  * Implements PHP's explode with support for escaped delimeters.
  *
@@ -1531,7 +1589,8 @@ function hasArray($array) {
  * @param string string
  * @return array
  * @author <adrian@bilsoftware.com>
- * @source http://www.php.net/manual/en/function.explode.php#89138 */
+ * @source http://www.php.net/manual/en/function.explode.php#89138
+ */
 function fim_explodeEscaped($delimiter, $string) {
   $exploded = explode($delimiter, $string);
   $fixed = array();

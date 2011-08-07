@@ -514,6 +514,7 @@ if (is_array($request['rooms'])) {
             'roomId' => 'roomId',
             'userId' => 'userId',
             'deleted' => 'deleted',
+            'flag' => 'flag',
           ),
           "{$sqlPrefix}users" => array(
             'userId' => 'muserId',
@@ -860,7 +861,7 @@ if (is_array($request['rooms'])) {
         if (is_array($messages)) {
           if (count($messages) > 0) {
             foreach ($messages AS $id => $message) {
-              $message = fim_decrypt($message);
+              $message = fim_decrypt($message, array('apiText', 'htmlText'));
 
 
               switch ($request['encode']) {

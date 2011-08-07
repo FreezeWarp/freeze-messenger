@@ -449,7 +449,6 @@ function fim_sendMessage($messageText, $userData, $roomData, $flag = '') {
   // Flags allow for less hassle on some communications.
   // Supported flags: image, video, link, email
   // Other flags that won't be parsed here: me, topic
-
   if (in_array($flag, array('image', 'video', 'link', 'email', 'youtube', 'html', 'audio', 'text'))) {
     $messageData = array(
       'rawText' => $messageText,
@@ -495,8 +494,9 @@ function fim_sendMessage($messageText, $userData, $roomData, $flag = '') {
   }
 
 
+
   // Add the data to the datastore.
-  $database->storeMessage($userData, $roomData, $messageData, $messageDataEncrypted, $flag);
+  $messageId = $database->storeMessage($userData, $roomData, $messageData, $messageDataEncrypted, $flag);
 
 
 
