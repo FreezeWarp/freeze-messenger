@@ -130,7 +130,7 @@ class database {
         case 'connect':
           $function = mysqli_connect($args[1], $args[3], $args[4], $args[5], $args[2]);
 
-          $this->version = mysqli_get_server_version();
+          $this->version = mysqli_get_server_version($function);
           if ($args[5]) {
             $this->activeDatabase = $args[5];
           }
@@ -143,7 +143,12 @@ class database {
         break;
 
         case 'error':
-          return mysqli_error($this->dbLink);
+          if (isset($this->dbLink)) {
+            return mysqli_error($this->dbLink);
+          }
+          else {
+            return mysqli_connect_error();
+          }
         break;
 
         case 'close':
@@ -208,7 +213,7 @@ class database {
    * @param string $host - The host of the database server.
    * @param string $user - The database user
    * @param string $password - The password of the user.
-   * @param string $database - The database to connect to.
+   * @param string $this - The database to connect to.
    * @return bool - True if a connection was successfully established, false otherwise.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
@@ -929,7 +934,7 @@ LIMIT
   }
 
 
-  public function createTable($tableName, $storeType, $tableColumns, $tableIndexes) {
+  public function createTable($tableName, $tableComment, $storeType, $tableColumns, $tableIndexes) {
     switch ($storeType) {
       case 'general': // Use this normally, and for all perm. data
       $engine = 'InnoDB';
@@ -976,7 +981,7 @@ LIMIT
           $restrictValues = array();
 
           foreach ((array) $column['restrict'] AS $value) {
-            $restrictValues[] = '"' . $database->real_escape_string($value) . '"';
+            $restrictValues[] = '"' . $this->real_escape_string($value) . '"';
           }
 
           $typePiece = 'ENUM(' . implode(',',$restrictValues) . ')';
@@ -1038,13 +1043,13 @@ LIMIT
       }
 
       if (isset($column['default'])) {
-        $column['default'] = '"' . $database->real_escape_string($column['default']) . '"';
+        $column['default'] = '"' . $this->real_escape_string($column['default']) . '"';
 
         $typePiece .= " DEFAULT {$column['default']}";
       }
 
 
-      $columns[] = "`{$column['@name']}` {$typePiece} NOT NULL" . (isset($column['comment']) ? ' COMMENT "' . $database->real_escape_string($column['comment']) . '"' : '');
+      $columns[] = "`{$column['@name']}` {$typePiece} NOT NULL" . (isset($column['comment']) ? ' COMMENT "' . $this->real_escape_string($column['comment']) . '"' : '');
     }
 
 
@@ -1081,10 +1086,10 @@ LIMIT
       $keys[] = "{$typePiece} ({$key['@name']})";
     }
 
-    $this-> = 'CREATE TABLE IF NOT EXISTS `' . $prefix . $table['@name'] . '` (
+    $this->rawQuery = 'CREATE TABLE IF NOT EXISTS `' . $prefix . $tableName . '` (
 ' . implode(",\n  ",$columns) . ',
 ' . implode(",\n  ",$keys) . '
-) ENGINE="' . $engine . '" COMMENT="' . $database->real_escape_string($table['@comment']) . '" DEFAULT CHARSET="utf8";';
+) ENGINE="' . $engine . '" COMMENT="' . $this->real_escape_string($tableComment) . '" DEFAULT CHARSET="utf8";';
   }
 
 
@@ -1111,7 +1116,7 @@ LIMIT
       case 'mysql':
       case 'mysqli':
       case 'postgresql':
-      $tables = $database->rawQuery('SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA LIKE "' . $this->escape($this->activeDatabase) . '"');
+      $tables = $this->rawQuery('SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA LIKE "' . $this->escape($this->activeDatabase) . '"');
       $tables = $tables->getAsArray('TABLE_NAME');
       $tables = array_keys($tables);
       break;

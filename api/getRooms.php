@@ -120,7 +120,7 @@ $queryParts['roomSelect'] = array(
 /* Modify Query Data for Directives */
 if ($request['showDeleted'] !== true) { // We will also check to make sure the user has moderation priviledges after the select.
   $queryParts['roomSelect']['conditions']['both'][] = array(
-    'type' => '!bitwise',
+    'type' => 'xor',
     'left' => array(
       'type' => 'column',
       'value' => 'options',

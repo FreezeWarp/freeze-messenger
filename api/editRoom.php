@@ -302,7 +302,7 @@ switch($request['action']) {
         array(
           'both' => array(
             array(
-              'type' => 'bitwise',
+              'type' => 'and',
               'left' => array(
                 'type' => 'column',
                 'value' => 'options',

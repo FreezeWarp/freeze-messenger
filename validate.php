@@ -776,7 +776,7 @@ if ($valid) { // If the user is valid, process their preferrences.
           array(
             'both' => array(
               array(
-                'type' => 'bitwise',
+                'type' => 'and',
                 'left' => array(
                   'type' => 'column',
                   'value' => 'options',
