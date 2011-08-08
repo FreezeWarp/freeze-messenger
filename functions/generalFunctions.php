@@ -587,8 +587,7 @@ function rgb2html($r, $g = false, $b = false) {
   $color .= (strlen($b) < 2 ? '0' : '') . $b;
 
 
-  // Return the value, prepended with a "#" to signify an HTML colour.
-  return '#' . $color;
+  return '#' . $color; // Return the value, prepended with a "#" to signify an HTML colour.
 }
 
 
@@ -607,14 +606,13 @@ function fim_date($format, $timestamp = false) {
 
   $timestamp = ($timestamp ? $timestamp : time()); // If a timestamp was specified, we'll go with it, otherwise get it from PHP's time().
 
-  $hourdiff = ((date('Z', $timestamp) / 3600) - (isset($user['timeZone']) ? $user['timeZone'] : 0)) * 3600;
-
-  $timestampAdj = $timestamp - $hourdiff;
+  $hourdiff = (isset($user['timeZone']) ? $user['timeZone'] : $config['defaultTimeZone']); // If the user's timeZone offset (e.g. 2 = 2 hour ahead) is set, we use it, otherwise we'll use the systsem default.
+  $timestampAdj = $timestamp + ($hourdiff * 3600); // Get the updated timestamp by adding the current timestamp and the hour diff, multiplied by 3600 (the number of seconds in hours).
 
   if ($format === false) { // If format is not specified, we use a dynamic format that will only show the day if the date is not on the current day.
-    $midnight = strtotime("yesterday") - $hourdiff;
+    $midnight = strtotime("yesterday") - $hourdiff; // Get the time of the last midight.
 
-    if ($timestampAdj > $midnight) { // The date falls on the current day.
+    if ($timestampAdj > $midnight) { // The date falls on the current day (the timestamp is after the last midnight).
       $format = 'g:i:sa';
     }
     else { // The date does not fall on the current day.
@@ -622,7 +620,7 @@ function fim_date($format, $timestamp = false) {
     }
   }
 
-  $newDate = date($format, $timestampAdj); // Using PHP's date(), get a date string based on the specified format and the adjusted timezone.
+  $newDate = gmdate($format, $timestampAdj); // Using PHP's gmdate(), get a date string based on the specified format and the adjusted timezone. Note that gmdate() is the same as date(), but forces GMT/UST.
 
   return $newDate;
 }
@@ -669,29 +667,32 @@ function template($name) {
   global $templates, $phrases, $title, $user, $room, $message, $template, $templateVars; // Lame approach.
   static $globalString;
 
-  if (isset($templateVars[$name])) {
-    if($templateVars[$name]) {
-      $vars = explode(', ', $templateVars[$name]);
-      foreach ($vars AS $var) {
-        $globalVars[] = '$' . $var;
-      }
-      $globalString = implode(', ', $globalVars);
 
-      eval("global $globalString;");
+  if (isset($templates[$name])) { // Does the template exist?
+    if (isset($templateVars[$name])) { // Do additional variables exist?
+      if (strlen($templateVars[$name]) > 0) { // Are the additional varaiables non-empty?
+        $vars = explode(',', $templateVars[$name]); // Get the vars as an array.
+
+        foreach ($vars AS $var) { // Run through each var.
+          $globalVars[] = '$' . trim($var); // Format the var for an eval, trimming it to remove any spaces surrounding the var.
+        }
+
+        $globalString = implode(', ', $globalVars); // Implode the variables for the below global eval.
+
+        eval("global $globalString;"); // And make all those variables global.
+      }
     }
 
 
-    $template2 = $templates[$name];
+    $template2 = parser1($templates[$name], 0, false, $globalString); // The initial parser, which is stored in the function below.
+    $template2 = preg_replace('/(.+)/e', 'stripslashes("\\1")', $template2); // Eval the data returned, thus obtaining proper variables.
 
-    $template2 = parser1($template2,0,false, $globalString);
 
-
-    $template2 = preg_replace('/(.+)/e', 'stripslashes("\\1")', $template2);
-
-    return $template2;
+    return $template2; // Return the template string.
   }
-
-  return '';
+  else { // Return an empty string if the template is not valid.
+    return '';
+  }
 }
 
 
@@ -906,55 +907,18 @@ function parser1($text, $offset, $stop = false, $globalString = '') {
 function iifl($condition, $true = '', $false = '', $eval = '') {
   global $templates, $phrases, $title, $user, $room, $message, $template, $templateVars; // Lame approach.
 
-  if (strlen($eval) > 0) {
+
+  if (strlen($eval) > 0) { // Is there an eval condition? We use this primarily to set global variables (though there are other uses).
     eval($eval);
   }
 
-  if (eval('return ' . $condition . ';')) {
-    return $true;
+
+  if (eval('return ' . $condition . ';')) { // Is the condition valid?
+    return $true; // Return the true string.
   }
-
-  return $false;
-}
-
-
-
-/**
- * General Error Handler
- *
- * @param int $errno
- * @param string $errstr
- * @param string $errfile
- * @param int $errline
- * @return true
- * @author Joseph Todd Parsons <josephtparsons@gmail.com>
- */
-function errorHandler($errno, $errstr, $errfile, $errline) {
-  global $errorFile, $installLoc;
-  $errorFile = ($errorFile ? $errorFile : $installLoc . 'error_log.txt');
-
-  switch ($errno) {
-    case E_USER_ERROR:
-    error_log("User Error in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr\n",3, $errorFile);
-    die("An error has occured: $errstr. \n\nThe application has terminated.");
-    break;
-
-    case E_USER_WARNING:
-    error_log("User Warning in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr\n",3, $errorFile);
-    break;
-
-    case E_ERROR:
-    error_log("System Error in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr\n",3, $errorFile);
-    die("An error has occured: $errstr. \n\nThe application has terminated.");
-    break;
-
-    case E_WARNING:
-    error_log("System Warning in $_SERVER[PHP_SELF]; File '$errfile'; Line '$errline': $errstr\n",3, $errorFile);
-    break;
+  else {
+    return $false; // Return the false string.
   }
-
-  // Don't execute the internal PHP error handler.
-  return true;
 }
 
 

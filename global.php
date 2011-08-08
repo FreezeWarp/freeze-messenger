@@ -83,22 +83,27 @@ $defaultConfig = array(
   'encodeXmlAttrEntitiesFind' => array('&', '\'', '<', '>', '"'),
   'encodeXmlAttrEntitiesReplace' => array('&amp;', '&apos;', '&lt;', '&gt;', '&quot;'),
 
+  'defaultTimeZone' => 0,
+
   'dev' => false,
 );
 
 
 
 /* Make Sure Required PHP Extensions are Present
+ *
  * Note that:
  * MySQL is present in all versions since PHP 4
  * JSON is present in all versions of PHP since 5.2 (but is not actually used in FIMv3)
  * MBString is present in all versions of PHP since 4.3
  * MCrypt is present in all versions since PHP 4
- * Hash is present in all versions since PHP 5.1.2
  * PCRE is present in all versions since PHP 4
  * APC is present in PHP 5.4, Ubuntu's php-apc packge, and easily installed from PECL.net. It simply has to be a requirement for may of the functions (as far as the way they are designed).
+ *
+ * The following are used, but with safe fallbacks:
+ * Hash is present in all versions since PHP 5.1.2; MHash is present in all versions since PHP4
  */
-foreach (array('mysql', 'json', 'mbstring', 'mcrypt', 'pcre', 'apc') AS $module) {
+foreach (array('mysql', 'json', 'mbstring', 'mcrypt', 'pcre', 'apc', 'date') AS $module) {
   if (!extension_loaded($module)) {
     die("The module $module could not be found. Please install PHP $module compatibility. See the documentation for help.");
   }
