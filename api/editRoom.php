@@ -183,10 +183,10 @@ switch($request['action']) {
         $errDesc = 'The room specified already exists.';
       }
       else {
-        $database->insert(array(
+        $database->insert("{$sqlPrefix}rooms", array(
           'roomName' => $request['roomName'],
           'owner' => (int) $user['userId'],
-          ),"{$sqlPrefix}rooms"
+          )
         );
         $roomId = $database->insertId;
 
@@ -196,15 +196,12 @@ switch($request['action']) {
               unset($allowedUser);
             }
             else {
-              $database->insert(
-                array(
+              $database->insert("{$sqlPrefix}roomPermissions", array(
                   'roomId' => $roomId,
                   'attribute' => 'user',
                   'param' => $allowedUser,
                   'permissions' => 7,
-                ),
-                "{$sqlPrefix}roomPermissions",
-                array(
+                ), array(
                   'permissions' => 7,
                 )
               );
@@ -212,30 +209,24 @@ switch($request['action']) {
           }
 
           foreach ($request['allowedGroups'] AS &$allowedGroup) {
-            $database->insert(
-              array(
+            $database->insert("{$sqlPrefix}roomPermissions", array(
                 'roomId' => $roomId,
                 'attribute' => 'group',
                 'param' => $allowedGroup,
                 'permissions' => 7,
-              ),
-              "{$sqlPrefix}roomPermissions",
-              array(
+              ), array(
                 'permissions' => 7,
               )
             );
           }
 
           foreach ($request['moderators'] AS &$moderator) {
-            $database->insert(
-              array(
+            $database->insert("{$sqlPrefix}roomPermissions", array(
                 'roomId' => $roomId,
                 'attribute' => 'user',
                 'param' => $moderator,
                 'permissions' => 15,
-              ),
-              "{$sqlPrefix}roomPermissions",
-              array(
+              ), array(
                 'permissions' => 15,
               )
             );
@@ -368,20 +359,20 @@ switch($request['action']) {
         }
 
         if ($checked == true && !$listsNew[$list['listId']]) {
-          $database->insert(array(
+          $database->insert("{$sqlPrefix}censorBlackWhiteLists", array(
             'roomId' => $room['roomId'],
             'listId' => $list['listId'],
             'status' => 'unblock'
-          ),"{$sqlPrefix}censorBlackWhiteLists",array(
+          ), array(
             'status' => 'unblock',
           ));
         }
         elseif ($checked == false && $listsNew[$list['listId']]) {
-          $database->insert(array(
+          $database->insert("{$sqlPrefix}censorBlackWhiteLists", array(
             'roomId' => $room['roomId'],
             'listId' => $list['listId'],
             'status' => 'block'
-          ),"{$sqlPrefix}censorBlackWhiteLists",array(
+          ), array(
             'status' => 'block',
           ));
         }
@@ -465,12 +456,12 @@ switch($request['action']) {
         $xmlData['editRoom']['response']['insertId'] = $room['roomId']; // Already exists; return ID
       }
       else {
-        $database->insert(array(
+        $database->insert("{$sqlPrefix}rooms", array(
             'roomName' => "Private IM ($user[userName] and $user2[userName])",
             'allowedUsers' => "$user[userId],$user2[userId]",
             'options' => 48,
             'bbcode' => 1,
-          ),"{$sqlPrefix}rooms"
+          )
         );
 
         $xmlData['editRoom']['response']['insertId'] = $database->insertId;

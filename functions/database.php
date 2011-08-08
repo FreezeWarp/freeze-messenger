@@ -28,6 +28,11 @@ class database {
   public function __construct() {
     $this->queryCounter = 0;
     $this->insertId = 0;
+    $this->errorLevel = E_ERROR;
+  }
+
+  public function setErrorLevel($errorLevel) {
+    $this->errorLevel = $errorLevel;
   }
 
 
@@ -99,7 +104,12 @@ class database {
         break;
 
         case 'error':
-          return mysql_error($this->dbLink);
+          if (isset($this->dbLink)) {
+            return mysql_error($this->dbLink);
+          }
+          else {
+            return mysql_error();
+          }
         break;
 
         case 'close':
@@ -128,7 +138,7 @@ class database {
       case 'mysqli':
       switch ($operation) {
         case 'connect':
-          $function = mysqli_connect($args[1], $args[3], $args[4], $args[5], $args[2]);
+          $function = mysqli_connect($args[1], $args[3], $args[4], ($args[5] ? $args[5] : null), (int) $args[2]);
 
           $this->version = mysqli_get_server_version($function);
           if ($args[5]) {
@@ -231,13 +241,6 @@ class database {
     }
 
 
-    if (!$this->functionMap('selectdb', $database)) { // Select the database.
-      $this->error = 'Could not select database: ' . $database;
-
-      return false;
-    }
-
-
     if ($this->language == 'mysql' || $this->language == 'mysqli') {
       if (!$this->rawQuery('SET NAMES "utf8"')) { // Sets the database encoding to utf8 (unicode).
         $this->error = 'Could not run SET NAMES query.';
@@ -248,6 +251,27 @@ class database {
 
 
     return true;
+  }
+
+
+  public function createDatabase($database) {
+    switch ($this->language) {
+      case 'mysql':
+      case 'mysqli':
+      return $this->rawQuery('CREATE DATABASE IF NOT EXISTS `' . $database . '`');
+      break;
+    }
+  }
+
+  public function selectDatabase($database) {
+    if (!$this->functionMap('selectdb', $database)) { // Select the database.
+      $this->error = 'Could not select database: ' . $database;
+
+      return false;
+    }
+    else {
+      return true;
+    }
   }
 
 
@@ -654,7 +678,7 @@ LIMIT
             }
             else {
               $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
-              trigger_error('Query nullified; backtrace: ' . print_r(debug_backtrace(), true), E_USER_WARNING);
+              trigger_error('Query nullified; backtrace: ' . print_r(debug_backtrace(), true), $this->errorLevel);
             }
           }
         }
@@ -694,7 +718,7 @@ LIMIT
   }
 
 
-  public function insert($dataArray, $table, $updateArray = false) { // Note: We will be switching the parameter order here briefly to $table, $dataArray, $updateArray.
+  public function insert($table, $dataArray, $updateArray = false) {
     list($columns, $values) = $this->splitArray($dataArray);
 
     $columns = implode(',', $columns); // Convert the column array into to a string.
@@ -833,10 +857,15 @@ LIMIT
     if ($queryData = $this->functionMap('query', $query)) {
       $this->queryCounter++;
 
-      return new databaseResult($queryData, $query, $this->language); // Return link resource.
+      if ($queryData === true) {
+        return true;
+      }
+      else {
+        return new databaseResult($queryData, $query, $this->language); // Return link resource.
+      }
     }
     else {
-      trigger_error("Database Error;\n\nQuery: $query;\n\nError: " . $this->functionMap('error'),E_USER_ERROR); // The query could not complete.
+      trigger_error("Database Error;\n\nQuery: $query;\n\nDAL Error: " . $this->error . "\n\nDriver Error: " . $this->functionMap('error'), $this->errorLevel); // The query could not complete.
 
       return false;
     }
@@ -977,26 +1006,26 @@ LIMIT
         break;
 
         case 'string':
-        if (isset($column['restrict'])) {
+        if ($column['restrict']) {
           $restrictValues = array();
 
           foreach ((array) $column['restrict'] AS $value) {
-            $restrictValues[] = '"' . $this->real_escape_string($value) . '"';
+            $restrictValues[] = '"' . $this->escape($value) . '"';
           }
 
           $typePiece = 'ENUM(' . implode(',',$restrictValues) . ')';
         }
         else {
-          if (!isset($column['maxlen'])) {
+          if (!isset($column['maxlen']) && $storeType != 'memory') {
             $typePiece = 'TEXT';
           }
-          elseif ($column['maxlen'] > 2097151) { // If the maxlen is greater than (16MB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
+          elseif ($column['maxlen'] > 2097151 && $storeType != 'memory') { // If the maxlen is greater than (16MB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
             $typePiece = 'LONGTEXT';
           }
-          elseif ($column['maxlen'] > 8191) { // If the maxlen is greater than (64KB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
+          elseif ($column['maxlen'] > 8191 && $storeType != 'memory') { // If the maxlen is greater than (64KB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
             $typePiece = 'MEDIUMTEXT';
           }
-          elseif ($column['maxlen'] > 1000) { // If the maxlen is greater than 1000, we use TEXT since it is most likely more optimized. VARCHAR itself limits to roughly 65,535 length, or less if using UTF8.
+          elseif ($column['maxlen'] > 1000 && $storeType != 'memory') { // If the maxlen is greater than 1000, we use TEXT since it is most likely more optimized. VARCHAR itself limits to roughly 65,535 length, or less if using UTF8.
             $typePiece = 'TEXT(' . (int) $column['maxlen'] . ')';
           }
           elseif ($column['maxlen'] > 100) { // If the maxlen is greater than 100, we use VARCHAR since it is most likely more optimized. CHAR itself limits to roughly 255 length, or less if using UTF8.
@@ -1011,20 +1040,20 @@ LIMIT
         break;
 
         case 'bitfield':
-        if (!isset($column['@bits'])) {
+        if (!isset($column['bits'])) {
           $typePiece = 'TINYINT UNSIGNED'; // Sane default
         }
         else {
-          if ($column['@bits'] <= 8) {
+          if ($column['bits'] <= 8) {
             $typePiece = 'TINYINT UNSIGNED';
           }
-          elseif ($column['@bits'] <= 16) {
+          elseif ($column['bits'] <= 16) {
             $typePiece = 'SMALLINT UNSIGNED';
           }
-          elseif ($column['@bits'] <= 24) {
+          elseif ($column['bits'] <= 24) {
             $typePiece = 'MEDIUMINT UNSIGNED';
           }
-          elseif ($column['@bits'] <= 32) {
+          elseif ($column['bits'] <= 32) {
             $typePiece = 'INTEGER UNSIGNED';
           }
           else {
@@ -1042,15 +1071,15 @@ LIMIT
         break;
       }
 
-      if (isset($column['default'])) {
-        $column['default'] = '"' . $this->real_escape_string($column['default']) . '"';
 
-        $typePiece .= " DEFAULT {$column['default']}";
+      if ($column['default']) {
+        $typePiece .= ' DEFAULT "' . $this->escape($column['default']) . '"';
       }
 
 
-      $columns[] = "`{$column['@name']}` {$typePiece} NOT NULL" . (isset($column['comment']) ? ' COMMENT "' . $this->real_escape_string($column['comment']) . '"' : '');
+      $columns[] = '`' . $this->escape($column['name']) . "` {$typePiece} NOT NULL COMMENT \"" . $this->escape($column['comment']) . '"';
     }
+
 
 
     foreach ($tableIndexes AS $key) {
@@ -1070,8 +1099,9 @@ LIMIT
         break;
       }
 
+
       if (strpos($key['name'],',') !== false) {
-        $keyCols = explode(',',$key['@name']);
+        $keyCols = explode(',', $key['name']);
 
         foreach ($keyCols AS &$keyCol) {
           $keyCol = "`$keyCol`";
@@ -1080,28 +1110,30 @@ LIMIT
         $key['name'] = implode(',', $keyCols);
       }
       else {
-        $key['name'] = "`{$key['@name']}`";
+        $key['name'] = "`{$key['name']}`";
       }
 
-      $keys[] = "{$typePiece} ({$key['@name']})";
+
+      $keys[] = "{$typePiece} ({$key['name']})";
     }
 
-    $this->rawQuery = 'CREATE TABLE IF NOT EXISTS `' . $prefix . $tableName . '` (
+
+    return $this->rawQuery('CREATE TABLE IF NOT EXISTS `' . $this->escape($tableName) . '` (
 ' . implode(",\n  ",$columns) . ',
 ' . implode(",\n  ",$keys) . '
-) ENGINE="' . $engine . '" COMMENT="' . $this->real_escape_string($tableComment) . '" DEFAULT CHARSET="utf8";';
+) ENGINE="' . $this->escape($engine) . '" COMMENT="' . $this->escape($tableComment) . '" DEFAULT CHARSET="utf8"');
   }
 
 
   public function renameTable($oldName, $newName) {
-    $query = "RENAME TABLE `$oldName` TO `$newName`";
+    $query = 'RENAME TABLE `' . $this->escape($oldName) . '` TO `' . $this->escape($newName) . '`';
 
     return $this->rawQuery($query);
   }
 
 
   public function deleteTable($tableName) {
-    $query = "DELETE TABLE `$tableName`";
+    $query = 'DELETE TABLE `' . $this->escape($tableName) . '`';
 
     return $this->rawQuery($query);
   }

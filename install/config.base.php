@@ -18,6 +18,13 @@
 
 ///* MySQL Login *///
 
+/* $dbConnect['core']['driver']
+ * Defines the driver to use for database connections.
+ * "mysql" and "mysqli" are both acceptable */
+$dbConnect['core']['driver'] = 'mysqli';
+$dbConnect['slave']['driver'] = 'mysqli';
+$dbConnect['integration']['driver'] = 'mysqli';
+
 /* $dbConnect['core']['host']
  * Defines the MySQL server to be connected to.
  * If unsure, "localhost" will work if you are connecting to a local server (which is the case most of the time) */
@@ -52,13 +59,6 @@ $dbConnect['integration']['password'] = '';
 $dbConnect['core']['database'] = '';
 $dbConnect['slave']['database'] = '';
 $dbConnect['integration']['database'] = '';
-
-/* $dbConnect['core']['driver']
- * Defines the driver to use for database connections.
- * "mysql" and "mysqli" are both acceptable */
-$dbConnect['core']['driver'] = 'mysqli';
-$dbConnect['slave']['driver'] = 'mysqli';
-$dbConnect['integration']['driver'] = 'mysqli';
 
 /* $sqlPrefix
  * A prefix used for all tables.

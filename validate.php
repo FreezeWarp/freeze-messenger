@@ -705,7 +705,7 @@ if ($valid) { // If the user is valid, process their preferrences.
 
 
       /* Insert User Settings Entry */
-      $database->insert(array(
+      $database->insert("{$sqlPrefix}users",array(
         'userId' => (int) $user2['userId'],
         'userName' => ($user2['userName']),
         'userGroup' => (int) $user2['userGroup'],
@@ -717,7 +717,7 @@ if ($valid) { // If the user is valid, process their preferrences.
         'socialGroups' => ($socialGroups['groups']),
         'userPrivs' => (int) $priviledges,
         'lastSync' => $database->now(),
-      ),"{$sqlPrefix}users");
+      ));
 
 
 
@@ -889,14 +889,14 @@ if ($valid) { // If the user is valid, process their preferrences.
 
     $anonId = rand(1,10000);
 
-    $database->insert(array(
+    $database->insert("{$sqlPrefix}sessions", array(
       'userId' => $user['userId'],
       'anonId' => ($anonymous ? $anonId : 0),
       'time' => $database->now(),
       'magicHash' => $sessionHash,
       'browser' => $_SERVER['HTTP_USER_AGENT'],
       'ip' => $_SERVER['REMOTE_ADDR'],
-      ), "{$sqlPrefix}sessions");
+      ));
 
     // Whenever a new user logs in, delete all sessions from 15 or more minutes in the past.
     $database->delete("{$sqlPrefix}sessions",array(

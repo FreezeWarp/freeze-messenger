@@ -291,22 +291,22 @@ if ($continue) {
             }
           }
           else {
-            $database->insert(array(
+            $database->insert("{$sqlPrefix}files", array(
               'userId' => $user['userId'],
               'fileName' => $request['fileName'],
               'fileType' => $mime,
-            ),"{$sqlPrefix}files");
+            ));
 
             $fileId = $database->insertId;
 
-            $database->insert(array(
+            $database->insert("{$sqlPrefix}fileVersions", array(
               'fileId' => $fileId,
               'sha256hash' => $sha256hash,
               'md5hash' => $md5hash,
               'salt' => $saltNum,
               'iv' => $iv,
               'contents' => $contentsEncrypted,
-            ),"{$sqlPrefix}fileVersions");
+            ));
 
             $webLocation = "{$installUrl}file.php?sha256hash={$sha256hash}";
 

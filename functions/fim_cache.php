@@ -20,6 +20,7 @@ function fim_getCachedVar($index) {
     return apc_fetch($index);
   }
 }
+
 function fim_setCachedVar($index, $variable, $ttl) {
   if (extension_loaded('apc')) {
     apc_delete($index);

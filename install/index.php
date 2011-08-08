@@ -228,14 +228,14 @@ switch ($_REQUEST['phase']) {
   // If tables do not exist, import them from SQL dump files.
   // If tables do exist, recreate if specified or leave alone.
 
+  $driver = urldecode($_GET['db_driver']);
   $host = urldecode($_GET['db_host']);
   $port = urldecode($_GET['db_port']);
   $userName = urldecode($_GET['db_userName']);
   $password = urldecode($_GET['db_password']);
-  $database = urldecode($_GET['db_database']);
+  $databaseName = urldecode($_GET['db_database']);
   $createdb = urldecode($_GET['db_createdb']);
   $prefix = urldecode($_GET['db_tableprefix']);
-  $driver = urldecode($_GET['db_driver']);
 
 
 
@@ -244,15 +244,17 @@ switch ($_REQUEST['phase']) {
 
   $database = new database();
   if ($driver === 'postgresql' && $createdb) {
-    die('PostGreSQL is unable to create databases.');
+    die('PostGreSQL is unable to create databases. Please manually create the database before you continue.');
   }
   else {
     if ($createdb) { // Databases that we will skip the create DB stuff for.
-      $database->connect($host, $userName, $password, false, $port);
+      $database->connect($host, $port, $userName, $password, false, $driver);
     }
     else {
-      $database->connect($host, $userName, $password, $database, $port);
+      $database->connect($host, $port, $userName, $password, $databaseName, $driver);
     }
+
+    $database->setErrorLevel(E_WARNING);
 
 
     if ($database->error) {
@@ -261,7 +263,7 @@ switch ($_REQUEST['phase']) {
     else {
       // Get Only The Good Parts of the Database Version (we could also use a REGEX, but meh)
       for ($i = 0; $i < strlen($database->version); $i++) {
-        if (in_array($database->version[$i], array(0,1,2,3,4,5,6,7,8,9)) || $database->version[$i] == '.') {
+        if (in_array($database->version[$i], array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)) || $database->version[$i] == '.') {
           $strippedVersion .= $database->version[$i];
         }
         else {
@@ -289,8 +291,11 @@ switch ($_REQUEST['phase']) {
 
 
       if ($createdb) { // Create the database if needed. This will not work for all drivers.
-        if ($database->createDatabase($databaseSafe)) { // We're supposed to create it, let's try.
+        if (!$database->createDatabase($databaseName)) { // We're supposed to create it, let's try.
           die('The database could not be created: ' . $database->error);
+        }
+        elseif (!$database->selectDatabase($databaseName)) {
+          die('The created database could not be selected.');
         }
       }
 
@@ -370,6 +375,7 @@ switch ($_REQUEST['phase']) {
           foreach ($table['column'] AS $column) {
             $tableColumns[] = array(
               'type' => $column['@type'],
+              'name' => $column['@name'],
               'autoincrement' => (isset($column['@autoincrement']) ? $column['@autoincrement'] : false),
               'restrict' => (isset($column['@restrict']) ? explode(',', $column['@restrict']) : false),
               'maxlen' => (isset($column['@maxlen']) ? $column['@maxlen'] : false),
@@ -382,8 +388,8 @@ switch ($_REQUEST['phase']) {
 
           foreach ($table['key'] AS $key) {
             $tableIndexes[] = array(
-              'type' => $column['@type'],
-              'name' => $column['@name'],
+              'type' => $key['@type'],
+              'name' => $key['@name'],
             );
           }
 
@@ -395,7 +401,9 @@ switch ($_REQUEST['phase']) {
           }
 
 
-          $database->createTable($tableName, $tableComment, $tableType, $tableColumns, $tableIndexes);
+          if (!$database->createTable($tableName, $tableComment, $tableType, $tableColumns, $tableIndexes)) {
+            die("Could not run query:\n" . $database->sourceQuery . "\n\nError:\n" . $database->error);
+          }
         }
 
 
@@ -413,7 +421,9 @@ switch ($_REQUEST['phase']) {
             $insertData[$column['@name']] = $column['@value'];
           }
 
-          $database->insert($table['@name'], $insertData);
+          if (!$database->insert($table['@name'], $insertData)) {
+            die("Could not run query:\n" . $database->sourceQuery . "\n\nError:\n" . $database->error);
+          }
         }
 
 
@@ -425,11 +435,13 @@ switch ($_REQUEST['phase']) {
           $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
 
           foreach ($templateData['templates'][0]['template'] AS $template) { // Run through each template from the XML
-            $database->insert($table[$prefix . 'templates'], array(
+            if (!$database->insert($table[$prefix . 'templates'], array(
               'templateName' => $template['@name'],
               'data' => $template['#text'],
               'vars' => $template['@vars'],
-            ));
+            ))) {
+              die("Could not run query:\n" . $database->sourceQuery . "\n\nError:\n" . $database->error);
+            }
           }
         }
 
@@ -442,17 +454,21 @@ switch ($_REQUEST['phase']) {
         foreach (array($xmlData4, $xmlData6) AS $phraseData) {
           $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
 
-          $database->insert($table[$prefix . 'languages'], array(
+          if (!$database->insert($table[$prefix . 'languages'], array(
             'languageCode' => $phraseData['@languageCode'],
             'languageName' => $phraseData['@languageName'],
-          ));
+          ))) {
+            die("Could not run query:\n" . $database->sourceQuery . "\n\nError:\n" . $database->error);
+          }
 
           foreach ($phraseData['phrases'][0]['phrase'] AS $phrase) { // Run through each phrase from the XML
-            $database->insert($table[$prefix . 'phrases'], array(
-              'phraseName' => $phrase['@name']
+            if (!$database->insert($table[$prefix . 'phrases'], array(
+              'phraseName' => $phrase['@name'],
               'languageCode' => $phraseData['@languageCode'],
               'text' => $phrase['#text']
-            ));
+            ))) {
+              die("Could not run query:\n" . $database->sourceQuery . "\n\nError:\n" . $database->error);
+            }
           }
         }
       }
@@ -468,7 +484,9 @@ switch ($_REQUEST['phase']) {
   break;
 
   case 2: // Config File
+  $driver = urldecode($_GET['db_driver']);
   $host = urldecode($_GET['db_host']);
+  $port = urldecode($_GET['db_port']);
   $userName = urldecode($_GET['db_userName']);
   $password = urldecode($_GET['db_password']);
   $database = urldecode($_GET['db_database']);
@@ -484,9 +502,15 @@ switch ($_REQUEST['phase']) {
   $base = file_get_contents('config.base.php');
 
   $find = array(
+    '$dbConnect[\'core\'][\'driver\'] = \'mysqli\';
+$dbConnect[\'slave\'][\'driver\'] = \'mysqli\';
+$dbConnect[\'integration\'][\'driver\'] = \'mysqli\';',
     '$dbConnect[\'core\'][\'host\'] = \'localhost\';
 $dbConnect[\'slave\'][\'host\'] = \'localhost\';
 $dbConnect[\'integration\'][\'host\'] = \'localhost\';',
+    '$dbConnect[\'core\'][\'port\'] = 3306;
+$dbConnect[\'slave\'][\'port\'] = 3306;
+$dbConnect[\'integration\'][\'port\'] = 3306;',
     '$dbConnect[\'core\'][\'username\'] = \'\';
 $dbConnect[\'slave\'][\'username\'] = \'\';
 $dbConnect[\'integration\'][\'username\'] = \'\';',
@@ -512,9 +536,15 @@ $dbConnect[\'integration\'][\'database\'] = \'\';',
   );
 
   $replace = array(
+    '$dbConnect[\'core\'][\'driver\'] = \'' . $driver . '\';
+$dbConnect[\'slave\'][\'driver\'] = \'' . $driver . '\';
+$dbConnect[\'integration\'][\'driver\'] = \'' . $driver . '\';',
     '$dbConnect[\'core\'][\'host\'] = \'' . $host . '\';
 $dbConnect[\'slave\'][\'host\'] = \'' . $host . '\';
 $dbConnect[\'integration\'][\'host\'] = \'' . $host . '\';',
+    '$dbConnect[\'core\'][\'port\'] = ' . $port . ';
+$dbConnect[\'slave\'][\'port\'] = ' . $port . ';
+$dbConnect[\'integration\'][\'port\'] = ' . $port . ';',
     '$dbConnect[\'core\'][\'username\'] = \'' . $userName . '\';
 $dbConnect[\'slave\'][\'username\'] = \'' . $userName . '\';
 $dbConnect[\'integration\'][\'username\'] = \'' . $userName . '\';',

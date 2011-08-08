@@ -266,7 +266,7 @@ class fimDatabase extends database {
     global $sqlPrefix, $config, $user;
 
     if ($config['enableEvents']) {
-      $this->insert(array(
+      $this->insert("{$sqlPrefix}events", array(
         'eventName' => $eventName,
         'userId' => $userId,
         'roomId' => $roomId,
@@ -275,8 +275,7 @@ class fimDatabase extends database {
         'param2' => $param2,
         'param3' => $param3,
         'time' => $this->now(),
-      ),
-      "{$sqlPrefix}events");
+      ));
     }
   }
 
@@ -285,7 +284,7 @@ class fimDatabase extends database {
     global $sqlPrefix, $config, $user;
 
     // Insert into permenant datastore.
-    $this->insert(array(
+    $this->insert("{$sqlPrefix}messages", array(
       'roomId' => (int) $roomData['roomId'],
       'userId' => (int) $userData['userId'],
       'rawText' => $messageDataEncrypted['rawText'],
@@ -296,12 +295,12 @@ class fimDatabase extends database {
       'ip' => $_SERVER['REMOTE_ADDR'],
       'flag' => $flag,
       'time' => $this->now(),
-    ),"{$sqlPrefix}messages");
+    ));
     $messageId = $this->insertId;
 
 
    // Insert into cache/memory datastore.
-    $this->insert(array(
+    $this->insert("{$sqlPrefix}messagesCached", array(
       'messageId' => (int) $messageId,
       'roomId' => (int) $roomData['roomId'],
       'userId' => (int) $userData['userId'],
@@ -319,7 +318,7 @@ class fimDatabase extends database {
       'apiText' => $messageDataPlain['apiText'],
       'flag' => $flag,
       'time' => $this->now(),
-    ),"{$sqlPrefix}messagesCached");
+    ));
     $messageId2 = $this->insertId;
 
 
@@ -348,11 +347,11 @@ class fimDatabase extends database {
 
 
     // Insert or update a user's room stats.
-    $this->insert(array(
+    $this->insert("{$sqlPrefix}roomStats", array(
       'userId' => $userData['userId'],
       'roomId' => $roomData['roomId'],
       'messages' => 1
-    ), "{$sqlPrefix}roomStats", array(
+    ), array(
       'messages' => array(
         'type' => 'equation',
         'value' => '$messages + 1',
@@ -366,13 +365,13 @@ class fimDatabase extends database {
         $this->createEvent('missedMessage', $sendToUserId, $room['roomId'], $messageId, false, false, false); // name, user, room, message, p1, p2, p3
 
         if ($config['enableUnreadMessages']) {
-          $this->insert(array(
+          $this->insert("{$sqlPrefix}unreadMessages", array(
             'userId' => $sendToUserId,
             'senderId' => $userData['userId'],
             'roomId' => $roomData['roomId'],
             'messageId' => $messageId,
             'time' => $this->now(),
-          ), "{$sqlPrefix}unreadMessages");
+          ));
         }
       }
     }
@@ -395,12 +394,12 @@ class fimDatabase extends database {
   public function modLog($action, $data) {
     global $sqlPrefix, $config, $user;
 
-    if ($this->insert(array(
+    if ($this->insert("{$sqlPrefix}modlog", array(
       'userId' => (int) $user['userId'],
       'ip' => $_SERVER['REMOTE_ADDR'],
       'action' => $action,
       'data' => $data,
-    ),"{$sqlPrefix}modlog")) {
+    ))) {
       return true;
     }
     else {

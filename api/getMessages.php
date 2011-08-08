@@ -719,11 +719,11 @@ if (is_array($request['rooms'])) {
 
         /* Process Ping */
         if (!$request['noping']) {
-          $database->insert(array(
+          $database->insert("{$sqlPrefix}ping", array(
             'userId' => $user['userId'],
             'roomId' => $room['roomId'],
             'time' => $database->now(),
-          ),"{$sqlPrefix}ping",array(
+          ), array(
             'time' => $database->now(),
           ));
 
