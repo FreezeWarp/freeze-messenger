@@ -30,11 +30,12 @@
  * MCrypt is present in all versions since PHP 4
  * PCRE is present in all versions since PHP 4
  * APC is present in PHP 5.4, Ubuntu's php-apc packge, and easily installed from PECL.net. It simply has to be a requirement for may of the functions (as far as the way they are designed).
+ * DOM is in all of PHP 5.
  *
  * The following are used, but with safe fallbacks:
  * Hash is present in all versions since PHP 5.1.2; MHash is present in all versions since PHP4
  */
-foreach (array('mysql', 'json', 'mbstring', 'mcrypt', 'pcre', 'apc') AS $module) {
+foreach (array('mysql', 'json', 'mbstring', 'mcrypt', 'pcre', 'apc', 'dom') AS $module) {
   if (!extension_loaded($module)) {
     die("The module $module could not be found. Please install PHP $module compatibility. See the documentation for help.");
   }

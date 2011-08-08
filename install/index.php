@@ -80,7 +80,7 @@ switch ($_REQUEST['phase']) {
       <li>MCrypt Extension (' . (extension_loaded('mcrypt') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
       <li>PCRE Extension (' . (extension_loaded('pcre') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
       <li>Multibyte String Extension (' . (extension_loaded('mbstring') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
-      <li>SimpleXML Extension (' . (extension_loaded('simplexml') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
+      <li>Document Object Module Extension (' . (extension_loaded('dom') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
       <li>APC Extension (' . (extension_loaded('apc') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
     </ul>
     <li>Proper Permissions (for automatic configuration file generation)</li>
@@ -359,194 +359,44 @@ switch ($_REQUEST['phase']) {
         $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
 
         foreach ($xmlData['database'][0]['table'] AS $table) { // Run through each table from the XML
-          $columns = array(); // We will use this to store the column fragments that will be implode()d into the final query.
-          $keys = array(); // We will use this to store the column fragments that will be implode()d into the final query.
+          $tableType = $table['@type'];
+          $tableName = $prefix . $table['@name'];
+          $tableComment = $table['@comment'];
 
-          switch ($table['@type']) {
-            case 'general': // Use this normally, and for all perm. data
-            $engine = 'InnoDB';
-            break;
-            case 'memory': // Use this for data that is transient.
-            $engine = 'MEMORY';
-            break;
-          }
+          $tableColumns = array();
+          $tableIndexes = array();
 
 
           foreach ($table['column'] AS $column) {
-            $typePiece = '';
-
-            switch ($column['@type']) {
-              case 'int':
-              $typePiece = 'INT(' . (int) $column['@maxlen'] . ')';
-
-              if (!isset($column['@maxlen'])) {
-                $typePiece = 'INT(8)'; // Sane default, really.
-              }
-              elseif ($coulmn['maxlen'] > 9) {// If the maxlen is greater than 9, we use LONGINT (0 - 9,223,372,036,854,775,807; 64 Bits / 8 Bytes)
-                $typePiece = 'BIGINT(' . (int) $column['@maxlen'] . ')';
-              }
-              elseif ($column['@maxlen'] > 7) { // If the maxlen is greater than 7, we use INT (0 - 4,294,967,295; 32 Bits / 4 Bytes)
-                $typePiece = 'INT(' . (int) $column['@maxlen'] . ')';
-              }
-              elseif ($column['@maxlen'] > 4) { // If the maxlen is greater than 4, we use MEDIUMINT (0 - 16,777,215; 24 Bits / 3 Bytes)
-                $typePiece = 'MEDIUMINT(' . (int) $column['@maxlen'] . ')';
-              }
-              elseif ($column['@maxlen'] > 2) { // If the maxlen is greater than 2, we use SMALLINT (0 - 65,535; 16 Bits / 2 Bytes)
-                $typePiece = 'SMALLINT(' . (int) $column['@maxlen'] . ')';
-              }
-              else {
-                $typePiece = 'TINYINT(' . (int) $column['@maxlen'] . ')';
-              }
-
-              if (isset($column['@autoincrement'])) {
-                if ($column['@autoincrement'] == true) {
-                  $typePiece .= ' AUTO_INCREMENT'; // Ya know, that thing where it sets itself.
-                }
-              }
-              break;
-
-              case 'string':
-              if (isset($column['@restrict'])) {
-                $restrictValues = array();
-
-                foreach ((array) explode(',',$column['@restrict']) AS $value) {
-                  $restrictValues[] = '"' . $database->real_escape_string($value) . '"';
-                }
-
-                $typePiece = 'ENUM(' . implode(',',$restrictValues) . ')';
-              }
-              else {
-                if (!isset($column['@maxlen'])) {
-                  $typePiece = 'TEXT';
-                }
-                elseif ($column['@maxlen'] > 2097151) { // If the maxlen is greater than (16MB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
-                  $typePiece = 'LONGTEXT';
-                }
-                elseif ($column['@maxlen'] > 8191) { // If the maxlen is greater than (64KB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
-                  $typePiece = 'MEDIUMTEXT';
-                }
-                elseif ($column['@maxlen'] > 5000) { // If the maxlen is greater than 1000, we use TEXT since it is most likely more optimized. VARCHAR itself limits to roughly 65,535 length, or less if using UTF8.
-                  $typePiece = 'TEXT(' . (int) $column['@maxlen'] . ')';
-                }
-                elseif ($column['@maxlen'] > 100) { // If the maxlen is greater than 1000, we use TEXT since it is most likely more optimized. VARCHAR itself limits to roughly 65,535 length, or less if using UTF8.
-                  $typePiece = 'VARCHAR(' . (int) $column['@maxlen'] . ')';
-                }
-                else {
-                  $typePiece = 'CHAR(' . (int) $column['@maxlen'] . ')';
-                }
-              }
-
-              $typePiece .= ' CHARACTER SET utf8 COLLATE utf8_bin';
-              break;
-
-              case 'bitfield':
-              if (!isset($column['@bits'])) {
-                $typePiece = 'TINYINT UNSIGNED'; // Sane default
-              }
-              else {
-                if ($column['@bits'] <= 8) {
-                  $typePiece = 'TINYINT UNSIGNED';
-                }
-                elseif ($column['@bits'] <= 16) {
-                  $typePiece = 'SMALLINT UNSIGNED';
-                }
-                elseif ($column['@bits'] <= 24) {
-                  $typePiece = 'MEDIUMINT UNSIGNED';
-                }
-                elseif ($column['@bits'] <= 32) {
-                  $typePiece = 'INTEGER UNSIGNED';
-                }
-              }
-              break;
-
-              case 'time':
-              $typePiece = 'TIMESTAMP';
-              break;
-            }
-
-            if (isset($column['@default'])) {
-              if ($column['@default'] == '__TIME__') {
-                $column['@default'] = 'CURRENT_TIMESTAMP';
-              }
-              else {
-                $column['@default'] = '"' . $database->real_escape_string($column['@default']) . '"';
-              }
-
-              $typePiece .= " DEFAULT {$column['@default']}";
-            }
-
-            if (isset($column['@update'])) {
-              if ($column['@update'] == '__TIME__') {
-                $column['@update'] = 'CURRENT_TIMESTAMP';
-              }
-              else {
-                $column['@update'] = '"' . $database->real_escape_string($column['@update']) . '"';
-              }
-
-              $typePiece .= " ON UPDATE {$column['@update']}";
-            }
-
-            $columns[] = "`{$column['@name']}` {$typePiece} NOT NULL" . (isset($column['@comment']) ? ' COMMENT "' . $database->real_escape_string($column['@comment']) . '"' : '');
+            $tableColumns[] = array(
+              'type' => $column['@type'],
+              'autoincrement' => (isset($column['@autoincrement']) ? $column['@autoincrement'] : false),
+              'restrict' => (isset($column['@restrict']) ? explode(',', $column['@restrict']) : false),
+              'maxlen' => (isset($column['@maxlen']) ? $column['@maxlen'] : false),
+              'bits' => (isset($column['@bits']) ? $column['@bits'] : false),
+              'default' => (isset($column['@default']) ? $column['@default'] : false),
+              'comment' => (isset($column['@comment']) ? $column['@comment'] : false),
+            );
           }
 
 
           foreach ($table['key'] AS $key) {
-            $typePiece = '';
-
-            switch ($key['@type']) {
-              case 'primary':
-              $typePiece = "PRIMARY KEY";
-              break;
-
-              case 'unique':
-              $typePiece = "UNIQUE KEY";
-              break;
-
-              case 'index':
-              $typePiece = "KEY";
-              break;
-            }
-
-            if (strpos($key['@name'],',') !== false) {
-              $keyCols = explode(',',$key['@name']);
-
-              foreach ($keyCols AS &$keyCol) {
-                $keyCol = "`$keyCol`";
-              }
-
-              $key['@name'] = implode(',',$keyCols);
-            }
-            else {
-              $key['@name'] = "`{$key['@name']}`";
-            }
-
-            $keys[] = "{$typePiece} ({$key['@name']})";
+            $tableIndexes[] = array(
+              'type' => $column['@type'],
+              'name' => $column['@name'],
+            );
           }
 
-          $queries[$prefix . $table['@name']] = 'CREATE TABLE IF NOT EXISTS `' . $prefix . $table['@name'] . '` (
-    ' . implode(",\n  ",$columns) . ',
-    ' . implode(",\n  ",$keys) . '
-  ) ENGINE="' . $engine . '" COMMENT="' . $database->real_escape_string($table['@comment']) . '" DEFAULT CHARSET="utf8";';
-        }
 
-        foreach ($queries AS $tableName => $query) {
           if (in_array($tableName, (array) $mysqlTables)) { // We are overwriting, so rename the old table to a backup. Someone else can clean it up later, but its for the best.
-            $newTable = $tableName . '~' . time();
-
-            if (!$database->query("")) {
+            if (!$database->renameTable($tableName, $tableName . '~' . time())) {
               die("Could Not Rename Table '$tableName'");
             }
           }
 
-          if (!trim($query)) {
-            continue;
-          }
 
-          if (!$database->query(trim($query))) {
-            die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $database->error);
-          }
+          $database->createTable($tableName, $tableComment, $tableType, $tableColumns, $tableIndexes);
         }
-
 
 
 
@@ -560,22 +410,10 @@ switch ($_REQUEST['phase']) {
 
 
           foreach ($table['column'] AS $column) {
-            $columns[] = '`' . $database->real_escape_string($column['@name']) . '`';
-            $values[] = '"' . $database->real_escape_string($column['@value']) . '"';
+            $insertData[$column['@name']] = $column['@value'];
           }
 
-          $queries[] = "INSERT INTO `{$prefix}{$table['@name']}` (" . implode(', ',$columns) . ") VALUES
-    (" . implode(', ',$values) . ")";
-        }
-
-        foreach ($queries AS $query) {
-          if (!trim($query)) {
-            continue;
-          }
-
-          if (!$database->query(trim($query))) {
-            die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $database->error);
-          }
+          $database->insert($table['@name'], $insertData);
         }
 
 
@@ -587,18 +425,11 @@ switch ($_REQUEST['phase']) {
           $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
 
           foreach ($templateData['templates'][0]['template'] AS $template) { // Run through each template from the XML
-            $queries[] = "INSERT INTO `{$prefix}templates` (`templateName`,`data`,`vars`) VALUES
-      ('" . $database->real_escape_string($template['@name']) . "','" . $database->real_escape_string($template['#text']) . "','" . $database->real_escape_string($template['@vars']) . "')";
-          }
-
-          foreach ($queries AS $query) {
-            if (!trim($query)) {
-              continue;
-            }
-
-            if (!$database->query(trim($query))) {
-              die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $database->error);
-            }
+            $database->insert($table[$prefix . 'templates'], array(
+              'templateName' => $template['@name'],
+              'data' => $template['#text'],
+              'vars' => $template['@vars'],
+            ));
           }
         }
 
@@ -611,21 +442,17 @@ switch ($_REQUEST['phase']) {
         foreach (array($xmlData4, $xmlData6) AS $phraseData) {
           $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
 
-          $queries[] = "INSERT INTO `{$prefix}languages` (`languageCode`, `languageName`) VALUES ('" . $database->real_escape_string($phraseData['@languageCode']) . "','" . $database->real_escape_string($phraseData['@languageName']) . "')";
+          $database->insert($table[$prefix . 'languages'], array(
+            'languageCode' => $phraseData['@languageCode'],
+            'languageName' => $phraseData['@languageName'],
+          ));
 
-          foreach ($phraseData['phrases'][0]['phrase'] AS $phrase) { // Run through each template from the XML
-            $queries[] = "INSERT INTO `{$prefix}phrases` (`phraseName`,`languageCode`,`text`) VALUES
-      ('" . $database->real_escape_string($phrase['@name']) . "','" . $database->real_escape_string($phraseData['@languageCode']) . "','" . $database->real_escape_string($phrase['#text']) . "')";
-          }
-
-          foreach ($queries AS $query) {
-            if (!trim($query)) {
-              continue;
-            }
-
-            if (!$database->query(trim($query))) {
-              die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $database->error);
-            }
+          foreach ($phraseData['phrases'][0]['phrase'] AS $phrase) { // Run through each phrase from the XML
+            $database->insert($table[$prefix . 'phrases'], array(
+              'phraseName' => $phrase['@name']
+              'languageCode' => $phraseData['@languageCode'],
+              'text' => $phrase['#text']
+            ));
           }
         }
       }
