@@ -131,10 +131,7 @@ switch ($request['action']) {
       ),"{$sqlPrefix}kicks",array(
         'length' => (int) $request['length'],
         'kickerId' => (int) $user['userId'],
-        'time' => array(
-          'type' => 'raw',
-          'value' => 'NOW()',
-        ),
+        'time' => $database->now(),
       )
     );
 

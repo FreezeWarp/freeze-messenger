@@ -123,10 +123,7 @@ $queryParts['activeUsersSelect']['columns'] = array(
   "{$sqlPrefix}ping" => array(
     'status' => 'status',
     'typing' => 'typing'
-    'time' => array(
-      'name' => 'ptime',
-      'context' => 'time',
-    ),
+    'time' => 'ptime',
     'roomId' => 'proomId',
     'userId' => 'puserId',
   ),

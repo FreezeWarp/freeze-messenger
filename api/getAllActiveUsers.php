@@ -24,6 +24,7 @@
  * @param int [time = time()] - Time in which to determine user activity. Default is the current time.
  * @param int [onlineThreshold = 15] - The period of time after which a user is no longer “active”. Default is 15, which may be overriden in the product configuration.
  * @param string [users = ''] - A comma-sperated list of user IDs to filter by. If not specified, all users will be shown.
+ * @todo Update for join
 */
 
 $apiRequest = true;

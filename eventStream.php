@@ -78,10 +78,7 @@ else {
       "{$sqlPrefix}messagesCached" => array(
         'messageId' => 'messageId',
         'roomId' => 'roomId',
-        'time' => array(
-          'context' => 'time',
-          'name' => 'time',
-        ),
+        'time' => 'time',
         'flag' => 'flag',
         'userId' => 'userId',
         'userName' => 'userName',
@@ -134,16 +131,10 @@ else {
       "{$sqlPrefix}rooms" => array(
         'roomId' => 'roomId',
         'options' => 'options',
-        'lastMessageTime' => array(
-          'context' => 'time',
-          'name' => 'lastMessageTime',
-        ),
+        'lastMessageTime' => 'lastMessageTime',
       ),
       "{$sqlPrefix}ping" => array(
-        'time' => array(
-          'context' => 'time',
-          'name' => 'pingTime',
-        ),
+        'time' => 'pingTime',
         'userId' => 'puserId',
         'roomId' => 'proomId',
       ),

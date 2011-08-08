@@ -76,10 +76,7 @@ $queryParts['fileSelect']['columns'] = array(
     'contents' => 'contents',
     'md5hash' => 'md5hash',
     'sha256hash' => 'sha256hash',
-    'time' => array(
-      'context' => 'time',
-      'name' => 'time',
-    ),
+    'time' => 'time',
   ),
 );
 $queryParts['fileSelect']['conditions'] = array(

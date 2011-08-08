@@ -31,6 +31,13 @@ class database {
   }
 
 
+  /**
+   * Set Language / Database Driver
+   *
+   * @param string language
+   * @return void
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
   private function setLanguage($language) {
     $this->language = $language;
 
@@ -62,15 +69,8 @@ class database {
   /**
    * Calls a database function, such as mysql_connect or mysql_query, using lookup tables
    *
-   * Native Argument Ref:
-   * connect - host user password
-   * selectdb - database
-   * error - void
-   *
-   * Driver Argument Ref
-   * mysql_connect - host user passwod
-   * mysql_select_db - database
-   * mysql_error - void
+   * @return void
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function functionMap($operation) {
     $args = func_get_args();
@@ -124,6 +124,7 @@ class database {
       }
       break;
 
+
       case 'mysqli':
       switch ($operation) {
         case 'connect':
@@ -166,6 +167,7 @@ class database {
         break;
       }
       break;
+
 
       case 'postgresql':
       switch ($operation) {
@@ -511,9 +513,6 @@ LIMIT
               'xor' => '^',
               '!and' => '^', // Alias of "xorg"
 
-              'bitwise' => '&', // DEPRECATED
-              '!bitwise' => '^', // DEPRECATED
-
               'in' => 'IN',
               '!notin' => 'IN', // Alias of "in"
               'notin' => 'NOT IN',
@@ -607,15 +606,7 @@ LIMIT
 
                   case 'column':
                   if (isset($data[$side]['context'])) {
-                    switch ($data[$side]['context']) {
-                      case 'time':
-                      $sideText[$side] = 'UNIX_TIMESTAMP(' . $reverseAlias[$data[$side]['value']] . ')';
-                      break;
-
-                      default:
-                      throw new Exception('Unrecognized column context'); // Throw an exception.
-                      break;
-                    }
+                    throw new Exception('Column context is deprecated.');
                   }
                   else {
                     if (isset($reverseAlias[$data[$side]['value']])) {
@@ -673,7 +664,7 @@ LIMIT
           $condSymbol = $concatTypes[$type];
         }
         else {
-          throw new Exception('Unrecognized concatenation operator: ' . $type . '; d: ' . $d . '; ' . print_r($data,true));
+          throw new Exception('Unrecognized concatenation operator: ' . $type . '; ' . print_r($data,true));
         }
 
 
@@ -833,16 +824,8 @@ LIMIT
   */
   private function rawQuery($query) {
     $this->sourceQuery = $query;
-//    $startTime = microtime(true); // Get time in milliseconds (as a float) to determine if the query took too long.
-
 
     if ($queryData = $this->functionMap('query', $query)) {
-//      $endTime = microtime(true); // Get time in milliseconds (as a float) to determine if the query took too long.
-
-//      if (($endTime - $startTime) > 2) {
-//        file_put_contents('query_log.txt',"Spent " . ($endTime - $startTime) . " on: $queryData",FILE_APPEND); // Log the query if it took over two seconds.
-//      }
-
       $this->queryCounter++;
 
       return new databaseResult($queryData, $query, $this->language); // Return link resource.
@@ -896,15 +879,7 @@ LIMIT
 
       elseif (is_array($data)) { // This allows for some more advanced datastructures; specifically, we use it here to define metadata that prevents $this->escape.
         if (isset($data['context'])) {
-          switch($data['context']) {
-            case 'time':
-            $columns[] = 'UNIX_TIMESTAMP(' . $this->escape($column) . ')';
-            break;
-
-            default:
-            $columns[] = $this->escape($column); // Maybe throw an exception instead?
-            break;
-          }
+          throw new Exception('Deprecated context');
         }
         else {
           $columns[] = $this->escape($column);
@@ -917,10 +892,6 @@ LIMIT
 
 
         switch($data['type']) {
-          case 'raw':
-          throw new exception('Raw data type.');
-          break;
-
           case 'equation':
           $equation = preg_replace('/\$([a-zA-Z\_]+)/', '\\1', $data['value']);
 
@@ -929,10 +900,6 @@ LIMIT
 
           case 'int':
           $values[] = (int) $data['value'];
-          break;
-
-          case 'time':
-          $values[] = "NOW()";
           break;
 
           case 'string':
@@ -961,9 +928,165 @@ LIMIT
     return array($columns, $values, $context);
   }
 
-  public function createTable($tableName, $storeType, $columns, $indexes) {
 
+  public function createTable($tableName, $storeType, $tableColumns, $tableIndexes) {
+    switch ($storeType) {
+      case 'general': // Use this normally, and for all perm. data
+      $engine = 'InnoDB';
+      break;
+      case 'memory': // Use this for data that is transient.
+      $engine = 'MEMORY';
+      break;
+    }
+
+
+    foreach ($tableColumns AS $column) {
+      $typePiece = '';
+
+      switch ($column['type']) {
+        case 'int':
+        $typePiece = 'INT(' . (int) $column['maxlen'] . ')';
+
+        if (!isset($column['maxlen'])) {
+          $typePiece = 'INT(8)'; // Sane default, really.
+        }
+        elseif ($column['maxlen'] > 9) {// If the maxlen is greater than 9, we use LONGINT (0 - 9,223,372,036,854,775,807; 64 Bits / 8 Bytes)
+          $typePiece = 'BIGINT(' . (int) $column['maxlen'] . ')';
+        }
+        elseif ($column['maxlen'] > 7) { // If the maxlen is greater than 7, we use INT (0 - 4,294,967,295; 32 Bits / 4 Bytes)
+          $typePiece = 'INT(' . (int) $column['maxlen'] . ')';
+        }
+        elseif ($column['maxlen'] > 4) { // If the maxlen is greater than 4, we use MEDIUMINT (0 - 16,777,215; 24 Bits / 3 Bytes)
+          $typePiece = 'MEDIUMINT(' . (int) $column['maxlen'] . ')';
+        }
+        elseif ($column['maxlen'] > 2) { // If the maxlen is greater than 2, we use SMALLINT (0 - 65,535; 16 Bits / 2 Bytes)
+          $typePiece = 'SMALLINT(' . (int) $column['maxlen'] . ')';
+        }
+        else {
+          $typePiece = 'TINYINT(' . (int) $column['maxlen'] . ')';
+        }
+
+        if ($column['autoincrement'] == true) {
+          $typePiece .= ' AUTO_INCREMENT'; // Ya know, that thing where it sets itself.
+        }
+        break;
+
+        case 'string':
+        if (isset($column['restrict'])) {
+          $restrictValues = array();
+
+          foreach ((array) $column['restrict'] AS $value) {
+            $restrictValues[] = '"' . $database->real_escape_string($value) . '"';
+          }
+
+          $typePiece = 'ENUM(' . implode(',',$restrictValues) . ')';
+        }
+        else {
+          if (!isset($column['maxlen'])) {
+            $typePiece = 'TEXT';
+          }
+          elseif ($column['maxlen'] > 2097151) { // If the maxlen is greater than (16MB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
+            $typePiece = 'LONGTEXT';
+          }
+          elseif ($column['maxlen'] > 8191) { // If the maxlen is greater than (64KB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
+            $typePiece = 'MEDIUMTEXT';
+          }
+          elseif ($column['maxlen'] > 1000) { // If the maxlen is greater than 1000, we use TEXT since it is most likely more optimized. VARCHAR itself limits to roughly 65,535 length, or less if using UTF8.
+            $typePiece = 'TEXT(' . (int) $column['maxlen'] . ')';
+          }
+          elseif ($column['maxlen'] > 100) { // If the maxlen is greater than 100, we use VARCHAR since it is most likely more optimized. CHAR itself limits to roughly 255 length, or less if using UTF8.
+            $typePiece = 'VARCHAR(' . (int) $column['maxlen'] . ')';
+          }
+          else {
+            $typePiece = 'CHAR(' . (int) $column['maxlen'] . ')';
+          }
+        }
+
+        $typePiece .= ' CHARACTER SET utf8 COLLATE utf8_bin';
+        break;
+
+        case 'bitfield':
+        if (!isset($column['@bits'])) {
+          $typePiece = 'TINYINT UNSIGNED'; // Sane default
+        }
+        else {
+          if ($column['@bits'] <= 8) {
+            $typePiece = 'TINYINT UNSIGNED';
+          }
+          elseif ($column['@bits'] <= 16) {
+            $typePiece = 'SMALLINT UNSIGNED';
+          }
+          elseif ($column['@bits'] <= 24) {
+            $typePiece = 'MEDIUMINT UNSIGNED';
+          }
+          elseif ($column['@bits'] <= 32) {
+            $typePiece = 'INTEGER UNSIGNED';
+          }
+          else {
+            $typePiece = 'LONGINT UNSIGNED';
+          }
+        }
+        break;
+
+        case 'time':
+        $typePiece = 'INTEGER UNSIGNED'; // Note: replace with LONGINT to avoid the Epoch issues in 2038 (...I'll do it in FIM5 or so). For now, it's more optimized. Also, since its UNSIGNED, we actually have more until 2106 or something like that.
+        break;
+
+        default:
+        throw new Exception('Unrecognized type.');
+        break;
+      }
+
+      if (isset($column['default'])) {
+        $column['default'] = '"' . $database->real_escape_string($column['default']) . '"';
+
+        $typePiece .= " DEFAULT {$column['default']}";
+      }
+
+
+      $columns[] = "`{$column['@name']}` {$typePiece} NOT NULL" . (isset($column['comment']) ? ' COMMENT "' . $database->real_escape_string($column['comment']) . '"' : '');
+    }
+
+
+    foreach ($tableIndexes AS $key) {
+      $typePiece = '';
+
+      switch ($key['type']) {
+        case 'primary':
+        $typePiece = "PRIMARY KEY";
+        break;
+
+        case 'unique': // We may remove this one in the future.
+        $typePiece = "UNIQUE KEY";
+        break;
+
+        case 'index':
+        $typePiece = "KEY";
+        break;
+      }
+
+      if (strpos($key['name'],',') !== false) {
+        $keyCols = explode(',',$key['@name']);
+
+        foreach ($keyCols AS &$keyCol) {
+          $keyCol = "`$keyCol`";
+        }
+
+        $key['name'] = implode(',', $keyCols);
+      }
+      else {
+        $key['name'] = "`{$key['@name']}`";
+      }
+
+      $keys[] = "{$typePiece} ({$key['@name']})";
+    }
+
+    $this-> = 'CREATE TABLE IF NOT EXISTS `' . $prefix . $table['@name'] . '` (
+' . implode(",\n  ",$columns) . ',
+' . implode(",\n  ",$keys) . '
+) ENGINE="' . $engine . '" COMMENT="' . $database->real_escape_string($table['@comment']) . '" DEFAULT CHARSET="utf8";';
   }
+
 
   public function renameTable($oldName, $newName) {
     $query = "RENAME TABLE `$oldName` TO `$newName`";
@@ -971,14 +1094,30 @@ LIMIT
     return $this->rawQuery($query);
   }
 
+
   public function deleteTable($tableName) {
     $query = "DELETE TABLE `$tableName`";
 
     return $this->rawQuery($query);
   }
 
+
   public function now() {
     return time();
+  }
+
+  public function getTablesAsArray() {
+    switch ($this->language) {
+      case 'mysql':
+      case 'mysqli':
+      case 'postgresql':
+      $tables = $database->rawQuery('SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA LIKE "' . $this->escape($this->activeDatabase) . '"');
+      $tables = $tables->getAsArray('TABLE_NAME');
+      $tables = array_keys($tables);
+      break;
+    }
+
+    return $tables;
   }
 }
 
