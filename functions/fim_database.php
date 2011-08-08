@@ -273,7 +273,9 @@ class fimDatabase extends database {
         'messageId' => $messageId,
         'param1' => $param1,
         'param2' => $param2,
-        'param3' => $param3),
+        'param3' => $param3,
+        'time' => $this->now(),
+      ),
       "{$sqlPrefix}events");
     }
   }
@@ -293,6 +295,7 @@ class fimDatabase extends database {
       'iv' => $messageDataEncrypted['iv'],
       'ip' => $_SERVER['REMOTE_ADDR'],
       'flag' => $flag,
+      'time' => $this->now(),
     ),"{$sqlPrefix}messages");
     $messageId = $this->insertId;
 
@@ -315,6 +318,7 @@ class fimDatabase extends database {
       'htmlText' => $messageDataPlain['htmlText'],
       'apiText' => $messageDataPlain['apiText'],
       'flag' => $flag,
+      'time' => $this->now(),
     ),"{$sqlPrefix}messagesCached");
     $messageId2 = $this->insertId;
 
@@ -332,7 +336,7 @@ class fimDatabase extends database {
 
     // Update room caches.
     $this->update(array(
-      'lastMessageTime' => $database->now(),
+      'lastMessageTime' => $this->now(),
       'lastMessageId' => $messageId,
       'messageCount' => array(
         'type' => 'equation',
@@ -366,7 +370,8 @@ class fimDatabase extends database {
             'userId' => $sendToUserId,
             'senderId' => $userData['userId'],
             'roomId' => $roomData['roomId'],
-            'messageId' => $messageId
+            'messageId' => $messageId,
+            'time' => $this->now(),
           ), "{$sqlPrefix}unreadMessages");
         }
       }

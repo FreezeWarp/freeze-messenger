@@ -205,6 +205,7 @@ class database {
     $reverseAlias = array();
 
 
+
     /* Process Columns (Must be Array) */
     if (is_array($columns)) {
       if (count($columns) > 0) {
@@ -284,6 +285,7 @@ class database {
     }
 
 
+
     /* Process Conditions (Must be Array) */
     if ($conditionArray !== false) {
       if (is_array($conditionArray)) {
@@ -292,6 +294,7 @@ class database {
         }
       }
     }
+
 
 
     /* Process Sorting (Must be Array)
@@ -356,16 +359,6 @@ class database {
     }
 
 
-    /* Process Grouping (Must be Array)
-     *
-     * Technical/future note:
-     * Group by will be simulated on database systems that do not implement it.
-     * Allowed aggregate functions (see "context"): Join (group_concat), Sum (sum),
-     * Product (simulated in MySQL), Average (avg), Minimum (min), Maximum (max), Count (count) */
-    if ($group !== false) {
-      $finalQuery['group'] = $reverseAlias[$group];
-    }
-
 
     /* Process Limit (Must be Integer) */
     if ($limit !== false) {
@@ -373,6 +366,7 @@ class database {
         $finalQuery['limit'] = (int) $limit;
       }
     }
+
 
 
     /* Generate Final Query */
@@ -552,7 +546,7 @@ LIMIT
                         $sideText[$side] = $reverseAlias[$data[$side]['value']];
                       }
                     }
-                    else {
+                    else { error_log(print_r($reverseAlias, true));
                       throw new Exception('Unrecognized column: ' . $data[$side]['value']);
                     }
                   }

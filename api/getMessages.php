@@ -550,7 +550,7 @@ if (is_array($request['rooms'])) {
       if ($request['messageDateMax']) {
         $queryParts['messagesSelect']['conditions']['both'][] = array(
           'type' => 'lte',
-          'left' => array( // Quick Note: Context: time is redunant and will cause issues if defined.
+          'left' => array(
             'type' => 'column',
             'value' => 'time',
           ),
@@ -563,7 +563,7 @@ if (is_array($request['rooms'])) {
       if ($request['messageDateMin']) {
         $queryParts['messagesSelect']['conditions']['both'][] = array(
           'type' => 'gte',
-          'left' => array( // Quick Note: Context: time is redunant and will cause issues if defined.
+          'left' => array(
             'type' => 'column',
             'value' => 'time',
           ),
@@ -827,7 +827,7 @@ if (is_array($request['rooms'])) {
         /* Process Active Users */
         if ($request['activeUsers']) {
           $queryParts['activeUsersSelect']['columns'] = array(
-            "{$sqlPrefix}ping" => 'status, typing, time ptime, roomId proomId, userId puserId'
+            "{$sqlPrefix}ping" => 'status, typing, time ptime, roomId proomId, userId puserId',
             "{$sqlPrefix}rooms" => 'roomId',
             "{$sqlPrefix}users" => 'userId, userName, userFormatStart, userFormatEnd, userGroup, socialGroups',
           );
@@ -886,7 +886,7 @@ if (is_array($request['rooms'])) {
 
           $activeUsers = $database->select($queryParts['activeUsersSelect']['columns'],
             $queryParts['activeUsersSelect']['conditions'],
-            $queryParts['activeUsersSelect']['sort']);// echo $activeUsers->sourceQuery;
+            $queryParts['activeUsersSelect']['sort']);
           $activeUsers = $activeUsers->getAsArray(true);
 
 

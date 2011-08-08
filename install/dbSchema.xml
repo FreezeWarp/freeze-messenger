@@ -71,7 +71,7 @@
       <column name="param1" type="string" maxlen="20" comment="An addition parameter." />
       <column name="param2" type="string" maxlen="20" comment="An addition parameter." />
       <column name="param3" type="string" maxlen="20" comment="An addition parameter." />
-      <column name="time" type="time" default="__TIME__" comment="The time of the event's occurence, primarily for maintence." />
+      <column name="time" type="time" comment="The time of the event's occurence, primarily for maintence." />
 
       <key name="eventId" type="primary" />
       <key name="eventName" type="index" />
@@ -82,7 +82,7 @@
       <column name="fileId" type="int" maxlen="6" autoincrement="true" comment="A unique ID for the file." />
       <column name="fileName" type="string" maxlen="255" comment="The file's name to be sent for downloading." />
       <column name="fileType" type="string" maxlen="255" comment="The file's mime-type/content-type." />
-      <column name="creationTime" type="time" default="__TIME__" comment="The date the file was uploaded." />
+      <column name="creationTime" type="time" comment="The date the file was uploaded." />
       <column name="userId" type="int" maxlen="8" comment="The ID of the user who uploaded the file." />
       <column name="source" type="string" maxlen="50" default="upload" comment="The file's source - in most cases upload." />
       <column name="rating" type="string" restrict="6,10,13,16,18" comment="The file's parental content age rating." />
@@ -97,7 +97,7 @@
     <table name="fileVersions" type="general" comment="User-created file contents and revisions.">
       <column name="versionId" type="int" maxlen="6" autoincrement="true" comment="A unique identifier for all file versions, regardless of each file." />
       <column name="fileId" type="int" maxlen="6" comment="The ID of the parent file." />
-      <column name="time" type="time" default="__TIME__" update="__TIME__" comment="The time the revision of the file was uploaded." />
+      <column name="time" type="time" comment="The time the revision of the file was uploaded." />
       <column name="size" type="int" maxlen="10" comment="The file size of the revision." />
       <column name="md5hash" type="string" maxlen="32" comment="The MD5 hash of the file's binary data." />
       <column name="sha256hash" type="string" maxlen="64" comment="The SHA256 hash of the file's binary data." />
@@ -146,7 +146,7 @@
       <column name="userId" type="int" maxlen="8" comment="The ID of the user who has been kicked." />
       <column name="roomId" type="int" maxlen="6" comment="The ID of the room the kick is active in." />
       <column name="kickerid" type="int" maxlen="8" comment="The ID of the user who made the kick." />
-      <column name="time" type="time" default="__TIME__" comment="The time the kick was made on." />
+      <column name="time" type="time" comment="The time the kick was made on." />
       <column name="length" type="int" maxlen="8" comment="The time the kick will remain active for." />
 
       <key name="userId,roomId" type="primary" />
@@ -165,7 +165,7 @@
       <column name="salt" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
       <column name="iv" type="string" maxlen="15" comment="The base64-encoded IV used for encryption." />
       <column name="deleted" type="int" maxlen="1" comment="Whether or not the message has been deleted by an administrator." />
-      <column name="time" type="time" default="__TIME__" comment="The time the message was made on." />
+      <column name="time" type="time" comment="The time the message was made on." />
       <column name="ip" type="string" maxlen="128" comment="The IP of the user who made the message." />
       <column name="flag" type="string" maxlen="10" comment="The content-type flag of the message (e.g. video, image, text, archive, html, url, email)." />
 
@@ -194,7 +194,7 @@
       <column name="defaultHighlight" type="string" maxlen="11" comment="The default highlight of the user's text." />
       <column name="defaultColor" type="string" maxlen="11" comment="The default color of the user's text." />
       <column name="defaultFontface" type="string" maxlen="50" comment="The default fontface of the user's text." />
-      <column name="time" type="time" default="__TIME__" comment="The time the message was made on." />
+      <column name="time" type="time" comment="The time the message was made on." />
       <column name="htmlText" type="string" maxlen="5000" comment="The HTML-formatted text of the message." />
       <column name="apiText" type="string" maxlen="5000" comment="The API-formatted text of the message." />
       <column name="flag" type="string" maxlen="10" comment="The content-type flag set for the message." />
@@ -209,7 +209,7 @@
     <table name="modlog" type="general" comment="A log of moderator actions.">
       <column name="id" type="int" maxlen="12" autoincrement="true" comment="A unique ID for the log entry." />
       <column name="userId" type="int" maxlen="8" comment="The user ID who performed the action." />
-      <column name="time" type="time" default="__TIME__" comment="The time the action was performed on." />
+      <column name="time" type="time" comment="The time the action was performed on." />
       <column name="ip" type="string" maxlen="128" comment="The IP of the user when the action was performed." />
       <column name="action" type="string" maxlen="100" comment="The action performed." />
       <column name="data" type="string" maxlen="100" comment="The associated data of the action." />
@@ -252,7 +252,7 @@
     <table name="ping" type="memory" comment="User online statuses.">
       <column name="userId" type="int" maxlen="8" comment="The ID of the user." />
       <column name="roomId" type="int" maxlen="6" comment="The ID of the room." />
-      <column name="time" type="time" default="__TIME__" update="__TIME__" comment="The time of the ping." />
+      <column name="time" type="time" comment="The time of the ping." />
       <column name="status" type="string" restrict="away,busy,available,invisible,offline," comment="The user's status." />
       <column name="typing" type="string" restrict="1,0" default="0" comment="Whether or not the user is typing." />
 
@@ -324,7 +324,7 @@
       <column name="sessionId" type="int" maxlen="10" autoincrement="true" comment="A unique ID corrosponding to all sessions. It is largely unused." />
       <column name="userId" type="int" maxlen="8" comment="The ID of the user the session belongs to." />
       <column name="anonId" type="int" maxlen="6" comment="A unique ID that can be used for anonymous users." />
-      <column name="time" type="time" default="__TIME__" comment="The time the session was last renewed." />
+      <column name="time" type="time" comment="The time the session was last renewed." />
       <column name="ip" type="string" maxlen="128" comment="The user's IP address." />
       <column name="browser" type="string" maxlen="300" comment="The useragent of the user of the session." />
       <column name="magicHash" type="string" maxlen="128" comment="The session hash itself." />
@@ -355,7 +355,7 @@
       <column name="roomId" type="int" maxlen="6" comment="The ID of the room in question." />
       <column name="roomName" type="string" maxlen="50" comment="The name of the room in question." />
       <column name="messageId" type="int" maxlen="15" comment="The ID of the message." />
-      <column name="time" type="time" default="__TIME__" update="__TIME__" comment="The time the message was made." />
+      <column name="time" type="time" comment="The time the message was made." />
 
       <key name="userId,messageId" type="primary" />
       <key name="userId" type="index" />
@@ -386,9 +386,9 @@
       <column name="userFormatStart" type="string" maxlen="300" comment="HTML-formatting to be prepended to the user's name for its display." />
       <column name="userFormatEnd" type="string" maxlen="300" comment="HTML-formatting to be appended to the user's name for its display." />
       <column name="password" type="string" maxlen="32" comment="The hashed password of the user. It is only used on vanilla logins." />
-      <column name="joinDate" type="time" default="__TIME__" update="__TIME__" comment="The date the user joined. It may not be used on logins other than vanilla." />
-      <column name="birthDate" type="time" default="0000-00-00 00:00:00" comment="The date of the user's birth, used for parental control settings." />
-      <column name="lastSync" type="time" default="0000-00-00 00:00:00" comment="The date the userdata was last synced. This is not applicable for vanilla logins." />
+      <column name="joinDate" type="time" default="0" comment="The date the user joined. It may not be used on logins other than vanilla." />
+      <column name="birthDate" type="time" default="0" comment="The date of the user's birth, used for parental control settings." />
+      <column name="lastSync" type="time" default="0" comment="The date the userdata was last synced. This is not applicable for vanilla logins." />
       <column name="defaultRoom" type="int" maxlen="6" default="1" comment="The user's default room." />
       <column name="interface" type="string" maxlen="50" comment="The user's default interface." />
       <column name="favRooms" type="string" maxlen="1000" default="1" comment="A comma-seperated list of rooms the user has ranked as being favourites." />

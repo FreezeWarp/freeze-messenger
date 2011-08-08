@@ -192,11 +192,7 @@ if (!($config = fim_getCachedVar('fim_config')) || $disableConfig) {
 
   $config2 = $slaveDatabase->select(
     array(
-      "{$sqlPrefix}configuration" => array(
-        'directive' => 'directive',
-        'value' => 'value',
-        'type' => 'type',
-      ),
+      "{$sqlPrefix}configuration" => 'directive, value, type',
     )
   );
   $config2 = $config2->getAsArray(true);
@@ -271,11 +267,7 @@ if (isset($reqPhrases)) { // TODO Languages currently overwrite eachother
     if (!$phrases = fim_getCachedVar('fim_phrases')) {
       $phrases2 = $slaveDatabase->select(
         array(
-          "{$sqlPrefix}phrases" => array(
-            'phraseName' => 'phraseName',
-            'languageCode' => 'languageCode',
-            'text' => 'text',
-          ),
+          "{$sqlPrefix}phrases" => 'phraseName, languageCode, text',
         )
       );
       $phrases2 = $phrases2->getAsArray(true);
@@ -311,11 +303,7 @@ if (isset($reqHooks)) {
     if (!$hooks = fim_getCachedVar('fim_hooks')) {
       $hooks2 = $slaveDatabase->select(
         array(
-          "{$sqlPrefix}hooks" => array(
-            'hookId' => 'hookId',
-            'hookName' => 'hookName',
-            'code' => 'code',
-          ),
+          "{$sqlPrefix}hooks" => 'hookId, hookName, code',
         )
       );
       $hooks2 = $hooks2->getAsArray('hookId');
@@ -354,12 +342,7 @@ if (isset($reqPhrases)) {
 
       $templates2 = $slaveDatabase->select(
         array(
-          "{$sqlPrefix}templates" => array(
-            'templateId' => 'templateId',
-            'templateName' => 'templateName',
-            'vars' => 'vars',
-            'data' => 'data',
-          ),
+          "{$sqlPrefix}templates" => 'templateId, templateName, vars, data',
         )
       );
       $templates2 = $templates2->getAsArray('templateId');
@@ -394,32 +377,10 @@ if ($kicksCache === null || $kicksCache === false) {
   $kicksCache = array();
 
   $queryParts['kicksCacheSelect']['columns'] = array(
-    "{$sqlPrefix}kicks" => array(
-      'kickerId' => 'kkickerId',
-      'userId' => 'kuserId',
-      'roomId' => 'kroomId',
-      'length' => 'klength',
-      'time' => array(
-        'name' => 'ktime',
-        'context' => 'time',
-      ),
-    ),
-    "{$sqlPrefix}users user" => array(
-      'userId' => 'userId',
-      'userName' => 'userName',
-      'userFormatStart' => 'userFormatStart',
-      'userFormatEnd' => 'userFormatEnd',
-    ),
-    "{$sqlPrefix}users kicker" => array(
-      'userId' => 'kickerId',
-      'userName' => 'kickerName',
-      'userFormatStart' => 'kickerFormatStart',
-      'userFormatEnd' => 'kickerFormatEnd',
-    ),
-    "{$sqlPrefix}rooms" => array(
-      'roomId' => 'roomId',
-      'roomName' => 'roomName',
-    ),
+    "{$sqlPrefix}kicks" => 'kickerId kkickerId, userId kuserId, roomId kroomId, length klength, time ktime',
+    "{$sqlPrefix}users user" => 'userId, userName, userFormatStart, userFormatEnd',
+    "{$sqlPrefix}users kicker" => 'userId kickerId, userName kickerName, userFormatStart kickerFormatStart, userFormatEnd kickerFormatEnd',
+    "{$sqlPrefix}rooms" => 'roomId, roomName',
   );
   $queryParts['kicksCacheSelect']['conditions'] = array(
     'both' => array(
