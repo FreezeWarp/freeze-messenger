@@ -560,7 +560,7 @@
 
 
     <!-- Table counters -->
-    <table name="configuration">
+    <table name="counters">
       <column name="counterName" value="uploads" />
       <column name="counterValue" value="0" />
     </table>

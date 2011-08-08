@@ -42,7 +42,7 @@ require_once(dirname(__FILE__) . '/global.php');
 
 ///* Some Pre-Stuff *///
 
-require(dirname(__FILE__) . '/functions/loginReqs.php');
+require(dirname(__FILE__) . '/functions/fim_uac.php');
 
 
 static $api, $goodVersion;
@@ -79,7 +79,7 @@ if (isset($_POST['userName'],$_POST['password']) || isset($_POST['userId'],$_POS
 
 
     foreach ($apiVersionList AS $version) {
-      $apiVersionSubs = explode('.',$_POST['apiVersion']); // Break it up into subversions.
+      $apiVersionSubs = explode(dirname(__FILE__) . '',$_POST['apiVersion']); // Break it up into subversions.
       if (!isset($apiVersionSubs[1])) {
         $apiVersionSubs[1] = 0;
       }

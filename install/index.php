@@ -1,7 +1,7 @@
 <?php
 error_reporting(E_ALL ^ E_NOTICE);
 
-require('../functions/simpleXml.php');
+require('../functions/xml.php');
 
 
 

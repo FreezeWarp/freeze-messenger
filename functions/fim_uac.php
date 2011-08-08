@@ -162,14 +162,14 @@ function processLogin($user, $password, $encrypt) {
 
 
     case 'phpbb':
-    require(dirname(__FILE__) . 'loginReqsPHPBB3.php'); // Require PHPBB3 Library
+    require(dirname(__FILE__) . '/fim_uac_phpbb3.php'); // Require PHPBB3 Library
 
     return processPHPBB($user, $password);
     break;
 
 
     case 'vanilla': // TODO
-    require(dirname(__FILE__) . 'loginReqsVanilla.php'); // Require Vanilla Library
+    require(dirname(__FILE__) . '/fim_uac_vanilla.php'); // Require Vanilla Library
 
     return processVanilla($user, $password);
     break;

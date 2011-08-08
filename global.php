@@ -71,10 +71,10 @@ elseif (floatval(PHP_VERSION) <= 5.3) { // Removed outright in 5.4, may as well 
 /* Require Libraries */
 require(dirname(__FILE__) . '/config.php'); // Configuration Variables
 require(dirname(__FILE__) . '/functions/mysql.php'); // MySQL Library (DEPRECATED)
-require(dirname(__FILE__) . '/functions/mysqlOOP.php'); // MySQL OOP Library
-require(dirname(__FILE__) . '/functions/cacheVars.php'); // APC Wrapper (may use for alteratives like memcached later)
-require(dirname(__FILE__) . '/functions/commonQueries.php'); // FIM-specific Extension to MySQL OOP Library
-require(dirname(__FILE__) . '/functions/generalFunctions.php'); // Various Functions
+require(dirname(__FILE__) . '/functions/database.php'); // MySQL OOP Library
+require(dirname(__FILE__) . '/functions/fim_database.php'); // FIM-specific Extension to MySQL OOP Library
+require(dirname(__FILE__) . '/functions/fim_cache.php'); // APC Wrapper (may use for alteratives like memcached later)
+require(dirname(__FILE__) . '/functions/fim_general.php'); // Various Functions
 
 
 

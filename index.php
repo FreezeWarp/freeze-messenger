@@ -2,8 +2,8 @@
 
 ///* Handle FIM Installation *///
 
-if (!file_exists('config.php')) {
-  if (file_exists('install/index.php')) {
+if (!file_exists('./config.php')) {
+  if (file_exists('./install/index.php')) {
     header('Location: install/index.php');
 
     die('FreezeMessenger must first be installed. <a href="install/index.php">Click here</a> to do so.');
@@ -18,7 +18,7 @@ if (!file_exists('config.php')) {
 ///* Handle Path Redirection *///
 
 else {
-  require('config.php');
+  require('./config.php');
 
   if ($disableWeb) {
     die('Web interfaces have been disabled on this server.');

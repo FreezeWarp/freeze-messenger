@@ -29,7 +29,8 @@
 
 $apiRequest = true;
 
-require_once('../global.php');
+require('../global.php');
+require('../functions/fim_parsers.php');
 
 
 
@@ -46,6 +47,7 @@ $request = fim_sanitizeGPC(array(
         'unfavRoom',
         'banUser',
         'unbanUser',
+        'markMessageRead',
       ),
     ),
 
@@ -122,7 +124,6 @@ switch ($request['action']) {
     $errStr = 'nokickuser';
     $errDesc = 'The user specified may not be kicked.';
 
-    require_once('../functions/parserFunctions.php');
     fim_sendMessage('/me fought the law and the law won.',$user,$roomData,'me');
   }
   elseif (!fim_hasPermission($roomData,$user,'moderate',true)) { // You have to be a mod yourself.
@@ -153,7 +154,6 @@ switch ($request['action']) {
       )
     );
 
-    require_once('../functions/parserFunctions.php');
     fim_sendMessage('/me kicked ' . $userData['userName'],$user,$roomData,'me');
 
     $xmlData['moderate']['response']['success'] = true;
@@ -184,7 +184,6 @@ switch ($request['action']) {
       'roomId' => $roomData['roomId'],
     ));
 
-    require_once('../functions/parserFunctions.php');
     fim_sendMessage('/me unkicked ' . $userData['userName'],$user,$roomData,'me');
 
     $xmlData['moderate']['response']['success'] = true;
@@ -275,6 +274,9 @@ switch ($request['action']) {
 
     echo container('User Unbanned','The user has been unbanned.');
   }
+  break;
+
+  case 'markMessageRead':
   break;
 
   default:

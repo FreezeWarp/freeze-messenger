@@ -15,7 +15,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 
-require_once('global.php');
+require('global.php');
 
 if (!$config['serverSentEvents']) {
   die('Not Supported');

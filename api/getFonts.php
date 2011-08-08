@@ -26,7 +26,7 @@
 
 $apiRequest = true;
 
-require_once('../global.php');
+require('../global.php');
 
 
 

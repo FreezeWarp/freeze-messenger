@@ -26,7 +26,7 @@
       <column name="counterName" type="string" maxlen="50" comment="The name of the counter." />
       <column name="counterValue" type="int" maxlen="10" comment="The current value of the counter." />
 
-      <key name="directive" type="counterName" />
+      <key name="counterName" type="primary" />
     </table>
 
 

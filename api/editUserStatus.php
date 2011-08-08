@@ -29,8 +29,8 @@
 
 $apiRequest = true;
 
-require_once('../global.php');
-require_once('../functions/parserFunctions.php');
+require('../global.php');
+require('../functions/parserFunctions.php');
 
 
 
