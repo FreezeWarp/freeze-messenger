@@ -20,26 +20,29 @@
  * @param array $needle - The array that contains all values that will be applied to $haystack
  * @param array $haystack - The matching array.
  * @return bool
+ *
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_inArray($needle, $haystack) {
-  if (!$haystack) {
+  if (!$haystack) { // If the haystack is not valid, return false.
     return false;
   }
-  if (!$needle) {
+  elseif (!$needle) { // If the needle is not valid, return false.
     return false;
   }
+  else {
+    foreach($needle AS $need) { // Run through each entry of the needle
+      if (!$need) { // If the needle value is false, skip it.
+        continue;
+      }
 
-  foreach($needle AS $need) {
-    if (!$need) {
-      continue;
+      if (in_array($need, $haystack)) { // If the needle is in the haystack, return true.
+        return true;
+      }
     }
 
-    if (in_array($need, $haystack)) {
-      return true;
-    }
+    return false; // If we haven't returned true yet, return false.
   }
-  return false;
 }
 
 
@@ -54,19 +57,20 @@ function fim_inArray($needle, $haystack) {
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_arrayValidate($array, $type = 'int', $preserveAll = false) {
-  $arrayValidated = array();
+  $arrayValidated = array(); // Create an empty array we will use to store things.
 
-  if (is_array($array)) {
-    foreach ($array AS $value) {
-      switch ($type) {
-        case 'int':
-        if ($preserveAll) {
-          $arrayValidated[] = (int) $value;
+  if (is_array($array)) { // Make sure the array is an array.
+    foreach ($array AS $value) { // Run through each value of the array.
+      switch ($type) { // What type are we validating to?
+        case 'int': // Integer type.
+        if ($preserveAll) { // Do we preserve false entries?
+          $arrayValidated[] = (int) $value; // If so, simply cast the value as an integer.
         }
-        else {
-          $preValue = (int) $value;
 
-          if ($preValue) {
+        else { // If we don't preserve false entries...
+          $preValue = (int) $value; // Cast the value
+
+          if ($preValue) { // If it is non-zero, add it to the new array.
             $arrayValidated[] = $preValue;
           }
         }
@@ -74,11 +78,11 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false) {
       }
     }
   }
-  else {
+  else { // If its not, we will return an empty array.
     $arrayValidated = array();
   }
 
-  return $arrayValidated;
+  return $arrayValidated; // Return the validated array.
 }
 
 
@@ -100,6 +104,8 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false) {
 function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false) {
   global $sqlPrefix, $banned, $loginConfig, $valid, $database, $config, $kicksCache, $permissionsCache;
 
+
+  // Set all of these to false to start.
   $isAdmin = false;
   $isModerator = false;
   $isAllowedUser = false;
@@ -109,9 +115,11 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
   $isPrivateRoom = false;
   $kick = false;
 
-  $reason = '';
-  $type = (array) $type;
+  $reason = ''; // Create an empty string for the reason.
+  $type = (array) $type; // Type cast the type as an array.
 
+
+  // These are the corrosponding database permissions for each "type".
   $permMap = array(
     'view' => 1,
     'post' => 2,
@@ -121,8 +129,8 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
   );
 
 
-  /* Make sure all presented data is correct. */
-  if (!$roomData['roomId']) {
+  // Make sure all presented data is correct.
+  if (!$roomData['roomId']) { // If the room is not valid...
     if ($quick) {
       return false;
     }
@@ -134,24 +142,24 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
       );
     }
   }
-  elseif (!isset($roomData['defaultPermissions'])) {
+  elseif (!isset($roomData['defaultPermissions'])) { // If the default permissions index is missing, through an exception.
     throw new Exception('Room data invalid (defaultPermissions index missing)');
   }
-  elseif ($type == 'know') { // Remove
+  elseif ($type == 'know') { // Transitional.
     throw new Exception('Room data invalid (type of "know")');
   }
 
 
-  foreach ((array) $type AS $type2) {
+  foreach ((array) $type AS $type2) { // Run through each type.
     /* Get the User's Kick Status */
-    if (isset($userData['userId'])) {
-      if ($userData['userId'] > 0) {
-        if (count($kicksCache) > 0) {
-          if (isset($kicksCache[$roomData['roomId']][$userData['userId']])) {
-            $kick = true;
+    if (isset($userData['userId'])) { // Was a user specified?
+      if ($userData['userId'] > 0) { // Is their userId non-zero?
+        if (count($kicksCache) > 0) { // Is the kicks cache non-empty?
+          if (isset($kicksCache[$roomData['roomId']][$userData['userId']])) { // Does a kick entry exist for the user in this room?
+            $kick = true; // We're kicked!
           }
           else {
-            $kick = false;
+            $kick = false; // We're not kicked!
           }
         }
       }
@@ -192,6 +200,9 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
         $isOwner = true;
       }
     }
+    else {
+      throw new Exception('Room data invalid (owner index missing)'); // We need the owner index.
+    }
 
 
     /* Is the Room a Private Room or Deleted? */
@@ -201,11 +212,11 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
       }
 
       if ($roomData['options'] & 16) {
-        $isPrivateRoom = true;
+        $isPrivateRoom = true; // The room is private
       }
     }
     else {
-      throw new Exception('Room data invalid (options index missing)');
+      throw new Exception('Room data invalid (options index missing)'); // We need the options index.
     }
 
 
@@ -341,7 +352,11 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_urldecode($str) {
-  return str_ireplace(array('%2b','%26','%20','%25','%0a'),array('+','&',' ', '%',"\n"), $str);
+  return str_ireplace(
+    array('%2b', '%26', '%20', '%25', '%0a'),
+    array('+', '&', ' ', '%', "\n"),
+    $str
+  );
 }
 
 
@@ -355,50 +370,36 @@ function fim_urldecode($str) {
  * @return array
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
-function fim_decrypt($message, $index = array('apiText','htmlText','rawText')) {
+function fim_decrypt($message, $index = array('apiText', 'htmlText', 'rawText')) {
   global $salts, $config;
 
-  if (isset($message['salt'],$message['iv'])) { // May not be for e.g. messages
-    if ($message['salt'] && $message['iv']) {
-      $salt = $salts[$message['salt']];
+  if (isset($message['salt'], $message['iv'])) { // Make sure the proper indexes exist (just in case).
+    if ($message['salt'] && $message['iv']) { // Make sure both the salt and the IV are non-false.
+      $salt = $salts[$message['salt']]; // Get the proper salt.
 
-      if ($index) {
-        if (is_array($index)) {
-          foreach ($index AS $index2) {
-            if (isset($message[$index2])) {
-              throw new Exception('Index not found: ' . $index2);
-            }
-
-            else {
-              $message[$index2] = rtrim(
-                mcrypt_decrypt(
-                  MCRYPT_3DES,
-                  $salt,
-                  base64_decode($message[$index2]),
-                  MCRYPT_MODE_CBC,
-                  base64_decode($message['iv'])
-                ),
-              "\0");
-            }
+      if ($index) { // If indexes are specified...
+        foreach ((array) $index AS $index2) { // Run through each index. If the specified index variable is a string instead of an array, we will cast it as an array ("example" becomes array("example")).
+          if (isset($message[$index2])) { // If the index is not in the message, throw an exception.
+            throw new Exception('Index not found: ' . $index2);
           }
-        }
 
-        else {
-          $message[$index] = rtrim(
-            mcrypt_decrypt(
-              MCRYPT_3DES,
-              $salt,
-              base64_decode($message[$index]),
-              MCRYPT_MODE_CBC,
-              base64_decode($message['iv'])
-            ),
-          "\0");
+          else { // Otherwise, unencrypt the index.
+            $message[$index2] = rtrim( // Remove \0 bytes from the end.
+              mcrypt_decrypt( // Decrypt the data.
+                MCRYPT_3DES, // Decrypt the data using 3DES/Triple DES (see http://en.wikipedia.org/wiki/Triple_DES).
+                $salt, // Use the salt we found above.
+                base64_decode($message[$index2]), // Base64-decode the data first, since we store it encoded.
+                MCRYPT_MODE_CBC, // Use Mcrypt CBC mode (see http://php.net/manual/en/function.mcrypt-cbc.php and http://www.php.net/manual/en/mcrypt.constants.php).
+                base64_decode($message['iv']) // Uses the decoded IV (we store it using base64 encoding).
+              ),
+            "\0");
+          }
         }
       }
     }
   }
 
-  return $message;
+  return $message; // Return the original array with the specified indexes unencrypted.
 }
 
 
@@ -435,8 +436,8 @@ function fim_encrypt($data) {
             $value, // Our value to encrypt.
             MCRYPT_MODE_CBC, // Use Mcrypt CBC mode (see http://php.net/manual/en/function.mcrypt-cbc.php and http://www.php.net/manual/en/mcrypt.constants.php).
             base64_decode($iv) // We need to use the raw IV, so we decode the earlier encoded value.
-          )
-        ,"\0")
+          ),
+        "\0")
       );
     }
   }
@@ -458,18 +459,20 @@ function fim_encrypt($data) {
 /**
  * Generates a SHA256 using whatever methods are available. If no valid function can be found, the data will be returned unhashed.
  *
- * @param mixed
+ * @param string $data - The data to encrypt.
+ * @return string - Encrypted data.
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_sha256($data) {
   global $config;
 
-  if (function_exists('hash')) {
+  if (function_exists('hash')) { // hash() is available in PHP 5.1.2+, or in PECL Hash 1.1
     return hash('sha256', $data);
   }
-  elseif (function_exists('mhash')) {
+  elseif (function_exists('mhash') && defined('MHASH_SHA256')) { // mhash() is available in pretty much all versions of PHP, but the SHA256 algo may not be available.
     return mhash(MHASH_SHA256, $data);
   }
-  else {
+  else { // Otherwise, we'll return the data unhashed. Better than dieing completely, really.
     return $data;
   }
 }
@@ -486,17 +489,7 @@ function fim_sha256($data) {
 function fim_encodeXml($data) {
   global $config;
 
-  $ref = array(
-    '&' => '&amp;', // By placing this first, we avoid accidents!
-    '\'' => '&apos;',
-    '<' => '&lt;',
-    '>' => '&gt;',
-    '"' => '&quot;',
-  );
-
-  foreach ($ref AS $search => $replace) {
-    $data = str_replace($search, $replace, $data);
-  }
+  $data = str_replace($config['encodeXmlEntitiesFind'], $config['encodeXmlEntitiesReplace'], $data); // Replace the entities defined in $config (these are usually not changed).
 
   return $data;
 }
@@ -512,19 +505,7 @@ function fim_encodeXml($data) {
 function fim_encodeXmlAttr($data) {
   global $config;
 
-
-  $ref = array(
-    '&' => '&amp;', // By placing this first, we avoid accidents!
-    '\'' => '&apos;',
-    '<' => '&lt;',
-    '>' => '&gt;',
-    '"' => '&quot;',
-  );
-
-
-  foreach ($ref AS $search => $replace) {
-    $data = str_replace($search, $replace, $data);
-  }
+  $data = str_replace($config['encodeXmlAttrEntitiesFind'], $config['encodeXmlAttrEntitiesReplace'], $data); // Replace the entities defined in $config (these are usually not changed).
 
   return $data;
 }
@@ -682,11 +663,11 @@ function template($name) {
 
   if (isset($templateVars[$name])) {
     if($templateVars[$name]) {
-      $vars = explode(',', $templateVars[$name]);
+      $vars = explode(', ', $templateVars[$name]);
       foreach ($vars AS $var) {
         $globalVars[] = '$' . $var;
       }
-      $globalString = implode(',', $globalVars);
+      $globalString = implode(', ', $globalVars);
 
       eval("global $globalString;");
     }
@@ -697,7 +678,7 @@ function template($name) {
     $template2 = parser1($template2,0,false, $globalString);
 
 
-    $template2 = preg_replace('/(.+)/e','stripslashes("\\1")', $template2);
+    $template2 = preg_replace('/(.+)/e', 'stripslashes("\\1")', $template2);
 
     return $template2;
   }
@@ -1297,7 +1278,7 @@ function fim_outputArray() {
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_htmlCompact($data) {
-  $data = preg_replace('/\ {2,}/','', $data);
+  $data = preg_replace('/\ {2,}/', '', $data);
   $data = preg_replace("/(\n|\n\r|\t|\r)/",'', $data);
   $data = preg_replace("/\<\!-- (.+?) --\>/",'', $data);
   $data = preg_replace("/\>(( )+?)\</",'><', $data);
@@ -1500,7 +1481,7 @@ function fim_sanitizeGPC($data) {
 
         switch($indexMetaData['context']['cast']) {
           case 'csv':
-          $newData[$indexName] = fim_arrayValidate(explode(',', $activeGlobal[$indexName]), $indexMetaData['context']['filter'],($indexMetaData['context']['evaltrue'] ? false : true)); // If a cast is set for a CSV list, explode with a comma seperator, make sure all values corrosponding to the filter (int, bool, or string - the latter pretty much changes nothing), and if evaltrue is true, then the preserveAll flag would be false, and vice-versa.
+          $newData[$indexName] = fim_arrayValidate(explode(', ', $activeGlobal[$indexName]), $indexMetaData['context']['filter'],($indexMetaData['context']['evaltrue'] ? false : true)); // If a cast is set for a CSV list, explode with a comma seperator, make sure all values corrosponding to the filter (int, bool, or string - the latter pretty much changes nothing), and if evaltrue is true, then the preserveAll flag would be false, and vice-versa.
           break;
 
           case 'int':

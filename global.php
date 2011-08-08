@@ -78,6 +78,11 @@ $defaultConfig = array(
   'enableWatchRooms' => true,
   'enableEvents' => true,
 
+  'encodeXmlEntitiesFind' => array('&', '\'', '<', '>', '"'),
+  'encodeXmlEntitiesReplace' => array('&amp;', '&apos;', '&lt;', '&gt;', '&quot;'),
+  'encodeXmlAttrEntitiesFind' => array('&', '\'', '<', '>', '"'),
+  'encodeXmlAttrEntitiesReplace' => array('&amp;', '&apos;', '&lt;', '&gt;', '&quot;'),
+
   'dev' => false,
 );
 
@@ -93,7 +98,7 @@ $defaultConfig = array(
  * PCRE is present in all versions since PHP 4
  * APC is present in PHP 5.4, Ubuntu's php-apc packge, and easily installed from PECL.net. It simply has to be a requirement for may of the functions (as far as the way they are designed).
  */
-foreach (array('mysql', 'json', 'mbstring', 'mcrypt', 'hash', 'pcre', 'apc') AS $module) {
+foreach (array('mysql', 'json', 'mbstring', 'mcrypt', 'pcre', 'apc') AS $module) {
   if (!extension_loaded($module)) {
     die("The module $module could not be found. Please install PHP $module compatibility. See the documentation for help.");
   }
