@@ -143,8 +143,6 @@ require(dirname(__FILE__) . '/functions/generalFunctions.php'); // Various Funct
 
 
 /* Blanket Defaults */
-date_default_timezone_set('GMT'); // Set the timezone to GMT.
-
 $continue = true; // Simple "stop" variable used throughout for hooks and live code. (Not neccissarly best practice, but it works better than most of the alternatives.)
 $hook = false;
 $errStr = '';

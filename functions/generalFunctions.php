@@ -605,22 +605,26 @@ function rgb2html($r, $g = false, $b = false) {
 function fim_date($format, $timestamp = false) {
   global $user, $config;
 
-
-  $timestamp = ($timestamp ?: time());
+  $timestamp = ($timestamp ? $timestamp : time()); // If a timestamp was specified, we'll go with it, otherwise get it from PHP's time().
 
   $hourdiff = ((date('Z', $timestamp) / 3600) - (isset($user['timeZone']) ? $user['timeZone'] : 0)) * 3600;
 
-  $timestamp_adjusted = $timestamp - $hourdiff;
+  $timestampAdj = $timestamp - $hourdiff;
 
-  if ($format == false) { // Used for most messages
+  if ($format === false) { // If format is not specified, we use a dynamic format that will only show the day if the date is not on the current day.
     $midnight = strtotime("yesterday") - $hourdiff;
-    if ($timestamp_adjusted > $midnight) $format = 'g:i:sa';
-    else $format = 'm/d/y g:i:sa';
+
+    if ($timestampAdj > $midnight) { // The date falls on the current day.
+      $format = 'g:i:sa';
+    }
+    else { // The date does not fall on the current day.
+      $format = 'm/d/y g:i:sa';
+    }
   }
 
-  $returndate = date($format, $timestamp_adjusted);
+  $newDate = date($format, $timestampAdj); // Using PHP's date(), get a date string based on the specified format and the adjusted timezone.
 
-  return $returndate;
+  return $newDate;
 }
 
 
@@ -635,15 +639,19 @@ function fim_date($format, $timestamp = false) {
 function hook($name) {
   global $hooks, $disableHooks;
 
-  $hook = $hooks[$name];
 
-  if ($disableHooks) {
+  if ($disableHooks) { // If hooks are disabled, then return false.
     return false;
   }
-  elseif ($hook) {
-    return $hook;
+  elseif (isset($hooks[$name])) { // If the hook is set...
+    if (strlen($hooks[$name]) > 0) { // If the hook is not empty, return the code to eval.
+      return $hook;
+    }
+    else { // Otherwise return false.
+      return false;
+    }
   }
-  else {
+  else { // And if the hook isn't set, return false.
     return false;
   }
 }
