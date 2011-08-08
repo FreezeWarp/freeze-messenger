@@ -557,5 +557,12 @@
       <column name="value" value="100" />
       <column name="type" value="int" />
     </table>
+
+
+    <!-- Table counters -->
+    <table name="configuration">
+      <column name="counterName" value="uploads" />
+      <column name="counterValue" value="0" />
+    </table>
   </database>
 </dbData>

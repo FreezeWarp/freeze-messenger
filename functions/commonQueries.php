@@ -247,7 +247,7 @@ class fimDatabase extends database {
       false,
       1
     );
-    return $messageDaata->getAsArray(false);
+    return $messageData->getAsArray(false);
   }
 
 
@@ -337,6 +337,10 @@ class fimDatabase extends database {
         'value' => '__TIME__',
       ),
       'lastMessageId' => $messageId,
+      'messageCount' => array(
+        'type' => 'equation',
+        'value' => '$messageCount + 1',
+      )
     ), "{$sqlPrefix}rooms", array(
       'roomId' => $roomData['roomId'],
     ));
@@ -386,7 +390,7 @@ class fimDatabase extends database {
   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
 
-  function modLog($action, $data) {
+  public function modLog($action, $data) {
     global $sqlPrefix, $config, $user;
 
     if ($this->insert(array(
@@ -400,6 +404,60 @@ class fimDatabase extends database {
     else {
       return false;
     }
+  }
+
+
+  public function incrementCounter($counterName, $incrementValue = 1) {
+   global $sqlPrefix, $config;
+
+    if ($this->update(array(
+      'counterValue' => array(
+        'type' => 'equation',
+        'value' => '$counterValue + ' . (int) $incrementValue,
+      )
+    ), "{$sqlPrefix}rooms", array(
+      'counterName' => $counterName,
+    ))) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+
+
+  public function getCounterValue($counterName) {
+    global $sqlPrefix, $config;
+
+    $queryParts['counterSelect']['columns'] = array(
+      "{$sqlPrefix}counters" => 'counterName, counterValue',
+    );
+    $queryParts['counterSelect']['conditions'] = array(
+      'both' => array(
+        array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'messageName'
+          ),
+          'right' => array(
+            'type' => 'string',
+            'value' => (int) $counterName,
+          ),
+        ),
+      ),
+    );
+
+    $counterData = $this->select(
+      $queryParts['counterSelect']['columns'],
+      $queryParts['counterSelect']['conditions'],
+      false,
+      false,
+      1
+    );
+    $counterData = $counterData->getAsArray(false);
+
+    return $counterData['counterValue'];
   }
 }
 ?>

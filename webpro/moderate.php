@@ -277,7 +277,7 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
           'languageCode' => $languageCode,
         ));
 
-        modLog('phraseEdit',$phraseID);
+        $database->modLog('phraseEdit',$phraseID);
 
         echo container('Updated','The phrase has been updated.<br /><br /><form action="./moderate.php?do=phrases" method="POST"><button type="submit">Return</button></form>');
         break;
@@ -344,7 +344,7 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
           'hookId' => (int) $hookId,
         ));
 
-        modLog('hookEdit',$hookID);
+        $database->modLog('hookEdit',$hookID);
 
         echo container('Updated','The hook has been updated.<br /><br /><form action="moderate.php?do=hooks" method="POST"><button type="submit">Return</button></form>');
         break;
@@ -432,7 +432,7 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
           'templateId' => (int) $templateId,
         ));
 
-        modLog('templateEdit',$templateId);
+        $database->modLog('templateEdit',$templateId);
 
         echo container('Updated','The template has been updated.<br /><br /><form action="Return" method="POST"><button type="submit">Return</button></form>');
         break;
@@ -575,7 +575,7 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
         case 'deleteList':
         $listId = intval($_GET['listId']);
 
-        modLog('deleteCensorList',$listId);
+        $database->modLog('deleteCensorList',$listId);
 
         dbQuery("DELETE FROM {$sqlPrefix}censorLists WHERE id = $listId");
         dbQuery("DELETE FROM {$sqlPrefix}censorWords WHERE listId = $listId");
@@ -702,7 +702,7 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
         $wordsev = (in_array($_POST['severity'],$options) ? $_POST['severity'] : 'replace');
         $wordparam = dbEscape($_POST['param']);
 
-        modLog('editCensorWord',$wordid);
+        $database->modLog('editCensorWord',$wordid);
 
         dbQuery("UPDATE {$sqlPrefix}censorWords SET word = '$wordtext', severity = '$wordsev', param = '$wordparam' WHERE id = $wordid");
 
@@ -714,7 +714,7 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
 
         dbQuery("DELETE FROM {$sqlPrefix}censorWords WHERE id = $wordid");
 
-        modLog('deleteCensorWord',$wordid);
+        $database->modLog('deleteCensorWord',$wordid);
 
         echo container('Word Deleted','The word has been removed.<br /><br /><button onclick="window.history.back();" type="button">Go Back</button>');
         break;

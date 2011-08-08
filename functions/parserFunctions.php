@@ -300,8 +300,8 @@ function fimParse_htmlWrap($html, $maxLength = 80, $char = '<br />') { /* An ada
   $openTag = false;
   $tagParams = false;
 
-  for ($i = 0; $i < mb_strlen($html,'UTF-8'); $i++) {
-   $mb = mb_substr($html, $i,1,'UTF-8');
+  for ($i = 0; $i < mb_strlen($html, 'UTF-8'); $i++) {
+   $mb = mb_substr($html, $i, 1, 'UTF-8');
    $noAppend = false;
 
     if ($mb == '<') { // The character starts a BBcode tag - don't touch nothing.
@@ -370,7 +370,7 @@ function fim3parse_keyWords($string, $messageId, $roomId) {
   global $config, $sqlPrefix, $database, $user;
 
   foreach ($config['searchWordPunctuation'] AS $punc) {
-    $puncList[] = addcslashes($punc,'"\'|(){}[]<>.,~-?!@#$%^&*/\\'); // Dunno if this is the best approach.
+    $puncList[] = addcslashes($punc, '"\'|(){}[]<>.,~-?!@#$%^&*/\\'); // Dunno if this is the best approach.
   }
 
   $string = preg_replace('/(' . implode('|', $puncList) . ')/is', ' ', $string);
@@ -423,7 +423,7 @@ function fim3parse_keyWords($string, $messageId, $roomId) {
         'messageId' => (int) $messageId,
         'userId' => (int) $user['userId'],
         'roomId' => (int) $roomId,
-      ),"{$sqlPrefix}searchMessages");
+      ), "{$sqlPrefix}searchMessages");
     }
   }
 }

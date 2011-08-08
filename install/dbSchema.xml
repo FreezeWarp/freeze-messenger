@@ -22,6 +22,14 @@
     </table>
 
 
+    <table name="counters" type="general">
+      <column name="counterName" type="string" maxlen="50" comment="The name of the counter." />
+      <column name="counterValue" type="int" maxlen="10" comment="The current value of the counter." />
+
+      <key name="directive" type="counterName" />
+    </table>
+
+
     <table name="censorBlackWhiteLists" type="general" comment="Room-defined censor list 'on/off'.">
       <column name="listId" type="int" maxlen="6" comment="The unique ID of the censor list being disabled/enabled." />
       <column name="roomId" type="int" maxlen="6" comment="The room ID the status is being applied to." />
@@ -251,6 +259,7 @@
       <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options." />
       <column name="lastMessageTime" type="time" default="0000-00-00 00:00:00" comment="The time of the last message made in the room." />
       <column name="lastMessageId" type="int" maxlen="15" comment="The ID of the last message made in the room." />
+      <column name="messageCount" type="int" maxlen="15" comment="The number of messages in this room." />
 
       <key name="roomId" type="primary" />
       <key name="options" type="index" />
