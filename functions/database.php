@@ -78,39 +78,122 @@ class database {
     switch ($this->language) {
       case 'mysql':
       switch ($operation) {
-        case 'connect': return mysql_connect("$args[1]:$args[2]", $args[3], $args[4]); break;
-        case 'selectdb': return mysql_select_db($args[1], $this->dbLink); break;
-        case 'error': return mysql_error($this->dbLink); break;
-        case 'close': return mysql_close($this->dbLink); break;
-        case 'escape': return mysql_real_escape_string($args[1], $this->dbLink); break;
-        case 'query': return mysql_query($args[1], $this->dbLink); break;
-        case 'insertId': return mysql_insert_id($this->dbLink); break;
-        default: throw new Exception('Unrecognized Operation: ' . $operation); break;
+        case 'connect':
+          $function = mysql_connect("$args[1]:$args[2]", $args[3], $args[4]);
+          $this->version = mysql_get_server_info($function);
+
+          if ($function && $args[5]) { // The initial function returned successfully and we need to select the database.
+            $function = mysql_select_db($args[5], $function);
+            $this->activeDatabase = $args[5];
+          }
+
+          return $function;
+        break;
+
+        case 'selectdb':
+          $function = mysql_select_db($args[1], $this->dbLink);
+
+          $this->activeDatabase = $args[5];
+
+          return $function;
+        break;
+
+        case 'error':
+          return mysql_error($this->dbLink);
+        break;
+
+        case 'close':
+          return mysql_close($this->dbLink);
+        break;
+
+        case 'escape':
+          return mysql_real_escape_string($args[1], $this->dbLink);
+        break;
+
+        case 'query':
+          return mysql_query($args[1], $this->dbLink);
+        break;
+
+        case 'insertId':
+          return mysql_insert_id($this->dbLink);
+        break;
+
+        default:
+          throw new Exception('Unrecognized Operation: ' . $operation);
+        break;
       }
       break;
 
       case 'mysqli':
       switch ($operation) {
-        case 'connect': return mysqli_connect($args[1], $args[3], $args[4], $args[5], $args[2]); break;
-        case 'selectdb': return mysqli_select_db($this->dbLink, $args[1]); break;
-        case 'error': return mysqli_error($this->dbLink); break;
-        case 'close': return mysqli_close($this->dbLink); break;
-        case 'escape': return mysqli_real_escape_string($this->dbLink, $args[1]); break;
-        case 'query': return mysqli_query($this->dbLink, $args[1]); break;
-        case 'insertId': return mysqli_insert_id($this->dbLink); break;
-        default: throw new Exception('Unrecognized Operation: ' . $operation); break;
+        case 'connect':
+          $function = mysqli_connect($args[1], $args[3], $args[4], $args[5], $args[2]);
+
+          $this->version = mysqli_get_server_version();
+          if ($args[5]) {
+            $this->activeDatabase = $args[5];
+          }
+
+          return $function;
+        break;
+
+        case 'selectdb':
+          return mysqli_select_db($this->dbLink, $args[1]);
+        break;
+
+        case 'error':
+          return mysqli_error($this->dbLink);
+        break;
+
+        case 'close':
+          return mysqli_close($this->dbLink);
+        break;
+
+        case 'escape':
+          return mysqli_real_escape_string($this->dbLink, $args[1]);
+        break;
+
+        case 'query':
+          return mysqli_query($this->dbLink, $args[1]);
+        break;
+
+        case 'insertId':
+          return mysqli_insert_id($this->dbLink);
+        break;
+
+        default:
+          throw new Exception('Unrecognized Operation: ' . $operation);
+        break;
       }
       break;
 
       case 'postgresql':
       switch ($operation) {
-        case 'connect': return pg_connect("host=$args[1] port=$args[2] username=$args[3] password=$args[4] dbname=$args[5]"); break;
-        case 'error': return pg_last_error($this->dbLink); break;
-        case 'close': return pg_close($this->dbLink); break;
-        case 'escape': return pg_escape_string($this->dbLink, $args[1]); break;
-        case 'query': return pg_query($this->dbLink, $args[1]); break;
+        case 'connect':
+          return pg_connect("host=$args[1] port=$args[2] username=$args[3] password=$args[4] dbname=$args[5]");
+        break;
+
+        case 'error':
+          return pg_last_error($this->dbLink);
+        break;
+
+        case 'close':
+          return pg_close($this->dbLink);
+        break;
+
+        case 'escape':
+          return pg_escape_string($this->dbLink, $args[1]);
+        break;
+
+        case 'query':
+          return pg_query($this->dbLink, $args[1]);
+        break;
+
         //case 'insertId': return mysqli_insert_id($this->dbLink); break;
-        default: throw new Exception('Unrecognized Operation: ' . $operation); break;
+
+        default:
+          throw new Exception('Unrecognized Operation: ' . $operation);
+        break;
       }
       break;
     }

@@ -463,6 +463,7 @@ if (is_array($request['rooms'])) {
           "{$sqlPrefix}messages" => 'messageId, time, iv, salt, roomId, userId, deleted, flag',
           "{$sqlPrefix}users" => 'userId muserId, userName, userGroup, socialGroups, userFormatStart, userFormatEnd, avatar, defaultColor, defaultFontface, defaultHighlight, defaultFormatting'
         );
+
         $queryParts['messagesSelect']['conditions'] = array(
           'both' => array(
             array(
@@ -670,18 +671,18 @@ if (is_array($request['rooms'])) {
         case 'both':
         case 'api,html': // In the future we may introduce more fields that will require using comma-values.
         case 'html,api': // Same thing.
-        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages" . (!$request['archive'] ? 'Cached' : '')]['apiText'] = 'apiText';
-        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages" . (!$request['archive'] ? 'Cached' : '')]['htmlText'] = 'htmlText';
+        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages" . (!$request['archive'] ? 'Cached' : '')] .= ', apiText';
+        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages" . (!$request['archive'] ? 'Cached' : '')] .= ', htmlText';
         $decryptArray = array('htmlText', 'apiText');
         break;
 
         case 'api':
-        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages" . (!$request['archive'] ? 'Cached' : '')]['apiText'] = 'apiText';
+        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages" . (!$request['archive'] ? 'Cached' : '')]['apiText'] .= ', apiText';
         $decryptArray = array('apiText');
         break;
 
         case 'html':
-        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages" . (!$request['archive'] ? 'Cached' : '')]['htmlText'] = 'htmlText';
+        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages" . (!$request['archive'] ? 'Cached' : '')]['htmlText'] .= ', htmlText';
         $decryptArray = array('htmlText');
         break;
 
@@ -736,7 +737,6 @@ if (is_array($request['rooms'])) {
 
           while (!$messages) {
             $longPollingRetries++;
-
             $messages = $database->select($queryParts['messagesSelect']['columns'],
               $queryParts['messagesSelect']['conditions'],
               $queryParts['messagesSelect']['sort'],
