@@ -85,6 +85,12 @@ $defaultConfig = array(
 
   'defaultTimeZone' => 0,
 
+  'fileSuffixes' => array('B', 'KiB', 'MiB', 'GiB', 'PiB', 'EiB', 'ZiB', 'YiB'),
+  'fileIncrementSize' = 1024,
+
+  'compactXmlStringsFind' => array('/\ {2,}/', "/(\n|\n\r|\t|\r)/", "/\<\!-- (.+?) --\>/", "/\>(( )+?)\</"),
+  'compactXmlStringsReplace' => array('', '', '', '><'),
+
   'dev' => false,
 );
 

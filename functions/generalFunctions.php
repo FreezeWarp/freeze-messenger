@@ -720,7 +720,7 @@ function parser1($text, $offset, $stop = false, $globalString = '') {
     $j = $text[$i];
 
     if ($iValueProc) {
-      $str .= iifl($cond,
+      $str .= fim_iifl($cond,
         (isset($iv[1]) ? $iv[1] : ''),
         (isset($iv[2]) ? $iv[2] : ''),
         ($globalString ? "global $globalString;" : '')
@@ -871,7 +871,7 @@ function parser1($text, $offset, $stop = false, $globalString = '') {
   }
 
   if ($iValueProc) {
-    $str .= iifl("$cond","$iv[1]","$iv[2]",($globalString ? "global $globalString;" : ''));
+    $str .= fim_iifl("$cond","$iv[1]","$iv[2]",($globalString ? "global $globalString;" : ''));
     if ($stop) return array($str, $i);
 
     $iv = array(1 => '', 2 => '');
@@ -904,8 +904,8 @@ function parser1($text, $offset, $stop = false, $globalString = '') {
  * @return string
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
-function iifl($condition, $true = '', $false = '', $eval = '') {
-  global $templates, $phrases, $title, $user, $room, $message, $template, $templateVars; // Lame approach.
+function fim_iifl($condition, $true = '', $false = '', $eval = '') {
+  global $config, $templates, $phrases, $title, $user, $room, $message, $template, $templateVars; // Lame approach.
 
 
   if (strlen($eval) > 0) { // Is there an eval condition? We use this primarily to set global variables (though there are other uses).
@@ -933,6 +933,7 @@ function iifl($condition, $true = '', $false = '', $eval = '') {
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function container($title, $content, $class = 'page') {
+  global $config;
 
   return $return = "<table class=\"$class ui-widget\">
   <thead>
@@ -962,36 +963,34 @@ function container($title, $content, $class = 'page') {
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_outputApi($data) {
+  global $config;
+
   if (isset($_REQUEST['fim3_format'])) {
     switch ($_REQUEST['fim3_format']) {
-      case 'json':
-      return fim_outputJson($data);
-      break;
-
-      case 'phparray':
+      case 'phparray': // print_r
       return fim_outputArray($data);
       break;
 
-      case 'keys':
+      case 'keys': // HTML List format for the keys only (documentation thing)
       return fim_outputKeys($data);
       break;
 
-      case 'eventstream':
-
-      break;
-
-      case 'xml2':
+      case 'xml2': // Compact XML
       return fim_outputXml2($data);
       break;
 
-      case 'xml':
-      default:
+      case 'xml': // No-Attribute XML (all data expressed as nodes)
       return fim_outputXml($data);
+      break;
+
+      case 'json': // Javascript Object Notion
+      default:
+      return fim_outputJson($data);
       break;
     }
   }
   else {
-    return fim_outputXml($data);
+    return fim_outputJson($data);
   }
 }
 
@@ -1006,6 +1005,8 @@ function fim_outputApi($data) {
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_outputXml($array, $level = 0) {
+  global $config;
+
   header('Content-type: application/xml');
 
   $indent = '';
@@ -1065,6 +1066,8 @@ $data";
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_outputXml2($array, $level = 0) {
+  global $config;
+
   header('Content-type: application/xml');
 
   $indent = '';
@@ -1143,6 +1146,8 @@ $data";
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_outputJson($array, $level = 0) {
+  global $config;
+
   header('Content-type: application/json');
 
   $data = array();
@@ -1208,6 +1213,8 @@ $indent}
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_outputKeys($array, $level = 0) { // Used only for creating documentation.
+  global $config;
+
   $indent = '';
 
   for ($i = 0; $i < $level; $i++) {
@@ -1237,6 +1244,8 @@ function fim_outputKeys($array, $level = 0) { // Used only for creating document
  * @param array $array
  */
 function fim_outputArray() {
+  global $config;
+
   print_r($array);
 }
 
@@ -1250,10 +1259,10 @@ function fim_outputArray() {
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_htmlCompact($data) {
-  $data = preg_replace('/\ {2,}/', '', $data);
-  $data = preg_replace("/(\n|\n\r|\t|\r)/",'', $data);
-  $data = preg_replace("/\<\!-- (.+?) --\>/",'', $data);
-  $data = preg_replace("/\>(( )+?)\</",'><', $data);
+  global $config;
+
+  $data = preg_replace($config['compactXmlStringsFind'], $config['compactXmlStringsReplace'], $data);
+
   return $data;
 }
 
@@ -1267,27 +1276,16 @@ function fim_htmlCompact($data) {
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function formatSize($size) {
-
-  $fileSuffixes = array(
-    'B',
-    'KiB',
-    'MiB',
-    'GiB',
-    'PiB',
-    'EiB',
-    'ZiB',
-    'YiB',
-  );
+  global $config;
 
   $suffix = 0;
 
-  // Increase the Byte Prefix, Decrease the Number (1024B = 1KiB)
-  while ($size > 1024) {
+  while ($size > $config['fileIncrementSize']) { // Increase the Byte Prefix, Decrease the Number (1024B = 1KiB)
     $suffix++;
-    $size /= 1024;
+    $size /= $config['fileIncrementSize'];
   }
 
-  return $size . $fileSuffixes[$suffix];
+  return $size . $config['fileSuffixes'][$suffix];
 }
 
 
@@ -1300,6 +1298,8 @@ function formatSize($size) {
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_sanitizeGPC($data) {
+  global $config;
+
   $metaDataDefaults = array(
     'type' => 'string',
     'require' => false,
@@ -1507,11 +1507,15 @@ function fim_sanitizeGPC($data) {
  * @return bool - true on success, false on failure
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
-function iif($condition, $true, $false) {
-  if (eval('return ' . stripslashes($condition) . ';')) {
-    return $true;
+function fim_iif($condition, $true, $false) {
+  global $config;
+
+  if (eval('return ' . stripslashes($condition) . ';')) { // Does the condition eval to true?
+    return $true; // Return the true string.
   }
-  return $false;
+  else {
+    return $false; // Return the false string.
+  }
 }
 
 
@@ -1524,13 +1528,15 @@ function iif($condition, $true, $false) {
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function hasArray($array) {
-  foreach ($array AS $key => $value) {
-    if (is_array($value)) {
+  global $config;
+
+  foreach ($array AS $key => $value) { // Run through each entry of the array.
+    if (is_array($value)) { // If the value is an array, return true.
       return true;
     }
   }
 
-  return false;
+  return false; // Since we haven't already found an array, return false.
 }
 
 
@@ -1545,6 +1551,8 @@ function hasArray($array) {
  * @source http://www.php.net/manual/en/function.explode.php#89138
  */
 function fim_explodeEscaped($delimiter, $string) {
+  global $config;
+
   $exploded = explode($delimiter, $string);
   $fixed = array();
 
