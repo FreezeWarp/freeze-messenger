@@ -491,8 +491,8 @@ Some features are currently not available for all browsers, however:
 &lt;li&gt;&lt;a href="javascript:void(0);" data-action="private_im"&gt;Private IM&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="javascript:void(0);" data-action="profile"&gt;View Profile&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="javascript:void(0);" data-action="ignore"&gt;Un/Ignore User&lt;/a&gt;&lt;/li&gt;
-{{if="fim_hasPermission($room, $user, 'moderate')"}{&lt;li&gt;&lt;a href="javascript:void(0);" data-action="kick"&gt;Kick&lt;/a&gt;&lt;/li&gt;}}
-{{if="$user['adminPrivs']['modUsers']"}{&lt;li&gt;&lt;a href="javascript:void(0);" data-action="ban"&gt;Ban&lt;/a&gt;&lt;/li&gt;}}
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="kick"&gt;Kick&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="ban"&gt;Ban&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;ul id="messageMenu" class="contextMenu"&gt;

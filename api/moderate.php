@@ -38,8 +38,6 @@ require('../functions/fim_parsers.php');
 $request = fim_sanitizeGPC(array(
   'post' => array(
     'action' => array(
-      'type' => 'string',
-      'require' => true,
       'valid' => array(
         'kickUser',
         'unkickUser',
@@ -52,8 +50,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'roomId' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => 0,
       'context' => array(
         'type' => 'int',
@@ -61,8 +57,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'userId' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => 0,
       'context' => array(
         'type' => 'int',
@@ -70,8 +64,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'length' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => 0,
       'context' => array(
         'type' => 'int',
@@ -79,8 +71,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'quiet' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => false,
       'context' => array(
         'type' => 'bool',
@@ -112,32 +102,26 @@ switch ($request['action']) {
   $userData = $slaveDatabase->getUser($request['userId']);
   $roomData = $slaveDatabase->getRoom($request['roomId']);
 
-  if (!$userData['userId']) {
-    $errStr = 'baduser';
+  if ($userData === false) {
+    $errStr = 'badUser';
     $errDesc = 'The room specified is not valid.';
   }
-  elseif (!$roomData['roomId']) {
-    $errStr = 'badroom';
+  elseif ($roomData === false) {
+    $errStr = 'badRoom';
     $errDesc = 'The room specified is not valid.';
   }
-  elseif (fim_hasPermission($roomData,$userData,'moderate',true)) { // You can't kick other moderators.
-    $errStr = 'nokickuser';
+  elseif (fim_hasPermission($roomData, $userData, 'moderate', true)) { // You can't kick other moderators.
+    $errStr = 'noKickUser';
     $errDesc = 'The user specified may not be kicked.';
 
-    fim_sendMessage('/me fought the law and the law won.',$user,$roomData,'me');
+    fim_sendMessage('/me fought the law and the law won.', $user, $roomData, 'me');
   }
-  elseif (!fim_hasPermission($roomData,$user,'moderate',true)) { // You have to be a mod yourself.
-    $errStr = 'nopermission';
+  elseif (!fim_hasPermission($roomData, $user, 'moderate', true)) { // You have to be a mod yourself.
+    $errStr = 'noPermission';
     $errDesc = 'You are not allowed to moderate this room.';
   }
   else {
-    modLog('kick',"$userData[userId],$roomData[roomId]");
-
-    // Delete any preexisting entries - the replace prolly negates this, but I'm not sure; is one query better than two?
-//    $database->delete("{$sqlPrefix}kicks",array(
-//      'userId' => $userData['userId'],
-//      'roomId' => $roomData['roomId'],
-//    ));
+    $database->modLog('kickUser', "$userData[userId],$roomData[roomId]");
 
     $database->insert(array(
         'userId' => (int) $userData['userId'],
@@ -154,7 +138,7 @@ switch ($request['action']) {
       )
     );
 
-    fim_sendMessage('/me kicked ' . $userData['userName'],$user,$roomData,'me');
+    fim_sendMessage('/me kicked ' . $userData['userName'], $user, $roomData, 'me');
 
     $xmlData['moderate']['response']['success'] = true;
   }
@@ -164,27 +148,27 @@ switch ($request['action']) {
   $userData = $slaveDatabase->getUser($request['userId']);
   $roomData = $slaveDatabase->getRoom($request['roomId']);
 
-  if (!$userData['userId']) {
-    $errStr = 'baduser';
+  if ($userData === false) {
+    $errStr = 'badUser';
     $errDesc = 'The room specified is not valid.';
   }
-  elseif (!$roomData['roomId']) {
-    $errStr = 'badroom';
+  elseif ($roomData === false) {
+    $errStr = 'badRoom';
     $errDesc = 'The room specified is not valid.';
   }
-  elseif (!fim_hasPermission($roomData,$user,'moderate',true)) {
+  elseif (!fim_hasPermission($roomData, $user, 'moderate', true)) {
     $errStr = 'nopermission';
     $errDesc = 'You are not allowed to moderate this room.';
   }
   else {
-    modLog('unkick',"$userData[userId],$roomData[roomId]");
+    $database->modLog('unkickUser', "$userData[userId],$roomData[roomId]");
 
     $database->delete("{$sqlPrefix}kicks",array(
       'userId' => $userData['userId'],
       'roomId' => $roomData['roomId'],
     ));
 
-    fim_sendMessage('/me unkicked ' . $userData['userName'],$user,$roomData,'me');
+    fim_sendMessage('/me unkicked ' . $userData['userName'], $user, $roomData, 'me');
 
     $xmlData['moderate']['response']['success'] = true;
   }
@@ -192,60 +176,50 @@ switch ($request['action']) {
 
 
   case 'favRoom':
-  $roomId = (int) $_POST['roomId'];
+  $currentRooms = fim_arrayValidate(explode(',', $user['favRooms']), 'int', false); // Get an array of the user's current rooms.
 
-  $currentRooms = explode(',',$user['favRooms']); // Get an array of the user's current rooms.
+  if (!in_array($request['roomId'], $currentRooms)) { // Make sure the room is not already a favourite.
+    $currentRooms[] = $request['roomId'];
 
-  if (!in_array($roomId,$currentRooms)) { // Make sure the room is not already a favourite.
-    $currentRooms[] = $roomId;
-
-    foreach ($currentRooms as $room2) {
-      if ((int) $room2) {
-        $currentRooms2[] = (int) $room2;
-      }
-    } // Rebuild the array without the room ID.
-
-    $newRoomString = implode(',',$currentRooms2);
+    $newRoomString = implode(',', $currentRooms2);
 
     $database->update(array(
       'favRooms' => (string) $newRoomString,
-    ),"{$sqlPrefix}users",array(
+    ), "{$sqlPrefix}users", array(
       'userId' => (int) $user['userId'],
     ));
 
     $xmlData['moderate']['response']['success'] = true;
   }
   else {
-    $errStr = 'nothingtodo';
+    $errStr = 'nothingToDo';
 
     $xmlData['moderate']['response']['success'] = false;
   }
   break;
 
   case 'unfavRoom':
-  $roomId = (int) $_POST['roomId'];
+  $currentRooms = fim_arrayValidate(explode(',', $user['favRooms']), 'int', false); // Get an array of the user's current rooms.
 
-  $currentRooms = explode(',',$user['favRooms']); // Get an array of the user's current rooms.
-
-  if (in_array($roomId,$currentRooms)) { // Make sure the room is already a favourite.
+  if (in_array($request['roomId'], $currentRooms)) { // Make sure the room is already a favourite.
     foreach ($currentRooms as $room2) { // Run through each room.
-      if ($room2 != $roomId && (int) $room2) { // If the room is not invalid and is not the one we are trying to remove, add it to the new list.
+      if ($room2 != $request['roomId'] && (int) $room2) { // If the room is not invalid and is not the one we are trying to remove, add it to the new list.
         $currentRooms2[] = (int) $room2;
       }
     }
 
-    $newRoomString = implode(',',$currentRooms2);
+    $newRoomString = implode(',', $currentRooms2);
 
     $database->update(array(
       'favRooms' => (string) $newRoomString,
-    ),"{$sqlPrefix}users",array(
+    ), "{$sqlPrefix}users", array(
       'userId' => (int) $user['userId'],
     ));
 
     $xmlData['moderate']['response']['success'] = true;
   }
   else {
-    $errStr = 'nothingtodo';
+    $errStr = 'nothingToDo';
 
     $xmlData['moderate']['response']['success'] = false;
   }
@@ -254,33 +228,73 @@ switch ($request['action']) {
 
   case 'banUser':
   if ($user['adminDefs']['modUsers']) {
-    $userId = intval($_GET['userId']);
+    $userData = $database->getUser($request['userId']);
 
-    modLog('banuser',$userId);
+    if ($userData['userPrivs'] & 16) { // The user is not banned
+      $database->modLog('banUser', $request['userId']);
 
-    dbQuery("UPDATE {$sqlPrefix}users SET settings = IF(settings & 1 = false,settings + 1,settings) WHERE userId = $userId");
+      $database->update(array(
+        'userPrivs' => (int) $userData['userPrivs'] - 16,
+      ), "{$sqlPrefix}users", array(
+        'userId' => (int) $userData['userId'],
+      ));
 
-    echo container('User Banned','The user has been banned.');
+      $xmlData['moderate']['response']['success'] = true;
+    }
+    else {
+      $errStr = 'nothingToDo';
+
+      $xmlData['moderate']['response']['success'] = false;
+    }
+  }
+  else {
+    $errStr = 'noPermission';
+
+    $xmlData['moderate']['response']['success'] = false;
   }
   break;
 
   case 'unbanUser':
-  if ($user['adminDefs']['modImages']) {
-    $userId = intval($_GET['userId']);
+  if ($user['adminDefs']['modUsers']) {
+    $userData = $database->getUser($request['userId']);
 
-    modLog('unbanuser',$userId);
+    if ($userData['userPrivs'] ^ 16) { // The user is banned
+      $database->modLog('unbanUser', $request['userId']);
 
-    dbQuery("UPDATE {$sqlPrefix}users SET settings = IF(settings & 1,settings - 1,settings) WHERE userId = $userId");
+      $database->update(array(
+        'userPrivs' => (int) $userData['userPrivs'] + 16,
+      ), "{$sqlPrefix}users", array(
+        'userId' => (int) $userData['userId'],
+      ));
 
-    echo container('User Unbanned','The user has been unbanned.');
+      $xmlData['moderate']['response']['success'] = true;
+    }
+    else {
+      $errStr = 'nothingToDo';
+
+      $xmlData['moderate']['response']['success'] = false;
+    }
+  }
+  else {
+    $errStr = 'noPermission';
+
+    $xmlData['moderate']['response']['success'] = false;
   }
   break;
 
   case 'markMessageRead':
+  if ($database->markMessageRead($request['messageId'], $user['userId'])) {
+    $xmlData['moderate']['response']['success'] = true;
+  }
+  else {
+    $xmlData['moderate']['response']['success'] = false;
+  }
   break;
 
   default:
+  $errStr = 'noAction';
 
+  $xmlData['moderate']['response']['success'] = false;
   break;
 }
 
