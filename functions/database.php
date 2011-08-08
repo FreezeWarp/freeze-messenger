@@ -33,7 +33,31 @@ class database {
 
   private function setLanguage($language) {
     $this->language = $language;
+
+    switch ($this->language) {
+      case 'mysql':
+      case 'mysqli':
+      $this->languageSubset = 'sql';
+      $this->tableQuotes = '`';
+      $this->tableAliasQuotes = '`';
+      $this->columnQuotes = '`';
+      $this->columnAliasQuotes = '`';
+      $this->sortOrderAsc = 'ASC';
+      $this->sortOrderDesc = 'DESC';
+      break;
+
+      case 'postgresql':
+      $this->languageSubset = 'sql';
+      $this->tableQuotes = '"';
+      $this->tableAliasQuotes = '"';
+      $this->columnQuotes = '"';
+      $this->columnAliasQuotes = '"';
+      $this->sortOrderAsc = 'ASC';
+      $this->sortOrderDesc = 'DESC';
+      break;
+    }
   }
+
 
   /**
    * Calls a database function, such as mysql_connect or mysql_query, using lookup tables
@@ -54,7 +78,7 @@ class database {
     switch ($this->language) {
       case 'mysql':
       switch ($operation) {
-        case 'connect': return mysql_connect($args[1], $args[2], $args[3]); break;
+        case 'connect': return mysql_connect("$args[1]:$args[2]", $args[3], $args[4]); break;
         case 'selectdb': return mysql_select_db($args[1], $this->dbLink); break;
         case 'error': return mysql_error($this->dbLink); break;
         case 'close': return mysql_close($this->dbLink); break;
@@ -67,7 +91,7 @@ class database {
 
       case 'mysqli':
       switch ($operation) {
-        case 'connect': return mysqli_connect($args[1], $args[2], $args[3], $args[4]); break;
+        case 'connect': return mysqli_connect($args[1], $args[3], $args[4], $args[5], $args[2]); break;
         case 'selectdb': return mysqli_select_db($this->dbLink, $args[1]); break;
         case 'error': return mysqli_error($this->dbLink); break;
         case 'close': return mysqli_close($this->dbLink); break;
@@ -79,7 +103,15 @@ class database {
       break;
 
       case 'postgresql':
-
+      switch ($operation) {
+        case 'connect': return pg_connect("host=$args[1] port=$args[2] username=$args[3] password=$args[4] dbname=$args[5]"); break;
+        case 'error': return pg_last_error($this->dbLink); break;
+        case 'close': return pg_close($this->dbLink); break;
+        case 'escape': return pg_escape_string($this->dbLink, $args[1]); break;
+        case 'query': return pg_query($this->dbLink, $args[1]); break;
+        //case 'insertId': return mysqli_insert_id($this->dbLink); break;
+        default: throw new Exception('Unrecognized Operation: ' . $operation); break;
+      }
       break;
     }
   }
@@ -95,11 +127,11 @@ class database {
    * @return bool - True if a connection was successfully established, false otherwise.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
-  public function connect($host, $user, $password, $database, $driver) {
+  public function connect($host, $port, $user, $password, $database, $driver) {
     $this->setLanguage($driver);
 
 
-    if (!$link = $this->functionMap('connect', $host, $user, $password, $database)) { // Make the connection.
+    if (!$link = $this->functionMap('connect', $host, $port, $user, $password, $database)) { // Make the connection.
       $this->error = 'The connection was refused: ' . $this->functionMap('error');
 
       return false;
@@ -157,6 +189,10 @@ class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function select($columns, $conditionArray = false, $sort = false, $group = false, $limit = false) {
+    if ($group) {
+      throw new Exception('Deprecated: group');
+    }
+
     /* Define Variables */
     $finalQuery = array(
       'columns' => array(),
@@ -167,37 +203,6 @@ class database {
       'limit' => 0
     );
     $reverseAlias = array();
-
-
-   /* Driver Definitions
-    * These are primarily SQL-oriented; we'll need to figure out how to handle more complicated stuff later. */
-  $sortOrder = array(
-    'mysql' => array(
-      'asc' => 'ASC',
-      'desc' => 'DESC',
-    ),
-    'mysqli' => array(
-      'asc' => 'ASC',
-      'desc' => 'DESC',
-    ),
-    'postgresql' => array(
-      'asc' => 'ASC',
-      'desc' => 'DESC',
-    ),
-  );
-
-  $funtions = array(
-    'mysql' => array(
-      'time' => 'UNIX_TIMESTAMP(##COLUMN##)',
-      'group' => 'GROUP_CONCAT(##COLUMN## SEPARATOR ##SEPARATOR##)',
-      'sum' => 'SUM(##COLUMN##)',
-    ),
-    'mysqli' => array(
-      'time' => 'UNIX_TIMESTAMP(##COLUMN##)',
-      'group' => 'GROUP_CONCAT(##COLUMN## SEPARATOR ##SEPARATOR##)',
-      'sum' => 'SUM(##COLUMN##)',
-    ),
-  );
 
 
     /* Process Columns (Must be Array) */
@@ -226,24 +231,7 @@ class database {
 
                   if (is_array($colAlias)) { // Used for advance structures and function calls.
                     if (isset($colAlias['context'])) {
-                      switch($colAlias['context']) {
-                        case 'time': // This is used when we need to retrieve a time as a UNIX TIMESTAMP integer value. On some systems, we may wish to generate it on the fly via the "since the epoch" method.
-                        $colName = "UNIX_TIMESTAMP(`$tableName`.`$colName`)";
-                        break;
-
-                        // This is used for group by queries, though is not yet very well tested.
-                        case 'join':
-                        $colName = "GROUP_CONCAT(`$tableName`.`$colName` SEPARATOR '$colAlias[separator]')";
-                        break;
-                        case 'sum':
-                        $colName = "SUM(`$tableName`.`$colName`)";
-                        break;
-
-                        case 'silent': // This is used when we don't want to select the actual value. In practice, it should only [currently] be used with group by queries.
-                        $reverseAlias[$colAlias['name']] = "`$tableName`.`$colName`";
-                        continue 2; // Is this DEPRECATED?
-                        break;
-                      }
+                      throw new Exception('Deprecated context.');
                     }
 
                     $finalQuery['columns'][] = "$colName AS `$colAlias[name]`";
@@ -295,6 +283,7 @@ class database {
       throw new Exception('Invalid select array'); // Throw an exception.
     }
 
+
     /* Process Conditions (Must be Array) */
     if ($conditionArray !== false) {
       if (is_array($conditionArray)) {
@@ -314,13 +303,13 @@ class database {
             if (isset($reverseAlias[$sortCol])) {
               switch (strtolower($direction)) {
                 case 'asc':
-                $directionSym = 'ASC';
+                $directionSym = $this->sortOrderAsc;
                 break;
                 case 'desc':
-                $directionSym = 'DESC';
+                $directionSym = $this->sortOrderDesc;
                 break;
                 default:
-                $directionSym = 'ASC';
+                $directionSym = $this->sortOrderAsc;
                 break;
               }
               $finalQuery['sort'][] = $reverseAlias[$sortCol] . " $directionSym";
@@ -346,19 +335,19 @@ class database {
 
             switch (strtolower($sortPartParts[0])) {
               case 'asc':
-              $directionSym = 'ASC';
+              $directionSym = $this->sortOrderAsc;
               break;
               case 'desc':
-              $directionSym = 'DESC';
+              $directionSym = $this->sortOrderDesc;
               break;
               default:
-              $directionSym = 'ASC';
+              $directionSym = $this->sortOrderAsc;
               break;
             }
           }
           else { // Otherwise, we assume asscending
             $sortCol = $sortPart; // Set the name equal to the sort part.
-            $directionSym = 'ASC'; // Set the alias equal to the default, ascending.
+            $directionSym = $this->sortOrderAsc; // Set the alias equal to the default, ascending.
           }
 
           $finalQuery['sort'][] = $reverseAlias[$sortCol] . " $directionSym";
@@ -393,9 +382,7 @@ class database {
 FROM
   ' . implode(', ', $finalQuery['tables']) . ($finalQuery['where'] ? '
 WHERE
-  ' . $finalQuery['where'] : '') . ($finalQuery['group'] ? '
-GROUP BY
-  ' . $finalQuery['group'] : '') . ($finalQuery['sort'] ? '
+  ' . $finalQuery['where'] : '') . ($finalQuery['sort'] ? '
 ORDER BY
   ' . $finalQuery['sort'] : '') . ($finalQuery['limit'] ? '
 LIMIT
@@ -404,23 +391,6 @@ LIMIT
 
     /* And Run the Query */
     return $this->rawQuery($finalQueryText);
-  }
-
-
-  /* INCOMPLETE */
-  public function createTable($tableName, $columns) {
-
-  }
-
-
-  /* INCOMPLETE */
-  public function deleteTable($tableName) {
-
-  }
-
-  /* INCOMPLETE */
-  private function driverFunction($funtion, $params) {
-
   }
 
   /**
@@ -876,7 +846,6 @@ LIMIT
 
           case 'equation':
           $equation = preg_replace('/\$([a-zA-Z\_]+)/', '\\1', $data['value']);
-          $equation = str_replace('__TIME__', 'UNIX_TIMESTAMP(NOW())', $equation);
 
           $values[] = $equation;
           break;
@@ -913,6 +882,26 @@ LIMIT
     }
 
     return array($columns, $values, $context);
+  }
+
+  public function createTable($tableName, $storeType, $columns, $indexes) {
+
+  }
+
+  public function renameTable($oldName, $newName) {
+    $query = "RENAME TABLE `$oldName` TO `$newName`";
+
+    return $this->rawQuery($query);
+  }
+
+  public function deleteTable($tableName) {
+    $query = "DELETE TABLE `$tableName`";
+
+    return $this->rawQuery($query);
+  }
+
+  public function now() {
+    return time();
   }
 }
 

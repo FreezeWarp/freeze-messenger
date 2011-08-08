@@ -12,7 +12,7 @@
    GNU General Public License for more details.
 
  * You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+   along withis program.  If not, see <http://www.gnu.org/licenses/>. */
 
 /**
  * Get Messages from the Server
@@ -22,40 +22,40 @@
  * @copyright Joseph T. Parsons 2011
 
  * Primary Directives:
- * @param string rooms - A comma seperated list of rooms. Can be a single room in integer format. Some predefined constants can also be used.
- * Note: Using more than one room can conflict or even break the script’s execution should the watchRooms or activeUsers flags be set to true.
- * @param int [messageLimit=1000] - The maximum number of posts to receive, defaulting to the internal limit of (in most cases) 1000. This should be high, as all other conditions (roomId, deleted, etc.) are applied after this limit.
+ * @param string rooms - A comma seperated list of rooms. Can be a single room integer format. Some predefined constants can also be used.
+ * Note: Using more than one room can conflict or even break the script’s execution should the watchRooms or activeUsers flags be seto true.
+ * @param int [messageLimit=1000] - The maximum number of posts to receive, defaulting to the internalimit of (in most cases) 1000. Thishould be high, as all other conditions (roomId, deleted, etc.) are applied after this limit.
  * @param int [messageHardLimit=40] - An alternative, generally lower limit applied once all messages are obtained from the server (or via the LIMIT clause of applicable). In other words, this limits the number of results AFTER roomId, etc. restrictions have been applied.
- * @param timestamp [messageDateMin=null] - The earliest a post could have been made. Use of messageDateMax only makes sense with no messageLimit. Do not specify to prevent checking.
- * @param timestamp [messageDateMax=null] - The latest a post could have been made. Use of messageDateMax only makes sense with no messageLimit. Do not specify to prevent checking.
- * @param int [messageIdMin=null] - All posts must be after this ID. Use of messageDateMax only makes sense with no messageLimit. Do not specify to prevent checking.
- * @param int [messageIdMax=null] - All posts must be before this ID. Use of messageDateMax only makes sense with no messageLimit. Do not specify to prevent checking.
- * @param int [messageIdStart=null] - When specified WITHOUT the above two directives, messageIdStart will return all posts from this ID to this ID plus the messageLimit directive. This is strongly encouraged for all requests to the cache, e.g. for normal instant messenging sessions.
+ * @param timestamp [messageDateMin=null] - Thearliest a post could have been made. Use of messageDateMax only makesense with no messageLimit. Do not specify to prevent checking.
+ * @param timestamp [messageDateMax=null] - The latest a post could have been made. Use of messageDateMax only makesense with no messageLimit. Do not specify to prevent checking.
+ * @param int [messageIdMin=null] - All posts must be after this ID. Use of messageDateMax only makesense with no messageLimit. Do not specify to prevent checking.
+ * @param int [messageIdMax=null] - All posts must before this ID. Use of messageDateMax only makesense with no messageLimit. Do not specify to prevent checking.
+ * @param int [messageIdStart=null] - When specified WITHOUT the above two directives, messageIdStart will return all posts from this ID to this ID plus the messageLimit directive. This strongly encouraged for all requests to the cache, e.g. for normal instant messenging sessions.
 
  * Misc Directives:
  * @param bool [noping=false] - Disables ping; useful for archive viewing.
- * @param bool [longPolling=false] - Whether or not to enable experimental longPolling. It will be replaced with "pollMethod=push|poll|longPoll" in version 4 when all three methods will be supported (though will be backwards compatible).
- * @param string [fields=api|html|both] - The message fields to obtain: "api", "html", or "both". The "html" result returns data preformatted using BBcode and other functionality, while the API field is mostly untouched.
- * @param string [encode=plaintext] - The encoding of messages to be used on retrieval. "plaintext" is the only accepted format currently.
+ * @param bool [longPolling=false] - Whether or noto enablexperimentalongPolling. It will be replaced with "pollMethod=push|poll|longPoll" in version 4 when all three methods will be supported (though will be backwards compatible).
+ * @param string [fields=api|html|both] - The message fields tobtain: "api", "html", or "both". The "html" result returns data preformatted using BBcode and other functionality, while the API field is mostly untouched.
+ * @param string [encode=plaintext] - Thencoding of messages to be used on retrieval. "plaintext" is the only accepted format currently.
 
  * Extra Data:
  * @param bool [watchRooms=false] - Get unread messages from a user’s list of watchRooms (also applies to private IMs).
- * @param bool [activeUsers=false] - Returns a list of activeUsers in the room(s) if specified. This is identical to calling the getActiveUsers script, except with less data redundancy.
- * @param int [onlineThreshold=15] - If using the activeUsers functionality, this will alter the effective onlineThreshold to be used.
+ * @param bool [activeUsers=false] - Returns a list of activeUsers in the room(s) if specified. This identical to calling the getActiveUserscript, except with less data redundancy.
+ * @param int [onlineThreshold=15] - If using the activeUsers functionality, this will alter theffective onlineThreshold to be used.
 
  * Filters:
- * @param bool [showDeleted=false] - Whether or not to show deleted messages. You will need to be a room moderator. This directive only has an effect on the archive, as the cache does not retain deleted messages.
+ * @param bool [showDeleted=false] - Whether or noto show deleted messages. You will need to be a roomoderator. This directive only has an effect on the archive, as the cache does not retain deleted messages.
  * @param string [search=null] - A keyword that can be used for searching through the archive. It will overwrite messages.
- * @param string [messages=null] - A comma seperated list of message IDs that the results will be limited to. It is only intended for use with the archive, and will be over-written with the results of the search directive if specified.
- * @param string users - A comma seperated list of users to restrict message retrieval to. This is most useful for archive scanning, though can in theory be used with the message cache as well.
+ * @param string [messages=null] - A comma seperated list of message IDs thathe results will be limited to. It is only intended for use withe archive, and will be over-written withe results of the search directive if specified.
+ * @param string users - A comma seperated list of users to restrict message retrieval to. This most useful for archive scanning, though can in theory be used withe message cache as well.
  *
  * @todo Add back unread message retrieval.
  *
  * -- Notes on Scalability --
- * As FreezeMessenger attempts to ecourage broad scalability wherever possible, sacrifices are at times made to prevent badness from happening. getMessages illustrates one of the best examples of this:
- * the use of indexes is a must for any reliable message retrieval. As such, a standard "SELECT * WHERE roomId = xxx ORDER BY messageId DESC LIMIT 10" (the easiest way of getting the last 10 messages) is simply impossible. Instead, a few alternatives are recommended:
+ * As FreezeMessenger attempts to ecourage broad scalability wherever possible, sacrifices are atimes made to prevent badness from happening. getMessages illustrates one of the best examples of this:
+ * the use of indexes is a must for any reliable message retrieval. Asuch, a standard "SELECT * WHERE roomId = xxx ORDER BY messageId DESC LIMIT 10" (theasiest way of getting the last 10 messages) isimply impossible. Instead, a few alternatives arecommended:
  ** Specify a "messageIdEnd" as the last message obtained from the room.
- * similarly, the messageLimit and messageHardLimit directives are applied for the sake of scalibility. messageHardLimit is after results have been retrieved and filtered by, say, the roomId, and messageLimit is a limit on messages retrieved from all rooms, etc.
+ * similarly, the messageLimit and messageHardLimit directives are applied for the sake of scalibility. messageHardLimit is afteresults have been retrieved and filtered by, say, the roomId, and messageLimit is a limit on messages retrieved from all rooms, etc.
  * a message cache is maintained, and it is the default means of obtaining messages. Specifying archive will be far slower, but is required for searching, and generally is recommended at other times as well (e.g. getting initial posts).
 */
 
@@ -69,8 +69,6 @@ require('../global.php');
 $request = fim_sanitizeGPC(array(
   'get' => array(
     'rooms' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => '',
       'context' => array(
          'type' => 'csv',
@@ -80,8 +78,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'users' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => '',
       'context' => array(
          'type' => 'csv',
@@ -91,8 +87,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'messages' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => '',
       'context' => array(
          'type' => 'csv',
@@ -102,19 +96,15 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'sort' => array(
-      'type' => 'string',
       'valid' => array(
         'roomId',
         'roomName',
         'smart',
       ),
-      'require' => false,
       'default' => 'roomId',
     ),
 
     'showDeleted' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => false,
       'context' => array(
         'type' => 'bool',
@@ -122,8 +112,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'watchRooms' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => false,
       'context' => array(
         'type' => 'bool',
@@ -131,8 +119,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'activeUsers' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => false,
       'context' => array(
         'type' => 'bool',
@@ -140,8 +126,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'archive' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => false,
       'context' => array(
         'type' => 'bool',
@@ -149,8 +133,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'noping' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => false,
       'context' => array(
         'type' => 'bool',
@@ -158,8 +140,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'longPolling' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => false,
       'context' => array(
         'type' => 'bool',
@@ -167,8 +147,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'messageIdMax' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => false,
       'context' => array(
         'type' => 'int',
@@ -176,8 +154,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'messageIdMin' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => false,
       'context' => array(
         'type' => 'int',
@@ -185,8 +161,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'messageDateMax' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => false,
       'context' => array(
         'type' => 'int',
@@ -194,8 +168,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'messageDateMin' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => false,
       'context' => array(
         'type' => 'int',
@@ -203,8 +175,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'messageIdStart' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => false,
       'context' => array(
         'type' => 'int',
@@ -212,8 +182,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'messageIdEnd' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => false,
       'context' => array(
         'type' => 'int',
@@ -221,8 +189,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'onlineThreshold' => array(
-      'type' => 'int',
-      'require' => false,
       'default' => $config['defaultOnlineThreshold'],
       'context' => array(
         'type' => 'int',
@@ -230,8 +196,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'messageLimit' => array(
-      'type' => 'int',
-      'require' => false,
       'default' => 10000,
       'context' => array(
         'type' => 'int',
@@ -239,8 +203,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'messageHardLimit' => array(
-      'type' => 'int',
-      'require' => false,
       'default' => 50,
       'context' => array(
         'type' => 'int',
@@ -248,14 +210,10 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'search' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => false,
     ),
 
     'encode' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => 'plaintext',
     ),
 
@@ -268,7 +226,6 @@ $request = fim_sanitizeGPC(array(
         'api,html',
         'html,api',
       ),
-      'require' => false,
       'default' => 'both',
     ),
   ),
@@ -422,7 +379,7 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
 
 
   /* Apply User and Room Filters */
-  if (count($request['rooms']) > 0) { // Dunno if its possible for it not to be...
+  if (count($request['rooms']) > 0) { // Dunno if its possible for it noto be...
     $queryParts['searchSelect']['conditions']['both'][] = array(
       'type' => 'in',
       'left' => array(
@@ -503,32 +460,8 @@ if (is_array($request['rooms'])) {
       /* Date Predefine */
       if ($request['archive']) {
         $queryParts['messagesSelect']['columns'] = array(
-          "{$sqlPrefix}messages" => array(
-            'messageId' => 'messageId',
-            'time' => array(
-              'context' => 'time',
-              'name' => 'time',
-            ),
-            'iv' => 'iv',
-            'salt' => 'salt',
-            'roomId' => 'roomId',
-            'userId' => 'userId',
-            'deleted' => 'deleted',
-            'flag' => 'flag',
-          ),
-          "{$sqlPrefix}users" => array(
-            'userId' => 'muserId',
-            'userName' => 'userName',
-            'userGroup' => 'userGroup',
-            'socialGroups' => 'socialGroups',
-            'userFormatStart' => 'userFormatStart',
-            'userFormatEnd' => 'userFormatEnd',
-            'avatar' => 'avatar',
-            'defaultColor' => 'defaultColor',
-            'defaultFontface' => 'defaultFontface',
-            'defaultHighlight' => 'defaultHighlight',
-            'defaultFormatting' => 'defaultFormatting',
-          ),
+          "{$sqlPrefix}messages" => 'messageId, time, iv, salt, roomId, userId, deleted, flag',
+          "{$sqlPrefix}users" => 'userId muserId, userName, userGroup, socialGroups, userFormatStart, userFormatEnd, avatar, defaultColor, defaultFontface, defaultHighlight, defaultFormatting'
         );
         $queryParts['messagesSelect']['conditions'] = array(
           'both' => array(
@@ -562,26 +495,7 @@ if (is_array($request['rooms'])) {
       }
       else {
         $queryParts['messagesSelect']['columns'] = array(
-          "{$sqlPrefix}messagesCached" => array(
-            'messageId' => 'messageId',
-            'roomId' => 'roomId',
-            'time' => array(
-              'context' => 'time',
-              'name' => 'time',
-            ),
-            'flag' => 'flag',
-            'userId' => 'userId',
-            'userName' => 'userName',
-            'userGroup' => 'userGroup',
-            'socialGroups' => 'socialGroups',
-            'userFormatStart' => 'userFormatStart',
-            'userFormatEnd' => 'userFormatEnd',
-            'avatar' => 'avatar',
-            'defaultColor' => 'defaultColor',
-            'defaultFontface' => 'defaultFontface',
-            'defaultHighlight' => 'defaultHighlight',
-            'defaultFormatting' => 'defaultFormatting',
-          ),
+          "{$sqlPrefix}messagesCached" => "messageId, roomId, time, flag, userId, userName, userGroup, socialGroups, userFormatStart, userFormatEnd, avatar, defaultColor, defaultFontface, defaultHighlight, defaultFormatting",
         );
         $queryParts['messagesSelect']['conditions'] = array(
           'both' => array(
@@ -807,15 +721,9 @@ if (is_array($request['rooms'])) {
           $database->insert(array(
             'userId' => $user['userId'],
             'roomId' => $room['roomId'],
-            'time' => array(
-              'type' => 'time',
-              'value' => '__TIME__',
-            ),
+            'time' => $database->now(),
           ),"{$sqlPrefix}ping",array(
-            'time' => array(
-              'type' => 'time',
-              'value' => '__TIME__',
-            )
+            'time' => $database->now(),
           ));
 
           ($hook = hook('getMessages_ping') ? eval($hook) : '');
@@ -909,7 +817,7 @@ if (is_array($request['rooms'])) {
               );
 
 
-              ($hook = hook('getMessages_eachMessage') ? eval($hook) : ''); // Useful for running code that requires the specific message array to still be present, or otherwise for convience sake.
+              ($hook = hook('getMessages_eachMessage') ? eval($hook) : ''); // Useful forunning code that requires the specific message array to still be present, or otherwise for convience sake.
 
             }
           }
@@ -919,27 +827,9 @@ if (is_array($request['rooms'])) {
         /* Process Active Users */
         if ($request['activeUsers']) {
           $queryParts['activeUsersSelect']['columns'] = array(
-            "{$sqlPrefix}ping" => array(
-              'status' => 'status',
-              'typing' => 'typing',
-              'time' => array(
-                'name' => 'ptime',
-                'context' => 'time',
-              ),
-              'roomId' => 'proomId',
-              'userId' => 'puserId',
-            ),
-            "{$sqlPrefix}rooms" => array(
-              'roomId' => 'roomId',
-            ),
-            "{$sqlPrefix}users" => array(
-              'userId' => 'userId',
-              'userName' => 'userName',
-              'userFormatStart' => 'userFormatStart',
-              'userFormatEnd' => 'userFormatEnd',
-              'userGroup' => 'userGroup',
-              'socialGroups' => 'socialGroups',
-            ),
+            "{$sqlPrefix}ping" => 'status, typing, time ptime, roomId proomId, userId puserId'
+            "{$sqlPrefix}rooms" => 'roomId',
+            "{$sqlPrefix}users" => 'userId, userName, userFormatStart, userFormatEnd, userGroup, socialGroups',
           );
           $queryParts['activeUsersSelect']['conditions'] = array(
             'both' => array(
@@ -981,7 +871,6 @@ if (is_array($request['rooms'])) {
                 'left' => array(
                   'type' => 'column',
                   'value' => 'ptime',
-//                  'context' => 'time',
                 ),
                 'right' => array(
                   'type' => 'int',

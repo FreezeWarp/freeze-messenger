@@ -228,14 +228,14 @@ switch ($_REQUEST['phase']) {
 
   /* Part 1 : Connect to the Database, Create a New Database If Needed */
 
-  $mysqli = new mysqli($host,$userName,$password);
+  $database = new mysqli($host, $userName, $password);
 
   if (mysqli_connect_error()) {
     die('Connection Error: ' . mysqli_connect_error());
   }
   else {
     // Get the MySQL version -- We will also check this when we create the tables.
-    $version = $mysqli->query('SELECT VERSION()',MYSQLI_USE_RESULT) or die('Could not obtain MySQL version.');
+    $version = $database->query('SELECT VERSION()', MYSQLI_USE_RESULT) or die('Could not obtain MySQL version.');
     $versionRow = $version->fetch_row();
     $version->free_result();
     $version = $versionRow[0];
@@ -244,7 +244,7 @@ switch ($_REQUEST['phase']) {
 
     // Get Only The Good Parts of the Version (we could also use a REGEX, but meh)
     for ($i = 0; $i < strlen($version); $i++) {
-      if (in_array($version[$i],array(0,1,2,3,4,5,6,7,8,9)) || $version[$i] == '.') {
+      if (in_array($version[$i], array(0,1,2,3,4,5,6,7,8,9)) || $version[$i] == '.') {
         $strippedVersion .= $version[$i];
       }
       else {
@@ -261,17 +261,17 @@ switch ($_REQUEST['phase']) {
     }
 
 
-    $databaseSafe = $mysqli->real_escape_string($database); // We will need to referrence the database safely in a number of queries.
+    $databaseSafe = $database->real_escape_string($database); // We will need to referrence the database safely in a number of queries.
 
 
     // I Think This Could be Rewritten with Better Flow, but I Dunno How
-    if ($mysqli->select_db($database)) { // Select the database (see if it exists, etc.)
+    if ($database->select_db($database)) { // Select the database (see if it exists, etc.)
       if ($createdb) { // We're supposed to create it, but it already exists, so... (we could just ignore this fact and move on, but if the user assumes that no __table__ data would be overwritten by creating a new database, we could give him or her a bad surprise)
         die('The MySQL database already exists, and can not be created.');
       }
     }
     elseif ($createdb) { // We're supposed to create it, let's try.
-      if (!$mysqli->query("CREATE DATABASE {$databaseSafe}")) {
+      if (!$database->query("CREATE DATABASE {$databaseSafe}")) {
         die('The database could not be created. We are not sure why.');
       }
     }
@@ -280,10 +280,10 @@ switch ($_REQUEST['phase']) {
     }
 
     // Set Proper Encoding
-    $mysqli->query("SET NAMES utf8") or die('The database was unable to set the UTF-8 encoding.');
+    $database->query("SET NAMES utf8") or die('The database was unable to set the UTF-8 encoding.');
 
     // Get Pre-Existing Tables So We Don't Overwrite Any of Them Later
-    $showTables = $mysqli->query("SHOW TABLES FROM $databaseSafe", MYSQLI_USE_RESULT);
+    $showTables = $database->query("SHOW TABLES FROM $databaseSafe", MYSQLI_USE_RESULT);
 
     while ($table = $showTables->fetch_row()) {
       $mysqlTables[] = $table[0];
@@ -312,6 +312,14 @@ switch ($_REQUEST['phase']) {
     $xmlData4 = $xmlData4->getAsArray(); // Get the XML data as an array
     $xmlData4 = $xmlData4['languagePack']; // Get the contents of the root node
 
+    $xmlData5 = new Xml2Array(file_get_contents('webLiteTemplate.xml')); // Get the XML Data from the webProTemplate.xml file, and feed it to the Xml2Array class
+    $xmlData5 = $xmlData5->getAsArray(); // Get the XML data as an array
+    $xmlData5 = $xmlData5['interface']; // Get the contents of the root node
+
+    $xmlData6 = new Xml2Array(file_get_contents('webLiteLangEn.xml')); // Get the XML Data from the webProLangEn.xml file, and feed it to the Xml2Array class
+    $xmlData6 = $xmlData6->getAsArray(); // Get the XML data as an array
+    $xmlData6 = $xmlData6['languagePack']; // Get the contents of the root node
+
     if ((float) $xmlData['@version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
       die('The XML Schema Data Source if For An Improper Version');
     }
@@ -322,6 +330,12 @@ switch ($_REQUEST['phase']) {
       die('The XML Interface Data Source if For An Improper Version');
     }
     elseif ((float) $xmlData4['@version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
+      die('The XML Language Data Source if For An Improper Version');
+    }
+    elseif ((float) $xmlData5['@version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
+      die('The XML Interface Data Source if For An Improper Version');
+    }
+    elseif ((float) $xmlData6['@version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
       die('The XML Language Data Source if For An Improper Version');
     }
     elseif (!$xmlData4['@languageName']) {
@@ -387,7 +401,7 @@ switch ($_REQUEST['phase']) {
               $restrictValues = array();
 
               foreach ((array) explode(',',$column['@restrict']) AS $value) {
-                $restrictValues[] = '"' . $mysqli->real_escape_string($value) . '"';
+                $restrictValues[] = '"' . $database->real_escape_string($value) . '"';
               }
 
               $typePiece = 'ENUM(' . implode(',',$restrictValues) . ')';
@@ -446,7 +460,7 @@ switch ($_REQUEST['phase']) {
               $column['@default'] = 'CURRENT_TIMESTAMP';
             }
             else {
-              $column['@default'] = '"' . $mysqli->real_escape_string($column['@default']) . '"';
+              $column['@default'] = '"' . $database->real_escape_string($column['@default']) . '"';
             }
 
             $typePiece .= " DEFAULT {$column['@default']}";
@@ -457,13 +471,13 @@ switch ($_REQUEST['phase']) {
               $column['@update'] = 'CURRENT_TIMESTAMP';
             }
             else {
-              $column['@update'] = '"' . $mysqli->real_escape_string($column['@update']) . '"';
+              $column['@update'] = '"' . $database->real_escape_string($column['@update']) . '"';
             }
 
             $typePiece .= " ON UPDATE {$column['@update']}";
           }
 
-          $columns[] = "`{$column['@name']}` {$typePiece} NOT NULL" . (isset($column['@comment']) ? ' COMMENT "' . $mysqli->real_escape_string($column['@comment']) . '"' : '');
+          $columns[] = "`{$column['@name']}` {$typePiece} NOT NULL" . (isset($column['@comment']) ? ' COMMENT "' . $database->real_escape_string($column['@comment']) . '"' : '');
         }
 
 
@@ -503,22 +517,24 @@ switch ($_REQUEST['phase']) {
         $queries[$prefix . $table['@name']] = 'CREATE TABLE IF NOT EXISTS `' . $prefix . $table['@name'] . '` (
   ' . implode(",\n  ",$columns) . ',
   ' . implode(",\n  ",$keys) . '
-) ENGINE="' . $engine . '" COMMENT="' . $mysqli->real_escape_string($table['@comment']) . '" DEFAULT CHARSET="utf8";';
+) ENGINE="' . $engine . '" COMMENT="' . $database->real_escape_string($table['@comment']) . '" DEFAULT CHARSET="utf8";';
       }
 
       foreach ($queries AS $tableName => $query) {
-        if (in_array($tableName,(array) $mysqlTables)) { // We are overwriting, so rename the old table to a backup. Someone else can clean it up later, but its for the best.
+        if (in_array($tableName, (array) $mysqlTables)) { // We are overwriting, so rename the old table to a backup. Someone else can clean it up later, but its for the best.
           $newTable = $tableName . '~' . time();
 
-          if (!$mysqli->query("RENAME TABLE `$tableName` TO `$newTable`")) {
+          if (!$database->query("")) {
             die("Could Not Rename Table '$tableName'");
           }
         }
 
-        if (!trim($query)) continue;
+        if (!trim($query)) {
+          continue;
+        }
 
-        if (!$mysqli->query(trim($query))) {
-          die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $mysqli->error);
+        if (!$database->query(trim($query))) {
+          die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $database->error);
         }
       }
 
@@ -535,8 +551,8 @@ switch ($_REQUEST['phase']) {
 
 
         foreach ($table['column'] AS $column) {
-          $columns[] = '`' . $mysqli->real_escape_string($column['@name']) . '`';
-          $values[] = '"' . $mysqli->real_escape_string($column['@value']) . '"';
+          $columns[] = '`' . $database->real_escape_string($column['@name']) . '`';
+          $values[] = '"' . $database->real_escape_string($column['@value']) . '"';
         }
 
         $queries[] = "INSERT INTO `{$prefix}{$table['@name']}` (" . implode(', ',$columns) . ") VALUES
@@ -548,8 +564,8 @@ switch ($_REQUEST['phase']) {
           continue;
         }
 
-        if (!$mysqli->query(trim($query))) {
-          die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $mysqli->error);
+        if (!$database->query(trim($query))) {
+          die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $database->error);
         }
       }
 
@@ -558,20 +574,22 @@ switch ($_REQUEST['phase']) {
 
       /* Part 4: Insert WebPro Templates */
 
-      $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
+      foreach (array($xmlData3, $xmlData5) AS $templateData) {
+        $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
 
-      foreach ($xmlData3['templates'][0]['template'] AS $template) { // Run through each template from the XML
-        $queries[] = "INSERT INTO `{$prefix}templates` (`templateName`,`data`,`vars`) VALUES
-  ('" . $mysqli->real_escape_string($template['@name']) . "','" . $mysqli->real_escape_string($template['#text']) . "','" . $mysqli->real_escape_string($template['@vars']) . "')";
-      }
-
-      foreach ($queries AS $query) {
-        if (!trim($query)) {
-          continue;
+        foreach ($templateData['templates'][0]['template'] AS $template) { // Run through each template from the XML
+          $queries[] = "INSERT INTO `{$prefix}templates` (`templateName`,`data`,`vars`) VALUES
+    ('" . $database->real_escape_string($template['@name']) . "','" . $database->real_escape_string($template['#text']) . "','" . $database->real_escape_string($template['@vars']) . "')";
         }
 
-        if (!$mysqli->query(trim($query))) {
-          die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $mysqli->error);
+        foreach ($queries AS $query) {
+          if (!trim($query)) {
+            continue;
+          }
+
+          if (!$database->query(trim($query))) {
+            die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $database->error);
+          }
         }
       }
 
@@ -581,30 +599,33 @@ switch ($_REQUEST['phase']) {
 
       /* Part 5: Insert WebPro Phrases */
 
-      $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
+      foreach (array($xmlData4, $xmlData6) AS $phraseData) {
+        $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
 
-      $queries[] = "INSERT INTO `{$prefix}languages` (`languageCode`, `languageName`) VALUES ('" . $mysqli->real_escape_string($xmlData4['@languageCode']) . "','" . $mysqli->real_escape_string($xmlData4['@languageName']) . "')";
+        $queries[] = "INSERT INTO `{$prefix}languages` (`languageCode`, `languageName`) VALUES ('" . $database->real_escape_string($phraseData['@languageCode']) . "','" . $database->real_escape_string($phraseData['@languageName']) . "')";
 
-      foreach ($xmlData4['phrases'][0]['phrase'] AS $phrase) { // Run through each template from the XML
-        $queries[] = "INSERT INTO `{$prefix}phrases` (`phraseName`,`languageCode`,`text`) VALUES
-  ('" . $mysqli->real_escape_string($phrase['@name']) . "','" . $mysqli->real_escape_string($xmlData4['@languageCode']) . "','" . $mysqli->real_escape_string($phrase['#text']) . "')";
-      }
-
-      foreach ($queries AS $query) {
-        if (!trim($query)) {
-          continue;
+        foreach ($phraseData['phrases'][0]['phrase'] AS $phrase) { // Run through each template from the XML
+          $queries[] = "INSERT INTO `{$prefix}phrases` (`phraseName`,`languageCode`,`text`) VALUES
+    ('" . $database->real_escape_string($phrase['@name']) . "','" . $database->real_escape_string($phraseData['@languageCode']) . "','" . $database->real_escape_string($phrase['#text']) . "')";
         }
 
-        if (!$mysqli->query(trim($query))) {
-          die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $mysqli->error);
+        foreach ($queries AS $query) {
+          if (!trim($query)) {
+            continue;
+          }
+
+          if (!$database->query(trim($query))) {
+            die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $database->error);
+          }
         }
       }
     }
 
 
+
     echo 'success';
 
-    $mysqli->close();
+    $database->close();
   }
 
   break;
@@ -671,7 +692,7 @@ $dbConnect[\'integration\'][\'database\'] = \'' . $database . '\';',
     '$loginConfig[\'method\'] = \'' . $forum . '\';',
     '$loginConfig[\'url\'] = \'' . $forumUrl . '\';',
     '$loginConfig[\'superUsers\'] = array(' . ($forum == 'phpbb' ? 2 : 1) . ');',
-    '$installUrl = \'' . str_replace(array('install/index.php','install/'),array('',''),$_SERVER['HTTP_REFERER']) . '\';',
+    '$installUrl = \'' . str_replace(array('install/index.php','install/'), array('',''), $_SERVER['HTTP_REFERER']) . '\';',
     '$salts = array(
   101 => \'' . $encryptSalt . '\',
 );',
@@ -683,60 +704,10 @@ $dbConnect[\'integration\'][\'database\'] = \'' . $database . '\';',
 
 
 
-  $baseNew = str_replace($find,$replace,$base);
+  $baseNew = str_replace($find, $replace, $base);
 
-  if (file_put_contents('../config.php',$baseNew)) {
+  if (file_put_contents('../config.php', $baseNew)) {
     echo 'success';
-  }
-  break;
-
-  case 'dev':
-  $mysqli = new mysqli('localhost','a','a','vb414');
-
-  $prefix = 'a_';
-
-  $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
-
-  $xmlData3 = new Xml2Array(file_get_contents('webProTemplate.xml')); // Get the XML Data from the webProTemplate.xml file, and feed it to the Xml2Array class
-  $xmlData3 = $xmlData3->getAsArray(); // Get the XML data as an array
-  $xmlData3 = $xmlData3['interface']; // Get the contents of the root node
-
-  $xmlData4 = new Xml2Array(file_get_contents('webProLangEn.xml')); // Get the XML Data from the webProLangEn.xml file, and feed it to the Xml2Array class
-  $xmlData4 = $xmlData4->getAsArray(); // Get the XML data as an array
-  $xmlData4 = $xmlData4['languagePack']; // Get the contents of the root node
-
-
-  foreach (array("{$prefix}phrases","{$prefix}templates") AS $tableName) {
-    $newTable = $tableName . '~' . time();
-
-    $queries[] = "RENAME TABLE `$tableName` TO `$newTable`";
-  }
-
-
-  /* Part 4: Insert WebPro Templates */
-
-  foreach ($xmlData3['templates'][0]['template'] AS $template) { // Run through each template from the XML
-    $queries[] = "INSERT INTO `{$prefix}templates` (`templateName`,`data`,`vars`) VALUES
-  ('" . $mysqli->real_escape_string($template['@name']) . "','" . $mysqli->real_escape_string($template['#text']) . "','" . $mysqli->real_escape_string($template['@vars']) . "')";
-  }
-
-
-  /* Part 5: Insert WebPro Phrases */
-
-
-  foreach ($xmlData4['phrases'][0]['phrase'] AS $phrase) { // Run through each template from the XML
-    $queries[] = "INSERT INTO `{$prefix}phrases` (`phraseName`,`languageCode`,`text`) VALUES
-  ('" . $mysqli->real_escape_string($phrase['@name']) . "','" . $mysqli->real_escape_string($xmlData4['@languageCode']) . "','" . $mysqli->real_escape_string($phrase['#text']) . "')";
-  }
-
-  foreach ($queries AS $query) {
-    if (!trim($query)) {
-      continue;
-    }
-
-    if (!$mysqli->query(trim($query))) {
-      die('The following query was unable to run:<br />' . $query . '<br /><br />The error given was:<br />' . $mysqli->error);
-    }
   }
   break;
 }

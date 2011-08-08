@@ -12,7 +12,7 @@
    GNU General Public License for more details.
 
  * You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+   along withis program.  If not, see <http://www.gnu.org/licenses/>. */
 
 
 /**
@@ -21,9 +21,9 @@
  * Directives Used Specifically for Obtaining a SessionHash via This Script:
  * @param string userName - The username of the user.
  * @param string password - The password of the user.
- * @param string passwordEncrypt - The encryption used for obtaining a login. "plaintext" and "md5" are both accepted, but the latter can only be used with vBulletin v3. Other forms of encryption will be possible soon.
- * @param string apiVersion - The version of the API being used to login. It can be comma-seperated if multiple versions will work with the client. 3.0.0 is the only currently accepted version.
- * @param bool apiLogin - Pass this when you are trying to obtain a sessionhash from this script. Otherwise, nothing will output.
+ * @param string passwordEncrypt - Thencryption used for obtaining a login. "plaintext" and "md5" are both accepted, buthe latter can only be used with vBulletin v3. Other forms of encryption will be possible soon.
+ * @param string apiVersion - The version of the API being used to login. It can be comma-seperated if multiple versions will work withe client. 3.0.0 is the only currently accepted version.
+ * @param bool apiLogin - Pass this when you are trying tobtain a sessionhash from thiscript. Otherwise, nothing will output.
 
  * Standard Directives Required for __ALL__ API Calls:
  * @param string fim3_userId
@@ -68,7 +68,7 @@ $loginDefs['syncMethods'] = array(
 ///* Obtain Login Data From Different Locations *///
 
 if (isset($_POST['userName'],$_POST['password']) || isset($_POST['userId'],$_POST['password'])) { // API.
-  $apiVersion = $_POST['apiVersion']; // Get the version of the software the client intended for.
+  $apiVersion = $_POST['apiVersion']; // Gethe version of the software the client intended for.
 
   if (!$apiVersion) {
     define('LOGIN_FLAG','API_VERSION_STRING');
@@ -88,7 +88,7 @@ if (isset($_POST['userName'],$_POST['password']) || isset($_POST['userId'],$_POS
         $apiVersionSubs[2] = 0;
       }
 
-      if ($apiVersionSubs[0] == 3 && $apiVersionSubs[1] == 0 && $apiVersionSubs[2] == 0) { // This is the same as version 3.0.0.
+      if ($apiVersionSubs[0] == 3 && $apiVersionSubs[1] == 0 && $apiVersionSubs[2] == 0) { // This the same as version 3.0.0.
         $goodVersion = true;
       }
     }
@@ -308,17 +308,7 @@ $queryParts['userSelect']['columns'] = array(
   "{$sqlPrefix}users" => 'userId, userName, userGroup, allGroups, avatar, profile, socialGroups, userFormatStart, userFormatEnd, password, joinDate, birthDate, lastSync, defaultRoom, interface, favRooms, watchRooms, ignoreList, status, defaultHighlight, defaultColor, defaultFontface, defaultFormatting, userPrivs, adminPrivs, lang',
 );
 $queryParts['userSelectFromSessionHash']['columns'] = array(
-  "{$sqlPrefix}sessions" => array(
-    'anonId' => 'anonId',
-    'magicHash' => 'magicHash',
-    'userId' => 'suserId',
-    'time' => array(
-      'name' => 'sessionTime',
-      'context' => 'time',
-    ),
-    'ip' => 'sessionIp',
-    'browser' => 'sessionBrowser',
-  ),
+  "{$sqlPrefix}sessions" => 'anonId, magicHash, userId suserId, time sessionTime, ip sessionIp, browser sessionBrowser',
 );
 $queryParts['userSelectFromUserName']['conditions'] = array(
   'both' => array(
@@ -421,13 +411,13 @@ if (strlen($sessionHash) > 0) {
   $user = $user->getAsArray(false);
 
   if ($user) {
-    if ((int) $user['userId'] !== (int) $userIdComp) { // The userid sent has to be the same one in the DB. In theory we could just not require a userId be specified, but there are benefits to this alternative. For instance, this eliminates some forms of injection-based session fixation.
+    if ((int) $user['userId'] !== (int) $userIdComp) { // The userid sent has to be the same one in the DB. In theory we could just not require a userId be specified, buthere are benefits to this alternative. For instance, this eliminatesome forms of injection-based session fixation.
 
       define('LOGIN_FLAG','INVALID_SESSION');
 
       $valid = false;
     }
-    elseif ($user['sessionBrowser'] !== $_SERVER['HTTP_USER_AGENT']) { // Require the UA match that of the the one used to establish the session. Smart clients are encouraged to specify there own with their client name and vers
+    elseif ($user['sessionBrowser'] !== $_SERVER['HTTP_USER_AGENT']) { // Require the UA match that of the one used to establish the session. Smart clients arencouraged to specify there own witheir client name and vers
       define('LOGIN_FLAG','INVALID_SESSION');
 
       $valid = false;
@@ -446,7 +436,7 @@ if (strlen($sessionHash) > 0) {
       $noSync = true;
       $valid = true;
 
-      if ($user['sessionTime'] < time() - 300) { // If five minutes have passed since the session has been generated, update ift.
+      if ($user['sessionTime'] < time() - 300) { // Ifive minutes have passed since the session has been generated, update ift.
         $session = 'update';
       }
     }
@@ -540,7 +530,7 @@ if ($valid) { // If the user is valid, process their preferrences.
 
   }
   elseif (in_array($loginConfig['method'], $loginDefs['syncMethods'])) {
-    $user2 = $user; // Create a copy of user, which will later be unset.
+    $user2 = $user; // Create a copy of user, which willater be unset.
     unset($user); // Unset user, so we don't have to worry about collision.
 
 
@@ -579,11 +569,7 @@ if ($valid) { // If the user is valid, process their preferrences.
 
     $queryParts['socialGroupsSelect']['columns'] = array(
       $sqlMemberGroupTable => array(
-        $sqlMemberGroupTableCols['groupId'] => array(
-          'context' => 'join',
-          'name' => 'groups',
-          'separator' => ',',
-        ),
+        $sqlMemberGroupTableCols['groupId'] => 'groupId',
         $sqlMemberGroupTableCols['userId'] => 'userId',
         $sqlMemberGroupTableCols['type'] => 'groupType',
       ),
@@ -730,10 +716,7 @@ if ($valid) { // If the user is valid, process their preferrences.
         'profile' => ($user2['profile']),
         'socialGroups' => ($socialGroups['groups']),
         'userPrivs' => (int) $priviledges,
-        'lastSync' => array(
-          'type' => 'time',
-          'value' => '__TIME__',
-        ),
+        'lastSync' => $database->now(),
       ),"{$sqlPrefix}users");
 
 
@@ -755,7 +738,8 @@ if ($valid) { // If the user is valid, process their preferrences.
         $queryParts['socialGroupsSelect']['columns'],
         $queryParts['socialGroupsSelect']['conditions']
       );
-      $socialGroups = $socialGroups->getAsArray(false);
+      $socialGroups = $socialGroups->getAsArray('groupId');
+      $socialGroupIds = array_keys($socialGroups);
 
       $database->update(array(
         'userName' => $user2['userName'],
@@ -765,11 +749,8 @@ if ($valid) { // If the user is valid, process their preferrences.
         'userFormatStart' => $user2['userFormatStart'],
         'avatar' => $user2['avatar'],
         'profile' => $user2['profile'],
-        'socialGroups' => $socialGroups['groups'],
-        'lastSync' => array(
-          'type' => 'time',
-          'value' => '__TIME__',
-        ),
+        'socialGroups' => implode(',', $socialGroupsIds),
+        'lastSync' => $database->now(),
       ),
       "{$sqlPrefix}users",
       array(
@@ -777,7 +758,7 @@ if ($valid) { // If the user is valid, process their preferrences.
       ));
     }
 
-    elseif ($userPrefs['lastSync'] <= (time() - (isset($config['userSyncThreshold']) ? $config['userSyncThreshold'] : 0))) { // This updates various caches every so often. In general, it is a rather slow process, and as such does tend to take a rather long time (that is, compared to normal - it won't exceed 500miliseconds, really).
+    elseif ($userPrefs['lastSync'] <= (time() - (isset($config['userSyncThreshold']) ? $config['userSyncThreshold'] : 0))) { // This updates various caches every soften. In general, it is a rather slow process, and asuch does tend to take a rather long time (that is, compared to normal - it won't exceed 500miliseconds, really).
 
       /* Favourite Room Cleanup
       * Remove all favourite groups a user is no longer a part of. */
@@ -831,7 +812,7 @@ if ($valid) { // If the user is valid, process their preferrences.
                 $currentRooms = fim_arrayValidate(explode(',',$userPrefs['favRooms']),'int',false);
 
                 foreach ($currentRooms as $room2) {
-                  if ($room2 != $room['roomId']) { // Rebuild the array without the room ID.
+                  if ($room2 != $room['roomId']) { // Rebuild the array withouthe room ID.
                     $currentRooms2[] = (int) $room2;
                   }
                 }
@@ -860,7 +841,8 @@ if ($valid) { // If the user is valid, process their preferrences.
         $queryParts['socialGroupsSelect']['columns'],
         $queryParts['socialGroupsSelect']['conditions']
       );
-      $socialGroups = $socialGroups->getAsArray(false);
+      $socialGroups = $socialGroups->getAsArray('groupId');
+      $socialGroupIds = array_keys($socialGroups);
 
       $database->update(array(
         'userName' => $user2['userName'],
@@ -870,11 +852,8 @@ if ($valid) { // If the user is valid, process their preferrences.
         'userFormatStart' => $user2['userFormatStart'],
         'avatar' => $user2['avatar'],
         'profile' => $user2['profile'],
-        'socialGroups' => $socialGroups['groups'],
-        'lastSync' => array(
-          'type' => 'time',
-          'value' => '__TIME__',
-        ),
+        'socialGroups' => implode(',', $socialGroupsIds),
+        'lastSync' => $database->now(),
       ),
       "{$sqlPrefix}users",
       array(
@@ -913,10 +892,7 @@ if ($valid) { // If the user is valid, process their preferrences.
     $database->insert(array(
       'userId' => $user['userId'],
       'anonId' => ($anonymous ? $anonId : 0),
-      'time' => array(
-        'type' => 'time',
-        'value' => '__TIME__',
-      ),
+      'time' => $database->now(),
       'magicHash' => $sessionHash,
       'browser' => $_SERVER['HTTP_USER_AGENT'],
       'ip' => $_SERVER['REMOTE_ADDR'],
@@ -925,10 +901,9 @@ if ($valid) { // If the user is valid, process their preferrences.
     // Whenever a new user logs in, delete all sessions from 15 or more minutes in the past.
     $database->delete("{$sqlPrefix}sessions",array(
       'time' => array(
-        'type' => 'equation', // Data in the value column should not be escaped.
+        'type' => 'equation', // Data in the value column should not be scaped.
         'cond' => 'lte', // Comparison is "<="
-        'context' => 'time', // We are comparing two times; the column should be processed as a timestamp.
-        'value' => '__TIME__ - 900',
+        'value' => $database->now() - 900,
       ),
     ));
   }
@@ -937,10 +912,7 @@ if ($valid) { // If the user is valid, process their preferrences.
     ($hook = hook('validate_updatesession') ? eval($hook) : '');
 
     $database->update(array(
-      'time' => array(
-        'type' => 'time',
-        'value' => '__TIME__',
-      ),
+      'time' => $database->now(),
     ),
     "{$sqlPrefix}sessions",
     array(
@@ -980,7 +952,7 @@ else {
 
 
 
-/* The following defines each individual user's options via an associative array. It is highly recommended this be used to referrence settings. */
+/* The following defines each individual user's options vian associative array. It is highly recommended this be used to referrence settings. */
 
 if (is_array($loginConfig['superUsers'])) {
   if (in_array($user['userId'],$loginConfig['superUsers'])) {
@@ -991,7 +963,7 @@ if (is_array($loginConfig['superUsers'])) {
 
 $user['adminDefs'] = array(
   'modPrivs' => ($user['adminPrivs'] & 1), // This effectively allows a user to give himself everything else below
-  'modCore' => ($user['adminPrivs'] & 2), // This is the "untouchable" flag, but that's more or less all it means.
+  'modCore' => ($user['adminPrivs'] & 2), // This the "untouchable" flag, buthat's more or less all it means.
   'modUsers' => ($user['adminPrivs'] & 16), // Ban, Unban, etc.
   'modFiles' => ($user['adminPrivs'] & 64), // File Uploads
   'modCensor' => ($user['adminPrivs'] & 256), // Censor
@@ -1030,7 +1002,7 @@ if ($valid) {
     $banned = true;
   }
 
-  if ($user['adminDefs']['modCore']) { // The user is an admin, don't give a crap about the above!
+  if ($user['adminDefs']['modCore']) { // The user is an admin, don't give a crap abouthe above!
     $banned = false;
   }
 
@@ -1045,7 +1017,7 @@ if ($valid) {
 if ($api) {
 
   if (defined('LOGIN_FLAG')) {
-    switch (LOGIN_FLAG) { // Generate a message based no the LOGIN_FLAG constant (...this should probably be a variable since it changes, but meh - it seems more logical as such)
+    switch (LOGIN_FLAG) { // Generate a message based no the LOGIN_FLAG constant (...thishould probably be a variable since it changes, but meh - it seems more logical asuch)
       case 'PASSWORD_ENCRYPT':
       $errDesc = 'The password encryption used was not recognized and could not be decoded.';
       break;
@@ -1092,7 +1064,7 @@ if ($api) {
       'anonId' => ($anonymous ? $anonId : 0),
       'defaultRoomId' => (int) (isset($_GET['room']) ? $_GET['room'] :
         (isset($user['defaultRoom']) ? $user['defaultRoom'] :
-          (isset($defaultRoom) ? $defaultRoom : 1))), // Get the room we're on. If there is a $_GET variable, use it, otherwise the user's "default", or finally just main.
+          (isset($defaultRoom) ? $defaultRoom : 1))), // Gethe room we're on. If there is a $_GET variable, use it, otherwise the user's "default", or finally just main.
 
       'userData' => array(
         'userName' => ($user['userName']),

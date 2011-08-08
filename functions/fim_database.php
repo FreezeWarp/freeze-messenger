@@ -332,10 +332,7 @@ class fimDatabase extends database {
 
     // Update room caches.
     $this->update(array(
-      'lastMessageTime' => array(
-        'type' => 'time',
-        'value' => '__TIME__',
-      ),
+      'lastMessageTime' => $database->now(),
       'lastMessageId' => $messageId,
       'messageCount' => array(
         'type' => 'equation',

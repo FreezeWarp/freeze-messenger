@@ -19,11 +19,18 @@
 ///* MySQL Login *///
 
 /* $dbConnect['core']['host']
- * Defines the MySQL server to be connected to, with an optional port attached.
+ * Defines the MySQL server to be connected to.
  * If unsure, "localhost" will work if you are connecting to a local server (which is the case most of the time) */
 $dbConnect['core']['host'] = 'localhost';
 $dbConnect['slave']['host'] = 'localhost';
 $dbConnect['integration']['host'] = 'localhost';
+
+/* $dbConnect['core']['port']
+ * Defines the MySQL port the MySQL server can be accessed to.
+ * If unsure, 3306 will usually be the default. */
+$dbConnect['core']['port'] = 3306;
+$dbConnect['slave']['port'] = 3306;
+$dbConnect['integration']['port'] = 3306;
 
 /* $dbConnect['core']['username']
  * Defines the user of the MySQL connection to be used.

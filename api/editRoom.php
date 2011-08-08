@@ -51,7 +51,6 @@ require('../global.php');
 $request = fim_sanitizeGPC(array(
   'post' => array(
     'action' => array(
-      'type' => 'string',
       'valid' => array(
         'create',
         'edit',
@@ -63,7 +62,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'roomId' => array(
-      'type' => 'string',
       'require' => false,
       'context' => array(
         'type' => 'int',
@@ -71,12 +69,10 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'roomName' => array(
-      'type' => 'string',
       'require' => false,
     ),
 
     'defaultPermissions' => array(
-      'type' => 'string',
       'require' => false,
       'default' => 0,
       'context' => array(
@@ -85,7 +81,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'moderators' => array(
-      'type' => 'string',
       'require' => false,
       'context' => array(
         'type' => 'csv',
@@ -95,7 +90,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'allowedUsers' => array(
-      'type' => 'string',
       'require' => false,
       'context' => array(
         'type' => 'csv',
@@ -105,7 +99,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'allowedGroups' => array(
-      'type' => 'string',
       'require' => false,
       'context' => array(
         'type' => 'csv',
@@ -115,7 +108,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'reverseOrder' => array(
-      'type' => 'string',
       'require' => false,
       'default' => false,
       'context' => array(
@@ -124,7 +116,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'userId' => array(
-      'type' => 'string',
       'require' => false,
       'context' => array(
         'type' => 'int',
@@ -132,12 +123,10 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'userName' => array(
-      'type' => 'string',
       'require' => false,
     ),
 
     'otr' => array( // This will be used in v4.
-      'type' => 'string',
       'require' => false,
       'default' => false,
     ),
