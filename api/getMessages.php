@@ -758,14 +758,17 @@ if (is_array($request['rooms'])) {
         case 'html,api': // Same thing.
         $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages" . (!$request['archive'] ? 'Cached' : '')]['apiText'] = 'apiText';
         $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages" . (!$request['archive'] ? 'Cached' : '')]['htmlText'] = 'htmlText';
+        $decryptArray = array('htmlText', 'apiText');
         break;
 
         case 'api':
         $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages" . (!$request['archive'] ? 'Cached' : '')]['apiText'] = 'apiText';
+        $decryptArray = array('apiText');
         break;
 
         case 'html':
         $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages" . (!$request['archive'] ? 'Cached' : '')]['htmlText'] = 'htmlText';
+        $decryptArray = array('htmlText');
         break;
 
         default:
@@ -861,7 +864,7 @@ if (is_array($request['rooms'])) {
         if (is_array($messages)) {
           if (count($messages) > 0) {
             foreach ($messages AS $id => $message) {
-              $message = fim_decrypt($message, array('apiText', 'htmlText'));
+              $message = fim_decrypt($message, $decryptArray);
 
 
               switch ($request['encode']) {

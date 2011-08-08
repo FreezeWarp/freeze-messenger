@@ -176,7 +176,7 @@ unset($dbConnect); // There is no reason the login credentials should still be a
 
 
 
-////* USER LOGIN (REQUIRES DATABASE) *////
+////* User Login (Requires Database) *////
 
 require_once(dirname(__FILE__) . '/validate.php'); // This is where all the user validation stuff occurs.
 
@@ -185,7 +185,7 @@ require_once(dirname(__FILE__) . '/validate.php'); // This is where all the user
 
 
 
-////* GET DATABASE-STORED CONFIGURATION *////
+////* Get Database-Stored Configuration *////
 
 if (!($config = fim_getCachedVar('fim_config')) || $disableConfig) {
   require(dirname(__FILE__) . '/defaultConfig.php');
@@ -251,6 +251,7 @@ if (!($config = fim_getCachedVar('fim_config')) || $disableConfig) {
 
 
 
+
 ////* Things That Require Config *////
 
 if (isset($apiRequest)) {
@@ -263,7 +264,7 @@ if (isset($apiRequest)) {
 
 
 
-////* GET PHRASES *////
+////* Get Phrases *////
 
 if (isset($reqPhrases)) { // TODO Languages currently overwrite eachother
   if ($reqPhrases === true) {
@@ -303,7 +304,7 @@ if (isset($reqPhrases)) { // TODO Languages currently overwrite eachother
 
 
 
-////* GET CODE HOOKS *////
+////* Get Code Hooks *////
 
 if (isset($reqHooks)) {
   if ($reqHooks === true) {
@@ -340,7 +341,7 @@ if (isset($reqHooks)) {
 
 
 
-////* GET TEMPLATES *////
+////* Get Templates *////
 
 if (isset($reqPhrases)) {
   if ($reqPhrases === true) {
@@ -384,7 +385,7 @@ if (isset($reqPhrases)) {
 
 
 
-////* CACHED DIRECTIVES (REQUIRES APC) *////
+////* Kicks Cache *////
 
 $kicksCache = fim_getCachedVar('fim_kickCache');
 $permissionsCache = fim_getCachedVar('fim_permissionsCache');
@@ -484,6 +485,12 @@ if ($kicksCache === null || $kicksCache === false) {
   fim_setCachedVar('fim_kickCache',$kicksCache,$config['kicksCacheRefresh']);
 }
 
+
+
+
+
+////* Permissions Cache *////
+
 if ($permissionsCache === null || $permissionsCache === false) {
   $permissionsCache = array();
 
@@ -513,13 +520,19 @@ if ($permissionsCache === null || $permissionsCache === false) {
 }
 
 
+
+
+
+////* Global Hook *////
+
 ($hook = hook('global') ? eval($hook) : '');
 
 
 
 
 
-////* OTHER STUFF *////
+
+////* Other Stuff *////
 
 if (isset($banned,$apiRequest)) { // A blanket die for the API when the user is banned.
   if ($apiRequest && $banned) {

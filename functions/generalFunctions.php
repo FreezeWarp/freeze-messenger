@@ -379,7 +379,7 @@ function fim_decrypt($message, $index = array('apiText', 'htmlText', 'rawText'))
 
       if ($index) { // If indexes are specified...
         foreach ((array) $index AS $index2) { // Run through each index. If the specified index variable is a string instead of an array, we will cast it as an array ("example" becomes array("example")).
-          if (isset($message[$index2])) { // If the index is not in the message, throw an exception.
+          if (!isset($message[$index2])) { // If the index is not in the message, throw an exception.
             throw new Exception('Index not found: ' . $index2);
           }
 
