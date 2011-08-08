@@ -19,82 +19,7 @@
 
 
 
-///* PREREQUISITES *///
-
-/* Default Configuration Settings
- * These are the simplified defaults of the configuration directives stored in the database.
- * Unlike the standard database defaults, these only include the barebones data (e.g. searchWord directives). */
-$defaultConfig = array(
-  'roomLengthMinimum' => 5,
-  'roomLengthMaximum' => 20,
-
-  'defaultLanguage' => 'en',
-
-  'defaultMessageHardLimit' => 50,
-  'defaultMessageLimit' => 10000,
-  'defaultOnlineThreshold' => 15,
-
-  'fullTextArchive' => false,
-
-  'searchWordMinimum' => 4,
-  'searchWordMaximum' => 10,
-  'searchWordOmissions' => array(),
-  'searchWordPunctuation' => array(),
-  'searchWordConvertsFind' => array(),
-  'searchWordConvertsReplace' => array(),
-
-  'kicksCacheRefresh' => 30,
-  'permissionsCacheRefresh' => 30,
-  'phrasesCacheRefresh' => 600,
-  'templatesCacheRefresh' => 600,
-  'hooksCacheRefresh' => 600,
-  'configCacheRefresh' => 600,
-
-  'longPolling' => false,
-  'longPollingWait' => 2,
-  'longPollingMaxRetries' => 50,
-
-  'serverSentEvents' => false,
-  'serverSentEventsWait' => .5, // Server sent events are more controlled, so we can call them at a greater frequency.
-  'serverSentMaxRetries' => 50,
-
-  'compressOutput' => true,
-
-  'disableTopic' => false,
-
-  'enableUploads' => false,
-  'enableGeneralUploads' => false,
-  'fileUploadChunkSize' => 1024,
-  'uploadMaxFiles' => -1,
-  'uploadMaxUserFiles' => -1,
-
-  'maxMessageLength' => 1000,
-
-  'apiPause' => .125,
-
-  'cacheTableMaxRows' => 100,
-
-  'enableUnreadMessages' => true,
-  'enableWatchRooms' => true,
-  'enableEvents' => true,
-
-  'encodeXmlEntitiesFind' => array('&', '\'', '<', '>', '"'),
-  'encodeXmlEntitiesReplace' => array('&amp;', '&apos;', '&lt;', '&gt;', '&quot;'),
-  'encodeXmlAttrEntitiesFind' => array('&', '\'', '<', '>', '"'),
-  'encodeXmlAttrEntitiesReplace' => array('&amp;', '&apos;', '&lt;', '&gt;', '&quot;'),
-
-  'defaultTimeZone' => 0,
-
-  'fileSuffixes' => array('B', 'KiB', 'MiB', 'GiB', 'PiB', 'EiB', 'ZiB', 'YiB'),
-  'fileIncrementSize' = 1024,
-
-  'compactXmlStringsFind' => array('/\ {2,}/', "/(\n|\n\r|\t|\r)/", "/\<\!-- (.+?) --\>/", "/\>(( )+?)\</"),
-  'compactXmlStringsReplace' => array('', '', '', '><'),
-
-  'dev' => false,
-);
-
-
+////* PREREQUISITES *////
 
 /* Make Sure Required PHP Extensions are Present
  *
@@ -109,7 +34,7 @@ $defaultConfig = array(
  * The following are used, but with safe fallbacks:
  * Hash is present in all versions since PHP 5.1.2; MHash is present in all versions since PHP4
  */
-foreach (array('mysql', 'json', 'mbstring', 'mcrypt', 'pcre', 'apc', 'date') AS $module) {
+foreach (array('mysql', 'json', 'mbstring', 'mcrypt', 'pcre', 'apc') AS $module) {
   if (!extension_loaded($module)) {
     die("The module $module could not be found. Please install PHP $module compatibility. See the documentation for help.");
   }
@@ -190,7 +115,7 @@ if (!isset($defaultLanguage)) {
 
 
 
-///* Database Stuff *///
+////* Database Stuff *////
 
 /* If the connections are the same, do not make multiple below. */
 if ($dbConnect['core'] == $dbConnect['integration']) {
@@ -251,7 +176,7 @@ unset($dbConnect); // There is no reason the login credentials should still be a
 
 
 
-///* USER LOGIN (REQUIRES DATABASE) *///
+////* USER LOGIN (REQUIRES DATABASE) *////
 
 require_once(dirname(__FILE__) . '/validate.php'); // This is where all the user validation stuff occurs.
 
@@ -260,9 +185,11 @@ require_once(dirname(__FILE__) . '/validate.php'); // This is where all the user
 
 
 
-///* GET DATABASE-STORED CONFIGURATION *///
+////* GET DATABASE-STORED CONFIGURATION *////
 
 if (!($config = fim_getCachedVar('fim_config')) || $disableConfig) {
+  require(dirname(__FILE__) . '/defaultConfig.php');
+
   $config2 = $slaveDatabase->select(
     array(
       "{$sqlPrefix}configuration" => array(
@@ -324,7 +251,7 @@ if (!($config = fim_getCachedVar('fim_config')) || $disableConfig) {
 
 
 
-///* Things That Require Config *///
+////* Things That Require Config *////
 
 if (isset($apiRequest)) {
   if ($apiRequest === true) {
@@ -336,7 +263,7 @@ if (isset($apiRequest)) {
 
 
 
-///* GET PHRASES *///
+////* GET PHRASES *////
 
 if (isset($reqPhrases)) { // TODO Languages currently overwrite eachother
   if ($reqPhrases === true) {
@@ -376,7 +303,7 @@ if (isset($reqPhrases)) { // TODO Languages currently overwrite eachother
 
 
 
-///* GET CODE HOOKS *///
+////* GET CODE HOOKS *////
 
 if (isset($reqHooks)) {
   if ($reqHooks === true) {
@@ -413,7 +340,7 @@ if (isset($reqHooks)) {
 
 
 
-///* GET TEMPLATES *///
+////* GET TEMPLATES *////
 
 if (isset($reqPhrases)) {
   if ($reqPhrases === true) {
@@ -457,7 +384,7 @@ if (isset($reqPhrases)) {
 
 
 
-///* CACHED DIRECTIVES (REQUIRES APC) *///
+////* CACHED DIRECTIVES (REQUIRES APC) *////
 
 $kicksCache = fim_getCachedVar('fim_kickCache');
 $permissionsCache = fim_getCachedVar('fim_permissionsCache');
@@ -592,7 +519,7 @@ if ($permissionsCache === null || $permissionsCache === false) {
 
 
 
-///* OTHER STUFF *///
+////* OTHER STUFF *////
 
 if (isset($banned,$apiRequest)) { // A blanket die for the API when the user is banned.
   if ($apiRequest && $banned) {
@@ -602,7 +529,7 @@ if (isset($banned,$apiRequest)) { // A blanket die for the API when the user is 
 
 if (isset($apiRequest)) { // Compress Output for transfer if configured to, and if we are outputting data from the API (file downloads, interfaces, etc. don't apply).
   if ($apiRequest && $config['compressOutput']) {
-    ob_start('fim_htmlCompact');
+    ob_start('fim_apiCompact');
   }
 }
 ?>

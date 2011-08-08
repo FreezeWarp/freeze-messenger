@@ -1258,10 +1258,25 @@ function fim_outputArray() {
  * @return string
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
-function fim_htmlCompact($data) {
+function fim_apiCompact($data) {
   global $config;
 
-  $data = preg_replace($config['compactXmlStringsFind'], $config['compactXmlStringsReplace'], $data);
+  if (isset($_REQUEST['fim3_format'])) {
+    switch ($_REQUEST['fim3_format']) {
+      case 'xml2': // Compact XML
+      case 'xml': // No-Attribute XML (all data expressed as nodes)
+      $data = preg_replace($config['compactXmlStringsFind'], $config['compactXmlStringsReplace'], $data);
+      break;
+
+      case 'json': // Javascript Object Notion
+      default:
+      $data = preg_replace($config['compactJsonStringsFind'], $config['compactJsonStringsReplace'], $data);
+      break;
+    }
+  }
+  else {
+    $data = preg_replace($config['compactJsonStringsFind'], $config['compactJsonStringsReplace'], $data);
+  }
 
   return $data;
 }
