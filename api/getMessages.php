@@ -852,7 +852,7 @@ if (is_array($request['rooms'])) {
             $queryParts['messagesSelect']['conditions'],
             $queryParts['messagesSelect']['sort'],
             false,
-            $request['messageHardLimit']);// echo $messages->sourceQuery;
+            $request['messageHardLimit']);
           $messages = $messages->getAsArray('messageId');
 
           ($hook = hook('getMessages_postMessages_polling') ? eval($hook) : '');

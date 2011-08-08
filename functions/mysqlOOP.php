@@ -388,7 +388,8 @@ class database {
 
     /* Generate Final Query */
     $finalQueryText = 'SELECT
-  ' . implode(', ', $finalQuery['columns']) . '
+  ' . implode(',
+  ', $finalQuery['columns']) . '
 FROM
   ' . implode(', ', $finalQuery['tables']) . ($finalQuery['where'] ? '
 WHERE

@@ -925,7 +925,7 @@ var standard = {
       where = 'messageIdStart=' + options.idMin;
     }
     else {
-      where = 'messageIdStart=0';
+      where = 'messageIdStart=1';
     }
 
 
@@ -951,7 +951,7 @@ var standard = {
       });
 
       return false;
-    }); console.log(2);
+    });
 
     $.when( $.ajax({
       url: directory + 'api/getMessages.php?rooms=' + options.roomId + '&' + (options.userId ? '&users=' + options.userId : '') + '&archive=1&messageLimit=10000&messageHardLimit=50&' + where + (options.search ? '&search=' + urlencode(options.search) : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
