@@ -218,13 +218,26 @@
     </table>
 
 
+    <table name="interfaces" type="general" comment="Installed interfaces. These will often interface with the phrase and template tables.">
+      <column name="interfaceId" type="int" maxlen="6" comment="The ID of the interface, generated as needed." />
+      <column name="interfaceName" type="string" maxlen="10" comment="The name of the interface, defined by itself." />
+      <column name="version" type="string" maxlen="20" comment="The version of the interface." />
+      <column name="fimVersion" type="string" maxlen="20" comment="The version of the FIM the interface is intended for." />
+      <column name="author" type="string" maxlen="40" comment="The name of the author who created the interface." />
+
+      <key name="interfaceId" type="primary" />
+    </table>
+
+
     <table name="phrases" type="general" comment="Phrases used by interface templates for smooth translations.">
       <column name="phraseName" type="string" maxlen="50" comment="The name of the phrase." />
       <column name="languageCode" type="string" maxlen="10" comment="The language code corrosponding to the language of the phrase." />
       <column name="text" type="string" maxlen="4294967296" comment="The phrase text." />
+      <column name="interfaceId" type="int" maxlen="6" comment="The interface that uses this phrase." />
 
       <key name="phraseName,languageCode" type="primary" />
       <key name="languageCode" type="index" />
+      <key name="interfaceId" type="index" />
     </table>
 
 
@@ -326,9 +339,10 @@
       <column name="templateName" type="string" maxlen="50" comment="The name of the template, used for its retrievel." />
       <column name="vars" type="string" maxlen="1000" comment="PHP variables that need to be accessed by the template." />
       <column name="data" type="string" maxlen="4294967296" comment="The text/data associated with the template." />
+      <column name="interfaceId" type="int" maxlen="6" comment="The interface that uses this template." />
 
       <key name="templateId" type="primary" />
-      <key name="templateName" type="index" />
+      <key name="interfaceId" type="index" />
     </table>
 
 

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<interface version="3.0" name="webro">
+  <metadata>
+    <title>WebPro (jQueryUI-powered)</title>
+    <summary>A powerful online interface that is developed as the "default" interface of FreezeMessenger. It is essentially the "source" implementation, though as such some of the more inventive ideas out there aren't to be found in WebPro.</summary>
+
+    <copyright>Joseph T. Parsons 2011</copyright>
+    <license>GPLv3</license>
+    <version>3.0</version>
+  </metadata>
+
+ <templates>
+    <template name="templateStart" vars="">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+{{if="$phrases['doctype']"}{$phrases[doctype]}{&lt;!DOCTYPE HTML&gt;}}
+
+&lt;!-- Original Source Code Copyright © 2011 Joseph T. Parsons. --&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"&gt;
+&lt;head&gt;
+&lt;title&gt;{{if="$phrases['brandingTitle']"}{$phrases[brandingTitle]}{FreezeMessenger}} - $title&lt;/title&gt;
+
+&lt;meta http-equiv="Content-type" value="text/html; charset=utf-8" /&gt;
+&lt;meta name="robots" content="index, follow" /&gt;
+&lt;meta name="author" content="Joseph T. Parsons" /&gt;
+&lt;meta name="keywords" content="{{if="$phrases['brandingKeywords']"}{$phrases[brandingKeywords]}{instant messenger, im, instant message}}" /&gt;
+&lt;meta name="description" content="{{if="$phrases['brandingDescription']"}{$phrases[brandingDescription]}{FreezeMessenger-powered chat program.}}" /&gt;
+{{if="$phrases['brandingFavicon']"}{&lt;link rel="icon" id="favicon" type="image/png" href="$phrases[brandingFavicon]" /&gt;}}
+
+
+{{if="$layout == 'alt'"}{&lt;style&gt;
+#menu { display: none; width: 0px; }
+#messageListContainer { float: right; width: 50%; }
+#textentryBoxMessage { float: left; width: 50%; }
+#content { width: 100%; }&lt;/style&gt;}}
+
+&lt;!-- END Styles --&gt;
+
+
+
+&lt;!-- START Scripts --&gt;
+
+&lt;script src="client/js/jquery-1.6.1.min.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script src="client/js/jquery.plugins.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script src="client/js/fim-all.js" type="text/javascript"&gt;&lt;/script&gt;
+
+&lt;!-- END Scripts --&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+&lt;div id="tooltext" class="tooltip-content"&gt;&lt;/div&gt;
+&lt;div id="page" data-role="page"&gt;
+&lt;!-- START links --&gt;
+&lt;div id="menu" data-role="header"&gt;
+&lt;h3 id="quickCat"&gt;&lt;a href="#"&gt;$phrases[templateQuickCat]&lt;/a&gt;&lt;/h3&gt;
+&lt;div&gt;
+&lt;ul&gt;
+  &lt;li style="border-bottom: 1px solid;"&gt;&lt;a href="#" id="messageArchive"&gt;$phrases[templateArchive]&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#" id="roomList"&gt;$phrases[templateRoomList]&lt;/a&gt;&lt;/li&gt;
+  &lt;li style="border-bottom: 1px solid;"&gt;&lt;a href="#" id="privateRoom"&gt;$phrases[templatePrivateIM]&lt;/a&gt;&lt;/li&gt;
+
+  &lt;li&gt;&lt;a href="#" id="online"&gt;$phrases[templateActiveUsers]&lt;/a&gt;&lt;/li&gt;
+
+  &lt;li&gt;&lt;a href="#" id="changeSettings"&gt;$phrases[templateChangeSettings]&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#" id="logout"&gt;$phrases[templateLogout]&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#" id="login"&gt;$phrases[templateLogin]&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;h3 id="roomCat"&gt;&lt;a href="#"&gt;$phrases[templateRoomListCat]&lt;/a&gt;&lt;/h3&gt;
+&lt;div&gt;
+  &lt;div id="roomListShort"&gt;
+    &lt;a href="javascript:void(0);" id="showMoreRooms"&gt;$phrases[templateShowMoreRooms]&lt;/a&gt;&lt;br /&gt;
+
+    &lt;ul&gt;
+    &lt;/ul&gt;
+  &lt;/div&gt;
+  &lt;div id="roomListLong" style="display: none;"&gt;
+    &lt;li&gt;&lt;a href="javascript:void(0);" id="showFewerRooms"&gt;$phrases[templateShowLessRooms]&lt;/a&gt;&lt;br /&gt;
+
+    &lt;ul&gt;
+    &lt;/ul&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;h3 id="activeCat"&gt;&lt;a href="#"&gt;$phrases[templateActiveUsersCat]&lt;/a&gt;&lt;/h3&gt;
+&lt;div id="activeUsers"&gt;$phrases[templateLoading]&lt;/div&gt;
+
+&lt;h3 id="copyCat"&gt;&lt;a href="#"&gt;$phrases[templateCopyrightCat]&lt;/a&gt;&lt;/h3&gt;
+&lt;div&gt;
+  &lt;ul&gt;
+    &lt;li&gt;FIM © 2010-2011 Joseph Parsons&lt;br /&gt;&lt;/li&gt;
+    &lt;li&gt;jQuery Plugins © Their Respective Owners.&lt;/li&gt;
+    &lt;li&gt;&lt;a href="#" id="copyrightLink"&gt;$phrases[templateAllCopyrights]&lt;/a&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;!-- END links --&gt;
+
+&lt;div id="content" data-role="content"&gt;
+&lt;!-- START content --&gt;
+    </template>
+
+    <template name="templateEnd" vars="">
+&lt;!-- END content --&gt;
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+    </template>
+  </templates>
+</interface>
