@@ -407,7 +407,7 @@
       <key name="userId" type="primary" />
       <key name="userGroup" type="index" />
       <key name="allGroups" type="index" />
-      <key name="interface" type="index" />
+      <key name="interfaceId" type="index" />
       <key name="lastSync" type="index" />
       <key name="userPrivs" type="index" />
       <key name="adminPrivs" type="index" />

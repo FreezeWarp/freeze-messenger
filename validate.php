@@ -305,7 +305,7 @@ $columnDefinitions = array(
 
 
 $queryParts['userSelect']['columns'] = array(
-  "{$sqlPrefix}users" => 'userId, userName, userGroup, allGroups, avatar, profile, socialGroups, userFormatStart, userFormatEnd, password, joinDate, birthDate, lastSync, defaultRoom, interface, favRooms, watchRooms, ignoreList, status, defaultHighlight, defaultColor, defaultFontface, defaultFormatting, userPrivs, adminPrivs, lang',
+  "{$sqlPrefix}users" => 'userId, userName, userGroup, allGroups, avatar, profile, socialGroups, userFormatStart, userFormatEnd, password, joinDate, birthDate, lastSync, defaultRoom, interfaceId, favRooms, watchRooms, ignoreList, status, defaultHighlight, defaultColor, defaultFontface, defaultFormatting, userPrivs, adminPrivs, lang',
 );
 $queryParts['userSelectFromSessionHash']['columns'] = array(
   "{$sqlPrefix}sessions" => 'anonId, magicHash, userId suserId, time sessionTime, ip sessionIp, browser sessionBrowser',
@@ -1097,6 +1097,9 @@ if ($api) {
 
   die();
 }
+
+
+define('FIM_LOGINRUN',true);
 
 
 ($hook = hook('validate_end') ? eval($hook) : '');

@@ -1060,6 +1060,7 @@ var standard = {
         timeout: 2500,
         success: function(json) {
           active = json.login;
+
           var loginFlag = active.loginFlag,
             loginText = active.loginText,
             valid = active.valid,

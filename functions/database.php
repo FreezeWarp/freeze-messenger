@@ -29,6 +29,7 @@ class database {
     $this->queryCounter = 0;
     $this->insertId = 0;
     $this->errorLevel = E_USER_ERROR;
+    $this->activeDatabase = false;
   }
 
   public function setErrorLevel($errorLevel) {
@@ -133,7 +134,7 @@ class database {
         case 'connect':
           $function = mysqli_connect($args[1], $args[3], $args[4], ($args[5] ? $args[5] : null), (int) $args[2]);
 
-          $this->version = mysqli_get_server_version($function);
+          $this->version = mysqli_get_server_info($function);
 
           return $function;
         break;
@@ -231,7 +232,7 @@ class database {
     }
 
 
-    if (!$this->activeDatabase && $database) { // Some drivers will require this.
+    if ($this->activeDatabase && $database) { // Some drivers will require this.
       if (!$this->selectDatabase($database)) {
         $this->error = 'Could not select database ("' . $database . '"): ' . $this->functionMap('error');
 
@@ -866,7 +867,7 @@ LIMIT
     else {
       $this->error = $this->functionMap('error');
 
-      trigger_error("Database Error;\n\nQuery: $query;\n\nError: " . $this->error, $this->errorLevel); // The query could not complete.
+      trigger_error("Database Error;\n\nQuery: $query;\n\nError: " . $this->error . "\n\nBacktrace: " . debug_backtrace(), $this->errorLevel); // The query could not complete.
 
       return false;
     }

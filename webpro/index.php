@@ -18,6 +18,7 @@ $inRoom = true;
 $title = 'Chat';
 $reqPhrases = true;
 $reqHooks = true;
+$interfaceName = 'webpro';
 
 
 

@@ -114,36 +114,25 @@ if (!isset($defaultLanguage)) {
 
 
 
-/* Better Error Handling and Output Buffering */
-if (!isset($apiRequest) || $apiRequest === false) {
-  function fim_errorHandler($errno, $errstr, $errfile, $errline) {
-    global $email;
-
-    if (!(error_reporting() & $errno)) { // The error is not to be reported.
-      return;
-    }
-
-    switch ($errno) {
-      case E_USER_ERROR:
-      ob_end_clean(); // Clean the output buffer and end it. This means when we show the error in a second, there won't be anything else with it.
-
-      die(nl2br('<fieldset><legend>Unrecoverable Error</legend><strong>Error Text</strong><br />' . $errstr . '<br /><br /><strong>What Should I Do Now?</strong><br />' . ($email ? 'You may wish to <a href="mailto:' . $email . '">notify the administration</a> of this error.' : 'No contact was specified for this installation, so try to wait it out.')  . '<br /><br /><strong>Are You The Host?</strong><br />Server errors are often database related. These may result from improper installation or a corrupted database. The documentation may provide clues, however.</fieldset>'));
-
-      if ($email) {
-        mail($email, 'FIM3 System Error [' . $_SERVER['SERVER_NAME'] . ']', 'The following error was encountered by the server located at ' . $_SERVER['SERVER_NAME'] . ':<br /><br />' . $errstr);
-      }
-      break;
-
-      default:
-      // Do Nothing
-      break;
-    }
-
-    return true; // Don't execute PHP internal error handler
+/* API Mode
+ * Determine if we are in the API or not.
+ * If we are, we disable things like the error handler.
+ * In rare cases (like validate.php, where it can act both as an API and as a part of the core system), this is already defined and will be left alone. Otherwise, API files should set $apiRequest to true, and it will be converted to $api here. */
+if (!isset($api)) {
+  if (isset($apiRequest)) {
+    $api = (bool) $apiRequest;
   }
+  else {
+    $api = false;
+  }
+}
 
+
+
+/* Better Error Handling and Output Buffering */
+if ($api === false) {
   ob_start();
-  set_error_handler('fim_errorHandler');
+  set_error_handler('fim_errorHandler'); // Defined in fim_general.php
 }
 
 
@@ -284,32 +273,30 @@ if (!($config = fim_getCachedVar('fim_config')) || $disableConfig) {
 
 ////* Things That Require Config *////
 
-if (isset($apiRequest)) {
-  if ($apiRequest === true) {
-    sleep($config['apiPause']); // This prevents flooding the server/DoSing. It's included since I've done it to myself during development...
-  }
+if ($api === true) {
+  sleep($config['apiPause']); // This prevents flooding the server/DoSing. It's included since I've done it to myself during development...
 }
 
 
 
 
 
-////* Get Intefaces *////
+////* Get Interfaces *////
 
 if (isset($reqPhrases)) {
   if ($reqPhrases === true) {
-    if (!$intefaces = fim_getCachedVar('fim_intefaces')) {
-      $intefaces2 = $slaveDatabase->select(
+    if (!$interfaces = fim_getCachedVar('fim_interfaces')) {
+      $interfaces2 = $slaveDatabase->select(
         array(
           "{$sqlPrefix}interfaces" => 'interfaceId, interfaceName',
         )
       );
-      $intefaces2 = $intefaces2->getAsArray(true);
+      $interfaces2 = $interfaces2->getAsArray(true);
 
-      if (is_array($intefaces2)) {
-        if (count($intefaces2) > 0) {
-          foreach ($intefaces2 AS $inteface) {
-            $intefaces[$inteface['interfaceId']] = $inteface['interfaceId'];
+      if (is_array($interfaces2)) {
+        if (count($interfaces2) > 0) {
+          foreach ($interfaces2 AS $interface) {
+            $interfaces[$interface['interfaceName']] = $interface['interfaceId'];
           }
 
           unset($interface);
@@ -318,12 +305,10 @@ if (isset($reqPhrases)) {
 
       unset($interfaces2);
 
-      fim_setCachedVar('fim_phrases', $interfaces, $config['phrasesCacheRefresh']);
+      fim_setCachedVar('fim_interfaces', $interfaces, $config['phrasesCacheRefresh']);
     }
   }
 }
-
-
 
 
 
@@ -354,14 +339,12 @@ if (isset($reqPhrases)) {
       fim_setCachedVar('fim_phrases', $phrases, $config['phrasesCacheRefresh']);
     }
 
-    $interfaceId = (isset($_REQUEST['interfaceId']) ? $_REQUEST['interfaceId'] :
-      (isset($user['interfaceId']) ? $user['interfaceId'] : $interfaces[$defaultInterface]));
+    $interfaceId = $interfaces[$interfaceName];
     $lang = (isset($_REQUEST['lang']) ? $_REQUEST['lang'] :
       (isset($user['lang']) ? $user['lang'] : $config['defaultLanguage']));
     $phrases = $phrases[$interfaceId][$lang];
   }
 }
-
 
 
 
@@ -400,8 +383,8 @@ if (isset($reqPhrases)) {
       fim_setCachedVar('fim_templateVars', $templateVars, $config['templatesCacheRefresh']);
     }
 
-    $interfaceId = (isset($_REQUEST['interfaceId']) ? $_REQUEST['interfaceId'] :
-      (isset($user['interfaceId']) ? $user['interfaceId'] : $interfaces[$defaultInterface]));
+
+    $interfaceId = $interfaces[$interfaceName];
     $templates = $templates[$interfaceId];
     $templateVars = $templateVars[$interfaceId];
   }
@@ -569,15 +552,13 @@ if ($permissionsCache === null || $permissionsCache === false) {
 
 ////* Other Stuff *////
 
-if (isset($banned,$apiRequest)) { // A blanket die for the API when the user is banned.
-  if ($apiRequest && $banned) {
+if (defined('FIM_LOGINRUN')) {
+  if ($api && $banned) {
     die();
   }
 }
 
-if (isset($apiRequest)) { // Compress Output for transfer if configured to, and if we are outputting data from the API (file downloads, interfaces, etc. don't apply).
-  if ($apiRequest && $config['compressOutput']) {
-    ob_start('fim_apiCompact');
-  }
+if ($api && $config['compressOutput']) {
+  ob_start('fim_apiCompact');
 }
 ?>

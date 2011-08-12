@@ -17,6 +17,7 @@
 $noReqLogin = true;
 $reqPhrases = true;
 $reqHooks = true;
+$interfaceName = 'webpro';
 
 require_once('../global.php');
 

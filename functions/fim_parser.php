@@ -408,22 +408,21 @@ function fim3parse_keyWords($string, $messageId, $roomId) {
 
     foreach ($stringPiecesAdd AS $piece) {
       if (!isset($phraseData[$piece])) {
-        $database->insert(array(
+        $database->insert("{$sqlPrefix}searchPhrases", array(
           'phraseName' => $piece,
-        ),
-        "{$sqlPrefix}searchPhrases");
+        ));
         $phraseId = $database->insertId;
       }
       else {
         $phraseId = $phraseData[$piece]['phraseId'];
       }
 
-      $database->insert(array(
+      $database->insert("{$sqlPrefix}searchMessages", array(
         'phraseId' => (int) $phraseId,
         'messageId' => (int) $messageId,
         'userId' => (int) $user['userId'],
         'roomId' => (int) $roomId,
-      ), "{$sqlPrefix}searchMessages");
+      ));
     }
   }
 }

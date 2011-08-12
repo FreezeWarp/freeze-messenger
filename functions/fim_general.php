@@ -1597,4 +1597,30 @@ function fim_explodeEscaped($delimiter, $string) {
   }
   return $fixed;
 }
+
+function fim_errorHandler($errno, $errstr, $errfile, $errline) {
+  global $email;
+
+  if (!(error_reporting() & $errno)) { // The error is not to be reported.
+    return;
+  }
+
+  switch ($errno) {
+    case E_USER_ERROR:
+    ob_end_clean(); // Clean the output buffer and end it. This means when we show the error in a second, there won't be anything else with it.
+
+    die(nl2br('<fieldset><legend>Unrecoverable Error</legend><strong>Error Text</strong><br />' . $errstr . '<br /><br /><strong>What Should I Do Now?</strong><br />' . ($email ? 'You may wish to <a href="mailto:' . $email . '">notify the administration</a> of this error.' : 'No contact was specified for this installation, so try to wait it out.')  . '<br /><br /><strong>Are You The Host?</strong><br />Server errors are often database related. These may result from improper installation or a corrupted database. The documentation may provide clues, however.</fieldset>'));
+
+    if ($email) {
+      mail($email, 'FIM3 System Error [' . $_SERVER['SERVER_NAME'] . ']', 'The following error was encountered by the server located at ' . $_SERVER['SERVER_NAME'] . ':<br /><br />' . $errstr);
+    }
+    break;
+
+    default:
+    // Do Nothing
+    break;
+  }
+
+  return true; // Don't execute PHP internal error handler
+}
 ?>
