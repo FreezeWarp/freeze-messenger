@@ -180,9 +180,9 @@ switch ($request['action']) {
 
     $newRoomString = implode(',', $currentRooms2);
 
-    $database->update(array(
+    $database->update("{$sqlPrefix}users", array(
       'favRooms' => (string) $newRoomString,
-    ), "{$sqlPrefix}users", array(
+    ), array(
       'userId' => (int) $user['userId'],
     ));
 
@@ -207,9 +207,9 @@ switch ($request['action']) {
 
     $newRoomString = implode(',', $currentRooms2);
 
-    $database->update(array(
+    $database->update("{$sqlPrefix}users", array(
       'favRooms' => (string) $newRoomString,
-    ), "{$sqlPrefix}users", array(
+    ), array(
       'userId' => (int) $user['userId'],
     ));
 
@@ -230,9 +230,9 @@ switch ($request['action']) {
     if ($userData['userPrivs'] & 16) { // The user is not banned
       $database->modLog('banUser', $request['userId']);
 
-      $database->update(array(
+      $database->update("{$sqlPrefix}users", array(
         'userPrivs' => (int) $userData['userPrivs'] - 16,
-      ), "{$sqlPrefix}users", array(
+      ), array(
         'userId' => (int) $userData['userId'],
       ));
 
@@ -258,9 +258,9 @@ switch ($request['action']) {
     if ($userData['userPrivs'] ^ 16) { // The user is banned
       $database->modLog('unbanUser', $request['userId']);
 
-      $database->update(array(
+      $database->update("{$sqlPrefix}users", array(
         'userPrivs' => (int) $userData['userPrivs'] + 16,
-      ), "{$sqlPrefix}users", array(
+      ), array(
         'userId' => (int) $userData['userId'],
       ));
 

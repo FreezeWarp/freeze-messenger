@@ -378,14 +378,12 @@ switch($request['action']) {
         }
       }
 
-      $database->update(array(
+      $database->update("{$sqlPrefix}rooms", array(
           'roomName' => $request['roomName'],
           'allowedGroups' => implode(',',$request['allowedGroups']),
           'allowedUsers' => implode(',',$request['allowedUsers']),
           'moderators' => implode(',',$request['moderators']),
-        ),
-        "{$sqlPrefix}rooms",
-        array(
+        ), array(
           'roomId' => $room['roomId'],
         )
       );
@@ -485,9 +483,9 @@ switch($request['action']) {
     else {
       $room['options'] += 4; // options & 4 = deleted
 
-      $database->update(array(
+      $database->update("{$sqlPrefix}rooms", array(
           'options' => (int) $room['options'],
-        ),"{$sqlPrefix}rooms",array(
+        ), array(
           'roomId' => (int) $room['roomId'],
         )
       );
@@ -510,9 +508,9 @@ switch($request['action']) {
     else {
       $room['options'] += 4; // options & 4 = deleted
 
-      $database->update(array(
+      $database->update("{$sqlPrefix}rooms", array(
           'options' => (int) $room['options'],
-        ),"{$sqlPrefix}rooms",array(
+        ), array(
           'roomId' => (int) $room['roomId'],
         )
       );

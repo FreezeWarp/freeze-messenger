@@ -81,11 +81,9 @@ switch ($request['action']) {
   $roomData = $slaveDatabase->getRoom($messageData['roomId']);
 
   if (fim_hasPermission($roomData,$user,'moderate',true)) {
-    $database->update(array(
+    $database->update("{$sqlPrefix}messages", array(
       'deleted' => 1
-      ),
-      "{$sqlPrefix}messages",
-      array(
+      ), array(
         "messageId" => (int) $request['messageId']
       )
     );
@@ -112,11 +110,9 @@ switch ($request['action']) {
   $roomData = $slaveDatabase->getRoom($messageData['roomId']);
 
   if (fim_hasPermission($roomData,$user,'moderate',true)) {
-    $database->update(array(
+    $database->update("{$sqlPrefix}messages", array(
       'deleted' => 0
-      ),
-      "{$sqlPrefix}messages",
-      array(
+      ), array(
         "messageId" => (int) $request['messageId']
       )
     );

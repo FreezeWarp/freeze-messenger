@@ -749,7 +749,7 @@ LIMIT
   }
 
 
-  public function update($dataArray, $table, $conditionArray = false) {
+  public function update($table, $dataArray, $conditionArray = false) {
     list($columns, $values) = $this->splitArray($dataArray);
 
     for ($i = 0; $i < count($columns); $i++) {

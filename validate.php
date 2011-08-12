@@ -741,7 +741,7 @@ if ($valid) { // If the user is valid, process their preferrences.
       $socialGroups = $socialGroups->getAsArray('groupId');
       $socialGroupIds = array_keys($socialGroups);
 
-      $database->update(array(
+      $database->update("{$sqlPrefix}users", array(
         'userName' => $user2['userName'],
         'userGroup' => $user2['userGroup'],
         'allGroups' => $user2['allGroups'],
@@ -751,9 +751,7 @@ if ($valid) { // If the user is valid, process their preferrences.
         'profile' => $user2['profile'],
         'socialGroups' => implode(',', $socialGroupIds),
         'lastSync' => $database->now(),
-      ),
-      "{$sqlPrefix}users",
-      array(
+      ), array(
         'userId' => (int) $user2['userId'],
       ));
     }
@@ -820,11 +818,9 @@ if ($valid) { // If the user is valid, process their preferrences.
             }
 
             if (count($currentRooms2) !== count($favRooms)) {
-              $database->update(array(
+              $database->update("{$sqlPrefix}users", array(
                 'favRooms' => implode(',',$currentRooms2),
-              ),
-              "{$sqlPrefix}users",
-              array(
+              ), array(
                 'userId' => $userPrefs['userId'],
               ));
             }
@@ -844,7 +840,7 @@ if ($valid) { // If the user is valid, process their preferrences.
       $socialGroups = $socialGroups->getAsArray('groupId');
       $socialGroupIds = array_keys($socialGroups);
 
-      $database->update(array(
+      $database->update("{$sqlPrefix}users", array(
         'userName' => $user2['userName'],
         'userGroup' => $user2['userGroup'],
         'allGroups' => $user2['allGroups'],
@@ -854,9 +850,7 @@ if ($valid) { // If the user is valid, process their preferrences.
         'profile' => $user2['profile'],
         'socialGroups' => implode(',', $socialGroupIds),
         'lastSync' => $database->now(),
-      ),
-      "{$sqlPrefix}users",
-      array(
+      ), array(
         'userId' => (int) $user2['userId'],
       ));
     }
@@ -911,11 +905,9 @@ if ($valid) { // If the user is valid, process their preferrences.
   elseif ($session == 'update' && $sessionHash) {
     ($hook = hook('validate_updatesession') ? eval($hook) : '');
 
-    $database->update(array(
+    $database->update("{$sqlPrefix}sessions", array(
       'time' => $database->now(),
-    ),
-    "{$sqlPrefix}sessions",
-    array(
+    ), array(
       "magicHash" => $sessionHash,
     ));
   }

@@ -212,9 +212,7 @@ if (isset($request['defaultFontface'])) {
 }
 
 $database->update(
-  $updateArray,
-  "{$sqlPrefix}users",
-  array(
+  "{$sqlPrefix}users", $updateArray, array(
     'userId' => $user['userId'],
   )
 );

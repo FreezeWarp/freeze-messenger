@@ -91,9 +91,7 @@ else {
 
       $database->update(array(
         'status' => $value,
-      ),
-      "{$sqlPrefix}ping",
-      array(
+      ), "{$sqlPrefix}ping", array(
         'userId' => $user['userId'],
         'roomId' => $room['roomId'],
       ));
