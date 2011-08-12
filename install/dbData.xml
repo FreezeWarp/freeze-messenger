@@ -564,5 +564,17 @@
       <column name="counterName" value="uploads" />
       <column name="counterValue" value="0" />
     </table>
+    <table name="counters">
+      <column name="counterName" value="uploadSize" />
+      <column name="counterValue" value="0" />
+    </table>
+    <table name="counters">
+      <column name="counterName" value="messages" />
+      <column name="counterValue" value="0" />
+    </table>
+    <table name="counters">
+      <column name="counterName" value="rooms" />
+      <column name="counterValue" value="0" />
+    </table>
   </database>
 </dbData>

@@ -403,6 +403,8 @@
       <column name="adminPrivs" type="bitfield" bits="16" comment="A bitfield corrosponding to admin-set administrative priviledges." />
       <column name="lang" type="string" maxlen="5" comment="4" />
       <column name="fileCount" type="int" maxlen="8" comment="The number of files store on the server by this user." />
+      <column name="fileSize" type="int" maxlen="8" comment="The total size of all files stored on the server by this user." />
+      <column name="messageCount" type="int" maxlen="8" comment="The number of messages made by this user." />
 
       <key name="userId" type="primary" />
       <key name="userGroup" type="index" />

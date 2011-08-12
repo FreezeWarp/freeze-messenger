@@ -137,187 +137,225 @@ if ($request['uploadMethod'] == 'put') { // This is an unsupported alternate upl
   fclose($putResource);
 }
 
-$continue = true;
-
-/* Verify the Data, Preprocess */
-switch ($request['uploadMethod']) {
-  case 'raw':
-  case 'put':
-  switch($request['dataEncode']) {
-    case 'base64':
-    $rawData = base64_decode($request['fileData']);
-    break;
-
-    case 'binary': // Binary is buggy and far from confirmed to work. That said... if you're lucky? MDN has some useful information on this type of thing: https://developer.mozilla.org/En/Using_XMLHttpRequest
-    $rawData = $request['fileData'];
-    break;
-
-    default:
-    $errStr = 'badRawEncoding';
-    $errDesc = 'The specified file content encoding was not recognized.';
-
-    $continue = false;
-    break;
-  }
-
-
-  if ($request['md5hash']) { // This will allow us to verify that the upload worked.
-    if (md5($rawData) != $request['md5hash']) {
-      $errStr = 'badRawHash';
-      $errDesc = 'The included MD5 hash did not match the file content.';
-
-      $continue = false;
-    }
-  }
-
-  if ($request['sha256hash']) { // This will allow us to verify that the upload worked.
-    if (hash('sha256',$rawData) != $request['sha256hash']) {
-      $errStr = 'badRawHash';
-      $errDesc = 'The included MD5 hash did not match the file content.';
-
-      $continue = false;
-    }
-  }
-
-  if ($request['fileSize']) { // This will allow us to verify that the upload worked as well, can be easier to implement, but doesn't serve the primary purpose of making sure the file upload wasn't intercepted.
-    if (strlen($rawData) != $request['fileSize']) {
-      $errStr = 'badRawSize';
-      $errDesc = 'The specified content length did not match the file content.';
-
-      $continue = false;
-    }
-  }
-  break;
+if ($database->getCounter('uploads') > $config['uploadMaxFiles']) {
+  $errStr = 'tooManyFiles';
+  $errDesc = 'The server has reached its file capacity.';
 }
+elseif ($user['fileCount'] > $config['uploadMaxUserFiles']) {
+  $errStr = 'tooManyFiles';
+  $errDesc = 'The server has reached its file capacity.';
+}
+else {
+  $continue = true;
+
+  /* Verify the Data, Preprocess */
+  switch ($request['uploadMethod']) {
+    case 'raw':
+    case 'put':
+    switch($request['dataEncode']) {
+      case 'base64':
+      $rawData = base64_decode($request['fileData']);
+      break;
+
+      case 'binary': // Binary is buggy and far from confirmed to work. That said... if you're lucky? MDN has some useful information on this type of thing: https://developer.mozilla.org/En/Using_XMLHttpRequest
+      $rawData = $request['fileData'];
+      break;
+
+      default:
+      $errStr = 'badRawEncoding';
+      $errDesc = 'The specified file content encoding was not recognized.';
+
+      $continue = false;
+      break;
+    }
 
 
+    if ($request['md5hash']) { // This will allow us to verify that the upload worked.
+      if (md5($rawData) != $request['md5hash']) {
+        $errStr = 'badRawHash';
+        $errDesc = 'The included MD5 hash did not match the file content.';
 
-/* Start Processing */
-if ($continue) {
-  if (!$request['fileData']) {
-    $errStr = 'badName';
-    $errDesc = 'A name was not specified for the file.';
+        $continue = false;
+      }
+    }
+
+    if ($request['sha256hash']) { // This will allow us to verify that the upload worked.
+      if (hash('sha256',$rawData) != $request['sha256hash']) {
+        $errStr = 'badRawHash';
+        $errDesc = 'The included MD5 hash did not match the file content.';
+
+        $continue = false;
+      }
+    }
+
+    if ($request['fileSize']) { // This will allow us to verify that the upload worked as well, can be easier to implement, but doesn't serve the primary purpose of making sure the file upload wasn't intercepted.
+      if (strlen($rawData) != $request['fileSize']) {
+        $errStr = 'badRawSize';
+        $errDesc = 'The specified content length did not match the file content.';
+
+        $continue = false;
+      }
+    }
+    break;
   }
-  else {
-    $fileNameParts = explode('.',$request['fileName']);
 
-    if (count($fileNameParts) != 2) {
-      $errStr = 'badNameParts';
-      $errDesc = 'There was an improper number of "periods" in the file name - the extension could not be obtained.';
+
+
+  /* Start Processing */
+  if ($continue) {
+    if (!$request['fileData']) {
+      $errStr = 'badName';
+      $errDesc = 'A name was not specified for the file.';
     }
     else {
-      if (isset($mimes[$fileNameParts[1]])) {
-        $mime = $mimes[$fileNameParts[1]]['mime'];
-        $container = $mimes[$fileNameParts[1]]['container'];
-        $maxSize = $mimes[$fileNameParts[1]]['maxSize'];
+      $fileNameParts = explode('.',$request['fileName']);
 
-        $sha256hash = hash('sha256',$rawData);
-        $md5hash = hash('md5',$rawData);
-
-        if ($encryptUploads) {
-          list($contentsEncrypted,$iv,$saltNum) = fim_encrypt($rawData);
-          $saltNum = intval($saltNum);
-        }
-        else {
-          $contentsEncrypted = base64_encode($rawData);
-          $iv = '';
-          $saltNum = '';
-        }
-
-        if (!$rawData) {
-          $errStr = 'emptyFile';
-          $errDesc = $phrases['uploadErrorFileContents'];
-        }
-        elseif (strlen($rawData) == 0) {
-          $errStr = 'emptyFile';
-          $errDesc = $phrases['uploadErrorFileContents'];
-        }
-        elseif (strlen($rawData) > $maxSize) { // Note: Data is stored as base64 because its easier to handle; thus, the data will be about 33% larger than the normal (thus, if a limit is normally 400KB the file must be smaller than 300KB).
-          $errStr = 'tooLarge';
-          $errDesc = $phrases['uploadErrorFileSize'];
-        }
-        else {
-          $prefile = $database->select(
-            array(
-              "{$sqlPrefix}fileVersions" => array(
-                'versionId' => 'versionId',
-                'fileId' => 'fileId',
-                'sha256hash' => 'sha256hash',
-              ),
-              "{$sqlPrefix}files" => array(
-                'fileId' => 'vfileId',
-              ),
-            ),
-            array(
-              'both' => array(
-                array(
-                  'type' => 'e',
-                  'left' => array(
-                    'type' => 'column',
-                    'value' => 'sha256hash',
-                  ),
-                  'right' => array(
-                    'type' => 'string',
-                    'value' => $sha256hash,
-                  ),
-                ),
-                array(
-                  'type' => 'e',
-                  'left' => array(
-                    'type' => 'column',
-                    'value' => 'fileId',
-                  ),
-                  'right' => array(
-                    'type' => 'column',
-                    'value' => 'vfileId',
-                  ),
-                ),
-              ),
-            )
-          )->getAsArray(false);
-
-          if ($prefile) {
-            $webLocation = "{$installUrl}file.php?sha256hash={$prefile['sha256hash']}";
-
-            if ($request['roomId']) {
-              $room = $slaveDatabase->getRoom($request['roomId']);
-
-              fim_sendMessage($webLocation,$user,$room,'image');
-            }
-          }
-          else {
-            $database->insert("{$sqlPrefix}files", array(
-              'userId' => $user['userId'],
-              'fileName' => $request['fileName'],
-              'fileType' => $mime,
-              'creationTime' => time(),
-            ));
-
-            $fileId = $database->insertId;
-
-            $database->insert("{$sqlPrefix}fileVersions", array(
-              'fileId' => $fileId,
-              'sha256hash' => $sha256hash,
-              'md5hash' => $md5hash,
-              'salt' => $saltNum,
-              'iv' => $iv,
-              'contents' => $contentsEncrypted,
-              'time' => time(),
-            ));
-
-            $webLocation = "{$installUrl}file.php?sha256hash={$sha256hash}";
-
-            if ($request['roomId']) {
-              $room = $slaveDatabase->getRoom($request['roomId']);
-
-              fim_sendMessage($webLocation, $user, $room, $container);
-            }
-          }
-        }
+      if (count($fileNameParts) != 2) {
+        $errStr = 'badNameParts';
+        $errDesc = 'There was an improper number of "periods" in the file name - the extension could not be obtained.';
       }
       else {
-        $errStr = 'unrecExt';
-        $errDesc = 'The extension .' . $fileNameParts[1] . ' was not recognized.';
+        if (isset($mimes[$fileNameParts[1]])) {
+          $mime = $mimes[$fileNameParts[1]]['mime'];
+          $container = $mimes[$fileNameParts[1]]['container'];
+          $maxSize = $mimes[$fileNameParts[1]]['maxSize'];
+
+          $sha256hash = hash('sha256',$rawData);
+          $md5hash = hash('md5',$rawData);
+
+          if ($encryptUploads) {
+            list($contentsEncrypted,$iv,$saltNum) = fim_encrypt($rawData);
+            $saltNum = intval($saltNum);
+          }
+          else {
+            $contentsEncrypted = base64_encode($rawData);
+            $iv = '';
+            $saltNum = '';
+          }
+
+          if (!$rawData) {
+            $errStr = 'emptyFile';
+            $errDesc = $phrases['uploadErrorFileContents'];
+          }
+          elseif (strlen($rawData) == 0) {
+            $errStr = 'emptyFile';
+            $errDesc = $phrases['uploadErrorFileContents'];
+          }
+          elseif (strlen($rawData) > $maxSize) { // Note: Data is stored as base64 because its easier to handle; thus, the data will be about 33% larger than the normal (thus, if a limit is normally 400KB the file must be smaller than 300KB).
+            $errStr = 'tooLarge';
+            $errDesc = $phrases['uploadErrorFileSize'];
+          }
+          else {
+            $prefile = $database->select(
+              array(
+                "{$sqlPrefix}fileVersions" => array(
+                  'versionId' => 'versionId',
+                  'fileId' => 'fileId',
+                  'sha256hash' => 'sha256hash',
+                ),
+                "{$sqlPrefix}files" => array(
+                  'fileId' => 'vfileId',
+                ),
+              ),
+              array(
+                'both' => array(
+                  array(
+                    'type' => 'e',
+                    'left' => array(
+                      'type' => 'column',
+                      'value' => 'sha256hash',
+                    ),
+                    'right' => array(
+                      'type' => 'string',
+                      'value' => $sha256hash,
+                    ),
+                  ),
+                  array(
+                    'type' => 'e',
+                    'left' => array(
+                      'type' => 'column',
+                      'value' => 'fileId',
+                    ),
+                    'right' => array(
+                      'type' => 'column',
+                      'value' => 'vfileId',
+                    ),
+                  ),
+                ),
+              )
+            )->getAsArray(false);
+
+            if ($prefile) {
+              $webLocation = "{$installUrl}file.php?sha256hash={$prefile['sha256hash']}";
+
+              if ($request['roomId']) {
+                $room = $slaveDatabase->getRoom($request['roomId']);
+
+                fim_sendMessage($webLocation,$user,$room,'image');
+              }
+            }
+            else {
+              $database->insert("{$sqlPrefix}files", array(
+                'userId' => $user['userId'],
+                'fileName' => $request['fileName'],
+                'fileType' => $mime,
+                'creationTime' => time(),
+              ));
+
+              $fileId = $database->insertId;
+
+              $database->insert("{$sqlPrefix}fileVersions", array(
+                'fileId' => $fileId,
+                'sha256hash' => $sha256hash,
+                'md5hash' => $md5hash,
+                'salt' => $saltNum,
+                'iv' => $iv,
+                'size' => strlen($rawData),
+                'contents' => $contentsEncrypted,
+                'time' => time(),
+              ));
+
+              $database->insert("{$sqlPrefix}fileVersions", array(
+                'fileId' => $fileId,
+                'sha256hash' => $sha256hash,
+                'md5hash' => $md5hash,
+                'salt' => $saltNum,
+                'iv' => $iv,
+                'size' => strlen($rawData),
+                'contents' => $contentsEncrypted,
+                'time' => time(),
+              ));
+
+              $database->update("{$sqlPrefix}users", array(
+                'fileCount' => array(
+                  'type' => 'equation',
+                  'value' => '$fileCount + 1',
+                ),
+                'fileSize' => array(
+                  'type' => 'equation',
+                  'value' => '$fileSize + ' . (int) strlen($rawData)),
+                ),
+              ), array(
+                'userId' => $user['userId'],
+              ));
+
+              $database->incrementCounter('uploads');
+              $database->incrementCounter('uploadSize', strlen($rawData));
+
+              $webLocation = "{$installUrl}file.php?sha256hash={$sha256hash}";
+
+              if ($request['roomId']) {
+                $room = $slaveDatabase->getRoom($request['roomId']);
+
+                fim_sendMessage($webLocation, $user, $room, $container);
+              }
+            }
+          }
+        }
+        else {
+          $errStr = 'unrecExt';
+          $errDesc = 'The extension .' . $fileNameParts[1] . ' was not recognized.';
+        }
       }
     }
   }

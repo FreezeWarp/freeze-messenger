@@ -346,6 +346,17 @@ class fimDatabase extends database {
     ));
 
 
+    // Update user caches
+    $this->update("{$sqlPrefix}users", array(
+      'messageCount' => array(
+        'type' => 'equation',
+        'value' => '$messageCount + 1',
+      )
+    ), array(
+      'userId' => $userData['userId'],
+    ));
+
+
     // Insert or update a user's room stats.
     $this->insert("{$sqlPrefix}roomStats", array(
       'userId' => $userData['userId'],
@@ -357,6 +368,10 @@ class fimDatabase extends database {
         'value' => '$messages + 1',
       )
     ));
+
+
+    // Increment the messages counter.
+    $database->incrementCounter('messages');
 
 
     // If the contact is a private communication, create an event and add to the message unread table.

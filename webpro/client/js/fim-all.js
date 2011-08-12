@@ -145,10 +145,6 @@ var currentLocation = window.location.origin + directory + 'webpro/';
 ******************* Static Functions ********************
 *********************************************************/
 
-function unxml(data) {
-  return data.replace(/\&lt\;/g, '<').replace(/\&gt\;/g, '>').replace(/\&apos\;/g, "'").replace(/\&quot\;/g, '"');
-}
-
 function toBottom() {
   document.getElementById('messageList').scrollTop = document.getElementById('messageList').scrollHeight;
 
