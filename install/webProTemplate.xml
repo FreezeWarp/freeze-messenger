@@ -201,9 +201,9 @@
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsThemeBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
 
 &lt;label for="fontsize"&gt;$phrases[settingsFontsizeLabel]&lt;/label&gt; &lt;select name="fontsize" id="fontsize"&gt;
-&lt;option value=".5"&gt;$phrases[settingsFontsize50]&lt;/option&gt;
-&lt;option value=".6"&gt;$phrases[settingsFontsize60]&lt;/option&gt;
-&lt;option value=".75"&gt;$phrases[settingsFontsize75]&lt;/option&gt;
+&lt;option value=".7"&gt;$phrases[settingsFontsize50]&lt;/option&gt;
+&lt;option value=".8"&gt;$phrases[settingsFontsize60]&lt;/option&gt;
+&lt;option value=".9"&gt;$phrases[settingsFontsize75]&lt;/option&gt;
 &lt;option value="1"&gt;$phrases[settingsFontsize100]&lt;/option&gt;
 &lt;option value="1.2"&gt;$phrases[settingsFontsize125]&lt;/option&gt;
 &lt;option value="1.4"&gt;$phrases[settingsFontsize140]&lt;/option&gt;

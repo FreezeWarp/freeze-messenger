@@ -2374,6 +2374,7 @@ popup = {
           $('#stylesFIM').attr('href','client/css/' + themes[this.value] + '/fim.css');
 
           $.cookie('fim3_themeId', this.value, { expires : 14 });
+          themeId = this.value;
 
           return false;
         });
@@ -2383,6 +2384,7 @@ popup = {
           $('body').css('font-size',this.value + 'em');
 
           $.cookie('fim3_fontsize', this.value, { expires : 14 });
+          fontsize = this.value;
 
           return false;
         });
@@ -2802,29 +2804,31 @@ popup = {
 
     function updateOnline() {
       $.ajax({
-        url: directory + 'api/getAllActiveUsers.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+        url: directory + 'api/getAllActiveUsers.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
         type: 'GET',
         timeout: 2400,
         cache: false,
-        success: function(xml) {
+        success: function(json) {
           var data = '';
 
-          $(xml).find('user').each(function() {
-            var userName = unxml($(this).find('userName').text().trim()),
-              userId = Number($(this).find('userId').text().trim()),
-              startTag = unxml($(this).find('startTag').text().trim()),
-              endTag = unxml($(this).find('endTag').text().trim()),
+          active = json.getAllActiveUsers.users;
+
+          for (i in active) {
+            var userName = active[i].userData.userName,
+              userId = active[i].userData.userId,
+              startTag = active[i].userData.startTag,
+              endTag = active[i].userData.endTag,
               roomData = [];
 
-            $(this).find('room').each(function() {
-              var roomId = Number($(this).find('roomId').text().trim()),
-                roomName = unxml($(this).find('roomName').text().trim());
+            for (j in active[i].rooms) {
+              var roomId = active[i].rooms[j].roomId,
+                roomName = active[i].rooms[j].roomName;
               roomData.push('<a href="#room=' + roomId + '">' + roomName + '</a>');
-            });
+            }
             roomData = roomData.join(', ');
 
-            data += '<tr><td>' + startTag + '<span class="userName">' + userName + '</span>' + endTag + '</td><td>' + roomData + '</td></tr>';
-          });
+            data += '<tr><td>' + startTag + '<span class="userName" data-userId="' + userId + '">' + userName + '</span>' + endTag + '</td><td>' + roomData + '</td></tr>';
+          }
 
           $('#onlineUsers').html(data);
 

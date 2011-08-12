@@ -82,8 +82,8 @@ $xmlData = array(
 
 $queryParts['activeUsersSelect']['columns'] = array(
   "{$sqlPrefix}users" => 'userName, userId, userFormatStart, userFormatEnd',
-  "{$sqlPrefix}rooms" => 'roomName, roomId',
-  "{$sqlPrefix}ping" => 'time ptime, userId puserId,roomId proomId',
+  "{$sqlPrefix}rooms" => 'roomName, roomId, defaultPermissions, owner, options',
+  "{$sqlPrefix}ping" => 'time ptime, userId puserId, roomId proomId',
 );
 $queryParts['activeUsersSelect']['conditions'] = array(
   'both' => array(
@@ -102,7 +102,7 @@ $queryParts['activeUsersSelect']['conditions'] = array(
       'type' => 'e',
       'left' => array(
         'type' => 'column',
-        'value' => 'roomIdRef',
+        'value' => 'roomId',
       ),
       'right' => array(
         'type' => 'column',
@@ -156,40 +156,32 @@ $activeUsers = $database->select($queryParts['activeUsersSelect']['columns'],
   $queryParts['activeUsersSelect']['sort']);
 $activeUsers = $activeUsers->getAsArray('userId');
 
+
+
 /* Start Processing */
 if (is_array($activeUsers)) {
   if (count($activeUsers) > 0) {
     foreach ($activeUsers AS $activeUser) {
-      $rooms = array_combine(explode(',',$activeUser['roomIds']),
-        explode(',',$activeUser['roomNames'])); // Combine the selected roomIds with their relevant roomNames using key -> value pairs. This is a performance technique, with the consequence of preventing access to any additional roomData.
-
-      $xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']] = array(
-        'userData' => array(
-          'userId' => (int) $activeUser['userId'],
-          'userName' => (string) $activeUser['userName'],
-          'startTag' => (string) $activeUser['userFormatStart'],
-          'endTag' => (string) $activeUser['userFormatEnd'],
-        ),
-        'rooms' => array(),
-      );
-
-
       ($hook = hook('getAllActiveUsers_eachUser_start') ? eval($hook) : '');
 
-      if (is_array($rooms)) {
-        if (count($rooms) > 0) {
-          foreach ($rooms AS $roomId => $name) {
-            $xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']]['rooms']['room ' . $roomId] = array(
-              'roomId' => (int) $roomId,
-              'roomName' => (string) $name,
-            );
-
-
-            ($hook = hook('getAllActiveUsers_eachRoom') ? eval($hook) : '');
-          }
-        }
+      if (!isset($xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']])) {
+        $xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']] = array(
+          'userData' => array(
+            'userId' => (int) $activeUser['userId'],
+            'userName' => (string) $activeUser['userName'],
+            'startTag' => (string) $activeUser['userFormatStart'],
+            'endTag' => (string) $activeUser['userFormatEnd'],
+          ),
+          'rooms' => array(),
+        );
       }
 
+      if (fim_hasPermission($activeUser, $activeUser, 'view', false)) { // Only list the room the user is in if the active user has permission to view the room.
+        $xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']]['rooms']['room ' . $activeUser['roomId']] = array(
+          'roomId' => (int) $activeUser['roomId'],
+          'roomName' => (string) $activeUser['roomName'],
+        );
+      }
 
       ($hook = hook('getAllActiveUsers_eachUser_end') ? eval($hook) : '');
     }
