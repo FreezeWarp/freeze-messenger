@@ -190,9 +190,9 @@ if ($continue) {
 
     $database->createEvent('topicChange', false, $room['roomId'], false, $topic, false, false); // name, user, room, message, p1, p2, p3
 
-    $database->update(array(
+    $database->update("{$sqlPrefix}rooms", array(
       'roomTopic' => $topic,
-    ),"{$sqlPrefix}rooms",array(
+    ), array(
      'roomId' => $room['roomId'],
     ));
   }/*

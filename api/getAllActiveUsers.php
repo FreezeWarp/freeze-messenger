@@ -37,17 +37,13 @@ require('../global.php');
 $request = fim_sanitizeGPC(array(
   'get' => array(
     'onlineThreshold' => array(
-      'type' => 'string',
-      'require' => false,
-      'default' => ($onlineThreshold ? $onlineThreshold : 15),
+      'default' => (int) $config['defaultOnlineThreshold'],
       'context' => array(
         'type' => 'int',
       ),
     ),
 
     'time' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => (int) time(),
       'context' => array(
         'type' => 'int',
@@ -55,8 +51,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'users' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => '',
       'context' => array(
          'type' => 'csv',
@@ -87,33 +81,9 @@ $xmlData = array(
 );
 
 $queryParts['activeUsersSelect']['columns'] = array(
-  "{$sqlPrefix}users" => array(
-    'userName' => 'userName',
-    'userId' => 'userId',
-    'userFormatStart' => 'userFormatStart',
-    'userFormatEnd' => 'userFormatEnd',
-  ),
-  "{$sqlPrefix}rooms" => array(
-    'roomName' => array(
-      'context' => 'join',
-      'separator' => ',',
-      'name' => 'roomNames',
-    ),
-    'roomId' => array(
-      'context' => 'join',
-      'separator' => ',',
-      'name' => 'roomIds',
-    ),
-    'roomId roomIdRef' => array(
-      'context' => 'silent',
-      'name' => 'roomIdRef',
-    ),
-  ),
-  "{$sqlPrefix}ping" => array(
-    'time' => 'ptime',
-    'userId' => 'puserId',
-    'roomId' => 'proomId',
-  ),
+  "{$sqlPrefix}users" => 'userName, userId, userFormatStart, userFormatEnd',
+  "{$sqlPrefix}rooms" => 'roomName, roomId',
+  "{$sqlPrefix}ping" => 'time ptime, userId puserId,roomId proomId',
 );
 $queryParts['activeUsersSelect']['conditions'] = array(
   'both' => array(
@@ -155,7 +125,6 @@ $queryParts['activeUsersSelect']['conditions'] = array(
 $queryParts['activeUsersSelect']['sort'] = array(
   'userName' => 'asc',
 );
-$queryParts['activeUsersSelect']['group'] = 'puserId';
 
 
 
@@ -184,8 +153,7 @@ if (count($request['users']) > 0) {
 /* Get Active Users */
 $activeUsers = $database->select($queryParts['activeUsersSelect']['columns'],
   $queryParts['activeUsersSelect']['conditions'],
-  $queryParts['activeUsersSelect']['sort'],
-  $queryParts['activeUsersSelect']['group']);
+  $queryParts['activeUsersSelect']['sort']);
 $activeUsers = $activeUsers->getAsArray('userId');
 
 /* Start Processing */

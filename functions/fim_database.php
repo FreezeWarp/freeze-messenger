@@ -334,14 +334,14 @@ class fimDatabase extends database {
 
 
     // Update room caches.
-    $this->update(array(
+    $this->update("{$sqlPrefix}rooms", array(
       'lastMessageTime' => $this->now(),
       'lastMessageId' => $messageId,
       'messageCount' => array(
         'type' => 'equation',
         'value' => '$messageCount + 1',
       )
-    ), "{$sqlPrefix}rooms", array(
+    ), array(
       'roomId' => $roomData['roomId'],
     ));
 
@@ -411,12 +411,12 @@ class fimDatabase extends database {
   public function incrementCounter($counterName, $incrementValue = 1) {
    global $sqlPrefix, $config;
 
-    if ($this->update(array(
+    if ($this->update("{$sqlPrefix}counters", array(
       'counterValue' => array(
         'type' => 'equation',
         'value' => '$counterValue + ' . (int) $incrementValue,
       )
-    ), "{$sqlPrefix}rooms", array(
+    ), array(
       'counterName' => $counterName,
     ))) {
       return true;
