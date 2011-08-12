@@ -2616,9 +2616,9 @@ popup = {
             dia.error('The roomname is too long.');
           }
           else {
-            $.post(directory + 'api/editRoom.php','action=edit&roomId=' + roomIdLocal + '&roomName=' + urlencode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
-              var errStr = unxml($(xml).find('errStr').text().trim()),
-                errDesc = unxml($(xml).find('errDesc').text().trim());
+            $.post(directory + 'api/editRoom.php','action=edit&roomId=' + roomIdLocal + '&roomName=' + urlencode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(json) {
+              var errStr = json.editRoom.errStr,
+                errDesc = json.editRoom.errDesc;
 
               if (errStr) {
                 dia.error('An error has occured: ' + errDesc);
@@ -2705,10 +2705,10 @@ popup = {
             dia.error('The roomname is too long.');
           }
           else {
-            $.post(directory + 'api/editRoom.php','action=create&roomName=' + urlencode(name) + ($('#allowAllUsers').is(':checked') ? '&defaultPermissions=7' : '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups) + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
-              var errStr = unxml($(xml).find('errStr').text().trim()),
-                errDesc = unxml($(xml).find('errDesc').text().trim()),
-                createRoomId = Number($(xml).find('insertId').text().trim());
+            $.post(directory + 'api/editRoom.php','action=create&roomName=' + urlencode(name) + ($('#allowAllUsers').is(':checked') ? '&defaultPermissions=7' : '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups) + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(json) {
+              var errStr = json.editRoom.errStr,
+                errDesc = json.editRoom.errDesc,
+                createRoomId = json.editRoom.response.insertId;
 
               if (errStr) {
                 dia.error('An error has occured: ' + errDesc);
@@ -2858,26 +2858,28 @@ popup = {
     var kickHtml = '';
 
     $.ajax({
-      url: directory + 'api/getKicks.php?rooms=' + roomId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+      url: directory + 'api/getKicks.php?rooms=' + roomId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
       timeout: 5000,
       type: 'GET',
       cache: false,
-      success: function(xml) {
-        $(xml).find('kick').each(function() {
-          var kickerId = Number($(this).find('kickerData > userId').text().trim()),
-            kickerName = $(this).find('kickerData > userName').text().trim(),
-            kickerFormatStart = $(this).find('kickerData > userFormatStart').text().trim(),
-            kickerFormatEnd = $(this).find('kickerData > userFormatEnd').text().trim(),
-            userId = Number($(this).find('userData > userId').text().trim()),
-            userName = $(this).find('userData > userName').text().trim(),
-            userFormatStart = $(this).find('userData > userFormatStart').text().trim(),
-            userFormatEnd = $(this).find('userData > userFormatEnd').text().trim(),
-            length = Number($(this).find('length').text().trim()),
-            set = unxml($(this).find('setFormatted').text().trim()),
-            expires = unxml($(this).find('expiresFormatted').text().trim());
+      success: function(json) {
+        active = json.getKicks.kicks;
+
+        for (i in active) {
+          var kickerId = active[i].kickerData.userId,
+            kickerName = active[i].kickerData.userName,
+            kickerFormatStart = active[i].kickerData.userFormatStart,
+            kickerFormatEnd = active[i].kickerData.userFormatEnd,
+            userId = active[i].userData.userId,
+            userName = active[i].userData.userName,
+            userFormatStart = active[i].userData.userFormatStart,
+            userFormatEnd = active[i].userData.userFormatEnd,
+            length = active[i].length,
+            set = active[i].setFormatted,
+            expires = active[i].expiresFormatted;
 
           kickHtml += '<tr><td>' + userFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + userFormatEnd + '</td><td>' + kickerFormatStart + '<span class="userName userNameTable" data-userId="' + kickerId + '">' + kickerName + '</span>' + kickerFormatEnd + '</td><td>' + set + '</td><td>' + expires + '</td><td><button onclick="standard.unkick(' + userId + ',' + roomId + ')">Unkick</button></td></tr>';
-        });
+        }
 
         dia.full({
           content : '<table class="center"><thead><tr class="hrow"><th>User</th><th>Kicked By</th><th>Kicked On</th><th>Expires On</th><th>Actions</th></tr>  </thead><tbody id="kickedUsers">' + kickHtml + '</tbody></table>',
@@ -2908,26 +2910,28 @@ popup = {
     var kickHtml = '';
 
     $.ajax({
-      url: directory + 'api/getKicks.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+      url: directory + 'api/getKicks.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
       timeout: 5000,
       type: 'GET',
       cache: false,
-      success: function(xml) {
-        $(xml).find('kick').each(function() {
-          var kickerId = Number($(this).find('kickerData > userId').text().trim()),
-            kickerName = $(this).find('kickerData > userName').text().trim(),
-            kickerFormatStart = $(this).find('kickerData > userFormatStart').text().trim(),
-            kickerFormatEnd = $(this).find('kickerData > userFormatEnd').text().trim(),
-            userId = Number($(this).find('userData > userId').text().trim()),
-            userName = $(this).find('userData > userName').text().trim(),
-            userFormatStart = $(this).find('userData > userFormatStart').text().trim(),
-            userFormatEnd = $(this).find('userData > userFormatEnd').text().trim(),
-            length = Number($(this).find('length').text().trim()),
-            set = unxml($(this).find('setFormatted').text().trim()),
-            expires = unxml($(this).find('expiresFormatted').text().trim());
+      success: function(json) {
+        active = json.getKicks.kicks;
+
+        for (i in active) {
+          var kickerId = active[i].kickerData.userId,
+            kickerName = active[i].kickerData.userName,
+            kickerFormatStart = active[i].kickerData.userFormatStart,
+            kickerFormatEnd = active[i].kickerData.userFormatEnd,
+            userId = active[i].userData.userId,
+            userName = active[i].userData.userName,
+            userFormatStart = active[i].userData.userFormatStart,
+            userFormatEnd = active[i].userData.userFormatEnd,
+            length = active[i].length,
+            set = active[i].setFormatted,
+            expires = active[i].expiresFormatted;
 
           kickHtml += '<tr><td>' + userFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + userFormatEnd + '</td><td>' + kickerFormatStart + '<span class="userName userNameTable" data-userId="' + kickerId + '">' + kickerName + '</span>' + kickerFormatEnd + '</td><td>' + set + '</td><td>' + expires + '</td></tr>';
-        });
+        }
 
         dia.full({
           content : '<table class="center"><thead><tr class="hrow"><th>User</th><th>Kicked By</th><th>Kicked On</th><th>Expires On</th></tr>  </thead><tbody id="kickedUsers">' + kickHtml + '</tbody></table>',
@@ -3108,15 +3112,19 @@ function windowDraw() {
 
       if (thisid != $('#tooltext').attr('data-lastuserId')) {
         $('#tooltext').attr('data-lastuserId',thisid);
-        $.get(directory + 'api/getUsers.php?users=' + thisid + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId, function(xml) {
-          var userName = unxml($(xml).find('user > userName').text().trim()),
-            userId = Number($(xml).find('user > userId').text().trim()),
-            startTag = unxml($(xml).find('user > startTag').text().trim()),
-            endTag = unxml($(xml).find('user > endTag').text().trim()),
-            userTitle = unxml($(xml).find('user > userTitle').text().trim()),
-            posts = Number($(xml).find('user > postCount').text().trim()),
-            joinDate = unxml($(xml).find('user > joinDateFormatted').text().trim()),
-            avatar = unxml($(xml).find('user > avatar').text().trim());
+        $.get(directory + 'api/getUsers.php?users=' + thisid + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId, function(json) {
+          active = json.getUsers.users;
+
+          for (i in active) {
+            var userName = active[i].userName,
+              userId = active[i].userId,
+              startTag = active[i].startTag,
+              endTag = active[i].endTag,
+              userTitle = active[i].userTitle,
+              posts = active[i].postCount,
+              joinDate = active[i].joinDateFormatted,
+              avatar = active[i].avatar;
+          }
 
           content.html('<div style="width: 400px;">' + (avatar.length > 0 ? '<img alt="" src="' + avatar + '" style="float: left;" />' : '') + '<span class="userName" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>' + (userTitle.length > 0 ? '<br />' + userTitle : '') + '<br /><em>Posts</em>: ' + posts + '<br /><em>Member Since</em>: ' + joinDate + '</div>');
 
@@ -3366,10 +3374,14 @@ function contextMenuParse() {
       type: 'GET',
       timeout: 2400,
       cache: false,
-      success: function(xml) {
-        userName = unxml($(xml).find('userName').text().trim());
-        avatarUrl = unxml($(xml).find('avatar').text().trim());
-        profileUrl = unxml($(xml).find('profile').text().trim());
+      success: function(json) {
+        active = json.getUsers.users;
+
+        for (i in active) {
+          userName = active[i].userName;
+          avatarUrl = active[i].avatar;
+          profileUrl = active[i].profile;
+        }
 
         switch(action) {
           case 'private_im':

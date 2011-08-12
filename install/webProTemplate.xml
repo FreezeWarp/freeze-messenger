@@ -55,6 +55,7 @@
 
   &lt;li&gt;&lt;a href="#" id="viewUploads"&gt;$phrases[templateViewUploads]&lt;/a&gt;&lt;/li&gt;
   &lt;li&gt;&lt;a href="#" id="changeSettings"&gt;$phrases[templateChangeSettings]&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#" id="manageKick"&gt;$phrases[templateMyKicks]&lt;/a&gt;&lt;/li&gt;
   &lt;li&gt;&lt;a href="#" id="logout"&gt;$phrases[templateLogout]&lt;/a&gt;&lt;/li&gt;
   &lt;li&gt;&lt;a href="#" id="login"&gt;$phrases[templateLogin]&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
