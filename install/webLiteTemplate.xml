@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<interface version="3.0" name="webro">
+<interface version="3.0" name="weblite">
   <metadata>
     <title>WebPro (jQueryUI-powered)</title>
     <summary>A powerful online interface that is developed as the "default" interface of FreezeMessenger. It is essentially the "source" implementation, though as such some of the more inventive ideas out there aren't to be found in WebPro.</summary>

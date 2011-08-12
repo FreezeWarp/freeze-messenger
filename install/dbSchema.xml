@@ -219,7 +219,7 @@
 
 
     <table name="interfaces" type="general" comment="Installed interfaces. These will often interface with the phrase and template tables.">
-      <column name="interfaceId" type="int" maxlen="6" comment="The ID of the interface, generated as needed." />
+      <column name="interfaceId" type="int" maxlen="6" autoincrement="true" comment="The ID of the interface, generated as needed." />
       <column name="interfaceName" type="string" maxlen="10" comment="The name of the interface, defined by itself." />
       <column name="version" type="string" maxlen="20" comment="The version of the interface." />
       <column name="fimVersion" type="string" maxlen="20" comment="The version of the FIM the interface is intended for." />
@@ -235,7 +235,7 @@
       <column name="text" type="string" maxlen="4294967296" comment="The phrase text." />
       <column name="interfaceId" type="int" maxlen="6" comment="The interface that uses this phrase." />
 
-      <key name="phraseName,languageCode" type="primary" />
+      <key name="phraseName,languageCode,interfaceId" type="primary" />
       <key name="languageCode" type="index" />
       <key name="interfaceId" type="index" />
     </table>

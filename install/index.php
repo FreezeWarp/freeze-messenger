@@ -254,7 +254,7 @@ switch ($_REQUEST['phase']) {
       $database->connect($host, $port, $userName, $password, $databaseName, $driver);
     }
 
-    $database->setErrorLevel(E_WARNING);
+    $database->setErrorLevel(E_USER_WARNING);
 
 
     if ($database->error) {
@@ -303,8 +303,6 @@ switch ($_REQUEST['phase']) {
 
       // Get Pre-Existing Tables So We Don't Overwrite Any of Them Later
       $showTables = $database->getTablesAsArray();
-
-
 
       // Read the various XML files.
       $xmlData = new Xml2Array(file_get_contents('dbSchema.xml')); // Get the XML Data from the dbSchema.xml file, and feed it to the Xml2Array class
@@ -394,7 +392,7 @@ switch ($_REQUEST['phase']) {
           }
 
 
-          if (in_array($tableName, (array) $mysqlTables)) { // We are overwriting, so rename the old table to a backup. Someone else can clean it up later, but its for the best.
+          if (in_array($tableName, (array) $showTables)) { // We are overwriting, so rename the old table to a backup. Someone else can clean it up later, but its for the best.
             if (!$database->renameTable($tableName, $tableName . '~' . time())) {
               die("Could Not Rename Table '$tableName'");
             }
@@ -408,6 +406,8 @@ switch ($_REQUEST['phase']) {
 
 
 
+
+
         /* Part 3: Insert Predefined Data */
 
         $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
@@ -415,13 +415,13 @@ switch ($_REQUEST['phase']) {
         foreach ($xmlData2['database'][0]['table'] AS $table) { // Run through each table from the XML
           $columns = array(); // We will use this to store the column fragments that will be implode()d into the final query.
           $values = array(); // We will use this to store the column fragments that will be implode()d into the final query.
-
+          $insertData = array();
 
           foreach ($table['column'] AS $column) {
             $insertData[$column['@name']] = $column['@value'];
           }
 
-          if (!$database->insert($table['@name'], $insertData)) {
+          if (!$database->insert($prefix . $table['@name'], $insertData)) {
             die("Could not run query:\n" . $database->sourceQuery . "\n\nError:\n" . $database->error);
           }
         }
@@ -429,16 +429,28 @@ switch ($_REQUEST['phase']) {
 
 
 
-        /* Part 4: Insert WebPro Templates */
 
+        /* Part 4: Insert WebPro, WebLite Templates */
         foreach (array($xmlData3, $xmlData5) AS $templateData) {
-          $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
+          if (!$database->insert($prefix . 'interfaces', array(
+            'interfaceName' => $templateData['@name'],
+            'version' => $templateData['metadata'][0]['version'][0]['#text'],
+            'fimVersion' => $templateData['@version'],
+            'author' => $templateData['metadata'][0]['copyright'][0]['#text'],
+          ))) {
+            die("Could not run query:\n" . $database->sourceQuery . "\n\nError:\n" . $database->error);
+          }
+          else {
+            $interfaceIds[$templateData['@name']] = $database->insertId;
+          }
+
 
           foreach ($templateData['templates'][0]['template'] AS $template) { // Run through each template from the XML
-            if (!$database->insert($table[$prefix . 'templates'], array(
+            if (!$database->insert($prefix . 'templates', array(
               'templateName' => $template['@name'],
               'data' => $template['#text'],
               'vars' => $template['@vars'],
+              'interfaceId' => $interfaceIds[$templateData['@name']],
             ))) {
               die("Could not run query:\n" . $database->sourceQuery . "\n\nError:\n" . $database->error);
             }
@@ -450,22 +462,25 @@ switch ($_REQUEST['phase']) {
 
 
         /* Part 5: Insert WebPro Phrases */
+        $languages = array();
 
         foreach (array($xmlData4, $xmlData6) AS $phraseData) {
-          $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
-
-          if (!$database->insert($table[$prefix . 'languages'], array(
-            'languageCode' => $phraseData['@languageCode'],
-            'languageName' => $phraseData['@languageName'],
-          ))) {
-            die("Could not run query:\n" . $database->sourceQuery . "\n\nError:\n" . $database->error);
+          if (!in_array($phraseData['@languageCode'], $languages)) {
+            $languages[] = $phraseData['@languageCode'];
+            if (!$database->insert($prefix . 'languages', array(
+              'languageCode' => $phraseData['@languageCode'],
+              'languageName' => $phraseData['@languageName'],
+            ))) {
+              die("Could not run query:\n" . $database->sourceQuery . "\n\nError:\n" . $database->error);
+            }
           }
 
           foreach ($phraseData['phrases'][0]['phrase'] AS $phrase) { // Run through each phrase from the XML
-            if (!$database->insert($table[$prefix . 'phrases'], array(
+            if (!$database->insert($prefix . 'phrases', array(
               'phraseName' => $phrase['@name'],
               'languageCode' => $phraseData['@languageCode'],
-              'text' => $phrase['#text']
+              'text' => $phrase['#text'],
+              'interfaceId' => $interfaceIds[$phraseData['@product']],
             ))) {
               die("Could not run query:\n" . $database->sourceQuery . "\n\nError:\n" . $database->error);
             }

@@ -28,7 +28,7 @@ class database {
   public function __construct() {
     $this->queryCounter = 0;
     $this->insertId = 0;
-    $this->errorLevel = E_ERROR;
+    $this->errorLevel = E_USER_ERROR;
   }
 
   public function setErrorLevel($errorLevel) {
@@ -87,18 +87,11 @@ class database {
           $function = mysql_connect("$args[1]:$args[2]", $args[3], $args[4]);
           $this->version = mysql_get_server_info($function);
 
-          if ($function && $args[5]) { // The initial function returned successfully and we need to select the database.
-            $function = mysql_select_db($args[5], $function);
-            $this->activeDatabase = $args[5];
-          }
-
           return $function;
         break;
 
         case 'selectdb':
           $function = mysql_select_db($args[1], $this->dbLink);
-
-          $this->activeDatabase = $args[5];
 
           return $function;
         break;
@@ -141,9 +134,6 @@ class database {
           $function = mysqli_connect($args[1], $args[3], $args[4], ($args[5] ? $args[5] : null), (int) $args[2]);
 
           $this->version = mysqli_get_server_version($function);
-          if ($args[5]) {
-            $this->activeDatabase = $args[5];
-          }
 
           return $function;
         break;
@@ -240,13 +230,8 @@ class database {
       $this->dbLink = $link; // Set the object property "dbLink" to the database connection resource. It will be used with most other queries that can accept this parameter.
     }
 
-
-    if ($this->language == 'mysql' || $this->language == 'mysqli') {
-      if (!$this->rawQuery('SET NAMES "utf8"')) { // Sets the database encoding to utf8 (unicode).
-        $this->error = 'Could not run SET NAMES query.';
-
-        return false;
-      }
+    if (!$this->activeDatabase && $database) { // Some drivers will require this.
+      $this->selectDatabase($database);
     }
 
 
@@ -270,6 +255,15 @@ class database {
       return false;
     }
     else {
+      if ($this->language == 'mysql' || $this->language == 'mysqli') {
+        if (!$this->rawQuery('SET NAMES "utf8"')) { // Sets the database encoding to utf8 (unicode).
+          $this->error = 'Could not run SET NAMES query.';
+
+          return false;
+        }
+      }
+
+      $this->activeDatabase = $database;
       return true;
     }
   }
@@ -865,7 +859,9 @@ LIMIT
       }
     }
     else {
-      trigger_error("Database Error;\n\nQuery: $query;\n\nDAL Error: " . $this->error . "\n\nDriver Error: " . $this->functionMap('error'), $this->errorLevel); // The query could not complete.
+      $this->error = $this->functionMap('error');
+
+      trigger_error("Database Error;\n\nQuery: $query;\n\nError: " . $this->error, $this->errorLevel); // The query could not complete.
 
       return false;
     }
