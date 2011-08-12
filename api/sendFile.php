@@ -119,12 +119,7 @@ $xmlData = array(
 /* Get Mime Types from the Database */
 $mimes = $slaveDatabase->select(
   array(
-    "{$sqlPrefix}uploadTypes" => array(
-      'typeId' => 'typeId',
-      'extension' => 'extension',
-      'mime' => 'mime',
-      'maxSize' => 'maxSize',
-    ),
+    "{$sqlPrefix}uploadTypes" => 'typeId, extension, mime, maxSize, container',
   )
 );
 $mimes = $mimes->getAsArray('extension');
@@ -295,6 +290,7 @@ if ($continue) {
               'userId' => $user['userId'],
               'fileName' => $request['fileName'],
               'fileType' => $mime,
+              'creationTime' => time(),
             ));
 
             $fileId = $database->insertId;
@@ -306,6 +302,7 @@ if ($continue) {
               'salt' => $saltNum,
               'iv' => $iv,
               'contents' => $contentsEncrypted,
+              'time' => time(),
             ));
 
             $webLocation = "{$installUrl}file.php?sha256hash={$sha256hash}";

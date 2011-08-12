@@ -232,7 +232,7 @@ class database {
     }
 
 
-    if ($this->activeDatabase && $database) { // Some drivers will require this.
+    if (!$this->activeDatabase && $database) { // Some drivers will require this.
       if (!$this->selectDatabase($database)) {
         $this->error = 'Could not select database ("' . $database . '"): ' . $this->functionMap('error');
 

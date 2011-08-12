@@ -180,6 +180,7 @@ $file = $file->getAsArray(false);
 
 
 
+
 /* Start Processing */
 if ($file['salt']) {
   $file = fim_decrypt($file,'contents');

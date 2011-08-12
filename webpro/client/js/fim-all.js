@@ -99,6 +99,7 @@ var roomRef = {}, // Object
 /* Get Cookies */
 
 var themeId = Number($.cookie('fim3_themeId'));
+var fontsize = $.cookie('fim3_fontsize');
 
 
 if ($.cookie('fim3_setting') == undefined) {
@@ -2000,7 +2001,7 @@ popup = {
                 fileSize = files[0].size;
 
               var fileParts = fileName.split('.');
-              var filePartsLast = fileParts[filePartsLast.length - 1];
+              var filePartsLast = fileParts[fileParts.length - 1];
 
               if (!filePartsLast in uploadFileTypes) {
                 $('#preview').html('The specified file type can not be uploaded.');
@@ -2257,7 +2258,10 @@ popup = {
           $('#disableImage').attr('checked','checked');
         }
         if (themeId) {
-          $('#theme > option[value=' + themeId + ']').attr('selected','selected');
+          $('#theme > option[value="' + themeId + '"]').attr('selected','selected');
+        }
+        if (fontsize) {
+          $('#fontsize > option[value="' + fontsize + '"]').attr('selected','selected');
         }
 
 
@@ -2300,7 +2304,7 @@ popup = {
               defaultHighlightHash = {r : defaultHighlightHashPre[0], g : defaultHighlightHashPre[1], b : defaultHighlightHashPre[2] }
             }
             if (defaultFontface) {
-              $('#defaultFace > option[value=' + defaultFontface + ']').attr('selected','selected');
+              $('#defaultFace > option[value="' + defaultFontface + '"]').attr('selected','selected');
             }
 
 
@@ -2370,6 +2374,15 @@ popup = {
           $('#stylesFIM').attr('href','client/css/' + themes[this.value] + '/fim.css');
 
           $.cookie('fim3_themeId', this.value, { expires : 14 });
+
+          return false;
+        });
+
+
+        $('#fontsize').change(function() {
+          $('body').css('font-size',this.value + 'em');
+
+          $.cookie('fim3_fontsize', this.value, { expires : 14 });
 
           return false;
         });
@@ -3534,6 +3547,10 @@ function contextMenuParse() {
 
 $(document).ready(function() {
   $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/' + themeName + '/jquery-ui-1.8.13.custom.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/' + themeName + '/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
+
+  if (fontsize) {
+    $('body').css('font-size',fontsize + 'em');
+  }
 
 
   if ($.cookie('fim3_userId') > 0) {
