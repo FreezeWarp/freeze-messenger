@@ -230,8 +230,13 @@ class database {
       $this->dbLink = $link; // Set the object property "dbLink" to the database connection resource. It will be used with most other queries that can accept this parameter.
     }
 
+
     if (!$this->activeDatabase && $database) { // Some drivers will require this.
-      $this->selectDatabase($database);
+      if (!$this->selectDatabase($database)) {
+        $this->error = 'Could not select database ("' . $database . '"): ' . $this->functionMap('error');
+
+        return false;
+      }
     }
 
 

@@ -390,7 +390,7 @@
       <column name="birthDate" type="time" default="0" comment="The date of the user's birth, used for parental control settings." />
       <column name="lastSync" type="time" default="0" comment="The date the userdata was last synced. This is not applicable for vanilla logins." />
       <column name="defaultRoom" type="int" maxlen="6" default="1" comment="The user's default room." />
-      <column name="interface" type="string" maxlen="50" comment="The user's default interface." />
+      <column name="interfaceId" type="string" maxlen="50" comment="The user's default interface." />
       <column name="favRooms" type="string" maxlen="1000" default="1" comment="A comma-seperated list of rooms the user has ranked as being favourites." />
       <column name="watchRooms" type="string" maxlen="1000" comment="A comma-seperated list of rooms the user would like to be notified about when new messages are made" />
       <column name="ignoreList" type="string" maxlen="1000" comment="4" />

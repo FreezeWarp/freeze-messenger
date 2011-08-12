@@ -114,6 +114,39 @@ if (!isset($defaultLanguage)) {
 
 
 
+/* Better Error Handling and Output Buffering */
+if (!isset($apiRequest) || $apiRequest === false) {
+  function fim_errorHandler($errno, $errstr, $errfile, $errline) {
+    global $email;
+
+    if (!(error_reporting() & $errno)) { // The error is not to be reported.
+      return;
+    }
+
+    switch ($errno) {
+      case E_USER_ERROR:
+      ob_end_clean(); // Clean the output buffer and end it. This means when we show the error in a second, there won't be anything else with it.
+
+      die(nl2br('<fieldset><legend>Unrecoverable Error</legend><strong>Error Text</strong><br />' . $errstr . '<br /><br /><strong>What Should I Do Now?</strong><br />' . ($email ? 'You may wish to <a href="mailto:' . $email . '">notify the administration</a> of this error.' : 'No contact was specified for this installation, so try to wait it out.')  . '<br /><br /><strong>Are You The Host?</strong><br />Server errors are often database related. These may result from improper installation or a corrupted database. The documentation may provide clues, however.</fieldset>'));
+
+      if ($email) {
+        mail($email, 'FIM3 System Error [' . $_SERVER['SERVER_NAME'] . ']', 'The following error was encountered by the server located at ' . $_SERVER['SERVER_NAME'] . ':<br /><br />' . $errstr);
+      }
+      break;
+
+      default:
+      // Do Nothing
+      break;
+    }
+
+    return true; // Don't execute PHP internal error handler
+  }
+
+  ob_start();
+  set_error_handler('fim_errorHandler');
+}
+
+
 
 
 ////* Database Stuff *////
@@ -261,14 +294,47 @@ if (isset($apiRequest)) {
 
 
 
+////* Get Intefaces *////
+
+if (isset($reqPhrases)) {
+  if ($reqPhrases === true) {
+    if (!$intefaces = fim_getCachedVar('fim_intefaces')) {
+      $intefaces2 = $slaveDatabase->select(
+        array(
+          "{$sqlPrefix}interfaces" => 'interfaceId, interfaceName',
+        )
+      );
+      $intefaces2 = $intefaces2->getAsArray(true);
+
+      if (is_array($intefaces2)) {
+        if (count($intefaces2) > 0) {
+          foreach ($intefaces2 AS $inteface) {
+            $intefaces[$inteface['interfaceId']] = $inteface['interfaceId'];
+          }
+
+          unset($interface);
+        }
+      }
+
+      unset($interfaces2);
+
+      fim_setCachedVar('fim_phrases', $interfaces, $config['phrasesCacheRefresh']);
+    }
+  }
+}
+
+
+
+
+
 ////* Get Phrases *////
 
-if (isset($reqPhrases)) { // TODO Languages currently overwrite eachother
+if (isset($reqPhrases)) {
   if ($reqPhrases === true) {
     if (!$phrases = fim_getCachedVar('fim_phrases')) {
       $phrases2 = $slaveDatabase->select(
         array(
-          "{$sqlPrefix}phrases" => 'phraseName, languageCode, text',
+          "{$sqlPrefix}phrases" => 'interfaceId, phraseName, languageCode, text',
         )
       );
       $phrases2 = $phrases2->getAsArray(true);
@@ -276,7 +342,7 @@ if (isset($reqPhrases)) { // TODO Languages currently overwrite eachother
       if (is_array($phrases2)) {
         if (count($phrases2) > 0) {
           foreach ($phrases2 AS $phrase) {
-            $phrases[$phrase['languageCode']][$phrase['phraseName']] = $phrase['text'];
+            $phrases[$phrase['interfaceId']][$phrase['languageCode']][$phrase['phraseName']] = $phrase['text'];
           }
 
           unset($phrase);
@@ -285,12 +351,59 @@ if (isset($reqPhrases)) { // TODO Languages currently overwrite eachother
 
       unset($phrases2);
 
-      fim_setCachedVar('fim_phrases',$phrases,$config['phrasesCacheRefresh']);
+      fim_setCachedVar('fim_phrases', $phrases, $config['phrasesCacheRefresh']);
     }
 
+    $interfaceId = (isset($_REQUEST['interfaceId']) ? $_REQUEST['interfaceId'] :
+      (isset($user['interfaceId']) ? $user['interfaceId'] : $interfaces[$defaultInterface]));
     $lang = (isset($_REQUEST['lang']) ? $_REQUEST['lang'] :
       (isset($user['lang']) ? $user['lang'] : $config['defaultLanguage']));
-    $phrases = $phrases[$lang];
+    $phrases = $phrases[$interfaceId][$lang];
+  }
+}
+
+
+
+
+
+////* Get Templates *////
+
+if (isset($reqPhrases)) {
+  if ($reqPhrases === true) {
+    $templates = fim_getCachedVar('fim_templates');
+    $templateVars = fim_getCachedVar('fim_templateVars');
+
+    if (!$templates || !$templateVars) {
+      $templates = array();
+      $templateVars = array();
+
+      $templates2 = $slaveDatabase->select(
+        array(
+          "{$sqlPrefix}templates" => 'interfaceId, templateId, templateName, vars, data',
+        )
+      );
+      $templates2 = $templates2->getAsArray('templateId');
+
+      if (is_array($templates2)) {
+        if (count($templates2) > 0) {
+          foreach ($templates2 AS $template) {
+            $templates[$template['interfaceId']][$template['templateName']] = $template['data'];
+            $templateVars[$template['interfaceId']][$template['templateName']] = $template['vars'];
+          }
+
+          unset($template);
+        }
+      }
+
+      unset($templates2);
+      fim_setCachedVar('fim_templates', $templates, $config['templatesCacheRefresh']);
+      fim_setCachedVar('fim_templateVars', $templateVars, $config['templatesCacheRefresh']);
+    }
+
+    $interfaceId = (isset($_REQUEST['interfaceId']) ? $_REQUEST['interfaceId'] :
+      (isset($user['interfaceId']) ? $user['interfaceId'] : $interfaces[$defaultInterface]));
+    $templates = $templates[$interfaceId];
+    $templateVars = $templateVars[$interfaceId];
   }
 }
 
@@ -322,46 +435,6 @@ if (isset($reqHooks)) {
 
       unset($hooks2);
       fim_setCachedVar('fim_hooks',$hooks,$config['hooksCacheRefresh']);
-    }
-  }
-}
-
-
-
-
-
-////* Get Templates *////
-
-if (isset($reqPhrases)) {
-  if ($reqPhrases === true) {
-    $templates = fim_getCachedVar('fim_templates');
-    $templateVars = fim_getCachedVar('fim_templateVars');
-
-    if (!$templates || !$templateVars) {
-      $templates = array();
-      $templateVars = array();
-
-      $templates2 = $slaveDatabase->select(
-        array(
-          "{$sqlPrefix}templates" => 'templateId, templateName, vars, data',
-        )
-      );
-      $templates2 = $templates2->getAsArray('templateId');
-
-      if (is_array($templates2)) {
-        if (count($templates2) > 0) {
-          foreach ($templates2 AS $template) {
-            $templates[$template['templateName']] = $template['data'];
-            $templateVars[$template['templateName']] = $template['vars'];
-          }
-
-          unset($template);
-        }
-      }
-
-      unset($templates2);
-      fim_setCachedVar('fim_templates',$templates,$config['templatesCacheRefresh']);
-      fim_setCachedVar('fim_templateVars',$templateVars,$config['templatesCacheRefresh']);
     }
   }
 }

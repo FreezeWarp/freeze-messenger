@@ -16,7 +16,7 @@
 
 
 
-///* MySQL Login *///
+////* MySQL Login *////
 
 /* $dbConnect['core']['driver']
  * Defines the driver to use for database connections.
@@ -70,7 +70,13 @@ $dbConfig['integration']['tablePreix'] = '';
 
 
 
-///* Forum Integration *///
+////* General *////
+/* $email
+ * This address is used to email critical errors in the system when they happen, and also to show to users during the same errors. */
+$email = '';
+
+
+////* Forum Integration *////
 
 /* $loginConfig['method']
  * The method used for forum-integration.
@@ -92,7 +98,7 @@ $loginConfig['superUsers'] = array();
 
 
 
-///* Encryption *///
+////* Encryption *////
 
 /* $salts
  * An array of salts.
@@ -119,7 +125,7 @@ $installUrl = '';
 
 
 
-///* Interfaces *///
+////* Interfaces *////
 
 /* $enabledInterfaces
  * Public interfaces that are set up on this server.
@@ -142,8 +148,8 @@ $disableWeb = false;
 
 
 
-///* Permissions *///
-///* The defaults here will usually work for most chats. *///
+////* Permissions *////
+////* The defaults here will usually work for most chats. *////
 
 /* $bannedUserGroups
  * Users that are a part of any of these groups are treated as automatically banned.
@@ -171,9 +177,9 @@ $userPermissions = array(
 
 
 
-///* Bleeding-Edge *///
-///* These are provided to enable technology that may help considerably but may also screw things up. *///
-///* Change at your own risk. *///
+////* Bleeding-Edge *////
+////* These are provided to enable technology that may help considerably but may also screw things up. *////
+////* Change at your own risk. *////
 
 /* $anonymousUser
  * If specified, a single user can be used to allow all unregistered / not-logged in to post messages.
@@ -185,8 +191,8 @@ $anonymousUser = 0;
 
 
 
-///* Save Me! *///
-///* These disable certain customizations in case things go horribly wrong. *///
+////* Save Me! *////
+////* These disable certain customizations in case things go horribly wrong. *////
 
 /* $disableHooks
  * Disable code hooks, used by plugins.
