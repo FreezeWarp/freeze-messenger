@@ -1680,7 +1680,7 @@ var standard = {
     }
     else {
       $.post(directory + 'api/editRoom.php','action=private&userId=' + userLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
-        var privateRoomId = json.editRoom.insertId,
+        var privateRoomId = json.editRoom.response.insertId,
           errStr = json.editRoom.errStr,
           errDesc = json.editRoom.errDesc;
 
@@ -1697,7 +1697,7 @@ var standard = {
             id : 'privateRoomSucessDialogue',
             buttons : {
               Open : function() {
-                standard.selectRoom(privateRoomId);
+                standard.changeRoom(privateRoomId);
               },
               Okay : function() {
                 $('#privateRoomSucessDialogue').dialog('close');

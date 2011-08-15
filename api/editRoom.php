@@ -429,9 +429,10 @@ switch($request['action']) {
             'options' => 48,
           )
         );
+        $roomId = $database->insertId;
 
-        $database->insert("{$sqlPrefix}roomPermissions", array(
-          'roomId' => $database->insertId,
+        $database->insert("{$sqlPrefix}privateRooms", array(
+          'roomId' => $roomId,
           'user1' => $user['userId'],
           'user2' => $user2['userId'],
         ));
@@ -448,7 +449,7 @@ switch($request['action']) {
           );
         }
 
-        $xmlData['editRoom']['response']['insertId'] = $database->insertId;
+        $xmlData['editRoom']['response']['insertId'] = $roomId;
       }
     }
   }

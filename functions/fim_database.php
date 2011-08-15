@@ -466,6 +466,8 @@ class fimDatabase extends database {
 
 
   public function getPrivateRoom($userList) {
+    global $sqlPrefix, $config;
+
     $queryParts['columns'] = array(
       "{$sqlPrefix}privateRooms" => 'roomId, userCount, user1, user2, user3, user4, user5, user6, user7, user8, user9, user10',
     );
@@ -504,9 +506,9 @@ class fimDatabase extends database {
       }
     }
 
-    $this->select($queryParts['columns'],
+    $privateRoom = $this->select($queryParts['columns'],
       $queryParts['conditions']);
-    return $this;
+    return $privateRoom->getAsArray(false);
   }
 }
 ?>

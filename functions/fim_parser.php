@@ -72,10 +72,6 @@ function fimParse_htmlParse($text) {
 function fimParse_censorParse($text, $roomId = 0) {
   global $sqlPrefix, $slaveDatabase;
 
-/*  $words = dbRows("SELECT w.word, w.severity, w.param, l.listId AS listId
-FROM {$sqlPrefix}censorLists AS l, {$sqlPrefix}censorWords AS w
-WHERE w.listId = l.listId AND w.severity = 'replace'",'word');*/
-
   $words = $slaveDatabase->select(
     array(
       "{$sqlPrefix}censorLists" => array(
@@ -360,8 +356,6 @@ function fimParse_htmlWrap($html, $maxLength = 80, $char = '<br />') { /* An ada
 * Generates keywords to enter into the archive search store.
 *
 * @param string $text - The text to generate the big keywords from.
-* @global int
-* @global
 * @return array - The keywords found.
 * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */

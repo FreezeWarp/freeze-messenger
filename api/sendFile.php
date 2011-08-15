@@ -333,7 +333,7 @@ else {
                 ),
                 'fileSize' => array(
                   'type' => 'equation',
-                  'value' => '$fileSize + ' . (int) strlen($rawData)),
+                  'value' => '$fileSize + ' . (int) strlen($rawData),
                 ),
               ), array(
                 'userId' => $user['userId'],

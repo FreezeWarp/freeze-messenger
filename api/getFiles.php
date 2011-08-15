@@ -80,7 +80,7 @@ $queryParts['fileSelect']['conditions'] = array(
     ),
   ),
 );
-$queryParts['fileSelect']['sort'] = 'fileId',
+$queryParts['fileSelect']['sort'] = 'fileId';
 $queryParts['fileSelect']['limit'] = false;
 
 
@@ -91,10 +91,10 @@ $queryParts['fileSelect']['limit'] = false;
 
 
 /* Get Uploads from Database */
-$files = $database->select(
-  ,
-
-);
+$files = $database->select($queryParts['fileSelect']['columns'],
+  $queryParts['fileSelect']['conditions'],
+  $queryParts['fileSelect']['sort'],
+  $queryParts['fileSelect']['limit']);
 $files = $files->getAsArray('fileId');
 
 
