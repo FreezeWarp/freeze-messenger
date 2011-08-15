@@ -137,11 +137,11 @@ if ($request['uploadMethod'] == 'put') { // This is an unsupported alternate upl
   fclose($putResource);
 }
 
-if ($database->getCounter('uploads') > $config['uploadMaxFiles']) {
+if ($config['uploadMaxFiles'] !== -1 && $database->getCounter('uploads') > $config['uploadMaxFiles']) {
   $errStr = 'tooManyFiles';
   $errDesc = 'The server has reached its file capacity.';
 }
-elseif ($user['fileCount'] > $config['uploadMaxUserFiles']) {
+elseif ($config['uploadMaxUserFiles'] !== -1 && $user['fileCount'] > $config['uploadMaxUserFiles']) {
   $errStr = 'tooManyFiles';
   $errDesc = 'The server has reached its file capacity.';
 }

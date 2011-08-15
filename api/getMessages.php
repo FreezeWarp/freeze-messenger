@@ -308,11 +308,6 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
     );
   }
 
-/*  $searchMessageIds = dbRows("SELECT GROUP_CONCAT(messageId SEPARATOR ',') AS messages
-  FROM {$sqlPrefix}searchPhrases AS p,
-  {$sqlPrefix}searchMessages AS m
-  WHERE p.phraseId = m.phraseId AND p.phraseName IN ($search2)");*/
-
   /* Establish Base Data */
   $queryParts['searchSelect']['columns'] = array(
     "{$sqlPrefix}searchPhrases" => array(
@@ -341,45 +336,10 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
       ),
     ),
   );
-  $queryParts['searchSelect']['join'] = false;
-
-
-  /* Determine Whether to Use the Fast or Slow Algorithms */
-
-  if (!$config['fullTextArchive']) { // Original, Fastest Algorithm
-
-    $queryParts['searchSelect']['columns']["{$sqlPrefix}searchMessages"]['messageId 2'] = array(
-      'context' => 'join',
-      'separator' => ',',
-      'name' => 'messageIds',
-    );
-    $queryParts['searchSelect']['conditions']['both'][] = array(
-      'type' => 'in',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'phraseName',
-      ),
-      'right' => array(
-        'type' => 'array',
-        'value' => $searchArray2,
-      ),
-    );
-
-    $queryParts['searchSelect']['join'] = 'messageId';
-  }
-  else { // Slower Algorithm
-    $queryParts['searchSelect']['columns']["{$sqlPrefix}searchMessages"]['messageId 2'] = array(
-      'context' => 'join',
-      'separator' => ',',
-      'name' => 'messageIds',
-    );
-
-    $queryParts['searchSelect']['join'] = 'mphraseId';
-  }
 
 
   /* Apply User and Room Filters */
-  if (count($request['rooms']) > 0) { // Dunno if its possible for it noto be...
+  if (count($request['rooms']) > 0) { // Dunno if its possible for it not to be...
     $queryParts['searchSelect']['conditions']['both'][] = array(
       'type' => 'in',
       'left' => array(
@@ -407,40 +367,56 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
     );
   }
 
+
+  /* Determine Whether to Use the Fast or Slow Algorithms */
+  if (!$config['fullTextArchive']) { // Original, Fastest Algorithm
+    $queryParts['searchSelect']['conditions']['both'][] = array(
+      'type' => 'in',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'phraseName',
+      ),
+      'right' => array(
+        'type' => 'array',
+        'value' => $searchArray2,
+      ),
+    );
+  }
+  else { // Slower Algorithm
+    foreach ($searchArray2 AS $phrase) {
+      $queryParts['searchSelect']['conditions']['both']['either'][] = array(
+        'type' => 'glob',
+        'left' => array(
+          'type' => 'column',
+          'value' => 'phraseName',
+        ),
+        'right' => array(
+          'type' => 'glob',
+          'value' => '*' . $phrase . '*',
+        ),
+      );
+    }
+  }
+
+
+  /* Run the Query */
   $searchMessageIds = $database->select(
     $queryParts['searchSelect']['columns'],
-    $queryParts['searchSelect']['conditions'],
-    false,
-    $queryParts['searchSelect']['join']
+    $queryParts['searchSelect']['conditions']
   );
 
-  if (!$config['fullTextArchive']) {
-    $searchMessageIds = $searchMessageIds->getAsArray(false);
-    $searchMessages = explode(',',$searchMessageIds['messageIds']);
+  $searchMessageIds = $searchMessageIds->getAsArray('messageId');
+  $searchMessages = array_keys($searchMessageIds);
+
+
+  /* Modify the Request Filter for Messages */
+  if ($searchMessages) {
+    $request['messages'] = fim_arrayValidate($searchMessages,'int',true);
   }
   else {
-    $searchMessageIds = $searchMessageIds->getAsArray('mphraseId');
-
-    foreach ($searchMessageIds AS &$phrase) {
-      foreach($searchArray2 AS $arrayPiece) {
-        if (strpos($phrase['phraseName'],$arrayPiece) !== false) {
-          $searchMessageIds2[] = $phrase;
-        }
-      }
-    }
-
-    foreach ($searchMessageIds2 AS $phrase) {
-      foreach (explode(',',$phrase['messageIds']) AS $message) {
-        $searchMessageIds3[] = $message;
-      }
-    }
-
-    $searchMessages = $searchMessageIds3;
+    $request['messages'] = array(0); // This is a fairly dirty approach, but it does work for now.
   }
-
-  $request['messages'] = fim_arrayValidate($searchMessages,'int',true);
 }
-
 
 
 /* Plugin Hook Start */

@@ -633,6 +633,10 @@ LIMIT
                   $sideText[$side] = $equation;
                   break;
 
+                  case 'glob':
+                  $sideText[$side] = '"' . str_replace(array('*','?'),array('%','_'),trim($data[$side]['value'])) . '"';
+                  break;
+
                   case 'column':
                   if (isset($data[$side]['context'])) {
                     throw new Exception('Column context is deprecated.');

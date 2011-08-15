@@ -484,7 +484,7 @@ $.ajax({
     }
   },
   error: function() {
-    dia.error('Warning','Upload file types not retrieved.')
+    dia.error('Upload file types not retrieved.');
   }
 });
 
@@ -933,7 +933,20 @@ var standard = {
         idMin : options.idMin,
         roomId : options.roomId,
         userId : userRef[$('#searchUser').val()],
-        search : $('#searchText').val()
+        search : $('#searchText').val(),
+        maxResults : $('#resultLimit').val(),
+      });
+    });
+
+    $('#resultLimit').unbind('change');
+    $('#resultLimit').bind('change',function() {
+      standard.archive({
+        idMax : options.idMax,
+        idMin : options.idMin,
+        roomId : options.roomId,
+        userId : userRef[$('#searchUser').val()],
+        search : $('#searchText').val(),
+        maxResults : $('#resultLimit').val(),
       });
     });
 
@@ -944,14 +957,15 @@ var standard = {
         idMin : options.idMin,
         roomId : options.roomId,
         userId : userRef[$('#searchUser').val()],
-        search : $('#searchText').val()
+        search : $('#searchText').val(),
+        maxResults : $('#resultLimit').val(),
       });
 
       return false;
     });
 
     $.when( $.ajax({
-      url: directory + 'api/getMessages.php?rooms=' + options.roomId + '&' + (options.userId ? '&users=' + options.userId : '') + '&archive=1&messageLimit=10000&messageHardLimit=50&' + where + (options.search ? '&search=' + urlencode(options.search) : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+      url: directory + 'api/getMessages.php?rooms=' + options.roomId + '&' + (options.userId ? '&users=' + options.userId : '') + '&archive=1&messageLimit=10000&messageHardLimit=' + (options.maxResults ? options.maxResults : 50) + '&' + where + (options.search ? '&search=' + urlencode(options.search) : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
       type: 'GET',
       timeout: 5000,
       contentType: "text/json; charset=utf-8",
