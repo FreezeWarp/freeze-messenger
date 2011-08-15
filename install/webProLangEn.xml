@@ -96,10 +96,14 @@
     <phrase name="settingsDisableFormattingLabel">Disable Formatting:</phrase>
     <phrase name="settingsDisableFxBlurb">Disabling effects can lead to a performance and a reduction of "client-side" lag (that not related to the server). It has no side-effects, aside from not looking as pretty.</phrase>
     <phrase name="settingsDisableFxLabel">Disable Effects:</phrase>
+    <phrase name="settingsDisableRightClickBlurb">This will disable right click functionality, replaced with a click menu placed to the right of the item. It is experimental, and will have some issues.</phrase>
+    <phrase name="settingsDisableRightClickLabel">Disable Right Click:</phrase>
     <phrase name="settingsDisableImageBlurb">This will disable image embeds in rooms that allow them, replaced with a link or alternate text.</phrase>
     <phrase name="settingsDisableImageLabel">Disable Images:</phrase>
     <phrase name="settingsDisableVideoBlurb">This will disable video embeds in rooms that allow them, replaced with a "click to activate" link.</phrase>
     <phrase name="settingsDisableVideoLabel">Disable Video Embeds:</phrase>
+    <phrase name="settingsEnableWebkitNotificationsLabel">Enable Webkit Notifications:</phrase>
+    <phrase name="settingsEnableWebkitNotificationsBlurb">Attempts to request permission to enable Webkit notifications, which are used by Google Chrome to notify you of new private messages even when you are not currently in a FreezeMessenger tab.</phrase>
     <phrase name="settingsIgnoreListBlurb">Users included here will be unable to contact you using private messaging.</phrase>
     <phrase name="settingsIgnoreListCurrentUsers">Current Users</phrase>
     <phrase name="settingsIgnoreListLabel">Ignored Users</phrase>
@@ -135,6 +139,7 @@
     <phrase name="settingsWatchRoomsLabel">Watch Rooms:</phrase>
     <phrase name="settingsWatchRoomsAdd">Add</phrase>
     <phrase name="settingsTabDisplay">Chat Display</phrase>
+    <phrase name="settingsTabHacks">Advanced</phrase>
     <phrase name="settingsTabFormatting">Message Formatting</phrase>
     <phrase name="settingsTabGeneral">General</phrase>
     <phrase name="settingsDefaultFormattingLabel">Default Formatting:</phrase>

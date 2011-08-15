@@ -74,7 +74,7 @@ class database {
 
       $this->tableTypes = array(
         'general' => 'InnoDB',
-        'memory': 'MEMORY',
+        'memory' => 'MEMORY',
       );
       break;
 
@@ -161,6 +161,15 @@ class database {
         8191 => 'MEDIUMTEXT',
         2097151 => 'LONGTEXT',
         0 => 'TEXT',
+      );
+
+      $this->columnBitLimits = array(
+        0 => 'TINYINT UNSIGNED',
+        8 => 'TINYINT UNSIGNED',
+        16 => 'SMALLINT UNSIGNED',
+        24 => 'MEDIUMINT UNSIGNED',
+        32 => 'INTEGER UNSIGNED',
+        64 => 'LONGINT UNSIGNED',
       );
 
       $this->globFindArray = array('*', '?');
@@ -1078,7 +1087,7 @@ LIMIT
             $typePiece = $this->columnIntLimits[$column['maxlen']];
           }
           else {
-            $typePiece = $this->columnIntLimits[$column['maxlen']] . '(' . (int) $column['maxlen'] . ')'
+            $typePiece = $this->columnIntLimits[$column['maxlen']] . '(' . (int) $column['maxlen'] . ')';
           }
         }
         else {
@@ -1273,6 +1282,7 @@ LIMIT
     return $tables;
   }
 }
+
 
 class databaseResult {
   /**

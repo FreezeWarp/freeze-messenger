@@ -182,6 +182,7 @@
 
 &lt;ul class="tabList"&gt;
 &lt;li&gt;&lt;a href="#settings1"&gt;$phrases[settingsTabDisplay]&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#settings4"&gt;$phrases[settingsTabHacks]&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#settings2"&gt;$phrases[settingsTabFormatting]&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#settings3"&gt;$phrases[settingsTabGeneral]&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
@@ -220,10 +221,21 @@
 
 &lt;label for="audioDing"&gt;$phrases[settingsAudioDingLabel]&lt;/label&gt; &lt;input type="checkbox" name="audioDing" id="audioDing" value="true" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsAudioDingBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
+&lt;/div&gt;
 
+
+&lt;div id="settings4"&gt;
 &lt;label for="disableFx"&gt;$phrases[settingsDisableFxLabel]&lt;/label&gt; &lt;input type="checkbox" name="disableFx" id="disableFx" value="true" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsDisableFxBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
 &lt;/div&gt;
+
+&lt;label for="disableRightClick"&gt;$phrases[settingsDisableRightClickLabel]&lt;/label&gt; &lt;input type="checkbox" name="disableRightClick" id="disableRightClick" value="true" /&gt;&lt;br /&gt;
+&lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsDisableRightClickBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
+
+&lt;label for="enableWebkitNotifications"&gt;$phrases[settingsEnableWebkitNotificationsLabel]&lt;/label&gt; &lt;input type="checkbox" name="enableWebkitNotifications" id="enableWebkitNotifications" value="true" /&gt;&lt;br /&gt;
+&lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsEnableWebkitNotificationsBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
+&lt;/div&gt;
+
 
 &lt;div id="settings2"&gt;
 {{if="$enableDF"}{
@@ -388,23 +400,35 @@ $phrases[helpFAQs]
 &lt;/ul&gt;
 
 &lt;ul id="messageMenuImage" class="contextMenu"&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="url"&gt;Get URL&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="link"&gt;Link To&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;Delete&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="url"&gt;Get Image URL&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;Delete Image&lt;/a&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="link"&gt;Link To Message&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;Delete Message&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;ul id="messageMenuLink" class="contextMenu"&gt;
 &lt;li&gt;&lt;a href="javascript:void(0);" data-action="url"&gt;Get URL&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="javascript:void(0);" data-action="sandbox"&gt;View in Sandbox&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="link"&gt;Link To&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;Delete&lt;/a&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="link"&gt;Link To Message&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;Delete Message&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul id="messageMenuVideo" class="contextMenu"&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="url"&gt;Get URL&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="sandbox"&gt;Download (Experimental)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="link"&gt;Hide This Video&lt;/a&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="link"&gt;Link To Message&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;Delete Message&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;ul id="roomMenu" class="contextMenu"&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="enter"&gt;Enter&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="enter"&gt;Enter Room&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="javascript:void(0);" data-action="archive"&gt;View Archive&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="edit"&gt;Edit&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;Delete&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="edit"&gt;Edit Room&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;Delete Room&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
     </template>
 
