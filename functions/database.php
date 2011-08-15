@@ -67,6 +67,7 @@ class database {
       $this->columnQuoteEnd = '`';
       $this->columnAliasQuoteStart = '`';
       $this->columnAliasQuoteEnd = '`';
+      $this->tableColumnDivider = '.';
 
       $this->sortOrderAsc = 'ASC';
       $this->sortOrderDesc = 'DESC';
@@ -83,9 +84,49 @@ class database {
       $this->columnQuoteEnd = '"';
       $this->columnAliasQuoteStart = '"';
       $this->columnAliasQuoteEnd = '"';
+      $this->tableColumnDivider = '.';
 
       $this->sortOrderAsc = 'ASC';
       $this->sortOrderDesc = 'DESC';
+      break;
+    }
+
+    switch ($this->language) {
+      case 'mysql':
+      case 'mysqli':
+      case 'postgresql':
+      $this->comparisonTypes = array(
+        'e' => '=',
+        'ne' => '!=',
+        '!e' => '!=', // Alias of "ne"
+        'lt' => '<',
+        '!gte' => '>', // Alias of "lt"
+        'gt' => '>',
+        '!lte' => '>', // Alias of "gt"
+        'lte' => '<=',
+        '!gt' => '>=', // Alias of "lte"
+        'gte' => '>=',
+        '!lt' => '>=', // Alias of "gte"
+
+        'and' => '&',
+        '!xor' => '&', // Alias of "and"
+        'xor' => '^',
+        '!and' => '^', // Alias of "xorg"
+
+        'in' => 'IN',
+        '!notin' => 'IN', // Alias of "in"
+        'notin' => 'NOT IN',
+        '!in' => 'NOT IN', // Alias of "notin"
+
+        'regexp' => 'REGEXP', // Applies extended POSIX regular expression to index. It is natively implemented in MySQL, PostGreSQL, and Oracle SQL databases. It is absent in MSSQL, and the status in VoltDB and SQLite is unknown.
+        'regex' => 'REGEXP', // Alias of "regexp"
+
+        'glob' => 'LIKE',
+        'like' => 'LIKE', // Alias of "glob"
+      );
+
+      $this->globFindArray = array('*', '?');
+      $this->globReplaceArray = array('%', '_');
       break;
     }
   }
@@ -386,13 +427,13 @@ class database {
                       throw new Exception('Deprecated context.');
                     }
 
-                    $finalQuery['columns'][] = "$colName AS `$colAlias[name]`";
+                    $finalQuery['columns'][] = $this->columnQuoteStart . $colName . $this->columnQuoteStart . ' AS ' . $this->columnAliasQuoteEnd . $colAlias['name'] . $this->columnAliasQuoteStart;
                     $reverseAlias[$colAlias['name']] = $colName;
                   }
 
                   else {
-                    $finalQuery['columns'][] = "`$tableName`.`$colName` AS `$colAlias`";
-                    $reverseAlias[$colAlias] = "`$tableName`.`$colName`";
+                    $finalQuery['columns'][] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd . $this->tableColumnDivider . $this->columnQuoteStart . $colName . $this->columnQuoteStart . ' AS ' . $this->columnAliasQuoteEnd . $colAlias . $this->columnAliasQuoteStart;
+                    $reverseAlias[$colAlias] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd . $this->tableColumnDivider . $this->columnQuoteStart . $colName . $this->columnQuoteStart;
                   }
                 }
                 else {
@@ -417,8 +458,8 @@ class database {
                   $columnPartAlias = $columnPart;
                 }
 
-                $finalQuery['columns'][] = "`$tableName`.`$columnPartName` AS `$columnPartAlias`";
-                $reverseAlias[$columnPartAlias] = "`$tableName`.`$columnPartName`";
+                $finalQuery['columns'][] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd . $this->tableColumnDivider . $this->columnQuoteStart . $columnPartName . $this->columnQuoteStart . ' AS ' . $this->columnAliasQuoteEnd . $columnPartAlias . $this->columnAliasQuoteStart;
+                $reverseAlias[$columnPartAlias] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd . $this->tableColumnDivider . $this->columnQuoteStart . $columnPartName . $this->columnQuoteStart;
               }
             }
           }
@@ -456,16 +497,11 @@ class database {
           foreach ($sort AS $sortCol => $direction) {
             if (isset($reverseAlias[$sortCol])) {
               switch (strtolower($direction)) {
-                case 'asc':
-                $directionSym = $this->sortOrderAsc;
-                break;
-                case 'desc':
-                $directionSym = $this->sortOrderDesc;
-                break;
-                default:
-                $directionSym = $this->sortOrderAsc;
-                break;
+                case 'asc': $directionSym = $this->sortOrderAsc; break;
+                case 'desc': $directionSym = $this->sortOrderDesc; break;
+                default: $directionSym = $this->sortOrderAsc; break;
               }
+
               $finalQuery['sort'][] = $reverseAlias[$sortCol] . " $directionSym";
             }
             else {
@@ -486,15 +522,9 @@ class database {
             $sortCol = $sortPartParts[0]; // Set the name equal to the first part of the piece
 
             switch (strtolower($sortPartParts[0])) {
-              case 'asc':
-              $directionSym = $this->sortOrderAsc;
-              break;
-              case 'desc':
-              $directionSym = $this->sortOrderDesc;
-              break;
-              default:
-              $directionSym = $this->sortOrderAsc;
-              break;
+              case 'asc': $directionSym = $this->sortOrderAsc; break;
+              case 'desc': $directionSym = $this->sortOrderDesc; break;
+              default: $directionSym = $this->sortOrderAsc; break;
             }
           }
           else { // Otherwise, we assume asscending
@@ -566,42 +596,13 @@ LIMIT
          }
 
           if ($recKey === 'both' || $recKey === 'either') {
-            $sideTextFull[$i] = $this->recurseBothEither(array($recKey => $data), $reverseAlias, $d+1);
+            $sideTextFull[$i] = $this->recurseBothEither(array($recKey => $data), $reverseAlias, $d + 1);
           }
           else {
             /* Get the Proper Comparison Operator */
-            $comparisonTypes = array(
-              'e' => '=',
-              'ne' => '!=',
-              '!e' => '!=', // Alias of "ne"
-              'lt' => '<',
-              '!gte' => '>', // Alias of "lt"
-              'gt' => '>',
-              '!lte' => '>', // Alias of "gt"
-              'lte' => '<=',
-              '!gt' => '>=', // Alias of "lte"
-              'gte' => '>=',
-              '!lt' => '>=', // Alias of "gte"
 
-              'and' => '&',
-              '!xor' => '&', // Alias of "and"
-              'xor' => '^',
-              '!and' => '^', // Alias of "xorg"
-
-              'in' => 'IN',
-              '!notin' => 'IN', // Alias of "in"
-              'notin' => 'NOT IN',
-              '!in' => 'NOT IN', // Alias of "notin"
-
-              'regexp' => 'REGEXP', // Applies extended POSIX regular expression to index. It is natively implemented in MySQL, PostGreSQL, and Oracle SQL databases. It is absent in MSSQL, and the status in VoltDB and SQLite is unknown.
-              'regex' => 'REGEXP', // Alias of "regexp"
-
-              'glob' => 'LIKE',
-              'like' => 'LIKE', // Alias of "glob"
-            );
-
-            if (isset($comparisonTypes[$data['type']])) {
-              $symbol = $comparisonTypes[$data['type']];
+            if (isset($this->comparisonTypes[$data['type']])) {
+              $symbol = $this->comparisonTypes[$data['type']];
             }
             else {
               throw new Exception('Unrecognized type operator "' . $data['type'] . '". Data: ' . print_r($data,true));
@@ -680,7 +681,7 @@ LIMIT
                   break;
 
                   case 'glob':
-                  $sideText[$side] = '"' . str_replace(array('*','?'),array('%','_'),trim($data[$side]['value'])) . '"';
+                  $sideText[$side] = '"' . str_replace($this->globFindArray, $this->globReplaceArray, trim($data[$side]['value'])) . '"';
                   break;
 
                   case 'column':
