@@ -395,17 +395,17 @@
     <table name="configuration">
       <column name="directive" value="defaultMessageHardLimit" />
       <column name="value" value="50" />
-      <column name="type" value="int" />
+      <column name="type" value="integer" />
     </table>
     <table name="configuration">
       <column name="directive" value="defaultMessageLimit" />
       <column name="value" value="10000" />
-      <column name="type" value="int" />
+      <column name="type" value="integer" />
     </table>
     <table name="configuration">
       <column name="directive" value="defaultOnlineThreshold" />
       <column name="value" value="15" />
-      <column name="type" value="int" />
+      <column name="type" value="integer" />
     </table>
     <table name="configuration">
       <column name="directive" value="fullTextArchive" />
@@ -416,12 +416,12 @@
     <table name="configuration">
       <column name="directive" value="searchWordMinimum" />
       <column name="value" value="4" />
-      <column name="type" value="int" />
+      <column name="type" value="integer" />
     </table>
     <table name="configuration">
       <column name="directive" value="searchWordMaximum" />
       <column name="value" value="10" />
-      <column name="type" value="int" />
+      <column name="type" value="integer" />
     </table>
     <table name="configuration">
       <column name="directive" value="searchWordOmissions" />
@@ -447,32 +447,32 @@
     <table name="configuration">
       <column name="directive" value="kicksCacheRefresh" />
       <column name="value" value="30" />
-      <column name="type" value="int" />
+      <column name="type" value="integer" />
     </table>
     <table name="configuration">
       <column name="directive" value="permissionsCacheRefresh" />
       <column name="value" value="30" />
-      <column name="type" value="int" />
+      <column name="type" value="integer" />
     </table>
     <table name="configuration">
       <column name="directive" value="phrasesCacheRefresh" />
       <column name="value" value="600" />
-      <column name="type" value="int" />
+      <column name="type" value="integer" />
     </table>
     <table name="configuration">
       <column name="directive" value="hooksCacheRefresh" />
       <column name="value" value="600" />
-      <column name="type" value="int" />
+      <column name="type" value="integer" />
     </table>
     <table name="configuration">
       <column name="directive" value="templatesCacheRefresh" />
       <column name="value" value="600" />
-      <column name="type" value="int" />
+      <column name="type" value="integer" />
     </table>
     <table name="configuration">
       <column name="directive" value="configCacheRefresh" />
       <column name="value" value="600" />
-      <column name="type" value="int" />
+      <column name="type" value="integer" />
     </table>
 
     <table name="configuration">
@@ -488,7 +488,7 @@
     <table name="configuration">
       <column name="directive" value="longPollingMaxRetries" />
       <column name="value" value="100" />
-      <column name="type" value="int" />
+      <column name="type" value="integer" />
     </table>
 
     <table name="configuration">
@@ -525,12 +525,12 @@
     <table name="configuration">
       <column name="directive" value="uploadUserMaxFiles" />
       <column name="value" value="-1" />
-      <column name="type" value="int" />
+      <column name="type" value="integer" />
     </table>
     <table name="configuration">
       <column name="directive" value="uploadMaxFiles" />
       <column name="value" value="-1" />
-      <column name="type" value="int" />
+      <column name="type" value="integer" />
     </table>
     <table name="configuration">
       <column name="directive" value="defaultLanguage" />
@@ -540,12 +540,12 @@
     <table name="configuration">
       <column name="directive" value="roomLengthMinimum" />
       <column name="value" value="5" />
-      <column name="type" value="int" />
+      <column name="type" value="integer" />
     </table>
     <table name="configuration">
       <column name="directive" value="roomLengthMaximum" />
       <column name="value" value="20" />
-      <column name="type" value="int" />
+      <column name="type" value="integer" />
     </table>
     <table name="configuration">
       <column name="directive" value="apiPause" />
@@ -555,7 +555,7 @@
     <table name="configuration">
       <column name="directive" value="cacheTableMaxRows" />
       <column name="value" value="100" />
-      <column name="type" value="int" />
+      <column name="type" value="integer" />
     </table>
 
 
