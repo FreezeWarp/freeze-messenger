@@ -71,6 +71,11 @@ class database {
 
       $this->sortOrderAsc = 'ASC';
       $this->sortOrderDesc = 'DESC';
+
+      $this->tableTypes = array(
+        'general' => 'InnoDB',
+        'memory': 'MEMORY',
+      );
       break;
 
       case 'postgresql':
@@ -123,6 +128,39 @@ class database {
 
         'glob' => 'LIKE',
         'like' => 'LIKE', // Alias of "glob"
+      );
+
+      $this->concatTypes = array(
+        'both' => ' AND ',
+        'either' => ' OR ',
+      );
+
+      $this->keyConstants = array(
+        'primary' => 'PRIMARY KEY',
+        'unique' => 'UNIQUE KEY',
+        'index' => 'KEY',
+      );
+
+      $this->columnIntLimits = array(
+        1 => 'TINYINT',
+        2 => 'TINYINT',
+        3 => 'SMALLINT',
+        4 => 'SMALLINT',
+        5 => 'MEDIUMINT',
+        6 => 'MEDIUMINT',
+        7 => 'MEDIUMINT',
+        8 => 'INT',
+        9 => 'INT',
+        0 => 'BIGINT',
+      );
+
+      $this->columnStringLimits = array(
+        1 => 'CHAR',
+        100 => 'VARCHAR',
+        1000 => 'TEXT',
+        8191 => 'MEDIUMTEXT',
+        2097151 => 'LONGTEXT',
+        0 => 'TEXT',
       );
 
       $this->globFindArray = array('*', '?');
@@ -591,7 +629,7 @@ LIMIT
           $sideTextFull[$i] = '';
 
          if (strpos($recKey, ' ') !== false) {
-           $recKeyPieces = explode($recKeyPieces, ' ');
+           $recKeyPieces = explode(' ', $recKey);
            $recKey = $recKeyPieces[0];
          }
 
@@ -735,16 +773,11 @@ LIMIT
         }
 
 
-        $concatTypes = array(
-          'both' => ' AND ',
-          'either' => ' OR ',
-        );
-
-        if (isset($concatTypes[$type])) {
-          $condSymbol = $concatTypes[$type];
+        if (isset($this->concatTypes[$type])) {
+          $condSymbol = $this->concatTypes[$type];
         }
         else {
-          throw new Exception('Unrecognized concatenation operator: ' . $type . '; ' . print_r($data,true));
+          throw new Exception('Unrecognized concatenation operator: ' . $type . '; ' . print_r($data, true));
         }
 
 
@@ -761,7 +794,7 @@ LIMIT
       $whereText = $whereText[0]; // Get the query string from the first (and only) index.
     }
     else {
-      $whereText = implode(' AND ', $whereText);
+      $whereText = implode($this->concatTypes['both'], $whereText);
     }
 
 
@@ -835,36 +868,20 @@ LIMIT
       list($columns, $values, $conditions) = $this->splitArray($conditionArray);
 
       for ($i = 0; $i < count($columns); $i++) {
-        switch ($conditions[$i]) {
-          case 'e':
-          $csym = '=';
-          break;
-
-          case 'lt':
-          $csym = '<';
-          break;
-
-          case 'gt':
-          $csym = '>';
-          break;
-
-          case 'lte':
-          $csym = '<=';
-          break;
-
-          case 'gte':
-          $csym = '>=';
-          break;
-
-          default:
-          $csym = '=';
-          break;
+        if (!$conditions[$i]) {
+          $csym = $this->comparisonTypes['e'];
+        }
+        elseif (isset($this->comparisonTypes[$conditions[$i]])) {
+          $csym = $this->comparisonTypes[$conditions[$i]];
+        }
+        else {
+          throw new Exception('Unrecognized comparison type: ' . $conditions[$i]);
         }
 
         $cond[] = $columns[$i] . $csym . $values[$i];
       }
 
-      $query .= ' WHERE ' . implode($cond,' AND ');
+      $query .= ' WHERE ' . implode($cond, $this->concatTypes['both']);
     }
 
 
@@ -886,36 +903,20 @@ LIMIT
     list($columns, $values, $conditions) = $this->splitArray($conditionArray);
 
     for ($i = 0; $i < count($columns); $i++) {
-      switch ($conditions[$i]) {
-        case 'e':
-        $csym = '=';
-        break;
-
-        case 'lt':
-        $csym = '<';
-        break;
-
-        case 'gt':
-        $csym = '>';
-        break;
-
-        case 'lte':
-        $csym = '<=';
-        break;
-
-        case 'gte':
-        $csym = '>=';
-        break;
-
-        default:
-        $csym = '=';
-        break;
+      if (!$conditions[$i]) {
+        $csym = $this->comparisonTypes['e'];
+      }
+      elseif (isset($this->comparisonTypes[$conditions[$i]])) {
+        $csym = $this->comparisonTypes[$conditions[$i]];
+      }
+      else {
+        throw new Exception('Unrecognized comparison type: ' . $conditions[$i]);
       }
 
       $delete[] = $columns[$i] . $csym . $values[$i];
     }
 
-    $delete = implode($delete,' AND ');
+    $delete = implode($delete, $this->concatTypes['both']);
 
     $query = "DELETE FROM $table WHERE $delete";
 
@@ -1059,13 +1060,11 @@ LIMIT
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function createTable($tableName, $tableComment, $storeType, $tableColumns, $tableIndexes) {
-    switch ($storeType) {
-      case 'general': // Use this normally, and for all perm. data
-      $engine = 'InnoDB';
-      break;
-      case 'memory': // Use this for data that is transient.
-      $engine = 'MEMORY';
-      break;
+    if (isset($this->tableTypes[$storeType])) {
+      $engine = $this->comparisonTypes[$storeType];
+    }
+    else {
+      throw new Exception('Unrecognized table engine: ' . $storeType);
     }
 
 
@@ -1074,26 +1073,18 @@ LIMIT
 
       switch ($column['type']) {
         case 'int':
-        $typePiece = 'INT(' . (int) $column['maxlen'] . ')';
-
-        if (!isset($column['maxlen'])) {
-          $typePiece = 'INT(8)'; // Sane default, really.
-        }
-        elseif ($column['maxlen'] > 9) {// If the maxlen is greater than 9, we use LONGINT (0 - 9,223,372,036,854,775,807; 64 Bits / 8 Bytes)
-          $typePiece = 'BIGINT(' . (int) $column['maxlen'] . ')';
-        }
-        elseif ($column['maxlen'] > 7) { // If the maxlen is greater than 7, we use INT (0 - 4,294,967,295; 32 Bits / 4 Bytes)
-          $typePiece = 'INT(' . (int) $column['maxlen'] . ')';
-        }
-        elseif ($column['maxlen'] > 4) { // If the maxlen is greater than 4, we use MEDIUMINT (0 - 16,777,215; 24 Bits / 3 Bytes)
-          $typePiece = 'MEDIUMINT(' . (int) $column['maxlen'] . ')';
-        }
-        elseif ($column['maxlen'] > 2) { // If the maxlen is greater than 2, we use SMALLINT (0 - 65,535; 16 Bits / 2 Bytes)
-          $typePiece = 'SMALLINT(' . (int) $column['maxlen'] . ')';
+        if (isset($this->columnIntLimits[$column['maxlen']])) {
+          if (in_array($type, $this->columnStringNoLength)) {
+            $typePiece = $this->columnIntLimits[$column['maxlen']];
+          }
+          else {
+            $typePiece = $this->columnIntLimits[$column['maxlen']] . '(' . (int) $column['maxlen'] . ')'
+          }
         }
         else {
-          $typePiece = 'TINYINT(' . (int) $column['maxlen'] . ')';
+          $typePiece = $this->columnIntLimits[0];
         }
+
 
         if ($column['autoincrement'] == true) {
           $typePiece .= ' AUTO_INCREMENT'; // Ya know, that thing where it sets itself.
@@ -1111,23 +1102,28 @@ LIMIT
           $typePiece = 'ENUM(' . implode(',',$restrictValues) . ')';
         }
         else {
-          if (!isset($column['maxlen']) && $storeType != 'memory') {
-            $typePiece = 'TEXT';
+          $typeProcessed = false;
+
+          foreach ($this->columnStringLimits AS $length => $type) {
+            if ($column['maxlen'] > $length) {
+              if (in_array($type, $this->columnStringNoLength)) {
+                $typePiece = $type;
+              }
+              else {
+                $typePiece = $type . '(' . $column['maxlen'] . ')';
+              }
+
+              $typeProcessed = true;
+
+              break;
+            }
+            else {
+              continue;
+            }
           }
-          elseif ($column['maxlen'] > 2097151 && $storeType != 'memory') { // If the maxlen is greater than (16MB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
-            $typePiece = 'LONGTEXT';
-          }
-          elseif ($column['maxlen'] > 8191 && $storeType != 'memory') { // If the maxlen is greater than (64KB / 8) - 1B, use MEDIUM TEXT -- the division is to accompony multibyte text.
-            $typePiece = 'MEDIUMTEXT';
-          }
-          elseif ($column['maxlen'] > 1000 && $storeType != 'memory') { // If the maxlen is greater than 1000, we use TEXT since it is most likely more optimized. VARCHAR itself limits to roughly 65,535 length, or less if using UTF8.
-            $typePiece = 'TEXT(' . (int) $column['maxlen'] . ')';
-          }
-          elseif ($column['maxlen'] > 100) { // If the maxlen is greater than 100, we use VARCHAR since it is most likely more optimized. CHAR itself limits to roughly 255 length, or less if using UTF8.
-            $typePiece = 'VARCHAR(' . (int) $column['maxlen'] . ')';
-          }
-          else {
-            $typePiece = 'CHAR(' . (int) $column['maxlen'] . ')';
+
+          if (!$typeProcessed) {
+            $typePiece = $this->columnStringNoLength[0];
           }
         }
 
@@ -1161,6 +1157,10 @@ LIMIT
         $typePiece = 'INTEGER UNSIGNED'; // Note: replace with LONGINT to avoid the Epoch issues in 2038 (...I'll do it in FIM5 or so). For now, it's more optimized. Also, since its UNSIGNED, we actually have more until 2106 or something like that.
         break;
 
+        case 'bool':
+        $typePiece = 'TINYINT(1) UNSIGNED';
+        break;
+
         default:
         throw new Exception('Unrecognized type.');
         break;
@@ -1178,24 +1178,15 @@ LIMIT
 
 
     foreach ($tableIndexes AS $key) {
-      $typePiece = '';
-
-      switch ($key['type']) {
-        case 'primary':
-        $typePiece = "PRIMARY KEY";
-        break;
-
-        case 'unique': // We may remove this one in the future.
-        $typePiece = "UNIQUE KEY";
-        break;
-
-        case 'index':
-        $typePiece = "KEY";
-        break;
+      if (isset($this->keyConstants[$key['type']])) {
+        $typePiece = $this->keyConstants[$key['type']];
+      }
+      else {
+        throw new Exception('Unrecognized key type: ' . $key['type']);
       }
 
 
-      if (strpos($key['name'],',') !== false) {
+      if (strpos($key['name'], ',') !== false) {
         $keyCols = explode(',', $key['name']);
 
         foreach ($keyCols AS &$keyCol) {

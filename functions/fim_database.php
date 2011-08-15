@@ -490,7 +490,7 @@ class fimDatabase extends database {
 
     foreach ($userList AS $userId) {
       for ($i = 1; $i <= $userCount; $i++) {
-        $queryParts['conditions']['both'][]['either'][] = array(
+        $queryParts['conditions']['both']['either ' . $userId][] = array(
           'type' => 'e',
           'left' => array(
             'type' => 'column',
@@ -505,7 +505,8 @@ class fimDatabase extends database {
     }
 
     $this->select($queryParts['columns'],
-      $queryParts['conditions']); error_log($this->sourceQuery);
+      $queryParts['conditions']);
+    return $this;
   }
 }
 ?>

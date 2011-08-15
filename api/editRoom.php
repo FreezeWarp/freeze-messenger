@@ -430,6 +430,12 @@ switch($request['action']) {
           )
         );
 
+        $database->insert("{$sqlPrefix}roomPermissions", array(
+          'roomId' => $database->insertId,
+          'user1' => $user['userId'],
+          'user2' => $user2['userId'],
+        ));
+
         foreach (array($user['userId'], $user2['userId']) AS $userId) {
           $database->insert("{$sqlPrefix}roomPermissions", array(
               'roomId' => $roomId,

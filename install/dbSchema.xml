@@ -87,7 +87,7 @@
       <column name="source" type="string" maxlen="50" default="upload" comment="The file's source - in most cases upload." />
       <column name="rating" type="string" restrict="6,10,13,16,18" comment="The file's parental content age rating." />
       <column name="flags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the file." />
-      <column name="deleted" type="int" maxlen="1" default="0" comment="Whether or not the file in question is deleted." />
+      <column name="deleted" type="bool" default="0" comment="Whether or not the file in question is deleted." />
 
       <key name="fileId" type="primary" />
       <key name="userId" type="index" />
@@ -131,6 +131,14 @@
     </table>
 
 
+    <table name="groupMembers" type="general" comment="The members of groups, used with vanilla logins.">
+      <column name="groupId" type="int" maxlen="6" comment="The group ID." />
+      <column name="userId" type="int" maxlen="6" comment="The member ID of the group." />
+
+      <key name="groupId,userId" type="primary" />
+    </table>
+
+
     <table name="hooks" type="general" comment="Plugin-created code hooks.">
       <column name="hookId" type="int" maxlen="8" autoincrement="true" comment="A unique ID corrosponding to the hook. It is not used in retrieving hook contents (and thus could, for whatever reason, be changed on a dime)." />
       <column name="hookName" type="string" maxlen="50" comment="The hook's name, which will be used for most identification. These can be compounded (multiple rows with the same hookname can exist) if multiple entries exist for the hook." />
@@ -164,7 +172,7 @@
       <column name="apiText" type="string" maxlen="5000" comment="The API-formatted text of the message." />
       <column name="salt" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
       <column name="iv" type="string" maxlen="15" comment="The base64-encoded IV used for encryption." />
-      <column name="deleted" type="int" maxlen="1" comment="Whether or not the message has been deleted by an administrator." />
+      <column name="deleted" type="bool" default="0" comment="Whether or not the message has been deleted by an administrator." />
       <column name="time" type="time" comment="The time the message was made on." />
       <column name="ip" type="string" maxlen="128" comment="The IP of the user who made the message." />
       <column name="flag" type="string" maxlen="10" comment="The content-type flag of the message (e.g. video, image, text, archive, html, url, email)." />
