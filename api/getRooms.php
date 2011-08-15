@@ -185,8 +185,7 @@ else {
 $rooms = $database->select(
   $queryParts['roomSelect']['columns'],
   $queryParts['roomSelect']['conditions'],
-  $queryParts['roomSelect']['sort']
-);
+  $queryParts['roomSelect']['sort']);
 $rooms = $rooms->getAsArray(true);
 
 

@@ -67,9 +67,7 @@ class fimDatabase extends database {
       $queryParts['roomSelect']['columns'],
       $queryParts['roomSelect']['conditions'],
       false,
-      false,
-      1
-    );
+      1);
     return $roomData->getAsArray(false);
   }
 
@@ -124,9 +122,7 @@ class fimDatabase extends database {
       $queryParts['userSelect']['columns'],
       $queryParts['userSelect']['conditions'],
       false,
-      false,
-      1
-    );
+      1);
     return $userData->getAsArray(false);
   }
 
@@ -163,9 +159,7 @@ class fimDatabase extends database {
       $queryParts['fontSelect']['columns'],
       $queryParts['fontSelect']['conditions'],
       false,
-      false,
-      1
-    );
+      1);
     return $fontData->getAsArray(false);
   }
 
@@ -205,9 +199,7 @@ class fimDatabase extends database {
       $queryParts['listSelect']['columns'],
       $queryParts['listSelect']['conditions'],
       false,
-      false,
-      1
-    );
+      1);
     return $listData->getAsArray(false);
   }
 
@@ -244,9 +236,7 @@ class fimDatabase extends database {
       $queryParts['messageSelect']['columns'],
       $queryParts['messageSelect']['conditions'],
       false,
-      false,
-      1
-    );
+      1);
     return $messageData->getAsArray(false);
   }
 
@@ -468,9 +458,7 @@ class fimDatabase extends database {
       $queryParts['counterSelect']['columns'],
       $queryParts['counterSelect']['conditions'],
       false,
-      false,
-      1
-    );
+      1);
     $counterData = $counterData->getAsArray(false);
 
     return $counterData['counterValue'];

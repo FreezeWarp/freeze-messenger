@@ -402,8 +402,7 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
   /* Run the Query */
   $searchMessageIds = $database->select(
     $queryParts['searchSelect']['columns'],
-    $queryParts['searchSelect']['conditions']
-  );
+    $queryParts['searchSelect']['conditions']);
 
   $searchMessageIds = $searchMessageIds->getAsArray('messageId');
   $searchMessages = array_keys($searchMessageIds);
@@ -716,7 +715,6 @@ if (is_array($request['rooms'])) {
             $messages = $database->select($queryParts['messagesSelect']['columns'],
               $queryParts['messagesSelect']['conditions'],
               $queryParts['messagesSelect']['sort'],
-              false,
               $request['messageHardLimit']);
             $messages = $messages->getAsArray('messageId');
 
@@ -735,7 +733,6 @@ if (is_array($request['rooms'])) {
           $messages = $database->select($queryParts['messagesSelect']['columns'],
             $queryParts['messagesSelect']['conditions'],
             $queryParts['messagesSelect']['sort'],
-            false,
             $request['messageHardLimit']);
           $messages = $messages->getAsArray('messageId');
 

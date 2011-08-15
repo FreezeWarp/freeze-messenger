@@ -173,9 +173,7 @@ $file = $database->select(
   $queryParts['fileSelect']['columns'],
   $queryParts['fileSelect']['conditions'],
   false,
-  false,
-  1
-);
+  1);
 $file = $file->getAsArray(false);
 
 

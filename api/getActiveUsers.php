@@ -219,7 +219,6 @@ if (is_array($request['rooms'])) {
       $room = $database->select($queryParts['roomSelect']['columns'],
         $queryParts['roomSelect']['conditions'],
         false,
-        false,
         1);
       $room = $room->getAsArray(false);
 

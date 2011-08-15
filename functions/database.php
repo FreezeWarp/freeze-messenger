@@ -302,11 +302,7 @@ class database {
    * @return object
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  public function select($columns, $conditionArray = false, $sort = false, $group = false, $limit = false) { // Note: We will be removing group from here briefly.
-    if ($group) {
-      throw new Exception('Deprecated: group');
-    }
-
+  public function select($columns, $conditionArray = false, $sort = false, $limit = false) { // Note: We will be removing group from here briefly.
     /* Define Variables */
     $finalQuery = array(
       'columns' => array(),
