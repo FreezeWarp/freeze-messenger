@@ -42,6 +42,13 @@ $xmlData = array(
   ),
 );
 
+$queryParts['fileTypeSelect']['columns'] = array(
+  "{$sqlPrefix}uploadTypes" => 'typeId, extension, mime, maxSize, container',
+);
+$queryParts['fileTypeSelect']['conditions'] = false;
+$queryParts['fileTypeSelect']['sort'] = 'typeId';
+$queryParts['fileTypeSelect']['limit'] = false;
+
 
 
 /* Plugin Hook Start */
@@ -51,16 +58,10 @@ $xmlData = array(
 
 /* Get Uploads from Database */
 $fileTypes = $database->select(
-  array(
-    "{$sqlPrefix}uploadTypes" => array(
-      'typeId' => 'typeId',
-      'extension' => 'extension',
-      'mime' => 'mime',
-      'maxSize' => 'maxSize',
-      'container' => 'container',
-    ),
-  )
-);
+  $queryParts['fileTypeSelect']['columns'],
+  $queryParts['fileTypeSelect']['conditions'],
+  $queryParts['fileTypeSelect']['sort'],
+  $queryParts['fileTypeSelect']['limit']);
 $fileTypes = $fileTypes->getAsArray('typeId');
 
 

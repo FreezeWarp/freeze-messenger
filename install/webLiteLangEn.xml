@@ -68,7 +68,7 @@
     <phrase name="templateLoading">Loading...</phrase>
     <phrase name="templateLogin">Login</phrase>
     <phrase name="templateLogout">Logout</phrase>
-    <phrase name="templateManageKickedUsers">Manage kicked Users</phrase>
+    <phrase name="templateManageKickedUsers">Manage Kicked Users</phrase>
     <phrase name="templateModerateCat">Moderation</phrase>
     <phrase name="templatePrivateIM">Enter Private IM</phrase>
     <phrase name="templateQuickCat">Key</phrase>

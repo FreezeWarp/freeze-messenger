@@ -77,37 +77,10 @@ $xmlData = array(
 );
 
 $queryParts['kicksSelect']['columns'] = array(
-  "{$sqlPrefix}kicks" => array(
-    'kickerId' => 'kkickerId',
-    'userId' => 'kuserId',
-    'roomId' => 'kroomId',
-    'length' => 'klength',
-    'time' => array(
-      'name' => 'ktime',
-      'context' => 'time',
-    ),
-  ),
-  "{$sqlPrefix}users user" => array(
-    'userId' => 'userId',
-    'userName' => 'userName',
-    'userFormatStart' => 'userFormatStart',
-    'userFormatEnd' => 'userFormatEnd',
-  ),
-  "{$sqlPrefix}users kicker" => array(
-    'userId' => 'kickerId',
-    'userName' => 'kickerName',
-    'userFormatStart' => 'kickerFormatStart',
-    'userFormatEnd' => 'kickerFormatEnd',
-  ),
-  "{$sqlPrefix}rooms" => array(
-    'roomId' => 'roomId',
-    'roomName' => 'roomName',
-    'owner' => 'owner',
-    'allowedUsers' => 'allowedUsers',
-    'allowedGroups' => 'allowedGroups',
-    'moderators' => 'moderators',
-    'options' => 'options',
-  ),
+  "{$sqlPrefix}kicks" => 'kickerId kkickerId, userId kuserId, roomId kroomId, length klength, time ktime',
+  "{$sqlPrefix}users user" => 'userId, userName, userFormatStart, userFormatEnd',
+  "{$sqlPrefix}users kicker" => 'userId kickerId, userName kickerName, userFormatStart kickerFormatStart, userFormatEnd kickerFormatEnd',
+  "{$sqlPrefix}rooms" => 'roomId, roomName, owner, options',
 );
 $queryParts['kicksSelect']['conditions'] = array(
   'both' => array(
@@ -146,10 +119,8 @@ $queryParts['kicksSelect']['conditions'] = array(
     ),
   ),
 );
-$queryParts['kicksSelect']['sort'] = array(
-  'roomId' => 'asc',
-  'userId' => 'asc'
-);
+$queryParts['kicksSelect']['sort'] = 'roomId, userId';
+$queryParts['kicksSelect']['limit'] = false;
 
 
 
@@ -192,7 +163,8 @@ if (count($request['rooms']) > 0) {
 /* Get Kicks from Database */
 $kicks = $database->select($queryParts['kicksSelect']['columns'],
   $queryParts['kicksSelect']['conditions'],
-  $queryParts['kicksSelect']['sort']); error_log($kicks->sourceQuery);
+  $queryParts['kicksSelect']['sort'],
+  $queryParts['kicksSelect']['limit']);
 $kicks = $kicks->getAsArray(true);
 
 

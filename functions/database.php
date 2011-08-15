@@ -431,8 +431,6 @@ class database {
               throw new Exception('Unrecognized sort column: ' . $sortCol);
             }
           }
-
-          $finalQuery['sort'] = implode(', ', $finalQuery['sort']);
         }
       }
       elseif (is_string($sort)) {
@@ -466,6 +464,8 @@ class database {
           $finalQuery['sort'][] = $reverseAlias[$sortCol] . " $directionSym";
         }
       }
+
+      $finalQuery['sort'] = implode(', ', $finalQuery['sort']);
     }
 
 

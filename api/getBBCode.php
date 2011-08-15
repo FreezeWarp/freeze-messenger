@@ -16,6 +16,7 @@
 
 /**
  * Get Admin-Created BBCode
+ *
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <rehtaew@gmail.com>
@@ -31,7 +32,7 @@ require('../global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC(array(
   'get' => array(
-    'fonts' => array(
+    'bbcodes' => array(
       'type' => 'string',
       'require' => false,
       'default' => '',
@@ -43,7 +44,6 @@ $request = fim_sanitizeGPC(array(
     ),
   ),
 ));
-
 
 
 /* Data Predefine */
@@ -59,33 +59,26 @@ $xmlData = array(
   ),
 );
 
-$queryParts['fontsSelect']['columns'] = array(
-  "{$sqlPrefix}fonts" => array(
-    'fontId' => 'fontId',
-    'fontName' => 'fontName',
-    'data' => 'fontData',
-    'category' => 'fontGroup',
-  ),
+$queryParts['bbcodeSelect']['columns'] = array(
+  "{$sqlPrefix}bbcode" => 'bbcodeId, bbcodeName, options, searchRegex, replacement',
 );
-$queryParts['fontsSelect']['conditions'] = array();
-$queryParts['fontsSelect']['sort'] = array(
-  'fontGroup' => 'asc',
-  'fontName' => 'asc',
-);
+$queryParts['bbcodeSelect']['conditions'] = array();
+$queryParts['bbcodeSelect']['sort'] = 'bbcodeId';
+$queryParts['bbcodeSelect']['limit'] = false;
 
 
 
 /* Modify Query Data for Directives */
-if (count($request['fonts']) > 0) {
-  $queryParts['fontsSelect']['conditions']['both'][] = array(
+if (count($request['bbcodes']) > 0) {
+  $queryParts['bbcodeSelect']['conditions']['both'][] = array(
     'type' => 'in',
     'left' => array(
       'type' => 'column',
-      'value' => 'fontId',
+      'value' => 'bbcodeId',
     ),
     'right' => array(
        'type' => 'array',
-       'value' => (array) $request['fonts'],
+       'value' => (array) $request['bbcodes'],
     ),
   );
 }
@@ -98,22 +91,23 @@ if (count($request['fonts']) > 0) {
 
 
 /* Get Fonts from Database */
-$fonts = $database->select($queryParts['fontsSelect']['columns'],
-  $queryParts['fontsSelect']['conditions'],
-  $queryParts['fontsSelect']['sort']);
-$fonts = $fonts->getAsArray('fontId');
+$bbcodes = $database->select($queryParts['bbcodeSelect']['columns'],
+  $queryParts['bbcodeSelect']['conditions'],
+  $queryParts['bbcodeSelect']['sort'],
+  $queryParts['bbcodeSelect']['limit']);
+$bbcodes = $bbcodes->getAsArray('bbcodeId');
 
 
 
 /* Start Processing */
-if (is_array($fonts)) {
-  if (count($fonts) > 0) {
-    foreach ($fonts AS $font) {
-      $xmlData['getBBCode']['fonts']['font ' . $font['fontId']] = array(
-        'fontId' => (int) $font['fontId'],
-        'fontName' => (string) $font['fontName'],
-        'fontGroup' => (string) $font['fontGroup'],
-        'fontData' => (string) $font['fontData'],
+if (is_array($bbcodes)) {
+  if (count($bbcodes) > 0) {
+    foreach ($bbcodes AS $bbcode) {
+      $xmlData['getBBCode']['bbcodes']['bbcode ' . $bbcode['bbcodeId']] = array(
+        'bbcodeId' => (int) $bbcode['bbcodeId'],
+        'bbcodeName' => (string) $bbcode['bbcodeName'],
+        'searchRegex' => (string) $bbcode['searchRegex'],
+        'replacement' => (string) $bbcode['replacement'],
       );
 
       ($hook = hook('getBBCode_eachFont') ? eval($hook) : '');

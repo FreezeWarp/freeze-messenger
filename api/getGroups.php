@@ -71,6 +71,7 @@ $queryParts['groupsSelect']['conditions'] = array();
 $queryParts['groupsSelect']['sort'] = array(
   'groupId' => 'asc',
 );
+$queryParts['groupsSelect']['limit'] = false;
 
 
 
@@ -99,7 +100,8 @@ if (count($request['groups']) > 0) {
 /* Get Groups from Database */
 $groups = $integrationDatabase->select($queryParts['groupsSelect']['columns'],
   $queryParts['groupsSelect']['conditions'],
-  $queryParts['groupsSelect']['sort']);
+  $queryParts['groupsSelect']['sort'],
+  $queryParts['groupsSelect']['limit']);
 $groups = $groups->getAsArray('groupId');
 
 

@@ -41,7 +41,7 @@ $request = fim_sanitizeGPC(array(
       'type' => 'string',
       'default' => 'raw',
       'context' => array(
-         'type' => 'int',
+        'type' => 'int',
       ),
       'require' => false,
     ),
@@ -75,7 +75,7 @@ if (!$room) { // Bad room.
   $errStr = 'badroom';
   $errDesc = 'That room could not be found.';
 }
-elseif (!fim_hasPermission($room,$user,'view',true)) { // Not allowed to see room.
+elseif (!fim_hasPermission($room, $user, 'view', true)) { // Not allowed to see room.
   $errStr = 'noperm';
   $errDesc = 'You are not allowed to post in this room.';
 }
@@ -95,8 +95,6 @@ else {
         'userId' => $user['userId'],
         'roomId' => $room['roomId'],
       ));
-
-      ),array());
     }
     else {
       $errStr = 'badstatusvalue';

@@ -61,6 +61,28 @@ $xmlData = array(
   ),
 );
 
+$queryParts['fileSelect']['columns'] = array(
+  "{$sqlPrefix}files" => 'fileId, fileName, fileType, creationTime, userId, rating, flags',
+  "{$sqlPrefix}fileVersions" => 'fileId vfileId, md5hash, sha256hash',
+);
+$queryParts['fileSelect']['conditions'] = array(
+  'both' => array(
+    array(
+      'type' => 'e',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'fileId',
+      ),
+      'right' => array(
+        'type' => 'column',
+        'value' => 'vfileId',
+      ),
+    ),
+  ),
+);
+$queryParts['fileSelect']['sort'] = 'fileId',
+$queryParts['fileSelect']['limit'] = false;
+
 
 
 /* Plugin Hook Start */
@@ -69,41 +91,9 @@ $xmlData = array(
 
 
 /* Get Uploads from Database */
-/*$files = dbRows("SELECT v.fileId, f.mime, f.name, f.rating, v.md5hash
-  FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS v
-  WHERE f.userId = $user[userId] AND f.fileId = v.fileId",'fileId');*/
 $files = $database->select(
-  array(
-    "{$sqlPrefix}files" => array(
-      'fileId' => 'fileId',
-      'fileName' => 'fileName',
-      'fileType' => 'fileType',
-      'creationTime' => 'creationTime',
-      'userId' => 'userId',
-      'rating' => 'rating',
-      'flags' => 'flags',
-    ),
-    "{$sqlPrefix}fileVersions" => array(
-      'fileId' => 'vfileId',
-      'md5hash' => 'md5hash',
-      'sha256hash' => 'sha256hash',
-    ),
-  ),
-  array(
-    'both' => array(
-      array(
-        'type' => 'e',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'fileId',
-        ),
-        'right' => array(
-          'type' => 'column',
-          'value' => 'vfileId',
-        ),
-      ),
-    ),
-  )
+  ,
+
 );
 $files = $files->getAsArray('fileId');
 

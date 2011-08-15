@@ -62,18 +62,11 @@ $xmlData = array(
 );
 
 $queryParts['fontsSelect']['columns'] = array(
-  "{$sqlPrefix}fonts" => array(
-    'fontId' => 'fontId',
-    'fontName' => 'fontName',
-    'data' => 'fontData',
-    'category' => 'fontGroup',
-  ),
+  "{$sqlPrefix}fonts" => 'fontId, fontName, data fontData, category fontGroup',
 );
 $queryParts['fontsSelect']['conditions'] = array();
-$queryParts['fontsSelect']['sort'] = array(
-  'fontGroup' => 'asc',
-  'fontName' => 'asc',
-);
+$queryParts['fontsSelect']['sort'] = 'fontGroup, fontName';
+$queryParts['fontsSelect']['limit'] = false;
 
 
 
@@ -102,7 +95,8 @@ if (count($request['fonts']) > 0) {
 /* Get Fonts from Database */
 $fonts = $database->select($queryParts['fontsSelect']['columns'],
   $queryParts['fontsSelect']['conditions'],
-  $queryParts['fontsSelect']['sort']);
+  $queryParts['fontsSelect']['sort'],
+  $queryParts['fontsSelect']['limit']);
 $fonts = $fonts->getAsArray('fontId');
 
 
