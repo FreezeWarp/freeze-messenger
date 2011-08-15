@@ -398,9 +398,9 @@ switch($request['action']) {
   }
   else {
     if (strlen($request['userName']) > 0) {
-      $user2 = $slaveDatabase->getUser(false,$request['userName']); // Get the user information.
+      $user2 = $slaveDatabase->getUser(false, $request['userName']); // Get the user information.
     }
-    elseif ((int) $reqest['userId'] > 0) {
+    elseif ((int) $request['userId'] > 0) {
       $user2 = $slaveDatabase->getUser($request['userId']); // Get the user information.
     }
     else {
@@ -408,6 +408,7 @@ switch($request['action']) {
       $errDesc = 'You did not specify a user.';
     }
 
+    if (!isset($user2)) {} // noUser thing above...
     if ($user2 === false) { // No user exists.
       $errStr = 'badUser';
       $errDesc = 'That user does not exist.';
@@ -417,38 +418,7 @@ switch($request['action']) {
       $errDesc = 'The user specified is yourself.';
     }
     else {
-      $room = $database->select(
-        array(
-          "{$sqlPrefix}rooms" => 'roomId, roomName, allowedUsers',
-        ),
-        array(
-          'both' => array(
-            array(
-              'type' => 'in',
-              'left' => array(
-                'type' => 'int',
-                'value' => $user['userId'],
-              ),
-              'right' => array(
-                'type' => 'column',
-                'value' => 'allowedUsers',
-              ),
-            ),
-            array(
-              'type' => 'in',
-              'left' => array(
-                'type' => 'int',
-                'value' => $user2['userId'],
-              ),
-              'right' => array(
-                'type' => 'column',
-                'value' => 'allowedUsers',
-              ),
-            ),
-          ),
-        )
-      );
-      $room = $room->getAsArray(false);
+      $room = $database->getPrivateRoom(array($user['userId'], $user2['userId']));
 
       if ($room) {
         $xmlData['editRoom']['response']['insertId'] = $room['roomId']; // Already exists; return ID
@@ -456,11 +426,21 @@ switch($request['action']) {
       else {
         $database->insert("{$sqlPrefix}rooms", array(
             'roomName' => "Private IM ($user[userName] and $user2[userName])",
-            'allowedUsers' => "$user[userId],$user2[userId]",
             'options' => 48,
-            'bbcode' => 1,
           )
         );
+
+        foreach (array($user['userId'], $user2['userId']) AS $userId) {
+          $database->insert("{$sqlPrefix}roomPermissions", array(
+              'roomId' => $roomId,
+              'attribute' => 'user',
+              'param' => $userId,
+              'permissions' => 7,
+            ), array(
+              'permissions' => 7,
+            )
+          );
+        }
 
         $xmlData['editRoom']['response']['insertId'] = $database->insertId;
       }

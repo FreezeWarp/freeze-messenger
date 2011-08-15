@@ -361,7 +361,7 @@ class fimDatabase extends database {
 
 
     // Increment the messages counter.
-    $database->incrementCounter('messages');
+    $this->incrementCounter('messages');
 
 
     // If the contact is a private communication, create an event and add to the message unread table.
@@ -462,6 +462,50 @@ class fimDatabase extends database {
     $counterData = $counterData->getAsArray(false);
 
     return $counterData['counterValue'];
+  }
+
+
+  public function getPrivateRoom($userList) {
+    $queryParts['columns'] = array(
+      "{$sqlPrefix}privateRooms" => 'roomId, userCount, user1, user2, user3, user4, user5, user6, user7, user8, user9, user10',
+    );
+
+    $userCount = count($userList);
+
+    $queryParts['conditions'] = array(
+      'both' => array(
+        array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'userCount',
+          ),
+          'right' => array(
+            'type' => 'int',
+            'value' => $userCount,
+          ),
+        ),
+      ),
+    );
+
+    foreach ($userList AS $userId) {
+      for ($i = 1; $i <= $userCount; $i++) {
+        $queryParts['conditions']['both'][]['either'][] = array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'user' . $i,
+          ),
+          'right' => array(
+            'type' => 'int',
+            'value' => $userId,
+          ),
+        );
+      }
+    }
+
+    $this->select($queryParts['columns'],
+      $queryParts['conditions']); error_log($this->sourceQuery);
   }
 }
 ?>

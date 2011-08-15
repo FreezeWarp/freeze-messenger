@@ -417,7 +417,7 @@ if (isset($reqHooks)) {
       }
 
       unset($hooks2);
-      fim_setCachedVar('fim_hooks',$hooks,$config['hooksCacheRefresh']);
+      fim_setCachedVar('fim_hooks', $hooks, $config['hooksCacheRefresh']);
     }
   }
 }
@@ -428,7 +428,6 @@ if (isset($reqHooks)) {
 ////* Kicks Cache *////
 
 $kicksCache = fim_getCachedVar('fim_kickCache');
-$permissionsCache = fim_getCachedVar('fim_permissionsCache');
 
 if ($kicksCache === null || $kicksCache === false) {
   $kicksCache = array();
@@ -500,7 +499,7 @@ if ($kicksCache === null || $kicksCache === false) {
     }
   }
 
-  fim_setCachedVar('fim_kickCache',$kicksCache,$config['kicksCacheRefresh']);
+  fim_setCachedVar('fim_kickCache', $kicksCache, $config['kicksCacheRefresh']);
 }
 
 
@@ -509,32 +508,23 @@ if ($kicksCache === null || $kicksCache === false) {
 
 ////* Permissions Cache *////
 
+$permissionsCache = fim_getCachedVar('fim_permissionsCache');
+
 if ($permissionsCache === null || $permissionsCache === false) {
   $permissionsCache = array();
 
   $queryParts['permissionsCacheSelect']['columns'] = array(
-    "{$sqlPrefix}roomPermissions" => array(
-      'roomId' => 'roomId',
-      'attribute' => 'attribute',
-      'param' => 'param',
-      'permissions' => 'permissions',
-    ),
+    "{$sqlPrefix}roomPermissions" => 'roomId, attribute, param, permissions',
   );
 
   $permissionsCachePre = $database->select($queryParts['permissionsCacheSelect']['columns']);
   $permissionsCachePre = $permissionsCachePre->getAsArray(true);
 
-  $permissionsCache = array(
-    'user' => array(),
-    'group' => array(),
-    'admingroup' => array(),
-  );
-
   foreach ($permissionsCachePre AS $cachePerm) {
     $permissionsCache[$cachePerm['roomId']][$cachePerm['attribute']][$cachePerm['param']] = $cachePerm['permissions'];
   }
 
-  fim_setCachedVar('fim_permissionCache',$permissionsCache,$config['permissionsCacheRefresh']);
+  fim_setCachedVar('fim_permissionCache', $permissionsCache, $config['permissionsCacheRefresh']);
 }
 
 

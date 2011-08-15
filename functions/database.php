@@ -18,6 +18,13 @@
 /* This file is the MySQL-version (and the only one currently existing) of a generic database layer created for FreezeMessenger. What purpose could it possibly server? Why not go the PDO-route? Mainly, it offers a few distinct advantages: full control, easier to modify by plugins (specifically, in that most data is stored in a tree structure), and perhaps more importantly it allows things than PDO, which is fundamentally an SQL extension, doesn't. There is no shortage of database foundations bearing almost no semblance to SQL: IndexedDB (which has become popular by-way of web-browser implementation), Node.JS (which I would absolutely love to work with but currently can't because of the MySQL requirement), and others come to mind.
  * As with everything else, this is GPL-based, but if anyone decides they like it and may wish to use it for less restricted purposes, contact me. I have considered going LGPL/MIT/BSD with it, but not yet :P */
 
+
+/**** BASIC POINTERS ****/
+/* The select command is very messy. While it is now possible to specify short & sweet column and sort definitions, conditions use a horridly messy array syntax. It is not ideal, but will not be for now be rewritten. Hopefully some logic can at least be applie to the structure, however.
+ * Complex joins, though originally possible in early development versions, are not and will not be possible now. This is because they are rarely neccessary, and can be considerably slower. Simple joins in which two tables are selected is possible, but some drivers do not support them (Google's language for their App Engine is a good example). These will then be interpreted by the DAL where neccessary.
+ * Delete, Update, and Insert commands are fairly straight forward. They all use the same format, and shouldn't be too hard to get the hang of.
+ */
+
 class database {
   /**
    * Construct
@@ -51,20 +58,32 @@ class database {
       case 'mysql':
       case 'mysqli':
       $this->languageSubset = 'sql';
-      $this->tableQuotes = '`';
-      $this->tableAliasQuotes = '`';
-      $this->columnQuotes = '`';
-      $this->columnAliasQuotes = '`';
+
+      $this->tableQuoteStart = '`';
+      $this->tableQuoteEnd = '`';
+      $this->tableAliasQuoteStart = '`';
+      $this->tableAliasQuoteEnd = '`';
+      $this->columnQuoteStart = '`';
+      $this->columnQuoteEnd = '`';
+      $this->columnAliasQuoteStart = '`';
+      $this->columnAliasQuoteEnd = '`';
+
       $this->sortOrderAsc = 'ASC';
       $this->sortOrderDesc = 'DESC';
       break;
 
       case 'postgresql':
       $this->languageSubset = 'sql';
-      $this->tableQuotes = '"';
-      $this->tableAliasQuotes = '"';
-      $this->columnQuotes = '"';
-      $this->columnAliasQuotes = '"';
+
+      $this->tableQuoteStart = '"';
+      $this->tableQuoteEnd = '"';
+      $this->tableAliasQuoteStart = '"';
+      $this->tableAliasQuoteEnd = '"';
+      $this->columnQuoteStart = '"';
+      $this->columnQuoteEnd = '"';
+      $this->columnAliasQuoteStart = '"';
+      $this->columnAliasQuoteEnd = '"';
+
       $this->sortOrderAsc = 'ASC';
       $this->sortOrderDesc = 'DESC';
       break;
@@ -245,15 +264,31 @@ class database {
   }
 
 
+  /**
+   * Creates a new database on the database server. This function is not possible on all drivers (e.g. PostGreSQL).
+   *
+   * @param string $database - The name of the databse.
+   * @return bool - True if the operation was successful, false otherwise.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
   public function createDatabase($database) {
     switch ($this->language) {
       case 'mysql':
       case 'mysqli':
-      return $this->rawQuery('CREATE DATABASE IF NOT EXISTS `' . $database . '`');
+      case 'postgresql':
+      return $this->rawQuery('CREATE DATABASE IF NOT EXISTS ' . $this->databaseQuoteStart . $database . $this->databaseQuoteEnd);
       break;
     }
   }
 
+
+  /**
+   * Alters the active database of the connection.  This function is not possible on all drivers (e.g. PostGreSQL). The connetion character set will also be set to UTF8 on certain drivers (e.g. MySQL).
+   *
+   * @param string $database - The name of the databse.
+   * @return bool - True if the operation was successful, false otherwise.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
   public function selectDatabase($database) {
     if (!$this->functionMap('selectdb', $database)) { // Select the database.
       $this->error = 'Could not select database: ' . $database;
@@ -288,6 +323,7 @@ class database {
 
   /**
    * Returns a string properly escaped for raw queries.
+   *
    * @return string
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
@@ -298,6 +334,11 @@ class database {
 
   /**
    * Retrieves data from the active database connection.
+   *
+   * @param array columns - The columns to select.
+   * @param array conditionArray - The conditions for the selection.
+   * @param array|string sort - A string or array defining how to sort the return data.
+   * @param int $limit - The maximum number of columns to select.
    *
    * @return object
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
@@ -324,12 +365,12 @@ class database {
             if (strstr($tableName,' ') !== false) { // A space can be used to create a table alias, which is sometimes required for different queries.
               $tableParts = explode(' ', $tableName);
 
-              $finalQuery['tables'][] = "`$tableParts[0]` AS `$tableParts[1]`";
+              $finalQuery['tables'][] = $this->tableQuoteStart . $tableParts[0] . $this->tableQuoteEnd . ' AS ' . $this->tableAliasQuoteStart . $tableParts[1] . $this->tableAliasQuoteEnd;
 
               $tableName = $tableParts[1];
             }
             else {
-              $finalQuery['tables'][] = "`$tableName`";
+              $finalQuery['tables'][] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd;
             }
 
             if (is_array($tableCols)) {
@@ -500,6 +541,10 @@ LIMIT
   /**
    * Recurses over a specified "where" array, returning a valid where clause.
    *
+   * @param array $conditionArray - The conditions to transform into proper SQL.
+   * @param array $reverseAlias - An array corrosponding to column aliases and their database counterparts.
+   * @param int $d - The level of recursion.
+   *
    * @return string
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
@@ -514,6 +559,11 @@ LIMIT
         foreach ($cond AS $recKey => $data) {
           $i++;
           $sideTextFull[$i] = '';
+
+         if (strpos($recKey, ' ') !== false) {
+           $recKeyPieces = explode($recKeyPieces, ' ');
+           $recKey = $recKeyPieces[0];
+         }
 
           if ($recKey === 'both' || $recKey === 'either') {
             $sideTextFull[$i] = $this->recurseBothEither(array($recKey => $data), $reverseAlias, $d+1);
@@ -649,7 +699,7 @@ LIMIT
                         $sideText[$side] = $reverseAlias[$data[$side]['value']];
                       }
                     }
-                    else { error_log(print_r($reverseAlias, true));
+                    else {
                       throw new Exception('Unrecognized column: ' . $data[$side]['value']);
                     }
                   }
@@ -718,6 +768,16 @@ LIMIT
   }
 
 
+  /**
+   * Inserts a row into a table of the database.
+   *
+   * @param string $table - The table to insert into.
+   * @param array $dataArray - The data to insert into the database.
+   * @param array $updateArray - If the row can not be inserted due to key restrictions, this defines data to update the row with instead (see MySQL's ON DUPLICATE KEY UPDATE).
+   *
+   * @return bool - True on success, false on failure.s
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
   public function insert($table, $dataArray, $updateArray = false) {
     list($columns, $values) = $this->splitArray($dataArray);
 
@@ -749,6 +809,16 @@ LIMIT
   }
 
 
+  /**
+   * Inserts a row into a table of the database.
+   *
+   * @param string $table - The table to update.
+   * @param array $dataArray - The data to update the row(s) with.
+   * @param array $conditionArray - The conditions to apply to the UPDATE.
+   *
+   * @return bool - True on success, false on failure.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
   public function update($table, $dataArray, $conditionArray = false) {
     list($columns, $values) = $this->splitArray($dataArray);
 
@@ -802,6 +872,15 @@ LIMIT
   }
 
 
+  /**
+   * Deletes rows from a table of the database.
+   *
+   * @param string $table - The table to delete from.
+   * @param array $updateArray - The conditions to delete rows by.
+   *
+   * @return bool - True on success, false on failure.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
   public function delete($table, $conditionArray = false) {
     list($columns, $values, $conditions) = $this->splitArray($conditionArray);
 
@@ -867,7 +946,7 @@ LIMIT
     else {
       $this->error = $this->functionMap('error');
 
-      trigger_error("Database Error;\n\nQuery: $query;\n\nError: " . $this->error . "\n\nBacktrace: " . debug_backtrace(), $this->errorLevel); // The query could not complete.
+      trigger_error("Database Error;\n\nQuery: $query;\n\nError: " . $this->error . "\n\nBacktrace: " . print_r(debug_backtrace(),true), $this->errorLevel); // The query could not complete.
 
       return false;
     }
@@ -875,9 +954,10 @@ LIMIT
 
 
   /**
-   * Divides a multidimensional array into three seperate two-dimensional arrays, and performs some additional processing as defined in the passed array.
+   * Divides a multidimensional array into three seperate two-dimensional arrays, and performs some additional processing as defined in the passed array. It is used by the insert(), update(), and delete() functions.
    *
    * @param string $array - The source array
+   *
    * @return array - An array containing three seperate arrays.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
@@ -965,6 +1045,18 @@ LIMIT
   }
 
 
+  /**
+   * Creates a table based on the specified data.
+   *
+   * @param string $tableName - The name of the table.
+   * @param string $tableComment - A table comment, used for documentation and related purposes.
+   * @param string $storeType - The class of database engine to use for the table, either "memory" or "general". The "memory" type should be used for tables that contain cache data, or otherwise where the table could be emptied without issue.
+   * @param array $tableColumns - The columns of the table.
+   * @param array $tableIndexes - The indexes of the table.
+   *
+   * @return bool - True on success, false on failure.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
   public function createTable($tableName, $tableComment, $storeType, $tableColumns, $tableIndexes) {
     switch ($storeType) {
       case 'general': // Use this normally, and for all perm. data
@@ -1127,6 +1219,15 @@ LIMIT
   }
 
 
+  /**
+   * Renames/moves a table. It will remain in the active database.
+   *
+   * @param string $oldName - The current table name.
+   * @param string $newName - The name the table should be renamed to.
+   *
+   * @return bool - True on success, false on failure.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
   public function renameTable($oldName, $newName) {
     $query = 'RENAME TABLE `' . $this->escape($oldName) . '` TO `' . $this->escape($newName) . '`';
 
@@ -1134,6 +1235,14 @@ LIMIT
   }
 
 
+  /**
+   * Deletes a table.
+   *
+   * @param string $tableName - The table to delete.
+   *
+   * @return bool - True on success, false on failure.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
   public function deleteTable($tableName) {
     $query = 'DELETE TABLE `' . $this->escape($tableName) . '`';
 
@@ -1141,10 +1250,23 @@ LIMIT
   }
 
 
+  /**
+   * Returns a compatible time field of the present time, as recognized by the DAL's interpretation of the database driver. In most cases, this will be a unix timestamp.
+   *
+   * @return mixed - The timefield corrosponding to the current time.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
   public function now() {
     return time();
   }
 
+
+  /**
+   * Returns an array of the tables in a database. The method used is driver specific, but where possible the SQL-standard INFORMATION_SCHEMA database will be used.
+   *
+   * @return mixed - The timefield corrosponding to the current time.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
   public function getTablesAsArray() {
     switch ($this->language) {
       case 'mysql':
@@ -1175,6 +1297,13 @@ class databaseResult {
     $this->language = $language;
   }
 
+
+  /**
+   * Calls a database function, such as mysql_connect or mysql_query, using lookup tables
+   *
+   * @return void
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
   public function functionMap($operation) {
     $args = func_get_args();
 
@@ -1193,6 +1322,7 @@ class databaseResult {
     }
   }
 
+
   /**
    * Replaces Query Data
    *
@@ -1203,6 +1333,7 @@ class databaseResult {
   public function setQuery($queryData) {
     $this->queryData = $queryData;
   }
+
 
   /**
    * Get Database Object as an Associative Array
