@@ -87,7 +87,7 @@
       <column name="source" type="string" maxlen="50" default="upload" comment="The file's source - in most cases upload." />
       <column name="rating" type="string" restrict="6,10,13,16,18" comment="The file's parental content age rating." />
       <column name="flags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the file." />
-      <column name="deleted" type="string" restrict="yes,no" default="no" comment="Whether or not the file in question is deleted." />
+      <column name="deleted" type="int" maxlen="1" default="no" comment="Whether or not the file in question is deleted." />
 
       <key name="fileId" type="primary" />
       <key name="userId" type="index" />

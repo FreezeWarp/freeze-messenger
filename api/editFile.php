@@ -80,25 +80,33 @@ $xmlData = array(
 switch ($request['action']) {
   case 'delete':
   if ($user['adminDefs']['modImages']) {
-    $id = intval($_GET['imageId']);
+    modLog('deleteImage', $request['fileId']);
 
-    modLog('deleteImage',$id);
-
-    dbQuery("UPDATE {$sqlPrefix}files SET deleted = 1 WHERE id = $id");
-
-    echo container('Deleted','The image has been deleted.');
+    $database->update("{$sqlPrefix}files", array(
+      'deleted' => 1,
+    ), array(
+      'fileId' => $request['fileId'],
+    ));
+  }
+  else {
+    $errStr = 'noPerm';
+    $errDesc = 'You do not have permission to delete and undelete images.';
   }
   break;
 
   case 'undelete':
   if ($user['adminDefs']['modImages']) {
-    $userId = intval($_GET['userId']);
+    modLog('undeleteImage', $request['fileId']);
 
-    modLog('unbanuser',$userId);
-
-    dbQuery("UPDATE {$sqlPrefix}users SET settings = IF(settings & 1,settings - 1,settings) WHERE userId = $userId");
-
-    echo container('User Unbanned','The user has been unbanned.');
+    $database->update("{$sqlPrefix}files", array(
+      'deleted' => 0,
+    ), array(
+      'fileId' => $request['fileId'],
+    ));
+  }
+  else {
+    $errStr = 'noPerm';
+    $errDesc = 'You do not have permission to delete and undelete images.';
   }
   break;
 
