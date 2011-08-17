@@ -114,6 +114,7 @@ echo '<!DOCTYPE HTML>
     $(\'#moderateRight\').css(\'height\', document.documentElement.clientHeight - 10);
     $(\'#moderateLeft\').css(\'height\', document.documentElement.clientHeight - 10);
     $(\'#moderateRight\').css(\'width\', Math.floor(document.documentElement.clientWidth * .74 - 10));
+    $(\'.CodeMirror\').css(\'width\', Math.floor(document.documentElement.clientWidth * .74 - 50));
     $(\'#moderateLeft\').css(\'width\', Math.floor(document.documentElement.clientWidth * .25 - 10));
     $(\'button, input[type=button], input[type=submit]\').button();
 
@@ -123,15 +124,19 @@ echo '<!DOCTYPE HTML>
   }
 
   $(document).ready(function() {
+    if ($(\'#textXml\').size()) {
+      var editorXml = CodeMirror.fromTextArea(document.getElementById("textXml"), {
+        mode:  "xml"
+      });
+    }
+
+    if ($(\'#textClike\').size()) {
+      var editorClike = CodeMirror.fromTextArea(document.getElementById("textClike"), {
+        mode:  "clike"
+      });
+    }
+
     windowDraw();
-
-    var editorXml = CodeMirror.fromTextArea(document.getElementById("textXml"), {
-      mode:  "xml"
-    });
-
-    var editorClike = CodeMirror.fromTextArea(document.getElementById("textClike"), {
-      mode:  "clike"
-    });
   });
 
 

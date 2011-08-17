@@ -376,7 +376,7 @@ class fimDatabase extends database {
   }
 
 
-  public function getTemplate($templateName, $languageCode, $interfaceId) {
+  public function getTemplate($templateName, $interfaceId) {
     global $sqlPrefix, $config, $user;
 
     $queryParts['templateSelect']['columns'] = array(

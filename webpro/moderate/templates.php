@@ -1,104 +1,26 @@
 <?php
-/*if (!defined('WEBPRO_INMOD')) {
-  die();
-}
-else {
-  if ($user['adminDefs']['modTemplates']) {
-    switch ($_GET['do2']) {
-      case false:
-      case 'view':
-      $templates2 = $database->select(array(
-        "{$sqlPrefix}templates" => "templateId, templateName, vars, data",
-      ));
-      $templates2 = $templates2->getAsArray(true);
+/* FreezeMessenger Copyright © 2011 Joseph Todd Parsons
 
-      foreach ($templates2 AS $template) {
-        $rows .= "<tr><td>$template[templateName]</td><td><a href=\"./moderate.php?do=templates&do2=edit&templateId=$template[templateId]\">Edit</td></tr>";
-      }
+ * This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
-      echo container('Templates','<table class="page rowHover" border="1">
-  <thead>
-    <tr class="hrow ui-widget-header">
-      <td>Template</td>
-      <td>Actions</td>
-    </tr>
-  </thead>
-  <tbody>
-' . $rows . '
-  </tbody>
-</table>');
-      break;
+ * This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-      case 'edit':
-      $template = $database->select(array(
-          "{$sqlPrefix}templates" => "templateId, templateName, vars, data",
-        ),
-        array(
-          'both' => array(
-            array(
-              'type' => 'e',
-              'left' => array(
-                'type' => 'column',
-                'value' => 'templateId',
-              ),
-              'right' => array(
-                'type' => 'int',
-                'value' => (int) $_GET['templateId'],
-              ),
-            ),
-          ),
-        ),
-        false,
-        false,
-        1
-      );
-      $template = $template->getAsArray(false);
+ * You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-      echo container("Edit Hook '$template[templateName]'","<form action=\"./moderate.php?do=templates&do2=edit2&templateId=$template[templateId]\" method=\"post\">
-  <label for=\"vars\">Vars:</label><br />
-  <input type=\"text\" name=\"vars\" value=\"$template[vars]\" /><br /><br />
-
-  <label for=\"text\">New Value:</label><br />
-  <textarea name=\"text\" id=\"textXml\" style=\"width: 100%; height: 300px;\">$template[data]</textarea><br /><br />
-
-  <button type=\"submit\">Update</button>
-</form>");
-      break;
-
-      case 'edit2':
-      $templateId = $_GET['templateId'];
-      $text = $_POST['text'];
-      $vars = $_POST['vars'];
-
-      $database->update(array(
-        'text' => $text,
-        'vars' => $vars
-      ),
-      "{$sqlPrefix}templates",
-      array(
-        'templateId' => (int) $templateId,
-      ));
-
-      $database->modLog('templateEdit',$templateId);
-
-      echo container('Updated','The template has been updated.<br /><br /><form action="Return" method="POST"><button type="submit">Return</button></form>');
-      break;
-    }
-  }
-  else {
-    echo 'You do not have permission to modify templates.';
-  }
-}*/
-
-
-<?php
 if (!defined('WEBPRO_INMOD')) {
   die();
 }
 else {
   $request = fim_sanitizeGPC(array(
     'request' => array(
-      'templateId' => array(
+      'templateName' => array(
         'context' => array(
           'type' => 'string',
         ),
@@ -189,7 +111,7 @@ else {
 <textarea name=\"vars\" id=\"vars\" style=\"width: 100%;\">$template[vars]</textarea><br /><br />
 
 <label for=\"data\">New Value:</label><br />
-<textarea name=\"data\" id=\"data\" style=\"width: 100%; height: 300px;\">$template[data]</textarea><br /><br />
+<textarea name=\"data\" id=\"textXml\" style=\"width: 100%; height: 300px;\">$template[data]</textarea><br /><br />
 
 <button type=\"submit\">Update</button>
 </form>");
@@ -209,7 +131,7 @@ else {
       $database->modLog('templateEdit',$template['templateName'] . '-' . $template['interfaceId']);
       $database->fullLog('templateEdit',array('template' => $template));
 
-      echo container('Template Updated','The template has been updated.<br /><br /><form action="./moderate.php?do=templates&do2=view&interfaceId=' . $request['interfaceId'] . '" method="POST"><button type="submit">Return</button></form>');
+      echo container('Template "' . $template['templateName'] . '" Updated','The template has been updated.<br /><br /><form action="./moderate.php?do=templates&do2=view&interfaceId=' . $request['interfaceId'] . '" method="POST"><button type="submit">Return</button></form>');
       break;
     }
   }
@@ -217,5 +139,4 @@ else {
     echo 'You do not have permission to modify templates.';
   }
 }
-?>
 ?>
