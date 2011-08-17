@@ -86,10 +86,10 @@ else {
       }
 
       echo container($title, '<form action="./moderate.php?do=bbcode&do2=edit2" method="post">
-  <table>
+  <table border="1" class="ui-widget page">
     <tr>
       <td>Name:</td>
-      <td><input type="text" name="bbcodeName" value="' . $bbcode['bbcodeName'] . '" /><td>
+      <td><input type="text" name="bbcodeName" value="' . $bbcode['bbcodeName'] . '" /></td>
     </tr>
     <tr>
       <td>Search Regex:</td>
@@ -101,7 +101,7 @@ else {
     <tr>
       <td>Replacement:</td>
       <td>
-        <input type="text" name="replacement" value="' . $bbcode['replacement'] . '" /><br />
+        <input type="text" name="replacement" value="' . htmlentities($bbcode['replacement']) . '" /><br />
         <small>Tips: "$1" and "\1" can be used here like with standard regular expressions. The /e flag is also possible, if adventurous.</small>
       </td>
     </tr>

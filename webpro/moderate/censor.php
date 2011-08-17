@@ -80,12 +80,30 @@ else {
 
       case false:
       case 'viewLists':
-      $lists = dbRows("SELECT * FROM {$sqlPrefix}censorLists WHERE options & 1",'id');
+      $lists = $database->select(array(
+        "{$sqlPrefix}censorLists" => "listId, listName, listType, options",
+      ), array(
+        'both' => array(
+          array(
+            'type' => 'and',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'options',
+            ),
+            'right' => array(
+              'type' => 'int',
+              'value' => 1,
+            ),
+          ),
+        ),
+      ));
+      $lists = $lists->getAsArray(true);
+
 
       foreach ($lists AS $list) {
         $options = array();
 
-        if ($list['options'] & 2) $options[] = "Dissabable";
+        if ($list['options'] & 2) $options[] = "Disableable";
         if ($list['options'] & 4) $options[] = "Disabled in Private";
         if ($list['options'] & 8) $options[] = "Mature";
 
@@ -93,7 +111,7 @@ else {
   ';
       }
 
-      echo container('Current Lists<a href="./moderate.php?do=censor&do2=addList"><span class="ui-icon ui-icon-plusthick" style="float: right;" ></span></a>', '<table class="page rowHover" border="1">
+      echo container('Current Lists<a href="./moderate.php?do=censor&do2=editList"><span class="ui-icon ui-icon-plusthick" style="float: right;" ></span></a>', '<table class="page rowHover" border="1">
   <thead>
     <tr class="hrow ui-widget-header">
       <td>List Name</td>
@@ -110,26 +128,36 @@ else {
 
       case 'editList':
       if ($request['listId']) {
-        $list = $database->getCensorWord($request['listId']);
+        $list = $database->getCensorList($request['listId']);
 
         $title = 'Edit Censor List "' . $list['listName'] . '"';
       }
       else {
+        $list = array(
+          'listId' => 0,
+          'listName' => '',
+          'listType' => 'white',
+          'options' => 0,
+        );
+
         $title = 'Add New Censor List';
+      }
+
+      $selectBlock = fimHtml_buildSelect('listType', array(
+        'black' => 'black',
+        'white' => 'white',
+      ), $list['listType']);
 
       echo container($title, '<form action="./moderate.php?do=censor&do2=editList2&listId=' . $list['listId'] . '" method="post">
-  <table>
+  <table class="page ui-widget" border="1">
     <tr>
-      <td>Name:</td>
-      <td><input type="text" name="name" value="' . $list['name'] . '" /><td>
+      <td width="30%">Name:</td>
+      <td width="70%"><input type="text" name="listName" value="' . $list['listName'] . '" /></td>
     </tr>
     <tr>
       <td>Type:</td>
       <td>
-        <select name="type">
-          <option value="white" ' . ($list['listType'] == 'white' ? ' selected="selected"' : '') . '>whitelist</option>
-          <option value="black" ' . ($list['listType'] == 'black' ? ' selected="selected"' : '') . '>blacklist</option>
-        </select>
+        ' . $selectBlock . '
       </td>
     </tr>
     <tr>
@@ -139,11 +167,11 @@ else {
     <tr>
       <td>Dissabled in Private Rooms:</td>
       <td><input type="checkbox" name="privdis" value="true" ' . ($list['options'] & 4 ? ' checked="checked"' : '') . ' /></td>
-    </tr>
+    </tr><!--
     <tr>
       <td>Mature:</td>
-      <td><input type="checkbox" name="mature" value="true" ' . ($list['options'] & 8 ? ' checked="checked"' : '') . ' /><td>
-    </tr>
+      <td><input type="checkbox" name="mature" value="true" ' . ($list['options'] & 8 ? ' checked="checked"' : '') . ' /></td>
+    </tr>-->
   </table>
 
   <button type="submit">Submit</button><button type="reset">Reset</button>
@@ -154,7 +182,7 @@ else {
       $listOptions = 1 + ($request['candis'] ? 2 : 0) + ($request['privdis'] ? 4 : 0) + ($request['mature'] ? 8 : 0);
 
       if ($request['listId']) {
-        $list = $database->getCensorList($requst['listid']);
+        $list = $database->getCensorList($request['listId']);
 
         $database->update("{$sqlPrefix}censorLists", array(
           'listName' => $request['listName'],
@@ -164,7 +192,10 @@ else {
           'listId' => $request['listId'],
         ));
 
-        echo container('List "' . $list['listName'] . '" Updated','The list has been updated.<br /><br /><form action="Return to Viewing Lists" method="POST"><button type="submit">Return to Viewing Lists</button></form>');
+        $database->modLog('addCensorList', $list['listId']);
+        $database->fullLog('addCensorList', array('list' => $list));
+
+        echo container('List "' . $list['listName'] . '" Updated','The list has been updated.<br /><br /><form action="moderate.php?do=censor&do2=viewLists" method="POST"><button type="submit">Return to Viewing Lists</button></form>');
       }
       else {
         $list = array(
@@ -176,7 +207,10 @@ else {
         $database->insert("{$sqlPrefix}censorLists", $list);
         $list['listId'] = $database->insertId;
 
-        echo container('List "' . $list['listName'] . '" Added','The list has been added.<br /><br /><form action="Return to Viewing Lists" method="POST"><button type="submit">Return to Viewing Lists</button></form>');
+        $database->modLog('addCensorList', $list['listId']);
+        $database->fullLog('addCensorList', array('list' => $list));
+
+        echo container('List "' . $list['listName'] . '" Added','The list has been added.<br /><br /><form action="moderate.php?do=censor&do2=viewLists" method="POST"><button type="submit">Return to Viewing Lists</button></form>');
       }
       break;
 
@@ -246,7 +280,7 @@ else {
         $rows = '<tr><td colspan="4">No words have been added.</td></tr>';
       }
 
-      echo container('Current Words<a href="./moderate.php?do=censor&do2=addWord&listId=' . $request['listId'] . '"><span class="ui-icon ui-icon-plusthick" style="float: right;" ></span></a>','<table class="page rowHover" border="1">
+      echo container('Current Words<a href="./moderate.php?do=censor&do2=editWord&listId=' . $request['listId'] . '"><span class="ui-icon ui-icon-plusthick" style="float: right;" ></span></a>','<table class="page rowHover" border="1">
   <thead>
     <tr class="hrow ui-widget-header">
       <td>Word</td>
@@ -292,7 +326,7 @@ else {
       ), $word['severity']);
 
       echo container($title, '<form action="./moderate.php?do=censor&do2=editWord2" method="post">
-  <table>
+  <table class="page ui-widget" border="1">
     <tr>
       <td>Text</td>
       <td>
@@ -352,7 +386,7 @@ else {
         $word['wordId'] = $database->insertId;
 
         $database->modLog('addCensorWord', $request['listId'] . ',' . $database->insertId);
-        $database->fullLog('addCensorWord', array('word' => $word, array($word, 'list' => $list));
+        $database->fullLog('addCensorWord', array('word' => $word, 'list' => $list));
 
         echo container('Censor Word Added To "' . $list['listName'] . '"', 'The word has been changed.<br /><br />' . button('Return to Viewing Words','./moderate.php?do=censor&do2=viewWords&listId=' . $word['listId']));
       }

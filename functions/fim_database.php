@@ -168,10 +168,7 @@ class fimDatabase extends database {
     global $sqlPrefix, $config, $user;
 
     $queryParts['listSelect']['columns'] = array(
-      "{$sqlPrefix}lists" => array(
-        'listId' => 'listId',
-        'listName' => 'listName',
-      ),
+      "{$sqlPrefix}censorLists" => 'listId, listName, listType, options',
     );
 
     if ($listId) {
@@ -207,7 +204,7 @@ class fimDatabase extends database {
     global $sqlPrefix, $config, $user;
 
     $queryParts['wordSelect']['columns'] = array(
-      "{$sqlPrefix}words" => array(
+      "{$sqlPrefix}censorWords" => array(
         'wordId' => 'wordId',
         'listId' => 'listId',
         'word' => 'word',

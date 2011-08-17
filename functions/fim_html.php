@@ -10,6 +10,8 @@ function fimHtml_buildSelect($selectName, $selectArray, $selectedItem) {
   }
 
   $code .= '</select>';
+
+  return $code;
 }
 
 ?>
