@@ -20,7 +20,7 @@ if (!file_exists('./config.php')) {
 else {
   require('./config.php');
 
-  if ($disableWeb) {
+  if ($config['disableWeb']) {
     die('Web interfaces have been disabled on this server.');
   }
   else {
@@ -28,13 +28,8 @@ else {
       (isset($user['interface']) ? $user['interface'] : ''));
 
 
-    if (is_array($enabledInterfaces)) {
-      if (!in_array($interface, $enabledInterfaces)) {
-        $interface = $defaultInterface; // If the interface is not enabled, use the default.
-      }
-    }
-    else {
-      $interface = $defaultInterface; // If the interface is not enabled, use the default.
+    if (!in_array($interface, $config['enabledInterfaces'])) {
+      $interface = $config['defaultInterface']; // If the interface is not enabled, use the default.
     }
 
 

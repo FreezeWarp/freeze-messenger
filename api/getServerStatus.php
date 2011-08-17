@@ -52,7 +52,7 @@ $xmlData = array(
         'enabled' => (bool) $config['enableUploads'],
         'generalEnabled' => (bool) $config['enableGeneralUploads'],
         'maxAll' => (int) $config['uploadMaxFiles'],
-        'maxUser' => (int) $config['uploadUserMaxFiles'],
+        'maxUser' => (int) $config['uploadMaxUserFiles'],
       ),
 
       'outputBuffer' => array(

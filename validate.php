@@ -134,8 +134,8 @@ elseif (isset($_REQUEST['fim3_sessionHash'])) { // Session hash defined via sent
   }
 }
 
-elseif ((int) $anonymousUser >= 1 && isset($_REQUEST['apiLogin'])) { // Unregistered user support.
-  $userId = $anonymousUser;
+elseif ((int) $config['anonymousUserId'] >= 1 && isset($_REQUEST['apiLogin'])) { // Unregistered user support.
+  $userId = $config['anonymousUserId'];
   $anonymous = true;
   $api = true;
 }
@@ -494,7 +494,7 @@ elseif ($userId && $password) {
 }
 
 
-elseif ($anonymousUser && $anonymous) {
+elseif ($config['anonymousUserId'] && $anonymous) {
   $user = $integrationDatabase->select(
     array(
       $sqlUserTable => array_flip($sqlUserTableCols),
@@ -928,7 +928,7 @@ else {
   unset($user);
 
   $user = array(
-    'userId' => ($anonymousUser ? $anonymousUser : 0), // TODO: Is this handled elsewhere?
+    'userId' => ($config['anonymousUserId'] ? $config['anonymousUserId'] : 0), // TODO: Is this handled elsewhere?
     'userName' => '',
     'settingsOfficialAjax' => 11264, // Default. TODO: Update w/ config defaults.
     'adminPrivs' => 0, // Nothing
@@ -985,8 +985,8 @@ $user['userDefs'] = array(
 
 if ($valid) {
 
-  if ($bannedUserGroups) { // The user is in a usergroup that is banned.
-    if (fim_inArray($bannedUserGroups,explode(',',$user['allGroups']))) {
+  if ($config['bannedUserGroups']) { // The user is in a usergroup that is banned.
+    if (fim_inArray($config['bannedUserGroups'],explode(',',$user['allGroups']))) {
       $banned = true;
     }
   }

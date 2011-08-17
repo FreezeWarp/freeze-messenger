@@ -69,13 +69,6 @@ $dbConfig['integration']['tablePreix'] = '';
 
 
 
-
-////* General *////
-/* $email
- * This address is used to email critical errors in the system when they happen, and also to show to users during the same errors. */
-$email = '';
-
-
 ////* Forum Integration *////
 
 /* $loginConfig['method']
@@ -119,32 +112,11 @@ $encrypt = true;
  * Doing so is encouraged, but not required. It does mean greater CPU stress. */
 $encryptUploads = true;
 
+
+////* General *////
+
 /* $installUrl */
 $installUrl = '';
-
-
-
-
-////* Interfaces *////
-
-/* $enabledInterfaces
- * Public interfaces that are set up on this server.
- * Currently, "webpro" is the only interface packaged.
- * Other interfaces may be found at http://code.google.com/p/freeze-messenger/downloads/list */
-$enabledInterfaces = array(
-  'webpro',
-  'liteiron',
-  'choose',
-);
-
-/* $defaultInterface
- * The default interface used when no other is found. */
-$defaultInterface = 'webpro';
-
-/* $disableWeb
- * This will disable all public interfaces.
- * Instead, users will be required to use third-party interfaces set up to use the FreezeMessenger API. */
-$disableWeb = false;
 
 
 
@@ -174,19 +146,6 @@ $userPermissions = array(
   'roomCreation' => true, // The user can create rooms.
   'privateRoomCreation' => true, // The user can create private rooms.
 );
-
-
-
-////* Bleeding-Edge *////
-////* These are provided to enable technology that may help considerably but may also screw things up. *////
-////* Change at your own risk. *////
-
-/* $anonymousUser
- * If specified, a single user can be used to allow all unregistered / not-logged in to post messages.
- * These users will be appended a number (stored in their session hash but lost quickly) to distinguish between themselves.
- * Leave false to not enable this feature.
- * This feature will become first-rate in FIMv5, or possibly as soon as FIMv4. */
-$anonymousUser = 0;
 
 
 

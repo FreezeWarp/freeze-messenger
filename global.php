@@ -46,6 +46,8 @@ foreach (array('mysql', 'json', 'mbstring', 'mcrypt', 'pcre', 'apc', 'dom') AS $
 /* Version Requirement, Magic Quotes, Display Errors and Register Globals */
 ini_set('display_errors',0); // Ideally we would never have to worry about this, but sadly that's not the case. FIMv4 will hopefully make improvements.
 
+//die(var_dump(get_magic_quotes_gpc()));
+
 if (floatval(PHP_VERSION) < 5.2) { // We won't bother supporting older PHP; too much hassle. We will also raise this to 5.3 in the next version.
   die('The installed version of PHP is out of date. Only PHP versions 5.2 and above are supported. Contact your server host for more information if possible.');
 }
@@ -131,8 +133,8 @@ if (!isset($api)) {
 
 /* Better Error Handling and Output Buffering */
 if ($api === false) {
-  ob_start();
-  set_error_handler('fim_errorHandler'); // Defined in fim_general.php
+//  ob_start();
+//  set_error_handler('fim_errorHandler'); // Defined in fim_general.php
 }
 
 
@@ -527,6 +529,8 @@ if ($permissionsCache === null || $permissionsCache === false) {
   fim_setCachedVar('fim_permissionCache', $permissionsCache, $config['permissionsCacheRefresh']);
 }
 
+//die(print_R($permissionsCache,true));
+
 
 
 
@@ -549,6 +553,6 @@ if (defined('FIM_LOGINRUN')) {
 }
 
 if ($api && $config['compressOutput']) {
-  ob_start('fim_apiCompact');
+//  ob_start('fim_apiCompact');
 }
 ?>

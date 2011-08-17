@@ -17,6 +17,8 @@
 $reqPhrases = true;
 $reqHooks = true;
 
+define('WEBPRO_INMOD', true);
+
 
 /* This below bit hooks into the validate.php script to facilitate a seperate login. It is a bit cooky, though, and will need to be further tested. */
 if (isset($_POST['webproModerate_userName'])) {
@@ -66,21 +68,29 @@ echo '<!DOCTYPE HTML>
 
   <style>
   body {
-    overflow: hidden;
     padding: 5px;
     margin: 5px;
   }
+
   #moderateRight {
     float: right;
+    overflow: auto;
   }
+
   #moderateLeft {
     float: left;
   }
+
   .CodeMirror {
     border: 1px solid white;
     background-color: white;
     color: black;
     width: 800px;
+  }
+
+  h1, h2 {
+    text-align: center;
+    font-family: sans-serif;
   }
   </style>
   <!-- END Styles -->
@@ -99,11 +109,11 @@ echo '<!DOCTYPE HTML>
 
   <script>
   function windowDraw() {
-    $(\'body\').css(\'min-height\',window.innerHeight);
-    $(\'#moderateRight\').css(\'height\',window.innerHeight);
-    $(\'#moderateLeft\').css(\'height\',window.innerHeight);
-    $(\'#moderateRight\').css(\'width\',Math.floor(window.innerWidth * .74 - 10));
-    $(\'#moderateLeft\').css(\'width\',Math.floor(window.innerWidth * .25 - 10));
+    $(\'body\').css(\'min-height\', document.documentElement.clientHeight);
+    $(\'#moderateRight\').css(\'height\', document.documentElement.clientHeight - 10);
+    $(\'#moderateLeft\').css(\'height\', document.documentElement.clientHeight - 10);
+    $(\'#moderateRight\').css(\'width\', Math.floor(document.documentElement.clientWidth * .74 - 10));
+    $(\'#moderateLeft\').css(\'width\', Math.floor(document.documentElement.clientWidth * .25 - 10));
     $(\'button, input[type=button], input[type=submit]\').button();
 
     $(\'#mainMenu\').accordion({
@@ -118,17 +128,17 @@ echo '<!DOCTYPE HTML>
       mode:  "xml"
     });
 
-    var editorClike = CodeMirror.fromTextArea(document.getElementById("textClike"),{
+    var editorClike = CodeMirror.fromTextArea(document.getElementById("textClike"), {
       mode:  "clike"
     });
   });
 
 
-  window.onresize = windowDraw;
+  $(window).bind(\'resize\', windowDraw);
 
 
   var alert = function(text) {
-    dia.info(text,"Alert");
+    dia.info(text, "Alert");
   };
   </script>
   <!-- END Scripts -->
@@ -186,580 +196,67 @@ if (!$user['userId']) {
 elseif ($user['adminDefs']) { // Check that the user is an admin.
   switch ($_GET['do']) {
     case 'phrases':
-    if ($user['adminDefs']['modTemplates']) {
-      switch ($_GET['do2']) {
-        case false:
-        case 'view':
-        $phrases2 = $database->select(array(
-          "{$sqlPrefix}phrases" => "phraseName, languageCode, text",
-        ));
-        $phrases2 = $phrases2->getAsArray(true);
-
-        foreach ($phrases2 AS $phrase) {
-          $phrase['text'] = nl2br(htmlentities($phrase['text']));
-
-          $rows .= "<tr><td>$phrase[phraseName] ($phrase[languageCode])</td><td>$phrase[text]</td><td><a href=\"./moderate.php?do=phrases&do2=edit&phraseName=$phrase[phraseName]&languageCode=$phrase[languageCode]\">Edit</td></tr>";
-        }
-
-        echo container('Phrases','<table class="page rowHover" border="1">
-    <thead>
-      <tr class="hrow ui-widget-header">
-        <td>Phrase</td>
-        <td>Current Value</td>
-        <td>Actions</td>
-      </tr>
-    </thead>
-    <tbody>
-  ' . $rows . '
-    </tbody>
-  </table>');
-        break;
-
-        case 'edit':
-        $phraseName = $_GET['phraseName'];
-        $languageCode = $_GET['languageCode'];
-
-        $phrase = $database->select(array(
-            "{$sqlPrefix}phrases" => "phraseName, languageCode, text",
-          ),
-          array(
-            'both' => array(
-              array(
-                'type' => 'e',
-                'left' => array(
-                  'type' => 'column',
-                  'value' => 'phraseName',
-                ),
-                'right' => array(
-                  'type' => 'string',
-                  'value' => $phraseName,
-                ),
-              ),
-              array(
-                'type' => 'e',
-                'left' => array(
-                  'type' => 'column',
-                  'value' => 'languageCode',
-                ),
-                'right' => array(
-                  'type' => 'string',
-                  'value' => $languageCode,
-                ),
-              ),
-            ),
-          ),
-          false,
-          false,
-          1
-        );
-        $phrase = $phrase->getAsArray(false);
-
-        echo container("Edit Phrase '$phrase[phraseName]'","<form action=\"./moderate.php?do=phrases&do2=edit2&phraseName=$phrase[phraseName]&languageCode=$phrase[languageCode]\" method=\"post\">
-  <label for=\"text\">New Value:</label><br />
-  <textarea name=\"text\" id=\"text\" style=\"width: 100%; height: 300px;\">$phrase[text]</textarea><br /><br />
-
-  <button type=\"submit\">Update</button>
-  <input type=\"hidden\" name=\"lang\" value=\"$lang\" />
-</form>");
-        break;
-
-        case 'edit2':
-        $phraseName = $_GET['phraseName'];
-        $languageCode = $_GET['languageCode'];
-        $newValue = $_POST['text'];
-
-        $database->update(array(
-          'text' => $newValue
-        ),
-        "{$sqlPrefix}phrases",
-        array(
-          'phraseName' => $phraseName,
-          'languageCode' => $languageCode,
-        ));
-
-        $database->modLog('phraseEdit',$phraseID);
-
-        echo container('Updated','The phrase has been updated.<br /><br /><form action="./moderate.php?do=phrases" method="POST"><button type="submit">Return</button></form>');
-        break;
-      }
-    }
-    else {
-      echo 'You do not have permission to modify phrases.';
-    }
+    require('./moderate/phrases.php');
     break;
 
     case 'hooks':
-    if ($user['adminDefs']['modHooks']) {
-
-      switch ($_GET['do2']) {
-        case false:
-        case 'view':
-        $hooks2 = $database->select(array(
-          "{$sqlPrefix}hooks" => "hookId, hookName, code, state",
-        ));
-        $hooks2 = $hooks2->getAsArray(true);
-
-        foreach ($hooks2 AS $hook) {
-          $hook['code'] = nl2br(htmlentities($hook['code']));
-
-          $rows .= "<tr><td>$hook[hookName]</td><td>$hook[code]</td><td><a href=\"./moderate.php?do=hooks&do2=edit&hookId=$hook[hookId]\">Edit</a> | <a href=\"./moderate.php?do=hooks&do2=state&hookId=$hook[hookId]\">" . ($hook['state'] == 'on' ? 'Deactivate' : 'Activate') . "</a></td></tr>";
-        }
-
-        echo container('Hooks','<table class="page rowHover" border="1">
-    <thead>
-      <tr class="hrow ui-widget-header">
-        <td>Hook</td>
-        <td>Current Value</td>
-        <td>Actions</td>
-      </tr>
-    </thead>
-    <tbody>
-  ' . $rows . '
-    </tbody>
-  </table>');
-        break;
-
-        case 'edit':
-        $hookID = intval($_GET['hookId']);
-
-        $hook = dbRows("SELECT * FROM {$sqlPrefix}hooks WHERE id = $hookID");
-
-        echo container("Edit Hook '$hook[name]'","<form action=\"./moderate.php?do=hooks&do2=edit2&hookId=$hook[id]\" method=\"post\">
-    <label for=\"text\">New Value:</label><br />
-    <textarea name=\"text\" id=\"textClike\" style=\"width: 100%; height: 300px;\">$hook[code]</textarea><br /><br />
-
-    <button type=\"submit\">Update</button>
-  </form>");
-        break;
-
-        case 'edit2':
-        $hookId = $_GET['hookId'];
-        $text = $_POST['text'];
-
-        $database->update(array(
-          'code' => $text,
-        ),
-        "{$sqlPrefix}phrases",
-        array(
-          'hookId' => (int) $hookId,
-        ));
-
-        $database->modLog('hookEdit',$hookID);
-
-        echo container('Updated','The hook has been updated.<br /><br /><form action="moderate.php?do=hooks" method="POST"><button type="submit">Return</button></form>');
-        break;
-      }
-    }
-    else {
-      echo 'You do not have permission to modify hooks.';
-    }
+    require('./moderate/hooks.php');
     break;
 
     case 'templates':
-    if ($user['adminDefs']['modTemplates']) {
-      switch ($_GET['do2']) {
-        case false:
-        case 'view':
-        $templates2 = $database->select(array(
-          "{$sqlPrefix}templates" => "templateId, templateName, vars, data",
-        ));
-        $templates2 = $templates2->getAsArray(true);
-
-        foreach ($templates2 AS $template) {
-          $rows .= "<tr><td>$template[templateName]</td><td><a href=\"./moderate.php?do=templates&do2=edit&templateId=$template[templateId]\">Edit</td></tr>";
-        }
-
-        echo container('Templates','<table class="page rowHover" border="1">
-    <thead>
-      <tr class="hrow ui-widget-header">
-        <td>Template</td>
-        <td>Actions</td>
-      </tr>
-    </thead>
-    <tbody>
-  ' . $rows . '
-    </tbody>
-  </table>');
-        break;
-
-        case 'edit':
-        $template = $database->select(array(
-            "{$sqlPrefix}templates" => "templateId, templateName, vars, data",
-          ),
-          array(
-            'both' => array(
-              array(
-                'type' => 'e',
-                'left' => array(
-                  'type' => 'column',
-                  'value' => 'templateId',
-                ),
-                'right' => array(
-                  'type' => 'int',
-                  'value' => (int) $_GET['templateId'],
-                ),
-              ),
-            ),
-          ),
-          false,
-          false,
-          1
-        );
-        $template = $template->getAsArray(false);
-
-        echo container("Edit Hook '$template[templateName]'","<form action=\"./moderate.php?do=templates&do2=edit2&templateId=$template[templateId]\" method=\"post\">
-    <label for=\"vars\">Vars:</label><br />
-    <input type=\"text\" name=\"vars\" value=\"$template[vars]\" /><br /><br />
-
-    <label for=\"text\">New Value:</label><br />
-    <textarea name=\"text\" id=\"textXml\" style=\"width: 100%; height: 300px;\">$template[data]</textarea><br /><br />
-
-    <button type=\"submit\">Update</button>
-  </form>");
-        break;
-
-        case 'edit2':
-        $templateId = $_GET['templateId'];
-        $text = $_POST['text'];
-        $vars = $_POST['vars'];
-
-        $database->update(array(
-          'text' => $text,
-          'vars' => $vars
-        ),
-        "{$sqlPrefix}templates",
-        array(
-          'templateId' => (int) $templateId,
-        ));
-
-        $database->modLog('templateEdit',$templateId);
-
-        echo container('Updated','The template has been updated.<br /><br /><form action="Return" method="POST"><button type="submit">Return</button></form>');
-        break;
-      }
-    }
-    else {
-      echo 'You do not have permission to modify templates.';
-    }
+    require('./moderate/templates.php');
     break;
 
     case 'censor':
-    if ($user['adminDefs']['modCensor']) {
-      switch($_GET['do2']) {
-        case false:
-        case 'viewLists':
-        $lists = dbRows("SELECT * FROM {$sqlPrefix}censorLists WHERE options & 1",'id');
-
-        foreach ($lists AS $list) {
-          $options = array();
-
-          if ($list['options'] & 2) $options[] = "Dissabable";
-          if ($list['options'] & 4) $options[] = "Disabled in Private";
-          if ($list['options'] & 8) $options[] = "Mature";
-
-          $rows .= '    <tr><td>' . $list['name'] . '</td><td align="center">' . ($list['type'] == 'white' ? '<div style="border-radius: 1em; background-color: white; border: 1px solid black; width: 20px; height: 20px;"></div>' : '<div style="border-radius: 1em; background-color: black; border: 1px solid white; width: 20px; height: 20px;"></div>') . '</td><td>' . implode(', ',$options) . '</td><td><a href="./moderate.php?do=censor&do2=deleteList&listId=' . $list['id'] . '"><span class="ui-icon ui-icon-trash"></span></a><a href="./moderate.php?do=censor&do2=editList&listId=' . $list['id'] . '"><span class="ui-icon ui-icon-gear"></span></a><a href="./moderate.php?do=censor&do2=viewWords&listId=' . $list['id'] . '"><span class="ui-icon ui-icon-document"></span></a></td></tr>
-    ';
-        }
-
-        echo container('Current Lists<a href="./moderate.php?do=censor&do2=addList"><span class="ui-icon ui-icon-plusthick" style="float: right;" ></span></a>','<table class="page rowHover" border="1">
-    <thead>
-      <tr class="hrow ui-widget-header">
-        <td>List Name</td>
-        <td>Type</td>
-        <td>Notes</td>
-        <td>Actions</td>
-      </tr>
-    </thead>
-    <tbody>
-  ' . $rows . '
-    </tbody>
-  </table>');
-        break;
-
-        case 'addList':
-        echo container('Create New Censor List','<form action="./moderate.php?do=censor&do2=addList2" method="post">
-    <table>
-      <tr>
-        <td>Name:</td>
-        <td><input type="text" name="name" /><td>
-      </tr>
-      <tr>
-        <td>Type:</td>
-        <td>
-          <select name="type">
-            <option value="white">whitelist</option>
-            <option value="black">blacklist</option>
-          </select>
-        </td>
-      </tr>
-      <tr>
-        <td>Can be Dissabled:</td>
-        <td><input type="checkbox" name="candis" value="true" /></td>
-      </tr>
-      <tr>
-        <td>Dissabled in Private Rooms:</td>
-        <td><input type="checkbox" name="privdis" value="true" /></td>
-      </tr>
-      <tr>
-        <td>Mature:</td>
-        <td><input type="checkbox" name="mature" value="true" /><td>
-      </tr>
-    </table>
-
-    <button type="submit">Submit</button><button type="reset">Reset</button>
-  </form>');
-        break;
-
-        case 'addList2':
-        $options = array('white','black');
-
-        $listname = dbEscape($_POST['name']);
-        $listtype = (in_array($_POST['name'],$options) ? $_POST['name'] : 'white');
-        $listoptions = 1 + ($_POST['candis'] ? 2 : 0) + ($_POST['privdis'] ? 4 : 0) + ($_POST['mature'] ? 8 : 0);
-
-        dbQuery("INSERT INTO {$sqlPrefix}censorLists (name, type, options) VALUES ('$listname', '$listtype', '$listoptions')");
-
-        echo container('List Added','The list has been added.<br /><br /><form action="Return to Viewing Lists" method="POST"><button type="submit">Return to Viewing Lists</button></form>');
-        break;
-
-        case 'editList':
-        $listId = intval($_GET['listId']);
-        $list = dbRows("SELECT * FROM {$sqlPrefix}censorLists WHERE id = $listId");
-
-        echo container('Edit Censor List','<form action="./moderate.php?do=censor&do2=editList2&listId=' . $list['id'] . '" method="post">
-    <table>
-      <tr>
-        <td>Name:</td>
-        <td><input type="text" name="name" value="' . $list['name'] . '" /><td>
-      </tr>
-      <tr>
-        <td>Type:</td>
-        <td>
-          <select name="type">
-            <option value="white" ' . ($list['type'] == 'white' ? ' selected="selected"' : '') . '>whitelist</option>
-            <option value="black" ' . ($list['type'] == 'black' ? ' selected="selected"' : '') . '>blacklist</option>
-          </select>
-        </td>
-      </tr>
-      <tr>
-        <td>Can be Dissabled:</td>
-        <td><input type="checkbox" name="candis" value="true" ' . ($list['options'] & 2 ? ' checked="checked"' : '') . ' /></td>
-      </tr>
-      <tr>
-        <td>Dissabled in Private Rooms:</td>
-        <td><input type="checkbox" name="privdis" value="true" ' . ($list['options'] & 4 ? ' checked="checked"' : '') . ' /></td>
-      </tr>
-      <tr>
-        <td>Mature:</td>
-        <td><input type="checkbox" name="mature" value="true" ' . ($list['options'] & 8 ? ' checked="checked"' : '') . ' /><td>
-      </tr>
-    </table>
-
-    <button type="submit">Submit</button><button type="reset">Reset</button>
-  </form>');
-        break;
-
-        case 'editList2':
-        $options = array('white','black');
-
-        $listId = intval($_GET['listId']);
-        $listname = dbEscape($_POST['name']);
-        $listtype = (in_array($_POST['name'],$options) ? $_POST['name'] : 'white');
-        $listoptions = 1 + ($_POST['candis'] ? 2 : 0) + ($_POST['privdis'] ? 4 : 0) + ($_POST['mature'] ? 8 : 0);
-
-        dbQuery("UPDATE {$sqlPrefix}censorLists SET name = '$listname', type = '$listtype', options = '$listoptions' WHERE id = $listId");
-
-        echo container('List Updated','The list has been updated.<br /><br /><form action="Return to Viewing Lists" method="POST"><button type="submit">Return to Viewing Lists</button></form>');
-        break;
-
-        case 'deleteList':
-        $listId = intval($_GET['listId']);
-
-        $database->modLog('deleteCensorList',$listId);
-
-        dbQuery("DELETE FROM {$sqlPrefix}censorLists WHERE id = $listId");
-        dbQuery("DELETE FROM {$sqlPrefix}censorWords WHERE listId = $listId");
-
-        echo container('List Deleted','The list and its words have been deleted.<br /><br /><form action="Return to Viewing Lists" method="POST"><button type="submit">Return to Viewing Lists</button></form>');
-        break;
-
-        case 'viewWords':
-        $listId = intval($_GET['listId']);
-        $words = dbRows("SELECT * FROM {$sqlPrefix}censorWords WHERE listId = $listId",'id');
-        if ($words) {
-          foreach ($words AS $word) {
-            $rows .= '    <tr><td>' . $word['word'] . '</td><td>' . $word['severity'] . '</td><td>' . $word['param'] . '</td><td><a href="./moderate.php?do=censor&do2=deleteWord&wordid=' . $word['id'] . '"><span class="ui-icon ui-icon-trash"></span></a><a href="./moderate.php?do=censor&do2=editWord&wordid=' . $word['id'] . '"><span class="ui-icon ui-icon-gear"></span></a></td></tr>
-    ';
-          }
-        }
-        else {
-          $rows = '<tr><td colspan="4">No words have been added.</td></tr>';
-        }
-
-        echo container('Current Words<a href="./moderate.php?do=censor&do2=addWord&listId=' . $listId . '"><span class="ui-icon ui-icon-plusthick" style="float: right;" ></span></a>','<table class="page rowHover" border="1">
-    <thead>
-      <tr class="hrow ui-widget-header">
-        <td>Word</td>
-        <td>Type</td>
-        <td>Param</td>
-        <td>Actions</td>
-      </tr>
-    </thead>
-    <tbody>
-  ' . $rows . '
-    </tbody>
-  </table>');
-        break;
-
-        case 'addWord':
-        $listId = intval($_GET['listId']);
-
-        echo container('Add New Word','<form action="./moderate.php?do=censor&do2=addWord2" method="post">
-  <table>
-    <tr>
-      <td>Text</td>
-      <td><input type="text" name="text" /></td>
-    </tr>
-      <td>Severity:
-      <td>
-        <select name="severity">
-          <option value="replace">replace</option>
-          <option value="warn">warn</option>
-          <option value="confirm">confirm</option>
-          <option value="block">block</option>
-        </select>
-      </td>
-    </tr>
-    <tr>
-      <td>Param:</td>
-      <td><input type="text" name="param" /></td>
-    </tr>
-  </table><br />
-
-    <input type="hidden" name="listId" value="' . $listId . '" />
-
-    <button type="submit">Submit</button><button type="reset">Reset</button>
-  </form>');
-        break;
-
-        case 'addWord2':
-        $options = array('replace','warn','confirm','block');
-
-        $wordtext = dbEscape($_POST['text']);
-        $wordsev = (in_array($_POST['severity'],$options) ? $_POST['severity'] : 'replace');
-        $wordparam = dbEscape($_POST['param']);
-        $listId = intval($_POST['listId']);
-
-        dbInsert(array(
-          'listId' => (int) $listId,
-          'word' => $wordtext,
-          'severity' => $wordsev,
-          'param' => $wordparam,
-        ),"{$sqlPrefix}censorWords");
-
-        echo container('Word Added','The word has been added.<br /><br /><form action="./moderate.php?do=censor&do2=viewWords&listId=' . $listId . '" method="POST"><button type="submit">Return to Viewing Words</button></form>');
-        break;
-
-        case 'editWord':
-        $wordid = intval($_GET['wordid']);
-        $word = dbRows("SELECT * FROM {$sqlPrefix}censorWords WHERE id = $wordid");
-
-        echo container('Edit Word "' . $word['word'] . '"','<form action="./moderate.php?do=censor&do2=editWord2" method="post">
-  <table>
-    <tr>
-      <td>Text</td>
-      <td><input type="text" name="text" value="' . $word['word'] . '" /></td>
-    </tr>
-      <td>Severity:
-      <td>
-        <select name="severity">
-          <option value="replace" ' . ($word['severity'] == 'replace' ? ' selected="selected"' : '') . '>replace</option>
-          <option value="warn" ' . ($word['severity'] == 'warn' ? ' selected="selected"' : '') . '>warn</option>
-          <option value="confirm" ' . ($word['severity'] == 'confirm' ? ' selected="selected"' : '') . '>confirm</option>
-          <option value="block" ' . ($word['severity'] == 'block' ? ' selected="selected"' : '') . '>block</option>
-        </select>
-      </td>
-    </tr>
-    <tr>
-      <td>Param:</td>
-      <td><input type="text" name="param" value="' . $word['param'] . '"  /></td>
-    </tr>
-  </table><br />
-
-    <input type="hidden" name="wordid" value="' . $word['id'] . '" />
-
-    <button type="submit">Submit</button><button type="reset">Reset</button>
-  </form>');
-        break;
-
-        case 'editWord2':
-        $options = array('replace','warn','confirm','block');
-
-        $wordid = intval($_POST['wordid']);
-        $word = dbRows("SELECT * FROM {$sqlPrefix}censorWords WHERE id = $wordid");
-
-        $wordtext = dbEscape($_POST['text']);
-        $wordsev = (in_array($_POST['severity'],$options) ? $_POST['severity'] : 'replace');
-        $wordparam = dbEscape($_POST['param']);
-
-        $database->modLog('editCensorWord',$wordid);
-
-        dbQuery("UPDATE {$sqlPrefix}censorWords SET word = '$wordtext', severity = '$wordsev', param = '$wordparam' WHERE id = $wordid");
-
-        echo container('Word Changed','The word has been changed.<br /><br />' . button('Return to Viewing Words','./moderate.php?do=censor&do2=viewWords&listId=' . $word['listId']));
-        break;
-
-        case 'deleteWord':
-        $wordid = intval($_GET['wordid']);
-
-        dbQuery("DELETE FROM {$sqlPrefix}censorWords WHERE id = $wordid");
-
-        $database->modLog('deleteCensorWord',$wordid);
-
-        echo container('Word Deleted','The word has been removed.<br /><br /><button onclick="window.history.back();" type="button">Go Back</button>');
-        break;
-      }
-    }
-    else {
-      echo 'You do not have permission to modify the censor.';
-    }
+    require('./moderate/censor.php');
     break;
 
 
     case 'bbcode':
-    if ($user['adminDefs']['modBBCode']) {
-      switch ($_GET['do2']) {
-        case 'view':
-        false:
-
-        break;
-        case 'add':
-
-        break;
-        case 'add2':
-
-        break;
-        case 'edit':
-
-        break;
-        case 'edit2':
-
-        break;
-      }
-    }
-    else {
-      echo 'You do not have permission to manage BBCodes.';
-    }
+    require('./moderate/bbcode.php');
     break;
 
 
     case 'phpinfo':
     if ($user['adminDefs']['modCore']) {
+      ob_start();
+
       phpinfo();
+
+      $phpinfo = ob_get_clean();
+      //ob_flush();
+
+      $phpinfo = str_replace(array('<body>','<html>','</html>','</body>'), '', $phpinfo);
+      $phpinfo = preg_replace(array('/<\!DOCTYPE(.*?)>/', '/\<head\>(.*)\<\/head\>/ism'), '', $phpinfo);
+      $phpinfo = str_replace(array('<table','class="p"','class="e"','class="h"','class="v"','class="r"'), array('<table class="page ui-widget" border="1"','class="ui-widget-header"','','class="ui-widget-header"','',''), $phpinfo);
+
+      echo $phpinfo;
     }
     else {
       echo 'You do not have permission to view PHP info.';
     }
+    break;
+
+
+    case 'copyright':
+    echo '<h1>FreezeMessenger and WebPro Copyright and License</h1>';
+    echo 'FreezeMessenger is Copyright &copy; 2011 by Joseph T. Parsons. It is distributed under the GNU General Public License, version 3:
+<blockquote>This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.<br /><br />
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.<br /><br />You should have received a copy of the GNU General Public License along with this program.  If not, see <a href="http://www.gnu.org/licenses/">&lt;http://www.gnu.org/licenses/&gt;</a>.</blockquote><br /><br />
+
+A copy of the GNU License should be found under <a href="../LICENSE">LICENSE</a>; it is printed below (scroll to see the entire content):
+<blockquote style="max-height: 600px; overflow: auto;">' . nl2br(file_get_contents('../LICENSE')) . '</blockquote><br /><br />
+
+<h1>WebPro Incl. Works</h1>
+<ul>
+  <li>jQuery, jQueryUI, and all jQueryUI Themeroller Themes &copy; <a href="http://jquery.org/" target="_BLANK">The jQuery Project.</a></li>
+  <li>jGrowl &copy; 2009 Stan Lemon.</li>
+  <li>jQuery Cookie Plugin &copy; 2006 Klaus Hartl</li>
+  <li>EZPZ Tooltip &copy; 2009 Mike Enriquez</li>
+  <li>Beeper &copy; 2009 Patrick Mueller</li>
+  <li>Context Menu &copy; 2008 Cory S.N. LaViska</li>
+  <li>jQTubeUtil &copy; 2010 Nirvana Tikku</li>
+</ul>';
     break;
 
 

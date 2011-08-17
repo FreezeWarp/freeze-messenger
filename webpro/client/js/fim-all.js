@@ -32,6 +32,49 @@
 *********************************************************/
 
 
+/* Requirements */
+
+/*browserMessage = 'You are using an incompatible Internet browser. We strongly urge you to try one of these browsers instead, which will allow you to enjoy the Internet to its fullest:<br /><br /><strong>Get Google Chrome (for Windows, Mac OS X, and Linux)</strong><br /><br /><strong>Get Mozilla Firefox (for Windows, Mac OS X, and Linux)</strong><br /><br /><strong>Get Opera 11.50 (for pretty much everything)</strong>';
+
+if (typeof window.JSON == 'undefined') {
+  document.body.innerHTML = browserMessage;
+
+  throw new Error('Your browser does not seem to support JSON objects. The script has exited.');
+}
+else if (typeof window.btoa == 'undefined') {
+  document.body.innerHTML = browserMessage;
+
+  throw new Error('Your browser does not seem to support Base64 operations. The script has exited.');
+}
+else if (typeof window.encodeURIComponent == 'undefined') {
+  document.body.innerHTML = browserMessage;
+
+  throw new Error('Your browser does not seem to support encodeURI operations. The script has exited.');
+}
+else if (true) {
+  document.write(browserMessage);
+
+  throw new Error('Pie');
+}
+console.log('Wait, what?');*/
+
+if (typeof window.JSON == 'undefined') {
+  window.location.href = 'browser.php';
+
+  throw new Error('Your browser does not seem to support JSON objects. The script has exited.');
+}
+else if (typeof window.btoa == 'undefined') {
+  window.location.href = 'browser.php';
+
+  throw new Error('Your browser does not seem to support Base64 operations. The script has exited.');
+}
+else if (typeof window.encodeURIComponent == 'undefined') {
+  window.location.href = 'browser.php';
+
+  throw new Error('Your browser does not seem to support encodeURI operations. The script has exited.');
+}
+
+
 /* Common Variables */
 
 var userId, // The user ID who is logged in.
@@ -144,6 +187,10 @@ var currentLocation = window.location.origin + directory + 'webpro/';
 ************************ START **************************
 ******************* Static Functions ********************
 *********************************************************/
+
+function urlencode(str) {
+  return encodeURIComponent(str).replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%20/g, '+');
+}
 
 function toBottom() {
   document.getElementById('messageList').scrollTop = document.getElementById('messageList').scrollHeight;
@@ -1275,41 +1322,42 @@ var standard = {
         });
       }
 
-      if (requestSettings.serverSentEvents) {
+      if (requestSettings.serverSentEvents) {console.log(requestSettings);
         var source = new EventSource(directory + 'eventStream.php?roomId=' + roomId + '&lastEvent=' + requestSettings.lastEvent + '&lastMessage=' + requestSettings.lastMessage + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
 
         source.addEventListener('message', function(e) {
-          var active = JSON.parse(e.data);
+          active = JSON.parse(e.data);
 
-          for (var i = 0; i < active.length; i++) {
-            var messageId = Number(active[i].messageData.messageId);
-            data = messageFormat(active[i], 'list');
+          var messageId = Number(active.messageData.messageId);
 
-            messagePopup(data)
+          console.log('Event (New Message): ' + messageId);
+
+          data = messageFormat(active, 'list');
+
+          messagePopup(data)
 
 
-            if (messageIndex[messageId]) {
-              // Double post hack
+          if (messageIndex[messageId]) {
+            // Double post hack
+          }
+          else {
+            if (settings.reversePostOrder) {
+              $('#messageList').append(data);
             }
             else {
-              if (settings.reversePostOrder) {
-                $('#messageList').append(data);
-              }
-              else {
-                $('#messageList').prepend(data);
-              }
+              $('#messageList').prepend(data);
+            }
 
-              if (messageId > requestSettings.lastMessage) {
-                requestSettings.lastMessage = messageId;
-              }
+            if (messageId > requestSettings.lastMessage) {
+              requestSettings.lastMessage = messageId;
+            }
 
-              messageIndex.push(requestSettings.lastMessage);
+            messageIndex.push(requestSettings.lastMessage);
 
-              if (messageIndex.length === 100) {
-                var messageOut = messageIndex[0];
-                $('#message' + messageOut).remove();
-                messageIndex = messageIndex.slice(1,99);
-              }
+            if (messageIndex.length === 100) {
+              var messageOut = messageIndex[0];
+              $('#message' + messageOut).remove();
+              messageIndex = messageIndex.slice(1,99);
             }
           }
 
@@ -3812,7 +3860,7 @@ $(document).ready(function() {
 
   /* Window Manipulation (see below) */
 
-  $(window).bind('resize',windowResize);
+  $(window).bind('resize', windowResize);
   window.onblur = function() { windowBlur(); }
   window.onfocus = function() { windowFocus(); }
 

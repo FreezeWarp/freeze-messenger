@@ -94,7 +94,7 @@
 &lt;h3 id="copyCat"&gt;&lt;a href="#"&gt;$phrases[templateCopyrightCat]&lt;/a&gt;&lt;/h3&gt;
 &lt;div&gt;
   &lt;ul&gt;
-    &lt;li&gt;FIM © 2010-2011 &lt;a href="http://josephtparsons.com/"&gt;Joseph T. Parsons&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
+    &lt;li&gt;FIM © 2010-2011 &lt;a href="http://josephtparsons.com/" target="_BLANK"&gt;Joseph T. Parsons&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
     &lt;li&gt;jQuery Plugins © Their Respective Owners.&lt;/li&gt;
     &lt;li&gt;&lt;a href="#" id="copyrightLink"&gt;$phrases[templateAllCopyrights]&lt;/a&gt;&lt;/li&gt;
   &lt;/ul&gt;

@@ -271,7 +271,7 @@ class fimDatabase extends database {
 
 
   public function storeMessage($userData, $roomData, $messageDataPlain, $messageDataEncrypted, $flag) {
-    global $sqlPrefix, $config, $user;
+    global $sqlPrefix, $config, $user, $permissionsCache;
 
     // Insert into permenant datastore.
     $this->insert("{$sqlPrefix}messages", array(
@@ -365,18 +365,23 @@ class fimDatabase extends database {
 
 
     // If the contact is a private communication, create an event and add to the message unread table.
-    if ($roomData['options'] & 16) {
-      foreach ($permissionsCache[$room['roomId']]['user'] AS $sendToUserId) {
-        $this->createEvent('missedMessage', $sendToUserId, $room['roomId'], $messageId, false, false, false); // name, user, room, message, p1, p2, p3
+    if ($roomData['options'] & 16) {// error_log(print_r($permissionsCache[$roomData['roomId']]['user'],true));
+      foreach ($permissionsCache[$roomData['roomId']]['user'] AS $sendToUserId => $permissionLevel) {
+        if ($sendToUserId == $user['userId']) {
+          continue;
+        }
+        else {
+          $this->createEvent('missedMessage', $sendToUserId, $roomData['roomId'], $messageId, false, false, false); // name, user, room, message, p1, p2, p3
 
-        if ($config['enableUnreadMessages']) {
-          $this->insert("{$sqlPrefix}unreadMessages", array(
-            'userId' => $sendToUserId,
-            'senderId' => $userData['userId'],
-            'roomId' => $roomData['roomId'],
-            'messageId' => $messageId,
-            'time' => $this->now(),
-          ));
+          if ($config['enableUnreadMessages']) {
+            $this->insert("{$sqlPrefix}unreadMessages", array(
+              'userId' => $sendToUserId,
+              'senderId' => $userData['userId'],
+              'roomId' => $roomData['roomId'],
+              'messageId' => $messageId,
+              'time' => $this->now(),
+            ));
+          }
         }
       }
     }

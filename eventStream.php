@@ -17,6 +17,7 @@
 
 require('global.php');
 
+
 if (!$config['serverSentEvents']) {
   die('Not Supported');
 }
@@ -25,7 +26,10 @@ else {
   header('Content-Type: text/event-stream');
   header('Cache-Control: no-cache'); // recommended to prevent caching of event data.
 
+  set_time_limit($config['serverSentTimeLimit']);
+
   $serverSentRetries = 0;
+  $outputStarted = false; // used for fastCGI
 
 
   /* Get Request Data */
@@ -124,6 +128,7 @@ else {
     $queryParts['messagesSelect']['sort'] = array(
       'messageId' => 'asc',
     );
+    $queryParts['messagesSelect']['limit'] = false;
 
 
 
@@ -187,6 +192,8 @@ else {
         ),
       )
     );
+    $queryParts['missedSelect']['order'] = false;
+    $queryParts['missedSelect']['limit'] = false;
 
 
 
@@ -234,6 +241,8 @@ else {
         ),
       ),
     );
+    $queryParts['eventsSelect']['order'] = false;
+    $queryParts['eventsSelect']['limit'] = false;
 
 
 
@@ -266,16 +275,18 @@ else {
         ),
       ),
     );
+    $queryParts['unreadSelect']['order'] = false;
+    $queryParts['unreadSelect']['limit'] = false;
 
 
 
     /* Get Messages */
     $messages = $database->select($queryParts['messagesSelect']['columns'],
       $queryParts['messagesSelect']['conditions'],
-      $queryParts['messagesSelect']['sort']);
+      $queryParts['messagesSelect']['sort'],
+      $queryParts['messagesSelect']['limit']);
     $messages = $messages->getAsArray('messageId');
-
-    $messagesOutput = array();
+//error_log(print_r($queryParts['messagesSelect']['conditions'],true));
 
     if (is_array($messages)) {
       if (count($messages) > 0) {
@@ -317,13 +328,11 @@ else {
           echo "event: message\n";
           echo "data: " . json_encode($messagesOutput) . "\n\n";
 
-
-          flush();
-
-          if (ob_get_level()) {
-            ob_flush();
-          }
+          fim_flush();
+          $outputStarted = true;
         }
+
+        unset($messages);
       }
     }
 
@@ -335,7 +344,9 @@ else {
       if (count(fim_arrayValidate(explode(',', $user['watchRooms']), 'int', false)) > 0) {
         $missedMessages = $database->select(
           $queryParts['missedSelect']['columns'],
-          $queryParts['missedSelect']['conditions']);
+          $queryParts['missedSelect']['conditions'],
+          $queryParts['missedSelect']['sort'],
+          $queryParts['missedSelect']['limit']);
         $missedMessages = $missedMessages->getAsArray();
 
         if (is_array($missedMessages)) {
@@ -348,15 +359,13 @@ else {
               echo "event: missedMessage\n";
               echo "data: " . json_encode($message) . "\n\n";
 
-
-              flush();
-
-              if (ob_get_level()) {
-                ob_flush();
-              }
+              fim_flush();
+              $outputStarted = true;
             }
           }
         }
+
+        unset($missedMessages);
       }
     }
 
@@ -367,7 +376,9 @@ else {
     if ($config['enableUnreadMessages'] && $user['userId'] > 0) {
       $unreadMessages = $database->select(
         $queryParts['unreadSelect']['columns'],
-        $queryParts['unreadSelect']['conditions']);
+        $queryParts['unreadSelect']['conditions'],
+        $queryParts['unreadSelect']['sort'],
+        $queryParts['unreadSelect']['limit']);
       $unreadMessages = $unreadMessages->getAsArray();
 
       if (is_array($unreadMessages)) {
@@ -378,17 +389,15 @@ else {
 
             $request['lastUnreadMessage'] = $message['messageId'];
 
-
-            flush();
-
-            if (ob_get_level()) {
-              ob_flush();
-            }
+            fim_flush();
+            $outputStarted = true;
 
             ($hook = hook('getMessages_watchRooms_eachRoom') ? eval($hook) : '');
           }
         }
       }
+
+      unset($unreadMessages);
     }
 
 
@@ -397,7 +406,9 @@ else {
     /* Get Events */
     if ($config['enableEvents']) {
       $events = $database->select($queryParts['eventsSelect']['columns'],
-        $queryParts['eventsSelect']['conditions']);
+        $queryParts['eventsSelect']['conditions'],
+        $queryParts['eventsSelect']['sort'],
+        $queryParts['eventsSelect']['limit']);
       $events = $events->getAsArray('eventId');
 
       $eventsOutput = array();
@@ -410,25 +421,31 @@ else {
 
             $request['lastEvent'] = $event['eventId'];
 
-            flush();
-
-            if (ob_get_level()) {
-              ob_flush();
-            }
+            fim_flush();
+            $outputStarted = true;
 
             ($hook = hook('getMessages_watchRooms_eachRoom') ? eval($hook) : '');
           }
         }
       }
+
+      unset($events);
     }
 
 
 
 
-    if ($serverSentRetries <= $config['serverSentMaxRetries']) {
+    if (($serverSentRetries <= $config['serverSentMaxRetries'])
+      || ($config['serverSentFastCGI'] && ) {
       ($hook = hook('getMessages_postMessages_serverSentEvents_repeat') ? eval($hook) : '');
 
-      sleep($config['serverSentEventsWait']); // Wait before re-requesting.
+      usleep($config['serverSentEventsWait'] * 1000000); // Wait before re-requesting. usleep delays in microseconds (millionths of seconds).
+    }
+    else {
+      echo "id: m" . (int) $request['lastMessage'] . "-e" . (int) $request['lastEvent'] . ';';
+      echo 'retry: 0';
+
+      exit;
     }
   }
 }
