@@ -44,7 +44,7 @@ else {
         ),
       ),
 
-      'param' => array(
+      'listName' => array(
         'context' => array(
           'type' => 'string',
         ),
@@ -187,14 +187,16 @@ else {
         "{$sqlPrefix}censorWords" => "wordId, listId, word, severity, param",
       ), array(
         'both' => array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'listId',
-          ),
-          'right' => array(
-            'type' => 'int',
-            'value' => (int) $list['listId'],
+          array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'listId',
+            ),
+            'right' => array(
+              'type' => 'int',
+              'value' => (int) $list['listId'],
+            ),
           ),
         ),
       ));
@@ -218,14 +220,16 @@ else {
         "{$sqlPrefix}censorWords" => "wordId, listId, word, severity, param",
       ), array(
         'both' => array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'listId',
-          ),
-          'right' => array(
-            'type' => 'int',
-            'value' => (int) $request['listId'],
+          array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'listId',
+            ),
+            'right' => array(
+              'type' => 'int',
+              'value' => (int) $request['listId'],
+            ),
           ),
         ),
       ));

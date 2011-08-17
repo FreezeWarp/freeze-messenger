@@ -320,6 +320,65 @@ class fimDatabase extends database {
   }
 
 
+  public function getPhrase($phraseName, $languageCode, $interfaceId) {
+    global $sqlPrefix, $config, $user;
+
+    $queryParts['phraseSelect']['columns'] = array(
+      "{$sqlPrefix}phrases" => "phraseName, languageCode, interfaceId, text",
+    );
+    $queryParts['phraseSelect']['conditions'] = array(
+      'both' => array(
+        array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'phraseName',
+          ),
+          'right' => array(
+            'type' => 'string',
+            'value' => $phraseName,
+          ),
+        ),
+        array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'languageCode',
+          ),
+          'right' => array(
+            'type' => 'string',
+            'value' => $languageCode,
+          ),
+        ),
+        array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'interfaceId',
+          ),
+          'right' => array(
+            'type' => 'int',
+            'value' => $interfaceId,
+          ),
+        ),
+      ),
+    );
+    $queryParts['phraseSelect']['sort'] = false;
+    $queryParts['phraseSelect']['limit'] = 1;
+
+    if (!$phraseName || !$languageCode || !$interfaceId) {
+      return false;
+    }
+
+    $phraseData = $this->select(
+      $queryParts['phraseSelect']['columns'],
+      $queryParts['phraseSelect']['conditions'],
+      $queryParts['phraseSelect']['sort'],
+      $queryParts['phraseSelect']['limit']);
+    return $phraseData->getAsArray(false);
+  }
+
+
   public function markMessageRead($messageId, $userId) {
     global $sqlPrefix, $config, $user;
 
@@ -510,9 +569,9 @@ class fimDatabase extends database {
   public function fullLog($action, $data) {
     global $sqlPrefix, $config, $user;
 
-    if ($this->insert("{$sqlPrefix}modlog", array(
+    if ($this->insert("{$sqlPrefix}fulllog", array(
       'user' => json_encode($user),
-      'ip' => $_SERVER['REMOTE_ADDR'],
+      'server' => json_encode($_SERVER),
       'action' => $action,
       'time' => $this->now(),
       'data' => json_encode($data),
