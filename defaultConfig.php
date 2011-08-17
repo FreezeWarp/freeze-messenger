@@ -38,7 +38,7 @@ $defaultConfig = array(
   'serverSentEvents' => false,
   'serverSentEventsWait' => .5, // Server sent events are more controlled, so we can call them at a greater frequency.
   'serverSentMaxRetries' => 50,
-  'serverSentFastCGI' => false, // This MUST be true for FastCGI compatibility.
+  'serverSentFastCGI' => true, // This MUST be true for FastCGI compatibility.
   'serverSentTimeLimit' => 0, // This MUST be true for many PHP setups, notably on IIS.
 
   'compressOutput' => true,
@@ -82,8 +82,8 @@ $defaultConfig = array(
   'anonymousUserId' => 0,
   'bannedUserGroups' => array(),
 
-  'enabledInterfaces' => array(),
-  'defaultInterface' => '',
+  'enabledInterfaces' => array('webpro'),
+  'defaultInterface' => 'webpro',
   'disableWeb' => false,
 );
 ?>

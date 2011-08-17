@@ -164,9 +164,11 @@ echo '<!DOCTYPE HTML>
 
     <h3>Manage Advanced</h3>
     <ul>
+      ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=admin">Admin Permissions</a></li>' : '') . '
       ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=conf">Configuration Editor</a></li>' : '') . '
       ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=sys">System Check</a></li>' : '') . '
       ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=phpinfo">PHP Info</a></li>' : '') . '
+      <li><a href="moderate.php?do=copyright">Copyright</a></li>
     </ul>
   </div>
 </div>
@@ -218,90 +220,33 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
 
 
     case 'phpinfo':
-    if ($user['adminDefs']['modCore']) {
-      ob_start();
-
-      phpinfo();
-
-      $phpinfo = ob_get_clean();
-      //ob_flush();
-
-      $phpinfo = str_replace(array('<body>','<html>','</html>','</body>'), '', $phpinfo);
-      $phpinfo = preg_replace(array('/<\!DOCTYPE(.*?)>/', '/\<head\>(.*)\<\/head\>/ism'), '', $phpinfo);
-      $phpinfo = str_replace(array('<table','class="p"','class="e"','class="h"','class="v"','class="r"'), array('<table class="page ui-widget" border="1"','class="ui-widget-header"','','class="ui-widget-header"','',''), $phpinfo);
-
-      echo $phpinfo;
-    }
-    else {
-      echo 'You do not have permission to view PHP info.';
-    }
+    require('./moderate/phpinfo.php');
     break;
 
 
     case 'copyright':
-    echo '<h1>FreezeMessenger and WebPro Copyright and License</h1>';
-    echo 'FreezeMessenger is Copyright &copy; 2011 by Joseph T. Parsons. It is distributed under the GNU General Public License, version 3:
-<blockquote>This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.<br /><br />
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.<br /><br />You should have received a copy of the GNU General Public License along with this program.  If not, see <a href="http://www.gnu.org/licenses/">&lt;http://www.gnu.org/licenses/&gt;</a>.</blockquote><br /><br />
-
-A copy of the GNU License should be found under <a href="../LICENSE">LICENSE</a>; it is printed below (scroll to see the entire content):
-<blockquote style="max-height: 600px; overflow: auto;">' . nl2br(file_get_contents('../LICENSE')) . '</blockquote><br /><br />
-
-<h1>WebPro Incl. Works</h1>
-<ul>
-  <li>jQuery, jQueryUI, and all jQueryUI Themeroller Themes &copy; <a href="http://jquery.org/" target="_BLANK">The jQuery Project.</a></li>
-  <li>jGrowl &copy; 2009 Stan Lemon.</li>
-  <li>jQuery Cookie Plugin &copy; 2006 Klaus Hartl</li>
-  <li>EZPZ Tooltip &copy; 2009 Mike Enriquez</li>
-  <li>Beeper &copy; 2009 Patrick Mueller</li>
-  <li>Context Menu &copy; 2008 Cory S.N. LaViska</li>
-  <li>jQTubeUtil &copy; 2010 Nirvana Tikku</li>
-</ul>';
+    require('./moderate/copyright.php');
     break;
 
 
     case 'sys':
-    if ($user['adminDefs']['modCore']) {
-      echo container('System Requirements & Status','<ul>
-        <li>Database</li>
-        <ul>
-          <li>MySQL 5.0.5+</li>
-          <li>MySQLi Extension (' . (extension_loaded('mysqli') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
-        </ul>
-        <li>PHP 5.2+ (' . (floatval(phpversion()) > 5.2 ? 'Looks Good' : 'Not Detected - Version ' . phpversion() . ' Installed') . ')</li>
-        <ul>
-          <li>MySQL Extension (' . (extension_loaded('mysql') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
-          <li>Hash Extension (' . (extension_loaded('hash') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
-          <li>Date/Time Extension (' . (extension_loaded('date') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
-          <li>MCrypt Extension (' . (extension_loaded('mcrypt') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
-          <li>PCRE Extension (' . (extension_loaded('pcre') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
-          <li>Multibyte String Extension (' . (extension_loaded('mbstring') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
-          <li>SimpleXML Extension (' . (extension_loaded('simplexml') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
-          <li>APC Extension (' . (extension_loaded('apc') ? 'Looks Good' : '<strong>Not Detected</strong>') . ')</li>
-        </ul>
-      </ul>');
-    }
-    else {
-      echo 'You do not have permission to view system info.';
-    }
+    require('./moderate/status.php');
     break;
 
 
     case 'conf':
+    require('./moderate/config.php');
     break;
 
 
     case 'plugins':
+    require('./moderate/plugins.php');
     echo container('To Be Continued...','Plugins will be added in FIMv3 Beta 4.');
     break;
 
 
     default:
-    echo container('Welcome','<div style="text-align: center; font-size: 40px; font-weight: bold;">Welcome</div><br /><br />
-
-Welcome to the FreezeMessenger control panel. Here you, as one of our well-served grandé and spectacular administrative staff, can perform every task needed to you during normal operation. Still, be careful: you can mess things up here!<br /><br />
-
-To perform an action, click a link on the sidebar. Further instructions can be found in the documentation.');
+    require('./moderate/main.php');
     break;
   }
 }

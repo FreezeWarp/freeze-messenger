@@ -74,6 +74,14 @@ else {
     ),
   ));
 
+  $lastMessageId = $_SERVER['HTTP_LAST_EVENT_ID'];
+  $lastMessageIdParts = explode('-', $lastMessageId);
+  if (count($lastMessageIdParts) == 3) {
+    $request['lastMessage'] = (int) substr($lastMessageIdParts[0], 1);
+    $request['lastUnreadMessage'] = (int) substr($lastMessageIdParts[1], 1);
+    $request['lastEvent'] = (int) substr($lastMessageIdParts[2], 1);
+  }
+
   while (true) {
     $serverSentRetries++;
 
@@ -192,7 +200,7 @@ else {
         ),
       )
     );
-    $queryParts['missedSelect']['order'] = false;
+    $queryParts['missedSelect']['sort'] = false;
     $queryParts['missedSelect']['limit'] = false;
 
 
@@ -241,7 +249,7 @@ else {
         ),
       ),
     );
-    $queryParts['eventsSelect']['order'] = false;
+    $queryParts['eventsSelect']['sort'] = false;
     $queryParts['eventsSelect']['limit'] = false;
 
 
@@ -275,7 +283,7 @@ else {
         ),
       ),
     );
-    $queryParts['unreadSelect']['order'] = false;
+    $queryParts['unreadSelect']['sort'] = false;
     $queryParts['unreadSelect']['limit'] = false;
 
 
@@ -435,17 +443,17 @@ else {
 
 
 
-    if (($serverSentRetries <= $config['serverSentMaxRetries'])
-      || ($config['serverSentFastCGI'] && ) {
+    if (($serverSentRetries > $config['serverSentMaxRetries'])
+      || ($config['serverSentFastCGI'] && $outputStarted)) {
+      echo "id: m" . (int) $request['lastMessage'] . "-u" . (int) $request['lastUnreadMessage'] . "-e" . (int) $request['lastEvent'] . ";\n";
+      echo "retry: 0\n";
+
+      exit;
+    }
+    else {
       ($hook = hook('getMessages_postMessages_serverSentEvents_repeat') ? eval($hook) : '');
 
       usleep($config['serverSentEventsWait'] * 1000000); // Wait before re-requesting. usleep delays in microseconds (millionths of seconds).
-    }
-    else {
-      echo "id: m" . (int) $request['lastMessage'] . "-e" . (int) $request['lastEvent'] . ';';
-      echo 'retry: 0';
-
-      exit;
     }
   }
 }
