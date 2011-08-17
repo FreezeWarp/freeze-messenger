@@ -3,8 +3,63 @@ if (!defined('WEBPRO_INMOD')) {
   die();
 }
 else {
+
+
+  $request = fim_sanitizeGPC(array(
+    'request' => array(
+      'listId' => array(
+        'context' => array(
+          'type' => 'int',
+        ),
+      ),
+
+      'wordId' => array(
+        'context' => array(
+          'type' => 'int',
+        ),
+      ),
+    ),
+
+    'post' => array(
+      'word' => array(
+        'context' => array(
+          'type' => 'string',
+        ),
+      ),
+
+      'param' => array(
+        'context' => array(
+          'type' => 'string',
+        ),
+      ),
+
+      'severity' => array(
+        'valid' => array('replace', 'warn', 'confirm', 'block'),
+        'default' => 'replace',
+      ),
+
+      'options' => array(
+        'context' => array(
+          'type' => 'int',
+        ),
+      ),
+
+      'param' => array(
+        'context' => array(
+          'type' => 'string',
+        ),
+      ),
+
+      'listType' => array(
+        'valid' => array('black', 'white'),
+        'default' => 'white',
+      ),
+    ),
+  ));
+
   if ($user['adminDefs']['modCensor']) {
     switch($_GET['do2']) {
+
       case false:
       case 'viewLists':
       $lists = dbRows("SELECT * FROM {$sqlPrefix}censorLists WHERE options & 1",'id');
@@ -20,7 +75,7 @@ else {
   ';
       }
 
-      echo container('Current Lists<a href="./moderate.php?do=censor&do2=addList"><span class="ui-icon ui-icon-plusthick" style="float: right;" ></span></a>','<table class="page rowHover" border="1">
+      echo container('Current Lists<a href="./moderate.php?do=censor&do2=addList"><span class="ui-icon ui-icon-plusthick" style="float: right;" ></span></a>', '<table class="page rowHover" border="1">
   <thead>
     <tr class="hrow ui-widget-header">
       <td>List Name</td>
@@ -132,14 +187,16 @@ else {
       break;
 
       case 'deleteList':
-      $listId = intval($_GET['listId']);
+      $database->modLog('deleteCensorList', $request['listId']);
 
-      $database->modLog('deleteCensorList',$listId);
+      $database->delete("{$sqlPrefix}censorLists", array(
+        'listId' => $request['listId'],
+      ));
+      $database->delete("{$sqlPrefix}censorWords", array(
+        'listId' => $request['listId'],
+      ));
 
-      dbQuery("DELETE FROM {$sqlPrefix}censorLists WHERE id = $listId");
-      dbQuery("DELETE FROM {$sqlPrefix}censorWords WHERE listId = $listId");
-
-      echo container('List Deleted','The list and its words have been deleted.<br /><br /><form action="Return to Viewing Lists" method="POST"><button type="submit">Return to Viewing Lists</button></form>');
+      echo container('Word Deleted','The list and its words have been deleted.<br /><br /><form method="post" action="moderate.php?do=censor&do2=viewLists"><button type="submit">Return to Viewing Words</button></form>');
       break;
 
       case 'viewWords':
@@ -170,112 +227,148 @@ else {
 </table>');
       break;
 
-      case 'addWord':
-      $listId = intval($_GET['listId']);
+      case 'editWord':
 
-      echo container('Add New Word','<form action="./moderate.php?do=censor&do2=addWord2" method="post">
-<table>
-  <tr>
-    <td>Text</td>
-    <td><input type="text" name="text" /></td>
-  </tr>
-    <td>Severity:
-    <td>
-      <select name="severity">
-        <option value="replace">replace</option>
-        <option value="warn">warn</option>
-        <option value="confirm">confirm</option>
-        <option value="block">block</option>
-      </select>
-    </td>
-  </tr>
-  <tr>
-    <td>Param:</td>
-    <td><input type="text" name="param" /></td>
-  </tr>
-</table><br />
+      echo container($title, '<form action="./moderate.php?do=bbcode&do2=edit2" method="post">
+  <table>
+    <tr>
+      <td>Name:</td>
+      <td><input type="text" name="bbcodeName" value="' . $bbcode['bbcodeName'] . '" /><td>
+    </tr>
+    <tr>
+      <td>Search Regex:</td>
+      <td>
+        <input type="text" name="searchRegex" value="' . $bbcode['searchRegex'] . '" /><br />
+        <small>Tips: Use standard PHP PECL-based <a href="http://php.net/manual/en/function.preg-replace.php">Regular Expressions</a>. Both the opening and closing "/" must be included, as well as any flags.<br />Example: <tt>/\_([a-zA-Z]+)\_/s</small>
+      </td>
+    </tr>
+    <tr>
+      <td>Replacement:</td>
+      <td>
+        <input type="text" name="replacement" value="' . $bbcode['replacement'] . '" /><br />
+        <small>Tips: "$1" and "\1" can be used here like with standard regular expressions. The /e flag is also possible, if adventurous.</small>
+      </td>
+    </tr>
+  </table>
 
-  <input type="hidden" name="listId" value="' . $listId . '" />
-
-  <button type="submit">Submit</button><button type="reset">Reset</button>
+  <button type="submit">Submit</button>
+  <button type="reset">Reset</button>
+  <input type="hidden" name="bbcodeId" value="' . $bbcode['bbcodeId'] . '" />
 </form>');
       break;
 
-      case 'addWord2':
-      $options = array('replace','warn','confirm','block');
-
-      $wordtext = dbEscape($_POST['text']);
-      $wordsev = (in_array($_POST['severity'],$options) ? $_POST['severity'] : 'replace');
-      $wordparam = dbEscape($_POST['param']);
-      $listId = intval($_POST['listId']);
-
-      dbInsert(array(
-        'listId' => (int) $listId,
-        'word' => $wordtext,
-        'severity' => $wordsev,
-        'param' => $wordparam,
-      ),"{$sqlPrefix}censorWords");
-
-      echo container('Word Added','The word has been added.<br /><br /><form action="./moderate.php?do=censor&do2=viewWords&listId=' . $listId . '" method="POST"><button type="submit">Return to Viewing Words</button></form>');
-      break;
-
       case 'editWord':
-      $wordid = intval($_GET['wordid']);
-      $word = dbRows("SELECT * FROM {$sqlPrefix}censorWords WHERE id = $wordid");
+      if ($request['wordId']) { // We are editing a word.
+        $word = $database->getCensorWord($request['wordId']);
+        $list = $database->getCensorList($word['listId']);
 
-      echo container('Edit Word "' . $word['word'] . '"','<form action="./moderate.php?do=censor&do2=editWord2" method="post">
-<table>
-  <tr>
-    <td>Text</td>
-    <td><input type="text" name="text" value="' . $word['word'] . '" /></td>
-  </tr>
-    <td>Severity:
-    <td>
-      <select name="severity">
-        <option value="replace" ' . ($word['severity'] == 'replace' ? ' selected="selected"' : '') . '>replace</option>
-        <option value="warn" ' . ($word['severity'] == 'warn' ? ' selected="selected"' : '') . '>warn</option>
-        <option value="confirm" ' . ($word['severity'] == 'confirm' ? ' selected="selected"' : '') . '>confirm</option>
-        <option value="block" ' . ($word['severity'] == 'block' ? ' selected="selected"' : '') . '>block</option>
-      </select>
-    </td>
-  </tr>
-  <tr>
-    <td>Param:</td>
-    <td><input type="text" name="param" value="' . $word['param'] . '"  /></td>
-  </tr>
-</table><br />
+        $title = 'Edit Censor Word "' . $word['word'] . '"';
+      }
+      elseif ($request['listId']) { // We are adding a word to a list.
+        $list = $database->getCensorList($request['listId']);
 
-  <input type="hidden" name="wordid" value="' . $word['id'] . '" />
+        $word = array(
+          'word' => '',
+          'wordId' => 0,
+          'severity' => 'replace',
+          'replacement' => '',
+        );
 
-  <button type="submit">Submit</button><button type="reset">Reset</button>
+        $title = 'Add Censor Word to "' . $list['listName'] . '"';
+      }
+      else {
+        die('Invalid params specified.');
+      }
+
+      $selectBlock = fimHtml_buildSelect('severity', array(
+        'replace' => 'replace',
+        'warn' => 'warn',
+        'confirm' => 'confirm',
+        'block' => 'block',
+      ), $word['severity']);
+
+      echo container($title, '<form action="./moderate.php?do=censor&do2=editWord2" method="post">
+  <table>
+    <tr>
+      <td>Text</td>
+      <td>
+        <input type="text" name="word" value="' . $word['word'] . '" /><br />
+        <small>This is the word to be filtered or blocked out.</small>
+      </td>
+    </tr>
+      <td>Severity:
+      <td>
+        ' . $selectBlock . '<br />
+        <small>This is the type of filter to apply to the word. <tt>replace</tt> will replace the word above with the one below; <tt>warn</tt> warns the user upon sending the message, but sends the message without user intervention; <tt>confirm</tt> requires the user to confirm that they wish to send the message before it is sent; <tt>block</tt> outright blocks a user from sending the message - they will need to change the content of it first.</small>
+      </td>
+    </tr>
+    <tr>
+      <td>Param:</td>
+      <td>
+        <input type="text" name="param" value="' . $word['param'] . '"  /><br />
+        <small>This is what the text will be replaced with if using the <tt>replace</tt> severity, while for <tt>warn</tt>, <tt>confirm</tt>, and <tt>block</tt> it is the message that will be displayed to the user.</small>
+      </td>
+    </tr>
+  </table><br />
+
+  <input type="hidden" name="wordId" value="' . $word['id'] . '" />
+  <input type="hidden" name="listId" value="' . $list['id'] . '" />
+  <button type="submit">Submit</button>
+  <button type="reset">Reset</button>
 </form>');
       break;
 
       case 'editWord2':
-      $options = array('replace','warn','confirm','block');
+      if ($request['wordId']) { // We are editing a word.
+        $word = $database->getCensorWord($request['wordId']);
+        $list = $database->getCensorList($word['listId']);
 
-      $wordid = intval($_POST['wordid']);
-      $word = dbRows("SELECT * FROM {$sqlPrefix}censorWords WHERE id = $wordid");
+        $database->modLog('editCensorWord', $request['wordId']);
+        $database->fullLog('editCensorWord', array('word' => $word, 'list' => $list));
 
-      $wordtext = dbEscape($_POST['text']);
-      $wordsev = (in_array($_POST['severity'],$options) ? $_POST['severity'] : 'replace');
-      $wordparam = dbEscape($_POST['param']);
+        $database->update("{$sqlPrefix}censorWords", array(
+          'word' => $request['word'],
+          'severity' => $request['severity'],
+          'param' => $request['param'],
+        ), array(
+          'wordId' => $request['wordId']
+        ));
 
-      $database->modLog('editCensorWord',$wordid);
+        echo container('Censor Word "' . $word['word'] . '" Changed', 'The word has been changed.<br /><br />' . button('Return to Viewing Words','./moderate.php?do=censor&do2=viewWords&listId=' . $word['listId']));
+      }
+      elseif ($request['listId']) { // We are adding a word to a list.
+        $list = $database->getCensorList($request['listId']);
+        $word = array(
+          'word' => $request['word'],
+          'severity' => $request['severity'],
+          'param' => $request['param'],
+        );
 
-      dbQuery("UPDATE {$sqlPrefix}censorWords SET word = '$wordtext', severity = '$wordsev', param = '$wordparam' WHERE id = $wordid");
+        $database->insert("{$sqlPrefix}censorWords", $word);
+        $word['wordId'] = $database->insertId;
 
-      echo container('Word Changed','The word has been changed.<br /><br />' . button('Return to Viewing Words','./moderate.php?do=censor&do2=viewWords&listId=' . $word['listId']));
+        $database->modLog('addCensorWord', $request['listId'] . ',' . $database->insertId);
+        $database->fullLog('addCensorWord', array('word' => $word, array($word, 'list' => $list));
+
+        echo container('Censor Word Added To "' . $list['listName'] . '"', 'The word has been changed.<br /><br />' . button('Return to Viewing Words','./moderate.php?do=censor&do2=viewWords&listId=' . $word['listId']));
+      }
+      else {
+        die('Invalid params specified.');
+      }
       break;
 
       case 'deleteWord':
-      $wordid = intval($_GET['wordid']);
+      $word = $database->getCensorWord($request['wordId']);
+      $list = $database->getCensorList($word['listId']);
 
-      dbQuery("DELETE FROM {$sqlPrefix}censorWords WHERE id = $wordid");
+      $database->delete("{$sqlPrefix}censorWords", array(
+        'wordId' => $request['wordId'],
+      ));
 
-      $database->modLog('deleteCensorWord',$wordid);
+      $database->modLog('deleteCensorWord', $request['wordId']);
+      $database->fullLog('deleteCensorWord', array('word' => $word, 'list' => $list));
 
-      echo container('Word Deleted','The word has been removed.<br /><br /><button onclick="window.history.back();" type="button">Go Back</button>');
+      echo container('Word Deleted','The word has been removed.<br /><br /><form method="post" action="moderate.php?do=censor&do2=viewWords"><button type="submit">Return to Viewing Words</button></form>');
       break;
     }
   }

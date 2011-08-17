@@ -72,7 +72,7 @@ else {
       case 'edit':
       if ($request['bbcodeId']) {
         $bbcode = $database->getBBCode($request['bbcodeId']);
-        $title = 'Edit BBCode "' . $bbcode['bbcodeName'];
+        $title = 'Edit BBCode "' . $bbcode['bbcodeName'] . '"';
       }
       else {
         $bbcode = array(

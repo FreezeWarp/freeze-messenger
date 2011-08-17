@@ -203,6 +203,48 @@ class fimDatabase extends database {
     return $listData->getAsArray(false);
   }
 
+  public function getCensorWord($wordId) {
+    global $sqlPrefix, $config, $user;
+
+    $queryParts['wordSelect']['columns'] = array(
+      "{$sqlPrefix}words" => array(
+        'wordId' => 'wordId',
+        'listId' => 'listId',
+        'word' => 'word',
+        'severity' => 'severity',
+        'param' => 'param',
+      ),
+    );
+
+    if ($wordId) {
+      $queryParts['wordSelect']['conditions'] = array(
+        'both' => array(
+          array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'wordId'
+            ),
+            'right' => array(
+              'type' => 'int',
+              'value' => (int) $wordId,
+            ),
+          ),
+        ),
+      );
+    }
+    else {
+      return false;
+    }
+
+    $wordData = $this->select(
+      $queryParts['wordSelect']['columns'],
+      $queryParts['wordSelect']['conditions'],
+      false,
+      1);
+    return $wordData->getAsArray(false);
+  }
+
 
   public function getBBCode($bbcodeId) {
     global $sqlPrefix, $config, $user;
@@ -430,7 +472,7 @@ class fimDatabase extends database {
 
 
   /**
-  * MySQL modLog container
+  * ModLog container
   *
   * @param string $action
   * @param string $data
@@ -446,6 +488,35 @@ class fimDatabase extends database {
       'ip' => $_SERVER['REMOTE_ADDR'],
       'action' => $action,
       'data' => $data,
+      'time' => $this->now(),
+    ))) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+
+
+  /**
+  * Fulllog container
+  *
+  * @param string $action
+  * @param array $data
+  * @return bool
+  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
+
+  public function fullLog($action, $data) {
+    global $sqlPrefix, $config, $user;
+
+    if ($this->insert("{$sqlPrefix}modlog", array(
+      'userId' => (int) $user['userId'],
+      'ip' => $_SERVER['REMOTE_ADDR'],
+      'action' => $action,
+      'data' => $data,
+      'time' => $this->now(),
+      'data' => json_encode($data),
     ))) {
       return true;
     }

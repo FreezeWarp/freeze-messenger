@@ -119,6 +119,17 @@
       <key name="fontId" type="primary" />
     </table>
 
+    <table name="fulllog" type="general" comment="A log of moderator actions that docment all update(), insert(), and delete() calls.">
+      <column name="id" type="int" maxlen="12" autoincrement="true" comment="A unique ID for the log entry." />
+      <column name="userId" type="int" maxlen="8" comment="The user ID who performed the action." />
+      <column name="time" type="time" comment="The time the action was performed on." />
+      <column name="ip" type="string" maxlen="128" comment="The IP of the user when the action was performed." />
+      <column name="action" type="string" maxlen="100" comment="The action performed." />
+      <column name="data" type="string" maxlen="100" comment="The associated data of the action, encoded using JSON." />
+
+      <key name="id" type="primary" />
+    </table>
+
 
     <table name="groups" type="general" comment="Admin-created usergroups that can be used with vanilla logins.">
       <column name="groupId" type="int" maxlen="6" comment="The unique ID of the group." />
