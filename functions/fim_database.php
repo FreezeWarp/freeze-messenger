@@ -376,6 +376,54 @@ class fimDatabase extends database {
   }
 
 
+  public function getTemplate($templateName, $languageCode, $interfaceId) {
+    global $sqlPrefix, $config, $user;
+
+    $queryParts['templateSelect']['columns'] = array(
+      "{$sqlPrefix}templates" => "templateName, interfaceId, data, vars, templateId",
+    );
+    $queryParts['templateSelect']['conditions'] = array(
+      'both' => array(
+        array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'templateName',
+          ),
+          'right' => array(
+            'type' => 'string',
+            'value' => $templateName,
+          ),
+        ),
+        array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'interfaceId',
+          ),
+          'right' => array(
+            'type' => 'int',
+            'value' => $interfaceId,
+          ),
+        ),
+      ),
+    );
+    $queryParts['templateSelect']['sort'] = false;
+    $queryParts['templateSelect']['limit'] = 1;
+
+    if (!$templateName || !$interfaceId) {
+      return false;
+    }
+
+    $templateData = $this->select(
+      $queryParts['templateSelect']['columns'],
+      $queryParts['templateSelect']['conditions'],
+      $queryParts['templateSelect']['sort'],
+      $queryParts['templateSelect']['limit']);
+    return $templateData->getAsArray(false);
+  }
+
+
   public function markMessageRead($messageId, $userId) {
     global $sqlPrefix, $config, $user;
 

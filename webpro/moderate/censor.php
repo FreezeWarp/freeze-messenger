@@ -272,7 +272,7 @@ else {
 
       if ($words) {
         foreach ($words AS $word) {
-          $rows .= '    <tr><td>' . $word['word'] . '</td><td>' . $word['severity'] . '</td><td>' . $word['param'] . '</td><td><a href="./moderate.php?do=censor&do2=deleteWord&wordid=' . $word['wordId'] . '"><span class="ui-icon ui-icon-trash"></span></a><a href="./moderate.php?do=censor&do2=editWord&wordid=' . $word['wordId'] . '"><span class="ui-icon ui-icon-gear"></span></a></td></tr>
+          $rows .= '    <tr><td>' . $word['word'] . '</td><td>' . $word['severity'] . '</td><td>' . $word['param'] . '</td><td><a href="./moderate.php?do=censor&do2=deleteWord&wordId=' . $word['wordId'] . '"><span class="ui-icon ui-icon-trash"></span></a><a href="./moderate.php?do=censor&do2=editWord&wordId=' . $word['wordId'] . '"><span class="ui-icon ui-icon-gear"></span></a></td></tr>
     ';
         }
       }
@@ -349,8 +349,8 @@ else {
     </tr>
   </table><br />
 
-  <input type="hidden" name="wordId" value="' . $word['id'] . '" />
-  <input type="hidden" name="listId" value="' . $list['id'] . '" />
+  <input type="hidden" name="wordId" value="' . $word['wordId'] . '" />
+  <input type="hidden" name="listId" value="' . $list['listId'] . '" />
   <button type="submit">Submit</button>
   <button type="reset">Reset</button>
 </form>');
@@ -372,7 +372,7 @@ else {
           'wordId' => $request['wordId']
         ));
 
-        echo container('Censor Word "' . $word['word'] . '" Changed', 'The word has been changed.<br /><br />' . button('Return to Viewing Words','./moderate.php?do=censor&do2=viewWords&listId=' . $word['listId']));
+        echo container('Censor Word "' . $word['word'] . '" Changed', 'The word has been changed.<br /><br /><form method="post" action="./moderate.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '"><button>Return to Viewing Words</button></form>');
       }
       elseif ($request['listId']) { // We are adding a word to a list.
         $list = $database->getCensorList($request['listId']);
@@ -388,7 +388,7 @@ else {
         $database->modLog('addCensorWord', $request['listId'] . ',' . $database->insertId);
         $database->fullLog('addCensorWord', array('word' => $word, 'list' => $list));
 
-        echo container('Censor Word Added To "' . $list['listName'] . '"', 'The word has been changed.<br /><br />' . button('Return to Viewing Words','./moderate.php?do=censor&do2=viewWords&listId=' . $word['listId']));
+        echo container('Censor Word Added To "' . $list['listName'] . '"', 'The word has been changed.<br /><br /><form method="post" action="./moderate.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '"><button>Return to Viewing Words</button></form>');
       }
       else {
         die('Invalid params specified.');
