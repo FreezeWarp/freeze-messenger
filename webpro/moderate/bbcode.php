@@ -132,8 +132,8 @@ else {
       $bbcode = $database->getBBCode($request['bbcodeId']);
 
       if ($request['bbcodeId']) {
-        $database->modLog('deleteCensorWord', $bbcode['wordId']);
-        $database->fullLog('deleteCensorWord', array('bbcode' => $bbcode));
+        $database->modLog('deleteBBCodeWord', $bbcode['wordId']);
+        $database->fullLog('deleteBBCodeWord', array('bbcode' => $bbcode));
 
         $database->update("{$sqlPrefix}bbcode", array(
           'bbcodeName' => $request['bbcodeName'],
@@ -155,8 +155,8 @@ else {
         $database->insert("{$sqlPrefix}bbcode", $bbcode);
         $bbcode['bbcodeId'] = $database->insertId;
 
-        $database->modLog('createCensorWord', $bbcode['wordId']);
-        $database->fullLog('createCensorWord', array('bbcode' => $bbcode));
+        $database->modLog('createBBCodeWord', $bbcode['wordId']);
+        $database->fullLog('createBBCodeWord', array('bbcode' => $bbcode));
 
         echo container('BBCode Added','The bbcode has been added.<br /><br /><form method="post" action="moderate.php?do=bbcode"><button type="submit">Return to Viewing Lists</button></form>');
       }
@@ -166,8 +166,8 @@ else {
       $bbcode = $database->getBBCode($request['bbcodeId']);
 
       if ($bbcode) {
-        $database->modLog('deleteCensorWord', $bbcode['wordId']);
-        $database->fullLog('deleteCensorWord', array('bbcode' => $bbcode));
+        $database->modLog('deleteBBCodeWord', $bbcode['wordId']);
+        $database->fullLog('deleteBBCodeWord', array('bbcode' => $bbcode));
 
         $database->delete("{$sqlPrefix}bbcode", array(
           'bbcodeId' => $request['bbcodeId'],
