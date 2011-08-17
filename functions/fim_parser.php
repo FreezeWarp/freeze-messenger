@@ -52,7 +52,9 @@ function fimParse_htmlParse($text) {
   $bbcode = $bbcode->getAsArray(true);
 
   foreach ($bbcode AS $code) {
-    $text = preg_replace($code['searchRegex'], $code['replacement'], $text);
+    if ($code['options'] & 1) { // BBcode is enabled
+      $text = preg_replace($code['searchRegex'], $code['replacement'], $text);
+    }
   }
 
   return $text;

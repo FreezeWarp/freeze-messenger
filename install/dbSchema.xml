@@ -5,7 +5,7 @@
     <table name="bbcode" type="general" comment="Admin-defined regexes to use for formatting the HTML cache of messages.">
       <column name="bbcodeId" type="int" maxlen="6" autoincrement="true" comment="A unique identifier for the word." />
       <column name="bbcodeName" type="string" maxlen="40" comment="The name of the BBcode for display purposes." />
-      <column name="options" type="bitfield" bits="3" comment="A bitfield containing column options." />
+      <column name="options" type="bitfield" bits="3" default="1" comment="A bitfield containing column options." />
       <column name="searchRegex" type="string" maxlen="1000" comment="The regex to use for BBcode searching." />
       <column name="replacement" type="string" maxlen="1000" comment="The replacement text to be used." />
 
@@ -446,8 +446,6 @@
   <definitions>
     <bitfield name="options" table="bbcode">
       <def bit="1">Enabled</def>
-      <def bit="2">Can Be Toggled by Rooms</def>
-      <def bit="4">Default to On</def>
     </bitfield>
 
     <bitfield name="defaultPermissions" table="rooms">

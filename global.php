@@ -555,4 +555,11 @@ if (defined('FIM_LOGINRUN')) {
 if ($api && $config['compressOutput']) {
 //  ob_start('fim_apiCompact');
 }
+
+if ($config['dev']) { // Developer hijinks - these are security risks for public servers
+  if (isset($_REQUEST['clearAPC'])) {
+    apc_clear_cache();
+    error_log('Cleared cache.');
+  }
+}
 ?>

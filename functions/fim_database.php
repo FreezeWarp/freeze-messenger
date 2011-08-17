@@ -204,6 +204,43 @@ class fimDatabase extends database {
   }
 
 
+  public function getBBCode($bbcodeId) {
+    global $sqlPrefix, $config, $user;
+
+    $queryParts['bbcodeSelect']['columns'] = array(
+      "{$sqlPrefix}bbcode" => 'bbcodeId, bbcodeName, searchRegex, replacement, options',
+    );
+
+    if ($bbcodeId) {
+      $queryParts['bbcodeSelect']['conditions'] = array(
+        'both' => array(
+          array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'bbcodeId'
+            ),
+            'right' => array(
+              'type' => 'int',
+              'value' => (int) $bbcodeId,
+            ),
+          ),
+        ),
+      );
+    }
+    else {
+      return false;
+    }
+
+    $bbcodeData = $this->select(
+      $queryParts['bbcodeSelect']['columns'],
+      $queryParts['bbcodeSelect']['conditions'],
+      false,
+      1);
+    return $bbcodeData->getAsArray(false);
+  }
+
+
   public function getMessage($messageId) {
     global $sqlPrefix, $config, $user;
 
