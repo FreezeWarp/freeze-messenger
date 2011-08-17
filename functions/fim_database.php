@@ -511,10 +511,9 @@ class fimDatabase extends database {
     global $sqlPrefix, $config, $user;
 
     if ($this->insert("{$sqlPrefix}modlog", array(
-      'userId' => (int) $user['userId'],
+      'user' => json_encode($user),
       'ip' => $_SERVER['REMOTE_ADDR'],
       'action' => $action,
-      'data' => $data,
       'time' => $this->now(),
       'data' => json_encode($data),
     ))) {

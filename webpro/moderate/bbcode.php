@@ -114,7 +114,12 @@ else {
       break;
 
       case 'edit2':
+      $bbcode = $database->getBBCode($request['bbcodeId']);
+
       if ($request['bbcodeId']) {
+        $database->modLog('deleteCensorWord', $bbcode['wordId']);
+        $database->fullLog('deleteCensorWord', array('bbcode' => $bbcode));
+
         $database->update("{$sqlPrefix}bbcode", array(
           'bbcodeName' => $request['bbcodeName'],
           'searchRegex' => $request['searchRegex'],
@@ -126,22 +131,38 @@ else {
         echo container('BBCode Updated','The bbcode has been updated.<br /><br /><form method="post" action="moderate.php?do=bbcode"><button type="submit">Return to Viewing Lists</button></form>');
       }
       else {
-        $database->insert("{$sqlPrefix}bbcode", array(
+        $bbcode = array(
           'bbcodeName' => $request['bbcodeName'],
           'searchRegex' => $request['searchRegex'],
           'replacement' => $request['replacement'],
-        ));
+        );
+
+        $database->insert("{$sqlPrefix}bbcode", $bbcode);
+        $bbcode['bbcodeId'] = $database->insertId;
+
+        $database->modLog('createCensorWord', $bbcode['wordId']);
+        $database->fullLog('createCensorWord', array('bbcode' => $bbcode));
 
         echo container('BBCode Added','The bbcode has been added.<br /><br /><form method="post" action="moderate.php?do=bbcode"><button type="submit">Return to Viewing Lists</button></form>');
       }
       break;
 
       case 'delete':
-      $database->delete("{$sqlPrefix}bbcode", array(
-        'bbcodeId' => $request['bbcodeId'],
-      ));
+      $bbcode = $database->getBBCode($request['bbcodeId']);
 
-      echo container('BBCode Deleted','The bbcode entry has been deleted.<br /><br /><form method="post" action="moderate.php?do=bbcode"><button type="submit">Return to Viewing Lists</button></form>');
+      if ($bbcode) {
+        $database->modLog('deleteCensorWord', $bbcode['wordId']);
+        $database->fullLog('deleteCensorWord', array('bbcode' => $bbcode));
+
+        $database->delete("{$sqlPrefix}bbcode", array(
+          'bbcodeId' => $request['bbcodeId'],
+        ));
+
+        echo container('BBCode Deleted','The bbcode entry has been deleted.<br /><br /><form method="post" action="moderate.php?do=bbcode"><button type="submit">Return to Viewing BBCode</button></form>');
+      }
+      else {
+        echo container('BBCode Not Found','The bbcode specified was not found.<br /><br /><form method="post" action="moderate.php?do=bbcode"><button type="submit">Return to Viewing BBCode</button></form>');
+      }
       break;
     }
   }
