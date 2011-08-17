@@ -33,6 +33,7 @@ elseif (isset($_COOKIE['webproModerate_sessionHash'])) {
 
 /* Here we require the backend. */
 require('../global.php');
+require('../functions/fim_html.php');
 
 
 /* And this sets the cookie with the session hash if possible. */
