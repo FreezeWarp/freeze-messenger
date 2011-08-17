@@ -558,6 +558,22 @@
       <column name="type" value="integer" />
     </table>
 
+    <table name="configuration">
+      <column name="directive" value="enabledInterfaces" />
+      <column name="value" value="webpro,weblite,choose" />
+      <column name="type" value="array" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="defaultInterface" />
+      <column name="value" value="webpro" />
+      <column name="type" value="string" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="disableWeb" />
+      <column name="value" value="false" />
+      <column name="type" value="bool" />
+    </table>
+
 
     <!-- Table counters -->
     <table name="counters">

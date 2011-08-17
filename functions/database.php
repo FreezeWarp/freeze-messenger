@@ -154,14 +154,23 @@ class database {
         0 => 'BIGINT',
       );
 
-      $this->columnStringLimits = array(
+      $this->columnStringPermLimits = array(
         1 => 'CHAR',
         100 => 'VARCHAR',
         1000 => 'TEXT',
         8191 => 'MEDIUMTEXT',
         2097151 => 'LONGTEXT',
-        0 => 'TEXT',
+        0 => 'LONGTEXT',
       );
+
+      $this->columnStringTempLimits = array(
+        1 => 'TEXT',
+        8191 => 'MEDIUMTEXT',
+        2097151 => 'LONGTEXT',
+        0 => 'LONGTEXT',
+      );
+
+      $this->columnStringNoLength = array('MEDIUMTEXT', 'LONGTEXT');
 
       $this->columnBitLimits = array(
         0 => 'TINYINT UNSIGNED',
@@ -1113,6 +1122,13 @@ LIMIT
         else {
           $typeProcessed = false;
 
+          if ($engine === 'memory') {
+            $this->columnStringLimits = $this->columnStringTempLimits;
+          }
+          else {
+            $this->columnStringLimits = $this->columnStringPermLimits;
+          }
+
           foreach ($this->columnStringLimits AS $length => $type) {
             if ($column['maxlen'] > $length) {
               if (in_array($type, $this->columnStringNoLength)) {
@@ -1124,10 +1140,10 @@ LIMIT
 
               $typeProcessed = true;
 
-              break;
+              continue;
             }
             else {
-              continue;
+              break;
             }
           }
 

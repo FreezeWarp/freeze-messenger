@@ -193,7 +193,7 @@
 &lt;option value="cupertino"&gt;$phrases[settingsThemeCupertino]&lt;/option&gt;
 &lt;option value="ui-darkness"&gt;$phrases[settingsThemejQueryUIDarkness]&lt;/option&gt;
 &lt;option value="ui-lightness"&gt;$phrases[settingsThemejQueryUILightness]&lt;/option&gt;
-&lt;option value="darkhive"&gt;$phrases[settingsThemeDarkhive]&lt;/option&gt;
+&lt;option value="dark-hive"&gt;$phrases[settingsThemeDarkhive]&lt;/option&gt;
 &lt;option value="start"&gt;$phrases[settingsThemeStart]&lt;/option&gt;
 &lt;option value="vader"&gt;$phrases[settingsThemeVader]&lt;/option&gt;
 &lt;option value="trontastic"&gt;$phrases[settingsThemeTrontastic]&lt;/option&gt;
@@ -227,7 +227,6 @@
 &lt;div id="settings4"&gt;
 &lt;label for="disableFx"&gt;$phrases[settingsDisableFxLabel]&lt;/label&gt; &lt;input type="checkbox" name="disableFx" id="disableFx" value="true" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsDisableFxBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
-&lt;/div&gt;
 
 &lt;label for="disableRightClick"&gt;$phrases[settingsDisableRightClickLabel]&lt;/label&gt; &lt;input type="checkbox" name="disableRightClick" id="disableRightClick" value="true" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsDisableRightClickBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;

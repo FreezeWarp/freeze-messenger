@@ -18,7 +18,7 @@ if (!file_exists('./config.php')) {
 ///* Handle Path Redirection *///
 
 else {
-  require('./config.php');
+  require('./global.php');
 
   if ($config['disableWeb']) {
     die('Web interfaces have been disabled on this server.');
@@ -33,7 +33,7 @@ else {
     }
 
 
-    if ($interface) {
+   if ($interface) {
       header("Location: $interface/");
     }
     else {

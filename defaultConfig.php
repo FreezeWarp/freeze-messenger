@@ -82,8 +82,8 @@ $defaultConfig = array(
   'anonymousUserId' => 0,
   'bannedUserGroups' => array(),
 
-  'enabledInterfaces' => array('webpro'),
-  'defaultInterface' => 'webpro',
+  'enabledInterfaces' => array(),
+  'defaultInterface' => '',
   'disableWeb' => false,
 );
 ?>
