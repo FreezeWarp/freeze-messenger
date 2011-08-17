@@ -34,30 +34,6 @@
 
 /* Requirements */
 
-/*browserMessage = 'You are using an incompatible Internet browser. We strongly urge you to try one of these browsers instead, which will allow you to enjoy the Internet to its fullest:<br /><br /><strong>Get Google Chrome (for Windows, Mac OS X, and Linux)</strong><br /><br /><strong>Get Mozilla Firefox (for Windows, Mac OS X, and Linux)</strong><br /><br /><strong>Get Opera 11.50 (for pretty much everything)</strong>';
-
-if (typeof window.JSON == 'undefined') {
-  document.body.innerHTML = browserMessage;
-
-  throw new Error('Your browser does not seem to support JSON objects. The script has exited.');
-}
-else if (typeof window.btoa == 'undefined') {
-  document.body.innerHTML = browserMessage;
-
-  throw new Error('Your browser does not seem to support Base64 operations. The script has exited.');
-}
-else if (typeof window.encodeURIComponent == 'undefined') {
-  document.body.innerHTML = browserMessage;
-
-  throw new Error('Your browser does not seem to support encodeURI operations. The script has exited.');
-}
-else if (true) {
-  document.write(browserMessage);
-
-  throw new Error('Pie');
-}
-console.log('Wait, what?');*/
-
 if (typeof window.JSON == 'undefined') {
   window.location.href = 'browser.php';
 
@@ -73,6 +49,8 @@ else if (typeof window.encodeURIComponent == 'undefined') {
 
   throw new Error('Your browser does not seem to support encodeURI operations. The script has exited.');
 }
+
+
 
 
 /* Common Variables */
@@ -141,8 +119,12 @@ var roomRef = {}, // Object
 
 /* Get Cookies */
 
-var themeId = Number($.cookie('fim3_themeId'));
+var theme = $.cookie('fim3_theme');
 var fontsize = $.cookie('fim3_fontsize');
+
+if (!theme) {
+  theme = 'cupertino';
+}
 
 
 if ($.cookie('fim3_setting') == undefined) {
@@ -571,23 +553,6 @@ var settings = {
 };
 
 
-
-/* Apply CSS Styling Dynamically
-* Added Bonus: It's Hard Not To Know When the Script is Broken */
-
-var themes = {
-  1 : 'ui-darkness',
-  2 : 'ui-lightness',
-  3 : 'redmond',
-  4 : 'cupertino',
-  5 : 'dark-hive',
-  6 : 'start',
-  7 : 'vader',
-  8 : 'trontastic',
-  9 : 'humanity'
-};
-
-var themeName = (themeId ? themes[themeId] : 'cupertino');
 
 
 /*********************************************************
@@ -1281,7 +1246,7 @@ var standard = {
   logout : function() {
     $.cookie('fim3_userId', null);
     $.cookie('fim3_password', null);
-    $.cookie('fim3_themeId', null);
+    $.cookie('fim3_theme', null);
     $.cookie('fim3_settings', null);
 
     standard.login({});
@@ -1874,6 +1839,7 @@ var standard = {
 if (typeof window.onhashchange !== 'undefined') {
   window.onhashchange = hashParse;
 }
+
 hashParse();
 
 /*********************************************************
@@ -2315,8 +2281,8 @@ popup = {
         if (settings.disableImage) {
           $('#disableImage').attr('checked','checked');
         }
-        if (themeId) {
-          $('#theme > option[value="' + themeId + '"]').attr('selected','selected');
+        if (theme) {
+          $('#theme > option[value="' + theme + '"]').attr('selected','selected');
         }
         if (fontsize) {
           $('#fontsize > option[value="' + fontsize + '"]').attr('selected','selected');
@@ -2428,11 +2394,11 @@ popup = {
 
 
         $('#theme').change(function() {
-          $('#stylesjQ').attr('href','client/css/' + themes[this.value] + '/jquery-ui-1.8.13.custom.css');
-          $('#stylesFIM').attr('href','client/css/' + themes[this.value] + '/fim.css');
+          $('#stylesjQ').attr('href','client/css/' + this.value + '/jquery-ui-1.8.13.custom.css');
+          $('#stylesFIM').attr('href','client/css/' + this.value + '/fim.css');
 
-          $.cookie('fim3_themeId', this.value, { expires : 14 });
-          themeId = this.value;
+          $.cookie('fim3_theme', this.value, { expires : 14 });
+          theme = this.value;
 
           return false;
         });
@@ -3620,7 +3586,7 @@ function contextMenuParse() {
 
 
 $(document).ready(function() {
-  $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/' + themeName + '/jquery-ui-1.8.13.custom.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/' + themeName + '/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
+  $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/' + theme + '/jquery-ui-1.8.13.custom.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/' + theme + '/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
 
   if (fontsize) {
     $('body').css('font-size',fontsize + 'em');

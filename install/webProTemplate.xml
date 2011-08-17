@@ -190,15 +190,15 @@
 &lt;form action="#" method="post" id="changeSettingsForm"&gt;
 &lt;div id="settings1"&gt;
 &lt;label for="theme"&gt;$phrases[settingsThemeLabel]&lt;/label&gt; &lt;select name="theme" id="theme"&gt;
-&lt;option value="4"&gt;$phrases[settingsThemeCupertino]&lt;/option&gt;
-&lt;option value="1"&gt;$phrases[settingsThemejQueryUIDarkness]&lt;/option&gt;
-&lt;option value="2"&gt;$phrases[settingsThemejQueryUILightness]&lt;/option&gt;
-&lt;option value="5"&gt;$phrases[settingsThemeDarkhive]&lt;/option&gt;
-&lt;option value="6"&gt;$phrases[settingsThemeStart]&lt;/option&gt;
-&lt;option value="7"&gt;$phrases[settingsThemeVader]&lt;/option&gt;
-&lt;option value="8"&gt;$phrases[settingsThemeTrontastic]&lt;/option&gt;
-&lt;option value="9"&gt;$phrases[settingsThemeHumanity]&lt;/option&gt;
-&lt;option value="3"&gt;$phrases[settingsThemeHighContrastBlue]&lt;/option&gt;
+&lt;option value="cupertino"&gt;$phrases[settingsThemeCupertino]&lt;/option&gt;
+&lt;option value="ui-darkness"&gt;$phrases[settingsThemejQueryUIDarkness]&lt;/option&gt;
+&lt;option value="ui-lightness"&gt;$phrases[settingsThemejQueryUILightness]&lt;/option&gt;
+&lt;option value="darkhive"&gt;$phrases[settingsThemeDarkhive]&lt;/option&gt;
+&lt;option value="start"&gt;$phrases[settingsThemeStart]&lt;/option&gt;
+&lt;option value="vader"&gt;$phrases[settingsThemeVader]&lt;/option&gt;
+&lt;option value="trontastic"&gt;$phrases[settingsThemeTrontastic]&lt;/option&gt;
+&lt;option value="humanity"&gt;$phrases[settingsThemeHumanity]&lt;/option&gt;
+&lt;option value="memetically-pink"&gt;$phrases[settingsThemeMemeticallyPink]&lt;/option&gt;
 &lt;/select&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsThemeBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
 
