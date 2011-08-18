@@ -120,11 +120,11 @@ else {
         if ($list['options'] & 4) $options[] = "Disabled in Private";
         if ($list['options'] & 8) $options[] = "Mature";
 
-        $rows .= '    <tr><td>' . $list['listName'] . '</td><td align="center">' . ($list['listType'] == 'white' ? '<div style="border-radius: 1em; background-color: white; border: 1px solid black; width: 20px; height: 20px;"></div>' : '<div style="border-radius: 1em; background-color: black; border: 1px solid white; width: 20px; height: 20px;"></div>') . '</td><td>' . implode(', ',$options) . '</td><td><a href="./moderate.php?do=censor&do2=deleteList&listId=' . $list['listId'] . '"><span class="ui-icon ui-icon-trash"></span></a><a href="./moderate.php?do=censor&do2=editList&listId=' . $list['listId'] . '"><span class="ui-icon ui-icon-gear"></span></a><a href="./moderate.php?do=censor&do2=viewWords&listId=' . $list['listId'] . '"><span class="ui-icon ui-icon-document"></span></a></td></tr>
+        $rows .= '    <tr><td>' . $list['listName'] . '</td><td align="center">' . ($list['listType'] == 'white' ? '<div style="border-radius: 1em; background-color: white; border: 1px solid black; width: 20px; height: 20px;"></div>' : '<div style="border-radius: 1em; background-color: black; border: 1px solid white; width: 20px; height: 20px;"></div>') . '</td><td>' . implode(', ',$options) . '</td><td align="center"><a href="./moderate.php?do=censor&do2=deleteList&listId=' . $list['listId'] . '"><img src="./images/document-close.png" /></a><a href="./moderate.php?do=censor&do2=editList&listId=' . $list['listId'] . '"><img src="./images/document-edit.png" /></a><a href="./moderate.php?do=censor&do2=viewWords&listId=' . $list['listId'] . '"><img src="./images/view-list-details.png" /></a></td></tr>
   ';
       }
 
-      echo container('Current Lists<a href="./moderate.php?do=censor&do2=editList"><span class="ui-icon ui-icon-plusthick" style="float: right;" ></span></a>', '<table class="page rowHover" border="1">
+      echo container('Current Lists<a href="./moderate.php?do=censor&do2=editList"><img src="./images/document-new.png" style="float: right;" /></a>', '<table class="page rowHover" border="1">
   <thead>
     <tr class="hrow ui-widget-header">
       <td>List Name</td>
@@ -282,10 +282,9 @@ else {
       ));
       $words = $words->getAsArray(true);
 
-
-      if ($words) {
+      if (count($words) > 0) {
         foreach ($words AS $word) {
-          $rows .= '    <tr><td>' . $word['word'] . '</td><td>' . $word['severity'] . '</td><td>' . $word['param'] . '</td><td><a href="./moderate.php?do=censor&do2=deleteWord&wordId=' . $word['wordId'] . '"><span class="ui-icon ui-icon-trash"></span></a><a href="./moderate.php?do=censor&do2=editWord&wordId=' . $word['wordId'] . '"><span class="ui-icon ui-icon-gear"></span></a></td></tr>
+          $rows .= '    <tr><td>' . $word['word'] . '</td><td>' . $word['severity'] . '</td><td>' . $word['param'] . '</td><td align="center"><a href="./moderate.php?do=censor&do2=deleteWord&wordId=' . $word['wordId'] . '"><img src="./images/document-close.png" /></a><a href="./moderate.php?do=censor&do2=editWord&wordId=' . $word['wordId'] . '"><img src="./images/document-edit.png" /></a></td></tr>
     ';
         }
       }
@@ -293,7 +292,7 @@ else {
         $rows = '<tr><td colspan="4">No words have been added.</td></tr>';
       }
 
-      echo container('Current Words<a href="./moderate.php?do=censor&do2=editWord&listId=' . $request['listId'] . '"><span class="ui-icon ui-icon-plusthick" style="float: right;" ></span></a>','<table class="page rowHover" border="1">
+      echo container('Current Words<a href="./moderate.php?do=censor&do2=editWord&listId=' . $request['listId'] . '"><img src="./images/document-new.png" style="float: right;" /></a>','<table class="page rowHover" border="1">
   <thead>
     <tr class="hrow ui-widget-header">
       <td>Word</td>
@@ -313,10 +312,15 @@ else {
         $word = $database->getCensorWord($request['wordId']);
         $list = $database->getCensorList($word['listId']);
 
+        if (!$word) die('Invalid Word');
+        if (!$list) die('Invalid List');
+
         $title = 'Edit Censor Word "' . $word['word'] . '"';
       }
       elseif ($request['listId']) { // We are adding a word to a list.
         $list = $database->getCensorList($request['listId']);
+
+        if (!$list) die('Invalid List');
 
         $word = array(
           'word' => '',
@@ -393,6 +397,7 @@ else {
           'word' => $request['word'],
           'severity' => $request['severity'],
           'param' => $request['param'],
+          'listId' => $request['listId'],
         );
 
         $database->insert("{$sqlPrefix}censorWords", $word);

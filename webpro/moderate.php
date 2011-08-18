@@ -165,13 +165,13 @@ echo '<!DOCTYPE HTML>
     <ul>
       ' . ($user['adminDefs']['modBBCode'] ? '<li><a href="moderate.php?do=bbcode">Modify BBCode</a></li>' : '') . '
       ' . ($user['adminDefs']['modCensor'] ? '<li><a href="moderate.php?do=censor">Modify Censor</a></li>' : '') . '
-      ' . ($user['adminDefs']['modFiles'] ? '<li><a href="moderate.php?do=censor">Modify File Types</a></li>' : '') . '
+      ' . ($user['adminDefs']['modFiles'] ? '<li><a href="moderate.php?do=ftypes">Modify File Types</a></li>' : '') . '
     </ul>
 
     <h3>Manage Advanced</h3>
     <ul>
       ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=admin">Admin Permissions</a></li>' : '') . '
-      ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=conf">Configuration Editor</a></li>' : '') . '
+      ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=config">Configuration Editor</a></li>' : '') . '
       ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=sys">System Check</a></li>' : '') . '
       ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=phpinfo">PHP Info</a></li>' : '') . '
       <li><a href="moderate.php?do=copyright">Copyright</a></li>
@@ -203,57 +203,18 @@ if (!$user['userId']) {
 }
 elseif ($user['adminDefs']) { // Check that the user is an admin.
   switch ($_GET['do']) {
-    case 'phrases':
-    require('./moderate/phrases.php');
-    break;
-
-    case 'hooks':
-    require('./moderate/hooks.php');
-    break;
-
-    case 'templates':
-    require('./moderate/templates.php');
-    break;
-
-    case 'censor':
-    require('./moderate/censor.php');
-    break;
-
-
-    case 'bbcode':
-    require('./moderate/bbcode.php');
-    break;
-
-
-    case 'phpinfo':
-    require('./moderate/phpinfo.php');
-    break;
-
-
-    case 'copyright':
-    require('./moderate/copyright.php');
-    break;
-
-
-    case 'sys':
-    require('./moderate/status.php');
-    break;
-
-
-    case 'conf':
-    require('./moderate/config.php');
-    break;
-
-
-    case 'plugins':
-    require('./moderate/plugins.php');
-    echo container('To Be Continued...','Plugins will be added in FIMv3 Beta 4.');
-    break;
-
-
-    default:
-    require('./moderate/main.php');
-    break;
+    case 'phrases': require('./moderate/phrases.php'); break;
+    case 'hooks': require('./moderate/hooks.php'); break;
+    case 'templates': require('./moderate/templates.php'); break;
+    case 'censor': require('./moderate/censor.php'); break;
+    case 'bbcode': require('./moderate/bbcode.php'); break;
+    case 'ftypes': require('./moderate/ftypes.php'); break;
+    case 'phpinfo': require('./moderate/phpinfo.php'); break;
+    case 'copyright': require('./moderate/copyright.php'); break;
+    case 'sys': require('./moderate/status.php'); break;
+    case 'config': require('./moderate/config.php'); break;
+    case 'plugins': require('./moderate/plugins.php'); break;
+    default: require('./moderate/main.php'); break;
   }
 }
 else {

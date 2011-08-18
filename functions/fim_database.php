@@ -317,6 +317,43 @@ class fimDatabase extends database {
   }
 
 
+  public function getConfiguration($directive) {
+    global $sqlPrefix, $config, $user;
+
+    $queryParts['configSelect']['columns'] = array(
+      "{$sqlPrefix}configuration" => 'directive, type, value',
+    );
+
+    if ($directive) {
+      $queryParts['configSelect']['conditions'] = array(
+        'both' => array(
+          array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'directive'
+            ),
+            'right' => array(
+              'type' => 'string',
+              'value' => $directive,
+            ),
+          ),
+        ),
+      );
+    }
+    else {
+      return false;
+    }
+
+    $configData = $this->select(
+      $queryParts['configSelect']['columns'],
+      $queryParts['configSelect']['conditions'],
+      false,
+      1);
+    return $configData->getAsArray(false);
+  }
+
+
   public function getPhrase($phraseName, $languageCode, $interfaceId) {
     global $sqlPrefix, $config, $user;
 

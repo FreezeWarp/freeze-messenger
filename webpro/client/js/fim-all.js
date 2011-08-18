@@ -119,16 +119,19 @@ var roomRef = {}, // Object
 
 /* Get Cookies */
 
+// Theme (goes into effect in document.ready)
 var theme = $.cookie('fim3_theme');
-var fontsize = $.cookie('fim3_fontsize');
 
 if (!theme) {
   theme = 'cupertino';
 }
 
+// Font Size (goes into effect in document.ready)
+var fontsize = $.cookie('fim3_fontsize');
 
+// Settings Bitfield (goes into effect all over the place)
 if ($.cookie('fim3_setting') == undefined) {
-  settingsBitfield = 8192;
+  var settingsBitfield = 8192;
 }
 else if (Number($.cookie('fim3_settings'))) {
   var settingsBitfield = Number($.cookie('fim3_settings'));
@@ -138,7 +141,37 @@ else {
   $.cookie('fim3_settings',0);
 }
 
+// Audio File (a hack I placed here just for fun)
+var snd = new Audio('images/beep.ogg');
+var audioFile = '';
 
+if ($.cookie('fim3_audioFile') != undefined) {
+  audioFile = $.cookie('fim3_audioFile');
+}
+else {
+  if (snd.canPlayType('audio/ogg; codecs=vorbis')) {
+    audioFile = 'images/beep.ogg';
+  }
+  else if (snd.canPlayType('audio/mp3')) {
+    audioFile = 'images/beep.mp3';
+  }
+  else if (snd.canPlayType('audio/wav')) {
+    audioFile = 'images/beep.wav';
+  }
+  else {
+    console.log('Audio Disabled');
+  }
+}
+
+//snd.setAttribute('src', audioFile);
+
+// Audio Volume
+if ($.cookie('fim3_audioVolume') != undefined) {
+  snd.volume = $.cookie('fim3_audioVolume') / 100;
+}
+else {
+  snd.volume = .5;
+}
 
 /* Get the absolute API path.
 * TODO: Define this in a more "sophisticated manner". */
@@ -350,7 +383,7 @@ function newMessage() {
 
   if (window.isBlurred) {
     if (settings.audioDing) {
-      riffwave.play();
+      snd.play();
 
       if (navigator.appName === 'Microsoft Internet Explorer') {
         timers.t3 = window.setInterval(faviconFlash,1000);
@@ -1246,8 +1279,6 @@ var standard = {
   logout : function() {
     $.cookie('fim3_userId', null);
     $.cookie('fim3_password', null);
-    $.cookie('fim3_theme', null);
-    $.cookie('fim3_settings', null);
 
     standard.login({});
   },
@@ -2409,6 +2440,13 @@ popup = {
 
           $.cookie('fim3_fontsize', this.value, { expires : 14 });
           fontsize = this.value;
+
+          return false;
+        });
+
+        $('#audioVolume').change(function() {
+          $.cookie('fim3_audioVolume', this.value, { expires : 14 });
+          window.volume = this.value;
 
           return false;
         });

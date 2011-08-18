@@ -22,7 +22,7 @@ else {
     'request' => array(
       'directive' => array(
         'context' => array(
-          'type' => 'int',
+          'type' => 'string',
         ),
       ),
     ),
@@ -47,16 +47,20 @@ else {
     switch ($_GET['do2']) {
       case 'view':
       case false:
-      $config2s2 = $database->select(array(
+      $config3 = $database->select(array(
         "{$sqlPrefix}configuration" => "directive, value, type",
       ));
-      $config2s2 = $config2s2->getAsArray(true);
+      $config3 = $config3->getAsArray(true);
 
-      foreach ($config2s2 AS $config2) {
-        $rows .= "<tr><td>$config2[directive]</td><td>$config2[searchRegex]</td><td>$config2[replacement]</td><td><a href=\"./moderate.php?do=config&do2=edit&directive=$config2[directive]\">Edit</td></tr>";
+      foreach ($config3 AS $config2) {
+        if ($config2['type'] == 'array') {
+          $config2['value'] = str_replace(',', ', ', $config2['value']);
+        }
+
+        $rows .= "<tr><td>$config2[directive]</td><td>$config2[type]</td><td>$config2[value]</td><td><a href=\"./moderate.php?do=config&do2=edit&directive=$config2[directive]\"><img src=\"./images/document-edit.png\" /></a></td></tr>";
       }
 
-      echo container('Configurations<a href="./moderate.php?do=config&do2=edit"><span class="ui-icon ui-icon-plusthick" style="float: right;" ></span></a>','<table class="page rowHover" border="1">
+      echo container('Configurations<a href="./moderate.php?do=config&do2=edit"><img src="./images/document-new.png" style="float: right;" /></a>','<table class="page rowHover" border="1">
   <thead>
     <tr class="hrow ui-widget-header">
       <td>Directive</td>
@@ -98,7 +102,7 @@ else {
   <table border="1" class="ui-widget page">
     <tr>
       <td>Directive:</td>
-      <td>' . ($config2['directive'] ? $config['directive'] : '<input type="text" name="directive" value="' . $config2['directive'] . '" />') . '</td>
+      <td>' . ($config2['directive'] ? '<input type="hidden" name="directive" value="' . $config2['directive'] . '" />' . $config2['directive'] : '<input type="text" name="directive" value="' . $config2['directive'] . '" />') . '</td>
     </tr>
     <tr>
       <td>Type:</td>
@@ -118,18 +122,17 @@ else {
 
   <button type="submit">Submit</button>
   <button type="reset">Reset</button>
-  <input type="hidden" name="directive" value="' . $config2['directive'] . '" />
 </form>');
       break;
 
       case 'edit2':
-      $config2 = $database->getConfiguration($request['directive']);
-
       if ($request['directive']) {
-        $database->modLog('deleteCensorWord', $config2['wordId']);
-        $database->fullLog('deleteCensorWord', array('config' => $config2));
+        $config2 = $database->getConfiguration($request['directive']);
 
-        $database->update("{$sqlPrefix}config", array(
+        $database->modLog('editConfigDirective', $config2['directive']);
+        $database->fullLog('editConfigDirective', array('config' => $config2));
+
+        $database->update("{$sqlPrefix}configuration", array(
           'type' => $request['type'],
           'value' => $request['value'],
         ), array(
@@ -145,7 +148,7 @@ else {
           'value' => $request['value'],
         );
 
-        $database->insert("{$sqlPrefix}config", $config2);
+        $database->insert("{$sqlPrefix}configuration", $config2);
         $config2['directive'] = $database->insertId;
 
         $database->modLog('createConfigDirective', $config2['directive']);
@@ -159,8 +162,8 @@ else {
       $config2 = $database->getConfiguration($request['directive']);
 
       if ($config2) {
-        $database->modLog('deleteCensorWord', $config2['wordId']);
-        $database->fullLog('deleteCensorWord', array('config' => $config2));
+        $database->modLog('deleteConfigDirective', $config2['directive']);
+        $database->fullLog('deleteConfigDirective', array('config' => $config2));
 
         $database->delete("{$sqlPrefix}config", array(
           'directive' => $request['directive'],

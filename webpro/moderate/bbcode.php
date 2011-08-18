@@ -66,10 +66,10 @@ else {
           $bbcode[$item] = str_replace(array('<', '>'), array(' <', '> '), nl2br(htmlentities($bbcode[$item])));
         }
 
-        $rows .= "<tr><td>$bbcode[bbcodeName]</td><td>$bbcode[searchRegex]</td><td>$bbcode[replacement]</td><td><a href=\"./moderate.php?do=bbcode&do2=edit&bbcodeId=$bbcode[bbcodeId]\">Edit</td></tr>";
+        $rows .= "<tr><td>$bbcode[bbcodeName]</td><td>$bbcode[searchRegex]</td><td>$bbcode[replacement]</td><td align=\"center\"><a href=\"./moderate.php?do=bbcode&do2=edit&bbcodeId=$bbcode[bbcodeId]\"><img src=\"./images/document-edit.png\" /></td></tr>";
       }
 
-      echo container('BBCodes<a href="./moderate.php?do=bbcode&do2=edit"><span class="ui-icon ui-icon-plusthick" style="float: right;" ></span></a>','<table class="page rowHover" border="1">
+      echo container('BBCodes<a href="./moderate.php?do=bbcode&do2=edit"><img src="./images/document-new.png" style="float: right;" /></a>','<table class="page rowHover" border="1">
   <thead>
     <tr class="hrow ui-widget-header">
       <td>BBCode</td>
@@ -132,8 +132,8 @@ else {
       $bbcode = $database->getBBCode($request['bbcodeId']);
 
       if ($request['bbcodeId']) {
-        $database->modLog('deleteBBCodeWord', $bbcode['wordId']);
-        $database->fullLog('deleteBBCodeWord', array('bbcode' => $bbcode));
+        $database->modLog('editBBCode', $bbcode['wordId']);
+        $database->fullLog('editBBCode', array('bbcode' => $bbcode));
 
         $database->update("{$sqlPrefix}bbcode", array(
           'bbcodeName' => $request['bbcodeName'],
@@ -143,7 +143,7 @@ else {
           'bbcodeId' => $request['bbcodeId'],
         ));
 
-        echo container('BBCode Updated','The bbcode has been updated.<br /><br /><form method="post" action="moderate.php?do=bbcode"><button type="submit">Return to Viewing Lists</button></form>');
+        echo container('BBCode Updated','The bbcode has been updated.<br /><br /><form method="post" action="moderate.php?do=bbcode"><button type="submit">Return to Viewing BBCode</button></form>');
       }
       else {
         $bbcode = array(
@@ -155,10 +155,10 @@ else {
         $database->insert("{$sqlPrefix}bbcode", $bbcode);
         $bbcode['bbcodeId'] = $database->insertId;
 
-        $database->modLog('createBBCodeWord', $bbcode['wordId']);
-        $database->fullLog('createBBCodeWord', array('bbcode' => $bbcode));
+        $database->modLog('createBBCode', $bbcode['wordId']);
+        $database->fullLog('createBBCode', array('bbcode' => $bbcode));
 
-        echo container('BBCode Added','The bbcode has been added.<br /><br /><form method="post" action="moderate.php?do=bbcode"><button type="submit">Return to Viewing Lists</button></form>');
+        echo container('BBCode Added','The bbcode has been added.<br /><br /><form method="post" action="moderate.php?do=bbcode"><button type="submit">Return to Viewing BBCode</button></form>');
       }
       break;
 
@@ -166,8 +166,8 @@ else {
       $bbcode = $database->getBBCode($request['bbcodeId']);
 
       if ($bbcode) {
-        $database->modLog('deleteBBCodeWord', $bbcode['wordId']);
-        $database->fullLog('deleteBBCodeWord', array('bbcode' => $bbcode));
+        $database->modLog('deleteBBCode', $bbcode['wordId']);
+        $database->fullLog('deleteBBCode', array('bbcode' => $bbcode));
 
         $database->delete("{$sqlPrefix}bbcode", array(
           'bbcodeId' => $request['bbcodeId'],

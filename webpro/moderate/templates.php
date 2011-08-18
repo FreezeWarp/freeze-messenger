@@ -87,7 +87,7 @@ else {
       $templates2 = $templates2->getAsArray(true);
 
       foreach ($templates2 AS $template) {
-        $rows .= "<tr><td>$template[templateName]</td><td><a href=\"./moderate.php?do=templates&do2=edit&templateName=$template[templateName]&interfaceId=$template[interfaceId]\">Edit</td></tr>";
+        $rows .= "<tr><td>$template[templateName]</td><td align=\"center\"><a href=\"./moderate.php?do=templates&do2=edit&templateName=$template[templateName]&interfaceId=$template[interfaceId]\"><img src=\"./images/document-edit.png\" /></td></tr>";
       }
 
       echo container('Edit Templates','<table class="page rowHover" border="1">

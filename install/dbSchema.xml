@@ -243,6 +243,7 @@
       <column name="version" type="string" maxlen="20" comment="The version of the interface." />
       <column name="fimVersion" type="string" maxlen="20" comment="The version of the FIM the interface is intended for." />
       <column name="author" type="string" maxlen="40" comment="The name of the author who created the interface." />
+      <column name="hooks" type="string" maxlen="4294967296" comment="A list of hooks supported by the interface." />
 
       <key name="interfaceId" type="primary" />
     </table>
@@ -401,7 +402,7 @@
 
 
     <table name="uploadTypes" type="general" comment="Admin-defined mime types to corrospond to file types of uploaded files.">
-      <column name="typeId" type="int" maxlen="6" autoincrement="true" comment="The unique ID for the room." />
+      <column name="typeId" type="int" maxlen="6" autoincrement="true" comment="The unique ID for the file type." />
       <column name="extension" type="string" maxlen="8" comment="The extension that will allow upload of files using these settings." />
       <column name="mime" type="string" maxlen="300" comment="The content type to output files of this type as." />
       <column name="maxSize" type="int" maxlen="12" comment="The maximum size (in bytes) files of this type can be." />

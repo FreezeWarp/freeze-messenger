@@ -92,6 +92,8 @@
     <phrase name="settingsDefaultFormattingPreview">Here's a Preview!</phrase>
     <phrase name="settingsDefaultRoomBlurb">This changes what room defaults when you first visit FreezeMessenger</phrase>
     <phrase name="settingsDefaultRoomLabel">Default Room:</phrase>
+    <phrase name="settingsDefaultRoomBlurb">This changes the volume of the audio ding played when a new message is received.</phrase>
+    <phrase name="settingsDefaultRoomLabel">Audio Volume:</phrase>
     <phrase name="settingsDisableFormattingBlurb">This will disable default formatting some users use on their messages.</phrase>
     <phrase name="settingsDisableFormattingLabel">Disable Formatting:</phrase>
     <phrase name="settingsDisableFxBlurb">Disabling effects can lead to a performance and a reduction of "client-side" lag (that not related to the server). It has no side-effects, aside from not looking as pretty.</phrase>

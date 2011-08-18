@@ -120,7 +120,7 @@ else {
 
         $phrase['text'] = str_replace(array('<', '>'), array(' <', '> '), nl2br(htmlentities($phrase['text'])));
 
-        $rows .= "<tr><td>$phrase[phraseName]</td><td>$phrase[text]</td><td><a href=\"./moderate.php?do=phrases&do2=edit&phraseName=$phrase[phraseName]&interfaceId=$phrase[interfaceId]&languageCode=$phrase[languageCode]\">Edit</td></tr>";
+        $rows .= "<tr><td>$phrase[phraseName]</td><td>$phrase[text]</td><td align=\"center\"><a href=\"./moderate.php?do=phrases&do2=edit&phraseName=$phrase[phraseName]&interfaceId=$phrase[interfaceId]&languageCode=$phrase[languageCode]\"><img src=\"./images/document-edit.png\" /></td></tr>";
       }
 
       echo container('Edit Phrases','<table class="page rowHover" border="1">
