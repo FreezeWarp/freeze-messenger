@@ -364,14 +364,17 @@ function fimParse_htmlWrap($html, $maxLength = 80, $char = '<br />') { /* An ada
 
 function fim3parse_keyWords($string, $messageId, $roomId) {
   global $config, $sqlPrefix, $database, $user;
+  $puncList = array();
 
-  foreach ($config['searchWordPunctuation'] AS $punc) {
-    $puncList[] = addcslashes($punc, '"\'|(){}[]<>.,~-?!@#$%^&*/\\'); // Dunno if this is the best approach.
+  if (count($config['searchWordPunctuation']) > 0) {
+    foreach ($config['searchWordPunctuation'] AS $punc) {
+      $puncList[] = addcslashes($punc, '"\'|(){}[]<>.,~-?!@#$%^&*/\\'); // Dunno if this is the best approach.
+    }
+
+    $string = preg_replace('/(' . implode('|', $puncList) . ')/is', ' ', $string);
   }
 
-  $string = preg_replace('/(' . implode('|', $puncList) . ')/is', ' ', $string);
-
-  while (strpos($string,'  ') !== false) {
+  while (strpos($string, '  ') !== false) {
     $string = str_replace('  ', ' ', $string);
   }
 
@@ -400,7 +403,7 @@ function fim3parse_keyWords($string, $messageId, $roomId) {
       )
     );
     $phraseData = $phraseData->getAsArray('phraseName');
-
+error_log(print_r($stringPiecesAdd, true));
 
     foreach ($stringPiecesAdd AS $piece) {
       if (!isset($phraseData[$piece])) {

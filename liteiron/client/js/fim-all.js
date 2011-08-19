@@ -18,7 +18,195 @@
 
 
 * Needed Changes:
-  * Consistency in use of templates+raw HTML. */
+  * Consistency in use of templates+raw HTML.
+  * Password Encryption */
+
+
+
+
+
+
+/*********************************************************
+************************ START **************************
+******************** Base Variables *********************
+*********************************************************/
+
+
+/* Requirements */
+
+if (false === ('JSON' in window)) {
+  window.location.href = 'browser.php';
+
+  throw new Error('Your browser does not seem to support JSON objects. The script has exited.');
+}
+else if (false === ('btoa' in window)) {
+  window.location.href = 'browser.php';
+
+  throw new Error('Your browser does not seem to support Base64 operations. The script has exited.');
+}
+else if (false === ('encodeURIComponent' in window)) {
+  window.location.href = 'browser.php';
+
+  throw new Error('Your browser does not seem to support encodeURI operations. The script has exited.');
+}
+else if (false === ('onhashchange' in window)) {
+  window.location.href = 'browser.php';
+
+  throw new Error('Your browser does not seem to support onhashchange operations. The script has exited.');
+}
+
+
+
+/* Common Variables */
+
+var userId, // The user ID who is logged in.
+  roomId, // The ID of the room we are in.
+  sessionHash, // The session hash of the active user.
+  anonId, // ID used to represent anonymous posters.
+  prepopup;
+
+
+
+/* Function-Specific Variables */
+
+window.isBlurred = false; // By default, we assume the window is active and not blurred.
+var topic,
+  favicon = $('#favicon').attr('href'),
+  uploadSettings = {}, // Object
+  requestSettings = {
+    longPolling : false, // We may set this to true if the server supports it.
+    timeout : 2400, // We may increase this dramatically if the server supports longPolling.
+    firstRequest : true,
+    totalFails : 0,
+    lastMessage : 0,
+    lastEvent : 0
+  },
+  timers = {t1 : false}; // Object
+
+
+
+/* Objects for Cleanness, Caching. */
+
+var roomRef = {}, // Object
+  roomIdRef = {}, // Object
+  roomList = [], // Array
+  modRooms = {}, // Object // Rooms which the user has special permissions in.
+
+  userRef = {}, // Object
+  userIdRef = {}, // Object
+  userList = [], // Array
+
+  groupRef = {}, // Object
+  groupList = [], // Array
+  groupIdRef = {}, // Object
+
+  fontIdRef = {}, // Object
+
+  messageIndex = [], // Array
+
+  roomUlFavHtml = '',
+  roomUlMyHtml = '',
+  roomUlPrivHtml = '',
+  roomUlHtml = '',
+  ulText = '',
+  roomTableHtml = '',
+  roomSelectHtml = '',
+
+  userSelectHtml = '',
+
+  fontSelectHtml = '',
+
+  active = {}, // Object which will be used to store various JSON results
+  uploadFileTypes = {};
+
+
+
+/* Get Cookies */
+
+// Theme (goes into effect in document.ready)
+var theme = $.cookie('fim3_theme');
+
+if (!theme) {
+  theme = 'cupertino';
+}
+
+// Font Size (goes into effect in document.ready)
+var fontsize = $.cookie('fim3_fontsize');
+
+// Settings Bitfield (goes into effect all over the place)
+if ($.cookie('fim3_settings') === null) {
+  var settingsBitfield = 8192;
+}
+else if (Number($.cookie('fim3_settings'))) {
+  var settingsBitfield = Number($.cookie('fim3_settings'));
+}
+else {
+  var settingsBitfield = 0;
+  $.cookie('fim3_settings',0);
+}
+
+// Audio File (a hack I placed here just for fun)
+if (typeof Audio !== 'undefined') {
+  var snd = new Audio();
+
+  if ($.cookie('fim3_audioFile') !== null) {
+    audioFile = $.cookie('fim3_audioFile');
+  }
+  else {
+    if (snd.canPlayType('audio/ogg; codecs=vorbis')) {
+      audioFile = 'images/beep.ogg';
+    }
+    else if (snd.canPlayType('audio/mp3')) {
+      audioFile = 'images/beep.mp3';
+    }
+    else if (snd.canPlayType('audio/wav')) {
+      audioFile = 'images/beep.wav';
+    }
+    else {
+      audioFile = '';
+
+      console.log('Audio Disabled');
+    }
+  }
+
+  snd.setAttribute('src', audioFile);
+
+  // Audio Volume
+  if ($.cookie('fim3_audioVolume') !== null) {
+    snd.volume = $.cookie('fim3_audioVolume') / 100;
+  }
+  else {
+    snd.volume = .5;
+  }
+}
+else {
+  snd = {
+    play : function() { return false; },
+    volume : 0
+  }
+}
+
+/* Get the absolute API path.
+* TODO: Define this in a more "sophisticated manner". */
+
+var directoryPre = window.location.pathname;
+directoryPre = directoryPre.split('/');
+directoryPre.pop();
+directoryPre.pop();
+directoryPre = directoryPre.join('/');
+
+var directory = directoryPre + '/';
+var currentLocation = window.location.origin + directory + 'webpro/';
+
+
+/*********************************************************
+************************* END ***************************
+******************** Base Variables *********************
+*********************************************************/
+
+
+
+
 
 
 
@@ -28,12 +216,8 @@
 ******************* Static Functions ********************
 *********************************************************/
 
-function unxml(data) {
-  return data.replace(/\&lt\;/g,'<',data).replace(/\&gt\;/g,'>',data).replace(/\&apos\;/g,"'",data).replace(/\&quot\;/g,'"',data);
-}
-
-function urlEncode(data) {
-  return data.replace(/\+/g,'%2b').replace(/\&/g,'%26').replace(/\%/g,'%25').replace(/\n/g,'%20');
+function urlencode(str) {
+  return encodeURIComponent(str).replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%20/g, '+');
 }
 
 function toBottom() {
@@ -42,186 +226,269 @@ function toBottom() {
   return false;
 }
 
+function faviconFlash() {
+  if ($('#favicon').attr('href') === 'images/favicon.ico') {
+    $('#favicon').attr('href', 'images/favicon2.ico');
+  }
+  else {
+    $('#favicon').attr('href', 'images/favicon.ico');
+  }
 
-if (typeof console != 'object' || typeof console.log != 'function') {
-  console = {
+  return false;
+}
+
+function messageFormat(json, format) {
+  var mjson = json.messageData,
+    ujson = json.userData,
+    data,
+    text = mjson.messageText.htmlText,
+    messageTime = mjson.messageTimeFormatted,
+    messageId = mjson.messageId,
+
+    userName = ujson.userName,
+    userId = ujson.userId,
+    groupFormatStart = ujson.startTag,
+    groupFormatEnd = ujson.endTag,
+    avatar = ujson.avatar,
+
+    styleColor = ujson.defaultFormatting.color,
+    styleHighlight = ujson.defaultFormatting.highlight,
+    styleFontface = ujson.defaultFormatting.fontface,
+    styleGeneral = ujson.defaultFormatting.general,
+    style = '',
+
+    flag = mjson.flags;
+
+  switch (flag) {
+    case 'me':
+    text = text.replace(/^\/me/,'');
+
+    if (settings.disableFormatting) {
+      text = '<span style="padding: 10px;">* ' + userName + ' ' + text + '</span>';
+    }
+    else {
+      text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' ' + text + '</span>';
+    }
+    break;
+
+    case 'topic':
+    text = text.replace(/^\/me/,'');
+
+    $('#topic').html(text);
+
+    if (settings.disableFormatting) {
+      text = '<span style="padding: 10px;">* ' + userName + ' ' + text + '</span>';
+    }
+    else {
+      text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' ' + text + '</span>';
+    }
+    break;
+
+    case 'image':
+    if (settings.disableImage) {
+      text = '<a href="' + text + '" target="_BLANK">[Image]</a>';
+    }
+    else {
+      text = '<a href="' + text + '" target="_BLANK"><img src="' + text + '" style="max-width: 250px; max-height: 250px;" /></a>';
+    }
+    break;
+
+    case 'video':
+    if (settings.disableVideo) {
+      text = '<a href="' + text + '" target="_BLANK">[Video]</a>';
+    }
+    else {
+      text = '<video src="' + text + '" controls></video><br /><small><a href="'+ text + '">If you can not see the above link, click here.</a></small>';
+    }
+    break;
+
+    case 'audio':
+    if (settings.disableVideo) {
+      text = '<a href="' + text + '" target="_BLANK">[Video]</a>';
+    }
+    else {
+      text = '<audio src="' + text + '" controls></video><br /><small><a href="'+ text + '">If you can not see the above link, click here.</a></small>';
+    }
+    break;
+
+    case 'youtube':
+    if (text.match(/http\:\/\/(www\.|)youtube\.com\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/) !== null) {
+      var code = text.replace(/http\:\/\/(www\.|)youtube\.com\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/i, "$4");
+    }
+    else if (text.match(/http\:\/\/(www\.|)youtu\.be\/([a-zA-Z0-9]+)/) !== null) {
+      var code = text.replace(/http\:\/\/(www\.|)youtu\.be\/([a-zA-Z0-9]+)/i, "$2");
+    }
+    else {
+      var code = false;
+      text = '<span style="color: red; font-style: oblique;">[Invalid Youtube Video]</span>';
+    }
+
+
+    if (code) {
+      if (settings.disableVideo) {
+        text = '<a href="https://www.youtu.be/' + code + '" target="_BLANK">[Youtube Video]</a>';
+      }
+      else {
+        text = '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>';
+      }
+    }
+    break;
+
+    case 'email':
+    text = '<a href="mailto: ' + text + '" target="_BLANK">' + text + '</a>';
+    break;
+
+    case 'url':
+    text = '<a href="' + text + '" target="_BLANK">' + text + '</a>';
+    break;
+
+    case '':
+    text = text.replace(/((http|https|ftp|data|gopher|sftp|ssh):(\/\/|)(.+?\.|)([a-zA-Z\-]+)\.(aero|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|xxx)((\/)([^ \n\<\>\"]*)([^\?\.\! \n])|))(?!\")(?!\])/,'<a href="$1">$1</a>');
+
+    if (!settings.disableFormatting) {
+      style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + fontIdRef[styleFontface] + ';';
+
+      if (styleGeneral & 256) {
+        style += 'font-weight: bold;';
+      }
+      if (styleGeneral & 512) {
+        style += 'font-style: oblique;';
+      }
+      if (styleGeneral & 1024) {
+        style += 'text-decoration: underline;';
+      }
+      if (styleGeneral & 2048) {
+        style += 'text-decoration: line-through;';
+      }
+    }
+    break;
+  }
+
+  switch (format) {
+    case 'table':
+    data = '<tr id="archiveMessage' + messageId + '"><td>' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageid="' + messageId + '">' + text + '</td><td><a href="javascript:void();" data-messageId="' + messageId + '" class="updateArchiveHere">Show</a></td></tr>';
+    break;
+
+    case 'list':
+    if (settings.showAvatars) {
+      data = '<span id="message' + messageId + '" class="messageLine messageLineAvatar"><span class="userName userNameTable userNameAvatar" data-userId="' + userId + '"><img alt="' + userName + '" src="' + avatar + '" /></span><span style="' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
+    }
+    else {
+      data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
+    }
+    break;
+  }
+
+
+  return data;
+}
+
+function fileFormat(container, file) {
+
+}
+
+
+/* ? */
+function newMessage() {
+  if (settings.reversePostOrder) {
+    toBottom();
+  }
+
+  if (window.isBlurred) {
+    if (settings.audioDing) {
+      snd.play();
+    }
+
+    window.clearInterval(timers.t3);
+    timers.t3 = window.setInterval(faviconFlash, 1000);
+
+    if (typeof window.external === 'object') {
+      if (typeof window.external.msIsSiteMode !== 'undefined' && typeof window.external.msSiteModeActivate !== 'undefined') {
+        try {
+          if (window.external.msIsSiteMode()) {
+            window.external.msSiteModeActivate(); // Task Bar Flashes
+          }
+        }
+        catch(ex) {
+          // Ya know, its very weird IE insists on this when the "in" statement works just as well...
+        }
+      }
+    }
+  }
+
+  contextMenuParse();
+}
+
+
+function messagePopup(data) {
+  if (typeof notify != 'undefined') {
+    if (typeof window.webkitNotifications === 'object') {
+      notify.webkitNotify('images/favicon.ico', 'New Message', data);
+    }
+  }
+}
+
+
+/* URL-Defined Actions
+* TODO */
+
+function hashParse() {
+  var urlHash = window.location.hash,
+    urlHashComponents = urlHash.split('#'),
+    page = '', // String
+    i = 0,
+    componentPieces = [],
+    messageId = 0;
+
+  for (i = 0; i < urlHashComponents.length; i += 1) {
+    if (urlHashComponents[i]) {
+      componentPieces = urlHashComponents[i].split('=');
+      switch (componentPieces[0]) {
+        case 'page':
+        page = componentPieces[1];
+        break;
+
+        case 'room':
+        roomId = componentPieces[1];
+        break;
+
+        case 'message':
+        messageId = componentPieces[1];
+        break;
+      }
+    }
+  }
+
+  switch (page) {
+    case 'archive':
+    prepopup = function() {
+      popup.archive({
+        'roomId' : roomId,
+        'idMin' : messageId - 1
+      });
+    };
+    break;
+
+    default:
+    if (roomId) {
+      if (!requestSettings.firstRequest) {
+        standard.changeRoom(roomId); // We only need to call this if we have already obtained messages.
+      }
+    }
+    break;
+  }
+}
+
+if (typeof console !== 'object' || typeof console.log !== 'function') {
+  var console = {
     log : function() {
       return false;
     }
   };
 }
 
-
-dia = {
-  error : function(message) {
-    $('<div style="display: none;">' + message + '</div>').dialog({
-      title : 'Error',
-      modal : true,
-      buttons: {
-        Close: function() {
-          $( this ).dialog( "close" );
-
-          return false;
-        }
-      }
-    });
-  },
-
-  info : function(message, title) {
-    $('<div style="display: none;">' + message + '</div>').dialog({
-      title : title,
-      modal : true,
-      buttons: {
-        Okay : function() {
-          $(this).dialog( "close" );
-
-          return false;
-        }
-      }
-    });
-  },
-
-  confirm : function(options) {
-    $('<div id="dialog-confirm"><span class="ui-icon ui-icon-alert" style="float: left; margin: 0px 7px 20px 0px;"></span>' + options.text + '</div>').dialog({
-      resizable: false,
-      height: 240,
-      modal: true,
-      hide: "puff",
-      buttons: {
-        Confirm: function() {
-          if ('true' in options) {
-            options['true']();
-          }
-
-          $(this).dialog("close");
-          return true;
-        },
-        Cancel: function() {
-          if ('false' in options) {
-            options['false']();
-          }
-
-          $(this).dialog("close");
-          return false;
-        }
-      }
-    });
-  },
-
-  // Supported options: autoShow (true), id, content, width (600), oF, cF
-  full : function(options) {
-    var ajax;
-
-    if (options.uri) {
-      options.content = '<img src="images/ajax-loader.gif" align="center" />';
-
-      ajax = true;
-    }
-    else if (options.content) {
-    }
-    else {
-      console.log('No content found for dialog; exiting.');
-
-      return false;
-    }
-
-    if (typeof options.autoOpen != 'undefined' && options.autoOpen == false) {
-      var autoOpen = false;
-    }
-    else {
-      var autoOpen = true;
-    }
-
-    var windowWidth = document.documentElement.clientWidth;
-    if (options.width > windowWidth) {
-      options.width = windowWidth;
-    }
-    else if (!options.width) {
-      options.widthwidth = 600;
-    }
-
-    var dialogOptions = {
-      width: options.width,
-      title: options.title,
-      hide: "puff",
-      modal: true,
-      buttons : options.buttons,
-      autoOpen: autoOpen,
-      open: function() {
-        if ('oF' in options) {
-          options['oF']();
-        }
-
-        return false
-      },
-      close: function() {
-        $('#' + options.id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
-        if ('cF' in options) {
-          options['cF']();
-        }
-
-        return false
-      }
-    };
-
-    var tabsOptions = {
-      selected : options.selectTab
-    };
-
-
-    var dialog = $('<div style="display: none;" id="' + options.id +  '">' + options.content + '</div>').appendTo('body');
-
-
-
-    if (ajax) {
-      var overlay = $('<div class="ui-widget-overlay"></div>').appendTo('body').width($(document).width()).height($(document).height());
-      var throbber = $('<img src="images/ajax-loader.gif" />').appendTo('body').css('position','absolute').offset({ left : (($(window).width() - 220) / 2), top : (($(window).height() - 19) / 2)});
-
-      $.ajax({
-        url : options.uri,
-        type : "GET",
-        timeout : 5000,
-        cache : true,
-        success : function(content) {
-          overlay.empty().remove();
-          throbber.empty().remove();
-
-          dialog.html(content);
-
-          if (options.tabs) {
-            dialog.tabbedDialog(dialogOptions,tabsOptions);
-          }
-          else {
-            dialog.dialog(dialogOptions);
-          }
-
-          windowDraw();
-
-          return false;
-        },
-        error : function() {
-          overlay.empty().remove();
-          throbber.empty().remove();
-
-          dialog.dialog('close');
-
-          dia.error('Could not request dialog URI.');
-
-          return false;
-        }
-      });
-    }
-    else {
-      if (options.tabs) {
-        dialog.tabbedDialog(dialogOptions,tabsOptions);
-      }
-      else {
-        dialog.dialog(dialogOptions);
-      }
-
-      windowDraw();
-    }
-  }
+var alert = function(text) {
+  dia.info(text,"Alert");
 };
 
 /*********************************************************
@@ -241,143 +508,62 @@ dia = {
 ******************* Variable Setting ********************
 *********************************************************/
 
-/* Common Variables */
-
-var userId; // The user ID who is logged in.
-var roomId; // The ID of the room we are in.
-var sessionHash; // The session hash of the active user.
-var anonId; // ID used to represent anonymous posters.
-var prepopup;
-
-
-
-/* Function-Specific Variables */
-
-window.isBlurred = false; // By default, we assume the window is active and not blurred.
-var topic;
-var notify = true;
-var favicon = $('#favicon').attr('href');
-
-var uploadSettings = new Object;
-var requestSettings = {
-  longPolling : false, // We may set this to true if the server supports it.
-  timeout : 2400, // We may increase this dramatically if the server supports longPolling.
-  firstRequest : true,
-  totalFails : 0,
-  lastMessage : 0
-};
-var timers = new Object;
-
-
-
-/* Get Cookies */
-
-var layout = $.cookie('fim3_layout'); // TODO
-var themeId = parseInt($.cookie('fim3_themeId'));
-
-
-if (parseInt($.cookie('fim3_settings'))) {
-  var settingsBitfield = parseInt($.cookie('fim3_settings'));
-}
-else {
-  var settingsBitfield = 0;
-  $.cookie('fim3_settings',0);
-}
-
-if ($.cookie('fim3_sessionHash')) {
-  sessionHash = $.cookie('fim3_sessionHash');
-  userId = $.cookie('fim3_userId');
-}
-
-
-
-/* Get the absolute API path.
-* TODO: Define this in a more "sophisticated manner". */
-
-var directoryPre = window.location.pathname;
-directoryPre = directoryPre.split('/');
-directoryPre.pop();
-directoryPre.pop();
-directoryPre = directoryPre.join('/');
-
-var directory = directoryPre + '/';
-var currentLocation = window.location.origin + directory + 'interface/';
-
-
-
 /* Get Server-Specific Variables
 * We Should Not Call This Again */
 
 $.ajax({
-  url: directory + 'api/getServerStatus.php',
+  url: directory + 'api/getServerStatus.php?fim3_format=json',
   type: 'GET',
-  timeout: 5000,
-  cache: false,
-  success: function(xml) {
-    requestSettings.longPolling = ($(xml).find('serverStatus > requestMethods > longPoll').text().trim() == 'true' ? true : false);
+  timeout: 1000,
+  dataType: 'json',
+  success: function(json) {
+    requestSettings.longPolling = json.getServerStatus.serverStatus.requestMethods.longPoll;
+
+    if (typeof window.EventSource == 'undefined') {
+      requestSettings.serverSentEvents = false;
+    }
+    else {
+      requestSettings.serverSentEvents = json.getServerStatus.serverStatus.requestMethods.serverSentEvents;
+    }
 
     return false;
   },
   error: function() {
     requestSettings.longPolling = false;
+    requestSettings.serverSentEvents = false;
 
     return false;
   }
 });
 
+$.ajax({
+  url: directory + 'api/getFileTypes.php?fim3_format=json',
+  type: 'GET',
+  timeout: 1000,
+  dataType: 'json',
+  success: function(json) {
+    console.log('Upload file types obtained.');
 
+    active = json.getFileTypes.fileTypes;
 
-/* URL-Defined Actions
- * TODO */
-
-function hashParse() {
-  var urlHash = window.location.hash;
-  var urlHashComponents = urlHash.split('#');
-  var page = '';
-
-  for (var i = 0; i < urlHashComponents.length; i++) {
-    if (!urlHashComponents[i]) {
-      continue;
+    for (i in active) {
+      uploadFileTypes[active[i].extension] = {
+        extension : active[i].extension,
+        maxSize : active[i].maxSize,
+        mime : active[i].mime,
+        container : active[i].container,
+      }
     }
-
-    var componentPieces = urlHashComponents[i].split('=');
-    switch (componentPieces[0]) {
-      case 'page':
-      page = componentPieces[1]
-      break;
-
-      case 'room':
-      roomId = componentPieces[1];
-      break;
-
-      case 'message':
-      messageId = componentPieces[1];
-      break;
-    }
+  },
+  error: function() {
+    dia.error('Upload file types not retrieved.');
   }
-
-  switch (page) {
-    case 'archive':
-    prepopup = function() {
-      popup.archive({
-        'roomId' : roomId,
-        'idMin' : messageId - 1,
-      });
-    };
-    break;
-    default:
-    if (roomId) {
-      standard.changeRoom(roomId);
-    }
-    break;
-  }
-}
+});
 
 
 
 /* Permission Dead Defaults
 * Specifically, These All Start False then Change on-Login */
-
 var userPermissions = {
   createRoom : false,
   privateRoom : false
@@ -399,69 +585,19 @@ var adminPermissions = {
 
 /* Settings
 * These Are Set Based on Cookies */
-
 var settings = {
-  disableFx : (settingsBitfield & 16384 ? true : false), // Disable jQuery Effects?
-  audioDing : (settingsBitfield & 8192 ? true : false), // Fire an HTML5 audio ding during each unread message?
-  showAvatars : (settingsBitfield & 2048 ? true : false), // Use the complex document style?
-  reversePostOrder : (settingsBitfield & 1024 ? true : false), // Show posts in reverse?
-  disableImages : (settingsBitfield & 32 ? true : false),
+  disableFormatting : (settingsBitfield & 16 ? true : false),
+  disableImage : (settingsBitfield & 32 ? true : false),
   disableVideos : (settingsBitfield & 64 ? true : false),
-  disableFormatting : (settingsBitfield & 16 ? true : false)
+  reversePostOrder : (settingsBitfield & 1024 ? true : false), // Show posts in reverse?
+  showAvatars : (settingsBitfield & 2048 ? true : false), // Use the complex document style?
+  audioDing : (settingsBitfield & 8192 ? true : false), // Fire an HTML5 audio ding during each unread message?
+  disableFx : (settingsBitfield & 16384 ? true : false), // Disable jQuery Effects?
+  webkitNotifications : (settingsBitfield & 32768 ? true : false),
+  disableRightClick : (settingsBitfield & 65536 ? true : false)
 };
 
 
-
-/* Apply CSS Styling Dynamically
-* Added Bonus: It's Hard Not To Know When the Script is Broken */
-
-var themes = {
-  1 : 'ui-darkness',
-  2 : 'ui-lightness',
-  3 : 'redmond',
-  4 : 'cupertino',
-  5 : 'dark-hive',
-  6 : 'start',
-  7 : 'vader',
-  8 : 'trontastic',
-  9 : 'humanity'
-};
-
-var themeName = (themeId ? themes[themeId] : 'cupertino');
-
-$('head').append('<link rel="stylesheet" type="text/css" id="stylesjQ" href="client/css/' + themeName + '/jquery-ui-1.8.13.custom.css" media="screen" />');
-$('head').append('<link rel="stylesheet" type="text/css" id="stylesFIM" href="client/css/' + themeName + '/fim.css" media="screen" />');
-$('head').append('<link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" media="screen" />');
-
-
-
-/* Objects for Cleanness, Caching. */
-
-var roomRef = new Object;
-var roomIdRef = new Object;
-var roomList = new Array;
-var modRooms = new Object; // Rooms which the user has special permissions in.
-
-var userRef = new Object;
-var userIdRef = new Object;
-var userList = new Array;
-
-var groupRef = new Object;
-var groupList = new Array;
-var groupIdRef = new Object;
-
-var messageIndex = new Array;
-
-
-var roomUlFavHtml = '';
-var roomUlMyHtml = '';
-var roomUlPrivHtml = '';
-var roomUlHtml = '';
-var ulText = '';
-var roomTableHtml = '';
-var roomSelectHtml = '';
-
-var userSelectHtml = '';
 
 
 /*********************************************************
@@ -484,30 +620,30 @@ var userSelectHtml = '';
 function populate(options) {
   $.when(
     $.ajax({
-      url: directory + 'api/getUsers.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+      url: directory + 'api/getUsers.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
       type: 'GET',
       timeout: 5000,
       cache: false,
-      success: function(xml) {
-        userList = new Array; // Clear so we don't get repeat values on regeneration.
-        userRef = new Object;
+      success: function(json) {
+        userList = []; // Array // Clear so we don't get repeat values on regeneration.
+        userRef = {}; // Object
         userSelectHtml = '';
+        active = json.getUsers.users;
 
         console.log('Users obtained.');
-
-        $(xml).find('user').each(function() {
-          var userName = unxml($(this).find('userName').text().trim());
-          var userId = parseInt($(this).find('userId').text().trim());
+        for (i in active) {
+          var userName = active[i].userName,
+            userId = active[i].userId;
 
           userRef[userName] = userId;
           userIdRef[userId] = userName;
           userList.push(userName);
-        });
+        }
 
         return false;
       },
       error: function() {
-        console.log('Users Not Obtained - Problems May Occur');
+        alert('Users Not Obtained - Problems May Occur');
 
         return false;
       }
@@ -515,14 +651,14 @@ function populate(options) {
 
 
     $.ajax({
-      url: directory + 'api/getRooms.php?permLevel=view&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+      url: directory + 'api/getRooms.php?permLevel=view&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
       timeout: 5000,
       type: 'GET',
       cache: false,
-      success: function(xml) {
-        roomList = new Array; // Clear so we don't get repeat values on regeneration.
-        roomIdRef = new Object;
-        roomRef = new Object;
+      success: function(json) {
+        roomList = []; // Array // Clear so we don't get repeat values on regeneration.
+        roomIdRef = {}; // Object
+        roomRef = {}; // Object
         roomTableHtml = '';
         roomSelectHtml = '';
         roomUlHtml = '';
@@ -530,35 +666,40 @@ function populate(options) {
         roomUlMyHtml = '';
         roomUlFavHtml = '';
 
-        $(xml).find('room').each(function() {
-          var roomName = unxml($(this).find('roomName').text().trim());
-          var roomId = parseInt($(this).find('roomId').text().trim());
-          var roomTopic = unxml($(this).find('roomTopic').text().trim());
-          var isFav = ($(this).find('favorite').text().trim() == 'true' ? true : false);
-          var isPriv = ($(this).find('optionDefinitions > privateIm').text().trim() == 'true' ? true : false);
-          var isAdmin = ($(this).find('canAdmin').text().trim() === 'true' ? true : false);
-          var isModerator = ($(this).find('canModerate').text().trim() === 'true' ? true : false);
-          var isOwner = (parseInt($(this).find('owner').text().trim()) == userId ? true : false);
+        active = json.getRooms.rooms;
 
-          var ulText = '<li><a href="#room=' + roomId + '">' + roomName + '</a></li>';
+        for (i in active) {
+          var roomName = active[i].roomName,
+            roomId = active[i].roomId,
+            roomTopic = active[i].roomTopic,
+            isFav = active[i].favorite,
+            isPriv = active[i].optionDefinitions.privateIm,
+            isAdmin = active[i].permissions.canAdmin,
+            isModerator = active[i].permissions.canModerate,
+            messageCount = active[i].messageCount,
+            isOwner = (active[i].owner === userId ? true : false),
+            ulText = '<li><a href="#room=' + roomId + '">' + roomName + '</a></li>';
 
           if (isFav) {
             roomUlFavHtml += ulText;
           }
-          if (isOwner && !isPriv) {
+          else if (isOwner && !isPriv) {
             roomUlMyHtml += ulText;
           }
-          if (isPriv) {
+          else if (isPriv) {
             roomUlPrivHtml += ulText;
           }
-          if (!isFav && !isOwner && !isPriv) {
+          else {
             roomUlHtml += ulText;
           }
 
-          roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isAdmin ? '<button data-roomId="' + roomId + '" class="editRoomMulti standard"></button><button data-roomId="' + roomId + '" class="deleteRoomMulti standard"></button>' : '') + '<button data-roomId="' + roomId + '" class="archiveMulti standard"></button><input type="checkbox" ' + (isFav ? 'checked="checked" ' : '') + ' data-roomId="' + roomId + '" class="favRoomMulti standard" /></td></tr>';
+          roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isAdmin ? '<button data-roomId="' + roomId + '" class="editRoomMulti standard"></button><button data-roomId="' + roomId + '" class="deleteRoomMulti standard"></button>' : '') + '<button data-roomId="' + roomId + '" class="archiveMulti standard"></button><input type="checkbox" ' + (isFav ? 'checked="checked" ' : '') + ' data-roomId="' + roomId + '" class="favRoomMulti" id="favRoom' + roomId + '" /><label for="favRoom' + roomId + '" class="standard"></label></td></tr>';
 
           roomRef[roomName] = roomId;
-          roomIdRef[roomId] = roomName;
+          roomIdRef[roomId] = {
+            'roomName' : roomName,
+            'messageCount' : messageCount
+          }
           roomList.push(roomName);
 
           if (isAdmin) {
@@ -570,20 +711,20 @@ function populate(options) {
           else {
             modRooms[roomId] = 0;
           }
-        });
+        }
 
         $('#roomListLong > li > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li><li>My Rooms<ul>' + roomUlMyHtml + '</ul></li><li>General<ul>' + roomUlHtml + '</ul></li><li>Private<ul>' + roomUlPrivHtml + '</ul></li>');
 
         $('#roomListShort > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li>');
 
-        $('#roomName').html(roomIdRef[roomId]);
+        $('#roomName').html(roomIdRef[roomId].roomName);
 
         console.log('Rooms obtained.');
 
         return false;
       },
       error: function() {
-        console.log('Rooms Not Obtained - Problems May Occur');
+        alert('Rooms Not Obtained - Problems May Occur');
 
         return false;
       }
@@ -591,31 +732,59 @@ function populate(options) {
 
 
     $.ajax({
-      url: directory + 'api/getGroups.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+      url: directory + 'api/getGroups.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
       timeout: 5000,
       type: 'GET',
       cache: false,
-      success: function(xml) {
+      success: function(json) {
         console.log('Groups obtained.');
 
-        $(xml).find('group').each(function() {
-          var groupName = unxml($(this).find('groupName').text().trim());
-          var groupId = parseInt($(this).find('groupId').text().trim());
+        active = json.getGroups.groups;
+        for (i in active) {
+          var groupName = active[i].groupName,
+            groupId = active[i].groupId;
 
           groupRef[groupName] = groupId;
           groupIdRef[groupId] = groupName;
           groupList.push(groupName);
-        });
+        }
 
         return false;
       },
       error: function() {
-        console.log('Groups Not Obtained - Problems May Occur');
+        alert('Groups Not Obtained - Problems May Occur');
+
+        return false;
+      }
+    }),
+
+    $.ajax({
+      url: directory + 'api/getFonts.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+      timeout: 5000,
+      type: 'GET',
+      cache: false,
+      success: function(json) {
+        active = json.getFonts.fonts;
+
+        for (i in active) {
+          var fontName = active[i].fontName,
+            fontId = active[i].fontId,
+            fontGroup = active[i].fontGroup,
+            fontData = active[i].fontData;
+
+          fontSelectHtml += '<option value="' + fontId + '" style="' + fontData + '" data-font="' + fontData + '">' + fontName + '</option>';
+          fontIdRef[fontId] = fontName;
+        }
+
+        return false;
+      },
+      error: function() {
+        dia.error('The list of fonts could not be obtained from the server.');
 
         return false;
       }
     })
-  ).done(function() {
+  ).always(function() {
       if (typeof options.callback === 'function') {
         options.callback();
       }
@@ -652,12 +821,13 @@ function youtubeSend(id) { // TODO
 
 function updateVids(searchPhrase) {
   jQTubeUtil.search(searchPhrase, function(response) {
-    var html = "";
-    var num = 0;
+    var html = "",
+      num = 0,
+      video;
 
     for (vid in response.videos) {
-      var video = response.videos[vid];
-      num ++;
+      video = response.videos[vid];
+      num += 1;
 
       if (num % 3 === 1) {
         html += '<tr>';
@@ -684,43 +854,47 @@ function updateVids(searchPhrase) {
 
 
 autoEntry = {
-  addEntry : function(type,source,id) {
+  addEntry : function(type, source, id) {
+    var val,
+      type2;
+
     if (!id) {
-      var val = $("#" + type + "Bridge").val();
+      val = $("#" + type + "Bridge").val();
       switch(type) {
         case 'watchRooms':
-        var id = roomRef[val];
-        var type2 = 'Room';
+        id = roomRef[val];
+        type2 = 'Room';
         break;
 
         case 'moderators':
         case 'allowedUsers':
-        var id = userRef[val];
-        var type2 = 'User';
+        case 'ignoreList':
+        id = userRef[val];
+        type2 = 'User';
         break;
 
         case 'allowedGroups':
-        var id = groupRef[val];
-        var type2 = 'Group';
+        id = groupRef[val];
+        type2 = 'Group';
         break;
       }
     }
     else {
       switch(type) {
         case 'watchRooms':
-        var val = roomIdRef[id];
-        var type2 = 'Room';
+        val = roomIdRef[id].roomName;
+        type2 = 'Room';
         break;
 
         case 'moderators':
         case 'allowedUsers':
-        var val = userIdRef[id];
-        var type2 = 'User';
+        val = userIdRef[id].roomName;
+        type2 = 'User';
         break;
 
         case 'allowedGroups':
-        var val = groupIdRef[id];
-        var type2 = 'Group';
+        val = groupIdRef[id].roomName;
+        type2 = 'Group';
         break;
       }
     }
@@ -739,14 +913,11 @@ autoEntry = {
     return false;
   },
 
-  removeEntry : function(type,id) {
-    $("#" + type + "SubList" + id).fadeOut(500, function() {
-      $(this).remove();
-    });
+  removeEntry : function(type, id) {
+    var currentRooms = $("#" + type).val().split(","),
+      i = 0;
 
-    var currentRooms = $("#" + type).val().split(",");
-
-    for (var i = 0; i < currentRooms.length; i++) {
+    for (i = 0; i < currentRooms.length; i += 1) {
       if(currentRooms[i] == id) {
         currentRooms.splice(i, 1);
         break;
@@ -755,31 +926,37 @@ autoEntry = {
 
     $("#" + type).val(currentRooms.toString(","));
 
+    $("#" + type + "SubList" + id).fadeOut(500, function() {
+      $(this).remove();
+    });
+
     return false;
   },
 
-  showEntries : function(type,string) {
-    entryList = string.split(',');
+  showEntries : function(type, string) {
+    var source,
+      i = 0;
 
+    entryList = string.split(', ');
 
     switch(type) {
       case 'watchRooms':
-      var source = roomRef;
+      source = roomRef;
       break;
 
       case 'moderators':
       case 'allowedUsers':
-      var source = userRef;
+      source = userRef;
       break;
 
       case 'allowedGroups':
-      var source = groupRef;
+      source = groupRef;
       break;
     }
 
 
-    for (var i = 0; i < entryList.length; i++) {
-      if (entryList[i] == '') {
+    for (i = 0; i < entryList.length; i += 1) {
+      if (!entryList[i]) {
         continue;
       }
 
@@ -793,84 +970,186 @@ autoEntry = {
 
 var standard = {
   archive : function (options) {
-    var encrypt = 'base64';
-    var lastMessage = 0;
-    var firstMessage = 0;
-    var data = '';
+    var encrypt = 'base64',
+      lastMessage = 0,
+      firstMessage = 0,
+      data = '',
+      where = '';
 
     if (options.idMax) {
-      var where = 'messageIdEnd=' + options.idMax;
+      where = 'messageIdEnd=' + options.idMax;
     }
     else if (options.idMin) {
-      var where = 'messageIdStart=' + options.idMin;
+      where = 'messageIdStart=' + options.idMin;
     }
     else {
-      var where = 'messageIdStart=0';
+      where = 'messageIdStart=1';
     }
 
+
+    $('#searchText, #resultLimit, #searchUser').unbind('change');
+    $('#searchText, #resultLimit, #searchUser').bind('change', function() {
+      standard.archive({
+        idMax : options.idMax,
+        idMin : options.idMin,
+        roomId : options.roomId,
+        userId : userRef[$('#searchUser').val()],
+        search : $('#searchText').val(),
+        maxResults : $('#resultLimit').val(),
+      });
+    });
+
     $.when( $.ajax({
-      url: directory + 'api/getMessages.php?rooms=' + options.roomId + '&archive=1&messageLimit=20&' + where + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+      url: directory + 'api/getMessages.php?rooms=' + options.roomId + '&' + (options.userId ? '&users=' + options.userId : '') + '&archive=1&messageLimit=10000&messageHardLimit=' + (options.maxResults ? options.maxResults : 50) + '&' + where + (options.search ? '&search=' + urlencode(options.search) : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
       type: 'GET',
-      timeout: 1000,
-      data: '',
-      contentType: "text/xml; charset=utf-8",
-      dataType: "xml",
+      timeout: 5000,
+      contentType: "text/json; charset=utf-8",
+      dataType: "json",
       cache: false,
-      success: function (xml) {
+      success: function (json) {
+        active = json.getMessages.messages;
 
-        if ($(xml).find('messages > message').length > 0) {
-          $(xml).find('messages > message').each(function() {
-            var text = unxml($(this).find('htmlText').text().trim());
-            var messageTime = $(this).find('messageTimeFormatted').text().trim();
-            var messageId = parseInt($(this).find('messageId').text().trim());
+        for (i in active) {
+          var messageId = active[i].messageData.messageId;
 
-            var userName = $(this).find('userData > userName').text().trim();
-            var userId = parseInt($(this).find('userData > userId').text().trim());
-            var groupFormatStart = unxml($(this).find('userData > startTag').text().trim());
-            var groupFormatEnd = unxml($(this).find('userData > endTag').text().trim());
+          data += messageFormat(active[i], 'table');
 
-            var styleColor = $(this).find('defaultFormatting > color').text().trim();
-            var styleHighlight = $(this).find('defaultFormatting > highlight').text().trim();
-            var styleFontface = $(this).find('defaultFormatting > fontface').text().trim();
-            var styleGeneral = parseInt($(this).find('defaultFormatting > general').text().trim());
-
-            var style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + styleFontface + ';';
-
-            if (styleGeneral & 256) {
-              style += 'font-weight: bold;';
-            }
-            if (styleGeneral & 512) {
-              style += 'font-style: oblique;';
-            }
-            if (styleGeneral & 1024) {
-              style += 'text-decoration: underline;';
-            }
-            if (styleGeneral & 2048) {
-              style += 'text-decoration: line-through;';
-            }
-
-            data += '<tr id="archiveMessage' + messageId + '"><td>' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageid="' + messageId + '">' + text + '</td></tr>';
-
-            if (messageId > lastMessage) {
-              lastMessage = messageId;
-            }
-            if (messageId < firstMessage || !firstMessage) {
-              firstMessage = messageId;
-            }
-          });
+          if (messageId > lastMessage) {
+            lastMessage = messageId;
+          }
+          if (messageId < firstMessage || !firstMessage) {
+            firstMessage = messageId;
+          }
         }
 
         return true;
-      },
-      error: function() {
-        dia.error('Archive failed to obtain results from server.');
-
-        return true;
       }
-    })).done(function() {
+    })).always(function() {
       $('#archiveMessageList').html(data);
-      $('#archiveNext').attr('onclick','standard.archive({idMin : ' + lastMessage + ', roomId: ' + options.roomId + '});');
-      $('#archivePrev').attr('onclick','standard.archive({idMax : ' + firstMessage + ', roomId: ' + options.roomId + '});');
+
+      $('#archiveNext').unbind('click');
+      $('#archivePrev').unbind('click');
+      $('#export').unbind('click');
+      $('.updateArchiveHere').unbind('click');
+
+      $('#archiveNext').bind('click', function() {
+        standard.archive({
+          idMin : lastMessage,
+          roomId: options.roomId,
+          userId : userRef[$('#searchUser').val()],
+          search : $('#searchText').val(),
+          maxResults : $('#resultLimit').val()
+        })
+      });
+      $('#archivePrev').bind('click', function() {
+        standard.archive({
+          idMax : firstMessage,
+          roomId: options.roomId,
+          userId : userRef[$('#searchUser').val()],
+          search : $('#searchText').val(),
+          maxResults : $('#resultLimit').val()
+        })
+      });
+      $('.updateArchiveHere').bind('click', function() {
+        $('#searchUser').val('');
+        $('#searchText').val('');
+
+        standard.archive({
+          idMin : $(this).attr('data-messageId'),
+          roomId: options.roomId,
+          maxResults : $('#resultLimit').val()
+        })
+      });
+      $('#export').bind('click', function() {
+        dia.full({
+          id : 'exportDia',
+          content : '<form method="post" action="#" onsubmit="return false;" id="exportDiaForm">How would you like to export the data?<br /><br /><table align="center"><tr><td>Format</td><td><select id="exportFormat"><option value="bbcodetable">BBCode Table</option><option value="csv">CSV List (Excel, etc.)</option></select></td></tr><tr><td colspan="2" align="center"><button type="submit">Export</button></td></tr></table></form>',
+          width: 600,
+        });
+
+        $('#exportDiaForm').submit(function() {
+          switch ($('#exportFormat option:selected').val()) {
+            case 'bbcodetable':
+            var exportData = '';
+
+            $('#archiveMessageList').find('tr').each(function() {
+              var exportUser = $(this).find('td:nth-child(1) .userNameTable').text(),
+                exportTime = $(this).find('td:nth-child(2)').text(),
+                exportMessage = $(this).find('td:nth-child(3)').text();
+
+              for (i in [1,3]) {
+                switch (i) {
+                  case 1:
+                  var exportItem = exportUser;
+                  break;
+
+                  case 3:
+                  var exportItem = exportMessage;
+                  break;
+                }
+
+                var colour = $(this).find('td:nth-child(' + i + ') > span').css('color'),
+                  highlight = $(this).find('td:nth-child(' + i + ') > span').css('background-color'),
+                  font = $(this).find('td:nth-child(' + i + ') > span').css('font-family'),
+                  bold = ($(this).find('td:nth-child(' + i + ') > span').css('font-weight') == 'bold' ? true : false),
+                  underline = ($(this).find('td:nth-child(' + i + ') > span').css('text-decoration') == 'underline' ? true : false),
+                  strikethrough = ($(this).find('td:nth-child(' + i + ') > span').css('text-decoration') == 'line-through' ? true : false);
+
+                if (colour || highlight || font) {
+                  exportUser = '[span="color: ' + colour + '; background-color: ' + highlight + '; font: ' + font + '"]' + exportUser + '[/span]';
+                }
+                if (bold) {
+                  exportUser = '[b]' + exportUser + '[/b]';
+                }
+                if (underline) {
+                  exportUser = '[u]' + exportUser + '[/u]';
+                }
+                if (strikethrough) {
+                  exportUser = '[s]' + exportUser + '[/s]';
+                }
+              }
+
+              switch (i) {
+                case 1:
+                exportUser = exportItem;
+                break;
+
+                case 3:
+                exportMessage = exportItem;
+                break;
+              }
+
+              exportData += exportUser + "|" + exportTime + "|" + exportMessage + "\n";
+            });
+
+            exportData = "<textarea style=\"width: 100%; height: 1000px;\">[table=head]User|Time|Message\n" + exportData + "[/table]</textarea>";
+            break;
+
+            case 'csv':
+
+            var exportData = '';
+
+            $('#archiveMessageList').find('tr').each(function() {
+              var exportUser = $(this).find('td:nth-child(1) .userNameTable').text(),
+                exportTime = $(this).find('td:nth-child(2)').text(),
+                exportMessage = $(this).find('td:nth-child(3)').text();
+
+              exportData += "'" + exportUser + "', '" + exportTime + "', '" + exportMessage + "'\n";
+            });
+
+            exportData = "<textarea style=\"width: 100%; height: 600px;\">" + exportData + "</textarea>";
+            break;
+          }
+
+          dia.full({
+            id : 'exportTable',
+            content : exportData,
+            width : '1000',
+          });
+
+          return false;
+        });
+      });
 
       if (options.callback) {
         options.callback(data);
@@ -878,15 +1157,16 @@ var standard = {
 
       return true;
     });
+     console.log(3);
   },
 
 
 
   login : function(options) {
     console.log('Login Initiated');
-    var data = '';
-    sessionHash = '';
-    $.cookie('fim3_sessionHash','');
+    var data = '',
+      passwordEncrypt = '';
+
 
     console.log('Encrypted Password: ' + options.password);
 
@@ -897,15 +1177,20 @@ var standard = {
 
 
     if (options.userName && options.password) {
-      var passwordEncrypt = 'plaintext';
+      passwordEncrypt = 'plaintext';
       // TODO: Enable for vBulletin
-      //  var password = md5(password);
-      //  var passwordEncrypt = 'md5';
+      // var password = md5(password);
+      // var passwordEncrypt = 'md5';
 
-      data = 'userName=' + options.userName + '&password=' + options.password + '&passwordEncrypt=' + passwordEncrypt;
+      data = 'userName=' + urlencode(options.userName) + '&password=' + urlencode(options.password) + '&passwordEncrypt=' + passwordEncrypt;
     }
-    else if (options.sessionHash) {
-      data = 'fim3_sessionHash=' + options.sessionHash + '&apiLogin=1&fim3_userId=' + $.cookie('fim3_userId');
+    else if (options.userId && options.password) {
+      passwordEncrypt = 'plaintext';
+      // TODO: Enable for vBulletin
+      // var password = md5(password);
+      // var passwordEncrypt = 'md5';
+
+      data = 'userId=' + urlencode(options.userId) + '&password=' + urlencode(options.password) + '&passwordEncrypt=' + passwordEncrypt;
     }
     else {
       data = 'apiLogin=1';
@@ -916,64 +1201,89 @@ var standard = {
       $.ajax({
         url: directory + 'validate.php',
         type: 'POST',
-        data: data + '&apiVersion=3',
+        data: data + '&apiVersion=3&fim3_format=json',
         cache: false,
         timeout: 2500,
-        success: function(xml) {
-          var loginFlag = unxml($(xml).find('loginFlag').text().trim());
-          var loginText = unxml($(xml).find('loginText').text().trim());
-          var valid = unxml($(xml).find('valid').text().trim());
-          var userName = unxml($(xml).find('userData > userName').text().trim());
-          var defaultRoomId = parseInt($(xml).find('defaultRoomId').text().trim());
+        success: function(json) {
+          active = json.login;
 
-          userId = parseInt($(xml).find('userData > userId').text().trim());
-          anonId = parseInt($(xml).find('anonId').text().trim());
-          sessionHash = unxml($(xml).find('sessionHash').text().trim());
+          var loginFlag = active.loginFlag,
+            loginText = active.loginText,
+            valid = active.valid,
+            userName = active.userData.userName,
+            defaultRoomId = active.defaultRoomId,
+            banned = active.banned;
 
-          $.cookie('fim3_sessionHash',sessionHash); // Set cookies.
-          $.cookie('fim3_userId',userId);
+          userId = active.userData.userId;
+          anonId = active.anonId;
+          sessionHash = active.sessionHash;
+
+
+
+          $.cookie('fim3_userId', userId, { expires : 14 });
+          $.cookie('fim3_password', options.password, { expires : 14 }); // We will encrypt this in B3 or later -- it wasn't a priority for now.
 
 
 
           /* Update Permissions */
 
-          userPermissions.createRoom = (parseInt($(xml).find('userPermissions > createRooms').text().trim()) > 0 ? true : false);
-          userPermissions.privateRoom = (parseInt($(xml).find('userPermissions > privateRooms').text().trim()) > 0 ? true : false);
-          userPermissions.general = (parseInt($(xml).find('userPermissions > allowed').text().trim()) > 0 ? true : false);
+          userPermissions = {
+            createRoom : active.userPermissions.createRooms,
+            privateRoom : active.userPermissions.privateRooms,
+            general : active.userPermissions.allowed
+          }
+
+          adminPermissions = {
+            modPrivs : active.adminPermissions.modPrivs,
+            modCore : active.adminPermissions.modCore,
+            modUsers : active.adminPermissions.modUsers,
+            modTemplates : active.adminPermissions.modTemplates,
+            modImages : active.adminPermissions.modImages,
+            modCensor : active.adminPermissions.modCensor,
+            modHooks : active.adminPermissions.modHooks
+          }
 
 
-          adminPermissions.modPrivs = (parseInt($(xml).find('adminPermissions > modPrivs').text().trim()) > 0 ? true : false);
-          adminPermissions.modCore = (parseInt($(xml).find('adminPermissions > modCore').text().trim()) > 0 ? true : false);
-          adminPermissions.modUsers = (parseInt($(xml).find('adminPermissions > modUsers').text().trim()) > 0 ? true : false);
-          adminPermissions.modTemplates = (parseInt($(xml).find('adminPermissions > modTemplates').text().trim()) > 0 ? true : false);
-          adminPermissions.modImages = (parseInt($(xml).find('adminPermissions > modImages').text().trim()) > 0 ? true : false);
-          adminPermissions.modCensor = (parseInt($(xml).find('adminPermissions > modCensor').text().trim()) > 0 ? true : false);
-          adminPermissions.modHooks = (parseInt($(xml).find('adminPermissions > modHooks').text().trim()) > 0 ? true : false);
+          if (banned) { // The user has been banned, so pretty much nothing will work. In some respects, this really only exists for IP bans, but meh.
+            dia.error('You have been banned. You will not be able to do anything.');
 
-
-
-          if (valid === 'true') {
-
-            if (options.showMessage) {
-              /* Display Dialog to Notify User of Being Logged In */
-              if (!userPermissions.general) {
-                dia.info('You are now logged in as ' + userName + '. However, you are not allowed to post and have been banned by an administrator.','Logged In');
-              }
-              else {
-                dia.info('You are now logged in as ' + userName + '.','Logged In');
-              }
+            userPermissions = {
+              createRoom : false,
+              privateRoom : false,
+              general : false
             }
 
-
+            adminPermissions = {
+              modPrivs : false,
+              modCore : false,
+              modUsers : false,
+              modTemplates : false,
+              modImages : false,
+              modCensor : false,
+              modHooks : false
+            }
+          }
+          else if (valid === true) {
+            if (options.showMessage) {
+              // Display Dialog to Notify User of Being Logged In
+              if (!userPermissions.general) {
+                dia.info('You are now logged in as ' + userName + '. However, you are not allowed to post and have been banned by an administrator.', 'Logged In');
+              }
+              else {
+                dia.info('You are now logged in as ' + userName + '.', 'Logged In');
+              }
+            }
 
             $('#loginDialogue').dialog('close'); // Close any open login forms.
 
             console.log('Login valid. Session hash: ' + sessionHash + '; User ID: ' + userId);
           }
-
           else {
-
             switch (loginFlag) {
+              case 'INVALID_LOGIN':
+              dia.error("The server did not accept the login, but did not specify why.")
+              break;
+
               case 'PASSWORD_ENCRYPT':
               dia.error("The form encryption used was not accepted by the server.");
               break;
@@ -996,9 +1306,6 @@ var standard = {
 
               case 'INVALID_SESSION':
               sessionHash = '';
-              $.cookie('fim3_sessionHash','');
-
-              dia.error("You have been logged out. Please log-in.");
               break;
 
               default:
@@ -1009,32 +1316,31 @@ var standard = {
           }
 
 
+          if (!roomId) {
+            if (!defaultRoomId) {
+              roomId = 1;
+            }
+
+            else {
+              roomId = defaultRoomId;
+            }
+          }
+
+
           if (!anonId && !userId) {
             $('#messageInput').attr("disabled","disabled"); // The user is not able to post.
           }
 
 
-
-          /* Select Room */
-
-          if (!roomId) {
-            if (!defaultRoomId) {
-              standard.changeRoom(1);
-            }
-            else {
-              standard.changeRoom(defaultRoomId);
-            }
-          }
-
           return false;
         },
-        error: function() {
-          dia.error("The login request could not be sent. Please try again.");
+        error: function(err,err2,err3) {
+          dia.error("The login request could not be sent. Please try again.<br /><br />" + err3 + "<br /><br />" + directory + "validate.php<br /><br />" + data + '&apiVersion=3');
 
           return false;
         }
       })
-    ).done(function() {
+    ).always(function() {
       if (options.finish) {
         options.finish();
       }
@@ -1043,6 +1349,9 @@ var standard = {
         callback : function() {
           windowDraw();
           windowDynaLinks();
+
+          /* Select Room */
+          standard.changeRoom(roomId);
 
           return false;
         }
@@ -1058,231 +1367,283 @@ var standard = {
 
 
   logout : function() {
-    $.cookie('fim3_sessionHash','');
+    $.cookie('fim3_userId', null);
+    $.cookie('fim3_password', null);
 
     standard.login({});
   },
 
 
   getMessages : function() {
+    clearInterval(timers.t1);
+
     if (roomId) {
 
-      var encrypt = 'base64';
+      var encrypt = 'base64',
+        lastMessageId;
 
-      $.ajax({
-        url: directory + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest? '&archive=1&messageDateMin=' + (Math.round((new Date()).getTime() / 1000) - 1200) : '&messageIdMin=' + (requestSettings.lastMessage)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
-        type: 'GET',
-        timeout: requestSettings.timeout,
-        data: '',
-        contentType: "text/xml; charset=utf-8",
-        dataType: "xml",
-        cache: false,
-        success: function(xml) {
-          var errStr = $(xml).find('errStr').text().trim();
-          var errDesc = $(xml).find('errDesc').text().trim();
+      if (requestSettings.firstRequest) {
+        $.ajax({
+          url: directory + 'api/getRooms.php?rooms=' + roomId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+          type: 'GET',
+          timeout: 2400,
+          cache: false,
+          async : false, // We need to complete this request before the next
+          success: function(json) {
+            active = json.getRooms.rooms;
 
-          if (errStr) {
-            var sentUserId = $(xml).find('activeUser > userId');
+            for (i in active) {
+              lastMessageId = active[i].lastMessageId;
 
-            if (errStr == 'noperm') {
-              roomId = false;
+              break;
+            }
 
-              if (sentUserId) {
-                popup.selectRoom();
+            return false;
+          },
+          error: function() {
+            dia.error('Failed to obtain current room settings from server.');
 
-                dia.error('You have been restricted access from this room. Please select a new room.');
+            return false;
+          }
+        });
+      }
+
+      if (requestSettings.serverSentEvents) {console.log(requestSettings);
+        var source = new EventSource(directory + 'eventStream.php?roomId=' + roomId + '&lastEvent=' + requestSettings.lastEvent + '&lastMessage=' + requestSettings.lastMessage + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
+
+        source.addEventListener('message', function(e) {
+          active = JSON.parse(e.data);
+
+          var messageId = Number(active.messageData.messageId);
+
+          console.log('Event (New Message): ' + messageId);
+
+          data = messageFormat(active, 'list');
+
+          messagePopup(data)
+
+
+          if (messageIndex[messageId]) {
+            // Double post hack
+          }
+          else {
+            if (settings.reversePostOrder) {
+              $('#messageList').append(data);
+            }
+            else {
+              $('#messageList').prepend(data);
+            }
+
+            if (messageId > requestSettings.lastMessage) {
+              requestSettings.lastMessage = messageId;
+            }
+
+            messageIndex.push(requestSettings.lastMessage);
+
+            if (messageIndex.length === 100) {
+              var messageOut = messageIndex[0];
+              $('#message' + messageOut).remove();
+              messageIndex = messageIndex.slice(1,99);
+            }
+          }
+
+          newMessage();
+
+          return false;
+        }, false);
+
+        source.addEventListener('topicChange', function(e) {
+          var active = JSON.parse(e.data);
+
+          $('#topic').html(active.param1);
+          console.log('Event (Topic Change): ' + active.param1);
+
+          requestSettings.lastEvent = active.eventId;
+
+          return false;
+        }, false);
+
+        source.addEventListener('missedMessage', function(e) {
+          var active = JSON.parse(e.data);
+
+          requestSettings.lastEvent = active.eventId;
+          $.jGrowl('Missed Message', 'New messages have been made in:<br /><br /><a href="#room=' + active.roomId + '">' + active.roomName + '</a>');
+          console.log('Event (Missed Message): ' + active.messageId);
+
+          return false;
+        }, false);
+
+        source.addEventListener('deletedMessage', function(e) {
+          var active = JSON.parse(e.data);
+
+          $('#topic').html(active.param1);
+          console.log('Event (Topic Change): ' + active.param1);
+
+          requestSettings.lastEvent = active.eventId;
+
+          return false;
+        }, false);
+
+        source.addEventListener('open', function(e) {
+          // Connection was opened.
+        }, false);
+
+        source.addEventListener('error', function(e) {
+          if (e.eventPhase == EventSource.CLOSED) {
+            // Connection was closed.
+          }
+        }, false);
+
+      }
+      else {
+        $.ajax({
+          url: directory + 'api/getMessages.php?rooms=' + roomId + '&messageLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest ? '&archive=1&messageIdEnd=' + lastMessageId : '&messageIdStart=' + (requestSettings.lastMessage + 1)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+          type: 'GET',
+          timeout: requestSettings.timeout,
+          contentType: "text/json; charset=utf-8",
+          dataType: "json",
+          cache: false,
+          success: function(json) {
+            var errStr = json.getMessages.errStr,
+              errDesc = json.getMessages.errDesc,
+              sentUserId = 0,
+              messageCount = 0;
+
+            if (errStr) {
+              sentUserId = json.getMessages.activeUser.userId;
+
+              if (errStr === 'noperm') {
+                roomId = false;
+
+                if (sentUserId) {
+                  popup.selectRoom();
+
+                  dia.error('You have been restricted access from this room. Please select a new room.');
+                }
+                else {
+                  popup.login();
+
+                  dia.error('You are no longer logged in. Please log-in.');
+                }
               }
               else {
-                popup.login();
-
-                dia.error('You are no longer logged in. Please log-in.');
+                roomId = false;
+                dia.error(errDesc);
               }
             }
             else {
-              roomId = false;
-              dia.error(errDesc);
-            }
-          }
-          else {
-            requestSettings.totalFails = 0;
-            var notifyData = '';
+              requestSettings.totalFails = 0;
+              var notifyData = '',
+                activeUserHtml = [];
 
 
-            $('#activeUsers').html('');
-            var activeUserHtml = new Array;
 
 
-            $(xml).find('activeUsers > user').each(function() {
-              var userName = $(this).find('userName').text().trim();
-              var userId = $(this).find('userId').text().trim();
-              var userGroup = $(this).find('userGroup').text().trim();
-              var startTag = unxml($(this).find('startTag').text().trim());
-              var endTag = unxml($(this).find('endTag').text().trim());
+              $('#activeUsers').html('');
 
-              activeUserHtml.push('<span class="userName" data-userId="' + userId + '">' + startTag + '<span class="username">' + userName + '</span>' + endTag + '</span>');
-            });
+              active = json.getMessages.activeUsers;
 
-            $('#activeUsers').html(activeUserHtml.join(', '));
+              for (i in active) {
+                var userName = active[i].userName,
+                  userId = active[i].userId,
+                  userGroup = active[i].userGroup,
+                  startTag = active[i].startTag,
+                  endTag = active[i].endTag;
 
+                activeUserHtml.push('<span class="userName" data-userId="' + userId + '">' + startTag + '<span class="username">' + userName + '</span>' + endTag + '</span>');
+              }
 
-            if ($(xml).find('messages > message').length > 0) {
-              $(xml).find('messages > message').each(function() {
-
-                var text = unxml($(this).find('htmlText').text().trim());
-                var messageTime = unxml($(this).find('messageTimeFormatted').text().trim());
-
-                var messageId = parseInt($(this).find('messageId').text().trim());
-
-                var userName = unxml($(this).find('userData > userName').text().trim());
-                var userId = parseInt($(this).find('userData > userId').text().trim());
-                var groupFormatStart = unxml($(this).find('userData > startTag').text().trim());
-                var groupFormatEnd = unxml($(this).find('userData > endTag').text().trim());
-                var avatar = unxml($(this).find('userData > avatar').text().trim());
-
-                var styleColor = unxml($(this).find('defaultFormatting > color').text().trim());
-                var styleHighlight = unxml($(this).find('defaultFormatting > highlight').text().trim());
-                var styleFontface = unxml($(this).find('defaultFormatting > fontface').text().trim());
-                var styleGeneral = parseInt($(this).find('defaultFormatting > general').text().trim());
-
-                var style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + styleFontface + ';';
-
-                if (styleGeneral & 256) {
-                  style += 'font-weight: bold;';
-                }
-                if (styleGeneral & 512) {
-                  style += 'font-style: oblique;';
-                }
-                if (styleGeneral & 1024) {
-                  style += 'text-decoration: underline;';
-                }
-                if (styleGeneral & 2048) {
-                  style += 'text-decoration: line-through;';
-                }
+              $('#activeUsers').html(activeUserHtml.join(', '));
 
 
-                if (settings.showAvatars) {
-                  var data = '<span id="message' + messageId + '" class="messageLine" style="padding-bottom: 3px; padding-top: 3px; vertical-align: middle;"><img alt="' + userName + '" src="' + avatar + '" style="max-width: 24px; max-height: 24px; padding-right: 3px;" class="userName userNameTable" data-userId="' + userId + '" /><span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
+
+              active = json.getMessages.messages;
+
+              for (i in active) {
+                var messageId = Number(active[i].messageData.messageId);
+                data = messageFormat(active[i], 'list');
+
+                if (messageIndex[messageId]) {
+                  // Double post hack
                 }
                 else {
-                  var data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="padding: 2px; ' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
+                  if (settings.reversePostOrder) {
+                    $('#messageList').append(data);
+                  }
+                  else {
+                    $('#messageList').prepend(data);
+                  }
+
+                  if (messageId > requestSettings.lastMessage) {
+                    requestSettings.lastMessage = messageId;
+                  }
+
+                  messageIndex.push(requestSettings.lastMessage);
+
+                  if (messageIndex.length === 100) {
+                    var messageOut = messageIndex[0];
+                    $('#message' + messageOut).remove();
+                    messageIndex = messageIndex.slice(1,99);
+                  }
                 }
 
-                notifyData += userName + ': ' + text + "\n";
-
-                if (settings.reversePostOrder) {
-                  $('#messageList').append(data);
-                }
-                else {
-                  $('#messageList').prepend(data);
-                }
-
-                if (messageId > requestSettings.lastMessage) {
-                  requestSettings.lastMessage = messageId;
-                }
-
-                messageIndex.push(requestSettings.lastMessage);
-
-                if (messageIndex.length == 100) {
-                  var messageOut = messageIndex[0];
-                  $('#message' + messageOut).remove();
-                  messageIndex = messageIndex.slice(1,99);
-                }
-
-                var roomTopic = $(this).find('roomData > roomTopic').text().trim();
-                if (roomTopic) {
-                  $('#topic').html(roomTopic);
-                }
-              });
-
-
-
-              if (settings.reversePostOrder) {
-                toBottom();
+                messageCount++;
               }
 
 
-
-              if (window.isBlurred) {
-                if (settings.audioDing) {
-                  riffwave.play();
-
-                  if (navigator.appName === 'Microsoft Internet Explorer') {
-                    timers.t3 = window.setInterval(faviconFlash,1000);
-
-                    window.clearInterval(timers.t3);
-                  }
-                }
-
-                if (notify) {
-                  if ('webkitNotifications' in window) {
-                    notify.webkitNotifyRequest('images/favicon.gif', 'New Message', notifyData);
-                  }
-                }
-
-                if ('external' in window) {
-                  if ('msIsSiteMode' in window.external && 'msSiteModeActivate' in window.external) {
-                    try {
-                      if (window.external.msIsSiteMode()) {
-                        window.external.msSiteModeActivate();
-                      }
-                    }
-                    catch(ex) {
-                      // Ya know, its very weird IE insists on this when the "in" statement works just as well...
-                    }
-                  }
-                }
+              if (messageCount > 0) {
+                newMessage();
               }
 
-              contextMenuParse();
+              if (requestSettings.longPolling) {
+                timers.t1 = setTimeout(standard.getMessages,50);
+              }
+              else {
+                requestSettings.timeout = 2400;
+                timers.t1 = setTimeout(standard.getMessages,2500);
+              }
             }
+
+            requestSettings.firstRequest = false;
+
+            return false;
+          },
+          error: function(err) {
+            console.log('Requesting messages for ' + roomId + '; failed: ' + err + '.');
+            var wait;
 
             if (requestSettings.longPolling) {
-              setTimeout(standard.getMessages,50);
+              timers.t1 = setTimeout(standard.getMessages,50);
             }
             else {
-              requestSettings.timeout = 2400;
-              setTimeout(standard.getMessages,2500);
-            }
-          }
+              requestSettings.totalFails += 1;
 
-          requestSettings.firstRequest = false;
+              if (!requestSettings.longPolling) {
+                if (requestSettings.totalFails > 10) {
+                  wait = 30000;
+                  requestSettings.timeout = 29900;
 
-          return false;
-        },
-        error: function(err) {
-          console.log('Requesting messages for ' + roomId + '; failed: ' + err + '.');
+                  // TODO: Add indicator.
+                }
+                else if (requestSettings.totalFails > 5) {
+                  wait = 10000;
+                  requestSettings.timeout = 9900;
 
-          if (requestSettings.longPolling) {
-            setTimeout(standard.getMessages,50);
-          }
-          else {
-            requestSettings.totalFails += 1;
-
-            if (!requestSettings.longPolling) {
-              if (requestSettings.totalFails > 10) {
-                var wait = 30000;
-                requestSettings.timeout = 29900;
-
-                // TODO: Add indicator.
+                  // TODO: Add indicator.
+                }
+                else {
+                  wait = 5000;
+                  requestSettings.timeout = 4900;
+                }
               }
-              else if (requestSettings.totalFails > 5) {
-                var wait = 10000;
-                requestSettings.timeout = 9900;
 
-                // TODO: Add indicator.
-              }
-              else {
-                var wait = 5000;
-                requestSettings.timeout = 4900;
-              }
+              timers.t1 = setTimeout(standard.getMessages,wait);
             }
 
-            setTimeout(standard.getMessages,wait);
+            return false;
           }
-
-          return false;
-        }
-      });
+        });
+      }
     }
     else {
       console.log('Not requesting messages; room undefined.');
@@ -1293,6 +1654,17 @@ var standard = {
 
 
   sendMessage : function(message,confirmed,flag) {
+    if (!flag) {
+      flag = '';
+
+      if (message.match(/http\:\/\/(www\.|)youtu\.be\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/) !== null) {
+        flag = 'youtube';
+      }
+      else if (message.match(/http\:\/\/(www\.|)youtu\.be\/([a-zA-Z0-9]+)/) !== null) {
+        flag = 'youtube';
+      }
+    }
+
     if (!roomId) {
       popup.selectRoom();
     }
@@ -1300,16 +1672,17 @@ var standard = {
       confirmed = (confirmed === 1 ? 1 : '');
 
       $.ajax({
-        url: directory + 'api/sendMessage.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+        url: directory + 'api/sendMessage.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
         type: 'POST',
-        data: 'roomId=' + roomId + '&confirmed=' + confirmed + '&message=' + urlEncode(message) + '&flag=' + flag,
+        data: 'roomId=' + roomId + '&confirmed=' + confirmed + '&message=' + urlencode(message) + '&flag=' + flag,
         cache: false,
-        timeout: 2500,
-        success: function(xml) {
+        timeout: 5000,
+        success: function(json) {
           console.log('Message sent.');
 
-          var errStr = $(xml).find('errStr').text().trim();
-          var errDesc = $(xml).find('errDesc').text().trim();
+          var errStr = json.sendMessage.errStr,
+            errDesc = json.sendMessage.errDesc;
+
           switch (errStr) {
             case '':
             break;
@@ -1335,7 +1708,7 @@ var standard = {
             break;
 
             case 'confirmcensor':
-            dia.error(errDesc + '<br /><br /><button type="button" onclick="$(this).parent().dialog(&apos;close&apos;);">No</button><button type="button" onclick="standard.standard.sendMessage(&apos;' + escape(message) + '&apos;,1' + (flag ? ',' + flag : '') + '); $(this).parent().dialog(&apos;close&apos;);">Yes</button>');
+            dia.error(errDesc + '<br /><br /><button type="button" onclick="$(this).parent().dialog(&apos;close&apos;);">No</button><button type="button" onclick="standard.sendMessage(&apos;' + escape(message) + '&apos;,1' + (flag ? ', ' + flag : '') + '); $(this).parent().dialog(&apos;close&apos;);">Yes</button>');
             break;
           }
 
@@ -1351,7 +1724,9 @@ var standard = {
             $('#messageList').prepend('Your message, "' + message + '", could not be sent and will be retried.');
           }
 
-          standard.standard.sendMessage(message);
+          window.setTimeout(function() {
+            standard.sendMessage(message)
+          },5000);
 
           return false;
         }
@@ -1363,10 +1738,10 @@ var standard = {
 
 
   changeRoom : function(roomLocalId) {
-    console.log('Changing Room: ' + roomLocalId + '; Detected Name: ' + roomIdRef[roomLocalId]);
+    console.log('Changing Room: ' + roomLocalId + '; Detected Name: ' + roomIdRef[roomLocalId].roomName);
 
     roomId = roomLocalId;
-    $('#roomName').html(roomIdRef[roomId]);
+    $('#roomName').html(roomIdRef[roomId].roomName);
     $('#messageList').html('');
 
     windowDraw();
@@ -1376,9 +1751,8 @@ var standard = {
     /*** Get Messages ***/
 
     $(document).ready(function() {
-      $(document).ready(function() {
-        standard.getMessages();
-      });
+      // If getMessages is called before the document is loaded, and we are using server-sent events or longpolling, then WebKit browsers will go beserk. It's an annoying bug, and the setTimeout merely serves as an inconsistent hack, but meh.
+      timers.t1 = setTimeout(standard.getMessages,500);
 
       return false;
     });
@@ -1387,8 +1761,49 @@ var standard = {
   },
 
 
+  deleteRoom : function(roomLocalId) {
+    $.post(directory + 'api/editRoom.php', 'action=delete&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
+      var errStr = json.editRoom.errStr,
+        errDesc = json.editRoom.errDesc;
+
+      switch (errStr) {
+        case '':
+        console.log('Message ' + messageId + ' deleted.');
+        break;
+
+        case 'nopermission':
+        dia.error('You do not have permision to administer this room.');
+        break;
+
+        case 'badroom':
+        dia.error('The specified room does not exist.');
+        break;
+      }
+
+      return false;
+    }); // Send the form data via AJAX.
+  },
+
+  favRoom : function(roomLocalId) {
+    $.post(directory + 'api/moderate.php', 'action=favRoom&roomId=' + roomLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
+      return false;
+    });
+
+    return false;
+  },
+
+  unfavRoom : function(roomLocalId) {
+    $.post(directory + 'api/moderate.php', 'action=unfavRoom&roomId=' + roomLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
+      return false;
+    });
+
+    return false;
+  },
+
   privateRoom : function(userLocalId) {
-    if (userLocalId == userId) {
+    userLocalId = Number(userLocalId);
+
+    if (userLocalId === userId) {
       dia.error('You can\'t talk to yourself...');
     }
     else if (!userLocalId) {
@@ -1398,10 +1813,10 @@ var standard = {
       dia.error('You do not have permission to talk to users privately.');
     }
     else {
-      $.post(directory + 'api/moderate.php','action=privateRoom&userId=' + userLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
-        var privateRoomId = parseInt($(xml).find('insertId').text().trim());
-        var errStr = unxml($(xml).find('errStr').text().trim());
-        var errDesc = unxml($(xml).find('errStr').text().trim());
+      $.post(directory + 'api/editRoom.php', 'action=private&userId=' + userLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
+        var privateRoomId = json.editRoom.response.insertId,
+          errStr = json.editRoom.errStr,
+          errDesc = json.editRoom.errDesc;
 
         if (errStr) {
           switch (errStr) {
@@ -1416,7 +1831,7 @@ var standard = {
             id : 'privateRoomSucessDialogue',
             buttons : {
               Open : function() {
-                standard.selectRoom(privateRoomId);
+                standard.changeRoom(privateRoomId);
               },
               Okay : function() {
                 $('#privateRoomSucessDialogue').dialog('close');
@@ -1432,6 +1847,97 @@ var standard = {
 
     return false;
   },
+
+
+  kick : function(userId, roomId, length) {
+    $.post(directory + 'api/moderate.php', 'action=kickUser&userId=' + userId + '&roomId=' + roomId + '&length=' + length + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
+      var errStr = json.moderaate.errStr,
+        errDesc = json.moderaate.errDesc;
+
+      switch (errStr) {
+        case '':
+        dia.info('The user has been kicked.', 'Success');
+
+        $("#kickUserDialogue").dialog('close');
+        break;
+
+        case 'nopermission':
+        dia.error('You do not have permision to moderate this room.');
+        break;
+
+        case 'nokickuser':
+        dia.error('That user may not be kicked!');
+        break;
+
+        case 'baduser':
+        dia.error('The user specified does not exist.');
+        break;
+
+        case 'badroom':
+        dia.error('The room specified does not exist.');
+        break;
+      }
+
+      return false;
+    }); // Send the form data via AJAX.
+
+    return false;
+  },
+
+  unkick : function(userId, roomId) {
+    $.post(directory + 'api/moderate.php', 'action=unkickUser&userId=' + userId + '&roomId=' + roomId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(json) {
+      var errStr = json.moderaate.errStr,
+        errDesc = json.moderaate.errDesc;
+
+      switch (errStr) {
+        case '':
+        dia.info('The user has been unkicked.', 'Success');
+
+        $("#kickUserDialogue").dialog('close');
+        break;
+
+        case 'nopermission':
+        dia.error('You do not have permision to moderate this room.');
+        break;
+
+        case 'baduser':
+        case 'badroom':
+        dia.error('Odd error: the user or room sent do not seem to exist.');
+        break;
+      }
+
+      return false;
+    }); // Send the form data via AJAX.
+
+    return false;
+  },
+
+
+  deleteMessage : function(messageId) {
+    $.post(directory + 'api/editMessage.php', 'action=delete&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + 'fim3_format=json',function(json) {
+      var errStr = json.moderaate.errStr,
+        errDesc = json.moderaate.errDesc;
+
+      switch (errStr) {
+        case '':
+        console.log('Message ' + messageId + ' deleted.');
+        break;
+
+        case 'nopermission':
+        dia.error('You do not have permision to moderate this room.');
+        break;
+
+        case 'badmessage':
+        dia.error('The message does not exist.');
+        break;
+      }
+
+      return false;
+    }); // Send the form data via AJAX.
+
+    return false;
+  }
+
 
 };
 
@@ -1451,9 +1957,14 @@ var standard = {
 ********** Silent Init Uses of Standard Methods *********
 *********************************************************/
 
-if ("onhashchange" in window) {
-  window.onhashchange = hashParse;
+if (typeof window.onhashchange !== 'undefined') {
+  window.onhashchange = function() {
+    hashParse();
+
+    return true;
+  }
 }
+
 hashParse();
 
 /*********************************************************
@@ -1476,7 +1987,7 @@ popup = {
   /*** START Login ***/
 
   login : function() {
-    $.get('template.php','template=login',function(data) {
+    $.get('template.php', 'template=login',function(data) {
       dia.full({
         content : data,
         title : 'Login',
@@ -1484,13 +1995,15 @@ popup = {
         width : 600,
         oF : function() {
           $("#loginForm").submit(function() {
-            var userName = $('#loginForm > #userName').val();
-            var password = $('#loginForm > #password').val();
+            var userName = $('#loginForm > #userName').val(),
+              password = $('#loginForm > #password').val(),
+              rememberMe = $('#loginForm > #rememberme').is('checked');
 
             standard.login({
               userName : userName,
               password : password,
-              showMessage : true
+              showMessage : true,
+              rememberMe : rememberMe
             });
 
             return false; // Don't submit the form.
@@ -1501,7 +2014,7 @@ popup = {
             standard.login({
               start : function() {
                 $('<div class="ui-widget-overlay" id="loginWaitOverlay"></div>').appendTo('body').width($(document).width()).height($(document).height());
-                $('<img src="images/ajax-loader.gif" id="loginWaitThrobber" />').appendTo('body').css('position','absolute').offset({ left : (($(window).width() - 220) / 2), top : (($(window).height() - 19) / 2)});
+                $('<img src="images/ajax-loader.gif" id="loginWaitThrobber" />').appendTo('body').css('position', 'absolute').offset({ left : (($(window).width() - 220) / 2), top : (($(window).height() - 19) / 2)});
               },
               finish : function() {
                 $('#loginWaitOverlay, #loginWaitThrobber').empty().remove();
@@ -1512,8 +2025,6 @@ popup = {
           return false;
         }
       });
-
-      console.log('Popup for un-loggedin user triggered.');
 
       return false;
     });
@@ -1533,13 +2044,16 @@ popup = {
       id : 'roomListDialogue',
       width: 1000,
       oF : function() {
-        $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}}).click(function() {
+        $('button.editRoomMulti, input[type=checkbox].favRoomMulti, button.archiveMulti, button.deleteRoomMulti').unbind('click'); // Prevent the below from being binded multiple times.
+
+
+        $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}}).bind('click',function() {
           popup.editRoom($(this).attr('data-roomId'));
 
           return false;
         });
 
-        $('input[type=checkbox].favRoomMulti').button({icons : {primary : 'ui-icon-star'}}).change(function() {
+        $('input[type=checkbox].favRoomMulti').button({icons : {primary : 'ui-icon-star'}, text : false}).bind('change',function() {
           if ($(this).is(':checked')) {
             standard.favRoom($(this).attr('data-roomId'));
           }
@@ -1550,13 +2064,13 @@ popup = {
           return false;
         });
 
-        $('button.archiveMulti').button({icons : {primary : 'ui-icon-note'}}).click(function() {
-          popup.archive($(this).attr('data-roomId'));
+        $('button.archiveMulti').button({icons : {primary : 'ui-icon-note'}}).bind('click',function() {
+          popup.archive({roomId : $(this).attr('data-roomId')});
 
           return false;
         });
 
-        $('button.deleteRoomMulti').button({icons : {primary : 'ui-icon-trash'}}).click(function() {
+        $('button.deleteRoomMulti').button({icons : {primary : 'ui-icon-trash'}}).bind('click',function() {
           standard.deleteRoom($(this).attr('data-roomId'));
 
           return false;
@@ -1575,20 +2089,21 @@ popup = {
   /*** START Insert Docs ***/
 
   insertDoc : function(preselect) {
-    var fileContent;
+    var fileContent,
+      selectTab;
 
     switch(preselect) {
       case 'video':
-      var selectTab = 2;
+      selectTab = 2;
       break;
 
       case 'image':
-      var selectTab = 1;
+      selectTab = 1;
       break;
 
       case 'link':
       default:
-      var selectTab = 0;
+      selectTab = 0;
       break;
     }
 
@@ -1598,20 +2113,31 @@ popup = {
       width: 600,
       tabs : true,
       oF : function() {
+        var fileName,
+          fileSize;
 
-        $('#fileUpload').attr('disabled','disabled').button({disabled: true});
+        $('#imageUploadSubmitButton').attr('disabled', 'disabled').button({
+          disabled: true
+        });
 
-        if (true) {
+
+        if (typeof FileReader !== 'function') {
           $('#uploadFileForm').html('Your device does not support file uploads.<br /><br />');
         }
         else {
-          $('#fileUpload').change(function() {
+          $('#fileUpload, #urlUpload').unbind('change'); // Prevent duplicate binds.
+          $('#uploadFileForm, #uploadUrlForm, #linkForm. #uploadYoutubeForm').unbind('submit');
+
+
+          $('#fileUpload').bind('change',function() {
             console.log('FileReader triggered.');
 
-            var reader = new FileReader();
+            var reader = new FileReader(),
+              reader2 = new FileReader();
+
             files = this.files;
 
-            if (files.length == 0) {
+            if (files.length === 0) {
               dia.error('No files selected!');
             }
             else if (files.length > 1) {
@@ -1620,39 +2146,65 @@ popup = {
             else {
               console.log('FileReader started.');
 
-              var file = files[0];
+              fileName = files[0].name,
+                fileSize = files[0].size;
 
-              var fileName = file.name;
-              var fileSize = file.size;
+              var fileParts = fileName.split('.');
+              var filePartsLast = fileParts[fileParts.length - 1];
 
-              if (!fileName.match(/\.(jpg|jpeg|gif|png|svg)$/i)) { // TODO
-                $('#preview').html('Wrong file type.');
+              if (!filePartsLast in uploadFileTypes) {
+                $('#preview').html('The specified file type can not be uploaded.');
               }
-              else if (fileSize > 4 * 1000 * 1000) { // TODO
-                $('#preview').html('File too large.');
+              else if (fileSize > uploadFileTypes[filePartsLast].maxSize) {
+                $('#preview').html('The specified file type must not be larger than ' + uploadFileTypes[filePartsLast].maxSize + ' bytes');
               }
               else {
-                reader.readAsBinaryString(file);
+                reader.readAsBinaryString(files[0]);
                 reader.onloadend = function() {
                   fileContent = window.btoa(reader.result);
                 };
 
-                reader2.readAsDataUrl(file);
-                reader.onloadend = function() {
-                  $('#uploadUrlFormPreview').html('<img src="' + reader2.result + '" style="max-height: 200px; max-width: 200px;" />');
-                };
+                reader2.readAsDataURL(files[0]);
+                reader2.onloadend = function() {
+                  switch (uploadFileTypes[filePartsLast].container) {
+                    case 'image':
+                    $('#uploadFileFormPreview').html('<img src="' + reader2.result + '" style="max-height: 200px; max-width: 200px;" />');
+                    break;
 
-                var reader = new FileReader();
-                reader.readAsDataURL(file);
+                    case 'video':
+                    $('#uploadFileFormPreview').html('No Preview Available');
+                    break;
+
+                    case 'audio':
+                    $('#uploadFileFormPreview').html('No Preview Available');
+                    break;
+
+                    case 'text':
+                    $('#uploadFileFormPreview').html('No Preview Available');
+                    break;
+
+                    case 'html':
+                    $('#uploadFileFormPreview').html('No Preview Available');
+                    break;
+
+                    case 'archive':
+                    $('#uploadFileFormPreview').html('No Preview Available');
+                    break;
+
+                    case 'other':
+                    $('#uploadFileFormPreview').html('No Preview Available');
+                    break;
+                  }
+                };
               }
 
               $('#imageUploadSubmitButton').removeAttr('disabled').button({disabled: false});
             }
           });
 
-          $('#urlUpload').change(function() {
+          $('#urlUpload').bind('change',function() {
             fileContent = $('#urlUpload').val();
-            if (fileContent && fileContent != 'http://') {
+            if (fileContent && fileContent !== 'http://') {
               fileContainer = '<img src="' + fileContent + '" alt="" style="max-width: 200px; max-height: 250px; height: auto;" />';
 
               $('#uploadUrlFormPreview').html(fileContainer);
@@ -1660,12 +2212,20 @@ popup = {
           });
 
 
-          $('#uploadFileForm').submit(function() {
+          $('#uploadFileForm').bind('submit',function() {
             $.ajax({
-              url: directory + 'api/uploadFile.php',
-              type: 'POST',
-              data : 'dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&file_data=' + urlEncode(fileContent) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
-              cache : false
+              url : directory + 'api/sendFile.php',
+              type : 'POST',
+              data : 'dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&fileName=' + fileName + '&fileData=' + urlencode(fileContent) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+              cache : false,
+              success : function(json) {
+                var errStr = json.sendFile.errStr,
+                  errDesc = json.sendFile.errDesc;
+
+                if (errStr) {
+                  dia.error(errDesc);
+                }
+              }
             });
 
             return false;
@@ -1673,7 +2233,7 @@ popup = {
         }
 
 
-        $('#uploadUrlForm').submit(function() {
+        $('#uploadUrlForm').bind('submit',function() {
           var linkImage = $('#urlUpload').val();
 
           if (linkImage) {
@@ -1684,9 +2244,9 @@ popup = {
         });
 
 
-        $('#linkForm').submit(function() {
-          var linkUrl = $('#linkUrl').val();
-          var linkMail = $('#linkEmail').val();
+        $('#linkForm').bind('submit',function() {
+          var linkUrl = $('#linkUrl').val(),
+            linkMail = $('#linkEmail').val();
 
           if (!linkUrl && !linkMail) {
             dia.error('No Link Was Specified');
@@ -1704,7 +2264,7 @@ popup = {
           return false;
         });
 
-        $('#uploadYoutubeForm').submit(function() {
+        $('#uploadYoutubeForm').bind('submit',function() {
           linkVideo = $('#youtubeUpload');
 
           if (linkVideo.search(/^http\:\/\/(www\.|)youtube\.com\/(.*?)?v=(.+?)(&|)(.*?)$/) === 0) {
@@ -1730,6 +2290,73 @@ popup = {
 
 
 
+  /*** START Stats ***/
+
+  viewStats : function() {
+    var statsHtml = {}, // Object
+      statsHtml2 = '',
+      roomHtml = '',
+      number = 10,
+      i = 1;
+
+    for (i = 1; i <= number; i += 1) {
+      statsHtml[i] = '';
+    }
+
+    $.ajax({
+      url: directory + 'api/getStats.php?rooms=' + roomId + '&number=' + number + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+      timeout: 5000,
+      type: 'GET',
+      cache: false,
+      success: function(json) {
+        for (i in json.getStats.roomStats) {
+          var roomName = json.getStats.roomStats[i].roomData.roomName,
+            roomId = json.getStats.roomStats[i].roomData.roomId;
+
+          for (j in json.getStats.roomStats[i].users) {
+            var userName = json.getStats.roomStats[i].users[j].userData.userName,
+              userId = json.getStats.roomStats[i].users[j].userData.userId,
+              startTag = json.getStats.roomStats[i].users[j].userData.startTag,
+              endTag = json.getStats.roomStats[i].users[j].userData.endTag,
+              position = json.getStats.roomStats[i].users[j].position,
+              messageCount = json.getStats.roomStats[i].users[j].messageCount;
+
+            statsHtml[position] += '<td><span class="userName userNameTable" data-userId="' + userId + '">' + startTag + userName + endTag + '</span> (' + messageCount + ')</td>';
+          };
+
+
+          roomHtml += '<th>' + roomName + '</th>';
+
+        }
+
+        for (i = 1; i <= number; i += 1) {
+          statsHtml2 += '<tr><th>' + i + '</th>' + statsHtml[i] + '</tr>';
+        }
+
+        dia.full({
+          content : '<table class="center"><thead><tr><th>Position</th>' + roomHtml + '</tr></thead><tbody>' + statsHtml2 + '</tbody></table>',
+          title : 'Room Stats',
+          id : 'roomStatsDialogue',
+          width : 600
+        });
+
+        return false;
+      },
+      error: function() {
+        dia.error('Failed to obtain stats.');
+
+        return false;
+      }
+    });
+
+    return false;
+  },
+
+  /*** END Stats ***/
+
+
+
+
   /*** START User Settings ***/
 
   userSettings : function() {
@@ -1744,109 +2371,151 @@ popup = {
         return false;
       },
       oF : function() {
-        var defaultColour = false;
-        var defaultHighlight = false;
-        var defaultFontface = false;
+        var defaultColour = false,
+          defaultHighlight = false,
+          defaultFontface = false,
+          idMap = {
+            disableFormatting : 16,
+            disableImage : 32,
+            disableVideos : 64,
+            reversePostOrder : 1024, // Show posts in reverse?
+            showAvatars : 2048, // Use the complex document style?
+            audioDing : 8192, // Fire an HTML5 audio ding during each unread message?
+            disableFx : 16384, // Disable jQuery Effects?
+            webkitNotifications : 32768,
+            disableRightClick : 65536
+          };
 
-        $('#theme').change(function() {
-          $('#stylesjQ').attr('href','client/css/' + themes[this.value] + '/jquery-ui-1.8.13.custom.css');
-          $('#stylesFIM').attr('href','client/css/' + themes[this.value] + '/fim.css');
-
-          $.cookie('fim3_themeId',this.value);
-
-          return false;
-        });
 
 
         if (settings.reversePostOrder) {
-          $('#reversePostOrder').attr('checked','checked');
+          $('#reversePostOrder').attr('checked', 'checked');
         }
         if (settings.showAvatars) {
-          $('#showAvatars').attr('checked','checked');
+          $('#showAvatars').attr('checked', 'checked');
         }
         if (settings.audioDing) {
-          $('#audioDing').attr('checked','checked');
+          $('#audioDing').attr('checked', 'checked');
         }
         if (settings.disableFx) {
-          $('#disableFx').attr('checked','checked');
+          $('#disableFx').attr('checked', 'checked');
+        }
+        if (settings.disableFormatting) {
+          $('#disableFormatting').attr('checked', 'checked');
+        }
+        if (settings.disableVideo) {
+          $('#disableVideo').attr('checked', 'checked');
+        }
+        if (settings.disableImage) {
+          $('#disableImage').attr('checked', 'checked');
+        }
+        if (settings.disableRightClick) {
+          $('#disableRightClick').attr('checked', 'checked');
+        }
+        if (settings.webkitNotifications) {
+          $('#webkitNotifications').attr('checked', 'checked');
+        }
+        if (snd.volume) {
+          $('#audioVolume').attr('value', snd.volume * 100);
+        }
+        if (theme) {
+          $('#theme > option[value="' + theme + '"]').attr('selected', 'selected');
+        }
+        if (fontsize) {
+          $('#fontsize > option[value="' + fontsize + '"]').attr('selected', 'selected');
         }
 
 
-        $('#showAvatars').change(function() {
-          if ($(this).val() == 'true' && !settings.showAvatars) {
-            settings.showAvatars = true;
-            $('#messageList').html('');
-            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) + 2048);
+        $.get(directory + 'api/getUsers.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
+          active = json.getUsers.users;
 
-            requestSettings.firstRequest= true;
+          for (i in active) {
+            defaultColour = active[i].defaultFormatting.color;
+            defaultHighlight = active[i].defaultFormatting.highlight;
+            defaultFontface = active[i].defaultFormatting.fontface;
+
+            var defaultGeneral = active[i].defaultFormatting.general,
+              ignoreList = active[i].ignoreList,
+              defaultHighlightHashPre = [],
+              defaultHighlightHash = {r:0,g:0,b:0},
+              defaultColourHashPre = [],
+              defaultColourHash = {r:0,g:0,b:0};
+
+            if (defaultGeneral & 256) {
+              $('#fontPreview').css('font-weight', 'bold');
+              $('#defaultBold').attr('checked', 'checked');
+            }
+            if (defaultGeneral & 512) {
+              $('#fontPreview').css('font-style', 'italic');
+              $('#defaultItalics').attr('checked', 'checked');
+            }
+
+            if (defaultColour) {
+              $('#fontPreview').css('color', 'rgb(' + defaultColour + ')');
+              $('#defaultColour').css('background-color', 'rgb(' + defaultColour + ')');
+
+              defaultColourHashPre = defaultColour.split(', ');
+              defaultColourHash = {r : defaultColourHashPre[0], g : defaultColourHashPre[1], b : defaultColourHashPre[2] }
+            }
+            if (defaultHighlight) {
+              $('#fontPreview').css('background-color', 'rgb(' + defaultHighlight + ')');
+              $('#defaultHighlight').css('background-color', 'rgb(' + defaultHighlight + ')');
+
+              defaultHighlightHashPre = defaultHighlight.split(', ');
+              defaultHighlightHash = {r : defaultHighlightHashPre[0], g : defaultHighlightHashPre[1], b : defaultHighlightHashPre[2] }
+            }
+            if (defaultFontface) {
+              $('#defaultFace > option[value="' + defaultFontface + '"]').attr('selected', 'selected');
+            }
+
+
+            $('#defaultHighlight').ColorPicker({
+              color: defaultHighlightHash,
+                onShow: function (colpkr) {
+                $(colpkr).fadeIn(500);
+
+                return false;
+              },
+              onHide: function (colpkr) {
+                $(colpkr).fadeOut(500);
+
+                return false;
+              },
+              onChange: function(hsb, hex, rgb) {
+                defaultHighlight = rgb['r'] + ', ' + rgb['g'] + ', ' + rgb['b'];
+
+                $('#defaultHighlight').css('background-color', 'rgb(' + defaultHighlight + ')');
+                $('#fontPreview').css('background-color', 'rgb(' + defaultHighlight + ')');
+              }
+            });
+
+            $('#defaultColour').ColorPicker({
+              color: defaultColourHash,
+              onShow: function (colpkr) {
+                $(colpkr).fadeIn(500);
+
+                return false;
+              },
+              onHide: function (colpkr) {
+                $(colpkr).fadeOut(500);
+
+                return false;
+              },
+              onChange: function(hsb, hex, rgb) {
+                defaultColour = rgb['r'] + ', ' + rgb['g'] + ', ' + rgb['b'];
+
+                $('#defaultColour').css('background-color', 'rgb(' + defaultColour + ')');
+                $('#fontPreview').css('color', 'rgb(' + defaultColour + ')');
+              }
+            });
+
+
+            autoEntry.showEntries('ignoreList', ignoreList);
+
+            return false;
           }
-          else if ($(this).val() != 'true' && settings.showAvatars) {
-            settings.showAvatars = false;
-            $('#messageList').html('');
-            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) - 2048);
-
-            requestSettings.firstRequest= true;
-          }
-
-          return false;
         });
 
-        $('#reversePostOrder').change(function() {
-          if ($(this).val() == 'true' && !settings.reversePostOrder) {
-            settings.reversePostOrder = true;
-            $('#messageList').html('');
-            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) + 1024);
-
-            requestSettings.firstRequest= true;
-          }
-          else if ($(this).val() != 'true' && settings.reversePostOrder) {
-            settings.reversePostOrder = false;
-            $('#messageList').html('');
-            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) - 1024);
-
-            requestSettings.firstRequest= true;
-          }
-
-          return false;
-        });
-
-        $('#audioDing').change(function() {
-          if ($(this).val() == 'true' && !settings.audioDing) {
-            settings.audioDing = true;
-            $('#messageList').html('');
-            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) + 8192);
-
-            requestSettings.firstRequest= true;
-          }
-          else if ($(this).val() != 'true' && settings.audioDing) {
-            settings.audioDing = false;
-            $('#messageList').html('');
-            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) - 8192);
-
-            requestSettings.firstRequest= true;
-          }
-
-          return false;
-        });
-
-        $('#disableFx').change(function() {
-          if ($(this).val() == 'true' && !settings.disableFx) {
-            settings.disableFx = true;
-            $('#disableFx').html('');
-            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) + 16384);
-
-            requestSettings.firstRequest= true;
-          }
-          else if ($(this).val() != 'true' && settings.disableFx) {
-            settings.disableFx = false;
-            $('#disableFx').html('');
-            $.cookie('fim3_settings',parseInt($.cookie('fim3_settings')) - 16384);
-
-            requestSettings.firstRequest= true;
-          }
-
-          return false;
-        });
 
         $("#defaultRoom").autocomplete({
           source: roomList
@@ -1854,97 +2523,93 @@ popup = {
         $("#watchRoomsBridge").autocomplete({
           source: roomList
         });
+        $("#ignoreListBridge").autocomplete({
+          source: userList
+        });
 
-        $.ajax({
-          url: directory + 'api/getFonts.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
-          timeout: 5000,
-          type: 'GET',
-          cache: false,
-          success: function(xml) {
-            $(xml).find('font').each(function() {
-              var fontName = unxml($(this).find('fontName').text().trim());
-              var fontId = parseInt($(this).find('fontId').text().trim());
-              var fontGroup = unxml($(this).find('fontGroup').text().trim());
-              var fontData = unxml($(this).find('fontData').text().trim());
+        $('#defaultFace').html(fontSelectHtml);
 
-              $('#defaultFace').append('<option value="' + fontId + '" style="' + fontData + '" data-font="' + fontData + '">' + fontName + '</option>');
-            });
 
-            return false;
-          },
-          error: function() {
-            dia.error('The list of fonts could not be obtained from the server.');
+        $('#theme').change(function() {
+          $('#stylesjQ').attr('href', 'client/css/' + this.value + '/jquery-ui-1.8.13.custom.css');
+          $('#stylesFIM').attr('href', 'client/css/' + this.value + '/fim.css');
 
-            return false;
+          $.cookie('fim3_theme', this.value, { expires : 14 });
+          theme = this.value;
+
+          return false;
+        });
+
+
+        $('#fontsize').change(function() {
+          $('body').css('font-size',this.value + 'em');
+
+          $.cookie('fim3_fontsize', this.value, { expires : 14 });
+          fontsize = this.value;
+
+          return false;
+        });
+
+        $('#audioVolume').change(function() {
+          $.cookie('fim3_audioVolume', this.value, { expires : 14 });
+          window.volume = this.value / 100;
+
+          return false;
+        });
+
+
+        $('#showAvatars, #reversePostOrder, #disableFormatting, #disableVideo, #disableImage').change(function() {
+          var localId = $(this).attr('id');
+
+          if ($(this).is(':checked') && !settings[localId]) {
+            settings[localId] = true;
+            $('#messageList').html('');
+            $.cookie('fim3_settings', Number($.cookie('fim3_settings')) + idMap[localId], { expires : 14 });
+
+            requestSettings.firstRequest = true;
+          }
+          else if (!$(this).is(':checked') && settings[localId]) {
+            settings[localId] = false;
+            $('#messageList').html('');
+            $.cookie('fim3_settings', Number($.cookie('fim3_settings')) - idMap[localId], { expires : 14 });
+
+            requestSettings.firstRequest = true;
           }
         });
 
-        $('#defaultHighlight').ColorPicker({
-          color: '',
-          onShow: function (colpkr) {
-            $(colpkr).fadeIn(500);
+        $('#audioDing, #disableFx, #webkitNotifications, #disableRightClick').change(function() {
+          var localId = $(this).attr('id');
 
-            return false;
-          },
-          onHide: function (colpkr) {
-            $(colpkr).fadeOut(500);
+          if ($(this).is(':checked') && !settings[localId]) {
+            settings[localId] = true;
+            $.cookie('fim3_settings', Number($.cookie('fim3_settings')) + idMap[localId], { expires : 14 });
 
-            return false;
-          },
-          onChange: function(hsb, hex, rgb) {
-            defaultHighlight = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
+            if (localId === 'disableFx') {
+              jQuery.fx.off = true;
+            }
+            if (localId === 'webkitNotifications') {
+              window.webkitNotifications.requestPermission();
+            }
+          }
+          else if (!$(this).is(':checked') && settings[localId]) {
+            settings[localId] = false;
+            $.cookie('fim3_settings', Number($.cookie('fim3_settings')) - idMap[localId], { expires : 14 });
 
-            $('#defaultHighlight').css('background-color','rgb(' + defaultHighlight + ')');
-            $('#fontPreview').css('background-color','rgb(' + defaultHighlight + ')');
+            if (localId === 'disableFx') {
+              jQuery.fx.off = false;
+            }
           }
         });
-
-        $('#defaultColour').ColorPicker({
-          color: '',
-          onShow: function (colpkr) {
-            $(colpkr).fadeIn(500);
-
-            return false;
-          },
-          onHide: function (colpkr) {
-            $(colpkr).fadeOut(500);
-
-            return false;
-          },
-          onChange: function(hsb, hex, rgb) {
-            defaultColour = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
-
-            $('#defaultColour').css('background-color','rgb(' + defaultColour + ')');
-            $('#fontPreview').css('color','rgb(' + defaultColour + ')');
-          }
-        });
-
-        $('#fontPreview').css('color','');
-        $('#defaultColour').css('background-color','');
-        $('#fontPreview').css('background-color','');
-        $('#defaultHighlight').css('background-color','');
-
-        if ($('#defaultItalics').is(':checked')) {
-          $('#fontPreview').css('font-style','italic');
-        }
-        else {
-          $('#fontPreview').css('messageIdfont-style','normal');
-        }
-
-        if ($('#defaultBold').is(':checked')) {
-          $('#fontPreview').css('font-weight','bold');
-        }
-        else {
-          $('#fontPreview').css('font-style','normal');
-        }
 
         $("#changeSettingsForm").submit(function() {
-          var watchRooms = $('#watchRooms').val();
-          var defaultRoom = $('#defaultRoom').val();
-          var defaultRoomId = (defaultRoom ? roomRef[defaultRoom] : 0);
-          var fontId = $('#defaultFace option:selected').val();
+          var watchRooms = $('#watchRooms').val(),
+            defaultRoom = $('#defaultRoom').val(),
+            ignoreList = $('#ignoreList').val(),
+            defaultRoomId = (defaultRoom ? roomRef[defaultRoom] : 0),
+            fontId = $('#defaultFace option:selected').val(),
+            defaultFormatting = ($('#defaultBold').is(':checked') ? 256 : 0) + ($('#defaultItalics').is(':checked') ? 512 : 0);
 
-          $.post(directory + 'api/moderate.php','action=userOptions&userId=' + userId + (defaultColour ? '&defaultColor=' + defaultColour : '') + (defaultHighlight ? '&defaultHighlight=' + defaultHighlight : '') + (defaultRoomId ? '&defaultRoomId=' + defaultRoomId : '') + (watchRooms ? '&watchRooms=' + watchRooms : '') + (fontId ? '&defaultFontface=' + fontId : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(xml) {
+          $.post(directory + 'api/editUserOptions.php', 'defaultFormatting=' + defaultFormatting + '&defaultColor=' + defaultColour + '&defaultHighlight=' + defaultHighlight + '&defaultRoomId=' + defaultRoomId + '&watchRooms=' + watchRooms + '&ignoreList=' + ignoreList + '&defaultFontface=' + fontId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
             dia.info('Your settings may or may not have been updated.');
           }); // Send the form data via AJAX.
 
@@ -1962,6 +2627,298 @@ popup = {
   },
 
   /*** END User Settings ***/
+
+
+
+
+
+
+  /*** START View My Uploads ***/
+
+  viewUploads : function() {
+    dia.full({
+      content : '<table align="center"><thead><tr><td>Preview</td><td>File Name</td></tr></thead><tbody id="viewUploadsBody"></tbody></table>',
+      width : 1000,
+      title : 'View My Uploads',
+      position : 'top',
+      oF : function() {
+        $.ajax({
+          url: directory + 'api/getFiles.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+          type: 'GET',
+          timeout: 2400,
+          cache: false,
+          success: function(json) {
+            var data = '';
+            active = json.getFiles.files;
+
+            for (i in active) {
+              var fileName = active[i].fileName,
+                md5hash = active[i].md5hash,
+                sha256hash = active[i].sha256hash,
+                fileSize = active[i].fileSize;
+
+              data += '<tr><td><img src="' + directory + 'file.php?sha256hash=' + sha256hash + '" style="max-width: 200px; max-height: 200px;" /></td><td>' + fileName + '</td></tr>';
+            }
+
+            $('#viewUploadsBody').html(data);
+
+            return false;
+          },
+          error: function() {
+            dia.error('Could not obtain uploads.');
+          }
+        });
+
+        return false;
+      }
+    });
+  },
+
+  /*** END View My Uploads ***/
+
+
+
+
+
+
+  /*** START Edit Room ***/
+
+  editRoom : function(roomIdLocal) {
+    dia.full({
+      uri : 'template.php?template=editRoomForm',
+      tabs : true,
+      id : 'editRoomDialogue',
+      width : 1000,
+      oF: function() {
+        $("#moderatorsBridge").autocomplete({
+          source: userList
+        });
+        $("#allowedUsersBridge").autocomplete({
+          source: userList
+        });
+        $("#allowedGroupsBridge").autocomplete({
+          source: groupList
+        });
+
+        $.ajax({
+          url: directory + 'api/getRooms.php?rooms=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+          type: 'GET',
+          timeout: 2400,
+          cache: false,
+          success: function(json) {
+            for (var i in json.getRooms.rooms) {
+              var data = '',
+                roomName = json.getRooms.rooms[i].roomName,
+                roomId = json.getRooms.rooms[i].roomId,
+                allowedUsers = json.getRooms.rooms[i].allowedUsers
+                allowedGroups = json.getRooms.rooms[i].allowedGroups,
+                moderators = json.getRooms.rooms[i].moderators;
+
+              break;
+            }
+
+            $('#name').val(roomName);
+
+            if (allowedUsers !== '*' && allowedUsers !== '') {
+              autoEntry.showEntries('allowedUsers',allowedUsers);
+            }
+
+
+            if (moderators !== '*' && moderators !== '') {
+              autoEntry.showEntries('moderators',moderators);
+            }
+
+
+            if (allowedGroups !== '*' && allowedGroups !== '') {
+              autoEntry.showEntries('allowedGroups',allowedGroups);
+            }
+
+            if (mature) {
+              $('#mature').attr('checked', 'checked');
+            }
+
+            return false;
+          },
+          error: function() {
+            dia.error('Failed to obtain current room settings from server.');
+
+            return false;
+          }
+        });
+
+        $.ajax({
+          url: directory + 'api/getCensorLists.php?rooms=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+          type: 'GET',
+          timeout: 2400,
+          cache: false,
+          success: function(json) {
+            var data = '';
+
+            for (var i in json.getCensorLists.lists) {
+              var listId = json.getCensorLists.lists[i].listId,
+                listName = json.getCensorLists.lists[i].listName,
+                listType = json.getCensorLists.lists[i].listType,
+                listOptions = json.getCensorLists.lists[i].listOptions,
+                isActive = json.getCensorLists.lists[i].isActive;
+
+              data += '<label><input type="checkbox" name="list' + listId + '" data-listId="' + listId + '" value="true" ' + (listOptions & 2 ? '' : ' disabled="disabled"') + (isActive ? ' checked="checked"' : '') + ' />' + listName + '</label>';
+            };
+
+            $('#censorLists').append(data);
+
+            return false;
+          },
+          error: function() {
+            dia.error('Failed to obtain current censor list settings from server.');
+
+            return false;
+          }
+        });
+
+        $("#editRoomForm").submit(function() {
+          var bbcode = Number($('#bbcode > option:selected').val()),
+            name = $('#name').val(),
+            mature = ($('#mature').is(':checked') ? true : false),
+            allowedUsers = $('#allowedUsers').val(),
+            allowedGroups = $('#allowedGroups').val(),
+            moderators = $('#moderators').val();
+
+          if (name.length > 20) {
+            dia.error('The roomname is too long.');
+          }
+          else {
+            $.post(directory + 'api/editRoom.php', 'action=edit&roomId=' + roomIdLocal + '&roomName=' + urlencode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(json) {
+              var errStr = json.editRoom.errStr,
+                errDesc = json.editRoom.errDesc;
+
+              if (errStr) {
+                dia.error('An error has occured: ' + errDesc);
+              }
+              else {
+                dia.full({
+                  content : 'The room has been edited.',
+                  title : 'Room Edited!',
+                  id : 'editRoomResultsDialogue',
+                  width : 600,
+                  buttons : {
+                    Open : function() {
+                      standard.selectRoom(roomIdLocal);
+
+                      return false;
+                    },
+                    Okay : function() {
+                      $('#editRoomResultsDialogue').dialog('close');
+
+                      return false;
+                    }
+                  }
+                });
+                $("#editRoomDialogue").dialog('close');
+              }
+
+              return false;
+            }); // Send the form data via AJAX.
+          }
+          return false; // Don't submit the form.
+        });
+      }
+    });
+  },
+
+  /*** END Edit Room ***/
+
+
+
+
+  /*** START Create Room ***/
+
+  createRoom : function() {
+    dia.full({
+      uri : 'template.php?template=editRoomForm&action=create',
+      id : 'createRoomDialogue',
+      width : 1000,
+      tabs : true,
+      oF : function() {
+        $("#moderatorsBridge").autocomplete({
+          source: userList
+        });
+        $("#allowedUsersBridge").autocomplete({
+          source: userList
+        });
+        $("#allowedGroupsBridge").autocomplete({
+          source: groupList
+        });
+
+        $('#allowAllUsers').change(function() {
+          if ($(this).is(':checked')) {
+            $('#allowedUsersBridge').attr('disabled', 'disabled');
+            $('#allowedGroupsBridge').attr('disabled', 'disabled');
+            $('#allowedUsersBridge').next().attr('disabled', 'disabled');
+            $('#allowedGroupsBridge').next().attr('disabled', 'disabled');
+          }
+          else {
+            $('#allowedUsersBridge').removeAttr('disabled');
+            $('#allowedGroupsBridge').removeAttr('disabled');
+            $('#allowedUsersBridge').next().removeAttr('disabled');
+            $('#allowedGroupsBridge').next().removeAttr('disabled');
+          }
+        });
+
+        $("#editRoomForm").submit(function() {
+          var bbcode = Number($('#bbcode').val()),
+            name = $('#name').val(),
+            mature = ($('#mature').is(':checked') ? true : false),
+            allowedUsers = $('#allowedUsersBridge').val(),
+            allowedGroups = $('#allowedGroupsBridge').val(),
+            moderators = $('#moderatorsBridge').val();
+
+          if (name.length > 20) {
+            dia.error('The roomname is too long.');
+          }
+          else {
+            $.post(directory + 'api/editRoom.php', 'action=create&roomName=' + urlencode(name) + ($('#allowAllUsers').is(':checked') ? '&defaultPermissions=7' : '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups) + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(json) {
+              var errStr = json.editRoom.errStr,
+                errDesc = json.editRoom.errDesc,
+                createRoomId = json.editRoom.response.insertId;
+
+              if (errStr) {
+                dia.error('An error has occured: ' + errDesc);
+              }
+              else {
+                dia.full({
+                  content : 'The room has been created at the following URL:<br /><br /><form action="' + currentLocation + '#room=' + createRoomId + '" method="post"><input type="text" style="width: 300px;" value="' + currentLocation + '#room=' + createRoomId + '" name="url" /></form>',
+                  title : 'Room Created!',
+                  id : 'createRoomResultDialogue',
+                  width : 600,
+                  buttons : {
+                    Open : function() {
+                      standard.changeRoom(createRoomId);
+
+                      return false;
+                    },
+                    Okay : function() {
+                      $('#createRoomResultsDialogue').dialog('close');
+
+                      return false;
+                    }
+                  }
+                });
+                $("#editRoomDialogue").dialog('close');
+              }
+            }); // Send the form data via AJAX.
+          }
+
+          return false; // Don't submit the form.
+        });
+
+        return false;
+      }
+    });
+
+    return false;
+  },
+
+  /*** END Create Room ***/
 
 
 
@@ -1985,6 +2942,8 @@ popup = {
 
           standard.privateRoom(privateUserId);
 
+
+
           return false; // Don't submit the form.
         });
 
@@ -2007,6 +2966,7 @@ popup = {
       content : '<table class="center"><thead><tr class="hrow"><th>User</th><th>Rooms</th></tr></thead><tbody id="onlineUsers"><tr><td colspan="2">Loading...</td></tr></tbody></table>',
       title : 'Active Users',
       id : 'onlineDialogue',
+      position : 'top',
       width : 600,
       cF : function() {
         clearInterval(timers.t2);
@@ -2015,29 +2975,31 @@ popup = {
 
     function updateOnline() {
       $.ajax({
-        url: directory + 'api/getAllActiveUsers.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
+        url: directory + 'api/getAllActiveUsers.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
         type: 'GET',
         timeout: 2400,
         cache: false,
-        success: function(xml) {
+        success: function(json) {
           var data = '';
 
-          $(xml).find('user').each(function() {
-            var userName = unxml($(this).find('userName').text().trim());
-            var userId = parseInt($(this).find('userId').text().trim());
-            var startTag = unxml($(this).find('startTag').text().trim());
-            var endTag = unxml($(this).find('endTag').text().trim());
-            var roomData = new Array();
+          active = json.getAllActiveUsers.users;
 
-            $(this).find('room').each(function() {
-              var roomId = parseInt($(this).find('roomId').text().trim());
-              var roomName = unxml($(this).find('roomName').text().trim());
+          for (i in active) {
+            var userName = active[i].userData.userName,
+              userId = active[i].userData.userId,
+              startTag = active[i].userData.startTag,
+              endTag = active[i].userData.endTag,
+              roomData = [];
+
+            for (j in active[i].rooms) {
+              var roomId = active[i].rooms[j].roomId,
+                roomName = active[i].rooms[j].roomName;
               roomData.push('<a href="#room=' + roomId + '">' + roomName + '</a>');
-            });
+            }
             roomData = roomData.join(', ');
 
-            data += '<tr><td>' + startTag + '<span class="userName">' + userName + '</span>' + endTag + '</td><td>' + roomData + '</td></tr>';
-          });
+            data += '<tr><td>' + startTag + '<span class="userName" data-userId="' + userId + '">' + userName + '</span>' + endTag + '</td><td>' + roomData + '</td></tr>';
+          }
 
           $('#onlineUsers').html(data);
 
@@ -2057,6 +3019,159 @@ popup = {
   },
 
   /*** END Online ***/
+
+
+
+
+  /*** START Kick Manager ***/
+
+  manageKicks : function() {
+    var kickHtml = '';
+
+    $.ajax({
+      url: directory + 'api/getKicks.php?rooms=' + roomId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+      timeout: 5000,
+      type: 'GET',
+      cache: false,
+      success: function(json) {
+        active = json.getKicks.kicks;
+
+        for (i in active) {
+          var kickerId = active[i].kickerData.userId,
+            kickerName = active[i].kickerData.userName,
+            kickerFormatStart = active[i].kickerData.userFormatStart,
+            kickerFormatEnd = active[i].kickerData.userFormatEnd,
+            userId = active[i].userData.userId,
+            userName = active[i].userData.userName,
+            userFormatStart = active[i].userData.userFormatStart,
+            userFormatEnd = active[i].userData.userFormatEnd,
+            length = active[i].length,
+            set = active[i].setFormatted,
+            expires = active[i].expiresFormatted;
+
+          kickHtml += '<tr><td>' + userFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + userFormatEnd + '</td><td>' + kickerFormatStart + '<span class="userName userNameTable" data-userId="' + kickerId + '">' + kickerName + '</span>' + kickerFormatEnd + '</td><td>' + set + '</td><td>' + expires + '</td><td><button onclick="standard.unkick(' + userId + ', ' + roomId + ')">Unkick</button></td></tr>';
+        }
+
+        dia.full({
+          content : '<table class="center"><thead><tr class="hrow"><th>User</th><th>Kicked By</th><th>Kicked On</th><th>Expires On</th><th>Actions</th></tr>  </thead><tbody id="kickedUsers">' + kickHtml + '</tbody></table>',
+          title : 'Manage Kicked Users in This Room',
+          width : 1000
+        });
+
+        return false;
+      },
+      error: function() {
+        dia.error('The list of currently kicked users could not be obtained from the server.');
+
+        return false;
+      }
+    });
+
+    return false;
+  },
+
+  /*** END Kick Manager ***/
+
+
+
+
+  /*** START My Kicks ***/
+
+  myKicks : function() {
+    var kickHtml = '';
+
+    $.ajax({
+      url: directory + 'api/getKicks.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+      timeout: 5000,
+      type: 'GET',
+      cache: false,
+      success: function(json) {
+        active = json.getKicks.kicks;
+
+        for (i in active) {
+          var kickerId = active[i].kickerData.userId,
+            kickerName = active[i].kickerData.userName,
+            kickerFormatStart = active[i].kickerData.userFormatStart,
+            kickerFormatEnd = active[i].kickerData.userFormatEnd,
+            userId = active[i].userData.userId,
+            userName = active[i].userData.userName,
+            userFormatStart = active[i].userData.userFormatStart,
+            userFormatEnd = active[i].userData.userFormatEnd,
+            length = active[i].length,
+            set = active[i].setFormatted,
+            expires = active[i].expiresFormatted;
+
+          kickHtml += '<tr><td>' + userFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + userFormatEnd + '</td><td>' + kickerFormatStart + '<span class="userName userNameTable" data-userId="' + kickerId + '">' + kickerName + '</span>' + kickerFormatEnd + '</td><td>' + set + '</td><td>' + expires + '</td></tr>';
+        }
+
+        dia.full({
+          content : '<table class="center"><thead><tr class="hrow"><th>User</th><th>Kicked By</th><th>Kicked On</th><th>Expires On</th></tr>  </thead><tbody id="kickedUsers">' + kickHtml + '</tbody></table>',
+          title : 'You Have Been Kicked From The Following Rooms',
+          width : 1000
+        });
+
+        return false;
+      },
+      error: function() {
+        dia.error('The list of currently kicked users could not be obtained from the server.');
+
+        return false;
+      }
+    });
+
+    return false;
+  },
+
+  /*** END Kick Manager ***/
+
+
+
+
+  /*** START Kick ***/
+
+  kick : function() {
+    dia.full({
+      content : '<form action="#" id="kickUserForm" method="post">  <label for="userName">User</label>: <input type="text" name="userName" id="userName" /><br />  <label for="roomNameKick">Room</label>: <input type="text" id="roomNameKick" name="roomNameKick" /> <br />  <label for="time">Time</label>: <input type="text" name="time" id="time" style="width: 50px;" />  <select name="interval" id="interval">    <option value="1">Seconds</option>    <option value="60">Minutes</option>    <option value="3600">Hours</option>    <option value="86400">Days</option>    <option value="604800">Weeks</option>  </select><br /><br />  <button type="submit">Kick User</button><button type="reset">Reset</button></form>',
+      title : 'Kick User',
+      id : 'kickUserDialogue',
+      width : 1000,
+      oF : function() {
+        var roomModList = [],
+          i = 0;
+
+        for (i = 0; i < roomList.length; i += 1) {
+          if (modRooms[roomRef[roomList[i]]] > 0) {
+            roomModList.push(roomIdRef[roomRef[roomList[i]]].roomName);
+          }
+        }
+
+        $('#userName').autocomplete({
+          source: userList
+        });
+        $('#roomNameKick').autocomplete({
+          source: roomModList
+        });
+
+        $("#kickUserForm").submit(function() {
+          var roomNameKick = $('#roomNameKick').val(),
+            roomId = roomRef[roomNameKick],
+            userName = $('#userName').val(),
+            userId = userRef[userName],
+            length = Math.floor(Number($('#time').val() * Number($('#interval > option:selected').attr('value'))));
+
+          standard.kick(userId,roomId,length);
+
+          return false; // Don't submit the form.
+        });
+
+        return false;
+      }
+    });
+
+    return false;
+  },
+
+  /*** END Kick ***/
 
 
 
@@ -2083,18 +3198,34 @@ popup = {
 
   archive : function(options) {
     dia.full({
-      content : '<form id="archiveSearch" action="#" method="get"><input type="text" name="searchText" /></form> <table class="center"><thead><tr><th style="width: 20%;">User</th><th style="width: 20%;">Time</th><th style="width: 60%;">Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><button id="archivePrev"><< Prev</button><button id="archiveNext">Next >></button>',
+      content : '<form id="archiveSearch" action="#" method="get" style="text-align: center;"><table style="text-align: center; margin-left: auto; margin-right: auto;"><thead><tr><th align="center"><small>Search Text:</small></th><th><small>Filter by User:</small></th><th><small>Results per Page:</small></th></tr></thead><tbody><tr><td><input type="text" id="searchText" name="searchText" style="margin-left: auto; margin-right: auto; text-align: left;" /></td><td><input type="text" id="searchUser" name="searchUser" style="margin-left: auto; margin-right: auto; text-align: left;" /></td><td><select id="resultLimit" name="resultLimit" style="margin-left: auto; margin-right: auto; text-align: left;"><option value="10">10</option><option value="25" selected="selected">25</option><option value="50">50</option><option value="100">100</option><option value="500">500</option></select></td></tr></tbody></table></form><br /><br /><table class="center"><thead><tr><th style="width: 20%;">User</th><th style="width: 20%;">Time</th><th style="width: 60%;">Message</th><th>-</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><div align="center"><button id="archivePrev"><< Prev</button><button id="export">Export</button><button id="archiveNext">Next >></button></div>',
       title : 'Archive',
       id : 'archiveDialogue',
+      position : 'top',
       width : 1000,
       autoOpen : false
     });
+
+    var messageCount = roomIdRef[options.roomId].messageCount;
 
     standard.archive({
       roomId: options.roomId,
       idMin: options.idMin,
       callback: function(data) {
         $('#archiveDialogue').dialog('open');
+        $("#searchUser").autocomplete({
+          source: userList,
+          change : function() {
+            standard.archive({
+              idMax : options.idMax,
+              idMin : options.idMin,
+              roomId : options.roomId,
+              userId : userRef[$('#searchUser').val()],
+              search : $('#searchText').val(),
+              maxResults : $('#resultLimit').val(),
+            });
+          }
+        });
 
         return false;
       }
@@ -2144,9 +3275,11 @@ popup = {
 function windowDraw() {
   console.log('Redrawing window.');
 
+
   if (settings.disableFx) {
     jQuery.fx.off = true;
   }
+
 
   if (settings.showAvatars) {
     $('.messageText').tipTip({
@@ -2162,15 +3295,19 @@ function windowDraw() {
 
       if (thisid != $('#tooltext').attr('data-lastuserId')) {
         $('#tooltext').attr('data-lastuserId',thisid);
-        $.get(directory + 'api/getUsers.php?users=' + thisid + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId, function(xml) {
-          var userName = unxml($(xml).find('user > userName').text().trim());
-          var userId = parseInt($(xml).find('user > userId').text().trim());
-          var startTag = unxml($(xml).find('user > startTag').text().trim());
-          var endTag = unxml($(xml).find('user > endTag').text().trim());
-          var userTitle = unxml($(xml).find('user > userTitle').text().trim());
-          var posts = parseInt($(xml).find('user > postCount').text().trim());
-          var joinDate = unxml($(xml).find('user > joinDateFormatted').text().trim());
-          var avatar = unxml($(xml).find('user > avatar').text().trim());
+        $.get(directory + 'api/getUsers.php?users=' + thisid + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId, function(json) {
+          active = json.getUsers.users;
+
+          for (i in active) {
+            var userName = active[i].userName,
+              userId = active[i].userId,
+              startTag = active[i].startTag,
+              endTag = active[i].endTag,
+              userTitle = active[i].userTitle,
+              posts = active[i].postCount,
+              joinDate = active[i].joinDateFormatted,
+              avatar = active[i].avatar;
+          }
 
           content.html('<div style="width: 400px;">' + (avatar.length > 0 ? '<img alt="" src="' + avatar + '" style="float: left;" />' : '') + '<span class="userName" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>' + (userTitle.length > 0 ? '<br />' + userTitle : '') + '<br /><em>Posts</em>: ' + posts + '<br /><em>Member Since</em>: ' + joinDate + '</div>');
 
@@ -2223,61 +3360,26 @@ function windowDraw() {
     $('#messageInput').attr("disabled","disabled"); // The user is able to post.
   }
 
-  $("#icon_settings.reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (settings.reversePostOrder ? 'n' : 's') } );
   $("#icon_help").button({ icons: {primary:'ui-icon-help'} });
   $("#icon_note").button({ icons: {primary:'ui-icon-note'} });
   $("#icon_settings").button({ icons: {primary:'ui-icon-wrench'} });
-  $("#icon_muteSound").button( "option", "icons", { primary: 'ui-icon-volume-on' } );
-  $("#icon_url").button( "option", "icons", { primary: 'ui-icon-link' } );
-  $("#icon_image").button( "option", "icons", { primary: 'ui-icon-image' } );
-  $("#icon_video").button( "option", "icons", { primary: 'ui-icon-video' } );
-  $("#icon_submit").button( "option", "icons", { primary: 'ui-icon-circle-check' } );
-  $("#icon_reset").button( "option", "icons", { primary: 'ui-icon-circle-close' } );
+  $("#icon_url").button("option", "icons", { primary: 'ui-icon-link' } );
+  $("#icon_image").button("option", "icons", { primary: 'ui-icon-image' } );
+  $("#icon_video").button("option", "icons", { primary: 'ui-icon-video' } );
+  $("#icon_submit").button("option", "icons", { primary: 'ui-icon-circle-check' } );
+  $("#icon_reset").button("option", "icons", { primary: 'ui-icon-circle-close' } );
 
-  $("#imageUploadSubmitButton").button( "option", "disabled", true);
+  $("#imageUploadSubmitButton").button("option", "disabled", true);
 
-  $("#icon_settings.reversePostOrder").hover(
-    function() {
-      $("#icon_settings.reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (settings.reversePostOrder ? 's' : 'n') } );
 
-      return false;
-    },
-    function () {
-      $("#icon_settings.reversePostOrder").button("option", "icons", { primary: 'ui-icon-circle-triangle-' + (settings.reversePostOrder ? 'n' : 's') } );
 
-      return false;
-    }
-  );
-
-  $("#icon_muteSound").hover(
-    function() {
-      if (settings.audioDing) {
-        $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-off' } );
-      }
-      else {
-        $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-on' } );
-      }
-
-      return false;
-    },
-    function () {
-      if (settings.audioDing) {
-        $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-on' } );
-      }
-      else {
-        $("#icon_muteSound").button("option", "icons", { primary: 'ui-icon-volume-off' } );
-      }
-
-      return false;
-    }
-  );
-
+  $('#icon_note, #messageArchive, a#editRoom').unbind('click'); // Cleanup
 
 
 
   /*** Archive ***/
 
-  $('#icon_note, #messageArchive').click(function() {
+  $('#icon_note, #messageArchive').bind('click',function() {
     popup.archive({roomId : roomId});
 
     return false;
@@ -2287,7 +3389,7 @@ function windowDraw() {
 
   /*** Edit Room ***/
 
-  $('a#editRoom').click(function() {
+  $('a#editRoom').bind('click',function() {
     popup.editRoom(roomId);
 
     return false;
@@ -2302,8 +3404,8 @@ function windowDraw() {
 }
 
 function windowDynaLinks() {
-  var noAdminCounter = 0; // This is probably a bad way of doing what we'll do, but meh.
-  var noModCounter = 0; // Same as above...
+  var noAdminCounter = 0, // This is probably a bad way of doing what we'll do, but meh.
+    noModCounter = 0; // Same as above...
 
 
   /* Show All Links */
@@ -2404,23 +3506,27 @@ function windowDynaLinks() {
 
 function contextMenuParse() {
   $('.userName').contextMenu({
-    menu: 'userMenu'
+    menu: 'userMenu',
+    altMenu : settings.disableRightClick
   },
   function(action, el) {
-    var userId = $(el).attr('data-userId');
-    var userName = '';
-    var avatarUrl = '';
-    var profileUrl = '';
+    var userId = $(el).attr('data-userId'),
+      userName = '',
+      avatarUrl = '',
+      profileUrl = '';
 
     $.ajax({
       url: directory + 'api/getUsers.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
       type: 'GET',
       timeout: 2400,
-      cache: false,
-      success: function(xml) {
-        userName = unxml($(xml).find('userName').text().trim());
-        avatarUrl = unxml($(xml).find('avatar').text().trim());
-        profileUrl = unxml($(xml).find('profile').text().trim());
+      success: function(json) {
+        active = json.getUsers.users;
+
+        for (i in active) {
+          userName = active[i].userName;
+          avatarUrl = active[i].avatar;
+          profileUrl = active[i].profile;
+        }
 
         switch(action) {
           case 'private_im':
@@ -2435,8 +3541,12 @@ function contextMenuParse() {
           popup.kick(userId, roomId);
           break;
 
-          case 'ban': // TODO?
-          window.open('moderate.php?do=banuser2&userId=' + userId,'banuser' + userId);
+          case 'ban': // TODO
+          standard.banUser(userId);
+          break;
+
+          case 'ignore': // TODO
+          standard.ignoreUser(userId);
           break;
         }
 
@@ -2453,10 +3563,11 @@ function contextMenuParse() {
   });
 
   $('.messageLine .messageText').contextMenu({
-    menu: 'messageMenu'
+    menu: 'messageMenu',
+    altMenu : settings.disableRightClick
   },
   function(action, el) {
-    postid = $(el).attr('data-messageid');
+    var postid = $(el).attr('data-messageid');
 
     switch(action) {
       case 'delete':
@@ -2473,8 +3584,11 @@ function contextMenuParse() {
       break;
 
       case 'link':
-        // TODO
-        dia.info('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + $('body').attr('data-roomId') + '#message=' + postid + '" />','Link to This Message');
+        dia.full({
+          title : 'Link to this Message',
+          id : 'messageLink',
+          content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + $('body').attr('data-roomId') + '#message=' + postid + '" />'
+        });
       break;
     }
 
@@ -2482,16 +3596,22 @@ function contextMenuParse() {
   });
 
   $('.messageLine .messageText img').contextMenu({
-    menu: 'messageMenuImage'
+    menu: 'messageMenuImage',
+    altMenu : settings.disableRightClick
   },
   function(action, el) {
-    postid = $(el).attr('data-messageid');
+    var postid = $(el).attr('data-messageid'),
+      src = '';
 
     switch(action) {
       case 'url':
-      var src= $(el).attr('src');
+      src = $(el).attr('src');
 
-      dia.info('<img src="' + src + '" style="max-width: 550px; max-height: 550px;" /><br /><br /><input type="text" value="' + src +  '" style="width: 550px;" />','Copy Image URL');
+      dia.full({
+        title : 'Copy Image URL',
+        content : '<img src="' + src + '" style="max-width: 550px; max-height: 550px;" /><br /><br /><input type="text" value="' + src +  '" style="width: 550px;" />',
+        width : 800
+      });
       break;
 
       case 'delete':
@@ -2506,7 +3626,55 @@ function contextMenuParse() {
       break;
 
       case 'link': // TODO
-      dia.info('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + $('body').attr('data-roomId') + '#message=' + postid + '" />','Link to This Message');
+      dia.info('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + $('body').attr('data-roomId') + '#message=' + postid + '" />', 'Link to This Message');
+      break;
+    }
+
+    return false;
+  });
+
+  $('.messageLine .messageText a').contextMenu({
+    menu: 'messageMenuLink',
+    altMenu : settings.disableRightClick
+  },
+  function(action, el) {
+    var postid = $(el).attr('data-messageid'),
+      src = '';
+
+    switch(action) {
+      case 'url':
+      src = $(el).attr('href');
+
+      dia.full({
+        title : 'Copy URL',
+        content : '<img src="' + src + '" style="max-width: 550px; max-height: 550px;" /><br /><br /><input type="text" value="' + src +  '" style="width: 550px;" />',
+        width : 800
+      });
+      break;
+
+      case 'sandbox':
+      src = $(el).attr('href');
+
+      dia.full({
+        title : 'View Sandboxed',
+        content : '<img src="' + src + '" style="max-width: 550px; max-height: 550px;" /><br /><br /><input type="text" value="' + src +  '" style="width: 550px;" />',
+        width : 800
+      });
+      break;
+
+      case 'delete':
+      dia.confirm({
+        text : 'Are you sure you want to delete this message?',
+        'true' : function() {
+          standard.deleteMessage(postid);
+
+          $(el).parent().fadeOut();
+        }
+      });
+      break;
+
+      case 'link': // TODO
+      dia.info('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + $('body').attr('data-roomId') + '#message=' + postid + '" />', 'Link to This Message');
       break;
     }
 
@@ -2514,7 +3682,8 @@ function contextMenuParse() {
   });
 
   $('.room').contextMenu({
-    menu: 'roomMenu'
+    menu: 'roomMenu',
+    altMenu : settings.disableRightClick
   },
   function(action, el) {
     switch(action) {
@@ -2530,6 +3699,7 @@ function contextMenuParse() {
         }
       });
       break;
+
       case 'edit':
       popup.editRoom($(el).attr('data-roomId'));
       break;
@@ -2544,16 +3714,33 @@ function contextMenuParse() {
 
 
 $(document).ready(function() {
-  standard.login({
-    sessionHash: sessionHash
-  });
+  $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/' + theme + '/jquery-ui-1.8.13.custom.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/' + theme + '/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
+
+  if (fontsize) {
+    $('body').css('font-size',fontsize + 'em');
+  }
+
+
+  if ($.cookie('fim3_userId') > 0) {
+    standard.login({
+      userId : $.cookie('fim3_userId'),
+      password : $.cookie('fim3_password'),
+      finish : function() {
+        if (!userId) { // The user is not actively logged in.
+          popup.login();
+        }
+      }
+    });
+  }
+  else {
+    popup.login();
+  }
+
+
 
   /*** Trigger Login ***/
 
-  if (!userId) { // The user is not actively logged in.
-    popup.login();
-  }
-  $('#login').click(function() {
+  $('#login').bind('click',function() {
     popup.login();
 
     return false;
@@ -2562,7 +3749,9 @@ $(document).ready(function() {
 
 
   /*** Trigger Logout */
-  $('#logout').click(function() {
+
+  $('#logout').bind('click',function() {
+    standard.logout();
     popup.login();
 
     return false;
@@ -2570,17 +3759,16 @@ $(document).ready(function() {
 
 
 
-
   /*** WIP ***/
 
-  $('#showMoreRooms').click(function() {
+  $('#showMoreRooms').bind('click',function() {
     $('#roomListShort').slideUp();
     $('#roomListLong').slideDown();
 
     return false;
   });
 
-  $('#showFewerRooms').click(function() {
+  $('#showFewerRooms').bind('click',function() {
     $('#roomListLong').slideUp();
     $('#roomListShort').slideDown();
 
@@ -2592,7 +3780,7 @@ $(document).ready(function() {
 
   /*** Context Menus ***/
 
-  $.get('template.php','template=contextMenu',function(data) {
+  $.get('template.php', 'template=contextMenu',function(data) {
     $('body').append(data);
 
     console.log('Appended Context Menus to DOM');
@@ -2602,9 +3790,9 @@ $(document).ready(function() {
 
 
 
-  /*** ??? ***/
+  /*** Upload ***/
 
-  $('#icon_url').click(function() {
+  $('#icon_url').bind('click',function() {
     popup.insertDoc('url');
 
     return false;
@@ -2622,7 +3810,7 @@ $(document).ready(function() {
 
   /*** Kick ***/
 
-  $('a#kick').click(function() {
+  $('a#kick').bind('click',function() {
     popup.kick();
 
     return false;
@@ -2632,7 +3820,7 @@ $(document).ready(function() {
 
   /*** Private Room ***/
 
-  $('a#privateRoom').click(function() {
+  $('a#privateRoom').bind('click',function() {
     popup.privateRoom();
 
     return false;
@@ -2642,7 +3830,7 @@ $(document).ready(function() {
 
   /*** Manage Kick ***/
 
-  $('a#manageKick').click(function() {
+  $('a#manageKick').bind('click',function() {
     popup.manageKicks();
 
     return false;
@@ -2650,10 +3838,10 @@ $(document).ready(function() {
 
 
 
-  $('#sendForm').submit(function() {
+  $('#sendForm').bind('submit',function() {
     var message = $('textarea#messageInput').val();
 
-    if (message.length == 0) {
+    if (message.length === 0) {
       dia.error('Please enter your message.');
     }
     else {
@@ -2668,7 +3856,7 @@ $(document).ready(function() {
 
   /*** Online ***/
 
-  $('a#online').click(function() {
+  $('a#online').bind('click',function() {
     popup.online();
 
     return false;
@@ -2678,7 +3866,7 @@ $(document).ready(function() {
 
   /* Create Room */
 
-  $('a#createRoom').click(function() {
+  $('a#createRoom').bind('click',function() {
     popup.createRoom();
 
     return false;
@@ -2688,7 +3876,7 @@ $(document).ready(function() {
 
   /*** Edit Room ***/
 
-  $('a.editRoomMulti').click(function() {
+  $('a.editRoomMulti').bind('click',function() {
     popup.editRoom($(this).attr('data-roomId'));
 
     return false;
@@ -2698,7 +3886,7 @@ $(document).ready(function() {
 
   /*** Help ***/
 
-  $('#icon_help').click(function() {
+  $('#icon_help').bind('click',function() {
     popup.help();
 
     return false;
@@ -2708,7 +3896,7 @@ $(document).ready(function() {
 
   /*** Room List ***/
 
-  $('#roomList').click(function() {
+  $('#roomList').bind('click',function() {
     popup.selectRoom();
 
     return false;
@@ -2718,7 +3906,7 @@ $(document).ready(function() {
 
   /*** Stats ***/
 
-  $('#viewStats').click(function() {
+  $('#viewStats').bind('click',function() {
     popup.viewStats();
 
     return false;
@@ -2728,7 +3916,7 @@ $(document).ready(function() {
 
   /*** Copyright & Credits ***/
 
-  $('#copyrightLink').click(function() {
+  $('#copyrightLink').bind('click',function() {
     popup.copyright();
 
     return false;
@@ -2738,15 +3926,39 @@ $(document).ready(function() {
 
   /*** User Settings ***/
 
-  $('#icon_settings, #changeSettings, a.changeSettingsMulti').click(function() {
+  $('#icon_settings, #changeSettings, a.changeSettingsMulti').bind('click',function() {
     popup.userSettings();
 
     return false;
   });
 
-  if (typeof prepopup == "function") {
+
+
+  /*** View My Uploads ***/
+
+  $('#viewUploads').bind('click',function() {
+    popup.viewUploads();
+
+    return false;
+  });
+
+
+
+  /* We haven't a clue what this does... */
+
+  if (typeof prepopup === "function") {
     prepopup();
   }
+
+
+
+  /* Window Manipulation (see below) */
+
+  $(window).bind('resize', windowResize);
+  window.onblur = function() { windowBlur(); }
+  window.onfocus = function() { windowFocus(); }
+
+
 
   return false;
 });
@@ -2754,4 +3966,58 @@ $(document).ready(function() {
 /*********************************************************
 ************************* END ***************************
 ********* DOM Event Handling & Window Painting **********
+*********************************************************/
+
+
+
+
+
+
+
+
+/*********************************************************
+************************ START **************************
+***** Window Manipulation and Multi-Window Handling *****
+*********************************************************/
+
+function windowResize() {
+  var windowWidth = document.documentElement.clientWidth; // Get the browser window "viewport" width, excluding scrollbars.
+  var windowHeight = document.documentElement.clientHeight; // Get the browser window "viewport" height, excluding scrollbars.
+
+
+  $('#messageList').css('min-height',(windowHeight - 240)); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
+  $('#messageList').css('max-width',((windowWidth - 10) * .75)); // Prevent box-stretching. This is common on... many chats.
+
+
+  /* Body Padding: 10px
+    * Right Area Width: 75%
+    * "Enter Message" Table Padding: 10px
+    *** TD Padding: 2px (on Standard Styling)
+    * Message Input Text Area Padding: 3px */
+  $('#messageInput').css('width',(((windowWidth - 10) * .75) - 10 - 2)); // Set the messageInput box to fill width.
+
+
+  $('body').css('height',windowHeight); // Set the body height to equal that of the window; this fixes many gradient issues in theming.
+
+
+  return false;
+}
+
+function windowBlur() {
+  window.isBlurred = true;
+
+  return false;
+}
+
+function windowFocus() {
+  window.isBlurred = false;
+  window.clearInterval(timers.t3);
+  $('#favicon').attr('href',favicon);
+
+  return false;
+}
+
+/*********************************************************
+************************* END ***************************
+***** Window Manipulation and Multi-Window Handling *****
 *********************************************************/

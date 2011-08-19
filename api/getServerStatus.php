@@ -40,8 +40,13 @@ $xmlData = array(
     'errDesc' => ($errDesc),
     'serverStatus' => array(
       'fim_version' => FIM_VERSION,
-      'loginMethod' => $loginConfig['method'],
       'installedPlugins' => array(),
+
+      'branding' => array(
+        'forumType' => $loginConfig['method'],
+        'forumUrl' => $loginConfig['url'],
+      ),
+
       'requestMethods' => array(
         'longPoll' => (bool) $config['longPolling'],
         'poll' => (bool) true,

@@ -136,9 +136,12 @@ body {
   white-space: nowrap;
 }
 .userNameAvatar {
+  padding-right: 3px;
+}
+.userNameAvatar > img {
+  min-width: 12px;
   max-width: 24px;
   max-height: 24px;
-  padding-right: 3px;
 }
 
 .inline {

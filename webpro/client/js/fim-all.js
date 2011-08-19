@@ -134,7 +134,7 @@ if (!theme) {
 var fontsize = $.cookie('fim3_fontsize');
 
 // Settings Bitfield (goes into effect all over the place)
-if ($.cookie('fim3_setting') === null) {
+if ($.cookie('fim3_settings') === null) {
   var settingsBitfield = 8192;
 }
 else if (Number($.cookie('fim3_settings'))) {
@@ -366,12 +366,12 @@ function messageFormat(json, format) {
 
   switch (format) {
     case 'table':
-    data = '<tr id="archiveMessage' + messageId + '"><td>' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageid="' + messageId + '">' + text + '</td></tr>';
+    data = '<tr id="archiveMessage' + messageId + '"><td>' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageid="' + messageId + '">' + text + '</td><td><a href="javascript:void();" data-messageId="' + messageId + '" class="updateArchiveHere">Show</a></td></tr>';
     break;
 
     case 'list':
     if (settings.showAvatars) {
-      data = '<span id="message' + messageId + '" class="messageLine messageLineAvatar"><img alt="' + userName + '" src="' + avatar + '" class="userName userNameTable userNameAvatar" data-userId="' + userId + '" /><span style="' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
+      data = '<span id="message' + messageId + '" class="messageLine messageLineAvatar"><span class="userName userNameTable userNameAvatar" data-userId="' + userId + '"><img alt="' + userName + '" src="' + avatar + '" /></span><span style="' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
     }
     else {
       data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
@@ -987,8 +987,8 @@ var standard = {
     }
 
 
-    $('#searchText').unbind('change');
-    $('#searchText').bind('change',function() {
+    $('#searchText, #resultLimit, #searchUser').unbind('change');
+    $('#searchText, #resultLimit, #searchUser').bind('change', function() {
       standard.archive({
         idMax : options.idMax,
         idMin : options.idMin,
@@ -997,32 +997,6 @@ var standard = {
         search : $('#searchText').val(),
         maxResults : $('#resultLimit').val(),
       });
-    });
-
-    $('#resultLimit').unbind('change');
-    $('#resultLimit').bind('change',function() {
-      standard.archive({
-        idMax : options.idMax,
-        idMin : options.idMin,
-        roomId : options.roomId,
-        userId : userRef[$('#searchUser').val()],
-        search : $('#searchText').val(),
-        maxResults : $('#resultLimit').val(),
-      });
-    });
-
-    $('#archiveSearch').unbind('submit');
-    $('#archiveSearch').bind('submit',function() {
-      standard.archive({
-        idMax : options.idMax,
-        idMin : options.idMin,
-        roomId : options.roomId,
-        userId : userRef[$('#searchUser').val()],
-        search : $('#searchText').val(),
-        maxResults : $('#resultLimit').val(),
-      });
-
-      return false;
     });
 
     $.when( $.ajax({
@@ -1056,20 +1030,37 @@ var standard = {
       $('#archiveNext').unbind('click');
       $('#archivePrev').unbind('click');
       $('#export').unbind('click');
+      $('.updateArchiveHere').unbind('click');
 
-      $('#archiveNext').bind('click',function() {
+      $('#archiveNext').bind('click', function() {
         standard.archive({
           idMin : lastMessage,
-          roomId: options.roomId
+          roomId: options.roomId,
+          userId : userRef[$('#searchUser').val()],
+          search : $('#searchText').val(),
+          maxResults : $('#resultLimit').val()
         })
       });
-      $('#archivePrev').bind('click',function() {
+      $('#archivePrev').bind('click', function() {
         standard.archive({
           idMax : firstMessage,
-          roomId: options.roomId
+          roomId: options.roomId,
+          userId : userRef[$('#searchUser').val()],
+          search : $('#searchText').val(),
+          maxResults : $('#resultLimit').val()
         })
       });
-      $('#export').bind('click',function() {
+      $('.updateArchiveHere').bind('click', function() {
+        $('#searchUser').val('');
+        $('#searchText').val('');
+
+        standard.archive({
+          idMin : $(this).attr('data-messageId'),
+          roomId: options.roomId,
+          maxResults : $('#resultLimit').val()
+        })
+      });
+      $('#export').bind('click', function() {
         dia.full({
           id : 'exportDia',
           content : '<form method="post" action="#" onsubmit="return false;" id="exportDiaForm">How would you like to export the data?<br /><br /><table align="center"><tr><td>Format</td><td><select id="exportFormat"><option value="bbcodetable">BBCode Table</option><option value="csv">CSV List (Excel, etc.)</option></select></td></tr><tr><td colspan="2" align="center"><button type="submit">Export</button></td></tr></table></form>',
@@ -1104,14 +1095,8 @@ var standard = {
                   underline = ($(this).find('td:nth-child(' + i + ') > span').css('text-decoration') == 'underline' ? true : false),
                   strikethrough = ($(this).find('td:nth-child(' + i + ') > span').css('text-decoration') == 'line-through' ? true : false);
 
-                if (colour) {
-                  exportUser = '[color=' + colour + ']' + exportUser + '[/color]';
-                }
-                if (highlight) {
-                  exportUser = '[span=background-color: ' + highlight + ']' + exportUser + '[/span]';
-                }
-                if (font) {
-                  exportUser = '[font=' + font + ']' + exportUser + '[/font]';
+                if (colour || highlight || font) {
+                  exportUser = '[span="color: ' + colour + '; background-color: ' + highlight + '; font: ' + font + '"]' + exportUser + '[/span]';
                 }
                 if (bold) {
                   exportUser = '[b]' + exportUser + '[/b]';
@@ -1137,7 +1122,7 @@ var standard = {
               exportData += exportUser + "|" + exportTime + "|" + exportMessage + "\n";
             });
 
-            exportData = "<textarea style=\"width: 100%; height: 1000px;\">[table]User|Time|Message\n" + exportData + "[/table]</textarea>";
+            exportData = "<textarea style=\"width: 100%; height: 1000px;\">[table=head]User|Time|Message\n" + exportData + "[/table]</textarea>";
             break;
 
             case 'csv':
@@ -3213,7 +3198,7 @@ popup = {
 
   archive : function(options) {
     dia.full({
-      content : '<form id="archiveSearch" action="#" method="get" style="text-align: center;"><table style="text-align: center; margin-left: auto; margin-right: auto;"><thead><tr><th align="center"><small>Search Text:</small></th><th><small>Filter by User:</small></th><th><small>Results per Page:</small></th></tr></thead><tbody><tr><td><input type="text" id="searchText" name="searchText" style="margin-left: auto; margin-right: auto; text-align: left;" /></td><td><input type="text" id="searchUser" name="searchUser" style="margin-left: auto; margin-right: auto; text-align: left;" /></td><td><select id="resultLimit" name="resultLimit" style="margin-left: auto; margin-right: auto; text-align: left;"><option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option><option value="500">500</option></select></td></tr></tbody></table></form><br /><br /><table class="center"><thead><tr><th style="width: 20%;">User</th><th style="width: 20%;">Time</th><th style="width: 60%;">Message</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><div align="center"><button id="archivePrev"><< Prev</button><button id="export">Export</button><button id="archiveNext">Next >></button></div>',
+      content : '<form id="archiveSearch" action="#" method="get" style="text-align: center;"><table style="text-align: center; margin-left: auto; margin-right: auto;"><thead><tr><th align="center"><small>Search Text:</small></th><th><small>Filter by User:</small></th><th><small>Results per Page:</small></th></tr></thead><tbody><tr><td><input type="text" id="searchText" name="searchText" style="margin-left: auto; margin-right: auto; text-align: left;" /></td><td><input type="text" id="searchUser" name="searchUser" style="margin-left: auto; margin-right: auto; text-align: left;" /></td><td><select id="resultLimit" name="resultLimit" style="margin-left: auto; margin-right: auto; text-align: left;"><option value="10">10</option><option value="25" selected="selected">25</option><option value="50">50</option><option value="100">100</option><option value="500">500</option></select></td></tr></tbody></table></form><br /><br /><table class="center"><thead><tr><th style="width: 20%;">User</th><th style="width: 20%;">Time</th><th style="width: 60%;">Message</th><th>-</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><div align="center"><button id="archivePrev"><< Prev</button><button id="export">Export</button><button id="archiveNext">Next >></button></div>',
       title : 'Archive',
       id : 'archiveDialogue',
       position : 'top',
@@ -3223,45 +3208,23 @@ popup = {
 
     var messageCount = roomIdRef[options.roomId].messageCount;
 
-/*    $('#searchUser').change({
-      if ($('#searchUser').val() in userRef) {
-        $.ajax({
-          url: directory + 'api/getStats.php?rooms=' + options.roomId + '&users=' + userRef[$('#searchUser').val()] + '&number=1&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-          timeout: 5000,
-          type: 'GET',
-          cache: false,
-          success: function(json) {
-            for (i in json.getStats.roomStats) {
-              for (j in json.getStats.roomStats[i].users) {
-                messageCount = json.getStats.roomStats[i].users[j].messageCount;
-              }
-            }
-
-            return false;
-          },
-          error: function() {
-            dia.error('Failed to obtain stats.');
-
-            return false;
-          }
-        });
-      }
-      else {
-        messageCount = roomIdRef[options.roomId].messageCount;
-      }
-
-      popup.archiveMC(messageCount);
-    });
-
-    popup.archiveMC(messageCount);*/
-
     standard.archive({
       roomId: options.roomId,
       idMin: options.idMin,
       callback: function(data) {
         $('#archiveDialogue').dialog('open');
         $("#searchUser").autocomplete({
-          source: userList
+          source: userList,
+          change : function() {
+            standard.archive({
+              idMax : options.idMax,
+              idMin : options.idMin,
+              roomId : options.roomId,
+              userId : userRef[$('#searchUser').val()],
+              search : $('#searchText').val(),
+              maxResults : $('#resultLimit').val(),
+            });
+          }
         });
 
         return false;
