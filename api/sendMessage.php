@@ -150,23 +150,23 @@ if ($words) {
 
 if ($continue) {
   if (!$room) { // Bad room.
-    $errStr = 'badroom';
+    $errStr = 'badRoom';
     $errDesc = 'That room could not be found.';
   }
   elseif (strlen($request['message']) == 0 || strlen($request['message']) > $config['maxMessageLength']) { // Too short/long.
-    $errStr = 'badmessage';
+    $errStr = 'badMessage';
     $errDesc = 'The message you entered is either too long or too short.';
   }
   elseif (preg_match('/^(\ |\n|\r)*$/',$request['message'])) { // All spaces.
-    $errStr = 'spacemessage';
+    $errStr = 'spaceMessage';
     $errDesc = 'In some countries, you could be arrested for posting only spaces. Now aren\'t you glad we stopped you?';
   }
   elseif (!fim_hasPermission($room,$user,'post',true)) { // Not allowed to post.
-    $errStr = 'noperm';
+    $errStr = 'noPerm';
     $errDesc = 'You are not allowed to post in this room.';
   }
   elseif ($blockedWordSeverity == 'block') {
-    $errStr = 'blockcensor';
+    $errStr = 'blockCensor';
     $errDesc = 'The word ' . $blockedWordText . ' is not allowed: ' . $blockedWordReason;
 
     $blockWordApi['severity'] = 'block';
@@ -174,7 +174,7 @@ if ($continue) {
     $blockWordApi['reason'] = $blockedWordReason;
   }
   elseif ($blockedWordSeverity == 'confirm') {
-    $errStr = 'confirmcensor';
+    $errStr = 'confirmCensor';
     $errDesc = 'Warning: The word ' . $blockedWordtext . ' may not be allowed: ' . $blockedWordReason;
 
     $blockWordApi['severity'] = 'confirm';

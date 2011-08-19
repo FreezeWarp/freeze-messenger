@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+die('This feature will be added in FIMv4.');
+
 /**
  * Performs a Maintenance Action
  * The user must be an administrator with maintenance priviledges, or the action will fail.

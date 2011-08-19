@@ -2125,8 +2125,8 @@ popup = {
               data : 'dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&fileName=' + fileName + '&fileData=' + urlencode(fileContent) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
               cache : false,
               success : function(json) {
-                var errStr = json.uploadFile.errStr,
-                  errDesc = json.uploadFile.errDesc;
+                var errStr = json.sendFile.errStr,
+                  errDesc = json.sendFile.errDesc;
 
                 if (errStr) {
                   dia.error(errDesc);

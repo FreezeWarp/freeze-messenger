@@ -117,7 +117,7 @@ switch ($request['action']) {
     fim_sendMessage('/me fought the law and the law won.', $user, $roomData, 'me');
   }
   elseif (!fim_hasPermission($roomData, $user, 'moderate', true)) { // You have to be a mod yourself.
-    $errStr = 'noPermission';
+    $errStr = 'noPerm';
     $errDesc = 'You are not allowed to moderate this room.';
   }
   else {
@@ -245,7 +245,7 @@ switch ($request['action']) {
     }
   }
   else {
-    $errStr = 'noPermission';
+    $errStr = 'noPerm';
 
     $xmlData['moderate']['response']['success'] = false;
   }
@@ -273,7 +273,7 @@ switch ($request['action']) {
     }
   }
   else {
-    $errStr = 'noPermission';
+    $errStr = 'noPerm';
 
     $xmlData['moderate']['response']['success'] = false;
   }

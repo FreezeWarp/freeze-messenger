@@ -79,24 +79,32 @@ $queryParts['unreadMessages']['sort'] = array(
 
 
 /* Get Unread Messages from Database */
-$unreadMessages = $database->select($queryParts['unreadMessages']['columns'],
-  $queryParts['unreadMessages']['conditions'],
-  $queryParts['unreadMessages']['sort']);
-$unreadMessages = $unreadMessages->getAsArray('messageId');
+if (!$user['userId']) {
+  $errStr = 'loginRequired';
+  $errDesc = 'You must be logged in to get your unread messages.';
+}
+elseif ($continue) {
+  $unreadMessages = $database->select($queryParts['unreadMessages']['columns'],
+    $queryParts['unreadMessages']['conditions'],
+    $queryParts['unreadMessages']['sort']);
+  $unreadMessages = $unreadMessages->getAsArray('messageId');
+}
 
 
 
 /* Start Processing */
-if (is_array($unreadMessages)) {
-  if (count($unreadMessages) > 0) {
-    foreach ($unreadMessages AS $unreadMessage) {
-      $xmlData['getUnreadMessages']['unreadMessages']['unreadMessage ' . $unreadMessage['messageId']] = array(
-        'messageId' => (int) $unreadMessage['messageId'],
-        'senderId' => (int) $unreadMessage['senderId'],
-        'roomId' => (int) $unreadMessage['roomId'],
-      );
+if ($continue) {
+  if (is_array($unreadMessages)) {
+    if (count($unreadMessages) > 0) {
+      foreach ($unreadMessages AS $unreadMessage) {
+        $xmlData['getUnreadMessages']['unreadMessages']['unreadMessage ' . $unreadMessage['messageId']] = array(
+          'messageId' => (int) $unreadMessage['messageId'],
+          'senderId' => (int) $unreadMessage['senderId'],
+          'roomId' => (int) $unreadMessage['roomId'],
+        );
 
-      ($hook = hook('getUnreadMessages_eachMessage') ? eval($hook) : '');
+        ($hook = hook('getUnreadMessages_eachMessage') ? eval($hook) : '');
+      }
     }
   }
 }
@@ -110,7 +118,7 @@ $xmlData['getMessages']['errDesc'] = (string) $errDesc;
 
 
 /* Plugin Hook End */
-($hook = hook('getFonts_end') ? eval($hook) : '');
+($hook = hook('getUnreadMessages_end') ? eval($hook) : '');
 
 
 

@@ -96,14 +96,10 @@ $request = fim_sanitizeGPC(array(
 ));
 
 
-/* Plugin Hook End */
-($hook = hook('uploadFile_end') ? eval($hook) : '');
-
-
 
 /* Data Predefine */
 $xmlData = array(
-  'uploadFile' => array(
+  'sendFile' => array(
     'activeUser' => array(
       'userId' => (int) $user['userId'],
       'userName' => ($user['userName']),
@@ -114,15 +110,29 @@ $xmlData = array(
   ),
 );
 
+$queryParts['getMimes']['columns'] = array(
+  "{$sqlPrefix}uploadTypes" => 'typeId, extension, mime, maxSize, container',
+);
+$queryParts['getMimes']['conditions'] = false;
+$queryParts['getMimes']['sort'] = false;
+$queryParts['getMimes']['limit'] = false;
+
+
+
+/* Plugin Hook Start */
+($hook = hook('sendFile_start') ? eval($hook) : '');
+
 
 
 /* Get Mime Types from the Database */
 $mimes = $slaveDatabase->select(
-  array(
-    "{$sqlPrefix}uploadTypes" => 'typeId, extension, mime, maxSize, container',
-  )
+  $queryParts['getMimes']['columns']
+  $queryParts['getMimes']['conditions']
+  $queryParts['getMimes']['sort']
+  $queryParts['getMimes']['limit']
 );
 $mimes = $mimes->getAsArray('extension');
+
 
 
 
@@ -137,17 +147,11 @@ if ($request['uploadMethod'] == 'put') { // This is an unsupported alternate upl
   fclose($putResource);
 }
 
-if ($config['uploadMaxFiles'] !== -1 && $database->getCounter('uploads') > $config['uploadMaxFiles']) {
+if (($config['uploadMaxFiles'] !== -1 && $database->getCounter('uploads') > $config['uploadMaxFiles']) || ($config['uploadMaxUserFiles'] !== -1 && $user['fileCount'] > $config['uploadMaxUserFiles'])) {
   $errStr = 'tooManyFiles';
   $errDesc = 'The server has reached its file capacity.';
 }
-elseif ($config['uploadMaxUserFiles'] !== -1 && $user['fileCount'] > $config['uploadMaxUserFiles']) {
-  $errStr = 'tooManyFiles';
-  $errDesc = 'The server has reached its file capacity.';
-}
-else {
-  $continue = true;
-
+elseif ($contine) {
   /* Verify the Data, Preprocess */
   switch ($request['uploadMethod']) {
     case 'raw':
@@ -180,7 +184,7 @@ else {
     }
 
     if ($request['sha256hash']) { // This will allow us to verify that the upload worked.
-      if (hash('sha256',$rawData) != $request['sha256hash']) {
+      if (hash('sha256', $rawData) != $request['sha256hash']) {
         $errStr = 'badRawHash';
         $errDesc = 'The included MD5 hash did not match the file content.';
 
@@ -198,6 +202,9 @@ else {
     }
     break;
   }
+
+
+  ($hook = hook('sendFile_method') ? eval($hook) : '');
 
 
 
@@ -232,6 +239,10 @@ else {
             $iv = '';
             $saltNum = '';
           }
+
+
+          ($hook = hook('sendFile_postReq') ? eval($hook) : '');
+
 
           if (!$rawData) {
             $errStr = 'emptyFile';
@@ -285,6 +296,8 @@ else {
               )
             )->getAsArray(false);
 
+            ($hook = hook('sendFile_prefile') ? eval($hook) : '');
+
             if ($prefile) {
               $webLocation = "{$installUrl}file.php?sha256hash={$prefile['sha256hash']}";
 
@@ -295,59 +308,67 @@ else {
               }
             }
             else {
-              $database->insert("{$sqlPrefix}files", array(
-                'userId' => $user['userId'],
-                'fileName' => $request['fileName'],
-                'fileType' => $mime,
-                'creationTime' => time(),
-              ));
+              ($hook = hook('sendFile_preInsert') ? eval($hook) : '');
 
-              $fileId = $database->insertId;
+              if ($continue) {
+                $database->insert("{$sqlPrefix}files", array(
+                  'userId' => $user['userId'],
+                  'fileName' => $request['fileName'],
+                  'fileType' => $mime,
+                  'creationTime' => time(),
+                ));
 
-              $database->insert("{$sqlPrefix}fileVersions", array(
-                'fileId' => $fileId,
-                'sha256hash' => $sha256hash,
-                'md5hash' => $md5hash,
-                'salt' => $saltNum,
-                'iv' => $iv,
-                'size' => strlen($rawData),
-                'contents' => $contentsEncrypted,
-                'time' => time(),
-              ));
+                $fileId = $database->insertId;
 
-              $database->insert("{$sqlPrefix}fileVersions", array(
-                'fileId' => $fileId,
-                'sha256hash' => $sha256hash,
-                'md5hash' => $md5hash,
-                'salt' => $saltNum,
-                'iv' => $iv,
-                'size' => strlen($rawData),
-                'contents' => $contentsEncrypted,
-                'time' => time(),
-              ));
+                $database->insert("{$sqlPrefix}fileVersions", array(
+                  'fileId' => $fileId,
+                  'sha256hash' => $sha256hash,
+                  'md5hash' => $md5hash,
+                  'salt' => $saltNum,
+                  'iv' => $iv,
+                  'size' => strlen($rawData),
+                  'contents' => $contentsEncrypted,
+                  'time' => time(),
+                ));
 
-              $database->update("{$sqlPrefix}users", array(
-                'fileCount' => array(
-                  'type' => 'equation',
-                  'value' => '$fileCount + 1',
-                ),
-                'fileSize' => array(
-                  'type' => 'equation',
-                  'value' => '$fileSize + ' . (int) strlen($rawData),
-                ),
-              ), array(
-                'userId' => $user['userId'],
-              ));
+                $database->insert("{$sqlPrefix}fileVersions", array(
+                  'fileId' => $fileId,
+                  'sha256hash' => $sha256hash,
+                  'md5hash' => $md5hash,
+                  'salt' => $saltNum,
+                  'iv' => $iv,
+                  'size' => strlen($rawData),
+                  'contents' => $contentsEncrypted,
+                  'time' => time(),
+                ));
 
-              $database->incrementCounter('uploads');
-              $database->incrementCounter('uploadSize', strlen($rawData));
+                $database->update("{$sqlPrefix}users", array(
+                  'fileCount' => array(
+                    'type' => 'equation',
+                    'value' => '$fileCount + 1',
+                  ),
+                  'fileSize' => array(
+                    'type' => 'equation',
+                    'value' => '$fileSize + ' . (int) strlen($rawData),
+                  ),
+                ), array(
+                  'userId' => $user['userId'],
+                ));
 
-              $webLocation = "{$installUrl}file.php?sha256hash={$sha256hash}";
+                $database->incrementCounter('uploads');
+                $database->incrementCounter('uploadSize', strlen($rawData));
 
-              if ($request['roomId']) {
-                $room = $slaveDatabase->getRoom($request['roomId']);
+                $webLocation = "{$installUrl}file.php?sha256hash={$sha256hash}";
 
-                fim_sendMessage($webLocation, $user, $room, $container);
+                ($hook = hook('sendFile_postInsert') ? eval($hook) : '');
+
+                if ($continue) {
+                  if ($request['roomId']) {
+                    $room = $slaveDatabase->getRoom($request['roomId']);
+
+                    fim_sendMessage($webLocation, $user, $room, $container);
+                  }
+                }
               }
             }
           }
@@ -364,13 +385,13 @@ else {
 
 
 /* Update Data for Errors */
-$xmlData['uploadFile']['errStr'] = ($errStr);
-$xmlData['uploadFile']['errDesc'] = ($errDesc);
+$xmlData['sendFile']['errStr'] = ($errStr);
+$xmlData['sendFile']['errDesc'] = ($errDesc);
 
 
 
 /* Plugin Hook End */
-($hook = hook('uploadFile_end') ? eval($hook) : '');
+($hook = hook('sendFile_end') ? eval($hook) : '');
 
 
 

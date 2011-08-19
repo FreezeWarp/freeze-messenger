@@ -38,31 +38,21 @@ $request = fim_sanitizeGPC(array(
   'get' => array(
     'users' => array(
       'type' => 'string',
-      'require' => false,
-      'default' => '',
       'context' => array(
          'type' => 'csv',
          'filter' => 'int',
          'evaltrue' => true,
       ),
     ),
-
-    'sort' => array(
-      'type' => 'string',
-      'valid' => array(
-        'userId',
-        'userName',
-      ),
-      'require' => false,
-      'default' => 'userId',
-    ),
-
     'showOnly' => array(
       'type' => 'string',
-      'valid' => array(
-        'banned',
-      ),
-      'require' => false,
+      'valid' => array('banned', 'unbanned', ''),
+      'default' => '',
+    ),
+    'sort' => array(
+      'type' => 'string',
+      'valid' => array('userId', 'userName'),
+      'default' => 'userId',
     ),
   ),
 ));
@@ -82,16 +72,7 @@ $xmlData = array(
   ),
 );
 
-
-
-/* Plugin Hook Start */
-($hook = hook('getUsers_start') ? eval($hook) : '');
-
-
-
-/* Get Users from Database */
-$users = $slaveDatabase->select(
-  array(
+$queryParts['getUsers']['columns'] = array(
     "{$sqlPrefix}users" => array(
       'userId' => 'userId',
       'userName' => 'userName',
@@ -109,10 +90,91 @@ $users = $slaveDatabase->select(
       'userGroup' => 'userGroup',
     ),
   ),
-  false,
-  array(
+$queryParts['getUsers']['conditions'] = false;
+$queryParts['getUsers']['sort'] = array(
+  'userId' => 'asc',
+);
+$queryParts['getUsers']['limit'] = false;
+
+
+
+
+/* Modify Query Data for Directives */
+switch ($request['showOnly']) {
+  case 'banned':
+  $queryParts['userSelect']['conditions']['both'][] = array(
+    'type' => 'xor',
+    'left' => array(
+      'type' => 'column',
+      'value' => 'options',
+    ),
+    'right' => array(
+      'type' => 'int',
+      'value' => 1,
+    ),
+  );
+  break;
+
+  case 'unbanned':
+  $queryParts['userSelect']['conditions']['both'][] = array(
+    'type' => 'and',
+    'left' => array(
+      'type' => 'column',
+      'value' => 'options',
+    ),
+    'right' => array(
+      'type' => 'int',
+      'value' => 1,
+    ),
+  );
+  break;
+}
+if (count($request['users']) > 0) {
+  $queryParts['userSelect']['conditions']['both'][] = array(
+    'type' => 'in',
+    'left' => array(
+      'type' => 'column',
+      'value' => 'userId',
+    ),
+    'right' => array(
+      'type' => 'array',
+      'value' => $request['users'],
+    ),
+  );
+}
+
+
+
+/* Query Results Order
+ * userId*, userName */
+switch ($request['sort']) {
+  case 'userName':
+  $queryParts['userSelect']['sort'] = array(
+    'userName' => 'asc',
+  );
+  break;
+
+  case 'userId':
+  default:
+  $queryParts['userSelect']['sort'] = array(
     'userId' => 'asc',
-  )
+  );
+  break;
+}
+
+
+
+/* Plugin Hook Start */
+($hook = hook('getUsers_start') ? eval($hook) : '');
+
+
+
+/* Get Users from Database */
+$users = $slaveDatabase->select(
+  $queryParts['getUsers']['columns']
+  $queryParts['getUsers']['conditions']
+  $queryParts['getUsers']['sort']
+  $queryParts['getUsers']['limit']
 );
 $users = $users->getAsArray();
 
