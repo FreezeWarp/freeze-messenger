@@ -97,16 +97,7 @@ $xmlData = array(
 
 $queryParts['roomSelect'] = array(
   'columns' => array(
-    "{$sqlPrefix}rooms" => array(
-      'roomId' => 'roomId',
-      'roomName' => 'roomName',
-      'options' => 'options',
-      'defaultPermissions' => 'defaultPermissions',
-      'owner' => 'owner',
-      'roomTopic' => 'roomTopic',
-      'lastMessageId' => 'lastMessageId',
-      'lastMessageTime' => 'lastMessageTime',
-    )
+    "{$sqlPrefix}rooms" => 'roomId, roomName, options, defaultPermissions, owner, roomTopic, lastMessageId, lastMessageTime, messageCount',
   ),
   'conditions' => array(
     'both' => array(
@@ -194,7 +185,7 @@ $rooms = $rooms->getAsArray(true);
 if (is_array($rooms)) {
   if (count($rooms) > 0) {
     foreach ($rooms AS $room) {
-      $permissions = fim_hasPermission($room,$user,array('post','view','topic','moderate','admin'),false);
+      $permissions = fim_hasPermission($room,$user,array('post', 'view', 'topic', 'moderate', 'admin'),false);
 
       if ($permissions[0][$request['permLevel']] === false) {
         continue;
@@ -217,6 +208,7 @@ if (is_array($rooms)) {
           ),
           'lastMessageId' => $room['lastMessageId'],
           'lastMessageTime' => $room['lastMessageTime'],
+          'messageCount' => $room['messageCount'],
           'permissions' => array(
             'canModerate' => (bool) $permissions[0]['moderate'],
             'canAdmin' => (bool) $permissions[0]['admin'],

@@ -676,6 +676,7 @@ function populate(options) {
             isPriv = active[i].optionDefinitions.privateIm,
             isAdmin = active[i].permissions.canAdmin,
             isModerator = active[i].permissions.canModerate,
+            messageCount = active[i].messageCount,
             isOwner = (active[i].owner === userId ? true : false),
             ulText = '<li><a href="#room=' + roomId + '">' + roomName + '</a></li>';
 
@@ -695,7 +696,10 @@ function populate(options) {
           roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isAdmin ? '<button data-roomId="' + roomId + '" class="editRoomMulti standard"></button><button data-roomId="' + roomId + '" class="deleteRoomMulti standard"></button>' : '') + '<button data-roomId="' + roomId + '" class="archiveMulti standard"></button><input type="checkbox" ' + (isFav ? 'checked="checked" ' : '') + ' data-roomId="' + roomId + '" class="favRoomMulti" id="favRoom' + roomId + '" /><label for="favRoom' + roomId + '" class="standard"></label></td></tr>';
 
           roomRef[roomName] = roomId;
-          roomIdRef[roomId] = roomName;
+          roomIdRef[roomId] = {
+            'roomName' : roomName,
+            'messageCount' : messageCount
+          }
           roomList.push(roomName);
 
           if (isAdmin) {
@@ -713,7 +717,7 @@ function populate(options) {
 
         $('#roomListShort > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li>');
 
-        $('#roomName').html(roomIdRef[roomId]);
+        $('#roomName').html(roomIdRef[roomId].roomName);
 
         console.log('Rooms obtained.');
 
@@ -878,18 +882,18 @@ autoEntry = {
     else {
       switch(type) {
         case 'watchRooms':
-        val = roomIdRef[id];
+        val = roomIdRef[id].roomName;
         type2 = 'Room';
         break;
 
         case 'moderators':
         case 'allowedUsers':
-        val = userIdRef[id];
+        val = userIdRef[id].roomName;
         type2 = 'User';
         break;
 
         case 'allowedGroups':
-        val = groupIdRef[id];
+        val = groupIdRef[id].roomName;
         type2 = 'Group';
         break;
       }
@@ -1068,8 +1072,97 @@ var standard = {
       $('#export').bind('click',function() {
         dia.full({
           id : 'exportDia',
-          content : 'How would you like to export the data?<br /><br /><table align="center"><tr><td>Format</td><td><select><option value="bbcodetable">BBCode Table</option><option value="csv">CSV List (Excel, etc.)</option><option value="xml">XML Data</option></select></td></tr><tr><td colspan="2" align="center"><button type="submit">Export</button></td></tr></table>',
+          content : '<form method="post" action="#" onsubmit="return false;" id="exportDiaForm">How would you like to export the data?<br /><br /><table align="center"><tr><td>Format</td><td><select id="exportFormat"><option value="bbcodetable">BBCode Table</option><option value="csv">CSV List (Excel, etc.)</option></select></td></tr><tr><td colspan="2" align="center"><button type="submit">Export</button></td></tr></table></form>',
           width: 600,
+        });
+
+        $('#exportDiaForm').submit(function() {
+          switch ($('#exportFormat option:selected').val()) {
+            case 'bbcodetable':
+            var exportData = '';
+
+            $('#archiveMessageList').find('tr').each(function() {
+              var exportUser = $(this).find('td:nth-child(1) .userNameTable').text(),
+                exportTime = $(this).find('td:nth-child(2)').text(),
+                exportMessage = $(this).find('td:nth-child(3)').text();
+
+              for (i in [1,3]) {
+                switch (i) {
+                  case 1:
+                  var exportItem = exportUser;
+                  break;
+
+                  case 3:
+                  var exportItem = exportMessage;
+                  break;
+                }
+
+                var colour = $(this).find('td:nth-child(' + i + ') > span').css('color'),
+                  highlight = $(this).find('td:nth-child(' + i + ') > span').css('background-color'),
+                  font = $(this).find('td:nth-child(' + i + ') > span').css('font-family'),
+                  bold = ($(this).find('td:nth-child(' + i + ') > span').css('font-weight') == 'bold' ? true : false),
+                  underline = ($(this).find('td:nth-child(' + i + ') > span').css('text-decoration') == 'underline' ? true : false),
+                  strikethrough = ($(this).find('td:nth-child(' + i + ') > span').css('text-decoration') == 'line-through' ? true : false);
+
+                if (colour) {
+                  exportUser = '[color=' + colour + ']' + exportUser + '[/color]';
+                }
+                if (highlight) {
+                  exportUser = '[span=background-color: ' + highlight + ']' + exportUser + '[/span]';
+                }
+                if (font) {
+                  exportUser = '[font=' + font + ']' + exportUser + '[/font]';
+                }
+                if (bold) {
+                  exportUser = '[b]' + exportUser + '[/b]';
+                }
+                if (underline) {
+                  exportUser = '[u]' + exportUser + '[/u]';
+                }
+                if (strikethrough) {
+                  exportUser = '[s]' + exportUser + '[/s]';
+                }
+              }
+
+              switch (i) {
+                case 1:
+                exportUser = exportItem;
+                break;
+
+                case 3:
+                exportMessage = exportItem;
+                break;
+              }
+
+              exportData += exportUser + "|" + exportTime + "|" + exportMessage + "\n";
+            });
+
+            exportData = "<textarea style=\"width: 100%; height: 1000px;\">[table]User|Time|Message\n" + exportData + "[/table]</textarea>";
+            break;
+
+            case 'csv':
+
+            var exportData = '';
+
+            $('#archiveMessageList').find('tr').each(function() {
+              var exportUser = $(this).find('td:nth-child(1) .userNameTable').text(),
+                exportTime = $(this).find('td:nth-child(2)').text(),
+                exportMessage = $(this).find('td:nth-child(3)').text();
+
+              exportData += "'" + exportUser + "', '" + exportTime + "', '" + exportMessage + "'\n";
+            });
+
+            exportData = "<textarea style=\"width: 100%; height: 600px;\">" + exportData + "</textarea>";
+            break;
+          }
+
+          dia.full({
+            id : 'exportTable',
+            content : exportData,
+            width : '1000',
+          });
+
+          return false;
         });
       });
 
@@ -1660,10 +1753,10 @@ var standard = {
 
 
   changeRoom : function(roomLocalId) {
-    console.log('Changing Room: ' + roomLocalId + '; Detected Name: ' + roomIdRef[roomLocalId]);
+    console.log('Changing Room: ' + roomLocalId + '; Detected Name: ' + roomIdRef[roomLocalId].roomName);
 
     roomId = roomLocalId;
-    $('#roomName').html(roomIdRef[roomId]);
+    $('#roomName').html(roomIdRef[roomId].roomName);
     $('#messageList').html('');
 
     windowDraw();
@@ -2226,7 +2319,7 @@ popup = {
     }
 
     $.ajax({
-      url: directory + 'api/getStats.php?rooms=' + roomId + '&maxResults=' + number + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+      url: directory + 'api/getStats.php?rooms=' + roomId + '&number=' + number + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
       timeout: 5000,
       type: 'GET',
       cache: false,
@@ -3063,7 +3156,7 @@ popup = {
 
         for (i = 0; i < roomList.length; i += 1) {
           if (modRooms[roomRef[roomList[i]]] > 0) {
-            roomModList.push(roomIdRef[roomRef[roomList[i]]]);
+            roomModList.push(roomIdRef[roomRef[roomList[i]]].roomName);
           }
         }
 
@@ -3127,6 +3220,40 @@ popup = {
       width : 1000,
       autoOpen : false
     });
+
+    var messageCount = roomIdRef[options.roomId].messageCount;
+
+/*    $('#searchUser').change({
+      if ($('#searchUser').val() in userRef) {
+        $.ajax({
+          url: directory + 'api/getStats.php?rooms=' + options.roomId + '&users=' + userRef[$('#searchUser').val()] + '&number=1&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+          timeout: 5000,
+          type: 'GET',
+          cache: false,
+          success: function(json) {
+            for (i in json.getStats.roomStats) {
+              for (j in json.getStats.roomStats[i].users) {
+                messageCount = json.getStats.roomStats[i].users[j].messageCount;
+              }
+            }
+
+            return false;
+          },
+          error: function() {
+            dia.error('Failed to obtain stats.');
+
+            return false;
+          }
+        });
+      }
+      else {
+        messageCount = roomIdRef[options.roomId].messageCount;
+      }
+
+      popup.archiveMC(messageCount);
+    });
+
+    popup.archiveMC(messageCount);*/
 
     standard.archive({
       roomId: options.roomId,

@@ -36,8 +36,6 @@ require('../global.php');
 $request = fim_sanitizeGPC(array(
   'get' => array(
     'rooms' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => '',
       'context' => array(
          'type' => 'csv',
@@ -45,10 +43,15 @@ $request = fim_sanitizeGPC(array(
          'evaltrue' => true,
       ),
     ),
-
+    'users' => array(
+      'default' => '',
+      'context' => array(
+         'type' => 'csv',
+         'filter' => 'int',
+         'evaltrue' => true,
+      ),
+    ),
     'number' => array(
-      'type' => 'string',
-      'require' => false,
       'default' => 10,
       'context' => array(
         'type' => 'int',
@@ -56,6 +59,27 @@ $request = fim_sanitizeGPC(array(
     ),
   ),
 ));
+
+$queryParts['roomSelect']['columns'] = array(
+  "{$sqlPrefix}rooms" => 'roomId, roomName, options, defaultPermissions, owner',
+);
+$queryParts['roomSelect']['conditions'] = array(
+  'both' => array(
+    array(
+      'type' => 'in',
+      'left' => array(
+        'type' => 'column',
+        'value' => 'roomId',
+      ),
+      'right' => array(
+        'type' => 'array',
+        'value' => $request['rooms'],
+      ),
+    ),
+  ),
+);
+$queryParts['roomSelect']['sort'] = false;
+$queryParts['roomSelect']['limit'] = false;
 
 
 
@@ -82,27 +106,10 @@ $xmlData = array(
 /* Start Processing */
 if (count($request['rooms']) > 0) {
   $rooms = $database->select(
-    array(
-      "{$sqlPrefix}rooms" => array(
-        'roomId' => 'roomId',
-        'roomName' => 'roomName',
-      ),
-    ),
-    array(
-      'both' => array(
-        array(
-          'type' => 'in',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'roomId',
-          ),
-          'right' => array(
-            'type' => 'array',
-            'value' => $request['rooms'],
-          ),
-        ),
-      ),
-    )
+    $queryParts['roomSelect']['columns'],
+    $queryParts['roomSelect']['conditions'],
+    $queryParts['roomSelect']['sort'],
+    $queryParts['roomSelect']['limit']
   );
   $rooms = $rooms->getAsArray('roomId');
 
@@ -119,55 +126,73 @@ if (count($request['rooms']) > 0) {
     }
 
 
+
+    $queryParts['statsSelect']['columns'] = array(
+      "{$sqlPrefix}roomStats" => array(
+        'roomId' => 'sroomId',
+        'userId' => 'suserId',
+        'messages' => 'messages',
+      ),
+      "{$sqlPrefix}users" => array(
+        'userId' => 'userId',
+        'userName' => 'userName',
+        'userFormatStart' => 'userFormatStart',
+        'userFormatEnd' => 'userFormatEnd',
+      ),
+    );
+    $queryParts['statsSelect']['conditions'] = array(
+      'both' => array(
+        array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'suserId',
+          ),
+          'right' => array(
+            'type' => 'column',
+            'value' => 'userId',
+          ),
+        ),
+        array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'sroomId',
+          ),
+          'right' => array(
+            'type' => 'int',
+            'value' => (int) $room['roomId'],
+          ),
+        ),
+      ),
+    );
+    $queryParts['statsSelect']['sort'] = 'messages desc';
+    $queryParts['statsSelect']['limit'] = $request['number'];
+
+
+    if (count($request['users']) > 0) {
+      $queryParts['statsSelect']['conditions']['both'][] = array(
+        'type' => 'e',
+        'left' => array(
+          'type' => 'column',
+          'value' => 'suserId',
+        ),
+        'right' => array(
+          'type' => 'array',
+          'value' => $request['users'],
+        ),
+      );
+    }
+
+
     ($hook = hook('getStats_eachRoom_preRooms') ? eval($hook) : '');
 
 
-
     $totalPosts = $database->select(
-      array(
-        "{$sqlPrefix}roomStats" => array(
-          'roomId' => 'sroomId',
-          'userId' => 'suserId',
-          'messages' => 'messages',
-        ),
-        "{$sqlPrefix}users" => array(
-          'userId' => 'userId',
-          'userName' => 'userName',
-          'userFormatStart' => 'userFormatStart',
-          'userFormatEnd' => 'userFormatEnd',
-        ),
-      ),
-      array(
-        'both' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'suserId',
-            ),
-            'right' => array(
-              'type' => 'column',
-              'value' => 'userId',
-            ),
-          ),
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'sroomId',
-            ),
-            'right' => array(
-              'type' => 'int',
-              'value' => (int) $room['roomId'],
-            ),
-          ),
-        ),
-      ),
-      array(
-        'messages' => 'desc',
-      ),
-      false,
-      $request['number']
+      $queryParts['statsSelect']['columns'],
+      $queryParts['statsSelect']['conditions'],
+      $queryParts['statsSelect']['sort'],
+      $queryParts['statsSelect']['limit']
     );
     $totalPosts = $totalPosts->getAsArray('userId');
 

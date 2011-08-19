@@ -128,9 +128,6 @@ body {
   text-align: right;
 }
 
-.userName {
-  font-weight: bold;
-}
 .userNameTable {
   width: 150px;
   overflow: hidden;

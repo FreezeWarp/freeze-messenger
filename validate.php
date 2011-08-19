@@ -205,6 +205,7 @@ $columnDefinitions = array(
       'userId' => 'userid',
       'userName' => 'username',
       'userGroup' => 'displaygroupid',
+      'userGroupAlt' => 'usergroupid',
       'allGroups' => 'membergroupids',
       'timeZone' => 'timezoneoffset',
       'options' => 'options',
@@ -215,6 +216,7 @@ $columnDefinitions = array(
       'userId' => 'userid',
       'userName' => 'username',
       'userGroup' => 'displaygroupid',
+      'userGroupAlt' => 'usergroupid',
       'allGroups' => 'membergroupids',
       'timeZone' => 'timezoneoffset',
       'options' => 'options',
@@ -225,6 +227,7 @@ $columnDefinitions = array(
       'userId' => 'user_id',
       'userName' => 'username',
       'userGroup' => 'group_id',
+      'userGroupAlt' => 'group_id',
       'allGroups' => 'group_id',
       'timeZone' => 'user_timezone',
       'color' => 'user_colour',
@@ -235,6 +238,7 @@ $columnDefinitions = array(
       'userId' => 'userId',
       'userName' => 'userName',
       'userGroup' => 'userGroup',
+      'userGroupAlt' => 'userGroup',
       'allGroups' => 'allGroups',
       'timeZone' => 'timeZone',
       'avatar' => 'avatar',
@@ -456,7 +460,6 @@ elseif ($userName && $password) {
     ),
     $queryParts['userSelectFromUserName']['conditions'],
     false,
-    false,
     1
   );
   $user = $user->getAsArray(false);
@@ -477,7 +480,6 @@ elseif ($userId && $password) {
       $sqlUserTable => array_flip($sqlUserTableCols),
     ),
     $queryParts['userSelectFromUserId']['conditions'],
-    false,
     false,
     1
   );
@@ -500,7 +502,6 @@ elseif ($config['anonymousUserId'] && $anonymous) {
       $sqlUserTable => array_flip($sqlUserTableCols),
     ),
     $queryParts['userSelectFromUserId']['conditions'],
-    false,
     false,
     1
   );
@@ -534,7 +535,6 @@ if ($valid) { // If the user is valid, process their preferrences.
     unset($user); // Unset user, so we don't have to worry about collision.
 
 
-
     $queryParts['adminGroupSelect']['conditions'] = array(
       'both' => array(
         array(
@@ -545,7 +545,7 @@ if ($valid) { // If the user is valid, process their preferrences.
           ),
           'right' => array(
             'type' => 'int',
-            'value' => (int) $user2['userGroup']
+            'value' => (int) ($user2['userGroup'] ? $user2['userGroup'] : $user2['userGroupAlt']), // Pretty much just for VB...
           ),
         ),
       ),
@@ -625,14 +625,12 @@ if ($valid) { // If the user is valid, process their preferrences.
         ),
         $queryParts['adminGroupSelect']['conditions'],
         false,
-        false,
         1
       );
       $group = $group->getAsArray(false);
 
-
-      $user2['userFormatStart'] = $group[$sqlAdminGroupTableCols['startTag']];
-      $user2['userFormatEnd'] = $group[$sqlAdminGroupTableCols['endTag']];
+      $user2['userFormatStart'] = $group['startTag'];
+      $user2['userFormatEnd'] = $group['endTag'];
       $user2['avatar'] = $loginConfig['url'] . '/image.php?u=' . $user2['userId'];
       $user2['profile'] = $loginConfig['url'] . '/member.php?u=' . $user2['userId'];
       break;
@@ -646,7 +644,6 @@ if ($valid) { // If the user is valid, process their preferrences.
             $sqlAdminGroupTable => array_flip($sqlAdminGroupTableCols),
           ),
           $queryParts['adminGroupSelect']['conditions'],
-          false,
           false,
           1
         );
@@ -681,7 +678,6 @@ if ($valid) { // If the user is valid, process their preferrences.
     $userPrefs = $integrationDatabase->select(
       $queryParts['userSelect']['columns'],
       $queryParts['userPrefsSelect']['conditions'],
-      false,
       false,
       1
     );
@@ -725,7 +721,6 @@ if ($valid) { // If the user is valid, process their preferrences.
       $userPrefs = $integrationDatabase->select(
         $queryParts['userSelect']['columns'],
         $queryParts['userPrefsSelect']['conditions'],
-        false,
         false,
         1
       );
@@ -845,7 +840,7 @@ if ($valid) { // If the user is valid, process their preferrences.
         'userGroup' => $user2['userGroup'],
         'allGroups' => $user2['allGroups'],
         'userFormatStart' => $user2['userFormatStart'],
-        'userFormatStart' => $user2['userFormatStart'],
+        'userFormatEnd' => $user2['userFormatEnd'],
         'avatar' => $user2['avatar'],
         'profile' => $user2['profile'],
         'socialGroups' => implode(',', $socialGroupIds),
@@ -859,7 +854,6 @@ if ($valid) { // If the user is valid, process their preferrences.
     $userPrefs = $integrationDatabase->select(
       $queryParts['userSelect']['columns'],
       $queryParts['userPrefsSelect']['conditions'],
-      false,
       false,
       1
     );
