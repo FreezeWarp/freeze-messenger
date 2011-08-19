@@ -118,7 +118,7 @@ else {
 
         if ($list['options'] & 2) $options[] = "Disableable";
         if ($list['options'] & 4) $options[] = "Disabled in Private";
-        if ($list['options'] & 8) $options[] = "Mature";
+//        if ($list['options'] & 8) $options[] = "Mature";
 
         $rows .= '    <tr><td>' . $list['listName'] . '</td><td align="center">' . ($list['listType'] == 'white' ? '<div style="border-radius: 1em; background-color: white; border: 1px solid black; width: 20px; height: 20px;"></div>' : '<div style="border-radius: 1em; background-color: black; border: 1px solid white; width: 20px; height: 20px;"></div>') . '</td><td>' . implode(', ',$options) . '</td><td align="center"><a href="./moderate.php?do=censor&do2=deleteList&listId=' . $list['listId'] . '"><img src="./images/document-close.png" /></a><a href="./moderate.php?do=censor&do2=editList&listId=' . $list['listId'] . '"><img src="./images/document-edit.png" /></a><a href="./moderate.php?do=censor&do2=viewWords&listId=' . $list['listId'] . '"><img src="./images/view-list-details.png" /></a></td></tr>
   ';

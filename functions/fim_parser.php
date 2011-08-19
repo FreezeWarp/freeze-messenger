@@ -71,14 +71,14 @@ function fimParse_htmlParse($text) {
 * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
-function fimParse_censorParse($text, $roomId = 0) {
+function fimParse_censorParse($text, $roomId = 0, $roomOptions) {
   global $sqlPrefix, $slaveDatabase;
 
+  $listIds = $slaveDatabase->getRoomCensorLists($roomId, $roomOptions);
 
   $words = $slaveDatabase->select(
     array(
       "{$sqlPrefix}censorWords" => 'listId, word, severity, param',
-      ),
     ),
     array(
       'both' => array(
@@ -110,26 +110,19 @@ function fimParse_censorParse($text, $roomId = 0) {
   $words = $words->getAsArray('word');
 
 
-
   if (!$words) {
     return $text;
   }
 
 
   foreach ($words AS $word) {
-    if ($noBlock) {
-      if (in_array($word['listId'], $noBlock)) continue;
-    }
-
     $words2[strtolower($word['word'])] = $word['param'];
     $searchText[] = addcslashes(strtolower($word['word']),'^&|!$?()[]<>\\/.+*');
   }
-
   $searchText2 = implode('|', $searchText);
 
-  return preg_replace("/(?<!(\[noparse\]))(?<!(\quot))($searchText2)(?!\[\/noparse\])/ie","indexValue(\$words2,strtolower('\\3'))", $text);
 
-  return $text;
+  return preg_replace("/(?<!(\[noparse\]))(?<!(\quot))($searchText2)(?!\[\/noparse\])/ie","indexValue(\$words2,strtolower('\\3'))", $text);
 }
 
 
@@ -416,7 +409,7 @@ function fim_sendMessage($messageText, $userData, $roomData, $flag = '') {
         fimParse_emotiParse( // Converts emoticons (e.g. ":D", ":P", "o.O") to HTML <img /> tags based on database-stored conversions.
           fimParse_htmlWrap( // Forces a space to be placed every 80 non-breaking characters, in order to prevent HTML stretching.
             fimParse_htmlParse( // Parses database-stored BBCode (e.g. "[b]Hello[/b]") to their HTML equivilents (e.g. "<b>Hello</b>").
-              fimParse_censorParse($messageText, $roomData['roomId']), // Censors text based on database-stored filters, which may be activated or deactivted by the room itself.
+              fimParse_censorParse($messageText, $roomData['roomId'], $roomData['options']), // Censors text based on database-stored filters, which may be activated or deactivted by the room itself.
               $roomData['options']
             ), 80, ' '
           )

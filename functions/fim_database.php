@@ -355,6 +355,8 @@ class fimDatabase extends database {
 
 
   public function getRoomCensorLists($roomId) {
+    global $user, $sqlPrefix, $slaveDatabase;
+
     if ($roomId > 0) {
       $listsActive = $slaveDatabase->select(
         array(
@@ -393,13 +395,13 @@ class fimDatabase extends database {
       }
     }
 
-    $lists = $slaveDatabase->select(
-      array(
-        "{$sqlPrefix}censorLists" => 'listId',
-      ),
-      array(
+    $queryParts['listsSelect']['columns'] = array(
+      "{$sqlPrefix}censorLists" => 'listId, listName, listType, options',
+    );
+    $queryParts['listsSelect']['conditions'] = array(
+      'both' => array(
         'either' => array(
-          'both' => array(
+          'both 1' => array(
             array(
               'type' => 'e',
               'left' => array(
@@ -423,7 +425,7 @@ class fimDatabase extends database {
               ),
             ),
           ),
-          'both' => array(
+          'both 2' => array(
             array(
               'type' => 'e',
               'left' => array(
@@ -448,8 +450,33 @@ class fimDatabase extends database {
             ),
           ),
         ),
-      )
+      ),
     );
+    $queryParts['listsSelect']['sort'] = false;
+    $queryParts['listsSelect']['limit'] = false;
+
+    if ($roomOptions & 16) {
+      $queryParts['listsSelect']['conditions']['both']['both'] = array(
+        array(
+          'type' => 'xor',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'options',
+          ),
+          'right' => array(
+            'type' => 'int',
+            'value' => 4,
+          ),
+        ),
+      );
+    }
+
+    $lists = $slaveDatabase->select(
+      $queryParts['listsSelect']['columns'],
+      $queryParts['listsSelect']['conditions'],
+      $queryParts['listsSelect']['sort'],
+      $queryParts['listsSelect']['limit']
+    ); error_log($lists->sourceQuery); die();
 
     return $lists->getAsArray('listId');
   }

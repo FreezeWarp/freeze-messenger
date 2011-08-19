@@ -785,7 +785,7 @@ LIMIT
             }
             else {
               $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
-              trigger_error('Query nullified; backtrace: ' . print_r(debug_backtrace(), true), $this->errorLevel);
+              throw new Exception('Query nullified.');
             }
           }
         }
@@ -966,7 +966,7 @@ LIMIT
     else {
       $this->error = $this->functionMap('error');
 
-      trigger_error("Database Error;\n\nQuery: $query;\n\nError: " . $this->error . "\n\nBacktrace: " . print_r(debug_backtrace(),true), $this->errorLevel); // The query could not complete.
+      trigger_error("Database Error;\n\nQuery: $query;\n\nError: " . $this->error, $this->errorLevel); // The query could not complete.
 
       return false;
     }

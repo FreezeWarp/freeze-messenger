@@ -119,7 +119,13 @@ echo '<!DOCTYPE HTML>
     $(\'button, input[type=button], input[type=submit]\').button();
 
     $(\'#mainMenu\').accordion({
-      autoHeight : false
+      autoHeight : false,
+      active : Number($.cookie(\'webproModerate_menustate\')) - 1,
+      change: function(event, ui) {
+        var sid = ui.newHeader.children(\'a\').attr(\'data-itemId\');
+
+        $.cookie(\'webproModerate_menustate\', sid, { expires: 14 });
+      }
     });
   }
 
@@ -153,7 +159,7 @@ echo '<!DOCTYPE HTML>
 <body>
 <div id="moderateLeft">
   <div id="mainMenu">
-    <h3>Manage Customizations</h3>
+    <h3><a href="#" data-itemId="1">Manage Customizations</a></h3>
     <ul>
       ' . ($user['adminDefs']['modTemplates'] ? '<li><a href="moderate.php?do=phrases">Modify Phrases</a></li>' : '') . '
       ' . ($user['adminDefs']['modTemplates'] ? '<li><a href="moderate.php?do=templates">Modify Templates</a></li>' : '') . '
@@ -161,14 +167,14 @@ echo '<!DOCTYPE HTML>
       ' . ($user['adminDefs']['modHooks'] ? '<li><a href="moderate.php?do=hooks">Modify Hooks</a></li>' : '') . '
     </ul>
 
-    <h3>Manage Engines</h3>
+    <h3><a href="#" data-itemId="2">Manage Engines</a></h3>
     <ul>
       ' . ($user['adminDefs']['modBBCode'] ? '<li><a href="moderate.php?do=bbcode">Modify BBCode</a></li>' : '') . '
       ' . ($user['adminDefs']['modCensor'] ? '<li><a href="moderate.php?do=censor">Modify Censor</a></li>' : '') . '
       ' . ($user['adminDefs']['modFiles'] ? '<li><a href="moderate.php?do=ftypes">Modify File Types</a></li>' : '') . '
     </ul>
 
-    <h3>Manage Advanced</h3>
+    <h3><a href="#" data-itemId="3">Manage Advanced</a></h3>
     <ul>
       ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=admin">Admin Permissions</a></li>' : '') . '
       ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=config">Configuration Editor</a></li>' : '') . '
