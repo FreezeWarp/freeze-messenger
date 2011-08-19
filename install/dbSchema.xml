@@ -306,7 +306,7 @@
       <column name="roomName" type="string" maxlen="50" comment="The name of the room." />
       <column name="roomTopic" type="string" maxlen="200" comment="The current topic of the room." />
       <column name="owner" type="int" maxlen="10" comment="The owner/creator of the room." />
-      <column name="defaultPermissions" type="bitfield" bits="8" comment="A bitfield corrosponding to permissions users are granted if they do not exist in the roomPermissions table." />
+      <column name="defaultPermissions" type="bitfield" bits="8" default="7" comment="A bitfield corrosponding to permissions users are granted if they do not exist in the roomPermissions table." />
       <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options." />
       <column name="lastMessageTime" type="time" default="0" comment="The time of the last message made in the room." />
       <column name="lastMessageId" type="int" maxlen="15" comment="The ID of the last message made in the room." />

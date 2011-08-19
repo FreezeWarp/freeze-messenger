@@ -410,7 +410,7 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
 
   /* Modify the Request Filter for Messages */
   if ($searchMessages) {
-    $request['messages'] = fim_arrayValidate($searchMessages,'int',true);
+    $request['messages'] = fim_arrayValidate($searchMessages, 'int', true);
   }
   else {
     $request['messages'] = array(0); // This is a fairly dirty approach, but it does work for now.

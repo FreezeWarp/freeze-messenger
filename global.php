@@ -214,49 +214,51 @@ require_once(dirname(__FILE__) . '/validate.php'); // This is where all the user
 if (!($config = fim_getCachedVar('fim_config')) || $disableConfig) {
   require(dirname(__FILE__) . '/defaultConfig.php');
 
-  $config2 = $slaveDatabase->select(
-    array(
-      "{$sqlPrefix}configuration" => 'directive, value, type',
-    )
-  );
-  $config2 = $config2->getAsArray(true);
+  if ($disableConfig) {
+    $config2 = $slaveDatabase->select(
+      array(
+        "{$sqlPrefix}configuration" => 'directive, value, type',
+      )
+    );
+    $config2 = $config2->getAsArray(true);
 
-  if (is_array($config2)) {
-    if (count($config2) > 0) {
-      foreach ($config2 AS $config3) {
-        switch ($config3['type']) {
-          case 'int':
-          $config[$config3['directive']] = (int) $config3['value'];
-          break;
+    if (is_array($config2)) {
+      if (count($config2) > 0) {
+        foreach ($config2 AS $config3) {
+          switch ($config3['type']) {
+            case 'int':
+            $config[$config3['directive']] = (int) $config3['value'];
+            break;
 
-          case 'string':
-          $config[$config3['directive']] = (string) $config3['value'];
-          break;
+            case 'string':
+            $config[$config3['directive']] = (string) $config3['value'];
+            break;
 
-          case 'array':
-          $config[$config3['directive']] = (array) fim_explodeEscaped(',',$config3['value']);
-          break;
+            case 'array':
+            $config[$config3['directive']] = (array) fim_explodeEscaped(',',$config3['value']);
+            break;
 
-          case 'bool':
-          if (in_array($config3['value'],array('true','1',true,1),true)) { // We include the non-string counterparts here on the off-chance the database driver supports returning non-strings. The third parameter in the in_array makes it a strict comparison.
-            $config[$config3['directive']] = true;
+            case 'bool':
+            if (in_array($config3['value'],array('true','1',true,1),true)) { // We include the non-string counterparts here on the off-chance the database driver supports returning non-strings. The third parameter in the in_array makes it a strict comparison.
+              $config[$config3['directive']] = true;
+            }
+            else {
+              $config[$config3['directive']] = false;
+            }
+            break;
+
+            case 'float':
+            $config[$config3['directive']] = (float) $config3['value'];
+            break;
           }
-          else {
-            $config[$config3['directive']] = false;
-          }
-          break;
-
-          case 'float':
-          $config[$config3['directive']] = (float) $config3['value'];
-          break;
         }
+
+        unset($config3);
       }
-
-      unset($config3);
     }
-  }
 
-  unset($config2);
+    unset($config2);
+  }
 
   foreach ($defaultConfig AS $key => $value) {
     if (!isset($config[$key])) {
@@ -265,7 +267,7 @@ if (!($config = fim_getCachedVar('fim_config')) || $disableConfig) {
   }
 
 
-  fim_setCachedVar('fim_config',$config,$config['configCacheRefresh']);
+  fim_setCachedVar('fim_config', $config, $config['configCacheRefresh']);
 }
 
 

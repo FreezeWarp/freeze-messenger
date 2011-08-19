@@ -254,6 +254,15 @@ table.center td {
   cursor: default;
 }
 
+.menuTrigger {
+  display: inline-block !important;
+  width: 20px;
+  opacity: .5;
+}
+.menuTrigger:hover {
+  opacity: 1;
+}
+
 
 
 

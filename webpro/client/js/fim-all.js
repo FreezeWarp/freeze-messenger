@@ -34,22 +34,26 @@
 
 /* Requirements */
 
-if (typeof window.JSON === 'undefined') {
+if (false === ('JSON' in window)) {
   window.location.href = 'browser.php';
 
   throw new Error('Your browser does not seem to support JSON objects. The script has exited.');
 }
-else if (typeof window.btoa === 'undefined') {
+else if (false === ('btoa' in window)) {
   window.location.href = 'browser.php';
 
   throw new Error('Your browser does not seem to support Base64 operations. The script has exited.');
 }
-else if (typeof window.encodeURIComponent === 'undefined') {
+else if (false === ('encodeURIComponent' in window)) {
   window.location.href = 'browser.php';
 
   throw new Error('Your browser does not seem to support encodeURI operations. The script has exited.');
 }
+else if (false === ('onhashchange' in window)) {
+  window.location.href = 'browser.php';
 
+  throw new Error('Your browser does not seem to support onhashchange operations. The script has exited.');
+}
 
 
 
@@ -130,7 +134,7 @@ if (!theme) {
 var fontsize = $.cookie('fim3_fontsize');
 
 // Settings Bitfield (goes into effect all over the place)
-if ($.cookie('fim3_setting') === 'undefined') {
+if ($.cookie('fim3_setting') === null) {
   var settingsBitfield = 8192;
 }
 else if (Number($.cookie('fim3_settings'))) {
@@ -142,34 +146,44 @@ else {
 }
 
 // Audio File (a hack I placed here just for fun)
-var snd = new Audio();
-var audioFile = '';
+if (typeof Audio !== 'undefined') {
+  var snd = new Audio();
 
-if ($.cookie('fim3_audioFile') !== 'undefined') {
-  audioFile = $.cookie('fim3_audioFile');
-}
-else {
-  if (snd.canPlayType('audio/ogg; codecs=vorbis')) {
-    audioFile = 'images/beep.ogg';
-  }
-  else if (snd.canPlayType('audio/mp3')) {
-    audioFile = 'images/beep.mp3';
-  }
-  else if (snd.canPlayType('audio/wav')) {
-    audioFile = 'images/beep.wav';
+  if ($.cookie('fim3_audioFile') !== null) {
+    audioFile = $.cookie('fim3_audioFile');
   }
   else {
-    console.log('Audio Disabled');
+    if (snd.canPlayType('audio/ogg; codecs=vorbis')) {
+      audioFile = 'images/beep.ogg';
+    }
+    else if (snd.canPlayType('audio/mp3')) {
+      audioFile = 'images/beep.mp3';
+    }
+    else if (snd.canPlayType('audio/wav')) {
+      audioFile = 'images/beep.wav';
+    }
+    else {
+      audioFile = '';
+
+      console.log('Audio Disabled');
+    }
+  }
+
+  snd.setAttribute('src', audioFile);
+
+  // Audio Volume
+  if ($.cookie('fim3_audioVolume') !== null) {
+    snd.volume = $.cookie('fim3_audioVolume') / 100;
+  }
+  else {
+    snd.volume = .5;
   }
 }
-snd.setAttribute('src', audioFile);
-
-// Audio Volume
-if ($.cookie('fim3_audioVolume') !== 'undefined') {
-  snd.volume = $.cookie('fim3_audioVolume') / 100;
-}
 else {
-  snd.volume = .5;
+  snd = {
+    play : function() { return false; },
+    volume : 0
+  }
 }
 
 /* Get the absolute API path.
@@ -501,7 +515,7 @@ $.ajax({
   url: directory + 'api/getServerStatus.php?fim3_format=json',
   type: 'GET',
   timeout: 1000,
-//  dataType: 'json',
+  dataType: 'json',
   success: function(json) {
     requestSettings.longPolling = json.getServerStatus.serverStatus.requestMethods.longPoll;
 
@@ -526,7 +540,7 @@ $.ajax({
   url: directory + 'api/getFileTypes.php?fim3_format=json',
   type: 'GET',
   timeout: 1000,
-//  dataType: 'json',
+  dataType: 'json',
   success: function(json) {
     console.log('Upload file types obtained.');
 
@@ -1866,7 +1880,11 @@ var standard = {
 *********************************************************/
 
 if (typeof window.onhashchange !== 'undefined') {
-  window.onhashchange = hashParse;
+  window.onhashchange = function() {
+    hashParse();
+
+    return true;
+  }
 }
 
 hashParse();
@@ -2286,8 +2304,10 @@ popup = {
             showAvatars : 2048, // Use the complex document style?
             audioDing : 8192, // Fire an HTML5 audio ding during each unread message?
             disableFx : 16384, // Disable jQuery Effects?
-            webkitNotifications : 32768 // Disable jQuery Effects?
+            webkitNotifications : 32768,
+            disableRightClick : 65536
           };
+
 
 
         if (settings.reversePostOrder) {
@@ -2310,6 +2330,15 @@ popup = {
         }
         if (settings.disableImage) {
           $('#disableImage').attr('checked', 'checked');
+        }
+        if (settings.disableRightClick) {
+          $('#disableRightClick').attr('checked', 'checked');
+        }
+        if (settings.webkitNotifications) {
+          $('#webkitNotifications').attr('checked', 'checked');
+        }
+        if (snd.volume) {
+          $('#audioVolume').attr('value', snd.volume * 100);
         }
         if (theme) {
           $('#theme > option[value="' + theme + '"]').attr('selected', 'selected');
@@ -2480,6 +2509,9 @@ popup = {
             if (localId === 'disableFx') {
               jQuery.fx.off = true;
             }
+            if (localId === 'webkitNotifications') {
+              window.webkitNotifications.requestPermission();
+            }
           }
           else if (!$(this).is(':checked') && settings[localId]) {
             settings[localId] = false;
@@ -2488,12 +2520,6 @@ popup = {
             if (localId === 'disableFx') {
               jQuery.fx.off = false;
             }
-            if (localId === 'webkitNotifications' && this.value) {
-              window.webkitNotifications.requestPermission();
-            }
-//            if (localId === 'disableRightClick' && this.value) {
-//              window.webkitNotifications.requestPermission();
-//            }
           }
         });
 
@@ -3447,7 +3473,8 @@ function contextMenuParse() {
   });
 
   $('.messageLine .messageText').contextMenu({
-    menu: 'messageMenu'
+    menu: 'messageMenu',
+    altMenu : settings.disableRightClick
   },
   function(action, el) {
     var postid = $(el).attr('data-messageid');
@@ -3467,8 +3494,11 @@ function contextMenuParse() {
       break;
 
       case 'link':
-        // TODO
-        dia.info('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + $('body').attr('data-roomId') + '#message=' + postid + '" />', 'Link to This Message');
+        dia.full({
+          title : 'Link to this Message',
+          id : 'messageLink',
+          content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + $('body').attr('data-roomId') + '#message=' + postid + '" />'
+        });
       break;
     }
 
@@ -3476,7 +3506,8 @@ function contextMenuParse() {
   });
 
   $('.messageLine .messageText img').contextMenu({
-    menu: 'messageMenuImage'
+    menu: 'messageMenuImage',
+    altMenu : settings.disableRightClick
   },
   function(action, el) {
     var postid = $(el).attr('data-messageid'),
@@ -3513,7 +3544,8 @@ function contextMenuParse() {
   });
 
   $('.messageLine .messageText a').contextMenu({
-    menu: 'messageMenuLink'
+    menu: 'messageMenuLink',
+    altMenu : settings.disableRightClick
   },
   function(action, el) {
     var postid = $(el).attr('data-messageid'),
@@ -3560,7 +3592,8 @@ function contextMenuParse() {
   });
 
   $('.room').contextMenu({
-    menu: 'roomMenu'
+    menu: 'roomMenu',
+    altMenu : settings.disableRightClick
   },
   function(action, el) {
     switch(action) {

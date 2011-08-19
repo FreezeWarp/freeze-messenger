@@ -178,7 +178,7 @@ switch($request['action']) {
       $errDesc = 'The room name specified is too long.';
     }
     else {
-      if ($slaveDatabase->getRoom(false,$request['roomName']) !== false) {
+      if ($slaveDatabase->getRoom(false, $request['roomName']) !== false) {
         $errStr = 'exists';
         $errDesc = 'The room specified already exists.';
       }
@@ -186,8 +186,7 @@ switch($request['action']) {
         $database->insert("{$sqlPrefix}rooms", array(
           'roomName' => $request['roomName'],
           'owner' => (int) $user['userId'],
-          )
-        );
+        ));
         $roomId = $database->insertId;
 
         if ((int) $roomId) {
