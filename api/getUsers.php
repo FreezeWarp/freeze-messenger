@@ -73,23 +73,23 @@ $xmlData = array(
 );
 
 $queryParts['getUsers']['columns'] = array(
-    "{$sqlPrefix}users" => array(
-      'userId' => 'userId',
-      'userName' => 'userName',
-      'userFormatStart' => 'userFormatStart',
-      'userFormatEnd' => 'userFormatEnd',
-      'profile' => 'profile',
-      'avatar' => 'avatar',
-      'socialGroups' => 'socialGroups',
-      'defaultColor' => 'defaultColor',
-      'defaultHighlight' => 'defaultHighlight',
-      'defaultFontface' => 'defaultFontface',
-      'defaultFormatting' => 'defaultFormatting',
-      'favRooms' => 'favRooms',
-      'ignoreList' => 'ignoreList',
-      'userGroup' => 'userGroup',
-    ),
+  "{$sqlPrefix}users" => array(
+    'userId' => 'userId',
+    'userName' => 'userName',
+    'userFormatStart' => 'userFormatStart',
+    'userFormatEnd' => 'userFormatEnd',
+    'profile' => 'profile',
+    'avatar' => 'avatar',
+    'socialGroups' => 'socialGroups',
+    'defaultColor' => 'defaultColor',
+    'defaultHighlight' => 'defaultHighlight',
+    'defaultFontface' => 'defaultFontface',
+    'defaultFormatting' => 'defaultFormatting',
+    'favRooms' => 'favRooms',
+    'ignoreList' => 'ignoreList',
+    'userGroup' => 'userGroup',
   ),
+);
 $queryParts['getUsers']['conditions'] = false;
 $queryParts['getUsers']['sort'] = array(
   'userId' => 'asc',
@@ -171,9 +171,9 @@ switch ($request['sort']) {
 
 /* Get Users from Database */
 $users = $slaveDatabase->select(
-  $queryParts['getUsers']['columns']
-  $queryParts['getUsers']['conditions']
-  $queryParts['getUsers']['sort']
+  $queryParts['getUsers']['columns'],
+  $queryParts['getUsers']['conditions'],
+  $queryParts['getUsers']['sort'],
   $queryParts['getUsers']['limit']
 );
 $users = $users->getAsArray();
@@ -189,6 +189,7 @@ if (is_array($users)) {
 
       switch ($loginConfig['method']) {
         case 'vbulletin3':
+        case 'vbulletin4':
         $userDataForums = $integrationDatabase->select(
           array(
             $sqlUserTable => array(

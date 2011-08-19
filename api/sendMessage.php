@@ -186,15 +186,19 @@ if ($continue) {
       preg_replace('/^\/topic (.+?)$/i', '$1', $request['message']) // Strip the "/topic" from the message.
     );
 
-    fim_sendMessage($topic,$user,$room,'topic');
+    ($hook = hook('sendMessage_topic') ? eval($hook) : '');
 
-    $database->createEvent('topicChange', false, $room['roomId'], false, $topic, false, false); // name, user, room, message, p1, p2, p3
+    if ($continue) {
+      fim_sendMessage($topic, $user, $room, 'topic');
 
-    $database->update("{$sqlPrefix}rooms", array(
-      'roomTopic' => $topic,
-    ), array(
-     'roomId' => $room['roomId'],
-    ));
+      $database->createEvent('topicChange', false, $room['roomId'], false, $topic, false, false); // name, user, room, message, p1, p2, p3
+
+      $database->update("{$sqlPrefix}rooms", array(
+        'roomTopic' => $topic,
+      ), array(
+      'roomId' => $room['roomId'],
+      ));
+    }
   }/*
   elseif (strpos($request['message'], '/kick') === 0) {
     $kickData = preg_replace('/^\/kick (.+?)(| ([0-9]+?))$/i','$1,$2',$request['message']);
@@ -219,7 +223,11 @@ if ($continue) {
       $request['flag'] = 'me';
     }
 
-    fim_sendMessage($request['message'],$user,$room,$request['flag']);
+    ($hook = hook('sendMessage_send') ? eval($hook) : '');
+
+    if ($continue) {
+      fim_sendMessage($request['message'], $user, $room, $request['flag']);
+    }
   }
 }
 

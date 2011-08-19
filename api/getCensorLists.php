@@ -112,24 +112,28 @@ if (count($request['lists']) > 0) {
 
 
 /* Get Censor Lists from Slave Database */
-$censorLists = $slaveDatabase->select($queryParts['censorListsSelect']['columns'],
-  $queryParts['censorListsSelect']['conditions'],
-  $queryParts['censorListsSelect']['sort']);
-$censorLists = $censorLists->getAsArray('listId');
+if ($continue) {
+  $censorLists = $slaveDatabase->select($queryParts['censorListsSelect']['columns'],
+    $queryParts['censorListsSelect']['conditions'],
+    $queryParts['censorListsSelect']['sort']);
+  $censorLists = $censorLists->getAsArray('listId');
+}
 
 
 
 /* Start Processing */
-if (count($censorLists) > 0) {
-  foreach ($censorLists AS $list) { // Run through each censor list retrieved.
-    $xmlData['getCensorLists']['lists']['list ' . $list['listId']] = array(
-      'listId' => (int) $list['listId'],
-      'listName' => ($list['listName']),
-      'listType' => ($list['listType']),
-      'listOptions' => (int) $list['listOptions'],
-    );
+if ($continue) {
+  if (count($censorLists) > 0) {
+    foreach ($censorLists AS $list) { // Run through each censor list retrieved.
+      $xmlData['getCensorLists']['lists']['list ' . $list['listId']] = array(
+        'listId' => (int) $list['listId'],
+        'listName' => ($list['listName']),
+        'listType' => ($list['listType']),
+        'listOptions' => (int) $list['listOptions'],
+      );
 
-    ($hook = hook('getCensorLists_eachList') ? eval($hook) : '');
+      ($hook = hook('getCensorLists_eachCensorList') ? eval($hook) : '');
+    }
   }
 }
 

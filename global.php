@@ -555,10 +555,12 @@ if ($api && $config['compressOutput']) {
 //  ob_start('fim_apiCompact');
 }
 
-if ($config['dev']) { // Developer hijinks - these are security risks for public servers
+//if ($config['dev']) { // Developer hijinks - these are security risks for public servers
   if (isset($_REQUEST['clearAPC'])) {
     apc_clear_cache();
+    apc_clear_cache('user');
+    apc_clear_cache('opcode');
     error_log('Cleared cache.');
   }
-}
+//}
 ?>

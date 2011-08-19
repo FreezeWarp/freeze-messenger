@@ -98,46 +98,49 @@ if (count($request['groups']) > 0) {
 
 
 /* Get Groups from Database */
-$groups = $integrationDatabase->select($queryParts['groupsSelect']['columns'],
-  $queryParts['groupsSelect']['conditions'],
-  $queryParts['groupsSelect']['sort'],
-  $queryParts['groupsSelect']['limit']);
-$groups = $groups->getAsArray('groupId');
-
+if ($continue) {
+  $groups = $integrationDatabase->select($queryParts['groupsSelect']['columns'],
+    $queryParts['groupsSelect']['conditions'],
+    $queryParts['groupsSelect']['sort'],
+    $queryParts['groupsSelect']['limit']);
+  $groups = $groups->getAsArray('groupId');
+}
 
 
 /* Start Processing */
-if (is_array($groups)) {
-  if (count($groups) > 0) {
-    foreach ($groups AS $group) {
-      /* Integration-Specific Conversion
-      /* TODO: Move to Hooks */
-      if ($loginConfig['method'] == 'phpbb') {
-        if (function_exists('mb_convert_case')) {
-          $group['groupName'] = mb_convert_case(
-            str_replace('_',' ',$group['groupName']), // PHPBB replaces spaces with underscores - revert this.
-            MB_CASE_TITLE, // Specifies that the first letter of each word should be capitalized, all the rest should not be.
-            "UTF-8" // Unicode
-          );
+if ($continue) {
+  if (is_array($groups)) {
+    if (count($groups) > 0) {
+      foreach ($groups AS $group) {
+        /* Integration-Specific Conversion
+        /* TODO: Move to Hooks */
+        if ($loginConfig['method'] == 'phpbb') {
+          if (function_exists('mb_convert_case')) {
+            $group['groupName'] = mb_convert_case(
+              str_replace('_',' ',$group['groupName']), // PHPBB replaces spaces with underscores - revert this.
+              MB_CASE_TITLE, // Specifies that the first letter of each word should be capitalized, all the rest should not be.
+              "UTF-8" // Unicode
+            );
+          }
+          elseif (function_exists('uc_words')) {
+            $group['groupName'] = ucwords( // Finally, captilize the first letter of each word.
+              strtolower( // Next, convert the entire string to lower case.
+                str_replace('_',' ',$group['groupName']) // First, replace underscores (see above)
+              )
+            );
+          }
+          else {
+            $group['groupName'] = str_replace('_',' ',$group['groupName']); // Just replace underscores (see above).
+          }
         }
-        elseif (function_exists('uc_words')) {
-          $group['groupName'] = ucwords( // Finally, captilize the first letter of each word.
-            strtolower( // Next, convert the entire string to lower case.
-              str_replace('_',' ',$group['groupName']) // First, replace underscores (see above)
-            )
-          );
-        }
-        else {
-          $group['groupName'] = str_replace('_',' ',$group['groupName']); // Just replace underscores (see above).
-        }
+
+        $xmlData['getGroups']['groups']['group ' . $group['groupId']] = array(
+          'groupId' => (int) $group['groupId'],
+          'groupName' => (string) $group['groupName'],
+        );
+
+        ($hook = hook('getGroups_eachGroup') ? eval($hook) : '');
       }
-
-      $xmlData['getGroups']['groups']['group ' . $group['groupId']] = array(
-        'groupId' => (int) $group['groupId'],
-        'groupName' => (string) $group['groupName'],
-      );
-
-      ($hook = hook('getGroups_eachGroup') ? eval($hook) : '');
     }
   }
 }

@@ -66,28 +66,28 @@ $room = $slaveDatabase->getRoom($request['roomId']);
 
 
 /* Plugin Hook Start */
-($hook = hook('setStatus_start') ? eval($hook) : '');
+($hook = hook('setUserStatus_start') ? eval($hook) : '');
 
 
 
 /* Start Processing */
 if (!$room) { // Bad room.
-  $errStr = 'badroom';
+  $errStr = 'badRoom';
   $errDesc = 'That room could not be found.';
 }
 elseif (!fim_hasPermission($room, $user, 'view', true)) { // Not allowed to see room.
-  $errStr = 'noperm';
+  $errStr = 'noPerm';
   $errDesc = 'You are not allowed to post in this room.';
 }
-else {
-  ($hook = hook('setStatus_inner_start') ? eval($hook) : '');
+elseif ($continue) {
+  ($hook = hook('setUserStatus_inner_start') ? eval($hook) : '');
 
   if ($statusType == 'typing') {
     $value = (int) $statusValue;
   }
   elseif ($statusType == 'status') {
-    if (in_array($value,array('available','away','busy','invisible','offline'))) {
-      ($hook = hook('setStatus_inner_query ') ? eval($hook) : '');
+    if (in_array($value, array('available','away','busy','invisible','offline'))) {
+      ($hook = hook('setUserStatus_inner_query') ? eval($hook) : '');
 
       $database->update(array(
         'status' => $value,
@@ -97,21 +97,21 @@ else {
       ));
     }
     else {
-      $errStr = 'badstatusvalue';
+      $errStr = 'badStatusValue';
       $errDesc = 'That status value is not recognized. Only "available", "away", "busy", "invisible", "offline" are supported.';
     }
   }
   else {
-    $errStr = 'badstatustype';
+    $errStr = 'badStatusType';
     $errDesc = 'That status type is not recognized. Only "status" and "typing" are supported.';
   }
 
-  ($hook = hook('setStatus_inner_end') ? eval($hook) : '');
+  ($hook = hook('setUserStatus_inner_end') ? eval($hook) : '');
 }
 
 
 $xmlData = array(
-  'setStatus' => array(
+  'setUserStatus' => array(
     'activeUser' => array(
       'userId' => (int) $user['userId'],
       'userName' => ($user['userName']),
@@ -122,7 +122,7 @@ $xmlData = array(
 );
 
 
-($hook = hook('setStatus_end') ? eval($hook) : '');
+($hook = hook('setUserStatus_end') ? eval($hook) : '');
 
 
 echo fim_outputApi($xmlData);

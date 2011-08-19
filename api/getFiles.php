@@ -91,29 +91,33 @@ $queryParts['fileSelect']['limit'] = false;
 
 
 /* Get Uploads from Database */
-$files = $database->select($queryParts['fileSelect']['columns'],
-  $queryParts['fileSelect']['conditions'],
-  $queryParts['fileSelect']['sort'],
-  $queryParts['fileSelect']['limit']);
-$files = $files->getAsArray('fileId');
+if ($continue) {
+  $files = $database->select($queryParts['fileSelect']['columns'],
+    $queryParts['fileSelect']['conditions'],
+    $queryParts['fileSelect']['sort'],
+    $queryParts['fileSelect']['limit']);
+  $files = $files->getAsArray('fileId');
+}
 
 
 
 /* Start Processing */
-if (is_array($files)) {
-  if (count($files) > 0) {
-    foreach ($files AS $file) {
-      $xmlData['getFiles']['files']['file ' . $file['fileId']] = array(
-        'fileSize' => (int) $file['fileSize'],
-        'fileSizeFormatted' => formatSize($file['fileSize']),
-        'fileName' => $file['fileName'],
-        'mime' => $file['mime'],
-        'rating' => $file['rating'],
-        'md5hash' => $file['md5hash'],
-        'sha256hash' => $file['sha256hash'],
-      );
+if ($continue) {
+  if (is_array($files)) {
+    if (count($files) > 0) {
+      foreach ($files AS $file) {
+        $xmlData['getFiles']['files']['file ' . $file['fileId']] = array(
+          'fileSize' => (int) $file['fileSize'],
+          'fileSizeFormatted' => formatSize($file['fileSize']),
+          'fileName' => $file['fileName'],
+          'mime' => $file['mime'],
+          'rating' => $file['rating'],
+          'md5hash' => $file['md5hash'],
+          'sha256hash' => $file['sha256hash'],
+        );
 
-      ($hook = hook('getFiles_eachUpload') ? eval($hook) : '');
+        ($hook = hook('getFiles_eachFile') ? eval($hook) : '');
+      }
     }
   }
 }

@@ -110,7 +110,7 @@ if (is_array($bbcodes)) {
         'replacement' => (string) $bbcode['replacement'],
       );
 
-      ($hook = hook('getBBCode_eachFont') ? eval($hook) : '');
+      ($hook = hook('getBBCode_eachBBCode') ? eval($hook) : '');
     }
   }
 }

@@ -30,7 +30,8 @@
     <phrase name="archiveViewAs">Results Format: </phrase>
     <phrase name="brandingCommunityLinks"></phrase>
     <phrase name="brandingDescription"></phrase>
-    <phrase name="brandingFavicon">images/favicon.png</phrase>
+    <phrase name="brandingFavicon">images/favicon.ico</phrase>
+    <phrase name="brandingFaviconType">image/x-icon</phrase>
     <phrase name="brandingIE9Color">blue</phrase>
     <phrase name="brandingKeywords"></phrase>
     <phrase name="brandingTitle">FreezeMessenger Beta 3 (DEV BUILD)</phrase>
@@ -92,8 +93,8 @@
     <phrase name="settingsDefaultFormattingPreview">Here's a Preview!</phrase>
     <phrase name="settingsDefaultRoomBlurb">This changes what room defaults when you first visit FreezeMessenger</phrase>
     <phrase name="settingsDefaultRoomLabel">Default Room:</phrase>
-    <phrase name="settingsDefaultRoomBlurb">This changes the volume of the audio ding played when a new message is received.</phrase>
-    <phrase name="settingsDefaultRoomLabel">Audio Volume:</phrase>
+    <phrase name="settingsAudioVolumeBlurb">This changes the volume of the audio ding played when a new message is received.</phrase>
+    <phrase name="settingsAudioVolumeLabel">Audio Volume:</phrase>
     <phrase name="settingsDisableFormattingBlurb">This will disable default formatting some users use on their messages.</phrase>
     <phrase name="settingsDisableFormattingLabel">Disable Formatting:</phrase>
     <phrase name="settingsDisableFxBlurb">Disabling effects can lead to a performance and a reduction of "client-side" lag (that not related to the server). It has no side-effects, aside from not looking as pretty.</phrase>
@@ -104,8 +105,8 @@
     <phrase name="settingsDisableImageLabel">Disable Images:</phrase>
     <phrase name="settingsDisableVideoBlurb">This will disable video embeds in rooms that allow them, replaced with a "click to activate" link.</phrase>
     <phrase name="settingsDisableVideoLabel">Disable Video Embeds:</phrase>
-    <phrase name="settingsEnableWebkitNotificationsLabel">Enable Webkit Notifications:</phrase>
-    <phrase name="settingsEnableWebkitNotificationsBlurb">Attempts to request permission to enable Webkit notifications, which are used by Google Chrome to notify you of new private messages even when you are not currently in a FreezeMessenger tab.</phrase>
+    <phrase name="settingsWebkitNotificationsLabel">Enable Webkit Notifications:</phrase>
+    <phrase name="settingsWebkitNotificationsBlurb">Attempts to request permission to enable Webkit notifications, which are used by Google Chrome to notify you of new private messages even when you are not currently in a FreezeMessenger tab.</phrase>
     <phrase name="settingsIgnoreListBlurb">Users included here will be unable to contact you using private messaging.</phrase>
     <phrase name="settingsIgnoreListCurrentUsers">Current Users</phrase>
     <phrase name="settingsIgnoreListLabel">Ignored Users</phrase>

@@ -317,6 +317,43 @@ class fimDatabase extends database {
   }
 
 
+  public function getFile($fileId) {
+    global $sqlPrefix, $config, $user;
+
+    $queryParts['fileSelect']['columns'] = array(
+      "{$sqlPrefix}files" => 'fileId, fileName, fileType, creationTime, userId, source, rating, flags, deleted',
+    );
+
+    if ($fileId) {
+      $queryParts['fileSelect']['conditions'] = array(
+        'both' => array(
+          array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'fileId'
+            ),
+            'right' => array(
+              'type' => 'int',
+              'value' => (int) $fileId,
+            ),
+          ),
+        ),
+      );
+    }
+    else {
+      return false;
+    }
+
+    $fileData = $this->select(
+      $queryParts['fileSelect']['columns'],
+      $queryParts['fileSelect']['conditions'],
+      false,
+      1);
+    return $fileData->getAsArray(false);
+  }
+
+
   public function getConfiguration($directive) {
     global $sqlPrefix, $config, $user;
 

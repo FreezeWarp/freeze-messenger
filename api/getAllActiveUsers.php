@@ -125,6 +125,7 @@ $queryParts['activeUsersSelect']['conditions'] = array(
 $queryParts['activeUsersSelect']['sort'] = array(
   'userName' => 'asc',
 );
+$queryParts['activeUsersSelect']['limit'] = false;
 
 
 
@@ -153,7 +154,8 @@ if (count($request['users']) > 0) {
 /* Get Active Users */
 $activeUsers = $database->select($queryParts['activeUsersSelect']['columns'],
   $queryParts['activeUsersSelect']['conditions'],
-  $queryParts['activeUsersSelect']['sort']);
+  $queryParts['activeUsersSelect']['sort'],
+  $queryParts['activeUsersSelect']['limit']);
 $activeUsers = $activeUsers->getAsArray('userId');
 
 

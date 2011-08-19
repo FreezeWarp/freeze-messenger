@@ -57,28 +57,32 @@ $queryParts['fileTypeSelect']['limit'] = false;
 
 
 /* Get Uploads from Database */
-$fileTypes = $database->select(
-  $queryParts['fileTypeSelect']['columns'],
-  $queryParts['fileTypeSelect']['conditions'],
-  $queryParts['fileTypeSelect']['sort'],
-  $queryParts['fileTypeSelect']['limit']);
-$fileTypes = $fileTypes->getAsArray('typeId');
+if ($continue) {
+  $fileTypes = $database->select(
+    $queryParts['fileTypeSelect']['columns'],
+    $queryParts['fileTypeSelect']['conditions'],
+    $queryParts['fileTypeSelect']['sort'],
+    $queryParts['fileTypeSelect']['limit']);
+  $fileTypes = $fileTypes->getAsArray('typeId');
+}
 
 
 
 /* Start Processing */
-if (is_array($fileTypes)) {
-  if (count($fileTypes) > 0) {
-    foreach ($fileTypes AS $fileType) {
-      $xmlData['getFileTypes']['fileTypes']['fileType ' . $fileType['typeId']] = array(
-        'typeId' => (int) $fileType['typeId'],
-        'extension' => $fileType['extension'],
-        'mime' => $fileType['mime'],
-        'maxSize' => (int) $fileType['maxSize'],
-        'container' => $fileType['container'],
-      );
+if ($continue) {
+  if (is_array($fileTypes)) {
+    if (count($fileTypes) > 0) {
+      foreach ($fileTypes AS $fileType) {
+        $xmlData['getFileTypes']['fileTypes']['fileType ' . $fileType['typeId']] = array(
+          'typeId' => (int) $fileType['typeId'],
+          'extension' => $fileType['extension'],
+          'mime' => $fileType['mime'],
+          'maxSize' => (int) $fileType['maxSize'],
+          'container' => $fileType['container'],
+        );
 
-      ($hook = hook('getFileTypes_eachType') ? eval($hook) : '');
+        ($hook = hook('getFileTypes_eachFileType') ? eval($hook) : '');
+      }
     }
   }
 }

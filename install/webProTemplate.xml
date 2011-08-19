@@ -24,7 +24,7 @@
 &lt;meta name="author" content="Joseph T. Parsons" /&gt;
 &lt;meta name="keywords" content="{{if="$phrases['brandingKeywords']"}{$phrases[brandingKeywords]}{instant messenger, im, instant message}}" /&gt;
 &lt;meta name="description" content="{{if="$phrases['brandingDescription']"}{$phrases[brandingDescription]}{FreezeMessenger-powered chat program.}}" /&gt;
-{{if="$phrases['brandingFavicon']"}{&lt;link rel="icon" id="favicon" type="image/png" href="$phrases[brandingFavicon]" /&gt;}}
+{{if="$phrases['brandingFavicon']"}{&lt;link rel="icon" id="favicon" type="$phrases[brandingFaviconType]" href="$phrases[brandingFavicon]" /&gt;}}
 
 
 &lt;!-- START Scripts --&gt;
@@ -231,8 +231,8 @@
 &lt;label for="disableRightClick"&gt;$phrases[settingsDisableRightClickLabel]&lt;/label&gt; &lt;input type="checkbox" name="disableRightClick" id="disableRightClick" value="true" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsDisableRightClickBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
 
-&lt;label for="enableWebkitNotifications"&gt;$phrases[settingsEnableWebkitNotificationsLabel]&lt;/label&gt; &lt;input type="checkbox" name="enableWebkitNotifications" id="enableWebkitNotifications" value="true" /&gt;&lt;br /&gt;
-&lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsEnableWebkitNotificationsBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
+&lt;label for="webkitNotifications"&gt;$phrases[settingsWebkitNotificationsLabel]&lt;/label&gt; &lt;input type="checkbox" name="webkitNotifications" id="webkitNotifications" value="true" /&gt;&lt;br /&gt;
+&lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsWebkitNotificationsBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
 
 &lt;label for="audioVolume"&gt;$phrases[settingsAudioVolumeLabel]&lt;/label&gt; &lt;input type="range" min="1" max="100" name="audioVolume" id="audioVolume" value="50" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsAudioVolumeBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;

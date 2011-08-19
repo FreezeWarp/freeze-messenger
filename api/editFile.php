@@ -74,45 +74,59 @@ $xmlData = array(
   ),
 );
 
+$fileData = $database->getFile();
+
+
+
+/* Plugin Hook End */
+($hook = hook('editFile_start') ? eval($hook) : '');
+
 
 
 /* Start Processing */
-switch ($request['action']) {
-  case 'delete':
-  if ($user['adminDefs']['modImages']) {
-    modLog('deleteImage', $request['fileId']);
+if (!$fileData) {
+  $errStr = 'invalidFile';
+  $errDesc = 'The file specified is invalid.';
+}
+elseif ($continue) {
+  switch ($request['action']) {
+    case 'delete':
+    if ($user['adminDefs']['modImages'] || $user['userId'] == $fileData['userId']) {
+      $database->modLog('deleteImage', $request['fileId']);
 
-    $database->update("{$sqlPrefix}files", array(
-      'deleted' => 1,
-    ), array(
-      'fileId' => $request['fileId'],
-    ));
+      $database->update("{$sqlPrefix}files", array(
+        'deleted' => 1,
+      ), array(
+        'fileId' => $request['fileId'],
+      ));
+    }
+    else {
+      $errStr = 'noPerm';
+      $errDesc = 'You do not have permission to delete and undelete images.';
+    }
+    break;
+
+    case 'undelete':
+    if ($user['adminDefs']['modImages']) {
+      modLog('undeleteImage', $request['fileId']);
+
+      $database->update("{$sqlPrefix}files", array(
+        'deleted' => 0,
+      ), array(
+        'fileId' => $request['fileId'],
+      ));
+    }
+    else {
+      $errStr = 'noPerm';
+      $errDesc = 'You do not have permission to delete and undelete images.';
+    }
+    break;
+
+    default:
+    $errStr = 'badAction';
+    $errDesc = 'The action specified does not exist.';
+    break;
   }
-  else {
-    $errStr = 'noPerm';
-    $errDesc = 'You do not have permission to delete and undelete images.';
-  }
-  break;
-
-  case 'undelete':
-  if ($user['adminDefs']['modImages']) {
-    modLog('undeleteImage', $request['fileId']);
-
-    $database->update("{$sqlPrefix}files", array(
-      'deleted' => 0,
-    ), array(
-      'fileId' => $request['fileId'],
-    ));
-  }
-  else {
-    $errStr = 'noPerm';
-    $errDesc = 'You do not have permission to delete and undelete images.';
-  }
-  break;
-
-  default:
-
-  break;
 }
 
 
@@ -120,6 +134,11 @@ switch ($request['action']) {
 /* Update Data for Errors */
 $xmlData['moderate']['errStr'] = ($errStr);
 $xmlData['moderate']['errDesc'] = ($errDesc);
+
+
+
+/* Plugin Hook End */
+($hook = hook('editFile_end') ? eval($hook) : '');
 
 
 

@@ -93,26 +93,30 @@ if (count($request['fonts']) > 0) {
 
 
 /* Get Fonts from Database */
-$fonts = $database->select($queryParts['fontsSelect']['columns'],
-  $queryParts['fontsSelect']['conditions'],
-  $queryParts['fontsSelect']['sort'],
-  $queryParts['fontsSelect']['limit']);
-$fonts = $fonts->getAsArray('fontId');
+if ($continue) {
+  $fonts = $database->select($queryParts['fontsSelect']['columns'],
+    $queryParts['fontsSelect']['conditions'],
+    $queryParts['fontsSelect']['sort'],
+    $queryParts['fontsSelect']['limit']);
+  $fonts = $fonts->getAsArray('fontId');
+}
 
 
 
 /* Start Processing */
-if (is_array($fonts)) {
-  if (count($fonts) > 0) {
-    foreach ($fonts AS $font) {
-      $xmlData['getFonts']['fonts']['font ' . $font['fontId']] = array(
-        'fontId' => (int) $font['fontId'],
-        'fontName' => (string) $font['fontName'],
-        'fontGroup' => (string) $font['fontGroup'],
-        'fontData' => (string) $font['fontData'],
-      );
+if ($continue) {
+  if (is_array($fonts)) {
+    if (count($fonts) > 0) {
+      foreach ($fonts AS $font) {
+        $xmlData['getFonts']['fonts']['font ' . $font['fontId']] = array(
+          'fontId' => (int) $font['fontId'],
+          'fontName' => (string) $font['fontName'],
+          'fontGroup' => (string) $font['fontGroup'],
+          'fontData' => (string) $font['fontData'],
+        );
 
-      ($hook = hook('getFonts_eachFont') ? eval($hook) : '');
+        ($hook = hook('getFonts_eachFont') ? eval($hook) : '');
+      }
     }
   }
 }
