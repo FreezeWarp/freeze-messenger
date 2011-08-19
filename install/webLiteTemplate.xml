@@ -11,7 +11,7 @@
   </metadata>
 
  <templates>
-    <template name="templateStart" vars="">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+    <template name="templateStart" vars="mode">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 {{if="$phrases['doctype']"}{$phrases[doctype]}{&lt;!DOCTYPE HTML&gt;}}
 
 &lt;!-- Original Source Code Copyright © 2011 Joseph T. Parsons. --&gt;
@@ -48,57 +48,61 @@
 
 &lt;body&gt;
 &lt;div id="tooltext" class="tooltip-content"&gt;&lt;/div&gt;
-&lt;div id="page" data-role="page"&gt;
-&lt;!-- START links --&gt;
-&lt;div id="menu" data-role="header"&gt;
-&lt;h3 id="quickCat"&gt;&lt;a href="#"&gt;$phrases[templateQuickCat]&lt;/a&gt;&lt;/h3&gt;
-&lt;div&gt;
-&lt;ul&gt;
-  &lt;li style="border-bottom: 1px solid;"&gt;&lt;a href="#" id="messageArchive"&gt;$phrases[templateArchive]&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href="#" id="roomList"&gt;$phrases[templateRoomList]&lt;/a&gt;&lt;/li&gt;
-  &lt;li style="border-bottom: 1px solid;"&gt;&lt;a href="#" id="privateRoom"&gt;$phrases[templatePrivateIM]&lt;/a&gt;&lt;/li&gt;
 
-  &lt;li&gt;&lt;a href="#" id="online"&gt;$phrases[templateActiveUsers]&lt;/a&gt;&lt;/li&gt;
-
-  &lt;li&gt;&lt;a href="#" id="changeSettings"&gt;$phrases[templateChangeSettings]&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href="#" id="logout"&gt;$phrases[templateLogout]&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href="#" id="login"&gt;$phrases[templateLogin]&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-
-&lt;h3 id="roomCat"&gt;&lt;a href="#"&gt;$phrases[templateRoomListCat]&lt;/a&gt;&lt;/h3&gt;
-&lt;div&gt;
-  &lt;div id="roomListShort"&gt;
-    &lt;a href="javascript:void(0);" id="showMoreRooms"&gt;$phrases[templateShowMoreRooms]&lt;/a&gt;&lt;br /&gt;
-
-    &lt;ul&gt;
-    &lt;/ul&gt;
-  &lt;/div&gt;
-  &lt;div id="roomListLong" style="display: none;"&gt;
-    &lt;li&gt;&lt;a href="javascript:void(0);" id="showFewerRooms"&gt;$phrases[templateShowLessRooms]&lt;/a&gt;&lt;br /&gt;
-
-    &lt;ul&gt;
-    &lt;/ul&gt;
-  &lt;/div&gt;
-&lt;/div&gt;
-
-&lt;h3 id="activeCat"&gt;&lt;a href="#"&gt;$phrases[templateActiveUsersCat]&lt;/a&gt;&lt;/h3&gt;
-&lt;div id="activeUsers"&gt;$phrases[templateLoading]&lt;/div&gt;
-
-&lt;h3 id="copyCat"&gt;&lt;a href="#"&gt;$phrases[templateCopyrightCat]&lt;/a&gt;&lt;/h3&gt;
-&lt;div&gt;
-  &lt;ul&gt;
-    &lt;li&gt;FIM © 2010-2011 Joseph Parsons&lt;br /&gt;&lt;/li&gt;
-    &lt;li&gt;jQuery Plugins © Their Respective Owners.&lt;/li&gt;
-    &lt;li&gt;&lt;a href="#" id="copyrightLink"&gt;$phrases[templateAllCopyrights]&lt;/a&gt;&lt;/li&gt;
-  &lt;/ul&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;!-- END links --&gt;
 
 &lt;div id="content" data-role="content"&gt;
 &lt;!-- START content --&gt;
+    </template>
+
+    <template name="chat">
+      <div id="roomTemplateContainer">
+        <script src="client/js/fim-main.js" type="text/javascript"></script>
+        <script src="client/js/fim-chat.js" type="text/javascript"></script>
+
+        <div id="activeUsersContainer">
+          {{container}{Active Users}{<div id="activeUsers">Loading...</div>}}
+        </div>
+
+        <div id="chatContainer">
+          {{container}{<div id="title">
+            <span id="status" class="leftPart">
+              {{if="$room['options'] & 1"}{<img src="images/bookmarks.png" class="standard" title="This is an Official Room" alt="Official" />}}<br />
+              <span id="refreshStatus" onclick="alert('Failed ' + totalFails + ' times. Current refreshing every ' + (timeout / 1000 + .1) + ' seconds.');"></span>
+            </span>
+
+            <div id="rightTitle" class="rightPart">
+              <form action="#" onsubmit="return false;" class="rightPart">
+                <button type="button" onclick="if (soundOn) { soundOn = false; $('#icon_muteSound').attr('src','/images/audio-volume-muted.png'); } else { soundOn = true; $('#icon_muteSound').attr('src','/images/audio-volume-high.png'); }" class="standard" id="icon_muteSound"></button>
+
+                <button type="button" class="standard" title="Switch the order of posts. This will refresh the page." id="icon_reversePostOrder"></button>
+
+                <button type="button" class="standard" id="icon_help"></button>
+              </form>
+            </div>
+
+            $room[name]<br />
+            <em id="topic$room[id]" style="white-space:nowrap;">$room[topic]</em>
+          </div>}{
+          <div id="messageListContainer">
+            <div id="messageList">
+            </div>
+          </div>
+          }}
+        </div>
+
+        <div id="textentryBoxMessage">
+          <form onsubmit="var message = $('textarea#messageInput').val(); if (message.length == 0) { alert('Please enter your message.'); } else { sendMessage(message); $('textarea#messageInput').val(''); } return false;" id="sendform">{{container}{
+            <div class="leftPart">Enter a Message</div>
+            <div class="rightPart">
+              <button type="submit" class="standard" id="icon_submit"></button>
+              <button type="reset" class="standard" id="icon_reset"></button>
+            </div>}{
+            <div id="messageInputContainer" class="middle">
+              <textarea onkeypress="if (event.keyCode == 13 && !event.shiftKey) { $('#sendform').submit(); return false; }" id="messageInput" autofocus="autofocus" placeholder="Enter your text."></textarea>
+            </div>}}
+          </form>
+        </div>
+      </div>
     </template>
 
     <template name="templateEnd" vars="">
