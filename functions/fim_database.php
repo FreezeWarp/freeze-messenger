@@ -421,7 +421,7 @@ class fimDatabase extends database {
               ),
               'right' => array(
                 'type' => 'array',
-                'value' => $unblock,
+                'value' => (array) $unblock,
               ),
             ),
           ),
@@ -445,7 +445,7 @@ class fimDatabase extends database {
               ),
               'right' => array(
                 'type' => 'array',
-                'value' => $block,
+                'value' => (array) $block,
               ),
             ),
           ),
@@ -476,7 +476,7 @@ class fimDatabase extends database {
       $queryParts['listsSelect']['conditions'],
       $queryParts['listsSelect']['sort'],
       $queryParts['listsSelect']['limit']
-    ); error_log($lists->sourceQuery); die();
+    );
 
     return $lists->getAsArray('listId');
   }

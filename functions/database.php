@@ -703,6 +703,9 @@ LIMIT
 
                       $sideText[$side] = "(" . implode(',', $data[$side]['value']) . ")";
                     }
+                    else {
+                      $sideText[$side] = '(NULL)';
+                    }
                   }
                   else {
                     throw new Exception('Type mismatch ("array")'); // Throw an exception.

@@ -65,27 +65,27 @@ $request = fim_sanitizeGPC(array(
 ));
 $ip = $_SERVER['REMOTE_ADDR']; // Get the IP address of the user.
 
-$room = $database->getRoom($request['roomId']);
-
 ($hook = hook('sendMessage_start') ? eval($hook) : '');
 
 
+$room = $database->getRoom($request['roomId']);
+$listIds = array_keys($database->getRoomCensorLists($room['roomId']));
+
 $words = $slaveDatabase->select(
   array(
-    "{$sqlPrefix}censorLists" => 'listId',
-    "{$sqlPrefix}censorWords" => 'severity, listId wlistId, word, severity, param',
+    "{$sqlPrefix}censorWords" => 'severity, listId, word, severity, param',
   ),
   array(
     'both' => array(
       array(
-        'type' => 'e',
+        'type' => 'in',
         'left' => array(
           'type' => 'column',
           'value' => 'listId',
         ),
         'right' => array(
-          'type' => 'column',
-          'value' => 'wlistId',
+          'type' => 'array',
+          'value' => $listIds,
         ),
       ),
       array(

@@ -1413,7 +1413,7 @@ var standard = {
         });
       }
 
-      if (requestSettings.serverSentEvents) {console.log(requestSettings);
+      if (requestSettings.serverSentEvents) {
         var source = new EventSource(directory + 'eventStream.php?roomId=' + roomId + '&lastEvent=' + requestSettings.lastEvent + '&lastMessage=' + requestSettings.lastMessage + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
 
         source.addEventListener('message', function(e) {
@@ -2569,16 +2569,16 @@ popup = {
             settings[localId] = true;
             $('#messageList').html('');
             $.cookie('webpro_settings', Number($.cookie('webpro_settings')) + idMap[localId], { expires : 14 });
-
-            requestSettings.firstRequest = true;
           }
           else if (!$(this).is(':checked') && settings[localId]) {
             settings[localId] = false;
             $('#messageList').html('');
             $.cookie('webpro_settings', Number($.cookie('webpro_settings')) - idMap[localId], { expires : 14 });
-
-            requestSettings.firstRequest = true;
           }
+
+          requestSettings.firstRequest = true;
+          requestSettings.lastMessage = 0;
+          messageIndex = [];
         });
 
         $('#audioDing, #disableFx, #webkitNotifications, #disableRightClick').change(function() {

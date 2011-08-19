@@ -334,28 +334,37 @@ $phrases[settingsDefaultFormattingLabel]&lt;br /&gt;
 &lt;li&gt;&lt;a href="#copyright2"&gt;$phrases[copyrightTabThanks]&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;
 
 &lt;div style="text-align: center;" id="copyright1"&gt;
-FreezeMessenger &amp;copy; 2010-2011 &lt;a href="http://josephtparsons.com/" target="_BLANK"&gt;Joseph T. Parsons&lt;/a&gt;. Some Rights Reserved.&lt;br /&gt;&lt;br /&gt;
+  FreezeMessenger &amp;copy; 2010-2011 &lt;a href="http://josephtparsons.com/" target="_BLANK"&gt;Joseph T. Parsons&lt;/a&gt;. Some Rights Reserved.&lt;br /&gt;&lt;br /&gt;
 
- jQuery, jQueryUI, and all jQueryUI Themeroller Themes &amp;copy; &lt;a href="http://jquery.org/" target="_BLANK"&gt;The jQuery Project.&lt;/a&gt;&lt;br /&gt;&lt;br /&gt;
+  <strong>The Following Third-Party Plugins Are Used with WebPro For Various Functionality:</strong>
+  jQuery, jQueryUI, and all jQueryUI Themeroller Themes &amp;copy; &lt;a href="http://jquery.org/" target="_BLANK"&gt;The jQuery Project.&lt;/a&gt;&lt;br /&gt;&lt;br /&gt;
 
-jGrowl &amp;copy; 2009 Stan Lemon.&lt;br /&gt;
-jQuery Cookie Plugin &amp;copy; 2006 Klaus Hartl&lt;br /&gt;
-EZPZ Tooltip &amp;copy; 2009 Mike Enriquez&lt;br /&gt;
-Beeper &amp;copy; 2009 Patrick Mueller&lt;br /&gt;
-Context Menu &amp;copy; 2008 Cory S.N. LaViska&lt;br /&gt;
-jQTubeUtil &amp;copy; 2010 Nirvana Tikku
+  jGrowl &amp;copy; 2009 <a href="http://stanlemon.net/projects/jgrowl.html">Stan Lemon</a>.&lt;br /&gt;
+  jQuery Cookie Plugin &amp;copy; 2006 <a href="https://github.com/carhartl/jquery-cookie">Klaus Hartl</a>&lt;br /&gt;
+  EZPZ Tooltip &amp;copy; 2009 <a href="http://theezpzway.com/2009/3/17/jquery-plugin-ezpz-tooltip">Mike Enriquez</a>&lt;br /&gt;
+  Context Menu &amp;copy; 2008 <a href="http://abeautifulsite.net/blog/2008/09/jquery-context-menu-plugin/">Cory S.N. LaViska</a>&lt;br /&gt;
+  jQTubeUtil &amp;copy; 2010 <a href="http://www.tikku.com/jquery-jqtube-util">Nirvana Tikku</a>
+  ColorPicker &copy; <a href="http://www.eyecon.ro/colorpicker/">Stefan Petr</a>
+
+  <strong>The Following Substantial Modifications Have Been Made to the Above Plugins by Joseph T. Parsons:</strong>
+  jGrowl - Support Live() Handler
+  EZPZ Tooltip - Support Live() Handler
+  Context Menu - Support Accessible Click Method ("Disable Right Click")
 &lt;/div&gt;
 
 &lt;div style="text-align: center;" id="copyright2"&gt;
-For continual bugtesting and related help, thanks to:&lt;br /&gt;&lt;br /&gt;
+<strong>For continual bugtesting and related help, thanks to:</strong>&lt;br /&gt;&lt;br /&gt;
 
 JC747&lt;br /&gt;
 A'Bom&lt;br /&gt;
 Shade&lt;br /&gt;
 Ningamer&lt;br /&gt;
 KingOfKYA&lt;br /&gt;
-Cat333Pokémon
-&lt;/div&gt;&lt;div id="copyright3"&gt;FreezeMessenger is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.&lt;br /&gt;&lt;br /&gt;This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.&lt;br /&gt;&lt;br /&gt;You should have received a copy of the GNU General Public License along with this program.  If not, see &amp;lt;http://www.gnu.org/licenses/&amp;gt;.&lt;/div&gt;
+<a href="http://www.victoryroad.net/">Cat333Pokémon</a>
+&lt;/div&gt;
+
+&lt;div id="copyright3"&gt;<strong>Redistribution License of FreezeMessenger and WebPro:</strong><br />
+FreezeMessenger is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.&lt;br /&gt;&lt;br /&gt;This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.&lt;br /&gt;&lt;br /&gt;You should have received a copy of the GNU General Public License along with this program.  If not, see &amp;lt;http://www.gnu.org/licenses/&amp;gt;.&lt;/div&gt;
     </template>
 
     <template name="help">&lt;ul&gt;

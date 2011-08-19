@@ -353,7 +353,7 @@ function fim3parse_keyWords($string, $messageId, $roomId) {
     );
     $phraseData = $phraseData->getAsArray('phraseName');
 
-    foreach ($stringPiefesAdd AS $piece) {
+    foreach ($stringPiecesAdd AS $piece) {
       if (!isset($phraseData[$piece])) {
         $database->insert("{$sqlPrefix}searchPhrases", array(
           'phraseName' => $piece,
