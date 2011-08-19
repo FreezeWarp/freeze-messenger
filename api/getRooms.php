@@ -185,7 +185,7 @@ $rooms = $rooms->getAsArray(true);
 if (is_array($rooms)) {
   if (count($rooms) > 0) {
     foreach ($rooms AS $room) {
-      $permissions = fim_hasPermission($room,$user,array('post', 'view', 'topic', 'moderate', 'admin'),false);
+      $permissions = fim_hasPermission($room, $user, array('post', 'view', 'topic', 'moderate', 'admin'),false);
 
       if ($permissions[0][$request['permLevel']] === false) {
         continue;

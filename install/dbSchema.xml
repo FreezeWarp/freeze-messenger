@@ -154,7 +154,7 @@
       <column name="hookId" type="int" maxlen="8" autoincrement="true" comment="A unique ID corrosponding to the hook. It is not used in retrieving hook contents (and thus could, for whatever reason, be changed on a dime)." />
       <column name="hookName" type="string" maxlen="50" comment="The hook's name, which will be used for most identification. These can be compounded (multiple rows with the same hookname can exist) if multiple entries exist for the hook." />
       <column name="code" type="string" maxlen="4294967296" comment="The code of the particular hook. It will be executed using PHP's EVAL." />
-      <column name="state" type="string" restrict="on,off" comment="Whether or not the hook is active." />
+      <column name="state" type="bool" default="1" comment="Whether or not the hook is active." />
 
       <key name="hookId" type="primary" />
       <key name="hookName" type="index" />
@@ -274,7 +274,7 @@
       <column name="roomId" type="int" maxlen="6" comment="The ID of the room." />
       <column name="time" type="time" comment="The time of the ping." />
       <column name="status" type="string" restrict="away,busy,available,invisible,offline," comment="The user's status." />
-      <column name="typing" type="string" restrict="1,0" default="0" comment="Whether or not the user is typing." />
+      <column name="typing" type="bool" default="0" comment="Whether or not the user is typing." />
 
       <key name="userId,roomId" type="primary" />
       <key name="time" type="index" />

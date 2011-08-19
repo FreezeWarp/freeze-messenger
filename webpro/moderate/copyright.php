@@ -29,11 +29,20 @@ A copy of the GNU License should be found under <a href="../LICENSE">LICENSE</a>
 <ul>
   <li>jQuery, jQueryUI, and all jQueryUI Themeroller Themes &copy; <a href="http://jquery.org/" target="_BLANK">The jQuery Project.</a></li>
   <li>jGrowl &copy; 2009 <a href="http://stanlemon.net/projects/jgrowl.html">Stan Lemon.</a></li>
+  <ul>
+    <li>Substantial Modifications to Support Live() Method by Joseph T. Parons</li>
+  </ul>
   <li>jQuery Cookie Plugin &copy; <a href="https://github.com/carhartl/jquery-cookie">2006 Klaus Hartl.</a></li>
   <li>EZPZ Tooltip &copy; 2009 <a href="http://theezpzway.com/2009/3/17/jquery-plugin-ezpz-tooltip">Mike Enriquez</a>.</li>
-  <li>Beeper &copy; 2011 <a href="http://www.codebase.es/riffwave/">Pedro Ladaria</a></li>
-  <li>Context Menu &copy; 2008 Cory S.N. LaViska</li>
-  <li>jQTubeUtil &copy; 2010 Nirvana Tikku</li>
+  <ul>
+    <li>Substantial Modifications to Support Live() Method by Joseph T. Parons</li>
+  </ul>
+  <li>Context Menu &copy; 2008 <a href="http://abeautifulsite.net/blog/2008/09/jquery-context-menu-plugin/">Cory S.N. LaViska</a></li>
+  <ul>
+    <li>Substantial Modifications to Support Alternate Click Method by Joseph T. Parons</li>
+  </ul>
+  <li>jQTubeUtil &copy; 2010 <a href="http://www.tikku.com/jquery-jqtube-util">Nirvana Tikku</a></li>
+  <li>ColorPicker &copy; <a href="http://www.eyecon.ro/colorpicker/">Stefan Petr</a></li>
 </ul>');
 }
 ?>

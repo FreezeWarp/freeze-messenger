@@ -124,33 +124,33 @@ var roomRef = {}, // Object
 /* Get Cookies */
 
 // Theme (goes into effect in document.ready)
-var theme = $.cookie('fim3_theme');
+var theme = $.cookie('webpro_theme');
 
 if (!theme) {
   theme = 'cupertino';
 }
 
 // Font Size (goes into effect in document.ready)
-var fontsize = $.cookie('fim3_fontsize');
+var fontsize = $.cookie('webpro_fontsize');
 
 // Settings Bitfield (goes into effect all over the place)
-if ($.cookie('fim3_settings') === null) {
+if ($.cookie('webpro_settings') === null) {
   var settingsBitfield = 8192;
 }
-else if (Number($.cookie('fim3_settings'))) {
-  var settingsBitfield = Number($.cookie('fim3_settings'));
+else if (Number($.cookie('webpro_settings'))) {
+  var settingsBitfield = Number($.cookie('webpro_settings'));
 }
 else {
   var settingsBitfield = 0;
-  $.cookie('fim3_settings',0);
+  $.cookie('webpro_settings',0);
 }
 
 // Audio File (a hack I placed here just for fun)
 if (typeof Audio !== 'undefined') {
   var snd = new Audio();
 
-  if ($.cookie('fim3_audioFile') !== null) {
-    audioFile = $.cookie('fim3_audioFile');
+  if ($.cookie('webpro_audioFile') !== null) {
+    audioFile = $.cookie('webpro_audioFile');
   }
   else {
     if (snd.canPlayType('audio/ogg; codecs=vorbis')) {
@@ -172,8 +172,8 @@ if (typeof Audio !== 'undefined') {
   snd.setAttribute('src', audioFile);
 
   // Audio Volume
-  if ($.cookie('fim3_audioVolume') !== null) {
-    snd.volume = $.cookie('fim3_audioVolume') / 100;
+  if ($.cookie('webpro_audioVolume') !== null) {
+    snd.volume = $.cookie('webpro_audioVolume') / 100; console.log(snd.volume);
   }
   else {
     snd.volume = .5;
@@ -937,7 +937,12 @@ autoEntry = {
     var source,
       i = 0;
 
-    entryList = string.split(', ');
+    if (string) {
+      entryList = string.split(',');
+    }
+    else {
+      entryList = [];
+    }
 
     switch(type) {
       case 'watchRooms':
@@ -1220,8 +1225,8 @@ var standard = {
 
 
 
-          $.cookie('fim3_userId', userId, { expires : 14 });
-          $.cookie('fim3_password', options.password, { expires : 14 }); // We will encrypt this in B3 or later -- it wasn't a priority for now.
+          $.cookie('webpro_userId', userId, { expires : 14 });
+          $.cookie('webpro_password', options.password, { expires : 14 }); // We will encrypt this in B3 or later -- it wasn't a priority for now.
 
 
 
@@ -1367,8 +1372,8 @@ var standard = {
 
 
   logout : function() {
-    $.cookie('fim3_userId', null);
-    $.cookie('fim3_password', null);
+    $.cookie('webpro_userId', null);
+    $.cookie('webpro_password', null);
 
     standard.login({});
   },
@@ -2437,9 +2442,9 @@ popup = {
             var defaultGeneral = active[i].defaultFormatting.general,
               ignoreList = active[i].ignoreList,
               defaultHighlightHashPre = [],
-              defaultHighlightHash = {r:0,g:0,b:0},
+              defaultHighlightHash = {r:0, g:0, b:0},
               defaultColourHashPre = [],
-              defaultColourHash = {r:0,g:0,b:0};
+              defaultColourHash = {r:0, g:0, b:0};
 
             if (defaultGeneral & 256) {
               $('#fontPreview').css('font-weight', 'bold');
@@ -2454,24 +2459,23 @@ popup = {
               $('#fontPreview').css('color', 'rgb(' + defaultColour + ')');
               $('#defaultColour').css('background-color', 'rgb(' + defaultColour + ')');
 
-              defaultColourHashPre = defaultColour.split(', ');
+              defaultColourHashPre = defaultColour.split(',');
               defaultColourHash = {r : defaultColourHashPre[0], g : defaultColourHashPre[1], b : defaultColourHashPre[2] }
             }
             if (defaultHighlight) {
               $('#fontPreview').css('background-color', 'rgb(' + defaultHighlight + ')');
               $('#defaultHighlight').css('background-color', 'rgb(' + defaultHighlight + ')');
 
-              defaultHighlightHashPre = defaultHighlight.split(', ');
+              defaultHighlightHashPre = defaultHighlight.split(',');
               defaultHighlightHash = {r : defaultHighlightHashPre[0], g : defaultHighlightHashPre[1], b : defaultHighlightHashPre[2] }
             }
             if (defaultFontface) {
               $('#defaultFace > option[value="' + defaultFontface + '"]').attr('selected', 'selected');
             }
 
-
             $('#defaultHighlight').ColorPicker({
               color: defaultHighlightHash,
-                onShow: function (colpkr) {
+              onShow: function (colpkr) {
                 $(colpkr).fadeIn(500);
 
                 return false;
@@ -2482,7 +2486,7 @@ popup = {
                 return false;
               },
               onChange: function(hsb, hex, rgb) {
-                defaultHighlight = rgb['r'] + ', ' + rgb['g'] + ', ' + rgb['b'];
+                defaultHighlight = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
 
                 $('#defaultHighlight').css('background-color', 'rgb(' + defaultHighlight + ')');
                 $('#fontPreview').css('background-color', 'rgb(' + defaultHighlight + ')');
@@ -2502,7 +2506,7 @@ popup = {
                 return false;
               },
               onChange: function(hsb, hex, rgb) {
-                defaultColour = rgb['r'] + ', ' + rgb['g'] + ', ' + rgb['b'];
+                defaultColour = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
 
                 $('#defaultColour').css('background-color', 'rgb(' + defaultColour + ')');
                 $('#fontPreview').css('color', 'rgb(' + defaultColour + ')');
@@ -2534,7 +2538,7 @@ popup = {
           $('#stylesjQ').attr('href', 'client/css/' + this.value + '/jquery-ui-1.8.13.custom.css');
           $('#stylesFIM').attr('href', 'client/css/' + this.value + '/fim.css');
 
-          $.cookie('fim3_theme', this.value, { expires : 14 });
+          $.cookie('webpro_theme', this.value, { expires : 14 });
           theme = this.value;
 
           return false;
@@ -2544,15 +2548,15 @@ popup = {
         $('#fontsize').change(function() {
           $('body').css('font-size',this.value + 'em');
 
-          $.cookie('fim3_fontsize', this.value, { expires : 14 });
+          $.cookie('webpro_fontsize', this.value, { expires : 14 });
           fontsize = this.value;
 
           return false;
         });
 
         $('#audioVolume').change(function() {
-          $.cookie('fim3_audioVolume', this.value, { expires : 14 });
-          window.volume = this.value / 100;
+          $.cookie('webpro_audioVolume', this.value, { expires : 14 });
+          snd.volume = this.value / 100;
 
           return false;
         });
@@ -2564,14 +2568,14 @@ popup = {
           if ($(this).is(':checked') && !settings[localId]) {
             settings[localId] = true;
             $('#messageList').html('');
-            $.cookie('fim3_settings', Number($.cookie('fim3_settings')) + idMap[localId], { expires : 14 });
+            $.cookie('webpro_settings', Number($.cookie('webpro_settings')) + idMap[localId], { expires : 14 });
 
             requestSettings.firstRequest = true;
           }
           else if (!$(this).is(':checked') && settings[localId]) {
             settings[localId] = false;
             $('#messageList').html('');
-            $.cookie('fim3_settings', Number($.cookie('fim3_settings')) - idMap[localId], { expires : 14 });
+            $.cookie('webpro_settings', Number($.cookie('webpro_settings')) - idMap[localId], { expires : 14 });
 
             requestSettings.firstRequest = true;
           }
@@ -2582,7 +2586,7 @@ popup = {
 
           if ($(this).is(':checked') && !settings[localId]) {
             settings[localId] = true;
-            $.cookie('fim3_settings', Number($.cookie('fim3_settings')) + idMap[localId], { expires : 14 });
+            $.cookie('webpro_settings', Number($.cookie('webpro_settings')) + idMap[localId], { expires : 14 });
 
             if (localId === 'disableFx') {
               jQuery.fx.off = true;
@@ -2593,7 +2597,7 @@ popup = {
           }
           else if (!$(this).is(':checked') && settings[localId]) {
             settings[localId] = false;
-            $.cookie('fim3_settings', Number($.cookie('fim3_settings')) - idMap[localId], { expires : 14 });
+            $.cookie('webpro_settings', Number($.cookie('webpro_settings')) - idMap[localId], { expires : 14 });
 
             if (localId === 'disableFx') {
               jQuery.fx.off = false;
@@ -2733,9 +2737,9 @@ popup = {
               autoEntry.showEntries('allowedGroups',allowedGroups);
             }
 
-            if (mature) {
-              $('#mature').attr('checked', 'checked');
-            }
+//            if (mature) {
+//              $('#mature').attr('checked', 'checked');
+//            }
 
             return false;
           },
@@ -2758,10 +2762,13 @@ popup = {
               var listId = json.getCensorLists.lists[i].listId,
                 listName = json.getCensorLists.lists[i].listName,
                 listType = json.getCensorLists.lists[i].listType,
-                listOptions = json.getCensorLists.lists[i].listOptions,
-                isActive = json.getCensorLists.lists[i].isActive;
+                listOptions = json.getCensorLists.lists[i].listOptions;
 
-              data += '<label><input type="checkbox" name="list' + listId + '" data-listId="' + listId + '" value="true" ' + (listOptions & 2 ? '' : ' disabled="disabled"') + (isActive ? ' checked="checked"' : '') + ' />' + listName + '</label>';
+              for (j in json.getCensorLists.lists[i].active) {
+                var listStatus = json.getCensorLists.lists[i].active[j].status;
+              }
+
+              data += '<label><input type="checkbox" name="list' + listId + '" data-listId="' + listId + '" data-checkType="list" value="true" ' + (listOptions & 2 ? '' : ' disabled="disabled"') + (listStatus === 'block' ? ' checked="checked"' : '') + ' />' + listName + '</label>';
             };
 
             $('#censorLists').append(data);
@@ -2781,44 +2788,46 @@ popup = {
             mature = ($('#mature').is(':checked') ? true : false),
             allowedUsers = $('#allowedUsers').val(),
             allowedGroups = $('#allowedGroups').val(),
-            moderators = $('#moderators').val();
+            moderators = $('#moderators').val(),
+            censor = [];
 
-          if (name.length > 20) {
-            dia.error('The roomname is too long.');
-          }
-          else {
-            $.post(directory + 'api/editRoom.php', 'action=edit&roomId=' + roomIdLocal + '&roomName=' + urlencode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(json) {
-              var errStr = json.editRoom.errStr,
-                errDesc = json.editRoom.errDesc;
+          $('input[data-checkType="list"]').each(function() {
+            censor.push($(this).attr('data-listId') + '=' + ($(this).is(':checked') ? 1 : 0));
+          });
 
-              if (errStr) {
-                dia.error('An error has occured: ' + errDesc);
-              }
-              else {
-                dia.full({
-                  content : 'The room has been edited.',
-                  title : 'Room Edited!',
-                  id : 'editRoomResultsDialogue',
-                  width : 600,
-                  buttons : {
-                    Open : function() {
-                      standard.selectRoom(roomIdLocal);
+          censor = censor.join(',');console.log(censor);
 
-                      return false;
-                    },
-                    Okay : function() {
-                      $('#editRoomResultsDialogue').dialog('close');
+          $.post(directory + 'api/editRoom.php', 'action=edit&roomId=' + roomIdLocal + '&roomName=' + urlencode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&censor=' + censor + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(json) {
+            var errStr = json.editRoom.errStr,
+              errDesc = json.editRoom.errDesc;
 
-                      return false;
-                    }
+            if (errStr) {
+              dia.error('An error has occured: ' + errDesc);
+            }
+            else {
+              dia.full({
+                content : 'The room has been edited.',
+                title : 'Room Edited!',
+                id : 'editRoomResultsDialogue',
+                width : 600,
+                buttons : {
+                  Open : function() {
+                    standard.selectRoom(roomIdLocal);
+
+                    return false;
+                  },
+                  Okay : function() {
+                    $('#editRoomResultsDialogue').dialog('close');
+
+                    return false;
                   }
-                });
-                $("#editRoomDialogue").dialog('close');
-              }
+                }
+              });
 
-              return false;
-            }); // Send the form data via AJAX.
-          }
+              $("#editRoomDialogue").dialog('close');
+            }
+          });
+
           return false; // Don't submit the form.
         });
       }
@@ -3328,7 +3337,13 @@ function windowDraw() {
   $('#menu').accordion({
     autoHeight: false,
     navigation: true,
-    clearStyle: true
+    clearStyle: true,
+    active : Number($.cookie('webpro_menustate')) - 1,
+    change: function(event, ui) {
+      var sid = ui.newHeader.children('a').attr('data-itemId');
+
+      $.cookie('webpro_menustate', sid, { expires: 14 });
+    }
   });
 
 
@@ -3721,10 +3736,10 @@ $(document).ready(function() {
   }
 
 
-  if ($.cookie('fim3_userId') > 0) {
+  if ($.cookie('webpro_userId') > 0) {
     standard.login({
-      userId : $.cookie('fim3_userId'),
-      password : $.cookie('fim3_password'),
+      userId : $.cookie('webpro_userId'),
+      password : $.cookie('webpro_password'),
       finish : function() {
         if (!userId) { // The user is not actively logged in.
           popup.login();

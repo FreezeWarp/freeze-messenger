@@ -42,7 +42,7 @@
 &lt;div id="page" data-role="page"&gt;
 &lt;!-- START links --&gt;
 &lt;div id="menu" data-role="header"&gt;
-&lt;h3 id="quickCat"&gt;&lt;a href="#"&gt;$phrases[templateQuickCat]&lt;/a&gt;&lt;/h3&gt;
+&lt;h3 id="quickCat"&gt;&lt;a href="#" data-itemId="1"&gt;$phrases[templateQuickCat]&lt;/a&gt;&lt;/h3&gt;
 &lt;div&gt;
 &lt;ul&gt;
   &lt;li style="border-bottom: 1px solid;"&gt;&lt;a href="#" id="messageArchive"&gt;$phrases[templateArchive]&lt;/a&gt;&lt;/li&gt;
@@ -61,7 +61,7 @@
 &lt;/ul&gt;
 &lt;/div&gt;
 
-&lt;h3 id="moderateCat"&gt;&lt;a href="#"&gt;$phrases[templateModerateCat]&lt;/a&gt;&lt;/h3&gt;
+&lt;h3 id="moderateCat"&gt;&lt;a href="#" data-itemId="2"&gt;$phrases[templateModerateCat]&lt;/a&gt;&lt;/h3&gt;
 &lt;div&gt;
 &lt;ul&gt;
   &lt;li&gt;&lt;a href="#" id="editRoom"&gt;$phrases[templateEditRoom]&lt;/a&gt;&lt;/li&gt;
@@ -72,7 +72,7 @@
 &lt;/ul&gt;
 &lt;/div&gt;
 
-&lt;h3 id="roomCat"&gt;&lt;a href="#"&gt;$phrases[templateRoomListCat]&lt;/a&gt;&lt;/h3&gt;
+&lt;h3 id="roomCat"&gt;&lt;a href="#" data-itemId="3"&gt;$phrases[templateRoomListCat]&lt;/a&gt;&lt;/h3&gt;
 &lt;div&gt;
   &lt;div id="roomListShort"&gt;
     &lt;a href="javascript:void(0);" id="showMoreRooms"&gt;$phrases[templateShowMoreRooms]&lt;/a&gt;&lt;br /&gt;
@@ -88,10 +88,10 @@
   &lt;/div&gt;
 &lt;/div&gt;
 
-&lt;h3 id="activeCat"&gt;&lt;a href="#"&gt;$phrases[templateActiveUsersCat]&lt;/a&gt;&lt;/h3&gt;
+&lt;h3 id="activeCat"&gt;&lt;a href="#" data-itemId="4"&gt;$phrases[templateActiveUsersCat]&lt;/a&gt;&lt;/h3&gt;
 &lt;div id="activeUsers"&gt;$phrases[templateLoading]&lt;/div&gt;
 
-&lt;h3 id="copyCat"&gt;&lt;a href="#"&gt;$phrases[templateCopyrightCat]&lt;/a&gt;&lt;/h3&gt;
+&lt;h3 id="copyCat"&gt;&lt;a href="#" data-itemId="5"&gt;$phrases[templateCopyrightCat]&lt;/a&gt;&lt;/h3&gt;
 &lt;div&gt;
   &lt;ul&gt;
     &lt;li&gt;FIM © 2010-2011 &lt;a href="http://josephtparsons.com/" target="_BLANK"&gt;Joseph T. Parsons ("FreezeWarp")&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;

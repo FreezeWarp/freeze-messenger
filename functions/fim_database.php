@@ -354,6 +354,107 @@ class fimDatabase extends database {
   }
 
 
+  public function getRoomCensorLists($roomId) {
+    if ($roomId > 0) {
+      $listsActive = $slaveDatabase->select(
+        array(
+          "{$sqlPrefix}censorBlackWhiteLists" => 'status, roomId, listId',
+        ),
+        array(
+          'both' => array(
+            array(
+              'type' => 'e',
+              'left' => array(
+                'type' => 'column',
+                'value' => 'roomId',
+              ),
+              'right' => array(
+                'type' => 'int',
+                'value' => (int) $roomId,
+              ),
+            ),
+          ),
+        )
+      );
+      $listsActive = $listsActive->getAsArray();
+
+
+      if (is_array($listsActive)) {
+        if (count($listsActive) > 0) {
+          foreach ($listsActive AS $active) {
+            if ($active['status'] == 'unblock') {
+              $unblock[] = $active['listId'];
+            }
+            elseif ($active['status'] == 'block') {
+              $block[] = $active['listId'];
+            }
+          }
+        }
+      }
+    }
+
+    $lists = $slaveDatabase->select(
+      array(
+        "{$sqlPrefix}censorLists" => 'listId',
+      ),
+      array(
+        'either' => array(
+          'both' => array(
+            array(
+              'type' => 'e',
+              'left' => array(
+                'type' => 'column',
+                'value' => 'listType',
+              ),
+              'right' => array(
+                'type' => 'string',
+                'value' => 'white',
+              ),
+            ),
+            array(
+              'type' => 'notin',
+              'left' => array(
+                'type' => 'column',
+                'value' => 'listId',
+              ),
+              'right' => array(
+                'type' => 'array',
+                'value' => $unblock,
+              ),
+            ),
+          ),
+          'both' => array(
+            array(
+              'type' => 'e',
+              'left' => array(
+                'type' => 'column',
+                'value' => 'listType',
+              ),
+              'right' => array(
+                'type' => 'string',
+                'value' => 'black',
+              ),
+            ),
+            array(
+              'type' => 'in',
+              'left' => array(
+                'type' => 'column',
+                'value' => 'listId',
+              ),
+              'right' => array(
+                'type' => 'array',
+                'value' => $block,
+              ),
+            ),
+          ),
+        ),
+      )
+    );
+
+    return $lists->getAsArray('listId');
+  }
+
+
   public function getConfiguration($directive) {
     global $sqlPrefix, $config, $user;
 

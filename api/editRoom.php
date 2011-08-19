@@ -107,23 +107,12 @@ $request = fim_sanitizeGPC(array(
       ),
     ),
 
-    'reverseOrder' => array(
-      'require' => false,
-      'default' => false,
+    'censor' => array(
       'context' => array(
-        'type' => 'bool',
+        'type' => 'array',
+        'filter' => 'int',
+        'evaltrue' => false,
       ),
-    ),
-
-    'userId' => array(
-      'require' => false,
-      'context' => array(
-        'type' => 'int',
-      ),
-    ),
-
-    'userName' => array(
-      'require' => false,
     ),
 
     'otr' => array( // This will be used in v4.
@@ -280,100 +269,101 @@ switch($request['action']) {
     }
     else {
 //      $listsActive = dbRows("SELECT listId, status FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomId = $room[roomId]",'listId'); // TODO
-      $lists = $slaveDatabase->select(
-        array(
-          "{$sqlPrefix}censorLists" => array(
-            'listId' => 'listId',
-            'listName' => 'listName',
-            'listType' => 'listType',
-            'options' => 'options',
-          ),
-        ),
-        array(
-          'both' => array(
-            array(
-              'type' => 'and',
-              'left' => array(
-                'type' => 'column',
-                'value' => 'options',
-              ),
-              'right' => array(
-                'type' => 'int',
-                'value' => 1,
-              ),
+      if (count($request['censor']) > 0) {
+        $lists = $slaveDatabase->select(
+          array(
+            "{$sqlPrefix}censorLists" => array(
+              'listId' => 'listId',
+              'listName' => 'listName',
+              'listType' => 'listType',
+              'options' => 'options',
             ),
           ),
-        )
-      );
-      $lists = $lists->getAsArray(true);
-
-      $listsActive = $slaveDatabase->select(
-        array(
-          "{$sqlPrefix}censorBlackWhiteLists" => array(
-            'status' => 'status',
-            'roomId' => 'roomId',
-            'listId' => 'listId',
-          ),
-        ),
-        array(
-          'both' => array(
-            array(
-              'type' => 'e',
-              'left' => array(
-                'type' => 'column',
-                'value' => 'roomId',
-              ),
-              'right' => array(
-                'type' => 'int',
-                'value' => (int) $room['roomId'],
+          array(
+            'both' => array(
+              array(
+                'type' => 'and',
+                'left' => array(
+                  'type' => 'column',
+                  'value' => 'options',
+                ),
+                'right' => array(
+                  'type' => 'int',
+                  'value' => 1,
+                ),
               ),
             ),
-          ),
-        )
-      );
-      $listsActive = $listsActive->getAsArray(true);
+          )
+        );
+        $lists = $lists->getAsArray(true);
 
-      if (is_array($listsActive)) {
-        if (count($listsActive) > 0) {
-          foreach ($listsActive AS $active) {
-            $listStatus[$active['listId']] = $active['status'];
+        $listsActive = $slaveDatabase->select(
+          array(
+            "{$sqlPrefix}censorBlackWhiteLists" => array(
+              'status' => 'status',
+              'roomId' => 'roomId',
+              'listId' => 'listId',
+            ),
+          ),
+          array(
+            'both' => array(
+              array(
+                'type' => 'e',
+                'left' => array(
+                  'type' => 'column',
+                  'value' => 'roomId',
+                ),
+                'right' => array(
+                  'type' => 'int',
+                  'value' => (int) $room['roomId'],
+                ),
+              ),
+            ),
+          )
+        );
+        $listsActive = $listsActive->getAsArray(true);
+
+        if (is_array($listsActive)) {
+          if (count($listsActive) > 0) {
+            foreach ($listsActive AS $active) {
+              $listStatus[$active['listId']] = $active['status'];
+            }
           }
         }
-      }
 
-      $censorLists = $request['censor']; // TODO
-      foreach($censorLists AS $id => $list) {
-        $listsNew[$id] = $list;
-      }
-
-      foreach ($lists AS $list) {
-        if ($list['type'] == 'black' && $listStatus[$list['listId']] == 'block') {
-          $checked = true;
-        }
-        elseif ($list['type'] == 'white' && $listStatus[$list['listId']] != 'unblock') {
-          $checked = true;
-        }
-        else {
-          $checked = false;
+        foreach($request['censor'] AS $listId => $status) {
+          $listsNew[$listId] = (bool) $status;
         }
 
-        if ($checked == true && !$listsNew[$list['listId']]) {
-          $database->insert("{$sqlPrefix}censorBlackWhiteLists", array(
-            'roomId' => $room['roomId'],
-            'listId' => $list['listId'],
-            'status' => 'unblock'
-          ), array(
-            'status' => 'unblock',
-          ));
-        }
-        elseif ($checked == false && $listsNew[$list['listId']]) {
-          $database->insert("{$sqlPrefix}censorBlackWhiteLists", array(
-            'roomId' => $room['roomId'],
-            'listId' => $list['listId'],
-            'status' => 'block'
-          ), array(
-            'status' => 'block',
-          ));
+        foreach ($lists AS $list) {
+          if ($list['type'] == 'black' && $listStatus[$list['listId']] == 'block') {
+            $checked = true;
+          }
+          elseif ($list['type'] == 'white' && $listStatus[$list['listId']] != 'unblock') {
+            $checked = true;
+          }
+          else {
+            $checked = false;
+          }
+
+          if ($checked == true && !$listsNew[$list['listId']]) {
+            $database->insert("{$sqlPrefix}censorBlackWhiteLists", array(
+              'roomId' => $room['roomId'],
+              'listId' => $list['listId'],
+              'status' => 'unblock'
+            ), array(
+              'status' => 'unblock',
+            ));
+          }
+          elseif ($checked == false && $listsNew[$list['listId']]) {
+            $database->insert("{$sqlPrefix}censorBlackWhiteLists", array(
+              'roomId' => $room['roomId'],
+              'listId' => $list['listId'],
+              'status' => 'block'
+            ), array(
+              'status' => 'block',
+            ));
+          }
         }
       }
 
@@ -426,6 +416,7 @@ switch($request['action']) {
         $database->insert("{$sqlPrefix}rooms", array(
             'roomName' => "Private IM ($user[userName] and $user2[userName])",
             'options' => 48,
+            'defaultPermissions' => 0,
           )
         );
         $roomId = $database->insertId;

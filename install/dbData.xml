@@ -69,7 +69,7 @@
     <table name="censorLists">
       <column name="listId" value="1" />
       <column name="listName" value="Example Censor" />
-      <column name="listType" value="black" />
+      <column name="listType" value="white" />
       <column name="options" value="3" />
     </table>
 

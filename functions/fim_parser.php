@@ -74,29 +74,23 @@ function fimParse_htmlParse($text) {
 function fimParse_censorParse($text, $roomId = 0) {
   global $sqlPrefix, $slaveDatabase;
 
+
   $words = $slaveDatabase->select(
     array(
-      "{$sqlPrefix}censorLists" => array(
-        'listId' => 'llistId',
-      ),
-      "{$sqlPrefix}censorWords" => array(
-        'listId' => 'listId',
-        'word' => 'word',
-        'severity' => 'severity',
-        'param' => 'param',
+      "{$sqlPrefix}censorWords" => 'listId, word, severity, param',
       ),
     ),
     array(
       'both' => array(
         array(
-          'type' => 'e',
+          'type' => 'in',
           'left' => array(
             'type' => 'column',
             'value' => 'listId',
           ),
           'right' => array(
-            'type' => 'column',
-            'value' => 'llistId',
+            'type' => 'array',
+            'value' => $listIds,
           ),
         ),
         array(
@@ -116,44 +110,6 @@ function fimParse_censorParse($text, $roomId = 0) {
   $words = $words->getAsArray('word');
 
 
-  if ($roomId > 0) {
-    $listsActive = $slaveDatabase->select(
-      array(
-        "{$sqlPrefix}censorBlackWhiteLists" => array(
-          'status' => 'status',
-          'roomId' => 'roomId',
-          'listId' => 'listId',
-        ),
-      ),
-      array(
-        'both' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'roomId',
-            ),
-            'right' => array(
-              'type' => 'int',
-              'value' => (int) $roomId,
-            ),
-          ),
-        ),
-      )
-    );
-    $listsActive = $listsActive->getAsArray();
-
-
-    if (is_array($listsActive)) {
-      if (count($listsActive) > 0) {
-        foreach ($listsActive AS $active) {
-          if ($active['status'] == 'unblock') {
-            $noBlock[] = $active['listId'];
-          }
-        }
-      }
-    }
-  }
 
   if (!$words) {
     return $text;
@@ -403,9 +359,8 @@ function fim3parse_keyWords($string, $messageId, $roomId) {
       )
     );
     $phraseData = $phraseData->getAsArray('phraseName');
-error_log(print_r($stringPiecesAdd, true));
 
-    foreach ($stringPiecesAdd AS $piece) {
+    foreach ($stringPiefesAdd AS $piece) {
       if (!isset($phraseData[$piece])) {
         $database->insert("{$sqlPrefix}searchPhrases", array(
           'phraseName' => $piece,

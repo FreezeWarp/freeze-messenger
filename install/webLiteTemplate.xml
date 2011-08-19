@@ -55,54 +55,54 @@
     </template>
 
     <template name="chat">
-      <div id="roomTemplateContainer">
-        <script src="client/js/fim-main.js" type="text/javascript"></script>
-        <script src="client/js/fim-chat.js" type="text/javascript"></script>
+      &lt;div id="roomTemplateContainer"&gt;
+        &lt;script src="client/js/fim-main.js" type="text/javascript"&gt;&lt;/script&gt;
+        &lt;script src="client/js/fim-chat.js" type="text/javascript"&gt;&lt;/script&gt;
 
-        <div id="activeUsersContainer">
-          {{container}{Active Users}{<div id="activeUsers">Loading...</div>}}
-        </div>
+        &lt;div id="activeUsersContainer"&gt;
+          {{container}{Active Users}{&lt;div id="activeUsers"&gt;Loading...&lt;/div&gt;}}
+        &lt;/div&gt;
 
-        <div id="chatContainer">
-          {{container}{<div id="title">
-            <span id="status" class="leftPart">
-              {{if="$room['options'] & 1"}{<img src="images/bookmarks.png" class="standard" title="This is an Official Room" alt="Official" />}}<br />
-              <span id="refreshStatus" onclick="alert('Failed ' + totalFails + ' times. Current refreshing every ' + (timeout / 1000 + .1) + ' seconds.');"></span>
-            </span>
+        &lt;div id="chatContainer"&gt;
+          {{container}{&lt;div id="title"&gt;
+            &lt;span id="status" class="leftPart"&gt;
+              {{if="$room['options'] &amp; 1"}{&lt;img src="images/bookmarks.png" class="standard" title="This is an Official Room" alt="Official" /&gt;}}&lt;br /&gt;
+              &lt;span id="refreshStatus" onclick="alert('Failed ' + totalFails + ' times. Current refreshing every ' + (timeout / 1000 + .1) + ' seconds.');"&gt;&lt;/span&gt;
+            &lt;/span&gt;
 
-            <div id="rightTitle" class="rightPart">
-              <form action="#" onsubmit="return false;" class="rightPart">
-                <button type="button" onclick="if (soundOn) { soundOn = false; $('#icon_muteSound').attr('src','/images/audio-volume-muted.png'); } else { soundOn = true; $('#icon_muteSound').attr('src','/images/audio-volume-high.png'); }" class="standard" id="icon_muteSound"></button>
+            &lt;div id="rightTitle" class="rightPart"&gt;
+              &lt;form action="#" onsubmit="return false;" class="rightPart"&gt;
+                &lt;button type="button" onclick="if (soundOn) { soundOn = false; $('#icon_muteSound').attr('src','/images/audio-volume-muted.png'); } else { soundOn = true; $('#icon_muteSound').attr('src','/images/audio-volume-high.png'); }" class="standard" id="icon_muteSound"&gt;&lt;/button&gt;
 
-                <button type="button" class="standard" title="Switch the order of posts. This will refresh the page." id="icon_reversePostOrder"></button>
+                &lt;button type="button" class="standard" title="Switch the order of posts. This will refresh the page." id="icon_reversePostOrder"&gt;&lt;/button&gt;
 
-                <button type="button" class="standard" id="icon_help"></button>
-              </form>
-            </div>
+                &lt;button type="button" class="standard" id="icon_help"&gt;&lt;/button&gt;
+              &lt;/form&gt;
+            &lt;/div&gt;
 
-            $room[name]<br />
-            <em id="topic$room[id]" style="white-space:nowrap;">$room[topic]</em>
-          </div>}{
-          <div id="messageListContainer">
-            <div id="messageList">
-            </div>
-          </div>
+            $room[name]&lt;br /&gt;
+            &lt;em id="topic$room[id]" style="white-space:nowrap;"&gt;$room[topic]&lt;/em&gt;
+          &lt;/div&gt;}{
+          &lt;div id="messageListContainer"&gt;
+            &lt;div id="messageList"&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
           }}
-        </div>
+        &lt;/div&gt;
 
-        <div id="textentryBoxMessage">
-          <form onsubmit="var message = $('textarea#messageInput').val(); if (message.length == 0) { alert('Please enter your message.'); } else { sendMessage(message); $('textarea#messageInput').val(''); } return false;" id="sendform">{{container}{
-            <div class="leftPart">Enter a Message</div>
-            <div class="rightPart">
-              <button type="submit" class="standard" id="icon_submit"></button>
-              <button type="reset" class="standard" id="icon_reset"></button>
-            </div>}{
-            <div id="messageInputContainer" class="middle">
-              <textarea onkeypress="if (event.keyCode == 13 && !event.shiftKey) { $('#sendform').submit(); return false; }" id="messageInput" autofocus="autofocus" placeholder="Enter your text."></textarea>
-            </div>}}
-          </form>
-        </div>
-      </div>
+        &lt;div id="textentryBoxMessage"&gt;
+          &lt;form onsubmit="var message = $('textarea#messageInput').val(); if (message.length == 0) { alert('Please enter your message.'); } else { sendMessage(message); $('textarea#messageInput').val(''); } return false;" id="sendform"&gt;{{container}{
+            &lt;div class="leftPart"&gt;Enter a Message&lt;/div&gt;
+            &lt;div class="rightPart"&gt;
+              &lt;button type="submit" class="standard" id="icon_submit"&gt;&lt;/button&gt;
+              &lt;button type="reset" class="standard" id="icon_reset"&gt;&lt;/button&gt;
+            &lt;/div&gt;}{
+            &lt;div id="messageInputContainer" class="middle"&gt;
+              &lt;textarea onkeypress="if (event.keyCode == 13 &amp;&amp; !event.shiftKey) { $('#sendform').submit(); return false; }" id="messageInput" autofocus="autofocus" placeholder="Enter your text."&gt;&lt;/textarea&gt;
+            &lt;/div&gt;}}
+          &lt;/form&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
     </template>
 
     <template name="templateEnd" vars="">

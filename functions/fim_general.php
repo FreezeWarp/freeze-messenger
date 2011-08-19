@@ -677,7 +677,7 @@ function template($name) {
           $globalVars[] = '$' . trim($var); // Format the var for an eval, trimming it to remove any spaces surrounding the var.
         }
 
-        $globalString = implode(', ', $globalVars); // Implode the variables for the below global eval.
+        $globalString = implode(',', $globalVars); // Implode the variables for the below global eval.
 
         eval("global $globalString;"); // And make all those variables global.
       }
@@ -1391,6 +1391,10 @@ function fim_sanitizeGPC($data) {
                   $indexMetaData['context']['cast'] = 'csv';
                   break;
 
+                  case 'array': // e.g. "1=1,2=0,3=0" "1=1,ab3=1,455=0"
+                  $indexMetaData['context']['cast'] = 'array';
+                  break;
+
                   case 'bool':
                   $indexMetaData['context']['cast'] = 'bool';
                   break;
@@ -1471,7 +1475,25 @@ function fim_sanitizeGPC($data) {
 
         switch($indexMetaData['context']['cast']) {
           case 'csv':
-          $newData[$indexName] = fim_arrayValidate(explode(', ', $activeGlobal[$indexName]), $indexMetaData['context']['filter'],($indexMetaData['context']['evaltrue'] ? false : true)); // If a cast is set for a CSV list, explode with a comma seperator, make sure all values corrosponding to the filter (int, bool, or string - the latter pretty much changes nothing), and if evaltrue is true, then the preserveAll flag would be false, and vice-versa.
+          $newData[$indexName] = fim_arrayValidate(explode(',', $activeGlobal[$indexName]), $indexMetaData['context']['filter'],($indexMetaData['context']['evaltrue'] ? false : true)); // If a cast is set for a CSV list, explode with a comma seperator, make sure all values corrosponding to the filter (int, bool, or string - the latter pretty much changes nothing), and if evaltrue is true, then the preserveAll flag would be false, and vice-versa.
+          break;
+
+          case 'array':
+          $arrayParts = explode(',', $activeGlobal[$indexName]);
+          $arrayKeys = array();
+          $arrayVals = array();
+
+          foreach ($arrayParts AS $arrayEntry) {
+            $arrayEntry = explode('=', $arrayEntry);
+
+            if (count($arrayEntry) !== 2) continue;
+
+            $arrayKeys[] = $arrayEntry[0];
+            $arrayVals[] = $arrayEntry[1];
+          }
+
+          $arrayVals = fim_arrayValidate($arrayVals, $indexMetaData['context']['filter'], ($indexMetaData['context']['evaltrue'] ? false : true));
+          $newData[$indexName] = array_combine($arrayKeys, $arrayVals);
           break;
 
           case 'int':

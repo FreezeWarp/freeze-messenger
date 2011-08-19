@@ -72,7 +72,7 @@ $xmlData = array(
   ),
 );
 
-$queryParts['getUsers']['columns'] = array(
+$queryParts['userSelect']['columns'] = array(
   "{$sqlPrefix}users" => array(
     'userId' => 'userId',
     'userName' => 'userName',
@@ -90,11 +90,11 @@ $queryParts['getUsers']['columns'] = array(
     'userGroup' => 'userGroup',
   ),
 );
-$queryParts['getUsers']['conditions'] = false;
-$queryParts['getUsers']['sort'] = array(
+$queryParts['userSelect']['conditions'] = false;
+$queryParts['userSelect']['sort'] = array(
   'userId' => 'asc',
 );
-$queryParts['getUsers']['limit'] = false;
+$queryParts['userSelect']['limit'] = false;
 
 
 
@@ -171,10 +171,10 @@ switch ($request['sort']) {
 
 /* Get Users from Database */
 $users = $slaveDatabase->select(
-  $queryParts['getUsers']['columns'],
-  $queryParts['getUsers']['conditions'],
-  $queryParts['getUsers']['sort'],
-  $queryParts['getUsers']['limit']
+  $queryParts['userSelect']['columns'],
+  $queryParts['userSelect']['conditions'],
+  $queryParts['userSelect']['sort'],
+  $queryParts['userSelect']['limit']
 );
 $users = $users->getAsArray();
 

@@ -31,18 +31,14 @@ require('../global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC(array(
-  'get' => array(
+  'post' => array(
     'defaultRoomId' => array(
-      'type' => 'string',
-      'require' => false,
       'context' => array(
         'type' => 'int',
       ),
     ),
 
     'defaultFontface' => array(
-      'type' => 'string',
-      'require' => false,
       'context' => array(
         'type' => 'int',
       ),
@@ -50,17 +46,19 @@ $request = fim_sanitizeGPC(array(
 
     'defaultColor' => array(
       'type' => 'string',
-      'require' => false,
     ),
 
     'defaultHighlight' => array(
       'type' => 'string',
-      'require' => false,
+    ),
+
+    'defaultFormatting' => array(
+      'context' => array(
+        'type' => 'int',
+      ),
     ),
 
     'watchRooms' => array(
-      'type' => 'string',
-      'require' => false,
       'context' => array(
         'type' => 'csv',
         'filter' => 'int',
@@ -69,8 +67,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'favRooms' => array(
-      'type' => 'string',
-      'require' => false,
       'context' => array(
         'type' => 'csv',
         'filter' => 'int',
@@ -79,8 +75,6 @@ $request = fim_sanitizeGPC(array(
     ),
 
     'ignoreList' => array(
-      'type' => 'string',
-      'require' => false,
       'context' => array(
         'type' => 'csv',
         'filter' => 'int',
@@ -117,79 +111,79 @@ if ($request['defaultRoomId'] > 0) {
   $defaultRoomData = $slaveDatabase->getRoom($request['defaultRoomId']);
 
   if (fim_hasPermission($defaultRoomData,$user,'view')) {
-    $updateArray['defaultRoom'] = (int) $_POST['defaultRoomId'];
+    $updateArray['defaultRoom'] = (int) $request['defaultRoomId'];
 
     $xmlData['editUserOptions']['response']['defaultRoom']['status'] = true;
-    $xmlData['editUserOptions']['response']['defaultRoom']['newValue'] = (int) $_POST['defaultRoomId'];
+    $xmlData['editUserOptions']['response']['defaultRoom']['newValue'] = (int) $request['defaultRoomId'];
   }
   else {
     $xmlData['editUserOptions']['response']['defaultRoom']['status'] = false;
-    $xmlData['editUserOptions']['response']['defaultRoom']['errStr'] = 'outofrange1';
-    $xmlData['editUserOptions']['response']['defaultRoom']['errDesc'] = 'The first value ("red") was out of range.';
+    $xmlData['editUserOptions']['response']['defaultRoom']['errStr'] = 'noPerm';
+    $xmlData['editUserOptions']['response']['defaultRoom']['errDesc'] = 'You do not have ';
   }
 }
 
 if (count($request['favRooms']) > 0) {
-  $favRooms = fim_arrayValidate(explode(',',$_POST['favRooms']),'int',false);
-  $updateArray['favRooms'] = (string) implode(',',$favRooms);
+  $favRooms = fim_arrayValidate(explode(',', $request['favRooms']),'int',false);
+  $updateArray['favRooms'] = (string) implode(',', $favRooms);
 
   $xmlData['editUserOptions']['response']['favRooms']['status'] = true;
-  $xmlData['editUserOptions']['response']['favRooms']['newValue'] = (string) implode(',',$favRooms);
+  $xmlData['editUserOptions']['response']['favRooms']['newValue'] = (string) implode(',', $favRooms);
 }
 
 if (count($request['watchRooms']) > 0) {
-  $watchRooms = fim_arrayValidate(explode(',',$_POST['watchRooms']),'int',false);
-  $updateArray['watchRooms'] = (string) implode(',',$watchRooms);
+  $watchRooms = fim_arrayValidate(explode(',', $request['watchRooms']),'int',false);
+  $updateArray['watchRooms'] = (string) implode(',', $watchRooms);
 
   $xmlData['editUserOptions']['response']['watchRooms']['status'] = true;
-  $xmlData['editUserOptions']['response']['watchRooms']['newValue'] = (string) implode(',',$watchRooms);
+  $xmlData['editUserOptions']['response']['watchRooms']['newValue'] = (string) implode(',', $watchRooms);
 }
 
 if (count($request['ignoreList']) > 0) {
-  $ignoreList = fim_arrayValidate(explode(',',$_POST['ignoreList']),'int',false);
-  $updateArray['ignoreList'] = (string) implode(',',$ignoreList);
+  $ignoreList = fim_arrayValidate(explode(',', $request['ignoreList']),'int',false);
+  $updateArray['ignoreList'] = (string) implode(',', $ignoreList);
 
   $xmlData['editUserOptions']['response']['ignoreList']['status'] = true;
-  $xmlData['editUserOptions']['response']['ignoreList']['newValue'] = (string) implode(',',$ignoreList);
+  $xmlData['editUserOptions']['response']['ignoreList']['newValue'] = (string) implode(',', $ignoreList);
 }
 
 if (isset($request['defaultFormatting'])) {
-  $updateArray['defaultFormatting'] = (int) $_POST['defaultFormatting'];
+  $updateArray['defaultFormatting'] = (int) $request['defaultFormatting'];
 
   $xmlData['editUserOptions']['response']['defaultFormatting']['status'] = true;
-  $xmlData['editUserOptions']['response']['defaultFormatting']['newValue'] = (string) implode(',',$defaultFormatting);
+  $xmlData['editUserOptions']['response']['defaultFormatting']['newValue'] = (string) implode(',', $defaultFormatting);
 }
 
 foreach (array('defaultHighlight','defaultColor') AS $value) {
   if (isset($request[$value])) {
-    $rgb = fim_arrayValidate(explode(',',$request[$value]),'int',true);
+    $rgb = fim_arrayValidate(explode(',', $request[$value]), 'int', true);
 
     if (count($rgb) === 3) { // Too many entries.
       if ($rgb[0] < 0 || $rgb[0] > 255) { // First val out of range.
         $xmlData['editUserOptions']['response'][$value]['status'] = false;
-        $xmlData['editUserOptions']['response'][$value]['errStr'] = 'outofrange1';
+        $xmlData['editUserOptions']['response'][$value]['errStr'] = 'outOfRange1';
         $xmlData['editUserOptions']['response'][$value]['errDesc'] = 'The first value ("red") was out of range.';
       }
       elseif ($rgb[1] < 0 || $rgb[1] > 255) { // Second val out of range.
         $xmlData['editUserOptions']['response'][$value]['status'] = false;
-        $xmlData['editUserOptions']['response'][$value]['errStr'] = 'outofrange2';
+        $xmlData['editUserOptions']['response'][$value]['errStr'] = 'outOfRange2';
         $xmlData['editUserOptions']['response'][$value]['errDesc'] = 'The first value ("green") was out of range.';
       }
       elseif ($rgb[2] < 0 || $rgb[2] > 255) { // Third val out of range.
         $xmlData['editUserOptions']['response'][$value]['status'] = false;
-        $xmlData['editUserOptions']['response'][$value]['errStr'] = 'outofrange3';
+        $xmlData['editUserOptions']['response'][$value]['errStr'] = 'outOfRange3';
         $xmlData['editUserOptions']['response'][$value]['errDesc'] = 'The third value ("blue") was out of range.';
       }
       else {
-        $updateArray[$value] = implode(',',$rgb);
+        $updateArray[$value] = implode(',', $rgb);
 
         $xmlData['editUserOptions']['response'][$value]['status'] = true;
-        $xmlData['editUserOptions']['response'][$value]['newValue'] = (string) implode(',',$rgb);
+        $xmlData['editUserOptions']['response'][$value]['newValue'] = (string) implode(',', $rgb);
       }
     }
     else {
       $xmlData['editUserOptions']['response'][$value]['status'] = false;
-      $xmlData['editUserOptions']['response'][$value]['errStr'] = 'badformat';
+      $xmlData['editUserOptions']['response'][$value]['errStr'] = 'badFormat';
       $xmlData['editUserOptions']['response'][$value]['errDesc'] = 'The default highlight value was not properly formatted.';
     }
   }
@@ -206,16 +200,21 @@ if (isset($request['defaultFontface'])) {
   }
   else {
     $xmlData['editUserOptions']['response']['defaultFontface']['status'] = false;
-    $xmlData['editUserOptions']['response']['defaultFontface']['errStr'] = 'nofont';
+    $xmlData['editUserOptions']['response']['defaultFontface']['errStr'] = 'noFont';
     $xmlData['editUserOptions']['response']['defaultFontface']['errDesc'] = 'The specified font does not exist.';
   }
 }
 
-$database->update(
-  "{$sqlPrefix}users", $updateArray, array(
-    'userId' => $user['userId'],
-  )
-);
+
+($hook = hook('editUserOptions_preQuery') ? eval($hook) : '');
+
+if (count($updateArray) > 0) {
+  $database->update(
+    "{$sqlPrefix}users", $updateArray, array(
+      'userId' => $user['userId'],
+    )
+  );
+}
 
 
 

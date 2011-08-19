@@ -86,7 +86,13 @@ $queryParts['censorListsSelect']['conditions'] = array();
 $queryParts['censorListsSelect']['sort'] = array(
   'listName' => 'asc',
 );
-
+$queryParts['censorListsSelect']['limit'] = false;
+$queryParts['activeSelect']['columns'] = array(
+  "{$sqlPrefix}censorBlackWhiteLists" => 'status, roomId, listId',
+);
+$queryParts['censorListsSelect']['conditions'] = array();
+$queryParts['censorListsSelect']['sort'] = false;
+$queryParts['censorListsSelect']['limit'] = false;
 
 
 /* Modify Query Data for Directives */
@@ -102,6 +108,32 @@ if (count($request['lists']) > 0) {
        'value' => (array) $request['lists'],
     ),
   );
+
+  $queryParts['activeSelect']['conditions']['both'][] = array(
+    'type' => 'in',
+    'left' => array(
+      'type' => 'column',
+      'value' => 'listId',
+    ),
+    'right' => array(
+      'type' => 'array',
+      'value' => $request['lists'],
+    ),
+  );
+}
+
+if (count($request['rooms']) > 0) {
+  $queryParts['activeSelect']['conditions']['both'][] = array(
+    'type' => 'in',
+    'left' => array(
+      'type' => 'column',
+      'value' => 'roomId',
+    ),
+    'right' => array(
+      'type' => 'array',
+      'value' => $request['rooms'],
+    ),
+  );
 }
 
 
@@ -115,8 +147,20 @@ if (count($request['lists']) > 0) {
 if ($continue) {
   $censorLists = $slaveDatabase->select($queryParts['censorListsSelect']['columns'],
     $queryParts['censorListsSelect']['conditions'],
-    $queryParts['censorListsSelect']['sort']);
+    $queryParts['censorListsSelect']['sort'],
+    $queryParts['censorListsSelect']['limit']);
   $censorLists = $censorLists->getAsArray('listId');
+
+  $listsActive = $slaveDatabase->select($queryParts['activeSelect']['columns'],
+    $queryParts['activeSelect']['conditions'],
+    $queryParts['activeSelect']['sort'],
+    $queryParts['activeSelect']['limit']);
+  $listsActive = $listsActive->getAsArray(true);
+
+  $listsActive2 = array();
+  foreach ($listsActive AS $lA) {
+    $listsActive2[$lA['listId']][$lA['roomId']] = $lA['status'];
+  }
 }
 
 
@@ -130,7 +174,29 @@ if ($continue) {
         'listName' => ($list['listName']),
         'listType' => ($list['listType']),
         'listOptions' => (int) $list['listOptions'],
+        'active' => array(),
       );
+
+      if (count($request['rooms']) > 0) {
+        foreach ($request['rooms'] AS $roomId) {
+          if (!isset($listsActive2[$list['listId']]) || !isset($listsActive2[$list['listId']][$roomId])) {
+            if ($list['listType'] === 'black') {
+              $roomStatus = 'unblock';
+            }
+            elseif ($list['listType'] === 'white') {
+              $roomStatus = 'block';
+            }
+          }
+          else {
+            $roomStatus = $listsActive2[$list['listId']][$roomId];
+          }
+
+          $xmlData['getCensorLists']['lists']['list ' . $list['listId']]['active']['roomStatus ' . $roomId] = array(
+            'roomId' => $roomId,
+            'status' => $roomStatus,
+          );
+        }
+      }
 
       ($hook = hook('getCensorLists_eachCensorList') ? eval($hook) : '');
     }
