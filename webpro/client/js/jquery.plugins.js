@@ -118,9 +118,14 @@ if(jQuery)(function() {
         $('#' + o.menu).addClass('contextMenu'); // Add contextMenu class
 
         if (o.altMenu) {
-          $(this).append('<span class="menuTrigger"><span class="ui-icon ui-icon-grip-diagonal-se"></span></span>');
+          $(this).append('<span class="menuTrigger" tabindex="1"><span class="ui-icon ui-icon-grip-diagonal-se"></span></span>');
+
           $(this).find('.menuTrigger').click(function() {
             contextMenuSub(false, o, $(this), $(el).offset(), callback, $(this).parent());
+          });
+
+          $(this).find('.menuTrigger').keyup(function(event){
+            if (event.keyCode == 13) $(this).click();
           });
         }
         else {
@@ -142,7 +147,7 @@ if(jQuery)(function() {
         // Disable text selection
         if ($.browser.mozilla) {
           $('#' + o.menu).each(function() {
-            $(this).css({ 'MozUserSelect' : 'none' });
+            $(this).css({'MozUserSelect' : 'none'});
           });
         }
         else if ($.browser.msie) {
@@ -178,16 +183,17 @@ if(jQuery)(function() {
   });
 })(jQuery);
 
+
 function contextMenuSub(e, o, el, offset, callback, srcElement) {
   if (e) {
     e.stopPropagation();
     var evt = e;
   }
   else {
-    evt = {
-      button: 2,
-    }
+    evt = { button: 2 }
   }
+
+
 
   $(this).unbind('mouseup');
 
@@ -196,8 +202,10 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
 
     var menu = $('#' + o.menu); // Get this context menu
 
+
     // Detect mouse position
     var d = {}, x, y;
+
     if (self.innerHeight) {
       d.pageYOffset = self.pageYOffset;
       d.pageXOffset = self.pageXOffset;
@@ -226,9 +234,14 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
       y = offset.top;
     }
 
+
+
     // Show the menu
     $(document).unbind('click');
-    $(menu).css({ top: y, left: x }).fadeIn(o.inSpeed);
+
+    $(menu).css({ top: y, left: x }).attr('data-visible', 'true').fadeIn(o.inSpeed);
+
+
 
     // Hover events
     $(menu).find('a').mouseover(function() {
@@ -238,10 +251,12 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
       $(menu).find('li.hover').removeClass('hover');
     });
 
+
+
     // Keyboard
-    $(document).keyup(function(e) {
+    $(document).keydown(function(e) {
       switch(e.keyCode) {
-        case 38: // up
+        case 38: // Up
         if ($(menu).find('li.hover').size() == 0) {
           $(menu).find('li:last').addClass('hover');
         }
@@ -252,9 +267,11 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
             $(menu).find('li:last').addClass('hover');
           }
         }
+
+        return false;
         break;
 
-        case 40: // down
+        case 40: // Down
         if ($(menu).find('li.hover').size() == 0) {
           $(menu).find('li:first').addClass('hover');
         }
@@ -265,22 +282,26 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
             $(menu).find('li:first').addClass('hover');
           }
         }
+
+        return false;
         break;
 
-        case 13: // enter
+        case 13: // Enter
         $(menu).find('li.hover a').trigger('click');
         break;
 
-        case 27: // esc
+        case 27: // Escape
         $(document).trigger('click');
         break
       }
     });
 
+
+
     // When items are selected
     $('#' + o.menu).find('a').unbind('click');
     $('#' + o.menu).find('li:not(.disabled) a').click(function() {
-      $(document).unbind('click').unbind('keypress');
+      $(document).unbind('click').unbind('keydown');
       $(".contextMenu").hide();
 
       // Callback
@@ -291,11 +312,13 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
       return false;
     });
 
+
+
     // Hide bindings
     setTimeout(function() { // Delay for Mozilla; TODO: Confirm still a problem
       $(document).click(function() {
-        $(document).unbind('click').unbind('keypress');
-        $(menu).fadeOut(o.outSpeed);
+        $(document).unbind('click').unbind('keydown');
+        $(menu).removeAttr('data-visible').fadeOut(o.outSpeed);
         return false;
       });
     }, 0);
@@ -1500,6 +1523,8 @@ var dia = {
           else {
             dialog.dialog(dialogOptions);
           }
+
+          dialog.focus();
 
           windowDraw();
 

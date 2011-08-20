@@ -42,37 +42,37 @@
 &lt;div id="page" data-role="page"&gt;
 &lt;!-- START links --&gt;
 &lt;div id="menu" data-role="header"&gt;
-&lt;h3 id="quickCat"&gt;&lt;a href="#" data-itemId="1"&gt;$phrases[templateQuickCat]&lt;/a&gt;&lt;/h3&gt;
+&lt;h3 id="quickCat"&gt;&lt;a href="#" data-itemId="1" accesskey="v"&gt;$phrases[templateQuickCat]&lt;/a&gt;&lt;/h3&gt;
 &lt;div&gt;
 &lt;ul&gt;
-  &lt;li style="border-bottom: 1px solid;"&gt;&lt;a href="#" id="messageArchive"&gt;$phrases[templateArchive]&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href="#" id="roomList"&gt;$phrases[templateRoomList]&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href="#" id="createRoom"&gt;$phrases[templateCreateRoom]&lt;/a&gt;&lt;/li&gt;
-  &lt;li style="border-bottom: 1px solid;"&gt;&lt;a href="#" id="privateRoom"&gt;$phrases[templatePrivateIM]&lt;/a&gt;&lt;/li&gt;
+  &lt;li style="border-bottom: 1px solid;"&gt;&lt;a href="#" id="messageArchive" accesskey="a"&gt;$phrases[templateArchive]&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#" id="roomList" accesskey="r"&gt;$phrases[templateRoomList]&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#" id="createRoom" accesskey="c"&gt;$phrases[templateCreateRoom]&lt;/a&gt;&lt;/li&gt;
+  &lt;li style="border-bottom: 1px solid;"&gt;&lt;a href="#" id="privateRoom" accesskey="p"&gt;$phrases[templatePrivateIM]&lt;/a&gt;&lt;/li&gt;
 
-  &lt;li&gt;&lt;a href="#" id="online"&gt;$phrases[templateActiveUsers]&lt;/a&gt;&lt;/li&gt;
-  &lt;li style="border-bottom: 1px solid;"&gt;&lt;a href="#" id="viewStats"&gt;$phrases[templateStats]&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#" id="online" accesskey="o"&gt;$phrases[templateActiveUsers]&lt;/a&gt;&lt;/li&gt;
+  &lt;li style="border-bottom: 1px solid;"&gt;&lt;a href="#" id="viewStats" accesskey="t"&gt;$phrases[templateStats]&lt;/a&gt;&lt;/li&gt;
 
-  &lt;li&gt;&lt;a href="#" id="viewUploads"&gt;$phrases[templateViewUploads]&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href="#" id="changeSettings"&gt;$phrases[templateChangeSettings]&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href="#" id="manageKick"&gt;$phrases[templateMyKicks]&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href="#" id="logout"&gt;$phrases[templateLogout]&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href="#" id="login"&gt;$phrases[templateLogin]&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#" id="viewUploads" accesskey="l"&gt;$phrases[templateViewUploads]&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#" id="changeSettings" accesskey="s"&gt;$phrases[templateChangeSettings]&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#" id="manageKick" accesskey="k"&gt;$phrases[templateMyKicks]&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#" id="logout" accesskey="x"&gt;$phrases[templateLogout]&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#" id="login" accesskey="i"&gt;$phrases[templateLogin]&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
 
-&lt;h3 id="moderateCat"&gt;&lt;a href="#" data-itemId="2"&gt;$phrases[templateModerateCat]&lt;/a&gt;&lt;/h3&gt;
+&lt;h3 id="moderateCat"&gt;&lt;a href="#" data-itemId="2" accesskey="w"&gt;$phrases[templateModerateCat]&lt;/a&gt;&lt;/h3&gt;
 &lt;div&gt;
 &lt;ul&gt;
-  &lt;li&gt;&lt;a href="#" id="editRoom"&gt;$phrases[templateEditRoom]&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href="#" id="manageKick"&gt;$phrases[templateManageKickedUsers]&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href="#" id="kick"&gt;$phrases[templateKickUser]&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#" id="editRoom" accesskey="e"&gt;$phrases[templateEditRoom]&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#" id="manageKick" accesskey="m"&gt;$phrases[templateManageKickedUsers]&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#" id="kick" accesskey="b"&gt;$phrases[templateKickUser]&lt;/a&gt;&lt;/li&gt;
 
-  &lt;li&gt;&lt;a href="./moderate.php" id="modGeneral"&gt;$phrases[templateAdmin]&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="./moderate.php" id="modGeneral" accesskey="n"&gt;$phrases[templateAdmin]&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
 
-&lt;h3 id="roomCat"&gt;&lt;a href="#" data-itemId="3"&gt;$phrases[templateRoomListCat]&lt;/a&gt;&lt;/h3&gt;
+&lt;h3 id="roomCat"&gt;&lt;a href="#" data-itemId="3" accesskey="x"&gt;$phrases[templateRoomListCat]&lt;/a&gt;&lt;/h3&gt;
 &lt;div&gt;
   &lt;div id="roomListShort"&gt;
     &lt;a href="javascript:void(0);" id="showMoreRooms"&gt;$phrases[templateShowMoreRooms]&lt;/a&gt;&lt;br /&gt;
@@ -88,10 +88,10 @@
   &lt;/div&gt;
 &lt;/div&gt;
 
-&lt;h3 id="activeCat"&gt;&lt;a href="#" data-itemId="4"&gt;$phrases[templateActiveUsersCat]&lt;/a&gt;&lt;/h3&gt;
+&lt;h3 id="activeCat"&gt;&lt;a href="#" data-itemId="4" accesskey="y"&gt;$phrases[templateActiveUsersCat]&lt;/a&gt;&lt;/h3&gt;
 &lt;div id="activeUsers"&gt;$phrases[templateLoading]&lt;/div&gt;
 
-&lt;h3 id="copyCat"&gt;&lt;a href="#" data-itemId="5"&gt;$phrases[templateCopyrightCat]&lt;/a&gt;&lt;/h3&gt;
+&lt;h3 id="copyCat"&gt;&lt;a href="#" data-itemId="5" accesskey="z"&gt;$phrases[templateCopyrightCat]&lt;/a&gt;&lt;/h3&gt;
 &lt;div&gt;
   &lt;ul&gt;
     &lt;li&gt;FIM © 2010-2011 &lt;a href="http://josephtparsons.com/" target="_BLANK"&gt;Joseph T. Parsons ("FreezeWarp")&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
@@ -148,8 +148,8 @@
     </template>
 
     <template name="editRoomForm">&lt;ul class="tabList"&gt;
-&lt;li&gt;&lt;a href="#editRoom1"&gt;General&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#editRoom2"&gt;Permissions&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#editRoom1" &gt;General&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#editRoom2" &gt;Permissions&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;form action="#" method="post" id="editRoomForm"&gt;&lt;div id="editRoom1"&gt;
@@ -297,7 +297,7 @@ $phrases[settingsDefaultFormattingLabel]&lt;br /&gt;
 
       &lt;button type="button" class="standard" id="icon_note"&gt;&lt;/button&gt;
 
-      &lt;button type="button" class="standard" id="icon_help"&gt;&lt;/button&gt;
+      &lt;button type="button" class="standard" id="icon_help" accesskey="?"&gt;&lt;/button&gt;
     &lt;/form&gt;
   &lt;/div&gt;
 
@@ -314,7 +314,7 @@ $phrases[settingsDefaultFormattingLabel]&lt;br /&gt;
 &lt;div id="textentryBoxMessage"&gt;
   &lt;form id="sendForm" action="#" method="post"&gt;{{container}{
     &lt;div class="leftPart"&gt;
-        &lt;button type="button" class="standard" id="icon_url"&gt;&lt;/button&gt;
+        &lt;button type="button" class="standard" id="icon_url" accesskey="u"&gt;&lt;/button&gt;
     &lt;/div&gt;
     &lt;div class="rightPart"&gt;
       &lt;button type="submit" class="standard" id="icon_submit"&gt;&lt;/button&gt;
@@ -336,34 +336,34 @@ $phrases[settingsDefaultFormattingLabel]&lt;br /&gt;
 &lt;div style="text-align: center;" id="copyright1"&gt;
   FreezeMessenger &amp;copy; 2010-2011 &lt;a href="http://josephtparsons.com/" target="_BLANK"&gt;Joseph T. Parsons&lt;/a&gt;. Some Rights Reserved.&lt;br /&gt;&lt;br /&gt;
 
-  <strong>The Following Third-Party Plugins Are Used with WebPro For Various Functionality:</strong>
+  &lt;strong&gt;The Following Third-Party Plugins Are Used with WebPro For Various Functionality:&lt;/strong&gt;
   jQuery, jQueryUI, and all jQueryUI Themeroller Themes &amp;copy; &lt;a href="http://jquery.org/" target="_BLANK"&gt;The jQuery Project.&lt;/a&gt;&lt;br /&gt;&lt;br /&gt;
 
-  jGrowl &amp;copy; 2009 <a href="http://stanlemon.net/projects/jgrowl.html">Stan Lemon</a>.&lt;br /&gt;
-  jQuery Cookie Plugin &amp;copy; 2006 <a href="https://github.com/carhartl/jquery-cookie">Klaus Hartl</a>&lt;br /&gt;
-  EZPZ Tooltip &amp;copy; 2009 <a href="http://theezpzway.com/2009/3/17/jquery-plugin-ezpz-tooltip">Mike Enriquez</a>&lt;br /&gt;
-  Context Menu &amp;copy; 2008 <a href="http://abeautifulsite.net/blog/2008/09/jquery-context-menu-plugin/">Cory S.N. LaViska</a>&lt;br /&gt;
-  jQTubeUtil &amp;copy; 2010 <a href="http://www.tikku.com/jquery-jqtube-util">Nirvana Tikku</a>
-  ColorPicker &copy; <a href="http://www.eyecon.ro/colorpicker/">Stefan Petr</a>
+  jGrowl &amp;copy; 2009 &lt;a href="http://stanlemon.net/projects/jgrowl.html"&gt;Stan Lemon&lt;/a&gt;.&lt;br /&gt;
+  jQuery Cookie Plugin &amp;copy; 2006 &lt;a href="https://github.com/carhartl/jquery-cookie"&gt;Klaus Hartl&lt;/a&gt;&lt;br /&gt;
+  EZPZ Tooltip &amp;copy; 2009 &lt;a href="http://theezpzway.com/2009/3/17/jquery-plugin-ezpz-tooltip"&gt;Mike Enriquez&lt;/a&gt;&lt;br /&gt;
+  Context Menu &amp;copy; 2008 &lt;a href="http://abeautifulsite.net/blog/2008/09/jquery-context-menu-plugin/"&gt;Cory S.N. LaViska&lt;/a&gt;&lt;br /&gt;
+  jQTubeUtil &amp;copy; 2010 &lt;a href="http://www.tikku.com/jquery-jqtube-util"&gt;Nirvana Tikku&lt;/a&gt;
+  ColorPicker &amp;copy; &lt;a href="http://www.eyecon.ro/colorpicker/"&gt;Stefan Petr&lt;/a&gt;
 
-  <strong>The Following Substantial Modifications Have Been Made to the Above Plugins by Joseph T. Parsons:</strong>
+  &lt;strong&gt;The Following Substantial Modifications Have Been Made to the Above Plugins by Joseph T. Parsons:&lt;/strong&gt;
   jGrowl - Support Live() Handler
   EZPZ Tooltip - Support Live() Handler
   Context Menu - Support Accessible Click Method ("Disable Right Click")
 &lt;/div&gt;
 
 &lt;div style="text-align: center;" id="copyright2"&gt;
-<strong>For continual bugtesting and related help, thanks to:</strong>&lt;br /&gt;&lt;br /&gt;
+&lt;strong&gt;For continual bugtesting and related help, thanks to:&lt;/strong&gt;&lt;br /&gt;&lt;br /&gt;
 
 JC747&lt;br /&gt;
 A'Bom&lt;br /&gt;
 Shade&lt;br /&gt;
 Ningamer&lt;br /&gt;
 KingOfKYA&lt;br /&gt;
-<a href="http://www.victoryroad.net/">Cat333Pokémon</a>
+&lt;a href="http://www.victoryroad.net/"&gt;Cat333Pokémon&lt;/a&gt;
 &lt;/div&gt;
 
-&lt;div id="copyright3"&gt;<strong>Redistribution License of FreezeMessenger and WebPro:</strong><br />
+&lt;div id="copyright3"&gt;&lt;strong&gt;Redistribution License of FreezeMessenger and WebPro:&lt;/strong&gt;&lt;br /&gt;
 FreezeMessenger is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.&lt;br /&gt;&lt;br /&gt;This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.&lt;br /&gt;&lt;br /&gt;You should have received a copy of the GNU General Public License along with this program.  If not, see &amp;lt;http://www.gnu.org/licenses/&amp;gt;.&lt;/div&gt;
     </template>
 
