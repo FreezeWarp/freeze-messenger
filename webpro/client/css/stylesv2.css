@@ -258,6 +258,8 @@ table.center td {
   display: inline-block !important;
   width: 20px;
   opacity: .5;
+  bottom: 0px;
+  vertical-align: bottom;
 }
 .menuTrigger:hover {
   opacity: 1;

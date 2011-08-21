@@ -29,8 +29,8 @@
 
 &lt;!-- START Scripts --&gt;
 
-&lt;script src="client/js/jquery-1.6.1.min.js" type="text/javascript"&gt;&lt;/script&gt;
-&lt;script src="client/js/jquery-ui-1.8.13.custom.min.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script src="client/js/jquery-1.6.2.min.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script src="client/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"&gt;&lt;/script&gt;
 &lt;script src="client/js/jquery.plugins.js" type="text/javascript"&gt;&lt;/script&gt;
 &lt;script src="client/js/fim-all.js" type="text/javascript"&gt;&lt;/script&gt;
 

@@ -2535,7 +2535,7 @@ popup = {
 
 
         $('#theme').change(function() {
-          $('#stylesjQ').attr('href', 'client/css/' + this.value + '/jquery-ui-1.8.13.custom.css');
+          $('#stylesjQ').attr('href', 'client/css/' + this.value + '/jquery-ui-1.8.16.custom.css');
           $('#stylesFIM').attr('href', 'client/css/' + this.value + '/fim.css');
 
           $.cookie('webpro_theme', this.value, { expires : 14 });
@@ -3729,7 +3729,7 @@ function contextMenuParse() {
 
 
 $(document).ready(function() {
-  $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/' + theme + '/jquery-ui-1.8.13.custom.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/' + theme + '/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
+  $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/' + theme + '/jquery-ui-1.8.16.custom.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/' + theme + '/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
 
   if (fontsize) {
     $('body').css('font-size',fontsize + 'em');
