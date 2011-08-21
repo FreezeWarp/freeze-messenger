@@ -130,25 +130,27 @@ if(jQuery)(function() {
           $(this).append('<span class="menuTrigger" tabindex="1"><span class="ui-icon ui-icon-grip-diagonal-se"></span></span>');
 
           $(this).find('.menuTrigger').click(function() {
-            contextMenuSub(false, o, $(this), $(el).offset(), callback, $(this).parent());
+            contextMenuSub(false, o, $(el).find('.menuTrigger'), $(el).find('.menuTrigger').offset(), callback, $(this).parent());
           });
 
-          $(this).find('.menuTrigger').keyup(function(event){
+          $(this).find('.menuTrigger').keyup(function(event) {
+            console.log('11');
             if (event.keyCode == 13) $(this).click();
           });
         }
         else {
           $(this).mousedown(function(e) { // Simulate a true right clickasync
-            var evt = e;
-            evt.stopPropagation();
+            e.preventDefault();
+            e.stopPropagation();
 
             $(this).mouseup(function(e) {
+              e.preventDefault();
+
               contextMenuSub(e, o, el, $(el).offset(), callback, $(this));
             });
           });
 
-          // Disable browser context menu (requires both selectors to work in IE/Safari + FF/Chrome)
-          $(el).add($('UL.contextMenu')).bind('contextmenu', function() {
+          $(el).add($('ul.contextMenu')).bind('contextmenu', function() { // Disable browser context menu (requires both selectors to work in IE/Safari + FF/Chrome)
             return false;
           });
         }
@@ -179,12 +181,9 @@ if(jQuery)(function() {
       return $(this);
     },
 
-    // Destroy context menu(s)
-    destroyContextMenu: function() {
-      // Destroy specified context menus
-      $(this).each(function() {
-        // Disable action
-        $(this).unbind('mousedown').unbind('mouseup');
+    destroyContextMenu: function() { // Destroy context menu(s)
+      $(this).each(function() { // Destroy specified context menus
+        $(this).unbind('mousedown').unbind('mouseup'); // Disable action
       });
 
       return($(this));
@@ -196,17 +195,20 @@ if(jQuery)(function() {
 function contextMenuSub(e, o, el, offset, callback, srcElement) {
   if (e) {
     e.stopPropagation();
-    var evt = e;
   }
   else {
-    evt = { button: 2 }
+    e = {
+      button: 2,
+      pageX : offset.left + $(el).width(),
+      pageY : offset.top + $(el).height()
+    }
   }
 
 
 
   $(this).unbind('mouseup');
 
-  if (evt.button == 2) {
+  if (e.button == 2) {
     $(".contextMenu").hide(); // Hide context menus that may be showing
 
     var menu = $('#' + o.menu); // Get this context menu
@@ -234,20 +236,13 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
       d.innerWidth = document.body.clientWidth;
     }
 
-    if (e) {
-      x = (e.pageX ? e.pageX : e.clientX + d.scrollLeft);
-      y = (e.pageY ? e.pageY : e.clientY + d.scrollTop);
-    }
-    else {
-      x = offset.left;
-      y = offset.top;
-    }
+    x = (e.pageX ? e.pageX : e.clientX + d.scrollLeft);
+    y = (e.pageY ? e.pageY : e.clientY + d.scrollTop);
 
 
 
     // Show the menu
     $(document).unbind('click');
-
     $(menu).css({ top: y, left: x }).attr('data-visible', 'true').fadeIn(o.inSpeed);
 
 
@@ -314,7 +309,7 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
       $(".contextMenu").hide();
 
       // Callback
-      if (callback) { console.log($(srcElement));
+      if (callback) {
         callback($(this).attr('data-action'), $(srcElement), {x: x - offset.left, y: y - offset.top, docX: x, docY: y});
       }
 
@@ -333,7 +328,7 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
     }, 0);
   }
 
-//  return false;
+  return false;
 }
 
 /* END jQuery Context Menu */
@@ -1603,7 +1598,7 @@ var dia = {
             dialog.dialog(dialogOptions);
           }
 
-//          windowDraw();
+          windowDraw();
 
           return false;
         },
@@ -1627,7 +1622,7 @@ var dia = {
         dialog.dialog(dialogOptions);
       }
 
-//      windowDraw();
+      windowDraw();
     }
   }
 };

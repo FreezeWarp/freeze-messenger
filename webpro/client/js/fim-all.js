@@ -360,15 +360,15 @@ function messageFormat(json, format) {
 
   switch (format) {
     case 'table':
-    data = '<tr id="archiveMessage' + messageId + '"><td>' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageid="' + messageId + '">' + text + '</td><td><a href="javascript:void();" data-messageId="' + messageId + '" class="updateArchiveHere">Show</a></td></tr>';
+    data = '<tr id="archiveMessage' + messageId + '"><td>' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageId="' + messageId + '" data-roomId="' + roomId + '">' + text + '</td><td><a href="javascript:void();" data-messageId="' + messageId + '"  data-roomId="' + roomId + '" class="updateArchiveHere">Show</a></td></tr>';
     break;
 
     case 'list':
     if (settings.showAvatars) {
-      data = '<span id="message' + messageId + '" class="messageLine messageLineAvatar"><span class="userName userNameAvatar" data-userId="' + userId + '"><img alt="' + userName + '" src="' + avatar + '" /></span><span style="' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
+      data = '<span id="message' + messageId + '" class="messageLine messageLineAvatar"><span class="userName userNameAvatar" data-userId="' + userId + '"><img alt="' + userName + '" src="' + avatar + '" /></span><span style="' + style + '" class="messageText" data-messageId="' + messageId + '" data-roomId="' + roomId + '" data-time="' + messageTime + '">' + text + '</span><br />';
     }
     else {
-      data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
+      data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="' + style + '" class="messageText" data-messageid="' + messageId + '" data-roomId="' + roomId + '">' + text + '</span><br />';
     }
     break;
   }
@@ -673,7 +673,7 @@ function populate(options) {
             isModerator = active[i].permissions.canModerate,
             messageCount = active[i].messageCount,
             isOwner = (active[i].owner === userId ? true : false),
-            ulText = '<li><a href="#room=' + roomId + '">' + roomName + '</a></li>';
+            ulText = '<li><a href="#room=' + roomId + '" class="room" data-roomId="' + roomId + '">' + roomName + '</a></li>';
 
           if (isFav) {
             roomUlFavHtml += ulText;
@@ -1605,7 +1605,7 @@ var standard = {
               }
               else {
                 requestSettings.timeout = 2400;
-                timers.t1 = setTimeout(standard.getMessages, 2500);
+                timers.t1 = setTimeout(standard.getMessages, 50);
               }
             }
 
@@ -1756,8 +1756,12 @@ var standard = {
     /*** Get Messages ***/
 
     $(document).ready(function() {
+      requestSettings.firstRequest = true;
+      requestSettings.lastMessage = 0;
+      messageIndex = [];
+
       // If getMessages is called before the document is loaded, and we are using server-sent events or longpolling, then WebKit browsers will go beserk. It's an annoying bug, and the setTimeout merely serves as an inconsistent hack, but meh.
-      timers.t1 = setTimeout(standard.getMessages,500);
+      timers.t1 = setTimeout(standard.getMessages, 500);
 
       return false;
     });
@@ -3216,8 +3220,6 @@ popup = {
       autoOpen : false
     });
 
-    var messageCount = roomIdRef[options.roomId].messageCount;
-
     standard.archive({
       roomId: options.roomId,
       idMin: options.idMin,
@@ -3514,14 +3516,14 @@ function contextMenuParseMessage() {
     altMenu : settings.disableRightClick
   },
   function(action, el) {
-    var postid = $(el).attr('data-messageid');
+    var messageId = $(el).attr('data-messageId');
 
     switch(action) {
       case 'delete':
       dia.confirm({
         text : 'Are you sure you want to delete this message?',
         'true' : function() {
-          standard.deleteMessage(postid);
+          standard.deleteMessage(messageId);
 
           $(el).parent().fadeOut();
 
@@ -3534,7 +3536,8 @@ function contextMenuParseMessage() {
         dia.full({
           title : 'Link to this Message',
           id : 'messageLink',
-          content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + $('body').attr('data-roomId') + '#message=' + postid + '" />'
+          content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '#page=archive#room=' + $(el).attr('data-roomId') + '#message=' + messageId + '" style="width: 100%;" />',
+          width: 600,
         });
       break;
     }
@@ -3547,7 +3550,7 @@ function contextMenuParseMessage() {
     altMenu : settings.disableRightClick
   },
   function(action, el) {
-    var postid = $(el).attr('data-messageid'),
+    var messageId = $(el).attr('data-messageId'),
       src = '';
 
     switch(action) {
@@ -3565,15 +3568,20 @@ function contextMenuParseMessage() {
       dia.confirm({
         text : 'Are you sure you want to delete this message?',
         'true' : function() {
-          standard.deleteMessage(postid);
+          standard.deleteMessage(messageId);
 
           $(el).parent().fadeOut();
         }
       });
       break;
 
-      case 'link': // TODO
-      dia.info('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + $('body').attr('data-roomId') + '#message=' + postid + '" />', 'Link to This Message');
+      case 'link':
+        dia.full({
+          title : 'Link to this Message',
+          id : 'messageLink',
+          content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + $('body').attr('data-roomId') + '#message=' + messageId + '" style="width: 100%;" />',
+          width: 600,
+        });
       break;
     }
 
@@ -3585,7 +3593,7 @@ function contextMenuParseMessage() {
     altMenu : settings.disableRightClick
   },
   function(action, el) {
-    var postid = $(el).attr('data-messageid'),
+    var messageId = $(el).attr('data-messageId'),
       src = '';
 
     switch(action) {
@@ -3613,15 +3621,20 @@ function contextMenuParseMessage() {
       dia.confirm({
         text : 'Are you sure you want to delete this message?',
         'true' : function() {
-          standard.deleteMessage(postid);
+          standard.deleteMessage(messageId);
 
           $(el).parent().fadeOut();
         }
       });
       break;
 
-      case 'link': // TODO
-      dia.info('This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + $('body').attr('data-roomId') + '#message=' + postid + '" />', 'Link to This Message');
+      case 'link':
+        dia.full({
+          title : 'Link to this Message',
+          id : 'messageLink',
+          content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + $('body').attr('data-roomId') + '#message=' + messageId + '" style="width: 100%;" />',
+          width: 600,
+        });
       break;
     }
 
@@ -3651,6 +3664,14 @@ function contextMenuParseRoom() {
 
       case 'edit':
       popup.editRoom($(el).attr('data-roomId'));
+      break;
+
+      case 'archive':
+      popup.archive({roomId : $(el).attr('data-roomId')});
+      break;
+
+      case 'enter':
+      standard.changeRoom($(el).attr('data-roomId'));
       break;
     }
 
@@ -3695,6 +3716,7 @@ $(document).ready(function() {
   /*** Time Tooltip ***/
   if (settings.showAvatars) {
     $('.messageText').tipTip({
+      activate: 'hover',
       attribute: 'data-time'
     });
   }

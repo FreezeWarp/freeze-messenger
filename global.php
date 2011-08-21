@@ -214,7 +214,7 @@ require_once(dirname(__FILE__) . '/validate.php'); // This is where all the user
 if (!($config = fim_getCachedVar('fim_config')) || $disableConfig) {
   require(dirname(__FILE__) . '/defaultConfig.php');
 
-  if ($disableConfig) {
+  if (!$disableConfig) {
     $config2 = $slaveDatabase->select(
       array(
         "{$sqlPrefix}configuration" => 'directive, value, type',

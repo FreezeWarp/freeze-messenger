@@ -24,7 +24,7 @@ else {
     die('Web interfaces have been disabled on this server.');
   }
   else {
-    $interface = (isset($_REQUEST['interface']) ? $_REQUEST['interface'] :
+    echo $interface = (isset($_REQUEST['interface']) ? $_REQUEST['interface'] :
       (isset($user['interface']) ? $user['interface'] : ''));
 
 
