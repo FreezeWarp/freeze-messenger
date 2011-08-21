@@ -421,6 +421,16 @@
       <column name="value" value=".5" />
       <column name="type" value="float" />
     </table>
+    <table name="configuration">
+      <column name="directive" value="serverSentMaxRetries" />
+      <column name="value" value="100" />
+      <column name="type" value="int" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="serverSentFastCGI" />
+      <column name="value" value="false" />
+      <column name="type" value="bool" />
+    </table>
 
     <table name="configuration">
       <column name="directive" value="compressOutput" />

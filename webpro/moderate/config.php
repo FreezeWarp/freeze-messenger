@@ -79,6 +79,23 @@ else {
       if ($request['directive']) {
         $config2 = $database->getConfiguration($request['directive']);
         $title = 'Edit Configuration Value "' . $config2['directive'] . '"';
+
+        switch($config2['type']) {
+          case 'bool':
+          $valueBlock = fimHtml_buildSelect('value', array(
+            'true' => 'true',
+            'false' => 'false',
+          ), $config2['value']);
+          break;
+
+          case 'integer':
+          case 'float':
+          $valueBlock = '<input type="number" name="value" required="required" value="' . $config2['value'] . '" />';
+          break;
+
+          default:
+          $valueBlock = '<input type="text" name="value" value="' . $config2['value'] . '" />';
+        }
       }
       else {
         $config2 = array(
@@ -114,7 +131,7 @@ else {
     <tr>
       <td>Value:</td>
       <td>
-        <input type="text" name="value" value="' . $config2['value'] . '" /><br />
+        ' . $valueBlock . '<br />
         <small>Note that for array types, values should be entered using comma-seperated notation. You can escape commas in entries by prepending a "\".</small>
       </td>
     </tr>
