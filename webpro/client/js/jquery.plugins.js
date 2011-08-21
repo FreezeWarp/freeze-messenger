@@ -332,6 +332,8 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
       });
     }, 0);
   }
+
+//  return false;
 }
 
 /* END jQuery Context Menu */
@@ -569,9 +571,9 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
         settings.beforeShow(content, $(this));
       },
       mousemove : function(e) {
-        var contentInfo = getElementDimensionsAndPosition(content);
-        var targetInfo = getElementDimensionsAndPosition($(this));
-        var contentInfo = $.fn.ezpz_tooltip.positions[settings.contentPosition](contentInfo, e.pageX, e.pageY, settings.offset, targetInfo);
+        var contentInfo = getElementDimensionsAndPosition(content),
+          targetInfo = getElementDimensionsAndPosition($(this));
+        contentInfo = keepInWindow($.fn.ezpz_tooltip.positions[settings.contentPosition](contentInfo, e.pageX, e.pageY, settings.offset, targetInfo));
 
         content.css('top', contentInfo['top']);
         content.css('left', contentInfo['left']);
@@ -585,11 +587,11 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
     });
 
     function getElementDimensionsAndPosition(element) {
-      var height = $(element).outerHeight(true);
-      var width = $(element).outerWidth(true);
-      var top = $(element).offset().top;
-      var left = $(element).offset().left;
-      var info = new Array();
+      var height = $(element).outerHeight(true),
+        width = $(element).outerWidth(true),
+        top = $(element).offset().top,
+        left = $(element).offset().left,
+        info = new Array();
 
       // Set dimensions
       info['height'] = height;
@@ -600,6 +602,26 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
       info['left'] = left;
 
       return info;
+    };
+
+    function keepInWindow(contentInfo){
+      var windowWidth = $(window).width();
+      var windowTop = $(window).scrollTop();
+      var output = new Array();
+
+      output = contentInfo;
+
+      if (contentInfo['top'] < windowTop) { // Top edge is too high
+        output['top'] = windowTop;
+      }
+      if ((contentInfo['left'] + contentInfo['width']) > windowWidth) { // Right edge is past the window
+        output['left'] = windowWidth - contentInfo['width'];
+      }
+      if (contentInfo['left'] < 0) { // Left edge is too far left
+        output['left'] = 0;
+      }
+
+      return output;
     };
   };
 
@@ -616,8 +638,16 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
       contentInfo['left'] = mouseX + offset;
 
       return contentInfo;
+    },
+
+    belowRightFollow: function(contentInfo, mouseX, mouseY, offset, targetInfo) {
+      contentInfo['top'] = mouseY + offset;
+      contentInfo['left'] = mouseX + offset;
+
+      return contentInfo;
     }
   };
+
 
   $.fn.ezpz_tooltip.defaults = {
     contentPosition: 'aboveRightFollow',

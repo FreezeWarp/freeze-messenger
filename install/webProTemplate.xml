@@ -321,7 +321,7 @@ $phrases[settingsDefaultFormattingLabel]&lt;br /&gt;
       &lt;button type="reset" class="standard" id="icon_reset"&gt;&lt;/button&gt;
     &lt;/div&gt;}{
     &lt;div id="messageInputContainer" class="middle"&gt;
-      &lt;textarea onkeypress="if (event.keyCode == 13 &amp;&amp; !event.shiftKey) { $('#sendForm').trigger('submit'); return false; }" id="messageInput" autofocus="autofocus" placeholder="Enter your text." style="$textboxStyle"&gt;&lt;/textarea&gt;
+      &lt;textarea id="messageInput" autofocus="autofocus" placeholder="Enter your text." style="$textboxStyle"&gt;&lt;/textarea&gt;
     &lt;/div&gt;}}
   &lt;/form&gt;
 &lt;/div&gt;

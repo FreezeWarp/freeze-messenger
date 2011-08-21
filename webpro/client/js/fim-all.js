@@ -365,7 +365,7 @@ function messageFormat(json, format) {
 
     case 'list':
     if (settings.showAvatars) {
-      data = '<span id="message' + messageId + '" class="messageLine messageLineAvatar"><span class="userName userNameTable userNameAvatar" data-userId="' + userId + '"><img alt="' + userName + '" src="' + avatar + '" /></span><span style="' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
+      data = '<span id="message' + messageId + '" class="messageLine messageLineAvatar"><span class="userName userNameAvatar" data-userId="' + userId + '"><img alt="' + userName + '" src="' + avatar + '" /></span><span style="' + style + '" class="messageText" data-messageid="' + messageId + '"  data-time="' + messageTime + '">' + text + '</span><br />';
     }
     else {
       data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="' + style + '" class="messageText" data-messageid="' + messageId + '">' + text + '</span><br />';
@@ -411,7 +411,7 @@ function newMessage() {
   }
 
   contextMenuParseMessage();
-  contextMenuParseUser('messageList');
+  contextMenuParseUser('#messageList');
 }
 
 
@@ -1351,6 +1351,7 @@ var standard = {
 
       populate({
         callback : function() {
+          contextMenuParseRoom();
           windowDynaLinks();
 
           /* Select Room */
@@ -1600,11 +1601,11 @@ var standard = {
               }
 
               if (requestSettings.longPolling) {
-                timers.t1 = setTimeout(standard.getMessages,50);
+                timers.t1 = setTimeout(standard.getMessages, 50);
               }
               else {
                 requestSettings.timeout = 2400;
-                timers.t1 = setTimeout(standard.getMessages,2500);
+                timers.t1 = setTimeout(standard.getMessages, 2500);
               }
             }
 
@@ -1617,7 +1618,7 @@ var standard = {
             var wait;
 
             if (requestSettings.longPolling) {
-              timers.t1 = setTimeout(standard.getMessages,50);
+              timers.t1 = setTimeout(standard.getMessages, 50);
             }
             else {
               requestSettings.totalFails += 1;
@@ -3022,7 +3023,7 @@ popup = {
       return false;
     }
 
-    timers.t2 = setInterval(updateOnline,2500);
+    timers.t2 = setInterval(updateOnline, 2500);
 
     return false;
   },
@@ -3449,7 +3450,7 @@ function windowDynaLinks() {
 
 
 function contextMenuParseUser(container) {
-  $((container ? container + ' >  ' : '') + '.userName').contextMenu({
+  $((container ? container + ' ' : '') + '.userName').contextMenu({
     menu: 'userMenu',
     altMenu : settings.disableRightClick
   },
