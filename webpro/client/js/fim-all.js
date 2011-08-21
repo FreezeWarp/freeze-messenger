@@ -1182,6 +1182,8 @@ var standard = {
 
 
     if (options.userName && options.password) {
+      console.log('Login Triggered; Using a Password of "' + options.password + '" and a Username of "' + options.userName + '"');
+
       passwordEncrypt = 'plaintext';
       // TODO: Enable for vBulletin
       // var password = md5(password);
@@ -1190,6 +1192,8 @@ var standard = {
       data = 'userName=' + urlencode(options.userName) + '&password=' + urlencode(options.password) + '&passwordEncrypt=' + passwordEncrypt;
     }
     else if (options.userId && options.password) {
+      console.log('Login Triggered; Using a Password of "' + options.password + '" and a UserID of "' + options.userId + '"');
+
       passwordEncrypt = 'plaintext';
       // TODO: Enable for vBulletin
       // var password = md5(password);
@@ -3996,12 +4000,12 @@ $(document).ready(function() {
 *********************************************************/
 
 function windowResize() {
-  var windowWidth = document.documentElement.clientWidth; // Get the browser window "viewport" width, excluding scrollbars.
-  var windowHeight = document.documentElement.clientHeight; // Get the browser window "viewport" height, excluding scrollbars.
+  var windowWidth = $(window).width(); // Get the browser window "viewport" width, excluding scrollbars.
+  var windowHeight = $(window).height(); // Get the browser window "viewport" height, excluding scrollbars.
 
 
-  $('#messageList').css('min-height',(windowHeight - 240)); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
-  $('#messageList').css('max-width',((windowWidth - 10) * .75)); // Prevent box-stretching. This is common on... many chats.
+  $('#messageList').css('height', (windowHeight - 220)); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
+  $('#messageList').css('max-width', ((windowWidth - 10) * .75)); // Prevent box-stretching. This is common on... many chats.
 
 
   /* Body Padding: 10px
@@ -4009,10 +4013,10 @@ function windowResize() {
     * "Enter Message" Table Padding: 10px
     *** TD Padding: 2px (on Standard Styling)
     * Message Input Text Area Padding: 3px */
-  $('#messageInput').css('width',(((windowWidth - 10) * .75) - 10 - 2)); // Set the messageInput box to fill width.
+  $('#messageInput').css('width', (((windowWidth - 10) * .75) - 10 - 2)); // Set the messageInput box to fill width.
 
 
-  $('body').css('height',windowHeight); // Set the body height to equal that of the window; this fixes many gradient issues in theming.
+  $('body').css('height', windowHeight); // Set the body height to equal that of the window; this fixes many gradient issues in theming.
 
 
   return false;

@@ -26,37 +26,46 @@
  * Source: https://github.com/carhartl/jquery-cookie/blob/master/jquery.cookie.js
  *
  */
-jQuery.cookie = function (key, value, options) {
-
-    // key and at least value given, set cookie...
-    if (arguments.length > 1 && String(value) !== "[object Object]") {
-        options = jQuery.extend({}, options);
-
-        if (value === null || value === undefined) {
+jQuery.cookie = function(name, value, options) {
+    if (typeof value != 'undefined') { // name and value given, set cookie
+        options = options || {};
+        if (value === null) {
+            value = '';
             options.expires = -1;
         }
-
-        if (typeof options.expires === 'number') {
-            var days = options.expires, t = options.expires = new Date();
-            t.setDate(t.getDate() + days);
+        var expires = '';
+        if (options.expires && (typeof options.expires == 'number' || options.expires.toUTCString)) {
+            var date;
+            if (typeof options.expires == 'number') {
+                date = new Date();
+                date.setTime(date.getTime() + (options.expires * 24 * 60 * 60 * 1000));
+            } else {
+                date = options.expires;
+            }
+            expires = '; expires=' + date.toUTCString(); // use expires attribute, max-age is not supported by IE
         }
-
-        value = String(value);
-
-        return (document.cookie = [
-            encodeURIComponent(key), '=',
-            options.raw ? value : encodeURIComponent(value),
-            options.expires ? '; expires=' + options.expires.toUTCString() : '', // use expires attribute, max-age is not supported by IE
-            options.path ? '; path=' + options.path : '',
-            options.domain ? '; domain=' + options.domain : '',
-            options.secure ? '; secure' : ''
-        ].join(''));
+        // CAUTION: Needed to parenthesize options.path and options.domain
+        // in the following expressions, otherwise they evaluate to undefined
+        // in the packed version for some reason...
+        var path = options.path ? '; path=' + (options.path) : '';
+        var domain = options.domain ? '; domain=' + (options.domain) : '';
+        var secure = options.secure ? '; secure' : '';
+        document.cookie = [name, '=', encodeURIComponent(value), expires, path, domain, secure].join('');
+    } else { // only name given, get cookie
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
     }
-
-    // key and possibly options given, get cookie...
-    options = value || {};
-    var result, decode = options.raw ? function (s) { return s; } : decodeURIComponent;
-    return (result = new RegExp('(?:^|; )' + encodeURIComponent(key) + '=([^;]*)').exec(document.cookie)) ? decode(result[1]) : null;
 };
 
 /* END jQuery Cookie Functon */
@@ -762,7 +771,7 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
         '<div class="jGrowl-close">' + o.closeTemplate + '</div>' +
         '<div class="jGrowl-header">' + o.header + '</div>' +
         '<div class="jGrowl-message">' + message + '</div></div>'
-      ).data("jGrowl", o).addClass(o.theme).children('div.jGrowl-close').bind("click.jGrowl", function() {
+     ).data("jGrowl", o).addClass(o.theme).children('div.jGrowl-close').bind("click.jGrowl", function() {
         $(this).parent().trigger('jGrowl.close');
       }).parent();
 
@@ -1068,7 +1077,7 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
                 var opts = {q: encodeURIComponent(input)};
                 var url = _buildURL(SuggestURL,
                         $.extend({}, SuggestDefaults, opts)
-                );
+               );
                 $.ajax({
                         type: "GET",
                         dataType: "json",
@@ -1096,7 +1105,7 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
          * @param cb
          */
         p.search = function(input, cb, category){
-                if ( typeof(input) == "string" )
+                if (typeof(input) == "string")
                         input = { "q" : encodeURIComponent(input) };
                 if (null != category)
                         category = {"category" : category};
@@ -1293,17 +1302,57 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
  * Modified to Work by Joseph T. Parsons
  * Browser Status: Chrome (+), Firefox (?), IE 8 (?), IE 9 (?), Opera (?), Safari (?)
  */
-$.fn.tabbedDialog = function (dialogOptions,tabOptions) {
+$.fn.tabbedDialog = function (dialogOptions, tabOptions) {
   this.tabs(tabOptions);
   this.dialog(dialogOptions);
 
-
   var tabul = this.find('ul:first');
-  this.parent().addClass('ui-tabs').prepend(tabul).draggable('option','handle',tabul);
+  this.parent().addClass('ui-tabs').prepend(tabul).draggable('option', 'handle', tabul);
   tabul.append($('a.ui-dialog-titlebar-close'));
   this.prev().remove();
   tabul.addClass('ui-dialog-titlebar');
 
+  var titleId = $.ui.dialog.getTitleId(this);
+
+  this.attr("tabIndex", -1).attr({
+    role: "dialog",
+    "aria-labelledby": titleId
+  });
+
+  this.bind("keydown.ui-dialog", function(event) {
+    if (event.keyCode !== $.ui.keyCode.TAB) {
+      return;
+    }
+
+    var tabbables = $(":tabbable", this),
+      first = tabbables.filter(":first"),
+      last  = tabbables.filter(":last");
+
+    if (event.target === last[0] && !event.shiftKey) {
+      first.focus(1);
+      return false;
+    }
+    else if (event.target === first[0] && event.shiftKey) {
+      last.focus(1);
+      return false;
+    }
+  });
+
+  this.find('select, input, a').first().focus();
+
+  $('.ui-dialog-titlebar').dblclick(function() {
+    var newHeight = $(window).height();
+    var newWidth = $(window).width();
+
+    $(this).parent().css({
+      width: newWidth,
+      height: newHeight,
+      left: 0,
+      top : 0
+    });
+
+    $(this).draggable({ disabled : true }).resizable({ disabled : true });
+  });
 }
 /* End Tabbed Dialog */
 // ######################################################################################################### //
@@ -1379,7 +1428,7 @@ var dia = {
       modal : true,
       buttons: {
         Close: function() {
-          $( this ).dialog( "close" );
+          $(this).dialog("close");
 
           return false;
         }
@@ -1393,7 +1442,7 @@ var dia = {
       modal : true,
       buttons: {
         Okay : function() {
-          $(this).dialog( "close" );
+          $(this).dialog("close");
 
           return false;
         }
@@ -1518,15 +1567,15 @@ var dia = {
           dialog.html(content);
 
           if (options.tabs) {
-            dialog.tabbedDialog(dialogOptions,tabsOptions);
+            dialog.tabbedDialog(dialogOptions, tabsOptions);
           }
           else {
             dialog.dialog(dialogOptions);
           }
 
-          dialog.focus();
-
           windowDraw();
+
+//          dialog.focus();
 
           return false;
         },
@@ -1544,7 +1593,7 @@ var dia = {
     }
     else {
       if (options.tabs) {
-        dialog.tabbedDialog(dialogOptions,tabsOptions);
+        dialog.tabbedDialog(dialogOptions, tabsOptions);
       }
       else {
         dialog.dialog(dialogOptions);
