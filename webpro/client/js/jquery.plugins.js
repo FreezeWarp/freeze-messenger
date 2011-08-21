@@ -1319,14 +1319,18 @@ $.fn.tabbedDialog = function (dialogOptions, tabOptions) {
     "aria-labelledby": titleId
   });
 
+
+  // Make Only The Content of the Tab Tabbable
   this.bind("keydown.ui-dialog", function(event) {
     if (event.keyCode !== $.ui.keyCode.TAB) {
       return;
     }
 
-    var tabbables = $(":tabbable", this),
+
+    var tabbables = $(":tabbable", this).add("ul.ui-tabs-nav.ui-dialog-titlebar > li > a"),
       first = tabbables.filter(":first"),
       last  = tabbables.filter(":last");
+
 
     if (event.target === last[0] && !event.shiftKey) {
       first.focus(1);
@@ -1338,21 +1342,17 @@ $.fn.tabbedDialog = function (dialogOptions, tabOptions) {
     }
   });
 
-  this.find('select, input, a').first().focus();
 
-  $('.ui-dialog-titlebar').dblclick(function() {
-    var newHeight = $(window).height();
-    var newWidth = $(window).width();
 
-    $(this).parent().css({
-      width: newWidth,
-      height: newHeight,
-      left: 0,
-      top : 0
-    });
-
-    $(this).draggable({ disabled : true }).resizable({ disabled : true });
-  });
+  // Give the First Element in the Dialog Focus
+  var hasFocus = this.find( ":tabbable" );
+  if ( !hasFocus.length ) {
+    hasFocus = uiDialog.find( ".ui-dialog-buttonpane :tabbable" );
+    if ( !hasFocus.length ) {
+      hasFocus = uiDialog;
+    }
+  }
+  hasFocus.eq( 0 ).focus();
 }
 /* End Tabbed Dialog */
 // ######################################################################################################### //
@@ -1573,9 +1573,7 @@ var dia = {
             dialog.dialog(dialogOptions);
           }
 
-          windowDraw();
-
-//          dialog.focus();
+//          windowDraw();
 
           return false;
         },
@@ -1599,7 +1597,7 @@ var dia = {
         dialog.dialog(dialogOptions);
       }
 
-      windowDraw();
+//      windowDraw();
     }
   }
 };

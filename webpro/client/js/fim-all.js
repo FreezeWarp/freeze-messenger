@@ -189,14 +189,8 @@ else {
 /* Get the absolute API path.
 * TODO: Define this in a more "sophisticated manner". */
 
-var directoryPre = window.location.pathname;
-directoryPre = directoryPre.split('/');
-directoryPre.pop();
-directoryPre.pop();
-directoryPre = directoryPre.join('/');
-
-var directory = directoryPre + '/';
-var currentLocation = window.location.origin + directory + 'webpro/';
+var directory = window.location.pathname.split('/').splice(0, 2).join('/') + '/', // splice returns the elements removed (and modifies the original array), in this case the first two; the rest should be self-explanatory
+  currentLocation = window.location.origin + directory + 'webpro/';
 
 
 /*********************************************************
@@ -416,7 +410,8 @@ function newMessage() {
     }
   }
 
-  contextMenuParse();
+  contextMenuParseMessage();
+  contextMenuParseUser('messageList');
 }
 
 
@@ -1356,7 +1351,6 @@ var standard = {
 
       populate({
         callback : function() {
-          windowDraw();
           windowDynaLinks();
 
           /* Select Room */
@@ -1563,6 +1557,7 @@ var standard = {
               }
 
               $('#activeUsers').html(activeUserHtml.join(', '));
+              contextMenuParseUser('#activeUsers');
 
 
 
@@ -3015,6 +3010,7 @@ popup = {
           }
 
           $('#onlineUsers').html(data);
+          contextMenuParseUser('#onlineUsers');
 
           return false;
         },
@@ -3289,72 +3285,36 @@ function windowDraw() {
   console.log('Redrawing window.');
 
 
-  if (settings.disableFx) {
-    jQuery.fx.off = true;
-  }
+
+  /*** Context Menus ***/
+  contextMenuParseRoom();
 
 
-  if (settings.showAvatars) {
-    $('.messageText').tipTip({
-      attribute: 'data-time'
-    });
-  }
 
+  /*** Funky Little Dialog Thing ***/
+  $('.ui-dialog-titlebar').dblclick(function() {
+    var newHeight = $(window).height();
+    var newWidth = $(window).width();
 
-  $('.userName').ezpz_tooltip({
-    contentId: 'tooltext',
-    beforeShow: function(content,el) {
-      var thisid = $(el).attr('data-userId');
+    if ($(this).parent().css('width') == newWidth && $(this).parent().css('height') == newHeight) {
+      // Already Maximized; Don't Do Anything
+    }
+    else {
+      $(this).parent().css({
+        width: newWidth,
+        height: newHeight,
+        left: 0,
+        top : 0
+      });
 
-      if (thisid != $('#tooltext').attr('data-lastuserId')) {
-        $('#tooltext').attr('data-lastuserId',thisid);
-        $.get(directory + 'api/getUsers.php?users=' + thisid + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId, function(json) {
-          active = json.getUsers.users;
-
-          for (i in active) {
-            var userName = active[i].userName,
-              userId = active[i].userId,
-              startTag = active[i].startTag,
-              endTag = active[i].endTag,
-              userTitle = active[i].userTitle,
-              posts = active[i].postCount,
-              joinDate = active[i].joinDateFormatted,
-              avatar = active[i].avatar;
-          }
-
-          content.html('<div style="width: 400px;">' + (avatar.length > 0 ? '<img alt="" src="' + avatar + '" style="float: left;" />' : '') + '<span class="userName" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>' + (userTitle.length > 0 ? '<br />' + userTitle : '') + '<br /><em>Posts</em>: ' + posts + '<br /><em>Member Since</em>: ' + joinDate + '</div>');
-
-          return false;
-        });
-      }
-
-      return false;
+      $(this).removeClass('ui-dialog-draggable');
+      $(this).parent().draggable("destroy").resizable("destroy")
     }
   });
-
-
-  contextMenuParse();
-
-
-  /*** Create the Accordion Menu ***/
-
-  $('#menu').accordion({
-    autoHeight: false,
-    navigation: true,
-    clearStyle: true,
-    active : Number($.cookie('webpro_menustate')) - 1,
-    change: function(event, ui) {
-      var sid = ui.newHeader.children('a').attr('data-itemId');
-
-      $.cookie('webpro_menustate', sid, { expires: 14 });
-    }
-  });
-
 
 
 
   /*** General Generic Styling ***/
-
   $('table > thead > tr:first-child > td:first-child, table > tr:first-child > td:first-child').addClass('ui-corner-tl');
   $('table > thead > tr:first-child > td:last-child, table > tr:first-child > td:last-child').addClass('ui-corner-tr');
   $('table > tbody > tr:last-child > td:first-child, table > tr:last-child > td:first-child').addClass('ui-corner-bl');
@@ -3369,9 +3329,7 @@ function windowDraw() {
 
 
 
-
-
-  /*** Draw the chatbox. ***/
+  /*** Draw The Chatbox ***/
   if (roomId && (userId | anonId)) {
     $('#messageInput').removeAttr("disabled"); // The user is able to post.
   }
@@ -3379,46 +3337,14 @@ function windowDraw() {
     $('#messageInput').attr("disabled","disabled"); // The user is able to post.
   }
 
-  $("#icon_help").button({ icons: {primary:'ui-icon-help'} });
-  $("#icon_note").button({ icons: {primary:'ui-icon-note'} });
-  $("#icon_settings").button({ icons: {primary:'ui-icon-wrench'} });
-  $("#icon_url").button("option", "icons", { primary: 'ui-icon-link' } );
-  $("#icon_image").button("option", "icons", { primary: 'ui-icon-image' } );
-  $("#icon_video").button("option", "icons", { primary: 'ui-icon-video' } );
-  $("#icon_submit").button("option", "icons", { primary: 'ui-icon-circle-check' } );
-  $("#icon_reset").button("option", "icons", { primary: 'ui-icon-circle-close' } );
-
-  $("#imageUploadSubmitButton").button("option", "disabled", true);
 
 
-
-  $('#icon_note, #messageArchive, a#editRoom').unbind('click'); // Cleanup
-
-
-
-  /*** Archive ***/
-
-  $('#icon_note, #messageArchive').bind('click',function() {
-    popup.archive({roomId : roomId});
-
-    return false;
-  });
-
-
-
-  /*** Edit Room ***/
-
-  $('a#editRoom').bind('click',function() {
-    popup.editRoom(roomId);
-
-    return false;
-  });
-
-
-
+  /*** Call Resize ***/
   windowResize();
 
 
+
+  /*** Return ***/
   return false;
 }
 
@@ -3502,7 +3428,6 @@ function windowDynaLinks() {
 
 
   /* Remove Link Categories */
-
   if (noAdminCounter === 8) {
       $('li > #modGeneral').parent().hide();
   }
@@ -3523,8 +3448,8 @@ function windowDynaLinks() {
 }
 
 
-function contextMenuParse() {
-  $('.userName').contextMenu({
+function contextMenuParseUser(container) {
+  $((container ? container + ' >  ' : '') + '.userName').contextMenu({
     menu: 'userMenu',
     altMenu : settings.disableRightClick
   },
@@ -3580,7 +3505,9 @@ function contextMenuParse() {
 
     return false;
   });
+}
 
+function contextMenuParseMessage() {
   $('.messageLine .messageText').contextMenu({
     menu: 'messageMenu',
     altMenu : settings.disableRightClick
@@ -3699,7 +3626,9 @@ function contextMenuParse() {
 
     return false;
   });
+}
 
+function contextMenuParseRoom() {
   $('.room').contextMenu({
     menu: 'roomMenu',
     altMenu : settings.disableRightClick
@@ -3735,6 +3664,7 @@ function contextMenuParse() {
 $(document).ready(function() {
   $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/' + theme + '/jquery-ui-1.8.16.custom.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/' + theme + '/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
 
+
   if (fontsize) {
     $('body').css('font-size',fontsize + 'em');
   }
@@ -3756,68 +3686,184 @@ $(document).ready(function() {
   }
 
 
+  if (settings.disableFx) {
+    jQuery.fx.off = true;
+  }
 
-  /*** Trigger Login ***/
 
-  $('#login').bind('click',function() {
-    popup.login();
+  /*** Time Tooltip ***/
+  if (settings.showAvatars) {
+    $('.messageText').tipTip({
+      attribute: 'data-time'
+    });
+  }
 
-    return false;
+
+  /*** Hover Tooltip ***/
+  $('.userName').ezpz_tooltip({
+    contentId: 'tooltext',
+    beforeShow: function(content,el) {
+      var thisid = $(el).attr('data-userId');
+
+      if (thisid != $('#tooltext').attr('data-lastuserId')) {
+        $('#tooltext').attr('data-lastuserId',thisid);
+        $.get(directory + 'api/getUsers.php?users=' + thisid + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId, function(json) {
+          active = json.getUsers.users;
+
+          for (i in active) {
+            var userName = active[i].userName,
+              userId = active[i].userId,
+              startTag = active[i].startTag,
+              endTag = active[i].endTag,
+              userTitle = active[i].userTitle,
+              posts = active[i].postCount,
+              joinDate = active[i].joinDateFormatted,
+              avatar = active[i].avatar;
+          }
+
+          content.html('<div style="width: 400px;">' + (avatar.length > 0 ? '<img alt="" src="' + avatar + '" style="float: left;" />' : '') + '<span class="userName" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>' + (userTitle.length > 0 ? '<br />' + userTitle : '') + '<br /><em>Posts</em>: ' + posts + '<br /><em>Member Since</em>: ' + joinDate + '</div>');
+
+          return false;
+        });
+      }
+
+      return false;
+    }
   });
 
 
+  /*** Create the Accordion Menu ***/
+  $('#menu').accordion({
+    autoHeight: false,
+    navigation: true,
+    clearStyle: true,
+    active : Number($.cookie('webpro_menustate')) - 1,
+    change: function(event, ui) {
+      var sid = ui.newHeader.children('a').attr('data-itemId');
 
-  /*** Trigger Logout */
+      $.cookie('webpro_menustate', sid, { expires: 14 });
+    }
+  });
 
+
+  /*** Image Buttons! ***/
+  $("#icon_help").button({ icons: {primary:'ui-icon-help'} });
+  $("#icon_note").button({ icons: {primary:'ui-icon-note'} });
+  $("#icon_settings").button({ icons: {primary:'ui-icon-wrench'} });
+  $("#icon_url").button({ icons: {primary: 'ui-icon-link'} });
+  $("#icon_submit").button({ icons: {primary: 'ui-icon-circle-check'} });
+  $("#icon_reset").button({ icons: {primary: 'ui-icon-circle-close'} });
+
+  $("#imageUploadSubmitButton").button("option", "disabled", true);
+
+
+
+
+  /*** Button Click Events ***/
+
+  // Cleanup
+  $('#icon_note, #messageArchive, a#editRoom').unbind('click');
+
+  // Archive
+  $('#icon_note, #messageArchive').bind('click',function() {
+    popup.archive({roomId : roomId});
+  });
+
+  // Edit Room
+  $('a#editRoom').bind('click',function() {
+    popup.editRoom(roomId);
+  });
+
+  // Trigger Login
+  $('#login').bind('click',function() {
+    popup.login();
+  });
+
+  // Trigger Logout
   $('#logout').bind('click',function() {
     standard.logout();
     popup.login();
-
-    return false;
   });
 
+  // Kick
+  $('a#kick').bind('click',function() {
+    popup.kick();
+  });
 
+  // Private Room
+  $('a#privateRoom').bind('click',function() {
+    popup.privateRoom();
+  });
 
-  /*** WIP ***/
+  // Manage Kick
+  $('a#manageKick').bind('click',function() {
+    popup.manageKicks();
+  });
 
+  // Online
+  $('a#online').bind('click',function() {
+    popup.online();
+  });
+
+  // Create Room
+  $('a#createRoom').bind('click',function() {
+    popup.createRoom();
+  });
+
+  // Edit Room
+  $('a.editRoomMulti').bind('click',function() {
+    popup.editRoom($(this).attr('data-roomId'));
+  });
+
+  // Help
+  $('#icon_help').bind('click',function() {
+    popup.help();
+  });
+
+  // Room List
+  $('#roomList').bind('click',function() {
+    popup.selectRoom();
+  });
+
+  // Stats
+  $('#viewStats').bind('click',function() {
+    popup.viewStats();
+  });
+
+  // Copyright & Credits
+  $('#copyrightLink').bind('click',function() {
+    popup.copyright();
+  });
+
+  // User Settings
+  $('#icon_settings, #changeSettings, a.changeSettingsMulti').bind('click',function() {
+    popup.userSettings();
+  });
+
+  // View My Uploads
+  $('#viewUploads').bind('click',function() {
+    popup.viewUploads();
+  });
+
+  // Upload
+  $('#icon_url').bind('click',function() {
+    popup.insertDoc('url');
+  });
+
+  // Room Shower Thing
   $('#showMoreRooms').bind('click',function() {
     $('#roomListShort').slideUp();
     $('#roomListLong').slideDown();
-
-    return false;
   });
 
   $('#showFewerRooms').bind('click',function() {
     $('#roomListLong').slideUp();
     $('#roomListShort').slideDown();
-
-    return false;
   });
 
 
 
-
-  /*** Context Menus ***/
-
-  $.get('template.php', 'template=contextMenu',function(data) {
-    $('body').append(data);
-
-    console.log('Appended Context Menus to DOM');
-
-    return false;
-  });
-
-
-
-  /*** Upload ***/
-
-  $('#icon_url').bind('click',function() {
-    popup.insertDoc('url');
-
-    return false;
-  });
-
-
+  /*** Youtube Videos for Uploads ***/
   jQTubeUtil.init({
     key: 'AI39si5_Dbv6rqUPbSe8e4RZyXkDM3X0MAAtOgCuqxg_dvGTWCPzrtN_JLh9HlTaoC01hCLZCxeEDOaxsjhnH5p7HhZVnah2iQ',
     orderby: 'relevance',  // *optional -- 'viewCount' is set by default
@@ -3827,36 +3873,7 @@ $(document).ready(function() {
 
 
 
-  /*** Kick ***/
-
-  $('a#kick').bind('click',function() {
-    popup.kick();
-
-    return false;
-  });
-
-
-
-  /*** Private Room ***/
-
-  $('a#privateRoom').bind('click',function() {
-    popup.privateRoom();
-
-    return false;
-  });
-
-
-
-  /*** Manage Kick ***/
-
-  $('a#manageKick').bind('click',function() {
-    popup.manageKicks();
-
-    return false;
-  });
-
-
-
+  /*** Send Messages, Yay! ***/
   $('#sendForm').bind('submit',function() {
     var message = $('textarea#messageInput').val();
 
@@ -3873,109 +3890,26 @@ $(document).ready(function() {
 
 
 
-  /*** Online ***/
+  /*** Context Menus ***/
+  $.get('template.php', 'template=contextMenu', function(data) {
+    $('body').append(data);
 
-  $('a#online').bind('click',function() {
-    popup.online();
-
-    return false;
+    console.log('Appended Context Menus to DOM');
   });
 
 
 
-  /* Create Room */
-
-  $('a#createRoom').bind('click',function() {
-    popup.createRoom();
-
-    return false;
-  });
-
-
-
-  /*** Edit Room ***/
-
-  $('a.editRoomMulti').bind('click',function() {
-    popup.editRoom($(this).attr('data-roomId'));
-
-    return false;
-  });
-
-
-
-  /*** Help ***/
-
-  $('#icon_help').bind('click',function() {
-    popup.help();
-
-    return false;
-  });
-
-
-
-  /*** Room List ***/
-
-  $('#roomList').bind('click',function() {
-    popup.selectRoom();
-
-    return false;
-  });
-
-
-
-  /*** Stats ***/
-
-  $('#viewStats').bind('click',function() {
-    popup.viewStats();
-
-    return false;
-  });
-
-
-
-  /*** Copyright & Credits ***/
-
-  $('#copyrightLink').bind('click',function() {
-    popup.copyright();
-
-    return false;
-  });
-
-
-
-  /*** User Settings ***/
-
-  $('#icon_settings, #changeSettings, a.changeSettingsMulti').bind('click',function() {
-    popup.userSettings();
-
-    return false;
-  });
-
-
-
-  /*** View My Uploads ***/
-
-  $('#viewUploads').bind('click',function() {
-    popup.viewUploads();
-
-    return false;
-  });
-
-
-
-  /* We haven't a clue what this does... */
-
+  /*** A Hack of Sorts to Open Dialogs onLoad ***/
   if (typeof prepopup === "function") {
     prepopup();
   }
 
 
 
-  /* Window Manipulation (see below) */
-
+  /*** Window Manipulation (see below) ***/
   $(window).bind('resize', windowResize);
-  window.onblur = function() { windowBlur(); }
-  window.onfocus = function() { windowFocus(); }
+  $(window).bind('blur', windowBlur);
+  $(window).bind('focus', windowFocus);
 
 
 
@@ -4017,23 +3951,17 @@ function windowResize() {
 
 
   $('body').css('height', windowHeight); // Set the body height to equal that of the window; this fixes many gradient issues in theming.
-
-
-  return false;
 }
 
 function windowBlur() {
   window.isBlurred = true;
-
-  return false;
 }
 
 function windowFocus() {
   window.isBlurred = false;
   window.clearInterval(timers.t3);
-  $('#favicon').attr('href',favicon);
 
-  return false;
+  $('#favicon').attr('href', favicon);
 }
 
 /*********************************************************
