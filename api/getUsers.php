@@ -73,22 +73,7 @@ $xmlData = array(
 );
 
 $queryParts['userSelect']['columns'] = array(
-  "{$sqlPrefix}users" => array(
-    'userId' => 'userId',
-    'userName' => 'userName',
-    'userFormatStart' => 'userFormatStart',
-    'userFormatEnd' => 'userFormatEnd',
-    'profile' => 'profile',
-    'avatar' => 'avatar',
-    'socialGroups' => 'socialGroups',
-    'defaultColor' => 'defaultColor',
-    'defaultHighlight' => 'defaultHighlight',
-    'defaultFontface' => 'defaultFontface',
-    'defaultFormatting' => 'defaultFormatting',
-    'favRooms' => 'favRooms',
-    'ignoreList' => 'ignoreList',
-    'userGroup' => 'userGroup',
-  ),
+  "{$sqlPrefix}users" => 'userId, userName, userFormatStart, userFormatEnd, profile, avatar, socialGroups, defaultColor, defaultHighlight, defaultFontface, defaultFormatting, favRooms, ignoreList, userGroup, options, defaultRoom',
 );
 $queryParts['userSelect']['conditions'] = false;
 $queryParts['userSelect']['sort'] = array(
@@ -278,14 +263,19 @@ if (is_array($users)) {
           'fontface' => ($userData['defaultFontface']),
           'general' => (int) $userData['defaultFormatting']
         ),
-        'ignoreList' => ($userData['ignoreList']),
-        'favRooms' => ($userData['favRooms']),
         'postCount' => (int) (isset($userDataForums['posts']) ? $userDataForums['posts'] : 0),
         'joinDate' => (int) (isset($userDataForums['joinDate']) ? $userDataForums['joinDate'] : 0),
         'joinDateFormatted' => (fim_date(false,(isset($userDataForums['joinDate']) ? $userDataForums['joinDate'] : 0))),
         'userTitle' => (isset($userDataForums['userTitle']) ? $userDataForums['userTitle'] :
           (isset($config['defaultUserTitle']) ? $config['defaultUserTitle'] :  '')),
       );
+
+      if ($userData['userId'] === $user['userId']) {
+        $xmlData['getUsers']['users']['user ' . $userData['userId']]['defaultRoom'] = $userData['defaultRoom'];
+        $xmlData['getUsers']['users']['user ' . $userData['userId']]['options'] = $userData['options'];
+        $xmlData['getUsers']['users']['user ' . $userData['userId']]['ignoreList'] = $userData['ignoreList'];
+        $xmlData['getUsers']['users']['user ' . $userData['userId']]['favRooms'] = $userData['favRooms'];
+      }
 
 
       ($hook = hook('getUsers_eachUser_end') ? eval($hook) : '');

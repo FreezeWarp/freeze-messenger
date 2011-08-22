@@ -418,8 +418,9 @@
       <column name="userName" type="string" maxlen="50" comment="The user's name." />
       <column name="userGroup" type="int" maxlen="6" default="1" comment="The admin-set usergroup ID of the user." />
       <column name="allGroups" type="string" maxlen="1000" comment="A comma-seperated list of the IDs of all admin-set groups the user is a part of. This is not used on PHPBB and Vanilla logins (both instead use socialGroups)." />
-      <column name="avatar" type="string" maxlen="1000" comment="4" />
-      <column name="profile" type="string" maxlen="1000" comment="4" />
+      <column name="options" type="bitfield" bits="16" comment="A bitfield corrosponding to the user's settings." />
+      <column name="avatar" type="string" maxlen="1000" comment="The absolute URI of the user's avatar." />
+      <column name="profile" type="string" maxlen="1000" comment="The absolute URI of the user's profile link or website." />
       <column name="socialGroups" type="string" maxlen="1000" comment="A comma-seperated list of the ids of all groups the user has joined." />
       <column name="userFormatStart" type="string" maxlen="300" comment="HTML-formatting to be prepended to the user's name for its display." />
       <column name="userFormatEnd" type="string" maxlen="300" comment="HTML-formatting to be appended to the user's name for its display." />
@@ -431,7 +432,7 @@
       <column name="interfaceId" type="string" maxlen="50" comment="The user's default interface." />
       <column name="favRooms" type="string" maxlen="1000" default="1" comment="A comma-seperated list of rooms the user has ranked as being favourites." />
       <column name="watchRooms" type="string" maxlen="1000" comment="A comma-seperated list of rooms the user would like to be notified about when new messages are made" />
-      <column name="ignoreList" type="string" maxlen="1000" comment="4" />
+      <column name="ignoreList" type="string" maxlen="1000" comment="A comma-seperated list of users the user would like to ignore from being contacted by." />
       <column name="status" type="int" maxlen="3" comment="The user's activity status." />
       <column name="defaultFormatting" type="bitfield" bits="16" comment="A bitfield corrosponding to the user's defaulting formatting (e.g. bold, italics) of all messages." />
       <column name="defaultHighlight" type="string" maxlen="11" comment="The user's default highlight colour used for all messages." />
@@ -439,7 +440,7 @@
       <column name="defaultFontface" type="string" maxlen="50" comment="The fontface ID used for all of the user's messages." />
       <column name="userPrivs" type="bitfield" bits="16" default="16" comment="A bitfield corrosponding to admin-set user priviledges." />
       <column name="adminPrivs" type="bitfield" bits="16" comment="A bitfield corrosponding to admin-set administrative priviledges." />
-      <column name="lang" type="string" maxlen="5" comment="4" />
+      <column name="lang" type="string" maxlen="5" comment="The user's preferred language code." />
       <column name="fileCount" type="int" maxlen="8" comment="The number of files store on the server by this user." />
       <column name="fileSize" type="int" maxlen="8" comment="The total size of all files stored on the server by this user." />
       <column name="messageCount" type="int" maxlen="8" comment="The number of messages made by this user." />
@@ -476,6 +477,11 @@
       <def bit="8">Can Modify and Delete Posts</def>
       <def bit="16">Can Edit Room Properties (e.g. name)</def>
       <def bit="128">Can Grant</def>
+    </bitfield>
+
+    <bitfield name="options" table="users">
+      <def bit="512">Block Private Contact</def>
+      <def bit="1024">Mature (Unimplemented)</def>
     </bitfield>
   </definitions>
 </dbSchema>

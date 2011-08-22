@@ -407,39 +407,48 @@ switch($request['action']) {
       $errDesc = 'The user specified is yourself.';
     }
     else {
-      $room = $database->getPrivateRoom(array($user['userId'], $user2['userId']));
+      $user['ignoreList'] = fim_arrayValidate(explode(',', $user2['ignoreList']), 'int', false);
 
-      if ($room) {
-        $xmlData['editRoom']['response']['insertId'] = $room['roomId']; // Already exists; return ID
+      if (in_array($user['userId'], $user['ignoreList']) ||
+        ($user2['options'] & 512)) {
+        $errStr = 'ignored';
+        $errDesc = 'The user has blocked private contact.';
       }
       else {
-        $database->insert("{$sqlPrefix}rooms", array(
-            'roomName' => "Private IM ($user[userName] and $user2[userName])",
-            'options' => 48,
-            'defaultPermissions' => 0,
-          )
-        );
-        $roomId = $database->insertId;
+        $room = $database->getPrivateRoom(array($user['userId'], $user2['userId']));
 
-        $database->insert("{$sqlPrefix}privateRooms", array(
-          'roomId' => $roomId,
-          'user1' => $user['userId'],
-          'user2' => $user2['userId'],
-        ));
-
-        foreach (array($user['userId'], $user2['userId']) AS $userId) {
-          $database->insert("{$sqlPrefix}roomPermissions", array(
-              'roomId' => $roomId,
-              'attribute' => 'user',
-              'param' => $userId,
-              'permissions' => 7,
-            ), array(
-              'permissions' => 7,
+        if ($room) {
+          $xmlData['editRoom']['response']['insertId'] = $room['roomId']; // Already exists; return ID
+        }
+        else {
+          $database->insert("{$sqlPrefix}rooms", array(
+              'roomName' => "Private IM ($user[userName] and $user2[userName])",
+              'options' => 48,
+              'defaultPermissions' => 0,
             )
           );
-        }
+          $roomId = $database->insertId;
 
-        $xmlData['editRoom']['response']['insertId'] = $roomId;
+          $database->insert("{$sqlPrefix}privateRooms", array(
+            'roomId' => $roomId,
+            'user1' => $user['userId'],
+            'user2' => $user2['userId'],
+          ));
+
+          foreach (array($user['userId'], $user2['userId']) AS $userId) {
+            $database->insert("{$sqlPrefix}roomPermissions", array(
+                'roomId' => $roomId,
+                'attribute' => 'user',
+                'param' => $userId,
+                'permissions' => 7,
+              ), array(
+                'permissions' => 7,
+              )
+            );
+          }
+
+          $xmlData['editRoom']['response']['insertId'] = $roomId;
+        }
       }
     }
   }

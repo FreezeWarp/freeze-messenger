@@ -592,6 +592,9 @@ var settings = {
   disableRightClick : (settingsBitfield & 65536 ? true : false)
 };
 
+hashParse();
+
+
 
 
 
@@ -1157,7 +1160,6 @@ var standard = {
 
       return true;
     });
-     console.log(3);
   },
 
 
@@ -1605,7 +1607,7 @@ var standard = {
               }
               else {
                 requestSettings.timeout = 2400;
-                timers.t1 = setTimeout(standard.getMessages, 50);
+                timers.t1 = setTimeout(standard.getMessages, 2500);
               }
             }
 
@@ -1851,7 +1853,7 @@ var standard = {
         }
 
         return false;
-      }); // Send the form data via AJAX.
+      });
     }
 
     return false;
@@ -1953,32 +1955,6 @@ var standard = {
 /*********************************************************
 ************************* END ***************************
 ******************* Content Functions *******************
-*********************************************************/
-
-
-
-
-
-
-
-/*********************************************************
-************************ START **************************
-********** Silent Init Uses of Standard Methods *********
-*********************************************************/
-
-if (typeof window.onhashchange !== 'undefined') {
-  window.onhashchange = function() {
-    hashParse();
-
-    return true;
-  }
-}
-
-hashParse();
-
-/*********************************************************
-************************* END ***************************
-********** Silent Init Uses of Standard Methods *********
 *********************************************************/
 
 
@@ -2102,18 +2078,9 @@ popup = {
       selectTab;
 
     switch(preselect) {
-      case 'video':
-      selectTab = 2;
-      break;
-
-      case 'image':
-      selectTab = 1;
-      break;
-
-      case 'link':
-      default:
-      selectTab = 0;
-      break;
+      case 'video': selectTab = 2; break;
+      case 'image': selectTab = 1; break;
+      case 'link': default: selectTab = 0; break;
     }
 
     dia.full({
@@ -2445,6 +2412,8 @@ popup = {
 
             var defaultGeneral = active[i].defaultFormatting.general,
               ignoreList = active[i].ignoreList,
+              options = active[i].options,
+              defaultRoom = active[i].defaultRoom,
               defaultHighlightHashPre = [],
               defaultHighlightHash = {r:0, g:0, b:0},
               defaultColourHashPre = [],
@@ -2516,6 +2485,8 @@ popup = {
                 $('#fontPreview').css('color', 'rgb(' + defaultColour + ')');
               }
             });
+
+            $('#defaultRoom').val(roomIdRef[defaultRoom].roomName);
 
 
             autoEntry.showEntries('ignoreList', ignoreList);
@@ -3481,7 +3452,13 @@ function contextMenuParseUser(container) {
           break;
 
           case 'profile':
-          window.open(profileUrl);
+          dia.full({
+            title : 'User Profile',
+            id : 'messageLink',
+            content : '<iframe src="profileUrl" style="width: 100%; height: 80%;" />',
+            width: $(window).width() * .8,
+            height: $(window).height() * .8,
+          });
           break;
 
           case 'kick':
@@ -3933,7 +3910,7 @@ $(document).ready(function() {
   $(window).bind('resize', windowResize);
   $(window).bind('blur', windowBlur);
   $(window).bind('focus', windowFocus);
-
+  $(window).bind('hashchange', hashParse);
 
 
   return false;

@@ -120,13 +120,20 @@ if(jQuery)(function() {
       if (o.inSpeed == 0) o.inSpeed = -1;
       if (o.outSpeed == 0) o.outSpeed = -1;
 
+
       $(this).each(function() { // Loop each context menu
         var el = $(this);
-        $(this).find('.menuTrigger').remove();
 
-        $('#' + o.menu).addClass('contextMenu'); // Add contextMenu class
+
+        $(this).unbind('mousedown').unbind('mouseup'); // Disable action (cleanup)
+
+
+        // Add contextMenu class
+        $('#' + o.menu).addClass('contextMenu');
+
 
         if (o.altMenu) {
+          $(this).find('.menuTrigger').remove(); // Remove Menu Trigger (cleanup)
           $(this).append('<span class="menuTrigger" tabindex="1"><span class="ui-icon ui-icon-grip-diagonal-se"></span></span>');
 
           $(this).find('.menuTrigger').click(function() {
@@ -134,7 +141,6 @@ if(jQuery)(function() {
           });
 
           $(this).find('.menuTrigger').keyup(function(event) {
-            console.log('11');
             if (event.keyCode == 13) $(this).click();
           });
         }
@@ -175,19 +181,10 @@ if(jQuery)(function() {
             });
           });
         }
-
       });
 
       return $(this);
     },
-
-    destroyContextMenu: function() { // Destroy context menu(s)
-      $(this).each(function() { // Destroy specified context menus
-        $(this).unbind('mousedown').unbind('mouseup'); // Disable action
-      });
-
-      return($(this));
-    }
   });
 })(jQuery);
 
@@ -195,22 +192,21 @@ if(jQuery)(function() {
 function contextMenuSub(e, o, el, offset, callback, srcElement) {
   if (e) {
     e.stopPropagation();
+
+    $(this).unbind('mouseup');
   }
   else {
     e = {
       button: 2,
       pageX : offset.left + $(el).width(),
-      pageY : offset.top + $(el).height()
+      pageY : offset.top + $(el).height(),
+      altMenu : true
     }
   }
 
 
-
-  $(this).unbind('mouseup');
-
   if (e.button == 2) {
     $(".contextMenu").hide(); // Hide context menus that may be showing
-
     var menu = $('#' + o.menu); // Get this context menu
 
 
@@ -261,13 +257,13 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
     $(document).keydown(function(e) {
       switch(e.keyCode) {
         case 38: // Up
-        if ($(menu).find('li.hover').size() == 0) {
+        if ($(menu).find('li.hover').size() === 0) {
           $(menu).find('li:last').addClass('hover');
         }
         else {
-          $(menu).find('li.hover').removeClass('hover').prevAll('li:not(.disabled)').eq(0).addClass('hover');
+          $(menu).find('li.hover').removeClass('hover').prevAll('li').eq(0).addClass('hover');
 
-          if ($(menu).find('li.hover').size() == 0) {
+          if ($(menu).find('li.hover').size() === 0) {
             $(menu).find('li:last').addClass('hover');
           }
         }
@@ -276,13 +272,13 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
         break;
 
         case 40: // Down
-        if ($(menu).find('li.hover').size() == 0) {
+        if ($(menu).find('li.hover').size() === 0) {
           $(menu).find('li:first').addClass('hover');
         }
         else {
-          $(menu).find('li.hover').removeClass('hover').nextAll('li:not(.disabled)').eq(0).addClass('hover');
+          $(menu).find('li.hover').removeClass('hover').nextAll('li').eq(0).addClass('hover');
 
-          if ($(menu).find('li.hover').size() == 0) {
+          if ($(menu).find('li.hover').size() === 0) {
             $(menu).find('li:first').addClass('hover');
           }
         }
@@ -304,7 +300,8 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
 
     // When items are selected
     $('#' + o.menu).find('a').unbind('click');
-    $('#' + o.menu).find('li:not(.disabled) a').click(function() {
+
+    $('#' + o.menu).find('li a').click(function() {
       $(document).unbind('click').unbind('keydown');
       $(".contextMenu").hide();
 
