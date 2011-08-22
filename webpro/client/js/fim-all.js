@@ -173,7 +173,7 @@ if (typeof Audio !== 'undefined') {
 
   // Audio Volume
   if ($.cookie('webpro_audioVolume') !== null) {
-    snd.volume = $.cookie('webpro_audioVolume') / 100; console.log(snd.volume);
+    snd.volume = $.cookie('webpro_audioVolume') / 100;
   }
   else {
     snd.volume = .5;
@@ -864,9 +864,7 @@ autoEntry = {
         type2 = 'Room';
         break;
 
-        case 'moderators':
-        case 'allowedUsers':
-        case 'ignoreList':
+        case 'moderators': case 'allowedUsers': case 'ignoreList':
         id = userRef[val];
         type2 = 'User';
         break;
@@ -884,14 +882,13 @@ autoEntry = {
         type2 = 'Room';
         break;
 
-        case 'moderators':
-        case 'allowedUsers':
-        val = userIdRef[id].roomName;
+        case 'moderators': case 'allowedUsers': case 'ignoreList':
+        val = userIdRef[id];
         type2 = 'User';
         break;
 
         case 'allowedGroups':
-        val = groupIdRef[id].roomName;
+        val = groupIdRef[id];
         type2 = 'Group';
         break;
       }
@@ -906,6 +903,8 @@ autoEntry = {
 
       $("#" + type + "List").append("<span id=\"" + type + "SubList" + id + "\">" + val + " (<a href=\"javascript:false(0);\" onclick=\"autoEntry.removeEntry('" + type + "'," + id + ");\">×</a>), </span>");
       $("#" + type).val(currentRooms.toString(","));
+
+      $("#" + type + "Bridge").val('');
     }
 
     return false;
@@ -947,8 +946,7 @@ autoEntry = {
       source = roomRef;
       break;
 
-      case 'moderators':
-      case 'allowedUsers':
+      case 'moderators': case 'allowedUsers': case 'ignoreList':
       source = userRef;
       break;
 
@@ -963,7 +961,7 @@ autoEntry = {
         continue;
       }
 
-      autoEntry.addEntry(type,source,entryList[i]);
+      autoEntry.addEntry(type, source, entryList[i]);
     }
 
     return false;
@@ -2412,6 +2410,7 @@ popup = {
 
             var defaultGeneral = active[i].defaultFormatting.general,
               ignoreList = active[i].ignoreList,
+              watchRooms = active[i].watchRooms,
               options = active[i].options,
               defaultRoom = active[i].defaultRoom,
               defaultHighlightHashPre = [],
@@ -2490,6 +2489,7 @@ popup = {
 
 
             autoEntry.showEntries('ignoreList', ignoreList);
+            autoEntry.showEntries('watchRooms', watchRooms);
 
             return false;
           }
@@ -2592,8 +2592,8 @@ popup = {
             dia.info('Your settings may or may not have been updated.');
           }); // Send the form data via AJAX.
 
-          $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
-          $(".colorpicker").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
+//          $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
+//          $(".colorpicker").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
 
           return false; // Don't submit the form.
         });
@@ -3886,6 +3886,18 @@ $(document).ready(function() {
     }
 
     return false;
+  });
+
+
+
+  /*** Process Enter for Message Input ***/
+  $('#messageInput').bind('keydown', function(e) {
+    if (e.keyCode === 13 && !e.shiftKey) {
+      $('#sendForm').submit();
+      return false;
+    }
+
+    return true;
   });
 
 

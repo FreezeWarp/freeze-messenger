@@ -244,24 +244,24 @@
 $phrases[settingsDefaultFormattingLabel]&lt;br /&gt;
 
 {{if="$enableDF['font']"}{
-&lt;select name="defaultFace" id="defaultFace" onchange="var fontFace = $('#defaultFace option:selected').attr('data-font'); $('#fontPreview').css('font-family',fontFace);" style="margin-left: 10px;"&gt;$fontBox&lt;/select&gt;}}
+&lt;select name="defaultFace" id="defaultFace" style="margin-left: 10px;"&gt;&lt;/select&gt;}}
 
 {{if="$enableDF['color']"}{&lt;input style="width: 40px;" id="defaultColour" name="defaultColour" /&gt;}}
 
 {{if="$enableDF['highlight']"}{&lt;input style="width: 40px;" id="defaultHighlight" name="defaultHighlight" /&gt;}}
 
 {{if="$enableDF['general']"}{
-&lt;label for="defaultBold"&gt;$phrases[settingsDefaultFormattingBoldLabel]&lt;/label&gt;&lt;input type="checkbox" name="defaultBold" id="defaultBold" onchange="if ($(this).is(':checked')) { $('#fontPreview').css('font-weight','bold'); } else { $('#fontPreview').css('font-weight','normal'); }" value="true"{{if="$user['defaultFormatting'] &amp; 256"}{ checked="checked"}} /&gt;
+&lt;label for="defaultBold"&gt;$phrases[settingsDefaultFormattingBoldLabel]&lt;/label&gt;&lt;input type="checkbox" name="defaultBold" id="defaultBold" onchange="if ($(this).is(':checked')) { $('#fontPreview').css('font-weight','bold'); } else { $('#fontPreview').css('font-weight','normal'); }" value="true" /&gt;
 
 &lt;label for="defaultItalics"&gt;$phrases[settingsDefaultFormattingItalicsLabel]&lt;/label&gt;&lt;input type="checkbox" name="defaultItalics" id="defaultItalics" value="true"{{if="$user['defaultFormatting'] &amp; 512"}{ checked="checked"}} onchange="if ($(this).is(':checked')) { $('#fontPreview').css('font-style','italic'); } else { $('#fontPreview').css('font-style','normal'); }" /&gt;&lt;br /&gt;&lt;br /&gt;}}
 
-&lt;label for="disableFormatting"&gt;$phrases[settingsDisableFormattingLabel]&lt;/label&gt; &lt;input type="checkbox" name="settingsOfficialAjax_disableFormatting" id="disableFormatting" value="true"{{if="$user['optionDefs']['disableFormatting']"}{ checked="checked"}} /&gt;&lt;br /&gt;
+&lt;label for="disableFormatting"&gt;$phrases[settingsDisableFormattingLabel]&lt;/label&gt; &lt;input type="checkbox" name="settingsOfficialAjax_disableFormatting" id="disableFormatting" value="true" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsDisableFormattingBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
 
-&lt;label for="disableVideo"&gt;$phrases[settingsDisableVideoLabel]&lt;/label&gt; &lt;input type="checkbox" name="settingsOfficialAjax_disableVideo" id="disableVideo" value="true"{{if="$user['optionDefs']['disableVideo']"}{ checked="checked"}} /&gt;&lt;br /&gt;
+&lt;label for="disableVideo"&gt;$phrases[settingsDisableVideoLabel]&lt;/label&gt; &lt;input type="checkbox" name="settingsOfficialAjax_disableVideo" id="disableVideo" value="true" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsDisableVideoBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
 
-&lt;label for="disableImage"&gt;$phrases[settingsDisableImageLabel]&lt;/label&gt; &lt;input type="checkbox" name="settingsOfficialAjax_disableImage" id="disableImage" value="true"{{if="$user['optionDefs']['disableImages']"}{ checked="checked"}} /&gt;&lt;br /&gt;
+&lt;label for="disableImage"&gt;$phrases[settingsDisableImageLabel]&lt;/label&gt; &lt;input type="checkbox" name="settingsOfficialAjax_disableImage" id="disableImage" value="true" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsDisableImageBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
 
 &lt;small&gt;&lt;span style="margin-left: 10px;" id="fontPreview"&gt;$phrases[settingsDefaultFormattingPreview]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;}}

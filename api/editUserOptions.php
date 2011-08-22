@@ -84,8 +84,6 @@ $request = fim_sanitizeGPC(array(
   ),
 ));
 
-
-
 /* Data Predefine */
 $xmlData = array(
   'editUserOptions' => array(
@@ -124,24 +122,21 @@ if ($request['defaultRoomId'] > 0) {
 }
 
 if (count($request['favRooms']) > 0) {
-  $favRooms = fim_arrayValidate(explode(',', $request['favRooms']),'int',false);
-  $updateArray['favRooms'] = (string) implode(',', $favRooms);
+  $updateArray['favRooms'] = (string) implode(',', $request['favRooms']);
 
   $xmlData['editUserOptions']['response']['favRooms']['status'] = true;
   $xmlData['editUserOptions']['response']['favRooms']['newValue'] = (string) implode(',', $favRooms);
 }
 
 if (count($request['watchRooms']) > 0) {
-  $watchRooms = fim_arrayValidate(explode(',', $request['watchRooms']),'int',false);
-  $updateArray['watchRooms'] = (string) implode(',', $watchRooms);
+  $updateArray['watchRooms'] = (string) implode(',', $request['watchRooms']);
 
   $xmlData['editUserOptions']['response']['watchRooms']['status'] = true;
   $xmlData['editUserOptions']['response']['watchRooms']['newValue'] = (string) implode(',', $watchRooms);
 }
 
 if (count($request['ignoreList']) > 0) {
-  $ignoreList = fim_arrayValidate(explode(',', $request['ignoreList']),'int',false);
-  $updateArray['ignoreList'] = (string) implode(',', $ignoreList);
+  $updateArray['ignoreList'] = (string) implode(',', $request['ignoreList']);
 
   $xmlData['editUserOptions']['response']['ignoreList']['status'] = true;
   $xmlData['editUserOptions']['response']['ignoreList']['newValue'] = (string) implode(',', $ignoreList);
