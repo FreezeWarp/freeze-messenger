@@ -175,6 +175,7 @@ switch($request['action']) {
         $database->insert("{$sqlPrefix}rooms", array(
           'roomName' => $request['roomName'],
           'owner' => (int) $user['userId'],
+          'defaultPermissions' => (int) $request['defaultPermissions'],
         ));
         $roomId = $database->insertId;
 

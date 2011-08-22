@@ -2592,8 +2592,8 @@ popup = {
             dia.info('Your settings may or may not have been updated.');
           }); // Send the form data via AJAX.
 
-//          $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
-//          $(".colorpicker").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
+          $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
+          $(".colorpicker").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
 
           return false; // Don't submit the form.
         });
@@ -2660,71 +2660,22 @@ popup = {
 
 
 
-  /*** START Edit Room ***/
+  /*** START Create Room ***/
 
   editRoom : function(roomIdLocal) {
+    if (roomIdLocal) {
+      var action = 'edit';
+    }
+    else {
+      var action = 'create';
+    }
+
     dia.full({
-      uri : 'template.php?template=editRoomForm',
-      tabs : true,
+      uri : 'template.php?template=editRoomForm&action=' + action,
       id : 'editRoomDialogue',
       width : 1000,
-      oF: function() {
-        $("#moderatorsBridge").autocomplete({
-          source: userList
-        });
-        $("#allowedUsersBridge").autocomplete({
-          source: userList
-        });
-        $("#allowedGroupsBridge").autocomplete({
-          source: groupList
-        });
-
-        $.ajax({
-          url: directory + 'api/getRooms.php?rooms=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-          type: 'GET',
-          timeout: 2400,
-          cache: false,
-          success: function(json) {
-            for (var i in json.getRooms.rooms) {
-              var data = '',
-                roomName = json.getRooms.rooms[i].roomName,
-                roomId = json.getRooms.rooms[i].roomId,
-                allowedUsers = json.getRooms.rooms[i].allowedUsers
-                allowedGroups = json.getRooms.rooms[i].allowedGroups,
-                moderators = json.getRooms.rooms[i].moderators;
-
-              break;
-            }
-
-            $('#name').val(roomName);
-
-            if (allowedUsers !== '*' && allowedUsers !== '') {
-              autoEntry.showEntries('allowedUsers',allowedUsers);
-            }
-
-
-            if (moderators !== '*' && moderators !== '') {
-              autoEntry.showEntries('moderators',moderators);
-            }
-
-
-            if (allowedGroups !== '*' && allowedGroups !== '') {
-              autoEntry.showEntries('allowedGroups',allowedGroups);
-            }
-
-//            if (mature) {
-//              $('#mature').attr('checked', 'checked');
-//            }
-
-            return false;
-          },
-          error: function() {
-            dia.error('Failed to obtain current room settings from server.');
-
-            return false;
-          }
-        });
-
+      tabs : true,
+      oF : function() {
         $.ajax({
           url: directory + 'api/getCensorLists.php?rooms=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
           type: 'GET',
@@ -2744,7 +2695,7 @@ popup = {
               }
 
               data += '<label><input type="checkbox" name="list' + listId + '" data-listId="' + listId + '" data-checkType="list" value="true" ' + (listOptions & 2 ? '' : ' disabled="disabled"') + (listStatus === 'block' ? ' checked="checked"' : '') + ' />' + listName + '</label>';
-            };
+            }
 
             $('#censorLists').append(data);
 
@@ -2757,72 +2708,6 @@ popup = {
           }
         });
 
-        $("#editRoomForm").submit(function() {
-          var bbcode = Number($('#bbcode > option:selected').val()),
-            name = $('#name').val(),
-            mature = ($('#mature').is(':checked') ? true : false),
-            allowedUsers = $('#allowedUsers').val(),
-            allowedGroups = $('#allowedGroups').val(),
-            moderators = $('#moderators').val(),
-            censor = [];
-
-          $('input[data-checkType="list"]').each(function() {
-            censor.push($(this).attr('data-listId') + '=' + ($(this).is(':checked') ? 1 : 0));
-          });
-
-          censor = censor.join(',');console.log(censor);
-
-          $.post(directory + 'api/editRoom.php', 'action=edit&roomId=' + roomIdLocal + '&roomName=' + urlencode(name) + '&bbcode=' + bbcode + '&mature=' + mature + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups + '&moderators=' + moderators + '&censor=' + censor + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(json) {
-            var errStr = json.editRoom.errStr,
-              errDesc = json.editRoom.errDesc;
-
-            if (errStr) {
-              dia.error('An error has occured: ' + errDesc);
-            }
-            else {
-              dia.full({
-                content : 'The room has been edited.',
-                title : 'Room Edited!',
-                id : 'editRoomResultsDialogue',
-                width : 600,
-                buttons : {
-                  Open : function() {
-                    standard.selectRoom(roomIdLocal);
-
-                    return false;
-                  },
-                  Okay : function() {
-                    $('#editRoomResultsDialogue').dialog('close');
-
-                    return false;
-                  }
-                }
-              });
-
-              $("#editRoomDialogue").dialog('close');
-            }
-          });
-
-          return false; // Don't submit the form.
-        });
-      }
-    });
-  },
-
-  /*** END Edit Room ***/
-
-
-
-
-  /*** START Create Room ***/
-
-  createRoom : function() {
-    dia.full({
-      uri : 'template.php?template=editRoomForm&action=create',
-      id : 'createRoomDialogue',
-      width : 1000,
-      tabs : true,
-      oF : function() {
         $("#moderatorsBridge").autocomplete({
           source: userList
         });
@@ -2849,18 +2734,24 @@ popup = {
         });
 
         $("#editRoomForm").submit(function() {
-          var bbcode = Number($('#bbcode').val()),
-            name = $('#name').val(),
-            mature = ($('#mature').is(':checked') ? true : false),
-            allowedUsers = $('#allowedUsersBridge').val(),
-            allowedGroups = $('#allowedGroupsBridge').val(),
-            moderators = $('#moderatorsBridge').val();
+          var name = $('#name').val(),
+//            mature = ($('#mature').is(':checked') ? true : false),
+            allowedUsers = $('#allowedUsers').val(),
+            allowedGroups = $('#allowedGroups').val(),
+            moderators = $('#moderators').val(),
+            censor = [];
+
+          $('input[data-checkType="list"]').each(function() {
+            censor.push($(this).attr('data-listId') + '=' + ($(this).is(':checked') ? 1 : 0));
+          });
+
+          censor = censor.join(',');console.log(censor);
 
           if (name.length > 20) {
             dia.error('The roomname is too long.');
           }
           else {
-            $.post(directory + 'api/editRoom.php', 'action=create&roomName=' + urlencode(name) + ($('#allowAllUsers').is(':checked') ? '&defaultPermissions=7' : '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups) + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(json) {
+            $.post(directory + 'api/editRoom.php', 'action=' + action + '&roomName=' + urlencode(name) + '&defaultPermissions=' + ($('#allowAllUsers').is(':checked') ? '7' : '0' + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups) + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(json) {
               var errStr = json.editRoom.errStr,
                 errDesc = json.editRoom.errDesc,
                 createRoomId = json.editRoom.response.insertId;
@@ -3807,7 +3698,7 @@ $(document).ready(function() {
 
   // Create Room
   $('a#createRoom').bind('click',function() {
-    popup.createRoom();
+    popup.editRoom();
   });
 
   // Edit Room
