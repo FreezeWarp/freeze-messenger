@@ -147,11 +147,52 @@ $xmlData = array(
 /* Start Processing */
 switch($request['action']) {
   case 'create':
-  if (!$user['userDefs']['createRooms']) {
-    $errStr = 'noPerm';
-    $errDesc = 'You do not have permission to create rooms.';
+  case 'edit':
+  if ($request['action'] === 'create') {
+    if (!$user['userDefs']['createRooms']) {
+      $errStr = 'noPerm';
+      $errDesc = 'You do not have permission to create rooms.';
+      $continue = false;
+    }
+    elseif ($slaveDatabase->getRoom(false, $request['roomName']) !== false) {
+      $errStr = 'exists';
+      $errDesc = 'The room specified already exists.';
+      $continue = false;
+    }
+
+    $request['roomId'] = 0;
+  }
+  elseif ($request['action'] === 'edit') {
+    $room = $slaveDatabase->getRoom($request['roomId']);
+    $data = $slaveDatabase->getRoom(false, $request['roomName']);
+
+    if ($room === false) {
+      $errStr = 'noRoom';
+      $errDesc = 'The room specified does not exist.';
+      $continue = false;
+    }
+    elseif (!fim_hasPermission($room, $user, 'admin', true)) { // The user must be an admin (or, inherently, the room's owner) to edit rooms.
+      $errStr = 'noPerm';
+      $errDesc = 'You do not have permission to edit this room.';
+      $continue = false;
+    }
+    elseif ($room['settings'] & 4) { // Make sure the room hasn't been deleted.
+      $errStr = 'deleted';
+      $errDesc = 'The room has been deleted - it can not be edited.';
+      $continue = false;
+    }
+    elseif ($data !== false && $data['roomId'] != $room['roomId']) { // Make sure no other room with that name exists (if no room is found, the result is false), and that, of course, this only applies if the user just specified the current room's existing name.
+      $errStr = 'exists';
+      $errDesc = 'The room name specified already exists.';
+      $continue = false;
+    }
   }
   else {
+    die('Internal Logic Error');
+  }
+
+
+  if ($continue) {
     if (strlen($request['roomName']) == 0) {
       $errStr = 'noName';
       $errDesc = 'A room name was not supplied.';
@@ -167,118 +208,10 @@ switch($request['action']) {
       $errDesc = 'The room name specified is too long.';
     }
     else {
-      if ($slaveDatabase->getRoom(false, $request['roomName']) !== false) {
-        $errStr = 'exists';
-        $errDesc = 'The room specified already exists.';
-      }
-      else {
-        $database->insert("{$sqlPrefix}rooms", array(
-          'roomName' => $request['roomName'],
-          'owner' => (int) $user['userId'],
-          'defaultPermissions' => (int) $request['defaultPermissions'],
-        ));
-        $roomId = $database->insertId;
-
-        if ((int) $roomId) {
-          foreach ($request['allowedUsers'] AS &$allowedUser) {
-            if (in_array($allowedUser,$request['moderators'])) {
-              unset($allowedUser);
-            }
-            else {
-              $database->insert("{$sqlPrefix}roomPermissions", array(
-                  'roomId' => $roomId,
-                  'attribute' => 'user',
-                  'param' => $allowedUser,
-                  'permissions' => 7,
-                ), array(
-                  'permissions' => 7,
-                )
-              );
-            }
-          }
-
-          foreach ($request['allowedGroups'] AS &$allowedGroup) {
-            $database->insert("{$sqlPrefix}roomPermissions", array(
-                'roomId' => $roomId,
-                'attribute' => 'group',
-                'param' => $allowedGroup,
-                'permissions' => 7,
-              ), array(
-                'permissions' => 7,
-              )
-            );
-          }
-
-          foreach ($request['moderators'] AS &$moderator) {
-            $database->insert("{$sqlPrefix}roomPermissions", array(
-                'roomId' => $roomId,
-                'attribute' => 'user',
-                'param' => $moderator,
-                'permissions' => 15,
-              ), array(
-                'permissions' => 15,
-              )
-            );
-          }
-
-          $xmlData['editRoom']['response']['insertId'] = $roomId;
-        }
-        else {
-          $errStr = 'unknown';
-          $errDesc = 'Room created failed for unknown reasons.';
-        }
-      }
-    }
-  }
-  break;
-
-  case 'edit':
-  $room = $slaveDatabase->getRoom($request['roomId']);
-
-  if ($room === false) {
-    $errStr = 'noRoom';
-    $errDesc = 'The room specified does not exist.';
-  }
-  elseif (strlen($request['roomName']) == 0) { // The name must exist :P
-    $errStr = 'noName';
-    $errDesc = 'A room name was not supplied.';
-  }
-  elseif (strlen($request['roomName']) < $config['roomLengthMinimum']) {
-    $errStr = 'shortName';
-    $errParam = $config['roomLengthMinimum'];
-    $errDesc = 'The room name specified is too short.';
-  }
-  elseif (strlen($request['roomName']) > $config['roomLengthMaximum']) {
-    $errStr = 'longName';
-    $errParam = $config['roomLengthMaximum'];
-    $errDesc = 'The room name specified is too long.';
-  }
-  elseif (!fim_hasPermission($room, $user, 'admin', true)) { // The user must be an admin (or, inherently, the room's owner) to edit rooms.
-    $errStr = 'noPerm';
-    $errDesc = 'You do not have permission to edit this room.';
-  }
-  elseif ($room['settings'] & 4) { // Make sure the room hasn't been deleted.
-    $errStr = 'deleted';
-    $errDesc = 'The room has been deleted - it can not be edited.';
-  }
-  else {
-    $data = $slaveDatabase->getRoom(false,$request['roomName']);
-
-    if ($data !== false && $data['roomId'] != $room['roomId']) { // Make sure no other room with that name exists (if no room is found, the result is false), and that, of course, this only applies if the user just specified the current room's existing name.
-      $errStr = 'exists';
-      $errDesc = 'The room name specified already exists.';
-    }
-    else {
-//      $listsActive = dbRows("SELECT listId, status FROM {$sqlPrefix}censorBlackWhiteLists WHERE roomId = $room[roomId]",'listId'); // TODO
       if (count($request['censor']) > 0) {
         $lists = $slaveDatabase->select(
           array(
-            "{$sqlPrefix}censorLists" => array(
-              'listId' => 'listId',
-              'listName' => 'listName',
-              'listType' => 'listType',
-              'options' => 'options',
-            ),
+            "{$sqlPrefix}censorLists" => 'listId, listName, listType, options'
           ),
           array(
             'both' => array(
@@ -298,31 +231,8 @@ switch($request['action']) {
         );
         $lists = $lists->getAsArray(true);
 
-        $listsActive = $slaveDatabase->select(
-          array(
-            "{$sqlPrefix}censorBlackWhiteLists" => array(
-              'status' => 'status',
-              'roomId' => 'roomId',
-              'listId' => 'listId',
-            ),
-          ),
-          array(
-            'both' => array(
-              array(
-                'type' => 'e',
-                'left' => array(
-                  'type' => 'column',
-                  'value' => 'roomId',
-                ),
-                'right' => array(
-                  'type' => 'int',
-                  'value' => (int) $room['roomId'],
-                ),
-              ),
-            ),
-          )
-        );
-        $listsActive = $listsActive->getAsArray(true);
+        $listsActive = $database->getRoomCensorLists($request['roomId']);
+
 
         if (is_array($listsActive)) {
           if (count($listsActive) > 0) {
@@ -368,15 +278,94 @@ switch($request['action']) {
         }
       }
 
-      $database->update("{$sqlPrefix}rooms", array(
+      if ($request['action'] === 'create') {
+        if ($database->insert("{$sqlPrefix}rooms", array(
           'roomName' => $request['roomName'],
-          'allowedGroups' => implode(',',$request['allowedGroups']),
-          'allowedUsers' => implode(',',$request['allowedUsers']),
-          'moderators' => implode(',',$request['moderators']),
-        ), array(
-          'roomId' => $room['roomId'],
-        )
-      );
+          'owner' => (int) $user['userId'],
+          'defaultPermissions' => (int) $request['defaultPermissions'],
+        ))) {
+          $roomId = $database->insertId;
+
+          $xmlData['editRoom']['response']['insertId'] = $roomId;
+        }
+        else {
+          $errStr = 'unknown';
+          $errDesc = 'Room created failed for unknown reasons.';
+
+          $roomId = 0;
+        }
+      }
+      elseif ($request['action'] === 'edit') {
+        if ($database->update("{$sqlPrefix}rooms", array(
+            'roomName' => $request['roomName'],
+            'allowedGroups' => implode(',',$request['allowedGroups']),
+            'allowedUsers' => implode(',',$request['allowedUsers']),
+            'moderators' => implode(',',$request['moderators']),
+          ), array(
+            'roomId' => $room['roomId'],
+          )
+        )) {
+          $roomId = $room['roomId'];
+        }
+        else {
+          $errStr = 'unknown';
+          $errDesc = 'Room created failed for unknown reasons.';
+
+          $roomId = 0;
+        }
+      }
+      else {
+        die('Internal Logic Error');
+      }
+
+
+      if ((int) $roomId) {
+        // Clear Existing Permissions
+        $database->delete("{$sqlPrefix}roomPermissions", array(
+          'roomId' => $roomId,
+        ));
+
+        foreach ($request['allowedUsers'] AS &$allowedUser) {
+          if (in_array($allowedUser, $request['moderators'])) { // Don't process as an allowed user if the user is to be a modederator as well.
+            unset($allowedUser);
+          }
+          else {
+            $database->insert("{$sqlPrefix}roomPermissions", array(
+                'roomId' => $roomId,
+                'attribute' => 'user',
+                'param' => $allowedUser,
+                'permissions' => 7,
+              ), array(
+                'permissions' => 7,
+              )
+            );
+          }
+        }
+
+        foreach ($request['allowedGroups'] AS &$allowedGroup) {
+          $database->insert("{$sqlPrefix}roomPermissions", array(
+              'roomId' => $roomId,
+              'attribute' => 'group',
+              'param' => $allowedGroup,
+              'permissions' => 7,
+            ), array(
+              'permissions' => 7,
+            )
+          );
+        }
+
+        foreach ($request['moderators'] AS &$moderator) {
+          $database->insert("{$sqlPrefix}roomPermissions", array(
+              'roomId' => $roomId,
+              'attribute' => 'user',
+              'param' => $moderator,
+              'permissions' => 15,
+            ), array(
+              'permissions' => 15,
+            )
+          );
+        }
+      }
     }
   }
   break;

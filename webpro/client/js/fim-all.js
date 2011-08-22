@@ -2763,21 +2763,23 @@ popup = {
                 dia.full({
                   content : 'The room has been created at the following URL:<br /><br /><form action="' + currentLocation + '#room=' + createRoomId + '" method="post"><input type="text" style="width: 300px;" value="' + currentLocation + '#room=' + createRoomId + '" name="url" /></form>',
                   title : 'Room Created!',
-                  id : 'createRoomResultDialogue',
+                  id : 'editRoomResultsDialogue',
                   width : 600,
                   buttons : {
                     Open : function() {
+                      $('#editRoomResultsDialogue').dialog('close');
                       standard.changeRoom(createRoomId);
 
                       return false;
                     },
                     Okay : function() {
-                      $('#createRoomResultsDialogue').dialog('close');
+                      $('#editRoomResultsDialogue').dialog('close');
 
                       return false;
                     }
                   }
                 });
+
                 $("#editRoomDialogue").dialog('close');
               }
             }); // Send the form data via AJAX.
