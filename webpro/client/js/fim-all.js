@@ -254,30 +254,6 @@ function messageFormat(json, format) {
     flag = mjson.flags;
 
   switch (flag) {
-/*    case 'me':
-    text = text.replace(/^\/me/,'');
-
-    if (settings.disableFormatting) {
-      text = '<span style="padding: 10px;">* ' + userName + ' ' + text + '</span>';
-    }
-    else {
-      text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' ' + text + '</span>';
-    }
-    break;
-
-    case 'topic':
-    text = text.replace(/^\/me/,'');
-
-    $('#topic').html(text);
-
-    if (settings.disableFormatting) {
-      text = '<span style="padding: 10px;">* ' + userName + ' ' + text + '</span>';
-    }
-    else {
-      text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' ' + text + '</span>';
-    }
-    break;*/
-
     case 'image':
     if (settings.disableImage) {
       text = '<a href="' + text + '" target="_BLANK">[Image]</a>';
@@ -337,7 +313,31 @@ function messageFormat(json, format) {
     break;
 
     case '':
-    text = text.replace(/((http|https|ftp|data|gopher|sftp|ssh):(\/\/|)(.+?\.|)([a-zA-Z\-]+)\.(aero|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|xxx)((\/)([^ \n\<\>\"]*)([^\?\.\! \n])|))(?!\")(?!\])/,'<a href="$1">$1</a>');
+    text = text.replace(regexs.image,'<img src="$1" alt="$1">');
+    text = text.replace(regexs.url,'<a href="$1">$1</a>');
+
+    if (/^\/me/.test(text)) {
+      text = text.replace(/^\/me/,'');
+
+      if (settings.disableFormatting) {
+        text = '<span style="padding: 10px;">* ' + userName + ' ' + text + '</span>';
+      }
+      else {
+        text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' ' + text + '</span>';
+      }
+    }
+    else if (/^\/topic/.test(text)) {
+      text = text.replace(/^\/topic/,'');
+
+      $('#topic').html(text);
+
+      if (settings.disableFormatting) {
+        text = '<span style="padding: 10px;">* ' + userName + ' ' + text + '</span>';
+      }
+      else {
+        text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' changed the topic to "' + text + '".</span>';
+      }
+    }
 
     if (!settings.disableFormatting) {
       style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + fontIdRef[styleFontface] + ';';
@@ -582,7 +582,7 @@ var adminPermissions = {
 
 
 /* Settings
-* These Are Set Based on Cookies */
+ * These Are Set Based on Cookies */
 var settings = {
   disableFormatting : (settingsBitfield & 16 ? true : false),
   disableImage : (settingsBitfield & 32 ? true : false),
@@ -594,6 +594,55 @@ var settings = {
   webkitNotifications : (settingsBitfield & 32768 ? true : false),
   disableRightClick : (settingsBitfield & 65536 ? true : false)
 };
+
+/* Regexes */
+var regexs = {
+  url : new RegExp("(" +
+    "(http|https|ftp|data|gopher|sftp|ssh)" + // List of acceptable protocols. (so far: "http")
+    ":" + // Colon! (so far: "http:")
+    "(\/\/|)" + // "//" is optional; this allows for it or nothing. (so far: "http://")
+    "([^\ ]+?\.|)" + // Anything up to a period (minus forbidden symbols), but optional. (so far: "http://www.")
+    "([a-zA-Z\-]+)" + // Alphabetic up to the next period. (so far: "http://www.google")
+    "\." + // The period! (so far: "http://www.google.")
+    "(aero|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|xxx)" + // The list of non-government TLDs. (so far: "http://www.google.com")
+    "(" +
+      ":" + // Colon for the port.
+      "([0-9]+)" + // Numeric port.
+      "|" + // This is all optional^
+    ")" +
+    "(" +
+      "(\/)" + // The slash! (so far: "http://www.google.com/")
+      "([^\ \n\<\>\"]*)" + // Almost anything, except spaces, new lines, <s, >s, or quotes
+      "([^\?\.\,\!\(\) \n])" + // Do not include periods, question marks, exclamation marks, parens, commas, or new lines at the very end (we assume its part of the sentence).
+      "|" + // This is all optional^
+    ")" +
+  ")" +
+  "(?!\")" + // Comma's should not proceed.
+  "(?![\]\>])"), // Nor the BBCode or HTML symbols.
+
+  image : new RegExp("(" +
+    "(http|https|ftp|data|gopher|sftp|ssh)" + // List of acceptable protocols. (so far: "http")
+    ":" + // Colon! (so far: "http:")
+    "(\/\/|)" + // "//" is optional; this allows for it or nothing. (so far: "http://")
+    "([^\ ]+?\.|)" + // Anything up to a period (minus forbidden symbols), but optional. (so far: "http://www.")
+    "([a-zA-Z\-]+)" + // Alphabetic up to the next period. (so far: "http://www.google")
+    "\." + // The period! (so far: "http://www.google.")
+    "(aero|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|xxx)" + // The list of non-government TLDs. (so far: "http://www.google.com")
+    "(" +
+      ":" + // Colon for the port.
+      "([0-9]+)" + // Numeric port.
+      "|" + // This is all optional^
+    ")" +
+    "(" +
+      "(\/)" + // The slash! (so far: "http://www.google.com/")
+      "([^\ \n\<\>\"]*)" + // Almost anything, except spaces, new lines, <s, >s, or quotes
+      "\." + // Extension
+      "(png|jpg|jpeg|gif|ico|bmp|svg|svgz)" + // List of images.
+    ")" +
+  ")" +
+  "(?!\")" + // Comma's should not proceed.
+  "(?![\]\>])"), // Nor the BBCode or HTML symbols.
+}
 
 
 

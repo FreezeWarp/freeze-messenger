@@ -718,8 +718,11 @@ if (is_array($request['rooms'])) {
         if (is_array($messages)) {
           if (count($messages) > 0) {
             foreach ($messages AS $id => $message) {
-              $message = fim_decrypt($message, 'text');
+              $roomData = $database->getRoom($message['roomId']);
 
+              $message = fim_decrypt($message, 'text');
+              $messageParse = new messageParse($message['text'], $message['flag'], $user, $roomData);
+              $message['text'] = $messageParse->getHtml();
 
               switch ($request['encode']) {
                 case 'plaintext':

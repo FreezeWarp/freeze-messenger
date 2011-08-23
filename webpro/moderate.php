@@ -59,7 +59,7 @@ echo '<!DOCTYPE HTML>
   <![endif]-->
 
   <!-- START Styles -->
-  <link rel="stylesheet" type="text/css" href="./client/css/start/jquery-ui-1.8.13.custom.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="./client/css/start/jquery-ui-1.8.16.custom.css" media="screen" />
   <link rel="stylesheet" type="text/css" href="./client/css/start/fim.css" media="screen" />
   <link rel="stylesheet" type="text/css" href="./client/css/stylesv2.css" media="screen" />
 
@@ -98,9 +98,9 @@ echo '<!DOCTYPE HTML>
 
 
   <!-- START Scripts -->
-  <script src="./client/js/jquery-1.6.1.min.js" type="text/javascript"></script>
+  <script src="./client/js/jquery-1.6.2.min.js" type="text/javascript"></script>
 
-  <script src="./client/js/jquery-ui-1.8.13.custom.min.js" type="text/javascript"></script>
+  <script src="./client/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
   <script src="./client/js/jquery.plugins.js" type="text/javascript"></script>
 
 

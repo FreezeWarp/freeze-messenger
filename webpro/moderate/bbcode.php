@@ -66,7 +66,7 @@ else {
           $bbcode[$item] = str_replace(array('<', '>'), array(' <', '> '), nl2br(htmlentities($bbcode[$item])));
         }
 
-        $rows .= "<tr><td>$bbcode[bbcodeName]</td><td>$bbcode[searchRegex]</td><td>$bbcode[replacement]</td><td align=\"center\"><a href=\"./moderate.php?do=bbcode&do2=edit&bbcodeId=$bbcode[bbcodeId]\"><img src=\"./images/document-edit.png\" /></td></tr>";
+        $rows .= "<tr><td>$bbcode[bbcodeName]</td><td>$bbcode[searchRegex]</td><td>$bbcode[replacement]</td><td align=\"center\"><a href=\"./moderate.php?do=bbcode&do2=edit&bbcodeId=$bbcode[bbcodeId]\"><img src=\"./images/document-edit.png\" /></a><a href=\"./moderate.php?do=bbcode&do2=delete&bbcodeId=$bbcode[bbcodeId]\"><img src=\"./images/document-close.png\" /></a></td></tr>";
       }
 
       echo container('BBCodes<a href="./moderate.php?do=bbcode&do2=edit"><img src="./images/document-new.png" style="float: right;" /></a>','<table class="page rowHover" border="1">

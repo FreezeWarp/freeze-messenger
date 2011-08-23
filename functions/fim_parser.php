@@ -228,7 +228,7 @@ class messageParse {
 
     $searchText2 = implode('|', $searchText);
 
-    $text = preg_replace("/(?<!(\[noparse\]))(?<!(quot))(?<!(gt))(?<!(lt))(?<!(apos))(?<!(amp))($searchText2)(?!\[\/noparse\])/ie","'<img src=\"$forumUrlS' . indexValue(\$smilies2,strtolower('\\7')) . '\" alt=\"\\7\" />'", $text);
+    $text = preg_replace("/(?<!(\[noparse\]))(?<!(quot))(?<!(gt))(?<!(lt))(?<!(apos))(?<!(amp))($searchText2)(?!\[\/noparse\])/ie","'{$forumUrlS}' . indexValue(\$smilies2,strtolower('\\7'))", $text);
 
     return $text;
   }
@@ -357,14 +357,14 @@ class messageParse {
     // Supported flags: image, video, link, email
     // Other flags that won't be parsed here: me, topic
     if (in_array($this->messageFlag, array('image', 'video', 'link', 'email', 'youtube', 'html', 'audio', 'text'))) {
-      return $messageText;
+      return $this->messageText;
     }
     else {
       return nl2br( // Converts \n characters to HTML <br />s.
         $this->emotiParse( // Converts emoticons (e.g. ":D", ":P", "o.O") to HTML <img /> tags based on database-stored conversions.
           $this->htmlWrap( // Forces a space to be placed every 80 non-breaking characters, in order to prevent HTML stretching.
             $this->htmlParse( // Parses database-stored BBCode (e.g. "[b]Hello[/b]") to their HTML equivilents (e.g. "<b>Hello</b>").
-              $this->censorParse($messageText, $this->roomData['roomId'], $this->roomData['options']) // Censors text based on database-stored filters, which may be activated or deactivted by the room itself.
+                $this->censorParse($this->messageText, $this->roomData['roomId'], $this->roomData['options']) // Censors text based on database-stored filters, which may be activated or deactivted by the room itself.
             ), 80, ' '
           )
         )
