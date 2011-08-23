@@ -226,7 +226,11 @@ if ($continue) {
     ($hook = hook('sendMessage_send') ? eval($hook) : '');
 
     if ($continue) {
-      fim_sendMessage($request['message'], $user, $room, $request['flag']);
+      list($messageData, $messageDataEncrypted) = fim_sendMessage($request['message'], $user, $room, $request['flag']);
+
+      $messageId = $database->storeMessage($user, $room, $messageData, $messageDataEncrypted, $flag);
+
+      fim3parse_keyWords($messageData['rawText'], $messageId, $roomData['roomId']); // Add message to archive search store.
     }
   }
 }

@@ -387,7 +387,7 @@ function fim3parse_keyWords($string, $messageId, $roomId) {
 * @author Joseph Todd Parsons <josephtparsons@gmail.com>
 */
 
-function fim_sendMessage($messageText, $userData, $roomData, $flag = '') {
+function fim_parseMessage($messageText, $userData, $roomData, $flag = '') {
   global $sqlPrefix, $parseFlags, $salts, $encrypt, $loginMethod, $sqlUserGroupTableCols, $sqlUserGroupTable, $database;
 
 
@@ -439,14 +439,6 @@ function fim_sendMessage($messageText, $userData, $roomData, $flag = '') {
     $messageDataEncrypted['saltNum'] = 0; // Same as with the IV, salt keys of "0" are ignored.
   }
 
-
-
-  // Add the data to the datastore.
-  $messageId = $database->storeMessage($userData, $roomData, $messageData, $messageDataEncrypted, $flag);
-
-
-
-  // Add message to archive search store.
-  fim3parse_keyWords($messageData['rawText'], $messageId, $roomData['roomId']);
+  return array($messageData, $messageDataEncrypted);
 }
 ?>

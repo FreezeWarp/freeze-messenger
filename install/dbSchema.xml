@@ -231,11 +231,12 @@
       <column name="newText" type="int" maxlen="6" comment="The new raw text of the message." />
       <column name="time" type="string" maxlen="5000" comment="The time of the change." />
       <column name="ip" type="string" maxlen="5000" comment="The IP of the user during the change." />
-      <column name="salt" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
+      <column name="salt1" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
+      <column name="salt2" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
       <column name="iv1" type="string" maxlen="15" comment="The base64-encoded IV used for encryption." />
       <column name="iv2" type="string" maxlen="15" comment="The base64-encoded IV used for encryption." />
 
-      <key name="messageId" type="primary" />
+      <key name="messageId,time" type="primary" />
     </table>
 
 
