@@ -24,41 +24,6 @@
       <column name="searchRegex" value="/\[(u)\](.+?)\[\/(u)\]/is" />
       <column name="replacement" value="&lt;span style=&quot;text-decoration: underline;&quot;&gt;$2&lt;/span&gt;" />
     </table>
-    <table name="bbcode">
-      <column name="bbcodeName" value="Link" />
-      <column name="searchRegex" value="/\[url\](\[^&quot;&lt;&gt;\]*?)\[\/url\]/is" />
-      <column name="replacement" value="&lt;a href=&quot;$1&quot; target=&quot;_BLANK&quot;&gt;$1&lt;/a&gt;" />
-    </table>
-    <table name="bbcode">
-      <column name="bbcodeName" value="Email" />
-      <column name="searchRegex" value="/\[email\](.*?)\[\/email\]/is" />
-      <column name="replacement" value="&lt;a href=&quot;mailto:$1&quot;&gt;$1&lt;/a&gt;" />
-    </table>
-    <table name="bbcode">
-      <column name="bbcodeName" value="Colour" />
-      <column name="searchRegex" value="/\[(color|colour)=(&quot;|)(.*?)(&quot;|)\](.*?)\[\/(color|colour)\]/is" />
-      <column name="replacement" value="&lt;span style=&quot;color: $3;&quot;&gt;$5&lt;/span&gt;" />
-    </table>
-    <table name="bbcode">
-      <column name="bbcodeName" value="Highlight" />
-      <column name="searchRegex" value="/\[(hl|highlight|bg|background)=(&quot;|)(.*?)(&quot;|)\](.*?)\[\/(hl|highlight|bg|background)\]/is" />
-      <column name="replacement" value="&lt;span style=&quot;background-color: $3;&quot;&gt;$5&lt;/span&gt;" />
-    </table>
-    <table name="bbcode">
-      <column name="bbcodeName" value="Image" />
-      <column name="searchRegex" value="/\[img\](.*?)\[\/img\]/is" />
-      <column name="replacement" value="&lt;a href=&quot;$1&quot; target=&quot;_BLANK&quot;&gt;&lt;img src=&quot;$1&quot; alt=&quot;image&quot; class=&quot;embedImage&quot; /&gt;&lt;/a&gt;" />
-    </table>
-    <table name="bbcode">
-      <column name="bbcodeName" value="Image (with Alternate Text)" />
-      <column name="searchRegex" value=" /\[img=(&quot;|)(.*?)(&quot;|)\](.*?)\[\/img\]/is" />
-      <column name="replacement" value="&lt;a href=&quot;$4&quot; target=&quot;_BLANK&quot;&gt;&lt;img src=&quot;$4&quot; alt=&quot;$2&quot; class=&quot;embedImage&quot; /&gt;&lt;/a&gt;" />
-    </table>
-    <table name="bbcode">
-      <column name="bbcodeName" value="Youtube Embed" />
-      <column name="searchRegex" value="/\[youtube\](.*?)\[\/youtube\]/is" />
-      <column name="replacement" value="&lt;object width=&quot;420&quot; height=&quot;255&quot; wmode=&quot;transparent&quot;&gt;&lt;param name=&quot;movie&quot; value=&quot;http://www.youtube.com/v/$1=en&amp;amp;fs=1&amp;amp;rel=0&amp;amp;border=0&quot;&gt;&lt;/param&gt;&lt;param name=&quot;allowFullScreen&quot; value=&quot;true&quot;&gt;&lt;/param&gt;&lt;embed src=&quot;http://www.youtube.com/v/$1&amp;amp;hl=en&amp;amp;fs=1&amp;amp;rel=0&amp;amp;border=0&quot; type=&quot;application/x-shockwave-flash&quot; allowfullscreen=&quot;true&quot; width=&quot;420&quot; height=&quot;255&quot; wmode=&quot;opaque&quot;&gt;&lt;/embed&gt;&lt;/object&gt;" />
-    </table>
 
 
     <!-- Table censorBlackWhiteLists -->
@@ -179,6 +144,11 @@
       <column name="data" value="Ubuntu, FreeSans, Tahoma, sans-serif" />
       <column name="category" value="sans-serif" />
     </table>
+    <table name="fonts"><!-- God I hate this font... -->
+      <column name="fontName" value="Comic Sans MS" />
+      <column name="data" value="'Comic Sans MS', cursive" />
+      <column name="category" value="cursive" />
+    </table>
     <table name="fonts">
       <column name="fontName" value="Liberation Sans" />
       <column name="data" value="Liberation Sans, sans-serif" />
@@ -208,11 +178,6 @@
       <column name="fontName" value="Rockwell Extra Bold" />
       <column name="data" value="'Rockwell Extra Bold', fantasy" />
       <column name="category" value="fantasy" />
-    </table>
-    <table name="fonts"><!-- God I hate this font... -->
-      <column name="fontName" value="Comic Sans MS" />
-      <column name="data" value="'Comic Sans MS', cursive" />
-      <column name="category" value="cursive" />
     </table>
 
 
