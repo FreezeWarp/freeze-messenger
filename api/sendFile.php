@@ -303,7 +303,7 @@ elseif ($contine) {
               if ($request['roomId']) {
                 $room = $slaveDatabase->getRoom($request['roomId']);
 
-                fim_sendMessage($webLocation,$user,$room,'image');
+                fim_sendMessage($webLocation, 'image', $user, $room);
               }
             }
             else {
@@ -365,7 +365,7 @@ elseif ($contine) {
                   if ($request['roomId']) {
                     $room = $slaveDatabase->getRoom($request['roomId']);
 
-                    fim_sendMessage($webLocation, $user, $room, $container);
+                    fim_sendMessage($webLocation, $container, $user, $room);
                   }
                 }
               }

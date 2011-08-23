@@ -218,10 +218,6 @@ if ($continue) {
     fclose($fp);
   }*/
   else {
-    if (strpos($request['message'], '/me') === 0) {
-      $request['flag'] = 'me';
-    }
-
     ($hook = hook('sendMessage_send') ? eval($hook) : '');
 
     if ($continue) {
