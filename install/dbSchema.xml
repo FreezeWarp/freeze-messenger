@@ -222,8 +222,8 @@
     </table>
 
     <table name="messageEditHistory" type="general" comment="A history of editted messages.">
-      <column name="messageId" type="int" maxlen="15" autoincrement="true" comment="The unique ID of the message." />
-      <column name="userId" type="int" maxlen="15" autoincrement="true" comment="The user who editted the message." />
+      <column name="messageId" type="int" maxlen="15" comment="The unique ID of the message." />
+      <column name="userId" type="int" maxlen="15" comment="The user who editted the message." />
       <column name="oldText" type="int" maxlen="8" comment="The old raw text of the message." />
       <column name="newText" type="int" maxlen="6" comment="The new raw text of the message." />
       <column name="time" type="string" maxlen="5000" comment="The time of the change." />

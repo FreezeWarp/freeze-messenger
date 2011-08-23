@@ -254,7 +254,7 @@ function messageFormat(json, format) {
     flag = mjson.flags;
 
   switch (flag) {
-    case 'me':
+/*    case 'me':
     text = text.replace(/^\/me/,'');
 
     if (settings.disableFormatting) {
@@ -276,7 +276,7 @@ function messageFormat(json, format) {
     else {
       text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' ' + text + '</span>';
     }
-    break;
+    break;*/
 
     case 'image':
     if (settings.disableImage) {
