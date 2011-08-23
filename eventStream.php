@@ -103,8 +103,7 @@ else {
         'defaultFontface' => 'defaultFontface',
         'defaultHighlight' => 'defaultHighlight',
         'defaultFormatting' => 'defaultFormatting',
-        'apiText' => 'apiText',
-        'htmlText' => 'htmlText',
+        'text' => 'text',
       ),
     );
     $queryParts['messagesSelect']['conditions'] = array(
@@ -306,8 +305,7 @@ else {
               'messageTime' => (int) $message['time'],
               'messageTimeFormatted' => fim_date(false,$message['time']),
               'messageText' => array(
-                'apiText' => ($message['apiText']),
-                'htmlText' => ($message['htmlText']),
+                'text' => ($message['text']),
               ),
               'flags' => ($message['flag']),
             ),

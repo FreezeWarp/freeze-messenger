@@ -178,8 +178,7 @@
       <column name="messageId" type="int" maxlen="15" autoincrement="true" comment="The unique ID of the message." />
       <column name="userId" type="int" maxlen="8" comment="The ID of the user who made the message." />
       <column name="roomId" type="int" maxlen="6" comment="The ID of the room the message was made in." />
-      <column name="htmlText" type="string" maxlen="5000" comment="The HTML-formatted text of the message." />
-      <column name="apiText" type="string" maxlen="5000" comment="The API-formatted text of the message." />
+      <column name="text" type="string" maxlen="5000" comment="The text of the message." />
       <column name="salt" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
       <column name="iv" type="string" maxlen="15" comment="The base64-encoded IV used for encryption." />
       <column name="deleted" type="bool" default="0" comment="Whether or not the message has been deleted by an administrator." />
@@ -213,8 +212,7 @@
       <column name="defaultColor" type="string" maxlen="11" comment="The default color of the user's text." />
       <column name="defaultFontface" type="string" maxlen="50" comment="The default fontface of the user's text." />
       <column name="time" type="time" comment="The time the message was made on." />
-      <column name="htmlText" type="string" maxlen="5000" comment="The HTML-formatted text of the message." />
-      <column name="apiText" type="string" maxlen="5000" comment="The API-formatted text of the message." />
+      <column name="text" type="string" maxlen="5000" comment="The HTML-formatted text of the message." />
       <column name="flag" type="string" maxlen="10" comment="The content-type flag set for the message." />
 
       <key name="id" type="primary" />

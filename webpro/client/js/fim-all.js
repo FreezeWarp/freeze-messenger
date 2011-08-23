@@ -235,7 +235,7 @@ function messageFormat(json, format) {
   var mjson = json.messageData,
     ujson = json.userData,
     data,
-    text = mjson.messageText.htmlText,
+    text = mjson.messageText,
     messageTime = mjson.messageTimeFormatted,
     messageId = mjson.messageId,
 

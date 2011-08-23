@@ -137,11 +137,11 @@ elseif ($continue) {
     if (fim_hasPermission($roomData, $user, 'moderate', true)) {
       list($messageDataNew, $messageDataEncrypted) = fim_sendMessage($request['newMssage'], $user, $room, $request['flag']);
 
-// TODO      fim3parse_keyWords($messageData['apiText'], $messageId, $roomData['roomId']); // Add message to archive search store.
+// TODO      fim3parse_keyWords($messageData['text'], $messageId, $roomData['roomId']); // Add message to archive search store.
 
       $database->insert("{$sqlPrefix}messageEditHistory", array(
-        'oldText' => $messageData['apiText'],
-        'newText' => $messageDataEncrypted['apiText'],
+        'oldText' => $messageData['text'],
+        'newText' => $messageDataEncrypted['text'],
         'iv1' => $messageData['iv'],
         'iv2' => $messageDataEncrypted['iv'],
         'salt1' => $messageData['salt'],
@@ -150,8 +150,7 @@ elseif ($continue) {
       ));
 
       $database->update("{$sqlPrefix}messages", array(
-        'htmlText' => $messageDataEncrypted['htmlText'],
-        'apiText' => $messageDataEncrypted['apiText'],
+        'text' => $messageDataEncrypted['text'],
         'salt' => $messageDataEncrypted['saltNum'],
         'iv' => $messageDataEncrypted['iv'],
         'ip' => $_SERVER['REMOTE_ADDR'],
@@ -162,7 +161,7 @@ elseif ($continue) {
 
       $database->modLog('editMessage', $messageData['messageId']);
 
-      $database->createEvent('editedMessage', $user['userId'], $roomData['roomId'], $messageData['messageId'], $messageDataNew['htmlText'], $messageDataNew['apiText'], false); // name, user, room, message, p1, p2, p3
+      $database->createEvent('editedMessage', $user['userId'], $roomData['roomId'], $messageData['messageId'], $messageDataNew['text'], false); // name, user, room, message, p1, p2, p3
 
       $xmlData['editMessage']['response']['success'] = true;
     }

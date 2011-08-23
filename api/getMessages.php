@@ -35,7 +35,6 @@
  * Misc Directives:
  * @param bool [noping=false] - Disables ping; useful for archive viewing.
  * @param bool [longPolling=false] - Whether or noto enablexperimentalongPolling. It will be replaced with "pollMethod=push|poll|longPoll" in version 4 when all three methods will be supported (though will be backwards compatible).
- * @param string [fields=api|html|both] - The message fields tobtain: "api", "html", or "both". The "html" result returns data preformatted using BBcode and other functionality, while the API field is mostly untouched.
  * @param string [encode=plaintext] - Thencoding of messages to be used on retrieval. "plaintext" is the only accepted format currently.
 
  * Extra Data:
@@ -471,7 +470,7 @@ if (is_array($request['rooms'])) {
       }
       else {
         $queryParts['messagesSelect']['columns'] = array(
-          "{$sqlPrefix}messagesCached" => "messageId, roomId, time, flag, userId, userName, userGroup, socialGroups, userFormatStart, userFormatEnd, avatar, defaultColor, defaultFontface, defaultHighlight, defaultFormatting",
+          "{$sqlPrefix}messagesCached" => "messageId, roomId, time, flag, userId, userName, userGroup, socialGroups, userFormatStart, userFormatEnd, avatar, defaultColor, defaultFontface, defaultHighlight, defaultFormatting, text",
         );
         $queryParts['messagesSelect']['conditions'] = array(
           'both' => array(
@@ -642,32 +641,6 @@ if (is_array($request['rooms'])) {
       }
 
 
-      switch ($request['fields']) {
-        case 'both':
-        case 'api,html': // In the future we may introduce more fields that will require using comma-values.
-        case 'html,api': // Same thing.
-        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages" . (!$request['archive'] ? 'Cached' : '')] .= ', apiText';
-        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages" . (!$request['archive'] ? 'Cached' : '')] .= ', htmlText';
-        $decryptArray = array('htmlText', 'apiText');
-        break;
-
-        case 'api':
-        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages" . (!$request['archive'] ? 'Cached' : '')]['apiText'] .= ', apiText';
-        $decryptArray = array('apiText');
-        break;
-
-        case 'html':
-        $queryParts['messagesSelect']['columns']["{$sqlPrefix}messages" . (!$request['archive'] ? 'Cached' : '')]['htmlText'] .= ', htmlText';
-        $decryptArray = array('htmlText');
-        break;
-
-        default:
-        $errStr = 'badFields';
-        $errDesc = 'The given message fields are invalid - recognized values are "api", "html", and "both"';
-        break;
-      }
-
-
 
       /* Make sure the user has permission to view posts from the room
        * TODO: make work with multiple rooms */
@@ -754,8 +727,7 @@ if (is_array($request['rooms'])) {
                 break;
 
                 case 'base64':
-                $message['apiText'] = base64_encode($message['apiText']);
-                $message['htmlText'] = base64_encode($message['htmlText']);
+                $message['text'] = base64_encode($message['text']);
                 break;
               }
 
@@ -766,10 +738,7 @@ if (is_array($request['rooms'])) {
                   'messageId' => (int) $message['messageId'],
                   'messageTime' => (int) $message['time'],
                   'messageTimeFormatted' => fim_date(false,$message['time']),
-                  'messageText' => array(
-                    'apiText' => ($message['apiText']),
-                    'htmlText' => ($message['htmlText']),
-                  ),
+                  'messageText' => $message['text']),
                   'flags' => ($message['flag']),
                 ),
                 'userData' => array(

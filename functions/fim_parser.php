@@ -397,23 +397,21 @@ function fim_parseMessage($messageText, $userData, $roomData, $flag = '') {
   // Other flags that won't be parsed here: me, topic
   if (in_array($flag, array('image', 'video', 'link', 'email', 'youtube', 'html', 'audio', 'text'))) {
     $messageData = array(
-      'apiText' => $messageText,
-      'htmlText' => $messageText,
+      'text' => $messageText,
     );
   }
   else {
     $messageData = array(
-      'htmlText' => nl2br( // Converts \n characters to HTML <br />s.
+      'text' => nl2br( // Converts \n characters to HTML <br />s.
         fimParse_emotiParse( // Converts emoticons (e.g. ":D", ":P", "o.O") to HTML <img /> tags based on database-stored conversions.
           fimParse_htmlWrap( // Forces a space to be placed every 80 non-breaking characters, in order to prevent HTML stretching.
             fimParse_htmlParse( // Parses database-stored BBCode (e.g. "[b]Hello[/b]") to their HTML equivilents (e.g. "<b>Hello</b>").
-              fimParse_censorParse($messageText, $roomData['roomId'], $roomData['options']), // Censors text based on database-stored filters, which may be activated or deactivted by the room itself.
+              $messageText, // Censors text based on database-stored filters, which may be activated or deactivted by the room itself.
               $roomData['options']
             ), 80, ' '
           )
         )
       ),
-      'apiText' => fimParse_censorParse($messageText), // Censors text (see above).
     );
   }
 
@@ -423,8 +421,7 @@ function fim_parseMessage($messageText, $userData, $roomData, $flag = '') {
   if ($salts && $encrypt) { // Only encrypt if we have both set salts and encrypt is enabled.
     list($messageDataEncrypted, $iv, $saltNum) = fim_encrypt( // Encrypt the values and return the new data, IV, and saltNum.
       array(
-        'htmlText' => $messageData['htmlText'],
-        'apiText' => $messageData['apiText'],
+        'text' => $messageData['text']
       )
     );
 
