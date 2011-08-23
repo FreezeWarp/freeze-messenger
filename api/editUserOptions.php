@@ -121,25 +121,13 @@ if ($request['defaultRoomId'] > 0) {
   }
 }
 
-if (count($request['favRooms']) > 0) {
-  $updateArray['favRooms'] = (string) implode(',', $request['favRooms']);
+foreach (array('favRooms', 'watchRooms', 'ignoreList') AS $item) {
+  if (isset($request[$item]) {
+    $updateArray[$item] = (string) implode(',', $request[$item]);
 
-  $xmlData['editUserOptions']['response']['favRooms']['status'] = true;
-  $xmlData['editUserOptions']['response']['favRooms']['newValue'] = (string) implode(',', $favRooms);
-}
-
-if (count($request['watchRooms']) > 0) {
-  $updateArray['watchRooms'] = (string) implode(',', $request['watchRooms']);
-
-  $xmlData['editUserOptions']['response']['watchRooms']['status'] = true;
-  $xmlData['editUserOptions']['response']['watchRooms']['newValue'] = (string) implode(',', $watchRooms);
-}
-
-if (count($request['ignoreList']) > 0) {
-  $updateArray['ignoreList'] = (string) implode(',', $request['ignoreList']);
-
-  $xmlData['editUserOptions']['response']['ignoreList']['status'] = true;
-  $xmlData['editUserOptions']['response']['ignoreList']['newValue'] = (string) implode(',', $ignoreList);
+    $xmlData['editUserOptions']['response']['favRooms']['status'] = true;
+    $xmlData['editUserOptions']['response']['favRooms']['newValue'] =  $updateArray[$item];
+  }
 }
 
 if (isset($request['defaultFormatting'])) {

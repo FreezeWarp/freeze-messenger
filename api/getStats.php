@@ -117,12 +117,10 @@ if (count($request['rooms']) > 0) {
   foreach ($rooms AS $room) {
     ($hook = hook('getStats_eachRoom_start') ? eval($hook) : '');
 
-    if ($hidePostCounts) {
-      if (!fim_hasPermission($room,$user,'view',true)) {
-        ($hook = hook('getStats_noPerm') ? eval($hook) : '');
+    if (!fim_hasPermission($room, $user, 'view', true)) { // Users must be able to view the room to see the respective post counts.
+      ($hook = hook('getStats_noPerm') ? eval($hook) : '');
 
-        continue;
-      }
+      continue;
     }
 
 

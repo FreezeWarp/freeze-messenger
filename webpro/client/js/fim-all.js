@@ -342,18 +342,11 @@ function messageFormat(json, format) {
     if (!settings.disableFormatting) {
       style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + fontIdRef[styleFontface] + ';';
 
-      if (styleGeneral & 256) {
-        style += 'font-weight: bold;';
-      }
-      if (styleGeneral & 512) {
-        style += 'font-style: oblique;';
-      }
-      if (styleGeneral & 1024) {
-        style += 'text-decoration: underline;';
-      }
-      if (styleGeneral & 2048) {
-        style += 'text-decoration: line-through;';
-      }
+      if (styleGeneral & 256) style += 'font-weight: bold;';
+      if (styleGeneral & 512) style += 'font-style: oblique;';
+      if (styleGeneral & 1024) style += 'text-decoration: underline;';
+      if (styleGeneral & 2048) style += 'text-decoration: line-through;';
+      if (styleGeneral & 4096) style += 'text-decoration: overline;';
     }
     break;
   }
@@ -427,13 +420,15 @@ function messagePopup(data) {
 /* URL-Defined Actions
 * TODO */
 
-function hashParse() {
+function hashParse(options) {
   var urlHash = window.location.hash,
     urlHashComponents = urlHash.split('#'),
     page = '', // String
     i = 0,
     componentPieces = [],
-    messageId = 0;
+    messageId = 0,
+    roomIdLocal,
+    messageId;
 
   for (i = 0; i < urlHashComponents.length; i += 1) {
     if (urlHashComponents[i]) {
@@ -444,7 +439,7 @@ function hashParse() {
         break;
 
         case 'room':
-        roomId = componentPieces[1];
+        roomIdLocal = componentPieces[1];
         break;
 
         case 'message':
@@ -464,11 +459,19 @@ function hashParse() {
     };
     break;
 
+    case 'settings':
+    prepopup = function() {
+      popup.userSettings();
+    };
+    break;
+
     default:
-    if (roomId) {
-      if (!requestSettings.firstRequest) {
-        standard.changeRoom(roomId); // We only need to call this if we have already obtained messages.
-      }
+    if (!roomIdLocal && options.defaultRoomId) {
+      roomIdLocal = options.defaultRoomId;
+    }
+
+    if (roomId !== roomIdLocal) {
+      standard.changeRoom(roomIdLocal); // If the room is different than current, change it.
     }
     break;
   }
@@ -592,8 +595,6 @@ var settings = {
   disableRightClick : (settingsBitfield & 65536 ? true : false)
 };
 
-hashParse();
-
 
 
 
@@ -712,10 +713,7 @@ function populate(options) {
         }
 
         $('#roomListLong > li > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li><li>My Rooms<ul>' + roomUlMyHtml + '</ul></li><li>General<ul>' + roomUlHtml + '</ul></li><li>Private<ul>' + roomUlPrivHtml + '</ul></li>');
-
         $('#roomListShort > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li>');
-
-        $('#roomName').html(roomIdRef[roomId].roomName);
 
         console.log('Rooms obtained.');
 
@@ -1201,174 +1199,158 @@ var standard = {
     }
 
 
-    $.when(
-      $.ajax({
-        url: directory + 'validate.php',
-        type: 'POST',
-        data: data + '&apiVersion=3&fim3_format=json',
-        cache: false,
-        timeout: 2500,
-        success: function(json) {
-          active = json.login;
+    $.ajax({
+      url: directory + 'validate.php',
+      type: 'POST',
+      data: data + '&apiVersion=3&fim3_format=json',
+      cache: false,
+      timeout: 2500,
+      success: function(json) {
+        active = json.login;
 
-          var loginFlag = active.loginFlag,
-            loginText = active.loginText,
-            valid = active.valid,
-            userName = active.userData.userName,
-            defaultRoomId = active.defaultRoomId,
-            banned = active.banned;
+        var loginFlag = active.loginFlag,
+          loginText = active.loginText,
+          valid = active.valid,
+          userName = active.userData.userName,
+          defaultRoomId = active.defaultRoomId,
+          banned = active.banned;
 
-          userId = active.userData.userId;
-          anonId = active.anonId;
-          sessionHash = active.sessionHash;
-
-
-
-          $.cookie('webpro_userId', userId, { expires : 14 });
-          $.cookie('webpro_password', options.password, { expires : 14 }); // We will encrypt this in B3 or later -- it wasn't a priority for now.
+        userId = active.userData.userId;
+        anonId = active.anonId;
+        sessionHash = active.sessionHash;
 
 
 
-          /* Update Permissions */
+        $.cookie('webpro_userId', userId, { expires : 14 });
+        $.cookie('webpro_password', options.password, { expires : 14 }); // We will encrypt this in B3 or later -- it wasn't a priority for now.
+
+
+
+        /* Update Permissions */
+
+        userPermissions = {
+          createRoom : active.userPermissions.createRooms,
+          privateRoom : active.userPermissions.privateRooms,
+          general : active.userPermissions.allowed
+        }
+
+        adminPermissions = {
+          modPrivs : active.adminPermissions.modPrivs,
+          modCore : active.adminPermissions.modCore,
+          modUsers : active.adminPermissions.modUsers,
+          modTemplates : active.adminPermissions.modTemplates,
+          modImages : active.adminPermissions.modImages,
+          modCensor : active.adminPermissions.modCensor,
+          modHooks : active.adminPermissions.modHooks
+        }
+
+
+        if (banned) { // The user has been banned, so pretty much nothing will work. In some respects, this really only exists for IP bans, but meh.
+          dia.error('You have been banned. You will not be able to do anything.');
 
           userPermissions = {
-            createRoom : active.userPermissions.createRooms,
-            privateRoom : active.userPermissions.privateRooms,
-            general : active.userPermissions.allowed
+            createRoom : false,
+            privateRoom : false,
+            general : false
           }
 
           adminPermissions = {
-            modPrivs : active.adminPermissions.modPrivs,
-            modCore : active.adminPermissions.modCore,
-            modUsers : active.adminPermissions.modUsers,
-            modTemplates : active.adminPermissions.modTemplates,
-            modImages : active.adminPermissions.modImages,
-            modCensor : active.adminPermissions.modCensor,
-            modHooks : active.adminPermissions.modHooks
+            modPrivs : false,
+            modCore : false,
+            modUsers : false,
+            modTemplates : false,
+            modImages : false,
+            modCensor : false,
+            modHooks : false
           }
-
-
-          if (banned) { // The user has been banned, so pretty much nothing will work. In some respects, this really only exists for IP bans, but meh.
-            dia.error('You have been banned. You will not be able to do anything.');
-
-            userPermissions = {
-              createRoom : false,
-              privateRoom : false,
-              general : false
+        }
+        else if (valid === true) {
+          if (options.showMessage) {
+            // Display Dialog to Notify User of Being Logged In
+            if (!userPermissions.general) {
+              dia.info('You are now logged in as ' + userName + '. However, you are not allowed to post and have been banned by an administrator.', 'Logged In');
             }
-
-            adminPermissions = {
-              modPrivs : false,
-              modCore : false,
-              modUsers : false,
-              modTemplates : false,
-              modImages : false,
-              modCensor : false,
-              modHooks : false
-            }
-          }
-          else if (valid === true) {
-            if (options.showMessage) {
-              // Display Dialog to Notify User of Being Logged In
-              if (!userPermissions.general) {
-                dia.info('You are now logged in as ' + userName + '. However, you are not allowed to post and have been banned by an administrator.', 'Logged In');
-              }
-              else {
-                dia.info('You are now logged in as ' + userName + '.', 'Logged In');
-              }
-            }
-
-            $('#loginDialogue').dialog('close'); // Close any open login forms.
-
-            console.log('Login valid. Session hash: ' + sessionHash + '; User ID: ' + userId);
-          }
-          else {
-            switch (loginFlag) {
-              case 'INVALID_LOGIN':
-              dia.error("The server did not accept the login, but did not specify why.")
-              break;
-
-              case 'PASSWORD_ENCRYPT':
-              dia.error("The form encryption used was not accepted by the server.");
-              break;
-
-              case 'BAD_USERNAME':
-              dia.error("A valid user was not provided.");
-              break;
-
-              case 'BAD_PASSWORD':
-              dia.error("The password was incorrect.");
-              break;
-
-              case 'API_VERSION_STRING':
-              dia.error("The server was unable to process the API version string specified.");
-              break;
-
-              case 'DEPRECATED_VERSION':
-              dia.error("The server will not accept this client because it is of a newer version.");
-              break;
-
-              case 'INVALID_SESSION':
-              sessionHash = '';
-              break;
-
-              default:
-              break;
-            }
-
-            console.log('Login Invalid');
-          }
-
-
-          if (!roomId) {
-            if (!defaultRoomId) {
-              roomId = 1;
-            }
-
             else {
-              roomId = defaultRoomId;
+              dia.info('You are now logged in as ' + userName + '.', 'Logged In');
             }
           }
 
+          $('#loginDialogue').dialog('close'); // Close any open login forms.
 
-          if (!anonId && !userId) {
-            $('#messageInput').attr("disabled","disabled"); // The user is not able to post.
+          console.log('Login valid. Session hash: ' + sessionHash + '; User ID: ' + userId);
+        }
+        else {
+          switch (loginFlag) {
+            case 'INVALID_LOGIN':
+            //dia.error("The server did not accept the login, but did not specify why.")
+            break;
+
+            case 'PASSWORD_ENCRYPT':
+            dia.error("The form encryption used was not accepted by the server.");
+            break;
+
+            case 'BAD_USERNAME':
+            dia.error("A valid user was not provided.");
+            break;
+
+            case 'BAD_PASSWORD':
+            dia.error("The password was incorrect.");
+            break;
+
+            case 'API_VERSION_STRING':
+            dia.error("The server was unable to process the API version string specified.");
+            break;
+
+            case 'DEPRECATED_VERSION':
+            dia.error("The server will not accept this client because it is of a newer version.");
+            break;
+
+            case 'INVALID_SESSION':
+            sessionHash = '';
+            break;
+
+            default:
+            break;
           }
 
-
-          return false;
-        },
-        error: function(err,err2,err3) {
-          dia.error("The login request could not be sent. Please try again.<br /><br />" + err3 + "<br /><br />" + directory + "validate.php<br /><br />" + data + '&apiVersion=3');
-
-          return false;
+          console.log('Login Invalid');
         }
-      })
-    ).always(function() {
-      if (options.finish) {
-        options.finish();
+
+
+        if (!anonId && !userId) {
+          $('#messageInput').attr("disabled","disabled"); // The user is not able to post.
+        }
+
+        if (options.finish) {
+          options.finish();
+        }
+
+        populate({
+          callback : function() {
+            contextMenuParseRoom();
+            windowDynaLinks();
+
+            /* Select Room */
+            if (!roomId) {
+              hashParse({defaultRoomId : defaultRoomId}); // When a user logs in, the hash data (such as room and archive) is processed, and subsequently executed.
+            }
+
+            return false;
+          }
+        });
+
+        console.log('Login Finished');
+
+
+        return false;
+      },
+      error: function(err,err2,err3) {
+        dia.error("The login request could not be sent. Please try again.<br /><br />" + err3 + "<br /><br />" + directory + "validate.php<br /><br />" + data + '&apiVersion=3');
+
+        return false;
       }
-
-      populate({
-        callback : function() {
-          contextMenuParseRoom();
-          windowDynaLinks();
-
-          /* Select Room */
-          standard.changeRoom(roomId);
-
-          return false;
-        }
-      });
-
-      console.log('Login Finished');
-
-      return false;
     });
-
-    return false;
   },
-
 
   logout : function() {
     $.cookie('webpro_userId', null);
@@ -1742,35 +1724,81 @@ var standard = {
   },
 
 
-  changeRoom : function(roomLocalId) {
-    console.log('Changing Room: ' + roomLocalId + '; Detected Name: ' + roomIdRef[roomLocalId].roomName);
-
-    roomId = roomLocalId;
-    $('#roomName').html(roomIdRef[roomId].roomName);
-    $('#messageList').html('');
-
-    windowDraw();
-    windowDynaLinks();
-
-
-    /*** Get Messages ***/
-
-    $(document).ready(function() {
-      requestSettings.firstRequest = true;
-      requestSettings.lastMessage = 0;
-      messageIndex = [];
-
-      // If getMessages is called before the document is loaded, and we are using server-sent events or longpolling, then WebKit browsers will go beserk. It's an annoying bug, and the setTimeout merely serves as an inconsistent hack, but meh.
-      timers.t1 = setTimeout(standard.getMessages, 500);
-
+  changeRoom : function(roomIdLocal) {
+    if (!roomIdLocal) {
       return false;
-    });
+    }
 
-    return false;
+    $.ajax({
+      url: directory + 'api/getRooms.php?rooms=' + roomIdLocal + 'permLevel=view&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+      timeout: 5000,
+      type: 'GET',
+      cache: false,
+      success: function(json) {
+        active = json.getRooms.rooms;
+
+        for (i in active) {
+          var roomName = active[i].roomName,
+            roomId2 = active[i].roomId,
+            roomTopic = active[i].roomTopic,
+            permissions = active[i].permissions;
+
+          if (!permissions.canView) {
+            roomId = false;
+
+            popup.selectRoom();
+
+            dia.error('You have been restricted access from this room. Please select a new room.');
+          }
+          else if (!permissions.canPost) {
+            alert('You are not allowed to post in this room. You will be able to view it, though.');
+
+            $('#messageInput').attr('disabled','disabled');
+            $('#icon_url').button({ disabled : true });
+            $('#icon_submit').button({ disabled : true });
+            $('#icon_reset').button({ disabled : true });
+          }
+          else {
+            $('#messageInput').removeAttr('disabled');
+            $('#icon_url').button({ disabled : false });
+            $('#icon_submit').button({ disabled : false });
+            $('#icon_reset').button({ disabled : false });
+          }
+
+          if (permissions.canView) {
+            roomId = roomId2;
+
+            $('#roomName').html(roomName);
+            $('#topic').html(roomTopic);
+            $('#messageList').html('');
+
+
+            /*** Get Messages ***/
+            $(document).ready(function() {
+              requestSettings.firstRequest = true;
+              requestSettings.lastMessage = 0;
+              messageIndex = [];
+
+              standard.getMessages();
+
+              windowDraw();
+              windowDynaLinks();
+            });
+          }
+
+          break;
+        }
+      },
+      error: function() {
+        alert('Could not fetch room data.');
+
+        return false;
+      }
+    });
   },
 
 
-  deleteRoom : function(roomLocalId) {
+  deleteRoom : function(roomIdLocal) {
     $.post(directory + 'api/editRoom.php', 'action=delete&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
       var errStr = json.editRoom.errStr,
         errDesc = json.editRoom.errDesc;
@@ -1793,16 +1821,16 @@ var standard = {
     }); // Send the form data via AJAX.
   },
 
-  favRoom : function(roomLocalId) {
-    $.post(directory + 'api/moderate.php', 'action=favRoom&roomId=' + roomLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
+  favRoom : function(roomIdLocal) {
+    $.post(directory + 'api/moderate.php', 'action=favRoom&roomId=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
       return false;
     });
 
     return false;
   },
 
-  unfavRoom : function(roomLocalId) {
-    $.post(directory + 'api/moderate.php', 'action=unfavRoom&roomId=' + roomLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
+  unfavRoom : function(roomIdLocal) {
+    $.post(directory + 'api/moderate.php', 'action=unfavRoom&roomId=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
       return false;
     });
 

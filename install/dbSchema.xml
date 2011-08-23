@@ -461,6 +461,12 @@
       <def bit="1">Enabled</def>
     </bitfield>
 
+    <bitfield name="options" table="rooms">
+      <def bit="1">Official</def>
+      <def bit="4">Deleted</def>
+      <def bit="16">Private</def>
+    </bitfield>
+
     <bitfield name="defaultPermissions" table="rooms">
       <def bit="1">Can View</def>
       <def bit="2">Can Post</def>
@@ -482,6 +488,14 @@
     <bitfield name="options" table="users">
       <def bit="512">Block Private Contact</def>
       <def bit="1024">Mature (Unimplemented)</def>
+    </bitfield>
+
+    <bitfield name="options" table="defaultPermissions">
+      <def bit="256">Bold</def>
+      <def bit="512">Italics</def>
+      <def bit="1024">Underline</def>
+      <def bit="2048">Strike-Through</def>
+      <def bit="4096">Overline</def>
     </bitfield>
   </definitions>
 </dbSchema>

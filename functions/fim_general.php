@@ -115,6 +115,9 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
   $isPrivateRoom = false;
   $kick = false;
 
+
+  $isAllowedUserOverride = false;
+
   $reason = ''; // Create an empty string for the reason.
   $type = (array) $type; // Type cast the type as an array.
 
@@ -167,29 +170,20 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
 
 
     /* Is the User an Allowed User? */
-    if (isset($permissionsCache[$roomData['roomId']],$permissionsCache[$roomData['roomId']]['user'],$permissionsCache[$roomData['roomId']]['user'][$userData['userId']])) {
-      if ($permissionsCache[$roomData['roomId']]['user'][$userData['userId']] & $permMap[$type2]) {
-        $isAllowedUser = true;
+    foreach(array('user', 'admingroup', 'group') AS $type3) {
+      if (isset($permissionsCache[$roomData['roomId']], $permissionsCache[$roomData['roomId']][$type3], $permissionsCache[$roomData['roomId']][$type3][$userData['userId']])) {
+        if ($permissionsCache[$roomData['roomId']][$type3][$userData['userId']] & $permMap[$type2]) {
+          $isAllowedUser = true;
+        }
+        else { // If a group is granted access but a user is forbidden, the user status is considered final. Likewise, if a social group is granted access but an admin group is restircted, the admin group is considered final.
+          $isAllowedUserOverride = true;
+
+          break;
+        }
       }
     }
-    else {
-      if ($roomData['defaultPermissions'] & $permMap[$type2]) {
-        $isAllowedUser = true;
-      }
-    }
-
-
-    /* Is the User Part of an Allowed Group? */
-    if (isset($permissionsCache[$roomData['roomId']],$permissionsCache[$roomData['roomId']]['group'],$permissionsCache[$roomData['roomId']]['group'][$userData['userId']])) {
-      if ($permissionsCache[$roomData['roomId']]['group'][$userData['userId']] & $permMap[$type2]) {
-        $isAllowedGroup = true;
-      }
-    }
-
-    if (isset($permissionsCache[$roomData['roomId']],$permissionsCache[$roomData['roomId']]['admingroup'],$permissionsCache[$roomData['roomId']]['admingroup'][$userData['userId']])) {
-      if ($permissionsCache[$roomData['roomId']]['admingroup'][$userData['userId']] & $permMap[$type2]) {
-        $isAllowedGroup = true;
-      }
+    if (($roomData['defaultPermissions'] & $permMap[$type2]) && !$isAllowedUserOverride) {
+      $isAllowedUser = true;
     }
 
 
@@ -1468,9 +1462,9 @@ function fim_sanitizeGPC($data) {
           elseif (isset($indexMetaData['default'])) { // If the value has a default and is not specified...
             $activeGlobal[$indexName] = $indexMetaData['default']; // Set the value to the default.
           }
-          else {
-            $activeGlobal[$indexName] = false;
-          }
+//          else {
+//            $activeGlobal[$indexName] = false;
+//          }
         }
 
         switch($indexMetaData['context']['cast']) {

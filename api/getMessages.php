@@ -671,7 +671,7 @@ if (is_array($request['rooms'])) {
 
       /* Make sure the user has permission to view posts from the room
        * TODO: make work with multiple rooms */
-      $permission = fim_hasPermission($room,$user,'view',false);
+      $permission = fim_hasPermission($room, $user, 'view', false);
 
       if (!$permission[0]) { // No Permission
 
