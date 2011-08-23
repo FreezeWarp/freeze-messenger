@@ -397,14 +397,12 @@ function fim_parseMessage($messageText, $userData, $roomData, $flag = '') {
   // Other flags that won't be parsed here: me, topic
   if (in_array($flag, array('image', 'video', 'link', 'email', 'youtube', 'html', 'audio', 'text'))) {
     $messageData = array(
-      'rawText' => $messageText,
       'apiText' => $messageText,
       'htmlText' => $messageText,
     );
   }
   else {
     $messageData = array(
-      'rawText' => $messageText, // Parses the sources for MySQL.
       'htmlText' => nl2br( // Converts \n characters to HTML <br />s.
         fimParse_emotiParse( // Converts emoticons (e.g. ":D", ":P", "o.O") to HTML <img /> tags based on database-stored conversions.
           fimParse_htmlWrap( // Forces a space to be placed every 80 non-breaking characters, in order to prevent HTML stretching.
@@ -424,9 +422,9 @@ function fim_parseMessage($messageText, $userData, $roomData, $flag = '') {
   // Encrypt Message Data
   if ($salts && $encrypt) { // Only encrypt if we have both set salts and encrypt is enabled.
     list($messageDataEncrypted, $iv, $saltNum) = fim_encrypt( // Encrypt the values and return the new data, IV, and saltNum.
-      array('rawText' => $messageData['rawText'],
-            'htmlText' => $messageData['htmlText'],
-            'apiText' => $messageData['apiText'],
+      array(
+        'htmlText' => $messageData['htmlText'],
+        'apiText' => $messageData['apiText'],
       )
     );
 

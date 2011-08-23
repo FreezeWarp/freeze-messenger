@@ -230,7 +230,7 @@ if ($continue) {
 
       $messageId = $database->storeMessage($user, $room, $messageData, $messageDataEncrypted, $flag);
 
-      fim3parse_keyWords($messageData['rawText'], $messageId, $roomData['roomId']); // Add message to archive search store.
+      fim3parse_keyWords($messageData['apiText'], $messageId, $roomData['roomId']); // Add message to archive search store.
     }
   }
 }

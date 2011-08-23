@@ -137,11 +137,11 @@ elseif ($continue) {
     if (fim_hasPermission($roomData, $user, 'moderate', true)) {
       list($messageDataNew, $messageDataEncrypted) = fim_sendMessage($request['newMssage'], $user, $room, $request['flag']);
 
-// TODO      fim3parse_keyWords($messageData['rawText'], $messageId, $roomData['roomId']); // Add message to archive search store.
+// TODO      fim3parse_keyWords($messageData['apiText'], $messageId, $roomData['roomId']); // Add message to archive search store.
 
       $database->insert("{$sqlPrefix}messageEditHistory", array(
-        'oldText' => $messageData['rawText'],
-        'newText' => $messageDataEncrypted['rawText'],
+        'oldText' => $messageData['apiText'],
+        'newText' => $messageDataEncrypted['apiText'],
         'iv1' => $messageData['iv'],
         'iv2' => $messageDataEncrypted['iv'],
         'salt1' => $messageData['salt'],
@@ -150,7 +150,6 @@ elseif ($continue) {
       ));
 
       $database->update("{$sqlPrefix}messages", array(
-        'rawText' => $messageDataEncrypted['rawText'],
         'htmlText' => $messageDataEncrypted['htmlText'],
         'apiText' => $messageDataEncrypted['apiText'],
         'salt' => $messageDataEncrypted['saltNum'],

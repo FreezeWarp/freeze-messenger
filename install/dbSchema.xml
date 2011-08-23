@@ -178,7 +178,6 @@
       <column name="messageId" type="int" maxlen="15" autoincrement="true" comment="The unique ID of the message." />
       <column name="userId" type="int" maxlen="8" comment="The ID of the user who made the message." />
       <column name="roomId" type="int" maxlen="6" comment="The ID of the room the message was made in." />
-      <column name="rawText" type="string" maxlen="5000" comment="The raw (uncensored, unformatted) text of the message." />
       <column name="htmlText" type="string" maxlen="5000" comment="The HTML-formatted text of the message." />
       <column name="apiText" type="string" maxlen="5000" comment="The API-formatted text of the message." />
       <column name="salt" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />

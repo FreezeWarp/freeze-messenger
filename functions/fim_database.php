@@ -284,7 +284,7 @@ class fimDatabase extends database {
     global $sqlPrefix, $config, $user;
 
     $queryParts['messageSelect']['columns'] = array(
-      "{$sqlPrefix}messages" => 'messageId, roomId, iv, salt, htmlText, apiText, rawText, deleted',
+      "{$sqlPrefix}messages" => 'messageId, roomId, iv, salt, htmlText, apiText, deleted',
     );
 
     if ($messageId) {
@@ -663,7 +663,6 @@ class fimDatabase extends database {
       $this->insert("{$sqlPrefix}messages", array(
         'roomId' => (int) $roomData['roomId'],
         'userId' => (int) $userData['userId'],
-        'rawText' => $messageDataEncrypted['rawText'],
         'htmlText' => $messageDataEncrypted['htmlText'],
         'apiText' => $messageDataEncrypted['apiText'],
         'salt' => $messageDataEncrypted['saltNum'],

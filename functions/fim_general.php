@@ -364,7 +364,7 @@ function fim_urldecode($str) {
  * @return array
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
-function fim_decrypt($message, $index = array('apiText', 'htmlText', 'rawText')) {
+function fim_decrypt($message, $index = array('apiText', 'htmlText')) {
   global $salts, $config;
 
   if (isset($message['salt'], $message['iv'])) { // Make sure the proper indexes exist (just in case).
