@@ -59,8 +59,8 @@ echo '<!DOCTYPE HTML>
   <![endif]-->
 
   <!-- START Styles -->
-  <link rel="stylesheet" type="text/css" href="./client/css/cupertino/jquery-ui-1.8.13.custom.css" media="screen" />
-  <link rel="stylesheet" type="text/css" href="./client/css/cupertino/fim.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="./client/css/start/jquery-ui-1.8.13.custom.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="./client/css/start/fim.css" media="screen" />
   <link rel="stylesheet" type="text/css" href="./client/css/stylesv2.css" media="screen" />
 
   <link rel="stylesheet" type="text/css" href="./client/codemirror/lib/codemirror.css">

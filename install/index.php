@@ -23,8 +23,8 @@ switch ($_REQUEST['phase']) {
   <![endif]-->
 
   <!-- START Styles -->
-  <link rel="stylesheet" type="text/css" href="../webpro/client/css/cupertino/jquery-ui-1.8.13.custom.css" media="screen" />
-  <link rel="stylesheet" type="text/css" href="../webpro/client/css/cupertino/fim.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="../webpro/client/css/start/jquery-ui-1.8.13.custom.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="../webpro/client/css/start/fim.css" media="screen" />
   <link rel="stylesheet" type="text/css" href="../webpro/client/css/stylesv2.css" media="screen" />
   <!-- END Styles -->
 

@@ -127,7 +127,7 @@ var roomRef = {}, // Object
 var theme = $.cookie('webpro_theme');
 
 if (!theme) {
-  theme = 'cupertino';
+  theme = 'start';
 }
 
 // Font Size (goes into effect in document.ready)

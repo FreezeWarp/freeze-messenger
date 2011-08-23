@@ -140,6 +140,11 @@ elseif ((int) $config['anonymousUserId'] >= 1 && isset($_REQUEST['apiLogin'])) {
   $api = true;
 }
 
+elseif (isset($_REQUEST['apiLogin'])) {
+  $userId = false;
+  $api = true;
+}
+
 elseif (isset($hookLogin)) {
   if (is_array($hookLogin)) {
     if (count($hookLogin) > 0) {
