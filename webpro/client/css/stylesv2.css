@@ -41,6 +41,7 @@ body {
 #menu {
   float: left;
   width: 25%;
+  padding: 4px;
 }
 #menu div, #menu ul {
   width: 100%;
@@ -118,6 +119,10 @@ body {
 
 
 /***** Other Crap *****/
+
+#chatContainer {
+  padding: 5px;
+}
 
 .leftPart {
   float: left;

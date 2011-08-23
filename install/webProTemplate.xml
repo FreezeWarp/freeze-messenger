@@ -199,6 +199,7 @@
 &lt;option value="trontastic"&gt;$phrases[settingsThemeTrontastic]&lt;/option&gt;
 &lt;option value="humanity"&gt;$phrases[settingsThemeHumanity]&lt;/option&gt;
 &lt;option value="memetically-pink"&gt;$phrases[settingsThemeMemeticallyPink]&lt;/option&gt;
+&lt;option value="high-contrast"&gt;$phrases[settingsThemeHighContrast]&lt;/option&gt;
 &lt;/select&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsThemeBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
 

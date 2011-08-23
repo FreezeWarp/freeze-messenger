@@ -224,6 +224,20 @@
       <key name="time" type="index" />
     </table>
 
+    <table name="messageEditHistory" type="general" comment="A history of editted messages.">
+      <column name="messageId" type="int" maxlen="15" autoincrement="true" comment="The unique ID of the message." />
+      <column name="userId" type="int" maxlen="15" autoincrement="true" comment="The user who editted the message." />
+      <column name="oldText" type="int" maxlen="8" comment="The old raw text of the message." />
+      <column name="newText" type="int" maxlen="6" comment="The new raw text of the message." />
+      <column name="time" type="string" maxlen="5000" comment="The time of the change." />
+      <column name="ip" type="string" maxlen="5000" comment="The IP of the user during the change." />
+      <column name="salt" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
+      <column name="iv1" type="string" maxlen="15" comment="The base64-encoded IV used for encryption." />
+      <column name="iv2" type="string" maxlen="15" comment="The base64-encoded IV used for encryption." />
+
+      <key name="messageId" type="primary" />
+    </table>
+
 
     <table name="modlog" type="general" comment="A log of moderator actions.">
       <column name="id" type="int" maxlen="12" autoincrement="true" comment="A unique ID for the log entry." />
@@ -465,6 +479,7 @@
       <def bit="1">Official</def>
       <def bit="4">Deleted</def>
       <def bit="16">Private</def>
+      <def bit="64">Off-The-Record</def>
     </bitfield>
 
     <bitfield name="defaultPermissions" table="rooms">

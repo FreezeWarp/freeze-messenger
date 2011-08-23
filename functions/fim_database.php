@@ -658,20 +658,62 @@ class fimDatabase extends database {
   public function storeMessage($userData, $roomData, $messageDataPlain, $messageDataEncrypted, $flag) {
     global $sqlPrefix, $config, $user, $permissionsCache;
 
-    // Insert into permenant datastore.
-    $this->insert("{$sqlPrefix}messages", array(
-      'roomId' => (int) $roomData['roomId'],
-      'userId' => (int) $userData['userId'],
-      'rawText' => $messageDataEncrypted['rawText'],
-      'htmlText' => $messageDataEncrypted['htmlText'],
-      'apiText' => $messageDataEncrypted['apiText'],
-      'salt' => $messageDataEncrypted['saltNum'],
-      'iv' => $messageDataEncrypted['iv'],
-      'ip' => $_SERVER['REMOTE_ADDR'],
-      'flag' => $flag,
-      'time' => $this->now(),
-    ));
-    $messageId = $this->insertId;
+    if ($roomData['options'] ^ 64) { // Off the record communication - messages are stored only in the cache.
+      // Insert into permenant datastore.
+      $this->insert("{$sqlPrefix}messages", array(
+        'roomId' => (int) $roomData['roomId'],
+        'userId' => (int) $userData['userId'],
+        'rawText' => $messageDataEncrypted['rawText'],
+        'htmlText' => $messageDataEncrypted['htmlText'],
+        'apiText' => $messageDataEncrypted['apiText'],
+        'salt' => $messageDataEncrypted['saltNum'],
+        'iv' => $messageDataEncrypted['iv'],
+        'ip' => $_SERVER['REMOTE_ADDR'],
+        'flag' => $flag,
+        'time' => $this->now(),
+      ));
+      $messageId = $this->insertId;
+
+      // Update room caches.
+      $this->update("{$sqlPrefix}rooms", array(
+        'lastMessageTime' => $this->now(),
+        'lastMessageId' => $messageId,
+        'messageCount' => array(
+          'type' => 'equation',
+          'value' => '$messageCount + 1',
+        )
+      ), array(
+        'roomId' => $roomData['roomId'],
+      ));
+
+
+      // Update user caches
+      $this->update("{$sqlPrefix}users", array(
+        'messageCount' => array(
+          'type' => 'equation',
+          'value' => '$messageCount + 1',
+        )
+      ), array(
+        'userId' => $userData['userId'],
+      ));
+
+
+      // Insert or update a user's room stats.
+      $this->insert("{$sqlPrefix}roomStats", array(
+        'userId' => $userData['userId'],
+        'roomId' => $roomData['roomId'],
+        'messages' => 1
+      ), array(
+        'messages' => array(
+          'type' => 'equation',
+          'value' => '$messages + 1',
+        )
+      ));
+
+
+      // Increment the messages counter.
+      $this->incrementCounter('messages');
+    }
 
 
    // Insert into cache/memory datastore.
@@ -706,47 +748,6 @@ class fimDatabase extends database {
         )
       ));
     }
-
-
-    // Update room caches.
-    $this->update("{$sqlPrefix}rooms", array(
-      'lastMessageTime' => $this->now(),
-      'lastMessageId' => $messageId,
-      'messageCount' => array(
-        'type' => 'equation',
-        'value' => '$messageCount + 1',
-      )
-    ), array(
-      'roomId' => $roomData['roomId'],
-    ));
-
-
-    // Update user caches
-    $this->update("{$sqlPrefix}users", array(
-      'messageCount' => array(
-        'type' => 'equation',
-        'value' => '$messageCount + 1',
-      )
-    ), array(
-      'userId' => $userData['userId'],
-    ));
-
-
-    // Insert or update a user's room stats.
-    $this->insert("{$sqlPrefix}roomStats", array(
-      'userId' => $userData['userId'],
-      'roomId' => $roomData['roomId'],
-      'messages' => 1
-    ), array(
-      'messages' => array(
-        'type' => 'equation',
-        'value' => '$messages + 1',
-      )
-    ));
-
-
-    // Increment the messages counter.
-    $this->incrementCounter('messages');
 
 
     // If the contact is a private communication, create an event and add to the message unread table.

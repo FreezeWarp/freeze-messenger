@@ -3203,7 +3203,7 @@ function windowDraw() {
       });
 
       $(this).removeClass('ui-dialog-draggable');
-      $(this).parent().draggable("destroy").resizable("destroy")
+      $(this).parent().draggable("destroy").resizable("destroy");
     }
   });
 
@@ -3871,7 +3871,7 @@ function windowResize() {
   var windowHeight = $(window).height(); // Get the browser window "viewport" height, excluding scrollbars.
 
 
-  $('#messageList').css('height', (windowHeight - 220)); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
+  $('#messageList').css('height', (windowHeight - 250)); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
   $('#messageList').css('max-width', ((windowWidth - 10) * .75)); // Prevent box-stretching. This is common on... many chats.
 
 
@@ -3880,10 +3880,10 @@ function windowResize() {
     * "Enter Message" Table Padding: 10px
     *** TD Padding: 2px (on Standard Styling)
     * Message Input Text Area Padding: 3px */
-  $('#messageInput').css('width', (((windowWidth - 10) * .75) - 10 - 2)); // Set the messageInput box to fill width.
+  $('#messageInput').css('width', (((windowWidth - 10) * .75) - 20 - 2)); // Set the messageInput box to fill width.
 
 
-  $('body').css('height', windowHeight); // Set the body height to equal that of the window; this fixes many gradient issues in theming.
+  $('body').css('min-height', windowHeight); // Set the body height to equal that of the window; this fixes many gradient issues in theming.
 }
 
 function windowBlur() {

@@ -26,6 +26,18 @@ switch ($_REQUEST['phase']) {
   <link rel="stylesheet" type="text/css" href="../webpro/client/css/start/jquery-ui-1.8.13.custom.css" media="screen" />
   <link rel="stylesheet" type="text/css" href="../webpro/client/css/start/fim.css" media="screen" />
   <link rel="stylesheet" type="text/css" href="../webpro/client/css/stylesv2.css" media="screen" />
+  <style>
+  h1 {
+    margin: 0px;
+  }
+
+  .main {
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+  }
+  </style>
   <!-- END Styles -->
 
   <!-- START Scripts -->
@@ -55,11 +67,11 @@ switch ($_REQUEST['phase']) {
   </style>
   <!-- END Scripts -->
 </head>
-<body>
+<body class="ui-widget">
 
-<div id="part1">
-  <h1>FreezeMessenger Installation: Introduction</h1><hr class="ui-widget-header" />
-
+<div id="part1" class="main">
+  <h1 class="ui-widget-header">FreezeMessenger Installation: Introduction</h1>
+  <div class="ui-widget-content">
   Thank you for downloading FreezeMessenger! FreezeMessenger is a new, easy-to-use, and highly powerful messenger backend (with included frontend) intended for sites which want an easy yet powerful means to allow users to quickly communicate with each other. Unlike other solutions, FreezeMessenger has numerous benefits:<br />
 
   <ul>
@@ -92,15 +104,18 @@ switch ($_REQUEST['phase']) {
 
   If the MySQLi Extension is not present, you can still use FreezeMessenger, but will need to install it manually.<br /><br />
 
-  <form onsubmit="return false;">
-    <button style="float: right;" type="button" onclick="$(\'#part1\').slideUp(); $(\'#part2\').slideDown(); windowDraw();">Start &rarr;</button>
-  </form>
+  <div style="height: 30px;">
+    <form onsubmit="return false;">
+      <button style="float: right;" type="button" onclick="$(\'#part1\').slideUp(); $(\'#part2\').slideDown(); windowDraw();">Start &rarr;</button>
+    </form>
+  </div>
+  </div>
 </div>
 
 
-<div id="part2" style="display: none;">
-  <h1>FreezeMessenger Installation: MySQL Setup</h1><hr class="ui-widget-header" />
-
+<div id="part2" style="display: none;" class="main">
+  <h1 class="ui-widget-header">FreezeMessenger Installation: MySQL Setup</h1>
+  <div class="ui-widget-content">
   First things first, please enter your MySQL connection details below, as well as a database (we can try to create the database ourselves, as well). If you are unable to proceed, try contacting your web host, or anyone who has helped you set up other things like this before.<br /><br />
   <form onsubmit="return false;" name="db_connect_form" id="db_connect_form">
     <table border="1" class="page">
@@ -151,14 +166,19 @@ switch ($_REQUEST['phase']) {
     </table>
   </form><br /><br />
 
-  <form onsubmit="return false;">
-    <button style="float: left;" type="button" onclick="$(\'#part2\').slideUp(); $(\'#part1\').slideDown(); windowDraw();">&larr; Back</button>
-    <button style="float: right;" type="button" onclick="dia.full({ title : \'Installing\', content : \'<div style=&quot;text-align: center;&quot;>Installing now. Please wait a few moments. <img src=&quot;../webpro/images/ajax-loader.gif&quot; /></div>\', id : \'installingDia\'}); $.get(\'index.php?phase=1\',$(\'#db_connect_form\').serialize(),function(data) { $(\'#installingDia\').remove(); if (data == \'success\') { $(\'#part2\').slideUp(); $(\'#part3\').slideDown(); } else { dia.error(data); } } ); windowDraw();">Setup &rarr;</button>
-  </form>
+
+  <div style="height: 30px;">
+    <form onsubmit="return false;">
+      <button style="float: left;" type="button" onclick="$(\'#part2\').slideUp(); $(\'#part1\').slideDown(); windowDraw();">&larr; Back</button>
+      <button style="float: right;" type="button" onclick="dia.full({ title : \'Installing\', content : \'<div style=&quot;text-align: center;&quot;>Installing now. Please wait a few moments. <img src=&quot;../webpro/images/ajax-loader.gif&quot; /></div>\', id : \'installingDia\'}); $.get(\'index.php?phase=1\',$(\'#db_connect_form\').serialize(),function(data) { $(\'#installingDia\').remove(); if (data == \'success\') { $(\'#part2\').slideUp(); $(\'#part3\').slideDown(); } else { dia.error(data); } } ); windowDraw();">Setup &rarr;</button>
+    </form>
+  </div>
+  </div>
 </div>
 
-<div id="part3" style="display: none;">
-  <h1>FreezeMessenger Installation: Generate Configuration File</h1><hr class="ui-widget-header" />
+<div id="part3" style="display: none;" class="main">
+  <h1 class="ui-widget-header">FreezeMessenger Installation: Generate Configuration File</h1>
+  <div class="ui-widget-content">
   Now that the database has been successfully installed, we must generate the configuration file. You can do this in a couple of ways: we would recommend simply entering the data below and you\'ll be on your way, though you can also do it manually by getting config.base.php from the install/ directory and saving it as config.php in the main directory.<br /><br />
 
   <form onsubmit="return false;" name="config_form" id="config_form">
@@ -199,16 +219,19 @@ switch ($_REQUEST['phase']) {
     </table><br /><br />
   </form>
 
-  <form onsubmit="return false;">
-    <button style="float: left;" type="button" onclick="$(\'#part3\').slideUp(); $(\'#part2\').slideDown(); windowDraw();">&larr; Back</button>
-    <button style="float: right;" type="button" onclick="$.get(\'index.php?phase=2\',$(\'#db_connect_form\').serialize() + \'&\' + $(\'#config_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part3\').slideUp(); $(\'#part4\').slideDown(); } else { alert(\'Could not create configuration file. Is the server allowed to write to it?\'); } } ); windowDraw();">Finish &rarr;</button>
-  </form>
+  <div style="height: 30px;">
+    <form onsubmit="return false;">
+      <button style="float: left;" type="button" onclick="$(\'#part3\').slideUp(); $(\'#part2\').slideDown(); windowDraw();">&larr; Back</button>
+      <button style="float: right;" type="button" onclick="$.get(\'index.php?phase=2\',$(\'#db_connect_form\').serialize() + \'&\' + $(\'#config_form\').serialize(),function(data) { if (data == \'success\') { $(\'#part3\').slideUp(); $(\'#part4\').slideDown(); } else { alert(\'Could not create configuration file. Is the server allowed to write to it?\'); } } ); windowDraw();">Finish &rarr;</button>
+    </form>
+  </div>
+  </div>
 </div>
 
 
-<div id="part4" style="display: none;">
-  <h1>Freezemessenger Installation: All Done!</h1><hr class="ui-widget-header" />
-
+<div id="part4" style="display: none;" class="main">
+  <h1 class="ui-widget-header">Freezemessenger Installation: All Done!</h1>
+  <div class="ui-widget-content">
   FreezeMessenger Installation is now complete. You\'re free to go wander (once you delete the install/ directory), though to put you in the right direction:<br />
   <ul>
     <li><a href="../">Start Chatting</a></li>
@@ -218,6 +241,7 @@ switch ($_REQUEST['phase']) {
     <li><a href="http://www.josephtparsons.com/">Go to The Creator\'s Website</a></li>
     <li><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=YL7K2CY59P9S6&lc=US&item_name=FreezeMessenger%20Development&item_number=freezemessenger&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted">Help Development with Some Money (The Whole Package is Free, but We Work More with Money!)</a></li>
   </ul>
+  </div>
 </div>
 
 </body>
