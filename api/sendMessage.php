@@ -30,7 +30,6 @@
 $apiRequest = true;
 
 require('../global.php');
-require('../functions/fim_parser.php');
 
 
 
@@ -226,11 +225,7 @@ if ($continue) {
     ($hook = hook('sendMessage_send') ? eval($hook) : '');
 
     if ($continue) {
-      list($messageData, $messageDataEncrypted) = fim_sendMessage($request['message'], $user, $room, $request['flag']);
-
-      $messageId = $database->storeMessage($user, $room, $messageData, $messageDataEncrypted, $flag);
-
-      fim3parse_keyWords($messageData['apiText'], $messageId, $roomData['roomId']); // Add message to archive search store.
+      fim_sendMessage($request['message'], $request['flag'], $user, $room);
     }
   }
 }

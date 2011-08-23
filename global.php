@@ -77,6 +77,7 @@ require(dirname(__FILE__) . '/functions/database.php'); // MySQL OOP Library
 require(dirname(__FILE__) . '/functions/fim_database.php'); // FIM-specific Extension to MySQL OOP Library
 require(dirname(__FILE__) . '/functions/fim_cache.php'); // APC Wrapper (may use for alteratives like memcached later)
 require(dirname(__FILE__) . '/functions/fim_general.php'); // Various Functions
+require(dirname(__FILE__) . '/functions/fim_parser.php'); // Message parser
 
 
 

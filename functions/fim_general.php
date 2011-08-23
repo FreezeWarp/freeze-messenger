@@ -1650,4 +1650,22 @@ function fim_flush() {
     ob_fim_flush();
   }
 }
+
+function indexValue($array, $index) {
+  return $array[$index];
+}
+
+function fim_sendMessage($messageText, $messageFlag, $userData, $roomData) {
+  global $database;
+
+  $messageParse = new messageParse($messageText, $messageFlag, $userData, $roomData);
+
+  $messageText = $messageParse->getRaw();
+  list($messageTextEncrypted, $iv, $saltNum) = $messageParse->getEncrypted();
+
+  $messageId = $database->storeMessage($userData, $roomData, $messageText, $messageTextEncrypted, $iv, $saltNum, $messageFlag);
+
+  $keyWords = $messageParse->getKeyWords();
+  $database->storeKeyWords($keyWords, $messageId, $userData['userId'], $roomData['roomId']);
+}
 ?>

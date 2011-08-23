@@ -26,414 +26,400 @@
  * Some notes: The reworked BBCode engine removes all predefined BBcode, and replaces it with a broad anything-goes regex system. It will allow for nearly anything (including advanced hacks), but also means the system will simply not play nice with anything else. As such, a few things to note: smilies and valid links will be parsed solely for the HTML field, directly converted to proper IMG tags; [we're not sure what else yet].
 */
 
-function fimParse_htmlParse($text) {
-  global $user, $loginConfig, $slaveDatabase, $sqlPrefix;
-
-  $search2 = array(
-    '/\[noparse\](.*?)\[\/noparse\]/is',
-  );
-
-  $replace2 = array(
-    '$1',
-  );
-
-  // Parse BB Code
-  $text = preg_replace($search2, $replace2, $text);
-
-  $bbcode = $slaveDatabase->select(
-    array(
-      "{$sqlPrefix}bbcode" => array(
-        'options' => 'options',
-        'searchRegex' => 'searchRegex',
-        'replacement' => 'replacement',
-      ),
-    )
-  );
-  $bbcode = $bbcode->getAsArray(true);
-
-  foreach ($bbcode AS $code) {
-    if ($code['options'] & 1) { // BBcode is enabled
-      $text = preg_replace($code['searchRegex'], $code['replacement'], $text);
-    }
+class messageParse {
+  public function __construct($messageText = false, $messageFlag = false, $userData = false, $roomData = false) {
+    $this->setMessage($messageText, $messageFlag);
+    $this->setUser($userData);
+    $this->setRoom($roomData);
   }
 
-  return $text;
-}
+  public function setMessage($messageText, $messageFlag) {
+    $this->messageText = $messageText;
+    $this->messageFlag = $messageFlag;
+  }
 
+  public function setUser($userData) {
+    $this->userData = $userData;
+  }
 
-
-/**
-* Parses and censors phrases. Requires an active MySQL connection.
-*
-* @param string $text - The text to censor.
-* @param int $roomId - The ID of the room's censors. Uses general censors if not available (thus not using any black/white lists).
-* @return string - Censored text.
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
-
-function fimParse_censorParse($text, $roomId = 0, $roomOptions) {
-  global $sqlPrefix, $slaveDatabase;
-
-  $listIds = $slaveDatabase->getRoomCensorLists($roomId, $roomOptions);
-
-  $words = $slaveDatabase->select(
-    array(
-      "{$sqlPrefix}censorWords" => 'listId, word, severity, param',
-    ),
-    array(
-      'both' => array(
-        array(
-          'type' => 'in',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'listId',
-          ),
-          'right' => array(
-            'type' => 'array',
-            'value' => $listIds,
-          ),
-        ),
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'severity',
-          ),
-          'right' => array(
-            'type' => 'string',
-            'value' => 'replace',
-          ),
-        ),
-      ),
-    )
-  );
-  $words = $words->getAsArray('word');
-
-
-  if (!$words) {
-    return $text;
+  public function setRoom($roomData) {
+    $this->roomData = $roomData;
   }
 
 
-  foreach ($words AS $word) {
-    $words2[strtolower($word['word'])] = $word['param'];
-    $searchText[] = addcslashes(strtolower($word['word']),'^&|!$?()[]<>\\/.+*');
-  }
-  $searchText2 = implode('|', $searchText);
 
+  public function htmlParse($text) {
+    global $user, $loginConfig, $slaveDatabase, $sqlPrefix;
 
-  return preg_replace("/(?<!(\[noparse\]))(?<!(\quot))($searchText2)(?!\[\/noparse\])/ie","indexValue(\$words2,strtolower('\\3'))", $text);
-}
+    $search2 = array(
+      '/\[noparse\](.*?)\[\/noparse\]/is',
+    );
 
+    $replace2 = array(
+      '$1',
+    );
 
+    // Parse BB Code
+    $text = preg_replace($search2, $replace2, $text);
 
-/**
-* Parsers database-stored smilies.
-*
-* @param string $text - The text to parse.
-* @return string - Parsed text.
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
-function fimParse_emotiParse($text) {
-  global $room, $forumTablePrefix, $slaveDatabase, $integrationDatabase, $loginConfig;
-
-  switch($loginConfig['method']) {
-    case 'vbulletin3':
-    case 'vbulletin4':
-    $smilies = $integrationDatabase->select(
+    $bbcode = $slaveDatabase->select(
       array(
-        "{$forumTablePrefix}smilie" => array(
-          'smilietext' => 'emoticonText',
-          'smiliepath' => 'emoticonFile',
-        ),
+        "{$sqlPrefix}bbcode" => 'options, searchRegex, replacement',
       )
     );
-    $smilies = $smilies->getAsArray(true);
-    break;
+    $bbcode = $bbcode->getAsArray(true);
 
-    case 'phpbb':
-    $smilies = $integrationDatabase->select(
-      array(
-        "{$forumTablePrefix}smilies" => array(
-          'code' => 'emoticonText',
-          'smiley_url' => 'emoticonFile',
-        ),
-      )
-    );
-    $smilies = $smilies->getAsArray(true);
-    break;
-
-    case 'vanilla':
-    $smilies = $slaveDatabase->select(
-      array(
-        "{$sqlPrefix}emoticons" => array(
-          'emoticonText' => 'emoticonText',
-          'emoticonFile' => 'emoticonFile',
-          'context' => 'context',
-        ),
-      )
-    );
-    $smilies = $smilies->getAsArray(true);
-    break;
-
-    default:
-    $smilies = false;
-    break;
-  }
-
-
-
-  if (!is_array($smilies)) {
-    return $text;
-  }
-  elseif (count($smilies) == 0) {
-    return $text;
-  }
-  else {
-    foreach ($smilies AS $smilie) {
-      $smilies2[strtolower($smilie['emoticonText'])] = $smilie['emoticonFile'];
-      $searchText[] = addcslashes(strtolower($smilie['emoticonText']),'^&|!$?()[]<>\\/.+*');
+    foreach ($bbcode AS $code) {
+      if ($code['options'] & 1) { // BBcode is enabled
+        $text = preg_replace($code['searchRegex'], $code['replacement'], $text);
+      }
     }
 
-    switch ($loginConfig['method']) {
+    return $text;
+  }
+
+
+
+  /**
+  * Parses and censors phrases. Requires an active MySQL connection.
+  *
+  * @param string $text - The text to censor.
+  * @param int $roomId - The ID of the room's censors. Uses general censors if not available (thus not using any black/white lists).
+  * @return string - Censored text.
+  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
+
+  public function censorParse($text, $roomId = 0, $roomOptions) {
+    global $sqlPrefix, $slaveDatabase, $config;
+
+    $listIds = $slaveDatabase->getRoomCensorLists($roomId, $roomOptions);
+
+    $words = $slaveDatabase->select(
+      array(
+        "{$sqlPrefix}censorWords" => 'listId, word, severity, param',
+      ),
+      array(
+        'both' => array(
+          array(
+            'type' => 'in',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'listId',
+            ),
+            'right' => array(
+              'type' => 'array',
+              'value' => $listIds,
+            ),
+          ),
+          array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column',
+              'value' => 'severity',
+            ),
+            'right' => array(
+              'type' => 'string',
+              'value' => 'replace',
+            ),
+          ),
+        ),
+      )
+    );
+    $words = $words->getAsArray('word');
+
+
+    if (!$words) {
+      return $text;
+    }
+
+
+    foreach ($words AS $word) {
+      $words2[strtolower($word['word'])] = $word['param'];
+      $searchText[] = addcslashes(strtolower($word['word']),'^&|!$?()[]<>\\/.+*');
+    }
+    $searchText2 = implode('|', $searchText);
+
+
+    return preg_replace("/(?<!(\[noparse\]))(?<!(\quot))($searchText2)(?!\[\/noparse\])/ie","indexValue(\$words2,strtolower('\\3'))", $text);
+  }
+
+
+
+  /**
+  * Parsers database-stored smilies.
+  *
+  * @param string $text - The text to parse.
+  * @return string - Parsed text.
+  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
+  public function emotiParse($text) {
+    global $room, $forumTablePrefix, $slaveDatabase, $integrationDatabase, $loginConfig;
+
+    switch($loginConfig['method']) {
+      case 'vbulletin3':
+      case 'vbulletin4':
+      $smilies = $integrationDatabase->select(
+        array(
+          "{$forumTablePrefix}smilie" => array(
+            'smilietext' => 'emoticonText',
+            'smiliepath' => 'emoticonFile',
+          ),
+        )
+      );
+      $smilies = $smilies->getAsArray(true);
+      break;
+
       case 'phpbb':
-      $forumUrlS = $loginConfig['url'] . 'images/smilies/';
+      $smilies = $integrationDatabase->select(
+        array(
+          "{$forumTablePrefix}smilies" => array(
+            'code' => 'emoticonText',
+            'smiley_url' => 'emoticonFile',
+          ),
+        )
+      );
+      $smilies = $smilies->getAsArray(true);
       break;
 
       case 'vanilla':
-      case 'vbulletin3':
-      case 'vbulletin4':
-      $forumUrlS = $loginConfig['url'];
+      $smilies = $slaveDatabase->select(
+        array(
+          "{$sqlPrefix}emoticons" => array(
+            'emoticonText' => 'emoticonText',
+            'emoticonFile' => 'emoticonFile',
+            'context' => 'context',
+          ),
+        )
+      );
+      $smilies = $smilies->getAsArray(true);
+      break;
+
+      default:
+      $smilies = false;
       break;
     }
-  }
-
-  $searchText2 = implode('|', $searchText);
-
-  $text = preg_replace("/(?<!(\[noparse\]))(?<!(quot))(?<!(gt))(?<!(lt))(?<!(apos))(?<!(amp))($searchText2)(?!\[\/noparse\])/ie","'<img src=\"$forumUrlS' . indexValue(\$smilies2,strtolower('\\7')) . '\" alt=\"\\7\" />'", $text);
-
-  return $text;
-}
 
 
 
-/**
- * NEEDS DOCUMENTATION
- */
-function indexValue($array, $index) {
-  return $array[$index];
-}
-
-
-
-/**
-* Wraps HTML with specific support for UTF-8 and URLs.
-*
-* @param string $html - HTML text
-* @param integer $maxLength - Length after which to wrap.
-* @param string $chat - String to wrap with.
-* @return string - Formatted data.
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
-
-function fimParse_htmlWrap($html, $maxLength = 80, $char = '<br />') { /* An adaption of a PHP.net commentor function dealing with HTML for BBCode */
-  // Configuration
-  $noparseTags = array('img', 'a');
-
-  // Initialize Variables
-  $count = 0;
-  $newHtml = '';
-  $currentTag = '';
-  $openTag = false;
-  $tagParams = false;
-
-  for ($i = 0; $i < mb_strlen($html, 'UTF-8'); $i++) {
-   $mb = mb_substr($html, $i, 1, 'UTF-8');
-   $noAppend = false;
-
-    if ($mb == '<') { // The character starts a BBcode tag - don't touch nothing.
-      $currentTag = '';
-      $openTag = true;
+    if (!is_array($smilies)) {
+      return $text;
     }
-    elseif ($mb == '/' && $openTag) {
-      $endTag = true;
-    }
-    elseif (($openTag) && ($mb == ' ')) {
-      $tagParams = true;
-    }
-    elseif (($openTag) && (!$endTag) && ($tagParams == false) && ($mb != '>')) {
-      $currentTag .= $mb;
-    }
-    elseif (($openTag) && ($mb == '>')) { // And the BBCode tag is done again - we can touch stuffz.
-      $endTag = false;
-      $openTag = false;
-      $tagParams = false;
+    elseif (count($smilies) == 0) {
+      return $text;
     }
     else {
-      if ($currentTag == 'a' && $count >= ($maxLength - 1)) {
-        $noAppend = true;
-        if (!$elipse) {
-          $newHtml .= '...';
-        }
-        $elipse = true;
+      foreach ($smilies AS $smilie) {
+        $smilies2[strtolower($smilie['emoticonText'])] = $smilie['emoticonFile'];
+        $searchText[] = addcslashes(strtolower($smilie['emoticonText']),'^&|!$?()[]<>\\/.+*');
       }
-      elseif (!$openTag) {
-        if ($mb == ' ' || $mb == "\n") { // The character is a space.
-          $count = 0; // Because the character is a space, we should reset the count back to 0.
-        }
-        else {
-           $count++; // Increment the current count.
 
-           if ($count == $maxLength) { // We've reached the limit; add a break and reset the count back to 0.
-            $newHtml .= $char;
-            $count = 0;
+      switch ($loginConfig['method']) {
+        case 'phpbb':
+        $forumUrlS = $loginConfig['url'] . 'images/smilies/';
+        break;
+
+        case 'vanilla':
+        case 'vbulletin3':
+        case 'vbulletin4':
+        $forumUrlS = $loginConfig['url'];
+        break;
+      }
+    }
+
+    $searchText2 = implode('|', $searchText);
+
+    $text = preg_replace("/(?<!(\[noparse\]))(?<!(quot))(?<!(gt))(?<!(lt))(?<!(apos))(?<!(amp))($searchText2)(?!\[\/noparse\])/ie","'<img src=\"$forumUrlS' . indexValue(\$smilies2,strtolower('\\7')) . '\" alt=\"\\7\" />'", $text);
+
+    return $text;
+  }
+
+
+
+  /**
+  * Wraps HTML with specific support for UTF-8 and URLs.
+  *
+  * @param string $html - HTML text
+  * @param integer $maxLength - Length after which to wrap.
+  * @param string $chat - String to wrap with.
+  * @return string - Formatted data.
+  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
+
+  public function htmlWrap($html, $maxLength = 80, $char = '<br />') { /* An adaption of a PHP.net commentor function dealing with HTML for BBCode */
+    // Configuration
+    $noparseTags = array('img', 'a');
+
+    // Initialize Variables
+    $count = 0;
+    $newHtml = '';
+    $currentTag = '';
+    $openTag = false;
+    $tagParams = false;
+
+    for ($i = 0; $i < mb_strlen($html, 'UTF-8'); $i++) {
+    $mb = mb_substr($html, $i, 1, 'UTF-8');
+    $noAppend = false;
+
+      if ($mb == '<') { // The character starts a BBcode tag - don't touch nothing.
+        $currentTag = '';
+        $openTag = true;
+      }
+      elseif ($mb == '/' && $openTag) {
+        $endTag = true;
+      }
+      elseif (($openTag) && ($mb == ' ')) {
+        $tagParams = true;
+      }
+      elseif (($openTag) && (!$endTag) && ($tagParams == false) && ($mb != '>')) {
+        $currentTag .= $mb;
+      }
+      elseif (($openTag) && ($mb == '>')) { // And the BBCode tag is done again - we can touch stuffz.
+        $endTag = false;
+        $openTag = false;
+        $tagParams = false;
+      }
+      else {
+        if ($currentTag == 'a' && $count >= ($maxLength - 1)) {
+          $noAppend = true;
+          if (!$elipse) {
+            $newHtml .= '...';
+          }
+          $elipse = true;
+        }
+        elseif (!$openTag) {
+          if ($mb == ' ' || $mb == "\n") { // The character is a space.
+            $count = 0; // Because the character is a space, we should reset the count back to 0.
+          }
+          else {
+            $count++; // Increment the current count.
+
+            if ($count == $maxLength) { // We've reached the limit; add a break and reset the count back to 0.
+              $newHtml .= $char;
+              $count = 0;
+            }
           }
         }
       }
-    }
 
-    if (!$noAppend) {
-      $newHtml .= $mb;
-    }
-
-  }
-
-  return $newHtml;
-}
-
-
-
-/**
-* Generates keywords to enter into the archive search store.
-*
-* @param string $text - The text to generate the big keywords from.
-* @return array - The keywords found.
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
-
-function fim3parse_keyWords($string, $messageId, $roomId) {
-  global $config, $sqlPrefix, $database, $user;
-  $puncList = array();
-
-  if (count($config['searchWordPunctuation']) > 0) {
-    foreach ($config['searchWordPunctuation'] AS $punc) {
-      $puncList[] = addcslashes($punc, '"\'|(){}[]<>.,~-?!@#$%^&*/\\'); // Dunno if this is the best approach.
-    }
-
-    $string = preg_replace('/(' . implode('|', $puncList) . ')/is', ' ', $string);
-  }
-
-  while (strpos($string, '  ') !== false) {
-    $string = str_replace('  ', ' ', $string);
-  }
-
-  $string = strtolower($string);
-
-
-  $stringPieces = array_unique(explode(' ', $string));
-  $stringPiecesAdd = array();
-
-  foreach ($stringPieces AS $piece) {
-    if (strlen($piece) >= $config['searchWordMinimum'] && !in_array($piece, $config['searchWordOmissions'])) {
-      $stringPiecesAdd[] = str_replace($config['searchWordConvertsFind'], $config['searchWordConvertsReplace'], $piece);
-    }
-  }
-
-  if (count($stringPiecesAdd) > 0) {
-    sort($stringPiecesAdd);
-
-
-    $phraseData = $database->select(
-      array(
-        "{$sqlPrefix}searchPhrases" => array(
-          'phraseName' => 'phraseName',
-          'phraseId' => 'phraseId',
-        ),
-      )
-    );
-    $phraseData = $phraseData->getAsArray('phraseName');
-
-    foreach ($stringPiecesAdd AS $piece) {
-      if (!isset($phraseData[$piece])) {
-        $database->insert("{$sqlPrefix}searchPhrases", array(
-          'phraseName' => $piece,
-        ));
-        $phraseId = $database->insertId;
-      }
-      else {
-        $phraseId = $phraseData[$piece]['phraseId'];
+      if (!$noAppend) {
+        $newHtml .= $mb;
       }
 
-      $database->insert("{$sqlPrefix}searchMessages", array(
-        'phraseId' => (int) $phraseId,
-        'messageId' => (int) $messageId,
-        'userId' => (int) $user['userId'],
-        'roomId' => (int) $roomId,
-      ));
     }
+
+    return $newHtml;
   }
-}
 
 
-
-/**
-* Sends a message to the database.
-*
-* @param string $messageText - Message to be sent.
-* @param array $user - Array of user, including at least the userId index (ideally also userName, others).
-* @param array $room - Room data, including at least the roomId index.
-* @param string $flag - Message context flag; for instance, email, image, etc..
-* @return void - true on success, false on failure
-* @author Joseph Todd Parsons <josephtparsons@gmail.com>
-*/
-
-function fim_parseMessage($messageText, $userData, $roomData, $flag = '') {
-  global $sqlPrefix, $parseFlags, $salts, $encrypt, $loginMethod, $sqlUserGroupTableCols, $sqlUserGroupTable, $database;
-
-
-
-  // Flags allow for less hassle on some communications.
-  // Supported flags: image, video, link, email
-  // Other flags that won't be parsed here: me, topic
-  if (in_array($flag, array('image', 'video', 'link', 'email', 'youtube', 'html', 'audio', 'text'))) {
-    $messageData = array(
-      'text' => $messageText,
-    );
+  public function getRaw() {
+    return $this->messageText;
   }
-  else {
-    $messageData = array(
-      'text' => nl2br( // Converts \n characters to HTML <br />s.
-        fimParse_emotiParse( // Converts emoticons (e.g. ":D", ":P", "o.O") to HTML <img /> tags based on database-stored conversions.
-          fimParse_htmlWrap( // Forces a space to be placed every 80 non-breaking characters, in order to prevent HTML stretching.
-            fimParse_htmlParse( // Parses database-stored BBCode (e.g. "[b]Hello[/b]") to their HTML equivilents (e.g. "<b>Hello</b>").
-              $messageText, // Censors text based on database-stored filters, which may be activated or deactivted by the room itself.
-              $roomData['options']
+
+
+
+  public function getEncrypted() {
+    global $salts, $encrypt;
+
+    // Encrypt Message Text
+    if ($salts && $encrypt) { // Only encrypt if we have both set salts and encrypt is enabled.
+      list($messageTextEncrypted, $iv, $saltNum) = fim_encrypt( // Encrypt the values and return the new data, IV, and saltNum.
+        $this->messageText
+      );
+    }
+    else { // No encyption
+      $messageTextEncrypted = $this->messageText;
+      $iv = ''; // Use an empty IV - it will be ignored by the decryptor.
+      $saltNum = 0; // Same as with the IV, salt keys of "0" are ignored.
+    }
+
+    return array($messageTextEncrypted, $iv, $saltNum);
+  }
+
+
+
+  /**
+  * Sends a message to the database.
+  *
+  * @param string $messageText - Message to be sent.
+  * @param array $user - Array of user, including at least the userId index (ideally also userName, others).
+  * @param array $room - Room data, including at least the roomId index.
+  * @param string $flag - Message context flag; for instance, email, image, etc..
+  * @return void - true on success, false on failure
+  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
+
+  public function getHtml() {
+    global $sqlPrefix, $parseFlags, $salts, $encrypt, $loginMethod, $sqlUserGroupTableCols, $sqlUserGroupTable, $database;
+
+
+
+    // Flags allow for less hassle on some communications.
+    // Supported flags: image, video, link, email
+    // Other flags that won't be parsed here: me, topic
+    if (in_array($this->messageFlag, array('image', 'video', 'link', 'email', 'youtube', 'html', 'audio', 'text'))) {
+      return $messageText;
+    }
+    else {
+      return nl2br( // Converts \n characters to HTML <br />s.
+        $this->emotiParse( // Converts emoticons (e.g. ":D", ":P", "o.O") to HTML <img /> tags based on database-stored conversions.
+          $this->htmlWrap( // Forces a space to be placed every 80 non-breaking characters, in order to prevent HTML stretching.
+            $this->htmlParse( // Parses database-stored BBCode (e.g. "[b]Hello[/b]") to their HTML equivilents (e.g. "<b>Hello</b>").
+              $this->censorParse($messageText, $this->roomData['roomId'], $this->roomData['options']) // Censors text based on database-stored filters, which may be activated or deactivted by the room itself.
             ), 80, ' '
           )
         )
-      ),
-    );
+      );
+    }
   }
 
 
 
-  // Encrypt Message Data
-  if ($salts && $encrypt) { // Only encrypt if we have both set salts and encrypt is enabled.
-    list($messageDataEncrypted, $iv, $saltNum) = fim_encrypt( // Encrypt the values and return the new data, IV, and saltNum.
-      array(
-        'text' => $messageData['text']
-      )
-    );
 
-    $messageDataEncrypted['iv'] = $iv; // Append the base64-encoded IV to the encrypted message data array.
-    $messageDataEncrypted['saltNum'] = $saltNum; // Append the salt referrence to the encrypted message data array.
-  }
-  else { // No encyption
-    $messageDataEncrypted = $messageData;
-    $messageDataEncrypted['iv'] = ''; // Use an empty IV - it will be ignored by the decryptor.
-    $messageDataEncrypted['saltNum'] = 0; // Same as with the IV, salt keys of "0" are ignored.
-  }
+  /**
+  * Generates keywords to enter into the archive search store.
+  *
+  * @param string $text - The text to generate the big keywords from.
+  * @return array - The keywords found.
+  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
 
-  return array($messageData, $messageDataEncrypted);
+  public function getKeyWords() {
+    global $config, $sqlPrefix, $database, $user;
+    $puncList = array();
+    $string = $this->messageText;
+
+    if (count($config['searchWordPunctuation']) > 0) {
+      foreach ($config['searchWordPunctuation'] AS $punc) {
+        $puncList[] = addcslashes($punc, '"\'|(){}[]<>.,~-?!@#$%^&*/\\'); // Dunno if this is the best approach.
+      }
+
+      $string = preg_replace('/(' . implode('|', $puncList) . ')/is', ' ', $string);
+    }
+
+    while (strpos($string, '  ') !== false) {
+      $string = str_replace('  ', ' ', $string);
+    }
+
+    $string = strtolower($string);
+
+
+    $stringPieces = array_unique(explode(' ', $string));
+    $stringPiecesAdd = array();
+
+    foreach ($stringPieces AS $piece) {
+      if (strlen($piece) >= $config['searchWordMinimum'] && !in_array($piece, $config['searchWordOmissions'])) {
+        $stringPiecesAdd[] = str_replace($config['searchWordConvertsFind'], $config['searchWordConvertsReplace'], $piece);
+      }
+    }
+
+    if (count($stringPiecesAdd) > 0) {
+      sort($stringPiecesAdd);
+
+      return $stringPiecesAdd;
+    }
+    else {
+      return array();
+    }
+  }
 }
 ?>

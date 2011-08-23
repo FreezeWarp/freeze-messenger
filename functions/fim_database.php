@@ -655,7 +655,7 @@ class fimDatabase extends database {
   }
 
 
-  public function storeMessage($userData, $roomData, $messageDataPlain, $messageDataEncrypted, $flag) {
+  public function storeMessage($userData, $roomData, $messageText, $messageTextEncrypted, $encryptIV, $encryptSalt, $flag) {
     global $sqlPrefix, $config, $user, $permissionsCache;
 
     if ($roomData['options'] ^ 64) { // Off the record communication - messages are stored only in the cache.
@@ -663,9 +663,9 @@ class fimDatabase extends database {
       $this->insert("{$sqlPrefix}messages", array(
         'roomId' => (int) $roomData['roomId'],
         'userId' => (int) $userData['userId'],
-        'text' => $messageDataEncrypted['text'],
-        'salt' => $messageDataEncrypted['saltNum'],
-        'iv' => $messageDataEncrypted['iv'],
+        'text' => $messageTextEncrypted,
+        'salt' => $encryptSalt,
+        'iv' => $encryptIV,
         'ip' => $_SERVER['REMOTE_ADDR'],
         'flag' => $flag,
         'time' => $this->now(),
@@ -729,7 +729,7 @@ class fimDatabase extends database {
       'defaultColor' => $userData['defaultColor'],
       'defaultHighlight' => $userData['defaultHighlight'],
       'defaultFontface' => $userData['defaultFontface'],
-      'text' => $messageDataPlain['text'],
+      'text' => $messageText,
       'flag' => $flag,
       'time' => $this->now(),
     ));
@@ -925,6 +925,36 @@ class fimDatabase extends database {
     $privateRoom = $this->select($queryParts['columns'],
       $queryParts['conditions']);
     return $privateRoom->getAsArray(false);
+  }
+
+  public function storeKeyWords($words, $messageId, $userId, $roomId) {
+    global $config, $sqlPrefix;
+
+    $phraseData = $this->select(
+      array(
+        "{$sqlPrefix}searchPhrases" => 'phraseName, phraseId',
+      )
+    );
+    $phraseData = $phraseData->getAsArray('phraseName');
+
+    foreach ($words AS $piece) {
+      if (!isset($phraseData[$piece])) {
+        $this->insert("{$sqlPrefix}searchPhrases", array(
+          'phraseName' => $piece,
+        ));
+        $phraseId = $this->insertId;
+      }
+      else {
+        $phraseId = $phraseData[$piece]['phraseId'];
+      }
+
+      $this->insert("{$sqlPrefix}searchMessages", array(
+        'phraseId' => (int) $phraseId,
+        'messageId' => (int) $messageId,
+        'userId' => (int) $userId,
+        'roomId' => (int) $roomId,
+      ));
+    }
   }
 }
 ?>

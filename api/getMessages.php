@@ -434,7 +434,7 @@ if (is_array($request['rooms'])) {
       /* Date Predefine */
       if ($request['archive']) {
         $queryParts['messagesSelect']['columns'] = array(
-          "{$sqlPrefix}messages" => 'messageId, time, iv, salt, roomId, userId, deleted, flag',
+          "{$sqlPrefix}messages" => 'messageId, time, iv, salt, roomId, userId, deleted, flag, text',
           "{$sqlPrefix}users" => 'userId muserId, userName, userGroup, socialGroups, userFormatStart, userFormatEnd, avatar, defaultColor, defaultFontface, defaultHighlight, defaultFormatting'
         );
 
@@ -718,7 +718,7 @@ if (is_array($request['rooms'])) {
         if (is_array($messages)) {
           if (count($messages) > 0) {
             foreach ($messages AS $id => $message) {
-              $message = fim_decrypt($message, $decryptArray);
+              $message = fim_decrypt($message, 'text');
 
 
               switch ($request['encode']) {
@@ -738,7 +738,7 @@ if (is_array($request['rooms'])) {
                   'messageId' => (int) $message['messageId'],
                   'messageTime' => (int) $message['time'],
                   'messageTimeFormatted' => fim_date(false,$message['time']),
-                  'messageText' => $message['text']),
+                  'messageText' => $message['text'],
                   'flags' => ($message['flag']),
                 ),
                 'userData' => array(

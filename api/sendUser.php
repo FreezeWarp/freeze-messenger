@@ -32,7 +32,6 @@
 $apiRequest = true;
 
 require('../global.php');
-require('../functions/fim_parser.php');
 require('../functions/fim_uac_vanilla.php');
 
 

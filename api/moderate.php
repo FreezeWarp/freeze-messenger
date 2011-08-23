@@ -30,7 +30,6 @@
 $apiRequest = true;
 
 require('../global.php');
-require('../functions/fim_parsers.php');
 
 
 
