@@ -313,8 +313,15 @@ function messageFormat(json, format) {
     break;
 
     case '':
-    text = text.replace(regexs.image,'<img src="$1" alt="$1">');
-    text = text.replace(regexs.url,'<a href="$1">$1</a>');
+    text = text.replace(regexs.url, function($1) {
+      if (text.match(regexs.image)) {
+        return text.replace(regexs.image, '<a href="$1" target="_BLANK"><img src="$1" style="max-width: 250px; max-height: 250px;" /></a>');
+      }
+      else {
+        var newpattern = $1.match(regexs.url2) ? $1.replace(regexs.url2, "$1") : $1;
+        return '<a href="' + newpattern + '" target="_BLANK">' + newpattern + '</a>'
+      }
+    });
 
     if (/^\/me/.test(text)) {
       text = text.replace(/^\/me/,'');
@@ -601,10 +608,13 @@ var regexs = {
     "(http|https|ftp|data|gopher|sftp|ssh)" + // List of acceptable protocols. (so far: "http")
     ":" + // Colon! (so far: "http:")
     "(\/\/|)" + // "//" is optional; this allows for it or nothing. (so far: "http://")
-    "([^\ ]+?\.|)" + // Anything up to a period (minus forbidden symbols), but optional. (so far: "http://www.")
-    "([a-zA-Z\-]+)" + // Alphabetic up to the next period. (so far: "http://www.google")
-    "\." + // The period! (so far: "http://www.google.")
-    "(aero|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|xxx)" + // The list of non-government TLDs. (so far: "http://www.google.com")
+    "(" +
+      "(([^\ \/]+?)\.|)" + // Anything up to a period (minus forbidden symbols), but optional. (so far: "http://www.")
+      "([a-zA-Z0-9\-]+)" + // Alphanumeric up to the next period. (so far: "http://www.google")
+      "\." + // The period! (so far: "http://www.google.")
+      "(aero|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|xxx)" + // The list of non-government TLDs. (so far: "http://www.google.com")
+      "|localhost" + // Largely for dev, support "localhost" too.
+    ")" +
     "(" +
       ":" + // Colon for the port.
       "([0-9]+)" + // Numeric port.
@@ -613,21 +623,23 @@ var regexs = {
     "(" +
       "(\/)" + // The slash! (so far: "http://www.google.com/")
       "([^\ \n\<\>\"]*)" + // Almost anything, except spaces, new lines, <s, >s, or quotes
-      "([^\?\.\,\!\(\) \n])" + // Do not include periods, question marks, exclamation marks, parens, commas, or new lines at the very end (we assume its part of the sentence).
       "|" + // This is all optional^
     ")" +
-  ")" +
-  "(?!\")" + // Comma's should not proceed.
-  "(?![\]\>])"), // Nor the BBCode or HTML symbols.
+  ")"), // Nor the BBCode or HTML symbols.
+
+  url2 : new RegExp("^(.+)[\"\?\!\.]$"),
 
   image : new RegExp("(" +
     "(http|https|ftp|data|gopher|sftp|ssh)" + // List of acceptable protocols. (so far: "http")
     ":" + // Colon! (so far: "http:")
     "(\/\/|)" + // "//" is optional; this allows for it or nothing. (so far: "http://")
-    "([^\ ]+?\.|)" + // Anything up to a period (minus forbidden symbols), but optional. (so far: "http://www.")
-    "([a-zA-Z\-]+)" + // Alphabetic up to the next period. (so far: "http://www.google")
-    "\." + // The period! (so far: "http://www.google.")
-    "(aero|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|xxx)" + // The list of non-government TLDs. (so far: "http://www.google.com")
+    "(" +
+      "(([^\ \/]+?)\.|)" + // Anything up to a period (minus forbidden symbols), but optional. (so far: "http://www.")
+      "([a-zA-Z0-9\-]+)" + // Alphanumeric up to the next period. (so far: "http://www.google")
+      "\." + // The period! (so far: "http://www.google.")
+      "(aero|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|xxx)" + // The list of non-government TLDs. (so far: "http://www.google.com")
+      "|localhost" + // Largely for dev, support "localhost" too.
+    ")" +
     "(" +
       ":" + // Colon for the port.
       "([0-9]+)" + // Numeric port.
@@ -639,9 +651,7 @@ var regexs = {
       "\." + // Extension
       "(png|jpg|jpeg|gif|ico|bmp|svg|svgz)" + // List of images.
     ")" +
-  ")" +
-  "(?!\")" + // Comma's should not proceed.
-  "(?![\]\>])"), // Nor the BBCode or HTML symbols.
+  ")")
 }
 
 
@@ -3425,7 +3435,7 @@ function contextMenuParseUser(container) {
           dia.full({
             title : 'User Profile',
             id : 'messageLink',
-            content : '<iframe src="profileUrl" style="width: 100%; height: 80%;" />',
+            content : '<iframe src="' + profileUrl + '" style="width: 100%; height: 80%;" />',
             width: $(window).width() * .8,
             height: $(window).height() * .8,
           });
@@ -3463,7 +3473,8 @@ function contextMenuParseMessage() {
     altMenu : settings.disableRightClick
   },
   function(action, el) {
-    var messageId = $(el).attr('data-messageId');
+    var messageId = $(el).attr('data-messageId'),
+      roomId = $(el).attr('data-roomId');
 
     switch(action) {
       case 'delete':
@@ -3483,7 +3494,7 @@ function contextMenuParseMessage() {
         dia.full({
           title : 'Link to this Message',
           id : 'messageLink',
-          content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '#page=archive#room=' + $(el).attr('data-roomId') + '#message=' + messageId + '" style="width: 100%;" />',
+          content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '#page=archive#room=' + roomId + '#message=' + messageId + '" style="width: 100%;" />',
           width: 600,
         });
       break;
@@ -3497,17 +3508,19 @@ function contextMenuParseMessage() {
     altMenu : settings.disableRightClick
   },
   function(action, el) {
-    var messageId = $(el).attr('data-messageId'),
-      src = '';
+    var messageId = $(el).parent().attr('data-messageId'),
+      roomId = $(el).parent().attr('data-roomId'),
+      src = $(el).attr('src');
 
     switch(action) {
       case 'url':
-      src = $(el).attr('src');
-
       dia.full({
         title : 'Copy Image URL',
-        content : '<img src="' + src + '" style="max-width: 550px; max-height: 550px;" /><br /><br /><input type="text" value="' + src +  '" style="width: 550px;" />',
-        width : 800
+        content : '<img src="' + src + '" style="max-width: 550px; max-height: 550px; margin-left: auto; margin-right: auto; display: block;" /><br /><br /><input type="text" name="url" value="' + src +  '" style="width: 100%;" />',
+        width : 800,
+        oF : function() {
+          $('input[name=url]', this).first().focus();
+        }
       });
       break;
 
@@ -3526,7 +3539,7 @@ function contextMenuParseMessage() {
         dia.full({
           title : 'Link to this Message',
           id : 'messageLink',
-          content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + $('body').attr('data-roomId') + '#message=' + messageId + '" style="width: 100%;" />',
+          content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + roomId + '#message=' + messageId + '" style="width: 100%;" />',
           width: 600,
         });
       break;
@@ -3540,27 +3553,20 @@ function contextMenuParseMessage() {
     altMenu : settings.disableRightClick
   },
   function(action, el) {
-    var messageId = $(el).attr('data-messageId'),
-      src = '';
+    var messageId = $(el).parent().attr('data-messageId'),
+      roomId = $(el).parent().attr('data-roomId'),
+      src = $(el).attr('href');
 
     switch(action) {
       case 'url':
-      src = $(el).attr('href');
-
       dia.full({
         title : 'Copy URL',
-        content : '<img src="' + src + '" style="max-width: 550px; max-height: 550px;" /><br /><br /><input type="text" value="' + src +  '" style="width: 550px;" />',
-        width : 800
-      });
-      break;
-
-      case 'sandbox':
-      src = $(el).attr('href');
-
-      dia.full({
-        title : 'View Sandboxed',
-        content : '<img src="' + src + '" style="max-width: 550px; max-height: 550px;" /><br /><br /><input type="text" value="' + src +  '" style="width: 550px;" />',
-        width : 800
+        position : 'top',
+        content : '<iframe style="width: 100%; display: none; height: 0px;"></iframe><a href="javascript:void(0);" onclick="$(this).prev().attr(\'src\',\'' + src.replace(/\'/g, "\\'").replace(/\"/g, '\\"') + '\').show().animate({height : \'80%\'}, 500); $(this).hide();">View<br /></a><br /><input type="text" name="url" value="' + src.replace(/\"/g, '\\"') +  '" style="width: 100%;" />',
+        width : 800,
+        oF : function() {
+          $('input[name=url]', this).first().focus();
+        }
       });
       break;
 
@@ -3579,7 +3585,7 @@ function contextMenuParseMessage() {
         dia.full({
           title : 'Link to this Message',
           id : 'messageLink',
-          content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + $('body').attr('data-roomId') + '#message=' + messageId + '" style="width: 100%;" />',
+          content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + roomId + '#message=' + messageId + '" style="width: 100%;" />',
           width: 600,
         });
       break;
@@ -3595,12 +3601,14 @@ function contextMenuParseRoom() {
     altMenu : settings.disableRightClick
   },
   function(action, el) {
+    roomId = $(el).attr('data-roomId');
+
     switch(action) {
       case 'delete':
       dia.confirm({
         text : 'Are you sure you want to delete this room?',
         'true' : function() {
-          standard.deleteRoom($(el).attr('data-roomId'));
+          standard.deleteRoom(roomId);
 
           $(el).parent().fadeOut();
 
@@ -3610,15 +3618,15 @@ function contextMenuParseRoom() {
       break;
 
       case 'edit':
-      popup.editRoom($(el).attr('data-roomId'));
+      popup.editRoom(roomId);
       break;
 
       case 'archive':
-      popup.archive({roomId : $(el).attr('data-roomId')});
+      popup.archive({roomId : roomId});
       break;
 
       case 'enter':
-      standard.changeRoom($(el).attr('data-roomId'));
+      standard.changeRoom(roomId);
       break;
     }
 
@@ -3635,7 +3643,7 @@ $(document).ready(function() {
 
 
   if (fontsize) {
-    $('body').css('font-size',fontsize + 'em');
+    $('body').css('font-size', fontsize + 'em');
   }
 
 

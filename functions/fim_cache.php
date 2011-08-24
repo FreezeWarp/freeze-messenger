@@ -15,16 +15,59 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 
-function fim_getCachedVar($index) {
-  if (extension_loaded('apc')) {
-    return apc_fetch($index);
-  }
-}
+class generalCache {
+  public function __construct($method, $servers) {
+    global $config;
 
-function fim_setCachedVar($index, $variable, $ttl) {
-  if (extension_loaded('apc')) {
-    apc_delete($index);
-    apc_store($index, $variable, $ttl);
+    if ($method) {
+      $this->method = $method;
+    }
+    else {
+      if (extension_loaded('apc')) {
+        $this->method = 'apc';
+      }
+    }
+
+    if ($this->method === 'memcache') {
+      $memcache = new Memcache;
+
+      foreach ($servers AS $server) {
+        $memcache->addServer($server['host'], $server['port'], $server['persistent'], $server['weight'], $server['timeout'], $server['retry_interval']);
+      }
+    }
+  }
+
+  public function getCachedVar($index) {
+    switch ($this->method) {
+      case 'apc':
+      return apc_fetch($index);
+      break;
+
+      case 'memcache':
+
+      break;
+
+      case 'db':
+
+      break;
+    }
+  }
+
+  public function setCachedVar($index, $variable, $ttl) {
+    switch ($this->method) {
+      case 'apc':
+      apc_delete($index);
+      apc_store($index, $variable, $ttl);
+      break;
+
+      case 'memcache':
+
+      break;
+
+      case 'db':
+
+      break;
+    }
   }
 }
 

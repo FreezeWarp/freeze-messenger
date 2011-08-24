@@ -364,7 +364,11 @@ class messageParse {
         $this->emotiParse( // Converts emoticons (e.g. ":D", ":P", "o.O") to HTML <img /> tags based on database-stored conversions.
           $this->htmlWrap( // Forces a space to be placed every 80 non-breaking characters, in order to prevent HTML stretching.
             $this->htmlParse( // Parses database-stored BBCode (e.g. "[b]Hello[/b]") to their HTML equivilents (e.g. "<b>Hello</b>").
-                $this->censorParse($this->messageText, $this->roomData['roomId'], $this->roomData['options']) // Censors text based on database-stored filters, which may be activated or deactivted by the room itself.
+              $this->censorParse( // Censors text based on database-stored filters, which may be activated or deactivted by the room itself.
+                str_replace(array("<", ">"), array("&lt;", "&gt;"), $this->messageText),
+                $this->roomData['roomId'],
+                $this->roomData['options']
+              )
             ), 80, ' '
           )
         )
@@ -385,6 +389,7 @@ class messageParse {
 
   public function getKeyWords() {
     global $config, $sqlPrefix, $database, $user;
+
     $puncList = array();
     $string = $this->messageText;
 
@@ -414,7 +419,7 @@ class messageParse {
 
     if (count($stringPiecesAdd) > 0) {
       sort($stringPiecesAdd);
-
+error_log(print_r($stringPiecesAdd,true));
       return $stringPiecesAdd;
     }
     else {

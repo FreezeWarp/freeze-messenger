@@ -16,7 +16,7 @@
 
 
 
-////* MySQL Login *////
+////* Database Login *////
 
 /* $dbConnect['core']['driver']
  * Defines the driver to use for database connections.
@@ -66,6 +66,30 @@ $dbConnect['integration']['database'] = '';
  * If you are integrating with a forum, it is imperative you not leave this blank. */
 $dbConfig['vanilla']['tablePrefix'] = '';
 $dbConfig['integration']['tablePreix'] = '';
+
+
+
+
+////* Cache Server *////
+/* $cacheConnect['driver']
+ * Defines the driver to use for caching.
+ * "apc" and "memcache" are both acceptable.
+ * Because APC does not require any advanced set-up, it is default. However, memcache is a must for large installations. */
+$cacheConnect['driver'] = 'apc';
+
+/* $cacheConnect['servers']
+ * For memcache, this is the list of servers to use in the connection pool.
+ * If using APC, this directive is ignored. */
+$cacheConnect['servers'] = array(
+  0 => array(
+    'host' => '127.0.0.1',
+    'port' => 11211,
+    'persistent' => true,
+    'weight' => 1,
+    'timeout' => 1,
+    'retry_interval' => 15,
+  ),
+);
 
 
 

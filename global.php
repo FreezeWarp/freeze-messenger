@@ -35,7 +35,7 @@
  * The following are used, but with safe fallbacks:
  * Hash is present in all versions since PHP 5.1.2; MHash is present in all versions since PHP4
  */
-foreach (array('mysql', 'json', 'mbstring', 'mcrypt', 'pcre', 'apc', 'dom') AS $module) {
+foreach (array('mysql', 'json', 'mbstring', 'mcrypt', 'pcre', 'dom') AS $module) {
   if (!extension_loaded($module)) {
     die("The module $module could not be found. Please install PHP $module compatibility. See the documentation for help.");
   }
@@ -200,6 +200,9 @@ unset($dbConnect); // There is no reason the login credentials should still be a
 
 
 
+////* Connet to Cache *////
+$generalCache = new generalCache($cacheConnect['driver'], $cacheConnect['servers']);
+
 
 ////* User Login (Requires Database) *////
 
@@ -212,7 +215,7 @@ require_once(dirname(__FILE__) . '/validate.php'); // This is where all the user
 
 ////* Get Database-Stored Configuration *////
 
-if (!($config = fim_getCachedVar('fim_config')) || $disableConfig) {
+if (!($config = $generalCache->getCachedVar('fim_config')) || $disableConfig) {
   require(dirname(__FILE__) . '/defaultConfig.php');
 
   if (!$disableConfig) {
@@ -268,7 +271,7 @@ if (!($config = fim_getCachedVar('fim_config')) || $disableConfig) {
   }
 
 
-  fim_setCachedVar('fim_config', $config, $config['configCacheRefresh']);
+  $generalCache->setCachedVar('fim_config', $config, $config['configCacheRefresh']);
 }
 
 
@@ -289,7 +292,7 @@ if ($api === true) {
 
 if (isset($reqPhrases)) {
   if ($reqPhrases === true) {
-    if (!$interfaces = fim_getCachedVar('fim_interfaces')) {
+    if (!$interfaces = $generalCache->getCachedVar('fim_interfaces')) {
       $interfaces2 = $slaveDatabase->select(
         array(
           "{$sqlPrefix}interfaces" => 'interfaceId, interfaceName',
@@ -309,7 +312,7 @@ if (isset($reqPhrases)) {
 
       unset($interfaces2);
 
-      fim_setCachedVar('fim_interfaces', $interfaces, $config['phrasesCacheRefresh']);
+      $generalCache->setCachedVar('fim_interfaces', $interfaces, $config['phrasesCacheRefresh']);
     }
   }
 }
@@ -320,7 +323,7 @@ if (isset($reqPhrases)) {
 
 if (isset($reqPhrases)) {
   if ($reqPhrases === true) {
-    if (!$phrases = fim_getCachedVar('fim_phrases')) {
+    if (!$phrases = $generalCache->getCachedVar('fim_phrases')) {
       $phrases2 = $slaveDatabase->select(
         array(
           "{$sqlPrefix}phrases" => 'interfaceId, phraseName, languageCode, text',
@@ -340,7 +343,7 @@ if (isset($reqPhrases)) {
 
       unset($phrases2);
 
-      fim_setCachedVar('fim_phrases', $phrases, $config['phrasesCacheRefresh']);
+      $generalCache->setCachedVar('fim_phrases', $phrases, $config['phrasesCacheRefresh']);
     }
 
     $interfaceId = $interfaces[$interfaceName];
@@ -357,8 +360,8 @@ if (isset($reqPhrases)) {
 
 if (isset($reqPhrases)) {
   if ($reqPhrases === true) {
-    $templates = fim_getCachedVar('fim_templates');
-    $templateVars = fim_getCachedVar('fim_templateVars');
+    $templates = $generalCache->getCachedVar('fim_templates');
+    $templateVars = $generalCache->getCachedVar('fim_templateVars');
 
     if (!$templates || !$templateVars) {
       $templates = array();
@@ -383,8 +386,8 @@ if (isset($reqPhrases)) {
       }
 
       unset($templates2);
-      fim_setCachedVar('fim_templates', $templates, $config['templatesCacheRefresh']);
-      fim_setCachedVar('fim_templateVars', $templateVars, $config['templatesCacheRefresh']);
+      $generalCache->setCachedVar('fim_templates', $templates, $config['templatesCacheRefresh']);
+      $generalCache->setCachedVar('fim_templateVars', $templateVars, $config['templatesCacheRefresh']);
     }
 
 
@@ -399,7 +402,7 @@ if (isset($reqPhrases)) {
 
 if (isset($reqHooks)) {
   if ($reqHooks === true) {
-    if (!$hooks = fim_getCachedVar('fim_hooks')) {
+    if (!$hooks = $generalCache->getCachedVar('fim_hooks')) {
       $hooks2 = $slaveDatabase->select(
         array(
           "{$sqlPrefix}hooks" => 'hookId, hookName, code',
@@ -419,7 +422,7 @@ if (isset($reqHooks)) {
       }
 
       unset($hooks2);
-      fim_setCachedVar('fim_hooks', $hooks, $config['hooksCacheRefresh']);
+      $generalCache->setCachedVar('fim_hooks', $hooks, $config['hooksCacheRefresh']);
     }
   }
 }
@@ -429,7 +432,7 @@ if (isset($reqHooks)) {
 
 ////* Kicks Cache *////
 
-$kicksCache = fim_getCachedVar('fim_kickCache');
+$kicksCache = $generalCache->getCachedVar('fim_kickCache');
 
 if ($kicksCache === null || $kicksCache === false) {
   $kicksCache = array();
@@ -501,7 +504,7 @@ if ($kicksCache === null || $kicksCache === false) {
     }
   }
 
-  fim_setCachedVar('fim_kickCache', $kicksCache, $config['kicksCacheRefresh']);
+  $generalCache->setCachedVar('fim_kickCache', $kicksCache, $config['kicksCacheRefresh']);
 }
 
 
@@ -510,7 +513,7 @@ if ($kicksCache === null || $kicksCache === false) {
 
 ////* Permissions Cache *////
 
-$permissionsCache = fim_getCachedVar('fim_permissionsCache');
+$permissionsCache = $generalCache->getCachedVar('fim_permissionsCache');
 
 if ($permissionsCache === null || $permissionsCache === false) {
   $permissionsCache = array();
@@ -526,7 +529,7 @@ if ($permissionsCache === null || $permissionsCache === false) {
     $permissionsCache[$cachePerm['roomId']][$cachePerm['attribute']][$cachePerm['param']] = $cachePerm['permissions'];
   }
 
-  fim_setCachedVar('fim_permissionCache', $permissionsCache, $config['permissionsCacheRefresh']);
+  $generalCache->setCachedVar('fim_permissionCache', $permissionsCache, $config['permissionsCacheRefresh']);
 }
 
 //die(print_R($permissionsCache,true));
@@ -553,15 +556,15 @@ if (defined('FIM_LOGINRUN')) {
 }
 
 if ($api && $config['compressOutput']) {
-//  ob_start('fim_apiCompact');
+  ob_start('fim_apiCompact');
 }
 
-//if ($config['dev']) { // Developer hijinks - these are security risks for public servers
+if ($config['dev']) { // Developer hijinks - these are security risks for public servers
   if (isset($_REQUEST['clearAPC'])) {
     apc_clear_cache();
     apc_clear_cache('user');
     apc_clear_cache('opcode');
     error_log('Cleared cache.');
   }
-//}
+}
 ?>
