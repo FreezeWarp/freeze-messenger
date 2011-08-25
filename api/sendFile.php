@@ -125,9 +125,9 @@ $queryParts['getMimes']['limit'] = false;
 
 /* Get Mime Types from the Database */
 $mimes = $slaveDatabase->select(
-  $queryParts['getMimes']['columns']
-  $queryParts['getMimes']['conditions']
-  $queryParts['getMimes']['sort']
+  $queryParts['getMimes']['columns'],
+  $queryParts['getMimes']['conditions'],
+  $queryParts['getMimes']['sort'],
   $queryParts['getMimes']['limit']
 );
 $mimes = $mimes->getAsArray('extension');
@@ -150,7 +150,7 @@ if (($config['uploadMaxFiles'] !== -1 && $database->getCounter('uploads') > $con
   $errStr = 'tooManyFiles';
   $errDesc = 'The server has reached its file capacity.';
 }
-elseif ($contine) {
+elseif ($continue) {
   /* Verify the Data, Preprocess */
   switch ($request['uploadMethod']) {
     case 'raw':
@@ -303,7 +303,7 @@ elseif ($contine) {
               if ($request['roomId']) {
                 $room = $slaveDatabase->getRoom($request['roomId']);
 
-                fim_sendMessage($webLocation, 'image', $user, $room);
+                fim_sendMessage($webLocation, $container, $user, $room);
               }
             }
             else {

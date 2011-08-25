@@ -122,7 +122,7 @@ if ($request['defaultRoomId'] > 0) {
 }
 
 foreach (array('favRooms', 'watchRooms', 'ignoreList') AS $item) {
-  if (isset($request[$item]) {
+  if (isset($request[$item])) {
     $updateArray[$item] = (string) implode(',', $request[$item]);
 
     $xmlData['editUserOptions']['response']['favRooms']['status'] = true;

@@ -865,7 +865,7 @@ function populate(options) {
 *********************************************************/
 
 function youtubeSend(id) { // TODO
-  standard.sendMessage('http://www.youtube.com/watch?v=' + id,0,'video');
+  standard.sendMessage('http://www.youtube.com/watch?v=' + id,0,'youtube');
 
   $('#textentryBoxYoutube').dialog('close');
 }
