@@ -412,7 +412,7 @@ $phrases[helpFAQs]
 
 &lt;ul id="messageMenuImage" class="contextMenu"&gt;
 &lt;li&gt;&lt;a href="javascript:void(0);" data-action="url"&gt;Get Image URL&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;Delete Image&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="deleteimage"&gt;Delete Image&lt;/a&gt;&lt;/li&gt;
 
 &lt;li&gt;&lt;a href="javascript:void(0);" data-action="link"&gt;Link To Message&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;Delete Message&lt;/a&gt;&lt;/li&gt;
@@ -420,7 +420,6 @@ $phrases[helpFAQs]
 
 &lt;ul id="messageMenuLink" class="contextMenu"&gt;
 &lt;li&gt;&lt;a href="javascript:void(0);" data-action="url"&gt;Get URL&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="sandbox"&gt;View in Sandbox&lt;/a&gt;&lt;/li&gt;
 
 &lt;li&gt;&lt;a href="javascript:void(0);" data-action="link"&gt;Link To Message&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;Delete Message&lt;/a&gt;&lt;/li&gt;
@@ -428,8 +427,7 @@ $phrases[helpFAQs]
 
 &lt;ul id="messageMenuVideo" class="contextMenu"&gt;
 &lt;li&gt;&lt;a href="javascript:void(0);" data-action="url"&gt;Get URL&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="sandbox"&gt;Download (Experimental)&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="link"&gt;Hide This Video&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="hide"&gt;Hide This Video&lt;/a&gt;&lt;/li&gt;
 
 &lt;li&gt;&lt;a href="javascript:void(0);" data-action="link"&gt;Link To Message&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;Delete Message&lt;/a&gt;&lt;/li&gt;

@@ -46,10 +46,6 @@ class generalCache {
       case 'memcache':
 
       break;
-
-      case 'db':
-
-      break;
     }
   }
 
@@ -61,10 +57,6 @@ class generalCache {
       break;
 
       case 'memcache':
-
-      break;
-
-      case 'db':
 
       break;
     }

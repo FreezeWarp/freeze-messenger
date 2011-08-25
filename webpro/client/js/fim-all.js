@@ -315,7 +315,7 @@ function messageFormat(json, format) {
     case '':
     text = text.replace(regexs.url, function($1) {
       if (text.match(regexs.image)) {
-        return text.replace(regexs.image, '<a href="$1" target="_BLANK"><img src="$1" style="max-width: 250px; max-height: 250px;" /></a>');
+        return text.replace(regexs.image, '<a href="$1" target="_BLANK">' + (settings.disableImage ? '[IMAGE]' : '<img src="$1" style="max-width: 250px; max-height: 250px;" />') + '</a>');
       }
       else {
         var newpattern = $1.match(regexs.url2) ? $1.replace(regexs.url2, "$1") : $1;
@@ -424,8 +424,7 @@ function messagePopup(data) {
 }
 
 
-/* URL-Defined Actions
-* TODO */
+/* URL-Defined Actions */
 
 function hashParse(options) {
   var urlHash = window.location.hash,
@@ -460,7 +459,7 @@ function hashParse(options) {
     case 'archive':
     prepopup = function() {
       popup.archive({
-        'roomId' : roomId,
+        'roomId' : roomIdLocal,
         'idMin' : messageId - 1
       });
     };
@@ -471,16 +470,14 @@ function hashParse(options) {
       popup.userSettings();
     };
     break;
+  }
 
-    default:
-    if (!roomIdLocal && options.defaultRoomId) {
-      roomIdLocal = options.defaultRoomId;
-    }
+  if (!roomIdLocal && options.defaultRoomId) {
+    roomIdLocal = options.defaultRoomId;
+  }
 
-    if (roomId !== roomIdLocal) {
-      standard.changeRoom(roomIdLocal); // If the room is different than current, change it.
-    }
-    break;
+  if (roomId !== roomIdLocal) {
+    standard.changeRoom(roomIdLocal); // If the room is different than current, change it.
   }
 }
 
@@ -1392,6 +1389,13 @@ var standard = {
             /* Select Room */
             if (!roomId) {
               hashParse({defaultRoomId : defaultRoomId}); // When a user logs in, the hash data (such as room and archive) is processed, and subsequently executed.
+
+              /*** A Hack of Sorts to Open Dialogs onLoad ***/
+              if (typeof prepopup === "function") {
+                prepopup();
+
+                prepopup = false;
+              }
             }
 
             return false;
@@ -3327,11 +3331,18 @@ function windowDynaLinks() {
 
   if (!adminPermissions.modUsers) {
     $('li > #modUsers').parent().hide();
+    $('ul#userMenu > li > a[data-action="ban"]').hide();
+
+    noAdminCounter += 1;
+  }
+  if (!adminPermissions.modRooms) {
+    $('ul#roomMenu > li > a[data-action="delete"]').hide();
 
     noAdminCounter += 1;
   }
   if (!adminPermissions.modImages) {
     $('li > #modImages').parent().hide();
+    $('ul#messageMenu > li > a[data-action="deleteimage"]').hide();
 
     noAdminCounter += 1;
   }
@@ -3370,6 +3381,8 @@ function windowDynaLinks() {
     $('li > #kick').parent().hide();
     $('li > #manageKick').parent().hide();
     $('#userMenu a[data-action="kick"]').parent().hide();
+
+    $('ul#messageMenu > li > a[data-action="delete"], ul#messageMenuImage > li > a[data-action="delete"], ul#messageMenuLink > li > a[data-action="delete"], ul#messageMenuVideo > li > a[data-action="delete"]').hide();
 
     noModCounter += 2;
   }
@@ -3886,13 +3899,6 @@ $(document).ready(function() {
 
     console.log('Appended Context Menus to DOM');
   });
-
-
-
-  /*** A Hack of Sorts to Open Dialogs onLoad ***/
-  if (typeof prepopup === "function") {
-    prepopup();
-  }
 
 
 
