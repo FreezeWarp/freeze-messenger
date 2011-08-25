@@ -189,7 +189,7 @@ else {
 /* Get the absolute API path.
 * TODO: Define this in a more "sophisticated manner". */
 
-var directory = window.location.pathname.split('/').splice(0, 2).join('/') + '/', // splice returns the elements removed (and modifies the original array), in this case the first two; the rest should be self-explanatory
+var directory = window.location.pathname.split('/').splice(0, window.location.pathname.split('/').length - 2).join('/') + '/', // splice returns the elements removed (and modifies the original array), in this case the first two; the rest should be self-explanatory
   currentLocation = window.location.origin + directory + 'webpro/';
 
 
