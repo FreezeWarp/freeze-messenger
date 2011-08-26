@@ -27,8 +27,8 @@ var Base64 = {
       }
 
       output = output +
-      this._keyStr.charAt(enc1) + this._keyStr.charAt(enc2) +
-      this._keyStr.charAt(enc3) + this._keyStr.charAt(enc4);
+      Base64._keyStr.charAt(enc1) + Base64._keyStr.charAt(enc2) +
+      Base64._keyStr.charAt(enc3) + Base64._keyStr.charAt(enc4);
     }
 
     return output;
@@ -44,10 +44,10 @@ var Base64 = {
     input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
 
     while (i < input.length) {
-      enc1 = this._keyStr.indexOf(input.charAt(i++));
-      enc2 = this._keyStr.indexOf(input.charAt(i++));
-      enc3 = this._keyStr.indexOf(input.charAt(i++));
-      enc4 = this._keyStr.indexOf(input.charAt(i++));
+      enc1 = Base64._keyStr.indexOf(input.charAt(i++));
+      enc2 = Base64._keyStr.indexOf(input.charAt(i++));
+      enc3 = Base64._keyStr.indexOf(input.charAt(i++));
+      enc4 = Base64._keyStr.indexOf(input.charAt(i++));
 
       chr1 = (enc1 << 2) | (enc2 >> 4);
       chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
@@ -100,7 +100,7 @@ var Base64 = {
   _utf8_decode : function (utftext) {
     var string = "";
     var i = 0;
-    var c = c1 = c2 = 0;
+    var c = 0, c1 = 0, c2 = 0;
 
     while ( i < utftext.length ) {
 

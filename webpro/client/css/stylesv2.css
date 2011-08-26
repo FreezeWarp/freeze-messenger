@@ -21,6 +21,10 @@ body {
   font-family: Ubuntu, Calibria, Arial;
 }
 
+img {
+  border: none;
+}
+
 /*@font-face {
   font-family: 'Ubuntu';
   font-style: normal;

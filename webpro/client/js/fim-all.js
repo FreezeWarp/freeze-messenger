@@ -314,8 +314,8 @@ function messageFormat(json, format) {
 
     case '':
     text = text.replace(regexs.url, function($1) {
-      if (text.match(regexs.image)) {
-        return text.replace(regexs.image, '<a href="$1" target="_BLANK">' + (settings.disableImage ? '[IMAGE]' : '<img src="$1" style="max-width: 250px; max-height: 250px;" />') + '</a>');
+      if ($1.match(regexs.image)) {
+        return '<a href="' + $1 + '" target="_BLANK">' + (settings.disableImage ? '[IMAGE]' : '<img src="' + $1 + '" style="max-width: 250px; max-height: 250px;" />') + '</a>';
       }
       else {
         var newpattern = $1.match(regexs.url2) ? $1.replace(regexs.url2, "$1") : $1;
@@ -622,33 +622,11 @@ var regexs = {
       "([^\ \n\<\>\"]*)" + // Almost anything, except spaces, new lines, <s, >s, or quotes
       "|" + // This is all optional^
     ")" +
-  ")"), // Nor the BBCode or HTML symbols.
+  ")", "g"), // Nor the BBCode or HTML symbols.
 
   url2 : new RegExp("^(.+)[\"\?\!\.]$"),
 
-  image : new RegExp("(" +
-    "(http|https|ftp|data|gopher|sftp|ssh)" + // List of acceptable protocols. (so far: "http")
-    ":" + // Colon! (so far: "http:")
-    "(\/\/|)" + // "//" is optional; this allows for it or nothing. (so far: "http://")
-    "(" +
-      "(([^\ \/]+?)\.|)" + // Anything up to a period (minus forbidden symbols), but optional. (so far: "http://www.")
-      "([a-zA-Z0-9\-]+)" + // Alphanumeric up to the next period. (so far: "http://www.google")
-      "\." + // The period! (so far: "http://www.google.")
-      "(aero|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|xxx)" + // The list of non-government TLDs. (so far: "http://www.google.com")
-      "|localhost" + // Largely for dev, support "localhost" too.
-    ")" +
-    "(" +
-      ":" + // Colon for the port.
-      "([0-9]+)" + // Numeric port.
-      "|" + // This is all optional^
-    ")" +
-    "(" +
-      "(\/)" + // The slash! (so far: "http://www.google.com/")
-      "([^\ \n\<\>\"]*)" + // Almost anything, except spaces, new lines, <s, >s, or quotes
-      "\." + // Extension
-      "(png|jpg|jpeg|gif|ico|bmp|svg|svgz)" + // List of images.
-    ")" +
-  ")")
+  image : new RegExp("^(.+)\.(jpg|jpeg|gif|png|svg|svgz|bmp|ico)$")
 }
 
 
