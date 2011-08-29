@@ -3109,6 +3109,7 @@ popup = {
       uri : 'template.php?template=help',
       title : 'helpDialogue',
       width : 1000,
+      position : 'top',
       tabs : true
     });
 
@@ -3488,6 +3489,7 @@ function contextMenuParseMessage() {
         title : 'Copy Image URL',
         content : '<img src="' + src + '" style="max-width: 550px; max-height: 550px; margin-left: auto; margin-right: auto; display: block;" /><br /><br /><input type="text" name="url" value="' + src +  '" style="width: 100%;" />',
         width : 800,
+        position : 'top',
         oF : function() {
           $('input[name=url]', this).first().focus();
         }

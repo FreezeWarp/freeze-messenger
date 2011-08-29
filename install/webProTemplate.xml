@@ -345,41 +345,22 @@ $phrases[settingsDefaultFormattingLabel]&lt;br /&gt;
 
     <template name="copyright" vars="">&lt;ul class="tabList"&gt;
 &lt;li&gt;&lt;a href="#copyright1"&gt;$phrases[copyrightTabCopyright]&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#copyright3"&gt;$phrases[copyrightTabLicense]&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#copyright2"&gt;$phrases[copyrightTabThanks]&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;
+&lt;li&gt;&lt;a href="#copyright2"&gt;$phrases[copyrightTabLicense]&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#copyright3"&gt;$phrases[copyrightTabThanks]&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;
 
 &lt;div style="text-align: center;" id="copyright1"&gt;
-  FreezeMessenger &amp;copy; 2010-2011 &lt;a href="http://josephtparsons.com/" target="_BLANK"&gt;Joseph T. Parsons&lt;/a&gt;. Some Rights Reserved.&lt;br /&gt;&lt;br /&gt;
-
-  &lt;strong&gt;The Following Third-Party Plugins Are Used with WebPro For Various Functionality:&lt;/strong&gt;&lt;br /&gt;
-  jQuery, jQueryUI, and all jQueryUI Themeroller Themes &amp;copy; &lt;a href="http://jquery.org/" target="_BLANK"&gt;The jQuery Project.&lt;/a&gt;&lt;br /&gt;&lt;br /&gt;
-
-  jGrowl &amp;copy; 2009 &lt;a href="http://stanlemon.net/projects/jgrowl.html"&gt;Stan Lemon&lt;/a&gt;.&lt;br /&gt;
-  jQuery Cookie Plugin &amp;copy; 2006 &lt;a href="https://github.com/carhartl/jquery-cookie"&gt;Klaus Hartl&lt;/a&gt;&lt;br /&gt;
-  EZPZ Tooltip &amp;copy; 2009 &lt;a href="http://theezpzway.com/2009/3/17/jquery-plugin-ezpz-tooltip"&gt;Mike Enriquez&lt;/a&gt;&lt;br /&gt;
-  Context Menu &amp;copy; 2008 &lt;a href="http://abeautifulsite.net/blog/2008/09/jquery-context-menu-plugin/"&gt;Cory S.N. LaViska&lt;/a&gt;&lt;br /&gt;
-  jQTubeUtil &amp;copy; 2010 &lt;a href="http://www.tikku.com/jquery-jqtube-util"&gt;Nirvana Tikku&lt;/a&gt;&lt;br /&gt;
-  ColorPicker &amp;copy; &lt;a href="http://www.eyecon.ro/colorpicker/"&gt;Stefan Petr&lt;/a&gt;&lt;br /&gt;&lt;br /&gt;
-
-  &lt;strong&gt;The Following Substantial Modifications Have Been Made to the Above Plugins by Joseph T. Parsons:&lt;/strong&gt;&lt;br /&gt;
-  jGrowl - Support Live() Handler&lt;br /&gt;
-  EZPZ Tooltip - Support Live() Handler&lt;br /&gt;
-  Context Menu - Support Accessible Click Method ("Disable Right Click")
+$phrases[copyrightCopyright]
 &lt;/div&gt;
 
-&lt;div style="text-align: center;" id="copyright2"&gt;
-&lt;strong&gt;For continual bugtesting and related help, thanks to:&lt;/strong&gt;&lt;br /&gt;&lt;br /&gt;
-
-JC747&lt;br /&gt;
-A'Bom&lt;br /&gt;
-Shade&lt;br /&gt;
-Ningamer&lt;br /&gt;
-KingOfKYA&lt;br /&gt;
-&lt;a href="http://www.victoryroad.net/"&gt;Cat333Pokémon&lt;/a&gt;
+&lt;div id="copyright2"&gt;
+$phrases[copyrightLicense]
 &lt;/div&gt;
 
-&lt;div id="copyright3"&gt;&lt;strong&gt;Redistribution License of FreezeMessenger and WebPro:&lt;/strong&gt;&lt;br /&gt;
-  FreezeMessenger is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.&lt;br /&gt;&lt;br /&gt;This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.&lt;br /&gt;&lt;br /&gt;You should have received a copy of the GNU General Public License along with this program.  If not, see &lt;a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/&lt;/a&gt;&gt;.&lt;/div&gt;
+&lt;div style="text-align: center;" id="copyright3"&gt;
+$phrases[copyrightThanks]
+&lt;/div&gt;
+
+  &lt;/div&gt;
     </template>
 
     <template name="help">&lt;ul&gt;
