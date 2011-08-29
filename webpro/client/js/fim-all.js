@@ -647,6 +647,34 @@ var regexs = {
   url2 : new RegExp("^(.+)([\"\?\!\.])$"),
 
   image : new RegExp("^(.+)\.(jpg|jpeg|gif|png|svg|svgz|bmp|ico)$")
+
+/*        if (message.match(/http\:\/\/(www\.|)youtube\.com\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/) !== null) { flag = 'youtube'; }
+      else if (message.match(/http\:\/\/(www\.|)youtu\.be\/([a-zA-Z0-9]+)/) !== null) { flag = 'youtube'; }
+
+  youtubeFull : new RegExp("^(" +
+    "(" +
+      "(http|https)" + // List of acceptable protocols. (so far: "http")
+      ":" + // Colon! (so far: "http:")
+      "(\/\/|)" + // "//" is optional; this allows for it or nothing. (so far: "http://")
+    "|)" // Protocol optional here.
+    "(" +
+      "(([^\ \/]+?)\.|)" + // Anything up to a period (minus forbidden symbols), but optional. (so far: "http://www.")
+      "([a-zA-Z0-9\-]+)" + // Alphanumeric up to the next period. (so far: "http://www.google")
+      "\." + // The period! (so far: "http://www.google.")
+      "(com)" + // YouTube TLD
+      "|localhost" + // Largely for dev, support "localhost" too.
+    ")" +
+    "(" +
+      ":" + // Colon for the port.
+      "([0-9]+)" + // Numeric port.
+      "|" + // This is all optional^
+    ")" +
+    "(" +
+      "(\/)" + // The slash! (so far: "http://www.google.com/")
+      "([^\ \n\<\>\"]*)" + // Almost anything, except spaces, new lines, <s, >s, or quotes
+      "|" + // This is all optional^
+    ")" +
+  ")$"),*/
 }
 
 
@@ -986,7 +1014,9 @@ autoEntry = {
     var source,
       i = 0;
 
-    if (string) {
+    if (typeof string === 'object' || typeof string === 'array') { // String is already not a string! (yeah...)
+    }
+    else if (typeof string === 'string' && string.length > 0) { // String is a string and not empty.
       entryList = string.split(',');
     }
     else {
@@ -994,17 +1024,9 @@ autoEntry = {
     }
 
     switch(type) {
-      case 'watchRooms':
-      source = roomRef;
-      break;
-
-      case 'moderators': case 'allowedUsers': case 'ignoreList':
-      source = userRef;
-      break;
-
-      case 'allowedGroups':
-      source = groupRef;
-      break;
+      case 'watchRooms': source = roomRef; break;
+      case 'moderators': case 'allowedUsers': case 'ignoreList': source = userRef; break;
+      case 'allowedGroups': source = groupRef; break;
     }
 
 
@@ -1701,16 +1723,12 @@ var standard = {
   },
 
 
-  sendMessage : function(message,confirmed,flag) {
+  sendMessage : function(message, confirmed, flag) {
     if (!flag) {
       flag = '';
 
-      if (message.match(/http\:\/\/(www\.|)youtu\.be\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/) !== null) {
-        flag = 'youtube';
-      }
-      else if (message.match(/http\:\/\/(www\.|)youtu\.be\/([a-zA-Z0-9]+)/) !== null) {
-        flag = 'youtube';
-      }
+      if (message.match(/http\:\/\/(www\.|)youtube\.com\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/) !== null) { flag = 'youtube'; }
+      else if (message.match(/http\:\/\/(www\.|)youtu\.be\/([a-zA-Z0-9]+)/) !== null) { flag = 'youtube'; }
     }
 
     if (!roomId) {
@@ -1735,26 +1753,11 @@ var standard = {
             case '':
             break;
 
-            case 'badroom':
-            dia.error("A valid room was not provided.");
-            break;
-
-            case 'badmessage':
-            dia.error("A valid message was not provided.");
-            break;
-
-            case 'spacerrDesc':
-            dia.error("Too... many... spaces!");
-            break;
-
-            case 'noperm':
-            dia.error("You do not have permission to post in this room.");
-            break;
-
-            case 'blockcensor':
-            dia.error(errDesc);
-            break;
-
+            case 'badroom': dia.error("A valid room was not provided."); break;
+            case 'badmessage': dia.error("A valid message was not provided."); break;
+            case 'spacerrDesc': dia.error("Too... many... spaces!"); break;
+            case 'noperm': dia.error("You do not have permission to post in this room."); break;
+            case 'blockcensor': dia.error(errDesc); break;
             case 'confirmcensor':
             dia.error(errDesc + '<br /><br /><button type="button" onclick="$(this).parent().dialog(&apos;close&apos;);">No</button><button type="button" onclick="standard.sendMessage(&apos;' + escape(message) + '&apos;,1' + (flag ? ', ' + flag : '') + '); $(this).parent().dialog(&apos;close&apos;);">Yes</button>');
             break;
@@ -1765,16 +1768,10 @@ var standard = {
         error: function() {
           console.log('Message error.');
 
-          if (settings.reversePostOrder) {
-            $('#messageList').append('Your message, "' + message + '", could not be sent and will be retried.');
-          }
-          else {
-            $('#messageList').prepend('Your message, "' + message + '", could not be sent and will be retried.');
-          }
+          if (settings.reversePostOrder) { $('#messageList').append('Your message, "' + message + '", could not be sent and will be retried.'); }
+          else { $('#messageList').prepend('Your message, "' + message + '", could not be sent and will be retried.'); }
 
-          window.setTimeout(function() {
-            standard.sendMessage(message)
-          },5000);
+          window.setTimeout(function() { standard.sendMessage(message) }, 5000);
 
           return false;
         }
@@ -1865,17 +1862,9 @@ var standard = {
         errDesc = json.editRoom.errDesc;
 
       switch (errStr) {
-        case '':
-        console.log('Message ' + messageId + ' deleted.');
-        break;
-
-        case 'nopermission':
-        dia.error('You do not have permision to administer this room.');
-        break;
-
-        case 'badroom':
-        dia.error('The specified room does not exist.');
-        break;
+        case '': console.log('Message ' + messageId + ' deleted.'); break;
+        case 'nopermission': dia.error('You do not have permision to administer this room.'); break;
+        case 'badroom': dia.error('The specified room does not exist.'); break;
       }
 
       return false;
@@ -1901,15 +1890,9 @@ var standard = {
   privateRoom : function(userLocalId) {
     userLocalId = Number(userLocalId);
 
-    if (userLocalId === userId) {
-      dia.error('You can\'t talk to yourself...');
-    }
-    else if (!userLocalId) {
-      dia.error('You have not specified a user.');
-    }
-    else if (!userPermissions.privateRoom) {
-      dia.error('You do not have permission to talk to users privately.');
-    }
+    if (userLocalId === userId) { dia.error('You can\'t talk to yourself...'); }
+    else if (!userLocalId) { dia.error('You have not specified a user.'); }
+    else if (!userPermissions.privateRoom) { dia.error('You do not have permission to talk to users privately.'); }
     else {
       $.post(directory + 'api/editRoom.php', 'action=private&userId=' + userLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
         var privateRoomId = json.editRoom.response.insertId,
@@ -1928,12 +1911,8 @@ var standard = {
             content : 'You may talk to this person privately at the following link: <form method="post" onsubmit="return false;"><input type="text" style="width: 300px;" value="' + currentLocation + '#room=' + privateRoomId + '" name="url" /></form>',
             id : 'privateRoomSucessDialogue',
             buttons : {
-              Open : function() {
-                standard.changeRoom(privateRoomId);
-              },
-              Okay : function() {
-                $('#privateRoomSucessDialogue').dialog('close');
-              }
+              Open : function() { standard.changeRoom(privateRoomId); },
+              Okay : function() { $('#privateRoomSucessDialogue').dialog('close'); }
             },
             width: 600
           });
@@ -1953,27 +1932,11 @@ var standard = {
         errDesc = json.moderaate.errDesc;
 
       switch (errStr) {
-        case '':
-        dia.info('The user has been kicked.', 'Success');
-
-        $("#kickUserDialogue").dialog('close');
-        break;
-
-        case 'nopermission':
-        dia.error('You do not have permision to moderate this room.');
-        break;
-
-        case 'nokickuser':
-        dia.error('That user may not be kicked!');
-        break;
-
-        case 'baduser':
-        dia.error('The user specified does not exist.');
-        break;
-
-        case 'badroom':
-        dia.error('The room specified does not exist.');
-        break;
+        case '': dia.info('The user has been kicked.', 'Success'); $("#kickUserDialogue").dialog('close'); break;
+        case 'nopermission': dia.error('You do not have permision to moderate this room.'); break;
+        case 'nokickuser': dia.error('That user may not be kicked!'); break;
+        case 'baduser': dia.error('The user specified does not exist.'); break;
+        case 'badroom': dia.error('The room specified does not exist.'); break;
       }
 
       return false;
@@ -1988,20 +1951,9 @@ var standard = {
         errDesc = json.moderaate.errDesc;
 
       switch (errStr) {
-        case '':
-        dia.info('The user has been unkicked.', 'Success');
-
-        $("#kickUserDialogue").dialog('close');
-        break;
-
-        case 'nopermission':
-        dia.error('You do not have permision to moderate this room.');
-        break;
-
-        case 'baduser':
-        case 'badroom':
-        dia.error('Odd error: the user or room sent do not seem to exist.');
-        break;
+        case '': dia.info('The user has been unkicked.', 'Success'); $("#kickUserDialogue").dialog('close'); break;
+        case 'nopermission': dia.error('You do not have permision to moderate this room.'); break;
+        case 'baduser': case 'badroom': dia.error('Odd error: the user or room sent do not seem to exist.'); break;
       }
 
       return false;
@@ -2017,17 +1969,9 @@ var standard = {
         errDesc = json.moderaate.errDesc;
 
       switch (errStr) {
-        case '':
-        console.log('Message ' + messageId + ' deleted.');
-        break;
-
-        case 'nopermission':
-        dia.error('You do not have permision to moderate this room.');
-        break;
-
-        case 'badmessage':
-        dia.error('The message does not exist.');
-        break;
+        case '': console.log('Message ' + messageId + ' deleted.'); break;
+        case 'nopermission': dia.error('You do not have permision to moderate this room.'); break;
+        case 'badmessage': dia.error('The message does not exist.'); break;
       }
 
       return false;
@@ -2072,10 +2016,8 @@ popup = {
               rememberMe = $('#loginForm > #rememberme').is('checked');
 
             standard.login({
-              userName : userName,
-              password : password,
-              showMessage : true,
-              rememberMe : rememberMe
+              userName : userName, password : password,
+              showMessage : true, rememberMe : rememberMe
             });
 
             return false; // Don't submit the form.
@@ -2121,31 +2063,19 @@ popup = {
 
         $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}}).bind('click',function() {
           popup.editRoom($(this).attr('data-roomId'));
-
-          return false;
         });
 
-        $('input[type=checkbox].favRoomMulti').button({icons : {primary : 'ui-icon-star'}, text : false}).bind('change',function() {
-          if ($(this).is(':checked')) {
-            standard.favRoom($(this).attr('data-roomId'));
-          }
-          else {
-            standard.unfavRoom($(this).attr('data-roomId'));
-          }
-
-          return false;
+        $('input[type=checkbox].favRoomMulti').button({icons : {primary : 'ui-icon-star'}, text : false}).bind('change', function() {
+          if ($(this).is(':checked')) { standard.favRoom($(this).attr('data-roomId')); }
+          else { standard.unfavRoom($(this).attr('data-roomId')); }
         });
 
         $('button.archiveMulti').button({icons : {primary : 'ui-icon-note'}}).bind('click',function() {
           popup.archive({roomId : $(this).attr('data-roomId')});
-
-          return false;
         });
 
         $('button.deleteRoomMulti').button({icons : {primary : 'ui-icon-trash'}}).bind('click',function() {
           standard.deleteRoom($(this).attr('data-roomId'));
-
-          return false;
         });
       }
     });
@@ -2179,9 +2109,7 @@ popup = {
         var fileName,
           fileSize;
 
-        $('#imageUploadSubmitButton').attr('disabled', 'disabled').button({
-          disabled: true
-        });
+        $('#imageUploadSubmitButton').attr('disabled', 'disabled').button({ disabled: true });
 
 
         if (typeof FileReader !== 'function') {
@@ -2278,12 +2206,10 @@ popup = {
         }
 
 
-        $('#uploadUrlForm').bind('submit',function() {
+        $('#uploadUrlForm').bind('submit', function() {
           var linkImage = $('#urlUpload').val();
 
-          if (linkImage) {
-            standard.sendMessage(linkImage,0,'image');
-          }
+          if (linkImage) { standard.sendMessage(linkImage, 0, 'image'); }
 
           $('#insertDoc').dialog('close');
 
@@ -2291,37 +2217,25 @@ popup = {
         });
 
 
-        $('#linkForm').bind('submit',function() {
+        $('#linkForm').bind('submit', function() {
           var linkUrl = $('#linkUrl').val(),
             linkMail = $('#linkEmail').val();
 
-          if (!linkUrl && !linkMail) {
-            dia.error('No Link Was Specified');
-          }
-          else if (linkUrl) {
-            standard.sendMessage(linkUrl,0,'url');
-          }
-          else if (linkMail) {
-            standard.sendMessage(linkMail,0,'email');
-          }
-          else {
-            dia.error('Logic Error');
-          }
+          if (linkUrl.length === 0 && linkMail.length === 0) { dia.error('No Link Was Specified'); } // No value for either.
+          else if (linkUrl.length > 0) { standard.sendMessage(linkUrl, 0, 'url'); } // Link specified for URL.
+          else if (linkMail.length > 0) { standard.sendMessage(linkMail, 0, 'email'); } // Link specified for mail, not URL.
+          else { dia.error('Logic Error'); } // Eh, why not?
 
           $('#insertDoc').dialog('close');
 
           return false;
         });
 
-        $('#uploadYoutubeForm').bind('submit',function() {
+        $('#uploadYoutubeForm').bind('submit', function() {
           linkVideo = $('#youtubeUpload');
 
-          if (linkVideo.search(/^http\:\/\/(www\.|)youtube\.com\/(.*?)?v=(.+?)(&|)(.*?)$/) === 0) {
-            dia.error('No Video Specified');
-          }
-          else {
-            standard.sendMessage(linkVideo,0,'video');
-          }
+          if (linkVideo.search(/^http\:\/\/(www\.|)youtube\.com\/(.*?)?v=(.+?)(&|)(.*?)$/) === 0) { dia.error('No Video Specified'); } // Bad format
+          else { standard.sendMessage(linkVideo, 0, 'video'); }
 
           $('#insertDoc').dialog('close');
 
@@ -2495,16 +2409,8 @@ popup = {
 
             $('#defaultHighlight').ColorPicker({
               color: defaultHighlightHash,
-              onShow: function (colpkr) {
-                $(colpkr).fadeIn(500);
-
-                return false;
-              },
-              onHide: function (colpkr) {
-                $(colpkr).fadeOut(500);
-
-                return false;
-              },
+              onShow: function (colpkr) { $(colpkr).fadeIn(500); }, // Fadein
+              onHide: function (colpkr) { $(colpkr).fadeOut(500); }, // Fadeout
               onChange: function(hsb, hex, rgb) {
                 defaultHighlight = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
 
@@ -2515,16 +2421,8 @@ popup = {
 
             $('#defaultColour').ColorPicker({
               color: defaultColourHash,
-              onShow: function (colpkr) {
-                $(colpkr).fadeIn(500);
-
-                return false;
-              },
-              onHide: function (colpkr) {
-                $(colpkr).fadeOut(500);
-
-                return false;
-              },
+              onShow: function (colpkr) { $(colpkr).fadeIn(500); }, // Fadein
+              onHide: function (colpkr) { $(colpkr).fadeOut(500); }, // Fadeout
               onChange: function(hsb, hex, rgb) {
                 defaultColour = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
 
@@ -2544,15 +2442,11 @@ popup = {
         });
 
 
-        $("#defaultRoom").autocomplete({
-          source: roomList
-        });
-        $("#watchRoomsBridge").autocomplete({
-          source: roomList
-        });
-        $("#ignoreListBridge").autocomplete({
-          source: userList
-        });
+        // Autocomplete Rooms and Users
+        $("#defaultRoom").autocomplete({ source: roomList });
+        $("#watchRoomsBridge").autocomplete({ source: roomList });
+        $("#ignoreListBridge").autocomplete({ source: userList });
+
 
         $('#defaultFace').html(fontSelectHtml);
 
@@ -2611,20 +2505,14 @@ popup = {
             settings[localId] = true;
             $.cookie('webpro_settings', Number($.cookie('webpro_settings')) + idMap[localId], { expires : 14 });
 
-            if (localId === 'disableFx') {
-              jQuery.fx.off = true;
-            }
-            if (localId === 'webkitNotifications') {
-              window.webkitNotifications.requestPermission();
-            }
+            if (localId === 'disableFx') { jQuery.fx.off = true; } // Disable jQuery Effects
+            if (localId === 'webkitNotifications' && 'webkitNotifications' in window) { window.webkitNotifications.requestPermission(); } // Ask client permission for webkit notifications
           }
           else if (!$(this).is(':checked') && settings[localId]) {
             settings[localId] = false;
             $.cookie('webpro_settings', Number($.cookie('webpro_settings')) - idMap[localId], { expires : 14 });
 
-            if (localId === 'disableFx') {
-              jQuery.fx.off = false;
-            }
+            if (localId === 'disableFx') { jQuery.fx.off = false; } // Reenable jQuery Effects
           }
         });
 
@@ -2724,6 +2612,65 @@ popup = {
       width : 1000,
       tabs : true,
       oF : function() {
+        if (roomIdLocal) {
+          $.ajax({
+            url: directory + 'api/getRooms.php?rooms=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+            type: 'GET',
+            timeout: 2400,
+            cache: false,
+            success: function(json) {
+              for (var i in json.getRooms.rooms) {
+                var data = '',
+                  roomName = json.getRooms.rooms[i].roomName,
+                  roomId = json.getRooms.rooms[i].roomId,
+                  allowedUsers = json.getRooms.rooms[i].allowedUsers,
+                  allowedGroups = json.getRooms.rooms[i].allowedGroups,
+                  defaultPermissions = json.getRooms.rooms[i].defaultPermissions,
+                  allowedUsersArray = [],
+                  moderatorsArray = [],
+                  allowedGroupsArray = [];
+
+                  for (var j in allowedUsers) {
+                    if (allowedUsers[j] & 15 === 15) { // Are all bits up to 8 present?
+                      moderatorsArray.push(j);
+                    }
+                    if (allowedUsers[j] & 7 === 7) { // Are the 1, 2, and 4 bits all present?
+                      allowedUsersArray.push(j);
+                    }
+                  }
+
+                break;
+              }
+
+              $('#name').val(roomName); // Current Room Name
+
+              // Prepopulate
+              if (allowedUsersArray.length > 0) autoEntry.showEntries('allowedUsers', allowedUsersArray);
+              if (moderatorsArray.length > 0) autoEntry.showEntries('moderators', moderatorsArray);
+              if (allowedGroupsArray.length > 0) autoEntry.showEntries('allowedGroups', allowedGroupsArray);
+
+              if (defaultPermissions == 7) { // Are All Users Allowed Presently?
+                $('#allowAllUsers').attr('checked', true);
+                $('#allowedUsersBridge').attr('disabled', 'disabled');
+                $('#allowedGroupsBridge').attr('disabled', 'disabled');
+                $('#allowedUsersBridge').next().attr('disabled', 'disabled');
+                $('#allowedGroupsBridge').next().attr('disabled', 'disabled');
+              }
+
+  //            if (mature) {
+  //              $('#mature').attr('checked', 'checked');
+  //            }
+
+              return false;
+            },
+            error: function() {
+              dia.error('Failed to obtain current room settings from server.');
+
+              return false;
+            }
+          });
+        }
+
         $.ajax({
           url: directory + 'api/getCensorLists.php?rooms=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
           type: 'GET',
@@ -2756,15 +2703,10 @@ popup = {
           }
         });
 
-        $("#moderatorsBridge").autocomplete({
-          source: userList
-        });
-        $("#allowedUsersBridge").autocomplete({
-          source: userList
-        });
-        $("#allowedGroupsBridge").autocomplete({
-          source: groupList
-        });
+        // Autocomplete Users and Groups
+        $("#moderatorsBridge").autocomplete({ source: userList });
+        $("#allowedUsersBridge").autocomplete({ source: userList });
+        $("#allowedGroupsBridge").autocomplete({ source: groupList });
 
         $('#allowAllUsers').change(function() {
           if ($(this).is(':checked')) {
@@ -2799,7 +2741,7 @@ popup = {
             dia.error('The roomname is too long.');
           }
           else {
-            $.post(directory + 'api/editRoom.php', 'action=' + action + '&roomName=' + urlencode(name) + '&defaultPermissions=' + ($('#allowAllUsers').is(':checked') ? '7' : '0' + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups) + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(json) {
+            $.post(directory + 'api/editRoom.php', 'action=' + action + '&roomId=' +  roomIdLocal + '&roomName=' + urlencode(name) + '&defaultPermissions=' + ($('#allowAllUsers').is(':checked') ? '7' : '0' + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups) + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(json) {
               var errStr = json.editRoom.errStr,
                 errDesc = json.editRoom.errDesc,
                 createRoomId = json.editRoom.response.insertId;
@@ -3212,19 +3154,10 @@ function windowDraw() {
     var newHeight = $(window).height();
     var newWidth = $(window).width();
 
-    if ($(this).parent().css('width') == newWidth && $(this).parent().css('height') == newHeight) {
-      // Already Maximized; Don't Do Anything
-    }
-    else {
-      $(this).parent().css({
-        width: newWidth,
-        height: newHeight,
-        left: 0,
-        top : 0
-      });
-
-      $(this).removeClass('ui-dialog-draggable');
-      $(this).parent().draggable("destroy").resizable("destroy");
+    if (($(this).parent().css('width') == newWidth && $(this).parent().css('height') == newHeight) === false) { // Only maximize if not already maximized.
+      $(this).parent().css({ width: newWidth, height: newHeight, left: 0, top : 0 });  // Set to the size of the window, realign to the upper-let corner.
+      $(this).removeClass('ui-dialog-draggable'); // Remove the drag indicator.
+      $(this).parent().draggable("destroy").resizable("destroy"); // Remove the ability to drag and resize.
     }
   });
 
@@ -3245,13 +3178,9 @@ function windowDraw() {
 
 
 
-  /*** Draw The Chatbox ***/
-  if (roomId && (userId | anonId)) {
-    $('#messageInput').removeAttr("disabled"); // The user is able to post.
-  }
-  else {
-    $('#messageInput').attr("disabled","disabled"); // The user is able to post.
-  }
+  // Disable the chatbox if the user is not allowed to post.
+  if (roomId && (userId | anonId)) { $('#messageInput').removeAttr("disabled"); } // The user is able to post.
+  else { $('#messageInput').attr("disabled","disabled"); } // The user is _not_ able to post.
 
 
 
@@ -3264,113 +3193,45 @@ function windowDraw() {
   return false;
 }
 
+
+
 function windowDynaLinks() {
   var noAdminCounter = 0, // This is probably a bad way of doing what we'll do, but meh.
     noModCounter = 0; // Same as above...
 
 
-  /* Show All Links */
+  // Show All Links At Start, Erasing the Effects of Below
   $('#moderateCat').show();
   $('#moderateCat').next().children().children().show(); // LIs
   $('#quickCat').next().children().children().show(); // LIs
   $('#moderateCat').next().children().children().children().show(); // Admin LIs
   $('#userMenu li').show(); // Context LIs
 
-  /* Remove Links if Not Available */
 
-  if (!userPermissions.createRoom) {
-    $('li > #createRoom').parent().hide();
-  }
-  if (!userPermissions.privateRoom) {
-    $('li > #privateRoom').parent().hide();
-    $('#userMenu a[data-action="private_im"]').parent().hide();
-  }
+  // Hide DOM Elements Based on User's Permissions
+  if (!userPermissions.createRoom) { $('li > #createRoom').parent().hide(); }
+  if (!userPermissions.privateRoom) { $('li > #privateRoom').parent().hide(); $('#userMenu a[data-action="private_im"]').parent().hide(); }
+  if (!adminPermissions.modUsers) { $('li > #modUsers').parent().hide(); $('ul#userMenu > li > a[data-action="ban"]').hide(); noAdminCounter += 1; }
+  if (!adminPermissions.modRooms) { $('ul#roomMenu > li > a[data-action="delete"]').hide(); noAdminCounter += 1; }
+  if (!adminPermissions.modImages) { $('li > #modImages').parent().hide(); $('ul#messageMenu > li > a[data-action="deleteimage"]').hide(); noAdminCounter += 1; }
+  if (!adminPermissions.modCensor) { $('li > #modCensor').parent().hide(); noAdminCounter += 1; }
+  if (!adminPermissions.modTemplates) { $('li > #modPhrases').parent().hide(); noAdminCounter += 1; }
+  if (!adminPermissions.modTemplates) { $('li > #modTemplates').parent().hide(); noAdminCounter += 1; }
+  if (!adminPermissions.modPrivs) { $('li > #modPrivs').parent().hide(); noAdminCounter += 1; }
+  if (!adminPermissions.modHooks) { $('li > #modHooks').parent().hide(); noAdminCounter += 1; }
+  if (!adminPermissions.modCore) { $('li > #modCore').parent().hide(); noAdminCounter += 1; }
+  if (modRooms[roomId] < 1) { $('li > #kick').parent().hide(); $('li > #manageKick').parent().hide(); $('#userMenu a[data-action="kick"]').parent().hide(); $('ul#messageMenu > li > a[data-action="delete"], ul#messageMenuImage > li > a[data-action="delete"], ul#messageMenuLink > li > a[data-action="delete"], ul#messageMenuVideo > li > a[data-action="delete"]').hide(); noModCounter += 2; }
+  if (modRooms[roomId] < 2) { $('li > #editRoom').parent().hide(); noModCounter += 1; }
 
+  // Remove Link Categories If They Are to Appear Empty (the counter is incremented in the above code block)
+  if (noAdminCounter === 8) { $('li > #modGeneral').parent().hide(); }
+  if (noModCounter === 3 && noAdminCounter === 8) { $('#moderateCat').hide(); }
 
-  if (!adminPermissions.modUsers) {
-    $('li > #modUsers').parent().hide();
-    $('ul#userMenu > li > a[data-action="ban"]').hide();
-
-    noAdminCounter += 1;
-  }
-  if (!adminPermissions.modRooms) {
-    $('ul#roomMenu > li > a[data-action="delete"]').hide();
-
-    noAdminCounter += 1;
-  }
-  if (!adminPermissions.modImages) {
-    $('li > #modImages').parent().hide();
-    $('ul#messageMenu > li > a[data-action="deleteimage"]').hide();
-
-    noAdminCounter += 1;
-  }
-  if (!adminPermissions.modCensor) {
-    $('li > #modCensor').parent().hide();
-
-    noAdminCounter += 1;
-  }
-  if (!adminPermissions.modTemplates) {
-    $('li > #modPhrases').parent().hide();
-
-    noAdminCounter += 1;
-  }
-  if (!adminPermissions.modTemplates) {
-    $('li > #modTemplates').parent().hide();
-
-    noAdminCounter += 1;
-  }
-  if (!adminPermissions.modPrivs) {
-    $('li > #modPrivs').parent().hide();
-
-    noAdminCounter += 1;
-  }
-  if (!adminPermissions.modHooks) {
-    $('li > #modHooks').parent().hide();
-
-    noAdminCounter += 1;
-  }
-  if (!adminPermissions.modCore) {
-    $('li > #modCore').parent().hide();
-
-    noAdminCounter += 1;
-  }
-
-  if (modRooms[roomId] < 1) {
-    $('li > #kick').parent().hide();
-    $('li > #manageKick').parent().hide();
-    $('#userMenu a[data-action="kick"]').parent().hide();
-
-    $('ul#messageMenu > li > a[data-action="delete"], ul#messageMenuImage > li > a[data-action="delete"], ul#messageMenuLink > li > a[data-action="delete"], ul#messageMenuVideo > li > a[data-action="delete"]').hide();
-
-    noModCounter += 2;
-  }
-  if (modRooms[roomId] < 2) {
-    $('li > #editRoom').parent().hide();
-
-    noModCounter += 1;
-  }
-
-
-
-  /* Remove Link Categories */
-  if (noAdminCounter === 8) {
-      $('li > #modGeneral').parent().hide();
-  }
-
-  if (noModCounter === 3 && noAdminCounter === 8) {
-    $('#moderateCat').hide();
-  }
-
-
-
-  /* Show Login or Logout Only */
-  if (userId && !anonId) {
-    $('li > #login').parent().hide();
-  }
-  else {
-    $('li > #logout').parent().hide();
-  }
+  // Show Login or Logout Only
+  if (userId && !anonId) { $('li > #login').parent().hide(); }
+  else { $('li > #logout').parent().hide(); }
 }
+
 
 
 function contextMenuParseUser(container) {
@@ -3710,106 +3571,29 @@ $(document).ready(function() {
 
 
   /*** Button Click Events ***/
+  $('#icon_note, #messageArchive, a#editRoom').unbind('click'); // Cleanup
 
-  // Cleanup
-  $('#icon_note, #messageArchive, a#editRoom').unbind('click');
-
-  // Archive
-  $('#icon_note, #messageArchive').bind('click',function() {
-    popup.archive({roomId : roomId});
-  });
-
-  // Edit Room
-  $('a#editRoom').bind('click',function() {
-    popup.editRoom(roomId);
-  });
-
-  // Trigger Login
-  $('#login').bind('click',function() {
-    popup.login();
-  });
-
-  // Trigger Logout
-  $('#logout').bind('click',function() {
-    standard.logout();
-    popup.login();
-  });
-
-  // Kick
-  $('a#kick').bind('click',function() {
-    popup.kick();
-  });
-
-  // Private Room
-  $('a#privateRoom').bind('click',function() {
-    popup.privateRoom();
-  });
-
-  // Manage Kick
-  $('a#manageKick').bind('click',function() {
-    popup.manageKicks();
-  });
-
-  // Online
-  $('a#online').bind('click',function() {
-    popup.online();
-  });
-
-  // Create Room
-  $('a#createRoom').bind('click',function() {
-    popup.editRoom();
-  });
-
-  // Edit Room
-  $('a.editRoomMulti').bind('click',function() {
-    popup.editRoom($(this).attr('data-roomId'));
-  });
-
-  // Help
-  $('#icon_help').bind('click',function() {
-    popup.help();
-  });
-
-  // Room List
-  $('#roomList').bind('click',function() {
-    popup.selectRoom();
-  });
-
-  // Stats
-  $('#viewStats').bind('click',function() {
-    popup.viewStats();
-  });
-
-  // Copyright & Credits
-  $('#copyrightLink').bind('click',function() {
-    popup.copyright();
-  });
-
-  // User Settings
-  $('#icon_settings, #changeSettings, a.changeSettingsMulti').bind('click',function() {
-    popup.userSettings();
-  });
-
-  // View My Uploads
-  $('#viewUploads').bind('click',function() {
-    popup.viewUploads();
-  });
-
-  // Upload
-  $('#icon_url').bind('click',function() {
-    popup.insertDoc('url');
-  });
+  $('#icon_note, #messageArchive').bind('click',function() { popup.archive({roomId : roomId}); }); // Archive
+  $('a#editRoom').bind('click',function() { popup.editRoom(roomId); }); // Edit Room
+  $('#login').bind('click',function() { popup.login(); }); // Login
+  $('#logout').bind('click',function() { standard.logout(); popup.login(); }); // Logout
+  $('a#kick').bind('click',function() { popup.kick(); }); // Kick
+  $('a#privateRoom').bind('click',function() { popup.privateRoom(); }); // Private Room
+  $('a#manageKick').bind('click',function() { popup.manageKicks(); }); // Manage Kicks
+  $('a#online').bind('click',function() { popup.online(); }); // Online
+  $('a#createRoom').bind('click',function() { popup.editRoom();}); // Create Room
+  $('a.editRoomMulti').bind('click',function() { popup.editRoom($(this).attr('data-roomId')); }); // Edit Room
+  $('#icon_help').bind('click',function() { popup.help(); }); // Help
+  $('#roomList').bind('click',function() { popup.selectRoom(); }); // Room List
+  $('#viewStats').bind('click',function() { popup.viewStats(); }); // Room Post Stats
+  $('#copyrightLink').bind('click',function() { popup.copyright(); }); // Copyright & Credits
+  $('#icon_settings, #changeSettings, a.changeSettingsMulti').bind('click',function() { popup.userSettings(); }); // User Settings
+  $('#viewUploads').bind('click',function() { popup.viewUploads(); }); // View My Uploads
+  $('#icon_url').bind('click',function() { popup.insertDoc('url'); }); // Upload
 
   // Room Shower Thing
-  $('#showMoreRooms').bind('click',function() {
-    $('#roomListShort').slideUp();
-    $('#roomListLong').slideDown();
-  });
-
-  $('#showFewerRooms').bind('click',function() {
-    $('#roomListLong').slideUp();
-    $('#roomListShort').slideDown();
-  });
+  $('#showMoreRooms').bind('click',function() { $('#roomListShort').slideUp(); $('#roomListLong').slideDown(); });
+  $('#showFewerRooms').bind('click',function() { $('#roomListLong').slideUp(); $('#roomListShort').slideDown(); });
 
 
 
@@ -3831,8 +3615,8 @@ $(document).ready(function() {
       dia.error('Please enter your message.');
     }
     else {
-      standard.sendMessage(message);
-      $('textarea#messageInput').val('');
+      standard.sendMessage(message); // Send the messaage
+      $('textarea#messageInput').val(''); // Clear the textbox
     }
 
     return false;
@@ -3842,7 +3626,7 @@ $(document).ready(function() {
 
   /*** Process Enter for Message Input ***/
   $('#messageInput').bind('keydown', function(e) {
-    if (e.keyCode === 13 && !e.shiftKey) {
+    if (e.keyCode === 13 && !e.shiftKey) { // Enter w/o shift
       $('#sendForm').submit();
       return false;
     }
