@@ -167,28 +167,29 @@
 &lt;div id="editRoom2"&gt;
 &lt;fieldset&gt;
 &lt;legend&gt;&lt;label&gt;&lt;input type="checkbox" id="allowAllUsers" name="allowAllUsers" /&gt; Allow All Users&lt;/label&gt;&lt;/legend&gt;
-&lt;label for="allowedUsers"&gt;$phrases[editRoomAllowedUsersLabel]&lt;/label&gt; &lt;input type="text" name="allowedUsersBridge" id="allowedUsersBridge" /&gt;&lt;input type="button" value="Add" onclick="autoEntry.addEntry('allowedUsers');" /&gt;&lt;input type="hidden" name="allowedUsers" id="allowedUsers" /&gt;&lt;br /&gt;
+&lt;label for="allowedUsers"&gt;$phrases[editRoomAllowedUsersLabel]&lt;/label&gt; &lt;input type="text" name="allowedUsersBridge" id="allowedUsersBridge" /&gt;&lt;input type="button" value="$phrases[editRoomAllowedUsersAdd]" /&gt;&lt;input type="hidden" name="allowedUsers" id="allowedUsers" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[editRoomAllowedUsersCurrent]&lt;span id="allowedUsersList"&gt;&lt;/span&gt;&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
 
-&lt;label for="allowedGroups"&gt;$phrases[editRoomAllowedGroupsLabel]&lt;/label&gt; &lt;input type="text" name="allowedGroupsBridge" id="allowedGroupsBridge" /&gt;&lt;input type="button" value="Add" onclick="autoEntry.addEntry('allowedGroups');" /&gt;&lt;input type="hidden" name="allowedGroups" id="allowedGroups" /&gt;&lt;br /&gt;
+&lt;label for="allowedGroups"&gt;$phrases[editRoomAllowedGroupsLabel]&lt;/label&gt; &lt;input type="text" name="allowedGroupsBridge" id="allowedGroupsBridge" /&gt;&lt;input type="button" value="$phrases[editRoomAllowedGroupsAdd]" /&gt;&lt;input type="hidden" name="allowedGroups" id="allowedGroups" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[editRoomAllowedGroupsCurrent]&lt;span id="allowedGroupsList"&gt;&lt;/span&gt;&lt;/span&gt;&lt;/small&gt;
 &lt;/fieldset&gt;&lt;br /&gt;
 
-&lt;label for="moderators"&gt;$phrases[editRoomModeratorsLabel]&lt;/label&gt; &lt;input type="text" name="moderatorsBridge" id="moderatorsBridge" /&gt;&lt;input type="button" value="Add" onclick="autoEntry.addEntry('moderators');" /&gt;&lt;input type="hidden" name="moderators" id="moderators" /&gt;&lt;br /&gt;
+&lt;label for="moderators"&gt;$phrases[editRoomModeratorsLabel]&lt;/label&gt; &lt;input type="text" name="moderatorsBridge" id="moderatorsBridge" /&gt;&lt;input type="button" value="$phrases[editRoomModeratorsAdd]" /&gt;&lt;input type="hidden" name="moderators" id="moderators" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[editRoomModeratorsCurrent]&lt;span id="moderatorsList"&gt;&lt;/span&gt;&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
 
 &lt;button type="submit"&gt;{{if="$_GET['action'] == 'create'"}{$phrases[createRoomSubmit]}{$phrases[editRoomSubmit]}}&lt;/button&gt;&lt;button type="reset"&gt;$phrases[editRoomReset]&lt;/button&gt;&lt;/div&gt;
 &lt;/form&gt;
     </template>
 
-    <template name="userSettingsForm" vars="enableDF">&lt;link rel="stylesheet" media="screen" type="text/css" href="client/colorpicker/css/colorpicker.css" /&gt;
+    <template name="userSettingsForm">&lt;link rel="stylesheet" media="screen" type="text/css" href="client/colorpicker/css/colorpicker.css" /&gt;
 &lt;script type="text/javascript" src="client/colorpicker/js/colorpicker.js"&gt;&lt;/script&gt;
 
 &lt;ul class="tabList"&gt;
 &lt;li&gt;&lt;a href="#settings1"&gt;$phrases[settingsTabDisplay]&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#settings4"&gt;$phrases[settingsTabHacks]&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#settings2"&gt;$phrases[settingsTabFormatting]&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#settings3"&gt;$phrases[settingsTabGeneral]&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#settings2"&gt;$phrases[settingsTabHacks]&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#settings3"&gt;$phrases[settingsTabLocal]&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#settings4"&gt;$phrases[settingsTabFormatting]&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#settings5"&gt;$phrases[settingsTabGeneral]&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;form action="#" method="post" id="changeSettingsForm"&gt;
@@ -229,7 +230,7 @@
 &lt;/div&gt;
 
 
-&lt;div id="settings4"&gt;
+&lt;div id="settings2"&gt;
 &lt;label for="disableFx"&gt;$phrases[settingsDisableFxLabel]&lt;/label&gt; &lt;input type="checkbox" name="disableFx" id="disableFx" value="true" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsDisableFxBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
 
@@ -244,7 +245,16 @@
 &lt;/div&gt;
 
 
-&lt;div id="settings2"&gt;
+&lt;div id="settings3"&gt;
+&lt;label for="usTime"&gt;$phrases[settingsUSTimeLabel]&lt;/label&gt; &lt;input type="checkbox" name="usTime" id="usTime" value="true" /&gt;&lt;br /&gt;
+&lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsUSTimeBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
+
+&lt;label for="twelveHourFormat"&gt;$phrases[settingsTwelveHourFormatLabel]&lt;/label&gt; &lt;input type="checkbox" name="v" id="twelveHourFormat" value="true" /&gt;&lt;br /&gt;
+&lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsTwelveHourFormatBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
+&lt;/div&gt;
+
+
+&lt;div id="settings4"&gt;
 {{if="$enableDF"}{
 $phrases[settingsDefaultFormattingLabel]&lt;br /&gt;
 
@@ -256,9 +266,9 @@ $phrases[settingsDefaultFormattingLabel]&lt;br /&gt;
 {{if="$enableDF['highlight']"}{&lt;input style="width: 40px;" id="defaultHighlight" name="defaultHighlight" /&gt;}}
 
 {{if="$enableDF['general']"}{
-&lt;label for="defaultBold"&gt;$phrases[settingsDefaultFormattingBoldLabel]&lt;/label&gt;&lt;input type="checkbox" name="defaultBold" id="defaultBold" onchange="if ($(this).is(':checked')) { $('#fontPreview').css('font-weight','bold'); } else { $('#fontPreview').css('font-weight','normal'); }" value="true" /&gt;
+&lt;label for="defaultBold"&gt;$phrases[settingsDefaultFormattingBoldLabel]&lt;/label&gt;&lt;input type="checkbox" name="defaultBold" id="defaultBold" value="true" /&gt;
 
-&lt;label for="defaultItalics"&gt;$phrases[settingsDefaultFormattingItalicsLabel]&lt;/label&gt;&lt;input type="checkbox" name="defaultItalics" id="defaultItalics" value="true"{{if="$user['defaultFormatting'] &amp; 512"}{ checked="checked"}} onchange="if ($(this).is(':checked')) { $('#fontPreview').css('font-style','italic'); } else { $('#fontPreview').css('font-style','normal'); }" /&gt;&lt;br /&gt;&lt;br /&gt;}}
+&lt;label for="defaultItalics"&gt;$phrases[settingsDefaultFormattingItalicsLabel]&lt;/label&gt;&lt;input type="checkbox" name="defaultItalics" id="defaultItalics" value="true" /&gt;&lt;br /&gt;&lt;br /&gt;}}
 
 &lt;label for="disableFormatting"&gt;$phrases[settingsDisableFormattingLabel]&lt;/label&gt; &lt;input type="checkbox" name="settingsOfficialAjax_disableFormatting" id="disableFormatting" value="true" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsDisableFormattingBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
@@ -272,7 +282,7 @@ $phrases[settingsDefaultFormattingLabel]&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;" id="fontPreview"&gt;$phrases[settingsDefaultFormattingPreview]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;}}
 &lt;/div&gt;
 
-&lt;div id="settings3"&gt;
+&lt;div id="settings5"&gt;
 &lt;label for="defaultRoom"&gt;$phrases[settingsDefaultRoomLabel]&lt;/label&gt; &lt;input type="text" name="defaultRoom" id="defaultRoom" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsDefaultRoomBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
 
@@ -284,16 +294,16 @@ $phrases[settingsDefaultFormattingLabel]&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsIgnoreListBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;&lt;span id="ignoreListList"&gt;&lt;/span&gt;&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
 
-&lt;input type="hidden" name="watchRooms" id="watchRooms" value="$user[watchRooms]" /&gt;
-&lt;input type="hidden" name="ignoreList" id="ignoreList" value="$user[ignoreList]" /&gt;
+&lt;input type="hidden" name="watchRooms" id="watchRooms" /&gt;
+&lt;input type="hidden" name="ignoreList" id="ignoreList" /&gt;
 &lt;/div&gt;
 
 &lt;button type="submit"&gt;Save Settings&lt;/button&gt;&lt;button type="reset"&gt;Reset&lt;/button&gt;
 &lt;input type="hidden" name="settingsOfficialAjax" value="true" /&gt;&lt;/form&gt;
     </template>
 
-    <template name="chatTemplate" vars="parseFlags,canModerate,chatTemplate,textboxStyle,stopMessage">&lt;div id="roomTemplateContainer"&gt;
-&lt;div id="chatContainer"{{if="$stopMessage"}{style="display: none;"}}&gt;
+    <template name="chatTemplate" vars="">&lt;div id="roomTemplateContainer"&gt;
+&lt;div id="chatContainer"&gt;
 {{container}{&lt;div id="title"&gt;
 
   &lt;div id="rightTitle" class="rightPart"&gt;
@@ -326,7 +336,7 @@ $phrases[settingsDefaultFormattingLabel]&lt;br /&gt;
       &lt;button type="reset" class="standard" id="icon_reset"&gt;&lt;/button&gt;
     &lt;/div&gt;}{
     &lt;div id="messageInputContainer" class="middle"&gt;
-      &lt;textarea id="messageInput" autofocus="autofocus" placeholder="Enter your text." style="$textboxStyle"&gt;&lt;/textarea&gt;
+      &lt;textarea id="messageInput" autofocus="autofocus" placeholder="Enter your text."&gt;&lt;/textarea&gt;
     &lt;/div&gt;}}
   &lt;/form&gt;
 &lt;/div&gt;
@@ -402,46 +412,46 @@ $phrases[helpFAQs]
     </template>
 
     <template name="contextMenu" vars="">&lt;ul id="userMenu" class="contextMenu"&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="private_im"&gt;Private IM&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="profile"&gt;View Profile&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="ignore"&gt;Un/Ignore User&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="kick"&gt;Kick&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="ban"&gt;Ban&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="private_im"&gt;$phrases[cmenuUserPrivateIM]&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="profile"&gt;$phrases[cmenuUserProfile]&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="ignore"&gt;$phrases[cmenuUserIgnore]&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="kick"&gt;$phrases[cmenuUserKick]&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="ban"&gt;$phrases[cmenuUserBan]&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;ul id="messageMenu" class="contextMenu"&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="link"&gt;Link To&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;Delete&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="link"&gt;$phrases[cmenuMessageLink]&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;$phrases[cmenuMessageDelete]&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;ul id="messageMenuImage" class="contextMenu"&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="url"&gt;Get Image URL&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="deleteimage"&gt;Delete Image&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="url"&gt;$phrases[cmenuMessageImageURL]&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="deleteimage"&gt;$phrases[cmenuMessageImageDeleteImage]&lt;/a&gt;&lt;/li&gt;
 
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="link"&gt;Link To Message&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;Delete Message&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="link"&gt;$phrases[cmenuMessageImageLink]&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;$phrases[cmenuMessageImageDelete]&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;ul id="messageMenuLink" class="contextMenu"&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="url"&gt;Get URL&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="url"&gt;$phrases[cmenuMessageLinkURL]&lt;/a&gt;&lt;/li&gt;
 
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="link"&gt;Link To Message&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;Delete Message&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="link"&gt;$phrases[cmenuMessageLinkLink]&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;$phrases[cmenuMessageLinkDelete]&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;ul id="messageMenuVideo" class="contextMenu"&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="url"&gt;Get URL&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="hide"&gt;Hide This Video&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="url"&gt;$phrases[cmenuMessageVideoURL]&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="deleteimage"&gt;$phrases[cmenuMessageVideoHide]&lt;/a&gt;&lt;/li&gt;
 
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="link"&gt;Link To Message&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;Delete Message&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="link"&gt;$phrases[cmenuMessageVideoLink]&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;$phrases[cmenuMessageVideoDelete]&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;ul id="roomMenu" class="contextMenu"&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="enter"&gt;Enter Room&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="archive"&gt;View Archive&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="edit"&gt;Edit Room&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;Delete Room&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="enter"&gt;$phrase[cmenuRoomEnter]&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="archive"&gt;$phrase[cmenuRoomArchive]&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="edit"&gt;$phrase[cmenuRoomEdit]&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="javascript:void(0);" data-action="delete"&gt;$phrase[cmenuRoomDelete]&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
     </template>
 
