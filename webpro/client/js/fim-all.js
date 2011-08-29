@@ -188,12 +188,8 @@ function toBottom() {
 }
 
 function faviconFlash() {
-  if ($('#favicon').attr('href') === 'images/favicon.ico')
-    $('#favicon').attr('href', 'images/favicon2.ico');
-  else
-    $('#favicon').attr('href', 'images/favicon.ico');
-
-  return false;
+  if ($('#favicon').attr('href') === 'images/favicon.ico') $('#favicon').attr('href', 'images/favicon2.ico');
+  else $('#favicon').attr('href', 'images/favicon.ico');
 }
 
 function messageFormat(json, format) {
@@ -220,43 +216,18 @@ function messageFormat(json, format) {
 
   switch (flag) {
     case 'image':
-    if (settings.disableImage)
-      text = '<a href="' + text + '" target="_BLANK">[Image]</a>';
-    else
-      text = '<a href="' + text + '" target="_BLANK"><img src="' + text + '" style="max-width: 250px; max-height: 250px;" /></a>';
+    if (settings.disableImage) text = '<a href="' + text + '" target="_BLANK">[Image]</a>';
+    else text = '<a href="' + text + '" target="_BLANK"><img src="' + text + '" style="max-width: 250px; max-height: 250px;" /></a>';
     break;
 
     case 'video':
-    if (settings.disableVideo)
-      text = '<a href="' + text + '" target="_BLANK">[Video]</a>';
-    else
-      text = '<video src="' + text + '" controls></video><br /><small><a href="'+ text + '">If you can not see the above link, click here.</a></small>';
+    if (settings.disableVideo) text = '<a href="' + text + '" target="_BLANK">[Video]</a>';
+    else text = '<video src="' + text + '" controls></video><br /><small><a href="'+ text + '">If you can not see the above link, click here.</a></small>';
     break;
 
     case 'audio':
-    if (settings.disableVideo)
-      text = '<a href="' + text + '" target="_BLANK">[Video]</a>';
-    else
-      text = '<audio src="' + text + '" controls></video><br /><small><a href="'+ text + '">If you can not see the above link, click here.</a></small>';
-    break;
-
-    case 'youtube':
-    var code = false;
-
-    if (text.match(/http\:\/\/(www\.|)youtube\.com\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/) !== null)
-      code = text.replace(/http\:\/\/(www\.|)youtube\.com\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/i, "$4");
-    else if (text.match(/http\:\/\/(www\.|)youtu\.be\/([a-zA-Z0-9]+)/) !== null)
-      code = text.replace(/http\:\/\/(www\.|)youtu\.be\/([a-zA-Z0-9]+)/i, "$2");
-    else
-      text = '<span style="color: red; font-style: oblique;">[Invalid Youtube Video]</span>';
-
-
-    if (code) {
-      if (settings.disableVideo)
-        text = '<a href="https://www.youtu.be/' + code + '" target="_BLANK">[Youtube Video]</a>';
-      else
-        text = '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>';
-    }
+    if (settings.disableVideo) text = '<a href="' + text + '" target="_BLANK">[Video]</a>';
+    else text = '<audio src="' + text + '" controls></video><br /><small><a href="'+ text + '">If you can not see the above link, click here.</a></small>';
     break;
 
     case 'email':
@@ -277,7 +248,29 @@ function messageFormat(json, format) {
         var $2 = '';
       }
 
-      if ($1.match(regexs.image)) {
+      if ($1.match(regexs.youtubeFull) || $1.match(regexs.youtubeShort)) {
+        var code = false;
+
+        if (text.match(regexs.youtubeFull) !== null) {
+          code = text.replace(regexs.youtubeFull, "$8");
+        }
+        else if (text.match(regexs.youtubeShort) !== null) {
+          code = text.replace(regexs.youtubeShort, "$5");
+        }
+
+        if (code) {
+          if (settings.disableVideo) {
+            return '<a href="https://www.youtu.be/' + code + '" target="_BLANK">[Youtube Video]</a>';
+          }
+          else {
+            return '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>';
+          }
+        }
+        else {
+          return '[Logic Error]';
+        }
+      }
+      else if ($1.match(regexs.image)) {
         return '<a href="' + $1 + '" target="_BLANK">' + (settings.disableImage ? '[IMAGE]' : '<img src="' + $1 + '" style="max-width: 250px; max-height: 250px;" />') + '</a>' + $2;
       }
       else {
@@ -646,35 +639,30 @@ var regexs = {
 
   url2 : new RegExp("^(.+)([\"\?\!\.])$"),
 
-  image : new RegExp("^(.+)\.(jpg|jpeg|gif|png|svg|svgz|bmp|ico)$")
+  image : new RegExp("^(.+)\.(jpg|jpeg|gif|png|svg|svgz|bmp|ico)$"),
 
-/*        if (message.match(/http\:\/\/(www\.|)youtube\.com\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/) !== null) { flag = 'youtube'; }
-      else if (message.match(/http\:\/\/(www\.|)youtu\.be\/([a-zA-Z0-9]+)/) !== null) { flag = 'youtube'; }
+//        if (message.match(/http\:\/\/(www\.|)youtube\.com\/(.*?)(\?|\&)/) !== null) { flag = 'youtube'; }
+//      else if (message.match(/http\:\/\/(www\.|)youtu\.be\/([a-zA-Z0-9]+)/) !== null) { flag = 'youtube'; }
 
   youtubeFull : new RegExp("^(" +
-    "(" +
-      "(http|https)" + // List of acceptable protocols. (so far: "http")
-      ":" + // Colon! (so far: "http:")
-      "(\/\/|)" + // "//" is optional; this allows for it or nothing. (so far: "http://")
-    "|)" // Protocol optional here.
-    "(" +
-      "(([^\ \/]+?)\.|)" + // Anything up to a period (minus forbidden symbols), but optional. (so far: "http://www.")
-      "([a-zA-Z0-9\-]+)" + // Alphanumeric up to the next period. (so far: "http://www.google")
-      "\." + // The period! (so far: "http://www.google.")
-      "(com)" + // YouTube TLD
-      "|localhost" + // Largely for dev, support "localhost" too.
-    ")" +
-    "(" +
-      ":" + // Colon for the port.
-      "([0-9]+)" + // Numeric port.
-      "|" + // This is all optional^
-    ")" +
-    "(" +
-      "(\/)" + // The slash! (so far: "http://www.google.com/")
-      "([^\ \n\<\>\"]*)" + // Almost anything, except spaces, new lines, <s, >s, or quotes
-      "|" + // This is all optional^
-    ")" +
-  ")$"),*/
+    "(http|https)" + // List of acceptable protocols. (so far: "http")
+    "\:" + // Colon! (so far: "http:")
+    "(\/\/|)" + // "//" is optional; this allows for it or nothing. (so far: "http://")
+    "(www|)" + // "www" optional (so far: "http://www")
+    "\.youtube\.com" + // Period and domain after "www" (so far: "http://www.")
+    "([^\ ]*?)" + // Anything except spaces
+    "(\\?|\&)" + // ? or &
+    "(w|v)=([a-zA-Z0-9]+)" + // The video ID
+  ")$", "i"),
+
+  youtubeShort : new RegExp("^(" +
+    "(http|https)" + // List of acceptable protocols. (so far: "http")
+    "\:" + // Colon! (so far: "http:")
+    "(\/\/|)" + // "//" is optional; this allows for it or nothing. (so far: "http://")
+    "(www|)" + // "www" optional (so far: "http://www")
+    "\.youtu\.be" + // Period and domain after "www" (so far: "http://www.")
+    "([a-zA-Z0-9]+)" + // THe video ID
+  ")$", "i")
 }
 
 
@@ -891,7 +879,7 @@ function populate(options) {
 *********************************************************/
 
 function youtubeSend(id) { // TODO
-  standard.sendMessage('http://www.youtube.com/watch?v=' + id,0,'youtube');
+  standard.sendMessage('http://www.youtube.com/watch?v=' + id, 0, 'url');
 
   $('#textentryBoxYoutube').dialog('close');
 }
@@ -1724,13 +1712,6 @@ var standard = {
 
 
   sendMessage : function(message, confirmed, flag) {
-    if (!flag) {
-      flag = '';
-
-      if (message.match(/http\:\/\/(www\.|)youtube\.com\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/) !== null) { flag = 'youtube'; }
-      else if (message.match(/http\:\/\/(www\.|)youtu\.be\/([a-zA-Z0-9]+)/) !== null) { flag = 'youtube'; }
-    }
-
     if (!roomId) {
       popup.selectRoom();
     }
@@ -1740,7 +1721,7 @@ var standard = {
       $.ajax({
         url: directory + 'api/sendMessage.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
         type: 'POST',
-        data: 'roomId=' + roomId + '&confirmed=' + confirmed + '&message=' + urlencode(message) + '&flag=' + flag,
+        data: 'roomId=' + roomId + '&confirmed=' + confirmed + '&message=' + urlencode(message) + '&flag=' + (flag ? flag : ''),
         cache: false,
         timeout: 5000,
         success: function(json) {

@@ -356,7 +356,7 @@ class messageParse {
     // Flags allow for less hassle on some communications.
     // Supported flags: image, video, link, email
     // Other flags that won't be parsed here: me, topic
-    if (in_array($this->messageFlag, array('image', 'video', 'link', 'email', 'youtube', 'html', 'audio', 'text'))) {
+    if (in_array($this->messageFlag, array('image', 'video', 'url', 'email', 'html', 'audio', 'text'))) {
       return $this->messageText;
     }
     else {
