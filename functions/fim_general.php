@@ -587,41 +587,6 @@ function rgb2html($r, $g = false, $b = false) {
 
 
 /**
- * Produces a date string based on specialized conditions.
- *
- * @param string $format - The format to be used; if false a format will be generated based on the distance between the current time and the time specicied.
- * @param int $timestamp - The timestamp to be used, defaulting to the current timestamp.
- * @global $user
- * @return string
- * @author Unknown
- */
-function fim_date($format, $timestamp = false) {
-  global $user, $config;
-
-  $timestamp = ($timestamp ? $timestamp : time()); // If a timestamp was specified, we'll go with it, otherwise get it from PHP's time().
-
-  $hourdiff = (isset($user['timeZone']) ? $user['timeZone'] : $config['defaultTimeZone']); // If the user's timeZone offset (e.g. 2 = 2 hour ahead) is set, we use it, otherwise we'll use the systsem default.
-  $timestampAdj = $timestamp + ($hourdiff * 3600); // Get the updated timestamp by adding the current timestamp and the hour diff, multiplied by 3600 (the number of seconds in hours).
-
-  if ($format === false) { // If format is not specified, we use a dynamic format that will only show the day if the date is not on the current day.
-    $midnight = strtotime("yesterday") - $hourdiff; // Get the time of the last midight.
-
-    if ($timestampAdj > $midnight) { // The date falls on the current day (the timestamp is after the last midnight).
-      $format = 'g:i:sa';
-    }
-    else { // The date does not fall on the current day.
-      $format = 'm/d/y g:i:sa';
-    }
-  }
-
-  $newDate = gmdate($format, $timestampAdj); // Using PHP's gmdate(), get a date string based on the specified format and the adjusted timezone. Note that gmdate() is the same as date(), but forces GMT/UST.
-
-  return $newDate;
-}
-
-
-
-/**
  * Retrieves a hook from the database.
  *
  * @param string $name

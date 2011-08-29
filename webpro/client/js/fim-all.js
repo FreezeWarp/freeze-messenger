@@ -54,6 +54,16 @@ else if (false === ('onhashchange' in window)) {
 
   throw new Error('Your browser does not seem to support onhashchange operations. The script has exited.');
 }
+else if (typeof Date === 'undefined') {
+  window.location.href = 'browser.php';
+
+  throw new Error('Your browser does not seem to support the Date object. The script has exited.');
+}
+else if (typeof Math === 'undefined') {
+  window.location.href = 'browser.php';
+
+  throw new Error('Your browser does not seem to support the Math object. The script has exited.');
+}
 
 
 
@@ -87,81 +97,40 @@ var topic,
 
 /* Objects for Cleanness, Caching. */
 
-var roomRef = {}, // Object
-  roomIdRef = {}, // Object
-  roomList = [], // Array
-  modRooms = {}, // Object // Rooms which the user has special permissions in.
+var roomRef = {}, roomIdRef = {}, modRooms = {}, // Just a whole bunch of objects.
+  userRef = {}, userIdRef = {}, groupRef = {},
+  groupIdRef = {}, fontIdRef = {}, uploadFileTypes = {},
 
-  userRef = {}, // Object
-  userIdRef = {}, // Object
-  userList = [], // Array
+  roomList = [], userList = [], groupList = [], // Arrays that serve different purposes, notably looking up IDs from names.
+  messageIndex = [],
 
-  groupRef = {}, // Object
-  groupList = [], // Array
-  groupIdRef = {}, // Object
+  roomUlFavHtml = '', roomUlMyHtml = '', roomUlPrivHtml = '', // A bunch of strings displayed at different points.
+  roomUlHtml = '', ulText = '', roomTableHtml = '',
+  roomSelectHtml = '', userSelectHtml = '', fontSelectHtml = '',
 
-  fontIdRef = {}, // Object
-
-  messageIndex = [], // Array
-
-  roomUlFavHtml = '',
-  roomUlMyHtml = '',
-  roomUlPrivHtml = '',
-  roomUlHtml = '',
-  ulText = '',
-  roomTableHtml = '',
-  roomSelectHtml = '',
-
-  userSelectHtml = '',
-
-  fontSelectHtml = '',
-
-  active = {}, // Object which will be used to store various JSON results
-  uploadFileTypes = {};
+  active = {}; // This is used as a placeholder for JSON objects where code cleanity is nice.
 
 
 
 /* Get Cookies */
+var theme = $.cookie('webpro_theme'), // Theme (goes into effect in document.ready)
+  fontsize = $.cookie('webpro_fontsize'), // Font Size (goes into effect in document.ready)
+  settingsBitfield = $.cookie('webpro_settings'); // Settings Bitfield (goes into effect all over the place)
 
-// Theme (goes into effect in document.ready)
-var theme = $.cookie('webpro_theme');
+if (theme === null) theme = 'start';
+if (fontsize === null) fontsize = 1;
+if (settingsBitfield === null) settingsBitfield = 8192 + 16777216 + 33554432; // US Time, 12-Hour Format, Audio Ding
 
-if (!theme) {
-  theme = 'start';
-}
-
-// Font Size (goes into effect in document.ready)
-var fontsize = $.cookie('webpro_fontsize');
-
-// Settings Bitfield (goes into effect all over the place)
-if ($.cookie('webpro_settings') === null) {
-  var settingsBitfield = 8192;
-}
-else if (Number($.cookie('webpro_settings'))) {
-  var settingsBitfield = Number($.cookie('webpro_settings'));
-}
-else {
-  var settingsBitfield = 0;
-  $.cookie('webpro_settings',0);
-}
 
 // Audio File (a hack I placed here just for fun)
 if (typeof Audio !== 'undefined') {
   var snd = new Audio();
 
-  if ($.cookie('webpro_audioFile') !== null) {
-    audioFile = $.cookie('webpro_audioFile');
-  }
+  if ($.cookie('webpro_audioFile') !== null) audioFile = $.cookie('webpro_audioFile');
   else {
-    if (snd.canPlayType('audio/ogg; codecs=vorbis')) {
-      audioFile = 'images/beep.ogg';
-    }
-    else if (snd.canPlayType('audio/mp3')) {
-      audioFile = 'images/beep.mp3';
-    }
-    else if (snd.canPlayType('audio/wav')) {
-      audioFile = 'images/beep.wav';
-    }
+    if (snd.canPlayType('audio/ogg; codecs=vorbis')) audioFile = 'images/beep.ogg';
+    else if (snd.canPlayType('audio/mp3')) audioFile = 'images/beep.mp3';
+    else if (snd.canPlayType('audio/wav')) audioFile = 'images/beep.wav';
     else {
       audioFile = '';
 
@@ -171,20 +140,18 @@ if (typeof Audio !== 'undefined') {
 
   snd.setAttribute('src', audioFile);
 
+
   // Audio Volume
-  if ($.cookie('webpro_audioVolume') !== null) {
-    snd.volume = $.cookie('webpro_audioVolume') / 100;
-  }
-  else {
-    snd.volume = .5;
-  }
+  if ($.cookie('webpro_audioVolume') !== null) snd.volume = ($.cookie('webpro_audioVolume') / 100);
+  else snd.volume = .5;
 }
 else {
-  snd = {
+  var snd = {
     play : function() { return false; },
     volume : 0
   }
 }
+
 
 /* Get the absolute API path.
 * TODO: Define this in a more "sophisticated manner". */
@@ -221,12 +188,10 @@ function toBottom() {
 }
 
 function faviconFlash() {
-  if ($('#favicon').attr('href') === 'images/favicon.ico') {
+  if ($('#favicon').attr('href') === 'images/favicon.ico')
     $('#favicon').attr('href', 'images/favicon2.ico');
-  }
-  else {
+  else
     $('#favicon').attr('href', 'images/favicon.ico');
-  }
 
   return false;
 }
@@ -236,7 +201,7 @@ function messageFormat(json, format) {
     ujson = json.userData,
     data,
     text = mjson.messageText,
-    messageTime = mjson.messageTimeFormatted,
+    messageTime = date(mjson.messageTime),
     messageId = mjson.messageId,
 
     userName = ujson.userName,
@@ -255,52 +220,42 @@ function messageFormat(json, format) {
 
   switch (flag) {
     case 'image':
-    if (settings.disableImage) {
+    if (settings.disableImage)
       text = '<a href="' + text + '" target="_BLANK">[Image]</a>';
-    }
-    else {
+    else
       text = '<a href="' + text + '" target="_BLANK"><img src="' + text + '" style="max-width: 250px; max-height: 250px;" /></a>';
-    }
     break;
 
     case 'video':
-    if (settings.disableVideo) {
+    if (settings.disableVideo)
       text = '<a href="' + text + '" target="_BLANK">[Video]</a>';
-    }
-    else {
+    else
       text = '<video src="' + text + '" controls></video><br /><small><a href="'+ text + '">If you can not see the above link, click here.</a></small>';
-    }
     break;
 
     case 'audio':
-    if (settings.disableVideo) {
+    if (settings.disableVideo)
       text = '<a href="' + text + '" target="_BLANK">[Video]</a>';
-    }
-    else {
+    else
       text = '<audio src="' + text + '" controls></video><br /><small><a href="'+ text + '">If you can not see the above link, click here.</a></small>';
-    }
     break;
 
     case 'youtube':
-    if (text.match(/http\:\/\/(www\.|)youtube\.com\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/) !== null) {
-      var code = text.replace(/http\:\/\/(www\.|)youtube\.com\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/i, "$4");
-    }
-    else if (text.match(/http\:\/\/(www\.|)youtu\.be\/([a-zA-Z0-9]+)/) !== null) {
-      var code = text.replace(/http\:\/\/(www\.|)youtu\.be\/([a-zA-Z0-9]+)/i, "$2");
-    }
-    else {
-      var code = false;
+    var code = false;
+
+    if (text.match(/http\:\/\/(www\.|)youtube\.com\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/) !== null)
+      code = text.replace(/http\:\/\/(www\.|)youtube\.com\/(.*?)(\?|\&)w=([a-zA-Z0-9]+)/i, "$4");
+    else if (text.match(/http\:\/\/(www\.|)youtu\.be\/([a-zA-Z0-9]+)/) !== null)
+      code = text.replace(/http\:\/\/(www\.|)youtu\.be\/([a-zA-Z0-9]+)/i, "$2");
+    else
       text = '<span style="color: red; font-style: oblique;">[Invalid Youtube Video]</span>';
-    }
 
 
     if (code) {
-      if (settings.disableVideo) {
+      if (settings.disableVideo)
         text = '<a href="https://www.youtu.be/' + code + '" target="_BLANK">[Youtube Video]</a>';
-      }
-      else {
+      else
         text = '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>';
-      }
     }
     break;
 
@@ -314,12 +269,19 @@ function messageFormat(json, format) {
 
     case '':
     text = text.replace(regexs.url, function($1) {
-      if ($1.match(regexs.image)) {
-        return '<a href="' + $1 + '" target="_BLANK">' + (settings.disableImage ? '[IMAGE]' : '<img src="' + $1 + '" style="max-width: 250px; max-height: 250px;" />') + '</a>';
+      if ($1.match(regexs.url2)) {
+        var $2 = $1.replace(regexs.url2, "$2");
+        $1 = $1.replace(regexs.url2, "$1"); // By doing this one second we don't have to worry about storing the variable first to get $2
       }
       else {
-        var newpattern = $1.match(regexs.url2) ? $1.replace(regexs.url2, "$1") : $1;
-        return '<a href="' + newpattern + '" target="_BLANK">' + newpattern + '</a>'
+        var $2 = '';
+      }
+
+      if ($1.match(regexs.image)) {
+        return '<a href="' + $1 + '" target="_BLANK">' + (settings.disableImage ? '[IMAGE]' : '<img src="' + $1 + '" style="max-width: 250px; max-height: 250px;" />') + '</a>' + $2;
+      }
+      else {
+        return '<a href="' + $1 + '" target="_BLANK">' + $1 + '</a>' + $2;
       }
     });
 
@@ -421,6 +383,60 @@ function messagePopup(data) {
       notify.webkitNotify('images/favicon.ico', 'New Message', data);
     }
   }
+}
+
+function date (timestamp, full) {
+  // This pads zeros to the start of time values.
+  _zeropad = function (number, newLength) {
+    var numberString = number + '';
+
+    for (var i = numberString.length; i < newLength; i++) {
+      number = '0' + number;
+    }
+
+    return number;
+  }
+
+
+  // Create the date object; set it to the specified timestamp.
+  var jsdate = new Date;
+  jsdate.setTime(timestamp * 1000);
+
+
+  // Time-part object -- this makes the below formats a bit more readable (...and writable).
+  _timepart = {
+    seconds: function () { return _zeropad(jsdate.getSeconds(), 2); }, // Seconds
+    minutes: function () { return _zeropad(jsdate.getMinutes(), 2); }, // Minutes
+    hours: function () { return _zeropad((jsdate.getHours() % 12 || 12), 2); }, // 12-Hours
+    hours24: function () { return _zeropad(jsdate.getHours(), 2); }, // 24-Hours
+    days: function () { return _zeropad(jsdate.getDate(), 2); }, // Days
+    months: function () { return _zeropad(jsdate.getMonth() + 1, 2); }, // Month
+    years: function () { return jsdate.getFullYear(); } // Year
+  };
+
+
+  if (!full) { // Short code
+    last24Code = false; // WIP
+
+    if (!last24Code) {
+      full = true;
+    }
+  }
+
+  if (full) { // Long code
+    var timestring = (settings.usTime ?
+      (_timepart.months() + '-' + _timepart.days() + '-' + _timepart.years()) :
+      (_timepart.days() + '-' + _timepart.months() + '-' + _timepart.years())) +
+    ' ' + (settings.twelveHourTime ?
+      _timepart.hours() :
+      _timepart.hours24()) +
+    ':' + _timepart.minutes() + ':' + _timepart.seconds();
+  }
+  else {
+
+  }
+
+  return timestring;
 }
 
 
@@ -567,20 +583,13 @@ $.ajax({
 /* Permission Dead Defaults
 * Specifically, These All Start False then Change on-Login */
 var userPermissions = {
-  createRoom : false,
-  privateRoom : false
+  createRoom : false, privateRoom : false
 };
 
 var adminPermissions = {
-  modPrivs : false,
-  modCore : false,
-  modUsers : false,
-  modImages : false,
-  modCensor : false,
-  modPlugins : false,
-  modTemplates: false,
-  modHooks : false,
-  modTranslations : false
+  modPrivs : false, modCore : false, modUsers : false,
+  modImages : false, modCensor : false, modPlugins : false,
+  modTemplates: false, modHooks : false, modTranslations : false
 };
 
 
@@ -588,15 +597,26 @@ var adminPermissions = {
 /* Settings
  * These Are Set Based on Cookies */
 var settings = {
+  // Formatting
   disableFormatting : (settingsBitfield & 16 ? true : false),
   disableImage : (settingsBitfield & 32 ? true : false),
   disableVideos : (settingsBitfield & 64 ? true : false),
+
+  // Fun Stuff
   reversePostOrder : (settingsBitfield & 1024 ? true : false), // Show posts in reverse?
   showAvatars : (settingsBitfield & 2048 ? true : false), // Use the complex document style?
   audioDing : (settingsBitfield & 8192 ? true : false), // Fire an HTML5 audio ding during each unread message?
-  disableFx : (settingsBitfield & 16384 ? true : false), // Disable jQuery Effects?
-  webkitNotifications : (settingsBitfield & 32768 ? true : false),
-  disableRightClick : (settingsBitfield & 65536 ? true : false)
+
+  // Accessibility
+  disableFx : (settingsBitfield & 262144 ? true : false), // Disable jQuery Effects?
+  disableRightClick : (settingsBitfield & 1048576 ? true : false),
+
+  // Localization
+  usTime : (settingsBitfield & 16777216 ? true : false),
+  twelveHourTime : (settingsBitfield & 33554432 ? true : false),
+
+  // Experimental Features
+  webkitNotifications : (settingsBitfield & 536870912 ? true : false)
 };
 
 /* Regexes */
@@ -624,7 +644,7 @@ var regexs = {
     ")" +
   ")", "g"), // Nor the BBCode or HTML symbols.
 
-  url2 : new RegExp("^(.+)[\"\?\!\.]$"),
+  url2 : new RegExp("^(.+)([\"\?\!\.])$"),
 
   image : new RegExp("^(.+)\.(jpg|jpeg|gif|png|svg|svgz|bmp|ico)$")
 }
@@ -2144,7 +2164,7 @@ popup = {
     var fileContent,
       selectTab;
 
-    switch(preselect) {
+    switch (preselect) {
       case 'video': selectTab = 2; break;
       case 'image': selectTab = 1; break;
       case 'link': default: selectTab = 0; break;
@@ -2210,38 +2230,18 @@ popup = {
                 reader2.readAsDataURL(files[0]);
                 reader2.onloadend = function() {
                   switch (uploadFileTypes[filePartsLast].container) {
-                    case 'image':
-                    $('#uploadFileFormPreview').html('<img src="' + reader2.result + '" style="max-height: 200px; max-width: 200px;" />');
-                    break;
-
-                    case 'video':
-                    $('#uploadFileFormPreview').html('No Preview Available');
-                    break;
-
-                    case 'audio':
-                    $('#uploadFileFormPreview').html('No Preview Available');
-                    break;
-
-                    case 'text':
-                    $('#uploadFileFormPreview').html('No Preview Available');
-                    break;
-
-                    case 'html':
-                    $('#uploadFileFormPreview').html('No Preview Available');
-                    break;
-
-                    case 'archive':
-                    $('#uploadFileFormPreview').html('No Preview Available');
-                    break;
-
-                    case 'other':
-                    $('#uploadFileFormPreview').html('No Preview Available');
-                    break;
+                    case 'image': $('#uploadFileFormPreview').html('<img src="' + reader2.result + '" style="max-height: 200px; max-width: 200px;" />'); break;
+                    case 'video': $('#uploadFileFormPreview').html('No Preview Available'); break;
+                    case 'audio': $('#uploadFileFormPreview').html('No Preview Available'); break;
+                    case 'text': $('#uploadFileFormPreview').html('No Preview Available'); break;
+                    case 'html': $('#uploadFileFormPreview').html('No Preview Available'); break;
+                    case 'archive': $('#uploadFileFormPreview').html('No Preview Available'); break;
+                    case 'other': $('#uploadFileFormPreview').html('No Preview Available'); break;
                   }
                 };
               }
 
-              $('#imageUploadSubmitButton').removeAttr('disabled').button({disabled: false});
+              $('#imageUploadSubmitButton').removeAttr('disabled').button({ disabled: false });
             }
           });
 
@@ -2271,6 +2271,8 @@ popup = {
               }
             });
 
+            $('#insertDoc').dialog('close');
+
             return false;
           });
         }
@@ -2282,6 +2284,8 @@ popup = {
           if (linkImage) {
             standard.sendMessage(linkImage,0,'image');
           }
+
+          $('#insertDoc').dialog('close');
 
           return false;
         });
@@ -2304,6 +2308,8 @@ popup = {
             dia.error('Logic Error');
           }
 
+          $('#insertDoc').dialog('close');
+
           return false;
         });
 
@@ -2316,6 +2322,8 @@ popup = {
           else {
             standard.sendMessage(linkVideo,0,'video');
           }
+
+          $('#insertDoc').dialog('close');
 
           return false;
         });
@@ -2418,55 +2426,26 @@ popup = {
           defaultHighlight = false,
           defaultFontface = false,
           idMap = {
-            disableFormatting : 16,
-            disableImage : 32,
-            disableVideos : 64,
-            reversePostOrder : 1024, // Show posts in reverse?
-            showAvatars : 2048, // Use the complex document style?
-            audioDing : 8192, // Fire an HTML5 audio ding during each unread message?
-            disableFx : 16384, // Disable jQuery Effects?
-            webkitNotifications : 32768,
-            disableRightClick : 65536
+            disableFormatting : 16, disableImage : 32, disableVideos : 64, reversePostOrder : 1024,
+            showAvatars : 2048, audioDing : 8192, disableFx : 262144, disableRightClick : 1048576,
+            usTime : 16777216, twelveHourTime : 33554432, webkitNotifications : 536870912
           };
 
 
+        if (settings.reversePostOrder) $('#reversePostOrder').attr('checked', 'checked');
+        if (settings.showAvatars) $('#showAvatars').attr('checked', 'checked');
+        if (settings.audioDing) $('#audioDing').attr('checked', 'checked');
+        if (settings.disableFx) $('#disableFx').attr('checked', 'checked');
+        if (settings.disableFormatting) $('#disableFormatting').attr('checked', 'checked');
+        if (settings.disableVideo) $('#disableVideo').attr('checked', 'checked');
+        if (settings.disableImage) $('#disableImage').attr('checked', 'checked');
+        if (settings.disableRightClick) $('#disableRightClick').attr('checked', 'checked');
+        if (settings.webkitNotifications) $('#webkitNotifications').attr('checked', 'checked');
 
-        if (settings.reversePostOrder) {
-          $('#reversePostOrder').attr('checked', 'checked');
-        }
-        if (settings.showAvatars) {
-          $('#showAvatars').attr('checked', 'checked');
-        }
-        if (settings.audioDing) {
-          $('#audioDing').attr('checked', 'checked');
-        }
-        if (settings.disableFx) {
-          $('#disableFx').attr('checked', 'checked');
-        }
-        if (settings.disableFormatting) {
-          $('#disableFormatting').attr('checked', 'checked');
-        }
-        if (settings.disableVideo) {
-          $('#disableVideo').attr('checked', 'checked');
-        }
-        if (settings.disableImage) {
-          $('#disableImage').attr('checked', 'checked');
-        }
-        if (settings.disableRightClick) {
-          $('#disableRightClick').attr('checked', 'checked');
-        }
-        if (settings.webkitNotifications) {
-          $('#webkitNotifications').attr('checked', 'checked');
-        }
-        if (snd.volume) {
-          $('#audioVolume').attr('value', snd.volume * 100);
-        }
-        if (theme) {
-          $('#theme > option[value="' + theme + '"]').attr('selected', 'selected');
-        }
-        if (fontsize) {
-          $('#fontsize > option[value="' + fontsize + '"]').attr('selected', 'selected');
-        }
+        if (snd.volume) $('#audioVolume').attr('value', snd.volume * 100);
+
+        if (theme) $('#theme > option[value="' + theme + '"]').attr('selected', 'selected');
+        if (fontsize) $('#fontsize > option[value="' + fontsize + '"]').attr('selected', 'selected');
 
 
         $.get(directory + 'api/getUsers.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
@@ -2993,8 +2972,8 @@ popup = {
             userFormatStart = active[i].userData.userFormatStart,
             userFormatEnd = active[i].userData.userFormatEnd,
             length = active[i].length,
-            set = active[i].setFormatted,
-            expires = active[i].expiresFormatted;
+            set = date(active[i].set, true),
+            expires = date(active[i].expires, true);
 
           kickHtml += '<tr><td>' + userFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + userFormatEnd + '</td><td>' + kickerFormatStart + '<span class="userName userNameTable" data-userId="' + kickerId + '">' + kickerName + '</span>' + kickerFormatEnd + '</td><td>' + set + '</td><td>' + expires + '</td><td><button onclick="standard.unkick(' + userId + ', ' + roomId + ')">Unkick</button></td></tr>';
         }
@@ -3045,8 +3024,8 @@ popup = {
             userFormatStart = active[i].userData.userFormatStart,
             userFormatEnd = active[i].userData.userFormatEnd,
             length = active[i].length,
-            set = active[i].setFormatted,
-            expires = active[i].expiresFormatted;
+            set = date(active[i].set, true),
+            expires = date(active[i].expires, true);
 
           kickHtml += '<tr><td>' + userFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + userFormatEnd + '</td><td>' + kickerFormatStart + '<span class="userName userNameTable" data-userId="' + kickerId + '">' + kickerName + '</span>' + kickerFormatEnd + '</td><td>' + set + '</td><td>' + expires + '</td></tr>';
         }
@@ -3686,7 +3665,7 @@ $(document).ready(function() {
               endTag = active[i].endTag,
               userTitle = active[i].userTitle,
               posts = active[i].postCount,
-              joinDate = active[i].joinDateFormatted,
+              joinDate = date(active[i].joinDate, true),
               avatar = active[i].avatar;
           }
 

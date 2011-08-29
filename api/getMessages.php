@@ -740,7 +740,6 @@ if (is_array($request['rooms'])) {
                   'roomId' => (int) $room['roomId'],
                   'messageId' => (int) $message['messageId'],
                   'messageTime' => (int) $message['time'],
-                  'messageTimeFormatted' => fim_date(false,$message['time']),
                   'messageText' => $message['text'],
                   'flags' => ($message['flag']),
                 ),

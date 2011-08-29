@@ -265,7 +265,6 @@ if (is_array($users)) {
         ),
         'postCount' => (int) (isset($userDataForums['posts']) ? $userDataForums['posts'] : 0),
         'joinDate' => (int) (isset($userDataForums['joinDate']) ? $userDataForums['joinDate'] : 0),
-        'joinDateFormatted' => (fim_date(false,(isset($userDataForums['joinDate']) ? $userDataForums['joinDate'] : 0))),
         'userTitle' => (isset($userDataForums['userTitle']) ? $userDataForums['userTitle'] :
           (isset($config['defaultUserTitle']) ? $config['defaultUserTitle'] :  '')),
       );

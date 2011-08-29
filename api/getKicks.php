@@ -194,9 +194,7 @@ if (is_array($kicks)) {
           'length' => (int) $kick['klength'],
 
           'set' => (int) $kick['ktime'],
-          'setFormatted' => (string) fim_date(false,$kick['ktime']),
           'expires' => (int) ($kick['ktime'] + $kick['klength']),
-          'expiresFormatted' => (string) fim_date(false,$kick['ktime'] + $kick['klength']),
         );
 
         ($hook = hook('getKicks_eachKick') ? eval($hook) : '');

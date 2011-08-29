@@ -479,7 +479,6 @@ $phrases[helpFAQs]
   &lt;button type="submit" id="linkSubmitButton"&gt;Link&lt;/button&gt;
 &lt;/fieldset&gt;
 
-&lt;iframe id="upload_target3" name="upload_target3" class="nodisplay"&gt;&lt;/iframe&gt;
 &lt;input type="hidden" name="method" value="url" /&gt;
 &lt;/form&gt;
 &lt;/div&gt;
