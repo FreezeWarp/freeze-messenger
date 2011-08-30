@@ -484,6 +484,7 @@ function fim_encodeXml($data) {
   global $config;
 
   $data = str_replace($config['encodeXmlEntitiesFind'], $config['encodeXmlEntitiesReplace'], $data); // Replace the entities defined in $config (these are usually not changed).
+  $data = str_replace("\n", '&#xA;', $data);
 
   return $data;
 }
@@ -1137,7 +1138,7 @@ $indent}
         $value = 'false';
       }
       elseif (is_string($value)) {
-        $value = '"' . addcslashes($value,"\"\\") . '"';
+        $value = '"' . str_replace("\n", '\n', addcslashes($value,"\"\\")) . '"';
       }
       if ($value == '') {
         $value = '""';

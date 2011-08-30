@@ -181,6 +181,10 @@ function urlencode(str) {
   return encodeURIComponent(str).replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%20/g, '+');
 }
 
+function attrencode(str) {
+  return str.replace(/\"/g, '&quot;').replace(/\\/g, '\\\\');
+}
+
 function toBottom() {
   document.getElementById('messageList').scrollTop = document.getElementById('messageList').scrollHeight;
 
@@ -214,90 +218,102 @@ function messageFormat(json, format) {
 
     flag = mjson.flags;
 
-  switch (flag) {
-    case 'image':
-    if (settings.disableImage) text = '<a href="' + text + '" target="_BLANK">[Image]</a>';
-    else text = '<a href="' + text + '" target="_BLANK"><img src="' + text + '" style="max-width: 250px; max-height: 250px;" /></a>';
-    break;
+  text = text.replace(/\</g, '&lt;').replace(/\>/g, '&gt;').replace(/\n/g, '<br />');
 
-    case 'video':
-    if (settings.disableVideo) text = '<a href="' + text + '" target="_BLANK">[Video]</a>';
-    else text = '<video src="' + text + '" controls></video><br /><small><a href="'+ text + '">If you can not see the above link, click here.</a></small>';
-    break;
+  if (text.length > 1000) {
+    text = '[Message Too Long]';
+  }
+  else {
+    switch (flag) {
+      case 'image':
+      if (settings.disableImage) text = '<a href="' + attrencode(text) + '" target="_BLANK">[Image]</a>';
+      else text = '<a href="' + text + '" target="_BLANK"><img src="' + attrencode(text) + '" style="max-width: 250px; max-height: 250px;" /></a>';
+      break;
 
-    case 'audio':
-    if (settings.disableVideo) text = '<a href="' + text + '" target="_BLANK">[Video]</a>';
-    else text = '<audio src="' + text + '" controls></video><br /><small><a href="'+ text + '">If you can not see the above link, click here.</a></small>';
-    break;
+      case 'video':
+      if (settings.disableVideo) text = '<a href="' + attrencode(text) + '" target="_BLANK">[Video]</a>';
+      else text = '<video src="' + attrencode(text) + '" controls></video>';
+      break;
 
-    case 'email':
-    text = '<a href="mailto: ' + text + '" target="_BLANK">' + text + '</a>';
-    break;
+      case 'audio':
+      if (settings.disableVideo) text = '<a href="' + attrencode(text) + '" target="_BLANK">[Video]</a>';
+      else text = '<audio src="' + attrencode(text) + '" controls></audio>';
+      break;
 
-    case 'url':
-    text = '<a href="' + text + '" target="_BLANK">' + text + '</a>';
-    break;
+      case 'email':
+      text = '<a href="mailto: ' + attrencode(text) + '" target="_BLANK">' + text + '</a>';
+      break;
 
-    case '':
-    text = text.replace(regexs.url, function($1) {
-      if ($1.match(regexs.url2)) {
-        var $2 = $1.replace(regexs.url2, "$2");
-        $1 = $1.replace(regexs.url2, "$1"); // By doing this one second we don't have to worry about storing the variable first to get $2
+      case 'url':
+      if (text.match(/^(http|https|ftp|data|gopher|sftp|ssh)/)) { // Certain protocols (e.g. "javascript:") could be malicious. Thus, we use a whitelist of trusted protocols instead.
+        text = '<a href="' + text + '" target="_BLANK">' + text + '</a>';
       }
       else {
-        var $2 = '';
+        text = '[Hidden Link]';
       }
+      break;
 
-      if ($1.match(regexs.youtubeFull) || $1.match(regexs.youtubeShort)) {
-        var code = false;
-
-        if (text.match(regexs.youtubeFull) !== null) {
-          code = text.replace(regexs.youtubeFull, "$8");
-        }
-        else if (text.match(regexs.youtubeShort) !== null) {
-          code = text.replace(regexs.youtubeShort, "$5");
-        }
-
-        if (code) {
-          if (settings.disableVideo) {
-            return '<a href="https://www.youtu.be/' + code + '" target="_BLANK">[Youtube Video]</a>';
-          }
-          else {
-            return '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>';
-          }
+      case '':
+      text = text.replace(regexs.url, function($1) {
+        if ($1.match(regexs.url2)) {
+          var $2 = $1.replace(regexs.url2, "$2");
+          $1 = $1.replace(regexs.url2, "$1"); // By doing this one second we don't have to worry about storing the variable first to get $2
         }
         else {
-          return '[Logic Error]';
+          var $2 = '';
+        }
+
+        if ($1.match(regexs.youtubeFull) || $1.match(regexs.youtubeShort)) {
+          var code = false;
+
+          if (text.match(regexs.youtubeFull) !== null) {
+            code = text.replace(regexs.youtubeFull, "$8");
+          }
+          else if (text.match(regexs.youtubeShort) !== null) {
+            code = text.replace(regexs.youtubeShort, "$5");
+          }
+
+          if (code) {
+            if (settings.disableVideo) {
+              return '<a href="https://www.youtu.be/' + code + '" target="_BLANK">[Youtube Video]</a>';
+            }
+            else {
+              return '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>';
+            }
+          }
+          else {
+            return '[Logic Error]';
+          }
+        }
+        else if ($1.match(regexs.image)) {
+          return '<a href="' + $1 + '" target="_BLANK">' + (settings.disableImage ? '[IMAGE]' : '<img src="' + $1 + '" style="max-width: 250px; max-height: 250px;" />') + '</a>' + $2;
+        }
+        else {
+          return '<a href="' + $1 + '" target="_BLANK">' + $1 + '</a>' + $2;
+        }
+      });
+
+      if (/^\/me/.test(text)) {
+        text = text.replace(/^\/me/,'');
+
+        if (settings.disableFormatting) {
+          text = '<span style="padding: 10px;">* ' + userName + ' ' + text + '</span>';
+        }
+        else {
+          text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' ' + text + '</span>';
         }
       }
-      else if ($1.match(regexs.image)) {
-        return '<a href="' + $1 + '" target="_BLANK">' + (settings.disableImage ? '[IMAGE]' : '<img src="' + $1 + '" style="max-width: 250px; max-height: 250px;" />') + '</a>' + $2;
-      }
-      else {
-        return '<a href="' + $1 + '" target="_BLANK">' + $1 + '</a>' + $2;
-      }
-    });
+      else if (/^\/topic/.test(text)) {
+        text = text.replace(/^\/topic/,'');
 
-    if (/^\/me/.test(text)) {
-      text = text.replace(/^\/me/,'');
+        $('#topic').html(text);
 
-      if (settings.disableFormatting) {
-        text = '<span style="padding: 10px;">* ' + userName + ' ' + text + '</span>';
-      }
-      else {
-        text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' ' + text + '</span>';
-      }
-    }
-    else if (/^\/topic/.test(text)) {
-      text = text.replace(/^\/topic/,'');
-
-      $('#topic').html(text);
-
-      if (settings.disableFormatting) {
-        text = '<span style="padding: 10px;">* ' + userName + ' ' + text + '</span>';
-      }
-      else {
-        text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' changed the topic to "' + text + '".</span>';
+        if (settings.disableFormatting) {
+          text = '<span style="padding: 10px;">* ' + userName + ' ' + text + '</span>';
+        }
+        else {
+          text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' changed the topic to "' + text + '".</span>';
+        }
       }
     }
 
@@ -1730,12 +1746,12 @@ var standard = {
             case '':
             break;
 
-            case 'badroom': dia.error("A valid room was not provided."); break;
-            case 'badmessage': dia.error("A valid message was not provided."); break;
-            case 'spacerrDesc': dia.error("Too... many... spaces!"); break;
-            case 'noperm': dia.error("You do not have permission to post in this room."); break;
-            case 'blockcensor': dia.error(errDesc); break;
-            case 'confirmcensor':
+            case 'badRoom': dia.error("A valid room was not provided."); break;
+            case 'badMessage': dia.error("A valid message was not provided."); break;
+            case 'spaceMessage': dia.error("Too... many... spaces!"); break;
+            case 'noPerm': dia.error("You do not have permission to post in this room."); break;
+            case 'blockCensor': dia.error(errDesc); break;
+            case 'confirmCensor':
             dia.error(errDesc + '<br /><br /><button type="button" onclick="$(this).parent().dialog(&apos;close&apos;);">No</button><button type="button" onclick="standard.sendMessage(&apos;' + escape(message) + '&apos;,1' + (flag ? ', ' + flag : '') + '); $(this).parent().dialog(&apos;close&apos;);">Yes</button>');
             break;
           }
@@ -3302,12 +3318,12 @@ function contextMenuParseMessage() {
       break;
 
       case 'link':
-        dia.full({
-          title : 'Link to this Message',
-          id : 'messageLink',
-          content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '#page=archive#room=' + roomId + '#message=' + messageId + '" style="width: 100%;" />',
-          width: 600,
-        });
+      dia.full({
+        title : 'Link to this Message',
+        id : 'messageLink',
+        content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '#page=archive#room=' + roomId + '#message=' + messageId + '" style="width: 100%;" />',
+        width: 600,
+      });
       break;
     }
 
@@ -3348,12 +3364,12 @@ function contextMenuParseMessage() {
       break;
 
       case 'link':
-        dia.full({
-          title : 'Link to this Message',
-          id : 'messageLink',
-          content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + roomId + '#message=' + messageId + '" style="width: 100%;" />',
-          width: 600,
-        });
+      dia.full({
+        title : 'Link to this Message',
+        id : 'messageLink',
+        content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + roomId + '#message=' + messageId + '" style="width: 100%;" />',
+        width: 600,
+      });
       break;
     }
 

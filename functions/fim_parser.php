@@ -284,14 +284,12 @@ class messageParse {
       return $this->messageText;
     }
     else {
-      return nl2br( // Converts \n characters to HTML <br />s.
-        $this->emotiParse( // Converts emoticons (e.g. ":D", ":P", "o.O") to HTML <img /> tags based on database-stored conversions.
-          $this->htmlParse( // Parses database-stored BBCode (e.g. "[b]Hello[/b]") to their HTML equivilents (e.g. "<b>Hello</b>").
-            $this->censorParse( // Censors text based on database-stored filters, which may be activated or deactivted by the room itself.
-              str_replace(array("<", ">"), array("&lt;", "&gt;"), $this->messageText),
-              $this->roomData['roomId'],
-              $this->roomData['options']
-            )
+      return $this->emotiParse( // Converts emoticons (e.g. ":D", ":P", "o.O") to HTML <img /> tags based on database-stored conversions.
+        $this->htmlParse( // Parses database-stored BBCode (e.g. "[b]Hello[/b]") to their HTML equivilents (e.g. "<b>Hello</b>").
+          $this->censorParse( // Censors text based on database-stored filters, which may be activated or deactivted by the room itself.
+            $this->messageText,
+            $this->roomData['roomId'],
+            $this->roomData['options']
           )
         )
       );
