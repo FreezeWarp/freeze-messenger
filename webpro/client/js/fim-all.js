@@ -319,18 +319,18 @@ function messageFormat(json, format) {
           text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' changed the topic to "' + text + '".</span>';
         }
       }
-    }
 
-    if (!settings.disableFormatting) {
-      style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + fontIdRef[styleFontface] + ';';
+      if (!settings.disableFormatting) {
+        style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + fontIdRef[styleFontface] + ';';
 
-      if (styleGeneral & 256) style += 'font-weight: bold;';
-      if (styleGeneral & 512) style += 'font-style: oblique;';
-      if (styleGeneral & 1024) style += 'text-decoration: underline;';
-      if (styleGeneral & 2048) style += 'text-decoration: line-through;';
-      if (styleGeneral & 4096) style += 'text-decoration: overline;';
+        if (styleGeneral & 256) style += 'font-weight: bold;';
+        if (styleGeneral & 512) style += 'font-style: oblique;';
+        if (styleGeneral & 1024) style += 'text-decoration: underline;';
+        if (styleGeneral & 2048) style += 'text-decoration: line-through;';
+        if (styleGeneral & 4096) style += 'text-decoration: overline;';
+      }
+      break;
     }
-    break;
   }
 
   switch (format) {
@@ -429,9 +429,11 @@ function date (timestamp, full) {
 
 
   if (!full) { // Short code
-    last24Code = false; // WIP
+    var currentTime = new Date(), // Create a new date object so we can get the current time.
+      currentTimeSeconds = Math.floor(currentTime.getTime() / 1000), // Get the unix timestamp from the current time, adjusted for the current timezone.
+      lastMidnight = (currentTimeSeconds - (currentTimeSeconds % 86400)) + (currentTime.getTimezoneOffset() * 60); // Using some cool math (look it up if you're not familiar), we determine the distance from the last even day, then get the time of the last even day itself. This is the midnight referrence point. After all that, we add the timezone adjust in seconds; this is important because we're interested in the local midnight, not the UTC one.
 
-    if (!last24Code) {
+    if (timestamp < lastMidnight) { // If the current time is before the last midnight...
       full = true;
     }
   }
@@ -446,7 +448,10 @@ function date (timestamp, full) {
     ':' + _timepart.minutes() + ':' + _timepart.seconds();
   }
   else {
-
+    var timestring = (settings.twelveHourTime ?
+      _timepart.hours() :
+      _timepart.hours24()) +
+    ':' + _timepart.minutes() + ':' + _timepart.seconds();
   }
 
   return timestring;
