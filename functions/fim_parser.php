@@ -235,82 +235,6 @@ class messageParse {
 
 
 
-  /**
-  * Wraps HTML with specific support for UTF-8 and URLs.
-  *
-  * @param string $html - HTML text
-  * @param integer $maxLength - Length after which to wrap.
-  * @param string $chat - String to wrap with.
-  * @return string - Formatted data.
-  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */
-
-  public function htmlWrap($html, $maxLength = 80, $char = '<br />') { /* An adaption of a PHP.net commentor function dealing with HTML for BBCode */
-    // Configuration
-    $noparseTags = array('img', 'a');
-
-    // Initialize Variables
-    $count = 0;
-    $newHtml = '';
-    $currentTag = '';
-    $openTag = false;
-    $tagParams = false;
-
-    for ($i = 0; $i < mb_strlen($html, 'UTF-8'); $i++) {
-    $mb = mb_substr($html, $i, 1, 'UTF-8');
-    $noAppend = false;
-
-      if ($mb == '<') { // The character starts a BBcode tag - don't touch nothing.
-        $currentTag = '';
-        $openTag = true;
-      }
-      elseif ($mb == '/' && $openTag) {
-        $endTag = true;
-      }
-      elseif (($openTag) && ($mb == ' ')) {
-        $tagParams = true;
-      }
-      elseif (($openTag) && (!$endTag) && ($tagParams == false) && ($mb != '>')) {
-        $currentTag .= $mb;
-      }
-      elseif (($openTag) && ($mb == '>')) { // And the BBCode tag is done again - we can touch stuffz.
-        $endTag = false;
-        $openTag = false;
-        $tagParams = false;
-      }
-      else {
-        if ($currentTag == 'a' && $count >= ($maxLength - 1)) {
-          $noAppend = true;
-          if (!$elipse) {
-            $newHtml .= '...';
-          }
-          $elipse = true;
-        }
-        elseif (!$openTag) {
-          if ($mb == ' ' || $mb == "\n") { // The character is a space.
-            $count = 0; // Because the character is a space, we should reset the count back to 0.
-          }
-          else {
-            $count++; // Increment the current count.
-
-            if ($count == $maxLength) { // We've reached the limit; add a break and reset the count back to 0.
-              $newHtml .= $char;
-              $count = 0;
-            }
-          }
-        }
-      }
-
-      if (!$noAppend) {
-        $newHtml .= $mb;
-      }
-
-    }
-
-    return $newHtml;
-  }
-
-
   public function getRaw() {
     return $this->messageText;
   }
@@ -362,14 +286,12 @@ class messageParse {
     else {
       return nl2br( // Converts \n characters to HTML <br />s.
         $this->emotiParse( // Converts emoticons (e.g. ":D", ":P", "o.O") to HTML <img /> tags based on database-stored conversions.
-          $this->htmlWrap( // Forces a space to be placed every 80 non-breaking characters, in order to prevent HTML stretching.
-            $this->htmlParse( // Parses database-stored BBCode (e.g. "[b]Hello[/b]") to their HTML equivilents (e.g. "<b>Hello</b>").
-              $this->censorParse( // Censors text based on database-stored filters, which may be activated or deactivted by the room itself.
-                str_replace(array("<", ">"), array("&lt;", "&gt;"), $this->messageText),
-                $this->roomData['roomId'],
-                $this->roomData['options']
-              )
-            ), 80, ' '
+          $this->htmlParse( // Parses database-stored BBCode (e.g. "[b]Hello[/b]") to their HTML equivilents (e.g. "<b>Hello</b>").
+            $this->censorParse( // Censors text based on database-stored filters, which may be activated or deactivted by the room itself.
+              str_replace(array("<", ">"), array("&lt;", "&gt;"), $this->messageText),
+              $this->roomData['roomId'],
+              $this->roomData['options']
+            )
           )
         )
       );
