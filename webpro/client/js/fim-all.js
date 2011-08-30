@@ -245,6 +245,10 @@ function messageFormat(json, format) {
       break;
 
       case 'url':
+      case 'text':
+      case 'html':
+      case 'archive':
+      case 'other':
       if (text.match(/^(http|https|ftp|data|gopher|sftp|ssh)/)) { // Certain protocols (e.g. "javascript:") could be malicious. Thus, we use a whitelist of trusted protocols instead.
         text = '<a href="' + text + '" target="_BLANK">' + text + '</a>';
       }
