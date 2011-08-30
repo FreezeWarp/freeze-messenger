@@ -298,9 +298,7 @@ switch($request['action']) {
       elseif ($request['action'] === 'edit') {
         if ($database->update("{$sqlPrefix}rooms", array(
             'roomName' => $request['roomName'],
-            'allowedGroups' => implode(',',$request['allowedGroups']),
-            'allowedUsers' => implode(',',$request['allowedUsers']),
-            'moderators' => implode(',',$request['moderators']),
+            'defaultPermissions' => (int) $request['defaultPermissions'],
           ), array(
             'roomId' => $room['roomId'],
           )

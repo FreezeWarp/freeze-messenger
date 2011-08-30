@@ -921,23 +921,28 @@ LIMIT
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function delete($table, $conditionArray = false) {
-    list($columns, $values, $conditions) = $this->splitArray($conditionArray);
-
-    for ($i = 0; $i < count($columns); $i++) {
-      if (!$conditions[$i]) {
-        $csym = $this->comparisonTypes['e'];
-      }
-      elseif (isset($this->comparisonTypes[$conditions[$i]])) {
-        $csym = $this->comparisonTypes[$conditions[$i]];
-      }
-      else {
-        throw new Exception('Unrecognized comparison type: ' . $conditions[$i]);
-      }
-
-      $delete[] = $columns[$i] . $csym . $values[$i];
+    if ($conditionArray === false) {
+      $delete = 'TRUE';
     }
+    else {
+      list($columns, $values, $conditions) = $this->splitArray($conditionArray);
 
-    $delete = implode($delete, $this->concatTypes['both']);
+      for ($i = 0; $i < count($columns); $i++) {
+        if (!$conditions[$i]) {
+          $csym = $this->comparisonTypes['e'];
+        }
+        elseif (isset($this->comparisonTypes[$conditions[$i]])) {
+          $csym = $this->comparisonTypes[$conditions[$i]];
+        }
+        else {
+          throw new Exception('Unrecognized comparison type: ' . $conditions[$i]);
+        }
+
+        $delete[] = $columns[$i] . $csym . $values[$i];
+      }
+
+      $delete = implode($delete, $this->concatTypes['both']);
+    }
 
     $query = "DELETE FROM $table WHERE $delete";
 
@@ -1264,7 +1269,7 @@ LIMIT
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function deleteTable($tableName) {
-    $query = 'DELETE TABLE `' . $this->escape($tableName) . '`';
+    $query = 'DROP TABLE `' . $this->escape($tableName) . '`';
 
     return $this->rawQuery($query);
   }

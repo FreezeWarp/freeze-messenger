@@ -999,7 +999,8 @@ autoEntry = {
     var source,
       i = 0;
 
-    if (typeof string === 'object' || typeof string === 'array') { // String is already not a string! (yeah...)
+    if (typeof string === 'object' || typeof string === 'array') { // String is already not a string! (yeah...) Also, "array" doesn't exist as a type far as I know, but I don't really want to remove it for whatever reason.
+      entryList = string;
     }
     else if (typeof string === 'string' && string.length > 0) { // String is a string and not empty.
       entryList = string.split(',');
@@ -2333,6 +2334,8 @@ popup = {
         if (settings.disableImage) $('#disableImage').attr('checked', 'checked');
         if (settings.disableRightClick) $('#disableRightClick').attr('checked', 'checked');
         if (settings.webkitNotifications) $('#webkitNotifications').attr('checked', 'checked');
+        if (settings.twelveHourTime) $('#twelveHourFormat').attr('checked', 'checked');
+        if (settings.usTime) $('#usTime').attr('checked', 'checked');
 
         if (snd.volume) $('#audioVolume').attr('value', snd.volume * 100);
 

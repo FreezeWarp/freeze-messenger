@@ -249,7 +249,7 @@
 &lt;label for="usTime"&gt;$phrases[settingsUSTimeLabel]&lt;/label&gt; &lt;input type="checkbox" name="usTime" id="usTime" value="true" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsUSTimeBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
 
-&lt;label for="twelveHourFormat"&gt;$phrases[settingsTwelveHourFormatLabel]&lt;/label&gt; &lt;input type="checkbox" name="v" id="twelveHourFormat" value="true" /&gt;&lt;br /&gt;
+&lt;label for="twelveHourFormat"&gt;$phrases[settingsTwelveHourFormatLabel]&lt;/label&gt; &lt;input type="checkbox" name="twelveHourFormat" id="twelveHourFormat" value="true" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsTwelveHourFormatBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
 &lt;/div&gt;
 

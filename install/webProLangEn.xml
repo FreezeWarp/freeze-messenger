@@ -278,8 +278,7 @@ Some features are currently not available for all browsers, however:
 &lt;li&gt;&lt;b&gt;Can I Donate to this Awesome Project?&lt;/b&gt; - &lt;a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=YL7K2CY59P9S6&amp;lc=US&amp;item_name=FreezeMessenger%20Development&amp;item_number=freezemessenger&amp;currency_code=USD&amp;bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted"&gt;Please do. It really helps keep development going.&lt;/a&gt;&lt;/li&gt;
   &lt;/ul&gt;</phrase>
   <phrase name="templateMyKicks">My Kicks</phrase>
-  </phrases>
-  <phrase name="copyrightCopyright">
+    <phrase name="copyrightCopyright">
   FreezeMessenger &amp;copy; 2010-2011 &lt;a href="http://josephtparsons.com/" target="_BLANK"&gt;Joseph T. Parsons&lt;/a&gt;. Some Rights Reserved.&lt;br /&gt;&lt;br /&gt;
 
   &lt;strong&gt;The Following Third-Party Plugins Are Used with WebPro For Various Functionality:&lt;/strong&gt;&lt;br /&gt;
@@ -310,4 +309,5 @@ Ningamer&lt;br /&gt;
 KingOfKYA&lt;br /&gt;
 &lt;a href="http://www.victoryroad.net/"&gt;Cat333Pokémon&lt;/a&gt;
   </phrase>
+  </phrases>
 </languagePack>
