@@ -181,7 +181,7 @@
 &lt;/form&gt;
     </template>
 
-    <template name="userSettingsForm">&lt;link rel="stylesheet" media="screen" type="text/css" href="client/colorpicker/css/colorpicker.css" /&gt;
+    <template name="userSettingsForm" vars="enableDF">&lt;link rel="stylesheet" media="screen" type="text/css" href="client/colorpicker/css/colorpicker.css" /&gt;
 &lt;script type="text/javascript" src="client/colorpicker/js/colorpicker.js"&gt;&lt;/script&gt;
 
 &lt;ul class="tabList"&gt;
@@ -255,20 +255,17 @@
 
 
 &lt;div id="settings4"&gt;
-{{if="$enableDF"}{
 $phrases[settingsDefaultFormattingLabel]&lt;br /&gt;
 
-{{if="$enableDF['font']"}{
-&lt;select name="defaultFace" id="defaultFace" style="margin-left: 10px;"&gt;&lt;/select&gt;}}
+&lt;select name="defaultFace" id="defaultFace" style="margin-left: 10px;"&gt;&lt;/select&gt;
 
-{{if="$enableDF['color']"}{&lt;input style="width: 40px;" id="defaultColour" name="defaultColour" /&gt;}}
+&lt;input style="width: 40px;" id="defaultColour" name="defaultColour" /&gt;
 
-{{if="$enableDF['highlight']"}{&lt;input style="width: 40px;" id="defaultHighlight" name="defaultHighlight" /&gt;}}
+&lt;input style="width: 40px;" id="defaultHighlight" name="defaultHighlight" /&gt;
 
-{{if="$enableDF['general']"}{
 &lt;label for="defaultBold"&gt;$phrases[settingsDefaultFormattingBoldLabel]&lt;/label&gt;&lt;input type="checkbox" name="defaultBold" id="defaultBold" value="true" /&gt;
 
-&lt;label for="defaultItalics"&gt;$phrases[settingsDefaultFormattingItalicsLabel]&lt;/label&gt;&lt;input type="checkbox" name="defaultItalics" id="defaultItalics" value="true" /&gt;&lt;br /&gt;&lt;br /&gt;}}
+&lt;label for="defaultItalics"&gt;$phrases[settingsDefaultFormattingItalicsLabel]&lt;/label&gt;&lt;input type="checkbox" name="defaultItalics" id="defaultItalics" value="true" /&gt;&lt;br /&gt;&lt;br /&gt;
 
 &lt;label for="disableFormatting"&gt;$phrases[settingsDisableFormattingLabel]&lt;/label&gt; &lt;input type="checkbox" name="settingsOfficialAjax_disableFormatting" id="disableFormatting" value="true" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsDisableFormattingBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
@@ -279,7 +276,7 @@ $phrases[settingsDefaultFormattingLabel]&lt;br /&gt;
 &lt;label for="disableImage"&gt;$phrases[settingsDisableImageLabel]&lt;/label&gt; &lt;input type="checkbox" name="settingsOfficialAjax_disableImage" id="disableImage" value="true" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[settingsDisableImageBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
 
-&lt;small&gt;&lt;span style="margin-left: 10px;" id="fontPreview"&gt;$phrases[settingsDefaultFormattingPreview]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;}}
+&lt;small&gt;&lt;span style="margin-left: 10px;" id="fontPreview"&gt;$phrases[settingsDefaultFormattingPreview]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
 &lt;/div&gt;
 
 &lt;div id="settings5"&gt;
