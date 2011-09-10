@@ -18,32 +18,28 @@ if (!defined('WEBPRO_INMOD')) {
   die();
 }
 else {
-  $request = fim_sanitizeGPC(array(
-    'request' => array(
-      'templateName' => array(
-        'context' => array(
-          'type' => 'string',
-        ),
-      ),
-
-      'interfaceId' => array(
-        'context' => array(
-          'type' => 'int',
-        ),
+  $request = fim_sanitizeGPC('r', array(
+    'templateName' => array(
+      'context' => array(
+        'type' => 'string',
       ),
     ),
 
-    'post' => array(
-      'data' => array(
-        'context' => array(
-          'type' => 'string',
-        ),
+    'interfaceId' => array(
+      'context' => array(
+        'type' => 'int',
       ),
+    ),
 
-      'vars' => array(
-        'context' => array(
-          'type' => 'string',
-        ),
+    'data' => array(
+      'context' => array(
+        'type' => 'string',
+      ),
+    ),
+
+    'vars' => array(
+      'context' => array(
+        'type' => 'string',
       ),
     ),
   ));

@@ -33,29 +33,27 @@ require('../global.php');
 
 
 /* Get Request */
-$request = fim_sanitizeGPC(array(
-  'get' => array(
-    'rooms' => array(
-      'default' => '',
-      'context' => array(
-         'type' => 'csv',
-         'filter' => 'int',
-         'evaltrue' => true,
-      ),
+$request = fim_sanitizeGPC('g', array(
+  'rooms' => array(
+    'default' => '',
+    'context' => array(
+        'type' => 'csv',
+        'filter' => 'int',
+        'evaltrue' => true,
     ),
-    'users' => array(
-      'default' => '',
-      'context' => array(
-         'type' => 'csv',
-         'filter' => 'int',
-         'evaltrue' => true,
-      ),
+  ),
+  'users' => array(
+    'default' => '',
+    'context' => array(
+        'type' => 'csv',
+        'filter' => 'int',
+        'evaltrue' => true,
     ),
-    'number' => array(
-      'default' => 10,
-      'context' => array(
-        'type' => 'int',
-      ),
+  ),
+  'number' => array(
+    'default' => 10,
+    'context' => array(
+      'type' => 'int',
     ),
   ),
 ));

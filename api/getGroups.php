@@ -31,17 +31,15 @@ require('../global.php');
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC(array(
-  'get' => array(
-    'groups' => array(
-      'type' => 'string',
-      'require' => false,
-      'default' => '',
-      'context' => array(
-         'type' => 'csv',
-         'filter' => 'int',
-         'evaltrue' => true,
-      ),
+$request = fim_sanitizeGPC('g', array(
+  'groups' => array(
+    'type' => 'string',
+    'require' => false,
+    'default' => '',
+    'context' => array(
+        'type' => 'csv',
+        'filter' => 'int',
+        'evaltrue' => true,
     ),
   ),
 ));

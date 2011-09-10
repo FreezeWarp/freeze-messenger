@@ -30,20 +30,18 @@ require('../global.php');
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC(array(
-  'post' => array(
-    'action' => array(
-      'valid' => array(
-        'delete',
-        'undelete',
-        'edit', // FIMv4
-      ),
+$request = fim_sanitizeGPC('p', array(
+  'action' => array(
+    'valid' => array(
+      'delete',
+      'undelete',
+      'edit', // FIMv4
     ),
+  ),
 
-    'messageId' => array(
-      'context' => array(
-        'type' => 'int',
-      ),
+  'messageId' => array(
+    'context' => array(
+      'type' => 'int',
     ),
   ),
 ));

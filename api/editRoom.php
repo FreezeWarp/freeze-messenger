@@ -48,77 +48,75 @@ require('../global.php');
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC(array(
-  'post' => array(
-    'action' => array(
-      'valid' => array(
-        'create',
-        'edit',
-        'delete',
-        'private',
-        'contact', // FIMv4
-      ),
-      'require' => true,
+$request = fim_sanitizeGPC('p', array(
+  'action' => array(
+    'valid' => array(
+      'create',
+      'edit',
+      'delete',
+      'private',
+      'contact', // FIMv4
     ),
+    'require' => true,
+  ),
 
-    'roomId' => array(
-      'require' => false,
-      'context' => array(
-        'type' => 'int',
-      ),
+  'roomId' => array(
+    'require' => false,
+    'context' => array(
+      'type' => 'int',
     ),
+  ),
 
-    'roomName' => array(
-      'require' => false,
-    ),
+  'roomName' => array(
+    'require' => false,
+  ),
 
-    'defaultPermissions' => array(
-      'require' => false,
-      'default' => 0,
-      'context' => array(
-        'type' => 'int',
-      ),
+  'defaultPermissions' => array(
+    'require' => false,
+    'default' => 0,
+    'context' => array(
+      'type' => 'int',
     ),
+  ),
 
-    'moderators' => array(
-      'require' => false,
-      'context' => array(
-        'type' => 'csv',
-        'filter' => 'int',
-        'evaltrue' => true,
-      ),
+  'moderators' => array(
+    'require' => false,
+    'context' => array(
+      'type' => 'csv',
+      'filter' => 'int',
+      'evaltrue' => true,
     ),
+  ),
 
-    'allowedUsers' => array(
-      'require' => false,
-      'context' => array(
-        'type' => 'csv',
-        'filter' => 'int',
-        'evaltrue' => true,
-      ),
+  'allowedUsers' => array(
+    'require' => false,
+    'context' => array(
+      'type' => 'csv',
+      'filter' => 'int',
+      'evaltrue' => true,
     ),
+  ),
 
-    'allowedGroups' => array(
-      'require' => false,
-      'context' => array(
-        'type' => 'csv',
-        'filter' => 'int',
-        'evaltrue' => true,
-      ),
+  'allowedGroups' => array(
+    'require' => false,
+    'context' => array(
+      'type' => 'csv',
+      'filter' => 'int',
+      'evaltrue' => true,
     ),
+  ),
 
-    'censor' => array(
-      'context' => array(
-        'type' => 'array',
-        'filter' => 'int',
-        'evaltrue' => false,
-      ),
+  'censor' => array(
+    'context' => array(
+      'type' => 'array',
+      'filter' => 'int',
+      'evaltrue' => false,
     ),
+  ),
 
-    'otr' => array( // This will be used in v4.
-      'require' => false,
-      'default' => false,
-    ),
+  'otr' => array( // This will be used in v4.
+    'require' => false,
+    'default' => false,
   ),
 ));
 

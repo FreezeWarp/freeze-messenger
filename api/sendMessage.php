@@ -34,31 +34,29 @@ require('../global.php');
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC(array(
-  'post' => array(
-    'roomId' => array(
+$request = fim_sanitizeGPC('p', array(
+  'roomId' => array(
+    'type' => 'int',
+    'require' => true,
+    'context' => array(
       'type' => 'int',
-      'require' => true,
-      'context' => array(
-         'type' => 'int',
-         'evaltrue' => true,
-      ),
+      'evaltrue' => true,
     ),
-    'message' => array(
-      'type' => 'string',
-      'require' => false,
-    ),
-    'flag' => array(
-      'type' => 'string',
-      'require' => false,
-    ),
-    'ignoreBlock' => array(
-      'type' => 'string',
-      'require' => false,
-      'default' => false,
-      'context' => array(
-        'type' => 'bool',
-      ),
+  ),
+  'message' => array(
+    'type' => 'string',
+    'require' => false,
+  ),
+  'flag' => array(
+    'type' => 'string',
+    'require' => false,
+  ),
+  'ignoreBlock' => array(
+    'type' => 'string',
+    'require' => false,
+    'default' => false,
+    'context' => array(
+      'type' => 'bool',
     ),
   ),
 ));

@@ -18,72 +18,68 @@ if (!defined('WEBPRO_INMOD')) {
   die();
 }
 else {
-  $request = fim_sanitizeGPC(array(
-    'request' => array(
-      'listId' => array(
-        'context' => array(
-          'type' => 'int',
-        ),
-      ),
-
-      'wordId' => array(
-        'context' => array(
-          'type' => 'int',
-        ),
+  $request = fim_sanitizeGPC('r', array(
+    'listId' => array(
+      'context' => array(
+        'type' => 'int',
       ),
     ),
 
-    'post' => array(
-      'word' => array(
-        'context' => array(
-          'type' => 'string',
-        ),
+    'wordId' => array(
+      'context' => array(
+        'type' => 'int',
       ),
+    ),
 
-      'param' => array(
-        'context' => array(
-          'type' => 'string',
-        ),
+    'word' => array(
+      'context' => array(
+        'type' => 'string',
       ),
+    ),
 
-      'severity' => array(
-        'valid' => array('replace', 'warn', 'confirm', 'block'),
-        'default' => 'replace',
+    'param' => array(
+      'context' => array(
+        'type' => 'string',
       ),
+    ),
 
-      'options' => array(
-        'context' => array(
-          'type' => 'int',
-        ),
+    'severity' => array(
+      'valid' => array('replace', 'warn', 'confirm', 'block'),
+      'default' => 'replace',
+    ),
+
+    'options' => array(
+      'context' => array(
+        'type' => 'int',
       ),
+    ),
 
-      'listName' => array(
-        'context' => array(
-          'type' => 'string',
-        ),
+    'listName' => array(
+      'context' => array(
+        'type' => 'string',
       ),
+    ),
 
-      'listType' => array(
-        'valid' => array('black', 'white'),
-        'default' => 'white',
+    'listType' => array(
+      'valid' => array('black', 'white'),
+      'default' => 'white',
+    ),
+
+    'candis' => array(
+      'context' => array(
+        'type' => 'bool',
       ),
+    ),
 
-      'candis' => array(
-        'context' => array(
-          'type' => 'bool',
-        ),
+    'privdis' => array(
+      'context' => array(
+        'type' => 'bool',
       ),
+    ),
 
-      'privdis' => array(
-        'context' => array(
-          'type' => 'bool',
-        ),
-      ),
-
-      'mature' => array(
-        'context' => array(
-          'type' => 'bool',
-        ),
+    'mature' => array(
+      'context' => array(
+        'type' => 'bool',
       ),
     ),
   ));

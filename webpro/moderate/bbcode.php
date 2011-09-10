@@ -18,32 +18,28 @@ if (!defined('WEBPRO_INMOD')) {
   die();
 }
 else {
-  $request = fim_sanitizeGPC(array(
-    'request' => array(
-      'bbcodeId' => array(
-        'context' => array(
-          'type' => 'int',
-        ),
+  $request = fim_sanitizeGPC('r', array(
+    'bbcodeId' => array(
+      'context' => array(
+        'type' => 'int',
       ),
     ),
 
-    'post' => array(
-      'bbcodeName' => array(
-        'context' => array(
-          'type' => 'string',
-        ),
+    'bbcodeName' => array(
+      'context' => array(
+        'type' => 'string',
       ),
+    ),
 
-      'searchRegex' => array(
-        'context' => array(
-          'type' => 'string',
-        ),
+    'searchRegex' => array(
+      'context' => array(
+        'type' => 'string',
       ),
+    ),
 
-      'replacement' => array(
-        'context' => array(
-          'type' => 'string',
-        ),
+    'replacement' => array(
+      'context' => array(
+        'type' => 'string',
       ),
     ),
   ));

@@ -33,28 +33,26 @@ require('../global.php');
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC(array(
-  'post' => array(
-    'action' => array(
-      'type' => 'string',
-      'require' => true,
-      'valid' => array(
-        'delete',
-        'undelete',
-        'addFlag', // FIMv4
-        'removeFlag', // FIMv4
-        'requestAction', // FIMv4
-        'parentalRating', // FIMv4
-      ),
+$request = fim_sanitizeGPC('p', array(
+  'action' => array(
+    'type' => 'string',
+    'require' => true,
+    'valid' => array(
+      'delete',
+      'undelete',
+      'addFlag', // FIMv4
+      'removeFlag', // FIMv4
+      'requestAction', // FIMv4
+      'parentalRating', // FIMv4
     ),
+  ),
 
-    'fileId' => array(
-      'type' => 'string',
-      'require' => false,
-      'default' => 0,
-      'context' => array(
-        'type' => 'int',
-      ),
+  'fileId' => array(
+    'type' => 'string',
+    'require' => false,
+    'default' => 0,
+    'context' => array(
+      'type' => 'int',
     ),
   ),
 ));

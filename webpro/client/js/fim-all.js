@@ -629,7 +629,7 @@ var settings = {
   disableFx : (settingsBitfield & 262144 ? true : false), // Disable jQuery Effects?
   disableRightClick : (settingsBitfield & 1048576 ? true : false),
 
-  // Localization
+  // Localisation
   usTime : (settingsBitfield & 16777216 ? true : false),
   twelveHourTime : (settingsBitfield & 33554432 ? true : false),
 

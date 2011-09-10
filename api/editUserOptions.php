@@ -30,58 +30,56 @@ require('../global.php');
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC(array(
-  'post' => array(
-    'defaultRoomId' => array(
-      'context' => array(
-        'type' => 'int',
-      ),
-    ),
-
-    'defaultFontface' => array(
-      'context' => array(
-        'type' => 'int',
-      ),
-    ),
-
-    'defaultColor' => array(
-      'type' => 'string',
-    ),
-
-    'defaultHighlight' => array(
-      'type' => 'string',
-    ),
-
-    'defaultFormatting' => array(
-      'context' => array(
-        'type' => 'int',
-      ),
-    ),
-
-    'watchRooms' => array(
-      'context' => array(
-        'type' => 'csv',
-        'filter' => 'int',
-        'evaltrue' => true,
-      ),
-    ),
-
-    'favRooms' => array(
-      'context' => array(
-        'type' => 'csv',
-        'filter' => 'int',
-        'evaltrue' => true,
-      ),
-    ),
-
-    'ignoreList' => array(
-      'context' => array(
-        'type' => 'csv',
-        'filter' => 'int',
-        'evaltrue' => true,
-      ),
+$request = fim_sanitizeGPC('p', array(
+  'defaultRoomId' => array(
+    'context' => array(
+      'type' => 'int',
     ),
   ),
+
+  'defaultFontface' => array(
+    'context' => array(
+      'type' => 'int',
+    ),
+  ),
+
+  'defaultColor' => array(
+    'type' => 'string',
+  ),
+
+  'defaultHighlight' => array(
+    'type' => 'string',
+  ),
+
+  'defaultFormatting' => array(
+    'context' => array(
+      'type' => 'int',
+    ),
+  ),
+
+  'watchRooms' => array(
+    'context' => array(
+      'type' => 'csv',
+      'filter' => 'int',
+      'evaltrue' => true,
+    ),
+  ),
+
+  'favRooms' => array(
+    'context' => array(
+      'type' => 'csv',
+      'filter' => 'int',
+      'evaltrue' => true,
+    ),
+  ),
+
+  'ignoreList' => array(
+    'context' => array(
+      'type' => 'csv',
+      'filter' => 'int',
+      'evaltrue' => true,
+    ),
+  )
 ));
 
 /* Data Predefine */

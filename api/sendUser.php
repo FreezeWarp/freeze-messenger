@@ -37,23 +37,21 @@ require('../functions/fim_uac_vanilla.php');
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC(array(
-  'post' => array(
-    'userName' => array(
-      'type' => 'string',
-    ),
-    'password' => array(
-      'type' => 'string',
-    ),
-    'passwordEncrypt' => array(
-      'type' => 'string',
-    ),
-    'email' => array(
-      'type' => 'string',
-    ),
-    'dob' => array(
-      'type' => 'string',
-    ),
+$request = fim_sanitizeGPC('p', array(
+  'userName' => array(
+    'type' => 'string',
+  ),
+  'password' => array(
+    'type' => 'string',
+  ),
+  'passwordEncrypt' => array(
+    'type' => 'string',
+  ),
+  'email' => array(
+    'type' => 'string',
+  ),
+  'dob' => array(
+    'type' => 'int',
   ),
 ));
 

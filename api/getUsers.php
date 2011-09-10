@@ -46,7 +46,7 @@ $request = fim_sanitizeGPC(array(
     ),
     'showOnly' => array(
       'type' => 'string',
-      'valid' => array('banned', 'unbanned', ''),
+      'valid' => array('banned', 'unbanned', 'friends', 'ignored', ''),
       'default' => '',
     ),
     'sort' => array(

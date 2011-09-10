@@ -34,46 +34,44 @@ require('../global.php');
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC(array(
-  'get' => array(
-    'rooms' => array(
-      'type' => 'string',
-      'require' => true,
-      'default' => '',
-      'context' => array(
-         'type' => 'csv',
-         'filter' => 'int',
-         'evaltrue' => true,
-      ),
+$request = fim_sanitizeGPC('g', array(
+  'rooms' => array(
+    'type' => 'string',
+    'require' => true,
+    'default' => '',
+    'context' => array(
+        'type' => 'csv',
+        'filter' => 'int',
+        'evaltrue' => true,
     ),
+  ),
 
-    'onlineThreshold' => array(
-      'type' => 'string',
-      'require' => false,
-      'default' => ($onlineThreshold ? $onlineThreshold : 15),
-      'context' => array(
-        'type' => 'int',
-      ),
+  'onlineThreshold' => array(
+    'type' => 'string',
+    'require' => false,
+    'default' => ($onlineThreshold ? $onlineThreshold : 15),
+    'context' => array(
+      'type' => 'int',
     ),
+  ),
 
-    'time' => array(
-      'type' => 'string',
-      'require' => false,
-      'default' => (int) time(),
-      'context' => array(
-        'type' => 'int',
-      ),
+  'time' => array(
+    'type' => 'string',
+    'require' => false,
+    'default' => (int) time(),
+    'context' => array(
+      'type' => 'int',
     ),
+  ),
 
-    'users' => array(
-      'type' => 'string',
-      'require' => false,
-      'default' => '',
-      'context' => array(
-         'type' => 'csv',
-         'filter' => 'int',
-         'evaltrue' => true,
-      ),
+  'users' => array(
+    'type' => 'string',
+    'require' => false,
+    'default' => '',
+    'context' => array(
+        'type' => 'csv',
+        'filter' => 'int',
+        'evaltrue' => true,
     ),
   ),
 ));

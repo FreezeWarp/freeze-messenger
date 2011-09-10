@@ -35,28 +35,26 @@ require('../global.php');
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC(array(
-  'get' => array(
-    'rooms' => array(
-      'type' => 'string',
-      'require' => false,
-      'default' => '',
-      'context' => array(
-         'type' => 'csv',
-         'filter' => 'int',
-         'evaltrue' => true,
-      ),
+$request = fim_sanitizeGPC('g', array(
+  'rooms' => array(
+    'type' => 'string',
+    'require' => false,
+    'default' => '',
+    'context' => array(
+        'type' => 'csv',
+        'filter' => 'int',
+        'evaltrue' => true,
     ),
+  ),
 
-    'users' => array(
-      'type' => 'string',
-      'require' => false,
-      'default' => '',
-      'context' => array(
-         'type' => 'csv',
-         'filter' => 'int',
-         'evaltrue' => true,
-      ),
+  'users' => array(
+    'type' => 'string',
+    'require' => false,
+    'default' => '',
+    'context' => array(
+        'type' => 'csv',
+        'filter' => 'int',
+        'evaltrue' => true,
     ),
   ),
 ));

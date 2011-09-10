@@ -65,168 +65,154 @@ require('../global.php');
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC(array(
-  'get' => array(
-    'rooms' => array(
-      'default' => '',
-      'context' => array(
-         'type' => 'csv',
-         'filter' => 'int',
-         'evaltrue' => true,
-      ),
+$request = fim_sanitizeGPC('g', array(
+  'rooms' => array(
+    'default' => '',
+    'context' => array(
+        'type' => 'csv',
+        'filter' => 'int',
+        'evaltrue' => true,
     ),
+  ),
 
-    'users' => array(
-      'default' => '',
-      'context' => array(
-         'type' => 'csv',
-         'filter' => 'int',
-         'evaltrue' => true,
-      ),
+  'users' => array(
+    'default' => '',
+    'context' => array(
+        'type' => 'csv',
+        'filter' => 'int',
+        'evaltrue' => true,
     ),
+  ),
 
-    'messages' => array(
-      'default' => '',
-      'context' => array(
-         'type' => 'csv',
-         'filter' => 'int',
-         'evaltrue' => true,
-      ),
+  'messages' => array(
+    'default' => '',
+    'context' => array(
+        'type' => 'csv',
+        'filter' => 'int',
+        'evaltrue' => true,
     ),
+  ),
 
-    'sort' => array(
-      'valid' => array(
-        'roomId',
-        'roomName',
-        'smart',
-      ),
-      'default' => 'roomId',
+  'sort' => array(
+    'valid' => array(
+      'roomId',
+      'roomName',
+      'smart',
     ),
+    'default' => 'roomId',
+  ),
 
-    'showDeleted' => array(
-      'default' => false,
-      'context' => array(
-        'type' => 'bool',
-      ),
+  'showDeleted' => array(
+    'default' => false,
+    'context' => array(
+      'type' => 'bool',
     ),
+  ),
 
-    'watchRooms' => array(
-      'default' => false,
-      'context' => array(
-        'type' => 'bool',
-      ),
+  'watchRooms' => array(
+    'default' => false,
+    'context' => array(
+      'type' => 'bool',
     ),
+  ),
 
-    'activeUsers' => array(
-      'default' => false,
-      'context' => array(
-        'type' => 'bool',
-      ),
+  'activeUsers' => array(
+    'default' => false,
+    'context' => array(
+      'type' => 'bool',
     ),
+  ),
 
-    'archive' => array(
-      'default' => false,
-      'context' => array(
-        'type' => 'bool',
-      ),
+  'archive' => array(
+    'default' => false,
+    'context' => array(
+      'type' => 'bool',
     ),
+  ),
 
-    'noping' => array(
-      'default' => false,
-      'context' => array(
-        'type' => 'bool',
-      ),
+  'noping' => array(
+    'default' => false,
+    'context' => array(
+      'type' => 'bool',
     ),
+  ),
 
-    'longPolling' => array(
-      'default' => false,
-      'context' => array(
-        'type' => 'bool',
-      ),
+  'longPolling' => array(
+    'default' => false,
+    'context' => array(
+      'type' => 'bool',
     ),
+  ),
 
-    'messageIdMax' => array(
-      'default' => false,
-      'context' => array(
-        'type' => 'int',
-      ),
+  'messageIdMax' => array(
+    'default' => false,
+    'context' => array(
+      'type' => 'int',
     ),
+  ),
 
-    'messageIdMin' => array(
-      'default' => false,
-      'context' => array(
-        'type' => 'int',
-      ),
+  'messageIdMin' => array(
+    'default' => false,
+    'context' => array(
+      'type' => 'int',
     ),
+  ),
 
-    'messageDateMax' => array(
-      'default' => false,
-      'context' => array(
-        'type' => 'int',
-      ),
+  'messageDateMax' => array(
+    'default' => false,
+    'context' => array(
+      'type' => 'int',
     ),
+  ),
 
-    'messageDateMin' => array(
-      'default' => false,
-      'context' => array(
-        'type' => 'int',
-      ),
+  'messageDateMin' => array(
+    'default' => false,
+    'context' => array(
+      'type' => 'int',
     ),
+  ),
 
-    'messageIdStart' => array(
-      'default' => false,
-      'context' => array(
-        'type' => 'int',
-      ),
+  'messageIdStart' => array(
+    'default' => false,
+    'context' => array(
+      'type' => 'int',
     ),
+  ),
 
-    'messageIdEnd' => array(
-      'default' => false,
-      'context' => array(
-        'type' => 'int',
-      ),
+  'messageIdEnd' => array(
+    'default' => false,
+    'context' => array(
+      'type' => 'int',
     ),
+  ),
 
-    'onlineThreshold' => array(
-      'default' => $config['defaultOnlineThreshold'],
-      'context' => array(
-        'type' => 'int',
-      ),
+  'onlineThreshold' => array(
+    'default' => $config['defaultOnlineThreshold'],
+    'context' => array(
+      'type' => 'int',
     ),
+  ),
 
-    'messageLimit' => array(
-      'default' => 10000,
-      'context' => array(
-        'type' => 'int',
-      ),
+  'messageLimit' => array(
+    'default' => 10000,
+    'context' => array(
+      'type' => 'int',
     ),
+  ),
 
-    'messageHardLimit' => array(
-      'default' => 50,
-      'context' => array(
-        'type' => 'int',
-      ),
+  'messageHardLimit' => array(
+    'default' => 50,
+    'context' => array(
+      'type' => 'int',
     ),
+  ),
 
-    'search' => array(
-      'default' => false,
-    ),
+  'search' => array(
+    'default' => false,
+  ),
 
-    'encode' => array(
-      'default' => 'plaintext',
-    ),
-
-    'fields' => array(
-      'type' => 'string',
-      'valid' => array(
-        'both',
-        'api',
-        'html',
-        'api,html',
-        'html,api',
-      ),
-      'default' => 'both',
-    ),
+  'encode' => array(
+    'default' => 'plaintext',
   ),
 ));
 

@@ -39,57 +39,85 @@ require('../global.php');
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC(array(
-  'post' => array(
-    'uploadMethod' => array(
-      'type' => 'string',
-      'default' => 'raw',
-      'valid' => array(
-        'raw',
-      ),
-      'require' => false,
+$request = fim_sanitizeGPC('p', array(
+  'uploadMethod' => array(
+    'type' => 'string',
+    'default' => 'raw',
+    'valid' => array(
+      'raw',
     ),
+    'require' => false,
+  ),
 
-    'fileName' => array(
-      'type' => 'string',
-      'require' => true,
+  'fileName' => array(
+    'type' => 'string',
+    'require' => true,
+  ),
+
+  'fileData' => array(
+    'type' => 'string',
+    'require' => true,
+  ),
+
+  'fileSize' => array(
+    'type' => 'string',
+    'require' => false,
+  ),
+
+  'fileMd5hash' => array(
+    'type' => 'string',
+    'require' => false,
+  ),
+
+  'fileSha256hash' => array(
+    'type' => 'string',
+    'require' => false,
+  ),
+
+  'roomId' => array(
+    'type' => 'string',
+    'require' => false,
+    'default' => 0,
+    'context' => array(
+      'type' => 'int',
     ),
+  ),
 
-    'fileData' => array(
-      'type' => 'string',
-      'require' => true,
+  'dataEncode' => array(
+    'type' => 'string',
+    'require' => true,
+    'valid' => array(
+      'base64',
     ),
+  ),
 
-    'fileSize' => array(
-      'type' => 'string',
-      'require' => false,
+  'fileRating' => array(
+    'type' => 'string',
+    'require' => false,
+    'context' => 'int',
+    'default' => '6',
+    'valid' => array(
+      '6',
+      '10',
+      '13',
+      '16',
+      '18',
     ),
+  ),
 
-    'fileMd5hash' => array(
-      'type' => 'string',
-      'require' => false,
-    ),
-
-    'fileSha256hash' => array(
-      'type' => 'string',
-      'require' => false,
-    ),
-
-    'roomId' => array(
-      'type' => 'string',
-      'require' => false,
-      'default' => 0,
-      'context' => array(
-        'type' => 'int',
-      ),
-    ),
-
-    'dataEncode' => array(
-      'type' => 'string',
-      'require' => true,
-      'valid' => array(
-        'base64',
-      ),
+  'fileFlags' => array(
+    'type' => 'array',
+    'require' => true,
+    'valid' => array(
+      'violence',
+      'suggestive',
+      'nudity',
+      'pnudity',
+      'language',
+      'violence',
+      'gore',
+      'weapons',
+      'drugs',
     ),
   ),
 ));

@@ -32,34 +32,32 @@ require('global.php');
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC(array(
-  'get' => array(
-    'time' => array(
-      'type' => 'string',
-      'require' => false,
-      'default' => 0,
-      'context' => array(
-        'type' => 'int',
-      ),
+$request = fim_sanitizeGPC('g', array(
+  'time' => array(
+    'type' => 'string',
+    'require' => false,
+    'default' => 0,
+    'context' => array(
+      'type' => 'int',
     ),
+  ),
 
-    'md5hash' => array(
-      'type' => 'string',
-      'require' => false,
-    ),
+  'md5hash' => array(
+    'type' => 'string',
+    'require' => false,
+  ),
 
-    'sha256hash' => array(
-      'type' => 'string',
-      'require' => false,
-    ),
+  'sha256hash' => array(
+    'type' => 'string',
+    'require' => false,
+  ),
 
-    'fileId' => array(
-      'type' => 'string',
-      'require' => false,
-      'default' => 0,
-      'context' => array(
-        'type' => 'int',
-      ),
+  'fileId' => array(
+    'type' => 'string',
+    'require' => false,
+    'default' => 0,
+    'context' => array(
+      'type' => 'int',
     ),
   ),
 ));

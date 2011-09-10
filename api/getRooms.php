@@ -34,50 +34,48 @@ require('../global.php');
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC(array(
-  'get' => array(
-    'permLevel' => array(
-      'type' => 'string',
-      'default' => '',
-      'valid' => array(
-        'post',
-        'view',
-        'moderate',
-        'know',
-        'admin',
-      ),
-      'require' => false,
+$request = fim_sanitizeGPC('g', array(
+  'permLevel' => array(
+    'type' => 'string',
+    'default' => '',
+    'valid' => array(
+      'post',
+      'view',
+      'moderate',
+      'know',
+      'admin',
     ),
+    'require' => false,
+  ),
 
-    'rooms' => array(
-      'type' => 'string',
-      'require' => false,
-      'default' => '',
-      'context' => array(
-         'type' => 'csv',
-         'filter' => 'int',
-         'evaltrue' => true,
-      ),
+  'rooms' => array(
+    'type' => 'string',
+    'require' => false,
+    'default' => '',
+    'context' => array(
+        'type' => 'csv',
+        'filter' => 'int',
+        'evaltrue' => true,
     ),
+  ),
 
-    'sort' => array(
-      'type' => 'string',
-      'valid' => array(
-        'roomId',
-        'roomName',
-        'smart',
-      ),
-      'require' => false,
-      'default' => 'roomId',
+  'sort' => array(
+    'type' => 'string',
+    'valid' => array(
+      'roomId',
+      'roomName',
+      'smart',
     ),
+    'require' => false,
+    'default' => 'roomId',
+  ),
 
-    'showDeleted' => array(
-      'type' => 'string',
-      'require' => false,
-      'default' => false,
-      'context' => array(
-        'type' => 'bool',
-      ),
+  'showDeleted' => array(
+    'type' => 'string',
+    'require' => false,
+    'default' => false,
+    'context' => array(
+      'type' => 'bool',
     ),
   ),
 ));

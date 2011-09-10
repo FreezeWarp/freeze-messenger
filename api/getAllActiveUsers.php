@@ -34,29 +34,27 @@ require('../global.php');
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC(array(
-  'get' => array(
-    'onlineThreshold' => array(
-      'default' => (int) $config['defaultOnlineThreshold'],
-      'context' => array(
-        'type' => 'int',
-      ),
+$request = fim_sanitizeGPC('g', array(
+  'onlineThreshold' => array(
+    'default' => (int) $config['defaultOnlineThreshold'],
+    'context' => array(
+      'type' => 'int',
     ),
+  ),
 
-    'time' => array(
-      'default' => (int) time(),
-      'context' => array(
-        'type' => 'int',
-      ),
+  'time' => array(
+    'default' => (int) time(),
+    'context' => array(
+      'type' => 'int',
     ),
+  ),
 
-    'users' => array(
-      'default' => '',
-      'context' => array(
-         'type' => 'csv',
-         'filter' => 'int',
-         'evaltrue' => true,
-      ),
+  'users' => array(
+    'default' => '',
+    'context' => array(
+        'type' => 'csv',
+        'filter' => 'int',
+        'evaltrue' => true,
     ),
   ),
 ));

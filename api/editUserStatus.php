@@ -35,27 +35,25 @@ require('../functions/parserFunctions.php');
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC(array(
-  'post' => array(
-    'roomId' => array(
-      'type' => 'string',
-      'default' => 'raw',
-      'context' => array(
-        'type' => 'int',
-      ),
-      'require' => false,
+$request = fim_sanitizeGPC('p', array(
+  'roomId' => array(
+    'type' => 'string',
+    'default' => 'raw',
+    'context' => array(
+      'type' => 'int',
     ),
-
-    'statusType' => array(
-      'type' => 'string',
-      'require' => false,
-    ),
-
-    'statusValue' => array(
-      'type' => 'string',
-      'require' => false,
-    ),
+    'require' => false,
   ),
+
+  'statusType' => array(
+    'type' => 'string',
+    'require' => false,
+  ),
+
+  'statusValue' => array(
+    'type' => 'string',
+    'require' => false,
+  )
 ));
 
 

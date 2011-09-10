@@ -33,50 +33,48 @@ else {
 
 
   /* Get Request Data */
-  $request = fim_sanitizeGPC(array(
-    'get' => array(
-      'roomId' => array(
-        'type' => 'string',
-        'require' => true,
-        'default' => 0,
-        'context' => array(
-          'type' => 'int',
-          'evaltrue' => true,
-        ),
+  $request = fim_sanitizeGPC('g', array(
+    'roomId' => array(
+      'type' => 'string',
+      'require' => true,
+      'default' => 0,
+      'context' => array(
+        'type' => 'int',
+        'evaltrue' => true,
       ),
-      'lastMessage' => array(
-        'type' => 'string',
-        'require' => false,
-        'default' => 0,
-        'context' => array(
-          'type' => 'int',
-          'evaltrue' => false,
-        ),
+    ),
+    'lastMessage' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => 0,
+      'context' => array(
+        'type' => 'int',
+        'evaltrue' => false,
       ),
-      'lastUnreadMessage' => array(
-        'type' => 'string',
-        'require' => false,
-        'default' => 0,
-        'context' => array(
-          'type' => 'int',
-          'evaltrue' => false,
-        ),
+    ),
+    'lastUnreadMessage' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => 0,
+      'context' => array(
+        'type' => 'int',
+        'evaltrue' => false,
       ),
-      'lastEvent' => array(
-        'type' => 'string',
-        'require' => false,
-        'default' => 0,
-        'context' => array(
-          'type' => 'int',
-          'evaltrue' => false,
-        ),
+    ),
+    'lastEvent' => array(
+      'type' => 'string',
+      'require' => false,
+      'default' => 0,
+      'context' => array(
+        'type' => 'int',
+        'evaltrue' => false,
       ),
     ),
   ));
 
-  $lastMessageId = $_SERVER['HTTP_LAST_EVENT_ID'];
-  $lastMessageIdParts = explode('-', $lastMessageId);
-  if (count($lastMessageIdParts) == 3) {
+  $lastMessageId = $_SERVER['HTTP_LAST_EVENT_ID']; // Get the message ID used for keeping state data; e.g. 1-2-3
+  $lastMessageIdParts = explode('-', $lastMessageId); // Get each state part; e.g. array(1, 2, 3)
+  if (count($lastMessageIdParts) === 3) { // There must be three parts
     $request['lastMessage'] = (int) substr($lastMessageIdParts[0], 1);
     $request['lastUnreadMessage'] = (int) substr($lastMessageIdParts[1], 1);
     $request['lastEvent'] = (int) substr($lastMessageIdParts[2], 1);

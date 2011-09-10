@@ -34,46 +34,44 @@ require('../global.php');
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC(array(
-  'post' => array(
-    'action' => array(
-      'valid' => array(
-        'kickUser',
-        'unkickUser',
-        'favRoom',
-        'unfavRoom',
-        'banUser',
-        'unbanUser',
-        'markMessageRead',
-      ),
+$request = fim_sanitizeGPC('p', array(
+  'action' => array(
+    'valid' => array(
+      'kickUser',
+      'unkickUser',
+      'favRoom',
+      'unfavRoom',
+      'banUser',
+      'unbanUser',
+      'markMessageRead',
     ),
+  ),
 
-    'roomId' => array(
-      'default' => 0,
-      'context' => array(
-        'type' => 'int',
-      ),
+  'roomId' => array(
+    'default' => 0,
+    'context' => array(
+      'type' => 'int',
     ),
+  ),
 
-    'userId' => array(
-      'default' => 0,
-      'context' => array(
-        'type' => 'int',
-      ),
+  'userId' => array(
+    'default' => 0,
+    'context' => array(
+      'type' => 'int',
     ),
+  ),
 
-    'length' => array(
-      'default' => 0,
-      'context' => array(
-        'type' => 'int',
-      ),
+  'length' => array(
+    'default' => 0,
+    'context' => array(
+      'type' => 'int',
     ),
+  ),
 
-    'quiet' => array(
-      'default' => false,
-      'context' => array(
-        'type' => 'bool',
-      ),
+  'quiet' => array(
+    'default' => false,
+    'context' => array(
+      'type' => 'bool',
     ),
   ),
 ));
