@@ -37,12 +37,8 @@ require('../functions/parserFunctions.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
   'roomId' => array(
-    'type' => 'string',
     'default' => 'raw',
-    'context' => array(
-      'type' => 'int',
-    ),
-    'require' => false,
+    'context' => 'int',
   ),
 
   'statusType' => array(),

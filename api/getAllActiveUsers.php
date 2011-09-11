@@ -37,16 +37,12 @@ require('../global.php');
 $request = fim_sanitizeGPC('g', array(
   'onlineThreshold' => array(
     'default' => (int) $config['defaultOnlineThreshold'],
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'time' => array(
     'default' => (int) time(),
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'users' => array(

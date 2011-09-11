@@ -32,15 +32,11 @@ require('../global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
   'defaultRoomId' => array(
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'defaultFontface' => array(
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'defaultColor' => array(),
@@ -48,9 +44,7 @@ $request = fim_sanitizeGPC('p', array(
   'defaultHighlight' => array(),
 
   'defaultFormatting' => array(
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'watchRooms' => array(

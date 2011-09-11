@@ -53,19 +53,15 @@ require('../global.php');
 $request = fim_sanitizeGPC('p', array(
   'action' => array(
     'valid' => array(
-      'create',
-      'edit',
-      'delete',
-      'private',
+      'create', 'edit',
+      'delete', 'private',
       'contact', // FIMv4
     ),
     'require' => true,
   ),
 
   'roomId' => array(
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'roomName' => array(
@@ -74,9 +70,7 @@ $request = fim_sanitizeGPC('p', array(
 
   'defaultPermissions' => array(
     'default' => 0,
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'moderators' => array(
@@ -106,15 +100,13 @@ $request = fim_sanitizeGPC('p', array(
   'censor' => array(
     'context' => array(
       'type' => 'array',
-      'filter' => 'int',
+      'filter' => 'bool',
       'evaltrue' => false,
     ),
   ),
 
   'parentalAge' => array(
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
     'valid' => array(
       6, 10, 13, 16, 18
     ),
@@ -123,7 +115,7 @@ $request = fim_sanitizeGPC('p', array(
 
   'parentalFlags' => array(
     'context' => array(
-      'type' => 'array',
+      'type' => 'csv',
       'valid' => array(
         'violence', 'weapons', 'gore',
         'nudity', 'pnudity', 'suggestive',

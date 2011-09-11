@@ -50,16 +50,12 @@ $request = fim_sanitizeGPC('p', array(
 
   'offset' => array(
     'default' => 0,
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'limit' => array(
     'default' => 0,
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 ));
 

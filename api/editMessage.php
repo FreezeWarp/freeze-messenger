@@ -40,9 +40,7 @@ $request = fim_sanitizeGPC('p', array(
   ),
 
   'messageId' => array(
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 ));
 

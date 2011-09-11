@@ -43,6 +43,7 @@ $request = fim_sanitizeGPC('g', array(
       'evaltrue' => true,
     ),
   ),
+
   'lists' => array(
     'default' => '',
     'context' => array(

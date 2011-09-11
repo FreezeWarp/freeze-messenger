@@ -36,12 +36,8 @@ require('../global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
   'roomId' => array(
-    'type' => 'int',
     'require' => true,
-    'context' => array(
-      'type' => 'int',
-      'evaltrue' => true,
-    ),
+    'context' => 'int',
   ),
 
   'message' => array(),
@@ -54,9 +50,7 @@ $request = fim_sanitizeGPC('p', array(
 
   'ignoreBlock' => array(
     'default' => false,
-    'context' => array(
-      'type' => 'bool',
-    ),
+    'context' => 'bool',
   ),
 ));
 $ip = $_SERVER['REMOTE_ADDR']; // Get the IP address of the user.

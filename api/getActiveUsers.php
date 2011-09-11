@@ -46,16 +46,12 @@ $request = fim_sanitizeGPC('g', array(
 
   'onlineThreshold' => array(
     'default' => ($onlineThreshold ? $onlineThreshold : 15),
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'time' => array(
     'default' => (int) time(),
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'users' => array(

@@ -102,101 +102,71 @@ $request = fim_sanitizeGPC('g', array(
 
   'showDeleted' => array(
     'default' => false,
-    'context' => array(
-      'type' => 'bool',
-    ),
+    'context' => 'bool',
   ),
 
   'watchRooms' => array(
     'default' => false,
-    'context' => array(
-      'type' => 'bool',
-    ),
+    'context' => 'bool',
   ),
 
   'activeUsers' => array(
     'default' => false,
-    'context' => array(
-      'type' => 'bool',
-    ),
+    'context' => 'bool',
   ),
 
   'archive' => array(
     'default' => false,
-    'context' => array(
-      'type' => 'bool',
-    ),
+    'context' => 'bool',
   ),
 
   'noping' => array(
     'default' => false,
-    'context' => array(
-      'type' => 'bool',
-    ),
+    'context' => 'bool',
   ),
 
   'longPolling' => array(
     'default' => false,
-    'context' => array(
-      'type' => 'bool',
-    ),
+    'context' => 'bool',
   ),
 
   'messageIdMax' => array(
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'messageIdMin' => array(
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'messageDateMax' => array(
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'messageDateMin' => array(
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'messageIdStart' => array(
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'messageIdEnd' => array(
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'onlineThreshold' => array(
     'default' => $config['defaultOnlineThreshold'],
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'messageLimit' => array(
     'default' => 10000,
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'messageHardLimit' => array(
     'default' => 50,
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'search' => array(
@@ -206,8 +176,7 @@ $request = fim_sanitizeGPC('g', array(
   'encode' => array(
     'default' => 'plaintext',
     'valid' => array(
-      'plaintext',
-      'base64',
+      'plaintext', 'base64',
     ),
   ),
 ));

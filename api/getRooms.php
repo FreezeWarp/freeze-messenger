@@ -46,9 +46,9 @@ $request = fim_sanitizeGPC('g', array(
   'rooms' => array(
     'default' => '',
     'context' => array(
-        'type' => 'csv',
-        'filter' => 'int',
-        'evaltrue' => true,
+      'type' => 'csv',
+      'filter' => 'int',
+      'evaltrue' => true,
     ),
   ),
 
@@ -60,9 +60,7 @@ $request = fim_sanitizeGPC('g', array(
   ),
 
   'showDeleted' => array(
-    'context' => array(
-      'type' => 'bool',
-    ),
+    'context' => 'bool',
   ),
 ));
 

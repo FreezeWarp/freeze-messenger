@@ -52,9 +52,7 @@ $request = fim_sanitizeGPC('g', array(
   ),
   'number' => array(
     'default' => 10,
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 ));
 

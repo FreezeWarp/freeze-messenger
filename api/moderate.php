@@ -46,30 +46,22 @@ $request = fim_sanitizeGPC('p', array(
 
   'roomId' => array(
     'default' => 0,
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'userId' => array(
     'default' => 0,
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'length' => array(
     'default' => 0,
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'quiet' => array(
     'default' => false,
-    'context' => array(
-      'type' => 'bool',
-    ),
+    'context' => 'bool',
   ),
 ));
 

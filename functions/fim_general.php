@@ -81,6 +81,26 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false, $allowed
           }
         }
         break;
+
+        case 'bool':
+        $preValue = fim_cast('bool', $value, false);
+
+        if ($preserveAll) { // Add to the array regardless of true/false (arguably what is should be here xD)
+          $arrayValidated[] = $preValue;
+        }
+        elseif ($preValue === true) { // Only add to the array if true.
+          $arrayValidated[] = $preValue;
+        }
+        break;
+
+        default:
+        if ($preserveAll) { // Add to the array regardless of true/false (arguably what is should be default here xD)
+          $arrayValidated[] = $value;
+        }
+        elseif ($preValue) { // Only add to the array if true.
+          $arrayValidated[] = $value;
+        }
+        break;
       }
     }
   }
@@ -1048,7 +1068,7 @@ function fim_outputXml2($array, $level = 0) {
     $key = $key[0];
 
     if (is_array($value)) {
-      if (hasArray($value)) {
+      if (fim_hasArray($value)) {
         $data2 = '';
         foreach ($value AS $key2 => $value2) {
           if (!is_array($value2)) {
@@ -1331,6 +1351,7 @@ function fim_sanitizeGPC($type, $data) {
                 case 'filter': // This is an additional filter applied to data that uses the "csv" context type (and possibly more in the future).
                 switch ($contextdata) {
                   case 'int': $indexMetaData['context']['filter'] = 'int'; break;
+                  case 'bool': $indexMetaData['context']['filter'] = 'bool'; break;
                 }
                 break;
                 case 'evaltrue': $indexMetaData['context']['evaltrue'] = (bool) $contextdata; break; // This specifies whether all subvalus of a context must be true. For instance, assuming we use an integer filter 0 would be removed if this was true.
@@ -1339,7 +1360,7 @@ function fim_sanitizeGPC($type, $data) {
             }
           }
           else { // The context only defines the type.
-            switch ($contextdata) {
+            switch ($metaData) {
               case 'csv': $indexMetaData['context']['cast'] = 'csv'; break; // e.g. "1,2,3" "1,ab3,455"
               case 'array': $indexMetaData['context']['cast'] = 'array'; break; // e.g. "1=1,2=0,3=0" "1=1,ab3=1,455=0"
               case 'bool': $indexMetaData['context']['cast'] = 'bool'; break;
@@ -1382,14 +1403,16 @@ function fim_sanitizeGPC($type, $data) {
         elseif (isset($indexMetaData['default'])) { // If the value has a default and is not specified...
           $activeGlobal[$indexName] = $indexMetaData['default']; // Set the value to the default.
         }
-//          else {
-//            $activeGlobal[$indexName] = false;
-//          }
       }
 
       switch($indexMetaData['context']['cast']) {
-        case 'csv':
-        $newData[$indexName] = fim_arrayValidate(explode(',', $activeGlobal[$indexName]), $indexMetaData['context']['filter'],($indexMetaData['context']['evaltrue'] ? false : true), (isset($indexMetaData['context']['valid']) ? $indexMetaData['context']['valid'] : false)); // If a cast is set for a CSV list, explode with a comma seperator, make sure all values corrosponding to the filter (int, bool, or string - the latter pretty much changes nothing), and if evaltrue is true, then the preserveAll flag would be false, and vice-versa.
+        case 'csv': // If a cast is set for a CSV list, explode with a comma seperator, make sure all values corrosponding to the filter (int, bool, or string - the latter pretty much changes nothing), and if evaltrue is true, then the preserveAll flag would be false, and vice-versa.
+        $newData[$indexName] = fim_arrayValidate(
+          explode(',', $activeGlobal[$indexName]),
+          $indexMetaData['context']['filter'],
+          ($indexMetaData['context']['evaltrue'] ? false : true),
+          (isset($indexMetaData['context']['valid']) ? $indexMetaData['context']['valid'] : false)
+        );
         break;
 
         case 'array':
@@ -1400,13 +1423,18 @@ function fim_sanitizeGPC($type, $data) {
         foreach ($arrayParts AS $arrayEntry) {
           $arrayEntry = explode('=', $arrayEntry);
 
-          if (count($arrayEntry) !== 2) continue;
+          if (count($arrayEntry) !== 2) continue; // Must be two parts to every entry.
 
           $arrayKeys[] = $arrayEntry[0];
           $arrayVals[] = $arrayEntry[1];
         }
 
-        $arrayVals = fim_arrayValidate($arrayVals, $indexMetaData['context']['filter'], ($indexMetaData['context']['evaltrue'] ? false : true));
+        $arrayVals = fim_arrayValidate(
+          $arrayVals,
+          $indexMetaData['context']['filter'],
+          ($indexMetaData['context']['evaltrue'] ? false : true),
+          (isset($indexMetaData['context']['valid']) ? $indexMetaData['context']['valid'] : false)
+        );
         $newData[$indexName] = array_combine($arrayKeys, $arrayVals);
         break;
 
@@ -1421,14 +1449,12 @@ function fim_sanitizeGPC($type, $data) {
         }
         break;
 
-        case 'bool': // I'm not sure what to do here yet, really...
-        $trueValues = array('true', 1, true, '1');
-        $falseValues = array('false', 0, false, '0');
-
-        if (in_array($activeGlobal[$indexName], $trueValues, true)) { $newData[$indexName] = true; } // Strictly matches one of the above true values
-        elseif (in_array($activeGlobal[$indexName], $falseValues, true)) { $newData[$indexName] = false; } // Strictly matches one of the above false values
-        elseif (isset($indexMetaData['default'])) { $newData[$indexName] = (bool) $indexMetaData['default']; } // There's a default
-        else { $newData[$indexName] = false; }
+        case 'bool':
+        $newData[$indexName] = fim_cast(
+          'bool',
+          $activeGlobal[$indexName],
+          (isset($indexMetaData['default']) ? $indexMetaData['default'] : null)
+        );
         break;
 
         default: // String or otherwise.
@@ -1472,7 +1498,7 @@ function fim_iif($condition, $true, $false) {
  * @return bool - True if the array contains array, false otherwise.
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
-function hasArray($array) {
+function fim_hasArray($array) {
   global $config;
 
   foreach ($array AS $key => $value) { // Run through each entry of the array.
@@ -1578,5 +1604,23 @@ function fim_sendMessage($messageText, $messageFlag, $userData, $roomData) {
 
   $keyWords = $messageParse->getKeyWords();
   $database->storeKeyWords($keyWords, $messageId, $userData['userId'], $roomData['roomId']);
+}
+
+function fim_cast($cast, $value, $default = null) {
+  switch ($cast) {
+    case 'bool':
+    $trueValues = array('true', 1, true, '1');
+    $falseValues = array('false', 0, false, '0');
+
+    if (in_array($value, $trueValues, true)) { $value = true; } // Strictly matches one of the above true values
+    elseif (in_array($value, $falseValues, true)) { $value = false; } // Strictly matches one of the above false values
+    elseif (!is_null($default)) { $value = (bool) $default; } // There's a default
+    else { $value = false; }
+    break;
+
+    default: throw new Exception('Unrecognized cast.'); break;
+  }
+
+  return $value;
 }
 ?>

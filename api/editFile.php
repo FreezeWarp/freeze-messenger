@@ -58,9 +58,7 @@ $request = fim_sanitizeGPC('p', array(
   'fileData' => array(),
 
   'fileSize' => array(
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'fileMd5hash' => array(),
@@ -69,9 +67,7 @@ $request = fim_sanitizeGPC('p', array(
 
   'roomId' => array(
     'default' => 0,
-    'context' => array(
-      'type' => 'int',
-    ),
+    'context' => 'int',
   ),
 
   'dataEncode' => array(
@@ -82,21 +78,21 @@ $request = fim_sanitizeGPC('p', array(
   ),
 
   'parentalAge' => array(
-    'context' => array(
-      'type' => 'int',
-      'valid' => array(
-        6, 10, 13, 16, 18,
-      ),
-    ),
+    'context' => 'int',
     'default' => 6,
+    'valid' => array(
+      6, 10, 13, 16, 18,
+    ),
   ),
 
   'parentalFlags' => array(
-    'type' => 'array',
-    'valid' => array(
-      'violence', 'suggestive', 'nudity',
-      'pnudity', 'language', 'violence',
-      'gore', 'weapons', 'drugs',
+    'context' => array(
+      'type' => 'csv',
+      'valid' => array(
+        'violence', 'suggestive', 'nudity',
+        'pnudity', 'language', 'violence',
+        'gore', 'weapons', 'drugs',
+      ),
     ),
   ),
 
