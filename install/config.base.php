@@ -137,39 +137,12 @@ $encrypt = true;
 $encryptUploads = true;
 
 
+
+
 ////* General *////
 
 /* $installUrl */
 $installUrl = '';
-
-
-
-////* Permissions *////
-////* The defaults here will usually work for most chats. *////
-
-/* $bannedUserGroups
- * Users that are a part of any of these groups are treated as automatically banned.
- * This is generally only used for forum integration. However, it must also be implemented if you wish to add a BANNED usergroup on Vanilla. */
-$bannedUserGroups = array();
-
-/* $enableDF
- * Set values here to true/false to disable "categories" of default formatting that users may use.
- * The "general" entry encompasses underline, bold, strikethrough, and italics.
- * This directive is deprecated. It will be removed in the future. */
-$enableDF = array( // Default formatting users can user to differentiate their text.
-  'color' => true,
-  'font' => true,
-  'highlight' => true,
-  'general' => true, // Bold, italics, etc.
-);
-
-/* $userDefaults
- * This defines default permissions used for users when they are added to the database.
- * These can be changed manually on a per-user basis by administrators. */
-$userPermissions = array(
-  'roomCreation' => true, // The user can create rooms.
-  'privateRoomCreation' => true, // The user can create private rooms.
-);
 
 
 

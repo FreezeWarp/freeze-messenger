@@ -695,10 +695,10 @@ if ($valid) { // If the user is valid, process their preferrences.
       $priviledges = 16; // Can post
 
       if (!$anonymous) { // In theory, you can still manually allow anon users to do the other things.
-        if ($userPermissions['roomCreation']) {
+        if ($config['userRoomCreation']) {
           $priviledges += 32;
         }
-        if ($userPermissions['privateRoomCreation']) {
+        if ($config['userPrivateRoomCreation']) {
           $priviledges += 64;
         }
       }
@@ -984,8 +984,8 @@ $user['userDefs'] = array(
 
 if ($valid) {
 
-  if ($config['bannedUserGroups']) { // The user is in a usergroup that is banned.
-    if (fim_inArray($config['bannedUserGroups'],explode(',',$user['allGroups']))) {
+  if (count($config['bannedUserGroups']) > 0) { // The user is in a usergroup that is banned.
+    if (fim_inArray($config['bannedUserGroups'], explode(',',$user['allGroups']))) {
       $banned = true;
     }
   }

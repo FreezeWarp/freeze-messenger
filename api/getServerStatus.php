@@ -49,7 +49,7 @@ $xmlData = array(
 
       'requestMethods' => array(
         'longPoll' => (bool) $config['longPolling'],
-        'poll' => (bool) true,
+        'poll' => true,
         'serverSentEvents' => (bool) $config['serverSentEvents'],
       ),
 
@@ -58,6 +58,17 @@ $xmlData = array(
         'generalEnabled' => (bool) $config['enableGeneralUploads'],
         'maxAll' => (int) $config['uploadMaxFiles'],
         'maxUser' => (int) $config['uploadMaxUserFiles'],
+      ),
+
+      'defaultFormatting' => array(
+        'color' => $config['defaultFormattingColor'],
+        'font' => $config['defaultFormattingFont'],
+        'highlight' => $config['defaultFormattingHighlight'],
+        'bold' => $config['defaultFormattingBold'],
+        'italics' => $config['defaultFormattingItalics'],
+        'underline' => $config['defaultFormattingUnderline'],
+        'strikethrough' => $config['defaultFormattingStrikethrough'],
+        'overline' => $config['defaultFormattingOverline'],
       ),
 
       'outputBuffer' => array(

@@ -3,6 +3,7 @@
  * These are the defaults to the $config system (which is a lot like about:config in Firefox).
  * Some of these are really barebones compared to the data used by the install script (e.g. searchWord directives), though otherwise its largely identical.
  * This file will only need to be loaded when the $config data is out-of-date.
+ * Finally, every single $config variable that is at any time used is in this file, in case you need a referrence.
 */
 
 $defaultConfig = array(
@@ -85,5 +86,17 @@ $defaultConfig = array(
   'enabledInterfaces' => array(),
   'defaultInterface' => '',
   'disableWeb' => false,
+
+  'defaultFormattingColor' => true,
+  'defaultFormattingFont' => true,
+  'defaultFormattingHighlight' => true,
+  'defaultFormattingBold' => true,
+  'defaultFormattingItalics' => true,
+  'defaultFormattingUnderline' => false,
+  'defaultFormattingStrikethrough' => false,
+  'defaultFormattingOverline' => false,
+
+  'userRoomCreation' => false,
+  'userPrivateRoomCreation' => false,
 );
 ?>
