@@ -128,17 +128,24 @@ if(jQuery)(function() {
         $(this).unbind('mousedown').unbind('mouseup').unbind('keydown'); // Disable action (cleanup)
 
 
-        // Add contextMenu class
-        $('#' + o.menu).addClass('contextMenu');
+        $('#' + o.menu).addClass('contextMenu'); // Add contextMenu class
 
 
         if (o.altMenu) { // This allows the menu to be accessed using click and enter (as well as the menu key), as opposed to right click and meny key.
-          $(this).click(function() {
-            contextMenuSub(false, o, $(el), $(el).offset(), callback, $(this));
+          $(this).click(function(e) {
+            contextMenuSub(e, o, el, $(el).offset(), callback, $(this));
           });
 
-          $(this).keyup(function(event) {
-            if (event.keyCode == 13 || event.keyCode == 93) $(this).click();
+          $(this).keyup(function(e) {
+            if (e.keyCode == 13 || e.keyCode == 93) {
+              var offset = $(el).offset();
+
+              contextMenuSub({
+                pageX : offset.left + $(el).width(),
+                pageY : offset.top + $(el).height(),
+                autoFocus : true
+              }, o, el, offset, callback, $(this));
+            }
           });
         }
         else {
@@ -150,6 +157,8 @@ if(jQuery)(function() {
               e.preventDefault();
 
               if (e.button == 2) {
+                e.stopPropagation(); // Prevent Defaultss
+                $(this).unbind('mouseup'); // Cleanup
                 contextMenuSub(e, o, el, $(el).offset(), callback, $(this));
               }
             });
@@ -157,7 +166,13 @@ if(jQuery)(function() {
 
           $(this).keyup(function(e) {
             if (e.which === 93) { // Menu Key
-              contextMenuSub(false, o, el, $(el).offset(), callback, $(this));
+              var offset = $(el).offset();
+
+              contextMenuSub({
+                pageX : offset.left + $(el).width(),
+                pageY : offset.top + $(el).height(),
+                autoFocus : true,
+              }, o, el, offset, callback, $(this));
             }
           });
 
@@ -195,21 +210,6 @@ if(jQuery)(function() {
 
 
 function contextMenuSub(e, o, el, offset, callback, srcElement) {
-  if (e) {
-    e.stopPropagation();
-
-    $(this).unbind('mouseup');
-  }
-  else {
-    e = {
-      button: 2,
-      pageX : offset.left + $(el).width(),
-      pageY : offset.top + $(el).height(),
-      altMenu : true
-    }
-  }
-
-
   $(".contextMenu").hide(); // Hide context menus that may be showing
   var menu = $('#' + o.menu); // Get this context menu
 
@@ -254,6 +254,13 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
   });$(menu).find('li').blur(function() { // When an element loses focus below, remove hover class.
     $(this).removeClass('hover');
   });
+
+
+  $(menu).find('li.hover').blur();
+
+  if (e.autoFocus) {
+    $(menu).find('li:first').focus();
+  }
 
 
 
