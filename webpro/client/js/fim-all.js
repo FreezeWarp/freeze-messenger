@@ -391,17 +391,17 @@ function newMessage() {
   $('.messageLine .messageText').bind('keydown', function(e) {
     if (window.restrictFocus === 'contextMenu') return true;
 
-    if (e.which === 38) {
+    if (e.which === 38) { // Left
       $(this).parent().prev('.messageLine').children('.messageText').focus();
 
       return false;
     }
-    else if (e.which === 37) {
+    else if (e.which === 37 || e.which === 39) { // Right+Left
       $(this).parent().children('.userName').focus();
 
       return false;
     }
-    else if (e.which === 40) {
+    else if (e.which === 40) { // Down
       $(this).parent().next('.messageLine').children('.messageText').focus();
 
       return false;
@@ -411,17 +411,17 @@ function newMessage() {
   $('.messageLine .userName').bind('keydown', function(e) {
     if (window.restrictFocus === 'contextMenu') return true;
 
-    if (e.which === 38) {
+    if (e.which === 38) { // Up
       $(this).parent().prev('.messageLine').children('.userName').focus();
 
       return false;
     }
-    else if (e.which === 39) {
+    else if (e.which === 39 || e.which === 37) { // Left+Right
       $(this).parent().children('.messageText').focus();
 
       return false;
     }
-    else if (e.which === 40) {
+    else if (e.which === 40) { // Down
       $(this).parent().next('.messageLine').children('.userName').focus();
 
       return false;
@@ -429,10 +429,22 @@ function newMessage() {
   });
 
   $('body').bind('keydown', function(e) {
-    if (e.which === 91) {
-      $('.messageLine .messageText').first().focus();
+    if (!$('input:focus, textarea:focus, button:focus').length) { // Make sure a text-entry field does not have focus
+      if (e.which === 192 || e.which === 49) { // "`", "1"
+        if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) {
+          return true;
+        }
+        else {
+          $('.messageLine .messageText').first().focus();
 
-      return false;
+          return false;
+        }
+      }
+      else if (e.which === 32) { // Space
+        $('#messageInput').focus();
+
+        return false;
+      }
     }
   });
 }

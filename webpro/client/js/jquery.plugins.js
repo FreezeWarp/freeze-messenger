@@ -132,16 +132,13 @@ if(jQuery)(function() {
         $('#' + o.menu).addClass('contextMenu');
 
 
-        if (o.altMenu) {
-          $(this).find('.menuTrigger').remove(); // Remove Menu Trigger (cleanup)
-          $(this).append('<span class="menuTrigger" tabindex="1"><span class="ui-icon ui-icon-grip-diagonal-se"></span></span>');
-
-          $(this).find('.menuTrigger').click(function() {
-            contextMenuSub(false, o, $(el).find('.menuTrigger'), $(el).find('.menuTrigger').offset(), callback, $(this).parent());
+        if (o.altMenu) { // This allows the menu to be accessed using click and enter (as well as the menu key), as opposed to right click and meny key.
+          $(this).click(function() {
+            contextMenuSub(false, o, $(el), $(el).offset(), callback, $(this));
           });
 
-          $(this).find('.menuTrigger').keyup(function(event) {
-            if (event.keyCode == 13) $(this).click();
+          $(this).keyup(function(event) {
+            if (event.keyCode == 13 || event.keyCode == 93) $(this).click();
           });
         }
         else {
@@ -152,12 +149,14 @@ if(jQuery)(function() {
             $(this).mouseup(function(e) {
               e.preventDefault();
 
-              contextMenuSub(e, o, el, $(el).offset(), callback, $(this));
+              if (e.button == 2) {
+                contextMenuSub(e, o, el, $(el).offset(), callback, $(this));
+              }
             });
           });
 
           $(this).keyup(function(e) {
-            if (e.which === 93) {
+            if (e.which === 93) { // Menu Key
               contextMenuSub(false, o, el, $(el).offset(), callback, $(this));
             }
           });
@@ -211,129 +210,131 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
   }
 
 
-  if (e.button == 2) {
-    $(".contextMenu").hide(); // Hide context menus that may be showing
-    var menu = $('#' + o.menu); // Get this context menu
+  $(".contextMenu").hide(); // Hide context menus that may be showing
+  var menu = $('#' + o.menu); // Get this context menu
 
 
-    // Detect mouse position
-    var d = {}, x, y;
+  // Detect mouse position
+  var d = {}, x, y;
 
-    if (self.innerHeight) {
-      d.pageYOffset = self.pageYOffset;
-      d.pageXOffset = self.pageXOffset;
-      d.innerHeight = self.innerHeight;
-      d.innerWidth = self.innerWidth;
-    }
-    else if (document.documentElement && document.documentElement.clientHeight) {
-      d.pageYOffset = document.documentElement.scrollTop;
-      d.pageXOffset = document.documentElement.scrollLeft;
-      d.innerHeight = document.documentElement.clientHeight;
-      d.innerWidth = document.documentElement.clientWidth;
-    }
-    else if (document.body) {
-      d.pageYOffset = document.body.scrollTop;
-      d.pageXOffset = document.body.scrollLeft;
-      d.innerHeight = document.body.clientHeight;
-      d.innerWidth = document.body.clientWidth;
-    }
+  if (self.innerHeight) {
+    d.pageYOffset = self.pageYOffset;
+    d.pageXOffset = self.pageXOffset;
+    d.innerHeight = self.innerHeight;
+    d.innerWidth = self.innerWidth;
+  }
+  else if (document.documentElement && document.documentElement.clientHeight) {
+    d.pageYOffset = document.documentElement.scrollTop;
+    d.pageXOffset = document.documentElement.scrollLeft;
+    d.innerHeight = document.documentElement.clientHeight;
+    d.innerWidth = document.documentElement.clientWidth;
+  }
+  else if (document.body) {
+    d.pageYOffset = document.body.scrollTop;
+    d.pageXOffset = document.body.scrollLeft;
+    d.innerHeight = document.body.clientHeight;
+    d.innerWidth = document.body.clientWidth;
+  }
 
-    x = (e.pageX ? e.pageX : e.clientX + d.scrollLeft);
-    y = (e.pageY ? e.pageY : e.clientY + d.scrollTop);
-
-
-
-    $(document).unbind('click'); // Remove any other click bindings on the document.
-
-    window.restrictFocus = 'contextMenu'; // Prevent the keydown event from changing anything more than it should.
-
-    $(menu).css({ top: y, left: x }).attr('data-visible', 'true').fadeIn(o.inSpeed); // Show the menu.
+  x = (e.pageX ? e.pageX : e.clientX + d.scrollLeft);
+  y = (e.pageY ? e.pageY : e.clientY + d.scrollTop);
 
 
 
-    $(menu).find('li').focus(function() { // When an element is granted focus below, give it the hover class.
-      $(this).addClass('hover');
-    });$(menu).find('li').blur(function() { // When an element loses focus below, remove hover class.
-      $(this).removeClass('hover');
-    });
+  $(document).unbind('click'); // Remove any other click bindings on the document.
+
+  window.restrictFocus = 'contextMenu'; // Prevent the keydown event from changing anything more than it should.
+
+  $(menu).css({ top: y, left: x }).attr('data-visible', 'true').fadeIn(o.inSpeed); // Show the menu.
 
 
 
-    $(menu).find('a').mouseover(function() { // Mouse Navigation
-      $(menu).find('li.hover').blur();
-      $(this).parent().focus();
-    }).mouseout(function() {
-      $(menu).find('li.hover').blur();
-    });
+  $(menu).find('li').focus(function() { // When an element is granted focus below, give it the hover class.
+    $(this).addClass('hover');
+  });$(menu).find('li').blur(function() { // When an element loses focus below, remove hover class.
+    $(this).removeClass('hover');
+  });
 
 
 
-    $(document).keydown(function(e) { // Keyboard Navigation
-      switch(e.keyCode) {
-        case 38: // Up
-        if ($(menu).find('li.hover').size() === 0) { $(menu).find('li:last').focus(); } // No item has focus.
-        else {
-          $(menu).find('li.hover').blur().prevAll('li').eq(0).focus(); // Add to the prev element (if it was the last, the focus will just be removed).
+  $(menu).find('a').mouseover(function() { // Mouse Navigation
+    $(menu).find('li.hover').blur();
+    $(this).parent().focus();
+  }).mouseout(function() {
+    $(menu).find('li.hover').blur();
+  });
 
-          if ($(menu).find('li.hover').size() === 0) { $(menu).find('li:last').focus(); } // Focus removed; add to the last.
-        }
 
-        return false;
-        break;
 
-        case 40: // Down
-        case 9: // Tab
-        if ($(menu).find('li.hover').size() === 0) { $(menu).find('li:first').focus(); } // No item has focus.
-        else {
-          $(menu).find('li.hover').blur().nextAll('li').eq(0).focus(); // Add to the prev element (if it was the last, the focus will just be removed).
+  $(document).keydown(function(e) { // Keyboard Navigation
+    switch(e.keyCode) {
+      case 38: // Up
+      if ($(menu).find('li.hover').size() === 0) { $(menu).find('li:last').focus(); } // No item has focus.
+      else {
+        $(menu).find('li.hover').blur().prevAll('li').eq(0).focus(); // Add to the prev element (if it was the last, the focus will just be removed).
 
-          if ($(menu).find('li.hover').size() === 0) { $(menu).find('li:first').focus(); } // Focus removed; add to the first.
-        }
-
-        return false;
-        break;
-
-        case 13: // Enter
-        $(menu).find('li.hover a').trigger('click');
-        break;
-
-        case 27: // Escape
-        $(document).trigger('click');
-        break
+        if ($(menu).find('li.hover').size() === 0) { $(menu).find('li:last').focus(); } // Focus removed; add to the last.
       }
-    });
+
+      return false; // Prevent Bubbling
+      break;
+
+      case 40: // Down
+      case 9: // Tab
+      if ($(menu).find('li.hover').size() === 0) { $(menu).find('li:first').focus(); } // No item has focus.
+      else {
+        $(menu).find('li.hover').blur().nextAll('li').eq(0).focus(); // Add to the prev element (if it was the last, the focus will just be removed).
+
+        if ($(menu).find('li.hover').size() === 0) { $(menu).find('li:first').focus(); } // Focus removed; add to the first.
+      }
+
+      return false; // Prevent Bubbling
+      break;
+
+      case 13: // Enter
+      $(menu).find('li.hover a').trigger('click');
+
+      return false; // Prevent Bubbling
+      break;
+
+      case 27: // Escape
+      $(document).trigger('click');
+
+      return false; // Prevent Bubbling
+      break
+    }
+  });
 
 
 
-    // When items are selected
-    $('#' + o.menu).find('a').unbind('click');
+  // When items are selected
+  $('#' + o.menu).find('a').unbind('click');
 
-    $('#' + o.menu).find('li a').click(function() {
+  $('#' + o.menu).find('li a').click(function() {
+    $(document).unbind('click').unbind('keydown');
+    $(".contextMenu").hide();
+
+    // Callback
+    if (callback) {
+      callback($(this).attr('data-action'), $(srcElement), {x: x - offset.left, y: y - offset.top, docX: x, docY: y});
+    }
+
+    return false;
+  });
+
+
+
+  // Hide bindings
+  setTimeout(function() { // Delay for Mozilla; TODO: Confirm still a problem
+    $(document).click(function() {
       $(document).unbind('click').unbind('keydown');
-      $(".contextMenu").hide();
+      $(menu).removeAttr('data-visible').fadeOut(o.outSpeed);
 
-      // Callback
-      if (callback) {
-        callback($(this).attr('data-action'), $(srcElement), {x: x - offset.left, y: y - offset.top, docX: x, docY: y});
-      }
+      window.restrictFocus = false;
 
       return false;
     });
-
-
-
-    // Hide bindings
-    setTimeout(function() { // Delay for Mozilla; TODO: Confirm still a problem
-      $(document).click(function() {
-        $(document).unbind('click').unbind('keydown');
-        $(menu).removeAttr('data-visible').fadeOut(o.outSpeed);
-
-        window.restrictFocus = false;
-
-        return false;
-      });
-    }, 0);
-  }
+  }, 0);
 
   return false;
 }
