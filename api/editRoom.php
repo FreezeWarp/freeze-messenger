@@ -112,7 +112,9 @@ $request = fim_sanitizeGPC('p', array(
   ),
 
   'parentalAge' => array(
-    'type' => 'int',
+    'context' => array(
+      'type' => 'int',
+    ),
     'valid' => array(
       6, 10, 13, 16, 18
     ),

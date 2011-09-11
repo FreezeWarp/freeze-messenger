@@ -36,19 +36,15 @@ require('../global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
   'rooms' => array(
-    'type' => 'string',
-    'require' => true,
     'default' => '',
     'context' => array(
-        'type' => 'csv',
-        'filter' => 'int',
-        'evaltrue' => true,
+      'type' => 'csv',
+      'filter' => 'int',
+      'evaltrue' => true,
     ),
   ),
 
   'onlineThreshold' => array(
-    'type' => 'string',
-    'require' => false,
     'default' => ($onlineThreshold ? $onlineThreshold : 15),
     'context' => array(
       'type' => 'int',
@@ -56,8 +52,6 @@ $request = fim_sanitizeGPC('g', array(
   ),
 
   'time' => array(
-    'type' => 'string',
-    'require' => false,
     'default' => (int) time(),
     'context' => array(
       'type' => 'int',
@@ -65,13 +59,11 @@ $request = fim_sanitizeGPC('g', array(
   ),
 
   'users' => array(
-    'type' => 'string',
-    'require' => false,
     'default' => '',
     'context' => array(
-        'type' => 'csv',
-        'filter' => 'int',
-        'evaltrue' => true,
+      'type' => 'csv',
+      'filter' => 'int',
+      'evaltrue' => true,
     ),
   ),
 ));

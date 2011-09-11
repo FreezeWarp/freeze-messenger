@@ -1305,16 +1305,9 @@ function fim_sanitizeGPC($type, $data) {
 
       foreach ($indexData AS $metaName => $metaData) {
         switch ($metaName) {
-          case 'type':
-          switch ($metaData) {
-            case 'string': $indexMetaData['type'] = 'string'; break;
-            case 'bool': $indexMetaData['type'] = 'bool'; break;
-            case 'int': $indexMetaData['type'] = 'int'; break;
-          }
-          break;
-
           case 'valid': $indexMetaData['valid'] = $metaData; break;
           case 'require': $indexMetaData['require'] = $metaData; break;
+
           case 'context':
           $indexMetaData['context'] = array(
             'cast' => '',
@@ -1322,47 +1315,47 @@ function fim_sanitizeGPC($type, $data) {
             'evaltrue' => false,
           );
 
-          foreach ($metaData AS $contextname => $contextdata) {
-
-            switch ($contextname) {
-              case 'type': // This is the original typecast, with some special types defined. While GPC variables are best interpretted as strings, this goes further and converts the string to a more proper format.
-              switch ($contextdata) {
-                case 'csv': $indexMetaData['context']['cast'] = 'csv'; break; // e.g. "1,2,3" "1,ab3,455"
-                case 'array': $indexMetaData['context']['cast'] = 'array'; break; // e.g. "1=1,2=0,3=0" "1=1,ab3=1,455=0"
-                case 'bool': $indexMetaData['context']['cast'] = 'bool'; break;
-                case 'int': $indexMetaData['context']['cast'] = 'int'; break;
-                case 'string': $indexMetaData['context']['cast'] = 'string'; break;
-                default: trigger_error('Invalid "type" in data in fim_sanitizeGPC', E_USER_WARNING); break;
+          if (is_array($metaData)) { // Quite a bit of context data exists.
+            foreach ($metaData AS $contextname => $contextdata) {
+              switch ($contextname) {
+                case 'type': // This is the original typecast, with some special types defined. While GPC variables are best interpretted as strings, this goes further and converts the string to a more proper format.
+                switch ($contextdata) {
+                  case 'csv': $indexMetaData['context']['cast'] = 'csv'; break; // e.g. "1,2,3" "1,ab3,455"
+                  case 'array': $indexMetaData['context']['cast'] = 'array'; break; // e.g. "1=1,2=0,3=0" "1=1,ab3=1,455=0"
+                  case 'bool': $indexMetaData['context']['cast'] = 'bool'; break;
+                  case 'int': $indexMetaData['context']['cast'] = 'int'; break;
+                  case 'string': $indexMetaData['context']['cast'] = 'string'; break;
+                  default: trigger_error('Invalid "type" in data in fim_sanitizeGPC', E_USER_WARNING); break;
+                }
+                break;
+                case 'filter': // This is an additional filter applied to data that uses the "csv" context type (and possibly more in the future).
+                switch ($contextdata) {
+                  case 'int': $indexMetaData['context']['filter'] = 'int'; break;
+                }
+                break;
+                case 'evaltrue': $indexMetaData['context']['evaltrue'] = (bool) $contextdata; break; // This specifies whether all subvalus of a context must be true. For instance, assuming we use an integer filter 0 would be removed if this was true.
+                case 'valid': $indexMetaData['context']['valid'] = (array) $contextdata; break; // This is only used with arrays and specifies which values can be included in the array.
               }
-              break;
-
-              case 'filter': // This is an additional filter applied to data that uses the "csv" context type (and possibly more in the future).
-              switch ($contextdata) {
-                case 'int': $indexMetaData['context']['filter'] = 'int'; break;
-              }
-              break;
-
-              case 'evaltrue': // This specifies whether all subvalus of a context must be true. For instance, assuming we use an integer filter 0 would be removed if this was true.
-              $indexMetaData['context']['evaltrue'] = (bool) $contextdata;
-              break;
+            }
+          }
+          else { // The context only defines the type.
+            switch ($contextdata) {
+              case 'csv': $indexMetaData['context']['cast'] = 'csv'; break; // e.g. "1,2,3" "1,ab3,455"
+              case 'array': $indexMetaData['context']['cast'] = 'array'; break; // e.g. "1=1,2=0,3=0" "1=1,ab3=1,455=0"
+              case 'bool': $indexMetaData['context']['cast'] = 'bool'; break;
+              case 'int': $indexMetaData['context']['cast'] = 'int'; break;
+              case 'string': $indexMetaData['context']['cast'] = 'string'; break;
+              default: trigger_error('Invalid "type" in data in fim_sanitizeGPC', E_USER_WARNING); break;
             }
           }
           break;
 
-          case 'default':
-          $indexMetaData['default'] = $metaData;
-          break;
+          case 'default': $indexMetaData['default'] = $metaData; break;
         }
       }
 
 
       if (isset($activeGlobal[$indexName])) { // Only typecast if the global is present.
-        switch ($indexMetaData['type']) {
-          case 'int': $activeGlobal[$indexName] = (int) $activeGlobal[$indexName]; break;
-          case 'bool': $activeGlobal[$indexName] = (bool) $activeGlobal[$indexName]; break;
-          case 'string': $activeGlobal[$indexName] = (string) $activeGlobal[$indexName]; break;
-        }
-
         if (isset($indexMetaData['valid'])) { // If a list of valid values is specified...
           if (is_array($indexMetaData['valid'])) { // And if that list is an array...
             if (in_array($activeGlobal[$indexName], $indexMetaData['valid'])) { // And if the value specified is in the list of valid values...

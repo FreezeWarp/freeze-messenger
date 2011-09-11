@@ -52,9 +52,9 @@ $request = fim_sanitizeGPC('g', array(
   'users' => array(
     'default' => '',
     'context' => array(
-        'type' => 'csv',
-        'filter' => 'int',
-        'evaltrue' => true,
+      'type' => 'csv',
+      'filter' => 'int',
+      'evaltrue' => true,
     ),
   ),
 ));

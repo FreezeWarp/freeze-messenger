@@ -43,17 +43,16 @@ $request = fim_sanitizeGPC('p', array(
       'evaltrue' => true,
     ),
   ),
-  'message' => array(
-    'type' => 'string',
-    'require' => false,
-  ),
+
+  'message' => array(),
+
   'flag' => array(
-    'type' => 'string',
-    'require' => false,
+    'valid' => array(
+      'image', 'video', 'url', 'email', 'html', 'audio', 'text', '',
+    ),
   ),
+
   'ignoreBlock' => array(
-    'type' => 'string',
-    'require' => false,
     'default' => false,
     'context' => array(
       'type' => 'bool',

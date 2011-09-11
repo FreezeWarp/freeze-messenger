@@ -34,26 +34,27 @@ require('../global.php');
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC(array(
-  'get' => array(
-    'users' => array(
-      'type' => 'string',
-      'context' => array(
-         'type' => 'csv',
-         'filter' => 'int',
-         'evaltrue' => true,
-      ),
+$request = fim_sanitizeGPC('g', array(
+  'users' => array(
+    'context' => array(
+      'type' => 'csv',
+      'filter' => 'int',
+      'evaltrue' => true,
     ),
-    'showOnly' => array(
-      'type' => 'string',
-      'valid' => array('banned', 'unbanned', 'friends', 'ignored', ''),
-      'default' => '',
+  ),
+
+  'showOnly' => array(
+    'valid' => array(
+      'banned', 'unbanned', 'friends', 'ignored', ''
     ),
-    'sort' => array(
-      'type' => 'string',
-      'valid' => array('userId', 'userName'),
-      'default' => 'userId',
+    'default' => '',
+  ),
+
+  'sort' => array(
+    'valid' => array(
+      'userId', 'userName'
     ),
+    'default' => 'userId',
   ),
 ));
 

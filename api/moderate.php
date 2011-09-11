@@ -37,12 +37,9 @@ require('../global.php');
 $request = fim_sanitizeGPC('p', array(
   'action' => array(
     'valid' => array(
-      'kickUser',
-      'unkickUser',
-      'favRoom',
-      'unfavRoom',
-      'banUser',
-      'unbanUser',
+      'kickUser', 'unkickUser',
+      'favRoom', 'unfavRoom',
+      'banUser', 'unbanUser',
       'markMessageRead',
     ),
   ),

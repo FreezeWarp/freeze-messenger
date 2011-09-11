@@ -36,21 +36,14 @@ require('../global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
   'permLevel' => array(
-    'type' => 'string',
     'default' => '',
     'valid' => array(
-      'post',
-      'view',
-      'moderate',
-      'know',
-      'admin',
+      'post', 'view', 'moderate', 'know', 'admin', ''
     ),
     'require' => false,
   ),
 
   'rooms' => array(
-    'type' => 'string',
-    'require' => false,
     'default' => '',
     'context' => array(
         'type' => 'csv',
@@ -60,20 +53,13 @@ $request = fim_sanitizeGPC('g', array(
   ),
 
   'sort' => array(
-    'type' => 'string',
     'valid' => array(
-      'roomId',
-      'roomName',
-      'smart',
+      'roomId', 'roomName', 'smart',
     ),
-    'require' => false,
     'default' => 'roomId',
   ),
 
   'showDeleted' => array(
-    'type' => 'string',
-    'require' => false,
-    'default' => false,
     'context' => array(
       'type' => 'bool',
     ),

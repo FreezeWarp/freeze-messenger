@@ -37,35 +37,28 @@ require('../global.php');
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC(array(
-  'post' => array(
-    'action' => array(
-      'type' => 'string',
-      'require' => true,
-      'valid' => array(
-        'disableSystem',
-        'enableSystem',
-        'updatePostFormatCache',
-        'updatePostCountCache',
-      ),
+$request = fim_sanitizeGPC('p', array(
+  'action' => array(
+    'require' => true,
+    'valid' => array(
+      'disableSystem',
+      'enableSystem',
+      'updatePostFormatCache',
+      'updatePostCountCache',
     ),
+  ),
 
-    'offset' => array(
-      'type' => 'string',
-      'require' => false,
-      'default' => 0,
-      'context' => array(
-        'type' => 'int',
-      ),
+  'offset' => array(
+    'default' => 0,
+    'context' => array(
+      'type' => 'int',
     ),
+  ),
 
-    'limit' => array(
-      'type' => 'string',
-      'require' => false,
-      'default' => 0,
-      'context' => array(
-        'type' => 'int',
-      ),
+  'limit' => array(
+    'default' => 0,
+    'context' => array(
+      'type' => 'int',
     ),
   ),
 ));

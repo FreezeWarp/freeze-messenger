@@ -45,15 +45,9 @@ $request = fim_sanitizeGPC('p', array(
     'require' => false,
   ),
 
-  'statusType' => array(
-    'type' => 'string',
-    'require' => false,
-  ),
+  'statusType' => array(),
 
-  'statusValue' => array(
-    'type' => 'string',
-    'require' => false,
-  )
+  'statusValue' => array()
 ));
 
 

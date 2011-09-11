@@ -69,35 +69,33 @@ $request = fim_sanitizeGPC('g', array(
   'rooms' => array(
     'default' => '',
     'context' => array(
-        'type' => 'csv',
-        'filter' => 'int',
-        'evaltrue' => true,
+      'type' => 'csv',
+      'filter' => 'int',
+      'evaltrue' => true,
     ),
   ),
 
   'users' => array(
     'default' => '',
     'context' => array(
-        'type' => 'csv',
-        'filter' => 'int',
-        'evaltrue' => true,
+      'type' => 'csv',
+      'filter' => 'int',
+      'evaltrue' => true,
     ),
   ),
 
   'messages' => array(
     'default' => '',
     'context' => array(
-        'type' => 'csv',
-        'filter' => 'int',
-        'evaltrue' => true,
+      'type' => 'csv',
+      'filter' => 'int',
+      'evaltrue' => true,
     ),
   ),
 
   'sort' => array(
     'valid' => array(
-      'roomId',
-      'roomName',
-      'smart',
+      'roomId', 'roomName', 'smart',
     ),
     'default' => 'roomId',
   ),
@@ -145,42 +143,36 @@ $request = fim_sanitizeGPC('g', array(
   ),
 
   'messageIdMax' => array(
-    'default' => false,
     'context' => array(
       'type' => 'int',
     ),
   ),
 
   'messageIdMin' => array(
-    'default' => false,
     'context' => array(
       'type' => 'int',
     ),
   ),
 
   'messageDateMax' => array(
-    'default' => false,
     'context' => array(
       'type' => 'int',
     ),
   ),
 
   'messageDateMin' => array(
-    'default' => false,
     'context' => array(
       'type' => 'int',
     ),
   ),
 
   'messageIdStart' => array(
-    'default' => false,
     'context' => array(
       'type' => 'int',
     ),
   ),
 
   'messageIdEnd' => array(
-    'default' => false,
     'context' => array(
       'type' => 'int',
     ),
@@ -213,6 +205,10 @@ $request = fim_sanitizeGPC('g', array(
 
   'encode' => array(
     'default' => 'plaintext',
+    'valid' => array(
+      'plaintext',
+      'base64',
+    ),
   ),
 ));
 
@@ -481,7 +477,7 @@ if (is_array($request['rooms'])) {
 
 
       /* Modify Query Data for Directives */
-      if ($request['messageIdMax']) {
+      if (isset($request['messageIdMax'])) {
         $queryParts['messagesSelect']['conditions']['both'][] = array(
           'type' => 'lte',
           'left' => array(
@@ -494,7 +490,7 @@ if (is_array($request['rooms'])) {
           ),
         );
       }
-      if ($request['messageIdMin']) {
+      if (isset($request['messageIdMin'])) {
         $queryParts['messagesSelect']['conditions']['both'][] = array(
           'type' => 'gte',
           'left' => array(
@@ -508,7 +504,7 @@ if (is_array($request['rooms'])) {
         );
       }
 
-      if ($request['messageDateMax']) {
+      if (isset($request['messageDateMax'])) {
         $queryParts['messagesSelect']['conditions']['both'][] = array(
           'type' => 'lte',
           'left' => array(
@@ -521,7 +517,7 @@ if (is_array($request['rooms'])) {
           ),
         );
       }
-      if ($request['messageDateMin']) {
+      if (isset($request['messageDateMin'])) {
         $queryParts['messagesSelect']['conditions']['both'][] = array(
           'type' => 'gte',
           'left' => array(
@@ -535,7 +531,7 @@ if (is_array($request['rooms'])) {
         );
       }
 
-      if ($request['messageIdStart']) {
+      if (isset($request['messageIdStart'])) {
         $queryParts['messagesSelect']['conditions']['both'][] = array(
           'type' => 'gte',
           'left' => array(
@@ -559,7 +555,7 @@ if (is_array($request['rooms'])) {
           ),
         );
       }
-      if ($request['messageIdEnd']) {
+      if (isset($request['messageIdEnd'])) {
         $queryParts['messagesSelect']['conditions']['both'][] = array(
           'type' => 'lte',
           'left' => array(

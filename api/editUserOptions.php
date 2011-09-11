@@ -43,13 +43,9 @@ $request = fim_sanitizeGPC('p', array(
     ),
   ),
 
-  'defaultColor' => array(
-    'type' => 'string',
-  ),
+  'defaultColor' => array(),
 
-  'defaultHighlight' => array(
-    'type' => 'string',
-  ),
+  'defaultHighlight' => array(),
 
   'defaultFormatting' => array(
     'context' => array(

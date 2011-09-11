@@ -37,17 +37,17 @@ $request = fim_sanitizeGPC('g', array(
   'rooms' => array(
     'default' => '',
     'context' => array(
-        'type' => 'csv',
-        'filter' => 'int',
-        'evaltrue' => true,
+      'type' => 'csv',
+      'filter' => 'int',
+      'evaltrue' => true,
     ),
   ),
   'users' => array(
     'default' => '',
     'context' => array(
-        'type' => 'csv',
-        'filter' => 'int',
-        'evaltrue' => true,
+      'type' => 'csv',
+      'filter' => 'int',
+      'evaltrue' => true,
     ),
   ),
   'number' => array(

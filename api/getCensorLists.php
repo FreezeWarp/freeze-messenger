@@ -36,23 +36,19 @@ require('../global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
   'rooms' => array(
-    'type' => 'string',
-    'require' => false,
     'default' => '',
     'context' => array(
-        'type' => 'csv',
-        'filter' => 'int',
-        'evaltrue' => true,
+      'type' => 'csv',
+      'filter' => 'int',
+      'evaltrue' => true,
     ),
   ),
   'lists' => array(
-    'type' => 'string',
-    'require' => false,
     'default' => '',
     'context' => array(
-        'type' => 'csv',
-        'filter' => 'int',
-        'evaltrue' => true,
+      'type' => 'csv',
+      'filter' => 'int',
+      'evaltrue' => true,
     ),
   ),
 ));
