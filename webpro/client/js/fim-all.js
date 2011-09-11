@@ -133,7 +133,6 @@ if (typeof Audio !== 'undefined') {
     else if (snd.canPlayType('audio/wav')) audioFile = 'images/beep.wav';
     else {
       audioFile = '';
-
       console.log('Audio Disabled');
     }
   }
@@ -242,11 +241,7 @@ function messageFormat(json, format) {
       text = '<a href="mailto: ' + attrencode(text) + '" target="_BLANK">' + text + '</a>';
       break;
 
-      case 'url':
-      case 'text':
-      case 'html':
-      case 'archive':
-      case 'other':
+      case 'url': case 'text': case 'html': case 'archive': case 'other':
       if (text.match(/^(http|https|ftp|data|gopher|sftp|ssh)/)) { // Certain protocols (e.g. "javascript:") could be malicious. Thus, we use a whitelist of trusted protocols instead.
         text = '<a href="' + text + '" target="_BLANK">' + text + '</a>';
       }
@@ -393,17 +388,14 @@ function newMessage() {
 
     if (e.which === 38) { // Left
       $(this).parent().prev('.messageLine').children('.messageText').focus();
-
       return false;
     }
     else if (e.which === 37 || e.which === 39) { // Right+Left
       $(this).parent().children('.userName').focus();
-
       return false;
     }
     else if (e.which === 40) { // Down
       $(this).parent().next('.messageLine').children('.messageText').focus();
-
       return false;
     }
   });
@@ -413,17 +405,14 @@ function newMessage() {
 
     if (e.which === 38) { // Up
       $(this).parent().prev('.messageLine').children('.userName').focus();
-
       return false;
     }
     else if (e.which === 39 || e.which === 37) { // Left+Right
       $(this).parent().children('.messageText').focus();
-
       return false;
     }
     else if (e.which === 40) { // Down
       $(this).parent().next('.messageLine').children('.userName').focus();
-
       return false;
     }
   });
@@ -436,13 +425,11 @@ function newMessage() {
         }
         else {
           $('.messageLine .messageText').first().focus();
-
           return false;
         }
       }
       else if (e.which === 32) { // Space
         $('#messageInput').focus();
-
         return false;
       }
     }
@@ -451,10 +438,8 @@ function newMessage() {
 
 
 function messagePopup(data) {
-  if (typeof notify != 'undefined') {
-    if (typeof window.webkitNotifications === 'object') {
-      notify.webkitNotify('images/favicon.ico', 'New Message', data);
-    }
+  if (typeof notify != 'undefined' && typeof window.webkitNotifications === 'object') {
+    notify.webkitNotify('images/favicon.ico', 'New Message', data);
   }
 }
 
@@ -829,18 +814,10 @@ function populate(options) {
             isOwner = (active[i].owner === userId ? true : false),
             ulText = '<li><a href="#room=' + roomId + '" class="room" data-roomId="' + roomId + '">' + roomName + '</a></li>';
 
-          if (isFav) {
-            roomUlFavHtml += ulText;
-          }
-          else if (isOwner && !isPriv) {
-            roomUlMyHtml += ulText;
-          }
-          else if (isPriv) {
-            roomUlPrivHtml += ulText;
-          }
-          else {
-            roomUlHtml += ulText;
-          }
+          if (isFav) { roomUlFavHtml += ulText; }
+          else if (isOwner && !isPriv) { roomUlMyHtml += ulText; }
+          else if (isPriv) { roomUlPrivHtml += ulText; }
+          else { roomUlHtml += ulText; }
 
           roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isAdmin ? '<button data-roomId="' + roomId + '" class="editRoomMulti standard"></button><button data-roomId="' + roomId + '" class="deleteRoomMulti standard"></button>' : '') + '<button data-roomId="' + roomId + '" class="archiveMulti standard"></button><input type="checkbox" ' + (isFav ? 'checked="checked" ' : '') + ' data-roomId="' + roomId + '" class="favRoomMulti" id="favRoom' + roomId + '" /><label for="favRoom' + roomId + '" class="standard"></label></td></tr>';
 
@@ -851,15 +828,9 @@ function populate(options) {
           }
           roomList.push(roomName);
 
-          if (isAdmin) {
-            modRooms[roomId] = 2;
-          }
-          else if (isModerator) {
-            modRooms[roomId] = 1;
-          }
-          else {
-            modRooms[roomId] = 0;
-          }
+          if (isAdmin) { modRooms[roomId] = 2; }
+          else if (isModerator) { modRooms[roomId] = 1; }
+          else { modRooms[roomId] = 0; }
         }
 
         $('#roomListLong > li > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li><li>My Rooms<ul>' + roomUlMyHtml + '</ul></li><li>General<ul>' + roomUlHtml + '</ul></li><li>Private<ul>' + roomUlPrivHtml + '</ul></li>');
@@ -1007,38 +978,16 @@ autoEntry = {
     if (!id) {
       val = $("#" + type + "Bridge").val();
       switch(type) {
-        case 'watchRooms':
-        id = roomRef[val];
-        type2 = 'Room';
-        break;
-
-        case 'moderators': case 'allowedUsers': case 'ignoreList':
-        id = userRef[val];
-        type2 = 'User';
-        break;
-
-        case 'allowedGroups':
-        id = groupRef[val];
-        type2 = 'Group';
-        break;
+        case 'watchRooms': id = roomRef[val]; type2 = 'Room'; break;
+        case 'moderators': case 'allowedUsers': case 'ignoreList': id = userRef[val]; type2 = 'User'; break;
+        case 'allowedGroups': id = groupRef[val]; type2 = 'Group'; break;
       }
     }
     else {
       switch(type) {
-        case 'watchRooms':
-        val = roomIdRef[id].roomName;
-        type2 = 'Room';
-        break;
-
-        case 'moderators': case 'allowedUsers': case 'ignoreList':
-        val = userIdRef[id];
-        type2 = 'User';
-        break;
-
-        case 'allowedGroups':
-        val = groupIdRef[id];
-        type2 = 'Group';
-        break;
+        case 'watchRooms': val = roomIdRef[id].roomName; type2 = 'Room'; break;
+        case 'moderators': case 'allowedUsers': case 'ignoreList': val = userIdRef[id]; type2 = 'User'; break;
+        case 'allowedGroups': val = groupIdRef[id]; type2 = 'Group'; break;
       }
     }
 
@@ -1082,15 +1031,9 @@ autoEntry = {
     var source,
       i = 0;
 
-    if (typeof string === 'object' || typeof string === 'array') { // String is already not a string! (yeah...) Also, "array" doesn't exist as a type far as I know, but I don't really want to remove it for whatever reason.
-      entryList = string;
-    }
-    else if (typeof string === 'string' && string.length > 0) { // String is a string and not empty.
-      entryList = string.split(',');
-    }
-    else {
-      entryList = [];
-    }
+    if (typeof string === 'object' || typeof string === 'array') { entryList = string; } // String is already not a string! (yeah...) Also, "array" doesn't exist as a type far as I know, but I don't really want to remove it for whatever reason.
+    else if (typeof string === 'string' && string.length > 0) { entryList = string.split(','); } // String is a string and not empty.
+    else { entryList = []; }
 
     switch(type) {
       case 'watchRooms': source = roomRef; break;
@@ -1100,9 +1043,7 @@ autoEntry = {
 
 
     for (i = 0; i < entryList.length; i += 1) {
-      if (!entryList[i]) {
-        continue;
-      }
+      if (!entryList[i]) { continue; }
 
       autoEntry.addEntry(type, source, entryList[i]);
     }
@@ -1120,16 +1061,9 @@ var standard = {
       data = '',
       where = '';
 
-    if (options.idMax) {
-      where = 'messageIdEnd=' + options.idMax;
-    }
-    else if (options.idMin) {
-      where = 'messageIdStart=' + options.idMin;
-    }
-    else {
-      where = 'messageIdStart=1';
-    }
-
+    if (options.idMax) { where = 'messageIdEnd=' + options.idMax; }
+    else if (options.idMin) { where = 'messageIdStart=' + options.idMin; }
+    else { where = 'messageIdStart=1'; }
 
     $('#searchText, #resultLimit, #searchUser').unbind('change');
     $('#searchText, #resultLimit, #searchUser').bind('change', function() {
@@ -1158,12 +1092,8 @@ var standard = {
 
           data += messageFormat(active[i], 'table');
 
-          if (messageId > lastMessage) {
-            lastMessage = messageId;
-          }
-          if (messageId < firstMessage || !firstMessage) {
-            firstMessage = messageId;
-          }
+          if (messageId > lastMessage) { lastMessage = messageId; }
+          if (messageId < firstMessage || !firstMessage) { firstMessage = messageId; }
         }
 
         return true;
@@ -1232,35 +1162,25 @@ var standard = {
                   break;
                 }
 
-                var colour = $(this).find('td:nth-child(' + i + ') > span').css('color'),
-                  highlight = $(this).find('td:nth-child(' + i + ') > span').css('background-color'),
-                  font = $(this).find('td:nth-child(' + i + ') > span').css('font-family'),
-                  bold = ($(this).find('td:nth-child(' + i + ') > span').css('font-weight') == 'bold' ? true : false),
-                  underline = ($(this).find('td:nth-child(' + i + ') > span').css('text-decoration') == 'underline' ? true : false),
-                  strikethrough = ($(this).find('td:nth-child(' + i + ') > span').css('text-decoration') == 'line-through' ? true : false);
+                var el = $(this).find('td:nth-child(' + i + ') > span'),
+                  colour = el.css('color'),
+                  highlight = el.css('backgroundColor'),
+                  font = el.css('fontFamily'),
+                  bold = (el.css('fontWeight') == 'bold' ? true : false),
+                  underline = (el.css('textDecoration') == 'underline' ? true : false),
+                  strikethrough = (el.css('textDecoration') == 'line-through' ? true : false);
 
                 if (colour || highlight || font) {
-                  exportUser = '[span="color: ' + colour + '; background-color: ' + highlight + '; font: ' + font + '"]' + exportUser + '[/span]';
+                  exportUser = '[span="' + (colour ? 'color: ' + colour + ';' : '') + (highlight ? 'background-color: ' + highlight + ';' : '') + (font ? 'font: ' + font + ';' : '') + '"]' + exportUser + '[/span]';
                 }
-                if (bold) {
-                  exportUser = '[b]' + exportUser + '[/b]';
-                }
-                if (underline) {
-                  exportUser = '[u]' + exportUser + '[/u]';
-                }
-                if (strikethrough) {
-                  exportUser = '[s]' + exportUser + '[/s]';
-                }
+                if (bold) { exportUser = '[b]' + exportUser + '[/b]'; }
+                if (underline) { exportUser = '[u]' + exportUser + '[/u]'; }
+                if (strikethrough) { exportUser = '[s]' + exportUser + '[/s]'; }
               }
 
               switch (i) {
-                case 1:
-                exportUser = exportItem;
-                break;
-
-                case 3:
-                exportMessage = exportItem;
-                break;
+                case 1: exportUser = exportItem; break;
+                case 3: exportMessage = exportItem; break;
               }
 
               exportData += exportUser + "|" + exportTime + "|" + exportMessage + "\n";
@@ -1270,7 +1190,6 @@ var standard = {
             break;
 
             case 'csv':
-
             var exportData = '';
 
             $('#archiveMessageList').find('tr').each(function() {
@@ -1394,18 +1313,12 @@ var standard = {
           dia.error('You have been banned. You will not be able to do anything.');
 
           userPermissions = {
-            createRoom : false,
-            privateRoom : false,
-            general : false
+            createRoom : false, privateRoom : false, general : false
           }
 
           adminPermissions = {
-            modPrivs : false,
-            modCore : false,
-            modUsers : false,
-            modTemplates : false,
-            modImages : false,
-            modCensor : false,
+            modPrivs : false, modCore : false, modUsers : false,
+            modTemplates : false, modImages : false, modCensor : false,
             modHooks : false
           }
         }
@@ -1426,36 +1339,14 @@ var standard = {
         }
         else {
           switch (loginFlag) {
-            case 'INVALID_LOGIN':
-            //dia.error("The server did not accept the login, but did not specify why.")
-            break;
-
-            case 'PASSWORD_ENCRYPT':
-            dia.error("The form encryption used was not accepted by the server.");
-            break;
-
-            case 'BAD_USERNAME':
-            dia.error("A valid user was not provided.");
-            break;
-
-            case 'BAD_PASSWORD':
-            dia.error("The password was incorrect.");
-            break;
-
-            case 'API_VERSION_STRING':
-            dia.error("The server was unable to process the API version string specified.");
-            break;
-
-            case 'DEPRECATED_VERSION':
-            dia.error("The server will not accept this client because it is of a newer version.");
-            break;
-
-            case 'INVALID_SESSION':
-            sessionHash = '';
-            break;
-
-            default:
-            break;
+            case 'INVALID_LOGIN': dia.error("The server did not accept the login, but did not specify why."); break;
+            case 'PASSWORD_ENCRYPT': dia.error("The form encryption used was not accepted by the server."); break;
+            case 'BAD_USERNAME': dia.error("A valid user was not provided."); break;
+            case 'BAD_PASSWORD': dia.error("The password was incorrect."); break;
+            case 'API_VERSION_STRING': dia.error("The server was unable to process the API version string specified."); break;
+            case 'DEPRECATED_VERSION': dia.error("The server will not accept this client because it is of a newer version."); break;
+            case 'INVALID_SESSION': sessionHash = ''; break;
+            default: break;
           }
 
           console.log('Login Invalid');
@@ -3326,10 +3217,6 @@ function contextMenuParseUser(container) {
         }
 
         switch(action) {
-          case 'private_im':
-          standard.privateRoom(userId);
-          break;
-
           case 'profile':
           dia.full({
             title : 'User Profile',
@@ -3340,17 +3227,10 @@ function contextMenuParseUser(container) {
           });
           break;
 
-          case 'kick':
-          popup.kick(userId, roomId);
-          break;
-
-          case 'ban': // TODO
-          standard.banUser(userId);
-          break;
-
-          case 'ignore': // TODO
-          standard.ignoreUser(userId);
-          break;
+          case 'private_im': standard.privateRoom(userId); break;
+          case 'kick': popup.kick(userId, roomId); break;
+          case 'ban': standard.banUser(userId); break; // TODO
+          case 'ignore': standard.ignoreUser(userId); break; // TODO
         }
 
         return false;
@@ -3517,17 +3397,9 @@ function contextMenuParseRoom() {
       });
       break;
 
-      case 'edit':
-      popup.editRoom(roomId);
-      break;
-
-      case 'archive':
-      popup.archive({roomId : roomId});
-      break;
-
-      case 'enter':
-      standard.changeRoom(roomId);
-      break;
+      case 'edit': popup.editRoom(roomId); break;
+      case 'archive': popup.archive({roomId : roomId}); break;
+      case 'enter': standard.changeRoom(roomId); break;
     }
 
     return false;

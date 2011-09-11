@@ -160,6 +160,12 @@
 &lt;label for="name"&gt;$phrases[editRoomNameLabel]&lt;/label&gt;: &lt;input type="text" name="name" id="name" /&gt;&lt;br /&gt;
 &lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[editRoomNameBlurb]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
 
+&lt;label for="age"&gt;$phrases[editRoomAgeLabel]&lt;/label&gt;: &lt;select name="age" id="age"&gt;&lt;/select&gt;&lt;br /&gt;
+&lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[editRoomAgeLabel]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
+
+&lt;label for="flags"&gt;$phrases[editRoomFlagsLabel]&lt;/label&gt;: &lt;span name="flags" id="flags"&gt;&lt;/span&gt;&lt;br /&gt;
+&lt;small&gt;&lt;span style="margin-left: 10px;"&gt;$phrases[editRoomFlagsLabel]&lt;/span&gt;&lt;/small&gt;&lt;br /&gt;&lt;br /&gt;
+
 &lt;label&gt;$phrases[editRoomCensorLabel]&lt;/label&gt;:&lt;br /&gt;&lt;div style="margin-left: 10px;" id="censorLists"&gt;&lt;/div&gt;&lt;br /&gt;
 
 &lt;button type="submit"&gt;{{if="$_GET['action'] == 'create'"}{$phrases[createRoomSubmit]}{$phrases[editRoomSubmit]}}&lt;/button&gt;&lt;button type="reset"&gt;$phrases[editRoomReset]&lt;/button&gt;&lt;/div&gt;
@@ -479,6 +485,12 @@ $phrases[helpFAQs]
 
   &lt;label for="fileUpload"&gt;File: &lt;/label&gt;
   &lt;input name="fileUpload" id="fileUpload" type="file" /&gt;&lt;br /&gt;&lt;br /&gt;
+
+  &lt;label for="fileRating"&gt;Rating: &lt;/label&gt;
+  &lt;select name="fileAge" id="fileAge"&gt;&lt;/select&gt;&lt;br /&gt;&lt;br /&gt;
+
+  &lt;label for="fileFlags"&gt;Flags: &lt;/label&gt;
+  &lt;span id="fileFlags"&gt;&lt;/select&gt;&lt;br /&gt;&lt;br /&gt;
 
 
   &lt;button onclick="$('#insertDoc').dialog('close');" type="button"&gt;Cancel&lt;/button&gt;

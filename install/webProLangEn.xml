@@ -98,6 +98,10 @@
     <phrase name="editRoomAllowedUsersAdd">Add</phrase>
     <phrase name="editRoomAllowedGroupsAdd">Add</phrase>
     <phrase name="editRoomModeratorsAdd">Add</phrase>
+    <phrase name="editRoomAgeLabel">Age:</phrase>
+    <phrase name="editRoomAgeBlurb">The approximate age-group that is appropriate for viewing and partaking in the discussions of this room.</phrase>
+    <phrase name="editRoomFlagsLabel">Flags:</phrase>
+    <phrase name="editRoomFlagsBlurb">Content that is often discussed in this room.</phrase>
     <phrase name="hookHead"></phrase>
     <phrase name="loginBad">Unsuccessful Login</phrase>
     <phrase name="loginGuestLinks">Guest Links</phrase>
