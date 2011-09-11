@@ -1306,23 +1306,15 @@ function fim_sanitizeGPC($type, $data) {
       foreach ($indexData AS $metaName => $metaData) {
         switch ($metaName) {
           case 'type':
-
           switch ($metaData) {
             case 'string': $indexMetaData['type'] = 'string'; break;
             case 'bool': $indexMetaData['type'] = 'bool'; break;
             case 'int': $indexMetaData['type'] = 'int'; break;
           }
-
           break;
 
-          case 'valid':
-          $indexMetaData['valid'] = $metaData;
-          break;
-
-          case 'require':
-          $indexMetaData['require'] = $metaData;
-          break;
-
+          case 'valid': $indexMetaData['valid'] = $metaData; break;
+          case 'require': $indexMetaData['require'] = $metaData; break;
           case 'context':
           $indexMetaData['context'] = array(
             'cast' => '',
@@ -1404,7 +1396,7 @@ function fim_sanitizeGPC($type, $data) {
 
       switch($indexMetaData['context']['cast']) {
         case 'csv':
-        $newData[$indexName] = fim_arrayValidate(explode(',', $activeGlobal[$indexName]), $indexMetaData['context']['filter'],($indexMetaData['context']['evaltrue'] ? false : true)); // If a cast is set for a CSV list, explode with a comma seperator, make sure all values corrosponding to the filter (int, bool, or string - the latter pretty much changes nothing), and if evaltrue is true, then the preserveAll flag would be false, and vice-versa.
+        $newData[$indexName] = fim_arrayValidate(explode(',', $activeGlobal[$indexName]), $indexMetaData['context']['filter'],($indexMetaData['context']['evaltrue'] ? false : true), (isset($indexMetaData['context']['valid']) ? $indexMetaData['context']['valid'] : false)); // If a cast is set for a CSV list, explode with a comma seperator, make sure all values corrosponding to the filter (int, bool, or string - the latter pretty much changes nothing), and if evaltrue is true, then the preserveAll flag would be false, and vice-versa.
         break;
 
         case 'array':

@@ -314,17 +314,25 @@
 
 
     <table name="rooms" type="general" note="This will be partially overhauled in FIMv4 to seperate rooms and groups, the former represented by a unique ID and the latter specific between a small group of users." comment="User-created rooms/groups.">
+      <!-- General -->
       <column name="roomId" type="int" maxlen="6" autoincrement="true" comment="The unique ID for the room." />
       <column name="roomName" type="string" maxlen="50" comment="The name of the room." />
       <column name="roomTopic" type="string" maxlen="200" comment="The current topic of the room." />
+      <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options." />
+
+      <!-- Permissions -->
       <column name="owner" type="int" maxlen="10" comment="The owner/creator of the room." />
       <column name="defaultPermissions" type="bitfield" bits="8" default="7" comment="A bitfield corrosponding to permissions users are granted if they do not exist in the roomPermissions table." />
-      <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options." />
+
+      <!-- Parental Controls -->
       <column name="parentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the file." />
       <column name="parentalAge" type="string" restrict="6,10,13,16,18" comment="The file's parental content age rating." />
+
+      <!-- Counters -->
       <column name="lastMessageTime" type="time" default="0" comment="The time of the last message made in the room." />
       <column name="lastMessageId" type="int" maxlen="15" comment="The ID of the last message made in the room." />
       <column name="messageCount" type="int" maxlen="15" comment="The number of messages in this room." />
+
 
       <key name="roomId" type="primary" />
       <key name="options" type="index" />
@@ -428,39 +436,58 @@
 
 
     <table name="users" type="general">
+      <!-- General -->
       <column name="userId" type="int" maxlen="8" comment="The unique ID of the user." />
       <column name="userName" type="string" maxlen="50" comment="The user's name." />
       <column name="userGroup" type="int" maxlen="6" default="1" comment="The admin-set usergroup ID of the user." />
       <column name="allGroups" type="string" maxlen="1000" comment="A comma-seperated list of the IDs of all admin-set groups the user is a part of. This is not used on PHPBB and Vanilla logins (both instead use socialGroups)." />
       <column name="options" type="bitfield" bits="16" comment="A bitfield corrosponding to the user's settings." />
-      <column name="avatar" type="string" maxlen="1000" comment="The absolute URI of the user's avatar." />
-      <column name="profile" type="string" maxlen="1000" comment="The absolute URI of the user's profile link or website." />
       <column name="socialGroups" type="string" maxlen="1000" comment="A comma-seperated list of the ids of all groups the user has joined." />
-      <column name="userFormatStart" type="string" maxlen="300" comment="HTML-formatting to be prepended to the user's name for its display." />
-      <column name="userFormatEnd" type="string" maxlen="300" comment="HTML-formatting to be appended to the user's name for its display." />
       <column name="password" type="string" maxlen="32" comment="The hashed password of the user. It is only used on vanilla logins." />
       <column name="joinDate" type="time" default="0" comment="The date the user joined. It may not be used on logins other than vanilla." />
       <column name="birthDate" type="time" default="0" comment="The date of the user's birth, used for parental control settings." />
       <column name="lastSync" type="time" default="0" comment="The date the userdata was last synced. This is not applicable for vanilla logins." />
+
+      <!-- User Display -->
+      <column name="avatar" type="string" maxlen="1000" comment="The absolute URI of the user's avatar." />
+      <column name="profile" type="string" maxlen="1000" comment="The absolute URI of the user's profile link or website." />
+      <column name="userFormatStart" type="string" maxlen="300" comment="HTML-formatting to be prepended to the user's name for its display." />
+      <column name="userFormatEnd" type="string" maxlen="300" comment="HTML-formatting to be appended to the user's name for its display." />
+
+      <!-- Prefs -->
       <column name="defaultRoom" type="int" maxlen="6" default="1" comment="The user's default room." />
       <column name="interfaceId" type="string" maxlen="50" comment="The user's default interface." />
+
+      <!-- Lists (DEPRECATED) -->
       <column name="favRooms" type="string" maxlen="1000" default="1" comment="A comma-seperated list of rooms the user has ranked as being favourites." />
       <column name="watchRooms" type="string" maxlen="1000" comment="A comma-seperated list of rooms the user would like to be notified about when new messages are made" />
       <column name="ignoreList" type="string" maxlen="1000" comment="A comma-seperated list of users the user would like to ignore from being contacted by." />
+
+      <!-- Status -->
       <column name="status" type="int" maxlen="3" comment="The user's activity status." />
+
+      <!-- Formatting -->
       <column name="defaultFormatting" type="bitfield" bits="16" comment="A bitfield corrosponding to the user's defaulting formatting (e.g. bold, italics) of all messages." />
       <column name="defaultHighlight" type="string" maxlen="11" comment="The user's default highlight colour used for all messages." />
       <column name="defaultColor" type="string" maxlen="11" comment="The user's default foreground colour used for all messages." />
       <column name="defaultFontface" type="string" maxlen="50" comment="The fontface ID used for all of the user's messages." />
+
+      <!-- Permissions -->
       <column name="userPrivs" type="bitfield" bits="16" default="16" comment="A bitfield corrosponding to admin-set user priviledges." />
       <column name="adminPrivs" type="bitfield" bits="16" comment="A bitfield corrosponding to admin-set administrative priviledges." />
+
+      <!-- Localisation -->
       <column name="lang" type="string" maxlen="5" comment="The user's preferred language code." />
+
+      <!-- Counters -->
       <column name="fileCount" type="int" maxlen="8" comment="The number of files store on the server by this user." />
       <column name="fileSize" type="int" maxlen="8" comment="The total size of all files stored on the server by this user." />
       <column name="messageCount" type="int" maxlen="8" comment="The number of messages made by this user." />
 
+      <!-- Parental Controls -->
       <column name="parentalFlags" type="string" maxlen="255" comment="An advanced comma-seperated (e.g. violence=10,language=13) list of parent content flags to restrict access to." />
       <column name="parentalAge" type="string" restrict="6,10,13,16,18" comment="Content rated above this rating should be blocked." />
+
 
       <key name="userId" type="primary" />
       <key name="userGroup" type="index" />

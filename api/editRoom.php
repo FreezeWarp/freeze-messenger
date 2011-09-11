@@ -63,7 +63,6 @@ $request = fim_sanitizeGPC('p', array(
   ),
 
   'roomId' => array(
-    'require' => false,
     'context' => array(
       'type' => 'int',
     ),
@@ -74,7 +73,6 @@ $request = fim_sanitizeGPC('p', array(
   ),
 
   'defaultPermissions' => array(
-    'require' => false,
     'default' => 0,
     'context' => array(
       'type' => 'int',
@@ -82,7 +80,6 @@ $request = fim_sanitizeGPC('p', array(
   ),
 
   'moderators' => array(
-    'require' => false,
     'context' => array(
       'type' => 'csv',
       'filter' => 'int',
@@ -91,7 +88,6 @@ $request = fim_sanitizeGPC('p', array(
   ),
 
   'allowedUsers' => array(
-    'require' => false,
     'context' => array(
       'type' => 'csv',
       'filter' => 'int',
@@ -100,7 +96,6 @@ $request = fim_sanitizeGPC('p', array(
   ),
 
   'allowedGroups' => array(
-    'require' => false,
     'context' => array(
       'type' => 'csv',
       'filter' => 'int',
@@ -116,9 +111,29 @@ $request = fim_sanitizeGPC('p', array(
     ),
   ),
 
+  'parentalAge' => array(
+    'type' => 'int',
+    'valid' => array(
+      6, 10, 13, 16, 18
+    ),
+  ),
+
+  'parentalFlags' => array(
+    'context' => array(
+      'type' => 'array',
+      'valid' => array(
+        'violence', 'weapons', 'gore',
+        'nudity', 'pnudity', 'suggestive',
+        'drugs', 'language',
+      ),
+    ),
+  ),
+
   'otr' => array( // This will be used in v4.
-    'require' => false,
     'default' => false,
+    'context' => array(
+      'type' => 'bool',
+    ),
   ),
 ));
 
@@ -149,12 +164,12 @@ switch($request['action']) {
   case 'create':
   case 'edit':
   if ($request['action'] === 'create') {
-    if (!$user['userDefs']['createRooms']) {
+    if (!$user['userDefs']['createRooms']) { // Gotta be able to create dem rooms.
       $errStr = 'noPerm';
       $errDesc = 'You do not have permission to create rooms.';
       $continue = false;
     }
-    elseif ($slaveDatabase->getRoom(false, $request['roomName']) !== false) {
+    elseif ($slaveDatabase->getRoom(false, $request['roomName']) !== false) { // Make sure no other room exists with the same name.
       $errStr = 'exists';
       $errDesc = 'The room specified already exists.';
       $continue = false;
@@ -283,6 +298,8 @@ switch($request['action']) {
           'roomName' => $request['roomName'],
           'owner' => (int) $user['userId'],
           'defaultPermissions' => (int) $request['defaultPermissions'],
+          'parentalAge' => $request['parentalAge'],
+          'parentalFlags' => implode(',', $request['parentalFlags']),
         ))) {
           $roomId = $database->insertId;
 
@@ -299,6 +316,8 @@ switch($request['action']) {
         if ($database->update("{$sqlPrefix}rooms", array(
             'roomName' => $request['roomName'],
             'defaultPermissions' => (int) $request['defaultPermissions'],
+            'parentalAge' => $request['parentalAge'],
+            'parentalFlags' => implode(',', $request['parentalFlags']),
           ), array(
             'roomId' => $room['roomId'],
           )
