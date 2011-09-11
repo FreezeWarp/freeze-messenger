@@ -224,7 +224,7 @@ function messageFormat(json, format) {
   else {
     switch (flag) {
       case 'image':
-      if (settings.disableImage) text = '<a href="' + attrencode(text) + '" target="_BLANK">[Image]</a>';
+      if (settings.disableImage) text = '<a href="' + attrencode(text) + '" class="imglink" target="_BLANK">[Image]</a>';
       else text = '<a href="' + text + '" target="_BLANK"><img src="' + attrencode(text) + '" style="max-width: 250px; max-height: 250px;" /></a>';
       break;
 
@@ -288,7 +288,7 @@ function messageFormat(json, format) {
           }
         }
         else if ($1.match(regexs.image)) {
-          return '<a href="' + $1 + '" target="_BLANK">' + (settings.disableImage ? '[IMAGE]' : '<img src="' + $1 + '" style="max-width: 250px; max-height: 250px;" />') + '</a>' + $2;
+          return '<a href="' + $1 + '" target="_BLANK" class="imglink">' + (settings.disableImage ? '[IMAGE]' : '<img src="' + $1 + '" style="max-width: 250px; max-height: 250px;" />') + '</a>' + $2;
         }
         else {
           return '<a href="' + $1 + '" target="_BLANK">' + $1 + '</a>' + $2;
@@ -3448,7 +3448,7 @@ function contextMenuParseMessage() {
     return false;
   });
 
-  $('.messageLine .messageText a').contextMenu({
+  $('.messageLine .messageText a').not('.imglink').contextMenu({
     menu: 'messageMenuLink',
     altMenu : settings.disableRightClick
   },
