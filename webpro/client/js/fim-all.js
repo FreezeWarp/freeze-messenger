@@ -1859,7 +1859,7 @@ var standard = {
 
 
   deleteRoom : function(roomIdLocal) {
-    $.post(directory + 'api/editRoom.php', 'action=delete&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
+    $.post(directory + 'api/editRoom.php', 'action=delete&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
       var errStr = json.editRoom.errStr,
         errDesc = json.editRoom.errDesc;
 
@@ -1874,7 +1874,7 @@ var standard = {
   },
 
   favRoom : function(roomIdLocal) {
-    $.post(directory + 'api/moderate.php', 'action=favRoom&roomId=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
+    $.post(directory + 'api/moderate.php', 'action=favRoom&roomId=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
       return false;
     });
 
@@ -1882,7 +1882,7 @@ var standard = {
   },
 
   unfavRoom : function(roomIdLocal) {
-    $.post(directory + 'api/moderate.php', 'action=unfavRoom&roomId=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
+    $.post(directory + 'api/moderate.php', 'action=unfavRoom&roomId=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
       return false;
     });
 
@@ -1896,7 +1896,7 @@ var standard = {
     else if (!userLocalId) { dia.error('You have not specified a user.'); }
     else if (!userPermissions.privateRoom) { dia.error('You do not have permission to talk to users privately.'); }
     else {
-      $.post(directory + 'api/editRoom.php', 'action=private&userId=' + userLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
+      $.post(directory + 'api/editRoom.php', 'action=private&userId=' + userLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
         var privateRoomId = json.editRoom.response.insertId,
           errStr = json.editRoom.errStr,
           errDesc = json.editRoom.errDesc;
@@ -1929,7 +1929,7 @@ var standard = {
 
 
   kick : function(userId, roomId, length) {
-    $.post(directory + 'api/moderate.php', 'action=kickUser&userId=' + userId + '&roomId=' + roomId + '&length=' + length + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
+    $.post(directory + 'api/moderate.php', 'action=kickUser&userId=' + userId + '&roomId=' + roomId + '&length=' + length + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
       var errStr = json.moderaate.errStr,
         errDesc = json.moderaate.errDesc;
 
@@ -1948,7 +1948,7 @@ var standard = {
   },
 
   unkick : function(userId, roomId) {
-    $.post(directory + 'api/moderate.php', 'action=unkickUser&userId=' + userId + '&roomId=' + roomId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(json) {
+    $.post(directory + 'api/moderate.php', 'action=unkickUser&userId=' + userId + '&roomId=' + roomId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId, function(json) {
       var errStr = json.moderaate.errStr,
         errDesc = json.moderaate.errDesc;
 
@@ -1966,7 +1966,7 @@ var standard = {
 
 
   deleteMessage : function(messageId) {
-    $.post(directory + 'api/editMessage.php', 'action=delete&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + 'fim3_format=json',function(json) {
+    $.post(directory + 'api/editMessage.php', 'action=delete&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + 'fim3_format=json', function(json) {
       var errStr = json.moderaate.errStr,
         errDesc = json.moderaate.errDesc;
 
@@ -2005,7 +2005,7 @@ popup = {
   /*** START Login ***/
 
   login : function() {
-    $.get('template.php', 'template=login',function(data) {
+    $.get('template.php', 'template=login', function(data) {
       dia.full({
         content : data,
         title : 'Login',
@@ -2063,7 +2063,7 @@ popup = {
         $('button.editRoomMulti, input[type=checkbox].favRoomMulti, button.archiveMulti, button.deleteRoomMulti').unbind('click'); // Prevent the below from being binded multiple times.
 
 
-        $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}}).bind('click',function() {
+        $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}}).bind('click', function() {
           popup.editRoom($(this).attr('data-roomId'));
         });
 
@@ -2072,11 +2072,11 @@ popup = {
           else { standard.unfavRoom($(this).attr('data-roomId')); }
         });
 
-        $('button.archiveMulti').button({icons : {primary : 'ui-icon-note'}}).bind('click',function() {
+        $('button.archiveMulti').button({icons : {primary : 'ui-icon-note'}}).bind('click', function() {
           popup.archive({roomId : $(this).attr('data-roomId')});
         });
 
-        $('button.deleteRoomMulti').button({icons : {primary : 'ui-icon-trash'}}).bind('click',function() {
+        $('button.deleteRoomMulti').button({icons : {primary : 'ui-icon-trash'}}).bind('click', function() {
           standard.deleteRoom($(this).attr('data-roomId'));
         });
       }
@@ -2122,7 +2122,7 @@ popup = {
           $('#uploadFileForm, #uploadUrlForm, #linkForm. #uploadYoutubeForm').unbind('submit');
 
 
-          $('#fileUpload').bind('change',function() {
+          $('#fileUpload').bind('change', function() {
             console.log('FileReader triggered.');
 
             var reader = new FileReader(),
@@ -2175,7 +2175,7 @@ popup = {
             }
           });
 
-          $('#urlUpload').bind('change',function() {
+          $('#urlUpload').bind('change', function() {
             fileContent = $('#urlUpload').val();
             if (fileContent && fileContent !== 'http://') {
               fileContainer = '<img src="' + fileContent + '" alt="" style="max-width: 200px; max-height: 250px; height: auto;" />';
@@ -2185,15 +2185,15 @@ popup = {
           });
 
 
-          $('#uploadFileForm').bind('submit',function() {
+          $('#uploadFileForm').bind('submit', function() {
             $.ajax({
-              url : directory + 'api/sendFile.php',
+              url : directory + 'api/editFile.php',
               type : 'POST',
-              data : 'dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&fileName=' + fileName + '&fileData=' + urlencode(fileContent) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+              data : 'action=create&dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&fileName=' + fileName + '&fileData=' + urlencode(fileContent) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
               cache : false,
               success : function(json) {
-                var errStr = json.sendFile.errStr,
-                  errDesc = json.sendFile.errDesc;
+                var errStr = json.editFile.errStr,
+                  errDesc = json.editFile.errDesc;
 
                 if (errStr) {
                   dia.error(errDesc);
@@ -2348,6 +2348,7 @@ popup = {
           };
 
 
+        // Check boxes that should be.
         if (settings.reversePostOrder) $('#reversePostOrder').attr('checked', 'checked');
         if (settings.showAvatars) $('#showAvatars').attr('checked', 'checked');
         if (settings.audioDing) $('#audioDing').attr('checked', 'checked');
@@ -2360,8 +2361,10 @@ popup = {
         if (settings.twelveHourTime) $('#twelveHourFormat').attr('checked', 'checked');
         if (settings.usTime) $('#usTime').attr('checked', 'checked');
 
+        // Update volume to current.
         if (snd.volume) $('#audioVolume').attr('value', snd.volume * 100);
 
+        // And the same with a few select boxes.
         if (theme) $('#theme > option[value="' + theme + '"]').attr('selected', 'selected');
         if (fontsize) $('#fontsize > option[value="' + fontsize + '"]').attr('selected', 'selected');
 
@@ -2528,7 +2531,7 @@ popup = {
             fontId = $('#defaultFace option:selected').val(),
             defaultFormatting = ($('#defaultBold').is(':checked') ? 256 : 0) + ($('#defaultItalics').is(':checked') ? 512 : 0);
 
-          $.post(directory + 'api/editUserOptions.php', 'defaultFormatting=' + defaultFormatting + '&defaultColor=' + defaultColour + '&defaultHighlight=' + defaultHighlight + '&defaultRoomId=' + defaultRoomId + '&watchRooms=' + watchRooms + '&ignoreList=' + ignoreList + '&defaultFontface=' + fontId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',function(json) {
+          $.post(directory + 'api/editUserOptions.php', 'defaultFormatting=' + defaultFormatting + '&defaultColor=' + defaultColour + '&defaultHighlight=' + defaultHighlight + '&defaultRoomId=' + defaultRoomId + '&watchRooms=' + watchRooms + '&ignoreList=' + ignoreList + '&defaultFontface=' + fontId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
             dia.info('Your settings may or may not have been updated.');
           }); // Send the form data via AJAX.
 
@@ -2745,7 +2748,7 @@ popup = {
             dia.error('The roomname is too long.');
           }
           else {
-            $.post(directory + 'api/editRoom.php', 'action=' + action + '&roomId=' +  roomIdLocal + '&roomName=' + urlencode(name) + '&defaultPermissions=' + ($('#allowAllUsers').is(':checked') ? '7' : '0' + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups) + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,function(json) {
+            $.post(directory + 'api/editRoom.php', 'action=' + action + '&roomId=' +  roomIdLocal + '&roomName=' + urlencode(name) + '&defaultPermissions=' + ($('#allowAllUsers').is(':checked') ? '7' : '0' + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups) + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId, function(json) {
               var errStr = json.editRoom.errStr,
                 errDesc = json.editRoom.errDesc,
                 createRoomId = json.editRoom.response.insertId;
@@ -3577,27 +3580,27 @@ $(document).ready(function() {
   /*** Button Click Events ***/
   $('#icon_note, #messageArchive, a#editRoom').unbind('click'); // Cleanup
 
-  $('#icon_note, #messageArchive').bind('click',function() { popup.archive({roomId : roomId}); }); // Archive
-  $('a#editRoom').bind('click',function() { popup.editRoom(roomId); }); // Edit Room
-  $('#login').bind('click',function() { popup.login(); }); // Login
-  $('#logout').bind('click',function() { standard.logout(); popup.login(); }); // Logout
-  $('a#kick').bind('click',function() { popup.kick(); }); // Kick
-  $('a#privateRoom').bind('click',function() { popup.privateRoom(); }); // Private Room
-  $('a#manageKick').bind('click',function() { popup.manageKicks(); }); // Manage Kicks
-  $('a#online').bind('click',function() { popup.online(); }); // Online
-  $('a#createRoom').bind('click',function() { popup.editRoom();}); // Create Room
-  $('a.editRoomMulti').bind('click',function() { popup.editRoom($(this).attr('data-roomId')); }); // Edit Room
-  $('#icon_help').bind('click',function() { popup.help(); }); // Help
-  $('#roomList').bind('click',function() { popup.selectRoom(); }); // Room List
-  $('#viewStats').bind('click',function() { popup.viewStats(); }); // Room Post Stats
-  $('#copyrightLink').bind('click',function() { popup.copyright(); }); // Copyright & Credits
-  $('#icon_settings, #changeSettings, a.changeSettingsMulti').bind('click',function() { popup.userSettings(); }); // User Settings
-  $('#viewUploads').bind('click',function() { popup.viewUploads(); }); // View My Uploads
-  $('#icon_url').bind('click',function() { popup.insertDoc('url'); }); // Upload
+  $('#icon_note, #messageArchive').bind('click', function() { popup.archive({roomId : roomId}); }); // Archive
+  $('a#editRoom').bind('click', function() { popup.editRoom(roomId); }); // Edit Room
+  $('#login').bind('click', function() { popup.login(); }); // Login
+  $('#logout').bind('click', function() { standard.logout(); popup.login(); }); // Logout
+  $('a#kick').bind('click', function() { popup.kick(); }); // Kick
+  $('a#privateRoom').bind('click', function() { popup.privateRoom(); }); // Private Room
+  $('a#manageKick').bind('click', function() { popup.manageKicks(); }); // Manage Kicks
+  $('a#online').bind('click', function() { popup.online(); }); // Online
+  $('a#createRoom').bind('click', function() { popup.editRoom();}); // Create Room
+  $('a.editRoomMulti').bind('click', function() { popup.editRoom($(this).attr('data-roomId')); }); // Edit Room
+  $('#icon_help').bind('click', function() { popup.help(); }); // Help
+  $('#roomList').bind('click', function() { popup.selectRoom(); }); // Room List
+  $('#viewStats').bind('click', function() { popup.viewStats(); }); // Room Post Stats
+  $('#copyrightLink').bind('click', function() { popup.copyright(); }); // Copyright & Credits
+  $('#icon_settings, #changeSettings, a.changeSettingsMulti').bind('click', function() { popup.userSettings(); }); // User Settings
+  $('#viewUploads').bind('click', function() { popup.viewUploads(); }); // View My Uploads
+  $('#icon_url').bind('click', function() { popup.insertDoc('url'); }); // Upload
 
   // Room Shower Thing
-  $('#showMoreRooms').bind('click',function() { $('#roomListShort').slideUp(); $('#roomListLong').slideDown(); });
-  $('#showFewerRooms').bind('click',function() { $('#roomListLong').slideUp(); $('#roomListShort').slideDown(); });
+  $('#showMoreRooms').bind('click', function() { $('#roomListShort').slideUp(); $('#roomListLong').slideDown(); });
+  $('#showFewerRooms').bind('click', function() { $('#roomListLong').slideUp(); $('#roomListShort').slideDown(); });
 
 
 
@@ -3612,7 +3615,7 @@ $(document).ready(function() {
 
 
   /*** Send Messages, Yay! ***/
-  $('#sendForm').bind('submit',function() {
+  $('#sendForm').bind('submit', function() {
     var message = $('textarea#messageInput').val();
 
     if (message.length === 0) {

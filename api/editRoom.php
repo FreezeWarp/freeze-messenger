@@ -116,6 +116,7 @@ $request = fim_sanitizeGPC('p', array(
     'valid' => array(
       6, 10, 13, 16, 18
     ),
+    'default' => 6,
   ),
 
   'parentalFlags' => array(
@@ -202,9 +203,7 @@ switch($request['action']) {
       $continue = false;
     }
   }
-  else {
-    die('Internal Logic Error');
-  }
+  else { die('Internal Logic Error'); }
 
 
   if ($continue) {

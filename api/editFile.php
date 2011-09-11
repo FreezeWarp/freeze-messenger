@@ -43,11 +43,6 @@ $request = fim_sanitizeGPC('p', array(
       'delete',
       'undelete',
       'flag',
-
-      'addFlag', // FIMv4
-      'removeFlag', // FIMv4
-      'requestAction', // FIMv4
-      'parentalRating', // FIMv4
     ),
   ),
 
@@ -57,8 +52,8 @@ $request = fim_sanitizeGPC('p', array(
     'default' => 'raw',
     'valid' => array(
       'raw',
+      'put',
     ),
-    'require' => false,
   ),
 
   'fileName' => array(
@@ -68,27 +63,22 @@ $request = fim_sanitizeGPC('p', array(
 
   'fileData' => array(
     'type' => 'string',
-    'require' => true,
   ),
 
   'fileSize' => array(
     'type' => 'string',
-    'require' => false,
   ),
 
   'fileMd5hash' => array(
     'type' => 'string',
-    'require' => false,
   ),
 
   'fileSha256hash' => array(
     'type' => 'string',
-    'require' => false,
   ),
 
   'roomId' => array(
     'type' => 'string',
-    'require' => false,
     'default' => 0,
     'context' => array(
       'type' => 'int',
@@ -100,17 +90,18 @@ $request = fim_sanitizeGPC('p', array(
     'require' => true,
     'valid' => array(
       'base64',
+      'binary',
     ),
   ),
 
-  'parentalRating' => array(
+  'parentalAge' => array(
     'type' => 'string',
-    'require' => false,
     'context' => array(
       'type' => 'int',
       'valid' => array(
         6, 10, 13, 16, 18,
       ),
+    ),
     'default' => 6,
   ),
 
@@ -126,7 +117,6 @@ $request = fim_sanitizeGPC('p', array(
 
   'fileId' => array(
     'type' => 'string',
-    'require' => false,
     'default' => 0,
     'context' => array(
       'type' => 'int',
@@ -185,7 +175,7 @@ elseif ($continue) {
       $mimes = $mimes->getAsArray('extension');
 
 
-      if ($request['uploadMethod'] == 'put') { // This is an unsupported alternate upload method. It will not be documented until it is known to work.
+      if ($request['uploadMethod'] === 'put') { // This is an unsupported alternate upload method. It will not be documented until it is known to work.
         $putResource = fopen("php://input", "r"); // file data is from stdin
         $request['fileData'] = ''; // The only real change is that we're getting things from stdin as opposed to from the headers. Thus, we'll just translate the two here.
 
@@ -365,10 +355,12 @@ elseif ($continue) {
                         'userId' => $user['userId'],
                         'fileName' => $request['fileName'],
                         'fileType' => $mime,
+                        'parentalFlags' =>
                         'creationTime' => time(),
                       ));
 
                       $fileId = $database->insertId;
+                      $parentalFileId = $fileId;
 
                       $database->insert("{$sqlPrefix}fileVersions", array(
                         'fileId' => $fileId,
@@ -431,6 +423,16 @@ elseif ($continue) {
           }
         }
       }
+    }
+    elseif ($request['action'] === 'edit') {
+      $parentalFileId = $request['fileId'];
+    }
+
+    if ($parentalFileId) {
+      $database->update("{$sqlPrefix}files", array(
+        'parentalAge' => (int) $request['parentalAge'],
+        'parentalFlags' => implode(',', $request['parentalFlags']),
+      ));
     }
     break;
 
