@@ -1403,6 +1403,9 @@ function fim_sanitizeGPC($type, $data) {
         elseif (isset($indexMetaData['default'])) { // If the value has a default and is not specified...
           $activeGlobal[$indexName] = $indexMetaData['default']; // Set the value to the default.
         }
+        else {
+          continue; // The entry is not set and won't be returned in $request.
+        }
       }
 
       switch($indexMetaData['context']['cast']) {
