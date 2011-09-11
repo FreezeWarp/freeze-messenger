@@ -156,9 +156,4 @@ $xmlData['getGroups']['errDesc'] = ($errDesc);
 
 /* Output Data */
 echo fim_outputApi($xmlData);
-
-
-
-/* Close Database Connection */
-dbClose();
 ?>

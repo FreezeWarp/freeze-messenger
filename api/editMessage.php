@@ -189,9 +189,4 @@ $xmlData['editMessage']['errDesc'] = ($errDesc);
 
 /* Output Data */
 echo fim_outputApi($xmlData);
-
-
-
-/* Close Database Conncetion */
-dbClose();
 ?>

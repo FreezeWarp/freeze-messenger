@@ -96,9 +96,4 @@ if ($continue) {
 
 /* Output Data */
 echo fim_outputApi($xmlData);
-
-
-
-/* Close Database Connection */
-dbClose();
 ?>

@@ -229,9 +229,4 @@ $xmlData['getRooms']['errDesc'] = ($errDesc);
 
 /* Output Data Structure */
 echo fim_outputApi($xmlData);
-
-
-
-/* Close Database (Should be Automatic) */
-dbClose();
 ?>

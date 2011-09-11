@@ -110,10 +110,12 @@ $xmlData = array(
 );
 
 
+
+/* Plugin Hook End */
 ($hook = hook('setUserStatus_end') ? eval($hook) : '');
 
 
-echo fim_outputApi($xmlData);
 
-dbClose();
+/* Output Data */
+echo fim_outputApi($xmlData);
 ?>

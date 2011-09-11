@@ -524,9 +524,4 @@ $xmlData['editRoom']['errDesc'] = (string) $errDesc;
 
 /* Output Data */
 echo fim_outputApi($xmlData);
-
-
-
-/* Close Database */
-dbClose();
 ?>

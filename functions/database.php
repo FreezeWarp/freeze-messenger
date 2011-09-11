@@ -15,7 +15,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 /**** BRIEF INTRODUCTION ****/
-/* This file is the MySQL-version (and the only one currently existing) of a generic database layer created for FreezeMessenger. What purpose could it possibly server? Why not go the PDO-route? Mainly, it offers a few distinct advantages: full control, easier to modify by plugins (specifically, in that most data is stored in a tree structure), and perhaps more importantly it allows things than PDO, which is fundamentally an SQL extension, doesn't. There is no shortage of database foundations bearing almost no semblance to SQL: IndexedDB (which has become popular by-way of web-browser implementation), Node.JS (which I would absolutely love to work with but currently can't because of the MySQL requirement), and others come to mind.
+/* This file is the MySQL-version (and the only one currently existing) of a generic database layer created for FreezeMessenger. What purpose could it possibly serve? Why not go the PDO-route? Mainly, it offers a few distinct advantages: full control, easier to modify by plugins (specifically, in that most data is stored in a tree structure), and perhaps more importantly it allows things that PDO, which is fundamentally an SQL extension, doesn't. There is no shortage of database foundations bearing almost no semblance to SQL: IndexedDB (which has become popular by-way of web-browser implementation), Node.JS (which I would absolutely love to work with but currently can't because of the MySQL requirement), and others come to mind.
  * As with everything else, this is GPL-based, but if anyone decides they like it and may wish to use it for less restricted purposes, contact me. I have considered going LGPL/MIT/BSD with it, but not yet :P */
 
 
@@ -1205,7 +1205,7 @@ LIMIT
       }
 
 
-      $columns[] = '`' . $this->escape($column['name']) . "` {$typePiece} NOT NULL COMMENT \"" . $this->escape($column['comment']) . '"';
+      $columns[] = $this->columnQuoteStart . $this->escape($column['name']) . $this->columnQuoteEnd . " {$typePiece} NOT NULL COMMENT \"" . $this->escape($column['comment']) . '"';
     }
 
 
@@ -1223,13 +1223,13 @@ LIMIT
         $keyCols = explode(',', $key['name']);
 
         foreach ($keyCols AS &$keyCol) {
-          $keyCol = "`$keyCol`";
+          $keyCol = $this->columnQuoteStart . $keyCol . $this->columnQuoteEnd;
         }
 
         $key['name'] = implode(',', $keyCols);
       }
       else {
-        $key['name'] = "`{$key['name']}`";
+        $key['name'] = $this->columnAliasStart . $key['name'] . $this->columnAliasEnd;
       }
 
 
@@ -1237,7 +1237,7 @@ LIMIT
     }
 
 
-    return $this->rawQuery('CREATE TABLE IF NOT EXISTS `' . $this->escape($tableName) . '` (
+    return $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->tableQuoteStart . $this->escape($tableName) . $this->tableQuoteEnd . ' (
 ' . implode(",\n  ",$columns) . ',
 ' . implode(",\n  ",$keys) . '
 ) ENGINE="' . $this->escape($engine) . '" COMMENT="' . $this->escape($tableComment) . '" DEFAULT CHARSET="utf8"');
@@ -1254,7 +1254,7 @@ LIMIT
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function renameTable($oldName, $newName) {
-    $query = 'RENAME TABLE `' . $this->escape($oldName) . '` TO `' . $this->escape($newName) . '`';
+    $query = 'RENAME TABLE ' . $this->tableQuoteStart . $this->escape($oldName) . $this->tableQuoteEnd . ' TO ' . $this->tableQuoteStart . $this->escape($newName) . $this->tableQuoteEnd;
 
     return $this->rawQuery($query);
   }
@@ -1269,7 +1269,7 @@ LIMIT
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function deleteTable($tableName) {
-    $query = 'DROP TABLE `' . $this->escape($tableName) . '`';
+    $query = 'DROP TABLE ' . $this->tableQuoteStart . $this->escape($tableName) . $this->tableQuoteEnd;
 
     return $this->rawQuery($query);
   }
@@ -1304,6 +1304,10 @@ LIMIT
     }
 
     return $tables;
+  }
+
+  public function __destruct() {
+    $this->close();
   }
 }
 

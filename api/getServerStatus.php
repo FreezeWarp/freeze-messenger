@@ -80,10 +80,13 @@ $xmlData = array(
   ),
 );
 
+
+
+/* Plugin Hook End */
 ($hook = hook('getServerStatus') ? eval($hook) : '');
 
 
-echo fim_outputApi($xmlData);
 
-dbClose();
+/* Output Data */
+echo fim_outputApi($xmlData);
 ?>
