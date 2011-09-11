@@ -177,21 +177,19 @@ var directory = window.location.pathname.split('/').splice(0, window.location.pa
 ******************* Static Functions ********************
 *********************************************************/
 
-function urlencode(str) {
+function urlencode(str) { // Escapes data for server storage.
   return encodeURIComponent(str).replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%20/g, '+');
 }
 
-function attrencode(str) {
+function attrencode(str) { // Escapes data that is stored via doublequote-encased attributes.
   return str.replace(/\"/g, '&quot;').replace(/\\/g, '\\\\');
 }
 
-function toBottom() {
+function toBottom() { // Scrools the message list to the bottom.
   document.getElementById('messageList').scrollTop = document.getElementById('messageList').scrollHeight;
-
-  return false;
 }
 
-function faviconFlash() {
+function faviconFlash() { // Changes the state of the favicon from opaque to transparent or similar.
   if ($('#favicon').attr('href') === 'images/favicon.ico') $('#favicon').attr('href', 'images/favicon2.ico');
   else $('#favicon').attr('href', 'images/favicon.ico');
 }

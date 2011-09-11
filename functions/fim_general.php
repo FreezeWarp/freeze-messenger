@@ -1384,7 +1384,7 @@ function fim_sanitizeGPC($type, $data) {
       }
       else {
         if ($indexMetaData['require']) { // If the value is required but not specified...
-          throw new Exception('Required data not present.'); // Throw an exception.
+          throw new Exception('Required data not present (index ' . $indexName . ').'); // Throw an exception.
         }
         elseif (isset($indexMetaData['default'])) { // If the value has a default and is not specified...
           $activeGlobal[$indexName] = $indexMetaData['default']; // Set the value to the default.

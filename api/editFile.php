@@ -35,50 +35,39 @@ require('../global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
   'action' => array(
-    'type' => 'string',
     'require' => true,
     'valid' => array(
-      'create',
-      'edit',
-      'delete',
-      'undelete',
+      'create', 'edit',
+      'delete', 'undelete',
       'flag',
     ),
   ),
 
 
   'uploadMethod' => array(
-    'type' => 'string',
     'default' => 'raw',
     'valid' => array(
-      'raw',
-      'put',
+      'raw', 'put',
     ),
   ),
 
   'fileName' => array(
-    'type' => 'string',
     'require' => true,
   ),
 
-  'fileData' => array(
-    'type' => 'string',
-  ),
+  'fileData' => array(),
 
   'fileSize' => array(
-    'type' => 'string',
+    'context' => array(
+      'type' => 'int',
+    ),
   ),
 
-  'fileMd5hash' => array(
-    'type' => 'string',
-  ),
+  'fileMd5hash' => array(),
 
-  'fileSha256hash' => array(
-    'type' => 'string',
-  ),
+  'fileSha256hash' => array(),
 
   'roomId' => array(
-    'type' => 'string',
     'default' => 0,
     'context' => array(
       'type' => 'int',
@@ -86,16 +75,13 @@ $request = fim_sanitizeGPC('p', array(
   ),
 
   'dataEncode' => array(
-    'type' => 'string',
     'require' => true,
     'valid' => array(
-      'base64',
-      'binary',
+      'base64', 'binary',
     ),
   ),
 
   'parentalAge' => array(
-    'type' => 'string',
     'context' => array(
       'type' => 'int',
       'valid' => array(
@@ -107,7 +93,6 @@ $request = fim_sanitizeGPC('p', array(
 
   'parentalFlags' => array(
     'type' => 'array',
-    'require' => true,
     'valid' => array(
       'violence', 'suggestive', 'nudity',
       'pnudity', 'language', 'violence',
@@ -116,7 +101,6 @@ $request = fim_sanitizeGPC('p', array(
   ),
 
   'fileId' => array(
-    'type' => 'string',
     'default' => 0,
     'context' => array(
       'type' => 'int',
@@ -156,14 +140,12 @@ $queryParts['getMimes']['limit'] = false;
 
 
 /* Start Processing */
-if (!$fileData) {
-  $errStr = 'invalidFile';
-  $errDesc = 'The file specified is invalid.';
-}
-elseif ($continue) {
+if ($continue) {
   switch ($request['action']) {
     case 'edit':
     case 'create':
+    $parentalFileId = 0;
+
     if ($request['action'] === 'create') {
       /* Get Mime Types from the Database */
       $mimes = $slaveDatabase->select(
@@ -355,7 +337,6 @@ elseif ($continue) {
                         'userId' => $user['userId'],
                         'fileName' => $request['fileName'],
                         'fileType' => $mime,
-                        'parentalFlags' =>
                         'creationTime' => time(),
                       ));
 
@@ -425,13 +406,23 @@ elseif ($continue) {
       }
     }
     elseif ($request['action'] === 'edit') {
-      $parentalFileId = $request['fileId'];
+      $fileData = $database->getFile($request['fileId']);
+
+      if (!$fileData) {
+        $errStr = 'invalidFile';
+        $errDesc = 'The file specified is invalid.';
+      }
+      else {
+        $parentalFileId = $request['fileId'];
+      }
     }
 
-    if ($parentalFileId) {
+    if ($parentalFileId > 0) {
       $database->update("{$sqlPrefix}files", array(
         'parentalAge' => (int) $request['parentalAge'],
         'parentalFlags' => implode(',', $request['parentalFlags']),
+      ), array(
+        'fileId' => $request['fileId'],
       ));
     }
     break;
@@ -486,8 +477,8 @@ elseif ($continue) {
 
 
 /* Update Data for Errors */
-$xmlData['moderate']['errStr'] = ($errStr);
-$xmlData['moderate']['errDesc'] = ($errDesc);
+$xmlData['editFile']['errStr'] = ($errStr);
+$xmlData['editFile']['errDesc'] = ($errDesc);
 
 
 
