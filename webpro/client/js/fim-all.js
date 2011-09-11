@@ -338,7 +338,7 @@ function messageFormat(json, format) {
 
     case 'list':
     if (settings.showAvatars) {
-      data = '<span id="message' + messageId + '" class="messageLine messageLineAvatar"><span class="userName userNameAvatar" data-userId="' + userId + '"><img alt="' + userName + '" src="' + avatar + '" /></span><span style="' + style + '" class="messageText" data-messageId="' + messageId + '" data-roomId="' + roomId + '" data-time="' + messageTime + '">' + text + '</span><br />';
+      data = '<span id="message' + messageId + '" class="messageLine messageLineAvatar"><span class="userName userNameAvatar" data-userId="' + userId + '" tabindex="1"><img alt="' + userName + '" src="' + avatar + '" /></span><span style="' + style + '" class="messageText" data-messageId="' + messageId + '" data-roomId="' + roomId + '" data-time="' + messageTime + '" tabindex="1">' + text + '</span><br />';
     }
     else {
       data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="' + style + '" class="messageText" data-messageid="' + messageId + '" data-roomId="' + roomId + '">' + text + '</span><br />';
@@ -385,6 +385,52 @@ function newMessage() {
 
   contextMenuParseMessage();
   contextMenuParseUser('#messageList');
+
+  $('.messageLine .messageText, .messageLine .userName, body').unbind('keydown');
+
+  $('.messageLine .messageText').bind('keydown', function(e) {
+    if (e.which === 38) {
+      $(this).parent().prev('.messageLine').children('.messageText').focus();
+
+      return false;
+    }
+    else if (e.which === 37) {
+      $(this).parent().children('.userName').focus();
+
+      return false;
+    }
+    else if (e.which === 40) {
+      $(this).parent().next('.messageLine').children('.messageText').focus();
+
+      return false;
+    }
+  });
+
+  $('.messageLine .userName').bind('keydown', function(e) {
+    if (e.which === 38) {
+      $(this).parent().prev('.messageLine').children('.userName').focus();
+
+      return false;
+    }
+    else if (e.which === 39) {
+      $(this).parent().children('.messageText').focus();
+
+      return false;
+    }
+    else if (e.which === 40) {
+      $(this).parent().next('.messageLine').children('.userName').focus();
+
+      return false;
+    }
+  });
+
+  $('body').bind('keydown', function(e) {
+    if (e.which === 91) {
+      $('.messageLine .messageText').first().focus();
+
+      return false;
+    }
+  });
 }
 
 

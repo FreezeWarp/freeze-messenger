@@ -125,7 +125,7 @@ if(jQuery)(function() {
         var el = $(this);
 
 
-        $(this).unbind('mousedown').unbind('mouseup'); // Disable action (cleanup)
+        $(this).unbind('mousedown').unbind('mouseup').unbind('keydown'); // Disable action (cleanup)
 
 
         // Add contextMenu class
@@ -154,6 +154,12 @@ if(jQuery)(function() {
 
               contextMenuSub(e, o, el, $(el).offset(), callback, $(this));
             });
+          });
+
+          $(this).keyup(function(e) {
+            if (e.which === 93) {
+              contextMenuSub(false, o, el, $(el).offset(), callback, $(this));
+            }
           });
 
           $(el).add($('ul.contextMenu')).bind('contextmenu', function() { // Disable browser context menu (requires both selectors to work in IE/Safari + FF/Chrome)
@@ -241,6 +247,8 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
     $(document).unbind('click');
     $(menu).css({ top: y, left: x }).attr('data-visible', 'true').fadeIn(o.inSpeed);
 
+    $(menu).children('li').first().focus();
+console.log($(menu).children('li').first());
 
 
     // Hover events
