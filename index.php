@@ -1,6 +1,6 @@
 <?php
 
-///* Handle FIM Installation *///
+////* Handle FIM Installation *////
 
 if (!file_exists('./config.php')) {
   if (file_exists('./install/index.php')) {
@@ -15,7 +15,7 @@ if (!file_exists('./config.php')) {
 
 
 
-///* Handle Path Redirection *///
+////* Handle Path Redirection *////
 
 else {
   require('./global.php');
@@ -24,7 +24,7 @@ else {
     die('Web interfaces have been disabled on this server.');
   }
   else {
-    echo $interface = (isset($_REQUEST['interface']) ? $_REQUEST['interface'] :
+    $interface = (isset($_REQUEST['interface']) ? $_REQUEST['interface'] :
       (isset($user['interface']) ? $user['interface'] : ''));
 
 

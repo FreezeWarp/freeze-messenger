@@ -29,7 +29,7 @@
  * MBString is present in all versions of PHP since 4.3
  * MCrypt is present in all versions since PHP 4
  * PCRE is present in all versions since PHP 4
- * APC is present in PHP 5.4, Ubuntu's php-apc packge, and easily installed from PECL.net. It simply has to be a requirement for may of the functions (as far as the way they are designed).
+ * APC is present in PHP 5.4, Ubuntu's php-apc packge, and easily installed from PECL.net. It simply has to be a requirement for many of the functions (as far as the way they are designed).
  * DOM is in all of PHP 5.
  *
  * The following are used, but with safe fallbacks:
@@ -37,13 +37,22 @@
  */
 foreach (array('mysql', 'json', 'mbstring', 'mcrypt', 'pcre', 'dom') AS $module) {
   if (!extension_loaded($module)) {
-    die("The module $module could not be found. Please install PHP $module compatibility. See the documentation for help.");
+    die("The module <strong>$module</strong> could not be found. Please install PHP <strong>$module</strong> compatibility. See the documentation for help.");
   }
+}
+
+if (!extension_loaded('apc') && !extension_loaded('memcache')) {
+  die("Neither the <strong>apc</strong> or <strong>memcache</strong> modules could not be found. Please install PHP <strong>apc</strong> or <strong>memcache</strong> compatibility. See the documentation for help.");
+}
+
+if (!extension_loaded('hash') && !extension_loaded('mhash')) {
+  die("Neither the <strong>hash</strong> or <strong>mhash</strong> modules could not be found. Please install PHP <strong>hash</strong> or <strong>mhash</strong> compatibility. See the documentation for help.");
 }
 
 
 
 /* Version Requirement, Magic Quotes, Display Errors and Register Globals */
+
 ini_set('display_errors',0); // Ideally we would never have to worry about this, but sadly that's not the case. FIMv4 will hopefully make improvements.
 
 
