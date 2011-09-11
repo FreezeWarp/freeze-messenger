@@ -30,6 +30,8 @@
  * @param csv allowedGroups
  * @param csv moderators
  * @param string roomName
+ * @param int parentalAge
+ * @param csv parentalFlags
  *
  * Edit, Delete, Undelete Room Parameters:
  * @param int roomId
