@@ -243,52 +243,51 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
 
 
 
-    // Show the menu
-    $(document).unbind('click');
-    $(menu).css({ top: y, left: x }).attr('data-visible', 'true').fadeIn(o.inSpeed);
+    $(document).unbind('click'); // Remove any other click bindings on the document.
 
-    $(menu).children('li').first().focus();
-console.log($(menu).children('li').first());
+    window.restrictFocus = 'contextMenu'; // Prevent the keydown event from changing anything more than it should.
+
+    $(menu).css({ top: y, left: x }).attr('data-visible', 'true').fadeIn(o.inSpeed); // Show the menu.
 
 
-    // Hover events
-    $(menu).find('a').mouseover(function() {
-      $(menu).find('li.hover').removeClass('hover');
-      $(this).parent().addClass('hover');
-    }).mouseout(function() {
-      $(menu).find('li.hover').removeClass('hover');
+
+    $(menu).find('li').focus(function() { // When an element is granted focus below, give it the hover class.
+      $(this).addClass('hover');
+    });$(menu).find('li').blur(function() { // When an element loses focus below, remove hover class.
+      $(this).removeClass('hover');
     });
 
 
 
-    // Keyboard
-    $(document).keydown(function(e) {
+    $(menu).find('a').mouseover(function() { // Mouse Navigation
+      $(menu).find('li.hover').blur();
+      $(this).parent().focus();
+    }).mouseout(function() {
+      $(menu).find('li.hover').blur();
+    });
+
+
+
+    $(document).keydown(function(e) { // Keyboard Navigation
       switch(e.keyCode) {
         case 38: // Up
-        if ($(menu).find('li.hover').size() === 0) {
-          $(menu).find('li:last').addClass('hover');
-        }
+        if ($(menu).find('li.hover').size() === 0) { $(menu).find('li:last').focus(); } // No item has focus.
         else {
-          $(menu).find('li.hover').removeClass('hover').prevAll('li').eq(0).addClass('hover');
+          $(menu).find('li.hover').blur().prevAll('li').eq(0).focus(); // Add to the prev element (if it was the last, the focus will just be removed).
 
-          if ($(menu).find('li.hover').size() === 0) {
-            $(menu).find('li:last').addClass('hover');
-          }
+          if ($(menu).find('li.hover').size() === 0) { $(menu).find('li:last').focus(); } // Focus removed; add to the last.
         }
 
         return false;
         break;
 
         case 40: // Down
-        if ($(menu).find('li.hover').size() === 0) {
-          $(menu).find('li:first').addClass('hover');
-        }
+        case 9: // Tab
+        if ($(menu).find('li.hover').size() === 0) { $(menu).find('li:first').focus(); } // No item has focus.
         else {
-          $(menu).find('li.hover').removeClass('hover').nextAll('li').eq(0).addClass('hover');
+          $(menu).find('li.hover').blur().nextAll('li').eq(0).focus(); // Add to the prev element (if it was the last, the focus will just be removed).
 
-          if ($(menu).find('li.hover').size() === 0) {
-            $(menu).find('li:first').addClass('hover');
-          }
+          if ($(menu).find('li.hover').size() === 0) { $(menu).find('li:first').focus(); } // Focus removed; add to the first.
         }
 
         return false;
@@ -328,6 +327,9 @@ console.log($(menu).children('li').first());
       $(document).click(function() {
         $(document).unbind('click').unbind('keydown');
         $(menu).removeAttr('data-visible').fadeOut(o.outSpeed);
+
+        window.restrictFocus = false;
+
         return false;
       });
     }, 0);

@@ -389,6 +389,8 @@ function newMessage() {
   $('.messageLine .messageText, .messageLine .userName, body').unbind('keydown');
 
   $('.messageLine .messageText').bind('keydown', function(e) {
+    if (window.restrictFocus === 'contextMenu') return true;
+
     if (e.which === 38) {
       $(this).parent().prev('.messageLine').children('.messageText').focus();
 
@@ -407,6 +409,8 @@ function newMessage() {
   });
 
   $('.messageLine .userName').bind('keydown', function(e) {
+    if (window.restrictFocus === 'contextMenu') return true;
+
     if (e.which === 38) {
       $(this).parent().prev('.messageLine').children('.userName').focus();
 
