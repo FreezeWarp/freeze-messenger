@@ -132,8 +132,6 @@ if(jQuery)(function() {
 
 
         if (o.altMenu) { // This allows the menu to be accessed using click and enter (as well as the menu key), as opposed to right click and meny key.
-          $(this).append('<span class="menuIndicator"><span class="ui-icon ui-icon-grip-diagonal-se"></span></span>');
-
           $(this).click(function(e) {
             contextMenuSub(e, o, el, $(el).offset(), callback, $(this));
 

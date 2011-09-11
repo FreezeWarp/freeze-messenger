@@ -263,17 +263,6 @@ table.center td {
   cursor: default;
 }
 
-.menuIndicator {
-  display: inline-block !important;
-  width: 20px;
-  opacity: 1;
-  bottom: 4px;
-  right: 15px;
-  vertical-align: bottom;
-  z-index: 10;
-  position: relative;
-}
-
 
 
 
