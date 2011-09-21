@@ -1456,12 +1456,8 @@ var standard = {
             // Double post hack
           }
           else {
-            if (settings.reversePostOrder) {
-              $('#messageList').append(data);
-            }
-            else {
-              $('#messageList').prepend(data);
-            }
+            if (settings.reversePostOrder) { $('#messageList').append(data); }
+            else { $('#messageList').prepend(data); }
 
             if (messageId > requestSettings.lastMessage) {
               requestSettings.lastMessage = messageId;
@@ -1621,9 +1617,7 @@ var standard = {
               }
 
 
-              if (messageCount > 0) {
-                newMessage();
-              }
+              if (messageCount > 0) { newMessage(); }
 
               if (requestSettings.longPolling) {
                 timers.t1 = setTimeout(standard.getMessages, 50);
@@ -1703,9 +1697,7 @@ var standard = {
             errDesc = json.sendMessage.errDesc;
 
           switch (errStr) {
-            case '':
-            break;
-
+            case '': break;
             case 'badRoom': dia.error("A valid room was not provided."); break;
             case 'badMessage': dia.error("A valid message was not provided."); break;
             case 'spaceMessage': dia.error("Too... many... spaces!"); break;
@@ -1917,7 +1909,7 @@ var standard = {
 
 
   deleteMessage : function(messageId) {
-    $.post(directory + 'api/editMessage.php', 'action=delete&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + 'fim3_format=json', function(json) {
+    $.post(directory + 'api/editMessage.php', 'action=delete&messageId=' + messageId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + 'fim3_format=json', function(json) { // Send the form data via AJAX.
       var errStr = json.moderaate.errStr,
         errDesc = json.moderaate.errDesc;
 
@@ -1928,7 +1920,7 @@ var standard = {
       }
 
       return false;
-    }); // Send the form data via AJAX.
+    });
 
     return false;
   }
@@ -2766,8 +2758,6 @@ popup = {
           privateUserId = userRef[privateUserName];
 
           standard.privateRoom(privateUserId);
-
-
 
           return false; // Don't submit the form.
         });
