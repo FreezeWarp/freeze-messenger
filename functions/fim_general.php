@@ -950,6 +950,7 @@ function container($title, $content, $class = 'page') {
  */
 function fim_outputApi($data) {
   global $config;
+  header('FIM-API-VERSION: 3b4dev');
 
   if (isset($_REQUEST['fim3_format'])) {
     switch ($_REQUEST['fim3_format']) {
@@ -962,15 +963,27 @@ function fim_outputApi($data) {
       break;
 
       case 'xml2': // Compact XML
+      header('Content-type: application/xml');
+
       return fim_outputXml2($data);
       break;
 
       case 'xml': // No-Attribute XML (all data expressed as nodes)
+      header('Content-type: application/xml');
+
       return fim_outputXml($data);
+      break;
+
+      case 'jsonp': // Javascript Object Notion for Cross-Origin Requests
+      header('Content-type: application/json');
+
+      return 'fim3_jsonp.parse(' . fim_outputJson($data) . ')';
       break;
 
       case 'json': // Javascript Object Notion
       default:
+      header('Content-type: application/json');
+
       return fim_outputJson($data);
       break;
     }
@@ -992,8 +1005,6 @@ function fim_outputApi($data) {
  */
 function fim_outputXml($array, $level = 0) {
   global $config;
-
-  header('Content-type: application/xml');
 
   $indent = '';
   $data = '';
@@ -1053,8 +1064,6 @@ $data";
  */
 function fim_outputXml2($array, $level = 0) {
   global $config;
-
-  header('Content-type: application/xml');
 
   $indent = '';
   $data = '';
@@ -1133,8 +1142,6 @@ $data";
  */
 function fim_outputJson($array, $level = 0) {
   global $config;
-
-  header('Content-type: application/json');
 
   $data = array();
   $indent = '';
@@ -1255,6 +1262,7 @@ function fim_apiCompact($data) {
       break;
 
       case 'json': // Javascript Object Notion
+      case 'jsonp':
       default:
       $data = preg_replace($config['compactJsonStringsFind'], $config['compactJsonStringsReplace'], $data);
       break;
