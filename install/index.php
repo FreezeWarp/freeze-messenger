@@ -102,8 +102,6 @@ switch ($_REQUEST['phase']) {
     </ul>
   </ul><br />
 
-  If the MySQLi Extension is not present, you can still use FreezeMessenger, but will need to install it manually.<br /><br />
-
   <div style="height: 30px;">
     <form onsubmit="return false;">
       <button style="float: right;" type="button" onclick="$(\'#part1\').slideUp(); $(\'#part2\').slideDown(); windowDraw();">Start &rarr;</button>
