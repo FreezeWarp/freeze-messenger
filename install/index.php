@@ -123,8 +123,9 @@ switch ($_REQUEST['phase']) {
       <tr>
         <td><strong>Driver</strong></td>
         <td><select name="db_driver">
-          <option value="mysql">MySQL</option>
-          <option value="mysqli">MySQLi</option>
+          ' . (extension_loaded('mysql') ? '<option value="mysql">MySQL</option>' : '') . '
+          ' . (extension_loaded('mysqli') ? '<option value="mysqli">MySQLi</option>' : '') . '
+          ' . (extension_loaded('postgresql') ? '<option value="postgresql">PostGreSQL (Broken - Don\'t Use)</option>' : '') . '
         </select><br /><small>The datbase driver. For most users, "MySQL" will work fine.</td>
       </tr>
       <tr>
@@ -217,6 +218,16 @@ switch ($_REQUEST['phase']) {
       <tr>
         <td><strong>Encryption Phrase</strong></td>
         <td><input type="text" name="encrypt_salt" /><br /><small>This is a phrase used to encrypt the data. You can change this later as long as you don\'t remove referrences to this one.</td>
+      </tr>
+      <tr class="ui-widget-header">
+        <th colspan="2">Other Settings</th>
+      </tr>
+      <tr>
+        <td><strong>Cache Method (Broken - We\'re Working On It)</strong></td>
+        <td><select name="cache_method">
+          ' . (extension_loaded('apc') ? '<option value="apc">APC</option>' : '') . '
+          ' . (extension_loaded('memcache') ? '<option value="memcache">MemCache</option>' : '') . '
+        </select><br /><small>The cache to use. If you are able to set up MemCache, you are encouraged to use it. APC is provided with PHP 5.4 and can be installed with most distributions. If neither option is listed, FreezeMessenger will use far more CPU than neccessary.</td>
       </tr>
     </table><br /><br />
   </form>
