@@ -1634,4 +1634,22 @@ function fim_cast($cast, $value, $default = null) {
 
   return $value;
 }
+
+/*
+* messageRange
+* 1 = {
+*   0 :
+*   100 :
+*   200 :
+*   300 :
+* }
+*
+* timeRange
+* 0 = 0
+* 1 = 400
+*
+*/
+function fim_getMessageRange() {
+
+}
 ?>
