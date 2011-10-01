@@ -328,10 +328,10 @@ function messageFormat(json, format) {
 
     case 'list':
     if (settings.showAvatars) {
-      data = '<span id="message' + messageId + '" class="messageLine messageLineAvatar"><span class="userName userNameAvatar" data-userId="' + userId + '" tabindex="1"><img alt="' + userName + '" src="' + avatar + '" /></span><span style="' + style + '" class="messageText" data-messageId="' + messageId + '" data-roomId="' + roomId + '" data-time="' + messageTime + '" tabindex="1">' + text + '</span><br />';
+      data = '<span id="message' + messageId + '" class="messageLine messageLineAvatar"><span class="userName userNameAvatar" data-userId="' + userId + '" tabindex="1000"><img alt="' + userName + '" src="' + avatar + '" /></span><span style="' + style + '" class="messageText" data-messageId="' + messageId + '" data-roomId="' + roomId + '" data-time="' + messageTime + '" tabindex="1000">' + text + '</span><br />';
     }
     else {
-      data = '<span id="message' + messageId + '" class="messageLine">' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + ' @ <em>' + messageTime + '</em>: <span style="' + style + '" class="messageText" data-messageid="' + messageId + '" data-roomId="' + roomId + '">' + text + '</span><br />';
+      data = '<span id="message' + messageId + '" class="messageLine"><span class="userName userNameTable" data-userId="' + userId + '" tabindex="1000">' + groupFormatStart + userName + groupFormatEnd + '</span> @ <em>' + messageTime + '</em>: <span style="' + style + '" class="messageText" data-messageid="' + messageId + '" data-roomId="' + roomId + '" tabindex="1000">' + text + '</span><br />';
     }
     break;
   }
@@ -407,13 +407,13 @@ function newMessage() {
       return false;
     }
     else if (e.which === 40) { // Down
-      $(this).parent().next('.messageLine').children('.userName').focus();
+      $(this).parent() .next('.messageLine').children('.userName').focus();
       return false;
     }
   });
 
-  $('body').bind('keydown', function(e) {
-    if (!$('input:focus, textarea:focus, button:focus').length) { // Make sure a text-entry field does not have focus
+  $('body').bind('keydown', function(e) { console.log($('input:focus, textarea:focus, button:focus').length);
+    if ($('input:focus, textarea:focus, button:focus').length === 0) { // Make sure a text-entry field does not have focus
       if (e.which === 192 || e.which === 49) { // "`", "1"
         if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) {
           return true;
