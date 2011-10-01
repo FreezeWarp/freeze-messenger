@@ -1649,7 +1649,7 @@ function fim_cast($cast, $value, $default = null) {
 * 1 = 400
 *
 */
-function fim_getMessageRange() {
+function fim_getMessageRange($roomId, $startId, $endId, $startDate, $endDate) {
 
 }
 ?>
