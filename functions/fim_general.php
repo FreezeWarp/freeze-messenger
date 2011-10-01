@@ -1458,6 +1458,17 @@ function fim_sanitizeGPC($type, $data) {
         else { // Include the value whether true or false.
           $newData[$indexName] = (int) $activeGlobal[$indexName]; // Append value as integer-cast.
         }
+/*
+        if (isset($indexMetaData['min'])) {
+          if ($newData[$indexName] < $indexMetaData['min']) { // Minimum Value
+            $newData[$indexName] = $indexMetaData['min'];
+          }
+        }
+        if (isset($indexMetaData['max'])) {
+          if ($newData[$indexName] > $indexMetaData['max']) { // Maximum Value
+            $newData[$indexName] = $indexMetaData['max'];
+          }
+        }*/
         break;
 
         case 'bool':

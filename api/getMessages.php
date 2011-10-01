@@ -155,12 +155,9 @@ $request = fim_sanitizeGPC('g', array(
   ),
 
   'messageLimit' => array(
-    'default' => 10000,
-    'context' => 'int',
-  ),
-
-  'messageHardLimit' => array(
     'default' => 50,
+    'max' => 500,
+    'min' => 1,
     'context' => 'int',
   ),
 
@@ -186,14 +183,6 @@ if ($config['longPolling'] && $request['longPolling'] === true) {
 }
 else {
   $config['longPolling'] = false;
-}
-
-
-if ($request['messageLimit'] > 10000) {
-  $request['messageLimit'] = 10000; // Sane maximum.
-}
-if ($request['messageHardLimit'] > 500) {
-  $request['messageHardLimit'] = 500; // Sane maximum.
 }
 
 
