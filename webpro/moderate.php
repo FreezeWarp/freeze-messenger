@@ -14,11 +14,83 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-$reqPhrases = true;
 $reqHooks = true;
 
 define('WEBPRO_INMOD', true);
 
+/**
+ * Container Template
+ *
+ * @param string $title
+ * @param string $content
+ * @param string $class
+ * @return string
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
+function container($title, $content, $class = 'page') {
+  global $config;
+
+  return $return = "<table class=\"$class ui-widget\">
+  <thead>
+    <tr class=\"hrow ui-widget-header ui-corner-top\">
+      <td>$title</td>
+    </tr>
+  </thead>
+  <tbody class=\"ui-widget-content ui-corner-bottom\">
+    <tr>
+      <td>
+        <div>$content</div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+";
+}
+
+
+function formatXmlString($xml) {
+
+  // add marker linefeeds to aid the pretty-tokeniser (adds a linefeed between all tag-end boundaries)
+  $xml = preg_replace('/(>)(<)(\/*)/', "$1\n$2$3", $xml);
+
+  // now indent the tags
+  $token      = strtok($xml, "\n");
+  $result     = ''; // holds formatted version as it is built
+  $pad        = 0; // initial indent
+  $matches    = array(); // returns from preg_matches()
+
+  // scan each line and adjust indent based on opening/closing tags
+  while ($token !== false) :
+
+    // test for the various tag states
+
+    // 1. open and closing tags on same line - no change
+    if (preg_match('/.+<\/\w[^>]*>$/', $token, $matches)) :
+      $indent = 0;
+    elseif (preg_match('/\<\!\-\-(.+?)\-\-\>$/', $token, $matches)) :
+      $indent = 0;
+    // 2. closing tag - outdent now
+    elseif (preg_match('/^<\/\w/', $token, $matches)) :
+      $pad--;
+      $indent = 0;
+    // 3. opening tag - don't pad this one, only subsequent tags
+    elseif (preg_match('/^<[^>]*[^\/]>.*$/', $token, $matches))  :
+      $indent = 1;
+    // 4. no indentation needed
+    else :
+      $indent = 0;
+    endif;
+
+    // pad the line with the required number of leading spaces
+    $line    = str_pad($token, strlen($token) + $pad, ' ', STR_PAD_LEFT);
+    $result .= $line . "\n"; // add to the cumulative result, with linefeed
+    $token   = strtok("\n"); // get the next token
+    $pad    += $indent; // update the pad size for subsequent lines
+  endwhile;
+
+  return $result;
+}
 
 /* This below bit hooks into the validate.php script to facilitate a seperate login. It is a bit cooky, though, and will need to be further tested. */
 if (isset($_POST['webproModerate_userName'])) {
@@ -89,6 +161,9 @@ echo '<!DOCTYPE HTML>
     width: 800px;
   }
 
+.searched {background: yellow;}
+  .mustache {color: #0ca;}
+
   h1, h2 {
     text-align: center;
     font-family: sans-serif;
@@ -105,6 +180,7 @@ echo '<!DOCTYPE HTML>
 
 
   <script src="./client/codemirror/lib/codemirror.js"></script>
+  <script src="./client/codemirror/lib/overlay.js"></script>
   <script src="./client/codemirror/mode/xml/xml.js"></script>
   <script src="./client/codemirror/mode/clike/clike.js"></script>
 
@@ -130,15 +206,36 @@ echo '<!DOCTYPE HTML>
   }
 
   $(document).ready(function() {
+
+    CodeMirror.defineMode("mustache", function(config, parserConfig) {
+      var mustacheOverlay = {
+        token: function(stream, state) {
+          if (stream.match("{{{{")) {
+            while ((ch = stream.next()) != null)
+              if (ch == "}" && stream.next() == "}" && stream.next() == "}" && stream.next() == "}") break;
+            return "mustache";
+          }
+          while (stream.next() != null && !stream.match("{{{{", false)) {}
+          return null;
+        }
+      };
+      return CodeMirror.overlayParser(CodeMirror.getMode(config, parserConfig.backdrop || "text/html"), mustacheOverlay);
+    });
+
+
     if ($(\'#textXml\').size()) {
       var editorXml = CodeMirror.fromTextArea(document.getElementById("textXml"), {
-        mode:  "xml"
+        mode:  "mustache",
+        tabMode: "shift",
+        lineNumbers: true
       });
     }
 
     if ($(\'#textClike\').size()) {
       var editorClike = CodeMirror.fromTextArea(document.getElementById("textClike"), {
-        mode:  "clike"
+        mode:  "clike",
+        tabMode: "shift",
+        lineNumbers: true
       });
     }
 

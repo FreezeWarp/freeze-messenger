@@ -25,12 +25,6 @@ else {
       ),
     ),
 
-    'interfaceId' => array(
-      'context' => array(
-        'type' => 'int',
-      ),
-    ),
-
     'data' => array(
       'context' => array(
         'type' => 'string',
@@ -44,46 +38,14 @@ else {
     ),
   ));
 
+  $json = json_decode(file_get_contents('client/data/templates.json'), true);
+
   if ($user['adminDefs']['modTemplates']) {
     switch ($_GET['do2']) {
-      case false:
-      case 'interface':
-      $interfaces = $database->select(array(
-        "{$sqlPrefix}interfaces" => "interfaceId, interfaceName",
-      ));
-      $interfaces = $interfaces->getAsArray(true);
-
-      $interfaceLinks = '';
-
-      foreach ($interfaces AS $interface) {
-        $interfaceLinks .= "<a href=\"moderate.php?do=templates&do2=view&interfaceId={$interface['interfaceId']}\">{$interface['interfaceName']}</a><br />";
-      }
-
-      echo container('Choose an Interface', $interfaceLinks);
-      break;
-
       case 'view':
-      $templates2 = $database->select(array(
-        "{$sqlPrefix}templates" => "templateName, templateId, interfaceId, data, vars",
-      ), array(
-        'both' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'interfaceId',
-            ),
-            'right' => array(
-              'type' => 'int',
-              'value' => (int) $request['interfaceId'],
-            ),
-          ),
-        ),
-      ));
-      $templates2 = $templates2->getAsArray(true);
-
-      foreach ($templates2 AS $template) {
-        $rows .= "<tr><td>$template[templateName]</td><td align=\"center\"><a href=\"./moderate.php?do=templates&do2=edit&templateName=$template[templateName]&interfaceId=$template[interfaceId]\"><img src=\"./images/document-edit.png\" /></td></tr>";
+      case false:
+      foreach (array_keys($json) AS $template) {
+        $rows .= "<tr><td>$template</td><td align=\"center\"><a href=\"./moderate.php?do=templates&do2=edit&templateName=$template\"><img src=\"./images/document-edit.png\" /></td></tr>";
       }
 
       echo container('Edit Templates','<table class="page rowHover" border="1">
@@ -100,34 +62,31 @@ else {
       break;
 
       case 'edit':
-      $template = $database->getTemplate($request['templateName'], $request['interfaceId']);
+      $template = $json[$request['templateName']];
+      $template = str_replace(array('<','>'),array('&lt;','&gt;'),formatXmlString($template));
 
-      echo container("Edit Template \"$template[templateName]\"","<form action=\"./moderate.php?do=templates&do2=edit2&templateName=$template[templateName]&interfaceId=$template[interfaceId]\" method=\"post\">
-<label for=\"vars\">Variables:</label><br />
-<textarea name=\"vars\" id=\"vars\" style=\"width: 100%;\">$template[vars]</textarea><br /><br />
+      echo container("Edit Template \"$request[templateName]\"","<form action=\"./moderate.php?do=templates&do2=edit2&templateName=$request[templateName]\" method=\"post\">
 
-<label for=\"data\">New Value:</label><br />
-<textarea name=\"data\" id=\"textXml\" style=\"width: 100%; height: 300px;\">$template[data]</textarea><br /><br />
+  <label for=\"data\">New Value:</label><br />
+  <textarea name=\"data\" id=\"textXml\" style=\"width: 100%; height: 300px;\">$template</textarea><br /><br />
 
-<button type=\"submit\">Update</button>
+  <button type=\"submit\">Update</button>
 </form>");
       break;
 
-      case 'edit2':
-      $template = $database->getTemplate($request['templateName'], $request['interfaceId']);
+      case 'edit2':die(json_encode(array(1,2)));
+      $template = $request['data'];
+      $template = str_replace("\n", '', $template); // Remove new lines (required for JSON).
+      $template = preg_replace("/\>(\ +)/", ">", $template); // Remove extra space (looks better).
 
-      $database->update("{$sqlPrefix}templates", array(
-        'data' => $request['data'],
-        'vars' => $request['vars'],
-      ), array(
-        'templateName' => $template['templateName'],
-        'interfaceId' => $template['interfaceId'],
-      ));
+      $json[$request['templateName']] = $template; // Update the JSON object with the new template data.
+
+      file_put_contents('client/data/templates.json', json_encode($json)); // Send the new JSON data to the server.
 
       $database->modLog('templateEdit',$template['templateName'] . '-' . $template['interfaceId']);
       $database->fullLog('templateEdit',array('template' => $template));
 
-      echo container('Template "' . $template['templateName'] . '" Updated','The template has been updated.<br /><br /><form action="./moderate.php?do=templates&do2=view&interfaceId=' . $request['interfaceId'] . '" method="POST"><button type="submit">Return</button></form>');
+      echo container('Template "' . $request['templateName'] . '" Updated','The template has been updated.<br /><br /><form action="./moderate.php?do=templates&do2=view" method="POST"><button type="submit">Return</button></form>');
       break;
     }
   }
