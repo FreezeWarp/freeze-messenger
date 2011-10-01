@@ -22,11 +22,38 @@ $interfaceName = 'webpro';
 
 require_once('../global.php');
 
+echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
-
-echo template('templateStart');
-
-echo template('chatTemplate');
-
-echo template('templateEnd');
 ?>
+
+<!DOCTYPE HTML>
+<!-- Original Source Code Copyright © 2011 Joseph T. Parsons. -->
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+  <head>
+    <title data-contextLabel="brandingTitle">FreezeLinux</title>
+
+    <meta http-equiv="Content-type" value="text/html; charset=utf-8" />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="Joseph T. Parsons" />
+    <meta name="keywords" content="im, instant messenger, awesomeness" />
+    <meta name="description" content="Awesomenss provided by FreezeMessenger: we're awesome[ness]." />
+
+    <link rel="icon" id="favicon" type="image/x-icon" href="images/favicon.ico" />
+
+
+    <!-- START Scripts -->
+
+    <!--[if IE]><script src="client/js/fim-ie.js" type="text/javascript"></script><![endif]-->
+    <script src="client/js/jquery-1.6.2.min.js" type="text/javascript"></script>
+    <script src="client/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
+    <script src="client/js/jquery.plugins.js" type="text/javascript"></script>
+    <script src="client/js/fim-loader.js" type="text/javascript"></script>
+    <script src="client/js/fim-all.js" type="text/javascript"></script>
+
+    <!-- END Scripts -->
+  </head>
+  <body>
+
+  </body>
+</html>
