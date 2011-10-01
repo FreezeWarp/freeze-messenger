@@ -20,28 +20,22 @@ if (!defined('WEBPRO_INMOD')) {
 else {
   $request = fim_sanitizeGPC('r', array(
     'templateName' => array(
-      'context' => array(
-        'type' => 'string',
-      ),
+      'context' => 'string',
     ),
 
     'data' => array(
-      'context' => array(
-        'type' => 'string',
-      ),
+      'context' => 'string',
     ),
 
-    'vars' => array(
-      'context' => array(
-        'type' => 'string',
-      ),
+    'do2' => array(
+      'context' => 'string',
     ),
   ));
 
   $json = json_decode(file_get_contents('client/data/templates.json'), true);
 
   if ($user['adminDefs']['modTemplates']) {
-    switch ($_GET['do2']) {
+    switch ($request['do2']) {
       case 'view':
       case false:
       foreach (array_keys($json) AS $template) {

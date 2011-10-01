@@ -19,104 +19,48 @@ if (!defined('WEBPRO_INMOD')) {
 }
 else {
   $request = fim_sanitizeGPC('r', array(
-    'phraseName' => array(
-      'context' => array(
-        'type' => 'string',
-      ),
+    'do2' => array(
+      'context' => 'string',
     ),
 
-    'interfaceId' => array(
-      'context' => array(
-        'type' => 'int',
-      ),
+    'data' => array(
+      'context' => 'string',
     ),
 
     'languageCode' => array(
-      'context' => array(
-        'type' => 'string',
-      ),
+      'context' => 'string',
     ),
 
-    'text' => array(
-      'context' => array(
-        'type' => 'string',
-      ),
+    'phraseName' => array(
+      'context' => 'string',
     ),
   ));
 
+  $config = json_decode(file_get_contents('client/data/config.json'), true);
+
   if ($user['adminDefs']['modTemplates']) {
-    switch ($_GET['do2']) {
-      case false:
-      case 'interface':
-      $interfaces = $database->select(array(
-        "{$sqlPrefix}interfaces" => "interfaceId, interfaceName",
-      ));
-      $interfaces = $interfaces->getAsArray(true);
-
-      $interfaceLinks = '';
-
-      foreach ($interfaces AS $interface) {
-        $interfaceLinks .= "<a href=\"moderate.php?do=phrases&do2=lang&interfaceId={$interface['interfaceId']}\">{$interface['interfaceName']}</a><br />";
-      }
-
-      echo container('Choose an Interface', $interfaceLinks);
-      break;
-
+    switch ($request['do2']) {
       case 'lang':
-      $languages = $database->select(array(
-        "{$sqlPrefix}languages" => "languageCode, languageName",
-      ));
-      $languages = $languages->getAsArray(true);
-
-      $langugeLinks = '';
-
-      foreach ($languages AS $language) {
-        $languageLinks .= "<a href=\"moderate.php?do=phrases&do2=view&interfaceId={$request['interfaceId']}&languageCode={$language['languageCode']}\">{$language['languageName']}</a><br />";
+      case false:
+      foreach ($config['languages'] AS $code => $language) {
+        $languageLinks .= "<a href=\"moderate.php?do=phrases&do2=view&languageCode={$code}\">{$language}</a><br />";
       }
 
-      echo container('Choose an Language', $languageLinks);
+      echo container('Choose a Language', $languageLinks);
 
       break;
 
       case 'view':
-      $phrases2 = $database->select(array(
-        "{$sqlPrefix}phrases" => "phraseName, languageCode, interfaceId, text",
-      ), array(
-        'both' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'interfaceId',
-            ),
-            'right' => array(
-              'type' => 'int',
-              'value' => (int) $request['interfaceId'],
-            ),
-          ),
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'languageCode',
-            ),
-            'right' => array(
-              'type' => 'string',
-              'value' => $request['languageCode'],
-            ),
-          ),
-        ),
-      ));
-      $phrases2 = $phrases2->getAsArray(true);
+      $phrases = json_decode(file_get_contents('client/data/language_' . $request['languageCode'] . '.json'), true);
 
-      foreach ($phrases2 AS $phrase) {
-        if (strlen($phrase['text']) > 80) {
-          $phrase['text'] = substr($phrase['text'], 0, 77) . '...';
+      foreach ($phrases AS $phrase => $text) {
+        if (strlen($text) > 80) {
+          $text = substr($text, 0, 77) . '...';
         }
 
-        $phrase['text'] = str_replace(array('<', '>'), array(' <', '> '), nl2br(htmlentities($phrase['text'])));
+        $text = str_replace(array('<', '>'), array(' <', '> '), nl2br(htmlentities($text)));
 
-        $rows .= "<tr><td>$phrase[phraseName]</td><td>$phrase[text]</td><td align=\"center\"><a href=\"./moderate.php?do=phrases&do2=edit&phraseName=$phrase[phraseName]&interfaceId=$phrase[interfaceId]&languageCode=$phrase[languageCode]\"><img src=\"./images/document-edit.png\" /></td></tr>";
+        $rows .= "<tr><td>$phrase</td><td>$text</td><td align=\"center\"><a href=\"./moderate.php?do=phrases&do2=edit&phraseName=$phrase&languageCode=$request[languageCode]\"><img src=\"./images/document-edit.png\" /></td></tr>";
       }
 
       echo container('Edit Phrases','<table class="page rowHover" border="1">
@@ -134,11 +78,12 @@ else {
       break;
 
       case 'edit':
-      $phrase = $database->getPhrase($request['phraseName'], $request['languageCode'], $request['interfaceId']);
+      $phrases = json_decode(file_get_contents('client/data/language_' . $request['languageCode'] . '.json'), true);
+      $phraseText = $phrases[$request['phraseName']];
 
-      echo container("Edit Phrase \"$phrase[phraseName]\"","<form action=\"./moderate.php?do=phrases&do2=edit2&phraseName=$phrase[phraseName]&languageCode=$phrase[languageCode]&interfaceId=$phrase[interfaceId]\" method=\"post\">
+      echo container("Edit Phrase \"$request[phraseName]\"","<form action=\"./moderate.php?do=phrases&do2=edit2&phraseName=$request[phraseName]&languageCode=$request[languageCode]\" method=\"post\">
 <label for=\"text\">New Value:</label><br />
-<textarea name=\"text\" id=\"text\" style=\"width: 100%; height: 300px;\">$phrase[text]</textarea><br /><br />
+<textarea name=\"text\" id=\"text\" style=\"width: 100%; height: 300px;\">$phraseText</textarea><br /><br />
 
 <button type=\"submit\">Update</button>
 </form>");

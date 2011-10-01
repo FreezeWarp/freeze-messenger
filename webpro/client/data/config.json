@@ -5,6 +5,20 @@
   },
 
   "themes" : [
-    "start",
-  ]
+    "start"
+  ],
+
+  "branding" : {
+    "communityLinks" : "",
+    "description" : "",
+    "favicon" : "images/favicon.ico",
+    "faviconType" : "image/x-icon",
+    "ie9Color" : "blue",
+    "keywords" : "",
+    "title" : "FreezeMessenger Beta 3 (DEV BUILD)",
+  },
+
+  "dom" : {
+    "doctype" : "<!DOCTYPE HTML>",
+  }
 }
