@@ -39,11 +39,6 @@ if (false === ('btoa' in window)) {
 
   throw new Error('Your browser does not seem to support Base64 operations. The script has exited.');
 }
-else if (false === ('encodeURIComponent' in window)) {
-  window.location.href = 'browser.php';
-
-  throw new Error('Your browser does not seem to support encodeURI operations. The script has exited.');
-}
 else if (false === ('onhashchange' in window)) {
   window.location.href = 'browser.php';
 
@@ -171,11 +166,21 @@ var directory = window.location.pathname.split('/').splice(0, window.location.pa
 ******************* Static Functions ********************
 *********************************************************/
 
-function urlencode(str) { // Escapes data for server storage.
-  return encodeURIComponent(str).replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%20/g, '+');
+function fim_eURL(str) { // Escapes data for server storage.
+  if ('encodeURIComponent' in window) {
+    return window.encodeURIComponent(str).replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%20/g, '+');
+  }
+  else if ('escape' in window) { // Escape is a bit overzealous, but it still works.
+    return window.escape(str).replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%20/g, '+');
+  }
+  else {
+    window.location.href = 'browser.php';
+
+    throw new Error('Your browser does not seem to support Base64 operations. The script has exited.');
+  }
 }
 
-function attrencode(str) { // Escapes data that is stored via doublequote-encased attributes.
+function fim_eXMLAttr(str) { // Escapes data that is stored via doublequote-encased attributes.
   return str.replace(/\"/g, '&quot;').replace(/\\/g, '\\\\');
 }
 
@@ -218,22 +223,22 @@ function messageFormat(json, format) {
   else {
     switch (flag) {
       case 'image':
-      if (settings.disableImage) text = '<a href="' + attrencode(text) + '" class="imglink" target="_BLANK">[Image]</a>';
-      else text = '<a href="' + text + '" target="_BLANK"><img src="' + attrencode(text) + '" style="max-width: 250px; max-height: 250px;" /></a>';
+      if (settings.disableImage) text = '<a href="' + fim_eXMLAttr(text) + '" class="imglink" target="_BLANK">[Image]</a>';
+      else text = '<a href="' + text + '" target="_BLANK"><img src="' + fim_eXMLAttr(text) + '" style="max-width: 250px; max-height: 250px;" /></a>';
       break;
 
       case 'video':
-      if (settings.disableVideo) text = '<a href="' + attrencode(text) + '" target="_BLANK">[Video]</a>';
-      else text = '<video src="' + attrencode(text) + '" controls></video>';
+      if (settings.disableVideo) text = '<a href="' + fim_eXMLAttr(text) + '" target="_BLANK">[Video]</a>';
+      else text = '<video src="' + fim_eXMLAttr(text) + '" controls></video>';
       break;
 
       case 'audio':
-      if (settings.disableVideo) text = '<a href="' + attrencode(text) + '" target="_BLANK">[Video]</a>';
-      else text = '<audio src="' + attrencode(text) + '" controls></audio>';
+      if (settings.disableVideo) text = '<a href="' + fim_eXMLAttr(text) + '" target="_BLANK">[Video]</a>';
+      else text = '<audio src="' + fim_eXMLAttr(text) + '" controls></audio>';
       break;
 
       case 'email':
-      text = '<a href="mailto: ' + attrencode(text) + '" target="_BLANK">' + text + '</a>';
+      text = '<a href="mailto: ' + fim_eXMLAttr(text) + '" target="_BLANK">' + text + '</a>';
       break;
 
       case 'url': case 'text': case 'html': case 'archive': case 'other':
@@ -1073,7 +1078,7 @@ var standard = {
     });
 
     $.when( $.ajax({
-      url: directory + 'api/getMessages.php?rooms=' + options.roomId + '&' + (options.userId ? '&users=' + options.userId : '') + '&archive=1&messageLimit=10000&messageHardLimit=' + (options.maxResults ? options.maxResults : 50) + '&' + where + (options.search ? '&search=' + urlencode(options.search) : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+      url: directory + 'api/getMessages.php?rooms=' + options.roomId + '&' + (options.userId ? '&users=' + options.userId : '') + '&archive=1&messageLimit=10000&messageHardLimit=' + (options.maxResults ? options.maxResults : 50) + '&' + where + (options.search ? '&search=' + fim_eURL(options.search) : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
       type: 'GET',
       timeout: 5000,
       contentType: "text/json; charset=utf-8",
@@ -1241,7 +1246,7 @@ var standard = {
       // var password = md5(password);
       // var passwordEncrypt = 'md5';
 
-      data = 'userName=' + urlencode(options.userName) + '&password=' + urlencode(options.password) + '&passwordEncrypt=' + passwordEncrypt;
+      data = 'userName=' + fim_eURL(options.userName) + '&password=' + fim_eURL(options.password) + '&passwordEncrypt=' + passwordEncrypt;
     }
     else if (options.userId && options.password) {
       console.log('Login Triggered; Using a Password of "' + options.password + '" and a UserID of "' + options.userId + '"');
@@ -1251,7 +1256,7 @@ var standard = {
       // var password = md5(password);
       // var passwordEncrypt = 'md5';
 
-      data = 'userId=' + urlencode(options.userId) + '&password=' + urlencode(options.password) + '&passwordEncrypt=' + passwordEncrypt;
+      data = 'userId=' + fim_eURL(options.userId) + '&password=' + fim_eURL(options.password) + '&passwordEncrypt=' + passwordEncrypt;
     }
     else {
       data = 'apiLogin=1';
@@ -1682,7 +1687,7 @@ var standard = {
       $.ajax({
         url: directory + 'api/sendMessage.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
         type: 'POST',
-        data: 'roomId=' + roomId + '&confirmed=' + confirmed + '&message=' + urlencode(message) + '&flag=' + (flag ? flag : ''),
+        data: 'roomId=' + roomId + '&confirmed=' + confirmed + '&message=' + fim_eURL(message) + '&flag=' + (flag ? flag : ''),
         cache: false,
         timeout: 5000,
         success: function(json) {
@@ -2127,7 +2132,7 @@ popup = {
             $.ajax({
               url : directory + 'api/editFile.php',
               type : 'POST',
-              data : 'action=create&dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&fileName=' + fileName + '&fileData=' + urlencode(fileContent) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+              data : 'action=create&dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&fileName=' + fileName + '&fileData=' + fim_eURL(fileContent) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
               cache : false,
               success : function(json) {
                 var errStr = json.editFile.errStr,
@@ -2686,7 +2691,7 @@ popup = {
             dia.error('The roomname is too long.');
           }
           else {
-            $.post(directory + 'api/editRoom.php', 'action=' + action + '&roomId=' +  roomIdLocal + '&roomName=' + urlencode(name) + '&defaultPermissions=' + ($('#allowAllUsers').is(':checked') ? '7' : '0' + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups) + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId, function(json) {
+            $.post(directory + 'api/editRoom.php', 'action=' + action + '&roomId=' +  roomIdLocal + '&roomName=' + fim_eURL(name) + '&defaultPermissions=' + ($('#allowAllUsers').is(':checked') ? '7' : '0' + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups) + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId, function(json) {
               var errStr = json.editRoom.errStr,
                 errDesc = json.editRoom.errDesc,
                 createRoomId = json.editRoom.response.insertId;
