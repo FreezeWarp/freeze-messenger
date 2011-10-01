@@ -74,14 +74,14 @@ else {
 </form>");
       break;
 
-      case 'edit2':die(json_encode(array(1,2)));
+      case 'edit2':
       $template = $request['data'];
       $template = str_replace("\n", '', $template); // Remove new lines (required for JSON).
       $template = preg_replace("/\>(\ +)/", ">", $template); // Remove extra space (looks better).
 
       $json[$request['templateName']] = $template; // Update the JSON object with the new template data.
 
-      file_put_contents('client/data/templates.json', json_encode($json)); // Send the new JSON data to the server.
+      file_put_contents('client/data/templates.json', json_encode($json)) or die('Unable to write'); // Send the new JSON data to the server.
 
       $database->modLog('templateEdit',$template['templateName'] . '-' . $template['interfaceId']);
       $database->fullLog('templateEdit',array('template' => $template));
