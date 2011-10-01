@@ -351,14 +351,6 @@ switch ($_REQUEST['phase']) {
       $xmlData2 = $xmlData2->getAsArray(); // Get the XML data as an array
       $xmlData2 = $xmlData2['dbData']; // Get the contents of the root node
 
-      $xmlData3 = new Xml2Array(file_get_contents('webProTemplate.xml')); // Get the XML Data from the webProTemplate.xml file, and feed it to the Xml2Array class
-      $xmlData3 = $xmlData3->getAsArray(); // Get the XML data as an array
-      $xmlData3 = $xmlData3['interface']; // Get the contents of the root node
-
-      $xmlData4 = new Xml2Array(file_get_contents('webProLangEn.xml')); // Get the XML Data from the webProLangEn.xml file, and feed it to the Xml2Array class
-      $xmlData4 = $xmlData4->getAsArray(); // Get the XML data as an array
-      $xmlData4 = $xmlData4['languagePack']; // Get the contents of the root node
-
 
 
       // Check file versions.
@@ -367,12 +359,6 @@ switch ($_REQUEST['phase']) {
       }
       elseif ((float) $xmlData2['@version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
         die('The XML Insert Data Source if For An Improper Version');
-      }
-      elseif ((float) $xmlData3['@version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
-        die('The XML Interface Data Source if For An Improper Version');
-      }
-      elseif ((float) $xmlData4['@version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
-        die('The XML Language Data Source if For An Improper Version');
       }
       elseif (!$xmlData4['@languageName']) {
         die('Language name not specified.');
@@ -456,67 +442,6 @@ switch ($_REQUEST['phase']) {
           $database->delete($prefix . 'interfaces');
           $database->delete($prefix . 'languages');
           $database->delete($prefix . 'templates');
-        }
-
-
-
-
-
-        /* Part 4: Insert WebPro, WebLite Templates */
-        foreach (array($xmlData3) AS $templateData) {
-          if (!$database->insert($prefix . 'interfaces', array(
-            'interfaceName' => $templateData['@name'],
-            'version' => $templateData['metadata'][0]['version'][0]['#text'],
-            'fimVersion' => $templateData['@version'],
-            'author' => $templateData['metadata'][0]['copyright'][0]['#text'],
-          ))) {
-            die("Could not run query:\n" . $database->sourceQuery . "\n\nError:\n" . $database->error);
-          }
-          else {
-            $interfaceIds[$templateData['@name']] = $database->insertId;
-          }
-
-
-          foreach ($templateData['templates'][0]['template'] AS $template) { // Run through each template from the XML
-            if (!$database->insert($prefix . 'templates', array(
-              'templateName' => $template['@name'],
-              'data' => $template['#text'],
-              'vars' => $template['@vars'],
-              'interfaceId' => $interfaceIds[$templateData['@name']],
-            ))) {
-              die("Could not run query:\n" . $database->sourceQuery . "\n\nError:\n" . $database->error);
-            }
-          }
-        }
-
-
-
-
-
-        /* Part 5: Insert WebPro Phrases */
-        $languages = array();
-
-        foreach (array($xmlData4) AS $phraseData) {
-          if (!in_array($phraseData['@languageCode'], $languages)) {
-            $languages[] = $phraseData['@languageCode'];
-            if (!$database->insert($prefix . 'languages', array(
-              'languageCode' => $phraseData['@languageCode'],
-              'languageName' => $phraseData['@languageName'],
-            ))) {
-              die("Could not run query:\n" . $database->sourceQuery . "\n\nError:\n" . $database->error);
-            }
-          }
-
-          foreach ($phraseData['phrases'][0]['phrase'] AS $phrase) { // Run through each phrase from the XML
-            if (!$database->insert($prefix . 'phrases', array(
-              'phraseName' => $phrase['@name'],
-              'languageCode' => $phraseData['@languageCode'],
-              'text' => $phrase['#text'],
-              'interfaceId' => $interfaceIds[$phraseData['@product']],
-            ))) {
-              die("Could not run query:\n" . $database->sourceQuery . "\n\nError:\n" . $database->error);
-            }
-          }
         }
       }
     }
