@@ -359,14 +359,6 @@ switch ($_REQUEST['phase']) {
       $xmlData4 = $xmlData4->getAsArray(); // Get the XML data as an array
       $xmlData4 = $xmlData4['languagePack']; // Get the contents of the root node
 
-      $xmlData5 = new Xml2Array(file_get_contents('webLiteTemplate.xml')); // Get the XML Data from the webProTemplate.xml file, and feed it to the Xml2Array class
-      $xmlData5 = $xmlData5->getAsArray(); // Get the XML data as an array
-      $xmlData5 = $xmlData5['interface']; // Get the contents of the root node
-
-      $xmlData6 = new Xml2Array(file_get_contents('webLiteLangEn.xml')); // Get the XML Data from the webProLangEn.xml file, and feed it to the Xml2Array class
-      $xmlData6 = $xmlData6->getAsArray(); // Get the XML data as an array
-      $xmlData6 = $xmlData6['languagePack']; // Get the contents of the root node
-
 
 
       // Check file versions.
@@ -380,12 +372,6 @@ switch ($_REQUEST['phase']) {
         die('The XML Interface Data Source if For An Improper Version');
       }
       elseif ((float) $xmlData4['@version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
-        die('The XML Language Data Source if For An Improper Version');
-      }
-      elseif ((float) $xmlData5['@version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
-        die('The XML Interface Data Source if For An Improper Version');
-      }
-      elseif ((float) $xmlData6['@version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
         die('The XML Language Data Source if For An Improper Version');
       }
       elseif (!$xmlData4['@languageName']) {
@@ -477,7 +463,7 @@ switch ($_REQUEST['phase']) {
 
 
         /* Part 4: Insert WebPro, WebLite Templates */
-        foreach (array($xmlData3, $xmlData5) AS $templateData) {
+        foreach (array($xmlData3) AS $templateData) {
           if (!$database->insert($prefix . 'interfaces', array(
             'interfaceName' => $templateData['@name'],
             'version' => $templateData['metadata'][0]['version'][0]['#text'],
@@ -510,7 +496,7 @@ switch ($_REQUEST['phase']) {
         /* Part 5: Insert WebPro Phrases */
         $languages = array();
 
-        foreach (array($xmlData4, $xmlData6) AS $phraseData) {
+        foreach (array($xmlData4) AS $phraseData) {
           if (!in_array($phraseData['@languageCode'], $languages)) {
             $languages[] = $phraseData['@languageCode'];
             if (!$database->insert($prefix . 'languages', array(
