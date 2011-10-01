@@ -48,38 +48,6 @@ class messageParse {
 
 
 
-  public function htmlParse($text) {
-    global $user, $loginConfig, $slaveDatabase, $sqlPrefix;
-
-    $search2 = array(
-      '/\[noparse\](.*?)\[\/noparse\]/is',
-    );
-
-    $replace2 = array(
-      '$1',
-    );
-
-    // Parse BB Code
-    $text = preg_replace($search2, $replace2, $text);
-
-    $bbcode = $slaveDatabase->select(
-      array(
-        "{$sqlPrefix}bbcode" => 'options, searchRegex, replacement',
-      )
-    );
-    $bbcode = $bbcode->getAsArray(true);
-
-    foreach ($bbcode AS $code) {
-      if ($code['options'] & 1) { // BBcode is enabled
-        $text = preg_replace($code['searchRegex'], $code['replacement'], $text);
-      }
-    }
-
-    return $text;
-  }
-
-
-
   /**
   * Parses and censors phrases. Requires an active MySQL connection.
   *
@@ -285,12 +253,10 @@ class messageParse {
     }
     else {
       return $this->emotiParse( // Converts emoticons (e.g. ":D", ":P", "o.O") to HTML <img /> tags based on database-stored conversions.
-        $this->htmlParse( // Parses database-stored BBCode (e.g. "[b]Hello[/b]") to their HTML equivilents (e.g. "<b>Hello</b>").
-          $this->censorParse( // Censors text based on database-stored filters, which may be activated or deactivted by the room itself.
-            $this->messageText,
-            $this->roomData['roomId'],
-            $this->roomData['options']
-          )
+        $this->censorParse( // Censors text based on database-stored filters, which may be activated or deactivted by the room itself.
+          $this->messageText,
+          $this->roomData['roomId'],
+          $this->roomData['options']
         )
       );
     }
