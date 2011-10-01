@@ -34,12 +34,7 @@
 
 /* Requirements */
 
-if (false === ('JSON' in window)) {
-  window.location.href = 'browser.php';
-
-  throw new Error('Your browser does not seem to support JSON objects. The script has exited.');
-}
-else if (false === ('btoa' in window)) {
+if (false === ('btoa' in window)) {
   window.location.href = 'browser.php';
 
   throw new Error('Your browser does not seem to support Base64 operations. The script has exited.');
