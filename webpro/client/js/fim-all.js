@@ -941,19 +941,12 @@ function updateVids(searchPhrase) {
       video = response.videos[vid];
       num += 1;
 
-      if (num % 3 === 1) {
-        html += '<tr>';
-      }
+      if (num % 3 === 1) { html += '<tr>'; }
       html += '<td><img src="http://i2.ytimg.com/vi/' + video.videoId + '/default.jpg" style="width: 80px; height: 60px;" /><br /><small><a href="javascript: false(0);" onclick="youtubeSend(&apos;' + video.videoId + '&apos;)">' + video.title + '</a></small></td>';
-
-      if (num % 3 === 0) {
-        html += '</tr>';
-      }
+      if (num % 3 === 0) { html += '</tr>'; }
     }
 
-    if (num % 3 !== 0) {
-      html += '</tr>';
-    }
+    if (num % 3 !== 0) { html += '</tr>'; }
 
     $('#youtubeResults').html(html);
 
@@ -1288,18 +1281,14 @@ var standard = {
         /* Update Permissions */
 
         userPermissions = {
-          createRoom : active.userPermissions.createRooms,
-          privateRoom : active.userPermissions.privateRooms,
+          createRoom : active.userPermissions.createRooms, privateRoom : active.userPermissions.privateRooms,
           general : active.userPermissions.allowed
         }
 
         adminPermissions = {
-          modPrivs : active.adminPermissions.modPrivs,
-          modCore : active.adminPermissions.modCore,
-          modUsers : active.adminPermissions.modUsers,
-          modTemplates : active.adminPermissions.modTemplates,
-          modImages : active.adminPermissions.modImages,
-          modCensor : active.adminPermissions.modCensor,
+          modPrivs : active.adminPermissions.modPrivs, modCore : active.adminPermissions.modCore,
+          modUsers : active.adminPermissions.modUsers, modTemplates : active.adminPermissions.modTemplates,
+          modImages : active.adminPermissions.modImages, modCensor : active.adminPermissions.modCensor,
           modHooks : active.adminPermissions.modHooks
         }
 
@@ -2956,12 +2945,8 @@ popup = {
           }
         }
 
-        $('#userName').autocomplete({
-          source: userList
-        });
-        $('#roomNameKick').autocomplete({
-          source: roomModList
-        });
+        $('#userName').autocomplete({ source: userList });
+        $('#roomNameKick').autocomplete({ source: roomModList });
 
         $("#kickUserForm").submit(function() {
           var roomNameKick = $('#roomNameKick').val(),
@@ -3535,9 +3520,7 @@ $(document).ready(function() {
   $('#sendForm').bind('submit', function() {
     var message = $('textarea#messageInput').val();
 
-    if (message.length === 0) {
-      dia.error('Please enter your message.');
-    }
+    if (message.length === 0) { dia.error('Please enter your message.'); }
     else {
       standard.sendMessage(message); // Send the messaage
       $('textarea#messageInput').val(''); // Clear the textbox
