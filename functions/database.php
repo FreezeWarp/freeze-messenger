@@ -67,6 +67,9 @@ class database {
       $this->columnQuoteEnd = '`';
       $this->columnAliasQuoteStart = '`';
       $this->columnAliasQuoteEnd = '`';
+      $this->stringQuoteStart = '"';
+      $this->stringQuoteEnd = '"';
+      $this->emptyString = '""';
       $this->tableColumnDivider = '.';
 
       $this->sortOrderAsc = 'ASC';
@@ -90,6 +93,9 @@ class database {
       $this->columnAliasQuoteStart = '"';
       $this->columnAliasQuoteEnd = '"';
       $this->tableColumnDivider = '.';
+      $this->stringQuoteStart = '"';
+      $this->stringQuoteEnd = '"';
+      $this->emptyString = '""';
 
       $this->sortOrderAsc = 'ASC';
       $this->sortOrderDesc = 'DESC';
@@ -845,10 +851,10 @@ LIMIT
       list($columns, $values) = $this->splitArray($updateArray);
 
       for ($i = 0; $i < count($columns); $i++) {
-        $update[] = $columns[$i] . '=' . $values[$i];
+        $update[] = $columns[$i] . ' = ' . $values[$i];
       }
 
-      $update = implode($update,',');
+      $update = implode($update, ', ');
 
       $query = "$query ON DUPLICATE KEY UPDATE $update";
     }
@@ -996,14 +1002,14 @@ LIMIT
     foreach($array AS $column => $data) { // Run through each element of the $dataArray, adding escaped columns and values to the above arrays.
 
       if (is_int($data)) { // Safe integer - leave it as-is.
-        $columns[] = $this->escape($column);
+        $columns[] = $this->columnQuoteStart . $this->escape($column) . $this->columnQuoteEnd;
         $context[] = 'e'; // Equals
 
         $values[] = $data;
       }
 
       elseif (is_bool($data)) { // In MySQL, true evals to  1, false evals to 0.
-        $columns[] = $this->escape($column);
+        $columns[] = $this->columnQuoteStart . $this->escape($column) . $this->columnQuoteEnd;
         $context[] = 'e'; // Equals
 
         if ($data === true) {
@@ -1015,10 +1021,10 @@ LIMIT
       }
 
       elseif (is_null($data)) { // Null data, simply make it empty.
-        $columns[] = $this->escape($column);
+        $columns[] = $this->columnQuoteStart . $this->escape($column) . $this->columnQuoteEnd;
         $context[] = 'e';
 
-        $values[] = '""';
+        $values[] = $this->emptyString;
       }
 
       elseif (is_array($data)) { // This allows for some more advanced datastructures; specifically, we use it here to define metadata that prevents $this->escape.
@@ -1026,7 +1032,7 @@ LIMIT
           throw new Exception('Deprecated context');
         }
         else {
-          $columns[] = $this->escape($column);
+          $columns[] = $this->columnQuoteStart . $this->escape($column) . $this->columnQuoteEnd;
         }
 
 
@@ -1048,7 +1054,7 @@ LIMIT
 
           case 'string':
           default:
-          $values[] = '"' . $this->escape($data['value']) . '"';
+          $values[] = $this->stringQuoteStart . $this->escape($data['value']) . $this->stringQuoteEnd;
           break;
         }
 
@@ -1062,10 +1068,10 @@ LIMIT
       }
 
       else { // String or otherwise; encode it using mysql_escape and put it in quotes
-        $columns[] = $this->escape($column);
+        $columns[] = $this->columnQuoteStart . $this->escape($column) . $this->columnQuoteEnd;
         $context[] = 'e'; // Equals
 
-        $values[] = '"' . $this->escape($data) . '"';
+        $values[] = $this->stringQuoteStart . $this->escape($data) . $this->stringQuoteEnd;
       }
     }
 
