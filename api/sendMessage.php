@@ -172,14 +172,12 @@ if ($continue) {
     $blockWordApi['reason'] = $blockedWordReason;
   }
   elseif (strpos($request['message'], '/topic') === 0 && !$config['disableTopic']) {
-    $topic = fimParse_censorParse( // Censor the topic using global settings.
-      preg_replace('/^\/topic (.+?)$/i', '$1', $request['message']) // Strip the "/topic" from the message.
-    );
+    $topicNew = preg_replace('/^\/topic (.+?)$/i', '$1', $request['message']); // Strip the "/topic" from the message.
 
     ($hook = hook('sendMessage_topic') ? eval($hook) : '');
 
     if ($continue) {
-      fim_sendMessage($topic, $user, $room, 'topic');
+      fim_sendMessage($request['message'], '', $user, $room);
 
       $database->createEvent('topicChange', false, $room['roomId'], false, $topic, false, false); // name, user, room, message, p1, p2, p3
 

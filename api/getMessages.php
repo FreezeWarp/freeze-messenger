@@ -125,14 +125,6 @@ $request = fim_sanitizeGPC('g', array(
     'context' => 'bool',
   ),
 
-  'messageIdMax' => array(
-    'context' => 'int',
-  ),
-
-  'messageIdMin' => array(
-    'context' => 'int',
-  ),
-
   'messageDateMax' => array(
     'context' => 'int',
   ),
