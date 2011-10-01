@@ -98,5 +98,8 @@ $defaultConfig = array(
 
   'userRoomCreation' => false,
   'userPrivateRoomCreation' => false,
+
+  'messageIndexCounter' => 1000, // If changed, rebuild the messageIndex table!
+  'messageTimesCounter' => 60 * 60 * 24, // If changed, rebuild the messageTimes table!
 );
 ?>

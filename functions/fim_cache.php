@@ -49,7 +49,7 @@ class generalCache {
     }
   }
 
-  public function setCachedVar($index, $variable, $ttl) {
+  public function setCachedVar($index, $variable, $ttl = 31536000) {
     switch ($this->method) {
       case 'apc':
       apc_delete($index);

@@ -17,7 +17,7 @@
 
 class fimDatabase extends database {
 
-  public function getRoom($roomId, $roomName = false) {
+  public function getRoom($roomId, $roomName = false, $cache = true) {
     global $sqlPrefix, $config, $user;
 
     $queryParts['roomSelect']['columns'] = array(
@@ -656,7 +656,7 @@ class fimDatabase extends database {
 
 
   public function storeMessage($userData, $roomData, $messageText, $messageTextEncrypted, $encryptIV, $encryptSalt, $flag) {
-    global $sqlPrefix, $config, $user, $permissionsCache;
+    global $sqlPrefix, $config, $user, $permissionsCache, $generalCache;
 
     if ($roomData['options'] ^ 64) { // Off the record communication - messages are stored only in the cache.
       // Insert into permenant datastore.
@@ -707,6 +707,57 @@ class fimDatabase extends database {
           'value' => '$messages + 1',
         )
       ));
+
+
+      // Update the messageIndex if appropriate
+      $roomDataNew = $this->getRoom($roomData['roomId'], false, false); // Get the new room data.
+
+
+      if ($roomDataNew['messages'] % $config['messageIndexCounter'] === 0) { // If the current messages in the room is divisible by the messageIndexCounter, insert into the messageIndex cache. Note that we are hoping this is because of the very last query which incremented this value, but it is impossible to know for certain (if we tried to re-order things to get the room data first, we still run this risk, so that doesn't matter; either way accuracy isn't critical).
+        $this->insert("{$sqlPrefix}messageIndex", array(
+          'roomId' => $roomData['roomId'],
+          'interval' => $roomDataNew['messages'],
+          'messageId' => $messageId
+        ), array(
+          'messageId' => array(
+            'type' => 'equation',
+            'value' => '$messageId',
+          )
+        ));
+      }
+
+      if ($roomDataNew['messages'] % $config['messageIndexCounter'] === 0) { // If the current messages in the room is divisible by the messageIndexCounter, insert into the messageIndex cache. Note that we are hoping this is because of the very last query which incremented this value, but it is impossible to know for certain (if we tried to re-order things to get the room data first, we still run this risk, so that doesn't matter; either way accuracy isn't critical).
+        $this->insert("{$sqlPrefix}messageIndex", array(
+          'roomId' => $roomData['roomId'],
+          'interval' => $roomDataNew['messages'],
+          'messageId' => $messageId
+        ), array(
+          'messageId' => array(
+            'type' => 'equation',
+            'value' => '$messageId',
+          )
+        ));
+      }
+
+
+      $lastDayCache = (int) $generalCache->getCachedVar('fim3_lastDayCache');
+
+      $currentTime = time();
+      $lastMidnight = $currentTime - ($currentTime % 86400); // Using some cool math (look it up if you're not familiar), we determine the distance from the last even day, then get the time of the last even day itself. This is the midnight referrence point.
+
+      if ($lastDayCache < $lastMidnight) { // If the most recent midnight comes after the period at which the time cache was last updated, handle that.
+        $this->insert("{$sqlPrefix}messageTimes", array(
+          'time' => $lastMidnight,
+          'messageId' => $messageId
+        ), array(
+          'messageId' => array(
+            'type' => 'equation',
+            'value' => '$messageId',
+          )
+        ));
+
+        $generalCache->setCachedVar('fim3_lastDayCache', $lastMidnight); // Update the quick cache.
+      }
 
 
       // Increment the messages counter.
@@ -881,6 +932,7 @@ class fimDatabase extends database {
   }
 
 
+  // DEPRECATED
   public function getPrivateRoom($userList) {
     global $sqlPrefix, $config;
 
