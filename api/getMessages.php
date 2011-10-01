@@ -579,7 +579,7 @@ else { // Has Permission
       $messages = $database->select($queryParts['messagesSelect']['columns'],
         $queryParts['messagesSelect']['conditions'],
         $queryParts['messagesSelect']['sort'],
-        $request['messageHardLimit']);
+        $request['messageLimit']);
       $messages = $messages->getAsArray('messageId');
 
       ($hook = hook('getMessages_postMessages_longPolling_repeat') ? eval($hook) : '');
@@ -596,7 +596,7 @@ else { // Has Permission
     $messages = $database->select($queryParts['messagesSelect']['columns'],
       $queryParts['messagesSelect']['conditions'],
       $queryParts['messagesSelect']['sort'],
-      $request['messageHardLimit']);
+      $request['messageLimit']);
     $messages = $messages->getAsArray('messageId');
 
     ($hook = hook('getMessages_postMessages_polling') ? eval($hook) : '');

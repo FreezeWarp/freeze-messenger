@@ -21,7 +21,7 @@ class fimDatabase extends database {
     global $sqlPrefix, $config, $user;
 
     $queryParts['roomSelect']['columns'] = array(
-      "{$sqlPrefix}rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, options',
+      "{$sqlPrefix}rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, options, lastMessageId, lastMessageTime, messageCount',
     );
 
     if ($roomId) {
@@ -357,6 +357,9 @@ class fimDatabase extends database {
   public function getRoomCensorLists($roomId) {
     global $user, $sqlPrefix, $slaveDatabase;
 
+    $block = array();
+    $unblock = array();
+
     if ($roomId > 0) {
       $listsActive = $slaveDatabase->select(
         array(
@@ -455,7 +458,7 @@ class fimDatabase extends database {
     $queryParts['listsSelect']['sort'] = false;
     $queryParts['listsSelect']['limit'] = false;
 
-    if ($roomOptions & 16) {
+/*    if ($roomOptions & 16) {
       $queryParts['listsSelect']['conditions']['both']['both'] = array(
         array(
           'type' => 'xor',
@@ -469,7 +472,7 @@ class fimDatabase extends database {
           ),
         ),
       );
-    }
+    }*/
 
     $lists = $slaveDatabase->select(
       $queryParts['listsSelect']['columns'],
@@ -672,6 +675,7 @@ class fimDatabase extends database {
       ));
       $messageId = $this->insertId;
 
+
       // Update room caches.
       $this->update("{$sqlPrefix}rooms", array(
         'lastMessageTime' => $this->now(),
@@ -683,6 +687,24 @@ class fimDatabase extends database {
       ), array(
         'roomId' => $roomData['roomId'],
       ));
+
+
+      // Update the messageIndex if appropriate
+      $roomDataNew = $this->getRoom($roomData['roomId'], false, false); // Get the new room data.
+
+
+      if ($roomDataNew['messageCount'] % $config['messageIndexCounter'] === 0) { // If the current messages in the room is divisible by the messageIndexCounter, insert into the messageIndex cache. Note that we are hoping this is because of the very last query which incremented this value, but it is impossible to know for certain (if we tried to re-order things to get the room data first, we still run this risk, so that doesn't matter; either way accuracy isn't critical).
+        $this->insert("{$sqlPrefix}messageIndex", array(
+          'roomId' => $roomData['roomId'],
+          'interval' => (int) $roomDataNew['messageCount'],
+          'messageId' => $messageId
+        ), array(
+          'messageId' => array(
+            'type' => 'equation',
+            'value' => '$messageId + 0',
+          )
+        )); error_log('333');
+      }
 
 
       // Update user caches
@@ -709,28 +731,10 @@ class fimDatabase extends database {
       ));
 
 
-      // Update the messageIndex if appropriate
-      $roomDataNew = $this->getRoom($roomData['roomId'], false, false); // Get the new room data.
-
-
-      if ($roomDataNew['messages'] % $config['messageIndexCounter'] === 0) { // If the current messages in the room is divisible by the messageIndexCounter, insert into the messageIndex cache. Note that we are hoping this is because of the very last query which incremented this value, but it is impossible to know for certain (if we tried to re-order things to get the room data first, we still run this risk, so that doesn't matter; either way accuracy isn't critical).
-        $this->insert("{$sqlPrefix}messageIndex", array(
-          'roomId' => $roomData['roomId'],
-          'interval' => (int) $roomDataNew['messages'],
-          'messageId' => $messageId
-        ), array(
-          'messageId' => array(
-            'type' => 'equation',
-            'value' => '$messageId + 0',
-          )
-        ));
-      }
-
-
       $lastDayCache = (int) $generalCache->getCachedVar('fim3_lastDayCache');
 
       $currentTime = time();
-      $lastMidnight = $currentTime - ($currentTime % 86400); // Using some cool math (look it up if you're not familiar), we determine the distance from the last even day, then get the time of the last even day itself. This is the midnight referrence point.
+      $lastMidnight = $currentTime - ($currentTime % $config['messageTimesCounter']); // Using some cool math (look it up if you're not familiar), we determine the distance from the last even day, then get the time of the last even day itself. This is the midnight referrence point.
 
       if ($lastDayCache < $lastMidnight) { // If the most recent midnight comes after the period at which the time cache was last updated, handle that.
         $this->insert("{$sqlPrefix}messageDates", array(
