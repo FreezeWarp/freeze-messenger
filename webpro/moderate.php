@@ -169,7 +169,6 @@ echo '<!DOCTYPE HTML>
 
     <h3><a href="#" data-itemId="2">Manage Engines</a></h3>
     <ul>
-      ' . ($user['adminDefs']['modBBCode'] ? '<li><a href="moderate.php?do=bbcode">Modify BBCode</a></li>' : '') . '
       ' . ($user['adminDefs']['modCensor'] ? '<li><a href="moderate.php?do=censor">Modify Censor</a></li>' : '') . '
       ' . ($user['adminDefs']['modFiles'] ? '<li><a href="moderate.php?do=ftypes">Modify File Types</a></li>' : '') . '
     </ul>

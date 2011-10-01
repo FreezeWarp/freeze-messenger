@@ -305,7 +305,7 @@ class messageParse {
 
     if (count($stringPiecesAdd) > 0) {
       sort($stringPiecesAdd);
-error_log(print_r($stringPiecesAdd,true));
+
       return $stringPiecesAdd;
     }
     else {
