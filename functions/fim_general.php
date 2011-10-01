@@ -989,6 +989,8 @@ function fim_outputApi($data) {
     }
   }
   else {
+    header('Content-type: application/json');
+
     return fim_outputJson($data);
   }
 }

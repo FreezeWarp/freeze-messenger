@@ -3440,9 +3440,9 @@ $(document).ready(function() {
     beforeShow: function(content, el) {
       var thisid = $(el).attr('data-userId');
 
-//      if (thisid != $('#tooltext').attr('data-lastuserId')) {
+      if (thisid != $('#tooltext').attr('data-lastuserId')) {
         $('#tooltext').attr('data-lastuserId', thisid);
-        $.get(directory + 'api/getUsers.php?users=' + thisid + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId, function(json) {
+        $.get(directory + 'api/getUsers.php', 'users=' + thisid + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
           active = json.getUsers.users;
 
           for (i in active) {
@@ -3455,12 +3455,12 @@ $(document).ready(function() {
               joinDate = date(active[i].joinDate, true),
               avatar = active[i].avatar;
           }
-alert('<div style="width: 400px;">' + (avatar.length > 0 ? '<img alt="" src="' + avatar + '" style="float: left;" />' : '') + '<span class="userName" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>' + (userTitle.length > 0 ? '<br />' + userTitle : '') + '<br /><em>Posts</em>: ' + posts + '<br /><em>Member Since</em>: ' + joinDate + '</div>');
+
           content.html('<div style="width: 400px;">' + (avatar.length > 0 ? '<img alt="" src="' + avatar + '" style="float: left;" />' : '') + '<span class="userName" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>' + (userTitle.length > 0 ? '<br />' + userTitle : '') + '<br /><em>Posts</em>: ' + posts + '<br /><em>Member Since</em>: ' + joinDate + '</div>');
 
           return false;
         });
-//      }
+      }
 
       return false;
     }
