@@ -227,6 +227,7 @@
       <key name="time" type="index" />
     </table>
 
+
     <table name="messageEditHistory" type="general" comment="A history of editted messages.">
       <column name="messageId" type="int" maxlen="15" comment="The unique ID of the message." />
       <column name="userId" type="int" maxlen="8" comment="The user who editted the message." />

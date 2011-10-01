@@ -1,0 +1,10 @@
+{
+  "languages" : {
+    "enGB" : "English (United Kingdom)",
+    "enUS" : "English (United States)"
+  },
+
+  "themes" : [
+    "start",
+  ]
+}
