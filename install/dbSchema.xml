@@ -207,7 +207,7 @@
       <column name="time" type="time" comment="The day (or appropriate time range) the message was made on." />
       <column name="messageId" type="int" maxlen="15" comment="The unique ID of the message." />
 
-      <key name="roomId,interval" type="primary" />
+      <key name="time" type="primary" />
     </table>
 
 

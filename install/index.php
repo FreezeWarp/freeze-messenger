@@ -197,7 +197,7 @@ switch ($_REQUEST['phase']) {
             <option value="vbulletin3">vBulletin 3.8</option>
             <option value="vbulletin4">vBulletin 4.1</option>
             <option value="phpbb">PHPBB 3</option>
-          </select><br /><small>If you have a forum, you can enable more advanced features than without one, and prevent users from having to instll more than one account.</small>
+          </select><br /><small>If you have a forum, you can enable more advanced features than without one, and prevent users from having to create more than one account.</small>
         </td>
       </tr>
       <tr>

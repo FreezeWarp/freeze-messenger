@@ -39,11 +39,6 @@ if (false === ('btoa' in window)) {
 
   throw new Error('Your browser does not seem to support Base64 operations. The script has exited.');
 }
-else if (false === ('onhashchange' in window)) {
-  window.location.href = 'browser.php';
-
-  throw new Error('Your browser does not seem to support onhashchange operations. The script has exited.');
-}
 else if (typeof Date === 'undefined') {
   window.location.href = 'browser.php';
 
