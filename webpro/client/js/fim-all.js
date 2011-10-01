@@ -584,6 +584,7 @@ var alert = function(text) {
 ******************* Variable Setting ********************
 *********************************************************/
 
+
 /* Get Server-Specific Variables
 * We Should Not Call This Again */
 
@@ -1932,45 +1933,43 @@ popup = {
   /*** START Login ***/
 
   login : function() {
-    $.get('template.php', 'template=login', function(data) {
-      dia.full({
-        content : data,
-        title : 'Login',
-        id : 'loginDialogue',
-        width : 600,
-        oF : function() {
-          $("#loginForm").submit(function() {
-            var userName = $('#loginForm > #userName').val(),
-              password = $('#loginForm > #password').val(),
-              rememberMe = $('#loginForm > #rememberme').is('checked');
+    dia.full({
+      content : window.templates.login,
+      title : 'Login',
+      id : 'loginDialogue',
+      width : 600,
+      oF : function() {
+        $("#loginForm").submit(function() {
+          var userName = $('#loginForm > #userName').val(),
+            password = $('#loginForm > #password').val(),
+            rememberMe = $('#loginForm > #rememberme').is('checked');
 
-            standard.login({
-              userName : userName, password : password,
-              showMessage : true, rememberMe : rememberMe
-            });
-
-            return false; // Don't submit the form.
+          standard.login({
+            userName : userName, password : password,
+            showMessage : true, rememberMe : rememberMe
           });
-        },
-        cF : function() {
-          if (!userId) {
-            standard.login({
-              start : function() {
-                $('<div class="ui-widget-overlay" id="loginWaitOverlay"></div>').appendTo('body').width($(document).width()).height($(document).height());
-                $('<img src="images/ajax-loader.gif" id="loginWaitThrobber" />').appendTo('body').css('position', 'absolute').offset({ left : (($(window).width() - 220) / 2), top : (($(window).height() - 19) / 2)});
-              },
-              finish : function() {
-                $('#loginWaitOverlay, #loginWaitThrobber').empty().remove();
-              }
-            });
-          }
 
-          return false;
+          return false; // Don't submit the form.
+        });
+      },
+      cF : function() {
+        if (!userId) {
+          standard.login({
+            start : function() {
+              $('<div class="ui-widget-overlay" id="loginWaitOverlay"></div>').appendTo('body').width($(document).width()).height($(document).height());
+              $('<img src="images/ajax-loader.gif" id="loginWaitThrobber" />').appendTo('body').css('position', 'absolute').offset({ left : (($(window).width() - 220) / 2), top : (($(window).height() - 19) / 2)});
+            },
+            finish : function() {
+              $('#loginWaitOverlay, #loginWaitThrobber').empty().remove();
+            }
+          });
         }
-      });
 
-      return false;
+        return false;
+      }
     });
+
+    return false;
   },
 
   /*** END Login ***/
@@ -2030,7 +2029,7 @@ popup = {
     }
 
     dia.full({
-      uri : 'template.php?template=insertDoc',
+      content : window.templates.insertDoc,
       id : 'insertDoc',
       width: 600,
       tabs : true,
@@ -2255,7 +2254,7 @@ popup = {
 
   userSettings : function() {
     dia.full({
-      uri : 'template.php?template=userSettingsForm',
+      content : window.templates.userSettingsForm,
       id : 'changeSettingsDialogue',
       tabs : true,
       width : 1000,
@@ -2541,7 +2540,7 @@ popup = {
     }
 
     dia.full({
-      uri : 'template.php?template=editRoomForm&action=' + action,
+      content : window.templates.editRoomForm,
       id : 'editRoomDialogue',
       width : 1000,
       tabs : true,
@@ -2976,7 +2975,7 @@ popup = {
 
   help : function() {
     dia.full({
-      uri : 'template.php?template=help',
+      content : window.templates.help,
       title : 'helpDialogue',
       width : 1000,
       position : 'top',
@@ -3038,7 +3037,7 @@ popup = {
 
   copyright : function() {
     dia.full({
-      uri : 'template.php?template=copyright',
+      content : window.templates.copyright,
       title : 'copyrightDialogue',
       width : 600,
       tabs : true
@@ -3378,188 +3377,217 @@ function contextMenuParseRoom() {
   return false;
 }
 
-
-
 $(document).ready(function() {
-  $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/' + theme + '/jquery-ui-1.8.16.custom.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/' + theme + '/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
+  $.when(
+    $.ajax({
+      url: 'client/data/config.json',
+      dataType: 'json',
+      success: function(data) {
+        window.fim_config = data;
+      },
+      async: false,
+      cache: true,
+    }),
 
+    $.ajax({
+      url: 'client/data/language_enGB.json',
+      dataType: 'json',
+      success: function(data) {
+        window.phrases = data;
+      },
+      async: false,
+      cache: true,
+    }),
 
-  if (fontsize) {
-    $('body').css('font-size', fontsize + 'em');
-  }
-
-
-  if ($.cookie('webpro_userId') > 0) {
-    standard.login({
-      userId : $.cookie('webpro_userId'),
-      password : $.cookie('webpro_password'),
-      finish : function() {
-        if (!userId) { // The user is not actively logged in.
-          popup.login();
+    $.ajax({
+      url: 'client/data/templates.json',
+      dataType: 'json',
+      success: function(data) {
+        for (i in data) {
+          data[i] = data[i].replace(/\{\{\{\{([a-zA-Z0-9]+)\}\}\}\}/g, function($1, $2) {
+              return window.phrases[$2];
+            }
+          );
         }
+
+        window.templates = data;
+        $('body').append(window.templates.main);
+        $('body').append(window.templates.chatTemplate);
+        $('body').append(window.templates.contextMenu);
+      },
+      async: false,
+      cache: true
+    })
+  ).always(function() {
+    $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/' + theme + '/jquery-ui-1.8.16.custom.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/' + theme + '/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
+
+
+    if (fontsize) { $('body').css('font-size', fontsize + 'em'); }
+
+
+    if ($.cookie('webpro_userId') > 0) {
+      standard.login({
+        userId : $.cookie('webpro_userId'),
+        password : $.cookie('webpro_password'),
+        finish : function() {
+          if (!userId) { // The user is not actively logged in.
+            popup.login();
+          }
+        }
+      });
+    }
+    else {
+      popup.login();
+    }
+
+
+    if (settings.disableFx) {
+      jQuery.fx.off = true;
+    }
+
+
+    /*** Time Tooltip ***/
+    if (settings.showAvatars) {
+      $('.messageText').tipTip({
+        activate: 'hover',
+        attribute: 'data-time'
+      });
+    }
+
+
+    /*** Hover Tooltip ***/
+    $('.userName').ezpz_tooltip({
+      contentId: 'tooltext',
+      beforeShow: function(content, el) {
+        var thisid = $(el).attr('data-userId');
+
+        if (thisid != $('#tooltext').attr('data-lastuserId')) {
+          $('#tooltext').attr('data-lastuserId', thisid);
+          $.get(directory + 'api/getUsers.php', 'users=' + thisid + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
+            active = json.getUsers.users;
+
+            for (i in active) {
+              var userName = active[i].userName,
+                userId = active[i].userId,
+                startTag = active[i].startTag,
+                endTag = active[i].endTag,
+                userTitle = active[i].userTitle,
+                posts = active[i].postCount,
+                joinDate = date(active[i].joinDate, true),
+                avatar = active[i].avatar;
+            }
+
+            content.html('<div style="width: 400px;">' + (avatar.length > 0 ? '<img alt="" src="' + avatar + '" style="float: left;" />' : '') + '<span class="userName" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>' + (userTitle.length > 0 ? '<br />' + userTitle : '') + '<br /><em>Posts</em>: ' + posts + '<br /><em>Member Since</em>: ' + joinDate + '</div>');
+
+            return false;
+          });
+        }
+
+        return false;
       }
     });
-  }
-  else {
-    popup.login();
-  }
 
 
-  if (settings.disableFx) {
-    jQuery.fx.off = true;
-  }
+    /*** Create the Accordion Menu ***/
+    $('#menu').accordion({
+      autoHeight: false,
+      navigation: true,
+      clearStyle: true,
+      active : Number($.cookie('webpro_menustate')) - 1,
+      change: function(event, ui) {
+        var sid = ui.newHeader.children('a').attr('data-itemId');
 
-
-  /*** Time Tooltip ***/
-  if (settings.showAvatars) {
-    $('.messageText').tipTip({
-      activate: 'hover',
-      attribute: 'data-time'
+        $.cookie('webpro_menustate', sid, { expires: 14 });
+      }
     });
-  }
 
 
-  /*** Hover Tooltip ***/
-  $('.userName').ezpz_tooltip({
-    contentId: 'tooltext',
-    beforeShow: function(content, el) {
-      var thisid = $(el).attr('data-userId');
+    /*** Image Buttons! ***/
+    $("#icon_help").button({ icons: {primary:'ui-icon-help'} });
+    $("#icon_note").button({ icons: {primary:'ui-icon-note'} });
+    $("#icon_settings").button({ icons: {primary:'ui-icon-wrench'} });
+    $("#icon_url").button({ icons: {primary: 'ui-icon-link'} });
+    $("#icon_submit").button({ icons: {primary: 'ui-icon-circle-check'} });
+    $("#icon_reset").button({ icons: {primary: 'ui-icon-circle-close'} });
 
-      if (thisid != $('#tooltext').attr('data-lastuserId')) {
-        $('#tooltext').attr('data-lastuserId', thisid);
-        $.get(directory + 'api/getUsers.php', 'users=' + thisid + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
-          active = json.getUsers.users;
+    $("#imageUploadSubmitButton").button("option", "disabled", true);
 
-          for (i in active) {
-            var userName = active[i].userName,
-              userId = active[i].userId,
-              startTag = active[i].startTag,
-              endTag = active[i].endTag,
-              userTitle = active[i].userTitle,
-              posts = active[i].postCount,
-              joinDate = date(active[i].joinDate, true),
-              avatar = active[i].avatar;
-          }
 
-          content.html('<div style="width: 400px;">' + (avatar.length > 0 ? '<img alt="" src="' + avatar + '" style="float: left;" />' : '') + '<span class="userName" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>' + (userTitle.length > 0 ? '<br />' + userTitle : '') + '<br /><em>Posts</em>: ' + posts + '<br /><em>Member Since</em>: ' + joinDate + '</div>');
 
-          return false;
-        });
+
+    /*** Button Click Events ***/
+    $('#icon_note, #messageArchive, a#editRoom').unbind('click'); // Cleanup
+
+    $('#icon_note, #messageArchive').bind('click', function() { popup.archive({roomId : roomId}); }); // Archive
+    $('a#editRoom').bind('click', function() { popup.editRoom(roomId); }); // Edit Room
+    $('#login').bind('click', function() { popup.login(); }); // Login
+    $('#logout').bind('click', function() { standard.logout(); popup.login(); }); // Logout
+    $('a#kick').bind('click', function() { popup.kick(); }); // Kick
+    $('a#privateRoom').bind('click', function() { popup.privateRoom(); }); // Private Room
+    $('a#manageKick').bind('click', function() { popup.manageKicks(); }); // Manage Kicks
+    $('a#online').bind('click', function() { popup.online(); }); // Online
+    $('a#createRoom').bind('click', function() { popup.editRoom();}); // Create Room
+    $('a.editRoomMulti').bind('click', function() { popup.editRoom($(this).attr('data-roomId')); }); // Edit Room
+    $('#icon_help').bind('click', function() { popup.help(); }); // Help
+    $('#roomList').bind('click', function() { popup.selectRoom(); }); // Room List
+    $('#viewStats').bind('click', function() { popup.viewStats(); }); // Room Post Stats
+    $('#copyrightLink').bind('click', function() { popup.copyright(); }); // Copyright & Credits
+    $('#icon_settings, #changeSettings, a.changeSettingsMulti').bind('click', function() { popup.userSettings(); }); // User Settings
+    $('#viewUploads').bind('click', function() { popup.viewUploads(); }); // View My Uploads
+    $('#icon_url').bind('click', function() { popup.insertDoc('url'); }); // Upload
+
+    // Room Shower Thing
+    $('#showMoreRooms').bind('click', function() { $('#roomListShort').slideUp(); $('#roomListLong').slideDown(); });
+    $('#showFewerRooms').bind('click', function() { $('#roomListLong').slideUp(); $('#roomListShort').slideDown(); });
+
+
+
+    /*** Youtube Videos for Uploads ***/
+    jQTubeUtil.init({
+      key: 'AI39si5_Dbv6rqUPbSe8e4RZyXkDM3X0MAAtOgCuqxg_dvGTWCPzrtN_JLh9HlTaoC01hCLZCxeEDOaxsjhnH5p7HhZVnah2iQ',
+      orderby: 'relevance',  // *optional -- 'viewCount' is set by default
+      time: 'this_month',   // *optional -- 'this_month' is set by default
+      maxResults: 20   // *optional -- defined as 10 results by default
+    });
+
+
+
+    /*** Send Messages, Yay! ***/
+    $('#sendForm').bind('submit', function() {
+      var message = $('textarea#messageInput').val();
+
+      if (message.length === 0) { dia.error('Please enter your message.'); }
+      else {
+        standard.sendMessage(message); // Send the messaage
+        $('textarea#messageInput').val(''); // Clear the textbox
       }
 
       return false;
-    }
-  });
-
-
-  /*** Create the Accordion Menu ***/
-  $('#menu').accordion({
-    autoHeight: false,
-    navigation: true,
-    clearStyle: true,
-    active : Number($.cookie('webpro_menustate')) - 1,
-    change: function(event, ui) {
-      var sid = ui.newHeader.children('a').attr('data-itemId');
-
-      $.cookie('webpro_menustate', sid, { expires: 14 });
-    }
-  });
-
-
-  /*** Image Buttons! ***/
-  $("#icon_help").button({ icons: {primary:'ui-icon-help'} });
-  $("#icon_note").button({ icons: {primary:'ui-icon-note'} });
-  $("#icon_settings").button({ icons: {primary:'ui-icon-wrench'} });
-  $("#icon_url").button({ icons: {primary: 'ui-icon-link'} });
-  $("#icon_submit").button({ icons: {primary: 'ui-icon-circle-check'} });
-  $("#icon_reset").button({ icons: {primary: 'ui-icon-circle-close'} });
-
-  $("#imageUploadSubmitButton").button("option", "disabled", true);
+    });
 
 
 
+    /*** Process Enter for Message Input ***/
+    $('#messageInput').bind('keydown', function(e) {
+      if (e.keyCode === 13 && !e.shiftKey) { // Enter w/o shift
+        $('#sendForm').submit();
+        return false;
+      }
 
-  /*** Button Click Events ***/
-  $('#icon_note, #messageArchive, a#editRoom').unbind('click'); // Cleanup
-
-  $('#icon_note, #messageArchive').bind('click', function() { popup.archive({roomId : roomId}); }); // Archive
-  $('a#editRoom').bind('click', function() { popup.editRoom(roomId); }); // Edit Room
-  $('#login').bind('click', function() { popup.login(); }); // Login
-  $('#logout').bind('click', function() { standard.logout(); popup.login(); }); // Logout
-  $('a#kick').bind('click', function() { popup.kick(); }); // Kick
-  $('a#privateRoom').bind('click', function() { popup.privateRoom(); }); // Private Room
-  $('a#manageKick').bind('click', function() { popup.manageKicks(); }); // Manage Kicks
-  $('a#online').bind('click', function() { popup.online(); }); // Online
-  $('a#createRoom').bind('click', function() { popup.editRoom();}); // Create Room
-  $('a.editRoomMulti').bind('click', function() { popup.editRoom($(this).attr('data-roomId')); }); // Edit Room
-  $('#icon_help').bind('click', function() { popup.help(); }); // Help
-  $('#roomList').bind('click', function() { popup.selectRoom(); }); // Room List
-  $('#viewStats').bind('click', function() { popup.viewStats(); }); // Room Post Stats
-  $('#copyrightLink').bind('click', function() { popup.copyright(); }); // Copyright & Credits
-  $('#icon_settings, #changeSettings, a.changeSettingsMulti').bind('click', function() { popup.userSettings(); }); // User Settings
-  $('#viewUploads').bind('click', function() { popup.viewUploads(); }); // View My Uploads
-  $('#icon_url').bind('click', function() { popup.insertDoc('url'); }); // Upload
-
-  // Room Shower Thing
-  $('#showMoreRooms').bind('click', function() { $('#roomListShort').slideUp(); $('#roomListLong').slideDown(); });
-  $('#showFewerRooms').bind('click', function() { $('#roomListLong').slideUp(); $('#roomListShort').slideDown(); });
+      return true;
+    });
 
 
 
-  /*** Youtube Videos for Uploads ***/
-  jQTubeUtil.init({
-    key: 'AI39si5_Dbv6rqUPbSe8e4RZyXkDM3X0MAAtOgCuqxg_dvGTWCPzrtN_JLh9HlTaoC01hCLZCxeEDOaxsjhnH5p7HhZVnah2iQ',
-    orderby: 'relevance',  // *optional -- 'viewCount' is set by default
-    time: 'this_month',   // *optional -- 'this_month' is set by default
-    maxResults: 20   // *optional -- defined as 10 results by default
-  });
+    /*** Window Manipulation (see below) ***/
+    $(window).bind('resize', windowResize);
+    $(window).bind('blur', windowBlur);
+    $(window).bind('focus', windowFocus);
+    $(window).bind('hashchange', hashParse);
 
-
-
-  /*** Send Messages, Yay! ***/
-  $('#sendForm').bind('submit', function() {
-    var message = $('textarea#messageInput').val();
-
-    if (message.length === 0) { dia.error('Please enter your message.'); }
-    else {
-      standard.sendMessage(message); // Send the messaage
-      $('textarea#messageInput').val(''); // Clear the textbox
-    }
 
     return false;
   });
-
-
-
-  /*** Process Enter for Message Input ***/
-  $('#messageInput').bind('keydown', function(e) {
-    if (e.keyCode === 13 && !e.shiftKey) { // Enter w/o shift
-      $('#sendForm').submit();
-      return false;
-    }
-
-    return true;
-  });
-
-
-
-  /*** Context Menus ***/
-  $.get('template.php', 'template=contextMenu', function(data) {
-    $('body').append(data);
-
-    console.log('Appended Context Menus to DOM');
-  });
-
-
-
-  /*** Window Manipulation (see below) ***/
-  $(window).bind('resize', windowResize);
-  $(window).bind('blur', windowBlur);
-  $(window).bind('focus', windowFocus);
-  $(window).bind('hashchange', hashParse);
-
-
-  return false;
 });
 
 /*********************************************************
