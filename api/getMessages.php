@@ -197,6 +197,9 @@ if ($request['messageHardLimit'] > 500) {
 }
 
 
+$room = $database->getRoom($request['rooms']); // Get the roomdata.
+
+
 
 /* Data Predefine */
 $xmlData = array(
@@ -549,9 +552,6 @@ if (count($request['users']) > 0) {
 
 
 /* Start Crazy Stuff */
-$room = $database->getRoom($request['rooms']); // Get the roomdata.
-
-
 
 /* Make sure the user has permission to view posts from the room. */
 $permission = fim_hasPermission($room, $user, 'view', false);
@@ -612,7 +612,6 @@ else { // Has Permission
 
   }
   else {
-
     $messages = $database->select($queryParts['messagesSelect']['columns'],
       $queryParts['messagesSelect']['conditions'],
       $queryParts['messagesSelect']['sort'],
