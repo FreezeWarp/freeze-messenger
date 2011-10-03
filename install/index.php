@@ -162,10 +162,6 @@ switch ($_REQUEST['phase']) {
         <td><strong>Table Prefix</strong></td>
         <td><input type="text" name="db_tableprefix" /><br /><small>The prefix that FreezeMessenger\'s tables should use. This can be left blank (or with the default), but if the database contains any other products you must use a <strong>different</strong> prefix than all other products.</small></td>
       </tr>
-      <tr>
-        <td><strong>Developer Flag</strong></td>
-        <td><input type="checkbox" name="db_dev" /><br /><small>A flag used in development that results in only the phrases and templates being updated.</small></td>
-      </tr>
     </table>
   </form><br /><br />
 
@@ -273,7 +269,6 @@ switch ($_REQUEST['phase']) {
   $databaseName = urldecode($_GET['db_database']);
   $createdb = urldecode($_GET['db_createdb']);
   $prefix = urldecode($_GET['db_tableprefix']);
-  $dev = urldecode($_GET['db_dev']);
 
 
 
@@ -360,88 +355,74 @@ switch ($_REQUEST['phase']) {
       elseif ((float) $xmlData2['@version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
         die('The XML Insert Data Source if For An Improper Version');
       }
-      elseif (!$xmlData4['@languageName']) {
-        die('Language name not specified.');
-      }
-      elseif (!$xmlData4['@languageCode']) {
-        die('Language code not specified.');
-      }
       else {
         /* Part 2: Create the Tables */
 
-        if (!$dev) {
-          $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
+        $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
 
-          foreach ($xmlData['database'][0]['table'] AS $table) { // Run through each table from the XML
-            $tableType = $table['@type'];
-            $tableName = $prefix . $table['@name'];
-            $tableComment = $table['@comment'];
+        foreach ($xmlData['database'][0]['table'] AS $table) { // Run through each table from the XML
+          $tableType = $table['@type'];
+          $tableName = $prefix . $table['@name'];
+          $tableComment = $table['@comment'];
 
-            $tableColumns = array();
-            $tableIndexes = array();
-
-
-            foreach ($table['column'] AS $column) {
-              $tableColumns[] = array(
-                'type' => $column['@type'],
-                'name' => $column['@name'],
-                'autoincrement' => (isset($column['@autoincrement']) ? $column['@autoincrement'] : false),
-                'restrict' => (isset($column['@restrict']) ? explode(',', $column['@restrict']) : false),
-                'maxlen' => (isset($column['@maxlen']) ? $column['@maxlen'] : false),
-                'bits' => (isset($column['@bits']) ? $column['@bits'] : false),
-                'default' => (isset($column['@default']) ? $column['@default'] : false),
-                'comment' => (isset($column['@comment']) ? $column['@comment'] : false),
-              );
-            }
+          $tableColumns = array();
+          $tableIndexes = array();
 
 
-            foreach ($table['key'] AS $key) {
-              $tableIndexes[] = array(
-                'type' => $key['@type'],
-                'name' => $key['@name'],
-              );
-            }
+          foreach ($table['column'] AS $column) {
+            $tableColumns[] = array(
+              'type' => $column['@type'],
+              'name' => $column['@name'],
+              'autoincrement' => (isset($column['@autoincrement']) ? $column['@autoincrement'] : false),
+              'restrict' => (isset($column['@restrict']) ? explode(',', $column['@restrict']) : false),
+              'maxlen' => (isset($column['@maxlen']) ? $column['@maxlen'] : false),
+              'bits' => (isset($column['@bits']) ? $column['@bits'] : false),
+              'default' => (isset($column['@default']) ? $column['@default'] : false),
+              'comment' => (isset($column['@comment']) ? $column['@comment'] : false),
+            );
+          }
 
 
-            if (in_array($tableName, (array) $showTables)) { // We are overwriting, so rename the old table to a backup. Someone else can clean it up later, but its for the best.
-              if (!$database->renameTable($tableName, $tableName . '~' . time())) {
-                die("Could Not Rename Table '$tableName'");
-              }
-            }
+          foreach ($table['key'] AS $key) {
+            $tableIndexes[] = array(
+              'type' => $key['@type'],
+              'name' => $key['@name'],
+            );
+          }
 
 
-            if (!$database->createTable($tableName, $tableComment, $tableType, $tableColumns, $tableIndexes)) {
-              die("Could not run query:\n" . $database->sourceQuery . "\n\nError:\n" . $database->error);
+          if (in_array($tableName, (array) $showTables)) { // We are overwriting, so rename the old table to a backup. Someone else can clean it up later, but its for the best.
+            if (!$database->renameTable($tableName, $tableName . '~' . time())) {
+              die("Could Not Rename Table '$tableName'");
             }
           }
 
 
-
-
-
-          /* Part 3: Insert Predefined Data */
-
-          $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
-
-          foreach ($xmlData2['database'][0]['table'] AS $table) { // Run through each table from the XML
-            $columns = array(); // We will use this to store the column fragments that will be implode()d into the final query.
-            $values = array(); // We will use this to store the column fragments that will be implode()d into the final query.
-            $insertData = array();
-
-            foreach ($table['column'] AS $column) {
-              $insertData[$column['@name']] = $column['@value'];
-            }
-
-            if (!$database->insert($prefix . $table['@name'], $insertData)) {
-              die("Could not run query:\n" . $database->sourceQuery . "\n\nError:\n" . $database->error);
-            }
+          if (!$database->createTable($tableName, $tableComment, $tableType, $tableColumns, $tableIndexes)) {
+            die("Could not run query:\n" . $database->sourceQuery . "\n\nError:\n" . $database->error);
           }
         }
-        else {
-          $database->delete($prefix . 'phrases');
-          $database->delete($prefix . 'interfaces');
-          $database->delete($prefix . 'languages');
-          $database->delete($prefix . 'templates');
+
+
+
+
+
+        /* Part 3: Insert Predefined Data */
+
+        $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
+
+        foreach ($xmlData2['database'][0]['table'] AS $table) { // Run through each table from the XML
+          $columns = array(); // We will use this to store the column fragments that will be implode()d into the final query.
+          $values = array(); // We will use this to store the column fragments that will be implode()d into the final query.
+          $insertData = array();
+
+          foreach ($table['column'] AS $column) {
+            $insertData[$column['@name']] = $column['@value'];
+          }
+
+          if (!$database->insert($prefix . $table['@name'], $insertData)) {
+            die("Could not run query:\n" . $database->sourceQuery . "\n\nError:\n" . $database->error);
+          }
         }
       }
     }

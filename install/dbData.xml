@@ -2,30 +2,6 @@
 
 <dbData version="3.0">
   <database>
-
-    <!-- Table bbcode -->
-    <table name="bbcode">
-      <column name="bbcodeName" value="Bold" />
-      <column name="searchRegex" value="/\[(b|strong)\](.+?)\[\/(b|strong)\]/is" />
-      <column name="replacement" value="&lt;span style=&quot;font-weight: bold;&quot;&gt;$2&lt;/span&gt;" />
-    </table>
-    <table name="bbcode">
-      <column name="bbcodeName" value="Strikethrough" />
-      <column name="searchRegex" value="/\[(s|strike)\](.+?)\[\/(s|strike)\]/is" />
-      <column name="replacement" value="&lt;span style=&quot;text-decoration: line-through;&quot;&gt;$2&lt;/span&gt;" />
-    </table>
-    <table name="bbcode">
-      <column name="bbcodeName" value="Italics" />
-      <column name="searchRegex" value="/\[(i|em)\](.+?)\[\/(i|em)\]/is" />
-      <column name="replacement" value="&lt;span style=&quot;font-style: oblique;&quot;&gt;$2&lt;/span&gt;" />
-    </table>
-    <table name="bbcode">
-      <column name="bbcodeName" value="Underline" />
-      <column name="searchRegex" value="/\[(u)\](.+?)\[\/(u)\]/is" />
-      <column name="replacement" value="&lt;span style=&quot;text-decoration: underline;&quot;&gt;$2&lt;/span&gt;" />
-    </table>
-
-
     <!-- Table censorBlackWhiteLists -->
 
 
