@@ -225,7 +225,7 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
       </tr>
       <tr>
         <td><strong>Database Name</strong></td>
-        <td><input type="text" name="db_database" /><br /><small>The name of the database FreezeMessenger's data will be stored in.</small></td>
+        <td><input type="text" name="db_database" /><br /><small>The name of the database FreezeMessenger's data will be stored in. <strong>If you are integrating with a forum, this must be the same database the forum uses.</strong></small></td>
       </tr>
       <tr>
         <td><strong>Create Database?<strong></td>
