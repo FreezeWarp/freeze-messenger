@@ -24,7 +24,7 @@ $installStatusDB = 0;
 
 // Define CONSTANTS (its a bit excessive here, but...)
 define('INSTALL_ISSUE_PHP_VERSION', 1);
-define('INSTALL_ISSUE_MYSQL', 16);
+define('INSTALL_ISSUE_DB', 16);
 define('INSTALL_ISSUE_HASH', 256);
 define('INSTALL_ISSUE_DATE', 512);
 define('INSTALL_ISSUE_MCRYPT', 1024);
@@ -54,7 +54,7 @@ if (extension_loaded('postgresql')) $installStatusDB += INSTALL_DB_POSTGRESQL;
 if (floatval(phpversion()) < 5.2) $installFlags += INSTALL_ISSUE_PHP_VERSION;
 
 // DB Issues
-if ($installStatusDB == 0) $installFlags += INSTALL_ISSUE_MYSQL;
+if ($installStatusDB == 0) $installFlags += INSTALL_ISSUE_DB;
 
 // Plugin Issues
 if (!extension_loaded('hash')) $installFlags += INSTALL_ISSUE_HASH;
@@ -148,7 +148,12 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
   <ul>
     <li>PHP 5.2+ (<?php echo (($installFlags & INSTALL_ISSUE_PHP_VERSION) ? '<strong>Not Detected - Version ' . phpversion() . ' Installed</strong>' : 'Looks Good'); ?>)</li>
     <ul>
-      <li>MySQL or MySQLi Extension (<?php echo (($installFlags & INSTALL_ISSUE_MYSQL) ? '<strong>Not Detected</strong>' : 'Looks Good'); ?>)</li>
+      <li>Database, Any of The Following: (<?php echo (($installFlags & INSTALL_ISSUE_DB) ? '<strong>Not Detected</strong>' : 'Looks Good'); ?>)</li>
+      <ul>
+        <li>MySQL (<?php echo (($installStatusDB & INSTALL_DB_MYSQL) ? 'Looks Good' : '<strong>Not Detected</strong>'); ?>)</li>
+        <li>MySQLi (<?php echo (($installStatusDB & INSTALL_DB_MYSQLI) ? 'Looks Good' : '<strong>Not Detected</strong>'); ?>)</li>
+        <li>PostGreSQL (<?php echo (($installStatusDB & INSTALL_DB_POSTGRESQL) ? 'Looks Good' : '<strong>Not Detected</strong>'); ?>)</li>
+      </ul>
       <li>Hash Extension (<?php echo (($installFlags & INSTALL_ISSUE_HASH) ? '<strong>Not Detected</strong>' : 'Looks Good'); ?>)</li>
       <li>Date/Time Extension (<?php echo (($installFlags & INSTALL_ISSUE_DATE) ? '<strong>Not Detected</strong>' : 'Looks Good'); ?>)</li>
       <li>MCrypt Extension (<?php echo (($installFlags & INSTALL_ISSUE_MCRYPT) ? '<strong>Not Detected</strong>' : 'Looks Good'); ?>)</li>

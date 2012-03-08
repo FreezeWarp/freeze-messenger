@@ -75,7 +75,7 @@ switch ($_REQUEST['phase']) {
         }
       }
 
-      $strippedVersionParts = explode('.',$strippedVersion); // Divide the decimal versions into an array; e.g. 5.0.1 becomes [0] => 5, [1] => 0, [2] => 1
+      $strippedVersionParts = explode('.', $strippedVersion); // Divide the decimal versions into an array; e.g. 5.0.1 becomes [0] => 5, [1] => 0, [2] => 1
       if ($driver === 'mysql' || $driver === 'mysqli') {
         if ($strippedVersionParts[0] <= 4) { // MySQL 4 is a no-go.
           die('You have attempted to connect to a MySQL version 4 database. MySQL 5.0.5+ is required for FreezeMessenger.');
@@ -199,10 +199,9 @@ switch ($_REQUEST['phase']) {
     }
 
 
+    $database->close();
 
     echo 'success';
-
-    $database->close();
   }
 
   break;

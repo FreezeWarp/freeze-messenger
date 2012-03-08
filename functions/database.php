@@ -37,6 +37,7 @@ class database {
     $this->insertId = 0;
     $this->errorLevel = E_USER_ERROR;
     $this->activeDatabase = false;
+    $this->dbLink = null;
   }
 
   public function setErrorLevel($errorLevel) {
@@ -229,7 +230,11 @@ class database {
         break;
 
         case 'close':
-          return mysql_close($this->dbLink);
+          $function = mysql_close($this->dbLink);
+          
+          unset($this->dbLink); 
+
+          return $function;
         break;
 
         case 'escape':
@@ -1313,7 +1318,9 @@ LIMIT
   }
 
   public function __destruct() {
-    $this->close();
+  	 if ($this->dbLink !== null) { // When close is called, the dbLink is nulled. This prevents redundancy.
+      $this->close();
+    }
   }
 }
 
