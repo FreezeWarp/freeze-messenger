@@ -1567,13 +1567,10 @@ var dia = {
       buttons : options.buttons,
       position : options.position,
       autoOpen: autoOpen,
-      height: 200,
       open: function() {
         if (typeof options.oF !== 'undefined') {
           options.oF();
         }
-        
-
         return false;
       },
       close: function() {
@@ -1591,7 +1588,7 @@ var dia = {
     };
 
 
-    dialog = $('<div style="display: none;" id="' + options.id +  '">' + options.content + options.position + '1</div>').appendTo('body');
+    dialog = $('<div style="display: none;" id="' + options.id +  '">' + options.content + '</div>').appendTo('body');
 
 
 

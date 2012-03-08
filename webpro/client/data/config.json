@@ -15,10 +15,10 @@
     "faviconType" : "image/x-icon",
     "ie9Color" : "blue",
     "keywords" : "",
-    "title" : "FreezeMessenger Beta 3 (DEV BUILD)",
+    "title" : "FreezeMessenger Beta 3 (DEV BUILD)"
   },
 
   "dom" : {
-    "doctype" : "<!DOCTYPE HTML>",
+    "doctype" : "<!DOCTYPE HTML>"
   }
 }

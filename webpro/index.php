@@ -48,13 +48,12 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
     <script src="client/js/jquery-1.7.1.min.js" type="text/javascript"></script>
     <script src="client/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
     <script src="client/js/jquery.plugins.js" type="text/javascript"></script>
-    <script src="client/js/fim-all.js" type="text/javascript"></script>
+    <script src="client/js/paint.js" type="text/javascript"></script>
     <link rel="stylesheet" media="screen" type="text/css" href="client/colorpicker/css/colorpicker.css" />
     <script type="text/javascript" src="client/colorpicker/js/colorpicker.js"></script>
 
     <!-- END Scripts -->
   </head>
   <body>
-
   </body>
 </html>
