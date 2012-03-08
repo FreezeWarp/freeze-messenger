@@ -35,7 +35,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
     <meta http-equiv="Content-type" value="text/html; charset=utf-8" />
     <meta name="robots" content="index, follow" />
-    <meta name="author" content="Joseph T. Parsons" />
+    <meta name="author" content="Joseph Parsons" />
     <meta name="keywords" content="im, instant messenger, awesomeness" />
     <meta name="description" content="Awesomenss provided by FreezeMessenger: we're awesome[ness]." />
 
@@ -45,7 +45,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
     <!-- START Scripts -->
 
     <!--[if IE]><script src="client/js/fim-ie.js" type="text/javascript"></script><![endif]-->
-    <script src="client/js/jquery-1.6.2.min.js" type="text/javascript"></script>
+    <script src="client/js/jquery-1.7.1.min.js" type="text/javascript"></script>
     <script src="client/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
     <script src="client/js/jquery.plugins.js" type="text/javascript"></script>
     <script src="client/js/fim-all.js" type="text/javascript"></script>

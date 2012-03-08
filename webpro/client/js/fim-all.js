@@ -1722,6 +1722,7 @@ var standard = {
       timeout: 5000,
       type: 'GET',
       cache: false,
+      async: false,
       success: function(json) {
         active = json.getRooms.rooms;
 
@@ -3070,7 +3071,6 @@ function windowDraw() {
   console.log('Redrawing window.');
 
 
-
   /*** Context Menus ***/
   contextMenuParseRoom();
 
@@ -3411,34 +3411,18 @@ $(document).ready(function() {
         }
 
         window.templates = data;
-        $('body').append(window.templates.main);
-        $('body').append(window.templates.chatTemplate);
-        $('body').append(window.templates.contextMenu);
       },
       async: false,
       cache: true
     })
   ).always(function() {
-    $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/' + theme + '/jquery-ui-1.8.16.custom.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/' + theme + '/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
-
+$.when(
+        $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/' + theme + '/jquery-ui-1.8.16.custom.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/' + theme + '/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />'),
+        $('body').append(window.templates.main),
+        $('body').append(window.templates.chatTemplate),
+        $('body').append(window.templates.contextMenu)).then(function() {$(document).ready(function(){
 
     if (fontsize) { $('body').css('font-size', fontsize + 'em'); }
-
-
-    if ($.cookie('webpro_userId') > 0) {
-      standard.login({
-        userId : $.cookie('webpro_userId'),
-        password : $.cookie('webpro_password'),
-        finish : function() {
-          if (!userId) { // The user is not actively logged in.
-            popup.login();
-          }
-        }
-      });
-    }
-    else {
-      popup.login();
-    }
 
 
     if (settings.disableFx) {
@@ -3585,9 +3569,25 @@ $(document).ready(function() {
     $(window).bind('focus', windowFocus);
     $(window).bind('hashchange', hashParse);
 
+    if ($.cookie('webpro_userId') > 0) {
+      standard.login({
+        userId : $.cookie('webpro_userId'),
+        password : $.cookie('webpro_password'),
+        finish : function() {
+          if (!userId) { // The user is not actively logged in.
+            popup.login();
+          }
+        }
+      });
+    }
+    else {
+      windowDraw();
+      popup.login();
+    }
+
 
     return false;
-  });
+  });});});
 });
 
 /*********************************************************
@@ -3625,6 +3625,8 @@ function windowResize() {
 
 
   $('body').css('min-height', windowHeight); // Set the body height to equal that of the window; this fixes many gradient issues in theming.
+  
+  return;
 }
 
 function windowBlur() {

@@ -1567,10 +1567,12 @@ var dia = {
       buttons : options.buttons,
       position : options.position,
       autoOpen: autoOpen,
+      height: 200,
       open: function() {
         if (typeof options.oF !== 'undefined') {
           options.oF();
         }
+        
 
         return false;
       },
@@ -1589,11 +1591,12 @@ var dia = {
     };
 
 
-    dialog = $('<div style="display: none;" id="' + options.id +  '">' + options.content + '</div>').appendTo('body');
+    dialog = $('<div style="display: none;" id="' + options.id +  '">' + options.content + options.position + '1</div>').appendTo('body');
 
 
 
-    if (ajax) {
+    if (ajax) {    var x = jQuery(this).position().left + jQuery(this).outerWidth();
+    var y = jQuery(this).position().top - jQuery(document).scrollTop();
       overlay = $('<div class="ui-widget-overlay"></div>').appendTo('body').width($(document).width()).height($(document).height());
       throbber = $('<img src="images/ajax-loader.gif" />').appendTo('body').css('position','absolute').offset({ left : (($(window).width() - 220) / 2), top : (($(window).height() - 19) / 2)});
 
