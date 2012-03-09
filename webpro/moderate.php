@@ -51,8 +51,8 @@ function container($title, $content, $class = 'page') {
 
 function formatXmlString($xml) {
 
-  // add marker linefeeds to aid the pretty-tokeniser (adds a linefeed between all tag-end boundaries)
-  $xml = preg_replace('/(>)(<)(\/*)/', "$1\n$2$3", $xml);
+  $xml = preg_replace('/(>)(<)(\/*)/', "$1\n$2$3", $xml); // add marker linefeeds to aid the pretty-tokeniser (adds a linefeed between all tag-end boundaries)
+  $xml = preg_replace('/^\s+/m','', $xml); // Get rid of all spaces at the beginning of lines.
 
   // now indent the tags
   $token      = strtok($xml, "\n");
@@ -61,33 +61,22 @@ function formatXmlString($xml) {
   $matches    = array(); // returns from preg_matches()
 
   // scan each line and adjust indent based on opening/closing tags
-  while ($token !== false) :
+  while ($token !== false) {
 
     // test for the various tag states
 
-    // 1. open and closing tags on same line - no change
-    if (preg_match('/.+<\/\w[^>]*>$/', $token, $matches)) :
-      $indent = 0;
-    elseif (preg_match('/\<\!\-\-(.+?)\-\-\>$/', $token, $matches)) :
-      $indent = 0;
-    // 2. closing tag - outdent now
-    elseif (preg_match('/^<\/\w/', $token, $matches)) :
-      $pad--;
-      $indent = 0;
-    // 3. opening tag - don't pad this one, only subsequent tags
-    elseif (preg_match('/^<[^>]*[^\/]>.*$/', $token, $matches))  :
-      $indent = 1;
-    // 4. no indentation needed
-    else :
-      $indent = 0;
-    endif;
+    if (preg_match('/.+<\/\w[^>]*>$/', $token, $matches)) { $indent = 0; } // 1. open and closing tags on same line - no change
+    elseif (preg_match('/\<\!\-\-(.+?)\-\-\>$/', $token, $matches)) { $indent = 0; } // 2. closing tag - outdent now
+    elseif (preg_match('/^<\/\w/', $token, $matches)) { $pad--; $indent = 0; } // 3. opening tag - don't pad this one, only subsequent tags
+    elseif (preg_match('/^<[^>]*[^\/]>.*$/', $token, $matches)) { $indent = 1; } // 4. no indentation needed
+    else { $indent = 0; }
 
     // pad the line with the required number of leading spaces
     $line    = str_pad($token, strlen($token) + $pad, ' ', STR_PAD_LEFT);
     $result .= $line . "\n"; // add to the cumulative result, with linefeed
     $token   = strtok("\n"); // get the next token
     $pad    += $indent; // update the pad size for subsequent lines
-  endwhile;
+  }
 
   return $result;
 }
