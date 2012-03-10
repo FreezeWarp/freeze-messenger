@@ -32,19 +32,20 @@ elseif (isset($_COOKIE['webproModerate_sessionHash'])) {
   $hookLogin['userIdComp'] = $_COOKIE['webproModerate_userId'];
 }
 
-/* This sets the cookie with the session hash if possible. */
-if (isset($sessionHash)) {
-  if (strlen($sessionHash) > 0) {
-    setcookie('webproModerate_sessionHash',$sessionHash);
-    setcookie('webproModerate_userId',$user['userId']);
-  }
-}
-
 
 /* Here we require the backend. */
 require('../global.php');
 require('../functions/fim_html.php');
 require('moderateFunctions.php'); // Functions that are used solely by the moderate interfaces.
+
+
+/* This sets the cookie with the session hash if possible (sessionHash will be set in validate.php). */
+if (isset($sessionHash)) {
+  if (strlen($sessionHash) > 0) {
+    setcookie('webproModerate_sessionHash', $sessionHash);
+    setcookie('webproModerate_userId', $user['userId']);
+  }
+}
 
 
 /* And this is the template. We should move it into the DB at some point. */
