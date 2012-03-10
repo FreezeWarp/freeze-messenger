@@ -79,6 +79,7 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
   <title>Freeze Messenger Installation</title>
   <meta name="robots" content="noindex, nofollow" />
   <meta name="author" content="Joseph T. Parsons" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <link rel="icon" id="favicon" type="image/png" href="images/favicon.png" />
   <!--[if lte IE 9]>
   <link rel="shortcut icon" id="faviconfallback" href="images/favicon1632.ico" />
