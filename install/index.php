@@ -40,7 +40,7 @@ define('INSTALL_ISSUE_CONFIGEXISTS', 2097152);
 
 define('INSTALL_DB_MYSQL', 1);
 define('INSTALL_DB_MYSQLI', 2);
-define('INSTALL_DB_POSTGRESQL', 4);
+//define('INSTALL_DB_POSTGRESQL', 4);
 define('INSTALL_DB_PDO', 4);
 define('INSTALL_DB_MSSQL', 8);
 
@@ -48,7 +48,7 @@ define('INSTALL_DB_MSSQL', 8);
 // Install Status - DB
 if (extension_loaded('mysql')) $installStatusDB += INSTALL_DB_MYSQL;
 if (extension_loaded('mysqli')) $installStatusDB += INSTALL_DB_MYSQLI;
-if (extension_loaded('postgresql')) $installStatusDB += INSTALL_DB_POSTGRESQL;
+//if (extension_loaded('postgresql')) $installStatusDB += INSTALL_DB_POSTGRESQL;
 
 // PHP Issues
 if (floatval(phpversion()) < 5.2) $installFlags += INSTALL_ISSUE_PHP_VERSION;
@@ -153,7 +153,7 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
       <ul>
         <li>MySQL (<?php echo (($installStatusDB & INSTALL_DB_MYSQL) ? 'Looks Good' : '<strong>Not Detected</strong>'); ?>)</li>
         <li>MySQLi (<?php echo (($installStatusDB & INSTALL_DB_MYSQLI) ? 'Looks Good' : '<strong>Not Detected</strong>'); ?>)</li>
-        <li>PostGreSQL (<?php echo (($installStatusDB & INSTALL_DB_POSTGRESQL) ? 'Looks Good' : '<strong>Not Detected</strong>'); ?>)</li>
+        <!--<li>PostGreSQL (php echo (($installStatusDB & INSTALL_DB_POSTGRESQL) ? 'Looks Good' : '<strong>Not Detected</strong>'); )</li>-->
       </ul>
       <li>Hash Extension (<?php echo (($installFlags & INSTALL_ISSUE_HASH) ? '<strong>Not Detected</strong>' : 'Looks Good'); ?>)</li>
       <li>Date/Time Extension (<?php echo (($installFlags & INSTALL_ISSUE_DATE) ? '<strong>Not Detected</strong>' : 'Looks Good'); ?>)</li>
@@ -201,7 +201,7 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
         <?php
           if ($installStatusDB & INSTALL_DB_MYSQL) echo '<option value="mysql">MySQL</option>';
           if ($installStatusDB & INSTALL_DB_MYSQLI) echo '<option value="mysql">MySQLi</option>';
-          if ($installStatusDB & INSTALL_DB_POSTGRESQL) echo '<option value="mysql">PostGreSQL (Broken)</option>';
+          //if ($installStatusDB & INSTALL_DB_POSTGRESQL) echo '<option value="mysql">PostGreSQL (Broken)</option>';
         ?>
         </select><br /><small>The datbase driver. For most users, "MySQL" will work fine.</td>
       </tr>
@@ -266,7 +266,7 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
         <td><strong>Forum Integration</strong></td>
         <td>
           <select name="forum">
-            <option value="vanilla">No Integration (Broken)</option>
+            <option value="vanilla">No Integration</option>
             <option value="vbulletin3">vBulletin 3.8</option>
             <option value="vbulletin4">vBulletin 4.1</option>
             <option value="phpbb">PHPBB 3</option>
@@ -292,7 +292,7 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
         <td><strong>Encryption Phrase</strong></td>
         <td><input type="text" name="encrypt_salt" /><br /><small>This is a phrase used to encrypt the data. You can change this later as long as you don't remove referrences to this one.</td>
       </tr>
-      <tr class="ui-widget-header">
+      <!--<tr class="ui-widget-header">
         <th colspan="2">Other Settings</th>
       </tr>
       <tr>
@@ -301,7 +301,7 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
           ' . (extension_loaded('apc') ? '<option value="apc">APC</option>' : '') . '
           ' . (extension_loaded('memcache') ? '<option value="memcache">MemCache</option>' : '') . '
         </select><br /><small>The cache to use. If you are able to set up MemCache, you are encouraged to use it. APC is provided with PHP 5.4 and can be installed with most distributions. If neither option is listed, FreezeMessenger will use far more CPU than neccessary.</td>
-      </tr>
+      </tr>-->
     </table><br /><br />
   </form>
 

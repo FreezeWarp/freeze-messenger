@@ -47,10 +47,10 @@ switch ($_REQUEST['phase']) {
   /* Part 1 : Connect to the Database, Create a New Database If Needed */
 
   $database = new database();
-  if ($driver === 'postgresql' && $createdb) {
-    die('PostGreSQL is unable to create databases. Please manually create the database before you continue.');
-  }
-  else {
+//  if ($driver === 'postgresql' && $createdb) {
+//    die('PostGreSQL is unable to create databases. Please manually create the database before you continue.');
+//  }
+//  else {
     if ($createdb) { // Databases that we will skip the create DB stuff for.
       $database->connect($host, $port, $userName, $password, false, $driver);
     }
@@ -84,13 +84,16 @@ switch ($_REQUEST['phase']) {
           die('You have attempted to connect to an incompatible version of a MySQL version 5 database (MySQL 5.0.0-5.0.4). MySQL 5.0.5+ is required for FreezeMessenger.');
         }
       }
-      elseif ($driver === 'postgresql') {
-        if ($strippedVersionParts[0] <= 7) { // PostGreSQL 7 is a no-go.
-          die('You have attempted to connect to a PostGreSQL version 7 database. PostGreSQL 8.2+ is required for FreezeMessenger.');
-        }
-        elseif ($strippedVersionParts[0] == 8 && $strippedVersionParts[1] <= 1) { // PostGreSQL 8.1 or 8.2 is also a no-go.
-          die('You have attempted to connect to an incompatible version of a PostGreSQL 8 database (PostGreSQL 8.0-8.1). PostGreSQL 8.2+ is required for FreezeMessenger.');
-        }
+//      elseif ($driver === 'postgresql') {
+//        if ($strippedVersionParts[0] <= 7) { // PostGreSQL 7 is a no-go.
+//          die('You have attempted to connect to a PostGreSQL version 7 database. PostGreSQL 8.2+ is required for FreezeMessenger.');
+//        }
+//        elseif ($strippedVersionParts[0] == 8 && $strippedVersionParts[1] <= 1) { // PostGreSQL 8.1 or 8.2 is also a no-go.
+//          die('You have attempted to connect to an incompatible version of a PostGreSQL 8 database (PostGreSQL 8.0-8.1). PostGreSQL 8.2+ is required for FreezeMessenger.');
+//        }
+//      }
+      else {
+        die('Unknown driver selected.');
       }
 
 
@@ -202,7 +205,7 @@ switch ($_REQUEST['phase']) {
     $database->close();
 
     echo 'success';
-  }
+//  }
 
   break;
 
