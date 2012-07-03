@@ -513,7 +513,7 @@ function fim_rand($min, $max) {
   if (function_exists('mt_rand')) {
     return mt_rand($min, $max);
   }
-  elseif (function_exists('rand') {
+  elseif (function_exists('rand')) {
     return rand($min, $max);
   }
   else {

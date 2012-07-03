@@ -48,7 +48,7 @@ $request = fim_sanitizeGPC('p', array(
     ),
   ),
   'passwordSalt' => array(
-    'context' => array(,
+    'context' => array(
       'type' => 'string',
       'filter' => 'ascii128',
     ),
@@ -66,8 +66,8 @@ if ($salts) {
   $encryptSaltNum = key($salts); // Get the key/id of the corrosponding salt.
 }
 else {
-  $encryptSalt = '',
-  $encryptSaltNum = 0,
+  $encryptSalt = '';
+  $encryptSaltNum = 0;
 }
 
 $passwordSalt = fim_generateSalt(); // Generate a random salt.
@@ -110,7 +110,7 @@ if ($continue) {
     $errStr = 'logginIn';
     $errDesc = 'You are already logged-in.';
   }
-  elseif ($database->getUser(false, $request['userName']) {
+  elseif ($database->getUser(false, $request['userName'])) {
     $errStr = 'userExists';
     $errDesc = 'That user specified already exists.';
   }

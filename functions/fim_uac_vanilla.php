@@ -17,7 +17,7 @@
 function fim_generateSalt() {
   // There are quite a few ways of creating a salt, and unfortunately there is very little concencus as to what is safe and what is not. To this end, I will use three seperate randomisation, uniqids, rand/mt_rand, and str_shuffle, as well as microtime, until I get more concencus.	
 
-  $salt = str_shuffle(str_replace('.','',uniqid('',true)) . str_replace('.','',microtime(true)) . mt_rand(1,100000000000))
+  $salt = str_shuffle(str_replace('.','',uniqid('',true)) . str_replace('.','',microtime(true)) . mt_rand(1,100000000000));
 
   if (strlen($salt) > 50) {
     return substr($salt, 0, 50);
