@@ -886,9 +886,7 @@ function fim_outputJson($array, $level = 0) {
     if (is_array($value)) {
       $data[] = "$datapre  {
 " . fim_outputJson($value, $level + 1) . "
-$indent}
-
-";
+$indent}";
     }
     else {
       if ($value === true) {
@@ -914,7 +912,7 @@ $indent}
     if ($level == 0) {
       return "{
   $data
-  }";
+}";
     }
     else {
       return $data;
@@ -1030,29 +1028,79 @@ function formatSize($size) {
 /**
  * Strict Sanitization of GET/POST/COOKIE Globals
  *
+ * @param string string
+ * @return array
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
+function fim_requestBodyToGPC($string) {
+  $arrayEntries = explode('&', $string);
+  $array = array();
+
+  foreach ($arrayEntries AS $arrayEntry) {
+    $arrayEntryParts = explode('=', $arrayEntry);
+    
+    $array[$arrayEntryParts[0]] = $arrayEntryParts[1];
+  }
+  
+  return $array;
+}
+
+
+
+/**
+ * Strict Sanitization of GET/POST/COOKIE Globals
+ *
  * @param array data
  * @return array
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_sanitizeGPC($type, $data) {
   global $config;
+  
+  // Get the request body.
+  $requestBody = file_get_contents('php://input');
 
   $metaDataDefaults = array(
     'type' => 'string',
     'require' => false,
     'context' => false,
   );
-
-  switch ($type) { // Set the GLOBAL to a local var for processing.
-    case 'g': case 'get': $activeGlobal = $_GET; break;
-    case 'p': case 'post': $activeGlobal = $_POST; break;
-    case 'c': case 'cookie': $activeGlobal = $_COOKIE; break;
-    case 'r': case 'request': $activeGlobal = $_REQUEST; break;
-    default:
-    trigger_error('Invalid type in fim_sanitizeGPC', E_USER_WARNING);
-
-    return false;
-    break;
+  
+  if (strlen($requestBody) > 0) { // If a request body exists, we will use it instead of PHP's generated superglobals. This allows for further REST compatibility.
+    switch ($type) {
+      case 'g': case 'get': // GET should NOT use a request body, though it is supported.
+        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+	  $activeGlobal = fim_requestBodyToGPC($requestBody);
+	}
+      break;
+      case 'p': case 'post': // POST can use a request body; it is ultimately the preferrence of the implementor.
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+	  $activeGlobal = fim_requestBodyToGPC($requestBody);
+	}
+      break;
+      case 'c': case 'cookie':
+        trigger_error('Invalid request method in fim_sanitizeGPC: cannot use request body with COOKIEs.', E_USER_WARNING);
+      break;
+      case 'r': case 'request':
+        
+      break;  
+      default:
+        trigger_error('Invalid type in fim_sanitizeGPC', E_USER_WARNING);
+        return false;
+      break;
+    }
+  }
+  else { // Request information is stored in superglobals; get that information.
+    switch ($type) { // Set the GLOBAL to a local var for processing.
+        case 'g': case 'get': $activeGlobal = $_GET; break;
+        case 'p': case 'post': $activeGlobal = $_POST; break;
+        case 'c': case 'cookie': $activeGlobal = $_COOKIE; break;
+        case 'r': case 'request': $activeGlobal = $_REQUEST; break;
+        default:
+          trigger_error('Invalid type in fim_sanitizeGPC', E_USER_WARNING);
+          return false;
+        break;
+    }
   }
 
   if (count($activeGlobal) > 0 && is_array($activeGlobal)) { // Make sure the active global is populated with data.

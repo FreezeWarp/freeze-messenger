@@ -35,8 +35,6 @@ $apiRequest = true;
 require('../global.php');
 require('../functions/fim_uac_vanilla.php');
 
-
-
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
   'userName' => array(),
@@ -74,6 +72,7 @@ $passwordSalt = fim_generateSalt(); // Generate a random salt.
 
 
 /* Encrypt Sent Password */
+echo $request['passwordEncrypt'];
 switch ($request['passwordEncrypt']) {
   case 'plaintext':
   $password = fim_generatePassword($passwordDecrypted, $passwordSalt, $encryptSaltNum, 0);
@@ -89,7 +88,7 @@ switch ($request['passwordEncrypt']) {
 
   default:
   $errStr = 'badEncryption';
-  $errDesc = 'The message encryption specified is not supported.';
+  $errDesc = 'The password encryption specified is not supported.';
 
   $continue = false;
   break;
