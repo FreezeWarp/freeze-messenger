@@ -264,8 +264,7 @@ $dbConnect[\'integration\'][\'database\'] = \'\';',
      '$encrypt = true;',
      '$encryptUploads = true;',
      '$enableUploads = true;',
-     '$enableGeneralUploads = true;',
-     '$loginConfig[\'recaptchaKey\'] = \'\'',
+     '$enableGeneralUploads = true;'
   );
 
   $replace = array(
@@ -299,8 +298,7 @@ $dbConnect[\'integration\'][\'database\'] = \'' . addslashes($database) . '\';',
     '$encrypt = ' . ($enableEncrypt & 1 ? 'true' : 'false') . ';',
     '$encryptUploads = ' . ($enableEncrypt & 2 ? 'true' : 'false') . ';',
     '$enableUploads = ' . ($enableUploads & 1 ? 'true' : 'false') . ';',
-    '$enableGeneralUploads = ' . ($enableUploads & 2 ? 'true' : 'false') . ';',
-    '$loginConfig[\'recaptchaKey\'] = \'' .  . '\'';
+    '$enableGeneralUploads = ' . ($enableUploads & 2 ? 'true' : 'false') . ';'
   );
 
 
