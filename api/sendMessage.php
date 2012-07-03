@@ -55,10 +55,16 @@ $request = fim_sanitizeGPC('p', array(
 ));
 $ip = $_SERVER['REMOTE_ADDR']; // Get the IP address of the user.
 
+
+/* Plugin Hook */
 ($hook = hook('sendMessage_start') ? eval($hook) : '');
 
 
+/* Get Room for DB */
 $room = $database->getRoom($request['roomId']);
+
+
+/* Censor Fun */
 $listIds = array_keys($database->getRoomCensorLists($room['roomId']));
 
 $words = $slaveDatabase->select(
@@ -133,11 +139,11 @@ if ($words) {
 }
 
 
-
+/* Plugin Hook */
 ($hook = hook('sendMessage_preGen') ? eval($hook) : '');
 
 
-
+/* Start Processing */
 if ($continue) {
   if (!$room) { // Bad room.
     $errStr = 'badRoom';

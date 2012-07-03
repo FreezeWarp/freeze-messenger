@@ -561,7 +561,7 @@ function fim_encodeXmlAttr($data) {
  *
  * @param string $color - The color, either 3 or 6 characters long with optional "#" appended.
  * @return array
- * @author Unknown
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function html2rgb($color) {
   global $config;
@@ -602,7 +602,7 @@ function html2rgb($color) {
  * @param int $g
  * @param int $b
  * @return string
- * @author Unknown
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function rgb2html($r, $g = false, $b = false) {
   global $config;
@@ -962,6 +962,7 @@ function fim_outputKeys($array, $level = 0) { // Used only for creating document
 /**
  * Output Using print_r
  * @param array $array
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_outputArray() {
   global $config;
@@ -1309,6 +1310,14 @@ function fim_explodeEscaped($delimiter, $string) {
   }
   return $fixed;
 }
+
+
+
+/**
+ * Custom Error Handler
+ *
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 
 function fim_errorHandler($errno, $errstr, $errfile, $errline) {
   global $config;

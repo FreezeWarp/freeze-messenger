@@ -70,19 +70,21 @@ else {
   $encryptSaltNum = 0,
 }
 
+$passwordSalt = fim_generateSalt(); // Generate a random salt.
+
 
 /* Encrypt Sent Password */
 switch ($request['passwordEncrypt']) {
   case 'plaintext':
-  $password = fim_generatePassword($passwordDecrypted, fim_generateSalt(), $encryptSaltNum, 0);
+  $password = fim_generatePassword($passwordDecrypted, $passwordSalt, $encryptSaltNum, 0);
   break;
 
   case 'sha256':
-  $password = fim_generatePassword($passwordDecrypted, fim_generateSalt(), $encryptSaltNum, 1);
+  $password = fim_generatePassword($passwordDecrypted, $passwordSalt, $encryptSaltNum, 1);
   break;
 
   case 'sha256-salt':
-  $password = fim_generatePassword($passwordDecrypted, fim_generateSalt(), $encryptSaltNum, 2);
+  $password = fim_generatePassword($passwordDecrypted, $passwordSalt, $encryptSaltNum, 2);
   break;
 
   default:
@@ -94,9 +96,11 @@ switch ($request['passwordEncrypt']) {
 }
 
 
+/* Plugin Hook Start */
 ($hook = hook('sendUser_start') ? eval($hook) : '');
 
 
+/* Start Processing */
 if ($continue) {
   if ($loginConfig['method'] != 'vanilla') {
     $errStr = 'notSupported';
@@ -126,6 +130,8 @@ if ($continue) {
     $userData = array(
       'userName' => $request['userName'],
       'password' => $password,
+      'passwordSalt' => $passwordSalt,
+      'passwordSaltNum' => $encryptSaltNum,
       'dob' => $request['dob'],
       'email' => $request['email'],
     );

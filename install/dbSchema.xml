@@ -405,9 +405,9 @@
       <column name="lastSync" type="time" default="0" comment="The date the userdata was last synced. This is not applicable for vanilla logins." />
 
       <!-- Password Fun -->
-      <column name="password" type="string" maxlen="32" comment="The hashed password of the user. It is only used on vanilla logins." />
-      <column name="passwordSalt" type="string" maxlen="32" comment="The salt used for the password of the user. It is only used on vanilla logins." />
-      <column name="passwordSaltNum" type="string" maxlen="32" comment="An additional number corresponding to an encryption salt used to salt the password. It is only used on vanilla logins." />
+      <column name="password" type="string" maxlen="64" comment="The hashed password of the user. It is only used on vanilla logins." />
+      <column name="passwordSalt" type="string" maxlen="50" comment="The salt used for the password of the user. It is only used on vanilla logins." />
+      <column name="passwordSaltNum" type="int" maxlen="6" comment="An additional number corresponding to an encryption salt used to salt the password. It is only used on vanilla logins." />
 
       <!-- User Display -->
       <column name="avatar" type="string" maxlen="1000" comment="The absolute URI of the user's avatar." />

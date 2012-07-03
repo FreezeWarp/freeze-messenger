@@ -41,7 +41,7 @@ foreach (array('mysql', 'json', 'mbstring', 'mcrypt', 'pcre', 'dom') AS $module)
   }
 }
 
-if (!extension_loaded('apc') && !extension_loaded('memcache')) {
+if (!extension_loaded('apc')/* && !extension_loaded('memcache')*/) {
   die("Neither the <strong>apc</strong> or <strong>memcache</strong> modules could not be found. Please install PHP <strong>apc</strong> or <strong>memcache</strong> compatibility. See the documentation for help.");
 }
 
