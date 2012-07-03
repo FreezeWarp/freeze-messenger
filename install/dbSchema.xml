@@ -2,6 +2,39 @@
 
 <dbSchema version="3.0">
   <database name="__CORE__" charset="utf8">
+    <table name="accessLog" type="general" comment="Log of all API calls. [RESERVED FOR VERSION 4]">
+      <column name="userId" type="int" maxlen="8" comment="The ID of the user." />
+      <column name="action" type="string" maxlen="64" comment="The action performed." />
+      <column name="info" type="int" maxlen="8" comment="Information pertaining to action." />
+      <column name="time" type="time" comment="Time of access." />
+      <column name="executionTime" type="int" maxlen="10" comment="Milliseconds required to perform action." />
+      <column name="clientId" type="int" maxlen="8" comment="The client used." />
+      <column name="userAgent" type="string" maxlen="1000" comment="The environment the agent is running under, usually a web browser or operating system identifer." />
+      <column name="ipAddress" type="string" maxlen="100" comment="The Internet Protocol addressed used to make the request." />
+
+      <key name="session" type="primary" />
+    </table>
+
+    <table name="activeClients" type="general" comment="Active clients. [RESERVED FOR VERSION 4]">
+      <column name="clientId" type="int" maxlen="8" comment="The ID of the client." />
+      <column name="session" type="string" maxlen="64" comment="The unique session string used." />
+      <column name="userId" type="int" maxlen="8" comment="The ID of the user." />
+      <column name="lastActive" type="time" comment="Last poll of API." />
+      <column name="userAgent" type="string" maxlen="1000" comment="The environment the agent is running under, usually a web browser or operating system identifer." />
+
+      <key name="session" type="primary" />
+    </table>
+    
+    <table name="clients" type="general" comment="Registered clients. [RESERVED FOR VERSION 4]">
+      <column name="clientId" type="int" maxlen="8" autoincrement="true" comment="The ID of the client." />
+      <column name="accessLevel" type="int" maxlen="2" comment="The access level granted to the client." />
+      <column name="agent" type="string" maxlen="1000" comment="The descriptive string of the client." />
+      <column name="userAgent" type="string" maxlen="1000" comment="The text/data associated with the template." />
+      <column name="interfaceId" type="int" maxlen="6" comment="The interface that uses this template." />
+
+      <key name="session" type="primary" />
+    </table>
+
     <table name="configuration" type="general">
       <column name="directive" type="string" maxlen="50" comment="The configuration directive." />
       <column name="value" type="string" maxlen="1000" comment="The current value of the configuration directive." />
@@ -93,6 +126,8 @@
       <column name="salt" type="int" maxlen="6" comment="The salt number (stored in the product configuration) used for encryption." />
       <column name="iv" type="string" maxlen="255" comment="The base64-encoded IV used for encryption." />
       <column name="contents" type="string" maxlen="4294967296" comment="The base64-encoded binary data of the file." />
+
+      <column name="location" type="string" maxlen="1024" comment="The location of the file on the fileserver, if used." />
 
       <key name="versionId" type="primary" />
       <key name="fileId" type="index" />
@@ -458,6 +493,41 @@
       <key name="userPrivs" type="index" />
       <key name="adminPrivs" type="index" />
       <key name="lang" type="index" />
+    </table>
+
+
+    <table name="userHistory" type="general">
+      <!-- General -->
+      <column name="userId" type="int" maxlen="8" comment="The unique ID of the user." />
+      <column name="userName" type="string" maxlen="50" comment="The user's name." />
+      <column name="userGroup" type="int" maxlen="6" default="1" comment="The admin-set usergroup ID of the user." />
+      <column name="allGroups" type="string" maxlen="1000" comment="A comma-seperated list of the IDs of all admin-set groups the user is a part of. This is not used on PHPBB and Vanilla logins (both instead use socialGroups)." />
+      <column name="options" type="bitfield" bits="16" comment="A bitfield corrosponding to the user's settings." />
+      <column name="socialGroups" type="string" maxlen="1000" comment="A comma-seperated list of the ids of all groups the user has joined." />
+
+      <!-- Password Fun -->
+      <column name="password" type="string" maxlen="64" comment="The hashed password of the user. It is only used on vanilla logins." />
+      <column name="passwordSalt" type="string" maxlen="50" comment="The salt used for the password of the user. It is only used on vanilla logins." />
+      <column name="passwordSaltNum" type="int" maxlen="6" comment="An additional number corresponding to an encryption salt used to salt the password. It is only used on vanilla logins." />
+
+      <!-- User Display -->
+      <column name="avatar" type="string" maxlen="1000" comment="The absolute URI of the user's avatar." />
+      <column name="profile" type="string" maxlen="1000" comment="The absolute URI of the user's profile link or website." />
+      <column name="userFormatStart" type="string" maxlen="300" comment="HTML-formatting to be prepended to the user's name for its display." />
+      <column name="userFormatEnd" type="string" maxlen="300" comment="HTML-formatting to be appended to the user's name for its display." />
+
+      <!-- Permissions -->
+      <column name="userPrivs" type="bitfield" bits="16" default="16" comment="A bitfield corrosponding to admin-set user priviledges." />
+      <column name="adminPrivs" type="bitfield" bits="16" comment="A bitfield corrosponding to admin-set administrative priviledges." />
+
+      <!-- Parental Controls -->
+      <column name="parentalFlags" type="string" maxlen="255" comment="An advanced comma-seperated (e.g. violence=10,language=13) list of parent content flags to restrict access to." />
+      <column name="parentalAge" type="string" restrict="6,10,13,16,18" comment="Content rated above this rating should be blocked." />
+
+      <column name="changeTime" type="string" maxlen="50" comment="The time at which the above information was altered." />
+
+
+      <key name="userId,changeTime" type="primary" />
     </table>
   </database>
 
