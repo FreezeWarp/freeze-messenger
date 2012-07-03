@@ -35,16 +35,27 @@
       <key name="session" type="primary" />
     </table>
 
-    <table name="configuration" type="general">
+    <table name="configuration" type="general" comment="Configuration directives.">
       <column name="directive" type="string" maxlen="50" comment="The configuration directive." />
       <column name="value" type="string" maxlen="1000" comment="The current value of the configuration directive." />
       <column name="type" type="string" restrict="integer,float,string,bool,array" comment="A typecast to be applied to the value after being retrieved. Bool and array behave slightly different, however: bool converts 'true' and '1' to true but everything else to false, while array splits a string using an escape-capable string split function." />
 
       <key name="directive" type="primary" />
     </table>
+    
+    
+    <table name="confirmations" type="general" comment="Temporary information to store codes for email and other confirmations.">
+      <!-- General -->
+      <column name="action" type="string" maxlen="10" comment="The action being performed." />
+      <column name="id" type="int" maxlen="8" comment="The ID of the action being performed." />
+      <column name="code" type="int" maxlen="6" default="1" comment="The admin-set usergroup ID of the user." />
+      <column name="time" type="string" maxlen="1000" comment="A comma-seperated list of the IDs of all admin-set groups the user is a part of. This is not used on PHPBB and Vanilla logins (both instead use socialGroups)." />
+
+      <key name="action,id,time" type="primary" />
+    </table>
 
 
-    <table name="counters" type="general">
+    <table name="counters" type="general" comment="A cached list of counters. Can be rebuilt from other tables (and must be rebuilt for deletions, etc.)">
       <column name="counterName" type="string" maxlen="50" comment="The name of the counter." />
       <column name="counterValue" type="int" maxlen="10" comment="The current value of the counter." />
 
@@ -203,6 +214,7 @@
       <column name="userId" type="int" maxlen="8" comment="The ID of the user who made the message." />
       <column name="roomId" type="int" maxlen="6" comment="The ID of the room the message was made in." />
       <column name="text" type="string" maxlen="5000" comment="The text of the message." />
+      <column name="textSha1" type="string" maxlen="40" comment="A SHA1 hash of the text of the message." />
       <column name="salt" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
       <column name="iv" type="string" maxlen="15" comment="The base64-encoded IV used for encryption." />
       <column name="deleted" type="bool" default="0" comment="Whether or not the message has been deleted by an administrator." />
@@ -427,7 +439,7 @@
     </table>
 
 
-    <table name="users" type="general">
+    <table name="users" type="general" comment="The users.">
       <!-- General -->
       <column name="userId" type="int" maxlen="8" comment="The unique ID of the user." />
       <column name="userName" type="string" maxlen="50" comment="The user's name." />
@@ -496,7 +508,7 @@
     </table>
 
 
-    <table name="userHistory" type="general">
+    <table name="userHistory" type="general" comment="A history of modifications to the user table.">
       <!-- General -->
       <column name="userId" type="int" maxlen="8" comment="The unique ID of the user." />
       <column name="userName" type="string" maxlen="50" comment="The user's name." />
@@ -524,7 +536,7 @@
       <column name="parentalFlags" type="string" maxlen="255" comment="An advanced comma-seperated (e.g. violence=10,language=13) list of parent content flags to restrict access to." />
       <column name="parentalAge" type="string" restrict="6,10,13,16,18" comment="Content rated above this rating should be blocked." />
 
-      <column name="changeTime" type="string" maxlen="50" comment="The time at which the above information was altered." />
+      <column name="changeTime" type="time" comment="The time at which the above information was altered." />
 
 
       <key name="userId,changeTime" type="primary" />

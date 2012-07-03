@@ -667,6 +667,7 @@ class fimDatabase extends database {
         'roomId' => (int) $roomData['roomId'],
         'userId' => (int) $userData['userId'],
         'text' => $messageTextEncrypted,
+        'textSha1' => sha1($messageText),
         'salt' => $encryptSalt,
         'iv' => $encryptIV,
         'ip' => $_SERVER['REMOTE_ADDR'],
