@@ -76,6 +76,31 @@
           <td><strong>Password (Again)</strong></td>
           <td><input id="passwordConfirm" type="password" name="register_passwordConfirm" /><br /><small>Retype your password to confirm its accuracy</small></td>
         </tr>
+        <tr>
+          <td><strong>Email</strong></td>
+          <td><input id="passwordConfirm" type="password" name="register_passwordConfirm" /><br /><small>Retype your password to confirm its accuracy</small></td>
+        </tr>
+        <tr>
+          <td><strong>Date of Birth</strong></td>
+          <td>
+            <div name="datepicker" id="datepicker"></div>
+            <script type="text/javascript">
+            $(document).ready(function() {
+              var date = new Date();
+              
+              $("#datepicker").datepicker({
+                changeMonth: true,
+                changeYear: true,
+                yearRange: "1900:" + date.getFullYear(),
+                onChangeMonthYear: function(year, month, inst) {
+                  $("#datepicker").datepicker('setDate',month + '/01/' + year);
+                }
+              });
+            });
+            </script>
+            <small>Select your month, year, and day of birth in the above calendar.</small>
+          </td>
+        </tr>    
       </table>
     </form><br /><br />
 
