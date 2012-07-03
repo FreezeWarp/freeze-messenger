@@ -1026,13 +1026,15 @@ function formatSize($size) {
 
 
 /**
- * Strict Sanitization of GET/POST/COOKIE Globals
+ * Converts a request string to an array. The request string must be able to be urldecoded (thus, "%" characters must be urlencoded, though "&" and "=" can be included via escaping).
  *
  * @param string string
  * @return array
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_requestBodyToGPC($string) {
+  $string = urldecode($string);
+
   $arrayEntries = explode('&', $string);
   $array = array();
 
@@ -1073,7 +1075,7 @@ function fim_sanitizeGPC($type, $data) {
 	  $activeGlobal = fim_requestBodyToGPC($requestBody);
 	}
       break;
-      case 'p': case 'post': // POST can use a request body; it is ultimately the preferrence of the implementor.
+      case 'p': case 'post': // POST can use a request body; it is ultimately the preferrence of the implementor .
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	  $activeGlobal = fim_requestBodyToGPC($requestBody);
 	}
@@ -1082,7 +1084,7 @@ function fim_sanitizeGPC($type, $data) {
         trigger_error('Invalid request method in fim_sanitizeGPC: cannot use request body with COOKIEs.', E_USER_WARNING);
       break;
       case 'r': case 'request':
-        
+	$activeGlobal = fim_requestBodyToGPC($requestBody);
       break;  
       default:
         trigger_error('Invalid type in fim_sanitizeGPC', E_USER_WARNING);
@@ -1318,45 +1320,40 @@ function fim_hasArray($array) {
 
 
 /**
- * Implements PHP's explode with support for escaped delimeters.
+ * Implements PHP's explode with support for escaped delimeters. You can not use as a delimiter or escape character 'µ', 'ñ', or 'ø' (which are used in place of '&', '#', ';' to free up those characters).
  *
  * @param string delimiter
  * @param string string
- * @return array
- * @author <adrian@bilsoftware.com>
- * @source http://www.php.net/manual/en/function.explode.php#89138
+ * @param string escapeChar - The character that escapes the string.
+ * @return string
  */
-function fim_explodeEscaped($delimiter, $string) {
-  global $config;
+function fim_explodeEscaped($delimiter, $string, $escapeChar = '//') {
+  $string = str_replace($escapeChar . $delimiter, urlencode($delimiter), $string);
+  return array_map('fim_decodeEntities', explode($delimiter, $string));
+}
 
-  $exploded = explode($delimiter, $string);
-  $fixed = array();
+/**
+ * Encode entities using a custom format.
+ *
+ * @param string delimiter
+ * @param array find - An array of characters to replace in the entity string (in most cases, should include only "&", "#", ";").
+ * @param array replace - An array of characters to replace with in the entity string (in most cases, this should include characters that would rarely be used for exploding a string).
+ * @return string
+ */
+function fim_encodeEntities($string, $find = array('&', '#', ';'), $replace = array('µ', 'ñ', 'ó')) {
+  return str_replace($find, $replace, mb_encode_numericentity($string, array(0x0, 0x10ffff, 0, 0xffffff), "UTF-8"));
+}
 
-  for ($k = 0, $l = count($exploded); $k < $l; ++$k) {
-    if ($exploded[$k][strlen($exploded[$k]) - 1] == '\\') {
-      if ($k != 0 && isset($exploded[$k][strlen($exploded[$k - 1]) - 1])) {
-        if ($exploded[$k][strlen($exploded[$k - 1]) - 1] == '\\') {
-          $fixed[] = '\\';
-
-          continue;
-        }
-      }
-
-      if ($k + 1 >= $l) {
-        $fixed[] = trim($exploded[$k]);
-        break;
-      }
-      $exploded[$k][strlen($exploded[$k]) - 1] = $delimiter;
-      $exploded[$k] .= $exploded[$k + 1];
-      array_splice($exploded, $k + 1, 1);
-      --$l;
-      --$k;
-    }
-    else {
-      $fixed[] = trim($exploded[$k]);
-    }
-  }
-  return $fixed;
+/**
+ * Decode entities using a custom format.
+ *
+ * @param string delimiter
+ * @param string string
+ * @param string escapeChar - The character that escapes the string.
+ * @return string
+ */
+function fim_decodeEntities($string, $replace = array('µ', 'ñ', 'ó'), $find = array('&', '#', ';')) {
+  return mb_decode_numericentity($string, array(0x0, 0x10ffff, 0, 0xffffff), "UTF-8");
 }
 
 

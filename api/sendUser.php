@@ -58,43 +58,6 @@ $request = fim_sanitizeGPC('p', array(
 ));
 
 
-/* Get Salts Used For Encryption */
-if ($salts) {
-  $encryptSalt = end($salts); // Move the file pointer to the last entry in the array (and return its value)
-  $encryptSaltNum = key($salts); // Get the key/id of the corrosponding salt.
-}
-else {
-  $encryptSalt = '';
-  $encryptSaltNum = 0;
-}
-
-$passwordSalt = fim_generateSalt(); // Generate a random salt.
-
-
-/* Encrypt Sent Password */
-echo $request['passwordEncrypt'];
-switch ($request['passwordEncrypt']) {
-  case 'plaintext':
-  $password = fim_generatePassword($passwordDecrypted, $passwordSalt, $encryptSaltNum, 0);
-  break;
-
-  case 'sha256':
-  $password = fim_generatePassword($passwordDecrypted, $passwordSalt, $encryptSaltNum, 1);
-  break;
-
-  case 'sha256-salt':
-  $password = fim_generatePassword($passwordDecrypted, $passwordSalt, $encryptSaltNum, 2);
-  break;
-
-  default:
-  $errStr = 'badEncryption';
-  $errDesc = 'The password encryption specified is not supported.';
-
-  $continue = false;
-  break;
-}
-
-
 /* Plugin Hook Start */
 ($hook = hook('sendUser_start') ? eval($hook) : '');
 
@@ -121,11 +84,48 @@ if ($continue) {
     $errStr = 'noEmail';
     $errDesc = 'No email was specified.';
   }
-  elseif (!$passwordDecrypted) {
+  elseif (!$request['password']) {
     $errStr = 'noPassword';
     $errDesc = 'No password was specified.';
   }
   else {
+    // Get Salts Used For Encryption
+    if ($salts) {
+      $encryptSalt = end($salts); // Move the file pointer to the last entry in the array (and return its value)
+      $encryptSaltNum = key($salts); // Get the key/id of the corrosponding salt.
+    }
+    else {
+      $encryptSalt = '';
+      $encryptSaltNum = 0;
+    }
+
+    $passwordSalt = fim_generateSalt(); // Generate a random salt.
+
+
+    // Encrypt Sent Password
+    switch ($request['passwordEncrypt']) {
+      case 'plaintext':
+      $password = fim_generatePassword($request['password'], $passwordSalt, $encryptSaltNum, 0);
+      break;
+
+      case 'sha256':
+      $password = fim_generatePassword($request['password'], $passwordSalt, $encryptSaltNum, 1);
+      break;
+
+      case 'sha256-salt':
+      $password = fim_generatePassword($request['password'], $passwordSalt, $encryptSaltNum, 2);
+      break;
+
+      default:
+      $errStr = 'badEncryption';
+      $errDesc = 'The password encryption specified is not supported.';
+
+      $continue = false;
+      break;
+    }
+
+    
+    // Create Userdata Array
     $userData = array(
       'userName' => $request['userName'],
       'password' => $password,
@@ -135,8 +135,12 @@ if ($continue) {
       'email' => $request['email'],
     );
 
+    
+    // Hook
     ($hook = hook('sendUser_preAdd') ? eval($hook) : '');
 
+    
+    // Insert Data
     if ($continue) {
       $database->insert("{$sqlPrefix}users", $userData);
     }
