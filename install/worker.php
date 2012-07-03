@@ -40,6 +40,7 @@ switch ($_REQUEST['phase']) {
   $databaseName = urldecode($_GET['db_database']);
   $createdb = urldecode($_GET['db_createdb']);
   $prefix = urldecode($_GET['db_tableprefix']);
+  $prefix = urldecode($_GET['db_tableprefix']);
 
 
 
@@ -210,6 +211,9 @@ switch ($_REQUEST['phase']) {
   break;
 
   case 2: // Config File
+
+  // Note: This writes a file to the server, which is a very sensitive action (and for a reason is never done elsewhere). This is NOT secure, but should only be used by users wishing to install the product.
+
   $driver = urldecode($_GET['db_driver']);
   $host = urldecode($_GET['db_host']);
   $port = urldecode($_GET['db_port']);
@@ -224,6 +228,8 @@ switch ($_REQUEST['phase']) {
 
   $encryptSalt = urldecode($_GET['encrypt_salt']);
   $enableEncrypt = (int) $_GET['enable_encrypt'];
+
+  $recaptchaKey = urldecode($_GET['recaptcha_key']);
 
   $base = file_get_contents('config.base.php');
 
@@ -259,31 +265,32 @@ $dbConnect[\'integration\'][\'database\'] = \'\';',
      '$encryptUploads = true;',
      '$enableUploads = true;',
      '$enableGeneralUploads = true;',
+     '$loginConfig[\'recaptchaKey\'] = \'\'',
   );
 
   $replace = array(
-    '$dbConnect[\'core\'][\'driver\'] = \'' . $driver . '\';
-$dbConnect[\'slave\'][\'driver\'] = \'' . $driver . '\';
-$dbConnect[\'integration\'][\'driver\'] = \'' . $driver . '\';',
-    '$dbConnect[\'core\'][\'host\'] = \'' . $host . '\';
-$dbConnect[\'slave\'][\'host\'] = \'' . $host . '\';
-$dbConnect[\'integration\'][\'host\'] = \'' . $host . '\';',
-    '$dbConnect[\'core\'][\'port\'] = ' . $port . ';
-$dbConnect[\'slave\'][\'port\'] = ' . $port . ';
-$dbConnect[\'integration\'][\'port\'] = ' . $port . ';',
-    '$dbConnect[\'core\'][\'username\'] = \'' . $userName . '\';
-$dbConnect[\'slave\'][\'username\'] = \'' . $userName . '\';
-$dbConnect[\'integration\'][\'username\'] = \'' . $userName . '\';',
-    '$dbConnect[\'core\'][\'password\'] = \'' . $password . '\';
-$dbConnect[\'slave\'][\'password\'] = \'' . $password . '\';
-$dbConnect[\'integration\'][\'password\'] = \'' . $password . '\';',
-    '$dbConnect[\'core\'][\'database\'] = \'' . $database . '\';
-$dbConnect[\'slave\'][\'database\'] = \'' . $database . '\';
-$dbConnect[\'integration\'][\'database\'] = \'' . $database . '\';',
-    '$dbConfig[\'vanilla\'][\'tablePrefix\'] = \'' . $prefix . '\';',
-    '$dbConfig[\'integration\'][\'tablePreix\'] = \'' . $forumTablePrefix . '\';',
-    '$loginConfig[\'method\'] = \'' . $forum . '\';',
-    '$loginConfig[\'url\'] = \'' . $forumUrl . '\';',
+    '$dbConnect[\'core\'][\'driver\'] = \'' . addslashes($driver) . '\';
+$dbConnect[\'slave\'][\'driver\'] = \'' . addslashes($driver) . '\';
+$dbConnect[\'integration\'][\'driver\'] = \'' . addslashes($driver) . '\';',
+    '$dbConnect[\'core\'][\'host\'] = \'' . addslashes($host) . '\';
+$dbConnect[\'slave\'][\'host\'] = \'' . addslashes($host) . '\';
+$dbConnect[\'integration\'][\'host\'] = \'' . addslashes($host) . '\';',
+    '$dbConnect[\'core\'][\'port\'] = ' . addslashes($port) . ';
+$dbConnect[\'slave\'][\'port\'] = ' . addslashes($port) . ';
+$dbConnect[\'integration\'][\'port\'] = ' . addslashes($port) . ';',
+    '$dbConnect[\'core\'][\'username\'] = \'' . addslashes($userName) . '\';
+$dbConnect[\'slave\'][\'username\'] = \'' . addslashes($userName) . '\';
+$dbConnect[\'integration\'][\'username\'] = \'' . addslashes($userName) . '\';',
+    '$dbConnect[\'core\'][\'password\'] = \'' . addslashes($password) . '\';
+$dbConnect[\'slave\'][\'password\'] = \'' . addslashes($password) . '\';
+$dbConnect[\'integration\'][\'password\'] = \'' . addslashes($password) . '\';',
+    '$dbConnect[\'core\'][\'database\'] = \'' . addslashes($database) . '\';
+$dbConnect[\'slave\'][\'database\'] = \'' . addslashes($database) . '\';
+$dbConnect[\'integration\'][\'database\'] = \'' . addslashes($database) . '\';',
+    '$dbConfig[\'vanilla\'][\'tablePrefix\'] = \'' . addslashes($prefix) . '\';',
+    '$dbConfig[\'integration\'][\'tablePreix\'] = \'' . addslashes($forumTablePrefix) . '\';',
+    '$loginConfig[\'method\'] = \'' . addslashes($forum) . '\';',
+    '$loginConfig[\'url\'] = \'' . addslashes($forumUrl) . '\';',
     '$loginConfig[\'superUsers\'] = array(' . ($forum == 'phpbb' ? 2 : 1) . ');',
     '$installUrl = \'' . str_replace(array('install/index.php','install/'), array('',''), $_SERVER['HTTP_REFERER']) . '\';',
     '$salts = array(
@@ -293,6 +300,7 @@ $dbConnect[\'integration\'][\'database\'] = \'' . $database . '\';',
     '$encryptUploads = ' . ($enableEncrypt & 2 ? 'true' : 'false') . ';',
     '$enableUploads = ' . ($enableUploads & 1 ? 'true' : 'false') . ';',
     '$enableGeneralUploads = ' . ($enableUploads & 2 ? 'true' : 'false') . ';',
+    '$loginConfig[\'recaptchaKey\'] = \'' .  . '\'';
   );
 
 

@@ -24,7 +24,8 @@
  *
  * @param userName - The user's name.
  * @param password - The user's password.
- * @param passwordEncrypt - The method of encryption used to send the password.
+ * @param passwordEncrypt - The method of encryption used to send the password. 'sha256' indicates sha256(password), 'sha256-salt' indicates sha256(sha256(password) . passwordSalt). 'sha256-salt' is discouraged, since it prevents the system from using an unstored salt that prevents against bruteforcing if the database is hacked.
+ * @param passwordSalt - The salt used for encrypting the password, if it is encrypted using 'sha256-salt' or 'sha256-salt'. Any salt can be used, though long ones will be truncated to 50 characters, and only certain characters are allowed.
  * @param email - The email of the user.
  * @param dob - The date-of-birth of the user (unix timestamp).
 */
@@ -40,7 +41,18 @@ require('../functions/fim_uac_vanilla.php');
 $request = fim_sanitizeGPC('p', array(
   'userName' => array(),
   'password' => array(),
-  'passwordEncrypt' => array(),
+  'passwordEncrypt' => array(
+    'required' => true,
+    'valid' => array(
+      'plaintext', 'sha256', 'sha256-salt',
+    ),
+  ),
+  'passwordSalt' => array(
+    'context' => array(,
+      'type' => 'string',
+      'filter' => 'ascii128',
+    ),
+  ),
   'email' => array(),
   'dob' => array(
     'context' => 'int',
@@ -48,9 +60,29 @@ $request = fim_sanitizeGPC('p', array(
 ));
 
 
+/* Get Salts Used For Encryption */
+if ($salts) {
+  $encryptSalt = end($salts); // Move the file pointer to the last entry in the array (and return its value)
+  $encryptSaltNum = key($salts); // Get the key/id of the corrosponding salt.
+}
+else {
+  $encryptSalt = '',
+  $encryptSaltNum = 0,
+}
+
+
+/* Encrypt Sent Password */
 switch ($request['passwordEncrypt']) {
   case 'plaintext':
-  $passwordDecrypted = $request['passwordEncrypt'];
+  $password = fim_generatePassword($passwordDecrypted, fim_generateSalt(), $encryptSaltNum, 0);
+  break;
+
+  case 'sha256':
+  $password = fim_generatePassword($passwordDecrypted, fim_generateSalt(), $encryptSaltNum, 1);
+  break;
+
+  case 'sha256-salt':
+  $password = fim_generatePassword($passwordDecrypted, fim_generateSalt(), $encryptSaltNum, 2);
   break;
 
   default:
@@ -91,7 +123,6 @@ if ($continue) {
     $errDesc = 'No password was specified.';
   }
   else {
-    $password = fim_generatePassword($passwordDecrypted, fim_generateSalt());
     $userData = array(
       'userName' => $request['userName'],
       'password' => $password,

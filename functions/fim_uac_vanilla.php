@@ -15,15 +15,53 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 function fim_generateSalt() {
-  $salt = rand(1, 10000);
+  // There are quite a few ways of creating a salt, and unfortunately there is very little concencus as to what is safe and what is not. To this end, I will use three seperate randomisation, uniqids, rand/mt_rand, and str_shuffle, as well as microtime, until I get more concencus.	
+
+  $salt = str_shuffle(str_replace('.','',uniqid('',true)) . str_replace('.','',microtime(true)) . mt_rand(1,100000000000))
+
+  if (strlen($salt) > 50) {
+    return substr($salt, 0, 50);
+  }
 
   return $salt;
 }
 
 
-function fim_generatePassword($password, $salt) {
-  for ($i; $i < 5000; $i++) { // Hash the password using sha256 5000 times
-    $password = fim_sha256(fim_sha256($password) . $salt);
+
+/**
+ * Generates a password hash using a password, salt, and optionally a number of iterations to run the encryption over. The function will also make use of salts stored in config.php to prevent bruteforcing of passwords in the case of a database leak.
+ *
+ * @param string $password - The password.
+ * @param string $salt - The salt to use. This salt is stored in the database.
+ * @param string $privateSaltNum - The private salt to use. This salt is referrenced in the database, but stored on the fileserver.
+ * @param int $hashStage - The level at which the password is already hashed. 0 is no hashing, 1 is sha256(password), 2 is sha256(sha256(password) . salt), and 3 is fully hashed.
+ * @return void - true on success, false on failure
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+*/
+
+function fim_generatePassword($password, $salt, $privateSaltNum, $hashStage = 0) {
+  global $salts;
+
+  $privateSalt = $salts[$privateSalt]; // Get the proper salt.
+
+  switch ($hashStage) {
+    case 0:
+    $passwordHashed = fim_sha256(fim_sha256(fim_sha256($password) . $salt) . $privateSalt);
+    break;
+
+    case 1:
+    $passwordHashed = fim_sha256(fim_sha256($password . $salt) . $privateSalt);
+    break;
+
+    case 2:
+    $passwordHashed = fim_sha256($password . $privateSalt);
+    break;
+
+    default:
+    $passwordHashed = $password;
+    break;
   }
+
+  return $passwordHashed;
 }
 ?>

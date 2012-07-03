@@ -445,6 +445,17 @@
       <column name="type" value="bool" />
     </table>
 
+    <table name="configuration">
+      <column name="directive" value="recaptchaPublicKey" />
+      <column name="value" value="" />
+      <column name="type" value="string" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="recaptchaPrivateKey" />
+      <column name="value" value="" />
+      <column name="type" value="string" />
+    </table>
+
 
     <!-- Table counters -->
     <table name="counters">

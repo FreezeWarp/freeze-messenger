@@ -486,14 +486,38 @@ function fim_encrypt($data) {
 function fim_sha256($data) {
   global $config;
 
-  if (function_exists('hash')) { // hash() is available in PHP 5.1.2+, or in PECL Hash 1.1
+  if (function_exists('hash') && in_array('sha256',hash_algos())) { // hash() is available in PHP 5.1.2+, or in PECL Hash 1.1. Algorithms vary, so we must make sure sha256 is one of them.
     return hash('sha256', $data);
   }
   elseif (function_exists('mhash') && defined('MHASH_SHA256')) { // mhash() is available in pretty much all versions of PHP, but the SHA256 algo may not be available.
     return mhash(MHASH_SHA256, $data);
   }
-  else { // Otherwise, we'll return the data unhashed. Better than dieing completely, really.
-    return $data;
+  else { // Otherwise, we'll return the data unhashed. Better than dieing completely, really (in this coder's humble opinion).
+    require('functions/sha256.php'); // Require SHA256 class provided by NanoLink.ca.
+
+    $obj = new nanoSha2();
+    $shaStr = $obj->hash($data);
+  }
+}
+
+
+
+/**
+ * A wrapper for rand and mt_rand, using whichever is available.
+ *
+ * @param string $data - The data to encrypt.
+ * @return string - Encrypted data.
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */ 
+function fim_rand($min, $max) {
+  if (function_exists('mt_rand')) {
+    return mt_rand($min, $max);
+  }
+  elseif (function_exists('rand') {
+    return rand($min, $max);
+  }
+  else {
+    return $min;
   }
 }
 
@@ -1063,6 +1087,7 @@ function fim_sanitizeGPC($type, $data) {
                 switch ($contextdata) {
                   case 'int': $indexMetaData['context']['filter'] = 'int'; break;
                   case 'bool': $indexMetaData['context']['filter'] = 'bool'; break;
+                  case 'ascii128': $indexMetaData['context']['filter'] = 'ascii128'; break;
                 }
                 break;
                 case 'evaltrue': $indexMetaData['context']['evaltrue'] = (bool) $contextdata; break; // This specifies whether all subvalus of a context must be true. For instance, assuming we use an integer filter 0 would be removed if this was true.
@@ -1183,7 +1208,13 @@ function fim_sanitizeGPC($type, $data) {
         break;
 
         default: // String or otherwise.
-        $newData[$indexName] = (string) $activeGlobal[$indexName]; // Append value as string-cast.
+        $newData[$indexName] = (string) $activeGlobal[$indexName]; // Append value as string-cast. 
+
+        switch ($indexMetaData['context']['filter']) {
+          case 'ascii128':
+            $newData[$indexName] = preg_replace('/[^(\x20-\x7F)]*/', '', $output); // Remove characters outside of ASCII128 range.
+          break;
+        }
         break;
       }
     }
