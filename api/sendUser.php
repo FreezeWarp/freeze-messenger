@@ -80,10 +80,10 @@ if ($continue) {
     $errStr = 'noUserName';
     $errDesc = 'No user name was specified.';
   }
-  elseif (!$request['email']) {
+/*  elseif (!$request['email']) {
     $errStr = 'noEmail';
     $errDesc = 'No email was specified.';
-  }
+  }*/
   elseif (!$request['password']) {
     $errStr = 'noPassword';
     $errDesc = 'No password was specified.';
@@ -132,7 +132,7 @@ if ($continue) {
       'passwordSalt' => $passwordSalt,
       'passwordSaltNum' => $encryptSaltNum,
       'dob' => $request['dob'],
-      'email' => $request['email'],
+//      'email' => $request['email'],
     );
 
     

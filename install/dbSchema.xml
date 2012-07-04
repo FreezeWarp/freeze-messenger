@@ -6,13 +6,13 @@
       <column name="userId" type="int" maxlen="8" comment="The ID of the user." />
       <column name="action" type="string" maxlen="64" comment="The action performed." />
       <column name="info" type="int" maxlen="8" comment="Information pertaining to action." />
-      <column name="time" type="time" comment="Time of access." />
+      <column name="time" type="time" comment="Time of access in milliseconds." />
       <column name="executionTime" type="int" maxlen="10" comment="Milliseconds required to perform action." />
       <column name="clientId" type="int" maxlen="8" comment="The client used." />
       <column name="userAgent" type="string" maxlen="1000" comment="The environment the agent is running under, usually a web browser or operating system identifer." />
-      <column name="ipAddress" type="string" maxlen="100" comment="The Internet Protocol addressed used to make the request." />
+      <column name="ipAddress" type="string" maxlen="100" comment="The Internet Protocol address used to make the request." />
 
-      <key name="session" type="primary" />
+      <key name="userId,time" type="primary" />
     </table>
 
     <table name="activeClients" type="general" comment="Active clients. [RESERVED FOR VERSION 4]">
@@ -32,7 +32,7 @@
       <column name="userAgent" type="string" maxlen="1000" comment="The text/data associated with the template." />
       <column name="interfaceId" type="int" maxlen="6" comment="The interface that uses this template." />
 
-      <key name="session" type="primary" />
+      <key name="clientId" type="primary" />
     </table>
 
     <table name="configuration" type="general" comment="Configuration directives.">
@@ -49,7 +49,7 @@
       <column name="action" type="string" maxlen="10" comment="The action being performed." />
       <column name="id" type="int" maxlen="8" comment="The ID of the action being performed." />
       <column name="code" type="int" maxlen="6" default="1" comment="The admin-set usergroup ID of the user." />
-      <column name="time" type="string" maxlen="1000" comment="A comma-seperated list of the IDs of all admin-set groups the user is a part of. This is not used on PHPBB and Vanilla logins (both instead use socialGroups)." />
+      <column name="time" type="time" comment="A comma-seperated list of the IDs of all admin-set groups the user is a part of. This is not used on PHPBB and Vanilla logins (both instead use socialGroups)." />
 
       <key name="action,id,time" type="primary" />
     </table>
@@ -450,6 +450,7 @@
       <column name="joinDate" type="time" default="0" comment="The date the user joined. It may not be used on logins other than vanilla." />
       <column name="birthDate" type="time" default="0" comment="The date of the user's birth, used for parental control settings." />
       <column name="lastSync" type="time" default="0" comment="The date the userdata was last synced. This is not applicable for vanilla logins." />
+      <column name="dob" type="time" comment="User's data of birth." />
 
       <!-- Password Fun -->
       <column name="password" type="string" maxlen="64" comment="The hashed password of the user. It is only used on vanilla logins." />
