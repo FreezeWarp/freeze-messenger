@@ -1258,7 +1258,7 @@ var standard = {
       data: data + '&apiVersion=3&fim3_format=json',
       cache: false,
       timeout: 2500,
-      success: function(json) {
+      success: function(json) { console.log(json);
         active = json.login;
 
         var loginFlag = active.loginFlag,
