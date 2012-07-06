@@ -1258,15 +1258,8 @@ var standard = {
       data: data + '&apiVersion=3&fim3_format=json',
       cache: false,
       timeout: 2500,
-      success: function(json) { console.log(json);
+      success: function(json) {
         active = json.login;
-
-        var loginFlag = active.loginFlag,
-          loginText = active.loginText,
-          valid = active.valid,
-          userName = active.userData.userName,
-          defaultRoomId = active.defaultRoomId,
-          banned = active.banned;
 
         userId = active.userData.userId;
         anonId = active.anonId;
@@ -1294,7 +1287,7 @@ var standard = {
         }
 
 
-        if (banned) { // The user has been banned, so pretty much nothing will work. In some respects, this really only exists for IP bans, but meh.
+        if (active.banned) { // The user has been banned, so pretty much nothing will work. In some respects, this really only exists for IP bans, but meh.
           dia.error('You have been banned. You will not be able to do anything.');
 
           userPermissions = {
@@ -1307,14 +1300,14 @@ var standard = {
             modHooks : false
           }
         }
-        else if (valid === true) {
+        else if (active.valid === true) {
           if (options.showMessage) {
             // Display Dialog to Notify User of Being Logged In
             if (!userPermissions.general) {
-              dia.info('You are now logged in as ' + userName + '. However, you are not allowed to post and have been banned by an administrator.', 'Logged In');
+              dia.info('You are now logged in as ' + active.userData.userName + '. However, you are not allowed to post and have been banned by an administrator.', 'Logged In');
             }
             else {
-              dia.info('You are now logged in as ' + userName + '.', 'Logged In');
+              dia.info('You are now logged in as ' + active.userData.userName + '.', 'Logged In');
             }
           }
 
@@ -1323,7 +1316,7 @@ var standard = {
           console.log('Login valid. Session hash: ' + sessionHash + '; User ID: ' + userId);
         }
         else {
-          switch (loginFlag) {
+          switch (active.loginFlag) {
             case 'PASSWORD_ENCRYPT': dia.error("The form encryption used was not accepted by the server."); break;
             case 'BAD_USERNAME': dia.error("A valid user was not provided."); break;
             case 'BAD_PASSWORD': dia.error("The password was incorrect."); break;
@@ -1352,7 +1345,7 @@ var standard = {
 
             /* Select Room */
             if (!roomId) {
-              hashParse({defaultRoomId : defaultRoomId}); // When a user logs in, the hash data (such as room and archive) is processed, and subsequently executed.
+              hashParse({defaultRoomId : active.defaultRoomId}); // When a user logs in, the hash data (such as room and archive) is processed, and subsequently executed.
 
               /*** A Hack of Sorts to Open Dialogs onLoad ***/
               if (typeof prepopup === "function") {

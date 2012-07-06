@@ -182,7 +182,7 @@ $tableDefinitions = array(
     'vbulletin3' => 'user',
     'vbulletin4' => 'user',
     'phpbb' => 'users',
-    'vanilla' => '',
+    'vanilla' => 'users',
   ),
   'adminGroups' => array(
     'vbulletin3' => 'usergroup',
@@ -388,7 +388,7 @@ $queryParts['userSelectFromSessionHash']['conditions'] = array(
 ///* Generate Proper Table Names for Integration *///
 
 if (isset($tableDefinitions['users'][$loginConfig['method']])) {
-  $sqlUserTable = $forumTablePrefix . $tableDefinitions['users'][$loginConfig['method']];
+  echo $sqlUserTable = $forumTablePrefix . $tableDefinitions['users'][$loginConfig['method']];
   $sqlAdminGroupTable = $forumTablePrefix . $tableDefinitions['adminGroups'][$loginConfig['method']];
   $sqlUserGroupTable = $forumTablePrefix . $tableDefinitions['socialGroups'][$loginConfig['method']];
   $sqlMemberGroupTable = $forumTablePrefix . $tableDefinitions['socialGroupMembers'][$loginConfig['method']];
