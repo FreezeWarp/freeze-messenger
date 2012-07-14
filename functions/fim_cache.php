@@ -37,7 +37,7 @@ class generalCache {
     }
   }
 
-  public function getCachedVar($index) {
+  public function get($index) {
     switch ($this->method) {
       case 'apc':
       return apc_fetch($index);
@@ -49,11 +49,23 @@ class generalCache {
     }
   }
 
-  public function setCachedVar($index, $variable, $ttl = 31536000) {
+  public function set($index, $variable, $ttl = 31536000) {
     switch ($this->method) {
       case 'apc':
       apc_delete($index);
       apc_store($index, $variable, $ttl);
+      break;
+
+      case 'memcache':
+
+      break;
+    }
+  }
+
+  public function exists($index) {
+    switch ($this->method) {
+      case 'apc':
+      return apc_exists($index);
       break;
 
       case 'memcache':

@@ -732,7 +732,7 @@ class fimDatabase extends database {
       ));
 
 
-      $lastDayCache = (int) $generalCache->getCachedVar('fim3_lastDayCache');
+      $lastDayCache = (int) $generalCache->get('fim3_lastDayCache');
 
       $currentTime = time();
       $lastMidnight = $currentTime - ($currentTime % $config['messageTimesCounter']); // Using some cool math (look it up if you're not familiar), we determine the distance from the last even day, then get the time of the last even day itself. This is the midnight referrence point.
@@ -748,7 +748,7 @@ class fimDatabase extends database {
           )
         ));
 
-        $generalCache->setCachedVar('fim3_lastDayCache', $lastMidnight); // Update the quick cache.
+        $generalCache->set('fim3_lastDayCache', $lastMidnight); // Update the quick cache.
       }
 
 

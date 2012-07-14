@@ -39,7 +39,6 @@ require_once(dirname(__FILE__) . '/global.php');
 
 
 
-
 ///* Some Pre-Stuff *///
 
 require(dirname(__FILE__) . '/functions/fim_uac.php');
@@ -61,6 +60,8 @@ $loginDefs['syncMethods'] = array(
   'vbulletin3',
   'vbulletin4',
 );
+
+
 
 
 
@@ -145,7 +146,7 @@ elseif (isset($_REQUEST['apiLogin'])) {
   $api = true;
 }
 
-elseif (isset($hookLogin)) {
+elseif (isset($hookLogin)) { // Custom Login
   if (is_array($hookLogin)) {
     if (count($hookLogin) > 0) {
       if (isset($hookLogin['userName'])) {
@@ -167,7 +168,6 @@ elseif (isset($hookLogin)) {
   }
 }
 
-
 ($hook = hook('validate_retrieval') ? eval($hook) : '');
 
 
@@ -177,6 +177,7 @@ elseif (isset($hookLogin)) {
 
 ///* Define Things *///
 
+// These are the table names that are used in different integration methods. "Users" is required, while for the rest, if one is absent functionality will not be supported.
 $tableDefinitions = array(
   'users' => array(
     'vbulletin3' => 'user',
@@ -194,16 +195,17 @@ $tableDefinitions = array(
     'vbulletin3' => 'socialgroup',
     'vbulletin4' => 'socialgroup',
     'phpbb' => 'groups',
-    'vanilla' => '',
+    'vanilla' => 'groups',
   ),
   'socialGroupMembers' => array(
     'vbulletin3' => 'socialgroupmember',
     'vbulletin4' => 'socialgroupmember',
     'phpbb' => 'user_group',
-    'vanilla' => '',
+    'vanilla' => 'groupMembers',
   ),
 );
 
+// Like above, these define the individual columns used.
 $columnDefinitions = array(
   'users' => array(
     'vbulletin3' => array(
@@ -239,6 +241,9 @@ $columnDefinitions = array(
       'avatar' => 'user_avatar',
       'password' => 'user_password',
     ),
+    'mybb' => array(
+        
+    ),
     'vanilla' => array(
       'userId' => 'userId',
       'userName' => 'userName',
@@ -248,6 +253,8 @@ $columnDefinitions = array(
       'timeZone' => 'timeZone',
       'avatar' => 'avatar',
       'password' => 'password',
+      'salt' => 'passwordSalt',
+      'salt2' => 'passwordSaltNum',
     ),
   ),
   'adminGroups' => array(
@@ -262,6 +269,9 @@ $columnDefinitions = array(
       'groupName' => 'title',
       'startTag' => 'opentag',
       'endTag' => 'closetag',
+    ),
+    'mybb' => array(
+        
     ),
     'phpbb' => array(
 
@@ -283,8 +293,11 @@ $columnDefinitions = array(
       'groupId' => 'group_id',
       'groupName' => 'group_name',
     ),
+    'mybb' => array(
+        
+    ),
     'vanilla' => array(
-
+      
     ),
   ),
   'socialGroupMembers' => array(
@@ -305,6 +318,9 @@ $columnDefinitions = array(
       'userId' => 'user_id',
       'type' => 'user_pending',
       'validType' => '0',
+    ),
+    'mybb' => array(
+        
     ),
     'vanilla' => array(
 
@@ -388,7 +404,7 @@ $queryParts['userSelectFromSessionHash']['conditions'] = array(
 ///* Generate Proper Table Names for Integration *///
 
 if (isset($tableDefinitions['users'][$loginConfig['method']])) {
-  echo $sqlUserTable = $forumTablePrefix . $tableDefinitions['users'][$loginConfig['method']];
+  $sqlUserTable = $forumTablePrefix . $tableDefinitions['users'][$loginConfig['method']];
   $sqlAdminGroupTable = $forumTablePrefix . $tableDefinitions['adminGroups'][$loginConfig['method']];
   $sqlUserGroupTable = $forumTablePrefix . $tableDefinitions['socialGroups'][$loginConfig['method']];
   $sqlMemberGroupTable = $forumTablePrefix . $tableDefinitions['socialGroupMembers'][$loginConfig['method']];
@@ -614,13 +630,29 @@ if ($valid) { // If the user is valid, process their preferrences.
 
       case 'vbulletin3':
       case 'vbulletin4':
-      if ($user2['options'] & 64) {
-        if (date('I')) {
-          $user2['timeZone']++; // DST is autodetect. We'll just set it by hand.
+      if ($user2['options'] & 64) { // DST is autodetect. We'll just set it by hand.
+        if ($generalCache->exists('fim_dst')) {
+          $dst = $generalCache->get('fim_dst');
+        }
+        else {
+          $currentMonth = (int) date('n');
+          $currentDay = (int) date('j');
+          if (date('I')) { //
+            $dst = 1;
+          }
+          else {
+            $dst = 0;
+          }
+
+          $generalCache->set('fim_dst', $dst, $ttl = 3600); // We only call this if using vBulletin because it only slows things down otherwise. In addition, we only check every hour. It's a complicated check and no fun to screw up.
+        }
+          
+        if ($dst) {
+          $user2['timeZone']++;
         }
       }
-      elseif ($user2['options'] & 128) {
-        $user2['timeZone']++; // DST is on, add an hour
+      elseif ($user2['options'] & 128) { // DST is on, add an hour
+        $user2['timeZone']++;
       }
 
 
@@ -642,7 +674,6 @@ if ($valid) { // If the user is valid, process their preferrences.
 
 
 
-      case 'phpbb':
       if ($user2['userGroup']) {
         $group = $integrationDatabase->select(
           array(
@@ -650,11 +681,11 @@ if ($valid) { // If the user is valid, process their preferrences.
           ),
           $queryParts['adminGroupSelect']['conditions'],
           false,
-          1
-        );
+          1                                                                                                                   
+        );                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
         $group = $group->getAsArray(false);
       }
-
+                                                                                    
 
       if (!$user2['color']) {
         $user2['color'] = $group['color'];

@@ -139,7 +139,7 @@ if (!isset($api)) {
 
 
 
-/* Better Error Handling and Output Buffering */
+/* Better Error Handling anvalidate.phpd Output Buffering */
 if ($api === false) {
 //  ob_start();
 //  set_error_handler('fim_errorHandler'); // Defined in fim_general.php
@@ -223,7 +223,7 @@ require_once(dirname(__FILE__) . '/validate.php'); // This is where all the user
 
 ////* Get Database-Stored Configuration *////
 
-if (!($config = $generalCache->getCachedVar('fim_config')) || $disableConfig) {
+if (!($config = $generalCache->get('fim_config')) || $disableConfig) {
   require(dirname(__FILE__) . '/defaultConfig.php');
 
   if (!$disableConfig) {
@@ -279,7 +279,7 @@ if (!($config = $generalCache->getCachedVar('fim_config')) || $disableConfig) {
   }
 
 
-  $generalCache->setCachedVar('fim_config', $config, $config['configCacheRefresh']);
+  $generalCache->set('fim_config', $config, $config['configCacheRefresh']);
 }
 
 
@@ -299,7 +299,7 @@ if ($api === true) {
 
 if (isset($reqHooks)) {
   if ($reqHooks === true) {
-    if (!$hooks = $generalCache->getCachedVar('fim_hooks')) {
+    if (!$hooks = $generalCache->get('fim_hooks')) {
       $hooks2 = $slaveDatabase->select(
         array(
           "{$sqlPrefix}hooks" => 'hookId, hookName, code',
@@ -319,7 +319,7 @@ if (isset($reqHooks)) {
       }
 
       unset($hooks2);
-      $generalCache->setCachedVar('fim_hooks', $hooks, $config['hooksCacheRefresh']);
+      $generalCache->set('fim_hooks', $hooks, $config['hooksCacheRefresh']);
     }
   }
 }
@@ -329,7 +329,7 @@ if (isset($reqHooks)) {
 
 ////* Kicks Cache *////
 
-$kicksCache = $generalCache->getCachedVar('fim_kickCache');
+$kicksCache = $generalCache->get('fim_kickCache');
 
 if ($kicksCache === null || $kicksCache === false) {
   $kicksCache = array();
@@ -401,7 +401,7 @@ if ($kicksCache === null || $kicksCache === false) {
     }
   }
 
-  $generalCache->setCachedVar('fim_kickCache', $kicksCache, $config['kicksCacheRefresh']);
+  $generalCache->set('fim_kickCache', $kicksCache, $config['kicksCacheRefresh']);
 }
 
 
@@ -410,7 +410,7 @@ if ($kicksCache === null || $kicksCache === false) {
 
 ////* Permissions Cache *////
 
-$permissionsCache = $generalCache->getCachedVar('fim_permissionsCache');
+$permissionsCache = $generalCache->get('fim_permissionsCache');
 
 if ($permissionsCache === null || $permissionsCache === false) {
   $permissionsCache = array();
@@ -426,7 +426,7 @@ if ($permissionsCache === null || $permissionsCache === false) {
     $permissionsCache[$cachePerm['roomId']][$cachePerm['attribute']][$cachePerm['param']] = $cachePerm['permissions'];
   }
 
-  $generalCache->setCachedVar('fim_permissionCache', $permissionsCache, $config['permissionsCacheRefresh']);
+  $generalCache->set('fim_permissionCache', $permissionsCache, $config['permissionsCacheRefresh']);
 }
 
 //die(print_R($permissionsCache,true));
