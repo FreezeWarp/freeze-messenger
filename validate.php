@@ -189,24 +189,24 @@ $tableDefinitions = array(
     'vbulletin3' => 'usergroup',
     'vbulletin4' => 'usergroup',
     'phpbb' => '',
-    'vanilla' => '',
+    'vanilla' => 'adminGroups',
   ),
   'socialGroups' => array(
     'vbulletin3' => 'socialgroup',
     'vbulletin4' => 'socialgroup',
     'phpbb' => 'groups',
-    'vanilla' => 'groups',
+    'vanilla' => 'socialGroups',
   ),
   'socialGroupMembers' => array(
     'vbulletin3' => 'socialgroupmember',
     'vbulletin4' => 'socialgroupmember',
     'phpbb' => 'user_group',
-    'vanilla' => 'groupMembers',
+    'vanilla' => 'socialGroupMembers',
   ),
 );
 
 // Like above, these define the individual columns used.
-$columnDefinitions = array(
+$columnDefinitions = array( // These are only used for syncing. When the original database is queried (such as with password), the field will be used explictly there.
   'users' => array(
     'vbulletin3' => array(
       'userId' => 'userid',
@@ -216,8 +216,6 @@ $columnDefinitions = array(
       'allGroups' => 'membergroupids',
       'timeZone' => 'timezoneoffset',
       'options' => 'options',
-      'password' => 'password',
-      'salt' => 'salt',
     ),
     'vbulletin4' => array(
       'userId' => 'userid',
@@ -227,8 +225,6 @@ $columnDefinitions = array(
       'allGroups' => 'membergroupids',
       'timeZone' => 'timezoneoffset',
       'options' => 'options',
-      'password' => 'password',
-      'salt' => 'salt',
     ),
     'phpbb' => array(
       'userId' => 'user_id',
@@ -239,7 +235,6 @@ $columnDefinitions = array(
       'timeZone' => 'user_timezone',
       'color' => 'user_colour',
       'avatar' => 'user_avatar',
-      'password' => 'user_password',
     ),
     'mybb' => array(
         
@@ -252,9 +247,6 @@ $columnDefinitions = array(
       'allGroups' => 'allGroups',
       'timeZone' => 'timeZone',
       'avatar' => 'avatar',
-      'password' => 'password',
-      'salt' => 'passwordSalt',
-      'salt2' => 'passwordSaltNum',
     ),
   ),
   'adminGroups' => array(
@@ -485,7 +477,7 @@ elseif ($userName && $password) {
   );
   $user = $user->getAsArray(false);
 
-  if (processLogin($user,$password,'plaintext')) {
+  if (processLogin($user, $password, 'plaintext')) {
     $valid = true;
     $session = 'create';
   }
@@ -635,16 +627,19 @@ if ($valid) { // If the user is valid, process their preferrences.
           $dst = $generalCache->get('fim_dst');
         }
         else {
-          $currentMonth = (int) date('n');
-          $currentDay = (int) date('j');
-          if (date('I')) { //
+          $currentDate = (int) (date('n') . date('d')); // Example: Janurary 1st would be 101, March 12th would be 312. Thus, every subsequent day is an increase numerically.
+          
+          $dstStart = (int) ('3' . date('d', strtotime('second sunday of march')));
+          $dstEnd = (int) ('11' . date('d', strtotime('first sunday of november')));
+
+          if ($currentDate >= $dstStart && $currentDate < $dstEnd) { //
             $dst = 1;
           }
           else {
             $dst = 0;
           }
 
-          $generalCache->set('fim_dst', $dst, $ttl = 3600); // We only call this if using vBulletin because it only slows things down otherwise. In addition, we only check every hour. It's a complicated check and no fun to screw up.
+          $generalCache->set('fim_dst', $dst, $ttl = 3600); // We only call this if using vBulletin because it only slows things down otherwise. In addition, we only check every hour.
         }
           
         if ($dst) {
@@ -1086,7 +1081,7 @@ if ($api) {
       'anonId' => ($anonymous ? $anonId : 0),
       'defaultRoomId' => (int) (isset($_GET['room']) ? $_GET['room'] :
         (isset($user['defaultRoom']) ? $user['defaultRoom'] :
-          (isset($defaultRoom) ? $defaultRoom : 1))), // Gethe room we're on. If there is a $_GET variable, use it, otherwise the user's "default", or finally just main.
+          (isset($defaultRoom) ? $defaultRoom : 1))), // Get the room we're on. If there is a $_GET variable, use it, otherwise the user's "default", or finally just main.
 
       'userData' => array(
         'userName' => ($user['userName']),

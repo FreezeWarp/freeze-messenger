@@ -24,6 +24,16 @@
 
       <key name="session" type="primary" />
     </table>
+
+    <table name="adminGroups" type="general" comment="Admin-created usergroups that can be used with vanilla logins.">
+      <column name="groupId" type="int" maxlen="6" comment="The unique ID of the group." />
+      <column name="groupName" type="string" maxlen="50" comment="The name of the group." />
+      <column name="memberIds" type="string" maxlen="100000" comment="A cached list of members who are part of the group." note="This will be replaced with an APC cache in FIMv4." />
+      <column name="userFormatStart" type="string" maxlen="300" comment="Username formatted to be prepended to the username." />
+      <column name="userFormatEnd" type="string" maxlen="300" comment="Username formatted to be appended to the username." />
+
+      <key name="groupId" type="primary" />
+    </table>
     
     <table name="clients" type="general" comment="Registered clients. [RESERVED FOR VERSION 4]">
       <column name="clientId" type="int" maxlen="8" autoincrement="true" comment="The ID of the client." />
@@ -163,25 +173,6 @@
       <column name="data" type="string" maxlen="100" comment="The associated data of the action, encoded using JSON." />
 
       <key name="id" type="primary" />
-    </table>
-
-
-    <table name="groups" type="general" comment="Admin-created usergroups that can be used with vanilla logins.">
-      <column name="groupId" type="int" maxlen="6" comment="The unique ID of the group." />
-      <column name="groupName" type="string" maxlen="50" comment="The name of the group." />
-      <column name="memberIds" type="string" maxlen="100000" comment="A cached list of members who are part of the group." note="This will be replaced with an APC cache in FIMv4." />
-      <column name="userFormatStart" type="string" maxlen="300" comment="Username formatted to be prepended to the username." />
-      <column name="userFormatEnd" type="string" maxlen="300" comment="Username formatted to be appended to the username." />
-
-      <key name="groupId" type="primary" />
-    </table>
-
-
-    <table name="groupMembers" type="general" comment="The members of groups, used with vanilla logins.">
-      <column name="groupId" type="int" maxlen="6" comment="The group ID." />
-      <column name="userId" type="int" maxlen="6" comment="The member ID of the group." />
-
-      <key name="groupId,userId" type="primary" />
     </table>
 
 
@@ -395,6 +386,27 @@
 
       <key name="sessionId" type="primary" />
       <key name="magicHash" type="unique" />
+    </table>
+
+
+    <table name="socialGroups" type="general" comment="The members of groups, used with vanilla logins.">
+      <column name="groupId" type="int" maxlen="6" comment="The group ID." />
+      <column name="groupName" type="int" maxlen="6" comment="The group name." />
+      <column name="creatorId" type="int" maxlen="6" comment="The member ID of the group." />
+      <column name="creationTime" type="int" maxlen="6" comment="The member ID of the group." />
+      <column name="leaderId" type="int" maxlen="6" comment="The current leader of the group. Allowed to set group options and remove members" />
+      <column name="memberIds" type="int" maxlen="6" comment="A list of members in the group." />
+      <column name="options" type="int" maxlen="6" comment="Group options." />
+
+      <key name="groupId,userId" type="primary" />
+    </table>
+
+
+    <table name="socialGroupMembers" type="general" comment="The members of groups, used with vanilla logins.">
+      <column name="groupId" type="int" maxlen="6" comment="The group ID." />
+      <column name="userId" type="int" maxlen="6" comment="The member ID of the group." />
+
+      <key name="groupId,userId" type="primary" />
     </table>
 
 
