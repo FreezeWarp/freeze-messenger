@@ -370,31 +370,31 @@ sha256 = {
    * These are the functions you'll usually want to call
    * They take string arguments and return either hex or base-64 encoded strings
    */
-  hex_sha256 : function(s) { return rstr2hex(rstr_sha256(str2rstr_utf8(s))); },
-  b64_sha256 : function(s) { return rstr2b64(rstr_sha256(str2rstr_utf8(s))); },
-  any_sha256 : function(s, e) { return rstr2any(rstr_sha256(str2rstr_utf8(s)), e); },
-  hex_hmac_sha256 : function(k, d) { return rstr2hex(rstr_hmac_sha256(str2rstr_utf8(k), str2rstr_utf8(d))); },
-  b64_hmac_sha256 : function(k, d) { return rstr2b64(rstr_hmac_sha256(str2rstr_utf8(k), str2rstr_utf8(d))); },
-  any_hmac_sha256 : function(k, d, e) { return rstr2any(rstr_hmac_sha256(str2rstr_utf8(k), str2rstr_utf8(d)), e); },
+  hex_sha256 : function(s) { return sha256.rstr2hex(sha256.rstr_sha256(sha256.str2rstr_utf8(s))); },
+  b64_sha256 : function(s) { return sha256.rstr2b64(sha256.rstr_sha256(sha256.str2rstr_utf8(s))); },
+  any_sha256 : function(s, e) { return sha256.rstr2any(sha256.rstr_sha256(sha256.str2rstr_utf8(s)), e); },
+  hex_hmac_sha256 : function(k, d) { return sha256.rstr2hex(sha256.rstr_hmac_sha256(sha256.str2rstr_utf8(k), sha256.str2rstr_utf8(d))); },
+  b64_hmac_sha256 : function(k, d) { return sha256.rstr2b64(sha256.rstr_hmac_sha256(sha256.str2rstr_utf8(k), sha256.str2rstr_utf8(d))); },
+  any_hmac_sha256 : function(k, d, e) { return sha256.rstr2any(sha256.rstr_hmac_sha256(sha256.str2rstr_utf8(k), sha256.str2rstr_utf8(d)), e); },
 
   /*
    * Perform a simple self-test to see if the VM is working
    */
-  sha256_vm_test : function() { return hex_sha256("abc").toLowerCase() == "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"; },
+  sha256_vm_test : function() { return sha256.hex_sha256("abc").toLowerCase() == "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"; },
 
   /*
    * Calculate the sha256 of a raw string
    */
   rstr_sha256 : function(s) {
-    return binb2rstr(binb_sha256(rstr2binb(s), s.length * 8));
+    return sha256.binb2rstr(sha256.binb_sha256(sha256.rstr2binb(s), s.length * 8));
   },
 
   /*
    * Calculate the HMAC-sha256 of a key and some data (raw strings)
    */
   rstr_hmac_sha256 : function(key, data) {
-    var bkey = rstr2binb(key);
-    if(bkey.length > 16) bkey = binb_sha256(bkey, key.length * 8);
+    var bkey = sha256.rstr2binb(key);
+    if(bkey.length > 16) bkey = sha256.binb_sha256(bkey, key.length * 8);
 
     var ipad = Array(16), opad = Array(16);
     for(var i = 0; i < 16; i++)
@@ -403,8 +403,8 @@ sha256 = {
       opad[i] = bkey[i] ^ 0x5C5C5C5C;
     }
 
-    var hash = binb_sha256(ipad.concat(rstr2binb(data)), 512 + data.length * 8);
-    return binb2rstr(binb_sha256(opad.concat(hash), 512 + 256));
+    var hash = sha256.binb_sha256(ipad.concat(sha256.rstr2binb(data)), 512 + data.length * 8);
+    return sha256.binb2rstr(sha256.binb_sha256(opad.concat(hash), 512 + 256));
   },
 
   /*
@@ -585,14 +585,14 @@ sha256 = {
   sha256_R : function(X, n) { return ( X >>> n ); },
   sha256_Ch : function(x, y, z) { return ((x & y) ^ ((~x) & z)); },
   sha256_Maj : function(x, y, z) { return ((x & y) ^ (x & z) ^ (y & z)); },
-  sha256_Sigma0256 : function(x) { return (sha256_S(x, 2) ^ sha256_S(x, 13) ^ sha256_S(x, 22)); },
-  sha256_Sigma1256 : function(x) { return (sha256_S(x, 6) ^ sha256_S(x, 11) ^ sha256_S(x, 25)); },
-  sha256_Gamma0256 : function(x) { return (sha256_S(x, 7) ^ sha256_S(x, 18) ^ sha256_R(x, 3)); },
-  sha256_Gamma1256 : function(x) { return (sha256_S(x, 17) ^ sha256_S(x, 19) ^ sha256_R(x, 10)); },
-  sha256_Sigma0512 : function(x) { return (sha256_S(x, 28) ^ sha256_S(x, 34) ^ sha256_S(x, 39)); },
-  sha256_Sigma1512 : function(x) { return (sha256_S(x, 14) ^ sha256_S(x, 18) ^ sha256_S(x, 41)); },
-  sha256_Gamma0512 : function(x) { return (sha256_S(x, 1)  ^ sha256_S(x, 8) ^ sha256_R(x, 7)); },
-  sha256_Gamma1512 : function(x) { return (sha256_S(x, 19) ^ sha256_S(x, 61) ^ sha256_R(x, 6)); },
+  sha256_Sigma0256 : function(x) { return (sha256.sha256_S(x, 2) ^ sha256.sha256_S(x, 13) ^ sha256.sha256_S(x, 22)); },
+  sha256_Sigma1256 : function(x) { return (sha256.sha256_S(x, 6) ^ sha256.sha256_S(x, 11) ^ sha256.sha256_S(x, 25)); },
+  sha256_Gamma0256 : function(x) { return (sha256.sha256_S(x, 7) ^ sha256.sha256_S(x, 18) ^ sha256.sha256_R(x, 3)); },
+  sha256_Gamma1256 : function(x) { return (sha256.sha256_S(x, 17) ^ sha256.sha256_S(x, 19) ^ sha256.sha256_R(x, 10)); },
+  sha256_Sigma0512 : function(x) { return (sha256.sha256_S(x, 28) ^ sha256.sha256_S(x, 34) ^ sha256.sha256_S(x, 39)); },
+  sha256_Sigma1512 : function(x) { return (sha256.sha256_S(x, 14) ^ sha256.sha256_S(x, 18) ^ sha256.sha256_S(x, 41)); },
+  sha256_Gamma0512 : function(x) { return (sha256.sha256_S(x, 1)  ^ sha256.sha256_S(x, 8) ^ sha256.sha256_R(x, 7)); },
+  sha256_Gamma1512 : function(x) { return (sha256.sha256_S(x, 19) ^ sha256.sha256_S(x, 61) ^ sha256.sha256_R(x, 6)); },
 
   sha256_K : new Array
   (
@@ -634,30 +634,30 @@ sha256 = {
       for(j = 0; j < 64; j++)
       {
         if (j < 16) W[j] = m[j + i];
-        else W[j] = safe_add(safe_add(safe_add(sha256_Gamma1256(W[j - 2]), W[j - 7]),
-                                              sha256_Gamma0256(W[j - 15])), W[j - 16]);
+        else W[j] = sha256.safe_add(sha256.safe_add(sha256.safe_add(sha256.sha256_Gamma1256(W[j - 2]), W[j - 7]),
+                                              sha256.sha256_Gamma0256(W[j - 15])), W[j - 16]);
 
-        T1 = safe_add(safe_add(safe_add(safe_add(h, sha256_Sigma1256(e)), sha256_Ch(e, f, g)),
-                                                            sha256_K[j]), W[j]);
-        T2 = safe_add(sha256_Sigma0256(a), sha256_Maj(a, b, c));
+        T1 = sha256.safe_add(sha256.safe_add(sha256.safe_add(sha256.safe_add(h, sha256.sha256_Sigma1256(e)), sha256.sha256_Ch(e, f, g)),
+                                                            sha256.sha256_K[j]), W[j]);
+        T2 = sha256.safe_add(sha256.sha256_Sigma0256(a), sha256.sha256_Maj(a, b, c));
         h = g;
         g = f;
         f = e;
-        e = safe_add(d, T1);
+        e = sha256.safe_add(d, T1);
         d = c;
         c = b;
         b = a;
-        a = safe_add(T1, T2);
+        a = sha256.safe_add(T1, T2);
       }
 
-      HASH[0] = safe_add(a, HASH[0]);
-      HASH[1] = safe_add(b, HASH[1]);
-      HASH[2] = safe_add(c, HASH[2]);
-      HASH[3] = safe_add(d, HASH[3]);
-      HASH[4] = safe_add(e, HASH[4]);
-      HASH[5] = safe_add(f, HASH[5]);
-      HASH[6] = safe_add(g, HASH[6]);
-      HASH[7] = safe_add(h, HASH[7]);
+      HASH[0] = sha256.safe_add(a, HASH[0]);
+      HASH[1] = sha256.safe_add(b, HASH[1]);
+      HASH[2] = sha256.safe_add(c, HASH[2]);
+      HASH[3] = sha256.safe_add(d, HASH[3]);
+      HASH[4] = sha256.safe_add(e, HASH[4]);
+      HASH[5] = sha256.safe_add(f, HASH[5]);
+      HASH[6] = sha256.safe_add(g, HASH[6]);
+      HASH[7] = sha256.safe_add(h, HASH[7]);
     }
     return HASH;
   },
@@ -666,5 +666,5 @@ sha256 = {
     var lsw = (x & 0xFFFF) + (y & 0xFFFF);
     var msw = (x >> 16) + (y >> 16) + (lsw >> 16);
     return (msw << 16) | (lsw & 0xFFFF);
-  },
+  }
 }
