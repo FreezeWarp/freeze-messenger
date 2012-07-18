@@ -358,36 +358,36 @@ md5 = {
  * Also http://anmar.eu.org/projects/jssha2/
  */
 
-function encrypt_sha256() {
+sha256 = {
   /*
    * Configurable variables. You may need to tweak these to be compatible with
    * the server-side, but the defaults work in most cases.
    */
-  var hexcase = 0;  /* hex output format. 0 - lowercase; 1 - uppercase        */
-  var b64pad  = ""; /* base-64 pad character. "=" for strict RFC compliance   */
+  hexcase : 0,  /* hex output format. 0 - lowercase; 1 - uppercase        */
+  b64pad  : "", /* base-64 pad character. "=" for strict RFC compliance   */
 
   /*
    * These are the functions you'll usually want to call
    * They take string arguments and return either hex or base-64 encoded strings
    */
-  hex_sha256 : function(s) { return rstr2hex(rstr_sha256(str2rstr_utf8(s))); }
-  b64_sha256 : function(s) { return rstr2b64(rstr_sha256(str2rstr_utf8(s))); }
-  any_sha256 : function(s, e) { return rstr2any(rstr_sha256(str2rstr_utf8(s)), e); }
-  hex_hmac_sha256 : function(k, d) { return rstr2hex(rstr_hmac_sha256(str2rstr_utf8(k), str2rstr_utf8(d))); }
-  b64_hmac_sha256 : function(k, d) { return rstr2b64(rstr_hmac_sha256(str2rstr_utf8(k), str2rstr_utf8(d))); }
-  any_hmac_sha256 : function(k, d, e) { return rstr2any(rstr_hmac_sha256(str2rstr_utf8(k), str2rstr_utf8(d)), e); }
+  hex_sha256 : function(s) { return rstr2hex(rstr_sha256(str2rstr_utf8(s))); },
+  b64_sha256 : function(s) { return rstr2b64(rstr_sha256(str2rstr_utf8(s))); },
+  any_sha256 : function(s, e) { return rstr2any(rstr_sha256(str2rstr_utf8(s)), e); },
+  hex_hmac_sha256 : function(k, d) { return rstr2hex(rstr_hmac_sha256(str2rstr_utf8(k), str2rstr_utf8(d))); },
+  b64_hmac_sha256 : function(k, d) { return rstr2b64(rstr_hmac_sha256(str2rstr_utf8(k), str2rstr_utf8(d))); },
+  any_hmac_sha256 : function(k, d, e) { return rstr2any(rstr_hmac_sha256(str2rstr_utf8(k), str2rstr_utf8(d)), e); },
 
   /*
    * Perform a simple self-test to see if the VM is working
    */
-  sha256_vm_test : function() { return hex_sha256("abc").toLowerCase() == "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"; }
+  sha256_vm_test : function() { return hex_sha256("abc").toLowerCase() == "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"; },
 
   /*
    * Calculate the sha256 of a raw string
    */
   rstr_sha256 : function(s) {
     return binb2rstr(binb_sha256(rstr2binb(s), s.length * 8));
-  }
+  },
 
   /*
    * Calculate the HMAC-sha256 of a key and some data (raw strings)
@@ -405,7 +405,7 @@ function encrypt_sha256() {
 
     var hash = binb_sha256(ipad.concat(rstr2binb(data)), 512 + data.length * 8);
     return binb2rstr(binb_sha256(opad.concat(hash), 512 + 256));
-  }
+  },
 
   /*
    * Convert a raw string to a hex string
@@ -422,7 +422,7 @@ function encrypt_sha256() {
              +  hex_tab.charAt( x        & 0x0F);
     }
     return output;
-  }
+  },
 
   /*
    * Convert a raw string to a base-64 string
@@ -444,7 +444,7 @@ function encrypt_sha256() {
       }
     }
     return output;
-  }
+  },
 
   /*
    * Convert a raw string to an arbitrary string encoding
@@ -495,7 +495,7 @@ function encrypt_sha256() {
       output = encoding[0] + output;
 
     return output;
-  }
+  },
 
   /*
    * Encode a string as utf-8.
@@ -534,7 +534,7 @@ function encrypt_sha256() {
                                       0x80 | ( x         & 0x3F));
     }
     return output;
-  }
+  },
 
   /*
    * Encode a string as utf-16
@@ -545,7 +545,7 @@ function encrypt_sha256() {
       output += String.fromCharCode( input.charCodeAt(i)        & 0xFF,
                                     (input.charCodeAt(i) >>> 8) & 0xFF);
     return output;
-  }
+  },
 
   str2rstr_utf16be : function(input) {
     var output = "";
@@ -553,7 +553,7 @@ function encrypt_sha256() {
       output += String.fromCharCode((input.charCodeAt(i) >>> 8) & 0xFF,
                                      input.charCodeAt(i)        & 0xFF);
     return output;
-  }
+  },
 
   /*
    * Convert a raw string to an array of big-endian words
@@ -566,7 +566,7 @@ function encrypt_sha256() {
     for(var i = 0; i < input.length * 8; i += 8)
       output[i>>5] |= (input.charCodeAt(i / 8) & 0xFF) << (24 - i % 32);
     return output;
-  }
+  },
 
   /*
    * Convert an array of big-endian words to a string
@@ -576,25 +576,25 @@ function encrypt_sha256() {
     for(var i = 0; i < input.length * 32; i += 8)
       output += String.fromCharCode((input[i>>5] >>> (24 - i % 32)) & 0xFF);
     return output;
-  }
+  },
 
   /*
    * Main sha256 function, with its support functions
    */
-  sha256_S : function(X, n) { return ( X >>> n ) | (X << (32 - n)); }
-  sha256_R : function(X, n) { return ( X >>> n ); }
-  sha256_Ch : function(x, y, z) { return ((x & y) ^ ((~x) & z)); }
-  sha256_Maj : function(x, y, z) { return ((x & y) ^ (x & z) ^ (y & z)); }
-  sha256_Sigma0256 : function(x) { return (sha256_S(x, 2) ^ sha256_S(x, 13) ^ sha256_S(x, 22)); }
-  sha256_Sigma1256 : function(x) { return (sha256_S(x, 6) ^ sha256_S(x, 11) ^ sha256_S(x, 25)); }
-  sha256_Gamma0256 : function(x) { return (sha256_S(x, 7) ^ sha256_S(x, 18) ^ sha256_R(x, 3)); }
-  sha256_Gamma1256 : function(x) { return (sha256_S(x, 17) ^ sha256_S(x, 19) ^ sha256_R(x, 10)); }
-  sha256_Sigma0512 : function(x) { return (sha256_S(x, 28) ^ sha256_S(x, 34) ^ sha256_S(x, 39)); }
-  sha256_Sigma1512 : function(x) { return (sha256_S(x, 14) ^ sha256_S(x, 18) ^ sha256_S(x, 41)); }
-  sha256_Gamma0512 : function(x) { return (sha256_S(x, 1)  ^ sha256_S(x, 8) ^ sha256_R(x, 7)); }
-  sha256_Gamma1512 : function(x) { return (sha256_S(x, 19) ^ sha256_S(x, 61) ^ sha256_R(x, 6)); }
+  sha256_S : function(X, n) { return ( X >>> n ) | (X << (32 - n)); },
+  sha256_R : function(X, n) { return ( X >>> n ); },
+  sha256_Ch : function(x, y, z) { return ((x & y) ^ ((~x) & z)); },
+  sha256_Maj : function(x, y, z) { return ((x & y) ^ (x & z) ^ (y & z)); },
+  sha256_Sigma0256 : function(x) { return (sha256_S(x, 2) ^ sha256_S(x, 13) ^ sha256_S(x, 22)); },
+  sha256_Sigma1256 : function(x) { return (sha256_S(x, 6) ^ sha256_S(x, 11) ^ sha256_S(x, 25)); },
+  sha256_Gamma0256 : function(x) { return (sha256_S(x, 7) ^ sha256_S(x, 18) ^ sha256_R(x, 3)); },
+  sha256_Gamma1256 : function(x) { return (sha256_S(x, 17) ^ sha256_S(x, 19) ^ sha256_R(x, 10)); },
+  sha256_Sigma0512 : function(x) { return (sha256_S(x, 28) ^ sha256_S(x, 34) ^ sha256_S(x, 39)); },
+  sha256_Sigma1512 : function(x) { return (sha256_S(x, 14) ^ sha256_S(x, 18) ^ sha256_S(x, 41)); },
+  sha256_Gamma0512 : function(x) { return (sha256_S(x, 1)  ^ sha256_S(x, 8) ^ sha256_R(x, 7)); },
+  sha256_Gamma1512 : function(x) { return (sha256_S(x, 19) ^ sha256_S(x, 61) ^ sha256_R(x, 6)); },
 
-  var sha256_K = new Array
+  sha256_K : new Array
   (
     1116352408, 1899447441, -1245643825, -373957723, 961987163, 1508970993,
     -1841331548, -1424204075, -670586216, 310598401, 607225278, 1426881987,
@@ -607,7 +607,7 @@ function encrypt_sha256() {
     430227734, 506948616, 659060556, 883997877, 958139571, 1322822218,
     1537002063, 1747873779, 1955562222, 2024104815, -2067236844, -1933114872,
     -1866530822, -1538233109, -1090935817, -965641998
-  );
+  ),
 
   binb_sha256 : function(m, l) {
     var HASH = new Array(1779033703, -1150833019, 1013904242, -1521486534,
@@ -660,11 +660,11 @@ function encrypt_sha256() {
       HASH[7] = safe_add(h, HASH[7]);
     }
     return HASH;
-  }
+  },
 
   safe_add : function(x, y){
     var lsw = (x & 0xFFFF) + (y & 0xFFFF);
     var msw = (x >> 16) + (y >> 16) + (lsw >> 16);
     return (msw << 16) | (lsw & 0xFFFF);
-  }
+  },
 }
