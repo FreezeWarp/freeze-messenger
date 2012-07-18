@@ -398,7 +398,7 @@
       <column name="memberIds" type="int" maxlen="6" comment="A list of members in the group." />
       <column name="options" type="int" maxlen="6" comment="Group options." />
 
-      <key name="groupId,userId" type="primary" />
+      <key name="groupId" type="primary" />
     </table>
 
 
@@ -458,6 +458,7 @@
       <column name="userGroup" type="int" maxlen="6" default="1" comment="The admin-set usergroup ID of the user." />
       <column name="allGroups" type="string" maxlen="1000" comment="A comma-seperated list of the IDs of all admin-set groups the user is a part of. This is not used on PHPBB and Vanilla logins (both instead use socialGroups)." />
       <column name="options" type="bitfield" bits="16" comment="A bitfield corrosponding to the user's settings." />
+      <column name="timeZone" type="int" maxlen="2" default="0" comment="The timezone of the user." />
       <column name="socialGroups" type="string" maxlen="1000" comment="A comma-seperated list of the ids of all groups the user has joined." />
       <column name="joinDate" type="time" default="0" comment="The date the user joined. It may not be used on logins other than vanilla." />
       <column name="birthDate" type="time" default="0" comment="The date of the user's birth, used for parental control settings." />

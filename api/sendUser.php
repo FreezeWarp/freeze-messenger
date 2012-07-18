@@ -92,7 +92,7 @@ if ($continue) {
     // Get Salts Used For Encryption
     if ($salts) {
       $encryptSalt = end($salts); // Move the file pointer to the last entry in the array (and return its value)
-      $encryptSaltNum = key($salts); // Get the key/id of the corrosponding salt.
+      $encryptSaltNum = key($salts) + 1; // Get the key/id of the corrosponding salt.
     }
     else {
       $encryptSalt = '';

@@ -213,6 +213,8 @@ switch ($_REQUEST['phase']) {
   break;
 
   case 2: // Config File
+  require('../functions/fim_general.php');
+  require('../functions/fim_uac_vanilla.php');
 
   // Note: This writes a file to the server, which is a very sensitive action (and for a reason is never done elsewhere). This is NOT secure, but should only be used by users wishing to install the product.
 
@@ -221,7 +223,7 @@ switch ($_REQUEST['phase']) {
   $port = urldecode($_GET['db_port']);
   $userName = urldecode($_GET['db_userName']);
   $password = urldecode($_GET['db_password']);
-  $database = urldecode($_GET['db_database']);
+  $databaseName = urldecode($_GET['db_database']);
   $prefix = urldecode($_GET['db_tableprefix']);
 
   $forum = urldecode($_GET['forum']);
@@ -233,7 +235,30 @@ switch ($_REQUEST['phase']) {
 
   $recaptchaKey = urldecode($_GET['recaptcha_key']);
 
+  $adminUsername = urldecode($_GET['admin_userName']);
+  $adminPassword = urldecode($_GET['admin_password']);
+  
+  $salts = array($encryptSalt); // This is later written to the config file, but we want to use this properly for now.
+
   $base = file_get_contents('config.base.php');
+
+  $userSalt = fim_generateSalt();
+ 
+  if ($forum == 'vanilla') {
+    $database = new database();
+    $database->connect($host, $port, $userName, $password, $databaseName, $driver);
+
+    $adminPassword = fim_generatePassword($adminPassword, $userSalt, 1, 0);
+
+    if (!$database->insert($prefix . 'users', array(
+      'passwordSalt' => $userSalt,
+      'passwordSaltNum' => 1,
+      'username' => $adminUsername,
+      'password' => $adminPassword
+    ))) {
+      die("Could not insert user.");
+    }
+  }
 
   $find = array(
     '$dbConnect[\'core\'][\'driver\'] = \'mysqli\';
@@ -285,9 +310,9 @@ $dbConnect[\'integration\'][\'username\'] = \'' . addslashes($userName) . '\';',
     '$dbConnect[\'core\'][\'password\'] = \'' . addslashes($password) . '\';
 $dbConnect[\'slave\'][\'password\'] = \'' . addslashes($password) . '\';
 $dbConnect[\'integration\'][\'password\'] = \'' . addslashes($password) . '\';',
-    '$dbConnect[\'core\'][\'database\'] = \'' . addslashes($database) . '\';
-$dbConnect[\'slave\'][\'database\'] = \'' . addslashes($database) . '\';
-$dbConnect[\'integration\'][\'database\'] = \'' . addslashes($database) . '\';',
+    '$dbConnect[\'core\'][\'database\'] = \'' . addslashes($databaseName) . '\';
+$dbConnect[\'slave\'][\'database\'] = \'' . addslashes($databaseName) . '\';
+$dbConnect[\'integration\'][\'database\'] = \'' . addslashes($databaseName) . '\';',
     '$dbConfig[\'vanilla\'][\'tablePrefix\'] = \'' . addslashes($prefix) . '\';',
     '$dbConfig[\'integration\'][\'tablePreix\'] = \'' . addslashes($forumTablePrefix) . '\';',
     '$loginConfig[\'method\'] = \'' . addslashes($forum) . '\';',

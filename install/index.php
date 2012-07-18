@@ -207,26 +207,26 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
       </tr>
       <tr>
         <td><strong>Host</strong></td>
-        <td><input type="text" name="db_host" value="<?php echo $_SERVER['SERVER_NAME']; ?>" /><br /><small>The host of the MySQL server. In most cases, the default shown here <em>should</em> work.</td>
+        <td><input id="db_host" type="text" name="db_host" value="<?php echo $_SERVER['SERVER_NAME']; ?>" /><br /><small>The host of the MySQL server. In most cases, the default shown here <em>should</em> work.</td>
       </tr>
       <tr>
         <td><strong>Port</strong></td>
-        <td><input type="text" name="db_port" value="3306" /><br /><small>The port your database server is configured to work on. For MySQL and MySQLi, it is usually 3306.</small></td>
+        <td><input id="db_port" type="text" name="db_port" value="3306" /><br /><small>The port your database server is configured to work on. For MySQL and MySQLi, it is usually 3306.</small></td>
       </tr>
       <tr>
         <td><strong>Username</strong></td>
-        <td><input type="text" name="db_userName" /><br /><small>The username of the user you will be connecting to the database with.</small></td>
+        <td><input id="db_userName" type="text" name="db_userName" /><br /><small>The username of the user you will be connecting to the database with.</small></td>
       </tr>
       <tr>
         <td><strong>Password</strong></td>
-        <td><input id="password" type="password" name="db_password" /><input type="button" onclick="$('<input type=\'text\' name=\'db_password\' />').val($('#password').val()).prependTo($('#password').parent()); $('#password').remove();$(this).remove();" value="Show" /><br /><small>The password of the user you will be connecting to the database with.</small></td>
+        <td><input id="db_password" type="password" name="db_password" /><input type="button" onclick="$('<input type=\'text\' name=\'db_password\' />').val($('#db_password').val()).prependTo($('#db_password').parent()); $('#db_password').remove();$(this).remove();" value="Show" /><br /><small>The password of the user you will be connecting to the database with.</small></td>
       </tr>
       <tr class="ui-widget-header">
         <th colspan="2">Database Settings</th>
       </tr>
       <tr>
         <td><strong>Database Name</strong></td>
-        <td><input type="text" name="db_database" /><br /><small>The name of the database FreezeMessenger's data will be stored in. <strong>If you are integrating with a forum, this must be the same database the forum uses.</strong></small></td>
+        <td><input id="db_database" type="text" name="db_database" /><br /><small>The name of the database FreezeMessenger's data will be stored in. <strong>If you are integrating with a forum, this must be the same database the forum uses.</strong></small></td>
       </tr>
       <tr>
         <td><strong>Create Database?<strong></td>
@@ -246,7 +246,7 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
   <div style="height: 30px;">
     <form onsubmit="return false;">
       <button style="float: left;" type="button" onclick="$('#part2').slideUp(); $('#part1').slideDown(); windowDraw();">&larr; Back</button>
-      <button style="float: right;" type="button" onclick="dia.full({ title : 'Installing', content : '<div style=&quot;text-align: center;&quot;>Installing now. Please wait a few moments. <img src=&quot;../webpro/images/ajax-loader.gif&quot; /></div>', id : 'installingDia'}); $.get('./worker.php?phase=1',$('#db_connect_form').serialize(),function(data) { $('#installingDia').remove(); if (data == 'success') { $('#part2').slideUp(); $('#part3').slideDown(); } else { dia.error(data); } } ); windowDraw();">Setup &rarr;</button>
+      <button style="float: right;" type="button" onclick="if (!$('#db_database').val().length) { dia.error('Please enter a database.'); } else if (!$('#db_userName').val().length) { dia.error('Please enter a username.'); } else { dia.full({ title : 'Installing', content : '<div style=&quot;text-align: center;&quot;>Installing now. Please wait a few moments. <img src=&quot;../webpro/images/ajax-loader.gif&quot; /></div>', id : 'installingDia'}); $.get('./worker.php?phase=1', $('#db_connect_form').serialize(), function(data) { $('#installingDia').remove(); if (data == 'success') { $('#part2').slideUp(); $('#part3').slideDown(); } else { dia.error(data); } } ); windowDraw(); }">Setup &rarr;</button>
     </form>
   </div>
   </div>
@@ -265,7 +265,7 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
       <tr>
         <td><strong>Forum Integration</strong></td>
         <td>
-          <select name="forum">
+          <select name="forum" onchange="if ($('select[name=\'forum\']').val() === 'vanilla') { $('.forumShow').hide(); $('.vanillaShow').show(); } else { $('.vanillaShow').hide(); $('.forumShow').show(); }">
             <option value="vanilla">No Integration</option>
             <option value="vbulletin3">vBulletin 3.8</option>
             <option value="vbulletin4">vBulletin 4.1</option>
@@ -273,13 +273,21 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
           </select><br /><small>If you have a forum, you can enable more advanced features than without one, and prevent users from having to create more than one account.</small>
         </td>
       </tr>
-      <tr>
+      <tr class="forumShow" style="display: none;">
         <td><strong>Forum URL</strong></td>
         <td><input type="text" name="forum_url" /><br /><small>The URL your forum is installed on.</small></td>
       </tr>
-      <tr>
+      <tr class="forumShow" style="display: none;">
         <td><strong>Forum Table Prefix</strong></td>
         <td><input type="text" name="forum_tableprefix" /><br /><small>The prefix of all tables the forum uses. You most likely defined this when you installed it. If unsure, check your forum's configuration file.</small></td>
+      </tr>
+      <tr class="vanillaShow">
+        <td><strong>Admin Username</strong></td>
+        <td><input type="text" name="admin_userName" /><br /><small>The name you wish to login with.</small></td>
+      </tr>
+      <tr class="vanillaShow">
+        <td><strong>Admin Password</strong></td>
+        <td><input id="admin_password"  type="password" name="admin_password" /><input type="button" onclick="$('<input type=\'text\' name=\'admin_password\' />').val($('#admin_password').val()).prependTo($('#admin_password').parent()); $('#admin_password').remove();$(this).remove();" value="Show" /><br /><small>The password you wish to login with.</small></td>
       </tr>
       <tr class="ui-widget-header">
         <th colspan="2">Encryption</th>
@@ -304,11 +312,11 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
       </tr>-->
       <tr>
         <td><strong>reCAPTCHA Public Key</strong></td>
-        <td><input type="text" name="encrypt_salt" /><br /><small>If a key is provided, reCAPTCHA will be enabled for user registration if you are not integrating with a forum. <a href="https://www.google.com/recaptcha/admin/create">This key can be obtained here.</a></small></td>
+        <td><input type="text" name="recaptcha_publicKey" /><br /><small>If a key is provided, reCAPTCHA will be enabled for user registration if you are not integrating with a forum. <a href="https://www.google.com/recaptcha/admin/create">This key can be obtained here.</a></small></td>
       </tr>
       <tr>
         <td><strong>reCAPTCHA Private Key</strong></td>
-        <td><input type="text" name="encrypt_salt" /><br /><small>This is paired with the above key, and can be found with the public key.</small></td>
+        <td><input type="text" name="recaptcha_privateKey" /><br /><small>This is paired with the above key, and can be found with the public key.</small></td>
       </tr>
     </table><br /><br />
   </form>

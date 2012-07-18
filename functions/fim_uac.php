@@ -125,7 +125,7 @@ function processVanilla($user, $password) {
     return false;
   }
 
-  else if (fim_generatePassword($password, $user['passwordSalt'], $user['passwordSaltNum'], 2) === $user['password']) { // The password is correct.
+  else if (fim_generatePassword($password, $user['passwordSalt'], $user['passwordSaltNum'], 0) === $user['password']) { // The password is correct.
     return true;
   }
 

@@ -42,7 +42,7 @@ function fim_generateSalt() {
 function fim_generatePassword($password, $salt, $privateSaltNum, $hashStage = 0) {
   global $salts;
 
-  $privateSalt = $salts[$privateSalt]; // Get the proper salt.
+  $privateSalt = $salts[$privateSaltNum - 1]; // Get the proper salt.
 
   switch ($hashStage) {
     case 0:
