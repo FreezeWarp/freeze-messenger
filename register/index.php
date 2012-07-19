@@ -34,6 +34,7 @@
 
   <script src="../webpro/client/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
   <script src="../webpro/client/js/jquery.plugins.js" type="text/javascript"></script>
+  <script src="../webpro/client/js/encrypt.js" type="text/javascript"></script>
   <script>
   function windowDraw() {
     $('body').css('min-height',window.innerHeight);
@@ -61,7 +62,7 @@
   <h1 class="ui-widget-header">FreezeMessenger: User Registration</h1>
   <div class="ui-widget-content">
     <?php
-    switch ($stage) {
+    switch (intval($_POST['stage'])) {
       case 0:
       case 1:
       ?>
@@ -87,36 +88,20 @@
             $('#passwordConfirm').val('');
           }
           else {
-            dia.full({
-              title : 'Processing',
-              content : '<div style=&quot;text-align: center;&quot;>Registering now. Please wait a moment. <img src=&quot;../webpro/images/ajax-loader.gif&quot; /></div>',
-              id : 'registeringDia'
-            });
-
-            $.get('./worker.php?phase=1', $('#db_connect_form').serialize(), function(data) {
-              $('#registeringDia').remove();
-
-              if (data == 'success') {
-                $('#part1').slideUp();
-                $('#part2').slideDown();
-              }
-              else {
-                dia.error(data);
-              }
-            });
-
-            windowDraw();
+            $('#password').val(sha256.hex_sha256($('#password').val()));
+            return true;
           }
+
           return false;
         });
       });     
       </script>
 
-      <form name="register_form" id="register_form" action="#" method="post">
+      <form name="register_form" id="register_form" action="index.php" method="post">
         <table border="1" class="page">
           <tr>
             <td><strong>Username</strong></td>
-            <td><input id="userName" type="text" name="register_userName" /><br /><small>This name will be displayed whenever you make a post.</small></td>
+            <td><input id="userName" type="text" name="userName" /><br /><small>This name will be displayed whenever you make a post.</small></td>
           </tr>
           <tr>
             <td><strong>Password</strong></td>
@@ -124,7 +109,7 @@
           </tr>
           <tr>
             <td><strong>Password (Again)</strong></td>
-            <td><input id="passwordConfirm" type="password" name="passwordConfirm" /><br /><small>Retype your password to confirm its accuracy</small></td>
+            <td><input id="passwordConfirm" type="password" /><br /><small>Retype your password to confirm its accuracy</small></td>
           </tr>
           <tr>
             <td><strong>Email</strong></td>
@@ -134,37 +119,32 @@
             <td><strong>Date of Birth</strong></td>
             <td>
               <div name="datepicker" id="datepicker"></div>
-              <script type="text/javascript">
-              $(document).ready(function() {
-                var date = new Date();
-
-                $("#datepicker").datepicker({
-                  changeMonth: true,
-                  changeYear: true,
-                  yearRange: "1900:" + date.getFullYear(),
-                  onChangeMonthYear: function(year, month, inst) {
-                    $("#datepicker").datepicker('setDate',month + '/01/' + year);
-                  }
-                });
-              });
-              </script>
+              <select id="birthday">
+                
+              </select>
+              <select id="birthmonth">
+               
+              </select>
+              <select id="birthyear">
+                
+              </select>
               <small>Select your month, year, and day of birth in the above calendar.</small>
             </td>
           </tr>    
         </table>
 
         <div style="height: 30px;">
-          <input style="float: right;" type="submit" value="Finish &rarr;" />
+          <input style="float: right;" type="submit" value="Finish &rarr;" /><input type="hidden" name="stage" value="2" /><input type="hidden" name="passwordEncrypt" value="sha256" /><input type="hidden" name="birthdate" />
         </div>
       </form><br /><br />
       <?php
       break;
       case 2:
       // Note: This is a wrapper for the API, more or less. Because of this, no data sanitiation is neccessary - the API handles it best.
-
+die(file_get_contents('php://input'));
       $ch = curl_init($installUrl . "api/sendUser.php");
       curl_setopt($ch, CURLOPT_POST, 1);
-      curl_setopt($ch, CURLOPT_POSTFIELDS, 'userName=' . $_POST['userName']);
+      curl_setopt($ch, CURLOPT_POSTFIELDS, 'userName=' . $_POST['userName'] . '&');
       curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1); /* obey redirects */
       curl_setopt($ch, CURLOPT_HEADER, 0);  /* No HTTP headers */
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);  /* return the data */
