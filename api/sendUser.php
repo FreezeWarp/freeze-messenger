@@ -27,7 +27,7 @@
  * @param passwordEncrypt - The method of encryption used to send the password. 'sha256' indicates sha256(password), 'sha256-salt' indicates sha256(sha256(password) . passwordSalt). 'sha256-salt' is discouraged, since it prevents the system from using an unstored salt that prevents against bruteforcing if the database is hacked.
  * @param passwordSalt - The salt used for encrypting the password, if it is encrypted using 'sha256-salt' or 'sha256-salt'. Any salt can be used, though long ones will be truncated to 50 characters, and only certain characters are allowed.
  * @param email - The email of the user.
- * @param dob - The date-of-birth of the user (unix timestamp).
+ * @param birthdate - The date-of-birth of the user (unix timestamp).
 */
 
 $apiRequest = true;
@@ -52,7 +52,7 @@ $request = fim_sanitizeGPC('p', array(
     ),
   ),
   'email' => array(),
-  'dob' => array(
+  'birthdate' => array(
     'context' => 'int',
   ),
 ));
@@ -131,8 +131,8 @@ if ($continue) {
       'password' => $password,
       'passwordSalt' => $passwordSalt,
       'passwordSaltNum' => $encryptSaltNum,
-      'dob' => $request['dob'],
-//      'email' => $request['email'],
+      'birthdate' => $request['birthdate'],
+      'email' => $request['email'],
     );
 
     

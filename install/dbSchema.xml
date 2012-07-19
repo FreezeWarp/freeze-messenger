@@ -473,8 +473,9 @@
       <column name="socialGroups" type="string" maxlen="1000" comment="A comma-seperated list of the ids of all groups the user has joined." />
       <column name="joinDate" type="time" default="0" comment="The date the user joined. It may not be used on logins other than vanilla." />
       <column name="birthDate" type="time" default="0" comment="The date of the user's birth, used for parental control settings." />
+      <column name="email" type="time" comment="The user's email address. Only used in vanilla logins." />
+
       <column name="lastSync" type="time" default="0" comment="The date the userdata was last synced. This is not applicable for vanilla logins." />
-      <column name="dob" type="time" comment="User's data of birth." />
 
       <!-- Password Fun -->
       <column name="password" type="string" maxlen="64" comment="The hashed password of the user. It is only used on vanilla logins." />

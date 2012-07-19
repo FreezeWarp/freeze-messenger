@@ -78,7 +78,7 @@
         </tr>
         <tr>
           <td><strong>Email</strong></td>
-          <td><input id="passwordConfirm" type="password" name="register_passwordConfirm" /><br /><small>Retype your password to confirm its accuracy</small></td>
+          <td><input id="email" type="text" name="register_email" /><br /><small>Retype your password to confirm its accuracy</small></td>
         </tr>
         <tr>
           <td><strong>Date of Birth</strong></td>
