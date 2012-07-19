@@ -247,6 +247,9 @@ $columnDefinitions = array( // These are only used for syncing. When the origina
       'allGroups' => 'allGroups',
       'timeZone' => 'timeZone',
       'avatar' => 'avatar',
+      'password' => 'password',
+      'passwordSalt' => 'passwordSalt',
+      'passwordSaltNum' => 'passwordSaltNum',
     ),
   ),
   'adminGroups' => array(
@@ -1019,7 +1022,7 @@ if ($valid) {
     $banned = true;
   }
 
-  if ($user['adminDefs']['modCore']) { // The user is an admin, don't give a crap abouthe above!
+  if ($user['adminDefs']['modCore']) { // The user is an admin, ignore the above.
     $banned = false;
   }
 

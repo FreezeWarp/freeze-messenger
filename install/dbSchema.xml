@@ -588,12 +588,24 @@
       <def bit="1024">Mature (Unimplemented)</def>
     </bitfield>
 
-    <bitfield name="options" table="defaultPermissions">
-      <def bit="256">Bold</def>
-      <def bit="512">Italics</def>
-      <def bit="1024">Underline</def>
-      <def bit="2048">Strike-Through</def>
-      <def bit="4096">Overline</def>
+    <bitfield name="adminPrivs" table="defaultPermissions">
+      <def bit="1">Grant Permissions</def>
+      <def bit="2">"Untouchable" (Permissions Can Not be Changed Except By Self)</def>
+      <def bit="16">Ban, Unban, Etc.</def>
+      <def bit="64">File Uploads</def>
+      <def bit="256">Censor</def>
+      <def bit="1024">BBCode</def>
+      <def bit="4096">Plugins</def>
+      <def bit="8192">Templates</def>
+      <def bit="16384">Hooks</def>
+    </bitfield>
+
+    <bitfield name="userPrivs" table="users">
+      <def bit="16">Is Not Banned</def>
+      <def bit="32">Can Create Rooms</def>
+      <def bit="64">Can Create Private Rooms</def>
+      <def bit="1024">Active Users Viewable</def>
+      <def bit="2048">Post Counts Viewable</def>
     </bitfield>
   </definitions>
 </dbSchema>

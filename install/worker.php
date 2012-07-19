@@ -238,7 +238,9 @@ switch ($_REQUEST['phase']) {
   $adminUsername = urldecode($_GET['admin_userName']);
   $adminPassword = urldecode($_GET['admin_password']);
   
-  $salts = array($encryptSalt); // This is later written to the config file, but we want to use this properly for now.
+  $salts = array( // This is later written to the config file, but we want to use this properly for now.
+    101 => $encryptSalt
+  );
 
   $base = file_get_contents('config.base.php');
 
@@ -248,13 +250,16 @@ switch ($_REQUEST['phase']) {
     $database = new database();
     $database->connect($host, $port, $userName, $password, $databaseName, $driver);
 
-    $adminPassword = fim_generatePassword($adminPassword, $userSalt, 1, 0);
+    $adminPassword = fim_generatePassword($adminPassword, $userSalt, 101, 0);
 
     if (!$database->insert($prefix . 'users', array(
-      'passwordSalt' => $userSalt,
-      'passwordSaltNum' => 1,
+      'userId' => 1,
       'username' => $adminUsername,
-      'password' => $adminPassword
+      'password' => $adminPassword,
+      'passwordSalt' => $userSalt,
+      'passwordSaltNum' => 101,
+      'userPrivs' => 65535,
+      'adminPrivs' => 65535,
     ))) {
       die("Could not insert user.");
     }
