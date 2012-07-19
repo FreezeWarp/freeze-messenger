@@ -292,7 +292,8 @@ $columnDefinitions = array( // These are only used for syncing. When the origina
         
     ),
     'vanilla' => array(
-      
+      'groupId' => 'groupId',
+      'groupName' => 'groupName',
     ),
   ),
   'socialGroupMembers' => array(
@@ -318,7 +319,10 @@ $columnDefinitions = array( // These are only used for syncing. When the origina
         
     ),
     'vanilla' => array(
-
+      'groupId' => 'groupId',
+      'userId' => 'userId',
+      'type' => 'type',
+      'validType' => 'member',
     ),
   ),
 );

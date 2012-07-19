@@ -415,6 +415,7 @@
     <table name="socialGroupMembers" type="general" comment="The members of groups, used with vanilla logins.">
       <column name="groupId" type="int" maxlen="6" comment="The group ID." />
       <column name="userId" type="int" maxlen="6" comment="The member ID of the group." />
+      <column name="type" default="pending" restrict="member,pending" type="string" maxlen="10" comment="The member ID of the group." />
 
       <key name="groupId,userId" type="primary" />
     </table>
