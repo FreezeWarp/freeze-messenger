@@ -403,6 +403,10 @@ $queryParts['userSelectFromSessionHash']['conditions'] = array(
 ///* Generate Proper Table Names for Integration *///
 
 if (isset($tableDefinitions['users'][$loginConfig['method']])) {
+  if ($loginConfig['method'] === 'vanilla') {
+    $forumTablePrefix = $sqlPrefix; // By setting it like this, if one wishes to switch over to a different login method, it will be much easier.
+  }
+
   $sqlUserTable = $forumTablePrefix . $tableDefinitions['users'][$loginConfig['method']];
   $sqlAdminGroupTable = $forumTablePrefix . $tableDefinitions['adminGroups'][$loginConfig['method']];
   $sqlUserGroupTable = $forumTablePrefix . $tableDefinitions['socialGroups'][$loginConfig['method']];

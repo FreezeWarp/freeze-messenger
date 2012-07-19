@@ -152,7 +152,7 @@ class messageParse {
       case 'vanilla':
       $smilies = $slaveDatabase->select(
         array(
-          "{$sqlPrefix}emoticons" => array(
+          "{$forumTablePrefix}emoticons" => array(
             'emoticonText' => 'emoticonText',
             'emoticonFile' => 'emoticonFile',
             'context' => 'context',
