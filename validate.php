@@ -256,6 +256,7 @@ $columnDefinitions = array( // These are only used for syncing. When the origina
       'passwordSaltNum' => 'passwordSaltNum',
       'userPrivs' => 'userPrivs',
       'adminPrivs' => 'adminPrivs',
+      'defaultRoom' => 'defaultRoom'
     ),
   ),
   'adminGroups' => array(
@@ -1095,7 +1096,7 @@ if ($api) {
       'anonId' => ($anonymous ? $anonId : 0),
       'defaultRoomId' => (int) (isset($_GET['room']) ? $_GET['room'] :
         (isset($user['defaultRoom']) ? $user['defaultRoom'] :
-          (isset($defaultRoom) ? $defaultRoom : 1))), // Get the room we're on. If there is a $_GET variable, use it, otherwise the user's "default", or finally just main.
+          (isset($config['defaultRoom']) ? $config['defaultRoom'] : 1))), // Get the room we're on. If there is a $_GET variable, use it, otherwise the user's "default", or finally just main.
 
       'userData' => array(
         'userName' => ($user['userName']),

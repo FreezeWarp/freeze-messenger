@@ -1259,35 +1259,35 @@ var standard = {
       cache: false,
       timeout: 2500,
       success: function(json) {
-        active = json.login;
+        activeLogin = json.login;
 
-        userId = active.userData.userId;
-        anonId = active.anonId;
-        sessionHash = active.sessionHash;
+        userId = activeLogin.userData.userId;
+        anonId = activeLogin.anonId;
+        sessionHash = activeLogin.sessionHash;
 
 
 
         $.cookie('webpro_userId', userId, { expires : 14 });
-        $.cookie('webpro_password', options.password, { expires : 14 }); // We will encrypt this in B3 or later -- it wasn't a priority for now.
+        $.cookie('webpro_password', options.password, { expires : 14 }); // We will encrypt this in B3 or later -- it isn't a priority for now. (TODO)
 
 
 
         /* Update Permissions */
 
         userPermissions = {
-          createRoom : active.userPermissions.createRooms, privateRoom : active.userPermissions.privateRooms,
-          general : active.userPermissions.allowed
+          createRoom : activeLogin.userPermissions.createRooms, privateRoom : activeLogin.userPermissions.privateRooms,
+          general : activeLogin.userPermissions.allowed
         }
 
         adminPermissions = {
-          modPrivs : active.adminPermissions.modPrivs, modCore : active.adminPermissions.modCore,
-          modUsers : active.adminPermissions.modUsers, modTemplates : active.adminPermissions.modTemplates,
-          modImages : active.adminPermissions.modImages, modCensor : active.adminPermissions.modCensor,
-          modHooks : active.adminPermissions.modHooks
+          modPrivs : activeLogin.adminPermissions.modPrivs, modCore : activeLogin.adminPermissions.modCore,
+          modUsers : activeLogin.adminPermissions.modUsers, modTemplates : activeLogin.adminPermissions.modTemplates,
+          modImages : activeLogin.adminPermissions.modImages, modCensor : activeLogin.adminPermissions.modCensor,
+          modHooks : activeLogin.adminPermissions.modHooks
         }
 
 
-        if (active.banned) { // The user has been banned, so pretty much nothing will work. In some respects, this really only exists for IP bans, but meh.
+        if (activeLogin.banned) { // The user has been banned, so pretty much nothing will work. In some respects, this really only exists for IP bans, but meh.
           dia.error('You have been banned. You will not be able to do anything.');
 
           userPermissions = {
@@ -1300,14 +1300,14 @@ var standard = {
             modHooks : false
           }
         }
-        else if (active.valid === true) {
+        else if (activeLogin.valid === true) {
           if (options.showMessage) {
             // Display Dialog to Notify User of Being Logged In
             if (!userPermissions.general) {
-              dia.info('You are now logged in as ' + active.userData.userName + '. However, you are not allowed to post and have been banned by an administrator.', 'Logged In');
+              dia.info('You are now logged in as ' + activeLogin.userData.userName + '. However, you are not allowed to post and have been banned by an administrator.', 'Logged In');
             }
             else {
-              dia.info('You are now logged in as ' + active.userData.userName + '.', 'Logged In');
+              dia.info('You are now logged in as ' + activeLogin.userData.userName + '.', 'Logged In');
             }
           }
 
@@ -1316,7 +1316,7 @@ var standard = {
           console.log('Login valid. Session hash: ' + sessionHash + '; User ID: ' + userId);
         }
         else {
-          switch (active.loginFlag) {
+          switch (activeLogin.loginFlag) {
             case 'PASSWORD_ENCRYPT': dia.error("The form encryption used was not accepted by the server."); break;
             case 'BAD_USERNAME': dia.error("A valid user was not provided."); break;
             case 'BAD_PASSWORD': dia.error("The password was incorrect."); break;
@@ -1345,7 +1345,7 @@ var standard = {
 
             /* Select Room */
             if (!roomId) {
-              hashParse({defaultRoomId : active.defaultRoomId}); // When a user logs in, the hash data (such as room and archive) is processed, and subsequently executed.
+              hashParse({defaultRoomId : activeLogin.defaultRoomId}); // When a user logs in, the hash data (such as room and archive) is processed, and subsequently executed.
 
               /*** A Hack of Sorts to Open Dialogs onLoad ***/
               if (typeof prepopup === "function") {
