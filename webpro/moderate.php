@@ -190,8 +190,9 @@ echo '<!DOCTYPE HTML>
   <div id="mainMenu">
     <h3><a href="#" data-itemId="1">Manage Customizations</a></h3>
     <ul>
+      <li><a href="moderate.php?do=main">Home</a></li>
       ' . ($user['adminDefs']['modTemplates'] ? '<li><a href="moderate.php?do=phrases">Modify Phrases</a></li>' : '') . '
-      ' . ($user['adminDefs']['modTemplates'] ? '<li><a href="moderate.php?do=templates">Modify Templates</a></li>' : '') . '
+      ' . ($user['adminDefs']['modTemplates'] ? '<li><a     href="moderate.php?do=templates">Modify Templates</a></li>' : '') . '
       ' . ($user['adminDefs']['modPlugins'] ? '<li><a href="moderate.php?do=plugins">Modify Plugins</a></li>' : '') . '
       ' . ($user['adminDefs']['modHooks'] ? '<li><a href="moderate.php?do=hooks">Modify Hooks</a></li>' : '') . '
     </ul>

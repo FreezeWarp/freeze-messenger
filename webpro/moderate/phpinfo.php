@@ -29,7 +29,7 @@ else {
 
       $phpinfo = str_replace(array('<body>','<html>','</html>','</body>'), '', $phpinfo);
       $phpinfo = preg_replace(array('/<\!DOCTYPE(.*?)>/', '/\<head\>(.*)\<\/head\>/ism'), '', $phpinfo);
-      $phpinfo = str_replace(array('<table','class="p"','class="e"','class="h"','class="v"','class="r"'), array('<table class="page ui-widget" border="1"','class="ui-widget-header"','','class="ui-widget-header"','',''), $phpinfo);
+      $phpinfo = str_replace(array('<table','<h1','class="p"','class="e"','class="h"','class="v"','class="r"'), array('<table class="page ui-widget ui-widget-content" border="1"','<h1 class="ui-widget-header"','class="ui-widget-header"','','class="ui-widget-header"','',''), $phpinfo);
 
       echo $phpinfo;
     }
