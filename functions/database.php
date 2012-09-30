@@ -231,8 +231,8 @@ class database {
 
         case 'close':
           $function = mysql_close($this->dbLink);
-          
-          unset($this->dbLink); 
+
+          unset($this->dbLink);
 
           return $function;
         break;
@@ -587,8 +587,7 @@ class database {
             $sortPartParts = explode(' ',$sortPart); // Divide the piece
 
             $sortCol = $sortPartParts[0]; // Set the name equal to the first part of the piece
-
-            switch (strtolower($sortPartParts[0])) {
+            switch (strtolower($sortPartParts[1])) {
               case 'asc': $directionSym = $this->sortOrderAsc; break;
               case 'desc': $directionSym = $this->sortOrderDesc; break;
               default: $directionSym = $this->sortOrderAsc; break;

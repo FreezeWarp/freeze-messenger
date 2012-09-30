@@ -181,7 +181,6 @@ if (count($request['rooms']) > 0) {
 
     ($hook = hook('getStats_eachRoom_preRooms') ? eval($hook) : '');
 
-
     $totalPosts = $database->select(
       $queryParts['statsSelect']['columns'],
       $queryParts['statsSelect']['conditions'],
