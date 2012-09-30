@@ -245,7 +245,7 @@ function messageFormat(json, format) {
       }
       break;
 
-      case '':
+      case '': console.log(text);
       text = text.replace(regexs.url, function($1) {
         if ($1.match(regexs.url2)) {
           var $2 = $1.replace(regexs.url2, "$2");

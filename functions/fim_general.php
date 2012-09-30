@@ -1033,15 +1033,13 @@ function formatSize($size) {
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_requestBodyToGPC($string) {
-  $string = urldecode($string);
-
   $arrayEntries = explode('&', $string);
   $array = array();
 
   foreach ($arrayEntries AS $arrayEntry) {
     $arrayEntryParts = explode('=', $arrayEntry);
     
-    $array[$arrayEntryParts[0]] = $arrayEntryParts[1];
+    $array[urldecode($arrayEntryParts[0])] = urldecode($arrayEntryParts[1]);
   }
   
   return $array;
@@ -1104,7 +1102,6 @@ function fim_sanitizeGPC($type, $data) {
         break;
     }
   }
-
   if (count($activeGlobal) > 0 && is_array($activeGlobal)) { // Make sure the active global is populated with data.
     foreach ($data AS $indexName => $indexData) {
       $indexMetaData = $metaDataDefaults; // Store indexMetaData with the defaults.
