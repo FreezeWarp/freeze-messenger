@@ -8,7 +8,7 @@ if (!file_exists('./config.php')) {
 
     die('FreezeMessenger must first be installed. <a href="install/index.php">Click here</a> to do so.');
   }
-  else {
+  else { // This scenario used to make more sense. Manual installation is still technically possible, which is why this is here.
     die('FreezeMessenger must first be installed. Please modify install/config-base.php and save as config.php in the base directory.');
   }
 }

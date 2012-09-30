@@ -1,6 +1,6 @@
 <!DOCTYPE HTML>
 <!-- Original Source Code Copyright © 2011 Joseph T. Parsons. -->
-<!-- Note: Installation Backend @ Worker.php -->
+<!-- TODO: Localisation for Dates -->
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <title>Freeze Messenger Registration</title>
@@ -62,9 +62,12 @@
   <h1 class="ui-widget-header">FreezeMessenger: User Registration</h1>
   <div class="ui-widget-content">
     <?php
-    switch (intval($_POST['stage'])) {
+    switch (intval($_GET['stage'])) {
       case 0:
       case 1:
+      require_once('./phrases.php');
+      require_once('../global.php');
+      $lang = 'enGB'; // TODO
       ?>
       Here you can register for a FreezeMessenger account easily.<br /><br />
 
@@ -97,7 +100,7 @@
       });     
       </script>
 
-      <form name="register_form" id="register_form" action="index.php" method="post">
+      <form name="register_form" id="register_form" action="index.php?stage=2" method="post">
         <table border="1" class="page">
           <tr>
             <td><strong>Username</strong></td>
@@ -120,36 +123,79 @@
             <td>
               <div name="datepicker" id="datepicker"></div>
               <select id="birthday">
-                
+                <option value="0"></option>
+                <?php
+                for ($day = 1; $day <= 31; $day++) {
+                  echo '<option value=' . $day . '>' . $day . '</option>';
+                }
+                ?>
               </select>
               <select id="birthmonth">
-               
+                <option value="0"></option>
+                <option value="1"><?php echo $phrases[$lang]['month01']; ?></option>
+                <option value="2"><?php echo $phrases[$lang]['month02']; ?></option>
+                <option value="3"><?php echo $phrases[$lang]['month03']; ?></option>
+                <option value="4"><?php echo $phrases[$lang]['month04']; ?></option>
+                <option value="5"><?php echo $phrases[$lang]['month05']; ?></option>
+                <option value="6"><?php echo $phrases[$lang]['month06']; ?></option>
+                <option value="7"><?php echo $phrases[$lang]['month07']; ?></option>
+                <option value="8"><?php echo $phrases[$lang]['month08']; ?></option>
+                <option value="9"><?php echo $phrases[$lang]['month09']; ?></option>
+                <option value="10"><?php echo $phrases[$lang]['month10']; ?></option>
+                <option value="11"><?php echo $phrases[$lang]['month11']; ?></option>
+                <option value="12"><?php echo $phrases[$lang]['month12']; ?></option>
               </select>
               <select id="birthyear">
-                
+                <option value="0"></option>
+                <?php
+                for ($year = (intval(date('Y')) - $config['ageMaximum']); $year <= (intval(date('Y')) - $config['ageMinimum']); $year++) {
+                  echo '<option value=' . $year . '>' . $year . '</option>';
+                }
+                ?>
               </select>
-              <small>Select your month, year, and day of birth in the above calendar.</small>
+              <small>Select your month, year, and day of birth in the above calendar. (Note that if your year does not appear, you are not allowed to register.)</small>
             </td>
           </tr>    
         </table>
 
         <div style="height: 30px;">
-          <input style="float: right;" type="submit" value="Finish &rarr;" /><input type="hidden" name="stage" value="2" /><input type="hidden" name="passwordEncrypt" value="sha256" /><input type="hidden" name="birthdate" />
+          <input style="float: right;" type="submit" value="Finish &rarr;" />
+          <input type="hidden" name="stage" value="2" />
+          <input type="hidden" name="passwordEncrypt" value="sha256" />
+          <input type="hidden" name="birthdate" />
         </div>
       </form><br /><br />
       <?php
       break;
       case 2:
       // Note: This is a wrapper for the API, more or less. Because of this, no data sanitiation is neccessary - the API handles it best.
-die(file_get_contents('php://input'));
-      $ch = curl_init($installUrl . "api/sendUser.php");
-      curl_setopt($ch, CURLOPT_POST, 1);
-      curl_setopt($ch, CURLOPT_POSTFIELDS, 'userName=' . $_POST['userName'] . '&');
-      curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1); /* obey redirects */
-      curl_setopt($ch, CURLOPT_HEADER, 0);  /* No HTTP headers */
-      curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);  /* return the data */
+      $ch = curl_init($_SERVER['HTTP_HOST'] . dirname(dirname($_SERVER["PHP_SELF"])) . "/api/sendUser.php");
+      curl_setopt($ch, CURLOPT_POST, TRUE);
+      curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array(
+//        'apiVersion' => '3',
+        'passwordEncrypt' => 'sha256',
+        'userName' => $_POST['userName'],
+        'password' => $_POST['password']
+      )));
+      curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE); /* obey redirects */
+      curl_setopt($ch, CURLOPT_HEADER, FALSE);  /* No HTTP headers */
+      curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);  /* return the data */
 
       $result = curl_exec($ch);
+
+      if ($che = curl_error($ch)) {
+        echo 'Curl Error: ' . $che;   
+      }
+      else {
+        $resultA = json_decode($result, true);
+        
+        if ($resultA['sendUser']['errStr']) {
+          echo '<form action="" onsubmit="window.history.back(); return false;" action="./index.php?stage=2">Error "' . $resultA['sendUser']['errStr'] . '": ' . $resultA['sendUser']['errDesc'] . '.<br /><br /><input type="submit" value="Go back." /></form>';
+        }
+        else {
+          echo 'You are now registered as "' . $resultA['sendUser']['activeUser']['userName'] . '".<br /><br /><a href="../">Return to chat interface.</a>';
+        }
+      }
 
       curl_close($ch);
       break;

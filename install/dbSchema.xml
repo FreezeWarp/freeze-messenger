@@ -464,7 +464,7 @@
 
     <table name="users" type="general" comment="The users.">
       <!-- General -->
-      <column name="userId" type="int" maxlen="8" comment="The unique ID of the user." />
+      <column name="userId" type="int" maxlen="8" autoincrement="true" comment="The unique ID of the user." />
       <column name="userName" type="string" maxlen="50" comment="The user's name." />
       <column name="userGroup" type="int" maxlen="6" default="1" comment="The admin-set usergroup ID of the user." />
       <column name="allGroups" type="string" maxlen="1000" comment="A comma-seperated list of the IDs of all admin-set groups the user is a part of. This is not used on PHPBB and Vanilla logins (both instead use socialGroups)." />

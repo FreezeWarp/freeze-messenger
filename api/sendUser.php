@@ -28,9 +28,12 @@
  * @param passwordSalt - The salt used for encrypting the password, if it is encrypted using 'sha256-salt' or 'sha256-salt'. Any salt can be used, though long ones will be truncated to 50 characters, and only certain characters are allowed.
  * @param email - The email of the user.
  * @param birthdate - The date-of-birth of the user (unix timestamp).
-*/
+ * 
+ * TODO: Captcha Support, IP Limits
+ */
 
 $apiRequest = true;
+$ignoreLogin = true;
 
 require('../global.php');
 require('../functions/fim_uac_vanilla.php');
@@ -69,7 +72,7 @@ if ($continue) {
     $errDesc = 'This script only works for servers using vanilla logins.';
   }
   elseif ($user['userId'] && (($config['anonymousUserId'] && $user['userId'] != $config['anonymousUserId']) || !$config['anonymousUserId'])) {
-    $errStr = 'logginIn';
+    $errStr = 'loggedIn';
     $errDesc = 'You are already logged-in.';
   }
   elseif ($database->getUser(false, $request['userName'])) {
@@ -143,6 +146,7 @@ if ($continue) {
     // Insert Data
     if ($continue) {
       $database->insert("{$sqlPrefix}users", $userData);
+      $userId = $database->insertId;
     }
   }
 }
@@ -153,8 +157,8 @@ if ($continue) {
 $xmlData = array(
   'sendUser' => array(
     'activeUser' => array(
-      'userId' => (int) $user['userId'],
-      'userName' => ($user['userName']),
+      'userId' => (int) $userId,
+      'userName' => ($userData['userName']),
     ),
     'errStr' => ($errStr),
     'errDesc' => ($errDesc),

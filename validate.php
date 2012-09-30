@@ -68,7 +68,10 @@ $loginDefs['syncMethods'] = array(
 
 ///* Obtain Login Data From Different Locations *///
 
-if (isset($_POST['userName'],$_POST['password']) || isset($_POST['userId'],$_POST['password'])) { // API.
+if ($ignoreLogin === true) {
+  // We do nothing.
+}
+elseif (isset($_POST['userName'],$_POST['password']) || isset($_POST['userId'],$_POST['password'])) { // API.
   $apiVersion = $_POST['apiVersion']; // Gethe version of the software the client intended for.
 
   if (!$apiVersion) {
@@ -106,7 +109,8 @@ if (isset($_POST['userName'],$_POST['password']) || isset($_POST['userId'],$_POS
       $passwordEncrypt = fim_urldecode($_POST['passwordEncrypt']);
 
       switch ($passwordEncrypt) {
-        case 'md5':
+//        case 'hashed': // Different forums use different encodings. "Hashed" allows the client to figure this out.
+        case 'md5': // Some forums use two levels of md5; this signifies the first.
         case 'plaintext':
         // Do nothing, yet.
         break;
@@ -250,6 +254,8 @@ $columnDefinitions = array( // These are only used for syncing. When the origina
       'password' => 'password',
       'passwordSalt' => 'passwordSalt',
       'passwordSaltNum' => 'passwordSaltNum',
+      'userPrivs' => 'userPrivs',
+      'adminPrivs' => 'adminPrivs',
     ),
   ),
   'adminGroups' => array(
@@ -508,7 +514,6 @@ elseif ($userId && $password) {
     1
   );
   $user = $user->getAsArray(false);
-
 
   if (processLogin($user,$password,'plaintext')) {
     $valid = true;
@@ -901,7 +906,6 @@ if ($valid) { // If the user is valid, process their preferrences.
     );
     $userPrefs = $userPrefs->getAsArray(false);
 
-
     $user = $userPrefs; // Set user to userPrefs.
   }
   else {
@@ -1002,7 +1006,6 @@ $user['adminDefs'] = array(
   'modTemplates' => ($user['adminPrivs'] & 8192), // Templates
   'modHooks' => ($user['adminPrivs'] & 16384), // Hooks
 );
-
 
 $user['userDefs'] = array(
   'allowed' => ($user['userPrivs'] & 16), // Is not banned

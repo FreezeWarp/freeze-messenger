@@ -104,5 +104,9 @@ $defaultConfig = array(
   
   'recaptchaPublicKey' => '',
   'recaptchaPrivateKey' => '',
+    
+  'requireDOB' => false, // TOADD
+  'ageMinimum' => 13, // TOADD
+  'ageMaximum' => 100, // TOADD
 );
 ?>
