@@ -2323,10 +2323,19 @@ popup = {
               $('#fontPreview').css('font-weight', 'bold');
               $('#defaultBold').attr('checked', 'checked');
             }
+            $('#defaultBold').change(function() {
+              if ($('#defaultBold').is(':checked')) $('#fontPreview').css('font-weight', 'bold');
+              else $('#fontPreview').css('font-weight', 'normal');
+            });
+
             if (defaultGeneral & 512) {
               $('#fontPreview').css('font-style', 'italic');
               $('#defaultItalics').attr('checked', 'checked');
             }
+            $('#defaultItalics').change(function() {
+              if ($('#defaultBold').is(':checked')) $('#fontPreview').css('font-style', 'italic');
+              else $('#fontPreview').css('font-style', 'normal');
+            });
 
             if (defaultColour) {
               $('#fontPreview').css('color', 'rgb(' + defaultColour + ')');
@@ -2335,6 +2344,7 @@ popup = {
               defaultColourHashPre = defaultColour.split(',');
               defaultColourHash = {r : defaultColourHashPre[0], g : defaultColourHashPre[1], b : defaultColourHashPre[2] }
             }
+
             if (defaultHighlight) {
               $('#fontPreview').css('background-color', 'rgb(' + defaultHighlight + ')');
               $('#defaultHighlight').css('background-color', 'rgb(' + defaultHighlight + ')');
@@ -2342,9 +2352,13 @@ popup = {
               defaultHighlightHashPre = defaultHighlight.split(',');
               defaultHighlightHash = {r : defaultHighlightHashPre[0], g : defaultHighlightHashPre[1], b : defaultHighlightHashPre[2] }
             }
+
             if (defaultFontface) {
               $('#defaultFace > option[value="' + defaultFontface + '"]').attr('selected', 'selected');
             }
+            $('#defaultFace').change(function() {
+              $('#fontPreview').css('fontFamily', $('#defaultFace > option:selected').attr('data-font'));
+            });
 
             $('#defaultHighlight').ColorPicker({
               color: defaultHighlightHash,
