@@ -72,7 +72,6 @@ else {
       $template = $request['data'];
       $template = str_replace(array("\r","\n","\r\n"), '', $template); // Remove new lines (required for JSON).
       $template = preg_replace("/\>(\ +)/", ">", $template); // Remove extra space between  (looks better).
-
       $json[$request['templateName']] = $template; // Update the JSON object with the new template data.
 
       file_put_contents('client/data/templates.json', json_encode($json)) or die('Unable to write'); // Send the new JSON data to the server.

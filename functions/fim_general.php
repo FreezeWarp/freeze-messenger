@@ -174,7 +174,7 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
   elseif (!isset($roomData['defaultPermissions'])) { // If the default permissions index is missing, through an exception.
     throw new Exception('Room data invalid (defaultPermissions index missing)');
   }
-  elseif ($type == 'know') { // Transitional.
+  elseif ($type === 'know') { // Transitional.
     throw new Exception('Room data invalid (type of "know")');
   }
 
@@ -250,7 +250,7 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
     }
 
 
-    if ($type2 == 'post') {
+    if ($type2 === 'post') {
       if ($banned) {
         $roomValid['post'] = false;
         $reason = 'banned';
@@ -279,7 +279,7 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
       }
     }
 
-    if ($type2 == 'view') {
+    if ($type2 === 'view') {
       if ($isAdmin && !$isPrivateRoom) {
         $roomValid['view'] = true;
       }
@@ -296,7 +296,7 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
       }
     }
 
-    if ($type2 == 'moderate') {
+    if ($type2 === 'moderate') {
       if ($banned) {
         $roomValid['moderate'] = false;
         $reason = 'banned';
@@ -322,7 +322,7 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
       }
     }
 
-    if ($type2 == 'admin') {
+    if ($type2 === 'admin') {
       if ($banned) {
         $roomValid['admin'] = false;
         $reason = 'banned';
@@ -508,7 +508,7 @@ function fim_sha256($data) {
  * @param string $data - The data to encrypt.
  * @return string - Encrypted data.
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
- */ 
+ */
 function fim_rand($min, $max) {
   if (function_exists('mt_rand')) {
     return mt_rand($min, $max);
@@ -1038,10 +1038,10 @@ function fim_requestBodyToGPC($string) {
 
   foreach ($arrayEntries AS $arrayEntry) {
     $arrayEntryParts = explode('=', $arrayEntry);
-    
+
     $array[urldecode($arrayEntryParts[0])] = urldecode($arrayEntryParts[1]);
   }
-  
+
   return $array;
 }
 
@@ -1056,37 +1056,30 @@ function fim_requestBodyToGPC($string) {
  */
 function fim_sanitizeGPC($type, $data) {
   global $config;
-  
+
   // Get the request body.
-  $requestBody = file_get_contents('php://input');
+  if ($type === 'p' || $type === 'post' || $type === 'u' || $type === 'put' || $type === 'd' || $type === 'delete') $requestBody = file_get_contents('php://input'); // Only get php://input if we want to. Otherwise, it creates some extra overhead we could do without.
+  else $requestBody = '';
 
   $metaDataDefaults = array(
     'type' => 'string',
     'require' => false,
     'context' => false,
   );
-  
-  if (strlen($requestBody) > 0) { // If a request body exists, we will use it instead of PHP's generated superglobals. This allows for further REST compatibility.
+
+  if (strlen($requestBody) > 0) { // If a request body exists, we will use it instead of PHP's generated superglobals. This allows for further REST compatibility. We will, however, only use it for GET and POST requests, at the present time.
     switch ($type) {
-      case 'g': case 'get': // GET should NOT use a request body, though it is supported.
-        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-	  $activeGlobal = fim_requestBodyToGPC($requestBody);
-	}
+      case 'p': case 'post': // POST can use a request body; it is ultimately the preferrence of the implementor, and for now we will prefer it as long as a REQUEST body exists. (TODO: Should a REQUEST body ever not exist in this case?)
+      if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $activeGlobal = fim_requestBodyToGPC($requestBody);
+      }
       break;
-      case 'p': case 'post': // POST can use a request body; it is ultimately the preferrence of the implementor .
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-	  $activeGlobal = fim_requestBodyToGPC($requestBody);
-	}
+      case 'u': case 'put': // PUT __requires__ a request body. It is not currently supported, however.
+      if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+        $activeGlobal = $requestBody;
+      }
       break;
-      case 'c': case 'cookie':
-        trigger_error('Invalid request method in fim_sanitizeGPC: cannot use request body with COOKIEs.', E_USER_WARNING);
-      break;
-      case 'r': case 'request':
-	$activeGlobal = fim_requestBodyToGPC($requestBody);
-      break;  
-      default:
-        trigger_error('Invalid type in fim_sanitizeGPC', E_USER_WARNING);
-        return false;
+      case 'd': case 'delete': // DELETE is not currently supported.
       break;
     }
   }
@@ -1102,6 +1095,7 @@ function fim_sanitizeGPC($type, $data) {
         break;
     }
   }
+
   if (count($activeGlobal) > 0 && is_array($activeGlobal)) { // Make sure the active global is populated with data.
     foreach ($data AS $indexName => $indexData) {
       $indexMetaData = $metaDataDefaults; // Store indexMetaData with the defaults.
@@ -1256,7 +1250,7 @@ function fim_sanitizeGPC($type, $data) {
         break;
 
         default: // String or otherwise.
-        $newData[$indexName] = (string) $activeGlobal[$indexName]; // Append value as string-cast. 
+        $newData[$indexName] = (string) $activeGlobal[$indexName]; // Append value as string-cast.
 
         switch ($indexMetaData['context']['filter']) {
           case 'ascii128':
