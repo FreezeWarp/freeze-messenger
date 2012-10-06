@@ -41,6 +41,7 @@ $request = fim_sanitizeGPC('g', array(
       'filter' => 'int',
       'evaltrue' => true,
     ),
+    'default' => '',
   ),
 
   'showOnly' => array(

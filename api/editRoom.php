@@ -398,7 +398,7 @@ switch($request['action']) {
     }
 
     if (!isset($user2)) {} // noUser thing above...
-    if ($user2 === false) { // No user exists.
+    elseif ($user2 === false) { // No user exists.
       $errStr = 'badUser';
       $errDesc = 'That user does not exist.';
     }

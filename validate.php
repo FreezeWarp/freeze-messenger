@@ -68,7 +68,7 @@ $loginDefs['syncMethods'] = array(
 
 ///* Obtain Login Data From Different Locations *///
 
-if ($ignoreLogin === true) {
+if (isset($ignoreLogin) && $ignoreLogin === true) {
   // We do nothing.
 }
 elseif (isset($_POST['userName'],$_POST['password']) || isset($_POST['userId'],$_POST['password'])) { // API.
@@ -153,21 +153,10 @@ elseif (isset($_REQUEST['apiLogin'])) {
 elseif (isset($hookLogin)) { // Custom Login
   if (is_array($hookLogin)) {
     if (count($hookLogin) > 0) {
-      if (isset($hookLogin['userName'])) {
-        $userName = $hookLogin['userName'];
-      }
-
-      if (isset($hookLogin['password'])) {
-        $password = $hookLogin['password'];
-      }
-
-      if (isset($hookLogin['sessionHash'])) {
-        $sessionHash = $hookLogin['sessionHash'];
-      }
-
-      if (isset($hookLogin['userIdComp'])) {
-        $userIdComp = $hookLogin['userIdComp'];
-      }
+      if (isset($hookLogin['userName'])) $userName = $hookLogin['userName'];
+      if (isset($hookLogin['password'])) $password = $hookLogin['password'];
+      if (isset($hookLogin['sessionHash'])) $sessionHash = $hookLogin['sessionHash'];
+      if (isset($hookLogin['userIdComp'])) $userIdComp = $hookLogin['userIdComp'];
     }
   }
 }
@@ -184,28 +173,20 @@ elseif (isset($hookLogin)) { // Custom Login
 // These are the table names that are used in different integration methods. "Users" is required, while for the rest, if one is absent functionality will not be supported.
 $tableDefinitions = array(
   'users' => array(
-    'vbulletin3' => 'user',
-    'vbulletin4' => 'user',
-    'phpbb' => 'users',
-    'vanilla' => 'users',
+    'vbulletin3' => 'user', 'vbulletin4' => 'user',
+    'phpbb' => 'users', 'vanilla' => 'users',
   ),
   'adminGroups' => array(
-    'vbulletin3' => 'usergroup',
-    'vbulletin4' => 'usergroup',
-    'phpbb' => '',
-    'vanilla' => 'adminGroups',
+    'vbulletin3' => 'usergroup', 'vbulletin4' => 'usergroup',
+    'phpbb' => '', 'vanilla' => 'adminGroups',
   ),
   'socialGroups' => array(
-    'vbulletin3' => 'socialgroup',
-    'vbulletin4' => 'socialgroup',
-    'phpbb' => 'groups',
-    'vanilla' => 'socialGroups',
+    'vbulletin3' => 'socialgroup', 'vbulletin4' => 'socialgroup',
+    'phpbb' => 'groups', 'vanilla' => 'socialGroups',
   ),
   'socialGroupMembers' => array(
-    'vbulletin3' => 'socialgroupmember',
-    'vbulletin4' => 'socialgroupmember',
-    'phpbb' => 'user_group',
-    'vanilla' => 'socialGroupMembers',
+    'vbulletin3' => 'socialgroupmember', 'vbulletin4' => 'socialgroupmember',
+    'phpbb' => 'user_group', 'vanilla' => 'socialGroupMembers',
   ),
 );
 
@@ -213,123 +194,83 @@ $tableDefinitions = array(
 $columnDefinitions = array( // These are only used for syncing. When the original database is queried (such as with password), the field will be used explictly there.
   'users' => array(
     'vbulletin3' => array(
-      'userId' => 'userid',
-      'userName' => 'username',
-      'userGroup' => 'displaygroupid',
-      'userGroupAlt' => 'usergroupid',
-      'allGroups' => 'membergroupids',
-      'timeZone' => 'timezoneoffset',
+      'userId' => 'userid', 'userName' => 'username',
+      'userGroup' => 'displaygroupid', 'userGroupAlt' => 'usergroupid',
+      'allGroups' => 'membergroupids', 'timeZone' => 'timezoneoffset',
       'options' => 'options',
     ),
     'vbulletin4' => array(
-      'userId' => 'userid',
-      'userName' => 'username',
-      'userGroup' => 'displaygroupid',
-      'userGroupAlt' => 'usergroupid',
-      'allGroups' => 'membergroupids',
-      'timeZone' => 'timezoneoffset',
+      'userId' => 'userid', 'userName' => 'username',
+      'userGroup' => 'displaygroupid', 'userGroupAlt' => 'usergroupid',
+      'allGroups' => 'membergroupids', 'timeZone' => 'timezoneoffset',
       'options' => 'options',
     ),
     'phpbb' => array(
-      'userId' => 'user_id',
-      'userName' => 'username',
-      'userGroup' => 'group_id',
-      'userGroupAlt' => 'group_id',
-      'allGroups' => 'group_id',
-      'timeZone' => 'user_timezone',
-      'color' => 'user_colour',
-      'avatar' => 'user_avatar',
-    ),
-    'mybb' => array(
-        
+      'userId' => 'user_id', 'userName' => 'username',
+      'userGroup' => 'group_id', 'userGroupAlt' => 'group_id',
+      'allGroups' => 'group_id', 'timeZone' => 'user_timezone',
+      'color' => 'user_colour', 'avatar' => 'user_avatar',
     ),
     'vanilla' => array(
-      'userId' => 'userId',
-      'userName' => 'userName',
-      'userGroup' => 'userGroup',
-      'userGroupAlt' => 'userGroup',
-      'allGroups' => 'allGroups',
-      'timeZone' => 'timeZone',
-      'avatar' => 'avatar',
-      'password' => 'password',
-      'passwordSalt' => 'passwordSalt',
-      'passwordSaltNum' => 'passwordSaltNum',
-      'userPrivs' => 'userPrivs',
-      'adminPrivs' => 'adminPrivs',
-      'defaultRoom' => 'defaultRoom'
+      'userId' => 'userId', 'userName' => 'userName',
+      'userGroupAlt' => 'userGroup', 'userGroup' => 'userGroup', // Note: Put 'userGroupAlt' first, since the array will later be flipped to generate a list of columns to select. (and userGroupAlt with thus be over-written with userGroup)
+      'allGroups' => 'allGroups', 'socialGroups' => 'socialGroups',
+      'timeZone' => 'timeZone', 'avatar' => 'avatar',
+      'password' => 'password', 'passwordSalt' => 'passwordSalt',
+      'passwordSaltNum' => 'passwordSaltNum', 'joinDate' => 'joinDate',
+      'birthDate' => 'birthDate', 'interfaceId' => 'interfaceId',
+      'favRooms' => 'favRooms', 'watchRooms' => 'watchRooms',
+      'ignoreList' => 'ignoreList', 'status' => 'status',
+      'userPrivs' => 'userPrivs', 'adminPrivs' => 'adminPrivs',
+      'defaultRoom' => 'defaultRoom', 'defaultFormatting '=> 'defaultFormatting',
+      'defaultHighlight' => 'defaultHighlight', 'defaultColor' => 'defaultColor',
+      'defaultFontface' => 'defaultFontface', 'profile' => 'profile',
+      'userFormatStart' => 'userFormatStart', 'userFormatEnd' => 'userFormatEnd',
+      'lang' => 'lang',
     ),
   ),
   'adminGroups' => array(
     'vbulletin3' => array(
-      'groupId' => 'usergroupid',
-      'groupName' => 'title',
-      'startTag' => 'opentag',
-      'endTag' => 'closetag',
+      'groupId' => 'usergroupid', 'groupName' => 'title',
+      'startTag' => 'opentag', 'endTag' => 'closetag',
     ),
     'vbulletin4' => array(
-      'groupId' => 'usergroupid',
-      'groupName' => 'title',
-      'startTag' => 'opentag',
-      'endTag' => 'closetag',
+      'groupId' => 'usergroupid', 'groupName' => 'title',
+      'startTag' => 'opentag', 'endTag' => 'closetag',
     ),
-    'mybb' => array(
-        
-    ),
-    'phpbb' => array(
-
-    ),
-    'vanilla' => array(
-
-    ),
+    'phpbb' => array(),
+    'vanilla' => array(),
   ),
   'socialGroups' => array(
     'vbulletin3' => array(
-      'groupId' => 'groupid',
-      'groupName' => 'name',
+      'groupId' => 'groupid', 'groupName' => 'name',
     ),
     'vbulletin4' => array(
-      'groupId' => 'groupid',
-      'groupName' => 'name',
+      'groupId' => 'groupid', 'groupName' => 'name',
     ),
     'phpbb' => array(
-      'groupId' => 'group_id',
-      'groupName' => 'group_name',
-    ),
-    'mybb' => array(
-        
+      'groupId' => 'group_id', 'groupName' => 'group_name',
     ),
     'vanilla' => array(
-      'groupId' => 'groupId',
-      'groupName' => 'groupName',
+      'groupId' => 'groupId', 'groupName' => 'groupName',
     ),
   ),
   'socialGroupMembers' => array(
     'vbulletin3' => array(
-      'groupId' => 'groupid',
-      'userId' => 'userid',
-      'type' => 'type',
-      'validType' => 'member',
+      'groupId' => 'groupid', 'userId' => 'userid',
+      'type' => 'type', 'validType' => 'member',
     ),
     'vbulletin4' => array(
-      'groupId' => 'groupid',
-      'userId' => 'userid',
-      'type' => 'type',
-      'validType' => 'member',
+      'groupId' => 'groupid', 'userId' => 'userid',
+      'type' => 'type', 'validType' => 'member',
     ),
     'phpbb' => array(
-      'groupId' => 'group_id',
-      'userId' => 'user_id',
-      'type' => 'user_pending',
-      'validType' => '0',
-    ),
-    'mybb' => array(
-        
+      'groupId' => 'group_id', 'userId' => 'user_id',
+      'type' => 'user_pending', 'validType' => '0',
     ),
     'vanilla' => array(
-      'groupId' => 'groupId',
-      'userId' => 'userId',
-      'type' => 'type',
-      'validType' => 'member',
+      'groupId' => 'groupId', 'userId' => 'userId',
+      'type' => 'type', 'validType' => 'member',
     ),
   ),
 );
@@ -645,7 +586,7 @@ if ($valid) { // If the user is valid, process their preferrences.
         }
         else {
           $currentDate = (int) (date('n') . date('d')); // Example: Janurary 1st would be 101, March 12th would be 312. Thus, every subsequent day is an increase numerically.
-          
+
           $dstStart = (int) ('3' . date('d', strtotime('second sunday of march')));
           $dstEnd = (int) ('11' . date('d', strtotime('first sunday of november')));
 
@@ -658,7 +599,7 @@ if ($valid) { // If the user is valid, process their preferrences.
 
           $generalCache->set('fim_dst', $dst, $ttl = 3600); // We only call this if using vBulletin because it only slows things down otherwise. In addition, we only check every hour.
         }
-          
+
         if ($dst) {
           $user2['timeZone']++;
         }
@@ -693,11 +634,11 @@ if ($valid) { // If the user is valid, process their preferrences.
           ),
           $queryParts['adminGroupSelect']['conditions'],
           false,
-          1                                                                                                                   
-        );                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+          1
+        );
         $group = $group->getAsArray(false);
       }
-                                                                                    
+
 
       if (!$user2['color']) {
         $user2['color'] = $group['color'];
@@ -799,7 +740,7 @@ if ($valid) { // If the user is valid, process their preferrences.
       ));
     }
 
-    elseif ($userPrefs['lastSync'] <= (time() - (isset($config['userSyncThreshold']) ? $config['userSyncThreshold'] : 0))) { // This updates various caches every soften. In general, it is a rather slow process, and asuch does tend to take a rather long time (that is, compared to normal - it won't exceed 500miliseconds, really).
+    elseif ($userPrefs['lastSync'] <= (time() - (isset($config['userSyncThreshold']) ? $config['userSyncThreshold'] : 0))) { // This updates various caches every soften. In general, it is a rather slow process, and as such does tend to take a rather long time (that is, compared to normal - it won't exceed 500 miliseconds, really).
 
       /* Favourite Room Cleanup
       * Remove all favourite groups a user is no longer a part of. */
@@ -931,7 +872,7 @@ if ($valid) { // If the user is valid, process their preferrences.
       'magicHash' => $sessionHash,
       'browser' => $_SERVER['HTTP_USER_AGENT'],
       'ip' => $_SERVER['REMOTE_ADDR'],
-      ));
+    ));
 
     // Whenever a new user logs in, delete all sessions from 15 or more minutes in the past.
     $database->delete("{$sqlPrefix}sessions",array(

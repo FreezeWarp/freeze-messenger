@@ -61,6 +61,7 @@ $request = fim_sanitizeGPC('g', array(
 
   'showDeleted' => array(
     'context' => 'bool',
+    'default' => false,
   ),
 ));
 
@@ -91,7 +92,7 @@ $queryParts['roomSelect'] = array(
 
 
 /* Modify Query Data for Directives */
-if ($request['showDeleted'] !== true) { // We will also check to make sure the user has moderation priviledges after the select.
+if ($request['showDeleted'] === false) { // We will also check to make sure the user has moderation priviledges after the select. (TODO: Wait, what the heck does this do?)
   $queryParts['roomSelect']['conditions']['both'][] = array(
     'type' => 'xor',
     'left' => array(
@@ -141,7 +142,7 @@ switch ($request['sort']) {
 
 /* Get User's Favourite Rooms as Array */
 if (isset($user['favRooms'])) {
-  $favRooms = fim_arrayValidate(explode(',',$user['favRooms']),'int',false); // All entries cast as integers, will not preserve entries of zero.
+  $favRooms = fim_arrayValidate(explode(',', $user['favRooms']), 'int', false); // All entries cast as integers, will not preserve entries of zero.
 }
 else {
   $favRooms = array();
@@ -205,8 +206,10 @@ if (is_array($rooms)) {
       }
 
       if ($permissions[0]['moderate']) { // Fetch the allowed users and allowed groups if the user is able to moderate the room.
-        $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['allowedUsers'] = (array) $permissionsCache[$roomData['roomId']]['user'];
-        $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['allowedGroups'] = (array) $permissionsCache[$roomData['roomId']]['group'];
+        if (isset($permissionsCache[$roomData['roomId']])) {
+          $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['allowedUsers'] = (array) $permissionsCache[$roomData['roomId']]['user'];
+          $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['allowedGroups'] = (array) $permissionsCache[$roomData['roomId']]['group'];
+        }
       }
 
       ($hook = hook('getRooms_eachRoom') ? eval($hook) : '');
