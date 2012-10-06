@@ -124,7 +124,14 @@ $request = fim_sanitizeGPC('p', array(
     ),
   ),
 
-  'otr' => array( // This will be used in v4.
+  // Private Only
+  'userId' => array(
+    'context' => 'int',
+    'default' => 0,
+  ),
+
+  // In The Future
+  'otr' => array( // OTR mode signals that a temporary room should be created where an archive will not be stored.
     'default' => false,
     'context' => array(
       'type' => 'bool',
