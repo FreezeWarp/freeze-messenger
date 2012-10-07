@@ -66,7 +66,7 @@ require('../global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
-  'rooms' => array(
+  'roomId' => array(
     'default' => '',
   ),
 
