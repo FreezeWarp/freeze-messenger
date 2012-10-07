@@ -22,7 +22,7 @@
  * @copyright Joseph T. Parsons 2011
 
  * Primary Directives:
- * @param string rooms - A comma seperated list of rooms. Can be a single room integer format. Some predefined constants can also be used.
+ * @param string roomId - The ID of the room to fetch messages from.
  * Note: Using more than one room can conflict or even break the script’s execution should the watchRooms or activeUsers flags be seto true.
  * @param int [messageLimit=1000] - The maximum number of posts to receive, defaulting to the internalimit of (in most cases) 1000. Thishould be high, as all other conditions (roomId, deleted, etc.) are applied after this limit.
  * @param int [messageHardLimit=40] - An alternative, generally lower limit applied once all messages are obtained from the server (or via the LIMIT clause of applicable). In other words, this limits the number of results AFTER roomId, etc. restrictions have been applied.
@@ -178,7 +178,7 @@ else {
 }
 
 
-$room = $database->getRoom($request['rooms']); // Get the roomdata.
+$room = $database->getRoom($request['roomId']); // Get the roomdata.
 
 
 
@@ -249,7 +249,7 @@ if ((strlen($request['search']) > 0) && $request['archive']) {
     ),
     'right' => array(
       'type' => 'string',
-      'value' => $request['rooms'],
+      'value' => $request['roomId'],
     ),
   );
 
