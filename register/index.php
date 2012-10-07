@@ -65,40 +65,14 @@
     switch (intval($_GET['stage'])) {
       case 0:
       case 1:
-      require_once('./phrases.php');
-      require_once('../global.php');
+      require('../global.php');
+      require('./phrases.php');
       $lang = 'enGB'; // TODO
       ?>
       Here you can register for a FreezeMessenger account easily.<br /><br />
 
-      <script type="text/javascript">
-      $(document).ready(function() {
-        $('#register_form').submit(function() {
-          if ($('#userName').val().length === 0) {
-            dia.error('Please enter a username.');
-          }
-          else if ($('#password').val().length === 0) {
-            dia.error('Please enter a password.');
-          }
-          else if ($('#userName').val().length === 0) {
-            dia.error('Please enter a username.');
-          }
-          else if ($('#email').val().length === 0) {
-            dia.error('Please enter an email address.');
-          }
-          else if ($('#password').val() !== $('#passwordConfirm').val()) {
-            dia.error('The entered passwords do not match. Please retype them.');
-            $('#passwordConfirm').val('');
-          }
-          else {
-            $('#password').val(sha256.hex_sha256($('#password').val()));
-            return true;
-          }
-
-          return false;
-        });
-      });     
-      </script>
+      <!-- Javascript is NOT required, but interfaces naturally work better with it. This script, to be stable, must work without it, however. -->
+      <script type="text/javascript" src="register.js"></script>
 
       <form name="register_form" id="register_form" action="index.php?stage=2" method="post">
         <table border="1" class="page">
@@ -122,7 +96,7 @@
             <td><strong>Date of Birth</strong></td>
             <td>
               <div name="datepicker" id="datepicker"></div>
-              <select id="birthday">
+              <select id="birthday" name="birthday">
                 <option value="0"></option>
                 <?php
                 for ($day = 1; $day <= 31; $day++) {
@@ -130,7 +104,7 @@
                 }
                 ?>
               </select>
-              <select id="birthmonth">
+              <select id="birthmonth" name="birthmonth">
                 <option value="0"></option>
                 <option value="1"><?php echo $phrases[$lang]['month01']; ?></option>
                 <option value="2"><?php echo $phrases[$lang]['month02']; ?></option>
@@ -145,60 +119,55 @@
                 <option value="11"><?php echo $phrases[$lang]['month11']; ?></option>
                 <option value="12"><?php echo $phrases[$lang]['month12']; ?></option>
               </select>
-              <select id="birthyear">
+              <select id="birthyear" name="birthyear">
                 <option value="0"></option>
                 <?php
-                for ($year = (intval(date('Y')) - $config['ageMaximum']); $year <= (intval(date('Y')) - $config['ageMinimum']); $year++) {
+                for ($year = (intval(date('Y')) - ($config['ageMaximum'] + 1)); $year <= (intval(date('Y')) - $config['ageMinimum']); $year++) {
                   echo '<option value=' . $year . '>' . $year . '</option>';
                 }
                 ?>
               </select>
               <small>Select your month, year, and day of birth in the above calendar. (Note that if your year does not appear, you are not allowed to register.)</small>
             </td>
-          </tr>    
+          </tr>
         </table>
 
         <div style="height: 30px;">
           <input style="float: right;" type="submit" value="Finish &rarr;" />
           <input type="hidden" name="stage" value="2" />
           <input type="hidden" name="passwordEncrypt" value="sha256" />
-          <input type="hidden" name="birthdate" />
         </div>
       </form><br /><br />
       <?php
       break;
       case 2:
-      // Note: This is a wrapper for the API, more or less. Because of this, no data sanitiation is neccessary - the API handles it best.
-      $ch = curl_init($_SERVER['HTTP_HOST'] . dirname(dirname($_SERVER["PHP_SELF"])) . "/api/sendUser.php");
-      curl_setopt($ch, CURLOPT_POST, TRUE);
-      curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array(
-//        'apiVersion' => '3',
+      require('../config.php'); // We do NOT want to require global for a couple of reasons, the biggest one being this file simply doesn't require it. All CURL requests require config.php, however.
+      require('../functions/fim_curl.php');
+//echo mktime(null, null, null, $_POST['birthmonth'], $_POST['birthday'], $_POST['birthyear']); die();
+      $crA = array(
+        'apiVersion' => '3',
         'passwordEncrypt' => 'sha256',
         'userName' => $_POST['userName'],
-        'password' => $_POST['password']
-      )));
-      curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE); /* obey redirects */
-      curl_setopt($ch, CURLOPT_HEADER, FALSE);  /* No HTTP headers */
-      curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);  /* return the data */
+        'email' => $_POST['email'],
+        'password' => $_POST['password'],
+      );
 
-      $result = curl_exec($ch);
+      if ($_POST['birthmonth'] && $_POST['birthday'] && $_POST['birthyear']) { // Only send a birthdate if provided. We wouldn't normally do it this way, but because older persons will have a negative unix timestamp, we have to omit the birthyear rather than provide a value of "0".
+        $crA['birthdate'] = mktime(null, null, null, $_POST['birthmonth'], $_POST['birthday'], $_POST['birthyear']);
+      }
 
-      if ($che = curl_error($ch)) {
-        echo 'Curl Error: ' . $che;   
+      $cr = new curlRequest($crA, '/api/sendUser.php');
+      $result = json_decode($cr->execute(), true);
+
+      if (!$result) {
+        echo 'The request could not be completed. (Server Error)';
+      }
+      elseif ($result['sendUser']['errStr']) {
+        echo '<form action="" onsubmit="window.history.back(); return false;" action="./index.php?stage=2">Error "' . $result['sendUser']['errStr'] . '": ' . $result['sendUser']['errDesc'] . '<br /><br /><input type="submit" value="Go back." /></form>';
       }
       else {
-        $resultA = json_decode($result, true);
-        
-        if ($resultA['sendUser']['errStr']) {
-          echo '<form action="" onsubmit="window.history.back(); return false;" action="./index.php?stage=2">Error "' . $resultA['sendUser']['errStr'] . '": ' . $resultA['sendUser']['errDesc'] . '.<br /><br /><input type="submit" value="Go back." /></form>';
-        }
-        else {
-          echo 'You are now registered as "' . $resultA['sendUser']['activeUser']['userName'] . '".<br /><br /><a href="../">Return to chat interface.</a>';
-        }
+        echo 'You are now registered as "' . $result['sendUser']['activeUser']['userName'] . '".<br /><br /><a href="../">Return to chat interface.</a>';
       }
-
-      curl_close($ch);
-      break;
     }
 
 
@@ -211,7 +180,7 @@
 <div id="part4" style="display: none;" class="main">
   <h1 class="ui-widget-header">Freezemessenger Registration: All Done!</h1>
   <div class="ui-widget-content">
-    You have now registered. Click here to 
+    You have now registered. Click here to
   </div>
 </div>
 </body>

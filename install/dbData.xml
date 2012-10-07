@@ -456,6 +456,28 @@
       <column name="type" value="string" />
     </table>
 
+    <table name="configuration">
+      <column name="directive" value="ageMinimum" />
+      <column name="value" value="6" />
+      <column name="type" value="int" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="ageMaximum" />
+      <column name="value" value="100" />
+      <column name="type" value="int" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="ageRequired" />
+      <column name="value" value="false" />
+      <column name="type" value="bool" />
+    </table>
+
+    <table name="configuration">
+      <column name="directive" value="emailRequired" />
+      <column name="value" value="true" />
+      <column name="type" value="bool" />
+    </table>
+
 
     <!-- Table counters -->
     <table name="counters">

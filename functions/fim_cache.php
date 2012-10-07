@@ -15,9 +15,12 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 
+/* Note: "none" is used solely for speed testing. NEVER EVER EVER use it. (at least with FIM) */
+
 class generalCache {
   public function __construct($method, $servers) {
     global $config;
+    $this->data = array();
 
     if ($method) {
       $this->method = $method;
@@ -39,6 +42,10 @@ class generalCache {
 
   public function get($index) {
     switch ($this->method) {
+      case 'none':
+      return $this->data[$index];
+      break;
+
       case 'apc':
       return apc_fetch($index);
       break;
@@ -51,9 +58,13 @@ class generalCache {
 
   public function set($index, $variable, $ttl = 31536000) {
     switch ($this->method) {
+      case 'none':
+      $this->data[$index] = $variable;
+      break;
+
       case 'apc':
       apc_delete($index);
-      apc_store($index, $variable, $ttl);
+      apc_store($index, $variable, 0);
       break;
 
       case 'memcache':
@@ -64,8 +75,29 @@ class generalCache {
 
   public function exists($index) {
     switch ($this->method) {
+      case 'none':
+      return isset($this->data[$index]);
+      break;
+
       case 'apc':
       return apc_exists($index);
+      break;
+
+      case 'memcache':
+
+      break;
+    }
+  }
+
+  public function clearAll() {
+    switch ($this->method) {
+      case 'none':
+      $this->data = array();
+      break;
+
+      case 'apc':
+      if (apc_clear_cache() && apc_clear_cache('user') && apc_clear_cache('opcode')) return true;
+      else return false;
       break;
 
       case 'memcache':

@@ -603,6 +603,10 @@ $.ajax({
       requestSettings.serverSentEvents = json.getServerStatus.serverStatus.requestMethods.serverSentEvents;
     }
 
+    if (json.getServerStatus.serverStatus.installUrl != window.location.origin + directory) {
+      dia.error('<strong>WARNING</strong>: Your copy of FreezeMessenger has been incorrectly installed. Errors may occur if this is not fixed. <a href="http://code.google.com/p/freeze-messenger/wiki/ChangingDomains">Please see the online documentation for more information.</a>');
+    }
+
     return false;
   },
   error: function() {

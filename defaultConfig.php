@@ -101,12 +101,14 @@ $defaultConfig = array(
 
   'messageIndexCounter' => 1000, // If changed, rebuild the messageIndex table!
   'messageTimesCounter' => 60 * 60 * 24, // If changed, rebuild the messageTimes table!
-  
+
   'recaptchaPublicKey' => '',
   'recaptchaPrivateKey' => '',
-    
-  'requireDOB' => false, // TOADD
-  'ageMinimum' => 13, // TOADD
-  'ageMaximum' => 100, // TOADD
+
+  'ageRequired' => true,
+  'ageMinimum' => 13,
+  'ageMaximum' => 100,
+
+  'emailRequired' => true,
 );
 ?>

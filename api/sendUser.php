@@ -28,8 +28,8 @@
  * @param passwordSalt - The salt used for encrypting the password, if it is encrypted using 'sha256-salt' or 'sha256-salt'. Any salt can be used, though long ones will be truncated to 50 characters, and only certain characters are allowed.
  * @param email - The email of the user.
  * @param birthdate - The date-of-birth of the user (unix timestamp).
- * 
- * TODO: Captcha Support, IP Limits
+ *
+ * TODO: Captcha Support, IP Limits, Email Restricted/Allowed Domains, Birthdate Filter
  */
 
 $apiRequest = true;
@@ -40,13 +40,17 @@ require('../functions/fim_uac_vanilla.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
-  'userName' => array(),
-  'password' => array(),
+  'userName' => array(
+    'default' => '',
+  ),
+  'password' => array(
+    'default' => '',
+  ),
   'passwordEncrypt' => array(
-    'required' => true,
     'valid' => array(
       'plaintext', 'sha256', 'sha256-salt',
     ),
+    'default' => '',
   ),
   'passwordSalt' => array(
     'context' => array(
@@ -54,11 +58,16 @@ $request = fim_sanitizeGPC('p', array(
       'filter' => 'ascii128',
     ),
   ),
-  'email' => array(),
+  'email' => array(
+    'default' => '',
+  ),
   'birthdate' => array(
     'context' => 'int',
   ),
 ));
+
+$userAge = floor((time() - $request['birthdate']) / (60 * 60 * 24 * 365));
+trigger_error($userAge, E_USER_NOTICE);
 
 
 /* Plugin Hook Start */
@@ -83,13 +92,33 @@ if ($continue) {
     $errStr = 'noUserName';
     $errDesc = 'No user name was specified.';
   }
-/*  elseif (!$request['email']) {
+  elseif ($config['requireEmail'] && !$request['email']) {
     $errStr = 'noEmail';
     $errDesc = 'No email was specified.';
-  }*/
+  }
+  elseif ($request['email'] && (!filter_var($request['email'], FILTER_VALIDATE_EMAIL))) {
+    $errStr = 'badEmail';
+    $errDesc = 'The email specified is not allowed.';
+  }
   elseif (!$request['password']) {
     $errStr = 'noPassword';
     $errDesc = 'No password was specified.';
+  }
+  elseif (!$request['passwordEncrypt']) {
+    $errStr = 'noPasswordEncrypt ';
+    $errDesc = 'A valid password encryption was not specified.';
+  }
+  elseif ($config['ageRequired'] && !isset($request['birthdate'])) {
+    $errStr = 'ageRequired';
+    $errDesc = 'An age must be specified to continue.';
+  }
+  elseif (isset($request['birthdate']) && ($userAge > $config['ageMaximum'])) {
+    $errStr = 'ageMaximum';
+    $errDesc = 'The age specified exceeds the maximum age allowed by the server.';
+  }
+  elseif (isset($request['birthdate']) && ($userAge < $config['ageMinimum'])) {
+    $errStr = 'ageMinimum';
+    $errDesc = 'The age specified is below the minimum age allowed by the server.';
   }
   else {
     // Get Salts Used For Encryption
@@ -127,7 +156,7 @@ if ($continue) {
       break;
     }
 
-    
+
     // Create Userdata Array
     $userData = array(
       'userName' => $request['userName'],
@@ -138,11 +167,11 @@ if ($continue) {
       'email' => $request['email'],
     );
 
-    
+
     // Hook
     ($hook = hook('sendUser_preAdd') ? eval($hook) : '');
 
-    
+
     // Insert Data
     if ($continue) {
       $database->insert("{$sqlPrefix}users", $userData);

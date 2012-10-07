@@ -41,6 +41,7 @@ $xmlData = array(
     'serverStatus' => array(
       'fim_version' => FIM_VERSION,
       'installedPlugins' => array(),
+      'installUrl' => $installUrl,
 
       'branding' => array(
         'forumType' => $loginConfig['method'],
@@ -51,6 +52,13 @@ $xmlData = array(
         'longPoll' => (bool) $config['longPolling'],
         'poll' => true,
         'serverSentEvents' => (bool) $config['serverSentEvents'],
+      ),
+
+      'registrationPolicies' => array(
+        'ageRequired' => $config['ageRequired'],
+        'ageMinimum' => $config['ageMinimum'],
+        'ageMaximum' => $config['ageMaximum'],
+        'emailRequired' => $config['emailRequired'],
       ),
 
       'fileUploads' => array(
