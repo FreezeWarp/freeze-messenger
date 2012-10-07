@@ -422,36 +422,19 @@ switch($request['action']) {
         $room = $database->getPrivateRoom(array($user['userId'], $user2['userId']));
 
         if ($room) {
-          $xmlData['editRoom']['response']['insertId'] = $room['roomId']; // Already exists; return ID
+          $xmlData['editRoom']['response']['insertId'] = 'p' . $room['roomUsersString']; // Already exists; return ID
         }
         else {
-          $database->insert("{$sqlPrefix}rooms", array(
-              'roomName' => "Private IM ($user[userName] and $user2[userName])",
-              'options' => 48,
-              'defaultPermissions' => 0,
-            )
-          );
-          $roomId = $database->insertId;
+          $roomUsers = array($user['userId'], $user2['userId']);
+          asort($roomUsers);
+          $roomUsersString = implode(',',$roomUsers);
 
           $database->insert("{$sqlPrefix}privateRooms", array(
-            'roomId' => $roomId,
-            'user1' => $user['userId'],
-            'user2' => $user2['userId'],
+            'roomUsersString' => $roomUsersString,
+            'roomUsersHash' => md5($roomUsersString),
           ));
 
-          foreach (array($user['userId'], $user2['userId']) AS $userId) {
-            $database->insert("{$sqlPrefix}roomPermissions", array(
-                'roomId' => $roomId,
-                'attribute' => 'user',
-                'param' => $userId,
-                'permissions' => 7,
-              ), array(
-                'permissions' => 7,
-              )
-            );
-          }
-
-          $xmlData['editRoom']['response']['insertId'] = $roomId;
+          $xmlData['editRoom']['response']['insertId'] = 'p' . $roomUsersString;
         }
       }
     }

@@ -329,9 +329,9 @@
 
     <table name="privateRooms" type="general" comment="List of private rooms. Note that roomUsers are stored both as a string (for fetching) a">
       <!-- General -->
-      <column name="roomUsersString" type="string" maxlen="1000"/>
       <column name="roomUsersHash" type="string" maxlen="32" />
-      <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options, such as whether the room is OTR." />
+      <column name="roomUsersString" type="string" maxlen="1000"/>
+      <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options." />
 
       <!-- Counters -->
       <column name="lastMessageTime" type="time" default="0" comment="The time of the last message made in the room." />

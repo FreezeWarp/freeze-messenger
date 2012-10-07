@@ -924,12 +924,13 @@ class fimDatabase extends database {
   }
 
 
-  // DEPRECATED
   public function getPrivateRoom($userList) {
     global $sqlPrefix, $config;
 
+    asort($userList);
+
     $queryParts['columns'] = array(
-      "{$sqlPrefix}privateRooms" => 'roomId, userCount, user1, user2, user3, user4, user5, user6, user7, user8, user9, user10',
+      "{$sqlPrefix}privateRooms" => 'roomUsersString, roomUsersHash, roomUsersString, options',
     );
 
     $userCount = count($userList);
@@ -940,31 +941,15 @@ class fimDatabase extends database {
           'type' => 'e',
           'left' => array(
             'type' => 'column',
-            'value' => 'userCount',
+            'value' => 'roomUsersHash',
           ),
           'right' => array(
-            'type' => 'int',
-            'value' => $userCount,
+            'type' => 'string',
+            'value' => md5(implode(',', $userList)),
           ),
         ),
       ),
     );
-
-    foreach ($userList AS $userId) {
-      for ($i = 1; $i <= $userCount; $i++) {
-        $queryParts['conditions']['both']['either ' . $userId][] = array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'user' . $i,
-          ),
-          'right' => array(
-            'type' => 'int',
-            'value' => $userId,
-          ),
-        );
-      }
-    }
 
     $privateRoom = $this->select($queryParts['columns'],
       $queryParts['conditions']);
