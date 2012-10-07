@@ -393,10 +393,7 @@ switch($request['action']) {
     $errDesc = 'You do not have permission to create private rooms.';
   }
   else {
-    if (strlen($request['userName']) > 0) {
-      $user2 = $slaveDatabase->getUser(false, $request['userName']); // Get the user information.
-    }
-    elseif ((int) $request['userId'] > 0) {
+    if ($request['userId'] > 0) {
       $user2 = $slaveDatabase->getUser($request['userId']); // Get the user information.
     }
     else {
