@@ -20,48 +20,91 @@ class fimDatabase extends database {
   public function getRoom($roomId, $roomName = false, $cache = true) {
     global $sqlPrefix, $config, $user;
 
-    $queryParts['roomSelect']['columns'] = array(
-      "{$sqlPrefix}rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, options, lastMessageId, lastMessageTime, messageCount',
-    );
+    if (substr($roomId, 0, 1) === 'o') { // OTR Room
+      $queryParts['roomSelect']['columns'] = array(
+        "{$sqlPrefix}otrRooms" => 'roomUsersString, roomUsersHash, options',
+      );
 
-    if ($roomId) {
       $queryParts['roomSelect']['conditions'] = array(
         'both' => array(
           array(
             'type' => 'e',
             'left' => array(
               'type' => 'column',
-              'value' => 'roomId'
+              'value' => 'roomUsersHash'
             ),
             'right' => array(
-              'type' => 'int',
-              'value' => (int) $roomId,
+              'type' => 'string',
+              'value' => (int) md5($roomId),
             ),
           ),
         ),
       );
     }
-    elseif ($roomName) {
+    elseif (substr($roomId, 0, 1) === 'p') { // Private Room
+      $queryParts['roomSelect']['columns'] = array(
+        "{$sqlPrefix}privateRooms" => 'roomUsersString, roomUsersHash, options, lastMessageId, lastMessageTime, messageCount',
+      );
+
       $queryParts['roomSelect']['conditions'] = array(
         'both' => array(
           array(
             'type' => 'e',
             'left' => array(
               'type' => 'column',
-              'value' => 'roomName'
+              'value' => 'roomUsersHash'
             ),
             'right' => array(
               'type' => 'string',
-              'value' => $roomName,
+              'value' => (int) md5($roomId),
             ),
           ),
         ),
       );
     }
     else {
-      return false;
-    }
+      $queryParts['roomSelect']['columns'] = array(
+        "{$sqlPrefix}rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, options, lastMessageId, lastMessageTime, messageCount',
+      );
 
+      if ($roomId) {
+        $queryParts['roomSelect']['conditions'] = array(
+          'both' => array(
+            array(
+              'type' => 'e',
+              'left' => array(
+                'type' => 'column',
+                'value' => 'roomId'
+              ),
+              'right' => array(
+                'type' => 'int',
+                'value' => (int) $roomId,
+              ),
+            ),
+          ),
+        );
+      }
+      elseif ($roomName) {
+        $queryParts['roomSelect']['conditions'] = array(
+          'both' => array(
+            array(
+              'type' => 'e',
+              'left' => array(
+                'type' => 'column',
+                'value' => 'roomName'
+              ),
+              'right' => array(
+                'type' => 'string',
+                'value' => $roomName,
+              ),
+            ),
+          ),
+        );
+      }
+      else {
+        return false;
+      }
+    }
 
     $roomData = $this->select(
       $queryParts['roomSelect']['columns'],
