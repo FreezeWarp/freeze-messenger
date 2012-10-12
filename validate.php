@@ -679,12 +679,8 @@ if ($valid) { // If the user is valid, process their preferrences.
       $priviledges = 16; // Can post
 
       if (!$anonymous) { // In theory, you can still manually allow anon users to do the other things.
-        if ($config['userRoomCreation']) {
-          $priviledges += 32;
-        }
-        if ($config['userPrivateRoomCreation']) {
-          $priviledges += 64;
-        }
+        if ($config['userRoomCreation']) $priviledges += 32;
+        if ($config['userPrivateRoomCreation']) $priviledges += 64;
       }
 
 

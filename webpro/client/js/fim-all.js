@@ -438,7 +438,7 @@ function messagePopup(data) {
   }
 }
 
-function date (timestamp, full) {
+function date(timestamp, full) {
   // This pads zeros to the start of time values.
   _zeropad = function (number, newLength) {
     var numberString = number + '';
@@ -1713,72 +1713,123 @@ var standard = {
       return false;
     }
 
-    $.ajax({
-      url: directory + 'api/getRooms.php?rooms=' + roomIdLocal + 'permLevel=view&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-      timeout: 5000,
-      type: 'GET',
-      cache: false,
-      success: function(json) {
-        active = json.getRooms.rooms;
+    if (roomIdLocal.toString().substr(0,1) === 'p') {
+      $.ajax({
+        url: directory + 'api/getPrivateRoom.php?users=' + roomIdLocal.toString().substr(1) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+        timeout: 5000,
+        type: 'GET',
+        cache: false,
+        success: function(json) {
+          active = json.getPrivateRoom.room;
+          var users = active.roomUsers,
+            roomUsers = [];
 
-        for (i in active) {
-          var roomName = active[i].roomName,
-            roomId2 = active[i].roomId,
-            roomTopic = active[i].roomTopic,
-            permissions = active[i].permissions;
+          for (i in users) {
+            userName = users[i].userName,
+            userFormatStart = users[i].userFormatStart,
+            userFormatEnd = users[i].userFormatEnd,
 
-          if (!permissions.canView) {
-            roomId = false;
-
-            popup.selectRoom();
-
-            dia.error('You have been restricted access from this room. Please select a new room.');
-          }
-          else if (!permissions.canPost) {
-            alert('You are not allowed to post in this room. You will be able to view it, though.');
-
-            $('#messageInput').attr('disabled','disabled');
-            $('#icon_url').button({ disabled : true });
-            $('#icon_submit').button({ disabled : true });
-            $('#icon_reset').button({ disabled : true });
-          }
-          else {
-            $('#messageInput').removeAttr('disabled');
-            $('#icon_url').button({ disabled : false });
-            $('#icon_submit').button({ disabled : false });
-            $('#icon_reset').button({ disabled : false });
+            roomUsers.push(userName);
           }
 
-          if (permissions.canView) {
-            roomId = roomId2;
+          var roomName = 'Conversation Between: ' + roomUsers.join(', ');
+          roomId = 'p' + active.roomUsersList;
 
-            $('#roomName').html(roomName);
-            $('#topic').html(roomTopic);
-            $('#messageList').html('');
+          $('#roomName').html(roomName);
+          $('#messageList').html('');
 
+          $('#messageInput').removeAttr('disabled');
+          $('#icon_url').button({ disabled : false });
+          $('#icon_submit').button({ disabled : false });
+          $('#icon_reset').button({ disabled : false });
 
-            /*** Get Messages ***/
-            $(document).ready(function() {
-              requestSettings.firstRequest = true;
-              requestSettings.lastMessage = 0;
-              messageIndex = [];
+          /*** Get Messages ***/
+          $(document).ready(function() {
+            requestSettings.firstRequest = true;
+            requestSettings.lastMessage = 0;
+            messageIndex = [];
 
-              standard.getMessages();
+            standard.getMessages();
 
-              windowDraw();
-              windowDynaLinks();
-            });
-          }
+            windowDraw();
+            windowDynaLinks();
+          });
+        },
+        error: function() {
+          alert('Could not fetch room data.');
 
-          break;
+          return false;
         }
-      },
-      error: function() {
-        alert('Could not fetch room data.');
+      });
+    }
+    else {
+      $.ajax({
+        url: directory + 'api/getRooms.php?rooms=' + roomIdLocal + '&permLevel=view&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+        timeout: 5000,
+        type: 'GET',
+        cache: false,
+        success: function(json) {
+          active = json.getRooms.rooms;
 
-        return false;
-      }
-    });
+          for (i in active) {
+            var roomName = active[i].roomName,
+              roomId2 = active[i].roomId,
+              roomTopic = active[i].roomTopic,
+              permissions = active[i].permissions;
+
+            if (!permissions.canView) {
+              roomId = false;
+
+              popup.selectRoom();
+
+              dia.error('You have been restricted access from this room. Please select a new room.');
+            }
+            else if (!permissions.canPost) {
+              alert('You are not allowed to post in this room. You will be able to view it, though.');
+
+              $('#messageInput').attr('disabled','disabled');
+              $('#icon_url').button({ disabled : true });
+              $('#icon_submit').button({ disabled : true });
+              $('#icon_reset').button({ disabled : true });
+            }
+            else {
+              $('#messageInput').removeAttr('disabled');
+              $('#icon_url').button({ disabled : false });
+              $('#icon_submit').button({ disabled : false });
+              $('#icon_reset').button({ disabled : false });
+            }
+
+            if (permissions.canView) {
+              roomId = roomId2;
+
+              $('#roomName').html(roomName);
+              $('#topic').html(roomTopic);
+              $('#messageList').html('');
+
+
+              /*** Get Messages ***/
+              $(document).ready(function() {
+                requestSettings.firstRequest = true;
+                requestSettings.lastMessage = 0;
+                messageIndex = [];
+
+                standard.getMessages();
+
+                windowDraw();
+                windowDynaLinks();
+              });
+            }
+
+            break;
+          }
+        },
+        error: function() {
+          alert('Could not fetch room data.');
+
+          return false;
+        }
+      });
+    }
   },
 
 
@@ -2692,7 +2743,7 @@ popup = {
             censor.push($(this).attr('data-listId') + '=' + ($(this).is(':checked') ? 1 : 0));
           });
 
-          censor = censor.join(',');console.log(censor);
+          censor = censor.join(',');console.log(censor); // TODO
 
           if (name.length > 20) {
             dia.error('The roomname is too long.');
@@ -3132,7 +3183,7 @@ function windowDraw() {
   // Disable the chatbox if the user is not allowed to post.
   if (roomId && (userId | anonId)) { $('#messageInput').removeAttr("disabled"); } // The user is able to post.
   else { $('#messageInput').attr("disabled","disabled"); } // The user is _not_ able to post.
-
+console.log(roomId);
 
 
   /*** Call Resize ***/

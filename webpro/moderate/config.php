@@ -152,7 +152,7 @@ else {
           'directive' => $request['directive'],
         ));
 
-        echo container('Configuration Updated','The configuration has been updated.<br /><br /><form method="post" action="moderate.php?do=config"><button type="submit">Return to Viewing Lists</button></form>');
+        echo container('Configuration Updated','The configuration has been updated. Note that certain settings do not take effect retroactively (e.g. "userRoomCreation" does not change the setting for existing users). <br /><br /><form method="post" action="moderate.php?do=config"><button type="submit">Return to Viewing Lists</button></form>');
       }
       else {
         $config2 = array(

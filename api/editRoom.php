@@ -422,19 +422,20 @@ switch($request['action']) {
         $room = $database->getPrivateRoom(array($user['userId'], $user2['userId']));
 
         if ($room) {
-          $xmlData['editRoom']['response']['insertId'] = 'p' . $room['roomUsersString']; // Already exists; return ID
+          $xmlData['editRoom']['response']['insertId'] = 'p' . $room['roomUsersList']; // Already exists; return ID
         }
         else {
           $roomUsers = array($user['userId'], $user2['userId']);
           asort($roomUsers);
-          $roomUsersString = implode(',',$roomUsers);
+          $roomUsersList = implode(',',$roomUsers);
+          $roomUsersHash = md5($roomUsersList);
 
           $database->insert("{$sqlPrefix}privateRooms", array(
-            'roomUsersString' => $roomUsersString,
-            'roomUsersHash' => md5($roomUsersString),
+            'roomUsersList' => $roomUsersList,
+            'roomUsersHash' => $roomUsersHash,
           ));
 
-          $xmlData['editRoom']['response']['insertId'] = 'p' . $roomUsersString;
+          $xmlData['editRoom']['response']['insertId'] = 'p' . $roomUsersList;
         }
       }
     }

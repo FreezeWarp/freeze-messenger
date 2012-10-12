@@ -304,7 +304,7 @@
     </table>
 
     <table name="otrRooms" type="memory" comment="List of OTR rooms. It is implemented exactly as private rooms, except no data is stored outside of memory.">
-      <column name="roomUsersString" type="string" maxlen="1000"/>
+      <column name="roomUsersList" type="string" maxlen="1000"/>
       <column name="roomUsersHash" type="string" maxlen="32" />
       <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options, such as whether the room is OTR." />
 
@@ -330,7 +330,7 @@
     <table name="privateRooms" type="general" comment="List of private rooms. Note that roomUsers are stored both as a string (for fetching) a">
       <!-- General -->
       <column name="roomUsersHash" type="string" maxlen="32" />
-      <column name="roomUsersString" type="string" maxlen="1000"/>
+      <column name="roomUsersList" type="string" maxlen="1000"/>
       <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options." />
 
       <!-- Counters -->
@@ -345,7 +345,7 @@
     </table>
 
 
-    <table name="rooms" type="general" note="This will be partially overhauled in FIMv4 to seperate rooms and groups, the former represented by a unique ID and the latter specific between a small group of users." comment="User-created rooms/groups.">
+    <table name="rooms" type="general" comment="User-created rooms/groups.">
       <!-- General -->
       <column name="roomId" type="int" maxlen="6" autoincrement="true" comment="The unique ID for the room." />
       <column name="roomName" type="string" maxlen="50" comment="The name of the room." />
@@ -371,6 +371,28 @@
       <key name="owner" type="index" />
       <key name="lastMessageId" type="index" />
       <key name="lastMessageTime" type="index" />
+    </table>
+
+
+    <table name="roomHistory" type="general" comment="A history of all changes made to rooms. This is enabled per-installation.">
+      <!-- General -->
+      <column name="roomId" type="int" maxlen="6" autoincrement="true" comment="The unique ID for the room." />
+      <column name="roomName" type="string" maxlen="50" comment="The name of the room." />
+      <column name="roomTopic" type="string" maxlen="200" comment="The current topic of the room." />
+      <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options." />
+
+      <!-- Permissions -->
+      <column name="owner" type="int" maxlen="10" comment="The owner/creator of the room." />
+      <column name="defaultPermissions" type="bitfield" bits="8" default="7" comment="A bitfield corrosponding to permissions users are granted if they do not exist in the roomPermissions table." />
+
+      <!-- Parental Controls -->
+      <column name="parentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the file." />
+      <column name="parentalAge" type="string" restrict="6,10,13,16,18" comment="The file's parental content age rating." />
+
+      <column name="changeTime" type="time" comment="The time at which the above information was altered." />
+
+
+      <key name="roomId,changeTime" type="primary" />
     </table>
 
 
@@ -460,7 +482,7 @@
     </table>
 
 
-    <table name="unreadMessages" type="general" comment="Unread private messages.">
+    <table name="unreadMessages" type="general" comment="Unread private messages. A unique index of userId,roomId should technically exist, but is not actually created. Still, there should never be mutliple notifcations to one user from the same room.">
       <column name="userId" type="int" maxlen="8" comment="The ID of the user who has yet to read the message." />
       <column name="senderId" type="int" maxlen="8" comment="The ID of the user who sent the message." />
       <column name="senderName" type="string" maxlen="50" comment="The name of the user who sent the message." />
@@ -561,7 +583,7 @@
     </table>
 
 
-    <table name="userHistory" type="general" comment="A history of modifications to the user table.">
+    <table name="userHistory" type="general" comment="A history of modifications to the user table. This is enabled per-installation.">
       <!-- General -->
       <column name="userId" type="int" maxlen="8" comment="The unique ID of the user." />
       <column name="userName" type="string" maxlen="50" comment="The user's name." />
@@ -595,6 +617,7 @@
       <key name="userId,changeTime" type="primary" />
     </table>
   </database>
+
 
   <definitions>
     <bitfield name="options" table="rooms">

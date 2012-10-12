@@ -478,6 +478,17 @@
       <column name="type" value="bool" />
     </table>
 
+    <table name="configuration">
+      <column name="directive" value="userRoomCreation" />
+      <column name="value" value="false" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="userPrivateRoomCreation" />
+      <column name="value" value="true" />
+      <column name="type" value="bool" />
+    </table>
+
 
     <!-- Table counters -->
     <table name="counters">

@@ -22,7 +22,7 @@ class fimDatabase extends database {
 
     if (substr($roomId, 0, 1) === 'o') { // OTR Room
       $queryParts['roomSelect']['columns'] = array(
-        "{$sqlPrefix}otrRooms" => 'roomUsersString, roomUsersHash, options',
+        "{$sqlPrefix}otrRooms" => 'roomUsersList, roomUsersHash, options',
       );
 
       $queryParts['roomSelect']['conditions'] = array(
@@ -35,7 +35,7 @@ class fimDatabase extends database {
             ),
             'right' => array(
               'type' => 'string',
-              'value' => (int) md5($roomId),
+              'value' => substr($roomId, 1),
             ),
           ),
         ),
@@ -43,7 +43,7 @@ class fimDatabase extends database {
     }
     elseif (substr($roomId, 0, 1) === 'p') { // Private Room
       $queryParts['roomSelect']['columns'] = array(
-        "{$sqlPrefix}privateRooms" => 'roomUsersString, roomUsersHash, options, lastMessageId, lastMessageTime, messageCount',
+        "{$sqlPrefix}privateRooms" => 'roomUsersList, roomUsersHash, options, lastMessageId, lastMessageTime, messageCount',
       );
 
       $queryParts['roomSelect']['conditions'] = array(
@@ -56,7 +56,7 @@ class fimDatabase extends database {
             ),
             'right' => array(
               'type' => 'string',
-              'value' => (int) md5($roomId),
+              'value' => substr($roomId, 1),
             ),
           ),
         ),
@@ -973,7 +973,7 @@ class fimDatabase extends database {
     asort($userList);
 
     $queryParts['columns'] = array(
-      "{$sqlPrefix}privateRooms" => 'roomUsersString, roomUsersHash, roomUsersString, options',
+      "{$sqlPrefix}privateRooms" => 'roomUsersList, roomUsersHash, options, lastMessageTime, lastMessageId, messageCount',
     );
 
     $userCount = count($userList);

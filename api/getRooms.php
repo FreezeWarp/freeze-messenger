@@ -22,7 +22,6 @@
  * @author Jospeph T. Parsons <rehtaew@gmail.com>
  * @copyright Joseph T. Parsons 2011
  * @param bool [showDeleted=false] - Will attempt to show deleted rooms, assuming the user has access to them (that is, is an administrator). Defaults to false.
- * @param bool [showPrivate=true] - Will show any private rooms of the user. Defaults to true.
  * @param string [order=roomId] - How the rooms should be ordered (either roomId or roomName).
  * @param string [rooms] - If specified, only specific rooms are listed. By default, all rooms are listed.
 */

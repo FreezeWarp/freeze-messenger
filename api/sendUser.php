@@ -66,8 +66,7 @@ $request = fim_sanitizeGPC('p', array(
   ),
 ));
 
-$userAge = floor((time() - $request['birthdate']) / (60 * 60 * 24 * 365));
-trigger_error($userAge, E_USER_NOTICE);
+$userAge = floor((time() - $request['birthdate']) / (60 * 60 * 24 * 365)); // Generate the age of the user by taking the current unix timestamp and subtracting the timestamp of the user's date. Divide to create years.
 
 
 /* Plugin Hook Start */
@@ -156,6 +155,11 @@ if ($continue) {
       break;
     }
 
+    // Generate Value for User Privs
+    $userPrivs = 16;
+    if ($config['userRoomCreation']) $userPrivs += 32;
+    if ($config['userPrivateRoomCreation']) $userPrivs += 64;
+
 
     // Create Userdata Array
     $userData = array(
@@ -165,6 +169,7 @@ if ($continue) {
       'passwordSaltNum' => $encryptSaltNum,
       'birthdate' => $request['birthdate'],
       'email' => $request['email'],
+      'userPrivs' => $userPrivs,
     );
 
 

@@ -97,7 +97,7 @@ $defaultConfig = array(
   'defaultFormattingOverline' => false,
 
   'userRoomCreation' => false,
-  'userPrivateRoomCreation' => false,
+  'userPrivateRoomCreation' => true,
 
   'messageIndexCounter' => 1000, // If changed, rebuild the messageIndex table!
   'messageTimesCounter' => 60 * 60 * 24, // If changed, rebuild the messageTimes table!
