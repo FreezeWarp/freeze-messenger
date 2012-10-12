@@ -60,21 +60,11 @@ class database {
       case 'mysqli':
       $this->languageSubset = 'sql';
 
-      $this->tableQuoteStart = '`';
-      $this->tableQuoteEnd = '`';
-      $this->tableAliasQuoteStart = '`';
-      $this->tableAliasQuoteEnd = '`';
-      $this->columnQuoteStart = '`';
-      $this->columnQuoteEnd = '`';
-      $this->columnAliasQuoteStart = '`';
-      $this->columnAliasQuoteEnd = '`';
-      $this->stringQuoteStart = '"';
-      $this->stringQuoteEnd = '"';
-      $this->emptyString = '""';
-      $this->tableColumnDivider = '.';
+      $this->tableQuoteStart = '`';  $this->tableQuoteEnd = '`';  $this->tableAliasQuoteStart = '`';  $this->tableAliasQuoteEnd = '`';
+      $this->columnQuoteStart = '`'; $this->columnQuoteEnd = '`'; $this->columnAliasQuoteStart = '`'; $this->columnAliasQuoteEnd = '`';
+      $this->stringQuoteStart = '"'; $this->stringQuoteEnd = '"'; $this->emptyString = '""';          $this->tableColumnDivider = '.';
 
-      $this->sortOrderAsc = 'ASC';
-      $this->sortOrderDesc = 'DESC';
+      $this->sortOrderAsc = 'ASC'; $this->sortOrderDesc = 'DESC';
 
       $this->tableTypes = array(
         'general' => 'InnoDB',
@@ -85,21 +75,11 @@ class database {
       case 'postgresql':
       $this->languageSubset = 'sql';
 
-      $this->tableQuoteStart = '"';
-      $this->tableQuoteEnd = '"';
-      $this->tableAliasQuoteStart = '"';
-      $this->tableAliasQuoteEnd = '"';
-      $this->columnQuoteStart = '"';
-      $this->columnQuoteEnd = '"';
-      $this->columnAliasQuoteStart = '"';
-      $this->columnAliasQuoteEnd = '"';
-      $this->tableColumnDivider = '.';
-      $this->stringQuoteStart = '"';
-      $this->stringQuoteEnd = '"';
-      $this->emptyString = '""';
+      $this->tableQuoteStart = '"';    $this->tableQuoteEnd = '"';    $this->tableAliasQuoteStart = '"';  $this->tableAliasQuoteEnd = '"';
+      $this->columnQuoteStart = '"';   $this->columnQuoteEnd = '"';   $this->columnAliasQuoteStart = '"'; $this->columnAliasQuoteEnd = '"';
+      $this->tableColumnDivider = '.'; $this->stringQuoteStart = '"'; $this->stringQuoteEnd = '"';        $this->emptyString = '""';
 
-      $this->sortOrderAsc = 'ASC';
-      $this->sortOrderDesc = 'DESC';
+      $this->sortOrderAsc = 'ASC'; $this->sortOrderDesc = 'DESC';
       break;
     }
 
@@ -109,26 +89,17 @@ class database {
       case 'postgresql':
       $this->comparisonTypes = array(
         'e' => '=',
-        'ne' => '!=',
-        '!e' => '!=', // Alias of "ne"
-        'lt' => '<',
-        '!gte' => '>', // Alias of "lt"
-        'gt' => '>',
-        '!lte' => '>', // Alias of "gt"
-        'lte' => '<=',
-        '!gt' => '>=', // Alias of "lte"
-        'gte' => '>=',
-        '!lt' => '>=', // Alias of "gte"
+        'ne' => '!=',  '!e' => '!=', // same
+        'lt' => '<',   '!gte' => '>', // same
+        'gt' => '>',   '!lte' => '>', // same
+        'lte' => '<=', '!gt' => '>=', // same
+        'gte' => '>=', '!lt' => '>=', // same
 
-        'and' => '&',
-        '!xor' => '&', // Alias of "and"
-        'xor' => '^',
-        '!and' => '^', // Alias of "xorg"
+        'and' => '&',  '!xor' => '&', // same
+        'xor' => '^',  '!and' => '^', // same
 
-        'in' => 'IN',
-        '!notin' => 'IN', // Alias of "in"
-        'notin' => 'NOT IN',
-        '!in' => 'NOT IN', // Alias of "notin"
+        'in' => 'IN',        '!notin' => 'IN', // same
+        'notin' => 'NOT IN', '!in' => 'NOT IN', // same
 
         'regexp' => 'REGEXP', // Applies extended POSIX regular expression to index. It is natively implemented in MySQL, PostGreSQL, and Oracle SQL databases. It is absent in MSSQL, and the status in VoltDB and SQLite is unknown.
         'regex' => 'REGEXP', // Alias of "regexp"
@@ -149,43 +120,25 @@ class database {
       );
 
       $this->columnIntLimits = array(
-        1 => 'TINYINT',
-        2 => 'TINYINT',
-        3 => 'SMALLINT',
-        4 => 'SMALLINT',
-        5 => 'MEDIUMINT',
-        6 => 'MEDIUMINT',
-        7 => 'MEDIUMINT',
-        8 => 'INT',
-        9 => 'INT',
-        0 => 'BIGINT',
+        1 => 'TINYINT',   2 => 'TINYINT',   3 => 'SMALLINT',  4 => 'SMALLINT',
+        5 => 'MEDIUMINT', 6 => 'MEDIUMINT', 7 => 'MEDIUMINT', 8 => 'INT',
+        9 => 'INT',       0 => 'BIGINT',
       );
 
       $this->columnStringPermLimits = array(
-        1 => 'CHAR',
-        100 => 'VARCHAR',
-        1000 => 'TEXT',
-        8191 => 'MEDIUMTEXT',
-        2097151 => 'LONGTEXT',
-        0 => 'LONGTEXT',
+        1 => 'CHAR',           100 => 'VARCHAR', 1000 => 'TEXT', 8191 => 'MEDIUMTEXT',
+        2097151 => 'LONGTEXT', 0 => 'LONGTEXT',
       );
 
       $this->columnStringTempLimits = array(
-        1 => 'TEXT',
-        8191 => 'MEDIUMTEXT',
-        2097151 => 'LONGTEXT',
-        0 => 'LONGTEXT',
+        1 => 'TEXT', 8191 => 'MEDIUMTEXT', 2097151 => 'LONGTEXT', 0 => 'LONGTEXT',
       );
 
       $this->columnStringNoLength = array('MEDIUMTEXT', 'LONGTEXT');
 
       $this->columnBitLimits = array(
-        0 => 'TINYINT UNSIGNED',
-        8 => 'TINYINT UNSIGNED',
-        16 => 'SMALLINT UNSIGNED',
-        24 => 'MEDIUMINT UNSIGNED',
-        32 => 'INTEGER UNSIGNED',
-        64 => 'LONGINT UNSIGNED',
+        0 => 'TINYINT UNSIGNED',  8 => 'TINYINT UNSIGNED', 16 => 'SMALLINT UNSIGNED', 24 => 'MEDIUMINT UNSIGNED',
+        32 => 'INTEGER UNSIGNED', 64 => 'LONGINT UNSIGNED',
       );
 
       $this->globFindArray = array('*', '?');
@@ -781,15 +734,9 @@ LIMIT
               }
             }
 
-            if (isset($hackz['left'])) {
-              $sideText['left'] = $hackz['left'];
-            }
-            if (isset($hackz['right'])) {
-              $sideText['right'] = $hackz['right'];
-            }
-            if (isset($hackz['symbol'])) {
-              $symbol = $hackz['symbol'];
-            }
+            if (isset($hackz['left']))   $sideText['left'] = $hackz['left'];
+            if (isset($hackz['right']))  $sideText['right'] = $hackz['right'];
+            if (isset($hackz['symbol'])) $symbol = $hackz['symbol'];
 
 
             /* Generate Comparison Part */
@@ -818,15 +765,9 @@ LIMIT
 
 
     // Combine the query array if multiple entries exist, or just get the first entry.
-    if (count($whereText) === 0) {
-      return false;
-    }
-    elseif (count($whereText) === 1) {
-      $whereText = $whereText[0]; // Get the query string from the first (and only) index.
-    }
-    else {
-      $whereText = implode($this->concatTypes['both'], $whereText);
-    }
+    if (count($whereText) === 0) return false;
+    elseif (count($whereText) === 1) $whereText = $whereText[0]; // Get the query string from the first (and only) index.
+    else $whereText = implode($this->concatTypes['both'], $whereText);
 
 
     return "($whereText)"; // Return condition string. We wrap parens around to support multiple levels of conditions/recursion.
@@ -899,15 +840,9 @@ LIMIT
       list($columns, $values, $conditions) = $this->splitArray($conditionArray);
 
       for ($i = 0; $i < count($columns); $i++) {
-        if (!$conditions[$i]) {
-          $csym = $this->comparisonTypes['e'];
-        }
-        elseif (isset($this->comparisonTypes[$conditions[$i]])) {
-          $csym = $this->comparisonTypes[$conditions[$i]];
-        }
-        else {
-          throw new Exception('Unrecognized comparison type: ' . $conditions[$i]);
-        }
+        if (!$conditions[$i]) $csym = $this->comparisonTypes['e'];
+        elseif (isset($this->comparisonTypes[$conditions[$i]])) $csym = $this->comparisonTypes[$conditions[$i]];
+        else throw new Exception('Unrecognized comparison type: ' . $conditions[$i]);
 
         $cond[] = $columns[$i] . $csym . $values[$i];
       }
@@ -974,12 +909,8 @@ LIMIT
     if ($queryData = $this->functionMap('query', $query)) {
       $this->queryCounter++;
 
-      if ($queryData === true) {
-        return true;
-      }
-      else {
-        return new databaseResult($queryData, $query, $this->language); // Return link resource.
-      }
+      if ($queryData === true) return true;
+      else return new databaseResult($queryData, $query, $this->language); // Return link resource.
     }
     else {
       $this->error = $this->functionMap('error');
@@ -1016,12 +947,8 @@ LIMIT
         $columns[] = $this->columnQuoteStart . $this->escape($column) . $this->columnQuoteEnd;
         $context[] = 'e'; // Equals
 
-        if ($data === true) {
-          $values[] = 1;
-        }
-        elseif ($data === false) {
-          $values[] = 0;
-        }
+        if ($data === true) $values[] = 1;
+        elseif ($data === false) $values[] = 0;
       }
 
       elseif (is_null($data)) { // Null data, simply make it empty.
@@ -1110,51 +1037,34 @@ LIMIT
       switch ($column['type']) {
         case 'int':
         if (isset($this->columnIntLimits[$column['maxlen']])) {
-          if (in_array($type, $this->columnStringNoLength)) {
-            $typePiece = $this->columnIntLimits[$column['maxlen']];
-          }
-          else {
-            $typePiece = $this->columnIntLimits[$column['maxlen']] . '(' . (int) $column['maxlen'] . ')';
-          }
+          if (in_array($type, $this->columnStringNoLength)) $typePiece = $this->columnIntLimits[$column['maxlen']];
+          else $typePiece = $this->columnIntLimits[$column['maxlen']] . '(' . (int) $column['maxlen'] . ')';
         }
         else {
           $typePiece = $this->columnIntLimits[0];
         }
 
-
-        if ($column['autoincrement'] == true) {
-          $typePiece .= ' AUTO_INCREMENT'; // Ya know, that thing where it sets itself.
-        }
+        if ($column['autoincrement'] == true) $typePiece .= ' AUTO_INCREMENT'; // Ya know, that thing where it sets itself.
         break;
 
         case 'string':
         if ($column['restrict']) {
           $restrictValues = array();
 
-          foreach ((array) $column['restrict'] AS $value) {
-            $restrictValues[] = '"' . $this->escape($value) . '"';
-          }
+          foreach ((array) $column['restrict'] AS $value) $restrictValues[] = '"' . $this->escape($value) . '"';
 
           $typePiece = 'ENUM(' . implode(',',$restrictValues) . ')';
         }
         else {
           $typeProcessed = false;
 
-          if ($engine === 'memory') {
-            $this->columnStringLimits = $this->columnStringTempLimits;
-          }
-          else {
-            $this->columnStringLimits = $this->columnStringPermLimits;
-          }
+          if ($engine === 'memory') $this->columnStringLimits = $this->columnStringTempLimits;
+          else                      $this->columnStringLimits = $this->columnStringPermLimits;
 
           foreach ($this->columnStringLimits AS $length => $type) {
             if ($column['maxlen'] > $length) {
-              if (in_array($type, $this->columnStringNoLength)) {
-                $typePiece = $type;
-              }
-              else {
-                $typePiece = $type . '(' . $column['maxlen'] . ')';
-              }
+              if (in_array($type, $this->columnStringNoLength)) $typePiece = $type;
+              else $typePiece = $type . '(' . $column['maxlen'] . ')';
 
               $typeProcessed = true;
 
@@ -1178,21 +1088,11 @@ LIMIT
           $typePiece = 'TINYINT UNSIGNED'; // Sane default
         }
         else {
-          if ($column['bits'] <= 8) {
-            $typePiece = 'TINYINT UNSIGNED';
-          }
-          elseif ($column['bits'] <= 16) {
-            $typePiece = 'SMALLINT UNSIGNED';
-          }
-          elseif ($column['bits'] <= 24) {
-            $typePiece = 'MEDIUMINT UNSIGNED';
-          }
-          elseif ($column['bits'] <= 32) {
-            $typePiece = 'INTEGER UNSIGNED';
-          }
-          else {
-            $typePiece = 'LONGINT UNSIGNED';
-          }
+          if ($column['bits'] <= 8)      $typePiece = 'TINYINT UNSIGNED';
+          elseif ($column['bits'] <= 16) $typePiece = 'SMALLINT UNSIGNED';
+          elseif ($column['bits'] <= 24) $typePiece = 'MEDIUMINT UNSIGNED';
+          elseif ($column['bits'] <= 32) $typePiece = 'INTEGER UNSIGNED';
+          else                           $typePiece = 'LONGINT UNSIGNED';
         }
         break;
 
@@ -1391,16 +1291,10 @@ class databaseResult {
     if ($this->queryData !== false) {
       if ($index) { // An index is specified, generate & return a multidimensional array. (index => [key => value], index being the value of the index for the row, key being the column name, and value being the corrosponding value).
         while ($row = $this->functionMap('fetchAsArray', $this->queryData)) {
-          if ($row === null || $row === false) {
-            break;
-          }
+          if ($row === null || $row === false) break;
 
-          if ($index === true) { // If the index is boolean "true", we simply create numbered rows to use. (1,2,3,4,5)
-            $indexV++;
-          }
-          else {
-            $indexV = $row[$index]; // If the index is not boolean "true", we instead get the column value of the index/column name.
-          }
+          if ($index === true) $indexV++; // If the index is boolean "true", we simply create numbered rows to use. (1,2,3,4,5)
+          else                 $indexV = $row[$index]; // If the index is not boolean "true", we instead get the column value of the index/column name.
 
           $data[$indexV] = $row; // Append the data.
         }

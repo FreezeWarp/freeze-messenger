@@ -52,18 +52,12 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false, $allowed
 
   if (is_array($array)) { // Make sure the array is an array.
     foreach ($array AS $value) { // Run through each value of the array.
-      if (is_array($allowedValues)) {
-        if (!in_array($value, $allowedValues)) {
-          continue;
-        }
-      }
+      if (is_array($allowedValues)
+        && !in_array($value, $allowedValues)) continue;
 
       switch ($type) { // What type are we validating to?
         case 'int': // Integer type.
-        if ($preserveAll) { // Do we preserve false entries?
-          $arrayValidated[] = (int) $value; // If so, simply cast the value as an integer.
-        }
-
+        if ($preserveAll) $arrayValidated[] = (int) $value; // If we preserve false entries, simply cast the variable as an interger.
         else { // If we don't preserve false entries...
           $preValue = (int) $value; // Cast the value
 
@@ -76,28 +70,18 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false, $allowed
         case 'bool':
         $preValue = fim_cast('bool', $value, false);
 
-        if ($preserveAll) { // Add to the array regardless of true/false (arguably what is should be here xD)
-          $arrayValidated[] = $preValue;
-        }
-        elseif ($preValue === true) { // Only add to the array if true.
-          $arrayValidated[] = $preValue;
-        }
+        if ($preserveAll)           $arrayValidated[] = $preValue; // Add to the array regardless of true/false (arguably what is should be here xD)
+        elseif ($preValue === true) $arrayValidated[] = $preValue; // Only add to the array if true.
         break;
 
         default:
-        if ($preserveAll) { // Add to the array regardless of true/false (arguably what is should be default here xD)
-          $arrayValidated[] = $value;
-        }
-        elseif ($preValue) { // Only add to the array if true.
-          $arrayValidated[] = $value;
-        }
+        if ($preserveAll)  $arrayValidated[] = $value; // Add to the array regardless of true/false (arguably what is should be default here xD)
+        elseif ($preValue) $arrayValidated[] = $value; // Only add to the array if true.
         break;
       }
     }
   }
-  else { // If its not, we will return an empty array.
-    $arrayValidated = array();
-  }
+  else $arrayValidated = array(); // If its not, we will return an empty array.
 
   return $arrayValidated; // Return the validated array.
 }
