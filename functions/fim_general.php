@@ -24,21 +24,12 @@
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_inArray($needle, $haystack) {
-  if (!$haystack) { // If the haystack is not valid, return false.
-    return false;
-  }
-  elseif (!$needle) { // If the needle is not valid, return false.
-    return false;
-  }
+  if (!$haystack) return false; // If the haystack is not valid, return false.
+  elseif (!$needle) return false; // If the needle is not valid, return false.
   else {
     foreach($needle AS $need) { // Run through each entry of the needle
-      if (!$need) { // If the needle value is false, skip it.
-        continue;
-      }
-
-      if (in_array($need, $haystack)) { // If the needle is in the haystack, return true.
-        return true;
-      }
+      if (!$need) continue; // If the needle value is false, skip it.
+      if (in_array($need, $haystack)) return true; // If the needle is in the haystack, return true.
     }
 
     return false; // If we haven't returned true yet, return false.
@@ -131,234 +122,161 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
   global $sqlPrefix, $banned, $loginConfig, $valid, $database, $config, $kicksCache, $permissionsCache;
 
 
-  // Set all of these to false to start.
-  $isAdmin = false;
-  $isModerator = false;
-  $isAllowedUser = false;
-  $isAllowedGroup = false;
-  $isOwner = false;
-  $isRoomDeleted = false;
-  $isPrivateRoom = false;
-  $kick = false;
+  if ($roomData['type'] === 'otr' || $roomData['type'] === 'private') {
+
+  }
+  else {
+    // Set all of these to false to start.
+    $isAdmin = false;
+    $isModerator = false;
+    $isAllowedUser = false;
+    $isAllowedGroup = false;
+    $isOwner = false;
+    $isRoomDeleted = false;
+    $isPrivateRoom = false;
+    $kick = false;
 
 
-  $isAllowedUserOverride = false;
+    $isAllowedUserOverride = false;
 
-  $reason = ''; // Create an empty string for the reason.
-  $type = (array) $type; // Type cast the type as an array.
-
-
-  // These are the corrosponding database permissions for each "type".
-  $permMap = array(
-    'view' => 1,
-    'post' => 2,
-    'topic' => 4,
-    'moderate' => 8,
-    'admin' => 128,
-  );
+    $reason = ''; // Create an empty string for the reason.
+    $type = (array) $type; // Type cast the type as an array.
 
 
-  // Make sure all presented data is correct.
-  if (!$roomData['roomId']) { // If the room is not valid...
+    // These are the corrosponding database permissions for each "type".
+    $permMap = array(
+      'view' => 1,
+      'post' => 2,
+      'topic' => 4,
+      'moderate' => 8,
+      'admin' => 128,
+    );
+
+
+    // Make sure all presented data is correct.
+    if (!$roomData['roomId']) { // If the room is not valid...
+      if ($quick) return false;
+      else {
+        return array(
+          false,
+          'invalidRoom',
+          0
+        );
+      }
+    }
+    elseif (!isset($roomData['defaultPermissions'])) throw new Exception('Room data invalid (defaultPermissions index missing)'); // If the default permissions index is missing, through an exception.
+    elseif ($type === 'know') throw new Exception('Room data invalid (type of "know")'); // Transitional.
+
+
+    foreach ((array) $type AS $type2) { // Run through each type.
+      /* Get the User's Kick Status */
+      if (isset($userData['userId'])) { // Was a user specified?
+        if ($userData['userId'] > 0) { // Is their userId non-zero?
+          if (count($kicksCache) > 0) { // Is the kicks cache non-empty?
+            if (isset($kicksCache[$roomData['roomId']][$userData['userId']])) $kick = true; // We're kicked!
+            else $kick = false; // We're not kicked!
+          }
+        }
+      }
+
+
+      /* Is the User an Allowed User? */
+      foreach(array('user', 'admingroup', 'group') AS $type3) {
+        if (isset($permissionsCache[$roomData['roomId']], $permissionsCache[$roomData['roomId']][$type3], $permissionsCache[$roomData['roomId']][$type3][$userData['userId']])) {
+          if ($permissionsCache[$roomData['roomId']][$type3][$userData['userId']] & $permMap[$type2]) {
+            $isAllowedUser = true;
+          }
+          else { // If a group is granted access but a user is forbidden, the user status is considered final. Likewise, if a social group is granted access but an admin group is restircted, the admin group is considered final.
+            $isAllowedUserOverride = true;
+
+            break;
+          }
+        }
+      }
+      if (($roomData['defaultPermissions'] & $permMap[$type2]) && !$isAllowedUserOverride) {
+        $isAllowedUser = true;
+      }
+
+
+      /* Is the User the Room's Owner/Creator */
+      if (isset($roomData['owner'])) {
+        if ($roomData['owner'] == $userData['userId']
+          && $roomData['owner'] > 0) {
+          $isOwner = true;
+        }
+      }
+      else {
+        throw new Exception('Room data invalid (owner index missing)'); // We need the owner index.
+      }
+
+
+      /* Is the Room a Private Room or Deleted? */
+      if (isset($roomData['options'])) {
+        if ($roomData['options'] & 4) $isRoomDeleted = true; // The room is deleted.
+        if ($roomData['options'] & 16) $isPrivateRoom = true; // The room is private
+      }
+      else {
+        throw new Exception('Room data invalid (options index missing)'); // We need the options index.
+      }
+
+
+      /* Is the user a super user? */
+      if (isset($userData['userId']) && isset($userData['adminPrivs']) && isset($loginConfig['superUsers'])) {
+        if (is_array($loginConfig['superUsers'])) {
+          if (in_array($userData['userId'], $loginConfig['superUsers']) || $userData['adminPrivs'] & 1) {
+            $isAdmin = true;
+          }
+        }
+      }
+
+
+      if ($type2 === 'post') {
+        if ($banned) {                                           $roomValid['post'] = false; $reason = 'banned'; }
+        elseif (!$valid) {                                       $roomValid['post'] = false; $reason = 'invalid'; }
+        elseif ($kick && !$isAdmin) {                            $roomValid['post'] = false; $reason = 'kicked'; }
+        elseif ($isAdmin && !$isPrivateRoom) {                   $roomValid['post'] = true; }
+        elseif ($isRoomDeleted) {                                $roomValid['post'] = false; $reason = 'deleted'; }
+        elseif ($isAllowedUser || $isAllowedGroup || $isOwner) { $roomValid['post'] = true; }
+        else {                                                   $roomValid['post'] = false; $reason = 'general'; }
+      }
+
+      if ($type2 === 'view') {
+        if ($isAdmin && !$isPrivateRoom) {                       $roomValid['view'] = true; }
+        elseif ($isRoomDeleted) {                                $roomValid['view'] = false; $reason = 'deleted'; }
+        elseif ($isAllowedUser || $isAllowedGroup || $isOwner) { $roomValid['view'] = true; }
+        else {                                                   $roomValid['view'] = false; $reason = 'general'; }
+      }
+
+      if ($type2 === 'moderate') {
+        if ($banned) {                                           $roomValid['moderate'] = false; $reason = 'banned';  }
+        elseif (!$valid) {                                       $roomValid['moderate'] = false; $reason = 'invalid'; }
+        elseif ($kick && !$isAdmin) {                            $roomValid['moderate'] = false; $reason = 'kicked';  }
+        elseif ($isPrivateRoom) {                                $roomValid['moderate'] = false; $reason = 'private'; }
+        elseif ($isOwner || $isModerator || $isAdmin) {          $roomValid['moderate'] = true;                       }
+        else {                                                   $roomValid['moderate'] = false; $reason = 'general'; }
+      }
+
+      if ($type2 === 'admin') {
+        if ($banned) {                                           $roomValid['admin'] = false; $reason = 'banned';  }
+        elseif (!$valid) {                                       $roomValid['admin'] = false; $reason = 'invalid'; }
+        elseif ($kick) {                                         $roomValid['admin'] = false; $reason = 'kicked';  }
+        elseif ($isPrivateRoom) {                                $roomValid['admin'] = false; $reason = 'private'; }
+        elseif ($isAdmin) {                                      $roomValid['admin'] = true;                       }
+        else {                                                   $roomValid['admin'] = false; $reason = 'general'; }
+      }
+    }
+
+
     if ($quick) {
-      return false;
+      return (count($type) > 1 ? $roomValid : $roomValid[$type[0]]);
     }
     else {
       return array(
-        false,
-        'invalidRoom',
-        0
+        (count($type) > 1 ? $roomValid : $roomValid[$type[0]]),
+        $reason,
+        $kick['expiresOn']
       );
     }
-  }
-  elseif (!isset($roomData['defaultPermissions'])) { // If the default permissions index is missing, through an exception.
-    throw new Exception('Room data invalid (defaultPermissions index missing)');
-  }
-  elseif ($type === 'know') { // Transitional.
-    throw new Exception('Room data invalid (type of "know")');
-  }
-
-
-  foreach ((array) $type AS $type2) { // Run through each type.
-    /* Get the User's Kick Status */
-    if (isset($userData['userId'])) { // Was a user specified?
-      if ($userData['userId'] > 0) { // Is their userId non-zero?
-        if (count($kicksCache) > 0) { // Is the kicks cache non-empty?
-          if (isset($kicksCache[$roomData['roomId']][$userData['userId']])) { // Does a kick entry exist for the user in this room?
-            $kick = true; // We're kicked!
-          }
-          else {
-            $kick = false; // We're not kicked!
-          }
-        }
-      }
-    }
-
-
-    /* Is the User an Allowed User? */
-    foreach(array('user', 'admingroup', 'group') AS $type3) {
-      if (isset($permissionsCache[$roomData['roomId']], $permissionsCache[$roomData['roomId']][$type3], $permissionsCache[$roomData['roomId']][$type3][$userData['userId']])) {
-        if ($permissionsCache[$roomData['roomId']][$type3][$userData['userId']] & $permMap[$type2]) {
-          $isAllowedUser = true;
-        }
-        else { // If a group is granted access but a user is forbidden, the user status is considered final. Likewise, if a social group is granted access but an admin group is restircted, the admin group is considered final.
-          $isAllowedUserOverride = true;
-
-          break;
-        }
-      }
-    }
-    if (($roomData['defaultPermissions'] & $permMap[$type2]) && !$isAllowedUserOverride) {
-      $isAllowedUser = true;
-    }
-
-
-    /* Is the User the Room's Owner/Creator */
-    if (isset($roomData['owner'])) {
-      if ($roomData['owner'] == $userData['userId']
-        && $roomData['owner'] > 0) {
-        $isOwner = true;
-      }
-    }
-    else {
-      throw new Exception('Room data invalid (owner index missing)'); // We need the owner index.
-    }
-
-
-    /* Is the Room a Private Room or Deleted? */
-    if (isset($roomData['options'])) {
-      if ($roomData['options'] & 4) {
-        $isRoomDeleted = true; // The room is deleted.
-      }
-
-      if ($roomData['options'] & 16) {
-        $isPrivateRoom = true; // The room is private
-      }
-    }
-    else {
-      throw new Exception('Room data invalid (options index missing)'); // We need the options index.
-    }
-
-
-    /* Is the user a super user? */
-    if (isset($userData['userId']) && isset($userData['adminPrivs']) && isset($loginConfig['superUsers'])) {
-      if (is_array($loginConfig['superUsers'])) {
-        if (in_array($userData['userId'], $loginConfig['superUsers']) || $userData['adminPrivs'] & 1) {
-          $isAdmin = true;
-        }
-      }
-    }
-
-
-    if ($type2 === 'post') {
-      if ($banned) {
-        $roomValid['post'] = false;
-        $reason = 'banned';
-      }
-      elseif (!$valid) {
-        $roomValid['post'] = false;
-        $reason = 'invalid';
-      }
-      elseif ($kick && !$isAdmin) {
-        $roomValid['post'] = false;
-        $reason = 'kicked';
-      }
-      elseif ($isAdmin && !$isPrivateRoom) {
-        $roomValid['post'] = true;
-      }
-      elseif ($isRoomDeleted) {
-        $roomValid['post'] = false;
-        $reason = 'deleted';
-      }
-      elseif ($isAllowedUser || $isAllowedGroup || $isOwner) {
-        $roomValid['post'] = true;
-      }
-      else {
-        $roomValid['post'] = false;
-        $reason = 'general';
-      }
-    }
-
-    if ($type2 === 'view') {
-      if ($isAdmin && !$isPrivateRoom) {
-        $roomValid['view'] = true;
-      }
-      elseif ($isRoomDeleted) {
-        $roomValid['view'] = false;
-        $reason = 'deleted';
-      }
-      elseif ($isAllowedUser || $isAllowedGroup || $isOwner) {
-        $roomValid['view'] = true;
-      }
-      else {
-        $roomValid['view'] = false;
-        $reason = 'general';
-      }
-    }
-
-    if ($type2 === 'moderate') {
-      if ($banned) {
-        $roomValid['moderate'] = false;
-        $reason = 'banned';
-      }
-      elseif (!$valid) {
-        $roomValid['moderate'] = false;
-        $reason = 'invalid';
-      }
-      elseif ($kick && !$isAdmin) {
-        $roomValid['moderate'] = false;
-        $reason = 'kicked';
-      }
-      elseif ($isPrivateRoom) {
-        $roomValid['moderate'] = false;
-        $reason = 'private';
-      }
-      elseif ($isOwner || $isModerator || $isAdmin) {
-        $roomValid['moderate'] = true;
-      }
-      else {
-        $roomValid['moderate'] = false;
-        $reason = 'general';
-      }
-    }
-
-    if ($type2 === 'admin') {
-      if ($banned) {
-        $roomValid['admin'] = false;
-        $reason = 'banned';
-      }
-      elseif (!$valid) {
-        $roomValid['admin'] = false;
-        $reason = 'invalid';
-      }
-      elseif ($kick) {
-        $roomValid['admin'] = false;
-        $reason = 'kicked';
-      }
-      elseif ($isPrivateRoom) {
-        $roomValid['admin'] = false;
-        $reason = 'private';
-      }
-      elseif ($isAdmin) {
-        $roomValid['admin'] = true;
-      }
-      else {
-        $roomValid['admin'] = false;
-        $reason = 'general';
-      }
-    }
-  }
-
-
-  if ($quick) {
-    return (count($type) > 1 ? $roomValid : $roomValid[$type[0]]);
-  }
-  else {
-    return array(
-      (count($type) > 1 ? $roomValid : $roomValid[$type[0]]),
-      $reason,
-      $kick['expiresOn']
-    );
   }
 }
 
@@ -486,12 +404,8 @@ function fim_encrypt($data) {
 function fim_sha256($data) {
   global $config;
 
-  if (function_exists('hash') && in_array('sha256',hash_algos())) { // hash() is available in PHP 5.1.2+, or in PECL Hash 1.1. Algorithms vary, so we must make sure sha256 is one of them.
-    return hash('sha256', $data);
-  }
-  elseif (function_exists('mhash') && defined('MHASH_SHA256')) { // mhash() is available in pretty much all versions of PHP, but the SHA256 algo may not be available.
-    return mhash(MHASH_SHA256, $data);
-  }
+  if (function_exists('hash') && in_array('sha256',hash_algos())) return hash('sha256', $data); // hash() is available in PHP 5.1.2+, or in PECL Hash 1.1. Algorithms vary, so we must make sure sha256 is one of them.
+  elseif (function_exists('mhash') && defined('MHASH_SHA256')) return mhash(MHASH_SHA256, $data); // mhash() is available in pretty much all versions of PHP, but the SHA256 algo may not be available.
   else { // Otherwise, we'll return the data unhashed. Better than dieing completely, really (in this coder's humble opinion).
     require('functions/sha256.php'); // Require SHA256 class provided by NanoLink.ca.
 
@@ -510,15 +424,9 @@ function fim_sha256($data) {
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_rand($min, $max) {
-  if (function_exists('mt_rand')) {
-    return mt_rand($min, $max);
-  }
-  elseif (function_exists('rand')) {
-    return rand($min, $max);
-  }
-  else {
-    return $min;
-  }
+  if (function_exists('mt_rand')) return mt_rand($min, $max); // Proper hardware-based rand, actually works.
+  elseif (function_exists('rand')) return rand($min, $max); // Standard rand, not well seeded.
+  else return $min; // Though it should never happened, applications should still /run/ if no rand function exists. Keep this in mind when using fim_rand.
 }
 
 
@@ -566,29 +474,17 @@ function fim_encodeXmlAttr($data) {
 function html2rgb($color) {
   global $config;
 
-
-  if ($color[0] === '#') { // Strip a prepended "#" if it exists.
-    $color = substr($color, 1);
-  }
-
+  if ($color[0] === '#') $color = substr($color, 1); // Strip a prepended "#" if it exists.
 
   // Get the RGB colour as an array
-  if (strlen($color) === 6) { // Data is stored as a six-character hexadecimal string (e.g. FFFFFF)
-    list($r, $g, $b) = array($color[0] . $color[1], $color[2] . $color[3], $color[4] . $color[5]);
-  }
-  elseif (strlen($color) === 3) { // Data is stored as a three-character hexadecimal string (e.g. FFF)
-    list($r, $g, $b) = array($color[0] . $color[0], $color[1] . $color[1], $color[2].$color[2]);
-  }
-  else {
-    throw new Exception('Invalid color: ' . $color);
-  }
-
+  if (strlen($color) === 6) list($r, $g, $b) = array($color[0] . $color[1], $color[2] . $color[3], $color[4] . $color[5]); // Data is stored as a six-character hexadecimal string (e.g. FFFFFF)
+  elseif (strlen($color) === 3) list($r, $g, $b) = array($color[0] . $color[0], $color[1] . $color[1], $color[2].$color[2]); // Data is stored as a three-character hexadecimal string (e.g. FFF)
+  else throw new Exception('Invalid color: ' . $color);
 
   // Convert hexadecimal values to decimalvalues
   $r = hexdec($r);
   $g = hexdec($g);
   $b = hexdec($b);
-
 
   return array($r, $g, $b); // Return as an array.
 }
@@ -607,30 +503,23 @@ function html2rgb($color) {
 function rgb2html($r, $g = false, $b = false) {
   global $config;
 
-
   // Support the first parameter as being an array of the three.
-  if (is_array($r) && sizeof($r) === 3) {
-    list($r, $g, $b) = $r;
-  }
-
+  if (is_array($r) && sizeof($r) === 3) list($r, $g, $b) = $r;
 
   // Cast the values as integers.
   $r = (int) $r;
   $g = (int) $g;
   $b = (int) $b;
 
-
   // Restrict the value to a range of 0-255, then convert the value from decimal to hexadecimal.
   $r = dechex($r < 0 ? 0 : ($r > 255 ? 255 : $r));
   $g = dechex($g < 0 ? 0 : ($g > 255 ? 255 : $g));
   $b = dechex($b < 0 ? 0 : ($b > 255 ? 255 : $b));
 
-
   // Create the color. If a hexadecimal value is only one character in length, prepend a "0" to it (e.g. "3" becomes "03").
   $color = (strlen($r) < 2 ? '0' : '') . $r;
   $color .= (strlen($g) < 2 ? '0' : '') . $g;
   $color .= (strlen($b) < 2 ? '0' : '') . $b;
-
 
   return '#' . $color; // Return the value, prepended with a "#" to signify an HTML colour.
 }
@@ -648,20 +537,12 @@ function hook($name) {
   global $hooks, $disableHooks;
 
 
-  if ($disableHooks) { // If hooks are disabled, then return false.
-    return false;
-  }
+  if ($disableHooks) return false; // If hooks are disabled, then return false.
   elseif (isset($hooks[$name])) { // If the hook is set...
-    if (strlen($hooks[$name]) > 0) { // If the hook is not empty, return the code to eval.
-      return $hook;
-    }
-    else { // Otherwise return false.
-      return false;
-    }
+    if (strlen($hooks[$name]) > 0) return $hook; // If the hook is not empty, return the code to eval.
+    else return false; // Otherwise return false.
   }
-  else { // And if the hook isn't set, return false.
-    return false;
-  }
+  else return false; // And if the hook isn't set, return false.
 }
 
 
@@ -679,38 +560,12 @@ function fim_outputApi($data) {
 
   if (isset($_REQUEST['fim3_format'])) {
     switch ($_REQUEST['fim3_format']) {
-      case 'phparray': // print_r
-      return fim_outputArray($data);
-      break;
-
-      case 'keys': // HTML List format for the keys only (documentation thing)
-      return fim_outputKeys($data);
-      break;
-
-      case 'xml2': // Compact XML
-      header('Content-type: application/xml');
-
-      return fim_outputXml2($data);
-      break;
-
-      case 'xml': // No-Attribute XML (all data expressed as nodes)
-      header('Content-type: application/xml');
-
-      return fim_outputXml($data);
-      break;
-
-      case 'jsonp': // Javascript Object Notion for Cross-Origin Requests
-      header('Content-type: application/json');
-
-      return 'fim3_jsonp.parse(' . fim_outputJson($data) . ')';
-      break;
-
-      case 'json': // Javascript Object Notion
-      default:
-      header('Content-type: application/json');
-
-      return fim_outputJson($data);
-      break;
+      case 'phparray':                                                return fim_outputArray($data); break; // print_r
+      case 'keys':                                                    return fim_outputKeys($data);  break; // HTML List format for the keys only (documentation thing)
+      case 'xml2':          header('Content-type: application/xml');  return fim_outputXml2($data); break; // Compact XML
+      case 'xml':           header('Content-type: application/xml');  return fim_outputXml($data); break; // No-Attribute XML (all data expressed as nodes)
+      case 'jsonp':         header('Content-type: application/json'); return 'fim3_jsonp.parse(' . fim_outputJson($data) . ')'; break; // Javascript Object Notion for Cross-Origin Requests
+      case 'json': default: header('Content-type: application/json'); return fim_outputJson($data); break; // Javascript Object Notion
     }
   }
   else {
@@ -736,9 +591,7 @@ function fim_outputXml($array, $level = 0) {
   $indent = '';
   $data = '';
 
-  for ($i = 0; $i < $level; $i++) {
-    $indent .= '  ';
-  }
+  for ($i = 0; $i < $level; $i++) $indent .= '  '; // Indent at beginning.
 
   foreach ($array AS $key => $value) {
     $key = explode(' ', $key);
@@ -746,19 +599,11 @@ function fim_outputXml($array, $level = 0) {
 
     $data .= "$indent<$key>\n";
 
-    if (is_array($value)) {
-      $data .= fim_outputXml($value, $level + 1);
-    }
+    if (is_array($value)) $data .= fim_outputXml($value, $level + 1);
     else {
-      if ($value === true) {
-        $value = 'true';
-      }
-      elseif ($value === false) {
-        $value = 'false';
-      }
-      elseif (is_string($value)) {
-        $value = fim_encodeXml($value);
-      }
+      if ($value === true)       $value = 'true';
+      elseif ($value === false)  $value = 'false';
+      elseif (is_string($value)) $value = fim_encodeXml($value);
 
       $data .= "$indent  $value\n";
     }
@@ -795,9 +640,7 @@ function fim_outputXml2($array, $level = 0) {
   $indent = '';
   $data = '';
 
-  for ($i = 0; $i < $level; $i++) {
-    $indent .= '  ';
-  }
+  for ($i = 0; $i < $level; $i++) $indent .= '  ';
 
   foreach ($array AS $key => $value) {
     $key = explode(' ', $key);
@@ -817,27 +660,17 @@ function fim_outputXml2($array, $level = 0) {
       else {
         $data .= "{$indent}<{$key}";
 
-        foreach ($value AS $key => $value2) {
-          $data .= " {$key}=\"" . fim_encodeXmlAttr($value2) . "\"";
-        }
+        foreach ($value AS $key => $value2) $data .= " {$key}=\"" . fim_encodeXmlAttr($value2) . "\"";
 
         $data .= " />\n";
       }
     }
     else {
-      if (empty($value)) {
-        $data .= "{$indent}<$key />\n";
-      }
+      if (empty($value)) $data .= "{$indent}<$key />\n";
       else {
-        if ($value === true) {
-          $value = 'true';
-        }
-        elseif ($value === false) {
-          $value = 'false';
-        }
-        elseif (is_string($value)) {
-          $value = fim_encodeXml($value);
-        }
+        if ($value === true)       $value = 'true';
+        elseif ($value === false)  $value = 'false';
+        elseif (is_string($value)) $value = fim_encodeXml($value);
 
         $data .= "{$indent}<{$key}>{$value}</{$key}>\n";
       }
@@ -873,9 +706,7 @@ function fim_outputJson($array, $level = 0) {
   $data = array();
   $indent = '';
 
-  for ($i = 0; $i <= $level; $i++) {
-    $indent .= '  ';
-  }
+  for ($i = 0; $i <= $level; $i++) $indent .= '  ';
 
   foreach ($array AS $key => $value) {
 //    $key = explode(' ', $key);
@@ -889,18 +720,11 @@ function fim_outputJson($array, $level = 0) {
 $indent}";
     }
     else {
-      if ($value === true) {
-        $value = 'true';
-      }
-      elseif ($value === false) {
-        $value = 'false';
-      }
-      elseif (is_string($value)) {
-        $value = '"' . str_replace("\n", '\n', addcslashes($value,"\"\\")) . '"';
-      }
-      if ($value == '') {
-        $value = '""';
-      }
+      if ($value === true)       $value = 'true';
+      elseif ($value === false)  $value = 'false';
+      elseif (is_string($value)) $value = '"' . str_replace("\n", '\n', addcslashes($value,"\"\\")) . '"';
+
+      if ($value == '')          $value = '""';
 
       $data[] = "$datapre  $value";
     }
@@ -935,9 +759,7 @@ function fim_outputKeys($array, $level = 0) { // Used only for creating document
 
   $indent = '';
 
-  for ($i = 0; $i < $level; $i++) {
-    $indent .= '  ';
-  }
+  for ($i = 0; $i < $level; $i++) $indent .= '  ';
 
   foreach ($array AS $key => $value) {
     $key = explode(' ', $key);
@@ -1038,7 +860,6 @@ function fim_requestBodyToGPC($string) {
 
   foreach ($arrayEntries AS $arrayEntry) {
     $arrayEntryParts = explode('=', $arrayEntry);
-
     $array[urldecode($arrayEntryParts[0])] = urldecode($arrayEntryParts[1]);
   }
 
@@ -1279,12 +1100,8 @@ function fim_sanitizeGPC($type, $data) {
 function fim_iif($condition, $true, $false) {
   global $config;
 
-  if (eval('return ' . stripslashes($condition) . ';')) { // Does the condition eval to true?
-    return $true; // Return the true string.
-  }
-  else {
-    return $false; // Return the false string.
-  }
+  if (eval('return ' . stripslashes($condition) . ';')) return $true; // If the string evals to true, return the true string.
+  else return $false; // Return the false string.
 }
 
 
@@ -1300,9 +1117,7 @@ function fim_hasArray($array) {
   global $config;
 
   foreach ($array AS $key => $value) { // Run through each entry of the array.
-    if (is_array($value)) { // If the value is an array, return true.
-      return true;
-    }
+    if (is_array($value)) return true; // If the value is an array, return true.
   }
 
   return false; // Since we haven't already found an array, return false.
@@ -1383,10 +1198,7 @@ function fim_errorHandler($errno, $errstr, $errfile, $errline) {
 
 function fim_flush() {
   flush();
-
-  if (ob_get_level()) {
-    ob_fim_flush();
-  }
+  if (ob_get_level()) ob_fim_flush(); // Flush output buffer if enabled. (We do not use this in FIM at present.)
 }
 
 function indexValue($array, $index) {

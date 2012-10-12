@@ -40,6 +40,8 @@ class fimDatabase extends database {
           ),
         ),
       );
+
+      $roomType = 'otr'; // We return this because it will be easier to change the roomId schema.
     }
     elseif (substr($roomId, 0, 1) === 'p') { // Private Room
       $queryParts['roomSelect']['columns'] = array(
@@ -61,6 +63,8 @@ class fimDatabase extends database {
           ),
         ),
       );
+
+      $roomType = 'private'; // We return this because it will be easier to change the roomId schema.
     }
     else {
       $queryParts['roomSelect']['columns'] = array(
@@ -104,6 +108,8 @@ class fimDatabase extends database {
       else {
         return false;
       }
+
+      $roomType = 'normal'; // We return this because it will be easier to change the roomId schema.
     }
 
     $roomData = $this->select(
@@ -111,7 +117,10 @@ class fimDatabase extends database {
       $queryParts['roomSelect']['conditions'],
       false,
       1);
-    return $roomData->getAsArray(false);
+    $roomData = $roomData->getAsArray(false);
+    $roomData['type'] = $roomType;
+
+    return $roomData;
   }
 
 
