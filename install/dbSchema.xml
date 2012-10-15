@@ -119,7 +119,7 @@
       <column name="eventId" type="int" maxlen="8" autoincrement="true" comment="A unique identifier for the event." />
       <column name="eventName" type="string" maxlen="20" autoincrement="true" comment="The name of the event (e.g. topic-change)." />
       <column name="userId" type="int" maxlen="8" comment="The user ID, if applicable." />
-      <column name="roomId" type="int" maxlen="6" comment="The room ID, if applicable." />
+      <column name="roomId" type="string" maxlen="6" comment="The room ID, if applicable." />
       <column name="messageId" type="int" maxlen="15" comment="The message ID, if applicable." />
       <column name="param1" type="string" maxlen="20" comment="An addition parameter." />
       <column name="param2" type="string" maxlen="20" comment="An addition parameter." />
@@ -327,8 +327,9 @@
     </table>
 
 
-    <table name="privateRooms" type="general" comment="List of private rooms. Note that roomUsers are stored both as a string (for fetching) a">
+    <table name="privateRooms" type="general" comment="List of private rooms. Note that roomUsers are stored both as a string (for fetching) and a hash.">
       <!-- General -->
+      <column name="uniqueId" type="int" note="uniqueId should only EVER be used with other tables for SQL optimisastion. It should NEVER be used for any other purpose, and instead roomUsersHash or roomUsersList MUST be used." comment="A unique ID representing the private room." />
       <column name="roomUsersHash" type="string" maxlen="32" />
       <column name="roomUsersList" type="string" maxlen="1000"/>
       <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options." />

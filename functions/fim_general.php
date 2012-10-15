@@ -105,9 +105,17 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false, $allowed
 function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false) {
   global $sqlPrefix, $banned, $loginConfig, $valid, $database, $config, $kicksCache, $permissionsCache;
 
-
-  if ($roomData['type'] === 'otr' || $roomData['type'] === 'private') {
-
+  if ($roomData['type'] === 'otr' || $roomData['type'] === 'private') { // We are doing this in hasPermission itself to allow for hooks that might, for instance, deny permission to certain users based on certain criteria.
+    if ($quick) {
+      return true;
+    }
+    else {
+      return array(
+        true,
+        '',
+        0
+      );
+    }
   }
   else {
     // Set all of these to false to start.
