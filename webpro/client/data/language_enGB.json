@@ -231,7 +231,7 @@
   "templateLoading" : "Loading...",
   "templateLogin" : "Login<span class=\"keycode\"> (Alt+I)</span>",
   "templateLogout" : "Logout (Alt+X)",
-  "templateManageKickedUsers" : "Manage kicked Users",
+  "templateManageKickedUsers" : "Manage Kicked Users",
   "templateModerateCat" : "Moderation<span class=\"keycode\"> (Alt+W)</span>",
   "templatePrivateIM" : "Enter Private IM<span class=\"keycode\"> (Alt+R)</span>",
   "templateQuickCat" : "Key<span class=\"keycode\"> (Alt+V)</span>",
