@@ -1713,7 +1713,7 @@ var standard = {
       return false;
     }
 
-    if (roomIdLocal.toString().substr(0,1) === 'p') {
+    if (roomIdLocal.toString().substr(0,1) === 'p') { // If the roomId string corresponds to a private room, we must query getPrivateRoom, among other things. [[TODO: windowDynaLinks]]
       $.ajax({
         url: directory + 'api/getPrivateRoom.php?users=' + roomIdLocal.toString().substr(1) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
         timeout: 5000,
@@ -1724,24 +1724,25 @@ var standard = {
           var users = active.roomUsers,
             roomUsers = [];
 
-          for (i in users) {
-            userName = users[i].userName,
-            userFormatStart = users[i].userFormatStart,
-            userFormatEnd = users[i].userFormatEnd,
+          for (i in users) { // Run through the user list return by getPrivateRooms
+            var userName = users[i].userName,
+              userFormatStart = users[i].userFormatStart,
+              userFormatEnd = users[i].userFormatEnd;
 
             roomUsers.push(userName);
           }
 
-          var roomName = 'Conversation Between: ' + roomUsers.join(', ');
-          roomId = 'p' + active.roomUsersList;
+          var roomName = 'Conversation Between: ' + roomUsers.join(', '); // Set the room name to list the users conversing.
+          roomId = 'p' + active.uniqueId; // Set the internal roomId to the uniqueId required by all API calls outside of getPrivateRoom.
 
           $('#roomName').html(roomName);
-          $('#messageList').html('');
+          $('#topic').html(''); // Clear the topic.
+          $('#messageList').html(''); // Clear the messsage list.
 
-          $('#messageInput').removeAttr('disabled');
-          $('#icon_url').button({ disabled : false });
-          $('#icon_submit').button({ disabled : false });
-          $('#icon_reset').button({ disabled : false });
+          $('#messageInput').removeAttr('disabled'); // Make sure the input is not disabled.
+          $('#icon_url').button({ disabled : false }); // "
+          $('#icon_submit').button({ disabled : false }); // "
+          $('#icon_reset').button({ disabled : false }); // "
 
           /*** Get Messages ***/
           $(document).ready(function() {
@@ -1762,7 +1763,7 @@ var standard = {
         }
       });
     }
-    else {
+    else { // Normal procedure otherwise.
       $.ajax({
         url: directory + 'api/getRooms.php?rooms=' + roomIdLocal + '&permLevel=view&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
         timeout: 5000,
@@ -1777,34 +1778,32 @@ var standard = {
               roomTopic = active[i].roomTopic,
               permissions = active[i].permissions;
 
-            if (!permissions.canView) {
-              roomId = false;
-
-              popup.selectRoom();
-
+            if (!permissions.canView) { // If we can not view the room
+              roomId = false; // Set the internal roomId false.
+              popup.selectRoom(); // Prompt the user to select a new room.
               dia.error('You have been restricted access from this room. Please select a new room.');
             }
-            else if (!permissions.canPost) {
+            else if (!permissions.canPost) { // If we can view, but not post
               alert('You are not allowed to post in this room. You will be able to view it, though.');
 
-              $('#messageInput').attr('disabled','disabled');
-              $('#icon_url').button({ disabled : true });
-              $('#icon_submit').button({ disabled : true });
-              $('#icon_reset').button({ disabled : true });
+              $('#messageInput').attr('disabled','disabled'); // Disable input boxes.
+              $('#icon_url').button({ disabled : true }); // "
+              $('#icon_submit').button({ disabled : true }); // "
+              $('#icon_reset').button({ disabled : true }); // "
             }
-            else {
-              $('#messageInput').removeAttr('disabled');
-              $('#icon_url').button({ disabled : false });
-              $('#icon_submit').button({ disabled : false });
-              $('#icon_reset').button({ disabled : false });
+            else { // If we can both view and post.
+              $('#messageInput').removeAttr('disabled'); // Make sure the input is not disabled.
+              $('#icon_url').button({ disabled : false }); // "
+              $('#icon_submit').button({ disabled : false }); // "
+              $('#icon_reset').button({ disabled : false }); // "
             }
 
-            if (permissions.canView) {
+            if (permissions.canView) { // If we can view the room...
               roomId = roomId2;
 
-              $('#roomName').html(roomName);
-              $('#topic').html(roomTopic);
-              $('#messageList').html('');
+              $('#roomName').html(roomName); // Update the room name.
+              $('#topic').html(roomTopic); // Update the room topic.
+              $('#messageList').html(''); // Clear the message list.
 
 
               /*** Get Messages ***/
@@ -1888,8 +1887,8 @@ var standard = {
             content : 'You may talk to this person privately at the following link: <form method="post" onsubmit="return false;"><input type="text" style="width: 300px;" value="' + currentLocation + '#room=' + privateRoomId + '" name="url" /></form>',
             id : 'privateRoomSucessDialogue',
             buttons : {
-              Open : function() { standard.changeRoom(privateRoomId); },
-              Okay : function() { $('#privateRoomSucessDialogue').dialog('close'); }
+              Open : function() { standard.changeRoom(privateRoomId); $('#privateRoomSucessDialogue, #privateRoomDialogue').dialog('close'); },
+              Okay : function() { $('#privateRoomSucessDialogue, #privateRoomDialogue').dialog('close'); }
             },
             width: 600
           });

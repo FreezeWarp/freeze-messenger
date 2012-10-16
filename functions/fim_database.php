@@ -20,9 +20,14 @@ class fimDatabase extends database {
   public function getRoom($roomId, $roomName = false, $cache = true) {
     global $sqlPrefix, $config, $user;
 
-    if (substr($roomId, 0, 1) === 'o') { // OTR Room
+/*    if (substr($roomId, 0, 1) === 'o') { // OTR Room
       $queryParts['roomSelect']['columns'] = array(
-        "{$sqlPrefix}otrRooms" => 'roomUsersList, roomUsersHash, options',
+        "{$sqlPrefix}privateRooms" => array(
+          'uniqueId' => 'roomId'.
+          'roomUsersList',
+          'roomUsersHash',
+          'options',
+        ),
       );
 
       $queryParts['roomSelect']['conditions'] = array(
@@ -31,10 +36,10 @@ class fimDatabase extends database {
             'type' => 'e',
             'left' => array(
               'type' => 'column',
-              'value' => 'roomUsersHash'
+              'value' => 'uniqueId'
             ),
             'right' => array(
-              'type' => 'string',
+              'type' => 'int',
               'value' => substr($roomId, 1),
             ),
           ),
@@ -43,9 +48,9 @@ class fimDatabase extends database {
 
       $roomType = 'otr'; // We return this because it will be easier to change the roomId schema.
     }
-    elseif (substr($roomId, 0, 1) === 'p') { // Private Room
+    else*/if (substr($roomId, 0, 1) === 'p') { // Private Room
       $queryParts['roomSelect']['columns'] = array(
-        "{$sqlPrefix}privateRooms" => 'roomUsersList, roomUsersHash, options, lastMessageId, lastMessageTime, messageCount',
+        "{$sqlPrefix}privateRooms" => 'uniqueId roomId, roomUsersList, roomUsersHash, options, lastMessageId, lastMessageTime, messageCount'
       );
 
       $queryParts['roomSelect']['conditions'] = array(
@@ -54,10 +59,10 @@ class fimDatabase extends database {
             'type' => 'e',
             'left' => array(
               'type' => 'column',
-              'value' => 'roomUsersHash'
+              'value' => 'roomId'
             ),
             'right' => array(
-              'type' => 'string',
+              'type' => 'int',
               'value' => substr($roomId, 1),
             ),
           ),
@@ -982,7 +987,7 @@ class fimDatabase extends database {
     asort($userList);
 
     $queryParts['columns'] = array(
-      "{$sqlPrefix}privateRooms" => 'roomUsersList, roomUsersHash, options, lastMessageTime, lastMessageId, messageCount',
+      "{$sqlPrefix}privateRooms" => 'uniqueId, roomUsersList, roomUsersHash, options, lastMessageTime, lastMessageId, messageCount',
     );
 
     $userCount = count($userList);

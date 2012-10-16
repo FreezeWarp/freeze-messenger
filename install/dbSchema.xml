@@ -36,7 +36,7 @@
     </table>
 
     <table name="clients" type="general" comment="Registered clients. [RESERVED FOR VERSION 4]">
-      <column name="clientId" type="int" maxlen="8" autoincrement="true" comment="The ID of the client." />
+      <column name="clientId" type="int" maxlen="8" autoincrement="1" comment="The ID of the client." />
       <column name="accessLevel" type="int" maxlen="2" comment="The access level granted to the client." />
       <column name="agent" type="string" maxlen="1000" comment="The descriptive string of the client." />
       <column name="userAgent" type="string" maxlen="1000" comment="The text/data associated with the template." />
@@ -83,7 +83,7 @@
 
 
     <table name="censorLists" type="general" comment="Admin-defined text censor categories.">
-      <column name="listId" type="int" maxlen="6" autoincrement="true" comment="The unique ID of the list." />
+      <column name="listId" type="int" maxlen="6" autoincrement="1" comment="The unique ID of the list." />
       <column name="listName" type="string" maxlen="40" comment="The name of the list. It is only used for user identification." />
       <column name="listType" type="string" restrict="black,white" comment="The list type - black to apply to no rooms automatically, and white to apply to all rooms automatically (opt-in vs. opt-out)" />
       <column name="options" type="bitfield" bits="6" default="3" comment="A bitfield of specific options for the list (6 bits are alotted, but only three are used by default)." />
@@ -94,7 +94,7 @@
 
 
     <table name="censorWords" type="general" comment="Admin-defined text censor items.">
-      <column name="wordId" type="int" maxlen="6" autoincrement="true" comment="A unique identifier for the word." />
+      <column name="wordId" type="int" maxlen="6" autoincrement="1" comment="A unique identifier for the word." />
       <column name="listId" type="int" maxlen="6" comment="The ID of the list the word is filed under." />
       <column name="word" type="string" maxlen="100" comment="The word text." />
       <column name="severity" type="string" restrict="replace,warn,confirm,block" default="replace" comment="The severity/type of word." />
@@ -105,8 +105,8 @@
     </table>
 
 
-    <table name="emoticons" type="general" comment="Events that can be queried by event scripts.">
-      <column name="emoticonId" type="int" maxlen="8" autoincrement="true" comment="Emoticon ID." />
+    <table name="emoticons" type="general" comment="Emoticon-oriented search/replace list.">
+      <column name="emoticonId" type="int" maxlen="8" autoincrement="1" comment="Emoticon ID." />
       <column name="emoticonText" type="string" maxlen="20" comment="Text to find." />
       <column name="emoticonFile" type="string" maxlen="1000" comment="Image source." />
       <column name="context" type="string" maxlen="20" default="imageReplace" comment="How to parse emoticon. ('imageReplace' only current option.)" />
@@ -116,8 +116,8 @@
 
 
     <table name="events" type="memory" comment="Events that can be queried by event scripts.">
-      <column name="eventId" type="int" maxlen="8" autoincrement="true" comment="A unique identifier for the event." />
-      <column name="eventName" type="string" maxlen="20" autoincrement="true" comment="The name of the event (e.g. topic-change)." />
+      <column name="eventId" type="int" maxlen="8" autoincrement="1" comment="A unique identifier for the event." />
+      <column name="eventName" type="string" maxlen="20" comment="The name of the event (e.g. topic-change)." />
       <column name="userId" type="int" maxlen="8" comment="The user ID, if applicable." />
       <column name="roomId" type="string" maxlen="6" comment="The room ID, if applicable." />
       <column name="messageId" type="int" maxlen="15" comment="The message ID, if applicable." />
@@ -132,7 +132,7 @@
 
 
     <table name="files" type="general" comment="User-created files.">
-      <column name="fileId" type="int" maxlen="6" autoincrement="true" comment="A unique ID for the file." />
+      <column name="fileId" type="int" maxlen="6" autoincrement="1" comment="A unique ID for the file." />
       <column name="fileName" type="string" maxlen="255" comment="The file's name to be sent for downloading." />
       <column name="fileType" type="string" maxlen="255" comment="The file's mime-type/content-type." />
       <column name="creationTime" type="time" comment="The date the file was uploaded." />
@@ -148,7 +148,7 @@
 
 
     <table name="fileVersions" type="general" comment="User-created file contents and revisions.">
-      <column name="versionId" type="int" maxlen="6" autoincrement="true" comment="A unique identifier for all file versions, regardless of each file." />
+      <column name="versionId" type="int" maxlen="6" autoincrement="1" comment="A unique identifier for all file versions, regardless of each file." />
       <column name="fileId" type="int" maxlen="6" comment="The ID of the parent file." />
       <column name="time" type="time" comment="The time the revision of the file was uploaded." />
       <column name="size" type="int" maxlen="10" comment="The file size of the revision." />
@@ -166,7 +166,7 @@
 
 
     <table name="fonts" type="general" comment="Admin-created fonts for use with default formatting.">
-      <column name="fontId" type="int" maxlen="6" autoincrement="true" comment="The unique ID of the font." />
+      <column name="fontId" type="int" maxlen="6" autoincrement="1" comment="The unique ID of the font." />
       <column name="fontName" type="string" maxlen="40" comment="The name of the font for display." />
       <column name="data" type="string" maxlen="40" comment="The name font code for use in CSS." />
       <column name="category" type="string" maxlen="40" comment="A named category the font is placed under (e.g. monospace)." />
@@ -175,7 +175,7 @@
     </table>
 
     <table name="fulllog" type="general" comment="A log of moderator actions that docment all update(), insert(), and delete() calls.">
-      <column name="id" type="int" maxlen="12" autoincrement="true" comment="A unique ID for the log entry." />
+      <column name="id" type="int" maxlen="12" autoincrement="1" comment="A unique ID for the log entry." />
       <column name="user" type="int" maxlen="8" comment="The JSON-encoded $user data." />
       <column name="time" type="time" comment="The time the action was performed on." />
       <column name="server" type="string" maxlen="128" comment="The JSON encoding of the $_SERVER variable." />
@@ -187,7 +187,7 @@
 
 
     <table name="hooks" type="general" comment="Plugin-created code hooks.">
-      <column name="hookId" type="int" maxlen="8" autoincrement="true" comment="A unique ID corrosponding to the hook. It is not used in retrieving hook contents (and thus could, for whatever reason, be changed on a dime)." />
+      <column name="hookId" type="int" maxlen="8" autoincrement="1" comment="A unique ID corrosponding to the hook. It is not used in retrieving hook contents (and thus could, for whatever reason, be changed on a dime)." />
       <column name="hookName" type="string" maxlen="50" comment="The hook's name, which will be used for most identification. These can be compounded (multiple rows with the same hookname can exist) if multiple entries exist for the hook." />
       <column name="code" type="string" maxlen="4294967296" comment="The code of the particular hook. It will be executed using PHP's EVAL." />
       <column name="state" type="bool" default="1" comment="Whether or not the hook is active." />
@@ -211,7 +211,7 @@
 
 
     <table name="messages" type="general" comment="User-created messages.">
-      <column name="messageId" type="int" maxlen="15" autoincrement="true" comment="The unique ID of the message." />
+      <column name="messageId" type="int" maxlen="15" autoincrement="1" comment="The unique ID of the message." />
       <column name="userId" type="int" maxlen="8" comment="The ID of the user who made the message." />
       <column name="roomId" type="int" maxlen="6" comment="The ID of the room the message was made in." />
       <column name="text" type="string" maxlen="5000" comment="The text of the message." />
@@ -249,7 +249,7 @@
 
 
     <table name="messagesCached" type="memory" comment="A cache of user-created messages for scalibility.">
-      <column name="id" type="int" maxlen="6" autoincrement="true" comment="A unique (temporary) ID for the message cache entry." />
+      <column name="id" type="int" maxlen="6" autoincrement="1" comment="A unique (temporary) ID for the message cache entry." />
       <column name="messageId" type="int" maxlen="15" comment="The ID of the message." />
       <column name="roomId" type="int" maxlen="6" comment="The ID of the room the message is in." />
       <column name="userId" type="int" maxlen="8" comment="The ID of the user who made the message." />
@@ -293,7 +293,7 @@
 
 
     <table name="modlog" type="general" comment="A log of moderator actions.">
-      <column name="id" type="int" maxlen="12" autoincrement="true" comment="A unique ID for the log entry." />
+      <column name="id" type="int" maxlen="12" autoincrement="1" comment="A unique ID for the log entry." />
       <column name="userId" type="int" maxlen="8" comment="The user ID who performed the action." />
       <column name="time" type="time" comment="The time the action was performed on." />
       <column name="ip" type="string" maxlen="128" comment="The IP of the user when the action was performed." />
@@ -329,9 +329,9 @@
 
     <table name="privateRooms" type="general" comment="List of private rooms. Note that roomUsers are stored both as a string (for fetching) and a hash.">
       <!-- General -->
-      <column name="uniqueId" type="int" note="uniqueId should only EVER be used with other tables for SQL optimisastion. It should NEVER be used for any other purpose, and instead roomUsersHash or roomUsersList MUST be used." comment="A unique ID representing the private room." />
+      <column name="uniqueId" type="int" autoincrement="100000" note="uniqueId should only EVER be used with other tables for SQL optimisastion. It should NEVER be used for any other purpose, and instead roomUsersHash or roomUsersList MUST be used." comment="A unique ID representing the private room." />
       <column name="roomUsersHash" type="string" maxlen="32" />
-      <column name="roomUsersList" type="string" maxlen="1000"/>
+      <column name="roomUsersList" type="string" maxlen="65536"/>
       <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options." />
 
       <!-- Counters -->
@@ -339,7 +339,8 @@
       <column name="lastMessageId" type="int" maxlen="15" comment="The ID of the last message made in the room." />
       <column name="messageCount" type="int" maxlen="15" comment="The number of messages in this room." />
 
-      <key name="roomUsersHash" type="primary" />
+      <key name="uniqueId" type="primary" />
+      <key name="roomUsersHash" type="unique" />
       <key name="options" type="index" />
       <key name="lastMessageId" type="index" />
       <key name="lastMessageTime" type="index" />
@@ -348,7 +349,7 @@
 
     <table name="rooms" type="general" comment="User-created rooms/groups.">
       <!-- General -->
-      <column name="roomId" type="int" maxlen="6" autoincrement="true" comment="The unique ID for the room." />
+      <column name="roomId" type="int" maxlen="6" autoincrement="1" comment="The unique ID for the room." />
       <column name="roomName" type="string" maxlen="50" comment="The name of the room." />
       <column name="roomTopic" type="string" maxlen="200" comment="The current topic of the room." />
       <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options." />
@@ -377,7 +378,7 @@
 
     <table name="roomHistory" type="general" comment="A history of all changes made to rooms. This is enabled per-installation.">
       <!-- General -->
-      <column name="roomId" type="int" maxlen="6" autoincrement="true" comment="The unique ID for the room." />
+      <column name="roomId" type="int" maxlen="6" autoincrement="1" comment="The unique ID for the room." />
       <column name="roomName" type="string" maxlen="50" comment="The name of the room." />
       <column name="roomTopic" type="string" maxlen="200" comment="The current topic of the room." />
       <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options." />
@@ -427,7 +428,7 @@
 
 
     <table name="searchPhrases" type="general" note="As of FIMv3B3 this is not as scalible as one might have hoped, though changes may be made further into the future, or at the latest in FIMv4" comment="A cache of search phrases to ease message searching in a scalible way.">
-      <column name="phraseId" type="int" maxlen="8" autoincrement="true" comment="A unique ID corrosponding to the phrase name/text." />
+      <column name="phraseId" type="int" maxlen="8" autoincrement="1" comment="A unique ID corrosponding to the phrase name/text." />
       <column name="phraseName" type="string" maxlen="50" comment="The name/text of the phrase." />
 
       <key name="phraseId" type="primary" />
@@ -436,7 +437,7 @@
 
 
     <table name="sessions" type="memory" comment="Active user credentials.">
-      <column name="sessionId" type="int" maxlen="10" autoincrement="true" comment="A unique ID corrosponding to all sessions. It is largely unused." />
+      <column name="sessionId" type="int" maxlen="10" autoincrement="1" comment="A unique ID corrosponding to all sessions. It is largely unused." />
       <column name="userId" type="int" maxlen="8" comment="The ID of the user the session belongs to." />
       <column name="anonId" type="int" maxlen="6" comment="A unique ID that can be used for anonymous users." />
       <column name="time" type="time" comment="The time the session was last renewed." />
@@ -472,7 +473,7 @@
 
 
     <table name="templates" type="general" comment="Interface-defined templates.">
-      <column name="templateId" type="int" maxlen="8" autoincrement="true" comment="The ID of the template." />
+      <column name="templateId" type="int" maxlen="8" autoincrement="1" comment="The ID of the template." />
       <column name="templateName" type="string" maxlen="50" comment="The name of the template, used for its retrievel." />
       <column name="vars" type="string" maxlen="1000" comment="PHP variables that need to be accessed by the template." />
       <column name="data" type="string" maxlen="4294967296" comment="The text/data associated with the template." />
@@ -501,7 +502,7 @@
 
 
     <table name="uploadTypes" type="general" comment="Admin-defined mime types to corrospond to file types of uploaded files.">
-      <column name="typeId" type="int" maxlen="6" autoincrement="true" comment="The unique ID for the file type." />
+      <column name="typeId" type="int" maxlen="6" autoincrement="1" comment="The unique ID for the file type." />
       <column name="extension" type="string" maxlen="8" comment="The extension that will allow upload of files using these settings." />
       <column name="mime" type="string" maxlen="300" comment="The content type to output files of this type as." />
       <column name="maxSize" type="int" maxlen="12" comment="The maximum size (in bytes) files of this type can be." />
@@ -514,7 +515,7 @@
 
     <table name="users" type="general" comment="The users.">
       <!-- General -->
-      <column name="userId" type="int" maxlen="8" autoincrement="true" comment="The unique ID of the user." />
+      <column name="userId" type="int" maxlen="8" autoincrement="1" comment="The unique ID of the user." />
       <column name="userName" type="string" maxlen="50" comment="The user's name." />
       <column name="userGroup" type="int" maxlen="6" default="1" comment="The admin-set usergroup ID of the user." />
       <column name="allGroups" type="string" maxlen="1000" comment="A comma-seperated list of the IDs of all admin-set groups the user is a part of. This is not used on PHPBB and Vanilla logins (both instead use socialGroups)." />

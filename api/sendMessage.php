@@ -36,7 +36,6 @@ require('../global.php');
 $request = fim_sanitizeGPC('p', array(
   'roomId' => array(
     'require' => true,
-    'context' => 'int',
   ),
 
   'message' => array(),
@@ -152,11 +151,11 @@ if ($continue) {
     $errStr = 'badMessage';
     $errDesc = 'The message you entered is either too long or too short.';
   }
-  elseif (preg_match('/^(\ |\n|\r)*$/',$request['message'])) { // All spaces.
+  elseif (preg_match('/^(\ |\n|\r)*$/', $request['message'])) { // All spaces.
     $errStr = 'spaceMessage';
     $errDesc = 'In some countries, you could be arrested for posting only spaces. Now aren\'t you glad we stopped you?';
   }
-  elseif (!fim_hasPermission($room,$user,'post',true)) { // Not allowed to post.
+  elseif (!fim_hasPermission($room, $user, 'post', true)) { // Not allowed to post.
     $errStr = 'noPerm';
     $errDesc = 'You are not allowed to post in this room.';
   }

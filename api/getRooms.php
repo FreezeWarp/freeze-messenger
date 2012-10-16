@@ -167,6 +167,8 @@ $rooms = $rooms->getAsArray(true);
 if (is_array($rooms)) {
   if (count($rooms) > 0) {
     foreach ($rooms AS $roomData) {
+      $roomData['type'] = 'normal'; // hasPermission requires this; it is returned by default from the getRoom function.
+
       $permissions = fim_hasPermission($roomData, $user, array('post', 'view', 'topic', 'moderate', 'admin'), false);
 
       if ($request['permLevel']) {

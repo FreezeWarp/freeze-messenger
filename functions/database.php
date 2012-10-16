@@ -422,19 +422,19 @@ class database {
     if (is_array($columns)) {
       if (count($columns) > 0) {
         foreach ($columns AS $tableName => $tableCols) {
-          if (strlen($tableName) > 0) {
+          if (strlen($tableName) > 0) { // If the tableName is defined...
             if (strstr($tableName,' ') !== false) { // A space can be used to create a table alias, which is sometimes required for different queries.
               $tableParts = explode(' ', $tableName);
 
-              $finalQuery['tables'][] = $this->tableQuoteStart . $tableParts[0] . $this->tableQuoteEnd . ' AS ' . $this->tableAliasQuoteStart . $tableParts[1] . $this->tableAliasQuoteEnd;
+              $finalQuery['tables'][] = $this->tableQuoteStart . $tableParts[0] . $this->tableQuoteEnd . ' AS ' . $this->tableAliasQuoteStart . $tableParts[1] . $this->tableAliasQuoteEnd; // Identify the table as [tableName] AS [tableAlias]
 
               $tableName = $tableParts[1];
             }
             else {
-              $finalQuery['tables'][] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd;
+              $finalQuery['tables'][] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd; // Identify the table as [tableName]
             }
 
-            if (is_array($tableCols)) {
+            if (is_array($tableCols)) { // Table columns have been defined with an array, e.g. ["a", "b", "c"]
               foreach($tableCols AS $colName => $colAlias) {
                 if (strlen($colName) > 0) {
                   if (strstr($colName,' ') !== false) { // A space can be used to create identical columns in different contexts, which is sometimes required for different queries.
@@ -444,13 +444,12 @@ class database {
 
                   if (is_array($colAlias)) { // Used for advance structures and function calls.
                     if (isset($colAlias['context'])) {
-                      throw new Exception('Deprecated context.');
+                      throw new Exception('Deprecated context.'); // TODO
                     }
 
-                    $finalQuery['columns'][] = $this->columnQuoteStart . $colName . $this->columnQuoteStart . ' AS ' . $this->columnAliasQuoteEnd . $colAlias['name'] . $this->columnAliasQuoteStart;
+                    $finalQuery['columns'][] = $this->columnQuoteStart . $colName . $this->columnQuoteStart . ' AS ' . $this->columnAliasQuoteEnd . $colAlias['name'] . $this->columnAliasQuoteStart; // Identify column as [columnName] AS [columnAlias]
                     $reverseAlias[$colAlias['name']] = $colName;
                   }
-
                   else {
                     $finalQuery['columns'][] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd . $this->tableColumnDivider . $this->columnQuoteStart . $colName . $this->columnQuoteStart . ' AS ' . $this->columnAliasQuoteEnd . $colAlias . $this->columnAliasQuoteStart;
                     $reverseAlias[$colAlias] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd . $this->tableColumnDivider . $this->columnQuoteStart . $colName . $this->columnQuoteStart;
@@ -461,8 +460,8 @@ class database {
                 }
               }
             }
-            elseif (is_string($tableCols)) {
-              $columnParts = explode(',',$tableCols); // Split the list into an array, delimited by commas
+            elseif (is_string($tableCols)) { // Table columns have been defined with a string list, e.g. "a,b,c"
+              $columnParts = explode(',', $tableCols); // Split the list into an array, delimited by commas
 
               foreach ($columnParts AS $columnPart) { // Run through each list item
                 $columnPart = trim($columnPart); // Remove outside whitespace from the item
@@ -1030,6 +1029,8 @@ LIMIT
       throw new Exception('Unrecognized table engine: ' . $storeType);
     }
 
+    $tableProperties = '';
+
 
     foreach ($tableColumns AS $column) {
       $typePiece = '';
@@ -1044,7 +1045,10 @@ LIMIT
           $typePiece = $this->columnIntLimits[0];
         }
 
-        if ($column['autoincrement'] == true) $typePiece .= ' AUTO_INCREMENT'; // Ya know, that thing where it sets itself.
+        if ($column['autoincrement']) {
+          $typePiece .= ' AUTO_INCREMENT'; // Ya know, that thing where it sets itself.
+          $tableProperties .= ' AUTO_INCREMENT = ' . (int) $column['autoincrement'];
+        }
         break;
 
         case 'string':
@@ -1150,7 +1154,7 @@ LIMIT
     return $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->tableQuoteStart . $this->escape($tableName) . $this->tableQuoteEnd . ' (
 ' . implode(",\n  ",$columns) . ',
 ' . implode(",\n  ",$keys) . '
-) ENGINE="' . $this->escape($engine) . '" COMMENT="' . $this->escape($tableComment) . '" DEFAULT CHARSET="utf8"');
+) ENGINE="' . $this->escape($engine) . '" COMMENT="' . $this->escape($tableComment) . '" DEFAULT CHARSET="utf8"' . $tableProperties);
   }
 
 
