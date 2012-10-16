@@ -578,9 +578,10 @@ else {
     /* Get Messages from Database */
 
     if ($config['longPolling']) {
-
+      $messages = false;
       while (!$messages) {
         $longPollingRetries++;
+
         $messages = $database->select($queryParts['messagesSelect']['columns'],
           $queryParts['messagesSelect']['conditions'],
           $queryParts['messagesSelect']['sort'],
@@ -589,9 +590,8 @@ else {
 
         ($hook = hook('getMessages_postMessages_longPolling_repeat') ? eval($hook) : '');
 
-        if ($longPollingRetries <= $config['longPollingMaxRetries']) {
-          sleep($config['longPollingWait']);
-        }
+        if ($longPollingRetries <= $config['longPollingMaxRetries']) { sleep($config['longPollingWait']); }
+        else break;
       }
 
       ($hook = hook('getMessages_postMessages_longPolling') ? eval($hook) : '');

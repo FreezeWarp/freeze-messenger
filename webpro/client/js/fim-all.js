@@ -1601,6 +1601,7 @@ var standard = {
               if (messageCount > 0) { newMessage(); }
 
               if (requestSettings.longPolling) {
+                requestSettings.timeout = 100000; // TODO: If longPolling were to fail, we'd be screwed. Examine how to handle the possibility to longPolling erroring on the server side without reporting this.
                 timers.t1 = setTimeout(standard.getMessages, 50);
               }
               else {
@@ -1623,23 +1624,21 @@ var standard = {
             else {
               requestSettings.totalFails += 1;
 
-              if (!requestSettings.longPolling) {
-                if (requestSettings.totalFails > 10) {
-                  wait = 30000;
-                  requestSettings.timeout = 29900;
+              if (requestSettings.totalFails > 10) {
+                wait = 30000;
+                requestSettings.timeout = 29900;
 
-                  // TODO: Add indicator.
-                }
-                else if (requestSettings.totalFails > 5) {
-                  wait = 10000;
-                  requestSettings.timeout = 9900;
+                // TODO: Add indicator.
+              }
+              else if (requestSettings.totalFails > 5) {
+                wait = 10000;
+                requestSettings.timeout = 9900;
 
-                  // TODO: Add indicator.
-                }
-                else {
-                  wait = 5000;
-                  requestSettings.timeout = 4900;
-                }
+                // TODO: Add indicator.
+              }
+              else {
+                wait = 5000;
+                requestSettings.timeout = 4900;
               }
 
               timers.t1 = setTimeout(standard.getMessages,wait);
