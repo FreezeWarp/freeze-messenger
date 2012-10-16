@@ -110,5 +110,11 @@ $defaultConfig = array(
   'ageMaximum' => 100,
 
   'emailRequired' => true,
+
+  'parentalEnabled' => true, // Is the system enabled by default?
+  'parentalForced' => true, // Can the user disable/enable the system him or herself?
+  'parentalAgeDefault' => 13, // Age used in lieu of a birthdate, if the user has not provided one. (see "ageRequired" above)
+  'parentalAgeChangable' => true, // Can the user override his or her age group upwards? (No matter what, a user may set it downwards).
+  'parentalFlagsDefault' => array(), // Flags on by default.
 );
 ?>

@@ -489,6 +489,31 @@
       <column name="type" value="bool" />
     </table>
 
+    <table name="configuration">
+      <column name="directive" value="parentalEnabled" />
+      <column name="value" value="true" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="parentalForced" />
+      <column name="value" value="false" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="parentalAgeDefault" />
+      <column name="value" value="13" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="parentalAgeChangable" />
+      <column name="value" value="true" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="parentalFlagsDefault" />
+      <column name="value" value="true" />
+      <column name="type" value="bool" />
+    </table>
 
     <!-- Table counters -->
     <table name="counters">
