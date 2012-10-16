@@ -152,9 +152,7 @@ $activeUsers = $database->select($queryParts['activeUsersSelect']['columns'],
   $queryParts['activeUsersSelect']['conditions'],
   $queryParts['activeUsersSelect']['sort'],
   $queryParts['activeUsersSelect']['limit']);
-$activeUsers = $activeUsers->getAsArray('userId');
-
-
+$activeUsers = $activeUsers->getAsArray(true);
 
 /* Start Processing */
 if (is_array($activeUsers)) {
@@ -176,12 +174,12 @@ if (is_array($activeUsers)) {
         );
       }
 
-      if (fim_hasPermission($activeUser, $activeUser, 'view', false)) { // Only list the room the user is in if the active user has permission to view the room.
+//      if (fim_hasPermission($activeUser, $activeUser, 'view', false)) { // Only list the room the user is in if the active user has permission to view the room.
         $xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']]['rooms']['room ' . $activeUser['roomId']] = array(
           'roomId' => (int) $activeUser['roomId'],
           'roomName' => (string) $activeUser['roomName'],
         );
-      }
+//      }
 
       ($hook = hook('getAllActiveUsers_eachUser_end') ? eval($hook) : '');
     }
