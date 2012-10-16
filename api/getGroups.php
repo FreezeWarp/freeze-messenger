@@ -16,6 +16,8 @@
 
 /**
  * Get All Usergroups
+ * USES INTEGRATION
+ *
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <rehtaew@gmail.com>

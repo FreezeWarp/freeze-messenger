@@ -16,6 +16,7 @@
 
 /**
  * Obtains User Post Counts in Specified Rooms
+ * Only works with normal rooms.
  *
  * @package fim3
  * @version 3.0
@@ -111,6 +112,8 @@ if (count($request['rooms']) > 0) {
 
 
   foreach ($rooms AS $room) {
+    $room['type'] = 'normal'; // Set this for hasPermission.
+
     ($hook = hook('getStats_eachRoom_start') ? eval($hook) : '');
 
     if (!fim_hasPermission($room, $user, 'view', true)) { // Users must be able to view the room to see the respective post counts.

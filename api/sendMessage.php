@@ -16,6 +16,8 @@
 
 /**
  * Get Messages from the Server
+ * Works with both private and normal rooms.
+ *
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <rehtaew@gmail.com>

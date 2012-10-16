@@ -16,6 +16,8 @@
 
 /**
  * Get the Active Users of All Rooms
+ * This ONLY queries for non-private rooms.
+ *
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <rehtaew@gmail.com>
@@ -158,6 +160,8 @@ $activeUsers = $activeUsers->getAsArray('userId');
 if (is_array($activeUsers)) {
   if (count($activeUsers) > 0) {
     foreach ($activeUsers AS $activeUser) {
+      $activeUser['type'] = 'normal';
+
       ($hook = hook('getAllActiveUsers_eachUser_start') ? eval($hook) : '');
 
       if (!isset($xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']])) {

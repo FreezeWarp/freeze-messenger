@@ -23,7 +23,13 @@ $.when(
     success: function(data) {
       for (i in data) {
         data[i] = data[i].replace(/\{\{\{\{([a-zA-Z0-9]+)\}\}\}\}/g, function($1, $2) {
-            return window.phrases[$2];
+            if (false === ($2 in window.phrases)) {
+              console.log('Missing phrase "' + $2 + '" in template "' + i + '"');
+              return '~~' + $2;
+            }
+            else {
+              return window.phrases[$2];
+            }
           }
         );
       }

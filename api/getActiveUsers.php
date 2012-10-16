@@ -16,6 +16,8 @@
 
 /**
  * Get the Active Users of a Single Room
+ * Works with both normal and private rooms.
+ *
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <rehtaew@gmail.com>

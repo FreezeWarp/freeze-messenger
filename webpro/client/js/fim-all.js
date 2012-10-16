@@ -3221,8 +3221,11 @@ function windowDynaLinks() {
   if (!adminPermissions.modPrivs) { $('li > #modPrivs').parent().hide(); noAdminCounter += 1; }
   if (!adminPermissions.modHooks) { $('li > #modHooks').parent().hide(); noAdminCounter += 1; }
   if (!adminPermissions.modCore) { $('li > #modCore').parent().hide(); noAdminCounter += 1; }
-  if (modRooms[roomId] < 1) { $('li > #kick').parent().hide(); $('li > #manageKick').parent().hide(); $('#userMenu a[data-action="kick"]').parent().hide(); $('ul#messageMenu > li > a[data-action="delete"], ul#messageMenuImage > li > a[data-action="delete"], ul#messageMenuLink > li > a[data-action="delete"], ul#messageMenuVideo > li > a[data-action="delete"]').hide(); noModCounter += 2; }
-  if (modRooms[roomId] < 2) { $('li > #editRoom').parent().hide(); noModCounter += 1; }
+
+  if (roomId) {
+    if (roomId.toString().substr(0,1) === 'p' || modRooms[roomId] < 1) { $('li > #kick').parent().hide(); $('li > #manageKick').parent().hide(); $('#userMenu a[data-action="kick"]').parent().hide(); $('ul#messageMenu > li > a[data-action="delete"], ul#messageMenuImage > li > a[data-action="delete"], ul#messageMenuLink > li > a[data-action="delete"], ul#messageMenuVideo > li > a[data-action="delete"]').hide(); noModCounter += 2; }
+    if (roomId.toString().substr(0,1) === 'p' || modRooms[roomId] < 2) { $('li > #editRoom').parent().hide(); noModCounter += 1; }
+  }
 
   // Remove Link Categories If They Are to Appear Empty (the counter is incremented in the above code block)
   if (noAdminCounter === 8) { $('li > #modGeneral').parent().hide(); }

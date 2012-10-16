@@ -16,7 +16,7 @@
 
 /**
  * Get the Kicks of One or More Rooms, Optionally Restricted To One or More Users
- *
+ * Only works with normal roooms.
  * You must have moderator permission of the room for successful retrieval!
  *
  * @package fim3
