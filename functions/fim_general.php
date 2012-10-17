@@ -105,21 +105,18 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false, $allowed
 function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false) {
   global $sqlPrefix, $banned, $loginConfig, $valid, $database, $config, $kicksCache, $permissionsCache;
 
-  /* issets are transitional; TODO: remove */
-  if (!isset($roomData['type'])) {
-    throw new Exception('hasPermission requires roomData[type] to be defined.');
-  }
+  if (!isset($roomData['type'])) throw new Exception('hasPermission requires roomData[type] to be defined.');
 
   if ($roomData['type'] === 'otr' || $roomData['type'] === 'private') { // We are doing this in hasPermission itself to allow for hooks that might, for instance, deny permission to certain users based on certain criteria.
-    if ($quick) {
-      return true;
+    if (!isset($roomData['roomUsersList'])) throw new Exception('hasPermission requires roomData[roomUsersList] to be defined.');
+
+    if (in_array($userData['userId'], $roomData['roomUsersList'])) { // The logic with private rooms is pretty self-explanatory: if the user is in the roomUsersList, they're allowed. Otherwise, nope.
+      if ($quick) return true;
+      else return array(true, '', 0);
     }
     else {
-      return array(
-        true,
-        '',
-        0
-      );
+      if ($quick) return false;
+      else return array(false, '', 0);
     }
   }
   else {
@@ -133,7 +130,6 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
     $isPrivateRoom = false;
     $kick = false;
 
-
     $isAllowedUserOverride = false;
 
     $reason = ''; // Create an empty string for the reason.
@@ -142,24 +138,14 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
 
     // These are the corrosponding database permissions for each "type".
     $permMap = array(
-      'view' => 1,
-      'post' => 2,
-      'topic' => 4,
-      'moderate' => 8,
-      'admin' => 128,
+      'view' => 1, 'post' => 2, 'topic' => 4, 'moderate' => 8, 'admin' => 128,
     );
 
 
     // Make sure all presented data is correct.
     if (!$roomData['roomId']) { // If the room is not valid...
       if ($quick) return false;
-      else {
-        return array(
-          false,
-          'invalidRoom',
-          0
-        );
-      }
+      else return array(false, 'invalidRoom', 0);
     }
     elseif (!isset($roomData['parentalFlags'])) throw new Exception('hasPermission requires roomData[parentalFlags] to be defined.');
     elseif (!isset($roomData['parentalAge'])) throw new Exception('hasPermission requires roomData[parentalAge] to be defined.');
@@ -915,7 +901,7 @@ function fim_sanitizeGPC($type, $data) {
         case 'c': case 'cookie': $activeGlobal = $_COOKIE; break;
         case 'r': case 'request': $activeGlobal = $_REQUEST; break;
         default:
-          trigger_error('Invalid type in fim_sanitizeGPC', E_USER_WARNING);
+          throw new Exception('Invalid type in fim_sanitizeGPC');
           return false;
         break;
     }
@@ -947,7 +933,7 @@ function fim_sanitizeGPC($type, $data) {
                   case 'bool': $indexMetaData['context']['cast'] = 'bool'; break;
                   case 'int': $indexMetaData['context']['cast'] = 'int'; break;
                   case 'string': $indexMetaData['context']['cast'] = 'string'; break;
-                  default: trigger_error('Invalid "type" in data in fim_sanitizeGPC', E_USER_WARNING); break;
+                  throw new Exception('Invalid "type" in data in fim_sanitizeGPC'); break;
                 }
                 break;
                 case 'filter': // This is an additional filter applied to data that uses the "csv" context type (and possibly more in the future).
@@ -969,7 +955,7 @@ function fim_sanitizeGPC($type, $data) {
               case 'bool': $indexMetaData['context']['cast'] = 'bool'; break;
               case 'int': $indexMetaData['context']['cast'] = 'int'; break;
               case 'string': $indexMetaData['context']['cast'] = 'string'; break;
-              default: trigger_error('Invalid "type" in data in fim_sanitizeGPC', E_USER_WARNING); break;
+              default: throw new Exception('Invalid "type" in data in fim_sanitizeGPC'); break;
             }
           }
           break;
@@ -1194,7 +1180,6 @@ function fim_exceptionHandler($exception) {
 }
 
 
-
 /**
  * Custom Error Handler
  *
@@ -1202,7 +1187,7 @@ function fim_exceptionHandler($exception) {
  */
 
 function fim_errorHandler($errno, $errstr, $errfile, $errline) {
-  global $config;
+  global $config, $api, $apiRequest;
 
   if (!(error_reporting() & $errno)) { // The error is not to be reported.
     return;
@@ -1212,7 +1197,17 @@ function fim_errorHandler($errno, $errstr, $errfile, $errline) {
     case E_USER_ERROR:
     ob_end_clean(); // Clean the output buffer and end it. This means when we show the error in a second, there won't be anything else with it.
 
-    die(nl2br('<fieldset><legend><strong style="color: #ff0000;">Unrecoverable Error</strong></legend><strong>Error Text</strong><br />' . $errstr . '<br /><br /><strong>What Should I Do Now?</strong><br />' . ($config['email'] ? 'You may wish to <a href="mailto:' . $config['email'] . '">notify the administration</a> of this error.' : 'No contact was specified for this installation, so try to wait it out.')  . '<br /><br /><strong>Are You The Host?</strong><br />Server errors are often database related. These may result from improper installation or a corrupted database. The documentation may provide clues, however.</fieldset>'));
+    if ($api || $apiRequest) { // TODO: I don't know why $api doesn't work. $apiRequest does for now, but this will need to be looked into to.
+      echo fim_outputApi(array(
+        'exception' => array(
+          'string' => $errstr,
+          'contactEmail' => $config['email'],
+        )
+      ));
+    }
+    else {
+      die(nl2br('<fieldset><legend><strong style="color: #ff0000;">Unrecoverable Error</strong></legend><strong>Error Text</strong><br />' . $errstr . '<br /><br /><strong>What Should I Do Now?</strong><br />' . ($config['email'] ? 'You may wish to <a href="mailto:' . $config['email'] . '">notify the administration</a> of this error.' : 'No contact was specified for this installation, so try to wait it out.')  . '<br /><br /><strong>Are You The Host?</strong><br />Server errors are often database related. These may result from improper installation or a corrupted database. The documentation may provide clues, however.</fieldset>'));
+    }
 
     if ($config['email']) {
       mail($config['email'], 'FIM3 System Error [' . $_SERVER['SERVER_NAME'] . ']', 'The following error was encountered by the server located at ' . $_SERVER['SERVER_NAME'] . ':<br /><br />' . $errstr);
