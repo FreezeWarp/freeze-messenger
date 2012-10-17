@@ -243,8 +243,6 @@ class messageParse {
   public function getHtml() {
     global $sqlPrefix, $parseFlags, $salts, $encrypt, $loginMethod, $sqlUserGroupTableCols, $sqlUserGroupTable, $database;
 
-
-
     // Flags allow for less hassle on some communications.
     // Supported flags: image, video, link, email
     // Other flags that won't be parsed here: me, topic

@@ -120,7 +120,17 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
     }
   }
   else {
-    // Set all of these to false to start.
+    /* Make Sure All Data is Present */
+    if (!$roomData['roomId']) { // If the room is not valid...
+      if ($quick) return false;
+      else return array(false, 'invalidRoom', 0);
+    }
+    elseif (!isset($roomData['parentalFlags'], $roomData['parentalAge'])) throw new Exception('hasPermission requires roomData[parentalFlags] and roomData[parentalAge] to be defined.');
+    elseif (!isset($roomData['defaultPermissions'], $roomData['options'], $roomData['owner'])) throw new Exception('hasPermission requires roomData[defaultPermissions], roomData[options], and roomData[owner]'); // If the default permissions index is missing, through an exception.
+    elseif (!isset($userData['parentalAge'], $userData['parentalFlags'])) throw new Exception('hasPermission requires userData[parentalAge] and userData[parentalFlags] to be defined.');
+
+
+    /* Initialise Variables */
     $isAdmin = false;
     $isModerator = false;
     $isAllowedUser = false;
@@ -135,79 +145,67 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
     $reason = ''; // Create an empty string for the reason.
     $type = (array) $type; // Type cast the type as an array.
 
-
-    // These are the corrosponding database permissions for each "type".
-    $permMap = array(
-      'view' => 1, 'post' => 2, 'topic' => 4, 'moderate' => 8, 'admin' => 128,
-    );
+    $permMap = array('view' => 1, 'post' => 2, 'moderate' => 8, 'admin' => 128); // These are the corrosponding database permissions for each "type".
 
 
-    // Make sure all presented data is correct.
-    if (!$roomData['roomId']) { // If the room is not valid...
-      if ($quick) return false;
-      else return array(false, 'invalidRoom', 0);
+    /* Get the User's Kick Status */
+    if (isset($userData['userId'])) { // Was a user specified?
+      if ($userData['userId'] > 0) { // Is their userId non-zero?
+        if (count($kicksCache) > 0) { // Is the kicks cache non-empty?
+          if (isset($kicksCache[$roomData['roomId']][$userData['userId']])) $kick = true; // We're kicked!
+          else $kick = false; // We're not kicked!
+        }
+      }
     }
-    elseif (!isset($roomData['parentalFlags'], $roomData['parentalAge'])) throw new Exception('hasPermission requires roomData[parentalFlags] and roomData[parentalAge] to be defined.');
-    elseif (!isset($roomData['defaultPermissions'], $roomData['options'], $roomData['owner'])) throw new Exception('hasPermission requires roomData[defaultPermissions], roomData[options], and roomData[owner]'); // If the default permissions index is missing, through an exception.
-    elseif (!isset($userData['parentalAge'], $userData['parentalFlags'])) throw new Exception('hasPermission requires userData[parentalAge] and userData[parentalFlags] to be defined.');
-    elseif (!in_array($type, array('post', 'view', 'moderate', 'admin'))) throw new Exception('hasPermission type unrecognised.'); // Transitional. TODO: Remove
 
 
-    foreach ((array) $type AS $type2) { // Run through each type.
-      /* Get the User's Kick Status */
-      if (isset($userData['userId'])) { // Was a user specified?
-        if ($userData['userId'] > 0) { // Is their userId non-zero?
-          if (count($kicksCache) > 0) { // Is the kicks cache non-empty?
-            if (isset($kicksCache[$roomData['roomId']][$userData['userId']])) $kick = true; // We're kicked!
-            else $kick = false; // We're not kicked!
-          }
+    /* Is the User an Allowed User? */
+    foreach(array('user', 'admingroup', 'group') AS $type3) {
+      if (isset($permissionsCache[$roomData['roomId']], $permissionsCache[$roomData['roomId']][$type3], $permissionsCache[$roomData['roomId']][$type3][$userData['userId']])) {
+        if ($permissionsCache[$roomData['roomId']][$type3][$userData['userId']] & $permMap[$type2]) { $isAllowedUser = true; }
+        else { $isAllowedUserOverride = true; break; } // If a group is granted access but a user is forbidden, the user status is considered final. Likewise, if a social group is granted access but an admin group is restircted, the admin group is considered final.
+      }
+    }
+    if (($roomData['defaultPermissions'] & $permMap[$type2]) && !$isAllowedUserOverride) {
+      $isAllowedUser = true;
+    }
+
+
+    /* Is the User the Room's Owner/Creator */
+    if (isset($roomData['owner'])) {
+      if ($roomData['owner'] == $userData['userId']
+        && $roomData['owner'] > 0) {
+        $isOwner = true;
+      }
+    }
+
+
+    /* Is the Room a Private Room or Deleted? */
+    if (isset($roomData['options'])) {
+      if ($roomData['options'] & 4) $isRoomDeleted = true; // The room is deleted.
+    }
+
+
+    /* Is the user a super user? */
+    if (isset($userData['userId']) && isset($userData['adminPrivs']) && isset($loginConfig['superUsers'])) {
+      if (is_array($loginConfig['superUsers'])) {
+        if (in_array($userData['userId'], $loginConfig['superUsers']) || $userData['adminPrivs'] & 1) {
+          $isAdmin = true;
         }
       }
+    }
 
 
-      /* Is the User an Allowed User? */
-      foreach(array('user', 'admingroup', 'group') AS $type3) {
-        if (isset($permissionsCache[$roomData['roomId']], $permissionsCache[$roomData['roomId']][$type3], $permissionsCache[$roomData['roomId']][$type3][$userData['userId']])) {
-          if ($permissionsCache[$roomData['roomId']][$type3][$userData['userId']] & $permMap[$type2]) { $isAllowedUser = true; }
-          else { $isAllowedUserOverride = true; break; } // If a group is granted access but a user is forbidden, the user status is considered final. Likewise, if a social group is granted access but an admin group is restircted, the admin group is considered final.
-        }
-      }
-      if (($roomData['defaultPermissions'] & $permMap[$type2]) && !$isAllowedUserOverride) {
-        $isAllowedUser = true;
-      }
+    /* Is the user banned by parental controls? */
+    if ($config['parentalEnabled']) {
+      if (fim_dobToAge($userData['dob']) < $userData['parentalAge']) $parentalBlock = true;
+      elseif (fim_inArray(explode(',', $userData['parentalFlags']), explode(',', $roomData['parentalFlags']))) $parentalBlock = true;
+    }
 
 
-      /* Is the User the Room's Owner/Creator */
-      if (isset($roomData['owner'])) {
-        if ($roomData['owner'] == $userData['userId']
-          && $roomData['owner'] > 0) {
-          $isOwner = true;
-        }
-      }
-
-
-      /* Is the Room a Private Room or Deleted? */
-      if (isset($roomData['options'])) {
-        if ($roomData['options'] & 4) $isRoomDeleted = true; // The room is deleted.
-      }
-
-
-      /* Is the user a super user? */
-      if (isset($userData['userId']) && isset($userData['adminPrivs']) && isset($loginConfig['superUsers'])) {
-        if (is_array($loginConfig['superUsers'])) {
-          if (in_array($userData['userId'], $loginConfig['superUsers']) || $userData['adminPrivs'] & 1) {
-            $isAdmin = true;
-          }
-        }
-      }
-
-
-      /* Is the user banned by parental controls? */
-      if ($config['parentalEnabled']) {
-        if (fim_dobToAge($userData['dob']) < $userData['parentalAge']) $parentalBlock = true;
-        elseif (fim_inArray(explode(',', $userData['parentalFlags']), explode(',', $roomData['parentalFlags']))) $parentalBlock = true;
-      }
-
+    /* Run Through Each Time */
+    foreach ((array) $type AS $type2) {
+      if (!in_array($type2, array('post', 'view', 'moderate', 'admin'))) throw new Exception('hasPermission type "' . $type2 . '" unrecognised.'); // Transitional. TODO: Remove
 
       if ($type2 === 'post') {
         if ($banned) {                                           $roomValid['post'] = false; $reason = 'banned'; } // admins can disable their own ban
@@ -1290,7 +1288,7 @@ function fim_cast($cast, $value, $default = null) {
     case 'float': $value = (float) $value; break;
     case 'string': $value = (string) $value; break;
 
-    default: throw new Exception('Unrecognized cast.'); break;
+    default: throw new Exception('Unrecognised cast.'); break;
   }
 
   return $value;

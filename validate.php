@@ -277,7 +277,7 @@ $columnDefinitions = array( // These are only used for syncing. When the origina
 
 
 $queryParts['userSelect']['columns'] = array(
-  "{$sqlPrefix}users" => 'userId, userName, userGroup, allGroups, avatar, profile, socialGroups, userFormatStart, userFormatEnd, password, joinDate, birthDate, lastSync, defaultRoom, interfaceId, favRooms, watchRooms, ignoreList, status, defaultHighlight, defaultColor, defaultFontface, defaultFormatting, userPrivs, adminPrivs, lang',
+  "{$sqlPrefix}users" => 'userId, userName, userGroup, allGroups, avatar, profile, socialGroups, userFormatStart, userFormatEnd, password, joinDate, birthDate, lastSync, defaultRoom, interfaceId, favRooms, watchRooms, ignoreList, status, defaultHighlight, defaultColor, defaultFontface, defaultFormatting, userPrivs, adminPrivs, lang, parentalAge, parentalFlags',
 );
 $queryParts['userSelectFromSessionHash']['columns'] = array(
   "{$sqlPrefix}sessions" => 'anonId, magicHash, userId suserId, time sessionTime, ip sessionIp, browser sessionBrowser',
