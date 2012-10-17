@@ -118,7 +118,7 @@ if (typeof Audio !== 'undefined') {
     else if (snd.canPlayType('audio/wav')) audioFile = 'images/beep.wav';
     else {
       audioFile = '';
-      console.log('Audio Disabled');
+      console.log('Audio Disabled'); // KEEP
     }
   }
 
@@ -245,7 +245,7 @@ function messageFormat(json, format) {
       }
       break;
 
-      case '': console.log(text);
+      case '':
       text = text.replace(regexs.url, function($1) {
         if ($1.match(regexs.url2)) {
           var $2 = $1.replace(regexs.url2, "$2");
@@ -425,7 +425,7 @@ function newMessage(messageText, messageId) {
     }
   });
 
-  $('body').bind('keydown', function(e) { console.log($('input:focus, textarea:focus, button:focus').length);
+  $('body').bind('keydown', function(e) {
     if ($('input:focus, textarea:focus, button:focus').length === 0) { // Make sure a text-entry field does not have focus
       if (e.which === 192 || e.which === 49) { // "`", "1"
         if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) {
@@ -639,8 +639,6 @@ $.ajax({
   timeout: 1000,
   dataType: 'json',
   success: function(json) {
-    console.log('Upload file types obtained.');
-
     active = json.getFileTypes.fileTypes;
 
     for (i in active) {
@@ -869,8 +867,6 @@ function populate(options) {
       type: 'GET',
       cache: false,
       success: function(json) {
-        console.log('Groups obtained.');
-
         active = json.getGroups.groups;
         for (i in active) {
           var groupName = active[i].groupName,
@@ -1233,18 +1229,14 @@ var standard = {
 
 
   login : function(options) {
-    console.log('Login Initiated');
     var data = '',
       passwordEncrypt = '';
 
-
     console.log('Encrypted Password: ' + options.password);
-
 
     if (options.start) {
       options.start();
     }
-
 
     if (options.userName && options.password) {
       console.log('Login Triggered; Using a Password of "' + options.password + '" and a Username of "' + options.userName + '"');
@@ -1278,6 +1270,8 @@ var standard = {
       cache: false,
       timeout: 2500,
       success: function(json) {
+        console.log('Login Started');
+
         activeLogin = json.login;
 
         userId = activeLogin.userData.userId;
@@ -1592,8 +1586,6 @@ var standard = {
         cache: false,
         timeout: 5000,
         success: function(json) {
-          console.log('Message sent.');
-
           var errStr = json.sendMessage.errStr,
             errDesc = json.sendMessage.errDesc;
 
@@ -1612,8 +1604,6 @@ var standard = {
           return false;
         },
         error: function() {
-          console.log('Message error.');
-
           if (settings.reversePostOrder) { $('#messageList').append('Your message, "' + message + '", could not be sent and will be retried.'); }
           else { $('#messageList').prepend('Your message, "' + message + '", could not be sent and will be retried.'); }
 
@@ -3061,13 +3051,11 @@ popup = {
 *********************************************************/
 
 function windowDraw() {
-  console.log('Redrawing window.');
-
+  console.log('Redrawing window.'); // KEEP
 
 
   /*** Context Menus ***/
   contextMenuParseRoom();
-
 
 
   /*** Funky Little Dialog Thing ***/
@@ -3102,7 +3090,6 @@ function windowDraw() {
   // Disable the chatbox if the user is not allowed to post.
   if (roomId && (userId | anonId)) { $('#messageInput').removeAttr("disabled"); } // The user is able to post.
   else { $('#messageInput').attr("disabled","disabled"); } // The user is _not_ able to post.
-console.log(roomId);
 
 
   /*** Call Resize ***/

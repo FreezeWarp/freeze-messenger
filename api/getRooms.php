@@ -79,7 +79,7 @@ $xmlData = array(
 
 $queryParts['roomSelect'] = array(
   'columns' => array(
-    "{$sqlPrefix}rooms" => 'roomId, roomName, options, defaultPermissions, owner, roomTopic, lastMessageId, lastMessageTime, messageCount',
+    "{$sqlPrefix}rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, parentalFlags, parentalAge, options, lastMessageId, lastMessageTime, messageCount',
   ),
   'conditions' => array(
     'both' => array(

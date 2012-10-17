@@ -91,11 +91,11 @@ $errDesc = '';
 
 
 /* Constants
- * These are most beneficial to third-party plugins. */
+ * These are mostly beneficial to third-party plugins. */
 define("FIM_VERSION","3.0"); // Version to be used by plugins if needed.
 define("FIM_LANGUAGE","EN_US"); // No plans to change this exist, but again, just in case...
 define("FIMDB_BACKEND","MYSQL"); // Database backend to be used by plugins if needed; in the future other backends will be supported, and if the defined database class for whatever reason won't do, this can be used to also support others. At present, PostGreSQL is the only for-sure future backend to be supported. Definite values, if they are to be supported: "MSSQL", "ORACLE", "POSTGRESQL"
-define("FIMDB_DRIVER","MYSQL"); // Drive used for connection to the database. This may be totally useless to plugins, but again for future compatibility is included; other possible example values: "MYSQLi", "PDO" (actually, it would prolly be more useful to plugin authors of a future version wishing to support old versions) TODO
+define("FIMDB_DRIVER","MYSQL"); // Driver used for connection to the database. This may be totally useless to plugins, but again for future compatibility is included; other possible example values: "MYSQLi", "PDO" (actually, it would prolly be more useful to plugin authors of a future version wishing to support old versions) TODO
 
 
 
@@ -132,9 +132,6 @@ if (!isset($api)) {
 //  ob_start(); TODO: re-enable
 set_error_handler('fim_errorHandler'); // Defined in fim_general.php
 set_exception_handler('fim_exceptionHandler'); // Defined in fim_general.php
-
-//throw new Exception('Shit.');
-
 
 
 

@@ -27,8 +27,6 @@ $apiRequest = true;
 
 require('../global.php');
 
-//  set_exception_handler('fim_exceptionHandler'); // Defined in fim_general.php
-throw new Exception('Fun fun fun.');
 
 $xmlData = array(
   'getServerStatus' => array(
