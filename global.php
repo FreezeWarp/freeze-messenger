@@ -35,25 +35,18 @@
  * The following are used, but with safe fallbacks:
  * Hash is present in all versions since PHP 5.1.2; MHash is present in all versions since PHP4
  */
-foreach (array('mysql', 'json', 'mbstring', 'mcrypt', 'pcre', 'dom', 'curl') AS $module) {
-  if (!extension_loaded($module)) {
-    die("The module <strong>$module</strong> could not be found. Please install PHP <strong>$module</strong> compatibility. See the documentation for help.");
-  }
+foreach (array('mysql', 'json', 'mbstring', 'mcrypt', 'pcre', 'dom', 'curl') AS $module) { // Check that each extension has been loaded.
+  if (!extension_loaded($module)) die("The module <strong>$module</strong> could not be found. Please install PHP <strong>$module</strong> compatibility. See the documentation for help.");
 }
 
-if (!extension_loaded('apc')/* && !extension_loaded('memcache')*/) {
-  die("Neither the <strong>apc</strong> or <strong>memcache</strong> modules could not be found. Please install PHP <strong>apc</strong> or <strong>memcache</strong> compatibility. See the documentation for help.");
-}
-
-if (!extension_loaded('hash') && !extension_loaded('mhash')) {
-  die("Neither the <strong>hash</strong> or <strong>mhash</strong> modules could not be found. Please install PHP <strong>hash</strong> or <strong>mhash</strong> compatibility. See the documentation for help.");
-}
+if (!extension_loaded('apc')/* && !extension_loaded('memcache')*/) die("Neither the <strong>apc</strong> or <strong>memcache</strong> modules could not be found. Please install PHP <strong>apc</strong> or <strong>memcache</strong> compatibility. See the documentation for help."); // APC is required. Memcached is not yet supported.
+if (!extension_loaded('hash') && !extension_loaded('mhash')) die("Neither the <strong>hash</strong> or <strong>mhash</strong> modules could not be found. Please install PHP <strong>hash</strong> or <strong>mhash</strong> compatibility. See the documentation for help."); // Either can be used.
 
 
 
 /* Version Requirement, Magic Quotes, Display Errors and Register Globals */
 
-ini_set('display_errors',0); // Ideally we would never have to worry about this, but sadly that's not the case. FIMv4 will hopefully make improvements.
+ini_set('display_errors', 0); // Ideally we would never have to worry about this, but sadly that's not the case. FIMv4 will hopefully make improvements.
 
 
 if (floatval(PHP_VERSION) < 5.2) { // We won't bother supporting older PHP; too much hassle. We will also raise this to 5.3 in the next version.
@@ -129,21 +122,18 @@ if (!isset($defaultLanguage)) {
  * If we are, we disable things like the error handler.
  * In rare cases (like validate.php, where it can act both as an API and as a part of the core system), this is already defined and will be left alone. Otherwise, API files should set $apiRequest to true, and it will be converted to $api here. */
 if (!isset($api)) {
-  if (isset($apiRequest)) {
-    $api = (bool) $apiRequest;
-  }
-  else {
-    $api = false;
-  }
+  if (isset($apiRequest)) $api = (bool) $apiRequest;
+  else $api = false;
 }
 
 
 
-/* Better Error Handling anvalidate.phpd Output Buffering */
-if ($api === false) {
-//  ob_start();
-//  set_error_handler('fim_errorHandler'); // Defined in fim_general.php
-}
+/* Better Error Handling and Output Buffering */
+//  ob_start(); TODO: re-enable
+set_error_handler('fim_errorHandler'); // Defined in fim_general.php
+set_exception_handler('fim_exceptionHandler'); // Defined in fim_general.php
+
+//throw new Exception('Shit.');
 
 
 
@@ -151,19 +141,11 @@ if ($api === false) {
 ////* Database Stuff *////
 
 /* If the connections are the same, do not make multiple below. */
-if ($dbConnect['core'] == $dbConnect['integration']) {
-  $integrationConnect = false;
-}
-else {
-  $integrationConnect = true;
-}
+if ($dbConnect['core'] == $dbConnect['integration']) $integrationConnect = false;
+else $integrationConnect = true;
 
-if ($dbConnect['core'] == $dbConnect['slave']) {
-  $slaveConnect = false;
-}
-else {
-  $slaveConnect = true;
-}
+if ($dbConnect['core'] == $dbConnect['slave']) $slaveConnect = false;
+else $slaveConnect = true;
 
 
 /* Connect to the Main Database */
@@ -238,30 +220,14 @@ if (!($config = $generalCache->get('fim_config')) || $disableConfig) {
       if (count($config2) > 0) {
         foreach ($config2 AS $config3) {
           switch ($config3['type']) {
-            case 'int':
-            $config[$config3['directive']] = (int) $config3['value'];
-            break;
-
-            case 'string':
-            $config[$config3['directive']] = (string) $config3['value'];
-            break;
-
-            case 'array':
-            $config[$config3['directive']] = (array) fim_explodeEscaped(',',$config3['value']);
-            break;
-
+            case 'int':    $config[$config3['directive']] = (int) $config3['value']; break;
+            case 'string': $config[$config3['directive']] = (string) $config3['value']; break;
+            case 'array':  $config[$config3['directive']] = (array) fim_explodeEscaped(',',$config3['value']); break;
             case 'bool':
-            if (in_array($config3['value'],array('true','1',true,1),true)) { // We include the non-string counterparts here on the off-chance the database driver supports returning non-strings. The third parameter in the in_array makes it a strict comparison.
-              $config[$config3['directive']] = true;
-            }
-            else {
-              $config[$config3['directive']] = false;
-            }
+            if (in_array($config3['value'],array('true','1',true,1),true)) $config[$config3['directive']] = true; // We include the non-string counterparts here on the off-chance the database driver supports returning non-strings. The third parameter in the in_array makes it a strict comparison.
+            else $config[$config3['directive']] = false;
             break;
-
-            case 'float':
-            $config[$config3['directive']] = (float) $config3['value'];
-            break;
+            case 'float':  $config[$config3['directive']] = (float) $config3['value']; break;
           }
         }
 

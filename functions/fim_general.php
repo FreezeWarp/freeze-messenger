@@ -105,10 +105,12 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false, $allowed
 function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false) {
   global $sqlPrefix, $banned, $loginConfig, $valid, $database, $config, $kicksCache, $permissionsCache;
 
+  /* issets are transitional; TODO: remove */
   if (!isset($roomData['type'])) {
     throw new Exception('hasPermission requires roomData[type] to be defined.');
   }
-  elseif ($roomData['type'] === 'otr' || $roomData['type'] === 'private') { // We are doing this in hasPermission itself to allow for hooks that might, for instance, deny permission to certain users based on certain criteria.
+
+  if ($roomData['type'] === 'otr' || $roomData['type'] === 'private') { // We are doing this in hasPermission itself to allow for hooks that might, for instance, deny permission to certain users based on certain criteria.
     if ($quick) {
       return true;
     }
@@ -159,8 +161,10 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
         );
       }
     }
+    elseif (!isset($roomData['parentalFlags'])) throw new Exception('hasPermission requires roomData[parentalFlags] to be defined.');
+    elseif (!isset($roomData['parentalAge'])) throw new Exception('hasPermission requires roomData[parentalAge] to be defined.');
     elseif (!isset($roomData['defaultPermissions'])) throw new Exception('Room data invalid (defaultPermissions index missing)'); // If the default permissions index is missing, through an exception.
-    elseif ($type === 'know') throw new Exception('Room data invalid (type of "know")'); // Transitional.
+    elseif ($type === 'know') throw new Exception('Room data invalid (type of "know")'); // Transitional. TODO: Remove
 
 
     foreach ((array) $type AS $type2) { // Run through each type.
@@ -306,7 +310,8 @@ function fim_urldecode($str) {
 function fim_decrypt($message, $index = array('text')) {
   global $salts, $config;
 
-  if (isset($message['salt'], $message['iv'])) { // Make sure the proper indexes exist (just in case).
+  if (!isset($message['salt'], $message['iv'])) throw new Exception('fim_decrypt requires message[salt] and message[iv]'); // Make sure the proper indexes exist (just in case).
+  else {
     if ($message['salt'] && $message['iv']) { // Make sure both the salt and the IV are non-false.
       $salt = $salts[$message['salt']]; // Get the proper salt.
 
@@ -436,6 +441,8 @@ function fim_rand($min, $max) {
 function fim_encodeXml($data) {
   global $config;
 
+  if (!isset($config['encodeXmlEntitiesFind'], $config['encodeXmlEntitiesReplace'])) throw new Exception('Config data invalid: missing config[encodeXmlEntitiesFind] or config[encodeXmlEntitiesReplace]');
+
   $data = str_replace($config['encodeXmlEntitiesFind'], $config['encodeXmlEntitiesReplace'], $data); // Replace the entities defined in $config (these are usually not changed).
   $data = str_replace("\n", '&#xA;', $data);
 
@@ -452,6 +459,8 @@ function fim_encodeXml($data) {
  */
 function fim_encodeXmlAttr($data) {
   global $config;
+
+  if (!isset($config['encodeXmlAttrEntitiesFind'], $config['encodeXmlAttrEntitiesReplace'])) throw new Exception('Config data invalid: missing config[encodeXmlAttrEntitiesFind] or config[encodeXmlAttrEntitiesReplace]');
 
   $data = str_replace($config['encodeXmlAttrEntitiesFind'], $config['encodeXmlAttrEntitiesReplace'], $data); // Replace the entities defined in $config (these are usually not changed).
 
@@ -1158,6 +1167,33 @@ function fim_decodeEntities($string, $replace = array('µ', 'ñ', 'ó'), $find =
 }
 
 
+/**
+ * Custom Exception Handler
+ *
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
+
+function fim_exceptionHandler($exception) {
+  global $api, $apiRequest;
+
+  ob_end_clean(); // Clean the output buffer and end it. This means when we show the error in a second, there won't be anything else with it.
+
+  if ($api || $apiRequest) { // TODO: I don't know why $api doesn't work. $apiRequest does for now, but this will need to be looked into to.
+    echo fim_outputApi(array(
+      'exception' => array(
+        'string' => $exception->getMessage(),
+        'contactEmail' => $config['email'],
+      )
+    ));
+  }
+  else {
+    echo(nl2br('<fieldset><legend><strong style="color: #ff0000;">Program Exception</strong></legend><strong>Error Text</strong><br />' . $exception->getMessage() . '<br /><br /><strong>What Should I Do Now?</strong><br />' . ($config['email'] ? 'You may wish to <a href="mailto:' . $config['email'] . '">notify the administration</a> of this error.' : 'No contact was specified for this installation, so try to wait it out.')  . '<br /><br /><strong>Are You The Host?</strong><br />Program exceptions are usually a result of either a bug in the program or a corrupted installation. If you have no idea what is going on, please report the problem on <a href="http://code.google.com/p/freeze-messenger/issues/list">FIM\'s bug tracker.</a></fieldset>'));
+  }
+
+  if ($config['email']) mail($config['email'], 'FIM3 System Error [' . $_SERVER['SERVER_NAME'] . ']', 'The following error was encountered by the server located at ' . $_SERVER['SERVER_NAME'] . ':<br /><br />' . $errstr);
+}
+
+
 
 /**
  * Custom Error Handler
@@ -1176,7 +1212,7 @@ function fim_errorHandler($errno, $errstr, $errfile, $errline) {
     case E_USER_ERROR:
     ob_end_clean(); // Clean the output buffer and end it. This means when we show the error in a second, there won't be anything else with it.
 
-    die(nl2br('<fieldset><legend>Unrecoverable Error</legend><strong>Error Text</strong><br />' . $errstr . '<br /><br /><strong>What Should I Do Now?</strong><br />' . ($config['email'] ? 'You may wish to <a href="mailto:' . $config['email'] . '">notify the administration</a> of this error.' : 'No contact was specified for this installation, so try to wait it out.')  . '<br /><br /><strong>Are You The Host?</strong><br />Server errors are often database related. These may result from improper installation or a corrupted database. The documentation may provide clues, however.</fieldset>'));
+    die(nl2br('<fieldset><legend><strong style="color: #ff0000;">Unrecoverable Error</strong></legend><strong>Error Text</strong><br />' . $errstr . '<br /><br /><strong>What Should I Do Now?</strong><br />' . ($config['email'] ? 'You may wish to <a href="mailto:' . $config['email'] . '">notify the administration</a> of this error.' : 'No contact was specified for this installation, so try to wait it out.')  . '<br /><br /><strong>Are You The Host?</strong><br />Server errors are often database related. These may result from improper installation or a corrupted database. The documentation may provide clues, however.</fieldset>'));
 
     if ($config['email']) {
       mail($config['email'], 'FIM3 System Error [' . $_SERVER['SERVER_NAME'] . ']', 'The following error was encountered by the server located at ' . $_SERVER['SERVER_NAME'] . ':<br /><br />' . $errstr);

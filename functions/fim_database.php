@@ -73,7 +73,7 @@ class fimDatabase extends database {
     }
     else {
       $queryParts['roomSelect']['columns'] = array(
-        "{$sqlPrefix}rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, options, lastMessageId, lastMessageTime, messageCount',
+        "{$sqlPrefix}rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, parentalFlags, parentalAge, options, lastMessageId, lastMessageTime, messageCount',
       );
 
       if ($roomId) {
