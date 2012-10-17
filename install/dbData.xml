@@ -354,7 +354,7 @@
 
     <table name="configuration">
       <column name="directive" value="serverSentEvents" />
-      <column name="value" value="false" />
+      <column name="value" value="true" />
       <column name="type" value="bool" />
     </table>
     <table name="configuration">

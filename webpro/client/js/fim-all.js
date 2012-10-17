@@ -1376,6 +1376,7 @@ var standard = {
     });
   },
 
+
   logout : function() {
     $.cookie('webpro_userId', null);
     $.cookie('webpro_password', null);
@@ -1388,7 +1389,6 @@ var standard = {
     clearInterval(timers.t1);
 
     if (roomId) {
-
       var encrypt = 'base64',
         lastMessageId;
 
@@ -1418,7 +1418,7 @@ var standard = {
         });
       }
 
-      if (requestSettings.serverSentEvents) {
+      if (requestSettings.serverSentEvents) { // Note that the event subsystem __requires__ serverSentEvents for various reasons. If you use polling, these events will no longer be fully compatible.
         var source = new EventSource(directory + 'eventStream.php?roomId=' + roomId + '&lastEvent=' + requestSettings.lastEvent + '&lastMessage=' + requestSettings.lastMessage + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
 
         source.addEventListener('message', function(e) {
@@ -1519,18 +1519,10 @@ var standard = {
               sentUserId = json.getMessages.activeUser.userId;
 
               if (errStr === 'noperm') {
-                roomId = false;
+                roomId = false; // Clear the internal roomId.
 
-                if (sentUserId) {
-                  popup.selectRoom();
-
-                  dia.error('You have been restricted access from this room. Please select a new room.');
-                }
-                else {
-                  popup.login();
-
-                  dia.error('You are no longer logged in. Please log-in.');
-                }
+                if (sentUserId) { popup.selectRoom(); dia.error('You have been restricted access from this room. Please select a new room.'); } // You are still login, but permission has been denied for whatever reason.
+                else { popup.login(); dia.error('You are no longer logged in. Please log-in.'); } // If the API no longer recognises the login, prompt a relogin.
               }
               else {
                 roomId = false;
@@ -1542,14 +1534,11 @@ var standard = {
               var notifyData = '',
                 activeUserHtml = [];
 
-
-
-
-              $('#activeUsers').html('');
+              $('#activeUsers').html(''); // Clear the active users box.
 
               active = json.getMessages.activeUsers;
 
-              for (i in active) {
+              for (i in active) { // Update active users box.
                 var userName = active[i].userName,
                   userId = active[i].userId,
                   userGroup = active[i].userGroup,
@@ -1562,32 +1551,22 @@ var standard = {
               $('#activeUsers').html(activeUserHtml.join(', '));
               contextMenuParseUser('#activeUsers');
 
-
-
               active = json.getMessages.messages;
 
               for (i in active) {
                 var messageId = Number(active[i].messageData.messageId);
                 data = messageFormat(active[i], 'list');
 
-                if (messageIndex[messageId]) {
-                  // Double post hack
-                }
+                if (messageIndex[messageId]) { } // Double post hack
                 else {
-                  if (settings.reversePostOrder) {
-                    $('#messageList').append(data);
-                  }
-                  else {
-                    $('#messageList').prepend(data);
-                  }
+                  if (settings.reversePostOrder) $('#messageList').append(data); // Put the data at the end of the list if reversePostOrder.
+                  else $('#messageList').prepend(data); // Otherwise, put it at top.
 
-                  if (messageId > requestSettings.lastMessage) {
-                    requestSettings.lastMessage = messageId;
-                  }
+                  if (messageId > requestSettings.lastMessage) requestSettings.lastMessage = messageId; // Update the interal lastMessage.
 
-                  messageIndex.push(requestSettings.lastMessage);
+                  messageIndex.push(requestSettings.lastMessage); // Update the internal messageIndex array.
 
-                  if (messageIndex.length === 100) {
+                  if (messageIndex.length === 100) { // Only list 100 messages in the table at any given time. This prevents memory excess (this usually isn't a problem until around 1,000, but 100 is usually all a user is going to need).
                     var messageOut = messageIndex[0];
                     $('#message' + messageOut).remove();
                     messageIndex = messageIndex.slice(1,99);
@@ -1597,17 +1576,10 @@ var standard = {
                 messageCount++;
               }
 
-
               if (messageCount > 0) { newMessage(); }
 
-              if (requestSettings.longPolling) {
-                requestSettings.timeout = 100000; // TODO: If longPolling were to fail, we'd be screwed. Examine how to handle the possibility to longPolling erroring on the server side without reporting this.
-                timers.t1 = setTimeout(standard.getMessages, 50);
-              }
-              else {
-                requestSettings.timeout = 2400;
-                timers.t1 = setTimeout(standard.getMessages, 2500);
-              }
+              if (requestSettings.longPolling) { requestSettings.timeout = 100000; timers.t1 = setTimeout(standard.getMessages, 50); } // TODO: If longPolling were to fail, we'd be screwed. Examine how to handle the possibility to longPolling erroring on the server side without reporting this.
+              else {                             requestSettings.timeout = 2400;   timers.t1 = setTimeout(standard.getMessages, 2500); }
             }
 
             requestSettings.firstRequest = false;
@@ -1618,30 +1590,16 @@ var standard = {
             console.log('Requesting messages for ' + roomId + '; failed: ' + err + '.');
             var wait;
 
-            if (requestSettings.longPolling) {
-              timers.t1 = setTimeout(standard.getMessages, 50);
-            }
+            if (requestSettings.longPolling) { timers.t1 = setTimeout(standard.getMessages, 50); } // Begin again without delay.
             else {
-              requestSettings.totalFails += 1;
+              requestSettings.totalFails += 1; // Increase total fail count.
 
-              if (requestSettings.totalFails > 10) {
-                wait = 30000;
-                requestSettings.timeout = 29900;
+              // Delays progressively become greater.
+              if (requestSettings.totalFails > 10) {     wait = 30000; requestSettings.timeout = 29900; } // TODO: Add indicator.
+              else if (requestSettings.totalFails > 5) { wait = 10000; requestSettings.timeout = 9900; } // TODO: Add indicator.
+              else {                                     wait = 5000;  requestSettings.timeout = 4900; }
 
-                // TODO: Add indicator.
-              }
-              else if (requestSettings.totalFails > 5) {
-                wait = 10000;
-                requestSettings.timeout = 9900;
-
-                // TODO: Add indicator.
-              }
-              else {
-                wait = 5000;
-                requestSettings.timeout = 4900;
-              }
-
-              timers.t1 = setTimeout(standard.getMessages,wait);
+              timers.t1 = setTimeout(standard.getMessages, wait);
             }
 
             return false;

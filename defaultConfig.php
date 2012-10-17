@@ -36,7 +36,7 @@ $defaultConfig = array(
   'longPollingWait' => 2,
   'longPollingMaxRetries' => 50,
 
-  'serverSentEvents' => false,
+  'serverSentEvents' => true,
   'serverSentEventsWait' => .5, // Server sent events are more controlled, so we can call them at a greater frequency.
   'serverSentMaxRetries' => 50,
   'serverSentFastCGI' => true, // This MUST be true for FastCGI compatibility.
