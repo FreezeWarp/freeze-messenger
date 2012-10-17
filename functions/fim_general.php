@@ -147,12 +147,10 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
       if ($quick) return false;
       else return array(false, 'invalidRoom', 0);
     }
-    elseif (!isset($roomData['parentalFlags'])) throw new Exception('hasPermission requires roomData[parentalFlags] to be defined.');
-    elseif (!isset($roomData['parentalAge'])) throw new Exception('hasPermission requires roomData[parentalAge] to be defined.');
-    elseif (!isset($userData['parentalAge'])) throw new Exception('hasPermission requires roomData[parentalAge] to be defined.');
-    elseif (!isset($userData['parentalFlags'])) throw new Exception('hasPermission requires roomData[parentalFlags] to be defined.');
-    elseif (!isset($roomData['defaultPermissions'])) throw new Exception('Room data invalid (defaultPermissions index missing)'); // If the default permissions index is missing, through an exception.
-    elseif ($type === 'know') throw new Exception('Room data invalid (type of "know")'); // Transitional. TODO: Remove
+    elseif (!isset($roomData['parentalFlags'], $roomData['parentalAge'])) throw new Exception('hasPermission requires roomData[parentalFlags] and roomData[parentalAge] to be defined.');
+    elseif (!isset($roomData['defaultPermissions'], $roomData['options'], $roomData['owner'])) throw new Exception('hasPermission requires roomData[defaultPermissions], roomData[options], and roomData[owner]'); // If the default permissions index is missing, through an exception.
+    elseif (!isset($userData['parentalAge'], $userData['parentalFlags'])) throw new Exception('hasPermission requires userData[parentalAge] and userData[parentalFlags] to be defined.');
+    elseif (!in_array($type, array('post', 'view', 'moderate', 'admin'))) throw new Exception('hasPermission type unrecognised.'); // Transitional. TODO: Remove
 
 
     foreach ((array) $type AS $type2) { // Run through each type.
@@ -186,17 +184,11 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
           $isOwner = true;
         }
       }
-      else {
-        throw new Exception('Room data invalid (owner index missing)'); // We need the owner index.
-      }
 
 
       /* Is the Room a Private Room or Deleted? */
       if (isset($roomData['options'])) {
         if ($roomData['options'] & 4) $isRoomDeleted = true; // The room is deleted.
-      }
-      else {
-        throw new Exception('Room data invalid (options index missing)'); // We need the options index.
       }
 
 
@@ -1080,7 +1072,7 @@ function fim_sanitizeGPC($type, $data) {
 
 
 /**
- * A function equvilent to an IF-statement that returns a true or false value. It is similar to the function in most spreadsheets (EXCEL, LibreOffice CALC, Lotus 123). TRANSITIONAL
+ * A function equvilent to an IF-statement that returns a true or false value. It is similar to the function in most spreadsheets (EXCEL, LibreOffice CALC, Lotus 123). TRANSITIONAL TODO
  *
  * @param string $condition - The condition that will be evaluated. It must be a string.
  * @param string $true - A string to return if the above condition evals to true.
@@ -1115,7 +1107,6 @@ function fim_hasArray($array) {
 }
 
 
-
 /**
  * Implements PHP's explode with support for escaped delimeters. You can not use as a delimiter or escape character 'µ', 'ñ', or 'ø' (which are used in place of '&', '#', ';' to free up those characters).
  *
@@ -1129,6 +1120,7 @@ function fim_explodeEscaped($delimiter, $string, $escapeChar = '//') {
   return array_map('fim_decodeEntities', explode($delimiter, $string));
 }
 
+
 /**
  * Encode entities using a custom format.
  *
@@ -1140,6 +1132,7 @@ function fim_explodeEscaped($delimiter, $string, $escapeChar = '//') {
 function fim_encodeEntities($string, $find = array('&', '#', ';'), $replace = array('µ', 'ñ', 'ó')) {
   return str_replace($find, $replace, mb_encode_numericentity($string, array(0x0, 0x10ffff, 0, 0xffffff), "UTF-8"));
 }
+
 
 /**
  * Decode entities using a custom format.
@@ -1225,15 +1218,38 @@ function fim_errorHandler($errno, $errstr, $errfile, $errline) {
   return true; // Don't execute PHP internal error handler
 }
 
+
 function fim_flush() {
   flush();
   if (ob_get_level()) ob_fim_flush(); // Flush output buffer if enabled. (We do not use this in FIM at present.)
 }
 
+
+/**
+ * Performs a custom cast, implementing custom logic for boolean casts (and the default logic for all others).
+ *
+ * @param string cast - Type of cast, either 'bool', 'int', 'float', or 'string'.
+ * @param string value - Value to cast.
+ * @param string default - Whether to lean true or false with bool casts. Only if a value is exactly true or false will thus value not be used.
+ *
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function indexValue($array, $index) {
   return $array[$index];
 }
 
+
+/**
+ * Sends a message. Requires the database to be active.
+ *
+ * @param string messageText - Text of message.
+ * @param string messageFlag - Flag of message, used by clients to automatically display URLs, images, etc.
+ * @param string userData - The data of the user sending the message. (This is not validated with the current user, and is left up to plugins).
+ * @param string roomData - The data of the room. Must be fully populated.
+ *
+ *
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function fim_sendMessage($messageText, $messageFlag, $userData, $roomData) {
   global $database;
 
@@ -1248,6 +1264,16 @@ function fim_sendMessage($messageText, $messageFlag, $userData, $roomData) {
   $database->storeKeyWords($keyWords, $messageId, $userData['userId'], $roomData['roomId']);
 }
 
+
+/**
+ * Performs a custom cast, implementing custom logic for boolean casts (and the default logic for all others).
+ *
+ * @param string cast - Type of cast, either 'bool', 'int', 'float', or 'string'.
+ * @param string value - Value to cast.
+ * @param string default - Whether to lean true or false with bool casts. Only if a value is exactly true or false will thus value not be used.
+ *
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 function fim_cast($cast, $value, $default = null) {
   switch ($cast) {
     case 'bool':
@@ -1260,26 +1286,16 @@ function fim_cast($cast, $value, $default = null) {
     else { $value = false; }
     break;
 
+    case 'int': $value = (int) $value; break;
+    case 'float': $value = (float) $value; break;
+    case 'string': $value = (string) $value; break;
+
     default: throw new Exception('Unrecognized cast.'); break;
   }
 
   return $value;
 }
 
-/**
- * Determines if a user has permission to do an action in a room.
- *
- * @param array $roomData - An array containing the room's data; indexes allowedUsers, allowedGroups, moderators, owner, and options may be used.
- * @param array $userData - An array containing the user's data; indexes userId, adminPrivs, and userPrivs may be used.
- * @param string $type - Either "topic", "view", "post", "moderate", or "admin", this defines the action the user is trying to do.
- * @param bool $trans - If true, return will be an information array; otherwise bool.
- * @global bool $banned - Whether or not the user is banned outright.
- * @global array $superUsers - The list of superUsers.
- * @global bool $valid - Whether or not the user has a valid login (required for posting, etc.)
- * @global string $sqlPrefix
- * @return mixed - Bool if $trans is false, array if $trans is true.
- * @author Joseph Todd Parsons <josephtparsons@gmail.com>
- */
 
 /**
  * Converts a date of birth to age.

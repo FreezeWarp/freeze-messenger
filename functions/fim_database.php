@@ -718,6 +718,8 @@ class fimDatabase extends database {
   public function storeMessage($userData, $roomData, $messageText, $messageTextEncrypted, $encryptIV, $encryptSalt, $flag) {
     global $sqlPrefix, $config, $user, $permissionsCache, $generalCache;
 
+    if (!isset($roomData['options'], $roomData['roomId'], $userData['userId'], $userData['userName'], $userData['userGroup'], $userData['avatar'], $userData['profile'], $userData['userFormatStart'], $userData['userFormatEnd'], $userData['defaultFormatting'], $userData['defaultColor'], $userData['defaultHighlight'], $userData['defaultFontface'])) throw new Exception('database->storeMessage required information not provided');
+
     if ($roomData['options'] ^ 64) { // Off the record communication - messages are stored only in the cache.
       // Insert into permenant datastore.
       $this->insert("{$sqlPrefix}messages", array(
@@ -887,6 +889,8 @@ class fimDatabase extends database {
   public function modLog($action, $data) {
     global $sqlPrefix, $config, $user;
 
+    if (!isset($user['userId'])) throw new Exception('database->modLog requires user[userId]');
+
     if ($this->insert("{$sqlPrefix}modlog", array(
       'userId' => (int) $user['userId'],
       'ip' => $_SERVER['REMOTE_ADDR'],
@@ -983,6 +987,9 @@ class fimDatabase extends database {
 
   public function getPrivateRoom($userList) {
     global $sqlPrefix, $config;
+
+    if (!is_array($userList)) throw new Exception('userList is not an array in getPrivateRoom');
+    elseif (count($userList) < 1) throw new Exception('userList is empty in getPrivateRoom');
 
     asort($userList);
 
