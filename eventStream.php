@@ -72,7 +72,7 @@ else {
     ),
   ));
 
-  $lastMessageId = $_SERVER['HTTP_LAST_EVENT_ID']; // Get the message ID used for keeping state data; e.g. 1-2-3
+  $lastMessageId = (isset($_SERVER['HTTP_LAST_EVENT_ID']) ? $_SERVER['HTTP_LAST_EVENT_ID'] : 0); // Get the message ID used for keeping state data; e.g. 1-2-3
   $lastMessageIdParts = explode('-', $lastMessageId); // Get each state part; e.g. array(1, 2, 3)
   if (count($lastMessageIdParts) === 3) { // There must be three parts
     $request['lastMessage'] = (int) substr($lastMessageIdParts[0], 1);
@@ -301,10 +301,7 @@ else {
               'roomId' => (int) $message['roomId'],
               'messageId' => (int) $message['messageId'],
               'messageTime' => (int) $message['time'],
-              'messageTimeFormatted' => fim_date(false,$message['time']),
-              'messageText' => array(
-                'text' => ($message['text']),
-              ),
+              'messageText' => $message['text'],
               'flags' => ($message['flag']),
             ),
             'userData' => array(

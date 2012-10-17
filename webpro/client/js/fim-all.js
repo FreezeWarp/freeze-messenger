@@ -141,7 +141,7 @@ else {
 * TODO: Define this in a more "sophisticated manner". */
 
 var directory = window.location.pathname.split('/').splice(0, window.location.pathname.split('/').length - 2).join('/') + '/', // splice returns the elements removed (and modifies the original array), in this case the first two; the rest should be self-explanatory
-  currentLocation = window.location.origin + directory + 'webpro/';
+  currentLocation = window.location.protocol + '//' + window.location.host + directory + 'webpro/';
 
 
 /*********************************************************
@@ -346,7 +346,20 @@ function fileFormat(container, file) {
 
 
 /* ? */
-function newMessage() {
+function newMessage(messageText, messageId) {
+  if (settings.reversePostOrder) $('#messageList').append(messageText); // Put the data at the end of the list if reversePostOrder.
+  else $('#messageList').prepend(messageText); // Otherwise, put it at top.
+
+  if (messageId > requestSettings.lastMessage) requestSettings.lastMessage = messageId; // Update the interal lastMessage.
+
+  messageIndex.push(requestSettings.lastMessage); // Update the internal messageIndex array.
+
+  if (messageIndex.length === 100) { // Only list 100 messages in the table at any given time. This prevents memory excess (this usually isn't a problem until around 1,000, but 100 is usually all a user is going to need).
+    var messageOut = messageIndex[0];
+    $('#message' + messageOut).remove();
+    messageIndex = messageIndex.slice(1,99);
+  }
+
   if (settings.reversePostOrder) {
     toBottom();
   }
@@ -603,7 +616,7 @@ $.ajax({
       requestSettings.serverSentEvents = json.getServerStatus.serverStatus.requestMethods.serverSentEvents;
     }
 
-    if (json.getServerStatus.serverStatus.installUrl != window.location.origin + directory) {
+    if (json.getServerStatus.serverStatus.installUrl != (window.location.protocol + '//' + window.location.host + directory)) {
       dia.error('<strong>WARNING</strong>: Your copy of FreezeMessenger has been incorrectly installed. Errors may occur if this is not fixed. <a href="http://code.google.com/p/freeze-messenger/wiki/ChangingDomains">Please see the online documentation for more information.</a>');
     }
 
@@ -1430,30 +1443,11 @@ var standard = {
 
           data = messageFormat(active, 'list');
 
-          messagePopup(data)
+//          messagePopup(data); TODO
 
 
-          if (messageIndex[messageId]) {
-            // Double post hack
-          }
-          else {
-            if (settings.reversePostOrder) { $('#messageList').append(data); }
-            else { $('#messageList').prepend(data); }
-
-            if (messageId > requestSettings.lastMessage) {
-              requestSettings.lastMessage = messageId;
-            }
-
-            messageIndex.push(requestSettings.lastMessage);
-
-            if (messageIndex.length === 100) {
-              var messageOut = messageIndex[0];
-              $('#message' + messageOut).remove();
-              messageIndex = messageIndex.slice(1,99);
-            }
-          }
-
-          newMessage();
+          if (messageId in messageIndex) { } // Double post hack
+          else { newMessage(data, messageId); }
 
           return false;
         }, false);
@@ -1557,26 +1551,11 @@ var standard = {
                 var messageId = Number(active[i].messageData.messageId);
                 data = messageFormat(active[i], 'list');
 
-                if (messageIndex[messageId]) { } // Double post hack
-                else {
-                  if (settings.reversePostOrder) $('#messageList').append(data); // Put the data at the end of the list if reversePostOrder.
-                  else $('#messageList').prepend(data); // Otherwise, put it at top.
-
-                  if (messageId > requestSettings.lastMessage) requestSettings.lastMessage = messageId; // Update the interal lastMessage.
-
-                  messageIndex.push(requestSettings.lastMessage); // Update the internal messageIndex array.
-
-                  if (messageIndex.length === 100) { // Only list 100 messages in the table at any given time. This prevents memory excess (this usually isn't a problem until around 1,000, but 100 is usually all a user is going to need).
-                    var messageOut = messageIndex[0];
-                    $('#message' + messageOut).remove();
-                    messageIndex = messageIndex.slice(1,99);
-                  }
-                }
+                if (messageId in messageIndex) { } // Double post hack
+                else { newMessage(data, messageId); }
 
                 messageCount++;
               }
-
-              if (messageCount > 0) { newMessage(); }
 
               if (requestSettings.longPolling) { requestSettings.timeout = 100000; timers.t1 = setTimeout(standard.getMessages, 50); } // TODO: If longPolling were to fail, we'd be screwed. Examine how to handle the possibility to longPolling erroring on the server side without reporting this.
               else {                             requestSettings.timeout = 2400;   timers.t1 = setTimeout(standard.getMessages, 2500); }
