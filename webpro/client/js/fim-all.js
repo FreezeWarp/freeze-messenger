@@ -1443,9 +1443,6 @@ var standard = {
 
           data = messageFormat(active, 'list');
 
-//          messagePopup(data); TODO
-
-
           if (messageId in messageIndex) { } // Double post hack
           else { newMessage(data, messageId); }
 
@@ -1493,7 +1490,6 @@ var standard = {
             // Connection was closed.
           }
         }, false);
-
       }
       else {
         $.ajax({

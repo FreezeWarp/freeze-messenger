@@ -327,11 +327,12 @@ else {
           }
 
           echo "event: message\n";
-          echo "data: " . json_encode($messagesOutput) . "\n\n";
-
-          fim_flush();
-          $outputStarted = true;
+          echo "data: " . json_encode($messagesOutput) . "\n";
+          echo "id: m" . (int) $request['lastMessage'] . "-u" . (int) $request['lastUnreadMessage'] . "-e" . (int) $request['lastEvent'] . ";\n\n";
         }
+
+        fim_flush();
+        $outputStarted = true;
 
         unset($messages);
       }
@@ -358,7 +359,8 @@ else {
               }
 
               echo "event: missedMessage\n";
-              echo "data: " . json_encode($message) . "\n\n";
+              echo "data: " . json_encode($message) . "\n";
+              echo "id: m" . (int) $request['lastMessage'] . "-u" . (int) $request['lastUnreadMessage'] . "-e" . (int) $request['lastEvent'] . ";\n\n";
 
               fim_flush();
               $outputStarted = true;
@@ -386,7 +388,8 @@ else {
         if (count($unreadMessages) > 0) {
           foreach ($unreadMessages AS $message) {
             echo "event: privateMessage\n";
-            echo "data: " . json_encode($message) . "\n\n";
+            echo "data: " . json_encode($message) . "\n";
+            echo "id: m" . (int) $request['lastMessage'] . "-u" . (int) $request['lastUnreadMessage'] . "-e" . (int) $request['lastEvent'] . ";\n\n";
 
             $request['lastUnreadMessage'] = $message['messageId'];
 
@@ -418,7 +421,8 @@ else {
         if (count($events) > 0) {
           foreach ($events AS $event) {
             echo "event: " . $event['eventName'] . "\n";
-            echo "data: " . json_encode($event) . "\n\n";
+            echo "data: " . json_encode($event) . "\n";
+            echo "id: m" . (int) $request['lastMessage'] . "-u" . (int) $request['lastUnreadMessage'] . "-e" . (int) $request['lastEvent'] . ";\n\n";
 
             $request['lastEvent'] = $event['eventId'];
 
