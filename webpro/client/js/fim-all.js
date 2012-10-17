@@ -445,6 +445,19 @@ function newMessage(messageText, messageId) {
 }
 
 
+function checkException(json) {
+  if ("exception" in json) {
+    dia.error('Exception Thrown by FIM API: ' + json.exception.name);
+    console.log('test');
+
+    return false;
+  }
+  else {
+    return true;
+  }
+}
+
+
 function messagePopup(data) {
   if (typeof notify != 'undefined' && typeof window.webkitNotifications === 'object') {
     notify.webkitNotify('images/favicon.ico', 'New Message', data);
@@ -607,20 +620,22 @@ $.ajax({
   timeout: 1000,
   dataType: 'json',
   success: function(json) {
-    requestSettings.longPolling = json.getServerStatus.serverStatus.requestMethods.longPoll;
+    if (checkException(json)) {
+      requestSettings.longPolling = json.getServerStatus.serverStatus.requestMethods.longPoll;
 
-    if (typeof window.EventSource == 'undefined') {
-      requestSettings.serverSentEvents = false;
-    }
-    else {
-      requestSettings.serverSentEvents = json.getServerStatus.serverStatus.requestMethods.serverSentEvents;
-    }
+      if (typeof window.EventSource == 'undefined') {
+        requestSettings.serverSentEvents = false;
+      }
+      else {
+        requestSettings.serverSentEvents = json.getServerStatus.serverStatus.requestMethods.serverSentEvents;
+      }
 
-    if (json.getServerStatus.serverStatus.installUrl != (window.location.protocol + '//' + window.location.host + directory)) {
-      dia.error('<strong>WARNING</strong>: Your copy of FreezeMessenger has been incorrectly installed. Errors may occur if this is not fixed. <a href="http://code.google.com/p/freeze-messenger/wiki/ChangingDomains">Please see the online documentation for more information.</a>');
-    }
+      if (json.getServerStatus.serverStatus.installUrl != (window.location.protocol + '//' + window.location.host + directory)) {
+        dia.error('<strong>WARNING</strong>: Your copy of FreezeMessenger has been incorrectly installed. Errors may occur if this is not fixed. <a href="http://code.google.com/p/freeze-messenger/wiki/ChangingDomains">Please see the online documentation for more information.</a>');
+      }
 
-    return false;
+      return false;
+    }
   },
   error: function() {
     requestSettings.longPolling = false;
@@ -1702,56 +1717,58 @@ var standard = {
         type: 'GET',
         cache: false,
         success: function(json) {
-          active = json.getRooms.rooms;
+          if (checkException(json)) {
+            active = json.getRooms.rooms;
 
-          for (i in active) {
-            var roomName = active[i].roomName,
-              roomId2 = active[i].roomId,
-              roomTopic = active[i].roomTopic,
-              permissions = active[i].permissions;
+            for (i in active) {
+              var roomName = active[i].roomName,
+                roomId2 = active[i].roomId,
+                roomTopic = active[i].roomTopic,
+                permissions = active[i].permissions;
 
-            if (!permissions.canView) { // If we can not view the room
-              roomId = false; // Set the internal roomId false.
-              popup.selectRoom(); // Prompt the user to select a new room.
-              dia.error('You have been restricted access from this room. Please select a new room.');
+              if (!permissions.canView) { // If we can not view the room
+                roomId = false; // Set the internal roomId false.
+                popup.selectRoom(); // Prompt the user to select a new room.
+                dia.error('You have been restricted access from this room. Please select a new room.');
+              }
+              else if (!permissions.canPost) { // If we can view, but not post
+                alert('You are not allowed to post in this room. You will be able to view it, though.');
+
+                $('#messageInput').attr('disabled','disabled'); // Disable input boxes.
+                $('#icon_url').button({ disabled : true }); // "
+                $('#icon_submit').button({ disabled : true }); // "
+                $('#icon_reset').button({ disabled : true }); // "
+              }
+              else { // If we can both view and post.
+                $('#messageInput').removeAttr('disabled'); // Make sure the input is not disabled.
+                $('#icon_url').button({ disabled : false }); // "
+                $('#icon_submit').button({ disabled : false }); // "
+                $('#icon_reset').button({ disabled : false }); // "
+              }
+
+              if (permissions.canView) { // If we can view the room...
+                roomId = roomId2;
+
+                $('#roomName').html(roomName); // Update the room name.
+                $('#topic').html(roomTopic); // Update the room topic.
+                $('#messageList').html(''); // Clear the message list.
+
+
+                /*** Get Messages ***/
+                $(document).ready(function() {
+                  requestSettings.firstRequest = true;
+                  requestSettings.lastMessage = 0;
+                  messageIndex = [];
+
+                  standard.getMessages();
+
+                  windowDraw();
+                  windowDynaLinks();
+                });
+              }
+
+              break;
             }
-            else if (!permissions.canPost) { // If we can view, but not post
-              alert('You are not allowed to post in this room. You will be able to view it, though.');
-
-              $('#messageInput').attr('disabled','disabled'); // Disable input boxes.
-              $('#icon_url').button({ disabled : true }); // "
-              $('#icon_submit').button({ disabled : true }); // "
-              $('#icon_reset').button({ disabled : true }); // "
-            }
-            else { // If we can both view and post.
-              $('#messageInput').removeAttr('disabled'); // Make sure the input is not disabled.
-              $('#icon_url').button({ disabled : false }); // "
-              $('#icon_submit').button({ disabled : false }); // "
-              $('#icon_reset').button({ disabled : false }); // "
-            }
-
-            if (permissions.canView) { // If we can view the room...
-              roomId = roomId2;
-
-              $('#roomName').html(roomName); // Update the room name.
-              $('#topic').html(roomTopic); // Update the room topic.
-              $('#messageList').html(''); // Clear the message list.
-
-
-              /*** Get Messages ***/
-              $(document).ready(function() {
-                requestSettings.firstRequest = true;
-                requestSettings.lastMessage = 0;
-                messageIndex = [];
-
-                standard.getMessages();
-
-                windowDraw();
-                windowDynaLinks();
-              });
-            }
-
-            break;
           }
         },
         error: function() {
