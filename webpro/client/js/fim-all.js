@@ -445,19 +445,6 @@ function newMessage(messageText, messageId) {
 }
 
 
-function checkException(json) {
-  if ("exception" in json) {
-    dia.error('Exception Thrown by FIM API: ' + json.exception.name);
-    console.log('test');
-
-    return false;
-  }
-  else {
-    return true;
-  }
-}
-
-
 function messagePopup(data) {
   if (typeof notify != 'undefined' && typeof window.webkitNotifications === 'object') {
     notify.webkitNotify('images/favicon.ico', 'New Message', data);
@@ -521,6 +508,11 @@ function date(timestamp, full) {
   }
 
   return timestring;
+}
+
+function quit() {
+  $('body').replaceWith('<body>Program failure. Please restart. See console log for more information.</body>');
+  throw new Error('The program can not continue.');
 }
 
 
@@ -589,10 +581,6 @@ if (typeof console !== 'object' || typeof console.log !== 'function') {
   };
 }
 
-var alert = function(text) {
-  dia.info(text,"Alert");
-};
-
 /*********************************************************
 ************************* END ***************************
 ******************* Static Functions ********************
@@ -620,24 +608,24 @@ $.ajax({
   timeout: 1000,
   dataType: 'json',
   success: function(json) {
-    if (checkException(json)) {
-      requestSettings.longPolling = json.getServerStatus.serverStatus.requestMethods.longPoll;
+    requestSettings.longPolling = json.getServerStatus.serverStatus.requestMethods.longPoll;
 
-      if (typeof window.EventSource == 'undefined') {
-        requestSettings.serverSentEvents = false;
-      }
-      else {
-        requestSettings.serverSentEvents = json.getServerStatus.serverStatus.requestMethods.serverSentEvents;
-      }
-
-      if (json.getServerStatus.serverStatus.installUrl != (window.location.protocol + '//' + window.location.host + directory)) {
-        dia.error('<strong>WARNING</strong>: Your copy of FreezeMessenger has been incorrectly installed. Errors may occur if this is not fixed. <a href="http://code.google.com/p/freeze-messenger/wiki/ChangingDomains">Please see the online documentation for more information.</a>');
-      }
-
-      return false;
+    if (typeof window.EventSource == 'undefined') {
+      requestSettings.serverSentEvents = false;
     }
+    else {
+      requestSettings.serverSentEvents = json.getServerStatus.serverStatus.requestMethods.serverSentEvents;
+    }
+
+    if (json.getServerStatus.serverStatus.installUrl != (window.location.protocol + '//' + window.location.host + directory)) {
+      dia.error('<strong>WARNING</strong>: Your copy of FreezeMessenger has been incorrectly installed. Errors may occur if this is not fixed. <a href="http://code.google.com/p/freeze-messenger/wiki/ChangingDomains">Please see the online documentation for more information.</a>');
+    }
+
+    return false;
   },
   error: function() {
+    dia.error('Could not obtain serverStatus. All advanced functionality will be disabled.');
+
     requestSettings.longPolling = false;
     requestSettings.serverSentEvents = false;
 
@@ -665,7 +653,7 @@ $.ajax({
     }
   },
   error: function() {
-    dia.error('Upload file types not retrieved.');
+    dia.error('Upload file types not retrieved. Uploads will be disabled.'); // TODO: Disable Uploads
   }
 });
 
@@ -792,7 +780,6 @@ function populate(options) {
         userSelectHtml = '';
         active = json.getUsers.users;
 
-        console.log('Users obtained.');
         for (i in active) {
           var userName = active[i].userName,
             userId = active[i].userId;
@@ -805,7 +792,8 @@ function populate(options) {
         return false;
       },
       error: function() {
-        alert('Users Not Obtained - Problems May Occur');
+        dia.error('The user list could not be retrieved. The program will not be started.'); // TODO: Don't start.
+        quit();
 
         return false;
       }
@@ -864,12 +852,11 @@ function populate(options) {
         $('#roomListLong > li > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li><li>My Rooms<ul>' + roomUlMyHtml + '</ul></li><li>General<ul>' + roomUlHtml + '</ul></li><li>Private<ul>' + roomUlPrivHtml + '</ul></li>');
         $('#roomListShort > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li>');
 
-        console.log('Rooms obtained.');
-
         return false;
       },
       error: function() {
-        alert('Rooms Not Obtained - Problems May Occur');
+        dia.error('The room list could not be obtained. The program will not be started.');
+        quit();
 
         return false;
       }
@@ -897,7 +884,7 @@ function populate(options) {
         return false;
       },
       error: function() {
-        alert('Groups Not Obtained - Problems May Occur');
+        dia.error('The usergroup list could not be retrieved. Certain features will be disabled.'); // TODO: Disable certain features.
 
         return false;
       }
@@ -924,7 +911,7 @@ function populate(options) {
         return false;
       },
       error: function() {
-        dia.error('The list of fonts could not be obtained from the server.');
+        dia.error('The font list could not be retrieved. Certain features will be disabled.'); // TODO: Disable certain features.
 
         return false;
       }
@@ -1298,10 +1285,8 @@ var standard = {
         sessionHash = activeLogin.sessionHash;
 
 
-
         $.cookie('webpro_userId', userId, { expires : 14 });
         $.cookie('webpro_password', options.password, { expires : 14 }); // We will encrypt this in B3 or later -- it isn't a priority for now. (TODO)
-
 
 
         /* Update Permissions */
@@ -1335,12 +1320,8 @@ var standard = {
         else if (activeLogin.valid === true) {
           if (options.showMessage) {
             // Display Dialog to Notify User of Being Logged In
-            if (!userPermissions.general) {
-              dia.info('You are now logged in as ' + activeLogin.userData.userName + '. However, you are not allowed to post and have been banned by an administrator.', 'Logged In');
-            }
-            else {
-              dia.info('You are now logged in as ' + activeLogin.userData.userName + '.', 'Logged In');
-            }
+            if (!userPermissions.general) dia.info('You are now logged in as ' + activeLogin.userData.userName + '. However, you are not allowed to post and have been banned by an administrator.', 'Logged In');
+            else dia.info('You are now logged in as ' + activeLogin.userData.userName + '.', 'Logged In');
           }
 
           $('#loginDialogue').dialog('close'); // Close any open login forms.
@@ -1362,13 +1343,9 @@ var standard = {
         }
 
 
-        if (!anonId && !userId) {
-          $('#messageInput').attr("disabled","disabled"); // The user is not able to post.
-        }
+        if (!anonId && !userId) $('#messageInput').attr('disabled', 'disabled'); // The user is not able to post.
 
-        if (options.finish) {
-          options.finish();
-        }
+        if (options.finish) options.finish();
 
         populate({
           callback : function() {
@@ -1380,11 +1357,7 @@ var standard = {
               hashParse({defaultRoomId : activeLogin.defaultRoomId}); // When a user logs in, the hash data (such as room and archive) is processed, and subsequently executed.
 
               /*** A Hack of Sorts to Open Dialogs onLoad ***/
-              if (typeof prepopup === "function") {
-                prepopup();
-
-                prepopup = false;
-              }
+              if (typeof prepopup === 'function') { prepopup(); prepopup = false; }
             }
 
             return false;
@@ -1397,7 +1370,7 @@ var standard = {
         return false;
       },
       error: function(err,err2,err3) {
-        dia.error("The login request could not be sent. Please try again.<br /><br />" + err3 + "<br /><br />" + directory + "validate.php<br /><br />" + data + '&apiVersion=3');
+        dia.error('The login request could not be sent. Please try again.<br /><br />' + err3 + '<br /><br />' + directory + 'validate.php<br /><br />' + data + '&apiVersion=3');
 
         return false;
       }
@@ -1439,7 +1412,7 @@ var standard = {
             return false;
           },
           error: function() {
-            dia.error('Failed to obtain current room settings from server.');
+            dia.error('Failed to obtain current room settings from the server.'); // TODO: Handle gracefully.
 
             return false;
           }
@@ -1704,7 +1677,7 @@ var standard = {
           });
         },
         error: function() {
-          alert('Could not fetch room data.');
+          dia.error('Could not fetch room data. Action cancelled.'); // TODO: Handle Gracefully
 
           return false;
         }
@@ -1717,62 +1690,60 @@ var standard = {
         type: 'GET',
         cache: false,
         success: function(json) {
-          if (checkException(json)) {
-            active = json.getRooms.rooms;
+          active = json.getRooms.rooms;
 
-            for (i in active) {
-              var roomName = active[i].roomName,
-                roomId2 = active[i].roomId,
-                roomTopic = active[i].roomTopic,
-                permissions = active[i].permissions;
+          for (i in active) {
+            var roomName = active[i].roomName,
+              roomId2 = active[i].roomId,
+              roomTopic = active[i].roomTopic,
+              permissions = active[i].permissions;
 
-              if (!permissions.canView) { // If we can not view the room
-                roomId = false; // Set the internal roomId false.
-                popup.selectRoom(); // Prompt the user to select a new room.
-                dia.error('You have been restricted access from this room. Please select a new room.');
-              }
-              else if (!permissions.canPost) { // If we can view, but not post
-                alert('You are not allowed to post in this room. You will be able to view it, though.');
-
-                $('#messageInput').attr('disabled','disabled'); // Disable input boxes.
-                $('#icon_url').button({ disabled : true }); // "
-                $('#icon_submit').button({ disabled : true }); // "
-                $('#icon_reset').button({ disabled : true }); // "
-              }
-              else { // If we can both view and post.
-                $('#messageInput').removeAttr('disabled'); // Make sure the input is not disabled.
-                $('#icon_url').button({ disabled : false }); // "
-                $('#icon_submit').button({ disabled : false }); // "
-                $('#icon_reset').button({ disabled : false }); // "
-              }
-
-              if (permissions.canView) { // If we can view the room...
-                roomId = roomId2;
-
-                $('#roomName').html(roomName); // Update the room name.
-                $('#topic').html(roomTopic); // Update the room topic.
-                $('#messageList').html(''); // Clear the message list.
-
-
-                /*** Get Messages ***/
-                $(document).ready(function() {
-                  requestSettings.firstRequest = true;
-                  requestSettings.lastMessage = 0;
-                  messageIndex = [];
-
-                  standard.getMessages();
-
-                  windowDraw();
-                  windowDynaLinks();
-                });
-              }
-
-              break;
+            if (!permissions.canView) { // If we can not view the room
+              roomId = false; // Set the internal roomId false.
+              popup.selectRoom(); // Prompt the user to select a new room.
+              dia.error('You have been restricted access from this room. Please select a new room.');
             }
+            else if (!permissions.canPost) { // If we can view, but not post
+              dia.error('You are not allowed to post in this room. You will be able to view it, though.');
+
+              $('#messageInput').attr('disabled','disabled'); // Disable input boxes.
+              $('#icon_url').button({ disabled : true }); // "
+              $('#icon_submit').button({ disabled : true }); // "
+              $('#icon_reset').button({ disabled : true }); // "
+            }
+            else { // If we can both view and post.
+              $('#messageInput').removeAttr('disabled'); // Make sure the input is not disabled.
+              $('#icon_url').button({ disabled : false }); // "
+              $('#icon_submit').button({ disabled : false }); // "
+              $('#icon_reset').button({ disabled : false }); // "
+            }
+
+            if (permissions.canView) { // If we can view the room...
+              roomId = roomId2;
+
+              $('#roomName').html(roomName); // Update the room name.
+              $('#topic').html(roomTopic); // Update the room topic.
+              $('#messageList').html(''); // Clear the message list.
+
+
+              /*** Get Messages ***/
+              $(document).ready(function() {
+                requestSettings.firstRequest = true;
+                requestSettings.lastMessage = 0;
+                messageIndex = [];
+
+                standard.getMessages();
+
+                windowDraw();
+                windowDynaLinks();
+              });
+            }
+
+            break;
           }
         },
         error: function() {
-          alert('Could not fetch room data.');
+          dia.error('Could not fetch room data. Action cancelled.'); // TODO: Handle gracefully
 
           return false;
         }
@@ -2245,7 +2216,7 @@ popup = {
         return false;
       },
       error: function() {
-        dia.error('Failed to obtain stats.');
+        dia.error('Failed to obtain stats. The action will be cancelled'); // TODO: Handle Gracefully
 
         return false;
       }
@@ -2536,7 +2507,7 @@ popup = {
             return false;
           },
           error: function() {
-            dia.error('Could not obtain uploads.');
+            dia.error('Could not obtain uploads. The action will be cancelled.'); // TODO: Handle Gracefully
           }
         });
 
@@ -2620,7 +2591,7 @@ popup = {
               return false;
             },
             error: function() {
-              dia.error('Failed to obtain current room settings from server.');
+              dia.error('Failed to obtain current room settings from server. The action will be cancelled.'); // TODO: Handle Gracefully
 
               return false;
             }
@@ -2653,7 +2624,7 @@ popup = {
             return false;
           },
           error: function() {
-            dia.error('Failed to obtain current censor list settings from server.');
+            dia.error('Failed to obtain current censor list settings from server. The action will be cancelled.'); // TODO: Handle Gracefully
 
             return false;
           }
@@ -2883,7 +2854,7 @@ popup = {
         return false;
       },
       error: function() {
-        dia.error('The list of currently kicked users could not be obtained from the server.');
+        dia.error('The list of currently kicked users could not be obtained from the server. The action will be cancelled.'); // TODO: Handle Gracefully
 
         return false;
       }
@@ -2935,7 +2906,7 @@ popup = {
         return false;
       },
       error: function() {
-        dia.error('The list of currently kicked users could not be obtained from the server.');
+        dia.error('The list of currently kicked users could not be obtained from the server. The action will be cancelled.'); // TODO: Handle Gracefully
 
         return false;
       }
@@ -3231,7 +3202,7 @@ function contextMenuParseUser(container) {
         return false;
       },
       error: function() {
-        dia.error('The information of this user could not be retrieved.');
+        dia.error('The information of this user could not be retrieved. The acton will be cancelled.');3
 
         return false;
       }

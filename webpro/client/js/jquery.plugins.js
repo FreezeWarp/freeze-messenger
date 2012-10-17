@@ -1465,6 +1465,8 @@ var notify = {
  * http://www.gnu.org/licenses/gpl.html */
 var dia = {
   error : function(message) {
+    console.log('Error: ' + message);
+
     $('<div style="display: none;"><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>' + message + '</div>').dialog({
       title : 'Error',
       modal : true,

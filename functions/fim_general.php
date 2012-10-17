@@ -1165,6 +1165,8 @@ function fim_exceptionHandler($exception) {
   ob_end_clean(); // Clean the output buffer and end it. This means when we show the error in a second, there won't be anything else with it.
 
   if ($api || $apiRequest) { // TODO: I don't know why $api doesn't work. $apiRequest does for now, but this will need to be looked into to.
+    header('HTTP/1.1 500 Internal Server Error');
+
     echo fim_outputApi(array(
       'exception' => array(
         'string' => $exception->getMessage(),
