@@ -1,7 +1,7 @@
 <?php
 /* Default Configuration Settings
  * These are the defaults to the $config system (which is a lot like about:config in Firefox).
- * Some of these are really barebones compared to the data used by the install script (e.g. searchWord directives), though otherwise its largely identical.
+ * Some of these are really barebones compared to the data used by the install script (e.g. searchWord directives), while others are ommitted from the install script due to their relative rarity in use.
  * This file will only need to be loaded when the $config data is out-of-date.
  * Finally, every single $config variable that is at any time used is in this file, in case you need a referrence.
 */
@@ -109,12 +109,13 @@ $defaultConfig = array(
   'ageMinimum' => 13,
   'ageMaximum' => 100,
 
-  'emailRequired' => true,
+  'emailRequired' => true, // The vanilla subsystem can function without email, but of-course email is required for password reminders.
 
   'parentalEnabled' => true, // Is the system enabled by default?
   'parentalForced' => true, // Can the user disable/enable the system him or herself?
   'parentalAgeDefault' => 13, // Age used in lieu of a birthdate, if the user has not provided one. (see "ageRequired" above)
   'parentalAgeChangable' => true, // Can the user override his or her age group upwards? (No matter what, a user may set it downwards).
   'parentalFlagsDefault' => array(), // Flags on by default.
+  'parentalRegistrationAge' => 0, // Age required to register.
 );
 ?>

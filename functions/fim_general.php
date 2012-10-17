@@ -127,7 +127,7 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
     $isAllowedGroup = false;
     $isOwner = false;
     $isRoomDeleted = false;
-    $isPrivateRoom = false;
+    $parentalBlock = false;
     $kick = false;
 
     $isAllowedUserOverride = false;
@@ -149,6 +149,8 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
     }
     elseif (!isset($roomData['parentalFlags'])) throw new Exception('hasPermission requires roomData[parentalFlags] to be defined.');
     elseif (!isset($roomData['parentalAge'])) throw new Exception('hasPermission requires roomData[parentalAge] to be defined.');
+    elseif (!isset($userData['parentalAge'])) throw new Exception('hasPermission requires roomData[parentalAge] to be defined.');
+    elseif (!isset($userData['parentalFlags'])) throw new Exception('hasPermission requires roomData[parentalFlags] to be defined.');
     elseif (!isset($roomData['defaultPermissions'])) throw new Exception('Room data invalid (defaultPermissions index missing)'); // If the default permissions index is missing, through an exception.
     elseif ($type === 'know') throw new Exception('Room data invalid (type of "know")'); // Transitional. TODO: Remove
 
@@ -168,14 +170,8 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
       /* Is the User an Allowed User? */
       foreach(array('user', 'admingroup', 'group') AS $type3) {
         if (isset($permissionsCache[$roomData['roomId']], $permissionsCache[$roomData['roomId']][$type3], $permissionsCache[$roomData['roomId']][$type3][$userData['userId']])) {
-          if ($permissionsCache[$roomData['roomId']][$type3][$userData['userId']] & $permMap[$type2]) {
-            $isAllowedUser = true;
-          }
-          else { // If a group is granted access but a user is forbidden, the user status is considered final. Likewise, if a social group is granted access but an admin group is restircted, the admin group is considered final.
-            $isAllowedUserOverride = true;
-
-            break;
-          }
+          if ($permissionsCache[$roomData['roomId']][$type3][$userData['userId']] & $permMap[$type2]) { $isAllowedUser = true; }
+          else { $isAllowedUserOverride = true; break; } // If a group is granted access but a user is forbidden, the user status is considered final. Likewise, if a social group is granted access but an admin group is restircted, the admin group is considered final.
         }
       }
       if (($roomData['defaultPermissions'] & $permMap[$type2]) && !$isAllowedUserOverride) {
@@ -198,7 +194,6 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
       /* Is the Room a Private Room or Deleted? */
       if (isset($roomData['options'])) {
         if ($roomData['options'] & 4) $isRoomDeleted = true; // The room is deleted.
-        if ($roomData['options'] & 16) $isPrivateRoom = true; // The room is private
       }
       else {
         throw new Exception('Room data invalid (options index missing)'); // We need the options index.
@@ -215,37 +210,43 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
       }
 
 
+      /* Is the user banned by parental controls? */
+      if ($config['parentalEnabled']) {
+        if (fim_dobToAge($userData['dob']) < $userData['parentalAge']) $parentalBlock = true;
+        elseif (fim_inArray(explode(',', $userData['parentalFlags']), explode(',', $roomData['parentalFlags']))) $parentalBlock = true;
+      }
+
+
       if ($type2 === 'post') {
-        if ($banned) {                                           $roomValid['post'] = false; $reason = 'banned'; }
+        if ($banned) {                                           $roomValid['post'] = false; $reason = 'banned'; } // admins can disable their own ban
         elseif (!$valid) {                                       $roomValid['post'] = false; $reason = 'invalid'; }
-        elseif ($kick && !$isAdmin) {                            $roomValid['post'] = false; $reason = 'kicked'; }
-        elseif ($isAdmin && !$isPrivateRoom) {                   $roomValid['post'] = true; }
-        elseif ($isRoomDeleted) {                                $roomValid['post'] = false; $reason = 'deleted'; }
-        elseif ($isAllowedUser || $isAllowedGroup || $isOwner) { $roomValid['post'] = true; }
+        elseif ($isAdmin || $isOwner || $isModerator) {          $roomValid['post'] = true; }
+        elseif ($kick) {                                         $roomValid['post'] = false; $reason = 'kicked'; } // admin overrides this
+        elseif ($parentalBlock) {                                $roomValid['view'] = false; $reason = 'parental'; } // admin overrides this
+        elseif ($isRoomDeleted) {                                $roomValid['post'] = false; $reason = 'deleted'; } // admin overrides this
+        elseif ($isAllowedUser || $isAllowedGroup) {             $roomValid['post'] = true; }
         else {                                                   $roomValid['post'] = false; $reason = 'general'; }
       }
 
       if ($type2 === 'view') {
-        if ($isAdmin && !$isPrivateRoom) {                       $roomValid['view'] = true; }
-        elseif ($isRoomDeleted) {                                $roomValid['view'] = false; $reason = 'deleted'; }
-        elseif ($isAllowedUser || $isAllowedGroup || $isOwner) { $roomValid['view'] = true; }
+        if ($banned) {                                           $roomValid['moderate'] = false; $reason = 'banned';  } // admins can disable their own ban
+        elseif ($isAdmin || $isOwner || $isModerator) {          $roomValid['view'] = true; }
+        elseif ($isRoomDeleted) {                                $roomValid['view'] = false; $reason = 'deleted'; } // admin overrides this
+        elseif ($parentalBlock) {                                $roomValid['view'] = false; $reason = 'parental'; } // admin overrides this
+        elseif ($isAllowedUser || $isAllowedGroup) {             $roomValid['view'] = true; }
         else {                                                   $roomValid['view'] = false; $reason = 'general'; }
       }
 
-      if ($type2 === 'moderate') {
-        if ($banned) {                                           $roomValid['moderate'] = false; $reason = 'banned';  }
-        elseif (!$valid) {                                       $roomValid['moderate'] = false; $reason = 'invalid'; }
-        elseif ($kick && !$isAdmin) {                            $roomValid['moderate'] = false; $reason = 'kicked';  }
-        elseif ($isPrivateRoom) {                                $roomValid['moderate'] = false; $reason = 'private'; }
+      if ($type2 === 'moderate') { // parental block and kick do not apply to moderator, ignore
+        if ($banned) {                                           $roomValid['moderate'] = false; $reason = 'banned';  } // admins can disable their own ban
+        elseif (!$valid) {                                       $roomValid['moderate'] = false; $reason = 'invalid'; }  // TODO: redundant?
         elseif ($isOwner || $isModerator || $isAdmin) {          $roomValid['moderate'] = true;                       }
         else {                                                   $roomValid['moderate'] = false; $reason = 'general'; }
       }
 
-      if ($type2 === 'admin') {
-        if ($banned) {                                           $roomValid['admin'] = false; $reason = 'banned';  }
-        elseif (!$valid) {                                       $roomValid['admin'] = false; $reason = 'invalid'; }
-        elseif ($kick) {                                         $roomValid['admin'] = false; $reason = 'kicked';  }
-        elseif ($isPrivateRoom) {                                $roomValid['admin'] = false; $reason = 'private'; }
+      if ($type2 === 'admin') { // parental block and kick do not apply to admin, ignore
+        if ($banned) {                                           $roomValid['admin'] = false; $reason = 'banned';  } // admins can disable their own ban
+        elseif (!$valid) {                                       $roomValid['admin'] = false; $reason = 'invalid'; } // TODO: redundant?
         elseif ($isAdmin) {                                      $roomValid['admin'] = true;                       }
         else {                                                   $roomValid['admin'] = false; $reason = 'general'; }
       }
@@ -1263,6 +1264,30 @@ function fim_cast($cast, $value, $default = null) {
   }
 
   return $value;
+}
+
+/**
+ * Determines if a user has permission to do an action in a room.
+ *
+ * @param array $roomData - An array containing the room's data; indexes allowedUsers, allowedGroups, moderators, owner, and options may be used.
+ * @param array $userData - An array containing the user's data; indexes userId, adminPrivs, and userPrivs may be used.
+ * @param string $type - Either "topic", "view", "post", "moderate", or "admin", this defines the action the user is trying to do.
+ * @param bool $trans - If true, return will be an information array; otherwise bool.
+ * @global bool $banned - Whether or not the user is banned outright.
+ * @global array $superUsers - The list of superUsers.
+ * @global bool $valid - Whether or not the user has a valid login (required for posting, etc.)
+ * @global string $sqlPrefix
+ * @return mixed - Bool if $trans is false, array if $trans is true.
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
+
+/**
+ * Converts a date of birth to age.
+ *
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
+function fim_dobToAge($date) {
+  return floor((time() - $date) / (60 * 60 * 24 * 365));
 }
 
 /*

@@ -457,6 +457,22 @@
     </table>
 
     <table name="configuration">
+      <column name="directive" value="email" />
+      <column name="value" value="" />
+      <column name="type" value="string" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="anonymousUserId" />
+      <column name="value" value="0" />
+      <column name="type" value="int" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="bannedUserGroups" />
+      <column name="value" value="0" />
+      <column name="type" value="int" />
+    </table>
+
+    <table name="configuration">
       <column name="directive" value="ageMinimum" />
       <column name="value" value="6" />
       <column name="type" value="int" />

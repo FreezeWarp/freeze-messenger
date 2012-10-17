@@ -66,7 +66,7 @@ $request = fim_sanitizeGPC('p', array(
   ),
 ));
 
-$userAge = floor((time() - $request['birthdate']) / (60 * 60 * 24 * 365)); // Generate the age of the user by taking the current unix timestamp and subtracting the timestamp of the user's date. Divide to create years.
+$userAge = fim_dobToAge($request['birthdate']); // Generate the age of the user by taking the current unix timestamp and subtracting the timestamp of the user's date. Divide to create years.
 
 
 /* Plugin Hook Start */
