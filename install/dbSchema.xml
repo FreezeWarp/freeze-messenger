@@ -544,7 +544,7 @@
       <column name="interfaceId" type="string" maxlen="50" comment="The user's default interface." />
 
       <!-- Lists (DEPRECATED) -->
-      <column name="favRooms" type="string" maxlen="1000" default="1" comment="A comma-seperated list of rooms the user has ranked as being favourites." />
+      <column name="favRooms" type="string" maxlen="1000" comment="A comma-seperated list of rooms the user has ranked as being favourites." />
       <column name="watchRooms" type="string" maxlen="1000" comment="A comma-seperated list of rooms the user would like to be notified about when new messages are made" />
       <column name="ignoreList" type="string" maxlen="1000" comment="A comma-seperated list of users the user would like to ignore from being contacted by." />
 
@@ -576,7 +576,6 @@
 
       <key name="userId" type="primary" />
       <key name="userGroup" type="index" />
-      <key name="allGroups" type="index" />
       <key name="interfaceId" type="index" />
       <key name="lastSync" type="index" />
       <key name="userPrivs" type="index" />

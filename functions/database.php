@@ -126,12 +126,12 @@ class database {
       );
 
       $this->columnStringPermLimits = array(
-        1 => 'CHAR',           100 => 'VARCHAR', 1000 => 'TEXT', 8191 => 'MEDIUMTEXT',
-        2097151 => 'LONGTEXT', 0 => 'LONGTEXT',
+        1 => 'CHAR',           255 => 'VARCHAR', 1000 => 'TEXT', 8191 => 'MEDIUMTEXT',
+        2097151 => 'LONGTEXT',
       );
 
       $this->columnStringTempLimits = array(
-        1 => 'TEXT', 8191 => 'MEDIUMTEXT', 2097151 => 'LONGTEXT', 0 => 'LONGTEXT',
+        255 => 'CHAR',           65535 => 'VARCHAR',
       );
 
       $this->columnStringNoLength = array('MEDIUMTEXT', 'LONGTEXT');
@@ -1023,7 +1023,7 @@ LIMIT
    */
   public function createTable($tableName, $tableComment, $storeType, $tableColumns, $tableIndexes) {
     if (isset($this->tableTypes[$storeType])) {
-      $engine = $this->comparisonTypes[$storeType];
+      $engine = $this->tableTypes[$storeType];
     }
     else {
       throw new Exception('Unrecognized table engine: ' . $storeType);
@@ -1060,26 +1060,21 @@ LIMIT
           $typePiece = 'ENUM(' . implode(',',$restrictValues) . ')';
         }
         else {
-          $typeProcessed = false;
+          if ($storeType === 'memory') $this->columnStringLimits = $this->columnStringTempLimits;
+          else                         $this->columnStringLimits = $this->columnStringPermLimits;
 
-          if ($engine === 'memory') $this->columnStringLimits = $this->columnStringTempLimits;
-          else                      $this->columnStringLimits = $this->columnStringPermLimits;
+          $typePiece = '';
 
           foreach ($this->columnStringLimits AS $length => $type) {
-            if ($column['maxlen'] > $length) {
+            if ($column['maxlen'] <= $length) {
               if (in_array($type, $this->columnStringNoLength)) $typePiece = $type;
               else $typePiece = $type . '(' . $column['maxlen'] . ')';
 
-              $typeProcessed = true;
-
-              continue;
-            }
-            else {
               break;
             }
           }
 
-          if (!$typeProcessed) {
+          if (!$typePiece) {
             $typePiece = $this->columnStringNoLength[0];
           }
         }
@@ -1149,7 +1144,6 @@ LIMIT
 
       $keys[] = "{$typePiece} ({$key['name']})";
     }
-
 
     return $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->tableQuoteStart . $this->escape($tableName) . $this->tableQuoteEnd . ' (
 ' . implode(",\n  ",$columns) . ',
