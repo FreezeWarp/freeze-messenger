@@ -3174,7 +3174,7 @@ function contextMenuParseUser(container) {
           dia.full({
             title : 'User Profile',
             id : 'messageLink',
-            content : '<iframe src="' + profileUrl + '" style="width: 100%; height: 80%;" />',
+            content : (profileUrl ? '<iframe src="' + profileUrl + '" style="width: 100%; height: 80%;" />' : 'The user has not yet registered a profile.'),
             width: $(window).width() * .8,
             height: $(window).height() * .8,
           });

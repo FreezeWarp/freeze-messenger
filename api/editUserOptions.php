@@ -35,6 +35,10 @@ $request = fim_sanitizeGPC('p', array(
     'context' => 'int',
   ),
 
+  'avatar' => array(),
+
+  'profile' => array(),
+
   'defaultFontface' => array(
     'context' => 'int',
   ),
@@ -69,7 +73,17 @@ $request = fim_sanitizeGPC('p', array(
       'filter' => 'int',
       'evaltrue' => true,
     ),
-  )
+  ),
+
+  'parentalAge' => array(
+    'context' => 'int',
+  ),
+
+  'parentalFlags' => array(
+    'context' => array(
+      'type' => 'csv',
+    ),
+  ),
 ));
 
 /* Data Predefine */
@@ -93,6 +107,69 @@ $xmlData = array(
 
 
 /* Start Processing */
+if ($loginConfig['method'] === 'vanilla') {
+  if (isset($request['avatar'])) { // TODO: Add regex policy.
+    $imageData = getimagesize($request['avatar']);
+
+    if ($imageData[0] <= $config['avatarMinimumWidth'] || $imageData[1] <= $config['avatarMinimumHeight']) {
+      $xmlData['editUserOptions']['response']['avatar']['status'] = false;
+      $xmlData['editUserOptions']['response']['avatar']['errStr'] = 'badSize';
+      $xmlData['editUserOptions']['response']['avatar']['errDesc'] = 'The avatar specified is too small.';
+    }
+    elseif (!in_array($imageData[2], array('IMAGETYPE_GIF', 'IMAGETYPE_JPEG', 'IMAGETYPE_PNG'))) {
+      $xmlData['editUserOptions']['response']['avatar']['status'] = false;
+      $xmlData['editUserOptions']['response']['avatar']['errStr'] = 'badType';
+      $xmlData['editUserOptions']['response']['avatar']['errDesc'] = 'The avatar is not a valid image type.';
+    }
+    elseif ($badRegex) {
+      $xmlData['editUserOptions']['response']['avatar']['status'] = false;
+      $xmlData['editUserOptions']['response']['avatar']['errStr'] = 'bannedFile';
+      $xmlData['editUserOptions']['response']['avatar']['errDesc'] = 'The avatar specified is not allowed.';
+    }
+    else {
+      $updateArray['avatar'] = $request['avatar'];
+
+      $xmlData['editUserOptions']['response']['avatar']['status'] = true;
+      $xmlData['editUserOptions']['response']['avatar']['newValue'] = (int) $request['avatar'];
+    }
+  }
+
+  if (isset($request['profile'])) { // TODO: Add regex policy.
+
+    if (filter_var($url, FILTER_VALIDATE_URL) === FALSE) {
+      $xmlData['editUserOptions']['response']['profile']['status'] = false;
+      $xmlData['editUserOptions']['response']['profile']['errStr'] = 'noUrl';
+      $xmlData['editUserOptions']['response']['profile']['errDesc'] = 'The URL is not a URL.';
+    }
+    else {
+      $ch = curl_init($request['profile']);
+      curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)');
+      curl_setopt($ch, CURLOPT_NOBODY, true);
+      curl_exec($ch);
+      $retcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+      curl_close($ch);
+
+      if ($status !== 200) {
+        $xmlData['editUserOptions']['response']['profile']['status'] = false;
+        $xmlData['editUserOptions']['response']['profile']['errStr'] = 'badUrl';
+        $xmlData['editUserOptions']['response']['profile']['errDesc'] = 'The URL does not validate.';
+      }
+      elseif ($badRegex) {
+        $xmlData['editUserOptions']['response']['avatar']['status'] = false;
+        $xmlData['editUserOptions']['response']['avatar']['errStr'] = 'bannedUrl';
+        $xmlData['editUserOptions']['response']['avatar']['errDesc'] = 'The URL specified is not allowed.';
+      }
+      else {
+        $updateArray['profile'] = $request['profile'];
+
+        $xmlData['editUserOptions']['res zponse']['profile']['status'] = true;
+        $xmlData['editUserOptions']['response']['profile']['newValue'] = (int) $request['avatar'];
+      }
+    }
+  }
+}
+
+
 if ($request['defaultRoomId'] > 0) {
   $defaultRoomData = $slaveDatabase->getRoom($request['defaultRoomId']);
 
@@ -105,7 +182,7 @@ if ($request['defaultRoomId'] > 0) {
   else {
     $xmlData['editUserOptions']['response']['defaultRoom']['status'] = false;
     $xmlData['editUserOptions']['response']['defaultRoom']['errStr'] = 'noPerm';
-    $xmlData['editUserOptions']['response']['defaultRoom']['errDesc'] = 'You do not have ';
+    $xmlData['editUserOptions']['response']['defaultRoom']['errDesc'] = 'You do not have permission to view the room you are trying to default to.';
   }
 }
 

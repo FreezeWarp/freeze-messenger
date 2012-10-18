@@ -237,7 +237,7 @@ switch ($_REQUEST['phase']) {
 
   $adminUsername = urldecode($_GET['admin_userName']);
   $adminPassword = urldecode($_GET['admin_password']);
-  
+
   $salts = array( // This is later written to the config file, but we want to use this properly for now.
     101 => $encryptSalt
   );
@@ -245,7 +245,7 @@ switch ($_REQUEST['phase']) {
   $base = file_get_contents('config.base.php');
 
   $userSalt = fim_generateSalt();
- 
+
   if ($forum == 'vanilla') {
     $database = new database();
     $database->connect($host, $port, $userName, $password, $databaseName, $driver);
