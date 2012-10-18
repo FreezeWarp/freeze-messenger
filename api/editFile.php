@@ -191,6 +191,8 @@ if ($continue) {
             break;
           }
 
+          $rawSize = strlen($rawData);
+
 
           if ($request['md5hash']) { // This will allow us to verify that the upload worked.
             if (md5($rawData) != $request['md5hash']) {
@@ -211,7 +213,7 @@ if ($continue) {
           }
 
           if ($request['fileSize']) { // This will allow us to verify that the upload worked as well, can be easier to implement, but doesn't serve the primary purpose of making sure the file upload wasn't intercepted.
-            if (strlen($rawData) != $request['fileSize']) {
+            if ($rawSize != $request['fileSize']) {
               $errStr = 'badRawSize';
               $errDesc = 'The specified content length did not match the file content.';
 
@@ -266,11 +268,11 @@ if ($continue) {
                   $errStr = 'emptyFile';
                   $errDesc = $phrases['uploadErrorFileContents'];
                 }
-                elseif (strlen($rawData) == 0) {
+                elseif ($rawSize == 0) {
                   $errStr = 'emptyFile';
                   $errDesc = $phrases['uploadErrorFileContents'];
                 }
-                elseif (strlen($rawData) > $maxSize) { // Note: Data is stored as base64 because its easier to handle; thus, the data will be about 33% larger than the normal (thus, if a limit is normally 400KB the file must be smaller than 300KB).
+                elseif ($rawSize > $maxSize) { // Note: Data is stored as base64 because its easier to handle; thus, the data will be about 33% larger than the normal (thus, if a limit is normally 400KB the file must be smaller than 300KB).
                   $errStr = 'tooLarge';
                   $errDesc = $phrases['uploadErrorFileSize'];
                 }
@@ -333,7 +335,10 @@ if ($continue) {
                         'userId' => $user['userId'],
                         'fileName' => $request['fileName'],
                         'fileType' => $mime,
+                        'parentalAge' => $request['parentalAge'],
+                        'parentalFlags' => $request['parentalFlags'],
                         'creationTime' => time(),
+                        'fileSize' => $rawSize,
                       ));
 
                       $fileId = $database->insertId;
@@ -345,7 +350,7 @@ if ($continue) {
                         'md5hash' => $md5hash,
                         'salt' => $saltNum,
                         'iv' => $iv,
-                        'size' => strlen($rawData),
+                        'size' => $rawSize,
                         'contents' => $contentsEncrypted,
                         'time' => time(),
                       ));
@@ -356,7 +361,7 @@ if ($continue) {
                         'md5hash' => $md5hash,
                         'salt' => $saltNum,
                         'iv' => $iv,
-                        'size' => strlen($rawData),
+                        'size' => $rawSize,
                         'contents' => $contentsEncrypted,
                         'time' => time(),
                       ));
@@ -368,14 +373,14 @@ if ($continue) {
                         ),
                         'fileSize' => array(
                           'type' => 'equation',
-                          'value' => '$fileSize + ' . (int) strlen($rawData),
+                          'value' => '$fileSize + ' . (int) $rawSize,
                         ),
                       ), array(
                         'userId' => $user['userId'],
                       ));
 
                       $database->incrementCounter('uploads');
-                      $database->incrementCounter('uploadSize', strlen($rawData));
+                      $database->incrementCounter('uploadSize', $rawSize);
 
                       $webLocation = "{$installUrl}file.php?sha256hash={$sha256hash}";
 

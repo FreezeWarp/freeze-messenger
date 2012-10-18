@@ -90,11 +90,7 @@
           </tr>
           <tr>
             <td><strong>Email</strong></td>
-            <td><input id="email" type="text" name="email" /><br /><small>Retype your password to confirm its accuracy</small></td>
-          </tr>
-          <tr>
-            <td><strong>Website / Profile</strong></td>
-            <td><input id="website" type="url" name="website" /><br /><small>If you have an online profile, include it here so people can find you.</small></td>
+            <td><input id="email" type="text" name="email" /><br /><small>What is your email?</small></td>
           </tr>
           <tr>
             <td><strong>Date of Birth</strong></td>

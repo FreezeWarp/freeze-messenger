@@ -58,7 +58,7 @@ $xmlData = array(
 );
 
 $queryParts['fileSelect']['columns'] = array(
-  "{$sqlPrefix}files" => 'fileId, fileName, fileType, creationTime, userId, rating, flags',
+  "{$sqlPrefix}files" => 'fileId, fileName, fileType, creationTime, userId, parentalAge, parentalFlags',
   "{$sqlPrefix}fileVersions" => 'fileId vfileId, md5hash, sha256hash',
 );
 $queryParts['fileSelect']['conditions'] = array(
@@ -107,7 +107,8 @@ if ($continue) {
           'fileSizeFormatted' => formatSize($file['fileSize']),
           'fileName' => $file['fileName'],
           'mime' => $file['mime'],
-          'rating' => $file['rating'],
+          'parentalAge' => $file['parentalAge'],
+          'parentalFlags' => $file['parentalFlags'],
           'md5hash' => $file['md5hash'],
           'sha256hash' => $file['sha256hash'],
         );

@@ -130,7 +130,6 @@
       <key name="eventName" type="index" />
     </table>
 
-
     <table name="files" type="general" comment="User-created files.">
       <column name="fileId" type="int" maxlen="6" autoincrement="1" comment="A unique ID for the file." />
       <column name="fileName" type="string" maxlen="255" comment="The file's name to be sent for downloading." />
@@ -185,7 +184,6 @@
       <key name="id" type="primary" />
     </table>
 
-
     <table name="hooks" type="general" comment="Plugin-created code hooks.">
       <column name="hookId" type="int" maxlen="8" autoincrement="1" comment="A unique ID corrosponding to the hook. It is not used in retrieving hook contents (and thus could, for whatever reason, be changed on a dime)." />
       <column name="hookName" type="string" maxlen="50" comment="The hook's name, which will be used for most identification. These can be compounded (multiple rows with the same hookname can exist) if multiple entries exist for the hook." />
@@ -196,6 +194,12 @@
       <key name="hookName" type="index" />
     </table>
 
+    <table name="ignoredUsers">
+      <column name="userId" type="int" maxlen="8" comment="The user ID." />
+      <column name="ignoredUserId" type="int" maxlen="8" comment="The user ID." />
+
+      <key name="userId" type="primary" />
+    </table>
 
     <table name="kicks" type="memory" note="This will be made a standard table in FIMv4 so that kicks don't get reset on system restart. We will instead use APC for proper caching." comment="Room-created temporary user bans.">
       <column name="userId" type="int" maxlen="8" comment="The ID of the user who has been kicked." />
@@ -335,6 +339,9 @@
       <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options." />
 
       <!-- Counters -->
+      <column name="favRooms" type="string" maxlen="1000" comment="A comma-seperated list of rooms the user has ranked as being favourites." />
+      <column name="watchRooms" type="string" maxlen="1000" comment="A comma-seperated list of rooms the user would like to be notified about when new messages are made" />
+      <column name="ignoreList" type="string" maxlen="1000" comment="A comma-seperated list of users the user would like to ignore from being contacted by." />
       <column name="lastMessageTime" type="time" default="0" comment="The time of the last message made in the room." />
       <column name="lastMessageId" type="int" maxlen="15" comment="The ID of the last message made in the room." />
       <column name="messageCount" type="int" maxlen="15" comment="The number of messages in this room." />
@@ -375,6 +382,21 @@
       <key name="lastMessageTime" type="index" />
     </table>
 
+    <table name="roomLists" comment="Lists of rooms for users to easily access.">
+      <column name="userId" type="int" maxlen="8" comment="The user ID." />
+      <column name="roomId" type="int" maxlen="6" comment="The room ID." />
+      <column name="listId" type="int" maxlen="6" comment="The list ID." />
+
+      <key name="userId" type="primary" />
+      <key name="listName" type="primary" />
+    </table>
+
+    <table name="roomListNames" comment="The names for roomLists.">
+      <column name="listId" type="int" maxlen="8" comment="The user ID." />
+      <column name="listName" type="string" maxlen="10" comment="List name." />
+
+      <key name="listId" type="primary" />
+    </table>
 
     <table name="roomHistory" type="general" comment="A history of all changes made to rooms. This is enabled per-installation.">
       <!-- General -->
@@ -543,11 +565,6 @@
       <column name="defaultRoom" type="int" maxlen="6" default="1" comment="The user's default room." />
       <column name="interfaceId" type="string" maxlen="50" comment="The user's default interface." />
 
-      <!-- Lists (DEPRECATED) -->
-      <column name="favRooms" type="string" maxlen="1000" comment="A comma-seperated list of rooms the user has ranked as being favourites." />
-      <column name="watchRooms" type="string" maxlen="1000" comment="A comma-seperated list of rooms the user would like to be notified about when new messages are made" />
-      <column name="ignoreList" type="string" maxlen="1000" comment="A comma-seperated list of users the user would like to ignore from being contacted by." />
-
       <!-- Status -->
       <column name="status" type="int" maxlen="3" comment="The user's activity status." />
 
@@ -581,6 +598,19 @@
       <key name="userPrivs" type="index" />
       <key name="adminPrivs" type="index" />
       <key name="lang" type="index" />
+
+      <key name="options" type="index" />
+      <key name="fileCount" type="index" />
+      <key name="fileSize" type="index" />
+      <key name="messageCount" type="index" />
+      <key name="defaultRoom" type="index" />
+    </table>
+
+    <table name="watchRooms">
+      <column name="userId" type="int" maxlen="8" comment="The user ID." />
+      <column name="roomId" type="int" maxlen="6" comment="The room ID." />
+
+      <key name="userId" type="primary" />
     </table>
 
 

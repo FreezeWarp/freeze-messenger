@@ -140,6 +140,8 @@
   "settingsIgnoreListAdd" : "Add",
   "settingsParentalControlsBlurb" : "By default parental controls are enabled that help keep younger users safe. Check this to disable these features, however we take no responsibility for any repercussions.",
   "settingsParentalControlsLabel" : "Disable Parental Controls: ",
+  "settingsProfileLabel" : "Profile: ",
+  "settingsProfileBlurb" : "If you have a website or online profile, you can include it here.",
   "settingsReversePostOrderBlurb" : "This will show newer posts at the bottom instead of the top, as is common with many instant messenging programs.",
   "settingsReversePostOrderLabel" : "Show Old Posts First: ",
   "settingsShowAvatarsBlurb" : "Showing avatars will reduce the overall amount of text by hiding post times and userNames with a small avatar to represent users. Times can be viewed by moving the mouse over each message.",

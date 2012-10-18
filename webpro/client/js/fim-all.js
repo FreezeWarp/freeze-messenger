@@ -58,7 +58,8 @@ var userId, // The user ID who is logged in.
   roomId, // The ID of the room we are in.
   sessionHash, // The session hash of the active user.
   anonId, // ID used to represent anonymous posters.
-  prepopup;
+  prepopup,
+  forumType;
 
 
 
@@ -609,6 +610,7 @@ $.ajax({
   dataType: 'json',
   success: function(json) {
     requestSettings.longPolling = json.getServerStatus.serverStatus.requestMethods.longPoll;
+    forumType = json.getServerStatus.serverStatus.branding.forumType; console.log('forum: ' + forumType);
 
     if (typeof window.EventSource == 'undefined') {
       requestSettings.serverSentEvents = false;
@@ -2264,6 +2266,9 @@ popup = {
         if (theme) $('#theme > option[value="' + theme + '"]').attr('selected', 'selected');
         if (fontsize) $('#fontsize > option[value="' + fontsize + '"]').attr('selected', 'selected');
 
+        // Hide the Profile Changer Depending on Forum Type
+        if (forumType !== 'vanilla') $('#settings5profile').hide(0);
+
 
         $.get(directory + 'api/getUsers.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
           active = json.getUsers.users;
@@ -2429,7 +2434,7 @@ popup = {
             settings[localId] = false;
             $.cookie('webpro_settings', Number($.cookie('webpro_settings')) - idMap[localId], { expires : 14 });
 
-            if (localId === 'disableFx') { jQuery.fx.off = false; } // Reenable jQuery Effects
+            if (localId === 'disableFx') { jQuery.fSystemx.off = false; } // Reenable jQuery Effects
           }
         });
 
@@ -2469,7 +2474,7 @@ popup = {
 
   viewUploads : function() {
     dia.full({
-      content : '<table align="center"><thead><tr><td>Preview</td><td>File Name</td></tr></thead><tbody id="viewUploadsBody"></tbody></table>',
+      content : '<table align="center"><thead><tr><td>Preview</td><td>File Name</td><td>File Size</td><td>Actions</td></tr></thead><tbody id="viewUploadsBody"></tbody></table>',
       width : 1000,
       title : 'View My Uploads',
       position : 'top',
@@ -2487,9 +2492,9 @@ popup = {
               var fileName = active[i].fileName,
                 md5hash = active[i].md5hash,
                 sha256hash = active[i].sha256hash,
-                fileSize = active[i].fileSize;
+                fileSizeFormatted = active[i].fileSizeFormatted;
 
-              data += '<tr><td><img src="' + directory + 'file.php?sha256hash=' + sha256hash + '" style="max-width: 200px; max-height: 200px;" /></td><td>' + fileName + '</td></tr>';
+              data += '<tr><td><img src="' + directory + 'file.php?sha256hash=' + sha256hash + '" style="max-width: 200px; max-height: 200px;" /></td><td>' + fileName + '</td><td>' + fileSizeFormatted + '</td><td><button onclick="standard.changeAvatar(\'' + sha256hash + '\')">Set to Avatar</button></td></tr>';
             }
 
             $('#viewUploadsBody').html(data);
