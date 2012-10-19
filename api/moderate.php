@@ -158,7 +158,7 @@ switch ($request['action']) {
   break;
 
 
-  case 'favRoom':
+  case 'favRoom': /* TODO
   $currentRooms = fim_arrayValidate(explode(',', $user['favRooms']), 'int', false); // Get an array of the user's current rooms.
 
   if (!in_array($request['roomId'], $currentRooms)) { // Make sure the room is not already a favourite.
@@ -178,10 +178,10 @@ switch ($request['action']) {
     $errStr = 'nothingToDo';
 
     $xmlData['moderate']['response']['success'] = false;
-  }
+  }*/
   break;
 
-  case 'unfavRoom':
+  case 'unfavRoom':/* TODO
   $currentRooms = fim_arrayValidate(explode(',', $user['favRooms']), 'int', false); // Get an array of the user's current rooms.
 
   if (in_array($request['roomId'], $currentRooms)) { // Make sure the room is already a favourite.
@@ -205,7 +205,7 @@ switch ($request['action']) {
     $errStr = 'nothingToDo';
 
     $xmlData['moderate']['response']['success'] = false;
-  }
+  } */
   break;
 
 

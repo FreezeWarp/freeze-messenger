@@ -25,7 +25,6 @@
 
  * Primary Directives:
  * @param string roomId - The ID of the room to fetch messages from.
- * Note: Using more than one room can conflict or even break the script’s execution should the watchRooms or activeUsers flags be seto true.
  * @param int [messageLimit=1000] - The maximum number of posts to receive, defaulting to the internalimit of (in most cases) 1000. Thishould be high, as all other conditions (roomId, deleted, etc.) are applied after this limit.
  * @param int [messageHardLimit=40] - An alternative, generally lower limit applied once all messages are obtained from the server (or via the LIMIT clause of applicable). In other words, this limits the number of results AFTER roomId, etc. restrictions have been applied.
  * @param timestamp [messageDateMin=null] - Thearliest a post could have been made. Use of messageDateMax only makesense with no messageLimit. Do not specify to prevent checking.
@@ -40,7 +39,6 @@
  * @param string [encode=plaintext] - Thencoding of messages to be used on retrieval. "plaintext" is the only accepted format currently.
 
  * Extra Data:
- * @param bool [watchRooms=false] - Get unread messages from a user’s list of watchRooms (also applies to private IMs).
  * @param bool [activeUsers=false] - Returns a list of activeUsers in the room(s) if specified. This identical to calling the getActiveUserscript, except with less data redundancy.
  * @param int [onlineThreshold=15] - If using the activeUsers functionality, this will alter theffective onlineThreshold to be used.
 
@@ -98,11 +96,6 @@ $request = fim_sanitizeGPC('g', array(
   ),
 
   'showDeleted' => array(
-    'default' => false,
-    'context' => 'bool',
-  ),
-
-  'watchRooms' => array(
     'default' => false,
     'context' => 'bool',
   ),
@@ -193,7 +186,6 @@ $xmlData = array(
     'errStr' => $errStr,
     'errDesc' => $errDesc,
     'messages' => array(),
-    'watchRooms' => array(),
     'activeUsers' => array(),
   ),
 );

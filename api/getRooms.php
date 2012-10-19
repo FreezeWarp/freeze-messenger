@@ -139,13 +139,13 @@ switch ($request['sort']) {
 
 
 
-/* Get User's Favourite Rooms as Array */
+/* Get User's Favourite Rooms as Array TODO
 if (isset($user['favRooms'])) {
   $favRooms = fim_arrayValidate(explode(',', $user['favRooms']), 'int', false); // All entries cast as integers, will not preserve entries of zero.
 }
 else {
   $favRooms = array();
-}
+} */
 
 
 
@@ -181,7 +181,7 @@ if (is_array($rooms)) {
         'roomId' => (int)$roomData['roomId'],
         'roomName' => ($roomData['roomName']),
         'defaultPermissions' => (int) $roomData['defaultPermissions'],
-        'favorite' => (bool) (in_array($roomData['roomId'],$favRooms) ? true : false),
+//TODO        'favorite' => (bool) (in_array($roomData['roomId'],$favRooms) ? true : false),
         'options' => (int) $roomData['options'],
         'optionDefinitions' => array(
           'official' => (bool) ($roomData['options'] & 1),

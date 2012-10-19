@@ -75,7 +75,7 @@ $xmlData = array(
 );
 
 $queryParts['userSelect']['columns'] = array(
-  "{$sqlPrefix}users" => 'userId, userName, userFormatStart, userFormatEnd, profile, avatar, socialGroups, defaultColor, defaultHighlight, defaultFontface, defaultFormatting, favRooms, ignoreList, userGroup, options, defaultRoom, watchRooms',
+  "{$sqlPrefix}users" => 'userId, userName, userFormatStart, userFormatEnd, profile, avatar, socialGroups, defaultColor, defaultHighlight, defaultFontface, defaultFormatting, userGroup, options, defaultRoom',
 );
 $queryParts['userSelect']['conditions'] = false;
 $queryParts['userSelect']['sort'] = array(
@@ -274,9 +274,9 @@ if (is_array($users)) {
       if ($userData['userId'] === $user['userId']) {
         $xmlData['getUsers']['users']['user ' . $userData['userId']]['defaultRoom'] = $userData['defaultRoom'];
         $xmlData['getUsers']['users']['user ' . $userData['userId']]['options'] = $userData['options'];
-        $xmlData['getUsers']['users']['user ' . $userData['userId']]['ignoreList'] = $userData['ignoreList'];
-        $xmlData['getUsers']['users']['user ' . $userData['userId']]['favRooms'] = $userData['favRooms'];
-        $xmlData['getUsers']['users']['user ' . $userData['userId']]['watchRooms'] = $userData['watchRooms'];
+//TODO        $xmlData['getUsers']['users']['user ' . $userData['userId']]['ignoreList'] = $userData['ignoreList'];
+//TODO        $xmlData['getUsers']['users']['user ' . $userData['userId']]['favRooms'] = $userData['favRooms'];
+//TODO        $xmlData['getUsers']['users']['user ' . $userData['userId']]['watchRooms'] = $userData['watchRooms'];
       }
 
 

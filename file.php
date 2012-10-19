@@ -178,7 +178,15 @@ $file = $file->getAsArray(false);
 
 
 /* Start Processing */
-if ($file['salt']) {
+if ($config['parentalEnabled']) {
+  if ($user['parentalAge'] < $file['parentalAge']) $parentalBlock = true;
+  elseif (fim_inArray(explode(',', $user['parentalFlags']), explode(',', $file['parentalFlags']))) $parentalBlock = true;
+}
+
+if ($parentalBlock) {
+  $file['contents'] = ''; // TODO: Placeholder
+}
+elseif ($file['salt']) {
   $file = fim_decrypt($file,'contents');
 }
 else {

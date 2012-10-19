@@ -15,6 +15,7 @@
       <key name="userId,time" type="primary" />
     </table>
 
+
     <table name="activeClients" type="general" comment="Active clients. [RESERVED FOR VERSION 4]">
       <column name="clientId" type="int" maxlen="8" comment="The ID of the client." />
       <column name="session" type="string" maxlen="64" comment="The unique session string used." />
@@ -24,6 +25,7 @@
 
       <key name="session" type="primary" />
     </table>
+
 
     <table name="adminGroups" type="general" comment="Admin-created usergroups that can be used with vanilla logins.">
       <column name="groupId" type="int" maxlen="6" comment="The unique ID of the group." />
@@ -35,6 +37,7 @@
       <key name="groupId" type="primary" />
     </table>
 
+
     <table name="clients" type="general" comment="Registered clients. [RESERVED FOR VERSION 4]">
       <column name="clientId" type="int" maxlen="8" autoincrement="1" comment="The ID of the client." />
       <column name="accessLevel" type="int" maxlen="2" comment="The access level granted to the client." />
@@ -44,6 +47,7 @@
 
       <key name="clientId" type="primary" />
     </table>
+
 
     <table name="configuration" type="general" comment="Configuration directives.">
       <column name="directive" type="string" maxlen="50" comment="The configuration directive." />
@@ -130,6 +134,7 @@
       <key name="eventName" type="index" />
     </table>
 
+
     <table name="files" type="general" comment="User-created files.">
       <column name="fileId" type="int" maxlen="6" autoincrement="1" comment="A unique ID for the file." />
       <column name="fileName" type="string" maxlen="255" comment="The file's name to be sent for downloading." />
@@ -173,6 +178,7 @@
       <key name="fontId" type="primary" />
     </table>
 
+
     <table name="fulllog" type="general" comment="A log of moderator actions that docment all update(), insert(), and delete() calls.">
       <column name="id" type="int" maxlen="12" autoincrement="1" comment="A unique ID for the log entry." />
       <column name="user" type="int" maxlen="8" comment="The JSON-encoded $user data." />
@@ -184,6 +190,7 @@
       <key name="id" type="primary" />
     </table>
 
+
     <table name="hooks" type="general" comment="Plugin-created code hooks.">
       <column name="hookId" type="int" maxlen="8" autoincrement="1" comment="A unique ID corrosponding to the hook. It is not used in retrieving hook contents (and thus could, for whatever reason, be changed on a dime)." />
       <column name="hookName" type="string" maxlen="50" comment="The hook's name, which will be used for most identification. These can be compounded (multiple rows with the same hookname can exist) if multiple entries exist for the hook." />
@@ -194,12 +201,14 @@
       <key name="hookName" type="index" />
     </table>
 
-    <table name="ignoredUsers">
+
+    <table name="ignoredUsers" type="general" comment="A list of ignored users.">
       <column name="userId" type="int" maxlen="8" comment="The user ID." />
       <column name="ignoredUserId" type="int" maxlen="8" comment="The user ID." />
 
       <key name="userId" type="primary" />
     </table>
+
 
     <table name="kicks" type="memory" note="This will be made a standard table in FIMv4 so that kicks don't get reset on system restart. We will instead use APC for proper caching." comment="Room-created temporary user bans.">
       <column name="userId" type="int" maxlen="8" comment="The ID of the user who has been kicked." />
@@ -307,6 +316,7 @@
       <key name="id" type="primary" />
     </table>
 
+
     <table name="otrRooms" type="memory" comment="List of OTR rooms. It is implemented exactly as private rooms, except no data is stored outside of memory.">
       <column name="roomUsersList" type="string" maxlen="1000"/>
       <column name="roomUsersHash" type="string" maxlen="32" />
@@ -382,21 +392,24 @@
       <key name="lastMessageTime" type="index" />
     </table>
 
-    <table name="roomLists" comment="Lists of rooms for users to easily access.">
+
+    <table name="roomLists" type="general" comment="Lists of rooms for users to easily access.">
       <column name="userId" type="int" maxlen="8" comment="The user ID." />
       <column name="roomId" type="int" maxlen="6" comment="The room ID." />
       <column name="listId" type="int" maxlen="6" comment="The list ID." />
 
       <key name="userId" type="primary" />
-      <key name="listName" type="primary" />
+      <key name="listId" type="index" />
     </table>
 
-    <table name="roomListNames" comment="The names for roomLists.">
+
+    <table name="roomListNames" type="general" comment="The names for roomLists.">
       <column name="listId" type="int" maxlen="8" comment="The user ID." />
       <column name="listName" type="string" maxlen="10" comment="List name." />
 
       <key name="listId" type="primary" />
     </table>
+
 
     <table name="roomHistory" type="general" comment="A history of all changes made to rooms. This is enabled per-installation.">
       <!-- General -->
@@ -414,7 +427,6 @@
       <column name="parentalAge" type="string" restrict="6,10,13,16,18" comment="The file's parental content age rating." />
 
       <column name="changeTime" type="time" comment="The time at which the above information was altered." />
-
 
       <key name="roomId,changeTime" type="primary" />
     </table>
@@ -606,7 +618,8 @@
       <key name="defaultRoom" type="index" />
     </table>
 
-    <table name="watchRooms">
+
+    <table name="watchRooms" type="general">
       <column name="userId" type="int" maxlen="8" comment="The user ID." />
       <column name="roomId" type="int" maxlen="6" comment="The room ID." />
 
@@ -643,7 +656,6 @@
       <column name="parentalAge" type="string" restrict="6,10,13,16,18" comment="Content rated above this rating should be blocked." />
 
       <column name="changeTime" type="time" comment="The time at which the above information was altered." />
-
 
       <key name="userId,changeTime" type="primary" />
     </table>

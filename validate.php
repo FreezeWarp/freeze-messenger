@@ -219,8 +219,7 @@ $columnDefinitions = array( // These are only used for syncing. When the origina
       'password' => 'password', 'passwordSalt' => 'passwordSalt',
       'passwordSaltNum' => 'passwordSaltNum', 'joinDate' => 'joinDate',
       'birthDate' => 'birthDate', 'interfaceId' => 'interfaceId',
-      'favRooms' => 'favRooms', 'watchRooms' => 'watchRooms',
-      'ignoreList' => 'ignoreList', 'status' => 'status',
+      'status' => 'status',
       'userPrivs' => 'userPrivs', 'adminPrivs' => 'adminPrivs',
       'defaultRoom' => 'defaultRoom', 'defaultFormatting '=> 'defaultFormatting',
       'defaultHighlight' => 'defaultHighlight', 'defaultColor' => 'defaultColor',
@@ -277,7 +276,7 @@ $columnDefinitions = array( // These are only used for syncing. When the origina
 
 
 $queryParts['userSelect']['columns'] = array(
-  "{$sqlPrefix}users" => 'userId, userName, userGroup, allGroups, avatar, profile, socialGroups, userFormatStart, userFormatEnd, password, joinDate, birthDate, lastSync, defaultRoom, interfaceId, favRooms, watchRooms, ignoreList, status, defaultHighlight, defaultColor, defaultFontface, defaultFormatting, userPrivs, adminPrivs, lang, parentalAge, parentalFlags',
+  "{$sqlPrefix}users" => 'userId, userName, userGroup, allGroups, avatar, profile, socialGroups, userFormatStart, userFormatEnd, password, joinDate, birthDate, lastSync, defaultRoom, interfaceId, status, defaultHighlight, defaultColor, defaultFontface, defaultFormatting, userPrivs, adminPrivs, lang, parentalAge, parentalFlags',
 );
 $queryParts['userSelectFromSessionHash']['columns'] = array(
   "{$sqlPrefix}sessions" => 'anonId, magicHash, userId suserId, time sessionTime, ip sessionIp, browser sessionBrowser',
@@ -738,9 +737,9 @@ if ($valid) { // If the user is valid, process their preferrences.
 
     elseif ($userPrefs['lastSync'] <= (time() - (isset($config['userSyncThreshold']) ? $config['userSyncThreshold'] : 0))) { // This updates various caches every soften. In general, it is a rather slow process, and as such does tend to take a rather long time (that is, compared to normal - it won't exceed 500 miliseconds, really).
 
-      /* Favourite Room Cleanup
+      /* Favourite Room Cleanup -- TODO
       * Remove all favourite groups a user is no longer a part of. */
-      if (strlen($userPrefs['favRooms']) > 0) {
+/*      if (strlen($userPrefs['favRooms']) > 0) {
         $favRooms = $database->select(
           array(
             "{$sqlPrefix}rooms" => array(
@@ -808,7 +807,7 @@ if ($valid) { // If the user is valid, process their preferrences.
             unset($room);
           }
         }
-      }
+      }*/
 
 
 
