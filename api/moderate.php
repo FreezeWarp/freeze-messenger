@@ -145,6 +145,8 @@ switch ($request['action']) {
     $errDesc = 'The room specified is not valid.';
   }
   elseif (!fim_hasPermission($roomData, $user, 'moderate', true)) {
+
+  $xmlData['moderate']['response']['success'] = true;
     $errStr = 'nopermission';
     $errDesc = 'You are not allowed to moderate this room.';
   }
@@ -164,9 +166,57 @@ switch ($request['action']) {
 
 
   case 'markRoom':
-  $roomData = $database->getRoom($request['roomId']);
+  $queryParts['roomListSelect']['columns'] = array(
+    "{$sqlPrefix}roomLists" => 'roomId, userId, listId',
+  );
+  $queryParts['fileSelect']['conditions'] = array(
+    'both' => array(
+      array(
+        'type' => 'e',
+        'left' => array(
+          'type' => 'column',
+          'value' => 'userId',
+        ),
+        'right' => array(
+          'type' => 'int',
+          'value' => $user['userId'],
+        ),
+      ),
+      array(
+        'type' => 'e',
+        'left' => array(
+          'type' => 'column',
+          'value' => 'roomId',
+        ),
+        'right' => array(
+          'type' => 'int',
+          'value' => $request['roomId'],
+        ),
+      ),
+      array(
+        'type' => 'e',
+        'left' => array(
+          'type' => 'column',
+          'value' => 'listId',
+        ),
+        'right' => array(
+          'type' => 'int',
+          'value' => $request['listId'],
+        ),
+      ),
+    ),
+  );
+  $roomListData = $database->select(
+    $queryParts['roomListSelect']['columns'],
+    $queryParts['roomListSelect']['conditions']);
+  $roomListData = $roomListData->getAsArray(true);
 
-  if (!$roomData['roomId']) {
+
+  if (count($roomListData) > 0) {
+    $errStr = 'badRoom';
+    $errDesc = 'The room specified is not valid.';
+  }
+  elseif (!$roomData['roomId']) {
     $errStr = 'badRoom';
     $errDesc = 'The room specified is not valid.';
   }
