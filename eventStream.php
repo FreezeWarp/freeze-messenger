@@ -35,98 +35,59 @@ else {
   /* Get Request Data */
   $request = fim_sanitizeGPC('g', array(
     'roomId' => array(
-      'type' => 'string',
+      'type' => 'int',
       'require' => true,
-      'default' => 0,
-      'context' => array(
-        'type' => 'int',
-        'evaltrue' => true,
-      ),
+      'context' => array('type' => 'int', 'evaltrue' => true),
     ),
     'lastMessage' => array(
-      'type' => 'string',
+      'type' => 'int',
       'require' => false,
       'default' => 0,
-      'context' => array(
-        'type' => 'int',
-        'evaltrue' => false,
-      ),
+      'context' => array('type' => 'int', 'evaltrue' => false),
     ),
     'lastUnreadMessage' => array(
-      'type' => 'string',
+      'type' => 'int',
       'require' => false,
       'default' => 0,
-      'context' => array(
-        'type' => 'int',
-        'evaltrue' => false,
-      ),
+      'context' => array('type' => 'int', 'evaltrue' => false),
     ),
     'lastEvent' => array(
-      'type' => 'string',
+      'type' => 'int',
       'require' => false,
       'default' => 0,
-      'context' => array(
-        'type' => 'int',
-        'evaltrue' => false,
-      ),
+      'context' => array('type' => 'int', 'evaltrue' => false),
     ),
   ));
 
-  $lastMessageId = (isset($_SERVER['HTTP_LAST_EVENT_ID']) ? $_SERVER['HTTP_LAST_EVENT_ID'] : 0); // Get the message ID used for keeping state data; e.g. 1-2-3
-  $lastMessageIdParts = explode('-', $lastMessageId); // Get each state part; e.g. array(1, 2, 3)
-  if (count($lastMessageIdParts) === 3) { // There must be three parts
-    $request['lastMessage'] = (int) substr($lastMessageIdParts[0], 1);
-    $request['lastUnreadMessage'] = (int) substr($lastMessageIdParts[1], 1);
-    $request['lastEvent'] = (int) substr($lastMessageIdParts[2], 1);
+  if (isset($_SERVER['HTTP_LAST_EVENT_ID'])) {
+    $lastMessageId = $_SERVER['HTTP_LAST_EVENT_ID']; // Get the message ID used for keeping state data; e.g. 1-2-3
+    $lastMessageIdParts = explode('-', $lastMessageId); // Get each state part; e.g. array(1, 2, 3)
+
+    if (count($lastMessageIdParts) === 3) { // There must be three parts
+      $request['lastMessage'] = (int) substr($lastMessageIdParts[0], 1);
+      $request['lastUnreadMessage'] = (int) substr($lastMessageIdParts[1], 1);
+      $request['lastEvent'] = (int) substr($lastMessageIdParts[2], 1);
+    }
   }
+
 
   while (true) {
     $serverSentRetries++;
 
-
     $queryParts['messagesSelect']['columns'] = array(
-      "{$sqlPrefix}messagesCached" => array(
-        'messageId' => 'messageId',
-        'roomId' => 'roomId',
-        'time' => 'time',
-        'flag' => 'flag',
-        'userId' => 'userId',
-        'userName' => 'userName',
-        'userGroup' => 'userGroup',
-        'socialGroups' => 'socialGroups',
-        'userFormatStart' => 'userFormatStart',
-        'userFormatEnd' => 'userFormatEnd',
-        'avatar' => 'avatar',
-        'defaultColor' => 'defaultColor',
-        'defaultFontface' => 'defaultFontface',
-        'defaultHighlight' => 'defaultHighlight',
-        'defaultFormatting' => 'defaultFormatting',
-        'text' => 'text',
-      ),
+      "{$sqlPrefix}messagesCached" => 'messageId, roomId, time, flag, userId, userName, userGroup, socialGroups, userFormatStart, userFormatEnd, avatar, defaultColor, defaultFontface, defaultHighlight, defaultFormatting, text',
     );
     $queryParts['messagesSelect']['conditions'] = array(
       'both' => array(
         array(
           'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'roomId',
-          ),
-          'right' => array(
-            'type' => 'int',
-            'value' => (int) $request['roomId'],
-          ),
+          'left' => array('type' => 'column', 'value' => 'roomId'),
+          'right' => array('type' => 'int', 'value' => (int) $request['roomId']),
         ),
         array(
           'type' => 'gt',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'messageId',
-          ),
-          'right' => array(
-            'type' => 'int',
-            'value' => (int) $request['lastMessage'],
-          ),
+          'left' => array('type' => 'column', 'value' => 'messageId'),
+          'right' => array('type' => 'int', 'value' => (int) $request['lastMessage']),
         ),
       ),
     );
@@ -137,7 +98,7 @@ else {
 
 
 
-    $queryParts['missedSelect']['columns'] = array(
+/*    $queryParts['missedSelect']['columns'] = array(
       "{$sqlPrefix}rooms" => array(
         'roomId' => 'roomId',
         'options' => 'options',
@@ -281,7 +242,7 @@ else {
       ),
     );
     $queryParts['unreadSelect']['sort'] = false;
-    $queryParts['unreadSelect']['limit'] = false;
+    $queryParts['unreadSelect']['limit'] = false; */
 
 
 
@@ -291,7 +252,9 @@ else {
       $queryParts['messagesSelect']['sort'],
       $queryParts['messagesSelect']['limit']);
     $messages = $messages->getAsArray('messageId');
-//error_log(print_r($queryParts['messagesSelect']['conditions'],true));
+//    error_log(print_r($queryParts['messagesSelect']['conditions'],true));
+//    error_log('EventStream Log: ' . print_r($request, true) . '          ' . print_r($messages->sourceQuery, true) . '          ' . print_r($messages, true));
+//    error_log(print_r($messages->sourceQuery, true));
 
     if (is_array($messages)) {
       if (count($messages) > 0) {
@@ -318,18 +281,20 @@ else {
                 'fontface' => ($message['defaultFontface']),
                 'general' => (int) $message['defaultFormatting']
               ),
-
             )
           );
 
-          if ($message['messageId'] > $request['lastMessage']) {
-            $request['lastMessage'] = $message['messageId'];
-          }
+          if ($message['messageId'] > $request['lastMessage']) $request['lastMessage'] = $message['messageId'];
 
           echo "event: message\n";
-          echo "data: " . json_encode($messagesOutput) . "\n";
-          echo "id: m" . (int) $request['lastMessage'] . "-u" . (int) $request['lastUnreadMessage'] . "-e" . (int) $request['lastEvent'] . ";\n\n";
+          echo "data: " . json_encode($messagesOutput) . "\n\n";
+
+          fim_flush(); // This /should/ not be neccessary. I don't know why it is -- TODO.
+
+          error_log('eventStream message: ' . json_encode($messagesOutput));
         }
+
+        echo "id: m" . (int) $request['lastMessage'] . "-u" . (int) $request['lastUnreadMessage'] . "-e" . (int) $request['lastEvent'] . "\n\n";
 
         fim_flush();
         $outputStarted = true;
@@ -342,7 +307,7 @@ else {
 
 
     /* Get New Message Alerts from Watched Rooms */
-    if ($config['enableWatchRooms'] && isset($user['watchRooms'])) {
+/*    if ($config['enableWatchRooms'] && isset($user['watchRooms'])) {
       if (count(fim_arrayValidate(explode(',', $user['watchRooms']), 'int', false)) > 0) {
         $missedMessages = $database->select(
           $queryParts['missedSelect']['columns'],
@@ -370,13 +335,13 @@ else {
 
         unset($missedMessages);
       }
-    }
+    }*/
 
 
 
 
     /* Get Unread Private Messages */
-    if ($config['enableUnreadMessages'] && $user['userId'] > 0) {
+/*    if ($config['enableUnreadMessages'] && $user['userId'] > 0) {
       $unreadMessages = $database->select(
         $queryParts['unreadSelect']['columns'],
         $queryParts['unreadSelect']['conditions'],
@@ -402,13 +367,13 @@ else {
       }
 
       unset($unreadMessages);
-    }
+    }*/
 
 
 
 
     /* Get Events */
-    if ($config['enableEvents']) {
+/*    if ($config['enableEvents']) {
       $events = $database->select($queryParts['eventsSelect']['columns'],
         $queryParts['eventsSelect']['conditions'],
         $queryParts['eventsSelect']['sort'],
@@ -435,6 +400,14 @@ else {
       }
 
       unset($events);
+    }*/
+
+
+    if ($config['dev']) {
+      $time = date('r');
+      echo "event: time\n";
+      echo "data: {$time}\n\n";
+      fim_flush();
     }
 
 
@@ -442,7 +415,7 @@ else {
 
     if (($serverSentRetries > $config['serverSentMaxRetries'])
       || ($config['serverSentFastCGI'] && $outputStarted)) {
-      echo "id: m" . (int) $request['lastMessage'] . "-u" . (int) $request['lastUnreadMessage'] . "-e" . (int) $request['lastEvent'] . ";\n";
+      echo "id: m" . (int) $request['lastMessage'] . "-u" . (int) $request['lastUnreadMessage'] . "-e" . (int) $request['lastEvent'] . "\n";
       echo "retry: 0\n";
 
       exit;

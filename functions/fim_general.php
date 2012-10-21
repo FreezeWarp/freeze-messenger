@@ -224,7 +224,7 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
         elseif ($isAdmin || $isOwner || $isModerator) {          $roomValid['view'] = true; }
         elseif ($isRoomDeleted) {                                $roomValid['view'] = false; $reason = 'deleted'; } // admin overrides this
         elseif ($parentalBlock) {                                $roomValid['view'] = false; $reason = 'parental'; } // admin overrides this
-        if ($isAllowedUser || $isAllowedGroup) {                 $roomValid['view'] = true; }
+        elseif ($isAllowedUser || $isAllowedGroup) {             $roomValid['view'] = true; }
         else {                                                   $roomValid['view'] = false; $reason = 'general'; }
       }
 
@@ -1218,7 +1218,7 @@ function fim_errorHandler($errno, $errstr, $errfile, $errline) {
 
 function fim_flush() {
   flush();
-  if (ob_get_level()) ob_fim_flush(); // Flush output buffer if enabled. (We do not use this in FIM at present.)
+  if (ob_get_level()) ob_flush(); // Flush output buffer if enabled.
 }
 
 

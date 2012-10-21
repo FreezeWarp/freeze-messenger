@@ -105,7 +105,7 @@ switch ($request['action']) {
     $errStr = 'noKickUser';
     $errDesc = 'The user specified may not be kicked.';
 
-    fim_sendMessage('/me fought the law and the law won.', $user, $roomData);
+    fim_sendMessage('/me fought the law and the law won.', $user, $roomData); // Perhaps this should be removed...
   }
   elseif (!fim_hasPermission($roomData, $user, 'moderate', true)) { // You have to be a mod yourself.
     $errStr = 'noPerm';

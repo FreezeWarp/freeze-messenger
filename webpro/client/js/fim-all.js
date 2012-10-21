@@ -1421,6 +1421,12 @@ var standard = {
 
       if (requestSettings.serverSentEvents) { // Note that the event subsystem __requires__ serverSentEvents for various reasons. If you use polling, these events will no longer be fully compatible.
         var source = new EventSource(directory + 'eventStream.php?roomId=' + roomId + '&lastEvent=' + requestSettings.lastEvent + '&lastMessage=' + requestSettings.lastMessage + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
+        console.log('Starting EventSource; roomId: ' + roomId + '; lastEvent: ' + requestSettings.lastEvent + '; lastMessage: ' + requestSettings.lastMessage);
+
+        source.addEventListener('time', function(e) {
+          console.log('The current time is: ' + e.data);
+          return false;
+        }, false);
 
         source.addEventListener('message', function(e) {
           active = JSON.parse(e.data);

@@ -39,7 +39,7 @@ $defaultConfig = array(
   'serverSentEvents' => true,
   'serverSentEventsWait' => .5, // Server sent events are more controlled, so we can call them at a greater frequency.
   'serverSentMaxRetries' => 50,
-  'serverSentFastCGI' => true, // This MUST be true for FastCGI compatibility.
+  'serverSentFastCGI' => false, // This MUST be true for FastCGI compatibility.
   'serverSentTimeLimit' => 0, // This MUST be true for many PHP setups, notably on IIS.
 
   'compressOutput' => true,

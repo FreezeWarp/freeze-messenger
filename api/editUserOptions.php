@@ -190,7 +190,7 @@ if ($request['defaultRoomId'] > 0) {
   }
 }
 
-if (isset($request['roomLists']) { // e.g. favRooms=1,2,3;
+if (isset($request['roomLists'])) { // e.g. favRooms=1,2,3;
   $lists = explode(';', $request['roomLists']);
 
   foreach ($lists AS $list) {

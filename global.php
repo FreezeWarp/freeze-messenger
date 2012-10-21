@@ -127,7 +127,6 @@ if (!isset($api)) {
 
 
 /* Better Error Handling and Output Buffering */
-ob_start();
 set_error_handler('fim_errorHandler'); // Defined in fim_general.php
 set_exception_handler('fim_exceptionHandler'); // Defined in fim_general.php
 
@@ -391,7 +390,7 @@ $watchRoomsCache = $generalCache->get('fim_watchRoomsCache');
 if ($watchRoomsCache === null || $watchRoomsCache === false) {
   $watchRoomsCache = array();
 
-  $queryParts['watchRoomsCache']['columns'] = array(
+  $queryParts['watchRoomsCacheSelect']['columns'] = array(
     "{$sqlPrefix}watchRooms" => 'roomId, userId',
   );
 
