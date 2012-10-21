@@ -1228,7 +1228,11 @@ var standard = {
     });
   },
 
-
+  changeAvatar : function(sha256hash) {
+    $.post(directory + 'api/editUserOptions.php', 'avatar=' + encodeURIComponent('http://localhost/freeze-messenger/file.php?sha256hash=04784bee666fb8757952ff6a0ff2b1755473a26150b94c1c26abf861958f8f41' + sha256hash) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
+      dia.info('Your avatar has been updated. Please refresh.');
+    }); // Send the form data via AJAX.
+  },
 
   login : function(options) {
     var data = '',
@@ -2096,6 +2100,9 @@ popup = {
                 if (errStr) {
                   dia.error(errDesc);
                 }
+              },
+              error : function() {
+                dia.error('The file failed to upload.');
               }
             });
 

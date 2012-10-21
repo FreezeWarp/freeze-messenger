@@ -52,9 +52,9 @@
  *
  * -- Notes on Scalability --
  * As FreezeMessenger attempts to ecourage broad scalability wherever possible, sacrifices are atimes made to prevent badness from happening. getMessages illustrates one of the best examples of this:
- * the use of indexes is a must for any reliable message retrieval. Asuch, a standard "SELECT * WHERE roomId = xxx ORDER BY messageId DESC LIMIT 10" (theasiest way of getting the last 10 messages) isimply impossible. Instead, a few alternatives arecommended:
+ * the use of indexes is a must for any reliable message retrieval. As such, a standard "SELECT * WHERE roomId = xxx ORDER BY messageId DESC LIMIT 10" (the easiest way of getting the last 10 messages) is simply impossible. Instead, a few alternatives are recommended:
  ** Specify a "messageIdEnd" as the last message obtained from the room.
- * similarly, the messageLimit and messageHardLimit directives are applied for the sake of scalibility. messageHardLimit is afteresults have been retrieved and filtered by, say, the roomId, and messageLimit is a limit on messages retrieved from all rooms, etc.
+ * similarly, the messageLimit and messageHardLimit directives are applied for the sake of scalibility. messageHardLimit is after results have been retrieved and filtered by, say, the roomId, and messageLimit is a limit on messages retrieved from all rooms, etc.
  * a message cache is maintained, and it is the default means of obtaining messages. Specifying archive will be far slower, but is required for searching, and generally is recommended at other times as well (e.g. getting initial posts).
 */
 

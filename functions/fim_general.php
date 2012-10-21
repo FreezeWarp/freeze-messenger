@@ -159,18 +159,6 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
     }
 
 
-    /* Is the User an Allowed User? */
-    foreach(array('user', 'admingroup', 'group') AS $type3) {
-      if (isset($permissionsCache[$roomData['roomId']], $permissionsCache[$roomData['roomId']][$type3], $permissionsCache[$roomData['roomId']][$type3][$userData['userId']])) {
-        if ($permissionsCache[$roomData['roomId']][$type3][$userData['userId']] & $permMap[$type2]) { $isAllowedUser = true; }
-        else { $isAllowedUserOverride = true; break; } // If a group is granted access but a user is forbidden, the user status is considered final. Likewise, if a social group is granted access but an admin group is restircted, the admin group is considered final.
-      }
-    }
-    if (($roomData['defaultPermissions'] & $permMap[$type2]) && !$isAllowedUserOverride) {
-      $isAllowedUser = true;
-    }
-
-
     /* Is the User the Room's Owner/Creator */
     if (isset($roomData['owner'])) {
       if ($roomData['owner'] == $userData['userId']
@@ -198,14 +186,25 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
 
     /* Is the user banned by parental controls? */
     if ($config['parentalEnabled']) {
-      if (fim_dobToAge($userData['dob']) < $userData['parentalAge']) $parentalBlock = true;
+      if ($roomData['parentalAge'] > $userData['parentalAge']) $parentalBlock = true;
       elseif (fim_inArray(explode(',', $userData['parentalFlags']), explode(',', $roomData['parentalFlags']))) $parentalBlock = true;
     }
 
 
-    /* Run Through Each Time */
+    /* Run Through Each Type Specified (if a string is specified, it will be converted to an array first) */
     foreach ((array) $type AS $type2) {
       if (!in_array($type2, array('post', 'view', 'moderate', 'admin'))) throw new Exception('hasPermission type "' . $type2 . '" unrecognised.'); // Transitional. TODO: Remove
+
+      /* Is the User an Allowed User? */
+      foreach(array('user', 'admingroup', 'group') AS $type3) {
+        if (isset($permissionsCache[$roomData['roomId']], $permissionsCache[$roomData['roomId']][$type3], $permissionsCache[$roomData['roomId']][$type3][$userData['userId']])) {
+          if ($permissionsCache[$roomData['roomId']][$type2][$userData['userId']] & $permMap[$type2]) { $isAllowedUser = true; }
+          else { $isAllowedUserOverride = true; break; } // If a group is granted access but a user is forbidden, the user status is considered final. Likewise, if a social group is granted access but an admin group is restricted, the admin group is considered final.
+        }
+      }
+      if (($roomData['defaultPermissions'] & $permMap[$type2]) && !$isAllowedUserOverride) {
+        $isAllowedUser = true;
+      }
 
       if ($type2 === 'post') {
         if ($banned) {                                           $roomValid['post'] = false; $reason = 'banned'; } // admins can disable their own ban
@@ -223,7 +222,7 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
         elseif ($isAdmin || $isOwner || $isModerator) {          $roomValid['view'] = true; }
         elseif ($isRoomDeleted) {                                $roomValid['view'] = false; $reason = 'deleted'; } // admin overrides this
         elseif ($parentalBlock) {                                $roomValid['view'] = false; $reason = 'parental'; } // admin overrides this
-        elseif ($isAllowedUser || $isAllowedGroup) {             $roomValid['view'] = true; }
+        if ($isAllowedUser || $isAllowedGroup) {                 $roomValid['view'] = true; }
         else {                                                   $roomValid['view'] = false; $reason = 'general'; }
       }
 

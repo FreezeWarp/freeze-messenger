@@ -52,6 +52,11 @@ $defaultConfig = array(
   'uploadMaxFiles' => -1,
   'uploadMaxUserFiles' => -1,
 
+  'avatarMaximumWidth' => 1000,
+  'avatarMaximumHeight' => 1000,
+  'avatarMinimumWidth' => 10,
+  'avatarMinimumHeight' => 10,
+
   'maxMessageLength' => 1000,
 
   'apiPause' => .125,
