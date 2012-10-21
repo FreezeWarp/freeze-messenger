@@ -190,16 +190,6 @@ if ($request['defaultRoomId'] > 0) {
   }
 }
 
-/* TODO
-foreach (array('favRooms', 'watchRooms', 'ignoreList') AS $item) {
-  if (isset($request[$item])) {
-    $updateArray[$item] = (string) implode(',', $request[$item]);
-
-    $xmlData['editUserOptions']['response']['favRooms']['status'] = true;
-    $xmlData['editUserOptions']['response']['favRooms']['newValue'] =  $updateArray[$item];
-  }
-} */
-
 if (isset($request['roomLists']) { // e.g. favRooms=1,2,3;
   $lists = explode(';', $request['roomLists']);
 

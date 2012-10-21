@@ -92,10 +92,8 @@ $errDesc = '';
 
 /* Constants
  * These are mostly beneficial to third-party plugins. */
-define("FIM_VERSION","3.0"); // Version to be used by plugins if needed.
-define("FIM_LANGUAGE","EN_US"); // No plans to change this exist, but again, just in case...
-define("FIMDB_BACKEND","MYSQL"); // Database backend to be used by plugins if needed; in the future other backends will be supported, and if the defined database class for whatever reason won't do, this can be used to also support others. At present, PostGreSQL is the only for-sure future backend to be supported. Definite values, if they are to be supported: "MSSQL", "ORACLE", "POSTGRESQL"
-define("FIMDB_DRIVER","MYSQL"); // Driver used for connection to the database. This may be totally useless to plugins, but again for future compatibility is included; other possible example values: "MYSQLi", "PDO" (actually, it would prolly be more useful to plugin authors of a future version wishing to support old versions) TODO
+define("FIM_VERSION", "3.0"); // Version to be used by plugins if needed.
+define("FIM_LANGUAGE", "EN_US"); // No plans to change this exist, but again, just in case...
 
 
 
@@ -129,7 +127,7 @@ if (!isset($api)) {
 
 
 /* Better Error Handling and Output Buffering */
-//  ob_start(); TODO: re-enable
+ob_start();
 set_error_handler('fim_errorHandler'); // Defined in fim_general.php
 set_exception_handler('fim_exceptionHandler'); // Defined in fim_general.php
 
@@ -167,7 +165,7 @@ else {
 
 
 /* Connect to the DB Slave
- * Unfortunately, this can not be reliably used in v3. It will more of a focus in the future.
+ * Unfortunately, this can not be reliably used in v3. It will be more of a focus in the future.
  * Still, if you do use it, it can ease load. */
 if ($slaveConnect) {
   $slaveDatabase = new fimDatabase;
@@ -182,21 +180,19 @@ else {
 
 
 
-unset($dbConnect); // There is no reason the login credentials should still be active. A variety of exploits could take advantage of this otherwise -- buffer overflow, issues in plugins, templates, and so-fourth. If anyone knows about the vBulletin 3.8.6 mess... you know what I'm talking about.
+unset($dbConnect); // There is no reason the login credentials should still be active. A variety of exploits could take advantage of this otherwise -- buffer overflow, issues in plugins, templates, and so-fourth. If anyone knows about the vBulletin 3.8.6 mess... you know what I'm talking about. (Yes, this program is that old. So... many... betas.)
 
 
 
+////* Connect to Cache *////
 
-////* Connet to Cache *////
 $generalCache = new generalCache($cacheConnect['driver'], $cacheConnect['servers']);
+
 
 
 ////* User Login (Requires Database) *////
 
 require_once(dirname(__FILE__) . '/validate.php'); // This is where all the user validation stuff occurs.
-
-
-
 
 
 
@@ -247,14 +243,11 @@ if (!($config = $generalCache->get('fim_config')) || $disableConfig) {
 
 
 
-
-
 ////* Things That Require Config *////
 
 if ($api === true) {
   sleep($config['apiPause']); // This prevents flooding the server/DoSing. It's included since I've done it to myself during development...
 }
-
 
 
 
@@ -286,7 +279,6 @@ if (isset($reqHooks)) {
     }
   }
 }
-
 
 
 
@@ -369,8 +361,6 @@ if ($kicksCache === null || $kicksCache === false) {
 
 
 
-
-
 ////* Permissions Cache *////
 
 $permissionsCache = $generalCache->get('fim_permissionsCache');
@@ -392,9 +382,30 @@ if ($permissionsCache === null || $permissionsCache === false) {
   $generalCache->set('fim_permissionCache', $permissionsCache, $config['permissionsCacheRefresh']);
 }
 
-//die(print_R($permissionsCache,true));
 
 
+////* Watch Rooms *////
+
+$watchRoomsCache = $generalCache->get('fim_watchRoomsCache');
+
+if ($watchRoomsCache === null || $watchRoomsCache === false) {
+  $watchRoomsCache = array();
+
+  $queryParts['watchRoomsCache']['columns'] = array(
+    "{$sqlPrefix}watchRooms" => 'roomId, userId',
+  );
+
+  $watchRoomsCachePre = $database->select($queryParts['watchRoomsCacheSelect']['columns']);
+  $watchRoomsCachePre = $watchRoomsCachePre->getAsArray(true);
+
+  foreach ($watchRoomsCachePre AS $cachePerm) {
+    if (!isset($watchRoomsCache[$cachePerm['userId']])) $watchRoomsCache[$cachePerm['userId']] = array();
+
+    $watchRoomsCache[$cachePerm['userId']][] = $cachePerm['roomId'];
+  }
+
+  $generalCache->set('fim_permissionCache', $watchRoomsCache, $config['permissionsCacheRefresh']);
+}
 
 
 
@@ -405,26 +416,15 @@ if ($permissionsCache === null || $permissionsCache === false) {
 
 
 
-
-
 ////* Other Stuff *////
 
 if (defined('FIM_LOGINRUN')) {
   if ($api && $banned) {
-    die();
+    throw new Exception('The user has been banned.'); // This isn't technically an exception, but the API is designed to throw all quit errors with the exception schema.
   }
 }
 
 if ($api && $config['compressOutput']) {
   ob_start('fim_apiCompact');
-}
-
-if ($config['dev']) { // Developer hijinks - these are security risks for public servers
-  if (isset($_REQUEST['clearAPC'])) {
-    apc_clear_cache();
-    apc_clear_cache('user');
-    apc_clear_cache('opcode');
-    error_log('Cleared cache.');
-  }
 }
 ?>

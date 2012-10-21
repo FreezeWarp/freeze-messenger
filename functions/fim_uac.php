@@ -110,7 +110,6 @@ function processPHPBB($user, $password) {
 
 /**
  * Verify a login using a FIM's database.
- * @todo Make work
  *
  * @param array user - The userdata array.
  * @param string password - The submitted password (usually via a form).

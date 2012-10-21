@@ -96,8 +96,6 @@ $queryParts['fileSelect']['conditions'] = array(
 
 /* Get File from Database */
 if ($request['time'] && $request['fileId']) {
-  //$file = dbRows("SELECT f.mime, v.salt, v.iv, v.contents, v.time FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS v WHERE v.fileid = $fileid AND UNIX_TIMESTAMP(v.time) = $time AND f.fileId = v.fileid LIMIT 1");
-
   $queryParts['fileSelect']['conditions']['both'][] = array(
     'type' => 'e',
     'left' => array(
@@ -122,8 +120,6 @@ if ($request['time'] && $request['fileId']) {
   );
 }
 elseif ($request['fileId']) {
-//  $file = dbRows("SELECT f.mime, v.salt, v.iv, v.contents, v.time FROM {$sqlPrefix}files AS f, {$sqlPrefix}fileVersions AS v WHERE v.fileid = $fileid AND f.fileId = v.fileid ORDER BY v.time DESC LIMIT 1");
-
   $queryParts['fileSelect']['conditions']['both'][] = array(
     'type' => 'e',
     'left' => array(
@@ -185,15 +181,19 @@ if ($config['parentalEnabled']) {
 
 if ($parentalBlock) {
   $file['contents'] = ''; // TODO: Placeholder
-}
-elseif ($file['salt']) {
-  $file = fim_decrypt($file,'contents');
+
+  header('Content-Type: ' . $file['fileType']);
+  echo $file['contents'];
 }
 else {
-  $file['contents'] = base64_decode($file['contents']);
+  if ($file['salt']) {
+    $file = fim_decrypt($file,'contents');
+  }
+  else {
+    $file['contents'] = base64_decode($file['contents']);
+  }
+
+  header('Content-Type: ' . $file['fileType']);
+  echo $file['contents'];
 }
-
-
-header('Content-Type: ' . $file['fileType']);
-echo $file['contents'];
 ?>

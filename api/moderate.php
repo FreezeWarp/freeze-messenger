@@ -54,6 +54,11 @@ $request = fim_sanitizeGPC('p', array(
     'context' => 'int',
   ),
 
+  'listId' => array(
+    'default' => 0,
+    'context' => 'int',
+  ),
+
   'length' => array(
     'default' => 0,
     'context' => 'int',
@@ -109,12 +114,12 @@ switch ($request['action']) {
   else {
     $database->modLog('kickUser', "$userData[userId],$roomData[roomId]");
 
-    $database->insert(array(
+    $database->insert("{$sqlPrefix}kicks", array(
         'userId' => (int) $userData['userId'],
         'kickerId' => (int) $user['userId'],
         'length' => (int) $request['length'],
         'roomId' => (int) $roomData['roomId'],
-      ),"{$sqlPrefix}kicks",array(
+      ), array(
         'length' => (int) $request['length'],
         'kickerId' => (int) $user['userId'],
         'time' => $database->now(),
@@ -146,7 +151,7 @@ switch ($request['action']) {
   else {
     $database->modLog('unkickUser', "$userData[userId],$roomData[roomId]");
 
-    $database->delete("{$sqlPrefix}kicks",array(
+    $database->delete("{$sqlPrefix}kicks", array(
       'userId' => $userData['userId'],
       'roomId' => $roomData['roomId'],
     ));
@@ -158,54 +163,36 @@ switch ($request['action']) {
   break;
 
 
-  case 'favRoom': /* TODO
-  $currentRooms = fim_arrayValidate(explode(',', $user['favRooms']), 'int', false); // Get an array of the user's current rooms.
+  case 'markRoom':
+  $roomData = $database->getRoom($request['roomId']);
 
-  if (!in_array($request['roomId'], $currentRooms)) { // Make sure the room is not already a favourite.
-    $currentRooms[] = $request['roomId'];
-
-    $newRoomString = implode(',', $currentRooms2);
-
-    $database->update("{$sqlPrefix}users", array(
-      'favRooms' => (string) $newRoomString,
-    ), array(
-      'userId' => (int) $user['userId'],
-    ));
-
-    $xmlData['moderate']['response']['success'] = true;
+  if (!$roomData['roomId']) {
+    $errStr = 'badRoom';
+    $errDesc = 'The room specified is not valid.';
+  }
+  elseif (!fim_hasPermission($roomData, $user, 'view')) {
+    $errStr = 'nopermission';
+    $errDesc = 'You are not allowed to access this room.';
   }
   else {
-    $errStr = 'nothingToDo';
+    $database->insert("{$sqlPrefix}roomLists", array(
+      'userId' => (int) $user['userId'],
+      'listId' => (int) $request['listId'],
+      'roomId' => (int) $request['roomId'],
+    ));
+  }
 
-    $xmlData['moderate']['response']['success'] = false;
-  }*/
+  $xmlData['moderate']['response']['success'] = true;
   break;
 
-  case 'unfavRoom':/* TODO
-  $currentRooms = fim_arrayValidate(explode(',', $user['favRooms']), 'int', false); // Get an array of the user's current rooms.
+  case 'unmarkRoom':
+  $database->delete("{$sqlPrefix}roomLists", array(
+    'userId' => (int) $user['userId'],
+    'listId' => (int) $request['listId'],
+    'roomId' => (int) $request['roomId'],
+  ));
 
-  if (in_array($request['roomId'], $currentRooms)) { // Make sure the room is already a favourite.
-    foreach ($currentRooms as $room2) { // Run through each room.
-      if ($room2 != $request['roomId'] && (int) $room2) { // If the room is not invalid and is not the one we are trying to remove, add it to the new list.
-        $currentRooms2[] = (int) $room2;
-      }
-    }
-
-    $newRoomString = implode(',', $currentRooms2);
-
-    $database->update("{$sqlPrefix}users", array(
-      'favRooms' => (string) $newRoomString,
-    ), array(
-      'userId' => (int) $user['userId'],
-    ));
-
-    $xmlData['moderate']['response']['success'] = true;
-  }
-  else {
-    $errStr = 'nothingToDo';
-
-    $xmlData['moderate']['response']['success'] = false;
-  } */
+  $xmlData['moderate']['response']['success'] = true;
   break;
 
 
