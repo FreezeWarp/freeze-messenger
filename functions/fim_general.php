@@ -206,6 +206,8 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
         $isAllowedUser = true;
       }
 
+
+      /* Each Type Has a Unique Set of Conditions */
       if ($type2 === 'post') {
         if ($banned) {                                           $roomValid['post'] = false; $reason = 'banned'; } // admins can disable their own ban
         elseif (!$valid) {                                       $roomValid['post'] = false; $reason = 'invalid'; }

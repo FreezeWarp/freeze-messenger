@@ -200,6 +200,135 @@ foreach (array('favRooms', 'watchRooms', 'ignoreList') AS $item) {
   }
 } */
 
+if (isset($request['roomLists']) { // e.g. favRooms=1,2,3;
+  $lists = explode(';', $request['roomLists']);
+
+  foreach ($lists AS $list) {
+    list($listName, $roomIds) = explode('=', $list);
+    $roomIds = fim_arrayValidate(explode(',', $listIds), 'int');
+
+    $queryParts['listSelect'] = array(
+      'columns' => array(
+        "{$sqlPrefix}roomListNames" => 'listId, listName',
+      ),
+      'conditions' => array(
+        'both' => array(
+          'type' => 'e',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'listName',
+          ),
+          'right' => array(
+            'type' => 'string',
+            'value' => $listName,
+          ),
+        ),
+      )
+    );
+
+    $listData = $database->select(
+      $queryParts['listSelect']['columns'],
+      $queryParts['listSelect']['conditions']);
+    $listData = $rooms->getAsArray('listId');
+
+
+    $queryParts['roomSelect'] = array(
+      'columns' => array(
+        "{$sqlPrefix}rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, parentalFlags, parentalAge, options, lastMessageId, lastMessageTime, messageCount',
+      ),
+      'conditions' => array(
+        'both' => array(
+          'type' => 'in',
+          'left' => array(
+            'type' => 'column',
+            'value' => 'roomId',
+          ),
+          'right' => array(
+            'type' => 'array',
+            'value' => $roomIds,
+          ),
+        ),
+      )
+    );
+
+    $roomData = $database->select(
+      $queryParts['roomSelect']['columns'],
+      $queryParts['roomSelect']['conditions']);
+    $roomData = $rooms->getAsArray('roomId');
+
+    foreach ($roomIds AS $roomId) {
+      $database->delete("{$sqlPrefix}roomLists", array(
+        'userId' => $user['userId'],
+        'listId' => $listData[$listName]['listId'],
+      ));
+
+      if (fim_hasPermission($roomData[$roomId], $user, 'view')) {
+        $this->insert("{$sqlPrefix}roomLists", array(
+          'userId' => $user['userId'],
+          'listId' => $listData[$listName]['listId'],
+          'roomId' => $roomId,
+        ));
+      }
+    }
+  }
+}
+
+if (isset($request['watchRooms'])) {
+  $database->delete("{$sqlPrefix}watchRooms", array(
+    'userId' => $user['userId'],
+  ));
+
+  $queryParts['roomSelect'] = array(
+    'columns' => array(
+      "{$sqlPrefix}rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, parentalFlags, parentalAge, options, lastMessageId, lastMessageTime, messageCount',
+    ),
+    'conditions' => array(
+      'both' => array(
+        'type' => 'in',
+        'left' => array(
+          'type' => 'column',
+          'value' => 'roomId',
+        ),
+        'right' => array(
+          'type' => 'array',
+          'value' => $request['watchRooms'],
+        ),
+      ),
+    )
+  );
+
+  $roomData = $database->select(
+    $queryParts['roomSelect']['columns'],
+    $queryParts['roomSelect']['conditions']);
+  $roomData = $rooms->getAsArray('roomId');
+
+  foreach ($request['watchRooms'] AS $watchRoomId) {
+    foreach ($roomIds AS $roomId) {
+      if (fim_hasPermission($roomData[$watchRoomId], $user, 'view')) {
+        $this->insert("{$sqlPrefix}watchRooms", array(
+          'userId' => $user['userId'],
+          'roomId' => $watchRoomId,
+        ));
+      }
+    }
+  }
+}
+
+if (isset($request['ignoreList'])) {
+  $database->delete("{$sqlPrefix}ignoredUsers", array(
+    'userId' => $user['userId'],
+  ));
+
+  foreach ($request['ignoreList'] AS $ignoredUserId) {
+    foreach ($roomIds AS $roomId) {
+      $this->insert("{$sqlPrefix}ignoredUser", array(
+        'userId' => $user['userId'],
+        'ignoredUserId' => $ignoredUserId,
+      ));
+    }
+  }
+}
+
 if (isset($request['defaultFormatting'])) {
   $updateArray['defaultFormatting'] = (int) $request['defaultFormatting'];
 

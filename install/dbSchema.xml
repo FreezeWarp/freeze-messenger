@@ -408,7 +408,7 @@
       <column name="listId" type="int" maxlen="8" comment="The user ID." />
       <column name="listName" type="string" maxlen="10" comment="List name." />
 
-      <key name="listId" type="primary" />
+      <key name="listName" type="primary" />
     </table>
 
 

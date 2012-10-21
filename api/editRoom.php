@@ -343,7 +343,7 @@ switch($request['action']) {
         ));
 
         foreach ($request['allowedUsers'] AS &$allowedUser) {
-          if (in_array($allowedUser, $request['moderators'])) { // Don't process as an allowed user if the user is to be a modederator as well.
+          if (in_array($allowedUser, $request['moderators'])) { // Don't process as an allowed user if the user is to be a moderator as well.
             unset($allowedUser);
           }
           else {
