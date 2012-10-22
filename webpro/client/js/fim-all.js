@@ -59,7 +59,7 @@ var userId, // The user ID who is logged in.
   sessionHash, // The session hash of the active user.
   anonId, // ID used to represent anonymous posters.
   prepopup,
-  serverSettings;
+  forumType;
 
 
 
@@ -610,8 +610,7 @@ $.ajax({
   dataType: 'json',
   success: function(json) {
     requestSettings.longPolling = json.getServerStatus.serverStatus.requestMethods.longPoll;
-    serverSettings = json.getServerStatus.serverStatus;
-    console.log('forum: ' + serverSettings.branding.forumType);
+    forumType = json.getServerStatus.serverStatus.branding.forumType; console.log('forum: ' + forumType);
 
     if (typeof window.EventSource == 'undefined') {
       requestSettings.serverSentEvents = false;
@@ -620,7 +619,7 @@ $.ajax({
       requestSettings.serverSentEvents = json.getServerStatus.serverStatus.requestMethods.serverSentEvents;
     }
 
-    if (serverSettings.installUrl != (window.location.protocol + '//' + window.location.host + directory)) {
+    if (json.getServerStatus.serverStatus.installUrl != (window.location.protocol + '//' + window.location.host + directory)) {
       dia.error('<strong>WARNING</strong>: Your copy of FreezeMessenger has been incorrectly installed. Errors may occur if this is not fixed. <a href="http://code.google.com/p/freeze-messenger/wiki/ChangingDomains">Please see the online documentation for more information.</a>');
     }
 
@@ -2259,31 +2258,6 @@ popup = {
             usTime : 16777216, twelveHourTime : 33554432, webkitNotifications : 536870912
           };
 
-
-        // Check boxes that should be.
-        if (settings.reversePostOrder) $('#reversePostOrder').attr('checked', 'checked');
-        if (settings.showAvatars) $('#showAvatars').attr('checked', 'checked');
-        if (settings.audioDing) $('#audioDing').attr('checked', 'checked');
-        if (settings.disableFx) $('#disableFx').attr('checked', 'checked');
-        if (settings.disableFormatting) $('#disableFormatting').attr('checked', 'checked');
-        if (settings.disableVideo) $('#disableVideo').attr('checked', 'checked');
-        if (settings.disableImage) $('#disableImage').attr('checked', 'checked');
-        if (settings.disableRightClick) $('#disableRightClick').attr('checked', 'checked');
-        if (settings.webkitNotifications) $('#webkitNotifications').attr('checked', 'checked');
-        if (settings.twelveHourTime) $('#twelveHourFormat').attr('checked', 'checked');
-        if (settings.usTime) $('#usTime').attr('checked', 'checked');
-
-        // Update volume to current.
-        if (snd.volume) $('#audioVolume').attr('value', snd.volume * 100);
-
-        // And the same with a few select boxes.
-        if (theme) $('#theme > option[value="' + theme + '"]').attr('selected', 'selected');
-        if (fontsize) $('#fontsize > option[value="' + fontsize + '"]').attr('selected', 'selected');
-
-        // Hide the Profile Changer Depending on Forum Type
-        if (serverSettings.branding.forumType !== 'vanilla') $('#settings5profile').hide(0);
-
-
         $.get(directory + 'api/getUsers.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
           active = json.getUsers.users;
 
@@ -2302,6 +2276,8 @@ popup = {
               defaultColourHashPre = [],
               defaultColourHash = {r:0, g:0, b:0};
 
+            /* Update Default Forum Values Based on Server Settings */
+            // Default Formatting -- Bold
             if (defaultGeneral & 256) {
               $('#fontPreview').css('font-weight', 'bold');
               $('#defaultBold').attr('checked', 'checked');
@@ -2311,6 +2287,7 @@ popup = {
               else $('#fontPreview').css('font-weight', 'normal');
             });
 
+            // Default Formatting -- Italics
             if (defaultGeneral & 512) {
               $('#fontPreview').css('font-style', 'italic');
               $('#defaultItalics').attr('checked', 'checked');
@@ -2320,6 +2297,7 @@ popup = {
               else $('#fontPreview').css('font-style', 'normal');
             });
 
+            // Default Formatting -- Font Colour
             if (defaultColour) {
               $('#fontPreview').css('color', 'rgb(' + defaultColour + ')');
               $('#defaultColour').css('background-color', 'rgb(' + defaultColour + ')');
@@ -2328,6 +2306,7 @@ popup = {
               defaultColourHash = {r : defaultColourHashPre[0], g : defaultColourHashPre[1], b : defaultColourHashPre[2] }
             }
 
+            // Default Formatting -- Highlight Colour
             if (defaultHighlight) {
               $('#fontPreview').css('background-color', 'rgb(' + defaultHighlight + ')');
               $('#defaultHighlight').css('background-color', 'rgb(' + defaultHighlight + ')');
@@ -2336,6 +2315,7 @@ popup = {
               defaultHighlightHash = {r : defaultHighlightHashPre[0], g : defaultHighlightHashPre[1], b : defaultHighlightHashPre[2] }
             }
 
+            // Default Formatting -- Fontface
             if (defaultFontface) {
               $('#defaultFace > option[value="' + defaultFontface + '"]').attr('selected', 'selected');
             }
@@ -2343,18 +2323,7 @@ popup = {
               $('#fontPreview').css('fontFamily', $('#defaultFace > option:selected').attr('data-font'));
             });
 
-            $('#defaultHighlight').ColorPicker({
-              color: defaultHighlightHash,
-              onShow: function (colpkr) { $(colpkr).fadeIn(500); }, // Fadein
-              onHide: function (colpkr) { $(colpkr).fadeOut(500); }, // Fadeout
-              onChange: function(hsb, hex, rgb) {
-                defaultHighlight = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
-
-                $('#defaultHighlight').css('background-color', 'rgb(' + defaultHighlight + ')');
-                $('#fontPreview').css('background-color', 'rgb(' + defaultHighlight + ')');
-              }
-            });
-
+            // Colour Chooser -- Colour
             $('#defaultColour').ColorPicker({
               color: defaultColourHash,
               onShow: function (colpkr) { $(colpkr).fadeIn(500); }, // Fadein
@@ -2367,9 +2336,23 @@ popup = {
               }
             });
 
+            // Colour Chooser -- Highlight
+            $('#defaultHighlight').ColorPicker({
+              color: defaultHighlightHash,
+              onShow: function (colpkr) { $(colpkr).fadeIn(500); }, // Fadein
+              onHide: function (colpkr) { $(colpkr).fadeOut(500); }, // Fadeout
+              onChange: function(hsb, hex, rgb) {
+                defaultHighlight = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
+
+                $('#defaultHighlight').css('background-color', 'rgb(' + defaultHighlight + ')');
+                $('#fontPreview').css('background-color', 'rgb(' + defaultHighlight + ')');
+              }
+            });
+
+            // Default Room Value
             $('#defaultRoom').val(roomIdRef[defaultRoom].roomName);
 
-
+            // Populate Existing Entries for Lists
             autoEntry.showEntries('ignoreList', ignoreList);
             autoEntry.showEntries('watchRooms', watchRooms);
 
@@ -2378,15 +2361,41 @@ popup = {
         });
 
 
+        /* Update Default Form Values to Client Settings */
+        // Boolean Checkboxes
+        if (settings.reversePostOrder) $('#reversePostOrder').attr('checked', 'checked');
+        if (settings.showAvatars) $('#showAvatars').attr('checked', 'checked');
+        if (settings.audioDing) $('#audioDing').attr('checked', 'checked');
+        if (settings.disableFx) $('#disableFx').attr('checked', 'checked');
+        if (settings.disableFormatting) $('#disableFormatting').attr('checked', 'checked');
+        if (settings.disableVideo) $('#disableVideo').attr('checked', 'checked');
+        if (settings.disableImage) $('#disableImage').attr('checked', 'checked');
+        if (settings.disableRightClick) $('#disableRightClick').attr('checked', 'checked');
+        if (settings.webkitNotifications) $('#webkitNotifications').attr('checked', 'checked');
+        if (settings.twelveHourTime) $('#twelveHourFormat').attr('checked', 'checked');
+        if (settings.usTime) $('#usTime').attr('checked', 'checked');
+
+        // Volume
+        if (snd.volume) $('#audioVolume').attr('value', snd.volume * 100);
+
+        // Select Boxes
+        if (theme) $('#theme > option[value="' + theme + '"]').attr('selected', 'selected');
+        if (fontsize) $('#fontsize > option[value="' + fontsize + '"]').attr('selected', 'selected');
+
+        // Only Show the Profile Setting if Using Vanilla Logins
+        if (forumType !== 'vanilla') $('#settings5profile').hide(0);
+
         // Autocomplete Rooms and Users
         $("#defaultRoom").autocomplete({ source: roomList });
         $("#watchRoomsBridge").autocomplete({ source: roomList });
         $("#ignoreListBridge").autocomplete({ source: userList });
 
-
+        // Populate face Checkbox
         $('#defaultFace').html(fontSelectHtml);
 
 
+        /* Actions onChange */
+        // Theme -- Update onChange
         $('#theme').change(function() {
           $('#stylesjQ').attr('href', 'client/css/' + this.value + '/jquery-ui-1.8.16.custom.css');
           $('#stylesFIM').attr('href', 'client/css/' + this.value + '/fim.css');
@@ -2397,7 +2406,7 @@ popup = {
           return false;
         });
 
-
+        // Theme Fontsize -- Update onChange
         $('#fontsize').change(function() {
           $('body').css('font-size',this.value + 'em');
 
@@ -2407,6 +2416,7 @@ popup = {
           return false;
         });
 
+        // Volume -- Update onChange
         $('#audioVolume').change(function() {
           $.cookie('webpro_audioVolume', this.value, { expires : 14 });
           snd.volume = this.value / 100;
@@ -2414,7 +2424,7 @@ popup = {
           return false;
         });
 
-
+        // Various Settings -- Update onChange, Refresh Posts
         $('#showAvatars, #reversePostOrder, #disableFormatting, #disableVideo, #disableImage').change(function() {
           var localId = $(this).attr('id');
 
@@ -2434,6 +2444,7 @@ popup = {
           messageIndex = [];
         });
 
+        // Various Settings -- Update onChange
         $('#audioDing, #disableFx, #webkitNotifications, #disableRightClick').change(function() {
           var localId = $(this).attr('id');
 
@@ -2452,6 +2463,8 @@ popup = {
           }
         });
 
+
+        /* Submit Processer */
         $("#changeSettingsForm").submit(function() {
           var watchRooms = $('#watchRooms').val(),
             defaultRoom = $('#defaultRoom').val(),

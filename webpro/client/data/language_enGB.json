@@ -191,7 +191,7 @@
     "18" : "Adult (18+)",
     "19" : "Adult (19+)",
     "20" : "Adult (20+)",
-    "21" : "Adult (21+)",
+    "21" : "Adult (21+)"
   },
   "settingsParentalAgeLabel" : "Content Must Be Appropriate For: ",
   "settingsParentalAgeBlurb" : "This will block images and rooms that are not appropriate for this age group. You can change this setting at any time.",
@@ -204,10 +204,12 @@
     "pnudity" : "Partial Nudity",
     "nudity" : "Nudity",
     "suggestive" : "Sexually Sugg.",
-    "drugs" : "Drugs",
+    "drugs" : "Drugs"
   },
   "settingsParentalFlagsLabel" : "Do Not Show Content Containing: ",
   "settingsParentalFlagsBlurb" : "If an item is selected and you attempt to view and image or enter a room that is marked as containing an excessive ammount of this type of content, you will be blocked from seeing it. You can change these settings at any time. <strong>Hold down the \"Ctrl\" key to select multiple items at once.</strong>",
+  "settingsSave" : "Save Settings",
+  "settingsReset" : "Reset Settings",
   "statsChooseSettings" : "Choose Settings",
   "statsChooseSettingsReset" : "Reset",
   "statsChooseSettingsSubmit" : "Go",
