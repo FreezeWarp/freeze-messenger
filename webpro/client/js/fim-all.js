@@ -59,7 +59,7 @@ var userId, // The user ID who is logged in.
   sessionHash, // The session hash of the active user.
   anonId, // ID used to represent anonymous posters.
   prepopup,
-  forumType;
+  serverSettings;
 
 
 
@@ -610,7 +610,8 @@ $.ajax({
   dataType: 'json',
   success: function(json) {
     requestSettings.longPolling = json.getServerStatus.serverStatus.requestMethods.longPoll;
-    forumType = json.getServerStatus.serverStatus.branding.forumType; console.log('forum: ' + forumType);
+    serverSettings = json.getServerStatus.serverStatus;
+    console.log('forum: ' + serverSettings.branding.forumType);
 
     if (typeof window.EventSource == 'undefined') {
       requestSettings.serverSentEvents = false;
@@ -619,7 +620,7 @@ $.ajax({
       requestSettings.serverSentEvents = json.getServerStatus.serverStatus.requestMethods.serverSentEvents;
     }
 
-    if (json.getServerStatus.serverStatus.installUrl != (window.location.protocol + '//' + window.location.host + directory)) {
+    if (serverSettings.installUrl != (window.location.protocol + '//' + window.location.host + directory)) {
       dia.error('<strong>WARNING</strong>: Your copy of FreezeMessenger has been incorrectly installed. Errors may occur if this is not fixed. <a href="http://code.google.com/p/freeze-messenger/wiki/ChangingDomains">Please see the online documentation for more information.</a>');
     }
 
@@ -2280,7 +2281,7 @@ popup = {
         if (fontsize) $('#fontsize > option[value="' + fontsize + '"]').attr('selected', 'selected');
 
         // Hide the Profile Changer Depending on Forum Type
-        if (forumType !== 'vanilla') $('#settings5profile').hide(0);
+        if (serverSettings.branding.forumType !== 'vanilla') $('#settings5profile').hide(0);
 
 
         $.get(directory + 'api/getUsers.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {

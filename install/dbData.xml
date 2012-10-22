@@ -521,7 +521,7 @@
       <column name="type" value="bool" />
     </table>
     <table name="configuration">
-      <column name="directive" value="parentalAgeChangable" />
+      <column name="directive" value="parentalAgeChangeable" />
       <column name="value" value="true" />
       <column name="type" value="bool" />
     </table>

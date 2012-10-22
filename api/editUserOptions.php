@@ -82,6 +82,7 @@ $request = fim_sanitizeGPC('p', array(
   'parentalFlags' => array(
     'context' => array(
       'type' => 'csv',
+      'allowedValues' => $config['parentalFlags'], // Note that values are dropped automatically if a value is not allowed. We will not tell the client this.
     ),
   ),
 ));
@@ -108,6 +109,7 @@ $xmlData = array(
 
 /* Start Processing */
 if ($loginConfig['method'] === 'vanilla') {
+  /* Avatar */
   if (isset($request['avatar'])) { // TODO: Add regex policy.
     $imageData = getimagesize($request['avatar']);
     if ($imageData[0] <= $config['avatarMinimumWidth'] || $imageData[1] <= $config['avatarMinimumHeight']) {
@@ -138,8 +140,9 @@ if ($loginConfig['method'] === 'vanilla') {
     }
   }
 
-  if (isset($request['profile'])) { // TODO: Add regex policy.
 
+  /* Profile */
+  if (isset($request['profile'])) { // TODO: Add regex policy.
     if (filter_var($url, FILTER_VALIDATE_URL) === FALSE) {
       $xmlData['editUserOptions']['response']['profile']['status'] = false;
       $xmlData['editUserOptions']['response']['profile']['errStr'] = 'noUrl';
@@ -174,6 +177,7 @@ if ($loginConfig['method'] === 'vanilla') {
 }
 
 
+/* Default Room */
 if ($request['defaultRoomId'] > 0) {
   $defaultRoomData = $slaveDatabase->getRoom($request['defaultRoomId']);
 
@@ -190,6 +194,8 @@ if ($request['defaultRoomId'] > 0) {
   }
 }
 
+
+/* Room Lists (e.g. favRooms) */
 if (isset($request['roomLists'])) { // e.g. favRooms=1,2,3;
   $lists = explode(';', $request['roomLists']);
 
@@ -205,12 +211,10 @@ if (isset($request['roomLists'])) { // e.g. favRooms=1,2,3;
         'both' => array(
           'type' => 'e',
           'left' => array(
-            'type' => 'column',
-            'value' => 'listName',
+            'type' => 'column', 'value' => 'listName',
           ),
           'right' => array(
-            'type' => 'string',
-            'value' => $listName,
+            'type' => 'string', 'value' => $listName,
           ),
         ),
       )
@@ -230,12 +234,10 @@ if (isset($request['roomLists'])) { // e.g. favRooms=1,2,3;
         'both' => array(
           'type' => 'in',
           'left' => array(
-            'type' => 'column',
-            'value' => 'roomId',
+            'type' => 'column', 'value' => 'roomId',
           ),
           'right' => array(
-            'type' => 'array',
-            'value' => $roomIds,
+            'type' => 'array', 'value' => $roomIds,
           ),
         ),
       )
@@ -263,6 +265,8 @@ if (isset($request['roomLists'])) { // e.g. favRooms=1,2,3;
   }
 }
 
+
+/* Watch Rooms (used for notifications of new messages, which are placed in unreadMessages) */
 if (isset($request['watchRooms'])) {
   $database->delete("{$sqlPrefix}watchRooms", array(
     'userId' => $user['userId'],
@@ -276,12 +280,10 @@ if (isset($request['watchRooms'])) {
       'both' => array(
         'type' => 'in',
         'left' => array(
-          'type' => 'column',
-          'value' => 'roomId',
+          'type' => 'column', 'value' => 'roomId',
         ),
         'right' => array(
-          'type' => 'array',
-          'value' => $request['watchRooms'],
+          'type' => 'array', 'value' => $request['watchRooms'],
         ),
       ),
     )
@@ -304,21 +306,31 @@ if (isset($request['watchRooms'])) {
   }
 }
 
+
+/* Ignored Users (essentially, users that are not allowed to contact via private/otr messages) */
 if (isset($request['ignoreList'])) {
   $database->delete("{$sqlPrefix}ignoredUsers", array(
     'userId' => $user['userId'],
   ));
 
-  foreach ($request['ignoreList'] AS $ignoredUserId) {
-    foreach ($roomIds AS $roomId) {
+  foreach ($request['ignoreList'] AS $key => $ignoredUserId) {
+    if ($slaveDatabase->getUser($ignoredUserId)) {
+      unset($request['ignoreList'][$key]);
+    }
+    else {
       $this->insert("{$sqlPrefix}ignoredUser", array(
         'userId' => $user['userId'],
         'ignoredUserId' => $ignoredUserId,
       ));
     }
   }
+
+  $xmlData['editUserOptions']['response']['ignoreList']['status'] = true;
+  $xmlData['editUserOptions']['response']['ignoreList']['newValue'] = $request['ignoreList'];
 }
 
+
+/* Default Formatting */
 if (isset($request['defaultFormatting'])) {
   $updateArray['defaultFormatting'] = (int) $request['defaultFormatting'];
 
@@ -326,7 +338,9 @@ if (isset($request['defaultFormatting'])) {
   $xmlData['editUserOptions']['response']['defaultFormatting']['newValue'] = (string) implode(',', $defaultFormatting);
 }
 
-foreach (array('defaultHighlight','defaultColor') AS $value) {
+
+/* Default Highlight & Default Colour */
+foreach (array('defaultHighlight', 'defaultColor') AS $value) {
   if (isset($request[$value])) {
     $rgb = fim_arrayValidate(explode(',', $request[$value]), 'int', true);
 
@@ -361,6 +375,8 @@ foreach (array('defaultHighlight','defaultColor') AS $value) {
   }
 }
 
+
+/* Default Fontface */
 if (isset($request['defaultFontface'])) {
   $fontData = $slaveDatabase->getFont((int) $request['defaultFontface']);
 
@@ -375,6 +391,31 @@ if (isset($request['defaultFontface'])) {
     $xmlData['editUserOptions']['response']['defaultFontface']['errStr'] = 'noFont';
     $xmlData['editUserOptions']['response']['defaultFontface']['errDesc'] = 'The specified font does not exist.';
   }
+}
+
+
+/* Parental Age */
+if (isset($request['parentalAge'])) {
+  if (in_array($request['parentalAge'], $config['parentalAges'])) {
+    $updateArray['parentalAge'] = $request['parentalAge'];
+
+    $xmlData['editUserOptions']['response']['parentalAge']['status'] = true;
+    $xmlData['editUserOptions']['response']['parentalAge']['newValue'] = (int) $request['parentalAge'];
+  }
+  else {
+    $xmlData['editUserOptions']['response']['parentalAge']['status'] = false;
+    $xmlData['editUserOptions']['response']['parentalAge']['errStr'] = 'badAge';
+    $xmlData['editUserOptions']['response']['parentalAge']['errDesc'] = 'The parental age specified is not valid.';
+  }
+}
+
+
+/* Parental Flags */
+if (isset($request['parentalFlags'])) {
+  $updateArray['parentalFlags'] = $request['parentalFlags'];
+
+  $xmlData['editUserOptions']['response']['parentalFlags']['status'] = true;
+  $xmlData['editUserOptions']['response']['parentalFlags']['newValue'] = $request['parentalFlags'];
 }
 
 

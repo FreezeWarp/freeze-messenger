@@ -41,6 +41,15 @@ $xmlData = array(
       'installedPlugins' => array(),
       'installUrl' => $installUrl,
 
+      'parentalControls' => array(
+        'parentalEnabled' => $config['parentalEnabled'],
+        'parentalForced' => $config['parentalForced'],
+        'parentalAgeChangeable' => $config['parentalAgeChangeable'],
+        'parentalRegistrationAge' => $config['parentalRegistrationAge'],
+        'parentalFlags' => $config['parentalFlags'],
+        'parentalAges' => $config['parentalAges'],
+      ),
+
       'branding' => array(
         'forumType' => $loginConfig['method'],
         'forumUrl' => $loginConfig['url'],

@@ -25,7 +25,7 @@
         text-align: center;
       }
 
-      b {
+      strong {
         font-weight: bold;
       }
       </style>
@@ -35,7 +35,7 @@
       <div class="main">
         <h1 class="center">Please Upgrade Your Browser!</h1>
 
-        <p>You are detected to be using an outdated or otherwise incompatible Internet browser. FIMv3 requires a reasonably modern web-browser to function, or else bad things happen (...at least ugly things). We <b>strongly</b> encourage you to choose a new browser, which will allow you to <b>experience the web</b> better than ever before. In general, it shouldn't take long at all! Please, choose one of the options below and <b>you won't be sorry</b>:</p>
+        <p>You are detected to be using an outdated or otherwise incompatible Internet browser. FIMv3 requires a reasonably modern web-browser to function, or else bad things happen (...at least ugly things). We <strong>strongly</strong> encourage you to choose a new browser, which will allow you to <strong>experience the web</strong> better than ever before. In general, it shouldn't take long at all! Please, choose one of the options below and <strong>you won't be sorry</strong>:</p>
 
         <p><b><a href="http://www.google.com/chrome">Google Chrome</a> (Windows XP/Vista/7, Mac OS X 10.5+, Linux)</b> - Google Chrome is a relatively new browser from Google that allows you to view the web faster than ever, experience the newest HTML5 and Web technologies, and browse the Internet without all the clutter of traditional browsers.</p>
 
