@@ -34,22 +34,10 @@
 
 /* Requirements */
 
-if (false === ('btoa' in window)) {
-  window.location.href = 'browser.php';
-
-  throw new Error('Your browser does not seem to support Base64 operations. The script has exited.');
-}
-else if (typeof Date === 'undefined') {
-  window.location.href = 'browser.php';
-
-  throw new Error('Your browser does not seem to support the Date object. The script has exited.');
-}
-else if (typeof Math === 'undefined') {
-  window.location.href = 'browser.php';
-
-  throw new Error('Your browser does not seem to support the Math object. The script has exited.');
-}
-
+if (false === ('btoa' in window)) { window.location.href = 'browser.php'; throw new Error('Your browser does not seem to support Base64 operations. The script has exited.'); }
+else if (typeof Date === 'undefined') { window.location.href = 'browser.php'; throw new Error('Your browser does not seem to support the Date object. The script has exited.'); }
+else if (typeof Math === 'undefined') { window.location.href = 'browser.php'; throw new Error('Your browser does not seem to support the Math object. The script has exited.'); }
+else if (false === ('encodeURIComponent' in window || 'escape' in window)) { window.location.href = 'browser.php'; throw new Error('You browser does not seemsupport to support the window methods encodeURIComponent or escape. The script has exited.'); }
 
 
 /* Common Variables */
@@ -59,7 +47,7 @@ var userId, // The user ID who is logged in.
   sessionHash, // The session hash of the active user.
   anonId, // ID used to represent anonymous posters.
   prepopup,
-  forumType;
+  serverSettings;
 
 
 
@@ -163,17 +151,9 @@ var directory = window.location.pathname.split('/').splice(0, window.location.pa
 *********************************************************/
 
 function fim_eURL(str) { // Escapes data for server storage.
-  if ('encodeURIComponent' in window) {
-    return window.encodeURIComponent(str).replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%20/g, '+');
-  }
-  else if ('escape' in window) { // Escape is a bit overzealous, but it still works.
-    return window.escape(str).replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%20/g, '+');
-  }
-  else {
-    window.location.href = 'browser.php';
-
-    throw new Error('Your browser does not seem to support Base64 operations. The script has exited.');
-  }
+  if ('encodeURIComponent' in window) { return window.encodeURIComponent(str).replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%20/g, '+'); }
+  else if ('escape' in window) { return window.escape(str).replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%20/g, '+'); } // Escape is a bit overzealous, but it still works.
+  else { throw new Error('You dun goofed.'); }
 }
 
 function fim_eXMLAttr(str) { // Escapes data that is stored via doublequote-encased attributes.
@@ -259,54 +239,32 @@ function messageFormat(json, format) {
         if ($1.match(regexs.youtubeFull) || $1.match(regexs.youtubeShort)) {
           var code = false;
 
-          if (text.match(regexs.youtubeFull) !== null) {
-            code = text.replace(regexs.youtubeFull, "$8");
-          }
-          else if (text.match(regexs.youtubeShort) !== null) {
-            code = text.replace(regexs.youtubeShort, "$5");
-          }
+          if (text.match(regexs.youtubeFull) !== null) { code = text.replace(regexs.youtubeFull, "$8"); }
+          else if (text.match(regexs.youtubeShort) !== null) { code = text.replace(regexs.youtubeShort, "$5"); }
 
           if (code) {
-            if (settings.disableVideo) {
-              return '<a href="https://www.youtu.be/' + code + '" target="_BLANK">[Youtube Video]</a>';
-            }
-            else {
-              return '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>';
-            }
+            if (settings.disableVideo) { return '<a href="https://www.youtu.be/' + code + '" target="_BLANK">[Youtube Video]</a>'; }
+            else { return '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>'; }
           }
-          else {
-            return '[Logic Error]';
-          }
+          else { return '[Logic Error]'; }
         }
-        else if ($1.match(regexs.image)) {
-          return '<a href="' + $1 + '" target="_BLANK" class="imglink">' + (settings.disableImage ? '[IMAGE]' : '<img src="' + $1 + '" style="max-width: 250px; max-height: 250px;" />') + '</a>' + $2;
-        }
-        else {
-          return '<a href="' + $1 + '" target="_BLANK">' + $1 + '</a>' + $2;
-        }
+        else if ($1.match(regexs.image)) { return '<a href="' + $1 + '" target="_BLANK" class="imglink">' + (settings.disableImage ? '[IMAGE]' : '<img src="' + $1 + '" style="max-width: 250px; max-height: 250px;" />') + '</a>' + $2; }
+        else { return '<a href="' + $1 + '" target="_BLANK">' + $1 + '</a>' + $2; }
       });
 
       if (/^\/me/.test(text)) {
         text = text.replace(/^\/me/,'');
 
-        if (settings.disableFormatting) {
-          text = '<span style="padding: 10px;">* ' + userName + ' ' + text + '</span>';
-        }
-        else {
-          text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' ' + text + '</span>';
-        }
+        if (settings.disableFormatting) { text = '<span style="padding: 10px;">* ' + userName + ' ' + text + '</span>'; }
+        else { text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' ' + text + '</span>'; }
       }
       else if (/^\/topic/.test(text)) {
         text = text.replace(/^\/topic/,'');
 
         $('#topic').html(text);
 
-        if (settings.disableFormatting) {
-          text = '<span style="padding: 10px;">* ' + userName + ' ' + text + '</span>';
-        }
-        else {
-          text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' changed the topic to "' + text + '".</span>';
-        }
+        if (settings.disableFormatting) { text = '<span style="padding: 10px;">* ' + userName + ' ' + text + '</span>'; }
+        else { text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' changed the topic to "' + text + '".</span>'; }
       }
 
       if (!settings.disableFormatting) {
@@ -361,14 +319,10 @@ function newMessage(messageText, messageId) {
     messageIndex = messageIndex.slice(1,99);
   }
 
-  if (settings.reversePostOrder) {
-    toBottom();
-  }
+  if (settings.reversePostOrder) toBottom();
 
   if (window.isBlurred) {
-    if (settings.audioDing) {
-      snd.play();
-    }
+    if (settings.audioDing) snd.play();
 
     window.clearInterval(timers.t3);
     timers.t3 = window.setInterval(faviconFlash, 1000);
@@ -376,13 +330,9 @@ function newMessage(messageText, messageId) {
     if (typeof window.external === 'object') {
       if (typeof window.external.msIsSiteMode !== 'undefined' && typeof window.external.msSiteModeActivate !== 'undefined') {
         try {
-          if (window.external.msIsSiteMode()) {
-            window.external.msSiteModeActivate(); // Task Bar Flashes
-          }
+          if (window.external.msIsSiteMode()) { window.external.msSiteModeActivate(); } // Task Bar Flashes
         }
-        catch(ex) {
-          // Ya know, its very weird IE insists on this when the "in" statement works just as well...
-        }
+        catch(ex) { } // Ya know, its very weird IE insists on this when the "in" statement works just as well...
       }
     }
   }
@@ -395,52 +345,26 @@ function newMessage(messageText, messageId) {
   $('.messageLine .messageText').bind('keydown', function(e) {
     if (window.restrictFocus === 'contextMenu') return true;
 
-    if (e.which === 38) { // Left
-      $(this).parent().prev('.messageLine').children('.messageText').focus();
-      return false;
-    }
-    else if (e.which === 37 || e.which === 39) { // Right+Left
-      $(this).parent().children('.userName').focus();
-      return false;
-    }
-    else if (e.which === 40) { // Down
-      $(this).parent().next('.messageLine').children('.messageText').focus();
-      return false;
-    }
+    if (e.which === 38) { $(this).parent().prev('.messageLine').children('.messageText').focus(); return false; } // Left
+    else if (e.which === 37 || e.which === 39) { $(this).parent().children('.userName').focus(); return false; } // Right+Left
+    else if (e.which === 40) { $(this).parent().next('.messageLine').children('.messageText').focus(); return false; } // Down
   });
 
   $('.messageLine .userName').bind('keydown', function(e) {
     if (window.restrictFocus === 'contextMenu') return true;
 
-    if (e.which === 38) { // Up
-      $(this).parent().prev('.messageLine').children('.userName').focus();
-      return false;
-    }
-    else if (e.which === 39 || e.which === 37) { // Left+Right
-      $(this).parent().children('.messageText').focus();
-      return false;
-    }
-    else if (e.which === 40) { // Down
-      $(this).parent() .next('.messageLine').children('.userName').focus();
-      return false;
-    }
+    if (e.which === 38) { $(this).parent().prev('.messageLine').children('.userName').focus(); return false; } // Up
+    else if (e.which === 39 || e.which === 37) { $(this).parent().children('.messageText').focus(); return false; } // Left+Right
+    else if (e.which === 40) { $(this).parent() .next('.messageLine').children('.userName').focus(); return false; } // Down
   });
 
   $('body').bind('keydown', function(e) {
     if ($('input:focus, textarea:focus, button:focus').length === 0) { // Make sure a text-entry field does not have focus
       if (e.which === 192 || e.which === 49) { // "`", "1"
-        if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) {
-          return true;
-        }
-        else {
-          $('.messageLine .messageText').first().focus();
-          return false;
-        }
+        if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) { return true; }
+        else { $('.messageLine .messageText').first().focus(); return false; }
       }
-      else if (e.which === 32) { // Space
-        $('#messageInput').focus();
-        return false;
-      }
+      else if (e.which === 32) { $('#messageInput').focus(); return false; } // Space
     }
   });
 }
@@ -457,9 +381,7 @@ function date(timestamp, full) {
   _zeropad = function (number, newLength) {
     var numberString = number + '';
 
-    for (var i = numberString.length; i < newLength; i++) {
-      number = '0' + number;
-    }
+    for (var i = numberString.length; i < newLength; i++) { number = '0' + number; }
 
     return number;
   }
@@ -487,9 +409,7 @@ function date(timestamp, full) {
       currentTimeSeconds = Math.floor(currentTime.getTime() / 1000), // Get the unix timestamp from the current time, adjusted for the current timezone.
       lastMidnight = (currentTimeSeconds - (currentTimeSeconds % 86400)) + (currentTime.getTimezoneOffset() * 60); // Using some cool math (look it up if you're not familiar), we determine the distance from the last even day, then get the time of the last even day itself. This is the midnight referrence point. After all that, we add the timezone adjust in seconds; this is important because we're interested in the local midnight, not the UTC one.
 
-    if (timestamp < lastMidnight) { // If the current time is before the last midnight...
-      full = true;
-    }
+    if (timestamp < lastMidnight) { full = true; } // If the current time is before the last midnight...
   }
 
   if (full) { // Long code
@@ -512,7 +432,7 @@ function date(timestamp, full) {
 }
 
 function quit() {
-  $('body').replaceWith('<body>Program failure. Please restart. See console log for more information.</body>');
+  $('body').replaceWith(window.phrases.quitMessage);
   throw new Error('The program can not continue.');
 }
 
@@ -533,17 +453,9 @@ function hashParse(options) {
     if (urlHashComponents[i]) {
       componentPieces = urlHashComponents[i].split('=');
       switch (componentPieces[0]) {
-        case 'page':
-        page = componentPieces[1];
-        break;
-
-        case 'room':
-        roomIdLocal = componentPieces[1];
-        break;
-
-        case 'message':
-        messageId = componentPieces[1];
-        break;
+        case 'page': page = componentPieces[1]; break;
+        case 'room': roomIdLocal = componentPieces[1]; break;
+        case 'message': messageId = componentPieces[1]; break;
       }
     }
   }
@@ -559,9 +471,7 @@ function hashParse(options) {
     break;
 
     case 'settings':
-    prepopup = function() {
-      popup.userSettings();
-    };
+    prepopup = function() { popup.userSettings(); };
     break;
   }
 
@@ -610,7 +520,7 @@ $.ajax({
   dataType: 'json',
   success: function(json) {
     requestSettings.longPolling = json.getServerStatus.serverStatus.requestMethods.longPoll;
-    forumType = json.getServerStatus.serverStatus.branding.forumType; console.log('forum: ' + forumType);
+    serverSettings = json.getServerStatus.serverStatus; console.log('forum: ' + serverSettings.branding.forumType);
 
     if (typeof window.EventSource == 'undefined') {
       requestSettings.serverSentEvents = false;
@@ -2383,15 +2293,28 @@ popup = {
         if (fontsize) $('#fontsize > option[value="' + fontsize + '"]').attr('selected', 'selected');
 
         // Only Show the Profile Setting if Using Vanilla Logins
-        if (forumType !== 'vanilla') $('#settings5profile').hide(0);
+        if (serverSettings.branding.forumType !== 'vanilla') $('#settings5profile').hide(0);
 
         // Autocomplete Rooms and Users
         $("#defaultRoom").autocomplete({ source: roomList });
         $("#watchRoomsBridge").autocomplete({ source: roomList });
         $("#ignoreListBridge").autocomplete({ source: userList });
 
-        // Populate face Checkbox
+        // Populate Fontface Checkbox
         $('#defaultFace').html(fontSelectHtml);
+
+        // Parental Controls
+        if (!serverSettings.parentalControls.parentalEnabled) { // Hide if Subsystem is Disabled
+          $('a[href="#settings6"]').parent().remove();
+        }
+        else {
+          for (i in serverSettings.parentalControls.parentalAges) {
+            $('#parentalAge').append('<option value="' + serverSettings.parentalControls.parentalAges[i] + '">' + window.phrases.parentalAges[serverSettings.parentalControls.parentalAges[i]] + '</option>');
+          }
+          for (i in serverSettings.parentalControls.parentalFlags) {
+            $('#parentalFlagsList').append('<label for="flag' + serverSettings.parentalControls.parentalFlags[i] + '">' +  window.phrases.parentalFlags[serverSettings.parentalControls.parentalFlags[i]] + ' <input type="checkbox" value="true" name="flagViolence" data-cat="parentalFlag" data-name="' + i + '" /></label>');
+          }
+        }
 
 
         /* Actions onChange */

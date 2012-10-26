@@ -170,7 +170,7 @@
   "settingsDefaultFormattingLabel" : "Default Formatting: ",
   "settingsDefaultFormattingBoldLabel" : "Bold",
   "settingsDefaultFormattingItalicsLabel" : "Italics",
-  "settingsParentalAges" : {
+  "parentalAges" : {
     "1" : "All-Ages (1+)",
     "2" : "All-Ages (2+)",
     "3" : "All-Ages (3+)",
@@ -195,7 +195,7 @@
   },
   "settingsParentalAgeLabel" : "Content Must Be Appropriate For: ",
   "settingsParentalAgeBlurb" : "This will block images and rooms that are not appropriate for this age group. You can change this setting at any time.",
-  "settingsParentalFlags" : {
+  "parentalFlags" : {
     "violence" : "Violence",
     "weapons" : "Weapons",
     "gore" : "Gore",
@@ -207,7 +207,7 @@
     "drugs" : "Drugs"
   },
   "settingsParentalFlagsLabel" : "Do Not Show Content Containing: ",
-  "settingsParentalFlagsBlurb" : "If an item is selected and you attempt to view and image or enter a room that is marked as containing an excessive ammount of this type of content, you will be blocked from seeing it. You can change these settings at any time. <strong>Hold down the \"Ctrl\" key to select multiple items at once.</strong>",
+  "settingsParentalFlagsBlurb" : "If an item is selected and you attempt to view and image or enter a room that is marked as containing an excessive ammount of this type of content, you will be blocked from seeing it. You can change these settings at any time.</strong>",
   "settingsSave" : "Save Settings",
   "settingsReset" : "Reset Settings",
   "statsChooseSettings" : "Choose Settings",
@@ -311,5 +311,6 @@
   "fileVideoCancel" : "Cancel",
   "fileVideoSend" : "Send",
   "fileVideoSearchLegend" : "Search for Videos (Youtube)",
-  "fileVideoSearchHolder" : "Results will appear here..."
+  "fileVideoSearchHolder" : "Results will appear here...",
+  "quitMessage" : "<body>The program has encountered a critical failure. The server may be under heavy load, other some other nonsense may have been encounered. Please refresh in a few minutes. See console log for more information.</body>"
 }

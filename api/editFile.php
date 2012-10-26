@@ -30,8 +30,6 @@ $apiRequest = true;
 
 require('../global.php');
 
-
-
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
   'action' => array(

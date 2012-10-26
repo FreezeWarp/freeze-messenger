@@ -365,7 +365,7 @@
     <table name="configuration">
       <column name="directive" value="serverSentMaxRetries" />
       <column name="value" value="100" />
-      <column name="type" value="int" />
+      <column name="type" value="integer" />
     </table>
     <table name="configuration">
       <column name="directive" value="serverSentFastCGI" />
@@ -464,23 +464,23 @@
     <table name="configuration">
       <column name="directive" value="anonymousUserId" />
       <column name="value" value="0" />
-      <column name="type" value="int" />
+      <column name="type" value="integer" />
     </table>
     <table name="configuration">
       <column name="directive" value="bannedUserGroups" />
       <column name="value" value="0" />
-      <column name="type" value="int" />
+      <column name="type" value="integer" />
     </table>
 
     <table name="configuration">
       <column name="directive" value="ageMinimum" />
       <column name="value" value="6" />
-      <column name="type" value="int" />
+      <column name="type" value="integer" />
     </table>
     <table name="configuration">
       <column name="directive" value="ageMaximum" />
       <column name="value" value="100" />
-      <column name="type" value="int" />
+      <column name="type" value="integer" />
     </table>
     <table name="configuration">
       <column name="directive" value="ageRequired" />
@@ -518,7 +518,7 @@
     <table name="configuration">
       <column name="directive" value="parentalAgeDefault" />
       <column name="value" value="13" />
-      <column name="type" value="bool" />
+      <column name="type" value="integer" />
     </table>
     <table name="configuration">
       <column name="directive" value="parentalAgeChangeable" />
@@ -527,8 +527,18 @@
     </table>
     <table name="configuration">
       <column name="directive" value="parentalFlagsDefault" />
-      <column name="value" value="true" />
-      <column name="type" value="bool" />
+      <column name="value" value="" />
+      <column name="type" value="array" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="parentalFlags" />
+      <column name="value" value="lang,violence,gore,drugs,gambling,nudity,pnudity" />
+      <column name="type" value="array" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="parentalAges" />
+      <column name="value" value="6,10,13,16,18" />
+      <column name="type" value="array" />
     </table>
 
     <!-- Table counters -->
