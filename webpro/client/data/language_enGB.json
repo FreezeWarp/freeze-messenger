@@ -312,5 +312,17 @@
   "fileVideoSend" : "Send",
   "fileVideoSearchLegend" : "Search for Videos (Youtube)",
   "fileVideoSearchHolder" : "Results will appear here...",
-  "quitMessage" : "<body>The program has encountered a critical failure. The server may be under heavy load, other some other nonsense may have been encounered. Please refresh in a few minutes. See console log for more information.</body>"
+  "errorQuitMessage" : "<body>The program has encountered a critical failure. The server may be under heavy load, other some other nonsense may have been encounered. Please refresh in a few minutes. See console log for more information.</body>",
+  "errorBadInstall" : "'<strong>WARNING</strong>: Your copy of FreezeMessenger has been incorrectly installed. Errors may occur if this is not fixed. <a href=\"http://code.google.com/p/freeze-messenger/wiki/ChangingDomains\">Please see the online documentation for more information.</a>'",
+  "errorBrowserBtoa" : "Your browser does not seem to support Base64 operations. The script has exited.",
+  "errorBrowserDate" : "Your browser does not seem to support the Date object. The script has exited.",
+  "errorBrowserMath" : "Your browser does not seem to support the Math object. The script has exited.",
+  "errorBrowserEscape" : "You browser does not seem to support the window methods encodeURIComponent or escape. The script has exited.",
+  "errorGenericQuit" : "The program can not continue.",
+  "errorUploadFilesNotRetrieved" : "Upload file types not retrieved. Uploads will be disabled.",
+  "errorUsersNotRetrieved" : "The user list could not be retrieved. The program will not be started.",
+  "errorRoomsNotRetrieved" : "The room list could not be obtained. The program will not be started.",
+  "errorUserGroupsNotRetrieved" : "The usergroup list could not be retrieved. Certain features will be disabled.",
+  "errorFontListNotRetrieved" : "The font list could not be retrieved. Certain features will be disabled.",
+  "errorBanned" : "You have been banned. You will not be able to do anything."
 }

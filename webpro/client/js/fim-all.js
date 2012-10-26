@@ -34,10 +34,10 @@
 
 /* Requirements */
 
-if (false === ('btoa' in window)) { window.location.href = 'browser.php'; throw new Error('Your browser does not seem to support Base64 operations. The script has exited.'); }
-else if (typeof Date === 'undefined') { window.location.href = 'browser.php'; throw new Error('Your browser does not seem to support the Date object. The script has exited.'); }
-else if (typeof Math === 'undefined') { window.location.href = 'browser.php'; throw new Error('Your browser does not seem to support the Math object. The script has exited.'); }
-else if (false === ('encodeURIComponent' in window || 'escape' in window)) { window.location.href = 'browser.php'; throw new Error('You browser does not seemsupport to support the window methods encodeURIComponent or escape. The script has exited.'); }
+if (false === ('btoa' in window)) { window.location.href = 'browser.php'; throw new Error(window.phrases.errorBrowserBtoa); }
+else if (typeof Date === 'undefined') { window.location.href = 'browser.php'; throw new Error(window.phrases.errorBrowserDate); }
+else if (typeof Math === 'undefined') { window.location.href = 'browser.php'; throw new Error(window.phrases.errorBrowserMath); } // Every browser supports Math. But, I /really/ hate programs that make stupid assumptions like that. All throughout FIM, I try to be as explicit as possible with these things.
+else if (false === ('encodeURIComponent' in window || 'escape' in window)) { window.location.href = 'browser.php'; throw new Error(window.phrases.errorBrowserEscape); }
 
 
 /* Common Variables */
@@ -432,8 +432,8 @@ function date(timestamp, full) {
 }
 
 function quit() {
-  $('body').replaceWith(window.phrases.quitMessage);
-  throw new Error('The program can not continue.');
+  $('body').replaceWith(window.phrases.errorQuitMessage);
+  throw new Error(window.phrases.errorGenericQuit);
 }
 
 
@@ -486,9 +486,7 @@ function hashParse(options) {
 
 if (typeof console !== 'object' || typeof console.log !== 'function') {
   var console = {
-    log : function() {
-      return false;
-    }
+    log : function() { return false; }
   };
 }
 
@@ -522,15 +520,11 @@ $.ajax({
     requestSettings.longPolling = json.getServerStatus.serverStatus.requestMethods.longPoll;
     serverSettings = json.getServerStatus.serverStatus; console.log('forum: ' + serverSettings.branding.forumType);
 
-    if (typeof window.EventSource == 'undefined') {
-      requestSettings.serverSentEvents = false;
-    }
-    else {
-      requestSettings.serverSentEvents = json.getServerStatus.serverStatus.requestMethods.serverSentEvents;
-    }
+    if (typeof window.EventSource == 'undefined') { requestSettings.serverSentEvents = false; }
+    else { requestSettings.serverSentEvents = json.getServerStatus.serverStatus.requestMethods.serverSentEvents; }
 
     if (json.getServerStatus.serverStatus.installUrl != (window.location.protocol + '//' + window.location.host + directory)) {
-      dia.error('<strong>WARNING</strong>: Your copy of FreezeMessenger has been incorrectly installed. Errors may occur if this is not fixed. <a href="http://code.google.com/p/freeze-messenger/wiki/ChangingDomains">Please see the online documentation for more information.</a>');
+      dia.error(window.phrases.errorBadInstall);
     }
 
     return false;
@@ -563,7 +557,7 @@ $.ajax({
     }
   },
   error: function() {
-    dia.error('Upload file types not retrieved. Uploads will be disabled.'); // TODO: Disable Uploads
+    dia.error(window.phrases.errorUploadFilesNotRetrieved); // TODO: Disable Uploads
   }
 });
 
@@ -702,7 +696,7 @@ function populate(options) {
         return false;
       },
       error: function() {
-        dia.error('The user list could not be retrieved. The program will not be started.'); // TODO: Don't start.
+        dia.error(window.phrases.errorUsersNotRetrieved);
         quit();
 
         return false;
@@ -765,7 +759,7 @@ function populate(options) {
         return false;
       },
       error: function() {
-        dia.error('The room list could not be obtained. The program will not be started.');
+        dia.error(window.phrases.errorRoomsNotRetrieved);
         quit();
 
         return false;
@@ -792,7 +786,7 @@ function populate(options) {
         return false;
       },
       error: function() {
-        dia.error('The usergroup list could not be retrieved. Certain features will be disabled.'); // TODO: Disable certain features.
+        dia.error(window.phrases.errorUserGroupsNotRetrieved); // TODO: Disable certain features.
 
         return false;
       }
@@ -819,7 +813,7 @@ function populate(options) {
         return false;
       },
       error: function() {
-        dia.error('The font list could not be retrieved. Certain features will be disabled.'); // TODO: Disable certain features.
+        dia.error(window.phrases.errorFontListNotRetrieved); // TODO: Disable certain features.
 
         return false;
       }
@@ -1215,7 +1209,7 @@ var standard = {
 
 
         if (activeLogin.banned) { // The user has been banned, so pretty much nothing will work. In some respects, this really only exists for IP bans, but meh.
-          dia.error('You have been banned. You will not be able to do anything.');
+          dia.error(window.phrases.errorBanned);
 
           userPermissions = {
             createRoom : false, privateRoom : false, general : false
@@ -3411,8 +3405,6 @@ $(document).ready(function() {
     $("#imageUploadSubmitButton").button("option", "disabled", true);
 
 
-
-
     /*** Button Click Events ***/
     $('#icon_note, #messageArchive, a#editRoom').unbind('click'); // Cleanup
 
@@ -3439,7 +3431,6 @@ $(document).ready(function() {
     $('#showFewerRooms').bind('click', function() { $('#roomListLong').slideUp(); $('#roomListShort').slideDown(); });
 
 
-
     /*** Youtube Videos for Uploads ***/
     jQTubeUtil.init({
       key: 'AI39si5_Dbv6rqUPbSe8e4RZyXkDM3X0MAAtOgCuqxg_dvGTWCPzrtN_JLh9HlTaoC01hCLZCxeEDOaxsjhnH5p7HhZVnah2iQ',
@@ -3447,7 +3438,6 @@ $(document).ready(function() {
       time: 'this_month',   // *optional -- 'this_month' is set by default
       maxResults: 20   // *optional -- defined as 10 results by default
     });
-
 
 
     /*** Send Messages, Yay! ***/
@@ -3464,7 +3454,6 @@ $(document).ready(function() {
     });
 
 
-
     /*** Process Enter for Message Input ***/
     $('#messageInput').bind('keydown', function(e) {
       if (e.keyCode === 13 && !e.shiftKey) { // Enter w/o shift
@@ -3474,7 +3463,6 @@ $(document).ready(function() {
 
       return true;
     });
-
 
 
     /*** Window Manipulation (see below) ***/
@@ -3508,10 +3496,8 @@ function windowResize() {
   var windowWidth = $(window).width(); // Get the browser window "viewport" width, excluding scrollbars.
   var windowHeight = $(window).height(); // Get the browser window "viewport" height, excluding scrollbars.
 
-
   $('#messageList').css('height', (windowHeight - 250)); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
   $('#messageList').css('max-width', ((windowWidth - 10) * .75)); // Prevent box-stretching. This is common on... many chats.
-
 
   /* Body Padding: 10px
     * Right Area Width: 75%
@@ -3519,7 +3505,6 @@ function windowResize() {
     *** TD Padding: 2px (on Standard Styling)
     * Message Input Text Area Padding: 3px */
   $('#messageInput').css('width', (((windowWidth - 10) * .75) - 20 - 2)); // Set the messageInput box to fill width.
-
 
   $('body').css('min-height', windowHeight); // Set the body height to equal that of the window; this fixes many gradient issues in theming.
 }
