@@ -271,7 +271,11 @@ function messageFormat(json, format) {
       }
 
       if (!settings.disableFormatting) {
-        style = 'color: rgb(' + styleColor + '); background: rgb(' + styleHighlight + '); font-family: ' + fontIdRef[styleFontface] + ';';
+        style = '';
+
+        if (styleColor) style += 'color: rgb(' + styleColor + ');';
+        if (styleHighlight) style += 'background: rgb(' + styleHighlight + ');'
+        if (styleFontface) stlye += 'font-family: ' + fontIdRef[styleFontface] + ';';
 
         if (styleGeneral & 256) style += 'font-weight: bold;';
         if (styleGeneral & 512) style += 'font-style: oblique;';
@@ -289,15 +293,10 @@ function messageFormat(json, format) {
     break;
 
     case 'list':
-    if (settings.showAvatars) {
-      data = '<span id="message' + messageId + '" class="messageLine messageLineAvatar"><span class="userName userNameAvatar" data-userId="' + userId + '" tabindex="1000"><img alt="' + userName + '" src="' + avatar + '" /></span><span style="' + style + '" class="messageText" data-messageId="' + messageId + '" data-roomId="' + roomId + '" data-time="' + messageTime + '" tabindex="1000">' + text + '</span><br />';
-    }
-    else {
-      data = '<span id="message' + messageId + '" class="messageLine"><span class="userName userNameTable" data-userId="' + userId + '" tabindex="1000">' + groupFormatStart + userName + groupFormatEnd + '</span> @ <em>' + messageTime + '</em>: <span style="' + style + '" class="messageText" data-messageid="' + messageId + '" data-roomId="' + roomId + '" tabindex="1000">' + text + '</span><br />';
-    }
+    if (settings.showAvatars) data = '<span id="message' + messageId + '" class="messageLine messageLineAvatar"><span class="userName userNameAvatar" data-userId="' + userId + '" tabindex="1000"><img alt="' + userName + '" src="' + avatar + '" /></span><span style="' + style + '" class="messageText" data-messageId="' + messageId + '" data-roomId="' + roomId + '" data-time="' + messageTime + '" tabindex="1000">' + text + '</span><br />';
+    else data = '<span id="message' + messageId + '" class="messageLine"><span class="userName userNameTable" data-userId="' + userId + '" tabindex="1000">' + groupFormatStart + userName + groupFormatEnd + '</span> @ <em>' + messageTime + '</em>: <span style="' + style + '" class="messageText" data-messageid="' + messageId + '" data-roomId="' + roomId + '" tabindex="1000">' + text + '</span><br />';
     break;
   }
-
 
   return data;
 }
@@ -2197,7 +2196,9 @@ popup = {
               defaultHighlightHashPre = [],
               defaultHighlightHash = {r:0, g:0, b:0},
               defaultColourHashPre = [],
-              defaultColourHash = {r:0, g:0, b:0};
+              defaultColourHash = {r:0, g:0, b:0},
+              parentalAge = active[i].parentalAge,
+              parentalFlags = active[i].parentalFlags;
 
             /* Update Default Forum Values Based on Server Settings */
             // Default Formatting -- Bold
@@ -2278,6 +2279,12 @@ popup = {
             // Populate Existing Entries for Lists
             autoEntry.showEntries('ignoreList', ignoreList);
             autoEntry.showEntries('watchRooms', watchRooms);
+
+            // Parental Control Flags
+            for (i in parentalFlags) {
+              $('input[data-cat=parentalFlag][data-name=' + parentalFlags[i] + ']').attr('checked', true);
+            }
+            $('select#parentalAge option[value=' + parentalAge + ']').attr('selected', 'selected');
 
             return false;
           }
