@@ -21,6 +21,9 @@
   * Consistency in use of templates+raw HTML.
   * Password Encryption */
 
+/* Coding Notes:
+ * I try to do things in as few lines as possible, because this file is fricken massive. I previously would store, for instance, parts of HTML in variables; now, if possible, I append immediately. */
+
 
 
 
@@ -1934,6 +1937,21 @@ popup = {
           $('#uploadFileForm, #uploadUrlForm, #linkForm. #uploadYoutubeForm').unbind('submit');
 
 
+          /* Parental Controls */
+          if (!serverSettings.parentalControls.parentalEnabled) { // Hide if Subsystem is Disabled
+            $('#insertDocParentalAge, #insertDocParentalFlags').remove();
+          }
+          else {
+            for (i in serverSettings.parentalControls.parentalAges) {
+              $('#parentalAge').append('<option value="' + serverSettings.parentalControls.parentalAges[i] + '">' + window.phrases.parentalAges[serverSettings.parentalControls.parentalAges[i]] + '</option>');
+            }
+            for (i in serverSettings.parentalControls.parentalFlags) {
+              $('#parentalFlagsList').append('<label>' +  window.phrases.parentalFlags[serverSettings.parentalControls.parentalFlags[i]] + '<input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + i + '" /></label> ');
+            }
+          }
+
+
+          /* Previewer for Files */
           $('#fileUpload').bind('change', function() {
             console.log('FileReader triggered.');
 
@@ -1987,6 +2005,8 @@ popup = {
             }
           });
 
+
+          /* Previewer for URLs */
           $('#urlUpload').bind('change', function() {
             fileContent = $('#urlUpload').val();
             if (fileContent && fileContent !== 'http://') {
@@ -1997,6 +2017,7 @@ popup = {
           });
 
 
+          /* Submit */
           $('#uploadFileForm').bind('submit', function() {
             $.ajax({
               url : directory + 'api/editFile.php',
@@ -2022,7 +2043,6 @@ popup = {
           });
         }
 
-
         $('#uploadUrlForm').bind('submit', function() {
           var linkImage = $('#urlUpload').val();
 
@@ -2032,7 +2052,6 @@ popup = {
 
           return false;
         });
-
 
         $('#linkForm').bind('submit', function() {
           var linkUrl = $('#linkUrl').val(),
@@ -2306,7 +2325,7 @@ popup = {
             $('#parentalAge').append('<option value="' + serverSettings.parentalControls.parentalAges[i] + '">' + window.phrases.parentalAges[serverSettings.parentalControls.parentalAges[i]] + '</option>');
           }
           for (i in serverSettings.parentalControls.parentalFlags) {
-            $('#parentalFlagsList').append('<label for="flag' + serverSettings.parentalControls.parentalFlags[i] + '">' +  window.phrases.parentalFlags[serverSettings.parentalControls.parentalFlags[i]] + ' <input type="checkbox" value="true" name="flagViolence" data-cat="parentalFlag" data-name="' + i + '" /></label>');
+            $('#parentalFlagsList').append('<label>' +  window.phrases.parentalFlags[serverSettings.parentalControls.parentalFlags[i]] + '<input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + i + '" /></label> ');
           }
         }
 
@@ -2497,12 +2516,8 @@ popup = {
                   allowedGroupsArray = [];
 
                   for (var j in allowedUsers) {
-                    if (allowedUsers[j] & 15 === 15) { // Are all bits up to 8 present?
-                      moderatorsArray.push(j);
-                    }
-                    if (allowedUsers[j] & 7 === 7) { // Are the 1, 2, and 4 bits all present?
-                      allowedUsersArray.push(j);
-                    }
+                    if (allowedUsers[j] & 15 === 15) { moderatorsArray.push(j); } // Are all bits up to 8 present?
+                    if (allowedUsers[j] & 7 === 7) { allowedUsersArray.push(j); } // Are the 1, 2, and 4 bits all present?
                   }
 
                 break;
@@ -2510,7 +2525,8 @@ popup = {
 
               $('#name').val(roomName); // Current Room Name
 
-              // Prepopulate
+              /* Prepopulate */
+              // User Autocomplete
               if (allowedUsersArray.length > 0) autoEntry.showEntries('allowedUsers', allowedUsersArray);
               if (moderatorsArray.length > 0) autoEntry.showEntries('moderators', moderatorsArray);
               if (allowedGroupsArray.length > 0) autoEntry.showEntries('allowedGroups', allowedGroupsArray);
@@ -2523,10 +2539,6 @@ popup = {
                 $('#allowedGroupsBridge').next().attr('disabled', 'disabled');
               }
 
-  //            if (mature) {
-  //              $('#mature').attr('checked', 'checked');
-  //            }
-
               return false;
             },
             error: function() {
@@ -2537,14 +2549,14 @@ popup = {
           });
         }
 
+
+        /* Censor Lists */
         $.ajax({
           url: directory + 'api/getCensorLists.php?rooms=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
           type: 'GET',
           timeout: 2400,
           cache: false,
           success: function(json) {
-            var data = '';
-
             for (var i in json.getCensorLists.lists) {
               var listId = json.getCensorLists.lists[i].listId,
                 listName = json.getCensorLists.lists[i].listName,
@@ -2555,10 +2567,8 @@ popup = {
                 var listStatus = json.getCensorLists.lists[i].active[j].status;
               }
 
-              data += '<label><input type="checkbox" name="list' + listId + '" data-listId="' + listId + '" data-checkType="list" value="true" ' + (listOptions & 2 ? '' : ' disabled="disabled"') + (listStatus === 'block' ? ' checked="checked"' : '') + ' />' + listName + '</label>';
+              $('#censorLists').append('<label><input type="checkbox" name="list' + listId + '" data-listId="' + listId + '" data-checkType="list" value="true" ' + (listOptions & 2 ? '' : ' disabled="disabled"') + (listStatus === 'block' ? ' checked="checked"' : '') + ' />' + listName + '</label>');
             }
-
-            $('#censorLists').append(data);
 
             return false;
           },
@@ -2569,7 +2579,8 @@ popup = {
           }
         });
 
-        // Autocomplete Users and Groups
+
+        /* Autocomplete Users and Groups */
         $("#moderatorsBridge").autocomplete({ source: userList });
         $("#allowedUsersBridge").autocomplete({ source: userList });
         $("#allowedGroupsBridge").autocomplete({ source: groupList });
@@ -2589,9 +2600,24 @@ popup = {
           }
         });
 
+
+        /* Parental Controls */
+        if (!serverSettings.parentalControls.parentalEnabled) { // Hide if Subsystem is Disabled
+          $('#editRoom1ParentalAge, #editRoom1ParentalFlags').remove();
+        }
+        else {
+          for (i in serverSettings.parentalControls.parentalAges) {
+            $('#parentalAge').append('<option value="' + serverSettings.parentalControls.parentalAges[i] + '">' + window.phrases.parentalAges[serverSettings.parentalControls.parentalAges[i]] + '</option>');
+          }
+          for (i in serverSettings.parentalControls.parentalFlags) {
+            $('#parentalFlagsList').append('<label>' +  window.phrases.parentalFlags[serverSettings.parentalControls.parentalFlags[i]] + '<input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + i + '" /></label> ');
+          }
+        }
+
+
+        /* Submit */
         $("#editRoomForm").submit(function() {
           var name = $('#name').val(),
-//            mature = ($('#mature').is(':checked') ? true : false),
             allowedUsers = $('#allowedUsers').val(),
             allowedGroups = $('#allowedGroups').val(),
             moderators = $('#moderators').val(),
@@ -2620,6 +2646,7 @@ popup = {
                   content : 'The room has been created at the following URL:<br /><br /><form action="' + currentLocation + '#room=' + createRoomId + '" method="post"><input type="text" style="width: 300px;" value="' + currentLocation + '#room=' + createRoomId + '" name="url" /></form>',
                   title : 'Room Created!',
                   id : 'editRoomResultsDialogue',
+
                   width : 600,
                   buttons : {
                     Open : function() {
