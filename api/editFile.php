@@ -78,19 +78,13 @@ $request = fim_sanitizeGPC('p', array(
   'parentalAge' => array(
     'context' => 'int',
     'default' => 6,
-    'valid' => array(
-      6, 10, 13, 16, 18,
-    ),
+    'valid' => $config['parentalAges'],
   ),
 
   'parentalFlags' => array(
     'context' => array(
       'type' => 'csv',
-      'valid' => array(
-        'violence', 'suggestive', 'nudity',
-        'pnudity', 'language', 'violence',
-        'gore', 'weapons', 'drugs',
-      ),
+      'valid' => $config['parentalFlags'],
     ),
   ),
 
@@ -334,7 +328,7 @@ if ($continue) {
                         'fileName' => $request['fileName'],
                         'fileType' => $mime,
                         'parentalAge' => $request['parentalAge'],
-                        'parentalFlags' => $request['parentalFlags'],
+                        'parentalFlags' => implode(',', $request['parentalFlags']),
                         'creationTime' => time(),
                         'fileSize' => $rawSize,
                       ));

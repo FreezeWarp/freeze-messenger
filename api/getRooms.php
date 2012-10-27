@@ -182,6 +182,8 @@ if (is_array($rooms)) {
         'roomName' => ($roomData['roomName']),
         'defaultPermissions' => (int) $roomData['defaultPermissions'],
 //TODO        'favorite' => (bool) (in_array($roomData['roomId'],$favRooms) ? true : false),
+        'parentalFlags' => explode(',', $roomData['parentalFlags']),
+        'parentalAge' => $roomData['parentalAge'],
         'options' => (int) $roomData['options'],
         'optionDefinitions' => array(
           'official' => (bool) ($roomData['options'] & 1),

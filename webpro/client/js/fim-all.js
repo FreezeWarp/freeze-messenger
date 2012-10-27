@@ -2018,10 +2018,17 @@ popup = {
 
           /* Submit */
           $('#uploadFileForm').bind('submit', function() {
+            parentalAge = $('#parentalAge option:selected').val(),
+            parentalFlags = [];
+
+            $('input[data-cat=parentalFlag]:checked').each(function(a, b) {
+              parentalFlags.push($(b).attr('data-name'));
+            });
+
             $.ajax({
               url : directory + 'api/editFile.php',
               type : 'POST',
-              data : 'action=create&dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&fileName=' + fileName + '&fileData=' + fim_eURL(fileContent) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+              data : 'action=create&dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&fileName=' + fileName + '&parentalAge=' + parentalAge + '&parentalFlags=' + parentalFlags.join(',') + '&fileData=' + fim_eURL(fileContent) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
               cache : false,
               success : function(json) {
                 var errStr = json.editFile.errStr,
@@ -2044,9 +2051,7 @@ popup = {
 
         $('#uploadUrlForm').bind('submit', function() {
           var linkImage = $('#urlUpload').val();
-
           if (linkImage) { standard.sendMessage(linkImage, 0, 'image'); }
-
           $('#insertDoc').dialog('close');
 
           return false;
@@ -2524,6 +2529,8 @@ popup = {
                   allowedUsers = json.getRooms.rooms[i].allowedUsers,
                   allowedGroups = json.getRooms.rooms[i].allowedGroups,
                   defaultPermissions = json.getRooms.rooms[i].defaultPermissions,
+                  parentalAge = json.getRooms.rooms[i].parentalAge,
+                  parentalFlags = json.getRooms.rooms[i].parentalFlags,
                   allowedUsersArray = [],
                   moderatorsArray = [],
                   allowedGroupsArray = [];
@@ -2532,6 +2539,12 @@ popup = {
                     if (allowedUsers[j] & 15 === 15) { moderatorsArray.push(j); } // Are all bits up to 8 present?
                     if (allowedUsers[j] & 7 === 7) { allowedUsersArray.push(j); } // Are the 1, 2, and 4 bits all present?
                   }
+
+                  console.log(parentalFlags);
+                  for (i in parentalFlags) {
+                    $('input[data-cat=parentalFlag][data-name=' + parentalFlags[i] + ']').attr('checked', true);
+                  }
+                  $('select#parentalAge option[value=' + parentalAge + ']').attr('selected', 'selected');
 
                 break;
               }
@@ -2634,19 +2647,28 @@ popup = {
             allowedUsers = $('#allowedUsers').val(),
             allowedGroups = $('#allowedGroups').val(),
             moderators = $('#moderators').val(),
-            censor = [];
+            censor = [],
+            parentalAge = $('#parentalAge option:selected').val(),
+            parentalFlags = [];
 
           $('input[data-checkType="list"]').each(function() {
             censor.push($(this).attr('data-listId') + '=' + ($(this).is(':checked') ? 1 : 0));
           });
 
+          $('input[data-cat=parentalFlag]:checked').each(function(a, b) {
+            parentalFlags.push($(b).attr('data-name'));
+          });
+
           censor = censor.join(',');console.log(censor); // TODO
 
-          if (name.length > 20) {
+          if (name.length > window.serverSettings.rooms.roomLengthMaximum) {
             dia.error('The roomname is too long.');
           }
+          else if (name.length < window.serverSettings.rooms.roomLengthMinimum) {
+            dia.error('The roomname is too short.');
+          }
           else {
-            $.post(directory + 'api/editRoom.php', 'action=' + action + '&roomId=' +  roomIdLocal + '&roomName=' + fim_eURL(name) + '&defaultPermissions=' + ($('#allowAllUsers').is(':checked') ? '7' : '0' + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups) + '&moderators=' + moderators + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId, function(json) {
+            $.post(directory + 'api/editRoom.php', 'action=' + action + '&roomId=' +  roomIdLocal + '&roomName=' + fim_eURL(name) + '&defaultPermissions=' + ($('#allowAllUsers').is(':checked') ? '7' : '0' + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups) + '&moderators=' + moderators + '&parentalAge=' + parentalAge + '&parentalFlags=' + parentalFlags + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId, function(json) {
               var errStr = json.editRoom.errStr,
                 errDesc = json.editRoom.errDesc,
                 createRoomId = json.editRoom.response.insertId;

@@ -62,10 +62,10 @@ $xmlData = array(
       ),
 
       'registrationPolicies' => array(
-        'ageRequired' => $config['ageRequired'],
-        'ageMinimum' => $config['ageMinimum'],
-        'ageMaximum' => $config['ageMaximum'],
-        'emailRequired' => $config['emailRequired'],
+        'ageRequired' => (bool) $config['ageRequired'],
+        'ageMinimum' => (int) $config['ageMinimum'],
+        'ageMaximum' => (int) $config['ageMaximum'],
+        'emailRequired' => (bool) $config['emailRequired'],
       ),
 
       'fileUploads' => array(
@@ -73,6 +73,11 @@ $xmlData = array(
         'generalEnabled' => (bool) $config['enableGeneralUploads'],
         'maxAll' => (int) $config['uploadMaxFiles'],
         'maxUser' => (int) $config['uploadMaxUserFiles'],
+      ),
+
+      'rooms' => array(
+        'roomLengthMinimum' => (int) $config['roomLengthMinimum'],
+        'roomLengthMaximum' => (int) $config['roomLengthMaximum'],
       ),
 
       'defaultFormatting' => array(

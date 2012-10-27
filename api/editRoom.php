@@ -39,8 +39,6 @@
  * Private Room Parameters:
  * @param int userId
  * @param string userName
- *
- * Note for FIMv4: This will add several additional methods ("contact" being the main one) that allow for improved IM-like communication. This will essentially return any stream that has x users involved, and will replace private for the most part (private will instead be used for OTR communication).
 */
 
 $apiRequest = true;
@@ -54,8 +52,7 @@ $request = fim_sanitizeGPC('p', array(
   'action' => array(
     'valid' => array(
       'create', 'edit',
-      'delete', 'private',
-      'contact', // FIMv4
+      'delete', 'undelete'
     ),
     'require' => true,
   ),
@@ -107,34 +104,14 @@ $request = fim_sanitizeGPC('p', array(
 
   'parentalAge' => array(
     'context' => 'int',
-    'valid' => array(
-      6, 10, 13, 16, 18
-    ),
+    'valid' => $config['parentalAges'],
     'default' => 6,
   ),
 
   'parentalFlags' => array(
     'context' => array(
       'type' => 'csv',
-      'valid' => array(
-        'violence', 'weapons', 'gore',
-        'nudity', 'pnudity', 'suggestive',
-        'drugs', 'language',
-      ),
-    ),
-  ),
-
-  // Private Only
-  'userId' => array(
-    'context' => 'int',
-    'default' => 0,
-  ),
-
-  // In The Future
-  'otr' => array( // OTR mode signals that a temporary room should be created where an archive will not be stored.
-    'default' => false,
-    'context' => array(
-      'type' => 'bool',
+      'valid' => $config['parentalFlags'],
     ),
   ),
 ));
@@ -385,65 +362,6 @@ switch($request['action']) {
       }
     }
   }
-  break;
-
-  case 'private':
-  if (!$user['userDefs']['privateRooms']) {
-    $errStr = 'noPerm';
-    $errDesc = 'You do not have permission to create private rooms.';
-  }
-  else {
-    if ($request['userId'] > 0) {
-      $user2 = $slaveDatabase->getUser($request['userId']); // Get the user information.
-    }
-    else {
-      $errStr = 'noUser';
-      $errDesc = 'You did not specify a user.';
-    }
-
-    if (!isset($user2)) {} // noUser thing above...
-    elseif ($user2 === false) { // No user exists.
-      $errStr = 'badUser';
-      $errDesc = 'That user does not exist.';
-    }
-    elseif ($user2['userId'] == $user['userId']) { // Don't allow the user to, well, talk to himself.
-      $errStr = 'sameUser';
-      $errDesc = 'The user specified is yourself.';
-    }
-    else {
-      $user['ignoreList'] = fim_arrayValidate(explode(',', $user2['ignoreList']), 'int', false);
-
-      if (in_array($user['userId'], $user['ignoreList']) ||
-        ($user2['options'] & 512)) {
-        $errStr = 'ignored';
-        $errDesc = 'The user has blocked private contact.';
-      }
-      else {
-        $room = $database->getPrivateRoom(array($user['userId'], $user2['userId']));
-
-        if ($room) {
-          $xmlData['editRoom']['response']['insertId'] = 'p' . $room['roomUsersList']; // Already exists; return ID
-        }
-        else {
-          $roomUsers = array($user['userId'], $user2['userId']);
-          asort($roomUsers);
-          $roomUsersList = implode(',',$roomUsers);
-          $roomUsersHash = md5($roomUsersList);
-
-          $database->insert("{$sqlPrefix}privateRooms", array(
-            'roomUsersList' => $roomUsersList,
-            'roomUsersHash' => $roomUsersHash,
-          ));
-
-          $xmlData['editRoom']['response']['insertId'] = 'p' . $roomUsersList;
-        }
-      }
-    }
-  }
-  break;
-
-  case 'contact':
-  // FIMv4
   break;
 
   case 'delete':

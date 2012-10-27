@@ -108,7 +108,7 @@ if ($continue) {
           'fileName' => $file['fileName'],
           'mime' => $file['mime'],
           'parentalAge' => $file['parentalAge'],
-          'parentalFlags' => $file['parentalFlags'],
+          'parentalFlags' => explode(',', $file['parentalFlags']),
           'md5hash' => $file['md5hash'],
           'sha256hash' => $file['sha256hash'],
         );
