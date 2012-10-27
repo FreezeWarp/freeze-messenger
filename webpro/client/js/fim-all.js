@@ -1946,7 +1946,7 @@ popup = {
               $('#parentalAge').append('<option value="' + serverSettings.parentalControls.parentalAges[i] + '">' + window.phrases.parentalAges[serverSettings.parentalControls.parentalAges[i]] + '</option>');
             }
             for (i in serverSettings.parentalControls.parentalFlags) {
-              $('#parentalFlagsList').append('<label>' +  window.phrases.parentalFlags[serverSettings.parentalControls.parentalFlags[i]] + '<input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + i + '" /></label> ');
+              $('#parentalFlagsList').append('<label>' +  window.phrases.parentalFlags[serverSettings.parentalControls.parentalFlags[i]] + '<input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + serverSettings.parentalControls.parentalFlags[i] + '" /></label> ');
             }
           }
 
@@ -2325,7 +2325,7 @@ popup = {
             $('#parentalAge').append('<option value="' + serverSettings.parentalControls.parentalAges[i] + '">' + window.phrases.parentalAges[serverSettings.parentalControls.parentalAges[i]] + '</option>');
           }
           for (i in serverSettings.parentalControls.parentalFlags) {
-            $('#parentalFlagsList').append('<label>' +  window.phrases.parentalFlags[serverSettings.parentalControls.parentalFlags[i]] + '<input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + i + '" /></label> ');
+            $('#parentalFlagsList').append('<label>' +  window.phrases.parentalFlags[serverSettings.parentalControls.parentalFlags[i]] + '<input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + serverSettings.parentalControls.parentalFlags[i] + '" /></label> ');
           }
         }
 
@@ -2407,9 +2407,15 @@ popup = {
             ignoreList = $('#ignoreList').val(),
             defaultRoomId = (defaultRoom ? roomRef[defaultRoom] : 0),
             fontId = $('#defaultFace option:selected').val(),
-            defaultFormatting = ($('#defaultBold').is(':checked') ? 256 : 0) + ($('#defaultItalics').is(':checked') ? 512 : 0);
+            defaultFormatting = ($('#defaultBold').is(':checked') ? 256 : 0) + ($('#defaultItalics').is(':checked') ? 512 : 0),
+            parentalAge = $('#parentalAge option:selected').val(),
+            parentalFlags = [];
 
-          $.post(directory + 'api/editUserOptions.php', 'defaultFormatting=' + defaultFormatting + '&defaultColor=' + defaultColour + '&defaultHighlight=' + defaultHighlight + '&defaultRoomId=' + defaultRoomId + '&watchRooms=' + watchRooms + '&ignoreList=' + ignoreList + '&defaultFontface=' + fontId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
+          $('input[data-cat=parentalFlag]:checked').each(function(a, b) {
+            parentalFlags.push($(b).attr('data-name'));
+          });
+
+          $.post(directory + 'api/editUserOptions.php', 'defaultFormatting=' + defaultFormatting + '&defaultColor=' + defaultColour + '&defaultHighlight=' + defaultHighlight + '&defaultRoomId=' + defaultRoomId + '&watchRooms=' + watchRooms + '&ignoreList=' + ignoreList + '&defaultFontface=' + fontId + '&parentalAge=' + parentalAge + '&parentalFlags=' + parentalFlags.join(',') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
             dia.info('Your settings may or may not have been updated.');
           }); // Send the form data via AJAX.
 
@@ -2610,7 +2616,7 @@ popup = {
             $('#parentalAge').append('<option value="' + serverSettings.parentalControls.parentalAges[i] + '">' + window.phrases.parentalAges[serverSettings.parentalControls.parentalAges[i]] + '</option>');
           }
           for (i in serverSettings.parentalControls.parentalFlags) {
-            $('#parentalFlagsList').append('<label>' +  window.phrases.parentalFlags[serverSettings.parentalControls.parentalFlags[i]] + '<input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + i + '" /></label> ');
+            $('#parentalFlagsList').append('<label>' +  window.phrases.parentalFlags[serverSettings.parentalControls.parentalFlags[i]] + '<input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + serverSettings.parentalControls.parentalFlags[i] + '" /></label> ');
           }
         }
 

@@ -209,12 +209,14 @@ if (isset($request['roomLists'])) { // e.g. favRooms=1,2,3;
       ),
       'conditions' => array(
         'both' => array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column', 'value' => 'listName',
-          ),
-          'right' => array(
-            'type' => 'string', 'value' => $listName,
+          array(
+            'type' => 'e',
+            'left' => array(
+              'type' => 'column', 'value' => 'listName',
+            ),
+            'right' => array(
+              'type' => 'string', 'value' => $listName,
+            ),
           ),
         ),
       )
@@ -232,12 +234,14 @@ if (isset($request['roomLists'])) { // e.g. favRooms=1,2,3;
       ),
       'conditions' => array(
         'both' => array(
-          'type' => 'in',
-          'left' => array(
-            'type' => 'column', 'value' => 'roomId',
-          ),
-          'right' => array(
-            'type' => 'array', 'value' => $roomIds,
+          array(
+            'type' => 'in',
+            'left' => array(
+              'type' => 'column', 'value' => 'roomId',
+            ),
+            'right' => array(
+              'type' => 'array', 'value' => $roomIds,
+            ),
           ),
         ),
       )
@@ -278,12 +282,14 @@ if (isset($request['watchRooms'])) {
     ),
     'conditions' => array(
       'both' => array(
-        'type' => 'in',
-        'left' => array(
-          'type' => 'column', 'value' => 'roomId',
-        ),
-        'right' => array(
-          'type' => 'array', 'value' => $request['watchRooms'],
+        array(
+          'type' => 'in',
+          'left' => array(
+            'type' => 'column', 'value' => 'roomId',
+          ),
+          'right' => array(
+            'type' => 'array', 'value' => $request['watchRooms'],
+          ),
         ),
       ),
     )
@@ -292,7 +298,7 @@ if (isset($request['watchRooms'])) {
   $roomData = $database->select(
     $queryParts['roomSelect']['columns'],
     $queryParts['roomSelect']['conditions']);
-  $roomData = $rooms->getAsArray('roomId');
+  $roomData = $roomData->getAsArray('roomId');
 
   foreach ($request['watchRooms'] AS $watchRoomId) {
     foreach ($roomIds AS $roomId) {
@@ -397,7 +403,7 @@ if (isset($request['defaultFontface'])) {
 /* Parental Age */
 if (isset($request['parentalAge'])) {
   if (in_array($request['parentalAge'], $config['parentalAges'])) {
-    $updateArray['parentalAge'] = $request['parentalAge'];
+    $updateArray['parentalAge'] = (int) $request['parentalAge'];
 
     $xmlData['editUserOptions']['response']['parentalAge']['status'] = true;
     $xmlData['editUserOptions']['response']['parentalAge']['newValue'] = (int) $request['parentalAge'];
@@ -412,7 +418,7 @@ if (isset($request['parentalAge'])) {
 
 /* Parental Flags */
 if (isset($request['parentalFlags'])) {
-  $updateArray['parentalFlags'] = $request['parentalFlags'];
+  $updateArray['parentalFlags'] = implode(',', $request['parentalFlags']);
 
   $xmlData['editUserOptions']['response']['parentalFlags']['status'] = true;
   $xmlData['editUserOptions']['response']['parentalFlags']['newValue'] = $request['parentalFlags'];

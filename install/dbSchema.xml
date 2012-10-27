@@ -144,7 +144,7 @@
       <column name="userId" type="int" maxlen="8" comment="The ID of the user who uploaded the file." />
       <column name="source" type="string" maxlen="50" default="upload" comment="The file's source - in most cases upload." />
       <column name="parentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the file." />
-      <column name="parentalAge" type="string" restrict="6,10,13,16,18" comment="The file's parental content age rating." />
+      <column name="parentalAge" type="int" maxlen="2" comment="The file's parental content age rating." />
       <column name="deleted" type="bool" default="0" comment="Whether or not the file in question is deleted." />
 
       <key name="fileId" type="primary" />
@@ -377,8 +377,8 @@
       <column name="defaultPermissions" type="bitfield" bits="8" default="7" comment="A bitfield corrosponding to permissions users are granted if they do not exist in the roomPermissions table." />
 
       <!-- Parental Controls -->
-      <column name="parentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the file." />
-      <column name="parentalAge" type="string" restrict="6,10,13,16,18" comment="The file's parental content age rating." />
+      <column name="parentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the user." />
+      <column name="parentalAge" type="int" maxlen="2" comment="The room's parental content age rating." />
 
       <!-- Counters -->
       <column name="lastMessageTime" type="time" default="0" comment="The time of the last message made in the room." />
@@ -424,8 +424,8 @@
       <column name="defaultPermissions" type="bitfield" bits="8" default="7" comment="A bitfield corrosponding to permissions users are granted if they do not exist in the roomPermissions table." />
 
       <!-- Parental Controls -->
-      <column name="parentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the file." />
-      <column name="parentalAge" type="string" restrict="6,10,13,16,18" comment="The file's parental content age rating." />
+      <column name="parentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the room." />
+      <column name="parentalAge" type="int" maxlen="2" comment="The room's parental content age rating." />
 
       <column name="changeTime" type="time" comment="The time at which the above information was altered." />
 
@@ -600,8 +600,8 @@
       <column name="messageCount" type="int" maxlen="8" comment="The number of messages made by this user." />
 
       <!-- Parental Controls -->
-      <column name="parentalFlags" type="string" maxlen="255" comment="An advanced comma-seperated (e.g. violence=10,language=13) list of parent content flags to restrict access to." />
-      <column name="parentalAge" type="string" restrict="6,10,13,16,18" comment="Content rated above this rating should be blocked." />
+      <column name="parentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to restrict access to." />
+      <column name="parentalAge" type="int" maxlen="2" comment="Content rated above this rating should be blocked." />
 
 
       <key name="userId" type="primary" />
@@ -654,7 +654,7 @@
 
       <!-- Parental Controls -->
       <column name="parentalFlags" type="string" maxlen="255" comment="An advanced comma-seperated (e.g. violence=10,language=13) list of parent content flags to restrict access to." />
-      <column name="parentalAge" type="string" restrict="6,10,13,16,18" comment="Content rated above this rating should be blocked." />
+      <column name="parentalAge" type="int" maxlen="2" comment="Content rated above this rating should be blocked." />
 
       <column name="changeTime" type="time" comment="The time at which the above information was altered." />
 

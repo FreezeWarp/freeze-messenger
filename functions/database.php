@@ -203,7 +203,7 @@ class database {
         break;
 
         default:
-          throw new Exception('Unrecognized Operation: ' . $operation);
+          throw new Exception('Unrecognised Operation: ' . $operation);
         break;
       }
       break;
@@ -249,7 +249,7 @@ class database {
         break;
 
         default:
-          throw new Exception('Unrecognized Operation: ' . $operation);
+          throw new Exception('Unrecognised Operation: ' . $operation);
         break;
       }
       break;
@@ -280,7 +280,7 @@ class database {
         //case 'insertId': return mysqli_insert_id($this->dbLink); break;
 
         default:
-          throw new Exception('Unrecognized Operation: ' . $operation);
+          throw new Exception('Unrecognised Operation: ' . $operation);
         break;
       }
       break;
@@ -524,7 +524,7 @@ class database {
               $finalQuery['sort'][] = $reverseAlias[$sortCol] . " $directionSym";
             }
             else {
-              throw new Exception('Unrecognized sort column: ' . $sortCol);
+              throw new Exception('Unrecognised sort column: ' . $sortCol);
             }
           }
         }
@@ -616,20 +616,14 @@ LIMIT
           if ($recKey === 'both' || $recKey === 'either') {
             $sideTextFull[$i] = $this->recurseBothEither(array($recKey => $data), $reverseAlias, $d + 1);
           }
-          else {
+          elseif (array('type', 'left', 'right') === array_keys($data)) { // Should be an array containing keys 'type', 'left', and 'right', in that order for now.
             /* Get the Proper Comparison Operator */
-
-            if (isset($this->comparisonTypes[$data['type']])) {
-              $symbol = $this->comparisonTypes[$data['type']];
-            }
-            else {
-              throw new Exception('Unrecognized type operator "' . $data['type'] . '". Data: ' . print_r($data,true));
-            }
-
+            if (isset($this->comparisonTypes[$data['type']])) { $symbol = $this->comparisonTypes[$data['type']]; }
+            else { throw new Exception('Unrecognised type operator "' . $data['type'] . '". Data: ' . print_r($conditionArray, true)); }
 
 
             /* Define Sides Array */
-            $sideText = array('left','right');
+            $sideText = array('left', 'right');
             $hackz = array();
 
 
@@ -711,7 +705,7 @@ LIMIT
                   }
                   else {
                     if (isset($reverseAlias[$data[$side]['value']])) {
-                      if ($symbol == 'IN' && $data['left']['type'] == 'int' && $data['right']['type'] == 'column') { // This is just a quick hack. It will be rewritten in the future.
+                      if ($symbol == 'IN' && $data['left']['type'] == 'int' && $data['right']['type'] == 'column') { // This is just a quick hack. It will be rewritten in the future; TODO
                         $sideText[$side] = $reverseAlias[$data[$side]['value']];
 
                         $hackz[($side == 'left' ? 'right' : 'left')] = '(' . $data[$side]['value'] . ',|' . $data[$side]['value'] . ')$';
@@ -722,7 +716,7 @@ LIMIT
                       }
                     }
                     else {
-                      throw new Exception('Unrecognized column: ' . $data[$side]['value']);
+                      throw new Exception('Unrecognised column: ' . $data[$side]['value']);
                     }
                   }
                   break;
@@ -747,6 +741,9 @@ LIMIT
               throw new Exception('Query nullified.');
             }
           }
+          else {
+            throw new Exception('Malformed Query; Data: ' . print_r($data, true));
+          }
         }
 
 
@@ -754,7 +751,7 @@ LIMIT
           $condSymbol = $this->concatTypes[$type];
         }
         else {
-          throw new Exception('Unrecognized concatenation operator: ' . $type . '; ' . print_r($data, true));
+          throw new Exception('Unrecognised concatenation operator: ' . $type . '; ' . print_r($data, true));
         }
 
 
@@ -841,7 +838,7 @@ LIMIT
       for ($i = 0; $i < count($columns); $i++) {
         if (!$conditions[$i]) $csym = $this->comparisonTypes['e'];
         elseif (isset($this->comparisonTypes[$conditions[$i]])) $csym = $this->comparisonTypes[$conditions[$i]];
-        else throw new Exception('Unrecognized comparison type: ' . $conditions[$i]);
+        else throw new Exception('Unrecognised comparison type: ' . $conditions[$i]);
 
         $cond[] = $columns[$i] . $csym . $values[$i];
       }
@@ -879,7 +876,7 @@ LIMIT
           $csym = $this->comparisonTypes[$conditions[$i]];
         }
         else {
-          throw new Exception('Unrecognized comparison type: ' . $conditions[$i]);
+          throw new Exception('Unrecognised comparison type: ' . $conditions[$i]);
         }
 
         $delete[] = $columns[$i] . $csym . $values[$i];
@@ -1026,7 +1023,7 @@ LIMIT
       $engine = $this->tableTypes[$storeType];
     }
     else {
-      throw new Exception('Unrecognized table engine: ' . $storeType);
+      throw new Exception('Unrecognised table engine: ' . $storeType);
     }
 
     $tableProperties = '';
@@ -1104,7 +1101,7 @@ LIMIT
         break;
 
         default:
-        throw new Exception('Unrecognized type.');
+        throw new Exception('Unrecognised type.');
         break;
       }
 
@@ -1124,7 +1121,7 @@ LIMIT
         $typePiece = $this->keyConstants[$key['type']];
       }
       else {
-        throw new Exception('Unrecognized key type: ' . $key['type']);
+        throw new Exception('Unrecognised key type: ' . $key['type']);
       }
 
 
