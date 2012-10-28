@@ -111,18 +111,18 @@ $xmlData = array(
 if ($loginConfig['method'] === 'vanilla') {
   /* Avatar */
   if (isset($request['avatar'])) { // TODO: Add regex policy.
-    $imageData = getimagesize($request['avatar']);
+    $imageData = getimagesize($request['avatar']); print_r($imageData);
     if ($imageData[0] <= $config['avatarMinimumWidth'] || $imageData[1] <= $config['avatarMinimumHeight']) {
       $xmlData['editUserOptions']['response']['avatar']['status'] = false;
       $xmlData['editUserOptions']['response']['avatar']['errStr'] = 'smallSize';
       $xmlData['editUserOptions']['response']['avatar']['errDesc'] = 'The avatar specified is too small.';
     }
-    elseif ($imageData[0] >= $config['avatarMaximumWidth'] || $imageData[1] <= $config['avatarMaximumHeight']) {
+    elseif ($imageData[0] >= $config['avatarMaximumWidth'] || $imageData[1] >= $config['avatarMaximumHeight']) {
       $xmlData['editUserOptions']['response']['avatar']['status'] = false;
       $xmlData['editUserOptions']['response']['avatar']['errStr'] = 'bigSize';
-      $xmlData['editUserOptions']['response']['avatar']['errDesc'] = 'The avatar specified is too small.';
+      $xmlData['editUserOptions']['response']['avatar']['errDesc'] = 'The avatar specified is too large.';
     }
-    elseif (!in_array($imageData[2], array('IMAGETYPE_GIF', 'IMAGETYPE_JPEG', 'IMAGETYPE_PNG'))) {
+    elseif (!in_array($imageData[2], array(IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG))) {
       $xmlData['editUserOptions']['response']['avatar']['status'] = false;
       $xmlData['editUserOptions']['response']['avatar']['errStr'] = 'badType';
       $xmlData['editUserOptions']['response']['avatar']['errDesc'] = 'The avatar is not a valid image type.';

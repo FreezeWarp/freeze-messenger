@@ -814,7 +814,7 @@ function fim_apiCompact($data) {
  * @return string
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
-function formatSize($size) {
+function fim_formatSize($size) {
   global $config;
 
   $suffix = 0;
@@ -824,7 +824,7 @@ function formatSize($size) {
     $size /= $config['fileIncrementSize'];
   }
 
-  return $size . $config['fileSuffixes'][$suffix];
+  return round($size, 2) . $config['fileSuffixes'][$suffix];
 }
 
 

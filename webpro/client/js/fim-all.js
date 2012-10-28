@@ -271,11 +271,9 @@ function messageFormat(json, format) {
       }
 
       if (!settings.disableFormatting) {
-        style = '';
-
         if (styleColor) style += 'color: rgb(' + styleColor + ');';
         if (styleHighlight) style += 'background: rgb(' + styleHighlight + ');'
-        if (styleFontface) stlye += 'font-family: ' + fontIdRef[styleFontface] + ';';
+        if (styleFontface) style += 'font-family: ' + fontIdRef[styleFontface] + ';';
 
         if (styleGeneral & 256) style += 'font-weight: bold;';
         if (styleGeneral & 512) style += 'font-style: oblique;';
@@ -286,7 +284,7 @@ function messageFormat(json, format) {
       break;
     }
   }
-
+console.log(ujson);
   switch (format) {
     case 'table':
     data = '<tr id="archiveMessage' + messageId + '"><td>' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageId="' + messageId + '" data-roomId="' + roomId + '">' + text + '</td><td><a href="javascript:void();" data-messageId="' + messageId + '"  data-roomId="' + roomId + '" class="updateArchiveHere">Show</a></td></tr>';
@@ -1135,8 +1133,12 @@ var standard = {
   },
 
   changeAvatar : function(sha256hash) {
-    $.post(directory + 'api/editUserOptions.php', 'avatar=' + encodeURIComponent('http://localhost/freeze-messenger/file.php?sha256hash=04784bee666fb8757952ff6a0ff2b1755473a26150b94c1c26abf861958f8f41' + sha256hash) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
-      dia.info('Your avatar has been updated. Please refresh.');
+    $.post(directory + 'api/editUserOptions.php', 'avatar=' + encodeURIComponent('http://localhost/freeze-messenger/file.php?sha256hash=' + sha256hash) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
+      active = json.editUserOptions;
+
+      if (active.errStr) {
+        dia.info(active.errDesc);
+      }
     }); // Send the form data via AJAX.
   },
 
@@ -1343,7 +1345,7 @@ var standard = {
 
           data = messageFormat(active, 'list');
 
-          if (messageId in messageIndex) { } // Double post hack
+          if ($.inArray(messageId, messageIndex) > -1) { } // Double post hack
           else { newMessage(data, messageId); }
 
           return false;
@@ -1447,7 +1449,7 @@ var standard = {
                 var messageId = Number(active[i].messageData.messageId);
                 data = messageFormat(active[i], 'list');
 
-                if (messageId in messageIndex) { } // Double post hack
+                if ($.inArray(messageId, messageIndex)) { } // Double post hack
                 else { newMessage(data, messageId); }
 
                 messageCount++;
@@ -2455,8 +2457,8 @@ popup = {
 
   viewUploads : function() {
     dia.full({
-      content : '<table align="center"><thead><tr><td>Preview</td><td>File Name</td><td>File Size</td><td>Actions</td></tr></thead><tbody id="viewUploadsBody"></tbody></table>',
-      width : 1000,
+      content : '<table align="center"><thead><tr><td>File</td><td>Size</td><td>Parental Info</td><td>Actions</td></tr></thead><tbody id="viewUploadsBody"></tbody></table>',
+      width : 1200,
       title : 'View My Uploads',
       position : 'top',
       oF : function() {
@@ -2466,19 +2468,23 @@ popup = {
           timeout: 2400,
           cache: false,
           success: function(json) {
-            var data = '';
             active = json.getFiles.files;
 
             for (i in active) {
               var fileName = active[i].fileName,
                 md5hash = active[i].md5hash,
                 sha256hash = active[i].sha256hash,
-                fileSizeFormatted = active[i].fileSizeFormatted;
+                fileSizeFormatted = active[i].fileSizeFormatted,
+                parentalAge = active[i].parentalAge,
+                parentalFlags = active[i].parentalFlags,
+                parentalFlagsFormatted = [];
 
-              data += '<tr><td><img src="' + directory + 'file.php?sha256hash=' + sha256hash + '" style="max-width: 200px; max-height: 200px;" /></td><td>' + fileName + '</td><td>' + fileSizeFormatted + '</td><td><button onclick="standard.changeAvatar(\'' + sha256hash + '\')">Set to Avatar</button></td></tr>';
+                for (i in parentalFlags) {
+                  parentalFlagsFormatted.push(window.phrases.parentalFlags[serverSettings.parentalControls.parentalFlags[i]]);
+                }
+
+                $('#viewUploadsBody').append('<tr><td align="center"><img src="' + directory + 'file.php?sha256hash=' + sha256hash + '" style="max-width: 200px; max-height: 200px;" /><br />' + fileName + '</td><td align="center">' + fileSizeFormatted + '</td><td align="center">' + window.phrases.parentalAges[parentalAge] + '<br />' + parentalFlagsFormatted.join(', ') + '</td><td align="center"><button onclick="standard.changeAvatar(\'' + sha256hash + '\')">Set to Avatar</button></td></tr>');
             }
-
-            $('#viewUploadsBody').html(data);
 
             return false;
           },
@@ -2502,12 +2508,8 @@ popup = {
   /*** START Create Room ***/
 
   editRoom : function(roomIdLocal) {
-    if (roomIdLocal) {
-      var action = 'edit';
-    }
-    else {
-      var action = 'create';
-    }
+    if (roomIdLocal) var action = 'edit';
+    else var action = 'create';
 
     dia.full({
       content : window.templates.editRoomForm,
@@ -2661,12 +2663,8 @@ popup = {
 
           censor = censor.join(',');console.log(censor); // TODO
 
-          if (name.length > window.serverSettings.rooms.roomLengthMaximum) {
-            dia.error('The roomname is too long.');
-          }
-          else if (name.length < window.serverSettings.rooms.roomLengthMinimum) {
-            dia.error('The roomname is too short.');
-          }
+          if (name.length > window.serverSettings.rooms.roomLengthMaximum) dia.error('The roomname is too long.');
+          else if (name.length < window.serverSettings.rooms.roomLengthMinimum) dia.error('The roomname is too short.');
           else {
             $.post(directory + 'api/editRoom.php', 'action=' + action + '&roomId=' +  roomIdLocal + '&roomName=' + fim_eURL(name) + '&defaultPermissions=' + ($('#allowAllUsers').is(':checked') ? '7' : '0' + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups) + '&moderators=' + moderators + '&parentalAge=' + parentalAge + '&parentalFlags=' + parentalFlags + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId, function(json) {
               var errStr = json.editRoom.errStr,
@@ -3431,7 +3429,7 @@ $(document).ready(function() {
                 avatar = active[i].avatar;
             }
 
-            content.html('<div style="width: 400px;">' + (avatar.length > 0 ? '<img alt="" src="' + avatar + '" style="float: left;" />' : '') + '<span class="userName" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>' + (userTitle.length > 0 ? '<br />' + userTitle : '') + '<br /><em>Posts</em>: ' + posts + '<br /><em>Member Since</em>: ' + joinDate + '</div>');
+            content.html('<div style="width: 400px;">' + (avatar.length > 0 ? '<img alt="" src="' + avatar + '" style="float: left; max-height: 200px; max-width: 200px;" />' : '') + '<span class="userName" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>' + (userTitle.length > 0 ? '<br />' + userTitle : '') + '<br /><em>Posts</em>: ' + posts + '<br /><em>Member Since</em>: ' + joinDate + '</div>');
 
             return false;
           });
