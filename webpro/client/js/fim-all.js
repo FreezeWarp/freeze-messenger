@@ -790,33 +790,6 @@ function populate(options) {
 
         return false;
       }
-    }),
-
-    $.ajax({
-      url: directory + 'api/getFonts.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-      timeout: 5000,
-      type: 'GET',
-      cache: false,
-      success: function(json) {
-        active = json.getFonts.fonts;
-
-        for (i in active) {
-          var fontName = active[i].fontName,
-            fontId = active[i].fontId,
-            fontGroup = active[i].fontGroup,
-            fontData = active[i].fontData;
-
-          fontSelectHtml += '<option value="' + fontId + '" style="' + fontData + '" data-font="' + fontData + '">' + fontName + '</option>';
-          fontIdRef[fontId] = fontName;
-        }
-
-        return false;
-      },
-      error: function() {
-        dia.error(window.phrases.errorFontListNotRetrieved); // TODO: Disable certain features.
-
-        return false;
-      }
     })
   ).always(function() {
       if (typeof options.callback === 'function') {
@@ -2328,7 +2301,9 @@ popup = {
         $("#ignoreListBridge").autocomplete({ source: userList });
 
         // Populate Fontface Checkbox
-        $('#defaultFace').html(fontSelectHtml);
+        for (i in window.serverSettings.formatting.fonts) {
+          $('#defaultFace').append('<option value="' + i + '" style="' + window.serverSettings.formatting.fonts[i] + '" data-font="' + window.serverSettings.formatting.fonts[i] + '">' + i + '</option>')
+        }
 
         // Parental Controls
         if (!serverSettings.parentalControls.parentalEnabled) { // Hide if Subsystem is Disabled

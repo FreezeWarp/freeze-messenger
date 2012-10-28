@@ -124,5 +124,32 @@ $defaultConfig = array(
   'parentalRegistrationAge' => 0, // Age required to register.
   'parentalFlags' => array('lang', 'violence', 'gore', 'drugs', 'gambling', 'nudity', 'pnudity'),
   'parentalAges' => array(6,10,13,16,18),
+
+  'fonts' => array(
+    'FreeMono' => "FreeMono, TwlgMono, 'Courier New', Consolas, monospace",
+    'Courier New' => "'Courier New', FreeMono, TwlgMono, Consolas, Courier, monospace",
+    'Consolas' => "Consolas, 'Courier New', FreeMono, TwlgMono, monospace",
+    'Courier' => "Courier, 'Courier New', Consolas, monospace",
+    'Liberation Mono'=> "'Liberation Mono', monospace",
+    'Times New Roman' => "'Times New Roman', 'Liberation Serif', Georgia, FreeSerif, Cambria, serif",
+    'Liberation Serif' => "'Liberation Serif', FreeSerif, 'Times New Roman', Georgia, Cambria, serif",
+    'Georgia' => "Georgia, Cambria, 'Liberation Serif', 'Times New Roman', serif",
+    'Cambria' => "Cambria, Georgia, 'Liberation Serif', 'Times New Roman', serif",
+    'Segoe UI' => "'Segoe UI', serif",
+    'Garamond' => "Garamond, serif",
+    'Century Gothic' => "'Century Gothic', Ubuntu, sans-serif",
+    'Trebuchet MS' => "'Trebuchet MS', Arial, Tahoma, Verdana, FreeSans, sans-serif",
+    'Arial' => "Arial, 'Trebuchet MS', Tahoma, Verdana, FreeSans, sans-serif",
+    'Verdana' => "Verdana, 'Trebuchet MS', Tahoma, Arial, sans-serif",
+    'Tahoma' => "Tahoma, Verdana, 'Trebuchet MS', Arial, FreeSans, sans-serif",
+    'Ubuntu' => "Ubuntu, FreeSans, Tahoma, sans-serif",
+    'Comic Sans MS' => "'Comic Sans MS', cursive",
+    'Liberation Sans, sans-serif' => "Liberation Sans, sans-serif",
+    "Bauhaus 93" => "'Bauhaus 93', fantasy",
+    "Impact" => "Impact, fantasy",
+    "Papyrus" => "Papyrus, fantasy",
+    "Copperplate Gothic Bold" => "'Copperplate Gothic Bold', fantasy",
+    "Rockwell Extra Bold" => "'Rockwell Extra Bold', fantasy",
+  ),
 );
 ?>

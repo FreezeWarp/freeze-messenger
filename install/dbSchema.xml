@@ -170,16 +170,6 @@
     </table>
 
 
-    <table name="fonts" type="general" comment="Admin-created fonts for use with default formatting.">
-      <column name="fontId" type="int" maxlen="6" autoincrement="1" comment="The unique ID of the font." />
-      <column name="fontName" type="string" maxlen="40" comment="The name of the font for display." />
-      <column name="data" type="string" maxlen="40" comment="The name font code for use in CSS." />
-      <column name="category" type="string" maxlen="40" comment="A named category the font is placed under (e.g. monospace)." />
-
-      <key name="fontId" type="primary" />
-    </table>
-
-
     <table name="fulllog" type="general" comment="A log of moderator actions that docment all update(), insert(), and delete() calls.">
       <column name="id" type="int" maxlen="12" autoincrement="1" comment="A unique ID for the log entry." />
       <column name="user" type="int" maxlen="8" comment="The JSON-encoded $user data." />

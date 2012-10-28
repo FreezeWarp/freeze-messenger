@@ -91,6 +91,10 @@ $xmlData = array(
         'overline' => $config['defaultFormattingOverline'],
       ),
 
+      'formatting' => array(
+        'fonts' => $config['fonts'],
+      ),
+
       'outputBuffer' => array(
         'comressOutput' => (bool) $config['compressOutput'],
       ),
