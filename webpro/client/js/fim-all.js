@@ -734,8 +734,7 @@ function populate(options) {
             ulText = '<li><a href="#room=' + roomId + '" class="room" data-roomId="' + roomId + '">' + roomName + '</a></li>';
 
           if (isFav) { roomUlFavHtml += ulText; }
-          else if (isOwner && !isPriv) { roomUlMyHtml += ulText; }
-          else if (isPriv) { roomUlPrivHtml += ulText; }
+          else if (isOwner) { roomUlMyHtml += ulText; }
           else { roomUlHtml += ulText; }
 
           roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isAdmin ? '<button data-roomId="' + roomId + '" class="editRoomMulti standard"></button><button data-roomId="' + roomId + '" class="deleteRoomMulti standard"></button>' : '') + '<button data-roomId="' + roomId + '" class="archiveMulti standard"></button><input type="checkbox" ' + (isFav ? 'checked="checked" ' : '') + ' data-roomId="' + roomId + '" class="favRoomMulti" id="favRoom' + roomId + '" /><label for="favRoom' + roomId + '" class="standard"></label></td></tr>';
