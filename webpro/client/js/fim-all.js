@@ -727,7 +727,6 @@ function populate(options) {
             roomId = active[i].roomId,
             roomTopic = active[i].roomTopic,
             isFav = active[i].favorite,
-            isPriv = active[i].optionDefinitions.privateIm,
             isAdmin = active[i].permissions.canAdmin,
             isModerator = active[i].permissions.canModerate,
             messageCount = active[i].messageCount,
@@ -748,13 +747,29 @@ function populate(options) {
           }
           roomList.push(roomName);
 
+
           if (isAdmin) { modRooms[roomId] = 2; }
           else if (isModerator) { modRooms[roomId] = 1; }
           else { modRooms[roomId] = 0; }
         }
 
-        $('#roomListLong > li > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li><li>My Rooms<ul>' + roomUlMyHtml + '</ul></li><li>General<ul>' + roomUlHtml + '</ul></li><li>Private<ul>' + roomUlPrivHtml + '</ul></li>');
-        $('#roomListShort > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li>');
+        if (!roomList.length) {
+          dia.error('You have not be granted access to any rooms. Sorry!');
+
+          $('#messageInput').attr('disabled', 'disabled');
+          $('#icon_url').button({ disabled : true });
+          $('#icon_submit').button({ disabled : true });
+          $('#icon_reset').button({ disabled : true });
+
+          $(document).ready(function() {
+            windowDraw();
+            windowDynaLinks();
+          });
+        }
+        else {
+          $('#roomListLong > li > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li><li>My Rooms<ul>' + roomUlMyHtml + '</ul></li><li>General<ul>' + roomUlHtml + '</ul></li><li>Private<ul>' + roomUlPrivHtml + '</ul></li>');
+          $('#roomListShort > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li>');
+        }
 
         return false;
       },
@@ -3116,6 +3131,9 @@ function windowDynaLinks() {
   if (roomId) {
     if (roomId.toString().substr(0,1) === 'p' || modRooms[roomId] < 1) { $('li > #kick').parent().hide(); $('li > #manageKick').parent().hide(); $('#userMenu a[data-action="kick"]').parent().hide(); $('ul#messageMenu > li > a[data-action="delete"], ul#messageMenuImage > li > a[data-action="delete"], ul#messageMenuLink > li > a[data-action="delete"], ul#messageMenuVideo > li > a[data-action="delete"]').hide(); noModCounter += 2; }
     if (roomId.toString().substr(0,1) === 'p' || modRooms[roomId] < 2) { $('li > #editRoom').parent().hide(); noModCounter += 1; }
+  }
+  else {
+    $('li > #editRoom').parent().hide(); noModCounter += 1; $('li > #kick').parent().hide(); $('li > #manageKick').parent().hide(); $('#userMenu a[data-action="kick"]').parent().hide();
   }
 
   // Remove Link Categories If They Are to Appear Empty (the counter is incremented in the above code block)

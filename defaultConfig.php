@@ -114,7 +114,7 @@ $defaultConfig = array(
   'ageMinimum' => 13,
   'ageMaximum' => 100,
 
-  'emailRequired' => true, // The vanilla subsystem can function without email, but of-course email is required for password reminders.
+  'emailRequired' => false, // The vanilla subsystem can function without email, and in truth, its not even used for anything in FIMv3 (where Vanilla is very IRC-like).
 
   'parentalEnabled' => true, // Is the system enabled by default?
   'parentalForced' => true, // Can the user disable/enable the system him or herself?

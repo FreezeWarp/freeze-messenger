@@ -298,7 +298,7 @@
 
     <table name="configuration">
       <column name="directive" value="emailRequired" />
-      <column name="value" value="true" />
+      <column name="value" value="false" />
       <column name="type" value="bool" />
     </table>
 

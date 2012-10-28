@@ -58,7 +58,7 @@ $request = fim_sanitizeGPC('g', array(
 ));
 
 $queryParts['roomSelect']['columns'] = array(
-  "{$sqlPrefix}rooms" => 'roomId, roomName, options, defaultPermissions, owner',
+  "{$sqlPrefix}rooms" => 'roomId, roomName, options, defaultPermissions, owner, parentalAge, parentalFlags',
 );
 $queryParts['roomSelect']['conditions'] = array(
   'both' => array(

@@ -689,7 +689,6 @@
 
     <bitfield name="options" table="users">
       <def bit="512">Block Private Contact</def>
-      <def bit="1024">Mature (Unimplemented)</def>
     </bitfield>
 
     <bitfield name="adminPrivs" table="defaultPermissions">
