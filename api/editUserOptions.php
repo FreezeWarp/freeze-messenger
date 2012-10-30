@@ -39,9 +39,7 @@ $request = fim_sanitizeGPC('p', array(
 
   'profile' => array(),
 
-  'defaultFontface' => array(
-    'context' => 'int',
-  ),
+  'defaultFontface' => array(),
 
   'defaultColor' => array(),
 
@@ -384,13 +382,11 @@ foreach (array('defaultHighlight', 'defaultColor') AS $value) {
 
 /* Default Fontface */
 if (isset($request['defaultFontface'])) {
-  $fontData = $slaveDatabase->getFont((int) $request['defaultFontface']);
-
-  if ((int) $fontData['fontId']) {
-    $updateArray['defaultFontface'] = (int) $fontData['fontId'];
+  if (isset($config['fonts'][$request['defaultFontface']])) {
+    $updateArray['defaultFontface'] = $config['fonts'][$request['defaultFontface']];
 
     $xmlData['editUserOptions']['response']['defaultFontface']['status'] = true;
-    $xmlData['editUserOptions']['response']['defaultFontface']['newValue'] = (int) $fontData['fontId'];
+    $xmlData['editUserOptions']['response']['defaultFontface']['newValue'] = $config['fonts'][$request['defaultFontface']];
   }
   else {
     $xmlData['editUserOptions']['response']['defaultFontface']['status'] = false;

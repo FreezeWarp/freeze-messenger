@@ -226,6 +226,7 @@ $columnDefinitions = array( // These are only used for syncing. When the origina
       'defaultFontface' => 'defaultFontface', 'profile' => 'profile',
       'userFormatStart' => 'userFormatStart', 'userFormatEnd' => 'userFormatEnd',
       'lang' => 'lang',
+      'parentalAge' => 'parentalAge', 'parentalFlags' => 'parentalFlags',
     ),
   ),
   'adminGroups' => array(
@@ -908,6 +909,8 @@ else {
     'userId' => ($config['anonymousUserId'] ? $config['anonymousUserId'] : 0), // TODO: Is this handled elsewhere?
     'userName' => '',
     'settingsOfficialAjax' => 11264, // Default. TODO: Update w/ config defaults.
+    'parentalAge' => $config['parentalAgeDefault'],
+    'parentalFlags' => $config['parentalFlagsDefault'],
     'adminPrivs' => 0, // Nothing
     'userPrivs' => 16, // Allowed, but nothing else.
   );
@@ -986,29 +989,12 @@ if ($api) {
 
   if (defined('LOGIN_FLAG')) {
     switch (LOGIN_FLAG) { // Generate a message based no the LOGIN_FLAG constant (...thishould probably be a variable since it changes, but meh - it seems more logical asuch)
-      case 'PASSWORD_ENCRYPT':
-      $errDesc = 'The password encryption used was not recognized and could not be decoded.';
-      break;
-
-      case 'BAD_USERNAME':
-      $errDesc = 'The user was not recognized.';
-      break;
-
-      case 'BAD_PASSWORD':
-      $errDesc = 'The password was not correct.';
-      break;
-
-      case 'API_VERSION_STRING':
-      $errDesc = 'The API version string specified is not recognized.';
-      break;
-
-      case 'DEPRECATED_VERSION':
-      $errDesc = 'The API version specified is deprecated and may no longer be used.';
-      break;
-
-      case 'INVALID_SESSION':
-      $errDesc = 'The specified session is no longer valid.';
-      break;
+      case 'PASSWORD_ENCRYPT': $errDesc = 'The password encryption used was not recognized and could not be decoded.'; break;
+      case 'BAD_USERNAME': $errDesc = 'The user was not recognized.'; break;
+      case 'BAD_PASSWORD': $errDesc = 'The password was not correct.'; break;
+      case 'API_VERSION_STRING': $errDesc = 'The API version string specified is not recognized.'; break;
+      case 'DEPRECATED_VERSION': $errDesc = 'The API version specified is deprecated and may no longer be used.'; break;
+      case 'INVALID_SESSION': $errDesc = 'The specified session is no longer valid.'; break;
     }
   }
   elseif ($valid === false) { // Generic login flag

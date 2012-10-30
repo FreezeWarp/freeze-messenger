@@ -66,6 +66,8 @@ $queryParts['fileSelect']['columns'] = array(
   "{$sqlPrefix}files" => array(
     'fileId' => 'ffileId',
     'fileType' => 'fileType',
+    'parentalAge' => 'parentalAge',
+    'parentalFlags' => 'parentalFlags',
   ),
   "{$sqlPrefix}fileVersions" => array(
     'fileId' => 'vfileId',
@@ -175,11 +177,11 @@ $file = $file->getAsArray(false);
 
 /* Start Processing */
 if ($config['parentalEnabled']) {
-  if ($user['parentalAge'] < $file['parentalAge']) $parentalBlock = true;
+  if ($file['parentalAge'] > $user['parentalAge']) $parentalBlock = true;
   elseif (fim_inArray(explode(',', $user['parentalFlags']), explode(',', $file['parentalFlags']))) $parentalBlock = true;
 }
 
-if ($parentalBlock) {
+if ($parentalBlock && false) {
   $file['contents'] = ''; // TODO: Placeholder
 
   header('Content-Type: ' . $file['fileType']);
@@ -195,5 +197,7 @@ else {
 
   header('Content-Type: ' . $file['fileType']);
   echo $file['contents'];
+
+//  print_r($file); var_dump($user);
 }
 ?>

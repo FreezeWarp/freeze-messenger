@@ -127,7 +127,7 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
     }
     elseif (!isset($roomData['parentalFlags'], $roomData['parentalAge'])) throw new Exception('hasPermission requires roomData[parentalFlags] and roomData[parentalAge] to be defined.');
     elseif (!isset($roomData['defaultPermissions'], $roomData['options'], $roomData['owner'])) throw new Exception('hasPermission requires roomData[defaultPermissions], roomData[options], and roomData[owner]'); // If the default permissions index is missing, through an exception.
-    elseif (!isset($userData['parentalAge'], $userData['parentalFlags'])) throw new Exception('hasPermission requires userData[parentalAge] and userData[parentalFlags] to be defined.');
+    elseif (!isset($userData['parentalAge'], $userData['parentalFlags'])) throw new Exception('hasPermission requires userData[parentalAge] and userData[parentalFlags] to be defined. -- ' . print_r($userData, true));
 
 
     /* Initialise Variables */

@@ -172,7 +172,7 @@ function faviconFlash() { // Changes the state of the favicon from opaque to tra
   else $('#favicon').attr('href', 'images/favicon.ico');
 }
 
-function messageFormat(json, format) {
+function messageFormat(json, format) { console.log(ujson);
   var mjson = json.messageData,
     ujson = json.userData,
     data,
@@ -273,7 +273,7 @@ function messageFormat(json, format) {
       if (!settings.disableFormatting) {
         if (styleColor) style += 'color: rgb(' + styleColor + ');';
         if (styleHighlight) style += 'background: rgb(' + styleHighlight + ');'
-        if (styleFontface) style += 'font-family: ' + fontIdRef[styleFontface] + ';';
+        if (styleFontface) style += 'font-family: ' + window.serverSettings.formatting.fonts[styleFontface] + ';';
 
         if (styleGeneral & 256) style += 'font-weight: bold;';
         if (styleGeneral & 512) style += 'font-style: oblique;';
@@ -284,7 +284,7 @@ function messageFormat(json, format) {
       break;
     }
   }
-console.log(ujson);
+
   switch (format) {
     case 'table':
     data = '<tr id="archiveMessage' + messageId + '"><td>' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageId="' + messageId + '" data-roomId="' + roomId + '">' + text + '</td><td><a href="javascript:void();" data-messageId="' + messageId + '"  data-roomId="' + roomId + '" class="updateArchiveHere">Show</a></td></tr>';
@@ -1067,9 +1067,7 @@ var standard = {
                   underline = (el.css('textDecoration') == 'underline' ? true : false),
                   strikethrough = (el.css('textDecoration') == 'line-through' ? true : false);
 
-                if (colour || highlight || font) {
-                  exportUser = '[span="' + (colour ? 'color: ' + colour + ';' : '') + (highlight ? 'background-color: ' + highlight + ';' : '') + (font ? 'font: ' + font + ';' : '') + '"]' + exportUser + '[/span]';
-                }
+                if (colour || highlight || font) exportUser = '[span="' + (colour ? 'color: ' + colour + ';' : '') + (highlight ? 'background-color: ' + highlight + ';' : '') + (font ? 'font: ' + font + ';' : '') + '"]' + exportUser + '[/span]';
                 if (bold) { exportUser = '[b]' + exportUser + '[/b]'; }
                 if (underline) { exportUser = '[u]' + exportUser + '[/u]'; }
                 if (strikethrough) { exportUser = '[s]' + exportUser + '[/s]'; }
@@ -2211,7 +2209,7 @@ popup = {
               $('#defaultItalics').attr('checked', 'checked');
             }
             $('#defaultItalics').change(function() {
-              if ($('#defaultBold').is(':checked')) $('#fontPreview').css('font-style', 'italic');
+              if ($('#defaultItalics').is(':checked')) $('#fontPreview').css('font-style', 'italic');
               else $('#fontPreview').css('font-style', 'normal');
             });
 
@@ -2468,11 +2466,11 @@ popup = {
                 parentalFlags = active[i].parentalFlags,
                 parentalFlagsFormatted = [];
 
-                for (i in parentalFlags) {
-                  parentalFlagsFormatted.push(window.phrases.parentalFlags[serverSettings.parentalControls.parentalFlags[i]]);
+                for (i in parentalFlags) { console.log(parentalFlags[i]);
+                  parentalFlagsFormatted.push(window.phrases.parentalFlags[parentalFlags[i]]); // Yes, this is a very weird line.
                 }
 
-                $('#viewUploadsBody').append('<tr><td align="center"><img src="' + directory + 'file.php?sha256hash=' + sha256hash + '" style="max-width: 200px; max-height: 200px;" /><br />' + fileName + '</td><td align="center">' + fileSizeFormatted + '</td><td align="center">' + window.phrases.parentalAges[parentalAge] + '<br />' + parentalFlagsFormatted.join(', ') + '</td><td align="center"><button onclick="standard.changeAvatar(\'' + sha256hash + '\')">Set to Avatar</button></td></tr>');
+                $('#viewUploadsBody').append('<tr><td align="center"><img src="' + directory + 'file.php?sha256hash=' + sha256hash + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json" style="max-width: 200px; max-height: 200px;" /><br />' + fileName + '</td><td align="center">' + fileSizeFormatted + '</td><td align="center">' + window.phrases.parentalAges[parentalAge] + '<br />' + parentalFlagsFormatted.join(', ') + '</td><td align="center"><button onclick="standard.changeAvatar(\'' + sha256hash + '\')">Set to Avatar</button></td></tr>');
             }
 
             return false;

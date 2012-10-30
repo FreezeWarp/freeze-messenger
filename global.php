@@ -189,12 +189,6 @@ $generalCache = new generalCache($cacheConnect['driver'], $cacheConnect['servers
 
 
 
-////* User Login (Requires Database) *////
-
-require_once(dirname(__FILE__) . '/validate.php'); // This is where all the user validation stuff occurs.
-
-
-
 ////* Get Database-Stored Configuration *////
 
 if (!($config = $generalCache->get('fim_config')) || $disableConfig) {
@@ -405,6 +399,12 @@ if ($watchRoomsCache === null || $watchRoomsCache === false) {
 
   $generalCache->set('fim_permissionCache', $watchRoomsCache, $config['permissionsCacheRefresh']);
 }
+
+
+
+////* User Login (Requires Database) *////
+
+require_once(dirname(__FILE__) . '/validate.php'); // This is where all the user validation stuff occurs.
 
 
 
