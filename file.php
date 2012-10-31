@@ -60,6 +60,20 @@ $request = fim_sanitizeGPC('g', array(
       'type' => 'int',
     ),
   ),
+
+  // Because file.php must NOT require a session token, we want to allow APIs to define these seperately.
+  'parentalAge' => array(
+    'context' => 'int',
+    'valid' => $config['parentalAges'],
+    'default' => $config['parentalAgeDefault'],
+  ),
+
+  'parentalFlags' => array(
+    'context' => array(
+      'type' => 'csv',
+      'valid' => $config['parentalFlags'],
+    ),
+  ),
 ));
 
 $queryParts['fileSelect']['columns'] = array(
@@ -177,11 +191,14 @@ $file = $file->getAsArray(false);
 
 /* Start Processing */
 if ($config['parentalEnabled']) {
+  if (isset($request['parentalAge'])) $user['parentalAge'] = $request['parentalAge'];
+  if (isset($request['parentalFlags'])) $user['parentalFlags'] = implode(',', $request['parentalFlags']);
+
   if ($file['parentalAge'] > $user['parentalAge']) $parentalBlock = true;
   elseif (fim_inArray(explode(',', $user['parentalFlags']), explode(',', $file['parentalFlags']))) $parentalBlock = true;
 }
 
-if ($parentalBlock && false) {
+if ($parentalBlock) {
   $file['contents'] = ''; // TODO: Placeholder
 
   header('Content-Type: ' . $file['fileType']);

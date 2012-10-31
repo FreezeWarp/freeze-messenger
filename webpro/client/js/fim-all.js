@@ -75,15 +75,14 @@ var topic,
 /* Objects for Cleanness, Caching. */
 
 var roomRef = {}, roomIdRef = {}, modRooms = {}, // Just a whole bunch of objects.
-  userRef = {}, userIdRef = {}, groupRef = {},
-  groupIdRef = {}, fontIdRef = {}, uploadFileTypes = {},
+  userRef = {}, userIdRef = {}, userData = {},
+  groupRef = {}, groupIdRef = {}, fontIdRef = {}, uploadFileTypes = {},
 
   roomList = [], userList = [], groupList = [], // Arrays that serve different purposes, notably looking up IDs from names.
   messageIndex = [],
 
   roomUlFavHtml = '', roomUlMyHtml = '', roomUlPrivHtml = '', // A bunch of strings displayed at different points.
   roomUlHtml = '', ulText = '', roomTableHtml = '',
-  roomSelectHtml = '', userSelectHtml = '', fontSelectHtml = '',
 
   active = {}; // This is used as a placeholder for JSON objects where code cleanity is nice.
 
@@ -172,7 +171,7 @@ function faviconFlash() { // Changes the state of the favicon from opaque to tra
   else $('#favicon').attr('href', 'images/favicon.ico');
 }
 
-function messageFormat(json, format) { console.log(ujson);
+function messageFormat(json, format) {
   var mjson = json.messageData,
     ujson = json.userData,
     data,
@@ -201,8 +200,8 @@ function messageFormat(json, format) { console.log(ujson);
   }
   else {
     switch (flag) {
-      case 'image':
-      if (settings.disableImage) text = '<a href="' + fim_eXMLAttr(text) + '" class="imglink" target="_BLANK">[Image]</a>';
+      case 'image': // We append the parentalAge flags regardless of an images source. It will potentially allow for other sites to use the same format (as far as I know, I am the first to implement the technology, and there are no related standards.)
+      if (settings.disableImage) text = '<a href="' + fim_eXMLAttr(text) + '&parentalAge=' + userData[userId].parentalAge + '&parentalFlags=' + userData[userId].parentalFlags.join(',') + '" class="imglink" target="_BLANK">[Image]</a>';
       else text = '<a href="' + text + '" target="_BLANK"><img src="' + fim_eXMLAttr(text) + '" style="max-width: 250px; max-height: 250px;" /></a>';
       break;
 
@@ -679,17 +678,24 @@ function populate(options) {
       timeout: 5000,
       cache: false,
       success: function(json) {
+        active = json.getUsers.users;
+
         userList = []; // Array // Clear so we don't get repeat values on regeneration.
         userRef = {}; // Object
-        userSelectHtml = '';
-        active = json.getUsers.users;
 
         for (i in active) {
           var userName = active[i].userName,
             userId = active[i].userId;
+          active[i].parentalFlagsArray = new Array();
+
+          for (j in active[i].parentalFlags) {
+            active[i].parentalFlagsArray.push(active[i].parentalFlags[j]);
+          }
+
+          active[i].parentalFlags = active[i].parentalFlagsArray;
 
           userRef[userName] = userId;
-          userIdRef[userId] = userName;
+          userData[userId] = active[i];
           userList.push(userName);
         }
 
@@ -714,7 +720,6 @@ function populate(options) {
         roomIdRef = {}; // Object
         roomRef = {}; // Object
         roomTableHtml = '';
-        roomSelectHtml = '';
         roomUlHtml = '';
         roomUlPrivHtml = '';
         roomUlMyHtml = '';
@@ -883,7 +888,7 @@ autoEntry = {
     else {
       switch(type) {
         case 'watchRooms': val = roomIdRef[id].roomName; type2 = 'Room'; break;
-        case 'moderators': case 'allowedUsers': case 'ignoreList': val = userIdRef[id]; type2 = 'User'; break;
+        case 'moderators': case 'allowedUsers': case 'ignoreList': val = userData[id].userName; type2 = 'User'; break;
         case 'allowedGroups': val = groupIdRef[id]; type2 = 'Group'; break;
       }
     }
@@ -1118,7 +1123,7 @@ var standard = {
   },
 
   changeAvatar : function(sha256hash) {
-    $.post(directory + 'api/editUserOptions.php', 'avatar=' + encodeURIComponent('http://localhost/freeze-messenger/file.php?sha256hash=' + sha256hash) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
+    $.post(directory + 'api/editUserOptions.php', 'avatar=' + encodeURIComponent(directory + '/file.php?sha256hash=' + sha256hash) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
       active = json.editUserOptions;
 
       if (active.errStr) {
@@ -2151,7 +2156,7 @@ popup = {
 
   /*** START User Settings ***/
 
-  userSettings : function() {
+  userSettings : function() { /* TODO: Handle reset properly, and refresh the entire application when settings are changed. It used to make some sense not to, but not any more. */
     dia.full({
       content : window.templates.userSettingsForm,
       id : 'changeSettingsDialogue',
@@ -3155,46 +3160,22 @@ function contextMenuParseUser(container) {
       avatarUrl = '',
       profileUrl = '';
 
-    $.ajax({
-      url: directory + 'api/getUsers.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId,
-      type: 'GET',
-      timeout: 2400,
-      success: function(json) {
-        active = json.getUsers.users;
+    switch(action) {
+      case 'profile':
+      dia.full({
+        title : 'User Profile',
+        id : 'messageLink',
+        content : (userData[userId].profileUrl ? '<iframe src="' + userData[userId].profileUrl + '" style="width: 100%; height: 80%;" />' : 'The user has not yet registered a profile.'),
+        width: $(window).width() * .8,
+        height: $(window).height() * .8,
+      });
+      break;
 
-        for (i in active) {
-          userName = active[i].userName;
-          avatarUrl = active[i].avatar;
-          profileUrl = active[i].profile;
-        }
-
-        switch(action) {
-          case 'profile':
-          dia.full({
-            title : 'User Profile',
-            id : 'messageLink',
-            content : (profileUrl ? '<iframe src="' + profileUrl + '" style="width: 100%; height: 80%;" />' : 'The user has not yet registered a profile.'),
-            width: $(window).width() * .8,
-            height: $(window).height() * .8,
-          });
-          break;
-
-          case 'private_im': standard.privateRoom(userId); break;
-          case 'kick': popup.kick(userId, roomId); break;
-          case 'ban': standard.banUser(userId); break; // TODO
-          case 'ignore': standard.ignoreUser(userId); break; // TODO
-        }
-
-        return false;
-      },
-      error: function() {
-        dia.error('The information of this user could not be retrieved. The acton will be cancelled.');3
-
-        return false;
-      }
-    });
-
-    return false;
+      case 'private_im': standard.privateRoom(userId); break;
+      case 'kick': popup.kick(userId, roomId); break;
+      case 'ban': standard.banUser(userId); break; // TODO
+      case 'ignore': standard.ignoreUser(userId); break; // TODO
+    }
   });
 }
 
@@ -3401,31 +3382,13 @@ $(document).ready(function() {
     $('.userName').ezpz_tooltip({
       contentId: 'tooltext',
       beforeShow: function(content, el) {
-        var thisid = $(el).attr('data-userId');
+        var userId = $(el).attr('data-userId');
 
-        if (thisid != $('#tooltext').attr('data-lastuserId')) {
-          $('#tooltext').attr('data-lastuserId', thisid);
-          $.get(directory + 'api/getUsers.php', 'users=' + thisid + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
-            active = json.getUsers.users;
+        if (userId != $('#tooltext').attr('data-lastuserId')) {
+          $('#tooltext').attr('data-lastuserId', userId);
 
-            for (i in active) {
-              var userName = active[i].userName,
-                userId = active[i].userId,
-                startTag = active[i].startTag,
-                endTag = active[i].endTag,
-                userTitle = active[i].userTitle,
-                posts = active[i].postCount,
-                joinDate = date(active[i].joinDate, true),
-                avatar = active[i].avatar;
-            }
-
-            content.html('<div style="width: 400px;">' + (avatar.length > 0 ? '<img alt="" src="' + avatar + '" style="float: left; max-height: 200px; max-width: 200px;" />' : '') + '<span class="userName" data-userId="' + userId + '">' + startTag + userName + endTag + '</span>' + (userTitle.length > 0 ? '<br />' + userTitle : '') + '<br /><em>Posts</em>: ' + posts + '<br /><em>Member Since</em>: ' + joinDate + '</div>');
-
-            return false;
-          });
+          content.html('<div style="width: 400px;">' + (userData[userId].avatar.length > 0 ? '<img alt="" src="' + userData[userId].avatar + '" style="float: left; max-height: 200px; max-width: 200px;" />' : '') + '<span class="userName" data-userId="' + userId + '">' + userData[userId].startTag + userData[userId].userName + userData[userId].endTag + '</span>' + (userData[userId].userTitle.length > 0 ? '<br />' + userData[userId].userTitle : '') + '<br /><em>Posts</em>: ' + userData[userId].posts + '<br /><em>Member Since</em>: ' + userData[userId].joinDate + '</div>');
         }
-
-        return false;
       }
     });
 
