@@ -270,7 +270,7 @@
       <column name="defaultColor" type="string" maxlen="11" comment="The default color of the user's text." />
       <column name="defaultFontface" type="string" maxlen="50" comment="The default fontface of the user's text." />
       <column name="time" type="time" comment="The time the message was made on." />
-      <column name="text" type="string" maxlen="5000" comment="The HTML-formatted text of the message." />
+      <column name="text" type="string" maxlen="5000" comment="The text of the message." />
       <column name="flag" type="string" maxlen="10" comment="The content-type flag set for the message." />
 
       <key name="id" type="primary" />

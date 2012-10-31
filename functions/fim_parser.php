@@ -113,7 +113,7 @@ class messageParse {
 
 
   /**
-  * Parsers database-stored smilies.
+  * Parses database-stored smilies.
   *
   * @param string $text - The text to parse.
   * @return string - Parsed text.

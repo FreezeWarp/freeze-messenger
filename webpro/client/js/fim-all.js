@@ -686,13 +686,7 @@ function populate(options) {
         for (i in active) {
           var userName = active[i].userName,
             userId = active[i].userId;
-          active[i].parentalFlagsArray = new Array();
-
-          for (j in active[i].parentalFlags) {
-            active[i].parentalFlagsArray.push(active[i].parentalFlags[j]);
-          }
-
-          active[i].parentalFlags = active[i].parentalFlagsArray;
+          active[i].parentalFlags = $.map(active[i].parentalFlags, function (value, key) { return value; }); // The map function here will convert the object to an array.
 
           userRef[userName] = userId;
           userData[userId] = active[i];

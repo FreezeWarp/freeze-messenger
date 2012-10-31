@@ -125,6 +125,8 @@ $defaultConfig = array(
   'parentalFlags' => array('lang', 'violence', 'gore', 'drugs', 'gambling', 'nudity', 'pnudity'),
   'parentalAges' => array(6,10,13,16,18),
 
+  'enableCensor' => true,
+
   'fonts' => array(
     'FreeMono' => "FreeMono, TwlgMono, 'Courier New', Consolas, monospace",
     'Courier New' => "'Courier New', FreeMono, TwlgMono, Consolas, Courier, monospace",
