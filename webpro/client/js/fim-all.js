@@ -404,9 +404,8 @@ function date(timestamp, full) {
 
 
   if (!full) { // Short code
-    var currentTime = new Date(), // Create a new date object so we can get the current time.
-      currentTimeSeconds = Math.floor(currentTime.getTime() / 1000), // Get the unix timestamp from the current time, adjusted for the current timezone.
-      lastMidnight = (currentTimeSeconds - (currentTimeSeconds % 86400)) + (currentTime.getTimezoneOffset() * 60); // Using some cool math (look it up if you're not familiar), we determine the distance from the last even day, then get the time of the last even day itself. This is the midnight referrence point. After all that, we add the timezone adjust in seconds; this is important because we're interested in the local midnight, not the UTC one.
+    var today = new Date;
+    var lastMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0).getTime() / 1000; // Finds the date of the last midnight as a timestamp.
 
     if (timestamp < lastMidnight) { full = true; } // If the current time is before the last midnight...
   }
@@ -2196,6 +2195,11 @@ popup = {
               parentalFlags = active[i].parentalFlags;
 
             /* Update Default Forum Values Based on Server Settings */
+            // User Profile
+            if (active[i].profile) {
+              $('#profile').val(active[i].profile);
+            }
+
             // Default Formatting -- Bold
             if (defaultGeneral & 256) {
               $('#fontPreview').css('font-weight', 'bold');
@@ -2409,6 +2413,7 @@ popup = {
           var watchRooms = $('#watchRooms').val(),
             defaultRoom = $('#defaultRoom').val(),
             ignoreList = $('#ignoreList').val(),
+            profile = $('#profile').val(),
             defaultRoomId = (defaultRoom ? roomRef[defaultRoom] : 0),
             fontId = $('#defaultFace option:selected').val(),
             defaultFormatting = ($('#defaultBold').is(':checked') ? 256 : 0) + ($('#defaultItalics').is(':checked') ? 512 : 0),
@@ -2419,7 +2424,7 @@ popup = {
             parentalFlags.push($(b).attr('data-name'));
           });
 
-          $.post(directory + 'api/editUserOptions.php', 'defaultFormatting=' + defaultFormatting + '&defaultColor=' + defaultColour + '&defaultHighlight=' + defaultHighlight + '&defaultRoomId=' + defaultRoomId + '&watchRooms=' + watchRooms + '&ignoreList=' + ignoreList + '&defaultFontface=' + fontId + '&parentalAge=' + parentalAge + '&parentalFlags=' + parentalFlags.join(',') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
+          $.post(directory + 'api/editUserOptions.php', 'defaultFormatting=' + defaultFormatting + '&defaultColor=' + defaultColour + '&defaultHighlight=' + defaultHighlight + '&defaultRoomId=' + defaultRoomId + '&watchRooms=' + watchRooms + '&ignoreList=' + ignoreList + '&profile=' + profile + '&defaultFontface=' + fontId + '&parentalAge=' + parentalAge + '&parentalFlags=' + parentalFlags.join(',') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
             dia.info('Your settings may or may not have been updated.');
           }); // Send the form data via AJAX.
 
@@ -3163,9 +3168,9 @@ function contextMenuParseUser(container) {
       dia.full({
         title : 'User Profile',
         id : 'messageLink',
-        content : (userData[userId].profileUrl ? '<iframe src="' + userData[userId].profileUrl + '" style="width: 100%; height: 80%;" />' : 'The user has not yet registered a profile.'),
+        content : (userData[userId].profile ? '<iframe src="' + userData[userId].profile + '" style="width: 100%; height: 90%;" /><br /><a href="' + userData[userId].profile + '" target="_BLANK">Visit The Page Directly</a>' : 'The user has not yet registered a profile.'),
         width: $(window).width() * .8,
-        height: $(window).height() * .8,
+        height: $(window).height() * .9,
       });
       break;
 

@@ -1526,42 +1526,29 @@ var dia = {
     var ajax,
       autoOpen,
       windowWidth = document.documentElement.clientWidth,
+      windowHeight = document.documentElement.clientHeight,
       dialog,
       dialogOptions,
       tabsOptions,
       overlay,
       throbber;
 
-    if (options.uri) {
-      options.content = '<img src="images/ajax-loader.gif" align="center" />';
+    if (options.uri) { options.content = '<img src="images/ajax-loader.gif" align="center" />'; ajax = true; }
+    else if (!options.content) { console.log('No content found for dialog; exiting.'); return false; }
 
-      ajax = true;
-    }
-    else if (!options.content) {
-      console.log('No content found for dialog; exiting.');
+    if (typeof options.autoOpen !== 'undefined' && options.autoOpen === false) autoOpen = false;
+    else autoOpen = true;
 
-      return false;
-    }
+    if (options.width > windowWidth) options.width = windowWidth;
+    else if (!options.width) options.width = 600;
 
-    if (typeof options.autoOpen !== 'undefined' && options.autoOpen === false) {
-      autoOpen = false;
-    }
-    else {
-      autoOpen = true;
-    }
+    if (options.height > windowHeight) options.height = windowHeight;
+    else if (!options.height) options.height = "auto";
 
-    if (options.width > windowWidth) {
-      options.width = windowWidth;
-    }
-    else if (!options.width) {
-      options.widthwidth = 600;
-    }
-
-    if (!options.position) {
-      options.position = 'center';
-    }
+    if (!options.position) options.position = 'center';
 
     dialogOptions = {
+      height: options.height,
       width: options.width,
       title: options.title,
       hide: "puff",

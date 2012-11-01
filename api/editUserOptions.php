@@ -141,7 +141,7 @@ if ($loginConfig['method'] === 'vanilla') {
 
   /* Profile */
   if (isset($request['profile'])) { // TODO: Add regex policy.
-    if (filter_var($url, FILTER_VALIDATE_URL) === FALSE) {
+    if (filter_var($request['profile'], FILTER_VALIDATE_URL) === FALSE) {
       $xmlData['editUserOptions']['response']['profile']['status'] = false;
       $xmlData['editUserOptions']['response']['profile']['errStr'] = 'noUrl';
       $xmlData['editUserOptions']['response']['profile']['errDesc'] = 'The URL is not a URL.';
@@ -154,21 +154,21 @@ if ($loginConfig['method'] === 'vanilla') {
       $retcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
       curl_close($ch);
 
-      if ($status !== 200) {
+      if ($retcode !== 200) {
         $xmlData['editUserOptions']['response']['profile']['status'] = false;
         $xmlData['editUserOptions']['response']['profile']['errStr'] = 'badUrl';
         $xmlData['editUserOptions']['response']['profile']['errDesc'] = 'The URL does not validate.';
       }
       elseif ($badRegex) {
-        $xmlData['editUserOptions']['response']['avatar']['status'] = false;
-        $xmlData['editUserOptions']['response']['avatar']['errStr'] = 'bannedUrl';
-        $xmlData['editUserOptions']['response']['avatar']['errDesc'] = 'The URL specified is not allowed.';
+        $xmlData['editUserOptions']['response']['profile']['status'] = false;
+        $xmlData['editUserOptions']['response']['profile']['errStr'] = 'bannedUrl';
+        $xmlData['editUserOptions']['response']['profile']['errDesc'] = 'The URL specified is not allowed.';
       }
       else {
         $updateArray['profile'] = $request['profile'];
 
-        $xmlData['editUserOptions']['res zponse']['profile']['status'] = true;
-        $xmlData['editUserOptions']['response']['profile']['newValue'] = (int) $request['avatar'];
+        $xmlData['editUserOptions']['response']['profile']['status'] = true;
+        $xmlData['editUserOptions']['response']['profile']['newValue'] = $request['profile'];
       }
     }
   }
