@@ -109,7 +109,7 @@ $xmlData = array(
 if ($loginConfig['method'] === 'vanilla') {
   /* Avatar */
   if (isset($request['avatar'])) { // TODO: Add regex policy.
-    $imageData = getimagesize($request['avatar']); print_r($imageData);
+    $imageData = getimagesize($request['avatar']);
     if ($imageData[0] <= $config['avatarMinimumWidth'] || $imageData[1] <= $config['avatarMinimumHeight']) {
       $xmlData['editUserOptions']['response']['avatar']['status'] = false;
       $xmlData['editUserOptions']['response']['avatar']['errStr'] = 'smallSize';

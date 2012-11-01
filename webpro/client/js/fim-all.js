@@ -19,7 +19,9 @@
 
 * Needed Changes:
   * Consistency in use of templates+raw HTML.
-  * Password Encryption */
+  * Password Encryption
+  * Get rid of the f*cking "active" variable. I must have have been incredibly high when I decided it would be good to store JSON in it. (Caffeine is a seriously bad drug, kids.)
+  */
 
 /* Coding Notes:
  * I try to do things in as few lines as possible, because this file is fricken massive. I previously would store, for instance, parts of HTML in variables; now, if possible, I append immediately. */
@@ -1116,11 +1118,14 @@ var standard = {
   },
 
   changeAvatar : function(sha256hash) {
-    $.post(directory + 'api/editUserOptions.php', 'avatar=' + encodeURIComponent(directory + '/file.php?sha256hash=' + sha256hash) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
+    $.post(directory + 'api/editUserOptions.php', 'avatar=' + encodeURIComponent(window.location.protocol + '//' + window.location.host + '/' + directory + '/file.php?sha256hash=' + sha256hash) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
       active = json.editUserOptions;
 
-      if (active.errStr) {
-        dia.info(active.errDesc);
+      if (json.editUserOptions.response.avatar.errStr) {
+        dia.info(json.editUserOptions.response.avatar.errDesc);
+      }
+      else {
+        dia.info('Your avatar has been updated. It will not appear in your old messages.');
       }
     }); // Send the form data via AJAX.
   },
