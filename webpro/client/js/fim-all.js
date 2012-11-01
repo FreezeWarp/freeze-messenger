@@ -238,11 +238,11 @@ function messageFormat(json, format) {
           var $2 = '';
         }
 
-        if ($1.match(regexs.youtubeFull) || $1.match(regexs.youtubeShort)) {
+        if ($1.match(regexs.youtubeFull) || $1.match(regexs.youtubeShort)) { console.log('Hello');
           var code = false;
 
           if (text.match(regexs.youtubeFull) !== null) { code = text.replace(regexs.youtubeFull, "$8"); }
-          else if (text.match(regexs.youtubeShort) !== null) { code = text.replace(regexs.youtubeShort, "$5"); }
+          else if (text.match(regexs.youtubeShort) !== null) { code = text.replace(regexs.youtubeShort, "$5"); } console.log(code);
 
           if (code) {
             if (settings.disableVideo) { return '<a href="https://www.youtu.be/' + code + '" target="_BLANK">[Youtube Video]</a>'; }
@@ -635,7 +635,7 @@ var regexs = {
     "youtube\\.com/" + // Period and domain after "www" (so far: "http://www.youtube.com/")
     "([^\\ ]*?)" + // Anything except spaces
     "(\\?|\\&)" + // ? or &
-    "(w|v)=([a-zA-Z0-9]+)" + // The video ID
+    "(w|v)=([a-zA-Z0-9\-\_]+)" + // The video ID
   ")$", "i"),
 
   youtubeShort : new RegExp("^(" +
@@ -644,7 +644,7 @@ var regexs = {
     "(//|)" + // "//" is optional; this allows for it or nothing. (so far: "http://")
     "(www\\.|)" + // "www." optional (so far: "http://www")
     "youtu\\.be/" + // domain after "www." (so far: "http://www.youtu.be/")
-    "([a-zA-Z0-9]+)" + // THe video ID
+    "([a-zA-Z0-9\-\_]+)" + // THe video ID
   ")$", "i")
 }
 
