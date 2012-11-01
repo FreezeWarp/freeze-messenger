@@ -1252,7 +1252,7 @@ function fim_sendMessage($messageText, $messageFlag, $userData, $roomData) {
 
   $messageParse = new messageParse($messageText, $messageFlag, $userData, $roomData);
 
-  $messageText = $messageParse->getRaw();
+  $messageText = $messageParse->getParsed();
   list($messageTextEncrypted, $iv, $saltNum) = $messageParse->getEncrypted();
 
   $messageId = $database->storeMessage($userData, $roomData, $messageText, $messageTextEncrypted, $iv, $saltNum, $messageFlag);

@@ -411,13 +411,15 @@ class fimDatabase extends database {
   }
 
 
-  public function getRoomCensorLists($roomId) {
-    global $user, $sqlPrefix, $slaveDatabase;
+  public function getRoomCensorLists($roomId) { // TODO: Cache
+    global $user, $sqlPrefix, $slaveDatabase, $censorListsCache;
 
     $block = array();
     $unblock = array();
+    $lists = array();
 
     if ($roomId > 0) {
+      // We will need to get these fresh every time for the most part, as it is not easily cached (just as rooms themselves are not easily cached).
       $listsActive = $slaveDatabase->select(
         array(
           "{$sqlPrefix}censorBlackWhiteLists" => 'status, roomId, listId',
@@ -444,101 +446,18 @@ class fimDatabase extends database {
       if (is_array($listsActive)) {
         if (count($listsActive) > 0) {
           foreach ($listsActive AS $active) {
-            if ($active['status'] == 'unblock') {
-              $unblock[] = $active['listId'];
-            }
-            elseif ($active['status'] == 'block') {
-              $block[] = $active['listId'];
-            }
+            if ($active['status'] == 'unblock') $unblock[] = $active['listId'];
+            elseif ($active['status'] == 'block') $block[] = $active['listId'];
           }
         }
       }
     }
 
-    $queryParts['listsSelect']['columns'] = array(
-      "{$sqlPrefix}censorLists" => 'listId, listName, listType, options',
-    );
-    $queryParts['listsSelect']['conditions'] = array(
-      'both' => array(
-        'either' => array(
-          'both 1' => array(
-            array(
-              'type' => 'e',
-              'left' => array(
-                'type' => 'column',
-                'value' => 'listType',
-              ),
-              'right' => array(
-                'type' => 'string',
-                'value' => 'white',
-              ),
-            ),
-            array(
-              'type' => 'notin',
-              'left' => array(
-                'type' => 'column',
-                'value' => 'listId',
-              ),
-              'right' => array(
-                'type' => 'array',
-                'value' => (array) $unblock,
-              ),
-            ),
-          ),
-          'both 2' => array(
-            array(
-              'type' => 'e',
-              'left' => array(
-                'type' => 'column',
-                'value' => 'listType',
-              ),
-              'right' => array(
-                'type' => 'string',
-                'value' => 'black',
-              ),
-            ),
-            array(
-              'type' => 'in',
-              'left' => array(
-                'type' => 'column',
-                'value' => 'listId',
-              ),
-              'right' => array(
-                'type' => 'array',
-                'value' => (array) $block,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-    $queryParts['listsSelect']['sort'] = false;
-    $queryParts['listsSelect']['limit'] = false;
+    foreach ($censorListsCache AS $listId => $censorList) {
+$lists[$listId] = $censorList;
+    }
 
-/*    if ($roomOptions & 16) {
-      $queryParts['listsSelect']['conditions']['both']['both'] = array(
-        array(
-          'type' => 'xor',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'options',
-          ),
-          'right' => array(
-            'type' => 'int',
-            'value' => 4,
-          ),
-        ),
-      );
-    }*/
-
-    $lists = $slaveDatabase->select(
-      $queryParts['listsSelect']['columns'],
-      $queryParts['listsSelect']['conditions'],
-      $queryParts['listsSelect']['sort'],
-      $queryParts['listsSelect']['limit']
-    );
-
-    return $lists->getAsArray('listId');
+    return $lists;
   }
 
 

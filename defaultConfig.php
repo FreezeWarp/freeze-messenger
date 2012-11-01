@@ -25,12 +25,16 @@ $defaultConfig = array(
   'searchWordConvertsFind' => array(),
   'searchWordConvertsReplace' => array(),
 
+  // All Seconds
   'kicksCacheRefresh' => 30,
   'permissionsCacheRefresh' => 30,
   'phrasesCacheRefresh' => 600,
   'templatesCacheRefresh' => 600,
   'hooksCacheRefresh' => 600,
   'configCacheRefresh' => 600,
+  'censorListsCache' => 600,
+  'censorWordsCache' => 600,
+  'watchRoomsCache' => 600,
 
   'longPolling' => false,
   'longPollingWait' => 2,

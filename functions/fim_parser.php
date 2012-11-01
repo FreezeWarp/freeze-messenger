@@ -57,57 +57,22 @@ class messageParse {
   */
 
   public function censorParse($text, $roomId = 0, $roomOptions) {
-    global $sqlPrefix, $slaveDatabase, $config;
+    global $sqlPrefix, $slaveDatabase, $config, $censorWordsCache;
 
-    $listIds = $slaveDatabase->getRoomCensorLists($roomId, $roomOptions);
-
-    $words = $slaveDatabase->select(
-      array(
-        "{$sqlPrefix}censorWords" => 'listId, word, severity, param',
-      ),
-      array(
-        'both' => array(
-          array(
-            'type' => 'in',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'listId',
-            ),
-            'right' => array(
-              'type' => 'array',
-              'value' => $listIds,
-            ),
-          ),
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'severity',
-            ),
-            'right' => array(
-              'type' => 'string',
-              'value' => 'replace',
-            ),
-          ),
-        ),
-      )
-    );
-    $words = $words->getAsArray('word');
-
-
-    if (!$words) {
+    if (!$censorWordsCache) {
       return $text;
     }
+    else {
+      $listIds = $slaveDatabase->getRoomCensorLists($roomId);
 
+      foreach ($censorWordsCache['replace'] AS $word) {
+        $words2[strtolower($word['word'])] = $word['param'];
+        $searchText[] = addcslashes(strtolower($word['word']),'^&|!$?()[]<>\\/.+*');
+      }
+      $searchText2 = implode('|', $searchText);
 
-    foreach ($words AS $word) {
-      $words2[strtolower($word['word'])] = $word['param'];
-      $searchText[] = addcslashes(strtolower($word['word']),'^&|!$?()[]<>\\/.+*');
+      return preg_replace("/(?<!(\[noparse\]))(?<!(\quot))($searchText2)(?!\[\/noparse\])/ie","indexValue(\$words2,strtolower('\\3'))", $text);
     }
-    $searchText2 = implode('|', $searchText);
-
-
-    return preg_replace("/(?<!(\[noparse\]))(?<!(\quot))($searchText2)(?!\[\/noparse\])/ie","indexValue(\$words2,strtolower('\\3'))", $text);
   }
 
 
@@ -239,7 +204,7 @@ class messageParse {
   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
 
-  public function getHtml() {
+  public function getParsed() {
     global $sqlPrefix, $parseFlags, $salts, $encrypt, $loginMethod, $sqlUserGroupTableCols, $sqlUserGroupTable, $database;
 
     // Flags allow for less hassle on some communications.
@@ -249,7 +214,7 @@ class messageParse {
       return $this->messageText;
     }
     else {
-      return $this->emotiParse( // Converts emoticons (e.g. ":D", ":P", "o.O") to HTML <img /> tags based on database-stored conversions.
+      return $this->emotiParse( // Converts emoticons (e.g. ":D", ":P", "o.O") to [img="alt"] tags based on database-stored conversions.
         $this->censorParse( // Censors text based on database-stored filters, which may be activated or deactivted by the room itself.
           $this->messageText,
           $this->roomData['roomId'],

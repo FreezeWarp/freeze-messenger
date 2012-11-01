@@ -42,6 +42,10 @@ foreach (array('mysql', 'json', 'mbstring', 'mcrypt', 'pcre', 'dom', 'curl') AS 
 if (!extension_loaded('apc')/* && !extension_loaded('memcache')*/) die("Neither the <strong>apc</strong> or <strong>memcache</strong> modules could not be found. Please install PHP <strong>apc</strong> or <strong>memcache</strong> compatibility. See the documentation for help."); // APC is required. Memcached is not yet supported.
 if (!extension_loaded('hash') && !extension_loaded('mhash')) die("Neither the <strong>hash</strong> or <strong>mhash</strong> modules could not be found. Please install PHP <strong>hash</strong> or <strong>mhash</strong> compatibility. See the documentation for help."); // Either can be used.
 
+if ((bool) ini_get('allow_url_fopen') === false) {
+  die('FOpen functionality is disable. Please enable allow_url_fopen in php.ini. More information can be found in the <a href="http://www.php.net/manual/en/filesystem.configuration.php#ini.allow-url-fopen">PHP manual</a>, and in the documentation.');
+}
+
 
 
 /* Version Requirement, Magic Quotes, Display Errors and Register Globals */
@@ -65,7 +69,7 @@ elseif (floatval(PHP_VERSION) <= 5.3) { // Removed outright in 5.4, may as well 
     }
   }
 
-  if (ini_get('register_globals') === true) { // Note: This can not be altered with ini_set, so... we won't even bother. We will remove it in the next version most likely, as no one really uses it anyway.
+  if ((bool) ini_get('register_globals') === true) { // Note: This can not be altered with ini_set, so... we won't even bother. We will remove it in the next version most likely, as no one really uses it anyway.
     die('Register Globals is enabled. Please disable register_globals in php.ini. More information can be found in the <a href="http://www.php.net/manual/en/security.globals.php">PHP manual</a>, and in the documentation.');
   }
 }
@@ -248,7 +252,7 @@ if ($api === true) {
 
 if (isset($reqHooks)) {
   if ($reqHooks === true) {
-    if (!$hooks = $generalCache->get('fim_hooks')) {
+    if (!$hooks = $generalCache->get('fim_hooksCache')) {
       $hooks2 = $slaveDatabase->select(
         array(
           "{$sqlPrefix}hooks" => 'hookId, hookName, code',
@@ -268,7 +272,7 @@ if (isset($reqHooks)) {
       }
 
       unset($hooks2);
-      $generalCache->set('fim_hooks', $hooks, $config['hooksCacheRefresh']);
+      $generalCache->set('fim_hooksCache', $hooks, $config['hooksCacheRefresh']);
     }
   }
 }
@@ -277,7 +281,7 @@ if (isset($reqHooks)) {
 
 ////* Kicks Cache *////
 
-$kicksCache = $generalCache->get('fim_kickCache');
+$kicksCache = $generalCache->get('fim_kicksCache');
 
 if ($kicksCache === null || $kicksCache === false) {
   $kicksCache = array();
@@ -349,7 +353,7 @@ if ($kicksCache === null || $kicksCache === false) {
     }
   }
 
-  $generalCache->set('fim_kickCache', $kicksCache, $config['kicksCacheRefresh']);
+  $generalCache->set('fim_kicksCache', $kicksCache, $config['kicksCacheRefresh']);
 }
 
 
@@ -397,8 +401,64 @@ if ($watchRoomsCache === null || $watchRoomsCache === false) {
     $watchRoomsCache[$cachePerm['userId']][] = $cachePerm['roomId'];
   }
 
-  $generalCache->set('fim_permissionCache', $watchRoomsCache, $config['permissionsCacheRefresh']);
+  $generalCache->set('fim_watchRoomsCache', $watchRoomsCache, $config['watchRoomsCacheRefresh']);
 }
+
+
+
+////* Censor Lists *////
+////* Caches Entire Table as data[listId] = [listId, listName, listType, options] *////
+
+$censorListsCache = $generalCache->get('fim_censorListsCache');
+
+if ($censorListsCache === null || $censorListsCache === false) {
+  $censorListsCache = array();
+
+  $queryParts['censorListsCacheSelect']['columns'] = array(
+    "{$sqlPrefix}censorLists" => 'listId, listName, listType, options',
+  );
+
+  $censorListsCachePre = $database->select($queryParts['censorListsCacheSelect']['columns']);
+  $censorListsCachePre = $censorListsCachePre->getAsArray(true);
+
+  foreach ($censorListsCachePre AS $cachePerm) {
+    $censorListsCache[$cachePerm['listId']] = $cachePerm;
+  }
+
+
+  $generalCache->set('fim_censorListsCache', $censorListsCache, $config['censorListsCache']);
+}
+
+
+
+////* Censor Words *////
+////* Caches Entire Table as data[severity][] = [listId, word, severity, param] *////
+
+$censorWordsCache = $generalCache->get('fim_censorWordsCache');
+
+if ($censorWordsCache === null || $censorWordsCache === false) {
+  $censorWordsCache = array(
+     'replace' => array(),
+     'warn' => array(),
+     'confirm' => array(),
+     'block' => array(),
+  );
+
+  $queryParts['censorWordsCacheSelect']['columns'] = array(
+    "{$sqlPrefix}censorWords" => 'listId, word, severity, param',
+  );
+
+  $censorWordsCachePre = $database->select($queryParts['censorWordsCacheSelect']['columns']);
+  $censorWordsCachePre = $censorWordsCachePre->getAsArray(true);
+
+  foreach ($censorWordsCachePre AS $cachePerm) {
+    $censorWordsCache[$cachePerm['severity']][] = $cachePerm;
+  }
+
+  $generalCache->set('fim_censorWordsCache', $censorWordsCache, $config['censorWordsCacheRefresh']);
+}
+
+
 
 
 
