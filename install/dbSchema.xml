@@ -340,9 +340,6 @@
       <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options." />
 
       <!-- Counters -->
-      <column name="favRooms" type="string" maxlen="1000" comment="A comma-seperated list of rooms the user has ranked as being favourites." />
-      <column name="watchRooms" type="string" maxlen="1000" comment="A comma-seperated list of rooms the user would like to be notified about when new messages are made" />
-      <column name="ignoreList" type="string" maxlen="1000" comment="A comma-seperated list of users the user would like to ignore from being contacted by." />
       <column name="lastMessageTime" type="time" default="0" comment="The time of the last message made in the room." />
       <column name="lastMessageId" type="int" maxlen="15" comment="The ID of the last message made in the room." />
       <column name="messageCount" type="int" maxlen="15" comment="The number of messages in this room." />
@@ -481,7 +478,6 @@
       <column name="creatorId" type="int" maxlen="6" comment="The member ID of the group." />
       <column name="creationTime" type="int" maxlen="6" comment="The member ID of the group." />
       <column name="leaderId" type="int" maxlen="6" comment="The current leader of the group. Allowed to set group options and remove members" />
-      <column name="memberIds" type="int" maxlen="6" comment="A list of members in the group." />
       <column name="options" type="int" maxlen="6" comment="Group options." />
 
       <key name="groupId" type="primary" />
@@ -527,14 +523,12 @@
 
 
     <table name="uploadTypes" type="general" comment="Admin-defined mime types to corrospond to file types of uploaded files.">
-      <column name="typeId" type="int" maxlen="6" autoincrement="1" comment="The unique ID for the file type." />
       <column name="extension" type="string" maxlen="8" comment="The extension that will allow upload of files using these settings." />
       <column name="mime" type="string" maxlen="300" comment="The content type to output files of this type as." />
       <column name="maxSize" type="int" maxlen="12" comment="The maximum size (in bytes) files of this type can be." />
       <column name="container" type="string" restrict="video,image,audio,text,html,archive,other" comment="The container that should be used to output the file. This is recognized by clients for best viewing." />
 
-      <key name="typeId" type="primary" />
-      <key name="extension" type="unique" />
+      <key name="extension" type="primary" />
     </table>
 
 
@@ -643,7 +637,7 @@
       <column name="adminPrivs" type="bitfield" bits="16" comment="A bitfield corrosponding to admin-set administrative priviledges." />
 
       <!-- Parental Controls -->
-      <column name="parentalFlags" type="string" maxlen="255" comment="An advanced comma-seperated (e.g. violence=10,language=13) list of parent content flags to restrict access to." />
+      <column name="parentalFlags" type="string" maxlen="255" comment="An comma-seperated list of parent content flags to restrict access to." />
       <column name="parentalAge" type="int" maxlen="2" comment="Content rated above this rating should be blocked." />
 
       <column name="changeTime" type="time" comment="The time at which the above information was altered." />

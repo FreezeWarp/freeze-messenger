@@ -608,8 +608,6 @@ else {
           $roomData = $database->getRoom($message['roomId']);
 
           $message = fim_decrypt($message, 'text');
-          $messageParse = new messageParse($message['text'], $message['flag'], $user, $roomData);
-          $message['text'] = $messageParse->getHtml();
 
           switch ($request['encode']) {
             case 'plaintext':

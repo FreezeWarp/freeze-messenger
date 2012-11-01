@@ -126,7 +126,7 @@ $defaultConfig = array(
   'parentalAgeChangeable' => true, // Can the user override his or her age group upwards? (No matter what, a user may set it downwards).
   'parentalFlagsDefault' => array(), // Flags on by default.
   'parentalRegistrationAge' => 0, // Age required to register.
-  'parentalFlags' => array('lang', 'violence', 'gore', 'drugs', 'gambling', 'nudity', 'pnudity'),
+  'parentalFlags' => array('language', 'violence', 'gore', 'drugs', 'gambling', 'nudity', 'suggestive', 'weapons'),
   'parentalAges' => array(6,10,13,16,18),
 
   'enableCensor' => true,

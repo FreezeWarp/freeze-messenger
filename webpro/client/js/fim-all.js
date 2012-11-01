@@ -202,6 +202,21 @@ function messageFormat(json, format) {
   }
   else {
     switch (flag) {
+      case 'source':
+      if ($1.match(regexs.youtubeFull) || $1.match(regexs.youtubeShort)) {
+        var code = false;
+
+        if (text.match(regexs.youtubeFull) !== null) { code = text.replace(regexs.youtubeFull, "$8"); }
+        else if (text.match(regexs.youtubeShort) !== null) { code = text.replace(regexs.youtubeShort, "$5"); }
+
+        if (code) {
+          if (settings.disableVideo) { return '<a href="https://www.youtu.be/' + code + '" target="_BLANK">[Youtube Video]</a>'; }
+          else { return '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>'; }
+        }
+        else { return '[Logic Error]'; }
+      }
+      break;
+
       case 'image': // We append the parentalAge flags regardless of an images source. It will potentially allow for other sites to use the same format (as far as I know, I am the first to implement the technology, and there are no related standards.)
       if (settings.disableImage) text = '<a href="' + fim_eXMLAttr(text) + '&parentalAge=' + userData[userId].parentalAge + '&parentalFlags=' + userData[userId].parentalFlags.join(',') + '" class="imglink" target="_BLANK">[Image]</a>';
       else text = '<a href="' + text + '" target="_BLANK"><img src="' + fim_eXMLAttr(text) + '" style="max-width: 250px; max-height: 250px;" /></a>';
@@ -240,11 +255,11 @@ function messageFormat(json, format) {
           var $2 = '';
         }
 
-        if ($1.match(regexs.youtubeFull) || $1.match(regexs.youtubeShort)) { console.log('Hello');
+        if ($1.match(regexs.youtubeFull) || $1.match(regexs.youtubeShort)) {
           var code = false;
 
           if (text.match(regexs.youtubeFull) !== null) { code = text.replace(regexs.youtubeFull, "$8"); }
-          else if (text.match(regexs.youtubeShort) !== null) { code = text.replace(regexs.youtubeShort, "$5"); } console.log(code);
+          else if (text.match(regexs.youtubeShort) !== null) { code = text.replace(regexs.youtubeShort, "$5"); }
 
           if (code) {
             if (settings.disableVideo) { return '<a href="https://www.youtu.be/' + code + '" target="_BLANK">[Youtube Video]</a>'; }
@@ -834,7 +849,7 @@ function populate(options) {
 *********************************************************/
 
 function youtubeSend(id) { // TODO
-  standard.sendMessage('http://www.youtube.com/watch?v=' + id, 0);
+  standard.sendMessage('http://www.youtube.com/watch?v=' + id, 0, 'source');
 
   $('#textentryBoxYoutube').dialog('close');
 }
@@ -2069,7 +2084,7 @@ popup = {
           linkVideo = $('#youtubeUpload');
 
           if (linkVideo.search(/^http\:\/\/(www\.|)youtube\.com\/(.*?)?v=(.+?)(&|)(.*?)$/) === 0) { dia.error('No Video Specified'); } // Bad format
-          else { standard.sendMessage(linkVideo, 0, 'video'); }
+          else { standard.sendMessage(linkVideo, 0, 'source'); }
 
           $('#insertDoc').dialog('close');
 

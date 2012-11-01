@@ -199,12 +199,13 @@
     "violence" : "Violence",
     "weapons" : "Weapons",
     "gore" : "Gore",
-    "lang" : "Language",
+    "language" : "Language",
     "gambling" : "Gambling",
     "pnudity" : "Partial Nudity",
     "nudity" : "Nudity",
     "suggestive" : "Sexually Sugg.",
-    "drugs" : "Drugs"
+    "drugs" : "Drugs",
+    "weapons" : "Weapons"
   },
   "settingsParentalFlagsLabel" : "Do Not Show Content Containing: ",
   "settingsParentalFlagsBlurb" : "If an item is selected and you attempt to view and image or enter a room that is marked as containing an excessive ammount of this type of content, you will be blocked from seeing it. You can change these settings at any time.</strong>",
