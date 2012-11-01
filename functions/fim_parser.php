@@ -65,7 +65,9 @@ class messageParse {
     else {
       $listIds = $slaveDatabase->getRoomCensorLists($roomId);
 
-      foreach ($censorWordsCache['replace'] AS $word) {
+      foreach ($censorWordsCache AS $word) {
+        if ($word['severity'] !== 'replace') continue; // We only deal with replaces here.
+
         $words2[strtolower($word['word'])] = $word['param'];
         $searchText[] = addcslashes(strtolower($word['word']),'^&|!$?()[]<>\\/.+*');
       }

@@ -65,45 +65,6 @@ $room = $database->getRoom($request['roomId']);
 
 
 /* Censor Fun */
-$listIds = array_keys($database->getRoomCensorLists($room['roomId']));
-
-$words = $slaveDatabase->select(
-  array(
-    "{$sqlPrefix}censorWords" => 'severity, listId, word, severity, param',
-  ),
-  array(
-    'both' => array(
-      array(
-        'type' => 'in',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'listId',
-        ),
-        'right' => array(
-          'type' => 'array',
-          'value' => $listIds,
-        ),
-      ),
-      array(
-        'type' => 'in',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'severity',
-        ),
-        'right' => array(
-          'type' => 'array',
-          'value' => array(
-            'warn',
-            'confirm',
-            'block',
-          ),
-        ),
-      ),
-    ),
-  )
-);
-$words = $words->getAsArray('word');
-
 $blockedWord = false;
 $blockedWordText = false;
 $blockedWordReason = false;
@@ -114,24 +75,25 @@ $blockWordApi = array(
   'reason' => '',
 );
 
-if ($words) {
+if ($censorWordsCache) {
   ($hook = hook('sendMessage_censor_start') ? eval($hook) : '');
 
-  foreach ($words AS $word) {
-    if ($request['ignoreBlock'] && $word['severity'] == 'confirm') continue;
+  foreach ($censorWordsCache AS $word) {
+    if ($request['ignoreBlock'] && $word['severity'] === 'confirm') continue;
 
-    $searchText[] = addcslashes(strtolower($word['word']),'^&|!$?()[]<>\\/.+*');
+    $searchText[] = addcslashes(strtolower($word['word']), '^&|!$?()[]<>\\/.+*');
 
     ($hook = hook('sendMessage_censor_eachWord') ? eval($hook) : '');
   }
 
+
   if ($searchText) {
-    preg_match('/(' . implode('|',$searchText) . ')/i',$request['message'],$matches);
+    preg_match('/(' . implode('|',$searchText) . ')/i', $request['message'], $matches);
     if ($matches[1]) {
       $blockedWord = strtolower($matches[1]);
-      $blockedWordText = $words[$blockedWord]['word'];
-      $blockedWordReason = $words[$blockedWord]['param'];
-      $blockedWordSeverity = $words[$blockedWord]['severity'];
+      $blockedWordText = $censorWordsCache[$blockedWord]['word'];
+      $blockedWordReason = $censorWordsCache[$blockedWord]['param'];
+      $blockedWordSeverity = $censorWordsCache[$blockedWord]['severity'];
     }
   }
 
@@ -213,6 +175,12 @@ if ($continue) {
     fclose($fp);
   }*/
   else {
+    if ($blockedWordSeverity == 'warn') {
+      $blockWordApi['severity'] = 'warn';
+      $blockWordApi['word'] = $blockedWordText;
+      $blockWordApi['reason'] = $blockedWordReason;
+    }
+
     ($hook = hook('sendMessage_send') ? eval($hook) : '');
 
     if ($continue) {

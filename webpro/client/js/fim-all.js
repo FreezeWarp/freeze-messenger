@@ -1505,6 +1505,10 @@ var standard = {
             break;
           }
 
+          if (json.sendMessage.censor.severity === 'warn') {
+            dia.info('Please use the word "' + json.sendMessage.censor.word + '" with care: ' + json.sendMessage.censor.reason);
+          }
+
           return false;
         },
         error: function() {

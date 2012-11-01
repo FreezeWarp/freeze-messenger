@@ -432,17 +432,12 @@ if ($censorListsCache === null || $censorListsCache === false) {
 
 
 ////* Censor Words *////
-////* Caches Entire Table as data[severity][] = [listId, word, severity, param] *////
+////* Caches Entire Table as data[word] = [listId, word, severity, param] *////
 
 $censorWordsCache = $generalCache->get('fim_censorWordsCache');
 
 if ($censorWordsCache === null || $censorWordsCache === false) {
-  $censorWordsCache = array(
-     'replace' => array(),
-     'warn' => array(),
-     'confirm' => array(),
-     'block' => array(),
-  );
+  $censorWordsCache = array();
 
   $queryParts['censorWordsCacheSelect']['columns'] = array(
     "{$sqlPrefix}censorWords" => 'listId, word, severity, param',
@@ -452,7 +447,7 @@ if ($censorWordsCache === null || $censorWordsCache === false) {
   $censorWordsCachePre = $censorWordsCachePre->getAsArray(true);
 
   foreach ($censorWordsCachePre AS $cachePerm) {
-    $censorWordsCache[$cachePerm['severity']][] = $cachePerm;
+    $censorWordsCache[$cachePerm['word']] = $cachePerm;
   }
 
   $generalCache->set('fim_censorWordsCache', $censorWordsCache, $config['censorWordsCacheRefresh']);

@@ -257,7 +257,7 @@ class fimDatabase extends database {
     return $listData->getAsArray(false);
   }
 
-  public function getCensorWord($wordId) {
+  public function getCensorWord($wordId) { // TODO
     global $sqlPrefix, $config, $user;
 
     $queryParts['wordSelect']['columns'] = array(
