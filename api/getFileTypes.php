@@ -16,6 +16,7 @@
 
 /**
  * Obtains All File Types Configured on the Server
+ * TODO -- Cache
  *
  * @package fim3
  * @version 3.0
@@ -43,10 +44,10 @@ $xmlData = array(
 );
 
 $queryParts['fileTypeSelect']['columns'] = array(
-  "{$sqlPrefix}uploadTypes" => 'typeId, extension, mime, maxSize, container',
+  "{$sqlPrefix}uploadTypes" => 'extension, mime, maxSize, container',
 );
 $queryParts['fileTypeSelect']['conditions'] = false;
-$queryParts['fileTypeSelect']['sort'] = 'typeId';
+$queryParts['fileTypeSelect']['sort'] = 'extension';
 $queryParts['fileTypeSelect']['limit'] = false;
 
 
@@ -73,8 +74,7 @@ if ($continue) {
   if (is_array($fileTypes)) {
     if (count($fileTypes) > 0) {
       foreach ($fileTypes AS $fileType) {
-        $xmlData['getFileTypes']['fileTypes']['fileType ' . $fileType['typeId']] = array(
-          'typeId' => (int) $fileType['typeId'],
+        $xmlData['getFileTypes']['fileTypes']['fileType ' . $fileType['extension']] = array(
           'extension' => $fileType['extension'],
           'mime' => $fileType['mime'],
           'maxSize' => (int) $fileType['maxSize'],

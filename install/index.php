@@ -15,7 +15,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 /* Frontend of Install
- * See worker.php for backend of install. 
+ * See worker.php for backend of install.
  * TODO: Translation support. */
 
 $installFlags = 0; // Create an integer (bitfield) that will store all install fields.
@@ -246,7 +246,7 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
   <div style="height: 30px;">
     <form onsubmit="return false;">
       <button style="float: left;" type="button" onclick="$('#part2').slideUp(); $('#part1').slideDown(); windowDraw();">&larr; Back</button>
-      <button style="float: right;" type="button" onclick="if (!$('#db_database').val().length) { dia.error('Please enter a database.'); } else if (!$('#db_userName').val().length) { dia.error('Please enter a username.'); } else { dia.full({ title : 'Installing', content : '<div style=&quot;text-align: center;&quot;>Installing now. Please wait a few moments. <img src=&quot;../webpro/images/ajax-loader.gif&quot; /></div>', id : 'installingDia'}); $.get('./worker.php?phase=1', $('#db_connect_form').serialize(), function(data) { $('#installingDia').remove(); if (data == 'success') { $('#part2').slideUp(); $('#part3').slideDown(); } else { dia.error(data); } } ); windowDraw(); }">Setup &rarr;</button>
+      <button style="float: right;" type="button" onclick="if (!$('#db_database').val().length) { dia.error('Please enter a database.'); } else if (!$('#db_userName').val().length) { dia.error('Please enter a username.'); } else { dia.full({ title : 'Installing', content : '<div style=&quot;text-align: center;&quot;>Installing now. Please wait a few moments.<br /><img src=&quot;../webpro/images/ajax-loader.gif&quot; /></div>', id : 'installingDia'}); $.get('./worker.php?phase=1', $('#db_connect_form').serialize(), function(data) { $('#installingDia').remove(); if (data == 'success') { $('#part2').slideUp(); $('#part3').slideDown(); } else { dia.error(data); } } ); windowDraw(); }">Setup &rarr;</button>
     </form>
   </div>
   </div>

@@ -30,28 +30,24 @@
 
     <!-- Table uploadTypes -->
     <table name="uploadTypes">
-      <column name="typeId" value="1" />
       <column name="extension" value="png" />
       <column name="mime" value="image/png" />
       <column name="maxSize" value="1048576" />
       <column name="container" value="image" />
     </table>
     <table name="uploadTypes">
-      <column name="typeId" value="2" />
       <column name="extension" value="jpg" />
       <column name="mime" value="image/jpeg" />
       <column name="maxSize" value="1048576" />
       <column name="container" value="image" />
     </table>
     <table name="uploadTypes">
-      <column name="typeId" value="3" />
       <column name="extension" value="jpeg" />
       <column name="mime" value="image/jpeg" />
       <column name="maxSize" value="1048576" />
       <column name="container" value="image" />
     </table>
     <table name="uploadTypes">
-      <column name="typeId" value="4" />
       <column name="extension" value="gif" />
       <column name="mime" value="image/gif" />
       <column name="maxSize" value="1048576" />
