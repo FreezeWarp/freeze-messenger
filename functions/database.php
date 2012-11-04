@@ -1295,7 +1295,7 @@ class databaseResult {
           }
           else { // If the index is not boolean "true", we instead get the column value of the index/column name.
             if ($group) $data[$row[$index]][] = $row; // Allow duplicate values.
-            else $data[$row[$index]][] = $row; // Overwrite values.
+            else $data[$row[$index]] = $row; // Overwrite values.
           }
         }
 
