@@ -323,6 +323,7 @@
   "errorUploadFilesNotRetrieved" : "Upload file types not retrieved. Uploads will be disabled.",
   "errorUsersNotRetrieved" : "The user list could not be retrieved. The program will not be started.",
   "errorRoomsNotRetrieved" : "The room list could not be obtained. The program will not be started.",
+  "errorRoomListsNotRetrieved" : "Favourite rooms could not be retrieved. Room lists will be disabled.",
   "errorUserGroupsNotRetrieved" : "The usergroup list could not be retrieved. Certain features will be disabled.",
   "errorFontListNotRetrieved" : "The font list could not be retrieved. Certain features will be disabled.",
   "errorBanned" : "You have been banned. You will not be able to do anything."

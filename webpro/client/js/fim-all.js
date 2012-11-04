@@ -797,6 +797,22 @@ function populate(options) {
 
 
     $.ajax({
+      url: directory + 'api/getRoomLists.php?roomListName=favRooms2&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+      timeout: 5000,
+      type: 'GET',
+      cache: false,
+      success: function(json) {
+        return false;
+      },
+      error: function() {
+        dia.error(window.phrases.errorRoomListsNotRetrieved);
+
+        return false;
+      }
+    }),
+
+
+    $.ajax({
       url: directory + 'api/getGroups.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
       timeout: 5000,
       type: 'GET',

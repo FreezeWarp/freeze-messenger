@@ -1279,7 +1279,7 @@ class databaseResult {
    * @return mixed
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
-  public function getAsArray($index = true) {
+  public function getAsArray($index = true, $group = false) {
     $data = array();
     $indexV = 0;
 
@@ -1288,10 +1288,15 @@ class databaseResult {
         while ($row = $this->functionMap('fetchAsArray', $this->queryData)) {
           if ($row === null || $row === false) break;
 
-          if ($index === true) $indexV++; // If the index is boolean "true", we simply create numbered rows to use. (1,2,3,4,5)
-          else                 $indexV = $row[$index]; // If the index is not boolean "true", we instead get the column value of the index/column name.
+          if ($index === true) {
+            $indexV++; // If the index is boolean "true", we simply create numbered rows to use. (1,2,3,4,5)
 
-          $data[$indexV] = $row; // Append the data.
+            $data[$indexV] = $row; // Append the data.
+          }
+          else { // If the index is not boolean "true", we instead get the column value of the index/column name.
+            if ($group) $data[$row[$index]][] = $row; // Allow duplicate values.
+            else $data[$row[$index]][] = $row; // Overwrite values.
+          }
         }
 
         return $data; // All rows fetched, return the data.

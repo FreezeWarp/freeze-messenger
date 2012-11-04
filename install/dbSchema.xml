@@ -387,6 +387,7 @@
       <column name="listId" type="int" maxlen="6" comment="The list ID." />
 
       <key name="userId" type="index" />
+      <key name="listId" type="index" />
     </table>
 
 
