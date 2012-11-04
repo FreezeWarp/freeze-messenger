@@ -775,7 +775,7 @@ class fimDatabase extends database {
           continue;
         }
         else {
-          $this->createEvent('missedMessage', $sendToUserId, $roomData['roomId'], $messageId, false, false, false); // name, user, room, message, p1, p2, p3
+          $this->createEvent('missedMessage', $sendToUserId, $roomData['roomId'], $messageId, false, false, false);
 
           if ($config['enableUnreadMessages']) {
             $this->insert("{$sqlPrefix}unreadMessages", array(

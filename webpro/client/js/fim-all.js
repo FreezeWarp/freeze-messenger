@@ -2346,7 +2346,7 @@ popup = {
 
         // Parental Controls
         if (!serverSettings.parentalControls.parentalEnabled) { // Hide if Subsystem is Disabled
-          $('a[href="#settings6"]').parent().remove();
+          $('a[href="#settings5"]').parent().remove();
         }
         else {
           for (i in serverSettings.parentalControls.parentalAges) {
