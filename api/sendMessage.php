@@ -75,10 +75,10 @@ $blockWordApi = array(
   'reason' => '',
 );
 
-if ($censorWordsCache) {
+if ($censorWordsCache['byWord']) {
   ($hook = hook('sendMessage_censor_start') ? eval($hook) : '');
 
-  foreach ($censorWordsCache AS $word) {
+  foreach ($censorWordsCache['byWord'] AS $word) {
     if ($request['ignoreBlock'] && $word['severity'] === 'confirm') continue;
 
     $searchText[] = addcslashes(strtolower($word['word']), '^&|!$?()[]<>\\/.+*');
@@ -91,9 +91,9 @@ if ($censorWordsCache) {
     preg_match('/(' . implode('|',$searchText) . ')/i', $request['message'], $matches);
     if ($matches[1]) {
       $blockedWord = strtolower($matches[1]);
-      $blockedWordText = $censorWordsCache[$blockedWord]['word'];
-      $blockedWordReason = $censorWordsCache[$blockedWord]['param'];
-      $blockedWordSeverity = $censorWordsCache[$blockedWord]['severity'];
+      $blockedWordText = $censorWordsCache['byWord'][$blockedWord]['word'];
+      $blockedWordReason = $censorWordsCache['byWord'][$blockedWord]['param'];
+      $blockedWordSeverity = $censorWordsCache['byWord'][$blockedWord]['severity'];
     }
   }
 

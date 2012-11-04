@@ -59,13 +59,13 @@ class messageParse {
   public function censorParse($text, $roomId = 0, $roomOptions) {
     global $sqlPrefix, $slaveDatabase, $config, $censorWordsCache;
 
-    if (!$censorWordsCache) {
+    if (!count($censorWordsCache['byWord'])) {
       return $text;
     }
     else {
       $listIds = $slaveDatabase->getRoomCensorLists($roomId);
 
-      foreach ($censorWordsCache AS $word) {
+      foreach ($censorWordsCache['byWord'] AS $word) {
         if ($word['severity'] !== 'replace') continue; // We only deal with replaces here.
 
         $words2[strtolower($word['word'])] = $word['param'];

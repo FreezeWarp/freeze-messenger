@@ -453,8 +453,8 @@ class fimDatabase extends database {
       }
     }
 
-    foreach ($censorListsCache AS $listId => $censorList) {
-$lists[$listId] = $censorList;
+    foreach ($censorListsCache['listId'] AS $listId => $censorList) {
+      $lists[$listId] = $censorList;
     }
 
     return $lists;
@@ -769,8 +769,8 @@ $lists[$listId] = $censorList;
 
 
     // If the contact is a private communication, create an event and add to the message unread table.
-    if ($roomData['options'] & 16) {// error_log(print_r($permissionsCache[$roomData['roomId']]['user'],true));
-      foreach ($permissionsCache[$roomData['roomId']]['user'] AS $sendToUserId => $permissionLevel) {
+    if ($roomData['options'] & 16) {
+      foreach ($permissionsCache['byRoomId'][$roomData['roomId']]['user'] AS $sendToUserId => $permissionLevel) {
         if ($sendToUserId == $user['userId']) {
           continue;
         }
