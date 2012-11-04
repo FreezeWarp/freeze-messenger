@@ -44,7 +44,7 @@ $request = fim_sanitizeGPC('p', array(
 
   'flag' => array(
     'valid' => array(
-      'image', 'video', 'url', 'email', 'html', 'audio', 'text', '',
+      'image', 'video', 'url', 'email', 'html', 'audio', 'text', 'source', '',
     ),
   ),
 
@@ -122,6 +122,15 @@ if ($continue) {
   elseif (!fim_hasPermission($room, $user, 'post', true)) { // Not allowed to post.
     $errStr = 'noPerm';
     $errDesc = 'You are not allowed to post in this room.';
+  }
+  // TODO: MB Support
+  elseif (in_array($request['flag'], array('image', 'video', 'url', 'html', 'audio')) && !filter_var($request['message'], FILTER_VALIDATE_URL, FILTER_FLAG_SCHEME_REQUIRED)) { // If the message is suppoed to be a URI, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
+    $errStr = 'badUrl';
+    $errDesc = 'The URL specified is not valid.';
+  }
+  elseif ($request['flag'] === 'email') && !filter_var($request['message'], FILTER_VALIDATE_EMAIL)) { // If the message is suppoed to be an email, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
+    $errStr = 'badEmail';
+    $errDesc = 'The email specified is not valid.';
   }
   elseif ($blockedWordSeverity == 'block') {
     $errStr = 'blockCensor';
