@@ -1,5 +1,5 @@
 <?php
-/* FreezeMessenger Copyright © 2011 Joseph Todd Parsons
+/* FreezeMessenger Copyright © 2012 Joseph Todd Parsons
 
  * This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <rehtaew@gmail.com>
- * @copyright Joseph T. Parsons 2011
+ * @copyright Joseph T. Parsons 2012
  *
  * @param int roomId - The room ID.
  * @param string message - The message text, properly URLencoded.

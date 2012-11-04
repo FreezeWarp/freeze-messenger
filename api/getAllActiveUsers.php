@@ -1,5 +1,5 @@
 <?php
-/* FreezeMessenger Copyright © 2011 Joseph Todd Parsons
+/* FreezeMessenger Copyright © 2012 Joseph Todd Parsons
 
  * This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <rehtaew@gmail.com>
- * @copyright Joseph T. Parsons 2011
+ * @copyright Joseph T. Parsons 2012
  *
  * @param int [time = time()] - Time in which to determine user activity. Default is the current time.
  * @param int [onlineThreshold = 15] - The period of time after which a user is no longer “active”. Default is 15, which may be overriden in the product configuration.
