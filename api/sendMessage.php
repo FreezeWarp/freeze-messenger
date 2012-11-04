@@ -128,7 +128,7 @@ if ($continue) {
     $errStr = 'badUrl';
     $errDesc = 'The URL specified is not valid.';
   }
-  elseif ($request['flag'] === 'email') && !filter_var($request['message'], FILTER_VALIDATE_EMAIL)) { // If the message is suppoed to be an email, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
+  elseif (($request['flag'] === 'email') && !filter_var($request['message'], FILTER_VALIDATE_EMAIL)) { // If the message is suppoed to be an email, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
     $errStr = 'badEmail';
     $errDesc = 'The email specified is not valid.';
   }
