@@ -193,81 +193,6 @@ if ($request['defaultRoomId'] > 0) {
 }
 
 
-/* Room Lists (e.g. favRooms) */
-if (isset($request['roomLists'])) { // e.g. favRooms=1,2,3;
-  $lists = explode(';', $request['roomLists']);
-
-  foreach ($lists AS $list) {
-    list($listName, $roomIds) = explode('=', $list);
-    $roomIds = fim_arrayValidate(explode(',', $listIds), 'int');
-
-    $queryParts['listSelect'] = array(
-      'columns' => array(
-        "{$sqlPrefix}roomListNames" => 'listId, listName',
-      ),
-      'conditions' => array(
-        'both' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column', 'value' => 'listName',
-            ),
-            'right' => array(
-              'type' => 'string', 'value' => $listName,
-            ),
-          ),
-        ),
-      )
-    );
-
-    $listData = $database->select(
-      $queryParts['listSelect']['columns'],
-      $queryParts['listSelect']['conditions']);
-    $listData = $rooms->getAsArray('listId');
-
-
-    $queryParts['roomSelect'] = array(
-      'columns' => array(
-        "{$sqlPrefix}rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, parentalFlags, parentalAge, options, lastMessageId, lastMessageTime, messageCount',
-      ),
-      'conditions' => array(
-        'both' => array(
-          array(
-            'type' => 'in',
-            'left' => array(
-              'type' => 'column', 'value' => 'roomId',
-            ),
-            'right' => array(
-              'type' => 'array', 'value' => $roomIds,
-            ),
-          ),
-        ),
-      )
-    );
-
-    $roomData = $database->select(
-      $queryParts['roomSelect']['columns'],
-      $queryParts['roomSelect']['conditions']);
-    $roomData = $rooms->getAsArray('roomId');
-
-    foreach ($roomIds AS $roomId) {
-      $database->delete("{$sqlPrefix}roomLists", array(
-        'userId' => $user['userId'],
-        'listId' => $listData[$listName]['listId'],
-      ));
-
-      if (fim_hasPermission($roomData[$roomId], $user, 'view')) {
-        $this->insert("{$sqlPrefix}roomLists", array(
-          'userId' => $user['userId'],
-          'listId' => $listData[$listName]['listId'],
-          'roomId' => $roomId,
-        ));
-      }
-    }
-  }
-}
-
-
 /* Watch Rooms (used for notifications of new messages, which are placed in unreadMessages) */
 if (isset($request['watchRooms'])) {
   $database->delete("{$sqlPrefix}watchRooms", array(
@@ -308,29 +233,6 @@ if (isset($request['watchRooms'])) {
       }
     }
   }
-}
-
-
-/* Ignored Users (essentially, users that are not allowed to contact via private/otr messages) */
-if (isset($request['ignoreList'])) {
-  $database->delete("{$sqlPrefix}ignoredUsers", array(
-    'userId' => $user['userId'],
-  ));
-
-  foreach ($request['ignoreList'] AS $key => $ignoredUserId) {
-    if ($slaveDatabase->getUser($ignoredUserId)) {
-      unset($request['ignoreList'][$key]);
-    }
-    else {
-      $this->insert("{$sqlPrefix}ignoredUser", array(
-        'userId' => $user['userId'],
-        'ignoredUserId' => $ignoredUserId,
-      ));
-    }
-  }
-
-  $xmlData['editUserOptions']['response']['ignoreList']['status'] = true;
-  $xmlData['editUserOptions']['response']['ignoreList']['newValue'] = $request['ignoreList'];
 }
 
 

@@ -15,7 +15,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 /**
- * Edit's the Logged-In User's Options
+ * Edit's a User's Ignore List
  *
  * @package fim3
  * @version 3.0
@@ -27,7 +27,6 @@
 $apiRequest = true;
 
 require('../global.php');
-
 
 
 /* Get Request Data */
@@ -48,18 +47,43 @@ $request = fim_sanitizeGPC('p', array(
 ));
 
 
+/* Data Predefine */
+$xmlData = array(
+  'editIgnoreList' => array(
+    'activeUser' => array(
+      'userId' => (int) $user['userId'],
+      'userName' => ($user['userName']),
+    ),
+    'errStr' => ($errStr),
+    'errDesc' => ($errDesc),
+    'response' => array(),
+  ),
+);
+
+
+/* Plugin Hook Start */
+($hook = hook('editIgnoreList_start') ? eval($hook) : '');
+
+
 switch ($request['method']) {
   case 'add':
   foreach ($request['ignoredUserId'] AS $ignoredUserId) {
-    $database->delete("{$sqlPrefix}ignoredUsers", array(
-      'userId' => $user['userId'],
-      'ignoredUserId' => $ignoredUserId,
-    ));
+    if ($slaveDatabase->getUser($ignoredUserId)) {
+      $database->delete("{$sqlPrefix}ignoredUsers", array(
+        'userId' => $user['userId'],
+        'ignoredUserId' => $ignoredUserId,
+      ));
 
-    $database->insert("{$sqlPrefix}ignoredUsers", array(
-      'userId' => $user['userId'],
-      'ignoredUserId' => $ignoredUserId,
-    ));
+      $database->insert("{$sqlPrefix}ignoredUsers", array(
+        'userId' => $user['userId'],
+        'ignoredUserId' => $ignoredUserId,
+      ));
+    }
+    else {
+      if ($slaveDatabase->getUser($ignoredUserId)) {
+        unset($request['ignoreList'][$key]);
+      }
+    }
   }
   break;
 
@@ -78,13 +102,22 @@ switch ($request['method']) {
   ));
 
   foreach ($request['ignoredUserId'] AS $ignoredUserId) {
-    $database->insert("{$sqlPrefix}ignoredUsers", array(
-      'userId' => $user['userId'],
-      'ignoredUserId' => $ignoredUserId,
-    ));
+    if ($slaveDatabase->getUser($ignoredUserId)) {
+      $database->insert("{$sqlPrefix}ignoredUsers", array(
+        'userId' => $user['userId'],
+        'ignoredUserId' => $ignoredUserId,
+      ));
+    }
+    else {
+      if ($slaveDatabase->getUser($ignoredUserId)) {
+        unset($request['ignoreList'][$key]);
+      }
+    }
   }
   break;
 }
 
 
+/* Plugin Hook Start */
+($hook = hook('editIgnoreList_end') ? eval($hook) : '');
 ?>
