@@ -45,7 +45,9 @@ $request = fim_sanitizeGPC('p', array(
     ),
   ),
 
-  'method' => array(
+  'roomListName' => array(),
+
+  'action' => array(
     'context' => array(
       'allowedValues' => array('add', 'remove', 'replace'),
     ),
@@ -71,98 +73,54 @@ $xmlData = array(
 ($hook = hook('editIgnoreList_start') ? eval($hook) : '');
 
 
-switch ($request['method']) {
+if (!$request['roomListId']) { // Not gonna lie, only doing this because I don't want to implement the feature myself in the frontends. (When I do implement it, though, I won't have to change the DB).
+  $request['roomListId'] = $roomListNamesCache['byListName'][$request['roomListName']]['listId'];
+}
+
+
+switch ($request['action']) {
   case 'add':
-  foreach ($request['ignoredUserId'] AS $ignoredUserId) {
-    if ($slaveDatabase->getUser($ignoredUserId)) {
-      $database->delete("{$sqlPrefix}ignoredUsers", array(
+  foreach ($request['roomIds'] AS $roomId) {
+    if ($roomData = $slaveDatabase->getRoom($roomId)) {
+      $database->delete("{$sqlPrefix}roomLists", array(
         'userId' => $user['userId'],
-        'ignoredUserId' => $ignoredUserId,
+        'roomId' => $roomId,
+        'listId' => $request['roomListId'],
       ));
 
-      $database->insert("{$sqlPrefix}ignoredUsers", array(
-        'userId' => $user['userId'],
-        'ignoredUserId' => $ignoredUserId,
-      ));
+      if (fim_hasPermission($roomData, $user, 'view')) {
+        $database->insert("{$sqlPrefix}roomLists", array(
+          'userId' => $user['userId'],
+          'listId' => $request['roomListId'],
+          'roomId' => $roomId,
+        ));
+      }
     }
   }
   break;
 
   case 'remove':
-  foreach ($request['ignoredUserId'] AS $ignoredUserId) {
-    $database->delete("{$sqlPrefix}ignoredUsers", array(
+  foreach ($request['roomIds'] AS $roomId) {
+    $database->delete("{$sqlPrefix}roomLists", array(
       'userId' => $user['userId'],
-      'ignoredUserId' => $ignoredUserId,
+      'roomId' => $roomId,
+      'listId' => $request['roomListId'],
     ));
   }
   break;
 
   case 'replace':
-  $lists = explode(';', $request['roomLists']);
+  $database->delete("{$sqlPrefix}roomLists", array(
+    'userId' => $user['userId'],
+    'listId' => $request['roomListId'],
+  ));
 
-  foreach ($lists AS $list) {
-    list($listName, $roomIds) = explode('=', $list);
-    $roomIds = fim_arrayValidate(explode(',', $listIds), 'int');
-
-    $queryParts['listSelect'] = array(
-      'columns' => array(
-        "{$sqlPrefix}roomListNames" => 'listId, listName',
-      ),
-      'conditions' => array(
-        'both' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column', 'value' => 'listName',
-            ),
-            'right' => array(
-              'type' => 'string', 'value' => $listName,
-            ),
-          ),
-        ),
-      )
-    );
-
-    $listData = $database->select(
-      $queryParts['listSelect']['columns'],
-      $queryParts['listSelect']['conditions']);
-    $listData = $rooms->getAsArray('listId');
-
-
-    $queryParts['roomSelect'] = array(
-      'columns' => array(
-        "{$sqlPrefix}rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, parentalFlags, parentalAge, options, lastMessageId, lastMessageTime, messageCount',
-      ),
-      'conditions' => array(
-        'both' => array(
-          array(
-            'type' => 'in',
-            'left' => array(
-              'type' => 'column', 'value' => 'roomId',
-            ),
-            'right' => array(
-              'type' => 'array', 'value' => $roomIds,
-            ),
-          ),
-        ),
-      )
-    );
-
-    $roomData = $database->select(
-      $queryParts['roomSelect']['columns'],
-      $queryParts['roomSelect']['conditions']);
-    $roomData = $rooms->getAsArray('roomId');
-
-    foreach ($roomIds AS $roomId) {
-      $database->delete("{$sqlPrefix}roomLists", array(
-        'userId' => $user['userId'],
-        'listId' => $listData[$listName]['listId'],
-      ));
-
-      if (fim_hasPermission($roomData[$roomId], $user, 'view')) {
-        $this->insert("{$sqlPrefix}roomLists", array(
+  foreach ($request['roomIds'] AS $roomId) {
+    if ($roomData = $slaveDatabase->getRoom($roomId)) {
+      if (fim_hasPermission($roomData, $user, 'view')) {
+        $database->insert("{$sqlPrefix}roomLists", array(
           'userId' => $user['userId'],
-          'listId' => $listData[$listName]['listId'],
+          'listId' => $request['roomListId'],
           'roomId' => $roomId,
         ));
       }

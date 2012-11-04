@@ -386,8 +386,7 @@
       <column name="roomId" type="int" maxlen="6" comment="The room ID." />
       <column name="listId" type="int" maxlen="6" comment="The list ID." />
 
-      <key name="userId" type="primary" />
-      <key name="listId" type="index" />
+      <key name="userId" type="index" />
     </table>
 
 
@@ -395,7 +394,7 @@
       <column name="listId" type="int" maxlen="8" comment="The user ID." />
       <column name="listName" type="string" maxlen="10" comment="List name." />
 
-      <key name="listName" type="primary" />
+      <key name="listId" type="primary" />
     </table>
 
 
@@ -446,6 +445,7 @@
       <column name="phraseId" type="int" maxlen="15" comment="The ID of the phrase found in the message." />
 
       <key name="messageId,phraseId" type="primary" />
+      <key name="phraseId" type="index" />
     </table>
 
 

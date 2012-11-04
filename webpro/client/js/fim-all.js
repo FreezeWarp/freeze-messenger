@@ -1685,7 +1685,7 @@ var standard = {
   },
 
   favRoom : function(roomIdLocal) {
-    $.post(directory + 'api/moderate.php', 'action=favRoom&roomId=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
+    $.post(directory + 'api/editRoomLists.php', 'action=add&roomListName=favRooms&roomIds=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
       return false;
     });
 
@@ -1693,7 +1693,7 @@ var standard = {
   },
 
   unfavRoom : function(roomIdLocal) {
-    $.post(directory + 'api/moderate.php', 'action=unfavRoom&roomId=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
+    $.post(directory + 'api/editRoomLists.php', 'action=remove&roomListName=favRooms&roomIds=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
       return false;
     });
 

@@ -39,7 +39,7 @@ $request = fim_sanitizeGPC('p', array(
     ),
   ),
 
-  'method' => array(
+  'action' => array(
     'context' => array(
       'allowedValues' => array('add', 'remove', 'replace'),
     ),
@@ -65,7 +65,7 @@ $xmlData = array(
 ($hook = hook('editIgnoreList_start') ? eval($hook) : '');
 
 
-switch ($request['method']) {
+switch ($request['action']) {
   case 'add':
   foreach ($request['ignoredUserId'] AS $ignoredUserId) {
     if ($slaveDatabase->getUser($ignoredUserId)) {

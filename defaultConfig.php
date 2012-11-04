@@ -6,6 +6,9 @@
  * Finally, every single $config variable that is at any time used is in this file, in case you need a referrence.
 */
 
+/* DO NOT EDIT
+ * (Unless you really really really want to. In which case, be prepared to have to reinstall stuff.) */
+
 $defaultConfig = array(
   'roomLengthMinimum' => 5,
   'roomLengthMaximum' => 20,
@@ -32,9 +35,10 @@ $defaultConfig = array(
   'templatesCacheRefresh' => 600,
   'hooksCacheRefresh' => 600,
   'configCacheRefresh' => 600,
-  'censorListsCache' => 600,
-  'censorWordsCache' => 600,
-  'watchRoomsCache' => 600,
+  'censorListsCacheRefresh' => 600,
+  'censorWordsCacheRefresh' => 600,
+  'watchRoomsCacheRefresh' => 600,
+  'roomListNamesCacheRefresh' => 3600, // This isn't used much (and is mostly a placeholder), which is why this value is so high.
 
   'longPolling' => false,
   'longPollingWait' => 2,

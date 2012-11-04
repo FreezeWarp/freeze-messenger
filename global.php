@@ -263,10 +263,7 @@ if (isset($reqHooks)) {
 
       if (is_array($hooks2)) {
         if (count($hooks2) > 0) {
-          foreach ($hooks2 AS $hook) {
-            $hooks[$hook['hookName']] = $hook['code'];
-          }
-
+          foreach ($hooks2 AS $hook) $hooks[$hook['hookName']] = $hook['code'];
           unset($hook);
         }
       }
@@ -451,6 +448,32 @@ if ($censorWordsCache === null || $censorWordsCache === false) {
   }
 
   $generalCache->set('fim_censorWordsCache', $censorWordsCache, $config['censorWordsCacheRefresh']);
+}
+
+
+
+////* Room List Names Cache *////
+////* Caches Entire Table as roomListNames[[listName, listId]] = [listId, listName] *////
+////* (indexes both listName and listId under roomListNames['byListName'][listName] and roomListNames['byListId'][listId]) *////
+
+$roomListNamesCache = $generalCache->get('fim_roomListNamesCache');
+
+if ($roomListNamesCache === null || $roomListNamesCache === false) {
+  $roomListNamesCache = array('byListName' => array(), 'byListId' => array());
+
+  $queryParts['roomListNamesCacheSelect']['columns'] = array(
+    "{$sqlPrefix}roomListNames" => 'listId, listName',
+  );
+
+  $roomListNamesCachePre = $database->select($queryParts['roomListNamesCacheSelect']['columns']);
+  $roomListNamesCachePre = $roomListNamesCachePre->getAsArray(true);
+
+  foreach ($roomListNamesCachePre AS $cachePerm) {
+    $roomListNamesCache['byListId'][$cachePerm['listId']] = $cachePerm;
+    $roomListNamesCache['byListName'][$cachePerm['listName']] = $cachePerm;
+  }
+
+  $generalCache->set('fim_roomListNamesCache', $roomListNamesCache, $config['roomListNamesCacheRefresh']);
 }
 
 

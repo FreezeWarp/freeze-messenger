@@ -28,6 +28,14 @@
 
 
 
+    <!-- Table roomListNames -->
+    <table name="roomListNames">
+      <column name="listId" value="1" />
+      <column name="listName" value="favRooms" />
+    </table>
+
+
+
     <!-- Table uploadTypes -->
     <table name="uploadTypes">
       <column name="extension" value="png" />
