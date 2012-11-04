@@ -95,6 +95,10 @@ switch ($request['action']) {
           'roomId' => $roomId,
         ));
       }
+      else {
+        $errStr = 'noPerm';
+        $errDesc = 'You do not have permission to access this room.';
+      }
     }
   }
   break;
@@ -124,12 +128,22 @@ switch ($request['action']) {
           'roomId' => $roomId,
         ));
       }
+      else {
+        $errStr = 'noPerm';
+        $errDesc = 'You do not have permission to access this room.';
+      }
     }
   }
   break;
 }
 
 
+
 /* Plugin Hook Start */
 ($hook = hook('editIgnoreList_end') ? eval($hook) : '');
+
+
+
+/* Output Data */
+echo fim_outputApi($xmlData);
 ?>
