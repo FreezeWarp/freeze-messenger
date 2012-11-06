@@ -20,12 +20,11 @@ $interfaceName = 'webpro';
 
 
 
-require_once('../global.php');
+//require_once('../global.php');
 
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
 ?>
-
 <!DOCTYPE HTML>
 <!-- Original Source Code Copyright © 2011 Joseph T. Parsons. -->
 
