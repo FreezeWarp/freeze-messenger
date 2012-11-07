@@ -11,6 +11,27 @@ else if (typeof Math === 'undefined') { window.location.href = 'browser.php'; th
 else if (false === ('encodeURIComponent' in window || 'escape' in window)) { window.location.href = 'browser.php'; throw new Error(window.phrases.errorBrowserEscape); }
 
 
+/* Prototyping
+ * Only for Compatibility */
+if (!Array.prototype.indexOf) { // Courtesy of Mozilla
+  Array.prototype.indexOf = function(elt /*, from*/) {
+    var len = this.length >>> 0;
+
+    var from = Number(arguments[1]) || 0;
+    from = (from < 0)
+         ? Math.ceil(from)
+         : Math.floor(from);
+    if (from < 0)
+      from += len;
+
+    for (; from < len; from++) {
+      if (from in this && this[from] === elt) return from;
+    }
+    return -1;
+  };
+}
+
+
 /* Common Variables */
 
 var userId, // The user ID who is logged in.
@@ -50,7 +71,7 @@ var roomRef = {}, roomIdRef = {}, modRooms = {}, // Just a whole bunch of object
   roomList = [], userList = [], groupList = [], // Arrays that serve different purposes, notably looking up IDs from names.
   messageIndex = [],
 
-  roomUlFavHtml = '', roomUlMyHtml = '', roomUlPrivHtml = '', // A bunch of strings displayed at different points.
+  roomUlFavHtml = '', roomUlMyHtml = '', // A bunch of strings displayed at different points.
   roomUlHtml = '', ulText = '', roomTableHtml = '',
 
   active = {}; // This is used as a placeholder for JSON objects where code cleanity is nice.
@@ -278,6 +299,20 @@ function messageFormat(json, format) {
   }
 
   return data;
+}
+
+function disableSender() {
+  $('#messageInput').attr('disabled','disabled'); // Disable input boxes.
+  $('#icon_url').button({ disabled : true }); // "
+  $('#icon_submit').button({ disabled : true }); // "
+  $('#icon_reset').button({ disabled : true }); // "
+}
+
+function enableSender() {
+  $('#messageInput').removeAttr('disabled'); // Make sure the input is not disabled.
+  $('#icon_url').button({ disabled : false }); // "
+  $('#icon_submit').button({ disabled : false }); // "
+  $('#icon_reset').button({ disabled : false }); // "
 }
 
 function fileFormat(container, file) {
@@ -689,7 +724,6 @@ function populate(options) {
         roomRef = {}; // Object
         roomTableHtml = '';
         roomUlHtml = '';
-        roomUlPrivHtml = '';
         roomUlMyHtml = '';
         roomUlFavHtml = '';
 
@@ -699,18 +733,16 @@ function populate(options) {
           var roomName = active[i].roomName,
             roomId = active[i].roomId,
             roomTopic = active[i].roomTopic,
-            isFav = active[i].favorite,
             isAdmin = active[i].permissions.canAdmin,
             isModerator = active[i].permissions.canModerate,
             messageCount = active[i].messageCount,
             isOwner = (active[i].owner === userId ? true : false),
             ulText = '<li><a href="#room=' + roomId + '" class="room" data-roomId="' + roomId + '">' + roomName + '</a></li>';
 
-          if (isFav) { roomUlFavHtml += ulText; }
-          else if (isOwner) { roomUlMyHtml += ulText; }
+          if (isOwner) { roomUlMyHtml += ulText; }
           else { roomUlHtml += ulText; }
 
-          roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isAdmin ? '<button data-roomId="' + roomId + '" class="editRoomMulti standard"></button><button data-roomId="' + roomId + '" class="deleteRoomMulti standard"></button>' : '') + '<button data-roomId="' + roomId + '" class="archiveMulti standard"></button><input type="checkbox" ' + (isFav ? 'checked="checked" ' : '') + ' data-roomId="' + roomId + '" class="favRoomMulti" id="favRoom' + roomId + '" /><label for="favRoom' + roomId + '" class="standard"></label></td></tr>';
+          roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isAdmin ? '<button data-roomId="' + roomId + '" class="editRoomMulti standard"></button><button data-roomId="' + roomId + '" class="deleteRoomMulti standard"></button>' : '') + '<button data-roomId="' + roomId + '" class="archiveMulti standard"></button><input type="checkbox" data-roomId="' + roomId + '" class="favRoomMulti" id="favRoom' + roomId + '" /><label for="favRoom' + roomId + '" class="standard"></label></td></tr>';
 
           roomRef[roomName] = roomId;
           roomIdRef[roomId] = {
@@ -728,10 +760,7 @@ function populate(options) {
         if (!roomList.length) {
           dia.error('You have not be granted access to any rooms. Sorry!');
 
-          $('#messageInput').attr('disabled', 'disabled');
-          $('#icon_url').button({ disabled : true });
-          $('#icon_submit').button({ disabled : true });
-          $('#icon_reset').button({ disabled : true });
+          disableSender();
 
           $(document).ready(function() {
             windowDraw();
@@ -739,7 +768,7 @@ function populate(options) {
           });
         }
         else {
-          $('#roomListLong > li > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li><li>My Rooms<ul>' + roomUlMyHtml + '</ul></li><li>General<ul>' + roomUlHtml + '</ul></li><li>Private<ul>' + roomUlPrivHtml + '</ul></li>');
+          $('#roomListLong > li > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li><li>My Rooms<ul>' + roomUlMyHtml + '</ul></li><li>General<ul>' + roomUlHtml + '</ul></li>');
           $('#roomListShort > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li>');
         }
 
@@ -804,11 +833,11 @@ function populate(options) {
       }
     })
   ).always(function() {
-      if (typeof options.callback === 'function') {
-        options.callback();
-      }
+    if (typeof options.callback === 'function') {
+      options.callback();
+    }
 
-      return true;
+    return true;
   });
 
   return false;
@@ -1001,8 +1030,8 @@ function windowDraw() {
 
 
   // Disable the chatbox if the user is not allowed to post.
-  if (roomId && (userId | anonId)) { $('#messageInput').removeAttr("disabled"); } // The user is able to post.
-  else { $('#messageInput').attr("disabled","disabled"); } // The user is _not_ able to post.
+  if (roomId && (userId | anonId)) { /* TODO */ } // The user is able to post.
+  else { disableSender(); } // The user is _not_ able to post.
 
 
   /*** Call Resize ***/
@@ -1055,8 +1084,8 @@ function windowDynaLinks() {
   if (noModCounter === 3 && noAdminCounter === 8) { $('#moderateCat').hide(); }
 
   // Show Login or Logout Only
-  if (userId && !anonId) { $('li > #login').parent().hide(); }
-  else { $('li > #logout').parent().hide(); }
+//  if (userId && !anonId) { $('li > #logout').parent().show(); $('li > #login').parent().hide(); }
+//  else { $('li > #login').parent().hide(); $('li > #logout').parent().hide(); }
 }
 
 
@@ -1257,7 +1286,7 @@ $(document).ready(function() {
   $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/' + theme + '/jquery-ui-1.8.16.custom.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/' + theme + '/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
 
 
-  if (fontsize) { $('body').css('font-size', fontsize + 'em'); }
+  if (fontsize) $('body').css('font-size', fontsize + 'em');
 
 
   if ($.cookie('webpro_userId') > 0) {

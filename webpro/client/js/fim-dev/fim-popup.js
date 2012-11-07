@@ -77,13 +77,17 @@ popup = {
         $('button.editRoomMulti, input[type=checkbox].favRoomMulti, button.archiveMulti, button.deleteRoomMulti').unbind('click'); // Prevent the below from being binded multiple times.
 
 
-        $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}}).bind('click', function() {
-          popup.editRoom($(this).attr('data-roomId'));
+        $('input[type=checkbox].favRoomMulti').each(function() {
+          if (roomLists.favRooms.indexOf($(this).attr('data-roomid')) !== -1) $(this).attr('checked', 'checked');
+
+          $(this).button({icons : {primary : 'ui-icon-star'}, text : false}).bind('change', function() {
+            if ($(this).is(':checked')) { standard.favRoom($(this).attr('data-roomId')); }
+            else { standard.unfavRoom($(this).attr('data-roomId')); }
+          });
         });
 
-        $('input[type=checkbox].favRoomMulti').button({icons : {primary : 'ui-icon-star'}, text : false}).bind('change', function() {
-          if ($(this).is(':checked')) { standard.favRoom($(this).attr('data-roomId')); }
-          else { standard.unfavRoom($(this).attr('data-roomId')); }
+        $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}}).bind('click', function() {
+          popup.editRoom($(this).attr('data-roomId'));
         });
 
         $('button.archiveMulti').button({icons : {primary : 'ui-icon-note'}}).bind('click', function() {

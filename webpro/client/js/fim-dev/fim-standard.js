@@ -6,9 +6,9 @@ var standard = {
       data = '',
       where = '';
 
-    if (options.idMax) { where = 'messageIdEnd=' + options.idMax; }
-    else if (options.idMin) { where = 'messageIdStart=' + options.idMin; }
-    else { where = 'messageIdStart=1'; }
+    if (options.idMax) where = 'messageIdEnd=' + options.idMax;
+    else if (options.idMin) where = 'messageIdStart=' + options.idMin;
+    else where = 'messageIdStart=1';
 
     $('#searchText, #resultLimit, #searchUser').unbind('change');
     $('#searchText, #resultLimit, #searchUser').bind('change', function() {
@@ -184,9 +184,7 @@ var standard = {
 
     console.log('Encrypted Password: ' + options.password);
 
-    if (options.start) {
-      options.start();
-    }
+    if (options.start) options.start();
 
     if (options.userName && options.password) {
       console.log('Login Triggered; Using a Password of "' + options.password + '" and a Username of "' + options.userName + '"');
@@ -287,7 +285,7 @@ var standard = {
         }
 
 
-        if (!anonId && !userId) $('#messageInput').attr('disabled', 'disabled'); // The user is not able to post.
+        if (!anonId && !userId) disableSender(); // The user is not able to post.
 
         if (options.finish) options.finish();
 
@@ -609,10 +607,7 @@ var standard = {
           $('#topic').html(''); // Clear the topic.
           $('#messageList').html(''); // Clear the messsage list.
 
-          $('#messageInput').removeAttr('disabled'); // Make sure the input is not disabled.
-          $('#icon_url').button({ disabled : false }); // "
-          $('#icon_submit').button({ disabled : false }); // "
-          $('#icon_reset').button({ disabled : false }); // "
+          enableSender();
 
           /*** Get Messages ***/
           $(document).ready(function() {
@@ -656,16 +651,10 @@ var standard = {
             else if (!permissions.canPost) { // If we can view, but not post
               dia.error('You are not allowed to post in this room. You will be able to view it, though.');
 
-              $('#messageInput').attr('disabled','disabled'); // Disable input boxes.
-              $('#icon_url').button({ disabled : true }); // "
-              $('#icon_submit').button({ disabled : true }); // "
-              $('#icon_reset').button({ disabled : true }); // "
+              disableSender();
             }
             else { // If we can both view and post.
-              $('#messageInput').removeAttr('disabled'); // Make sure the input is not disabled.
-              $('#icon_url').button({ disabled : false }); // "
-              $('#icon_submit').button({ disabled : false }); // "
-              $('#icon_reset').button({ disabled : false }); // "
+              enableSender();
             }
 
             if (permissions.canView) { // If we can view the room...
