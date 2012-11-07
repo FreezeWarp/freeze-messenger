@@ -736,18 +736,20 @@ function populate(options) {
             isAdmin = active[i].permissions.canAdmin,
             isModerator = active[i].permissions.canModerate,
             messageCount = active[i].messageCount,
-            isOwner = (active[i].owner === userId ? true : false),
-            ulText = '<li><a href="#room=' + roomId + '" class="room" data-roomId="' + roomId + '">' + roomName + '</a></li>';
+            isOwner = (active[i].owner === userId ? true : false);
 
           if (isOwner) { roomUlMyHtml += ulText; }
           else { roomUlHtml += ulText; }
 
-          roomTableHtml += '<tr id="room' + roomId + '"><td><a href="#room=' + roomId + '">' + roomName + '</a></td><td>' + roomTopic + '</td><td>' + (isAdmin ? '<button data-roomId="' + roomId + '" class="editRoomMulti standard"></button><button data-roomId="' + roomId + '" class="deleteRoomMulti standard"></button>' : '') + '<button data-roomId="' + roomId + '" class="archiveMulti standard"></button><input type="checkbox" data-roomId="' + roomId + '" class="favRoomMulti" id="favRoom' + roomId + '" /><label for="favRoom' + roomId + '" class="standard"></label></td></tr>';
-
           roomRef[roomName] = roomId;
           roomIdRef[roomId] = {
+            'roomId' : roomId,
             'roomName' : roomName,
+            'roomTopic' : roomTopic,
             'messageCount' : messageCount,
+            'isAdmin' : isAdmin,
+            'isModerator' : isModerator,
+            'isOwner' : isOwner,
           }
           roomList.push(roomName);
 
@@ -767,10 +769,6 @@ function populate(options) {
             windowDynaLinks();
           });
         }
-        else {
-          $('#roomListLong > li > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li><li>My Rooms<ul>' + roomUlMyHtml + '</ul></li><li>General<ul>' + roomUlHtml + '</ul></li>');
-          $('#roomListShort > ul').html('<li>Favourites<ul>' + roomUlFavHtml + '</ul></li>');
-        }
 
         return false;
       },
@@ -784,7 +782,7 @@ function populate(options) {
 
 
     $.ajax({
-      url: directory + 'api/getRoomLists.php?roomListName=favRooms2&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+      url: directory + 'api/getRoomLists.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
       timeout: 5000,
       type: 'GET',
       cache: false,
@@ -1084,8 +1082,27 @@ function windowDynaLinks() {
   if (noModCounter === 3 && noAdminCounter === 8) { $('#moderateCat').hide(); }
 
   // Show Login or Logout Only
-//  if (userId && !anonId) { $('li > #logout').parent().show(); $('li > #login').parent().hide(); }
-//  else { $('li > #login').parent().hide(); $('li > #logout').parent().hide(); }
+  if (userId && !anonId) { $('li > #logout').parent().show(); $('li > #login').parent().hide(); }
+  else { $('li > #login').parent().hide(); $('li > #logout').parent().hide(); }
+
+
+  // Room Lists (this is a bit slow -- we should optimise)
+  $('#roomListLong > li > ul').html('<li>My Rooms<ul id="myRooms1"></ul></li>');
+  $('#roomListShort > li > ul').html('<li>My Rooms<ul id="myRooms2"></ul></li>');
+
+  for (i in roomIdRef) {
+    if (roomIdRef[i].isOwner) {
+      $('#myRooms1, #myRooms2').append('<li>' + roomIdRef[i].roomName + '</li>');
+    }
+  }
+
+  for (i in roomLists) {
+    $('#roomListLong > li > ul').append('<li>' + window.phrases.roomListNames[i] + '<ul id="roomList' + i + '"></ul></li>');
+
+    for (j = 0; j < roomLists[i].length; j++) {
+      $('#roomList' + i).append('<li><a href="#room=' + roomIdRef[roomLists[i][j]].roomId + '" class="room" data-roomId="' + roomIdRef[roomLists[i][j]].roomId + '">' + roomIdRef[roomLists[i][j]].roomName + '</a></li>');
+    }
+  }
 }
 
 

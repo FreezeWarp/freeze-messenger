@@ -326,5 +326,8 @@
   "errorRoomListsNotRetrieved" : "Favourite rooms could not be retrieved. Room lists will be disabled.",
   "errorUserGroupsNotRetrieved" : "The usergroup list could not be retrieved. Certain features will be disabled.",
   "errorFontListNotRetrieved" : "The font list could not be retrieved. Certain features will be disabled.",
-  "errorBanned" : "You have been banned. You will not be able to do anything."
+  "errorBanned" : "You have been banned. You will not be able to do anything.",
+  "roomListNames" : {
+    "favRooms" : "Favourite Rooms"
+  }
 }

@@ -1,3 +1,6 @@
+/* START WebPro
+ * Note that: WebPro is not optimised for large sets of rooms. It can handle around 1,000 "normal" rooms. */
+
 $.when(
   $.ajax({
       url: 'client/data/config.json',

@@ -69,14 +69,18 @@ popup = {
 
   selectRoom : function() {
     dia.full({
-      content : '<table class="center"><thead><tr><th style="width: 20%;">Name</th><th style="width: 60%;">Topic</th><th style="width: 20%;">Actions</th></tr></thead><tbody>' + roomTableHtml + '</tbody></table>',
+      content : '<table class="center"><thead><tr><th style="width: 20%;">Name</th><th style="width: 60%;">Topic</th><th style="width: 20%;">Actions</th></tr></thead><tbody id="roomTableHtml"></tbody></table>',
       title : 'Room List',
       id : 'roomListDialogue',
       width: 1000,
       oF : function() {
+        for (i in roomIdRef) {
+          $('#roomTableHtml').append('<tr id="room' + roomIdRef[i].roomId + '"><td><a href="#room=' + roomIdRef[i].roomId + '">' + roomIdRef[i].roomName + '</a></td><td>' + roomIdRef[i].roomTopic + '</td><td>' + (roomIdRef[i].isAdmin ? '<button data-roomId="' + roomIdRef[i].roomId + '" class="editRoomMulti standard"></button><button data-roomId="' + roomIdRef[i].roomId + '" class="deleteRoomMulti standard"></button>' : '') + '<button data-roomId="' + roomIdRef[i].roomId + '" class="archiveMulti standard"></button><input type="checkbox" data-roomId="' + roomIdRef[i].roomId + '" class="favRoomMulti" id="favRoom' + roomIdRef[i].roomId + '" /><label for="favRoom' + roomIdRef[i].roomId + '" class="standard"></label></td></tr>');
+        }
+
         $('button.editRoomMulti, input[type=checkbox].favRoomMulti, button.archiveMulti, button.deleteRoomMulti').unbind('click'); // Prevent the below from being binded multiple times.
 
-
+        /* Favorites */
         $('input[type=checkbox].favRoomMulti').each(function() {
           if (roomLists.favRooms.indexOf($(this).attr('data-roomid')) !== -1) $(this).attr('checked', 'checked');
 
