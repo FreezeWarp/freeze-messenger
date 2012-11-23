@@ -687,18 +687,19 @@ function populate(options) {
       timeout: 5000,
       cache: false,
       success: function(json) {
-        active = json.getUsers.users;
-
         userList = []; // Array // Clear so we don't get repeat values on regeneration.
         userRef = {}; // Object
 
-        for (i in active) {
-          var userName = active[i].userName,
-            userId = active[i].userId;
-          active[i].parentalFlags = $.map(active[i].parentalFlags, function (value, key) { return value; }); // The map function here will convert the object to an array.
+        for (i in json.getUsers.users) {
+          var userName = json.getUsers.users[i].userName,
+            userId = json.getUsers.users[i].userId;
+
+          if ('parentalFlags' in json.getUsers.users[i]) { // Normally, only for the logged in user.
+            json.getUsers.users[i].parentalFlags = $.map(json.getUsers.users[i].parentalFlags, function (value, key) { return value; }); // The map function here will convert the object to an array.
+          }
 
           userRef[userName] = userId;
-          userData[userId] = active[i];
+          userData[userId] = json.getUsers.users[i];
           userList.push(userName);
         }
 

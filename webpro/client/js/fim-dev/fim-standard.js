@@ -308,7 +308,6 @@ var standard = {
 
         console.log('Login Finished');
 
-
         return false;
       },
       error: function(err,err2,err3) {
