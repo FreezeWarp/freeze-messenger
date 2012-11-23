@@ -212,7 +212,7 @@ if (!($config = $generalCache->get('fim_config')) || $disableConfig) { // Disabl
           switch ($config3['type']) {
             case 'int':    $config[$config3['directive']] = (int) $config3['value']; break;
             case 'string': $config[$config3['directive']] = (string) $config3['value']; break;
-            case 'array':  $config[$config3['directive']] = (array) fim_explodeEscaped(',',$config3['value']); break;
+            case 'array':  $config[$config3['directive']] = (array) fim_explodeEscaped(',', $config3['value']); break;
             case 'bool':
             if (in_array($config3['value'],array('true','1',true,1),true)) $config[$config3['directive']] = true; // We include the non-string counterparts here on the off-chance the database driver supports returning non-strings. The third parameter in the in_array makes it a strict comparison.
             else $config[$config3['directive']] = false;

@@ -248,15 +248,12 @@ class messageParse {
         $puncList[] = addcslashes($punc, '"\'|(){}[]<>.,~-?!@#$%^&*/\\'); // Dunno if this is the best approach.
       }
 
-      $string = preg_replace('/(' . implode('|', $puncList) . ')/is', ' ', $string);
+      $string = preg_replace('/(' . implode('|', $puncList) . ')/is', ' ', $string); // Get rid of punctuation.
     }
 
-    while (strpos($string, '  ') !== false) {
-      $string = str_replace('  ', ' ', $string);
-    }
+    while (strpos($string, '  ') !== false) $string = str_replace('  ', ' ', $string); // Get rid of extra spaces.
 
-    $string = strtolower($string);
-
+    $string = strtolower($string); // Lowercase the string.
 
     $stringPieces = array_unique(explode(' ', $string));
     $stringPiecesAdd = array();

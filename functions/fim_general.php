@@ -1108,14 +1108,16 @@ function fim_hasArray($array) {
 
 /**
  * Implements PHP's explode with support for escaped delimeters. You can not use as a delimiter or escape character 'µ', 'ñ', or 'ø' (which are used in place of '&', '#', ';' to free up those characters).
+ * If the escaepChar occurs twice in a row, it will be understood as having been twice-escaped, and handled accordingly.
  *
  * @param string delimiter
  * @param string string
  * @param string escapeChar - The character that escapes the string.
  * @return string
  */
-function fim_explodeEscaped($delimiter, $string, $escapeChar = '//') {
-  $string = str_replace($escapeChar . $delimiter, urlencode($delimiter), $string);
+function fim_explodeEscaped($delimiter, $string, $escapeChar = '\\') {
+  $string = str_replace($escapeChar . $escapeChar, fim_encodeEntities($escapeChar), $string);
+  $string = str_replace($escapeChar . $delimiter, fim_encodeEntities($delimiter), $string);
   return array_map('fim_decodeEntities', explode($delimiter, $string));
 }
 
@@ -1142,7 +1144,7 @@ function fim_encodeEntities($string, $find = array('&', '#', ';'), $replace = ar
  * @return string
  */
 function fim_decodeEntities($string, $replace = array('µ', 'ñ', 'ó'), $find = array('&', '#', ';')) {
-  return mb_decode_numericentity($string, array(0x0, 0x10ffff, 0, 0xffffff), "UTF-8");
+  return mb_decode_numericentity(str_replace($replace, $find, $string), array(0x0, 0x10ffff, 0, 0xffffff), "UTF-8");
 }
 
 

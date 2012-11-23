@@ -90,7 +90,7 @@ else {
           break;
 
           default:
-          $valueBlock = '<input type="text" name="value" value="' . $config2['value'] . '" />';
+          $valueBlock = '<input type="text" name="value" value="' . str_replace('"', '&quot;', $config2['value']) . '" />';
         }
       }
       else {
