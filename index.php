@@ -35,6 +35,7 @@ else {
 
    if ($interface) {
       header("Location: $interface/");
+      die("Redirecting to <a href=\"$interface\">$interface</a>");
     }
     else {
       die('No web-accessible interface found.');

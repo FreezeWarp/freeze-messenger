@@ -1086,9 +1086,9 @@ function windowDynaLinks() {
   else { $('li > #login').parent().hide(); $('li > #logout').parent().hide(); }
 
 
-  // Room Lists (this is a bit slow -- we should optimise)
-  $('#roomListLong > li > ul').html('<li>My Rooms<ul id="myRooms1"></ul></li>');
-  $('#roomListShort > li > ul').html('<li>My Rooms<ul id="myRooms2"></ul></li>');
+  // Room Lists (this is a bit slow -- we should optimise TODO)
+  $('#roomListLong > ul').html('<li>My Rooms<ul id="myRooms1"></ul></li>');
+  $('#roomListShort > ul').html('<li>My Rooms<ul id="myRooms2"></ul></li>');
 
   for (i in roomIdRef) {
     if (roomIdRef[i].isOwner) {
@@ -1097,7 +1097,7 @@ function windowDynaLinks() {
   }
 
   for (i in roomLists) {
-    $('#roomListLong > li > ul').append('<li>' + window.phrases.roomListNames[i] + '<ul id="roomList' + i + '"></ul></li>');
+    $('#roomListLong > ul').append('<li>' + window.phrases.roomListNames[i] + '<ul id="roomList' + i + '"></ul></li>');
 
     for (j = 0; j < roomLists[i].length; j++) {
       $('#roomList' + i).append('<li><a href="#room=' + roomIdRef[roomLists[i][j]].roomId + '" class="room" data-roomId="' + roomIdRef[roomLists[i][j]].roomId + '">' + roomIdRef[roomLists[i][j]].roomName + '</a></li>');
@@ -1390,7 +1390,7 @@ $(document).ready(function() {
   $('a#createRoom').bind('click', function() { popup.editRoom();}); // Create Room
   $('a.editRoomMulti').bind('click', function() { popup.editRoom($(this).attr('data-roomId')); }); // Edit Room
   $('#icon_help').bind('click', function() { popup.help(); }); // Help
-  $('#roomList').bind('click', function() { popup.selectRoom(); }); // Room List
+  $('#roomList, #roomList2').bind('click', function() { popup.selectRoom(); }); // Room List
   $('#viewStats').bind('click', function() { popup.viewStats(); }); // Room Post Stats
   $('#copyrightLink').bind('click', function() { popup.copyright(); }); // Copyright & Credits
   $('#icon_settings, #changeSettings, a.changeSettingsMulti').bind('click', function() { popup.userSettings(); }); // User Settings
