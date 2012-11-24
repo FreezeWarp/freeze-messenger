@@ -16,7 +16,11 @@ $defaultConfig = array(
   'defaultLanguage' => 'en',
 
   'defaultMessageHardLimit' => 50,
+  'maxMessageHardLimit' => 500,
+
   'defaultMessageLimit' => 10000,
+  'maxMessageLimit' => 10000,
+
   'defaultOnlineThreshold' => 15,
 
   'fullTextArchive' => false,

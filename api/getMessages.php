@@ -25,7 +25,7 @@
 
  * Primary Directives:
  * @param string roomId - The ID of the room to fetch messages from.
- * @param int [messageLimit=1000] - The maximum number of posts to receive, defaulting to the internalimit of (in most cases) 1000. Thishould be high, as all other conditions (roomId, deleted, etc.) are applied after this limit.
+ * @param int [messageLimit=1000] - The maximum number of posts to receive, defaulting to the internal limit of (in most cases) 1000. This should be high, as all other conditions (roomId, deleted, etc.) are applied after this limit.
  * @param int [messageHardLimit=40] - An alternative, generally lower limit applied once all messages are obtained from the server (or via the LIMIT clause of applicable). In other words, this limits the number of results AFTER roomId, etc. restrictions have been applied.
  * @param timestamp [messageDateMin=null] - Thearliest a post could have been made. Use of messageDateMax only makesense with no messageLimit. Do not specify to prevent checking.
  * @param timestamp [messageDateMax=null] - The latest a post could have been made. Use of messageDateMax only makesense with no messageLimit. Do not specify to prevent checking.
@@ -37,10 +37,6 @@
  * @param bool [noping=false] - Disables ping; useful for archive viewing.
  * @param bool [longPolling=false] - Whether or noto enablexperimentalongPolling. It will be replaced with "pollMethod=push|poll|longPoll" in version 4 when all three methods will be supported (though will be backwards compatible).
  * @param string [encode=plaintext] - Thencoding of messages to be used on retrieval. "plaintext" is the only accepted format currently.
-
- * Extra Data:
- * @param bool [activeUsers=false] - Returns a list of activeUsers in the room(s) if specified. This identical to calling the getActiveUserscript, except with less data redundancy.
- * @param int [onlineThreshold=15] - If using the activeUsers functionality, this will alter theffective onlineThreshold to be used.
 
  * Filters:
  * @param bool [showDeleted=false] - Whether or noto show deleted messages. You will need to be a roomoderator. This directive only has an effect on the archive, as the cache does not retain deleted messages.
@@ -56,6 +52,13 @@
  ** Specify a "messageIdEnd" as the last message obtained from the room.
  * similarly, the messageLimit and messageHardLimit directives are applied for the sake of scalibility. messageHardLimit is after results have been retrieved and filtered by, say, the roomId, and messageLimit is a limit on messages retrieved from all rooms, etc.
  * a message cache is maintained, and it is the default means of obtaining messages. Specifying archive will be far slower, but is required for searching, and generally is recommended at other times as well (e.g. getting initial posts).
+ *
+ * -- TODO --
+ * We need to use internal message boundaries via the messageIndex and messageDates table. Using these, we can approximate message dates for individual rooms. Here is how that will work:
+ ** Step 1: Identify Crtiteria. If a criteria is date based (e.g. what was said in this room on this date?), we will rely on messageDates. If it is ID-based, we will rely on messageIndex.
+ ** Step 2: If using date-based criteria, we lookup the approximate post ID that corresponds to the room and date. At this point, we are basically done. Simply set the messageIdStart to the date that occured before and mesageIdEnd to the date that occured after.
+ ** If, however, we are using ID-based criteria, we will instead look into messageIndex. Here, we correlate room and ID, and try to find an approprimate messageIdEnd and messageIdStart.
+ ** Step 3: Use a more narrow range if neccessary. The indexes we used may be too large. In this case, we need to do our best to approximate.
 */
 
 
@@ -100,11 +103,6 @@ $request = fim_sanitizeGPC('g', array(
     'context' => 'bool',
   ),
 
-  'activeUsers' => array(
-    'default' => false,
-    'context' => 'bool',
-  ),
-
   'archive' => array(
     'default' => false,
     'context' => 'bool',
@@ -142,8 +140,15 @@ $request = fim_sanitizeGPC('g', array(
   ),
 
   'messageLimit' => array(
-    'default' => 50,
-    'max' => 500,
+    'default' => $config['defaultMessageLimit'],
+    'max' => $config['maxMessageLimit'],
+    'min' => 1,
+    'context' => 'int',
+  ),
+
+  'messageHardLimit' => array(
+    'default' => $config['defaultMessageHardLimit'],
+    'max' => $config['maxMessageHardLimit'],
     'min' => 1,
     'context' => 'int',
   ),
@@ -186,7 +191,6 @@ $xmlData = array(
     'errStr' => $errStr,
     'errDesc' => $errDesc,
     'messages' => array(),
-    'activeUsers' => array(),
   ),
 );
 
@@ -455,7 +459,7 @@ else {
       ),
     );
   }
-  if (isset($request['messageIdEnd'])) {
+  elseif (isset($request['messageIdEnd'])) {
     $queryParts['messagesSelect']['conditions']['both'][] = array(
       'type' => 'lte',
       'left' => array(
@@ -604,6 +608,11 @@ else {
     /* Process Messages */
     if (is_array($messages)) {
       if (count($messages) > 0) {
+        if (count($messages) > $request['messageHardLimit']) {
+          if (isset($request['messageIdEnd'])) array_splice($messages, 0, -1 * $request['messageHardLimit']);
+          else array_splice($messages, $request['messageHardLimit']);
+        }
+
         foreach ($messages AS $id => $message) {
           $roomData = $database->getRoom($message['roomId']);
 
@@ -650,95 +659,6 @@ else {
 
         }
       }
-    }
-
-
-    /* Process Active Users */
-    if ($request['activeUsers']) {
-      $queryParts['activeUsersSelect']['columns'] = array(
-        "{$sqlPrefix}ping" => 'status, typing, time ptime, roomId proomId, userId puserId',
-        "{$sqlPrefix}rooms" => 'roomId',
-        "{$sqlPrefix}users" => 'userId, userName, userFormatStart, userFormatEnd, userGroup, socialGroups',
-      );
-      $queryParts['activeUsersSelect']['conditions'] = array(
-        'both' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'roomId',
-            ),
-            'right' => array(
-              'type' => 'int',
-              'value' => (int) $room['roomId'],
-            ),
-          ),
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'proomId',
-            ),
-            'right' => array(
-              'type' => 'column',
-              'value' => 'roomId',
-            ),
-          ),
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'puserId',
-            ),
-            'right' => array(
-              'type' => 'column',
-              'value' => 'userId',
-            ),
-          ),
-          array(
-            'type' => 'gte',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'ptime',
-            ),
-            'right' => array(
-              'type' => 'int',
-              'value' => (int) (time() - $request['onlineThreshold']),
-            ),
-          ),
-        ),
-      );
-      $queryParts['activeUsersSelect']['sort'] = array(
-        'userName' => 'asc',
-      );
-
-
-      $activeUsers = $database->select($queryParts['activeUsersSelect']['columns'],
-        $queryParts['activeUsersSelect']['conditions'],
-        $queryParts['activeUsersSelect']['sort']);
-      $activeUsers = $activeUsers->getAsArray(true);
-
-
-      if (is_array($activeUsers)) {
-        if (count($activeUsers) > 0) {
-          foreach ($activeUsers AS $activeUser) {
-            $xmlData['getMessages']['activeUsers']['user ' . $activeUser['userId']] = array(
-              'userId' => (int) $activeUser['userId'],
-              'userName' => ($activeUser['userName']),
-              'userGroup' => (int) $activeUser['userGroup'],
-              'socialGroups' => ($activeUser['socialGroups']),
-              'startTag' => ($activeUser['userFormatStart']),
-              'endTag' => ($activeUser['userFormatEnd']),
-            );
-
-
-            ($hook = hook('getMessages_activeUsers_eachUser') ? eval($hook) : '');
-          }
-        }
-      }
-
-
-      ($hook = hook('getMessages_activeUsers') ? eval($hook) : '');
     }
   }
 }
