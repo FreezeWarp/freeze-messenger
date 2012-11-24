@@ -26,6 +26,7 @@
  * Note that:
  * MySQL is present in all versions since PHP 4
  * JSON is present in all versions of PHP since 5.2 (but is not actually used in FIMv3)
+ ** JSON is used if APC is not available
  * MBString is present in all versions of PHP since 4.3
  * MCrypt is present in all versions since PHP 4
  * PCRE is present in all versions since PHP 4

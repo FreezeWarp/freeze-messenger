@@ -671,7 +671,6 @@ class fimDatabase extends database {
       // Update the messageIndex if appropriate
       $roomDataNew = $this->getRoom($roomData['roomId'], false, false); // Get the new room data.
 
-
       if ($roomDataNew['messageCount'] % $config['messageIndexCounter'] === 0) { // If the current messages in the room is divisible by the messageIndexCounter, insert into the messageIndex cache. Note that we are hoping this is because of the very last query which incremented this value, but it is impossible to know for certain (if we tried to re-order things to get the room data first, we still run this risk, so that doesn't matter; either way accuracy isn't critical).
         $this->insert("{$sqlPrefix}messageIndex", array(
           'roomId' => $roomData['roomId'],
@@ -682,7 +681,7 @@ class fimDatabase extends database {
             'type' => 'equation',
             'value' => '$messageId + 0',
           )
-        )); error_log('333');
+        ));
       }
 
 
@@ -710,6 +709,11 @@ class fimDatabase extends database {
       ));
 
 
+      // Increment the messages counter.
+      $this->incrementCounter('messages');
+
+
+      // Update the messageDates if appropriate
       $lastDayCache = (int) $generalCache->get('fim3_lastDayCache');
 
       $currentTime = time();
@@ -728,10 +732,6 @@ class fimDatabase extends database {
 
         $generalCache->set('fim3_lastDayCache', $lastMidnight); // Update the quick cache.
       }
-
-
-      // Increment the messages counter.
-      $this->incrementCounter('messages');
     }
 
 

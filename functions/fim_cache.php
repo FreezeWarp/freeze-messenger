@@ -18,26 +18,32 @@
 /* Note: "none" is used solely for speed testing. NEVER EVER EVER use it. (at least with FIM) */
 
 class generalCache {
-  public function __construct($method, $servers) {
+  public function __construct($method = '', $servers) {
     global $config;
+
     $this->data = array();
+    $this->method = $method;
 
-    if ($method) {
-      $this->method = $method;
+    // Basically, use APC if we can, unless told not to. If we can't, use disk.
+    if ($method !== 'apc' && $method !== 'disk') {
+      if (extension_loaded('apc')) $this->method = 'apc';
+      else $this->method = 'disk';
     }
-    else {
-      if (extension_loaded('apc')) {
-        $this->method = 'apc';
-      }
+    elseif ($method === 'apc' && !extension_loaded('apc')) $this->method = 'disk';
+
+    if ($this->method === 'disk') {
+      require_once('fileCache.php');
+
+      $this->fileCache = new FileCache(dirname(dirname(__FILE__)) . '/cache/');
     }
 
-    if ($this->method === 'memcache') {
+/*    if ($this->method === 'memcache') {
       $memcache = new Memcache;
 
       foreach ($servers AS $server) {
         $memcache->addServer($server['host'], $server['port'], $server['persistent'], $server['weight'], $server['timeout'], $server['retry_interval']);
       }
-    }
+    }*/
   }
 
   public function get($index) {
@@ -46,12 +52,24 @@ class generalCache {
       return $this->data[$index];
       break;
 
+      case 'disk':
+      $value = $this->fileCache->get($index);
+
+      //if ($error = $this->fileCache->get_error()) throw new Exception('Cache Error: ' . $error);
+      //else return $value;
+      return $value;
+      break;
+
       case 'apc':
       return apc_fetch($index);
       break;
 
       case 'memcache':
 
+      break;
+
+      default:
+      throw new Exception('Unknown cache method.');
       break;
     }
   }
@@ -62,6 +80,12 @@ class generalCache {
       $this->data[$index] = $variable;
       break;
 
+      case 'disk':
+      $this->fileCache->set($index, $variable, $ttl);
+
+//      if ($error = $this->fileCache->get_error()) throw new Exception('Cache Error: ' . $error);
+      break;
+
       case 'apc':
       apc_delete($index);
       apc_store($index, $variable, 0);
@@ -69,6 +93,10 @@ class generalCache {
 
       case 'memcache':
 
+      break;
+
+      default:
+      throw new Exception('Unknown cache method.');
       break;
     }
   }
@@ -79,12 +107,20 @@ class generalCache {
       return isset($this->data[$index]);
       break;
 
+      case 'disk': // No method exists.
+      return false;
+      break;
+
       case 'apc':
       return apc_exists($index);
       break;
 
       case 'memcache':
 
+      break;
+
+      default:
+      throw new Exception('Unknown cache method.');
       break;
     }
   }
@@ -95,6 +131,10 @@ class generalCache {
       $this->data = array();
       break;
 
+      case 'disk': // No method exists.
+      return false;
+      break;
+
       case 'apc':
       if (apc_clear_cache() && apc_clear_cache('user') && apc_clear_cache('opcode')) return true;
       else return false;
@@ -102,6 +142,10 @@ class generalCache {
 
       case 'memcache':
 
+      break;
+
+      default:
+      throw new Exception('Unknown cache method.');
       break;
     }
   }

@@ -303,13 +303,14 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
       <tr class="ui-widget-header">
         <th colspan="2">Other Settings</th>
       </tr>
-      <!--<tr>
-        <td><strong>Cache Method (Broken - We're Working On It)</strong></td>
+      <tr>
+        <td><strong>Cache Method</strong></td>
         <td><select name="cache_method">
-          ' . (extension_loaded('apc') ? '<option value="apc">APC</option>' : '') . '
-          ' . (extension_loaded('memcache') ? '<option value="memcache">MemCache</option>' : '') . '
-        </select><br /><small>The cache to use. If you are able to set up MemCache, you are encouraged to use it. APC is provided with PHP 5.4 and can be installed with most distributions. If neither option is listed, FreezeMessenger will use far more CPU than neccessary.</td>
-      </tr>-->
+          <option value="disk">Disk Cache</option>
+          <?php echo (extension_loaded('apc') ? '<option value="apc" selected="selected">APC</option>' : '') .
+          (extension_loaded('memcache') ? '<option value="memcache">MemCache</option>' : '') ?>
+        </select><br /><small>The cache to use. Only available caches are listed. We strongly recommend APC if you are able to use it. (Dev Note: Memcached will be available in Beta 5.)</td>
+      </tr>
       <tr>
         <td><strong>reCAPTCHA Public Key</strong></td>
         <td><input type="text" name="recaptcha_publicKey" /><br /><small>If a key is provided, reCAPTCHA will be enabled for user registration if you are not integrating with a forum. <a href="https://www.google.com/recaptcha/admin/create">This key can be obtained here.</a></small></td>

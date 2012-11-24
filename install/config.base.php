@@ -75,7 +75,7 @@ $dbConfig['integration']['tablePreix'] = '';
  * Defines the driver to use for caching.
  * "apc" and "memcache" are both acceptable.
  * Because APC does not require any advanced set-up, it is default. However, memcache is a must for large installations. */
-$cacheConnect['driver'] = 'apc';
+$cacheConnect['driver'] = '';
 
 /* $cacheConnect['servers']
  * For memcache, this is the list of servers to use in the connection pool.

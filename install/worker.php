@@ -238,6 +238,8 @@ switch ($_REQUEST['phase']) {
   $adminUsername = urldecode($_GET['admin_userName']);
   $adminPassword = urldecode($_GET['admin_password']);
 
+  $cacheMethod = urldecode($_GET['cache_method']);
+
   $salts = array( // This is later written to the config file, but we want to use this properly for now.
     101 => $encryptSalt
   );
@@ -285,6 +287,7 @@ $dbConnect[\'integration\'][\'password\'] = \'\';',
 $dbConnect[\'slave\'][\'database\'] = \'\';
 $dbConnect[\'integration\'][\'database\'] = \'\';',
     '$dbConfig[\'vanilla\'][\'tablePrefix\'] = \'\';',
+    '$cacheConnect[\'driver\'] = \'\';',
     '$dbConfig[\'integration\'][\'tablePreix\'] = \'\';',
     '$loginConfig[\'method\'] = \'vanilla\';',
     '$loginConfig[\'url\'] = \'http://example.com/forums/\';',
@@ -320,10 +323,11 @@ $dbConnect[\'slave\'][\'database\'] = \'' . addslashes($databaseName) . '\';
 $dbConnect[\'integration\'][\'database\'] = \'' . addslashes($databaseName) . '\';',
     '$dbConfig[\'vanilla\'][\'tablePrefix\'] = \'' . addslashes($prefix) . '\';',
     '$dbConfig[\'integration\'][\'tablePreix\'] = \'' . addslashes($forumTablePrefix) . '\';',
+    '$cacheConnect[\'driver\'] = \'' . addslashes($cacheMethod) . '\';',
     '$loginConfig[\'method\'] = \'' . addslashes($forum) . '\';',
     '$loginConfig[\'url\'] = \'' . addslashes($forumUrl) . '\';',
     '$loginConfig[\'superUsers\'] = array(' . ($forum == 'phpbb' ? 2 : 1) . ');',
-    '$installUrl = \'' . str_replace(array('install/index.php','install/'), array('',''), $_SERVER['HTTP_REFERER']) . '\';',
+    '$installUrl = \'' . str_replace(array('install/index.php', 'install/'), array('', ''), $_SERVER['HTTP_REFERER']) . '\';',
     '$salts = array(
   101 => \'' . $encryptSalt . '\',
 );',
