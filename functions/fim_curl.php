@@ -1,5 +1,19 @@
 <?php
+/**
+ * Performs a structured CURL request.
+ *
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 class curlRequest {
+  /**
+  * Initialises class.
+  *
+  * @param array $data - Request data (as array).
+  * @param array $apiFile - The file to query.
+  * @return void
+  *
+  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
   public function __construct($data = array(), $apiFile = '') {
     if (count($data) > 0) {
       $this->setRequestData($data);
@@ -10,22 +24,59 @@ class curlRequest {
     }
   }
 
+  /**
+  * Returns the request data.
+  *
+  * @return array - Request data.
+  *
+  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
   public function getRequestData() {
     return $this->requestData;
   }
 
+  /**
+  * Sets the request data.
+  *
+  * @param array $data - Request data.
+  * @return void
+  *
+  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
   public function setRequestData($data) {
     $this->requestData = http_build_query($data);
   }
 
+  /**
+  * Returns the request file.
+  *
+  * @return string - Request file.
+  *
+  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
   public function getRequestFile() {
     return $this->requestFile;
   }
 
+  /**
+  * Sets the request file.
+  *
+  * @param string $file - Request file.
+  * @return void
+  *
+  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
   public function setRequestFile($file) {
     $this->requestFile = $file;
   }
 
+  /**
+  * Executes the cURL request.
+  *
+  * @return mixed - cURL response on success, false on failure.
+  *
+  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
   public function execute() {
     global $installUrl;
     $ch = curl_init($installUrl . $this->requestFile); // $installUrl is automatically generated at installation (if the doamin changes, it will need to be updated).
