@@ -17,7 +17,26 @@
 
 /* Note: "none" is used solely for speed testing. NEVER EVER EVER use it. (at least with FIM) */
 
+/**
+ * Cache layer to support file caches, APC, and (eventually) memcached.
+ * An explanation of the support cache methods:
+ ** 'none' - If specified, all cache variables will be stored as standard variables in the class. Thus, no cache will actually be used, but all functionality should still work.
+ ** 'disk' - If specified, all cache variables will be written to the disk (usually as temporary files).
+ ** 'apc' - If specified, all cache variables will be stored using APC.
+ ** 'memcached' - If spceified, all cache variables wil be stored using memcached. (Not yet supported.)
+ *
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
 class generalCache {
+  /**
+  * Initialises class.
+  *
+  * @param string method - Cache method to use (will guess if not provided).
+  * @param array servers - Servers used for Memcached. (not yet supported).
+  * @return void
+  *
+  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
   public function __construct($method = '', $servers) {
     global $config, $tmpDir;
 
@@ -51,107 +70,82 @@ class generalCache {
     }*/
   }
 
+  /**
+  * Retrives a variable from the cache.
+  *
+  * @param string index - The name of the cache entry.
+  * @return mixed - Value of cache entry.
+  *
+  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
   public function get($index) {
     switch ($this->method) {
-      case 'none':
-      return $this->data[$index];
-      break;
-
-      case 'disk':
-      $value = $this->fileCache->get($index);
-
-      //if ($error = $this->fileCache->get_error()) throw new Exception('Cache Error: ' . $error);
-      //else return $value;
-      return $value;
-      break;
-
-      case 'apc':
-      return apc_fetch($index);
-      break;
-
-      case 'memcache':
-
-      break;
-
-      default:
-      throw new Exception('Unknown cache method.');
-      break;
+      case 'none': return $this->data[$index]; break;
+      case 'disk': return $this->fileCache->get($index); break;
+      case 'apc': return apc_fetch($index); break;
+      case 'memcache': break;
+      default: throw new Exception('Unknown cache method.'); break;
     }
   }
 
+  /**
+  * Stores a variable in the cache.
+  *
+  * @param string index - The name of the cache entry.
+  * @param mixed variable - The data to store.
+  * @param int ttl - The time before the variable is considered to have "expired", in seconds. (Default is 1 year = 31536000 seconds)
+  * @return void
+  *
+  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
   public function set($index, $variable, $ttl = 31536000) {
     switch ($this->method) {
-      case 'none':
-      $this->data[$index] = $variable;
-      break;
-
-      case 'disk':
-      $this->fileCache->set($index, $variable, $ttl);
-
-//      if ($error = $this->fileCache->get_error()) throw new Exception('Cache Error: ' . $error);
-      break;
-
-      case 'apc':
-      apc_delete($index);
-      apc_store($index, $variable, 0);
-      break;
-
-      case 'memcache':
-
-      break;
-
-      default:
-      throw new Exception('Unknown cache method.');
-      break;
+      case 'none': $this->data[$index] = $variable; break;
+      case 'disk': $this->fileCache->set($index, $variable, $ttl); break;
+      case 'apc': apc_delete($index); apc_store($index, $variable, $ttl); break;
+      case 'memcache':  break;
+      default: throw new Exception('Unknown cache method.'); break;
     }
   }
 
+  /**
+  * Determines if a variable exists in the cache.
+  *
+  * @param string index - The name of the cache entry.
+  * @return void
+  *
+  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
   public function exists($index) {
     switch ($this->method) {
-      case 'none':
-      return isset($this->data[$index]);
-      break;
-
-      case 'disk': // No method exists.
-      $this->fileCache->exists($index);
-      break;
-
-      case 'apc':
-      return apc_exists($index);
-      break;
-
-      case 'memcache':
-
-      break;
-
-      default:
-      throw new Exception('Unknown cache method.');
-      break;
+      case 'none': return isset($this->data[$index]); break;
+      case 'disk': $this->fileCache->exists($index); break;
+      case 'apc': return apc_exists($index); break;
+      case 'memcache': break;
+      default: throw new Exception('Unknown cache method.'); break;
     }
   }
 
+
+  /**
+  * Destroys the entire cache. (With APC, this will clear the user and the opcode cache as well.)
+  *
+  * @return bool - True on success, false on failure.
+  *
+  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
   public function clearAll() {
     switch ($this->method) {
-      case 'none':
-      $this->data = array();
-      break;
-
-      case 'disk':
-      $this->fileCache->deleteAll();
-      break;
+      case 'none': $this->data = array(); break;
+      case 'disk': $this->fileCache->deleteAll(); break;
 
       case 'apc':
       if (apc_clear_cache() && apc_clear_cache('user') && apc_clear_cache('opcode')) return true;
       else return false;
       break;
 
-      case 'memcache':
-
-      break;
-
-      default:
-      throw new Exception('Unknown cache method.');
-      break;
+      case 'memcache': break;
+      default: throw new Exception('Unknown cache method.'); break;
     }
   }
 }
