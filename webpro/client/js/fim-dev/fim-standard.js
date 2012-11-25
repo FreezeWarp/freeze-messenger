@@ -361,15 +361,18 @@ var standard = {
       }
 
       if (requestSettings.serverSentEvents) { // Note that the event subsystem __requires__ serverSentEvents for various reasons. If you use polling, these events will no longer be fully compatible.
-        var source = new EventSource(directory + 'eventStream.php?roomId=' + roomId + '&lastEvent=' + requestSettings.lastEvent + '&lastMessage=' + requestSettings.lastMessage + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
+        var messageSource = new EventSource(directory + 'apiStream/messageStream.php?roomId=' + roomId + '&lastEvent=' + requestSettings.lastEvent + '&lastMessage=' + requestSettings.lastMessage + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
+
+        var eventSource = new EventSource(directory + 'apiStream/eventStream.php?roomId=' + roomId + '&lastEvent=' + requestSettings.lastEvent + '&lastMessage=' + requestSettings.lastMessage + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
+
         console.log('Starting EventSource; roomId: ' + roomId + '; lastEvent: ' + requestSettings.lastEvent + '; lastMessage: ' + requestSettings.lastMessage);
 
-        source.addEventListener('time', function(e) {
+        messageSource.addEventListener('time', function(e) {
           console.log('The current time is: ' + e.data);
           return false;
         }, false);
 
-        source.addEventListener('message', function(e) {
+        messageSource.addEventListener('message', function(e) {
           active = JSON.parse(e.data);
 
           var messageId = Number(active.messageData.messageId);
@@ -384,7 +387,7 @@ var standard = {
           return false;
         }, false);
 
-        source.addEventListener('topicChange', function(e) {
+        eventSource.addEventListener('topicChange', function(e) {
           var active = JSON.parse(e.data);
 
           $('#topic').html(active.param1);
@@ -395,7 +398,7 @@ var standard = {
           return false;
         }, false);
 
-        source.addEventListener('missedMessage', function(e) {
+        eventSource.addEventListener('missedMessage', function(e) {
           var active = JSON.parse(e.data);
 
           requestSettings.lastEvent = active.eventId;
@@ -405,7 +408,7 @@ var standard = {
           return false;
         }, false);
 
-        source.addEventListener('deletedMessage', function(e) {
+        eventSource.addEventListener('deletedMessage', function(e) {
           var active = JSON.parse(e.data);
 
           $('#topic').html(active.param1);
@@ -414,16 +417,6 @@ var standard = {
           requestSettings.lastEvent = active.eventId;
 
           return false;
-        }, false);
-
-        source.addEventListener('open', function(e) {
-          // Connection was opened.
-        }, false);
-
-        source.addEventListener('error', function(e) {
-          if (e.eventPhase == EventSource.CLOSED) {
-            // Connection was closed.
-          }
         }, false);
       }
       else {
