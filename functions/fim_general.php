@@ -1261,6 +1261,8 @@ function fim_sendMessage($messageText, $messageFlag, $userData, $roomData) {
 
   $keyWords = $messageParse->getKeyWords();
   $database->storeKeyWords($keyWords, $messageId, $userData['userId'], $roomData['roomId']);
+
+//  $database->storeUnreadMessage();
 }
 
 
