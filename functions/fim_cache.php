@@ -19,7 +19,7 @@
 
 class generalCache {
   public function __construct($method = '', $servers) {
-    global $config;
+    global $config, $tmpDir;
 
     $this->data = array();
     $this->method = $method;
@@ -34,7 +34,12 @@ class generalCache {
     if ($this->method === 'disk') {
       require_once('fileCache.php');
 
-      $this->fileCache = new FileCache(dirname(dirname(__FILE__)) . '/cache/');
+      if (is_writable($tmpDir)) {
+        $this->fileCache = new FileCache($tmpDir . '/');
+      }
+      else {
+        throw new Exception('Could not create disk cache. Please ensure that PHP temp directory is set and writable (current value: ' . $tmpDir . ').');
+      }
     }
 
 /*    if ($this->method === 'memcache') {
@@ -108,7 +113,7 @@ class generalCache {
       break;
 
       case 'disk': // No method exists.
-      return false;
+      $this->fileCache->exists($index);
       break;
 
       case 'apc':
@@ -131,8 +136,8 @@ class generalCache {
       $this->data = array();
       break;
 
-      case 'disk': // No method exists.
-      return false;
+      case 'disk':
+      $this->fileCache->deleteAll();
       break;
 
       case 'apc':

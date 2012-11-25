@@ -240,6 +240,8 @@ switch ($_REQUEST['phase']) {
 
   $cacheMethod = urldecode($_GET['cache_method']);
 
+  $tmpDir = urldecode($_GET['tmp_dir']);
+
   $salts = array( // This is later written to the config file, but we want to use this properly for now.
     101 => $encryptSalt
   );
@@ -287,11 +289,11 @@ $dbConnect[\'integration\'][\'password\'] = \'\';',
 $dbConnect[\'slave\'][\'database\'] = \'\';
 $dbConnect[\'integration\'][\'database\'] = \'\';',
     '$dbConfig[\'vanilla\'][\'tablePrefix\'] = \'\';',
-    '$cacheConnect[\'driver\'] = \'\';',
     '$dbConfig[\'integration\'][\'tablePreix\'] = \'\';',
+    '$cacheConnect[\'driver\'] = \'\';',
     '$loginConfig[\'method\'] = \'vanilla\';',
     '$loginConfig[\'url\'] = \'http://example.com/forums/\';',
-    '$loginConfig[\'superUsers\'] = array()',
+    '$loginConfig[\'superUsers\'] = array();',
     '$installUrl = \'\';',
     '$salts = array(
   101 => \'xxx\',
@@ -299,7 +301,8 @@ $dbConnect[\'integration\'][\'database\'] = \'\';',
      '$encrypt = true;',
      '$encryptUploads = true;',
      '$enableUploads = true;',
-     '$enableGeneralUploads = true;'
+     '$enableGeneralUploads = true;',
+     '$tmpDir = \'\';'
   );
 
   $replace = array(
@@ -334,7 +337,8 @@ $dbConnect[\'integration\'][\'database\'] = \'' . addslashes($databaseName) . '\
     '$encrypt = ' . ($enableEncrypt & 1 ? 'true' : 'false') . ';',
     '$encryptUploads = ' . ($enableEncrypt & 2 ? 'true' : 'false') . ';',
     '$enableUploads = ' . ($enableUploads & 1 ? 'true' : 'false') . ';',
-    '$enableGeneralUploads = ' . ($enableUploads & 2 ? 'true' : 'false') . ';'
+    '$enableGeneralUploads = ' . ($enableUploads & 2 ? 'true' : 'false') . ';',
+    '$tmpDir = \'' . $tmpDir . '\';'
   );
 
 

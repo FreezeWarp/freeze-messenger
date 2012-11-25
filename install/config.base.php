@@ -146,6 +146,11 @@ $installUrl = '';
 
 
 
+/* $tmpDir */
+$tmpDir = '';
+
+
+
 
 ////* Save Me! *////
 ////* These disable certain customizations in case things go horribly wrong. *////

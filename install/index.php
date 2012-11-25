@@ -309,7 +309,11 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
           <option value="disk">Disk Cache</option>
           <?php echo (extension_loaded('apc') ? '<option value="apc" selected="selected">APC</option>' : '') .
           (extension_loaded('memcache') ? '<option value="memcache">MemCache</option>' : '') ?>
-        </select><br /><small>The cache to use. Only available caches are listed. We strongly recommend APC if you are able to use it. (Dev Note: Memcached will be available in Beta 5.)</td>
+        </select><br /><small>The primary cache to use. Only available caches are listed. We strongly recommend APC if you are able to use it. (Dev Note: Memcached will be available in Beta 5.)</td>
+      </tr>
+      <tr>
+        <td><strong>Temporary Directory</strong></td>
+        <td><input type="text" name="tmp_dir" value="<?php echo addcslashes(realpath(sys_get_temp_dir()), '"'); ?>" /><br /><small>The temporary directory of the system. This should not be web-accessible and must be writable by FreezeMessenger.</a></small></td>
       </tr>
       <tr>
         <td><strong>reCAPTCHA Public Key</strong></td>
