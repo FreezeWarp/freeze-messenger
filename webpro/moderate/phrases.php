@@ -82,23 +82,22 @@ else {
       $phraseText = $phrases[$request['phraseName']];
 
       echo container("Edit Phrase \"$request[phraseName]\"","<form action=\"./moderate.php?do=phrases&do2=edit2&phraseName=$request[phraseName]&languageCode=$request[languageCode]\" method=\"post\">
-<label for=\"text\">New Value:</label><br />
-<textarea name=\"text\" id=\"text\" style=\"width: 100%; height: 300px;\">$phraseText</textarea><br /><br />
+<label for=\"data\">New Value:</label><br />
+<textarea name=\"data\" id=\"data\" style=\"width: 100%; height: 300px;\">$phraseText</textarea><br /><br />
 
 <button type=\"submit\">Update</button>
 </form>");
       break;
 
       case 'edit2':
-      $phrase = $database->getPhrase($request['phraseName'], $request['languageCode'], $request['interfaceId']);
+      $phraseText = $request['data'];
+      $phraseText = str_replace(array("\r","\n","\r\n"), '', $phraseText); // Remove new lines (required for JSON).
+      $phraseText = preg_replace("/\>(\ +)/", ">", $phraseText); // Remove extra space between  (looks better).
 
-      $database->update("{$sqlPrefix}phrases", array(
-        'text' => $request['text']
-      ), array(
-        'phraseName' => $phrase['phraseName'],
-        'languageCode' => $phrase['languageCode'],
-        'interfaceId' => $phrase['interfaceId'],
-      ));
+      $phrases = json_decode(file_get_contents('client/data/language_' . $request['languageCode'] . '.json'), true);
+      $phrases[$request['phraseName']] = $phraseText; // Update the JSON object with the new phrase data.
+
+      file_put_contents('client/data/language_' . $request['languageCode'] . '.json', json_encode($phrases)) or die('Unable to write'); // Send the new JSON data to the server.
 
       $database->modLog('phraseEdit',$phrase['phraseName'] . '-' . $phrase['languageCode'] . '-' . $phrase['interfaceId']);
       $database->fullLog('phraseEdit',array('phrase' => $phrase));

@@ -1251,7 +1251,7 @@ popup = {
     dia.full({
       content : window.templates.copyright,
       title : 'copyrightDialogue',
-      width : 600,
+      width : 800,
       tabs : true
     });
 
