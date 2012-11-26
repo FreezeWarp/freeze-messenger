@@ -1164,6 +1164,9 @@ function fim_exceptionHandler($exception) {
     echo fim_outputApi(array(
       'exception' => array(
         'string' => $exception->getMessage(),
+        'file' => $exception->getFile(),
+        'line' => $exception->getLine(),
+        'trace' => $exception->getTrace(),
         'contactEmail' => $config['email'],
       )
     ));

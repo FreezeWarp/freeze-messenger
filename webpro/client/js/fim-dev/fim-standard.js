@@ -584,6 +584,7 @@ var standard = {
           var users = active.roomUsers,
             roomUsers = [];
 
+
           for (i in users) { // Run through the user list return by getPrivateRooms
             var userName = users[i].userName,
               userFormatStart = users[i].userFormatStart,
@@ -592,26 +593,31 @@ var standard = {
             roomUsers.push(userName);
           }
 
-          var roomName = 'Conversation Between: ' + roomUsers.join(', '); // Set the room name to list the users conversing.
-          roomId = 'p' + active.uniqueId; // Set the internal roomId to the uniqueId required by all API calls outside of getPrivateRoom.
+          if (roomUsers) {
+            var roomName = 'Conversation Between: ' + roomUsers.join(', '); // Set the room name to list the users conversing.
+            roomId = 'p' + active.uniqueId; // Set the internal roomId to the uniqueId required by all API calls outside of getPrivateRoom.
 
-          $('#roomName').html(roomName);
-          $('#topic').html(''); // Clear the topic.
-          $('#messageList').html(''); // Clear the messsage list.
+            $('#roomName').html(roomName);
+            $('#topic').html(''); // Clear the topic.
+            $('#messageList').html(''); // Clear the messsage list.
 
-          enableSender();
+            enableSender();
 
-          /*** Get Messages ***/
-          $(document).ready(function() {
-            requestSettings.firstRequest = true;
-            requestSettings.lastMessage = 0;
-            messageIndex = [];
+            /*** Get Messages ***/
+            $(document).ready(function() {
+              requestSettings.firstRequest = true;
+              requestSettings.lastMessage = 0;
+              messageIndex = [];
 
-            standard.getMessages();
+              standard.getMessages();
 
-            windowDraw();
-            windowDynaLinks();
-          });
+              windowDraw();
+              windowDynaLinks();
+            });
+          }
+          else {
+            dia.error('You are not allowed to talk to that user.');
+          }
         },
         error: function() {
           dia.error('Could not fetch room data. Action cancelled.'); // TODO: Handle Gracefully
@@ -721,32 +727,6 @@ var standard = {
     else if (!userLocalId) { dia.error('You have not specified a user.'); }
     else if (!userPermissions.privateRoom) { dia.error('You do not have permission to talk to users privately.'); }
     else {
-      $.post(directory + 'api/editRoom.php', 'action=private&userId=' + userLocalId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
-        var privateRoomId = json.editRoom.response.insertId,
-          errStr = json.editRoom.errStr,
-          errDesc = json.editRoom.errDesc;
-
-        if (errStr) {
-          switch (errStr) {
-            case 'baduser':
-            dia.error('The user specified does not exist.');
-            break;
-          }
-        }
-        else {
-          dia.full({
-            content : 'You may talk to this person privately at the following link: <form method="post" onsubmit="return false;"><input type="text" style="width: 300px;" value="' + currentLocation + '#room=' + privateRoomId + '" name="url" /></form>',
-            id : 'privateRoomSucessDialogue',
-            buttons : {
-              Open : function() { standard.changeRoom(privateRoomId); $('#privateRoomSucessDialogue, #privateRoomDialogue').dialog('close'); },
-              Okay : function() { $('#privateRoomSucessDialogue, #privateRoomDialogue').dialog('close'); }
-            },
-            width: 600
-          });
-        }
-
-        return false;
-      });
     }
 
     return false;

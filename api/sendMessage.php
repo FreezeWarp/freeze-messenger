@@ -61,7 +61,7 @@ $ip = $_SERVER['REMOTE_ADDR']; // Get the IP address of the user.
 
 
 /* Get Room for DB */
-$room = $database->getRoom($request['roomId']);
+$roomData = $database->getRoom($request['roomId']);
 
 
 /* Censor Fun */
@@ -107,7 +107,7 @@ if ($censorWordsCache['byWord']) {
 
 /* Start Processing */
 if ($continue) {
-  if (!$room) { // Bad room.
+  if (!$roomData['roomId']) { // Bad room.
     $errStr = 'badRoom';
     $errDesc = 'That room could not be found.';
   }
@@ -119,7 +119,7 @@ if ($continue) {
     $errStr = 'spaceMessage';
     $errDesc = 'In some countries, you could be arrested for posting only spaces. Now aren\'t you glad we stopped you?';
   }
-  elseif (!fim_hasPermission($room, $user, 'post', true)) { // Not allowed to post.
+  elseif (!fim_hasPermission($roomData, $user, 'post', true)) { // Not allowed to post.
     $errStr = 'noPerm';
     $errDesc = 'You are not allowed to post in this room.';
   }
@@ -154,14 +154,14 @@ if ($continue) {
     ($hook = hook('sendMessage_topic') ? eval($hook) : '');
 
     if ($continue) {
-      fim_sendMessage($request['message'], '', $user, $room);
+      fim_sendMessage($request['message'], '', $user, $roomData);
 
-      $database->createEvent('topicChange', false, $room['roomId'], false, $topic, false, false); // name, user, room, message, p1, p2, p3
+      $database->createEvent('topicChange', false, $roomData['roomId'], false, $topic, false, false); // name, user, room, message, p1, p2, p3
 
       $database->update("{$sqlPrefix}rooms", array(
         'roomTopic' => $topic,
       ), array(
-      'roomId' => $room['roomId'],
+      'roomId' => $roomData['roomId'],
       ));
     }
   }/*
@@ -193,7 +193,7 @@ if ($continue) {
     ($hook = hook('sendMessage_send') ? eval($hook) : '');
 
     if ($continue) {
-      fim_sendMessage($request['message'], $request['flag'], $user, $room);
+      fim_sendMessage($request['message'], $request['flag'], $user, $roomData);
     }
   }
 }

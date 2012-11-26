@@ -506,7 +506,7 @@
     </table>
 
 
-    <table name="unreadMessages" type="general" comment="Unread private messages. A unique index of userId,roomId should technically exist, but is not actually created. Still, there should never be mutliple notifcations to one user from the same room.">
+    <table name="unreadMessages" type="general" comment="Unread private messages.">
       <column name="userId" type="int" maxlen="8" comment="The ID of the user who has yet to read the message." />
       <column name="senderId" type="int" maxlen="8" comment="The ID of the user who sent the message." />
       <column name="senderName" type="string" maxlen="50" comment="The name of the user who sent the message." />
@@ -517,8 +517,7 @@
       <column name="messageId" type="int" maxlen="15" comment="The ID of the message." />
       <column name="time" type="time" comment="The time the message was made." />
 
-      <key name="userId,messageId" type="primary" />
-      <key name="userId" type="index" />
+      <key name="userId,roomId" type="unique" />
       <key name="time" type="index" />
     </table>
 

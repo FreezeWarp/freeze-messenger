@@ -637,101 +637,100 @@ class fimDatabase extends database {
   public function storeMessage($userData, $roomData, $messageText, $messageTextEncrypted, $encryptIV, $encryptSalt, $flag) {
     global $sqlPrefix, $config, $user, $permissionsCache, $generalCache;
 
-    if (!isset($roomData['options'], $roomData['roomId'], $userData['userId'], $userData['userName'], $userData['userGroup'], $userData['avatar'], $userData['profile'], $userData['userFormatStart'], $userData['userFormatEnd'], $userData['defaultFormatting'], $userData['defaultColor'], $userData['defaultHighlight'], $userData['defaultFontface'])) throw new Exception('database->storeMessage required information not provided');
-
-    if ($roomData['options'] ^ 64) { // Off the record communication - messages are stored only in the cache.
-      // Insert into permenant datastore.
-      $this->insert("{$sqlPrefix}messages", array(
-        'roomId' => (int) $roomData['roomId'],
-        'userId' => (int) $userData['userId'],
-        'text' => $messageTextEncrypted,
-        'textSha1' => sha1($messageText),
-        'salt' => $encryptSalt,
-        'iv' => $encryptIV,
-        'ip' => $_SERVER['REMOTE_ADDR'],
-        'flag' => $flag,
-        'time' => $this->now(),
-      ));
-      $messageId = $this->insertId;
+    if (!isset($roomData['options'], $roomData['roomId'], $roomData['roomName'], $roomData['type'], $userData['userId'], $userData['userName'], $userData['userGroup'], $userData['avatar'], $userData['profile'], $userData['userFormatStart'], $userData['userFormatEnd'], $userData['defaultFormatting'], $userData['defaultColor'], $userData['defaultHighlight'], $userData['defaultFontface'])) throw new Exception('database->storeMessage required information not provided');
 
 
-      // Update room caches.
-      $this->update("{$sqlPrefix}rooms", array(
-        'lastMessageTime' => $this->now(),
-        'lastMessageId' => $messageId,
-        'messageCount' => array(
-          'type' => 'equation',
-          'value' => '$messageCount + 1',
-        )
-      ), array(
+    // Insert into permenant datastore.
+    $this->insert("{$sqlPrefix}messages", array(
+      'roomId' => (int) $roomData['roomId'],
+      'userId' => (int) $userData['userId'],
+      'text' => $messageTextEncrypted,
+      'textSha1' => sha1($messageText),
+      'salt' => $encryptSalt,
+      'iv' => $encryptIV,
+      'ip' => $_SERVER['REMOTE_ADDR'],
+      'flag' => $flag,
+      'time' => $this->now(),
+    ));
+    $messageId = $this->insertId;
+
+
+    // Update room caches.
+    $this->update("{$sqlPrefix}rooms", array(
+      'lastMessageTime' => $this->now(),
+      'lastMessageId' => $messageId,
+      'messageCount' => array(
+        'type' => 'equation',
+        'value' => '$messageCount + 1',
+      )
+    ), array(
+      'roomId' => $roomData['roomId'],
+    ));
+
+
+    // Update the messageIndex if appropriate
+    $roomDataNew = $this->getRoom($roomData['roomId'], false, false); // Get the new room data.
+
+    if ($roomDataNew['messageCount'] % $config['messageIndexCounter'] === 0) { // If the current messages in the room is divisible by the messageIndexCounter, insert into the messageIndex cache. Note that we are hoping this is because of the very last query which incremented this value, but it is impossible to know for certain (if we tried to re-order things to get the room data first, we still run this risk, so that doesn't matter; either way accuracy isn't critical).
+      $this->insert("{$sqlPrefix}messageIndex", array(
         'roomId' => $roomData['roomId'],
-      ));
-
-
-      // Update the messageIndex if appropriate
-      $roomDataNew = $this->getRoom($roomData['roomId'], false, false); // Get the new room data.
-
-      if ($roomDataNew['messageCount'] % $config['messageIndexCounter'] === 0) { // If the current messages in the room is divisible by the messageIndexCounter, insert into the messageIndex cache. Note that we are hoping this is because of the very last query which incremented this value, but it is impossible to know for certain (if we tried to re-order things to get the room data first, we still run this risk, so that doesn't matter; either way accuracy isn't critical).
-        $this->insert("{$sqlPrefix}messageIndex", array(
-          'roomId' => $roomData['roomId'],
-          'interval' => (int) $roomDataNew['messageCount'],
-          'messageId' => $messageId
-        ), array(
-          'messageId' => array(
-            'type' => 'equation',
-            'value' => '$messageId + 0',
-          )
-        ));
-      }
-
-
-      // Update user caches
-      $this->update("{$sqlPrefix}users", array(
-        'messageCount' => array(
-          'type' => 'equation',
-          'value' => '$messageCount + 1',
-        )
+        'interval' => (int) $roomDataNew['messageCount'],
+        'messageId' => $messageId
       ), array(
-        'userId' => $userData['userId'],
-      ));
-
-
-      // Insert or update a user's room stats.
-      $this->insert("{$sqlPrefix}roomStats", array(
-        'userId' => $userData['userId'],
-        'roomId' => $roomData['roomId'],
-        'messages' => 1
-      ), array(
-        'messages' => array(
+        'messageId' => array(
           'type' => 'equation',
-          'value' => '$messages + 1',
+          'value' => '$messageId + 0',
         )
       ));
+    }
 
 
-      // Increment the messages counter.
-      $this->incrementCounter('messages');
+    // Update user caches
+    $this->update("{$sqlPrefix}users", array(
+      'messageCount' => array(
+        'type' => 'equation',
+        'value' => '$messageCount + 1',
+      )
+    ), array(
+      'userId' => $userData['userId'],
+    ));
 
 
-      // Update the messageDates if appropriate
-      $lastDayCache = (int) $generalCache->get('fim3_lastDayCache');
+    // Insert or update a user's room stats.
+    $this->insert("{$sqlPrefix}roomStats", array(
+      'userId' => $userData['userId'],
+      'roomId' => $roomData['roomId'],
+      'messages' => 1
+    ), array(
+      'messages' => array(
+        'type' => 'equation',
+        'value' => '$messages + 1',
+      )
+    ));
 
-      $currentTime = time();
-      $lastMidnight = $currentTime - ($currentTime % $config['messageTimesCounter']); // Using some cool math (look it up if you're not familiar), we determine the distance from the last even day, then get the time of the last even day itself. This is the midnight referrence point.
 
-      if ($lastDayCache < $lastMidnight) { // If the most recent midnight comes after the period at which the time cache was last updated, handle that.
-        $this->insert("{$sqlPrefix}messageDates", array(
-          'time' => $lastMidnight,
-          'messageId' => $messageId
-        ), array(
-          'messageId' => array(
-            'type' => 'equation',
-            'value' => '$messageId + 0',
-          )
-        ));
+    // Increment the messages counter.
+    $this->incrementCounter('messages');
 
-        $generalCache->set('fim3_lastDayCache', $lastMidnight); // Update the quick cache.
-      }
+
+    // Update the messageDates if appropriate
+    $lastDayCache = (int) $generalCache->get('fim3_lastDayCache');
+
+    $currentTime = time();
+    $lastMidnight = $currentTime - ($currentTime % $config['messageTimesCounter']); // Using some cool math (look it up if you're not familiar), we determine the distance from the last even day, then get the time of the last even day itself. This is the midnight referrence point.
+
+    if ($lastDayCache < $lastMidnight) { // If the most recent midnight comes after the period at which the time cache was last updated, handle that.
+      $this->insert("{$sqlPrefix}messageDates", array(
+        'time' => $lastMidnight,
+        'messageId' => $messageId
+      ), array(
+        'messageId' => array(
+          'type' => 'equation',
+          'value' => '$messageId + 0',
+        )
+      ));
+
+      $generalCache->set('fim3_lastDayCache', $lastMidnight); // Update the quick cache.
     }
 
 
@@ -769,7 +768,7 @@ class fimDatabase extends database {
 
 
     // If the contact is a private communication, create an event and add to the message unread table.
-    if ($roomData['options'] & 16) {
+    if ($roomData['type'] === 'private') {
       foreach ($permissionsCache['byRoomId'][$roomData['roomId']]['user'] AS $sendToUserId => $permissionLevel) {
         if ($sendToUserId == $user['userId']) {
           continue;
@@ -781,7 +780,19 @@ class fimDatabase extends database {
             $this->insert("{$sqlPrefix}unreadMessages", array(
               'userId' => $sendToUserId,
               'senderId' => $userData['userId'],
+              'senderName' => $userData['userName'],
+              'senderFormatStart' => $userData['userFormatStart'],
+              'senderFormatEnd' => $userData['userFormatEnd'],
               'roomId' => $roomData['roomId'],
+              'roomName' => $roomData['roomName'],
+              'messageId' => $messageId,
+              'time' => $this->now(),
+            ), array(
+              'senderId' => $userData['userId'],
+              'senderName' => $userData['userName'],
+              'senderFormatStart' => $userData['userFormatStart'],
+              'senderFormatEnd' => $userData['userFormatEnd'],
+              'roomName' => $roomData['roomName'],
               'messageId' => $messageId,
               'time' => $this->now(),
             ));
