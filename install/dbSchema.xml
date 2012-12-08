@@ -541,7 +541,7 @@
       <column name="options" type="bitfield" bits="16" comment="A bitfield corrosponding to the user's settings." />
       <column name="timeZone" type="int" maxlen="2" default="0" comment="The timezone of the user." />
       <column name="socialGroups" type="string" maxlen="1000" comment="A comma-seperated list of the ids of all groups the user has joined." />
-      <column name="joinDate" type="time" default="0" comment="The date the user joined. It may not be used on logins other than vanilla." />
+      <column name="joinDate" type="time" default="__TIME__" comment="The date the user joined. It may not be used on logins other than vanilla." />
       <column name="birthDate" type="time" default="0" comment="The date of the user's birth, used for parental control settings." />
       <column name="email" type="time" comment="The user's email address. Only used in vanilla logins." />
 

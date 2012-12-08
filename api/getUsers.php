@@ -236,7 +236,7 @@ if (is_array($users)) {
 
         case 'vanilla':
         $userDataForums = array(
-          'joinDate' => false,
+          'joinDate' => $user['joinDate'],
           'posts' => false,
         );
         break;

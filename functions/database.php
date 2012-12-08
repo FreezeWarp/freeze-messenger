@@ -119,6 +119,10 @@ class database {
         'index' => 'KEY',
       );
 
+      $this->defaultPhrases = array(
+        '__TIME__' => 'CURRENT_TIMESTAMP',
+      );
+
       $this->columnIntLimits = array(
         1 => 'TINYINT',   2 => 'TINYINT',   3 => 'SMALLINT',  4 => 'SMALLINT',
         5 => 'MEDIUMINT', 6 => 'MEDIUMINT', 7 => 'MEDIUMINT', 8 => 'INT',
@@ -1107,9 +1111,13 @@ LIMIT
 
 
       if ($column['default']) {
-        $typePiece .= ' DEFAULT "' . $this->escape($column['default']) . '"';
+        if (issset($this->defaultPhrases($column['default']))) {
+          $typePiece .= ' DEFAULT ' . $this->defaultPhrases($column['default']);
+        }
+        else {
+          $typePiece .= ' DEFAULT "' . $this->escape($column['default']) . '"';
+        }
       }
-
 
       $columns[] = $this->columnQuoteStart . $this->escape($column['name']) . $this->columnQuoteEnd . " {$typePiece} NOT NULL COMMENT \"" . $this->escape($column['comment']) . '"';
     }
