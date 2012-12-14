@@ -15,34 +15,36 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 /**
- * Edit a File's Status
+ * Edit a file's properties, create a file, delete a file, or undelete a file.
  *
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
  *
+ * =GET Parameters=
  * @param string $_GET[action] The action to be performed by the script, either:
  ** 'create' - Creates a new file.
  ** 'edit' - Edits an existing file.
  ** 'delete' - Marks a file as deleted. (File data will remain on the server.)
  ** 'undelete' - Unmarks a file as deleted.
- * @param string $_GET[uploadMethod] [default=raw] How the file is being transferred from the server.
+ * @param string $_GET[uploadMethod='raw'] How the file is being transferred from the server, either:
  ** 'raw' - File data is stored in the "fileData" POST variable.
- ** 'put' [unstable] - File is being transferred via PUT. Not supported.
+ ** 'put' - File is being transferred via PUT. [[Unstable.]]
  * @param string $_GET[fileName] The name of the file. [[Required.]]
  * @param string $_GET[fileData] The data of the file. If not specified, the file will be stored empty.
- * @param int $_GET[fileSize] The size of the file (in bytes), used for checks.  [TODO: Bugtest.]
+ * @param int $_GET[fileSize] The size of the file (in bytes), used for checks.  [[TODO: Bugtest.]]
  * @param string $_GET[fileMd5Hash] The MD5 hash of the file, used for checks.
  * @param string $_GET[fileSha256Hash] The SHA256 hash of the file, used for checks.
  * @param int $_GET[roomId] If the image is to be directly posted to a room, specify the room ID here. This may be required, depending on server settings.
- * @param string $_GET[dataEncode] [required] How the data is encoded, either:
+ * @param string $_GET[dataEncode] How the data is encoded, either:
  ** 'base64' - Data is encoded as Base64.
- ** 'binary' - Data is not encoded. Not supported. [unstable]
+ ** 'binary' - Data is not encoded. [[Unstable.]]
  * @param string $_GET[parentalAge] The parental age corresponding to the file. If the age is not recognised, a server-defined default will be used.
- * @param string $_GET[parentalFlags] A comma-separated list of parental flags that apply to the file. If a flag is not recognised, it will be dropped. If omitted, a server-defined default will be used.
+ * @param csv $_GET[parentalFlags] A comma-separated list of parental flags that apply to the file. If a flag is not recognised, it will be dropped. If omitted, a server-defined default will be used.
  * @param int $_GET[fileId] If editing, deleting, or undeleting the file, this is the ID of the file.
  *
+ * =Errors=
  * @throws tooManyFiles The user is not allowed to upload files because they have reached the file upload limit, either for themselves or for the entire server.
  * @throws badEncoding The encoding specified is not recognised.
  * @throws badMd5Hash The md5 hash of the uploaded file data does not match the md5 hash sent.
@@ -56,7 +58,8 @@
  * @throws invalidFile The 'fileId' parameter sent does not correspond to an existing file.
  * @throws noPerm The active user does not have permission to perform the action requested.
  * @throws noOrphanFiles A valid room was not provided, and the server requires that all files are associated with a room.
- 
+ *
+ * =Reponse=
  * @return APIOBJ:
  ** editFile
  *** activeUser

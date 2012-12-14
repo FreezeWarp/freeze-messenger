@@ -22,23 +22,52 @@
  * @author Jospeph T. Parsons <rehtaew@gmail.com>
  * @copyright Joseph T. Parsons 2012
  *
- * @param string action - "create", "edit", "delete", "undelete", or "private"
+ * =GET Parameters=
+ * @param action The action to be performed by the script, either: [[Required.]]
+ ** 'create' - Creates a room with the data specified.
+ ** 'edit' - Updates a room with the data specified.
+ ** 'delete' - Marks a room as deleted. (It's data, messages, and permissions will remain on the server.)
+ ** 'undelete' - Unmarks a room as deleted.
  *
- * Create, Edit Room Parameters:
- * @param int defaultPermissions
- * @param csv allowedUsers
- * @param csv allowedGroups
- * @param csv moderators
- * @param string roomName
- * @param int parentalAge
- * @param csv parentalFlags
+ * ==Edit, Delete, and Undelete Parameters==
+ * @param int roomId - The editing, deleting, or undeleting, this is the ID of the room.
  *
- * Edit, Delete, Undelete Room Parameters:
- * @param int roomId
+ * ==Create and Edit Paramters==
+ * @param string roomName - The name the room should be set to. [[Required.]]
+ * @param int defaultPermissions - The default permissions all users are granted to a room.
+ * @param csv moderators - A comma-separated list of user IDs who will be allowed to moderate the room.
+ * @param csv allowedUsers - A comma-separated list of user IDs who will be allowed access to the room.
+ * @param csv allowedGroups - A comma-separated list of group IDs who will be allowed to access the room.
+ * @param int parentalAge - The parental age corresponding to the room.
+ * @param csv parentalFlag - A comma-separated list of parental flags that apply to the room.
  *
- * Private Room Parameters:
- * @param int userId
- * @param string userName
+ * =Errors=
+ * @throws noPerm - The user does not have permission to perform the action specified.
+ *
+ * ==Creating and Editing Rooms==
+ * @throws exists - The room name specified collides with an existing room.
+ * @throws noName - A valid room name was not specified.
+ * @throws shortName - The room name specified was too short.
+ * @throws longName - The room name specified was too long.
+ * @throws unknown - The action could not proceed for unknown reasons.
+ *
+ * ==Editing Rooms==
+ * @throws noRoom - The room ID specified does not correspond with an existing room.
+ * @throws deleted - The room specified has been deleted, and thus can not be edited.
+ *
+ * ==Deleting and Undeleting Rooms==
+ * @throws nothingToDo - The room is already deleted or undeleted.
+ *
+ * =Response=
+ * @return APIOBJ:
+ ** editRoom
+ *** activeUser
+ **** userId
+ **** userName
+ *** errStr
+ *** errDesc
+ *** response
+ **** insertId - If creating a room, the ID of the created room.
 */
 
 $apiRequest = true;
