@@ -19,11 +19,52 @@
  *
  * @package fim3
  * @version 3.0
- * @author Jospeph T. Parsons <rehtaew@gmail.com>
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
  *
- * @param string action
- * @param integer fileId
+ * @param string $_GET[action] The action to be performed by the script, either:
+ ** 'create' - Creates a new file.
+ ** 'edit' - Edits an existing file.
+ ** 'delete' - Marks a file as deleted. (File data will remain on the server.)
+ ** 'undelete' - Unmarks a file as deleted.
+ * @param string $_GET[uploadMethod] [default=raw] How the file is being transferred from the server.
+ ** 'raw' - File data is stored in the "fileData" POST variable.
+ ** 'put' [unstable] - File is being transferred via PUT. Not supported.
+ * @param string $_GET[fileName] The name of the file. [[Required.]]
+ * @param string $_GET[fileData] The data of the file. If not specified, the file will be stored empty.
+ * @param int $_GET[fileSize] The size of the file (in bytes), used for checks.  [TODO: Bugtest.]
+ * @param string $_GET[fileMd5Hash] The MD5 hash of the file, used for checks.
+ * @param string $_GET[fileSha256Hash] The SHA256 hash of the file, used for checks.
+ * @param int $_GET[roomId] If the image is to be directly posted to a room, specify the room ID here. This may be required, depending on server settings.
+ * @param string $_GET[dataEncode] [required] How the data is encoded, either:
+ ** 'base64' - Data is encoded as Base64.
+ ** 'binary' - Data is not encoded. Not supported. [unstable]
+ * @param string $_GET[parentalAge] The parental age corresponding to the file. If the age is not recognised, a server-defined default will be used.
+ * @param string $_GET[parentalFlags] A comma-separated list of parental flags that apply to the file. If a flag is not recognised, it will be dropped. If omitted, a server-defined default will be used.
+ * @param int $_GET[fileId] If editing, deleting, or undeleting the file, this is the ID of the file.
+ *
+ * @throws tooManyFiles The user is not allowed to upload files because they have reached the file upload limit, either for themselves or for the entire server.
+ * @throws badEncoding The encoding specified is not recognised.
+ * @throws badMd5Hash The md5 hash of the uploaded file data does not match the md5 hash sent.
+ * @throws badSha256Hash The sha256 hash of the uploaded file data does not match the sha256 hash sent.
+ * @throws badSize The size of the uploaded file data does not match the fileSize parameter sent.
+ * @throws badName No name was specified, or, potentially, the name contained characters that are not allowed but will not be removed.
+ * @throws badNameParts An extension could not be obtained because of the number of '.' characters in the file. If there are zero, or two or more, then this error will thrown. (Thus, for example, ".tar.gz" files can not be processed by the script.)
+ * @throws emptyFile The file sent was empty. This is only thrown if the server does not accept empty files.
+ * @throws tooLarge The file data exceeds the server limit.
+ * @throws unrecExt The extension of the file is not recognised by the server, and thus is not accepted.
+ * @throws invalidFile The 'fileId' parameter sent does not correspond to an existing file.
+ * @throws noPerm The active user does not have permission to perform the action requested.
+ * @throws noOrphanFiles A valid room was not provided, and the server requires that all files are associated with a room.
+ 
+ * @return APIOBJ:
+ ** editFile
+ *** activeUser
+ **** userId
+ **** userName
+ *** errStr
+ *** errDesc
+ *** response [TODO]
 */
 
 $apiRequest = true;
@@ -37,7 +78,7 @@ $request = fim_sanitizeGPC('p', array(
     'valid' => array(
       'create', 'edit',
       'delete', 'undelete',
-      'flag',
+      'flag', // TODO
     ),
   ),
 
@@ -51,9 +92,12 @@ $request = fim_sanitizeGPC('p', array(
 
   'fileName' => array(
     'require' => true,
+    'trim' => true,
   ),
 
-  'fileData' => array(),
+  'fileData' => array(
+    'default' => '',
+  ),
 
   'fileSize' => array(
     'context' => 'int',
@@ -77,11 +121,12 @@ $request = fim_sanitizeGPC('p', array(
 
   'parentalAge' => array(
     'context' => 'int',
-    'default' => 6,
     'valid' => $config['parentalAges'],
+    'default' => $config['parentalAgeDefault'],
   ),
 
   'parentalFlags' => array(
+    'default' => $config['parentalFlagsDefault'],
     'context' => array(
       'type' => 'csv',
       'valid' => $config['parentalFlags'],
@@ -145,6 +190,12 @@ if ($continue) {
       $mimes = $mimes->getAsArray('extension');
 
 
+      /* Get Room Data, if Applicable */
+      if ($request['roomId']) $roomData = $slaveDatabase->getRoom($request['roomId']);
+      else $roomData = false;
+
+
+      /* PUT Support (TODO) */
       if ($request['uploadMethod'] === 'put') { // This is an unsupported alternate upload method. It will not be documented until it is known to work.
         $putResource = fopen("php://input", "r"); // file data is from stdin
         $request['fileData'] = ''; // The only real change is that we're getting things from stdin as opposed to from the headers. Thus, we'll just translate the two here.
@@ -157,7 +208,11 @@ if ($continue) {
       }
 
 
-      if (($config['uploadMaxFiles'] !== -1 && $database->getCounter('uploads') > $config['uploadMaxFiles']) || ($config['uploadMaxUserFiles'] !== -1 && $user['fileCount'] > $config['uploadMaxUserFiles'])) {
+      if (!$roomData && !$config['allowOrphanFiles']) {
+        $errStr = 'noOrphanFiles';
+        $errDesc = 'The server will not accept orphan files.';
+      }
+      elseif (($config['uploadMaxFiles'] !== -1 && $database->getCounter('uploads') > $config['uploadMaxFiles']) || ($config['uploadMaxUserFiles'] !== -1 && $user['fileCount'] > $config['uploadMaxUserFiles'])) {
         $errStr = 'tooManyFiles';
         $errDesc = 'The server has reached its file capacity.';
       }
@@ -176,7 +231,7 @@ if ($continue) {
             break;
 
             default:
-            $errStr = 'badRawEncoding';
+            $errStr = 'badEncoding';
             $errDesc = 'The specified file content encoding was not recognized.';
 
             $continue = false;
@@ -188,7 +243,7 @@ if ($continue) {
 
           if ($request['md5hash']) { // This will allow us to verify that the upload worked.
             if (md5($rawData) != $request['md5hash']) {
-              $errStr = 'badRawHash';
+              $errStr = 'badMd5Hash';
               $errDesc = 'The included MD5 hash did not match the file content.';
 
               $continue = false;
@@ -197,7 +252,7 @@ if ($continue) {
 
           if ($request['sha256hash']) { // This will allow us to verify that the upload worked.
             if (hash('sha256', $rawData) != $request['sha256hash']) {
-              $errStr = 'badRawHash';
+              $errStr = 'badSha256Hash';
               $errDesc = 'The included MD5 hash did not match the file content.';
 
               $continue = false;
@@ -206,7 +261,7 @@ if ($continue) {
 
           if ($request['fileSize']) { // This will allow us to verify that the upload worked as well, can be easier to implement, but doesn't serve the primary purpose of making sure the file upload wasn't intercepted.
             if ($rawSize != $request['fileSize']) {
-              $errStr = 'badRawSize';
+              $errStr = 'badSize';
               $errDesc = 'The specified content length did not match the file content.';
 
               $continue = false;
@@ -222,7 +277,7 @@ if ($continue) {
 
         /* Start Processing */
         if ($continue) {
-          if (!$request['fileData']) {
+          if (!$request['fileName']) {
             $errStr = 'badName';
             $errDesc = 'A name was not specified for the file.';
           }
@@ -256,11 +311,11 @@ if ($continue) {
                 ($hook = hook('sendFile_postReq') ? eval($hook) : '');
 
 
-                if (!$rawData) {
+                if (!$rawData && !$config['allowEmptyFiles']) {
                   $errStr = 'emptyFile';
                   $errDesc = $phrases['uploadErrorFileContents'];
                 }
-                elseif ($rawSize == 0) {
+                elseif (($rawSize == 0) && !$config['allowEmptyFiles']) {
                   $errStr = 'emptyFile';
                   $errDesc = $phrases['uploadErrorFileContents'];
                 }
@@ -313,10 +368,8 @@ if ($continue) {
                   if ($prefile) {
                     $webLocation = "{$installUrl}file.php?sha256hash={$prefile['sha256hash']}";
 
-                    if ($request['roomId']) {
-                      $room = $slaveDatabase->getRoom($request['roomId']);
-
-                      fim_sendMessage($webLocation, $container, $user, $room);
+                    if ($roomData) {
+                      fim_sendMessage($webLocation, $container, $user, $roomData);
                     }
                   }
                   else {
@@ -379,10 +432,8 @@ if ($continue) {
                       ($hook = hook('sendFile_postInsert') ? eval($hook) : '');
 
                       if ($continue) {
-                        if ($request['roomId']) {
-                          $room = $slaveDatabase->getRoom($request['roomId']);
-
-                          fim_sendMessage($webLocation, $container, $user, $room);
+                        if ($roomData) {
+                          fim_sendMessage($webLocation, $container, $user, $roomData);
                         }
                       }
                     }
@@ -456,13 +507,8 @@ if ($continue) {
     }
     break;
 
-    case 'flag':
+    case 'flag': // TODO: Allows users to flag images that are not appropriate for a room.
 
-    break;
-
-    default:
-    $errStr = 'badAction';
-    $errDesc = 'The action specified does not exist.';
     break;
   }
 }

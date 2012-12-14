@@ -868,6 +868,7 @@ function fim_sanitizeGPC($type, $data) {
     'type' => 'string',
     'require' => false,
     'context' => false,
+    'trim' => false,
   );
 
   if (strlen($requestBody) > 0) { // If a request body exists, we will use it instead of PHP's generated superglobals. This allows for further REST compatibility. We will, however, only use it for GET and POST requests, at the present time.
@@ -904,11 +905,10 @@ function fim_sanitizeGPC($type, $data) {
       $indexMetaData = $metaDataDefaults; // Store indexMetaData with the defaults.
 
       foreach ($indexData AS $metaName => $metaData) {
-        switch ($metaName) {
-          case 'valid': $indexMetaData['valid'] = $metaData; break;
-          case 'require': $indexMetaData['require'] = $metaData; break;
-
-          case 'context':
+        if (in_array($metaName === 'valid' || $metaName === 'require' || $metaName === 'trim' || $metaName === 'default')) {
+          $indexMetaData[$metaName] = $metaData;
+        }
+        elseif ($metaName === 'context') {
           $indexMetaData['context'] = array(
             'cast' => '',
             'filter' => '',
@@ -929,11 +929,9 @@ function fim_sanitizeGPC($type, $data) {
                 }
                 break;
                 case 'filter': // This is an additional filter applied to data that uses the "csv" context type (and possibly more in the future).
-                switch ($contextdata) {
-                  case 'int': $indexMetaData['context']['filter'] = 'int'; break;
-                  case 'bool': $indexMetaData['context']['filter'] = 'bool'; break;
-                  case 'ascii128': $indexMetaData['context']['filter'] = 'ascii128'; break;
-                }
+                if (in_array($contextData, array('int', 'bool', 'ascii128', 'alphanum'))) {
+                  $indexMetaData['context']['filter'] = $contextData;
+		}
                 break;
                 case 'evaltrue': $indexMetaData['context']['evaltrue'] = (bool) $contextdata; break; // This specifies whether all subvalus of a context must be true. For instance, assuming we use an integer filter 0 would be removed if this was true.
                 case 'valid': $indexMetaData['context']['valid'] = (array) $contextdata; break; // This is only used with arrays and specifies which values can be included in the array.
@@ -951,8 +949,9 @@ function fim_sanitizeGPC($type, $data) {
             }
           }
           break;
-
-          case 'default': $indexMetaData['default'] = $metaData; break;
+        }
+        else {
+          throw new Exception('Unrecognised metadata: ' . $metaName); // TODO: Allow override/etc.
         }
       }
 
@@ -987,6 +986,10 @@ function fim_sanitizeGPC($type, $data) {
         else {
           continue; // The entry is not set and won't be returned in $request.
         }
+      }
+      
+      if ($indexMetaData['trim']) { // Trim
+        $activeGlobal[$indexName] = trim($activeGlobal[$indexName]);
       }
 
       switch($indexMetaData['context']['cast']) {
@@ -1056,9 +1059,8 @@ function fim_sanitizeGPC($type, $data) {
         $newData[$indexName] = (string) $activeGlobal[$indexName]; // Append value as string-cast.
 
         switch ($indexMetaData['context']['filter']) {
-          case 'ascii128':
-            $newData[$indexName] = preg_replace('/[^(\x20-\x7F)]*/', '', $output); // Remove characters outside of ASCII128 range.
-          break;
+          case 'ascii128': $newData[$indexName] = preg_replace('/[^(\x20-\x7F)]*/', '', $output); break; // Remove characters outside of ASCII128 range.
+          case 'alphanum': $newData[$indexName] = preg_replace('/[^a-zA-Z0-9]*/', '', str_replace(array_keys($config['romanisation']), array_values($config['romanisation']), $output)); break;
         }
         break;
       }

@@ -105,13 +105,14 @@ $request = fim_sanitizeGPC('p', array(
   'parentalAge' => array(
     'context' => 'int',
     'valid' => $config['parentalAges'],
-    'default' => 6,
+    'default' => $config['parentalAgeDefault'],
   ),
 
   'parentalFlags' => array(
     'context' => array(
       'type' => 'csv',
       'valid' => $config['parentalFlags'],
+      'default' => $config['parentalFlagsDefault'],
     ),
   ),
 ));

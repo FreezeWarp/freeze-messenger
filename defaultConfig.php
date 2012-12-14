@@ -63,6 +63,8 @@ $defaultConfig = array(
   'fileUploadChunkSize' => 1024,
   'uploadMaxFiles' => -1,
   'uploadMaxUserFiles' => -1,
+  'allowEmptyFiles' => false,
+  'allowOrphanFiles' => false,
 
   'avatarMaximumWidth' => 1000,
   'avatarMaximumHeight' => 1000,
@@ -164,6 +166,22 @@ $defaultConfig = array(
     "Papyrus" => "Papyrus, fantasy",
     "Copperplate Gothic Bold" => "'Copperplate Gothic Bold', fantasy",
     "Rockwell Extra Bold" => "'Rockwell Extra Bold', fantasy",
+  ),
+  
+  'romanisation' => array(
+    'á' => 'a', 'ä' => 'a', 'å' => 'a', 'Á' => 'A', 'Ä' => 'A', 'Å' => 'A',
+    'é' => 'e', 'ë' => 'e', 'É' => 'E', 'Ë' => 'E',
+    'ú' => 'u', 'ü' => 'u', 'Ú' => 'U', 'Ü' => 'U',
+    'í' => 'i', 'ï' => 'i', 'Í' => 'I', 'Ï' => 'I',
+    'ó' => 'o', 'ö' => 'o', 'Ó' => 'O', 'Ö' => 'O',
+    'æ' => 'ae', 'Æ' => 'AE',
+    'ß' => 'ss',
+    'ð' => 'd', 'Ð' => 'd'
+    'œ' => 'ce', 'Œ' => 'CE',
+    'þ' => 'th' 'Þ' => 'TH',
+    'ñ' => 'n',
+    'µ' => 'mu',
+    'œ' => 'oe',
   ),
 );
 ?>
