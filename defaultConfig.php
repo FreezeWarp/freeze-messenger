@@ -65,6 +65,7 @@ $defaultConfig = array(
   'uploadMaxUserFiles' => -1,
   'allowEmptyFiles' => false,
   'allowOrphanFiles' => false,
+  'imageTypes' => array(IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG),
 
   'avatarMaximumWidth' => 1000,
   'avatarMaximumHeight' => 1000,
@@ -137,7 +138,9 @@ $defaultConfig = array(
   'parentalFlagsDefault' => array(), // Flags on by default.
   'parentalRegistrationAge' => 0, // Age required to register.
   'parentalFlags' => array('language', 'violence', 'gore', 'drugs', 'gambling', 'nudity', 'suggestive', 'weapons'),
-  'parentalAges' => array(6,10,13,16,18),
+  'parentalAges' => array(6, 10, 13, 16, 18),
+  
+  'curlUA' => 'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)',
 
   'enableCensor' => true,
 

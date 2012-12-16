@@ -92,6 +92,7 @@ $request = fim_sanitizeGPC('p', array(
 
   'roomName' => array(
     'require' => false,
+    'trim' => true,
   ),
 
   'defaultPermissions' => array(

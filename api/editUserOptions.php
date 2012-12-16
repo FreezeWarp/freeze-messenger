@@ -21,6 +21,98 @@
  * @version 3.0
  * @author Jospeph T. Parsons <rehtaew@gmail.com>
  * @copyright Joseph T. Parsons 2012
+ *
+ * =GET Parameters=
+ These parameteres are, where applicable, documented in the SQL documentation.
+
+ * @param int defaultRoomId
+ * @param uri avatar
+ * @param uri profile
+ * @param array[r,g,b] defaultColor - A comma-seperated list of the three chroma values, corresponding to red, green, and blue. The range of these chroma values is [0,255], where 0 is no color, and 255 is full color.
+ * @param array[r,g,b] defaultHighlight - Same as defaultColor.
+ * @param string defaultFontface
+ * @param int defaultFormatting
+ * @param csv watchRooms - A comma-seperated list comma-seperated list of room IDs that will be watched. When a new message is made in these rooms, the user will be notified.
+ * @param csv ignoreList - A comma-seperated list of user IDs that will be ignored for private messages.
+ * @param int parentalAge - The parental age corresponding to the room.
+ * @param csv parentalFlags - A comma-separated list of parental flags that apply to the room.
+ *
+ * =Errors=
+ * Error codes are listed by the parent node they appear under:
+ *
+ * ==editUserOptions==
+ * No error codes are thrown.
+ *
+ * ==avatar==
+ * @throw smallSize - The avatar's dimensions are below the server minimum. This may also occur if a valid image was not sent.
+ * @throw bigSize - The avatar's dimensions exceed the server maximum.
+ * @throw badType - The avatar's filetype is not supported.
+ * @throw bannedFile - The file has been been blocked by a server regex blacklist. [[TODO.]]
+
+ * ==profile==
+ * @throw noUrl - A valid URL was not provided.
+ * @throw bannedUrl - The URL has been blocked by a server regex blacklist. [[TODO.]]
+
+ * ==defaultRoom==
+ * @throw noPerm - The user is not allowed to view the room specified.
+
+ * ==defaultHighlight, defaultColor==
+ * @throw outOfRange1 - The first color value, red, is out of the [0,255] range.
+ * @throw outOfRange2 - The second color value, green, is out of the [0,255] range.
+ * @throw outOfRange3 - The second color value, blue, is out of the [0,255] range.
+ * @throw badFormat - Too few, or too many, chroma values were specified.
+ 
+ * ==defaultFontface==
+ * @throw noFont - The font specified does not exist.
+
+ * ==parentalAge==
+ * @throw badAge - The parental age specified is not valid.
+ *
+ * =Response=
+ * @return APIOBJ
+ ** editUserOptions
+ *** activeUser
+ **** userId
+ **** userName
+ *** errStr
+ *** errDesc
+ *** response
+ **** avatar
+ ***** status - true or false
+ ***** newValue
+ ***** errStr
+ ***** errDesc
+ **** profile
+ ***** status - true or false
+ ***** newValue
+ ***** errStr
+ ***** errDesc
+ **** defaultRoom
+ ***** status - true or false
+ ***** newValue
+ ***** errStr
+ ***** errDesc
+ **** defaultFormatting
+ ***** status - true or false (always true)
+ ***** newValue
+ **** defaultHighlight, defaultColor
+ ***** status - true or false
+ ***** newValue
+ ***** errStr
+ ***** errDesc
+ **** defaultFontface
+ ***** status - true or false
+ ***** newValue
+ ***** errStr
+ ***** errDesc
+ **** parentalAge
+ ***** status - true or false
+ ***** newValue
+ ***** errStr
+ ***** errDesc
+ **** parentalFlags
+ ***** status - true or false
+ ***** newValue
 */
 
 $apiRequest = true;
@@ -35,29 +127,31 @@ $request = fim_sanitizeGPC('p', array(
     'context' => 'int',
   ),
 
-  'avatar' => array(),
+  'avatar' => array(
+    'trim' => true,
+  ),
 
-  'profile' => array(),
+  'profile' => array(
+    'trim' => true,
+  ),
 
-  'defaultFontface' => array(),
+  'defaultFontface' => array(
+    'trim' => true,
+  ),
 
-  'defaultColor' => array(),
+  'defaultColor' => array(
+    'trim' => true,
+  ),
 
-  'defaultHighlight' => array(),
+  'defaultHighlight' => array(
+    'trim' => true,
+  ),
 
   'defaultFormatting' => array(
     'context' => 'int',
   ),
 
   'watchRooms' => array(
-    'context' => array(
-      'type' => 'csv',
-      'filter' => 'int',
-      'evaltrue' => true,
-    ),
-  ),
-
-  'favRooms' => array(
     'context' => array(
       'type' => 'csv',
       'filter' => 'int',
@@ -120,7 +214,7 @@ if ($loginConfig['method'] === 'vanilla') {
       $xmlData['editUserOptions']['response']['avatar']['errStr'] = 'bigSize';
       $xmlData['editUserOptions']['response']['avatar']['errDesc'] = 'The avatar specified is too large.';
     }
-    elseif (!in_array($imageData[2], array(IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG))) {
+    elseif (!in_array($imageData[2], $config['imageType'])) {
       $xmlData['editUserOptions']['response']['avatar']['status'] = false;
       $xmlData['editUserOptions']['response']['avatar']['errStr'] = 'badType';
       $xmlData['editUserOptions']['response']['avatar']['errDesc'] = 'The avatar is not a valid image type.';
@@ -148,7 +242,7 @@ if ($loginConfig['method'] === 'vanilla') {
     }
     else {
       $ch = curl_init($request['profile']);
-      curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)');
+      curl_setopt($ch, CURLOPT_USERAGENT, $config['curlUA']);
       curl_setopt($ch, CURLOPT_NOBODY, true);
       curl_exec($ch);
       $retcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
