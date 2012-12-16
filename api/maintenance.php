@@ -22,7 +22,7 @@ die('This feature will be added in FIMv4.');
  *
  * @package fim3
  * @version 3.0
- * @author Jospeph T. Parsons <rehtaew@gmail.com>
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
  *
  * @param string action - The maintenance action to perform.

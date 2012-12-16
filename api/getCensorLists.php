@@ -18,7 +18,7 @@
  * Get All Censor Lists, Optionally With the Active Status in One or More Rooms
  * @package fim3
  * @version 3.0
- * @author Jospeph T. Parsons <rehtaew@gmail.com>
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
  *
  * @param string rooms - A comma-seperated list of room IDs to query for whether or not the list is active in that room.

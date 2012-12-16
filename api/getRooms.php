@@ -19,7 +19,7 @@
  *
  * @package fim3
  * @version 3.0
- * @author Jospeph T. Parsons <rehtaew@gmail.com>
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
  * @param bool [showDeleted=false] - Will attempt to show deleted rooms, assuming the user has access to them (that is, is an administrator). Defaults to false.
  * @param string [order=roomId] - How the rooms should be ordered (either roomId or roomName).

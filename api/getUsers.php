@@ -19,7 +19,7 @@
  *
  * @package fim3
  * @version 3.0
- * @author Jospeph T. Parsons <rehtaew@gmail.com>
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
  *
  * @param string [users] - A comma-seperated list of user IDs to get. If not specified, all users will be retrieved.
