@@ -91,9 +91,9 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false, $allowed
 /**
  * Determines if a user has permission to do an action in a room.
  *
- * @param array $roomData - An array containing the room's data; indexes allowedUsers, allowedGroups, moderators, owner, and options may be used.
- * @param array $userData - An array containing the user's data; indexes userId, adminPrivs, and userPrivs may be used.
- * @param string $type - Either "topic", "view", "post", "moderate", or "admin", this defines the action the user is trying to do.
+ * @param array $roomData - An array containing the room's data; indexes roomId, allowedUsers, allowedGroups, moderators, owner, options, defaultPermissions, type, parentalAge, and parentalFlags are required; index roomUsersList is required if type is "private" or "otr".
+ * @param array $userData - An array containing the user's data; indexes userId, adminPrivs, userPrivs, parentalAge, and parentalFlags are required.
+ * @param string $type - Either "view", "post", "moderate", or "admin", this defines the action the user is trying to do.
  * @param bool $trans - If true, return will be an information array; otherwise bool.
  * @global bool $banned - Whether or not the user is banned outright.
  * @global array $superUsers - The list of superUsers.

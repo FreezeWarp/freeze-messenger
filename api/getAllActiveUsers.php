@@ -15,18 +15,44 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 /**
- * Get the Active Users of All Rooms
- * This ONLY queries for non-private rooms.
+ * Get the Active Users of All Rooms (sans Public Rooms)
  *
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
  *
- * @param int [time = time()] - Time in which to determine user activity. Default is the current time.
- * @param int [onlineThreshold = 15] - The period of time after which a user is no longer “active”. Default is 15, which may be overriden in the product configuration.
- * @param string [users = ''] - A comma-sperated list of user IDs to filter by. If not specified, all users will be shown.
- * @todo Update for join
+ * Specification not yet stable. Expect minor updates in Beta 4 or Beta 5.
+ *
+ * =GET Parameters=
+ * @param int onlineThreshold - How recent the user's last ping must be to be considered active. The default is generally recommended, but for special purposes you may wish to increase or decrease this.
+ * @param csv users - Restrict the active users result to this comma-separated list of user IDs, if specified.
+ *
+ * =Errors=
+ *
+ * =Response=
+ * @return APIOBJ
+ * getAllActiveUsers
+ ** activeUser
+ *** userId
+ *** userName
+ ** errStr
+ ** errDesc
+ ** users
+ *** user $userId
+ **** userId
+ **** userName
+ **** userGroup
+ **** socialGroups
+ **** startTag
+ **** endTag
+ **** status
+ **** rooms
+ ***** room $roomId
+ ****** roomId
+ ****** roomName
+ ****** roomTopic
+
 */
 
 $apiRequest = true;
@@ -39,11 +65,6 @@ require('../global.php');
 $request = fim_sanitizeGPC('g', array(
   'onlineThreshold' => array(
     'default' => (int) $config['defaultOnlineThreshold'],
-    'context' => 'int',
-  ),
-
-  'time' => array(
-    'default' => (int) time(),
     'context' => 'int',
   ),
 
@@ -77,8 +98,9 @@ $xmlData = array(
 );
 
 $queryParts['activeUsersSelect']['columns'] = array(
-  "{$sqlPrefix}users" => 'userName, userId, userFormatStart, userFormatEnd',
-  "{$sqlPrefix}rooms" => 'roomName, roomId, defaultPermissions, owner, options',
+  "{$sqlPrefix}users" => 'userId, userName, userFormatStart, userFormatEnd, userGroup, socialGroups, typing, status',
+  //"{$sqlPrefix}rooms" => 'roomName, roomId, defaultPermissions, owner, options',
+  "{$sqlPrefix}rooms" => 'roomName, roomId, allowedUsers, allowedGroups, moderators, owner, options, defaultPermissions, type, parentalAge, parentalFlags rparentalFlags',
   "{$sqlPrefix}ping" => 'time ptime, userId puserId, roomId proomId',
 );
 $queryParts['activeUsersSelect']['conditions'] = array(
@@ -167,6 +189,8 @@ if (is_array($activeUsers)) {
           'userData' => array(
             'userId' => (int) $activeUser['userId'],
             'userName' => (string) $activeUser['userName'],
+            'userGroup' => (string) $activeUser['userGroup'],
+            'socialGroups' => (string) $activeUser['socialGroups'],
             'startTag' => (string) $activeUser['userFormatStart'],
             'endTag' => (string) $activeUser['userFormatEnd'],
           ),
@@ -174,12 +198,12 @@ if (is_array($activeUsers)) {
         );
       }
 
-//      if (fim_hasPermission($activeUser, $activeUser, 'view', false)) { // Only list the room the user is in if the active user has permission to view the room.
+      if (fim_hasPermission($activeUser, $user, 'view', false)) { // Only list the room the user is in if the active user has permission to view the room.
         $xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']]['rooms']['room ' . $activeUser['roomId']] = array(
           'roomId' => (int) $activeUser['roomId'],
           'roomName' => (string) $activeUser['roomName'],
         );
-//      }
+      }
 
       ($hook = hook('getAllActiveUsers_eachUser_end') ? eval($hook) : '');
     }

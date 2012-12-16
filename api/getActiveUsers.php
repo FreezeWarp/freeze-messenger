@@ -15,18 +15,46 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 /**
- * Get the Active Users of a Single Room
- * Works with both normal and private rooms.
+ * Get the Active Users of a One or More Rooms
  *
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
+ * @todo Support Private Rooms
  *
- * @param string rooms - A comma-seperated list of room IDs to query.
- * @param int [time = time()] - Time in which to determine user activity. Default is the current time.
- * @param int [onlineThreshold = 15] - The period of time after which a user is no longer “active”. Default is 15, which may be overriden in the product configuration.
- * @param string [users = ''] - A comma-sperated list of user IDs to filter by. If not specified, all users will be shown.
+ * =GET Parameters=
+ * @param csv rooms - Comma-separated list of rooms to obtain active users for. [[Required.]]
+ * @param int onlineThreshold - How recent the user's last ping must be to be considered active. The default is generally recommended, but for special purposes you may wish to increase or decrease this.
+ * @param csv users - Restrict the active users result to these users, if specified.
+ *
+ * =Errors=
+ *
+ * =Response=
+ * @return APIOBJ
+ ** getActiveUsers
+ *** activeUser
+ *** userId
+ *** userName
+ *** errStr
+ *** errDesc
+ *** rooms
+ **** room $roomId
+ ***** roomData
+ ****** roomId
+ ****** roomName
+ ****** roomTopic
+ ***** users
+ ****** user $userId
+ ******* userId
+ ******* userName
+ ******* userGroup
+ ******* socialGroups
+ ******* startTag
+ ******* endTag
+ ******* status
+ ******* typing
+
 */
 
 $apiRequest = true;
@@ -39,6 +67,7 @@ require('../global.php');
 $request = fim_sanitizeGPC('g', array(
   'rooms' => array(
     'default' => '',
+    'require' => true,
     'context' => array(
       'type' => 'csv',
       'filter' => 'int',
@@ -47,12 +76,7 @@ $request = fim_sanitizeGPC('g', array(
   ),
 
   'onlineThreshold' => array(
-    'default' => ($onlineThreshold ? $onlineThreshold : 15),
-    'context' => 'int',
-  ),
-
-  'time' => array(
-    'default' => (int) time(),
+    'default' => (int) $config['defaultOnlineThreshold'],
     'context' => 'int',
   ),
 
@@ -108,20 +132,9 @@ $queryParts['roomSelect'] = array(
 );
 
 $queryParts['activeUsersSelect']['columns'] = array(
-  "{$sqlPrefix}ping" => array(
-    'status' => 'status',
-    'typing' => 'typing',
-    'time' => 'ptime',
-    'roomId' => 'proomId',
-    'userId' => 'puserId',
-  ),
-  "{$sqlPrefix}rooms" => array(
-    'roomId' => 'roomId',
-  ),
-  "{$sqlPrefix}users" => array(
-    'userId' => 'userId',
-    'userName' => 'userName',
-  ),
+  "{$sqlPrefix}ping" => 'status, typing, time ptime, roomId proomId, userId puserId',
+  "{$sqlPrefix}rooms" => 'roomId',
+  "{$sqlPrefix}users" => 'userId, userName, userFormatStart, userFormatEnd, userGroup, socialGroups, typing, status',
 );
 $queryParts['activeUsersSelect']['conditions'] = array(
   'both' => array(
@@ -166,7 +179,7 @@ $queryParts['activeUsersSelect']['conditions'] = array(
       ),
       'right' => array(
         'type' => 'int',
-        'value' => (int) ($request['time'] - $request['onlineThreshold']),
+        'value' => (int) ((int) time() - $request['onlineThreshold']),
       ),
     ),
   ),
@@ -200,71 +213,65 @@ if (count($request['users']) > 0) {
 
 
 /* Start Processing */
-if (count($request['rooms']) > 0) {
-  foreach ($request['rooms'] AS $roomId) { // Run through each room.
-    // Get the room data.
-    $room = $database->select($queryParts['roomSelect']['columns'],
-      $queryParts['roomSelect']['conditions'],
-      false,
-      1);
-    $room = $room->getAsArray(false);
+foreach ($request['rooms'] AS $roomId) { // Run through each room.
+  // Get the room data.
+  $room = $database->select($queryParts['roomSelect']['columns'],
+    $queryParts['roomSelect']['conditions'],
+    false,
+    1);
+  $room = $room->getAsArray(false);
 
 
-    ($hook = hook('getActiveUsers_eachRoom_start') ? eval($hook) : ''); // Hook that will be run at the start of each room.
+  ($hook = hook('getActiveUsers_eachRoom_start') ? eval($hook) : ''); // Hook that will be run at the start of each room.
 
 
-    if (fim_hasPermission($room,$user,'know',true) === false) { // The user must be able to know the room exists.
-      ($hook = hook('getActiveUsers_eachRoom_noPerm') ? eval($hook) : ''); // Hook that will be executed if the user does not have permission here.
+  if (fim_hasPermission($room, $user, 'know', true) === false) { // The user must be able to know the room exists.
+    ($hook = hook('getActiveUsers_eachRoom_noPerm') ? eval($hook) : ''); // Hook that will be executed if the user does not have permission here.
 
-      continue; // Skip to next iteration (strictly speaking, redundant)
-    }
-    else {
-      $activeUsers = $database->select($queryParts['activeUsersSelect']['columns'],
-        $queryParts['activeUsersSelect']['conditions'],
-        $queryParts['activeUsersSelect']['sort']);
-
-
-
-      /* Define Room Summary */
-      $xmlData['getActiveUsers']['rooms']['room ' . $room['roomId']] = array(
-        'roomData' => array(
-          'roomId' => (int) $activeUser['roomId'],
-          'roomName' => (string) $activeUser['roomName'],
-          'roomTopic' => (string) $activeUser['roomTopic'],
-        ),
-        'users' => array(),
-      );
-
-
-
-      /* Process Active Users */
-      if (is_array($activeUsers)) {
-        if (count($activeUsers) > 0) {
-          foreach ($activeUsers AS $activeUser) {
-            ($hook = hook('getActiveUsers_eachUser') ? eval($hook) : ''); // Hook that will be run for each active user.
-
-            $xmlData['getActiveUsers']['rooms']['room ' . $room['roomId']]['users']['user ' . $activeUser['userId']] = array(
-              'userId' => (int) $activeUser['userId'],
-              'userName' => (string) $activeUser['userName'],
-              'userGroup' => (int) $activeUser['userGroup'],
-              'socialGroups' => (string) $activeUser['socialGroups'],
-              'startTag' => (string) $activeUser['startTag'],
-              'endTag' => (string) $activeUser['endTag'],
-              'status' => (string) $activeUser['status'],
-              'typing' => (bool) $activeUser['typing'],
-            );
-          }
-        }
-      }
-
-
-      ($hook = hook('getActiveUsers_eachRoom_end') ? eval($hook) : ''); // Hook that will be run at the end of each room.
-    }
+    continue; // Skip to next iteration (strictly speaking, redundant)
   }
-}
-else {
-  $errStr = 'badRoomsRequest';
-  $errDesc = 'The room string was not supplied or evaluated to false.';
+  else {
+    $activeUsers = $database->select($queryParts['activeUsersSelect']['columns'],
+      $queryParts['activeUsersSelect']['conditions'],
+      $queryParts['activeUsersSelect']['sort']);
+
+
+
+    /* Define Room Summary */
+    $xmlData['getActiveUsers']['rooms']['room ' . $room['roomId']] = array(
+      'roomData' => array(
+        'roomId' => (int) $activeUser['roomId'],
+        'roomName' => (string) $activeUser['roomName'],
+        'roomTopic' => (string) $activeUser['roomTopic'],
+      ),
+      'users' => array(),
+    );
+
+
+
+    /* Process Active Users */
+    if (is_array($activeUsers)) {
+      if (count($activeUsers) > 0) {
+	foreach ($activeUsers AS $activeUser) {
+	  ($hook = hook('getActiveUsers_eachUser') ? eval($hook) : ''); // Hook that will be run for each active user.
+
+	  $xmlData['getActiveUsers']['rooms']['room ' . $room['roomId']]['users']['user ' . $activeUser['userId']] = array(
+	    'userId' => (int) $activeUser['userId'],
+	    'userName' => (string) $activeUser['userName'],
+	    'userGroup' => (int) $activeUser['userGroup'],
+	    'socialGroups' => (string) $activeUser['socialGroups'],
+	    'startTag' => (string) $activeUser['userFormatStart'],
+	    'endTag' => (string) $activeUser['userFormatEnd'],
+	    'status' => (string) $activeUser['status'],
+	    'typing' => (bool) $activeUser['typing'],
+	  );
+	}
+      }
+    }
+
+
+    ($hook = hook('getActiveUsers_eachRoom_end') ? eval($hook) : ''); // Hook that will be run at the end of each room.
+  }
 }
 
 

@@ -22,42 +22,42 @@
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
  *
- * =GET Parameters=
- * @param string $_GET[action] The action to be performed by the script, either:
+ * =POST Parameters=
+ * @param string action - The action to be performed by the script, either:
  ** 'create' - Creates a new file.
  ** 'edit' - Edits an existing file.
  ** 'delete' - Marks a file as deleted. (File data will remain on the server.)
  ** 'undelete' - Unmarks a file as deleted.
- * @param string $_GET[uploadMethod='raw'] How the file is being transferred from the server, either:
+ * @param string uploadMethod='raw' - How the file is being transferred from the server, either:
  ** 'raw' - File data is stored in the "fileData" POST variable.
  ** 'put' - File is being transferred via PUT. [[Unstable.]]
- * @param string $_GET[fileName] The name of the file. [[Required.]]
- * @param string $_GET[fileData] The data of the file. If not specified, the file will be stored empty.
- * @param int $_GET[fileSize] The size of the file (in bytes), used for checks.  [[TODO: Bugtest.]]
- * @param string $_GET[fileMd5Hash] The MD5 hash of the file, used for checks.
- * @param string $_GET[fileSha256Hash] The SHA256 hash of the file, used for checks.
- * @param int $_GET[roomId] If the image is to be directly posted to a room, specify the room ID here. This may be required, depending on server settings.
- * @param string $_GET[dataEncode] How the data is encoded, either:
+ * @param string fileName - The name of the file. [[Required.]]
+ * @param string fileData - The data of the file. If not specified, the file will be stored empty.
+ * @param int fileSize - The size of the file (in bytes), used for checks.  [[TODO: Bugtest.]]
+ * @param string fileMd5Hash - The MD5 hash of the file, used for checks.
+ * @param string fileSha256Hash - The SHA256 hash of the file, used for checks.
+ * @param int roomId - If the image is to be directly posted to a room, specify the room ID here. This may be required, depending on server settings.
+ * @param string dataEncode - How the data is encoded, either:
  ** 'base64' - Data is encoded as Base64.
  ** 'binary' - Data is not encoded. [[Unstable.]]
- * @param string $_GET[parentalAge] The parental age corresponding to the file. If the age is not recognised, a server-defined default will be used.
- * @param csv $_GET[parentalFlags] A comma-separated list of parental flags that apply to the file. If a flag is not recognised, it will be dropped. If omitted, a server-defined default will be used.
- * @param int $_GET[fileId] If editing, deleting, or undeleting the file, this is the ID of the file.
+ * @param string parentalAge - The parental age corresponding to the file. If the age is not recognised, a server-defined default will be used.
+ * @param csv parentalFlags - A comma-separated list of parental flags that apply to the file. If a flag is not recognised, it will be dropped. If omitted, a server-defined default will be used.
+ * @param int fileId - If editing, deleting, or undeleting the file, this is the ID of the file.
  *
  * =Errors=
- * @throws tooManyFiles The user is not allowed to upload files because they have reached the file upload limit, either for themselves or for the entire server.
- * @throws badEncoding The encoding specified is not recognised.
- * @throws badMd5Hash The md5 hash of the uploaded file data does not match the md5 hash sent.
- * @throws badSha256Hash The sha256 hash of the uploaded file data does not match the sha256 hash sent.
- * @throws badSize The size of the uploaded file data does not match the fileSize parameter sent.
- * @throws badName No name was specified, or, potentially, the name contained characters that are not allowed but will not be removed.
- * @throws badNameParts An extension could not be obtained because of the number of '.' characters in the file. If there are zero, or two or more, then this error will thrown. (Thus, for example, ".tar.gz" files can not be processed by the script.)
- * @throws emptyFile The file sent was empty. This is only thrown if the server does not accept empty files.
- * @throws tooLarge The file data exceeds the server limit.
- * @throws unrecExt The extension of the file is not recognised by the server, and thus is not accepted.
- * @throws invalidFile The 'fileId' parameter sent does not correspond to an existing file.
- * @throws noPerm The active user does not have permission to perform the action requested.
- * @throws noOrphanFiles A valid room was not provided, and the server requires that all files are associated with a room.
+ * @throws tooManyFiles - The user is not allowed to upload files because they have reached the file upload limit, either for themselves or for the entire server.
+ * @throws badEncoding - The encoding specified is not recognised.
+ * @throws badMd5Hash - The md5 hash of the uploaded file data does not match the md5 hash sent.
+ * @throws badSha256Hash - The sha256 hash of the uploaded file data does not match the sha256 hash sent.
+ * @throws badSize - The size of the uploaded file data does not match the fileSize parameter sent.
+ * @throws badName - No name was specified, or, potentially, the name contained characters that are not allowed but will not be removed.
+ * @throws badNameParts - An extension could not be obtained because of the number of '.' characters in the file. If there are zero, or two or more, then this error will thrown. (Thus, for example, ".tar.gz" files can not be processed by the script.)
+ * @throws emptyFile - The file sent was empty. This is only thrown if the server does not accept empty files.
+ * @throws tooLarge - The file data exceeds the server limit.
+ * @throws unrecExt - The extension of the file is not recognised by the server, and thus is not accepted.
+ * @throws invalidFile - The 'fileId' parameter sent does not correspond to an existing file.
+ * @throws noPerm - The active user does not have permission to perform the action requested.
+ * @throws noOrphanFiles - A valid room was not provided, and the server requires that all files are associated with a room.
  *
  * =Reponse=
  * @return APIOBJ:
@@ -67,7 +67,7 @@
  **** userName
  *** errStr
  *** errDesc
- *** response [TODO]
+ *** response [[TODO]]
 */
 
 $apiRequest = true;

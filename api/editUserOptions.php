@@ -15,14 +15,14 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 /**
- * Edit's the Logged-In User's Options
+ * Edits the Logged-In User's Options
  *
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
  *
- * =GET Parameters=
+ * =POST Parameters=
  These parameteres are, where applicable, documented in the SQL documentation.
 
  * @param int defaultRoomId

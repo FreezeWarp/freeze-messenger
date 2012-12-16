@@ -22,7 +22,7 @@
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
  *
- * =GET Parameters=
+ * =POST Parameters=
  * @param action The action to be performed by the script, either: [[Required.]]
  ** 'create' - Creates a room with the data specified.
  ** 'edit' - Updates a room with the data specified.
@@ -30,16 +30,16 @@
  ** 'undelete' - Unmarks a room as deleted.
  *
  * ==Edit, Delete, and Undelete Parameters==
- * @param int roomId - The editing, deleting, or undeleting, this is the ID of the room.
+ * @param int roomId - The ID of the room to be modified, deleted, or undeleted.
  *
  * ==Create and Edit Paramters==
- * @param string roomName - The name the room should be set to. [[Required.]]
- * @param int defaultPermissions - The default permissions all users are granted to a room.
+ * @param string roomName - The name the room should be set to. Required when creating a room.
+ * @param int defaultPermissions=0 - The default permissions all users are granted to a room.
  * @param csv moderators - A comma-separated list of user IDs who will be allowed to moderate the room.
  * @param csv allowedUsers - A comma-separated list of user IDs who will be allowed access to the room.
  * @param csv allowedGroups - A comma-separated list of group IDs who will be allowed to access the room.
- * @param int parentalAge - The parental age corresponding to the room.
- * @param csv parentalFlag - A comma-separated list of parental flags that apply to the room.
+ * @param int parentalAge=$config['parentalAgeDefault'] - The parental age corresponding to the room.
+ * @param csv parentalFlag=$config['parentalFlagsDefault'] - A comma-separated list of parental flags that apply to the room.
  *
  * =Errors=
  * @throws noPerm - The user does not have permission to perform the action specified.
@@ -189,6 +189,8 @@ switch($request['action']) {
   }
   elseif ($request['action'] === 'edit') {
     $room = $slaveDatabase->getRoom($request['roomId']);
+    if (!$request['roomName']) { $request['roomName'] = $room['roomName']; } // If only a user ID was provided, we will fill in the room name here.
+
     $data = $slaveDatabase->getRoom(false, $request['roomName']);
 
     if ($room === false) {
@@ -206,7 +208,7 @@ switch($request['action']) {
       $errDesc = 'The room has been deleted - it can not be edited.';
       $continue = false;
     }
-    elseif ($data !== false && $data['roomId'] != $room['roomId']) { // Make sure no other room with that name exists (if no room is found, the result is false), and that, of course, this only applies if the user just specified the current room's existing name.
+    elseif ($data !== false && $data['roomId'] !== $room['roomId']) { // Make sure no other room with that name exists (if no room is found, the result is false), and that, of course, this only applies if the user just specified the current room's existing name.
       $errStr = 'exists';
       $errDesc = 'The room name specified already exists.';
       $continue = false;
