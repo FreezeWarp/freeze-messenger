@@ -323,7 +323,7 @@
  *
  * http://docs.jquery.com/UI/Autocomplete#theming
  */
-.ui-autocomplete { position: absolute; cursor: default; }	
+.ui-autocomplete { position: absolute; cursor: default; }       
 
 /* workarounds */
 * html .ui-autocomplete { width:1px; } /* without this, the menu expands to 100% in IE6 */
@@ -338,34 +338,34 @@
  * http://docs.jquery.com/UI/Menu#theming
  */
 .ui-menu {
-	list-style:none;
-	padding: 2px;
-	margin: 0;
-	display:block;
-	float: left;
+        list-style:none;
+        padding: 2px;
+        margin: 0;
+        display:block;
+        float: left;
 }
 .ui-menu .ui-menu {
-	margin-top: -3px;
+        margin-top: -3px;
 }
 .ui-menu .ui-menu-item {
-	margin:0;
-	padding: 0;
-	zoom: 1;
-	float: left;
-	clear: left;
-	width: 100%;
+        margin:0;
+        padding: 0;
+        zoom: 1;
+        float: left;
+        clear: left;
+        width: 100%;
 }
 .ui-menu .ui-menu-item a {
-	text-decoration:none;
-	display:block;
-	padding:.2em .4em;
-	line-height:1.5;
-	zoom:1;
+        text-decoration:none;
+        display:block;
+        padding:.2em .4em;
+        line-height:1.5;
+        zoom:1;
 }
 .ui-menu .ui-menu-item a.ui-state-hover,
 .ui-menu .ui-menu-item a.ui-state-active {
-	font-weight: normal;
-	margin: -1px;
+        font-weight: normal;
+        margin: -1px;
 }
 /*
  * jQuery UI Button 1.8.16
@@ -691,12 +691,12 @@ html, body{background-color:#ffffff;}
 .ui-tabs-nav{border-color:#d4d4d4;}
 
 /* Dialog states */
-.ui-dialog{border-color:#3399ff;background-color:#ffffff !important;}
-.ui-dialog-titlebar{border-color:#3399ff;color:#ffffff;background-color:#3399ff;}
-.ui-dialog-buttonpane{border-color:#3399ff !important;background-color:#ffffff;}
+.ui-dialog{border-color:#0072C6;background-color:#ffffff !important;}
+.ui-dialog-titlebar{border-color:#0072C6;color:#ffffff;background-color:#0072C6;}
+.ui-dialog-buttonpane{border-color:#0072C6 !important;background-color:#ffffff;}
 .ui-dialog-content{background-color:#ffffff !important;}
 .ui-dialog-titlebar .ui-icon{background-image:url(images/ui-icons_ffffff_0.png);}
-.ui-dialog-titlebar .ui-state-hover .ui-icon{background-image:url(images/ui-icons_3399ff_0.png) !important;}
+.ui-dialog-titlebar .ui-state-hover .ui-icon{background-image:url(images/ui-icons_0072C6_0.png) !important;}
 .ui-dialog-titlebar-close{background-image:url(images/ui-icons_ffffff_0.png) !important;background-position: -232px -216px !important;}
 .ui-dialog-titlebar-close.ui-state-hover{background:url(images/ui-icons_ffffff_0.png) !important;background-position: -232px -168px !important;}
 
@@ -706,7 +706,7 @@ html, body{background-color:#ffffff;}
 
 /* Slider */
 .ui-slider{background:#d4d4d4;}
-.ui-slider .ui-slider-range{background:#3399ff;}
+.ui-slider .ui-slider-range{background:#0072C6;}
 .ui-slider .ui-state-default{background-color:#000000;}
 .ui-slider .ui-state-active{background-color:#525252 !important;}
 .ui-slider .ui-state-focus{background-color:#000000;}
@@ -714,7 +714,7 @@ html, body{background-color:#ffffff;}
 
 /* Progressbar */
 .ui-progressbar{background:#d4d4d4;}
-.ui-progressbar .ui-progressbar-value{background-color:#3399ff;}
+.ui-progressbar .ui-progressbar-value{background-color:#0072C6;}
 
 /* Autocomplete */
 
@@ -723,8 +723,8 @@ html, body{background-color:#ffffff;}
 .ui-autocomplete .ui-state-hover{background:#3399ff;color:#ffffff;}
 
 /* Datepicker */
-.ui-datepicker {border-color:#3399ff;}
-.ui-datepicker .ui-datepicker-header{background-color:#3399ff;color:#ffffff;}
+.ui-datepicker {border-color:#0072C6;}
+.ui-datepicker .ui-datepicker-header{background-color:#0072C6;color:#ffffff;}
 .ui-datepicker table {border-color:#ffffff; }
 .ui-datepicker-calendar{background:#ffffff;}
 .ui-datepicker-calendar .ui-state-default{background-color:#d4d4d4;border-color:#d4d4d4;color:#525252;}
@@ -733,7 +733,7 @@ html, body{background-color:#ffffff;}
 .ui-datepicker-calendar .ui-state-active{background-color:#3399ff;border-color:#3399ff;color:#ffffff;}
 .ui-datepicker .ui-icon {background-image:url(images/ui-icons_ffffff_0.png);}
 
-.ui-datepicker .ui-state-hover .ui-icon {background-image:url(images/ui-icons_3399ff_0.png)}
+.ui-datepicker .ui-state-hover .ui-icon {background-image:url(images/ui-icons_0072C6_0.png)}
 .ui-datepicker-next, .ui-datepicker-prev{background-image:url(images/ui-icons_ffffff_0.png);background-position: -232px -216px;}
 .ui-datepicker-next-hover, .ui-datepicker-prev-hover{background-image:url(images/ui-icons_ffffff_0.png) !important;background-position: -232px -168px !important;opacity:1;}
 .ui-datepicker-next.ui-state-disabled, .ui-datepicker-prev.ui-state-disabled{background-image:url(images/ui-icons_ffffff_0.png);background-position: -232px -216px;}

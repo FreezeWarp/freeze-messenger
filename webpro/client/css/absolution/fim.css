@@ -1,0 +1,15 @@
+.ui-dialog-titlebar-close {
+  height: 24px !important; 
+}
+.tabList > li > a {
+  margin-top: 0px !important; 
+}
+.ui-dialog-buttonpane {
+  margin-top: 0px !important; 
+}
+.ui-accordion-content {
+  background-color: #FAFAFA !important;
+}
+body {
+  background-color: #d7d7d7; 
+}

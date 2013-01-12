@@ -1,0 +1,33 @@
+.ui-widget-header {
+  background-color: #0072C6 !important; 
+}
+.ui-tabs-nav {
+  height: 2.5em !important; 
+}
+.ui-widget-header .ui-button {
+  background-color: #ffffff; 
+}
+.ui-widget-header .ui-button.ui-state-hover {
+  background-color: #3399ff; 
+}
+.ui-button {
+  height: 32px !important; 
+}
+.ui-button > .ui-icon {
+  margin-top: -8px !important;
+}
+.ui-accordion .ui-accordion-header .ui-icon {
+  margin-top: -16px !important; 
+}
+.ui-dialog-content .ui-button {
+  height: 3em !important; 
+}
+.tabList > li > a {
+  height: 2.5em !important; 
+}
+.ui-tabs .ui-widget-content {
+  border: 0px !important;
+}
+.tabList {
+  height: 3.5em !important; 
+}
