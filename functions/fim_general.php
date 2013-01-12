@@ -875,7 +875,7 @@ function fim_sanitizeGPC($type, $data) {
     'type' => 'string',
     'require' => false,
     'context' => false,
-//    'trim' => false,
+    'trim' => false,
   );
 
   if (strlen($requestBody) > 0) { // If a request body exists, we will use it instead of PHP's generated superglobals. This allows for further REST compatibility. We will, however, only use it for GET and POST requests, at the present time.
@@ -906,13 +906,11 @@ function fim_sanitizeGPC($type, $data) {
         break;
     }
   }
-
   if (count($activeGlobal) > 0 && is_array($activeGlobal)) { // Make sure the active global is populated with data.
     foreach ($data AS $indexName => $indexData) {
       $indexMetaData = $metaDataDefaults; // Store indexMetaData with the defaults.
-
       foreach ($indexData AS $metaName => $metaData) {
-        if (in_array($metaName === 'valid' || $metaName === 'require' || $metaName === 'trim' || $metaName === 'default')) {
+        if ($metaName === 'valid' || $metaName === 'require' || $metaName === 'trim' || $metaName === 'default') {
           $indexMetaData[$metaName] = $metaData;
         }
         elseif ($metaName === 'context') {
@@ -942,6 +940,7 @@ function fim_sanitizeGPC($type, $data) {
                 break;
                 case 'evaltrue': $indexMetaData['context']['evaltrue'] = (bool) $contextdata; break; // This specifies whether all subvalus of a context must be true. For instance, assuming we use an integer filter 0 would be removed if this was true.
                 case 'valid': $indexMetaData['context']['valid'] = (array) $contextdata; break; // This is only used with arrays and specifies which values can be included in the array.
+                default: throw new Exception('Invalid context value "' . $contextname . '" in data in fim_sanitizeGPC'); break;
               }
             }
           }
@@ -955,13 +954,12 @@ function fim_sanitizeGPC($type, $data) {
               default: throw new Exception('Invalid "type" in data in fim_sanitizeGPC'); break;
             }
           }
-          break;
+          //break;
         }
         else {
           throw new Exception('Unrecognised metadata: ' . $metaName); // TODO: Allow override/etc.
         }
       }
-
 
       if (isset($activeGlobal[$indexName])) { // Only typecast if the global is present.
         if (isset($indexMetaData['valid'])) { // If a list of valid values is specified...
@@ -983,7 +981,7 @@ function fim_sanitizeGPC($type, $data) {
           }
         }
       }
-      else {
+      else {  die($indexName);
         if ($indexMetaData['require']) { // If the value is required but not specified...
           throw new Exception('Required data not present (index ' . $indexName . ').'); // Throw an exception.
         }

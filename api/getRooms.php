@@ -36,9 +36,7 @@ require('../global.php');
 $request = fim_sanitizeGPC('g', array(
   'permLevel' => array(
     'default' => '',
-    'context' => array(
-      'valid' => array('post', 'view', 'moderate', 'know', 'admin', ''),
-    ),
+    'valid' => array('post', 'view', 'moderate', 'know', 'admin', ''),
     'require' => false,
   ),
 
@@ -52,9 +50,7 @@ $request = fim_sanitizeGPC('g', array(
   ),
 
   'sort' => array(
-    'context' => array(
-      'valid' => array('roomId', 'roomName', 'smart'),
-    ),
+    'valid' => array('roomId', 'roomName', 'smart'),
     'default' => 'roomId',
   ),
 
