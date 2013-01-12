@@ -37,9 +37,13 @@ else {
         $formattedCache = '';
         
         foreach ($generalCache->get($cache) AS $key => $value) {
+          if (is_array($value)) {
+            $value = print_r($value, true);
+          }
+          
           $formattedCache .= '<tr><td>' . $key . '</td><td>' . $value . '</td></tr>';
         }
-        
+
         echo container('Cache Entries: ' . $cache, '<table class="page ui-widget ui-widget-content" border="1">' . $formattedCache . '</table>');
       }
       break;

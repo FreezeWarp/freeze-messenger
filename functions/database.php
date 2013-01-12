@@ -607,159 +607,192 @@ LIMIT
     $whereText = array();
 
     foreach ($conditionArray AS $type => $cond) {
-      if (count($cond) > 0) {
-        foreach ($cond AS $recKey => $data) {
-          $i++;
-          $sideTextFull[$i] = '';
+      // First off, we are going to figure out whether the data specified is using the shorthand method or not. This is a bit complicated, and if we don't understand this right, the user may just have a typo, and we want to print an error for that if possible.
 
-         if (strpos($recKey, ' ') !== false) {
-           $recKeyPieces = explode(' ', $recKey);
-           $recKey = $recKeyPieces[0];
-         }
+      // First, make sure that $cond isn't empty. Pretty simple.
+      if (is_array($cond) && count($cond) > 0) {
+        // Next, we analyse whether or not any arrays exist in the $cond field. This is really very simple -- arrays do NOT exist in the shorthand version, and MUST exist in the longhand version.
+        if (fim_hasArray($cond)) {
+          foreach ($cond AS $recKey => $data) {
+            $i++;
+            $sideTextFull[$i] = '';
 
-          if ($recKey === 'both' || $recKey === 'either') {
-            $sideTextFull[$i] = $this->recurseBothEither(array($recKey => $data), $reverseAlias, $d + 1);
-          }
-          elseif (array('type', 'left', 'right') === array_keys($data)) { // Should be an array containing keys 'type', 'left', and 'right', in that order for now.
-            /* Get the Proper Comparison Operator */
-            if (isset($this->comparisonTypes[$data['type']])) { $symbol = $this->comparisonTypes[$data['type']]; }
-            else { throw new Exception('Unrecognised type operator "' . $data['type'] . '". Data: ' . print_r($conditionArray, true)); }
+            if (strpos($recKey, ' ') !== false) {
+              $recKeyPieces = explode(' ', $recKey);
+              $recKey = $recKeyPieces[0];
+            }
+
+            if ($recKey === 'both' || $recKey === 'either') {
+              $sideTextFull[$i] = $this->recurseBothEither(array($recKey => $data), $reverseAlias, $d + 1);
+            }
+            elseif (array('type', 'left', 'right') === array_keys($data)) { // The full query mode must contain the entries 'type', 'left', and 'right'.
+              /* Get the Proper Comparison Operator */
+              if (isset($this->comparisonTypes[$data['type']])) { $symbol = $this->comparisonTypes[$data['type']]; }
+              else { throw new Exception('Unrecognised type operator "' . $data['type'] . '". Data: ' . print_r($conditionArray, true)); }
 
 
-            /* Define Sides Array */
-            $sideText = array('left', 'right');
-            $hackz = array();
+              /* Define Sides Array */
+              $sideText = array('left', 'right');
+              $hackz = array();
 
 
-            /* Properly Format Left & Right Sides */
-            foreach (array('left', 'right') AS $side) { // We do the same thing for the left and right indexes, so this reduces code redundancy. Not sure if it's good practice, though...
-              if (is_array($data[$side])) {
-                switch($data[$side]['type']) {
-                  case 'string': // Strings should never be escaped before hand, otherwise values come out looking funny (and innacurate).
-                  $sideText[$side] = '"' . $this->escape($data[$side]['value']) . '"';
-                  break;
+              /* Properly Format Left & Right Sides */
+              foreach (array('left', 'right') AS $side) { // We do the same thing for the left and right indexes, so this reduces code redundancy. Not sure if it's good practice, though...
+                if (is_array($data[$side])) {
+                  switch($data[$side]['type']) {
+                    case 'string': // Strings should never be escaped before hand, otherwise values come out looking funny (and innacurate).
+                    $sideText[$side] = '"' . $this->escape($data[$side]['value']) . '"';
+                    break;
 
-                  case 'int': // Best Practice Note: The value should __always__ be typed as an INTEGER (or possibly BOOL) anyway before sending it to the select method. Using "int" as the type really only means the database sees it as such, useful for databases that may in fact use such information (say, even, a spreadsheet).
-                  $sideText[$side] = (int) $data[$side]['value'];
-                  break;
+                    case 'int': // Best Practice Note: The value should __always__ be typed as an INTEGER (or possibly BOOL) anyway before sending it to the select method. Using "int" as the type really only means the database sees it as such, useful for databases that may in fact use such information (say, even, a spreadsheet).
+                    $sideText[$side] = (int) $data[$side]['value'];
+                    break;
 
-                  case 'bool': // Best practice note: bool should only be used with values that are compared (e.g. pi = TRUE). Not that anything else is possible at the moment...
-                  if (is_bool($data[$side]['value'])) { // We force bool here, since there is really no way of properly inferring what someone might have meant in a number of cases (e.g. "false", "0" - both common over HTTP).
-                    $sideText[$side] = ($data[$side]['value'] ? 'TRUE' : 'FALSE');
-                  }
-                  else {
-                    throw new Exception('Type mismatch ("bool")'); // Throw an exception.
-                  }
-                  break;
-
-                  case 'array': // Used for IN clauses, mainly.
-                  if (is_array($data[$side])) {
-                    if (count($data[$side]['value']) > 0) {
-                      foreach ($data[$side]['value'] AS &$entry) {
-                        if (is_string($entry)) {
-                          $entry = '\'' . $this->escape($entry) . '\'';
-                        }
-                      }
-
-                      $sideText[$side] = "(" . implode(',', $data[$side]['value']) . ")";
+                    case 'bool': // Best practice note: bool should only be used with values that are compared (e.g. pi = TRUE). Not that anything else is possible at the moment...
+                    if (is_bool($data[$side]['value'])) { // We force bool here, since there is really no way of properly inferring what someone might have meant in a number of cases (e.g. "false", "0" - both common over HTTP).
+                      $sideText[$side] = ($data[$side]['value'] ? 'TRUE' : 'FALSE');
                     }
                     else {
-                      $sideText[$side] = '(NULL)';
+                      throw new Exception('Type mismatch ("bool")'); // Throw an exception.
                     }
-                  }
-                  else {
-                    throw new Exception('Type mismatch ("array")'); // Throw an exception.
-                  }
-                  break;
+                    break;
 
-                  case 'regexp': // Whatever Note: This will eventually be implemented server-side where not supported. That said, support is in PostgreSQL
-                  $sideText[$side] = '"' . $data[$side]['value'] . '"';
-                  break;
+                    case 'array': // Used for IN clauses, mainly.
+                    if (is_array($data[$side])) {
+                      if (count($data[$side]['value']) > 0) {
+                        foreach ($data[$side]['value'] AS &$entry) {
+                          if (is_string($entry)) {
+                            $entry = '\'' . $this->escape($entry) . '\'';
+                          }
+                        }
 
-                  case 'equation': // This is a specific format useful for various conversions. More documentation needs to be created, but in a nutshell: $aaa = column aaa; ()+-*/ supported mathematical operators; use ',' for concatenation; use double quotes for strings.
-                  // Valid equations: $aa + $bb; "b", $b,"c"
-                  $equation = $data[$side]['value'];
-                  $equation = preg_replace('/\$([a-zA-Z\_]+)/e','$reverseAlias[\'\\1\']', $equation);
-
-
-                  $equationPieces = array();
-                  if (strpos(',', $equation) !== false) { // If commas exist for concatenation...
-                    foreach(explode(',', $equation) AS $piece) { // Run through each comma-seperated part of the equation (this is used for concatenation).
-                      if (preg_match('/"([a-zA-Z0-9\*\?]+?)"/',trim($piece))) { // Yes, you can't use many things in strings. Nor should you.
-                        $piece = str_replace(array('*','?'),array('%','_'),trim($piece)); // Replace glob pieces with SQL equivs
-                      }
-                      $equationPieces[] = trim($piece); // Spaces can get in the way, but this is likely redundant with the twim two lines up.
-                    }
-
-                    if (count($equationPieces) > 0) { // Only replace the equation if things worked.
-                      $equation = 'CONCAT(' . implode(',', $equationPieces) . ')'; // Replace the equation and wrap concat for the commas (if concat used another symbol, we'd need to replace our implode accordingly).
-                    }
-                  }
-
-                  $sideText[$side] = $equation;
-                  break;
-
-                  case 'glob':
-                  $sideText[$side] = '"' . str_replace($this->globFindArray, $this->globReplaceArray, trim($data[$side]['value'])) . '"';
-                  break;
-
-                  case 'column':
-                  if (isset($data[$side]['context'])) {
-                    throw new Exception('Column context is deprecated.');
-                  }
-                  else {
-                    if (isset($reverseAlias[$data[$side]['value']])) {
-                      if ($symbol == 'IN' && $data['left']['type'] == 'int' && $data['right']['type'] == 'column') { // This is just a quick hack. It will be rewritten in the future; TODO
-                        $sideText[$side] = $reverseAlias[$data[$side]['value']];
-
-                        $hackz[($side == 'left' ? 'right' : 'left')] = '(' . $data[$side]['value'] . ',|' . $data[$side]['value'] . ')$';
-                        $hackz['symbol'] = 'REGEXP';
+                        $sideText[$side] = "(" . implode(',', $data[$side]['value']) . ")";
                       }
                       else {
-                        $sideText[$side] = $reverseAlias[$data[$side]['value']];
+                        $sideText[$side] = '(NULL)';
                       }
                     }
                     else {
-                      throw new Exception('Unrecognised column: ' . $data[$side]['value']);
+                      throw new Exception('Type mismatch ("array")'); // Throw an exception.
                     }
+                    break;
+
+                    case 'regexp': // Whatever Note: This will eventually be implemented server-side where not supported. That said, support is in PostgreSQL
+                    $sideText[$side] = '"' . $data[$side]['value'] . '"';
+                    break;
+
+                    case 'equation': // This is a specific format useful for various conversions. More documentation needs to be created, but in a nutshell: $aaa = column aaa; ()+-*/ supported mathematical operators; use ',' for concatenation; use double quotes for strings.
+                    // Valid equations: $aa + $bb; "b", $b,"c"
+                    $equation = $data[$side]['value'];
+                    $equation = preg_replace('/\$([a-zA-Z\_]+)/e','$reverseAlias[\'\\1\']', $equation);
+
+
+                    $equationPieces = array();
+                    if (strpos(',', $equation) !== false) { // If commas exist for concatenation...
+                      foreach(explode(',', $equation) AS $piece) { // Run through each comma-seperated part of the equation (this is used for concatenation).
+                        if (preg_match('/"([a-zA-Z0-9\*\?]+?)"/',trim($piece))) { // Yes, you can't use many things in strings. Nor should you.
+                          $piece = str_replace(array('*','?'),array('%','_'),trim($piece)); // Replace glob pieces with SQL equivs
+                        }
+                        $equationPieces[] = trim($piece); // Spaces can get in the way, but this is likely redundant with the twim two lines up.
+                      }
+
+                      if (count($equationPieces) > 0) { // Only replace the equation if things worked.
+                        $equation = 'CONCAT(' . implode(',', $equationPieces) . ')'; // Replace the equation and wrap concat for the commas (if concat used another symbol, we'd need to replace our implode accordingly).
+                      }
+                    }
+
+                    $sideText[$side] = $equation;
+                    break;
+
+                    case 'glob':
+                    $sideText[$side] = '"' . str_replace($this->globFindArray, $this->globReplaceArray, trim($data[$side]['value'])) . '"';
+                    break;
+
+                    case 'column':
+                    if (isset($data[$side]['context'])) {
+                      throw new Exception('Column context is deprecated.');
+                    }
+                    else {
+                      if (isset($reverseAlias[$data[$side]['value']])) {
+                        if ($symbol == 'IN' && $data['left']['type'] == 'int' && $data['right']['type'] == 'column') { // This is just a quick hack. It will be rewritten in the future; TODO
+                          $sideText[$side] = $reverseAlias[$data[$side]['value']];
+
+                          $hackz[($side == 'left' ? 'right' : 'left')] = '(' . $data[$side]['value'] . ',|' . $data[$side]['value'] . ')$';
+                          $hackz['symbol'] = 'REGEXP';
+                        }
+                        else {
+                          $sideText[$side] = $reverseAlias[$data[$side]['value']];
+                        }
+                      }
+                      else {
+                        throw new Exception('Unrecognised column: ' . $data[$side]['value']);
+                      }
+                    }
+                    break;
                   }
-                  break;
+                }
+                elseif (is_string($data[$side])) {
+                  // TODO, or something
                 }
               }
-              elseif (is_string($data[$side])) {
-                // TODO, or something
+
+              if (isset($hackz['left']))   $sideText['left'] = $hackz['left'];
+              if (isset($hackz['right']))  $sideText['right'] = $hackz['right'];
+              if (isset($hackz['symbol'])) $symbol = $hackz['symbol'];
+
+
+              /* Generate Comparison Part */
+              if ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
+                $sideTextFull[$i] = "{$sideText['left']} {$symbol} {$sideText['right']}";
+              }
+              else {
+                $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
+                throw new Exception('Query nullified.');
               }
             }
-
-            if (isset($hackz['left']))   $sideText['left'] = $hackz['left'];
-            if (isset($hackz['right']))  $sideText['right'] = $hackz['right'];
-            if (isset($hackz['symbol'])) $symbol = $hackz['symbol'];
-
-
-            /* Generate Comparison Part */
-            if ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
-              $sideTextFull[$i] = "{$sideText['left']} {$symbol} {$sideText['right']}";
-            }
             else {
-              $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
-              throw new Exception('Query nullified.');
+              throw new Exception('Malformed Query; Data: ' . print_r($data, true));
             }
+          }
+
+
+          if (isset($this->concatTypes[$type])) {
+            $condSymbol = $this->concatTypes[$type];
           }
           else {
-            throw new Exception('Malformed Query; Data: ' . print_r($data, true));
+            throw new Exception('Unrecognised concatenation operator: ' . $type . '; ' . print_r($data, true));
           }
+
+
+          $whereText[$h] = implode($condSymbol, $sideTextFull);
         }
+        else { // No array -- shorthand mode.
+          foreach ($cond AS $key => $value) {          
+            $i++;
+            $sideTextFull[$i] = '';
 
+            if ($key === 'left' || $key === 'right' || $key === 'type') { // These keys are reserved for the longhand mode. Needless to say, those columns are off limits for now.
+              throw new Exception('Malformed Query; Data: ' . print_r($data, true));
+            }
+            else {
+              $sideText['left'] = $reverseAlias[$key];
 
-        if (isset($this->concatTypes[$type])) {
-          $condSymbol = $this->concatTypes[$type];
+              if (is_string($value)) {
+                $sideText['right'] = (int) $data['right']['value'];
+              }
+              elseif (is_int($value)) {
+                $sideText['right'] = (int) $data['right']['value'];
+              }
+              else {
+                throw new Exception('Unrecognised Value Type; Value: ' . $value);
+              }
+              
+              $sideTextFull[$i] = "{$sideText['left']} = {$sideText['right']}";
+            }
+          }
+
+          $whereText[$h] = implode($this->concatTypes['both'], $sideTextFull);
         }
-        else {
-          throw new Exception('Unrecognised concatenation operator: ' . $type . '; ' . print_r($data, true));
-        }
-
-
-        $whereText[$h] = implode($condSymbol, $sideTextFull);
       }
     }
 

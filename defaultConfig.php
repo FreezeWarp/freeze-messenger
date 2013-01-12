@@ -107,7 +107,7 @@ $defaultConfig = array(
   'logExceptions' => true,
   'logErrorsFile' => '',
   'logExceptionsFile' => '',
-  'displayExceptions' => false,
+  'displayExceptions' => true,
 
   'anonymousUserId' => 0,
 

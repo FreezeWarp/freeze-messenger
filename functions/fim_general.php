@@ -875,7 +875,7 @@ function fim_sanitizeGPC($type, $data) {
     'type' => 'string',
     'require' => false,
     'context' => false,
-    'trim' => false,
+//    'trim' => false,
   );
 
   if (strlen($requestBody) > 0) { // If a request body exists, we will use it instead of PHP's generated superglobals. This allows for further REST compatibility. We will, however, only use it for GET and POST requests, at the present time.

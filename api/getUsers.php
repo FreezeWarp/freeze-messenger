@@ -45,15 +45,19 @@ $request = fim_sanitizeGPC('g', array(
   ),
 
   'showOnly' => array(
-    'valid' => array(
-      'banned', 'unbanned', 'friends', 'ignored', ''
+    'context' => array(
+      'valid' => array(
+        'banned', 'unbanned', 'friends', 'ignored', ''
+      ),
     ),
     'default' => '',
   ),
 
   'sort' => array(
-    'valid' => array(
-      'userId', 'userName'
+    'context' => array(
+      'valid' => array(
+        'userId', 'userName'
+      ),
     ),
     'default' => 'userId',
   ),
