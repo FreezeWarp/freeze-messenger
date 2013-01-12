@@ -1,7 +1,7 @@
 .ui-dialog-titlebar-close {
   height: 24px !important; 
 }
-.tabList > li > a {
+ul.ui-tabs-nav > li > a {
   margin-top: 0px !important; 
 }
 .ui-dialog-buttonpane {

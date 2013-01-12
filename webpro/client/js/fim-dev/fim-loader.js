@@ -1471,13 +1471,6 @@ function windowResize() {
   $('#messageList').css('height', (windowHeight - 250)); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
   $('#messageList').css('max-width', ((windowWidth - 10) * .75)); // Prevent box-stretching. This is common on... many chats.
 
-  /* Body Padding: 10px
-    * Right Area Width: 75%
-    * "Enter Message" Table Padding: 10px
-    *** TD Padding: 2px (on Standard Styling)
-    * Message Input Text Area Padding: 3px */
-  $('#messageInput').css('width', (((windowWidth - 10) * .75) - 20 - 2)); // Set the messageInput box to fill width.
-
   $('body').css('min-height', windowHeight); // Set the body height to equal that of the window; this fixes many gradient issues in theming.
   
   $('.ui-widget-overlay').each(function() {

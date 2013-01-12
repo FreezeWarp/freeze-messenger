@@ -97,7 +97,6 @@ $queryParts['roomListSelect'] = array(
 $roomLists = $database->select(
   $queryParts['roomListSelect']['columns'],
   $queryParts['roomListSelect']['conditions']);
-  die($roomLists->sourceQuery);
 $roomLists = $roomLists->getAsArray(true);
 
 
