@@ -19,7 +19,9 @@ require('global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
   'do' => array(
-    'type' => 'string',
+    'context' => array(
+      'type' => 'string',
+    ),
     'require' => false,
   ),
 ));

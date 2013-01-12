@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /* Default Configuration Settings
  * These are the defaults to the $config system (which is a lot like about:config in Firefox).
  * Some of these are really barebones compared to the data used by the install script (e.g. searchWord directives), while others are ommitted from the install script due to their relative rarity in use.
@@ -185,7 +185,7 @@ $defaultConfig = array(
     'ß' => 'ss',
     'ð' => 'd', 'Ð' => 'd'
     'œ' => 'ce', 'Œ' => 'CE',
-    'þ' => 'th' 'Þ' => 'TH',
+    'þ' => 'th', 'Þ' => 'TH',
     'ñ' => 'n',
     'µ' => 'mu',
     'œ' => 'oe',

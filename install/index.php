@@ -33,6 +33,7 @@ define('INSTALL_ISSUE_MBSTRING', 4096);
 define('INSTALL_ISSUE_DOM', 8192);
 define('INSTALL_ISSUE_JSON', 16384);
 define('INSTALL_ISSUE_APC', 32768);
+define('INSTALL_ISSUE_CURL', 65536);
 define('INSTALL_ISSUE_WRITEORIGINDIR', 1048576);
 define('INSTALL_ISSUE_CONFIGEXISTS', 2097152);
 
@@ -64,6 +65,7 @@ if (!extension_loaded('mbstring')) $installFlags += INSTALL_ISSUE_MBSTRING;
 if (!extension_loaded('dom')) $installFlags += INSTALL_ISSUE_DOM;
 if (!extension_loaded('json')) $installFlags += INSTALL_ISSUE_JSON;
 if (!extension_loaded('apc')) $installFlags += INSTALL_ISSUE_APC;
+if (!extension_loaded('curl')) $installFlags += INSTALL_ISSUE_CURL;
 
 // FS Issues
 if (!is_writable('../')) $installFlags += INSTALL_ISSUE_WRITEORIGINDIR;
@@ -188,7 +190,7 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
         <td>5.2</td>
         <td><?php echo phpversion(); ?></td>
         <td>Everything</td>
-        <td>On Ubuntu: <pre>sudo apt-get install php5 sudo apt-get install libapache2-mod-php5</pre>
+        <td>On Ubuntu: <pre>sudo apt-get install php5 libapache2-mod-php5</pre>
           On Windows: See <a href="http://php.net/manual/en/install.windows.installer.msi.php">http://php.net/manual/en/install.windows.installer.msi.php</a></td>
       </tr>
       <tr class="<?php echo ($installFlags & INSTALL_ISSUE_APC ? 'uninstalledFlag' : 'installedFlag'); ?>">
@@ -196,7 +198,15 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
         <td>3.1.4</td>
         <td><?php echo phpversion('apc'); ?></td>
         <td>Caching</td>
-        <td>On Ubuntu: <pre>sudo apt-get install php5 sudo apt-get install php-apc</pre>
+        <td>On Ubuntu: <pre>sudo apt-get install php-apc</pre>
+          On Windows: Usually comes with PHP.</td>
+      </tr>
+      <tr class="<?php echo ($installFlags & INSTALL_ISSUE_CURL ? 'uninstalledFlag' : 'installedFlag'); ?>">
+        <td>cURL</td>
+        <td>3.1.4</td>
+        <td><?php echo phpversion('curl'); ?></td>
+        <td>WebLite</td>
+        <td>On Ubuntu: <pre>sudo apt-get install curl libcurl3 libcurl3-dev php5-curl</pre>
           On Windows: Compile APC, or find the plugin matching your version of PHP at <a href="http://dev.freshsite.pl/php-accelerators/apc.html">http://dev.freshsite.pl/php-accelerators/apc.html</a>.</td>
       </tr>
       <tr class="<?php echo ($installFlags & INSTALL_ISSUE_DATE ? 'uninstalledFlag' : 'installedFlag'); ?>">
@@ -232,7 +242,7 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
         <td>n/a</td>
         <td><?php echo phpversion('mcrypt'); ?></td>
         <td>Message Encryption</td>
-        <td>On Ubuntu: <pre>sudo apt-get install php5 sudo apt-get install php-mcrypt</pre>
+        <td>On Ubuntu: <pre>sudo apt-get install php5-mcrypt</pre>
           On Windows: Install PHP 5.3, or see <a href="http://php.net/manual/en/mcrypt.requirements.php">http://php.net/manual/en/mcrypt.requirements.php</a></td>
       </tr>
       <tr class="<?php echo ($installFlags & INSTALL_ISSUE_MBSTRING ? 'uninstalledFlag' : 'installedFlag'); ?>">
@@ -315,53 +325,65 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
   First things first, please enter your MySQL connection details below, as well as a database (we can try to create the database ourselves, as well). If you are unable to proceed, try contacting your web host, or anyone who has helped you set up other things like this before.<br /><br />
   <form onsubmit="return false;" name="db_connect_form" id="db_connect_form">
     <table border="1" class="page">
-      <tr class="ui-widget-header">
-        <th colspan="2">Connection Settings</th>
-      </tr>
-      <tr>
-        <td><strong>Driver</strong></td>
-        <td><select name="db_driver">
-        <?php
-          if ($installStatusDB & INSTALL_DB_MYSQL) echo '<option value="mysql">MySQL</option>';
-          if ($installStatusDB & INSTALL_DB_MYSQLI) echo '<option value="mysql">MySQLi</option>';
-          //if ($installStatusDB & INSTALL_DB_POSTGRESQL) echo '<option value="mysql">PostGreSQL (Broken)</option>';
-        ?>
-        </select><br /><small>The datbase driver. For most users, "MySQL" will work fine.</td>
-      </tr>
-      <tr>
-        <td><strong>Host</strong></td>
-        <td><input id="db_host" type="text" name="db_host" value="<?php echo $_SERVER['SERVER_NAME']; ?>" /><br /><small>The host of the MySQL server. In most cases, the default shown here <em>should</em> work.</td>
-      </tr>
-      <tr>
-        <td><strong>Port</strong></td>
-        <td><input id="db_port" type="text" name="db_port" value="3306" /><br /><small>The port your database server is configured to work on. For MySQL and MySQLi, it is usually 3306.</small></td>
-      </tr>
-      <tr>
-        <td><strong>Username</strong></td>
-        <td><input id="db_userName" type="text" name="db_userName" /><br /><small>The username of the user you will be connecting to the database with.</small></td>
-      </tr>
-      <tr>
-        <td><strong>Password</strong></td>
-        <td><input id="db_password" type="password" name="db_password" /><input type="button" onclick="$('<input type=\'text\' name=\'db_password\' />').val($('#db_password').val()).prependTo($('#db_password').parent()); $('#db_password').remove();$(this).remove();" value="Show" /><br /><small>The password of the user you will be connecting to the database with.</small></td>
-      </tr>
-      <tr class="ui-widget-header">
-        <th colspan="2">Database Settings</th>
-      </tr>
-      <tr>
-        <td><strong>Database Name</strong></td>
-        <td><input id="db_database" type="text" name="db_database" /><br /><small>The name of the database FreezeMessenger's data will be stored in. <strong>If you are integrating with a forum, this must be the same database the forum uses.</strong></small></td>
-      </tr>
-      <tr>
-        <td><strong>Create Database?<strong></td>
-        <td><input type="checkbox" name="db_createdb" /><br /><small>This will not overwrite existing databases. You are encouraged to create the database yourself, as otherwise default permissions, etc. will be used (which is rarely ideal).</td>
-      </tr>
-      <tr class="ui-widget-header">
-        <th colspan="2">Table Settings</th>
-      </tr>
-      <tr>
-        <td><strong>Table Prefix</strong></td>
-        <td><input type="text" name="db_tableprefix" /><br /><small>The prefix that FreezeMessenger's tables should use. This can be left blank (or with the default), but if the database contains any other products you must use a <strong>different</strong> prefix than all other products.</small></td>
-      </tr>
+      <thead>
+        <tr class="ui-widget-header">
+          <th colspan="2">Connection Settings</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Driver</strong></td>
+          <td><select name="db_driver">
+          <?php
+            if ($installStatusDB & INSTALL_DB_MYSQL) echo '<option value="mysql">MySQL</option>';
+            if ($installStatusDB & INSTALL_DB_MYSQLI) echo '<option value="mysql">MySQLi</option>';
+            //if ($installStatusDB & INSTALL_DB_POSTGRESQL) echo '<option value="mysql">PostGreSQL (Broken)</option>';
+          ?>
+          </select><br /><small>The datbase driver. For most users, "MySQL" will work fine.</td>
+        </tr>
+        <tr>
+          <td><strong>Host</strong></td>
+          <td><input id="db_host" type="text" name="db_host" value="<?php echo $_SERVER['SERVER_NAME']; ?>" /><br /><small>The host of the MySQL server. In most cases, the default shown here <em>should</em> work.</td>
+        </tr>
+        <tr>
+          <td><strong>Port</strong></td>
+          <td><input id="db_port" type="text" name="db_port" value="3306" /><br /><small>The port your database server is configured to work on. For MySQL and MySQLi, it is usually 3306.</small></td>
+        </tr>
+        <tr>
+          <td><strong>Username</strong></td>
+          <td><input id="db_userName" type="text" name="db_userName" /><br /><small>The username of the user you will be connecting to the database with.</small></td>
+        </tr>
+        <tr>
+          <td><strong>Password</strong></td>
+          <td><input id="db_password" type="password" name="db_password" /><input type="button" onclick="$('<input type=\'text\' name=\'db_password\' />').val($('#db_password').val()).prependTo($('#db_password').parent()); $('#db_password').remove();$(this).remove();" value="Show" /><br /><small>The password of the user you will be connecting to the database with.</small></td>
+        </tr>
+      </tbody>
+      <thead>
+        <tr class="ui-widget-header">
+          <th colspan="2">Database Settings</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Database Name</strong></td>
+          <td><input id="db_database" type="text" name="db_database" /><br /><small>The name of the database FreezeMessenger's data will be stored in. <strong>If you are integrating with a forum, this must be the same database the forum uses.</strong></small></td>
+        </tr>
+        <tr>
+          <td><strong>Create Database?<strong></td>
+          <td><input type="checkbox" name="db_createdb" /><br /><small>This will not overwrite existing databases. You are encouraged to create the database yourself, as otherwise default permissions, etc. will be used (which is rarely ideal).</td>
+        </tr>
+      </tbody>
+      <thead>
+        <tr class="ui-widget-header">
+          <th colspan="2">Table Settings</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Table Prefix</strong></td>
+          <td><input type="text" name="db_tableprefix" /><br /><small>The prefix that FreezeMessenger's tables should use. This can be left blank (or with the default), but if the database contains any other products you must use a <strong>different</strong> prefix than all other products.</small></td>
+        </tr>
+      </tbody>
     </table>
   </form><br /><br />
 
@@ -382,70 +404,80 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
 
   <form onsubmit="return false;" name="config_form" id="config_form">
     <table border="1" class="page">
-      <tr class="ui-widget-header">
-        <th colspan="2">Forum Integration</th>
-      </tr>
-      <tr>
-        <td><strong>Forum Integration</strong></td>
-        <td>
-          <select name="forum" onchange="if ($('select[name=\'forum\']').val() === 'vanilla') { $('.forumShow').hide(); $('.vanillaShow').show(); } else { $('.vanillaShow').hide(); $('.forumShow').show(); }">
-            <option value="vanilla">No Integration</option>
-            <option value="vbulletin3">vBulletin 3.8</option>
-            <option value="vbulletin4">vBulletin 4.1</option>
-            <option value="phpbb">PHPBB 3</option>
-          </select><br /><small>If you have a forum, you can enable more advanced features than without one, and prevent users from having to create more than one account.</small>
-        </td>
-      </tr>
-      <tr class="forumShow" style="display: none;">
-        <td><strong>Forum URL</strong></td>
-        <td><input type="text" name="forum_url" /><br /><small>The URL your forum is installed on.</small></td>
-      </tr>
-      <tr class="forumShow" style="display: none;">
-        <td><strong>Forum Table Prefix</strong></td>
-        <td><input type="text" name="forum_tableprefix" /><br /><small>The prefix of all tables the forum uses. You most likely defined this when you installed it. If unsure, check your forum's configuration file.</small></td>
-      </tr>
-      <tr class="vanillaShow">
-        <td><strong>Admin Username</strong></td>
-        <td><input type="text" name="admin_userName" /><br /><small>The name you wish to login with.</small></td>
-      </tr>
-      <tr class="vanillaShow">
-        <td><strong>Admin Password</strong></td>
-        <td><input id="admin_password"  type="password" name="admin_password" /><input type="button" onclick="$('<input type=\'text\' name=\'admin_password\' />').val($('#admin_password').val()).prependTo($('#admin_password').parent()); $('#admin_password').remove();$(this).remove();" value="Show" /><br /><small>The password you wish to login with.</small></td>
-      </tr>
-      <tr class="ui-widget-header">
-        <th colspan="2">Encryption</th>
-      </tr>
-      <tr>
-        <td><strong>Enable Encryption?</strong></td>
-        <td><select name="enable_encrypt"><option value="3">For Everything</option><option value="2">For Uploads Only</option><option value="1">For Messages Only</option><option value="0">For Nothing</option></select><br /><small>Encryption is strongly encouraged, though it will cause slight slowdown.</small></td>
-      </tr>
-      <tr>
-        <td><strong>Encryption Phrase</strong></td>
-        <td><input type="text" name="encrypt_salt" /><br /><small>This is a phrase used to encrypt the data. You can change this later as long as you don't remove referrences to this one.</td>
-      </tr>
-      <tr class="ui-widget-header">
-        <th colspan="2">Other Settings</th>
-      </tr>
-      <tr>
-        <td><strong>Cache Method</strong></td>
-        <td><select name="cache_method">
-          <option value="disk">Disk Cache</option>
-          <?php echo (extension_loaded('apc') ? '<option value="apc" selected="selected">APC</option>' : '') .
-          (extension_loaded('memcache') ? '<option value="memcache">MemCache</option>' : '') ?>
-        </select><br /><small>The primary cache to use. Only available caches are listed. We strongly recommend APC if you are able to use it. (Dev Note: Memcached will be available in Beta 5.)</td>
-      </tr>
-      <tr>
-        <td><strong>Temporary Directory</strong></td>
-        <td><input type="text" name="tmp_dir" value="<?php echo addcslashes(realpath(sys_get_temp_dir()), '"'); ?>" /><br /><small>The temporary directory of the system. This should not be web-accessible and must be writable by FreezeMessenger.</a></small></td>
-      </tr>
-      <tr>
-        <td><strong>reCAPTCHA Public Key</strong></td>
-        <td><input type="text" name="recaptcha_publicKey" /><br /><small>If a key is provided, reCAPTCHA will be enabled for user registration if you are not integrating with a forum. <a href="https://www.google.com/recaptcha/admin/create">This key can be obtained here.</a></small></td>
-      </tr>
-      <tr>
-        <td><strong>reCAPTCHA Private Key</strong></td>
-        <td><input type="text" name="recaptcha_privateKey" /><br /><small>This is paired with the above key, and can be found with the public key.</small></td>
-      </tr>
+      <thead>
+        <tr class="ui-widget-header">
+          <th colspan="2">Forum Integration</th>
+        </tr>
+        <tr>
+          <td><strong>Forum Integration</strong></td>
+          <td>
+            <select name="forum" onchange="if ($('select[name=\'forum\']').val() === 'vanilla') { $('.forumShow').hide(); $('.vanillaShow').show(); } else { $('.vanillaShow').hide(); $('.forumShow').show(); }">
+              <option value="vanilla">No Integration</option>
+              <option value="vbulletin3">vBulletin 3.8</option>
+              <option value="vbulletin4">vBulletin 4.1</option>
+              <option value="phpbb">PHPBB 3</option>
+            </select><br /><small>If you have a forum, you can enable more advanced features than without one, and prevent users from having to create more than one account.</small>
+          </td>
+        </tr>
+        <tr class="forumShow" style="display: none;">
+          <td><strong>Forum URL</strong></td>
+          <td><input type="text" name="forum_url" /><br /><small>The URL your forum is installed on.</small></td>
+        </tr>
+        <tr class="forumShow" style="display: none;">
+          <td><strong>Forum Table Prefix</strong></td>
+          <td><input type="text" name="forum_tableprefix" /><br /><small>The prefix of all tables the forum uses. You most likely defined this when you installed it. If unsure, check your forum's configuration file.</small></td>
+        </tr>
+        <tr class="vanillaShow">
+          <td><strong>Admin Username</strong></td>
+          <td><input type="text" name="admin_userName" /><br /><small>The name you wish to login with.</small></td>
+        </tr>
+        <tr class="vanillaShow">
+          <td><strong>Admin Password</strong></td>
+          <td><input id="admin_password"  type="password" name="admin_password" /><input type="button" onclick="$('<input type=\'text\' name=\'admin_password\' />').val($('#admin_password').val()).prependTo($('#admin_password').parent()); $('#admin_password').remove();$(this).remove();" value="Show" /><br /><small>The password you wish to login with.</small></td>
+        </tr>
+      </tbody>
+      <thead>
+        <tr class="ui-widget-header">
+          <th colspan="2">Encryption</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Enable Encryption?</strong></td>
+          <td><select name="enable_encrypt"><option value="3">For Everything</option><option value="2">For Uploads Only</option><option value="1">For Messages Only</option><option value="0">For Nothing</option></select><br /><small>Encryption is strongly encouraged, though it will cause slight slowdown.</small></td>
+        </tr>
+        <tr>
+          <td><strong>Encryption Phrase</strong></td>
+          <td><input type="text" name="encrypt_salt" /><br /><small>This is a phrase used to encrypt the data. You can change this later as long as you don't remove referrences to this one.</td>
+        </tr>
+      </tbody>
+      <thead>
+        <tr class="ui-widget-header">
+          <th colspan="2">Other Settings</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Cache Method</strong></td>
+          <td><select name="cache_method">
+            <option value="disk">Disk Cache</option>
+            <?php echo (extension_loaded('apc') ? '<option value="apc" selected="selected">APC</option>' : '') .
+            (extension_loaded('memcache') ? '<option value="memcache">MemCache</option>' : '') ?>
+          </select><br /><small>The primary cache to use. Only available caches are listed. We strongly recommend APC if you are able to use it. (Dev Note: Memcached will be available in Beta 5.)</td>
+        </tr>
+        <tr>
+          <td><strong>Temporary Directory</strong></td>
+          <td><input type="text" name="tmp_dir" value="<?php echo addcslashes(realpath(sys_get_temp_dir()), '"'); ?>" /><br /><small>The temporary directory of the system. This should not be web-accessible and must be writable by FreezeMessenger.</a></small></td>
+        </tr>
+        <tr>
+          <td><strong>reCAPTCHA Public Key</strong></td>
+          <td><input type="text" name="recaptcha_publicKey" /><br /><small>If a key is provided, reCAPTCHA will be enabled for user registration if you are not integrating with a forum. <a href="https://www.google.com/recaptcha/admin/create">This key can be obtained here.</a></small></td>
+        </tr>
+        <tr>
+          <td><strong>reCAPTCHA Private Key</strong></td>
+          <td><input type="text" name="recaptcha_privateKey" /><br /><small>This is paired with the above key, and can be found with the public key.</small></td>
+        </tr>
+      </tbody>
     </table><br /><br />
   </form>
 

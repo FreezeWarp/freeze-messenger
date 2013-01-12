@@ -1111,8 +1111,8 @@ LIMIT
 
 
       if ($column['default']) {
-        if (issset($this->defaultPhrases($column['default']))) {
-          $typePiece .= ' DEFAULT ' . $this->defaultPhrases($column['default']);
+        if (isset($this->defaultPhrases[$column['default']])) {
+          $typePiece .= ' DEFAULT ' . $this->defaultPhrases[$column['default']];
         }
         else {
           $typePiece .= ' DEFAULT "' . $this->escape($column['default']) . '"';

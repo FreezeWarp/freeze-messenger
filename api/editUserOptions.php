@@ -33,7 +33,6 @@
  * @param string defaultFontface
  * @param int defaultFormatting
  * @param csv watchRooms - A comma-seperated list comma-seperated list of room IDs that will be watched. When a new message is made in these rooms, the user will be notified.
- * @param csv ignoreList - A comma-seperated list of user IDs that will be ignored for private messages.
  * @param int parentalAge - The parental age corresponding to the room.
  * @param csv parentalFlags - A comma-separated list of parental flags that apply to the room.
  *
@@ -152,14 +151,6 @@ $request = fim_sanitizeGPC('p', array(
   ),
 
   'watchRooms' => array(
-    'context' => array(
-      'type' => 'csv',
-      'filter' => 'int',
-      'evaltrue' => true,
-    ),
-  ),
-
-  'ignoreList' => array(
     'context' => array(
       'type' => 'csv',
       'filter' => 'int',

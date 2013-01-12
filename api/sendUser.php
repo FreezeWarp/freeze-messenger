@@ -167,7 +167,8 @@ if ($continue) {
       'password' => $password,
       'passwordSalt' => $passwordSalt,
       'passwordSaltNum' => $encryptSaltNum,
-      'birthdate' => $request['birthdate'],
+      'birthDate' => $request['birthdate'],
+      'joinDate' => time(),
       'email' => $request['email'],
       'userPrivs' => $userPrivs,
     );
