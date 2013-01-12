@@ -100,7 +100,11 @@ $defaultConfig = array(
   'dev' => false,
 
   'email' => '',
+  'emailErrors' => true,
+  'emailExeptions' => true,
+
   'anonymousUserId' => 0,
+
   'bannedUserGroups' => array(),
 
   'enabledInterfaces' => array(),

@@ -105,12 +105,17 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false, $allowed
 function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false) {
   global $sqlPrefix, $banned, $loginConfig, $valid, $database, $config, $kicksCache, $permissionsCache;
 
+  /* START COMPILE VERBOSE */
   if (!isset($roomData['type'])) throw new Exception('hasPermission requires roomData[type] to be defined.');
+  elseif (!isset($userData['userId'])) throw new Exception('hasPermission requires roomData[type] to be defined.');
+  /* END COMPILE VERBOSE */
 
   if ($roomData['type'] === 'otr' || $roomData['type'] === 'private') { // We are doing this in hasPermission itself to allow for hooks that might, for instance, deny permission to certain users based on certain criteria.
+    /* START COMPILE VERBOSE */
     if (!isset($roomData['roomUsersList'])) throw new Exception('hasPermission requires roomData[roomUsersList] to be defined.');
+    /* END COMPILE VERBOSE */
 
-    if (in_array($userData['userId'], $roomData['roomUsersList'])) { // The logic with private rooms is pretty self-explanatory: if the user is in the roomUsersList, they're allowed. Otherwise, nope.
+    if (in_array($userData['userId'], $roomData['roomUsersList'])) { // The logic with private rooms is fairly self-explanatory: if the user is in the roomUsersList, they're allowed. Otherwise, nope.
       if ($quick) return true;
       else return array(true, '', 0);
     }
@@ -120,6 +125,7 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
     }
   }
   else {
+    /* START COMPILE VERBOSE */
     /* Make Sure All Data is Present */
     if (!$roomData['roomId']) { // If the room is not valid...
       if ($quick) return false;
@@ -127,7 +133,9 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
     }
     elseif (!isset($roomData['parentalFlags'], $roomData['parentalAge'])) throw new Exception('hasPermission requires roomData[parentalFlags] and roomData[parentalAge] to be defined.');
     elseif (!isset($roomData['defaultPermissions'], $roomData['options'], $roomData['owner'])) throw new Exception('hasPermission requires roomData[defaultPermissions], roomData[options], and roomData[owner]'); // If the default permissions index is missing, through an exception.
-    elseif (!isset($userData['parentalAge'], $userData['parentalFlags'])) throw new Exception('hasPermission requires userData[parentalAge] and userData[parentalFlags] to be defined. -- ' . print_r($userData, true));
+    elseif (!isset($userData['parentalAge'], $userData['parentalFlags'])) throw new Exception('hasPermission requires userData[parentalAge] and userData[parentalFlags] to be defined.');
+    elseif (!isset($userData['adminPrivs'])) throw new Exception('hasPermission requires userData[adminPrivs] to be defined.');
+    /* END COMPILE VERBOSE */
 
 
     /* Initialise Variables */
@@ -149,43 +157,35 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
 
 
     /* Get the User's Kick Status */
-    if (isset($userData['userId'])) { // Was a user specified?
-      if ($userData['userId'] > 0) { // Is their userId non-zero?
-        if (count($kicksCache['byRoomId']) > 0) { // Is the kicks cache non-empty?
-          if (isset($kicksCache['byRoomId'][$roomData['roomId']][$userData['userId']])) $kick = true; // We're kicked!
-          else $kick = false; // We're not kicked!
-        }
+    if ($userData['userId'] > 0) { // Is their userId non-zero?
+      if (count($kicksCache['byRoomId']) > 0) { // Is the kicks cache non-empty?
+	if (isset($kicksCache['byRoomId'][$roomData['roomId']][$userData['userId']])) $kick = true; // We're kicked!
+	else $kick = false; // We're not kicked!
       }
     }
 
 
     /* Is the User the Room's Owner/Creator */
-    if (isset($roomData['owner'])) {
-      if ($roomData['owner'] == $userData['userId']
-        && $roomData['owner'] > 0) {
-        $isOwner = true;
-      }
+    if ($roomData['owner'] === $userData['userId']
+      && $roomData['owner'] > 0) {
+      $isOwner = true;
     }
 
 
     /* Is the Room a Private Room or Deleted? */
-    if (isset($roomData['options'])) {
-      if ($roomData['options'] & 4) $isRoomDeleted = true; // The room is deleted.
-    }
+    if ($roomData['options'] & 4) $isRoomDeleted = true; // The room is deleted.
 
 
     /* Is the user a super user? */
-    if (isset($userData['userId']) && isset($userData['adminPrivs']) && isset($loginConfig['superUsers'])) {
-      if (is_array($loginConfig['superUsers'])) {
-        if (in_array($userData['userId'], $loginConfig['superUsers']) || $userData['adminPrivs'] & 1) {
-          $isAdmin = true;
-        }
+    if (isset($loginConfig['superUsers'])) {
+      if (in_array($userData['userId'], (array) $loginConfig['superUsers']) || $userData['adminPrivs'] & 1) {
+	$isAdmin = true;
       }
     }
 
 
     /* Is the user banned by parental controls? */
-    if ($config['parentalEnabled']) {
+    if ($config['parentalEnabled'] === true) {
       if ($roomData['parentalAge'] > $userData['parentalAge']) $parentalBlock = true;
       elseif (fim_inArray(explode(',', $userData['parentalFlags']), explode(',', $roomData['parentalFlags']))) $parentalBlock = true;
     }
@@ -289,28 +289,25 @@ function fim_decrypt($message, $index = array('text')) {
   global $salts, $config;
 
   if (!isset($message['salt'], $message['iv'])) throw new Exception('fim_decrypt requires message[salt] and message[iv]'); // Make sure the proper indexes exist (just in case).
-  else {
-    if ($message['salt'] && $message['iv']) { // Make sure both the salt and the IV are non-false.
-      $salt = $salts[$message['salt']]; // Get the proper salt.
 
-      if ($index) { // If indexes are specified...
-        foreach ((array) $index AS $index2) { // Run through each index. If the specified index variable is a string instead of an array, we will cast it as an array ("example" becomes array("example")).
-          if (!isset($message[$index2])) { // If the index is not in the message, throw an exception.
-            throw new Exception('Index not found: ' . $index2);
-          }
+  if ($message['salt'] && $message['iv']) { // Make sure both the salt and the IV are non-false.
+    $salt = $salts[$message['salt']]; // Get the proper salt.
 
-          else { // Otherwise, unencrypt the index.
-            $message[$index2] = rtrim( // Remove \0 bytes from the end.
-              mcrypt_decrypt( // Decrypt the data.
-                MCRYPT_3DES, // Decrypt the data using 3DES/Triple DES (see http://en.wikipedia.org/wiki/Triple_DES).
-                $salt, // Use the salt we found above.
-                base64_decode($message[$index2]), // Base64-decode the data first, since we store it encoded.
-                MCRYPT_MODE_CBC, // Use Mcrypt CBC mode (see http://php.net/manual/en/function.mcrypt-cbc.php and http://www.php.net/manual/en/mcrypt.constants.php).
-                base64_decode($message['iv']) // Uses the decoded IV (we store it using base64 encoding).
-              ),
-            "\0");
-          }
-        }
+    if ($index) { // If indexes are specified...
+      foreach ((array) $index AS $index2) { // Run through each index. If the specified index variable is a string instead of an array, we will cast it as an array ("example" becomes array("example")).
+	if (!isset($message[$index2])) { // If the index is not in the message, throw an exception.
+	  throw new Exception('Index not found: ' . $index2);
+	}
+
+	$message[$index2] = rtrim( // Remove \0 bytes from the end.
+	  mcrypt_decrypt( // Decrypt the data.
+	    MCRYPT_3DES, // Decrypt the data using 3DES/Triple DES (see http://en.wikipedia.org/wiki/Triple_DES).
+	    $salt, // Use the salt we found above.
+	    base64_decode($message[$index2]), // Base64-decode the data first, since we store it encoded.
+	    MCRYPT_MODE_CBC, // Use Mcrypt CBC mode (see http://php.net/manual/en/function.mcrypt-cbc.php and http://www.php.net/manual/en/mcrypt.constants.php).
+	    base64_decode($message['iv']) // Uses the decoded IV (we store it using base64 encoding).
+	  ),
+	"\0");
       }
     }
   }
@@ -511,6 +508,7 @@ function rgb2html($r, $g = false, $b = false) {
 /**
  * Retrieves a hook from the database.
  *
+ *
  * @param string $name
  * @return evalcode (string)
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
@@ -525,6 +523,15 @@ function hook($name) {
     else return false; // Otherwise return false.
   }
   else return false; // And if the hook isn't set, return false.
+  
+  // It doesn't matter whar I say.
+  // So long as I sing with in-flec-tion.
+  // That makes you feel that I'll convey.
+  // Some inner true of vast reflection!
+  // But I've said nothing so far.
+  // And I can keep it up for s long as it takes.
+  // And it don't matter who you are.
+  // If I'm doing my job then it's your resolve that breaks.
 }
 
 
@@ -1073,7 +1080,8 @@ function fim_sanitizeGPC($type, $data) {
 
 
 /**
- * A function equvilent to an IF-statement that returns a true or false value. It is similar to the function in most spreadsheets (EXCEL, LibreOffice CALC, Lotus 123). TRANSITIONAL TODO
+ * A function equvilent to an IF-statement that returns a true or false value. It is similar to the function in most spreadsheets (EXCEL, LibreOffice CALC).
+ * Note that this function is DEPRECATED for all internal commands, since it really doesn't serve any purpose, but it will be kept for 3rd party plugins to use as documented.
  *
  * @param string $condition - The condition that will be evaluated. It must be a string.
  * @param string $true - A string to return if the above condition evals to true.
@@ -1127,7 +1135,7 @@ function fim_explodeEscaped($delimiter, $string, $escapeChar = '\\') {
 /**
  * Encode entities using a custom format.
  *
- * @param string delimiter
+ * @param string string - String to encode.
  * @param array find - An array of characters to replace in the entity string (in most cases, should include only "&", "#", ";").
  * @param array replace - An array of characters to replace with in the entity string (in most cases, this should include characters that would rarely be used for exploding a string).
  * @return string
@@ -1140,9 +1148,9 @@ function fim_encodeEntities($string, $find = array('&', '#', ';'), $replace = ar
 /**
  * Decode entities using a custom format.
  *
- * @param string delimiter
- * @param string string
- * @param string escapeChar - The character that escapes the string.
+ * @param string string - String to encode.
+ * @param array replace - An array of characters to replace in the entity string (in most cases, should include only "&", "#", ";").
+ * @param array find - An array of characters to replace with in the entity string (in most cases, this should include characters that would rarely be used for exploding a string).
  * @return string
  */
 function fim_decodeEntities($string, $replace = array('µ', 'ñ', 'ó'), $find = array('&', '#', ';')) {
@@ -1160,7 +1168,7 @@ function fim_exceptionHandler($exception) {
   global $api, $apiRequest;
 
   ob_end_clean(); // Clean the output buffer and end it. This means when we show the error in a second, there won't be anything else with it.
-  header('HTTP/1.1 500 Internal Server Error');
+  header('HTTP/1.1 500 Internal Server Error'); // When an exception is encountered, we throw an error to tell the server that the software effectively is broken.
 
   if ($api || $apiRequest) { // TODO: I don't know why $api doesn't work. $apiRequest does for now, but this will need to be looked into to.
     echo fim_outputApi(array(
@@ -1177,7 +1185,7 @@ function fim_exceptionHandler($exception) {
     echo(nl2br('<fieldset><legend><strong style="color: #ff0000;">Program Exception</strong></legend><strong>Error Text</strong><br />' . $exception->getMessage() . '<br /><br /><strong>What Should I Do Now?</strong><br />' . ($config['email'] ? 'You may wish to <a href="mailto:' . $config['email'] . '">notify the administration</a> of this error.' : 'No contact was specified for this installation, so try to wait it out.')  . '<br /><br /><strong>Are You The Host?</strong><br />Program exceptions are usually a result of either a bug in the program or a corrupted installation. If you have no idea what is going on, please report the problem on <a href="http://code.google.com/p/freeze-messenger/issues/list">FIM\'s bug tracker.</a></fieldset>'));
   }
 
-  if ($config['email']) mail($config['email'], 'FIM3 System Error [' . $_SERVER['SERVER_NAME'] . ']', 'The following error was encountered by the server located at ' . $_SERVER['SERVER_NAME'] . ':<br /><br />' . $errstr);
+  if ($config['email'] && $config['emailExceptions']) mail($config['email'], 'FIM3 System Error [' . $_SERVER['SERVER_NAME'] . ']', 'The following error was encountered by the server located at ' . $_SERVER['SERVER_NAME'] . ':<br /><br />' . $errstr);
 }
 
 
@@ -1211,7 +1219,7 @@ function fim_errorHandler($errno, $errstr, $errfile, $errline) {
       die(nl2br('<fieldset><legend><strong style="color: #ff0000;">Unrecoverable Error</strong></legend><strong>Error Text</strong><br />' . $errstr . '<br /><br /><strong>What Should I Do Now?</strong><br />' . ($config['email'] ? 'You may wish to <a href="mailto:' . $config['email'] . '">notify the administration</a> of this error.' : 'No contact was specified for this installation, so try to wait it out.')  . '<br /><br /><strong>Are You The Host?</strong><br />Server errors are often database related. These may result from improper installation or a corrupted database. The documentation may provide clues, however.</fieldset>'));
     }
 
-    if ($config['email']) mail($config['email'], 'FIM3 System Error [' . $_SERVER['SERVER_NAME'] . ']', 'The following error was encountered by the server located at ' . $_SERVER['SERVER_NAME'] . ':<br /><br />' . $errstr);
+    if ($config['email'] && $config['emailErrors']) mail($config['email'], 'FIM3 System Error [' . $_SERVER['SERVER_NAME'] . ']', 'The following error was encountered by the server located at ' . $_SERVER['SERVER_NAME'] . ':<br /><br />' . $errstr);
     break;
 
     default:
@@ -1230,12 +1238,11 @@ function fim_flush() {
 
 
 /**
- * Performs a custom cast, implementing custom logic for boolean casts (and the default logic for all others).
+ * A function equvilent to obtaining the index value of an array.
  *
- * @param string cast - Type of cast, either 'bool', 'int', 'float', or 'string'.
- * @param string value - Value to cast.
- * @param string default - Whether to lean true or false with bool casts. Only if a value is exactly true or false will thus value not be used.
- *
+ * @param array $array
+ * @param mixed $index
+ * @return mixed
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function indexValue($array, $index) {

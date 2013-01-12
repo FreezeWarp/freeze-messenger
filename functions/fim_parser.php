@@ -73,7 +73,7 @@ class messageParse {
       }
       $searchText2 = implode('|', $searchText);
 
-      return preg_replace("/(?<!(\[noparse\]))(?<!(\quot))($searchText2)(?!\[\/noparse\])/ie","indexValue(\$words2,strtolower('\\3'))", $text);
+      return preg_replace("/(?<!(\[noparse\]))(?<!(\quot))($searchText2)(?!\[\/noparse\])/ie","fim_indexValue(\$words2,strtolower('\\3'))", $text);
     }
   }
 
@@ -162,7 +162,7 @@ class messageParse {
 
     $searchText2 = implode('|', $searchText);
 
-    $text = preg_replace("/(?<!(\[noparse\]))(?<!(quot))(?<!(gt))(?<!(lt))(?<!(apos))(?<!(amp))($searchText2)(?!\[\/noparse\])/ie","'{$forumUrlS}' . indexValue(\$smilies2,strtolower('\\7'))", $text);
+    $text = preg_replace("/(?<!(\[noparse\]))(?<!(quot))(?<!(gt))(?<!(lt))(?<!(apos))(?<!(amp))($searchText2)(?!\[\/noparse\])/ie","'{$forumUrlS}' . fim_indexValue(\$smilies2,strtolower('\\7'))", $text);
 
     return $text;
   }

@@ -31,8 +31,7 @@ define('INSTALL_ISSUE_MCRYPT', 1024);
 define('INSTALL_ISSUE_PCRE', 2048);
 define('INSTALL_ISSUE_MBSTRING', 4096);
 define('INSTALL_ISSUE_DOM', 8192);
-define('INSTALL_ISSUE_APC', 32768);
-define('INSTALL_ISSUE_DOM', 8192);
+define('INSTALL_ISSUE_JSON', 16384);
 define('INSTALL_ISSUE_APC', 32768);
 define('INSTALL_ISSUE_WRITEORIGINDIR', 1048576);
 define('INSTALL_ISSUE_CONFIGEXISTS', 2097152);
@@ -63,6 +62,7 @@ if (!extension_loaded('mcrypt')) $installFlags += INSTALL_ISSUE_MCRYPT;
 if (!extension_loaded('pcre')) $installFlags += INSTALL_ISSUE_PCRE;
 if (!extension_loaded('mbstring')) $installFlags += INSTALL_ISSUE_MBSTRING;
 if (!extension_loaded('dom')) $installFlags += INSTALL_ISSUE_DOM;
+if (!extension_loaded('json')) $installFlags += INSTALL_ISSUE_JSON;
 if (!extension_loaded('apc')) $installFlags += INSTALL_ISSUE_APC;
 
 // FS Issues
@@ -95,7 +95,7 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
   }
 
   .main {
-    width: 800px;
+    max-width: 1000px;
     margin-left: auto;
     margin-right: auto;
     display: block;
@@ -116,8 +116,23 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
   $(document).ready(function() {
     windowDraw();
     $('button, input[type=button], input[type=submit]').button();
+    
+    // We do this in Javascript instead of the HTML directly since its easier to skin that way, and also good for screenreaders.
+    $('.installedFlag').each(function() {
+      $('td:first, th:first', this).append('<img src="task-complete.png" style="height: 16px; width: 16px; float: right;" />');
+    });
+    
+    $('.uninstalledFlag').each(function() {
+      $('td:first, th:first', this).append('<img src="task-reject.png" style="height: 16px; width: 16px;  float: right;" />');
+    });
+    
+//    $('table#requirements tbody tr td:nth-child(5)').hide();
   });
   window.onwindowDraw = windowDraw;
+  
+  function showDetails() {
+    $('table#requirements tbody tr td:nth-child(5)').show();
+  }
 
   var alert = function(text) {
     dia.info(text,"Alert");
@@ -127,6 +142,15 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
   .ui-widget {
     font-size: 12px;
   }
+  .installedFlag {
+  }
+  .uninstalledFlag {
+    font-weight: bold;
+  }
+  tbody tr:nth-child(2n) {
+    background: #DDE9ED !important;
+  }
+  
   </style>
   <!-- END Scripts -->
 </head>
@@ -143,32 +167,131 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
     <li>Easily extensible.</li>
   </ul><br />
 
-  Still, there are some server requirements to using FreezeMessenger. Once allow of the following are satisfied, click "Start" below:<br />
+  Still, there are some server requirements to using FreezeMessenger. They are easy to get working, and you may already have them ready. We'll outline them below:<br /><br />
 
-
-  <ul>
-    <li>PHP 5.2+ (<?php echo (($installFlags & INSTALL_ISSUE_PHP_VERSION) ? '<strong>Not Detected - Version ' . phpversion() . ' Installed</strong>' : 'Looks Good'); ?>)</li>
-    <ul>
-      <li>Database, Any of The Following: (<?php echo (($installFlags & INSTALL_ISSUE_DB) ? '<strong>Not Detected</strong>' : 'Looks Good'); ?>)</li>
-      <ul>
-        <li>MySQL (<?php echo (($installStatusDB & INSTALL_DB_MYSQL) ? 'Looks Good' : '<strong>Not Detected</strong>'); ?>)</li>
-        <li>MySQLi (<?php echo (($installStatusDB & INSTALL_DB_MYSQLI) ? 'Looks Good' : '<strong>Not Detected</strong>'); ?>)</li>
-        <!--<li>PostGreSQL (php echo (($installStatusDB & INSTALL_DB_POSTGRESQL) ? 'Looks Good' : '<strong>Not Detected</strong>'); )</li>-->
-      </ul>
-      <li>Hash Extension (<?php echo (($installFlags & INSTALL_ISSUE_HASH) ? '<strong>Not Detected</strong>' : 'Looks Good'); ?>)</li>
-      <li>Date/Time Extension (<?php echo (($installFlags & INSTALL_ISSUE_DATE) ? '<strong>Not Detected</strong>' : 'Looks Good'); ?>)</li>
-      <li>MCrypt Extension (<?php echo (($installFlags & INSTALL_ISSUE_MCRYPT) ? '<strong>Not Detected</strong>' : 'Looks Good'); ?>)</li>
-      <li>PCRE Extension (<?php echo (($installFlags & INSTALL_ISSUE_PCRE) ? '<strong>Not Detected</strong>' : 'Looks Good'); ?>)</li>
-      <li>Multibyte String Extension (<?php echo (($installFlags & INSTALL_ISSUE_MBSTRING) ? '<strong>Not Detected</strong>' : 'Looks Good'); ?>)</li>
-      <li>Document Object Module Extension (<?php echo (($installFlags & INSTALL_ISSUE_DOM) ? '<strong>Not Detected</strong>' : 'Looks Good'); ?>)</li>
-      <li>APC Extension (<?php echo (($installFlags & INSTALL_ISSUE_APC) ? '<strong>Not Detected</strong>' : 'Looks Good'); ?>)</li>
-    </ul>
-    <li>Proper Permissions (for automatic configuration file generation)</li>
-    <ul>
-      <li>Origin Directory Writable (<?php echo (($installFlags & INSTALL_ISSUE_WRITEORIGINDIR) ? '<strong>Not Detected</strong>' : 'Looks Good'); ?>)</li>
-      <li>Config File Absent (<?php echo (($installFlags & INSTALL_ISSUE_CONFIGEXISTS) ? '<strong>Not Detected</strong>' : 'Looks Good'); ?>)</li>
-    </ul>
-  </ul><br />
+  <table id="requirements">
+    <thead>
+      <tr class="ui-widget-header">
+        <th width="10%">Package</th>
+        <th width="10%">Minimum Version</th>
+        <th width="10%">Installed Version</th>
+        <th width="10%">Used For</th>
+        <th width="60%">How To Install<!-- (<a href="#" onclick="showDetails();">Show</a>)--></th>
+      </tr>
+      <tr class="ui-widget-header">
+        <th colspan="5">PHP</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="<?php echo ($installFlags & INSTALL_ISSUE_PHP ? 'uninstalledFlag' : 'installedFlag'); ?>">
+        <td>PHP</td>
+        <td>5.2</td>
+        <td><?php echo phpversion(); ?></td>
+        <td>Everything</td>
+        <td>On Ubuntu: <pre>sudo apt-get install php5 sudo apt-get install libapache2-mod-php5</pre>
+          On Windows: See <a href="http://php.net/manual/en/install.windows.installer.msi.php">http://php.net/manual/en/install.windows.installer.msi.php</a></td>
+      </tr>
+      <tr class="<?php echo ($installFlags & INSTALL_ISSUE_APC ? 'uninstalledFlag' : 'installedFlag'); ?>">
+        <td>APC</td>
+        <td>3.1.4</td>
+        <td><?php echo phpversion('apc'); ?></td>
+        <td>Caching</td>
+        <td>On Ubuntu: <pre>sudo apt-get install php5 sudo apt-get install php-apc</pre>
+          On Windows: Compile APC, or find the plugin matching your version of PHP at <a href="http://dev.freshsite.pl/php-accelerators/apc.html">http://dev.freshsite.pl/php-accelerators/apc.html</a>.</td>
+      </tr>
+      <tr class="<?php echo ($installFlags & INSTALL_ISSUE_DATE ? 'uninstalledFlag' : 'installedFlag'); ?>">
+        <td>Date/Time</td>
+        <td>n/a</td>
+        <td><?php echo phpversion('date'); ?></td>
+        <td>Date/Time</td>
+        <td>With PHP 5.2</td>
+      </tr>
+      <tr class="<?php echo ($installFlags & INSTALL_ISSUE_DOM ? 'uninstalledFlag' : 'installedFlag'); ?>">
+        <td>Document Object Model</td>
+        <td>n/a</td>
+        <td><?php echo phpversion('dom'); ?></td>
+        <td>XML File Support</td>
+        <td>With PHP 5.2</td>
+      </tr>
+      <tr class="<?php echo ($installFlags & INSTALL_ISSUE_HASH ? 'uninstalledFlag' : 'installedFlag'); ?>">
+        <td>Hash</td>
+        <td>1.1</td>
+        <td><?php echo phpversion('hash'); ?></td>
+        <td>Password Hashing</td>
+        <td>With PHP 5.2</td>
+      </tr>
+      <tr class="<?php echo ($installFlags & INSTALL_ISSUE_JSON ? 'uninstalledFlag' : 'installedFlag'); ?>">
+        <td>JSON</td>
+        <td>1.2.0</td>
+        <td><?php echo phpversion('json'); ?></td>
+        <td>API and WebPro</td>
+        <td>With PHP 5.2</td>
+      </tr>
+      <tr class="<?php echo ($installFlags & INSTALL_ISSUE_MCRYPT ? 'uninstalledFlag' : 'installedFlag'); ?>">
+        <td>MCrypt</td>
+        <td>n/a</td>
+        <td><?php echo phpversion('mcrypt'); ?></td>
+        <td>Message Encryption</td>
+        <td>On Ubuntu: <pre>sudo apt-get install php5 sudo apt-get install php-mcrypt</pre>
+          On Windows: Install PHP 5.3, or see <a href="http://php.net/manual/en/mcrypt.requirements.php">http://php.net/manual/en/mcrypt.requirements.php</a></td>
+      </tr>
+      <tr class="<?php echo ($installFlags & INSTALL_ISSUE_MBSTRING ? 'uninstalledFlag' : 'installedFlag'); ?>">
+        <td>Multibyte String</td>
+        <td>n/a</td>
+        <td><?php echo phpversion('mbstring'); ?></td>
+        <td>Foreign Language Support</td>
+        <td>With PHP 5.2</td>
+      </tr>
+      <tr class="<?php echo ($installFlags & INSTALL_ISSUE_PCRE ? 'uninstalledFlag' : 'installedFlag'); ?>">
+        <td>PCRE</td>
+        <td>n/a</td>
+        <td><?php echo phpversion('pcre'); ?></td>
+        <td>Regex</td>
+        <td>With PHP 5.2</td>
+      </tr>
+    </tbody>
+    <thead>
+      <tr class="ui-widget-header <?php echo ($installFlags & INSTALL_ISSUE_DB ? 'uninstalledFlag' : 'installedFlag'); ?>">
+        <th colspan="5">Database (any of the following)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="<?php echo ($installStatusDB & INSTALL_DB_MYSQL ? 'installedFlag' : 'unininstalledFlag'); ?>">
+        <td>MySQL</td>
+        <td>5.0</td>
+        <td>*</td>
+        <td>Database</td>
+        <td>On Ubuntu: <pre>sudo apt-get install mysql-server libapache2-mod-auth-mysql php5-mysql</pre>
+          On Windows: See <a href="http://php.net/manual/en/install.windows.installer.msi.php">http://php.net/manual/en/install.windows.installer.msi.php</a></td>
+      </tr>
+      <tr class="<?php echo ($installStatusDB & INSTALL_DB_MYSQLI ? 'installedFlag' : 'uninstalledFlag'); ?>">
+        <td>MySQLi</td>
+        <td>5.0</td>
+        <td>*</td>
+        <td>Database</td>
+        <td>On Ubuntu: <pre>sudo apt-get install mysql-server libapache2-mod-auth-mysql php5-mysql</pre>
+          On Windows: See <a href="http://php.net/manual/en/install.windows.installer.msi.php">http://php.net/manual/en/install.windows.installer.msi.php</a></td>
+      </tr>
+    </tbody>
+    <thead>
+      <tr class="ui-widget-header">
+        <th colspan="5">Permissions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="<?php echo ($installFlags & INSTALL_ISSUE_WRITEORIGINDIR ? 'uninstalledFlag' : 'installedFlag'); ?>">
+        <td colspan="3">Origin Directory Writable</td>
+        <td>Config File Creation</td>
+        <td>The reasons for this are complicated, so we can't give copy+paste directions on fixing this. However, make sure you only give write permission to the server user (in Ubuntu, usually "www-data"). If you are running Apache on Windows, this user can be found by going to the Windows Services tool, right-clicking the "Apache" service,         selecting "properties", and finally looking under "Log On".</td>
+      </tr>
+      <tr class="<?php echo ($installFlags & INSTALL_ISSUE_CONFIGEXISTS ? 'uninstalledFlag' : 'installedFlag'); ?>">
+        <td colspan="3">Config File Absent</td>
+        <td>Security</td>
+        <td>Since a previous installation exists, you will need to remove its core configuration file ('config.php' in the FreezeMessenger directory) before proceeding. This is intended as a security measure.</td>
+      </tr>
+    </tbody>
+  </table><br />
+  * Database versions are not checked yet. You will be told once database installation begins if they are unsatisfactory, however FreezeMessenger will most likely be compatibile as long as the database extension exists.<br /><br />
 
   <div style="height: 30px;">
     <form onsubmit="return false;">
