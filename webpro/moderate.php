@@ -208,7 +208,7 @@ echo '<!DOCTYPE HTML>
       ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=admin">Admin Permissions</a></li>' : '') . '
       ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=config">Configuration Editor</a></li>' : '') . '
       ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=sys">System Check</a></li>' : '') . '
-      ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=dev">Dev Tools</a></li>' : '') . '
+      ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=tools">Tools</a></li>' : '') . '
       ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=phpinfo">PHP Info</a></li>' : '') . '
       <li><a href="moderate.php?do=copyright">Copyright</a></li>
     </ul>
@@ -250,7 +250,7 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
     case 'sys': require('./moderate/status.php'); break;
     case 'config': require('./moderate/config.php'); break;
     case 'plugins': require('./moderate/plugins.php'); break;
-    case 'dev': require('./moderate/dev.php'); break;
+    case 'tools': require('./moderate/tools.php'); break;
     default: require('./moderate/main.php'); break;
   }
 }

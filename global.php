@@ -146,7 +146,6 @@ else $integrationConnect = true;
 if ($dbConnect['core'] == $dbConnect['slave']) $slaveConnect = false;
 else $slaveConnect = true;
 
-
 /* Connect to the Main Database */
 $database = new fimDatabase;
 if (!$database->connect($dbConnect['core']['host'], $dbConnect['core']['port'], $dbConnect['core']['username'], $dbConnect['core']['password'], $dbConnect['core']['database'], $dbConnect['core']['driver'])) {
@@ -249,7 +248,6 @@ if ($api === true) {
 else {
   sleep($config['pause']);
 }
-
 
 
 ////* Get Code Hooks *////

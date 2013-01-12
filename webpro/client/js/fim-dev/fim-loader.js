@@ -7,7 +7,7 @@
 
 if (false === ('btoa' in window)) { window.location.href = 'browser.php'; throw new Error(window.phrases.errorBrowserBtoa); }
 else if (typeof Date === 'undefined') { window.location.href = 'browser.php'; throw new Error(window.phrases.errorBrowserDate); }
-else if (typeof Math === 'undefined') { window.location.href = 'browser.php'; throw new Error(window.phrases.errorBrowserMath); } // Every browser supports Math. But, I /really/ hate programs that make stupid assumptions like that. All throughout FIM, I try to be as explicit as possible with these things.
+else if (typeof Math === 'undefined') { window.location.href = 'browser.php'; throw new Error(window.phrases.errorBrowserMath); } // Every browser supports Math. But, I /really/ hate programs that make stupid assumptions like that. All throughout FIM, I try to be as explicit as possible with these things. Try is, of-course, the keyword there.
 else if (false === ('encodeURIComponent' in window || 'escape' in window)) { window.location.href = 'browser.php'; throw new Error(window.phrases.errorBrowserEscape); }
 
 
@@ -1479,6 +1479,11 @@ function windowResize() {
   $('#messageInput').css('width', (((windowWidth - 10) * .75) - 20 - 2)); // Set the messageInput box to fill width.
 
   $('body').css('min-height', windowHeight); // Set the body height to equal that of the window; this fixes many gradient issues in theming.
+  
+  $('.ui-widget-overlay').each(function() {
+    $(this).height(windowHeight);
+    $(this).width(windowWidth);
+  });
 }
 
 function windowBlur() {

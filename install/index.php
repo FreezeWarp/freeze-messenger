@@ -36,6 +36,7 @@ define('INSTALL_ISSUE_APC', 32768);
 define('INSTALL_ISSUE_CURL', 65536);
 define('INSTALL_ISSUE_WRITEORIGINDIR', 1048576);
 define('INSTALL_ISSUE_CONFIGEXISTS', 2097152);
+define('INSTALL_ISSUE_WRITEDATADIR', 4194304);
 
 
 define('INSTALL_DB_MYSQL', 1);
@@ -70,6 +71,13 @@ if (!extension_loaded('curl')) $installFlags += INSTALL_ISSUE_CURL;
 // FS Issues
 if (!is_writable('../')) $installFlags += INSTALL_ISSUE_WRITEORIGINDIR;
 if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
+
+foreach(array('../webpro/client/data/config.json', '../webpro/client/data/language_enGB.json', '../webpro/client/data/language_enUS.json', '../webpro/client/data/templates.json', '../webpro/client/data/') AS $file) {
+  if (!is_writable($file)) { 
+    $installFlags += INSTALL_ISSUE_WRITEDATADIR;
+    break;
+  }
+}
 
 ?>
 
@@ -293,6 +301,11 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
         <td colspan="3">Origin Directory Writable</td>
         <td>Config File Creation</td>
         <td>The reasons for this are complicated, so we can't give copy+paste directions on fixing this. However, make sure you only give write permission to the server user (in Ubuntu, usually "www-data"). If you are running Apache on Windows, this user can be found by going to the Windows Services tool, right-clicking the "Apache" service,         selecting "properties", and finally looking under "Log On".</td>
+      </tr>
+      <tr class="<?php echo ($installFlags & INSTALL_ISSUE_WRITEDATADIR ? 'uninstalledFlag' : 'installedFlag'); ?>">
+        <td colspan="3">WebPro Data Directory Writable</td>
+        <td>WebPro Customisation</td>
+        <td>Similar to above, you will need to enable writing for all files in the 'webpro/client/data' directory (as well as the directory itself).</td>
       </tr>
       <tr class="<?php echo ($installFlags & INSTALL_ISSUE_CONFIGEXISTS ? 'uninstalledFlag' : 'installedFlag'); ?>">
         <td colspan="3">Config File Absent</td>

@@ -100,8 +100,14 @@ $defaultConfig = array(
   'dev' => false,
 
   'email' => '',
+
   'emailErrors' => true,
   'emailExeptions' => true,
+  'logErrors' => true,
+  'logExceptions' => true,
+  'logErrorsFile' => '',
+  'logExceptionsFile' => '',
+  'displayExceptions' => false,
 
   'anonymousUserId' => 0,
 
@@ -183,7 +189,7 @@ $defaultConfig = array(
     'ó' => 'o', 'ö' => 'o', 'Ó' => 'O', 'Ö' => 'O',
     'æ' => 'ae', 'Æ' => 'AE',
     'ß' => 'ss',
-    'ð' => 'd', 'Ð' => 'd'
+    'ð' => 'd', 'Ð' => 'd',
     'œ' => 'ce', 'Œ' => 'CE',
     'þ' => 'th', 'Þ' => 'TH',
     'ñ' => 'n',
