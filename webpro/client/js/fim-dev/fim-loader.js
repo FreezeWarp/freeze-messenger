@@ -1469,7 +1469,7 @@ function windowResize() {
   var windowHeight = $(window).height(); // Get the browser window "viewport" height, excluding scrollbars.
 
   $('#messageList').css('height', (windowHeight - 250)); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
-  $('#messageList').css('max-width', ((windowWidth - 10) * .75)); // Prevent box-stretching. This is common on... many chats.
+  $('#messageList').css('max-width', ((windowWidth - 20) * .75)); // Prevent box-stretching. This is common on... many chats.
 
   $('body').css('min-height', windowHeight); // Set the body height to equal that of the window; this fixes many gradient issues in theming.
   

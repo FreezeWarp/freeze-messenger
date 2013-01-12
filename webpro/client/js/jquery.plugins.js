@@ -1470,6 +1470,7 @@ var dia = {
     $('<div style="display: none;"><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>' + message + '</div>').dialog({
       title : 'Error',
       modal : true,
+      dialogClass : 'error',
       buttons: {
         Close: function() {
           $(this).dialog("close");

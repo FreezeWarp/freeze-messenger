@@ -139,10 +139,10 @@ $request = fim_sanitizeGPC('p', array(
   ),
 
   'parentalFlags' => array(
+    'default' => $config['parentalFlagsDefault'],
     'context' => array(
       'type' => 'csv',
       'valid' => $config['parentalFlags'],
-      'default' => $config['parentalFlagsDefault'],
     ),
   ),
 ));

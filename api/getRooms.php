@@ -135,16 +135,6 @@ switch ($request['sort']) {
 
 
 
-/* Get User's Favourite Rooms as Array TODO
-if (isset($user['favRooms'])) {
-  $favRooms = fim_arrayValidate(explode(',', $user['favRooms']), 'int', false); // All entries cast as integers, will not preserve entries of zero.
-}
-else {
-  $favRooms = array();
-} */
-
-
-
 /* Plugin Hook Start */
 ($hook = hook('getRooms_start') ? eval($hook) : '');
 
@@ -155,6 +145,7 @@ $rooms = $database->select(
   $queryParts['roomSelect']['columns'],
   $queryParts['roomSelect']['conditions'],
   $queryParts['roomSelect']['sort']);
+//  die($rooms->sourceQuery);
 $rooms = $rooms->getAsArray(true);
 
 
@@ -177,7 +168,6 @@ if (is_array($rooms)) {
         'roomId' => (int)$roomData['roomId'],
         'roomName' => ($roomData['roomName']),
         'defaultPermissions' => (int) $roomData['defaultPermissions'],
-//TODO        'favorite' => (bool) (in_array($roomData['roomId'],$favRooms) ? true : false),
         'parentalFlags' => explode(',', $roomData['parentalFlags']),
         'parentalAge' => $roomData['parentalAge'],
         'options' => (int) $roomData['options'],

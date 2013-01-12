@@ -49,7 +49,6 @@ function fim_inArray($needle, $haystack) {
  */
 function fim_arrayValidate($array, $type = 'int', $preserveAll = false, $allowedValues = false) {
   $arrayValidated = array(); // Create an empty array we will use to store things.
-
   if (is_array($array)) { // Make sure the array is an array.
     foreach ($array AS $value) { // Run through each value of the array.
       if (is_array($allowedValues)
@@ -921,10 +920,10 @@ function fim_sanitizeGPC($type, $data) {
           );
 
           if (is_array($metaData)) { // Quite a bit of context data exists.
-            foreach ($metaData AS $contextname => $contextdata) {
-              switch ($contextname) {
+            foreach ($metaData AS $contextName => $contextData) {
+              switch ($contextName) {
                 case 'type': // This is the original typecast, with some special types defined. While GPC variables are best interpretted as strings, this goes further and converts the string to a more proper format.
-                switch ($contextdata) {
+                switch ($contextData) {
                   case 'csv': $indexMetaData['context']['cast'] = 'csv'; break; // e.g. "1,2,3" "1,ab3,455"
                   case 'array': $indexMetaData['context']['cast'] = 'array'; break; // e.g. "1=1,2=0,3=0" "1=1,ab3=1,455=0"
                   case 'bool': $indexMetaData['context']['cast'] = 'bool'; break;
@@ -934,13 +933,16 @@ function fim_sanitizeGPC($type, $data) {
                 }
                 break;
                 case 'filter': // This is an additional filter applied to data that uses the "csv" context type (and possibly more in the future).
-                if (in_array($contextData, array('int', 'bool', 'ascii128', 'alphanum'))) {
+                if (in_array($contextData, array('', 'int', 'bool', 'ascii128', 'alphanum'))) {
                   $indexMetaData['context']['filter'] = $contextData;
 		}
+		else {
+		  throw new Exception('Unrecognised filter "' . $contextData . '" in fim_sanitizeGPC');
+		}
                 break;
-                case 'evaltrue': $indexMetaData['context']['evaltrue'] = (bool) $contextdata; break; // This specifies whether all subvalus of a context must be true. For instance, assuming we use an integer filter 0 would be removed if this was true.
-                case 'valid': $indexMetaData['context']['valid'] = (array) $contextdata; break; // This is only used with arrays and specifies which values can be included in the array.
-                default: throw new Exception('Invalid context value "' . $contextname . '" in data in fim_sanitizeGPC'); break;
+                case 'evaltrue': $indexMetaData['context']['evaltrue'] = (bool) $contextData; break; // This specifies whether all subvalus of a context must be true. For instance, assuming we use an integer filter 0 would be removed if this was true.
+                case 'valid': $indexMetaData['context']['valid'] = (array) $contextData; break; // This is only used with arrays and specifies which values can be included in the array.
+                default: throw new Exception('Invalid context value "' . $contextName . '" in data in fim_sanitizeGPC'); break;
               }
             }
           }
@@ -965,7 +967,7 @@ function fim_sanitizeGPC($type, $data) {
         if (isset($indexMetaData['valid'])) { // If a list of valid values is specified...
           if (is_array($indexMetaData['valid'])) { // And if that list is an array...
             if (in_array($activeGlobal[$indexName], $indexMetaData['valid'])) { // And if the value specified is in the list of valid values...
-              // Do Nothing; We're Good
+                // Do Nothing; We're Good
             }
             else {
               if ($indexMetaData['require']) { // If the value is required but not valid...

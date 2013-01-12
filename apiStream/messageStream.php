@@ -35,24 +35,20 @@ else {
   /* Get Request Data */
   $request = fim_sanitizeGPC('g', array(
     'roomId' => array(
-      'type' => 'int',
       'require' => true,
       'context' => array('type' => 'int', 'evaltrue' => true),
     ),
     'lastMessage' => array(
-      'type' => 'int',
       'require' => false,
       'default' => 0,
       'context' => array('type' => 'int', 'evaltrue' => false),
     ),
     'lastUnreadMessage' => array(
-      'type' => 'int',
       'require' => false,
       'default' => 0,
       'context' => array('type' => 'int', 'evaltrue' => false),
     ),
     'lastEvent' => array(
-      'type' => 'int',
       'require' => false,
       'default' => 0,
       'context' => array('type' => 'int', 'evaltrue' => false),
@@ -139,8 +135,6 @@ else {
           echo "data: " . json_encode($messagesOutput) . "\n\n";
 
           fim_flush(); // This /should/ not be neccessary. I don't know why it is -- TODO.
-
-          error_log('eventStream message: ' . json_encode($messagesOutput));
         }
 
         echo "id: m" . (int) $request['lastMessage'] . "-u" . (int) $request['lastUnreadMessage'] . "-e" . (int) $request['lastEvent'] . "\n\n";

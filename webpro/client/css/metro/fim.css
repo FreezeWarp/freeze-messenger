@@ -23,7 +23,7 @@
 .ui-dialog-content .ui-button {
   height: 3em !important; 
 }
-ul.ui-tabs-nav > li > a {
+ul.ui-tabs-nav > li > a, .ui-dialog-buttonpane .ui-button {
   height: 2.5em !important; 
 }
 .ui-tabs .ui-widget-content {
@@ -37,4 +37,25 @@ ul.ui-tabs-nav {
 }
 .page {
   margin-bottom: 5px !important;
+}
+.error .ui-widget-header {
+  background-color: #ff0000 !important;
+}
+.error, .error .ui-dialog-buttonpane {
+  border-color: #ff0000 !important;
+}
+.error .ui-button.ui-state-focus {
+  background-color: #FF9999;
+  border-color: #FF9999;
+  color: #000000;
+}
+.error .ui-button.ui-state-hover {
+  background-color: #FFBBBB;
+  border-color: #FFBBBB;
+  color: #000000;
+}
+.error .ui-button.ui-state-active {
+  background-color: #FF0000;
+  border-color: #FF0000;
+  color: #ffffff;
 }
