@@ -981,7 +981,7 @@ function fim_sanitizeGPC($type, $data) {
           }
         }
       }
-      else {  die($indexName);
+      else {
         if ($indexMetaData['require']) { // If the value is required but not specified...
           throw new Exception('Required data not present (index ' . $indexName . ').'); // Throw an exception.
         }
