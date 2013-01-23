@@ -150,10 +150,16 @@ popup = {
 
         for (i in serverSettings.fileUploads.allowedExtensions) {
           var maxFileSize = serverSettings.fileUploads.sizeLimits[serverSettings.fileUploads.allowedExtensions[i]],
+            maxFileSize2 = maxFileSize + window.phrases.byteUnits[1],
             fileContainer = serverSettings.fileUploads.fileContainers[serverSettings.fileUploads.allowedExtensions[i]],
             fileExtensions = serverSettings.fileUploads.extensionChangesReverse[serverSettings.fileUploads.allowedExtensions[i]];
+            
+          for (j in window.phrases.byteUnits) {
+            if (maxFileSize > j) maxFileSize2 = (maxFileSize / j) + window.phrases.byteUnits[j];
+            else break; 
+          }
           
-          $('table#fileUploadInfo tbody').append('<tr><td>' + (fileExtensions ? fileExtensions.join(', ') : serverSettings.fileUploads.allowedExtensions[i]) + '</td><td>' + fileContainer + '</td><td>' + maxFileSize + ' Bytes</td></tr>');
+          $('table#fileUploadInfo tbody').append('<tr><td>' + (fileExtensions ? fileExtensions.join(', ') : serverSettings.fileUploads.allowedExtensions[i]) + '</td><td>' + fileContainer + '</td><td>' + maxFileSize2 + '</td></tr>');
         }
         
        

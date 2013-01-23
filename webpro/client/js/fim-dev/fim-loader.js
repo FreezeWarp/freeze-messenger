@@ -189,18 +189,20 @@ function messageFormat(json, format) {
   else {
     switch (flag) {
       case 'source':
-      if ($1.match(regexs.youtubeFull) || $1.match(regexs.youtubeShort)) {
-        var code = false;
+      text = text.replace(regexs.url, function($1) {
+        if ($1.match(regexs.youtubeFull) || $1.match(regexs.youtubeShort)) {
+          var code = false;
 
-        if (text.match(regexs.youtubeFull) !== null) { code = text.replace(regexs.youtubeFull, "$8"); }
-        else if (text.match(regexs.youtubeShort) !== null) { code = text.replace(regexs.youtubeShort, "$5"); }
+          if (text.match(regexs.youtubeFull) !== null) { code = text.replace(regexs.youtubeFull, "$8"); }
+          else if (text.match(regexs.youtubeShort) !== null) { code = text.replace(regexs.youtubeShort, "$5"); }
 
-        if (code) {
-          if (settings.disableVideo) { return '<a href="https://www.youtu.be/' + code + '" target="_BLANK">[Youtube Video]</a>'; }
-          else { return '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>'; }
+          if (code) {
+            if (settings.disableVideo) { return '<a href="https://www.youtu.be/' + code + '" target="_BLANK">[Youtube Video]</a>'; }
+            else { return '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>'; }
+          }
+          else { return '[Logic Error]'; }
         }
-        else { return '[Logic Error]'; }
-      }
+      });
       break;
 
       case 'image': // We append the parentalAge flags regardless of an images source. It will potentially allow for other sites to use the same format (as far as I know, I am the first to implement the technology, and there are no related standards.)
