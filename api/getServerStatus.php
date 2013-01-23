@@ -73,6 +73,15 @@ $xmlData = array(
         'generalEnabled' => (bool) $config['enableGeneralUploads'],
         'maxAll' => (int) $config['uploadMaxFiles'],
         'maxUser' => (int) $config['uploadMaxUserFiles'],
+        'chunkSize' => (int) $config['fileUploadChunkSize'],
+        'emptyFiles' => (bool) $config['allowEmptyFiles'],
+        'orphanFiles' => (bool) $config['allowOrphanFiles'],
+        'allowedExtensions' => (array) $config['allowedExtensions'],
+        'uploadMimes' => (array) $config['uploadMimes'],
+        'extensionChanges' => $config['extensionChanges'],
+        'fileContainers' => $config['fileContainers'],
+        'uploadMimeProof' => $config['uploadMimeTypes'],
+        'uploadSizeLimits' => $config['uploadSizeLimits'],
       ),
 
       'rooms' => array(
