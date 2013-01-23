@@ -34,17 +34,13 @@ require('../global.php');
 $request = fim_sanitizeGPC('g', array(
   'roomLists' => array(
     'default' => '',
-    'context' => array(
-      'type' => 'csv',
-      'filter' => 'int',
-      'evaltrue' => true,
-    ),
+    'cast' => 'csv',
+    'filter' => 'int',
+    'evaltrue' => true,
   ),
   
   'permissionCheck' => array(
-    'context' => array(
-      'type' => 'bool',
-    ),
+    'cast' => 'bool',
   ),
 ));
 

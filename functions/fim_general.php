@@ -875,7 +875,6 @@ function fim_sanitizeGPC($type, $data) {
   $metaDataDefaults = array(
     'cast' => 'string',
     'require' => false,
-    'context' => false,
     'trim' => false,
     'filter' => '',
     'evaltrue' => false,

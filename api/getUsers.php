@@ -36,25 +36,19 @@ require('../global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
   'users' => array(
-    'context' => array(
-      'type' => 'csv',
-      'filter' => 'int',
-      'evaltrue' => true,
-    ),
+    'cast' => 'csv',
+    'filter' => 'int',
+    'evaltrue' => true,
     'default' => '',
   ),
 
   'showOnly' => array(
-    'valid' => array(
-      'banned', 'unbanned', 'friends', 'ignored', ''
-    ),
+    'valid' => array('banned', 'unbanned', 'friends', 'ignored', ''),
     'default' => '',
   ),
 
   'sort' => array(
-    'valid' => array(
-      'userId', 'userName'
-    ),
+    'valid' => array('userId', 'userName'),
     'default' => 'userId',
   ),
 ));
