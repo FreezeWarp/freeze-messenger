@@ -132,7 +132,8 @@ popup = {
     dia.full({
       content : window.templates.insertDoc,
       id : 'insertDoc',
-      width: 600,
+      width: 1000,
+      position: 'top',
       tabs : true,
       oF : function() {
         /* File Upload Info */
@@ -208,8 +209,12 @@ popup = {
 
               var fileParts = fileName.split('.');
               var filePartsLast = fileParts[fileParts.length - 1];
+              
+              if (filePartsLast in serverSettings.fileUploads.extensionChanges) {
+                filePartsLast = serverSettings.fileUploads.extensionChanges[filePartsLast];
+              }
 
-              if (!filePartsLast in uploadFileTypes) { // TODO
+              if (!filePartsLast in serverSettings.fileUploads.allowedExtensions) { // TODO
                 $('#preview').html('The specified file type can not be uploaded.');
               }
               else if (fileSize > serverSettings.fileUploads.sizeLimits[filePartsLast]) {
@@ -223,10 +228,10 @@ popup = {
 
                 reader2.readAsDataURL(files[0]);
                 reader2.onloadend = function() {
-                  switch (uploadFileTypes[filePartsLast].container) {
+                  switch (serverSettings.fileUploads.fileContainers[filePartsLast]) {
                     case 'image': $('#uploadFileFormPreview').html('<img src="' + reader2.result + '" style="max-height: 200px; max-width: 200px;" />'); break;
-                    case 'video': $('#uploadFileFormPreview').html('No Preview Available'); break;
-                    case 'audio': $('#uploadFileFormPreview').html('No Preview Available'); break;
+                    case 'video': $('#uploadFileFormPreview').html('<video src="' + reader2.result + '" style="max-height: 200px; max-width: 200px;">Video Preview Not Supported</video>'); break;
+                    case 'audio': $('#uploadFileFormPreview').html('<audio src="' + reader2.result + '" style="max-height: 200px; max-width: 200px;">Audio Preview Not Supported</video>'); break;
                     case 'text': $('#uploadFileFormPreview').html('No Preview Available'); break;
                     case 'html': $('#uploadFileFormPreview').html('No Preview Available'); break;
                     case 'archive': $('#uploadFileFormPreview').html('No Preview Available'); break;
