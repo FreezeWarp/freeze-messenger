@@ -355,10 +355,14 @@ popup = {
         }
 
         dia.full({
-          content : '<table class="center"><thead><tr><th>Position</th>' + roomHtml + '</tr></thead><tbody>' + statsHtml2 + '</tbody></table>',
+          content : window.templates.viewStats,
           title : 'Room Stats',
           id : 'roomStatsDialogue',
-          width : 600
+          width : 600,
+          oF : function() {
+            $('table#viewStats > thead > tr').append(roomHtml);
+            $('table#viewStats > tbody').html(statsHtml2);
+          }
         });
 
         return false;
@@ -679,7 +683,7 @@ popup = {
 
   viewUploads : function() {
     dia.full({
-      content : '<table align="center"><thead><tr><td>File</td><td>Size</td><td>Parental Info</td><td>Actions</td></tr></thead><tbody id="viewUploadsBody"></tbody></table>',
+      content : window.templates.viewUploads,
       width : 1200,
       title : 'View My Uploads',
       position : 'top',
@@ -942,7 +946,7 @@ popup = {
 
   privateRoom : function() {
     dia.full({
-      content : '<form action="index.php?action=privateRoom&phase=2" method="post" id="privateRoomForm"><label for="userName">Username</label>: <input type="text" name="userName" id="userName" /><br /><small><span style="margin-left: 10px;">The other user you would like to talk to.</span></small><br /><br />  <button type="submit">Go</button></form>',
+      content : window.templates.privateRoom,
       title : 'Enter Private Room',
       id : 'privateRoomDialogue',
       width : 1000,
@@ -976,7 +980,7 @@ popup = {
 
   online : function() {
     dia.full({
-      content : '<table class="center"><thead><tr class="hrow"><th>User</th><th>Rooms</th></tr></thead><tbody id="onlineUsers"><tr><td colspan="2">Loading...</td></tr></tbody></table>',
+      content : window.templates.online,
       title : 'Active Users',
       id : 'onlineDialogue',
       position : 'top',
@@ -1067,9 +1071,12 @@ popup = {
         }
 
         dia.full({
-          content : '<table class="center"><thead><tr class="hrow"><th>User</th><th>Kicked By</th><th>Kicked On</th><th>Expires On</th><th>Actions</th></tr>  </thead><tbody id="kickedUsers">' + kickHtml + '</tbody></table>',
+          content : window.templates.manageKicks,
           title : 'Manage Kicked Users in This Room',
-          width : 1000
+          width : 1000,
+          oF : function() {
+            $('#kickHtml').html(kickHtml); 
+          }
         });
 
         return false;
@@ -1119,9 +1126,12 @@ popup = {
         }
 
         dia.full({
-          content : '<table class="center"><thead><tr class="hrow"><th>User</th><th>Kicked By</th><th>Kicked On</th><th>Expires On</th></tr>  </thead><tbody id="kickedUsers">' + kickHtml + '</tbody></table>',
+          content : window.templates.manageKicks,
           title : 'You Have Been Kicked From The Following Rooms',
-          width : 1000
+          width : 1000,
+          oF : function() {
+            $('#kickHtml').html(kickHtml); 
+          }
         });
 
         return false;
@@ -1145,7 +1155,7 @@ popup = {
 
   kick : function() {
     dia.full({
-      content : '<form action="#" id="kickUserForm" method="post">  <label for="userName">User</label>: <input type="text" name="userName" id="userName" /><br />  <label for="roomNameKick">Room</label>: <input type="text" id="roomNameKick" name="roomNameKick" /> <br />  <label for="time">Time</label>: <input type="text" name="time" id="time" style="width: 50px;" />  <select name="interval" id="interval">    <option value="1">Seconds</option>    <option value="60">Minutes</option>    <option value="3600">Hours</option>    <option value="86400">Days</option>    <option value="604800">Weeks</option>  </select><br /><br />  <button type="submit">Kick User</button><button type="reset">Reset</button></form>',
+      content : window.templates.kick,
       title : 'Kick User',
       id : 'kickUserDialogue',
       width : 1000,
@@ -1209,7 +1219,7 @@ popup = {
 
   archive : function(options) {
     dia.full({
-      content : '<form id="archiveSearch" action="#" method="get" style="text-align: center;"><table style="text-align: center; margin-left: auto; margin-right: auto;"><thead><tr><th align="center"><small>Search Text:</small></th><th><small>Filter by User:</small></th><th><small>Results per Page:</small></th></tr></thead><tbody><tr><td><input type="text" id="searchText" name="searchText" style="margin-left: auto; margin-right: auto; text-align: left;" /></td><td><input type="text" id="searchUser" name="searchUser" style="margin-left: auto; margin-right: auto; text-align: left;" /></td><td><select id="resultLimit" name="resultLimit" style="margin-left: auto; margin-right: auto; text-align: left;"><option value="10">10</option><option value="25" selected="selected">25</option><option value="50">50</option><option value="100">100</option><option value="500">500</option></select></td></tr></tbody></table></form><br /><br /><table class="center"><thead><tr><th style="width: 20%;">User</th><th style="width: 20%;">Time</th><th style="width: 60%;">Message</th><th>-</th></tr></thead><tbody id="archiveMessageList"></tbody></table><br /><br /><div align="center"><button id="archivePrev"><< Prev</button><button id="export">Export</button><button id="archiveNext">Next >></button></div>',
+      content : window.templates.archive,
       title : 'Archive',
       id : 'archiveDialogue',
       position : 'top',
