@@ -20,9 +20,7 @@ if (!defined('WEBPRO_INMOD')) {
 else {
   $request = fim_sanitizeGPC('r', array(
     'tool' => array(
-      'context' => array(
-        'type' => 'string',
-      ),
+      'cast' => 'string'
     ),
   ));
 

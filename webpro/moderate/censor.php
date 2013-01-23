@@ -20,27 +20,19 @@ if (!defined('WEBPRO_INMOD')) {
 else {
   $request = fim_sanitizeGPC('r', array(
     'listId' => array(
-      'context' => array(
-        'type' => 'int',
-      ),
+      'cast' => 'int',
     ),
 
     'wordId' => array(
-      'context' => array(
-        'type' => 'int',
-      ),
+      'cast' => 'int',
     ),
 
     'word' => array(
-      'context' => array(
-        'type' => 'string',
-      ),
+      'cast' => 'string',
     ),
 
     'param' => array(
-      'context' => array(
-        'type' => 'string',
-      ),
+      'cast' => 'string',
     ),
 
     'severity' => array(
@@ -49,15 +41,11 @@ else {
     ),
 
     'options' => array(
-      'context' => array(
-        'type' => 'int',
-      ),
+      'cast' => 'int',
     ),
 
     'listName' => array(
-      'context' => array(
-        'type' => 'string',
-      ),
+      'cast' => 'string',
     ),
 
     'listType' => array(
@@ -66,21 +54,15 @@ else {
     ),
 
     'candis' => array(
-      'context' => array(
-        'type' => 'bool',
-      ),
+      'cast' => 'bool',
     ),
 
     'privdis' => array(
-      'context' => array(
-        'type' => 'bool',
-      ),
+      'cast' => 'bool',
     ),
 
     'mature' => array(
-      'context' => array(
-        'type' => 'bool',
-      ),
+      'cast' => 'bool',
     ),
   ));
 

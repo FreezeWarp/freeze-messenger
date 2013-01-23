@@ -69,7 +69,7 @@ popup = {
 
   selectRoom : function() {
     dia.full({
-      content : '<table class="center"><thead><tr><th style="width: 20%;">Name</th><th style="width: 60%;">Topic</th><th style="width: 20%;">Actions</th></tr></thead><tbody id="roomTableHtml"></tbody></table>',
+      content : window.templates.selectRoom,
       title : 'Room List',
       id : 'roomListDialogue',
       width: 1000,
@@ -189,6 +189,9 @@ popup = {
 
               if (!filePartsLast in uploadFileTypes) { // TODO
                 $('#preview').html('The specified file type can not be uploaded.');
+              }
+              else if (!fileSize) {
+                
               }
               else if (fileSize > uploadFileTypes[filePartsLast].maxSize) {
                 $('#preview').html('The specified file type must not be larger than ' + uploadFileTypes[filePartsLast].maxSize + ' bytes');
