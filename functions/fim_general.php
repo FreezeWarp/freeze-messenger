@@ -873,11 +873,10 @@ function fim_sanitizeGPC($type, $data) {
 
   /* Define Defaults */
   $metaDataDefaults = array(
-    'type' => 'string',
+    'cast' => 'string',
     'require' => false,
     'context' => false,
     'trim' => false,
-    'cast' => '',
     'filter' => '',
     'evaltrue' => false,
     

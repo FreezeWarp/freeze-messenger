@@ -32,25 +32,19 @@ require('../global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
   'roomIds' => array(
-    'context' => array(
-      'type' => 'csv',
-      'filter' => 'int',
-      'evaltrue' => true,
-    ),
+    'cast' => 'csv',
+    'filter' => 'int',
+    'evaltrue' => true,
   ),
 
   'roomListId' => array(
-    'context' => array(
-      'type' => 'int',
-    ),
+    'cast' => 'int',
   ),
 
   'roomListName' => array(),
 
   'action' => array(
-    'context' => array(
-      'allowedValues' => array('add', 'remove', 'replace'),
-    ),
+    'valid' => array('add', 'remove', 'replace'),
   ),
 ));
 

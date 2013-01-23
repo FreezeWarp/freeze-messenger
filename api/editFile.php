@@ -85,7 +85,6 @@ $request = fim_sanitizeGPC('p', array(
     ),
   ),
 
-
   'uploadMethod' => array(
     'default' => 'raw',
     'valid' => array(
@@ -103,7 +102,7 @@ $request = fim_sanitizeGPC('p', array(
   ),
 
   'fileSize' => array(
-    'context' => 'int',
+    'cast' => 'int',
   ),
 
   'fileMd5hash' => array(),
@@ -112,7 +111,7 @@ $request = fim_sanitizeGPC('p', array(
 
   'roomId' => array(
     'default' => 0,
-    'context' => 'int',
+    'cast' => 'int',
   ),
 
   'dataEncode' => array(
@@ -123,24 +122,20 @@ $request = fim_sanitizeGPC('p', array(
   ),
 
   'parentalAge' => array(
-    'context' => 'int',
+    'cast' => 'int',
     'valid' => $config['parentalAges'],
     'default' => $config['parentalAgeDefault'],
   ),
 
   'parentalFlags' => array(
     'default' => $config['parentalFlagsDefault'],
-    'context' => array(
-      'type' => 'csv',
-      'valid' => $config['parentalFlags'],
-    ),
+    'cast' => 'csv',
+    'valid' => $config['parentalFlags'],
   ),
 
   'fileId' => array(
     'default' => 0,
-    'context' => array(
-      'type' => 'int',
-    ),
+    'cast' => 'int',
   ),
 ));
 

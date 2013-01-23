@@ -87,7 +87,7 @@ $request = fim_sanitizeGPC('p', array(
   ),
 
   'roomId' => array(
-    'context' => 'int',
+    'cast' => 'int',
   ),
 
   'roomName' => array(
@@ -97,53 +97,43 @@ $request = fim_sanitizeGPC('p', array(
 
   'defaultPermissions' => array(
     'default' => 0,
-    'context' => 'int',
+    'cast' => 'int',
   ),
 
   'moderators' => array(
-    'context' => array(
-      'type' => 'csv',
-      'filter' => 'int',
-      'evaltrue' => true,
-    ),
+    'cast' => 'csv',
+    'filter' => 'int',
+    'evaltrue' => true,
   ),
 
   'allowedUsers' => array(
-    'context' => array(
-      'type' => 'csv',
-      'filter' => 'int',
-      'evaltrue' => true,
-    ),
+    'cast' => 'csv',
+    'filter' => 'int',
+    'evaltrue' => true,
   ),
 
   'allowedGroups' => array(
-    'context' => array(
-      'type' => 'csv',
-      'filter' => 'int',
-      'evaltrue' => true,
-    ),
+    'cast' => 'csv',
+    'filter' => 'int',
+    'evaltrue' => true,
   ),
 
   'censor' => array(
-    'context' => array(
-      'type' => 'array',
-      'filter' => 'bool',
-      'evaltrue' => false,
-    ),
+    'cast' => 'array',
+    'filter' => 'bool',
+    'evaltrue' => false,
   ),
 
   'parentalAge' => array(
-    'context' => 'int',
+    'cast' => 'int',
     'valid' => $config['parentalAges'],
     'default' => $config['parentalAgeDefault'],
   ),
 
   'parentalFlags' => array(
     'default' => $config['parentalFlagsDefault'],
-    'context' => array(
-      'type' => 'csv',
-      'valid' => $config['parentalFlags'],
-    ),
+    'cast' => 'csv',
+    'valid' => $config['parentalFlags'],
   ),
 ));
 

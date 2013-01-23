@@ -32,17 +32,13 @@ require('../global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
   'ignoredUserIds' => array(
-    'context' => array(
-      'type' => 'csv',
-      'filter' => 'int',
-      'evaltrue' => true,
-    ),
+    'cast' => 'csv',
+    'filter' => 'int',
+    'evaltrue' => true,
   ),
 
   'action' => array(
-    'context' => array(
-      'allowedValues' => array('add', 'remove', 'replace'),
-    ),
+    'valid' => array('add', 'remove', 'replace'),
   ),
 ));
 
