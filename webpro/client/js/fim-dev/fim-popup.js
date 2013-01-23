@@ -1015,10 +1015,9 @@ popup = {
             }
             roomData = roomData.join(', ');
 
-            data += '<tr><td>' + startTag + '<span class="userName" data-userId="' + userId + '">' + userName + '</span>' + endTag + '</td><td>' + roomData + '</td></tr>';
+            $('#onlineUsers').append('<tr><td>' + startTag + '<span class="userName" data-userId="' + userId + '">' + userName + '</span>' + endTag + '</td><td>' + roomData + '</td></tr>');
           }
 
-          $('#onlineUsers').html(data);
           contextMenuParseUser('#onlineUsers');
 
           return false;
@@ -1044,51 +1043,45 @@ popup = {
   /*** START Kick Manager ***/
 
   manageKicks : function() {
-    var kickHtml = '';
+    dia.full({
+      content : window.templates.manageKicks,
+      title : 'Manage Kicked Users in This Room',
+      width : 1000,
+      oF : function() {
+        $.ajax({
+          url: directory + 'api/getKicks.php?rooms=' + roomId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+          timeout: 5000,
+          type: 'GET',
+          cache: false,
+          success: function(json) {
+            active = json.getKicks.kicks;
 
-    $.ajax({
-      url: directory + 'api/getKicks.php?rooms=' + roomId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-      timeout: 5000,
-      type: 'GET',
-      cache: false,
-      success: function(json) {
-        active = json.getKicks.kicks;
+            for (i in active) {
+              var kickerId = active[i].kickerData.userId,
+                kickerName = active[i].kickerData.userName,
+                kickerFormatStart = active[i].kickerData.userFormatStart,
+                kickerFormatEnd = active[i].kickerData.userFormatEnd,
+                userId = active[i].userData.userId,
+                userName = active[i].userData.userName,
+                userFormatStart = active[i].userData.userFormatStart,
+                userFormatEnd = active[i].userData.userFormatEnd,
+                length = active[i].length,
+                set = date(active[i].set, true),
+                expires = date(active[i].expires, true);
 
-        for (i in active) {
-          var kickerId = active[i].kickerData.userId,
-            kickerName = active[i].kickerData.userName,
-            kickerFormatStart = active[i].kickerData.userFormatStart,
-            kickerFormatEnd = active[i].kickerData.userFormatEnd,
-            userId = active[i].userData.userId,
-            userName = active[i].userData.userName,
-            userFormatStart = active[i].userData.userFormatStart,
-            userFormatEnd = active[i].userData.userFormatEnd,
-            length = active[i].length,
-            set = date(active[i].set, true),
-            expires = date(active[i].expires, true);
+              $('#kickHtml').append('<tr><td>' + userFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + userFormatEnd + '</td><td>' + kickerFormatStart + '<span class="userName userNameTable" data-userId="' + kickerId + '">' + kickerName + '</span>' + kickerFormatEnd + '</td><td>' + set + '</td><td>' + expires + '</td><td><button onclick="standard.unkick(' + userId + ', ' + roomId + ')">Unkick</button></td></tr>'); 
+            }
 
-          kickHtml += '<tr><td>' + userFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + userFormatEnd + '</td><td>' + kickerFormatStart + '<span class="userName userNameTable" data-userId="' + kickerId + '">' + kickerName + '</span>' + kickerFormatEnd + '</td><td>' + set + '</td><td>' + expires + '</td><td><button onclick="standard.unkick(' + userId + ', ' + roomId + ')">Unkick</button></td></tr>';
-        }
+            return false;
+          },
+          error: function() {
+            dia.error('The list of currently kicked users could not be obtained from the server. The action will be cancelled.'); // TODO: Handle Gracefully
 
-        dia.full({
-          content : window.templates.manageKicks,
-          title : 'Manage Kicked Users in This Room',
-          width : 1000,
-          oF : function() {
-            $('#kickHtml').html(kickHtml); 
+            return false;
           }
         });
-
-        return false;
-      },
-      error: function() {
-        dia.error('The list of currently kicked users could not be obtained from the server. The action will be cancelled.'); // TODO: Handle Gracefully
-
-        return false;
       }
     });
-
-    return false;
   },
 
   /*** END Kick Manager ***/
@@ -1100,50 +1093,47 @@ popup = {
 
   myKicks : function() {
     var kickHtml = '';
+    
+    dia.full({
+      content : window.templates.manageKicks,
+      title : 'You Have Been Kicked From The Following Rooms',
+      width : 1000,
+      oF : function() {
+        $.ajax({
+          url: directory + 'api/getKicks.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+          timeout: 5000,
+          type: 'GET',
+          cache: false,
+          success: function(json) {
+            active = json.getKicks.kicks;
 
-    $.ajax({
-      url: directory + 'api/getKicks.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-      timeout: 5000,
-      type: 'GET',
-      cache: false,
-      success: function(json) {
-        active = json.getKicks.kicks;
+            for (i in active) {
+              var kickerId = active[i].kickerData.userId,
+                kickerName = active[i].kickerData.userName,
+                kickerFormatStart = active[i].kickerData.userFormatStart,
+                kickerFormatEnd = active[i].kickerData.userFormatEnd,
+                userId = active[i].userData.userId,
+                userName = active[i].userData.userName,
+                userFormatStart = active[i].userData.userFormatStart,
+                userFormatEnd = active[i].userData.userFormatEnd,
+                length = active[i].length,
+                set = date(active[i].set, true),
+                expires = date(active[i].expires, true);
 
-        for (i in active) {
-          var kickerId = active[i].kickerData.userId,
-            kickerName = active[i].kickerData.userName,
-            kickerFormatStart = active[i].kickerData.userFormatStart,
-            kickerFormatEnd = active[i].kickerData.userFormatEnd,
-            userId = active[i].userData.userId,
-            userName = active[i].userData.userName,
-            userFormatStart = active[i].userData.userFormatStart,
-            userFormatEnd = active[i].userData.userFormatEnd,
-            length = active[i].length,
-            set = date(active[i].set, true),
-            expires = date(active[i].expires, true);
+              $('#kickHtml').append('<tr><td>' + userFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + userFormatEnd + '</td><td>' + kickerFormatStart + '<span class="userName userNameTable" data-userId="' + kickerId + '">' + kickerName + '</span>' + kickerFormatEnd + '</td><td>' + set + '</td><td>' + expires + '</td></tr>');
+            }
 
-          kickHtml += '<tr><td>' + userFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + userFormatEnd + '</td><td>' + kickerFormatStart + '<span class="userName userNameTable" data-userId="' + kickerId + '">' + kickerName + '</span>' + kickerFormatEnd + '</td><td>' + set + '</td><td>' + expires + '</td></tr>';
-        }
+            return false;
+          },
+          error: function() {
+            dia.error('The list of currently kicked users could not be obtained from the server. The action will be cancelled.'); // TODO: Handle Gracefully
 
-        dia.full({
-          content : window.templates.manageKicks,
-          title : 'You Have Been Kicked From The Following Rooms',
-          width : 1000,
-          oF : function() {
-            $('#kickHtml').html(kickHtml); 
+            return false;
           }
         });
-
-        return false;
-      },
-      error: function() {
-        dia.error('The list of currently kicked users could not be obtained from the server. The action will be cancelled.'); // TODO: Handle Gracefully
-
-        return false;
       }
     });
 
-    return false;
   },
 
   /*** END Kick Manager ***/
