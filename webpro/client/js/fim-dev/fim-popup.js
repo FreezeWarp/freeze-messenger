@@ -135,6 +135,28 @@ popup = {
       width: 600,
       tabs : true,
       oF : function() {
+        /* File Upload Info */
+        serverSettings.fileUploads.extensionChangesReverse = new Object();
+        
+        for (i in serverSettings.fileUploads.extensionChanges) {
+          var extension = serverSettings.fileUploads.extensionChanges[i];
+          
+          if (!(extension in serverSettings.fileUploads.extensionChangesReverse))
+            serverSettings.fileUploads.extensionChangesReverse[extension] = [extension];
+          
+          serverSettings.fileUploads.extensionChangesReverse[extension].push(i);
+        }
+
+        for (i in serverSettings.fileUploads.allowedExtensions) {
+          var maxFileSize = serverSettings.fileUploads.sizeLimits[serverSettings.fileUploads.allowedExtensions[i]],
+            fileContainer = serverSettings.fileUploads.fileContainers[serverSettings.fileUploads.allowedExtensions[i]],
+            fileExtensions = serverSettings.fileUploads.extensionChangesReverse[serverSettings.fileUploads.allowedExtensions[i]];
+          
+          $('table#fileUploadInfo tbody').append('<tr><td>' + (fileExtensions ? fileExtensions.join(', ') : serverSettings.fileUploads.allowedExtensions[i]) + '</td><td>' + fileContainer + '</td><td>' + maxFileSize + ' Bytes</td></tr>');
+        }
+        
+       
+        
         var fileName,
           fileSize;
 
@@ -190,11 +212,8 @@ popup = {
               if (!filePartsLast in uploadFileTypes) { // TODO
                 $('#preview').html('The specified file type can not be uploaded.');
               }
-              else if (!fileSize) {
-                
-              }
-              else if (fileSize > uploadFileTypes[filePartsLast].maxSize) {
-                $('#preview').html('The specified file type must not be larger than ' + uploadFileTypes[filePartsLast].maxSize + ' bytes');
+              else if (fileSize > serverSettings.fileUploads.sizeLimits[filePartsLast]) {
+                $('#preview').html('The specified file type must not be larger than ' + serverSettings.fileUploads.sizeLimits[filePartsLast] + ' bytes');
               }
               else {
                 reader.readAsBinaryString(files[0]);

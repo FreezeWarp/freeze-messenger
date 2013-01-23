@@ -77,11 +77,11 @@ $xmlData = array(
         'emptyFiles' => (bool) $config['allowEmptyFiles'],
         'orphanFiles' => (bool) $config['allowOrphanFiles'],
         'allowedExtensions' => (array) $config['allowedExtensions'],
-        'uploadMimes' => (array) $config['uploadMimes'],
+        'mimes' => (array) $config['uploadMimes'],
         'extensionChanges' => $config['extensionChanges'],
         'fileContainers' => $config['fileContainers'],
-        'uploadMimeProof' => $config['uploadMimeTypes'],
-        'uploadSizeLimits' => $config['uploadSizeLimits'],
+        'mimeProofs' => $config['uploadMimeTypes'],
+        'sizeLimits' => $config['uploadSizeLimits'],
       ),
 
       'rooms' => array(

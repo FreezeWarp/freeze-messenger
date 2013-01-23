@@ -67,7 +67,7 @@ $defaultConfig = array(
   'allowOrphanFiles' => false,
   'extensionChanges' => array(
     'jpe' => 'jpg',
-    'jpeg' => 'jpeg',
+    'jpeg' => 'jpg',
     'tar.gz' => 'tgz',
     'tar.bz2' => 'tbz2',
     'mpeg' => 'mpg',
@@ -75,6 +75,7 @@ $defaultConfig = array(
     'text' => 'txt',
     'php4' => 'php',
     'php5' => 'php',
+    'tiff' => 'tif',
   ),
   'fileContainers' => array(
     // application    
@@ -116,16 +117,29 @@ $defaultConfig = array(
 
     // image
     'png' => 'image',
-    'jpe' => 'image',
-    'jpeg' => 'image',
     'jpg' => 'image',
     'gif' => 'image',
     'bmp' => 'image',
     'ico' => 'image',
-    'tiff' => 'image',
     'tif' => 'image',
     'svg' => 'image',
     'svgz' => 'image',
+
+    // audio
+    'mp2' => 'audio',
+    'mp3' => 'audio',
+    'ogg' => 'audio',
+    'flac' => 'audio',
+    'm4a' => 'audio',
+    'wav' => 'audio',
+    'wma' => 'audio',
+    
+    // video
+    'mp4' => 'video',
+    'm4v' => 'video',
+    'ogv' => 'video',
+    'mov' => 'video',
+    'wmv' => 'video',
 
     // archives
     'zip' => 'archive',
@@ -135,12 +149,11 @@ $defaultConfig = array(
     'tbz2' => 'archive',
   ),
   'imageTypes' => array(IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG),
-  'allowedExtensions' => array('gif', 'png', 'jpg', 'jpeg'),
+  'allowedExtensions' => array('gif', 'png', 'jpg', 'txt', 'ogg', 'mp3', 'flac'),
   'uploadMimes' => array( // We transfer a file with a specific mimetype. Obviously, certain types are more prone to viruses than others.
     // text
     'txt' => 'text/plain',
     'htm' => 'text/html',
-    'html' => 'text/html',
     'php' => 'text/html',
     'css' => 'text/css',
     'js' => 'application/javascript',
@@ -177,13 +190,10 @@ $defaultConfig = array(
 
     // image
     'png' => 'image/png',
-    'jpe' => 'image/jpeg',
-    'jpeg' => 'image/jpeg',
     'jpg' => 'image/jpeg',
     'gif' => 'image/gif',
     'bmp' => 'image/bmp',
     'ico' => 'image/vnd.microsoft.icon',
-    'tiff' => 'image/tiff',
     'tif' => 'image/tiff',
     'svg' => 'image/svg+xml',
     'svgz' => 'image/svg+xml',
@@ -196,12 +206,13 @@ $defaultConfig = array(
     'm4a' => 'audio/m4a',
     'wav' => 'audio/wav',
     'wma' => 'audio/x-ms-wma',
-    'mov' => 'video/quicktime',
     
     // video
     'mp4' => 'video/mp4',
     'm4v' => 'video/mp4',
     'ogv' => 'video/ogg',
+    'mov' => 'video/quicktime',
+    'wmv' => 'video/x-ms-wmv',
 
     // archive
     'zip' => 'application/zip',
@@ -214,9 +225,74 @@ $defaultConfig = array(
     'gif', 'jpg', 'png',
   ),
   'uploadSizeLimits' => array(
-    'gif' => 10 * 1024 * 1024, // 10MB
+    'txt' => 1 * 1024 * 1024, // 1MB
+    'htm' => 1 * 1024 * 1024, // 1MB
+    'php' => 1 * 1024 * 1024, // 1MB
+    'css' => 1 * 1024 * 1024, // 1MB
+    'js' => 1 * 1024 * 1024, // 1MB
+    'json' => 1 * 1024 * 1024, // 1MB
+    'xml' => 1 * 1024 * 1024, // 1MB
+    
+    // application    
+    'exe' => 50 * 1024 * 1024, // 50MB
+    'msi' => 50 * 1024 * 1024, // 50MB
+    'cab' => 50 * 1024 * 1024, // 50MB
+
+    'swf' => 10 * 1024 * 1024, // 10MB
+    'flv' => 10 * 1024 * 1024, // 10MB
+    'pdf' => 10 * 1024 * 1024, // 10MB
+    'rtf' => 10 * 1024 * 1024, // 10MB
+    'doc' => 10 * 1024 * 1024, // 10MB
+    'xls' => 10 * 1024 * 1024, // 10MB
+    'ppt' => 10 * 1024 * 1024, // 10MB
+    
+    'docx' => 10 * 1024 * 1024, // 10MB
+    'dotx' => 10 * 1024 * 1024, // 10MB
+    'xlsx' => 10 * 1024 * 1024, // 10MB
+    'xltx' => 10 * 1024 * 1024, // 10MB
+    'xlam' => 10 * 1024 * 1024, // 10MB
+    'xlsb' => 10 * 1024 * 1024, // 10MB
+    'potx' => 10 * 1024 * 1024, // 10MB
+    'ppsx' => 10 * 1024 * 1024, // 10MB
+    'pptx' => 10 * 1024 * 1024, // 10MB
+    'sldx' => 10 * 1024 * 1024, // 10MB
+    
+    'odt' => 10 * 1024 * 1024, // 10MB
+    'ods' => 10 * 1024 * 1024, // 10MB
+    'odp' => 10 * 1024 * 1024, // 10MB
+
+    // image
     'png' => 10 * 1024 * 1024, // 10MB
-    'jpeg' => 10 * 1024 * 1024, // 10MB
+    'jpg' => 10 * 1024 * 1024, // 10MB
+    'gif' => 10 * 1024 * 1024, // 10MB
+    'bmp' => 10 * 1024 * 1024, // 10MB
+    'ico' => 1 * 1024 * 1024, // 1MB
+    'tif' => 10 * 1024 * 1024, // 10MB
+    'svg' => 10 * 1024 * 1024, // 10MB
+    'svgz' => 10 * 1024 * 1024, // 10MB
+
+    // audio
+    'mp2' => 20 * 1024 * 1024, // 20MB
+    'mp3' => 20 * 1024 * 1024, // 20MB
+    'ogg' => 20 * 1024 * 1024, // 20MB
+    'flac' => 50 * 1024 * 1024, // 50MB
+    'm4a' => 20 * 1024 * 1024, // 20MB
+    'wav' => 50 * 1024 * 1024, // 50MB
+    'wma' => 20 * 1024 * 1024, // 20MB
+    
+    // video
+    'mp4' => 10 * 1024 * 1024, // 100MB
+    'm4v' => 10 * 1024 * 1024, // 100MB
+    'ogv' => 10 * 1024 * 1024, // 100MB
+    'wmv' => 20 * 1024 * 1024, // 20MB
+    'mov' => 20 * 1024 * 1024, // 20MB
+
+    // archive
+    'zip' => 50 * 1024 * 1024, // 50MB
+    'rar' => 50 * 1024 * 1024, // 50MB
+    '7z' => 50 * 1024 * 1024, // 50MB
+    'tgz' => 50 * 1024 * 1024, // 50MB
+    'tbz2' => 50 * 1024 * 1024, // 50MB
   ),
 
   'avatarMaximumWidth' => 1000,
