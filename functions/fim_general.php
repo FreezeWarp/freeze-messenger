@@ -866,10 +866,12 @@ function fim_requestBodyToGPC($string) {
 function fim_sanitizeGPC($type, $data) {
   global $config;
 
-  // Get the request body.
+  /* Get The Request Body */
   if ($type === 'p' || $type === 'post' || $type === 'u' || $type === 'put' || $type === 'd' || $type === 'delete') $requestBody = file_get_contents('php://input'); // Only get php://input if we want to. Otherwise, it creates some extra overhead we could do without.
   else $requestBody = '';
 
+
+  /* Define Defaults */
   $metaDataDefaults = array(
     'type' => 'string',
     'require' => false,
@@ -878,8 +880,12 @@ function fim_sanitizeGPC($type, $data) {
     'cast' => '',
     'filter' => '',
     'evaltrue' => false,
+    
+    // Others: min, max, valid, default
   );
 
+
+  /* Store Request Body */
   if (strlen($requestBody) > 0) { // If a request body exists, we will use it instead of PHP's generated superglobals. This allows for further REST compatibility. We will, however, only use it for GET and POST requests, at the present time.
     switch ($type) {
       case 'p': case 'post': // POST can use a request body; it is ultimately the preferrence of the implementor, and for now we will prefer it as long as a REQUEST body exists. (TODO: Should a REQUEST body ever not exist in this case?)
@@ -908,20 +914,32 @@ function fim_sanitizeGPC($type, $data) {
         break;
     }
   }
+  
+
+  /* Process Request Body */
   if (count($activeGlobal) > 0 && is_array($activeGlobal)) { // Make sure the active global is populated with data.
     foreach ($data AS $indexName => $indexData) {
       $indexMetaData = $metaDataDefaults; // Store indexMetaData with the defaults.
       
       /* Validate Metadata */
       foreach ($indexData AS $metaName => $metaData) {
-        if (in_array($metaName, array('valid', 'require', 'trim', 'default', 'evaltrue', 'min', 'max'))) {
+        if ($metaName === 'default') {
           // Do nothing.
         }
+        elseif ($metaName === 'require' || $metaName === 'trim' || $metaName === 'evaltrue') {
+          if (!is_bool($metaData)) throw new Exception('Invalid "' . $metaName . '" in data in fim_sanitizeGPC');
+        }
+        elseif ($metaName === 'valid') {
+          if (!is_array($metaData)) throw new Exception('Invalid "' . $metaName . '" in data in fim_sanitizeGPC');
+        }
+        elseif ($metaName === 'min' || $metaName === 'max') {
+          if (!is_numeric($metaData)) throw new Exception('Invalid "' . $metaName . '" in data in fim_sanitizeGPC');
+        }
         elseif ($metaName === 'filter') {
-          if (!in_array($metaData,array('', 'int', 'bool', 'ascii128', 'alphanum'))) throw new Exception('Invalid "filter" in data in fim_sanitizeGPC');
+          if (!in_array($metaData, array('', 'int', 'bool', 'ascii128', 'alphanum'))) throw new Exception('Invalid "filter" in data in fim_sanitizeGPC');
         }
         elseif ($metaName === 'cast') {
-          if (!in_array($metaData,array('int', 'bool', 'string', 'csv', 'array'))) throw new Exception('Invalid "filter" in data in fim_sanitizeGPC');
+          if (!in_array($metaData, array('int', 'bool', 'string', 'csv', 'array'))) throw new Exception('Invalid "cast" in data in fim_sanitizeGPC');
         }
         else {
           throw new Exception('Unrecognised metadata: ' . $metaName); // TODO: Allow override/etc.
@@ -938,12 +956,8 @@ function fim_sanitizeGPC($type, $data) {
               // Do Nothing; We're Good
             }
             else {
-              if ($indexMetaData['require']) { // If the value is required but not valid...
-                throw new Exception('Required data not valid.'); // Throw an exception.
-              }
-              elseif (isset($indexMetaData['default'])) { // If the value has a default but is not valid...
-                $activeGlobal[$indexName] = $indexMetaData['default']; // Set the value to the default.
-              }
+              if ($indexMetaData['require']) throw new Exception('Required data not valid.'); // If the value is required but not valid, throw an exception.
+              elseif (isset($indexMetaData['default'])) $activeGlobal[$indexName] = $indexMetaData['default']; // If the value has a default but is not valid, set it to the default.
             }
           }
           else {
@@ -1002,23 +1016,17 @@ function fim_sanitizeGPC($type, $data) {
 
         case 'int':
         if ($indexMetaData['evaltrue']) { // Only include the value if it is true.
-          if ((int) $activeGlobal[$indexName]) { // If true/non-zero...
-            $newData[$indexName] = (int) $activeGlobal[$indexName]; // Append value as integer-cast.
-          }
+          if ((int) $activeGlobal[$indexName]) $newData[$indexName] = (int) $activeGlobal[$indexName]; // If true/non-zero... append value as integer-cast.
         }
         else { // Include the value whether true or false.
           $newData[$indexName] = (int) $activeGlobal[$indexName]; // Append value as integer-cast.
         }
 
         if (isset($indexMetaData['min'])) {
-          if ($newData[$indexName] < $indexMetaData['min']) { // Minimum Value
-            $newData[$indexName] = $indexMetaData['min'];
-          }
+          if ($newData[$indexName] < $indexMetaData['min']) $newData[$indexName] = $indexMetaData['min']; // Minimum Value
         }
         if (isset($indexMetaData['max'])) {
-          if ($newData[$indexName] > $indexMetaData['max']) { // Maximum Value
-            $newData[$indexName] = $indexMetaData['max'];
-          }
+          if ($newData[$indexName] > $indexMetaData['max']) $newData[$indexName] = $indexMetaData['max']; // Maximum Value
         }
         break;
 

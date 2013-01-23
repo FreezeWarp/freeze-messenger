@@ -123,7 +123,7 @@ require('../global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
   'defaultRoomId' => array(
-    'context' => 'int',
+    'cast' => 'int',
   ),
 
   'avatar' => array(
@@ -147,26 +147,22 @@ $request = fim_sanitizeGPC('p', array(
   ),
 
   'defaultFormatting' => array(
-    'context' => 'int',
+    'cast' => 'int',
   ),
 
   'watchRooms' => array(
-    'context' => array(
-      'type' => 'csv',
-      'filter' => 'int',
-      'evaltrue' => true,
-    ),
+    'cast' => 'csv',
+    'filter' => 'int',
+    'evaltrue' => true,
   ),
 
   'parentalAge' => array(
-    'context' => 'int',
+    'cast' => 'int',
   ),
 
   'parentalFlags' => array(
-    'context' => array(
-      'type' => 'csv',
-      'allowedValues' => $config['parentalFlags'], // Note that values are dropped automatically if a value is not allowed. We will not tell the client this.
-    ),
+    'cast' => 'csv',
+    'allowedValues' => $config['parentalFlags'], // Note that values are dropped automatically if a value is not allowed. We will not tell the client this.
   ),
 ));
 
