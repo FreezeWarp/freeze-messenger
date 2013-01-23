@@ -47,16 +47,12 @@ $request = fim_sanitizeGPC('p', array(
     'default' => '',
   ),
   'passwordEncrypt' => array(
-    'valid' => array(
-      'plaintext', 'sha256', 'sha256-salt',
-    ),
+    'valid' => array('plaintext', 'sha256', 'sha256-salt'),
     'default' => '',
   ),
   'passwordSalt' => array(
-    'context' => array(
-      'type' => 'string',
-      'filter' => 'ascii128',
-    ),
+    'cast' => 'string',
+    'filter' => 'ascii128',
   ),
   'email' => array(
     'default' => '',

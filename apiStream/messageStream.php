@@ -36,22 +36,26 @@ else {
   $request = fim_sanitizeGPC('g', array(
     'roomId' => array(
       'require' => true,
-      'context' => array('type' => 'int', 'evaltrue' => true),
+      'cast' => 'int',
+      'evaltrue' => true,
     ),
     'lastMessage' => array(
       'require' => false,
       'default' => 0,
-      'context' => array('type' => 'int', 'evaltrue' => false),
+      'cast' => 'int',
+      'evaltrue' => false,
     ),
     'lastUnreadMessage' => array(
       'require' => false,
       'default' => 0,
-      'context' => array('type' => 'int', 'evaltrue' => false),
+      'cast' => 'int',
+      'evaltrue' => false,
     ),
     'lastEvent' => array(
       'require' => false,
       'default' => 0,
-      'context' => array('type' => 'int', 'evaltrue' => false),
+      'cast' => 'int',
+      'evaltrue' => false,
     ),
   ));
 

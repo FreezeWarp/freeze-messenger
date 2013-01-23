@@ -43,14 +43,12 @@ $request = fim_sanitizeGPC('p', array(
   'message' => array(),
 
   'flag' => array(
-    'valid' => array(
-      'image', 'video', 'url', 'email', 'html', 'audio', 'text', 'source', '',
-    ),
+    'valid' => array('image', 'video', 'url', 'email', 'html', 'audio', 'text', 'source', ''),
   ),
 
   'ignoreBlock' => array(
     'default' => false,
-    'context' => 'bool',
+    'cast' => 'bool',
   ),
 ));
 $ip = $_SERVER['REMOTE_ADDR']; // Get the IP address of the user.
