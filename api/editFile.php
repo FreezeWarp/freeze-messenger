@@ -159,17 +159,8 @@ $xmlData = array(
   ),
 );
 
-$queryParts['getMimes']['columns'] = array(
-  "{$sqlPrefix}uploadTypes" => 'typeId, extension, mime, maxSize, container',
-);
-$queryParts['getMimes']['conditions'] = false;
-$queryParts['getMimes']['sort'] = false;
-$queryParts['getMimes']['limit'] = false;
 
-
-
-
-
+// 
 /* Plugin Hook End */
 ($hook = hook('editFile_start') ? eval($hook) : '');
 

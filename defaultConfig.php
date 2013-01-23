@@ -65,7 +65,159 @@ $defaultConfig = array(
   'uploadMaxUserFiles' => -1,
   'allowEmptyFiles' => false,
   'allowOrphanFiles' => false,
+  'extensionChanges' => array(
+    'jpe' => 'jpg',
+    'jpeg' => 'jpeg',
+    'tar.gz' => 'tgz',
+    'tar.bz2' => 'tbz2',
+    'mpeg' => 'mpg',
+    'html' => 'htm',
+    'text' => 'txt',
+    'php4' => 'php',
+    'php5' => 'php',
+  ),
+  'fileContainers' => array(
+    // application    
+    'exe' => 'application',
+    'msi' => 'application',
+    'cab' => 'application',
+
+    'swf' => 'flash',
+    'flv' => 'flash',
+    'rtf' => 'application',
+
+    'doc' => 'application',
+    'xls' => 'application',
+    'ppt' => 'application',
+
+    'docx' => 'application',
+    'dotx' => 'application',
+    'xlsx' => 'application',
+    'xltx' => 'application',
+    'xlam' => 'application',
+    'xlsb' => 'application',
+    'potx' => 'application',
+    'ppsx' => 'application',
+    'pptx' => 'application',
+    'sldx' => 'application',
+
+    'odt' => 'application',
+    'ods' => 'application',
+    'odp' => 'application',
+
+    // text
+    'txt' => 'text',
+    'htm' => 'text',
+    'php' => 'text',
+    'css' => 'text',
+    'js' => 'text',
+    'json' => 'text',
+    'xml' => 'text',
+
+    // image
+    'png' => 'image',
+    'jpe' => 'image',
+    'jpeg' => 'image',
+    'jpg' => 'image',
+    'gif' => 'image',
+    'bmp' => 'image',
+    'ico' => 'image',
+    'tiff' => 'image',
+    'tif' => 'image',
+    'svg' => 'image',
+    'svgz' => 'image',
+
+    // archives
+    'zip' => 'archive',
+    'rar' => 'archive',
+    '7z' => 'archive',
+    'tgz' => 'archive',
+    'tbz2' => 'archive',
+  ),
   'imageTypes' => array(IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG),
+  'allowedExtensions' => array('gif', 'png', 'jpg', 'jpeg'),
+  'uploadMimes' => array( // We transfer a file with a specific mimetype. Obviously, certain types are more prone to viruses than others.
+    // text
+    'txt' => 'text/plain',
+    'htm' => 'text/html',
+    'html' => 'text/html',
+    'php' => 'text/html',
+    'css' => 'text/css',
+    'js' => 'application/javascript',
+    'json' => 'application/json',
+    'xml' => 'application/xml',
+    
+    // application    
+    'exe' => 'application/x-msdownload',
+    'msi' => 'application/x-msdownload',
+    'cab' => 'application/vnd.ms-cab-compressed',
+
+    'swf' => 'application/x-shockwave-flash',
+    'flv' => 'video/x-flv',
+    'pdf' => 'application/pdf',
+    'rtf' => 'application/rtf',
+    'doc' => 'application/msword',
+    'xls' => 'application/vnd.ms-excel',
+    'ppt' => 'application/vnd.ms-powerpoint',
+    
+    'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'dotx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.template',
+    'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'xltx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.template',
+    'xlam' => 'application/vnd.ms-excel.addin.macroEnabled.12',
+    'xlsb' => 'application/vnd.ms-excel.sheet.binary.macroEnabled.12',
+    'potx' => 'application/vnd.openxmlformats-officedocument.presentationml.template',
+    'ppsx' => 'application/vnd.openxmlformats-officedocument.presentationml.slideshow',
+    'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'sldx' => 'application/vnd.openxmlformats-officedocument.presentationml.slide',
+    
+    'odt' => 'application/vnd.oasis.opendocument.text',
+    'ods' => 'application/vnd.oasis.opendocument.spreadsheet',
+    'odp' => 'application/vnd.oasis.opendocument.presentation',
+
+    // image
+    'png' => 'image/png',
+    'jpe' => 'image/jpeg',
+    'jpeg' => 'image/jpeg',
+    'jpg' => 'image/jpeg',
+    'gif' => 'image/gif',
+    'bmp' => 'image/bmp',
+    'ico' => 'image/vnd.microsoft.icon',
+    'tiff' => 'image/tiff',
+    'tif' => 'image/tiff',
+    'svg' => 'image/svg+xml',
+    'svgz' => 'image/svg+xml',
+
+    // audio
+    'mp2' => 'audio/mpeg',
+    'mp3' => 'audio/mpeg',
+    'ogg' => 'audio/ogg',
+    'flac' => 'audio/flac',
+    'm4a' => 'audio/m4a',
+    'wav' => 'audio/wav',
+    'wma' => 'audio/x-ms-wma',
+    'mov' => 'video/quicktime',
+    
+    // video
+    'mp4' => 'video/mp4',
+    'm4v' => 'video/mp4',
+    'ogv' => 'video/ogg',
+
+    // archive
+    'zip' => 'application/zip',
+    'rar' => 'application/x-rar-compressed',
+    '7z' => 'application/x-7z-compressed',
+    'tgz' => 'application/x-compressed-tar',
+    'tbz2' => 'application/x-compressed-tar',
+  ),
+  'uploadMimeProof' => array( // When uploading files, we don't normally ensure a file is what it says (that's kinda hard). The mimetypes in uploadMimes will be checked against the detected mime type, however, if you include it here.
+    'gif', 'jpg', 'png',
+  ),
+  'uploadSizeLimits' => array(
+    'gif' => 10 * 1024 * 1024, // 10MB
+    'png' => 10 * 1024 * 1024, // 10MB
+    'jpeg' => 10 * 1024 * 1024, // 10MB
+  ),
 
   'avatarMaximumWidth' => 1000,
   'avatarMaximumHeight' => 1000,
