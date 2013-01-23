@@ -75,20 +75,16 @@ $request = fim_sanitizeGPC('g', array(
 
   'users' => array(
     'default' => '',
-    'context' => array(
-      'type' => 'csv',
-      'filter' => 'int',
-      'evaltrue' => true,
-    ),
+    'cast' => 'csv',
+    'filter' => 'int',
+    'evaltrue' => true,
   ),
 
   'messages' => array(
     'default' => '',
-    'context' => array(
-      'type' => 'csv',
-      'filter' => 'int',
-      'evaltrue' => true,
-    ),
+    'cast' => 'csv',
+    'filter' => 'int',
+    'evaltrue' => true,
   ),
 
   'sort' => array(
@@ -100,57 +96,57 @@ $request = fim_sanitizeGPC('g', array(
 
   'showDeleted' => array(
     'default' => false,
-    'context' => 'bool',
+    'cast' => 'bool',
   ),
 
   'archive' => array(
     'default' => false,
-    'context' => 'bool',
+    'cast' => 'bool',
   ),
 
   'noping' => array(
     'default' => false,
-    'context' => 'bool',
+    'cast' => 'bool',
   ),
 
   'longPolling' => array(
     'default' => false,
-    'context' => 'bool',
+    'cast' => 'bool',
   ),
 
   'messageDateMax' => array(
-    'context' => 'int',
+    'cast' => 'int',
   ),
 
   'messageDateMin' => array(
-    'context' => 'int',
+    'cast' => 'int',
   ),
 
   'messageIdStart' => array(
-    'context' => 'int',
+    'cast' => 'int',
   ),
 
   'messageIdEnd' => array(
-    'context' => 'int',
+    'cast' => 'int',
   ),
 
   'onlineThreshold' => array(
     'default' => $config['defaultOnlineThreshold'],
-    'context' => 'int',
+    'cast' => 'int',
   ),
 
   'messageLimit' => array(
     'default' => $config['defaultMessageLimit'],
     'max' => $config['maxMessageLimit'],
     'min' => 1,
-    'context' => 'int',
+    'cast' => 'int',
   ),
 
   'messageHardLimit' => array(
     'default' => $config['defaultMessageHardLimit'],
     'max' => $config['maxMessageHardLimit'],
     'min' => 1,
-    'context' => 'int',
+    'cast' => 'int',
   ),
 
   'search' => array(

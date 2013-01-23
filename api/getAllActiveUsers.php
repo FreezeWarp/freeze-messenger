@@ -65,16 +65,14 @@ require('../global.php');
 $request = fim_sanitizeGPC('g', array(
   'onlineThreshold' => array(
     'default' => (int) $config['defaultOnlineThreshold'],
-    'context' => 'int',
+    'cast' => 'int',
   ),
 
   'users' => array(
     'default' => '',
-    'context' => array(
-      'type' => 'csv',
-      'filter' => 'int',
-      'evaltrue' => true,
-    ),
+    'cast' => 'csv',
+    'filter' => 'int',
+    'evaltrue' => true,
   ),
 ));
 

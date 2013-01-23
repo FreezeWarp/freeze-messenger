@@ -34,11 +34,9 @@ require('../global.php');
 $request = fim_sanitizeGPC('g', array(
   'users' => array(
     'default' => '',
-    'context' => array(
-      'type' => 'csv',
-      'filter' => 'int',
-      'evaltrue' => true,
-    ),
+    'cast' => 'csv',
+    'filter' => 'int',
+    'evaltrue' => true,
   ),
 ));
 
