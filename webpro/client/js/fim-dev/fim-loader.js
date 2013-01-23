@@ -66,7 +66,7 @@ var topic,
 var roomRef = {}, roomIdRef = {}, modRooms = {}, // Just a whole bunch of objects.
   userRef = {}, userIdRef = {}, userData = {},
   groupRef = {}, groupIdRef = {}, fontIdRef = {},
-  uploadFileTypes = {}, roomLists = {},
+  roomLists = {},
 
   roomList = [], userList = [], groupList = [], // Arrays that serve different purposes, notably looking up IDs from names.
   messageIndex = [],
@@ -548,28 +548,6 @@ $.ajax({
     requestSettings.serverSentEvents = false;
 
     return false;
-  }
-});
-
-$.ajax({
-  url: directory + 'api/getFileTypes.php?fim3_format=json',
-  type: 'GET',
-  timeout: 1000,
-  dataType: 'json',
-  success: function(json) {
-    active = json.getFileTypes.fileTypes;
-
-    for (i in active) {
-      uploadFileTypes[active[i].extension] = {
-        extension : active[i].extension,
-        maxSize : active[i].maxSize,
-        mime : active[i].mime,
-        container : active[i].container,
-      }
-    }
-  },
-  error: function() {
-    dia.error(window.phrases.errorUploadFilesNotRetrieved); // TODO: Disable Uploads
   }
 });
 

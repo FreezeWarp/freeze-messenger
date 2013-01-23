@@ -187,7 +187,7 @@ popup = {
               var fileParts = fileName.split('.');
               var filePartsLast = fileParts[fileParts.length - 1];
 
-              if (!filePartsLast in uploadFileTypes) {
+              if (!filePartsLast in uploadFileTypes) { // TODO
                 $('#preview').html('The specified file type can not be uploaded.');
               }
               else if (fileSize > uploadFileTypes[filePartsLast].maxSize) {
