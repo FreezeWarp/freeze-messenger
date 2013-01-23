@@ -875,6 +875,9 @@ function fim_sanitizeGPC($type, $data) {
     'require' => false,
     'context' => false,
     'trim' => false,
+    'cast' => '',
+    'filter' => '',
+    'evaltrue' => false,
   );
 
   if (strlen($requestBody) > 0) { // If a request body exists, we will use it instead of PHP's generated superglobals. This allows for further REST compatibility. We will, however, only use it for GET and POST requests, at the present time.
@@ -908,66 +911,31 @@ function fim_sanitizeGPC($type, $data) {
   if (count($activeGlobal) > 0 && is_array($activeGlobal)) { // Make sure the active global is populated with data.
     foreach ($data AS $indexName => $indexData) {
       $indexMetaData = $metaDataDefaults; // Store indexMetaData with the defaults.
+      
+      /* Validate Metadata */
       foreach ($indexData AS $metaName => $metaData) {
-        if ($metaName === 'valid' || $metaName === 'require' || $metaName === 'trim' || $metaName === 'default') {
-          $indexMetaData[$metaName] = $metaData;
+        if (in_array($metaName, array('valid', 'require', 'trim', 'default', 'evaltrue', 'min', 'max'))) {
+          // Do nothing.
         }
-        elseif ($metaName === 'context') {
-          $indexMetaData['context'] = array(
-            'cast' => '',
-            'filter' => '',
-            'evaltrue' => false,
-          );
-
-          if (is_array($metaData)) { // Quite a bit of context data exists.
-            foreach ($metaData AS $contextName => $contextData) {
-              switch ($contextName) {
-                case 'type': // This is the original typecast, with some special types defined. While GPC variables are best interpretted as strings, this goes further and converts the string to a more proper format.
-                switch ($contextData) {
-                  case 'csv': $indexMetaData['context']['cast'] = 'csv'; break; // e.g. "1,2,3" "1,ab3,455"
-                  case 'array': $indexMetaData['context']['cast'] = 'array'; break; // e.g. "1=1,2=0,3=0" "1=1,ab3=1,455=0"
-                  case 'bool': $indexMetaData['context']['cast'] = 'bool'; break;
-                  case 'int': $indexMetaData['context']['cast'] = 'int'; break;
-                  case 'string': $indexMetaData['context']['cast'] = 'string'; break;
-                  throw new Exception('Invalid "type" in data in fim_sanitizeGPC'); break;
-                }
-                break;
-                case 'filter': // This is an additional filter applied to data that uses the "csv" context type (and possibly more in the future).
-                if (in_array($contextData, array('', 'int', 'bool', 'ascii128', 'alphanum'))) {
-                  $indexMetaData['context']['filter'] = $contextData;
-		}
-		else {
-		  throw new Exception('Unrecognised filter "' . $contextData . '" in fim_sanitizeGPC');
-		}
-                break;
-                case 'evaltrue': $indexMetaData['context']['evaltrue'] = (bool) $contextData; break; // This specifies whether all subvalus of a context must be true. For instance, assuming we use an integer filter 0 would be removed if this was true.
-                case 'valid': $indexMetaData['context']['valid'] = (array) $contextData; break; // This is only used with arrays and specifies which values can be included in the array.
-                default: throw new Exception('Invalid context value "' . $contextName . '" in data in fim_sanitizeGPC'); break;
-              }
-            }
-          }
-          else { // The context only defines the type.
-            switch ($metaData) {
-              case 'csv': $indexMetaData['context']['cast'] = 'csv'; break; // e.g. "1,2,3" "1,ab3,455"
-              case 'array': $indexMetaData['context']['cast'] = 'array'; break; // e.g. "1=1,2=0,3=0" "1=1,ab3=1,455=0"
-              case 'bool': $indexMetaData['context']['cast'] = 'bool'; break;
-              case 'int': $indexMetaData['context']['cast'] = 'int'; break;
-              case 'string': $indexMetaData['context']['cast'] = 'string'; break;
-              default: throw new Exception('Invalid "type" in data in fim_sanitizeGPC'); break;
-            }
-          }
-          //break;
+        elseif ($metaName === 'filter') {
+          if (!in_array($metaData,array('', 'int', 'bool', 'ascii128', 'alphanum'))) throw new Exception('Invalid "filter" in data in fim_sanitizeGPC');
+        }
+        elseif ($metaName === 'cast') {
+          if (!in_array($metaData,array('int', 'bool', 'string', 'csv', 'array'))) throw new Exception('Invalid "filter" in data in fim_sanitizeGPC');
         }
         else {
           throw new Exception('Unrecognised metadata: ' . $metaName); // TODO: Allow override/etc.
         }
+        
+        $indexMetaData[$metaName] = $metaData;
       }
 
+      /* Process Global */
       if (isset($activeGlobal[$indexName])) { // Only typecast if the global is present.
         if (isset($indexMetaData['valid'])) { // If a list of valid values is specified...
           if (is_array($indexMetaData['valid'])) { // And if that list is an array...
             if (in_array($activeGlobal[$indexName], $indexMetaData['valid'])) { // And if the value specified is in the list of valid values...
-                // Do Nothing; We're Good
+              // Do Nothing; We're Good
             }
             else {
               if ($indexMetaData['require']) { // If the value is required but not valid...
@@ -999,13 +967,13 @@ function fim_sanitizeGPC($type, $data) {
         $activeGlobal[$indexName] = trim($activeGlobal[$indexName]);
       }
 
-      switch($indexMetaData['context']['cast']) {
+      switch($indexMetaData['cast']) {
         case 'csv': // If a cast is set for a CSV list, explode with a comma seperator, make sure all values corrosponding to the filter (int, bool, or string - the latter pretty much changes nothing), and if evaltrue is true, then the preserveAll flag would be false, and vice-versa.
         $newData[$indexName] = fim_arrayValidate(
           explode(',', $activeGlobal[$indexName]),
-          $indexMetaData['context']['filter'],
-          ($indexMetaData['context']['evaltrue'] ? false : true),
-          (isset($indexMetaData['context']['valid']) ? $indexMetaData['context']['valid'] : false)
+          $indexMetaData['filter'],
+          ($indexMetaData['evaltrue'] ? false : true),
+          (isset($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
         );
         break;
 
@@ -1025,15 +993,15 @@ function fim_sanitizeGPC($type, $data) {
 
         $arrayVals = fim_arrayValidate(
           $arrayVals,
-          $indexMetaData['context']['filter'],
-          ($indexMetaData['context']['evaltrue'] ? false : true),
-          (isset($indexMetaData['context']['valid']) ? $indexMetaData['context']['valid'] : false)
+          $indexMetaData['filter'],
+          ($indexMetaData['evaltrue'] ? false : true),
+          (isset($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
         );
         $newData[$indexName] = array_combine($arrayKeys, $arrayVals);
         break;
 
         case 'int':
-        if ($indexMetaData['context']['evaltrue']) { // Only include the value if it is true.
+        if ($indexMetaData['evaltrue']) { // Only include the value if it is true.
           if ((int) $activeGlobal[$indexName]) { // If true/non-zero...
             $newData[$indexName] = (int) $activeGlobal[$indexName]; // Append value as integer-cast.
           }
@@ -1041,7 +1009,7 @@ function fim_sanitizeGPC($type, $data) {
         else { // Include the value whether true or false.
           $newData[$indexName] = (int) $activeGlobal[$indexName]; // Append value as integer-cast.
         }
-/*
+
         if (isset($indexMetaData['min'])) {
           if ($newData[$indexName] < $indexMetaData['min']) { // Minimum Value
             $newData[$indexName] = $indexMetaData['min'];
@@ -1051,7 +1019,7 @@ function fim_sanitizeGPC($type, $data) {
           if ($newData[$indexName] > $indexMetaData['max']) { // Maximum Value
             $newData[$indexName] = $indexMetaData['max'];
           }
-        }*/
+        }
         break;
 
         case 'bool':
@@ -1065,9 +1033,9 @@ function fim_sanitizeGPC($type, $data) {
         default: // String or otherwise.
         $newData[$indexName] = (string) $activeGlobal[$indexName]; // Append value as string-cast.
 
-        switch ($indexMetaData['context']['filter']) {
+        switch ($indexMetaData['filter']) { // TODO optimise
           case 'ascii128': $newData[$indexName] = preg_replace('/[^(\x20-\x7F)]*/', '', $output); break; // Remove characters outside of ASCII128 range.
-          case 'alphanum': $newData[$indexName] = preg_replace('/[^a-zA-Z0-9]*/', '', str_replace(array_keys($config['romanisation']), array_values($config['romanisation']), $output)); break;
+          case 'alphanum': $newData[$indexName] = preg_replace('/[^a-zA-Z0-9]*/', '', str_replace(array_keys($config['romanisation']), array_values($config['romanisation']), $output)); break; // Remove characters that are non-alphanumeric. Note that we will try to romanise what we can.
         }
         break;
       }
