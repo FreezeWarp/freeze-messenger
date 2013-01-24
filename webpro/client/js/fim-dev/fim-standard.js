@@ -166,7 +166,7 @@ var standard = {
   },
 
   changeAvatar : function(sha256hash) {
-    $.post(directory + 'api/editUserOptions.php', 'avatar=' + encodeURIComponent(window.location.protocol + '//' + window.location.host + '/' + directory + '/file.php?sha256hash=' + sha256hash) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
+    $.post(directory + 'api/editUserOptions.php', 'avatar=' + fim_eURL(window.location.protocol + '//' + window.location.host + '/' + directory + '/file.php?sha256hash=' + sha256hash) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
       active = json.editUserOptions;
 
       if (json.editUserOptions.response.avatar.errStr) {

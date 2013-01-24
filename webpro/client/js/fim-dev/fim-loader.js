@@ -3,17 +3,20 @@
 ******************** Base Variables *********************
 *********************************************************/
 
-/* Requirements */
-
-if (false === ('btoa' in window)) { window.location.href = 'browser.php'; throw new Error(window.phrases.errorBrowserBtoa); }
-else if (typeof Date === 'undefined') { window.location.href = 'browser.php'; throw new Error(window.phrases.errorBrowserDate); }
-else if (typeof Math === 'undefined') { window.location.href = 'browser.php'; throw new Error(window.phrases.errorBrowserMath); } // Every browser supports Math. But, I /really/ hate programs that make stupid assumptions like that. All throughout FIM, I try to be as explicit as possible with these things. Try is, of-course, the keyword there.
+/* Requirements
+ * All of these are pretty universal, but I want to be explicit with them. */
+if (typeof Date === 'undefined') { window.location.href = 'browser.php'; throw new Error(window.phrases.errorBrowserDate); }
+else if (typeof Math === 'undefined') { window.location.href = 'browser.php'; throw new Error(window.phrases.errorBrowserMath); }
 else if (false === ('encodeURIComponent' in window || 'escape' in window)) { window.location.href = 'browser.php'; throw new Error(window.phrases.errorBrowserEscape); }
+
 
 
 /* Prototyping
  * Only for Compatibility */
-if (!Array.prototype.indexOf) { // Courtesy of Mozilla
+
+// Array indexOf
+// Courtesy of https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/indexOf
+if (!Array.prototype.indexOf) {
   Array.prototype.indexOf = function(elt /*, from*/) {
     var len = this.length >>> 0;
 
@@ -28,6 +31,19 @@ if (!Array.prototype.indexOf) { // Courtesy of Mozilla
       if (from in this && this[from] === elt) return from;
     }
     return -1;
+  };
+}
+
+
+// Base64 encode/decode
+if (!window.btoa) window.btoa = $.base64.encode;
+if (!window.atob) window.atob = $.base64.decode;
+
+
+// console.log
+if (typeof console !== 'object' || typeof console.log !== 'function') {
+  var console = {
+    log : function() { return false; }
   };
 }
 
@@ -88,7 +104,10 @@ if (fontsize === null) fontsize = 1;
 if (settingsBitfield === null) settingsBitfield = 8192 + 16777216 + 33554432; // US Time, 12-Hour Format, Audio Ding
 
 
-// Audio File (a hack I placed here just for fun)
+
+/* Audio File (a hack I placed here just for fun)
+ * Essentially, if a cookie has a custom audio file, we play it instead.
+ * If not, we will try to play the default, either via ogg, mp3, or wav. */
 if (typeof Audio !== 'undefined') {
   var snd = new Audio();
 
@@ -118,8 +137,9 @@ else {
 }
 
 
+
 /* Get the absolute API path.
-* TODO: Define this in a more "sophisticated manner". */
+ * This is used for a few absolute referrences, and is checked with the server. */
 
 var directory = window.location.pathname.split('/').splice(0, window.location.pathname.split('/').length - 2).join('/') + '/', // splice returns the elements removed (and modifies the original array), in this case the first two; the rest should be self-explanatory
   currentLocation = window.location.protocol + '//' + window.location.host + directory + 'webpro/';
@@ -140,25 +160,110 @@ var directory = window.location.pathname.split('/').splice(0, window.location.pa
 ******************* Static Functions ********************
 *********************************************************/
 
-function fim_eURL(str) { // Escapes data for server storage.
+/**
+ * Quit with a pretty little message. This can be used whenever an unrecoverable error occurs.
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
+function quit() {
+  $('body').replaceWith(window.phrases.errorQuitMessage);
+  throw new Error(window.phrases.errorGenericQuit);
+}
+
+
+
+/**
+ * Escapes Data for Server Storage
+ * Internally, it will use either encodeURIComponent or escape, with custom replacements.
+ * 
+ * @param str - The string to encode.
+ *
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
+function fim_eURL(str) {
   if ('encodeURIComponent' in window) { return window.encodeURIComponent(str).replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%20/g, '+'); }
   else if ('escape' in window) { return window.escape(str).replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%20/g, '+'); } // Escape is a bit overzealous, but it still works.
   else { throw new Error('You dun goofed.'); }
 }
 
+
+
+/**
+ * Encode data for XML attributes.
+ * Really, all this does is make sure backslashes and '"' don't throw things off.
+ * 
+ * @param str - The string to encode.
+ *
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
 function fim_eXMLAttr(str) { // Escapes data that is stored via doublequote-encased attributes.
   return str.replace(/\"/g, '&quot;').replace(/\\/g, '\\\\');
 }
 
+
+
+/**
+ * Forces a word-wrap of the specified string.
+ * This is implemented similarly to PHP.
+ * 
+ * @param str - The string to wrap.
+ * @param width - The maximum number of characters before the wrap is forced.
+ * @param brk - The character to break with.
+ * @param cut - Forces the wrap mid-word if necessary.
+ *
+ * @author James Padolsey http://james.padolsey.com/javascript/wordwrap-for-javascript/ */
+function fim_wordWrap(str, width, brk, cut) {
+  var brk = brk || '\n',
+    width = width || 75,
+    cut = cut || false,
+    regex = '.{1,' + width + '}(\\s|$)' + (cut ? '|.{' + width + '}|.+$' : '|\\S+?(\\s|$)');
+
+  if (!str) return str;
+  else return str.match(RegExp(regex, 'g')).join(brk);
+}
+
+
+
+/**
+ * Scrolls the message list to the bottom.
+ *
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
 function toBottom() { // Scrools the message list to the bottom.
   document.getElementById('messageList').scrollTop = document.getElementById('messageList').scrollHeight;
 }
 
+
+
+/**
+ * Attempts to "flash" the favicon once called, or stop flashing if already flashing.
+ * This has been tested to work in Google Chrome.
+ * 
+ * @param str - The string to encode.
+ *
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
 function faviconFlash() { // Changes the state of the favicon from opaque to transparent or similar.
   if ($('#favicon').attr('href') === 'images/favicon.ico') $('#favicon').attr('href', 'images/favicon2.ico');
   else $('#favicon').attr('href', 'images/favicon.ico');
 }
 
+
+
+/**
+ * Formats received message data for display in either the message list or message table.
+ * 
+ * @param object json - The data to format.
+ * @param string format - The format to use.
+ *
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
 function messageFormat(json, format) {
   var mjson = json.messageData,
     ujson = json.userData,
@@ -188,121 +293,148 @@ function messageFormat(json, format) {
   }
   else {
     switch (flag) {
+      // Youtube, etc.
       case 'source':
-      text = text.replace(regexs.url, function($1) {
-        if ($1.match(regexs.youtubeFull) || $1.match(regexs.youtubeShort)) {
-          var code = false;
+        text = text.replace(regexs.url, function($1) {
+          if ($1.match(regexs.youtubeFull) || $1.match(regexs.youtubeShort)) {
+            var code = false;
 
-          if (text.match(regexs.youtubeFull) !== null) { code = text.replace(regexs.youtubeFull, "$8"); }
-          else if (text.match(regexs.youtubeShort) !== null) { code = text.replace(regexs.youtubeShort, "$5"); }
+            if (text.match(regexs.youtubeFull) !== null) { code = text.replace(regexs.youtubeFull, "$8"); }
+            else if (text.match(regexs.youtubeShort) !== null) { code = text.replace(regexs.youtubeShort, "$5"); }
 
-          if (code) {
-            if (settings.disableVideo) { return '<a href="https://www.youtu.be/' + code + '" target="_BLANK">[Youtube Video]</a>'; }
-            else { return '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>'; }
+            if (code) {
+              if (settings.disableVideo) { return '<a href="https://www.youtu.be/' + code + '" target="_BLANK">[Youtube Video]</a>'; }
+              else { return '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>'; }
+            }
+            else { return '[Logic Error]'; }
           }
-          else { return '[Logic Error]'; }
-        }
-      });
+        });
       break;
 
+      // Image
       case 'image': // We append the parentalAge flags regardless of an images source. It will potentially allow for other sites to use the same format (as far as I know, I am the first to implement the technology, and there are no related standards.)
-      if (settings.disableImage) text = '<a href="' + fim_eXMLAttr(text) + '&parentalAge=' + userData[userId].parentalAge + '&parentalFlags=' + userData[userId].parentalFlags.join(',') + '" class="imglink" target="_BLANK">[Image]</a>';
-      else text = '<a href="' + text + '" target="_BLANK"><img src="' + fim_eXMLAttr(text) + '" style="max-width: 250px; max-height: 250px;" /></a>';
+        if (settings.disableImage) text = '<a href="' + fim_eXMLAttr(text) + '&parentalAge=' + userData[userId].parentalAge + '&parentalFlags=' + userData[userId].parentalFlags.join(',') + '" class="imglink" target="_BLANK">[Image]</a>';
+        else text = '<a href="' + text + '" target="_BLANK"><img src="' + fim_eXMLAttr(text) + '" style="max-width: 250px; max-height: 250px;" /></a>';
       break;
 
+      // Video
       case 'video':
-      if (settings.disableVideo) text = '<a href="' + fim_eXMLAttr(text) + '" target="_BLANK">[Video]</a>';
-      else text = '<video src="' + fim_eXMLAttr(text) + '" controls></video>';
+        if (settings.disableVideo) text = '<a href="' + fim_eXMLAttr(text) + '" target="_BLANK">[Video]</a>';
+        else text = '<video src="' + fim_eXMLAttr(text) + '" controls></video>';
       break;
 
+      // Audio
       case 'audio':
-      if (settings.disableVideo) text = '<a href="' + fim_eXMLAttr(text) + '" target="_BLANK">[Video]</a>';
-      else text = '<audio src="' + fim_eXMLAttr(text) + '" controls></audio>';
+        if (settings.disableVideo) text = '<a href="' + fim_eXMLAttr(text) + '" target="_BLANK">[Video]</a>';
+        else text = '<audio src="' + fim_eXMLAttr(text) + '" controls></audio>';
       break;
 
+      // Email Link
       case 'email':
-      text = '<a href="mailto: ' + fim_eXMLAttr(text) + '" target="_BLANK">' + text + '</a>';
+        text = '<a href="mailto: ' + fim_eXMLAttr(text) + '" target="_BLANK">' + text + '</a>';
       break;
 
+      // Various Files and URLs
       case 'url': case 'text': case 'html': case 'archive': case 'other':
-      if (text.match(/^(http|https|ftp|data|gopher|sftp|ssh)/)) { // Certain protocols (e.g. "javascript:") could be malicious. Thus, we use a whitelist of trusted protocols instead.
-        text = '<a href="' + text + '" target="_BLANK">' + text + '</a>';
-      }
-      else {
-        text = '[Hidden Link]';
-      }
-      break;
-
-      case '':
-      text = text.replace(regexs.url, function($1) {
-        if ($1.match(regexs.url2)) {
-          var $2 = $1.replace(regexs.url2, "$2");
-          $1 = $1.replace(regexs.url2, "$1"); // By doing this one second we don't have to worry about storing the variable first to get $2
+        if (text.match(/^(http|https|ftp|data|gopher|sftp|ssh)/)) { // Certain protocols (e.g. "javascript:") could be malicious. Thus, we use a whitelist of trusted protocols instead.
+          text = '<a href="' + text + '" target="_BLANK">' + text + '</a>';
         }
         else {
-          var $2 = '';
+          text = '[Hidden Link]';
         }
+      break;
 
-        if ($1.match(regexs.youtubeFull) || $1.match(regexs.youtubeShort)) {
-          var code = false;
-
-          if (text.match(regexs.youtubeFull) !== null) { code = text.replace(regexs.youtubeFull, "$8"); }
-          else if (text.match(regexs.youtubeShort) !== null) { code = text.replace(regexs.youtubeShort, "$5"); }
-
-          if (code) {
-            if (settings.disableVideo) { return '<a href="https://www.youtu.be/' + code + '" target="_BLANK">[Youtube Video]</a>'; }
-            else { return '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>'; }
+      // Unspecified
+      case '':
+        // URL Autoparse (will also detect youtube & image)
+        text = text.replace(regexs.url, function($1) {
+          if ($1.match(regexs.url2)) {
+            var $2 = $1.replace(regexs.url2, "$2");
+            $1 = $1.replace(regexs.url2, "$1"); // By doing this one second we don't have to worry about storing the variable first to get $2
           }
-          else { return '[Logic Error]'; }
+          else {
+            var $2 = '';
+          }
+
+          // Youtube Autoparse
+          if ($1.match(regexs.youtubeFull) || $1.match(regexs.youtubeShort)) {
+            var code = false;
+
+            if (text.match(regexs.youtubeFull) !== null) { code = text.replace(regexs.youtubeFull, "$8"); }
+            else if (text.match(regexs.youtubeShort) !== null) { code = text.replace(regexs.youtubeShort, "$5"); }
+
+            if (code) {
+              if (settings.disableVideo) { return '<a href="https://www.youtu.be/' + code + '" target="_BLANK">[Youtube Video]</a>'; }
+              else { return '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>'; }
+            }
+            else { return '[Logic Error]'; }
+          }
+          
+          // Image Autoparse
+          else if ($1.match(regexs.image)) { return '<a href="' + $1 + '" target="_BLANK" class="imglink">' + (settings.disableImage ? '[IMAGE]' : '<img src="' + $1 + '" style="max-width: 250px; max-height: 250px;" />') + '</a>' + $2; }
+          
+          // Normal URL
+          else { return '<a href="' + $1 + '" target="_BLANK">' + $1 + '</a>' + $2; }
+        });
+
+        // "/me" parse
+        if (/^\/me/.test(text)) {
+          text = text.replace(/^\/me/,'');
+
+          if (settings.disableFormatting) { text = '<span style="padding: 10px;">* ' + userName + ' ' + text + '</span>'; }
+          else { text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' ' + text + '</span>'; }
         }
-        else if ($1.match(regexs.image)) { return '<a href="' + $1 + '" target="_BLANK" class="imglink">' + (settings.disableImage ? '[IMAGE]' : '<img src="' + $1 + '" style="max-width: 250px; max-height: 250px;" />') + '</a>' + $2; }
-        else { return '<a href="' + $1 + '" target="_BLANK">' + $1 + '</a>' + $2; }
-      });
+        
+        // "/topic" parse
+        else if (/^\/topic/.test(text)) {
+          text = text.replace(/^\/topic/,'');
 
-      if (/^\/me/.test(text)) {
-        text = text.replace(/^\/me/,'');
+          $('#topic').html(text);
 
-        if (settings.disableFormatting) { text = '<span style="padding: 10px;">* ' + userName + ' ' + text + '</span>'; }
-        else { text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' ' + text + '</span>'; }
-      }
-      else if (/^\/topic/.test(text)) {
-        text = text.replace(/^\/topic/,'');
+          if (settings.disableFormatting) { text = '<span style="padding: 10px;">* ' + userName + ' ' + text + '</span>'; }
+          else { text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' changed the topic to "' + text + '".</span>'; }
+        }
 
-        $('#topic').html(text);
+        // Default Formatting
+        if (!settings.disableFormatting) {
+          if (styleColor) style += 'color: rgb(' + styleColor + ');';
+          if (styleHighlight) style += 'background: rgb(' + styleHighlight + ');'
+          if (styleFontface) style += 'font-family: ' + window.serverSettings.formatting.fonts[styleFontface] + ';';
 
-        if (settings.disableFormatting) { text = '<span style="padding: 10px;">* ' + userName + ' ' + text + '</span>'; }
-        else { text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' changed the topic to "' + text + '".</span>'; }
-      }
-
-      if (!settings.disableFormatting) {
-        if (styleColor) style += 'color: rgb(' + styleColor + ');';
-        if (styleHighlight) style += 'background: rgb(' + styleHighlight + ');'
-        if (styleFontface) style += 'font-family: ' + window.serverSettings.formatting.fonts[styleFontface] + ';';
-
-        if (styleGeneral & 256) style += 'font-weight: bold;';
-        if (styleGeneral & 512) style += 'font-style: oblique;';
-        if (styleGeneral & 1024) style += 'text-decoration: underline;';
-        if (styleGeneral & 2048) style += 'text-decoration: line-through;';
-        if (styleGeneral & 4096) style += 'text-decoration: overline;';
-      }
+          if (styleGeneral & 256) style += 'font-weight: bold;';
+          if (styleGeneral & 512) style += 'font-style: oblique;';
+          if (styleGeneral & 1024) style += 'text-decoration: underline;';
+          if (styleGeneral & 2048) style += 'text-decoration: line-through;';
+          if (styleGeneral & 4096) style += 'text-decoration: overline;';
+        }
       break;
     }
   }
 
+  
+  /* Format for Table/List Display */
   switch (format) {
     case 'table':
-    data = '<tr id="archiveMessage' + messageId + '"><td>' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageId="' + messageId + '" data-roomId="' + roomId + '">' + text + '</td><td><a href="javascript:void();" data-messageId="' + messageId + '"  data-roomId="' + roomId + '" class="updateArchiveHere">Show</a></td></tr>';
+      data = '<tr id="archiveMessage' + messageId + '" style="word-wrap: break-word;"><td>' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageId="' + messageId + '" data-roomId="' + roomId + '">' + text + '</td><td><a href="javascript:void();" data-messageId="' + messageId + '"  data-roomId="' + roomId + '" class="updateArchiveHere">Show</a></td></tr>';
     break;
 
     case 'list':
-    if (settings.showAvatars) data = '<span id="message' + messageId + '" class="messageLine messageLineAvatar"><span class="userName userNameAvatar" data-userId="' + userId + '" tabindex="1000"><img alt="' + userName + '" src="' + avatar + '" /></span><span style="' + style + '" class="messageText" data-messageId="' + messageId + '" data-roomId="' + roomId + '" data-time="' + messageTime + '" tabindex="1000">' + text + '</span><br />';
-    else data = '<span id="message' + messageId + '" class="messageLine"><span class="userName userNameTable" data-userId="' + userId + '" tabindex="1000">' + groupFormatStart + userName + groupFormatEnd + '</span> @ <em>' + messageTime + '</em>: <span style="' + style + '" class="messageText" data-messageid="' + messageId + '" data-roomId="' + roomId + '" tabindex="1000">' + text + '</span><br />';
+      if (settings.showAvatars) data = '<span id="message' + messageId + '" class="messageLine messageLineAvatar"><span class="userName userNameAvatar" data-userId="' + userId + '" tabindex="1000"><img alt="' + userName + '" src="' + avatar + '" /></span><span style="' + style + '" class="messageText" data-messageId="' + messageId + '" data-roomId="' + roomId + '" data-time="' + messageTime + '" tabindex="1000">' + text + '</span><br />';
+      else data = '<span id="message' + messageId + '" class="messageLine"><span class="userName userNameTable" data-userId="' + userId + '" tabindex="1000">' + groupFormatStart + userName + groupFormatEnd + '</span> @ <em>' + messageTime + '</em>: <span style="' + style + '" class="messageText" data-messageid="' + messageId + '" data-roomId="' + roomId + '" tabindex="1000">' + text + '</span><br />';
     break;
   }
 
   return data;
 }
 
+
+
+/**
+ * Disables the input boxes.
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
 function disableSender() {
   $('#messageInput').attr('disabled','disabled'); // Disable input boxes.
   $('#icon_url').button({ disabled : true }); // "
@@ -310,6 +442,14 @@ function disableSender() {
   $('#icon_reset').button({ disabled : true }); // "
 }
 
+
+
+/**
+ * Enables the input boxes.
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
 function enableSender() {
   $('#messageInput').removeAttr('disabled'); // Make sure the input is not disabled.
   $('#icon_url').button({ disabled : false }); // "
@@ -317,12 +457,16 @@ function enableSender() {
   $('#icon_reset').button({ disabled : false }); // "
 }
 
-function fileFormat(container, file) {
-
-}
 
 
-/* ? */
+/**
+ * Registers a new message in the caches and triggers alerts to users.
+ * @param string messageText
+ * @param int messageId
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
 function newMessage(messageText, messageId) {
   if (settings.reversePostOrder) $('#messageList').append(messageText); // Put the data at the end of the list if reversePostOrder.
   else $('#messageList').prepend(messageText); // Otherwise, put it at top.
@@ -388,12 +532,31 @@ function newMessage(messageText, messageId) {
 }
 
 
+
+/**
+ * Helper function to trigger webkit notifications.
+ * @param object data - Data to be displayed in the popup.
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
 function messagePopup(data) {
   if (typeof notify != 'undefined' && typeof window.webkitNotifications === 'object') {
     notify.webkitNotify('images/favicon.ico', 'New Message', data);
   }
 }
 
+
+
+/**
+ * Formats a timestamp into a date string.
+ * 
+ * @param int timestamp - The UNIX timestamp that will be formatted.
+ * @param bool full - If true, will include 
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
 function date(timestamp, full) {
   // This pads zeros to the start of time values.
   _zeropad = function (number, newLength) {
@@ -407,6 +570,10 @@ function date(timestamp, full) {
 
   // Create the date object; set it to the specified timestamp.
   var jsdate = new Date;
+  
+  // Create the string we will eventually return.
+  var timeString = '';
+
   jsdate.setTime(timestamp * 1000);
 
 
@@ -422,40 +589,39 @@ function date(timestamp, full) {
   };
 
 
-  if (!full) { // Short code
+  // If the message as sent on the previous day, we will force the full code.
+  if (!full) {
     var today = new Date;
     var lastMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0).getTime() / 1000; // Finds the date of the last midnight as a timestamp.
 
     if (timestamp < lastMidnight) { full = true; } // If the current time is before the last midnight...
   }
 
-  if (full) { // Long code
-    var timestring = (settings.usTime ?
+  
+  // Format String
+  if (full) { // Include the full code.
+    var timestring += (settings.usTime ?
       (_timepart.months() + '-' + _timepart.days() + '-' + _timepart.years()) :
       (_timepart.days() + '-' + _timepart.months() + '-' + _timepart.years())) +
-    ' ' + (settings.twelveHourTime ?
-      _timepart.hours() :
-      _timepart.hours24()) +
-    ':' + _timepart.minutes() + ':' + _timepart.seconds();
+    ' ';
   }
-  else {
-    var timestring = (settings.twelveHourTime ?
-      _timepart.hours() :
-      _timepart.hours24()) +
-    ':' + _timepart.minutes() + ':' + _timepart.seconds();
-  }
+
+  var timestring += (settings.twelveHourTime ?
+    _timepart.hours() :
+    _timepart.hours24()) +
+  ':' + _timepart.minutes() + ':' + _timepart.seconds();
 
   return timestring;
 }
 
-function quit() {
-  $('body').replaceWith(window.phrases.errorQuitMessage);
-  throw new Error(window.phrases.errorGenericQuit);
-}
 
 
-/* URL-Defined Actions */
-
+/**
+ * Hash Parse for URL-Defined Actions.
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
 function hashParse(options) {
   var urlHash = window.location.hash,
     urlHashComponents = urlHash.split('#'),
@@ -499,12 +665,6 @@ function hashParse(options) {
   if (roomId !== roomIdLocal) {
     standard.changeRoom(roomIdLocal); // If the room is different than current, change it.
   }
-}
-
-if (typeof console !== 'object' || typeof console.log !== 'function') {
-  var console = {
-    log : function() { return false; }
-  };
 }
 
 /*********************************************************
