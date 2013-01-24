@@ -569,8 +569,8 @@ popup = {
         if (snd.volume) $('#audioVolume').attr('value', snd.volume * 100);
 
         // Select Boxes
-        if (theme) $('#theme > option[value="' + theme + '"]').attr('selected', 'selected');
-        if (fontsize) $('#fontsize > option[value="' + fontsize + '"]').attr('selected', 'selected');
+        if (window.webproDisplay.theme) $('#theme > option[value="' + window.webproDisplay.theme + '"]').attr('selected', 'selected');
+        if (window.webproDisplay.fontSize) $('#fontsize > option[value="' + window.webproDisplay.fontSize + '"]').attr('selected', 'selected');
 
         // Only Show the Profile Setting if Using Vanilla Logins
         if (serverSettings.branding.forumType !== 'vanilla') $('#settings5profile').hide(0);
@@ -606,7 +606,7 @@ popup = {
           $('#stylesFIM').attr('href', 'client/css/' + this.value + '/fim.css');
 
           $.cookie('webpro_theme', this.value, { expires : 14 });
-          theme = this.value;
+          window.webproDisplay.theme = this.value;
 
           return false;
         });
@@ -616,7 +616,7 @@ popup = {
           $('body').css('font-size',this.value + 'em');
 
           $.cookie('webpro_fontsize', this.value, { expires : 14 });
-          fontsize = this.value;
+          window.webproDisplay.fontSize = this.value;
 
           return false;
         });

@@ -95,13 +95,13 @@ var roomRef = {}, roomIdRef = {}, modRooms = {}, // Just a whole bunch of object
 
 
 /* Get Cookies */
-var theme = $.cookie('webpro_theme'), // Theme (goes into effect in document.ready)
-  fontsize = $.cookie('webpro_fontsize'), // Font Size (goes into effect in document.ready)
-  settingsBitfield = $.cookie('webpro_settings'); // Settings Bitfield (goes into effect all over the place)
+var window.webproDisplay.theme = $.cookie('webpro_theme'), // Theme (goes into effect in document.ready)
+  window.webproDisplay.fontSize = $.cookie('webpro_fontSize'), // Font Size (goes into effect in document.ready)
+  window.webproDisplay.settingsBitfield = $.cookie('webpro_settings'); // Settings Bitfield (goes into effect all over the place)
 
-if (theme === null) theme = 'start';
-if (fontsize === null) fontsize = 1;
-if (settingsBitfield === null) settingsBitfield = 8192 + 16777216 + 33554432; // US Time, 12-Hour Format, Audio Ding
+if (window.webproDisplay.theme === null) window.webproDisplay.theme = 'start';
+if (window.webproDisplay.fontSize === null) window.webproDisplay.fontSize = 1;
+if (window.webproDisplay.settingsBitfield === null) window.webproDisplay.settingsBitfield = 8192 + 16777216 + 33554432; // US Time, 12-Hour Format, Audio Ding
 
 
 
@@ -118,7 +118,7 @@ if (typeof Audio !== 'undefined') {
     else if (snd.canPlayType('audio/wav')) audioFile = 'images/beep.wav';
     else {
       audioFile = '';
-      console.log('Audio Disabled'); // KEEP
+      console.log('Audio Disabled');
     }
   }
 
@@ -733,25 +733,25 @@ var adminPermissions = {
  * These Are Set Based on Cookies */
 var settings = {
   // Formatting
-  disableFormatting : (settingsBitfield & 16 ? true : false),
-  disableImage : (settingsBitfield & 32 ? true : false),
-  disableVideos : (settingsBitfield & 64 ? true : false),
+  disableFormatting : (window.webproDisplay.settingsBitfield & 16 ? true : false),
+  disableImage : (window.webproDisplay.settingsBitfield & 32 ? true : false),
+  disableVideos : (window.webproDisplay.settingsBitfield & 64 ? true : false),
 
   // Fun Stuff
-  reversePostOrder : (settingsBitfield & 1024 ? true : false), // Show posts in reverse?
-  showAvatars : (settingsBitfield & 2048 ? true : false), // Use the complex document style?
-  audioDing : (settingsBitfield & 8192 ? true : false), // Fire an HTML5 audio ding during each unread message?
+  reversePostOrder : (window.webproDisplay.settingsBitfield & 1024 ? true : false), // Show posts in reverse?
+  showAvatars : (window.webproDisplay.settingsBitfield & 2048 ? true : false), // Use the complex document style?
+  audioDing : (window.webproDisplay.settingsBitfield & 8192 ? true : false), // Fire an HTML5 audio ding during each unread message?
 
   // Accessibility
-  disableFx : (settingsBitfield & 262144 ? true : false), // Disable jQuery Effects?
-  disableRightClick : (settingsBitfield & 1048576 ? true : false),
+  disableFx : (window.webproDisplay.settingsBitfield & 262144 ? true : false), // Disable jQuery Effects?
+  disableRightClick : (window.webproDisplay.settingsBitfield & 1048576 ? true : false),
 
   // Localisation
-  usTime : (settingsBitfield & 16777216 ? true : false),
-  twelveHourTime : (settingsBitfield & 33554432 ? true : false),
+  usTime : (window.webproDisplay.settingsBitfield & 16777216 ? true : false),
+  twelveHourTime : (window.webproDisplay.settingsBitfield & 33554432 ? true : false),
 
   // Experimental Features
-  webkitNotifications : (settingsBitfield & 536870912 ? true : false)
+  webkitNotifications : (window.webproDisplay.settingsBitfield & 536870912 ? true : false)
 };
 
 /* Regexes */
@@ -819,6 +819,15 @@ var regexs = {
 ******************** Data Population ********************
 *********************************************************/
 
+/**
+ * Query and update the various caches.
+ * 
+ * @param object options - An object containing various options, including:
+ ** function 'callback' - A function to execute once populate has finished.
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
 function populate(options) {
   $.when(
     $.ajax({
@@ -999,13 +1008,32 @@ function populate(options) {
 ******************* Content Functions *******************
 *********************************************************/
 
-function youtubeSend(id) { // TODO
+/**
+ * Submit a youtube video based on the video's ID.
+ * This is a helper function for updateVids.
+ * 
+ * @param string id - The video's unique ID.
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
+function youtubeSend(id) {
   standard.sendMessage('http://www.youtube.com/watch?v=' + id, 0, 'source');
 
   $('#textentryBoxYoutube').dialog('close');
 }
 
 
+
+/**
+ * Redraw the search results with the information for a new search string.
+ * 
+ * @param string id - The video's unique ID.
+ * 
+ * @todo Support for video sorting.
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
 function updateVids(searchPhrase) {
   jQTubeUtil.search(searchPhrase, function(response) {
     var html = "",
@@ -1032,7 +1060,15 @@ function updateVids(searchPhrase) {
 }
 
 
-
+/**
+ * This object is used to handle the "list" interface that is used for adding and removing objects from lists through the interface.
+ * 
+ * @param string id - The video's unique ID.
+ * 
+ * @todo Pictures in dropdowns, updated interface for user lists
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
 autoEntry = {
   addEntry : function(type, source, id) {
     var val,
@@ -1131,8 +1167,14 @@ autoEntry = {
 ********* DOM Event Handling & Window Painting **********
 *********************************************************/
 
+/**
+ * Draw the interace.
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
 function windowDraw() {
-  console.log('Redrawing window.'); // KEEP
+  console.log('Redrawing window.');
 
 
   /*** Context Menus ***/
@@ -1152,7 +1194,6 @@ function windowDraw() {
   });
 
 
-
   /*** General Generic Styling ***/
   $('table > thead > tr:first-child > td:first-child, table > tr:first-child > td:first-child').addClass('ui-corner-tl');
   $('table > thead > tr:first-child > td:last-child, table > tr:first-child > td:last-child').addClass('ui-corner-tr');
@@ -1167,7 +1208,6 @@ function windowDraw() {
   $('tbody').addClass('widget ui-widget-content');
 
 
-
   // Disable the chatbox if the user is not allowed to post.
   if (roomId && (userId | anonId)) { /* TODO */ } // The user is able to post.
   else { disableSender(); } // The user is _not_ able to post.
@@ -1177,13 +1217,17 @@ function windowDraw() {
   windowResize();
 
 
-
   /*** Return ***/
   return false;
 }
 
 
-
+/**
+ * Redraws all links. This is required when changing rooms, users, etc.
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
 function windowDynaLinks() {
   var noAdminCounter = 0, // This is probably a bad way of doing what we'll do, but meh.
     noModCounter = 0; // Same as above...
@@ -1248,6 +1292,14 @@ function windowDynaLinks() {
 
 
 
+/**
+ * (Re-)Parse the "user" context menus.
+ * 
+ * @param container - A jQuery selector that can be used to restrict the results. For example, specifying "#funStuff" would only reparse menus that are within the "#funStuff" node.
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
 function contextMenuParseUser(container) {
   $((container ? container + ' ' : '') + '.userName').contextMenu({
     menu: 'userMenu',
@@ -1278,6 +1330,14 @@ function contextMenuParseUser(container) {
   });
 }
 
+
+
+/**
+ * (Re-)Parse the "message" context menus, including menus for embedded images and links.
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
 function contextMenuParseMessage() {
   $('.messageLine .messageText').contextMenu({
     menu: 'messageMenu',
@@ -1407,6 +1467,14 @@ function contextMenuParseMessage() {
   });
 }
 
+
+
+/**
+ * (Re-)Parse the "room" context menus.
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
 function contextMenuParseRoom() {
   $('.room').contextMenu({
     menu: 'roomMenu',
@@ -1440,11 +1508,21 @@ function contextMenuParseRoom() {
   return false;
 }
 
+
+
+/**
+ * Blast-off.
+ * There's a million things that happen here
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
 $(document).ready(function() {
-  $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/' + theme + '/jquery-ui-1.8.16.custom.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/' + theme + '/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
+  // Start by injecting the stylesheets into the DOM.
+  $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/' + window.webproDisplay.theme + '/jquery-ui-1.8.16.custom.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/' + window.webproDisplay.theme + '/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
 
 
-  if (fontsize) $('body').css('font-size', fontsize + 'em');
+  if (window.webproDisplay.fontSize) $('body').css('font-size', window.webproDisplay.fontSize + 'em');
 
 
   if ($.cookie('webpro_userId') > 0) {
