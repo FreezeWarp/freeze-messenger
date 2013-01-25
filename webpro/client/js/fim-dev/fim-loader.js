@@ -934,6 +934,38 @@ function populate(options) {
   return false;
 }
 
+/**
+ * Obtains information for a single user.
+ * 
+ * @param object userId - The ID of the user to obtain info of.
+ * 
+ * @return mixed - Object of user data on sucess, "false" on failure.
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ * 
+ */
+function getUser(userId) {
+  var userData = false;
+
+  $.ajax({
+    url: directory + 'api/getUsers.php?users=' + userId + 'fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+    type: 'GET',
+    timeout: 5000,
+    cache: false,
+    async : false,
+    success: function(json) {
+      for (i in json.getUsers.users) {
+        userData = json.getUsers.users[i];
+      }
+      
+      return false;
+    },
+  });
+  
+  return userData;
+}
+
 /*********************************************************
 ************************* END ***************************
 ******************** Data Population ********************
