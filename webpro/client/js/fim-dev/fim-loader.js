@@ -9,8 +9,6 @@ if (typeof Date === 'undefined') { window.location.href = 'browser.php'; throw n
 else if (typeof Math === 'undefined') { window.location.href = 'browser.php'; throw new Error(window.phrases.errorBrowserMath); }
 else if (false === ('encodeURIComponent' in window || 'escape' in window)) { window.location.href = 'browser.php'; throw new Error(window.phrases.errorBrowserEscape); }
 
-
-
 /* Prototyping
  * Only for Compatibility */
 
@@ -36,8 +34,8 @@ if (!Array.prototype.indexOf) {
 
 
 // Base64 encode/decode
-if (!window.btoa) window.btoa = $.base64.encode;
-if (!window.atob) window.atob = $.base64.decode;
+//if (!window.btoa) window.btoa = $.base64.encode;
+//if (!window.atob) window.atob = $.base64.decode;
 
 
 // console.log
@@ -95,9 +93,11 @@ var roomRef = {}, roomIdRef = {}, modRooms = {}, // Just a whole bunch of object
 
 
 /* Get Cookies */
-var window.webproDisplay.theme = $.cookie('webpro_theme'), // Theme (goes into effect in document.ready)
-  window.webproDisplay.fontSize = $.cookie('webpro_fontSize'), // Font Size (goes into effect in document.ready)
-  window.webproDisplay.settingsBitfield = $.cookie('webpro_settings'); // Settings Bitfield (goes into effect all over the place)
+window.webproDisplay = {
+  'theme' : $.cookie('webpro_theme'), // Theme (goes into effect in document.ready)
+  'fontSize' : $.cookie('webpro_fontSize'), // Font Size (goes into effect in document.ready)
+  'settingsBitfield' : $.cookie('webpro_settings') // Settings Bitfield (goes into effect all over the place)
+}
 
 if (window.webproDisplay.theme === null) window.webproDisplay.theme = 'start';
 if (window.webproDisplay.fontSize === null) window.webproDisplay.fontSize = 1;
@@ -166,7 +166,7 @@ var directory = window.location.pathname.split('/').splice(0, window.location.pa
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
  */
-function quit() {
+function fim_quit() {
   $('body').replaceWith(window.phrases.errorQuitMessage);
   throw new Error(window.phrases.errorGenericQuit);
 }
@@ -216,13 +216,13 @@ function fim_eXMLAttr(str) { // Escapes data that is stored via doublequote-enca
  *
  * @author James Padolsey http://james.padolsey.com/javascript/wordwrap-for-javascript/ */
 function fim_wordWrap(str, width, brk, cut) {
-  var brk = brk || '\n',
-    width = width || 75,
-    cut = cut || false,
-    regex = '.{1,' + width + '}(\\s|$)' + (cut ? '|.{' + width + '}|.+$' : '|\\S+?(\\s|$)');
+//  var brk = brk || '\n',
+//    width = width || 75,
+//    cut = cut || false,
+//    regex = '.{1,' + width + '}(\\s|$)' + (cut ? '|.{' + width + '}|.+$' : '|\\S+?(\\s|$)');
 
-  if (!str) return str;
-  else return str.match(RegExp(regex, 'g')).join(brk);
+//  if (!str) return str;
+//  else return str.match(RegExp(regex, 'g')).join(brk);
 }
 
 
@@ -233,7 +233,7 @@ function fim_wordWrap(str, width, brk, cut) {
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
  */
-function toBottom() { // Scrools the message list to the bottom.
+function fim_toBottom() { // Scrolls the message list to the bottom.
   document.getElementById('messageList').scrollTop = document.getElementById('messageList').scrollHeight;
 }
 
@@ -248,9 +248,92 @@ function toBottom() { // Scrools the message list to the bottom.
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
  */
-function faviconFlash() { // Changes the state of the favicon from opaque to transparent or similar.
+function fim_faviconFlash() { // Changes the state of the favicon from opaque to transparent or similar.
   if ($('#favicon').attr('href') === 'images/favicon.ico') $('#favicon').attr('href', 'images/favicon2.ico');
   else $('#favicon').attr('href', 'images/favicon.ico');
+}
+
+
+
+/**
+ * Helper function to trigger webkit notifications.
+ * @param object data - Data to be displayed in the popup.
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
+function messagePopup(data) {
+  if (typeof notify != 'undefined' && typeof window.webkitNotifications === 'object') {
+    notify.webkitNotify('images/favicon.ico', 'New Message', data);
+  }
+}
+
+
+
+/**
+ * Formats a timestamp into a date string.
+ * 
+ * @param int timestamp - The UNIX timestamp that will be formatted.
+ * @param bool full - If true, will include 
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
+function dateFormat(timestamp, full) {
+  // This pads zeros to the start of time values.
+  _zeropad = function (number, newLength) {
+    var numberString = number + '';
+
+    for (var i = numberString.length; i < newLength; i++) { number = '0' + number; }
+
+    return number;
+  }
+
+
+  // Create the date object; set it to the specified timestamp.
+  var jsdate = new Date;
+  
+  // Create the string we will eventually return.
+  var timeString = '';
+
+  jsdate.setTime(timestamp * 1000);
+
+
+  // Time-part object -- this makes the below formats a bit more readable (...and writable).
+  _timepart = {
+    seconds: function () { return _zeropad(jsdate.getSeconds(), 2); }, // Seconds
+    minutes: function () { return _zeropad(jsdate.getMinutes(), 2); }, // Minutes
+    hours: function () { return _zeropad((jsdate.getHours() % 12 || 12), 2); }, // 12-Hours
+    hours24: function () { return _zeropad(jsdate.getHours(), 2); }, // 24-Hours
+    days: function () { return _zeropad(jsdate.getDate(), 2); }, // Days
+    months: function () { return _zeropad(jsdate.getMonth() + 1, 2); }, // Month
+    years: function () { return jsdate.getFullYear(); } // Year
+  };
+
+
+  // If the message as sent on the previous day, we will force the full code.
+  if (!full) {
+    var today = new Date;
+    var lastMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0).getTime() / 1000; // Finds the date of the last midnight as a timestamp.
+
+    if (timestamp < lastMidnight) { full = true; } // If the current time is before the last midnight...
+  }
+
+  
+  // Format String
+  if (full) { // Include the full code.
+    timestring += ((settings.usTime ?
+      (_timepart.months() + '-' + _timepart.days() + '-' + _timepart.years()) :
+      (_timepart.days() + '-' + _timepart.months() + '-' + _timepart.years())) +
+    ' ');
+  }
+
+  timestring += (settings.twelveHourTime ?
+    _timepart.hours() :
+    _timepart.hours24()) +
+  ':' + _timepart.minutes() + ':' + _timepart.seconds();
+
+  return timestring;
 }
 
 
@@ -269,7 +352,7 @@ function messageFormat(json, format) {
     ujson = json.userData,
     data,
     text = mjson.messageText,
-    messageTime = date(mjson.messageTime),
+    messageTime = fim_dateFormat(mjson.messageTime),
     messageId = mjson.messageId,
 
     userName = ujson.userName,
@@ -430,36 +513,6 @@ function messageFormat(json, format) {
 
 
 /**
- * Disables the input boxes.
- * 
- * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2012
- */
-function disableSender() {
-  $('#messageInput').attr('disabled','disabled'); // Disable input boxes.
-  $('#icon_url').button({ disabled : true }); // "
-  $('#icon_submit').button({ disabled : true }); // "
-  $('#icon_reset').button({ disabled : true }); // "
-}
-
-
-
-/**
- * Enables the input boxes.
- * 
- * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2012
- */
-function enableSender() {
-  $('#messageInput').removeAttr('disabled'); // Make sure the input is not disabled.
-  $('#icon_url').button({ disabled : false }); // "
-  $('#icon_submit').button({ disabled : false }); // "
-  $('#icon_reset').button({ disabled : false }); // "
-}
-
-
-
-/**
  * Registers a new message in the caches and triggers alerts to users.
  * @param string messageText
  * @param int messageId
@@ -481,7 +534,7 @@ function newMessage(messageText, messageId) {
     messageIndex = messageIndex.slice(1,99);
   }
 
-  if (settings.reversePostOrder) toBottom();
+  if (settings.reversePostOrder) fim_toBottom();
 
   if (window.isBlurred) {
     if (settings.audioDing) snd.play();
@@ -529,89 +582,6 @@ function newMessage(messageText, messageId) {
       else if (e.which === 32) { $('#messageInput').focus(); return false; } // Space
     }
   });
-}
-
-
-
-/**
- * Helper function to trigger webkit notifications.
- * @param object data - Data to be displayed in the popup.
- * 
- * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2012
- */
-function messagePopup(data) {
-  if (typeof notify != 'undefined' && typeof window.webkitNotifications === 'object') {
-    notify.webkitNotify('images/favicon.ico', 'New Message', data);
-  }
-}
-
-
-
-/**
- * Formats a timestamp into a date string.
- * 
- * @param int timestamp - The UNIX timestamp that will be formatted.
- * @param bool full - If true, will include 
- * 
- * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2012
- */
-function date(timestamp, full) {
-  // This pads zeros to the start of time values.
-  _zeropad = function (number, newLength) {
-    var numberString = number + '';
-
-    for (var i = numberString.length; i < newLength; i++) { number = '0' + number; }
-
-    return number;
-  }
-
-
-  // Create the date object; set it to the specified timestamp.
-  var jsdate = new Date;
-  
-  // Create the string we will eventually return.
-  var timeString = '';
-
-  jsdate.setTime(timestamp * 1000);
-
-
-  // Time-part object -- this makes the below formats a bit more readable (...and writable).
-  _timepart = {
-    seconds: function () { return _zeropad(jsdate.getSeconds(), 2); }, // Seconds
-    minutes: function () { return _zeropad(jsdate.getMinutes(), 2); }, // Minutes
-    hours: function () { return _zeropad((jsdate.getHours() % 12 || 12), 2); }, // 12-Hours
-    hours24: function () { return _zeropad(jsdate.getHours(), 2); }, // 24-Hours
-    days: function () { return _zeropad(jsdate.getDate(), 2); }, // Days
-    months: function () { return _zeropad(jsdate.getMonth() + 1, 2); }, // Month
-    years: function () { return jsdate.getFullYear(); } // Year
-  };
-
-
-  // If the message as sent on the previous day, we will force the full code.
-  if (!full) {
-    var today = new Date;
-    var lastMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0).getTime() / 1000; // Finds the date of the last midnight as a timestamp.
-
-    if (timestamp < lastMidnight) { full = true; } // If the current time is before the last midnight...
-  }
-
-  
-  // Format String
-  if (full) { // Include the full code.
-    var timestring += (settings.usTime ?
-      (_timepart.months() + '-' + _timepart.days() + '-' + _timepart.years()) :
-      (_timepart.days() + '-' + _timepart.months() + '-' + _timepart.years())) +
-    ' ';
-  }
-
-  var timestring += (settings.twelveHourTime ?
-    _timepart.hours() :
-    _timepart.hours24()) +
-  ':' + _timepart.minutes() + ':' + _timepart.seconds();
-
-  return timestring;
 }
 
 
@@ -856,7 +826,7 @@ function populate(options) {
       },
       error: function() {
         dia.error(window.phrases.errorUsersNotRetrieved);
-        quit();
+        fim_quit();
 
         return false;
       }
@@ -924,7 +894,7 @@ function populate(options) {
       },
       error: function() {
         dia.error(window.phrases.errorRoomsNotRetrieved);
-        quit();
+        fim_quit();
 
         return false;
       }
@@ -1288,6 +1258,36 @@ function windowDynaLinks() {
       $('#roomList' + i).append('<li><a href="#room=' + roomIdRef[roomLists[i][j]].roomId + '" class="room" data-roomId="' + roomIdRef[roomLists[i][j]].roomId + '">' + roomIdRef[roomLists[i][j]].roomName + '</a></li>');
     }
   }
+}
+
+
+
+/**
+ * Disables the input boxes.
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
+function disableSender() {
+  $('#messageInput').attr('disabled','disabled'); // Disable input boxes.
+  $('#icon_url').button({ disabled : true }); // "
+  $('#icon_submit').button({ disabled : true }); // "
+  $('#icon_reset').button({ disabled : true }); // "
+}
+
+
+
+/**
+ * Enables the input boxes.
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
+function enableSender() {
+  $('#messageInput').removeAttr('disabled'); // Make sure the input is not disabled.
+  $('#icon_url').button({ disabled : false }); // "
+  $('#icon_submit').button({ disabled : false }); // "
+  $('#icon_reset').button({ disabled : false }); // "
 }
 
 

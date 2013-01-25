@@ -31,7 +31,7 @@ $.when(
               return '~~' + $2;
             }
             else {
-              return window.phrases[$2];
+                return window.phrases[$2];
             }
           }
         );
