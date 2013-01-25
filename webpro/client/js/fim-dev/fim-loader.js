@@ -94,14 +94,11 @@ var roomRef = {}, roomIdRef = {}, modRooms = {}, // Just a whole bunch of object
 
 /* Get Cookies */
 window.webproDisplay = {
-  'theme' : $.cookie('webpro_theme'), // Theme (goes into effect in document.ready)
-  'fontSize' : $.cookie('webpro_fontSize'), // Font Size (goes into effect in document.ready)
-  'settingsBitfield' : $.cookie('webpro_settings') // Settings Bitfield (goes into effect all over the place)
+  'theme' : $.getCookie('webpro_theme', 'start'), // Theme (goes into effect in document.ready)
+  'fontSize' : $.getCookie('webpro_fontSize', 1), // Font Size (goes into effect in document.ready)
+  'settingsBitfield' : $.getCookie('webpro_settings', 8192 + 16777216 + 33554432), // Settings Bitfield (goes into effect all over the place); defaults with US Time, 12-Hour Format, Audio Ding
+  'audioVolume' : $.getCookie('webpro_audioVolume', .5)
 }
-
-if (window.webproDisplay.theme === null) window.webproDisplay.theme = 'start';
-if (window.webproDisplay.fontSize === null) window.webproDisplay.fontSize = 1;
-if (window.webproDisplay.settingsBitfield === null) window.webproDisplay.settingsBitfield = 8192 + 16777216 + 33554432; // US Time, 12-Hour Format, Audio Ding
 
 
 
@@ -123,11 +120,7 @@ if (typeof Audio !== 'undefined') {
   }
 
   snd.setAttribute('src', audioFile);
-
-
-  // Audio Volume
-  if ($.cookie('webpro_audioVolume') !== null) snd.volume = ($.cookie('webpro_audioVolume') / 100);
-  else snd.volume = .5;
+  snd.volume = window.webproDisplay.audioVolume; // Audio Volume
 }
 else {
   var snd = {
@@ -201,28 +194,6 @@ function fim_eURL(str) {
  */
 function fim_eXMLAttr(str) { // Escapes data that is stored via doublequote-encased attributes.
   return str.replace(/\"/g, '&quot;').replace(/\\/g, '\\\\');
-}
-
-
-
-/**
- * Forces a word-wrap of the specified string.
- * This is implemented similarly to PHP.
- * 
- * @param str - The string to wrap.
- * @param width - The maximum number of characters before the wrap is forced.
- * @param brk - The character to break with.
- * @param cut - Forces the wrap mid-word if necessary.
- *
- * @author James Padolsey http://james.padolsey.com/javascript/wordwrap-for-javascript/ */
-function fim_wordWrap(str, width, brk, cut) {
-//  var brk = brk || '\n',
-//    width = width || 75,
-//    cut = cut || false,
-//    regex = '.{1,' + width + '}(\\s|$)' + (cut ? '|.{' + width + '}|.+$' : '|\\S+?(\\s|$)');
-
-//  if (!str) return str;
-//  else return str.match(RegExp(regex, 'g')).join(brk);
 }
 
 

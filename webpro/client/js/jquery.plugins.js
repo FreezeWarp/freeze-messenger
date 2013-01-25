@@ -69,6 +69,78 @@ jQuery.cookie = function(name, value, options) {
 };
 
 /* END jQuery Cookie Functon */
+// ######################################################################################################### //
+
+
+
+
+
+
+
+
+
+// ######################################################################################################### //
+/* Start jQuery Get Cookie Extension */
+
+/**
+ * jQuery Cookie plugin
+ *
+ * Copyright (c) 2010 Klaus Hartl (stilbuero.de)
+ * Dual licensed under the MIT and GPL licenses:
+ * http://www.opensource.org/licenses/mit-license.php
+ * http://www.gnu.org/licenses/gpl.html
+ *
+ * Documentation: https://github.com/carhartl/jquery-cookie/blob/master/README.rdoc
+ * Source: https://github.com/carhartl/jquery-cookie/blob/master/jquery.cookie.js
+ *
+ */
+jQuery.getCookie = function(name, ifNull) {
+  var cookie = $.cookie(name);
+
+  if (cookie === null) return ifNull;
+  else return cookie;
+};
+
+/* END jQuery Cookie Functon */
+// ######################################################################################################### //
+
+
+
+
+
+
+
+
+
+// ######################################################################################################### //
+/* Start jQuery Word Wrap Plugin */
+
+/**
+ * Forces a word-wrap of the specified string.
+ * This is implemented to be similar to PHP's equivilent function.
+ * 
+ * @param str - The string to wrap.
+ * @param width - The maximum number of characters before the wrap is forced.
+ * @param brk - The character to break with.
+ * @param cut - Forces the wrap mid-word if necessary.
+ *
+ * @author James Padolsey http://james.padolsey.com/javascript/wordwrap-for-javascript/
+ *
+ * Modified by Joseph Parsons for jQuery Wrapper*/
+jQuery.wordWrap = function(str, width, brk, cut) {
+  var brk = brk || '\n',
+    width = width || 75,
+    cut = cut || false,
+    regex = '.{1,' + width + '}(\\s|$)' + (cut ? '|.{' + width + '}|.+$' : '|\\S+?(\\s|$)');
+
+  if (!str) return str;
+  else return str.match(RegExp(regex, 'g')).join(brk);
+};
+
+/* END jQuery Cookie Functon */
+// ######################################################################################################### //
+
+
 
 
 
