@@ -768,6 +768,8 @@ var regexs = {
  * 
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
+ * 
+ * TODO - Stop populating everything. That was a bad idea.
  */
 function populate(options) {
   $.when(
@@ -935,6 +937,73 @@ function populate(options) {
 /*********************************************************
 ************************* END ***************************
 ******************** Data Population ********************
+*********************************************************/
+
+
+
+
+
+
+
+
+/*********************************************************
+************************ START **************************
+***** Window Manipulation and Multi-Window Handling *****
+*********************************************************/
+
+
+
+/**
+ * Redraws part of the window when it is resized.
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
+function windowResize() {
+  var windowWidth = $(window).width(); // Get the browser window "viewport" width, excluding scrollbars.
+  var windowHeight = $(window).height(); // Get the browser window "viewport" height, excluding scrollbars.
+
+  $('#messageList').css('height', (windowHeight - 250)); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
+  $('#messageList').css('max-width', ((windowWidth - 20) * .75)); // Prevent box-stretching. This is common on... many chats.
+
+  $('body').css('min-height', windowHeight); // Set the body height to equal that of the window; this fixes many gradient issues in theming.
+  
+  $('.ui-widget-overlay').each(function() {
+    $(this).height(windowHeight);
+    $(this).width(windowWidth);
+  });
+}
+
+
+
+/**
+ * Define the window as blurred (used for new message notifications).
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
+function windowBlur() {
+  window.isBlurred = true;
+}
+
+
+
+/**
+ * Define the window as active (used for new message notifications), and clear the Favicon Flash timer.
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
+function windowFocus() {
+  window.isBlurred = false;
+  window.clearInterval(timers.t3);
+
+  $('#favicon').attr('href', favicon);
+}
+
+/*********************************************************
+************************* END ***************************
+***** Window Manipulation and Multi-Window Handling *****
 *********************************************************/
 
 
@@ -1639,47 +1708,4 @@ $(document).ready(function() {
 /*********************************************************
 ************************* END ***************************
 ********* DOM Event Handling & Window Painting **********
-*********************************************************/
-
-
-
-
-
-
-
-
-/*********************************************************
-************************ START **************************
-***** Window Manipulation and Multi-Window Handling *****
-*********************************************************/
-
-function windowResize() {
-  var windowWidth = $(window).width(); // Get the browser window "viewport" width, excluding scrollbars.
-  var windowHeight = $(window).height(); // Get the browser window "viewport" height, excluding scrollbars.
-
-  $('#messageList').css('height', (windowHeight - 250)); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
-  $('#messageList').css('max-width', ((windowWidth - 20) * .75)); // Prevent box-stretching. This is common on... many chats.
-
-  $('body').css('min-height', windowHeight); // Set the body height to equal that of the window; this fixes many gradient issues in theming.
-  
-  $('.ui-widget-overlay').each(function() {
-    $(this).height(windowHeight);
-    $(this).width(windowWidth);
-  });
-}
-
-function windowBlur() {
-  window.isBlurred = true;
-}
-
-function windowFocus() {
-  window.isBlurred = false;
-  window.clearInterval(timers.t3);
-
-  $('#favicon').attr('href', favicon);
-}
-
-/*********************************************************
-************************* END ***************************
-***** Window Manipulation and Multi-Window Handling *****
 *********************************************************/
