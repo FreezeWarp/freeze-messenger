@@ -672,6 +672,8 @@
     <bitfield name="options" table="rooms">
       <def bit="1">Official</def>
       <def bit="4">Deleted</def>
+      <def bit="8">Hidden</def>
+      <def bit="16">Allow Viewing</def>
     </bitfield>
 
     <bitfield name="options" table="privateRooms">

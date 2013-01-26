@@ -135,6 +135,11 @@ $request = fim_sanitizeGPC('p', array(
     'cast' => 'csv',
     'valid' => $config['parentalFlags'],
   ),
+  
+  'allowViewing' => array(
+    'cast' => 'bool',
+    'default' => false,
+  ),
 ));
 
 
@@ -223,6 +228,7 @@ switch($request['action']) {
       $errDesc = 'The room name specified is too long.';
     }
     else {
+      /* Censor */
       if (count($request['censor']) > 0) {
         $lists = $slaveDatabase->select(
           array(
@@ -293,6 +299,18 @@ switch($request['action']) {
         }
       }
 
+      /* Options */
+      $options = 0;
+      
+      if ($config['officialRooms'] && $user['adminDefs']['modRooms'])) {
+        $options += 1;
+      }
+      if ($config['hiddenRooms'] && $request['hidden']) {
+        $options += 8;
+      }
+      
+      
+      /* Submit */
       if ($request['action'] === 'create') {
         if ($database->insert("{$sqlPrefix}rooms", array(
           'roomName' => $request['roomName'],
@@ -300,6 +318,7 @@ switch($request['action']) {
           'defaultPermissions' => (int) $request['defaultPermissions'],
           'parentalAge' => $request['parentalAge'],
           'parentalFlags' => implode(',', $request['parentalFlags']),
+          'options' => $options,
         ))) {
           $roomId = $database->insertId;
 
@@ -318,6 +337,7 @@ switch($request['action']) {
             'defaultPermissions' => (int) $request['defaultPermissions'],
             'parentalAge' => $request['parentalAge'],
             'parentalFlags' => implode(',', $request['parentalFlags']),
+            'options' => $options,
           ), array(
             'roomId' => $room['roomId'],
           )

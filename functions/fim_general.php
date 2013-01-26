@@ -19,20 +19,32 @@
  *
  * @param array $needle - The array that contains all values that will be applied to $haystack
  * @param array $haystack - The matching array.
+ * @param bool $all - Only return true if /all/ values in $needle are in $haystack.
  * @return bool
  *
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
-function fim_inArray($needle, $haystack) {
+function fim_inArray($needle, $haystack, $all = false) {
   if (!$haystack) return false; // If the haystack is not valid, return false.
   elseif (!$needle) return false; // If the needle is not valid, return false.
   else {
     foreach($needle AS $need) { // Run through each entry of the needle
-      if (!$need) continue; // If the needle value is false, skip it.
-      if (in_array($need, $haystack)) return true; // If the needle is in the haystack, return true.
+      if ($all) { // All values must be found.
+        if (!$need) return false; // If the needle value is false, skip it.
+        if (in_array($need, $haystack)) continue; // If the needle is in the haystack, return true.
+      }
+      else { // Only one value must be found.
+        if (!$need) continue; // If the needle value is false, skip it.
+        if (in_array($need, $haystack)) return true; // If the needle is in the haystack, return true.
+      }
     }
 
-    return false; // If we haven't returned true yet, return false.
+    if ($all) {
+      return true; // If we have found all values, return true.
+    }
+    else {
+      return false; // If we haven't found a value, return false.
+    }
   }
 }
 
@@ -254,6 +266,18 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
       );
     }
   }
+}
+
+
+
+/**
+ * Determine if the active user is a superuser.
+ */
+function fim_isSuper() {
+  global $loginConfig;
+
+  if (in_array(FIM_ACTIVEUSERID, $loginConfig['superUsers'])) return true; // The use of FIM_ACTIVEUSERID instead of $user['userId'] is as a precaution against plugins changing it for whatever reason.
+  else return false;
 }
 
 

@@ -899,6 +899,9 @@ if ($valid) { // If the user is valid, process their preferrences.
   if ($anonymous) {
     $user['userName'] .= $anonId;
   }
+  else {
+    define(FIM_ACTIVEUSERID, $user['userId']);
+  }
 
 }
 
@@ -935,11 +938,11 @@ if (is_array($loginConfig['superUsers'])) {
 
 $user['adminDefs'] = array(
   'modPrivs' => ($user['adminPrivs'] & 1), // This effectively allows a user to give himself everything else below
-  'modCore' => ($user['adminPrivs'] & 2), // This the "untouchable" flag, buthat's more or less all it means.
+  'modCore' => ($user['adminPrivs'] & 2), // This the "untouchable" flag, but that's more or less all it means.
   'modUsers' => ($user['adminPrivs'] & 16), // Ban, Unban, etc.
+  'modRooms' => ($user['adminPrivs'] & 32), // Official room marking, etc.
   'modFiles' => ($user['adminPrivs'] & 64), // File Uploads
   'modCensor' => ($user['adminPrivs'] & 256), // Censor
-  'modBBCode' => ($user['adminPrivs'] & 1024), // BBCode
 
   /* Should Generally Go Together */
   'modPlugins' => ($user['adminPrivs'] & 4096), // Plugins

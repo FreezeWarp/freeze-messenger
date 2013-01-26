@@ -643,6 +643,11 @@ LIMIT
                     case 'string': // Strings should never be escaped before hand, otherwise values come out looking funny (and innacurate).
                     $sideText[$side] = '"' . $this->escape($data[$side]['value']) . '"';
                     break;
+                    
+                    case 'search':
+                    $sideText[$side] = '"%' . $this->escape($data[$side]['value']) . '%"';
+                    $hackz['symbol'] = 'LIKE';
+                    break;
 
                     case 'int': // Best Practice Note: The value should __always__ be typed as an INTEGER (or possibly BOOL) anyway before sending it to the select method. Using "int" as the type really only means the database sees it as such, useful for databases that may in fact use such information (say, even, a spreadsheet).
                     $sideText[$side] = (int) $data[$side]['value'];

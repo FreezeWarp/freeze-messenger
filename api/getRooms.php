@@ -47,8 +47,12 @@ $request = fim_sanitizeGPC('g', array(
     'evaltrue' => true,
   ),
 
+  'search' => array(
+    'cast' => 'string',
+  ),
+
   'sort' => array(
-    'valid' => array('roomId', 'roomName', 'smart'),
+    'valid' => array('roomId', 'roomName'),
     'default' => 'roomId',
   ),
 
@@ -77,15 +81,28 @@ $queryParts['roomSelect'] = array(
   ),
   'conditions' => array(
     'both' => array(
-
-     ),
+      array( // Do not include hidden results.
+        'type' => 'xor',
+        'left' => array(
+          'type' => 'column',
+          'value' => 'options',
+        ),
+        'right' => array(
+          'type' => 'int',
+          'value' => 8,
+        ),
+      ),
+    ),
+  ),
+  'sort' => array(
+    $request['sort'] => 'asc',
   ),
 );
 
 
 
 /* Modify Query Data for Directives */
-if ($request['showDeleted'] === false) { // We will also check to make sure the user has moderation priviledges after the select. (TODO: Wait, what the heck does this do?)
+if ($request['showDeleted'] === false) {
   $queryParts['roomSelect']['conditions']['both'][] = array(
     'type' => 'xor',
     'left' => array(
@@ -98,6 +115,7 @@ if ($request['showDeleted'] === false) { // We will also check to make sure the 
     ),
   );
 }
+
 if (count($request['rooms']) > 0) {
   $queryParts['roomSelect']['conditions']['both'][] = array(
     'type' => 'in',
@@ -112,23 +130,18 @@ if (count($request['rooms']) > 0) {
   );
 }
 
-
-
-/* Query Results Order
- * roomId*, roomName */
-switch ($request['sort']) {
-  case 'roomName':
-  $queryParts['roomSelect']['sort'] = array(
-    'roomName' => 'asc',
+if (isset($request['search'])) {
+  $queryParts['roomSelect']['conditions']['both'][] = array(
+    'type' => 'and',
+    'left' => array(
+      'type' => 'column',
+      'value' => 'roomName',
+    ),
+    'right' => array(
+      'type' => 'search',
+      'value' => $request['search'],
+    ),
   );
-  break;
-
-  case 'roomId':
-  default:
-  $queryParts['roomSelect']['sort'] = array(
-    'roomId' => 'asc',
-  );
-  break;
 }
 
 
@@ -171,10 +184,9 @@ if (is_array($rooms)) {
         'options' => (int) $roomData['options'],
         'optionDefinitions' => array(
           'official' => (bool) ($roomData['options'] & 1),
-          'mature' => (bool) ($roomData['options'] & 2),
           'deleted' => (bool) ($roomData['options'] & 4),
           'hidden' => (bool) ($roomData['options'] & 8),
-          'privateIm' => (bool) ($roomData['options'] & 16),
+          'allowViewing' => (bool) ($roomData['options'] & 32),
         ),
         'permissions' => array(
           'canModerate' => (bool) $permissions[0]['moderate'],

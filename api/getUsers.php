@@ -263,6 +263,7 @@ if (is_array($users)) {
         'joinDate' => (int) (isset($userDataForums['joinDate']) ? $userDataForums['joinDate'] : 0),
         'userTitle' => (isset($userDataForums['userTitle']) ? $userDataForums['userTitle'] :
           (isset($config['defaultUserTitle']) ? $config['defaultUserTitle'] :  '')),
+        'superUser' => (in_array($userData['userId'], $loginConfig['superUsers']) && fim_isSuper() ? true : false), // We only tell other super users if a user is a superuser. It is something of a security risk otherwise.
       );
 
       if ($userData['userId'] === $user['userId']) {

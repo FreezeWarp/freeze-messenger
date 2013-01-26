@@ -10,16 +10,16 @@
  * (Unless you really really really want to. In which case, be prepared to have to reinstall stuff.) */
 
 $defaultConfig = array(
-  'roomLengthMinimum' => 5,
-  'roomLengthMaximum' => 20,
+  'roomLengthMinimum' => 5, // integer Requires all room names to be at least this many characters.
+  'roomLengthMaximum' => 20, // integer Requires all room names to not exceed this many characters in length.
 
-  'defaultLanguage' => 'en',
+  'defaultLanguage' => 'en', // string The language that is default when a user has not specified one. 'en' is the only value supported by default. TODO
 
-  'defaultMessageHardLimit' => 50,
-  'maxMessageHardLimit' => 500,
+  'defaultMessageHardLimit' => 50, // integer The default number of messages that will be returned by api/getMessages.php.
+  'maxMessageHardLimit' => 500, // integer The maximum number of messages that will be returned by api/getMessages.php.
 
-  'defaultMessageLimit' => 10000,
-  'maxMessageLimit' => 10000,
+  'defaultMessageLimit' => 10000, // integer The default message range getMessages.php will query.
+  'maxMessageLimit' => 10000, // integer The maximum message range getMessages.php will query.
 
   'defaultOnlineThreshold' => 15,
 
@@ -356,6 +356,7 @@ $defaultConfig = array(
 
   'userRoomCreation' => false,
   'userPrivateRoomCreation' => true,
+  'hiddenRooms' => true,
 
   'messageIndexCounter' => 1000, // If changed, rebuild the messageIndex table!
   'messageTimesCounter' => 60 * 60 * 24, // If changed, rebuild the messageTimes table!
