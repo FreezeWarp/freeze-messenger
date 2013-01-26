@@ -304,7 +304,7 @@ switch($request['action']) {
         $options += 8;
       }
       if ($request['allowViewing']) {
-        $options += 16;
+        $options += 32;
       }
       
       

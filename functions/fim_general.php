@@ -158,6 +158,7 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
     $isRoomDeleted = false;
     $parentalBlock = false;
     $kick = false;
+    $allowViewing = false;
 
     $isAllowedUserOverride = false;
 
@@ -185,6 +186,10 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
 
     /* Is the Room a Private Room or Deleted? */
     if ($roomData['options'] & 4) $isRoomDeleted = true; // The room is deleted.
+
+
+    /* Allow Viewing? */
+    if ($roomData['options'] & 32) $allowViewing = true; // The room allows viewing by unathourised users.
 
 
     /* Is the user a super user? */
@@ -236,6 +241,7 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
         elseif ($isRoomDeleted) {                                $roomValid['view'] = false; $reason = 'deleted'; } // admin overrides this
         elseif ($parentalBlock) {                                $roomValid['view'] = false; $reason = 'parental'; } // admin overrides this
         elseif ($isAllowedUser || $isAllowedGroup) {             $roomValid['view'] = true; }
+        elseif ($allowViewing) {                                 $roomValid['view'] = true; }
         else {                                                   $roomValid['view'] = false; $reason = 'general'; }
       }
 
