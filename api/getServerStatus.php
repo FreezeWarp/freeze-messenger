@@ -88,6 +88,7 @@ $xmlData = array(
       'rooms' => array(
         'roomLengthMinimum' => (int) $config['roomLengthMinimum'],
         'roomLengthMaximum' => (int) $config['roomLengthMaximum'],
+        'disableTopic' => (bool) $config['disableTopic'],
       ),
 
       'defaultFormatting' => array(

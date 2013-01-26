@@ -21,42 +21,42 @@ $defaultConfig = array(
   'defaultMessageLimit' => 10000, // integer The default message range getMessages.php will query.
   'maxMessageLimit' => 10000, // integer The maximum message range getMessages.php will query.
 
-  'defaultOnlineThreshold' => 15,
+  'defaultOnlineThreshold' => 15, // integer The default period of time after which a user is considered inactive. NOTE: This functionality will be modified either in B3 or B4 significantly, such that users are no longer pinged as frequently, and instead will send a signal only when they leave. Thus, this will be increase to around 120.
 
-  'fullTextArchive' => false,
+  'fullTextArchive' => false, // bool Whether or not to enable full text archive search. This will search the "phrase" table in full-text mode, which is much slower, as opposed to the default full-match mode. If you have the server power, this is good functionality to enable, but most people do not.
 
-  'searchWordMinimum' => 4,
-  'searchWordMaximum' => 10,
-  'searchWordOmissions' => array(),
-  'searchWordPunctuation' => array(),
-  'searchWordConvertsFind' => array(),
-  'searchWordConvertsReplace' => array(),
+  'searchWordMinimum' => 4, // int The minimum length a string must be to be added to the "phrase" table.
+  'searchWordMaximum' => 10, // int The maximum length a string can be to be added to the "phrase" table.
+  'searchWordOmissions' => array(), // array Words that are not wll be ommitted from the "phrase" table.
+  'searchWordPunctuation' => array(), // array Punctuation marks that are not included in phrases.
+  'searchWordConvertsFind' => array(), // array An array of characters that will be replaced in the "phrase" table. Not that the "romanisation" configuration rules are applied to phrases as well, so you should not include these.
+  'searchWordConvertsReplace' => array(), // array See "searchWordConvertsFind"
 
   // All Seconds
-  'kicksCacheRefresh' => 30,
-  'permissionsCacheRefresh' => 30,
-  'phrasesCacheRefresh' => 600,
-  'templatesCacheRefresh' => 600,
-  'hooksCacheRefresh' => 600,
-  'configCacheRefresh' => 600,
-  'censorListsCacheRefresh' => 600,
-  'censorWordsCacheRefresh' => 600,
-  'watchRoomsCacheRefresh' => 600,
-  'roomListNamesCacheRefresh' => 3600, // This isn't used much (and is mostly a placeholder), which is why this value is so high.
+  'kicksCacheRefresh' => 30, // int The number of seconds after which the kicks cache will be refreshed. Because this is a *full* cache, the table will be read in its entirety every time this ammount of time elapses, so it can only be so low. However, kicks do not come into effect until they appear in the cache, so if this is too high, the kicks functionality effectively breaks down. TODO: disable kicks cache functionality
+  'permissionsCacheRefresh' => 30, // int The number of seconds after which the permissions cache will be refreshed. Because this is a *full* cache, the table will be read in its entirety every time this ammount of time elapses, so it can only be so low. However, permissions do not come into effect until they appear in the cache, so if this is too high, the kicks functionality effectively breaks down.
+  'phrasesCacheRefresh' => 3600, // int The number of seconds after which the phrases cache will be refreshed. Because this is a *full* cache, the table will be read in its entirety every time this ammount of time elapses, so it should only be so low. It can be very high, however, because you should be able to manually clear this cache when you update phrases.
+  'templatesCacheRefresh' => 3600, // int The number of seconds after which the templates cache will be refreshed. Because this is a *full* cache, the table will be read in its entirety every time this ammount of time elapses, so it should only be so low. It can be very high, however, because you should be able to manually clear this cache when you update templates.
+  'hooksCacheRefresh' => 3600, // int The number of seconds after which the hooks cache will be refreshed. Because this is a *full* cache, the table will be read in its entirety every time this ammount of time elapses, so it should only be so low. It can be very high, however, because you should be able to manually clear this cache when you update hooks.
+  'configCacheRefresh' => 3600, // int The number of seconds after which the config cache will be refreshed. Because this is a *full* cache, the table will be read in its entirety every time this ammount of time elapses, so it should only be so low. It can be very high, however, because you should normally be able to manually clear this cache when you update the config.
+  'censorListsCacheRefresh' => 3600, // int The number of seconds after which the censor lists cache will be refreshed. Because this is a *full* cache, the table will be read in its entirety every time this ammount of time elapses, so it should only be so low. It can be very high, however, because you should normally be able to manually clear this cache when you update censor lists.
+  'censorWordsCacheRefresh' => 3600, // int The number of seconds after which the censor words cache will be refreshed. Because this is a *full* cache, the table will be read in its entirety every time this ammount of time elapses, so it should only be so low. It can be very high, however, because you should normally be able to manually clear this cache when you update censor words.
+  'watchRoomsCacheRefresh' => 600, // int The number of seconds after which the watch rooms cache will be refreshed. Because this is a *full* cache, the table will be read in its entirety every time this ammount of time elapses, so it should only be so low. It can be moderately high, however, because watch rooms are often delayed.
+  'roomListNamesCacheRefresh' => 3600, // int The number of seconds after which the room list names cache will be refreshed. Because this is a *full* cache, the table will be read in its entirety every time this ammount of time elapses, so it should only be so low. It can be very high, however, because you should normally be able to manually clear this cache when you update phrases.
 
-  'longPolling' => false,
-  'longPollingWait' => 2,
-  'longPollingMaxRetries' => 50,
+  'longPolling' => false, // bool Whether to enable long-polling. This is meant to support "lazy" clients, especially Internet Explorer, but it can cause problems on an improperly configured server, as well as pose DoS risks. Be careful when enabled.
+  'longPollingWait' => 2, // float The time to wait between queries when long-polling. Long polling is harder to control, and can be used to DoS servers if the value is too low.
+  'longPollingMaxRetries' => 50, // int The number of tries the server will requery before requiring the client to resend a longPolling request.
 
-  'serverSentEvents' => true,
-  'serverSentEventsWait' => .5, // Server sent events are more controlled, so we can call them at a greater frequency.
-  'serverSentMaxRetries' => 50,
-  'serverSentFastCGI' => false, // This MUST be true for FastCGI compatibility.
-  'serverSentTimeLimit' => 0, // This MUST be true for many PHP setups, notably on IIS.
+  'serverSentEvents' => true, // bool Whether to enable SSE. These are fairly stable, but some server configurations will still have problems with server sent events. Disable if you have issues.
+  'serverSentEventsWait' => .5, // float Server sent events are more controlled, so we can call them at a greater frequency.
+  'serverSentMaxRetries' => 50, // int The number of tries the server will requery before requiring the client to resend a SSE request.
+  'serverSentFastCGI' => false, // This MUST be true for FastCGI compatibility. WARNING: We have not tested on FastCGI recently. This is NOT supported in B3.
+  'serverSentTimeLimit' => 0, // This MUST be true for many PHP setups, notably on IIS. WARNING: We have not tested on IIS recently. This is NOT supported in B3.
 
-  'compressOutput' => true,
+  'compressOutput' => true, // bool Whether or not to remove whitespace from API responses. Servers that enable GZ probably don't need to enable this, but it is safe eitherway.
 
-  'disableTopic' => false,
+  'disableTopic' => false, // bool Whether or not to disable topic functionality.
 
   'enableUploads' => false,
   'enableGeneralUploads' => false,
