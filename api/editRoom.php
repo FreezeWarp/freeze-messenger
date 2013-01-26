@@ -268,15 +268,9 @@ switch($request['action']) {
         }
 
         foreach ($lists AS $list) {
-          if ($list['type'] == 'black' && $listStatus[$list['listId']] == 'block') {
-            $checked = true;
-          }
-          elseif ($list['type'] == 'white' && $listStatus[$list['listId']] != 'unblock') {
-            $checked = true;
-          }
-          else {
-            $checked = false;
-          }
+          if ($list['type'] == 'black' && $listStatus[$list['listId']] == 'block') $checked = true;
+          elseif ($list['type'] == 'white' && $listStatus[$list['listId']] != 'unblock') $checked = true;
+          else $checked = false;
 
           if ($checked == true && !$listsNew[$list['listId']]) {
             $database->insert("{$sqlPrefix}censorBlackWhiteLists", array(
@@ -299,6 +293,7 @@ switch($request['action']) {
         }
       }
 
+      
       /* Options */
       $options = 0;
       
@@ -307,6 +302,9 @@ switch($request['action']) {
       }
       if ($config['hiddenRooms'] && $request['hidden']) {
         $options += 8;
+      }
+      if ($request['allowViewing']) {
+        $options += 16;
       }
       
       

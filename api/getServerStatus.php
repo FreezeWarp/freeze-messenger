@@ -48,6 +48,7 @@ $xmlData = array(
         'parentalRegistrationAge' => $config['parentalRegistrationAge'],
         'parentalFlags' => $config['parentalFlags'],
         'parentalAges' => $config['parentalAges'],
+        'enableCensor' => $config['enableCensor'],
       ),
 
       'branding' => array(
