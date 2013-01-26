@@ -461,6 +461,8 @@ function fim_messageFormat(json, format) {
           if (styleGeneral & 2048) style += 'text-decoration: line-through;';
           if (styleGeneral & 4096) style += 'text-decoration: overline;';
         }
+        
+//        text = $.wordWrap(text, 40, ' ', true);
       break;
     }
   }
@@ -1535,26 +1537,26 @@ function contextMenuParseMessage() {
 
     switch(action) {
       case 'url':
-      dia.full({
-        title : 'Copy URL',
-        position : 'top',
-        content : '<iframe style="width: 100%; display: none; height: 0px;"></iframe><a href="javascript:void(0);" onclick="$(this).prev().attr(\'src\',\'' + src.replace(/\'/g, "\\'").replace(/\"/g, '\\"') + '\').show().animate({height : \'80%\'}, 500); $(this).hide();">View<br /></a><br /><input type="text" name="url" value="' + src.replace(/\"/g, '\\"') +  '" style="width: 100%;" />',
-        width : 800,
-        oF : function() {
-          $('input[name=url]', this).first().focus();
-        }
-      });
+        dia.full({
+          title : 'Copy URL',
+          position : 'top',
+          content : '<iframe style="width: 100%; display: none; height: 0px;"></iframe><a href="javascript:void(0);" onclick="$(this).prev().attr(\'src\',\'' + src.replace(/\'/g, "\\'").replace(/\"/g, '\\"') + '\').show().animate({height : \'80%\'}, 500); $(this).hide();">View<br /></a><br /><input type="text" name="url" value="' + src.replace(/\"/g, '\\"') +  '" style="width: 100%;" />',
+          width : 800,
+          oF : function() {
+            $('input[name=url]', this).first().focus();
+          }
+        });
       break;
 
       case 'delete':
-      dia.confirm({
-        text : 'Are you sure you want to delete this message?',
-        'true' : function() {
-          standard.deleteMessage(messageId);
+        dia.confirm({
+          text : 'Are you sure you want to delete this message?',
+          'true' : function() {
+            standard.deleteMessage(messageId);
 
-          $(el).parent().fadeOut();
-        }
-      });
+            $(el).parent().fadeOut();
+          }
+        });
       break;
 
       case 'link':
@@ -1564,6 +1566,11 @@ function contextMenuParseMessage() {
           content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + roomId + '#message=' + messageId + '" style="width: 100%;" />',
           width: 600,
         });
+      break;
+
+      case 'click':
+        $('<a id="contextMenuClickHelper" style="display: none;" />').attr('href', src).attr('target', '_blank').text('-').appendTo('body').get(0).click();
+        $('#contextMenuClickHelper').remove();
       break;
     }
 

@@ -130,7 +130,7 @@ img {
   width: 150px;
   overflow: hidden;
   display: inline-block;
-  word-wrap: normal;
+  word-wrap: break-word;
   white-space: nowrap;
 }
 .userNameAvatar {
@@ -201,6 +201,15 @@ table.page {
 
 .messageText {
   padding: 2px;
+  word-wrap: break-word;
+}
+
+.messageTable {
+  table-layout: fixed; 
+}
+
+.messageTable tr td {
+  word-wrap: break-word; 
 }
 
 table.center {

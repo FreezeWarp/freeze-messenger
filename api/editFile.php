@@ -169,16 +169,6 @@ if ($continue) {
     $parentalFileId = 0;
 
     if ($request['action'] === 'create') {
-      /* Get Mime Types from the Database */
-      $mimes = $slaveDatabase->select(
-        $queryParts['getMimes']['columns'],
-        $queryParts['getMimes']['conditions'],
-        $queryParts['getMimes']['sort'],
-        $queryParts['getMimes']['limit']
-      );
-      $mimes = $mimes->getAsArray('extension');
-
-
       /* Get Room Data, if Applicable */
       if ($request['roomId']) $roomData = $slaveDatabase->getRoom($request['roomId']);
       else $roomData = false;
@@ -197,6 +187,10 @@ if ($continue) {
       }
 
 
+      if (!$config['enableUploads']) {
+        $errStr = 'uploadsDisabled';
+        $errDesc = 'Uploads are not allowed currently.';
+      }
       if (!$roomData && !$config['allowOrphanFiles']) {
         $errStr = 'noOrphanFiles';
         $errDesc = 'The server will not accept orphan files.';
