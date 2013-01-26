@@ -433,7 +433,7 @@ if ($continue) {
       }
     }
     elseif ($request['action'] === 'edit') {
-      $fileData = $database->getFile($request['fileId']);
+/*      $fileData = $database->getFile($request['fileId']);
 
       if (!$fileData) {
         $errStr = 'invalidFile';
@@ -450,7 +450,7 @@ if ($continue) {
         'parentalFlags' => implode(',', $request['parentalFlags']),
       ), array(
         'fileId' => $request['fileId'],
-      ));
+      )); TODO */
     }
     break;
 

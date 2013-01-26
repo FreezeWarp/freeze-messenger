@@ -283,13 +283,14 @@ popup = {
                 if (errStr) {
                   dia.error(errDesc);
                 }
+                else {              
+                  $('#insertDoc').dialog('close');
+                }
               },
               error : function() {
                 dia.error('The file failed to upload.');
               }
             });
-
-            $('#insertDoc').dialog('close');
 
             return false;
           });
