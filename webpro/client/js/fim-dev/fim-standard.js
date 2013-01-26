@@ -35,7 +35,7 @@ var standard = {
         for (i in active) {
           var messageId = active[i].messageData.messageId;
 
-          data += messageFormat(active[i], 'table');
+          data += fim_messageFormat(active[i], 'table');
 
           if (messageId > lastMessage) { lastMessage = messageId; }
           if (messageId < firstMessage || !firstMessage) { firstMessage = messageId; }
@@ -296,7 +296,7 @@ var standard = {
 
             /* Select Room */
             if (!roomId) {
-              hashParse({defaultRoomId : activeLogin.defaultRoomId}); // When a user logs in, the hash data (such as room and archive) is processed, and subsequently executed.
+              fim_hashParse({defaultRoomId : activeLogin.defaultRoomId}); // When a user logs in, the hash data (such as room and archive) is processed, and subsequently executed.
 
               /*** A Hack of Sorts to Open Dialogs onLoad ***/
               if (typeof prepopup === 'function') { prepopup(); prepopup = false; }
@@ -379,10 +379,10 @@ var standard = {
 
           console.log('Event (New Message): ' + messageId);
 
-          data = messageFormat(active, 'list');
+          data = fim_messageFormat(active, 'list');
 
           if ($.inArray(messageId, messageIndex) > -1) { } // Double post hack
-          else { newMessage(data, messageId); }
+          else { fim_newMessage(data, messageId); }
 
           return false;
         }, false);
@@ -473,10 +473,10 @@ var standard = {
 
               for (i in active) {
                 var messageId = Number(active[i].messageData.messageId);
-                data = messageFormat(active[i], 'list');
+                data = fim_messageFormat(active[i], 'list');
 
                 if ($.inArray(messageId, messageIndex)) { } // Double post hack
-                else { newMessage(data, messageId); }
+                else { fim_newMessage(data, messageId); }
 
                 messageCount++;
               }

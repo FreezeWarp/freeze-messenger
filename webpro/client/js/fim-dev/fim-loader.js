@@ -233,7 +233,7 @@ function fim_faviconFlash() { // Changes the state of the favicon from opaque to
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
  */
-function messagePopup(data) {
+function fim_messagePopup(data) {
   if (typeof notify != 'undefined' && typeof window.webkitNotifications === 'object') {
     notify.webkitNotify('images/favicon.ico', 'New Message', data);
   }
@@ -250,7 +250,7 @@ function messagePopup(data) {
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
  */
-function dateFormat(timestamp, full) {
+function fim_dateFormat(timestamp, full) {
   // This pads zeros to the start of time values.
   _zeropad = function (number, newLength) {
     var numberString = number + '';
@@ -293,18 +293,18 @@ function dateFormat(timestamp, full) {
   
   // Format String
   if (full) { // Include the full code.
-    timestring += ((settings.usTime ?
+    timeString += ((settings.usTime ?
       (_timepart.months() + '-' + _timepart.days() + '-' + _timepart.years()) :
       (_timepart.days() + '-' + _timepart.months() + '-' + _timepart.years())) +
     ' ');
   }
 
-  timestring += (settings.twelveHourTime ?
+  timeString += (settings.twelveHourTime ?
     _timepart.hours() :
     _timepart.hours24()) +
   ':' + _timepart.minutes() + ':' + _timepart.seconds();
 
-  return timestring;
+  return timeString;
 }
 
 
@@ -318,7 +318,7 @@ function dateFormat(timestamp, full) {
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
  */
-function messageFormat(json, format) {
+function fim_messageFormat(json, format) {
   var mjson = json.messageData,
     ujson = json.userData,
     data,
@@ -491,7 +491,7 @@ function messageFormat(json, format) {
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
  */
-function newMessage(messageText, messageId) {
+function fim_newMessage(messageText, messageId) {
   if (settings.reversePostOrder) $('#messageList').append(messageText); // Put the data at the end of the list if reversePostOrder.
   else $('#messageList').prepend(messageText); // Otherwise, put it at top.
 
@@ -563,7 +563,7 @@ function newMessage(messageText, messageId) {
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
  */
-function hashParse(options) {
+function fim_hashParse(options) {
   var urlHash = window.location.hash,
     urlHashComponents = urlHash.split('#'),
     page = '', // String
@@ -939,7 +939,7 @@ function populate(options) {
  * 
  * @param object userId - The ID of the user to obtain info of.
  * 
- * @return mixed - Object of user data on sucess, "false" on failure.
+ * @return mixed - Object of user data on success, "false" on failure.
  * 
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
@@ -1731,7 +1731,7 @@ $(document).ready(function() {
   $(window).bind('resize', windowResize);
   $(window).bind('blur', windowBlur);
   $(window).bind('focus', windowFocus);
-  $(window).bind('hashchange', hashParse);
+  $(window).bind('hashchange', fim_hashParse);
 
 
   return false;
