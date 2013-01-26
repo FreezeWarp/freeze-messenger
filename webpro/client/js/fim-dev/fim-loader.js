@@ -966,6 +966,38 @@ function getUser(userId) {
   return userData;
 }
 
+/**
+ * Obtains information for a single room.
+ * 
+ * @param object userId - The ID of the user to obtain info of.
+ * 
+ * @return mixed - Object of user data on success, "false" on failure.
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ * 
+ */
+function getRoom(userId) {
+  var roomData = false;
+
+  $.ajax({
+    url: directory + 'api/getRooms.php?rooms=' + userId + 'fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+    type: 'GET',
+    timeout: 5000,
+    cache: false,
+    async : false,
+    success: function(json) {
+      for (i in json.getRooms.rooms) {
+        roomData = json.getRooms.rooms[i];
+      }
+      
+      return false;
+    },
+  });
+  
+  return roomData;
+}
+
 /*********************************************************
 ************************* END ***************************
 ******************** Data Population ********************
