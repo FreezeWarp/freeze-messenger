@@ -34,8 +34,8 @@ if (!Array.prototype.indexOf) {
 
 
 // Base64 encode/decode
-//if (!window.btoa) window.btoa = $.base64.encode;
-//if (!window.atob) window.atob = $.base64.decode;
+if (!window.btoa) window.btoa = $.base64.encode;
+if (!window.atob) window.atob = $.base64.decode;
 
 
 // console.log

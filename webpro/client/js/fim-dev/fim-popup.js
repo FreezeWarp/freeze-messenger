@@ -229,7 +229,25 @@ popup = {
               else {
                 reader.readAsBinaryString(files[0]);
                 reader.onloadend = function() {
-                  fileContent = window.btoa(reader.result);
+
+                  /* We'll keep the three methods for now for more testing, but so far both Firefox and Chrome are ~twice as fast in the jQuery method than in Base64. */
+                  console.time('Native');
+                  fileContent1 = window.btoa(reader.result);
+                  console.timeEnd('Native');
+                  console.time('Base64');
+                  fileContent2 = Base64.encode(reader.result);
+                  console.timeEnd('Base64');
+                  console.time('jQuery');
+                  fileContent3 = $.base64.encode(reader.result);
+                  console.timeEnd('jQuery');
+                  
+                  if (fileContent1 === fileContent2 && fileContent2 === fileContent3) {
+                    console.log('Content Matches'); 
+                  }
+                  else {
+                    console.log('Content Does Not Match'); 
+                  }
+                  
                 };
 
                 reader2.readAsDataURL(files[0]);

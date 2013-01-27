@@ -1,6 +1,11 @@
 /* jQuery, jQueryUI, and Javascipt Plugins File
+ * Whenever a write a function that could be used with other projects, I will include it here instead of a fim-*.js file.
  * Below are several mini-libaries bundled into one file. If any author has issues with their software being included, the means used to attribute their work, or would otherwise like to contact me, email me at <josephtparsons@gmail.com>.
  * The copyright of each piece is listed directly above the section. It should be easy enough to distinguish between sections. */
+
+
+
+
 // ######################################################################################################### //
 /* Start jQuery Cookie Extension */
 /**

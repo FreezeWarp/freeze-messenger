@@ -44,6 +44,7 @@ $.when(
         $('body').append(window.templates.chatTemplate);
         $('body').append(window.templates.contextMenu);
 
+        $.getScript('client/js/fim-ie.js');
         $.getScript('client/js/fim-dev/fim-popup.js');
         $.getScript('client/js/fim-dev/fim-standard.js');
         $.getScript('client/js/fim-dev/fim-loader.js');
