@@ -461,8 +461,6 @@ function fim_messageFormat(json, format) {
           if (styleGeneral & 2048) style += 'text-decoration: line-through;';
           if (styleGeneral & 4096) style += 'text-decoration: overline;';
         }
-        
-//        text = $.wordWrap(text, 40, ' ', true);
       break;
     }
   }

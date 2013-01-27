@@ -1,19 +1,8 @@
 /* jQuery, jQueryUI, and Javascipt Plugins File
  * Below are several mini-libaries bundled into one file. If any author has issues with their software being included, the means used to attribute their work, or would otherwise like to contact me, email me at <josephtparsons@gmail.com>.
  * The copyright of each piece is listed directly above the section. It should be easy enough to distinguish between sections. */
-
-
-
-
-
-
-
-
-
-
 // ######################################################################################################### //
 /* Start jQuery Cookie Extension */
-
 /**
  * jQuery Cookie plugin
  *
@@ -26,46 +15,48 @@
  * Source: https://github.com/carhartl/jquery-cookie/blob/master/jquery.cookie.js
  *
  */
-jQuery.cookie = function(name, value, options) {
-    if (typeof value != 'undefined') { // name and value given, set cookie
-        options = options || {};
-        if (value === null) {
-            value = '';
-            options.expires = -1;
-        }
-        var expires = '';
-        if (options.expires && (typeof options.expires == 'number' || options.expires.toUTCString)) {
-            var date;
-            if (typeof options.expires == 'number') {
-                date = new Date();
-                date.setTime(date.getTime() + (options.expires * 24 * 60 * 60 * 1000));
-            } else {
-                date = options.expires;
-            }
-            expires = '; expires=' + date.toUTCString(); // use expires attribute, max-age is not supported by IE
-        }
-        // CAUTION: Needed to parenthesize options.path and options.domain
-        // in the following expressions, otherwise they evaluate to undefined
-        // in the packed version for some reason...
-        var path = options.path ? '; path=' + (options.path) : '';
-        var domain = options.domain ? '; domain=' + (options.domain) : '';
-        var secure = options.secure ? '; secure' : '';
-        document.cookie = [name, '=', encodeURIComponent(value), expires, path, domain, secure].join('');
-    } else { // only name given, get cookie
-        var cookieValue = null;
-        if (document.cookie && document.cookie != '') {
-            var cookies = document.cookie.split(';');
-            for (var i = 0; i < cookies.length; i++) {
-                var cookie = jQuery.trim(cookies[i]);
-                // Does this cookie string begin with the name we want?
-                if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
+jQuery.cookie = function (name, value, options) {
+  if (typeof value != 'undefined') { // name and value given, set cookie
+    options = options || {};
+    if (value === null) {
+      value = '';
+      options.expires = -1;
     }
+    var expires = '';
+    if (options.expires && (typeof options.expires == 'number' || options.expires.toUTCString)) {
+      var date;
+      if (typeof options.expires == 'number') {
+        date = new Date();
+        date.setTime(date.getTime() + (options.expires * 24 * 60 * 60 * 1000));
+      }
+      else {
+        date = options.expires;
+      }
+      expires = '; expires=' + date.toUTCString(); // use expires attribute, max-age is not supported by IE
+    }
+    // CAUTION: Needed to parenthesize options.path and options.domain
+    // in the following expressions, otherwise they evaluate to undefined
+    // in the packed version for some reason...
+    var path = options.path ? '; path=' + (options.path) : '';
+    var domain = options.domain ? '; domain=' + (options.domain) : '';
+    var secure = options.secure ? '; secure' : '';
+    document.cookie = [name, '=', encodeURIComponent(value), expires, path, domain, secure].join('');
+  }
+  else { // only name given, get cookie
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+      var cookies = document.cookie.split(';');
+      for (var i = 0; i < cookies.length; i++) {
+        var cookie = jQuery.trim(cookies[i]);
+        // Does this cookie string begin with the name we want?
+        if (cookie.substring(0, name.length + 1) == (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
 };
 
 /* END jQuery Cookie Functon */
@@ -94,7 +85,7 @@ jQuery.cookie = function(name, value, options) {
  * Source: https://github.com/carhartl/jquery-cookie/blob/master/jquery.cookie.js
  *
  */
-jQuery.getCookie = function(name, ifNull) {
+jQuery.getCookie = function (name, ifNull) {
   var cookie = $.cookie(name);
 
   if (cookie === null) return ifNull;
@@ -103,55 +94,6 @@ jQuery.getCookie = function(name, ifNull) {
 
 /* END jQuery Cookie Functon */
 // ######################################################################################################### //
-
-
-
-
-
-
-
-
-
-// ######################################################################################################### //
-/* Start jQuery Word Wrap Plugin */
-
-/**
- * Forces a word-wrap of the specified string.
- * This is implemented to be similar to PHP's equivilent function.
- * 
- * @param str - The string to wrap.
- * @param width - The maximum number of characters before the wrap is forced.
- * @param brk - The character to break with.
- * @param cut - Forces the wrap mid-word if necessary.
- *
- * @author James Padolsey http://james.padolsey.com/javascript/wordwrap-for-javascript/
- *
- * Modified by Joseph Parsons for jQuery Wrapper*/
-jQuery.wordWrap = function(str, width, brk, cut) {
-  var brk = brk || '\n',
-    width = width || 75,
-    cut = cut || false,
-    regex = '.{1,' + width + '}(\\s|$)' + (cut ? '|.{' + width + '}|.+$' : '|\\S+?(\\s|$)');
-
-  if (!str) return str;
-  else return str.match(RegExp(regex, 'g')).join(brk);
-};
-
-/* END jQuery Cookie Functon */
-// ######################################################################################################### //
-
-jQuery.fn.highlight = function (str, className) {
-    var regex = new RegExp(str, "gi");
-    return this.each(function () {
-        $(this).contents().filter(function() {
-            return this.nodeType == 3 && regex.test(this.nodeValue);
-        }).replaceWith(function() {
-            return (this.nodeValue || "").replace(regex, function(match) {
-                return "<span class=\"" + className + "\">" + match + "</span>";
-            });
-        });
-    });
-};
 
 
 
@@ -190,10 +132,10 @@ jQuery.fn.highlight = function (str, className) {
 // Removed: Some Annoying Hackish Code
 // Changed: Core Menu Lives in Seperate Function (not in jQuery Namespace)
 
-if(jQuery)(function() {
+if (jQuery)(function () {
   $.extend($.fn, {
 
-    contextMenu: function(o, callback) {
+    contextMenu: function (o, callback) {
       // Defaults
       if (o.menu == undefined) return false;
       if (o.inSpeed == undefined) o.inSpeed = 150;
@@ -204,7 +146,7 @@ if(jQuery)(function() {
       if (o.outSpeed == 0) o.outSpeed = -1;
 
 
-      $(this).each(function() { // Loop each context menu
+      $(this).each(function () { // Loop each context menu
         var el = $(this);
 
 
@@ -215,30 +157,30 @@ if(jQuery)(function() {
 
 
         if (o.altMenu) { // This allows the menu to be accessed using click and enter (as well as the menu key), as opposed to right click and meny key.
-          $(this).click(function(e) {
+          $(this).click(function (e) {
             contextMenuSub(e, o, el, $(el).offset(), callback, $(this));
 
             return false;
           });
 
-          $(this).keyup(function(e) {
+          $(this).keyup(function (e) {
             if (e.keyCode == 13 || e.keyCode == 93) {
               var offset = $(el).offset();
 
               contextMenuSub({
-                pageX : offset.left + $(el).width(),
-                pageY : offset.top + $(el).height(),
-                autoFocus : true
+                pageX: offset.left + $(el).width(),
+                pageY: offset.top + $(el).height(),
+                autoFocus: true
               }, o, el, offset, callback, $(this));
             }
           });
         }
         else {
-          $(this).mousedown(function(e) { // Simulate a true right clickasync
+          $(this).mousedown(function (e) { // Simulate a true right clickasync
             e.preventDefault();
             e.stopPropagation();
 
-            $(this).mouseup(function(e) {
+            $(this).mouseup(function (e) {
               e.preventDefault();
 
               if (e.button == 2) {
@@ -249,39 +191,41 @@ if(jQuery)(function() {
             });
           });
 
-          $(this).keyup(function(e) {
+          $(this).keyup(function (e) {
             if (e.which === 93) { // Menu Key
               var offset = $(el).offset();
 
               contextMenuSub({
-                pageX : offset.left + $(el).width(),
-                pageY : offset.top + $(el).height(),
-                autoFocus : true,
+                pageX: offset.left + $(el).width(),
+                pageY: offset.top + $(el).height(),
+                autoFocus: true,
               }, o, el, offset, callback, $(this));
             }
           });
 
-          $(el).add($('ul.contextMenu')).bind('contextmenu', function() { // Disable browser context menu (requires both selectors to work in IE/Safari + FF/Chrome)
+          $(el).add($('ul.contextMenu')).bind('contextmenu', function () { // Disable browser context menu (requires both selectors to work in IE/Safari + FF/Chrome)
             return false;
           });
         }
 
         // Disable text selection
         if ($.browser.mozilla) {
-          $('#' + o.menu).each(function() {
-            $(this).css({'MozUserSelect' : 'none'});
+          $('#' + o.menu).each(function () {
+            $(this).css({
+              'MozUserSelect': 'none'
+            });
           });
         }
         else if ($.browser.msie) {
-          $('#' + o.menu).each(function() {
-            $(this).bind('selectstart.disableTextSelect', function() {
+          $('#' + o.menu).each(function () {
+            $(this).bind('selectstart.disableTextSelect', function () {
               return false;
             });
           });
         }
         else {
-          $('#' + o.menu).each(function() {
-            $(this).bind('mousedown.disableTextSelect', function() {
+          $('#' + o.menu).each(function () {
+            $(this).bind('mousedown.disableTextSelect', function () {
               return false;
             });
           });
@@ -330,13 +274,17 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
 
   window.restrictFocus = 'contextMenu'; // Prevent the keydown event from changing anything more than it should.
 
-  $(menu).css({ top: y, left: x }).attr('data-visible', 'true').fadeIn(o.inSpeed); // Show the menu.
+  $(menu).css({
+    top: y,
+    left: x
+  }).attr('data-visible', 'true').fadeIn(o.inSpeed); // Show the menu.
 
 
 
-  $(menu).find('li').focus(function() { // When an element is granted focus below, give it the hover class.
+  $(menu).find('li').focus(function () { // When an element is granted focus below, give it the hover class.
     $(this).addClass('hover');
-  });$(menu).find('li').blur(function() { // When an element loses focus below, remove hover class.
+  });
+  $(menu).find('li').blur(function () { // When an element loses focus below, remove hover class.
     $(this).removeClass('hover');
   });
 
@@ -349,51 +297,64 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
 
 
 
-  $(menu).find('a').mouseover(function() { // Mouse Navigation
+  $(menu).find('a').mouseover(function () { // Mouse Navigation
     $(menu).find('li.hover').blur();
     $(this).parent().focus();
-  }).mouseout(function() {
+  }).mouseout(function () {
     $(menu).find('li.hover').blur();
   });
 
 
 
-  $(document).keydown(function(e) { // Keyboard Navigation
-    switch(e.keyCode) {
-      case 38: // Up
-      if ($(menu).find('li.hover').size() === 0) { $(menu).find('li:last').focus(); } // No item has focus.
-      else {
-        $(menu).find('li.hover').blur().prevAll('li').eq(0).focus(); // Add to the prev element (if it was the last, the focus will just be removed).
+  $(document).keydown(function (e) { // Keyboard Navigation
+    switch (e.keyCode) {
+      case 38:
+        // Up
+        if ($(menu).find('li.hover').size() === 0) {
+          $(menu).find('li:last').focus();
+        } // No item has focus.
+        else {
+          $(menu).find('li.hover').blur().prevAll('li').eq(0).focus(); // Add to the prev element (if it was the last, the focus will just be removed).
 
-        if ($(menu).find('li.hover').size() === 0) { $(menu).find('li:last').focus(); } // Focus removed; add to the last.
-      }
+          if ($(menu).find('li.hover').size() === 0) {
+            $(menu).find('li:last').focus();
+          } // Focus removed; add to the last.
+        }
 
-      return false; // Prevent Bubbling
-      break;
+        return false; // Prevent Bubbling
+        break;
 
-      case 40: // Down
-      case 9: // Tab
-      if ($(menu).find('li.hover').size() === 0) { $(menu).find('li:first').focus(); } // No item has focus.
-      else {
-        $(menu).find('li.hover').blur().nextAll('li').eq(0).focus(); // Add to the prev element (if it was the last, the focus will just be removed).
+      case 40:
+        // Down
+      case 9:
+        // Tab
+        if ($(menu).find('li.hover').size() === 0) {
+          $(menu).find('li:first').focus();
+        } // No item has focus.
+        else {
+          $(menu).find('li.hover').blur().nextAll('li').eq(0).focus(); // Add to the prev element (if it was the last, the focus will just be removed).
 
-        if ($(menu).find('li.hover').size() === 0) { $(menu).find('li:first').focus(); } // Focus removed; add to the first.
-      }
+          if ($(menu).find('li.hover').size() === 0) {
+            $(menu).find('li:first').focus();
+          } // Focus removed; add to the first.
+        }
 
-      return false; // Prevent Bubbling
-      break;
+        return false; // Prevent Bubbling
+        break;
 
-      case 13: // Enter
-      $(menu).find('li.hover a').trigger('click');
+      case 13:
+        // Enter
+        $(menu).find('li.hover a').trigger('click');
 
-      return false; // Prevent Bubbling
-      break;
+        return false; // Prevent Bubbling
+        break;
 
-      case 27: // Escape
-      $(document).trigger('click');
+      case 27:
+        // Escape
+        $(document).trigger('click');
 
-      return false; // Prevent Bubbling
-      break
+        return false; // Prevent Bubbling
+        break
     }
   });
 
@@ -402,13 +363,18 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
   // When items are selected
   $('#' + o.menu).find('a').unbind('click');
 
-  $('#' + o.menu).find('li a').click(function() {
+  $('#' + o.menu).find('li a').click(function () {
     $(document).unbind('click').unbind('keydown');
     $(".contextMenu").hide();
 
     // Callback
     if (callback) {
-      callback($(this).attr('data-action'), $(srcElement), {x: x - offset.left, y: y - offset.top, docX: x, docY: y});
+      callback($(this).attr('data-action'), $(srcElement), {
+        x: x - offset.left,
+        y: y - offset.top,
+        docX: x,
+        docY: y
+      });
     }
 
     return false;
@@ -417,8 +383,8 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
 
 
   // Hide bindings
-  setTimeout(function() { // Delay for Mozilla; TODO: Confirm still a problem
-    $(document).click(function() {
+  setTimeout(function () { // Delay for Mozilla; TODO: Confirm still a problem
+    $(document).click(function () {
       $(document).unbind('click').unbind('keydown');
       $(menu).removeAttr('data-visible').fadeOut(o.outSpeed);
 
@@ -443,7 +409,7 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
 // ######################################################################################################### //
 /* START jQuery Tooltip #1 */
 
- /*
+/*
  * TipTip (Original)
  * Copyright 2010 Drew Wilson
  * www.drewwilson.com
@@ -470,8 +436,8 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
  *
  * Modified to support live() handler, eliminate code unneeded for FIM (e.g. click handlers). */
 
-(function($) {
-  $.fn.tipTip = function(options) {
+(function ($) {
+  $.fn.tipTip = function (options) {
     var defaults = {
       maxWidth: "200px",
       edgeOffset: 3,
@@ -481,14 +447,18 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
       fadeOut: 200,
       attribute: "title",
       content: false, // HTML or String to fill TipTIp with
-      enter: function() {return false;},
-      exit: function() {return false;}
+      enter: function () {
+        return false;
+      },
+      exit: function () {
+        return false;
+      }
     };
     var opts = $.extend(defaults, options);
 
     // Setup tip tip elements and render them to the DOM
     if ($("#tiptip_holder").length <= 0) {
-      var tiptip_holder = $('<div id="tiptip_holder" style="max-width:'+ opts.maxWidth +';"></div>');
+      var tiptip_holder = $('<div id="tiptip_holder" style="max-width:' + opts.maxWidth + ';"></div>');
       var tiptip_content = $('<div id="tiptip_content"></div>');
       var tiptip_arrow = $('<div id="tiptip_arrow"></div>');
       $("body").append(tiptip_holder.html(tiptip_content).prepend(tiptip_arrow.html('<div id="tiptip_arrow_inner"></div>')));
@@ -508,7 +478,7 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
     $(this).die('mouseout');
 
     $(this).live({
-      mouseover : function() {
+      mouseover: function () {
         if (opts.content) {
           var org_title = opts.content;
         }
@@ -518,7 +488,7 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
 
         opts.enter.call(this);
         tiptip_content.html(org_title);
-        tiptip_holder.hide().removeAttr("class").css("margin","0");
+        tiptip_holder.hide().removeAttr("class").css("margin", "0");
         tiptip_arrow.removeAttr("style");
 
         var top = parseInt($(this).offset()['top']);
@@ -561,7 +531,7 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
         else if ((left_compare && w_compare < 0) || (t_class == "_left" && !right_compare)) {
           t_class = "_left";
           arrow_top = Math.round(tip_h - 13) / 2;
-          arrow_left =  Math.round(tip_w);
+          arrow_left = Math.round(tip_w);
           marg_left = Math.round(left - (tip_w + opts.edgeOffset + 5));
           marg_top = Math.round(top + h_compare);
         }
@@ -574,7 +544,7 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
             t_class = "_top";
           }
           else {
-            t_class = t_class+"_top";
+            t_class = t_class + "_top";
           }
           arrow_top = tip_h;
           marg_top = Math.round(top - (tip_h + 5 + opts.edgeOffset));
@@ -584,7 +554,7 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
             t_class = "_bottom";
           }
           else {
-            t_class = t_class+"_bottom";
+            t_class = t_class + "_bottom";
           }
           arrow_top = -12;
           marg_top = Math.round(top + org_height + opts.edgeOffset);
@@ -601,20 +571,26 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
           marg_left = marg_left + 5;
         }
 
-        tiptip_arrow.css({"margin-left": arrow_left+"px", "margin-top": arrow_top+"px"});
-        tiptip_holder.css({"margin-left": marg_left+"px", "margin-top": marg_top+"px"}).attr("class","tip"+t_class);
+        tiptip_arrow.css({
+          "margin-left": arrow_left + "px",
+          "margin-top": arrow_top + "px"
+        });
+        tiptip_holder.css({
+          "margin-left": marg_left + "px",
+          "margin-top": marg_top + "px"
+        }).attr("class", "tip" + t_class);
 
         if (timeout) {
           clearTimeout(timeout);
         }
-        timeout = setTimeout(function() {
-          tiptip_holder.stop(true,true).fadeIn(opts.fadeIn);
+        timeout = setTimeout(function () {
+          tiptip_holder.stop(true, true).fadeIn(opts.fadeIn);
           return false;
         }, opts.delay);
 
         return false;
       },
-      mouseout: function() {
+      mouseout: function () {
         opts.exit.call(this);
         if (timeout) {
           clearTimeout(timeout);
@@ -650,22 +626,21 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
 /* EZPZ Tooltip v1.0 Modified June 23rd, 2011
  * Joseph T. Parsons
  *
- * Modified to support live() handler, eliminate code unneeded for FIM. */
-(function($){
+ * Modified to support live() handler, eliminate code unneeded for FIM. */ (function ($) {
   $(this).die('mouseover');
   $(this).die('mousemove');
   $(this).die('mouseout');
 
-  $.fn.ezpz_tooltip = function(options) {
+  $.fn.ezpz_tooltip = function (options) {
     var settings = $.extend({}, $.fn.ezpz_tooltip.defaults, options);
     var content = $("#" + settings.contentId);
 
     $(this).live({
-      mouseover : function() {
+      mouseover: function () {
         content = $("#" + settings.contentId);
         settings.beforeShow(content, $(this));
       },
-      mousemove : function(e) {
+      mousemove: function (e) {
         var contentInfo = getElementDimensionsAndPosition(content),
           targetInfo = getElementDimensionsAndPosition($(this));
         contentInfo = keepInWindow($.fn.ezpz_tooltip.positions[settings.contentPosition](contentInfo, e.pageX, e.pageY, settings.offset, targetInfo));
@@ -675,7 +650,7 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
 
         settings.showContent(content);
       },
-      mouseout : function() {
+      mouseout: function () {
         settings.hideContent(content);
         settings.afterHide();
       }
@@ -699,7 +674,7 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
       return info;
     };
 
-    function keepInWindow(contentInfo){
+    function keepInWindow(contentInfo) {
       var windowWidth = $(window).width();
       var windowTop = $(window).scrollTop();
       var output = new Array();
@@ -720,7 +695,7 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
     };
   };
 
-  $.fn.ezpz_tooltip.positionContent = function(contentInfo, mouseX, mouseY, offset, targetInfo) {
+  $.fn.ezpz_tooltip.positionContent = function (contentInfo, mouseX, mouseY, offset, targetInfo) {
     contentInfo['top'] = mouseY - offset - contentInfo['height'];
     contentInfo['left'] = mouseX + offset;
 
@@ -728,14 +703,14 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
   };
 
   $.fn.ezpz_tooltip.positions = {
-    aboveRightFollow: function(contentInfo, mouseX, mouseY, offset, targetInfo) {
+    aboveRightFollow: function (contentInfo, mouseX, mouseY, offset, targetInfo) {
       contentInfo['top'] = mouseY - offset - contentInfo['height'];
       contentInfo['left'] = mouseX + offset;
 
       return contentInfo;
     },
 
-    belowRightFollow: function(contentInfo, mouseX, mouseY, offset, targetInfo) {
+    belowRightFollow: function (contentInfo, mouseX, mouseY, offset, targetInfo) {
       contentInfo['top'] = mouseY + offset;
       contentInfo['left'] = mouseX + offset;
 
@@ -749,16 +724,20 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
     stayOnContent: false,
     offset: 10,
     contentId: "",
-    beforeShow: function(content) {return false;},
-    showContent: function(content) {
+    beforeShow: function (content) {
+      return false;
+    },
+    showContent: function (content) {
       content.show();
       return false;
     },
-    hideContent: function(content) {
+    hideContent: function (content) {
       content.hide();
       return false;
     },
-    afterHide: function() {return false;}
+    afterHide: function () {
+      return false;
+    }
   };
 
 })(jQuery);
@@ -796,37 +775,40 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
 /* EZPZ Tooltip v1.0 Modified June 23rd, 2011
  * Joseph T. Parsons
  *
- * Eliminate code unneeded for FIM. */
-(function($) {
+ * Eliminate code unneeded for FIM. */ (function ($) {
   /** jGrowl Wrapper - Establish a base jGrowl Container for compatibility with older releases. **/
-  $.jGrowl = function(m, o) {
+  $.jGrowl = function (m, o) {
     // To maintain compatibility with older version that only supported one instance we'll create the base container.
-    if ($('#jGrowl').size() == 0)
-      $('<div id="jGrowl"></div>').addClass((o && o.position) ? o.position : $.jGrowl.defaults.position).appendTo('body');
+    if ($('#jGrowl').size() == 0) $('<div id="jGrowl"></div>').addClass((o && o.position) ? o.position : $.jGrowl.defaults.position).appendTo('body');
 
     // Create a notification on the container.
-    $('#jGrowl').jGrowl(m,o);
+    $('#jGrowl').jGrowl(m, o);
   };
 
 
   /** Raise jGrowl Notification on a jGrowl Container **/
-  $.fn.jGrowl = function(m, o) {
+  $.fn.jGrowl = function (m, o) {
     if ($.isFunction(this.each)) {
       var args = arguments;
 
-      return this.each(function() {
+      return this.each(function () {
         var self = this;
 
         /** Create a jGrowl Instance on the Container if it does not exist **/
         if ($(this).data('jGrowl.instance') == undefined) {
-          $(this).data('jGrowl.instance', $.extend(new $.fn.jGrowl(), { notifications: [], element: null, interval: null }));
+          $(this).data('jGrowl.instance', $.extend(new $.fn.jGrowl(), {
+            notifications: [],
+            element: null,
+            interval: null
+          }));
           $(this).data('jGrowl.instance').startup(this);
         }
 
         /** Optionally call jGrowl instance methods, or just raise a normal notification **/
         if ($.isFunction($(this).data('jGrowl.instance')[m])) {
           $(this).data('jGrowl.instance')[m].apply($(this).data('jGrowl.instance'), $.makeArray(args).slice(1));
-        } else {
+        }
+        else {
           $(this).data('jGrowl.instance').create(m, o);
         }
       });
@@ -837,111 +819,110 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
 
     /** Default JGrowl Settings **/
     defaults: {
-      pool:       0,
-      header:     '',
-      group:      '',
-      sticky:     false,
-      position:         'top-right',
-      glue:       'after',
-      theme:      'default',
-      themeState:     'highlight',
-      corners:    '10px',
-      check:      250,
-      life:       3000,
-      closeDuration:  'normal',
-      openDuration:   'normal',
-      easing:     'swing',
-      closer:     true,
+      pool: 0,
+      header: '',
+      group: '',
+      sticky: false,
+      position: 'top-right',
+      glue: 'after',
+      theme: 'default',
+      themeState: 'highlight',
+      corners: '10px',
+      check: 250,
+      life: 3000,
+      closeDuration: 'normal',
+      openDuration: 'normal',
+      easing: 'swing',
+      closer: true,
       closeTemplate: '&times;',
       closerTemplate: '<div>[ close all ]</div>',
-      log:        function(e,m,o) {},
-      beforeOpen:     function(e,m,o) {},
-      afterOpen:        function(e,m,o) {},
-      open:       function(e,m,o) {},
-      beforeClose:    function(e,m,o) {},
-      close:      function(e,m,o) {},
-      animateOpen:    {
-        opacity:  'show'
+      log: function (e, m, o) {},
+      beforeOpen: function (e, m, o) {},
+      afterOpen: function (e, m, o) {},
+      open: function (e, m, o) {},
+      beforeClose: function (e, m, o) {},
+      close: function (e, m, o) {},
+      animateOpen: {
+        opacity: 'show'
       },
-      animateClose:   {
-        opacity:  'hide'
+      animateClose: {
+        opacity: 'hide'
       }
     },
 
     notifications: [],
 
     /** jGrowl Container Node **/
-    element:  null,
+    element: null,
 
     /** Interval Function **/
-    interval:   null,
+    interval: null,
 
     /** Create a Notification **/
-    create:   function(message, o) {
+    create: function (message, o) {
       var o = $.extend({}, this.defaults, o);
 
-      this.notifications.push({ message: message, options: o });
+      this.notifications.push({
+        message: message,
+        options: o
+      });
 
-      o.log.apply(this.element, [this.element,message,o]);
+      o.log.apply(this.element, [this.element, message, o]);
     },
 
-    render:     function(notification) {
+    render: function (notification) {
       var self = this;
       var message = notification.message;
       var o = notification.options;
 
       var notification = $(
-        '<div class="jGrowl-notification ' + o.themeState + ' ui-corner-all' +
-        ((o.group != undefined && o.group != '') ? ' ' + o.group : '') + '">' +
+        '<div class="jGrowl-notification ' + o.themeState + ' ui-corner-all' + ((o.group != undefined && o.group != '') ? ' ' + o.group : '') + '">' +
         '<div class="jGrowl-close">' + o.closeTemplate + '</div>' +
         '<div class="jGrowl-header">' + o.header + '</div>' +
-        '<div class="jGrowl-message">' + message + '</div></div>'
-     ).data("jGrowl", o).addClass(o.theme).children('div.jGrowl-close').bind("click.jGrowl", function() {
+        '<div class="jGrowl-message">' + message + '</div></div>').data("jGrowl", o).addClass(o.theme).children('div.jGrowl-close').bind("click.jGrowl", function () {
         $(this).parent().trigger('jGrowl.close');
       }).parent();
 
 
       /** Notification Actions **/
-      $(notification).bind("mouseover.jGrowl", function() {
+      $(notification).bind("mouseover.jGrowl", function () {
         $('div.jGrowl-notification', self.element).data("jGrowl.pause", true);
-      }).bind("mouseout.jGrowl", function() {
+      }).bind("mouseout.jGrowl", function () {
         $('div.jGrowl-notification', self.element).data("jGrowl.pause", false);
-      }).bind('jGrowl.beforeOpen', function() {
-        if (o.beforeOpen.apply(notification, [notification,message,o,self.element]) != false) {
+      }).bind('jGrowl.beforeOpen', function () {
+        if (o.beforeOpen.apply(notification, [notification, message, o, self.element]) != false) {
           $(this).trigger('jGrowl.open');
         }
-      }).bind('jGrowl.open', function() {
-        if (o.open.apply(notification, [notification,message,o,self.element]) != false) {
+      }).bind('jGrowl.open', function () {
+        if (o.open.apply(notification, [notification, message, o, self.element]) != false) {
           if (o.glue == 'after') {
             $('div.jGrowl-notification:last', self.element).after(notification);
-          } else {
+          }
+          else {
             $('div.jGrowl-notification:first', self.element).before(notification);
           }
 
-          $(this).animate(o.animateOpen, o.openDuration, o.easing, function() {
+          $(this).animate(o.animateOpen, o.openDuration, o.easing, function () {
             // Fixes some anti-aliasing issues with IE filters.
-            if ($.browser.msie && (parseInt($(this).css('opacity'), 10) === 1 || parseInt($(this).css('opacity'), 10) === 0))
-              this.style.removeAttribute('filter');
+            if ($.browser.msie && (parseInt($(this).css('opacity'), 10) === 1 || parseInt($(this).css('opacity'), 10) === 0)) this.style.removeAttribute('filter');
 
             $(this).data("jGrowl").created = new Date();
 
             $(this).trigger('jGrowl.afterOpen');
           });
         }
-      }).bind('jGrowl.afterOpen', function() {
-        o.afterOpen.apply(notification, [notification,message,o,self.element]);
-      }).bind('jGrowl.beforeClose', function() {
-        if (o.beforeClose.apply(notification, [notification,message,o,self.element]) != false)
-          $(this).trigger('jGrowl.close');
-      }).bind('jGrowl.close', function() {
+      }).bind('jGrowl.afterOpen', function () {
+        o.afterOpen.apply(notification, [notification, message, o, self.element]);
+      }).bind('jGrowl.beforeClose', function () {
+        if (o.beforeClose.apply(notification, [notification, message, o, self.element]) != false) $(this).trigger('jGrowl.close');
+      }).bind('jGrowl.close', function () {
         // Pause the notification, lest during the course of animation another close event gets called.
         $(this).data('jGrowl.pause', true);
-        $(this).animate(o.animateClose, o.closeDuration, o.easing, function() {
+        $(this).animate(o.animateClose, o.closeDuration, o.easing, function () {
           $(this).remove();
-          var close = o.close.apply(notification, [notification,message,o,self.element]);
+          var close = o.close.apply(notification, [notification, message, o, self.element]);
 
-          if ($.isFunction(close))
-            close.apply(notification, [notification,message,o,self.element]);
+          if ($.isFunction(close)) close.apply(notification, [notification, message, o, self.element]);
         });
       }).trigger('jGrowl.beforeOpen');
 
@@ -949,48 +930,42 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
       if (o.corners != '' && $.fn.corner != undefined) $(notification).corner(o.corners);
 
       /** Add a Global Closer if more than one notification exists **/
-      if ($('div.jGrowl-notification:parent', self.element).size() > 1 &&
-         $('div.jGrowl-closer', self.element).size() == 0 && this.defaults.closer != false) {
+      if ($('div.jGrowl-notification:parent', self.element).size() > 1 && $('div.jGrowl-closer', self.element).size() == 0 && this.defaults.closer != false) {
         $(this.defaults.closerTemplate).addClass('jGrowl-closer ui-state-highlight ui-corner-all').addClass(this.defaults.theme)
           .appendTo(self.element).animate(this.defaults.animateOpen, this.defaults.speed, this.defaults.easing)
-          .bind("click.jGrowl", function() {
-            $(this).siblings().trigger("jGrowl.beforeClose");
+          .bind("click.jGrowl", function () {
+          $(this).siblings().trigger("jGrowl.beforeClose");
 
-            if ($.isFunction(self.defaults.closer)) {
-              self.defaults.closer.apply($(this).parent()[0], [$(this).parent()[0]]);
-            }
-          });
+          if ($.isFunction(self.defaults.closer)) {
+            self.defaults.closer.apply($(this).parent()[0], [$(this).parent()[0]]);
+          }
+        });
       };
     },
 
     /** Update the jGrowl Container, removing old jGrowl notifications **/
-    update:  function() {
-      $(this.element).find('div.jGrowl-notification:parent').each(function() {
-        if ($(this).data("jGrowl") != undefined && $(this).data("jGrowl").created != undefined &&
-           ($(this).data("jGrowl").created.getTime() + parseInt($(this).data("jGrowl").life))  < (new Date()).getTime() &&
-           $(this).data("jGrowl").sticky != true &&
-           ($(this).data("jGrowl.pause") == undefined || $(this).data("jGrowl.pause") != true)) {
+    update: function () {
+      $(this.element).find('div.jGrowl-notification:parent').each(function () {
+        if ($(this).data("jGrowl") != undefined && $(this).data("jGrowl").created != undefined && ($(this).data("jGrowl").created.getTime() + parseInt($(this).data("jGrowl").life)) < (new Date()).getTime() && $(this).data("jGrowl").sticky != true && ($(this).data("jGrowl.pause") == undefined || $(this).data("jGrowl.pause") != true)) {
 
           // Pause the notification, lest during the course of animation another close event gets called.
           $(this).trigger('jGrowl.beforeClose');
         }
       });
 
-      if (this.notifications.length > 0 &&
-         (this.defaults.pool == 0 || $(this.element).find('div.jGrowl-notification:parent').size() < this.defaults.pool))
-        this.render(this.notifications.shift());
+      if (this.notifications.length > 0 && (this.defaults.pool == 0 || $(this.element).find('div.jGrowl-notification:parent').size() < this.defaults.pool)) this.render(this.notifications.shift());
 
       if ($(this.element).find('div.jGrowl-notification:parent').size() < 2) {
-        $(this.element).find('div.jGrowl-closer').animate(this.defaults.animateClose, this.defaults.speed, this.defaults.easing, function() {
+        $(this.element).find('div.jGrowl-closer').animate(this.defaults.animateClose, this.defaults.speed, this.defaults.easing, function () {
           $(this).remove();
         });
       }
     },
 
     /** Setup the jGrowl Notification Container **/
-    startup:  function(e) {
+    startup: function (e) {
       this.element = $(e).addClass('jGrowl').append('<div class="jGrowl-notification"></div>');
-      this.interval = setInterval(function() {
+      this.interval = setInterval(function () {
         $(e).data('jGrowl.instance').update();
       }, parseInt(this.defaults.check));
 
@@ -1000,13 +975,13 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
     },
 
     /** Shutdown jGrowl, removing it and clearing the interval **/
-    shutdown:   function() {
+    shutdown: function () {
       $(this.element).removeClass('jGrowl').find('div.jGrowl-notification').remove();
       clearInterval(this.interval);
     },
 
-    close:  function() {
-      $(this.element).find('div.jGrowl-notification').each(function(){
+    close: function () {
+      $(this.element).find('div.jGrowl-notification').each(function () {
         $(this).trigger('jGrowl.beforeClose');
       });
     }
@@ -1117,296 +1092,357 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
  *
  */
 
-;jQTubeUtil = (function($){ /* singleton */
+;
+jQTubeUtil = (function ($) { /* singleton */
 
-        var f = function(){};
-        var p = f.prototype;
+  var f = function () {};
+  var p = f.prototype;
 
-        // Constants, Private Scope
-        var MaxResults = 10,
-                StartPoint = 1,
-                // URLs
-                BaseURL = "http://gdata.youtube.com",
-                FeedsURL = BaseURL + "/feeds/api",
-                VideoURL = FeedsURL + "/videos/",
-                SearchURL = FeedsURL + "/videos",
-                StandardFeedsURL = FeedsURL + "/standardfeeds",
-                MostViewed = StandardFeedsURL + "/most_viewed"
-                MostPopular = StandardFeedsURL + "/most_popular",
-                MostRecent = StandardFeedsURL + "/most_recent",
-                TopRated = StandardFeedsURL + "/top_rated",
-                TopFavs = StandardFeedsURL + "/top_favorites",
-                RecentlyFeatured = StandardFeedsURL + "/recently_featured",
-                SuggestURL = "http://suggestqueries.google.com/complete/search",
-                // Settings
-                Times = ["today","this_week","this_month","all_time"],
-                OrderBy = ["relevance", "published", "viewCount", "rating"],
-                Categories = ["Film","Autos","Music","Animals","Sports","Travel","Shortmov","Videoblog","Games","Comedy","People","News","Entertainment","Education","Howto","Nonprofit","Tech"];
+  // Constants, Private Scope
+  var MaxResults = 10,
+    StartPoint = 1,
+    // URLs
+    BaseURL = "http://gdata.youtube.com",
+    FeedsURL = BaseURL + "/feeds/api",
+    VideoURL = FeedsURL + "/videos/",
+    SearchURL = FeedsURL + "/videos",
+    StandardFeedsURL = FeedsURL + "/standardfeeds",
+    MostViewed = StandardFeedsURL + "/most_viewed"
+  MostPopular = StandardFeedsURL + "/most_popular",
+  MostRecent = StandardFeedsURL + "/most_recent",
+  TopRated = StandardFeedsURL + "/top_rated",
+  TopFavs = StandardFeedsURL + "/top_favorites",
+  RecentlyFeatured = StandardFeedsURL + "/recently_featured",
+  SuggestURL = "http://suggestqueries.google.com/complete/search",
+  // Settings
+  Times = ["today", "this_week", "this_month", "all_time"],
+  OrderBy = ["relevance", "published", "viewCount", "rating"],
+  Categories = ["Film", "Autos", "Music", "Animals", "Sports", "Travel", "Shortmov", "Videoblog", "Games", "Comedy", "People", "News", "Entertainment", "Education", "Howto", "Nonprofit", "Tech"];
 
-        // Settings _required_ for search
-        var SearchDefaults = {
-                "q": "",
-                "orderby": OrderBy[2],
-                "time": Times[3],
-                "max-results": MaxResults
+  // Settings _required_ for search
+  var SearchDefaults = {
+    "q": "",
+    "orderby": OrderBy[2],
+    "time": Times[3],
+    "max-results": MaxResults
+  };
+
+  // The Feed URL structure _requires_ these
+  var CoreDefaults = {
+    "key": "", //"", /** NEEDS TO BE SET **/
+    "format": 5, // embeddable
+    "alt": "json",
+    "callback": "?"
+  };
+
+  // The Autocomplete utility _requires_ these
+  var SuggestDefaults = {
+    hl: "en",
+    ds: "yt",
+    client: "youtube",
+    hjson: "t",
+    cp: 1
+  };
+
+  /**
+   * Initialize the jQTubeUtil utility
+   */
+  p.init = function (options) {
+    if (!options.key) throw "jQTubeUtil requires a key!";
+    CoreDefaults.key = options.key;
+    if (options.orderby) SearchDefaults.orderby = options.orderby;
+    if (options.time) SearchDefaults.time = options.time;
+    if (options.maxResults) SearchDefaults["max-results"] = MaxResults = options.maxResults;
+    if (options.lang) SuggestDefaults.hl = options.lang;
+  };
+
+  /** public method to get available time filter options */
+  p.getTimes = function () {
+    return Times;
+  };
+
+  /** public method to get available order filter options */
+  p.getOrders = function () {
+    return OrderBy;
+  };
+
+  /** public method to get available category filter options */
+  p.getCategories = function () {
+    return Categories;
+  };
+
+  /**
+   * Autocomplete utility returns array of suggestions
+   * @param input - string
+   * @param callback - function
+   */
+  p.suggest = function (input, callback) {
+    var opts = {
+      q: encodeURIComponent(input)
+    };
+    var url = _buildURL(SuggestURL,
+    $.extend({}, SuggestDefaults, opts));
+    $.ajax({
+      type: "GET",
+      dataType: "json",
+      url: url,
+      success: function (xhr) {
+        var suggestions = [],
+          res = {};
+        for (entry in xhr[1]) {
+          suggestions.push(xhr[1][entry][0]);
+        }
+        res.suggestions = suggestions;
+        res.searchURL = url;
+        if (typeof (callback) == "function") {
+          callback(res);
+          return;
+        }
+      }
+    });
+  };
+
+  /**
+   * This function is the public method
+   * provided to the user to perform a
+   * keyword based search
+   * @param input
+   * @param cb
+   */
+  p.search = function (input, cb, category) {
+    if (typeof (input) == "string") input = {
+      "q": encodeURIComponent(input)
+    };
+    if (null != category) category = {
+      "category": category
+    };
+    else category = {};
+    return _search($.extend({}, SearchDefaults, input, category), cb);
+  };
+
+  /** Get a particular video via VideoID */
+  p.video = function (vid, cb) {
+    return _request(VideoURL + vid + "?alt=json", cb);
+  };
+
+  /** Get related videos for a VideoID; ex. http://gdata.youtube.com/feeds/api/videos/ZTUVgYoeN_b/related?v=2 */
+  p.related = function (vid, cb) {
+    return _request(VideoURL + vid + "/related?alt=json", cb);
+  };
+
+  /** Most Viewed Feed */
+  p.mostViewed = function (incoming, callback) {
+    return _getFeedRequest(MostViewed, getOptions(incoming, true), callback);
+  };
+
+  /** Most Recent Feed */
+  p.mostRecent = function (incoming, callback) {
+    return _getFeedRequest(MostRecent, getOptions(incoming, false), callback);
+  };
+
+  /** Most Popular Feed */
+  p.mostPopular = function (incoming, callback) {
+    return _getFeedRequest(MostPopular, getOptions(incoming, true), callback);
+  };
+
+  /** Top Rated Feed */
+  p.topRated = function (incoming, callback) {
+    return _getFeedRequest(TopRated, getOptions(incoming, true), callback);
+  };
+
+  /** Top Favorited Feed */
+  p.topFavs = function (incoming, callback) {
+    return _getFeedRequest(TopFavs, getOptions(incoming, true), callback);
+  };
+
+  /**
+   * Get a feeds request by specifying the URL
+   * the options and the callback
+   */
+  function _getFeedRequest(baseURL, options, callback) {
+    var reqUrlParams = {
+      "max-results": options.max || MaxResults,
+      "start-index": options.start || StartPoint
+    };
+    if (options.time) reqUrlParams.time = options.time;
+    var url = _buildURL(baseURL, reqUrlParams);
+    return _request(url, options.callback || callback);
+  };
+
+  /**
+   * Method to get the options for a standard
+   * feed that is then utilized in the URL
+   * building process
+   */
+  function getOptions(arg, hasTime) {
+    switch (typeof (arg)) {
+      case "function":
+        return {
+          callback: arg,
+          time: undefined
         };
-
-        // The Feed URL structure _requires_ these
-        var CoreDefaults = {
-                "key": "", //"", /** NEEDS TO BE SET **/
-                "format": 5, // embeddable
-                "alt": "json",
-                "callback": "?"
+      case "object":
+        var ret = {
+          max: arg.max,
+          start: arg['start-index']
         };
+        if (hasTime) ret.time = arg.time;
+        return ret;
+      default:
+        return {};
+        break;
+    }
+  };
 
-        // The Autocomplete utility _requires_ these
-        var SuggestDefaults = {
-                hl: "en",
-                ds: "yt",
-                client: "youtube",
-                hjson: "t",
-                cp: 1
-        };
+  /**
+   * This function builds the URL and makes
+   * the search request
+   * @param options
+   * @param callback
+   */
+  function _search(options, callback) {
+    var URL = _buildURL(SearchURL, options);
+    return _request(URL, callback);
+  };
 
-        /**
-         * Initialize the jQTubeUtil utility
-         */
-        p.init = function(options){
-                if(!options.key) throw "jQTubeUtil requires a key!";
-                CoreDefaults.key = options.key;
-                if(options.orderby)
-                        SearchDefaults.orderby = options.orderby;
-                if(options.time)
-                        SearchDefaults.time = options.time;
-                if(options.maxResults)
-                        SearchDefaults["max-results"] = MaxResults = options.maxResults;
-                if(options.lang)
-                        SuggestDefaults.hl = options.lang;
-        };
+  /**
+   * This method makes the actual JSON request
+   * and builds the results that are returned to
+   * the callback
+   */
+  function _request(url, callback) {
+    var res = {};
+    $.ajax({
+      type: "GET",
+      dataType: "json",
+      url: url,
+      success: function (xhr) {
+        if ((typeof (xhr) == "undefined") || (xhr == null)) return;
+        var videos = [];
+        if (xhr.feed) {
+          var feed = xhr.feed;
+          var entries = xhr.feed.entry;
+          for (entry in entries)
+          videos.push(new YouTubeVideo(entries[entry]));
+          res.startIndex = feed.openSearch$startIndex.$t;
+          res.itemsPerPage = feed.openSearch$itemsPerPage.$t;
+          res.totalResults = feed.openSearch$totalResults.$t;
+        }
+        else {
+          videos.push(new YouTubeVideo(xhr.entry));
+        }
+        res.version = xhr.version;
+        res.searchURL = url;
+        res.videos = videos;
+        if (typeof (callback) == "function") {
+          callback(res); // pass the response obj
+          return;
+        }
 
-        /** public method to get available time filter options */
-        p.getTimes = function(){return Times;};
+      },
+      error: function (e) {
+        throw Exception("couldn't fetch YouTube request : " + url + " : " + e);
+      }
+    });
+    return res;
+  };
 
-        /** public method to get available order filter options */
-        p.getOrders = function(){return OrderBy;};
+  /**
+   * This method builds the url utilizing a JSON
+   * object as the request param names and values
+   */
+  function _buildURL(root, options) {
+    var ret = "?",
+      k, v, first = true;
+    var opts = $.extend({}, options, CoreDefaults);
+    for (o in opts) {
+      k = o;
+      v = opts[o];
+      ret += (first ? "" : "&") + k + "=" + v;
+      first = false;
+    }
+    return root + ret;
+  };
 
-        /** public method to get available category filter options */
-        p.getCategories = function(){return Categories;};
+  /**
+   * Represents the object that transposes the
+   * YouTube video entry from the JSON response
+   * into a usable object
+   */
+  var YouTubeVideo = function (entry) {
+    var unavail = [];
+    var id = entry.id.$t;
+    var start = id.lastIndexOf('/') + 1;
+    var end = id.length;
+    // set values
+    this.videoId = id.substring(start, end);
+    this.entry = entry; // give access to the entry itself
+    this.title = entry.title.$t;
+    try {
+      this.updated = entry.updated.$t;
+    }
+    catch (e) {
+      unavail.push("updated");
+    }
+    try {
+      this.thumbs = entry.media$group.media$thumbnail;
+    }
+    catch (e) {
+      unavail.push("thumbs");
+    }
+    try {
+      this.duration = entry.media$group.yt$duration.seconds;
+    }
+    catch (e) {
+      unavail.push("duration");
+    }
+    try {
+      this.favCount = entry.yt$statistics.favoriteCount;
+    }
+    catch (e) {
+      unavail.push("favCount");
+    }
+    try {
+      this.rating = entry.gd$rating;
+    }
+    catch (e) {
+      alert(e);
+      unavail.push("rating");
+    }
+    try {
+      this.viewCount = entry.yt$statistics.viewCount;
+    }
+    catch (e) {
+      unavail.push("viewCount");
+    }
+    try {
+      this.category = entry.media$group.media$category[0].$t;
+    }
+    catch (e) {
+      unavail.push("category");
+    }
+    try {
+      this.categoryLabel = entry.media$group.media$category[0].label;
+    }
+    catch (e) {
+      unavail.push("categoryLabel");
+    }
+    try {
+      this.description = entry.media$group.media$description.$t;
+    }
+    catch (e) {
+      unavail.push("description");
+    }
+    try {
+      this.keywords = entry.media$group.media$keywords.$t;
+    }
+    catch (e) {
+      unavail.push("keywords");
+    }
+    this.unavailAttributes = unavail; // so that the user can tell if a value isnt available
+  };
 
-        /**
-                 * Autocomplete utility returns array of suggestions
-         * @param input - string
-         * @param callback - function
-         */
-        p.suggest = function(input, callback){
-                var opts = {q: encodeURIComponent(input)};
-                var url = _buildURL(SuggestURL,
-                        $.extend({}, SuggestDefaults, opts)
-               );
-                $.ajax({
-                        type: "GET",
-                        dataType: "json",
-                        url: url,
-                        success: function(xhr){
-                                var suggestions = [], res = {};
-                                for(entry in xhr[1]){
-                                        suggestions.push(xhr[1][entry][0]);
-                                }
-                                res.suggestions = suggestions;
-                                res.searchURL = url;
-                                if(typeof(callback) == "function"){
-                                        callback(res);
-                                        return;
-                                }
-                        }
-                });
-        };
-
-        /**
-         * This function is the public method
-         * provided to the user to perform a
-         * keyword based search
-         * @param input
-         * @param cb
-         */
-        p.search = function(input, cb, category){
-                if (typeof(input) == "string")
-                        input = { "q" : encodeURIComponent(input) };
-                if (null != category)
-                        category = {"category" : category};
-                else
-                        category = {};
-                return _search($.extend({}, SearchDefaults, input,category), cb);
-        };
-
-        /** Get a particular video via VideoID */
-        p.video = function(vid, cb){
-                return _request(VideoURL+vid+"?alt=json", cb);
-        };
-
-        /** Get related videos for a VideoID; ex. http://gdata.youtube.com/feeds/api/videos/ZTUVgYoeN_b/related?v=2 */
-        p.related = function(vid, cb){
-            return _request(VideoURL+vid+"/related?alt=json", cb);
-        };
-
-        /** Most Viewed Feed */
-        p.mostViewed = function(incoming, callback){
-                return _getFeedRequest(MostViewed, getOptions(incoming, true), callback);
-        };
-
-        /** Most Recent Feed */
-        p.mostRecent = function(incoming, callback){
-                return _getFeedRequest(MostRecent, getOptions(incoming, false), callback);
-        };
-
-        /** Most Popular Feed */
-        p.mostPopular = function(incoming, callback){
-                return _getFeedRequest(MostPopular, getOptions(incoming, true), callback);
-        };
-
-        /** Top Rated Feed */
-        p.topRated = function(incoming, callback){
-                return _getFeedRequest(TopRated, getOptions(incoming, true), callback);
-        };
-
-        /** Top Favorited Feed */
-        p.topFavs = function(incoming, callback){
-                return _getFeedRequest(TopFavs, getOptions(incoming, true), callback);
-        };
-
-        /**
-         * Get a feeds request by specifying the URL
-         * the options and the callback
-         */
-        function _getFeedRequest(baseURL, options, callback){
-                var reqUrlParams = {
-                        "max-results": options.max || MaxResults,
-                        "start-index": options.start || StartPoint
-                };
-                if(options.time) reqUrlParams.time = options.time;
-                var url = _buildURL(baseURL, reqUrlParams);
-                return _request(url, options.callback || callback);
-        };
-
-        /**
-         * Method to get the options for a standard
-         * feed that is then utilized in the URL
-         * building process
-         */
-        function getOptions(arg, hasTime){
-                switch(typeof(arg)){
-                        case "function":
-                                return {
-                                        callback: arg,
-                                        time: undefined
-                                };
-                        case "object":
-                                var ret = {
-                                        max: arg.max,
-                                        start: arg['start-index']
-                                };
-                                if(hasTime) ret.time = arg.time;
-                                return ret;
-                        default: return {}; break;
-                }
-        };
-
-        /**
-         * This function builds the URL and makes
-         * the search request
-         * @param options
-         * @param callback
-         */
-        function _search(options, callback){
-                var URL = _buildURL(SearchURL, options);
-                return _request(URL, callback);
-        };
-
-        /**
-         * This method makes the actual JSON request
-         * and builds the results that are returned to
-         * the callback
-         */
-        function _request(url, callback){
-                var res = {};
-                $.ajax({
-                        type: "GET",
-                        dataType: "json",
-                        url: url,
-                        success: function(xhr){
-                                if((typeof(xhr) == "undefined")
-                                        ||(xhr == null)) return;
-                                var videos = [];
-                                if(xhr.feed){
-                                        var feed = xhr.feed;
-                                        var entries = xhr.feed.entry;
-                                        for(entry in entries)
-                                                videos.push(new YouTubeVideo(entries[entry]));
-                                        res.startIndex = feed.openSearch$startIndex.$t;
-                                        res.itemsPerPage = feed.openSearch$itemsPerPage.$t;
-                                        res.totalResults = feed.openSearch$totalResults.$t;
-                                } else {
-                                        videos.push(new YouTubeVideo(xhr.entry));
-                                }
-                                res.version = xhr.version;
-                                res.searchURL = url;
-                                res.videos = videos;
-                                if(typeof(callback) == "function") {
-                                        callback(res); // pass the response obj
-                                        return;
-                                }
-
-                        },
-                        error: function(e){
-                                throw Exception("couldn't fetch YouTube request : "+url+" : "+e);
-                        }
-                });
-                return res;
-        };
-
-        /**
-         * This method builds the url utilizing a JSON
-         * object as the request param names and values
-         */
-        function _buildURL(root, options){
-                var ret = "?", k, v, first=true;
-                var opts = $.extend({}, options, CoreDefaults);
-                for(o in opts){
-                        k = o;  v = opts[o];
-                        ret += (first?"":"&")+k+"="+v;
-                        first=false;
-                }
-                return root + ret;
-        };
-
-        /**
-         * Represents the object that transposes the
-         * YouTube video entry from the JSON response
-         * into a usable object
-         */
-        var YouTubeVideo = function(entry){
-                var unavail = [];
-                var id = entry.id.$t;
-                var start = id.lastIndexOf('/')+1;
-                var end = id.length;
-                // set values
-                this.videoId = id.substring(start, end);
-                this.entry = entry; // give access to the entry itself
-                this.title = entry.title.$t;
-                try{ this.updated = entry.updated.$t; }catch(e){ unavail.push("updated"); }
-                try{ this.thumbs = entry.media$group.media$thumbnail; }catch(e){ unavail.push("thumbs"); }
-                try{ this.duration = entry.media$group.yt$duration.seconds; }catch(e){ unavail.push("duration"); }
-                try{ this.favCount = entry.yt$statistics.favoriteCount; }catch(e){ unavail.push("favCount"); }
-                try{ this.rating = entry.gd$rating; }catch(e){ alert(e); unavail.push("rating"); }
-                try{ this.viewCount = entry.yt$statistics.viewCount; }catch(e){ unavail.push("viewCount"); }
-                try{ this.category = entry.media$group.media$category[0].$t; }catch(e){ unavail.push("category"); }
-                try{ this.categoryLabel = entry.media$group.media$category[0].label; }catch(e){ unavail.push("categoryLabel"); }
-                try{ this.description = entry.media$group.media$description.$t; }catch(e){ unavail.push("description"); }
-                try{ this.keywords = entry.media$group.media$keywords.$t; }catch(e){ unavail.push("keywords"); }
-                this.unavailAttributes = unavail; // so that the user can tell if a value isnt available
-        };
-
-        return new f();
+  return new f();
 
 })(jQuery);
 
@@ -1446,7 +1482,7 @@ $.fn.tabbedDialog = function (dialogOptions, tabOptions) {
 
 
   // Make Only The Content of the Tab Tabbable
-  this.bind("keydown.ui-dialog", function(event) {
+  this.bind("keydown.ui-dialog", function (event) {
     if (event.keyCode !== $.ui.keyCode.TAB) {
       return;
     }
@@ -1454,7 +1490,7 @@ $.fn.tabbedDialog = function (dialogOptions, tabOptions) {
 
     var tabbables = $(":tabbable", this).add("ul.ui-tabs-nav.ui-dialog-titlebar > li > a"),
       first = tabbables.filter(":first"),
-      last  = tabbables.filter(":last");
+      last = tabbables.filter(":last");
 
 
     if (event.target === last[0] && !event.shiftKey) {
@@ -1470,14 +1506,14 @@ $.fn.tabbedDialog = function (dialogOptions, tabOptions) {
 
 
   // Give the First Element in the Dialog Focus
-  var hasFocus = this.find( ":tabbable" );
-  if ( !hasFocus.length ) {
-    hasFocus = uiDialog.find( ".ui-dialog-buttonpane :tabbable" );
-    if ( !hasFocus.length ) {
+  var hasFocus = this.find(":tabbable");
+  if (!hasFocus.length) {
+    hasFocus = uiDialog.find(".ui-dialog-buttonpane :tabbable");
+    if (!hasFocus.length) {
       hasFocus = uiDialog;
     }
   }
-  hasFocus.eq( 0 ).focus();
+  hasFocus.eq(0).focus();
 }
 /* End Tabbed Dialog */
 // ######################################################################################################### //
@@ -1495,11 +1531,11 @@ $.fn.tabbedDialog = function (dialogOptions, tabOptions) {
  * http://www.gnu.org/licenses/gpl.html */
 
 var notify = {
-  webkitNotifyRequest : function() {
+  webkitNotifyRequest: function () {
     window.webkitNotifications.requestPermission();
   },
 
-  webkitNotify : function(icon, title, notifyData) {
+  webkitNotify: function (icon, title, notifyData) {
     if (window.webkitNotifications.checkPermission() > 0) {
       notify.webkitNotifyRequest();
     }
@@ -1509,7 +1545,7 @@ var notify = {
     }
   },
 
-  notify : function(text,header,id,id2) {
+  notify: function (text, header, id, id2) {
     if ($('#' + id + ' > #' + id + id2).html()) {
       // Do nothing
     }
@@ -1547,15 +1583,15 @@ var notify = {
  * Joseph T. Parsons
  * http://www.gnu.org/licenses/gpl.html */
 var dia = {
-  error : function(message) {
+  error: function (message) {
     console.log('Error: ' + message);
 
     $('<div style="display: none;"><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>' + message + '</div>').dialog({
-      title : 'Error',
-      modal : true,
-      dialogClass : 'error',
+      title: 'Error',
+      modal: true,
+      dialogClass: 'error',
       buttons: {
-        Close: function() {
+        Close: function () {
           $(this).dialog("close");
 
           return false;
@@ -1564,12 +1600,12 @@ var dia = {
     });
   },
 
-  info : function(message, title) {
+  info: function (message, title) {
     $('<div style="display: none;">' + message + '</div>').dialog({
-      title : title,
-      modal : true,
+      title: title,
+      modal: true,
       buttons: {
-        Okay : function() {
+        Okay: function () {
           $(this).dialog("close");
 
           return false;
@@ -1578,14 +1614,14 @@ var dia = {
     });
   },
 
-  confirm : function(options) {
+  confirm: function (options) {
     $('<div id="dialog-confirm"><span class="ui-icon ui-icon-alert" style="float: left; margin: 0px 7px 20px 0px;"></span>' + options.text + '</div>').dialog({
       resizable: false,
       height: 240,
       modal: true,
       hide: "puff",
       buttons: {
-        Confirm: function() {
+        Confirm: function () {
           if (typeof options['true'] !== 'undefined') {
             options['true']();
           }
@@ -1593,7 +1629,7 @@ var dia = {
           $(this).dialog("close");
           return true;
         },
-        Cancel: function() {
+        Cancel: function () {
           if (typeof options['false'] !== 'undefined') {
             options['false']();
           }
@@ -1606,10 +1642,10 @@ var dia = {
   },
 
   // Supported options: autoShow (true), id, content, width (600), oF, cF
-  full : function(options) {
+  full: function (options) {
     var ajax,
-      autoOpen,
-      windowWidth = document.documentElement.clientWidth,
+    autoOpen,
+    windowWidth = document.documentElement.clientWidth,
       windowHeight = document.documentElement.clientHeight,
       dialog,
       dialogOptions,
@@ -1617,8 +1653,14 @@ var dia = {
       overlay,
       throbber;
 
-    if (options.uri) { options.content = '<img src="images/ajax-loader.gif" align="center" />'; ajax = true; }
-    else if (!options.content) { console.log('No content found for dialog; exiting.'); return false; }
+    if (options.uri) {
+      options.content = '<img src="images/ajax-loader.gif" align="center" />';
+      ajax = true;
+    }
+    else if (!options.content) {
+      console.log('No content found for dialog; exiting.');
+      return false;
+    }
 
     if (typeof options.autoOpen !== 'undefined' && options.autoOpen === false) autoOpen = false;
     else autoOpen = true;
@@ -1637,16 +1679,16 @@ var dia = {
       title: options.title,
       hide: "puff",
       modal: true,
-      buttons : options.buttons,
-      position : options.position,
+      buttons: options.buttons,
+      position: options.position,
       autoOpen: autoOpen,
-      open: function() {
+      open: function () {
         if (typeof options.oF !== 'undefined') {
           options.oF();
         }
         return false;
       },
-      close: function() {
+      close: function () {
         $('#' + options.id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
         if (typeof options.cF !== 'undefined') {
           options.cF();
@@ -1657,25 +1699,29 @@ var dia = {
     };
 
     tabsOptions = {
-      selected : options.selectTab
+      selected: options.selectTab
     };
 
 
-    dialog = $('<div style="display: none;" id="' + options.id +  '">' + options.content + '</div>').appendTo('body');
+    dialog = $('<div style="display: none;" id="' + options.id + '">' + options.content + '</div>').appendTo('body');
 
 
 
-    if (ajax) {    var x = jQuery(this).position().left + jQuery(this).outerWidth();
-    var y = jQuery(this).position().top - jQuery(document).scrollTop();
+    if (ajax) {
+      var x = jQuery(this).position().left + jQuery(this).outerWidth();
+      var y = jQuery(this).position().top - jQuery(document).scrollTop();
       overlay = $('<div class="ui-widget-overlay"></div>').appendTo('body').width($(document).width()).height($(document).height());
-      throbber = $('<img src="images/ajax-loader.gif" />').appendTo('body').css('position','absolute').offset({ left : (($(window).width() - 220) / 2), top : (($(window).height() - 19) / 2)});
+      throbber = $('<img src="images/ajax-loader.gif" />').appendTo('body').css('position', 'absolute').offset({
+        left: (($(window).width() - 220) / 2),
+        top: (($(window).height() - 19) / 2)
+      });
 
       $.ajax({
-        url : options.uri,
-        type : "GET",
-        timeout : 5000,
-        cache : true,
-        success : function(content) {
+        url: options.uri,
+        type: "GET",
+        timeout: 5000,
+        cache: true,
+        success: function (content) {
           overlay.empty().remove();
           throbber.empty().remove();
 
@@ -1692,7 +1738,7 @@ var dia = {
 
           return false;
         },
-        error : function() {
+        error: function () {
           overlay.empty().remove();
           throbber.empty().remove();
 
@@ -1819,7 +1865,7 @@ var dia = {
 //         extra awesomeness that BBQ provides. This plugin will be included as
 //         part of jQuery BBQ, but also be available separately.
 
-(function($,window,undefined){
+(function ($, window, undefined) {
   '$:nomunge'; // Used by YUI compressor.
 
   // Reused string.
@@ -1834,13 +1880,13 @@ var dia = {
     // IE7 compatibility mode reports true for 'onhashchange' in window, even
     // though the event isn't supported, so also test document.documentMode.
     doc_mode = doc.documentMode,
-    supports_onhashchange = 'on' + str_hashchange in window && ( doc_mode === undefined || doc_mode > 7 );
+    supports_onhashchange = 'on' + str_hashchange in window && (doc_mode === undefined || doc_mode > 7);
 
   // Get location.hash (or what you'd expect location.hash to be) sans any
   // leading #. Thanks for making this necessary, Firefox!
-  function get_fragment( url ) {
+  function get_fragment(url) {
     url = url || location.href;
-    return '#' + url.replace( /^[^#]*#?(.*)$/, '$1' );
+    return '#' + url.replace(/^[^#]*#?(.*)$/, '$1');
   };
 
   // Method: jQuery.fn.hashchange
@@ -1869,8 +1915,8 @@ var dia = {
 
   // Allow the "shortcut" format $(elem).hashchange( fn ) for binding and
   // $(elem).hashchange() for triggering, like jQuery does for built-in events.
-  $.fn[ str_hashchange ] = function( fn ) {
-    return fn ? this.bind( str_hashchange, fn ) : this.trigger( str_hashchange );
+  $.fn[str_hashchange] = function (fn) {
+    return fn ? this.bind(str_hashchange, fn) : this.trigger(str_hashchange);
   };
 
   // Property: jQuery.fn.hashchange.delay
@@ -1908,7 +1954,7 @@ var dia = {
   //
   // jQuery.fn.hashchange.src = 'path/to/file.html';
 
-  $.fn[ str_hashchange ].delay = 50;
+  $.fn[str_hashchange].delay = 50;
   /*
   $.fn[ str_hashchange ].domain = null;
   $.fn[ str_hashchange ].src = null;
@@ -1959,26 +2005,30 @@ var dia = {
 
   // Override existing $.event.special.hashchange methods (allowing this plugin
   // to be defined after jQuery BBQ in BBQ's source code).
-  special[ str_hashchange ] = $.extend( special[ str_hashchange ], {
+  special[str_hashchange] = $.extend(special[str_hashchange], {
 
     // Called only when the first 'hashchange' event is bound to window.
-    setup: function() {
+    setup: function () {
       // If window.onhashchange is supported natively, there's nothing to do..
-      if ( supports_onhashchange ) { return false; }
+      if (supports_onhashchange) {
+        return false;
+      }
 
       // Otherwise, we need to create our own. And we don't want to call this
       // until the user binds to the event, just in case they never do, since it
       // will create a polling loop and possibly even a hidden Iframe.
-      $( fake_onhashchange.start );
+      $(fake_onhashchange.start);
     },
 
     // Called only when the last 'hashchange' event is unbound from window.
-    teardown: function() {
+    teardown: function () {
       // If window.onhashchange is supported natively, there's nothing to do..
-      if ( supports_onhashchange ) { return false; }
+      if (supports_onhashchange) {
+        return false;
+      }
 
       // Otherwise, we need to stop ours (if possible).
-      $( fake_onhashchange.stop );
+      $(fake_onhashchange.stop);
     }
 
   });
@@ -1987,25 +2037,27 @@ var dia = {
   // event for browsers that don't natively support it, including creating a
   // polling loop to watch for hash changes and in IE 6/7 creating a hidden
   // Iframe to enable back and forward.
-  fake_onhashchange = (function(){
+  fake_onhashchange = (function () {
     var self = {},
-      timeout_id,
+    timeout_id,
 
-      // Remember the initial hash so it doesn't get triggered immediately.
-      last_hash = get_fragment(),
+    // Remember the initial hash so it doesn't get triggered immediately.
+    last_hash = get_fragment(),
 
-      fn_retval = function(val){ return val; },
+      fn_retval = function (val) {
+        return val;
+      },
       history_set = fn_retval,
       history_get = fn_retval;
 
     // Start the polling loop.
-    self.start = function() {
+    self.start = function () {
       timeout_id || poll();
     };
 
     // Stop the polling loop.
-    self.stop = function() {
-      timeout_id && clearTimeout( timeout_id );
+    self.stop = function () {
+      timeout_id && clearTimeout(timeout_id);
       timeout_id = undefined;
     };
 
@@ -2014,65 +2066,67 @@ var dia = {
     // window when necessary.
     function poll() {
       var hash = get_fragment(),
-        history_hash = history_get( last_hash );
+        history_hash = history_get(last_hash);
 
-      if ( hash !== last_hash ) {
-        history_set( last_hash = hash, history_hash );
+      if (hash !== last_hash) {
+        history_set(last_hash = hash, history_hash);
 
-        $(window).trigger( str_hashchange );
+        $(window).trigger(str_hashchange);
 
-      } else if ( history_hash !== last_hash ) {
-        location.href = location.href.replace( /#.*/, '' ) + history_hash;
+      }
+      else if (history_hash !== last_hash) {
+        location.href = location.href.replace(/#.*/, '') + history_hash;
       }
 
-      timeout_id = setTimeout( poll, $.fn[ str_hashchange ].delay );
+      timeout_id = setTimeout(poll, $.fn[str_hashchange].delay);
     };
 
     // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
     // vvvvvvvvvvvvvvvvvvv REMOVE IF NOT SUPPORTING IE6/7/8 vvvvvvvvvvvvvvvvvvv
     // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-    $.browser.msie && !supports_onhashchange && (function(){
+    $.browser.msie && !supports_onhashchange && (function () {
       // Not only do IE6/7 need the "magical" Iframe treatment, but so does IE8
       // when running in "IE7 compatibility" mode.
 
       var iframe,
-        iframe_src;
+      iframe_src;
 
       // When the event is bound and polling starts in IE 6/7, create a hidden
       // Iframe for history handling.
-      self.start = function(){
-        if ( !iframe ) {
-          iframe_src = $.fn[ str_hashchange ].src;
+      self.start = function () {
+        if (!iframe) {
+          iframe_src = $.fn[str_hashchange].src;
           iframe_src = iframe_src && iframe_src + get_fragment();
 
           // Create hidden Iframe. Attempt to make Iframe as hidden as possible
           // by using techniques from http://www.paciellogroup.com/blog/?p=604.
           iframe = $('<iframe tabindex="-1" title="empty"/>').hide()
 
-            // When Iframe has completely loaded, initialize the history and
-            // start polling.
-            .one( 'load', function(){
-              iframe_src || history_set( get_fragment() );
-              poll();
-            })
+          // When Iframe has completely loaded, initialize the history and
+          // start polling.
+          .one('load', function () {
+            iframe_src || history_set(get_fragment());
+            poll();
+          })
 
-            // Load Iframe src if specified, otherwise nothing.
-            .attr( 'src', iframe_src || 'javascript:0' )
+          // Load Iframe src if specified, otherwise nothing.
+          .attr('src', iframe_src || 'javascript:0')
 
-            // Append Iframe after the end of the body to prevent unnecessary
-            // initial page scrolling (yes, this works).
-            .insertAfter( 'body' )[0].contentWindow;
+          // Append Iframe after the end of the body to prevent unnecessary
+          // initial page scrolling (yes, this works).
+          .insertAfter('body')[0].contentWindow;
 
           // Whenever `document.title` changes, update the Iframe's title to
           // prettify the back/next history menu entries. Since IE sometimes
           // errors with "Unspecified error" the very first time this is set
           // (yes, very useful) wrap this with a try/catch block.
-          doc.onpropertychange = function(){
+          doc.onpropertychange = function () {
             try {
-              if ( event.propertyName === 'title' ) {
+              if (event.propertyName === 'title') {
                 iframe.document.title = doc.title;
               }
-            } catch(e) {}
+            }
+            catch (e) {}
           };
 
         }
@@ -2084,18 +2138,18 @@ var dia = {
       self.stop = fn_retval;
 
       // Get history by looking at the hidden Iframe's location.hash.
-      history_get = function() {
-        return get_fragment( iframe.location.href );
+      history_get = function () {
+        return get_fragment(iframe.location.href);
       };
 
       // Set a new history item by opening and then closing the Iframe
       // document, *then* setting its location.hash. If document.domain has
       // been set, update that as well.
-      history_set = function( hash, history_hash ) {
+      history_set = function (hash, history_hash) {
         var iframe_doc = iframe.document,
-          domain = $.fn[ str_hashchange ].domain;
+          domain = $.fn[str_hashchange].domain;
 
-        if ( hash !== history_hash ) {
+        if (hash !== history_hash) {
           // Update Iframe with any initial `document.title` that might be set.
           iframe_doc.title = doc.title;
 
@@ -2104,7 +2158,7 @@ var dia = {
           iframe_doc.open();
 
           // Set document.domain for the Iframe document as well, if necessary.
-          domain && iframe_doc.write( '<script>document.domain="' + domain + '"</script>' );
+          domain && iframe_doc.write('<script>document.domain="' + domain + '"</script>');
 
           iframe_doc.close();
 
@@ -2121,7 +2175,7 @@ var dia = {
     return self;
   })();
 
-})(jQuery,this);
+})(jQuery, this);
 
 /* End HashChange Abstraction */
 // ######################################################################################################### //
@@ -2178,7 +2232,7 @@ var dia = {
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
-*/
+ */
 
 /* base64 encode/decode compatible with window.btoa/atob
  *
@@ -2201,50 +2255,50 @@ var dia = {
  * If the input length is not a multiple of 4, or contains invalid characters
  *   then an exception is thrown.
  */
- 
-jQuery.base64 = ( function( $ ) {
-  
+
+jQuery.base64 = (function ($) {
+
   var _PADCHAR = "=",
     _ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
     _VERSION = "1.0";
 
 
-  function _getbyte64( s, i ) {
+  function _getbyte64(s, i) {
     // This is oddly fast, except on Chrome/V8.
     // Minimal or no improvement in performance by using a
     // object with properties mapping chars to value (eg. 'A': 0)
 
-    var idx = _ALPHA.indexOf( s.charAt( i ) );
+    var idx = _ALPHA.indexOf(s.charAt(i));
 
-    if ( idx === -1 ) {
+    if (idx === -1) {
       throw "Cannot decode base64";
     }
 
     return idx;
   }
-  
-  
-  function _decode( s ) {
+
+
+  function _decode(s) {
     var pads = 0,
       i,
       b10,
       imax = s.length,
       x = [];
 
-    s = String( s );
-    
-    if ( imax === 0 ) {
+    s = String(s);
+
+    if (imax === 0) {
       return s;
     }
 
-    if ( imax % 4 !== 0 ) {
+    if (imax % 4 !== 0) {
       throw "Cannot decode base64";
     }
 
-    if ( s.charAt( imax - 1 ) === _PADCHAR ) {
+    if (s.charAt(imax - 1) === _PADCHAR) {
       pads = 1;
 
-      if ( s.charAt( imax - 2 ) === _PADCHAR ) {
+      if (s.charAt(imax - 2) === _PADCHAR) {
         pads = 2;
       }
 
@@ -2252,75 +2306,75 @@ jQuery.base64 = ( function( $ ) {
       imax -= 4;
     }
 
-    for ( i = 0; i < imax; i += 4 ) {
-      b10 = ( _getbyte64( s, i ) << 18 ) | ( _getbyte64( s, i + 1 ) << 12 ) | ( _getbyte64( s, i + 2 ) << 6 ) | _getbyte64( s, i + 3 );
-      x.push( String.fromCharCode( b10 >> 16, ( b10 >> 8 ) & 0xff, b10 & 0xff ) );
+    for (i = 0; i < imax; i += 4) {
+      b10 = (_getbyte64(s, i) << 18) | (_getbyte64(s, i + 1) << 12) | (_getbyte64(s, i + 2) << 6) | _getbyte64(s, i + 3);
+      x.push(String.fromCharCode(b10 >> 16, (b10 >> 8) & 0xff, b10 & 0xff));
     }
 
-    switch ( pads ) {
+    switch (pads) {
       case 1:
-        b10 = ( _getbyte64( s, i ) << 18 ) | ( _getbyte64( s, i + 1 ) << 12 ) | ( _getbyte64( s, i + 2 ) << 6 );
-        x.push( String.fromCharCode( b10 >> 16, ( b10 >> 8 ) & 0xff ) );
+        b10 = (_getbyte64(s, i) << 18) | (_getbyte64(s, i + 1) << 12) | (_getbyte64(s, i + 2) << 6);
+        x.push(String.fromCharCode(b10 >> 16, (b10 >> 8) & 0xff));
         break;
 
       case 2:
-        b10 = ( _getbyte64( s, i ) << 18) | ( _getbyte64( s, i + 1 ) << 12 );
-        x.push( String.fromCharCode( b10 >> 16 ) );
+        b10 = (_getbyte64(s, i) << 18) | (_getbyte64(s, i + 1) << 12);
+        x.push(String.fromCharCode(b10 >> 16));
         break;
     }
 
-    return x.join( "" );
+    return x.join("");
   }
-  
-  
-  function _getbyte( s, i ) {
-    var x = s.charCodeAt( i );
 
-    if ( x > 255 ) {
+
+  function _getbyte(s, i) {
+    var x = s.charCodeAt(i);
+
+    if (x > 255) {
       throw "INVALID_CHARACTER_ERR: DOM Exception 5";
     }
-    
+
     return x;
   }
 
 
-  function _encode( s ) {
-    if ( arguments.length !== 1 ) {
+  function _encode(s) {
+    if (arguments.length !== 1) {
       throw "SyntaxError: exactly one argument required";
     }
 
-    s = String( s );
+    s = String(s);
 
     var i,
-      b10,
-      x = [],
+    b10,
+    x = [],
       imax = s.length - s.length % 3;
 
-    if ( s.length === 0 ) {
+    if (s.length === 0) {
       return s;
     }
 
-    for ( i = 0; i < imax; i += 3 ) {
-      b10 = ( _getbyte( s, i ) << 16 ) | ( _getbyte( s, i + 1 ) << 8 ) | _getbyte( s, i + 2 );
-      x.push( _ALPHA.charAt( b10 >> 18 ) );
-      x.push( _ALPHA.charAt( ( b10 >> 12 ) & 0x3F ) );
-      x.push( _ALPHA.charAt( ( b10 >> 6 ) & 0x3f ) );
-      x.push( _ALPHA.charAt( b10 & 0x3f ) );
+    for (i = 0; i < imax; i += 3) {
+      b10 = (_getbyte(s, i) << 16) | (_getbyte(s, i + 1) << 8) | _getbyte(s, i + 2);
+      x.push(_ALPHA.charAt(b10 >> 18));
+      x.push(_ALPHA.charAt((b10 >> 12) & 0x3F));
+      x.push(_ALPHA.charAt((b10 >> 6) & 0x3f));
+      x.push(_ALPHA.charAt(b10 & 0x3f));
     }
 
-    switch ( s.length - imax ) {
+    switch (s.length - imax) {
       case 1:
-        b10 = _getbyte( s, i ) << 16;
-        x.push( _ALPHA.charAt( b10 >> 18 ) + _ALPHA.charAt( ( b10 >> 12 ) & 0x3F ) + _PADCHAR + _PADCHAR );
+        b10 = _getbyte(s, i) << 16;
+        x.push(_ALPHA.charAt(b10 >> 18) + _ALPHA.charAt((b10 >> 12) & 0x3F) + _PADCHAR + _PADCHAR);
         break;
 
       case 2:
-        b10 = ( _getbyte( s, i ) << 16 ) | ( _getbyte( s, i + 1 ) << 8 );
-        x.push( _ALPHA.charAt( b10 >> 18 ) + _ALPHA.charAt( ( b10 >> 12 ) & 0x3F ) + _ALPHA.charAt( ( b10 >> 6 ) & 0x3f ) + _PADCHAR );
+        b10 = (_getbyte(s, i) << 16) | (_getbyte(s, i + 1) << 8);
+        x.push(_ALPHA.charAt(b10 >> 18) + _ALPHA.charAt((b10 >> 12) & 0x3F) + _ALPHA.charAt((b10 >> 6) & 0x3f) + _PADCHAR);
         break;
     }
 
-    return x.join( "" );
+    return x.join("");
   }
 
 
@@ -2329,8 +2383,8 @@ jQuery.base64 = ( function( $ ) {
     encode: _encode,
     VERSION: _VERSION
   };
-      
-}( jQuery ) );
+
+}(jQuery));
 
 /* End HashChange Abstraction */
 // ######################################################################################################### //
