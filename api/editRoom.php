@@ -297,15 +297,9 @@ switch($request['action']) {
       /* Options */
       $options = 0;
       
-      if ($config['officialRooms'] && $user['adminDefs']['modRooms'])) {
-        $options += 1;
-      }
-      if ($config['hiddenRooms'] && $request['hidden']) {
-        $options += 8;
-      }
-      if ($request['allowViewing']) {
-        $options += 32;
-      }
+      if ($config['officialRooms'] && $user['adminDefs']['modRooms'])) $options += 1;
+      if ($config['hiddenRooms'] && $request['hidden']) $options += 8;
+      if ($request['allowViewing']) $options += 32;
       
       
       /* Submit */

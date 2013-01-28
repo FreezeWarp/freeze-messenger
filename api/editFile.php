@@ -189,15 +189,12 @@ if ($continue) {
 
       if (!$config['enableUploads']) {
         $errStr = 'uploadsDisabled';
-        $errDesc = 'Uploads are not allowed currently.';
       }
       if (!$roomData && !$config['allowOrphanFiles']) {
         $errStr = 'noOrphanFiles';
-        $errDesc = 'The server will not accept orphan files.';
       }
       elseif (($config['uploadMaxFiles'] !== -1 && $database->getCounter('uploads') > $config['uploadMaxFiles']) || ($config['uploadMaxUserFiles'] !== -1 && $user['fileCount'] > $config['uploadMaxUserFiles'])) {
         $errStr = 'tooManyFiles';
-        $errDesc = 'The server has reached its file capacity.';
       }
       elseif ($continue) {
         /* Verify the Data, Preprocess */
@@ -215,8 +212,6 @@ if ($continue) {
 
             default:
             $errStr = 'badEncoding';
-            $errDesc = 'The specified file content encoding was not recognized.';
-
             $continue = false;
             break;
           }
@@ -227,8 +222,6 @@ if ($continue) {
           if ($request['md5hash']) { // This will allow us to verify that the upload worked.
             if (md5($rawData) != $request['md5hash']) {
               $errStr = 'badMd5Hash';
-              $errDesc = 'The included MD5 hash did not match the file content.';
-
               $continue = false;
             }
           }
@@ -236,8 +229,6 @@ if ($continue) {
           if ($request['sha256hash']) { // This will allow us to verify that the upload worked.
             if (hash('sha256', $rawData) != $request['sha256hash']) {
               $errStr = 'badSha256Hash';
-              $errDesc = 'The included MD5 hash did not match the file content.';
-
               $continue = false;
             }
           }
@@ -245,8 +236,6 @@ if ($continue) {
           if ($request['fileSize']) { // This will allow us to verify that the upload worked as well, can be easier to implement, but doesn't serve the primary purpose of making sure the file upload wasn't intercepted.
             if ($rawSize != $request['fileSize']) {
               $errStr = 'badSize';
-              $errDesc = 'The specified content length did not match the file content.';
-
               $continue = false;
             }
           }
@@ -262,20 +251,28 @@ if ($continue) {
         if ($continue) {
           if (!$request['fileName']) {
             $errStr = 'badName';
-            $errDesc = 'A name was not specified for the file.';
           }
           else {
             $fileNameParts = explode('.',$request['fileName']);
 
             if (count($fileNameParts) != 2) {
               $errStr = 'badNameParts';
-              $errDesc = 'There was an improper number of "periods" in the file name - the extension could not be obtained.';
             }
             else {
-              if (isset($mimes[$fileNameParts[1]])) {
-                $mime = $mimes[$fileNameParts[1]]['mime'];
-                $container = $mimes[$fileNameParts[1]]['container'];
-                $maxSize = $mimes[$fileNameParts[1]]['maxSize'];
+              if (isset($config['extensionChanges'][$fileNameParts[1]])) { // Certain extensions are considered to be equivilent, so we only keep records for the primary one. For instance, "html" is considered to be the same as "htm" usually.
+                $fileNameParts[1] = $config['extensionChanges'][$fileNameParts[1]];
+              }
+              
+              if (!isset($config['uploadMimes'][$fileNameParts[1]])) { // All files theoretically need to have a mime (at any rate, we will require one). This is different from simply not being allowed, wherein we understand what file you are trying to upload, but aren't going to accept it. (Small diff, I know.)
+                $errStr = 'unrecExt';
+              }
+              elseif (!in_array($fileNameParts[1], $config['allowedExtensions'])) { // Not allowed...
+                $errStr = 'badExt';
+              }
+              else {
+                $mime = ($config['uploadMimes'][$fileNameParts[1]] ? $config['uploadMimes'][$fileNameParts[1]] : 'application/octet-stream');
+                $container = ($config['fileContainers'][$fileNameParts[1]] ? $config['fileContainers'][$fileNameParts[1]] : 'other');
+                $maxSize = ($config['uploadSizeLimits'][$fileNameParts[1]] ? $config['uploadSizeLimits'][$fileNameParts[1]] : 0);
 
                 $sha256hash = hash('sha256',$rawData);
                 $md5hash = hash('md5',$rawData);
@@ -296,15 +293,12 @@ if ($continue) {
 
                 if (!$rawData && !$config['allowEmptyFiles']) {
                   $errStr = 'emptyFile';
-                  $errDesc = $phrases['uploadErrorFileContents'];
                 }
                 elseif (($rawSize == 0) && !$config['allowEmptyFiles']) {
                   $errStr = 'emptyFile';
-                  $errDesc = $phrases['uploadErrorFileContents'];
                 }
                 elseif ($rawSize > $maxSize) { // Note: Data is stored as base64 because its easier to handle; thus, the data will be about 33% larger than the normal (thus, if a limit is normally 400KB the file must be smaller than 300KB).
                   $errStr = 'tooLarge';
-                  $errDesc = $phrases['uploadErrorFileSize'];
                 }
                 else {
                   $prefile = $database->select(
@@ -422,10 +416,6 @@ if ($continue) {
                     }
                   }
                 }
-              }
-              else {
-                $errStr = 'unrecExt';
-                $errDesc = 'The extension .' . $fileNameParts[1] . ' was not recognized.';
               }
             }
           }
