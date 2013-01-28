@@ -187,7 +187,7 @@ popup = {
               $('#parentalAge').append('<option value="' + serverSettings.parentalControls.parentalAges[i] + '">' + window.phrases.parentalAges[serverSettings.parentalControls.parentalAges[i]] + '</option>');
             }
             for (i in serverSettings.parentalControls.parentalFlags) {
-              $('#parentalFlagsList').append('<br /><label>' +  window.phrases.parentalFlags[serverSettings.parentalControls.parentalFlags[i]] + '<input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + serverSettings.parentalControls.parentalFlags[i] + '" /></label>');
+              $('#parentalFlagsList').append('<br /><label><input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + serverSettings.parentalControls.parentalFlags[i] + '" />' +  window.phrases.parentalFlags[serverSettings.parentalControls.parentalFlags[i]] + '</label>');
             }
           }
 
@@ -895,7 +895,7 @@ popup = {
             $('#parentalAge').append('<option value="' + serverSettings.parentalControls.parentalAges[i] + '">' + window.phrases.parentalAges[serverSettings.parentalControls.parentalAges[i]] + '</option>');
           }
           for (i in serverSettings.parentalControls.parentalFlags) {
-            $('#parentalFlagsList').append('<br /><label>' +  window.phrases.parentalFlags[serverSettings.parentalControls.parentalFlags[i]] + '<input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + serverSettings.parentalControls.parentalFlags[i] + '" /></label>');
+            $('#parentalFlagsList').append('<br /><label><input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + serverSettings.parentalControls.parentalFlags[i] + '" />' +  window.phrases.parentalFlags[serverSettings.parentalControls.parentalFlags[i]] + '</label>');
           }
         }
 
