@@ -222,6 +222,14 @@ table.center td {
   text-align: center;
 }
 
+.indent {
+  margin-left: 10px; 
+}
+
+.small {
+  font-size: .8em;
+}
+
 
 
 
