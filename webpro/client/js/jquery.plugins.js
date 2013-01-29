@@ -64,7 +64,7 @@ jQuery.cookie = function (name, value, options) {
   }
 };
 
-/* END jQuery Cookie Functon */
+/* END jQuery Cookie Extension */
 // ######################################################################################################### //
 
 
@@ -79,15 +79,12 @@ jQuery.cookie = function (name, value, options) {
 /* Start jQuery Get Cookie Extension */
 
 /**
- * jQuery Cookie plugin
+ * jQuery getCookie Wrapper
+ * 
+ * @param name - The name of the cookie to obtain.
+ * @param ifNull - A value to return if the cookie is not set.
  *
- * Copyright (c) 2010 Klaus Hartl (stilbuero.de)
- * Dual licensed under the MIT and GPL licenses:
- * http://www.opensource.org/licenses/mit-license.php
- * http://www.gnu.org/licenses/gpl.html
- *
- * Documentation: https://github.com/carhartl/jquery-cookie/blob/master/README.rdoc
- * Source: https://github.com/carhartl/jquery-cookie/blob/master/jquery.cookie.js
+ * @author Joseph T. Parsons
  *
  */
 jQuery.getCookie = function (name, ifNull) {
@@ -97,8 +94,41 @@ jQuery.getCookie = function (name, ifNull) {
   else return cookie;
 };
 
-/* END jQuery Cookie Functon */
+/* END jQuery Get Cookie Extension */
 // ######################################################################################################### //
+
+
+
+
+
+
+
+
+
+
+
+// ######################################################################################################### //
+/* Start jQuery toArray Extension */
+
+/**
+ * jQuery toArray Wrapper
+ * Converts an object to an array.
+ * 
+ * @param obj - Object to convert.
+ * 
+ * @return array - Converted object.
+ *
+ * @author Joseph T. Parsons
+ *
+ */
+jQuery.toArray = function(obj) {
+  return $.map(obj, function (value, key) { return value; });
+};
+
+/* END jQuery toArray Extension */
+// ######################################################################################################### //
+
+
 
 
 

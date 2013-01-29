@@ -195,6 +195,7 @@ popup = {
           /* Previewer for Files */
           $('#fileUpload').bind('change', function() {
             console.log('FileReader triggered.');
+            $('#imageUploadSubmitButton').attr('disabled', 'disabled').button({ disabled: true });
 
             var reader = new FileReader(),
               reader2 = new FileReader();
@@ -215,16 +216,16 @@ popup = {
 
               var fileParts = fileName.split('.');
               var filePartsLast = fileParts[fileParts.length - 1];
-              
+              console.log(filePartsLast);
               if (filePartsLast in serverSettings.fileUploads.extensionChanges) {
                 filePartsLast = serverSettings.fileUploads.extensionChanges[filePartsLast];
               }
 
-              if (!filePartsLast in serverSettings.fileUploads.allowedExtensions) { // TODO
-                $('#preview').html('The specified file type can not be uploaded.');
+              if ($.inArray(filePartsLast, $.toArray(serverSettings.fileUploads.allowedExtensions)) === -1) { console.log('Really? Fuck you.');
+                $('#uploadFileFormPreview').html('The specified file type can not be uploaded.');
               }
               else if (fileSize > serverSettings.fileUploads.sizeLimits[filePartsLast]) {
-                $('#preview').html('The specified file type must not be larger than ' + serverSettings.fileUploads.sizeLimits[filePartsLast] + ' bytes');
+                $('#uploadFileFormPreview').html('The specified file type must not be larger than ' + serverSettings.fileUploads.sizeLimits[filePartsLast] + ' bytes');
               }
               else {
                 reader.readAsBinaryString(files[0]);
@@ -242,11 +243,12 @@ popup = {
                     case 'html': $('#uploadFileFormPreview').html('No Preview Available'); break;
                     case 'archive': $('#uploadFileFormPreview').html('No Preview Available'); break;
                     case 'other': $('#uploadFileFormPreview').html('No Preview Available'); break;
+                    default: $('#uploadFileFormPreview').html('No Preview Available'); break;
                   }
                 };
+                
+                $('#imageUploadSubmitButton').removeAttr('disabled').button({ disabled: false });
               }
-
-              $('#imageUploadSubmitButton').removeAttr('disabled').button({ disabled: false });
             }
           });
 
