@@ -482,6 +482,24 @@ function fim_messageFormat(json, format) {
 }
 
 
+/**
+ * 
+ */
+
+function fim_messagePreview(container, content) {
+  switch (container) {
+    case 'image': return '<img src="' + content + '" style="max-height: 200px; max-width: 200px;" />'; break;
+    case 'video': return '<video src="' + content + '" style="max-height: 200px; max-width: 200px;">Video Preview Not Supported</video>'; break;
+    case 'audio': return '<audio src="' + content + '" style="max-height: 200px; max-width: 200px;">Audio Preview Not Supported</video>'; break;
+    case 'text': return 'No Preview Available'; break;
+    case 'html': return 'No Preview Available'; break;
+    case 'archive': return 'No Preview Available'; break;
+    case 'other': return 'No Preview Available'; break;
+    default: return 'No Preview Available'; break;
+  }
+}
+
+
 
 /**
  * Registers a new message in the caches and triggers alerts to users.

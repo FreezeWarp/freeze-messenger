@@ -119,11 +119,10 @@ popup = {
 
   /*** START Insert Docs ***/
 
-  insertDoc : function(preselect) {
-    var fileContent,
-      selectTab;
+  insertDoc : function(preSelect) {
+    var selectTab;
 
-    switch (preselect) {
+    switch (preSelect) {
       case 'video': selectTab = 2; break;
       case 'image': selectTab = 1; break;
       case 'link': default: selectTab = 0; break;
@@ -136,6 +135,12 @@ popup = {
       position: 'top',
       tabs : true,
       oF : function() {
+        /* Form Stuff */
+        $('#fileUpload, #urlUpload').unbind('change'); // Prevent duplicate binds.
+        $('#uploadFileForm, #uploadUrlForm, #linkForm. #uploadYoutubeForm').unbind('submit'); // Disable default submit action.
+        $('#imageUploadSubmitButton').attr('disabled', 'disabled').button({ disabled: true }); // Disable submit button until conditions are fulfilled.
+        
+        
         /* File Upload Info */
         serverSettings.fileUploads.extensionChangesReverse = new Object();
         
@@ -161,23 +166,13 @@ popup = {
           
           $('table#fileUploadInfo tbody').append('<tr><td>' + (fileExtensions ? fileExtensions.join(', ') : serverSettings.fileUploads.allowedExtensions[i]) + '</td><td>' + fileContainer + '</td><td>' + maxFileSize2 + '</td></tr>');
         }
-        
-       
-        
-        var fileName,
-          fileSize;
-
-        $('#imageUploadSubmitButton').attr('disabled', 'disabled').button({ disabled: true });
 
 
+        /* File Upload Form */
         if (typeof FileReader !== 'function') {
           $('#uploadFileForm').html('Your device does not support file uploads.<br /><br />');
         }
         else {
-          $('#fileUpload, #urlUpload').unbind('change'); // Prevent duplicate binds.
-          $('#uploadFileForm, #uploadUrlForm, #linkForm. #uploadYoutubeForm').unbind('submit');
-
-
           /* Parental Controls */
           if (!serverSettings.parentalControls.parentalEnabled) { // Hide if Subsystem is Disabled
             $('#insertDocParentalAge, #insertDocParentalFlags').remove();
@@ -194,57 +189,44 @@ popup = {
 
           /* Previewer for Files */
           $('#fileUpload').bind('change', function() {
-            console.log('FileReader triggered.');
-            $('#imageUploadSubmitButton').attr('disabled', 'disabled').button({ disabled: true });
-
             var reader = new FileReader(),
               reader2 = new FileReader();
 
-            files = this.files;
+            console.log('FileReader triggered.');
+            $('#imageUploadSubmitButton').attr('disabled', 'disabled').button({ disabled: true }); // Redisable the submit button if it has been enabled prior.
 
-            if (files.length === 0) {
-              dia.error('No files selected!');
-            }
-            else if (files.length > 1) {
-              dia.error('Too many files selected!');
-            }
+            if (this.files.length === 0) dia.error('No files selected!');
+            else if (this.files.length > 1) dia.error('Too many files selected!');
             else {
               console.log('FileReader started.');
 
-              fileName = files[0].name,
-                fileSize = files[0].size;
-
-              var fileParts = fileName.split('.');
-              var filePartsLast = fileParts[fileParts.length - 1];
-              console.log(filePartsLast);
+              // File Information
+              var fileName = this.files[0].name,
+                fileSize = this.files[0].size,
+                fileContent = '',
+                fileParts = fileName.split('.'),
+                filePartsLast = fileParts[fileParts.length - 1];
+              
+              // If there are two identical file extensions (e.g. jpg and jpeg), we only process the primary one. This converts a secondary extension to a primary.
               if (filePartsLast in serverSettings.fileUploads.extensionChanges) {
                 filePartsLast = serverSettings.fileUploads.extensionChanges[filePartsLast];
               }
 
-              if ($.inArray(filePartsLast, $.toArray(serverSettings.fileUploads.allowedExtensions)) === -1) { console.log('Really? Fuck you.');
+              if ($.inArray(filePartsLast, $.toArray(serverSettings.fileUploads.allowedExtensions)) === -1) {
                 $('#uploadFileFormPreview').html('The specified file type can not be uploaded.');
               }
               else if (fileSize > serverSettings.fileUploads.sizeLimits[filePartsLast]) {
                 $('#uploadFileFormPreview').html('The specified file type must not be larger than ' + serverSettings.fileUploads.sizeLimits[filePartsLast] + ' bytes');
               }
               else {
-                reader.readAsBinaryString(files[0]);
+                reader.readAsBinaryString(this.files[0]);
                 reader.onloadend = function() {
-                  fileContent1 = window.btoa(reader.result);
+                  fileContent = window.btoa(reader.result);
                 };
 
-                reader2.readAsDataURL(files[0]);
+                reader2.readAsDataURL(this.files[0]);
                 reader2.onloadend = function() {
-                  switch (serverSettings.fileUploads.fileContainers[filePartsLast]) {
-                    case 'image': $('#uploadFileFormPreview').html('<img src="' + reader2.result + '" style="max-height: 200px; max-width: 200px;" />'); break;
-                    case 'video': $('#uploadFileFormPreview').html('<video src="' + reader2.result + '" style="max-height: 200px; max-width: 200px;">Video Preview Not Supported</video>'); break;
-                    case 'audio': $('#uploadFileFormPreview').html('<audio src="' + reader2.result + '" style="max-height: 200px; max-width: 200px;">Audio Preview Not Supported</video>'); break;
-                    case 'text': $('#uploadFileFormPreview').html('No Preview Available'); break;
-                    case 'html': $('#uploadFileFormPreview').html('No Preview Available'); break;
-                    case 'archive': $('#uploadFileFormPreview').html('No Preview Available'); break;
-                    case 'other': $('#uploadFileFormPreview').html('No Preview Available'); break;
-                    default: $('#uploadFileFormPreview').html('No Preview Available'); break;
-                  }
+                  $('#uploadFileFormPreview').html(fim_messagePreview(serverSettings.fileUploads.fileContainers[filePartsLast], this.result));
                 };
                 
                 $('#imageUploadSubmitButton').removeAttr('disabled').button({ disabled: false });
@@ -253,18 +235,7 @@ popup = {
           });
 
 
-          /* Previewer for URLs */
-          $('#urlUpload').bind('change', function() {
-            fileContent = $('#urlUpload').val();
-            if (fileContent && fileContent !== 'http://') {
-              fileContainer = '<img src="' + fileContent + '" alt="" style="max-width: 200px; max-height: 250px; height: auto;" />';
-
-              $('#uploadUrlFormPreview').html(fileContainer);
-            }
-          });
-
-
-          /* Submit */
+          /* Submit Upload */
           $('#uploadFileForm').bind('submit', function() {
             parentalAge = $('#parentalAge option:selected').val(),
             parentalFlags = [];
@@ -279,15 +250,8 @@ popup = {
               data : 'action=create&dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&fileName=' + fileName + '&parentalAge=' + parentalAge + '&parentalFlags=' + parentalFlags.join(',') + '&fileData=' + fim_eURL(fileContent) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
               cache : false,
               success : function(json) {
-                var errStr = json.editFile.errStr,
-                  errDesc = json.editFile.errDesc;
-
-                if (errStr) {
-                  dia.error(errDesc);
-                }
-                else {              
-                  $('#insertDoc').dialog('close');
-                }
+                if (json.editFile.errStr) window.phrases.uploadErrors[errStr];
+                else $('#insertDoc').dialog('close');
               },
               error : function() {
                 dia.error('The file failed to upload.');
@@ -298,14 +262,29 @@ popup = {
           });
         }
 
+        
+        /* Upload URL */
         $('#uploadUrlForm').bind('submit', function() {
-          var linkImage = $('#urlUpload').val();
-          if (linkImage) { standard.sendMessage(linkImage, 0, 'image'); }
+          var linkName = $('#urlUpload').val();
+          
+          if (linkName) { standard.sendMessage(linkName, 0, 'image'); }
           $('#insertDoc').dialog('close');
 
           return false;
         });
+        
+        
+        /* Previewer for URLs */
+        $('#urlUpload').bind('change', function() {
+          var linkName = $('#urlUpload').val();
+          
+          if (linkName.length > 0 && linkName !== 'http://') {
+            $('#uploadUrlFormPreview').html('<img src="' + linkName + '" alt="" style="max-width: 200px; max-height: 250px; height: auto;" />');
+          }
+        });
 
+        
+        /* Upload Link */
         $('#linkForm').bind('submit', function() {
           var linkUrl = $('#linkUrl').val(),
             linkMail = $('#linkEmail').val();
@@ -320,6 +299,8 @@ popup = {
           return false;
         });
 
+        
+        /* Upload Youtube */
         $('#uploadYoutubeForm').bind('submit', function() {
           linkVideo = $('#youtubeUpload');
 

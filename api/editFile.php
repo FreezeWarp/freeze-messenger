@@ -66,7 +66,6 @@
  **** userId
  **** userName
  *** errStr
- *** errDesc
  *** response [[TODO]]
 */
 
@@ -149,7 +148,6 @@ $xmlData = array(
       'userName' => ($user['userName']),
     ),
     'errStr' => ($errStr),
-    'errDesc' => ($errDesc),
     'response' => array(),
   ),
 );
@@ -193,8 +191,11 @@ if ($continue) {
       if (!$roomData && !$config['allowOrphanFiles']) {
         $errStr = 'noOrphanFiles';
       }
-      elseif (($config['uploadMaxFiles'] !== -1 && $database->getCounter('uploads') > $config['uploadMaxFiles']) || ($config['uploadMaxUserFiles'] !== -1 && $user['fileCount'] > $config['uploadMaxUserFiles'])) {
-        $errStr = 'tooManyFiles';
+      elseif ($config['uploadMaxFiles'] !== -1 && $database->getCounter('uploads') > $config['uploadMaxFiles']) {
+        $errStr = 'tooManyFilesServer';
+      }
+      elseif ($config['uploadMaxUserFiles'] !== -1 && $user['fileCount'] > $config['uploadMaxUserFiles']) {
+        $errStr = 'tooManyFilesUser';
       }
       elseif ($continue) {
         /* Verify the Data, Preprocess */
@@ -490,7 +491,6 @@ if ($continue) {
 
 /* Update Data for Errors */
 $xmlData['editFile']['errStr'] = ($errStr);
-$xmlData['editFile']['errDesc'] = ($errDesc);
 
 
 

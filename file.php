@@ -34,45 +34,37 @@ require('global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
   'time' => array(
-    'type' => 'string',
+    'cast' => 'int',
     'require' => false,
     'default' => 0,
-    'context' => array(
-      'type' => 'int',
-    ),
   ),
 
   'md5hash' => array(
-    'type' => 'string',
+    'cast' => 'string',
     'require' => false,
   ),
 
   'sha256hash' => array(
-    'type' => 'string',
+    'cast' => 'string',
     'require' => false,
   ),
 
   'fileId' => array(
-    'type' => 'string',
+    'cast' => 'int',
     'require' => false,
     'default' => 0,
-    'context' => array(
-      'type' => 'int',
-    ),
   ),
 
   // Because file.php must NOT require a session token, we want to allow APIs to define these seperately.
   'parentalAge' => array(
-    'context' => 'int',
+    'cast' => 'int',
     'valid' => $config['parentalAges'],
     'default' => $config['parentalAgeDefault'],
   ),
 
   'parentalFlags' => array(
-    'context' => array(
-      'type' => 'csv',
-      'valid' => $config['parentalFlags'],
-    ),
+    'cast' => 'csv',
+    'valid' => $config['parentalFlags'],
   ),
 ));
 
