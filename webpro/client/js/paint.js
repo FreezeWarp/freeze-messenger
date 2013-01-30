@@ -9,8 +9,22 @@
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
  */
-function l(stringName) {
-  return window.phrases[$2];
+function l(stringName, substitutions) {
+  var phrase = false;
+  
+  if (phrase = eval("window.phrases." + stringName)) {
+    if (substitutions) {
+      $.each(substitutions, function(index, value) {
+        phrase = phrase.replace('{{{{' + index + '}}}}', value);
+      });
+    }
+    
+    return phrase;
+  }
+  else {
+    console.log('Missing phrase "' + stringName + '"');
+    return '~~' + stringName;
+  }
 }
 
 $.when(
@@ -38,13 +52,7 @@ $.when(
     success: function(data) {
       for (i in data) {
         data[i] = data[i].replace(/\{\{\{\{([a-zA-Z0-9]+)\}\}\}\}/g, function($1, $2) {
-            if (false === ($2 in window.phrases)) {
-              console.log('Missing phrase "' + $2 + '" in template "' + i + '"');
-              return '~~' + $2;
-            }
-            else {
-              return window.phrases[$2];
-            }
+            return l($2);
           }
         );
       }

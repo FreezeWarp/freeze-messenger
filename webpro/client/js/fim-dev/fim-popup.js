@@ -222,10 +222,12 @@ popup = {
               }
 
               if ($.inArray(filePartsLast, $.toArray(serverSettings.fileUploads.allowedExtensions)) === -1) {
-                $('#uploadFileFormPreview').html(window.phrases.uploadErrors['badExtPersonal']);
+                $('#uploadFileFormPreview').html(l('uploadErrors.badExtPersonal'));
               }
-              else if (fileSize > serverSettings.fileUploads.sizeLimits[filePartsLast]) {
-                $('#uploadFileFormPreview').html('The specified file type must not be larger than ' + serverSettings.fileUploads.sizeLimits[filePartsLast] + ' bytes');
+              else if ((fileSize + 10000000000) > serverSettings.fileUploads.sizeLimits[filePartsLast]) {
+                $('#uploadFileFormPreview').html(l('uploadErrors.tooLargePersonal', {
+                  'fileSize' : serverSettings.fileUploads.sizeLimits[filePartsLast]
+                }));
               }
               else {
                 $('#uploadFileFormPreview').html('Loading Preview...');
