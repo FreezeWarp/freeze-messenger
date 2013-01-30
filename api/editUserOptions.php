@@ -162,7 +162,7 @@ $request = fim_sanitizeGPC('p', array(
 
   'parentalFlags' => array(
     'cast' => 'csv',
-    'allowedValues' => $config['parentalFlags'], // Note that values are dropped automatically if a value is not allowed. We will not tell the client this.
+    'valid' => $config['parentalFlags'], // Note that values are dropped automatically if a value is not allowed. We will not tell the client this.
   ),
 ));
 

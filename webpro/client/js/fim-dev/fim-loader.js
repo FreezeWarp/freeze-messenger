@@ -341,6 +341,9 @@ function fim_messageFormat(json, format) {
     flag = mjson.flags;
 
   text = text.replace(/\</g, '&lt;').replace(/\>/g, '&gt;').replace(/\n/g, '<br />');
+  text = text.replace(/(file\.php\?sha256hash\=[a-f0-9]{64})/, function ($1) {
+    return ($1 + '&parentalAge=' + userData[userId].parentalAge + '&parentalFlags=' + userData[userId].parentalFlags.join(','));
+  })
 
   if (text.length > 1000) {
     text = '[Message Too Long]';
@@ -367,7 +370,7 @@ function fim_messageFormat(json, format) {
 
       // Image
       case 'image': // We append the parentalAge flags regardless of an images source. It will potentially allow for other sites to use the same format (as far as I know, I am the first to implement the technology, and there are no related standards.)
-        if (settings.disableImage) text = '<a href="' + fim_eXMLAttr(text) + '&parentalAge=' + userData[userId].parentalAge + '&parentalFlags=' + userData[userId].parentalFlags.join(',') + '" class="imglink" target="_BLANK">[Image]</a>';
+        if (settings.disableImage) text = '<a href="' + fim_eXMLAttr(text) + '" class="imglink" target="_BLANK">[Image]</a>';
         else text = '<a href="' + text + '" target="_BLANK"><img src="' + fim_eXMLAttr(text) + '" style="max-width: 250px; max-height: 250px;" /></a>';
       break;
 
