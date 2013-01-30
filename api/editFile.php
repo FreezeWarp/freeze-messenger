@@ -185,18 +185,10 @@ if ($continue) {
       }
 
 
-      if (!$config['enableUploads']) {
-        $errStr = 'uploadsDisabled';
-      }
-      if (!$roomData && !$config['allowOrphanFiles']) {
-        $errStr = 'noOrphanFiles';
-      }
-      elseif ($config['uploadMaxFiles'] !== -1 && $database->getCounter('uploads') > $config['uploadMaxFiles']) {
-        $errStr = 'tooManyFilesServer';
-      }
-      elseif ($config['uploadMaxUserFiles'] !== -1 && $user['fileCount'] > $config['uploadMaxUserFiles']) {
-        $errStr = 'tooManyFilesUser';
-      }
+      if (!$config['enableUploads']) $errStr = 'uploadsDisabled';
+      if (!$roomData && !$config['allowOrphanFiles']) $errStr = 'noOrphanFiles';
+      elseif ($config['uploadMaxFiles'] !== -1 && $database->getCounter('uploads') > $config['uploadMaxFiles']) $errStr = 'tooManyFilesServer';
+      elseif ($config['uploadMaxUserFiles'] !== -1 && $user['fileCount'] > $config['uploadMaxUserFiles']) $errStr = 'tooManyFilesUser';
       elseif ($continue) {
         /* Verify the Data, Preprocess */
         switch ($request['uploadMethod']) {
@@ -275,8 +267,8 @@ if ($continue) {
                 $container = ($config['fileContainers'][$fileNameParts[1]] ? $config['fileContainers'][$fileNameParts[1]] : 'other');
                 $maxSize = ($config['uploadSizeLimits'][$fileNameParts[1]] ? $config['uploadSizeLimits'][$fileNameParts[1]] : 0);
 
-                $sha256hash = hash('sha256',$rawData);
-                $md5hash = hash('md5',$rawData);
+                $sha256hash = hash('sha256', $rawData);
+                $md5hash = hash('md5', $rawData);
 
                 if ($encryptUploads) {
                   list($contentsEncrypted,$iv,$saltNum) = fim_encrypt($rawData);

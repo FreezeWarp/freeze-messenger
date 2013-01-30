@@ -366,9 +366,11 @@
     "badNameParts" : "The file can not be uploaded, as it contains contains additional '.' characters (or periods).",
     "unrecExt" : "The file type specified is not recognised by the server.",
     "badExt" : "The file type specified is disallowed by the server.",
+    "badExtP" : "The specified file type can not be uploaded.",
     "emptyFile" : "The file transferred appears to be empty, and empty files are not accepted by the server.",
     "tooLarge" : "The file transferred is too large to be uploaded.",
-  }
+    "other" : "An unknown error occured trying to upload the file.",
+  },
   "uploadHeaderActions" : "Actions",
   "uploadHeaderMime" : "Mime Type",
   "uploadHeaderName" : "Name",

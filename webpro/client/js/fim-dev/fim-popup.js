@@ -118,6 +118,7 @@ popup = {
 
 
   /*** START Insert Docs ***/
+  /* Note: This dialogue will calculate only "expected" errors before submit. The rest of the errors, though we could calculate, will be left up to the server to tell us. */
 
   insertDoc : function(preSelect) {
     var selectTab;
@@ -135,6 +136,14 @@ popup = {
       position: 'top',
       tabs : true,
       oF : function() {
+        /* Define Variables (these are updated onChange and used onSubmit) */
+        var fileName = '',
+          fileSize = 0,
+          fileContent = '',
+          fileParts = [],
+          filePartsLast = '',
+          md5hash = '';
+          
         /* Form Stuff */
         $('#fileUpload, #urlUpload').unbind('change'); // Prevent duplicate binds.
         $('#uploadFileForm, #uploadUrlForm, #linkForm. #uploadYoutubeForm').unbind('submit'); // Disable default submit action.
@@ -201,7 +210,7 @@ popup = {
               console.log('FileReader started.');
 
               // File Information
-              var fileName = this.files[0].name,
+              fileName = this.files[0].name,
                 fileSize = this.files[0].size,
                 fileContent = '',
                 fileParts = fileName.split('.'),
@@ -213,15 +222,18 @@ popup = {
               }
 
               if ($.inArray(filePartsLast, $.toArray(serverSettings.fileUploads.allowedExtensions)) === -1) {
-                $('#uploadFileFormPreview').html('The specified file type can not be uploaded.');
+                $('#uploadFileFormPreview').html(window.phrases.uploadErrors['badExtPersonal']);
               }
               else if (fileSize > serverSettings.fileUploads.sizeLimits[filePartsLast]) {
                 $('#uploadFileFormPreview').html('The specified file type must not be larger than ' + serverSettings.fileUploads.sizeLimits[filePartsLast] + ' bytes');
               }
               else {
+                $('#uploadFileFormPreview').html('Loading Preview...');
+                
                 reader.readAsBinaryString(this.files[0]);
                 reader.onloadend = function() {
                   fileContent = window.btoa(reader.result);
+                  md5hash = md5.hex_md5(fileContent);
                 };
 
                 reader2.readAsDataURL(this.files[0]);
@@ -244,18 +256,21 @@ popup = {
               parentalFlags.push($(b).attr('data-name'));
             });
 
+            fim_showLoader();
+
             $.ajax({
               url : directory + 'api/editFile.php',
               type : 'POST',
-              data : 'action=create&dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&fileName=' + fileName + '&parentalAge=' + parentalAge + '&parentalFlags=' + parentalFlags.join(',') + '&fileData=' + fim_eURL(fileContent) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+              data : 'action=create&dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&fileName=' + fileName + '&parentalAge=' + parentalAge + '&parentalFlags=' + parentalFlags.join(',') + '&fileData=' + fim_eURL(fileContent) + '&md5hash=' + md5hash + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
               cache : false,
               success : function(json) {
                 if (json.editFile.errStr) window.phrases.uploadErrors[errStr];
                 else $('#insertDoc').dialog('close');
               },
               error : function() {
-                dia.error('The file failed to upload.');
-              }
+                dia.error(window.phrases.uploadErrors['other']);
+              },
+              finish : fim_hideLoader,
             });
 
             return false;

@@ -1,6 +1,18 @@
 /* START WebPro
  * Note that: WebPro is not optimised for large sets of rooms. It can handle around 1,000 "normal" rooms. */
 
+/* Returns a localised string.
+ * Note that this currently is using "window.phrase", as that is how I did things prior to creating this function, but I will likely change this later.
+ * 
+ * @param stringName - The name of the string we will return.
+ * 
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2012
+ */
+function l(stringName) {
+  return window.phrases[$2];
+}
+
 $.when(
   $.ajax({
       url: 'client/data/config.json',
@@ -31,7 +43,7 @@ $.when(
               return '~~' + $2;
             }
             else {
-                return window.phrases[$2];
+              return window.phrases[$2];
             }
           }
         );

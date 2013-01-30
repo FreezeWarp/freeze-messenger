@@ -230,6 +230,14 @@ table.center td {
   font-size: .8em;
 }
 
+#waitOverlay {
+  z-index: 10000;
+}
+
+#waitThrobber {
+  z-index: 10001;
+}
+
 
 
 

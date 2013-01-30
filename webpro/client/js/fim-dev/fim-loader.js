@@ -1383,6 +1383,19 @@ function windowDynaLinks() {
 }
 
 
+/*
+ * 
+ */
+
+function fim_showLoader() {
+  $('<div class="ui-widget-overlay" id="waitOverlay"></div>').appendTo('body').width($(document).width()).height($(document).height());
+  $('<img src="images/ajax-loader.gif" id="waitThrobber" />').appendTo('body').css('position', 'absolute').offset({ left : (($(window).width() - 220) / 2), top : (($(window).height() - 19) / 2)});
+}
+
+function fim_hideLoader() {
+  $('#waitOverlay, #waitThrobber').empty().remove();
+}
+
 
 /**
  * Disables the input boxes.
