@@ -54,8 +54,14 @@ $request = fim_sanitizeGPC('g', array(
     'require' => false,
     'default' => 0,
   ),
+  
+  'userId' => array(
+    'cast' => 'int',
+    'require' => false,
+    'default' => $user['userId'],
+  ),
 
-  // Because file.php must NOT require a session token, we want to allow APIs to define these seperately.
+  // Because file.php must NOT require a session token, we want to allow APIs to define these seperately (and, yes, this is very much by design -- again, the parental control system is not locked-down).
   'parentalAge' => array(
     'cast' => 'int',
     'valid' => $config['parentalAges'],
@@ -69,21 +75,8 @@ $request = fim_sanitizeGPC('g', array(
 ));
 
 $queryParts['fileSelect']['columns'] = array(
-  "{$sqlPrefix}files" => array(
-    'fileId' => 'ffileId',
-    'fileType' => 'fileType',
-    'parentalAge' => 'parentalAge',
-    'parentalFlags' => 'parentalFlags',
-  ),
-  "{$sqlPrefix}fileVersions" => array(
-    'fileId' => 'vfileId',
-    'salt' => 'salt',
-    'iv' => 'iv',
-    'contents' => 'contents',
-    'md5hash' => 'md5hash',
-    'sha256hash' => 'sha256hash',
-    'time' => 'time',
-  ),
+  "{$sqlPrefix}files" => 'userId, fileId ffileId, fileType, parentalAge, parentalFlags',
+  "{$sqlPrefix}fileVersions" => 'fileId vfileId, salt, iv, contents, md5hash, sha256hash, time',
 );
 $queryParts['fileSelect']['conditions'] = array(
   'both' => array(
@@ -188,6 +181,10 @@ if ($config['parentalEnabled']) {
 
   if ($file['parentalAge'] > $user['parentalAge']) $parentalBlock = true;
   elseif (fim_inArray(explode(',', $user['parentalFlags']), explode(',', $file['parentalFlags']))) $parentalBlock = true;
+}
+
+if ($request['userId'] && ($request['userId'] !== $file['userId'])) {
+  $parentalBlock = false; // Disable the parental block if the user themself uploaded the image.
 }
 
 if ($parentalBlock) {

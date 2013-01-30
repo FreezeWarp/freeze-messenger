@@ -267,7 +267,7 @@ popup = {
               error : function() {
                 dia.error($l('uploadErrors.other'));
               },
-              finish : fim_hideLoader,
+              finish : fim_hideLoader(),
             });
 
             return false;
@@ -737,7 +737,7 @@ popup = {
                 parentalFlagsFormatted = [];
 
                 for (i in parentalFlags) {
-                  parentalFlagsFormatted.push($l('parentalFlags.' + parentalFlags[i])); // Yes, this is a very weird line.
+                  if (parentalFlags[i]) parentalFlagsFormatted.push($l('parentalFlags.' + parentalFlags[i])); // Yes, this is a very weird line.
                 }
 
                 $('#viewUploadsBody').append('<tr><td align="center"><img src="' + directory + 'file.php?sha256hash=' + sha256hash + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json" style="max-width: 200px; max-height: 200px;" /><br />' + fileName + '</td><td align="center">' + fileSizeFormatted + '</td><td align="center">' + $l('parentalAges.' + parentalAge) + '<br />' + parentalFlagsFormatted.join(', ') + '</td><td align="center"><button onclick="standard.changeAvatar(\'' + sha256hash + '\')">Set to Avatar</button></td></tr>');

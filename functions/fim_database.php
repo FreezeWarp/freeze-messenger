@@ -960,7 +960,7 @@ class fimDatabase extends database {
     );
     $phraseData = $phraseData->getAsArray('phraseName');
 
-    foreach ($words AS $piece) {
+    foreach (array_unique($words) AS $piece) {
       if (!isset($phraseData[$piece])) {
         $this->insert("{$sqlPrefix}searchPhrases", array(
           'phraseName' => $piece,

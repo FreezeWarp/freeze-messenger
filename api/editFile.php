@@ -370,17 +370,6 @@ if ($continue) {
                         'time' => time(),
                       ));
 
-                      $database->insert("{$sqlPrefix}fileVersions", array(
-                        'fileId' => $fileId,
-                        'sha256hash' => $sha256hash,
-                        'md5hash' => $md5hash,
-                        'salt' => $saltNum,
-                        'iv' => $iv,
-                        'size' => $rawSize,
-                        'contents' => $contentsEncrypted,
-                        'time' => time(),
-                      ));
-
                       $database->update("{$sqlPrefix}users", array(
                         'fileCount' => array(
                           'type' => 'equation',
