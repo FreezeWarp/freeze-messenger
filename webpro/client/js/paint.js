@@ -9,7 +9,7 @@
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
  */
-function l(stringName, substitutions) {
+function $l(stringName, substitutions) {
   var phrase = false;
   
   if (phrase = eval("window.phrases." + stringName)) {
@@ -52,7 +52,7 @@ $.when(
     success: function(data) {
       for (i in data) {
         data[i] = data[i].replace(/\{\{\{\{([a-zA-Z0-9]+)\}\}\}\}/g, function($1, $2) {
-            return l($2);
+            return $l($2);
           }
         );
       }

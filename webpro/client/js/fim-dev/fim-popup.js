@@ -188,10 +188,10 @@ popup = {
           }
           else {
             for (i in serverSettings.parentalControls.parentalAges) {
-              $('#parentalAge').append('<option value="' + serverSettings.parentalControls.parentalAges[i] + '">' + window.phrases.parentalAges[serverSettings.parentalControls.parentalAges[i]] + '</option>');
+              $('#parentalAge').append('<option value="' + serverSettings.parentalControls.parentalAges[i] + '">' + $l('parentalAges.' + serverSettings.parentalControls.parentalAges[i]) + '</option>');
             }
             for (i in serverSettings.parentalControls.parentalFlags) {
-              $('#parentalFlagsList').append('<br /><label><input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + serverSettings.parentalControls.parentalFlags[i] + '" />' +  window.phrases.parentalFlags[serverSettings.parentalControls.parentalFlags[i]] + '</label>');
+              $('#parentalFlagsList').append('<br /><label><input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + serverSettings.parentalControls.parentalFlags[i] + '" />' +  $l('parentalFlags.' + serverSettings.parentalControls.parentalFlags[i]) + '</label>');
             }
           }
 
@@ -222,14 +222,14 @@ popup = {
               }
 
               if ($.inArray(filePartsLast, $.toArray(serverSettings.fileUploads.allowedExtensions)) === -1) {
-                $('#uploadFileFormPreview').html(l('uploadErrors.badExtPersonal'));
+                $('#uploadFileFormPreview').html($l('uploadErrors.badExtPersonal'));
               }
               else if ((fileSize + 10000000000) > serverSettings.fileUploads.sizeLimits[filePartsLast]) {
-                $('#uploadFileFormPreview').html(l('uploadErrors.tooLargePersonal', {
+                $('#uploadFileFormPreview').html($l('uploadErrors.tooLargePersonal', {
                   'fileSize' : serverSettings.fileUploads.sizeLimits[filePartsLast]
                 }));
               }
-              else {
+                else {
                 $('#uploadFileFormPreview').html('Loading Preview...');
                 
                 reader.readAsBinaryString(this.files[0]);
@@ -266,11 +266,11 @@ popup = {
               data : 'action=create&dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&fileName=' + fileName + '&parentalAge=' + parentalAge + '&parentalFlags=' + parentalFlags.join(',') + '&fileData=' + fim_eURL(fileContent) + '&md5hash=' + md5hash + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
               cache : false,
               success : function(json) {
-                if (json.editFile.errStr) window.phrases.uploadErrors[errStr];
+                if (json.editFile.errStr) $l('uploadErrors.' + errStr);
                 else $('#insertDoc').dialog('close');
               },
               error : function() {
-                dia.error(window.phrases.uploadErrors['other']);
+                dia.error($l('uploadErrors.other'));
               },
               finish : fim_hideLoader,
             });
@@ -592,10 +592,10 @@ popup = {
         }
         else {
           for (i in serverSettings.parentalControls.parentalAges) {
-            $('#parentalAge').append('<option value="' + serverSettings.parentalControls.parentalAges[i] + '">' + window.phrases.parentalAges[serverSettings.parentalControls.parentalAges[i]] + '</option>');
+            $('#parentalAge').append('<option value="' + serverSettings.parentalControls.parentalAges[i] + '">' + $l('parentalAges.' + serverSettings.parentalControls.parentalAges[i]) + '</option>');
           }
           for (i in serverSettings.parentalControls.parentalFlags) {
-            $('#parentalFlagsList').append('<br /><label><input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + serverSettings.parentalControls.parentalFlags[i] + '" />' +  window.phrases.parentalFlags[serverSettings.parentalControls.parentalFlags[i]] + '</label>');
+            $('#parentalFlagsList').append('<br /><label><input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + serverSettings.parentalControls.parentalFlags[i] + '" />' +  $l('parentalFlags.' + serverSettings.parentalControls.parentalFlags[i]) + '</label>');
           }
         }
 
@@ -736,11 +736,11 @@ popup = {
                 parentalFlags = active[i].parentalFlags,
                 parentalFlagsFormatted = [];
 
-                for (i in parentalFlags) { console.log(parentalFlags[i]);
-                  parentalFlagsFormatted.push(window.phrases.parentalFlags[parentalFlags[i]]); // Yes, this is a very weird line.
+                for (i in parentalFlags) {
+                  parentalFlagsFormatted.push($l('parentalFlags.' + parentalFlags[i])); // Yes, this is a very weird line.
                 }
 
-                $('#viewUploadsBody').append('<tr><td align="center"><img src="' + directory + 'file.php?sha256hash=' + sha256hash + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json" style="max-width: 200px; max-height: 200px;" /><br />' + fileName + '</td><td align="center">' + fileSizeFormatted + '</td><td align="center">' + window.phrases.parentalAges[parentalAge] + '<br />' + parentalFlagsFormatted.join(', ') + '</td><td align="center"><button onclick="standard.changeAvatar(\'' + sha256hash + '\')">Set to Avatar</button></td></tr>');
+                $('#viewUploadsBody').append('<tr><td align="center"><img src="' + directory + 'file.php?sha256hash=' + sha256hash + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json" style="max-width: 200px; max-height: 200px;" /><br />' + fileName + '</td><td align="center">' + fileSizeFormatted + '</td><td align="center">' + $l('parentalAges.' + parentalAge) + '<br />' + parentalFlagsFormatted.join(', ') + '</td><td align="center"><button onclick="standard.changeAvatar(\'' + sha256hash + '\')">Set to Avatar</button></td></tr>');
             }
 
             return false;
