@@ -59,7 +59,7 @@ $.when(
     dataType: 'json',
     success: function(data) {
       for (i in data) {
-        data[i] = data[i].replace(/\{\{\{\{([a-zA-Z0-9]+)\}\}\}\}/g, function($1, $2) {
+        data[i] = data[i].replace(/\{\{\{\{([a-zA-Z0-9\.]+)\}\}\}\}/g, function($1, $2) {
             return $l($2);
           }
         );

@@ -39,6 +39,12 @@ $request = fim_sanitizeGPC('g', array(
     'valid' => array('post', 'view', 'moderate', 'know', 'admin', ''),
     'require' => false,
   ),
+  
+  'permFilter' => array(
+    'default' => 'view',
+    'valid' => array('post', 'view', 'moderate', 'own'),
+    'require' => false,
+  ),
 
   'rooms' => array(
     'default' => '',

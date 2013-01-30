@@ -26,7 +26,7 @@ $defaultConfig = array(
   'fullTextArchive' => false, // bool Whether or not to enable full text archive search. This will search the "phrase" table in full-text mode, which is much slower, as opposed to the default full-match mode. If you have the server power, this is good functionality to enable, but most people do not.
 
   'searchWordMinimum' => 4, // int The minimum length a string must be to be added to the "phrase" table.
-  'searchWordMaximum' => 10, // int The maximum length a string can be to be added to the "phrase" table.
+  'searchWordMaximum' => 12, // int The maximum length a string can be to be added to the "phrase" table.
   'searchWordOmissions' => array(), // array Words that are not wll be ommitted from the "phrase" table.
   'searchWordPunctuation' => array(), // array Punctuation marks that are not included in phrases.
   'searchWordConvertsFind' => array(), // array An array of characters that will be replaced in the "phrase" table. Not that the "romanisation" configuration rules are applied to phrases as well, so you should not include these.
@@ -357,6 +357,7 @@ $defaultConfig = array(
   'userRoomCreation' => false,
   'userPrivateRoomCreation' => true,
   'hiddenRooms' => true,
+  'officialRooms' => true,
 
   'messageIndexCounter' => 1000, // If changed, rebuild the messageIndex table!
   'messageTimesCounter' => 60 * 60 * 24, // If changed, rebuild the messageTimes table!
