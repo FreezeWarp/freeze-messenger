@@ -370,7 +370,8 @@
     "emptyFile" : "The file transferred appears to be empty, and empty files are not accepted by the server.",
     "tooLarge" : "The file transferred is too large to be uploaded.",
     "other" : "An unknown error occured trying to upload the file.",
-    "tooLargePersonal" : "The specified file type must not be larger than {{{{fileSize}}}} bytes"
+    "tooLargePersonal" : "The specified file type must not be larger than {{{{fileSize}}}} bytes",
+    "notSupported" : "Your device does not support file uploads."
   },
   "uploadHeaderActions" : "Actions",
   "uploadHeaderMime" : "Mime Type",

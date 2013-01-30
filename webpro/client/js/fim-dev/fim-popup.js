@@ -164,22 +164,16 @@ popup = {
 
         for (i in serverSettings.fileUploads.allowedExtensions) {
           var maxFileSize = serverSettings.fileUploads.sizeLimits[serverSettings.fileUploads.allowedExtensions[i]],
-            maxFileSize2 = maxFileSize + window.phrases.byteUnits[1],
             fileContainer = serverSettings.fileUploads.fileContainers[serverSettings.fileUploads.allowedExtensions[i]],
             fileExtensions = serverSettings.fileUploads.extensionChangesReverse[serverSettings.fileUploads.allowedExtensions[i]];
-            
-          for (j in window.phrases.byteUnits) {
-            if (maxFileSize > j) maxFileSize2 = (maxFileSize / j) + window.phrases.byteUnits[j];
-            else break; 
-          }
-          
-          $('table#fileUploadInfo tbody').append('<tr><td>' + (fileExtensions ? fileExtensions.join(', ') : serverSettings.fileUploads.allowedExtensions[i]) + '</td><td>' + fileContainer + '</td><td>' + maxFileSize2 + '</td></tr>');
+
+          $('table#fileUploadInfo tbody').append('<tr><td>' + (fileExtensions ? fileExtensions.join(', ') : serverSettings.fileUploads.allowedExtensions[i]) + '</td><td>' + fileContainer + '</td><td>' + $.formatFileSize(maxFileSize, $l('byteUnits')) + '</td></tr>');
         }
 
 
         /* File Upload Form */
         if (typeof FileReader !== 'function') {
-          $('#uploadFileForm').html('Your device does not support file uploads.<br /><br />');
+          $('#uploadFileForm').html($l('uploadErrors.notSupported'));
         }
         else {
           /* Parental Controls */
@@ -190,8 +184,9 @@ popup = {
             for (i in serverSettings.parentalControls.parentalAges) {
               $('#parentalAge').append('<option value="' + serverSettings.parentalControls.parentalAges[i] + '">' + $l('parentalAges.' + serverSettings.parentalControls.parentalAges[i]) + '</option>');
             }
+
             for (i in serverSettings.parentalControls.parentalFlags) {
-              $('#parentalFlagsList').append('<br /><label><input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + serverSettings.parentalControls.parentalFlags[i] + '" />' +  $l('parentalFlags.' + serverSettings.parentalControls.parentalFlags[i]) + '</label>');
+              $('#parentalFlagsList').append('<br /><label><input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + serverSettings.parentalControls.parentalFlags[i] + '" />' + $l('parentalFlags.' + serverSettings.parentalControls.parentalFlags[i]) + '</label>');
             }
           }
 
