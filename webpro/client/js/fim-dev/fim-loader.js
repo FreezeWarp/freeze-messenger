@@ -1550,6 +1550,11 @@ function contextMenuParseMessage() {
         width: 600,
       });
       break;
+      
+      case 'click':
+        $('<a id="contextMenuClickHelper" style="display: none;" />').attr('href', src).attr('target', '_blank').text('-').appendTo('body').get(0).click();
+        $('#contextMenuClickHelper').remove();
+      break;
     }
 
     return false;

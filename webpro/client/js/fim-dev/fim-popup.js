@@ -167,7 +167,7 @@ popup = {
             fileContainer = serverSettings.fileUploads.fileContainers[serverSettings.fileUploads.allowedExtensions[i]],
             fileExtensions = serverSettings.fileUploads.extensionChangesReverse[serverSettings.fileUploads.allowedExtensions[i]];
 
-          $('table#fileUploadInfo tbody').append('<tr><td>' + (fileExtensions ? fileExtensions.join(', ') : serverSettings.fileUploads.allowedExtensions[i]) + '</td><td>' + fileContainer + '</td><td>' + $.formatFileSize(maxFileSize, $l('byteUnits')) + '</td></tr>');
+          $('table#fileUploadInfo tbody').append('<tr><td>' + (fileExtensions ? fileExtensions.join(', ') : serverSettings.fileUploads.allowedExtensions[i]) + '</td><td>' + $l('fileContainers.' + fileContainer) + '</td><td>' + $.formatFileSize(maxFileSize, $l('byteUnits')) + '</td></tr>');
         }
 
 
@@ -219,7 +219,7 @@ popup = {
               if ($.inArray(filePartsLast, $.toArray(serverSettings.fileUploads.allowedExtensions)) === -1) {
                 $('#uploadFileFormPreview').html($l('uploadErrors.badExtPersonal'));
               }
-              else if ((fileSize + 10000000000) > serverSettings.fileUploads.sizeLimits[filePartsLast]) {
+              else if ((fileSize) > serverSettings.fileUploads.sizeLimits[filePartsLast]) {
                 $('#uploadFileFormPreview').html($l('uploadErrors.tooLargePersonal', {
                   'fileSize' : serverSettings.fileUploads.sizeLimits[filePartsLast]
                 }));
@@ -278,9 +278,14 @@ popup = {
         /* Upload URL */
         $('#uploadUrlForm').bind('submit', function() {
           var linkName = $('#urlUpload').val();
-          
-          if (linkName) { standard.sendMessage(linkName, 0, 'image'); }
-          $('#insertDoc').dialog('close');
+
+          if (linkName.length > 0 && linkName !== 'http://') {
+            standard.sendMessage(linkName, 0, 'image');
+            $('#insertDoc').dialog('close');
+          }
+          else {
+            dia.error($l('uploadErrors.imageEmpty'));  
+          }
 
           return false;
         });
@@ -301,7 +306,7 @@ popup = {
           var linkUrl = $('#linkUrl').val(),
             linkMail = $('#linkEmail').val();
 
-          if (linkUrl.length === 0 && linkMail.length === 0) { dia.error('No Link Was Specified'); } // No value for either.
+          if (linkUrl.length === 0 && linkMail.length === 0) { dia.error($l('uploadErrors.linkEmpty')); } // No value for either.
           else if (linkUrl.length > 0) { standard.sendMessage(linkUrl, 0, 'url'); } // Link specified for URL.
           else if (linkMail.length > 0) { standard.sendMessage(linkMail, 0, 'email'); } // Link specified for mail, not URL.
           else { dia.error('Logic Error'); } // Eh, why not?
@@ -316,7 +321,7 @@ popup = {
         $('#uploadYoutubeForm').bind('submit', function() {
           linkVideo = $('#youtubeUpload');
 
-          if (linkVideo.search(/^http\:\/\/(www\.|)youtube\.com\/(.*?)?v=(.+?)(&|)(.*?)$/) === 0) { dia.error('No Video Specified'); } // Bad format
+          if (linkVideo.search(/^http\:\/\/(www\.|)youtube\.com\/(.*?)?v=(.+?)(&|)(.*?)$/) === 0) { dia.error($l('uploadErrors.videoEmpty')); } // Bad format
           else { standard.sendMessage(linkVideo, 0, 'source'); }
 
           $('#insertDoc').dialog('close');
@@ -847,7 +852,7 @@ popup = {
                 var listStatus = json.getCensorLists.lists[i].active[j].status;
               }
 
-              $('#censorLists').append('<label><input type="checkbox" name="list' + listId + '" data-listId="' + listId + '" data-checkType="list" value="true" ' + (listOptions & 2 ? '' : ' disabled="disabled"') + (listStatus === 'block' ? ' checked="checked"' : '') + ' />' + listName + '</label>');
+              $('#censorLists').append('<label><input type="checkbox" name="list' + listId + '" data-listId="' + listId + '" data-checkType="list" value="true" ' + (listOptions & 2 ? '' : ' disabled="disabled"') + (listStatus === 'block' ? ' checked="checked"' : '') + ' />' + listName + '</label><br />');
             }
 
             return false;
@@ -887,10 +892,10 @@ popup = {
         }
         else {
           for (i in serverSettings.parentalControls.parentalAges) {
-            $('#parentalAge').append('<option value="' + serverSettings.parentalControls.parentalAges[i] + '">' + window.phrases.parentalAges[serverSettings.parentalControls.parentalAges[i]] + '</option>');
+            $('#parentalAge').append('<option value="' + serverSettings.parentalControls.parentalAges[i] + '">' + $l('parentalAges.' + serverSettings.parentalControls.parentalAges[i]) + '</option>');
           }
           for (i in serverSettings.parentalControls.parentalFlags) {
-            $('#parentalFlagsList').append('<br /><label><input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + serverSettings.parentalControls.parentalFlags[i] + '" />' +  window.phrases.parentalFlags[serverSettings.parentalControls.parentalFlags[i]] + '</label>');
+            $('#parentalFlagsList').append('<label><input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + serverSettings.parentalControls.parentalFlags[i] + '" />' +  $l('parentalFlags.' + serverSettings.parentalControls.parentalFlags[i]) + '</label><br />');
           }
         }
 
@@ -913,7 +918,7 @@ popup = {
             parentalFlags.push($(b).attr('data-name'));
           });
 
-          censor = censor.join(',');console.log(censor); // TODO
+          censor = censor.join(',');
 
           if (name.length > window.serverSettings.rooms.roomLengthMaximum) dia.error('The roomname is too long.');
           else if (name.length < window.serverSettings.rooms.roomLengthMinimum) dia.error('The roomname is too short.');
