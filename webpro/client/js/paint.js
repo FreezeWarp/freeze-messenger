@@ -11,16 +11,22 @@
  */
 function $l(stringName, substitutions) {
   var phrase = false,
-    stringParsed = '';
+    stringParsed = '',
+    eachBreak = false;
   
   // We start be breaking up the stringName (which needs to be seperated with periods), to use the [] format. This is mainly neccissary because of integer indexes (JS does not support "a.b.1"), but these indexes are better anyway for arrays.
   stringNameParts = stringName.split('.');
   
   $.each(stringNameParts, function(index, value) {
     stringParsed += ('[\'' + value + '\']');
+    
+    if (undefined === eval("window.phrases" + stringParsed)) {
+      eachBreak = true;
+      return false;
+    }
   });
-  
-  if (phrase = eval("window.phrases" + stringParsed)) {
+
+  if ((eachBreak === false) && (phrase = eval("window.phrases" + stringParsed))) {
     if (substitutions) {
       $.each(substitutions, function(index, value) {
         phrase = phrase.replace('{{{{' + index + '}}}}', value);
