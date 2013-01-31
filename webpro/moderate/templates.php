@@ -58,6 +58,7 @@ else {
       case 'edit':
       $template = $json[$request['templateName']];
       $template = str_replace(array('<', '>'), array('&lt;', '&gt;'), formatXmlString($template));
+      $template = preg_replace('/template\.([A-Z])/e', '"template." . lcfirst($1)', $template);
 
       echo container("Edit Template \"$request[templateName]\"","<form action=\"./moderate.php?do=templates&do2=edit2&templateName=$request[templateName]\" method=\"post\">
 
