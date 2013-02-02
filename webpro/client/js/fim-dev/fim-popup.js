@@ -687,6 +687,7 @@ popup = {
           });
 
           $.post(directory + 'api/editUserOptions.php', 'defaultFormatting=' + defaultFormatting + '&defaultColor=' + defaultColour + '&defaultHighlight=' + defaultHighlight + '&defaultRoomId=' + defaultRoomId + '&watchRooms=' + watchRooms + '&ignoreList=' + ignoreList + '&profile=' + profile + '&defaultFontface=' + fontId + '&parentalAge=' + parentalAge + '&parentalFlags=' + parentalFlags.join(',') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
+            
             dia.info('Your settings may or may not have been updated.');
           }); // Send the form data via AJAX.
 

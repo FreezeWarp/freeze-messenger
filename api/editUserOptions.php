@@ -222,7 +222,10 @@ if ($loginConfig['method'] === 'vanilla') {
 
   /* Profile */
   if (isset($request['profile'])) { // TODO: Add regex policy.
-    if (filter_var($request['profile'], FILTER_VALIDATE_URL) === FALSE) {
+    if ($request['profile'] === '') {
+      // Really, do nothing for now. Could have a hook here later if we want to.
+    }
+    elseif (filter_var($request['profile'], FILTER_VALIDATE_URL) === FALSE) {
       $xmlData['editUserOptions']['response']['profile']['status'] = false;
       $xmlData['editUserOptions']['response']['profile']['errStr'] = 'noUrl';
       $xmlData['editUserOptions']['response']['profile']['errDesc'] = 'The URL is not a URL.';

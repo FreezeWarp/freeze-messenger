@@ -79,9 +79,10 @@ elseif (floatval(PHP_VERSION) <= 5.3) { // Removed outright in 5.4, may as well 
 
 /* Require Libraries */
 require(dirname(__FILE__) . '/config.php'); // Configuration Variables
+require(dirname(__FILE__) . '/functions/cache.php'); // APC Wrapper (may use for alteratives like memcached later)
 require(dirname(__FILE__) . '/functions/database.php'); // MySQL OOP Library
 require(dirname(__FILE__) . '/functions/fim_database.php'); // FIM-specific Extension to MySQL OOP Library
-require(dirname(__FILE__) . '/functions/fim_cache.php'); // APC Wrapper (may use for alteratives like memcached later)
+require(dirname(__FILE__) . '/functions/fim_cache.php'); // FIM-specific Extension to APC Wrapper
 require(dirname(__FILE__) . '/functions/fim_general.php'); // Various Functions
 require(dirname(__FILE__) . '/functions/fim_parser.php'); // Message parser
 
@@ -189,7 +190,7 @@ unset($dbConnect); // There is no reason the login credentials should still be a
 
 ////* Connect to Cache *////
 
-$generalCache = new generalCache($cacheConnect['driver'], $cacheConnect['servers']);
+$generalCache = new fimCache($slaveDatabase, $cacheConnect['driver'], $cacheConnect['servers']);
 
 
 

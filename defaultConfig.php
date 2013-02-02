@@ -358,6 +358,7 @@ $defaultConfig = array(
   'userPrivateRoomCreation' => true,
   'hiddenRooms' => true,
   'officialRooms' => true,
+  'defaultRoom' => 1,
 
   'messageIndexCounter' => 1000, // If changed, rebuild the messageIndex table!
   'messageTimesCounter' => 60 * 60 * 24, // If changed, rebuild the messageTimes table!

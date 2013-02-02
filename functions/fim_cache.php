@@ -18,134 +18,76 @@
 /* Note: "none" is used solely for speed testing. NEVER EVER EVER use it. (at least with FIM) */
 
 /**
- * Cache layer to support file caches, APC, and (eventually) memcached.
- * An explanation of the support cache methods:
- ** 'none' - If specified, all cache variables will be stored as standard variables in the class. Thus, no cache will actually be used, but all functionality should still work.
- ** 'disk' - If specified, all cache variables will be written to the disk (usually as temporary files).
- ** 'apc' - If specified, all cache variables will be stored using APC.
- ** 'memcached' - If spceified, all cache variables wil be stored using memcached. (Not yet supported.)
+ * Class designed to store and recall cache variables.
  *
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
-class generalCache {
-  /**
-  * Initialises class.
-  *
-  * @param string method - Cache method to use (will guess if not provided).
-  * @param array servers - Servers used for Memcached. (not yet supported).
-  * @return void
-  *
-  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */
-  public function __construct($method = '', $servers) {
-    global $config, $tmpDir;
-
-    $this->data = array();
-    $this->method = $method;
-
-    // Basically, use APC if we can, unless told not to. If we can't, use disk.
-    if ($method !== 'apc' && $method !== 'disk') {
-      if (extension_loaded('apc')) $this->method = 'apc';
-      else $this->method = 'disk';
+class fimCache extends generalCache {
+  private $defaultConfigFile;
+  protected $database = false;
+  
+  function __construct($method = '', $servers, $database) {
+    parent::__construct($method, $servers);
+    
+    $this->defaultConfigFile = dirname(__FILE__) . '/defaultConfig.php';
+    
+    if (!$database) {
+      throw new Exception('No database provided');
     }
-    elseif ($method === 'apc' && !extension_loaded('apc')) $this->method = 'disk';
+    else {
+      $this->database = $database;
+    }
+  }
+  
+  /**
+   * Retrieve and store configuration data into cache.
+   *
+   * @global bool disableConfig - If true, __only__ default config will be used, and the database will not be queried. This I picked up from vBulletin, and it makes it possible to disable the database-stored configuration if something goes horribly wrong.
+   *
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  function storeConfig() {
+    global $disableConfig;
 
-    if ($this->method === 'disk') {
-      require_once('fileCache.php');
+    if (!($config = $this->get('fim_config')) || $disableConfig) {
+      require($defaultConfigFile);
 
-      if (is_writable($tmpDir)) {
-        $this->fileCache = new FileCache($tmpDir . '/');
+      if (!$disableConfig) {
+        $config2 = $slaveDatabase->select(
+          array(
+            "{$sqlPrefix}configuration" => 'directive, value, type',
+          )
+        );
+        $config2 = $config2->getAsArray(true);
+
+        if (is_array($config2)) {
+          if (count($config2) > 0) {
+            foreach ($config2 AS $config3) {
+              switch ($config3['type']) {
+                case 'int':    $config[$config3['directive']] = (int) $config3['value']; break;
+                case 'string': $config[$config3['directive']] = (string) $config3['value']; break;
+                case 'array':  $config[$config3['directive']] = (array) fim_explodeEscaped(',', $config3['value']); break;
+                case 'bool':
+                if (in_array($config3['value'],array('true','1',true,1),true)) $config[$config3['directive']] = true; // We include the non-string counterparts here on the off-chance the database driver supports returning non-strings. The third parameter in the in_array makes it a strict comparison.
+                else $config[$config3['directive']] = false;
+                break;
+                case 'float':  $config[$config3['directive']] = (float) $config3['value']; break;
+              }
+            }
+
+            unset($config3);
+          }
+        }
+
+        unset($config2);
       }
-      else {
-        throw new Exception('Could not create disk cache. Please ensure that PHP temp directory is set and writable (current value: ' . $tmpDir . ').');
+
+      foreach ($defaultConfig AS $key => $value) {
+        if (!isset($config[$key])) $config[$key] = $value;
       }
-    }
-
-/*    if ($this->method === 'memcache') {
-      $memcache = new Memcache;
-
-      foreach ($servers AS $server) {
-        $memcache->addServer($server['host'], $server['port'], $server['persistent'], $server['weight'], $server['timeout'], $server['retry_interval']);
-      }
-    }*/
-  }
-
-  /**
-  * Retrives a variable from the cache.
-  *
-  * @param string index - The name of the cache entry.
-  * @return mixed - Value of cache entry.
-  *
-  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */
-  public function get($index) {
-    switch ($this->method) {
-      case 'none': return $this->data[$index]; break;
-      case 'disk': return $this->fileCache->get($index); break;
-      case 'apc': return apc_fetch($index); break;
-      case 'memcache': break;
-      default: throw new Exception('Unknown cache method.'); break;
-    }
-  }
-
-  /**
-  * Stores a variable in the cache.
-  *
-  * @param string index - The name of the cache entry.
-  * @param mixed variable - The data to store.
-  * @param int ttl - The time before the variable is considered to have "expired", in seconds. (Default is 1 year = 31536000 seconds)
-  * @return void
-  *
-  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */
-  public function set($index, $variable, $ttl = 31536000) {
-    switch ($this->method) {
-      case 'none': $this->data[$index] = $variable; break;
-      case 'disk': $this->fileCache->set($index, $variable, $ttl); break;
-      case 'apc': apc_delete($index); apc_store($index, $variable, $ttl); break;
-      case 'memcache':  break;
-      default: throw new Exception('Unknown cache method.'); break;
-    }
-  }
-
-  /**
-  * Determines if a variable exists in the cache.
-  *
-  * @param string index - The name of the cache entry.
-  * @return void
-  *
-  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */
-  public function exists($index) {
-    switch ($this->method) {
-      case 'none': return isset($this->data[$index]); break;
-      case 'disk': $this->fileCache->exists($index); break;
-      case 'apc': return apc_exists($index); break;
-      case 'memcache': break;
-      default: throw new Exception('Unknown cache method.'); break;
-    }
-  }
 
 
-  /**
-  * Destroys the entire cache. (With APC, this will clear the user and the opcode cache as well.)
-  *
-  * @return bool - True on success, false on failure.
-  *
-  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */
-  public function clearAll() {
-    switch ($this->method) {
-      case 'none': $this->data = array(); break;
-      case 'disk': $this->fileCache->deleteAll(); break;
-
-      case 'apc':
-      if (apc_clear_cache() && apc_clear_cache('user') && apc_clear_cache('opcode')) return true;
-      else return false;
-      break;
-
-      case 'memcache': break;
-      default: throw new Exception('Unknown cache method.'); break;
+      $this->set('fim_config', $config, $config['configCacheRefresh']);
     }
   }
 }

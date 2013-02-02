@@ -351,7 +351,6 @@
   "statsPlace" : "#",
   "statsRoomList" : "Room List (IDs): ",
   "template" : {
-
     "activeUsers" : "Who's Online",
     "activeUsersCat" : "Online",
     "admin" : "AdminCP",
