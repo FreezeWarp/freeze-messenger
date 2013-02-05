@@ -18,7 +18,6 @@
  * This is WebPro's means of configuring FIM's data. The pages for individual actions are stored in the moderate/ directory.
 */
 
-$reqHooks = true;
 
 define('WEBPRO_INMOD', true); // Security to prevent loading of base moderate pages.
 

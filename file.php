@@ -25,7 +25,6 @@
 */
 
 $reqPhrases = true;
-$reqHooks = true;
 
 require('global.php');
 

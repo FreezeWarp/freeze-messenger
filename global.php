@@ -196,48 +196,7 @@ $generalCache = new fimCache($slaveDatabase, $cacheConnect['driver'], $cacheConn
 
 ////* Get Database-Stored Configuration *////
 
-if (!($config = $generalCache->get('fim_config')) || $disableConfig) { // Disable config is a trick I picked up from vBulletin. It makes it possible to disable the database-stored configuration if something goes horribly wrong.
-  require(dirname(__FILE__) . '/defaultConfig.php');
-
-  if (!$disableConfig) {
-    $config2 = $slaveDatabase->select(
-      array(
-        "{$sqlPrefix}configuration" => 'directive, value, type',
-      )
-    );
-    $config2 = $config2->getAsArray(true);
-
-    if (is_array($config2)) {
-      if (count($config2) > 0) {
-        foreach ($config2 AS $config3) {
-          switch ($config3['type']) {
-            case 'int':    $config[$config3['directive']] = (int) $config3['value']; break;
-            case 'string': $config[$config3['directive']] = (string) $config3['value']; break;
-            case 'array':  $config[$config3['directive']] = (array) fim_explodeEscaped(',', $config3['value']); break;
-            case 'bool':
-            if (in_array($config3['value'],array('true','1',true,1),true)) $config[$config3['directive']] = true; // We include the non-string counterparts here on the off-chance the database driver supports returning non-strings. The third parameter in the in_array makes it a strict comparison.
-            else $config[$config3['directive']] = false;
-            break;
-            case 'float':  $config[$config3['directive']] = (float) $config3['value']; break;
-          }
-        }
-
-        unset($config3);
-      }
-    }
-
-    unset($config2);
-  }
-
-  foreach ($defaultConfig AS $key => $value) {
-    if (!isset($config[$key])) {
-      $config[$key] = $value;
-    }
-  }
-
-
-  $generalCache->set('fim_config', $config, $config['configCacheRefresh']);
-}
+$config = $generalCache->getConfig();
 
 
 
@@ -253,29 +212,7 @@ else {
 
 ////* Get Code Hooks *////
 
-if (isset($reqHooks)) {
-  if ($reqHooks === true) {
-    if (!$hooks = $generalCache->get('fim_hooksCache')) {
-      $hooks2 = $slaveDatabase->select(
-        array(
-          "{$sqlPrefix}hooks" => 'hookId, hookName, code',
-        )
-      );
-      $hooks2 = $hooks2->getAsArray('hookId');
-
-
-      if (is_array($hooks2)) {
-        if (count($hooks2) > 0) {
-          foreach ($hooks2 AS $hook) $hooks[$hook['hookName']] = $hook['code'];
-          unset($hook);
-        }
-      }
-
-      unset($hooks2);
-      $generalCache->set('fim_hooksCache', $hooks, $config['hooksCacheRefresh']);
-    }
-  }
-}
+$hooks = $generalCache->getHooks();
 
 
 

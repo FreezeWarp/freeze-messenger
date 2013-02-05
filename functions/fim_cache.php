@@ -15,21 +15,22 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 
-/* Note: "none" is used solely for speed testing. NEVER EVER EVER use it. (at least with FIM) */
-
 /**
  * Class designed to store and recall cache variables.
+ *
+ * @internal The fim class currently stores all of its calls in memory in addition to whatever other methods are provided (one of the methods is to store in mmemory, and we will duplicate it in this situation; however, you shouldn't EVER use that method anyway). This is because each function should be able to return a single index from a cache object, and having to retrieve the cache each time we want to call a single index of an array is, well, stupid (previously, we just stored the entire array outside of the class; this way, we can at least convert things super easily if we want to change methodologies). That said, this may be a problem with scripts that run longer than the cache -- currently not a problem, but it might be if we try to support persistent scripts in the future.
  *
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 class fimCache extends generalCache {
   private $defaultConfigFile;
+  private $memory = array(); // Whenever the cache is retrieved, we store it in memory for the duration of the script's execution
   protected $database = false;
-  
+
   function __construct($method = '', $servers, $database) {
     parent::__construct($method, $servers);
     
-    $this->defaultConfigFile = dirname(__FILE__) . '/defaultConfig.php';
+    $this->defaultConfigFile = dirname(dirname(__FILE__)) . '/defaultConfig.php';
     
     if (!$database) {
       throw new Exception('No database provided');
@@ -39,47 +40,83 @@ class fimCache extends generalCache {
     }
   }
   
+  private function returnValue($array, $index) {
+    if ($index === false) return $array;
+    else return (isset($array[$index]) ? $array[$index] : null);
+  }
+  
+  /**
+   * Stores an object both using the specified driver and in memory.
+   *
+   * @param string index - The name the data should be stored under.
+   * @param mixed data - The data to cache.
+   * @param mixed refresh - The period after which the cache will no longer be valid.
+   */
+  private function storeMemory($index, $data, $refresh) {
+    $this->set('fim_config', $data, $config['configCacheRefresh']);
+    
+    $this->memory[$index] = $data;
+  }
+  
+  private function issetMemory($index) {
+    if (isset($this->memory[$index])) return true;
+    else return false;
+  }
+  
+  private function getMemory($index) {
+    return $this->memory[$index];
+  }
+  
   /**
    * Retrieve and store configuration data into cache.
    *
-   * @global bool disableConfig - If true, __only__ default config will be used, and the database will not be queried. This I picked up from vBulletin, and it makes it possible to disable the database-stored configuration if something goes horribly wrong.
+   * @param mixed index -- If false, all configuration information will be returned. Otherwise, will return the value of the index specified.
+   *
+   * @global bool disableConfig - If true, only the default cache will be used (note that the configuration will not be cahced so long as disableConfig is in effect -- it will need to be disabled ASAP). This I picked up from vBulletin, and it makes it possible to disable the database-stored configuration if something goes horribly wrong.
+   *
+   * @return
    *
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  function storeConfig() {
-    global $disableConfig;
+  public function getConfig($index = false) {
+    global $disableConfig, $slaveDatabase;
 
-    if (!($config = $this->get('fim_config')) || $disableConfig) {
-      require($defaultConfigFile);
+    if ($this->issetMemory('fim_config')) {
+      $hooks = $this->getMemory('fim_config');
+    }
+    elseif ($this->exists('fim_config') && !$disableConfig) {
+      $config = $this->get('fim_config');
+    }
+    else {
+      require_once($this->defaultConfigFile); // Not exactly best practice, but the best option for reducing resources. (The alternative is to parse it with JSON, but really, why?)
+      $config = array();
 
       if (!$disableConfig) {
-        $config2 = $slaveDatabase->select(
+        $configDatabase = $slaveDatabase->select(
           array(
             "{$sqlPrefix}configuration" => 'directive, value, type',
           )
         );
-        $config2 = $config2->getAsArray(true);
+        $configDatabase = $configDatabase->getAsArray(true);
 
-        if (is_array($config2)) {
-          if (count($config2) > 0) {
-            foreach ($config2 AS $config3) {
-              switch ($config3['type']) {
-                case 'int':    $config[$config3['directive']] = (int) $config3['value']; break;
-                case 'string': $config[$config3['directive']] = (string) $config3['value']; break;
-                case 'array':  $config[$config3['directive']] = (array) fim_explodeEscaped(',', $config3['value']); break;
-                case 'bool':
-                if (in_array($config3['value'],array('true','1',true,1),true)) $config[$config3['directive']] = true; // We include the non-string counterparts here on the off-chance the database driver supports returning non-strings. The third parameter in the in_array makes it a strict comparison.
-                else $config[$config3['directive']] = false;
-                break;
-                case 'float':  $config[$config3['directive']] = (float) $config3['value']; break;
-              }
+        if (is_array($configDatabase) && count($configDatabase) > 0) {
+          foreach ($configDatabase AS $configDatabaseRow) {
+            switch ($configDatabaseRow['type']) {
+              case 'int':    $config[$configDatabaseRow['directive']] = (int) $configDatabaseRow['value']; break;
+              case 'string': $config[$configDatabaseRow['directive']] = (string) $configDatabaseRow['value']; break;
+              case 'array':  $config[$configDatabaseRow['directive']] = (array) fim_explodeEscaped(',', $configDatabaseRow['value']); break;
+              case 'bool':
+              if (in_array($configDatabaseRow['value'], array('true', '1', true, 1), true)) $config[$configDatabaseRow['directive']] = true; // We include the non-string counterparts here on the off-chance the database driver supports returning non-strings. The third parameter in the in_array makes it a strict comparison.
+              else $config[$configDatabaseRow['directive']] = false;
+              break;
+              case 'float':  $config[$configDatabaseRow['directive']] = (float) $configDatabaseRow['value']; break;
             }
 
-            unset($config3);
+            unset($configDatabaseRow);
           }
         }
 
-        unset($config2);
+        unset($configDatabase);
       }
 
       foreach ($defaultConfig AS $key => $value) {
@@ -87,8 +124,42 @@ class fimCache extends generalCache {
       }
 
 
-      $this->set('fim_config', $config, $config['configCacheRefresh']);
+      $this->storeMemory('fim_config', $config, $config['configCacheRefresh']);
     }
+    
+    $this->returnValue($config, $index);
+  }
+  
+  public function getHooks($index) {
+    global $disableHooks, $slaveDatabase;
+    
+    if ($this->issetMemory('fim_hooks')) {
+      $hooks = $this->getMemory('fim_hooks');
+    }
+    elseif ($this->exists('fim_hooks')) {
+      $hooks = $this->get('fim_hooks');
+    }
+    else {
+      $hooks = array();
+
+      if ($disableHooks !== true) {
+        $hooksDatabase = $slaveDatabase->select(
+          array(
+            "{$sqlPrefix}hooks" => 'hookId, hookName, code',
+          )
+        );
+        $hooksDatabase = $hooksDatabase->getAsArray('hookId');
+
+        if (is_array($hooksDatabase) && count($hooksDatabase) > 0) {
+          foreach ($hooksDatabase AS $hook) $hooks[$hook['hookName']] = $hook['code'];
+        }
+
+        $this->storeMemory('fim_hooks', $hooks, $config['hooksCacheRefresh']);
+      }
+    }
+    
+    if ($index === false) return $hooks;
+    else return (isset($hooks[$index]) ? $hooks[$index] : null);
   }
 }
 
