@@ -133,7 +133,7 @@ class fimDatabase extends database {
     global $sqlPrefix, $config, $user;
 
     $queryParts['userSelect']['columns'] = array(
-      "{$sqlPrefix}users" => 'userId, userName, userFormatStart, userFormatEnd, userGroup, allGroups, socialGroups',
+      "{$sqlPrefix}users" => 'userId, userName, profile, userFormatStart, userFormatEnd, userGroup, allGroups, socialGroups, parentalAge, parentalFlags, adminPrivs, defaultFormatting, defaultColor, defaultHighlight, defaultFontface',
     );
 
     if ($userId) {
@@ -637,7 +637,8 @@ class fimDatabase extends database {
   public function storeMessage($userData, $roomData, $messageText, $messageTextEncrypted, $encryptIV, $encryptSalt, $flag) {
     global $sqlPrefix, $config, $user, $permissionsCache, $generalCache;
 
-    if (!isset($roomData['options'], $roomData['roomId'], $roomData['roomName'], $roomData['type'], $userData['userId'], $userData['userName'], $userData['userGroup'], $userData['avatar'], $userData['profile'], $userData['userFormatStart'], $userData['userFormatEnd'], $userData['defaultFormatting'], $userData['defaultColor'], $userData['defaultHighlight'], $userData['defaultFontface'])) throw new Exception('database->storeMessage required information not provided');
+    if (!isset($roomData['options'], $roomData['roomId'], $roomData['roomName'], $roomData['type'])) throw new Exception('database->storeMessage requires roomData[options], roomData[roomId], roomData[roomName], and roomData[type].');
+    if (!isset($userData['userId'], $userData['userName'], $userData['userGroup'], $userData['avatar'], $userData['profile'], $userData['userFormatStart'], $userData['userFormatEnd'], $userData['defaultFormatting'], $userData['defaultColor'], $userData['defaultHighlight'], $userData['defaultFontface'])) throw new Exception('database->storeMessage requires userData[userId], userData[userName], userData[userGroup], userData[avatar]. userData[profile], userData[userFormatStart], userData[userFormatEnd], userData[defaultFormatting], userData[defaultColor], userData[defaultHighlight], and userData[defaultFontface]');
 
 
     // Insert into permenant datastore.

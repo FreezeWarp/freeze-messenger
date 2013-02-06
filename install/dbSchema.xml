@@ -356,6 +356,7 @@
       <!-- General -->
       <column name="roomId" type="int" maxlen="6" autoincrement="1" comment="The unique ID for the room." />
       <column name="roomName" type="string" maxlen="50" comment="The name of the room." />
+      <column name="roomNameSearchable" type="string" maxlen="50" comment="The name of the room, formatted for searching." />
       <column name="roomTopic" type="string" maxlen="200" comment="The current topic of the room." />
       <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options." />
 
@@ -374,6 +375,7 @@
 
 
       <key name="roomId" type="primary" />
+      <key name="roomNameSearchable" type="index" />
       <key name="options" type="index" />
       <key name="owner" type="index" />
       <key name="lastMessageId" type="index" />

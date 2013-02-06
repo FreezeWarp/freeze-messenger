@@ -733,8 +733,8 @@ var standard = {
   },
 
 
-  kick : function(userId, roomId, length) {
-    $.post(directory + 'api/moderate.php', 'action=kickUser&userId=' + userId + '&roomId=' + roomId + '&length=' + length + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
+  kick : function(userLocalId, roomId, length) {
+    $.post(directory + 'api/moderate.php', 'action=kickUser&userId=' + userLocalId + '&roomId=' + roomId + '&length=' + length + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
       var errStr = json.moderaate.errStr,
         errDesc = json.moderaate.errDesc;
 

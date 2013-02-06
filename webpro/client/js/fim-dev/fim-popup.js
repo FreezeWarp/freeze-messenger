@@ -1201,7 +1201,7 @@ popup = {
             userId = userRef[userName],
             length = Math.floor(Number($('#time').val() * Number($('#interval > option:selected').attr('value'))));
 
-          standard.kick(userId,roomId,length);
+          standard.kick(userId, roomId, length);
 
           return false; // Don't submit the form.
         });

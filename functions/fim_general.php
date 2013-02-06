@@ -1174,7 +1174,6 @@ function fim_exceptionHandler($exception) {
   ob_end_clean(); // Clean the output buffer and end it. This means that when we show the error in a second, there won't be anything else with it.
   header('HTTP/1.1 500 Internal Server Error'); // When an exception is encountered, we throw an error to tell the server that the software effectively is broken.
 
-  
   if ($config['displayExceptions']) {
     $errorData = array(
       'string' => $exception->getMessage(),

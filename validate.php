@@ -387,18 +387,17 @@ if (strlen($sessionHash) > 0) {
   $user = $user->getAsArray(false);
 
   if ($user) {
-    if ((int) $user['userId'] !== (int) $userIdComp) { // The userid sent has to be the same one in the DB. In theory we could just not require a userId be specified, buthere are benefits to this alternative. For instance, this eliminatesome forms of injection-based session fixation.
-
+    if ((int) $user['userId'] !== (int) $userIdComp) { // The userid sent has to be the same one in the DB. In theory we could just not require a userId be specified, but there are benefits to this alternative. For instance, this eliminates some forms of injection-based session fixation.
       define('LOGIN_FLAG','INVALID_SESSION');
 
       $valid = false;
     }
-    elseif ($user['sessionBrowser'] !== $_SERVER['HTTP_USER_AGENT']) { // Require the UA match that of the one used to establish the session. Smart clients arencouraged to specify there own witheir client name and vers
+    elseif ($user['sessionBrowser'] !== $_SERVER['HTTP_USER_AGENT']) { // Require the UA match that of the one used to establish the session. Smart clients arencouraged to specify their own with their client name and version.
       define('LOGIN_FLAG','INVALID_SESSION');
 
       $valid = false;
     }
-    elseif ($user['sessionIp'] !== $_SERVER['REMOTE_ADDR']) {
+    elseif ($user['sessionIp'] !== $_SERVER['REMOTE_ADDR']) { // This is a tricky one, but generally the most certain to block any attempted forgeries. That said, IPs can, /theoretically/ be spoofed.
       define('LOGIN_FLAG','INVALID_SESSION');
 
       $valid = false;
@@ -412,7 +411,7 @@ if (strlen($sessionHash) > 0) {
       $noSync = true;
       $valid = true;
 
-      if ($user['sessionTime'] < time() - 300) { // Ifive minutes have passed since the session has been generated, update ift.
+      if ($user['sessionTime'] < time() - 300) { // If five minutes have passed since the session has been generated, update it.
         $session = 'update';
       }
     }

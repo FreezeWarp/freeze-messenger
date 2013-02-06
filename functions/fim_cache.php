@@ -53,7 +53,7 @@ class fimCache extends generalCache {
    * @param mixed refresh - The period after which the cache will no longer be valid.
    */
   private function storeMemory($index, $data, $refresh) {
-    $this->set('fim_config', $data, $config['configCacheRefresh']);
+    $this->set($index, $data, $refresh);
     
     $this->memory[$index] = $data;
   }
@@ -111,12 +111,8 @@ class fimCache extends generalCache {
               break;
               case 'float':  $config[$configDatabaseRow['directive']] = (float) $configDatabaseRow['value']; break;
             }
-
-            unset($configDatabaseRow);
           }
         }
-
-        unset($configDatabase);
       }
 
       foreach ($defaultConfig AS $key => $value) {
@@ -127,7 +123,7 @@ class fimCache extends generalCache {
       $this->storeMemory('fim_config', $config, $config['configCacheRefresh']);
     }
     
-    $this->returnValue($config, $index);
+    return $this->returnValue($config, $index);
   }
   
   public function getHooks($index) {
