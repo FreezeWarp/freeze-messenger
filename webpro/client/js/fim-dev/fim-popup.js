@@ -1101,7 +1101,7 @@ popup = {
                 set = fim_dateFormat(active[i].set, true),
                 expires = fim_dateFormat(active[i].expires, true);
 
-              $('#kickHtml').append('<tr><td>' + userFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + userFormatEnd + '</td><td>' + kickerFormatStart + '<span class="userName userNameTable" data-userId="' + kickerId + '">' + kickerName + '</span>' + kickerFormatEnd + '</td><td>' + set + '</td><td>' + expires + '</td><td><button onclick="standard.unkick(' + userId + ', ' + roomId + ')">Unkick</button></td></tr>'); 
+              $('#kickedUsers').append('<tr><td>' + userFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + userFormatEnd + '</td><td>' + kickerFormatStart + '<span class="userName userNameTable" data-userId="' + kickerId + '">' + kickerName + '</span>' + kickerFormatEnd + '</td><td>' + set + '</td><td>' + expires + '</td><td><button onclick="standard.unkick(' + userId + ', ' + roomId + ')">Unkick</button></td></tr>'); 
             }
 
             return false;

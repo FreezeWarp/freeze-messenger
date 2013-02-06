@@ -63,7 +63,7 @@ $queryParts['roomListSelect'] = array(
   ),
   'conditions' => array(
     'both' => array(
-       'userId' => $user['userId'],
+       'userId' => (int) $user['userId'],
        'roomId' => 22,
      ),
   ),

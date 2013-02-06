@@ -74,39 +74,9 @@ $queryParts['kicksSelect']['columns'] = array(
 );
 $queryParts['kicksSelect']['conditions'] = array(
   'both' => array(
-    array(
-      'type' => 'e',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'kuserId',
-      ),
-      'right' => array(
-        'type' => 'column',
-        'value' => 'userId',
-      ),
-    ),
-    array(
-      'type' => 'e',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'kroomId',
-      ),
-      'right' => array(
-        'type' => 'column',
-        'value' => 'roomId',
-      ),
-    ),
-    array(
-      'type' => 'e',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'kkickerId',
-      ),
-      'right' => array(
-        'type' => 'column',
-        'value' => 'kickerId',
-      ),
-    ),
+    'kuserId' => 'column userId',
+    'kroomId' => 'column roomId',
+    'kkickerId' => 'column kickerId',
   ),
 );
 $queryParts['kicksSelect']['sort'] = 'roomId, userId';

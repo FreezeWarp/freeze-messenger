@@ -640,7 +640,7 @@ LIMIT
               foreach (array('left', 'right') AS $side) { // We do the same thing for the left and right indexes, so this reduces code redundancy. Not sure if it's good practice, though...
                 if (is_array($data[$side])) {
                   switch($data[$side]['type']) {
-                    case 'string': // Strings should never be escaped before hand, otherwise values come out looking funny (and innacurate).
+                    case 'string': // Strings should never be escaped beforehand, otherwise values come out looking funny (and innacurate).
                     $sideText[$side] = '"' . $this->escape($data[$side]['value']) . '"';
                     break;
                     
@@ -782,11 +782,16 @@ LIMIT
             else {
               $sideText['left'] = $reverseAlias[$key];
 
-              if (is_string($value)) {
+              if (is_int($value)) {
                 $sideText['right'] = (int) $data['right']['value'];
               }
-              elseif (is_int($value)) {
-                $sideText['right'] = (int) $data['right']['value'];
+              elseif (is_string($value)) {
+                if (strpos($value, 'column ') === 0) {
+                  $sideText['right'] = $reverseAlias[str_replace('column ', '', $value)];
+                }
+                else {
+                  throw new Exception('Unsupported.');
+                }
               }
               else {
                 throw new Exception('Unrecognised Value Type; Value: ' . $value);
