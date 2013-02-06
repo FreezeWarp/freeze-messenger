@@ -70,7 +70,7 @@ $queryParts['kicksSelect']['columns'] = array(
   "{$sqlPrefix}kicks" => 'kickerId kkickerId, userId kuserId, roomId kroomId, length klength, time ktime',
   "{$sqlPrefix}users user" => 'userId, userName, userFormatStart, userFormatEnd',
   "{$sqlPrefix}users kicker" => 'userId kickerId, userName kickerName, userFormatStart kickerFormatStart, userFormatEnd kickerFormatEnd',
-  "{$sqlPrefix}rooms" => 'roomId, roomName, owner, options',
+  "{$sqlPrefix}rooms" => 'roomId, roomName, owner, options, defaultPermissions',
 );
 $queryParts['kicksSelect']['conditions'] = array(
   'both' => array(
@@ -163,7 +163,11 @@ $kicks = $kicks->getAsArray(true);
 if (is_array($kicks)) {
   if (count($kicks) > 0) {
     foreach ($kicks AS $kick) {
-      if (fim_hasPermission($kick,$user,'moderate') || $kick['userId'] == $user['userId']) { // The user is allowed to know of all kicks they are subject to, and of all kicks in any rooms they moderate.
+      $kick['type'] = 'normal';
+      $kick['parentalAge'] = 100; // Over-ride parentalAge/parentalFlags.
+      $kick['parentalFlags'] = '';
+      
+      if (fim_hasPermission($kick, $user, 'moderate') || $kick['userId'] == $user['userId']) { // The user is allowed to know of all kicks they are subject to, and of all kicks in any rooms they moderate.
         $xmlData['getKicks']['kicks']['kick ' . $kick['kickId']] = array(
           'roomData' => array(
             'roomId' => (int) $kick['roomId'],
