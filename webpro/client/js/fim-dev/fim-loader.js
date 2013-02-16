@@ -153,17 +153,6 @@ var directory = window.location.pathname.split('/').splice(0, window.location.pa
 ******************* Static Functions ********************
 *********************************************************/
 
-/**
- * Quit with a pretty little message. This can be used whenever an unrecoverable error occurs.
- * 
- * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2012
- */
-function fim_quit() {
-  $('body').replaceWith(window.phrases.errorQuitMessage);
-  throw new Error(window.phrases.errorGenericQuit);
-}
-
 
 
 /**
@@ -820,7 +809,7 @@ function populate(options) {
       },
       error: function() {
         dia.error(window.phrases.errorUsersNotRetrieved);
-        fim_quit();
+        $q($l('errorQuitMessage'), $l('errorGenericQuit'));
 
         return false;
       }
@@ -888,7 +877,7 @@ function populate(options) {
       },
       error: function() {
         dia.error(window.phrases.errorRoomsNotRetrieved);
-        fim_quit();
+        $q($l('errorQuitMessage'), $l('errorGenericQuit'));
 
         return false;
       }

@@ -434,5 +434,9 @@
   "editBoxNames" : {
     "users" : "Users",
     "groups" : "Groups"
+  },
+  "editBox" : {
+    "add" : "Add",
+    "search" : "Search:"
   }
 }

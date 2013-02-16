@@ -1295,30 +1295,56 @@ popup = {
 
   /*** END Copyright ***/
   
-  editBox : function(name, list, removeCallBack, addCallback) {
+  
+  
+  /*** START Editbox ***/
+  editBox : function(name, list, removeCallBack, addCallback) { // TODO: Move into plugins?
     dia.full({
-      content : window.templates.editBox,
-      title : 'Edit ' + $l('editBox.') + name,
+      content : $t('editBox'),
+      title : 'Edit ' + $l('editBoxNames.' + name),
       width : 400,
       oF : function() {
+        // General 
+        function drawButtons() {
+          $("#editBoxList button").button({ icons: {primary:'ui-icon-closethick'} });
+        }
+        
+        // Populate
         $(list).each(function(key, value) {
-          $('#editBoxList').append('<li class="ui-state-default">' + value + '<button style="width: 30px; height: 30px;"></button></li>');
+          $('#editBoxList').append($t('editBoxItem', {"value" : value}));
+          drawButtons();
         });
         
-        $("#editBoxList button").button({ icons: {primary:'ui-icon-closethick'} });
         
+        // Search
         $('#editBoxSearch').focus().keyup(function(e) {
           var val = $('#editBoxSearch').val();
           
           $('#editBoxList li').show();
 
-          if (val !== '') 
+          if (val !== '') {
             $("#editBoxList li").not(":contains('" + val + "')").hide();
           }
+        });
+        
+        $('#editBoxSearch').submit(function() { return false; });
+        
+        // Add
+        $('#editBoxAdd').submit(function() {
+          $('#editBoxList').append($t('editBoxItem', {"value" : $('#editBoxAddValue').val()}));
+          drawButtons();
+          
+          $('#editBoxAdd').val('');
+          
+          addCallback();
+          
+          return false;
         });
       }
     });
   }
+  
+  /*** End Editbox ***/
 };
 
 /*********************************************************

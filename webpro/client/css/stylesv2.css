@@ -218,6 +218,10 @@ table.center {
   margin-left: auto;
 }
 
+form.center {
+  text-align: center;
+}
+
 table.center td {
   text-align: center;
 }
@@ -236,6 +240,21 @@ table.center td {
 
 #waitThrobber {
   z-index: 10001;
+}
+
+ul.clear {
+  list-style-type: none;
+  padding: 0;
+  margin-left: 0;
+  font-weight: bold;
+}
+
+button.small.ui-widget {
+  width: 1em !important;
+}
+
+button.small.ui-widget .ui-icon {
+  left: 0em !important;
 }
 
 
