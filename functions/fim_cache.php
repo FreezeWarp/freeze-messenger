@@ -26,24 +26,56 @@ class fimCache extends generalCache {
   private $defaultConfigFile;
   private $memory = array(); // Whenever the cache is retrieved, we store it in memory for the duration of the script's execution
   protected $database = false;
+  protected $slaveDatabase = false;
 
-  function __construct($method = '', $servers, $database) {
+  
+  /** Sets the defaultConfigFile, and checks to ensure a database exists.
+   * 
+   * @param string method - The database method, required by fimCache's construct.
+   * @param mixed servers - The server information we are using, mainly for memcached. Obviously, if we aren't using memcached, there won't really be anything here.
+   * @param object database - A fimDatabase object to use for queries.
+   * @param object slaveDatabase - A fimData object to use for slave-enabled queries.
+  */
+  function __construct($servers, $method = '', $database, $slaveDatabase = false) {
     parent::__construct($method, $servers);
     
     $this->defaultConfigFile = dirname(dirname(__FILE__)) . '/defaultConfig.php';
+    
     
     if (!$database) {
       throw new Exception('No database provided');
     }
     else {
       $this->database = $database;
+      $this->slaveDatabase = $slaveDatabase ? $slaveDatabase : $database;
     }
   }
+
   
-  private function returnValue($array, $index) {
-    if ($index === false) return $array;
-    else return (isset($array[$index]) ? $array[$index] : null);
+  /**
+   * If a cache value includes an index, we should use this to query it. At present, all this reduces is an isset() call, but in the future we could use it to retrieve values in other ways.
+   * Fun fact: if we used eval() for our builder, we could totally save some cycles. Oh well.
+   * Additionally, if an index is false, it will be understood as ending the sequence.
+   *
+   * @param array array - The cache array.
+   * @param string index - The name of the array index.
+   */
+  private function returnValue($array) {
+    $arguments = func_num_args();
+      
+    if ($arguments > 1) {
+      for ($i = 2; $i <= $arguments; $i++) {
+        $value = func_get_arg($i);
+        
+        if ($value === false) return $array;
+        if (isset($array[$value])) $array = $array[func_get_arg($i)];
+        else return null;
+      }
+    }
+
+    return $array;
   }
+  
   
   /**
    * Stores an object both using the specified driver and in memory.
@@ -58,28 +90,43 @@ class fimCache extends generalCache {
     $this->memory[$index] = $data;
   }
   
+  
+  /**
+   * Checks to see if a cache index exists in memory. This function really just exists to make it easy to change the logic in the future.
+   *
+   * @param string index - The name of the cache index
+   */
   private function issetMemory($index) {
     if (isset($this->memory[$index])) return true;
     else return false;
   }
   
+  
+  /**
+   * Returns a cache index from memory.
+   *
+   * @param string index - The name of the cache index
+   */
   private function getMemory($index) {
     return $this->memory[$index];
   }
   
+  
   /**
    * Retrieve and store configuration data into cache.
+   * The database is stored as $config[index].
+   * TODO: Config is supposed to be able to support associative arrays, but they currently are not understood by this function.
    *
    * @param mixed index -- If false, all configuration information will be returned. Otherwise, will return the value of the index specified.
    *
    * @global bool disableConfig - If true, only the default cache will be used (note that the configuration will not be cahced so long as disableConfig is in effect -- it will need to be disabled ASAP). This I picked up from vBulletin, and it makes it possible to disable the database-stored configuration if something goes horribly wrong.
    *
-   * @return
+   * @return mixed -- The config array if no index is specified, otherwise the formatted config value corresponding to the index (this may be an array, but due to the nature of $config, we will not support going two levels in).
    *
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function getConfig($index = false) {
-    global $disableConfig, $slaveDatabase;
+    global $disableConfig;
 
     if ($this->issetMemory('fim_config')) {
       $hooks = $this->getMemory('fim_config');
@@ -92,8 +139,8 @@ class fimCache extends generalCache {
       $config = array();
 
       if (!$disableConfig) {
-        $configDatabase = $slaveDatabase->select(
-          array(
+        $configDatabase = $this->slaveDatabase->select(
+         array(
             "{$sqlPrefix}configuration" => 'directive, value, type',
           )
         );
@@ -126,8 +173,8 @@ class fimCache extends generalCache {
     return $this->returnValue($config, $index);
   }
   
-  public function getHooks($index) {
-    global $disableHooks, $slaveDatabase;
+  public function getHooks($index = false) {
+    global $disableHooks;
     
     if ($this->issetMemory('fim_hooks')) {
       $hooks = $this->getMemory('fim_hooks');
@@ -139,7 +186,7 @@ class fimCache extends generalCache {
       $hooks = array();
 
       if ($disableHooks !== true) {
-        $hooksDatabase = $slaveDatabase->select(
+        $hooksDatabase = $this->slaveDatabase->select(
           array(
             "{$sqlPrefix}hooks" => 'hookId, hookName, code',
           )
@@ -154,8 +201,94 @@ class fimCache extends generalCache {
       }
     }
     
-    if ($index === false) return $hooks;
-    else return (isset($hooks[$index]) ? $hooks[$index] : null);
+    return $this->returnValue($hooks, $index);
+  }
+  
+  ////* Caches Entire Table as kicks[roomId][userId] = true *////
+  public function getKicks($roomIndex = false, $userIndex = false) {
+    global $database;
+
+    if ($this->issetMemory('fim_kicks')) {
+      $kicks = $this->getMemory('fim_kicks');
+    }
+    elseif ($this->exists('fim_kicks')) {
+      $kicks = $this->get('fim_kicks');
+    }
+    else {
+      $kicks = array();
+
+      $queryParts['kicksCacheSelect']['columns'] = array(
+        "{$sqlPrefix}kicks" => 'kickerId kkickerId, userId kuserId, roomId kroomId, length klength, time ktime',
+        "{$sqlPrefix}users user" => 'userId, userName, userFormatStart, userFormatEnd',
+        "{$sqlPrefix}users kicker" => 'userId kickerId, userName kickerName, userFormatStart kickerFormatStart, userFormatEnd kickerFormatEnd',
+        "{$sqlPrefix}rooms" => 'roomId, roomName',
+      );
+      $queryParts['kicksCacheSelect']['conditions'] = array(
+        'both' => array(
+          'kuserId' => 'column userId',
+          'kroomId' => 'column roomId',
+          'kkickerId' => 'column kickerId',
+        ),
+      );
+      $queryParts['kicksCacheSelect']['sort'] = array(
+        'roomId' => 'asc',
+        'userId' => 'asc'
+      );
+
+      $kicksDatabase = $this->database->select($queryParts['kicksCacheSelect']['columns'],
+        $queryParts['kicksCacheSelect']['conditions'],
+        $queryParts['kicksCacheSelect']['sort']);
+      $kicksDatabase = $kicksDatabase->getAsArray(true);
+
+      $kicks = array();
+
+      foreach ($kicksDatabase AS $kick) {
+        if ($kick['ktime'] + $kick['klength'] < time()) { // Automatically delete old entires when cache is regenerated.
+          $this->database->delete("{$sqlPrefix}kicks",array(
+            'userId' => $kickCache['userId'],
+            'roomId' => $kickCache['roomId'],
+          ));
+        }
+        else {
+          $kicks['byRoomId'][$kick['roomId']][$kick['userId']] = true;
+        }
+      }
+      
+      $this->storeMemory('fim_kicks', $kicks, $config['kicksCacheRefresh']);
+    }
+    
+    return $this->returnValue($kicks, $roomIndex, $userIndex);
+  }
+  
+  
+  ////* Caches Entire Table as roomPermissions[roomId][attibute][param] = permissions *////
+  /* Attribute = user, group, or adminGroup
+   * Param = userId, groupId, or adminGroupId */
+  public function getPermissions($roomIndex = false, $attributeIndex = false, $paramIndex = false) {
+    if ($this->issetMemory('fim_kicks')) {
+      $kicks = $this->getMemory('fim_kicks');
+    }
+    elseif ($this->exists('fim_kicks')) {
+      $kicks = $this->get('fim_kicks');
+    }
+    else {
+      $permissions = array();
+
+      $queryParts['permissionsCacheSelect']['columns'] = array(
+        "{$sqlPrefix}roomPermissions" => 'roomId, attribute, param, permissions',
+      );
+
+      $permissionsDatabase = $database->select($queryParts['permissionsCacheSelect']['columns']);
+      $permissionsDatabase = $permissionsDatabase->getAsArray(true);
+
+      foreach ($permissionsDatabase AS $permission) {
+        $permissionss['byRoomId'][$permission['roomId']][$permission['attribute']][$permission['param']] = $cachePerm['permissions'];
+      }
+
+      $generalCache->storeMemory('fim_permissionCache', $permissionsCache, $config['permissionsCacheRefresh']);
+    }
+    
+    return $this->returnValue($kicks, $roomIndex, $attributeIndex, $paramIndex);
   }
 }
 

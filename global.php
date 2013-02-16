@@ -18,7 +18,6 @@
  * Core MySQLLogin, Cookie/etc. Salt, and Site Data is stored here. */
 
 
-
 ////* PREREQUISITES *////
 
 /* Make Sure Required PHP Extensions are Present
@@ -74,7 +73,6 @@ elseif (floatval(PHP_VERSION) <= 5.3) { // Removed outright in 5.4, may as well 
     die('Register Globals is enabled. Please disable register_globals in php.ini. More information can be found in the <a href="http://www.php.net/manual/en/security.globals.php">PHP manual</a>, and in the documentation.');
   }
 }
-
 
 
 /* Require Libraries */
@@ -137,7 +135,6 @@ set_error_handler('fim_errorHandler'); // Defined in fim_general.php
 set_exception_handler('fim_exceptionHandler'); // Defined in fim_general.php
 
 
-
 ////* Database Stuff *////
 
 /* If the connections are the same, do not make multiple below. */
@@ -170,7 +167,11 @@ else {
 
 /* Connect to the DB Slave
  * Unfortunately, this can not be reliably used in v3. It will be more of a focus in the future.
- * Still, if you do use it, it can ease load. */
+ * Still, if you do use it, it can ease load.
+ * NOTE:
+ ** Slave Database should be used, at least in the future, to referrence values that can have high latency. For instance, kicks, which can change within the minute, require relatively low latency, but roomData can have high latency. Thus, when trying to obtain a value for roomData, we should generally use the slave, while if we are trying to obtain kick information, we should use the slave.
+ ** In general, things that /don't/ use the slave will be cached. The exception is high-latency databases that are loaded with every single page call. That is to say, config and hooks, both of which are cached and use the slave.
+ ** Thus, the rule of thumb, especially for plugins, is that low-latency tables should be accessed via the primary database, while high-latency tables should use the slave. Plugins should never implement both unless the data that is being cached will be accessed constantly, and generally can be delayed by up to an hour. */
 if ($slaveConnect) {
   $slaveDatabase = new fimDatabase;
 
@@ -190,17 +191,13 @@ unset($dbConnect); // There is no reason the login credentials should still be a
 
 ////* Connect to Cache *////
 
-$generalCache = new fimCache($slaveDatabase, $cacheConnect['driver'], $cacheConnect['servers']);
+$generalCache = new fimCache($cacheConnect['servers'], $cacheConnect['driver'], $database, $slaveDatabase);
 
 
 
 ////* Get Database-Stored Configuration *////
 
 $config = $generalCache->getConfig();
-
-
-
-////* Things That Require Config *////
 
 if ($api === true) {
   sleep($config['apiPause']); // This prevents flooding the server/DoSing. It's included since I've done it to myself during development...
@@ -210,113 +207,14 @@ else {
 }
 
 
-////* Get Code Hooks *////
+
+////* Cache Objects *////
 
 $hooks = $generalCache->getHooks();
+$kicksCache = $generalCache->getKicks();
+$permissionsCache = $generalCache->getPermissions();
 
 
-
-////* Kicks Cache *////
-////* Caches Entire Table as kicks[roomId][userId] = true *////
-
-$kicksCache = $generalCache->get('fim_kicksCache');
-
-if ($kicksCache === null || $kicksCache === false) {
-  $kicksCache = array();
-
-  $queryParts['kicksCacheSelect']['columns'] = array(
-    "{$sqlPrefix}kicks" => 'kickerId kkickerId, userId kuserId, roomId kroomId, length klength, time ktime',
-    "{$sqlPrefix}users user" => 'userId, userName, userFormatStart, userFormatEnd',
-    "{$sqlPrefix}users kicker" => 'userId kickerId, userName kickerName, userFormatStart kickerFormatStart, userFormatEnd kickerFormatEnd',
-    "{$sqlPrefix}rooms" => 'roomId, roomName',
-  );
-  $queryParts['kicksCacheSelect']['conditions'] = array(
-    'both' => array(
-      array(
-        'type' => 'e',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'kuserId',
-        ),
-        'right' => array(
-          'type' => 'column',
-          'value' => 'userId',
-        ),
-      ),
-      array(
-        'type' => 'e',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'kroomId',
-        ),
-        'right' => array(
-          'type' => 'column',
-          'value' => 'roomId',
-        ),
-      ),
-      array(
-        'type' => 'e',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'kkickerId',
-        ),
-        'right' => array(
-          'type' => 'column',
-          'value' => 'kickerId',
-        ),
-      ),
-    ),
-  );
-  $queryParts['kicksCacheSelect']['sort'] = array(
-    'roomId' => 'asc',
-    'userId' => 'asc'
-  );
-
-  $kickCachesPre = $database->select($queryParts['kicksCacheSelect']['columns'],
-    $queryParts['kicksCacheSelect']['conditions'],
-    $queryParts['kicksCacheSelect']['sort']);
-  $kickCachesPre = $kickCachesPre->getAsArray(true);
-
-  $kicksCache = array();
-
-  foreach ($kickCachesPre AS $kickCache) {
-    if ($kickCache['ktime'] + $kickCache['klength'] < time()) { // Automatically delete old entires when cache is regenerated.
-      $database->delete("{$sqlPrefix}kicks",array(
-        'userId' => $kickCache['userId'],
-        'roomId' => $kickCache['roomId'],
-      ));
-    }
-    else {
-      $kicksCache['byRoomId'][$kickCache['roomId']][$kickCache['userId']] = true;
-    }
-  }
-
-  $generalCache->set('fim_kicksCache', $kicksCache, $config['kicksCacheRefresh']);
-}
-
-
-
-////* Permissions Cache *////
-////* Caches Entire Table as roomPermissions[roomId] = [roomId, attribute, param, permissions] *////
-
-$permissionsCache = $generalCache->get('fim_permissionsCache');
-
-if ($permissionsCache === null || $permissionsCache === false) {
-  $permissionsCache = array();
-
-  $queryParts['permissionsCacheSelect']['columns'] = array(
-    "{$sqlPrefix}roomPermissions" => 'roomId, attribute, param, permissions',
-  );
-
-  $permissionsCachePre = $database->select($queryParts['permissionsCacheSelect']['columns']);
-  $permissionsCachePre = $permissionsCachePre->getAsArray(true);
-
-  foreach ($permissionsCachePre AS $cachePerm) {
-    $permissionsCache['byRoomId'][$cachePerm['roomId']][$cachePerm['attribute']][$cachePerm['param']] = $cachePerm['permissions'];
-  }
-
-  $generalCache->set('fim_permissionCache', $permissionsCache, $config['permissionsCacheRefresh']);
-}
 
 
 

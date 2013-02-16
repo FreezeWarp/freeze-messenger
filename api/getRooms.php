@@ -52,6 +52,13 @@ $request = fim_sanitizeGPC('g', array(
     'filter' => 'int',
     'evaltrue' => true,
   ),
+  
+/*  'info' => array(
+    'default' => array(),
+    'cast' => 'csv',
+    'evaltrue' => true,
+    'valid' => array('basic', 'perm'),
+  ),*/
 
   'search' => array(
     'cast' => 'string',

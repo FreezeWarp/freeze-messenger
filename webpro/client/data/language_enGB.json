@@ -430,5 +430,9 @@
   "uploadNewFileComputer" : "Upload from Computer",
   "uploadNewFilePreview" : "Preview & Submit",
   "uploadNewFileSubmitButton" : "Upload",
-  "uploadNewFileTitle" : "Upload New File"
+  "uploadNewFileTitle" : "Upload New File",
+  "editBoxNames" : {
+    "users" : "Users",
+    "groups" : "Groups"
+  }
 }

@@ -1291,9 +1291,34 @@ popup = {
     });
 
     return false;
-  }
+  },
 
   /*** END Copyright ***/
+  
+  editBox : function(name, list, removeCallBack, addCallback) {
+    dia.full({
+      content : window.templates.editBox,
+      title : 'Edit ' + $l('editBox.') + name,
+      width : 400,
+      oF : function() {
+        $(list).each(function(key, value) {
+          $('#editBoxList').append('<li class="ui-state-default">' + value + '<button style="width: 30px; height: 30px;"></button></li>');
+        });
+        
+        $("#editBoxList button").button({ icons: {primary:'ui-icon-closethick'} });
+        
+        $('#editBoxSearch').focus().keyup(function(e) {
+          var val = $('#editBoxSearch').val();
+          
+          $('#editBoxList li').show();
+
+          if (val !== '') 
+            $("#editBoxList li").not(":contains('" + val + "')").hide();
+          }
+        });
+      }
+    });
+  }
 };
 
 /*********************************************************
