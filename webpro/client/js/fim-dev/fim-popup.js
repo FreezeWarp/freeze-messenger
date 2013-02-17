@@ -8,7 +8,7 @@ popup = {
 
   login : function() {
     dia.full({
-      content : window.templates.login,
+      content : $t('login'),
       title : 'Login',
       id : 'loginDialogue',
       width : 600,
@@ -69,7 +69,7 @@ popup = {
 
   selectRoom : function() {
     dia.full({
-      content : window.templates.selectRoom,
+      content : $t('selectRoom'),
       title : 'Room List',
       id : 'roomListDialogue',
       width: 1000,
@@ -130,7 +130,7 @@ popup = {
     }
 
     dia.full({
-      content : window.templates.insertDoc,
+      content : $t('insertDoc'),
       id : 'insertDoc',
       width: 1000,
       position: 'top',
@@ -386,7 +386,7 @@ popup = {
         }
 
         dia.full({
-          content : window.templates.viewStats,
+          content : $t('viewStats'),
           title : 'Room Stats',
           id : 'roomStatsDialogue',
           width : 600,
@@ -417,7 +417,7 @@ popup = {
 
   userSettings : function() { /* TODO: Handle reset properly, and refresh the entire application when settings are changed. It used to make some sense not to, but not any more. */
     dia.full({
-      content : window.templates.userSettingsForm,
+      content : $t('userSettingsForm'),
       id : 'changeSettingsDialogue',
       tabs : true,
       width : 1000,
@@ -715,7 +715,7 @@ popup = {
 
   viewUploads : function() {
     dia.full({
-      content : window.templates.viewUploads,
+      content : $t('viewUploads'),
       width : 1200,
       title : 'View My Uploads',
       position : 'top',
@@ -770,7 +770,7 @@ popup = {
     else var action = 'create';
 
     dia.full({
-      content : window.templates.editRoomForm,
+      content : $t('editRoomForm'),
       id : 'editRoomDialogue',
       width : 1000,
       tabs : true,
@@ -978,7 +978,7 @@ popup = {
 
   privateRoom : function() {
     dia.full({
-      content : window.templates.privateRoom,
+      content : $t('privateRoom'),
       title : 'Enter Private Room',
       id : 'privateRoomDialogue',
       width : 1000,
@@ -1012,7 +1012,7 @@ popup = {
 
   online : function() {
     dia.full({
-      content : window.templates.online,
+      content : $t('online'),
       title : 'Active Users',
       id : 'onlineDialogue',
       position : 'top',
@@ -1076,7 +1076,7 @@ popup = {
 
   manageKicks : function() {
     dia.full({
-      content : window.templates.manageKicks,
+      content : $t('manageKicks'),
       title : 'Manage Kicked Users in This Room',
       width : 1000,
       oF : function() {
@@ -1127,7 +1127,7 @@ popup = {
     var kickHtml = '';
     
     dia.full({
-      content : window.templates.manageKicks,
+      content : $t('manageKicks'),
       title : 'You Have Been Kicked From The Following Rooms',
       width : 1000,
       oF : function() {
@@ -1177,7 +1177,7 @@ popup = {
 
   kick : function() {
     dia.full({
-      content : window.templates.kick,
+      content : $t('kick'),
       title : 'Kick User',
       id : 'kickUserDialogue',
       width : 1000,
@@ -1222,7 +1222,7 @@ popup = {
 
   help : function() {
     dia.full({
-      content : window.templates.help,
+      content : $t('help'),
       title : 'helpDialogue',
       width : 1000,
       position : 'top',
@@ -1241,7 +1241,7 @@ popup = {
 
   archive : function(options) {
     dia.full({
-      content : window.templates.archive,
+      content : $t('archive'),
       title : 'Archive',
       id : 'archiveDialogue',
       position : 'top',
@@ -1284,7 +1284,7 @@ popup = {
 
   copyright : function() {
     dia.full({
-      content : window.templates.copyright,
+      content : $t('copyright'),
       title : 'copyrightDialogue',
       width : 800,
       tabs : true
@@ -1298,16 +1298,31 @@ popup = {
   
   
   /*** START Editbox ***/
-  editBox : function(name, list, removeCallBack, addCallback) { // TODO: Move into plugins?
+  editBox : function(name, list, allowDefaults, removeCallback, addCallback) { // TODO: Move into plugins?
+    allowDefaults = allowDefaults || false;
+    removeCallback = removeCallback || function(value) { return false };
+    addCallback = addCallback || function(value) { return false };
+    
     dia.full({
       content : $t('editBox'),
       title : 'Edit ' + $l('editBoxNames.' + name),
       width : 400,
       oF : function() {
         // General 
-        function drawButtons() {
-          $("#editBoxList button").button({ icons: {primary:'ui-icon-closethick'} });
+        function remove(element) {
+          removeCallback($(element).text());
+          
+          $(element).remove();
         }
+        
+        function drawButtons() {
+          $("#editBoxList button").button({
+            icons: {primary : 'ui-icon-closethick'}
+          }).bind('click', function() {
+            remove($(this).parent());
+          });
+        }
+
         
         // Populate
         $(list).each(function(key, value) {
@@ -1317,8 +1332,8 @@ popup = {
         
         
         // Search
-        $('#editBoxSearch').focus().keyup(function(e) {
-          var val = $('#editBoxSearch').val();
+        $('#editBoxSearchValue').focus().keyup(function(e) {
+          var val = $('#editBoxSearchValue').val();
           
           $('#editBoxList li').show();
 
@@ -1329,14 +1344,16 @@ popup = {
         
         $('#editBoxSearch').submit(function() { return false; });
         
+        
         // Add
         $('#editBoxAdd').submit(function() {
-          $('#editBoxList').append($t('editBoxItem', {"value" : $('#editBoxAddValue').val()}));
+          value = $('#editBoxAddValue').val();
+          $('#editBoxAddValue').val('');
+          
+          $('#editBoxList').append($t('editBoxItem', {"value" : value}));
           drawButtons();
           
-          $('#editBoxAdd').val('');
-          
-          addCallback();
+          addCallback(value);
           
           return false;
         });

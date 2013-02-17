@@ -209,87 +209,16 @@ else {
 
 
 ////* Cache Objects *////
+/* Transitional note:
+ * The new cache system is intended to be used with per-value querying, as opposed to loading the entire cache into memory like this every time. However, this conversion will take a while, so for now, we will go with the old way as shown below. */
 
 $hooks = $generalCache->getHooks();
 $kicksCache = $generalCache->getKicks();
 $permissionsCache = $generalCache->getPermissions();
+$watchRoomsCache = $generalCache->getWatchRooms();
+$censorListsCache = $generalCache->getCensorLists();
+$censorWordsCache = $generalCache->getCensorWords();
 
-
-
-
-
-////* Watch Rooms *////
-////* Caches Entire Table as watchRooms[userId] = [roomId, userId] *////
-
-$watchRoomsCache = $generalCache->get('fim_watchRoomsCache');
-
-if ($watchRoomsCache === null || $watchRoomsCache === false) {
-  $watchRoomsCache = array();
-
-  $queryParts['watchRoomsCacheSelect']['columns'] = array(
-    "{$sqlPrefix}watchRooms" => 'roomId, userId',
-  );
-
-  $watchRoomsCachePre = $database->select($queryParts['watchRoomsCacheSelect']['columns']);
-  $watchRoomsCachePre = $watchRoomsCachePre->getAsArray(true);
-
-  foreach ($watchRoomsCachePre AS $cachePerm) {
-    if (!isset($watchRoomsCache['byUserId'][$cachePerm['userId']])) $watchRoomsCache['byUserId'][$cachePerm['userId']] = array();
-
-    $watchRoomsCache['byUserId'][$cachePerm['userId']][] = $cachePerm['roomId'];
-  }
-
-  $generalCache->set('fim_watchRoomsCache', $watchRoomsCache, $config['watchRoomsCacheRefresh']);
-}
-
-
-
-////* Censor Lists *////
-////* Caches Entire Table as censorLists[listId] = [listId, listName, listType, options] *////
-
-$censorListsCache = $generalCache->get('fim_censorListsCache');
-
-if ($censorListsCache === null || $censorListsCache === false) {
-  $censorListsCache = array('byListId' => array());
-
-  $queryParts['censorListsCacheSelect']['columns'] = array(
-    "{$sqlPrefix}censorLists" => 'listId, listName, listType, options',
-  );
-
-  $censorListsCachePre = $database->select($queryParts['censorListsCacheSelect']['columns']);
-  $censorListsCachePre = $censorListsCachePre->getAsArray(true);
-
-  foreach ($censorListsCachePre AS $cachePerm) {
-    $censorListsCache['byListId'][$cachePerm['listId']] = $cachePerm;
-  }
-
-
-  $generalCache->set('fim_censorListsCache', $censorListsCache, $config['censorListsCache']);
-}
-
-
-
-////* Censor Words *////
-////* Caches Entire Table as censorWords[word] = [listId, word, severity, param] *////
-
-$censorWordsCache = $generalCache->get('fim_censorWordsCache');
-
-if ($censorWordsCache === null || $censorWordsCache === false) {
-  $censorWordsCache = array('byWord' => array());
-
-  $queryParts['censorWordsCacheSelect']['columns'] = array(
-    "{$sqlPrefix}censorWords" => 'listId, word, severity, param',
-  );
-
-  $censorWordsCachePre = $database->select($queryParts['censorWordsCacheSelect']['columns']);
-  $censorWordsCachePre = $censorWordsCachePre->getAsArray(true);
-
-  foreach ($censorWordsCachePre AS $cachePerm) {
-    $censorWordsCache['byWord'][$cachePerm['word']] = $cachePerm;
-  }
-
-  $generalCache->set('fim_censorWordsCache', $censorWordsCache, $config['censorWordsCacheRefresh']);
-}
 
 
 

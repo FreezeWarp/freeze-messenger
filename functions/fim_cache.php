@@ -174,7 +174,7 @@ class fimCache extends generalCache {
   }
   
   public function getHooks($index = false) {
-    global $disableHooks;
+    global $disableHooks, $config;
     
     if ($this->issetMemory('fim_hooks')) {
       $hooks = $this->getMemory('fim_hooks');
@@ -206,7 +206,7 @@ class fimCache extends generalCache {
   
   ////* Caches Entire Table as kicks[roomId][userId] = true *////
   public function getKicks($roomIndex = false, $userIndex = false) {
-    global $database;
+    global $config;
 
     if ($this->issetMemory('fim_kicks')) {
       $kicks = $this->getMemory('fim_kicks');
@@ -244,13 +244,14 @@ class fimCache extends generalCache {
 
       foreach ($kicksDatabase AS $kick) {
         if ($kick['ktime'] + $kick['klength'] < time()) { // Automatically delete old entires when cache is regenerated.
-          $this->database->delete("{$sqlPrefix}kicks",array(
+          // Note: We use the slave to prevent excessive locking.
+          $this->slaveDatabase->delete("{$sqlPrefix}kicks", array(
             'userId' => $kickCache['userId'],
             'roomId' => $kickCache['roomId'],
           ));
         }
         else {
-          $kicks['byRoomId'][$kick['roomId']][$kick['userId']] = true;
+          $kicks[$kick['roomId']][$kick['userId']] = true;
         }
       }
       
@@ -265,11 +266,11 @@ class fimCache extends generalCache {
   /* Attribute = user, group, or adminGroup
    * Param = userId, groupId, or adminGroupId */
   public function getPermissions($roomIndex = false, $attributeIndex = false, $paramIndex = false) {
-    if ($this->issetMemory('fim_kicks')) {
-      $kicks = $this->getMemory('fim_kicks');
+    if ($this->issetMemory('fim_permissions')) {
+      $permissions = $this->getMemory('fim_permissions');
     }
-    elseif ($this->exists('fim_kicks')) {
-      $kicks = $this->get('fim_kicks');
+    elseif ($this->exists('fim_permissions')) {
+      $permissions = $this->get('fim_permissions');
     }
     else {
       $permissions = array();
@@ -278,17 +279,108 @@ class fimCache extends generalCache {
         "{$sqlPrefix}roomPermissions" => 'roomId, attribute, param, permissions',
       );
 
-      $permissionsDatabase = $database->select($queryParts['permissionsCacheSelect']['columns']);
+      $permissionsDatabase = $this->database->select($queryParts['permissionsCacheSelect']['columns']);
       $permissionsDatabase = $permissionsDatabase->getAsArray(true);
 
       foreach ($permissionsDatabase AS $permission) {
-        $permissionss['byRoomId'][$permission['roomId']][$permission['attribute']][$permission['param']] = $cachePerm['permissions'];
+        $permissionss[$permission['roomId']][$permission['attribute']][$permission['param']] = $cachePerm['permissions'];
       }
 
-      $generalCache->storeMemory('fim_permissionCache', $permissionsCache, $config['permissionsCacheRefresh']);
+      $this->storeMemory('fim_permissions', $permissionsCache, $this->getConfig('permissionsCacheRefresh'));
     }
     
-    return $this->returnValue($kicks, $roomIndex, $attributeIndex, $paramIndex);
+    return $this->returnValue($permissions, $roomIndex, $attributeIndex, $paramIndex);
+  }
+
+  
+  ////* Caches Entire Table as watchRooms[userId] = [roomId, userId] *////
+  public function getWatchRooms($userIndex = false) {
+   if ($this->issetMemory('fim_watchRooms')) {
+      $watchRooms = $this->getMemory('fim_watchRooms');
+    }
+    elseif ($this->exists('fim_watchRooms')) {
+      $watchRooms = $this->get('fim_watchRooms');
+    }
+    else {
+      $watchRooms = array();
+      
+      $queryParts['watchRoomsCacheSelect']['columns'] = array(
+        "{$sqlPrefix}watchRooms" => 'roomId, userId',
+      );
+
+      $watchRoomsDatabase = $this->database->select($queryParts['watchRoomsCacheSelect']['columns']);
+      $watchRoomsDatabase = $watchRoomsDatabase->getAsArray(true);
+
+      foreach ($watchRoomsDatabase AS $watchRoom) {
+        if (!isset($watchRooms[$watchRoom['userId']])) $watchRoom[$watchRoom['userId']] = array();
+
+        $watchRooms[$watchRoom['userId']][] = $watchRoom['roomId'];
+      }
+
+      $this->storeMemory('fim_watchRooms', $watchRooms, $this->getConfig('watchRoomsCacheRefresh'));
+    }
+    
+    return $this->returnValue($watchRooms, $userIndex);
+  }
+  
+  
+  ////* Censor Lists *////
+  ////* Caches Entire Table as censorLists[listId] = [listId, listName, listType, options] *////
+  public function getCensorLists($listIndex) {    
+   if ($this->issetMemory('fim_censorLists')) {
+      $censorLists = $this->getMemory('fim_censorLists');
+    }
+    elseif ($this->exists('fim_censorLists')) {
+      $censorLists = $this->get('fim_censorLists');
+    }
+    else {
+      $censorLists = array();
+
+      $queryParts['censorListsCacheSelect']['columns'] = array(
+        "{$sqlPrefix}censorLists" => 'listId, listName, listType, options',
+      );
+
+      $censorListsDatabase = $this->slaveDatabase->select($queryParts['censorListsCacheSelect']['columns']);
+      $censorListsDatabase = $censorListsDatabase->getAsArray(true);
+
+      foreach ($censorListsDatabase AS $censorList) {
+        $censorLists['byListId'][$censorList['listId']] = $censorList;
+      }
+
+      $this->storeMemory('fim_censorLists', $censorLists, $this->getConfig('censorListsCacheRefresh'));
+    }
+    
+    return $this->returnValue($censorLists, $listIndex);
+  }
+  
+  
+  ////* Censor Words *////
+  ////* Caches Entire Table as censorWords[word] = [listId, word, severity, param] *////
+  public function getCensorWords($listIndex) {    
+   if ($this->issetMemory('fim_censorWords')) {
+      $censorWords = $this->getMemory('fim_censorWords');
+    }
+    elseif ($this->exists('fim_censorWords')) {
+      $censorWords = $this->get('fim_censorWords');
+    }
+    else {
+      $censorWords = array();
+
+      $queryParts['censorWordsCacheSelect']['columns'] = array(
+        "{$sqlPrefix}censorWords" => 'listId, word, severity, param',
+      );
+
+      $censorWordsDatabase = $this->slaveDatabase->select($queryParts['censorWordsCacheSelect']['columns']);
+      $censorWordsDatabase = $censorWordsDatabase->getAsArray(true);
+
+      foreach ($censorWordsDatabase AS $censorWord) {
+        $censorWords[$censorList['word']] = $censorWord;
+      }
+
+      $this->storeMemory('fim_censorWords', $censorWords, $this->getConfig('censorWordsCacheRefresh'));
+    }
+    
+    return $this->returnValue($censorWords, $listIndex);
   }
 }
 
