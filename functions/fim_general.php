@@ -14,88 +14,19 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-/**
- * Determines if any value in an array is found in a seperate array.
- *
- * @param array $needle - The array that contains all values that will be applied to $haystack
- * @param array $haystack - The matching array.
- * @param bool $all - Only return true if /all/ values in $needle are in $haystack.
- * @return bool
- *
- * @author Joseph Todd Parsons <josephtparsons@gmail.com>
- */
-function fim_inArray($needle, $haystack, $all = false) {
-  if (!$haystack) return false; // If the haystack is not valid, return false.
-  elseif (!$needle) return false; // If the needle is not valid, return false.
-  else {
-    foreach($needle AS $need) { // Run through each entry of the needle
-      if ($all) { // All values must be found.
-        if (!$need) return false; // If the needle value is false, skip it.
-        if (in_array($need, $haystack)) continue; // If the needle is in the haystack, return true.
-      }
-      else { // Only one value must be found.
-        if (!$need) continue; // If the needle value is false, skip it.
-        if (in_array($need, $haystack)) return true; // If the needle is in the haystack, return true.
-      }
-    }
-
-    if ($all) {
-      return true; // If we have found all values, return true.
-    }
-    else {
-      return false; // If we haven't found a value, return false.
-    }
-  }
-}
 
 
 
-/**
- * Returns a "safe" array based on parameters.
- *
- * @param array $array - The array to be processed.
- * @param string $type - The variable type all entries in the returned array should corrospond to.
- * @param bool $preserveAll - Whether false, 0, and empty strings should be returned as a part of the array.
- * @return array
- * @author Joseph Todd Parsons <josephtparsons@gmail.com>
- */
-function fim_arrayValidate($array, $type = 'int', $preserveAll = false, $allowedValues = false) {
-  $arrayValidated = array(); // Create an empty array we will use to store things.
-  if (is_array($array)) { // Make sure the array is an array.
-    foreach ($array AS $value) { // Run through each value of the array.
-      if (is_array($allowedValues)
-        && !in_array($value, $allowedValues)) continue;
 
-      switch ($type) { // What type are we validating to?
-        case 'int': // Integer type.
-        if ($preserveAll) $arrayValidated[] = (int) $value; // If we preserve false entries, simply cast the variable as an interger.
-        else { // If we don't preserve false entries...
-          $preValue = (int) $value; // Cast the value
 
-          if ($preValue) { // If it is non-zero, add it to the new array.
-            $arrayValidated[] = $preValue;
-          }
-        }
-        break;
 
-        case 'bool':
-        $preValue = fim_cast('bool', $value, false);
 
-        if ($preserveAll)           $arrayValidated[] = $preValue; // Add to the array regardless of true/false (arguably what is should be here xD)
-        elseif ($preValue === true) $arrayValidated[] = $preValue; // Only add to the array if true.
-        break;
 
-        default:
-        if ($preserveAll)  $arrayValidated[] = $value; // Add to the array regardless of true/false (arguably what is should be default here xD)
-        elseif ($preValue) $arrayValidated[] = $value; // Only add to the array if true.
-        break;
-      }
-    }
-  }
-  else $arrayValidated = array(); // If its not, we will return an empty array.
 
-  return $arrayValidated; // Return the validated array.
-}
+/********************************************************
+************************ START **************************
+******************** IM Functions ***********************
+*********************************************************/
 
 
 
@@ -106,11 +37,14 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false, $allowed
  * @param array $userData - An array containing the user's data; indexes userId, adminPrivs, userPrivs, parentalAge, and parentalFlags are required.
  * @param string $type - Either "view", "post", "moderate", or "admin", this defines the action the user is trying to do.
  * @param bool $trans - If true, return will be an information array; otherwise bool.
+ *
  * @global bool $banned - Whether or not the user is banned outright.
  * @global array $superUsers - The list of superUsers.
  * @global bool $valid - Whether or not the user has a valid login (required for posting, etc.)
  * @global string $sqlPrefix
+ *
  * @return mixed - Bool if $trans is false, array if $trans is true.
+ *
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false) {
@@ -275,9 +209,12 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
 }
 
 
-
 /**
  * Determine if the active user is a superuser.
+ *
+ * @return bool - True if the user is super, false otherwise.
+ *
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_isSuper() {
   global $loginConfig;
@@ -286,6 +223,66 @@ function fim_isSuper() {
   else return false;
 }
 
+
+/**
+ * Sends a message. Requires the database to be active.
+ *
+ * @param string messageText - Text of message.
+ * @param string messageFlag - Flag of message, used by clients to automatically display URLs, images, etc.
+ * @param string userData - The data of the user sending the message. (This is not validated with the current user, and is left up to plugins).
+ * @param string roomData - The data of the room. Must be fully populated.
+ *
+ *
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
+function fim_sendMessage($messageText, $messageFlag, $userData, $roomData) {
+  global $database;
+
+  $messageParse = new messageParse($messageText, $messageFlag, $userData, $roomData);
+
+  $messageText = $messageParse->getParsed();
+  list($messageTextEncrypted, $iv, $saltNum) = $messageParse->getEncrypted();
+
+  $messageId = $database->storeMessage($userData, $roomData, $messageText, $messageTextEncrypted, $iv, $saltNum, $messageFlag);
+
+  $keyWords = $messageParse->getKeyWords();
+  $database->storeKeyWords($keyWords, $messageId, $userData['userId'], $roomData['roomId']);
+
+//  $database->storeUnreadMessage();
+}
+
+
+/*
+* messageRange
+* 1 = {
+*   0 :
+*   100 :
+*   200 :
+*   300 :
+* }
+*
+* timeRange
+* 0 = 0
+* 1 = 400
+*
+*/
+function fim_getMessageRange($roomId, $startId, $endId, $startDate, $endDate) {
+
+}
+
+
+
+
+
+
+
+
+
+
+/********************************************************
+************************ START **************************
+**************** Encoding & Encryption ******************
+*********************************************************/
 
 
 /**
@@ -302,7 +299,6 @@ function fim_urldecode($str) {
     $str
   );
 }
-
 
 
 /**
@@ -343,7 +339,6 @@ function fim_decrypt($message, $index = array('text')) {
 
   return $message; // Return the original array with the specified indexes unencrypted.
 }
-
 
 
 /**
@@ -398,6 +393,19 @@ function fim_encrypt($data) {
 
 
 
+
+
+
+
+
+
+/********************************************************
+************************ START **************************
+*********************** Wrappers ************************
+*********************************************************/
+
+
+
 /**
  * Generates a SHA256 using whatever methods are available. If no valid function can be found, the data will be returned unhashed.
  *
@@ -419,7 +427,6 @@ function fim_sha256($data) {
 }
 
 
-
 /**
  * A wrapper for rand and mt_rand, using whichever is available.
  *
@@ -433,6 +440,47 @@ function fim_rand($min, $max) {
   else return $min; // Though it should never happened, applications should still /run/ if no rand function exists. Keep this in mind when using fim_rand.
 }
 
+
+
+/**
+ * Retrieves a hook from the database.
+ *
+ *
+ * @param string $name
+ * @return evalcode (string)
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
+function hook($name) {
+  global $hooks, $disableHooks;
+
+
+  if ($disableHooks) return false; // If hooks are disabled, then return false.
+  elseif (isset($hooks[$name])) { // If the hook is set...
+    if (strlen($hooks[$name]) > 0) return $hook; // If the hook is not empty, return the code to eval.
+    else return false; // Otherwise return false.
+  }
+  else return false; // And if the hook isn't set, return false.
+  
+  // It doesn't matter whar I say.
+  // So long as I sing with in-flec-tion.
+  // That makes you feel that I'll convey.
+  // Some inner true of vast reflection!
+  // But I've said nothing so far.
+  // And I can keep it up for s long as it takes.
+  // And it don't matter who you are.
+  // If I'm doing my job then it's your resolve that breaks.
+}
+
+
+
+
+
+
+
+/********************************************************
+************************ START **************************
+********************* API Functions *********************
+*********************************************************/
 
 
 /**
@@ -473,99 +521,6 @@ function fim_encodeXmlAttr($data) {
 
 
 /**
- * Converts an HTML hexadecimal code to an array containing equivilent r-g-b values.
- *
- * @param string $color - The color, either 3 or 6 characters long with optional "#" appended.
- * @return array
- * @author Joseph Todd Parsons <josephtparsons@gmail.com>
- */
-function html2rgb($color) {
-  global $config;
-
-  if ($color[0] === '#') $color = substr($color, 1); // Strip a prepended "#" if it exists.
-
-  // Get the RGB colour as an array
-  if (strlen($color) === 6) list($r, $g, $b) = array($color[0] . $color[1], $color[2] . $color[3], $color[4] . $color[5]); // Data is stored as a six-character hexadecimal string (e.g. FFFFFF)
-  elseif (strlen($color) === 3) list($r, $g, $b) = array($color[0] . $color[0], $color[1] . $color[1], $color[2].$color[2]); // Data is stored as a three-character hexadecimal string (e.g. FFF)
-  else throw new Exception('Invalid color: ' . $color);
-
-  // Convert hexadecimal values to decimalvalues
-  $r = hexdec($r);
-  $g = hexdec($g);
-  $b = hexdec($b);
-
-  return array($r, $g, $b); // Return as an array.
-}
-
-
-
-/**
- * Converts an r-g-b value array (or integer list) to equivilent hexadecimal code.
- *
- * @param mixed $r
- * @param int $g
- * @param int $b
- * @return string
- * @author Joseph Todd Parsons <josephtparsons@gmail.com>
- */
-function rgb2html($r, $g = false, $b = false) {
-  global $config;
-
-  // Support the first parameter as being an array of the three.
-  if (is_array($r) && sizeof($r) === 3) list($r, $g, $b) = $r;
-
-  // Cast the values as integers.
-  $r = (int) $r;
-  $g = (int) $g;
-  $b = (int) $b;
-
-  // Restrict the value to a range of 0-255, then convert the value from decimal to hexadecimal.
-  $r = dechex($r < 0 ? 0 : ($r > 255 ? 255 : $r));
-  $g = dechex($g < 0 ? 0 : ($g > 255 ? 255 : $g));
-  $b = dechex($b < 0 ? 0 : ($b > 255 ? 255 : $b));
-
-  // Create the color. If a hexadecimal value is only one character in length, prepend a "0" to it (e.g. "3" becomes "03").
-  $color = (strlen($r) < 2 ? '0' : '') . $r;
-  $color .= (strlen($g) < 2 ? '0' : '') . $g;
-  $color .= (strlen($b) < 2 ? '0' : '') . $b;
-
-  return '#' . $color; // Return the value, prepended with a "#" to signify an HTML colour.
-}
-
-
-
-/**
- * Retrieves a hook from the database.
- *
- *
- * @param string $name
- * @return evalcode (string)
- * @author Joseph Todd Parsons <josephtparsons@gmail.com>
- */
-function hook($name) {
-  global $hooks, $disableHooks;
-
-
-  if ($disableHooks) return false; // If hooks are disabled, then return false.
-  elseif (isset($hooks[$name])) { // If the hook is set...
-    if (strlen($hooks[$name]) > 0) return $hook; // If the hook is not empty, return the code to eval.
-    else return false; // Otherwise return false.
-  }
-  else return false; // And if the hook isn't set, return false.
-  
-  // It doesn't matter whar I say.
-  // So long as I sing with in-flec-tion.
-  // That makes you feel that I'll convey.
-  // Some inner true of vast reflection!
-  // But I've said nothing so far.
-  // And I can keep it up for s long as it takes.
-  // And it don't matter who you are.
-  // If I'm doing my job then it's your resolve that breaks.
-}
-
-
-
-/**
  * API Layer
  *
  * @param array $array
@@ -592,7 +547,6 @@ function fim_outputApi($data) {
     return fim_outputJson($data);
   }
 }
-
 
 
 /**
@@ -641,7 +595,6 @@ $data";
     return $data;
   }
 }
-
 
 
 /**
@@ -709,7 +662,6 @@ $data";
 }
 
 
-
 /**
  * JSON Parser
  *
@@ -763,7 +715,6 @@ $indent}";
 }
 
 
-
 /**
  * Key Parser
  *
@@ -796,7 +747,6 @@ function fim_outputKeys($array, $level = 0) { // Used only for creating document
 }
 
 
-
 /**
  * Output Using print_r
  * @param array $array
@@ -807,7 +757,6 @@ function fim_outputArray() {
 
   print_r($array);
 }
-
 
 
 /**
@@ -843,6 +792,126 @@ function fim_apiCompact($data) {
 
 
 
+
+
+
+
+/********************************************************
+************************ START **************************
+******************** Misc Functions *********************
+*********************************************************/
+
+
+/**
+ * A function equvilent to obtaining the index value of an array.
+ *
+ * @param array $array
+ * @param mixed $index
+ * @return mixed
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
+function fim_indexValue($array, $index) {
+  return $array[$index];
+}
+
+
+/**
+ * Determines if any value in an array is found in a seperate array.
+ *
+ * @param array $needle - The array that contains all values that will be applied to $haystack
+ * @param array $haystack - The matching array.
+ * @param bool $all - Only return true if /all/ values in $needle are in $haystack.
+ * @return bool
+ *
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
+function fim_inArray($needle, $haystack, $all = false) {
+  if (!$haystack) return false; // If the haystack is not valid, return false.
+  elseif (!$needle) return false; // If the needle is not valid, return false.
+  else {
+    foreach($needle AS $need) { // Run through each entry of the needle
+      if ($all) { // All values must be found.
+        if (!$need) return false; // If the needle value is false, skip it.
+        if (in_array($need, $haystack)) continue; // If the needle is in the haystack, return true.
+      }
+      else { // Only one value must be found.
+        if (!$need) continue; // If the needle value is false, skip it.
+        if (in_array($need, $haystack)) return true; // If the needle is in the haystack, return true.
+      }
+    }
+
+    if ($all) {
+      return true; // If we have found all values, return true.
+    }
+    else {
+      return false; // If we haven't found a value, return false.
+    }
+  }
+}
+
+
+/**
+ * Determines if an array contains an array.
+ *
+ * @param array $array
+ * @return bool - True if the array contains array, false otherwise.
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
+function fim_hasArray($array) {
+  global $config;
+
+  foreach ($array AS $key => $value) { // Run through each entry of the array.
+    if (is_array($value)) return true; // If the value is an array, return true.
+  }
+
+  return false; // Since we haven't already found an array, return false.
+}
+
+
+/**
+ * Implements PHP's explode with support for escaped delimeters. You can not use as a delimiter or escape character 'µ', 'ñ', or 'ø' (which are used in place of '&', '#', ';' to free up those characters).
+ * If the escaepChar occurs twice in a row, it will be understood as having been twice-escaped, and handled accordingly.
+ *
+ * @param string delimiter
+ * @param string string
+ * @param string escapeChar - The character that escapes the string.
+ * @return string
+ */
+function fim_explodeEscaped($delimiter, $string, $escapeChar = '\\') {
+  $string = str_replace($escapeChar . $escapeChar, fim_encodeEntities($escapeChar), $string);
+  $string = str_replace($escapeChar . $delimiter, fim_encodeEntities($delimiter), $string);
+  return array_map('fim_decodeEntities', explode($delimiter, $string));
+}
+
+
+/**
+ * A function equvilent to an IF-statement that returns a true or false value. It is similar to the function in most spreadsheets (EXCEL, LibreOffice CALC).
+ * Note that this function is DEPRECATED for all internal commands, since it really doesn't serve any purpose, but it will be kept for 3rd party plugins to use as documented.
+ *
+ * @param string $condition - The condition that will be evaluated. It must be a string.
+ * @param string $true - A string to return if the above condition evals to true.
+ * @param string $false - A string to return if the above condition evals to false.
+ * @return bool - true on success, false on failure
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
+function fim_iif($condition, $true, $false) {
+  global $config;
+
+  if (eval('return ' . stripslashes($condition) . ';')) return $true; // If the string evals to true, return the true string.
+  else return $false; // Return the false string.
+}
+
+
+/**
+ * Converts a date of birth to age.
+ *
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ */
+function fim_dobToAge($date) {
+  return floor((time() - $date) / (60 * 60 * 24 * 365));
+}
+
+
 /**
  * Pretty Size
  *
@@ -864,6 +933,46 @@ function fim_formatSize($size) {
 }
 
 
+/**
+ * Encode entities using a custom format.
+ *
+ * @param string string - String to encode.
+ * @param array find - An array of characters to replace in the entity string (in most cases, should include only "&", "#", ";").
+ * @param array replace - An array of characters to replace with in the entity string (in most cases, this should include characters that would rarely be used for exploding a string).
+ * @return string
+ */
+function fim_encodeEntities($string, $find = array('&', '#', ';'), $replace = array('µ', 'ñ', 'ó')) {
+  return str_replace($find, $replace, mb_encode_numericentity($string, array(0x0, 0x10ffff, 0, 0xffffff), "UTF-8"));
+}
+
+
+/**
+ * Decode entities using a custom format.
+ *
+ * @param string string - String to encode.
+ * @param array replace - An array of characters to replace in the entity string (in most cases, should include only "&", "#", ";").
+ * @param array find - An array of characters to replace with in the entity string (in most cases, this should include characters that would rarely be used for exploding a string).
+ * @return string
+ */
+function fim_decodeEntities($string, $replace = array('µ', 'ñ', 'ó'), $find = array('&', '#', ';')) {
+  return mb_decode_numericentity(str_replace($replace, $find, $string), array(0x0, 0x10ffff, 0, 0xffffff), "UTF-8");
+}
+
+
+
+
+
+
+
+
+
+
+
+/********************************************************
+************************ START **************************
+**************** Data Handling Functions ****************
+*********************************************************/
+
 
 /**
  * Converts a request string to an array. The request string must be able to be urldecoded (thus, "%" characters must be urlencoded, though "&" and "=" can be included via escaping).
@@ -883,7 +992,6 @@ function fim_requestBodyToGPC($string) {
 
   return $array;
 }
-
 
 
 /**
@@ -1082,84 +1190,100 @@ function fim_sanitizeGPC($type, $data) {
 }
 
 
-
 /**
- * A function equvilent to an IF-statement that returns a true or false value. It is similar to the function in most spreadsheets (EXCEL, LibreOffice CALC).
- * Note that this function is DEPRECATED for all internal commands, since it really doesn't serve any purpose, but it will be kept for 3rd party plugins to use as documented.
+ * Performs a custom cast, implementing custom logic for boolean casts (and the default logic for all others).
  *
- * @param string $condition - The condition that will be evaluated. It must be a string.
- * @param string $true - A string to return if the above condition evals to true.
- * @param string $false - A string to return if the above condition evals to false.
- * @return bool - true on success, false on failure
+ * @param string cast - Type of cast, either 'bool', 'int', 'float', or 'string'.
+ * @param string value - Value to cast.
+ * @param string default - Whether to lean true or false with bool casts. Only if a value is exactly true or false will thus value not be used.
+ *
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
-function fim_iif($condition, $true, $false) {
-  global $config;
+function fim_cast($cast, $value, $default = null) {
+  switch ($cast) {
+    case 'bool':
+    $trueValues = array('true', 1, true, '1');
+    $falseValues = array('false', 0, false, '0');
 
-  if (eval('return ' . stripslashes($condition) . ';')) return $true; // If the string evals to true, return the true string.
-  else return $false; // Return the false string.
-}
+    if (in_array($value, $trueValues, true)) { $value = true; } // Strictly matches one of the above true values
+    elseif (in_array($value, $falseValues, true)) { $value = false; } // Strictly matches one of the above false values
+    elseif (!is_null($default)) { $value = (bool) $default; } // There's a default
+    else { $value = false; }
+    break;
 
+    case 'int': $value = (int) $value; break;
+    case 'float': $value = (float) $value; break;
+    case 'string': $value = (string) $value; break;
 
-
-/**
- * Determines if an array contains an array.
- *
- * @param array $array
- * @return bool - True if the array contains array, false otherwise.
- * @author Joseph Todd Parsons <josephtparsons@gmail.com>
- */
-function fim_hasArray($array) {
-  global $config;
-
-  foreach ($array AS $key => $value) { // Run through each entry of the array.
-    if (is_array($value)) return true; // If the value is an array, return true.
+    default: throw new Exception('Unrecognised cast.'); break;
   }
 
-  return false; // Since we haven't already found an array, return false.
+  return $value;
 }
 
 
 /**
- * Implements PHP's explode with support for escaped delimeters. You can not use as a delimiter or escape character 'µ', 'ñ', or 'ø' (which are used in place of '&', '#', ';' to free up those characters).
- * If the escaepChar occurs twice in a row, it will be understood as having been twice-escaped, and handled accordingly.
+ * Returns a "safe" array based on parameters.
  *
- * @param string delimiter
- * @param string string
- * @param string escapeChar - The character that escapes the string.
- * @return string
+ * @param array $array - The array to be processed.
+ * @param string $type - The variable type all entries in the returned array should corrospond to.
+ * @param bool $preserveAll - Whether false, 0, and empty strings should be returned as a part of the array.
+ * @return array
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
-function fim_explodeEscaped($delimiter, $string, $escapeChar = '\\') {
-  $string = str_replace($escapeChar . $escapeChar, fim_encodeEntities($escapeChar), $string);
-  $string = str_replace($escapeChar . $delimiter, fim_encodeEntities($delimiter), $string);
-  return array_map('fim_decodeEntities', explode($delimiter, $string));
+function fim_arrayValidate($array, $type = 'int', $preserveAll = false, $allowedValues = false) {
+  $arrayValidated = array(); // Create an empty array we will use to store things.
+  if (is_array($array)) { // Make sure the array is an array.
+    foreach ($array AS $value) { // Run through each value of the array.
+      if (is_array($allowedValues)
+        && !in_array($value, $allowedValues)) continue;
+
+      switch ($type) { // What type are we validating to?
+        case 'int': // Integer type.
+        if ($preserveAll) $arrayValidated[] = (int) $value; // If we preserve false entries, simply cast the variable as an interger.
+        else { // If we don't preserve false entries...
+          $preValue = (int) $value; // Cast the value
+
+          if ($preValue) { // If it is non-zero, add it to the new array.
+            $arrayValidated[] = $preValue;
+          }
+        }
+        break;
+
+        case 'bool':
+        $preValue = fim_cast('bool', $value, false);
+
+        if ($preserveAll)           $arrayValidated[] = $preValue; // Add to the array regardless of true/false (arguably what is should be here xD)
+        elseif ($preValue === true) $arrayValidated[] = $preValue; // Only add to the array if true.
+        break;
+
+        default:
+        if ($preserveAll)  $arrayValidated[] = $value; // Add to the array regardless of true/false (arguably what is should be default here xD)
+        elseif ($preValue) $arrayValidated[] = $value; // Only add to the array if true.
+        break;
+      }
+    }
+  }
+  else $arrayValidated = array(); // If its not, we will return an empty array.
+
+  return $arrayValidated; // Return the validated array.
 }
 
 
-/**
- * Encode entities using a custom format.
- *
- * @param string string - String to encode.
- * @param array find - An array of characters to replace in the entity string (in most cases, should include only "&", "#", ";").
- * @param array replace - An array of characters to replace with in the entity string (in most cases, this should include characters that would rarely be used for exploding a string).
- * @return string
- */
-function fim_encodeEntities($string, $find = array('&', '#', ';'), $replace = array('µ', 'ñ', 'ó')) {
-  return str_replace($find, $replace, mb_encode_numericentity($string, array(0x0, 0x10ffff, 0, 0xffffff), "UTF-8"));
-}
 
 
-/**
- * Decode entities using a custom format.
- *
- * @param string string - String to encode.
- * @param array replace - An array of characters to replace in the entity string (in most cases, should include only "&", "#", ";").
- * @param array find - An array of characters to replace with in the entity string (in most cases, this should include characters that would rarely be used for exploding a string).
- * @return string
- */
-function fim_decodeEntities($string, $replace = array('µ', 'ñ', 'ó'), $find = array('&', '#', ';')) {
-  return mb_decode_numericentity(str_replace($replace, $find, $string), array(0x0, 0x10ffff, 0, 0xffffff), "UTF-8");
-}
+
+
+
+
+
+
+
+
+/********************************************************
+************************ START **************************
+******************** Error Handling *********************
+*********************************************************/
 
 
 /**
@@ -1254,109 +1378,12 @@ function fim_errorHandler($errno, $errstr, $errfile, $errline) {
 }
 
 
+/**
+ * Flushes The Output Buffer
+ */
 function fim_flush() {
   flush();
+  
   if (ob_get_level()) ob_flush(); // Flush output buffer if enabled.
-}
-
-
-/**
- * A function equvilent to obtaining the index value of an array.
- *
- * @param array $array
- * @param mixed $index
- * @return mixed
- * @author Joseph Todd Parsons <josephtparsons@gmail.com>
- */
-function fim_indexValue($array, $index) {
-  return $array[$index];
-}
-
-
-/**
- * Sends a message. Requires the database to be active.
- *
- * @param string messageText - Text of message.
- * @param string messageFlag - Flag of message, used by clients to automatically display URLs, images, etc.
- * @param string userData - The data of the user sending the message. (This is not validated with the current user, and is left up to plugins).
- * @param string roomData - The data of the room. Must be fully populated.
- *
- *
- * @author Joseph Todd Parsons <josephtparsons@gmail.com>
- */
-function fim_sendMessage($messageText, $messageFlag, $userData, $roomData) {
-  global $database;
-
-  $messageParse = new messageParse($messageText, $messageFlag, $userData, $roomData);
-
-  $messageText = $messageParse->getParsed();
-  list($messageTextEncrypted, $iv, $saltNum) = $messageParse->getEncrypted();
-
-  $messageId = $database->storeMessage($userData, $roomData, $messageText, $messageTextEncrypted, $iv, $saltNum, $messageFlag);
-
-  $keyWords = $messageParse->getKeyWords();
-  $database->storeKeyWords($keyWords, $messageId, $userData['userId'], $roomData['roomId']);
-
-//  $database->storeUnreadMessage();
-}
-
-
-/**
- * Performs a custom cast, implementing custom logic for boolean casts (and the default logic for all others).
- *
- * @param string cast - Type of cast, either 'bool', 'int', 'float', or 'string'.
- * @param string value - Value to cast.
- * @param string default - Whether to lean true or false with bool casts. Only if a value is exactly true or false will thus value not be used.
- *
- * @author Joseph Todd Parsons <josephtparsons@gmail.com>
- */
-function fim_cast($cast, $value, $default = null) {
-  switch ($cast) {
-    case 'bool':
-    $trueValues = array('true', 1, true, '1');
-    $falseValues = array('false', 0, false, '0');
-
-    if (in_array($value, $trueValues, true)) { $value = true; } // Strictly matches one of the above true values
-    elseif (in_array($value, $falseValues, true)) { $value = false; } // Strictly matches one of the above false values
-    elseif (!is_null($default)) { $value = (bool) $default; } // There's a default
-    else { $value = false; }
-    break;
-
-    case 'int': $value = (int) $value; break;
-    case 'float': $value = (float) $value; break;
-    case 'string': $value = (string) $value; break;
-
-    default: throw new Exception('Unrecognised cast.'); break;
-  }
-
-  return $value;
-}
-
-
-/**
- * Converts a date of birth to age.
- *
- * @author Joseph Todd Parsons <josephtparsons@gmail.com>
- */
-function fim_dobToAge($date) {
-  return floor((time() - $date) / (60 * 60 * 24 * 365));
-}
-
-/*
-* messageRange
-* 1 = {
-*   0 :
-*   100 :
-*   200 :
-*   300 :
-* }
-*
-* timeRange
-* 0 = 0
-* 1 = 400
-*
-*/
-function fim_getMessageRange($roomId, $startId, $endId, $startDate, $endDate) {
-
 }
 ?>

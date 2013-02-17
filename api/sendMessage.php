@@ -86,6 +86,7 @@ if ($censorWordsCache['byWord']) {
 
   if ($searchText) {
     preg_match('/(' . implode('|',$searchText) . ')/i', $request['message'], $matches);
+    
     if ($matches[1]) {
       $blockedWord = strtolower($matches[1]);
       $blockedWordText = $censorWordsCache['byWord'][$blockedWord]['word'];
