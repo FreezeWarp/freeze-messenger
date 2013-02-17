@@ -55,17 +55,7 @@ class fimDatabase extends database {
 
       $queryParts['roomSelect']['conditions'] = array(
         'both' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'roomId'
-            ),
-            'right' => array(
-              'type' => 'int',
-              'value' => substr($roomId, 1),
-            ),
-          ),
+          'roomId' => (int) substr($roomId, 1),
         ),
       );
 
@@ -79,34 +69,14 @@ class fimDatabase extends database {
       if ($roomId) {
         $queryParts['roomSelect']['conditions'] = array(
           'both' => array(
-            array(
-              'type' => 'e',
-              'left' => array(
-                'type' => 'column',
-                'value' => 'roomId'
-              ),
-              'right' => array(
-                'type' => 'int',
-                'value' => (int) $roomId,
-              ),
-            ),
+            'column' => (int) $roomId,
           ),
         );
       }
       elseif ($roomName) {
         $queryParts['roomSelect']['conditions'] = array(
           'both' => array(
-            array(
-              'type' => 'e',
-              'left' => array(
-                'type' => 'column',
-                'value' => 'roomName'
-              ),
-              'right' => array(
-                'type' => 'string',
-                'value' => $roomName,
-              ),
-            ),
+            'roomName' => $roomName,
           ),
         );
       }
@@ -139,34 +109,14 @@ class fimDatabase extends database {
     if ($userId) {
       $queryParts['userSelect']['conditions'] = array(
         'both' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'userId'
-            ),
-            'right' => array(
-              'type' => 'int',
-              'value' => (int) $userId,
-            ),
-          ),
+          'userId' => (int) $userId,
         ),
       );
     }
     elseif ($userName) {
       $queryParts['userSelect']['conditions'] = array(
         'both' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'userName'
-            ),
-            'right' => array(
-              'type' => 'string',
-              'value' => $userName,
-            ),
-          ),
+          'userName' => $userName,
         ),
       );
     }
@@ -184,43 +134,6 @@ class fimDatabase extends database {
   }
 
 
-  public function getFont($fontId) {
-    global $sqlPrefix, $config, $user;
-
-    $queryParts['fontSelect']['columns'] = array(
-      "{$sqlPrefix}fonts" => 'fontId, fontName',
-    );
-
-    if ($fontId) {
-      $queryParts['fontSelect']['conditions'] = array(
-        'both' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'fontId'
-            ),
-            'right' => array(
-              'type' => 'int',
-              'value' => (int) $fontId,
-            ),
-          ),
-        ),
-      );
-    }
-    else {
-      return false;
-    }
-
-    $fontData = $this->select(
-      $queryParts['fontSelect']['columns'],
-      $queryParts['fontSelect']['conditions'],
-      false,
-      1);
-    return $fontData->getAsArray(false);
-  }
-
-
   public function getCensorList($listId) {
     global $sqlPrefix, $config, $user;
 
@@ -231,17 +144,7 @@ class fimDatabase extends database {
     if ($listId) {
       $queryParts['listSelect']['conditions'] = array(
         'both' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'listId'
-            ),
-            'right' => array(
-              'type' => 'int',
-              'value' => (int) $listId,
-            ),
-          ),
+          'listId' => (int) $listId,
         ),
       );
     }
@@ -273,17 +176,7 @@ class fimDatabase extends database {
     if ($wordId) {
       $queryParts['wordSelect']['conditions'] = array(
         'both' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'wordId'
-            ),
-            'right' => array(
-              'type' => 'int',
-              'value' => (int) $wordId,
-            ),
-          ),
+          'wordId' => (int) $wordId,
         ),
       );
     }
@@ -310,17 +203,7 @@ class fimDatabase extends database {
     if ($bbcodeId) {
       $queryParts['bbcodeSelect']['conditions'] = array(
         'both' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'bbcodeId'
-            ),
-            'right' => array(
-              'type' => 'int',
-              'value' => (int) $bbcodeId,
-            ),
-          ),
+          'bbcodeId' => (int) $bbcodeId,
         ),
       );
     }
@@ -347,17 +230,7 @@ class fimDatabase extends database {
     if ($messageId) {
       $queryParts['messageSelect']['conditions'] = array(
         'both' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'messageId'
-            ),
-            'right' => array(
-              'type' => 'int',
-              'value' => (int) $messageId,
-            ),
-          ),
+          'messageId' => (int) $messageId,
         ),
       );
     }
@@ -384,17 +257,7 @@ class fimDatabase extends database {
     if ($fileId) {
       $queryParts['fileSelect']['conditions'] = array(
         'both' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'fileId'
-            ),
-            'right' => array(
-              'type' => 'int',
-              'value' => (int) $fileId,
-            ),
-          ),
+          'fileId' => (int) $fileId,
         ),
       );
     }
@@ -426,17 +289,7 @@ class fimDatabase extends database {
         ),
         array(
           'both' => array(
-            array(
-              'type' => 'e',
-              'left' => array(
-                'type' => 'column',
-                'value' => 'roomId',
-              ),
-              'right' => array(
-                'type' => 'int',
-                'value' => (int) $roomId,
-              ),
-            ),
+            'roomId' => (int) $roomId,
           ),
         )
       );
@@ -471,17 +324,7 @@ class fimDatabase extends database {
     if ($directive) {
       $queryParts['configSelect']['conditions'] = array(
         'both' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'directive'
-            ),
-            'right' => array(
-              'type' => 'string',
-              'value' => $directive,
-            ),
-          ),
+          'directive' => $directive,
         ),
       );
     }
@@ -495,113 +338,6 @@ class fimDatabase extends database {
       false,
       1);
     return $configData->getAsArray(false);
-  }
-
-
-  public function getPhrase($phraseName, $languageCode, $interfaceId) {
-    global $sqlPrefix, $config, $user;
-
-    $queryParts['phraseSelect']['columns'] = array(
-      "{$sqlPrefix}phrases" => "phraseName, languageCode, interfaceId, text",
-    );
-    $queryParts['phraseSelect']['conditions'] = array(
-      'both' => array(
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'phraseName',
-          ),
-          'right' => array(
-            'type' => 'string',
-            'value' => $phraseName,
-          ),
-        ),
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'languageCode',
-          ),
-          'right' => array(
-            'type' => 'string',
-            'value' => $languageCode,
-          ),
-        ),
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'interfaceId',
-          ),
-          'right' => array(
-            'type' => 'int',
-            'value' => $interfaceId,
-          ),
-        ),
-      ),
-    );
-    $queryParts['phraseSelect']['sort'] = false;
-    $queryParts['phraseSelect']['limit'] = 1;
-
-    if (!$phraseName || !$languageCode || !$interfaceId) {
-      return false;
-    }
-
-    $phraseData = $this->select(
-      $queryParts['phraseSelect']['columns'],
-      $queryParts['phraseSelect']['conditions'],
-      $queryParts['phraseSelect']['sort'],
-      $queryParts['phraseSelect']['limit']);
-    return $phraseData->getAsArray(false);
-  }
-
-
-  public function getTemplate($templateName, $interfaceId) {
-    global $sqlPrefix, $config, $user;
-
-    $queryParts['templateSelect']['columns'] = array(
-      "{$sqlPrefix}templates" => "templateName, interfaceId, data, vars, templateId",
-    );
-    $queryParts['templateSelect']['conditions'] = array(
-      'both' => array(
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'templateName',
-          ),
-          'right' => array(
-            'type' => 'string',
-            'value' => $templateName,
-          ),
-        ),
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'interfaceId',
-          ),
-          'right' => array(
-            'type' => 'int',
-            'value' => $interfaceId,
-          ),
-        ),
-      ),
-    );
-    $queryParts['templateSelect']['sort'] = false;
-    $queryParts['templateSelect']['limit'] = 1;
-
-    if (!$templateName || !$interfaceId) {
-      return false;
-    }
-
-    $templateData = $this->select(
-      $queryParts['templateSelect']['columns'],
-      $queryParts['templateSelect']['conditions'],
-      $queryParts['templateSelect']['sort'],
-      $queryParts['templateSelect']['limit']);
-    return $templateData->getAsArray(false);
   }
 
 
@@ -891,17 +627,7 @@ class fimDatabase extends database {
     );
     $queryParts['counterSelect']['conditions'] = array(
       'both' => array(
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'messageName'
-          ),
-          'right' => array(
-            'type' => 'string',
-            'value' => (int) $counterName,
-          ),
-        ),
+        'counterName' => $counterName,
       ),
     );
 
@@ -932,17 +658,7 @@ class fimDatabase extends database {
 
     $queryParts['conditions'] = array(
       'both' => array(
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'roomUsersHash',
-          ),
-          'right' => array(
-            'type' => 'string',
-            'value' => md5(implode(',', $userList)),
-          ),
-        ),
+        'roomUsersHash' => md5(implode(',', $userList)),
       ),
     );
 
@@ -950,6 +666,7 @@ class fimDatabase extends database {
       $queryParts['conditions']);
     return $privateRoom->getAsArray(false);
   }
+  
 
   public function storeKeyWords($words, $messageId, $userId, $roomId) {
     global $config, $sqlPrefix;
