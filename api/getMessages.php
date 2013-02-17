@@ -523,7 +523,6 @@ else {
   }
 
 
-
   /* Plugin Hook Start */
   ($hook = hook('getMessages_start') ? eval($hook) : '');
 

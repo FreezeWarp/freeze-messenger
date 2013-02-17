@@ -783,14 +783,19 @@ LIMIT
               $sideText['left'] = $reverseAlias[$key];
 
               if (is_int($value)) {
-                $sideText['right'] = (int) $data['right']['value'];
+                $sideText['right'] = $value;
               }
               elseif (is_string($value)) {
                 if (strpos($value, 'column ') === 0) {
-                  $sideText['right'] = $reverseAlias[str_replace('column ', '', $value)];
+                  if (ctype_alnum(substr($value, 7))) {
+                    $sideText['right'] = $reverseAlias[str_replace('column ', '', $value)];
+                  }
+                  else {
+                    throw new Exception('Invalid use of shorthand sequence: columns must be alphanumeric. (Take a guess why.)');
+                  }
                 }
                 else {
-                  throw new Exception('Unsupported.');
+                  $sideText['right'] = $this->escape($value);
                 }
               }
               else {

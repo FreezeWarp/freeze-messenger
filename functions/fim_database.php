@@ -69,7 +69,7 @@ class fimDatabase extends database {
       if ($roomId) {
         $queryParts['roomSelect']['conditions'] = array(
           'both' => array(
-            'column' => (int) $roomId,
+            'roomId' => (int) $roomId,
           ),
         );
       }
@@ -86,7 +86,7 @@ class fimDatabase extends database {
 
       $roomType = 'normal'; // We return this because it will be easier to change the roomId schema.
     }
-
+    
     $roomData = $this->select(
       $queryParts['roomSelect']['columns'],
       $queryParts['roomSelect']['conditions'],
@@ -159,6 +159,7 @@ class fimDatabase extends database {
       1);
     return $listData->getAsArray(false);
   }
+  
 
   public function getCensorWord($wordId) { // TODO
     global $sqlPrefix, $config, $user;
@@ -347,7 +348,8 @@ class fimDatabase extends database {
     if ($config['enableUnreadMessages']) {
       $this->delete("{$sqlPrefix}unreadMessages",array(
         'messageId' => $messageId,
-        'userId' => $userId));
+        'userId' => $userId
+      ));
     }
   }
 
