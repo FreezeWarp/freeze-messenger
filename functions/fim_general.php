@@ -48,7 +48,7 @@
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false) {
-  global $sqlPrefix, $banned, $loginConfig, $valid, $database, $config, $kicksCache, $permissionsCache;
+  global $sqlPrefix, $banned, $loginConfig, $valid, $database, $config, $generalCache;
 
   /* START COMPILE VERBOSE */
   if (!isset($roomData['type'])) throw new Exception('hasPermission requires roomData[type] to be defined.');
@@ -104,10 +104,8 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
 
     /* Get the User's Kick Status */
     if ($userData['userId'] > 0) { // Is their userId non-zero?
-      if (count($kicksCache['byRoomId']) > 0) { // Is the kicks cache non-empty?
-	if (isset($kicksCache['byRoomId'][$roomData['roomId']][$userData['userId']])) $kick = true; // We're kicked!
-	else $kick = false; // We're not kicked!
-      }
+      if ($generalCache->getKicks($roomData['roomId'], $userData['userId'])) $kick = true; // We're kicked!
+      else $kick = false; // We're not kicked!
     }
 
 
@@ -147,10 +145,8 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
 
       /* Is the User an Allowed User? */
       foreach(array('user', 'admingroup', 'group') AS $type3) {
-        if (isset($permissionsCache['byRoomId'][$roomData['roomId']], $permissionsCache['byRoomId'][$roomData['roomId']][$type3], $permissionsCache['byRoomId'][$roomData['roomId']][$type3][$userData['userId']])) {
-          if ($permissionsCache['byRoomId'][$roomData['roomId']][$type2][$userData['userId']] & $permMap[$type2]) { $isAllowedUser = true; }
-          else { $isAllowedUserOverride = true; break; } // If a group is granted access but a user is forbidden, the user status is considered final. Likewise, if a social group is granted access but an admin group is restricted, the admin group is considered final.
-        }
+        if ($generalCache->getPermissions($roomData['roomId'], $type3, $userData['userId']) & $permMap[$type2]) { $isAllowedUser = true; }
+        else { $isAllowedUserOverride = true; break; } // If a group is granted access but a user is forbidden, the user status is considered final. Likewise, if a social group is granted access but an admin group is restricted, the admin group is considered final.
       }
       if (($roomData['defaultPermissions'] & $permMap[$type2]) && !$isAllowedUserOverride) {
         $isAllowedUser = true;

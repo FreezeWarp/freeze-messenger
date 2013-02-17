@@ -437,6 +437,27 @@ class fimCache extends generalCache {
 
     return $this->returnValue($activeCensorLists);
   }
+  
+  
+  public function getActiveCensorWords($roomId) {
+    if ($this->issetMemory('fim_activeCensorWords')) {
+      $activeCensorWords = $this->getMemory('fim_activeCensorWords');
+    }
+    else {
+      $activeCensorWords = array();
+      
+      foreach ($this->getActiveCensorLists($roomId) AS $list) {
+        foreach ($this->getCensorWords($list) AS $word) {
+          $activeCensorWords[] = $word;    
+        }
+      }
+      
+      $this->storeMemory('fim_activeCensorWords', $activeCensorWords, false); // "false" indicates that the information should not be cached. We include this function in the cache class because the memory store is /really/ useful, and because we exclusively work with other cache functions.
+      
+    }
+    
+    return $this->returnValue($activeCensorWords);
+  }
 }
 
 ?>

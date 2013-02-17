@@ -213,9 +213,6 @@ else {
  * The new cache system is intended to be used with per-value querying, as opposed to loading the entire cache into memory like this every time. However, this conversion will take a while, so for now, we will go with the old way as shown below. */
 
 $hooks = $generalCache->getHooks();
-$kicksCache = $generalCache->getKicks();
-$permissionsCache = $generalCache->getPermissions();
-$watchRoomsCache = $generalCache->getWatchRooms();
 $censorListsCache = $generalCache->getCensorLists();
 $censorWordsCache = $generalCache->getCensorWords();
 

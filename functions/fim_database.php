@@ -346,7 +346,7 @@ class fimDatabase extends database {
 
 
   public function storeMessage($userData, $roomData, $messageText, $messageTextEncrypted, $encryptIV, $encryptSalt, $flag) {
-    global $sqlPrefix, $config, $user, $permissionsCache, $generalCache;
+    global $sqlPrefix, $config, $user, $generalCache;
 
     if (!isset($roomData['options'], $roomData['roomId'], $roomData['roomName'], $roomData['type'])) throw new Exception('database->storeMessage requires roomData[options], roomData[roomId], roomData[roomName], and roomData[type].');
     if (!isset($userData['userId'], $userData['userName'], $userData['userGroup'], $userData['avatar'], $userData['profile'], $userData['userFormatStart'], $userData['userFormatEnd'], $userData['defaultFormatting'], $userData['defaultColor'], $userData['defaultHighlight'], $userData['defaultFontface'])) throw new Exception('database->storeMessage requires userData[userId], userData[userName], userData[userGroup], userData[avatar]. userData[profile], userData[userFormatStart], userData[userFormatEnd], userData[defaultFormatting], userData[defaultColor], userData[defaultHighlight], and userData[defaultFontface]');
@@ -481,7 +481,7 @@ class fimDatabase extends database {
 
     // If the contact is a private communication, create an event and add to the message unread table.
     if ($roomData['type'] === 'private') {
-      foreach ($permissionsCache['byRoomId'][$roomData['roomId']]['user'] AS $sendToUserId => $permissionLevel) {
+      foreach ($generalCache->getPermissions($roomData['roomId'], 'user') AS $sendToUserId => $permissionLevel) {
         if ($sendToUserId == $user['userId']) {
           continue;
         }

@@ -219,8 +219,8 @@ if (is_array($rooms)) {
 
       if ($permissions[0]['moderate']) { // Fetch the allowed users and allowed groups if the user is able to moderate the room.
         if (isset($permissionsCache['byRoomId'][$roomData['roomId']])) {
-          $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['allowedUsers'] = (array) $permissionsCache['byRoomId'][$roomData['roomId']]['user'];
-          $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['allowedGroups'] = (array) $permissionsCache['byRoomId'][$roomData['roomId']]['group'];
+          $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['allowedUsers'] = (array) $generalCache->getPermissions($roomData['roomId'], 'user');
+          $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['allowedGroups'] = (array) $generalCache->getPermissions($roomData['roomId'], 'group');
         }
       }
 
