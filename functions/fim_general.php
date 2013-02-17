@@ -1268,7 +1268,7 @@ function fim_flush() {
  * @return mixed
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
-function indexValue($array, $index) {
+function fim_indexValue($array, $index) {
   return $array[$index];
 }
 

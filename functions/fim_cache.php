@@ -85,7 +85,7 @@ class fimCache extends generalCache {
    * @param mixed refresh - The period after which the cache will no longer be valid.
    */
   private function storeMemory($index, $data, $refresh) {
-    $this->set($index, $data, $refresh);
+    if ($refresh) $this->set($index, $data, $refresh);
     
     $this->memory[$index] = $data;
   }
@@ -374,13 +374,68 @@ class fimCache extends generalCache {
       $censorWordsDatabase = $censorWordsDatabase->getAsArray(true);
 
       foreach ($censorWordsDatabase AS $censorWord) {
-        $censorWords[$censorList['word']] = $censorWord;
+        $censorWords[$censorWord['word']] = $censorWord;
       }
 
       $this->storeMemory('fim_censorWords', $censorWords, $this->getConfig('censorWordsCacheRefresh'));
     }
     
     return $this->returnValue($censorWords, $listIndex);
+  }
+  
+  
+  ////* Censor Words *////
+  ////* Caches Entire Table as censorWords[word] = [listId, word, severity, param] *////
+  public function getCensorBlackWhiteLists($roomIndex, $listIndex) {    
+   if ($this->issetMemory('fim_censorBlackWhiteLists')) {
+      $censorBlackWhiteLists = $this->getMemory('fim_censorBlackWhiteLists');
+    }
+    elseif ($this->exists('fim_censorBlackWhiteLists')) {
+      $censorBlackWhiteLists = $this->get('fim_censorBlackWhiteLists');
+    }
+    else {
+      $censorBlackWhiteLists = array();
+
+      $queryParts['censorBlackWhiteListsCacheSelect']['columns'] = array(
+        "{$sqlPrefix}censorBlackWhiteLists" => 'listId, roomId, status',
+      );
+
+      $censorBlackWhiteListsDatabase = $this->slaveDatabase->select($queryParts['censorBlackWhiteListsCacheSelect']['columns']);
+      $censorBlackWhiteListsDatabase = $censorBlackWhiteListsDatabase->getAsArray(true);
+
+      foreach ($censorBlackWhiteListsDatabase AS $censorBlackWhiteList) {
+        $censorBlackWhiteLists[$censorBlackWhiteList['roomId']][$censorBlackWhiteList['listId']] = $censorBlackWhiteList;
+      }
+
+      $this->storeMemory('fim_censorBlackWhiteLists', $censorBlackWhiteLists, $this->getConfig('$censorBlackWhiteListsCacheRefresh'));
+    }
+    
+    return $this->returnValue($censorBlackWhiteLists, $roomIndex, $listIndex);
+  }
+  
+  
+  public function getActiveCensorLists($roomId) {
+    if ($this->issetMemory('fim_censorBlackWhiteLists')) {
+      $censorBlackWhiteLists = $this->getMemory('fim_censorBlackWhiteLists');
+    }
+    else {
+      $censorLists = $this->getCensorLists();
+      $censorBlackWhiteLists = $this->getCensorBlackWhiteLists($roomId);
+      $activeCensorLists = array();
+      
+      foreach ($censorLists AS $censorList) {
+        if ($censorList['type'] === 'black' && in_array($censorList['listId'], array_keys($censorBlackWhiteLists))) {
+          $activeCensorLists[] = $censorList;
+        }
+        elseif ($censorList['type'] === 'white' && !in_array($censorList['listId'], array_keys($censorBlackWhiteLists))) {
+          $activeCensorLists[] = $censorList;
+        }
+      }
+      
+      $this->storeMemory('fim_activeCensorLists', $activeCensorLists, false); // "false" indicates that the information should not be cached. We include this function in the cache class because the memory store is /really/ useful, and because we exclusively work with other cache functions.
+    }
+
+    return $this->returnValue($activeCensorLists);
   }
 }
 

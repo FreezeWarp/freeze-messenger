@@ -57,24 +57,23 @@ class messageParse {
   */
 
   public function censorParse($text, $roomId = 0, $roomOptions) {
-    global $sqlPrefix, $slaveDatabase, $config, $censorWordsCache;
+    global $sqlPrefix, $slaveDatabase, $config, $generalCache;
+    
+    $words2 = array();
+    $searchText = array();
 
-    if (!count($censorWordsCache['byWord'])) {
-      return $text;
-    }
-    else {
-      $listIds = $slaveDatabase->getRoomCensorLists($roomId);
-
-      foreach ($censorWordsCache['byWord'] AS $word) {
+    foreach ($generalCache->getActiveCensorLists($roomId) AS $list) {
+      foreach ($generalCache->getCensorWords($list['listId']) AS $word) {
         if ($word['severity'] !== 'replace') continue; // We only deal with replaces here.
 
         $words2[strtolower($word['word'])] = $word['param'];
         $searchText[] = addcslashes(strtolower($word['word']),'^&|!$?()[]<>\\/.+*');
       }
-      $searchText2 = implode('|', $searchText);
-
-      return preg_replace("/(?<!(\[noparse\]))(?<!(\quot))($searchText2)(?!\[\/noparse\])/ie","fim_indexValue(\$words2,strtolower('\\3'))", $text);
     }
+    
+    $searchText2 = implode('|', $searchText);
+
+    return preg_replace("/(?<!(\[noparse\]))(?<!(\quot))($searchText2)(?!\[\/noparse\])/ie","fim_indexValue(\$words2,strtolower('\\3'))", $text);
   }
 
 
