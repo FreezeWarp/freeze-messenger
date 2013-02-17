@@ -41,8 +41,6 @@ $request = fim_sanitizeGPC('p', array(
     'cast' => 'int',
   ),
 
-  'roomListName' => array(),
-
   'action' => array(
     'valid' => array('add', 'remove', 'replace'),
   ),
@@ -65,11 +63,6 @@ $xmlData = array(
 
 /* Plugin Hook Start */
 ($hook = hook('editIgnoreList_start') ? eval($hook) : '');
-
-
-if (!$request['roomListId']) { // Not gonna lie, only doing this because I don't want to implement the feature myself in the frontends. (When I do implement it, though, I won't have to change the DB).
-  $request['roomListId'] = $roomListNamesCache['byListName'][$request['roomListName']]['listId'];
-}
 
 
 switch ($request['action']) {

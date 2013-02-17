@@ -222,33 +222,6 @@ $censorWordsCache = $generalCache->getCensorWords();
 
 
 
-////* Room List Names Cache *////
-////* Caches Entire Table as roomListNames[[listName, listId]] = [listId, listName] *////
-
-$roomListNamesCache = $generalCache->get('fim_roomListNamesCache');
-
-if ($roomListNamesCache === null || $roomListNamesCache === false) {
-  $roomListNamesCache = array('byListName' => array(), 'byListId' => array());
-
-  $queryParts['roomListNamesCacheSelect']['columns'] = array(
-    "{$sqlPrefix}roomListNames" => 'listId, listName',
-  );
-
-  $roomListNamesCachePre = $database->select($queryParts['roomListNamesCacheSelect']['columns']);
-  $roomListNamesCachePre = $roomListNamesCachePre->getAsArray(true);
-
-  foreach ($roomListNamesCachePre AS $cachePerm) {
-    $roomListNamesCache['byListId'][$cachePerm['listId']] = $cachePerm;
-    $roomListNamesCache['byListName'][$cachePerm['listName']] = $cachePerm;
-  }
-
-  $generalCache->set('fim_roomListNamesCache', $roomListNamesCache, $config['roomListNamesCacheRefresh']);
-}
-
-
-
-
-
 ////* User Login (Requires Database) *////
 
 require_once(dirname(__FILE__) . '/validate.php'); // This is where all the user validation stuff occurs.
