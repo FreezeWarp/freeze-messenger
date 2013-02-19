@@ -346,55 +346,6 @@ switch($request['action']) {
       else {
         die('Internal Logic Error');
       }
-
-
-      if ((int) $roomId) {
-        // Clear Existing Permissions
-        $database->delete("{$sqlPrefix}roomPermissions", array(
-          'roomId' => $roomId,
-        ));
-
-        foreach ($request['allowedUsers'] AS &$allowedUser) {
-          if (in_array($allowedUser, $request['moderators'])) { // Don't process as an allowed user if the user is to be a moderator as well.
-            unset($allowedUser);
-          }
-          else {
-            $database->insert("{$sqlPrefix}roomPermissions", array(
-                'roomId' => $roomId,
-                'attribute' => 'user',
-                'param' => $allowedUser,
-                'permissions' => 7,
-              ), array(
-                'permissions' => 7,
-              )
-            );
-          }
-        }
-
-        foreach ($request['allowedGroups'] AS &$allowedGroup) {
-          $database->insert("{$sqlPrefix}roomPermissions", array(
-              'roomId' => $roomId,
-              'attribute' => 'group',
-              'param' => $allowedGroup,
-              'permissions' => 7,
-            ), array(
-              'permissions' => 7,
-            )
-          );
-        }
-
-        foreach ($request['moderators'] AS &$moderator) {
-          $database->insert("{$sqlPrefix}roomPermissions", array(
-              'roomId' => $roomId,
-              'attribute' => 'user',
-              'param' => $moderator,
-              'permissions' => 15,
-            ), array(
-              'permissions' => 15,
-            )
-          );
-        }
-      }
     }
   }
   break;
