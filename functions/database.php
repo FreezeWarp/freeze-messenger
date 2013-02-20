@@ -532,6 +532,8 @@ LIMIT
     return $this->rawQuery($finalQueryText);
   }
 
+  
+  
   /**
    * Recurses over a specified "where" array, returning a valid where clause.
    *
@@ -572,7 +574,10 @@ LIMIT
          ** To compare a column to a value: 'columnName' => 'value' (value must be either integer or string, and will be escaped automatically)
          ** To compare a column to multiple values using an IN clause: 'columnName' => 'value' (value must be one-dimensional array, all entries of which should either be strings or integers, which will automatically be escaped.
          ** To compare a column to another column: 'columnName' => 'column columnName2' (columnName2 must be alphanumeric or it will not be accepted; additionally, above strings must not start with "column")
-         **
+         *
+         * Next, a few caveats:
+         ** Everything is case sensitive. Live with it.
+         ** 
         */
 
         else { // No array -- shorthand mode.
@@ -595,21 +600,27 @@ LIMIT
                 if (ctype_alnum(substr($value, 7))) {
                   $sideText['right'] = $reverseAlias[str_replace('column ', '', $value)];
                 }
-                else {
-                  throw new Exception('Invalid use of shorthand sequence: columns must be alphanumeric. (Take a guess why.)');
-                }
+                else throw new Exception('Invalid use of shorthand sequence: columns must be alphanumeric.');
               }
               
               // Value is to be Searched
               elseif (strpos($value, 'search ') === 0) {
                 if (ctype_alnum(substr($value, 7))) {
-                  $sideText['right'] = '"%' . $this->escape($data[$side]['value']) . '%"';
+                  $sideText['right'] = '"%' . $this->escape(substr($value, 7)) . '%"';
                   $hackz['symbol'] = 'LIKE'; // TODO
                 }
-                else {
-                  throw new Exception('Invalid use of shorthand sequence: search must be alphanumeric. (Take a guess why.)');
-                }
+                else throw new Exception('Invalid use of shorthand sequence: search must be alphanumeric.');
               }
+              
+              // Value is to be 
+              elseif (startsWith($value, 'and ') === 0) {
+                if (ctype_digit(substr($value, 4))) {
+                  $sideText['right'] = (int) substr($value, 4);
+                  $hackz['symbol'] = $this->comparisonTypes['and'];
+                }
+                else throw new Exception('Invalid use of shorthand sequence: bAnd must be numeric.');
+              }
+              
               
               // Value is String Value
               else {
@@ -659,7 +670,71 @@ LIMIT
 
     return "($whereText)"; // Return condition string. We wrap parens around to support multiple levels of conditions/recursion.
   }
+  
+  
+  
+  /**
+   * Designates a value to be an integer during SELECT operations.
+   *
+   * This function should _only_ be used for SELECT operations, and can be understood as being similar to PHP's native (int), (string), etc.
+   *
+   * @return special - int() returns a custom value that should only be read by the select() function.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  public function int($value) {
+    return array('int', $value);
+  }
+  
+  
+  
+  /**
+   * Designates a value to be a timestamp during SELECT operations.
+   *
+   * This function should _only_ be used for SELECT operations, and can be understood as being similar to PHP's native (int), (string), etc.
+   *
+   * @return special - ts() returns a custom value that should only be read by the select() function.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  public function ts($value) {
+    return array('ts', $value);
+  }
+  
+  
+  
+  /**
+   * Designates a value to be a string during SELECT operations.
+   *
+   * This function should _only_ be used for SELECT operations, and can be understood as being similar to PHP's native (int), (string), etc.
+   *
+   * @return special - str() returns a custom value that should only be read by the select() function.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */  
+  public function str($value) {
+    return array('str', $value);
+  }
+  
+  
+  
+  /**
+   * Designates a value to be a column referrence (alias the column must be referrenced as) during SELECT operations.
+   *
+   * This function should _only_ be used for SELECT operations, and can be understood as being similar to PHP's native (int), (string), etc.
+   *
+   * @return special - col() returns a custom value that should only be read by the select() function.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */  
+  public function col($value) {
+    return array('col', $value);
+  }
+  
+  
+  
+  public function comp($method, $value) {
+  
+  }
 
+  
+  
 
   /**
    * Inserts a row into a table of the database.

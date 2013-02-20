@@ -965,6 +965,14 @@ function fim_decodeEntities($string, $replace = array('µ', 'ñ', 'ó'), $find =
   return mb_decode_numericentity(str_replace($replace, $find, $string), array(0x0, 0x10ffff, 0, 0xffffff), "UTF-8");
 }
 
+function fim_startsWith($haystack, $needle) {
+  return strpos($haystack, $needle, 0) === 0;
+}
+
+function fim_endsWith($haystack, $needle) {
+  return strrpos($haystack, $needle, 0) === (strlen($haystack) - strlen($needle));
+}
+
 
 
 

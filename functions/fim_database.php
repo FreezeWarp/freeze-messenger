@@ -64,9 +64,7 @@ class fimDatabase extends database {
       );
 
       $queryParts['roomSelect']['conditions'] = array(
-        'both' => array(
-          'roomId' => (int) substr($roomId, 1),
-        ),
+        'both' => array('roomId' => $this->int(substr($roomId, 1))),
       );
 
       $roomType = 'private'; // We return this because it will be easier to change the roomId schema.
@@ -89,16 +87,12 @@ class fimDatabase extends database {
 
       if ($roomId) {
         $queryParts['roomSelect']['conditions'] = array(
-          'both' => array(
-            'roomId' => (array) $roomIds,
-          ),
+          'both' => array('roomId' => $this->in($roomIds)),
         );
       }
       elseif ($roomName) {
         $queryParts['roomSelect']['conditions'] = array(
-          'both' => array(
-            'roomName' => $roomName,
-          ),
+          'both' => array('roomName' => $this->str($roomName)),
         );
       }
       else {
@@ -129,16 +123,12 @@ class fimDatabase extends database {
 
     if ($userId) {
       $queryParts['userSelect']['conditions'] = array(
-        'both' => array(
-          'userId' => (int) $userId,
-        ),
+        'both' => array('userId' => $this->int($userId)),
       );
     }
     elseif ($userName) {
       $queryParts['userSelect']['conditions'] = array(
-        'both' => array(
-          'userName' => $userName,
-        ),
+        'both' => array('userName' => $this->str($userName)),
       );
     }
     else {
@@ -164,9 +154,7 @@ class fimDatabase extends database {
 
     if ($listId) {
       $queryParts['listSelect']['conditions'] = array(
-        'both' => array(
-          'listId' => (int) $listId,
-        ),
+        'both' => array('listId' => $this->int($listId)),
       );
     }
     else {
@@ -186,20 +174,12 @@ class fimDatabase extends database {
     global $sqlPrefix, $config, $user;
 
     $queryParts['wordSelect']['columns'] = array(
-      "{$sqlPrefix}censorWords" => array(
-        'wordId' => 'wordId',
-        'listId' => 'listId',
-        'word' => 'word',
-        'severity' => 'severity',
-        'param' => 'param',
-      ),
+      "{$sqlPrefix}censorWords" => 'wordId, listId, word, severity, param',
     );
 
     if ($wordId) {
       $queryParts['wordSelect']['conditions'] = array(
-        'both' => array(
-          'wordId' => (int) $wordId,
-        ),
+        'both' => array('wordId' => $this->int($wordId)),
       );
     }
     else {
@@ -224,9 +204,7 @@ class fimDatabase extends database {
 
     if ($messageId) {
       $queryParts['messageSelect']['conditions'] = array(
-        'both' => array(
-          'messageId' => (int) $messageId,
-        ),
+        'both' => array('messageId' => $this->int($messageId)),
       );
     }
     else {
@@ -251,9 +229,7 @@ class fimDatabase extends database {
 
     if ($fileId) {
       $queryParts['fileSelect']['conditions'] = array(
-        'both' => array(
-          'fileId' => (int) $fileId,
-        ),
+        'both' => array('fileId' => $this->int($fileId)),
       );
     }
     else {
@@ -283,9 +259,7 @@ class fimDatabase extends database {
           "{$sqlPrefix}censorBlackWhiteLists" => 'status, roomId, listId',
         ),
         array(
-          'both' => array(
-            'roomId' => (int) $roomId,
-          ),
+          'both' => array('roomId' => $this->int($roomId)),
         )
       );
       $listsActive = $listsActive->getAsArray();
@@ -318,9 +292,7 @@ class fimDatabase extends database {
 
     if ($directive) {
       $queryParts['configSelect']['conditions'] = array(
-        'both' => array(
-          'directive' => $directive,
-        ),
+        'both' => array('directive' => $this->str($directive)),
       );
     }
     else {
@@ -623,7 +595,7 @@ class fimDatabase extends database {
     );
     $queryParts['counterSelect']['conditions'] = array(
       'both' => array(
-        'counterName' => $counterName,
+        'counterName' => $this->str($counterName),
       ),
     );
 
@@ -654,7 +626,7 @@ class fimDatabase extends database {
 
     $queryParts['conditions'] = array(
       'both' => array(
-        'roomUsersHash' => md5(implode(',', $userList)),
+        'roomUsersHash' => $this->str(md5(implode(',', $userList))),
       ),
     );
 

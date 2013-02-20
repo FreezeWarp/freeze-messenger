@@ -707,6 +707,7 @@
     </bitfield>
 
     <bitfield name="options" table="users">
+      <def bit="1">Allowed (if unset, the user is banned)</def>
       <def bit="512">Block Private Contact</def>
       <def bit="1024">Block Non-Friends for Private Contact</def>
     </bitfield>
