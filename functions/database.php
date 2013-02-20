@@ -580,60 +580,57 @@ LIMIT
             $i++;
             $sideTextFull[$i] = '';
 
-            if ($key === 'left' || $key === 'right' || $key === 'type') { // These keys are reserved for the longhand mode. Needless to say, those columns are off limits for now.
-              throw new Exception('Malformed Query; Data: ' . print_r($data, true));
-            }
-            else {
-              $sideText['left'] = $reverseAlias[$key]; // This is over-ridden for REGEX.
-              $symbol = $this->comparisonTypes['e']; // TODO: lt/gt/etc.
+            $sideText['left'] = $reverseAlias[$key]; // This is over-ridden for REGEX.
+            $symbol = $this->comparisonTypes['e']; // TODO: lt/gt/etc.
 
-              // Value is Integer Value
-              if (is_int($value)) {
-                $sideText['right'] = $value;
-              }
-              
-              // Value is String
-              elseif (is_string($value)) {
-                // Value is Column
-                if (strpos($value, 'column ') === 0) {
-                  if (ctype_alnum(substr($value, 7))) {
-                    $sideText['right'] = $reverseAlias[str_replace('column ', '', $value)];
-                  }
-                  else {
-                    throw new Exception('Invalid use of shorthand sequence: columns must be alphanumeric. (Take a guess why.)');
-                  }
-                }
-                
-                // Value is to be Searched
-                elseif (strpos($value, 'search ') === 0) {
-                  if (ctype_alnum(substr($value, 7))) {
-                    $sideText['right'] = '"%' . $this->escape($data[$side]['value']) . '%"';
-                    $hackz['symbol'] = 'LIKE'; // TODO
-                  }
-                  else {
-                    throw new Exception('Invalid use of shorthand sequence: search must be alphanumeric. (Take a guess why.)');
-                  }
-                }
-                
-                // Value is String Value
-                else {
-                  $sideText['right'] = $this->escape($value);
-                }
-              }
-              
-              // Value is Array
-              elseif (is_array($value)) {
-                $sideText['left'] = $reverseAlias[$key];
-                $sideText['right'] = implode(',', $value); // TODO: format for non-INTS/escape/etc.
-                $symbol = $this->comparisonTypes['in'];
-              }
-              
-              else {
-                throw new Exception('Unrecognised Value Type; Value: ' . $value);
-              }
-              
-              $sideTextFull[$i] = "{$sideText['left']} = {$sideText['right']}";
+            // Value is Integer Value
+            if (is_int($value)) {
+              $sideText['right'] = $value;
             }
+            
+            // Value is String
+            elseif (is_string($value)) {
+              // Value is Column
+              if (strpos($value, 'column ') === 0) {
+                if (ctype_alnum(substr($value, 7))) {
+                  $sideText['right'] = $reverseAlias[str_replace('column ', '', $value)];
+                }
+                else {
+                  throw new Exception('Invalid use of shorthand sequence: columns must be alphanumeric. (Take a guess why.)');
+                }
+              }
+              
+              // Value is to be Searched
+              elseif (strpos($value, 'search ') === 0) {
+                if (ctype_alnum(substr($value, 7))) {
+                  $sideText['right'] = '"%' . $this->escape($data[$side]['value']) . '%"';
+                  $hackz['symbol'] = 'LIKE'; // TODO
+                }
+                else {
+                  throw new Exception('Invalid use of shorthand sequence: search must be alphanumeric. (Take a guess why.)');
+                }
+              }
+              
+              // Value is String Value
+              else {
+                $sideText['right'] = $this->escape($value);
+              }
+            }
+              
+            // Value is Array
+            elseif (is_array($value)) {
+              $sideText['left'] = $reverseAlias[$key];
+              $sideText['right'] = implode(',', $value); // TODO: format for non-INTS/escape/etc.
+              $symbol = $this->comparisonTypes['in'];
+            }
+            
+            else {
+              throw new Exception('Unrecognised Value Type; Value: ' . $value);
+            }
+            
+            
+            
+            $sideTextFull[$i] = "{$sideText['left']} $symbol {$sideText['right']}";
 
             /* Generate Comparison Part */
             if ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
@@ -646,7 +643,7 @@ LIMIT
           }
 
           if (isset($this->concatTypes[$type])) $condSymbol = $this->concatTypes[$type];
-          else throw new Exception('Unrecognised concatenation operator: ' . $type . '; ' . print_r($data, true)); }
+          else throw new Exception('Unrecognised concatenation operator: ' . $type . '; ' . print_r($data, true));
 
           $whereText[$h] = implode($condSymbol, $sideTextFull);
         }
