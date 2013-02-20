@@ -49,6 +49,17 @@
  */
 function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false) {
   global $sqlPrefix, $banned, $loginConfig, $valid, $database, $config, $generalCache;
+  
+  /* START TRANSITIONAL */
+  /* We'll be removing this soon, but I didn't want to do another overhaul yet. */
+  if (is_int($roomData)) {
+    $roomData = $generalCache->getRooms($roomData);
+  }
+  
+  if (is_int($userData)) {
+    $userData = $generalCache->getUsers($roomData);
+  }
+  /* END TRANSITIONAL */
 
   /* START COMPILE VERBOSE */
   if (!isset($roomData['type'])) throw new Exception('hasPermission requires roomData[type] to be defined.');

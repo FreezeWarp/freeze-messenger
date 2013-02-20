@@ -168,7 +168,7 @@ if ($continue) {
 
     if ($request['action'] === 'create') {
       /* Get Room Data, if Applicable */
-      if ($request['roomId']) $roomData = $slaveDatabase->getRoom($request['roomId']);
+      if ($request['roomId']) $roomData = $generalCache->getRoom($request['roomId']);
       else $roomData = false;
 
 

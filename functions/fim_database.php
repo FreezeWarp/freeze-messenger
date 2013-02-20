@@ -17,8 +17,9 @@
 
 class fimDatabase extends database {
 
-  public function getRoom($roomId, $roomName = false, $cache = true) {
+  public function getRoom($roomIds, $roomName = false, $cache = true) {
     global $sqlPrefix, $config, $user;
+    
 
 /*    if (substr($roomId, 0, 1) === 'o') { // OTR Room
       $queryParts['roomSelect']['columns'] = array(
@@ -48,7 +49,16 @@ class fimDatabase extends database {
 
       $roomType = 'otr'; // We return this because it will be easier to change the roomId schema.
     }
-    else*/if (substr($roomId, 0, 1) === 'p') { // Private Room
+    else*/
+    
+    /* Private Rooms - These Are "Special" Rooms That Don't Conform to Standard Crap
+     *
+     * A Few Notes:
+     * The $generalCache->getRooms() call must understand these rooms properly, reading the $roomType to be either "private" or "general".
+     * These rooms exist in the "privateRooms" table.
+     * These rooms must not be mass-managed. They must be read using the getPrivateRoom.php API, which transparently creates a private room if one did not already exist. Certain APIs may use this function to query the room information (getMessages.php is the primary one), but none may "list" multiple private rooms, nor query information for multiple private rooms. As a result, this function will _only_ support reading a single private room at any time. */
+    
+    if (is_int($roomIds) && substr($roomIds, 0, 1) === 'p') { // Private Room
       $queryParts['roomSelect']['columns'] = array(
         "{$sqlPrefix}privateRooms" => 'uniqueId roomId, roomUsersList, roomUsersHash, options, lastMessageId, lastMessageTime, messageCount'
       );
@@ -61,6 +71,17 @@ class fimDatabase extends database {
 
       $roomType = 'private'; // We return this because it will be easier to change the roomId schema.
     }
+    
+    /* Room Name Handling
+     *
+     * This function supports querying rooms by room name in rare circumstances. These must be queried one-at-a-time, and should be avoided whenever possible (the main use is for determining if a room by a certain name already exists, though other purposes could in theory exist). */
+    elseif (false !== $roomName) {
+    
+    }
+    
+    /* Room ID Handling
+     *
+     * An IN clause is used to support multiple rooms. If a single roomId was specified, a flat array will be returned; otherwise, an array using roomId as an index will be used. */
     else {
       $queryParts['roomSelect']['columns'] = array(
         "{$sqlPrefix}rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, parentalFlags, parentalAge, options, lastMessageId, lastMessageTime, messageCount',
@@ -69,7 +90,7 @@ class fimDatabase extends database {
       if ($roomId) {
         $queryParts['roomSelect']['conditions'] = array(
           'both' => array(
-            'roomId' => (int) $roomId,
+            'roomId' => (array) $roomIds,
           ),
         );
       }

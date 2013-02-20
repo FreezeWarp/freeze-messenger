@@ -171,19 +171,9 @@ class database {
           return $function;
         break;
 
-        case 'selectdb':
-          $function = mysql_select_db($args[1], $this->dbLink);
-
-          return $function;
-        break;
-
         case 'error':
-          if (isset($this->dbLink)) {
-            return mysql_error($this->dbLink);
-          }
-          else {
-            return mysql_error();
-          }
+          if (isset($this->dbLink)) return mysql_error($this->dbLink);
+          else                      return mysql_error();
         break;
 
         case 'close':
@@ -194,21 +184,11 @@ class database {
           return $function;
         break;
 
-        case 'escape':
-          return mysql_real_escape_string($args[1], $this->dbLink);
-        break;
-
-        case 'query':
-          return mysql_query($args[1], $this->dbLink);
-        break;
-
-        case 'insertId':
-          return mysql_insert_id($this->dbLink);
-        break;
-
-        default:
-          throw new Exception('Unrecognised Operation: ' . $operation);
-        break;
+        case 'selectdb': return mysql_select_db($args[1], $this->dbLink);              break;
+        case 'escape':   return mysql_real_escape_string($args[1], $this->dbLink);     break;
+        case 'query':    return mysql_query($args[1], $this->dbLink);                  break;
+        case 'insertId': return mysql_insert_id($this->dbLink);                        break;
+        default:         throw new Exception('Unrecognised Operation: ' . $operation); break;
       }
       break;
 
@@ -217,75 +197,37 @@ class database {
       switch ($operation) {
         case 'connect':
           $function = mysqli_connect($args[1], $args[3], $args[4], ($args[5] ? $args[5] : null), (int) $args[2]);
-
           $this->version = mysqli_get_server_info($function);
 
           return $function;
         break;
 
-        case 'selectdb':
-          return mysqli_select_db($this->dbLink, $args[1]);
-        break;
-
         case 'error':
-          if (isset($this->dbLink)) {
-            return mysqli_error($this->dbLink);
-          }
-          else {
-            return mysqli_connect_error();
-          }
+          if (isset($this->dbLink)) return mysqli_error($this->dbLink);
+          else                      return mysqli_connect_error();
         break;
 
-        case 'close':
-          return mysqli_close($this->dbLink);
-        break;
-
-        case 'escape':
-          return mysqli_real_escape_string($this->dbLink, $args[1]);
-        break;
-
-        case 'query':
-          return mysqli_query($this->dbLink, $args[1]);
-        break;
-
-        case 'insertId':
-          return mysqli_insert_id($this->dbLink);
-        break;
-
-        default:
-          throw new Exception('Unrecognised Operation: ' . $operation);
-        break;
+        case 'selectdb': return mysqli_select_db($this->dbLink, $args[1]);             break;
+        case 'close':    return mysqli_close($this->dbLink);                           break;
+        case 'escape':   return mysqli_real_escape_string($this->dbLink, $args[1]);    break;
+        case 'query':    return mysqli_query($this->dbLink, $args[1]);                 break;
+        case 'insertId': return mysqli_insert_id($this->dbLink);                       break;
+        default:         throw new Exception('Unrecognised Operation: ' . $operation); break;
       }
       break;
 
 
       case 'postgresql':
       switch ($operation) {
-        case 'connect':
-          return pg_connect("host=$args[1] port=$args[2] username=$args[3] password=$args[4] dbname=$args[5]");
-        break;
-
-        case 'error':
-          return pg_last_error($this->dbLink);
-        break;
-
-        case 'close':
-          return pg_close($this->dbLink);
-        break;
-
-        case 'escape':
-          return pg_escape_string($this->dbLink, $args[1]);
-        break;
-
-        case 'query':
-          return pg_query($this->dbLink, $args[1]);
-        break;
+        case 'connect': return pg_connect("host=$args[1] port=$args[2] username=$args[3] password=$args[4] dbname=$args[5]"); break;
+        case 'error':   return pg_last_error($this->dbLink);                                                                  break;
+        case 'close':   return pg_close($this->dbLink);                                                                       break;
+        case 'escape':  return pg_escape_string($this->dbLink, $args[1]);                                                     break;
+        case 'query':   return pg_query($this->dbLink, $args[1]);                                                             break;
 
         //case 'insertId': return mysqli_insert_id($this->dbLink); break;
 
-        default:
-          throw new Exception('Unrecognised Operation: ' . $operation);
-        break;
+        default:        throw new Exception('Unrecognised Operation: ' . $operation);                                         break;
       }
       break;
     }
@@ -612,7 +554,14 @@ LIMIT
       // First, make sure that $cond isn't empty. Pretty simple.
       if (is_array($cond) && count($cond) > 0) {
         // Next, we analyse whether or not any arrays exist in the $cond field. This is really very simple -- arrays do NOT exist in the shorthand version, and MUST exist in the longhand version.
+        
+        /* Longhand
+         *
+         * Longhand notation is meant for full coverage of language features, and is essentially deprecated. If possible, use the shorthand notation instead. */
+         
         if (fim_hasArray($cond)) {
+          throw new Exception('Longhand Deprecated. Crazy, isn\'t it?');
+
           foreach ($cond AS $recKey => $data) {
             $i++;
             $sideTextFull[$i] = '';
@@ -771,6 +720,19 @@ LIMIT
 
           $whereText[$h] = implode($condSymbol, $sideTextFull);
         }
+        
+        
+        
+        /* Shorthand Mode
+         *
+         * Shorthand mode is, well, shorter. It's 10× simpler, and I may eventually deprecate the full mode in its favour. Right now, however, it simply doesn't support all operations. Eventually, I feel I will be able to make enough analogues that this will be different, though.
+         * Anyway, here is a quick usage guide for how the select part (inside of a "both" or "or" array) should look:
+         ** To compare a column to a value: 'columnName' => 'value' (value must be either integer or string, and will be escaped automatically)
+         ** To compare a column to multiple values using an IN clause: 'columnName' => 'value' (value must be one-dimensional array, all entries of which should either be strings or integers, which will automatically be escaped.
+         ** To compare a column to another column: 'columnName' => 'column columnName2' (columnName2 must be alphanumeric or it will not be accepted; additionally, above strings must not start with "column")
+         **
+        */
+
         else { // No array -- shorthand mode.
           foreach ($cond AS $key => $value) {          
             $i++;
@@ -780,12 +742,17 @@ LIMIT
               throw new Exception('Malformed Query; Data: ' . print_r($data, true));
             }
             else {
-              $sideText['left'] = $reverseAlias[$key];
+              $sideText['left'] = $reverseAlias[$key]; // This is over-ridden for REGEX.
+              $symbol = $this->comparisonTypes['e']; // TODO: lt/gt/etc.
 
+              // Value is Integer Value
               if (is_int($value)) {
                 $sideText['right'] = $value;
               }
+              
+              // Value is String
               elseif (is_string($value)) {
+                // Value is Column
                 if (strpos($value, 'column ') === 0) {
                   if (ctype_alnum(substr($value, 7))) {
                     $sideText['right'] = $reverseAlias[str_replace('column ', '', $value)];
@@ -794,19 +761,52 @@ LIMIT
                     throw new Exception('Invalid use of shorthand sequence: columns must be alphanumeric. (Take a guess why.)');
                   }
                 }
+                
+                // Value is to be Searched
+                elseif (strpos($value, 'search ') === 0) {
+                  if (ctype_alnum(substr($value, 7))) {
+                    $sideText['right'] = '"%' . $this->escape($data[$side]['value']) . '%"';
+                    $hackz['symbol'] = 'LIKE'; // TODO
+                  }
+                  else {
+                    throw new Exception('Invalid use of shorthand sequence: search must be alphanumeric. (Take a guess why.)');
+                  }
+                }
+                
+                // Value is String Value
                 else {
                   $sideText['right'] = $this->escape($value);
                 }
               }
+              
+              // Value is Array
+              elseif (is_array($value)) {
+                $sideText['left'] = $reverseAlias[$key];
+                $sideText['right'] = implode(',', $value); // TODO: format for non-INTS/escape/etc.
+                $symbol = $this->comparisonTypes['in'];
+              }
+              
               else {
                 throw new Exception('Unrecognised Value Type; Value: ' . $value);
               }
               
               $sideTextFull[$i] = "{$sideText['left']} = {$sideText['right']}";
             }
+
+            /* Generate Comparison Part */
+            if ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
+              $sideTextFull[$i] = "{$sideText['left']} {$symbol} {$sideText['right']}";
+            }
+            else {
+              $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
+              throw new Exception('Query nullified.');
+            }
           }
 
-          $whereText[$h] = implode($this->concatTypes['both'], $sideTextFull);
+          if (isset($this->concatTypes[$type])) $condSymbol = $this->concatTypes[$type];
+          else throw new Exception('Unrecognised concatenation operator: ' . $type . '; ' . print_r($data, true)); }
+
+          $whereText[$h] = implode($condSymbol, $sideTextFull);
         }
       }
     }

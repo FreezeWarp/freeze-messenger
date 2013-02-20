@@ -204,6 +204,10 @@ class fimCache extends generalCache {
     return $this->returnValue($hooks, $index);
   }
   
+  public function getRooms($roomIndex) {
+    return $this->slaveDatabase->getRoom($roomIndex);
+  }
+  
   ////* Caches Entire Table as kicks[roomId][userId] = true *////
   public function getKicks($roomIndex = false, $userIndex = false) {
     global $config;

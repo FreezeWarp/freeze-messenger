@@ -78,7 +78,7 @@ if (!$messageData) {
 elseif ($continue) {
   switch ($request['action']) {
     case 'delete':
-    $roomData = $slaveDatabase->getRoom($messageData['roomId']);
+    $roomData = $generalCache->getRooms($messageData['roomId']);
 
     if (fim_hasPermission($roomData, $user, 'moderate', true)) {
       $database->update("{$sqlPrefix}messages", array(
@@ -109,7 +109,7 @@ elseif ($continue) {
 
 
     case 'undelete':
-    $roomData = $slaveDatabase->getRoom($messageData['roomId']);
+    $roomData = $generalCache->getRooms($messageData['roomId']);
 
     if (fim_hasPermission($roomData, $user, 'moderate', true)) {
       $database->update("{$sqlPrefix}messages", array(
