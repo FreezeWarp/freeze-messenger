@@ -284,58 +284,18 @@ $queryParts['userSelectFromSessionHash']['columns'] = array(
 );
 $queryParts['userSelectFromUserName']['conditions'] = array(
   'both' => array(
-    array(
-      'type' => 'e',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'userName',
-      ),
-      'right' => array(
-        'type' => 'string',
-        'value' => $userName,
-      ),
-    ),
+    'userName' => $userName,
   ),
 );
 $queryParts['userSelectFromUserId']['conditions'] = array(
   'both' => array(
-    array(
-      'type' => 'e',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'userId',
-      ),
-      'right' => array(
-        'type' => 'int',
-        'value' => (int) $userId,
-      ),
-    ),
+    'userId' => (int) $userId,
   ),
 );
 $queryParts['userSelectFromSessionHash']['conditions'] = array(
   'both' => array(
-    array(
-      'type' => 'e',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'userId',
-      ),
-      'right' => array(
-        'type' => 'column',
-        'value' => 'suserId',
-      ),
-    ),
-    array(
-      'type' => 'e',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'magicHash',
-      ),
-      'right' => array(
-        'type' => 'string',
-        'value' => $sessionHash,
-      ),
-    ),
+    'userId' => 'column suserId',
+    'magicHash' => $sessionHash,
   ),
 );
 
@@ -507,33 +467,13 @@ if ($valid) { // If the user is valid, process their preferrences.
 
     $queryParts['adminGroupSelect']['conditions'] = array(
       'both' => array(
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'groupId',
-          ),
-          'right' => array(
-            'type' => 'int',
-            'value' => (int) ($user2['userGroup'] ? $user2['userGroup'] : $user2['userGroupAlt']), // Pretty much just for VB...
-          ),
-        ),
+        'groupId' => (int) ($user2['userGroup'] ? $user2['userGroup'] : $user2['userGroupAlt']), // Pretty much just for VB...
       ),
     );
 
     $queryParts['userPrefsSelect']['conditions'] = array(
       'both' => array(
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'userId',
-          ),
-          'right' => array(
-            'type' => 'int',
-            'value' => (int) $user2['userId'],
-          ),
-        ),
+        'userId' => (int) $user2['userId'],
       ),
     );
 
@@ -547,28 +487,8 @@ if ($valid) { // If the user is valid, process their preferrences.
 
     $queryParts['socialGroupsSelect']['conditions'] = array(
       'both' => array(
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'userId',
-          ),
-          'right' => array(
-            'type' => 'int',
-            'value' => (int) $user2['userId'],
-          ),
-        ),
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'groupType',
-          ),
-          'right' => array(
-            'type' => 'string',
-            'value' => $sqlMemberGroupTableCols['validType'],
-          ),
-        ),
+        'userId' => (int) $user2['userId'],
+        'groupType' => $sqlMemberGroupTableCols['validType'],
       ),
     );
 
