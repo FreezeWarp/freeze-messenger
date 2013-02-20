@@ -544,53 +544,56 @@ LIMIT
    * @return string
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
+        
+  /* Shorthand Mode
+    *
+    * Shorthand mode is, well, shorter. It's 10× simpler, and I may eventually deprecate the full mode in its favour. Right now, however, it simply doesn't support all operations. Eventually, I feel I will be able to make enough analogues that this will be different, though.
+    * Anyway, here is a quick usage guide for how the select part (inside of a "both" or "or" array) should look:
+    ** To compare a column to a value: 'columnName' => 'value' (value must be either integer or string, and will be escaped automatically)
+    ** To compare a column to multiple values using an IN clause: 'columnName' => 'value' (value must be one-dimensional array, all entries of which should either be strings or integers, which will automatically be escaped.
+    ** To compare a column to another column: 'columnName' => 'column columnName2' (columnName2 must be alphanumeric or it will not be accepted; additionally, above strings must not start with "column")
+    *
+    * Next, a few caveats:
+    ** Everything is case sensitive. Live with it.
+    ** 
+  */
   private function recurseBothEither($conditionArray, $reverseAlias, $d = 0) {
     $i = 0;
     $h = 0;
 
     $whereText = array();
 
+    // $type is either "both", "either", or "neither". $cond is an array of arguments.
     foreach ($conditionArray AS $type => $cond) {
-      // First off, we are going to figure out whether the data specified is using the shorthand method or not. This is a bit complicated, and if we don't understand this right, the user may just have a typo, and we want to print an error for that if possible.
-
       // First, make sure that $cond isn't empty. Pretty simple.
       if (is_array($cond) && count($cond) > 0) {
-        // Next, we analyse whether or not any arrays exist in the $cond field. This is really very simple -- arrays do NOT exist in the shorthand version, and MUST exist in the longhand version.
-        
-        /* Longhand
-         *
-         * Longhand notation is meant for full coverage of language features, and is essentially deprecated. If possible, use the shorthand notation instead. */
-         
-        if (fim_hasArray($cond)) {
-          throw new Exception('Longhand Deprecated. Crazy, isn\'t it?');
-        }
-        
-        
-        
-        /* Shorthand Mode
-         *
-         * Shorthand mode is, well, shorter. It's 10× simpler, and I may eventually deprecate the full mode in its favour. Right now, however, it simply doesn't support all operations. Eventually, I feel I will be able to make enough analogues that this will be different, though.
-         * Anyway, here is a quick usage guide for how the select part (inside of a "both" or "or" array) should look:
-         ** To compare a column to a value: 'columnName' => 'value' (value must be either integer or string, and will be escaped automatically)
-         ** To compare a column to multiple values using an IN clause: 'columnName' => 'value' (value must be one-dimensional array, all entries of which should either be strings or integers, which will automatically be escaped.
-         ** To compare a column to another column: 'columnName' => 'column columnName2' (columnName2 must be alphanumeric or it will not be accepted; additionally, above strings must not start with "column")
-         *
-         * Next, a few caveats:
-         ** Everything is case sensitive. Live with it.
-         ** 
-        */
+        // $key is usually a column, $value is a formatted value for the select() function.
+        foreach ($cond AS $key => $value) {
+          if ($key === 'both' || $key === 'either' || $key === 'neither') {
+            // Recurse TODO
+          }
+          else {
+            /* Value is currently stored as:
+             * array(TYPE, VALUE, COMPARISON) */
 
-        else { // No array -- shorthand mode.
-          foreach ($cond AS $key => $value) {          
             $i++;
             $sideTextFull[$i] = '';
 
             $sideText['left'] = $reverseAlias[$key]; // This is over-ridden for REGEX.
-            $symbol = $this->comparisonTypes['e']; // TODO: lt/gt/etc.
+            $symbol = $this->comparisonTypes[$value[2]];
 
-            // Value is Integer Value
-            if (is_int($value)) {
+            switch ($value[0]) { // Switch the value type
+              case 'int':
               $sideText['right'] = $value;
+              break;
+              
+              case  'string':
+              $sideText['right'] = $value;
+              break;
+              
+              case 'column':
+              
+              break;
             }
             
             // Value is String
@@ -652,12 +655,12 @@ LIMIT
               throw new Exception('Query nullified.');
             }
           }
-
-          if (isset($this->concatTypes[$type])) $condSymbol = $this->concatTypes[$type];
-          else throw new Exception('Unrecognised concatenation operator: ' . $type . '; ' . print_r($data, true));
-
-          $whereText[$h] = implode($condSymbol, $sideTextFull);
         }
+
+        if (isset($this->concatTypes[$type])) $condSymbol = $this->concatTypes[$type];
+        else throw new Exception('Unrecognised concatenation operator: ' . $type . '; ' . print_r($data, true));
+
+        $whereText[$h] = implode($condSymbol, $sideTextFull);
       }
     }
 
@@ -681,8 +684,8 @@ LIMIT
    * @return special - int() returns a custom value that should only be read by the select() function.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  public function int($value) {
-    return array('int', $value);
+  public function int($value, $comp = 'e') {
+    return array('int', (int) $value, $comp);
   }
   
   
@@ -695,8 +698,8 @@ LIMIT
    * @return special - ts() returns a custom value that should only be read by the select() function.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  public function ts($value) {
-    return array('ts', $value);
+  public function ts($value, $comp = 'e') {
+    return array('ts', (int) $value, $comp);
   }
   
   
@@ -709,8 +712,8 @@ LIMIT
    * @return special - str() returns a custom value that should only be read by the select() function.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */  
-  public function str($value) {
-    return array('str', $value);
+  public function str($value, $comp = 'e') {
+    return array('str', (string) $value, $comp);
   }
   
   
@@ -723,14 +726,8 @@ LIMIT
    * @return special - col() returns a custom value that should only be read by the select() function.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */  
-  public function col($value) {
-    return array('col', $value);
-  }
-  
-  
-  
-  public function comp($method, $value) {
-  
+  public function col($value, $comp = 'e') {
+    return array('col', $value, $comp);
   }
 
   

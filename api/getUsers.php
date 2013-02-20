@@ -82,45 +82,18 @@ $queryParts['userSelect']['limit'] = false;
 
 /* Modify Query Data for Directives */
 switch ($request['showOnly']) {
-  case 'banned':
-  $queryParts['userSelect']['conditions']['both'][] = array(
-    'type' => 'xor',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'options',
-    ),
-    'right' => array(
-      'type' => 'int',
-      'value' => 1,
-    ),
-  );
+  case 'banned': // TODO!
+  $queryParts['userSelect']['conditions']['both'][] = array('!options' => $database->int(1, 'and'));
   break;
 
   case 'unbanned':
-  $queryParts['userSelect']['conditions']['both'][] = array(
-    'type' => 'and',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'options',
-    ),
-    'right' => array(
-      'type' => 'int',
-      'value' => 1,
-    ),
-  );
+  $queryParts['userSelect']['conditions']['both'][] = array('options' => $database->int(1, 'and'));
   break;
 }
+
 if (count($request['users']) > 0) {
   $queryParts['userSelect']['conditions']['both'][] = array(
-    'type' => 'in',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'userId',
-    ),
-    'right' => array(
-      'type' => 'array',
-      'value' => $request['users'],
-    ),
+    'userId' => $database->in($request['users']),
   );
 }
 
@@ -130,16 +103,11 @@ if (count($request['users']) > 0) {
  * userId*, userName */
 switch ($request['sort']) {
   case 'userName':
-  $queryParts['userSelect']['sort'] = array(
-    'userName' => 'asc',
-  );
+  $queryParts['userSelect']['sort'] = array('userName' => 'asc');
   break;
 
-  case 'userId':
-  default:
-  $queryParts['userSelect']['sort'] = array(
-    'userId' => 'asc',
-  );
+  case 'userId': default:
+  $queryParts['userSelect']['sort'] = array('userId' => 'asc');
   break;
 }
 
@@ -181,21 +149,7 @@ if (is_array($users)) {
               $sqlUserTableCols['userId'] => 'userId',
             ),
           ),
-          array(
-            'both' => array(
-              array(
-                'type' => 'e',
-                'left' => array(
-                  'type' => 'column',
-                  'value' => 'userId',
-                ),
-                'right' => array(
-                  'type' => 'int',
-                  'value' => (int) $userData['userId'],
-                ),
-              ),
-            ),
-          )
+          array('both' => array('userId' => (int) $userData['userId']))
         );
         $userDataForums = $userDataForums->getAsArray(false);
         break;
@@ -210,19 +164,7 @@ if (is_array($users)) {
             ),
           ),
           array(
-            'both' => array(
-              array(
-                'type' => 'e',
-                'left' => array(
-                  'type' => 'column',
-                  'value' => 'userId',
-                ),
-                'right' => array(
-                  'type' => 'int',
-                  'value' => (int) $userData['userId'],
-                ),
-              ),
-            ),
+            'both' => array('userId' => (int) $userData['userId']),
           )
         );
         $userDataForums = $userDataForums->getAsArray(false);
