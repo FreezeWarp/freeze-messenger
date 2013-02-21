@@ -20,10 +20,15 @@
 
 
 /**** BASIC POINTERS ****/
-/* The select command is very messy. While it is now possible to specify short & sweet column and sort definitions, conditions use a horridly messy array syntax. It is not ideal, but will not be for now be rewritten. Hopefully some logic can at least be applie to the structure, however.
- * Complex joins, though originally possible in early development versions, are not and will not be possible now. This is because they are rarely neccessary, and can be considerably slower. Simple joins in which two tables are selected is possible, but some drivers do not support them (Google's language for their App Engine is a good example). These will then be interpreted by the DAL where neccessary.
+/* Select requires that you use the cast functions before passing values. Pretty simple, but important.
  * Delete, Update, and Insert commands are fairly straight forward. They all use the same format, and shouldn't be too hard to get the hang of.
  */
+ 
+ /**** RANDOM RATIONALE ****/
+ /* Though we could just keep the connect() etc. methods in databaseSQL.php/etc., having them as they are has some unique benefits, mainly: consistency (it just looks prettier to keep the core stuff in database as opposed to databaseSQL/etc.), "core" validation (we might, for instance, want to ensure the data passed is valid, a job better suited for the core functions), and others. In general, as a result, we want to understand the difference as follows:
+  ** database should parse the structure of queries to the greatest extent possible before sending them to databaseSQL.
+  ** databaseSQL should handle the routing and syntax of queries.
+ * These are still a WIP, obviously, so they do not quite meet these conditions yet. */
 
 class database {
   /**
@@ -40,115 +45,9 @@ class database {
     $this->dbLink = null;
   }
 
+
   public function setErrorLevel($errorLevel) {
     $this->errorLevel = $errorLevel;
-  }
-
-
-  /**
-   * Set Language / Database Driver
-   *
-   * @param string language
-   * @return void
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */
-  private function setLanguage($language) {
-    $this->language = $language;
-
-    switch ($this->language) {
-      case 'mysql':
-      case 'mysqli':
-      $this->languageSubset = 'sql';
-
-      $this->tableQuoteStart = '`';  $this->tableQuoteEnd = '`';  $this->tableAliasQuoteStart = '`';  $this->tableAliasQuoteEnd = '`';
-      $this->columnQuoteStart = '`'; $this->columnQuoteEnd = '`'; $this->columnAliasQuoteStart = '`'; $this->columnAliasQuoteEnd = '`';
-      $this->stringQuoteStart = '"'; $this->stringQuoteEnd = '"'; $this->emptyString = '""';          $this->tableColumnDivider = '.';
-
-      $this->sortOrderAsc = 'ASC'; $this->sortOrderDesc = 'DESC';
-
-      $this->tableTypes = array(
-        'general' => 'InnoDB',
-        'memory' => 'MEMORY',
-      );
-      break;
-
-      case 'postgresql':
-      $this->languageSubset = 'sql';
-
-      $this->tableQuoteStart = '"';    $this->tableQuoteEnd = '"';    $this->tableAliasQuoteStart = '"';  $this->tableAliasQuoteEnd = '"';
-      $this->columnQuoteStart = '"';   $this->columnQuoteEnd = '"';   $this->columnAliasQuoteStart = '"'; $this->columnAliasQuoteEnd = '"';
-      $this->tableColumnDivider = '.'; $this->stringQuoteStart = '"'; $this->stringQuoteEnd = '"';        $this->emptyString = '""';
-
-      $this->sortOrderAsc = 'ASC'; $this->sortOrderDesc = 'DESC';
-      break;
-    }
-
-    switch ($this->language) {
-      case 'mysql':
-      case 'mysqli':
-      case 'postgresql':
-      $this->comparisonTypes = array(
-        'e' => '=',
-        'ne' => '!=',  '!e' => '!=', // same
-        'lt' => '<',   '!gte' => '>', // same
-        'gt' => '>',   '!lte' => '>', // same
-        'lte' => '<=', '!gt' => '>=', // same
-        'gte' => '>=', '!lt' => '>=', // same
-
-        'and' => '&',  '!xor' => '&', // same
-        'xor' => '^',  '!and' => '^', // same
-
-        'in' => 'IN',        '!notin' => 'IN', // same
-        'notin' => 'NOT IN', '!in' => 'NOT IN', // same
-
-        'regexp' => 'REGEXP', // Applies extended POSIX regular expression to index. It is natively implemented in MySQL, PostGreSQL, and Oracle SQL databases. It is absent in MSSQL, and the status in VoltDB and SQLite is unknown.
-        'regex' => 'REGEXP', // Alias of "regexp"
-
-        'glob' => 'LIKE',
-        'like' => 'LIKE', // Alias of "glob"
-      );
-
-      $this->concatTypes = array(
-        'both' => ' AND ',
-        'either' => ' OR ',
-      );
-
-      $this->keyConstants = array(
-        'primary' => 'PRIMARY KEY',
-        'unique' => 'UNIQUE KEY',
-        'index' => 'KEY',
-      );
-
-      $this->defaultPhrases = array(
-        '__TIME__' => 'CURRENT_TIMESTAMP',
-      );
-
-      $this->columnIntLimits = array(
-        1 => 'TINYINT',   2 => 'TINYINT',   3 => 'SMALLINT',  4 => 'SMALLINT',
-        5 => 'MEDIUMINT', 6 => 'MEDIUMINT', 7 => 'MEDIUMINT', 8 => 'INT',
-        9 => 'INT',       0 => 'BIGINT',
-      );
-
-      $this->columnStringPermLimits = array(
-        1 => 'CHAR',           255 => 'VARCHAR', 1000 => 'TEXT', 8191 => 'MEDIUMTEXT',
-        2097151 => 'LONGTEXT',
-      );
-
-      $this->columnStringTempLimits = array(
-        255 => 'CHAR',           65535 => 'VARCHAR',
-      );
-
-      $this->columnStringNoLength = array('MEDIUMTEXT', 'LONGTEXT');
-
-      $this->columnBitLimits = array(
-        0 => 'TINYINT UNSIGNED',  8 => 'TINYINT UNSIGNED', 16 => 'SMALLINT UNSIGNED', 24 => 'MEDIUMINT UNSIGNED',
-        32 => 'INTEGER UNSIGNED', 64 => 'LONGINT UNSIGNED',
-      );
-
-      $this->globFindArray = array('*', '?');
-      $this->globReplaceArray = array('%', '_');
-      break;
-    }
   }
 
 
@@ -158,7 +57,7 @@ class database {
    * @return void
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  public function functionMap($operation) {
+  private function functionMap($operation) {
     $args = func_get_args();
 
     switch ($this->language) {
@@ -245,32 +144,13 @@ class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   public function connect($host, $port, $user, $password, $database, $driver) {
-    $this->setLanguage($driver);
-
-
-    if (!$link = $this->functionMap('connect', $host, $port, $user, $password, $database)) { // Make the connection.
-      $this->error = 'The connection was refused: ' . $this->functionMap('error');
-
-      return false;
-    }
-    else {
-      $this->dbLink = $link; // Set the object property "dbLink" to the database connection resource. It will be used with most other queries that can accept this parameter.
-    }
-
-
-    if (!$this->activeDatabase && $database) { // Some drivers will require this.
-      if (!$this->selectDatabase($database)) {
-        $this->error = 'Could not select database ("' . $database . '"): ' . $this->functionMap('error');
-
-        return false;
-      }
-    }
-
-
-    return true;
+    $functionName = 'connect' . $this->mode;
+    
+    return $this->$functionName($host, $port, $user, $password, $database, $driver);
   }
 
 
+  
   /**
    * Creates a new database on the database server. This function is not possible on all drivers (e.g. PostGreSQL).
    *
@@ -279,16 +159,13 @@ class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   public function createDatabase($database) {
-    switch ($this->language) {
-      case 'mysql':
-      case 'mysqli':
-      case 'postgresql':
-      return $this->rawQuery('CREATE DATABASE IF NOT EXISTS ' . $this->databaseQuoteStart . $database . $this->databaseQuoteEnd);
-      break;
-    }
+    $functionName = 'createDatabase' . $this->mode;
+    
+    return $this->$functionName($table, $dataArray, $conditionArray);
   }
 
 
+  
   /**
    * Alters the active database of the connection.  This function is not possible on all drivers (e.g. PostGreSQL). The connetion character set will also be set to UTF8 on certain drivers (e.g. MySQL).
    *
@@ -297,24 +174,15 @@ class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   public function selectDatabase($database) {
-    if (!$this->functionMap('selectdb', $database)) { // Select the database.
-      $this->error = 'Could not select database: ' . $database;
-
-      return false;
-    }
-    else {
-      if ($this->language == 'mysql' || $this->language == 'mysqli') {
-        if (!$this->rawQuery('SET NAMES "utf8"')) { // Sets the database encoding to utf8 (unicode).
-          $this->error = 'Could not run SET NAMES query.';
-
-          return false;
-        }
-      }
-
+    $functionName = 'createDatabase' . $this->mode;
+    
+    if ($this->$functionName($table, $dataArray, $conditionArray)) {  
       $this->activeDatabase = $database;
+      
       return true;
     }
   }
+  
 
 
   /**
@@ -326,10 +194,12 @@ class database {
   public function close() {
     return $this->functionMap('close');
   }
+  
 
 
   /**
    * Returns a string properly escaped for raw queries.
+   * Developer Note: This is only passed through functionMap(), and not an exended class's implementation of escape. If, for whatever reason, it needs to be overwritten, a class method of escape() will automatically replace it.
    *
    * @return string
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
@@ -351,185 +221,9 @@ class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function select($columns, $conditionArray = false, $sort = false, $limit = false) { // Note: We will be removing group from here briefly.
-    /* Define Variables */
-    $finalQuery = array(
-      'columns' => array(),
-      'tables' => array(),
-      'where' => '',
-      'sort' => array(),
-      'group' => '',
-      'limit' => 0
-    );
-    $reverseAlias = array();
-
-
-
-    /* Process Columns (Must be Array) */
-    if (is_array($columns)) {
-      if (count($columns) > 0) {
-        foreach ($columns AS $tableName => $tableCols) {
-          if (strlen($tableName) > 0) { // If the tableName is defined...
-            if (strstr($tableName,' ') !== false) { // A space can be used to create a table alias, which is sometimes required for different queries.
-              $tableParts = explode(' ', $tableName);
-
-              $finalQuery['tables'][] = $this->tableQuoteStart . $tableParts[0] . $this->tableQuoteEnd . ' AS ' . $this->tableAliasQuoteStart . $tableParts[1] . $this->tableAliasQuoteEnd; // Identify the table as [tableName] AS [tableAlias]
-
-              $tableName = $tableParts[1];
-            }
-            else {
-              $finalQuery['tables'][] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd; // Identify the table as [tableName]
-            }
-
-            if (is_array($tableCols)) { // Table columns have been defined with an array, e.g. ["a", "b", "c"]
-              foreach($tableCols AS $colName => $colAlias) {
-                if (strlen($colName) > 0) {
-                  if (strstr($colName,' ') !== false) { // A space can be used to create identical columns in different contexts, which is sometimes required for different queries.
-                    $colParts = explode(' ', $colName);
-                    $colName = $colParts[0];
-                  }
-
-                  if (is_array($colAlias)) { // Used for advance structures and function calls.
-                    if (isset($colAlias['context'])) {
-                      throw new Exception('Deprecated context.'); // TODO
-                    }
-
-                    $finalQuery['columns'][] = $this->columnQuoteStart . $colName . $this->columnQuoteStart . ' AS ' . $this->columnAliasQuoteEnd . $colAlias['name'] . $this->columnAliasQuoteStart; // Identify column as [columnName] AS [columnAlias]
-                    $reverseAlias[$colAlias['name']] = $colName;
-                  }
-                  else {
-                    $finalQuery['columns'][] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd . $this->tableColumnDivider . $this->columnQuoteStart . $colName . $this->columnQuoteStart . ' AS ' . $this->columnAliasQuoteEnd . $colAlias . $this->columnAliasQuoteStart;
-                    $reverseAlias[$colAlias] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd . $this->tableColumnDivider . $this->columnQuoteStart . $colName . $this->columnQuoteStart;
-                  }
-                }
-                else {
-                  throw new Exception('Invalid select array: column name empty'); // Throw an exception.
-                }
-              }
-            }
-            elseif (is_string($tableCols)) { // Table columns have been defined with a string list, e.g. "a,b,c"
-              $columnParts = explode(',', $tableCols); // Split the list into an array, delimited by commas
-
-              foreach ($columnParts AS $columnPart) { // Run through each list item
-                $columnPart = trim($columnPart); // Remove outside whitespace from the item
-
-                if (strpos($columnPart,' ') !== false) { // If a space is within the part, then the part is formatted as "columnName columnAlias"
-                  $columnPartParts = explode(' ',$columnPart); // Divide the piece
-
-                  $columnPartName = $columnPartParts[0]; // Set the name equal to the first part of the piece
-                  $columnPartAlias = $columnPartParts[1]; // Set the alias equal to the second part of the piece
-                }
-                else { // Otherwise, the column name and alias are one in the same.
-                  $columnPartName = $columnPart; // Set the name and alias equal to the piece
-                  $columnPartAlias = $columnPart;
-                }
-
-                $finalQuery['columns'][] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd . $this->tableColumnDivider . $this->columnQuoteStart . $columnPartName . $this->columnQuoteStart . ' AS ' . $this->columnAliasQuoteEnd . $columnPartAlias . $this->columnAliasQuoteStart;
-                $reverseAlias[$columnPartAlias] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd . $this->tableColumnDivider . $this->columnQuoteStart . $columnPartName . $this->columnQuoteStart;
-              }
-            }
-          }
-          else {
-            throw new Exception('Invalid select array: table name empty'); // Throw an exception.
-          }
-        }
-      }
-      else {
-        throw new Exception('Invalid select array: no entries'); // Throw an exception.
-      }
-    }
-    else {
-      throw new Exception('Invalid select array'); // Throw an exception.
-    }
-
-
-
-    /* Process Conditions (Must be Array) */
-    if ($conditionArray !== false) {
-      if (is_array($conditionArray)) {
-        if (count($conditionArray) > 0) {
-          $finalQuery['where'] = $this->recurseBothEither($conditionArray, $reverseAlias);
-        }
-      }
-    }
-
-
-
-    /* Process Sorting (Must be Array)
-     * TODO: Combine the array and string routines to be more effective. */
-    if ($sort !== false) {
-      if (is_array($sort)) {
-        if (count($sort) > 0) {
-          foreach ($sort AS $sortCol => $direction) {
-            if (isset($reverseAlias[$sortCol])) {
-              switch (strtolower($direction)) {
-                case 'asc': $directionSym = $this->sortOrderAsc; break;
-                case 'desc': $directionSym = $this->sortOrderDesc; break;
-                default: $directionSym = $this->sortOrderAsc; break;
-              }
-
-              $finalQuery['sort'][] = $reverseAlias[$sortCol] . " $directionSym";
-            }
-            else {
-              throw new Exception('Unrecognised sort column: ' . $sortCol);
-            }
-          }
-        }
-      }
-      elseif (is_string($sort)) {
-        $sortParts = explode(',',$sort); // Split the list into an array, delimited by commas
-
-        foreach ($sortParts AS $sortPart) { // Run through each list item
-          $sortPart = trim($sortPart); // Remove outside whitespace from the item
-
-          if (strpos($sortPart,' ') !== false) { // If a space is within the part, then the part is formatted as "columnName direction"
-            $sortPartParts = explode(' ',$sortPart); // Divide the piece
-
-            $sortCol = $sortPartParts[0]; // Set the name equal to the first part of the piece
-            switch (strtolower($sortPartParts[1])) {
-              case 'asc': $directionSym = $this->sortOrderAsc; break;
-              case 'desc': $directionSym = $this->sortOrderDesc; break;
-              default: $directionSym = $this->sortOrderAsc; break;
-            }
-          }
-          else { // Otherwise, we assume asscending
-            $sortCol = $sortPart; // Set the name equal to the sort part.
-            $directionSym = $this->sortOrderAsc; // Set the alias equal to the default, ascending.
-          }
-
-          $finalQuery['sort'][] = $reverseAlias[$sortCol] . " $directionSym";
-        }
-      }
-
-      $finalQuery['sort'] = implode(', ', $finalQuery['sort']);
-    }
-
-
-
-    /* Process Limit (Must be Integer) */
-    if ($limit !== false) {
-      if (is_int($limit)) {
-        $finalQuery['limit'] = (int) $limit;
-      }
-    }
-
-
-
-    /* Generate Final Query */
-    $finalQueryText = 'SELECT
-  ' . implode(',
-  ', $finalQuery['columns']) . '
-FROM
-  ' . implode(', ', $finalQuery['tables']) . ($finalQuery['where'] ? '
-WHERE
-  ' . $finalQuery['where'] : '') . ($finalQuery['sort'] ? '
-ORDER BY
-  ' . $finalQuery['sort'] : '') . ($finalQuery['limit'] ? '
-LIMIT
-  ' . $finalQuery['limit'] : '');
-
-
-    /* And Run the Query */
-    return $this->rawQuery($finalQueryText);
+    $functionName = 'selct' . $this->mode;
+    
+    return $this->$functionName($columns, $conditionArray, $sort, $limit);
   }
 
   
@@ -579,12 +273,19 @@ LIMIT
             $i++;
             $sideTextFull[$i] = '';
 
-            $sideText['left'] = $reverseAlias[$key]; // This is over-ridden for REGEX.
+            $sideText['left'] = $reverseAlias[(startsWith($key, '!') ? $key : $key)]; // This is over-ridden for REGEX.
             $symbol = $this->comparisonTypes[$value[2]];
+            
+              
 
             switch ($value[0]) { // Switch the value type
               case 'int':
-              $sideText['right'] = $value;
+              if ($value[2] === 'search') {
+                $sideText['right'] = ;
+              }
+              else {
+              
+              }
               break;
               
               case  'string':
@@ -596,39 +297,15 @@ LIMIT
               break;
             }
             
-            // Value is String
-            elseif (is_string($value)) {
-              // Value is Column
-              if (strpos($value, 'column ') === 0) {
-                if (ctype_alnum(substr($value, 7))) {
-                  $sideText['right'] = $reverseAlias[str_replace('column ', '', $value)];
-                }
-                else throw new Exception('Invalid use of shorthand sequence: columns must be alphanumeric.');
-              }
+            
+            switch ($value[2]) { // Comparison
+              case 'search':
+              $value[
+              break;
               
-              // Value is to be Searched
-              elseif (strpos($value, 'search ') === 0) {
-                if (ctype_alnum(substr($value, 7))) {
-                  $sideText['right'] = '"%' . $this->escape(substr($value, 7)) . '%"';
-                  $hackz['symbol'] = 'LIKE'; // TODO
-                }
-                else throw new Exception('Invalid use of shorthand sequence: search must be alphanumeric.');
-              }
+              default:
               
-              // Value is to be 
-              elseif (startsWith($value, 'and ') === 0) {
-                if (ctype_digit(substr($value, 4))) {
-                  $sideText['right'] = (int) substr($value, 4);
-                  $hackz['symbol'] = $this->comparisonTypes['and'];
-                }
-                else throw new Exception('Invalid use of shorthand sequence: bAnd must be numeric.');
-              }
-              
-              
-              // Value is String Value
-              else {
-                $sideText['right'] = $this->escape($value);
-              }
+              break;
             }
               
             // Value is Array
@@ -636,10 +313,6 @@ LIMIT
               $sideText['left'] = $reverseAlias[$key];
               $sideText['right'] = implode(',', $value); // TODO: format for non-INTS/escape/etc.
               $symbol = $this->comparisonTypes['in'];
-            }
-            
-            else {
-              throw new Exception('Unrecognised Value Type; Value: ' . $value);
             }
             
             
@@ -672,6 +345,26 @@ LIMIT
 
 
     return "($whereText)"; // Return condition string. We wrap parens around to support multiple levels of conditions/recursion.
+  }
+  
+  
+  
+  private function formatSearch($value) {
+    switch ($this->mode) {
+      case 'SQL':
+      return $this->stringQuoteStart . $this->stringFuzzy . $this->escape($value) . $this->stringFuzzy . $this->stringQuoteEnd;
+      break;
+    }
+  }
+  
+  
+  
+  private function formatString($value) {
+    switch ($this->mode) {
+      case 'SQL':
+      return $this->stringQuoteStart . $this->escape($value) . $this->stringQuoteEnd;
+      break;
+    }
   }
   
   
@@ -713,7 +406,7 @@ LIMIT
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */  
   public function str($value, $comp = 'e') {
-    return array('str', (string) $value, $comp);
+    return array('str', $this->escape((string) $value), $comp);
   }
   
   
@@ -727,12 +420,23 @@ LIMIT
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */  
   public function col($value, $comp = 'e') {
-    return array('col', $value, $comp);
+    return array('col', "`$value`", $comp);
   }
 
   
   
+  /**
+   * Returns a compatible time field of the present time, as recognized by the DAL's interpretation of the database driver. In most cases, this will be a unix timestamp.
+   *
+   * @return mixed - The timefield corrosponding to the current time.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  public function now() {
+    return time();
+  }
 
+  
+  
   /**
    * Inserts a row into a table of the database.
    *
@@ -745,35 +449,10 @@ LIMIT
    */
   public function insert($table, $dataArray, $updateArray = false) {
     list($columns, $values) = $this->splitArray($dataArray);
-
-    $columns = implode(',', $columns); // Convert the column array into to a string.
-    $values = implode(',', $values); // Convert the data array into a string.
-
-    $query = "INSERT INTO $table ($columns) VALUES ($values)";
-
-    if ($updateArray) { // This is used for an ON DUPLICATE KEY request.
-      list($columns, $values) = $this->splitArray($updateArray);
-
-      for ($i = 0; $i < count($columns); $i++) {
-        $update[] = $columns[$i] . ' = ' . $values[$i];
-      }
-
-      $update = implode($update, ', ');
-
-      $query = "$query ON DUPLICATE KEY UPDATE $update";
-    }
-
-    if ($queryData = $this->rawQuery($query)) {
-      $this->insertId = $this->functionMap('insertId');
-
-      return $queryData;
-    }
-    else {
-      return false;
-    }
   }
 
 
+  
   /**
    * Inserts a row into a table of the database.
    *
@@ -787,34 +466,13 @@ LIMIT
   public function update($table, $dataArray, $conditionArray = false) {
     list($columns, $values) = $this->splitArray($dataArray);
 
-    for ($i = 0; $i < count($columns); $i++) {
-      $update[] = $columns[$i] . ' = ' . $values[$i];
-    }
-
-    $update = implode($update,', ');
-
-    $query = "UPDATE {$table} SET {$update}";
-
-    if ($conditionArray) {
-      list($columns, $values, $conditions) = $this->splitArray($conditionArray);
-
-      for ($i = 0; $i < count($columns); $i++) {
-        if (!$conditions[$i]) $csym = $this->comparisonTypes['e'];
-        elseif (isset($this->comparisonTypes[$conditions[$i]])) $csym = $this->comparisonTypes[$conditions[$i]];
-        else throw new Exception('Unrecognised comparison type: ' . $conditions[$i]);
-
-        $cond[] = $columns[$i] . $csym . $values[$i];
-      }
-
-      $query .= ' WHERE ' . implode($cond, $this->concatTypes['both']);
-    }
-
-
-    return $this->rawQuery($query);
-
+    $functionName = 'update' . $this->mode;
+    
+    return $this->$functionName($table, $dataArray, $conditionArray);
   }
 
 
+  
   /**
    * Deletes rows from a table of the database.
    *
@@ -825,35 +483,13 @@ LIMIT
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function delete($table, $conditionArray = false) {
-    if ($conditionArray === false) {
-      $delete = 'TRUE';
-    }
-    else {
-      list($columns, $values, $conditions) = $this->splitArray($conditionArray);
-
-      for ($i = 0; $i < count($columns); $i++) {
-        if (!$conditions[$i]) {
-          $csym = $this->comparisonTypes['e'];
-        }
-        elseif (isset($this->comparisonTypes[$conditions[$i]])) {
-          $csym = $this->comparisonTypes[$conditions[$i]];
-        }
-        else {
-          throw new Exception('Unrecognised comparison type: ' . $conditions[$i]);
-        }
-
-        $delete[] = $columns[$i] . $csym . $values[$i];
-      }
-
-      $delete = implode($delete, $this->concatTypes['both']);
-    }
-
-    $query = "DELETE FROM $table WHERE $delete";
-
-    return $this->rawQuery($query);
+    $functionName = 'delete' . $this->mode;
+    
+    return $this->$functionName($table, $conditionArray);
   }
 
 
+  
   /**
    * Sends a raw, unmodified query string to the database server.
    * The query may be logged if it takes a certain amount of time to execute successfully.
@@ -988,133 +624,13 @@ LIMIT
     else {
       throw new Exception('Unrecognised table engine: ' . $storeType);
     }
-
-    $tableProperties = '';
-
-
-    foreach ($tableColumns AS $column) {
-      $typePiece = '';
-
-      switch ($column['type']) {
-        case 'int':
-        if (isset($this->columnIntLimits[$column['maxlen']])) {
-          if (in_array($type, $this->columnStringNoLength)) $typePiece = $this->columnIntLimits[$column['maxlen']];
-          else $typePiece = $this->columnIntLimits[$column['maxlen']] . '(' . (int) $column['maxlen'] . ')';
-        }
-        else {
-          $typePiece = $this->columnIntLimits[0];
-        }
-
-        if ($column['autoincrement']) {
-          $typePiece .= ' AUTO_INCREMENT'; // Ya know, that thing where it sets itself.
-          $tableProperties .= ' AUTO_INCREMENT = ' . (int) $column['autoincrement'];
-        }
-        break;
-
-        case 'string':
-        if ($column['restrict']) {
-          $restrictValues = array();
-
-          foreach ((array) $column['restrict'] AS $value) $restrictValues[] = '"' . $this->escape($value) . '"';
-
-          $typePiece = 'ENUM(' . implode(',',$restrictValues) . ')';
-        }
-        else {
-          if ($storeType === 'memory') $this->columnStringLimits = $this->columnStringTempLimits;
-          else                         $this->columnStringLimits = $this->columnStringPermLimits;
-
-          $typePiece = '';
-
-          foreach ($this->columnStringLimits AS $length => $type) {
-            if ($column['maxlen'] <= $length) {
-              if (in_array($type, $this->columnStringNoLength)) $typePiece = $type;
-              else $typePiece = $type . '(' . $column['maxlen'] . ')';
-
-              break;
-            }
-          }
-
-          if (!$typePiece) {
-            $typePiece = $this->columnStringNoLength[0];
-          }
-        }
-
-        $typePiece .= ' CHARACTER SET utf8 COLLATE utf8_bin';
-        break;
-
-        case 'bitfield':
-        if (!isset($column['bits'])) {
-          $typePiece = 'TINYINT UNSIGNED'; // Sane default
-        }
-        else {
-          if ($column['bits'] <= 8)      $typePiece = 'TINYINT UNSIGNED';
-          elseif ($column['bits'] <= 16) $typePiece = 'SMALLINT UNSIGNED';
-          elseif ($column['bits'] <= 24) $typePiece = 'MEDIUMINT UNSIGNED';
-          elseif ($column['bits'] <= 32) $typePiece = 'INTEGER UNSIGNED';
-          else                           $typePiece = 'LONGINT UNSIGNED';
-        }
-        break;
-
-        case 'time':
-        $typePiece = 'INTEGER UNSIGNED'; // Note: replace with LONGINT to avoid the Epoch issues in 2038 (...I'll do it in FIM5 or so). For now, it's more optimized. Also, since its UNSIGNED, we actually have more until 2106 or something like that.
-        break;
-
-        case 'bool':
-        $typePiece = 'TINYINT(1) UNSIGNED';
-        break;
-
-        default:
-        throw new Exception('Unrecognised type.');
-        break;
-      }
-
-
-      if ($column['default']) {
-        if (isset($this->defaultPhrases[$column['default']])) {
-          $typePiece .= ' DEFAULT ' . $this->defaultPhrases[$column['default']];
-        }
-        else {
-          $typePiece .= ' DEFAULT "' . $this->escape($column['default']) . '"';
-        }
-      }
-
-      $columns[] = $this->columnQuoteStart . $this->escape($column['name']) . $this->columnQuoteEnd . " {$typePiece} NOT NULL COMMENT \"" . $this->escape($column['comment']) . '"';
-    }
-
-
-
-    foreach ($tableIndexes AS $key) {
-      if (isset($this->keyConstants[$key['type']])) {
-        $typePiece = $this->keyConstants[$key['type']];
-      }
-      else {
-        throw new Exception('Unrecognised key type: ' . $key['type']);
-      }
-
-
-      if (strpos($key['name'], ',') !== false) {
-        $keyCols = explode(',', $key['name']);
-
-        foreach ($keyCols AS &$keyCol) {
-          $keyCol = $this->columnQuoteStart . $keyCol . $this->columnQuoteEnd;
-        }
-
-        $key['name'] = implode(',', $keyCols);
-      }
-      else {
-        $key['name'] = $this->columnAliasStart . $key['name'] . $this->columnAliasEnd;
-      }
-
-
-      $keys[] = "{$typePiece} ({$key['name']})";
-    }
-
-    return $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->tableQuoteStart . $this->escape($tableName) . $this->tableQuoteEnd . ' (
-' . implode(",\n  ",$columns) . ',
-' . implode(",\n  ",$keys) . '
-) ENGINE="' . $this->escape($engine) . '" COMMENT="' . $this->escape($tableComment) . '" DEFAULT CHARSET="utf8"' . $tableProperties);
+    
+    $functionName = 'createTable' . $this->mode;
+    
+    return $this->$functionName($tableName);
   }
 
+  
 
   /**
    * Renames/moves a table. It will remain in the active database.
@@ -1126,12 +642,13 @@ LIMIT
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function renameTable($oldName, $newName) {
-    $query = 'RENAME TABLE ' . $this->tableQuoteStart . $this->escape($oldName) . $this->tableQuoteEnd . ' TO ' . $this->tableQuoteStart . $this->escape($newName) . $this->tableQuoteEnd;
-
-    return $this->rawQuery($query);
+    $functionName = 'deleteTable' . $this->mode;
+    
+    return $this->$functionName($oldName, $newName);
   }
 
 
+  
   /**
    * Deletes a table.
    *
@@ -1141,23 +658,13 @@ LIMIT
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function deleteTable($tableName) {
-    $query = 'DROP TABLE ' . $this->tableQuoteStart . $this->escape($tableName) . $this->tableQuoteEnd;
-
-    return $this->rawQuery($query);
+    $functionName = 'deleteTable' . $this->mode;
+    
+    return $this->$functionName($tableName);
   }
 
 
-  /**
-   * Returns a compatible time field of the present time, as recognized by the DAL's interpretation of the database driver. In most cases, this will be a unix timestamp.
-   *
-   * @return mixed - The timefield corrosponding to the current time.
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-   */
-  public function now() {
-    return time();
-  }
-
-
+  
   /**
    * Returns an array of the tables in a database. The method used is driver specific, but where possible the SQL-standard INFORMATION_SCHEMA database will be used.
    *
@@ -1165,21 +672,15 @@ LIMIT
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function getTablesAsArray() {
-    switch ($this->language) {
-      case 'mysql':
-      case 'mysqli':
-      case 'postgresql':
-      $tables = $this->rawQuery('SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA LIKE "' . $this->escape($this->activeDatabase) . '"');
-      $tables = $tables->getAsArray('TABLE_NAME');
-      $tables = array_keys($tables);
-      break;
-    }
-
-    return $tables;
+    $functionName = 'getTableAsArray' . $this->mode;
+    
+    return $this->$functionName();
   }
 
+
+  
   public function __destruct() {
-  	 if ($this->dbLink !== null) { // When close is called, the dbLink is nulled. This prevents redundancy.
+    if ($this->dbLink !== null) { // When close is called, the dbLink is nulled. This prevents redundancy.
       $this->close();
     }
   }
