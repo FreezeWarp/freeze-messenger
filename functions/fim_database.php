@@ -15,7 +15,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 
-class fimDatabase extends database {
+class fimDatabase extends databaseSQL {
 
   public function getRoom($roomIds, $roomName = false, $cache = true) {
     global $sqlPrefix, $config, $user;
