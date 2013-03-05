@@ -19,9 +19,17 @@
  * As with everything else, this is GPL-based, but if anyone decides they like it and may wish to use it for less restricted purposes, contact me. I have considered going LGPL/MIT/BSD with it, but not yet :P */
  
  
-class databaseSQL extends database {  
-  protected $language = '';
+class databaseSQL extends database {
+  public $version = 3;
+  public $product = 'fim';
+  
   public $storeTypes = array('memory', 'general', 'innodb');
+  public $queryLog = array();
+  public $mode = 'SQL';
+  public $language = '';
+  
+  protected $language = '';
+  protected $dbLink = false;
 
   /*********************************************************
   ************************ START **************************
@@ -95,15 +103,13 @@ class databaseSQL extends database {
 
       case 'postgresql':
       switch ($operation) {
-        case 'connect': return pg_connect("host=$args[1] port=$args[2] username=$args[3] password=$args[4] dbname=$args[5]"); break;
-        case 'error':   return pg_last_error($this->dbLink);                                                                  break;
-        case 'close':   return pg_close($this->dbLink);                                                                       break;
-        case 'escape':  return pg_escape_string($this->dbLink, $args[1]);                                                     break;
-        case 'query':   return pg_query($this->dbLink, $args[1]);                                                             break;
-
-        //case 'insertId': return mysqli_insert_id($this->dbLink); break;
-
-        default:        throw new Exception('Unrecognised Operation: ' . $operation);                                         break;
+        case 'connect':  return pg_connect("host=$args[1] port=$args[2] username=$args[3] password=$args[4] dbname=$args[5]"); break;
+        case 'error':    return pg_last_error($this->dbLink);                                                                  break;
+        case 'close':    return pg_close($this->dbLink);                                                                       break;
+        case 'escape':   return pg_escape_string($this->dbLink, $args[1]);                                                     break;
+        case 'query':    return pg_query($this->dbLink, $args[1]);                                                             break;
+        case 'insertId': /* TODO */                                                                                            break;
+        default:        throw new Exception('Unrecognised Operation: ' . $operation);                                          break;
       }
       break;
     }
@@ -114,9 +120,13 @@ class databaseSQL extends database {
   public function connect($host, $port, $user, $password, $database, $driver) {
     $this->setLanguage($driver);
 
-
     if (!$link = $this->functionMap('connect', $host, $port, $user, $password, $database)) { // Make the connection.
-      $this->error = 'The connection was refused: ' . $this->functionMap('error');
+      $this->triggerError('Could Not Connect', array( // Note: we do not include "password" in the error data.
+        'host' => $host,
+        'port' => $port,
+        'user' => $user,
+        'database' => $database
+      ), 'connection');
 
       return false;
     }
@@ -124,15 +134,11 @@ class databaseSQL extends database {
       $this->dbLink = $link; // Set the object property "dbLink" to the database connection resource. It will be used with most other queries that can accept this parameter.
     }
 
-
     if (!$this->activeDatabase && $database) { // Some drivers will require this.
-      if (!$this->selectDatabase($database)) {
-        $this->error = 'Could not select database ("' . $database . '"): ' . $this->functionMap('error');
-
+      if (!$this->selectDatabase($database)) { // Error will be issued in selectDatabase.
         return false;
       }
     }
-
 
     return true;
   }
@@ -158,15 +164,13 @@ class databaseSQL extends database {
     switch ($this->language) {
       case 'mysql':
       case 'mysqli':
-      $this->languageSubset = 'sql';
-
-      $this->tableQuoteStart = '`';  $this->tableQuoteEnd = '`';  $this->tableAliasQuoteStart = '`';  $this->tableAliasQuoteEnd = '`';
-      $this->columnQuoteStart = '`'; $this->columnQuoteEnd = '`'; $this->columnAliasQuoteStart = '`'; $this->columnAliasQuoteEnd = '`';
-      $this->stringQuoteStart = '"'; $this->stringQuoteEnd = '"'; $this->emptyString = '""';          $this->tableColumnDivider = '.';
-      $this->intQuoteStart = ''; $this->intQuoteEnd = '';
-      $this->stringFuzzy = '%';
-
-      $this->sortOrderAsc = 'ASC'; $this->sortOrderDesc = 'DESC';
+      $this->tableQuoteStart = '`';    $this->tableQuoteEnd = '`';    $this->tableAliasQuoteStart = '`';    $this->tableAliasQuoteEnd = '`';
+      $this->columnQuoteStart = '`';   $this->columnQuoteEnd = '`';   $this->columnAliasQuoteStart = '`';   $this->columnAliasQuoteEnd = '`';
+      $this->databaseQuoteStart = '`'; $this->databaseQuoteEnd = '`'; $this->databaseAliasQuoteStart = '`'; $this->databaseAliasQuoteEnd = '`';
+      $this->stringQuoteStart = '"';   $this->stringQuoteEnd = '"';   $this->emptyString = '""';            $this->stringFuzzy = '%';
+      $this->intQuoteStart = '';       $this->intQuoteEnd = '';
+      $this->tableColumnDivider = '.'; $this->databaseColumnDivider = '.';
+      $this->sortOrderAsc = 'ASC';     $this->sortOrderDesc = 'DESC';
 
       $this->tableTypes = array(
         'general' => 'InnoDB',
@@ -175,16 +179,13 @@ class databaseSQL extends database {
       break;
 
       case 'postgresql':
-      $this->languageSubset = 'sql';
-
-      $this->tableQuoteStart = '"';    $this->tableQuoteEnd = '"';    $this->tableAliasQuoteStart = '"';  $this->tableAliasQuoteEnd = '"';
-      $this->columnQuoteStart = '"';   $this->columnQuoteEnd = '"';   $this->columnAliasQuoteStart = '"'; $this->columnAliasQuoteEnd = '"';
-      $this->stringQuoteStart = '"';   $this->stringQuoteEnd = '"';   $this->emptyString = '""';          $this->tableColumnDivider = '.';    
-      $this->intQuoteStart = ''; $this->intQuoteEnd = '';
-      $this->stringFuzzy = '%';
-
-
-      $this->sortOrderAsc = 'ASC'; $this->sortOrderDesc = 'DESC';
+      $this->tableQuoteStart = '"';    $this->tableQuoteEnd = '"';    $this->tableAliasQuoteStart = '"';    $this->tableAliasQuoteEnd = '"';
+      $this->columnQuoteStart = '"';   $this->columnQuoteEnd = '"';   $this->columnAliasQuoteStart = '"';   $this->columnAliasQuoteEnd = '"';
+      $this->databaseQuoteStart = '"'; $this->databaseQuoteEnd = '"'; $this->databaseAliasQuoteStart = '"'; $this->databaseAliasQuoteEnd = '"';
+      $this->stringQuoteStart = '"';   $this->stringQuoteEnd = '"';   $this->emptyString = '""';            $this->stringFuzzy = '%';
+      $this->intQuoteStart = '';       $this->intQuoteEnd = '';
+      $this->tableColumnDivider = '.'; $this->databaseColumnDivider = '.';
+      $this->sortOrderAsc = 'ASC';     $this->sortOrderDesc = 'DESC';
       break;
     }
 
@@ -193,29 +194,17 @@ class databaseSQL extends database {
       case 'mysqli':
       case 'postgresql':
       $this->comparisonTypes = array(
-        'e' => '=',
-        'ne' => '!=',  '!e' => '!=', // same
-        'lt' => '<',   '!gte' => '>', // same
-        'gt' => '>',   '!lte' => '>', // same
-        'lte' => '<=', '!gt' => '>=', // same
-        'gte' => '>=', '!lt' => '>=', // same
-
-        'and' => '&',  '!xor' => '&', // same
-        'xor' => '^',  '!and' => '^', // same
-
-        'in' => 'IN',        '!notin' => 'IN', // same
-        'notin' => 'NOT IN', '!in' => 'NOT IN', // same
-
-        'regexp' => 'REGEXP', // Applies extended POSIX regular expression to index. It is natively implemented in MySQL, PostGreSQL, and Oracle SQL databases. It is absent in MSSQL, and the status in VoltDB and SQLite is unknown.
-        'regex' => 'REGEXP', // Alias of "regexp"
-
-        'glob' => 'LIKE',
-        'like' => 'LIKE', // Alias of "glob"
+        'e' => '=', '!e' => '!=',
+        'lt' => '<', 'gt' => '>',
+        'lte' => '<=', 'gte' => '>=',
+        'in' => 'IN', '!in' => 'NOT IN',
+        'regex' => 'REGEXP', // Applies extended POSIX regular expression to index. It is natively implemented in MySQL, PostGreSQL, and Oracle SQL databases. It is absent in MSSQL, and the status in VoltDB and SQLite is unknown.
+        'search' => 'LIKE',
+        'band' => '&',
       );
 
       $this->concatTypes = array(
-        'both' => ' AND ',
-        'either' => ' OR ',
+        'both' => ' AND ', 'either' => ' OR ',
       );
 
       $this->keyConstants = array(
@@ -229,31 +218,29 @@ class databaseSQL extends database {
       );
 
       $this->columnIntLimits = array(
-        1 => 'TINYINT',   2 => 'TINYINT',   3 => 'SMALLINT',  4 => 'SMALLINT',
-        5 => 'MEDIUMINT', 6 => 'MEDIUMINT', 7 => 'MEDIUMINT', 8 => 'INT',
-        9 => 'INT',       0 => 'BIGINT',
+        1 => 'TINYINT',   2 => 'TINYINT',   3 => 'SMALLINT',  4 => 'SMALLINT', 5 => 'MEDIUMINT',
+        6 => 'MEDIUMINT', 7 => 'MEDIUMINT', 8 => 'INT',       9 => 'INT',      0 => 'BIGINT'
       );
 
       $this->columnStringPermLimits = array(
-        1 => 'CHAR',           255 => 'VARCHAR', 1000 => 'TEXT', 8191 => 'MEDIUMTEXT',
-        2097151 => 'LONGTEXT',
+        1 => 'CHAR', 255 => 'VARCHAR', 1000 => 'TEXT', 8191 => 'MEDIUMTEXT', 2097151 => 'LONGTEXT'
       );
 
       $this->columnStringTempLimits = array(
-        255 => 'CHAR',           65535 => 'VARCHAR',
+        255 => 'CHAR', 65535 => 'VARCHAR'
       );
 
-      $this->columnStringNoLength = array('MEDIUMTEXT', 'LONGTEXT');
+      $this->columnStringNoLength = array(
+        'MEDIUMTEXT', 'LONGTEXT'
+      );
 
       $this->columnBitLimits = array(
-        0 => 'TINYINT UNSIGNED',  8 => 'TINYINT UNSIGNED', 16 => 'SMALLINT UNSIGNED', 24 => 'MEDIUMINT UNSIGNED',
-        32 => 'INTEGER UNSIGNED', 64 => 'LONGINT UNSIGNED',
+        0 => 'TINYINT UNSIGNED',    8 => 'TINYINT UNSIGNED',  16 => 'SMALLINT UNSIGNED',
+        24 => 'MEDIUMINT UNSIGNED', 32 => 'INTEGER UNSIGNED', 64 => 'LONGINT UNSIGNED',
       );
 
       $this->globFindArray = array('*', '?');
       $this->globReplaceArray = array('%', '_');
-      
-      $this->mode = 'SQL';
       break;
     }
   }
@@ -274,7 +261,7 @@ class databaseSQL extends database {
    * @return resource|bool - The database resource returned by the query, or false on failure.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
-  private function rawQuery($query, $suppressErrors = false) {
+  protected function rawQuery($query, $suppressErrors = false) {
     $this->sourceQuery = $query;
 
     if ($queryData = $this->functionMap('query', $query)) {
@@ -291,6 +278,24 @@ class databaseSQL extends database {
 
       return false;
     }
+  }
+  
+  
+  
+  protected function getLastQuery() {
+    return end($this->queryLog);
+  }
+  
+  
+  
+  protected function newQuery($queryText) {
+    $this->queryLog[] = $queryText;
+  }
+  
+  
+  
+  protected function clearQueries() {
+    $this->queryLog = array();
   }
   
   /*********************************************************
@@ -361,7 +366,7 @@ class databaseSQL extends database {
 
     $tableProperties = '';
     
-    foreach ($tableColumns AS $column) {
+    foreach ($tableColumns AS $columnName => $column) {
       $typePiece = '';
 
       switch ($column['type']) {
@@ -433,7 +438,11 @@ class databaseSQL extends database {
         break;
 
         default:
-        $this->triggerError("Unrecognised column type: '$column[type]'.");
+        $this->triggerError("Unrecognised Column Type", array(
+          'tableName' : $tableName,
+          'columnName' : $columnName,
+          'columnType' : $column['type'],
+        ), 'validation');
         break;
       }
 
@@ -447,7 +456,7 @@ class databaseSQL extends database {
         }
       }
 
-      $columns[] = $this->columnQuoteStart . $this->escape($column['name']) . $this->columnQuoteEnd . " {$typePiece} NOT NULL COMMENT \"" . $this->escape($column['comment']) . '"';
+      $columns[] = $this->columnQuoteStart . $this->escape($columnName) . $this->columnQuoteEnd . " {$typePiece} NOT NULL COMMENT \"" . $this->escape($column['comment']) . '"';
     }
 
 
@@ -739,41 +748,24 @@ LIMIT
              * Note: We do not want to include quotes/etc. in VALUE yet, because these theoretically could vary based on the comparison type. */
 
             $i++;
-            $sideTextFull[$i] = '';
-
-            $sideText['left'] = $reverseAlias[(startsWith($key, '!') ? $key : $key)]; // Get the column definition that corresponds with the named column. "!column" signifies negation.
-            $symbol = $this->comparisonTypes[$value[2]];
+            $sideTextFull[$i] = '';            
             
-            
+            if (startsWith($key, '!')) {
               
-            // Value is Array
-            if (is_array($value[1])) {
+            }
+            
+            if (is_array($value[1])) { // Value is Array, Meaning an IN Clause
               $sideText['left'] = $reverseAlias[$key];
               $sideText['right'] = implode(',', $value[1]); // TODO: format for non-INTS/escape/etc.
               $symbol = $this->comparisonTypes['in'];
             }
-            else {
-              switch ($value[0]) { // Switch the value type
-                case 'int':
-                  $sideText['right'] = $this->intQuoteStart . $value[1] . $this->intQuoteEnd;
-                  
-                  if ($value[2] === 'search') {
-                    $sideText['right'] = $this->stringFuzzy . $sideText['right'] . $this->stringFuzzy;
-                  }
-                break;
-                
-                case  'string':
-                  $sideText['right'] = $this->stringQuoteStart . $this->escape($value[1]) . $this->stringQuoteEnd;
-                break;
-                
-                case 'column':
-                  $sideText['right'] = $this->columnQuoteStart . $value[1] . $this->columnQuoteEnd;
-                break;
-              }
+            else { // Otherwise, Some Type of Comparison
+              $sideText['left'] = $reverseAlias[(startsWith($key, '!') ? $key : $key)]; // Get the column definition that corresponds with the named column. "!column" signifies negation.
+              $sideText['right'] = formatValue($value[2] === 'search' ? $value[2] : $value[1], $value[0]);
+              $symbol = $this->comparisonTypes[$value[2]];
             }
 
             
-            /* Generate Comparison Part */
             if ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
               $sideTextFull[$i] = "{$sideText['left']} {$symbol} {$sideText['right']}";
             }
@@ -803,20 +795,22 @@ LIMIT
   
   
   
-  private function formatSearch($value) {
-    return $this->stringQuoteStart . $this->stringFuzzy . $this->escape($value) . $this->stringFuzzy . $this->stringQuoteEnd;
-  }
-  
-  
-  
-  private function formatString($value) {
-    return $this->stringQuoteStart . $this->escape($value) . $this->stringQuoteEnd;
-  }
-  
-  
-  
-  private function formatInteger($value) {
-    return $this->intgQuoteStart . $this->escape($value, 'integer') . $this->intQuoteEnd;
+  /** Format a value to represent the specified type in an SQL query.
+   *
+   * @param int|string value - The value to format.
+   * @param string type - The type to format as, either "search", "string", "integer", or "column".
+   * @return int|string - Value, formatted as specified.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  private function formatValue($value, $type) {
+    switch ($type) {
+      case 'search':   return $this->stringQuoteStart . $this->stringFuzzy . $this->escape($value) . $this->stringFuzzy . $this->stringQuoteEnd; break;
+      case 'string':   return $this->stringQuoteStart . $this->escape($value) . $this->stringQuoteEnd;                                           break;
+      case 'integer':  return $this->intQuoteStart . $this->escape($value, 'integer') . $this->intQuoteEnd;                                      break;
+      case 'column':   return $this->columngQuoteStart . $this->escape($value, 'column') . $this->intQuoteEnd;                                   break;
+      case 'table':    return $this->tableQuoteStart . $this->escape($value, 'table') . $this->tableQuoteEnd;                                    break;
+      case 'database': return $this->databaseQuoteStart . $this->escape($value, 'database') . $this->databaseQuoteEnd;                           break;
+    }
   }
   
   

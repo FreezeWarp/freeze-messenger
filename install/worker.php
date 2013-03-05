@@ -147,9 +147,8 @@ switch ($_REQUEST['phase']) {
 
 
           foreach ($table['column'] AS $column) {
-            $tableColumns[] = array(
+            $tableColumns[$column['@name']] = array(
               'type' => $column['@type'],
-              'name' => $column['@name'],
               'autoincrement' => (isset($column['@autoincrement']) ? $column['@autoincrement'] : false),
               'restrict' => (isset($column['@restrict']) ? explode(',', $column['@restrict']) : false),
               'maxlen' => (isset($column['@maxlen']) ? $column['@maxlen'] : false),

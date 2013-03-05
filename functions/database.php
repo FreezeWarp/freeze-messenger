@@ -24,6 +24,9 @@
  */
 
 abstract class database {
+
+  public $version = 3;
+  public $product = 'fim';
   
   public $queryCounter = 0;
   public $insertId = null;
@@ -31,9 +34,43 @@ abstract class database {
   public $errors = array();
   public $getTablesEnabled = false;
   public $errorFormatFunction = '';
+  public $storeTypes;
   protected $errorLevel = E_USER_ERROR;
   protected $activeDatabase = false;
   protected $dbLink = null;
+  
+  protected $comparisonAliases = array(
+    'eq' => 'e',
+    'equal' => 'e',
+    'ne' => '!e',
+    'notequal' => '!e',
+    '!equal' => '!e',
+    '!eq' => '!e',
+    
+    'lessthan' => 'lt',
+    '!gte' => 'lt',
+    'greaterthan' => 'gt',
+    '!lte' => 'gt',
+    '!gt' => 'lte',
+    '!greaterthan' => 'lte',
+    '!lt' => 'gte',
+    '!lessthan' => 'lte',
+
+    'notin' => '!in',
+    
+    'regexp' => 'regex',
+    
+    'like' => 'search'
+    'glob' => 'search',
+  );
+  protected $comparisonTypes = array(
+    'e', '!e',
+    'lt', 'gt',
+    'lte', 'gte',
+    'in', '!in',
+    'regex', 'search',
+    'band',
+  );
   
   
   
@@ -118,9 +155,53 @@ abstract class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   abstract public function escape($string, $context = 'string');
+  
+  /*********************************************************
+  ************************* END ***************************
+  ******************* General Functions *******************
+  *********************************************************/
+  
+  
+  
+  
+  /*********************************************************
+  ************************ START **************************
+  ******************** Error Handling *********************
+  *********************************************************/
+  
+  /**
+   * Trigger an Error
+   * When a database error is encountered, database implementations should call this function. It will both store the error in the $this->errors property and, potentially, log the error. $errorType should be specified to determine whether or not the error is critical (see below).
+   *
+   * In this example, an error, "Database is locked.", will be issued using the defined error level.
+   * <code>
+   * $this->triggerError('Database is locked.', 'function');
+   * </code>
+   *
+   * @param string errorMessage - The error message to issue.
+   * @param string errorType - The type of error encountered, one of:
+   *  - 'function' - A function returns false. For instance, selectDB() fails because a database could not be found.
+   *  - 'syntax' - A function can not complete due to a syntax error. Some drivers may not trigger this kind of error.
+   *  - 'validation' - A function can not complete because the data specified does not validate, for instance a value is not recognised or is of the wrong type.
+   *  - 'connection' - A connection failed. For instance, connect() returns false or the MySQL server is down. The latter error may not always be detected.
+   * @param bool suppressErrors - Do not trigger an error. The error will still be logged, but it will not interupt the program flow.
+   * @return void
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  protected function triggerError($errorMessage, $errorData, $errorType, $suppressErrors = false) {
+    if (function_exists($this->errorFormatFunction)) {
+      $errorMessage = call_user_func($this->errorFormatFunction, $errorMessage, $errorData);
+    }
+    
+    if (!$suppressErrors) {
+      trigger_error($errorMessage, $this->errorLevel);
+    }
+    
+    $this->newError($errorMessage);
+  }
 
   
-
+  
   /**
    * Defines what error level should be used for all database errors called by the class. Class exceptions will not be affected.
    * This function's main purpose in surpressing errors at certain points in script execution, e.g.:
@@ -141,7 +222,7 @@ abstract class database {
   public function setErrorLevel($errorLevel) {
     return $this->errorLevel = $errorLevel;
   }
-  
+
   
   
   /**
@@ -163,57 +244,48 @@ abstract class database {
   }
   
   
-  public function newError($errorMessage) {
+  
+  /**
+   * Adds a new error to the error log. This should normally only be called by triggerError(), but is left protected if a class wishes to use it. 
+   *
+   * @param string $errorMessage - Text of message to log.
+   * @return void
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  protected function newError($errorMessage) {
     $this->errors[] = $errorMessage
-  }
-  
-  
-  public function clearErrors() {
-    $this->errors = array();
-  }
-  
-  
-  public function getLastError() {
-    return end($this->errors);
   }
   
   
   
   /**
-   * Trigger an Error
-   * When a database error is encountered, database implementations should call this function. It will both store the error in the $this->errors property and, potentially, log the error. $errorType should be specified to determine whether or not the error is critical (see below).
+   * Clears the error log.
    *
-   * In this example, an error, "Database is locked.", will be issued using the defined error level.
-   * <code>
-   * $this->triggerError('Database is locked.', 'function');
-   * </code>
-   *
-   * @param string errorMessage - The error message to issue.
-   * @param string errorType - The type of error encountered, one of:
-   *  - 'function' - A function returns false. For instance, selectDB() fails because a database could not be found.
-   *  - 'syntax' - A function can not complete due to a syntax error. Some drivers may not trigger this kind of error.
-   *  - 'validation' - A function can not complete because the data specified does not validate, for instance a value is not recognised or is of the wrong type.
-   * @param bool suppressErrors - Do not trigger an error. The error will still be logged, but it will not interupt the program flow.
    * @return void
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  protected function triggerError($errorMessage, $errorData, $errorType, $suppressErrors = false) {
-    if (function_exists($this->errorFormatFunction)) {
-      $errorMessage = call_user_func($this->errorFormatFunction, $errorMessage, $errorData);
-    }
-    
-    if (!$suppressErrors) {
-      trigger_error($errorMessage, $this->errorLevel);
-    }
-    
-    $this->newError($errorMessage);
+  public function clearErrors() {
+    $this->errors = array();
+  }
+  
+  
+  
+  /**
+   * Retrives the last logged error.
+   *
+   * @return string - Last logged error.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  public function getLastError() {
+    return end($this->errors);
   }
   
   /*********************************************************
   ************************* END ***************************
-  ******************* General Functions *******************
+  ******************** Error Handling *********************
   *********************************************************/
 
+  
   
 
   /*********************************************************
@@ -363,6 +435,7 @@ abstract class database {
 
   
   
+  
   /*********************************************************
   ************************ START **************************
   ******************** Row Functions **********************
@@ -481,6 +554,36 @@ abstract class database {
   ************************ START **************************
   **************** Type-Casting Functions *****************
   *********************************************************/
+  
+  /**
+   * Define a value as being of a certain type for database operations.
+   *
+   * @param mixed $value - The value to "type".
+   * @param string $type - The type to attribute to the value, either:
+   *  - 'int', an integer
+   *  - 'ts', a timestamp
+   *  - 'str', a string
+   *  - 'col', a column
+   * @param mixed $comp - How the value will be compared to the data present as an index, either:
+   *  - 'search'
+   *  - 'e'
+   *
+   * @internal Note that minimal casting actually occurs here, and should instead be performed by the select() function in each implementation. Instead, it simply ensures that basic PHP typing is present: integer for integers and timestamps, strings for strings and columns, arrays for arrays, and floats for floats.
+   *
+   * @return special - Returns a special representation of a column int only for use in database functions.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
+  
+  public function type($value, $type, $comp = 'e') {
+    switch ($type) {
+      case 'int': return array('integer',   (int)    $value, $comp); break;
+      case 'ts':  return array('timestamp', (int)    $value, $comp); break;
+      case 'str': return array('string',    (string) $value, $comp); break;
+      case 'col': return array('colomn',    (string) $value, $comp); break;
+      case 'arr': return array('array',     (array)  $value, $comp); break;
+      case 'flt': return array('float',     (float)  $value, $comp); break;
+    }
+  }
   
   /**
    * Define a value as being an integer for database operations.
