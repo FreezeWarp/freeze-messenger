@@ -19,33 +19,7 @@
  * As with everything else, this is GPL-based, but if anyone decides they like it and may wish to use it for less restricted purposes, contact me. I have considered going LGPL/MIT/BSD with it, but not yet :P */
  
  
-class databaseSQL extends database {
-  /**
-   * Construct
-   *
-   * @return void
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */
-  public function __construct() {
-    $this->queryCounter = 0;
-    $this->insertId = 0;
-    $this->errorLevel = E_USER_ERROR;
-    $this->activeDatabase = false;
-    $this->dbLink = null;
-  }
-
-  
-
-  /**
-   * Set the Error Level for Display
-   *
-   * @return string - New error level.
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com> */
-  public function setErrorLevel($errorLevel) {
-    $this->errorLevel = $errorLevel;
-  }
-
-  
+class databaseSQL extends database {  
 
   /**
    * Calls a database function, such as mysql_connect or mysql_query, using lookup tables
@@ -312,6 +286,225 @@ class databaseSQL extends database {
   }
   
   
+
+  
+  
+  /*********************************************************
+  ************************ START **************************
+  ****************** Database Functions *******************
+  *********************************************************/
+  
+  public function selectDatabase($database) {
+    if (!$this->functionMap('selectdb', $database)) { // Select the database.
+      $this->error = 'Could not select database: ' . $database;
+
+      return false;
+    }
+    else {
+      if ($this->language == 'mysql' || $this->language == 'mysqli') {
+        if (!$this->rawQuery('SET NAMES "utf8"')) { // Sets the database encoding to utf8 (unicode).
+          $this->error = 'Could not run SET NAMES query.';
+
+          return false;
+        }
+      }
+      
+      $this->activeDatabase = $database;
+
+      return true;
+    }
+  }
+  
+  
+  
+  public function createDatabase($database) {
+    return $this->rawQuery('CREATE DATABASE IF NOT EXISTS ' . $this->databaseQuoteStart . $database . $this->databaseQuoteEnd);
+  }
+  
+  /*********************************************************
+  ************************* END ***************************
+  ****************** Database Functions *******************
+  *********************************************************/
+  
+  
+  
+  /*********************************************************
+  ************************ START **************************
+  ******************* Table Functions *********************
+  *********************************************************/
+
+  public function createTable($tableName, $tableComment, $engine, $tableColumns, $tableIndexes) {
+    if (isset($this->tableTypes[$storeType])) {
+      $engine = $this->tableTypes[$storeType];
+    }
+    else {
+      throw new Exception('Unrecognised table engine: ' . $storeType);
+    }
+
+    $tableProperties = '';
+    
+    foreach ($tableColumns AS $column) {
+      $typePiece = '';
+
+      switch ($column['type']) {
+        case 'int':
+        if (isset($this->columnIntLimits[$column['maxlen']])) {
+          if (in_array($type, $this->columnStringNoLength)) $typePiece = $this->columnIntLimits[$column['maxlen']];
+          else $typePiece = $this->columnIntLimits[$column['maxlen']] . '(' . (int) $column['maxlen'] . ')';
+        }
+        else {
+          $typePiece = $this->columnIntLimits[0];
+        }
+
+        if ($column['autoincrement']) {
+          $typePiece .= ' AUTO_INCREMENT'; // Ya know, that thing where it sets itself.
+          $tableProperties .= ' AUTO_INCREMENT = ' . (int) $column['autoincrement'];
+        }
+        break;
+
+        case 'string':
+        if ($column['restrict']) {
+          $restrictValues = array();
+
+          foreach ((array) $column['restrict'] AS $value) $restrictValues[] = '"' . $this->escape($value) . '"';
+
+          $typePiece = 'ENUM(' . implode(',',$restrictValues) . ')';
+        }
+        else {
+          if ($storeType === 'memory') $this->columnStringLimits = $this->columnStringTempLimits;
+          else                         $this->columnStringLimits = $this->columnStringPermLimits;
+
+          $typePiece = '';
+
+          foreach ($this->columnStringLimits AS $length => $type) {
+            if ($column['maxlen'] <= $length) {
+              if (in_array($type, $this->columnStringNoLength)) $typePiece = $type;
+              else $typePiece = $type . '(' . $column['maxlen'] . ')';
+
+              break;
+            }
+          }
+
+          if (!$typePiece) {
+            $typePiece = $this->columnStringNoLength[0];
+          }
+        }
+
+        $typePiece .= ' CHARACTER SET utf8 COLLATE utf8_bin';
+        break;
+
+        case 'bitfield':
+        if (!isset($column['bits'])) {
+          $typePiece = 'TINYINT UNSIGNED'; // Sane default
+        }
+        else {
+          if ($column['bits'] <= 8)      $typePiece = 'TINYINT UNSIGNED';
+          elseif ($column['bits'] <= 16) $typePiece = 'SMALLINT UNSIGNED';
+          elseif ($column['bits'] <= 24) $typePiece = 'MEDIUMINT UNSIGNED';
+          elseif ($column['bits'] <= 32) $typePiece = 'INTEGER UNSIGNED';
+          else                           $typePiece = 'LONGINT UNSIGNED';
+        }
+        break;
+
+        case 'time':
+        $typePiece = 'INTEGER UNSIGNED'; // Note: replace with LONGINT to avoid the Epoch issues in 2038 (...I'll do it in FIM5 or so). For now, it's more optimized. Also, since its UNSIGNED, we actually have more until 2106 or something like that.
+        break;
+
+        case 'bool':
+        $typePiece = 'TINYINT(1) UNSIGNED';
+        break;
+
+        default:
+        throw new Exception('Unrecognised type.');
+        break;
+      }
+
+
+      if ($column['default']) {
+        if (isset($this->defaultPhrases[$column['default']])) {
+          $typePiece .= ' DEFAULT ' . $this->defaultPhrases[$column['default']];
+        }
+        else {
+          $typePiece .= ' DEFAULT "' . $this->escape($column['default']) . '"';
+        }
+      }
+
+      $columns[] = $this->columnQuoteStart . $this->escape($column['name']) . $this->columnQuoteEnd . " {$typePiece} NOT NULL COMMENT \"" . $this->escape($column['comment']) . '"';
+    }
+
+
+
+    foreach ($tableIndexes AS $key) {
+      if (isset($this->keyConstants[$key['type']])) {
+        $typePiece = $this->keyConstants[$key['type']];
+      }
+      else {
+        throw new Exception('Unrecognised key type: ' . $key['type']);
+      }
+
+
+      if (strpos($key['name'], ',') !== false) {
+        $keyCols = explode(',', $key['name']);
+
+        foreach ($keyCols AS &$keyCol) {
+          $keyCol = $this->columnQuoteStart . $keyCol . $this->columnQuoteEnd;
+        }
+
+        $key['name'] = implode(',', $keyCols);
+      }
+      else {
+        $key['name'] = $this->columnAliasStart . $key['name'] . $this->columnAliasEnd;
+      }
+
+
+      $keys[] = "{$typePiece} ({$key['name']})";
+    }
+
+    return $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->tableQuoteStart . $this->escape($tableName) . $this->tableQuoteEnd . ' (
+' . implode(",\n  ",$columns) . ',
+' . implode(",\n  ",$keys) . '
+) ENGINE="' . $this->escape($engine) . '" COMMENT="' . $this->escape($tableComment) . '" DEFAULT CHARSET="utf8"' . $tableProperties);
+  }
+  
+  
+  
+  public function deleteTable($tableName) {
+    return $this->rawQuery('DROP TABLE ' . $this->tableQuoteStart . $this->escape($tableName) . $this->tableQuoteEnd);
+  }
+  
+  
+  
+  public function renameTable($oldName, $newName) {
+    return $this->rawQuery('RENAME TABLE ' . $this->tableQuoteStart . $this->escape($oldName) . $this->tableQuoteEnd . ' TO ' . $this->tableQuoteStart . $this->escape($newName) . $this->tableQuoteEnd);
+  }
+  
+  
+  
+  public function getTablesAsArray() {
+    switch ($this->language) {
+      case 'mysql':
+      case 'mysqli':
+      case 'postgresql':
+      $tables = $this->rawQuery('SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA LIKE "' . $this->escape($this->activeDatabase) . '"');
+      $tables = $tables->getAsArray('TABLE_NAME');
+      $tables = array_keys($tables);
+      break;
+    }
+    
+    return $tables;
+  }
+  
+  /*********************************************************
+  ************************* END ***************************
+  ******************* Table Functions *********************
+  *********************************************************/
+  
+  
+  
+  /*********************************************************
+  ************************ START **************************
+  ******************** Row Functions **********************
+  *********************************************************/  
   
   public function select($columns, $conditionArray = false, $sort = false, $limit = false) {
       /* Define Variables */
@@ -506,19 +699,6 @@ LIMIT
    * @return string
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-        
-  /* Shorthand Mode
-    *
-    * Shorthand mode is, well, shorter. It's 10× simpler, and I may eventually deprecate the full mode in its favour. Right now, however, it simply doesn't support all operations. Eventually, I feel I will be able to make enough analogues that this will be different, though.
-    * Anyway, here is a quick usage guide for how the select part (inside of a "both" or "or" array) should look:
-    ** To compare a column to a value: 'columnName' => 'value' (value must be either integer or string, and will be escaped automatically)
-    ** To compare a column to multiple values using an IN clause: 'columnName' => 'value' (value must be one-dimensional array, all entries of which should either be strings or integers, which will automatically be escaped.
-    ** To compare a column to another column: 'columnName' => 'column columnName2' (columnName2 must be alphanumeric or it will not be accepted; additionally, above strings must not start with "column")
-    *
-    * Next, a few caveats:
-    ** Everything is case sensitive. Live with it.
-    ** 
-  */
   private function recurseBothEither($conditionArray, $reverseAlias, $d = 0) {
     $i = 0;
     $h = 0;
@@ -565,7 +745,7 @@ LIMIT
                 break;
                 
                 case  'string':
-                  $sideText['right'] = $this->stringQuoteStart . $value[1] . $this->stringQuoteEnd;
+                  $sideText['right'] = $this->stringQuoteStart . $this->escape($value[1]) . $this->stringQuoteEnd;
                 break;
                 
                 case 'column':
@@ -606,21 +786,19 @@ LIMIT
   
   
   private function formatSearch($value) {
-    switch ($this->mode) {
-      case 'SQL':
-      return $this->stringQuoteStart . $this->stringFuzzy . $this->escape($value) . $this->stringFuzzy . $this->stringQuoteEnd;
-      break;
-    }
+    return $this->stringQuoteStart . $this->stringFuzzy . $this->escape($value) . $this->stringFuzzy . $this->stringQuoteEnd;
   }
   
   
   
   private function formatString($value) {
-    switch ($this->mode) {
-      case 'SQL':
-      return $this->stringQuoteStart . $this->escape($value) . $this->stringQuoteEnd;
-      break;
-    }
+    return $this->stringQuoteStart . $this->escape($value) . $this->stringQuoteEnd;
+  }
+  
+  
+  
+  private function formatInteger($value) {
+    return $this->intgQuoteStart . $this->escape($value, 'integer') . $this->intQuoteEnd;
   }
   
   
@@ -806,197 +984,10 @@ LIMIT
     return $this->rawQuery($query);
   }
   
-  
-  
-  public function createTable($tableName, $tableComment, $engine, $tableColumns, $tableIndexes) {
-    if (isset($this->tableTypes[$storeType])) {
-      $engine = $this->tableTypes[$storeType];
-    }
-    else {
-      throw new Exception('Unrecognised table engine: ' . $storeType);
-    }
-
-    $tableProperties = '';
-    
-    foreach ($tableColumns AS $column) {
-      $typePiece = '';
-
-      switch ($column['type']) {
-        case 'int':
-        if (isset($this->columnIntLimits[$column['maxlen']])) {
-          if (in_array($type, $this->columnStringNoLength)) $typePiece = $this->columnIntLimits[$column['maxlen']];
-          else $typePiece = $this->columnIntLimits[$column['maxlen']] . '(' . (int) $column['maxlen'] . ')';
-        }
-        else {
-          $typePiece = $this->columnIntLimits[0];
-        }
-
-        if ($column['autoincrement']) {
-          $typePiece .= ' AUTO_INCREMENT'; // Ya know, that thing where it sets itself.
-          $tableProperties .= ' AUTO_INCREMENT = ' . (int) $column['autoincrement'];
-        }
-        break;
-
-        case 'string':
-        if ($column['restrict']) {
-          $restrictValues = array();
-
-          foreach ((array) $column['restrict'] AS $value) $restrictValues[] = '"' . $this->escape($value) . '"';
-
-          $typePiece = 'ENUM(' . implode(',',$restrictValues) . ')';
-        }
-        else {
-          if ($storeType === 'memory') $this->columnStringLimits = $this->columnStringTempLimits;
-          else                         $this->columnStringLimits = $this->columnStringPermLimits;
-
-          $typePiece = '';
-
-          foreach ($this->columnStringLimits AS $length => $type) {
-            if ($column['maxlen'] <= $length) {
-              if (in_array($type, $this->columnStringNoLength)) $typePiece = $type;
-              else $typePiece = $type . '(' . $column['maxlen'] . ')';
-
-              break;
-            }
-          }
-
-          if (!$typePiece) {
-            $typePiece = $this->columnStringNoLength[0];
-          }
-        }
-
-        $typePiece .= ' CHARACTER SET utf8 COLLATE utf8_bin';
-        break;
-
-        case 'bitfield':
-        if (!isset($column['bits'])) {
-          $typePiece = 'TINYINT UNSIGNED'; // Sane default
-        }
-        else {
-          if ($column['bits'] <= 8)      $typePiece = 'TINYINT UNSIGNED';
-          elseif ($column['bits'] <= 16) $typePiece = 'SMALLINT UNSIGNED';
-          elseif ($column['bits'] <= 24) $typePiece = 'MEDIUMINT UNSIGNED';
-          elseif ($column['bits'] <= 32) $typePiece = 'INTEGER UNSIGNED';
-          else                           $typePiece = 'LONGINT UNSIGNED';
-        }
-        break;
-
-        case 'time':
-        $typePiece = 'INTEGER UNSIGNED'; // Note: replace with LONGINT to avoid the Epoch issues in 2038 (...I'll do it in FIM5 or so). For now, it's more optimized. Also, since its UNSIGNED, we actually have more until 2106 or something like that.
-        break;
-
-        case 'bool':
-        $typePiece = 'TINYINT(1) UNSIGNED';
-        break;
-
-        default:
-        throw new Exception('Unrecognised type.');
-        break;
-      }
-
-
-      if ($column['default']) {
-        if (isset($this->defaultPhrases[$column['default']])) {
-          $typePiece .= ' DEFAULT ' . $this->defaultPhrases[$column['default']];
-        }
-        else {
-          $typePiece .= ' DEFAULT "' . $this->escape($column['default']) . '"';
-        }
-      }
-
-      $columns[] = $this->columnQuoteStart . $this->escape($column['name']) . $this->columnQuoteEnd . " {$typePiece} NOT NULL COMMENT \"" . $this->escape($column['comment']) . '"';
-    }
-
-
-
-    foreach ($tableIndexes AS $key) {
-      if (isset($this->keyConstants[$key['type']])) {
-        $typePiece = $this->keyConstants[$key['type']];
-      }
-      else {
-        throw new Exception('Unrecognised key type: ' . $key['type']);
-      }
-
-
-      if (strpos($key['name'], ',') !== false) {
-        $keyCols = explode(',', $key['name']);
-
-        foreach ($keyCols AS &$keyCol) {
-          $keyCol = $this->columnQuoteStart . $keyCol . $this->columnQuoteEnd;
-        }
-
-        $key['name'] = implode(',', $keyCols);
-      }
-      else {
-        $key['name'] = $this->columnAliasStart . $key['name'] . $this->columnAliasEnd;
-      }
-
-
-      $keys[] = "{$typePiece} ({$key['name']})";
-    }
-
-    return $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->tableQuoteStart . $this->escape($tableName) . $this->tableQuoteEnd . ' (
-' . implode(",\n  ",$columns) . ',
-' . implode(",\n  ",$keys) . '
-) ENGINE="' . $this->escape($engine) . '" COMMENT="' . $this->escape($tableComment) . '" DEFAULT CHARSET="utf8"' . $tableProperties);
-  }
-  
-  
-  
-  public function deleteTable($tableName) {
-    return $this->rawQuery('DROP TABLE ' . $this->tableQuoteStart . $this->escape($tableName) . $this->tableQuoteEnd);
-  }
-  
-  
-  
-  public function renameTable($oldName, $newName) {
-    return $this->rawQuery('RENAME TABLE ' . $this->tableQuoteStart . $this->escape($oldName) . $this->tableQuoteEnd . ' TO ' . $this->tableQuoteStart . $this->escape($newName) . $this->tableQuoteEnd);
-  }
-  
-  
-  
-  public function getTablesAsArray() {
-    switch ($this->language) {
-      case 'mysql':
-      case 'mysqli':
-      case 'postgresql':
-      $tables = $this->rawQuery('SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA LIKE "' . $this->escape($this->activeDatabase) . '"');
-      $tables = $tables->getAsArray('TABLE_NAME');
-      $tables = array_keys($tables);
-      break;
-    }
-    
-    return $tables;
-  }
-  
-  
-  
-  public function selectDatabase($database) {
-    if (!$this->functionMap('selectdb', $database)) { // Select the database.
-      $this->error = 'Could not select database: ' . $database;
-
-      return false;
-    }
-    else {
-      if ($this->language == 'mysql' || $this->language == 'mysqli') {
-        if (!$this->rawQuery('SET NAMES "utf8"')) { // Sets the database encoding to utf8 (unicode).
-          $this->error = 'Could not run SET NAMES query.';
-
-          return false;
-        }
-      }
-      
-      $this->activeDatabase = $database;
-
-      return true;
-    }
-  }
-  
-  
-  
-  public function createDatabase($database) {
-    return $this->rawQuery('CREATE DATABASE IF NOT EXISTS ' . $this->databaseQuoteStart . $database . $this->databaseQuoteEnd);
-  }
+  /*********************************************************
+  ************************* END ***************************
+  ******************** Row Functions **********************
+  *********************************************************/
   
 }
 ?>

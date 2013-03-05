@@ -25,7 +25,41 @@
  */
 
 abstract class database {
+  
 
+  /*********************************************************
+  ************************ START **************************
+  ******************* General Functions *******************
+  *********************************************************/
+  
+  /**
+   * Construct
+   *
+   * @return void
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
+  public function __construct() {
+    $this->queryCounter = 0;
+    $this->insertId = 0;
+    $this->errorLevel = E_USER_ERROR;
+    $this->activeDatabase = false;
+    $this->dbLink = null;
+  }
+  
+
+  
+  /**
+   * Construct
+   *
+   * @return void
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */ 
+  public function __destruct() {
+    if ($this->dbLink !== null) { // When close is called, the dbLink is nulled. This prevents redundancy.
+      $this->close();
+    }
+  }
+  
   /**
    * Connect to a database server.
    *
@@ -37,8 +71,50 @@ abstract class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   abstract public function connect($host, $port, $user, $password, $database, $driver);
+  
 
 
+  /**
+   * Closes a connection to a database server.
+   *
+   * @return void
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  abstract public function close();
+
+  
+  
+  /**
+   * Returns a string properly escaped for raw queries.
+   * Developer Note: This is only passed through functionMap(), and not an exended class's implementation of escape. If, for whatever reason, it needs to be overwritten, a class method of escape() will automatically replace it.
+   *
+   * @return string
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  abstract public function escape($string, $context = 'string');
+
+  
+
+  /**
+   * Set the Error Level for Display
+   *
+   * @return string - New error level.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com> */
+  public function setErrorLevel($errorLevel) {
+    $this->errorLevel = $errorLevel;
+  }
+  
+  /*********************************************************
+  ************************* END ***************************
+  ******************* General Functions *******************
+  *********************************************************/
+
+  
+
+  /*********************************************************
+  ************************ START **************************
+  ****************** Database Functions *******************
+  *********************************************************/
   
   /**
    * Creates a new database on the database server. This function is not possible on all drivers (e.g. PostGreSQL).
@@ -60,85 +136,19 @@ abstract class database {
   */
   abstract public function selectDatabase($database);
   
+  /*********************************************************
+  ************************* END ***************************
+  ****************** Database Functions *******************
+  *********************************************************/
 
-
-  /**
-   * Closes a connection to a database server.
-   *
-   * @return void
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-   */
-  abstract public function close();
-  
-
-
-  /**
-   * Returns a string properly escaped for raw queries.
-   * Developer Note: This is only passed through functionMap(), and not an exended class's implementation of escape. If, for whatever reason, it needs to be overwritten, a class method of escape() will automatically replace it.
-   *
-   * @return string
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-   */
-  abstract public function escape($string);
-
-  
-
-  /**
-   * Retrieves data from the active database connection.
-   *
-   * @param array columns - The columns to select.
-   * @param array conditionArray - The conditions for the selection.
-   * @param array|string sort - A string or array defining how to sort the return data.
-   * @param int $limit - The maximum number of columns to select.
-   *
-   * @return object
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-   */
-  abstract public function select($columns, $conditionArray = false, $sort = false, $limit = false);
-
-  
-  
-  /**
-   * Inserts a row into a table of the database.
-   *
-   * @param string $table - The table to insert into.
-   * @param array $dataArray - The data to insert into the database.
-   * @param array $updateArray - If the row can not be inserted due to key restrictions, this defines data to update the row with instead (see MySQL's ON DUPLICATE KEY UPDATE).
-   *
-   * @return bool - True on success, false on failure.s
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-   */
-  abstract public function insert($table, $dataArray, $updateArray = false);
 
 
   
-  /**
-   * Inserts a row into a table of the database.
-   *
-   * @param string $table - The table to update.
-   * @param array $dataArray - The data to update the row(s) with.
-   * @param array $conditionArray - The conditions to apply to the UPDATE.
-   *
-   * @return bool - True on success, false on failure.
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-   */
-  abstract public function update($table, $dataArray, $conditionArray = false );
-
-
+  /*********************************************************
+  ************************ START **************************
+  ******************* Table Functions *********************
+  *********************************************************/
   
-  /**
-   * Deletes rows from a table of the database.
-   *
-   * @param string $table - The table to delete from.
-   * @param array $updateArray - The conditions to delete rows by.
-   *
-   * @return bool - True on success, false on failure.
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-   */
-  abstract public function delete($table, $conditionArray = false);
-
-
-
   /**
    * Creates a table based on the specified data.
    *
@@ -187,14 +197,105 @@ abstract class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   abstract public function getTablesAsArray();
+  
+  /*********************************************************
+  ************************* END ***************************
+  ******************* Table Functions *********************
+  *********************************************************/
+
+  
+  
+  /*********************************************************
+  ************************ START **************************
+  ******************** Row Functions **********************
+  *********************************************************/
+
+  /**
+   * Retrieves data from the active database connection.
+   *
+   * @param array columns - The columns to select.
+   * @param array conditionArray - The conditions for the selection.
+   * @param array|string sort - A string or array defining how to sort the return data.
+   * @param int $limit - The maximum number of columns to select.
+   *
+   * @return object
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+   
+   /* Formatting:
+    *
+    * To compare a column to a value: 'columnName' => $dB->str('value') (value must be either integer or string, and will be escaped automatically)
+    * To compare a column to multiple values using an IN clause: 'columnName' => 'value' (value must be one-dimensional array, all entries of which should either be strings or integers, which will automatically be escaped.
+    * To compare a column to another column: 'columnName' => 'column columnName2' (columnName2 must be alphanumeric or it will not be accepted; additionally, above strings must not start with "column")
+    *
+    * Next, a few caveats:
+    ** Everything is case sensitive. Live with it.
+  */
+
+  abstract public function select($columns, $conditionArray = false, $sort = false, $limit = false);
+
+  
+  
+  /**
+   * Inserts a row into a table of the database.
+   *
+   * @param string $table - The table to insert into.
+   * @param array $dataArray - The data to insert into the database.
+   * @param array $updateArray - If the row can not be inserted due to key restrictions, this defines data to update the row with instead (see MySQL's ON DUPLICATE KEY UPDATE).
+   *
+   * @return bool - True on success, false on failure.s
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  abstract public function insert($table, $dataArray, $updateArray = false);
 
 
+  
+  /**
+   * Inserts a row into a table of the database.
+   *
+   * @param string $table - The table to update.
+   * @param array $dataArray - The data to update the row(s) with.
+   * @param array $conditionArray - The conditions to apply to the UPDATE.
+   *
+   * @return bool - True on success, false on failure.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  abstract public function update($table, $dataArray, $conditionArray = false );
+
+
+  
+  /**
+   * Deletes rows from a table of the database.
+   *
+   * @param string $table - The table to delete from.
+   * @param array $updateArray - The conditions to delete rows by.
+   *
+   * @return bool - True on success, false on failure.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  abstract public function delete($table, $conditionArray = false);
+  
+  /*********************************************************
+  ************************* END ***************************
+  ******************** Row Functions **********************
+  *********************************************************/
+
+
+  
+  
+  /*********************************************************
+  ************************ START **************************
+  **************** Type-Casting Functions *****************
+  *********************************************************/
   
   /**
    * Define a value as being an integer for database operations.
    *
    * @param mixed $value - The value to cast.
    * @param mixed $comp - How the value will be compared to the data present as an index.
+   *
+   * @return special - Returns a special representation of a column int only for use in database functions.
+   *
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   public function int($value, $comp = 'e') {
@@ -208,6 +309,9 @@ abstract class database {
    *
    * @param mixed $value - The value to cast.
    * @param mixed $comp - How the value will be compared to the data present as an index.
+   *
+   * @return special - Returns a special representation of a timestamp value only for use in database functions.
+   *
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   public function ts($value, $comp = 'e') {
@@ -221,10 +325,13 @@ abstract class database {
    *
    * @param mixed $value - The value to cast.
    * @param mixed $comp - How the value will be compared to the data present as an index.
+   *
+   * @return special - Returns a special representation of a string value only for use in database functions.
+   *
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   public function str($value, $comp = 'e') {
-    return array('str', $this->escape((string) $value), $comp);
+    return array('str', (string) $value, $comp);
   }
   
   
@@ -234,24 +341,18 @@ abstract class database {
    *
    * @param mixed $value - The value to cast.
    * @param mixed $comp - How the value will be compared to the data present as an index.
+   *
+   * @return special - Returns a special representation of a column value only for use in database functions.
+   *
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   public function col($value, $comp = 'e') {
-    return array('col', $value, $comp);
-  }
-
-  
-
-  public function now() {
-    return time();
+    return array('col', (string) $value, $comp);
   }
   
-  
-  
-  public function __destruct() {
-    if ($this->dbLink !== null) { // When close is called, the dbLink is nulled. This prevents redundancy.
-      $this->close();
-    }
-  }
+  /*********************************************************
+  ************************* END ***************************
+  **************** Type-Casting Functions *****************
+  *********************************************************/
 }
 ?>
