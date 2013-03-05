@@ -15,8 +15,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 /**** BRIEF INTRODUCTION ****/
-/* This file is the outline of FreezeMessenger's database class. The legwork will be performed by another class (usually databaseSQL), while this defines variables and includes documentation for the interface.
- */
+/* This file is the outline of FreezeMessenger's database class. The legwork will be performed by another class (usually databaseSQL), while this defines variables and includes documentation for the interface. */
 
 
 /**** BASIC POINTERS ****/
@@ -26,20 +25,20 @@
 
 abstract class database {
   
-
-  /*********************************************************
-  ************************ START **************************
-  ******************* General Functions *******************
-  *********************************************************/
-  
   public $queryCounter = 0;
   public $insertId = null;
   public $error = false;
+  public $getTablesEnabled = false;
   protected $errorLevel = E_USER_ERROR;
   protected $activeDatabase = false;
   protected $dbLink = null;
   
   
+  
+  /*********************************************************
+  ************************ START **************************
+  ******************* General Functions *******************
+  *********************************************************/
   
   /**
    * Construct
@@ -77,6 +76,20 @@ abstract class database {
    * @param string $password - The password of the user.
    * @param string $database - The database to connect to. (Note: This can be selected using selectDatabase(), but for most purposes it should be specified now.)
    * @param string $driver - The driver that will power the abstraction. At present, only "mysql" and "mysqli" are supported.
+   *
+   * Connect to MySQL server using MySQLi driver:
+   * <code>
+   * $db = new database()
+   * $dB->connect('localhost', 3306, 'root', 'r00tpassword', 'database1', 'mysqli');
+   * </code>
+   *
+   * Alternatively, the connection information can be specified in the __construct() call:
+   * <code>
+   * $db = new database('localhost', 3306, 'root', 'r00tpassword', 'database1', 'mysqli');
+   * </code>
+   *
+   * @internal Implementors who use a file (e.g. JSON) instead of a database are suggested to use "host", "user", and "password" as login details for a remote session, with "database" corresponding to the proper file. "user" and "password" could also be used to authenticate access to the file itself, but it is recommended that this be the same as the remote login information, if a remote login is used. Similarily, implementors who use a PHP object should follow the same remote guidelines if a remote session is possible, with the "database" corresponding with the unique object identifier.
+   * @internal Ideally, all alternative SQL implementations should use databaseSQL.php. If, however, you are creating an SQL implementation, please respect the procedure used there: $host as the server host, $port as the server port, $user as the authentication name, $password as the authentication password, $database as the database name, and $driver as a unique referrence to your implementation. Again, user and password should be the same used for server authentication as for database authentication. If an implementation uses SQLite or a similar file-based cache, the file location should be that of the either $database or $host, as best determined by the implementor.
    *
    * @return bool - True if a connection was successfully established, false otherwise.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
@@ -192,8 +205,47 @@ abstract class database {
    * @param string $tableName - The name of the table.
    * @param string $tableComment - A table comment, used for documentation and related purposes.
    * @param string $storeType - The class of database engine to use for the table, either "memory" or "general". The "memory" type should be used for tables that contain cache data, or otherwise where the table could be emptied without issue.
-   * @param array $tableColumns - The columns of the table.
+   * @param array $tableColumns - The columns of the table as an array in which all entries should be <code>array(columnName => columnProperties)</code>. The following is a list of allowed indexes for any given "type" index:
+   *  - "int" type: INT "maxlen", BOOL "autoincrement"
+   *  - "string" type: INT "maxlen", ARRAY "restrict"
+   *  - "bitfield" type: INT "bits"
+   *  - "time" type: none
+   *  - "bool" type: none
    * @param array $tableIndexes - The indexes of the table.
+   *
+   * In this example, a new table, named "table1" will be created using the primary store type and with three columns, one each for integers, strings, and bitfields.
+   * <code>
+   * $db = new database('localhost', 3306, 'root', 'r00tpassword', 'database1', 'mysqli');
+   * $db->createTable('table1', 'Our first table!', 'general', array(
+   *   'column1' => array(
+   *     'type' => 'int',
+   *     'maxlen' => 10,
+   *     'autoincrement' => true,
+   *   ),
+   *   'column2' => array(
+   *     'type' => 'string',
+   *     'maxlen' => 10,
+   *     'restrict' => array('value1', 'value2', 'value3'),
+   *   ),
+   *   'column3' => array(
+   *     'type' => 'bitfield',
+   *     'bits' => 8,
+   *   ),
+   * ), array(
+   *   'column1' => array(
+   *     'type' => 'primary'
+   *   ),
+   *   'column2,column3' => array(
+   *     'type' => 'unique',
+   *   ),
+   * ));
+   * </code>
+   *
+   * @internal Implementers do not need to support $tableComment, which is only used for when developers wish to interact with the database. It serves no real purpose aside from documentation.
+   * @internal Implementers are required to populate $this->storeTypes as described in its documentation.
+   * @internal Implementers are required to support autoincrement on integer columns. If native support does not exist, this should be simulated, for instance by including a column property known as "uniqueValue" that increments with each insert, by maintaining a cache or database schema, or, if a database can function smoothly in doing so, by selecting the last inserted row in a table. For instance, in a JSON implementation, one could support a table as { row 1 : {} row 2 : {} uniqueValue : INT }.
+   * @internal Restrict is strongly encouraged for implementation, but strictly speaking is not required. Developers of applications using the database are encouraged to validate data prior to database insertion. Implementations that do not support "restrict" should note this, so that developers can accomodate. (FreezeMessenger does validate all input, but also includes "restrict" for documentation purposes.)
+   * @internal Finally, indexes are designed around SQL concepts. Implementators can support "primary" and "index" indexes mostly at their descretion -- they shouldn't affect a query's logic flow, and only exist to increase the speed of queries (something some implementations may benefit from, but others may not). However, "unique", which species that an index can not be duplicatd, must be emulated if it is not natively supported. Schema is the recommended way to emulate this: when the implementation's __construct is called, it should retrieve all unique indexes (likely from a cache or schema table). All insert() calls should then check to see if a unique index is violated, and respond accordingly.
    *
    * @return bool - True on success, false on failure.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
@@ -208,6 +260,12 @@ abstract class database {
    * @param string $oldName - The current table name.
    * @param string $newName - The name the table should be renamed to.
    *
+   * In this example, the table named "table1" will be renamed to "specialTable1".
+   * <code>
+   * $db = new database('localhost', 3306, 'root', 'r00tpassword', 'database1', 'mysqli');
+   * $db->renameTable('table1', 'specialTable1');
+   * </code>
+   *
    * @return bool - True on success, false on failure.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
@@ -220,6 +278,12 @@ abstract class database {
    *
    * @param string $tableName - The table to delete.
    *
+   * In this example, the table named "table1" will be deleted.
+   * <code>
+   * $db = new database('localhost', 3306, 'root', 'r00tpassword', 'database1', 'mysqli');
+   * $db->deleteTable('table1');
+   * </code>
+   *
    * @return bool - True on success, false on failure.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
@@ -230,7 +294,9 @@ abstract class database {
   /**
    * Returns an array of the tables in a database. The method used is driver specific, but where possible the SQL-standard INFORMATION_SCHEMA database will be used.
    *
-   * @return mixed - The timefield corrosponding to the current time.
+   * @internal Due to the nature of this function, drivers that do not natively implement this functionality do not have to be emulated. However, such drivers MUST specify the object property $this->getTablesEnabled as being false.
+   *
+   * @return array - All table names (as strings) in a database.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   abstract public function getTablesAsArray();
@@ -280,6 +346,20 @@ abstract class database {
    * @param array $dataArray - The data to insert into the database.
    * @param array $updateArray - If the row can not be inserted due to key restrictions, this defines data to update the row with instead (see MySQL's ON DUPLICATE KEY UPDATE).
    *
+   * In this example, a row will be inserted with values specified for column1, column2, and column4. If one of these columns is "unique" and the value specified already exists, however, then only column2 will be updated with the new information.
+   * <code>
+   * $db = new database('localhost', 3306, 'root', 'r00tpassword', 'database1', 'mysqli');
+   * $db->insert('table1', array(
+   *   'column1' => 'value1',
+   *   'column2' => 'value2',
+   *   'column4' => 'value4',
+   * ), array(
+   *   'column2' => 'value2',
+   * ));
+   * </code>
+   *
+   * @internal The UPDATE functionality is required of all implementations. This could be implemented using a single query, as with most SQL variations, but it could also first check to see if a key restriction exists, and then either inserting or updating accordingly. If a database does not have native key restrictions, implementators are encouraged to support "simulated" key restrictions as defined in createTable().
+   *
    * @return bool - True on success, false on failure.s
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
@@ -294,6 +374,19 @@ abstract class database {
    * @param array $dataArray - The data to update the row(s) with.
    * @param array $conditionArray - The conditions to apply to the UPDATE.
    *
+   * In this example, an existing row's values will be updated as shown whereever both that rows' "column2" is equal to "value2" and that rows' "column3" is equal to "column3".
+   * <code>
+   * $db = new database('localhost', 3306, 'root', 'r00tpassword', 'database1', 'mysqli');
+   * $db->update('table1', array(
+   *   'column1' => 'value1',
+   *   'column2' => 'value4',
+   *   'column4' => 'value4',
+   * ), array(
+   *   'column2' => 'value2',
+   *   'column3' => 'value3',
+   * ));
+   * </code>
+   *
    * @return bool - True on success, false on failure.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
@@ -306,6 +399,15 @@ abstract class database {
    *
    * @param string $table - The table to delete from.
    * @param array $updateArray - The conditions to delete rows by.
+   *
+   * In this example, one or more existing rows will be deleted whereever both that rows' "column2" is equal to "value2" and that rows' "column3" is equal to "column3":
+   * <code>
+   * $db = new database('localhost', 3306, 'root', 'r00tpassword', 'database1', 'mysqli');
+   * $db->delete('table1', array(
+   *   'column2' => 'value2',
+   *   'column3' => 'value3',
+   * ));
+   * </code>
    *
    * @return bool - True on success, false on failure.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>

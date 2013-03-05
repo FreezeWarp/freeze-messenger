@@ -21,7 +21,13 @@
  
 class databaseSQL extends database {  
   protected $language = '';
+  public $storeTypes = array('memory', 'general', 'innodb');
 
+  /*********************************************************
+  ************************ START **************************
+  ******************* General Functions *******************
+  *********************************************************/
+  
   /**
    * Calls a database function, such as mysql_connect or mysql_query, using lookup tables
    *
@@ -137,40 +143,6 @@ class databaseSQL extends database {
     return $this->functionMap('close');
   }
   
-  
-  
-  public function escape($string, $context = 'string') {
-    return $this->functionMap('escape', $string, $context); // Retrun the escaped string.
-  }
-
-
-  
-  /**
-   * Sends a raw, unmodified query string to the database server.
-   * The query may be logged if it takes a certain amount of time to execute successfully.
-   *
-   * @param string $query - The raw query to execute.
-   * @return resource|bool - The database resource returned by the query, or false on failure.
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */
-  private function rawQuery($query) {
-    $this->sourceQuery = $query;
-
-    if ($queryData = $this->functionMap('query', $query)) {
-      $this->queryCounter++;
-
-      if ($queryData === true) return true;
-      else return new databaseResult($queryData, $query, $this->language); // Return link resource.
-    }
-    else {
-      $this->error = $this->functionMap('error');
-
-      $this->triggerError("Database Error;\n\nQuery: $query;\n\nError: " . $this->error); // The query could not complete.
-
-      return false;
-    }
-  }
-    
     
     
   /**
@@ -286,7 +258,44 @@ class databaseSQL extends database {
     }
   }
   
+
   
+  public function escape($string, $context = 'string') {
+    return $this->functionMap('escape', $string, $context); // Retrun the escaped string.
+  }
+
+
+  
+  /**
+   * Sends a raw, unmodified query string to the database server.
+   * The query may be logged if it takes a certain amount of time to execute successfully.
+   *
+   * @param string $query - The raw query to execute.
+   * @return resource|bool - The database resource returned by the query, or false on failure.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
+  private function rawQuery($query) {
+    $this->sourceQuery = $query;
+
+    if ($queryData = $this->functionMap('query', $query)) {
+      $this->queryCounter++;
+
+      if ($queryData === true) return true;
+      else return new databaseResult($queryData, $query, $this->language); // Return link resource.
+    }
+    else {
+      $this->error = $this->functionMap('error');
+
+      $this->triggerError("Database Error;\n\nQuery: $query;\n\nError: " . $this->error); // The query could not complete.
+
+      return false;
+    }
+  }
+  
+  /*********************************************************
+  ************************* END ***************************
+  ******************* General Functions *******************
+  *********************************************************/
 
   
   
@@ -435,7 +444,7 @@ class databaseSQL extends database {
 
 
 
-    foreach ($tableIndexes AS $key) {
+    foreach ($tableIndexes AS $name => $key) {
       if (isset($this->keyConstants[$key['type']])) {
         $typePiece = $this->keyConstants[$key['type']];
       }
@@ -444,17 +453,17 @@ class databaseSQL extends database {
       }
 
 
-      if (strpos($key['name'], ',') !== false) {
-        $keyCols = explode(',', $key['name']);
+      if (strpos($name, ',') !== false) {
+        $keyCols = explode(',', $name);
 
         foreach ($keyCols AS &$keyCol) {
           $keyCol = $this->columnQuoteStart . $keyCol . $this->columnQuoteEnd;
         }
 
-        $key['name'] = implode(',', $keyCols);
+        $name = implode(',', $keyCols);
       }
       else {
-        $key['name'] = $this->columnAliasStart . $key['name'] . $this->columnAliasEnd;
+        $name = $this->columnAliasStart . $name . $this->columnAliasEnd;
       }
 
 

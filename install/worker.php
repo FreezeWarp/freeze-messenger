@@ -161,9 +161,8 @@ switch ($_REQUEST['phase']) {
 
 
           foreach ($table['key'] AS $key) {
-            $tableIndexes[] = array(
+            $tableIndexes[$key['@name']] = array(
               'type' => $key['@type'],
-              'name' => $key['@name'],
             );
           }
 
