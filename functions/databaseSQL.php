@@ -55,24 +55,13 @@ class databaseSQL extends database {
           return $function;
         break;
 
-        case 'error':
-          if (isset($this->dbLink)) return mysql_error($this->dbLink);
-          else                      return mysql_error();
-        break;
-
-        case 'close':
-          $function = mysql_close($this->dbLink);
-
-          unset($this->dbLink);
-
-          return $function;
-        break;
-
-        case 'selectdb': return mysql_select_db($args[1], $this->dbLink);              break;
-        case 'escape':   return mysql_real_escape_string($args[1], $this->dbLink);     break;
-        case 'query':    return mysql_query($args[1], $this->dbLink);                  break;
-        case 'insertId': return mysql_insert_id($this->dbLink);                        break;
-        default:         throw new Exception('Unrecognised Operation: ' . $operation); break;
+        case 'error':    return mysql_error((isset($this->dbLink) ? $this->dbLink : null);                                            break;
+        case 'close':    $function = mysql_close($this->dbLink); unset($this->dbLink); return $function;                              break;
+        case 'selectdb': return mysql_select_db($args[1], $this->dbLink);                                                             break;
+        case 'escape':   return mysql_real_escape_string($args[1], $this->dbLink);                                                    break;
+        case 'query':    return mysql_query($args[1], $this->dbLink);                                                                 break;
+        case 'insertId': return mysql_insert_id($this->dbLink);                                                                       break;
+        default:         $this->triggerError("[Function Map] Unrecognised Operation", array('operation' : $operation), 'validation'); break;
       }
       break;
 
@@ -91,27 +80,50 @@ class databaseSQL extends database {
           else                      return mysqli_connect_error();
         break;
 
-        case 'selectdb': return mysqli_select_db($this->dbLink, $args[1]);             break;
-        case 'close':    return mysqli_close($this->dbLink);                           break;
-        case 'escape':   return mysqli_real_escape_string($this->dbLink, $args[1]);    break;
-        case 'query':    return mysqli_query($this->dbLink, $args[1]);                 break;
-        case 'insertId': return mysqli_insert_id($this->dbLink);                       break;
-        default:         throw new Exception('Unrecognised Operation: ' . $operation); break;
+        case 'selectdb': return mysqli_select_db($this->dbLink, $args[1]);                                                            break;
+        case 'close':    return mysqli_close($this->dbLink);                                                                          break;
+        case 'escape':   return mysqli_real_escape_string($this->dbLink, $args[1]);                                                   break;
+        case 'query':    return mysqli_query($this->dbLink, $args[1]);                                                                break;
+        case 'insertId': return mysqli_insert_id($this->dbLink);                                                                      break;
+        default:         $this->triggerError("[Function Map] Unrecognised Operation", array('operation' : $operation), 'validation'); break;
       }
       break;
 
 
       case 'postgresql':
       switch ($operation) {
-        case 'connect':  return pg_connect("host=$args[1] port=$args[2] username=$args[3] password=$args[4] dbname=$args[5]"); break;
-        case 'error':    return pg_last_error($this->dbLink);                                                                  break;
-        case 'close':    return pg_close($this->dbLink);                                                                       break;
-        case 'escape':   return pg_escape_string($this->dbLink, $args[1]);                                                     break;
-        case 'query':    return pg_query($this->dbLink, $args[1]);                                                             break;
-        case 'insertId': /* TODO */                                                                                            break;
-        default:        throw new Exception('Unrecognised Operation: ' . $operation);                                          break;
+        case 'connect':  return pg_connect("host=$args[1] port=$args[2] username=$args[3] password=$args[4] dbname=$args[5]");       break;
+        case 'error':    return pg_last_error($this->dbLink);                                                                        break;
+        case 'close':    return pg_close($this->dbLink);                                                                             break;
+        case 'escape':   return pg_escape_string($this->dbLink, $args[1]);                                                           break;
+        case 'query':    return pg_query($this->dbLink, $args[1]);                                                                   break;
+        case 'insertId': /* TODO */                                                                                                  break;
+        default:        $this->triggerError("[Function Map] Unrecognised Operation", array('operation' : $operation), 'validation'); break;
       }
       break;
+    }
+  }
+  
+  
+  
+  /** Format a value to represent the specified type in an SQL query.
+   *
+   * @param int|string value - The value to format.
+   * @param string type - The type to format as, either "search", "string", "integer", or "column".
+   * @return int|string - Value, formatted as specified.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  private function formatValue($value, $type) {
+    switch ($type) {
+      case 'search':    return $this->stringQuoteStart . $this->stringFuzzy . $this->escape($value, 'search') . $this->stringFuzzy . $this->stringQuoteEnd; break;
+      case 'string':    return $this->stringQuoteStart . $this->escape($value, 'string') . $this->stringQuoteEnd;                                           break;
+      case 'integer':   return $this->intQuoteStart . (int) $this->escape($value, 'integer') . $this->intQuoteEnd;                                          break;
+      case 'timestamp': return $this->timestampQuoteStart . (int) $this->escape($value, 'timestamp') . $this->timestampQuoteEnd;                            break;
+      case 'column':    return $this->columnQuoteStart . $this->escape($value, 'column') . $this->columnQuoteEnd;                                           break;
+      case 'columnA':   return $this->columnAliasQuoteStart . $this->escape($value, 'columnA') . $this->columnAliasQuoteEnd;                                break;
+      case 'table':     return $this->tableQuoteStart . $this->escape($value, 'table') . $this->tableQuoteEnd;                                              break;
+      case 'tableA':    return $this->tableAliasQuoteStart . $this->escape($value, 'tableA') . $this->tableAliasQuoteEnd;                                   break;
+      case 'database':  return $this->databaseQuoteStart . $this->escape($value, 'database') . $this->databaseQuoteEnd;                                     break;
     }
   }
 
@@ -245,10 +257,19 @@ class databaseSQL extends database {
     }
   }
   
-
   
-  public function escape($string, $context = 'string') {
-    return $this->functionMap('escape', $string, $context); // Retrun the escaped string.
+
+  /**
+   * Returns a properly escaped string for raw queries.
+   *
+   * @param string int|string - Value to escape.
+   * @param string context - The value type, in-case the escape method varies based on it.
+   * @return string
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+   
+  protected function escape($string, $context = 'string') {
+    return $this->functionMap('escape', $string, $context); // Return the escaped string.
   }
 
 
@@ -281,20 +302,39 @@ class databaseSQL extends database {
   }
   
   
-  
-  protected function getLastQuery() {
-    return end($this->queryLog);
-  }
-  
-  
-  
+
+  /**
+   * Add the text of a query to the log. This should normally only be called by rawQuery(), but is left protected since other purposes could exist by design.
+   *
+   * @return string - The query text of the last query executed.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
+
   protected function newQuery($queryText) {
     $this->queryLog[] = $queryText;
   }
   
   
   
-  protected function clearQueries() {
+  /**
+   * Get the text of the last query executed.
+   *
+   * @return string - The query text of the last query executed.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
+  public function getLastQuery() {
+    return end($this->queryLog);
+  }
+  
+  
+  
+  /**
+   * Clears the query log.
+   *
+   * @return string - The query text of the last query executed.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
+  public function clearQueries() {
     $this->queryLog = array();
   }
   
@@ -361,7 +401,10 @@ class databaseSQL extends database {
       $engine = $this->tableTypes[$storeType];
     }
     else {
-      $this->triggerError("Unrecognised table engine: '$storeType'.", 'validation');
+      $this->triggerError("Unrecognised Table Engine", array(
+        'tableName' : $tableName
+        'engine' : $engine
+      ), 'validation');
     }
 
     $tableProperties = '';
@@ -456,40 +499,44 @@ class databaseSQL extends database {
         }
       }
 
-      $columns[] = $this->columnQuoteStart . $this->escape($columnName) . $this->columnQuoteEnd . " {$typePiece} NOT NULL COMMENT \"" . $this->escape($column['comment']) . '"';
+      $columns[] = $this->formatValue($columnName, 'column') . $typePiece . ' NOT NULL COMMENT "' . $this->escape($column['comment']) . '"';
     }
 
 
 
-    foreach ($tableIndexes AS $name => $key) {
-      if (isset($this->keyConstants[$key['type']])) {
-        $typePiece = $this->keyConstants[$key['type']];
+    foreach ($tableIndexes AS $indexName => $index) {
+      if (isset($this->keyConstants[$index['type']])) {
+        $typePiece = $this->keyConstants[$index['type']];
       }
       else {
-        $this->triggerError("Unrecognised key type: '$key[type]'.");
+        $this->triggerError("Unrecognised Index Type", array(
+          'tableName' : $tableName,
+          'indexName' : $indexName,
+          'indexType' : $index['type'],
+        ), 'validation');
       }
 
 
-      if (strpos($name, ',') !== false) {
-        $keyCols = explode(',', $name);
+      if (strpos($indexName, ',') !== false) {
+        $indexCols = explode(',', $indexName);
 
-        foreach ($keyCols AS &$keyCol) {
-          $keyCol = $this->columnQuoteStart . $keyCol . $this->columnQuoteEnd;
+        foreach ($indexCols AS &$indexCol) {
+          $indexCol = $this->columnQuoteStart . $indexCol . $this->columnQuoteEnd;
         }
 
-        $name = implode(',', $keyCols);
+        $indexName = implode(',', $indexCols);
       }
       else {
-        $name = $this->columnAliasStart . $name . $this->columnAliasEnd;
+        $indexName = $this->columnAliasStart . $indexName . $this->columnAliasEnd;
       }
 
 
-      $keys[] = "{$typePiece} ({$key['name']})";
+      $indexes[] = "{$typePiece} ({$indexName})";
     }
 
     return $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->tableQuoteStart . $this->escape($tableName) . $this->tableQuoteEnd . ' (
 ' . implode(",\n  ",$columns) . ',
-' . implode(",\n  ",$keys) . '
+' . implode(",\n  ",$indexes) . '
 ) ENGINE="' . $this->escape($engine) . '" COMMENT="' . $this->escape($tableComment) . '" DEFAULT CHARSET="utf8"' . $tableProperties);
   }
   
@@ -584,7 +631,10 @@ class databaseSQL extends database {
                   }
                 }
                 else {
-                  throw new Exception('Invalid select array: column name empty'); // Throw an exception.
+                  trigger_error('Invalid Select Array (Empty Column Name)', array(
+                    'tableName' => $tableName,
+                    'columnName' => $columnName,
+                  ), 'validation');
                 }
               }
             }
@@ -611,16 +661,18 @@ class databaseSQL extends database {
             }
           }
           else {
-            throw new Exception('Invalid select array: table name empty'); // Throw an exception.
+            trigger_error('Invalid Select Array (Empty Table Name)', array(
+              'tableName' => $tableName.
+            ), 'validation');
           }
         }
       }
       else {
-        throw new Exception('Invalid select array: no entries'); // Throw an exception.
+        trigger_error('Invalid Select Array (Columns Array Empty)', array(), 'validation');
       }
     }
     else {
-      throw new Exception('Invalid select array'); // Throw an exception.
+      trigger_error('Invalid Select Array (Columns Not an Array)', array(), 'validation');
     }
 
 
@@ -641,24 +693,26 @@ class databaseSQL extends database {
     if ($sort !== false) {
       if (is_array($sort)) {
         if (count($sort) > 0) {
-          foreach ($sort AS $sortCol => $direction) {
-            if (isset($reverseAlias[$sortCol])) {
+          foreach ($sort AS $sortColumn => $direction) {
+            if (isset($reverseAlias[$sortColumn])) {
               switch (strtolower($direction)) {
                 case 'asc': $directionSym = $this->sortOrderAsc; break;
                 case 'desc': $directionSym = $this->sortOrderDesc; break;
                 default: $directionSym = $this->sortOrderAsc; break;
               }
 
-              $finalQuery['sort'][] = $reverseAlias[$sortCol] . " $directionSym";
+              $finalQuery['sort'][] = $reverseAlias[$sortColumn] . " $directionSym";
             }
             else {
-              throw new Exception('Unrecognised sort column: ' . $sortCol);
+              trigger_error('Unrecognised Sort Column', array(
+                'sortColumn' => $sortColumn,
+              ), 'validation');
             }
           }
         }
       }
       elseif (is_string($sort)) {
-        $sortParts = explode(',',$sort); // Split the list into an array, delimited by commas
+        $sortParts = explode(',', $sort); // Split the list into an array, delimited by commas
 
         foreach ($sortParts AS $sortPart) { // Run through each list item
           $sortPart = trim($sortPart); // Remove outside whitespace from the item
@@ -666,19 +720,19 @@ class databaseSQL extends database {
           if (strpos($sortPart,' ') !== false) { // If a space is within the part, then the part is formatted as "columnName direction"
             $sortPartParts = explode(' ',$sortPart); // Divide the piece
 
-            $sortCol = $sortPartParts[0]; // Set the name equal to the first part of the piece
+            $sortColumn = $sortPartParts[0]; // Set the name equal to the first part of the piece
             switch (strtolower($sortPartParts[1])) {
-              case 'asc': $directionSym = $this->sortOrderAsc; break;
+              case 'asc':  $directionSym = $this->sortOrderAsc;  break;
               case 'desc': $directionSym = $this->sortOrderDesc; break;
-              default: $directionSym = $this->sortOrderAsc; break;
+              default:     $directionSym = $this->sortOrderAsc;  break;
             }
           }
           else { // Otherwise, we assume asscending
-            $sortCol = $sortPart; // Set the name equal to the sort part.
+            $sortColumn = $sortPart; // Set the name equal to the sort part.
             $directionSym = $this->sortOrderAsc; // Set the alias equal to the default, ascending.
           }
 
-          $finalQuery['sort'][] = $reverseAlias[$sortCol] . " $directionSym";
+          $finalQuery['sort'][] = $reverseAlias[$sortColumn] . " $directionSym";
         }
       }
 
@@ -751,7 +805,7 @@ LIMIT
             $sideTextFull[$i] = '';            
             
             if (startsWith($key, '!')) {
-              
+              // TODO
             }
             
             if (is_array($value[1])) { // Value is Array, Meaning an IN Clause
@@ -771,13 +825,20 @@ LIMIT
             }
             else {
               $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
-              throw new Exception('Query nullified.');
+
+              trigger_error('Query Nullified', array(), 'validation');
             }
           }
         }
 
-        if (isset($this->concatTypes[$type])) $condSymbol = $this->concatTypes[$type];
-        else throw new Exception('Unrecognised concatenation operator: ' . $type . '; ' . print_r($data, true));
+        if (isset($this->concatTypes[$type])) {
+          $condSymbol = $this->concatTypes[$type];
+        }
+        else {
+          trigger_error('Unrecognised Concatenation Operator', array(
+            'operator' => $type,
+          ), 'validation');
+        }
 
         $whereText[$h] = implode($condSymbol, $sideTextFull);
       }
@@ -791,26 +852,6 @@ LIMIT
 
 
     return "($whereText)"; // Return condition string. We wrap parens around to support multiple levels of conditions/recursion.
-  }
-  
-  
-  
-  /** Format a value to represent the specified type in an SQL query.
-   *
-   * @param int|string value - The value to format.
-   * @param string type - The type to format as, either "search", "string", "integer", or "column".
-   * @return int|string - Value, formatted as specified.
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-   */
-  private function formatValue($value, $type) {
-    switch ($type) {
-      case 'search':   return $this->stringQuoteStart . $this->stringFuzzy . $this->escape($value) . $this->stringFuzzy . $this->stringQuoteEnd; break;
-      case 'string':   return $this->stringQuoteStart . $this->escape($value) . $this->stringQuoteEnd;                                           break;
-      case 'integer':  return $this->intQuoteStart . $this->escape($value, 'integer') . $this->intQuoteEnd;                                      break;
-      case 'column':   return $this->columngQuoteStart . $this->escape($value, 'column') . $this->intQuoteEnd;                                   break;
-      case 'table':    return $this->tableQuoteStart . $this->escape($value, 'table') . $this->tableQuoteEnd;                                    break;
-      case 'database': return $this->databaseQuoteStart . $this->escape($value, 'database') . $this->databaseQuoteEnd;                           break;
-    }
   }
   
   
@@ -853,7 +894,7 @@ LIMIT
 
       elseif (is_array($data)) { // This allows for some more advanced datastructures; specifically, we use it here to define metadata that prevents $this->escape.
         if (isset($data['context'])) {
-          throw new Exception('Deprecated context');
+          throw new Exception('Deprecated context'); // TODO
         }
         else {
           $columns[] = $this->columnQuoteStart . $this->escape($column) . $this->columnQuoteEnd;
@@ -873,12 +914,12 @@ LIMIT
           break;
 
           case 'int':
-          $values[] = (int) $data['value'];
+          $values[] = $this->formatValue($data['value'], 'integer');
           break;
 
           case 'string':
           default:
-          $values[] = $this->stringQuoteStart . $this->escape($data['value']) . $this->stringQuoteEnd;
+          $values[] = $this->formatValue($data['value'], 'string');
           break;
         }
 
@@ -936,7 +977,7 @@ LIMIT
   
   
   
-  public function delete($table, $conditionArray = false) {
+  public function delete($tableName, $conditionArray = false) {
     if ($conditionArray === false) {
       $delete = 'TRUE';
     }
@@ -951,7 +992,10 @@ LIMIT
           $csym = $this->comparisonTypes[$conditions[$i]];
         }
         else {
-          throw new Exception('Unrecognised comparison type: ' . $conditions[$i]);
+          $this->triggerError("[Update Table] Unrecognised Comparison Type", array(
+            'tableName' : $tableName,
+            'comparisonType' : $conditions[$i],
+          ), 'validation');
         }
 
         $delete[] = $columns[$i] . $csym . $values[$i];
@@ -960,14 +1004,12 @@ LIMIT
       $delete = implode($delete, $this->concatTypes['both']);
     }
 
-    $query = "DELETE FROM $table WHERE $delete";
-
-    return $this->rawQuery($query);
+    return $this->rawQuery("DELETE FROM $tableName WHERE $delete");
   }
   
   
   
-  public function update($table, $dataArray, $conditionArray = false) {
+  public function update($tableName, $dataArray, $conditionArray = false) {
     list($columns, $values) = $this->splitArray($dataArray);
     
     for ($i = 0; $i < count($columns); $i++) {
@@ -976,7 +1018,7 @@ LIMIT
 
     $update = implode($update,', ');
 
-    $query = "UPDATE {$table} SET {$update}";
+    $query = "UPDATE {$tableName} SET {$update}";
 
     if ($conditionArray) {
       list($columns, $values, $conditions) = $this->splitArray($conditionArray);
@@ -984,7 +1026,10 @@ LIMIT
       for ($i = 0; $i < count($columns); $i++) {
         if (!$conditions[$i]) $csym = $this->comparisonTypes['e'];
         elseif (isset($this->comparisonTypes[$conditions[$i]])) $csym = $this->comparisonTypes[$conditions[$i]];
-        else throw new Exception('Unrecognised comparison type: ' . $conditions[$i]);
+        else $this->triggerError("[Delete Table] Unrecognised Comparison Type", array(
+          'tableName' : $tableName,
+          'comparisonType' : $conditions[$i],
+        ), 'validation');
 
         $cond[] = $columns[$i] . $csym . $values[$i];
       }

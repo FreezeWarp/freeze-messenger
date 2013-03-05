@@ -144,17 +144,6 @@ abstract class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   abstract public function close();
-
-  
-  
-  /**
-   * Returns a string properly escaped for raw queries.
-   * Developer Note: This is only passed through functionMap(), and not an exended class's implementation of escape. If, for whatever reason, it needs to be overwritten, a class method of escape() will automatically replace it.
-   *
-   * @return string
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-   */
-  abstract public function escape($string, $context = 'string');
   
   /*********************************************************
   ************************* END ***************************
@@ -184,6 +173,7 @@ abstract class database {
    *  - 'syntax' - A function can not complete due to a syntax error. Some drivers may not trigger this kind of error.
    *  - 'validation' - A function can not complete because the data specified does not validate, for instance a value is not recognised or is of the wrong type.
    *  - 'connection' - A connection failed. For instance, connect() returns false or the MySQL server is down. The latter error may not always be detected.
+   *  - 'logic' - A logic error in the function occured. (Honestly, you should probably throw an exception instead, but whatever.)
    * @param bool suppressErrors - Do not trigger an error. The error will still be logged, but it will not interupt the program flow.
    * @return void
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
@@ -259,18 +249,6 @@ abstract class database {
   
   
   /**
-   * Clears the error log.
-   *
-   * @return void
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-   */
-  public function clearErrors() {
-    $this->errors = array();
-  }
-  
-  
-  
-  /**
    * Retrives the last logged error.
    *
    * @return string - Last logged error.
@@ -278,6 +256,18 @@ abstract class database {
    */
   public function getLastError() {
     return end($this->errors);
+  }
+  
+  
+  
+  /**
+   * Clears the error log.
+   *
+   * @return void
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  public function clearErrors() {
+    $this->errors = array();
   }
   
   /*********************************************************
