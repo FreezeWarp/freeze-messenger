@@ -19,7 +19,7 @@
  * As with everything else, this is GPL-based, but if anyone decides they like it and may wish to use it for less restricted purposes, contact me. I have considered going LGPL/MIT/BSD with it, but not yet :P */
  
  
-class databaseSQL implements database {
+class databaseSQL extends database {
   /**
    * Construct
    *
@@ -625,35 +625,6 @@ LIMIT
   
   
   
-  public function int($value, $comp = 'e') {
-    return array('int', (int) $value, $comp);
-  }
-  
-  
-  
-  public function ts($value, $comp = 'e') {
-    return array('ts', (int) $value, $comp);
-  }
-  
-  
-  
-  public function str($value, $comp = 'e') {
-    return array('str', $this->escape((string) $value), $comp);
-  }
-  
-  
-  
-  public function col($value, $comp = 'e') {
-    return array('col', $value, $comp);
-  }
-
-  
-
-  public function now() {
-    return time();
-  }
-  
-  
   /**
    * Divides a multidimensional array into three seperate two-dimensional arrays, and performs some additional processing as defined in the passed array. It is used by the insert(), update(), and delete() functions.
    *
@@ -984,7 +955,7 @@ LIMIT
   
   
   
-  public function getTableAsArray() {
+  public function getTablesAsArray() {
     switch ($this->language) {
       case 'mysql':
       case 'mysqli':
@@ -1025,14 +996,6 @@ LIMIT
   
   public function createDatabase($database) {
     return $this->rawQuery('CREATE DATABASE IF NOT EXISTS ' . $this->databaseQuoteStart . $database . $this->databaseQuoteEnd);
-  }
-
-
-  
-  public function __destruct() {
-    if ($this->dbLink !== null) { // When close is called, the dbLink is nulled. This prevents redundancy.
-      $this->close();
-    }
   }
   
 }

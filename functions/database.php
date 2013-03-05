@@ -24,7 +24,7 @@
  * Delete, Update, and Insert commands are fairly straight forward. They all use the same format, and shouldn't be too hard to get the hang of.
  */
 
-interface database {
+abstract class database {
 
   /**
    * Connect to a database server.
@@ -36,7 +36,7 @@ interface database {
    * @return bool - True if a connection was successfully established, false otherwise.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
-  public function connect($host, $port, $user, $password, $database, $driver);
+  abstract public function connect($host, $port, $user, $password, $database, $driver);
 
 
   
@@ -47,7 +47,7 @@ interface database {
    * @return bool - True if the operation was successful, false otherwise.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
-  public function createDatabase($database);
+  abstract public function createDatabase($database);
 
 
   
@@ -58,7 +58,7 @@ interface database {
    * @return bool - True if the operation was successful, false otherwise.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
-  public function selectDatabase($database);
+  abstract public function selectDatabase($database);
   
 
 
@@ -68,7 +68,7 @@ interface database {
    * @return void
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  public function close();
+  abstract public function close();
   
 
 
@@ -79,7 +79,7 @@ interface database {
    * @return string
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  public function escape($string);
+  abstract public function escape($string);
 
   
 
@@ -94,65 +94,7 @@ interface database {
    * @return object
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  public function select($columns, $conditionArray = false, $sort = false, $limit = false);
-  
-  
-  
-  /**
-   * Designates a value to be an integer during SELECT operations.
-   *
-   * This function should _only_ be used for SELECT operations, and can be understood as being similar to PHP's native (int), (string), etc.
-   *
-   * @return special - int() returns a custom value that should only be read by the select() function.
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-   */
-  public function int($value, $comp = 'e');
-  
-  
-  
-  /**
-   * Designates a value to be a timestamp during SELECT operations.
-   *
-   * This function should _only_ be used for SELECT operations, and can be understood as being similar to PHP's native (int), (string), etc.
-   *
-   * @return special - ts() returns a custom value that should only be read by the select() function.
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-   */
-  public function ts($value, $comp = 'e');
-  
-  
-  
-  /**
-   * Designates a value to be a string during SELECT operations.
-   *
-   * This function should _only_ be used for SELECT operations, and can be understood as being similar to PHP's native (int), (string), etc.
-   *
-   * @return special - str() returns a custom value that should only be read by the select() function.
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-   */  
-  public function str($value, $comp = 'e');
-  
-  
-  
-  /**
-   * Designates a value to be a column referrence (alias the column must be referrenced as) during SELECT operations.
-   *
-   * This function should _only_ be used for SELECT operations, and can be understood as being similar to PHP's native (int), (string), etc.
-   *
-   * @return special - col() returns a custom value that should only be read by the select() function.
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-   */  
-  public function col($value, $comp = 'e');
-
-  
-  
-  /**
-   * Returns a compatible time field of the present time, as recognized by the DAL's interpretation of the database driver. In most cases, this will be a unix timestamp.
-   *
-   * @return mixed - The timefield corrosponding to the current time.
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-   */
-  public function now();
+  abstract public function select($columns, $conditionArray = false, $sort = false, $limit = false);
 
   
   
@@ -166,7 +108,7 @@ interface database {
    * @return bool - True on success, false on failure.s
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  public function insert($table, $dataArray, $updateArray = false);
+  abstract public function insert($table, $dataArray, $updateArray = false);
 
 
   
@@ -180,7 +122,7 @@ interface database {
    * @return bool - True on success, false on failure.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  public function update($table, $dataArray, $conditionArray = false);
+  abstract public function update($table, $dataArray, $conditionArray = false );
 
 
   
@@ -193,7 +135,7 @@ interface database {
    * @return bool - True on success, false on failure.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  public function delete($table, $conditionArray = false);
+  abstract public function delete($table, $conditionArray = false);
 
 
 
@@ -209,7 +151,7 @@ interface database {
    * @return bool - True on success, false on failure.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  public function createTable($tableName, $tableComment, $storeType, $tableColumns, $tableIndexes);
+  abstract public function createTable($tableName, $tableComment, $storeType, $tableColumns, $tableIndexes);
 
   
 
@@ -222,7 +164,7 @@ interface database {
    * @return bool - True on success, false on failure.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  public function renameTable($oldName, $newName);
+  abstract public function renameTable($oldName, $newName);
 
 
   
@@ -234,7 +176,7 @@ interface database {
    * @return bool - True on success, false on failure.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  public function deleteTable($tableName);
+  abstract public function deleteTable($tableName);
 
 
   
@@ -244,6 +186,72 @@ interface database {
    * @return mixed - The timefield corrosponding to the current time.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  public function getTablesAsArray();
+  abstract public function getTablesAsArray();
+
+
+  
+  /**
+   * Define a value as being an integer for database operations.
+   *
+   * @param mixed $value - The value to cast.
+   * @param mixed $comp - How the value will be compared to the data present as an index.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
+  public function int($value, $comp = 'e') {
+    return array('int', (int) $value, $comp);
+  }
+  
+  
+  
+  /**
+   * Define a value as being a timestamp for database operations.
+   *
+   * @param mixed $value - The value to cast.
+   * @param mixed $comp - How the value will be compared to the data present as an index.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
+  public function ts($value, $comp = 'e') {
+    return array('ts', (int) $value, $comp);
+  }
+  
+  
+  
+  /**
+   * Define a value as being an string for database operations.
+   *
+   * @param mixed $value - The value to cast.
+   * @param mixed $comp - How the value will be compared to the data present as an index.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
+  public function str($value, $comp = 'e') {
+    return array('str', $this->escape((string) $value), $comp);
+  }
+  
+  
+  
+  /**
+   * Define a value as being a column for database operations.
+   *
+   * @param mixed $value - The value to cast.
+   * @param mixed $comp - How the value will be compared to the data present as an index.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
+  public function col($value, $comp = 'e') {
+    return array('col', $value, $comp);
+  }
+
+  
+
+  public function now() {
+    return time();
+  }
+  
+  
+  
+  public function __destruct() {
+    if ($this->dbLink !== null) { // When close is called, the dbLink is nulled. This prevents redundancy.
+      $this->close();
+    }
+  }
 }
 ?>
