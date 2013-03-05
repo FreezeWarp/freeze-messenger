@@ -32,18 +32,24 @@ abstract class database {
   ******************* General Functions *******************
   *********************************************************/
   
+  public $queryCounter = 0;
+  public $insertId = null;
+  public $error = false;
+  protected $errorLevel = E_USER_ERROR;
+  protected $activeDatabase = false;
+  protected $dbLink = null;
+  
+  
+  
   /**
    * Construct
+   * Pipes in connect().
    *
    * @return void
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
-  public function __construct() {
-    $this->queryCounter = 0;
-    $this->insertId = 0;
-    $this->errorLevel = E_USER_ERROR;
-    $this->activeDatabase = false;
-    $this->dbLink = null;
+  public function __construct($host, $port, $user, $password, $database, $driver) {
+    $this->connect($host, $port, $user, $password, $database, $driver);
   }
   
 
@@ -60,13 +66,18 @@ abstract class database {
     }
   }
   
+  
+  
   /**
    * Connect to a database server.
    *
    * @param string $host - The host of the database server.
+   * @param int port - The port the server is located on, if applicable. (Note: Some drivers, like MySQL, normally include the port in the host. For this abstraction, please seperate the host and the port, including them in $host and $port respectively.)
    * @param string $user - The database user
    * @param string $password - The password of the user.
-   * @param string $this - The database to connect to.
+   * @param string $database - The database to connect to. (Note: This can be selected using selectDatabase(), but for most purposes it should be specified now.)
+   * @param string $driver - The driver that will power the abstraction. At present, only "mysql" and "mysqli" are supported.
+   *
    * @return bool - True if a connection was successfully established, false otherwise.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
@@ -96,12 +107,38 @@ abstract class database {
   
 
   /**
+   * Defines what error level should be used for all database errors called by the class. Class exceptions will not be affected.
+   *
+   * @param int level - PHP error level to use for all errors called by the class.
+   * @return string - New error level.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  public function setErrorLevel($errorLevel) {
+    return $this->errorLevel = $errorLevel;
+  }
+  
+  
+  
+  /**
+   * Get the Current Error Level
+   *
+   * @return string - Current error level.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  public function getErrorLevel() {
+    return $this->errorLevel;
+  }
+  
+  
+  
+  /**
    * Set the Error Level for Display
    *
    * @return string - New error level.
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com> */
-  public function setErrorLevel($errorLevel) {
-    $this->errorLevel = $errorLevel;
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  protected function triggerError($errorMessage) {
+    trigger_error($errorMessage, $this->errorLevel);
   }
   
   /*********************************************************

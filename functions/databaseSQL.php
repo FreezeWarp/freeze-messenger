@@ -20,6 +20,7 @@
  
  
 class databaseSQL extends database {  
+  protected $language = '';
 
   /**
    * Calls a database function, such as mysql_connect or mysql_query, using lookup tables
@@ -138,8 +139,8 @@ class databaseSQL extends database {
   
   
   
-  public function escape($string) {
-    return $this->functionMap('escape', $string); // Retrun the escaped string.
+  public function escape($string, $context = 'string') {
+    return $this->functionMap('escape', $string, $context); // Retrun the escaped string.
   }
 
 
@@ -164,7 +165,7 @@ class databaseSQL extends database {
     else {
       $this->error = $this->functionMap('error');
 
-      trigger_error("Database Error;\n\nQuery: $query;\n\nError: " . $this->error, $this->errorLevel); // The query could not complete.
+      $this->triggerError("Database Error;\n\nQuery: $query;\n\nError: " . $this->error); // The query could not complete.
 
       return false;
     }
