@@ -51,6 +51,7 @@ class databaseSQL extends database {
       $this->tableQuoteStart = '`';  $this->tableQuoteEnd = '`';  $this->tableAliasQuoteStart = '`';  $this->tableAliasQuoteEnd = '`';
       $this->columnQuoteStart = '`'; $this->columnQuoteEnd = '`'; $this->columnAliasQuoteStart = '`'; $this->columnAliasQuoteEnd = '`';
       $this->stringQuoteStart = '"'; $this->stringQuoteEnd = '"'; $this->emptyString = '""';          $this->tableColumnDivider = '.';
+      $this->intQuoteStart = ''; $this->intQuoteEnd = '';
       $this->stringFuzzy = '%';
 
       $this->sortOrderAsc = 'ASC'; $this->sortOrderDesc = 'DESC';
@@ -67,6 +68,7 @@ class databaseSQL extends database {
       $this->tableQuoteStart = '"';    $this->tableQuoteEnd = '"';    $this->tableAliasQuoteStart = '"';  $this->tableAliasQuoteEnd = '"';
       $this->columnQuoteStart = '"';   $this->columnQuoteEnd = '"';   $this->columnAliasQuoteStart = '"'; $this->columnAliasQuoteEnd = '"';
       $this->stringQuoteStart = '"';   $this->stringQuoteEnd = '"';   $this->emptyString = '""';          $this->tableColumnDivider = '.';    
+      $this->intQuoteStart = ''; $this->intQuoteEnd = '';
       $this->stringFuzzy = '%';
 
 

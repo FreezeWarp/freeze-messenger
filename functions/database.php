@@ -268,57 +268,45 @@ class database {
           }
           else {
             /* Value is currently stored as:
-             * array(TYPE, VALUE, COMPARISON) */
+             * array(TYPE, VALUE, COMPARISON)
+             *
+             * Note: We do not want to include quotes/etc. in VALUE yet, because these theoretically could vary based on the comparison type. */
 
             $i++;
             $sideTextFull[$i] = '';
 
-            $sideText['left'] = $reverseAlias[(startsWith($key, '!') ? $key : $key)]; // This is over-ridden for REGEX.
+            $sideText['left'] = $reverseAlias[(startsWith($key, '!') ? $key : $key)]; // Get the column definition that corresponds with the named column. "!column" signifies negation.
             $symbol = $this->comparisonTypes[$value[2]];
             
-              
-
-            switch ($value[0]) { // Switch the value type
-              case 'int':
-              if ($value[2] === 'search') {
-                $sideText['right'] = ;
-              }
-              else {
-              
-              }
-              break;
-              
-              case  'string':
-              $sideText['right'] = $value;
-              break;
-              
-              case 'column':
-              
-              break;
-            }
             
-            
-            switch ($value[2]) { // Comparison
-              case 'search':
-              $value[
-              break;
-              
-              default:
-              
-              break;
-            }
               
             // Value is Array
-            elseif (is_array($value)) {
+            if (is_array($value[1])) {
               $sideText['left'] = $reverseAlias[$key];
-              $sideText['right'] = implode(',', $value); // TODO: format for non-INTS/escape/etc.
+              $sideText['right'] = implode(',', $value[1]); // TODO: format for non-INTS/escape/etc.
               $symbol = $this->comparisonTypes['in'];
             }
-            
-            
-            
-            $sideTextFull[$i] = "{$sideText['left']} $symbol {$sideText['right']}";
+            else {
+              switch ($value[0]) { // Switch the value type
+                case 'int':
+                  $sideText['right'] = $this->intQuoteStart . $value[1] . $this->intQuoteEnd;
+                  
+                  if ($value[2] === 'search') {
+                    $sideText['right'] = $this->stringFuzzy . $sideText['right'] . $this->stringFuzzy;
+                  }
+                break;
+                
+                case  'string':
+                  $sideText['right'] = $this->stringQuoteStart . $value[1] . $this->stringQuoteEnd;
+                break;
+                
+                case 'column':
+                  $sideText['right'] = $this->columnQuoteStart . $value[1] . $this->columnQuoteEnd;
+                break;
+              }
+            }
 
+            
             /* Generate Comparison Part */
             if ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
               $sideTextFull[$i] = "{$sideText['left']} {$symbol} {$sideText['right']}";
@@ -420,7 +408,7 @@ class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */  
   public function col($value, $comp = 'e') {
-    return array('col', "`$value`", $comp);
+    return array('col', $value, $comp);
   }
 
   

@@ -150,6 +150,8 @@ if (!$database->connect($dbConnect['core']['host'], $dbConnect['core']['port'], 
   die('Could not connect to the database: ' . $database->error . '; the application has exitted.'); // Die to prevent further execution.
 }
 
+die('Hello!');
+
 
 /* Connect to the Integration DB
  * On the whole, the product was designed such that all tables are in one database, but for the advanced users out there... */
