@@ -28,7 +28,9 @@ abstract class database {
   public $queryCounter = 0;
   public $insertId = null;
   public $error = false;
+  public $errors = array();
   public $getTablesEnabled = false;
+  public $errorFormatFunction = '';
   protected $errorLevel = E_USER_ERROR;
   protected $activeDatabase = false;
   protected $dbLink = null;
@@ -121,6 +123,16 @@ abstract class database {
 
   /**
    * Defines what error level should be used for all database errors called by the class. Class exceptions will not be affected.
+   * This function's main purpose in surpressing errors at certain points in script execution, e.g.:
+   * <code>
+   * $db = new database('localhost', 3306, 'root', 'r00tpassword', 'database1', 'mysqli');
+   * $db->setErrorLevel(E_NOTICE); // Surpress errors 
+   * 
+   * ...
+   * if (count($db->select(...)) > 5) {
+   *   trigger_error('Too many results in query.', $db->errorLevel);
+   * }
+   * </code>
    *
    * @param int level - PHP error level to use for all errors called by the class.
    * @return string - New error level.
@@ -134,6 +146,14 @@ abstract class database {
   
   /**
    * Get the Current Error Level
+   * This function should be used to retrive the current error level. It could be useful, for instance, in showing other errors outside of the database class, e.g:
+   * <code>
+   * $db = new database('localhost', 3306, 'root', 'r00tpassword', 'database1', 'mysqli');
+   * ...
+   * if (count($db->select(...)) > 5) {
+   *   trigger_error('Too many results in query.', $db->errorLevel);
+   * }
+   * </code>
    *
    * @return string - Current error level.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
@@ -143,15 +163,50 @@ abstract class database {
   }
   
   
+  public function newError($errorMessage) {
+    $this->errors[] = $errorMessage
+  }
+  
+  
+  public function clearErrors() {
+    $this->errors = array();
+  }
+  
+  
+  public function getLastError() {
+    return end($this->errors);
+  }
+  
+  
   
   /**
-   * Set the Error Level for Display
+   * Trigger an Error
+   * When a database error is encountered, database implementations should call this function. It will both store the error in the $this->errors property and, potentially, log the error. $errorType should be specified to determine whether or not the error is critical (see below).
    *
-   * @return string - New error level.
+   * In this example, an error, "Database is locked.", will be issued using the defined error level.
+   * <code>
+   * $this->triggerError('Database is locked.', 'function');
+   * </code>
+   *
+   * @param string errorMessage - The error message to issue.
+   * @param string errorType - The type of error encountered, one of:
+   *  - 'function' - A function returns false. For instance, selectDB() fails because a database could not be found.
+   *  - 'syntax' - A function can not complete due to a syntax error. Some drivers may not trigger this kind of error.
+   *  - 'validation' - A function can not complete because the data specified does not validate, for instance a value is not recognised or is of the wrong type.
+   * @param bool suppressErrors - Do not trigger an error. The error will still be logged, but it will not interupt the program flow.
+   * @return void
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  protected function triggerError($errorMessage) {
-    trigger_error($errorMessage, $this->errorLevel);
+  protected function triggerError($errorMessage, $errorData, $errorType, $suppressErrors = false) {
+    if (function_exists($this->errorFormatFunction)) {
+      $errorMessage = call_user_func($this->errorFormatFunction, $errorMessage, $errorData);
+    }
+    
+    if (!$suppressErrors) {
+      trigger_error($errorMessage, $this->errorLevel);
+    }
+    
+    $this->newError($errorMessage);
   }
   
   /*********************************************************

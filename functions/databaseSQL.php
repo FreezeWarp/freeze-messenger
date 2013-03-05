@@ -274,19 +274,20 @@ class databaseSQL extends database {
    * @return resource|bool - The database resource returned by the query, or false on failure.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
-  private function rawQuery($query) {
+  private function rawQuery($query, $suppressErrors = false) {
     $this->sourceQuery = $query;
 
     if ($queryData = $this->functionMap('query', $query)) {
       $this->queryCounter++;
 
-      if ($queryData === true) return true;
-      else return new databaseResult($queryData, $query, $this->language); // Return link resource.
+      if ($queryData === true) return true; // Insert, Update, Delete, etc.
+      else return new databaseResult($queryData, $query, $this->language); // Select, etc.
     }
     else {
-      $this->error = $this->functionMap('error');
-
-      $this->triggerError("Database Error;\n\nQuery: $query;\n\nError: " . $this->error); // The query could not complete.
+      $this->triggerError('Database Error', array(
+        'query' => $query;
+        'error' => $this->functionMap('error')
+      ), 'syntax', $suppressErrors); // The query could not complete.
 
       return false;
     }
@@ -305,22 +306,29 @@ class databaseSQL extends database {
   *********************************************************/
   
   public function selectDatabase($database) {
-    if (!$this->functionMap('selectdb', $database)) { // Select the database.
-      $this->error = 'Could not select database: ' . $database;
-
+    $error = false;
+    
+    if ($this->functionMap('selectdb', $database)) { // Select the database.      
+      if ($this->language == 'mysql' || $this->language == 'mysqli') {
+        if (!$this->rawQuery('SET NAMES "utf8"', true)) { // Sets the database encoding to utf8 (unicode).
+          $error = 'SET NAMES Query Failed';
+        }
+      }
+    }
+    else {
+      $error = 'Failed to Select Database';
+    }
+    
+    if ($error) {
+      $this->triggerError($error, array(
+        'database' => $database,
+        'query' => $this->getLastQuery(),
+        'sqlError' => $this->getLastError()
+      ), 'function');
       return false;
     }
     else {
-      if ($this->language == 'mysql' || $this->language == 'mysqli') {
-        if (!$this->rawQuery('SET NAMES "utf8"')) { // Sets the database encoding to utf8 (unicode).
-          $this->error = 'Could not run SET NAMES query.';
-
-          return false;
-        }
-      }
-      
       $this->activeDatabase = $database;
-
       return true;
     }
   }
@@ -348,7 +356,7 @@ class databaseSQL extends database {
       $engine = $this->tableTypes[$storeType];
     }
     else {
-      throw new Exception('Unrecognised table engine: ' . $storeType);
+      $this->triggerError("Unrecognised table engine: '$storeType'.", 'validation');
     }
 
     $tableProperties = '';
@@ -366,7 +374,7 @@ class databaseSQL extends database {
           $typePiece = $this->columnIntLimits[0];
         }
 
-        if ($column['autoincrement']) {
+        if (isset($column['autoincrement']) && $column['autoincrement']) {
           $typePiece .= ' AUTO_INCREMENT'; // Ya know, that thing where it sets itself.
           $tableProperties .= ' AUTO_INCREMENT = ' . (int) $column['autoincrement'];
         }
@@ -425,7 +433,7 @@ class databaseSQL extends database {
         break;
 
         default:
-        throw new Exception('Unrecognised type.');
+        $this->triggerError("Unrecognised column type: '$column[type]'.");
         break;
       }
 
@@ -449,7 +457,7 @@ class databaseSQL extends database {
         $typePiece = $this->keyConstants[$key['type']];
       }
       else {
-        throw new Exception('Unrecognised key type: ' . $key['type']);
+        $this->triggerError("Unrecognised key type: '$key[type]'.");
       }
 
 

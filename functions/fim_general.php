@@ -1393,6 +1393,32 @@ function fim_errorHandler($errno, $errstr, $errfile, $errline) {
 }
 
 
+
+/** Format structured error data for string output. Additional information may be appended, such as the current time.
+ *
+ * @param string errorString
+ * @param array errorData - An array of error data, formatted as <code>array($parameter => $value, $parameter => $value, ...)</code>.
+ *
+ * For instance, say an HTTP request could not be completed. You would want to call this function to format the relevant information:
+ * <code>
+ * trigger_error(E_USER_ERROR, fim_formatErrors(array(
+ *   'errorContext' => 'http',
+ *   'errorCode' => '404',
+ *   'errorString' => 'File Not Found',
+ * )));
+ * </code>
+ */
+function fim_formatErrors($errorString, $errorData) {
+  $returnString = '';
+  
+  foreach ($errorData AS $param => $value) {
+    $returnString .= "  $param: $value\n";
+  }
+  
+  return "$errorString; Additional Information:\n$returnString";
+}
+
+
 /**
  * Flushes The Output Buffer
  */
