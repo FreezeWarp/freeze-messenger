@@ -18,11 +18,37 @@
 /* This file is the MySQL-version (and the only one currently existing) of a generic database layer created for FreezeMessenger. What purpose could it possibly serve? Why not go the PDO-route? Mainly, it offers a few distinct advantages: full control, easier to modify by plugins (specifically, in that most data is stored in a tree structure), and perhaps more importantly it allows things that PDO, which is fundamentally an SQL extension, doesn't. There is no shortage of database foundations bearing almost no semblance to SQL: IndexedDB (which has become popular by-way of web-browser implementation), Node.JS (which I would absolutely love to work with but currently can't because of the MySQL requirement), and others come to mind.
  * As with everything else, this is GPL-based, but if anyone decides they like it and may wish to use it for less restricted purposes, contact me. I have considered going LGPL/MIT/BSD with it, but not yet :P */
  
+/**** EXTENSIBILITY NOTES ****/
+/* databaseSQL, unlike database, does not support extended languages. The class attempts to handle all variations of SQL (though, at the moment, obviously doesn't -- there will certainly need to be driver-specific code added). As a result, nearly all query strings are abstracted in some way or another with the hope that different SQL variations can be better accomodated with the least amount of code. That said, if a variation is to be added, it needs to be added to databaseSQL. */
+
+/**** SUPPORT NOTES ****/
+/* The following is a basic changelog of key MySQL features since 4.0:
+ * 5.0.0: User variables are not case sensitive in 5.0, but were prior.
+ * 5.0.2: "SHOW STATUS" behavior is global before 5.0.2 and sessional afterwards. 'SHOW /*!50002 GLOBAL *\/ STATUS;' can be used to trigger global in both.
+ * 5.0.2: NOT Parsing. Prior to 5.0.2, "NOT a BETWEEN b AND c" was parsed as "(NOT a) BETWEEN b AND ". Beginning in 5.0.2, it is parsed as "NOT (a BETWEEN b AND c)". The SQL mode "HIGH_NOT_PRECEDENCE" can be used to trigger the old mode. (http://dev.mysql.com/doc/refman/5.0/en/server-sql-mode.html#sqlmode_high_not_precedence).
+ * 5.0.3: The BIT Type. Prior to 5.0.3, the BIT type is a synonym for TINYINT(1). Beginning with 5.0.3, the BIT type accepts an additional argument (e.g. BIT(2)) that species the number of bits to use. (http://dev.mysql.com/doc/refman/5.0/en/bit-type.html)
+ ** Due to performance, BIT is far better than TINYINT(1). Both, however, are supported in this class.
+ * 5.0.6: "LOAD DATA INFILE" 
+ * 5.0.12: NOW() and SYSDATE() are no longer identical, with the latter be the time at script execution and the former at statement execution time (approximately).
+ * 5.0.13: The GREATEST() and LEAST() functions return NULL when a passed parameter is NULL. Prior, they ignored NULL values.
+ 
+ * Other incompatibilities that may be encountered:
+ * Reserved Words Added in 5.0: http://dev.mysql.com/doc/mysqld-version-reference/en/mysqld-version-reference-reservedwords-5-0.html.
+  ** This class puts everything in quotes to avoid this and related issues.
+
+ * Further Reading:
+ ** http://dev.mysql.com/doc/refman/5.0/en/upgrading-from-previous-series.html */
  
 class databaseSQL extends database {
-  public $version = 3;
-  public $product = 'fim';
+  public $classVersion = 3;
+  public $classProduct = 'fim';
   
+  public $version = 0;
+  public $versionPrimary = 0;
+  public $versionSeconday = 0;
+  public $versionTertiary = 0;
+  public $versionString = '0.0.0';
+  public $supportedLanguages = array('mysql', 'mysqli');
   public $storeTypes = array('memory', 'general', 'innodb');
   public $queryLog = array();
   public $mode = 'SQL';
@@ -50,7 +76,7 @@ class databaseSQL extends database {
       switch ($operation) {
         case 'connect':
           $function = mysql_connect("$args[1]:$args[2]", $args[3], $args[4]);
-          $this->version = mysql_get_server_info($function);
+          $this->version = $this->setDatabaseVersion(mysql_get_server_info($function));
 
           return $function;
         break;
@@ -124,6 +150,57 @@ class databaseSQL extends database {
       case 'table':     return $this->tableQuoteStart . $this->escape($value, 'table') . $this->tableQuoteEnd;                                              break;
       case 'tableA':    return $this->tableAliasQuoteStart . $this->escape($value, 'tableA') . $this->tableAliasQuoteEnd;                                   break;
       case 'database':  return $this->databaseQuoteStart . $this->escape($value, 'database') . $this->databaseQuoteEnd;                                     break;
+      case 'index':     return $this->indexQuoteStart . $this->escape($value, 'index') . $this->indexQuoteEnd;                                              break;
+    }
+  }
+  
+  
+  
+  /** Formats two columns or table names such that one is an alias.
+   *
+   * @param string value - The value (column name/table name).
+   *
+   * @internal Needless to say, this is quite the simple function. However, I feel that the syntax merits it, as there are certainly other ways an "AS" could be structure. (Most wouldn't comply with SQL, but strictly speaking I would like this class to work with slight modifications of SQL as well, if any exist.)
+   *
+   * @param string alias - The alias.
+   * @return string - The formatted SQL string.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  private function formatAlias($value, $alias, $type) {
+    switch ($type) {
+      case 'column': case 'table': return "$value AS $alias"; break;
+    }
+  }
+  
+  
+  
+  private function setDatabaseVersion($versionString) {
+    $this->versionString = $versionString;
+    
+    // Get the version without any extra crap (e.g. "5.0.0.0~ubuntuyaypartytimeohohohoh").
+    for ($i = 0; $i < strlen($database->version); $i++) {
+      if (in_array($database->version[$i], array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, '.'))) $strippedVersion .= $database->version[$i];
+      else break;
+    }
+
+    // Divide the decimal versions into an array (e.g. 5.0.1 becomes [0] => 5, [1] => 0, [2] => 1) and set the first three as properties.
+    $strippedVersionParts = explode('.', $strippedVersion);
+    
+    $this->versionPrimary = $strippedVersionParts[0];
+    $this->versionSeconday = $strippedVersionParts[1];
+    $this->versionTertiary = $strippedVersionParts[2];
+    
+
+    // Compatibility check. We're really not sure how true any of this, and we have no reason to support older versions, but meh.
+    switch ($driver) {
+      case 'mysql': case 'mysqli':
+      if ($strippedVersionParts[0] <= 4) { // MySQL 4 is a no-go.
+        die('You have attempted to connect to a MySQL version 4 database. MySQL 5.0.5+ is required for FreezeMessenger.');
+      }
+      elseif ($strippedVersionParts[0] == 5 && $strippedVersionParts[1] == 0 && $strippedVersionParts[2] <= 4) { // MySQL 5.0.0-5.0.4 is also a no-go (we require the BIT type, even though in theory we could work without it)
+        die('You have attempted to connect to an incompatible version of a MySQL version 5 database (MySQL 5.0.0-5.0.4). MySQL 5.0.5+ is required for FreezeMessenger.');
+      }
+      break;
     }
   }
 
@@ -181,7 +258,7 @@ class databaseSQL extends database {
       $this->databaseQuoteStart = '`'; $this->databaseQuoteEnd = '`'; $this->databaseAliasQuoteStart = '`'; $this->databaseAliasQuoteEnd = '`';
       $this->stringQuoteStart = '"';   $this->stringQuoteEnd = '"';   $this->emptyString = '""';            $this->stringFuzzy = '%';
       $this->intQuoteStart = '';       $this->intQuoteEnd = '';
-      $this->tableColumnDivider = '.'; $this->databaseColumnDivider = '.';
+      $this->tableColumnDivider = '.'; $this->databaseTableDivider = '.';
       $this->sortOrderAsc = 'ASC';     $this->sortOrderDesc = 'DESC';
 
       $this->tableTypes = array(
@@ -196,7 +273,7 @@ class databaseSQL extends database {
       $this->databaseQuoteStart = '"'; $this->databaseQuoteEnd = '"'; $this->databaseAliasQuoteStart = '"'; $this->databaseAliasQuoteEnd = '"';
       $this->stringQuoteStart = '"';   $this->stringQuoteEnd = '"';   $this->emptyString = '""';            $this->stringFuzzy = '%';
       $this->intQuoteStart = '';       $this->intQuoteEnd = '';
-      $this->tableColumnDivider = '.'; $this->databaseColumnDivider = '.';
+      $this->tableColumnDivider = '.'; $this->databaseTableDivider = '.';
       $this->sortOrderAsc = 'ASC';     $this->sortOrderDesc = 'DESC';
       break;
     }
@@ -206,11 +283,9 @@ class databaseSQL extends database {
       case 'mysqli':
       case 'postgresql':
       $this->comparisonTypes = array(
-        'e' => '=', '!e' => '!=',
-        'lt' => '<', 'gt' => '>',
-        'lte' => '<=', 'gte' => '>=',
-        'in' => 'IN', '!in' => 'NOT IN',
-        'regex' => 'REGEXP', // Applies extended POSIX regular expression to index. It is natively implemented in MySQL, PostGreSQL, and Oracle SQL databases. It is absent in MSSQL, and the status in VoltDB and SQLite is unknown.
+        'e' => '=',  '!e' => '!=', 'in' => 'IN',  '!in' => 'NOT IN',
+        'lt' => '<', 'gt' => '>',  'lte' => '<=', 'gte' => '>=',
+        'regex' => 'REGEXP',
         'search' => 'LIKE',
         'band' => '&',
       );
@@ -219,7 +294,7 @@ class databaseSQL extends database {
         'both' => ' AND ', 'either' => ' OR ',
       );
 
-      $this->keyConstants = array(
+      $this->keyTypeConstants = array(
         'primary' => 'PRIMARY KEY',
         'unique' => 'UNIQUE KEY',
         'index' => 'KEY',
@@ -253,6 +328,15 @@ class databaseSQL extends database {
 
       $this->globFindArray = array('*', '?');
       $this->globReplaceArray = array('%', '_');
+      
+      $this->boolValues = array(
+        true => 1, false => 0,
+      );
+      
+      $this->columnTypeConstants = array(
+        'bool' => 'TINYINT(1) UNSIGNED',
+        'time' => 'INTEGER UNSIGNED',
+      );
       break;
     }
   }
@@ -381,7 +465,7 @@ class databaseSQL extends database {
   
   
   public function createDatabase($database) {
-    return $this->rawQuery('CREATE DATABASE IF NOT EXISTS ' . $this->databaseQuoteStart . $database . $this->databaseQuoteEnd);
+    return $this->rawQuery('CREATE DATABASE IF NOT EXISTS ' . $this->formatValue($database, 'database'));
   }
   
   /*********************************************************
@@ -460,15 +544,20 @@ class databaseSQL extends database {
         break;
 
         case 'bitfield':
-        if (!isset($column['bits'])) {
-          $typePiece = 'TINYINT UNSIGNED'; // Sane default
+        if ($this->nativeBitfield) {
+        
         }
         else {
-          if ($column['bits'] <= 8)      $typePiece = 'TINYINT UNSIGNED';
-          elseif ($column['bits'] <= 16) $typePiece = 'SMALLINT UNSIGNED';
-          elseif ($column['bits'] <= 24) $typePiece = 'MEDIUMINT UNSIGNED';
-          elseif ($column['bits'] <= 32) $typePiece = 'INTEGER UNSIGNED';
-          else                           $typePiece = 'LONGINT UNSIGNED';
+          if (!isset($column['bits'])) {
+            $typePiece = 'TINYINT UNSIGNED'; // Sane default
+          }
+          else {
+            if ($column['bits'] <= 8)      $typePiece = 'TINYINT UNSIGNED';
+            elseif ($column['bits'] <= 16) $typePiece = 'SMALLINT UNSIGNED';
+            elseif ($column['bits'] <= 24) $typePiece = 'MEDIUMINT UNSIGNED';
+            elseif ($column['bits'] <= 32) $typePiece = 'INTEGER UNSIGNED';
+            else                           $typePiece = 'LONGINT UNSIGNED';
+          }
         }
         break;
 
@@ -505,8 +594,8 @@ class databaseSQL extends database {
 
 
     foreach ($tableIndexes AS $indexName => $index) {
-      if (isset($this->keyConstants[$index['type']])) {
-        $typePiece = $this->keyConstants[$index['type']];
+      if (isset($this->keyTypeConstants[$index['type']])) {
+        $typePiece = $this->keyTypeConstants[$index['type']];
       }
       else {
         $this->triggerError("Unrecognised Index Type", array(
@@ -520,46 +609,42 @@ class databaseSQL extends database {
       if (strpos($indexName, ',') !== false) {
         $indexCols = explode(',', $indexName);
 
-        foreach ($indexCols AS &$indexCol) {
-          $indexCol = $this->columnQuoteStart . $indexCol . $this->columnQuoteEnd;
-        }
+        foreach ($indexCols AS &$indexCol) $indexCol = $this->formatValue($indexCol, 'column')
 
         $indexName = implode(',', $indexCols);
       }
       else {
-        $indexName = $this->columnAliasStart . $indexName . $this->columnAliasEnd;
+        $this->formatValue($indexName, 'index');
       }
 
 
       $indexes[] = "{$typePiece} ({$indexName})";
     }
 
-    return $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->tableQuoteStart . $this->escape($tableName) . $this->tableQuoteEnd . ' (
-' . implode(",\n  ",$columns) . ',
-' . implode(",\n  ",$indexes) . '
+    return $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->formatValue($tableName, 'table') . ' (
+' . implode(",\n  ", $columns) . ',
+' . implode(",\n  ", $indexes) . '
 ) ENGINE="' . $this->escape($engine) . '" COMMENT="' . $this->escape($tableComment) . '" DEFAULT CHARSET="utf8"' . $tableProperties);
   }
   
   
   
   public function deleteTable($tableName) {
-    return $this->rawQuery('DROP TABLE ' . $this->tableQuoteStart . $this->escape($tableName) . $this->tableQuoteEnd);
+    return $this->rawQuery('DROP TABLE ' . $this->formatValue($tableName, 'table'));
   }
   
   
   
   public function renameTable($oldName, $newName) {
-    return $this->rawQuery('RENAME TABLE ' . $this->tableQuoteStart . $this->escape($oldName) . $this->tableQuoteEnd . ' TO ' . $this->tableQuoteStart . $this->escape($newName) . $this->tableQuoteEnd);
+    return $this->rawQuery('RENAME TABLE ' . $this->formatValue($oldName, 'table') . ' TO ' . $this->formatValue($newName, 'table'));
   }
   
   
   
   public function getTablesAsArray() {
     switch ($this->language) {
-      case 'mysql':
-      case 'mysqli':
-      case 'postgresql':
-      $tables = $this->rawQuery('SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA LIKE "' . $this->escape($this->activeDatabase) . '"');
+      case 'mysql': case 'mysqli': case 'postgresql':
+      $tables = $this->rawQuery('SELECT * FROM ' . $this->formatValue('INFORMATION_SCHEMA', 'database') . $this->databaseTableDivider . $this->formatValue('TABLES', 'table') . ' WHERE TABLE_SCHEMA = "' . $this->escape($this->activeDatabase) . '"');
       $tables = $tables->getAsArray('TABLE_NAME');
       $tables = array_keys($tables);
       break;
@@ -601,12 +686,12 @@ class databaseSQL extends database {
             if (strstr($tableName,' ') !== false) { // A space can be used to create a table alias, which is sometimes required for different queries.
               $tableParts = explode(' ', $tableName);
 
-              $finalQuery['tables'][] = $this->tableQuoteStart . $tableParts[0] . $this->tableQuoteEnd . ' AS ' . $this->tableAliasQuoteStart . $tableParts[1] . $this->tableAliasQuoteEnd; // Identify the table as [tableName] AS [tableAlias]
+              $finalQuery['tables'][] = $this->formatValue($tableParts[0], 'table') . ' AS ' . $this->format($tableParts[1], 'tableA'); // Identify the table as [tableName] AS [tableAlias]
 
               $tableName = $tableParts[1];
             }
             else {
-              $finalQuery['tables'][] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd; // Identify the table as [tableName]
+              $finalQuery['tables'][] = $this->formatValue($tableName, 'table'); // Identify the table as [tableName]
             }
 
             if (is_array($tableCols)) { // Table columns have been defined with an array, e.g. ["a", "b", "c"]
@@ -622,7 +707,7 @@ class databaseSQL extends database {
                       throw new Exception('Deprecated context.'); // TODO
                     }
 
-                    $finalQuery['columns'][] = $this->columnQuoteStart . $colName . $this->columnQuoteStart . ' AS ' . $this->columnAliasQuoteEnd . $colAlias['name'] . $this->columnAliasQuoteStart; // Identify column as [columnName] AS [columnAlias]
+                    $finalQuery['columns'][] = $this->formatAlias($this->formatValue($colName, 'column'), $this->formatValue($colAlias['name'], 'columnA'), 'column'); // Identify column as [columnName] AS [columnAlias]
                     $reverseAlias[$colAlias['name']] = $colName;
                   }
                   else {
@@ -870,23 +955,22 @@ LIMIT
 
     foreach($array AS $column => $data) { // Run through each element of the $dataArray, adding escaped columns and values to the above arrays.
 
-      if (is_int($data)) { // Safe integer - leave it as-is.
-        $columns[] = $this->columnQuoteStart . $this->escape($column) . $this->columnQuoteEnd;
+      $columns[] = $this->formatValue($column, "column");
+      
+      switch (gettype($data)) {
+        case 'int':// Safe integer - leave it as-is.
         $context[] = 'e'; // Equals
-
         $values[] = $data;
-      }
-
-      elseif (is_bool($data)) { // In MySQL, true evals to  1, false evals to 0.
-        $columns[] = $this->columnQuoteStart . $this->escape($column) . $this->columnQuoteEnd;
+        break;
+        
+        case 'bool':
         $context[] = 'e'; // Equals
 
         if ($data === true) $values[] = 1;
         elseif ($data === false) $values[] = 0;
-      }
+        break;
 
       elseif (is_null($data)) { // Null data, simply make it empty.
-        $columns[] = $this->columnQuoteStart . $this->escape($column) . $this->columnQuoteEnd;
         $context[] = 'e';
 
         $values[] = $this->emptyString;
@@ -896,47 +980,31 @@ LIMIT
         if (isset($data['context'])) {
           throw new Exception('Deprecated context'); // TODO
         }
-        else {
-          $columns[] = $this->columnQuoteStart . $this->escape($column) . $this->columnQuoteEnd;
-        }
 
 
-        if (!isset($data['type'])) {
-          $data['type'] = 'string';
-        }
+
+        if (!isset($data['type'])) $data['type'] = 'string';
 
 
         switch($data['type']) {
-          case 'equation':
-          $equation = preg_replace('/\$([a-zA-Z\_]+)/', '\\1', $data['value']);
-
-          $values[] = $equation;
-          break;
-
-          case 'int':
-          $values[] = $this->formatValue($data['value'], 'integer');
-          break;
-
-          case 'string':
-          default:
-          $values[] = $this->formatValue($data['value'], 'string');
-          break;
+          case 'equation':        $values[] = preg_replace('/\$([a-zA-Z\_]+)/', '\\1', $data['value']); break;
+          case 'int':             $values[] = $this->formatValue($data['value'], 'integer');            break;
+          case 'string': default: $values[] = $this->formatValue($data['value'], 'string');             break;
         }
 
 
-        if (isset($data['cond'])) {
-          $context[] = $data['cond'];
-        }
-        else {
-          $context[] = 'e';
-        }
+        if (isset($data['cond'])) $context[] = $data['cond'];
+        else                      $context[] = 'e';
+      }
+      
+      elseif (is_string($data)) { // Simple Ol' String
+        $columns[] = $this->formatValue($column, 'column');
+        $values[] = $this->formatValue($data, 'string');
+        $context[] = 'e'; // Equals      
       }
 
-      else { // String or otherwise; encode it using mysql_escape and put it in quotes
-        $columns[] = $this->columnQuoteStart . $this->escape($column) . $this->columnQuoteEnd;
-        $context[] = 'e'; // Equals
-
-        $values[] = $this->stringQuoteStart . $this->escape($data) . $this->stringQuoteEnd;
+      else {
+        throw new Exception('Unrecognised data type.');
       }
     }
 

@@ -18,15 +18,15 @@
 /* This file is the outline of FreezeMessenger's database class. The legwork will be performed by another class (usually databaseSQL), while this defines variables and includes documentation for the interface. */
 
 
-/**** BASIC POINTERS ****/
-/* Select requires that you use the cast functions before passing values. Pretty simple, but important.
- * Delete, Update, and Insert commands are fairly straight forward. They all use the same format, and shouldn't be too hard to get the hang of.
+/**** TODO ****/
+/* "float" support
+ * 
  */
 
 abstract class database {
 
-  public $version = 3;
-  public $product = 'fim';
+  public $classVersion = 3;
+  public $classProduct = 'fim';
   
   public $queryCounter = 0;
   public $insertId = null;
