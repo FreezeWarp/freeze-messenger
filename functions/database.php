@@ -20,7 +20,7 @@
 
 /**** TODO ****/
 /* "float" support
- * 
+ * triggers (e.g. a watch() function)
  */
 
 abstract class database {
