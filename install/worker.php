@@ -19,6 +19,7 @@ error_reporting(E_ALL ^ E_NOTICE);
 
 require('../functions/xml.php');
 require('../functions/database.php');
+require('../functions/databaseSQL.php');
 
 if (file_exists('../config.php')) {
   die('Error.');
@@ -49,7 +50,11 @@ switch ($_REQUEST['phase']) {
 
   /* Part 1 : Connect to the Database, Create a New Database If Needed */
 
-  $database = new database();
+  $database = new databaseSQL(); // Note: In the future, we will probably change this to be just database(), with driver selection taking place afterwards. That has not yet happened.
+  $database->setErrorLevel(E_USER_WARNING);
+  $database->getVersion = true;
+  //$database->printErrors = true;
+  
 //  if ($driver === 'postgresql' && $createdb) {
 //    die('PostGreSQL is unable to create databases. Please manually create the database before you continue.');
 //  }
@@ -61,31 +66,21 @@ switch ($_REQUEST['phase']) {
       $database->connect($host, $port, $userName, $password, $databaseName, $driver);
     }
 
-    $database->setErrorLevel(E_USER_WARNING);
-
 
     if ($database->error) {
       die('Connection Error: ' . $database->error);
     }
     else {
-      // Get Only The Good Parts of the Database Version (we could also use a REGEX, but meh)
-      for ($i = 0; $i < strlen($database->version); $i++) {
-        if (in_array($database->version[$i], array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)) || $database->version[$i] == '.') {
-          $strippedVersion .= $database->version[$i];
-        }
-        else {
-          break;
-        }
-      }
-
-      $strippedVersionParts = explode('.', $strippedVersion); // Divide the decimal versions into an array; e.g. 5.0.1 becomes [0] => 5, [1] => 0, [2] => 1
       if ($driver === 'mysql' || $driver === 'mysqli') {
-        if ($strippedVersionParts[0] <= 4) { // MySQL 4 is a no-go.
-          die('You have attempted to connect to a MySQL version 4 database. MySQL 5.0.5+ is required for FreezeMessenger.');
+        if ($database->versionPrimary <= 4) { // MySQL 4 is a no-go.
+          die('You have attempted to connect to a MySQL version ' . $database->version . ' database. MySQL 5.0.5+ is required for FreezeMessenger.');
         }
-        elseif ($strippedVersionParts[0] == 5 && $strippedVersionParts[1] == 0 && $strippedVersionParts[2] <= 4) { // MySQL 5.0.0-5.0.4 is also a no-go (we require the BIT type, even though in theory we could work without it)
-          die('You have attempted to connect to an incompatible version of a MySQL version 5 database (MySQL 5.0.0-5.0.4). MySQL 5.0.5+ is required for FreezeMessenger.');
-        }
+        elseif ($database->versionPrimary == 5 && $database->versionSecondary == 0 && $database->versionTertiary <= 4) { // MySQL 5.0.0-5.0.4 is also a no-go (we require the BIT type, even though in theory we could work without it)
+          die('You have attempted to connect to a MySQL version ' . $database->version . ' database. MySQL 5.0.5+ is required for FreezeMessenger.');
+	}
+	elseif ($database->versionPrimary > 5) { // Note: I figure this might be best for now. Note that the code should still run for any version of MySQL 5.x.
+	  die ('You have attempted to connect to a MySQL version greater than 5. Such a thing did not exist when I was writing this code, and there is a good chance it won\'t work as expected. Either download a newer version of FreezeMessenger, or, if one does not yet exist, you can try to modify the source code of the installer script to remove this restriction. If you\'re lucky, things will still work.');
+	}
       }
 //      elseif ($driver === 'postgresql') {
 //        if ($strippedVersionParts[0] <= 7) { // PostGreSQL 7 is a no-go.

@@ -81,6 +81,8 @@ class databaseSQL extends database {
   public $classVersion = 3;
   public $classProduct = 'fim';
   
+  public $getVersion = false; // Whether or not to get the database version, adding overhead.
+  
   public $version = 0;
   public $versionPrimary = 0;
   public $versionSeconday = 0;
@@ -91,8 +93,7 @@ class databaseSQL extends database {
   public $queryLog = array();
   public $mode = 'SQL';
   public $language = '';
-  
-  protected $language = '';
+
   protected $dbLink = false;
 
   /*********************************************************
@@ -114,18 +115,19 @@ class databaseSQL extends database {
       switch ($operation) {
         case 'connect':
           $function = mysql_connect("$args[1]:$args[2]", $args[3], $args[4]);
-          $this->version = $this->setDatabaseVersion(mysql_get_server_info($function));
+          
+          if ($this->getVersion) $this->version = $this->setDatabaseVersion(mysql_get_server_info($function));
 
           return $function;
         break;
 
-        case 'error':    return mysql_error((isset($this->dbLink) ? $this->dbLink : null);                                            break;
+        case 'error':    return mysql_error(isset($this->dbLink) ? $this->dbLink : null);                                             break;
         case 'close':    $function = mysql_close($this->dbLink); unset($this->dbLink); return $function;                              break;
         case 'selectdb': return mysql_select_db($args[1], $this->dbLink);                                                             break;
         case 'escape':   return mysql_real_escape_string($args[1], $this->dbLink);                                                    break;
         case 'query':    return mysql_query($args[1], $this->dbLink);                                                                 break;
         case 'insertId': return mysql_insert_id($this->dbLink);                                                                       break;
-        default:         $this->triggerError("[Function Map] Unrecognised Operation", array('operation' : $operation), 'validation'); break;
+        default:         $this->triggerError("[Function Map] Unrecognised Operation", array('operation' => $operation), 'validation'); break;
       }
       break;
 
@@ -149,7 +151,7 @@ class databaseSQL extends database {
         case 'escape':   return mysqli_real_escape_string($this->dbLink, $args[1]);                                                   break;
         case 'query':    return mysqli_query($this->dbLink, $args[1]);                                                                break;
         case 'insertId': return mysqli_insert_id($this->dbLink);                                                                      break;
-        default:         $this->triggerError("[Function Map] Unrecognised Operation", array('operation' : $operation), 'validation'); break;
+        default:         $this->triggerError("[Function Map] Unrecognised Operation", array('operation' => $operation), 'validation'); break;
       }
       break;
 
@@ -162,7 +164,7 @@ class databaseSQL extends database {
         case 'escape':   return pg_escape_string($this->dbLink, $args[1]);                                                           break;
         case 'query':    return pg_query($this->dbLink, $args[1]);                                                                   break;
         case 'insertId': /* TODO */                                                                                                  break;
-        default:        $this->triggerError("[Function Map] Unrecognised Operation", array('operation' : $operation), 'validation'); break;
+        default:        $this->triggerError("[Function Map] Unrecognised Operation", array('operation' => $operation), 'validation'); break;
       }
       break;
     }
@@ -213,11 +215,13 @@ class databaseSQL extends database {
   
   
   private function setDatabaseVersion($versionString) {
+    $versionString = (string) $versionString;
     $this->versionString = $versionString;
+    $strippedVersion = '';
     
     // Get the version without any extra crap (e.g. "5.0.0.0~ubuntuyaypartytimeohohohoh").
-    for ($i = 0; $i < strlen($database->version); $i++) {
-      if (in_array($database->version[$i], array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, '.'))) $strippedVersion .= $database->version[$i];
+    for ($i = 0; $i < strlen($versionString); $i++) {
+      if (in_array($versionString[$i], array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.'), true)) $strippedVersion .= $versionString[$i];
       else break;
     }
 
@@ -415,7 +419,7 @@ class databaseSQL extends database {
     }
     else {
       $this->triggerError('Database Error', array(
-        'query' => $query;
+        'query' => $query,
         'error' => $this->functionMap('error')
       ), 'syntax', $suppressErrors); // The query could not complete.
 
@@ -524,8 +528,8 @@ class databaseSQL extends database {
     }
     else {
       $this->triggerError("Unrecognised Table Engine", array(
-        'tableName' : $tableName
-        'engine' : $engine
+        'tableName' => $tableName,
+        'engine' => $engine
       ), 'validation');
     }
 
@@ -609,9 +613,9 @@ class databaseSQL extends database {
 
         default:
         $this->triggerError("Unrecognised Column Type", array(
-          'tableName' : $tableName,
-          'columnName' : $columnName,
-          'columnType' : $column['type'],
+          'tableName' => $tableName,
+          'columnName' => $columnName,
+          'columnType' => $column['type'],
         ), 'validation');
         break;
       }
@@ -637,9 +641,9 @@ class databaseSQL extends database {
       }
       else {
         $this->triggerError("Unrecognised Index Type", array(
-          'tableName' : $tableName,
-          'indexName' : $indexName,
-          'indexType' : $index['type'],
+          'tableName' => $tableName,
+          'indexName' => $indexName,
+          'indexType' => $index['type'],
         ), 'validation');
       }
 
@@ -647,7 +651,7 @@ class databaseSQL extends database {
       if (strpos($indexName, ',') !== false) {
         $indexCols = explode(',', $indexName);
 
-        foreach ($indexCols AS &$indexCol) $indexCol = $this->formatValue($indexCol, 'column')
+        foreach ($indexCols AS &$indexCol) $indexCol = $this->formatValue($indexCol, 'column');
 
         $indexName = implode(',', $indexCols);
       }
@@ -754,7 +758,7 @@ class databaseSQL extends database {
                   }
                 }
                 else {
-                  trigger_error('Invalid Select Array (Empty Column Name)', array(
+                  $this->triggerError('Invalid Select Array (Empty Column Name)', array(
                     'tableName' => $tableName,
                     'columnName' => $columnName,
                   ), 'validation');
@@ -784,18 +788,18 @@ class databaseSQL extends database {
             }
           }
           else {
-            trigger_error('Invalid Select Array (Empty Table Name)', array(
-              'tableName' => $tableName.
+            $this->triggerError('Invalid Select Array (Empty Table Name)', array(
+              'tableName' => $tableName,
             ), 'validation');
           }
         }
       }
       else {
-        trigger_error('Invalid Select Array (Columns Array Empty)', array(), 'validation');
+        $this->triggerError('Invalid Select Array (Columns Array Empty)', array(), 'validation');
       }
     }
     else {
-      trigger_error('Invalid Select Array (Columns Not an Array)', array(), 'validation');
+      $this->triggerError('Invalid Select Array (Columns Not an Array)', array(), 'validation');
     }
 
 
@@ -827,7 +831,7 @@ class databaseSQL extends database {
               $finalQuery['sort'][] = $reverseAlias[$sortColumn] . " $directionSym";
             }
             else {
-              trigger_error('Unrecognised Sort Column', array(
+              $this->triggerError('Unrecognised Sort Column', array(
                 'sortColumn' => $sortColumn,
               ), 'validation');
             }
@@ -949,7 +953,7 @@ LIMIT
             else {
               $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
 
-              trigger_error('Query Nullified', array(), 'validation');
+              $this->triggerError('Query Nullified', array(), 'validation');
             }
           }
         }
@@ -958,7 +962,7 @@ LIMIT
           $condSymbol = $this->concatTypes[$type];
         }
         else {
-          trigger_error('Unrecognised Concatenation Operator', array(
+          $this->triggerError('Unrecognised Concatenation Operator', array(
             'operator' => $type,
           ), 'validation');
         }
@@ -1007,22 +1011,19 @@ LIMIT
         if ($data === true) $values[] = 1;
         elseif ($data === false) $values[] = 0;
         break;
-
-      elseif (is_null($data)) { // Null data, simply make it empty.
+        
+        case 'NULL': // Null data, simply make it empty.
         $context[] = 'e';
 
         $values[] = $this->emptyString;
-      }
-
-      elseif (is_array($data)) { // This allows for some more advanced datastructures; specifically, we use it here to define metadata that prevents $this->escape.
+        break;
+        
+        case 'array': // This allows for some more advanced datastructures; specifically, we use it here to define metadata that prevents $this->escape.
         if (isset($data['context'])) {
           throw new Exception('Deprecated context'); // TODO
         }
-
-
-
+        
         if (!isset($data['type'])) $data['type'] = 'string';
-
 
         switch($data['type']) {
           case 'equation':        $values[] = preg_replace('/\$([a-zA-Z\_]+)/', '\\1', $data['value']); break;
@@ -1030,19 +1031,18 @@ LIMIT
           case 'string': default: $values[] = $this->formatValue($data['value'], 'string');             break;
         }
 
-
         if (isset($data['cond'])) $context[] = $data['cond'];
         else                      $context[] = 'e';
-      }
       
-      elseif (is_string($data)) { // Simple Ol' String
+        case 'string': // Simple Ol' String
         $columns[] = $this->formatValue($column, 'column');
         $values[] = $this->formatValue($data, 'string');
-        $context[] = 'e'; // Equals      
-      }
-
-      else {
+        $context[] = 'e'; // Equals
+        break;
+        
+        default:
         throw new Exception('Unrecognised data type.');
+        break;
       }
     }
 
@@ -1099,8 +1099,8 @@ LIMIT
         }
         else {
           $this->triggerError("[Update Table] Unrecognised Comparison Type", array(
-            'tableName' : $tableName,
-            'comparisonType' : $conditions[$i],
+            'tableName' => $tableName,
+            'comparisonType' => $conditions[$i],
           ), 'validation');
         }
 
@@ -1133,8 +1133,8 @@ LIMIT
         if (!$conditions[$i]) $csym = $this->comparisonTypes['e'];
         elseif (isset($this->comparisonTypes[$conditions[$i]])) $csym = $this->comparisonTypes[$conditions[$i]];
         else $this->triggerError("[Delete Table] Unrecognised Comparison Type", array(
-          'tableName' : $tableName,
-          'comparisonType' : $conditions[$i],
+          'tableName' => $tableName,
+          'comparisonType' => $conditions[$i],
         ), 'validation');
 
         $cond[] = $columns[$i] . $csym . $values[$i];

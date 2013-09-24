@@ -32,6 +32,7 @@ abstract class database {
   public $insertId = null;
   public $error = false;
   public $errors = array();
+  public $printErrors = false;
   public $getTablesEnabled = false;
   public $errorFormatFunction = '';
   public $storeTypes;
@@ -60,7 +61,7 @@ abstract class database {
     
     'regexp' => 'regex',
     
-    'like' => 'search'
+    'like' => 'search',
     'glob' => 'search',
   );
   protected $comparisonTypes = array(
@@ -86,8 +87,8 @@ abstract class database {
    * @return void
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
-  public function __construct($host, $port, $user, $password, $database, $driver) {
-    $this->connect($host, $port, $user, $password, $database, $driver);
+  public function __construct($host = false, $port = false, $user = false, $password = false, $database = false, $driver = false) {
+    if ($host) $this->connect($host, $port, $user, $password, $database, $driver);
   }
   
 
@@ -179,8 +180,13 @@ abstract class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   protected function triggerError($errorMessage, $errorData, $errorType, $suppressErrors = false) {
+  
     if (function_exists($this->errorFormatFunction)) {
       $errorMessage = call_user_func($this->errorFormatFunction, $errorMessage, $errorData);
+    }
+    
+    if ($this->printErrors) { // Trigger error is not guaranteed to output the error message to the client. If this flag is set, we send the message before triggering the error. (At the same time, multiple messages may appear.)
+      echo $errorMessage;
     }
     
     if (!$suppressErrors) {
@@ -243,7 +249,7 @@ abstract class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   protected function newError($errorMessage) {
-    $this->errors[] = $errorMessage
+    $this->errors[] = $errorMessage;
   }
   
   
@@ -641,5 +647,127 @@ abstract class database {
   ************************* END ***************************
   **************** Type-Casting Functions *****************
   *********************************************************/
+}
+
+class databaseResult {
+  /**
+   * Construct
+   *
+   * @param object $queryData - The database object.
+   * @param string $sourceQuery - The source query, which can be stored for referrence.
+   * @return void
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
+  public function __construct($queryData, $sourceQuery, $language) {
+    $this->queryData = $queryData;
+    $this->sourceQuery = $sourceQuery;
+    $this->language = $language;
+  }
+
+
+  /**
+   * Calls a database function, such as mysql_connect or mysql_query, using lookup tables
+   *
+   * @return void
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  public function functionMap($operation) {
+    $args = func_get_args();
+
+    switch ($this->language) {
+      case 'mysql':
+      switch ($operation) {
+        case 'fetchAsArray' : return (($data = mysql_fetch_assoc($args[1])) === false ? false : $data); break;
+      }
+      break;
+
+      case 'mysqli':
+      switch ($operation) {
+        case 'fetchAsArray' : return (($data = mysqli_fetch_assoc($args[1])) === null ? false : $data); break;
+      }
+      break;
+    }
+  }
+
+
+  /**
+   * Replaces Query Data
+   *
+   * @param object $queryData - The database object.
+   * @return void
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
+  public function setQuery($queryData) {
+    $this->queryData = $queryData;
+  }
+
+
+  /**
+   * Get Database Object as an Associative Array
+   *
+   * @param mixed $index
+   * @return mixed
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
+  public function getAsArray($index = true, $group = false) {
+    $data = array();
+    $indexV = 0;
+
+    if ($this->queryData !== false) {
+      if ($index) { // An index is specified, generate & return a multidimensional array. (index => [key => value], index being the value of the index for the row, key being the column name, and value being the corrosponding value).
+        while ($row = $this->functionMap('fetchAsArray', $this->queryData)) {
+          if ($row === null || $row === false) break;
+
+          if ($index === true) {
+            $indexV++; // If the index is boolean "true", we simply create numbered rows to use. (1,2,3,4,5)
+
+            $data[$indexV] = $row; // Append the data.
+          }
+          else { // If the index is not boolean "true", we instead get the column value of the index/column name.
+            if ($group) $data[$row[$index]][] = $row; // Allow duplicate values.
+            else $data[$row[$index]] = $row; // Overwrite values.
+          }
+        }
+
+        return $data; // All rows fetched, return the data.
+      }
+      else { // No index is present, generate a two-dimensional array (key => value, key being the column name, value being the corrosponding value).
+        return $this->functionMap('fetchAsArray', $this->queryData);
+      }
+    }
+
+    else {
+      return false; // Query data is false or null, return false.
+    }
+  }
+
+
+  /**
+   * Get the database object as a string, using the specified format/template. Each result will be passed to this template and stored in a string, which will be appended to the entire result.
+   *
+   * @param string $format
+   * @return mixed
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  */
+  public function getAsTemplate($format) {
+    static $data;
+
+    if ($this->queryData !== false && $this->queryData !== null) {
+      while (false !== ($row = $this->functionMap('fetchAsArray', $this->queryData))) { // Process through all rows.
+        $uid++;
+        $row['uid'] = $uid; // UID is a variable that can be used as the row number in the template.
+
+        $data2 = preg_replace('/\$([a-zA-Z0-9]+)/e','$row[$1]', $format); // the "e" flag is a PHP-only extension that allows parsing of PHP code in the replacement.
+        $data2 = preg_replace('/\{\{(.*?)\}\}\{\{(.*?)\}\{(.*?)\}\}/e','stripslashes(iif(\'$1\',\'$2\',\'$3\'))', $data2); // Slashes are appended automatically when using the /e flag, thus corrupting links.
+        $data .= $data2;
+      }
+
+      return $data;
+    }
+
+    else {
+      return false; // Query data is false or null, return false.
+    }
+  }
 }
 ?>
