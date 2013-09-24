@@ -64,4 +64,20 @@ function fim_generatePassword($password, $salt, $privateSaltNum, $hashStage = 0)
 
   return $passwordHashed;
 }
+
+/**
+ * Generates a computationally-expensive password hash using a password, salt, and optionally a number of iterations to run the encryption over. The function will also make use of salts stored in config.php to prevent bruteforcing of passwords in the case of a database leak.
+ * @internal Sha256 is primarily used for portability. Unlike other algorithms, it is possible to encode it 
+ *
+ * @param string $password - The password.
+ * @param string $salt - The salt to use. This salt is stored in the database.
+ * @param string $privateSaltNum - The private salt to use. This salt is referrenced in the database, but stored on the fileserver.
+ * @param int $hashStage - The level at which the password is already hashed. 0 is no hashing, 1 is sha256(password), 2 is sha256(sha256(password) . salt), and 3 is fully hashed.
+ * @return void - true on success, false on failure
+ * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+*/
+
+function fim_generatePasswordNew($password, $salt, $privateSaltNum, $preHashStage = 0, $hashRounds = 5000) {
+  
+}
 ?>

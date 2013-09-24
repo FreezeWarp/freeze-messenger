@@ -523,8 +523,8 @@ class databaseSQL extends database {
   *********************************************************/
 
   public function createTable($tableName, $tableComment, $engine, $tableColumns, $tableIndexes) {
-    if (isset($this->tableTypes[$storeType])) {
-      $engine = $this->tableTypes[$storeType];
+    if (isset($this->tableTypes[$engine])) {
+      $engineName = $this->tableTypes[$engine];
     }
     else {
       $this->triggerError("Unrecognised Table Engine", array(
@@ -563,7 +563,7 @@ class databaseSQL extends database {
           $typePiece = 'ENUM(' . implode(',',$restrictValues) . ')';
         }
         else {
-          if ($storeType === 'memory') $this->columnStringLimits = $this->columnStringTempLimits;
+          if ($engine === 'memory')    $this->columnStringLimits = $this->columnStringTempLimits;
           else                         $this->columnStringLimits = $this->columnStringPermLimits;
 
           $typePiece = '';
@@ -666,7 +666,7 @@ class databaseSQL extends database {
     return $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->formatValue($tableName, 'table') . ' (
 ' . implode(",\n  ", $columns) . ',
 ' . implode(",\n  ", $indexes) . '
-) ENGINE="' . $this->escape($engine) . '" COMMENT="' . $this->escape($tableComment) . '" DEFAULT CHARSET="utf8"' . $tableProperties);
+) ENGINE="' . $this->escape($engineName) . '" COMMENT="' . $this->escape($tableComment) . '" DEFAULT CHARSET="utf8"' . $tableProperties);
   }
   
   
@@ -1000,12 +1000,12 @@ LIMIT
       $columns[] = $this->formatValue($column, "column");
       
       switch (gettype($data)) {
-        case 'int':// Safe integer - leave it as-is.
+        case 'integer':// Safe integer - leave it as-is.
         $context[] = 'e'; // Equals
         $values[] = $data;
         break;
         
-        case 'bool':
+        case 'boolean':
         $context[] = 'e'; // Equals
 
         if ($data === true) $values[] = 1;
@@ -1033,9 +1033,9 @@ LIMIT
 
         if (isset($data['cond'])) $context[] = $data['cond'];
         else                      $context[] = 'e';
+        break;
       
         case 'string': // Simple Ol' String
-        $columns[] = $this->formatValue($column, 'column');
         $values[] = $this->formatValue($data, 'string');
         $context[] = 'e'; // Equals
         break;
@@ -1043,9 +1043,10 @@ LIMIT
         default:
         throw new Exception('Unrecognised data type.');
         break;
+        
       }
     }
-
+//    print_r($columns);
     return array($columns, $values, $context);
   }
   

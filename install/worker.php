@@ -67,15 +67,15 @@ switch ($_REQUEST['phase']) {
     }
 
 
-    if ($database->error) {
-      die('Connection Error: ' . $database->error);
+    if ($database->getLastError()) {
+      die("Connection Error.\n" . $database->getLastError());
     }
     else {
       if ($driver === 'mysql' || $driver === 'mysqli') {
         if ($database->versionPrimary <= 4) { // MySQL 4 is a no-go.
           die('You have attempted to connect to a MySQL version ' . $database->version . ' database. MySQL 5.0.5+ is required for FreezeMessenger.');
         }
-        elseif ($database->versionPrimary == 5 && $database->versionSecondary == 0 && $database->versionTertiary <= 4) { // MySQL 5.0.0-5.0.4 is also a no-go (we require the BIT type, even though in theory we could work without it)
+        elseif ($database->versionPrimary == 5 && $database->versionSecondary == 0 && $database->versionTertiary <= 4) { // MySQL 5.0.0-5.0.4 is also a no-g	o (we require the BIT type, even though in theory we could work without it)
           die('You have attempted to connect to a MySQL version ' . $database->version . ' database. MySQL 5.0.5+ is required for FreezeMessenger.');
 	}
 	elseif ($database->versionPrimary > 5) { // Note: I figure this might be best for now. Note that the code should still run for any version of MySQL 5.x.
@@ -97,7 +97,7 @@ switch ($_REQUEST['phase']) {
 
       if ($createdb) { // Create the database if needed. This will not work for all drivers.
         if (!$database->createDatabase($databaseName)) { // We're supposed to create it, let's try.
-          die('The database could not be created: ' . $database->error);
+          die("The database could not be created.\n" . $database->getLastError());
         }
         elseif (!$database->selectDatabase($databaseName)) {
           die('The created database could not be selected.');
@@ -167,9 +167,8 @@ switch ($_REQUEST['phase']) {
             }
           }
 
-
           if (!$database->createTable($tableName, $tableComment, $tableType, $tableColumns, $tableIndexes)) {
-            die("Could not run query:\n" . $database->sourceQuery . "\n\nError:\n" . $database->error);
+            die("Could not create table.\n" . $database->getLastError());
           }
         }
 
@@ -191,7 +190,7 @@ switch ($_REQUEST['phase']) {
           }
 
           if (!$database->insert($prefix . $table['@name'], $insertData)) {
-            die("Could not run query:\n" . $database->sourceQuery . "\n\nError:\n" . $database->error);
+            die("Could not run query.\n" . $database->getLastError());
           }
         }
       }
@@ -244,8 +243,7 @@ switch ($_REQUEST['phase']) {
   $userSalt = fim_generateSalt();
 
   if ($forum == 'vanilla') {
-    $database = new database();
-    $database->connect($host, $port, $userName, $password, $databaseName, $driver);
+    $database = new databaseSQL($host, $port, $userName, $password, $databaseName, $driver);
 
     $adminPassword = fim_generatePassword($adminPassword, $userSalt, 101, 0);
 

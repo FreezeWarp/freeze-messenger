@@ -30,7 +30,6 @@ abstract class database {
   
   public $queryCounter = 0;
   public $insertId = null;
-  public $error = false;
   public $errors = array();
   public $printErrors = false;
   public $getTablesEnabled = false;
@@ -88,7 +87,7 @@ abstract class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   public function __construct($host = false, $port = false, $user = false, $password = false, $database = false, $driver = false) {
-    if ($host) $this->connect($host, $port, $user, $password, $database, $driver);
+    if ($host !== false) $this->connect($host, $port, $user, $password, $database, $driver);
   }
   
 
@@ -190,10 +189,10 @@ abstract class database {
     }
     
     if (!$suppressErrors) {
-      trigger_error($errorMessage, $this->errorLevel);
+      trigger_error("$errorMessage\n\ndetails\n" . print_r($errorData, true), $this->errorLevel);
     }
     
-    $this->newError($errorMessage);
+    $this->newError($errorMessage . "\nAdditional Information:\n" . print_r($errorData, true));
   }
 
   

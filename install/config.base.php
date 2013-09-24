@@ -117,6 +117,21 @@ $loginConfig['superUsers'] = array();
 
 ////* Encryption *////
 
+/*
+ * $blowFish
+ * When set to true, FreezeMessenger will attempt to use BlowFish for all password encrpytions. Note that doing so is the best for user security.
+ * However, blowFish is not widely supported, and once passwords are encoded using blowFish, FreezeMessenger can not be moved to systems that do not support it.
+ * DO NOT CHANGE THIS AT ANY TIME POST-INSTALLATION!
+ */
+$blowFish = false;
+
+/*
+ * $sha256Rounds
+ * If $blowFish is false, FreezeMessenger will fallback to sha256. For small installations, a low number of sha256 rounds is ideal.
+ * Post-installation, this number can be increased as long as administrators update the database first.
+ */
+$sha256Rounds = 5000;
+
 /* $salts
  * An array of salts.
  * You can add values to this any time you want, but never remove them.

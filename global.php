@@ -80,7 +80,6 @@ require(dirname(__FILE__) . '/config.php'); // Configuration Variables
 require(dirname(__FILE__) . '/functions/cache.php'); // APC Wrapper (may use for alteratives like memcached later)
 require(dirname(__FILE__) . '/functions/database.php'); // Database
 require(dirname(__FILE__) . '/functions/databaseSQL.php'); // Database (SQL)
-require(dirname(__FILE__) . '/functions/databaseResult.php'); // Database (SQL)
 require(dirname(__FILE__) . '/functions/fim_database.php'); // FIM-specific Extension to MySQL OOP Library
 require(dirname(__FILE__) . '/functions/fim_cache.php'); // FIM-specific Extension to APC Wrapper
 require(dirname(__FILE__) . '/functions/fim_general.php'); // Various Functions
@@ -151,8 +150,6 @@ $database = new fimDatabase;
 if (!$database->connect($dbConnect['core']['host'], $dbConnect['core']['port'], $dbConnect['core']['username'], $dbConnect['core']['password'], $dbConnect['core']['database'], $dbConnect['core']['driver'])) {
   die('Could not connect to the database: ' . $database->error . '; the application has exitted.'); // Die to prevent further execution.
 }
-
-die('Hello!');
 
 
 /* Connect to the Integration DB
