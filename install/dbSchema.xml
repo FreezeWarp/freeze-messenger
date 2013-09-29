@@ -479,9 +479,9 @@
     <table name="socialGroups" type="general" comment="The members of groups, used with vanilla logins.">
       <column name="groupId" type="int" maxlen="6" comment="The group ID." />
       <column name="groupName" type="string" maxlen="50" comment="The group name." />
-      <column name="creatorId" type="int" maxlen="8" comment="The member ID of the group." />
+      <column name="creatorId" type="int" maxlen="8" fkey="users.userId" comment="The member ID of the group." />
       <column name="creationTime" type="time" comment="The member ID of the group." />
-      <column name="leaderId" type="int" maxlen="8" comment="The current leader of the group. Allowed to set group options and remove members" />
+      <column name="leaderId" type="int" maxlen="8" fkey="users.userId" comment="The current leader of the group. Allowed to set group options and remove members" />
       <column name="options" type="int" maxlen="6" comment="Group options." />
 
       <key name="groupId" type="primary" />
@@ -489,8 +489,8 @@
 
 
     <table name="socialGroupMembers" type="general" comment="The members of groups, used with vanilla logins.">
-      <column name="groupId" type="int" maxlen="6" comment="The group ID." />
-      <column name="userId" type="int" maxlen="6" comment="The member ID of the group." />
+      <column name="groupId" type="int" maxlen="6" fkey="socialGroups.groupId" comment="The group ID." />
+      <column name="userId" type="int" maxlen="8" fkey="users.userId" comment="The member ID of the group." />
       <column name="type" default="pending" restrict="member,pending" type="string" maxlen="10" comment="The member ID of the group." />
 
       <key name="groupId,userId" type="primary" />
@@ -510,15 +510,15 @@
 
 
     <table name="unreadMessages" type="general" comment="Unread private messages.">
-      <column name="userId" type="int" maxlen="8" comment="The ID of the user who has yet to read the message." />
-      <column name="senderId" type="int" maxlen="8" comment="The ID of the user who sent the message." />
-      <column name="senderName" type="string" maxlen="50" comment="The name of the user who sent the message." />
-      <column name="senderFormatStart" type="string" maxlen="300" comment="The start formatting of the user who sent the message." />
-      <column name="senderFormatEnd" type="string" maxlen="300" comment="The end formatting of the user who sent the message." />
-      <column name="roomId" type="int" maxlen="6" comment="The ID of the room in question." />
+      <column name="userId" type="int" maxlen="8" fkey="users.userId" comment="The ID of the user who has yet to read the message." />
+      <column name="senderId" type="int" maxlen="8" fkey="users.userId" comment="The ID of the user who sent the message." />
+      <column name="senderName" type="string" maxlen="50" fkey="users.userName" fkeyWeak="true" comment="The name of the user who sent the message." />
+      <column name="senderFormatStart" type="string" maxlen="300" fkey="users.userFormatStart" fkeyWeak="true" comment="The start formatting of the user who sent the message." />
+      <column name="senderFormatEnd" type="string" maxlen="300" fkey="users.userFormatEnd" fkeyWeak="true"  comment="The end formatting of the user who sent the message." />
+      <column name="roomId" type="int" maxlen="6" comment="The ID of the room in question. May refer to either rooms.roomId or privateRooms.uniqueId." />
       <column name="roomName" type="string" maxlen="50" comment="The name of the room in question." />
-      <column name="messageId" type="int" maxlen="15" comment="The ID of the message." />
-      <column name="time" type="time" comment="The time the message was made." />
+      <column name="messageId" type="int" maxlen="15" fkey="messages.messageId" comment="The ID of the message." />
+      <column name="time" type="time" fkey="messages.messageId" comment="The time the message was made." />
 
       <key name="userId,roomId" type="unique" />
       <key name="time" type="index" />
@@ -562,7 +562,7 @@
       <column name="userFormatEnd" type="string" maxlen="300" comment="HTML-formatting to be appended to the user's name for its display." />
 
       <!-- Prefs -->
-      <column name="defaultRoom" type="int" maxlen="6" default="1" comment="The user's default room." />
+      <column name="defaultRoom" type="int" maxlen="6" default="1" fkey="rooms.roomId" comment="The user's default room." />
       <column name="interfaceId" type="string" maxlen="50" comment="The user's default interface." />
 
       <!-- Status -->
