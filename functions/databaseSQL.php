@@ -179,18 +179,25 @@ class databaseSQL extends database {
    * @return int|string - Value, formatted as specified.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  private function formatValue($value, $type) {
+  private function formatValue($type) {
+    $values = func_get_args();
+    
     switch ($type) {
-      case 'search':    return $this->stringQuoteStart . $this->stringFuzzy . $this->escape($value, 'search') . $this->stringFuzzy . $this->stringQuoteEnd; break;
-      case 'string':    return $this->stringQuoteStart . $this->escape($value, 'string') . $this->stringQuoteEnd;                                           break;
-      case 'integer':   return $this->intQuoteStart . (int) $this->escape($value, 'integer') . $this->intQuoteEnd;                                          break;
-      case 'timestamp': return $this->timestampQuoteStart . (int) $this->escape($value, 'timestamp') . $this->timestampQuoteEnd;                            break;
-      case 'column':    return $this->columnQuoteStart . $this->escape($value, 'column') . $this->columnQuoteEnd;                                           break;
-      case 'columnA':   return $this->columnAliasQuoteStart . $this->escape($value, 'columnA') . $this->columnAliasQuoteEnd;                                break;
-      case 'table':     return $this->tableQuoteStart . $this->escape($value, 'table') . $this->tableQuoteEnd;                                              break;
-      case 'tableA':    return $this->tableAliasQuoteStart . $this->escape($value, 'tableA') . $this->tableAliasQuoteEnd;                                   break;
-      case 'database':  return $this->databaseQuoteStart . $this->escape($value, 'database') . $this->databaseQuoteEnd;                                     break;
-      case 'index':     return $this->indexQuoteStart . $this->escape($value, 'index') . $this->indexQuoteEnd;                                              break;
+      case 'search':    return $this->stringQuoteStart . $this->stringFuzzy . $this->escape($values[1], 'search') . $this->stringFuzzy . $this->stringQuoteEnd; break;
+      case 'string':    return $this->stringQuoteStart . $this->escape($values[1], 'string') . $this->stringQuoteEnd;                                           break;
+      case 'integer':   return $this->intQuoteStart . (int) $this->escape($values[1], 'integer') . $this->intQuoteEnd;                                          break;
+      case 'timestamp': return $this->timestampQuoteStart . (int) $this->escape($values[1], 'timestamp') . $this->timestampQuoteEnd;                            break;
+      case 'column':    return $this->columnQuoteStart . $this->escape($values[1], 'column') . $this->columnQuoteEnd;                                           break;
+      case 'columnA':   return $this->columnAliasQuoteStart . $this->escape($values[1], 'columnA') . $this->columnAliasQuoteEnd;                                break;
+      case 'table':     return $this->tableQuoteStart . $this->escape($values[1], 'table') . $this->tableQuoteEnd;                                              break;
+      case 'tableA':    return $this->tableAliasQuoteStart . $this->escape($values[1], 'tableA') . $this->tableAliasQuoteEnd;                                   break;
+      case 'database':  return $this->databaseQuoteStart . $this->escape($values[1], 'database') . $this->databaseQuoteEnd;                                     break;
+      case 'index':     return $this->indexQuoteStart . $this->escape($values[1], 'index') . $this->indexQuoteEnd;                                              break;
+      
+      case 'tableColumn':   return $this->formatValue('table', $values[1]) . $this->tableColumnDivider . $this->formatValue('column', $values[2]);     break;
+      case 'databaseTable': return $this->formatValue('database', $values[1]) . $this->databaseTableDivider . $this->formatValue('table', $values[2]); break;
+      
+      case 'tableColumnAlias': return $this->formatValue('table', $values[1]) . $this->tableColumnDivider . $this->formatValue('column', $values[2]) . ' AS ' . $this->formatValue('columnA', $values[3]); break;
     }
   }
   
@@ -507,7 +514,7 @@ class databaseSQL extends database {
   
   
   public function createDatabase($database) {
-    return $this->rawQuery('CREATE DATABASE IF NOT EXISTS ' . $this->formatValue($database, 'database'));
+    return $this->rawQuery('CREATE DATABASE IF NOT EXISTS ' . $this->formatValue('database', $database));
   }
   
   /*********************************************************
@@ -630,7 +637,7 @@ class databaseSQL extends database {
         }
       }
 
-      $columns[] = $this->formatValue($columnName, 'column') . $typePiece . ' NOT NULL COMMENT "' . $this->escape($column['comment']) . '"';
+      $columns[] = $this->formatValue('column', $columnName) . $typePiece . ' NOT NULL COMMENT "' . $this->escape($column['comment']) . '"';
     }
 
 
@@ -651,19 +658,19 @@ class databaseSQL extends database {
       if (strpos($indexName, ',') !== false) {
         $indexCols = explode(',', $indexName);
 
-        foreach ($indexCols AS &$indexCol) $indexCol = $this->formatValue($indexCol, 'column');
+        foreach ($indexCols AS &$indexCol) $indexCol = $this->formatValue('column', $indexCol);
 
         $indexName = implode(',', $indexCols);
       }
       else {
-        $this->formatValue($indexName, 'index');
+        $this->formatValue('index', $indexName);
       }
 
 
       $indexes[] = "{$typePiece} ({$indexName})";
     }
 
-    return $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->formatValue($tableName, 'table') . ' (
+    return $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->formatValue('table', $tableName) . ' (
 ' . implode(",\n  ", $columns) . ',
 ' . implode(",\n  ", $indexes) . '
 ) ENGINE="' . $this->escape($engineName) . '" COMMENT="' . $this->escape($tableComment) . '" DEFAULT CHARSET="utf8"' . $tableProperties);
@@ -672,13 +679,13 @@ class databaseSQL extends database {
   
   
   public function deleteTable($tableName) {
-    return $this->rawQuery('DROP TABLE ' . $this->formatValue($tableName, 'table'));
+    return $this->rawQuery('DROP TABLE ' . $this->formatValue('table', $tableName));
   }
   
   
   
   public function renameTable($oldName, $newName) {
-    return $this->rawQuery('RENAME TABLE ' . $this->formatValue($oldName, 'table') . ' TO ' . $this->formatValue($newName, 'table'));
+    return $this->rawQuery('RENAME TABLE ' . $this->formatValue('table', $oldName) . ' TO ' . $this->formatValue('table', $newName));
   }
   
   
@@ -686,7 +693,7 @@ class databaseSQL extends database {
   public function getTablesAsArray() {
     switch ($this->language) {
       case 'mysql': case 'mysqli': case 'postgresql':
-      $tables = $this->rawQuery('SELECT * FROM ' . $this->formatValue('INFORMATION_SCHEMA', 'database') . $this->databaseTableDivider . $this->formatValue('TABLES', 'table') . ' WHERE TABLE_SCHEMA = "' . $this->escape($this->activeDatabase) . '"');
+      $tables = $this->rawQuery('SELECT * FROM ' . $this->formatValue('databaseTable', 'INFORMATION_SCHEMA', 'TABLES') . ' WHERE TABLE_SCHEMA = "' . $this->escape($this->activeDatabase) . '"');
       $tables = $tables->getAsArray('TABLE_NAME');
       $tables = array_keys($tables);
       break;
@@ -726,14 +733,17 @@ class databaseSQL extends database {
         foreach ($columns AS $tableName => $tableCols) {
           if (strlen($tableName) > 0) { // If the tableName is defined...
             if (strstr($tableName,' ') !== false) { // A space can be used to create a table alias, which is sometimes required for different queries.
+              
+              throw new Exception('TODO');
+              
               $tableParts = explode(' ', $tableName);
 
-              $finalQuery['tables'][] = $this->formatValue($tableParts[0], 'table') . ' AS ' . $this->format($tableParts[1], 'tableA'); // Identify the table as [tableName] AS [tableAlias]
+              $finalQuery['tables'][] = $this->formatValue('tableAsAlias', $tableParts[0], $tableParts[1]); // Identify the table as [tableName] AS [tableAlias]
 
               $tableName = $tableParts[1];
             }
             else {
-              $finalQuery['tables'][] = $this->formatValue($tableName, 'table'); // Identify the table as [tableName]
+              $finalQuery['tables'][] = $this->formatValue('table', $tableName); // Identify the table as [tableName]
             }
 
             if (is_array($tableCols)) { // Table columns have been defined with an array, e.g. ["a", "b", "c"]
@@ -745,16 +755,19 @@ class databaseSQL extends database {
                   }
 
                   if (is_array($colAlias)) { // Used for advance structures and function calls.
+                  
+                    throw new Exception('TODO');
+                    
                     if (isset($colAlias['context'])) {
                       throw new Exception('Deprecated context.'); // TODO
                     }
-
-                    $finalQuery['columns'][] = $this->formatAlias($this->formatValue($colName, 'column'), $this->formatValue($colAlias['name'], 'columnA'), 'column'); // Identify column as [columnName] AS [columnAlias]
-                    $reverseAlias[$colAlias['name']] = $colName;
+                    
+                    $finalQuery['columns'][] = $this->formatValue('tableColumnAlias', $tableName, $colName, $colAlias);
+                    $reverseAlias[$colAlias] = $this->formatValue('tableColumn', $tableName, $colName);
                   }
                   else {
-                    $finalQuery['columns'][] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd . $this->tableColumnDivider . $this->columnQuoteStart . $colName . $this->columnQuoteStart . ' AS ' . $this->columnAliasQuoteEnd . $colAlias . $this->columnAliasQuoteStart;
-                    $reverseAlias[$colAlias] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd . $this->tableColumnDivider . $this->columnQuoteStart . $colName . $this->columnQuoteStart;
+                    $finalQuery['columns'][] = $this->formatValue('tableColumnAlias', $tableName, $colName, $colAlias);
+                    $reverseAlias[$colAlias] = $this->formatValue('tableColumn', $tableName, $colName);
                   }
                 }
                 else {
@@ -766,24 +779,27 @@ class databaseSQL extends database {
               }
             }
             elseif (is_string($tableCols)) { // Table columns have been defined with a string list, e.g. "a,b,c"
-              $columnParts = explode(',', $tableCols); // Split the list into an array, delimited by commas
+              $colParts = explode(',', $tableCols); // Split the list into an array, delimited by commas
 
-              foreach ($columnParts AS $columnPart) { // Run through each list item
-                $columnPart = trim($columnPart); // Remove outside whitespace from the item
+              foreach ($colParts AS $colPart) { // Run through each list item
+                $colPart = trim($colPart); // Remove outside whitespace from the item
 
-                if (strpos($columnPart,' ') !== false) { // If a space is within the part, then the part is formatted as "columnName columnAlias"
-                  $columnPartParts = explode(' ',$columnPart); // Divide the piece
+                if (strpos($colPart, ' ') !== false) { // If a space is within the part, then the part is formatted as "columnName columnAlias"
+                  $colPartParts = explode(' ', $colPart); // Divide the piece
 
-                  $columnPartName = $columnPartParts[0]; // Set the name equal to the first part of the piece
-                  $columnPartAlias = $columnPartParts[1]; // Set the alias equal to the second part of the piece
+                  $colPartName = $colPartParts[0]; // Set the name equal to the first part of the piece
+                  $colPartAlias = $colPartParts[1]; // Set the alias equal to the second part of the piece
                 }
                 else { // Otherwise, the column name and alias are one in the same.
-                  $columnPartName = $columnPart; // Set the name and alias equal to the piece
-                  $columnPartAlias = $columnPart;
+                  $colPartName = $colPart; // Set the name and alias equal to the piece
+                  $colPartAlias = $colPart;
                 }
 
-                $finalQuery['columns'][] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd . $this->tableColumnDivider . $this->columnQuoteStart . $columnPartName . $this->columnQuoteStart . ' AS ' . $this->columnAliasQuoteEnd . $columnPartAlias . $this->columnAliasQuoteStart;
-                $reverseAlias[$columnPartAlias] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd . $this->tableColumnDivider . $this->columnQuoteStart . $columnPartName . $this->columnQuoteStart;
+                //$finalQuery['columns'][] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd . $this->tableColumnDivider . $this->columnQuoteStart . $columnPartName . $this->columnQuoteStart . ' AS ' . $this->columnAliasQuoteEnd . $columnPartAlias . $this->columnAliasQuoteStart;
+                // $reverseAlias[$columnPartAlias] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd . $this->tableColumnDivider . $this->columnQuoteStart . $columnPartName . $this->columnQuoteStart;
+                
+                $finalQuery['columns'][] = $this->formatValue('tableColumnAlias', $tableName, $colPartName, $colPartAlias);
+                $reverseAlias[$colPartAlias] = $this->formatValue('tableColumn', $tableName, $colPartName);
               }
             }
           }
@@ -890,7 +906,6 @@ ORDER BY
 LIMIT
   ' . $finalQuery['limit'] : '');
 
-
     /* And Run the Query */
     return $this->rawQuery($finalQueryText);
   }
@@ -931,18 +946,26 @@ LIMIT
             $i++;
             $sideTextFull[$i] = '';            
             
-            if (startsWith($key, '!')) {
+            if ($this->startsWith($key, '!')) {
               // TODO
             }
             
             if (is_array($value[1])) { // Value is Array, Meaning an IN Clause
+              throw new Exception('TODO');
               $sideText['left'] = $reverseAlias[$key];
               $sideText['right'] = implode(',', $value[1]); // TODO: format for non-INTS/escape/etc.
               $symbol = $this->comparisonTypes['in'];
             }
             else { // Otherwise, Some Type of Comparison
-              $sideText['left'] = $reverseAlias[(startsWith($key, '!') ? $key : $key)]; // Get the column definition that corresponds with the named column. "!column" signifies negation.
-              $sideText['right'] = formatValue($value[2] === 'search' ? $value[2] : $value[1], $value[0]);
+              $sideText['left'] = $reverseAlias[($this->startsWith($key, '!') ? $key : $key)]; // Get the column definition that corresponds with the named column. "!column" signifies negation.
+
+              if ($value[0] === 'column') { // The value is a column, and should be returned as a reverseAlias.
+                $sideText['right'] = $reverseAlias[$value[1]]; // Note that reverseAlias is already formatted using formatValue.
+              }
+              else { // The value is a data type, and should be processed as such.
+                $sideText['right'] = $this->formatValue($value[0], $value[2] === 'search' ? $value[2] : $value[1]);
+              }
+              
               $symbol = $this->comparisonTypes[$value[2]];
             }
 
@@ -997,7 +1020,7 @@ LIMIT
 
     foreach($array AS $column => $data) { // Run through each element of the $dataArray, adding escaped columns and values to the above arrays.
 
-      $columns[] = $this->formatValue($column, "column");
+      $columns[] = $this->formatValue('column', $column);
       
       switch (gettype($data)) {
         case 'integer':// Safe integer - leave it as-is.
@@ -1027,8 +1050,8 @@ LIMIT
 
         switch($data['type']) {
           case 'equation':        $values[] = preg_replace('/\$([a-zA-Z\_]+)/', '\\1', $data['value']); break;
-          case 'int':             $values[] = $this->formatValue($data['value'], 'integer');            break;
-          case 'string': default: $values[] = $this->formatValue($data['value'], 'string');             break;
+          case 'int':             $values[] = $this->formatValue('integer', $data['value']);            break;
+          case 'string': default: $values[] = $this->formatValue('string', $data['value']);             break;
         }
 
         if (isset($data['cond'])) $context[] = $data['cond'];
@@ -1036,7 +1059,7 @@ LIMIT
         break;
       
         case 'string': // Simple Ol' String
-        $values[] = $this->formatValue($data, 'string');
+        $values[] = $this->formatValue('string', $data);
         $context[] = 'e'; // Equals
         break;
         

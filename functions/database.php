@@ -104,6 +104,15 @@ abstract class database {
     }
   }
   
+  public function startsWith($haystack, $needle) {
+    return (strpos($haystack, $needle) === 0);
+  }
+  
+  
+  public function endsWith($haystack, $needle) {
+    return (substr($haystack, -strlen($needle)) === $needle);
+  }
+  
   
   
   /**
@@ -591,7 +600,7 @@ abstract class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   public function int($value, $comp = 'e') {
-    return array('int', (int) $value, $comp);
+    return array('integer', (int) $value, $comp);
   }
   
   
@@ -607,7 +616,15 @@ abstract class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   public function ts($value, $comp = 'e') {
-    return array('ts', (int) $value, $comp);
+    return array('timestamp', (int) $value, $comp);
+  }
+  
+  
+  // TODO
+  public function now($relative, $comp = 'e') {
+    //return array('timestamp', (int) time() + (int) $relative, $comp);
+    
+    return (int) time();
   }
   
   
@@ -623,7 +640,7 @@ abstract class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   public function str($value, $comp = 'e') {
-    return array('str', (string) $value, $comp);
+    return array('string', (string) $value, $comp);
   }
   
   
@@ -639,7 +656,7 @@ abstract class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   public function col($value, $comp = 'e') {
-    return array('col', (string) $value, $comp);
+    return array('column', (string) $value, $comp);
   }
   
   /*********************************************************

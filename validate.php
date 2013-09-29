@@ -21,9 +21,9 @@
  * Directives Used Specifically for Obtaining a SessionHash via This Script:
  * @param string userName - The username of the user.
  * @param string password - The password of the user.
- * @param string passwordEncrypt - Thencryption used for obtaining a login. "plaintext" and "md5" are both accepted, buthe latter can only be used with vBulletin v3. Other forms of encryption will be possible soon.
+ * @param string passwordEncrypt - The ecryption used for obtaining a login. "plaintext" and "md5" are both accepted, but the latter can only be used with vBulletin v3. Other forms of encryption will be possible soon.
  * @param string apiVersion - The version of the API being used to login. It can be comma-seperated if multiple versions will work withe client. 3.0.0 is the only currently accepted version.
- * @param bool apiLogin - Pass this when you are trying tobtain a sessionhash from thiscript. Otherwise, nothing will output.
+ * @param bool apiLogin - Pass this when you are trying to obtain a sessionhash from this script. Otherwise, nothing will output.
 
  * Standard Directives Required for __ALL__ API Calls:
  * @param string fim3_userId
@@ -71,7 +71,8 @@ $loginDefs['syncMethods'] = array(
 if (isset($ignoreLogin) && $ignoreLogin === true) {
   // We do nothing.
 }
-elseif (isset($_POST['userName'],$_POST['password']) || isset($_POST['userId'],$_POST['password'])) { // API.
+
+elseif (isset($_POST['userName'], $_POST['password']) || isset($_POST['userId'], $_POST['password'])) { // API.
   $apiVersion = $_POST['apiVersion']; // Gethe version of the software the client intended for.
 
   if (!$apiVersion) {
@@ -134,7 +135,7 @@ elseif (isset($_REQUEST['fim3_sessionHash'])) { // Session hash defined via sent
 
   $userIdComp = $_REQUEST['fim3_userId'];
 
-  if (isset($_POST['apiLogin'])) {
+  if (isset($_REQUEST['apiLogin'])) { // TODO: This should just be POST. For debugging purposes, it is not right now.
     $api = true;
   }
 }
@@ -307,7 +308,6 @@ $queryParts['userSelectFromSessionHash']['conditions'] = array(
 
 
 
-
 ///* Generate Proper Table Names for Integration *///
 
 if (isset($tableDefinitions['users'][$loginConfig['method']])) {
@@ -344,6 +344,7 @@ if (strlen($sessionHash) > 0) {
     ),
     $queryParts['userSelectFromSessionHash']['conditions']
   );
+  
   $user = $user->getAsArray(false);
 
   if ($user) {
@@ -441,6 +442,7 @@ elseif ($config['anonymousUserId'] && $anonymous) {
   $api = true;
   $session = 'create';
 }
+
 
 else {
   $valid = false;

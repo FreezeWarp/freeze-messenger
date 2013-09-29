@@ -478,10 +478,10 @@
 
     <table name="socialGroups" type="general" comment="The members of groups, used with vanilla logins.">
       <column name="groupId" type="int" maxlen="6" comment="The group ID." />
-      <column name="groupName" type="int" maxlen="6" comment="The group name." />
-      <column name="creatorId" type="int" maxlen="6" comment="The member ID of the group." />
-      <column name="creationTime" type="int" maxlen="6" comment="The member ID of the group." />
-      <column name="leaderId" type="int" maxlen="6" comment="The current leader of the group. Allowed to set group options and remove members" />
+      <column name="groupName" type="string" maxlen="50" comment="The group name." />
+      <column name="creatorId" type="int" maxlen="8" comment="The member ID of the group." />
+      <column name="creationTime" type="time" comment="The member ID of the group." />
+      <column name="leaderId" type="int" maxlen="8" comment="The current leader of the group. Allowed to set group options and remove members" />
       <column name="options" type="int" maxlen="6" comment="Group options." />
 
       <key name="groupId" type="primary" />
