@@ -578,15 +578,37 @@ abstract class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   
-  public function type($value, $type, $comp = 'e') {
+  public function type($type, $value, $comp = 'e') {
     switch ($type) {
-      case 'int': return array('integer',   (int)    $value, $comp); break;
-      case 'ts':  return array('timestamp', (int)    $value, $comp); break;
-      case 'str': return array('string',    (string) $value, $comp); break;
-      case 'col': return array('colomn',    (string) $value, $comp); break;
-      case 'arr': return array('array',     (array)  $value, $comp); break;
-      case 'flt': return array('float',     (float)  $value, $comp); break;
+      case 'int': case 'integer':   return array('integer',   (int)    $value, $comp); break;
+      case 'ts':  case 'timestamp': return array('timestamp', (int)    $value, $comp); break;
+      case 'str': case 'string':    return array('string',    (string) $value, $comp); break;
+      case 'col': case 'column':    return array('colomn',    (string) $value, $comp); break;
+      case 'arr': case 'array':     return array('array',     (array)  $value, ($comp === 'in' || $comp === 'notin' ? $comp : 'in')); break;
+      case 'flt': case 'float':     return array('float',     (float)  $value, $comp); break;
     }
+  }
+  
+  
+  // Okay, so I know I'm doing this wrong. Sorry. (It will seriously need to be rewritten later, I know that.)
+  public function bitChange($typeArray, $bit, $change) {
+    if ($typeArray[0] !== 'integer') throw new Exception('Invalid typeArray');
+    else {
+      switch ($change) {
+        case 'add':
+        if (!($typeArray[1] & $bit === $bit)) $typeArray[1] += $bit; // Increase by $bit if $bit is 
+        break;
+        
+        case 'remove':
+        if ($typeArray[1] & $bit === $bit) $typeArray[1] -= $bit; // Decrease by $bit if $bit is in $typeArray.
+        break;
+        
+        case 'flip': // TODO
+        break;
+      }
+    }
+    
+    return $typeArray;
   }
   
   /**
@@ -600,7 +622,7 @@ abstract class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   public function int($value, $comp = 'e') {
-    return array('integer', (int) $value, $comp);
+    return $this->type('int', $value, $comp);
   }
   
   
@@ -616,7 +638,7 @@ abstract class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   public function ts($value, $comp = 'e') {
-    return array('timestamp', (int) $value, $comp);
+    return $this->type('ts', $value, $comp);
   }
   
   
@@ -640,7 +662,7 @@ abstract class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   public function str($value, $comp = 'e') {
-    return array('string', (string) $value, $comp);
+    return $this->type('str', (string) $value, $comp);
   }
   
   

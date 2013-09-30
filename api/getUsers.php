@@ -43,7 +43,8 @@ $request = fim_sanitizeGPC('g', array(
   ),
 
   'showOnly' => array(
-    'valid' => array('banned', 'unbanned', 'friends', 'ignored', ''),
+    'cast' => 'csv', // TODO?
+    'valid' => array('banned', '!banned', '!friends', 'friends', '!ignored', 'ignored', ''),
     'default' => '',
   ),
 
@@ -71,7 +72,7 @@ $xmlData = array(
 $queryParts['userSelect']['columns'] = array(
   "{$sqlPrefix}users" => 'userId, userName, userFormatStart, userFormatEnd, profile, avatar, socialGroups, defaultColor, defaultHighlight, defaultFontface, defaultFormatting, userGroup, options, defaultRoom, parentalAge, parentalFlags',
 );
-$queryParts['userSelect']['conditions'] = false;
+$queryParts['userSelect']['conditions'] = array('both' => array());
 $queryParts['userSelect']['sort'] = array(
   'userId' => 'asc',
 );
@@ -81,20 +82,13 @@ $queryParts['userSelect']['limit'] = false;
 
 
 /* Modify Query Data for Directives */
-switch ($request['showOnly']) {
-  case 'banned': // TODO!
-  $queryParts['userSelect']['conditions']['both'][] = array('!options' => $database->int(1, 'and'));
-  break;
-
-  case 'unbanned':
-  $queryParts['userSelect']['conditions']['both'][] = array('options' => $database->int(1, 'and'));
-  break;
+switch ($request['showOnly']) { // TODO: multiple operators, friends, etc.
+  case 'banned': $queryParts['userSelect']['conditions']['both']['!options'] = $database->int(1, 'bAnd'); break; // TODO!
+  case 'unbanned': $queryParts['userSelect']['conditions']['both']['options'] = $database->int(1, 'bAnd'); break;
 }
 
 if (count($request['users']) > 0) {
-  $queryParts['userSelect']['conditions']['both'][] = array(
-    'userId' => $database->in($request['users']),
-  );
+  $queryParts['userSelect']['conditions']['both']['userId'] = $database->type('array', $request['users'], 'in');
 }
 
 
@@ -115,8 +109,6 @@ switch ($request['sort']) {
 
 /* Plugin Hook Start */
 ($hook = hook('getUsers_start') ? eval($hook) : '');
-
-
 
 /* Get Users from Database */
 $users = $slaveDatabase->select(

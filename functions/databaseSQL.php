@@ -193,6 +193,7 @@ class databaseSQL extends database {
       case 'tableA':    return $this->tableAliasQuoteStart . $this->escape($values[1], 'tableA') . $this->tableAliasQuoteEnd;                                   break;
       case 'database':  return $this->databaseQuoteStart . $this->escape($values[1], 'database') . $this->databaseQuoteEnd;                                     break;
       case 'index':     return $this->indexQuoteStart . $this->escape($values[1], 'index') . $this->indexQuoteEnd;                                              break;
+      case 'array':     return '(' . implode(',', $values[1]) . ')';                                                                                            break;  // TODO: format for non-INTS/escape/etc.
       
       case 'tableColumn':   return $this->formatValue('table', $values[1]) . $this->tableColumnDivider . $this->formatValue('column', $values[2]);     break;
       case 'databaseTable': return $this->formatValue('database', $values[1]) . $this->databaseTableDivider . $this->formatValue('table', $values[2]); break;
@@ -336,7 +337,7 @@ class databaseSQL extends database {
         'lt' => '<', 'gt' => '>',  'lte' => '<=', 'gte' => '>=',
         'regex' => 'REGEXP',
         'search' => 'LIKE',
-        'band' => '&',
+        'bAnd' => '&',
       );
 
       $this->concatTypes = array(
@@ -925,7 +926,6 @@ LIMIT
   private function recurseBothEither($conditionArray, $reverseAlias, $d = 0) {
     $i = 0;
     $h = 0;
-
     $whereText = array();
 
     // $type is either "both", "either", or "neither". $cond is an array of arguments.
@@ -934,8 +934,9 @@ LIMIT
       if (is_array($cond) && count($cond) > 0) {
         // $key is usually a column, $value is a formatted value for the select() function.
         foreach ($cond AS $key => $value) {
+        
           if ($key === 'both' || $key === 'either' || $key === 'neither') {
-            // Recurse TODO
+            throw new Exception('TODO'); // Recurse TODO
           }
           else {
             /* Value is currently stored as:
@@ -944,39 +945,21 @@ LIMIT
              * Note: We do not want to include quotes/etc. in VALUE yet, because these theoretically could vary based on the comparison type. */
 
             $i++;
-            $sideTextFull[$i] = '';            
-            
-            if ($this->startsWith($key, '!')) {
-              // TODO
-            }
-            
-            if (is_array($value[1])) { // Value is Array, Meaning an IN Clause
-              throw new Exception('TODO');
-              $sideText['left'] = $reverseAlias[$key];
-              $sideText['right'] = implode(',', $value[1]); // TODO: format for non-INTS/escape/etc.
-              $symbol = $this->comparisonTypes['in'];
-            }
-            else { // Otherwise, Some Type of Comparison
-              $sideText['left'] = $reverseAlias[($this->startsWith($key, '!') ? $key : $key)]; // Get the column definition that corresponds with the named column. "!column" signifies negation.
+            $sideTextFull[$i] = '';      
 
-              if ($value[0] === 'column') { // The value is a column, and should be returned as a reverseAlias.
-                $sideText['right'] = $reverseAlias[$value[1]]; // Note that reverseAlias is already formatted using formatValue.
-              }
-              else { // The value is a data type, and should be processed as such.
-                $sideText['right'] = $this->formatValue($value[0], $value[2] === 'search' ? $value[2] : $value[1]);
-              }
-              
-              $symbol = $this->comparisonTypes[$value[2]];
-            }
-
+            $sideText['left'] = $reverseAlias[($this->startsWith($key, '!') ? substr($key, 1) : $key)]; // Get the column definition that corresponds with the named column. "!column" signifies negation.
+            $symbol = $this->comparisonTypes[$value[2]];
+            
+            if ($value[0] === 'column') $sideText['right'] = $reverseAlias[$value[1]]; // The value is a column, and should be returned as a reverseAlias. (Note that reverseAlias should have already called formatValue)
+            else $sideText['right'] = $this->formatValue($value[0], $value[2] === 'search' ? $value[2] : $value[1]); // The value is a data type, and should be processed as such.
             
             if ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
-              $sideTextFull[$i] = "{$sideText['left']} {$symbol} {$sideText['right']}";
+              $sideTextFull[$i] = ($this->startsWith($key, '!') ? '!' : '') . "({$sideText['left']} {$symbol} {$sideText['right']})";
             }
-            else {
+            else {//var_dump($reverseAlias); echo $key;  var_dump($value); var_dump($sideText); die();
               $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
 
-              $this->triggerError('Query Nullified', array(), 'validation');
+              $this->triggerError('Query Nullified', array(), 'validation'); // Dev, basically. TODO.
             }
           }
         }

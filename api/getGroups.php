@@ -63,7 +63,7 @@ $queryParts['groupsSelect']['columns'] = array(
     "$sqlUserGroupTableCols[groupName]" => 'groupName',
   ),
 );
-$queryParts['groupsSelect']['conditions'] = array();
+$queryParts['groupsSelect']['conditions'] = array('both' => array());
 $queryParts['groupsSelect']['sort'] = array(
   'groupId' => 'asc',
 );
@@ -73,17 +73,7 @@ $queryParts['groupsSelect']['limit'] = false;
 
 /* Modify Query Data for Directives */
 if (count($request['groups']) > 0) {
-  $queryParts['groupsSelect']['conditions']['both'][] = array(
-    'type' => 'in',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'groupId',
-    ),
-    'right' => array(
-       'type' => 'array',
-       'value' => (array) $request['groups'],
-    ),
-  );
+  $queryParts['groupsSelect']['conditions']['both']['groupId'] = $database->type('array', $request['groups'], 'in');
 }
 
 

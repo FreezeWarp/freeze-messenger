@@ -665,5 +665,12 @@ class fimDatabase extends databaseSQL {
       ));
     }
   }
+  
+  /* Originally from fim_general.php TODO */
+//  protected function explodeEscaped($delimiter, $string, $escapeChar = '\\') {
+//    $string = str_replace($escapeChar . $escapeChar, fim_encodeEntities($escapeChar), $string);
+//    $string = str_replace($escapeChar . $delimiter, fim_encodeEntities($delimiter), $string);
+//    return array_map('fim_decodeEntities', explode($delimiter, $string));
+//  }
 }
 ?>

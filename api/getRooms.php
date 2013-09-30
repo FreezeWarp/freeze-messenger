@@ -94,17 +94,7 @@ $queryParts['roomSelect'] = array(
   ),
   'conditions' => array(
     'both' => array(
-      array( // Do not include hidden results.
-        'type' => 'xor',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'options',
-        ),
-        'right' => array(
-          'type' => 'int',
-          'value' => 8,
-        ),
-      ),
+      '!options' => $database->int(8, 'bAnd')
     ),
   ),
   'sort' => array(
@@ -116,45 +106,15 @@ $queryParts['roomSelect'] = array(
 
 /* Modify Query Data for Directives */
 if ($request['showDeleted'] === false) {
-  $queryParts['roomSelect']['conditions']['both'][] = array(
-    'type' => 'xor',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'options',
-    ),
-    'right' => array(
-      'type' => 'int',
-      'value' => 4,
-    ),
-  );
+  $queryParts['roomSelect']['conditions']['both']['!options'] = $database->bitChange($queryParts['roomSelect']['conditions']['both']['!options'], 8, 'remove');
 }
 
 if (count($request['rooms']) > 0) {
-  $queryParts['roomSelect']['conditions']['both'][] = array(
-    'type' => 'in',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'roomId',
-    ),
-    'right' => array(
-      'type' => 'array',
-      'value' => $request['rooms'],
-    ),
-  );
+  $queryParts['roomSelect']['conditions']['both']['roomId'] = $database->type('array', $request['rooms'], 'in');
 }
 
 if (isset($request['search'])) {
-  $queryParts['roomSelect']['conditions']['both'][] = array(
-    'type' => 'and',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'roomName',
-    ),
-    'right' => array(
-      'type' => 'search',
-      'value' => $request['search'],
-    ),
-  );
+  $queryParts['roomSelect']['conditions']['both']['roomName'] = $database->type('string', $request['search'], 'search');
 }
 
 
@@ -162,14 +122,12 @@ if (isset($request['search'])) {
 /* Plugin Hook Start */
 ($hook = hook('getRooms_start') ? eval($hook) : '');
 
-
-
 /* Get Rooms From Database */
 $rooms = $database->select(
   $queryParts['roomSelect']['columns'],
   $queryParts['roomSelect']['conditions'],
   $queryParts['roomSelect']['sort']);
-//  die($rooms->sourceQuery);
+//die($rooms->sourceQuery);
 $rooms = $rooms->getAsArray(true);
 
 
