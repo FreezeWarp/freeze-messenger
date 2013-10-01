@@ -25,6 +25,18 @@
       <column name="owner" value="0" />
       <column name="options" value="1" />
     </table>
+    <table name="rooms" dev="true">
+      <column name="roomName" value="Hidden Room" />
+      <column name="roomTopic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
+      <column name="owner" value="1" />
+      <column name="options" value="8" />
+    </table>
+    <table name="rooms" dev="true">
+      <column name="roomName" value="Dev Room" />
+      <column name="roomTopic" value="Nothing Much" />
+      <column name="owner" value="2" />
+      <column name="options" value="0" />
+    </table>
 
 
 

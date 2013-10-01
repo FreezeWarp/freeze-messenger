@@ -383,22 +383,21 @@
     </table>
 
 
-    <table name="roomLists" type="general" comment="Lists of rooms for users to easily access.">
-      <column name="userId" type="int" maxlen="8" comment="The user ID." />
-      <column name="roomId" type="int" maxlen="6" comment="The room ID." />
-      <column name="listId" type="int" maxlen="6" comment="The list ID." />
-
-      <key name="userId" type="index" />
-      <key name="listId" type="index" />
+    <table name="roomLists" type="general" comment="User-created room lists. The 'favourites' roomList understood by the APIs is understood as listId=0, and will not be stored in this table.">
+      <column name="listId" type="int" maxlen="8" comment="The list ID." />
+      <column name="userId" type="int" maxlen="8" comment="The list creator's user ID." />
+      <column name="listName" type="string" maxlen="10" comment="The list's name." />
+      <column name="options" type="bitfield" bits="8" comment="Options for the list." />
+      
+      <key name="listId" type="primary" />
     </table>
 
 
-    <table name="roomListNames" type="general" comment="The names for roomLists.">
-      <column name="listId" type="int" maxlen="8" comment="The user ID." />
-      <column name="listName" type="string" maxlen="10" comment="List name." />
-      <column name="options" type="bitfield" bits="8" comment="Options for the list." />
+    <table name="roomListRooms" type="general" comment="The rooms that are stored in each roomList.">
+      <column name="listId" type="int" maxlen="6" fkey="roomsList.listId" comment="The list ID." />
+      <column name="roomId" type="int" maxlen="6" comment="The room ID." />
 
-      <key name="listId" type="primary" />
+      <key name="listId,roomId" type="primary" />
     </table>
 
 

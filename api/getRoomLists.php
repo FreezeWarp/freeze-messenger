@@ -21,7 +21,8 @@
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
- * @param string [roomLists] - If specified, only specific room lists are listed. By default, all of the user's roomLists are listed.
+ * @param string [listIds] - If specified, only specific room lists are listed. By default, all of the user's roomLists are listed.
+ 
 */
 
 $apiRequest = true;
@@ -32,7 +33,7 @@ require('../global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
-  'roomLists' => array(
+  'listIds' => array(
     'default' => '',
     'cast' => 'csv',
     'filter' => 'int',
@@ -57,19 +58,22 @@ $xmlData = array(
   ),
 );
 
+/* Non-favourite rooms. */
 $queryParts['roomListSelect'] = array(
   'columns' => array(
-    "{$sqlPrefix}roomLists" => 'userId, listId, roomId',
+    "{$sqlPrefix}roomLists" => 'listId, userId, listName, options',
+    "{$sqlPrefix}roomListRooms" => 'listId llistId, roomId lRoomid',
   ),
   'conditions' => array(
     'both' => array(
-       'userId' => (int) $user['userId'],
-       'roomId' => 22,
+       'userId' => $database->int($user['userId']),
+       'llistId' => $database->either($database->int(0), $database->col('listId')),
      ),
   ),
 );
 
-/*if (count($request['roomLists']) > 0) {
+if (count($request['roomLists']) > 0) {
+  $queryParts['roomListSelect']['conditions']['both']['listId'] = $database->type('array', $request['listIds'], 'in');
   $queryParts['roomSelect']['conditions']['both'][] = array(
     'type' => 'in',
     'left' => array(
@@ -81,7 +85,21 @@ $queryParts['roomListSelect'] = array(
       'value' => $request['rooms'],
     ),
   );
-}*/
+}
+
+
+/* Favourite rooms. */
+$queryParts['favSelect'] = array(
+  'columns' => array(
+    "{$sqlPrefix}roomListRooms" => 'listId llistId, roomId lRoomid',
+  ),
+  'conditions' => array(
+    'both' => array(
+       'userId' => $database->int($user['userId']),
+       'llistId' => $database->int(0),
+     ),
+  ),
+);
 
 
 /* Plugin Hook Start */
@@ -90,10 +108,19 @@ $queryParts['roomListSelect'] = array(
 
 
 /* Get Rooms From Database */
-$roomLists = $database->select(
-  $queryParts['roomListSelect']['columns'],
-  $queryParts['roomListSelect']['conditions']);
-$roomLists = $roomLists->getAsArray(true);
+if ($request['listIds'] !== array(0)) { // Only run this if listIds is not array(1).
+  $roomLists = $database->select(
+    $queryParts['roomListSelect']['columns'],
+    $queryParts['roomListSelect']['conditions']);
+  $roomLists = $roomLists->getAsArray(true);
+}
+
+if (count($request['listIds']) === 0 || in_array(0, $request['listIds')) {
+  $favRooms = $database->select(
+    $queryParts['favSelect']['columns'],
+    $queryParts['favSelect']['conditions']);
+  $favRooms = $favRooms->getAsArray(true);
+}
 
 
 /* Process Room Lists Obtained from Database */
