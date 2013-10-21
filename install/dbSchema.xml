@@ -143,6 +143,7 @@
       <column name="fileSize" type="int" maxlen="12" comment="The file's size." />
       <column name="userId" type="int" maxlen="8" comment="The ID of the user who uploaded the file." />
       <column name="source" type="string" maxlen="50" default="upload" comment="The file's source - in most cases upload." />
+      <column name="roomIdLink" type="int" maxlen="8" comment="If provided, the upload is linked to a particular room, which means that is may only be viewed by those who can view that room. The file will always be viewable by its poster." />
       <column name="parentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the file." />
       <column name="parentalAge" type="int" maxlen="2" comment="The file's parental content age rating." />
       <column name="deleted" type="bool" default="0" comment="Whether or not the file in question is deleted." />
@@ -311,7 +312,7 @@
     <table name="otrRooms" type="memory" comment="List of OTR rooms. It is implemented exactly as private rooms, except no data is stored outside of memory.">
       <column name="roomUsersList" type="string" maxlen="1000"/>
       <column name="roomUsersHash" type="string" maxlen="32" />
-      <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options, such as whether the room is OTR." />
+      <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options." />
 
       <key name="roomUsersHash" type="primary" />
       <key name="options" type="index" />
@@ -383,7 +384,7 @@
     </table>
 
 
-    <table name="roomLists" type="general" comment="User-created room lists. The 'favourites' roomList understood by the APIs is understood as listId=0, and will not be stored in this table.">
+    <table name="roomLists" type="general" comment="User-created room lists. listId=1 will typically be reserved for the favourite room list, and will be created when adding a favourite room for the first time. However, the database does not make this distinction by default.">
       <column name="listId" type="int" maxlen="8" comment="The list ID." />
       <column name="userId" type="int" maxlen="8" comment="The list creator's user ID." />
       <column name="listName" type="string" maxlen="10" comment="The list's name." />
@@ -671,20 +672,27 @@
 
   <definitions>
     <bitfield name="options" table="rooms">
-      <def bit="1">Official</def>
-      <def bit="4">Deleted</def>
-      <def bit="8">Hidden</def>
-      <def bit="16">Allow Viewing</def>
-    </bitfield>
-
-    <bitfield name="options" table="privateRooms">
-      <def bit="1">Official</def>
-      <def bit="4">Deleted</def>
+      <def bit="1" comment="'Official' rooms are designated as such, but generally don't alter permissions in any way.">Official</def>
+      <def bit="4" comment="Deleted rooms are only viewable by administrators, and are otherwise read-only.">Deleted</def>
+      <def bit="8" comment="Hidden rooms are not displayed under any circumstances, except to site administrators. Similarly, only administrators may set this flag. Hidden rooms can still be accessed by anyone who both has permission and knows the room ID.">Hidden</def> 
+      <!--<def bit="16" comment="">Allow Viewing</def>-->
+      <def bit="16" comment="These rooms may not be posted in, and may be optimised specially. Otherwise, they behave normally, and only people with permission to view or know a room will be able to do such..">Archived</def>
+      <def bit="256">Reserved for R9000. Not supported officially, but marked for extensions that wish to support.</def>
     </bitfield>
 
     <bitfield name="options" table="otrRooms">
-      <def bit="1">Official</def>
-      <def bit="4">Deleted</def>
+      <def bit="1" comment="If true, the OTR room is banned, and the users who were part of it may no longer communicate off-the-record.">Banned</def>
+      <def bit="4" comment="Whether or not OTR messages are force-encrypted while stored in memory. This option is ignored in cases where messages are encrypted anyway. Additionally, while the option is always respected [if supported], FIM may be configured to disable setting the option.">Encrypted</def>
+    </bitfield>
+
+    <bitfield name="options" table="privateRooms">
+      <def bit="1" comment="If true, the private room is banned, and the users who were part of it may no longer communicate privately.">Banned</def>
+    </bitfield>
+
+    <bitfield name="options" table="censorLists">
+      <def bit="1" comment="If false, the list is considered inactive and is neither used nor shown to users under any circumstances.">Enabled</def>
+      <def bit="2" comment="If true, the list can not be disabled by non-administrators.">Required</def>
+      <def bit="4" comment="If true, the list is not 'shown' to users. The authors of FIM really don't like this option, but provide it anyway.">Hidden</def>
     </bitfield>
 
     <bitfield name="defaultPermissions" table="rooms">
@@ -696,31 +704,32 @@
       <def bit="128">Can Grant</def>
     </bitfield>
 
-    <bitfield name="permissions" table="roomPermissions">
-      <def bit="1">Can View</def>
-      <def bit="2">Can Post</def>
-      <def bit="4">Can Change the Topic</def>
-      <def bit="8">Can Modify and Delete Posts</def>
-      <def bit="16">Can Edit Room Properties (e.g. name)</def>
-      <def bit="128">Can Grant</def>
+    <bitfield name="permissions" table="roomPermissions" comment="An argument can be made that these are all sequential, and should instead simply be 1/2/3/4/... That argument is right. We're doing this anyway.">
+      <def bit="1" comment="This allows the room's common properties -- topic, name, etc. -- to be known, and its messages to be viewed. The room is effectively read-only if this permission is set alone.">Can View</def>
+      <def bit="2" comment="This allows a user to post in a room.">Can Post</def>
+      <def bit="4" comment="Whether a user may modify a room's topic.">Can Change the Topic</def>
+      <def bit="8" comment="Whether a user may edit or delete posts made by other users.">Can Modify and Delete Posts</def>
+      <def bit="16" comment="Whether a user may modify common room properties, such as its name and censor lists.">Can Edit Room Properties (e.g. name)</def>
+      <def bit="128" comment="Whether a user may alter user permissions for the room.">Can Grant</def>
     </bitfield>
 
     <bitfield name="options" table="users">
-      <def bit="1">Allowed (if unset, the user is banned)</def>
-      <def bit="512">Block Private Contact</def>
-      <def bit="1024">Block Non-Friends for Private Contact</def>
+      <def bit="1" comment="By default, a user is considered banned -- this is mainly to ease integration headaches, where users automatically gain access to the system where they maybe shouldn't. FIM's default integration servers automatically set this, however.">Allowed</def>
+      <def bit="512" comment="Disallows a user from creating and being part of OTR and private rooms.">Block Private Contact</def>
+      <def bit="1024" comment="Disallows a user from creating and being part of OTR and private rooms where any user is not on the user's friend list.">Block Non-Friends for Private Contact</def>
     </bitfield>
 
     <bitfield name="adminPrivs" table="defaultPermissions">
-      <def bit="1">Grant Permissions</def>
-      <def bit="2">"Untouchable" (Permissions Can Not be Changed Except By Self)</def>
-      <def bit="16">Ban, Unban, Etc.</def>
-      <def bit="64">File Uploads</def>
-      <def bit="256">Censor</def>
-      <def bit="1024">BBCode</def>
-      <def bit="4096">Plugins</def>
-      <def bit="8192">Templates</def>
-      <def bit="16384">Hooks</def>
+      <def bit="1" comment="">Grant Permissions</def>
+      <def bit="2" comment="Only the site owner may alter this user's permissions. The site owner is set in config.php.">Untouchable</def>
+      
+      <def bit="4" comment="Gives the user full moderation to all rooms, except private rooms.">Super-Moderator</def>
+      <def bit="8" comment="Allows the user to review the contents of messages between private users, forbid private communications between particular users."></def>
+      <def bit="16" comment="Allows the administrator to make site-wide bans.">Ban, Unban, Etc.</def>
+      <def bit="64" comment="Allows the administrator to remove uploads made by users, and view uploads made privately.">File Uploads</def>
+      <def bit="256" comment="Allows the administrator to author and modify censor lists.">Censor</def>
+      <def bit="4096" comment="Allows the administrator to modify system plugins. These are not supported in FIMv3.">Plugins</def>
+      <def bit="8192" comment="Allows the administrator to modify system templates. This is a specialised permission added with WebPro in mind, but should be respected by other frontends with customisable templates.">Templates</def>
     </bitfield>
 
     <bitfield name="userPrivs" table="users">

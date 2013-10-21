@@ -58,7 +58,6 @@ $xmlData = array(
   ),
 );
 
-/* Non-favourite rooms. */
 $queryParts['roomListSelect'] = array(
   'columns' => array(
     "{$sqlPrefix}roomLists" => 'listId, userId, listName, options',
@@ -67,39 +66,14 @@ $queryParts['roomListSelect'] = array(
   'conditions' => array(
     'both' => array(
        'userId' => $database->int($user['userId']),
-       'llistId' => $database->either($database->int(0), $database->col('listId')),
+       'llistId' => $database->col('listId'),
      ),
   ),
 );
 
 if (count($request['roomLists']) > 0) {
   $queryParts['roomListSelect']['conditions']['both']['listId'] = $database->type('array', $request['listIds'], 'in');
-  $queryParts['roomSelect']['conditions']['both'][] = array(
-    'type' => 'in',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'roomId',
-    ),
-    'right' => array(
-      'type' => 'array',
-      'value' => $request['rooms'],
-    ),
-  );
 }
-
-
-/* Favourite rooms. */
-$queryParts['favSelect'] = array(
-  'columns' => array(
-    "{$sqlPrefix}roomListRooms" => 'listId llistId, roomId lRoomid',
-  ),
-  'conditions' => array(
-    'both' => array(
-       'userId' => $database->int($user['userId']),
-       'llistId' => $database->int(0),
-     ),
-  ),
-);
 
 
 /* Plugin Hook Start */
@@ -108,19 +82,11 @@ $queryParts['favSelect'] = array(
 
 
 /* Get Rooms From Database */
-if ($request['listIds'] !== array(0)) { // Only run this if listIds is not array(1).
-  $roomLists = $database->select(
-    $queryParts['roomListSelect']['columns'],
-    $queryParts['roomListSelect']['conditions']);
-  $roomLists = $roomLists->getAsArray(true);
-}
+$roomLists = $database->select(
+  $queryParts['roomListSelect']['columns'],
+  $queryParts['roomListSelect']['conditions']);
+$roomLists = $roomLists->getAsArray(true);
 
-if (count($request['listIds']) === 0 || in_array(0, $request['listIds')) {
-  $favRooms = $database->select(
-    $queryParts['favSelect']['columns'],
-    $queryParts['favSelect']['conditions']);
-  $favRooms = $favRooms->getAsArray(true);
-}
 
 
 /* Process Room Lists Obtained from Database */
