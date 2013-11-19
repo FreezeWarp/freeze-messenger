@@ -14,26 +14,23 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-error_reporting(E_ALL ^ E_NOTICE);
+error_reporting(E_ALL ^ E_NOTICE); // Report All Potential Errors
 
+require('../functions/xml.php'); // For reading the db*.xml files
+require('../functions/database.php'); // DB Operations
+require('../functions/databaseSQL.php'); // ""
 
-require('../functions/xml.php');
-require('../functions/database.php');
-require('../functions/databaseSQL.php');
-
-if (file_exists('../config.php')) {
+if (file_exists('../config.php')) { // Make sure that config doesn't exist. TODO: Is this secure?
   die('Error.');
 }
 
 switch ($_REQUEST['phase']) {
-  case false:
-  default:
-
+  case false: default:
   break;
 
   case 1: // Table Check
-  // If tables do not exist, import them from SQL dump files.
-  // If tables do exist, recreate if specified or leave alone.
+  // If tables do not exist, create them from the schema (dbSchema.xml).
+  // If tables do exist, recreate if specified or leave alone. (TODO)
 
   $driver = urldecode($_GET['db_driver']);
   $host = urldecode($_GET['db_host']);
@@ -122,10 +119,10 @@ switch ($_REQUEST['phase']) {
 
       // Check file versions.
       if ((float) $xmlData['@version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
-        die('The XML Schema Data Source if For An Improper Version');
+        die('The XML data source appears to be out of date. Reinstall FreezeMessenger and try again.');
       }
       elseif ((float) $xmlData2['@version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
-        die('The XML Insert Data Source if For An Improper Version');
+        die('The XML data source appears to be out of date. Reinstall FreezeMessenger and try again.');
       }
       else {
         /* Part 2: Create the Tables */

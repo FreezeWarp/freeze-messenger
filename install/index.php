@@ -19,10 +19,11 @@
  * TODO: Translation support. */
 
 $installFlags = 0; // Create an integer (bitfield) that will store all install fields.
-$installStatusDB = 0;
+$optionalInstallFlags = 0; // ""
+$installStatusDB = 0; // And one for supported DBs.
 
 
-// Define CONSTANTS (its a bit excessive here, but...)
+// Define CONSTANTS (it's a bit excessive here, but...)
 define('INSTALL_ISSUE_PHP_VERSION', 1);
 define('INSTALL_ISSUE_DB', 16);
 define('INSTALL_ISSUE_DATE', 512);
@@ -32,16 +33,14 @@ define('INSTALL_ISSUE_WRITEORIGINDIR', 1048576);
 define('INSTALL_ISSUE_CONFIGEXISTS', 2097152);
 define('INSTALL_ISSUE_WRITEDATADIR', 4194304);
 
-
 define('OPTIONAL_INSTALL_ISSUE_MCRYPT', 256);
 define('OPTIONAL_INSTALL_ISSUE_HASH', 512);
 define('OPTIONAL_INSTALL_ISSUE_SHA256', 1024);
-define('OPTIONAL_INSTALL_ISSUE_BLOWFISH', 2048);
+define('OPTIONAL_INSTALL_ISSUE_SHA512', 2048);
 define('OPTIONAL_INSTALL_ISSUE_MBSTRING', 4096);
 define('OPTIONAL_INSTALL_ISSUE_JSON', 16384);
 define('OPTIONAL_INSTALL_ISSUE_APC', 32768);
 define('OPTIONAL_INSTALL_ISSUE_CURL', 65536);
-
 
 define('INSTALL_DB_MYSQL', 1);
 define('INSTALL_DB_MYSQLI', 2);
@@ -78,8 +77,8 @@ if (!extension_loaded('json')) $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_J
 if (!extension_loaded('curl')) $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_CURL;
 if (!extension_loaded('apc')) $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_APC;
 
-if (CRYPT_SHA256 == 1) $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_SHA256;
-if (CRYPT_BLOWFISH == 1) $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_BLOWFISH;
+if (CRYPT_SHA256 !== 1) $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_SHA256; // ...Will be removed, prolly.
+if (CRYPT_SHA512 !== 1) $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_SHA512;
 
 
 // FS Issues
@@ -108,8 +107,8 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
   <![endif]-->
 
   <!-- START Styles -->
-  <link rel="stylesheet" type="text/css" href="../webpro/client/css/start/jquery-ui-1.8.16.custom.css" media="screen" />
-  <link rel="stylesheet" type="text/css" href="../webpro/client/css/start/fim.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="../webpro/client/css/absolution/jquery-ui-1.8.16.custom.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="../webpro/client/css/absolution/fim.css" media="screen" />
   <link rel="stylesheet" type="text/css" href="../webpro/client/css/stylesv2.css" media="screen" />
   <style>
   h1 {
@@ -121,6 +120,16 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
     margin-left: auto;
     margin-right: auto;
     display: block;
+  }
+  
+  .ui-widget {
+    font-size: 12px;
+  }
+  .uninstalledFlag {
+    font-weight: bold;
+  }
+  tbody tr:nth-child(2n) {
+    background: #efefef !important;
   }
   </style>
   <!-- END Styles -->
@@ -142,6 +151,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
     // We do this in Javascript instead of the HTML directly since its easier to skin that way, and also good for screenreaders.
     $('.installedFlag').each(function() {
       $('td:first, th:first', this).append('<img src="task-complete.png" style="height: 16px; width: 16px; float: right;" />');
+      $('td:last', this).html('');
     });
     
     $('.uninstalledFlag').each(function() {
@@ -160,20 +170,6 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
     dia.info(text,"Alert");
   };
   </script>
-  <style>
-  .ui-widget {
-    font-size: 12px;
-  }
-  .installedFlag {
-  }
-  .uninstalledFlag {
-    font-weight: bold;
-  }
-  tbody tr:nth-child(2n) {
-    background: #DDE9ED !important;
-  }
-  
-  </style>
   <!-- END Scripts -->
 </head>
 <body class="ui-widget">
@@ -205,7 +201,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
       </tr>
     </thead>
     <tbody>
-      <tr class="<?php echo ($installFlags & INSTALL_ISSUE_PHP ? 'uninstalledFlag' : 'installedFlag'); ?>">
+      <tr class="<?php echo ($installFlags & INSTALL_ISSUE_PHP_VERSION ? 'uninstalledFlag' : 'installedFlag'); ?>">
         <td>PHP</td>
         <td>5.2</td>
         <td><?php echo phpversion(); ?></td>
@@ -242,11 +238,18 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
       </tr>
     </thead>
     <tbody>
+      <tr class="<?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_SHA512 ? 'uninstalledFlag' : 'installedFlag'); ?>">
+        <td>SHA512</td>
+        <td>n/a</td>
+        <td><?php echo phpversion('hash'); ?></td>
+        <td><abbr title="Without SHA512 support, the default hashing algorithm, which is both secure and fast, will not be available. The HASH extension will be used instead for a slightly less secure algorithm. If it is not available, a much slower, slightly less secure algorithm with be used.">Password Hashing</abbr></td>
+        <td>With PHP 5.3</td>
+      </tr>
       <tr class="<?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_HASH ? 'uninstalledFlag' : 'installedFlag'); ?>">
         <td>Hash</td>
         <td>1.1</td>
         <td><?php echo phpversion('hash'); ?></td>
-        <td><abbr title="Without the Hash extension, password encryption will be far, far slower. You are strongly recommended to have the optimised hash function installed.">Password Hashing</abbr></td>
+        <td><abbr title="Without the Hash extension, password encryption will be far, far slower, unless you use SHA512 (above).">Password Hashing</abbr></td>
         <td>With PHP 5.2</td>
       </tr>
       <tr class="<?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_JSON ? 'uninstalledFlag' : 'installedFlag'); ?>">
@@ -260,7 +263,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
         <td>APC</td>
         <td>3.1.4</td>
         <td><?php echo phpversion('apc'); ?></td>
-        <td><abbr title="Without APC, higher disk and database usage will occur. FreezeMessenger is optimised for in-memory caching, and will not be able to function on large installations without APC.">Caching</abbr></td>
+        <td><abbr title="Without APC, higher disk and database usage will occur. FreezeMessenger is optimised for in-memory caching, and will not be able to function on large installations without APC.">Caching</abbr	></td>
         <td>On Ubuntu: <pre>sudo apt-get install php-apc</pre>
           On Windows: Usually comes with PHP.</td>
       </tr>
@@ -372,11 +375,11 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
             if ($installStatusDB & INSTALL_DB_MYSQLI) echo '<option value="mysql">MySQLi</option>';
             //if ($installStatusDB & INSTALL_DB_POSTGRESQL) echo '<option value="mysql">PostGreSQL (Broken)</option>';
           ?>
-          </select><br /><small>The datbase driver. For most users, "MySQL" will work fine.</td>
+          </select><br /><small>The datbase driver. For most users, "MySQL" will work fine.</small></td>
         </tr>
         <tr>
           <td><strong>Host</strong></td>
-          <td><input id="db_host" type="text" name="db_host" value="<?php echo $_SERVER['SERVER_NAME']; ?>" /><br /><small>The host of the MySQL server. In most cases, the default shown here <em>should</em> work.</td>
+          <td><input id="db_host" type="text" name="db_host" value="<?php echo $_SERVER['SERVER_NAME']; ?>" /><br /><small>The host of the MySQL server. In most cases, the default shown here <em>should</em> work.</small></td>
         </tr>
         <tr>
           <td><strong>Port</strong></td>
@@ -402,8 +405,8 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
           <td><input id="db_database" type="text" name="db_database" /><br /><small>The name of the database FreezeMessenger's data will be stored in. <strong>If you are integrating with a forum, this must be the same database the forum uses.</strong></small></td>
         </tr>
         <tr>
-          <td><strong>Create Database?<strong></td>
-          <td><input type="checkbox" name="db_createdb" /><br /><small>This will not overwrite existing databases. You are encouraged to create the database yourself, as otherwise default permissions, etc. will be used (which is rarely ideal).</td>
+          <td><strong>Create Database?</strong></td>
+          <td><input type="checkbox" name="db_createdb" /><br /><small>This will not overwrite existing databases. You are encouraged to create the database yourself, as otherwise default permissions, etc. will be used (which is rarely ideal).</small></td>
         </tr>
       </tbody>
       <thead>
@@ -415,6 +418,20 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
         <tr>
           <td><strong>Table Prefix</strong></td>
           <td><input type="text" name="db_tableprefix" /><br /><small>The prefix that FreezeMessenger's tables should use. This can be left blank (or with the default), but if the database contains any other products you must use a <strong>different</strong> prefix than all other products.</small></td>
+        </tr>
+      </tbody>
+      <thead>
+        <tr class="ui-widget-header">
+          <th colspan="2">Advanced Options</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Insert Developer Data</strong></td>
+          <td><input type="checkbox" name="db_usedev" /><br /><small>This will populate the database with test data. Generally only meant for the developers, you could also probably use this to test drive FreezeMessenger.</small></td>
+        </tr>        <tr>
+          <td><strong>Use Portable Hashing</strong></td>
+          <td><input type="checkbox" name="db_althash" <?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_SHA512 ? 'checked disabled' : ''); ?> /><br /><small>By default FreezeMessenger uses the Crypt() function with the Sha256 algorithm, which potentially requires PHP 5.3. This will instead cause FreezeMessenger to use a portable algorithm that will ensure the software can easily be moved between different versions of PHP 5.x and between servers. The portable algorithm uses 5,000 runs of the SHA-256 algorithm with a salted field, but will cause slowdown if the system does not have the PHP hash() function.</small></td>
         </tr>
       </tbody>
     </table>

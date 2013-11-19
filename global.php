@@ -39,8 +39,13 @@ foreach (array('mysql', 'json', 'mbstring', 'mcrypt', 'pcre', 'dom', 'curl') AS 
   if (!extension_loaded($module)) die("The module <strong>$module</strong> could not be found. Please install PHP <strong>$module</strong> compatibility. See the documentation for help.");
 }
 
-if (!extension_loaded('apc')/* && !extension_loaded('memcache')*/) die("Neither the <strong>apc</strong> or <strong>memcache</strong> modules could not be found. Please install PHP <strong>apc</strong> or <strong>memcache</strong> compatibility. See the documentation for help."); // APC is required. Memcached is not yet supported.
+/*
+ * TODO: As of now, FIM simply scales too poorly to allow people _not_ to use either APC or Memcached. For testing purposes, the requirement is currently commented out.
+ * Ideally, a disk cache will be possible for extra-common data, of which there is some.
+
+  if (!extension_loaded('apc') && !extension_loaded('memcache')) die("Neither the <strong>apc</strong> or <strong>memcache</strong> modules could not be found. Please install PHP <strong>apc</strong> or <strong>memcache</strong> compatibility. See the documentation for help."); // APC is required. Memcached is not yet supported.
 if (!extension_loaded('hash') && !extension_loaded('mhash')) die("Neither the <strong>hash</strong> or <strong>mhash</strong> modules could not be found. Please install PHP <strong>hash</strong> or <strong>mhash</strong> compatibility. See the documentation for help."); // Either can be used.
+*/
 
 if ((bool) ini_get('allow_url_fopen') === false) {
   die('FOpen functionality is disable. Please enable allow_url_fopen in php.ini. More information can be found in the <a href="http://www.php.net/manual/en/filesystem.configuration.php#ini.allow-url-fopen">PHP manual</a>, and in the documentation.');

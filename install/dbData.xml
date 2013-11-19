@@ -22,8 +22,7 @@
       <column name="options" value="3" />
     </table>
     
-    
-    
+        
     <!-- Table censorWords -->
     <table name="censorWords">
       <column name="listId" value="1" />
@@ -54,98 +53,100 @@
       <column name="param" value="Unix" />
     </table>
     
-    <table name="censorWords">
+    <table name="censorWords" mode="dev">
       <column name="listId" value="2" />
       <column name="word" value="faggot" />
       <column name="severity" value="block" />
     </table>
-    <table name="censorWords">
+    <table name="censorWords" mode="dev">
       <column name="listId" value="2" />
       <column name="word" value="cuntmeister" />
       <column name="severity" value="block" />
     </table>
-    <table name="censorWords">
+    <table name="censorWords" mode="dev">
       <column name="listId" value="2" />
       <column name="word" value="fag" />
       <column name="severity" value="warn" />
       <column name="param" value="You better be talking about a cigarrette or annoying biker gangs..." />
     </table>
-    <table name="censorWords">
+    <table name="censorWords" mode="dev">
       <column name="listId" value="2" />
       <column name="word" value="cock" />
       <column name="severity" value="confirm" />
       <column name="param" value="Are you talking about a bird? If not, please don't say that." />
     </table>
-    <table name="censorWords">
+    <table name="censorWords" mode="dev">
       <column name="listId" value="2" />
       <column name="word" value="no homo" />
       <column name="severity" value="replace" />
       <column name="param" value="marry me" />
     </table>
-
-
-    <!-- Table rooms -->
-    <table name="rooms">
-      <column name="roomName" value="Your Room!" />
-      <column name="roomTopic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
-      <column name="owner" value="0" />
-      <column name="options" value="1" />
+    
+    <table name="censorWords" mode="dev">
+      <column name="listId" value="2" />
+      <column name="word" value="faggot" />
+      <column name="severity" value="block" />
     </table>
-    <table name="rooms">
-      <column name="roomName" value="Another Room!" />
-      <column name="roomTopic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
-      <column name="owner" value="0" />
-      <column name="options" value="1" />
+    <table name="censorWords" mode="dev">
+      <column name="listId" value="2" />
+      <column name="word" value="cuntmeister" />
+      <column name="severity" value="block" />
     </table>
-    <table name="rooms" mode="dev">
-      <column name="roomName" value="Hidden Room" />
-      <column name="roomTopic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
-      <column name="owner" value="1" />
-      <column name="options" value="8" />
+    <table name="censorWords" mode="dev">
+      <column name="listId" value="2" />
+      <column name="word" value="fag" />
+      <column name="severity" value="warn" />
+      <column name="param" value="You better be talking about a cigarrette or annoying biker gangs..." />
     </table>
-    <table name="rooms" mode="dev">
-      <column name="roomName" value="Dev Room" />
-      <column name="roomTopic" value="Nothing Much" />
-      <column name="owner" value="2" />
-      <column name="options" value="0" />
+    <table name="censorWords" mode="dev">
+      <column name="listId" value="2" />
+      <column name="word" value="cock" />
+      <column name="severity" value="confirm" />
+      <column name="param" value="Are you talking about a bird? If not, please don't say that." />
     </table>
-
-
-
-    <!-- Table roomListNames -->
-    <table name="roomListNames">
-      <column name="listId" value="1" />
-      <column name="listName" value="favRooms" />
+    
+    <table name="censorWords" mode="dev">
+      <column name="listId" value="3" />
+      <column name="word" value="bug" />
+      <column name="severity" value="replace" />
+      <column name="param" value="feature" />
     </table>
-
-
-
-    <!-- Table uploadTypes -->
-    <table name="uploadTypes">
-      <column name="extension" value="png" />
-      <column name="mime" value="image/png" />
-      <column name="maxSize" value="1048576" />
-      <column name="container" value="image" />
+    <table name="censorWords" mode="dev">
+      <column name="listId" value="3" />
+      <column name="word" value="crash" />
+      <column name="severity" value="replace" />
+      <column name="param" value="restart" />
     </table>
-    <table name="uploadTypes">
-      <column name="extension" value="jpg" />
-      <column name="mime" value="image/jpeg" />
-      <column name="maxSize" value="1048576" />
-      <column name="container" value="image" />
+    <table name="censorWords" mode="dev">
+      <column name="listId" value="3" />
+      <column name="word" value="piece of shit" />
+      <column name="severity" value="replace" />
+      <column name="param" value="pile of chocolate" />
     </table>
-    <table name="uploadTypes">
-      <column name="extension" value="jpeg" />
-      <column name="mime" value="image/jpeg" />
-      <column name="maxSize" value="1048576" />
-      <column name="container" value="image" />
+    <table name="censorWords" mode="dev">
+      <column name="listId" value="3" />
+      <column name="word" value="monkey" />
+      <column name="severity" value="warn" />
+      <column name="param" value="kitty!" />
     </table>
-    <table name="uploadTypes">
-      <column name="extension" value="gif" />
-      <column name="mime" value="image/gif" />
-      <column name="maxSize" value="1048576" />
-      <column name="container" value="image" />
+    <table name="censorWords" mode="dev">
+      <column name="listId" value="3" />
+      <column name="word" value="lucille 2" />
+      <column name="severity" value="confirm" />
+      <column name="param" value="Who?" />
     </table>
-
+    <table name="censorWords" mode="dev">
+      <column name="listId" value="3" />
+      <column name="word" value="replace" />
+      <column name="severity" value="ann" />
+      <column name="param" value="egg" />
+    </table>
+    <table name="censorWords" mode="dev">
+      <column name="listId" value="3" />
+      <column name="word" value="Google" />
+      <column name="severity" value="block" />
+      <column name="param" value="We're not allowed to show that. (Also, are my AD referrences horrible or what?)" />
+    </table>
 
 
     <!-- Table configuration -->
@@ -437,6 +438,7 @@
       <column name="type" value="array" />
     </table>
 
+
     <!-- Table counters -->
     <table name="counters">
       <column name="counterName" value="uploads" />
@@ -453,6 +455,82 @@
     <table name="counters">
       <column name="counterName" value="rooms" />
       <column name="counterValue" value="0" />
+    </table>
+
+
+    <!-- Table rooms -->
+    <table name="rooms">
+      <column name="roomName" value="Your Room!" />
+      <column name="roomTopic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
+      <column name="owner" value="0" />
+      <column name="options" value="1" />
+    </table>
+    <table name="rooms">
+      <column name="roomName" value="Another Room!" />
+      <column name="roomTopic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
+      <column name="owner" value="0" />
+      <column name="options" value="1" />
+    </table>
+    <table name="rooms" mode="dev">
+      <column name="roomName" value="Hidden Room" />
+      <column name="roomTopic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
+      <column name="owner" value="1" />
+      <column name="options" value="8" />
+    </table>
+    <table name="rooms" mode="dev">
+      <column name="roomName" value="Dev Room" />
+      <column name="roomTopic" value="Nothing Much" />
+      <column name="owner" value="2" />
+      <column name="options" value="0" />
+    </table>
+
+
+    <!-- Table uploadTypes -->
+    <table name="uploadTypes">
+      <column name="extension" value="png" />
+      <column name="mime" value="image/png" />
+      <column name="maxSize" value="1048576" />
+      <column name="container" value="image" />
+    </table>
+    <table name="uploadTypes">
+      <column name="extension" value="jpg" />
+      <column name="mime" value="image/jpeg" />
+      <column name="maxSize" value="1048576" />
+      <column name="container" value="image" />
+    </table>
+    <table name="uploadTypes">
+      <column name="extension" value="jpeg" />
+      <column name="mime" value="image/jpeg" />
+      <column name="maxSize" value="1048576" />
+      <column name="container" value="image" />
+    </table>
+    <table name="uploadTypes">
+      <column name="extension" value="gif" />
+      <column name="mime" value="image/gif" />
+      <column name="maxSize" value="1048576" />
+      <column name="container" value="image" />
+    </table>
+    
+    
+    <!-- Table users -->
+    <!-- The addUser function should be tested seperately (as with addRoom, etc.) -->
+    <table name="users">
+      <column name="userId" value="3" />
+      <column name="userName" value="Test Bot 1" />
+      <column name="userGroup" value="3" /><!-- TODO -->
+      <column name="allGroups" value="3,4,5,6" /><!-- vBulletin Only. TODO -->
+      <column name="socialGroups" value="3,4,5,6" /> <!-- PHPBB, Vanilla Only. TODO -->
+      <column name="timeZone" value="" /><!-- TODO -->
+      <column name="birthDate" value="" /><!-- TODO -->
+      <column name="password" value="pass1" /><!-- Unhashed passwords are only used for testing. -->
+      <column name="passwordFormat" value="plaintext" />
+      <column name="avatar" value="" /><!-- TODO -->
+      <column name="profile" value="http://www.josephtparsons.com/" />
+      <column name="userFormatStart" value="&lt;span style=&quot;color: red;&quot;&gt;>" /><!-- TODO -->
+      <column name="userFormatSEnd" value="&lt;/span&gt;" /><!-- TODO -->
+      <column name="defaultRoom" value="3" />
+      <column name="interfaceId" value="2" />
+      <column name="parentalFlags" value="" />
     </table>
   </database>
 </dbData>

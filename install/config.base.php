@@ -101,6 +101,11 @@ $cacheConnect['servers'] = array(
  * Otherwise, "phpbb", "vbulletin3", and "vbulletin4" are supported by default. */
 $loginConfig['method'] = 'vanilla';
 
+/* $loginConfig['portableHashing']
+ * Whether FreezeMessenger has been set up to use portable hashing.
+ * This should not be changed without porting over all passwords, which would most likely require a reset. */
+$loginConfig['portableHashing'] = array();
+
 /* $loginConfig['url']
  * The URL of the forum you will be integrating with.
  * If not using integration (login method vanilla), you may leave this blank.
