@@ -221,32 +221,7 @@ class fimCache extends generalCache {
       $kicks = $this->get('fim_kicks');
     }
     else {
-      $kicks = array();
-
-      $queryParts['kicksCacheSelect']['columns'] = array(
-        "{$sqlPrefix}kicks" => 'kickerId kkickerId, userId kuserId, roomId kroomId, length klength, time ktime',
-        "{$sqlPrefix}users user" => 'userId, userName, userFormatStart, userFormatEnd',
-        "{$sqlPrefix}users kicker" => 'userId kickerId, userName kickerName, userFormatStart kickerFormatStart, userFormatEnd kickerFormatEnd',
-        "{$sqlPrefix}rooms" => 'roomId, roomName',
-      );
-      $queryParts['kicksCacheSelect']['conditions'] = array(
-        'both' => array(
-          'kuserId' => 'column userId',
-          'kroomId' => 'column roomId',
-          'kkickerId' => 'column kickerId',
-        ),
-      );
-      $queryParts['kicksCacheSelect']['sort'] = array(
-        'roomId' => 'asc',
-        'userId' => 'asc'
-      );
-
-      $kicksDatabase = $this->database->select($queryParts['kicksCacheSelect']['columns'],
-        $queryParts['kicksCacheSelect']['conditions'],
-        $queryParts['kicksCacheSelect']['sort']);
-      $kicksDatabase = $kicksDatabase->getAsArray(true);
-
-      $kicks = array();
+      $kicks = $this->database->getKicks()->getAsArray(true);
 
       foreach ($kicksDatabase AS $kick) {
         if ($kick['ktime'] + $kick['klength'] < time()) { // Automatically delete old entires when cache is regenerated.
@@ -281,22 +256,15 @@ class fimCache extends generalCache {
       $permissions = $this->get('fim_permissions');
     }
     else {
-      $permissions = array();
-
-      $queryParts['permissionsCacheSelect']['columns'] = array(
-        "{$sqlPrefix}roomPermissions" => 'roomId, attribute, param, permissions',
-      );
-
-      $permissionsDatabase = $this->database->select($queryParts['permissionsCacheSelect']['columns']);
-      $permissionsDatabase = $permissionsDatabase->getAsArray(true);
+      $permissionsDatabase = $this->database->getPermissions()->getAsArray(true);
 
       foreach ($permissionsDatabase AS $permission) {
-        $permissionss[$permission['roomId']][$permission['attribute']][$permission['param']] = $cachePerm['permissions'];
+        $permissions[$permission['roomId']][$permission['attribute']][$permission['param']] = $cachePerm['permissions'];
       }
 
       $this->storeMemory('fim_permissions', $permissionsCache, $this->getConfig('permissionsCacheRefresh'));
     }
-    
+
     return $this->returnValue($permissions, $roomIndex, $attributeIndex, $paramIndex);
   }
 
@@ -346,14 +314,7 @@ class fimCache extends generalCache {
       $censorLists = $this->get('fim_censorLists');
     }
     else {
-      $censorLists = array();
-
-      $queryParts['censorListsCacheSelect']['columns'] = array(
-        "{$sqlPrefix}censorLists" => 'listId, listName, listType, options',
-      );
-
-      $censorListsDatabase = $this->slaveDatabase->select($queryParts['censorListsCacheSelect']['columns']);
-      $censorListsDatabase = $censorListsDatabase->getAsArray(true);
+      $censorListsDatabase = $this->slaveDatabase->getCensorLists()->getAsArray(true);
 
       foreach ($censorListsDatabase AS $censorList) {
         $censorLists['byListId'][$censorList['listId']] = $censorList;
@@ -378,14 +339,7 @@ class fimCache extends generalCache {
       $censorWords = $this->get('fim_censorWords');
     }
     else {
-      $censorWords = array();
-
-      $queryParts['censorWordsCacheSelect']['columns'] = array(
-        "{$sqlPrefix}censorWords" => 'listId, word, severity, param',
-      );
-
-      $censorWordsDatabase = $this->slaveDatabase->select($queryParts['censorWordsCacheSelect']['columns']);
-      $censorWordsDatabase = $censorWordsDatabase->getAsArray(true);
+      $censorWords = $this->database->getCensorWords()->getAsArray();
 
       foreach ($censorWordsDatabase AS $censorWord) {
         $censorWords[$censorWord['word']] = $censorWord;

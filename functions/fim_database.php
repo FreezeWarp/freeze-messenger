@@ -16,11 +16,57 @@
 
 
 class fimDatabase extends databaseSQL {
-	
+
+
+  public function getPermissions($rooms = array()) {
+    // Modify Query Data for Directives (First for Performance)
+    $columns = array(
+      $this->sqlPrefix . "roomPermissions" => 'roomId, attribute, param, permissions',
+    );
+
+    if (count(rooms) > 0)
+      $conditions['both']['roomId'] = $this->in((array) $rooms);
+
+    return $permissionsDatabase = $this->select($columns);
+  }
+
+  public function getKicks ($users = array(), $rooms = array(), $kickers = array(), $sort = array('roomId' => 'asc', 'userId' => 'asc'), $limit, $pagination) {
+    $columns = array(
+      $this->sqlPrefix . "kicks" => 'kickerId kkickerId, userId kuserId, roomId kroomId, length klength, time ktime',
+      $this->sqlPrefix . "users user" => 'userId, userName, userFormatStart, userFormatEnd',
+      $this->sqlPrefix . "users kicker" => 'userId kickerId, userName kickerName, userFormatStart kickerFormatStart, userFormatEnd kickerFormatEnd',
+      $this->sqlPrefix . "rooms" => 'roomId, roomName, owner, options, defaultPermissions',
+    );
+
+
+    // Modify Query Data for Directives (First for Performance)
+    if (count($users) > 0)
+      $conditions['both']['kuserId'] = $this->in((array) $users);
+
+    if (count($rooms) > 0)
+      $conditions['both']['roomId'] = $this->in((array) $rooms);
+
+    if (count($kickers) > 0)
+      $conditions['both']['kuserId'] = $this->in((array) $users);
+
+
+    // Conditions
+    $conditions = array(
+      'both' => array(
+        'kuserId' => $this->col('userId'),
+        'kroomId' => $this->col('roomId'),
+        'kkickerId' => $this->col('kickerId')
+      ),
+    );
+
+
+    return $this->select($columns, $conditions, $sort);
+  }
+
   /*
    * @TODO Limit handling (OFFSET = limit * pagination). 
    */
-  public function getRooms($rooms, $showDeleted = false, $globNameSearch = false, $limit = false, $pagination = 0, $sortColumn = 'roomId', $sortOrder = 'asc') {
+  public function getRooms($rooms = array(), $showDeleted = false, $globNameSearch = false, $limit = false, $pagination = 0, $sort = array('roomId' => 'asc'), $slave = false) {
   	// Defaults
   	$columns = array($this->sqlPrefix . "rooms" =>
   	  'roomId, roomName, roomTopic, owner, defaultPermissions, parentalFlags, parentalAge, options, lastMessageId, lastMessageTime, messageCount');
@@ -28,7 +74,6 @@ class fimDatabase extends databaseSQL {
       'both' => array(
   	    '!options' => $this->int(8, 'bAnd')
   	  ));
-    $sort = array($sortColumn => $sortOrder);
   	
 	  	
   	// Modify Query Data for Directives
@@ -36,20 +81,17 @@ class fimDatabase extends databaseSQL {
   	  $conditions['both']['!options'] = $this->bitChange($queryParts['roomSelect']['conditions']['both']['!options'], 8, 'remove'); // TODO: Permission?
   	
   	if (count($rooms) > 0)
-  	  $conditions['both']['roomId'] = $this->type('array', $request['rooms'], 'in');
+  	  $conditions['both']['roomId'] = $this->type('array', $rooms, 'in');
   	
   	if ($globNameSearch)
-  	  $conditions['both']['roomName'] = $this->type('string', $request['search'], 'search');
+  	  $conditions['both']['roomName'] = $this->type('string', $globNameSearch, 'search');
   	 	
 
   	// Perform Query
-  	$rooms = $this->select(
+  	return $this->select(
   	  $columns,
   	  $conditions,
   	  $sort);
-  	
-//  	die($rooms->sourceQuery);
-  	return $rooms->getAsArray(true);
   }
 
   /* TODO: Alias for getRooms? */
@@ -180,8 +222,46 @@ class fimDatabase extends databaseSQL {
     return $userData->getAsArray(false);
   }
 
+  public function getCensorLists($lists = array(), $rooms = array(), $sort = array('listName' => 'asc'), $limit = false, $pagination = false) {
+    $columns = array(
+      $this->sqlPrefix . "censorLists" => 'listId, listName, listType, options',
+    );
+
+    $conditions = array();
+
+
+    /* Modify Query Data for Directives */
+    if (count($lists) > 0) {
+      $conditions['both']['listId'] = $this->in((array) $lists);
+    }
+
+
+    // Extend to determine which lists are active in rooms.
+    if (count($rooms) > 0) {
+      $columns = array(
+        $this->sqlPrefix . "censorBlackWhiteLists" => 'status, roomId, listId rlistId',
+      );
+
+      $conditions['both']['roomId'] = $this->in((array) $rooms);
+      $conditions['both']['listId'] = $this->col('rlistId');
+    }
+
+
+    return $this->select($columns, $conditions, $sort);
+  }
+
+
+  public function getCensorWords($words) {
+    $columns = array(
+      $this->sqlPrefix . "censorWords" => 'listId, word, severity, param',
+    );
+
+    return $this->select($columns);
+  }
+
 
   public function getCensorList($listId) {
+    throw new Exception('Deprecated');
     global $config, $user;
 
     $queryParts['listSelect']['columns'] = array(
@@ -207,6 +287,8 @@ class fimDatabase extends databaseSQL {
   
 
   public function getCensorWord($wordId) { // TODO
+
+    throw new Exception('Deprecated');
     global $config, $user;
 
     $queryParts['wordSelect']['columns'] = array(

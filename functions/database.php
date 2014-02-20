@@ -598,6 +598,11 @@ abstract class database {
       case 'flt': case 'float':     return array('float',     (float)  $value, $comp); break;
     }
   }
+
+
+  public function in($value) {
+    return $this->type('arr', $value, 'in');
+  }
   
   
   // Okay, so I know I'm doing this wrong. Sorry. (It will seriously need to be rewritten later, I know that.)

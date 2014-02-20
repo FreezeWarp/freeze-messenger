@@ -65,67 +65,7 @@ $xmlData = array(
   ),
 );
 
-$queryParts['censorListsSelect']['columns'] = array(
-  "{$sqlPrefix}censorLists" => array(
-    'listId' => 'listId',
-    'listName' => 'listName',
-    'listType' => 'listType',
-    'options' => 'listOptions',
-  ),
-);
-$queryParts['censorListsSelect']['conditions'] = array();
-$queryParts['censorListsSelect']['sort'] = array(
-  'listName' => 'asc',
-);
-$queryParts['censorListsSelect']['limit'] = false;
-$queryParts['activeSelect']['columns'] = array(
-  "{$sqlPrefix}censorBlackWhiteLists" => 'status, roomId, listId',
-);
-$queryParts['censorListsSelect']['conditions'] = array();
-$queryParts['censorListsSelect']['sort'] = false;
-$queryParts['censorListsSelect']['limit'] = false;
 
-
-/* Modify Query Data for Directives */
-if (count($request['lists']) > 0) {
-  $queryParts['censorListsSelect']['conditions']['both'][] = array(
-    'type' => 'in',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'listId',
-    ),
-    'right' => array(
-       'type' => 'array',
-       'value' => (array) $request['lists'],
-    ),
-  );
-
-  $queryParts['activeSelect']['conditions']['both'][] = array(
-    'type' => 'in',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'listId',
-    ),
-    'right' => array(
-      'type' => 'array',
-      'value' => $request['lists'],
-    ),
-  );
-}
-
-if (count($request['rooms']) > 0) {
-  $queryParts['activeSelect']['conditions']['both'][] = array(
-    'type' => 'in',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'roomId',
-    ),
-    'right' => array(
-      'type' => 'array',
-      'value' => $request['rooms'],
-    ),
-  );
-}
 
 
 

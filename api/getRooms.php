@@ -89,9 +89,7 @@ $xmlData = array(
   ),
 );
 
-
-$rooms = $database->getRooms($request['rooms'], $request['showDeleted'], $request['search'], null, null, $request['sort'], 'asc');
-
+$rooms = $database->getRooms($request['rooms'], $request['showDeleted'], $request['search'], null, null, array($request['sort'] => 'asc'), true)->getAsArray(true);
 
 /* Process Rooms Obtained from Database */
 // I'll fix the spacing when I get a better editor. Eclipse is seriously the worst thing ever, and I miss KDevelop.

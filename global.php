@@ -110,7 +110,7 @@ define("FIM_LANGUAGE", "EN_US"); // No plans to change this exist, but again, ju
 /* Legacy Code
  * Will be removed shortly, maybe.*/
 $sqlPrefix = $dbConfig['vanilla']['tablePrefix']; // It's more sane this way...
-$forumTablePrefix = $dbConfig['integration']['tablePrefix'];
+//$forumTablePrefix = $dbConfig['integration']['tablePrefix'];
 
 
 

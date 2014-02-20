@@ -66,66 +66,9 @@ $xmlData = array(
   ),
 );
 
-$queryParts['kicksSelect']['columns'] = array(
-  "{$sqlPrefix}kicks" => 'kickerId kkickerId, userId kuserId, roomId kroomId, length klength, time ktime',
-  "{$sqlPrefix}users user" => 'userId, userName, userFormatStart, userFormatEnd',
-  "{$sqlPrefix}users kicker" => 'userId kickerId, userName kickerName, userFormatStart kickerFormatStart, userFormatEnd kickerFormatEnd',
-  "{$sqlPrefix}rooms" => 'roomId, roomName, owner, options, defaultPermissions',
-);
-$queryParts['kicksSelect']['conditions'] = array(
-  'both' => array(
-    'kuserId' => 'column userId',
-    'kroomId' => 'column roomId',
-    'kkickerId' => 'column kickerId',
-  ),
-);
-$queryParts['kicksSelect']['sort'] = 'roomId, userId';
-$queryParts['kicksSelect']['limit'] = false;
-
-
-
-/* Modify Query Data for Directives */
-if (count($request['users']) > 0) {
-  $queryParts['usersSelect']['conditions']['both'][] = array(
-    'type' => 'in',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'kuserId',
-    ),
-    'right' => array(
-       'type' => 'array',
-       'value' => (array) $request['users'],
-    ),
-  );
-}
-
-if (count($request['rooms']) > 0) {
-  $queryParts['usersSelect']['conditions']['both'][] = array(
-    'type' => 'in',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'kroomId',
-    ),
-    'right' => array(
-       'type' => 'array',
-       'value' => (array) $request['rooms'],
-    ),
-  );
-}
-
-
-
-/* Plugin Hook Start */
-($hook = hook('getKicks_start') ? eval($hook) : '');
-
-
 
 /* Get Kicks from Database */
-$kicks = $database->select($queryParts['kicksSelect']['columns'],
-  $queryParts['kicksSelect']['conditions'],
-  $queryParts['kicksSelect']['sort'],
-  $queryParts['kicksSelect']['limit']);
-$kicks = $kicks->getAsArray(true);
+$kicks = $database->getKicks($request['users'], $request['rooms'])->getAsArray(true);
 
 
 
