@@ -93,7 +93,7 @@ class databaseSQL extends database {
   public $queryLog = array();
   public $mode = 'SQL';
   public $language = '';
-
+  
   protected $dbLink = false;
 
   /*********************************************************
@@ -402,7 +402,7 @@ class databaseSQL extends database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
    
-  protected function escape($string, $context = 'string') {
+  protected function escape($string, $context = 'string') {  	
     return $this->functionMap('escape', $string, $context); // Return the escaped string.
   }
 

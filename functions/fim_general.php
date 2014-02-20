@@ -423,9 +423,9 @@ function fim_encrypt($data) {
 function fim_sha256($data) {
   global $config;
 
-  if (function_exists('hash') && in_array('sha256',hash_algos())) return hash('sha256', $data); // hash() is available in PHP 5.1.2+, or in PECL Hash 1.1. Algorithms vary, so we must make sure sha256 is one of them.
+  if (function_exists('hash') && in_array('sha256', hash_algos())) return hash('sha256', $data); // hash() is available in PHP 5.1.2+, or in PECL Hash 1.1. Algorithms vary, so we must make sure sha256 is one of them.
   elseif (function_exists('mhash') && defined('MHASH_SHA256')) return mhash(MHASH_SHA256, $data); // mhash() is available in pretty much all versions of PHP, but the SHA256 algo may not be available.
-  else { // Otherwise, we use a third-party SHA256 library. Expect slowness.
+  else { // Otherwise, we use a third-party SHA256 library. Expect slowness. [TODO: Test]
     require('functions/sha256.php'); // Require SHA256 class provided by NanoLink.ca.
 
     $obj = new nanoSha2();

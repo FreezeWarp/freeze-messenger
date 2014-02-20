@@ -20,6 +20,12 @@ require('../functions/xml.php'); // For reading the db*.xml files
 require('../functions/database.php'); // DB Operations
 require('../functions/databaseSQL.php'); // ""
 
+// If possible, remove the execution time limits (often requires ~40-60 seconds). TODO: Long term, the install script should be split up into seperate HTTP requests.
+if(!ini_get('safe_mode')) {
+  ini_set('max_execution_time', 0);
+  set_time_limit(0);
+}
+
 if (file_exists('../config.php')) { // Make sure that config doesn't exist. TODO: Is this secure?
   die('Error.');
 }
@@ -104,7 +110,8 @@ switch ($_REQUEST['phase']) {
 
 
       // Get Pre-Existing Tables So We Don't Overwrite Any of Them Later
-      $showTables = $database->getTablesAsArray();
+      $showTable = (array) $database->getTablesAsArray();
+      $showTables = array_map('strtolower', $showTable); // ...In Windows, table names may not be returned as entered (uppercase letters usually become lowercase), so this is the most efficient work-around I could come up with.
 
       // Read the various XML files.
       $xmlData = new Xml2Array(file_get_contents('dbSchema.xml')); // Get the XML Data from the dbSchema.xml file, and feed it to the Xml2Array class
@@ -128,6 +135,7 @@ switch ($_REQUEST['phase']) {
         /* Part 2: Create the Tables */
 
         $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
+        $time = time();
 
         foreach ($xmlData['database'][0]['table'] AS $table) { // Run through each table from the XML
           $tableType = $table['@type'];
@@ -157,9 +165,8 @@ switch ($_REQUEST['phase']) {
             );
           }
 
-
-          if (in_array($tableName, (array) $showTables)) { // We are overwriting, so rename the old table to a backup. Someone else can clean it up later, but its for the best.
-            if (!$database->renameTable($tableName, $tableName . '~' . time())) {
+          if (in_array(strtolower($tableName), $showTables)) { // We are overwriting, so rename the old table to a backup. Someone else can clean it up later, but its for the best.
+          	if (!$database->renameTable($tableName, $tableName . '~' . $time)) {
               die("Could Not Rename Table '$tableName'");
             }
           }

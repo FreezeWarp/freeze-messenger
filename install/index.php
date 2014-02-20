@@ -141,7 +141,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
   <script src="../webpro/client/js/jquery.plugins.js" type="text/javascript"></script>
   <script>
   function windowDraw() {
-    $('body').css('min-height',window.innerHeight);
+    $('body').css('min-height', window.innerHeight);
   }
 
   $(document).ready(function() {

@@ -17,6 +17,7 @@
 
 /**
  * Class designed to store and recall cache variables.
+ * @TODO All database queries should be moved to fimDatabase.php, which should, if possible, do _all_ database logic (currently its split between APIs and other functions.)
  *
  * @internal The fim class currently stores all of its calls in memory in addition to whatever other methods are provided (one of the methods is to store in mmemory, and we will duplicate it in this situation; however, you shouldn't EVER use that method anyway). This is because each function should be able to return a single index from a cache object, and having to retrieve the cache each time we want to call a single index of an array is, well, stupid (previously, we just stored the entire array outside of the class; this way, we can at least convert things super easily if we want to change methodologies). That said, this may be a problem with scripts that run longer than the cache -- currently not a problem, but it might be if we try to support persistent scripts in the future.
  *
@@ -27,6 +28,7 @@ class fimCache extends generalCache {
   private $memory = array(); // Whenever the cache is retrieved, we store it in memory for the duration of the script's execution
   protected $database = false;
   protected $slaveDatabase = false;
+  
 
   
   /** Sets the defaultConfigFile, and checks to ensure a database exists.
@@ -126,7 +128,7 @@ class fimCache extends generalCache {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function getConfig($index = false) {
-    global $disableConfig;
+    global $disableConfig, $sqlPrefix;
 
     if ($this->issetMemory('fim_config')) {
       $hooks = $this->getMemory('fim_config');
@@ -174,7 +176,7 @@ class fimCache extends generalCache {
   }
   
   public function getHooks($index = false) {
-    global $disableHooks, $config;
+    global $disableHooks, $config, $sqlPrefix;
     
     if ($this->issetMemory('fim_hooks')) {
       $hooks = $this->getMemory('fim_hooks');
@@ -210,7 +212,7 @@ class fimCache extends generalCache {
   
   ////* Caches Entire Table as kicks[roomId][userId] = true *////
   public function getKicks($roomIndex = false, $userIndex = false) {
-    global $config;
+    global $config, $sqlPrefix;
 
     if ($this->issetMemory('fim_kicks')) {
       $kicks = $this->getMemory('fim_kicks');
@@ -270,7 +272,9 @@ class fimCache extends generalCache {
   /* Attribute = user, group, or adminGroup
    * Param = userId, groupId, or adminGroupId */
   public function getPermissions($roomIndex = false, $attributeIndex = false, $paramIndex = false) {
-    if ($this->issetMemory('fim_permissions')) {
+    global $sqlPrefix;
+  	
+  	if ($this->issetMemory('fim_permissions')) {
       $permissions = $this->getMemory('fim_permissions');
     }
     elseif ($this->exists('fim_permissions')) {
@@ -299,7 +303,9 @@ class fimCache extends generalCache {
   
   ////* Caches Entire Table as watchRooms[userId] = [roomId, userId] *////
   public function getWatchRooms($userIndex = false) {
-   if ($this->issetMemory('fim_watchRooms')) {
+    global $sqlPrefix;
+    
+    if ($this->issetMemory('fim_watchRooms')) {
       $watchRooms = $this->getMemory('fim_watchRooms');
     }
     elseif ($this->exists('fim_watchRooms')) {
@@ -331,6 +337,8 @@ class fimCache extends generalCache {
   ////* Censor Lists *////
   ////* Caches Entire Table as censorLists[listId] = [listId, listName, listType, options] *////
   public function getCensorLists($listIndex) {    
+    global $sqlPrefix;
+  	
    if ($this->issetMemory('fim_censorLists')) {
       $censorLists = $this->getMemory('fim_censorLists');
     }
@@ -360,7 +368,9 @@ class fimCache extends generalCache {
   
   ////* Censor Words *////
   ////* Caches Entire Table as censorWords[word] = [listId, word, severity, param] *////
-  public function getCensorWords($listIndex) {    
+  public function getCensorWords($listIndex) {
+   global $sqlPrefix;
+
    if ($this->issetMemory('fim_censorWords')) {
       $censorWords = $this->getMemory('fim_censorWords');
     }
@@ -391,6 +401,8 @@ class fimCache extends generalCache {
   ////* Censor Words *////
   ////* Caches Entire Table as censorWords[word] = [listId, word, severity, param] *////
   public function getCensorBlackWhiteLists($roomIndex, $listIndex) {    
+  	global $sqlPrefix;
+  	
    if ($this->issetMemory('fim_censorBlackWhiteLists')) {
       $censorBlackWhiteLists = $this->getMemory('fim_censorBlackWhiteLists');
     }
@@ -419,6 +431,8 @@ class fimCache extends generalCache {
   
   
   public function getActiveCensorLists($roomId) {
+  	global $sqlPrefix;
+  	
     if ($this->issetMemory('fim_censorBlackWhiteLists')) {
       $censorBlackWhiteLists = $this->getMemory('fim_censorBlackWhiteLists');
     }

@@ -35,7 +35,7 @@
  * The following are used, but with safe fallbacks:
  * Hash is present in all versions since PHP 5.1.2; MHash is present in all versions since PHP4
  */
-foreach (array('mysql', 'json', 'mbstring', 'mcrypt', 'pcre', 'dom', 'curl') AS $module) { // Check that each extension has been loaded.
+foreach (array('mysql', 'json', 'mbstring', 'mcrypt', 'pcre', 'dom') AS $module) { // Check that each extension has been loaded.
   if (!extension_loaded($module)) die("The module <strong>$module</strong> could not be found. Please install PHP <strong>$module</strong> compatibility. See the documentation for help.");
 }
 
@@ -52,16 +52,15 @@ if ((bool) ini_get('allow_url_fopen') === false) {
 }
 
 
-
 /* Version Requirement, Magic Quotes, Display Errors and Register Globals */
 
 ini_set('display_errors', 0); // Ideally we would never have to worry about this, but sadly that's not the case. FIMv4 will hopefully make improvements.
+$phpVersion = floatval(PHP_VERSION);
 
-
-if (floatval(PHP_VERSION) < 5.2) { // We won't bother supporting older PHP; too much hassle. We will also raise this to 5.3 in the next version.
+if ($phpVersion < 5.2) { // We won't bother supporting older PHP; too much hassle. We will also raise this to 5.3 in the next version.
   die('The installed version of PHP is out of date. Only PHP versions 5.2 and above are supported. Contact your server host for more information if possible.');
 }
-elseif (floatval(PHP_VERSION) <= 5.3) { // Removed outright in 5.4, may as well save a CPU cycle or two.
+elseif ($phpVersion <= 5.3) { // Removed outright in 5.4, may as well save a CPU cycle or two.
   if (function_exists('get_magic_quotes_runtime')) { // Really, in the future, even this function will be removed as well, but it is still there in 5.4 for all the good scripts that use it to disable 'em.
     if (get_magic_quotes_runtime()) { // Note: We should consider removing the set_magic_quotes_runtime to false; it is deprecated in 5.3, so if we make that the baseline in version 4 we will do it then.
       if (!set_magic_quotes_runtime(false)) {

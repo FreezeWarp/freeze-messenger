@@ -510,7 +510,7 @@
       <column name="maxSize" value="1048576" />
       <column name="container" value="image" />
     </table>
-    
+
     
     <!-- Table users -->
     <!-- The addUser function should be tested seperately (as with addRoom, etc.) -->
@@ -527,7 +527,7 @@
       <column name="avatar" value="" /><!-- TODO -->
       <column name="profile" value="http://www.josephtparsons.com/" />
       <column name="userFormatStart" value="&lt;span style=&quot;color: red;&quot;&gt;>" /><!-- TODO -->
-      <column name="userFormatSEnd" value="&lt;/span&gt;" /><!-- TODO -->
+      <column name="userFormatEnd" value="&lt;/span&gt;" /><!-- TODO -->
       <column name="defaultRoom" value="3" />
       <column name="interfaceId" value="2" />
       <column name="parentalFlags" value="" />
