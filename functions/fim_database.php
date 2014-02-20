@@ -16,9 +16,45 @@
 
 
 class fimDatabase extends databaseSQL {
+	
+  /*
+   * @TODO Limit handling (OFFSET = limit * pagination). 
+   */
+  public function getRooms($rooms, $showDeleted = false, $globNameSearch = false, $limit = false, $pagination = 0, $sortColumn = 'roomId', $sortOrder = 'asc') {
+  	// Defaults
+  	$columns = array($this->sqlPrefix . "rooms" =>
+  	  'roomId, roomName, roomTopic, owner, defaultPermissions, parentalFlags, parentalAge, options, lastMessageId, lastMessageTime, messageCount');
+    $conditions = array(
+      'both' => array(
+  	    '!options' => $this->int(8, 'bAnd')
+  	  ));
+    $sort = array($sortColumn => $sortOrder);
+  	
+	  	
+  	// Modify Query Data for Directives
+  	if ($showDeleted)
+  	  $conditions['both']['!options'] = $this->bitChange($queryParts['roomSelect']['conditions']['both']['!options'], 8, 'remove'); // TODO: Permission?
+  	
+  	if (count($rooms) > 0)
+  	  $conditions['both']['roomId'] = $this->type('array', $request['rooms'], 'in');
+  	
+  	if ($globNameSearch)
+  	  $conditions['both']['roomName'] = $this->type('string', $request['search'], 'search');
+  	 	
 
+  	// Perform Query
+  	$rooms = $this->select(
+  	  $columns,
+  	  $conditions,
+  	  $sort);
+  	
+//  	die($rooms->sourceQuery);
+  	return $rooms->getAsArray(true);
+  }
+
+  /* TODO: Alias for getRooms? */
   public function getRoom($roomIds, $roomName = false, $cache = true) {
-    global $sqlPrefix, $config, $user;
+    global $config, $user;
     
 
 /*    if (substr($roomId, 0, 1) === 'o') { // OTR Room
@@ -60,7 +96,7 @@ class fimDatabase extends databaseSQL {
     
     if (is_int($roomIds) && substr($roomIds, 0, 1) === 'p') { // Private Room
       $queryParts['roomSelect']['columns'] = array(
-        "{$sqlPrefix}privateRooms" => 'uniqueId roomId, roomUsersList, roomUsersHash, options, lastMessageId, lastMessageTime, messageCount'
+        $this->sqlPrefix . "privateRooms" => 'uniqueId roomId, roomUsersList, roomUsersHash, options, lastMessageId, lastMessageTime, messageCount'
       );
 
       $queryParts['roomSelect']['conditions'] = array(
@@ -82,7 +118,7 @@ class fimDatabase extends databaseSQL {
      * An IN clause is used to support multiple rooms. If a single roomId was specified, a flat array will be returned; otherwise, an array using roomId as an index will be used. */
     else {
       $queryParts['roomSelect']['columns'] = array(
-        "{$sqlPrefix}rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, parentalFlags, parentalAge, options, lastMessageId, lastMessageTime, messageCount',
+        $this->sqlPrefix . "rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, parentalFlags, parentalAge, options, lastMessageId, lastMessageTime, messageCount',
       );
 
       if ($roomId) {
@@ -115,10 +151,10 @@ class fimDatabase extends databaseSQL {
 
 
   public function getUser($userId, $userName = false) {
-    global $sqlPrefix, $config, $user;
+    global $config, $user;
 
     $queryParts['userSelect']['columns'] = array(
-      "{$sqlPrefix}users" => 'userId, userName, profile, userFormatStart, userFormatEnd, userGroup, allGroups, socialGroups, parentalAge, parentalFlags, adminPrivs, defaultFormatting, defaultColor, defaultHighlight, defaultFontface',
+      $this->sqlPrefix . "users" => 'userId, userName, profile, userFormatStart, userFormatEnd, userGroup, allGroups, socialGroups, parentalAge, parentalFlags, adminPrivs, defaultFormatting, defaultColor, defaultHighlight, defaultFontface',
     );
 
     if ($userId) {
@@ -146,10 +182,10 @@ class fimDatabase extends databaseSQL {
 
 
   public function getCensorList($listId) {
-    global $sqlPrefix, $config, $user;
+    global $config, $user;
 
     $queryParts['listSelect']['columns'] = array(
-      "{$sqlPrefix}censorLists" => 'listId, listName, listType, options',
+      $this->sqlPrefix . "censorLists" => 'listId, listName, listType, options',
     );
 
     if ($listId) {
@@ -171,10 +207,10 @@ class fimDatabase extends databaseSQL {
   
 
   public function getCensorWord($wordId) { // TODO
-    global $sqlPrefix, $config, $user;
+    global $config, $user;
 
     $queryParts['wordSelect']['columns'] = array(
-      "{$sqlPrefix}censorWords" => 'wordId, listId, word, severity, param',
+      $this->sqlPrefix . "censorWords" => 'wordId, listId, word, severity, param',
     );
 
     if ($wordId) {
@@ -196,10 +232,10 @@ class fimDatabase extends databaseSQL {
 
 
   public function getMessage($messageId) {
-    global $sqlPrefix, $config, $user;
+    global $config, $user;
 
     $queryParts['messageSelect']['columns'] = array(
-      "{$sqlPrefix}messages" => 'messageId, roomId, iv, salt, text, deleted',
+      $this->sqlPrefix . "messages" => 'messageId, roomId, iv, salt, text, deleted',
     );
 
     if ($messageId) {
@@ -221,10 +257,10 @@ class fimDatabase extends databaseSQL {
 
 
   public function getFile($fileId) {
-    global $sqlPrefix, $config, $user;
+    global $config, $user;
 
     $queryParts['fileSelect']['columns'] = array(
-      "{$sqlPrefix}files" => 'fileId, fileName, fileType, creationTime, userId, source, rating, flags, deleted',
+      $this->sqlPrefix . "files" => 'fileId, fileName, fileType, creationTime, userId, source, rating, flags, deleted',
     );
 
     if ($fileId) {
@@ -246,7 +282,7 @@ class fimDatabase extends databaseSQL {
 
 
   public function getRoomCensorLists($roomId) { // TODO: Cache
-    global $user, $sqlPrefix, $slaveDatabase, $censorListsCache;
+    global $user, $slaveDatabase, $censorListsCache;
 
     $block = array();
     $unblock = array();
@@ -256,7 +292,7 @@ class fimDatabase extends databaseSQL {
       // We will need to get these fresh every time for the most part, as it is not easily cached (just as rooms themselves are not easily cached).
       $listsActive = $slaveDatabase->select(
         array(
-          "{$sqlPrefix}censorBlackWhiteLists" => 'status, roomId, listId',
+          $this->sqlPrefix . "censorBlackWhiteLists" => 'status, roomId, listId',
         ),
         array(
           'both' => array('roomId' => $this->int($roomId)),
@@ -284,10 +320,10 @@ class fimDatabase extends databaseSQL {
 
 
   public function getConfiguration($directive) {
-    global $sqlPrefix, $config, $user;
+    global $config, $user;
 
     $queryParts['configSelect']['columns'] = array(
-      "{$sqlPrefix}configuration" => 'directive, type, value',
+      $this->sqlPrefix . "configuration" => 'directive, type, value',
     );
 
     if ($directive) {
@@ -309,10 +345,10 @@ class fimDatabase extends databaseSQL {
 
 
   public function markMessageRead($messageId, $userId) {
-    global $sqlPrefix, $config, $user;
+    global $config, $user;
 
     if ($config['enableUnreadMessages']) {
-      $this->delete("{$sqlPrefix}unreadMessages",array(
+      $this->delete($this->sqlPrefix . "unreadMessages",array(
         'messageId' => $messageId,
         'userId' => $userId
       ));
@@ -321,10 +357,10 @@ class fimDatabase extends databaseSQL {
 
 
   public function createEvent($eventName, $userId, $roomId, $messageId, $param1, $param2, $param3) {
-    global $sqlPrefix, $config, $user;
+    global $config, $user;
 
     if ($config['enableEvents']) {
-      $this->insert("{$sqlPrefix}events", array(
+      $this->insert($this->sqlPrefix . "events", array(
         'eventName' => $eventName,
         'userId' => $userId,
         'roomId' => $roomId,
@@ -339,14 +375,14 @@ class fimDatabase extends databaseSQL {
 
 
   public function storeMessage($userData, $roomData, $messageText, $messageTextEncrypted, $encryptIV, $encryptSalt, $flag) {
-    global $sqlPrefix, $config, $user, $generalCache;
+    global $config, $user, $generalCache;
 
     if (!isset($roomData['options'], $roomData['roomId'], $roomData['roomName'], $roomData['type'])) throw new Exception('database->storeMessage requires roomData[options], roomData[roomId], roomData[roomName], and roomData[type].');
     if (!isset($userData['userId'], $userData['userName'], $userData['userGroup'], $userData['avatar'], $userData['profile'], $userData['userFormatStart'], $userData['userFormatEnd'], $userData['defaultFormatting'], $userData['defaultColor'], $userData['defaultHighlight'], $userData['defaultFontface'])) throw new Exception('database->storeMessage requires userData[userId], userData[userName], userData[userGroup], userData[avatar]. userData[profile], userData[userFormatStart], userData[userFormatEnd], userData[defaultFormatting], userData[defaultColor], userData[defaultHighlight], and userData[defaultFontface]');
 
 
     // Insert into permenant datastore.
-    $this->insert("{$sqlPrefix}messages", array(
+    $this->insert($this->sqlPrefix . "messages", array(
       'roomId' => (int) $roomData['roomId'],
       'userId' => (int) $userData['userId'],
       'text' => $messageTextEncrypted,
@@ -361,7 +397,7 @@ class fimDatabase extends databaseSQL {
 
 
     // Update room caches.
-    $this->update("{$sqlPrefix}rooms", array(
+    $this->update($this->sqlPrefix . "rooms", array(
       'lastMessageTime' => $this->now(),
       'lastMessageId' => $messageId,
       'messageCount' => array(
@@ -377,7 +413,7 @@ class fimDatabase extends databaseSQL {
     $roomDataNew = $this->getRoom($roomData['roomId'], false, false); // Get the new room data.
 
     if ($roomDataNew['messageCount'] % $config['messageIndexCounter'] === 0) { // If the current messages in the room is divisible by the messageIndexCounter, insert into the messageIndex cache. Note that we are hoping this is because of the very last query which incremented this value, but it is impossible to know for certain (if we tried to re-order things to get the room data first, we still run this risk, so that doesn't matter; either way accuracy isn't critical).
-      $this->insert("{$sqlPrefix}messageIndex", array(
+      $this->insert($this->sqlPrefix . "messageIndex", array(
         'roomId' => $roomData['roomId'],
         'interval' => (int) $roomDataNew['messageCount'],
         'messageId' => $messageId
@@ -391,7 +427,7 @@ class fimDatabase extends databaseSQL {
 
 
     // Update user caches
-    $this->update("{$sqlPrefix}users", array(
+    $this->update($this->sqlPrefix . "users", array(
       'messageCount' => array(
         'type' => 'equation',
         'value' => '$messageCount + 1',
@@ -402,7 +438,7 @@ class fimDatabase extends databaseSQL {
 
 
     // Insert or update a user's room stats.
-    $this->insert("{$sqlPrefix}roomStats", array(
+    $this->insert($this->sqlPrefix . "roomStats", array(
       'userId' => $userData['userId'],
       'roomId' => $roomData['roomId'],
       'messages' => 1
@@ -425,7 +461,7 @@ class fimDatabase extends databaseSQL {
     $lastMidnight = $currentTime - ($currentTime % $config['messageTimesCounter']); // Using some cool math (look it up if you're not familiar), we determine the distance from the last even day, then get the time of the last even day itself. This is the midnight referrence point.
 
     if ($lastDayCache < $lastMidnight) { // If the most recent midnight comes after the period at which the time cache was last updated, handle that.
-      $this->insert("{$sqlPrefix}messageDates", array(
+      $this->insert($this->sqlPrefix . "messageDates", array(
         'time' => $lastMidnight,
         'messageId' => $messageId
       ), array(
@@ -440,7 +476,7 @@ class fimDatabase extends databaseSQL {
 
 
    // Insert into cache/memory datastore.
-    $this->insert("{$sqlPrefix}messagesCached", array(
+    $this->insert($this->sqlPrefix . "messagesCached", array(
       'messageId' => (int) $messageId,
       'roomId' => (int) $roomData['roomId'],
       'userId' => (int) $userData['userId'],
@@ -463,7 +499,7 @@ class fimDatabase extends databaseSQL {
 
     // Delete old messages from the cache, based on the maximum allowed rows.
     if ($messageId2 > $config['cacheTableMaxRows']) {
-      $this->delete("{$sqlPrefix}messagesCached",
+      $this->delete($this->sqlPrefix . "messagesCached",
         array('id' => array(
           'cond' => 'lte',
           'value' => (int) ($messageId2 - $config['cacheTableMaxRows'])
@@ -482,7 +518,7 @@ class fimDatabase extends databaseSQL {
           $this->createEvent('missedMessage', $sendToUserId, $roomData['roomId'], $messageId, false, false, false);
 
           if ($config['enableUnreadMessages']) {
-            $this->insert("{$sqlPrefix}unreadMessages", array(
+            $this->insert($this->sqlPrefix . "unreadMessages", array(
               'userId' => $sendToUserId,
               'senderId' => $userData['userId'],
               'senderName' => $userData['userName'],
@@ -522,11 +558,11 @@ class fimDatabase extends databaseSQL {
   */
 
   public function modLog($action, $data) {
-    global $sqlPrefix, $config, $user;
+    global $config, $user;
 
     if (!isset($user['userId'])) throw new Exception('database->modLog requires user[userId]');
 
-    if ($this->insert("{$sqlPrefix}modlog", array(
+    if ($this->insert($this->sqlPrefix . "modlog", array(
       'userId' => (int) $user['userId'],
       'ip' => $_SERVER['REMOTE_ADDR'],
       'action' => $action,
@@ -551,9 +587,9 @@ class fimDatabase extends databaseSQL {
   */
 
   public function fullLog($action, $data) {
-    global $sqlPrefix, $config, $user;
+    global $config, $user;
 
-    if ($this->insert("{$sqlPrefix}fulllog", array(
+    if ($this->insert($this->sqlPrefix . "fulllog", array(
       'user' => json_encode($user),
       'server' => json_encode($_SERVER),
       'action' => $action,
@@ -569,9 +605,9 @@ class fimDatabase extends databaseSQL {
 
 
   public function incrementCounter($counterName, $incrementValue = 1) {
-   global $sqlPrefix, $config;
+   global $config;
 
-    if ($this->update("{$sqlPrefix}counters", array(
+    if ($this->update($this->sqlPrefix . "counters", array(
       'counterValue' => array(
         'type' => 'equation',
         'value' => '$counterValue + ' . (int) $incrementValue,
@@ -588,10 +624,10 @@ class fimDatabase extends databaseSQL {
 
 
   public function getCounterValue($counterName) {
-    global $sqlPrefix, $config;
+    global $config;
 
     $queryParts['counterSelect']['columns'] = array(
-      "{$sqlPrefix}counters" => 'counterName, counterValue',
+      $this->sqlPrefix . "counters" => 'counterName, counterValue',
     );
     $queryParts['counterSelect']['conditions'] = array(
       'both' => array(
@@ -611,7 +647,7 @@ class fimDatabase extends databaseSQL {
 
 
   public function getPrivateRoom($userList) {
-    global $sqlPrefix, $config;
+    global $config;
 
     if (!is_array($userList)) throw new Exception('userList is not an array in getPrivateRoom');
     elseif (count($userList) < 1) throw new Exception('userList is empty in getPrivateRoom');
@@ -619,7 +655,7 @@ class fimDatabase extends databaseSQL {
     asort($userList);
 
     $queryParts['columns'] = array(
-      "{$sqlPrefix}privateRooms" => 'uniqueId, roomUsersList, roomUsersHash, options, lastMessageTime, lastMessageId, messageCount',
+      $this->sqlPrefix . "privateRooms" => 'uniqueId, roomUsersList, roomUsersHash, options, lastMessageTime, lastMessageId, messageCount',
     );
 
     $userCount = count($userList);
@@ -637,18 +673,18 @@ class fimDatabase extends databaseSQL {
   
 
   public function storeKeyWords($words, $messageId, $userId, $roomId) {
-    global $config, $sqlPrefix;
+    global $config;
 
     $phraseData = $this->select(
       array(
-        "{$sqlPrefix}searchPhrases" => 'phraseName, phraseId',
+        $this->sqlPrefix . "searchPhrases" => 'phraseName, phraseId',
       )
     );
     $phraseData = $phraseData->getAsArray('phraseName');
 
     foreach (array_unique($words) AS $piece) {
       if (!isset($phraseData[$piece])) {
-        $this->insert("{$sqlPrefix}searchPhrases", array(
+        $this->insert($this->sqlPrefix . "searchPhrases", array(
           'phraseName' => $piece,
         ));
         $phraseId = $this->insertId;
@@ -657,7 +693,7 @@ class fimDatabase extends databaseSQL {
         $phraseId = $phraseData[$piece]['phraseId'];
       }
 
-      $this->insert("{$sqlPrefix}searchMessages", array(
+      $this->insert($this->sqlPrefix . "searchMessages", array(
         'phraseId' => (int) $phraseId,
         'messageId' => (int) $messageId,
         'userId' => (int) $userId,

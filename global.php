@@ -40,7 +40,7 @@ foreach (array('mysql', 'json', 'mbstring', 'mcrypt', 'pcre', 'dom') AS $module)
 }
 
 /*
- * TODO: As of now, FIM simply scales too poorly to allow people _not_ to use either APC or Memcached. For testing purposes, the requirement is currently commented out.
+ * I'm not yet sure how well the disk cache works for small installations. APC is still essential for larger ones, but the disk cache may suffice for everything else.
  * Ideally, a disk cache will be possible for extra-common data, of which there is some.
 
   if (!extension_loaded('apc') && !extension_loaded('memcache')) die("Neither the <strong>apc</strong> or <strong>memcache</strong> modules could not be found. Please install PHP <strong>apc</strong> or <strong>memcache</strong> compatibility. See the documentation for help."); // APC is required. Memcached is not yet supported.
@@ -108,9 +108,9 @@ define("FIM_LANGUAGE", "EN_US"); // No plans to change this exist, but again, ju
 
 
 /* Legacy Code
- * I was too laxy to rewrite stuff. */
+ * Will be removed shortly, maybe.*/
 $sqlPrefix = $dbConfig['vanilla']['tablePrefix']; // It's more sane this way...
-$forumTablePrefix = $dbConfig['integration']['tablePreix'];
+$forumTablePrefix = $dbConfig['integration']['tablePrefix'];
 
 
 
@@ -151,7 +151,13 @@ else $slaveConnect = true;
 
 /* Connect to the Main Database */
 $database = new fimDatabase;
-if (!$database->connect($dbConnect['core']['host'], $dbConnect['core']['port'], $dbConnect['core']['username'], $dbConnect['core']['password'], $dbConnect['core']['database'], $dbConnect['core']['driver'])) {
+if (!$database->connect($dbConnect['core']['host'],
+  $dbConnect['core']['port'],
+  $dbConnect['core']['username'],
+  $dbConnect['core']['password'],
+  $dbConnect['core']['database'],
+  $dbConnect['core']['driver'],
+  $dbConfig['vanilla']['tablePrefix'])) {
   die('Could not connect to the database: ' . $database->error . '; the application has exitted.'); // Die to prevent further execution.
 }
 
@@ -161,7 +167,12 @@ if (!$database->connect($dbConnect['core']['host'], $dbConnect['core']['port'], 
 if ($integrationConnect) {
   $integrationDatabase = new fimDatabase;
 
-  if (!$database->connect($dbConnect['integration']['host'], $dbConnect['integration']['port'], $dbConnect['integration']['username'], $dbConnect['integration']['password'], $dbConnect['integration']['database'], $dbConnect['integration']['driver'])) { // Connect to MySQL
+  if (!$database->connect($dbConnect['integration']['host'],
+    $dbConnect['integration']['port'],
+    $dbConnect['integration']['username'],
+    $dbConnect['integration']['password'],
+    $dbConnect['integration']['database'],
+    $dbConnect['integration']['driver'])) { // Connect to MySQL
     die('Could not connect to the integration database: ' . $database->error . '; the application has exitted.');
   }
 }
@@ -180,7 +191,13 @@ else {
 if ($slaveConnect) {
   $slaveDatabase = new fimDatabase;
 
-  if (!$database->connect($dbConnect['slave']['host'], $dbConnect['slave']['port'], $dbConnect['slave']['username'], $dbConnect['slave']['password'], $dbConnect['slave']['database'], $dbConnect['slave']['driver'])) { // Connect to MySQL
+  if (!$database->connect($dbConnect['slave']['host'],
+    $dbConnect['slave']['port'],
+    $dbConnect['slave']['username'],
+    $dbConnect['slave']['password'],
+    $dbConnect['slave']['database'],
+    $dbConnect['slave']['driver'],
+    $dbConfig['vanilla']['tablePrefix'])) { // Connect to MySQL
     die('Could not connect to the slave database: ' . $database->error . '; the application has exitted.');
   }
 }

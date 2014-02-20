@@ -39,6 +39,8 @@ abstract class database {
   protected $activeDatabase = false;
   protected $dbLink = null;
   
+  public $sqlPrefix;
+  
   protected $comparisonAliases = array(
     'eq' => 'e',
     'equal' => 'e',
@@ -78,16 +80,24 @@ abstract class database {
   ************************ START **************************
   ******************* General Functions *******************
   *********************************************************/
-  
+
   /**
    * Construct
    * Pipes in connect().
    *
-   * @return void
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */
-  public function __construct($host = false, $port = false, $user = false, $password = false, $database = false, $driver = false) {
-    if ($host !== false) $this->connect($host, $port, $user, $password, $database, $driver);
+   * @param mixed $host
+   * @param mixed $port
+   * @param mixed $user
+   * @param mixed $password
+   * @param mixed $database
+   * @param mixed $driver
+   * @param mixed $tablePrefix
+   * @return \database
+   *
+    @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  public function __construct($host = false, $port = false, $user = false, $password = false, $database = false, $driver = false, $tablePrefix = '') {
+    if ($host !== false) $this->connect($host, $port, $user, $password, $database, $driver, $tablePrefix);
   }
   
 
@@ -142,7 +152,7 @@ abstract class database {
    * @return bool - True if a connection was successfully established, false otherwise.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
-  abstract public function connect($host, $port, $user, $password, $database, $driver);
+  abstract public function connect($host, $port, $user, $password, $database, $driver, $tablePrefix);
   
 
 

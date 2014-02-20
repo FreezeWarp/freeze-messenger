@@ -75,6 +75,7 @@ $request = fim_sanitizeGPC('g', array(
   ),
 ));
 
+
 /* Data Predefine */
 $xmlData = array(
   'getRooms' => array(
@@ -88,53 +89,12 @@ $xmlData = array(
   ),
 );
 
-$queryParts['roomSelect'] = array(
-  'columns' => array(
-    "{$sqlPrefix}rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, parentalFlags, parentalAge, options, lastMessageId, lastMessageTime, messageCount',
-  ),
-  'conditions' => array(
-    'both' => array(
-      '!options' => $database->int(8, 'bAnd')
-    ),
-  ),
-  'sort' => array(
-    $request['sort'] => 'asc',
-  ),
-);
 
-
-
-/* Modify Query Data for Directives */
-if ($request['showDeleted'] === false) {
-  $queryParts['roomSelect']['conditions']['both']['!options'] = $database->bitChange($queryParts['roomSelect']['conditions']['both']['!options'], 8, 'remove');
-}
-
-if (count($request['rooms']) > 0) {
-  $queryParts['roomSelect']['conditions']['both']['roomId'] = $database->type('array', $request['rooms'], 'in');
-}
-
-if (isset($request['search'])) {
-  $queryParts['roomSelect']['conditions']['both']['roomName'] = $database->type('string', $request['search'], 'search');
-}
-
-
-
-/* Plugin Hook Start */
-($hook = hook('getRooms_start') ? eval($hook) : '');
-
-/* Get Rooms From Database */
-$rooms = $database->select(
-  $queryParts['roomSelect']['columns'],
-  $queryParts['roomSelect']['conditions'],
-  $queryParts['roomSelect']['sort']);
-//die($rooms->sourceQuery);
-$rooms = $rooms->getAsArray(true);
-
+$rooms = $database->getRooms($request['rooms'], $request['showDeleted'], $request['search'], null, null, $request['sort'], 'asc');
 
 
 /* Process Rooms Obtained from Database */
-if (is_array($rooms)) {
-  if (count($rooms) > 0) {
+// I'll fix the spacing when I get a better editor. Eclipse is seriously the worst thing ever, and I miss KDevelop.
     foreach ($rooms AS $roomData) {
       $roomData['type'] = 'normal'; // hasPermission requires this; it is returned by default from the getRoom function.
 
@@ -184,8 +144,6 @@ if (is_array($rooms)) {
 
       ($hook = hook('getRooms_eachRoom') ? eval($hook) : '');
     }
-  }
-}
 
 
 

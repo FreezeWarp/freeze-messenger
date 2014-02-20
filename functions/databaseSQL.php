@@ -198,7 +198,8 @@ class databaseSQL extends database {
       case 'tableColumn':   return $this->formatValue('table', $values[1]) . $this->tableColumnDivider . $this->formatValue('column', $values[2]);     break;
       case 'databaseTable': return $this->formatValue('database', $values[1]) . $this->databaseTableDivider . $this->formatValue('table', $values[2]); break;
       
-      case 'tableColumnAlias': return $this->formatValue('table', $values[1]) . $this->tableColumnDivider . $this->formatValue('column', $values[2]) . ' AS ' . $this->formatValue('columnA', $values[3]); break;
+      case 'tableColumnAlias': return $this->formatValue('table', $values[1]) . $this->tableColumnDivider . $this->formatValue('column', $values[2]) . $this->columnAliasDivider . $this->formatValue('columnA', $values[3]); break;
+      case 'tableAlias' : return $this->formatValue('table', $values[1]) . $this->tableAliasDivider . $this->formatValue('tableA', $values[2]);     break;
     }
   }
   
@@ -214,11 +215,11 @@ class databaseSQL extends database {
    * @return string - The formatted SQL string.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  private function formatAlias($value, $alias, $type) {
+/*  private function formatAlias($value, $alias, $type) {
     switch ($type) {
       case 'column': case 'table': return "$value AS $alias"; break;
     }
-  }
+  }*/
   
   
   
@@ -256,8 +257,9 @@ class databaseSQL extends database {
 
 
   
-  public function connect($host, $port, $user, $password, $database, $driver) {
+  public function connect($host, $port, $user, $password, $database, $driver, $tablePrefix) {
     $this->setLanguage($driver);
+    $this->sqlPrefix = $tablePrefix;
 
     if (!$link = $this->functionMap('connect', $host, $port, $user, $password, $database)) { // Make the connection.
       $this->triggerError('Could Not Connect', array( // Note: we do not include "password" in the error data.
@@ -310,6 +312,7 @@ class databaseSQL extends database {
       $this->intQuoteStart = '';       $this->intQuoteEnd = '';
       $this->tableColumnDivider = '.'; $this->databaseTableDivider = '.';
       $this->sortOrderAsc = 'ASC';     $this->sortOrderDesc = 'DESC';
+      $this->tableAliasDivider = ' AS '; $this->columnAliasDivider = ' AS ';
 
       $this->tableTypes = array(
         'general' => 'InnoDB',
@@ -325,6 +328,7 @@ class databaseSQL extends database {
       $this->intQuoteStart = '';       $this->intQuoteEnd = '';
       $this->tableColumnDivider = '.'; $this->databaseTableDivider = '.';
       $this->sortOrderAsc = 'ASC';     $this->sortOrderDesc = 'DESC';
+      $this->tableAliasDivider = ' AS '; $this->columnAliasDivider = ' AS ';
       break;
     }
 
@@ -733,13 +737,12 @@ class databaseSQL extends database {
       if (count($columns) > 0) {
         foreach ($columns AS $tableName => $tableCols) {
           if (strlen($tableName) > 0) { // If the tableName is defined...
-            if (strstr($tableName,' ') !== false) { // A space can be used to create a table alias, which is sometimes required for different queries.
-              
-              throw new Exception('TODO');
+            if (strstr($tableName, ' ') !== false) { // A space can be used to create a table alias, which is sometimes required for different queries.
+              //throw new Exception('TODO');
               
               $tableParts = explode(' ', $tableName);
 
-              $finalQuery['tables'][] = $this->formatValue('tableAsAlias', $tableParts[0], $tableParts[1]); // Identify the table as [tableName] AS [tableAlias]
+              $finalQuery['tables'][] = $this->formatValue('tableAlias', $tableParts[0], $tableParts[1]); // Identify the table as [tableName] AS [tableAlias]
 
               $tableName = $tableParts[1];
             }
@@ -774,7 +777,7 @@ class databaseSQL extends database {
                 else {
                   $this->triggerError('Invalid Select Array (Empty Column Name)', array(
                     'tableName' => $tableName,
-                    'columnName' => $columnName,
+                    'columnName' => $colName,
                   ), 'validation');
                 }
               }
@@ -956,7 +959,7 @@ LIMIT
             if ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
               $sideTextFull[$i] = ($this->startsWith($key, '!') ? '!' : '') . "({$sideText['left']} {$symbol} {$sideText['right']})";
             }
-            else {//var_dump($reverseAlias); echo $key;  var_dump($value); var_dump($sideText); die();
+            else {var_dump($reverseAlias); echo $key;  var_dump($value); var_dump($sideText); die();
               $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
 
               $this->triggerError('Query Nullified', array(), 'validation'); // Dev, basically. TODO.
