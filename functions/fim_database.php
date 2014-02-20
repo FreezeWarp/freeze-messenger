@@ -18,6 +18,149 @@
 class fimDatabase extends databaseSQL {
 
 
+  public function getMessages($rooms = array(),
+    $messages = array(),
+    $users = array(),
+    $messageTextGlob = '',
+    $showDeleted = true,
+    $messageIdConstraints = array(),
+    $archive = false,
+    $longPolling = false,
+    $sort = array('messageId' => 'asc'),
+    $limit = false
+  ) {
+
+    global $config;
+
+
+    /* Create a $messages list based on search parameter. */
+    if (strlen($messageTextGlob) > 0 && $archive) {
+      $searchArray = explode(',', $messageTextGlob);
+
+      foreach ($searchArray AS $searchVal) {
+        $searchArray2[] = str_replace(
+          array_keys($config['searchWordConverts']),
+          array_values($config['searchWordConverts']),
+          $searchVal
+        );
+      }
+
+      /* Establish Base Data */
+      $columns = array(
+        $this->sqlPrefix . "searchPhrases" => 'phraseName, phraseId pphraseId',
+        $this->sqlPrefix . "searchMessages" => 'phraseId mphraseId, messageId, userId, roomId'
+      );
+
+      $conditions['both']['mphraseId'] = $this->col('pphraseId');
+
+
+      /* Apply User and Room Filters */
+
+      if (count($rooms) > 1)
+        $conditions['both']['roomId'] = $this->in((array) $rooms);
+
+      if (count($users) > 1)
+        $conditions['both']['userId'] = $this->in((array) $users);
+
+
+      /* Determine Whether to Use the Fast or Slow Algorithms */
+      if (!$config['fullTextArchive']) { // Original, Fastest Algorithm
+        $conditions['both']['phraseName'] = $this->in((array) $searchArray2);
+      }
+      else { // Slower Algorithm
+        foreach ($searchArray2 AS $phrase)
+          $conditions['both']['either'][]['phraseName'] = '*' . $phrase . '*';
+      }
+
+
+      /* Run the Query */
+      $searchMessageIds = $this->select($columns, $conditions, $sort)->getAsArray('messageId');
+
+      $searchMessages = array_keys($searchMessageIds);
+
+
+      /* Modify the Request Filter for Messages */
+      if ($searchMessages) $messages = fim_arrayValidate($searchMessages, 'int', true);
+      else                 $messages = array(0); // This is a fairly dirty approach, but it does work for now. TODO
+    }
+
+
+    /* Query via the Archive */
+    if ($archive) {
+      $columns = array(
+        $this->sqlPrefix . "messages" => 'messageId, time, iv, salt, roomId, userId, deleted, flag, text',
+        $this->sqlPrefix . "users" => 'userId muserId, userName, userGroup, socialGroups, userFormatStart, userFormatEnd, avatar, defaultColor, defaultFontface, defaultHighlight, defaultFormatting'
+      );
+
+      $conditions['both']['muserId'] = $this->col('userId');
+    }
+
+
+    /* Access the Stream */
+    else {
+      $columns = array(
+        $this->sqlPrefix . "messagesCached" => "messageId, roomId, time, flag, userId, userName, userGroup, socialGroups, userFormatStart, userFormatEnd, avatar, defaultColor, defaultFontface, defaultHighlight, defaultFormatting, text",
+      );
+    }
+
+
+
+    /* Modify Query Data for Directives */
+    if (isset($messageIdConstraints['messageIdMax']))
+      $conditions['both']['messageId'] = $this->val('int', $request['messageIdMax'], 'lte');
+
+    if (isset($messageIdConstraints['messageIdMin']))
+      $conditions['both']['messageId'] = $this->val('int', $request['messageIdMin'], 'gte');
+
+    if (isset($messageIdConstraints['messageDateMax']))
+      $conditions['both']['time'] = $this->val('int', $request['messageDateMax'], 'lte');
+
+    if (isset($messageIdConstraints['messageDateMin']))
+      $conditions['both']['time'] = $this->val('int', $request['messageDateMin'], 'gte');
+
+    if (isset($messageIdConstraints['messageIdStart'])) {
+      $conditions['both']['messageId'] = $this->val('int', $request['messageIdStart'], 'gte');
+      $conditions['both']['messageId b'] = $this->val('int', $request['messageIdStart'] + $request['messageLimit'], 'lt');
+    }
+    elseif (isset($messageIdConstraints['messageIdEnd'])) {
+      $conditions['both']['messageId'] = $this->val('int', $request['messageIdEnd'], 'lte');
+      $conditions['both']['messageId b'] = $this->val('int', $request['messageIdEnd'] - $request['messageLimit'], 'gt');
+    }
+
+    if ($showDeleted === true && $archive === true)
+      $conditions['both']['deleted'] = $this->bool(false);
+
+    if (count($messages) > 0) // Overrides all other message ID parameters.
+      $conditions['both']['messageId'] = $this->in($messages);
+
+    if (count($users) > 0)
+      $conditions['both']['userId'] = $this->in($user);
+
+    if (count($rooms) > 0)
+      $conditions['both']['roomId'] = $this->in($rooms);
+
+
+    $messages = $this->select($columns, $conditions, $sort);
+
+
+    if ($longPolling) {
+      $longPollingRetries = 0;
+
+      while (!$messages) {
+        $longPollingRetries++;
+
+        $messages = $this->select($columns, $conditions, $sort);
+
+        if ($longPollingRetries <= $config['longPollingMaxRetries']) { sleep($config['longPollingWait']); }
+        else break;
+      }
+    }
+
+
+    return $messages;
+  }
+
+
   public function getPermissions($rooms = array()) {
     // Modify Query Data for Directives (First for Performance)
     $columns = array(
@@ -74,11 +217,11 @@ class fimDatabase extends databaseSQL {
       'both' => array(
   	    '!options' => $this->int(8, 'bAnd')
   	  ));
-  	
-	  	
+
+
   	// Modify Query Data for Directives
   	if ($showDeleted)
-  	  $conditions['both']['!options'] = $this->bitChange($queryParts['roomSelect']['conditions']['both']['!options'], 8, 'remove'); // TODO: Permission?
+  	  $conditions['both']['!options'] = $this->bitChange($conditions['both']['!options'], 8, 'remove'); // TODO: Permission?
   	
   	if (count($rooms) > 0)
   	  $conditions['both']['roomId'] = $this->type('array', $rooms, 'in');
@@ -87,6 +230,9 @@ class fimDatabase extends databaseSQL {
   	  $conditions['both']['roomName'] = $this->type('string', $globNameSearch, 'search');
   	 	
 
+    $this->roomType = 'normal';
+
+
   	// Perform Query
   	return $this->select(
   	  $columns,
@@ -94,99 +240,11 @@ class fimDatabase extends databaseSQL {
   	  $sort);
   }
 
-  /* TODO: Alias for getRooms? */
-  public function getRoom($roomIds, $roomName = false, $cache = true) {
-    global $config, $user;
-    
 
-/*    if (substr($roomId, 0, 1) === 'o') { // OTR Room
-      $queryParts['roomSelect']['columns'] = array(
-        "{$sqlPrefix}privateRooms" => array(
-          'uniqueId' => 'roomId'.
-          'roomUsersList',
-          'roomUsersHash',
-          'options',
-        ),
-      );
-
-      $queryParts['roomSelect']['conditions'] = array(
-        'both' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'uniqueId'
-            ),
-            'right' => array(
-              'type' => 'int',
-              'value' => substr($roomId, 1),
-            ),
-          ),
-        ),
-      );
-
-      $roomType = 'otr'; // We return this because it will be easier to change the roomId schema.
-    }
-    else*/
-    
-    /* Private Rooms - These Are "Special" Rooms That Don't Conform to Standard Crap
-     *
-     * A Few Notes:
-     * The $generalCache->getRooms() call must understand these rooms properly, reading the $roomType to be either "private" or "general".
-     * These rooms exist in the "privateRooms" table.
-     * These rooms must not be mass-managed. They must be read using the getPrivateRoom.php API, which transparently creates a private room if one did not already exist. Certain APIs may use this function to query the room information (getMessages.php is the primary one), but none may "list" multiple private rooms, nor query information for multiple private rooms. As a result, this function will _only_ support reading a single private room at any time. */
-    
-    if (is_int($roomIds) && substr($roomIds, 0, 1) === 'p') { // Private Room
-      $queryParts['roomSelect']['columns'] = array(
-        $this->sqlPrefix . "privateRooms" => 'uniqueId roomId, roomUsersList, roomUsersHash, options, lastMessageId, lastMessageTime, messageCount'
-      );
-
-      $queryParts['roomSelect']['conditions'] = array(
-        'both' => array('roomId' => $this->int(substr($roomId, 1))),
-      );
-
-      $roomType = 'private'; // We return this because it will be easier to change the roomId schema.
-    }
-    
-    /* Room Name Handling
-     *
-     * This function supports querying rooms by room name in rare circumstances. These must be queried one-at-a-time, and should be avoided whenever possible (the main use is for determining if a room by a certain name already exists, though other purposes could in theory exist). */
-    elseif (false !== $roomName) {
-    
-    }
-    
-    /* Room ID Handling
-     *
-     * An IN clause is used to support multiple rooms. If a single roomId was specified, a flat array will be returned; otherwise, an array using roomId as an index will be used. */
-    else {
-      $queryParts['roomSelect']['columns'] = array(
-        $this->sqlPrefix . "rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, parentalFlags, parentalAge, options, lastMessageId, lastMessageTime, messageCount',
-      );
-
-      if ($roomId) {
-        $queryParts['roomSelect']['conditions'] = array(
-          'both' => array('roomId' => $this->in($roomIds)),
-        );
-      }
-      elseif ($roomName) {
-        $queryParts['roomSelect']['conditions'] = array(
-          'both' => array('roomName' => $this->str($roomName)),
-        );
-      }
-      else {
-        return false;
-      }
-
-      $roomType = 'normal'; // We return this because it will be easier to change the roomId schema.
-    }
-    
-    $roomData = $this->select(
-      $queryParts['roomSelect']['columns'],
-      $queryParts['roomSelect']['conditions'],
-      false,
-      1);
-    $roomData = $roomData->getAsArray(false);
-    $roomData['type'] = $roomType;
+  public function getRoom($roomId) {
+    $roomData = $this->getRooms(array($roomId))->getAsArray(true);
+    $roomData = $roomData[$roomId];
+    $roomData['type'] = 'normal'; // TODO
 
     return $roomData;
   }
@@ -454,6 +512,34 @@ class fimDatabase extends databaseSQL {
       ));
     }
   }
+
+
+
+  /**
+   * Sends a message. Requires the database to be active.
+   *
+   * @param string messageText - Text of message.
+   * @param string messageFlag - Flag of message, used by clients to automatically display URLs, images, etc.
+   * @param string userData - The data of the user sending the message. (This is not validated with the current user, and is left up to plugins).
+   * @param string roomData - The data of the room. Must be fully populated.
+   *
+   *
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  public function sendMessage($messageText, $messageFlag, $userData, $roomData) {
+    $messageParse = new messageParse($messageText, $messageFlag, $userData, $roomData);
+
+    $messageText = $messageParse->getParsed();
+    list($messageTextEncrypted, $iv, $saltNum) = $messageParse->getEncrypted();
+
+    $messageId = $this->storeMessage($userData, $roomData, $messageText, $messageTextEncrypted, $iv, $saltNum, $messageFlag);
+
+    $keyWords = $messageParse->getKeyWords();
+    $this->storeKeyWords($keyWords, $messageId, $userData['userId'], $roomData['roomId']);
+
+//  $database->storeUnreadMessage();
+  }
+
 
 
   public function storeMessage($userData, $roomData, $messageText, $messageTextEncrypted, $encryptIV, $encryptSalt, $flag) {
@@ -728,6 +814,7 @@ class fimDatabase extends databaseSQL {
   }
 
 
+
   public function getPrivateRoom($userList) {
     global $config;
 
@@ -752,7 +839,8 @@ class fimDatabase extends databaseSQL {
       $queryParts['conditions']);
     return $privateRoom->getAsArray(false);
   }
-  
+
+
 
   public function storeKeyWords($words, $messageId, $userId, $roomId) {
     global $config;

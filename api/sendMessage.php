@@ -34,6 +34,7 @@ $apiRequest = true;
 require('../global.php');
 
 
+
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
   'roomId' => array(
@@ -53,9 +54,6 @@ $request = fim_sanitizeGPC('p', array(
 ));
 $ip = $_SERVER['REMOTE_ADDR']; // Get the IP address of the user.
 
-
-/* Plugin Hook */
-($hook = hook('sendMessage_start') ? eval($hook) : '');
 
 
 /* Get Room for DB */
@@ -94,13 +92,9 @@ if ($censorWordsCache['byWord']) {
       $blockedWordSeverity = $censorWordsCache['byWord'][$blockedWord]['severity'];
     }
   }
-
-  ($hook = hook('sendMessage_censor_end') ? eval($hook) : '');
 }
 
 
-/* Plugin Hook */
-($hook = hook('sendMessage_preGen') ? eval($hook) : '');
 
 
 /* Start Processing */
@@ -152,7 +146,7 @@ if ($continue) {
     ($hook = hook('sendMessage_topic') ? eval($hook) : '');
 
     if ($continue) {
-      fim_sendMessage($request['message'], '', $user, $roomData);
+      $database->sendMessage($request['message'], '', $user, $roomData);
 
       $database->createEvent('topicChange', false, $roomData['roomId'], false, $topic, false, false); // name, user, room, message, p1, p2, p3
 
@@ -191,13 +185,10 @@ if ($continue) {
     ($hook = hook('sendMessage_send') ? eval($hook) : '');
 
     if ($continue) {
-      fim_sendMessage($request['message'], $request['flag'], $user, $roomData);
+      $database->sendMessage($request['message'], $request['flag'], $user, $roomData);
     }
   }
 }
-
-
-($hook = hook('sendMessage_postGen') ? eval($hook) : '');
 
 
 
@@ -217,11 +208,6 @@ $xmlData = array(
     ),
   ),
 );
-
-
-
-/* Plugin Hook End */
-($hook = hook('sendMessage_end') ? eval($hook) : '');
 
 
 

@@ -107,7 +107,7 @@ abstract class database {
    *
    * @return void
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */ 
+    */
   public function __destruct() {
     if ($this->dbLink !== null) { // When close is called, the dbLink is nulled. This prevents redundancy.
       $this->close();
@@ -596,12 +596,30 @@ abstract class database {
       case 'col': case 'column':    return array('colomn',    (string) $value, $comp); break;
       case 'arr': case 'array':     return array('array',     (array)  $value, ($comp === 'in' || $comp === 'notin' ? $comp : 'in')); break;
       case 'flt': case 'float':     return array('float',     (float)  $value, $comp); break;
+      case 'bool':                  return array('bool',      (bool)   $value, $comp); break;
     }
   }
 
-
   public function in($value) {
     return $this->type('arr', $value, 'in');
+  }
+
+  public function bool($value) {
+    return $this->type('bool', $value, 'e');
+  }
+
+  /**
+   * Define a value as being an integer for database operations.
+   *
+   * @param mixed $value - The value to cast.
+   * @param mixed $comp - How the value will be compared to the data present as an index.
+   *
+   * @return special - Returns a special representation of a column int only for use in database functions.
+   *
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  public function int($value, $comp = 'e') {
+    return $this->type('int', $value, $comp);
   }
   
   
@@ -624,20 +642,6 @@ abstract class database {
     }
     
     return $typeArray;
-  }
-  
-  /**
-   * Define a value as being an integer for database operations.
-   *
-   * @param mixed $value - The value to cast.
-   * @param mixed $comp - How the value will be compared to the data present as an index.
-   *
-   * @return special - Returns a special representation of a column int only for use in database functions.
-   *
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */
-  public function int($value, $comp = 'e') {
-    return $this->type('int', $value, $comp);
   }
   
   

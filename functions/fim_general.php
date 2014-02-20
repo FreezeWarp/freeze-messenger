@@ -61,7 +61,7 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
   }
   /* END TRANSITIONAL */
 
-  /* START COMPILE VERBOSE */
+  /* START COMPILE VERBOSE -- TODO: Should be able to detect based on ID. */
   if (!isset($roomData['type'])) throw new Exception('hasPermission requires roomData[type] to be defined.');
   elseif (!isset($userData['userId'])) throw new Exception('hasPermission requires roomData[type] to be defined.');
   /* END COMPILE VERBOSE */
@@ -230,33 +230,6 @@ function fim_isSuper() {
   else return false;
 }
 
-
-/**
- * Sends a message. Requires the database to be active.
- *
- * @param string messageText - Text of message.
- * @param string messageFlag - Flag of message, used by clients to automatically display URLs, images, etc.
- * @param string userData - The data of the user sending the message. (This is not validated with the current user, and is left up to plugins).
- * @param string roomData - The data of the room. Must be fully populated.
- *
- *
- * @author Joseph Todd Parsons <josephtparsons@gmail.com>
- */
-function fim_sendMessage($messageText, $messageFlag, $userData, $roomData) {
-  global $database;
-
-  $messageParse = new messageParse($messageText, $messageFlag, $userData, $roomData);
-
-  $messageText = $messageParse->getParsed();
-  list($messageTextEncrypted, $iv, $saltNum) = $messageParse->getEncrypted();
-
-  $messageId = $database->storeMessage($userData, $roomData, $messageText, $messageTextEncrypted, $iv, $saltNum, $messageFlag);
-
-  $keyWords = $messageParse->getKeyWords();
-  $database->storeKeyWords($keyWords, $messageId, $userData['userId'], $roomData['roomId']);
-
-//  $database->storeUnreadMessage();
-}
 
 
 /*
@@ -1065,13 +1038,12 @@ function fim_sanitizeGPC($type, $data) {
       break;
     }
   }
-  
 
   /* Process Request Body */
   if (!is_array($activeGlobal)) { // Make sure the active global is populated with data.
     $activeGlobal = array();
   }
-  
+
   foreach ($data AS $indexName => $indexData) {
     $indexMetaData = $metaDataDefaults; // Store indexMetaData with the defaults.
     

@@ -959,7 +959,7 @@ LIMIT
             if ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
               $sideTextFull[$i] = ($this->startsWith($key, '!') ? '!' : '') . "({$sideText['left']} {$symbol} {$sideText['right']})";
             }
-            else {var_dump($reverseAlias); echo $key;  var_dump($value); var_dump($sideText); die();
+            else {//var_dump($reverseAlias); echo $key;  var_dump($value); var_dump($sideText); die();
               $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
 
               $this->triggerError('Query Nullified', array(), 'validation'); // Dev, basically. TODO.
@@ -989,9 +989,9 @@ LIMIT
 
     return "($whereText)"; // Return condition string. We wrap parens around to support multiple levels of conditions/recursion.
   }
-  
-  
-  
+
+
+
   /**
    * Divides a multidimensional array into three seperate two-dimensional arrays, and performs some additional processing as defined in the passed array. It is used by the insert(), update(), and delete() functions.
    *

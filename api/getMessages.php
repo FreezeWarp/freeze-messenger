@@ -196,340 +196,6 @@ if (!$room) {
   $errDesc = 'That room could not be found.';
 }
 else {
-  if ((strlen($request['search']) > 0) && $request['archive']) {
-    $searchArray = explode(',',$request['search']);
-
-    foreach ($searchArray AS $searchVal) {
-      $searchArray2[] = str_replace(
-        array_keys($config['searchWordConverts']),
-        array_values($config['searchWordConverts']),
-        $searchVal
-      );
-    }
-
-    /* Establish Base Data */
-    $queryParts['searchSelect']['columns'] = array(
-      "{$sqlPrefix}searchPhrases" => array(
-        'phraseName' => 'phraseName',
-        'phraseId' => 'pphraseId',
-      ),
-      "{$sqlPrefix}searchMessages" => array(
-        'phraseId' => 'mphraseId',
-        'messageId' => 'messageId',
-        'userId' => 'userId',
-        'roomId' => 'roomId',
-      ),
-    );
-    $queryParts['searchSelect']['conditions'] = array(
-      'both' => array(
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'mphraseId',
-          ),
-          'right' => array(
-            'type' => 'column',
-            'value' => 'pphraseId',
-          ),
-        ),
-      ),
-    );
-
-
-    /* Apply User and Room Filters */
-    $queryParts['searchSelect']['conditions']['both'][] = array(
-      'type' => 'e',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'roomId',
-      ),
-      'right' => array(
-        'type' => 'string',
-        'value' => $request['roomId'],
-      ),
-    );
-
-    if (count($request['users']) > 0) {
-      $queryParts['searchSelect']['conditions']['both'][] = array(
-        'type' => 'in',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'userId',
-        ),
-        'right' => array(
-          'type' => 'array',
-          'value' => $request['users'],
-        ),
-      );
-    }
-
-
-    /* Determine Whether to Use the Fast or Slow Algorithms */
-    if (!$config['fullTextArchive']) { // Original, Fastest Algorithm
-      $queryParts['searchSelect']['conditions']['both'][] = array(
-        'type' => 'in',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'phraseName',
-        ),
-        'right' => array(
-          'type' => 'array',
-          'value' => $searchArray2,
-        ),
-      );
-    }
-    else { // Slower Algorithm
-      foreach ($searchArray2 AS $phrase) {
-        $queryParts['searchSelect']['conditions']['both']['either'][] = array(
-          'type' => 'glob',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'phraseName',
-          ),
-          'right' => array(
-            'type' => 'glob',
-            'value' => '*' . $phrase . '*',
-          ),
-        );
-      }
-    }
-
-
-    /* Run the Query */
-    $searchMessageIds = $database->select(
-      $queryParts['searchSelect']['columns'],
-      $queryParts['searchSelect']['conditions']);
-
-    $searchMessageIds = $searchMessageIds->getAsArray('messageId');
-    $searchMessages = array_keys($searchMessageIds);
-
-
-    /* Modify the Request Filter for Messages */
-    if ($searchMessages) {
-      $request['messages'] = fim_arrayValidate($searchMessages, 'int', true);
-    }
-    else {
-      $request['messages'] = array(0); // This is a fairly dirty approach, but it does work for now.
-    }
-  }
-
-  if ($request['archive']) {
-    $queryParts['messagesSelect']['columns'] = array(
-      "{$sqlPrefix}messages" => 'messageId, time, iv, salt, roomId, userId, deleted, flag, text',
-      "{$sqlPrefix}users" => 'userId muserId, userName, userGroup, socialGroups, userFormatStart, userFormatEnd, avatar, defaultColor, defaultFontface, defaultHighlight, defaultFormatting'
-    );
-
-    $queryParts['messagesSelect']['conditions'] = array(
-      'both' => array(
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'roomId',
-          ),
-          'right' => array(
-            'type' => 'int',
-            'value' => (int) $room['roomId'],
-          ),
-        ),
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'muserId',
-          ),
-          'right' => array(
-            'type' => 'column',
-            'value' => 'userId',
-          ),
-        ),
-      ),
-    );
-    $queryParts['messagesSelect']['sort'] = array(
-      'messageId' => 'asc',
-    );
-  }
-  else {
-    $queryParts['messagesSelect']['columns'] = array(
-      "{$sqlPrefix}messagesCached" => "messageId, roomId, time, flag, userId, userName, userGroup, socialGroups, userFormatStart, userFormatEnd, avatar, defaultColor, defaultFontface, defaultHighlight, defaultFormatting, text",
-    );
-    $queryParts['messagesSelect']['conditions'] = array(
-      'both' => array(
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'roomId',
-          ),
-          'right' => array(
-            'type' => 'int',
-            'value' => (int) $room['roomId'],
-          ),
-        ),
-      ),
-    );
-    $queryParts['messagesSelect']['sort'] = array(
-      'messageId' => 'asc',
-    );
-  }
-
-
-
-  /* Modify Query Data for Directives */
-  if (isset($request['messageIdMax'])) {
-    $queryParts['messagesSelect']['conditions']['both'][] = array(
-      'type' => 'lte',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'messageId',
-      ),
-      'right' => array(
-        'type' => 'int',
-        'value' => (int) $request['messageIdMax'],
-      ),
-    );
-  }
-  if (isset($request['messageIdMin'])) {
-    $queryParts['messagesSelect']['conditions']['both'][] = array(
-      'type' => 'gte',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'messageId',
-      ),
-      'right' => array(
-        'type' => 'int',
-        'value' => (int) $request['messageIdMin'],
-      ),
-    );
-  }
-
-  if (isset($request['messageDateMax'])) {
-    $queryParts['messagesSelect']['conditions']['both'][] = array(
-      'type' => 'lte',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'time',
-      ),
-      'right' => array(
-        'type' => 'int',
-        'value' => (int) $request['messageDateMax'],
-      ),
-    );
-  }
-  if (isset($request['messageDateMin'])) {
-    $queryParts['messagesSelect']['conditions']['both'][] = array(
-      'type' => 'gte',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'time',
-      ),
-      'right' => array(
-        'type' => 'int',
-        'value' => (int) $request['messageDateMin'],
-      ),
-    );
-  }
-
-  if (isset($request['messageIdStart'])) {
-    $queryParts['messagesSelect']['conditions']['both'][] = array(
-      'type' => 'gte',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'messageId',
-      ),
-      'right' => array(
-        'type' => 'int',
-        'value' => (int) $request['messageIdStart'],
-      ),
-    );
-    $queryParts['messagesSelect']['conditions']['both'][] = array(
-      'type' => 'lt',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'messageId',
-      ),
-      'right' => array(
-        'type' => 'int',
-        'value' => (int) ($request['messageIdStart'] + $request['messageLimit']),
-      ),
-    );
-  }
-  elseif (isset($request['messageIdEnd'])) {
-    $queryParts['messagesSelect']['conditions']['both'][] = array(
-      'type' => 'lte',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'messageId',
-      ),
-      'right' => array(
-        'type' => 'int',
-        'value' => (int) $request['messageIdEnd'],
-      ),
-    );
-    $queryParts['messagesSelect']['conditions']['both'][] = array(
-      'type' => 'gt',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'messageId',
-      ),
-      'right' => array(
-        'type' => 'int',
-        'value' => (int) ($request['messageIdEnd'] - $request['messageLimit']),
-      ),
-    );
-  }
-
-  if (!$request['showDeleted'] === true && $request['archive'] === true) {
-    $queryParts['messagesSelect']['conditions']['both'][] = array(
-      'type' => 'e',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'deleted',
-      ),
-      'right' => array(
-        'type' => 'bool',
-        'value' => false,
-      ),
-    );
-  }
-
-  if (count($request['messages']) > 0) {
-    $queryParts['messagesSelect']['conditions']['both'][] = array(
-      'type' => 'in',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'messageId',
-      ),
-      'right' => array(
-        'type' => 'array',
-        'value' => $request['messages'],
-      ),
-    );
-  }
-
-  if (count($request['users']) > 0) {
-    $queryParts['messagesSelect']['conditions']['both'][] = array(
-      'type' => 'in',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'userId',
-      ),
-      'right' => array(
-        'type' => 'array',
-        'value' => $request['users'],
-      ),
-    );
-  }
-
-
-  /* Plugin Hook Start */
-  ($hook = hook('getMessages_start') ? eval($hook) : '');
-
-
-
-  /* Start Crazy Stuff */
-
   /* Make sure the user has permission to view posts from the room. */
   $permission = fim_hasPermission($room, $user, 'view', false);
 
@@ -537,14 +203,14 @@ else {
 
     switch($permission[1]) {
       case 'kick':
-      $errStr = 'kicked';
-      $errDesc = 'You have been kicked untl ' . fim_date($permission[3]) . '.';
-      break;
+        $errStr = 'kicked';
+        $errDesc = 'You have been kicked untl ' . fim_date($permission[3]) . '.';
+        break;
 
       default:
-      $errStr = 'noperm';
-      $errDesc = 'You do not have permission to view the room you are trying to view.';
-      break;
+        $errStr = 'noperm';
+        $errDesc = 'You do not have permission to view the room you are trying to view.';
+        break;
     }
 
     ($hook = hook('getMessages_noPerm') ? eval($hook) : '');
@@ -561,98 +227,55 @@ else {
       ), array(
         'time' => $database->now(),
       ));
-
-      ($hook = hook('getMessages_ping') ? eval($hook) : '');
     }
 
 
     /* Get Messages from Database */
-
-    if ($config['longPolling']) {
-      $messages = false;
-      while (!$messages) {
-        $longPollingRetries++;
-
-        $messages = $database->select($queryParts['messagesSelect']['columns'],
-          $queryParts['messagesSelect']['conditions'],
-          $queryParts['messagesSelect']['sort'],
-          $request['messageLimit']);
-        $messages = $messages->getAsArray('messageId');
-
-        ($hook = hook('getMessages_postMessages_longPolling_repeat') ? eval($hook) : '');
-
-        if ($longPollingRetries <= $config['longPollingMaxRetries']) { sleep($config['longPollingWait']); }
-        else break;
-      }
-
-      ($hook = hook('getMessages_postMessages_longPolling') ? eval($hook) : '');
-
-    }
-    else {
-      $messages = $database->select($queryParts['messagesSelect']['columns'],
-        $queryParts['messagesSelect']['conditions'],
-        $queryParts['messagesSelect']['sort'],
-        $request['messageLimit']);
-      $messages = $messages->getAsArray('messageId');
-
-      ($hook = hook('getMessages_postMessages_polling') ? eval($hook) : '');
-
-    }
+    $messages = $database->getMessages()->getAsArray(true);
 
 
     /* Process Messages */
-    if (is_array($messages)) {
-      if (count($messages) > 0) {
-        if (count($messages) > $request['messageHardLimit']) {
-          if (isset($request['messageIdEnd'])) array_splice($messages, 0, -1 * $request['messageHardLimit']);
-          else array_splice($messages, $request['messageHardLimit']);
+    if (count($messages) > 0) {
+      if (count($messages) > $request['messageHardLimit']) {
+        if (isset($request['messageIdEnd'])) array_splice($messages, 0, -1 * $request['messageHardLimit']);
+        else array_splice($messages, $request['messageHardLimit']);
+      }
+
+      foreach ($messages AS $id => $message) {
+        $roomData = $database->getRoom($message['roomId']);
+
+        if (isset($message['iv'], $message['salt'])) $message = fim_decrypt($message, 'text');
+
+        switch ($request['encode']) {
+          case 'plaintext': break; // All Good
+          case 'base64': $message['text'] = base64_encode($message['text']); break;
         }
 
-        foreach ($messages AS $id => $message) {
-          $roomData = $database->getRoom($message['roomId']);
 
-          $message = fim_decrypt($message, 'text');
-
-          switch ($request['encode']) {
-            case 'plaintext':
-            // All Good
-            break;
-
-            case 'base64':
-            $message['text'] = base64_encode($message['text']);
-            break;
-          }
-
-
-          $xmlData['getMessages']['messages']['message ' . (int) $message['messageId']] = array(
-            'messageData' => array(
-              'roomId' => (int) $room['roomId'],
-              'messageId' => (int) $message['messageId'],
-              'messageTime' => (int) $message['time'],
-              'messageText' => $message['text'],
-              'flags' => ($message['flag']),
+        $xmlData['getMessages']['messages']['message ' . (int) $message['messageId']] = array(
+          'messageData' => array(
+            'roomId' => (int) $room['roomId'],
+            'messageId' => (int) $message['messageId'],
+            'messageTime' => (int) $message['time'],
+            'messageText' => $message['text'],
+            'flags' => ($message['flag']),
+          ),
+          'userData' => array(
+            'userName' => ($message['userName']),
+            'userId' => (int) $message['userId'],
+            'userGroup' => (int) $message['userGroup'],
+            'avatar' => ($message['avatar']),
+            'socialGroups' => ($message['socialGroups']),
+            'startTag' => ($message['userFormatStart']),
+            'endTag' => ($message['userFormatEnd']),
+            'defaultFormatting' => array(
+              'color' => ($message['defaultColor']),
+              'highlight' => ($message['defaultHighlight']),
+              'fontface' => ($message['defaultFontface']),
+              'general' => (int) $message['defaultFormatting']
             ),
-            'userData' => array(
-              'userName' => ($message['userName']),
-              'userId' => (int) $message['userId'],
-              'userGroup' => (int) $message['userGroup'],
-              'avatar' => ($message['avatar']),
-              'socialGroups' => ($message['socialGroups']),
-              'startTag' => ($message['userFormatStart']),
-              'endTag' => ($message['userFormatEnd']),
-              'defaultFormatting' => array(
-                'color' => ($message['defaultColor']),
-                'highlight' => ($message['defaultHighlight']),
-                'fontface' => ($message['defaultFontface']),
-                'general' => (int) $message['defaultFormatting']
-              ),
-            ),
-          );
-
-
-          ($hook = hook('getMessages_eachMessage') ? eval($hook) : ''); // Useful forunning code that requires the specific message array to still be present, or otherwise for convience sake.
-
-        }
+          ),
+        );
       }
     }
   }
