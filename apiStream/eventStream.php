@@ -81,41 +81,11 @@ else {
     $queryParts['eventsSelect']['conditions'] = array(
       'both' => array(
         'either' => array(
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'roomId',
-            ),
-            'right' => array(
-              'type' => 'int',
-              'value' => (int) $request['roomId'],
-            ),
-          ),
-          array(
-            'type' => 'e',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'userId',
-            ),
-            'right' => array(
-              'type' => 'int',
-              'value' => (int) $user['userId'],
-            ),
-          ),
+          'roomId' => $database->int($request['roomId']),
+          'userId' => $database->int($user['userId']),
         ),
         'both' => array(
-          array(
-            'type' => 'gt',
-            'left' => array(
-              'type' => 'column',
-              'value' => 'eventId',
-            ),
-            'right' => array(
-              'type' => 'int',
-              'value' => (int) $request['lastEvent'],
-            ),
-          ),
+          'eventId' => $database->int($request['lastEvent']),
         ),
       ),
     );

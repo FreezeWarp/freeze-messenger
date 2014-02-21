@@ -931,23 +931,26 @@ LIMIT
     $h = 0;
     $whereText = array();
 
+//    if ($d == 1) {var_dump($conditionArray); die();}
+
     // $type is either "both", "either", or "neither". $cond is an array of arguments.
     foreach ($conditionArray AS $type => $cond) {
       // First, make sure that $cond isn't empty. Pretty simple.
       if (is_array($cond) && count($cond) > 0) {
         // $key is usually a column, $value is a formatted value for the select() function.
         foreach ($cond AS $key => $value) {
+          $i++;
         
           if ($key === 'both' || $key === 'either' || $key === 'neither') {
-            throw new Exception('TODO'); // Recurse TODO
+            //throw new Exception('TODO'); // Recurse TODO
+            $sideTextFull[$i] = $this->recurseBothEither($cond, $reverseAlias, 1);
+            //var_dump($sideTextFull); die('2');
           }
           else {
             /* Value is currently stored as:
              * array(TYPE, VALUE, COMPARISON)
              *
              * Note: We do not want to include quotes/etc. in VALUE yet, because these theoretically could vary based on the comparison type. */
-
-            $i++;
             $sideTextFull[$i] = '';      
 
             $sideText['left'] = $reverseAlias[($this->startsWith($key, '!') ? substr($key, 1) : $key)]; // Get the column definition that corresponds with the named column. "!column" signifies negation.

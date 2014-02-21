@@ -1075,6 +1075,7 @@ function fim_sanitizeGPC($type, $data) {
     }
 
     /* Process Global */
+    /* TODO: Rewrite logic. I'm sure this can be simplified. */
     if (isset($activeGlobal[$indexName])) { // Only typecast if the global is present.
       if (isset($indexMetaData['valid'])) { // If a list of valid values is specified...
         if (is_array($indexMetaData['valid'])) { // And if that list is an array...
@@ -1086,7 +1087,7 @@ function fim_sanitizeGPC($type, $data) {
             elseif (isset($indexMetaData['default'])) $activeGlobal[$indexName] = $indexMetaData['default']; // If the value has a default but is not valid, set it to the default.
           }
         }
-        else throw new Exception('Defined valid values do not corrospond to recognized data type (array).'); // Throw an exception since valid values are not properly defined.
+        else throw new Exception('Defined valid values do not correspond to recognized data type (array).'); // Throw an exception since valid values are not properly defined.
       }
     }
     else {
@@ -1095,6 +1096,9 @@ function fim_sanitizeGPC($type, $data) {
           $activeGlobal[$indexName] = $indexMetaData['default']; // Set the value to the default.
         }
         else throw new Exception('Required data not present (index ' . $indexName . ').'); // Throw an exception.
+      }
+      elseif ($indexMetaData['default']) {
+        $activeGlobal[$indexName] = $indexMetaData['default']; // Set the value to the default.
       }
       else continue; // The entry is not set and won't be returned in $request.
     }
