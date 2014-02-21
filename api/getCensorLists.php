@@ -68,68 +68,53 @@ $xmlData = array(
 
 
 
-
-/* Plugin Hook Start */
-($hook = hook('getCensorLists_start') ? eval($hook) : '');
-
-
-
 /* Get Censor Lists from Slave Database */
-if ($continue) {
-  $censorLists = $slaveDatabase->select($queryParts['censorListsSelect']['columns'],
-    $queryParts['censorListsSelect']['conditions'],
-    $queryParts['censorListsSelect']['sort'],
-    $queryParts['censorListsSelect']['limit']);
-  $censorLists = $censorLists->getAsArray('listId');
+$censorLists = $slaveDatabase->getCensorLists($lists, $rooms);
 
-  $listsActive = $slaveDatabase->select($queryParts['activeSelect']['columns'],
-    $queryParts['activeSelect']['conditions'],
-    $queryParts['activeSelect']['sort'],
-    $queryParts['activeSelect']['limit']);
-  $listsActive = $listsActive->getAsArray(true);
 
-  $listsActive2 = array();
-  foreach ($listsActive AS $lA) {
-    $listsActive2[$lA['listId']][$lA['roomId']] = $lA['status'];
-  }
+$listsActive = $slaveDatabase->select($queryParts['activeSelect']['columns'],
+  $queryParts['activeSelect']['conditions'],
+  $queryParts['activeSelect']['sort'],
+  $queryParts['activeSelect']['limit']);
+$listsActive = $listsActive->getAsArray(true);
+
+$listsActive2 = array();
+foreach ($listsActive AS $lA) {
+  $listsActive2[$lA['listId']][$lA['roomId']] = $lA['status'];
 }
 
 
 
 /* Start Processing */
-if ($continue) {
-  if (count($censorLists) > 0) {
-    foreach ($censorLists AS $list) { // Run through each censor list retrieved.
-      $xmlData['getCensorLists']['lists']['list ' . $list['listId']] = array(
-        'listId' => (int) $list['listId'],
-        'listName' => ($list['listName']),
-        'listType' => ($list['listType']),
-        'listOptions' => (int) $list['listOptions'],
-        'active' => array(),
-      );
+if (count($censorLists) > 0) {
+  foreach ($censorLists AS $list) { // Run through each censor list retrieved.
+    $xmlData['getCensorLists']['lists']['list ' . $list['listId']] = array(
+      'listId' => (int) $list['listId'],
+      'listName' => ($list['listName']),
+      'listType' => ($list['listType']),
+      'listOptions' => (int) $list['listOptions'],
+      'active' => array(),
+    );
 
-      if (count($request['rooms']) > 0) {
-        foreach ($request['rooms'] AS $roomId) {
-          if (!isset($listsActive2[$list['listId']]) || !isset($listsActive2[$list['listId']][$roomId])) {
-            if ($list['listType'] === 'black') {
-              $roomStatus = 'unblock';
-            }
-            elseif ($list['listType'] === 'white') {
-              $roomStatus = 'block';
-            }
+    if (count($request['rooms']) > 0) {
+      foreach ($request['rooms'] AS $roomId) {
+        if (!isset($listsActive2[$list['listId']]) || !isset($listsActive2[$list['listId']][$roomId])) {
+          if ($list['listType'] === 'black') {
+            $roomStatus = 'unblock';
           }
-          else {
-            $roomStatus = $listsActive2[$list['listId']][$roomId];
+          elseif ($list['listType'] === 'white') {
+            $roomStatus = 'block';
           }
-
-          $xmlData['getCensorLists']['lists']['list ' . $list['listId']]['active']['roomStatus ' . $roomId] = array(
-            'roomId' => $roomId,
-            'status' => $roomStatus,
-          );
         }
-      }
+        else {
+          $roomStatus = $listsActive2[$list['listId']][$roomId];
+        }
 
-      ($hook = hook('getCensorLists_eachCensorList') ? eval($hook) : '');
+        $xmlData['getCensorLists']['lists']['list ' . $list['listId']]['active']['roomStatus ' . $roomId] = array(
+          'roomId' => $roomId,
+          'status' => $roomStatus,
+        );
+      }
     }
   }
 }
@@ -139,11 +124,6 @@ if ($continue) {
 /* Update Data for Errors */
 $xmlData['getCensorLists']['errStr'] = ($errStr);
 $xmlData['getCensorLists']['errDesc'] = ($errDesc);
-
-
-
-/* Plugin Hook End */
-($hook = hook('getCensorLists_end') ? eval($hook) : '');
 
 
 

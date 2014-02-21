@@ -17,6 +17,43 @@
 
 class fimDatabase extends databaseSQL {
 
+  /* TODO: Filters for other file properties. */
+  public function getFiles($users, $files, $sort = array('fileId' => 'asc'), $limit, $pagination) {
+    $columns = array(
+      "files" => 'fileId, fileName, fileType, creationTime, userId, parentalAge, parentalFlags',
+      "fileVersions" => 'fileId vfileId, md5hash, sha256hash, size',
+    );
+
+    if (count($users) > 0) $conditions['both']['userId'] = $this->in($users);
+    if (count($files) > 0) $conditions['both']['fileId'] = $this->in($files);
+
+    $conditions['both']['fileId'] = $this->col('vfileId');
+
+    return $this->select($columns, $conditions, $sort);
+  }
+
+
+
+  public function getRoomLists($user, $roomLists = array(), $sort = array('listId' => 'asc')) {
+    $columns = array(
+      $this->sqlPrefix . "roomLists" => 'listId, userId, listName, options',
+      $this->sqlPrefix . "roomListRooms" => 'listId llistId, roomId lRoomid',
+    );
+
+    $conditions['both'] = array(
+      'userId' => $this->int($user['userId']),
+      'llistId' => $this->col('listId'),
+    );
+
+    if (count($roomLists) > 0) {
+      $conditions['both']['listId'] = $database->in($roomLists1);
+    }
+
+    return $this->select($columns, $conditions, $sort);
+  }
+
+
+
   public function getActiveUsers($onlineThreshold, $rooms = array(), $users = array(), $sort = array('userName' => 'asc'), $limit = false, $pagination = false) {
     $columns = array(
       $this->sqlPrefix . "rooms" => 'roomId, roomName, roomTopic, defaultPermissions',
@@ -47,6 +84,7 @@ class fimDatabase extends databaseSQL {
   }
 
 
+
   public function getAllActiveUsers($time, $threshold, $users = array(), $sort = array('userName' => 'asc'), $limit = false, $pagination = false) {
     $columns = array(
       $this->sqlPrefix . "users" => 'userId, userName, userFormatStart, userFormatEnd, userGroup, socialGroups',
@@ -73,6 +111,8 @@ class fimDatabase extends databaseSQL {
     return $this->select($columns, $conditions, $sort);
   }
 
+
+  /* getMessages is by far the most advanced set of database calls in the whole application, and is still in need of much fine-tuning. The mesagEStream file uses its own query and must be teste seerately. */
   public function getMessages($rooms = array(),
     $messages = array(),
     $users = array(),
@@ -341,6 +381,7 @@ class fimDatabase extends databaseSQL {
     );
 
     $conditions = array();
+
 
 
     /* Modify Query Data for Directives */

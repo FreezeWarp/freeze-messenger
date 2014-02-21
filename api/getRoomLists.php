@@ -53,32 +53,12 @@ $xmlData = array(
       'userName' => ($user['userName']),
     ),
     'errStr' => $errStr,
-    'errDesc' => $errDesc,
     'roomLists' => array(),
   ),
 );
 
-$queryParts['roomListSelect'] = array(
-  'columns' => array(
-    "{$sqlPrefix}roomLists" => 'listId, userId, listName, options',
-    "{$sqlPrefix}roomListRooms" => 'listId llistId, roomId lRoomid',
-  ),
-  'conditions' => array(
-    'both' => array(
-       'userId' => $database->int($user['userId']),
-       'llistId' => $database->col('listId'),
-     ),
-  ),
-);
 
-if (count($request['roomLists']) > 0) {
-  $queryParts['roomListSelect']['conditions']['both']['listId'] = $database->type('array', $request['listIds'], 'in');
-}
-
-
-/* Plugin Hook Start */
-($hook = hook('getRoomLists_start') ? eval($hook) : '');
-
+$roomLists = $database->getRoomLists($user, $request['roomLists']);
 
 
 /* Get Rooms From Database */
@@ -102,12 +82,6 @@ if (is_array($roomLists) && count($roomLists) > 0) {
 
 /* Errors */
 $xmlData['getRooms']['errStr'] = ($errStr);
-$xmlData['getRooms']['errDesc'] = ($errDesc);
-
-
-
-/* Plugin Hook End */
-($hook = hook('getRoomLists_end') ? eval($hook) : '');
 
 
 

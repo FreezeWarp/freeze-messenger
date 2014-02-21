@@ -55,33 +55,6 @@ $xmlData = array(
   ),
 );
 
-$queryParts['fileSelect']['columns'] = array(
-  "{$sqlPrefix}files" => 'fileId, fileName, fileType, creationTime, userId, parentalAge, parentalFlags',
-  "{$sqlPrefix}fileVersions" => 'fileId vfileId, md5hash, sha256hash, size',
-);
-$queryParts['fileSelect']['conditions'] = array(
-  'both' => array(
-    array(
-      'type' => 'e',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'fileId',
-      ),
-      'right' => array(
-        'type' => 'column',
-        'value' => 'vfileId',
-      ),
-    ),
-  ),
-);
-$queryParts['fileSelect']['sort'] = 'fileId';
-$queryParts['fileSelect']['limit'] = false;
-
-
-
-/* Plugin Hook Start */
-($hook = hook('getFiles_start') ? eval($hook) : '');
-
 
 
 /* Get Uploads from Database */
@@ -110,17 +83,10 @@ if ($continue) {
           'md5hash' => $file['md5hash'],
           'sha256hash' => $file['sha256hash'],
         );
-
-        ($hook = hook('getFiles_eachFile') ? eval($hook) : '');
       }
     }
   }
 }
-
-
-
-/* Plugin Hook End */
-($hook = hook('getFiles_end') ? eval($hook) : '');
 
 
 
