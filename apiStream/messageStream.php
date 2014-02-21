@@ -77,19 +77,9 @@ else {
     $queryParts['messagesSelect']['columns'] = array(
       "{$sqlPrefix}messagesCached" => 'messageId, roomId, time, flag, userId, userName, userGroup, socialGroups, userFormatStart, userFormatEnd, avatar, defaultColor, defaultFontface, defaultHighlight, defaultFormatting, text',
     );
-    $queryParts['messagesSelect']['conditions'] = array(
-      'both' => array(
-        array(
-          'type' => 'e',
-          'left' => array('type' => 'column', 'value' => 'roomId'),
-          'right' => array('type' => 'int', 'value' => (int) $request['roomId']),
-        ),
-        array(
-          'type' => 'gt',
-          'left' => array('type' => 'column', 'value' => 'messageId'),
-          'right' => array('type' => 'int', 'value' => (int) $request['lastMessage']),
-        ),
-      ),
+    $queryParts['messagesSelect']['conditions']['both'] = array(
+      'roomId' => $database->int($request['roomId']),
+      'messageId' => $database->int($request['lastMessage'], 'gt'),
     );
     $queryParts['messagesSelect']['sort'] = array(
       'messageId' => 'asc',

@@ -17,6 +17,64 @@
 
 class fimDatabase extends databaseSQL {
 
+  public function getActiveUsers($onlineThreshold, $rooms = array(), $users = array(), $sort = array('userName' => 'asc'), $limit, $pagination) {
+    $columns = array(
+      $this->sqlPrefix . "rooms" => 'roomId, roomName, roomTopic, defaultPermissions',
+    );
+
+    $columns = array(
+      $this->sqlPrefix . "ping" => 'status, typing, time ptime, roomId proomId, userId puserId',
+      $this->sqlPrefix . "rooms" => 'roomId',
+      $this->sqlPrefix . "users" => 'userId, userName, userFormatStart, userFormatEnd, userGroup, socialGroups, typing, status',
+    );
+
+    if (count($rooms) > 0) {
+      $conditions['both']['roomId'] = $this->in($rooms);
+    }
+
+    $conditions['both'] = array(
+      'roomid' => $this->col('proomid'),
+      'puserid' => $this->col('userid'),
+      'ptime' => $this->int(time() - $onlineThreshold, 'gte')
+    );
+
+
+
+    /* Modify Query Data for Directives */
+    if (count($users) > 0) {
+      $conditions['both']['puserId'] = $this->in($users);
+    }
+
+
+    return $this->select($columns, $conditions, $sort);
+  }
+
+
+  public function getAllActiveUsers($time, $threshold, $users = array(), $sort = array('userName' => 'asc'), $limit = false, $pagination) {
+    $columns = array(
+      $this->sqlPrefix . "users" => 'userId, userName, userFormatStart, userFormatEnd, userGroup, socialGroups',
+      //"{$sqlPrefix}rooms" => 'roomName, roomId, defaultPermissions, owner, options',
+      $this->sqlPrefix . "rooms" => 'roomName, roomId, owner, options, defaultPermissions, parentalAge, parentalFlags',
+      $this->sqlPrefix . "ping" => 'time ptime, userId puserId, roomId proomId, typing, status',
+    );
+
+
+    $conditions['both'] = array(
+      'userId' => $this->col('puserId'),
+      'roomId' => $this->col('proomId'),
+      'ptime' => $this->int($time - $threshold, 'lt'),
+    );
+
+
+    /* Modify Query Data for Directives */
+    if (count($users) > 0) {
+      $conditions['both']['puserId'] = $this->in($users);
+    }
+
+
+    /* Get Active Users */
+    return $this->select($columns, $conditions, $sort);
+  }
 
   public function getMessages($rooms = array(),
     $messages = array(),

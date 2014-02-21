@@ -87,7 +87,7 @@ $xmlData = array(
     ),
     'sentData' => array(
       'onlineThreshold' => (int) $request['onlineThreshold'],
-      'time' => (int) $time,
+      'time' => (int) time(),
     ),
     'errStr' => ($errStr),
     'errDesc' => ($errDesc),
@@ -95,117 +95,35 @@ $xmlData = array(
   ),
 );
 
-$queryParts['activeUsersSelect']['columns'] = array(
-  "{$sqlPrefix}users" => 'userId, userName, userFormatStart, userFormatEnd, userGroup, socialGroups, typing, status',
-  //"{$sqlPrefix}rooms" => 'roomName, roomId, defaultPermissions, owner, options',
-  "{$sqlPrefix}rooms" => 'roomName, roomId, allowedUsers, allowedGroups, moderators, owner, options, defaultPermissions, type, parentalAge, parentalFlags rparentalFlags',
-  "{$sqlPrefix}ping" => 'time ptime, userId puserId, roomId proomId',
-);
-$queryParts['activeUsersSelect']['conditions'] = array(
-  'both' => array(
-    array(
-      'type' => 'e',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'userId',
-      ),
-      'right' => array(
-        'type' => 'column',
-        'value' => 'puserId',
-      ),
-    ),
-    array(
-      'type' => 'e',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'roomId',
-      ),
-      'right' => array(
-        'type' => 'column',
-        'value' => 'proomId',
-      ),
-    ),
-    array(
-      'type' => 'gt',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'ptime',
-      ),
-      'right' => array(
-        'type' => 'int',
-        'value' => (int) ($request['time'] - $request['onlineThreshold']),
-      ),
-    ),
-  ),
-);
-$queryParts['activeUsersSelect']['sort'] = array(
-  'userName' => 'asc',
-);
-$queryParts['activeUsersSelect']['limit'] = false;
-
-
-
-/* Modify Query Data for Directives */
-if (count($request['users']) > 0) {
-  $queryParts['activeUsersSelect']['conditions']['both'][] = array(
-    'type' => 'in',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'puserId',
-    ),
-    'right' => array(
-      'type' => 'array',
-      'value' => (array) $request['users'],
-    ),
-  );
-}
-
-
-
-/* Plugin Hook Start */
-($hook = hook('getAllActiveUsers_start') ? eval($hook) : '');
-
-
-
-/* Get Active Users */
-$activeUsers = $database->select($queryParts['activeUsersSelect']['columns'],
-  $queryParts['activeUsersSelect']['conditions'],
-  $queryParts['activeUsersSelect']['sort'],
-  $queryParts['activeUsersSelect']['limit']);
-$activeUsers = $activeUsers->getAsArray(true);
-
+$activeUsers = $database->getAllActiveUsers(time(), $request['onlineThreshold'], $request['users'])->getAsArray(true);
 /* Start Processing */
-if (is_array($activeUsers)) {
-  if (count($activeUsers) > 0) {
-    foreach ($activeUsers AS $activeUser) {
-      $activeUser['type'] = 'normal';
+foreach ($activeUsers AS $activeUser) {
+  $activeUser['type'] = 'normal';
 
-      ($hook = hook('getAllActiveUsers_eachUser_start') ? eval($hook) : '');
+  ($hook = hook('getAllActiveUsers_eachUser_start') ? eval($hook) : '');
 
-      if (!isset($xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']])) {
-        $xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']] = array(
-          'userData' => array(
-            'userId' => (int) $activeUser['userId'],
-            'userName' => (string) $activeUser['userName'],
-            'userGroup' => (string) $activeUser['userGroup'],
-            'socialGroups' => (string) $activeUser['socialGroups'],
-            'startTag' => (string) $activeUser['userFormatStart'],
-            'endTag' => (string) $activeUser['userFormatEnd'],
-          ),
-          'rooms' => array(),
-        );
-      }
-
-      if (fim_hasPermission($activeUser, $user, 'view', false)) { // Only list the room the user is in if the active user has permission to view the room.
-        $xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']]['rooms']['room ' . $activeUser['roomId']] = array(
-          'roomId' => (int) $activeUser['roomId'],
-          'roomName' => (string) $activeUser['roomName'],
-        );
-      }
-
-      ($hook = hook('getAllActiveUsers_eachUser_end') ? eval($hook) : '');
-    }
+  if (!isset($xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']])) {
+    $xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']] = array(
+      'userData' => array(
+        'userId' => (int) $activeUser['userId'],
+        'userName' => (string) $activeUser['userName'],
+        'userGroup' => (string) $activeUser['userGroup'],
+        'socialGroups' => (string) $activeUser['socialGroups'],
+        'startTag' => (string) $activeUser['userFormatStart'],
+        'endTag' => (string) $activeUser['userFormatEnd'],
+      ),
+      'rooms' => array(),
+    );
   }
+
+  if (fim_hasPermission($activeUser, $user, 'view', false)) { // Only list the room the user is in if the active user has permission to view the room.
+    $xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']]['rooms']['room ' . $activeUser['roomId']] = array(
+      'roomId' => (int) $activeUser['roomId'],
+      'roomName' => (string) $activeUser['roomName'],
+    );
+  }
+
+  ($hook = hook('getAllActiveUsers_eachUser_end') ? eval($hook) : '');
 }
 
 

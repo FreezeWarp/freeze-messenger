@@ -593,7 +593,7 @@ abstract class database {
       case 'int': case 'integer':   return array('integer',   (int)    $value, $comp); break;
       case 'ts':  case 'timestamp': return array('timestamp', (int)    $value, $comp); break;
       case 'str': case 'string':    return array('string',    (string) $value, $comp); break;
-      case 'col': case 'column':    return array('colomn',    (string) $value, $comp); break;
+      case 'col': case 'column':    return array('column',    (string) $value, $comp); break;
       case 'arr': case 'array':     return array('array',     (array)  $value, ($comp === 'in' || $comp === 'notin' ? $comp : 'in')); break;
       case 'flt': case 'float':     return array('float',     (float)  $value, $comp); break;
       case 'bool':                  return array('bool',      (bool)   $value, $comp); break;
