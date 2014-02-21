@@ -27,35 +27,7 @@
  * @param csv rooms - Comma-separated list of rooms to obtain active users for. [[Required.]]
  * @param int onlineThreshold - How recent the user's last ping must be to be considered active. The default is generally recommended, but for special purposes you may wish to increase or decrease this.
  * @param csv users - Restrict the active users result to these users, if specified.
- *
- * =Errors=
- *
- * =Response=
- * @return APIOBJ
- ** getActiveUsers
- *** activeUser
- *** userId
- *** userName
- *** errStr-
- *** errDesc
- *** rooms
- **** room $roomId
- ***** roomData
- ****** roomId
- ****** roomName
- ****** roomTopic
- ***** users
- ****** user $userId
- ******* userId
- ******* userName
- ******* userGroup
- ******* socialGroups
- ******* startTag
- ******* endTag
- ******* status
- ******* typing
-
-*/
+ */
 
 $apiRequest = true;
 
@@ -66,27 +38,23 @@ require('../global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
   'rooms' => array(
-    'default' => '',
+    'default' => array( ),
     'require' => true,
-    'context' => array(
-      'type' => 'csv',
-      'filter' => 'int',
-      'evaltrue' => true,
-    ),
+    'cast' => 'csv',
+    'filter' => 'int',
+    'evaltrue' => true,
   ),
 
   'onlineThreshold' => array(
     'default' => (int) $config['defaultOnlineThreshold'],
-    'context' => 'int',
+    'cast' => 'int',
   ),
 
   'users' => array(
     'default' => '',
-    'context' => array(
-      'type' => 'csv',
-      'filter' => 'int',
-      'evaltrue' => true,
-    ),
+    'cast' => 'csv',
+    'filter' => 'int',
+    'evaltrue' => true,
   ),
 ));
 
@@ -106,7 +74,7 @@ $xmlData = array(
 );
 
 
-$activeUsers = $database->getActiveUsers($request['onlineThreshold'], $request['rooms'], $request['users'])->groupBy('roomId');
+$activeUsers = $database->getActiveUsers($request['onlineThreshold'], $request['rooms'], $request['users'])->getAsArray(true, 'roomId');
 
 
 /* Start Processing */

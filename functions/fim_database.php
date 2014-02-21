@@ -17,7 +17,7 @@
 
 class fimDatabase extends databaseSQL {
 
-  public function getActiveUsers($onlineThreshold, $rooms = array(), $users = array(), $sort = array('userName' => 'asc'), $limit, $pagination) {
+  public function getActiveUsers($onlineThreshold, $rooms = array(), $users = array(), $sort = array('userName' => 'asc'), $limit = false, $pagination = false) {
     $columns = array(
       $this->sqlPrefix . "rooms" => 'roomId, roomName, roomTopic, defaultPermissions',
     );
@@ -28,16 +28,13 @@ class fimDatabase extends databaseSQL {
       $this->sqlPrefix . "users" => 'userId, userName, userFormatStart, userFormatEnd, userGroup, socialGroups, typing, status',
     );
 
-    if (count($rooms) > 0) {
-      $conditions['both']['roomId'] = $this->in($rooms);
-    }
+    if (count($rooms) > 0) $conditions['both']['roomId'] = $this->in($rooms);
 
     $conditions['both'] = array(
       'roomid' => $this->col('proomid'),
       'puserid' => $this->col('userid'),
       'ptime' => $this->int(time() - $onlineThreshold, 'gte')
     );
-
 
 
     /* Modify Query Data for Directives */
@@ -50,7 +47,7 @@ class fimDatabase extends databaseSQL {
   }
 
 
-  public function getAllActiveUsers($time, $threshold, $users = array(), $sort = array('userName' => 'asc'), $limit = false, $pagination) {
+  public function getAllActiveUsers($time, $threshold, $users = array(), $sort = array('userName' => 'asc'), $limit = false, $pagination = false) {
     $columns = array(
       $this->sqlPrefix . "users" => 'userId, userName, userFormatStart, userFormatEnd, userGroup, socialGroups',
       //"{$sqlPrefix}rooms" => 'roomName, roomId, defaultPermissions, owner, options',
@@ -280,13 +277,13 @@ class fimDatabase extends databaseSQL {
   	// Modify Query Data for Directives
   	if ($showDeleted)
   	  $conditions['both']['!options'] = $this->bitChange($conditions['both']['!options'], 8, 'remove'); // TODO: Permission?
-  	
+
   	if (count($rooms) > 0)
   	  $conditions['both']['roomId'] = $this->type('array', $rooms, 'in');
-  	
+
   	if ($globNameSearch)
   	  $conditions['both']['roomName'] = $this->type('string', $globNameSearch, 'search');
-  	 	
+
 
     $this->roomType = 'normal';
 
@@ -400,7 +397,7 @@ class fimDatabase extends databaseSQL {
       1);
     return $listData->getAsArray(false);
   }
-  
+
 
   public function getCensorWord($wordId) { // TODO
 
@@ -929,7 +926,7 @@ class fimDatabase extends databaseSQL {
       ));
     }
   }
-  
+
   /* Originally from fim_general.php TODO */
 //  protected function explodeEscaped($delimiter, $string, $escapeChar = '\\') {
 //    $string = str_replace($escapeChar . $escapeChar, fim_encodeEntities($escapeChar), $string);

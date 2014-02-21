@@ -1086,21 +1086,17 @@ function fim_sanitizeGPC($type, $data) {
             elseif (isset($indexMetaData['default'])) $activeGlobal[$indexName] = $indexMetaData['default']; // If the value has a default but is not valid, set it to the default.
           }
         }
-        else {
-          throw new Exception('Defined valid values do not corrospond to recognized data type (array).'); // Throw an exception since valid values are not properly defined.
-        }
+        else throw new Exception('Defined valid values do not corrospond to recognized data type (array).'); // Throw an exception since valid values are not properly defined.
       }
     }
     else {
       if ($indexMetaData['require']) { // If the value is required but not specified...
-        throw new Exception('Required data not present (index ' . $indexName . ').'); // Throw an exception.
+        if (isset($indexMetaData['default'])) { // If the value has a default and is not specified...
+          $activeGlobal[$indexName] = $indexMetaData['default']; // Set the value to the default.
+        }
+        else throw new Exception('Required data not present (index ' . $indexName . ').'); // Throw an exception.
       }
-      elseif (isset($indexMetaData['default'])) { // If the value has a default and is not specified...
-        $activeGlobal[$indexName] = $indexMetaData['default']; // Set the value to the default.
-      }
-      else {
-        continue; // The entry is not set and won't be returned in $request.
-      }
+      else continue; // The entry is not set and won't be returned in $request.
     }
     
     if ($indexMetaData['trim']) { // Trim
