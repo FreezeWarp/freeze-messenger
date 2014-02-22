@@ -29,7 +29,7 @@
  * @param email - The email of the user.
  * @param birthdate - The date-of-birth of the user (unix timestamp).
  *
- * TODO: Captcha Support, IP Limits, Email Restricted/Allowed Domains, Birthdate Filter
+ * TODO: Captcha Support, IP Limits, Email Restricted/Allowed Domains, Birthdate Filter, Censor Names
  */
 
 $apiRequest = true;
@@ -43,30 +43,32 @@ $request = fim_sanitizeGPC('p', array(
   'userName' => array(
     'default' => '',
   ),
+
   'password' => array(
     'default' => '',
   ),
+
   'passwordEncrypt' => array(
     'valid' => array('plaintext', 'sha256', 'sha256-salt'),
     'default' => '',
   ),
+
   'passwordSalt' => array(
     'cast' => 'string',
     'filter' => 'ascii128',
   ),
+
   'email' => array(
     'default' => '',
   ),
+
   'birthdate' => array(
-    'context' => 'int',
+    'cast' => 'int',
   ),
 ));
 
-$userAge = fim_dobToAge($request['birthdate']); // Generate the age of the user by taking the current unix timestamp and subtracting the timestamp of the user's date. Divide to create years.
 
-
-/* Plugin Hook Start */
-($hook = hook('sendUser_start') ? eval($hook) : '');
+$userAge = fim_dobToAge($request['birthdate']); // Generate the age in years of the user.
 
 
 /* Start Processing */

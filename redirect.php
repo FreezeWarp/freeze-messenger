@@ -14,42 +14,43 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+
 require('global.php');
+
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
   'do' => array(
-    'context' => array(
-      'type' => 'string',
-    ),
+    'cast' => 'string',
+    'valid' => array('register'),
     'require' => false,
   ),
 ));
 
+
 $redirectPage = ''; // This will contain the page to redirect to.
+
 
 switch ($request['do']) {
 
   case 'register': // Register for an account to post.
 
     switch ($loginConfig['method']) { // Different methods for each forum system.
-
-      case 'phpbb':
-      $redirectPage = $loginConfig['url'] . 'ucp.php?mode=register';
-      break;
-
-      case 'vbulletin':
-      $redirectPage = $loginConfig['url'] . 'register.php';
-      break;
-
-      case 'vanilla': // Clients can do this themselves if they want, be we will include our own as a sorta "core" functionality.
-      $redirectPage = 'register/index.php';
-      break;
-
+      case 'phpbb':     $redirectPage = $loginConfig['url'] . 'ucp.php?mode=register'; break;
+      case 'vbulletin': $redirectPage = $loginConfig['url'] . 'register.php';          break;
+      case 'vanilla':   $redirectPage = 'register/index.php';                          break; // Clients can do this themselves if they want, be we will include our own as a sorta "core" functionality.
     }
+
+  break;
 
 }
 
-header('Location: ' . $redirectPage);
-die('Redirecting to <a href="' . $redirectPage . '">' . $redirectPage . '</a>');
+
+if ($redirectPage) {
+  header('Location: ' . $redirectPage);
+  die('Redirecting to <a href="' . $redirectPage . '">' . $redirectPage . '</a>');
+}
+else {
+  die('No action detected.');
+}
 ?>

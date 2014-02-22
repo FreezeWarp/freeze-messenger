@@ -14,6 +14,11 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/* Design Rational
+ * I wanted to move all SELECT logic into this file so that it could be more easily maintained. This seemed fine at first, but then it became clear that in order to do so effectively, I would need several, hard to organise parameters for each and every function, which would surely change in the future. This bugged me. Named parameters would work just fine, but PHP doesn't have those. I _do not_ like the array() syntax as a matter of principle, but it is _far_ more practical. Plus, calls can easily use the shorthand array syntax if they aren't worried about old versions -- for now I am, but that could change.
+ * So, yeah, unfortunately this will be using ugly, ugly arrays. I felt this was the best compromise, but I'm not exactly happy about it. It's hard to document, etc, etc.
+ */
+
 
 class fimDatabase extends databaseSQL {
 
@@ -97,7 +102,7 @@ class fimDatabase extends databaseSQL {
 
     return $this->select($columns, $conditions, $sort);
   }
-
+    
 
 
   public function getActiveUsers($onlineThreshold, $rooms = array(), $users = array(), $sort = array('userName' => 'asc'), $limit = false, $pagination = false) {
@@ -350,7 +355,7 @@ class fimDatabase extends databaseSQL {
   /*
    * @TODO Limit handling (OFFSET = limit * pagination). 
    */
-  public function getRooms($rooms = array(), $showDeleted = false, $globNameSearch = false, $limit = false, $pagination = 0, $sort = array('roomId' => 'asc'), $slave = false) {
+  public function getRooms($rooms = array(), $showDeleted = false, $globNameSearch = false, $limit = 0, $pagination = 1, $sort = array('roomId' => 'asc'), $slave = false) {
   	// Defaults
   	$columns = array($this->sqlPrefix . "rooms" =>
   	  'roomId, roomName, roomTopic, owner, defaultPermissions, parentalFlags, parentalAge, options, lastMessageId, lastMessageTime, messageCount');
@@ -391,34 +396,37 @@ class fimDatabase extends databaseSQL {
   }
 
 
-  public function getUser($userId, $userName = false) {
-    global $config, $user;
-
-    $queryParts['userSelect']['columns'] = array(
-      $this->sqlPrefix . "users" => 'userId, userName, profile, userFormatStart, userFormatEnd, userGroup, allGroups, socialGroups, parentalAge, parentalFlags, adminPrivs, defaultFormatting, defaultColor, defaultHighlight, defaultFontface',
+  public function getUsers($users = array(), $globNameSearch = false, $userParams = array(), $limit = 0, $pagination = 1, $sort = array('userId' => 'asc')) {
+    $columns = array(
+      $this->sqlPrefix . "users" => 'userId, userName, userFormatStart, userFormatEnd, profile, avatar, socialGroups, defaultColor, defaultHighlight, defaultFontface, defaultFormatting, userGroup, options, defaultRoom, parentalAge, parentalFlags',
     );
 
-    if ($userId) {
-      $queryParts['userSelect']['conditions'] = array(
-        'both' => array('userId' => $this->int($userId)),
-      );
-    }
-    elseif ($userName) {
-      $queryParts['userSelect']['conditions'] = array(
-        'both' => array('userName' => $this->str($userName)),
-      );
-    }
-    else {
-      return false;
-    }
+    $conditions['both'] = array();
 
 
-    $userData = $this->select(
-      $queryParts['userSelect']['columns'],
-      $queryParts['userSelect']['conditions'],
-      false,
-      1);
-    return $userData->getAsArray(false);
+    /* Modify Query Data for Directives */
+    if (isset($userParams['bannedStatus'])) {
+      switch ($userParams['bannedStatus']) { // TODO: multiple operators, friends, etc.
+        case 'banned': $conditions['both']['!options'] = $this->int(1, 'bAnd'); break; // TODO: Test!
+        case 'unbanned': $conditions['both']['options'] = $this->int(1, 'bAnd'); break;
+      }
+    }
+
+    if (count($users) > 0) $conditions['both']['userId'] = $this->in($users);
+
+    if ($globNameSearch) $conditions['both']['userName'] = $this->type('string', $globNameSearch, 'search');
+
+//echo $this->select($columns, $conditions)->sourceQuery;die();
+    return $this->select($columns, $conditions, $sort);
+  }
+
+
+  public function getUser($userId = array(), $userName = false) {
+    $roomData = $this->getRooms(array($roomId), $userName)->getAsArray(true);
+    $roomData = $roomData[$roomId];
+    $roomData['type'] = 'normal'; // TODO
+
+    return $roomData;
   }
 
   public function getCensorLists($lists = array(), $rooms = array(), $sort = array('listName' => 'asc'), $limit = false, $pagination = false) {

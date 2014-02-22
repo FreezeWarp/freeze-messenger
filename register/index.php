@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<!-- Original Source Code Copyright © 2011 Joseph T. Parsons. -->
+<!-- Original Source Code Copyright © 2014 Joseph T. Parsons. -->
 <!-- TODO: Localisation for Dates -->
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -12,19 +12,32 @@
   <![endif]-->
 
   <!-- START Styles -->
-  <link rel="stylesheet" type="text/css" href="../webpro/client/css/start/jquery-ui-1.8.16.custom.css" media="screen" />
-  <link rel="stylesheet" type="text/css" href="../webpro/client/css/start/fim.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="../webpro/client/css/absolution/jquery-ui-1.8.16.custom.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="../webpro/client/css/absolution/fim.css" media="screen" />
   <link rel="stylesheet" type="text/css" href="../webpro/client/css/stylesv2.css" media="screen" />
   <style>
   h1 {
     margin: 0px;
+    padding: 5px;
   }
-
   .main {
     width: 800px;
     margin-left: auto;
     margin-right: auto;
     display: block;
+  }
+
+  .ui-widget {
+    font-size: 12px;
+  }
+  .ui-widget-content {
+    padding: 5px;
+  }
+  table.page {
+    border: 1px solid black;
+  }
+  tbody tr:nth-child(2n) {
+    background: #efefef !important;
   }
   </style>
   <!-- END Styles -->
@@ -35,6 +48,7 @@
   <script src="../webpro/client/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
   <script src="../webpro/client/js/jquery.plugins.js" type="text/javascript"></script>
   <script src="../webpro/client/js/encrypt.js" type="text/javascript"></script>
+
   <script>
   function windowDraw() {
     $('body').css('min-height',window.innerHeight);
@@ -50,95 +64,92 @@
     dia.info(text,"Alert");
   };
   </script>
-  <style>
-  .ui-widget {
-    font-size: 12px;
-  }
-  </style>
   <!-- END Scripts -->
 </head>
+
 <body class="ui-widget">
 <div id="part1" class="main">
   <h1 class="ui-widget-header">FreezeMessenger: User Registration</h1>
   <div class="ui-widget-content">
+
     <?php
-    switch (intval($_GET['stage'])) {
-      case 0:
-      case 1:
+    $stage = (isset($_GET['stage']) ? intval($_GET['stage']) : 1);
+
+    switch ($stage) {
+      case 0: case 1:
       require('../global.php');
       require('./phrases.php');
       $lang = 'enGB'; // TODO
-      ?>
-      Here you can register for a FreezeMessenger account easily.<br /><br />
+
+      echo $phrases[$lang]['stage1introduction'] . '<br /><br />
 
       <!-- Javascript is NOT required, but interfaces naturally work better with it. This script, to be stable, must work without it, however. -->
       <script type="text/javascript" src="register.js"></script>
 
       <form name="register_form" id="register_form" action="index.php?stage=2" method="post">
-        <table border="1" class="page">
+        <table class="page">
           <tr>
-            <td><strong>Username</strong></td>
-            <td><input id="userName" type="text" name="userName" /><br /><small>This name will be displayed whenever you make a post.</small></td>
+            <td><strong>' . $phrases[$lang]['stage1formUserNameLabel'] . '</strong></td>
+            <td><input id="userName" type="text" name="userName" /><br /><small>' . $phrases[$lang]['stage1formUserNameBlurb'] . '</small></td>
           </tr>
           <tr>
-            <td><strong>Password</strong></td>
-            <td><input id="password" type="password" name="password" /><br /><small>Your password must be between 4 and 100 characters</small></td>
+            <td><strong>' . $phrases[$lang]['stage1formPasswordLabel'] . '</strong></td>
+            <td><input id="password" type="password" name="password" /><br /><small>' . $phrases[$lang]['stage1formPasswordBlurb'] . '</small></td>
           </tr>
           <tr>
-            <td><strong>Password (Again)</strong></td>
-            <td><input id="passwordConfirm" type="password" /><br /><small>Retype your password to confirm its accuracy</small></td>
+            <td><strong>' . $phrases[$lang]['stage1formPasswordAgainLabel'] . '</strong></td>
+            <td><input id="passwordConfirm" type="password" /><br /><small>' . $phrases[$lang]['stage1formPasswordAgainBlurb'] . '</small></td>
           </tr>
           <tr>
-            <td><strong>Email</strong></td>
-            <td><input id="email" type="text" name="email" /><br /><small>What is your email?</small></td>
+            <td><strong>' . $phrases[$lang]['stage1formEmailLabel'] . '</strong></td>
+            <td><input id="email" type="text" name="email" /><br /><small>' . $phrases[$lang]['stage1formEmailBlurb'] . '</small></td>
           </tr>
           <tr>
-            <td><strong>Date of Birth</strong></td>
+            <td><strong>' . $phrases[$lang]['stage1formBirthDateLabel'] . '</strong></td>
             <td>
               <div name="datepicker" id="datepicker"></div>
               <select id="birthday" name="birthday">
-                <option value="0"></option>
-                <?php
+                <option value="0"></option>';
+
                 for ($day = 1; $day <= 31; $day++) {
                   echo '<option value=' . $day . '>' . $day . '</option>';
                 }
-                ?>
-              </select>
+
+              echo '</select>
               <select id="birthmonth" name="birthmonth">
                 <option value="0"></option>
-                <option value="1"><?php echo $phrases[$lang]['month01']; ?></option>
-                <option value="2"><?php echo $phrases[$lang]['month02']; ?></option>
-                <option value="3"><?php echo $phrases[$lang]['month03']; ?></option>
-                <option value="4"><?php echo $phrases[$lang]['month04']; ?></option>
-                <option value="5"><?php echo $phrases[$lang]['month05']; ?></option>
-                <option value="6"><?php echo $phrases[$lang]['month06']; ?></option>
-                <option value="7"><?php echo $phrases[$lang]['month07']; ?></option>
-                <option value="8"><?php echo $phrases[$lang]['month08']; ?></option>
-                <option value="9"><?php echo $phrases[$lang]['month09']; ?></option>
-                <option value="10"><?php echo $phrases[$lang]['month10']; ?></option>
-                <option value="11"><?php echo $phrases[$lang]['month11']; ?></option>
-                <option value="12"><?php echo $phrases[$lang]['month12']; ?></option>
+                <option value="1">' . $phrases[$lang]['month01'] . '</option>
+                <option value="2">' . $phrases[$lang]['month02']. '</option>
+                <option value="3">' . $phrases[$lang]['month03']. '</option>
+                <option value="4">' . $phrases[$lang]['month04']. '</option>
+                <option value="5">' . $phrases[$lang]['month05']. '</option>
+                <option value="6">' . $phrases[$lang]['month06']. '</option>
+                <option value="7">' . $phrases[$lang]['month07']. '</option>
+                <option value="8">' . $phrases[$lang]['month08']. '</option>
+                <option value="9">' . $phrases[$lang]['month09']. '</option>
+                <option value="10">' . $phrases[$lang]['month10']. '</option>
+                <option value="11">' . $phrases[$lang]['month11']. '</option>
+                <option value="12">' . $phrases[$lang]['month12']. '</option>
               </select>
               <select id="birthyear" name="birthyear">
-                <option value="0"></option>
-                <?php
+                <option value="0"></option>';
+
                 for ($year = (intval(date('Y')) - ($config['ageMaximum'] + 1)); $year <= (intval(date('Y')) - $config['ageMinimum']); $year++) {
                   echo '<option value=' . $year . '>' . $year . '</option>';
                 }
-                ?>
-              </select>
-              <small>Select your month, year, and day of birth in the above calendar. (Note that if your year does not appear, you are not allowed to register.)</small>
+
+              echo '</select><br />
+              <small>' . $phrases[$lang]['stage1formBirthDateBlurb'] . '</small>
             </td>
           </tr>
-        </table>
+        </table><br />
 
         <div style="height: 30px;">
           <input style="float: right;" type="submit" value="Finish &rarr;" />
           <input type="hidden" name="stage" value="2" />
           <input type="hidden" name="passwordEncrypt" value="sha256" />
         </div>
-      </form><br /><br />
-      <?php
+      </form>';
       break;
       case 2:
       require('../config.php'); // We do NOT want to require global for a couple of reasons, the biggest one being this file simply doesn't require it. All CURL requests require config.php, however.

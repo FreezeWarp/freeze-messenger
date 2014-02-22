@@ -888,7 +888,7 @@ function fim_iif($condition, $true, $false) {
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_dobToAge($date) {
-  return floor((time() - $date) / (60 * 60 * 24 * 365));
+  return floor((time() - $date) / (60 * 60 * 24 * 365)); // Generate an age by taking a unix timestamp and subtracting the timestamp of the user's DOB. Divide to create years.
 }
 
 
