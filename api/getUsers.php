@@ -72,7 +72,10 @@ $xmlData = array(
 
 
 /* Get Users from Database */
-$users = $slaveDatabase->getUsers($request['users'], 'root', null, null, null, array($request['sort'] => 'asc'))->getAsArray(true);
+$users = $slaveDatabase->getUsers(array(
+  'userIds' => $request['users'],
+  'userNames' => $request['userNames']
+), array($request['sort'] => 'asc'))->getAsArray(true);
 
 
 

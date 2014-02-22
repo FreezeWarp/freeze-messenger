@@ -742,8 +742,6 @@ class databaseSQL extends database {
         foreach ($columns AS $tableName => $tableCols) {
           if (strlen($tableName) > 0) { // If the tableName is defined...
             if (strstr($tableName, ' ') !== false) { // A space can be used to create a table alias, which is sometimes required for different queries.
-              //throw new Exception('TODO');
-              
               $tableParts = explode(' ', $tableName);
 
               $finalQuery['tables'][] = $this->formatValue('tableAlias', $tableParts[0], $tableParts[1]); // Identify the table as [tableName] AS [tableAlias]
@@ -944,13 +942,13 @@ LIMIT
         // $key is usually a column, $value is a formatted value for the select() function.
         foreach ($cond AS $key => $value) {
           $i++;
-        
+
           if ($key === 'both' || $key === 'either' || $key === 'neither') {
-            //throw new Exception('TODO'); // Recurse TODO
             $sideTextFull[$i] = $this->recurseBothEither($cond, $reverseAlias, 1);
-            //var_dump($sideTextFull); die('2');
           }
           else {
+            if (strstr($key, ' ') !== false) list($key) = explode(' ', $key); // A space can be used to reference the same key twice in different contexts. It's basically a hack, but it's better than using further arrays.
+
             /* Value is currently stored as:
              * array(TYPE, VALUE, COMPARISON)
              *

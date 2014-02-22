@@ -102,7 +102,7 @@ class fimDatabase extends databaseSQL {
 
     return $this->select($columns, $conditions, $sort);
   }
-    
+
 
 
   public function getActiveUsers($onlineThreshold, $rooms = array(), $users = array(), $sort = array('userName' => 'asc'), $limit = false, $pagination = false) {
@@ -396,27 +396,35 @@ class fimDatabase extends databaseSQL {
   }
 
 
-  public function getUsers($users = array(), $globNameSearch = false, $userParams = array(), $limit = 0, $pagination = 1, $sort = array('userId' => 'asc')) {
+  public function getUsers($options = array(), $sort = array('userId' => 'asc'), $limit = 0, $pagination = 1) {
+    $options = array_merge(array(
+      'userIds' => array(),
+      'userNames' => array(),
+      'userNameSearch' => false,
+      'bannedStatus' => false,
+    ), $options);
+
+
     $columns = array(
       $this->sqlPrefix . "users" => 'userId, userName, userFormatStart, userFormatEnd, profile, avatar, socialGroups, defaultColor, defaultHighlight, defaultFontface, defaultFormatting, userGroup, options, defaultRoom, parentalAge, parentalFlags',
     );
+
 
     $conditions['both'] = array();
 
 
     /* Modify Query Data for Directives */
-    if (isset($userParams['bannedStatus'])) {
-      switch ($userParams['bannedStatus']) { // TODO: multiple operators, friends, etc.
-        case 'banned': $conditions['both']['!options'] = $this->int(1, 'bAnd'); break; // TODO: Test!
-        case 'unbanned': $conditions['both']['options'] = $this->int(1, 'bAnd'); break;
-      }
+    if ($options['bannedStatus'] === 'banned') $conditions['both']['!options'] = $this->int(1, 'bAnd'); // TODO: Test!
+    if ($options['bannedStatus'] === 'unbanned') $conditions['both']['options'] = $this->int(1, 'bAnd'); // TODO: Test!
+
+
+    if (count($options['userIds']) > 0 || count($options['userNames']) > 0 || $options['userNameSearch']) {
+      if (count($options['userIds']) > 0) $conditions['both']['either']['userId'] = $this->in($options['userIds']);
+      if (count($options['userNames']) > 0) $conditions['both']['either']['userName 1'] = $this->in($options['userNames']);
+      if ($options['userNameSearch'])  $conditions['both']['either']['userName 2'] = $this->type('string', $options['userNameSearch'], 'search');
     }
 
-    if (count($users) > 0) $conditions['both']['userId'] = $this->in($users);
 
-    if ($globNameSearch) $conditions['both']['userName'] = $this->type('string', $globNameSearch, 'search');
-
-//echo $this->select($columns, $conditions)->sourceQuery;die();
     return $this->select($columns, $conditions, $sort);
   }
 
