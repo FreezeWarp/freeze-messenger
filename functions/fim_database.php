@@ -17,21 +17,67 @@
 
 class fimDatabase extends databaseSQL {
 
-  /* TODO: Filters for other file properties. */
-  public function getFiles($users, $files, $sort = array('fileId' => 'asc'), $limit, $pagination) {
+  /** Run a query to obtain files.
+   * Scans tables `files` and `fileVersions`. These two tables cannot be queried individually using fimDatabase.
+   * Returns columns files.fileId, files.fileName, files.fileType, files.creationTime, files.userId, files.parentalAge, files.parentalFlags, files.roomIdLink, files.fileId, fileVersions.vfileId (= files.fileId), fileVersions.md5hash, fileVersions.sha256hash, fileVersions.size.
+   *
+   * @param array $users          An array of userIDs corresponding with file ownership.
+   * @param array $files          An array of fileIDs.
+   * @param array $fileParams     An associative array of additional file parameters, which may be added to in the future. Valid keys include:
+   *                                array  ['fileTypes']       Array of file extensions (e.g. jpg).
+   *                                int    ['creationTimeMin'] File's creation time must be after.
+   *                                int    ['creationTimeMax'] File's creation time must be before.
+   *                                string ['fileNameBlob']    String that must appear within the fileName.
+   * @param array $rooms          An array of roomIDs corresponding with where a file was posted. Some files do not have a corresponding roomId
+   * @param array $parentalParams An associative array of additional parental control parameters, which may be added to in the future. Valid keys include:
+   *                                int ['ageMin']
+   *                                int ['ageMax']
+   * @param array $sort           A standard sort array.
+   * @param int   $limit          Maximum number of results (or 0 for no limit).
+   * @param int   $pagination     Result page if limit exceeded, starting at 1.
+   *
+   * @return bool|object|resource
+   *
+   * @TODO: Test filters for other file properties.
+   */
+  public function getFiles(
+    $users = array(),
+    $files = array(),
+    $fileParams = array(),
+    $rooms = array(),
+    $parentalParams = array(),
+    $sort = array('fileId' => 'asc'),
+    $limit = 0,
+    $pagination = 1)
+  {
     $columns = array(
-      "files" => 'fileId, fileName, fileType, creationTime, userId, parentalAge, parentalFlags',
+      "files"        => 'fileId, fileName, fileType, creationTime, userId, parentalAge, parentalFlags, roomIdLink',
       "fileVersions" => 'fileId vfileId, md5hash, sha256hash, size',
     );
 
+
     if (count($users) > 0) $conditions['both']['userId'] = $this->in($users);
     if (count($files) > 0) $conditions['both']['fileId'] = $this->in($files);
+    if (count($rooms) > 0) $conditions['both']['roomLinkId'] = $this->in($rooms);
+
+    if (isset($fileParams['fileTypes'])) $conditions['both']['fileType'] = $this->in($fileParams['fileTypes']);
+    if (isset($fileParams['creationTimeMin'])) $conditions['both']['creationTime'] = $this->int($fileParams['creationTime'], 'gte');
+    if (isset($fileParams['creationTimeMax'])) $conditions['both']['creationTime'] = $this->int($fileParams['creationTime'], 'lte');
+    if (isset($fileParams['fileNameGlob'])) $conditions['both']['filelName'] = $this->type('string', $fileParams['fileNameGlob'], 'search');
+
+    if (isset($parentalParams['ageMin'])) $conditions['both']['parentalAge'] = $this->int($parentalParams['ageMin'], 'gte');
+    if (isset($parentalParams['ageMax'])) $conditions['both']['parentalAge'] = $this->int($parentalParams['ageMax'], 'lte');
+
 
     $conditions['both']['fileId'] = $this->col('vfileId');
 
+
+    if (isset($fileParams['sizeMin'])) $conditions['both']['size'] = $this->int($fileParams['size'], 'gte');
+    if (isset($fileParams['sizeMax'])) $conditions['both']['size'] = $this->int($fileParams['size'], 'lte');
+
+
     return $this->select($columns, $conditions, $sort);
   }
-
 
 
   public function getRoomLists($user, $roomLists = array(), $sort = array('listId' => 'asc')) {

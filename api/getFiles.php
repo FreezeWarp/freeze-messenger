@@ -33,7 +33,7 @@ require('../global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
   'users' => array(
-    'default' => '',
+    'default' => array($user['userId']),
     'cast' => 'csv',
     'filter' => 'int',
     'evaltrue' => true,
@@ -58,34 +58,29 @@ $xmlData = array(
 
 
 /* Get Uploads from Database */
-if ($continue) {
-  $files = $database->select($queryParts['fileSelect']['columns'],
-    $queryParts['fileSelect']['conditions'],
-    $queryParts['fileSelect']['sort'],
-    $queryParts['fileSelect']['limit']);
-  $files = $files->getAsArray('fileId');
-}
+$files = $database->getFiles($request['users'])->getAsArray('fileId');
 
 
 
 /* Start Processing */
-if ($continue) {
-  if (is_array($files)) {
-    if (count($files) > 0) {
-      foreach ($files AS $file) {
-        $xmlData['getFiles']['files']['file ' . $file['fileId']] = array(
-          'fileSize' => (int) $file['size'],
-          'fileSizeFormatted' => fim_formatSize($file['size']),
-          'fileName' => $file['fileName'],
-          'mime' => $file['mime'],
-          'parentalAge' => $file['parentalAge'],
-          'parentalFlags' => explode(',', $file['parentalFlags']),
-          'md5hash' => $file['md5hash'],
-          'sha256hash' => $file['sha256hash'],
-        );
-      }
+foreach ($files AS $file) {
+  // Only show if the user has permission.
+  if ($file['roomIdLink'] && $file['userId'] != $user['userId']) { /* TODO: Test */
+    if (!fim_hasPermission($database->getRoom($file['roomIdLink']), $user, 'view', true)) {
+      continue;
     }
   }
+
+  $xmlData['getFiles']['files']['file ' . $file['fileId']] = array(
+    'fileSize' => (int) $file['size'],
+    'fileSizeFormatted' => fim_formatSize($file['size']),
+    'fileName' => $file['fileName'],
+    'mime' => $file['mime'],
+    'parentalAge' => $file['parentalAge'],
+    'parentalFlags' => explode(',', $file['parentalFlags']),
+    'md5hash' => $file['md5hash'],
+    'sha256hash' => $file['sha256hash'],
+  );
 }
 
 

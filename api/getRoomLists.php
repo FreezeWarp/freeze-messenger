@@ -45,6 +45,8 @@ $request = fim_sanitizeGPC('g', array(
   ),
 ));
 
+
+
 /* Data Predefine */
 $xmlData = array(
   'getRoomLists' => array(
@@ -58,24 +60,15 @@ $xmlData = array(
 );
 
 
-$roomLists = $database->getRoomLists($user, $request['roomLists']);
 
-
-/* Get Rooms From Database */
-$roomLists = $database->select(
-  $queryParts['roomListSelect']['columns'],
-  $queryParts['roomListSelect']['conditions']);
-$roomLists = $roomLists->getAsArray(true);
+/* Query */
+$roomLists = $database->getRoomLists($user, $request['roomLists'])->getAsArray(true);
 
 
 
 /* Process Room Lists Obtained from Database */
-if (is_array($roomLists) && count($roomLists) > 0) {
-  foreach ($roomLists AS $roomList) {
-    $xmlData['getRoomLists']['roomLists'][$roomList['listId']][] = $roomList['roomId'];
-
-    ($hook = hook('getRoomLists_eachList') ? eval($hook) : '');
-  }
+foreach ($roomLists AS $roomList) {
+  $xmlData['getRoomLists']['roomLists'][$roomList['listId']][] = $roomList['roomId'];
 }
 
 

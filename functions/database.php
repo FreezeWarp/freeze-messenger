@@ -760,10 +760,10 @@ class databaseResult {
 
 
   /**
-   * Get Database Object as an Associative Array
+   * Get Database Object as an Associative Array. An empty array will be returned if an error occurs.
    *
    * @param mixed $index
-   * @return mixed
+   * @return array
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   public function getAsArray($index = true, $group = false) {
@@ -789,12 +789,12 @@ class databaseResult {
         return $data; // All rows fetched, return the data.
       }
       else { // No index is present, generate a two-dimensional array (key => value, key being the column name, value being the corrosponding value).
-        return $this->functionMap('fetchAsArray', $this->queryData);
+        return (array) $this->functionMap('fetchAsArray', $this->queryData);
       }
     }
 
     else {
-      return false; // Query data is false or null, return false.
+      return array(); // Query data is false or null, return an empty array.
     }
   }
 
