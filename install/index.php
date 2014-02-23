@@ -113,6 +113,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
   <style>
   h1 {
     margin: 0px;
+    padding: 5px;
   }
 
   .main {
@@ -120,16 +121,38 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
     margin-left: auto;
     margin-right: auto;
     display: block;
+    border: 1px solid black;
   }
   
   .ui-widget {
     font-size: 12px;
   }
+  .ui-widget-content {
+    padding: 5px;
+  }
   .uninstalledFlag {
     font-weight: bold;
   }
+  abbr {
+    outline-bottom: dotted 1px;
+  }
+  table td {
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+  table.page td { border-bottom: 1px solid black; }
+  table.page tr:last-child td { border-bottom: none; }
+  /*tbody tr:last-child { border-bottom: none; }*/
   tbody tr:nth-child(2n) {
     background: #efefef !important;
+  }
+
+  @media screen and (max-width: 780px) {
+    table#requirements tr td:last-child, table#requirements tr th:last-child {
+      visibility: hidden;
+      width: 0px;
+      display: none;
+    }
   }
   </style>
   <!-- END Styles -->
@@ -217,7 +240,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
         <td>With PHP 5.2</td>
       </tr>
       <tr class="<?php echo ($installFlags & INSTALL_ISSUE_DOM ? 'uninstalledFlag' : 'installedFlag'); ?>">
-        <td>Document Object Model</td>
+        <td>DOM</td>
         <td>n/a</td>
         <td><?php echo phpversion('dom'); ?></td>
         <td>XML File Support</td>
@@ -284,7 +307,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
           On Windows: Install PHP 5.3, or see <a href="http://php.net/manual/en/mcrypt.requirements.php">http://php.net/manual/en/mcrypt.requirements.php</a></td>
       </tr>
       <tr class="<?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_MBSTRING ? 'uninstalledFlag' : 'installedFlag'); ?>">
-        <td>Multibyte String</td>
+        <td>MB String</td>
         <td>n/a</td>
         <td><?php echo phpversion('mbstring'); ?></td>
         <td><abbr title="Without MBString, certain localisations will not function correctly, and certain characters may not appear correctly. In addition, bugs may occur with non-latin characters in the database.">Foreign Language Support</abbr></td>
@@ -343,7 +366,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
     <form onsubmit="return false;">
       <?php
        if ($installFlags > 0) {
-         echo '<strong>Cannot continue.</strong>';
+         echo '<strong style="float: right; font-size: 1.2em;">Cannot Continue.</strong>';
        }
        else {
          echo '<button style="float: right;" type="button" onclick="$(\'#part1\').slideUp(); $(\'#part2\').slideDown(); windowDraw();">Start &rarr;</button>';
@@ -360,7 +383,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
   <div class="ui-widget-content">
   First things first, please enter your MySQL connection details below, as well as a database (we can try to create the database ourselves, as well). If you are unable to proceed, try contacting your web host, or anyone who has helped you set up other things like this before.<br /><br />
   <form onsubmit="return false;" name="db_connect_form" id="db_connect_form">
-    <table border="1" class="page">
+    <table class="page">
       <thead>
         <tr class="ui-widget-header">
           <th colspan="2">Connection Settings</th>
@@ -368,8 +391,8 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
       </thead>
       <tbody>
         <tr>
-          <td><strong>Driver</strong></td>
-          <td><select name="db_driver">
+          <td width="20%"><strong>Driver</strong></td>
+          <td width="80%"><select name="db_driver">
           <?php
             if ($installStatusDB & INSTALL_DB_MYSQL) echo '<option value="mysql">MySQL</option>';
             if ($installStatusDB & INSTALL_DB_MYSQLI) echo '<option value="mysql">MySQLi</option>';

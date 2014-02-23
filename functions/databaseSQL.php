@@ -265,7 +265,7 @@ class databaseSQL extends database {
 
 
   
-  public function connect($host, $port, $user, $password, $database, $driver, $tablePrefix) {
+  public function connect($host, $port, $user, $password, $database, $driver, $tablePrefix = '') {
     $this->setLanguage($driver);
     $this->sqlPrefix = $tablePrefix;
 
@@ -977,7 +977,7 @@ LIMIT
             else {//var_dump($reverseAlias); echo $key;  var_dump($value); var_dump($sideText); die();
               $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
 
-              $this->triggerError('Query Nullified', array(), 'validation'); // Dev, basically. TODO.
+              $this->triggerError('Query Nullified', array('Key' => $key, 'Value' => $value, 'Side Text' => $sideText, 'Reverse Alias' => $reverseAlias), 'validation'); // Dev, basically. TODO.
             }
           }
         }

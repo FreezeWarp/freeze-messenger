@@ -74,7 +74,13 @@ $xmlData = array(
 );
 
 
-$activeUsers = $database->getActiveUsers($request['onlineThreshold'], $request['rooms'], $request['users'])->getAsArray(true, 'roomId');
+$activeUsers = $database->getActiveUsers(array(
+  'onlineThreshold' => $request['onlineThreshold'],
+  'roomIds' => $request['rooms'],
+  'userIds' => $request['users']
+))->getAsArray('roomId', true);
+
+var_dump($activeUsers); die();
 
 
 /* Start Processing */

@@ -97,7 +97,7 @@ abstract class database {
     @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function __construct($host = false, $port = false, $user = false, $password = false, $database = false, $driver = false, $tablePrefix = '') {
-    if ($host !== false) $this->connect($host, $port, $user, $password, $database, $driver, $tablePrefix);
+    if ($host !== false) $this->connect($host, $port, $user, $password, $database, $driver, $tablePrefix = '');
   }
   
 

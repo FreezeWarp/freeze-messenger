@@ -94,7 +94,7 @@ var roomRef = {}, roomIdRef = {}, modRooms = {}, // Just a whole bunch of object
 
 /* Get Cookies */
 window.webproDisplay = {
-  'theme' : $.getCookie('webpro_theme', 'start'), // Theme (goes into effect in document.ready)
+  'theme' : $.getCookie('webpro_theme', 'absolution'), // Theme (goes into effect in document.ready)
   'fontSize' : $.getCookie('webpro_fontSize', 1), // Font Size (goes into effect in document.ready)
   'settingsBitfield' : $.getCookie('webpro_settings', 8192 + 16777216 + 33554432), // Settings Bitfield (goes into effect all over the place); defaults with US Time, 12-Hour Format, Audio Ding
   'audioVolume' : $.getCookie('webpro_audioVolume', .5)
