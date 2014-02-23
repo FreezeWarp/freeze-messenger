@@ -4,6 +4,10 @@
 ul.ui-tabs-nav > li > a {
   margin-top: 0px !important; 
 }
+.ui-tabs .ui-tabs-nav li {
+  font-size: 1em;
+  color: white !important;
+}
 .ui-dialog-buttonpane {
   margin-top: 0px !important; 
 }

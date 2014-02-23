@@ -1041,11 +1041,15 @@ function windowResize() {
   $('#messageList').css('max-width', ((windowWidth - 20) * .75)); // Prevent box-stretching. This is common on... many chats.
 
   $('body').css('min-height', windowHeight); // Set the body height to equal that of the window; this fixes many gradient issues in theming.
-  
+
   $('.ui-widget-overlay').each(function() {
     $(this).height(windowHeight);
     $(this).width(windowWidth);
   });
+
+  if ($(".ui-dialog-content").dialog("option", "width") > windowWidth) $(".ui-dialog-content").dialog("option", "width", windowWidth);
+  if ($(".ui-dialog-content").dialog("option", "height") > windowHeight) $(".ui-dialog-content").dialog("option", "height", windowHeight);
+  $(".ui-dialog-content").dialog("option", "position", "center");
 }
 
 
@@ -1272,8 +1276,8 @@ function windowDraw() {
 
     if (($(this).parent().css('width') == newWidth && $(this).parent().css('height') == newHeight) === false) { // Only maximize if not already maximized.
       $(this).parent().css({ width: newWidth, height: newHeight, left: 0, top : 0 });  // Set to the size of the window, realign to the upper-let corner.
-      $(this).removeClass('ui-dialog-draggable'); // Remove the drag indicator.
-      $(this).parent().draggable("destroy").resizable("destroy"); // Remove the ability to drag and resize.
+      //$(this).removeClass('ui-dialog-draggable'); // Remove the drag indicator.
+      //$(this).parent().draggable("destroy").resizable("destroy"); // Remove the ability to drag and resize.
     }
   });
 
