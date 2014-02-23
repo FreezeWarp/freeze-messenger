@@ -457,7 +457,7 @@ else {
 
 ///* Final Forum-Specific Processing *///
 
-if ($valid) { // If the user is valid, process their preferrences.
+if ($valid) { // If the user is valid, process their preferences.
 
   if ($noSync || $loginConfig['method'] == 'vanilla') {
 

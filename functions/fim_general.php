@@ -1319,7 +1319,7 @@ function fim_exceptionHandler($exception) {
     mail($config['email'], 'FIM3 System Error [' . $_SERVER['SERVER_NAME'] . ']', 'The following error was encountered by the server located at ' . $_SERVER['SERVER_NAME'] . ':<br /><br />' . $errstr);
   }
   
-  if ($config['logExceptionsFile'] && $config['logExceptions']) {
+  if ($config['logExceptions  File'] && $config['logExceptions']) {
     error_log($exception->getFile() . ', ' . $exception->getLine() . ', ' . $exception->getMessage() . ' TRACE: ' . $exception->getTrace());
   }
 }
@@ -1343,19 +1343,25 @@ function fim_errorHandler($errno, $errstr, $errfile, $errline) {
     ob_end_clean(); // Clean the output buffer and end it. This means when we show the error in a second, there won't be anything else with it.
     header('HTTP/1.1 500 Internal Server Error');
 
+    $errstr2 = $errstr;
+
+    if (substr($errstr2, 0, 11) === 'JSONencoded') {
+      $errstr2 = json_decode(substr($errstr2, 11), true);
+    }
+
     if ($api || $apiRequest) { // TODO: I don't know why $api doesn't work. $apiRequest does for now, but this will need to be looked into to.
       echo fim_outputApi(array(
         'exception' => array(
-          'string' => $errstr,
+          'string' => $errstr2,
           'contactEmail' => $config['email'],
         )
       ));
     }
     else {
-      die(nl2br('<fieldset><legend><strong style="color: #ff0000;">Unrecoverable Error</strong></legend><strong>Error Text</strong><br />' . $errstr . '<br /><br /><strong>What Should I Do Now?</strong><br />' . ($config['email'] ? 'You may wish to <a href="mailto:' . $config['email'] . '">notify the administration</a> of this error.' : 'No contact was specified for this installation, so try to wait it out.')  . '<br /><br /><strong>Are You The Host?</strong><br />Server errors are often database related. These may result from improper installation or a corrupted database. The documentation may provide clues, however.</fieldset>'));
+      die(nl2br('<fieldset><legend><strong style="color: #ff0000;">Unrecoverable Error</strong></legend><strong>Error Text</strong><br />' . print_r($errstr2) . '<br /><br /><strong>What Should I Do Now?</strong><br />' . ($config['email'] ? 'You may wish to <a href="mailto:' . $config['email'] . '">notify the administration</a> of this error.' : 'No contact was specified for this installation, so try to wait it out.')  . '<br /><br /><strong>Are You The Host?</strong><br />Server errors are often database related. These may result from improper installation or a corrupted database. The documentation may provide clues, however.</fieldset>'));
     }
 
-    if ($config['email'] && $config['emailErrors']) mail($config['email'], 'FIM3 System Error [' . $_SERVER['SERVER_NAME'] . ']', 'The following error was encountered by the server located at ' . $_SERVER['SERVER_NAME'] . ':<br /><br />' . $errstr);
+    if ($config['email'] && $config['emailErrors']) mail($config['email'], 'FIM3 System Error [' . $_SERVER['SERVER_NAME'] . ']', 'The following error was encountered by the server located at ' . $_SERVER['SERVER_NAME'] . ':<br /><br />' . print_r($errstr2));
     break;
 
     default:

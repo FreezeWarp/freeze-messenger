@@ -198,7 +198,7 @@ abstract class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   protected function triggerError($errorMessage, $errorData, $errorType, $suppressErrors = false) {
-  
+
     if (function_exists($this->errorFormatFunction)) {
       $errorMessage = call_user_func($this->errorFormatFunction, $errorMessage, $errorData);
     }
@@ -208,7 +208,11 @@ abstract class database {
     }
     
     if (!$suppressErrors) {
-      trigger_error("$errorMessage\n\ndetails\n" . print_r($errorData, true), $this->errorLevel);
+      trigger_error('JSONencoded' . json_encode(array(
+        "Message" => $errorMessage,
+        "Stack Trace" => debug_backtrace(false),
+        "Error Data" => $errorData
+      )), $this->errorLevel);
     }
     
     $this->newError($errorMessage . "\nAdditional Information:\n" . print_r($errorData, true));
@@ -594,9 +598,14 @@ abstract class database {
       case 'ts':  case 'timestamp': return array('timestamp', (int)    $value, $comp); break;
       case 'str': case 'string':    return array('string',    (string) $value, $comp); break;
       case 'col': case 'column':    return array('column',    (string) $value, $comp); break;
-      case 'arr': case 'array':     return array('array',     (array)  $value, ($comp === 'in' || $comp === 'notin' ? $comp : 'in')); break;
       case 'flt': case 'float':     return array('float',     (float)  $value, $comp); break;
       case 'bool':                  return array('bool',      (bool)   $value, $comp); break;
+
+      case 'arr': case 'array':
+       if (count($value) === 0) {
+         $this->triggerError('Empty arrays can not be specified.', false, 'validation');
+       }
+       return array('array',     (array)  $value, ($comp === 'in' || $comp === 'notin' ? $comp : 'in')); break;
     }
   }
 

@@ -313,10 +313,9 @@ class fimDatabase extends databaseSQL {
       $this->sqlPrefix . "roomPermissions" => 'roomId, attribute, param, permissions',
     );
 
-    if (count(rooms) > 0)
-      $conditions['both']['roomId'] = $this->in((array) $rooms);
+    if (count($rooms) > 0) { $conditions['both']['roomId'] = $this->in((array) $rooms); }
 
-    return $permissionsDatabase = $this->select($columns);
+    return $this->select($columns, $conditions);
   }
 
   public function getKicks ($users = array(), $rooms = array(), $kickers = array(), $sort = array('roomId' => 'asc', 'userId' => 'asc'), $limit, $pagination) {
@@ -370,7 +369,7 @@ class fimDatabase extends databaseSQL {
   	  $conditions['both']['!options'] = $this->bitChange($conditions['both']['!options'], 8, 'remove'); // TODO: Permission?
 
   	if (count($rooms) > 0)
-  	  $conditions['both']['roomId'] = $this->type('array', $rooms, 'in');
+  	  $conditions['both']['roomId'] = $this->in($rooms);
 
   	if ($globNameSearch)
   	  $conditions['both']['roomName'] = $this->type('string', $globNameSearch, 'search');
@@ -428,14 +427,6 @@ class fimDatabase extends databaseSQL {
     return $this->select($columns, $conditions, $sort);
   }
 
-
-  public function getUser($userId = array(), $userName = false) {
-    $roomData = $this->getRooms(array($roomId), $userName)->getAsArray(true);
-    $roomData = $roomData[$roomId];
-    $roomData['type'] = 'normal'; // TODO
-
-    return $roomData;
-  }
 
   public function getCensorLists($lists = array(), $rooms = array(), $sort = array('listName' => 'asc'), $limit = false, $pagination = false) {
     $columns = array(

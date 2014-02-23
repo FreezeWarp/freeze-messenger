@@ -1,13 +1,13 @@
-﻿<?php
+<?php
 /* Default Configuration Settings
- * These are the defaults to the $config system (which is a lot like about:config in Firefox).
- * Some of these are really barebones compared to the data used by the install script (e.g. searchWord directives), while others are ommitted from the install script due to their relative rarity in use.
- * This file will only need to be loaded when the $config data is out-of-date.
- * Finally, every single $config variable that is at any time used is in this file, in case you need a referrence.
+* These are the defaults to the $config system (which is a lot like about:config in Firefox).
+* Some of these are really barebones compared to the data used by the install script (e.g. searchWord directives), while others are ommitted from the install script due to their relative rarity in use.
+* This file will only need to be loaded when the $config data is out-of-date.
+* Finally, every single $config variable that is at any time used is in this file, in case you need a referrence.
 */
 
 /* DO NOT EDIT
- * (Unless you really really really want to. In which case, be prepared to have to reinstall stuff.) */
+* (Unless you really really really want to. In which case, be prepared to have to reinstall stuff.) */
 
 $defaultConfig = array(
   'roomLengthMinimum' => 5, // integer Requires all room names to be at least this many characters.
@@ -32,7 +32,7 @@ $defaultConfig = array(
   'searchWordConvertsFind' => array(), // array An array of characters that will be replaced in the "phrase" table. Not that the "romanisation" configuration rules are applied to phrases as well, so you should not include these.
   'searchWordConvertsReplace' => array(), // array See "searchWordConvertsFind"
 
-  // All Seconds
+// All Seconds
   'kicksCacheRefresh' => 30, // int The number of seconds after which the kicks cache will be refreshed. Because this is a *full* cache, the table will be read in its entirety every time this ammount of time elapses, so it can only be so low. However, kicks do not come into effect until they appear in the cache, so if this is too high, the kicks functionality effectively breaks down. TODO: disable kicks cache functionality
   'permissionsCacheRefresh' => 30, // int The number of seconds after which the permissions cache will be refreshed. Because this is a *full* cache, the table will be read in its entirety every time this ammount of time elapses, so it can only be so low. However, permissions do not come into effect until they appear in the cache, so if this is too high, the kicks functionality effectively breaks down.
   'phrasesCacheRefresh' => 3600, // int The number of seconds after which the phrases cache will be refreshed. Because this is a *full* cache, the table will be read in its entirety every time this ammount of time elapses, so it should only be so low. It can be very high, however, because you should be able to manually clear this cache when you update phrases.
@@ -78,7 +78,7 @@ $defaultConfig = array(
     'tiff' => 'tif',
   ),
   'fileContainers' => array(
-    // application    
+// application
     'exe' => 'application',
     'msi' => 'application',
     'cab' => 'application',
@@ -106,7 +106,7 @@ $defaultConfig = array(
     'ods' => 'application',
     'odp' => 'application',
 
-    // text
+// text
     'txt' => 'text',
     'htm' => 'text',
     'php' => 'text',
@@ -115,7 +115,7 @@ $defaultConfig = array(
     'json' => 'text',
     'xml' => 'text',
 
-    // image
+// image
     'png' => 'image',
     'jpg' => 'image',
     'gif' => 'image',
@@ -125,7 +125,7 @@ $defaultConfig = array(
     'svg' => 'image',
     'svgz' => 'image',
 
-    // audio
+// audio
     'mp2' => 'audio',
     'mp3' => 'audio',
     'ogg' => 'audio',
@@ -133,15 +133,15 @@ $defaultConfig = array(
     'm4a' => 'audio',
     'wav' => 'audio',
     'wma' => 'audio',
-    
-    // video
+
+// video
     'mp4' => 'video',
     'm4v' => 'video',
     'ogv' => 'video',
     'mov' => 'video',
     'wmv' => 'video',
 
-    // archives
+// archives
     'zip' => 'archive',
     'rar' => 'archive',
     '7z' => 'archive',
@@ -151,7 +151,7 @@ $defaultConfig = array(
   'imageTypes' => array(IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG),
   'allowedExtensions' => array('gif', 'png', 'jpg', 'txt', 'ogg', 'mp3', 'flac'),
   'uploadMimes' => array( // We transfer a file with a specific mimetype. Obviously, certain types are more prone to viruses than others.
-    // text
+// text
     'txt' => 'text/plain',
     'htm' => 'text/html',
     'php' => 'text/html',
@@ -159,8 +159,8 @@ $defaultConfig = array(
     'js' => 'application/javascript',
     'json' => 'application/json',
     'xml' => 'application/xml',
-    
-    // application    
+
+// application
     'exe' => 'application/x-msdownload',
     'msi' => 'application/x-msdownload',
     'cab' => 'application/vnd.ms-cab-compressed',
@@ -172,7 +172,7 @@ $defaultConfig = array(
     'doc' => 'application/msword',
     'xls' => 'application/vnd.ms-excel',
     'ppt' => 'application/vnd.ms-powerpoint',
-    
+
     'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'dotx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.template',
     'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -183,12 +183,12 @@ $defaultConfig = array(
     'ppsx' => 'application/vnd.openxmlformats-officedocument.presentationml.slideshow',
     'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     'sldx' => 'application/vnd.openxmlformats-officedocument.presentationml.slide',
-    
+
     'odt' => 'application/vnd.oasis.opendocument.text',
     'ods' => 'application/vnd.oasis.opendocument.spreadsheet',
     'odp' => 'application/vnd.oasis.opendocument.presentation',
 
-    // image
+// image
     'png' => 'image/png',
     'jpg' => 'image/jpeg',
     'gif' => 'image/gif',
@@ -198,7 +198,7 @@ $defaultConfig = array(
     'svg' => 'image/svg+xml',
     'svgz' => 'image/svg+xml',
 
-    // audio
+// audio
     'mp2' => 'audio/mpeg',
     'mp3' => 'audio/mpeg',
     'ogg' => 'audio/ogg',
@@ -206,15 +206,15 @@ $defaultConfig = array(
     'm4a' => 'audio/m4a',
     'wav' => 'audio/wav',
     'wma' => 'audio/x-ms-wma',
-    
-    // video
+
+// video
     'mp4' => 'video/mp4',
     'm4v' => 'video/mp4',
     'ogv' => 'video/ogg',
     'mov' => 'video/quicktime',
     'wmv' => 'video/x-ms-wmv',
 
-    // archive
+// archive
     'zip' => 'application/zip',
     'rar' => 'application/x-rar-compressed',
     '7z' => 'application/x-7z-compressed',
@@ -232,8 +232,8 @@ $defaultConfig = array(
     'js' => 1 * 1024 * 1024, // 1MB
     'json' => 1 * 1024 * 1024, // 1MB
     'xml' => 1 * 1024 * 1024, // 1MB
-    
-    // application    
+
+// application
     'exe' => 50 * 1024 * 1024, // 50MB
     'msi' => 50 * 1024 * 1024, // 50MB
     'cab' => 50 * 1024 * 1024, // 50MB
@@ -245,7 +245,7 @@ $defaultConfig = array(
     'doc' => 10 * 1024 * 1024, // 10MB
     'xls' => 10 * 1024 * 1024, // 10MB
     'ppt' => 10 * 1024 * 1024, // 10MB
-    
+
     'docx' => 10 * 1024 * 1024, // 10MB
     'dotx' => 10 * 1024 * 1024, // 10MB
     'xlsx' => 10 * 1024 * 1024, // 10MB
@@ -256,12 +256,12 @@ $defaultConfig = array(
     'ppsx' => 10 * 1024 * 1024, // 10MB
     'pptx' => 10 * 1024 * 1024, // 10MB
     'sldx' => 10 * 1024 * 1024, // 10MB
-    
+
     'odt' => 10 * 1024 * 1024, // 10MB
     'ods' => 10 * 1024 * 1024, // 10MB
     'odp' => 10 * 1024 * 1024, // 10MB
 
-    // image
+// image
     'png' => 10 * 1024 * 1024, // 10MB
     'jpg' => 10 * 1024 * 1024, // 10MB
     'gif' => 10 * 1024 * 1024, // 10MB
@@ -271,7 +271,7 @@ $defaultConfig = array(
     'svg' => 10 * 1024 * 1024, // 10MB
     'svgz' => 10 * 1024 * 1024, // 10MB
 
-    // audio
+// audio
     'mp2' => 20 * 1024 * 1024, // 20MB
     'mp3' => 20 * 1024 * 1024, // 20MB
     'ogg' => 20 * 1024 * 1024, // 20MB
@@ -279,15 +279,15 @@ $defaultConfig = array(
     'm4a' => 20 * 1024 * 1024, // 20MB
     'wav' => 50 * 1024 * 1024, // 50MB
     'wma' => 20 * 1024 * 1024, // 20MB
-    
-    // video
+
+// video
     'mp4' => 10 * 1024 * 1024, // 100MB
     'm4v' => 10 * 1024 * 1024, // 100MB
     'ogv' => 10 * 1024 * 1024, // 100MB
     'wmv' => 20 * 1024 * 1024, // 20MB
     'mov' => 20 * 1024 * 1024, // 20MB
 
-    // archive
+// archive
     'zip' => 50 * 1024 * 1024, // 50MB
     'rar' => 50 * 1024 * 1024, // 50MB
     '7z' => 50 * 1024 * 1024, // 50MB
@@ -380,7 +380,7 @@ $defaultConfig = array(
   'parentalRegistrationAge' => 0, // Age required to register.
   'parentalFlags' => array('language', 'violence', 'gore', 'drugs', 'gambling', 'nudity', 'suggestive', 'weapons'),
   'parentalAges' => array(6, 10, 13, 16, 18),
-  
+
   'curlUA' => 'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)',
 
   'enableCensor' => true,
@@ -411,7 +411,7 @@ $defaultConfig = array(
     "Copperplate Gothic Bold" => "'Copperplate Gothic Bold', fantasy",
     "Rockwell Extra Bold" => "'Rockwell Extra Bold', fantasy",
   ),
-  
+
   'romanisation' => array(
     'á' => 'a', 'ä' => 'a', 'å' => 'a', 'Á' => 'A', 'Ä' => 'A', 'Å' => 'A',
     'é' => 'e', 'ë' => 'e', 'É' => 'E', 'Ë' => 'E',

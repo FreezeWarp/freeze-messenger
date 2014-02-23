@@ -155,6 +155,7 @@
       require('../config.php'); // We do NOT want to require global for a couple of reasons, the biggest one being this file simply doesn't require it. All CURL requests require config.php, however.
       require('../functions/fim_curl.php');
 //echo mktime(null, null, null, $_POST['birthmonth'], $_POST['birthday'], $_POST['birthyear']); die();
+
       $crA = array(
         'apiVersion' => '3',
         'passwordEncrypt' => 'sha256',

@@ -126,7 +126,7 @@ if (!isset($defaultLanguage)) {
 
 /* API Mode
  * Determine if we are in the API or not.
- * If we are, we disable things like the error handler.
+ * If we are, we disable th*ings like the error handler.
  * In rare cases (like validate.php, where it can act both as an API and as a part of the core system), this is already defined and will be left alone. Otherwise, API files should set $apiRequest to true, and it will be converted to $api here. */
 if (!isset($api)) {
   if (isset($apiRequest)) $api = (bool) $apiRequest;
@@ -172,7 +172,8 @@ if ($integrationConnect) {
     $dbConnect['integration']['username'],
     $dbConnect['integration']['password'],
     $dbConnect['integration']['database'],
-    $dbConnect['integration']['driver'])) { // Connect to MySQL
+    $dbConnect['integration']['driver'],
+    $dbConfig['integration']['tablePrefix'])) { // Connect to MySQL
     die('Could not connect to the integration database: ' . $database->error . '; the application has exitted.');
   }
 }

@@ -193,8 +193,16 @@ class databaseSQL extends database {
       case 'tableA':    return $this->tableAliasQuoteStart . $this->escape($values[1], 'tableA') . $this->tableAliasQuoteEnd;                                   break;
       case 'database':  return $this->databaseQuoteStart . $this->escape($values[1], 'database') . $this->databaseQuoteEnd;                                     break;
       case 'index':     return $this->indexQuoteStart . $this->escape($values[1], 'index') . $this->indexQuoteEnd;                                              break;
-      case 'array':     return '(' . implode(',', $values[1]) . ')';                                                                                            break;  // TODO: format for non-INTS/escape/etc.
-      
+      case 'array':
+        foreach ($values[1] AS &$item) {
+          if     (is_string($item)) $item = $this->formatValue('string', $item); // Format as a string.
+          elseif (is_int($item))    continue; // Do nothing.
+          else   $this->triggerError('Improper item type in array.', $values[1], 'validation');
+        }
+
+        return $this->arrayQuoteStart . implode($this->arraySeperator, $values[1]) . $this->arrayQuoteEnd; // Combine as list.
+      break;
+
       case 'tableColumn':   return $this->formatValue('table', $values[1]) . $this->tableColumnDivider . $this->formatValue('column', $values[2]);     break;
       case 'databaseTable': return $this->formatValue('database', $values[1]) . $this->databaseTableDivider . $this->formatValue('table', $values[2]); break;
       
@@ -305,13 +313,14 @@ class databaseSQL extends database {
     switch ($this->language) {
       case 'mysql':
       case 'mysqli':
-      $this->tableQuoteStart = '`';    $this->tableQuoteEnd = '`';    $this->tableAliasQuoteStart = '`';    $this->tableAliasQuoteEnd = '`';
-      $this->columnQuoteStart = '`';   $this->columnQuoteEnd = '`';   $this->columnAliasQuoteStart = '`';   $this->columnAliasQuoteEnd = '`';
-      $this->databaseQuoteStart = '`'; $this->databaseQuoteEnd = '`'; $this->databaseAliasQuoteStart = '`'; $this->databaseAliasQuoteEnd = '`';
-      $this->stringQuoteStart = '"';   $this->stringQuoteEnd = '"';   $this->emptyString = '""';            $this->stringFuzzy = '%';
-      $this->intQuoteStart = '';       $this->intQuoteEnd = '';
-      $this->tableColumnDivider = '.'; $this->databaseTableDivider = '.';
-      $this->sortOrderAsc = 'ASC';     $this->sortOrderDesc = 'DESC';
+      $this->tableQuoteStart = '`';      $this->tableQuoteEnd = '`';    $this->tableAliasQuoteStart = '`';    $this->tableAliasQuoteEnd = '`';
+      $this->columnQuoteStart = '`';     $this->columnQuoteEnd = '`';   $this->columnAliasQuoteStart = '`';   $this->columnAliasQuoteEnd = '`';
+      $this->databaseQuoteStart = '`';   $this->databaseQuoteEnd = '`'; $this->databaseAliasQuoteStart = '`'; $this->databaseAliasQuoteEnd = '`';
+      $this->stringQuoteStart = '"';     $this->stringQuoteEnd = '"';   $this->emptyString = '""';            $this->stringFuzzy = '%';
+      $this->arrayQuoteStart = '(';      $this->arrayQuoteEnd = ')';    $this->arraySeperator = ', ';
+      $this->intQuoteStart = '';         $this->intQuoteEnd = '';
+      $this->tableColumnDivider = '.';   $this->databaseTableDivider = '.';
+      $this->sortOrderAsc = 'ASC';       $this->sortOrderDesc = 'DESC';
       $this->tableAliasDivider = ' AS '; $this->columnAliasDivider = ' AS ';
 
       $this->tableTypes = array(
@@ -325,6 +334,7 @@ class databaseSQL extends database {
       $this->columnQuoteStart = '"';   $this->columnQuoteEnd = '"';   $this->columnAliasQuoteStart = '"';   $this->columnAliasQuoteEnd = '"';
       $this->databaseQuoteStart = '"'; $this->databaseQuoteEnd = '"'; $this->databaseAliasQuoteStart = '"'; $this->databaseAliasQuoteEnd = '"';
       $this->stringQuoteStart = '"';   $this->stringQuoteEnd = '"';   $this->emptyString = '""';            $this->stringFuzzy = '%';
+      $this->arrayQuoteStart = '(';    $this->arrayQuoteEnd = ')';    $this->arraySeperator = ', ';
       $this->intQuoteStart = '';       $this->intQuoteEnd = '';
       $this->tableColumnDivider = '.'; $this->databaseTableDivider = '.';
       $this->sortOrderAsc = 'ASC';     $this->sortOrderDesc = 'DESC';

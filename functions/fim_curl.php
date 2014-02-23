@@ -100,8 +100,8 @@ class curlRequest {
       }
     }
     else {
-      $errno = 0;
-      $errstr = 0;
+      $errno = false;
+      $errstr = false;
 
       $urlData = parse_url($installUrl . $this->requestFile); // parse the given URL
 
@@ -123,8 +123,6 @@ class curlRequest {
         while(!feof($fp)) {
           $result .= fgets($fp, 128); // receive the results of the request
         }
-
-        var_dump($result); die();
       }
 
       // close the socket connection:

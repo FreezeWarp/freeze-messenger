@@ -138,6 +138,7 @@ class fimCache extends generalCache {
     }
     else {
       require_once($this->defaultConfigFile); // Not exactly best practice, but the best option for reducing resources. (The alternative is to parse it with JSON, but really, why?)
+
       $config = array();
 
       if (!$disableConfig) {

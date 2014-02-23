@@ -32,6 +32,8 @@
  * TODO: Captcha Support, IP Limits, Email Restricted/Allowed Domains, Birthdate Filter, Censor Names
  */
 
+
+
 $apiRequest = true;
 $ignoreLogin = true;
 
@@ -70,7 +72,6 @@ $request = fim_sanitizeGPC('p', array(
 
 $userAge = fim_dobToAge($request['birthdate']); // Generate the age in years of the user.
 
-
 /* Start Processing */
 if ($continue) {
   if ($loginConfig['method'] != 'vanilla') {
@@ -81,8 +82,10 @@ if ($continue) {
     $errStr = 'loggedIn';
     $errDesc = 'You are already logged-in.';
   }
-  elseif ($database->getUser(false, $request['userName'])) {
-    $errStr = 'userExists';
+  elseif (count($slaveDatabase->getUsers(array(
+    'userNames' => $request['userName'],
+  ))->getAsArray(true)) > 0) {
+      $errStr = 'userExists';
     $errDesc = 'That user specified already exists.';
   }
   elseif (!$request['userName']) {
@@ -202,11 +205,6 @@ $xmlData = array(
     ),
   ),
 );
-
-
-
-/* Plugin Hook End */
-($hook = hook('sendUser_end') ? eval($hook) : '');
 
 
 
