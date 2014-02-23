@@ -140,9 +140,12 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
     padding-top: 5px;
     padding-bottom: 5px;
   }
-  table.page td { border-bottom: 1px solid black; }
-  table.page tr:last-child td { border-bottom: none; }
-  /*tbody tr:last-child { border-bottom: none; }*/
+  table.page td {
+    border-bottom: 1px solid black;
+  }
+  table.page tr:last-child td {
+    border-bottom: none;
+  }
   tbody tr:nth-child(2n) {
     background: #efefef !important;
   }

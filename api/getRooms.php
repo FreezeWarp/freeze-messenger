@@ -88,59 +88,63 @@ $xmlData = array(
   ),
 );
 
-$rooms = $database->getRooms($request['rooms'], $request['showDeleted'], $request['search'], null, null, array($request['sort'] => 'asc'), true)->getAsArray(true);
 
-/* Process Rooms Obtained from Database */
-// I'll fix the spacing when I get a better editor. Eclipse is seriously the worst thing ever, and I miss KDevelop.
-    foreach ($rooms AS $roomData) {
-      $roomData['type'] = 'normal'; // hasPermission requires this; it is returned by default from the getRoom function.
+$rooms = $database->getRooms(array(
+  'roomIds' => $request['rooms'],
+  'showDeleted' => $request['showDeleted'],
+  'roomNameSearch' => $request['search']),
+array($request['sort'] => 'asc'))->getAsArray(true);
 
-      $permissions = fim_hasPermission($roomData, $user, array('post', 'view', 'moderate', 'admin'), false);
 
-      if ($request['permLevel']) {
-        if ($permissions[0][$request['permLevel']] === false) {
-          continue;
-        }
-      }
+foreach ($rooms AS $roomData) {
+  $roomData['type'] = 'normal'; // hasPermission requires this; it is returned by default from the getRoom function.
 
-      $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']] = array(
-        'roomId' => (int)$roomData['roomId'],
-        'roomName' => ($roomData['roomName']),
-        'defaultPermissions' => (int) $roomData['defaultPermissions'],
-        'parentalFlags' => explode(',', $roomData['parentalFlags']),
-        'parentalAge' => $roomData['parentalAge'],
-        'options' => (int) $roomData['options'],
-        'optionDefinitions' => array(
-          'official' => (bool) ($roomData['options'] & 1),
-          'deleted' => (bool) ($roomData['options'] & 4),
-          'hidden' => (bool) ($roomData['options'] & 8),
-          'allowViewing' => (bool) ($roomData['options'] & 32),
-        ),
-        'permissions' => array(
-          'canModerate' => (bool) $permissions[0]['moderate'],
-          'canAdmin' => (bool) $permissions[0]['admin'],
-          'canPost' => (bool) $permissions[0]['post'],
-          'canView' => (bool) $permissions[0]['view'],
-        ),
-      );
+  $permissions = fim_hasPermission($roomData, $user, array('post', 'view', 'moderate', 'admin'), false);
 
-      if ($permissions[0]['view']) { // These are not shown to users who are not allowed to access the room.
-        $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['roomTopic'] = $roomData['roomTopic'];
-        $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['owner'] = $roomData['owner'];
-        $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['lastMessageId'] = $roomData['lastMessageId'];
-        $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['lastMessageTime'] = $roomData['lastMessageTime'];
-        $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['messageCount'] = $roomData['messageCount'];
-      }
-
-      if ($permissions[0]['moderate']) { // Fetch the allowed users and allowed groups if the user is able to moderate the room.
-        if (isset($permissionsCache['byRoomId'][$roomData['roomId']])) {
-          $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['allowedUsers'] = (array) $generalCache->getPermissions($roomData['roomId'], 'user');
-          $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['allowedGroups'] = (array) $generalCache->getPermissions($roomData['roomId'], 'group');
-        }
-      }
-
-      ($hook = hook('getRooms_eachRoom') ? eval($hook) : '');
+  if ($request['permLevel']) {
+    if ($permissions[0][$request['permLevel']] === false) {
+      continue;
     }
+  }
+
+  $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']] = array(
+    'roomId' => (int)$roomData['roomId'],
+    'roomName' => ($roomData['roomName']),
+    'defaultPermissions' => (int) $roomData['defaultPermissions'],
+    'parentalFlags' => explode(',', $roomData['parentalFlags']),
+    'parentalAge' => $roomData['parentalAge'],
+    'options' => (int) $roomData['options'],
+    'optionDefinitions' => array(
+      'official' => (bool) ($roomData['options'] & 1),
+      'deleted' => (bool) ($roomData['options'] & 4),
+      'hidden' => (bool) ($roomData['options'] & 8),
+      'allowViewing' => (bool) ($roomData['options'] & 32),
+    ),
+    'permissions' => array(
+      'canModerate' => (bool) $permissions[0]['moderate'],
+      'canAdmin' => (bool) $permissions[0]['admin'],
+      'canPost' => (bool) $permissions[0]['post'],
+      'canView' => (bool) $permissions[0]['view'],
+    ),
+  );
+
+  if ($permissions[0]['view']) { // These are not shown to users who are not allowed to access the room.
+    $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['roomTopic'] = $roomData['roomTopic'];
+    $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['owner'] = $roomData['owner'];
+    $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['lastMessageId'] = $roomData['lastMessageId'];
+    $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['lastMessageTime'] = $roomData['lastMessageTime'];
+    $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['messageCount'] = $roomData['messageCount'];
+  }
+
+  if ($permissions[0]['moderate']) { // Fetch the allowed users and allowed groups if the user is able to moderate the room.
+    if (isset($permissionsCache['byRoomId'][$roomData['roomId']])) {
+      $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['allowedUsers'] = (array) $generalCache->getPermissions($roomData['roomId'], 'user');
+      $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['allowedGroups'] = (array) $generalCache->getPermissions($roomData['roomId'], 'group');
+    }
+  }
+
+  ($hook = hook('getRooms_eachRoom') ? eval($hook) : '');
+}
 
 
 

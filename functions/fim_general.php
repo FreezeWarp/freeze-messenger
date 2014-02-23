@@ -101,9 +101,9 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
     $isAllowedGroup = false;
     $isOwner = false;
     $isRoomDeleted = false;
+    $isRoomArchived = false;
     $parentalBlock = false;
     $kick = false;
-    $allowViewing = false;
 
     $isAllowedUserOverride = false;
 
@@ -131,8 +131,9 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
     if ($roomData['options'] & 4) $isRoomDeleted = true; // The room is deleted.
 
 
-    /* Allow Viewing? */
-    if ($roomData['options'] & 32) $allowViewing = true; // The room allows viewing by unathourised users.
+    /* Archived? */
+    if ($roomData['options'] & 16) $isRoomArchived = true; // The room is archived.
+
 
 
     /* Is the user a super user? */
@@ -154,17 +155,17 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
     foreach ((array) $type AS $type2) {
       if (!in_array($type2, array('post', 'view', 'moderate', 'admin'))) throw new Exception('hasPermission type "' . $type2 . '" unrecognised.'); // Transitional. TODO: Remove
 
-      /* Is the User an Allowed User? */
+      /* Is the User an Allowed User?
+       * TODO: Rewrite/debug/whatever */
       foreach(array('user', 'admingroup', 'group') AS $type3) {
-        if ($generalCache->getPermissions($roomData['roomId'], $type3, $userData['userId']) & $permMap[$type2]) { $isAllowedUser = true; }
-        else { $isAllowedUserOverride = true; break; } // If a group is granted access but a user is forbidden, the user status is considered final. Likewise, if a social group is granted access but an admin group is restricted, the admin group is considered final.
+        if ($generalCache->getPermissions($roomData['roomId'], $type3, $userData['userId']) & $permMap[$type2]) { $isAllowedUser = true; break; }
       }
       if (($roomData['defaultPermissions'] & $permMap[$type2]) && !$isAllowedUserOverride) {
-        $isAllowedUser = true;
+          $isAllowedUser = true;
       }
 
 
-      /* Each Type Has a Unique Set of Conditions */
+        /* Each Type Has a Unique Set of Conditions */
       if ($type2 === 'post') {
         if ($banned) {                                           $roomValid['post'] = false; $reason = 'banned'; } // admins can disable their own ban
         elseif (!$valid) {                                       $roomValid['post'] = false; $reason = 'invalid'; }
@@ -182,7 +183,6 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
         elseif ($isRoomDeleted) {                                $roomValid['view'] = false; $reason = 'deleted'; } // admin overrides this
         elseif ($parentalBlock) {                                $roomValid['view'] = false; $reason = 'parental'; } // admin overrides this
         elseif ($isAllowedUser || $isAllowedGroup) {             $roomValid['view'] = true; }
-        elseif ($allowViewing) {                                 $roomValid['view'] = true; }
         else {                                                   $roomValid['view'] = false; $reason = 'general'; }
       }
 

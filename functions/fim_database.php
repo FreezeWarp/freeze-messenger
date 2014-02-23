@@ -25,6 +25,7 @@ class fimDatabase extends databaseSQL {
   /** Run a query to obtain files.
    * Scans tables `files` and `fileVersions`. These two tables cannot be queried individually using fimDatabase.
    * Returns columns files.fileId, files.fileName, files.fileType, files.creationTime, files.userId, files.parentalAge, files.parentalFlags, files.roomIdLink, files.fileId, fileVersions.vfileId (= files.fileId), fileVersions.md5hash, fileVersions.sha256hash, fileVersions.size.
+   * Optimisation notes: If an index is kept on the number of files posted in a given room, or to a given user, then this index can be used to see if it can be used to quickly narrow down results. Of-course, if such an index results in hundreds of results, no efficiency gain is likely to be made from doing such an elimination first. Similar optimisations might be doable wwith age, creationTime, fileTypes, etc., but these should wait for now.
    *
    * @param array $users          An array of userIDs corresponding with file ownership.
    * @param array $files          An array of fileIDs.
@@ -45,50 +46,6 @@ class fimDatabase extends databaseSQL {
    *
    * @TODO: Test filters for other file properties.
    */
-  public function getFiles(
-    $users = array(),
-    $files = array(),
-    $fileParams = array(),
-    $rooms = array(),
-    $parentalParams = array(),
-    $sort = array('fileId' => 'asc'),
-    $limit = 0,
-    $pagination = 1)
-  {
-    $columns = array(
-      "files"        => 'fileId, fileName, fileType, creationTime, userId, parentalAge, parentalFlags, roomIdLink',
-      "fileVersions" => 'fileId vfileId, md5hash, sha256hash, size',
-    );
-
-
-    if (count($users) > 0) $conditions['both']['userId'] = $this->in($users);
-    if (count($files) > 0) $conditions['both']['fileId'] = $this->in($files);
-    if (count($rooms) > 0) $conditions['both']['roomLinkId'] = $this->in($rooms);
-
-    if (isset($fileParams['fileTypes'])) $conditions['both']['fileType'] = $this->in($fileParams['fileTypes']);
-    if (isset($fileParams['creationTimeMin'])) $conditions['both']['creationTime'] = $this->int($fileParams['creationTime'], 'gte');
-    if (isset($fileParams['creationTimeMax'])) $conditions['both']['creationTime'] = $this->int($fileParams['creationTime'], 'lte');
-    if (isset($fileParams['fileNameGlob'])) $conditions['both']['filelName'] = $this->type('string', $fileParams['fileNameGlob'], 'search');
-
-    if (isset($parentalParams['ageMin'])) $conditions['both']['parentalAge'] = $this->int($parentalParams['ageMin'], 'gte');
-    if (isset($parentalParams['ageMax'])) $conditions['both']['parentalAge'] = $this->int($parentalParams['ageMax'], 'lte');
-
-
-    $conditions['both']['fileId'] = $this->col('vfileId');
-
-
-    if (isset($fileParams['sizeMin'])) $conditions['both']['size'] = $this->int($fileParams['size'], 'gte');
-    if (isset($fileParams['sizeMax'])) $conditions['both']['size'] = $this->int($fileParams['size'], 'lte');
-
-
-    return $this->select($columns, $conditions, $sort);
-  }
-
-
-
- /*
-   * Optimisation notes: If an index is kept on the number of files posted in a given room, or to a given user, then this index can be used to see if it can be used to quickly narrow down results. Of-course, if such an index results in hundreds of results, no efficiency gain is likely to be made from doing such an elimination first. Similar optimisations might be doable wwith age, creationTime, fileTypes, etc., but these should wait for now.
-  */
   public function getFilesNew($options = array(), $sort = array('fileId' => 'asc'), $limit = 0, $pagination = 1) {
     $options = array_merge(array(
       'userIds' => array(),
@@ -98,8 +55,8 @@ class fimDatabase extends databaseSQL {
       'creationTimeMax' => 0,
       'creationTimeMin' => 0,
       'fileNameSearch' => '',
-      'ageMin' => 0,
-      'ageMax' => 0,
+      'parentalAgeMin' => 0,
+      'parentalAgeMax' => 0,
       'vfileIds' => array(),
       'md5hashes' => array(),
       'sha256hashes' => array(),
@@ -125,8 +82,8 @@ class fimDatabase extends databaseSQL {
     if (count($options['userIds']) > 0) $conditions['both']['userId']     = $this->in($options['userIds']);
     if (count($options['roomIds']) > 0) $conditions['both']['roomLinkId'] = $this->in($options['roomIds']);
 
-    if ($options['ageMin'] > 0) $conditions['both']['parentalAge'] = $this->int($options['ageMin'], 'gte');
-    if ($options['ageMax'] > 0) $conditions['both']['parentalAge'] = $this->int($options['ageMax'], 'lte');
+    if ($options['parentalAgeMin'] > 0) $conditions['both']['parentalAge'] = $this->int($options['parentalAgeMin'], 'gte');
+    if ($options['parentalAgeMax'] > 0) $conditions['both']['parentalAge'] = $this->int($options['parentalAgeMax'], 'lte');
 
     if ($options['creationTimeMin'] > 0)  $conditions['both']['creationTime'] = $this->int($options['creationTime'], 'gte');
     if ($options['creationTimeMax'] > 0)  $conditions['both']['creationTime'] = $this->int($options['creationTime'], 'lte');
@@ -192,6 +149,7 @@ class fimDatabase extends databaseSQL {
 
 
     if (count($options['roomListIds']) > 0) $conditions['both']['listId'] = $this->in($options['roomListIds']);
+
     if (count($options['userIds']) > 0)     $conditions['both']['userId'] =  $this->in($options['userIds']);
     if (count($options['roomIds']) > 0)     $conditions['both']['lroomId'] = $this->in($options['userIds']);
 
@@ -233,7 +191,7 @@ class fimDatabase extends databaseSQL {
       'ptime' => $this->int(time() - $options['onlineThreshold'], 'gte')
     );
 
-//var_dump($conditions); die();
+
     return $this->select($columns, $conditions, $sort);
   }
 
@@ -504,44 +462,47 @@ class fimDatabase extends databaseSQL {
   /*
    * @TODO Limit handling (OFFSET = limit * pagination). 
    */
-  public function getRooms($rooms = array(), $showDeleted = false, $globNameSearch = false, $limit = 0, $pagination = 1, $sort = array('roomId' => 'asc'), $slave = false) {
+  public function getRooms($options, $sort = array('roomId' => 'asc'), $limit = 0, $pagination = 1) {
+    $options = array_merge(array(
+      'roomIds' => array(),
+      'ownerIds' => array(),
+      'parentalAgeMin' => 0,
+      'parentalAgeMax' => 0,
+      'messageCountMin' => 0,
+      'messageCountMax' => 0,
+      'lastMessageTimeMin' => 0,
+      'lastMessageTimeMax' => 0,
+      'showDeleted' => false,
+      'roomNameSearch' => false,
+    ), $options);
+
+
   	// Defaults
-  	$columns = array($this->sqlPrefix . "rooms" =>
-  	  'roomId, roomName, roomTopic, owner, defaultPermissions, parentalFlags, parentalAge, options, lastMessageId, lastMessageTime, messageCount');
-    $conditions = array(
-      'both' => array(
-  	    '!options' => $this->int(8, 'bAnd')
-  	  ));
+  	$columns = array($this->sqlPrefix . "rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, parentalFlags, parentalAge, options, lastMessageId, lastMessageTime, messageCount');
 
 
   	// Modify Query Data for Directives
-  	if ($showDeleted)
-  	  $conditions['both']['!options'] = $this->bitChange($conditions['both']['!options'], 8, 'remove'); // TODO: Permission?
+//  	if ($options['showDeleted']) $conditions['both']['options'] = $this->int(8, 'bAnd'); // TODO: Permission?
+//    else $conditions['both'] = array('!options' => $this->int(8, 'bAnd'));
 
-  	if (count($rooms) > 0)
-  	  $conditions['both']['roomId'] = $this->in($rooms);
+    if (count($options['roomIds']) > 0) $conditions['both']['roomId'] = $this->in($options['roomIds']);
+  	if ($options['roomNameSearch']) $conditions['both']['roomName'] = $this->type('string', $options['roomNameSearch'], 'search');
 
-  	if ($globNameSearch)
-  	  $conditions['both']['roomName'] = $this->type('string', $globNameSearch, 'search');
+    if ($options['parentalAgeMin'] > 0) $conditions['both']['parentalAge'] = $this->int($options['parentalAgeMin'], 'gte');
+    if ($options['parentalAgeMax'] > 0) $conditions['both']['parentalAge'] = $this->int($options['parentalAgeMax'], 'lte');
+
+    if ($options['messageCountMin'] > 0)  $conditions['both']['messageCount'] = $this->int($options['messageCount'], 'gte');
+    if ($options['messageCountMax'] > 0)  $conditions['both']['messageCount'] = $this->int($options['messageCount'], 'lte');
+
+    if ($options['lastMessageTimeMin'] > 0)  $conditions['both']['lastMessageTime'] = $this->int($options['lastMessageTime'], 'gte');
+    if ($options['lastMessageTimeMax'] > 0)  $conditions['both']['lastMessageTime'] = $this->int($options['lastMessageTime'], 'lte');
 
 
     $this->roomType = 'normal';
 
 
   	// Perform Query
-  	return $this->select(
-  	  $columns,
-  	  $conditions,
-  	  $sort);
-  }
-
-
-  public function getRoom($roomId) {
-    $roomData = $this->getRooms(array($roomId))->getAsArray(true);
-    $roomData = $roomData[$roomId];
-    $roomData['type'] = 'normal'; // TODO
-
-    return $roomData;
+  	return $this->select($columns, $conditions, $sort);
   }
 
 

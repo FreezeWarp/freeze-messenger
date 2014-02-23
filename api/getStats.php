@@ -53,27 +53,6 @@ $request = fim_sanitizeGPC('g', array(
   ),
 ));
 
-$queryParts['roomSelect']['columns'] = array(
-  "{$sqlPrefix}rooms" => 'roomId, roomName, options, defaultPermissions, owner, parentalAge, parentalFlags',
-);
-$queryParts['roomSelect']['conditions'] = array(
-  'both' => array(
-    array(
-      'type' => 'in',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'roomId',
-      ),
-      'right' => array(
-        'type' => 'array',
-        'value' => $request['rooms'],
-      ),
-    ),
-  ),
-);
-$queryParts['roomSelect']['sort'] = false;
-$queryParts['roomSelect']['limit'] = false;
-
 
 
 /* Data Predefine */
@@ -91,33 +70,22 @@ $xmlData = array(
 
 
 
-/* Plugin Hook Start */
-($hook = hook('getStats_start') ? eval($hook) : '');
-
-
-
 /* Start Processing */
 if (count($request['rooms']) > 0) {
-  $rooms = $database->select(
-    $queryParts['roomSelect']['columns'],
-    $queryParts['roomSelect']['conditions'],
-    $queryParts['roomSelect']['sort'],
-    $queryParts['roomSelect']['limit']
-  );
-  $rooms = $rooms->getAsArray('roomId');
+  $rooms = $database->getRooms(array(
+    'roomIds' => $request['rooms']
+  ))->getAsArray('roomId');
 
 
   foreach ($rooms AS $room) {
     $room['type'] = 'normal'; // Set this for hasPermission.
 
-    ($hook = hook('getStats_eachRoom_start') ? eval($hook) : '');
 
     if (!fim_hasPermission($room, $user, 'view', true)) { // Users must be able to view the room to see the respective post counts.
       ($hook = hook('getStats_noPerm') ? eval($hook) : '');
 
       continue;
     }
-
 
 
     $queryParts['statsSelect']['columns'] = array(
@@ -231,11 +199,6 @@ if (count($request['rooms']) > 0) {
 /* Update Data for Errors */
 $xmlData['getStats']['errStr'] = ($errStr);
 $xmlData['getStats']['errDesc'] = ($errDesc);
-
-
-
-/* Plugin Hook End */
-($hook = hook('getStats_end') ? eval($hook) : '');
 
 
 

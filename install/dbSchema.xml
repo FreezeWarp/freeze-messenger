@@ -360,7 +360,7 @@
       <column name="roomName" type="string" maxlen="50" comment="The name of the room." />
       <column name="roomNameSearchable" type="string" maxlen="50" comment="The name of the room, formatted for searching." />
       <column name="roomTopic" type="string" maxlen="200" comment="The current topic of the room." />
-      <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options." />
+      <column name="options" type="bitfield" bits="8" default="" comment="A bitfield corrosponding to certain room options." />
 
       <!-- Permissions -->
       <column name="owner" type="int" maxlen="10" comment="The owner/creator of the room." />
@@ -680,8 +680,7 @@
     <bitfield name="options" table="rooms">
       <def bit="1" comment="'Official' rooms are designated as such, but generally don't alter permissions in any way.">Official</def>
       <def bit="4" comment="Deleted rooms are only viewable by administrators, and are otherwise read-only.">Deleted</def>
-      <def bit="8" comment="Hidden rooms are not displayed under any circumstances, except to site administrators. Similarly, only administrators may set this flag. Hidden rooms can still be accessed by anyone who both has permission and knows the room ID.">Hidden</def> 
-      <!--<def bit="16" comment="">Allow Viewing</def>-->
+      <def bit="8" comment="Hidden rooms are not displayed under any circumstances, except to site administrators. Similarly, only administrators may set this flag. Hidden rooms can still be accessed by anyone who both has permission and knows the room ID.">Hidden</def>
       <def bit="16" comment="These rooms may not be posted in, and may be optimised specially. Otherwise, they behave normally, and only people with permission to view or know a room will be able to do such..">Archived</def>
       <def bit="256">Reserved for R9000. Not supported officially, but marked for extensions that wish to support.</def>
     </bitfield>

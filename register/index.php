@@ -21,10 +21,11 @@
     padding: 5px;
   }
   .main {
-    width: 800px;
+    max-width: 800px;
     margin-left: auto;
     margin-right: auto;
     display: block;
+    border: 1px solid black;
   }
 
   .ui-widget {
@@ -33,8 +34,14 @@
   .ui-widget-content {
     padding: 5px;
   }
-  table.page {
-    border: 1px solid black;
+  table td {
+    padding: 5px;
+  }
+  table.page td {
+    border-bottom: 1px solid black;
+  }
+  table.page tr:last-child td {
+    border-bottom: none;
   }
   tbody tr:nth-child(2n) {
     background: #efefef !important;
