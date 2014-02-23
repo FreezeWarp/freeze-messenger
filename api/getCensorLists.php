@@ -72,19 +72,6 @@ $xmlData = array(
 $censorLists = $slaveDatabase->getCensorLists($lists, $rooms);
 
 
-$listsActive = $slaveDatabase->select($queryParts['activeSelect']['columns'],
-  $queryParts['activeSelect']['conditions'],
-  $queryParts['activeSelect']['sort'],
-  $queryParts['activeSelect']['limit']);
-$listsActive = $listsActive->getAsArray(true);
-
-$listsActive2 = array();
-foreach ($listsActive AS $lA) {
-  $listsActive2[$lA['listId']][$lA['roomId']] = $lA['status'];
-}
-
-
-
 /* Start Processing */
 if (count($censorLists) > 0) {
   foreach ($censorLists AS $list) { // Run through each censor list retrieved.

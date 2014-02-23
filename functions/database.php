@@ -790,7 +790,19 @@ class databaseResult {
             $data[$indexV] = $row; // Append the data.
           }
           else { // If the index is not boolean "true", we instead get the column value of the index/column name.
-            if ($group) $data[$row[$index]][] = $row; // Allow duplicate values.
+            if ($group) { // Allow duplicate values.
+              $index = (array) $index;
+
+              // Okay, so here's the thing: there's no easy way to build this thing below with an unlimited number of index values. Instead, just because I can, I'm going to hardcode five. If someone can submit a patch that is more flexible, it would be awesome -- I simply can't think of a good way how myself.
+              switch (count($index)) {
+                case 1: $data[$row[$index[1]]][] = $row; break;
+                case 2: $data[$row[$index[1]]][$row[$index[2]]][] = $row; break;
+                case 3: $data[$row[$index[1]]][$row[$index[2]]][$row[$index[3]]][] = $row; break;
+                case 4: $data[$row[$index[1]]][$row[$index[2]]][$row[$index[3]]][$row[$index[4]]][] = $row; break;
+                case 5: $data[$row[$index[1]]][$row[$index[2]]][$row[$index[3]]][$row[$index[4]]][$row[$index[5]]][] = $row; break;
+              }
+            }
+
             else $data[$row[$index]] = $row; // Overwrite values.
           }
         }

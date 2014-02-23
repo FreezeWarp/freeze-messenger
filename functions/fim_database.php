@@ -85,6 +85,73 @@ class fimDatabase extends databaseSQL {
   }
 
 
+
+ /*
+   * Optimisation notes: If an index is kept on the number of files posted in a given room, or to a given user, then this index can be used to see if it can be used to quickly narrow down results. Of-course, if such an index results in hundreds of results, no efficiency gain is likely to be made from doing such an elimination first. Similar optimisations might be doable wwith age, creationTime, fileTypes, etc., but these should wait for now.
+  */
+  public function getFilesNew($options = array(), $sort = array('fileId' => 'asc'), $limit = 0, $pagination = 1) {
+    $options = array_merge(array(
+      'userIds' => array(),
+      'fileIds' => array(),
+      'roomIds' => array(),
+      'fileTypes' => array(),
+      'creationTimeMax' => 0,
+      'creationTimeMin' => 0,
+      'fileNameSearch' => '',
+      'ageMin' => 0,
+      'ageMax' => 0,
+      'vfileIds' => array(),
+      'md5hashes' => array(),
+      'sha256hashes' => array(),
+    ), $options);
+
+
+    $columns = array(
+      "files"        => 'fileId, fileName, fileType, creationTime, userId, parentalAge, parentalFlags, roomIdLink, source',
+      "fileVersions" => 'fileId vfileId, md5hash, sha256hash, size',
+    );
+
+
+    // This is a method of optimisation I'm trying. Basically, if a very small sample is requested, then we can optimise by doing those first. Otherwise, the other filters are usually better performed first.
+    foreach (array('fileIds', 'vfileIds', 'md5hashes', 'sha256hashes') AS $key) {
+      if (count($options[$key]) > 0 && count($options[$key]) <= 10) {
+        $conditions['both'][$key] = $this->in($options[$key]);
+      }
+    }
+
+
+    // Narrow down files _before_ matching to fileVersions. Try to perform the quickest searchest first (those which act on integer indexes).
+    if (!isset($conditions['both']['fileIds']) && count($options['fileIds']) > 0) $conditions['both']['fileId']     = $this->in($options['fileIds']);
+    if (count($options['userIds']) > 0) $conditions['both']['userId']     = $this->in($options['userIds']);
+    if (count($options['roomIds']) > 0) $conditions['both']['roomLinkId'] = $this->in($options['roomIds']);
+
+    if ($options['ageMin'] > 0) $conditions['both']['parentalAge'] = $this->int($options['ageMin'], 'gte');
+    if ($options['ageMax'] > 0) $conditions['both']['parentalAge'] = $this->int($options['ageMax'], 'lte');
+
+    if ($options['creationTimeMin'] > 0)  $conditions['both']['creationTime'] = $this->int($options['creationTime'], 'gte');
+    if ($options['creationTimeMax'] > 0)  $conditions['both']['creationTime'] = $this->int($options['creationTime'], 'lte');
+    if (count($options['fileTypes']) > 0) $conditions['both']['fileType'] = $this->in($options['fileTypes']);
+    if ($options['fileNameSearch'])       $conditions['both']['filelName'] = $this->type('string', $options['fileNameSearch'], 'search');
+
+
+    // Match files to fileVersions.
+    $conditions['both']['fileId'] = $this->col('vfileId');
+
+
+    // Narrow down fileVersions _after_ it has been restricted to matched files.
+    if (!isset($conditions['both']['vfileIds'])     && count($options['vfileIds']) > 0)  $conditions['both']['vfileId']    = $this->in($options['vfileIds']);
+    if (!isset($conditions['both']['md5hashes'])    && count($options['md5hashes']) > 0) $conditions['both']['md5hash']    = $this->in($options['md5hashes']);
+    if (!isset($conditions['both']['sha256hashes']) && count($options['md5hashes']) > 0) $conditions['both']['sha256hash'] = $this->in($options['sha256hashes']);
+
+    if ($options['sizeMin'] > 0) $conditions['both']['size'] = $this->int($options['size'], 'gte');
+    if ($options['sizeMax'] > 0) $conditions['both']['size'] = $this->int($options['size'], 'lte');
+
+
+    return $this->select($columns, $conditions, $sort);
+  }
+
+
+
   public function getRoomLists($user, $roomLists = array(), $sort = array('listId' => 'asc')) {
     $columns = array(
       $this->sqlPrefix . "roomLists" => 'listId, userId, listName, options',
@@ -99,6 +166,35 @@ class fimDatabase extends databaseSQL {
     if (count($roomLists) > 0) {
       $conditions['both']['listId'] = $database->in($roomLists1);
     }
+
+    return $this->select($columns, $conditions, $sort);
+  }
+
+
+
+  /* Use of groupBy _highly_ recommended. */
+  public function getRoomListsNew($options, $sort = array('listId' => 'asc'), $limit = 0, $pagination = 1) {
+    $options = array_merge(array(
+      'userIds' => array(),
+      'roomIds' => array(),
+      'roomListIds' => array(),
+    ), $options);
+
+    $columns = array(
+      $this->sqlPrefix . "roomLists" => 'listId, userId, listName, options',
+      $this->sqlPrefix . "roomListRooms" => 'listId llistId, roomId lroomid',
+    );
+
+
+    $conditions['both'] = array(
+      'llistId' => $this->col('listId'),
+    );
+
+
+    if (count($options['roomListIds']) > 0) $conditions['both']['listId'] = $this->in($options['roomListIds']);
+    if (count($options['userIds']) > 0)     $conditions['both']['userId'] =  $this->in($options['userIds']);
+    if (count($options['roomIds']) > 0)     $conditions['both']['lroomId'] = $this->in($options['userIds']);
+
 
     return $this->select($columns, $conditions, $sort);
   }
@@ -129,6 +225,44 @@ class fimDatabase extends databaseSQL {
     if (count($users) > 0) {
       $conditions['both']['puserId'] = $this->in($users);
     }
+
+
+    return $this->select($columns, $conditions, $sort);
+  }
+
+
+
+  public function getActiveUsersNew($options, $sort = array('userName' => 'asc'), $limit = false, $pagination = false) {
+    global $config;
+
+    $options = array_merge(array(
+      'onlineThreshold' => $config['defaultOnlineThreshold'],
+      'roomIds' => array(),
+      'userIds' => array(),
+      'typing' => null,
+      'statuses' => array()
+    ), $options);
+
+
+    $columns = array(
+      $this->sqlPrefix . "ping" => 'status, typing, time ptime, roomId proomId, userId puserId',
+      $this->sqlPrefix . "rooms" => 'roomId, roomName, roomTopic, defaultPermissions',
+      $this->sqlPrefix . "users" => 'userId, userName, userFormatStart, userFormatEnd, userGroup, socialGroups, typing, status',
+    );
+
+
+    if (count($options['roomIds']) > 0)  $conditions['both']['proomId'] = $this->in($options['roomIds']);
+    if (count($options['userIds']) > 0)  $conditions['both']['puserId'] = $this->in($options['userIds']);
+    if (count($options['statuses']) > 0) $conditions['both']['status']  = $this->in($options['statuses']);
+
+    if (isset($options['typing'])) $conditions['both']['typing'] = $this->bool($options['typing']);
+
+
+    $conditions['both'] = array(
+      'roomid' => $this->col('proomid'),
+      'puserid' => $this->col('userid'),
+      'ptime' => $this->int(time() - $options['onlineThreshold'], 'gte')
+    );
 
 
     return $this->select($columns, $conditions, $sort);
@@ -351,6 +485,53 @@ class fimDatabase extends databaseSQL {
     return $this->select($columns, $conditions, $sort);
   }
 
+
+  public function getKicksNew ($options = array(), $sort = array('roomId' => 'asc', 'userId' => 'asc'), $limit, $pagination) {
+    $options = array_merge(array(
+      'userIds'   => array(),
+      'roomIds'   => array(),
+      'kickerIds' => array(),
+      'lengthMin' => 0,
+      'lengthMax' => 0,
+      'timeMin'  => 0,
+      'timeMax'  => 0
+    ), $options);
+
+
+    $columns = array(
+      $this->sqlPrefix . "kicks" => 'kickerId kkickerId, userId kuserId, roomId kroomId, length klength, time ktime',
+      $this->sqlPrefix . "users user" => 'userId, userName, userFormatStart, userFormatEnd',
+      $this->sqlPrefix . "users kicker" => 'userId kickerId, userName kickerName, userFormatStart kickerFormatStart, userFormatEnd kickerFormatEnd',
+      $this->sqlPrefix . "rooms" => 'roomId, roomName, owner, options, defaultPermissions',
+    );
+
+
+    // Modify Query Data for Directives (First for Performance)
+    if (count($options['userIds']) > 0)   $conditions['both']['kuserId'] = $this->in((array) $options['userIds']);
+    if (count($options['roomIds']) > 0)   $conditions['both']['roomId']  = $this->in((array) $options['roomIds']);
+    if (count($options['kickerIds']) > 0) $conditions['both']['kuserId'] = $this->in((array) $options['kickerIds']);
+
+    if ($options['lengthIdMin'] > 0) $conditions['both']['klength 1'] = $this->int($options['lengthMin'], 'gte');
+    if ($options['lengthIdMax'] > 0) $conditions['both']['klength 2'] = $this->int($options['lengthMax'], 'lte');
+
+    if ($options['timeMin'] > 0) $conditions['both']['ktime 1'] = $this->int($options['timeMin'], 'gte');
+    if ($options['timeMax'] > 0) $conditions['both']['ktime 2'] = $this->int($options['timeMax'], 'lte');
+
+
+    // Default Conditions
+    $conditions = array(
+      'both' => array(
+        'kuserId' => $this->col('userId'),
+        'kroomId' => $this->col('roomId'),
+        'kkickerId' => $this->col('kickerId')
+      ),
+    );
+
+
+    return $this->select($columns, $conditions, $sort);
+  }
+
+
   /*
    * @TODO Limit handling (OFFSET = limit * pagination). 
    */
@@ -464,109 +645,6 @@ class fimDatabase extends databaseSQL {
     );
 
     return $this->select($columns);
-  }
-
-
-  public function getCensorList($listId) {
-    throw new Exception('Deprecated');
-    global $config, $user;
-
-    $queryParts['listSelect']['columns'] = array(
-      $this->sqlPrefix . "censorLists" => 'listId, listName, listType, options',
-    );
-
-    if ($listId) {
-      $queryParts['listSelect']['conditions'] = array(
-        'both' => array('listId' => $this->int($listId)),
-      );
-    }
-    else {
-      return false;
-    }
-
-    $listData = $this->select(
-      $queryParts['listSelect']['columns'],
-      $queryParts['listSelect']['conditions'],
-      false,
-      1);
-    return $listData->getAsArray(false);
-  }
-
-
-  public function getCensorWord($wordId) { // TODO
-
-    throw new Exception('Deprecated');
-    global $config, $user;
-
-    $queryParts['wordSelect']['columns'] = array(
-      $this->sqlPrefix . "censorWords" => 'wordId, listId, word, severity, param',
-    );
-
-    if ($wordId) {
-      $queryParts['wordSelect']['conditions'] = array(
-        'both' => array('wordId' => $this->int($wordId)),
-      );
-    }
-    else {
-      return false;
-    }
-
-    $wordData = $this->select(
-      $queryParts['wordSelect']['columns'],
-      $queryParts['wordSelect']['conditions'],
-      false,
-      1);
-    return $wordData->getAsArray(false);
-  }
-
-
-  public function getMessage($messageId) {
-    global $config, $user;
-
-    $queryParts['messageSelect']['columns'] = array(
-      $this->sqlPrefix . "messages" => 'messageId, roomId, iv, salt, text, deleted',
-    );
-
-    if ($messageId) {
-      $queryParts['messageSelect']['conditions'] = array(
-        'both' => array('messageId' => $this->int($messageId)),
-      );
-    }
-    else {
-      return false;
-    }
-
-    $messageData = $this->select(
-      $queryParts['messageSelect']['columns'],
-      $queryParts['messageSelect']['conditions'],
-      false,
-      1);
-    return $messageData->getAsArray(false);
-  }
-
-
-  public function getFile($fileId) {
-    global $config, $user;
-
-    $queryParts['fileSelect']['columns'] = array(
-      $this->sqlPrefix . "files" => 'fileId, fileName, fileType, creationTime, userId, source, rating, flags, deleted',
-    );
-
-    if ($fileId) {
-      $queryParts['fileSelect']['conditions'] = array(
-        'both' => array('fileId' => $this->int($fileId)),
-      );
-    }
-    else {
-      return false;
-    }
-
-    $fileData = $this->select(
-      $queryParts['fileSelect']['columns'],
-      $queryParts['fileSelect']['conditions'],
-      false,
-      1);
-    return $fileData->getAsArray(false);
   }
 
 

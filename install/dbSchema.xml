@@ -149,6 +149,7 @@
       <column name="deleted" type="bool" default="0" comment="Whether or not the file in question is deleted." />
 
       <key name="fileId" type="primary" />
+      <key name="roomIdLink" type="index" />
       <key name="userId" type="index" />
     </table>
 
