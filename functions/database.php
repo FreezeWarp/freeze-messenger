@@ -592,7 +592,7 @@ abstract class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   
-  public function type($type, $value, $comp = 'e') {
+  public function type($type, $value = '', $comp = 'e') {
     switch ($type) {
       case 'int': case 'integer':   return array('integer',   (int)    $value, $comp); break;
       case 'ts':  case 'timestamp': return array('timestamp', (int)    $value, $comp); break;
@@ -600,6 +600,7 @@ abstract class database {
       case 'col': case 'column':    return array('column',    (string) $value, $comp); break;
       case 'flt': case 'float':     return array('float',     (float)  $value, $comp); break;
       case 'bool':                  return array('bool',      (bool)   $value, $comp); break;
+      case 'empty':                 return array('empty');                             break;
 
       case 'arr': case 'array':
        if (count($value) === 0) {

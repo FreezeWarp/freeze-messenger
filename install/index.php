@@ -136,22 +136,43 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
   abbr {
     outline-bottom: dotted 1px;
   }
+  pre {
+    display: inline;
+  }
+
+  /* General Tables */
   table td {
     padding-top: 5px;
     padding-bottom: 5px;
   }
-  table.page td {
+  table tr {
     border-bottom: 1px solid black;
   }
-  table.page tr:last-child td {
+  table {
+    border-collapse: collapse;
+  }
+  table tr:last-child {
     border-bottom: none;
   }
   tbody tr:nth-child(2n) {
     background: #efefef !important;
   }
 
+  /* Requirements Table */
+  table#requirements tr td:nth-child(2), table#requirements tr td:nth-child(3) {
+    text-align: center;
+  }
+  tbody#permissionRequirements td {
+    text-align: left !important;
+  }
+  table#requirements .installIcon {
+    height: 16px;
+    width: 16px;
+    float: left;
+    margin-right: 5px;
+  }
   @media screen and (max-width: 780px) {
-    table#requirements tr td:last-child, table#requirements tr th:last-child {
+    table#requirements tbody tr td:last-child, table#requirements thead:first-child tr:first-child th:last-child {
       visibility: hidden;
       width: 0px;
       display: none;
@@ -176,12 +197,12 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
     
     // We do this in Javascript instead of the HTML directly since its easier to skin that way, and also good for screenreaders.
     $('.installedFlag').each(function() {
-      $('td:first, th:first', this).append('<img src="task-complete.png" style="height: 16px; width: 16px; float: right;" />');
+      $('td:first, th:first', this).append('<img src="task-complete.png" class="installIcon" />');
       $('td:last', this).html('');
     });
     
     $('.uninstalledFlag').each(function() {
-      $('td:first, th:first', this).append('<img src="task-reject.png" style="height: 16px; width: 16px;  float: right;" />');
+      $('td:first, th:first', this).append('<img src="task-reject.png" class="installIcon" />');
     });
     
 //    $('table#requirements tbody tr td:nth-child(5)').hide();
@@ -232,7 +253,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
         <td>5.2</td>
         <td><?php echo phpversion(); ?></td>
         <td>Everything</td>
-        <td>On Ubuntu: <pre>sudo apt-get install php5 libapache2-mod-php5</pre>
+        <td>On Ubuntu: <pre>sudo apt-get install php5 libapache2-mod-php5</pre><br />
           On Windows: See <a href="http://php.net/manual/en/install.windows.installer.msi.php">http://php.net/manual/en/install.windows.installer.msi.php</a></td>
       </tr>
       <tr class="<?php echo ($installFlags & INSTALL_ISSUE_DATE ? 'uninstalledFlag' : 'installedFlag'); ?>">
@@ -290,7 +311,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
         <td>3.1.4</td>
         <td><?php echo phpversion('apc'); ?></td>
         <td><abbr title="Without APC, higher disk and database usage will occur. FreezeMessenger is optimised for in-memory caching, and will not be able to function on large installations without APC.">Caching</abbr	></td>
-        <td>On Ubuntu: <pre>sudo apt-get install php-apc</pre>
+        <td>On Ubuntu: <pre>sudo apt-get install php-apc</pre><br />
           On Windows: Usually comes with PHP.</td>
       </tr>
       <tr class="<?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_CURL ? 'uninstalledFlag' : 'installedFlag'); ?>">
@@ -298,7 +319,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
         <td>3.1.4</td>
         <td><?php echo phpversion('curl'); ?></td>
         <td><abbr title="Without cURL, WebLite may not function. If it does function, it will be slower.">WebLite</abbr></td>
-        <td>On Ubuntu: <pre>sudo apt-get install curl libcurl3 libcurl3-dev php5-curl</pre>
+        <td>On Ubuntu: <pre>sudo apt-get install curl libcurl3 libcurl3-dev php5-curl</pre><br />
           On Windows: Compile APC, or find the plugin matching your version of PHP at <a href="http://dev.freshsite.pl/php-accelerators/apc.html">http://dev.freshsite.pl/php-accelerators/apc.html</a>.</td>
       </tr>
       <tr class="<?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_MCRYPT ? 'uninstalledFlag' : 'installedFlag'); ?>">
@@ -306,7 +327,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
         <td>n/a</td>
         <td><?php echo phpversion('mcrypt'); ?></td>
         <td><abbr title="Without MCrypt, message encryption will be disabled.">Message Encryption</abbr></td>
-        <td>On Ubuntu: <pre>sudo apt-get install php5-mcrypt</pre>
+        <td>On Ubuntu: <pre>sudo apt-get install php5-mcrypt</pre><br />
           On Windows: Install PHP 5.3, or see <a href="http://php.net/manual/en/mcrypt.requirements.php">http://php.net/manual/en/mcrypt.requirements.php</a></td>
       </tr>
       <tr class="<?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_MBSTRING ? 'uninstalledFlag' : 'installedFlag'); ?>">
@@ -328,7 +349,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
         <td>5.0</td>
         <td>*</td>
         <td>Database</td>
-        <td>On Ubuntu: <pre>sudo apt-get install mysql-server libapache2-mod-auth-mysql php5-mysql</pre>
+        <td>On Ubuntu: <pre>sudo apt-get install mysql-server libapache2-mod-auth-mysql php5-mysql</pre><br />
           On Windows: See <a href="http://php.net/manual/en/install.windows.installer.msi.php">http://php.net/manual/en/install.windows.installer.msi.php</a></td>
       </tr>
       <tr class="<?php echo ($installStatusDB & INSTALL_DB_MYSQLI ? 'installedFlag' : 'uninstalledFlag'); ?>">
@@ -336,7 +357,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
         <td>5.0</td>
         <td>*</td>
         <td>Database</td>
-        <td>On Ubuntu: <pre>sudo apt-get install mysql-server libapache2-mod-auth-mysql php5-mysql</pre>
+        <td>On Ubuntu: <pre>sudo apt-get install mysql-server libapache2-mod-auth-mysql php5-mysql</pre><br />
           On Windows: See <a href="http://php.net/manual/en/install.windows.installer.msi.php">http://php.net/manual/en/install.windows.installer.msi.php</a></td>
       </tr>
     </tbody>
@@ -345,7 +366,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
         <th colspan="5">Permissions</th>
       </tr>
     </thead>
-    <tbody>
+    <tbody id="permissionRequirements">
       <tr class="<?php echo ($installFlags & INSTALL_ISSUE_WRITEORIGINDIR ? 'uninstalledFlag' : 'installedFlag'); ?>">
         <td colspan="3">Origin Directory Writable</td>
         <td>Config File Creation</td>
@@ -432,7 +453,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
         </tr>
         <tr>
           <td><strong>Create Database?</strong></td>
-          <td><input type="checkbox" name="db_createdb" /><br /><small>This will not overwrite existing databases. You are encouraged to create the database yourself, as otherwise default permissions, etc. will be used (which is rarely ideal).</small></td>
+          <td><input type="checkbox" name="db_createdb" /><small>This will not overwrite existing databases. You are encouraged to create the database yourself, as otherwise default permissions, etc. will be used (which is rarely ideal).</small></td>
         </tr>
       </tbody>
       <thead>
@@ -454,10 +475,10 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
       <tbody>
         <tr>
           <td><strong>Insert Developer Data</strong></td>
-          <td><input type="checkbox" name="db_usedev" /><br /><small>This will populate the database with test data. Generally only meant for the developers, you could also probably use this to test drive FreezeMessenger.</small></td>
+          <td><input type="checkbox" name="db_usedev" /><small>This will populate the database with test data. Generally only meant for the developers, you could also probably use this to test drive FreezeMessenger.</small></td>
         </tr>        <tr>
           <td><strong>Use Portable Hashing</strong></td>
-          <td><input type="checkbox" name="db_althash" <?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_SHA512 ? 'checked disabled' : ''); ?> /><br /><small>By default FreezeMessenger uses the Crypt() function with the Sha256 algorithm, which potentially requires PHP 5.3. This will instead cause FreezeMessenger to use a portable algorithm that will ensure the software can easily be moved between different versions of PHP 5.x and between servers. The portable algorithm uses 5,000 runs of the SHA-256 algorithm with a salted field, but will cause slowdown if the system does not have the PHP hash() function.</small></td>
+          <td><input type="checkbox" name="db_althash" <?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_SHA512 ? 'checked disabled' : ''); ?> /><small>By default FreezeMessenger uses the Crypt() function with the Sha256 algorithm, which potentially requires PHP 5.3. This will instead cause FreezeMessenger to use a portable algorithm that will ensure the software can easily be moved between different versions of PHP 5.x and between servers. The portable algorithm uses 5,000 runs of the SHA-256 algorithm with a salted field, but will cause slowdown if the system does not have the PHP hash() function.</small></td>
         </tr>
       </tbody>
     </table>

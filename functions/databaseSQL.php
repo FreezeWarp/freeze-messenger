@@ -738,6 +738,7 @@ class databaseSQL extends database {
     $finalQuery = array(
       'columns' => array(),
       'tables' => array(),
+      'join' => array(),
       'where' => '',
       'sort' => array(),
       'group' => '',
@@ -754,32 +755,39 @@ class databaseSQL extends database {
             if (strstr($tableName, ' ') !== false) { // A space can be used to create a table alias, which is sometimes required for different queries.
               $tableParts = explode(' ', $tableName);
 
-              $finalQuery['tables'][] = $this->formatValue('tableAlias', $tableParts[0], $tableParts[1]); // Identify the table as [tableName] AS [tableAlias]
+              $finalQuery['tables'][] = $this->formatValue('tableAlias', $tableParts[0], $tableParts[1]); // Identify the table as [tableName] AS [tableAlias]; note: may be removed if the table is part of a join.
 
               $tableName = $tableParts[1];
             }
             else {
-              $finalQuery['tables'][] = $this->formatValue('table', $tableName); // Identify the table as [tableName]
+              $finalQuery['tables'][] = $this->formatValue('table', $tableName); // Identify the table as [tableName]; note: may be removed if the table is part of a join.
             }
 
             if (is_array($tableCols)) { // Table columns have been defined with an array, e.g. ["a", "b", "c"]
               foreach($tableCols AS $colName => $colAlias) {
+                if (is_int($colName)) $colName = $colAlias;
+
                 if (strlen($colName) > 0) {
-                  if (strstr($colName,' ') !== false) { // A space can be used to create identical columns in different contexts, which is sometimes required for different queries.
+                  if (strstr($colName, ' ') !== false) { // A space can be used to create identical columns in different contexts, which is sometimes required for different queries.
                     $colParts = explode(' ', $colName);
                     $colName = $colParts[0];
                   }
 
                   if (is_array($colAlias)) { // Used for advance structures and function calls.
-                  
-                    throw new Exception('TODO');
-                    
                     if (isset($colAlias['context'])) {
                       throw new Exception('Deprecated context.'); // TODO
                     }
-                    
-                    $finalQuery['columns'][] = $this->formatValue('tableColumnAlias', $tableName, $colName, $colAlias);
-                    $reverseAlias[$colAlias] = $this->formatValue('tableColumn', $tableName, $colName);
+
+                    if ($colAlias['joinOn']) {
+                      $finalQuery['join'][] = $this->formatValue('table', $tableName) . ' ON ' . $reverseAlias[$colAlias['joinOn']] . ' = ' . $this->formatValue('tableColumn', $tableName, $colName);
+
+                      array_pop($finalQuery['tables']);
+                    }
+                    else {
+                      $finalQuery['columns'][] = $this->formatValue('tableColumnAlias', $tableName, $colName, $colAlias['alias']);
+                    }
+
+                    $reverseAlias[$colAlias['alias']] = $this->formatValue('tableColumn', $tableName, $colName);
                   }
                   else {
                     $finalQuery['columns'][] = $this->formatValue('tableColumnAlias', $tableName, $colName, $colAlias);
@@ -914,7 +922,9 @@ class databaseSQL extends database {
   ' . implode(',
   ', $finalQuery['columns']) . '
 FROM
-  ' . implode(', ', $finalQuery['tables']) . ($finalQuery['where'] ? '
+  ' . implode(', ', $finalQuery['tables']) . ($finalQuery['join'] ? '
+LEFT JOIN
+  ' . implode("\n", $finalQuery['join']) : '') . ($finalQuery['where'] ? '
 WHERE
   ' . $finalQuery['where'] : '') . ($finalQuery['sort'] ? '
 ORDER BY
@@ -943,8 +953,6 @@ LIMIT
     $h = 0;
     $whereText = array();
 
-//    if ($d == 1) {var_dump($conditionArray); die();}
-
     // $type is either "both", "either", or "neither". $cond is an array of arguments.
     foreach ($conditionArray AS $type => $cond) {
       // First, make sure that $cond isn't empty. Pretty simple.
@@ -954,7 +962,7 @@ LIMIT
           $i++;
 
           if ($key === 'both' || $key === 'either' || $key === 'neither') {
-            $sideTextFull[$i] = $this->recurseBothEither($cond, $reverseAlias, 1);
+            $sideTextFull[$i] = $this->recurseBothEither($cond, $reverseAlias, $d + 1);
           }
           else {
             if (strstr($key, ' ') !== false) list($key) = explode(' ', $key); // A space can be used to reference the same key twice in different contexts. It's basically a hack, but it's better than using further arrays.
@@ -963,12 +971,14 @@ LIMIT
              * array(TYPE, VALUE, COMPARISON)
              *
              * Note: We do not want to include quotes/etc. in VALUE yet, because these theoretically could vary based on the comparison type. */
-            $sideTextFull[$i] = '';      
+
+            $sideTextFull[$i] = '';
 
             $sideText['left'] = $reverseAlias[($this->startsWith($key, '!') ? substr($key, 1) : $key)]; // Get the column definition that corresponds with the named column. "!column" signifies negation.
             $symbol = $this->comparisonTypes[$value[2]];
-            
-            if ($value[0] === 'column') $sideText['right'] = $reverseAlias[$value[1]]; // The value is a column, and should be returned as a reverseAlias. (Note that reverseAlias should have already called formatValue)
+
+            if ($value[0] === 'empty') { $sideText['right'] = 'IS NULL'; }
+            elseif ($value[0] === 'column') $sideText['right'] = $reverseAlias[$value[1]]; // The value is a column, and should be returned as a reverseAlias. (Note that reverseAlias should have already called formatValue)
             else $sideText['right'] = $this->formatValue(($value[2] === 'search' ? $value[2] : $value[0]), $value[1]); // The value is a data type, and should be processed as such.
             
             if ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {

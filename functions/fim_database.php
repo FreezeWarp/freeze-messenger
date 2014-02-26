@@ -539,29 +539,48 @@ class fimDatabase extends databaseSQL {
   }
 
 
-  public function getCensorLists($lists = array(), $rooms = array(), $sort = array('listName' => 'asc'), $limit = false, $pagination = false) {
+  /**
+   * Note: Censor active status is calculated outside of the database, and thus can not be selected.
+   */
+  public function getCensorLists($options = array(), $sort = array('listName' => 'asc'), $limit = false, $pagination = false) {
+    $options = array_merge(array(
+      'listIds' => array(),
+      'roomIds' => array(),
+      'listNameSearch' => '',
+      'activeStatus' => '',
+      'hiddenStatus' => '',
+    ), $options);
+
+
     $columns = array(
       $this->sqlPrefix . "censorLists" => 'listId, listName, listType, options',
+      $this->sqlPrefix . "censorBlackWhiteLists" => array(
+        'listId' => array(
+          'alias' => 'bwListId',
+          'joinOn' => 'listId',
+        ),
+        'roomId',
+        'status',
+      ),
     );
-
-    $conditions = array();
-
 
 
     /* Modify Query Data for Directives */
-    if (count($lists) > 0) {
-      $conditions['both']['listId'] = $this->in((array) $lists);
-    }
+    if (count($options['listIds']) > 0) $conditions['both']['listId'] = $this->in((array) $options['listIds']);
+    if ($options['listNameSearch']) $conditions['both']['listName'] = $this->type('string', $options['listNameSearch'], 'search');
 
+    if ($options['activeStatus'] === 'active') $conditions['both']['options'] = $this->int(1, 'bAnd'); // TODO: Test!
+    if ($options['activeStatus'] === 'inactive') $conditions['both']['!options'] = $this->int(1, 'bAnd'); // TODO: Test!
 
-    // Extend to determine which lists are active in rooms.
-    if (count($rooms) > 0) {
-      $columns = array(
-        $this->sqlPrefix . "censorBlackWhiteLists" => 'status, roomId, listId rlistId',
-      );
+    if ($options['forcedStatus'] === 'forced') $conditions['both']['!options'] = $this->int(2, 'bAnd'); // TODO: Test!
+    if ($options['forcedStatus'] === 'notforced') $conditions['both']['options'] = $this->int(2, 'bAnd'); // TODO: Test!
 
-      $conditions['both']['roomId'] = $this->in((array) $rooms);
-      $conditions['both']['listId'] = $this->col('rlistId');
+    if ($options['hiddenStatus'] === 'hidden') $conditions['both']['options'] = $this->int(4, 'bAnd'); // TODO: Test!
+    if ($options['hiddenStatus'] === 'unhidden') $conditions['both']['!options'] = $this->int(4, 'bAnd'); // TODO: Test!
+
+    if ($options['roomIds']) {
+      $conditions['either']['roomId 1'] = $this->in($options['roomIds']);
+      $conditions['either']['roomId 2'] = $this->type('empty');
     }
 
 
