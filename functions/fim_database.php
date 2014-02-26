@@ -541,11 +541,12 @@ class fimDatabase extends databaseSQL {
 
   /**
    * Note: Censor active status is calculated outside of the database, and thus can not be selected.
+   * Note: Due to database limitations, it is not possible to restrict by roomId.
+   * Note: This will multiple duplicate censorList columns for each matching censorBlackWhiteList entry. If a matching roomId is found for a listId, it should be used. Otherwise, any matching listId can be used, ignoring the associated room data.
    */
-  public function getCensorLists($options = array(), $sort = array('listName' => 'asc'), $limit = false, $pagination = false) {
+  public function getCensorLists($options = array(), $sort = array('listId' => 'asc'), $limit = false, $pagination = false) {
     $options = array_merge(array(
       'listIds' => array(),
-      'roomIds' => array(),
       'listNameSearch' => '',
       'activeStatus' => '',
       'hiddenStatus' => '',
@@ -577,11 +578,6 @@ class fimDatabase extends databaseSQL {
 
     if ($options['hiddenStatus'] === 'hidden') $conditions['both']['options'] = $this->int(4, 'bAnd'); // TODO: Test!
     if ($options['hiddenStatus'] === 'unhidden') $conditions['both']['!options'] = $this->int(4, 'bAnd'); // TODO: Test!
-
-    if ($options['roomIds']) {
-      $conditions['either']['roomId 1'] = $this->in($options['roomIds']);
-      $conditions['either']['roomId 2'] = $this->type('empty');
-    }
 
 
     return $this->select($columns, $conditions, $sort);

@@ -35,13 +35,6 @@ require('../global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
-  'rooms' => array(
-    'default' => '',
-    'cast' => 'csv',
-    'filter' => 'int',
-    'evaltrue' => true,
-  ),
-
   'lists' => array(
     'default' => '',
     'cast' => 'csv',
@@ -67,47 +60,31 @@ $xmlData = array(
 
 
 
-var_dump($slaveDatabase->getCensorLists(array(
-  'listIds' => $request['lists'],
-  'roomIds' => $request['rooms'],
-))->sourceQuery);
 /* Get Censor Lists from Slave Database */
 $censorLists = $slaveDatabase->getCensorLists(array(
   'listIds' => $request['lists'],
   'roomIds' => $request['rooms'],
-))->getAsArray(true);
-var_dump($censorLists); die();
+))->getAsArray(array('listId', 'roomId'));
+//var_dump($censorLists); die();
 
 
 /* Start Processing */
-foreach ($censorLists AS $list) { // Run through each censor list retrieved.
-  $xmlData['getCensorLists']['lists']['list ' . $list['listId']] = array(
-    'listId' => (int) $list['listId'],
-    'listName' => ($list['listName']),
-    'listType' => ($list['listType']),
-    'listOptions' => (int) $list['listOptions'],
-    'active' => array(),
-  );
-
-  if (count($request['rooms']) > 0) {
-    foreach ($request['rooms'] AS $roomId) {
-      if (!isset($listsActive2[$list['listId']]) || !isset($listsActive2[$list['listId']][$roomId])) {
-        if ($list['listType'] === 'black') {
-          $roomStatus = 'unblock';
-        }
-        elseif ($list['listType'] === 'white') {
-          $roomStatus = 'block';
-        }
-      }
-      else {
-        $roomStatus = $listsActive2[$list['listId']][$roomId];
-      }
-
-      $xmlData['getCensorLists']['lists']['list ' . $list['listId']]['active']['roomStatus ' . $roomId] = array(
-        'roomId' => $roomId,
-        'status' => $roomStatus,
+foreach ($censorLists AS $listId => $lists) { // Run through each censor list retrieved.
+  foreach ($lists AS $roomId => $list) {
+    if (!isset($xmlData['getCensorLists']['lists']['list ' . $list['listId']])) {
+      $xmlData['getCensorLists']['lists']['list ' . $list['listId']] = array(
+        'listId' => (int) $list['listId'],
+        'listName' => ($list['listName']),
+        'listType' => ($list['listType']),
+        'listOptions' => (int) $list['options'],
+        'active' => array(),
       );
     }
+
+    $xmlData['getCensorLists']['lists']['list ' . $list['listId']]['active']['roomStatus ' . $roomId] = array(
+      'roomId' => $roomId,
+      'status' => $list['status'],
+    );
   }
 }
 

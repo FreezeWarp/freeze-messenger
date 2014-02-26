@@ -977,7 +977,7 @@ LIMIT
             $sideText['left'] = $reverseAlias[($this->startsWith($key, '!') ? substr($key, 1) : $key)]; // Get the column definition that corresponds with the named column. "!column" signifies negation.
             $symbol = $this->comparisonTypes[$value[2]];
 
-            if ($value[0] === 'empty') { $sideText['right'] = 'IS NULL'; }
+            if ($value[0] === 'empty') $sideText['right'] = 'IS NULL';
             elseif ($value[0] === 'column') $sideText['right'] = $reverseAlias[$value[1]]; // The value is a column, and should be returned as a reverseAlias. (Note that reverseAlias should have already called formatValue)
             else $sideText['right'] = $this->formatValue(($value[2] === 'search' ? $value[2] : $value[0]), $value[1]); // The value is a data type, and should be processed as such.
             
