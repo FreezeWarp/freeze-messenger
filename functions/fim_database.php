@@ -248,50 +248,55 @@ class fimDatabase extends databaseSQL {
 
 
     /* Create a $messages list based on search parameter. */
-    if (strlen($options['messageTextSearch']) > 0 && $options['archive']) {
-      $searchArray = explode(',', $options['messageTextSearch']);
+    if (strlen($options['messageTextSearch']) > 0) {
+      if (!$options['archive']) {
+        $this->triggerError('The "messageTextSearch" option in getMessages can only be used if "archive" is set to true.', array('Options' => $options), 'validation');
+      }
+      else {
+        $searchArray = explode(',', $options['messageTextSearch']);
 
-      foreach ($searchArray AS $searchVal) {
-        $searchArray2[] = str_replace(
-          array_keys($config['searchWordConverts']),
-          array_values($config['searchWordConverts']),
-          $searchVal
+        foreach ($searchArray AS $searchVal) {
+          $searchArray2[] = str_replace(
+            array_keys($config['searchWordConverts']),
+            array_values($config['searchWordConverts']),
+            $searchVal
+          );
+        }
+
+        /* Establish Base Data */
+        $columns = array(
+          $this->sqlPrefix . "searchPhrases" => 'phraseName, phraseId pphraseId',
+          $this->sqlPrefix . "searchMessages" => 'phraseId mphraseId, messageId, userId, roomId'
         );
+
+        $conditions['both']['mphraseId'] = $this->col('pphraseId');
+
+
+        /* Apply User and Room Filters */
+
+        if (count($options['rooms']) > 1) $conditions['both']['roomId'] = $this->in((array) $options['rooms']);
+        if (count($options['users']) > 1) $conditions['both']['userId'] = $this->in((array) $options['users']);
+
+
+        /* Determine Whether to Use the Fast or Slow Algorithms */
+        if (!$config['fullTextArchive']) { // Original, Fastest Algorithm
+          $conditions['both']['phraseName'] = $this->in((array) $searchArray2);
+        }
+        else { // Slower Algorithm
+          foreach ($searchArray2 AS $phrase) $conditions['both']['either'][]['phraseName'] = '*' . $phrase . '*';
+        }
+
+
+        /* Run the Query */
+        $searchMessageIds = $this->select($columns, $conditions, $sort)->getAsArray('messageId');
+
+        $searchMessages = array_keys($searchMessageIds);
+
+
+        /* Modify the Request Filter for Messages */
+        if ($searchMessages) $messages = fim_arrayValidate($searchMessages, 'int', true);
+        else                 $messages = array(0); // This is a fairly dirty approach, but it does work for now. TODO
       }
-
-      /* Establish Base Data */
-      $columns = array(
-        $this->sqlPrefix . "searchPhrases" => 'phraseName, phraseId pphraseId',
-        $this->sqlPrefix . "searchMessages" => 'phraseId mphraseId, messageId, userId, roomId'
-      );
-
-      $conditions['both']['mphraseId'] = $this->col('pphraseId');
-
-
-      /* Apply User and Room Filters */
-
-      if (count($options['rooms']) > 1) $conditions['both']['roomId'] = $this->in((array) $options['rooms']);
-      if (count($options['users']) > 1) $conditions['both']['userId'] = $this->in((array) $options['users']);
-
-
-      /* Determine Whether to Use the Fast or Slow Algorithms */
-      if (!$config['fullTextArchive']) { // Original, Fastest Algorithm
-        $conditions['both']['phraseName'] = $this->in((array) $searchArray2);
-      }
-      else { // Slower Algorithm
-        foreach ($searchArray2 AS $phrase) $conditions['both']['either'][]['phraseName'] = '*' . $phrase . '*';
-      }
-
-
-      /* Run the Query */
-      $searchMessageIds = $this->select($columns, $conditions, $sort)->getAsArray('messageId');
-
-      $searchMessages = array_keys($searchMessageIds);
-
-
-      /* Modify the Request Filter for Messages */
-      if ($searchMessages) $messages = fim_arrayValidate($searchMessages, 'int', true);
-      else                 $messages = array(0); // This is a fairly dirty approach, but it does work for now. TODO
     }
 
 
@@ -304,8 +309,6 @@ class fimDatabase extends databaseSQL {
 
       $conditions['both']['muserId'] = $this->col('userId');
     }
-
-
     /* Access the Stream */
     else {
       $columns = array(
@@ -315,7 +318,8 @@ class fimDatabase extends databaseSQL {
 
 
 
-    /* Modify Query Data for Directives */
+    /* Modify Query Data for Directives
+     * TODO: Remove messageIdStart and messageIdEnd, replacing with $limit and $pagination (combined with other operators). */
     if ($options['messageIdMax'] > 0)
       $conditions['both']['messageId 2'] = $this->int($options['messageIdMax'], 'lte');
 
@@ -336,6 +340,9 @@ class fimDatabase extends databaseSQL {
       $conditions['both']['messageId 3'] = $this->int($options['messageIdEnd'], 'lte');
       $conditions['both']['messageId 4'] = $this->int($options['messageIdEnd'] - $options['messageLimit'], 'gt');
     }
+
+    if ($options['messagesSince'] > 0)
+      $conditions['both']['messageId 5'] = $this->int($options['messageDateMin'], 'gt');
 
     if ($options['showDeleted'] === true && $options['archive'] === true) $conditions['both']['deleted'] = $this->bool(false);
     if (count($options['messageIds']) > 0) $conditions['both']['messageId'] = $this->in($options['messageIds']); // Overrides all other message ID parameters; TODO

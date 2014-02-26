@@ -71,29 +71,14 @@ else {
   }
 
 
+
   while (true) {
     $serverSentRetries++;
 
-    $queryParts['messagesSelect']['columns'] = array(
-      "{$sqlPrefix}messagesCached" => 'messageId, roomId, time, flag, userId, userName, userGroup, socialGroups, userFormatStart, userFormatEnd, avatar, defaultColor, defaultFontface, defaultHighlight, defaultFormatting, text',
-    );
-    $queryParts['messagesSelect']['conditions']['both'] = array(
-      'roomId' => $database->int($request['roomId']),
-      'messageId' => $database->int($request['lastMessage'], 'gt'),
-    );
-    $queryParts['messagesSelect']['sort'] = array(
-      'messageId' => 'asc',
-    );
-    $queryParts['messagesSelect']['limit'] = false;
-
-
-
-    /* Get Messages */
-    $messages = $database->select($queryParts['messagesSelect']['columns'],
-      $queryParts['messagesSelect']['conditions'],
-      $queryParts['messagesSelect']['sort'],
-      $queryParts['messagesSelect']['limit']);
-    $messages = $messages->getAsArray('messageId');
+    $messages = $database->getMessages(array(
+      'roomIds' => array($request['roomId']),
+      'messagesSince' => array($request['lastMessage']),
+    ), array('messageId' => 'asc'))->getAsArray('messageId');
 
     if (is_array($messages)) {
       if (count($messages) > 0) {
