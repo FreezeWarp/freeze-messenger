@@ -174,7 +174,11 @@ else {
 }
 
 
-$room = $database->getRoom($request['roomId']); // Get the roomdata.
+/* Get the roomdata. */
+$room = $database->getRooms(array(
+  'roomIds' => array($request['roomId'])
+))->getAsArray(true);
+$room = $room[$request['roomId']];
 
 
 /* Data Predefine */
