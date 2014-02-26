@@ -70,7 +70,7 @@ require('../global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
   'roomId' => array(
-    'default' => '',
+    'require' => true,
   ),
 
   'users' => array(
@@ -115,18 +115,22 @@ $request = fim_sanitizeGPC('g', array(
   ),
 
   'messageDateMax' => array(
+    'default' => 0,
     'cast' => 'int',
   ),
 
   'messageDateMin' => array(
+    'default' => 0,
     'cast' => 'int',
   ),
 
   'messageIdStart' => array(
+    'default' => 0,
     'cast' => 'int',
   ),
 
   'messageIdEnd' => array(
+    'default' => 0,
     'cast' => 'int',
   ),
 
@@ -175,10 +179,7 @@ else {
 
 
 /* Get the roomdata. */
-$room = $database->getRooms(array(
-  'roomIds' => array($request['roomId'])
-))->getAsArray(true);
-$room = $room[$request['roomId']];
+$room = $database->getRoom($request['roomId']);
 
 
 /* Data Predefine */
@@ -217,8 +218,6 @@ else {
         break;
     }
 
-    ($hook = hook('getMessages_noPerm') ? eval($hook) : '');
-
   }
   else { // Has Permission
 
@@ -235,7 +234,18 @@ else {
 
 
     /* Get Messages from Database */
-    $messages = $database->getMessages()->getAsArray(true);
+    $messages = $database->getMessages(array(
+      'messageIdEnd' => $request['messageIdEnd'],
+      'messageIdStart' => $request['messageIdStart'],
+      'messageDateMin' => $request['messageDateMax'],
+      'messageDateMax' => $request['messageDateMax'],
+      'messageLimit' => $request['messageLimit'],
+      'showDeleted' => $request['showDeleted'],
+      'archive' => $request['archive'],
+      'longPolling' => $request['longPolling'],
+      'users' => $request['users'],
+      'rooms' => $request['roomId'],
+    ))->getAsArray(true);
 
 
     /* Process Messages */

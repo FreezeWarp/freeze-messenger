@@ -672,7 +672,7 @@ abstract class database {
   
   
   // TODO
-  public function now($relative, $comp = 'e') {
+  public function now($relative = 0, $comp = 'e') {
     //return array('timestamp', (int) time() + (int) $relative, $comp);
     
     return (int) time();

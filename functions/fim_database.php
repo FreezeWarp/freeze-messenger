@@ -241,7 +241,7 @@ class fimDatabase extends databaseSQL {
       'messageIdStart' => 0,
       'messageIdEnd' => 0,
       'messageDateMax' => 0,
-      'messageDateMim' => 0,
+      'messageDateMin' => 0,
       'archive' => false,
       'longPolling' => false
     ), $options);
@@ -296,7 +296,7 @@ class fimDatabase extends databaseSQL {
 
 
     /* Query via the Archive */
-    if ($archive) {
+    if ($options['archive']) {
       $columns = array(
         $this->sqlPrefix . "messages" => 'messageId, time, iv, salt, roomId, userId, deleted, flag, text',
         $this->sqlPrefix . "users" => 'userId muserId, userName, userGroup, socialGroups, userFormatStart, userFormatEnd, avatar, defaultColor, defaultFontface, defaultHighlight, defaultFormatting'
@@ -316,31 +316,31 @@ class fimDatabase extends databaseSQL {
 
 
     /* Modify Query Data for Directives */
-    if (isset($options['messageIdMax']))
-      $conditions['both']['messageId'] = $this->val('int', $request['messageIdMax'], 'lte');
+    if ($options['messageIdMax'] > 0)
+      $conditions['both']['messageId 2'] = $this->int($options['messageIdMax'], 'lte');
 
-    if (isset($options['messageIdMin']))
-      $conditions['both']['messageId'] = $this->val('int', $request['messageIdMin'], 'gte');
+    if ($options['messageIdMin'] > 0)
+      $conditions['both']['messageId 1'] = $this->int($options['messageIdMin'], 'gte');
 
-    if (isset($options['messageDateMax']))
-      $conditions['both']['time'] = $this->val('int', $request['messageDateMax'], 'lte');
+    if ($options['messageDateMax'] > 0)
+      $conditions['both']['time 1'] = $this->int($options['messageDateMax'], 'lte');
 
-    if (isset($options['messageDateMin']))
-      $conditions['both']['time'] = $this->val('int', $request['messageDateMin'], 'gte');
+    if ($options['messageDateMin'] > 0)
+      $conditions['both']['time 2'] = $this->int($options['messageDateMin'], 'gte');
 
-    if (isset($options['messageIdStart'])) {
-      $conditions['both']['messageId'] = $this->val('int', $request['messageIdStart'], 'gte');
-      $conditions['both']['messageId b'] = $this->val('int', $request['messageIdStart'] + $request['messageLimit'], 'lt');
+    if ($options['messageIdStart'] > 0) {
+      $conditions['both']['messageId 3'] = $this->int($options['messageIdStart'], 'gte');
+      $conditions['both']['messageId 4'] = $this->int($options['messageIdStart'] + $options['messageLimit'], 'lt');
     }
-    elseif (isset($options['messageIdEnd'])) {
-      $conditions['both']['messageId'] = $this->val('int', $request['messageIdEnd'], 'lte');
-      $conditions['both']['messageId b'] = $this->val('int', $request['messageIdEnd'] - $request['messageLimit'], 'gt');
+    elseif ($options['messageIdEnd'] > 0) {
+      $conditions['both']['messageId 3'] = $this->int($options['messageIdEnd'], 'lte');
+      $conditions['both']['messageId 4'] = $this->int($options['messageIdEnd'] - $options['messageLimit'], 'gt');
     }
 
-    if ($options['showDeleted'] === true && $archive === true) $conditions['both']['deleted'] = $this->bool(false);
+    if ($options['showDeleted'] === true && $options['archive'] === true) $conditions['both']['deleted'] = $this->bool(false);
     if (count($options['messageIds']) > 0) $conditions['both']['messageId'] = $this->in($options['messageIds']); // Overrides all other message ID parameters; TODO
-    if (count($options['users']) > 0) $conditions['both']['userId'] = $this->in($user);
-    if (count($options['rooms']) > 0) $conditions['both']['roomId'] = $this->in($rooms);
+    if (count($options['users']) > 0) $conditions['both']['userId'] = $this->in($options['user']);
+    if (count($options['rooms']) > 0) $conditions['both']['roomId'] = $this->in($options['rooms']);
 
 
     $messages = $this->select($columns, $conditions, $sort);
@@ -493,9 +493,6 @@ class fimDatabase extends databaseSQL {
 
     if ($options['lastMessageTimeMin'] > 0)  $conditions['both']['lastMessageTime'] = $this->int($options['lastMessageTime'], 'gte');
     if ($options['lastMessageTimeMax'] > 0)  $conditions['both']['lastMessageTime'] = $this->int($options['lastMessageTime'], 'lte');
-
-
-    $this->roomType = 'normal';
 
 
   	// Perform Query
