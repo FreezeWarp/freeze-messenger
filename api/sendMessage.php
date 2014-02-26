@@ -59,6 +59,7 @@ $ip = $_SERVER['REMOTE_ADDR']; // Get the IP address of the user.
 /* Get Room for DB */
 $roomData = $database->getRoom($request['roomId']);
 
+
 /* Censor Fun */
 $blockedWord = false;
 $blockedWordText = false;

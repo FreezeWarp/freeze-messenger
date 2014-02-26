@@ -63,9 +63,13 @@ $xmlData = array(
 /* Get Censor Lists from Slave Database */
 $censorLists = $slaveDatabase->getCensorLists(array(
   'listIds' => $request['lists'],
-  'roomIds' => $request['rooms'],
 ))->getAsArray(array('listId', 'roomId'));
 //var_dump($censorLists); die();
+
+$censorWords = $slaveDatabase->getCensorWords(array(
+  'listIds' => $request['lists'],
+))->getAsArray(array('listId', 'wordId'));
+//var_dump($censorWords); die();
 
 
 /* Start Processing */
@@ -77,11 +81,21 @@ foreach ($censorLists AS $listId => $lists) { // Run through each censor list re
         'listName' => ($list['listName']),
         'listType' => ($list['listType']),
         'listOptions' => (int) $list['options'],
-        'active' => array(),
+        'words' => array(),
+        'roomStatuses' => array(),
       );
+
+      foreach($censorWords[$list['listId']] AS $wordId => $censorListWord) {
+        $xmlData['getCensorLists']['lists']['list ' . $list['listId']]['words']['word ' . $censorListWord['wordId']] = array(
+          'wordId' => $censorListWord['wordId'],
+          'word' => $censorListWord['word'],
+          'severity' => $censorListWord['severity'],
+          'param' => $censorListWord['param'],
+        );
+      }
     }
 
-    $xmlData['getCensorLists']['lists']['list ' . $list['listId']]['active']['roomStatus ' . $roomId] = array(
+    $xmlData['getCensorLists']['lists']['list ' . $list['listId']]['roomStatuses']['roomStatus ' . $roomId] = array(
       'roomId' => $roomId,
       'status' => $list['status'],
     );
@@ -92,7 +106,6 @@ foreach ($censorLists AS $listId => $lists) { // Run through each censor list re
 
 /* Update Data for Errors */
 $xmlData['getCensorLists']['errStr'] = ($errStr);
-$xmlData['getCensorLists']['errDesc'] = ($errDesc);
 
 
 

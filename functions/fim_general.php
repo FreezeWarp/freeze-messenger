@@ -62,11 +62,11 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
   /* END TRANSITIONAL */
 
   /* START COMPILE VERBOSE -- TODO: Should be able to detect based on ID. */
-  if (!isset($roomData['type'])) throw new Exception('hasPermission requires roomData[type] to be defined.');
-  elseif (!isset($userData['userId'])) throw new Exception('hasPermission requires roomData[type] to be defined.');
+  if (!isset($roomData['roomType'])) throw new Exception('hasPermission requires roomData[roomType] to be defined.');
+  elseif (!isset($userData['userId'])) throw new Exception('hasPermission requires userData[userId] to be defined.');
   /* END COMPILE VERBOSE */
 
-  if ($roomData['type'] === 'otr' || $roomData['type'] === 'private') { // We are doing this in hasPermission itself to allow for hooks that might, for instance, deny permission to certain users based on certain criteria.
+  if ($roomData['roomType'] === 'otr' || $roomData['roomType'] === 'private') { // We are doing this in hasPermission itself to allow for hooks that might, for instance, deny permission to certain users based on certain criteria.
     /* START COMPILE VERBOSE */
     if (!isset($roomData['roomUsersList'])) throw new Exception('hasPermission requires roomData[roomUsersList] to be defined.');
     /* END COMPILE VERBOSE */

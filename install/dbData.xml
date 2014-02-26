@@ -490,6 +490,7 @@
     <!-- Table rooms -->
     <table name="rooms">
       <column name="roomId" value="1" />
+      <column name="roomAlias" value="1" />
       <column name="roomName" value="Your Room!" />
       <column name="roomTopic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
       <column name="owner" value="0" />
@@ -497,6 +498,7 @@
     </table>
     <table name="rooms">
       <column name="roomId" value="2" />
+      <column name="roomAlias" value="2" />
       <column name="roomName" value="Another Room!" />
       <column name="roomTopic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
       <column name="owner" value="0" />
@@ -504,6 +506,7 @@
     </table>
     <table name="rooms" mode="dev">
       <column name="roomId" value="3" />
+      <column name="roomAlias" value="3" />
       <column name="roomName" value="Hidden Room" />
       <column name="roomTopic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
       <column name="owner" value="1" />
@@ -511,9 +514,21 @@
     </table>
     <table name="rooms" mode="dev">
       <column name="roomId" value="4" />
-      <column name="roomName" value="Dev Room" />
+      <column name="roomAlias" value="4" />
+      <column name="roomName" value="Private Communication [NAME GENERATION NEEDED]" />
       <column name="roomTopic" value="Nothing Much" />
-      <column name="owner" value="2" />
+      <column name="options" value="0" />
+    </table>
+    <table name="rooms" mode="dev">
+      <column name="roomId" value="5" />
+      <column name="roomAlias" value="o1,2,3" />
+      <column name="roomName" value="Private Communication [NAME GENERATION NEEDED]" />
+      <column name="options" value="0" />
+    </table>
+    <table name="rooms" mode="dev">
+      <column name="roomId" value="6" />
+      <column name="roomAlias" value="p1,3" />
+      <column name="roomName" value="Private Communication [NAME GENERATION NEEDED]" />
       <column name="options" value="0" />
     </table>
 

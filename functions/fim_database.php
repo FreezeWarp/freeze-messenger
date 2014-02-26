@@ -173,7 +173,7 @@ class fimDatabase extends databaseSQL {
 
     $columns = array(
       $this->sqlPrefix . "ping" => 'status, typing, time ptime, roomId proomId, userId puserId',
-      $this->sqlPrefix . "rooms" => 'roomId, roomName, roomTopic, defaultPermissions',
+      $this->sqlPrefix . "rooms" => 'roomId, roomName, roomTopic, defaultPermissions, roomType',
       $this->sqlPrefix . "users" => 'userId, userName, userFormatStart, userFormatEnd, userGroup, socialGroups, typing, status',
     );
 
@@ -201,12 +201,13 @@ class fimDatabase extends databaseSQL {
     $columns = array(
       $this->sqlPrefix . "users" => 'userId, userName, userFormatStart, userFormatEnd, userGroup, socialGroups',
       //"{$sqlPrefix}rooms" => 'roomName, roomId, defaultPermissions, owner, options',
-      $this->sqlPrefix . "rooms" => 'roomName, roomId, owner, options, defaultPermissions, parentalAge, parentalFlags',
+      $this->sqlPrefix . "rooms" => 'roomName, roomId, owner, options, defaultPermissions, parentalAge, parentalFlags, roomType',
       $this->sqlPrefix . "ping" => 'time ptime, userId puserId, roomId proomId, typing, status',
     );
 
 
     $conditions['both'] = array(
+
       'userId' => $this->col('puserId'),
       'roomId' => $this->col('proomId'),
       'ptime' => $this->int($time - $threshold, 'lt'),
@@ -225,24 +226,30 @@ class fimDatabase extends databaseSQL {
 
 
   /* getMessages is by far the most advanced set of database calls in the whole application, and is still in need of much fine-tuning. The mesagEStream file uses its own query and must be teste seerately. */
-  public function getMessages($rooms = array(),
-    $messages = array(),
-    $users = array(),
-    $messageTextGlob = '',
-    $showDeleted = true,
-    $messageIdConstraints = array(),
-    $archive = false,
-    $longPolling = false,
-    $sort = array('messageId' => 'asc'),
-    $limit = false
-  ) {
-
+  public function getMessages($options = array(), $sort = array('messageId' => 'asc'), $limit = false ) {
     global $config;
+
+    $options = array_merge(array(
+      'roomIds' => array(),
+      'messageIds' => array(),
+      'userIds' => array(),
+      'messageTextSearch' => '',
+      'showDeleted' => true,
+      'messageIdConstraints' => array(),
+      'messageIdMax' => 0,
+      'messageIdMin' => 0,
+      'messageIdStart' => 0,
+      'messageIdEnd' => 0,
+      'messageDateMax' => 0,
+      'messageDateMim' => 0,
+      'archive' => false,
+      'longPolling' => false
+    ), $options);
 
 
     /* Create a $messages list based on search parameter. */
-    if (strlen($messageTextGlob) > 0 && $archive) {
-      $searchArray = explode(',', $messageTextGlob);
+    if (strlen($options['messageTextSearch']) > 0 && $options['archive']) {
+      $searchArray = explode(',', $options['messageTextSearch']);
 
       foreach ($searchArray AS $searchVal) {
         $searchArray2[] = str_replace(
@@ -263,11 +270,8 @@ class fimDatabase extends databaseSQL {
 
       /* Apply User and Room Filters */
 
-      if (count($rooms) > 1)
-        $conditions['both']['roomId'] = $this->in((array) $rooms);
-
-      if (count($users) > 1)
-        $conditions['both']['userId'] = $this->in((array) $users);
+      if (count($options['rooms']) > 1) $conditions['both']['roomId'] = $this->in((array) $options['rooms']);
+      if (count($options['users']) > 1) $conditions['both']['userId'] = $this->in((array) $options['users']);
 
 
       /* Determine Whether to Use the Fast or Slow Algorithms */
@@ -275,8 +279,7 @@ class fimDatabase extends databaseSQL {
         $conditions['both']['phraseName'] = $this->in((array) $searchArray2);
       }
       else { // Slower Algorithm
-        foreach ($searchArray2 AS $phrase)
-          $conditions['both']['either'][]['phraseName'] = '*' . $phrase . '*';
+        foreach ($searchArray2 AS $phrase) $conditions['both']['either'][]['phraseName'] = '*' . $phrase . '*';
       }
 
 
@@ -313,47 +316,40 @@ class fimDatabase extends databaseSQL {
 
 
     /* Modify Query Data for Directives */
-    if (isset($messageIdConstraints['messageIdMax']))
+    if (isset($options['messageIdMax']))
       $conditions['both']['messageId'] = $this->val('int', $request['messageIdMax'], 'lte');
 
-    if (isset($messageIdConstraints['messageIdMin']))
+    if (isset($options['messageIdMin']))
       $conditions['both']['messageId'] = $this->val('int', $request['messageIdMin'], 'gte');
 
-    if (isset($messageIdConstraints['messageDateMax']))
+    if (isset($options['messageDateMax']))
       $conditions['both']['time'] = $this->val('int', $request['messageDateMax'], 'lte');
 
-    if (isset($messageIdConstraints['messageDateMin']))
+    if (isset($options['messageDateMin']))
       $conditions['both']['time'] = $this->val('int', $request['messageDateMin'], 'gte');
 
-    if (isset($messageIdConstraints['messageIdStart'])) {
+    if (isset($options['messageIdStart'])) {
       $conditions['both']['messageId'] = $this->val('int', $request['messageIdStart'], 'gte');
       $conditions['both']['messageId b'] = $this->val('int', $request['messageIdStart'] + $request['messageLimit'], 'lt');
     }
-    elseif (isset($messageIdConstraints['messageIdEnd'])) {
+    elseif (isset($options['messageIdEnd'])) {
       $conditions['both']['messageId'] = $this->val('int', $request['messageIdEnd'], 'lte');
       $conditions['both']['messageId b'] = $this->val('int', $request['messageIdEnd'] - $request['messageLimit'], 'gt');
     }
 
-    if ($showDeleted === true && $archive === true)
-      $conditions['both']['deleted'] = $this->bool(false);
-
-    if (count($messages) > 0) // Overrides all other message ID parameters.
-      $conditions['both']['messageId'] = $this->in($messages);
-
-    if (count($users) > 0)
-      $conditions['both']['userId'] = $this->in($user);
-
-    if (count($rooms) > 0)
-      $conditions['both']['roomId'] = $this->in($rooms);
+    if ($options['showDeleted'] === true && $archive === true) $conditions['both']['deleted'] = $this->bool(false);
+    if (count($options['messageIds']) > 0) $conditions['both']['messageId'] = $this->in($options['messageIds']); // Overrides all other message ID parameters; TODO
+    if (count($options['users']) > 0) $conditions['both']['userId'] = $this->in($user);
+    if (count($options['rooms']) > 0) $conditions['both']['roomId'] = $this->in($rooms);
 
 
     $messages = $this->select($columns, $conditions, $sort);
 
 
-    if ($longPolling) {
+    if ($options['longPolling']) {
       $longPollingRetries = 0;
 
-      while (!$messages) {
+      while (!count($messages->getAsArray(true))) { // This could be a little inefficient, but is probably fine. Might be worth testing (e.g. replace with ->resultCount or something.
         $longPollingRetries++;
 
         $messages = $this->select($columns, $conditions, $sort);
@@ -378,6 +374,7 @@ class fimDatabase extends databaseSQL {
 
     return $this->select($columns, $conditions);
   }
+
 
   public function getKicks ($users = array(), $rooms = array(), $kickers = array(), $sort = array('roomId' => 'asc', 'userId' => 'asc'), $limit, $pagination) {
     $columns = array(
@@ -429,7 +426,7 @@ class fimDatabase extends databaseSQL {
       $this->sqlPrefix . "kicks" => 'kickerId kkickerId, userId kuserId, roomId kroomId, length klength, time ktime',
       $this->sqlPrefix . "users user" => 'userId, userName, userFormatStart, userFormatEnd',
       $this->sqlPrefix . "users kicker" => 'userId kickerId, userName kickerName, userFormatStart kickerFormatStart, userFormatEnd kickerFormatEnd',
-      $this->sqlPrefix . "rooms" => 'roomId, roomName, owner, options, defaultPermissions',
+      $this->sqlPrefix . "rooms" => 'roomId, roomName, owner, options, defaultPermissions, roomType',
     );
 
 
@@ -478,7 +475,7 @@ class fimDatabase extends databaseSQL {
 
 
   	// Defaults
-  	$columns = array($this->sqlPrefix . "rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, parentalFlags, parentalAge, options, lastMessageId, lastMessageTime, messageCount');
+  	$columns = array($this->sqlPrefix . "rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, parentalFlags, parentalAge, options, lastMessageId, lastMessageTime, messageCount, roomType');
 
 
   	// Modify Query Data for Directives
@@ -503,6 +500,14 @@ class fimDatabase extends databaseSQL {
 
   	// Perform Query
   	return $this->select($columns, $conditions, $sort);
+  }
+
+
+  public function getRoom($roomId) {
+    $room = $this->getRooms(array(
+      'roomIds' => array($roomId)
+    ))->getAsArray(true);
+    return $room[$roomId];
   }
 
 
@@ -584,12 +589,28 @@ class fimDatabase extends databaseSQL {
   }
 
 
-  public function getCensorWords($words) {
+  public function getCensorWords($options, $sort = array('listId' => 'asc', 'word' => 'asc'), $limit = 0, $pagination = 1) {
+    $options = array_merge(array(
+      'listIds' => array(),
+      'wordIds' => array(),
+      'wordSearch' => '',
+      'severities' => array(),
+      'paramSearch' => '',
+    ), $options);
+
     $columns = array(
-      $this->sqlPrefix . "censorWords" => 'listId, word, severity, param',
+      $this->sqlPrefix . "censorWords" => 'listId, word, wordId, severity, param',
     );
 
-    return $this->select($columns);
+    $conditions = array();
+
+    if (count($options['listIds']) > 0)    $conditions['both']['listId'] = $this->in($options['listIds']);
+    if (count($options['wordIds']) > 0)    $conditions['both']['wordId'] = $this->in($options['wordIds']);
+    if ($options['wordSearch'])            $conditions['both']['word'] = $this->type('string', $options['wordSearch'], 'search');
+    if (count($options['severities']) > 0) $conditions['both']['severity'] = $this->in($options['severities']);
+    if ($options['paramSearch'])           $conditions['both']['param'] = $this->type('string', $options['paramSearch'], 'search');
+
+    return $this->select($columns, $conditions, $sort);
   }
 
 
@@ -717,7 +738,7 @@ class fimDatabase extends databaseSQL {
   public function storeMessage($userData, $roomData, $messageText, $messageTextEncrypted, $encryptIV, $encryptSalt, $flag) {
     global $config, $user, $generalCache;
 
-    if (!isset($roomData['options'], $roomData['roomId'], $roomData['roomName'], $roomData['type'])) throw new Exception('database->storeMessage requires roomData[options], roomData[roomId], roomData[roomName], and roomData[type].');
+    if (!isset($roomData['options'], $roomData['roomId'], $roomData['roomName'], $roomData['roomType'])) throw new Exception('database->storeMessage requires roomData[options], roomData[roomId], roomData[roomName], and roomData[type].');
     if (!isset($userData['userId'], $userData['userName'], $userData['userGroup'], $userData['avatar'], $userData['profile'], $userData['userFormatStart'], $userData['userFormatEnd'], $userData['defaultFormatting'], $userData['defaultColor'], $userData['defaultHighlight'], $userData['defaultFontface'])) throw new Exception('database->storeMessage requires userData[userId], userData[userName], userData[userGroup], userData[avatar]. userData[profile], userData[userFormatStart], userData[userFormatEnd], userData[defaultFormatting], userData[defaultColor], userData[defaultHighlight], and userData[defaultFontface]');
 
 
@@ -849,7 +870,7 @@ class fimDatabase extends databaseSQL {
 
 
     // If the contact is a private communication, create an event and add to the message unread table.
-    if ($roomData['type'] === 'private') {
+    if ($roomData['roomType'] === 'private') {
       foreach ($generalCache->getPermissions($roomData['roomId'], 'user') AS $sendToUserId => $permissionLevel) {
         if ($sendToUserId == $user['userId']) {
           continue;
@@ -983,33 +1004,6 @@ class fimDatabase extends databaseSQL {
     $counterData = $counterData->getAsArray(false);
 
     return $counterData['counterValue'];
-  }
-
-
-
-  public function getPrivateRoom($userList) {
-    global $config;
-
-    if (!is_array($userList)) throw new Exception('userList is not an array in getPrivateRoom');
-    elseif (count($userList) < 1) throw new Exception('userList is empty in getPrivateRoom');
-
-    asort($userList);
-
-    $queryParts['columns'] = array(
-      $this->sqlPrefix . "privateRooms" => 'uniqueId, roomUsersList, roomUsersHash, options, lastMessageTime, lastMessageId, messageCount',
-    );
-
-    $userCount = count($userList);
-
-    $queryParts['conditions'] = array(
-      'both' => array(
-        'roomUsersHash' => $this->str(md5(implode(',', $userList))),
-      ),
-    );
-
-    $privateRoom = $this->select($queryParts['columns'],
-      $queryParts['conditions']);
-    return $privateRoom->getAsArray(false);
   }
 
 
