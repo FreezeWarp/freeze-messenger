@@ -107,7 +107,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
   <![endif]-->
 
   <!-- START Styles -->
-  <link rel="stylesheet" type="text/css" href="../webpro/client/css/absolution/jquery-ui-1.8.16.custom.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="../webpro/client/css/absolution/jquery-ui-1.8.16.custom.css" media="screen" />-
   <link rel="stylesheet" type="text/css" href="../webpro/client/css/absolution/fim.css" media="screen" />
   <link rel="stylesheet" type="text/css" href="../webpro/client/css/stylesv2.css" media="screen" />
   <style>
@@ -182,9 +182,8 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
   <!-- END Styles -->
 
   <!-- START Scripts -->
-  <script src="../webpro/client/js/jquery-1.6.2.min.js" type="text/javascript"></script>
-
-  <script src="../webpro/client/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
+  <script src="../webpro/client/js/jquery-1.11.0.min.js" type="text/javascript"></script>
+  <script src="../webpro/client/js/jquery-ui-1.10.4.custom.min.js" type="text/javascript"></script>
   <script src="../webpro/client/js/jquery.plugins.js" type="text/javascript"></script>
   <script>
   function windowDraw() {

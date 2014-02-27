@@ -522,10 +522,10 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
     var timeout = false;
 
 
-    $(this).die('mouseover');
-    $(this).die('mouseout');
+    $(this).off('mouseover');
+    $(this).off('mouseout');
 
-    $(this).live({
+    $(this).on({
       mouseover: function () {
         if (opts.content) {
           var org_title = opts.content;
@@ -1644,18 +1644,17 @@ $.fn.tabbedDialog = function (dialogOptions, tabOptions) {
   this.tabs(tabOptions);
   this.dialog(dialogOptions);
 
+
+
+  // Create the Tabbed Dialogue
   var tabul = this.find('ul:first');
   this.parent().addClass('ui-tabs').prepend(tabul).draggable('option', 'handle', tabul);
-  tabul.append($('a.ui-dialog-titlebar-close'));
+  tabul.append($('.ui-dialog-titlebar-close').css('top', '.4em'));
   this.prev().remove();
-  tabul.addClass('ui-dialog-titlebar');
+  tabul.addClass('ui-dialog-titlebar-tabbed');
 
-  var titleId = $.ui.dialog.getTitleId(this);
+  this.attr("tabIndex", -1).attr("role", "dialog");
 
-  this.attr("tabIndex", -1).attr({
-    role: "dialog",
-    "aria-labelledby": titleId
-  });
 
 
   // Make Only The Content of the Tab Tabbable
@@ -1665,7 +1664,7 @@ $.fn.tabbedDialog = function (dialogOptions, tabOptions) {
     }
 
 
-    var tabbables = $(":tabbable", this).add("ul.ui-tabs-nav.ui-dialog-titlebar > li > a"),
+    var tabbables = $(":tabbable", this).add("ul.ui-tabs-nav.ui-dialog-titlebar-tabbed > li > a"),
       first = tabbables.filter(":first"),
       last = tabbables.filter(":last");
 
