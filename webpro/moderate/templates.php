@@ -39,13 +39,13 @@ else {
       case 'view':
       case false:
       foreach (array_keys($json) AS $template) {
-        $rows .= "<tr><td>$template</td><td align=\"center\"><a href=\"./moderate.php?do=templates&do2=edit&templateName=$template\"><img src=\"./images/document-edit.png\" /></td></tr>";
+        $rows .= "<tr><td>$template</td><td><a href=\"./moderate.php?do=templates&do2=edit&templateName=$template\"><img src=\"./images/document-edit.png\" alt=\"Edit\" /></td></tr>";
       }
 
-      echo container('Edit Templates','<table class="page rowHover" border="1">
+      echo container('Edit Templates','<table class="page rowHover">
   <thead>
-    <tr class="hrow ui-widget-header">
-      <td width="20%">Template</td>
+    <tr class="ui-widget-header">
+      <td width="80%">Template</td>
       <td width="20%">Actions</td>
     </tr>
   </thead>

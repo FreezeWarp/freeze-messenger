@@ -136,8 +136,8 @@ class generalCache {
   */
   public function clearAll() {
     switch ($this->method) {
-      case 'none': $this->data = array(); break;
-      case 'disk': $this->fileCache->deleteAll(); break;
+      case 'none': $this->data = array(); return true; break;
+      case 'disk': return $this->fileCache->deleteAll(); break;
 
       case 'apc':
       if (apc_clear_cache() && apc_clear_cache('user') && apc_clear_cache('opcode')) return true;

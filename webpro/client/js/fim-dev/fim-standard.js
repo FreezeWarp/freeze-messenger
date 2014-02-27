@@ -373,6 +373,7 @@ var standard = {
         }, false);
 
         messageSource.addEventListener('message', function(e) {
+console.log('Fired');
           active = JSON.parse(e.data);
 
           var messageId = Number(active.messageData.messageId);

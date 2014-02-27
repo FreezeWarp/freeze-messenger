@@ -60,12 +60,12 @@ else {
 
         $text = str_replace(array('<', '>'), array(' <', '> '), nl2br(htmlentities($text)));
 
-        $rows .= "<tr><td>$phrase</td><td>$text</td><td align=\"center\"><a href=\"./moderate.php?do=phrases&do2=edit&phraseName=$phrase&languageCode=$request[languageCode]\"><img src=\"./images/document-edit.png\" /></td></tr>";
+        $rows .= "<tr><td>$phrase</td><td>$text</td><td><a href=\"./moderate.php?do=phrases&do2=edit&phraseName=$phrase&languageCode=$request[languageCode]\"><img src=\"./images/document-edit.png\" /></td></tr>";
       }
 
-      echo container('Edit Phrases','<table class="page rowHover" border="1">
+      echo container('Edit Phrases','<table class="page rowHover">
   <thead>
-    <tr class="hrow ui-widget-header">
+    <tr class="ui-widget-header">
       <td width="20%">Phrase</td>
       <td width="60%">Current Value</td>
       <td width="20%">Actions</td>

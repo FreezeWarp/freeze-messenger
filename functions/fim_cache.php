@@ -222,14 +222,15 @@ class fimCache extends generalCache {
       $kicks = $this->get('fim_kicks');
     }
     else {
-      $kicks = $this->database->getKicks()->getAsArray(true);
+      $kicks = array();
+
+      $kicksDatabase = $this->database->getKicks()->getAsArray(true);
 
       foreach ($kicksDatabase AS $kick) {
-        if ($kick['ktime'] + $kick['klength'] < time()) { // Automatically delete old entires when cache is regenerated.
-          // Note: We use the slave to prevent excessive locking.
-          $this->slaveDatabase->delete("{$sqlPrefix}kicks", array(
-            'userId' => $kickCache['userId'],
-            'roomId' => $kickCache['roomId'],
+        if ($kick['ktime'] + $kick['klength'] < time()) { // Automatically delete old entries when cache is regenerated.
+          $this->database->delete("{$sqlPrefix}kicks", array(
+            'userId' => $kick['userId'],
+            'roomId' => $kick['roomId'],
           ));
         }
         else {

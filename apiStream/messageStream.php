@@ -24,6 +24,7 @@ if (!$config['serverSentEvents']) {
 else {
   /* Send Proper Headers */
   header('Content-Type: text/event-stream');
+//  header('Content-Type: text/plain');
   header('Cache-Control: no-cache'); // recommended to prevent caching of event data.
 
   set_time_limit($config['serverSentTimeLimit']);
@@ -61,8 +62,12 @@ else {
     ), array('messageId' => 'asc'))->getAsArray('messageId');
 
 
-    foreach ($messages AS $message) {
-      $messagesOutput = array(
+    foreach ($messages AS $messageId => $message) {
+      if ($messageId > $request['lastMessage']) $request['lastMessage'] = $messageId;
+
+      echo "id: " . (int) $message['messageId'] . "\n";
+      echo "event: message\n";
+      echo "data: " . json_encode(array(
         'messageData' => array(
           'roomId' => (int) $message['roomId'],
           'messageId' => (int) $message['messageId'],
@@ -85,21 +90,13 @@ else {
             'general' => (int) $message['defaultFormatting']
           ),
         )
-      );
-
-      if ($message['messageId'] > $request['lastMessage']) $request['lastMessage'] = $message['messageId'];
-
-      echo "event: message\n";
-      echo "data: " . json_encode($messagesOutput) . "\n";
-      echo "id: " . (int) $message['messageId'] . "\n\n";
+      )) . "\n\n";
 
       fim_flush(); // Force the server to flush.
     }
 
-    fim_flush();
 
     unset($messages);
-
 
     if ($config['dev']) {
       $time = date('r');

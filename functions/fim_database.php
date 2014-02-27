@@ -111,29 +111,8 @@ class fimDatabase extends databaseSQL {
   }
 
 
-
-  public function getRoomLists($user, $roomLists = array(), $sort = array('listId' => 'asc')) {
-    $columns = array(
-      $this->sqlPrefix . "roomLists" => 'listId, userId, listName, options',
-      $this->sqlPrefix . "roomListRooms" => 'listId llistId, roomId lRoomid',
-    );
-
-    $conditions['both'] = array(
-      'userId' => $this->int($user['userId']),
-      'llistId' => $this->col('listId'),
-    );
-
-    if (count($roomLists) > 0) {
-      $conditions['both']['listId'] = $database->in($roomLists1);
-    }
-
-    return $this->select($columns, $conditions, $sort);
-  }
-
-
-
   /* Use of groupBy _highly_ recommended. */
-  public function getRoomListsNew($options, $sort = array('listId' => 'asc'), $limit = 0, $pagination = 1) {
+  public function getRoomLists($options, $sort = array('listId' => 'asc'), $limit = 0, $pagination = 1) {
     $options = array_merge(array(
       'userIds' => array(),
       'roomIds' => array(),
@@ -320,8 +299,8 @@ class fimDatabase extends databaseSQL {
 
     if ($options['showDeleted'] === true && $options['archive'] === true) $conditions['both']['deleted'] = $this->bool(false);
     if (count($options['messageIds']) > 0) $conditions['both']['messageId'] = $this->in($options['messageIds']); // Overrides all other message ID parameters; TODO
-    if (count($options['users']) > 0) $conditions['both']['userId'] = $this->in($options['user']);
-    if (count($options['rooms']) > 0) $conditions['both']['roomId'] = $this->in($options['rooms']);
+    if (count($options['userIds']) > 0) $conditions['both']['userId'] = $this->in($options['userIds']);
+    if (count($options['roomIds']) > 0) $conditions['both']['roomId'] = $this->in($options['roomIds']);
 
 
     $messages = $this->select($columns, $conditions, $sort);
@@ -357,41 +336,8 @@ class fimDatabase extends databaseSQL {
   }
 
 
-  public function getKicks ($users = array(), $rooms = array(), $kickers = array(), $sort = array('roomId' => 'asc', 'userId' => 'asc'), $limit, $pagination) {
-    $columns = array(
-      $this->sqlPrefix . "kicks" => 'kickerId kkickerId, userId kuserId, roomId kroomId, length klength, time ktime',
-      $this->sqlPrefix . "users user" => 'userId, userName, userFormatStart, userFormatEnd',
-      $this->sqlPrefix . "users kicker" => 'userId kickerId, userName kickerName, userFormatStart kickerFormatStart, userFormatEnd kickerFormatEnd',
-      $this->sqlPrefix . "rooms" => 'roomId, roomName, owner, options, defaultPermissions',
-    );
 
-
-    // Modify Query Data for Directives (First for Performance)
-    if (count($users) > 0)
-      $conditions['both']['kuserId'] = $this->in((array) $users);
-
-    if (count($rooms) > 0)
-      $conditions['both']['roomId'] = $this->in((array) $rooms);
-
-    if (count($kickers) > 0)
-      $conditions['both']['kuserId'] = $this->in((array) $users);
-
-
-    // Conditions
-    $conditions = array(
-      'both' => array(
-        'kuserId' => $this->col('userId'),
-        'kroomId' => $this->col('roomId'),
-        'kkickerId' => $this->col('kickerId')
-      ),
-    );
-
-
-    return $this->select($columns, $conditions, $sort);
-  }
-
-
-  public function getKicksNew ($options = array(), $sort = array('roomId' => 'asc', 'userId' => 'asc'), $limit, $pagination) {
+  public function getKicks($options = array(), $sort = array('roomId' => 'asc', 'userId' => 'asc'), $limit = 0, $pagination = 1) {
     $options = array_merge(array(
       'userIds'   => array(),
       'roomIds'   => array(),
@@ -482,10 +428,9 @@ class fimDatabase extends databaseSQL {
 
 
   public function getRoom($roomId) {
-    $room = $this->getRooms(array(
+    return $room = $this->getRooms(array(
       'roomIds' => array($roomId)
-    ))->getAsArray(true);
-    return $room[$roomId];
+    ))->getAsArray(false);
   }
 
 
@@ -499,7 +444,7 @@ class fimDatabase extends databaseSQL {
 
 
     $columns = array(
-      $this->sqlPrefix . "users" => 'userId, userName, userFormatStart, userFormatEnd, profile, avatar, socialGroups, defaultColor, defaultHighlight, defaultFontface, defaultFormatting, userGroup, options, defaultRoom, parentalAge, parentalFlags',
+      $this->sqlPrefix . "users" => 'userId, userName, userFormatStart, userFormatEnd, profile, avatar, socialGroups, defaultColor, defaultHighlight, defaultFontface, defaultFormatting, userGroup, options, defaultRoom, parentalAge, parentalFlags, adminPrivs',
     );
 
 
@@ -522,6 +467,13 @@ class fimDatabase extends databaseSQL {
   }
 
 
+  public function getUser($userId) {
+    return $user = $this->getUsers(array(
+      'userIds' => array($userId)
+    ))->getAsArray(false);
+  }
+
+
   /**
    * Note: Censor active status is calculated outside of the database, and thus can not be selected.
    * Note: Due to database limitations, it is not possible to restrict by roomId.
@@ -532,21 +484,28 @@ class fimDatabase extends databaseSQL {
       'listIds' => array(),
       'listNameSearch' => '',
       'activeStatus' => '',
+      'forcedStatus' => '',
       'hiddenStatus' => '',
+      'privateStatus' => '',
+      'includeStatus' => true,
     ), $options);
 
 
     $columns = array(
       $this->sqlPrefix . "censorLists" => 'listId, listName, listType, options',
-      $this->sqlPrefix . "censorBlackWhiteLists" => array(
+    );
+
+
+    if ($options['includeStatus']) {
+      $columns[$this->sqlPrefix . "censorBlackWhiteLists"] = array(
         'listId' => array(
           'alias' => 'bwListId',
           'joinOn' => 'listId',
         ),
         'roomId',
         'status',
-      ),
-    );
+      );
+    }
 
 
     /* Modify Query Data for Directives */
@@ -554,16 +513,23 @@ class fimDatabase extends databaseSQL {
     if ($options['listNameSearch']) $conditions['both']['listName'] = $this->type('string', $options['listNameSearch'], 'search');
 
     if ($options['activeStatus'] === 'active') $conditions['both']['options'] = $this->int(1, 'bAnd'); // TODO: Test!
-    if ($options['activeStatus'] === 'inactive') $conditions['both']['!options'] = $this->int(1, 'bAnd'); // TODO: Test!
+    elseif ($options['activeStatus'] === 'inactive') $conditions['both']['!options'] = $this->int(1, 'bAnd'); // TODO: Test!
 
     if ($options['forcedStatus'] === 'forced') $conditions['both']['!options'] = $this->int(2, 'bAnd'); // TODO: Test!
-    if ($options['forcedStatus'] === 'notforced') $conditions['both']['options'] = $this->int(2, 'bAnd'); // TODO: Test!
+    elseif ($options['forcedStatus'] === 'notforced') $conditions['both']['options'] = $this->int(2, 'bAnd'); // TODO: Test!
 
     if ($options['hiddenStatus'] === 'hidden') $conditions['both']['options'] = $this->int(4, 'bAnd'); // TODO: Test!
-    if ($options['hiddenStatus'] === 'unhidden') $conditions['both']['!options'] = $this->int(4, 'bAnd'); // TODO: Test!
+    elseif ($options['hiddenStatus'] === 'unhidden') $conditions['both']['!options'] = $this->int(4, 'bAnd'); // TODO: Test!
 
 
     return $this->select($columns, $conditions, $sort);
+  }
+
+
+  public function getCensorList($censorListId) {
+    return $this->getCensorLists(array(
+      'listIds' => array($censorListId)
+    ))->getAsArray(false);
   }
 
 
@@ -589,6 +555,13 @@ class fimDatabase extends databaseSQL {
     if ($options['paramSearch'])           $conditions['both']['param'] = $this->type('string', $options['paramSearch'], 'search');
 
     return $this->select($columns, $conditions, $sort);
+  }
+
+
+  public function getCensorWord($censorWordId) {
+    return $this->getCensorWords(array(
+      'wordIds' => array($censorWordId)
+    ))->getAsArray(false);
   }
 
 
@@ -630,28 +603,26 @@ class fimDatabase extends databaseSQL {
   }
 
 
-  public function getConfiguration($directive) {
+  public function getConfigurations($options = array(), $sort = array('directive' => 'asc')) {
     global $config, $user;
 
-    $queryParts['configSelect']['columns'] = array(
+    $options = array_merge(array(
+      'directives' => array(),
+    ), $options);
+
+    $columns = array(
       $this->sqlPrefix . "configuration" => 'directive, type, value',
     );
 
-    if ($directive) {
-      $queryParts['configSelect']['conditions'] = array(
-        'both' => array('directive' => $this->str($directive)),
-      );
-    }
-    else {
-      return false;
+    if (count($options['directives']) > 0) {
+      $conditions['both']['directive'] = $this->in($options['directives']);
     }
 
-    $configData = $this->select(
-      $queryParts['configSelect']['columns'],
-      $queryParts['configSelect']['conditions'],
-      false,
-      1);
-    return $configData->getAsArray(false);
+    return $this->select($columns, $conditions, $sort);
+  }
+
+
+  public function getConfiguration($directive) {
   }
 
 

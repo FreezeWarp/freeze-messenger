@@ -37,15 +37,10 @@ else {
     switch ($_GET['do2']) {
       case 'view':
       case false:
-      $config3 = $database->select(array(
-        "{$sqlPrefix}configuration" => "directive, value, type",
-      ));
-      $config3 = $config3->getAsArray(true);
+      $config3 = $database->getConfigurations()->getAsArray(true);
 
       foreach ($config3 AS $config2) {
-        if ($config2['type'] == 'array') {
-          $config2['value'] = str_replace(',', ', ', $config2['value']);
-        }
+        if ($config2['type'] == 'array') $config2['value'] = str_replace(',', ', ', $config2['value']);
 
         $rows .= "<tr><td>$config2[directive]</td><td>$config2[type]</td><td>$config2[value]</td><td><a href=\"./moderate.php?do=config&do2=edit&directive=$config2[directive]\"><img src=\"./images/document-edit.png\" /></a></td></tr>";
       }
@@ -67,7 +62,7 @@ else {
 
       case 'edit':
       if ($request['directive']) {
-        $config2 = $database->getConfiguration($request['directive']);
+        $config2 = $database->getConfigurations(array('directives' => array($request['directive'])))->getAsArray(false);
         $title = 'Edit Configuration Value "' . $config2['directive'] . '"';
 
         switch($config2['type']) {
@@ -97,14 +92,6 @@ else {
         $title = 'Create New Configuration Value';
       }
 
-      $selectBlock = fimHtml_buildSelect('type', array(
-        'bool' => 'Boolean',
-        'integer' => 'Integer',
-        'float' => 'Float',
-        'string' => 'String',
-        'array' => 'Array',
-      ), $config2['type']);
-
       echo container($title, '<form action="./moderate.php?do=config&do2=edit2" method="post">
   <table border="1" class="ui-widget page">
     <tr>
@@ -114,7 +101,13 @@ else {
     <tr>
       <td>Type:</td>
       <td>
-        ' . $selectBlock . '<br />
+        ' . fimHtml_buildSelect('type', array(
+          'bool' => 'Boolean',
+          'integer' => 'Integer',
+          'float' => 'Float',
+          'string' => 'String',
+          'array' => 'Array',
+        ), $config2['type']) . '<br />
         <small>This is the type of the variable when interpretted. It should not normally be altered.</small>
       </td>
     </tr>

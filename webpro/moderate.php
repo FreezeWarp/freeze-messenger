@@ -34,7 +34,6 @@ elseif (isset($_COOKIE['webproModerate_sessionHash'])) {
 
 /* Here we require the backend. */
 require('../global.php');
-require('../functions/fim_html.php');
 require('moderateFunctions.php'); // Functions that are used solely by the moderate interfaces.
 
 
@@ -46,9 +45,7 @@ if (isset($sessionHash)) {
   }
 }
 
-
-/* And this is the template. We should move it into the DB at some point. */
-echo '<!DOCTYPE HTML>
+?><!DOCTYPE HTML>
 <!-- Original Source Code Copyright © 2011 Joseph T. Parsons. -->
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -62,42 +59,116 @@ echo '<!DOCTYPE HTML>
   <![endif]-->
 
   <!-- START Styles -->
-  <link rel="stylesheet" type="text/css" href="./client/css/start/jquery-ui-1.8.16.custom.css" media="screen" />
-  <link rel="stylesheet" type="text/css" href="./client/css/start/fim.css" media="screen" />
-  <link rel="stylesheet" type="text/css" href="./client/css/stylesv2.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="../webpro/client/css/absolution/jquery-ui-1.8.16.custom.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="../webpro/client/css/absolution/fim.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="../webpro/client/css/stylesv2.css" media="screen" />
 
   <link rel="stylesheet" type="text/css" href="./client/codemirror/lib/codemirror.css">
-  <link rel="stylesheet" type="text/css" href="./client/codemirror/mode/xml/xml.css">
-  <link rel="stylesheet" type="text/css" href="./client/codemirror/mode/clike/clike.css">
+  <!--<link rel="stylesheet" type="text/css" href="./client/codemirror/mode/xml/xml.css">
+  <link rel="stylesheet" type="text/css" href="./client/codemirror/mode/clike/clike.css">-->
 
   <style>
+  *, *:before, *:after {
+    -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+  }
+
   body {
     padding: 5px;
-    margin: 5px;
   }
 
   #moderateRight {
     float: right;
+    width: 75%;
     overflow: auto;
   }
 
   #moderateLeft {
     float: left;
+    width: 25%;
+    padding-right: 20px;
   }
 
   .CodeMirror {
     border: 1px solid white;
     background-color: white;
     color: black;
-    width: 800px;
+    width: 100%;
+    min-width: 200px !important;
   }
 
-.searched {background: yellow;}
+  .searched {background: yellow;}
   .mustache {color: #0ca;}
 
-  h1, h2 {
-    text-align: center;
-    font-family: sans-serif;
+  h1 {
+    margin: 0px;
+    padding: 5px;
+  }
+
+  .main {
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    border: 1px solid black;
+  }
+
+  .ui-widget {
+    font-size: 12px;
+  }
+  .ui-widget-content {
+    padding: 5px;
+  }
+  .uninstalledFlag {
+    font-weight: bold;
+  }
+  abbr {
+    outline-bottom: dotted 1px;
+  }
+  pre {
+    display: inline;
+  }
+
+  /* General Tables */
+  table td {
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+  table tr {
+    border-bottom: 1px solid black;
+  }
+  table {
+    border-collapse: collapse;
+  }
+  table tr:last-child {
+    border-bottom: none;
+  }
+  tbody tr:nth-child(2n) {
+    background: #efefef !important;
+  }
+  table.page td {
+    padding: 5px;
+  }
+  table.page tr.hrow {
+    font-size: 2em;
+    font-weight: bold;
+  }
+
+  /*** Mobile Screen Layout ***/
+  @media screen and (max-width: 600px) {
+    #moderateLeft, #moderateRight {
+      clear: both;
+      float: none;
+      width: 100%;
+    }
+
+    #moderateLeft {
+      padding-right: 0px;
+      padding-bottom: 20px;
+    }
+
+    table.page tr.hrow {
+      font-size: 1.4em;
+    }
   }
   </style>
   <!-- END Styles -->
@@ -111,34 +182,30 @@ echo '<!DOCTYPE HTML>
 
 
   <script src="./client/codemirror/lib/codemirror.js"></script>
-  <script src="./client/codemirror/lib/overlay.js"></script>
   <script src="./client/codemirror/mode/xml/xml.js"></script>
   <script src="./client/codemirror/mode/clike/clike.js"></script>
+  <!--<script src="./client/codemirror/lib/overlay.js"></script>-->
+  <!--<script src="./client/codemirror/mode/xml/xml.js"></script>
+  <script src="./client/codemirror/mode/clike/clike.js"></script>-->
 
   <script>
   function windowDraw() {
-    $(\'body\').css(\'min-height\', document.documentElement.clientHeight);
-    $(\'#moderateRight\').css(\'height\', document.documentElement.clientHeight - 10);
-    $(\'#moderateLeft\').css(\'height\', document.documentElement.clientHeight - 10);
-    $(\'#moderateRight\').css(\'width\', Math.floor(document.documentElement.clientWidth * .74 - 10));
-    $(\'.CodeMirror\').css(\'width\', Math.floor(document.documentElement.clientWidth * .74 - 50));
-    $(\'#moderateLeft\').css(\'width\', Math.floor(document.documentElement.clientWidth * .25 - 10));
-    $(\'button, input[type=button], input[type=submit]\').button();
+    $('button, input[type=button], input[type=submit]').button();
 
-    $(\'#mainMenu\').accordion({
+    $('#mainMenu').accordion({
       autoHeight : false,
-      active : Number($.cookie(\'webproModerate_menustate\')) - 1,
+      active : Number($.cookie('webproModerate_menustate')) - 1,
       change: function(event, ui) {
-        var sid = ui.newHeader.children(\'a\').attr(\'data-itemId\');
+        var sid = ui.newHeader.children('a').attr('data-itemId');
 
-        $.cookie(\'webproModerate_menustate\', sid, { expires: 14 });
+        $.cookie('webproModerate_menustate', sid, { expires: 14 });
       }
     });
   }
 
   $(document).ready(function() {
 
-    CodeMirror.defineMode("mustache", function(config, parserConfig) {
+/*    CodeMirror.defineMode("mustache", function(config, parserConfig) {
       var mustacheOverlay = {
         token: function(stream, state) {
           if (stream.match("{{{{")) {
@@ -154,7 +221,7 @@ echo '<!DOCTYPE HTML>
     });
 
 
-    if ($(\'#textXml\').size()) {
+    if ($('#textXml').size()) {
       var editorXml = CodeMirror.fromTextArea(document.getElementById("textXml"), {
         mode:  "mustache",
         tabMode: "shift",
@@ -162,11 +229,27 @@ echo '<!DOCTYPE HTML>
       });
     }
 
-    if ($(\'#textClike\').size()) {
+    if ($('#textClike').size()) {
       var editorClike = CodeMirror.fromTextArea(document.getElementById("textClike"), {
         mode:  "clike",
         tabMode: "shift",
         lineNumbers: true
+      });
+    }*/
+
+    if ($('#textXml').size()) {
+      var editorXml = CodeMirror.fromTextArea(document.getElementById("textXml"), {
+        mode:  "text/html",
+        lineNumbers: true,
+        lineWrapping: true
+      });
+    }
+
+    if ($('#textClike').size()) {
+      var editorClike = CodeMirror.fromTextArea(document.getElementById("textClike"), {
+        mode:  "clike",
+        lineNumbers: true,
+        lineWrapping: true
       });
     }
 
@@ -174,7 +257,7 @@ echo '<!DOCTYPE HTML>
   });
 
 
-  $(window).bind(\'resize\', windowDraw);
+  $(window).bind('resize', windowDraw);
 
 
   var alert = function(text) {
@@ -187,36 +270,38 @@ echo '<!DOCTYPE HTML>
 <body>
 <div id="moderateLeft">
   <div id="mainMenu">
-    <h3><a href="#" data-itemId="1">Manage Customizations</a></h3>
+    <h3><a href="#" data-itemId="1">General Information</a></h3>
     <ul>
       <li><a href="moderate.php?do=main">Home</a></li>
-      ' . ($user['adminDefs']['modTemplates'] ? '<li><a href="moderate.php?do=phrases">Modify Phrases</a></li>' : '') . '
-      ' . ($user['adminDefs']['modTemplates'] ? '<li><a     href="moderate.php?do=templates">Modify Templates</a></li>' : '') . '
-      ' . ($user['adminDefs']['modPlugins'] ? '<li><a href="moderate.php?do=plugins">Modify Plugins</a></li>' : '') . '
-      ' . ($user['adminDefs']['modHooks'] ? '<li><a href="moderate.php?do=hooks">Modify Hooks</a></li>' : '') . '
-    </ul>
-
-    <h3><a href="#" data-itemId="2">Manage Engines</a></h3>
-    <ul>
-      ' . ($user['adminDefs']['modCensor'] ? '<li><a href="moderate.php?do=censor">Modify Censor</a></li>' : '') . '
-      ' . ($user['adminDefs']['modFiles'] ? '<li><a href="moderate.php?do=ftypes">Modify File Types</a></li>' : '') . '
-    </ul>
-
-    <h3><a href="#" data-itemId="3">Manage Advanced</a></h3>
-    <ul>
-      ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=admin">Admin Permissions</a></li>' : '') . '
-      ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=config">Configuration Editor</a></li>' : '') . '
-      ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=sys">System Check</a></li>' : '') . '
-      ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=tools">Tools</a></li>' : '') . '
-      ' . ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=phpinfo">PHP Info</a></li>' : '') . '
       <li><a href="moderate.php?do=copyright">Copyright</a></li>
+    </ul>
+
+    <h3><a href="#" data-itemId="2">Manage WebPro</a></h3>
+    <ul>
+      <?php echo ($user['adminDefs']['modTemplates'] ? '<li><a href="moderate.php?do=phrases">Modify Phrases</a></li>' : ''); ?>
+      <?php echo ($user['adminDefs']['modTemplates'] ? '<li><a     href="moderate.php?do=templates">Modify Templates</a></li>' : ''); ?>
+    </ul>
+
+    <h3><a href="#" data-itemId="3">Manage Engines</a></h3>
+    <ul>
+      <?php echo ($user['adminDefs']['modCensor'] ? '<li><a href="moderate.php?do=censor">Modify Censor</a></li>' : ''); ?>
+      <?php echo ($user['adminDefs']['modFiles'] ? '<li><a href="moderate.php?do=ftypes">Modify File Types</a></li>' : ''); ?>
+      <?php echo ($user['adminDefs']['modPlugins'] && false ? '<li><a href="moderate.php?do=plugins">Modify Plugins</a></li>' : ''); ?>
+    </ul>
+
+    <h3><a href="#" data-itemId="4">Manage Advanced</a></h3>
+    <ul>
+      <?php echo ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=admin">Admin Permissions</a></li>' : ''); ?>
+      <?php echo ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=config">Configuration Editor</a></li>' : ''); ?>
+      <?php echo ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=sys">System Check</a></li>' : ''); ?>
+      <?php echo ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=tools">Tools</a></li>' : ''); ?>
+      <?php echo ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=phpinfo">PHP Info</a></li>' : ''); ?>
     </ul>
   </div>
 </div>
-<div id="moderateRight" class="ui-widget">';
+<div id="moderateRight" class="ui-widget">
 
-eval(hook('moderateStart'));
-
+<?php
 if (!$user['userId']) {
   echo container('Please Login','You have not logged in. Please login:<br /><br />
 
@@ -256,10 +341,7 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
 else {
   trigger_error('You do not have permission to access this page. Please login on the main chat and refresh.',E_USER_ERROR);
 }
-
-eval(hook('moderateEnd'));
-
-echo '</div>
-</body>
-</html>';
 ?>
+</div>
+</body>
+</html>

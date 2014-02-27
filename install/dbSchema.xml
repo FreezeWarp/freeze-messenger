@@ -662,6 +662,7 @@
       <def bit="1" comment="If false, the list is considered inactive and is neither used nor shown to users under any circumstances.">Enabled</def>
       <def bit="2" comment="If true, the list can not be disabled by non-administrators.">Required</def>
       <def bit="4" comment="If true, the list is not 'shown' to users. The authors of FIM really don't like this option, but provide it anyway.">Hidden</def>
+      <def bit="256" comment="If true, the list is automatically disabled in private and OTR communication.">Hidden</def>
     </bitfield>
 
     <bitfield name="defaultPermissions" table="rooms">

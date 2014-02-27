@@ -68,7 +68,10 @@ $xmlData = array(
 
 
 /* Get Kicks from Database */
-$kicks = $database->getKicks($request['users'], $request['rooms'])->getAsArray(true);
+$kicks = $database->getKicks(array(
+  'userIds' => $request['users'],
+  'roomIds' => $request['rooms']
+))->getAsArray(true);
 
 
 
@@ -77,7 +80,7 @@ if (is_array($kicks)) {
   if (count($kicks) > 0) {
     foreach ($kicks AS $kick) {
       $kick['type'] = 'normal';
-      $kick['parentalAge'] = 100; // Over-ride parentalAge/parentalFlags.
+      $kick['parentalAge'] = 100; // Over-ride parentalAge/parentalFlags; TODO: needed?
       $kick['parentalFlags'] = '';
       
       if (fim_hasPermission($kick, $user, 'moderate') || $kick['userId'] == $user['userId']) { // The user is allowed to know of all kicks they are subject to, and of all kicks in any rooms they moderate.

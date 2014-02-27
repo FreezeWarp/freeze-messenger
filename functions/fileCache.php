@@ -145,8 +145,6 @@ class FileCache {
 
     $key = $this->_make_file_key($key);
 
-    flock($file_handle, LOCK_EX); // Attempt to get exclusive access to the file.
-
     if (!unlink($key)) { // Remove the file.
       throw new Exception('Could not delete cache.');
     }
@@ -189,10 +187,8 @@ class FileCache {
     $files = glob($this->root . $this->prefix . '*');
 
     foreach ($files AS $file) {
-      flock($file_handle, LOCK_EX); // Attempt to get exclusive access to the file.
-
-      if (!unlink($key)) { // Remove the file.
-        throw new Exception('Could not delete cache.');
+      if (!unlink($file)) { // Remove the file.
+        throw new Exception('Could not delete cache file ' . $file);
       }
     }
 

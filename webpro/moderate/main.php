@@ -18,21 +18,27 @@ if (!defined('WEBPRO_INMOD')) {
   die();
 }
 else {
-  echo container('Welcome','<div style="text-align: center; font-size: 40px; font-weight: bold;">Welcome</div><br /><br />
-
-Welcome to the FreezeMessenger control panel. Here you, as one of our well-served grandé and spectacular administrative staff, can perform every task needed to you during normal operation. Still, be careful: you can mess things up here!<br /><br />
+  echo container('Welcome','Welcome to the FreezeMessenger control panel. Here you, as one of our well-served grandé and spectacular administrative staff, can perform every task needed to you during normal operation. Still, be careful: you can mess things up here!<br /><br />
 
 To perform an action, click a link on the sidebar. Further instructions can be found in the documentation.<br /><br />
 
 <strong>Note</strong>: All users can sign into this control panel to see copyright information.<br /><br />
-<table class="page ui-widget" border="1">
-  <tr>
-    <td>Active User</td>
-    <td>' . $user['userName'] . '</td>
-  </tr>
-  <tr>
-    <td>FIM Release</td>
-    <td>FIMv3.0 ("Bad Wolf")</td>
+<table class="page ui-widget">
+  <thead>
+    <tr class="ui-widget-header">
+        <th colspan="2">About FreezeMessenger</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Active User</td>
+      <td>' . $user['userName'] . '</td>
+    </tr>
+    <tr>
+      <td>FIM Release</td>
+      <td>FIMv3.0 ("Bad Wolf")</td>
+    </tr>
+  </tbody>
 </table>');
 }
 ?>
