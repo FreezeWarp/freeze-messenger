@@ -56,7 +56,9 @@ $xmlData['getFiles'] = array(
 
 
 /* Get Uploads from Database */
-$files = $database->getFiles($request['users'])->getAsArray('fileId');
+$files = $database->getFiles(array(
+  'userIds' => $request['users']
+))->getAsArray('fileId');
 
 
 
@@ -64,9 +66,7 @@ $files = $database->getFiles($request['users'])->getAsArray('fileId');
 foreach ($files AS $file) {
   // Only show if the user has permission.
   if ($file['roomIdLink'] && $file['userId'] != $user['userId']) { /* TODO: Test */
-    if (!fim_hasPermission($database->getRoom($file['roomIdLink']), $user, 'view', true)) {
-      continue;
-    }
+    if (!fim_hasPermission($database->getRoom($file['roomIdLink']), $user, 'view', true)) continue;
   }
 
   $xmlData['getFiles']['files']['file ' . $file['fileId']] = array(

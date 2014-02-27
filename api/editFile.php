@@ -153,11 +153,6 @@ $xmlData = array(
 );
 
 
-// 
-/* Plugin Hook End */
-($hook = hook('editFile_start') ? eval($hook) : '');
-
-
 
 /* Start Processing */
 if ($continue) {
@@ -168,7 +163,7 @@ if ($continue) {
 
     if ($request['action'] === 'create') {
       /* Get Room Data, if Applicable */
-      if ($request['roomId']) $roomData = $generalCache->getRoom($request['roomId']);
+      if ($request['roomId']) $roomData = $slaveDatabase->getRoom($request['roomId']);
       else $roomData = false;
 
 
@@ -178,7 +173,7 @@ if ($continue) {
         $request['fileData'] = ''; // The only real change is that we're getting things from stdin as opposed to from the headers. Thus, we'll just translate the two here.
 
         while ($fileContents = fread($putResource, $config['fileUploadChunkSize'])) { // Read the resource using 1KB chunks. This is slower than a higher chunk, but also avoids issues for now. It can be overridden with the config directive fileUploadChunkSize.
-          $request['fileData'] = $fileContents; // We're not sure if this will work, since there are indications you have to write to a file instead.
+          $request['fileData'] .= $fileContents; // We're not sure if this will work, since there are indications you have to write to a file instead.
         }
 
         fclose($putResource);
@@ -186,27 +181,17 @@ if ($continue) {
 
 
       if (!$config['enableUploads']) $errStr = 'uploadsDisabled';
-      if (!$roomData && !$config['allowOrphanFiles']) $errStr = 'noOrphanFiles';
+      elseif (!$roomData && !$config['allowOrphanFiles']) $errStr = 'noOrphanFiles';
       elseif ($config['uploadMaxFiles'] !== -1 && $database->getCounter('uploads') > $config['uploadMaxFiles']) $errStr = 'tooManyFilesServer';
       elseif ($config['uploadMaxUserFiles'] !== -1 && $user['fileCount'] > $config['uploadMaxUserFiles']) $errStr = 'tooManyFilesUser';
       elseif ($continue) {
         /* Verify the Data, Preprocess */
         switch ($request['uploadMethod']) {
-          case 'raw':
-          case 'put':
+          case 'raw': case 'put':
           switch($request['dataEncode']) {
-            case 'base64':
-            $rawData = base64_decode($request['fileData']);
-            break;
-
-            case 'binary': // Binary is buggy and far from confirmed to work. That said... if you're lucky? MDN has some useful information on this type of thing: https://developer.mozilla.org/En/Using_XMLHttpRequest
-            $rawData = $request['fileData'];
-            break;
-
-            default:
-            $errStr = 'badEncoding';
-            $continue = false;
-            break;
+            case 'base64': $rawData = base64_decode($request['fileData']); break;
+            case 'binary': $rawData = $request['fileData'];                break; // Binary is buggy and far from confirmed to work. That said... if you're lucky? MDN has some useful information on this type of thing: https://developer.mozilla.org/En/Using_XMLHttpRequest
+            default:      $errStr = 'badEncoding'; $continue = false;      break;
           }
 
           $rawSize = strlen($rawData);
@@ -236,9 +221,6 @@ if ($continue) {
         }
 
 
-        ($hook = hook('sendFile_method') ? eval($hook) : '');
-
-
 
         /* Start Processing */
         if ($continue) {
@@ -248,9 +230,7 @@ if ($continue) {
           else {
             $fileNameParts = explode('.',$request['fileName']);
 
-            if (count($fileNameParts) != 2) {
-              $errStr = 'badNameParts';
-            }
+            if (count($fileNameParts) != 2) $errStr = 'badNameParts';
             else {
               if (isset($config['extensionChanges'][$fileNameParts[1]])) { // Certain extensions are considered to be equivilent, so we only keep records for the primary one. For instance, "html" is considered to be the same as "htm" usually.
                 $fileNameParts[1] = $config['extensionChanges'][$fileNameParts[1]];
@@ -294,57 +274,19 @@ if ($continue) {
                   $errStr = 'tooLarge';
                 }
                 else {
-                  $prefile = $database->select(
-                    array(
-                      "{$sqlPrefix}fileVersions" => array(
-                        'versionId' => 'versionId',
-                        'fileId' => 'fileId',
-                        'sha256hash' => 'sha256hash',
-                      ),
-                      "{$sqlPrefix}files" => array(
-                        'fileId' => 'vfileId',
-                      ),
-                    ),
-                    array(
-                      'both' => array(
-                        array(
-                          'type' => 'e',
-                          'left' => array(
-                            'type' => 'column',
-                            'value' => 'sha256hash',
-                          ),
-                          'right' => array(
-                            'type' => 'string',
-                            'value' => $sha256hash,
-                          ),
-                        ),
-                        array(
-                          'type' => 'e',
-                          'left' => array(
-                            'type' => 'column',
-                            'value' => 'fileId',
-                          ),
-                          'right' => array(
-                            'type' => 'column',
-                            'value' => 'vfileId',
-                          ),
-                        ),
-                      ),
-                    )
-                  )->getAsArray(false);
+                  $prefile = $database->getFiles(array(
+                    'sha256hashes' => array($sha256hash)
+                  ))->getAsArray(false);
 
-                  ($hook = hook('sendFile_prefile') ? eval($hook) : '');
 
                   if ($prefile) {
                     $webLocation = "{$installUrl}file.php?sha256hash={$prefile['sha256hash']}";
 
                     if ($roomData) {
-                      fim_sendMessage($webLocation, $container, $user, $roomData);
+                      $database->sendMessage($webLocation, $container, $user, $roomData);
                     }
                   }
                   else {
-                    ($hook = hook('sendFile_preInsert') ? eval($hook) : '');
-
                     if ($continue) {
                       $database->insert("{$sqlPrefix}files", array(
                         'userId' => $user['userId'],
@@ -388,12 +330,8 @@ if ($continue) {
 
                       $webLocation = "{$installUrl}file.php?sha256hash={$sha256hash}";
 
-                      ($hook = hook('sendFile_postInsert') ? eval($hook) : '');
-
-                      if ($continue) {
-                        if ($roomData) {
-                          fim_sendMessage($webLocation, $container, $user, $roomData);
-                        }
+                      if ($continue && $roomData) {
+                        $database->sendMessage($webLocation, $container, $user, $roomData);
                       }
                     }
                   }

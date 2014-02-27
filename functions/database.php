@@ -818,7 +818,8 @@ class databaseResult {
         return $data; // All rows fetched, return the data.
       }
       else { // No index is present, generate a two-dimensional array (key => value, key being the column name, value being the corrosponding value).
-        return (array) $this->functionMap('fetchAsArray', $this->queryData);
+        $return = $this->functionMap('fetchAsArray', $this->queryData);
+        return (!$return ? array() : $return);
       }
     }
 

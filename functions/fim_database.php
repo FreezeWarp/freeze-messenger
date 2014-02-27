@@ -46,7 +46,7 @@ class fimDatabase extends databaseSQL {
    *
    * @TODO: Test filters for other file properties.
    */
-  public function getFilesNew($options = array(), $sort = array('fileId' => 'asc'), $limit = 0, $pagination = 1) {
+  public function getFiles($options = array(), $sort = array('fileId' => 'asc'), $limit = 0, $pagination = 1) {
     $options = array_merge(array(
       'userIds' => array(),
       'fileIds' => array(),
@@ -60,19 +60,22 @@ class fimDatabase extends databaseSQL {
       'vfileIds' => array(),
       'md5hashes' => array(),
       'sha256hashes' => array(),
+      'includeContent' => false,
     ), $options);
 
 
     $columns = array(
-      "files"        => 'fileId, fileName, fileType, creationTime, userId, parentalAge, parentalFlags, roomIdLink, source',
-      "fileVersions" => 'fileId vfileId, md5hash, sha256hash, size',
+      $this->sqlPrefix . "files"        => 'fileId, fileName, fileType, creationTime, userId, parentalAge, parentalFlags, roomIdLink, source',
+      $this->sqlPrefix . "fileVersions" => 'fileId vfileId, md5hash, sha256hash, size',
     );
+
+    if ($options['includeContent']) $columns[$this->sqlPrefix . 'fileVersions'] .= ', salt, iv, contents';
 
 
     // This is a method of optimisation I'm trying. Basically, if a very small sample is requested, then we can optimise by doing those first. Otherwise, the other filters are usually better performed first.
-    foreach (array('fileIds', 'vfileIds', 'md5hashes', 'sha256hashes') AS $key) {
-      if (count($options[$key]) > 0 && count($options[$key]) <= 10) {
-        $conditions['both'][$key] = $this->in($options[$key]);
+    foreach (array('fileIds' => 'fileId', 'vfileIds' => 'vfileId', 'md5hashes' => 'md5hash', 'sha256hashes' => 'sha256hash') AS $group => $key) {
+      if (count($options[$group]) > 0 && count($options[$group]) <= 10) {
+        $conditions['both'][$key] = $this->in($options[$group]);
       }
     }
 
@@ -82,7 +85,7 @@ class fimDatabase extends databaseSQL {
     if (count($options['userIds']) > 0) $conditions['both']['userId']     = $this->in($options['userIds']);
     if (count($options['roomIds']) > 0) $conditions['both']['roomLinkId'] = $this->in($options['roomIds']);
 
-    if ($options['parentalAgeMin'] > 0) $conditions['both']['parentalAge'] = $this->int($options['parentalAgeMin'], 'gte');
+    if ($options['parentalAgeMin']  > 0) $conditions['both']['parentalAge'] = $this->int($options['parentalAgeMin'], 'gte');
     if ($options['parentalAgeMax'] > 0) $conditions['both']['parentalAge'] = $this->int($options['parentalAgeMax'], 'lte');
 
     if ($options['creationTimeMin'] > 0)  $conditions['both']['creationTime'] = $this->int($options['creationTime'], 'gte');

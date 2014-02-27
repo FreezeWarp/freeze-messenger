@@ -32,35 +32,31 @@ require('global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
-  'time' => array(
-    'cast' => 'int',
-    'require' => false,
-    'default' => 0,
-  ),
-
   'md5hash' => array(
     'cast' => 'string',
     'require' => false,
+    'default' => '',
   ),
 
   'sha256hash' => array(
     'cast' => 'string',
     'require' => false,
+    'default' => '',
   ),
 
-  'fileId' => array(
+  'fileId' =>  array(
     'cast' => 'int',
     'require' => false,
-    'default' => 0,
-  ),
-  
-  'userId' => array(
-    'cast' => 'int',
-    'require' => false,
-    'default' => $user['userId'],
+    'default' => '',
   ),
 
-  // Because file.php must NOT require a session token, we want to allow APIs to define these seperately (and, yes, this is very much by design -- again, the parental control system is not locked-down).
+  'vfileId' => array(
+    'cast' => 'int',
+    'require' => false,
+    'default' => '',
+  ),
+
+  // Because file.php must NOT require a session token, we want to allow APIs to define these separately (and, yes, this is very much by design -- again, the parental control system is not locked-down).
   'parentalAge' => array(
     'cast' => 'int',
     'valid' => $config['parentalAges'],
@@ -73,103 +69,23 @@ $request = fim_sanitizeGPC('g', array(
   ),
 ));
 
-$queryParts['fileSelect']['columns'] = array(
-  "{$sqlPrefix}files" => 'userId, fileId ffileId, fileType, parentalAge, parentalFlags',
-  "{$sqlPrefix}fileVersions" => 'fileId vfileId, salt, iv, contents, md5hash, sha256hash, time',
-);
-$queryParts['fileSelect']['conditions'] = array(
-  'both' => array(
-    array(
-      'type' => 'e',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'ffileId',
-      ),
-      'right' => array(
-        'type' => 'column',
-        'value' => 'vfileId',
-      ),
-    ),
-  ),
-);
 
 
-/* Get File from Database */
-if ($request['time'] && $request['fileId']) {
-  $queryParts['fileSelect']['conditions']['both'][] = array(
-    'type' => 'e',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'time'
-    ),
-    'right' => array(
-      'type' => 'int',
-      'value' => (int) $request['time'],
-    ),
-  );
-  $queryParts['fileSelect']['conditions']['both'][] = array(
-    'type' => 'e',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'vfileId'
-    ),
-    'right' => array(
-      'type' => 'int',
-      'value' => (int) $request['fileId'],
-    ),
-  );
-}
-elseif ($request['fileId']) {
-  $queryParts['fileSelect']['conditions']['both'][] = array(
-    'type' => 'e',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'vfileId'
-    ),
-    'right' => array(
-      'type' => 'int',
-      'value' => (int) $request['fileId'],
-    ),
-  );
-}
-elseif ($request['sha256hash']) {
-  $queryParts['fileSelect']['conditions']['both'][] = array(
-    'type' => 'e',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'sha256hash'
-    ),
-    'right' => array(
-      'type' => 'string',
-      'value' => $request['sha256hash'],
-    ),
-  );
-}
-elseif ($request['md5hash']) {
-  $queryParts['fileSelect']['conditions']['both'][] = array(
-    'type' => 'e',
-    'left' => array(
-      'type' => 'column',
-      'value' => 'md5hash'
-    ),
-    'right' => array(
-      'type' => 'string',
-      'value' => $request['sha256hash'],
-    ),
-  );
-}
-else {
-  die('No criteria specified');
-}
 
-
-$file = $database->select(
+/*$file = $database->select(
   $queryParts['fileSelect']['columns'],
   $queryParts['fileSelect']['conditions'],
   false,
   1);
-$file = $file->getAsArray(false);
+$file = $file->getAsArray(false);*/
 
+$file = $database->getFiles(array(
+  'sha256hashes' => $request['sha256hash'] ? array($request['sha256hash']) : array(),
+  'md5hashes' => $request['md5hash'] ? array($request['md5hash']) : array(),
+  'fileIds' => $request['fileId'] ? array($request['fileId']) : array(),
+  'vfileIds' => $request['vfileId'] ? array($request['vfileId']) : array(),
+  'includeContent' => true
+))->getAsArray(false);
 
 
 
