@@ -536,6 +536,29 @@ function fim_newMessage(messageText, messageId) {
   contextMenuParseMessage();
   contextMenuParseUser('#messageList');
 
+  /*** Time Tooltip ***/
+  if (settings.showAvatars) {
+    $('.messageText').tipTip({
+      activate: 'hover',
+      attribute: 'data-time'
+    });
+  }
+
+
+  /*** Hover Tooltip ***/
+  $('.userName').ezpz_tooltip({
+    contentId: 'tooltext',
+    beforeShow: function(content, el) {
+      var userId = $(el).attr('data-userId');
+
+      if (userId != $('#tooltext').attr('data-lastuserId')) {
+        $('#tooltext').attr('data-lastuserId', userId);
+
+        content.html('<div style="width: 400px;">' + (userData[userId].avatar.length > 0 ? '<img alt="" src="' + userData[userId].avatar + '" style="float: left; max-height: 200px; max-width: 200px;" />' : '') + '<span class="userName" data-userId="' + userId + '">' + userData[userId].startTag + userData[userId].userName + userData[userId].endTag + '</span>' + (userData[userId].userTitle.length > 0 ? '<br />' + userData[userId].userTitle : '') + '<br /><em>Posts</em>: ' + userData[userId].posts + '<br /><em>Member Since</em>: ' + userData[userId].joinDate + '</div>');
+      }
+    }
+  });
+
   $('.messageLine .messageText, .messageLine .userName, body').unbind('keydown');
 
   $('.messageLine .messageText').bind('keydown', function(e) {
@@ -1660,7 +1683,7 @@ function contextMenuParseRoom() {
  */
 $(document).ready(function() {
   // Start by injecting the stylesheets into the DOM.
-  $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/' + window.webproDisplay.theme + '/jquery-ui-1.8.16.custom.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/' + window.webproDisplay.theme + '/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
+  $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/' + window.webproDisplay.theme + '/jquery-ui-1.10.4.min.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/' + window.webproDisplay.theme + '/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
 
 
   if (window.webproDisplay.fontSize) $('body').css('font-size', window.webproDisplay.fontSize + 'em');
@@ -1685,30 +1708,6 @@ $(document).ready(function() {
   if (settings.disableFx) {
     jQuery.fx.off = true;
   }
-
-
-  /*** Time Tooltip ***/
-  if (settings.showAvatars) {
-    $('.messageText').tipTip({
-      activate: 'hover',
-      attribute: 'data-time'
-    });
-  }
-
-
-  /*** Hover Tooltip ***/
-  $('.userName').ezpz_tooltip({
-    contentId: 'tooltext',
-    beforeShow: function(content, el) {
-      var userId = $(el).attr('data-userId');
-
-      if (userId != $('#tooltext').attr('data-lastuserId')) {
-        $('#tooltext').attr('data-lastuserId', userId);
-
-        content.html('<div style="width: 400px;">' + (userData[userId].avatar.length > 0 ? '<img alt="" src="' + userData[userId].avatar + '" style="float: left; max-height: 200px; max-width: 200px;" />' : '') + '<span class="userName" data-userId="' + userId + '">' + userData[userId].startTag + userData[userId].userName + userData[userId].endTag + '</span>' + (userData[userId].userTitle.length > 0 ? '<br />' + userData[userId].userTitle : '') + '<br /><em>Posts</em>: ' + userData[userId].posts + '<br /><em>Member Since</em>: ' + userData[userId].joinDate + '</div>');
-      }
-    }
-  });
 
 
   /*** Create the Accordion Menu ***/

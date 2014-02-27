@@ -345,10 +345,10 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
 
 
 
-  $(menu).find('a').mouseover(function () { // Mouse Navigation
+  $(menu).find('a').mouseenter(function () { // Mouse Navigation
     $(menu).find('li.hover').blur();
     $(this).parent().focus();
-  }).mouseout(function () {
+  }).mouseleave(function () {
     $(menu).find('li.hover').blur();
   });
 
@@ -486,6 +486,7 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
 
 (function ($) {
   $.fn.tipTip = function (options) {
+    console.log($(this));
     var defaults = {
       maxWidth: "200px",
       edgeOffset: 3,
@@ -521,132 +522,129 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
 
     var timeout = false;
 
+    $(this).off('mouseenter');
+    $(this).off('mouseleave');
 
-    $(this).off('mouseover');
-    $(this).off('mouseout');
+    $(this).on("mouseenter", function () {
+      if (opts.content) {
+        var org_title = opts.content;
+      }
+      else {
+        var org_title = $(this).attr(opts.attribute);
+      }
 
-    $(this).on({
-      mouseover: function () {
-        if (opts.content) {
-          var org_title = opts.content;
-        }
-        else {
-          var org_title = $(this).attr(opts.attribute);
-        }
+      opts.enter.call(this);
+      tiptip_content.html(org_title);
+      tiptip_holder.hide().removeAttr("class").css("margin", "0");
+      tiptip_arrow.removeAttr("style");
 
-        opts.enter.call(this);
-        tiptip_content.html(org_title);
-        tiptip_holder.hide().removeAttr("class").css("margin", "0");
-        tiptip_arrow.removeAttr("style");
+      var top = parseInt($(this).offset()['top']);
+      var left = parseInt($(this).offset()['left']);
+      var org_width = parseInt($(this).outerWidth());
+      var org_height = parseInt($(this).outerHeight());
+      var tip_w = tiptip_holder.outerWidth();
+      var tip_h = tiptip_holder.outerHeight();
+      var w_compare = Math.round((org_width - tip_w) / 2);
+      var h_compare = Math.round((org_height - tip_h) / 2);
+      var marg_left = Math.round(left + w_compare);
+      var marg_top = Math.round(top + org_height + opts.edgeOffset);
+      var t_class = "";
+      var arrow_top = "";
+      var arrow_left = Math.round(tip_w - 12) / 2;
 
-        var top = parseInt($(this).offset()['top']);
-        var left = parseInt($(this).offset()['left']);
-        var org_width = parseInt($(this).outerWidth());
-        var org_height = parseInt($(this).outerHeight());
-        var tip_w = tiptip_holder.outerWidth();
-        var tip_h = tiptip_holder.outerHeight();
-        var w_compare = Math.round((org_width - tip_w) / 2);
-        var h_compare = Math.round((org_height - tip_h) / 2);
-        var marg_left = Math.round(left + w_compare);
-        var marg_top = Math.round(top + org_height + opts.edgeOffset);
-        var t_class = "";
-        var arrow_top = "";
-        var arrow_left = Math.round(tip_w - 12) / 2;
+      if (opts.defaultPosition == "bottom") {
+        t_class = "_bottom";
+      }
+      else if (opts.defaultPosition == "top") {
+        t_class = "_top";
+      }
+      else if (opts.defaultPosition == "left") {
+        t_class = "_left";
+      }
+      else if (opts.defaultPosition == "right") {
+        t_class = "_right";
+      }
 
-        if (opts.defaultPosition == "bottom") {
-          t_class = "_bottom";
-        }
-        else if (opts.defaultPosition == "top") {
+      var right_compare = (w_compare + left) < parseInt($(window).scrollLeft());
+      var left_compare = (tip_w + left) > parseInt($(window).width());
+
+      if ((right_compare && w_compare < 0) || (t_class == "_right" && !left_compare) || (t_class == "_left" && left < (tip_w + opts.edgeOffset + 5))) {
+        t_class = "_right";
+        arrow_top = Math.round(tip_h - 13) / 2;
+        arrow_left = -12;
+        marg_left = Math.round(left + org_width + opts.edgeOffset);
+        marg_top = Math.round(top + h_compare);
+      }
+      else if ((left_compare && w_compare < 0) || (t_class == "_left" && !right_compare)) {
+        t_class = "_left";
+        arrow_top = Math.round(tip_h - 13) / 2;
+        arrow_left = Math.round(tip_w);
+        marg_left = Math.round(left - (tip_w + opts.edgeOffset + 5));
+        marg_top = Math.round(top + h_compare);
+      }
+
+      var top_compare = (top + org_height + opts.edgeOffset + tip_h + 8) > parseInt($(window).height() + $(window).scrollTop());
+      var bottom_compare = ((top + org_height) - (opts.edgeOffset + tip_h + 8)) < 0;
+
+      if (top_compare || (t_class == "_bottom" && top_compare) || (t_class == "_top" && !bottom_compare)) {
+        if (t_class == "_top" || t_class == "_bottom") {
           t_class = "_top";
         }
-        else if (opts.defaultPosition == "left") {
-          t_class = "_left";
+        else {
+          t_class = t_class + "_top";
         }
-        else if (opts.defaultPosition == "right") {
-          t_class = "_right";
-        }
-
-        var right_compare = (w_compare + left) < parseInt($(window).scrollLeft());
-        var left_compare = (tip_w + left) > parseInt($(window).width());
-
-        if ((right_compare && w_compare < 0) || (t_class == "_right" && !left_compare) || (t_class == "_left" && left < (tip_w + opts.edgeOffset + 5))) {
-          t_class = "_right";
-          arrow_top = Math.round(tip_h - 13) / 2;
-          arrow_left = -12;
-          marg_left = Math.round(left + org_width + opts.edgeOffset);
-          marg_top = Math.round(top + h_compare);
-        }
-        else if ((left_compare && w_compare < 0) || (t_class == "_left" && !right_compare)) {
-          t_class = "_left";
-          arrow_top = Math.round(tip_h - 13) / 2;
-          arrow_left = Math.round(tip_w);
-          marg_left = Math.round(left - (tip_w + opts.edgeOffset + 5));
-          marg_top = Math.round(top + h_compare);
-        }
-
-        var top_compare = (top + org_height + opts.edgeOffset + tip_h + 8) > parseInt($(window).height() + $(window).scrollTop());
-        var bottom_compare = ((top + org_height) - (opts.edgeOffset + tip_h + 8)) < 0;
-
-        if (top_compare || (t_class == "_bottom" && top_compare) || (t_class == "_top" && !bottom_compare)) {
-          if (t_class == "_top" || t_class == "_bottom") {
-            t_class = "_top";
-          }
-          else {
-            t_class = t_class + "_top";
-          }
-          arrow_top = tip_h;
-          marg_top = Math.round(top - (tip_h + 5 + opts.edgeOffset));
-        }
-        else if (bottom_compare | (t_class == "_top" && bottom_compare) || (t_class == "_bottom" && !top_compare)) {
-          if (t_class == "_top" || t_class == "_bottom") {
-            t_class = "_bottom";
-          }
-          else {
-            t_class = t_class + "_bottom";
-          }
-          arrow_top = -12;
-          marg_top = Math.round(top + org_height + opts.edgeOffset);
-        }
-
-        if (t_class == "_right_top" || t_class == "_left_top") {
-          marg_top = marg_top + 5;
-        }
-        else if (t_class == "_right_bottom" || t_class == "_left_bottom") {
-          marg_top = marg_top - 5;
-        }
-
-        if (t_class == "_left_top" || t_class == "_left_bottom") {
-          marg_left = marg_left + 5;
-        }
-
-        tiptip_arrow.css({
-          "margin-left": arrow_left + "px",
-          "margin-top": arrow_top + "px"
-        });
-        tiptip_holder.css({
-          "margin-left": marg_left + "px",
-          "margin-top": marg_top + "px"
-        }).attr("class", "tip" + t_class);
-
-        if (timeout) {
-          clearTimeout(timeout);
-        }
-        timeout = setTimeout(function () {
-          tiptip_holder.stop(true, true).fadeIn(opts.fadeIn);
-          return false;
-        }, opts.delay);
-
-        return false;
-      },
-      mouseout: function () {
-        opts.exit.call(this);
-        if (timeout) {
-          clearTimeout(timeout);
-        }
-
-        tiptip_holder.fadeOut(opts.fadeOut);
-        return false;
+        arrow_top = tip_h;
+        marg_top = Math.round(top - (tip_h + 5 + opts.edgeOffset));
       }
+      else if (bottom_compare | (t_class == "_top" && bottom_compare) || (t_class == "_bottom" && !top_compare)) {
+        if (t_class == "_top" || t_class == "_bottom") {
+          t_class = "_bottom";
+        }
+        else {
+          t_class = t_class + "_bottom";
+        }
+        arrow_top = -12;
+        marg_top = Math.round(top + org_height + opts.edgeOffset);
+      }
+
+      if (t_class == "_right_top" || t_class == "_left_top") {
+        marg_top = marg_top + 5;
+      }
+      else if (t_class == "_right_bottom" || t_class == "_left_bottom") {
+        marg_top = marg_top - 5;
+      }
+
+      if (t_class == "_left_top" || t_class == "_left_bottom") {
+        marg_left = marg_left + 5;
+      }
+
+      tiptip_arrow.css({
+        "margin-left": arrow_left + "px",
+        "margin-top": arrow_top + "px"
+      });
+      tiptip_holder.css({
+        "margin-left": marg_left + "px",
+        "margin-top": marg_top + "px"
+      }).attr("class", "tip" + t_class);
+
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+      timeout = setTimeout(function () {
+        tiptip_holder.stop(true, true).fadeIn(opts.fadeIn);
+        return false;
+      }, opts.delay);
+
+      return false;
+    });
+    $(this).on("mouseleave", function () {
+    opts.exit.call(this);
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+
+      tiptip_holder.fadeOut(opts.fadeOut);
+      return false;
     });
 
     return false;
@@ -676,33 +674,31 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
  *
  * Modified to support live() handler, eliminate code unneeded for FIM. */
 ( function ($) {
-  $(this).off('mouseover');
+  $(this).off('mouseenter');
   $(this).off('mousemove');
-  $(this).off('mouseout');
+  $(this).off('mouseleave');
 
   $.fn.ezpz_tooltip = function (options) {
     var settings = $.extend({}, $.fn.ezpz_tooltip.defaults, options);
     var content = $("#" + settings.contentId);
 
-    $(this).on({
-      mouseover: function () {
-        content = $("#" + settings.contentId);
-        settings.beforeShow(content, $(this));
-      },
-      mousemove: function (e) {
-        var contentInfo = getElementDimensionsAndPosition(content),
-          targetInfo = getElementDimensionsAndPosition($(this));
-        contentInfo = keepInWindow($.fn.ezpz_tooltip.positions[settings.contentPosition](contentInfo, e.pageX, e.pageY, settings.offset, targetInfo));
+    $(this).on("mouseenter", function () {
+      content = $("#" + settings.contentId);
+      settings.beforeShow(content, $(this));
+    });
+    $(this).on("mousemove", function (e) {
+      var contentInfo = getElementDimensionsAndPosition(content),
+        targetInfo = getElementDimensionsAndPosition($(this));
+      contentInfo = keepInWindow($.fn.ezpz_tooltip.positions[settings.contentPosition](contentInfo, e.pageX, e.pageY, settings.offset, targetInfo));
 
-        content.css('top', contentInfo['top']);
-        content.css('left', contentInfo['left']);
+      content.css('top', contentInfo['top']);
+      content.css('left', contentInfo['left']);
 
-        settings.showContent(content);
-      },
-      mouseout: function () {
-        settings.hideContent(content);
-        settings.afterHide();
-      }
+      settings.showContent(content);
+    });
+    $(this).on("mouseleave", function () {
+      settings.hideContent(content);
+      settings.afterHide();
     });
 
     function getElementDimensionsAndPosition(element) {
@@ -1049,9 +1045,9 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
 
 
       /** Notification Actions **/
-      $(notification).bind("mouseover.jGrowl", function() {
+      $(notification).bind("mouseenter.jGrowl", function() {
         $('div.jGrowl-notification', self.element).data("jGrowl.pause", true);
-      }).bind("mouseout.jGrowl", function() {
+      }).bind("mouseexit.jGrowl", function() {
         $('div.jGrowl-notification', self.element).data("jGrowl.pause", false);
       }).bind('jGrowl.beforeOpen', function() {
         if ( o.beforeOpen.apply( notification , [notification,message,o,self.element] ) !== false ) {
@@ -1649,7 +1645,7 @@ $.fn.tabbedDialog = function (dialogOptions, tabOptions) {
   // Create the Tabbed Dialogue
   var tabul = this.find('ul:first');
   this.parent().addClass('ui-tabs').prepend(tabul).draggable('option', 'handle', tabul);
-  tabul.append($('.ui-dialog-titlebar-close').css('top', '.4em'));
+  tabul.append($('.ui-dialog-titlebar-close').css({'top': '1.5em', 'right': '1em'}));
   this.prev().remove();
   tabul.addClass('ui-dialog-titlebar-tabbed');
 

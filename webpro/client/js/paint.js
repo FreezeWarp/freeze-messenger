@@ -84,33 +84,44 @@ $.when(
       }
   }),
   $.ajax({
-      url: 'client/data/language_enGB.json',
-      dataType: 'json',
-      success: function(data) {
-        window.phrases = data;
-      },
-      async: false,
-      cache: true,
-    })
-).then(function() {
-
+    url: 'client/data/language_enGB.json',
+    dataType: 'json',
+    success: function(data) {
+      window.phrases = data;
+    },
+    cache: true,
+  }),
   $.ajax({
     url: 'client/data/templates.json',
     dataType: 'json',
     success: function(data) {
       window.templates = data;
-      
-      $(document).ready(function() {
-        $('body').append($t('main'));
-//        $('body').append($t('chatTemplate'));
-        $('body').append($t('contextMenu'));
+    }
+  })
+ ).then(function() {
+  $(document).ready(function() {
+    $('body').append($t('main'));
+    $('body').append($t('contextMenu'));
 
-        $.getScript('client/js/fim-dev/fim-popup.js');
-        $.getScript('client/js/fim-dev/fim-standard.js');
-        $.getScript('client/js/fim-dev/fim-loader.js');
-      });
-    },
-    async: false,
-    cache: true
+    $.ajax({
+      async: false,
+      url: 'client/js/fim-dev/fim-popup.js',
+      dataType:'script'
+    });
+    $.ajax({
+      async: false,
+      url: 'client/js/fim-dev/fim-standard.js',
+      dataType:'script'
+    });
+    $.ajax({
+      async: false,
+      url: 'client/js/fim-dev/fim-loader.js',
+      dataType:'script'
+    });
   });
+
+//    $.getScript('client/js/fim-dev/fim-popup.js');
+//    $.getScript('client/js/fim-dev/fim-standard.js');
+//    $.getScript('client/js/fim-dev/fim-loader.js');
+
 });
