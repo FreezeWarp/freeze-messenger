@@ -44,30 +44,11 @@ else {
       'cast' => 'int',
       'evaltrue' => false,
     ),
-    'lastUnreadMessage' => array(
-      'require' => false,
-      'default' => 0,
-      'cast' => 'int',
-      'evaltrue' => false,
-    ),
-    'lastEvent' => array(
-      'require' => false,
-      'default' => 0,
-      'cast' => 'int',
-      'evaltrue' => false,
-    ),
   ));
 
 
   if (isset($_SERVER['HTTP_LAST_EVENT_ID'])) {
-    $lastMessageId = $_SERVER['HTTP_LAST_EVENT_ID']; // Get the message ID used for keeping state data; e.g. 1-2-3
-    $lastMessageIdParts = explode('-', $lastMessageId); // Get each state part; e.g. array(1, 2, 3)
-
-    if (count($lastMessageIdParts) === 3) { // There must be three parts
-      $request['lastMessage'] = (int) substr($lastMessageIdParts[0], 1);
-      $request['lastUnreadMessage'] = (int) substr($lastMessageIdParts[1], 1);
-      $request['lastEvent'] = (int) substr($lastMessageIdParts[2], 1);
-    }
+    $request['lastMessage'] = $_SERVER['HTTP_LAST_EVENT_ID']; // Get the message ID used for keeping state data; e.g. 1-2-3
   }
 
 
@@ -109,13 +90,12 @@ else {
       if ($message['messageId'] > $request['lastMessage']) $request['lastMessage'] = $message['messageId'];
 
       echo "event: message\n";
-      echo "data: " . json_encode($messagesOutput) . "\n\n";
+      echo "data: " . json_encode($messagesOutput) . "\n";
+      echo "id: " . (int) $message['messageId'] . "\n\n";
 
       fim_flush(); // Force the server to flush.
     }
 
-
-    echo "id: m" . (int) $request['lastMessage'] . "-u" . (int) $request['lastUnreadMessage'] . "-e" . (int) $request['lastEvent'] . "\n\n";
     fim_flush();
 
     unset($messages);
@@ -133,6 +113,5 @@ else {
   }
 }
 
-echo "id: m" . (int) $request['lastMessage'] . "-u" . (int) $request['lastUnreadMessage'] . "-e" . (int) $request['lastEvent'] . "\n";
 echo "retry: 0\n";
 ?>
