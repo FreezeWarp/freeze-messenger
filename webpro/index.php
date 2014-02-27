@@ -42,6 +42,8 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
     <!-- START Scripts -->
 
+    <!--[if lt IE 7]><script>window.location = "browser.php";</script><![endif]-->
+
     <!--[if IE]><script src="client/js/fim-ie.js" type="text/javascript"></script><![endif]-->
     <!--<script src="client/js/jquery-1.7.1.min.js" type="text/javascript"></script>-->
 
@@ -50,7 +52,8 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
     <!--<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>-->
 
 
-    <script src="client/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
+    <!--<script src="client/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>-->
+    <script src="client/js/jquery-ui-1.10.4.custom.min.js" type="text/javascript"></script>
     <script src="client/js/jquery.plugins.js" type="text/javascript"></script>
     <script src="client/js/paint.js" type="text/javascript"></script>
     <script src="client/js/encrypt.js" type="text/javascript"></script>

@@ -256,14 +256,15 @@ if (jQuery)(function () {
         }
 
         // Disable text selection
-        if ($.browser.mozilla) {
-          $('#' + o.menu).each(function () {
-            $(this).css({
-              'MozUserSelect': 'none'
-            });
+        $('#' + o.menu).each(function () {
+          $(this).css({
+            'MozUserSelect': 'none',
+            'MsUserSelect': 'none',
+            'WebkitUserSelect': 'none'
           });
-        }
-        else if ($.browser.msie) {
+        });
+
+          if (navigator.userAgent.match(/msie/i)) { // TODO: Test versions
           $('#' + o.menu).each(function () {
             $(this).bind('selectstart.disableTextSelect', function () {
               return false;
