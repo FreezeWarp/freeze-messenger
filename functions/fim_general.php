@@ -1403,6 +1403,8 @@ function fim_formatErrors($errorString, $errorData) {
  * Flushes The Output Buffer
  */
 function fim_flush() {
+  echo str_pad(' ', 1024); // TODO: Config
+
   flush();
   
   if (ob_get_level()) ob_flush(); // Flush output buffer if enabled.

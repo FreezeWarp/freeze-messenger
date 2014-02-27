@@ -176,8 +176,8 @@ class fimDatabase extends databaseSQL {
 
     $columns = array(
       $this->sqlPrefix . "ping" => 'status, typing, time ptime, roomId proomId, userId puserId',
-      $this->sqlPrefix . "rooms" => 'roomId, roomName, roomTopic, defaultPermissions, roomType',
-      $this->sqlPrefix . "users" => 'userId, userName, userFormatStart, userFormatEnd, userGroup, socialGroups, typing, status',
+      $this->sqlPrefix . "rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, roomType, parentalAge, parentalFlags, options',
+      $this->sqlPrefix . "users" => 'userId, userName, userFormatStart, userFormatEnd, userGroup, socialGroups, status',
     );
 
 
@@ -189,41 +189,12 @@ class fimDatabase extends databaseSQL {
 
 
     $conditions['both'] = array(
+      'ptime' => $this->int(time() - $options['onlineThreshold'], 'lt'),
       'proomId' => $this->col('roomId'),
       'puserId' => $this->col('userId'),
-      'ptime' => $this->int(time() - $options['onlineThreshold'], 'gte')
     );
 
 
-    return $this->select($columns, $conditions, $sort);
-  }
-
-
-
-  public function getAllActiveUsers($time, $threshold, $users = array(), $sort = array('userName' => 'asc'), $limit = false, $pagination = false) {
-    $columns = array(
-      $this->sqlPrefix . "users" => 'userId, userName, userFormatStart, userFormatEnd, userGroup, socialGroups',
-      //"{$sqlPrefix}rooms" => 'roomName, roomId, defaultPermissions, owner, options',
-      $this->sqlPrefix . "rooms" => 'roomName, roomId, owner, options, defaultPermissions, parentalAge, parentalFlags, roomType',
-      $this->sqlPrefix . "ping" => 'time ptime, userId puserId, roomId proomId, typing, status',
-    );
-
-
-    $conditions['both'] = array(
-
-      'userId' => $this->col('puserId'),
-      'roomId' => $this->col('proomId'),
-      'ptime' => $this->int($time - $threshold, 'lt'),
-    );
-
-
-    /* Modify Query Data for Directives */
-    if (count($users) > 0) {
-      $conditions['both']['puserId'] = $this->in($users);
-    }
-
-
-    /* Get Active Users */
     return $this->select($columns, $conditions, $sort);
   }
 
@@ -238,7 +209,7 @@ class fimDatabase extends databaseSQL {
       'userIds' => array(),
       'messageTextSearch' => '',
       'showDeleted' => true,
-      'messageIdConstraints' => array(),
+      'messagesSince' => 0,
       'messageIdMax' => 0,
       'messageIdMin' => 0,
       'messageIdStart' => 0,
@@ -345,7 +316,7 @@ class fimDatabase extends databaseSQL {
     }
 
     if ($options['messagesSince'] > 0)
-      $conditions['both']['messageId 5'] = $this->int($options['messageDateMin'], 'gt');
+      $conditions['both']['messageId 5'] = $this->int($options['messagesSince'], 'gt');
 
     if ($options['showDeleted'] === true && $options['archive'] === true) $conditions['both']['deleted'] = $this->bool(false);
     if (count($options['messageIds']) > 0) $conditions['both']['messageId'] = $this->in($options['messageIds']); // Overrides all other message ID parameters; TODO

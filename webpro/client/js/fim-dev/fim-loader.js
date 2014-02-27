@@ -331,7 +331,7 @@ function fim_messageFormat(json, format) {
 
   text = text.replace(/\</g, '&lt;').replace(/\>/g, '&gt;').replace(/\n/g, '<br />');
   text = text.replace(/(file\.php\?sha256hash\=[a-f0-9]{64})/, function ($1) {
-    return ($1 + '&parentalAge=' + userData[userId].parentalAge + '&parentalFlags=' + userData[userId].parentalFlags.join(','));
+    return ($1 + '&parentalAge=' + userData[window.userId].parentalAge + '&parentalFlags=' + userData[window.userId].parentalFlags.join(','));
   })
 
   if (text.length > 1000) {

@@ -1024,12 +1024,13 @@ popup = {
 
     function updateOnline() {
       $.ajax({
-        url: directory + 'api/getAllActiveUsers.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+        url: directory + 'api/getActiveUsers.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
         type: 'GET',
         timeout: 2400,
         cache: false,
         success: function(json) {
           var data = '';
+          $('#onlineUsers').html('');
 
           active = json.getAllActiveUsers.users;
 

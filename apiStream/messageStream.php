@@ -29,7 +29,6 @@ else {
   set_time_limit($config['serverSentTimeLimit']);
 
   $serverSentRetries = 0;
-  $outputStarted = false; // used for fastCGI
 
 
   /* Get Request Data */
@@ -59,6 +58,7 @@ else {
     ),
   ));
 
+
   if (isset($_SERVER['HTTP_LAST_EVENT_ID'])) {
     $lastMessageId = $_SERVER['HTTP_LAST_EVENT_ID']; // Get the message ID used for keeping state data; e.g. 1-2-3
     $lastMessageIdParts = explode('-', $lastMessageId); // Get each state part; e.g. array(1, 2, 3)
@@ -71,60 +71,54 @@ else {
   }
 
 
-
-  while (true) {
+  while ($serverSentRetries < $config['serverSentMaxRetries']) {
     $serverSentRetries++;
 
     $messages = $database->getMessages(array(
       'roomIds' => array($request['roomId']),
-      'messagesSince' => array($request['lastMessage']),
+      'messagesSince' => $request['lastMessage'],
     ), array('messageId' => 'asc'))->getAsArray('messageId');
 
-    if (is_array($messages)) {
-      if (count($messages) > 0) {
-        foreach ($messages AS $message) {
-          $messagesOutput = array(
-            'messageData' => array(
-              'roomId' => (int) $message['roomId'],
-              'messageId' => (int) $message['messageId'],
-              'messageTime' => (int) $message['time'],
-              'messageText' => $message['text'],
-              'flags' => ($message['flag']),
-            ),
-            'userData' => array(
-              'userName' => ($message['userName']),
-              'userId' => (int) $message['userId'],
-              'userGroup' => (int) $message['userGroup'],
-              'avatar' => ($message['avatar']),
-              'socialGroups' => ($message['socialGroups']),
-              'startTag' => ($message['userFormatStart']),
-              'endTag' => ($message['userFormatEnd']),
-              'defaultFormatting' => array(
-                'color' => ($message['defaultColor']),
-                'highlight' => ($message['defaultHighlight']),
-                'fontface' => ($message['defaultFontface']),
-                'general' => (int) $message['defaultFormatting']
-              ),
-            )
-          );
 
-          if ($message['messageId'] > $request['lastMessage']) $request['lastMessage'] = $message['messageId'];
+    foreach ($messages AS $message) {
+      $messagesOutput = array(
+        'messageData' => array(
+          'roomId' => (int) $message['roomId'],
+          'messageId' => (int) $message['messageId'],
+          'messageTime' => (int) $message['time'],
+          'messageText' => $message['text'],
+          'flags' => ($message['flag']),
+        ),
+        'userData' => array(
+          'userName' => ($message['userName']),
+          'userId' => (int) $message['userId'],
+          'userGroup' => (int) $message['userGroup'],
+          'avatar' => ($message['avatar']),
+          'socialGroups' => ($message['socialGroups']),
+          'startTag' => ($message['userFormatStart']),
+          'endTag' => ($message['userFormatEnd']),
+          'defaultFormatting' => array(
+            'color' => ($message['defaultColor']),
+            'highlight' => ($message['defaultHighlight']),
+            'fontface' => ($message['defaultFontface']),
+            'general' => (int) $message['defaultFormatting']
+          ),
+        )
+      );
 
-          echo "event: message\n";
-          echo "data: " . json_encode($messagesOutput) . "\n\n";
+      if ($message['messageId'] > $request['lastMessage']) $request['lastMessage'] = $message['messageId'];
 
-          fim_flush(); // This /should/ not be neccessary. I don't know why it is -- TODO.
-        }
+      echo "event: message\n";
+      echo "data: " . json_encode($messagesOutput) . "\n\n";
 
-        echo "id: m" . (int) $request['lastMessage'] . "-u" . (int) $request['lastUnreadMessage'] . "-e" . (int) $request['lastEvent'] . "\n\n";
-
-        fim_flush();
-        $outputStarted = true;
-
-        unset($messages);
-      }
+      fim_flush(); // Force the server to flush.
     }
 
+
+    echo "id: m" . (int) $request['lastMessage'] . "-u" . (int) $request['lastUnreadMessage'] . "-e" . (int) $request['lastEvent'] . "\n\n";
+    fim_flush();
+
+    unset($messages);
 
 
     if ($config['dev']) {
@@ -135,19 +129,10 @@ else {
     }
 
 
-
-    if (($serverSentRetries > $config['serverSentMaxRetries'])
-      || ($config['serverSentFastCGI'] && $outputStarted)) {
-      echo "id: m" . (int) $request['lastMessage'] . "-u" . (int) $request['lastUnreadMessage'] . "-e" . (int) $request['lastEvent'] . "\n";
-      echo "retry: 0\n";
-
-      exit;
-    }
-    else {
-      ($hook = hook('getMessages_postMessages_serverSentEvents_repeat') ? eval($hook) : '');
-
-      usleep($config['serverSentEventsWait'] * 1000000); // Wait before re-requesting. usleep delays in microseconds (millionths of seconds).
-    }
+    usleep($config['serverSentEventsWait'] * 1000000); // Wait before re-requesting. usleep delays in microseconds (millionths of seconds).
   }
 }
+
+echo "id: m" . (int) $request['lastMessage'] . "-u" . (int) $request['lastUnreadMessage'] . "-e" . (int) $request['lastEvent'] . "\n";
+echo "retry: 0\n";
 ?>

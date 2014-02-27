@@ -102,9 +102,7 @@ foreach ($rooms AS $roomData) {
   $permissions = fim_hasPermission($roomData, $user, array('post', 'view', 'moderate', 'admin'), false);
 
   if ($request['permLevel']) {
-    if ($permissions[0][$request['permLevel']] === false) {
-      continue;
-    }
+    if ($permissions[0][$request['permLevel']] === false) continue;
   }
 
   $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']] = array(

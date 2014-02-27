@@ -68,7 +68,6 @@ $xmlData = array(
       'userName' => (string) $user['userName'],
     ),
     'errStr' => (string) $errStr,
-    'errDesc' => (string) $errDesc,
     'rooms' => array(),
   ),
 );
@@ -78,37 +77,65 @@ $activeUsers = $database->getActiveUsers(array(
   'onlineThreshold' => $request['onlineThreshold'],
   'roomIds' => $request['rooms'],
   'userIds' => $request['users']
-))->getAsArray('roomId', true);
+));
 
-var_dump($activeUsers); die();
+//var_dump($activeUsers); die();
 
 
 /* Start Processing */
-foreach ($activeUsers AS $roomId => $room) { // Run through each room.
-  if (fim_hasPermission($room, $user, 'know', true) === false) { // The user must be able to know the room exists.
-    continue; // Skip to next iteration (strictly speaking, redundant)
+if (count($request['rooms']) > 0) {
+  foreach ($activeUsers->getAsArray('roomId', true) AS $roomId => $room) { // Run through each room.
+    if (fim_hasPermission($room, $user, 'know', true) === false) { // The user must be able to know the room exists.
+      continue; // Skip to next iteration (strictly speaking, redundant)
+    }
+    else {
+      /* Define Room Summary */
+      $xmlData['getActiveUsers']['rooms']['room ' . $room['roomId']] = array(
+        'roomData' => array(
+          'roomId' => (int) $activeUser['roomId'],
+          'roomName' => (string) $activeUser['roomName'],
+          'roomTopic' => (string) $activeUser['roomTopic'],
+        ),
+        'users' => array(),
+      );
+
+      foreach ($room AS $activeUser) {
+        $xmlData['getActiveUsers']['rooms']['room ' . $room['roomId']]['users']['user ' . $activeUser['userId']] = array(
+          'userId' => (int) $activeUser['userId'],
+          'userName' => (string) $activeUser['userName'],
+          'userGroup' => (int) $activeUser['userGroup'],
+          'socialGroups' => (string) $activeUser['socialGroups'],
+          'startTag' => (string) $activeUser['userFormatStart'],
+          'endTag' => (string) $activeUser['userFormatEnd'],
+          'status' => (string) $activeUser['status'],
+          'typing' => (bool) $activeUser['typing'],
+        );
+      }
+    }
   }
-  else {
-    /* Define Room Summary */
-    $xmlData['getActiveUsers']['rooms']['room ' . $room['roomId']] = array(
-      'roomData' => array(
+}
+else {
+  foreach ($activeUsers->getAsArray(true) AS $activeUser) {
+    $activeUser['type'] = 'normal';
+
+    if (!isset($xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']])) {
+      $xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']] = array(
+        'userData' => array(
+          'userId' => (int) $activeUser['userId'],
+          'userName' => (string) $activeUser['userName'],
+          'userGroup' => (string) $activeUser['userGroup'],
+          'socialGroups' => (string) $activeUser['socialGroups'],
+          'startTag' => (string) $activeUser['userFormatStart'],
+          'endTag' => (string) $activeUser['userFormatEnd'],
+        ),
+        'rooms' => array(),
+      );
+    }
+
+    if (fim_hasPermission($activeUser, $user, 'view', false)) { // Only list the room the user is in if the active user has permission to view the room.
+      $xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']]['rooms']['room ' . $activeUser['roomId']] = array(
         'roomId' => (int) $activeUser['roomId'],
         'roomName' => (string) $activeUser['roomName'],
-        'roomTopic' => (string) $activeUser['roomTopic'],
-      ),
-      'users' => array(),
-    );
-
-    foreach ($room AS $activeUser) {
-      $xmlData['getActiveUsers']['rooms']['room ' . $room['roomId']]['users']['user ' . $activeUser['userId']] = array(
-        'userId' => (int) $activeUser['userId'],
-        'userName' => (string) $activeUser['userName'],
-        'userGroup' => (int) $activeUser['userGroup'],
-        'socialGroups' => (string) $activeUser['socialGroups'],
-        'startTag' => (string) $activeUser['userFormatStart'],
-        'endTag' => (string) $activeUser['userFormatEnd'],
-        'status' => (string) $activeUser['status'],
-        'typing' => (bool) $activeUser['typing'],
       );
     }
   }
@@ -117,7 +144,6 @@ foreach ($activeUsers AS $roomId => $room) { // Run through each room.
 
 /* Update Data for Errors */
 $xmlData['getActiveUsers']['errStr'] = (string) $errStr;
-$xmlData['getActiveUsers']['errDesc'] = (string) $errDesc;
 
 
 

@@ -59,6 +59,7 @@ else {
     ),
   ));
 
+
   if (isset($_SERVER['HTTP_LAST_EVENT_ID'])) {
     $lastMessageId = $_SERVER['HTTP_LAST_EVENT_ID']; // Get the message ID used for keeping state data; e.g. 1-2-3
     $lastMessageIdParts = explode('-', $lastMessageId); // Get each state part; e.g. array(1, 2, 3)
@@ -105,20 +106,16 @@ else {
 
       $eventsOutput = array();
 
-      if (is_array($events)) {
-        if (count($events) > 0) {
-          foreach ($events AS $event) {
-            echo "event: " . $event['eventName'] . "\n";
-            echo "data: " . json_encode($event) . "\n";
-            echo "id: m" . (int) $request['lastMessage'] . "-u" . (int) $request['lastUnreadMessage'] . "-e" . (int) $request['lastEvent'] . ";\n\n";
+      if (count($events) > 0) {
+        foreach ($events AS $event) {
+          echo "event: " . $event['eventName'] . "\n";
+          echo "data: " . json_encode($event) . "\n";
+          echo "id: m" . (int) $request['lastMessage'] . "-u" . (int) $request['lastUnreadMessage'] . "-e" . (int) $request['lastEvent'] . ";\n\n";
 
-            $request['lastEvent'] = $event['eventId'];
+          $request['lastEvent'] = $event['eventId'];
 
-            fim_flush();
-            $outputStarted = true;
-
-            ($hook = hook('getMessages_watchRooms_eachRoom') ? eval($hook) : '');
-          }
+          fim_flush();
+          $outputStarted = true;
         }
       }
 
@@ -134,8 +131,6 @@ else {
     }
 
 
-
-
     if (($serverSentRetries > $config['serverSentMaxRetries'])
       || ($config['serverSentFastCGI'] && $outputStarted)) {
       echo "id: m" . (int) $request['lastMessage'] . "-u" . (int) $request['lastUnreadMessage'] . "-e" . (int) $request['lastEvent'] . "\n";
@@ -144,8 +139,6 @@ else {
       exit;
     }
     else {
-      ($hook = hook('getMessages_postMessages_serverSentEvents_repeat') ? eval($hook) : '');
-
       usleep($config['serverSentEventsWait'] * 1000000); // Wait before re-requesting. usleep delays in microseconds (millionths of seconds).
     }
   }
