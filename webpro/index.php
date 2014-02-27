@@ -43,7 +43,13 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
     <!-- START Scripts -->
 
     <!--[if IE]><script src="client/js/fim-ie.js" type="text/javascript"></script><![endif]-->
-    <script src="client/js/jquery-1.7.1.min.js" type="text/javascript"></script>
+    <!--<script src="client/js/jquery-1.7.1.min.js" type="text/javascript"></script>-->
+
+    <!--[if lt IE 9]><script src="client/js/jquery-1.11.0.min.js"></script><![endif]-->
+    <!--[if gte IE 9]><!--><script src="client/js/jquery-2.1.0.min.js"></script><!--<![endif]-->
+    <!--<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>-->
+
+
     <script src="client/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
     <script src="client/js/jquery.plugins.js" type="text/javascript"></script>
     <script src="client/js/paint.js" type="text/javascript"></script>
