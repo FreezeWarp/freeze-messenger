@@ -159,230 +159,177 @@ $xmlData = array(
 
 
 
-/* Plugin Hook Start */
-($hook = hook('editRoom_start') ? eval($hook) : '');
+if ($action !== 'create') {
+  $room = $slaveDatabase->getRoom($request['roomId']);
+
+  if (!fim_hasPermission($room, $user, 'admin', true)) {
+    $errStr = 'noPerm';
+  }
+}
 
 
 
 /* Start Processing */
-switch($request['action']) {
-  case 'create':
-  case 'edit':
-  if ($request['action'] === 'create') {
-    if (!$user['userDefs']['createRooms']) { // Gotta be able to create dem rooms.
-      $errStr = 'noPerm';
-      $errDesc = 'You do not have permission to create rooms.';
-      $continue = false;
-    }
-    elseif ($slaveDatabase->getRoom(false, $request['roomName']) !== false) { // Make sure no other room exists with the same name.
-      $errStr = 'exists';
-      $errDesc = 'The room specified already exists.';
-      $continue = false;
-    }
-
-    $request['roomId'] = 0;
-  }
-  elseif ($request['action'] === 'edit') {
-    $room = $slaveDatabase->getRoom($request['roomId']);
-    if (!$request['roomName']) { $request['roomName'] = $room['roomName']; } // If only a user ID was provided, we will fill in the room name here.
-
-    $data = $slaveDatabase->getRoom(false, $request['roomName']);
-
-    if ($room === false) {
-      $errStr = 'noRoom';
-      $errDesc = 'The room specified does not exist.';
-      $continue = false;
-    }
-    elseif (!fim_hasPermission($room, $user, 'admin', true)) { // The user must be an admin (or, inherently, the room's owner) to edit rooms.
-      $errStr = 'noPerm';
-      $errDesc = 'You do not have permission to edit this room.';
-      $continue = false;
-    }
-    elseif ($room['settings'] & 4) { // Make sure the room hasn't been deleted.
-      $errStr = 'deleted';
-      $errDesc = 'The room has been deleted - it can not be edited.';
-      $continue = false;
-    }
-    elseif ($data !== false && $data['roomId'] !== $room['roomId']) { // Make sure no other room with that name exists (if no room is found, the result is false), and that, of course, this only applies if the user just specified the current room's existing name.
-      $errStr = 'exists';
-      $errDesc = 'The room name specified already exists.';
-      $continue = false;
-    }
-  }
-  else { die('Internal Logic Error'); }
+if (!$errStr) {
+  switch($request['action']) {
+    case 'create':
+    case 'edit':
+    $data = $slaveDatabase->getRooms(array(
+      'roomNames' => array($request['roomName'])
+    ))->getAsArray(false);
 
 
-  if ($continue) {
-    if (strlen($request['roomName']) == 0) {
-      $errStr = 'noName';
-      $errDesc = 'A room name was not supplied.';
-    }
-    elseif (strlen($request['roomName']) < $config['roomLengthMinimum']) {
-      $errStr = 'shortName';
-      $errParam = $config['roomLengthMinimum'];
-      $errDesc = 'The room name specified is too short.';
-    }
-    elseif (strlen($request['roomName']) > $config['roomLengthMaximum']) {
-      $errStr = 'longName';
-      $errParam = $config['roomLengthMaximum'];
-      $errDesc = 'The room name specified is too long.';
-    }
-    else {
-      /* Censor */
-      if (count($request['censor']) > 0) {
-        $lists = $database->getCensorLists(array(
-          'activeStatus' => 'active',
-        ))->getAsArray(array('listId', 'roomId'));
-
-        $lists[0][3]['status']
-
-
-        foreach ($listsActive AS $active) {
-          $listStatus[$active['listId']] = $active['status'];
-        }
-
-        foreach($request['censor'] AS $listId => $status) {
-          $listsNew[$listId] = (bool) $status;
-        }
-
-        foreach ($lists AS $listId => $prelist) {
-          foreach ($prelist AS $roomId => $)
-          if (isset($lists[$list['listId']][$room['roomId']])) {
-            if ($list['type'] == 'black' && $lists[$list['listId']] == 'block') $checked = true;
-            elseif ($list['type'] == 'white' && $listStatus[$list['listId']] != 'unblock') $checked = true;
-            else $checked = false;
-          }
-          else {
-            if ($list['type'])
-          }
-
-          if ($checked == true && !$listsNew[$list['listId']]) {
-            $database->insert("{$sqlPrefix}censorBlackWhiteLists", array(
-              'roomId' => $room['roomId'],
-              'listId' => $list['listId'],
-              'status' => 'unblock'
-            ), array(
-              'status' => 'unblock',
-            ));
-          }
-          elseif ($checked == false && $listsNew[$list['listId']]) {
-            $database->insert("{$sqlPrefix}censorBlackWhiteLists", array(
-              'roomId' => $room['roomId'],
-              'listId' => $list['listId'],
-              'status' => 'block'
-            ), array(
-              'status' => 'block',
-            ));
-          }
-        }
+    if ($request['action'] === 'create') {
+      if (!$user['userDefs']['createRooms']) { // Gotta be able to create dem rooms.
+        $errStr = 'noPerm';
+        $errDesc = 'You do not have permission to create rooms.';
+        $continue = false;
+      }
+      elseif (count($data) > 0) { // Make sure no other room exists with the same name.
+        $errStr = 'exists';
+        $errDesc = 'The room specified already exists.';
+        $continue = false;
       }
 
-      
-      /* Options */
-      $options = 0;
-      
-      if ($config['officialRooms'] && $user['adminDefs']['modRooms']) $options += 1;
-      if ($config['hiddenRooms'] && $request['hidden']) $options += 8;
-      if ($request['allowViewing']) $options += 32;
-      
-      
-      /* Submit */
-      if ($request['action'] === 'create') {
-        if ($database->insert("{$sqlPrefix}rooms", array(
-          'roomName' => $request['roomName'],
-          'owner' => (int) $user['userId'],
-          'defaultPermissions' => (int) $request['defaultPermissions'],
-          'parentalAge' => $request['parentalAge'],
-          'parentalFlags' => implode(',', $request['parentalFlags']),
-          'options' => $options,
-        ))) {
-          $roomId = $database->insertId;
+      $room['roomId'] = 0;
+    }
+    elseif ($request['action'] === 'edit') {
+      if (!$request['roomName']) { $request['roomName'] = $room['roomName']; } // If only a room ID was provided, we will fill in the room name here.
 
-          $xmlData['editRoom']['response']['insertId'] = $roomId;
-        }
-        else {
-          $errStr = 'unknown';
-          $errDesc = 'Room created failed for unknown reasons.';
-
-          $roomId = 0;
-        }
+      if ($room === false) {
+        $errStr = 'noRoom';
+        $errDesc = 'The room specified does not exist.';
+        $continue = false;
       }
-      elseif ($request['action'] === 'edit') {
-        if ($database->update("{$sqlPrefix}rooms", array(
-            'roomName' => $request['roomName'],
-            'defaultPermissions' => (int) $request['defaultPermissions'],
-            'parentalAge' => $request['parentalAge'],
-            'parentalFlags' => implode(',', $request['parentalFlags']),
-            'options' => $options,
-          ), array(
-            'roomId' => $room['roomId'],
-          )
-        )) {
-          $roomId = $room['roomId'];
-        }
-        else {
-          $errStr = 'unknown';
-          $errDesc = 'Room created failed for unknown reasons.';
+      elseif (!fim_hasPermission($room, $user, 'admin', true)) { // The user must be an admin (or, inherently, the room's owner) to edit rooms.
+        $errStr = 'noPerm';
+        $errDesc = 'You do not have permission to edit this room.';
+        $continue = false;
+      }
+      elseif ($room['settings'] & 4) { // Make sure the room hasn't been deleted.
+        $errStr = 'deleted';
+        $errDesc = 'The room has been deleted - it can not be edited.';
+        $continue = false;
+      }
+      elseif (count($data) > 0 && $data['roomId'] !== $room['roomId']) { // Make sure no other room with that name exists (if no room is found, the result is false), and that, of course, this only applies if the user just specified the current room's existing name.
+        $errStr = 'exists';
+        $errDesc = 'The room name specified already exists.';
+        $continue = false;
+      }
+    }
 
-          $roomId = 0;
-        }
+
+    if ($continue) {
+      if (strlen($request['roomName']) == 0) {
+        $errStr = 'noName';
+        $errDesc = 'A room name was not supplied.';
+      }
+      elseif (strlen($request['roomName']) < $config['roomLengthMinimum']) {
+        $errStr = 'shortName';
+        $errParam = $config['roomLengthMinimum'];
+        $errDesc = 'The room name specified is too short.';
+      }
+      elseif (strlen($request['roomName']) > $config['roomLengthMaximum']) {
+        $errStr = 'longName';
+        $errParam = $config['roomLengthMaximum'];
+        $errDesc = 'The room name specified is too long.';
       }
       else {
-        die('Internal Logic Error');
+        /* Censor */
+        if (count($request['censor']) > 0) {
+          $lists = $database->getCensorLists(array(
+            'activeStatus' => 'active',
+            'roomIds' => array($room['roomId']),
+            ))->getAsArray(array('listId'));// var_dump($lists); die();
+
+          foreach ($lists AS $listId => $list) {
+            if ($list['type'] == 'black' && $lists[$list['listId']] == 'block') $checked = true;
+            elseif ($list['type'] == 'white' && $listStatus[$list['listId']] != 'unblock') $checked = true;
+
+            if ($checked == true && !$request['censor'][$list['listId']]) {
+              $database->setCensorList($room['roomId'], $list['listId'], 'unblock');
+            }
+            elseif ($checked == false && $request['censor'][$list['listId']]) {
+              $database->setCensorList($room['roomId'], $list['listId'], 'block');
+            }
+          }
+        }
+
+
+        /* Options */
+
+
+        $columns = array(
+          'roomName' => $request['roomName'],
+          'defaultPermissions' => (int) $request['defaultPermissions'],
+          'roomParentalAge' => $request['parentalAge'],
+          'roomParentalFlags' => implode(',', $request['parentalFlags']),
+        );
+
+        if (isset($request['officialRoom']) && $config['officialRooms'] && $user['adminDefs']['modRooms']) {
+          $columns['officialRoom'] = $request['officialRoom'];
+        }
+
+        if (isset($request['hiddenRoom']) && $config['hiddenRooms']) {
+          $columns['hiddenRoom'] = $request['hiddenRoom'];
+        }
+
+        if ($request['action'] === 'create') {
+          $columns['owner'] = (int) $user['userId'],
+        }
+
+
+        /* Submit */
+        if ($request['action'] === 'create') {
+          if ($roomId = $database->editRoom(0, $columns)) {
+            $xmlData['editRoom']['response']['insertId'] = $roomId;
+          }
+          else {
+            $errStr = 'unknown';
+            $errDesc = 'Room created failed for unknown reasons.';
+
+            $roomId = 0;
+          }
+        }
+        elseif ($request['action'] === 'edit') {
+          if ($database->editRoom($room['roomId'], $columns)) {
+            $xmlData['editRoom']['response']['insertId'] = $room['roomId'];
+          }
+          else {
+            $errStr = 'unknown';
+            $errDesc = 'Room created failed for unknown reasons.';
+
+            $roomId = 0;
+          }
+        }
       }
     }
-  }
-  break;
+    break;
 
-  case 'delete':
-  $room = $slaveDatabase->getRoom($request['roomId']);
-
-  if (fim_hasPermission($room, $user, 'admin', true)) {
-    if ($room['options'] & 4) {
+    case 'delete':
+    if ($room['options'] & ROOM_DELETED) {
       $errStr = 'nothingToDo';
       $errDesc = 'The room is already deleted.';
     }
     else {
-      $room['options'] += 4; // options & 4 = deleted
-
-      $database->update("{$sqlPrefix}rooms", array(
-          'options' => (int) $room['options'],
-        ), array(
-          'roomId' => (int) $room['roomId'],
-        )
-      );
+      $database->editRoom($room['roomId'], array(
+        'deleted' => true
+      ));
     }
-  }
-  else {
-    $errStr = 'noPerm';
-    $errDesc = 'You are not allowed to undelete this room.';
-  }
-  break;
+    break;
 
-  case 'undelete':
-  $room = $slaveDatabase->getRoom($request['roomId']);
-
-  if (fim_hasPermission($room, $user, 'admin', true)) {
-    if ($room['options'] & 4) {
+    case 'undelete':
+    if (!($room['options'] & ROOM_DELETED)) {
       $errStr = 'nothingToDo';
       $errDesc = 'The room is already deleted.';
     }
     else {
-      $room['options'] += 4; // options & 4 = deleted
-
-      $database->update("{$sqlPrefix}rooms", array(
-          'options' => (int) $room['options'],
-        ), array(
-          'roomId' => (int) $room['roomId'],
-        )
-      );
+      $database->editRoom($room['roomId'], array(
+        'deleted' => false
+      ));
     }
+    break;
   }
-  else {
-    $errStr = 'noPerm';
-    $errDesc = 'You are not allowed to undelete this room.';
-  }
-  break;
 }
 
 

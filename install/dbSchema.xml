@@ -650,7 +650,7 @@
       <def bit="1" comment="If false, the list is considered inactive and is neither used nor shown to users under any circumstances.">Enabled</def>
       <def bit="2" comment="If true, the list can not be disabled by non-administrators.">Required</def>
       <def bit="4" comment="If true, the list is not 'shown' to users. The authors of FIM really don't like this option, but provide it anyway.">Hidden</def>
-      <def bit="256" comment="If true, the list is automatically disabled in private and OTR communication.">Hidden</def>
+      <def bit="256" comment="If true, the list is automatically disabled in private and OTR communication.">Disabled in Private/OTR</def>
     </bitfield>
 
     <bitfield name="defaultPermissions" table="rooms">
@@ -672,12 +672,10 @@
     </bitfield>
 
     <bitfield name="options" table="users">
-      <def bit="1" comment="By default, a user is considered banned -- this is mainly to ease integration headaches, where users automatically gain access to the system where they maybe shouldn't. FIM's default integration servers automatically set this, however.">Allowed</def>
-      <def bit="512" comment="Disallows a user from creating and being part of OTR and private rooms.">Block Private Contact</def>
-      <def bit="1024" comment="Disallows a user from creating and being part of OTR and private rooms where any user is not on the user's friend list.">Block Non-Friends for Private Contact</def>
+
     </bitfield>
 
-    <bitfield name="adminPrivs" table="defaultPermissions">
+    <bitfield name="adminPrivs" table="users">
       <def bit="1" comment="">Grant Permissions</def>
       <def bit="2" comment="Only the site owner may alter this user's permissions. The site owner is set in config.php.">Untouchable</def>
       
@@ -691,11 +689,12 @@
     </bitfield>
 
     <bitfield name="userPrivs" table="users">
-      <def bit="16">Is Not Banned</def>
-      <def bit="32">Can Create Rooms</def>
-      <def bit="64">Can Create Private Rooms</def>
-      <def bit="1024">Active Users Viewable</def>
-      <def bit="2048">Post Counts Viewable</def>
+      <def bit="1" comment="By default, a user is considered banned -- this is mainly to ease integration headaches, where users automatically gain access to the system where they maybe shouldn't. FIM's default integration servers automatically set this, however.">Allowed</def>
+      <def bit="32">Create Rooms</def>
+      <def bit="64" comment="Disallows a user from creating and being part of OTR and private rooms.">Contact Friends for Private Contact</def>
+      <def bit="128" comment="Disallows a user from creating and being part of OTR and private rooms where any user is not on the user's friend list.">Contact Non-Friends for Private Contact</def>
+      <def bit="1024">Active Users</def>
+      <def bit="2048">Post Counts</def>
     </bitfield>
   </definitions>
 </dbSchema>

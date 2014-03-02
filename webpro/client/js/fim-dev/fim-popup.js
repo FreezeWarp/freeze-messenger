@@ -924,14 +924,12 @@ popup = {
 
           $('input[data-cat=parentalFlag]:checked').each(function(a, b) {
             parentalFlags.push($(b).attr('data-name'));
-          });
-
-          censor = censor.join(',');
+          }); console.log(directory + 'api/editRoom.php', 'action=' + action + '&roomId=' +  roomIdLocal + '&roomName=' + fim_eURL(name) + '&defaultPermissions=' + ($('#allowAllUsers').is(':checked') ? '7' : '0' + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups) + '&moderators=' + moderators + '&parentalAge=' + parentalAge + '&parentalFlags=' + parentalFlags + '&censor=' + censor.join(',') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
 
           if (name.length > window.serverSettings.rooms.roomLengthMaximum) dia.error('The roomname is too long.');
           else if (name.length < window.serverSettings.rooms.roomLengthMinimum) dia.error('The roomname is too short.');
           else {
-            $.post(directory + 'api/editRoom.php', 'action=' + action + '&roomId=' +  roomIdLocal + '&roomName=' + fim_eURL(name) + '&defaultPermissions=' + ($('#allowAllUsers').is(':checked') ? '7' : '0' + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups) + '&moderators=' + moderators + '&parentalAge=' + parentalAge + '&parentalFlags=' + parentalFlags + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId, function(json) {
+            $.post(directory + 'api/editRoom.php', 'action=' + action + '&roomId=' +  roomIdLocal + '&roomName=' + fim_eURL(name) + '&defaultPermissions=' + ($('#allowAllUsers').is(':checked') ? '7' : '0' + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups) + '&moderators=' + moderators + '&parentalAge=' + parentalAge + '&parentalFlags=' + parentalFlags + '&censor=' + fim_eURL(censor.join(',')) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId, function(json) {
               var errStr = json.editRoom.errStr,
                 errDesc = json.editRoom.errDesc,
                 createRoomId = json.editRoom.response.insertId;

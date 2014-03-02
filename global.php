@@ -104,6 +104,41 @@ $errDesc = '';
 define("FIM_VERSION", "3.0"); // Version to be used by plugins if needed.
 define("FIM_LANGUAGE", "EN_US"); // No plans to change this exist, but again, just in case...
 
+define("ROOM_OFFICIAL", 1);
+define("ROOM_DELETED", 4);
+define("ROOM_HIDDEN", 8);
+define("ROOM_ARCHIVED", 16);
+define("ROOM_R9000", 256);
+
+define("CENSORLIST_INACTIVE", 1);
+define("CENSORLIST_FORCED", 2);
+define("CENSORLIST_HIDDEN", 4);
+define("CENSORLIST_DISABLED_PRIVATE", 256);
+
+define("ROOM_PERMISSION_VIEW", 1);
+define("ROOM_PERMISSION_POST", 2);
+define("ROOM_PERMISSION_TOPIC", 4);
+define("ROOM_PERMISSION_MODERATE", 8);
+define("ROOM_PERMISSION_PROPERTIES", 16);
+define("ROOM_PERMISSION_GRANT", 128);
+
+define("USER_PRIV_UNBANNED", 1);
+define("USER_PRIV_CREATE_ROOMS", 32);
+define("USER_PRIV_PRIVATE_FRIENDS", 64);
+define("USER_PRIV_PRIVATE_ALL", 128);
+define("USER_PRIV_ACTIVE_USERS", 1024);
+define("USER_PRIV_POST_COUNTS", 2048);
+
+define("ADMIN_GRANT", 1);
+define("ADMIN_PROTECTED", 2);
+define("ADMIN_MODERATOR", 4);
+define("ADMIN_VIEW_PRIVATE", 8);
+define("ADMIN_BAN", 16);
+define("ADMIN_FILES", 64);
+define("ADMIN_CENSOR", 256);
+define("ADMIN_PLUGINS", 4096);
+define("ADMIN_INTERFACES", 8192);
+
 
 
 

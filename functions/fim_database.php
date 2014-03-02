@@ -695,6 +695,7 @@ class fimDatabase extends databaseSQL
   {
     $options = array_merge(array(
       'roomIds'            => array(),
+      'roomNames'          => array(),
       'ownerIds'           => array(),
       'parentalAgeMin'     => 0,
       'parentalAgeMax'     => 0,
@@ -715,8 +716,9 @@ class fimDatabase extends databaseSQL
 //  	if ($options['showDeleted']) $conditions['both']['options'] = $this->int(8, 'bAnd'); // TODO: Permission?
 //    else $conditions['both'] = array('!options' => $this->int(8, 'bAnd'));
 
-    if (count($options['roomIds']) > 0) $conditions['both']['roomId'] = $this->in($options['roomIds']);
-    if ($options['roomNameSearch']) $conditions['both']['roomName'] = $this->type('string', $options['roomNameSearch'], 'search');
+    if (count($options['roomIds']) > 0) $conditions['both']['either']['roomId'] = $this->in($options['roomIds']);
+    if (count($options['roomNames']) > 0) $conditions['both']['either']['roomName'] = $this->in($options['roomNames']);
+    if ($options['roomNameSearch']) $conditions['both']['either']['roomName'] = $this->type('string', $options['roomNameSearch'], 'search');
 
     if ($options['parentalAgeMin'] > 0) $conditions['both']['roomParentalAge'] = $this->int($options['parentalAgeMin'], 'gte');
     if ($options['parentalAgeMax'] > 0) $conditions['both']['roomParentalAge'] = $this->int($options['parentalAgeMax'], 'lte');
@@ -829,6 +831,55 @@ class fimDatabase extends databaseSQL
     return $user = $this->getUsers(array(
       'userIds' => array($userId)
     ))->getAsArray(false);
+  }
+
+
+
+  public function setCensorList($roomId, $listId, $status) {
+    $this->modLog('unblockCensorList', $roomId . ',' . $listId);
+
+    $this->insert($this->sqlPrefix . "censorBlackWhiteLists", array(
+      'roomId' => $roomId,
+      'listId' => $listId,
+      'status' => $status
+    ), array(
+      'status' => $status,
+    ));
+  }
+
+
+
+  public function editRoom($roomId, $options) {
+    $options = array_merge(array(
+      'roomName' => '',
+      'owner' => 0,
+      'defaultPermissions' => 0,
+      'roomParentalAge' => 0,
+      'roomParentalFlags' => array(),
+      'officialRoom' => false,
+      'hiddenRoom' => false,
+      'deleted' => false,
+    ), $options);
+
+    $columns = array(
+      'roomName' => $options['roomName'],
+      'owner' => (int) $options['owner'],
+      'defaultPermissions' => (int) $options['defaultPermissions'],
+      'roomParentalAge' => $options['roomParentalAge'],
+      'roomParentalFlags' => implode(',', $options['roomParentalFlags']),
+      'options' => $options,
+    );
+
+    if (!$roomId) {
+      $this->insert($this->sqlPrefix . "rooms", $columns);
+
+      return $this->insertId;
+    }
+    else {
+      return $this->update($this->sqlPrefix . "rooms", $columns, array(
+        'roomId' => $roomId,
+      ));
+    }
   }
 
 
