@@ -243,8 +243,8 @@ else {
       'showDeleted' => $request['showDeleted'],
       'archive' => $request['archive'],
       'longPolling' => $request['longPolling'],
-      'users' => $request['users'],
-      'rooms' => $request['roomId'],
+      'userIds' => $request['users'],
+      'roomIds' => $request['roomId'],
     ))->getAsArray(true);
 
 

@@ -71,7 +71,9 @@ var topic,
     lastMessage : 0,
     lastEvent : 0
   },
-  timers = {t1 : false}; // Object
+  timers = {t1 : false}, // Object
+  messageSource,
+  eventSource;
 
 
 

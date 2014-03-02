@@ -361,9 +361,9 @@ var standard = {
       }
 
       if (requestSettings.serverSentEvents) { // Note that the event subsystem __requires__ serverSentEvents for various reasons. If you use polling, these events will no longer be fully compatible.
-        var messageSource = new EventSource(directory + 'apiStream/messageStream.php?roomId=' + roomId + '&lastMessage=' + requestSettings.lastMessage + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
+        messageSource = new EventSource(directory + 'apiStream/messageStream.php?roomId=' + roomId + '&lastMessage=' + requestSettings.lastMessage + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
 
-        var eventSource = new EventSource(directory + 'apiStream/eventStream.php?roomId=' + roomId + '&lastEvent=' + requestSettings.lastEvent + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
+        eventSource = new EventSource(directory + 'apiStream/eventStream.php?roomId=' + roomId + '&lastEvent=' + requestSettings.lastEvent + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
 
         console.log('Starting EventSource; roomId: ' + roomId + '; lastEvent: ' + requestSettings.lastEvent + '; lastMessage: ' + requestSettings.lastMessage)
 
@@ -573,6 +573,8 @@ var standard = {
     if (!roomIdLocal) {
       return false;
     }
+
+    if (typeof messageSource != "undefined") messageSource.close();
 
     if (roomIdLocal.toString().substr(0,1) === 'p') { // If the roomId string corresponds to a private room, we must query getPrivateRoom, among other things. [[TODO: windowDynaLinks]]
       $.ajax({
