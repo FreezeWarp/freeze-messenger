@@ -29,10 +29,13 @@ img {
 
 /***** Menu *****/
 
-#menu {
+#menuParent {
   float: left;
-  width: 25%;
+  width: 24%;
+}
+#menu {
   padding: 4px;
+  width: 100%;
 }
 #menu div, #menu ul {
   width: 100%;
@@ -69,6 +72,15 @@ img {
 #youtubeResultsContainer {
   height: 320px;
   overflow: auto;
+}
+
+table#youtubeResults {
+  table-layout: fixed;
+}
+
+table#youtubeResults td {
+  text-align: center;
+  width: 33%;
 }
 
 #textentryBoxUpload, #textentryBoxYoutube, #textentryBoxUrl {

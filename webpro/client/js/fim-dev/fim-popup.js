@@ -146,132 +146,137 @@ popup = {
           
         /* Form Stuff */
         $('#fileUpload, #urlUpload').unbind('change'); // Prevent duplicate binds.
-        $('#uploadFileForm, #uploadUrlForm, #linkForm. #uploadYoutubeForm').unbind('submit'); // Disable default submit action.
+        $('#uploadFileForm, #uploadUrlForm, #linkForm, #uploadYoutubeForm').unbind('submit'); // Disable default submit action.
         $('#imageUploadSubmitButton').attr('disabled', 'disabled').button({ disabled: true }); // Disable submit button until conditions are fulfilled.
         
         
         /* File Upload Info */
-        serverSettings.fileUploads.extensionChangesReverse = new Object();
-        
-        for (i in serverSettings.fileUploads.extensionChanges) {
-          var extension = serverSettings.fileUploads.extensionChanges[i];
-          
-          if (!(extension in serverSettings.fileUploads.extensionChangesReverse))
-            serverSettings.fileUploads.extensionChangesReverse[extension] = [extension];
-          
-          serverSettings.fileUploads.extensionChangesReverse[extension].push(i);
-        }
-
-        for (i in serverSettings.fileUploads.allowedExtensions) {
-          var maxFileSize = serverSettings.fileUploads.sizeLimits[serverSettings.fileUploads.allowedExtensions[i]],
-            fileContainer = serverSettings.fileUploads.fileContainers[serverSettings.fileUploads.allowedExtensions[i]],
-            fileExtensions = serverSettings.fileUploads.extensionChangesReverse[serverSettings.fileUploads.allowedExtensions[i]];
-
-          $('table#fileUploadInfo tbody').append('<tr><td>' + (fileExtensions ? fileExtensions.join(', ') : serverSettings.fileUploads.allowedExtensions[i]) + '</td><td>' + $l('fileContainers.' + fileContainer) + '</td><td>' + $.formatFileSize(maxFileSize, $l('byteUnits')) + '</td></tr>');
-        }
-
-
-        /* File Upload Form */
-        if (typeof FileReader !== 'function') {
-          $('#uploadFileForm').html($l('uploadErrors.notSupported'));
+        if (!('fileUploads' in serverSettings)) {
+          $('#insertDocUpload').html('Disabled.');
         }
         else {
-          /* Parental Controls */
-          if (!serverSettings.parentalControls.parentalEnabled) { // Hide if Subsystem is Disabled
-            $('#insertDocParentalAge, #insertDocParentalFlags').remove();
+          serverSettings.fileUploads.extensionChangesReverse = new Object();
+
+          for (i in serverSettings.fileUploads.extensionChanges) {
+            var extension = serverSettings.fileUploads.extensionChanges[i];
+
+            if (!(extension in serverSettings.fileUploads.extensionChangesReverse))
+              serverSettings.fileUploads.extensionChangesReverse[extension] = [extension];
+
+            serverSettings.fileUploads.extensionChangesReverse[extension].push(i);
+          }
+
+          for (i in serverSettings.fileUploads.allowedExtensions) {
+            var maxFileSize = serverSettings.fileUploads.sizeLimits[serverSettings.fileUploads.allowedExtensions[i]],
+              fileContainer = serverSettings.fileUploads.fileContainers[serverSettings.fileUploads.allowedExtensions[i]],
+              fileExtensions = serverSettings.fileUploads.extensionChangesReverse[serverSettings.fileUploads.allowedExtensions[i]];
+
+            $('table#fileUploadInfo tbody').append('<tr><td>' + (fileExtensions ? fileExtensions.join(', ') : serverSettings.fileUploads.allowedExtensions[i]) + '</td><td>' + $l('fileContainers.' + fileContainer) + '</td><td>' + $.formatFileSize(maxFileSize, $l('byteUnits')) + '</td></tr>');
+          }
+
+
+          /* File Upload Form */
+          if (typeof FileReader !== 'function') {
+            $('#uploadFileForm').html($l('uploadErrors.notSupported'));
           }
           else {
-            for (i in serverSettings.parentalControls.parentalAges) {
-              $('#parentalAge').append('<option value="' + serverSettings.parentalControls.parentalAges[i] + '">' + $l('parentalAges.' + serverSettings.parentalControls.parentalAges[i]) + '</option>');
+            /* Parental Controls */
+            if (!serverSettings.parentalControls.parentalEnabled) { // Hide if Subsystem is Disabled
+              $('#insertDocParentalAge, #insertDocParentalFlags').remove();
             }
-
-            for (i in serverSettings.parentalControls.parentalFlags) {
-              $('#parentalFlagsList').append('<br /><label><input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + serverSettings.parentalControls.parentalFlags[i] + '" />' + $l('parentalFlags.' + serverSettings.parentalControls.parentalFlags[i]) + '</label>');
-            }
-          }
-
-
-          /* Previewer for Files */
-          $('#fileUpload').bind('change', function() {
-            var reader = new FileReader(),
-              reader2 = new FileReader();
-
-            console.log('FileReader triggered.');
-            $('#imageUploadSubmitButton').attr('disabled', 'disabled').button({ disabled: true }); // Redisable the submit button if it has been enabled prior.
-
-            if (this.files.length === 0) dia.error('No files selected!');
-            else if (this.files.length > 1) dia.error('Too many files selected!');
             else {
-              console.log('FileReader started.');
-
-              // File Information
-              fileName = this.files[0].name,
-                fileSize = this.files[0].size,
-                fileContent = '',
-                fileParts = fileName.split('.'),
-                filePartsLast = fileParts[fileParts.length - 1];
-              
-              // If there are two identical file extensions (e.g. jpg and jpeg), we only process the primary one. This converts a secondary extension to a primary.
-              if (filePartsLast in serverSettings.fileUploads.extensionChanges) {
-                filePartsLast = serverSettings.fileUploads.extensionChanges[filePartsLast];
+              for (i in serverSettings.parentalControls.parentalAges) {
+                $('#parentalAge').append('<option value="' + serverSettings.parentalControls.parentalAges[i] + '">' + $l('parentalAges.' + serverSettings.parentalControls.parentalAges[i]) + '</option>');
               }
 
-              if ($.inArray(filePartsLast, $.toArray(serverSettings.fileUploads.allowedExtensions)) === -1) {
-                $('#uploadFileFormPreview').html($l('uploadErrors.badExtPersonal'));
-              }
-              else if ((fileSize) > serverSettings.fileUploads.sizeLimits[filePartsLast]) {
-                $('#uploadFileFormPreview').html($l('uploadErrors.tooLargePersonal', {
-                  'fileSize' : serverSettings.fileUploads.sizeLimits[filePartsLast]
-                }));
-              }
-                else {
-                $('#uploadFileFormPreview').html('Loading Preview...');
-                
-                reader.readAsBinaryString(this.files[0]);
-                reader.onloadend = function() {
-                  fileContent = window.btoa(reader.result);
-                  md5hash = md5.hex_md5(fileContent);
-                };
-
-                reader2.readAsDataURL(this.files[0]);
-                reader2.onloadend = function() {
-                  $('#uploadFileFormPreview').html(fim_messagePreview(serverSettings.fileUploads.fileContainers[filePartsLast], this.result));
-                };
-                
-                $('#imageUploadSubmitButton').removeAttr('disabled').button({ disabled: false });
+              for (i in serverSettings.parentalControls.parentalFlags) {
+                $('#parentalFlagsList').append('<br /><label><input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + serverSettings.parentalControls.parentalFlags[i] + '" />' + $l('parentalFlags.' + serverSettings.parentalControls.parentalFlags[i]) + '</label>');
               }
             }
-          });
 
 
-          /* Submit Upload */
-          $('#uploadFileForm').bind('submit', function() {
-            parentalAge = $('#parentalAge option:selected').val(),
-            parentalFlags = [];
+            /* Previewer for Files */
+            $('#fileUpload').bind('change', function() {
+              var reader = new FileReader(),
+                reader2 = new FileReader();
 
-            $('input[data-cat=parentalFlag]:checked').each(function(a, b) {
-              parentalFlags.push($(b).attr('data-name'));
+              console.log('FileReader triggered.');
+              $('#imageUploadSubmitButton').attr('disabled', 'disabled').button({ disabled: true }); // Redisable the submit button if it has been enabled prior.
+
+              if (this.files.length === 0) dia.error('No files selected!');
+              else if (this.files.length > 1) dia.error('Too many files selected!');
+              else {
+                console.log('FileReader started.');
+
+                // File Information
+                fileName = this.files[0].name,
+                  fileSize = this.files[0].size,
+                  fileContent = '',
+                  fileParts = fileName.split('.'),
+                  filePartsLast = fileParts[fileParts.length - 1];
+
+                // If there are two identical file extensions (e.g. jpg and jpeg), we only process the primary one. This converts a secondary extension to a primary.
+                if (filePartsLast in serverSettings.fileUploads.extensionChanges) {
+                  filePartsLast = serverSettings.fileUploads.extensionChanges[filePartsLast];
+                }
+
+                if ($.inArray(filePartsLast, $.toArray(serverSettings.fileUploads.allowedExtensions)) === -1) {
+                  $('#uploadFileFormPreview').html($l('uploadErrors.badExtPersonal'));
+                }
+                else if ((fileSize) > serverSettings.fileUploads.sizeLimits[filePartsLast]) {
+                  $('#uploadFileFormPreview').html($l('uploadErrors.tooLargePersonal', {
+                    'fileSize' : serverSettings.fileUploads.sizeLimits[filePartsLast]
+                  }));
+                }
+                  else {
+                  $('#uploadFileFormPreview').html('Loading Preview...');
+
+                  reader.readAsBinaryString(this.files[0]);
+                  reader.onloadend = function() {
+                    fileContent = window.btoa(reader.result);
+                    md5hash = md5.hex_md5(fileContent);
+                  };
+
+                  reader2.readAsDataURL(this.files[0]);
+                  reader2.onloadend = function() {
+                    $('#uploadFileFormPreview').html(fim_messagePreview(serverSettings.fileUploads.fileContainers[filePartsLast], this.result));
+                  };
+
+                  $('#imageUploadSubmitButton').removeAttr('disabled').button({ disabled: false });
+                }
+              }
             });
 
-            fim_showLoader();
 
-            $.ajax({
-              url : directory + 'api/editFile.php',
-              type : 'POST',
-              data : 'action=create&dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&fileName=' + fileName + '&parentalAge=' + parentalAge + '&parentalFlags=' + parentalFlags.join(',') + '&fileData=' + fim_eURL(fileContent) + '&md5hash=' + md5hash + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-              cache : false,
-              success : function(json) {
-                if (json.editFile.errStr) $l('uploadErrors.' + errStr);
-                else $('#insertDoc').dialog('close');
-              },
-              error : function() {
-                dia.error($l('uploadErrors.other'));
-              },
-              finish : fim_hideLoader(),
+            /* Submit Upload */
+            $('#uploadFileForm').bind('submit', function() {
+              parentalAge = $('#parentalAge option:selected').val(),
+              parentalFlags = [];
+
+              $('input[data-cat=parentalFlag]:checked').each(function(a, b) {
+                parentalFlags.push($(b).attr('data-name'));
+              });
+
+              fim_showLoader();
+
+              $.ajax({
+                url : directory + 'api/editFile.php',
+                type : 'POST',
+                data : 'action=create&dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&fileName=' + fileName + '&parentalAge=' + parentalAge + '&parentalFlags=' + parentalFlags.join(',') + '&fileData=' + fim_eURL(fileContent) + '&md5hash=' + md5hash + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+                cache : false,
+                success : function(json) {
+                  if (json.editFile.errStr) $l('uploadErrors.' + errStr);
+                  else $('#insertDoc').dialog('close');
+                },
+                error : function() {
+                  dia.error($l('uploadErrors.other'));
+                },
+                finish : fim_hideLoader(),
+              });
+
+              return false;
             });
-
-            return false;
-          });
+          }
         }
 
         
@@ -574,7 +579,7 @@ popup = {
         if (window.webproDisplay.fontSize) $('#fontsize > option[value="' + window.webproDisplay.fontSize + '"]').attr('selected', 'selected');
 
         // Only Show the Profile Setting if Using Vanilla Logins
-        if (serverSettings.branding.forumType !== 'vanilla') $('#settings5profile').hide(0);
+        if (window.serverSettings.branding.forumType !== 'vanilla') $('#settings5profile').hide(0);
 
         // Autocomplete Rooms and Users
         $("#defaultRoom").autocomplete({ source: roomList });
@@ -587,15 +592,15 @@ popup = {
         }
 
         // Parental Controls
-        if (!serverSettings.parentalControls.parentalEnabled) { // Hide if Subsystem is Disabled
+        if (!window.serverSettings.parentalControls.parentalEnabled) { // Hide if Subsystem is Disabled
           $('a[href="#settings5"]').parent().remove();
         }
         else {
-          for (i in serverSettings.parentalControls.parentalAges) {
-            $('#parentalAge').append('<option value="' + serverSettings.parentalControls.parentalAges[i] + '">' + $l('parentalAges.' + serverSettings.parentalControls.parentalAges[i]) + '</option>');
+          for (i in window.serverSettings.parentalControls.parentalAges) {
+            $('#parentalAge').append('<option value="' + window.serverSettings.parentalControls.parentalAges[i] + '">' + $l('parentalAges.' + window.serverSettings.parentalControls.parentalAges[i]) + '</option>');
           }
-          for (i in serverSettings.parentalControls.parentalFlags) {
-            $('#parentalFlagsList').append('<br /><label><input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + serverSettings.parentalControls.parentalFlags[i] + '" />' +  $l('parentalFlags.' + serverSettings.parentalControls.parentalFlags[i]) + '</label>');
+          for (i in window.serverSettings.parentalControls.parentalFlags) {
+            $('#parentalFlagsList').append('<br /><label><input type="checkbox" value="true" name="flag' + window.serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + window.serverSettings.parentalControls.parentalFlags[i] + '" />' +  $l('parentalFlags.' + window.serverSettings.parentalControls.parentalFlags[i]) + '</label>');
           }
         }
 

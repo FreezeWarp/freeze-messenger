@@ -682,6 +682,11 @@ $.ajax({
 
     requestSettings.longPolling = false;
     requestSettings.serverSentEvents = false;
+    serverSettings: {
+      parentalControls : {
+        parentalEnabled : false
+      }
+    };
 
     return false;
   }
@@ -1061,6 +1066,7 @@ function windowResize() {
   var windowHeight = $(window).height(); // Get the browser window "viewport" height, excluding scrollbars.
 
   $('#messageList').css('height', (windowHeight - 250)); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
+  $('#menuParent').css('height', windowHeight - 20); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
   $('#messageList').css('max-width', ((windowWidth - 20) * .75)); // Prevent box-stretching. This is common on... many chats.
 
   $('body').css('min-height', windowHeight); // Set the body height to equal that of the window; this fixes many gradient issues in theming.
@@ -1156,7 +1162,7 @@ function updateVids(searchPhrase) {
       num += 1;
 
       if (num % 3 === 1) { html += '<tr>'; }
-      html += '<td><img src="http://i2.ytimg.com/vi/' + video.videoId + '/default.jpg" style="width: 80px; height: 60px;" /><br /><small><a href="javascript: false(0);" onclick="youtubeSend(&apos;' + video.videoId + '&apos;)">' + video.title + '</a></small></td>';
+      html += '<td><img src="http://i2.ytimg.com/vi/' + video.videoId + '/default.jpg" style="width: 120px; height: 90px;" /><br /><small><a href="javascript: false(0);" onclick="youtubeSend(&apos;' + video.videoId + '&apos;)">' + video.title + '</a></small></td>';
       if (num % 3 === 0) { html += '</tr>'; }
     }
 
@@ -1293,7 +1299,7 @@ function windowDraw() {
 
 
   /*** Funky Little Dialog Thing ***/
-  $('.ui-dialog-titlebar').dblclick(function() {
+  $('.ui-dialog-titlebar-tabbed').on('dblclick', function() {
     var newHeight = $(window).height();
     var newWidth = $(window).width();
 
@@ -1712,11 +1718,10 @@ $(document).ready(function() {
 
   /*** Create the Accordion Menu ***/
   $('#menu').accordion({
-    autoHeight: false,
-    navigation: true,
-    clearStyle: true,
+    heightStyle : 'content',
+    navigation : true,
     active : Number($.cookie('webpro_menustate')) - 1,
-    change: function(event, ui) {
+    activate: function(event, ui) {
       var sid = ui.newHeader.children('a').attr('data-itemId');
 
       $.cookie('webpro_menustate', sid, { expires: 14 });
@@ -1765,8 +1770,7 @@ $(document).ready(function() {
   jQTubeUtil.init({
     key: 'AI39si5_Dbv6rqUPbSe8e4RZyXkDM3X0MAAtOgCuqxg_dvGTWCPzrtN_JLh9HlTaoC01hCLZCxeEDOaxsjhnH5p7HhZVnah2iQ',
     orderby: 'relevance',  // *optional -- 'viewCount' is set by default
-    time: 'this_month',   // *optional -- 'this_month' is set by default
-    maxResults: 20   // *optional -- defined as 10 results by default
+    maxResults: 40   // *optional -- defined as 10 results by default
   });
 
 
