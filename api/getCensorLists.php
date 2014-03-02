@@ -41,9 +41,18 @@ $request = fim_sanitizeGPC('g', array(
     'filter' => 'int',
     'evaltrue' => true,
   ),
+  'rooms' => array(
+    'default' => '',
+    'cast' => 'csv',
+    'filter' => 'int',
+    'evaltrue' => true,
+  ),
+  'includeWords' => array(
+    'default' => false,
+    'filter' => 'bool',
+  ),
 ));
-
-
+//; die($censorLists->sourceQuery); //
 
 /* Data Predefine */
 $xmlData = array(
@@ -63,13 +72,16 @@ $xmlData = array(
 /* Get Censor Lists from Slave Database */
 $censorLists = $slaveDatabase->getCensorLists(array(
   'listIds' => $request['lists'],
+  'roomIds' => $request['rooms'],
 ))->getAsArray(array('listId', 'roomId'));
-//var_dump($censorLists); die();
 
-$censorWords = $slaveDatabase->getCensorWords(array(
-  'listIds' => $request['lists'],
-))->getAsArray(array('listId', 'wordId'));
-//var_dump($censorWords); die();
+
+if ($request['includeWords']) {
+  $censorWords = $slaveDatabase->getCensorWords(array(
+    'listIds' => $request['lists'],
+  ))->getAsArray(array('listId', 'wordId'));
+}
+
 
 
 /* Start Processing */
@@ -85,13 +97,15 @@ foreach ($censorLists AS $listId => $lists) { // Run through each censor list re
         'roomStatuses' => array(),
       );
 
-      foreach($censorWords[$list['listId']] AS $wordId => $censorListWord) {
-        $xmlData['getCensorLists']['lists']['list ' . $list['listId']]['words']['word ' . $censorListWord['wordId']] = array(
-          'wordId' => $censorListWord['wordId'],
-          'word' => $censorListWord['word'],
-          'severity' => $censorListWord['severity'],
-          'param' => $censorListWord['param'],
-        );
+      if ($request['includeWords']) {
+        foreach($censorWords[$list['listId']] AS $wordId => $censorListWord) {
+          $xmlData['getCensorLists']['lists']['list ' . $list['listId']]['words']['word ' . $censorListWord['wordId']] = array(
+            'wordId' => $censorListWord['wordId'],
+            'word' => $censorListWord['word'],
+            'severity' => $censorListWord['severity'],
+            'param' => $censorListWord['param'],
+          );
+        }
       }
     }
 

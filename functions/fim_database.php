@@ -92,6 +92,7 @@ class fimDatabase extends databaseSQL
   {
     $options = array_merge(array(
       'listIds'        => array(),
+      'roomIds'        => array(),
       'listNameSearch' => '',
       'activeStatus'   => '',
       'forcedStatus'   => '',
@@ -107,6 +108,25 @@ class fimDatabase extends databaseSQL
 
 
     if ($options['includeStatus']) {
+/*      $columns[$this->sqlPrefix . "censorBlackWhiteLists"] = array(
+        'listId' => array(
+          'alias'  => 'bwListId',
+          'joinOn' => 'listId',
+          ),
+          'roomId',
+          'status',
+        );*/
+
+
+
+      $subColumns = array(
+        $this->sqlPrefix . 'censorBlackWhiteLists' => 'listId, roomId, status'
+      );
+      $subConditions = array();
+      if (count($options['roomIds']) > 0) $subConditions['both']['roomId'] = $this->in($options['roomIds']);
+
+      $columns['sub ' . $this->sqlPrefix . "censorBlackWhiteLists"] = $this->subSelect($subColumns, $subConditions);
+
       $columns[$this->sqlPrefix . "censorBlackWhiteLists"] = array(
         'listId' => array(
           'alias'  => 'bwListId',
@@ -116,6 +136,8 @@ class fimDatabase extends databaseSQL
         'status',
       );
     }
+
+
 
 
     /* Modify Query Data for Directives */

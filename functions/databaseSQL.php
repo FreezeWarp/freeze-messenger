@@ -93,6 +93,8 @@ class databaseSQL extends database {
   public $queryLog = array();
   public $mode = 'SQL';
   public $language = '';
+
+  public $returnQueryString = false;
   
   protected $dbLink = false;
 
@@ -745,14 +747,22 @@ class databaseSQL extends database {
       'limit' => 0
     );
     $reverseAlias = array();
+    $subQueries = array();
 
 
     /* Process Columns (Must be Array) */
     if (is_array($columns)) {
       if (count($columns) > 0) {
         foreach ($columns AS $tableName => $tableCols) {
-          if (strlen($tableName) > 0) { // If the tableName is defined...
-            if (strstr($tableName, ' ') !== false) { // A space can be used to create a table alias, which is sometimes required for different queries.
+          if (strpos($tableName, 'sub ') === 0) {
+            $subQueries[substr($tableName, 4)] = $tableCols;
+          }
+          elseif (strlen($tableName) > 0) { // If the tableName is defined...
+            if (isset($subQueries[$tableName])) {
+              $finalQuery['tables'][] = '(' . $subQueries[$tableName] . ') AS ' . $tableName; // TODO, obviously
+//              $finalQuery['tables'][] = $this->formatValue('tableAlias', $tableParts[0], $tableParts[1]); // Identify the table as [tableName] AS [tableAlias]; note: may be removed if the table is part of a join.
+            }
+            elseif (strstr($tableName, ' ') !== false) { // A space can be used to create a table alias, which is sometimes required for different queries.
               $tableParts = explode(' ', $tableName);
 
               $finalQuery['tables'][] = $this->formatValue('tableAlias', $tableParts[0], $tableParts[1]); // Identify the table as [tableName] AS [tableAlias]; note: may be removed if the table is part of a join.
@@ -779,9 +789,9 @@ class databaseSQL extends database {
                     }
 
                     if ($colAlias['joinOn']) {
-                      $finalQuery['join'][] = $this->formatValue('table', $tableName) . ' ON ' . $reverseAlias[$colAlias['joinOn']] . ' = ' . $this->formatValue('tableColumn', $tableName, $colName);
+                      $joinTableName = array_pop($finalQuery['tables']);;
 
-                      array_pop($finalQuery['tables']);
+                      $finalQuery['join'][] = $joinTableName . ' ON ' . $reverseAlias[$colAlias['joinOn']] . ' = ' . $this->formatValue('tableColumn', $tableName, $colName);
                     }
                     else {
                       $finalQuery['columns'][] = $this->formatValue('tableColumnAlias', $tableName, $colName, $colAlias['alias']);
@@ -821,7 +831,7 @@ class databaseSQL extends database {
 
                 //$finalQuery['columns'][] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd . $this->tableColumnDivider . $this->columnQuoteStart . $columnPartName . $this->columnQuoteStart . ' AS ' . $this->columnAliasQuoteEnd . $columnPartAlias . $this->columnAliasQuoteStart;
                 // $reverseAlias[$columnPartAlias] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd . $this->tableColumnDivider . $this->columnQuoteStart . $columnPartName . $this->columnQuoteStart;
-                
+
                 $finalQuery['columns'][] = $this->formatValue('tableColumnAlias', $tableName, $colPartName, $colPartAlias);
                 $reverseAlias[$colPartAlias] = $this->formatValue('tableColumn', $tableName, $colPartName);
               }
@@ -933,7 +943,16 @@ LIMIT
   ' . $finalQuery['limit'] : '');
 
     /* And Run the Query */
-    return $this->rawQuery($finalQueryText);
+    if ($this->returnQueryString) return $finalQueryText;
+    else return $this->rawQuery($finalQueryText);
+  }
+
+
+  public function subSelect($columns, $conditionArray = false, $sort = false, $limit = false) {
+    $this->returnQueryString = true;
+    $return = $this->select($columns, $conditionArray, $sort, $limit, true);
+    $this->returnQueryString = false;
+    return $return;
   }
   
   
