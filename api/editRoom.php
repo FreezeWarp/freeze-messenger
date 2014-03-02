@@ -230,27 +230,9 @@ switch($request['action']) {
     else {
       /* Censor */
       if (count($request['censor']) > 0) {
-        $lists = $slaveDatabase->select(
-          array(
-            "{$sqlPrefix}censorLists" => 'listId, listName, listType, options'
-          ),
-          array(
-            'both' => array(
-              array(
-                'type' => 'and',
-                'left' => array(
-                  'type' => 'column',
-                  'value' => 'options',
-                ),
-                'right' => array(
-                  'type' => 'int',
-                  'value' => 1,
-                ),
-              ),
-            ),
-          )
-        );
-        $lists = $lists->getAsArray(true);
+        $lists = $database->getCensorLists(array(
+          'activeStatus' => 'active',
+        ));
 
         $listsActive = $database->getRoomCensorLists($request['roomId']);
 

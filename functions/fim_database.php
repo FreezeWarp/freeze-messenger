@@ -555,6 +555,30 @@ class fimDatabase extends databaseSQL
 
 
 
+  public function getModLog($options, $sort = array('time' => 'asc'), $limit = 0, $pagination = 1) {
+
+    $options = array_merge(array(
+      'userIds' => array(),
+      'ips' => array(),
+      'timeMin' => 0,
+      'timeMax' => 0,
+      'actions' => array(),
+    ), $options);
+
+    $columns = array(
+      $this->sqlPrefix => 'id, userId, time, ip, action, data'
+    );
+
+
+
+
+    $this->select($columns, $conditions, $sort);
+
+
+  }
+
+
+
   public function getPermissions($rooms = array())
   {
     // Modify Query Data for Directives (First for Performance)

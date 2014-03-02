@@ -92,6 +92,10 @@ table#youtubeResults td {
   text-align: center;
 }
 
+table#fileUploadInfo td {
+  word-break: break-all;
+}
+
 #fileUpload, #urlUpload {
   width: 300px;
 }
@@ -278,15 +282,15 @@ button.small.ui-widget .ui-icon {
 
 /*** Mobile Screen Layout ***/
 @media screen and (max-width: 800px) {
-    #menu, #content {
-        clear: both;
-        float: none;
-        width: 100%;
-    }
+  #menuParent, #content {
+    clear: both;
+    float: none;
+    width: 100%;
+  }
 
-    .ui-tabs .ui-tabs-nav li {
-        font-size: .8em;
-    }
+  .u  i-tabs .ui-tabs-nav li {
+    font-size: .8em;
+  }
 }
 
 

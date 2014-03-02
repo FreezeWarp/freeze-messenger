@@ -624,6 +624,8 @@ popup = {
           $.cookie('webpro_fontsize', this.value, { expires : 14 });
           window.webproDisplay.fontSize = this.value;
 
+          windowResize();
+
           return false;
         });
 
