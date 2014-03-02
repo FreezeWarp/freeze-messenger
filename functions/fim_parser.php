@@ -258,7 +258,9 @@ class messageParse {
     $stringPiecesAdd = array();
 
     foreach ($stringPieces AS $piece) {
-      if (strlen($piece) >= $config['searchWordMinimum'] && !in_array($piece, $config['searchWordOmissions'])) {
+      if (strlen($piece) >= $config['searchWordMinimum'] &&
+        strlen($piece) <= $config['searchWordMaximum'] &&
+        !in_array($piece, $config['searchWordOmissions'])) {
         $stringPiecesAdd[] = str_replace($config['searchWordConvertsFind'], $config['searchWordConvertsReplace'], $piece);
       }
     }

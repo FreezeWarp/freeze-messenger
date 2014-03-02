@@ -29,7 +29,7 @@ else {
 
     'type' => array(
       'cast' => 'string',
-      'valid' => array('integer', 'bool', 'string', 'float', 'array'),
+      'valid' => array('integer', 'bool', 'string', 'float', 'array', 'associative'),
     ),
   ));
 
@@ -40,7 +40,7 @@ else {
       $config3 = $database->getConfigurations()->getAsArray(true);
 
       foreach ($config3 AS $config2) {
-        if ($config2['type'] == 'array') $config2['value'] = str_replace(',', ', ', $config2['value']);
+        if ($config2['type'] == 'array' || $config2['type'] == 'associative') $config2['value'] = str_replace(',', ', ', $config2['value']);
 
         $rows .= "<tr><td>$config2[directive]</td><td>$config2[type]</td><td>$config2[value]</td><td><a href=\"./moderate.php?do=config&do2=edit&directive=$config2[directive]\"><img src=\"./images/document-edit.png\" /></a></td></tr>";
       }
@@ -78,6 +78,12 @@ else {
           $valueBlock = '<input type="number" name="value" required="required" value="' . $config2['value'] . '" />';
           break;
 
+
+          case 'associative':
+          $valueBlock = '<textarea name="value">' . json_encode(json_decode($config2['value']), JSON_PRETTY_PRINT) . '</textarea>';
+          break;
+
+
           default:
           $valueBlock = '<input type="text" name="value" value="' . str_replace('"', '&quot;', $config2['value']) . '" />';
         }
@@ -107,15 +113,16 @@ else {
           'float' => 'Float',
           'string' => 'String',
           'array' => 'Array',
+          'associative' => 'Associative Array',
         ), $config2['type']) . '<br />
-        <small>This is the type of the variable when interpretted. It should not normally be altered.</small>
+        <small>This is the type of the variable when interpreted. It should not normally be altered.</small>
       </td>
     </tr>
     <tr>
       <td>Value:</td>
       <td>
         ' . $valueBlock . '<br />
-        <small>Note that for array types, values should be entered using comma-seperated notation. You can escape commas in entries by prepending a "\".</small>
+        <small>Note that for array types, values should be entered using comma-separated notation. You can escape commas in entries by prepending a "\".</small>
       </td>
     </tr>
   </table>

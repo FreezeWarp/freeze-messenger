@@ -292,8 +292,8 @@ if ($continue) {
                         'userId' => $user['userId'],
                         'fileName' => $request['fileName'],
                         'fileType' => $mime,
-                        'parentalAge' => $request['parentalAge'],
-                        'parentalFlags' => implode(',', $request['parentalFlags']),
+                        'fileParentalAge' => $request['parentalAge'],
+                        'fileParentalFlags' => implode(',', $request['parentalFlags']),
                         'creationTime' => time(),
                         'fileSize' => $rawSize,
                       ));
