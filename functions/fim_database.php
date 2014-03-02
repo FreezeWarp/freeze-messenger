@@ -137,6 +137,39 @@ class fimDatabase extends databaseSQL
 
 
 
+  public function getCensorListsActive($roomId) {
+    $censorListsReturn = array();
+
+    $censorLists = $this->getCensorLists(array(
+      'listIds' => $request['lists'],
+    ))->getAsArray(array('listId', 'roomId'));
+
+    foreach ($censorLists AS $listId => $lists) { // Run through each censor list retrieved.
+      foreach ($lists AS $roomId => $list) {
+        if (!isset($censorListsReturn[$list['listId']])) {
+          $censorListsReturn[$list['listId']] = array(
+            'listId' => (int) $list['listId'],
+            'listName' => ($list['listName']),
+            'listType' => ($list['listType']),
+            'options' => (int) $list['options'],
+            'words' => array(),
+            'roomStatuses' => array(),
+          );
+        }
+
+
+        $censorListsReturn['lists']['list ' . $list['listId']]['roomStatuses'][$roomId] = array(
+          'roomId' => $roomId,
+          'status' => $list['status'],
+        );
+      }
+    }
+
+    return $censorListsReturn;
+  }
+
+
+
   public function getCensorList($censorListId)
   {
     return $this->getCensorLists(array(

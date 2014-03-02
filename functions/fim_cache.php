@@ -328,6 +328,20 @@ class fimCache extends generalCache {
     
     return $this->returnValue($censorLists, $listIndex);
   }
+
+
+  public function getCensorListsNew($listIndex, $roomIndex) {    global $sqlPrefix;
+    if ($this->issetMemory('fim_censorLists')) {
+      $censorLists = $this->getMemory('fim_censorLists');
+    }
+    elseif ($this->exists('fim_censorLists')) {
+      $censorLists = $this->get('fim_censorLists');
+    }
+    else {
+
+    }
+
+
   
   
   ////* Censor Words *////

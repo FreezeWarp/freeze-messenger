@@ -232,27 +232,29 @@ switch($request['action']) {
       if (count($request['censor']) > 0) {
         $lists = $database->getCensorLists(array(
           'activeStatus' => 'active',
-        ));
+        ))->getAsArray(array('listId', 'roomId'));
 
-        $listsActive = $database->getRoomCensorLists($request['roomId']);
+        $lists[0][3]['status']
 
 
-        if (is_array($listsActive)) {
-          if (count($listsActive) > 0) {
-            foreach ($listsActive AS $active) {
-              $listStatus[$active['listId']] = $active['status'];
-            }
-          }
+        foreach ($listsActive AS $active) {
+          $listStatus[$active['listId']] = $active['status'];
         }
 
         foreach($request['censor'] AS $listId => $status) {
           $listsNew[$listId] = (bool) $status;
         }
 
-        foreach ($lists AS $list) {
-          if ($list['type'] == 'black' && $listStatus[$list['listId']] == 'block') $checked = true;
-          elseif ($list['type'] == 'white' && $listStatus[$list['listId']] != 'unblock') $checked = true;
-          else $checked = false;
+        foreach ($lists AS $listId => $prelist) {
+          foreach ($prelist AS $roomId => $)
+          if (isset($lists[$list['listId']][$room['roomId']])) {
+            if ($list['type'] == 'black' && $lists[$list['listId']] == 'block') $checked = true;
+            elseif ($list['type'] == 'white' && $listStatus[$list['listId']] != 'unblock') $checked = true;
+            else $checked = false;
+          }
+          else {
+            if ($list['type'])
+          }
 
           if ($checked == true && !$listsNew[$list['listId']]) {
             $database->insert("{$sqlPrefix}censorBlackWhiteLists", array(
