@@ -144,8 +144,8 @@
       <column name="userId" type="int" maxlen="8" comment="The ID of the user who uploaded the file." />
       <column name="source" type="string" maxlen="50" default="upload" comment="The file's source - in most cases upload." />
       <column name="roomIdLink" type="int" maxlen="8" comment="If provided, the upload is linked to a particular room, which means that is may only be viewed by those who can view that room. The file will always be viewable by its poster." />
-      <column name="parentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the file." />
-      <column name="parentalAge" type="int" maxlen="2" comment="The file's parental content age rating." />
+      <column name="fileParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the file." />
+      <column name="fileParentalAge" type="int" maxlen="2" comment="The file's parental content age rating." />
       <column name="deleted" type="bool" default="0" comment="Whether or not the file in question is deleted." />
 
       <key name="fileId" type="primary" />
@@ -339,8 +339,8 @@
       <column name="defaultPermissions" type="bitfield" bits="8" default="7" comment="A bitfield corrosponding to permissions users are granted if they do not exist in the roomPermissions table." />
 
       <!-- Parental Controls -->
-      <column name="parentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the user." />
-      <column name="parentalAge" type="int" maxlen="2" comment="The room's parental content age rating." />
+      <column name="roomParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the user." />
+      <column name="roomParentalAge" type="int" maxlen="2" comment="The room's parental content age rating." />
 
       <!-- Counters -->
       <column name="lastMessageTime" type="time" default="0" comment="The time of the last message made in the room." />
@@ -388,8 +388,8 @@
       <column name="defaultPermissions" type="bitfield" bits="8" default="7" comment="A bitfield corrosponding to permissions users are granted if they do not exist in the roomPermissions table." />
 
       <!-- Parental Controls -->
-      <column name="parentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the room." />
-      <column name="parentalAge" type="int" maxlen="2" comment="The room's parental content age rating." />
+      <column name="roomParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the room." />
+      <column name="roomParentalAge" type="int" maxlen="2" comment="The room's parental content age rating." />
 
       <column name="changeTime" type="time" comment="The time at which the above information was altered." />
 
@@ -427,7 +427,7 @@
     </table>
 
 
-    <table name="searchPhrases" type="general" note="As of FIMv3B3 this is not as scalible as one might have hoped, though changes may be made further into the future, or at the latest in FIMv4" comment="A cache of search phrases to ease message searching in a scalible way.">
+    <table name="searchPhrases" type="general" note="As of FIMv3B3 this is not as scalable as one might have hoped, though changes may be made further into the future, or at the latest in FIMv4" comment="A cache of search phrases to ease message searching in a scalable way.">
       <column name="phraseId" type="int" maxlen="8" autoincrement="1" comment="A unique ID corrosponding to the phrase name/text." />
       <column name="phraseName" type="string" maxlen="50" comment="The name/text of the phrase." />
 
@@ -468,18 +468,6 @@
       <column name="type" default="pending" restrict="member,pending" type="string" maxlen="10" comment="The member ID of the group." />
 
       <key name="groupId,userId" type="primary" />
-    </table>
-
-
-    <table name="templates" type="general" comment="Interface-defined templates.">
-      <column name="templateId" type="int" maxlen="8" autoincrement="1" comment="The ID of the template." />
-      <column name="templateName" type="string" maxlen="50" comment="The name of the template, used for its retrievel." />
-      <column name="vars" type="string" maxlen="1000" comment="PHP variables that need to be accessed by the template." />
-      <column name="data" type="string" maxlen="4294967296" comment="The text/data associated with the template." />
-      <column name="interfaceId" type="int" maxlen="6" comment="The interface that uses this template." />
-
-      <key name="templateId" type="primary" />
-      <key name="interfaceId" type="index" />
     </table>
 
 
@@ -566,8 +554,8 @@
       <column name="messageCount" type="int" maxlen="8" default="0" comment="The number of messages made by this user." />
 
       <!-- Parental Controls -->
-      <column name="parentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to restrict access to." />
-      <column name="parentalAge" type="int" maxlen="2" comment="Content rated above this rating should be blocked." />
+      <column name="userParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to restrict access to." />
+      <column name="userParentalAge" type="int" maxlen="2" comment="Content rated above this rating should be blocked." />
 
 
       <key name="userId" type="primary" />
@@ -631,8 +619,8 @@
       <column name="adminPrivs" type="bitfield" bits="16" comment="A bitfield corrosponding to admin-set administrative priviledges." />
 
       <!-- Parental Controls -->
-      <column name="parentalFlags" type="string" maxlen="255" comment="An comma-seperated list of parent content flags to restrict access to." />
-      <column name="parentalAge" type="int" maxlen="2" comment="Content rated above this rating should be blocked." />
+      <column name="userParentalFlags" type="string" maxlen="255" comment="An comma-seperated list of parent content flags to restrict access to." />
+      <column name="userParentalAge" type="int" maxlen="2" comment="Content rated above this rating should be blocked." />
 
       <column name="changeTime" type="time" comment="The time at which the above information was altered." />
 
@@ -699,7 +687,7 @@
       <def bit="64" comment="Allows the administrator to remove uploads made by users, and view uploads made privately.">File Uploads</def>
       <def bit="256" comment="Allows the administrator to author and modify censor lists.">Censor</def>
       <def bit="4096" comment="Allows the administrator to modify system plugins. These are not supported in FIMv3.">Plugins</def>
-      <def bit="8192" comment="Allows the administrator to modify system templates. This is a specialised permission added with WebPro in mind, but should be respected by other frontends with customisable templates.">Templates</def>
+      <def bit="8192" comment="Allows the administrator to modify interfaces and interface templates.">Templates</def>
     </bitfield>
 
     <bitfield name="userPrivs" table="users">

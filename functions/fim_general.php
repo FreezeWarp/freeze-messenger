@@ -87,9 +87,9 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
       if ($quick) return false;
       else return array(false, 'invalidRoom', 0);
     }
-    elseif (!isset($roomData['parentalFlags'], $roomData['parentalAge'])) throw new Exception('hasPermission requires roomData[parentalFlags] and roomData[parentalAge] to be defined.');
+    elseif (!isset($roomData['roomParentalFlags'], $roomData['roomParentalAge'])) throw new Exception('hasPermission requires roomData[userParentalFlags] and roomData[userParentalAge] to be defined.');
     elseif (!isset($roomData['defaultPermissions'], $roomData['options'], $roomData['owner'])) throw new Exception('hasPermission requires roomData[defaultPermissions], roomData[options], and roomData[owner]'); // If the default permissions index is missing, through an exception.
-    elseif (!isset($userData['parentalAge'], $userData['parentalFlags'])) throw new Exception('hasPermission requires userData[parentalAge] and userData[parentalFlags] to be defined.');
+    elseif (!isset($userData['userParentalAge'], $userData['userParentalFlags'])) throw new Exception('hasPermission requires userData[userParentalAge] and userData[userParentalFlags] to be defined.');
     elseif (!isset($userData['adminPrivs'])) throw new Exception('hasPermission requires userData[adminPrivs] to be defined.');
     /* END COMPILE VERBOSE */
 
@@ -146,8 +146,8 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
 
     /* Is the user banned by parental controls? */
     if ($config['parentalEnabled'] === true) {
-      if ($roomData['parentalAge'] > $userData['parentalAge']) $parentalBlock = true;
-      elseif (fim_inArray(explode(',', $userData['parentalFlags']), explode(',', $roomData['parentalFlags']))) $parentalBlock = true;
+      if ($roomData['roomParentalAge'] > $userData['userParentalAge']) $parentalBlock = true;
+      elseif (fim_inArray(explode(',', $userData['userParentalFlags']), explode(',', $roomData['roomParentalFlags']))) $parentalBlock = true;
     }
 
 

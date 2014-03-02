@@ -499,7 +499,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
   Now that the database has been successfully installed, we must generate the configuration file. You can do this in a couple of ways: we would recommend simply entering the data below and you'll be on your way, though you can also do it manually by getting config.base.php from the install/ directory and saving it as config.php in the main directory.<br /><br />
 
   <form onsubmit="return false;" name="config_form" id="config_form">
-    <table border="1" class="page">
+    <table class="page">
       <thead>
         <tr class="ui-widget-header">
           <th colspan="2">Forum Integration</th>

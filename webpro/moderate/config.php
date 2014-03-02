@@ -45,9 +45,9 @@ else {
         $rows .= "<tr><td>$config2[directive]</td><td>$config2[type]</td><td>$config2[value]</td><td><a href=\"./moderate.php?do=config&do2=edit&directive=$config2[directive]\"><img src=\"./images/document-edit.png\" /></a></td></tr>";
       }
 
-      echo container('Configurations<a href="./moderate.php?do=config&do2=edit"><img src="./images/document-new.png" style="float: right;" /></a>','<table class="page rowHover" border="1">
+      echo container('Configurations<a href="./moderate.php?do=config&do2=edit"><img src="./images/document-new.png" style="float: right;" /></a>','<table class="page rowHover">
   <thead>
-    <tr class="hrow ui-widget-header">
+    <tr class="ui-widget-header">
       <td>Directive</td>
       <td>Type</td>
       <td>Value</td>
@@ -93,7 +93,7 @@ else {
       }
 
       echo container($title, '<form action="./moderate.php?do=config&do2=edit2" method="post">
-  <table border="1" class="ui-widget page">
+  <table class="ui-widget page">
     <tr>
       <td>Directive:</td>
       <td>' . ($config2['directive'] ? '<input type="hidden" name="directive" value="' . $config2['directive'] . '" />' . $config2['directive'] : '<input type="text" name="directive" value="' . $config2['directive'] . '" />') . '</td>

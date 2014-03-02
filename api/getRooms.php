@@ -97,8 +97,6 @@ array($request['sort'] => 'asc'))->getAsArray(true);
 
 
 foreach ($rooms AS $roomData) {
-  $roomData['type'] = 'normal'; // hasPermission requires this; it is returned by default from the getRoom function.
-
   $permissions = fim_hasPermission($roomData, $user, array('post', 'view', 'moderate', 'admin'), false);
 
   if ($request['permLevel']) {
@@ -109,8 +107,8 @@ foreach ($rooms AS $roomData) {
     'roomId' => (int)$roomData['roomId'],
     'roomName' => ($roomData['roomName']),
     'defaultPermissions' => (int) $roomData['defaultPermissions'],
-    'parentalFlags' => explode(',', $roomData['parentalFlags']),
-    'parentalAge' => $roomData['parentalAge'],
+    'parentalFlags' => explode(',', $roomData['roomParentalFlags']),
+    'parentalAge' => $roomData['roomParentalAge'],
     'options' => (int) $roomData['options'],
     'optionDefinitions' => array(
       'official' => (bool) ($roomData['options'] & 1),

@@ -227,7 +227,7 @@ $columnDefinitions = array( // These are only used for syncing. When the origina
       'defaultFontface' => 'defaultFontface', 'profile' => 'profile',
       'userFormatStart' => 'userFormatStart', 'userFormatEnd' => 'userFormatEnd',
       'lang' => 'lang',
-      'parentalAge' => 'parentalAge', 'parentalFlags' => 'parentalFlags',
+      'userParentalAge' => 'userParentalAge', 'userParentalFlags' => 'userParentalFlags',
     ),
   ),
   'adminGroups' => array(
@@ -278,7 +278,7 @@ $columnDefinitions = array( // These are only used for syncing. When the origina
 
 
 $queryParts['userSelect']['columns'] = array(
-  "{$sqlPrefix}users" => 'userId, userName, userGroup, allGroups, avatar, profile, socialGroups, userFormatStart, userFormatEnd, password, joinDate, birthDate, lastSync, defaultRoom, interfaceId, status, defaultHighlight, defaultColor, defaultFontface, defaultFormatting, userPrivs, adminPrivs, lang, parentalAge, parentalFlags',
+  "{$sqlPrefix}users" => 'userId, userName, userGroup, allGroups, avatar, profile, socialGroups, userFormatStart, userFormatEnd, password, joinDate, birthDate, lastSync, defaultRoom, interfaceId, status, defaultHighlight, defaultColor, defaultFontface, defaultFormatting, userPrivs, adminPrivs, lang, userParentalAge, userParentalFlags',
 );
 $queryParts['userSelectFromSessionHash']['columns'] = array(
   "{$sqlPrefix}sessions" => 'anonId, magicHash, userId suserId, time sessionTime, ip sessionIp, browser sessionBrowser',
@@ -833,8 +833,8 @@ else {
     'userId' => ($config['anonymousUserId'] ? $config['anonymousUserId'] : 0), // TODO: Is this handled elsewhere?
     'userName' => '',
     'settingsOfficialAjax' => 11264, // Default. TODO: Update w/ config defaults.
-    'parentalAge' => $config['parentalAgeDefault'],
-    'parentalFlags' => $config['parentalFlagsDefault'],
+    'userParentalAge' => $config['parentalAgeDefault'],
+    'userParentalFlags' => $config['parentalFlagsDefault'],
     'adminPrivs' => 0, // Nothing
     'userPrivs' => 16, // Allowed, but nothing else.
   );
@@ -969,16 +969,12 @@ if ($api) {
   );
 
 
-  ($hook = hook('validate_api') ? eval($hook) : '');
-
   echo fim_outputApi($xmlData);
+
 
   die();
 }
 
 
 define('FIM_LOGINRUN',true);
-
-
-($hook = hook('validate_end') ? eval($hook) : '');
 ?>

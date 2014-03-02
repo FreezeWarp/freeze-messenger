@@ -285,7 +285,6 @@ if (isset($sessionHash)) {
     <h3><a href="#" data-itemId="3">Manage Engines</a></h3>
     <ul>
       <?php echo ($user['adminDefs']['modCensor'] ? '<li><a href="moderate.php?do=censor">Modify Censor</a></li>' : ''); ?>
-      <?php echo ($user['adminDefs']['modFiles'] ? '<li><a href="moderate.php?do=ftypes">Modify File Types</a></li>' : ''); ?>
       <?php echo ($user['adminDefs']['modPlugins'] && false ? '<li><a href="moderate.php?do=plugins">Modify Plugins</a></li>' : ''); ?>
     </ul>
 
@@ -328,13 +327,13 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
     case 'templates': require('./moderate/templates.php'); break;
     case 'censor': require('./moderate/censor.php'); break;
     case 'bbcode': require('./moderate/bbcode.php'); break;
-    case 'ftypes': require('./moderate/ftypes.php'); break;
     case 'phpinfo': require('./moderate/phpinfo.php'); break;
     case 'copyright': require('./moderate/copyright.php'); break;
     case 'sys': require('./moderate/status.php'); break;
     case 'config': require('./moderate/config.php'); break;
     case 'plugins': require('./moderate/plugins.php'); break;
     case 'tools': require('./moderate/tools.php'); break;
+    case 'admin': require('./moderate/admin.php'); break;
     default: require('./moderate/main.php'); break;
   }
 }

@@ -63,7 +63,6 @@ $xmlData = array(
       'userName' => ($user['userName']),
     ),
     'errStr' => $errStr,
-    'errDesc' => $errDesc,
     'roomStats' => array(),
   ),
 );
@@ -71,126 +70,38 @@ $xmlData = array(
 
 
 /* Start Processing */
-if (count($request['rooms']) > 0) {
-  $rooms = $database->getRooms(array(
-    'roomIds' => $request['rooms']
-  ))->getAsArray('roomId');
 
+$totalPosts = $database->getPostStats(array(
+  'roomIds' => $request['rooms'],
+))->getAsArray(array('roomId', 'userId'), false);
+//var_dump($totalPosts);
 
-  foreach ($rooms AS $room) {
-    $room['type'] = 'normal'; // Set this for hasPermission.
-
-
-    if (!fim_hasPermission($room, $user, 'view', true)) { // Users must be able to view the room to see the respective post counts.
-      ($hook = hook('getStats_noPerm') ? eval($hook) : '');
-
+foreach ($totalPosts AS $room) {
+  foreach ($room AS $position => $totalPoster) {
+    if (!fim_hasPermission($totalPoster, $totalPoster, 'view', true)) { // Users must be able to view the room to see the respective post counts.
       continue;
     }
 
-
-    $queryParts['statsSelect']['columns'] = array(
-      "{$sqlPrefix}roomStats" => array(
-        'roomId' => 'sroomId',
-        'userId' => 'suserId',
-        'messages' => 'messages',
-      ),
-      "{$sqlPrefix}users" => array(
-        'userId' => 'userId',
-        'userName' => 'userName',
-        'userFormatStart' => 'userFormatStart',
-        'userFormatEnd' => 'userFormatEnd',
-      ),
-    );
-    $queryParts['statsSelect']['conditions'] = array(
-      'both' => array(
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'suserId',
-          ),
-          'right' => array(
-            'type' => 'column',
-            'value' => 'userId',
-          ),
-        ),
-        array(
-          'type' => 'e',
-          'left' => array(
-            'type' => 'column',
-            'value' => 'sroomId',
-          ),
-          'right' => array(
-            'type' => 'int',
-            'value' => (int) $room['roomId'],
-          ),
-        ),
-      ),
-    );
-    $queryParts['statsSelect']['sort'] = 'messages desc';
-    $queryParts['statsSelect']['limit'] = $request['number'];
-
-
-    if (count($request['users']) > 0) {
-      $queryParts['statsSelect']['conditions']['both'][] = array(
-        'type' => 'e',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'suserId',
-        ),
-        'right' => array(
-          'type' => 'array',
-          'value' => $request['users'],
-        ),
-      );
-    }
-
-
-    ($hook = hook('getStats_eachRoom_preRooms') ? eval($hook) : '');
-
-    $totalPosts = $database->select(
-      $queryParts['statsSelect']['columns'],
-      $queryParts['statsSelect']['conditions'],
-      $queryParts['statsSelect']['sort'],
-      $queryParts['statsSelect']['limit']
-    );
-    $totalPosts = $totalPosts->getAsArray('userId');
-
-
-    $xmlData['getStats']['roomStats']['room ' . $room['roomId']] = array(
+    if (!isset($xmlData['getStats']['roomStats']['room ' . $room['roomId']])) {
+      $xmlData['getStats']['roomStats']['room ' . $room['roomId']] = array(
       'roomData' => array(
         'roomId' => (int) $room['roomId'],
         'roomName' => $room['name'],
       ),
       'users' => array(),
-    );
-
-
-    ($hook = hook('getStats_eachRoom_postRooms') ? eval($hook) : '');
-
-
-    if (is_array($totalPosts)) {
-      if (count($totalPosts) > 0) {
-        foreach ($totalPosts AS $totalPoster) {
-          $position++;
-
-          $xmlData['getStats']['roomStats']['room ' . $room['roomId']]['users']['user ' . $totalPoster['userId']] = array(
-            'userData' => array(
-              'userId' => (int) $totalPoster['userId'],
-              'userName' => ($totalPoster['userName']),
-              'startTag' => ($totalPoster['userFormatStart']),
-              'endTag' => ($totalPoster['userFormatEnd']),
-            ),
-            'messageCount' => (int) $totalPoster['messages'],
-            'position' => (int) $position,
-          );
-
-          ($hook = hook('getStats_eachUser') ? eval($hook) : '');
-        }
-      }
+      );
     }
 
-    ($hook = hook('getStats_eachRoom_end') ? eval($hook) : '');
+    $xmlData['getStats']['roomStats']['room ' . $room['roomId']]['users']['user ' . $totalPoster['userId']] = array(
+      'userData' => array(
+        'userId' => (int) $totalPoster['userId'],
+        'userName' => ($totalPoster['userName']),
+        'startTag' => ($totalPoster['userFormatStart']),
+        'endTag' => ($totalPoster['userFormatEnd']),
+      ),
+      'messageCount' => (int) $totalPoster['messages'],
+      'position' => (int) $position,
+    );
   }
 }
 
@@ -198,7 +109,6 @@ if (count($request['rooms']) > 0) {
 
 /* Update Data for Errors */
 $xmlData['getStats']['errStr'] = ($errStr);
-$xmlData['getStats']['errDesc'] = ($errDesc);
 
 
 

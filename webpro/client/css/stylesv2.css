@@ -25,6 +25,10 @@ img {
   border: none;
 }
 
+abbr {
+  border-bottom: 1px dotted;
+}
+
 
 
 /***** Menu *****/

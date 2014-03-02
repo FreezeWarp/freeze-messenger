@@ -50,8 +50,8 @@
       <column name="roomId" value="4" />
       <column name="status" value="block" />
     </table>
-    
-        
+
+
     <!-- Table censorWords -->
     <table name="censorWords">
       <column name="listId" value="1" />
@@ -81,7 +81,7 @@
       <column name="severity" value="replace" />
       <column name="param" value="Unix" />
     </table>
-    
+
     <table name="censorWords" mode="dev">
       <column name="listId" value="2" />
       <column name="word" value="faggot" />
@@ -110,7 +110,7 @@
       <column name="severity" value="replace" />
       <column name="param" value="marry me" />
     </table>
-    
+
     <table name="censorWords" mode="dev">
       <column name="listId" value="2" />
       <column name="word" value="faggot" />
@@ -133,7 +133,7 @@
       <column name="severity" value="confirm" />
       <column name="param" value="Are you talking about a bird? If not, please don't say that." />
     </table>
-    
+
     <table name="censorWords" mode="dev">
       <column name="listId" value="3" />
       <column name="word" value="bug" />
@@ -180,6 +180,24 @@
 
     <!-- Table configuration -->
     <table name="configuration">
+      <column name="directive" value="roomLengthMinimum" />
+      <column name="value" value="5" />
+      <column name="type" value="integer" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="roomLengthMaximum" />
+      <column name="value" value="20" />
+      <column name="type" value="integer" />
+    </table>
+
+
+    <table name="configuration">
+      <column name="directive" value="defaultLanguage" />
+      <column name="value" value="en" />
+      <column name="type" value="string" />
+    </table>
+
+    <table name="configuration">
       <column name="directive" value="defaultMessageHardLimit" />
       <column name="value" value="50" />
       <column name="type" value="integer" />
@@ -189,11 +207,13 @@
       <column name="value" value="10000" />
       <column name="type" value="integer" />
     </table>
+
     <table name="configuration">
       <column name="directive" value="defaultOnlineThreshold" />
       <column name="value" value="15" />
       <column name="type" value="integer" />
     </table>
+
     <table name="configuration">
       <column name="directive" value="fullTextArchive" />
       <column name="value" value="false" />
@@ -207,7 +227,7 @@
     </table>
     <table name="configuration">
       <column name="directive" value="searchWordMaximum" />
-      <column name="value" value="10" />
+      <column name="value" value="12" />
       <column name="type" value="integer" />
     </table>
     <table name="configuration">
@@ -238,26 +258,36 @@
     </table>
     <table name="configuration">
       <column name="directive" value="permissionsCacheRefresh" />
-      <column name="value" value="30" />
-      <column name="type" value="integer" />
-    </table>
-    <table name="configuration">
-      <column name="directive" value="phrasesCacheRefresh" />
-      <column name="value" value="600" />
+      <column name="value" value="60" />
       <column name="type" value="integer" />
     </table>
     <table name="configuration">
       <column name="directive" value="hooksCacheRefresh" />
-      <column name="value" value="600" />
-      <column name="type" value="integer" />
-    </table>
-    <table name="configuration">
-      <column name="directive" value="templatesCacheRefresh" />
-      <column name="value" value="600" />
+      <column name="value" value="86400" />
       <column name="type" value="integer" />
     </table>
     <table name="configuration">
       <column name="directive" value="configCacheRefresh" />
+      <column name="value" value="86400" />
+      <column name="type" value="integer" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="censorListsCacheRefresh" />
+      <column name="value" value="86400" />
+      <column name="type" value="integer" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="censorWordsCacheRefresh" />
+      <column name="value" value="86400" />
+      <column name="type" value="integer" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="watchRoomsCacheRefresh" />
+      <column name="value" value="600" />
+      <column name="type" value="integer" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="roomListNamesCacheRefresh" />
       <column name="value" value="600" />
       <column name="type" value="integer" />
     </table>
@@ -274,7 +304,7 @@
     </table>
     <table name="configuration">
       <column name="directive" value="longPollingMaxRetries" />
-      <column name="value" value="100" />
+      <column name="value" value="50" />
       <column name="type" value="integer" />
     </table>
 
@@ -290,13 +320,8 @@
     </table>
     <table name="configuration">
       <column name="directive" value="serverSentMaxRetries" />
-      <column name="value" value="100" />
+      <column name="value" value="50" />
       <column name="type" value="integer" />
-    </table>
-    <table name="configuration">
-      <column name="directive" value="serverSentFastCGI" />
-      <column name="value" value="false" />
-      <column name="type" value="bool" />
     </table>
 
     <table name="configuration">
@@ -304,11 +329,13 @@
       <column name="value" value="true" />
       <column name="type" value="bool" />
     </table>
+
     <table name="configuration">
       <column name="directive" value="disableTopic" />
       <column name="value" value="false" />
       <column name="type" value="bool" />
     </table>
+
     <table name="configuration">
       <column name="directive" value="enableUploads" />
       <column name="value" value="true" />
@@ -320,9 +347,9 @@
       <column name="type" value="bool" />
     </table>
     <table name="configuration">
-      <column name="directive" value="uploadUserMaxFiles" />
-      <column name="value" value="-1" />
-      <column name="type" value="integer" />
+      <column name="directive" value="fileUploadChunkSize" />
+      <column name="value" value="1024" />
+      <column name="type" value="bool" />
     </table>
     <table name="configuration">
       <column name="directive" value="uploadMaxFiles" />
@@ -330,29 +357,180 @@
       <column name="type" value="integer" />
     </table>
     <table name="configuration">
-      <column name="directive" value="defaultLanguage" />
-      <column name="value" value="en" />
-      <column name="type" value="string" />
-    </table>
-    <table name="configuration">
-      <column name="directive" value="roomLengthMinimum" />
-      <column name="value" value="5" />
+      <column name="directive" value="uploadMaxUserFiles" />
+      <column name="value" value="-1" />
       <column name="type" value="integer" />
     </table>
     <table name="configuration">
-      <column name="directive" value="roomLengthMaximum" />
-      <column name="value" value="20" />
+      <column name="directive" value="allowEmptyFiles" />
+      <column name="value" value="false" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="allowOrphanFiles" />
+      <column name="value" value="false" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="extensionChanges" />
+      <column name="value" value="{&quot;jpe&quot;:&quot;jpg&quot;,&quot;jpeg&quot;:&quot;jpg&quot;,&quot;tar.gz&quot;:&quot;tgz&quot;,&quot;tar.bz2&quot;:&quot;tbz2&quot;,&quot;mpeg&quot;:&quot;mpg&quot;,&quot;html&quot;:&quot;htm&quot;,&quot;text&quot;:&quot;txt&quot;,&quot;php4&quot;:&quot;php&quot;,&quot;php5&quot;:&quot;php&quot;,&quot;tiff&quot;:&quot;tif&quot;}" />
+      <column name="type" value="associative" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="fileContainers" />
+      <column name="value" value="{&quot;exe&quot;:&quot;application&quot;,&quot;msi&quot;:&quot;application&quot;,&quot;cab&quot;:&quot;application&quot;,&quot;swf&quot;:&quot;flash&quot;,&quot;flv&quot;:&quot;flash&quot;,&quot;rtf&quot;:&quot;application&quot;,&quot;doc&quot;:&quot;application&quot;,&quot;xls&quot;:&quot;application&quot;,&quot;ppt&quot;:&quot;application&quot;,&quot;docx&quot;:&quot;application&quot;,&quot;dotx&quot;:&quot;application&quot;,&quot;xlsx&quot;:&quot;application&quot;,&quot;xltx&quot;:&quot;application&quot;,&quot;xlam&quot;:&quot;application&quot;,&quot;xlsb&quot;:&quot;application&quot;,&quot;potx&quot;:&quot;application&quot;,&quot;ppsx&quot;:&quot;application&quot;,&quot;pptx&quot;:&quot;application&quot;,&quot;sldx&quot;:&quot;application&quot;,&quot;odt&quot;:&quot;application&quot;,&quot;ods&quot;:&quot;application&quot;,&quot;odp&quot;:&quot;application&quot;,&quot;txt&quot;:&quot;text&quot;,&quot;htm&quot;:&quot;text&quot;,&quot;php&quot;:&quot;text&quot;,&quot;css&quot;:&quot;text&quot;,&quot;js&quot;:&quot;text&quot;,&quot;json&quot;:&quot;text&quot;,&quot;xml&quot;:&quot;text&quot;,&quot;png&quot;:&quot;image&quot;,&quot;jpg&quot;:&quot;image&quot;,&quot;gif&quot;:&quot;image&quot;,&quot;bmp&quot;:&quot;image&quot;,&quot;ico&quot;:&quot;image&quot;,&quot;tif&quot;:&quot;image&quot;,&quot;svg&quot;:&quot;image&quot;,&quot;svgz&quot;:&quot;image&quot;,&quot;mp2&quot;:&quot;audio&quot;,&quot;mp3&quot;:&quot;audio&quot;,&quot;ogg&quot;:&quot;audio&quot;,&quot;flac&quot;:&quot;audio&quot;,&quot;m4a&quot;:&quot;audio&quot;,&quot;wav&quot;:&quot;audio&quot;,&quot;wma&quot;:&quot;audio&quot;,&quot;mp4&quot;:&quot;video&quot;,&quot;m4v&quot;:&quot;video&quot;,&quot;ogv&quot;:&quot;video&quot;,&quot;mov&quot;:&quot;video&quot;,&quot;wmv&quot;:&quot;video&quot;,&quot;zip&quot;:&quot;archive&quot;,&quot;rar&quot;:&quot;archive&quot;,&quot;7z&quot;:&quot;archive&quot;,&quot;tgz&quot;:&quot;archive&quot;,&quot;tbz2&quot;:&quot;archive&quot;}" />
+      <column name="type" value="associative" />
+    </table>
+    <!-- Missing imageTypes -->
+    <table name="configuration">
+      <column name="directive" value="allowedExtensions" />
+      <column name="value" value="gif,png,jpg,txt,ogg,mp3,flac" />
+      <column name="type" value="array" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="uploadMimes" />
+      <column name="value" value="{&quot;txt&quot;:&quot;text\/plain&quot;,&quot;htm&quot;:&quot;text\/html&quot;,&quot;php&quot;:&quot;text\/html&quot;,&quot;css&quot;:&quot;text\/css&quot;,&quot;js&quot;:&quot;application\/javascript&quot;,&quot;json&quot;:&quot;application\/json&quot;,&quot;xml&quot;:&quot;application\/xml&quot;,&quot;exe&quot;:&quot;application\/x-msdownload&quot;,&quot;msi&quot;:&quot;application\/x-msdownload&quot;,&quot;cab&quot;:&quot;application\/vnd.ms-cab-compressed&quot;,&quot;swf&quot;:&quot;application\/x-shockwave-flash&quot;,&quot;flv&quot;:&quot;video\/x-flv&quot;,&quot;pdf&quot;:&quot;application\/pdf&quot;,&quot;rtf&quot;:&quot;application\/rtf&quot;,&quot;doc&quot;:&quot;application\/msword&quot;,&quot;xls&quot;:&quot;application\/vnd.ms-excel&quot;,&quot;ppt&quot;:&quot;application\/vnd.ms-powerpoint&quot;,&quot;docx&quot;:&quot;application\/vnd.openxmlformats-officedocument.wordprocessingml.document&quot;,&quot;dotx&quot;:&quot;application\/vnd.openxmlformats-officedocument.wordprocessingml.template&quot;,&quot;xlsx&quot;:&quot;application\/vnd.openxmlformats-officedocument.spreadsheetml.sheet&quot;,&quot;xltx&quot;:&quot;application\/vnd.openxmlformats-officedocument.spreadsheetml.template&quot;,&quot;xlam&quot;:&quot;application\/vnd.ms-excel.addin.macroEnabled.12&quot;,&quot;xlsb&quot;:&quot;application\/vnd.ms-excel.sheet.binary.macroEnabled.12&quot;,&quot;potx&quot;:&quot;application\/vnd.openxmlformats-officedocument.presentationml.template&quot;,&quot;ppsx&quot;:&quot;application\/vnd.openxmlformats-officedocument.presentationml.slideshow&quot;,&quot;pptx&quot;:&quot;application\/vnd.openxmlformats-officedocument.presentationml.presentation&quot;,&quot;sldx&quot;:&quot;application\/vnd.openxmlformats-officedocument.presentationml.slide&quot;,&quot;odt&quot;:&quot;application\/vnd.oasis.opendocument.text&quot;,&quot;ods&quot;:&quot;application\/vnd.oasis.opendocument.spreadsheet&quot;,&quot;odp&quot;:&quot;application\/vnd.oasis.opendocument.presentation&quot;,&quot;png&quot;:&quot;image\/png&quot;,&quot;jpg&quot;:&quot;image\/jpeg&quot;,&quot;gif&quot;:&quot;image\/gif&quot;,&quot;bmp&quot;:&quot;image\/bmp&quot;,&quot;ico&quot;:&quot;image\/vnd.microsoft.icon&quot;,&quot;tif&quot;:&quot;image\/tiff&quot;,&quot;svg&quot;:&quot;image\/svg+xml&quot;,&quot;svgz&quot;:&quot;image\/svg+xml&quot;,&quot;mp2&quot;:&quot;audio\/mpeg&quot;,&quot;mp3&quot;:&quot;audio\/mpeg&quot;,&quot;ogg&quot;:&quot;audio\/ogg&quot;,&quot;flac&quot;:&quot;audio\/flac&quot;,&quot;m4a&quot;:&quot;audio\/m4a&quot;,&quot;wav&quot;:&quot;audio\/wav&quot;,&quot;wma&quot;:&quot;audio\/x-ms-wma&quot;,&quot;mp4&quot;:&quot;video\/mp4&quot;,&quot;m4v&quot;:&quot;video\/mp4&quot;,&quot;ogv&quot;:&quot;video\/ogg&quot;,&quot;mov&quot;:&quot;video\/quicktime&quot;,&quot;wmv&quot;:&quot;video\/x-ms-wmv&quot;,&quot;zip&quot;:&quot;application\/zip&quot;,&quot;rar&quot;:&quot;application\/x-rar-compressed&quot;,&quot;7z&quot;:&quot;application\/x-7z-compressed&quot;,&quot;tgz&quot;:&quot;application\/x-compressed-tar&quot;,&quot;tbz2&quot;:&quot;application\/x-compressed-tar&quot;}" />
+      <column name="type" value="associative" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="uploadMimeProof" />
+      <column name="value" value="gif,png,jpg" />
+      <column name="type" value="array" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="uploadMimeLimits" />
+      <column name="value" value="{&quot;txt&quot;:1048576,&quot;htm&quot;:1048576,&quot;php&quot;:1048576,&quot;css&quot;:1048576,&quot;js&quot;:1048576,&quot;json&quot;:1048576,&quot;xml&quot;:1048576,&quot;exe&quot;:52428800,&quot;msi&quot;:52428800,&quot;cab&quot;:52428800,&quot;swf&quot;:10485760,&quot;flv&quot;:10485760,&quot;pdf&quot;:10485760,&quot;rtf&quot;:10485760,&quot;doc&quot;:10485760,&quot;xls&quot;:10485760,&quot;ppt&quot;:10485760,&quot;docx&quot;:10485760,&quot;dotx&quot;:10485760,&quot;xlsx&quot;:10485760,&quot;xltx&quot;:10485760,&quot;xlam&quot;:10485760,&quot;xlsb&quot;:10485760,&quot;potx&quot;:10485760,&quot;ppsx&quot;:10485760,&quot;pptx&quot;:10485760,&quot;sldx&quot;:10485760,&quot;odt&quot;:10485760,&quot;ods&quot;:10485760,&quot;odp&quot;:10485760,&quot;png&quot;:10485760,&quot;jpg&quot;:10485760,&quot;gif&quot;:10485760,&quot;bmp&quot;:10485760,&quot;ico&quot;:1048576,&quot;tif&quot;:10485760,&quot;svg&quot;:10485760,&quot;svgz&quot;:10485760,&quot;mp2&quot;:20971520,&quot;mp3&quot;:20971520,&quot;ogg&quot;:20971520,&quot;flac&quot;:52428800,&quot;m4a&quot;:20971520,&quot;wav&quot;:52428800,&quot;wma&quot;:20971520,&quot;mp4&quot;:10485760,&quot;m4v&quot;:10485760,&quot;ogv&quot;:10485760,&quot;wmv&quot;:20971520,&quot;mov&quot;:20971520,&quot;zip&quot;:52428800,&quot;rar&quot;:52428800,&quot;7z&quot;:52428800,&quot;tgz&quot;:52428800,&quot;tbz2&quot;:52428800}" />
+      <column name="type" value="associative" />
+    </table>
+
+    <table name="configuration">
+      <column name="directive" value="avatarMaximumWidth" />
+      <column name="value" value="1000" />
       <column name="type" value="integer" />
     </table>
+    <table name="configuration">
+      <column name="directive" value="avatarMaximumHeight" />
+      <column name="value" value="1000" />
+      <column name="type" value="integer" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="avatarMinimumWidth" />
+      <column name="value" value="1000" />
+      <column name="type" value="integer" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="avatarMinimumHeight" />
+      <column name="value" value="1000" />
+      <column name="type" value="integer" />
+    </table>
+
+    <table name="configuration">
+      <column name="directive" value="maxMessageLength" />
+      <column name="value" value="1000" />
+      <column name="type" value="integer" />
+    </table>
+
     <table name="configuration">
       <column name="directive" value="apiPause" />
       <column name="value" value=".125" />
       <column name="type" value="float" />
     </table>
+
     <table name="configuration">
       <column name="directive" value="cacheTableMaxRows" />
       <column name="value" value="100" />
       <column name="type" value="integer" />
+    </table>
+
+    <table name="configuration">
+      <column name="directive" value="enableUnreadMessages" />
+      <column name="value" value="true" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="enableWatchRooms" />
+      <column name="value" value="true" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="enableEvents" />
+      <column name="value" value="true" />
+      <column name="type" value="bool" />
+    </table>
+
+    <!-- encodeXml* missing - can be added manually -->
+
+    <table name="configuration">
+      <column name="directive" value="defaultTimeZone" />
+      <column name="value" value="0" />
+      <column name="type" value="integer" />
+    </table>
+
+    <table name="configuration">
+      <column name="directive" value="fileSuffixes" />
+      <column name="value" value="B,KiB,MiB,GiB,PiB,EiB,ZiB,YiB" />
+      <column name="type" value="array" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="fileIncrementalSize" />
+      <column name="value" value="1024" />
+      <column name="type" value="integer" />
+    </table>
+
+    <!-- compactXml* missing - can be added manually -->
+
+    <table name="configuration">
+      <column name="directive" value="email" />
+      <column name="value" value="" />
+      <column name="type" value="string" />
+    </table>
+
+    <table name="configuration">
+      <column name="directive" value="emailErrors" />
+      <column name="value" value="true" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="emailExceptions" />
+      <column name="value" value="true" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="logErrors" />
+      <column name="value" value="true" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="logExceptions" />
+      <column name="value" value="true" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="logErrorFile" />
+      <column name="value" value="" />
+      <column name="type" value="string" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="logExceptionsFile" />
+      <column name="value" value="" />
+      <column name="type" value="string" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="displayExceptions" />
+      <column name="value" value="true" />
+      <column name="type" value="bool" />
+    </table>
+
+    <table name="configuration">
+      <column name="directive" value="anonymousUserId" />
+      <column name="value" value="0" />
+      <column name="type" value="integer" />
+    </table>
+
+    <table name="configuration">
+      <column name="directive" value="bannedUserGroups" />
+      <column name="value" value="" />
+      <column name="type" value="array" />
     </table>
 
     <table name="configuration">
@@ -371,6 +549,45 @@
       <column name="type" value="bool" />
     </table>
 
+    <!-- Missing defaultFormatting* -->
+
+    <table name="configuration">
+      <column name="directive" value="userRoomCreation" />
+      <column name="value" value="false" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="userPrivateRoomCreation" />
+      <column name="value" value="true" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="hiddenRooms" />
+      <column name="value" value="true" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="officialRooms" />
+      <column name="value" value="true" />
+      <column name="type" value="bool" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="defaultRoom" />
+      <column name="value" value="1" />
+      <column name="type" value="integer" />
+    </table>
+
+    <table name="configuration">
+      <column name="directive" value="messageIndexCounter" />
+      <column name="value" value="1000" />
+      <column name="type" value="integer" />
+    </table>
+    <table name="configuration">
+      <column name="directive" value="messageTimesCounter" />
+      <column name="value" value="86400" />
+      <column name="type" value="integer" />
+    </table>
+
     <table name="configuration">
       <column name="directive" value="recaptchaPublicKey" />
       <column name="value" value="" />
@@ -380,22 +597,6 @@
       <column name="directive" value="recaptchaPrivateKey" />
       <column name="value" value="" />
       <column name="type" value="string" />
-    </table>
-
-    <table name="configuration">
-      <column name="directive" value="email" />
-      <column name="value" value="" />
-      <column name="type" value="string" />
-    </table>
-    <table name="configuration">
-      <column name="directive" value="anonymousUserId" />
-      <column name="value" value="0" />
-      <column name="type" value="integer" />
-    </table>
-    <table name="configuration">
-      <column name="directive" value="bannedUserGroups" />
-      <column name="value" value="0" />
-      <column name="type" value="integer" />
     </table>
 
     <table name="configuration">
@@ -417,17 +618,6 @@
     <table name="configuration">
       <column name="directive" value="emailRequired" />
       <column name="value" value="false" />
-      <column name="type" value="bool" />
-    </table>
-
-    <table name="configuration">
-      <column name="directive" value="userRoomCreation" />
-      <column name="value" value="false" />
-      <column name="type" value="bool" />
-    </table>
-    <table name="configuration">
-      <column name="directive" value="userPrivateRoomCreation" />
-      <column name="value" value="true" />
       <column name="type" value="bool" />
     </table>
 
@@ -457,6 +647,11 @@
       <column name="type" value="array" />
     </table>
     <table name="configuration">
+      <column name="directive" value="parentalRegistrationAge" />
+      <column name="value" value="0" />
+      <column name="type" value="integer" />
+    </table>
+    <table name="configuration">
       <column name="directive" value="parentalFlags" />
       <column name="value" value="language,violence,gore,drugs,gambling,nudity,pnudity" />
       <column name="type" value="array" />
@@ -465,6 +660,18 @@
       <column name="directive" value="parentalAges" />
       <column name="value" value="6,10,13,16,18" />
       <column name="type" value="array" />
+    </table>
+
+    <table name="configuration">
+      <column name="directive" value="curlUA" />
+      <column name="value" value="Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)" />
+      <column name="type" value="string" />
+    </table>
+
+    <table name="configuration">
+      <column name="directive" value="enableCensor" />
+      <column name="value" value="true" />
+      <column name="type" value="bool" />
     </table>
 
 
@@ -559,9 +766,9 @@
       <column name="container" value="image" />
     </table>
 
-    
+
     <!-- Table users -->
-    <!-- The addUser function should be tested seperately (as with addRoom, etc.) -->
+    <!-- The addUser function should be tested separately (as with addRoom, etc.) -->
     <table name="users">
       <column name="userId" value="3" />
       <column name="userName" value="Test Bot 1" />
@@ -578,7 +785,7 @@
       <column name="userFormatEnd" value="&lt;/span&gt;" /><!-- TODO -->
       <column name="defaultRoom" value="3" />
       <column name="interfaceId" value="2" />
-      <column name="parentalFlags" value="" />
+      <column name="userParentalFlags" value="" />
     </table>
   </database>
 </dbData>

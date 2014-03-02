@@ -155,6 +155,7 @@ class fimCache extends generalCache {
               case 'int':    $config[$configDatabaseRow['directive']] = (int) $configDatabaseRow['value']; break;
               case 'string': $config[$configDatabaseRow['directive']] = (string) $configDatabaseRow['value']; break;
               case 'array':  $config[$configDatabaseRow['directive']] = (array) fim_explodeEscaped(',', $configDatabaseRow['value']); break;
+              case 'associative': $config[$configDatabaseRow['directive']] = (array) json_decode($configDatabaseRow['value']); break;
               case 'bool':
               if (in_array($configDatabaseRow['value'], array('true', '1', true, 1), true)) $config[$configDatabaseRow['directive']] = true; // We include the non-string counterparts here on the off-chance the database driver supports returning non-strings. The third parameter in the in_array makes it a strict comparison.
               else $config[$configDatabaseRow['directive']] = false;

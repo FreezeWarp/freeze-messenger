@@ -65,7 +65,7 @@ class fimDatabase extends databaseSQL {
 
 
     $columns = array(
-      $this->sqlPrefix . "files"        => 'fileId, fileName, fileType, creationTime, userId, parentalAge, parentalFlags, roomIdLink, source',
+      $this->sqlPrefix . "files"        => 'fileId, fileName, fileType, creationTime, userId, fileParentalAge, fileParentalFlags, roomIdLink, source',
       $this->sqlPrefix . "fileVersions" => 'fileId vfileId, md5hash, sha256hash, size',
     );
 
@@ -85,8 +85,8 @@ class fimDatabase extends databaseSQL {
     if (count($options['userIds']) > 0) $conditions['both']['userId']     = $this->in($options['userIds']);
     if (count($options['roomIds']) > 0) $conditions['both']['roomLinkId'] = $this->in($options['roomIds']);
 
-    if ($options['parentalAgeMin']  > 0) $conditions['both']['parentalAge'] = $this->int($options['parentalAgeMin'], 'gte');
-    if ($options['parentalAgeMax'] > 0) $conditions['both']['parentalAge'] = $this->int($options['parentalAgeMax'], 'lte');
+    if ($options['parentalAgeMin'] > 0) $conditions['both']['fileParentalAge'] = $this->int($options['parentalAgeMin'], 'gte');
+    if ($options['parentalAgeMax'] > 0) $conditions['both']['fileParentalAge'] = $this->int($options['parentalAgeMax'], 'lte');
 
     if ($options['creationTimeMin'] > 0)  $conditions['both']['creationTime'] = $this->int($options['creationTime'], 'gte');
     if ($options['creationTimeMax'] > 0)  $conditions['both']['creationTime'] = $this->int($options['creationTime'], 'lte');
@@ -105,6 +105,35 @@ class fimDatabase extends databaseSQL {
 
     if ($options['sizeMin'] > 0) $conditions['both']['size'] = $this->int($options['size'], 'gte');
     if ($options['sizeMax'] > 0) $conditions['both']['size'] = $this->int($options['size'], 'lte');
+
+
+    return $this->select($columns, $conditions, $sort);
+  }
+
+
+  /* Use of groupBy _highly_ recommended. */
+  public function getPostStats($options, $sort = array('roomId' => 'asc', 'userId' => 'asc'), $limit = 0, $pagination = 1) {
+    $options = array_merge(array(
+      'userIds' => array(),
+      'roomIds' => array(),
+    ), $options);
+
+
+    $columns = array(
+      $this->sqlPrefix . 'roomStats' => 'roomId sroomId, userId suserId, messages',
+      $this->sqlPrefix . 'users' => 'userId, userName, adminPrivs, userFormatStart, userFormatEnd, userParentalFlags, userParentalAge',
+      $this->sqlPrefix . 'rooms' => 'roomId, roomName, owner, defaultPermissions, roomParentalFlags, roomParentalAge, options, messageCount, roomType',
+    );
+
+
+    $conditions['both'] = array(
+      'suserId' => $this->col('userId'),
+      'sroomId' => $this->col('roomId'),
+    );
+
+
+    if (count($options['roomIds']) > 0) $conditions['both']['sroomId'] = $this->in($options['roomIds']);
+    if (count($options['userIds']) > 0) $conditions['both']['suserId'] = $this->in($options['userIds']);
 
 
     return $this->select($columns, $conditions, $sort);
@@ -155,7 +184,7 @@ class fimDatabase extends databaseSQL {
 
     $columns = array(
       $this->sqlPrefix . "ping" => 'status, typing, time ptime, roomId proomId, userId puserId',
-      $this->sqlPrefix . "rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, roomType, parentalAge, parentalFlags, options',
+      $this->sqlPrefix . "rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, roomType, roomParentalAge, roomParentalFlags, options',
       $this->sqlPrefix . "users" => 'userId, userName, userFormatStart, userFormatEnd, userGroup, socialGroups, status',
     );
 
@@ -402,7 +431,7 @@ class fimDatabase extends databaseSQL {
 
 
   	// Defaults
-  	$columns = array($this->sqlPrefix . "rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, parentalFlags, parentalAge, options, lastMessageId, lastMessageTime, messageCount, roomType');
+  	$columns = array($this->sqlPrefix . "rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, roomParentalFlags, roomParentalAge, options, lastMessageId, lastMessageTime, messageCount, roomType');
 
 
   	// Modify Query Data for Directives
@@ -412,8 +441,8 @@ class fimDatabase extends databaseSQL {
     if (count($options['roomIds']) > 0) $conditions['both']['roomId'] = $this->in($options['roomIds']);
   	if ($options['roomNameSearch']) $conditions['both']['roomName'] = $this->type('string', $options['roomNameSearch'], 'search');
 
-    if ($options['parentalAgeMin'] > 0) $conditions['both']['parentalAge'] = $this->int($options['parentalAgeMin'], 'gte');
-    if ($options['parentalAgeMax'] > 0) $conditions['both']['parentalAge'] = $this->int($options['parentalAgeMax'], 'lte');
+    if ($options['parentalAgeMin'] > 0) $conditions['both']['roomParentalAge'] = $this->int($options['parentalAgeMin'], 'gte');
+    if ($options['parentalAgeMax'] > 0) $conditions['both']['roomParentalAge'] = $this->int($options['parentalAgeMax'], 'lte');
 
     if ($options['messageCountMin'] > 0)  $conditions['both']['messageCount'] = $this->int($options['messageCount'], 'gte');
     if ($options['messageCountMax'] > 0)  $conditions['both']['messageCount'] = $this->int($options['messageCount'], 'lte');
@@ -444,7 +473,7 @@ class fimDatabase extends databaseSQL {
 
 
     $columns = array(
-      $this->sqlPrefix . "users" => 'userId, userName, userFormatStart, userFormatEnd, profile, avatar, socialGroups, defaultColor, defaultHighlight, defaultFontface, defaultFormatting, userGroup, options, defaultRoom, parentalAge, parentalFlags, adminPrivs',
+      $this->sqlPrefix . "users" => 'userId, userName, userFormatStart, userFormatEnd, profile, avatar, socialGroups, defaultColor, defaultHighlight, defaultFontface, defaultFormatting, userGroup, options, defaultRoom, userParentalAge, userParentalFlags, adminPrivs',
     );
 
 
@@ -454,6 +483,11 @@ class fimDatabase extends databaseSQL {
     /* Modify Query Data for Directives */
     if ($options['bannedStatus'] === 'banned') $conditions['both']['!options'] = $this->int(1, 'bAnd'); // TODO: Test!
     if ($options['bannedStatus'] === 'unbanned') $conditions['both']['options'] = $this->int(1, 'bAnd'); // TODO: Test!
+
+
+    if (count($options['hasAdminPrivs']) > 0) {
+      foreach ($options['hasAdminPrivs'] AS $adminPriv) $conditions['both']['adminPrivs'] = $this->int($adminPriv, 'bAnd');
+    }
 
 
     if (count($options['userIds']) > 0 || count($options['userNames']) > 0 || $options['userNameSearch']) {
