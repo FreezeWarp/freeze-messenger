@@ -140,22 +140,22 @@ class databaseSQL extends database {
       case 'mysqli':
       switch ($operation) {
         case 'connect':
-          $function = mysqli_connect($args[1], $args[3], $args[4], ($args[5] ? $args[5] : null), (int) $args[2]);
-          $this->version = mysqli_get_server_info($function);
+          $this->connection = new mysqli($args[1], $args[3], $args[4], ($args[5] ? $args[5] : null), (int) $args[2]);
+          $this->version = $this->connection->server_info;
 
-          return $function;
+          return $this->connection;
         break;
 
         case 'error':
-          if (isset($this->dbLink)) return mysqli_error($this->dbLink);
-          else                      return mysqli_connect_error();
+          if (isset($this->connection->connect_errno)) return $this->connection->connect_error;
+          else                                         return $this->connection->error;
         break;
 
-        case 'selectdb': return mysqli_select_db($this->dbLink, $args[1]);                                                            break;
-        case 'close':    return mysqli_close($this->dbLink);                                                                          break;
-        case 'escape':   return mysqli_real_escape_string($this->dbLink, $args[1]);                                                   break;
-        case 'query':    return mysqli_query($this->dbLink, $args[1]);                                                                break;
-        case 'insertId': return mysqli_insert_id($this->dbLink);                                                                      break;
+        case 'selectdb': return $this->connection->select_db($args[1]);                                                            break;
+        case 'close':    return $this->connection->close();                                                                          break;
+        case 'escape':   return $this->connection->real_escape_string($args[1]);                                                   break;
+        case 'query':    return $this->connection->query($args[1]);                                                                break;
+        case 'insertId': return $this->connection->insert_id;                                                                      break;
         default:         $this->triggerError("[Function Map] Unrecognised Operation", array('operation' => $operation), 'validation'); break;
       }
       break;
@@ -307,6 +307,9 @@ class databaseSQL extends database {
     $this->setLanguage($driver);
     $this->sqlPrefix = $tablePrefix;
 
+    if ($driver === 'mysqli' && PHP_VERSION_ID < 50209) { // if PHP_VERSION_ID isn't defined with versions < 5.2.7, but this obviously isn't a problem here.
+      throw new Exception('MySQLi not supported on versions of PHP < 5.2.9');
+    }
     if (!$link = $this->functionMap('connect', $host, $port, $user, $password, $database)) { // Make the connection.
       $this->triggerError('Could Not Connect', array( // Note: we do not include "password" in the error data.
         'host' => $host,

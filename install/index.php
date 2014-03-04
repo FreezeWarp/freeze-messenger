@@ -23,6 +23,14 @@ $optionalInstallFlags = 0; // ""
 $installStatusDB = 0; // And one for supported DBs.
 
 
+/* Available in 5.2.7+ */
+if (!defined('PHP_VERSION_ID')) {
+  $version = explode('.', PHP_VERSION);
+
+  define('PHP_VERSION_ID', ($version[0] * 10000 + $version[1] * 100 + $version[2]));
+}
+
+
 // Define CONSTANTS (it's a bit excessive here, but...)
 define('INSTALL_ISSUE_PHP_VERSION', 1);
 define('INSTALL_ISSUE_DB', 16);
@@ -51,12 +59,12 @@ define('INSTALL_DB_MSSQL', 16);
 
 // Install Status - DB
 if (extension_loaded('mysql')) $installStatusDB += INSTALL_DB_MYSQL;
-if (extension_loaded('mysqli')) $installStatusDB += INSTALL_DB_MYSQLI;
+if (extension_loaded('mysqli') && PHP_VERSION_ID > 50209) $installStatusDB += INSTALL_DB_MYSQLI; // MySQLi has a weird issue that was fixed in 5.2.9 and 5.3.0; see http://www.php.net/manual/en/mysqli.connect-error.php
 //if (extension_loaded('postgresql')) $installStatusDB += INSTALL_DB_POSTGRESQL;
 
 
 // PHP Issues
-if (floatval(phpversion()) < 5.2) $installFlags += INSTALL_ISSUE_PHP_VERSION;
+if (PHP_VERSION_ID < 50200) $installFlags += INSTALL_ISSUE_PHP_VERSION;
 
 
 // DB Issues

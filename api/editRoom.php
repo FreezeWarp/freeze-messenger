@@ -199,27 +199,26 @@ if (!$errStr) {
       if ($room === false) {
         $errStr = 'noRoom';
         $errDesc = 'The room specified does not exist.';
-        $continue = false;
+      }
+      elseif ($room['roomType'] !== 'general') {
+        $errStr = 'nongeneralRoom';
       }
       elseif (!fim_hasPermission($room, $user, 'admin', true)) { // The user must be an admin (or, inherently, the room's owner) to edit rooms.
         $errStr = 'noPerm';
         $errDesc = 'You do not have permission to edit this room.';
-        $continue = false;
       }
       elseif ($room['settings'] & 4) { // Make sure the room hasn't been deleted.
         $errStr = 'deleted';
         $errDesc = 'The room has been deleted - it can not be edited.';
-        $continue = false;
       }
       elseif (count($data) > 0 && $data['roomId'] !== $room['roomId']) { // Make sure no other room with that name exists (if no room is found, the result is false), and that, of course, this only applies if the user just specified the current room's existing name.
         $errStr = 'exists';
         $errDesc = 'The room name specified already exists.';
-        $continue = false;
       }
     }
 
 
-    if ($continue) {
+    if (!$errStr) {
       if (strlen($request['roomName']) == 0) {
         $errStr = 'noName';
         $errDesc = 'A room name was not supplied.';
