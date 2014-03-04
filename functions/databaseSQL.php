@@ -55,7 +55,7 @@
  * 5.0.15: The pad value for BINARY has changed from a space to \0, as has the handling of these. Using a BINARY(3) type with a value of 'a ' to illustrate: in the original, SELECT, DISTINCT, and ORDER BY operations remove all trailing spaces ('a'), while in the new version SELECT, DISTINCT, and ORDER BY maintain all additional null bytes ('a \0'). InnoDB still uses trailing spaces ('a  '), and did not remove the trailing spaces until 5.0.19 ('a').
  * 5.0.15: CHAR() returns a binary string instead of a character set. A "USING" may be used instead to specify a character set. For instance, SELECT CHAR() returns a VARBINARY but previously would have returned VARCHAR (similarly, CHAR(ORD('A')) is equvilent to 'a' prior to this change, but now would only be so if a latin character set is specified.).
  * 5.0.25: lc_time_names will affect the display of DATE_FORMAT(), DAYNAME(), and MONTHNAME().
- * 5.0.42: When DATE and DATETIME interact, DATE is now converted to DATETIME with 00:00:00. Prior to 5.0.42, DATETIME would instead loose its time portion. CAST() can be used to mimic the old behavior.
+ * 5.0.42: When DATE and DATETIME interact, DATE is now converted to DATETIME with 00:00:00. Prior to 5.0.42, DATETIME would instead lose its time portion. CAST() can be used to mimic the old behavior.
  * 5.0.50: Statesments containing "/*" without "*\/" are no longer accepted.
  * 5.1.0: table_cache -> table_open_cache
  * 5.1.0: "-", "*", "/", POW(), and EXP() now return NULL if an error is occured during floating-point operations. Previously, they may return "+INF", "-INF", or NaN.
@@ -115,6 +115,7 @@ class databaseSQL extends database {
   private function functionMap($operation) {
     $args = func_get_args();
 
+    /* TODO: consistent responses (e.g. FALSE on failure) */
     switch ($this->language) {
       case 'mysql':
       switch ($operation) {
@@ -132,6 +133,9 @@ class databaseSQL extends database {
         case 'escape':   return mysql_real_escape_string($args[1], $this->dbLink);                                                    break;
         case 'query':    return mysql_query($args[1], $this->dbLink);                                                                 break;
         case 'insertId': return mysql_insert_id($this->dbLink);                                                                       break;
+        case 'startTrans': $this->rawQuery('START TRANSACTION'); break;
+        case 'endTrans': $this->rawQuery('COMMIT'); break;
+        case 'rollbackTrans': $this->rawQuery('ROLLBACK'); break;
         default:         $this->triggerError("[Function Map] Unrecognised Operation", array('operation' => $operation), 'validation'); break;
       }
       break;
@@ -156,6 +160,9 @@ class databaseSQL extends database {
         case 'escape':   return $this->connection->real_escape_string($args[1]);                                                   break;
         case 'query':    return $this->connection->query($args[1]);                                                                break;
         case 'insertId': return $this->connection->insert_id;                                                                      break;
+        case 'startTrans': $this->connection->autocommit(false); break; // Use start_transaction in PHP 5.5
+        case 'endTrans':    $this->connection->commit(); $this->connection->autocommit(true); break;
+        case 'rollbackTrans': $this->connection->rollback(); $this->connection->autocommit(true);  break;
         default:         $this->triggerError("[Function Map] Unrecognised Operation", array('operation' => $operation), 'validation'); break;
       }
       break;
@@ -164,7 +171,13 @@ class databaseSQL extends database {
       case 'pdo':
       switch ($operation) {
         case 'connect':// var_dump($args); die();
-          $this->connection = new PDO("mysql:dbname=$args[5];host=$args[1]:$args[2]", $args[3], $args[4]);
+          try {
+            $this->connection = new PDO("mysql:dbname=$args[5];host=$args[1]:$args[2]", $args[3], $args[4]);
+          } catch (PDOException $e) {
+            $this->connection->errorCode = $e->getFile();
+            die($this->connection->errorCode); return false;
+          }
+
           $this->version = $this->connection->getAttribute(PDO::ATTR_SERVER_VERSION);
           $this->activeDatabase = $args[5];
 
@@ -175,8 +188,8 @@ class databaseSQL extends database {
           return $this->connection->errorCode;
         break;
 
-//        case 'selectdb': return $this->rawQuery("USE " . $args[1]);                                                                         break;
-        case 'close':    unset($this->connection); return true;                                                                       break;
+        case 'selectdb': return $this->rawQuery("USE " . $this->formatValue("database", $args[1]);                                 break; // TODO test
+        case 'close': unset($this->connection); return true;                                                                       break;
         case 'escape':
           switch ($args[2]) {
             case 'string': case 'search': return $this->connection->quote($args[1], PDO::PARAM_STR); break;
@@ -184,25 +197,29 @@ class databaseSQL extends database {
             case 'column':case 'columnA':case 'table':case 'tableA':case 'database': return $args[1]; break;
             default: $this->triggerError('Invalid context.', array('arguments' => $args), 'validation'); break;
           }
-                                                                           break; // Note: long-term, we should implement this using prepared statements.
+        break; // Note: long-term, we should implement this using prepared statements.
         case 'query':
         return $this->connection->query($args[1]);
         break;
         case 'insertId': return $this->connection->lastInsertId();                                                                      break;
+        case 'startTrans': $this->connection->beginTransaction(); break; // Use start_transaction in PHP 5.5
+        case 'endTrans':    $this->connection->commit(); break;
+        case 'rollbackTrans': $this->connection->rollBack(); break;
         default:         $this->triggerError("[Function Map] Unrecognised Operation", array('operation' => $operation), 'validation'); break;
-      }
+-      }
       break;
 
 
-      case 'postgresql':
+      case 'pgsql':
       switch ($operation) {
         case 'connect':  return pg_connect("host=$args[1] port=$args[2] username=$args[3] password=$args[4] dbname=$args[5]");       break;
         case 'error':    return pg_last_error($this->dbLink);                                                                        break;
         case 'close':    return pg_close($this->dbLink);                                                                             break;
         case 'escape':   return pg_escape_string($this->dbLink, $args[1]);                                                           break;
         case 'query':    return pg_query($this->dbLink, $args[1]);                                                                   break;
-        case 'insertId': /* TODO */                                                                                                  break;
-        default:        $this->triggerError("[Function Map] Unrecognised Operation", array('operation' => $operation), 'validation'); break;
+        case 'insertId': return $this->rawQuery('SELECT LASTVAL()')->getAsArray(false, false, 0);                                    break; // Note: Returning is by far the best solution, and should be considered in future versions. This would require defining the insertId column, which might be doable.
+        case 'notify':   return pg_get_notify($this->dbLink); break;
+        default:         $this->triggerError("[Function Map] Unrecognised Operation", array('operation' => $operation), 'validation'); break;
       }
       break;
     }
@@ -307,10 +324,15 @@ class databaseSQL extends database {
     $this->setLanguage($driver);
     $this->sqlPrefix = $tablePrefix;
 
-    if ($driver === 'mysqli' && PHP_VERSION_ID < 50209) { // if PHP_VERSION_ID isn't defined with versions < 5.2.7, but this obviously isn't a problem here.
-      throw new Exception('MySQLi not supported on versions of PHP < 5.2.9');
+    switch ($driver) {
+      case 'mysqli':
+      if (PHP_VERSION_ID < 50209) { // if PHP_VERSION_ID isn't defined with versions < 5.2.7, but this obviously isn't a problem here.
+        throw new Exception('MySQLi not supported on versions of PHP < 5.2.9');
+      }
+      break;
     }
-    if (!$link = $this->functionMap('connect', $host, $port, $user, $password, $database)) { // Make the connection.
+
+    if (!$this->functionMap('connect', $host, $port, $user, $password, $database)) { // Make the connection.
       $this->triggerError('Could Not Connect', array( // Note: we do not include "password" in the error data.
         'host' => $host,
         'port' => $port,
@@ -319,9 +341,6 @@ class databaseSQL extends database {
       ), 'connection');
 
       return false;
-    }
-    else {
-      $this->dbLink = $link; // Set the object property "dbLink" to the database connection resource. It will be used with most other queries that can accept this parameter.
     }
 
     if (!$this->activeDatabase && $database) { // Some drivers will require this.
@@ -382,7 +401,7 @@ class databaseSQL extends database {
         $this->tableAliasDivider = ' AS '; $this->columnAliasDivider = ' AS ';
         break;
 
-      case 'postgresql':
+      case 'pgsql':
       $this->tableQuoteStart = '"';    $this->tableQuoteEnd = '"';    $this->tableAliasQuoteStart = '"';    $this->tableAliasQuoteEnd = '"';
       $this->columnQuoteStart = '"';   $this->columnQuoteEnd = '"';   $this->columnAliasQuoteStart = '"';   $this->columnAliasQuoteEnd = '"';
       $this->databaseQuoteStart = '"'; $this->databaseQuoteEnd = '"'; $this->databaseAliasQuoteStart = '"'; $this->databaseAliasQuoteEnd = '"';
@@ -398,7 +417,7 @@ class databaseSQL extends database {
     switch ($this->language) {
       case 'mysql':
       case 'mysqli':
-      case 'postgresql':
+      case 'pgsql':
       case 'pdo':
       $this->comparisonTypes = array(
         'e' => '=',  '!e' => '!=', 'in' => 'IN',  '!in' => 'NOT IN',
@@ -549,7 +568,39 @@ class databaseSQL extends database {
   ******************* General Functions *******************
   *********************************************************/
 
-  
+
+
+  /*********************************************************
+   ************************ START **************************
+   ********************* Transactions **********************
+   *********************************************************/
+
+
+
+  public function startTransaction() {
+
+  }
+
+
+
+  public function rollbackTransaction() {
+
+  }
+
+
+
+  public function endTransaction() {
+
+  }
+
+
+
+  /*********************************************************
+   ************************* END ***************************
+   ********************* Transactions **********************
+   *********************************************************/
+
+
   
   /*********************************************************
   ************************ START **************************

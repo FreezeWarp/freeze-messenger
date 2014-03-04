@@ -275,6 +275,20 @@
       <column name="text" type="string" maxlen="5000" comment="The text of the message." />
       <column name="flag" type="string" maxlen="10" comment="The content-type flag set for the message." />
 
+      <trigger lang="postgre" comment="A trigger that watches the messagesCached table, returning results in JSON. By default the returned JSON _cannot_ be greater than 8,000 bytes.">
+        CREATE OR REPLACE FUNCTION notifyMessage() RETURNS trigger AS $$
+          DECLARE
+        BEGIN
+        SELECT row_to_json(NEW, false) AS jsonString
+        SELECT (CASE WHEN octet_length(jsonString) > 8000 THEN NEW.messageId ELSE jsonString) AS jsonStringChecked
+        PERFORM pg_notify('messagesCachedNotify', jsonStringChecked);
+        RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql;
+
+        CREATE TRIGGER notifyMessage AFTER UPDATE ON messagesCached FOR EACH ROW EXECUTE PROCEDURE notifyMessage();
+      </trigger>
+
       <key name="id" type="primary" />
       <key name="messageId" type="index" />
       <key name="roomId" type="index" />

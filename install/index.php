@@ -52,15 +52,18 @@ define('OPTIONAL_INSTALL_ISSUE_CURL', 65536);
 
 define('INSTALL_DB_MYSQL', 1);
 define('INSTALL_DB_MYSQLI', 2);
-//define('INSTALL_DB_POSTGRESQL', 4);
-define('INSTALL_DB_PDO', 8);
-define('INSTALL_DB_MSSQL', 16);
+define('INSTALL_DB_PDO_MYSQL', 4);
+define('INSTALL_DB_POSTGRESQL', 8);
+define('INSTALL_DB_PDO_POSTGRESQL', 16);
+define('INSTALL_DB_MSSQL', 32);
 
 
 // Install Status - DB
 if (extension_loaded('mysql')) $installStatusDB += INSTALL_DB_MYSQL;
 if (extension_loaded('mysqli') && PHP_VERSION_ID > 50209) $installStatusDB += INSTALL_DB_MYSQLI; // MySQLi has a weird issue that was fixed in 5.2.9 and 5.3.0; see http://www.php.net/manual/en/mysqli.connect-error.php
-//if (extension_loaded('postgresql')) $installStatusDB += INSTALL_DB_POSTGRESQL;
+if (extension_loaded('pdo_mysql')) $installStatusDB += INSTALL_DB_PDO_MYSQL;
+if (extension_loaded('pdo_pgsql')) $installStatusDB += INSTALL_DB_PDO_POSTGRESQL;
+if (extension_loaded('postgresql')) $installStatusDB += INSTALL_DB_POSTGRESQL;
 
 
 // PHP Issues
@@ -351,7 +354,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
       </tr>
     </thead>
     <tbody>
-      <tr class="<?php echo ($installStatusDB & INSTALL_DB_MYSQL ? 'installedFlag' : 'unininstalledFlag'); ?>">
+      <tr class="<?php echo ($installStatusDB & (INSTALL_DB_MYSQL + INSTALL_DB_MYSQLI + INSTALL_DB_PDO_MYSQL) ? 'installedFlag' : 'unininstalledFlag'); ?>">
         <td>MySQL</td>
         <td>5.0</td>
         <td>*</td>
@@ -359,14 +362,22 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
         <td>On Ubuntu: <pre>sudo apt-get install mysql-server libapache2-mod-auth-mysql php5-mysql</pre><br />
           On Windows: See <a href="http://php.net/manual/en/install.windows.installer.msi.php">http://php.net/manual/en/install.windows.installer.msi.php</a></td>
       </tr>
-      <tr class="<?php echo ($installStatusDB & INSTALL_DB_MYSQLI ? 'installedFlag' : 'uninstalledFlag'); ?>">
+      <tr class="<?php echo ($installStatusDB & (INSTALL_DB_POSTGRESQL + INSTALL_DB_PDO_POSTGRESQL) ? 'installedFlag' : 'unininstalledFlag'); ?>">
+        <td>PostGreSQL</td>
+        <td>?</td>
+        <td>*</td>
+        <td>Database</td>
+        <td>On Ubuntu: <pre>sudo apt-get install mysql-server libapache2-mod-auth-mysql php5-mysql</pre><br />
+          On Windows: See <a href="http://php.net/manual/en/install.windows.installer.msi.php">http://php.net/manual/en/install.windows.installer.msi.php</a></td>
+      </tr>
+<!--      <tr class="<?php echo ($installStatusDB & INSTALL_DB_MYSQLI ? 'installedFlag' : 'uninstalledFlag'); ?>">
         <td>MySQLi</td>
         <td>5.0</td>
         <td>*</td>
         <td>Database</td>
         <td>On Ubuntu: <pre>sudo apt-get install mysql-server libapache2-mod-auth-mysql php5-mysql</pre><br />
           On Windows: See <a href="http://php.net/manual/en/install.windows.installer.msi.php">http://php.net/manual/en/install.windows.installer.msi.php</a></td>
-      </tr>
+      </tr>-->
     </tbody>
     <thead>
       <tr class="ui-widget-header">
@@ -422,18 +433,20 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
       </thead>
       <tbody>
         <tr>
-          <td width="20%"><strong>Driver</strong></td>
+          <td width="20%"><strong>Database & Driver</strong></td>
           <td width="80%"><select name="db_driver">
           <?php
-            if ($installStatusDB & INSTALL_DB_MYSQL) echo '<option value="mysql">MySQL</option>';
-            if ($installStatusDB & INSTALL_DB_MYSQLI) echo '<option value="mysql">MySQLi</option>';
-            //if ($installStatusDB & INSTALL_DB_POSTGRESQL) echo '<option value="mysql">PostGreSQL (Broken)</option>';
+            if ($installStatusDB & INSTALL_DB_MYSQL) echo '<option value="mysql">MySQL, MySQL Driver (Discouraged)</option>';
+            if ($installStatusDB & INSTALL_DB_MYSQLI) echo '<option value="mysqli">MySQL, MySQLi Driver (Recommended for MySQL)</option>';
+            if ($installStatusDB & INSTALL_DB_PDO_MYSQL) echo '<option value="pdo-mysql">MySQL, PDO Driver</option>';
+            if ($installStatusDB & INSTALL_DB_POSTGRESQL) echo '<option value="pgsql">PostGreSQL, PostGreSQL Driver (Recommended for PostGreSQL)</option>';
+            if ($installStatusDB & INSTALL_DB_PDO_POSTGRESQL) echo '<option value="pdo-pgsql">PostGreSQL, PDO Driver</option>';
           ?>
-          </select><br /><small>The datbase driver. For most users, "MySQL" will work fine.</small></td>
+          </select><br /><small>The database and corresponding driver. If you are integrating with a forum, choose the database (either MySQL or PostgreSQL) that your forum uses. Otherwise PostgreSQL, with the PostgreSQL driver, is best if available.</small></td>
         </tr>
         <tr>
           <td><strong>Host</strong></td>
-          <td><input id="db_host" type="text" name="db_host" value="<?php echo $_SERVER['SERVER_NAME']; ?>" /><br /><small>The host of the MySQL server. In most cases, the default shown here <em>should</em> work.</small></td>
+          <td><input id="db_host" type="text" name="db_host" value="<?php echo $_SERVER['SERVER_NAME']; ?>" /><br /><small>The host of the SQL server. In most cases, the default shown here <em>should</em> work.</small></td>
         </tr>
         <tr>
           <td><strong>Port</strong></td>

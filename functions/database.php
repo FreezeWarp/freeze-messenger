@@ -303,6 +303,31 @@ abstract class database {
   ******************** Error Handling *********************
   *********************************************************/
 
+
+
+  /*********************************************************
+   ************************ START **************************
+   ********************* Transactions **********************
+   *********************************************************/
+
+
+
+  abstract function startTransaction();
+
+
+
+  abstract function rollbackTransaction();
+
+
+
+  abstract function endTransaction();
+
+
+
+  /*********************************************************
+   ************************* END ***************************
+   ********************* Transactions **********************
+   *********************************************************/
   
   
 
@@ -782,7 +807,7 @@ class databaseResult {
    * @return array
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
-  public function getAsArray($index = true, $group = false) {
+  public function getAsArray($index = true, $group = false, $index = false) {
     $data = array();
     $indexV = 0;
 
@@ -825,7 +850,7 @@ class databaseResult {
       }
       else { // No index is present, generate a two-dimensional array (key => value, key being the column name, value being the corrosponding value).
         $return = $this->functionMap('fetchAsArray', $this->queryData);
-        return (!$return ? array() : $return);
+        return (!$return ? array() : ($index !== false ? $return[$index] : $return));
       }
     }
 
