@@ -1074,7 +1074,7 @@ function windowResize() {
   $('#menuParent').css('height', windowHeight - 30); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
   $('#messageList').css('max-width', ((windowWidth - 20) * .75)); // Prevent box-stretching. This is common on... many chats.
 
-  $("#menu").accordion("refresh");
+  if ($("#menu").hasClass("ui-accordion")) $("#menu").accordion("refresh");
 
   $('body').css('min-height', windowHeight - 1); // Set the body height to equal that of the window; this fixes many gradient issues in theming.
 

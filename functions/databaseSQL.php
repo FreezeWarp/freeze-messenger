@@ -88,14 +88,17 @@ class databaseSQL extends database {
   public $versionSeconday = 0;
   public $versionTertiary = 0;
   public $versionString = '0.0.0';
-  public $supportedLanguages = array('mysql', 'mysqli');
+  public $supportedLanguages = array('mysql', 'mysqli', 'pdo');
   public $storeTypes = array('memory', 'general', 'innodb');
   public $queryLog = array();
   public $mode = 'SQL';
   public $language = '';
 
   public $returnQueryString = false;
-  
+
+  protected $connection = false;
+  protected $connectionResult = false;
+
   protected $dbLink = false;
 
   /*********************************************************
@@ -153,6 +156,39 @@ class databaseSQL extends database {
         case 'escape':   return mysqli_real_escape_string($this->dbLink, $args[1]);                                                   break;
         case 'query':    return mysqli_query($this->dbLink, $args[1]);                                                                break;
         case 'insertId': return mysqli_insert_id($this->dbLink);                                                                      break;
+        default:         $this->triggerError("[Function Map] Unrecognised Operation", array('operation' => $operation), 'validation'); break;
+      }
+      break;
+
+
+      case 'pdo':
+      switch ($operation) {
+        case 'connect':// var_dump($args); die();
+          $this->connection = new PDO("mysql:dbname=$args[5];host=$args[1]:$args[2]", $args[3], $args[4]);
+          $this->version = $this->connection->getAttribute(PDO::ATTR_SERVER_VERSION);
+          $this->activeDatabase = $args[5];
+
+          return $this->connection;
+          break;
+
+        case 'error':
+          return $this->connection->errorCode;
+        break;
+
+//        case 'selectdb': return $this->rawQuery("USE " . $args[1]);                                                                         break;
+        case 'close':    unset($this->connection); return true;                                                                       break;
+        case 'escape':
+          switch ($args[2]) {
+            case 'string': case 'search': return $this->connection->quote($args[1], PDO::PARAM_STR); break;
+            case 'integer': case 'timestamp': return $this->connection->quote($args[1], PDO::PARAM_STR); break;
+            case 'column':case 'columnA':case 'table':case 'tableA':case 'database': return $args[1]; break;
+            default: $this->triggerError('Invalid context.', array('arguments' => $args), 'validation'); break;
+          }
+                                                                           break; // Note: long-term, we should implement this using prepared statements.
+        case 'query':
+        return $this->connection->query($args[1]);
+        break;
+        case 'insertId': return $this->connection->lastInsertId();                                                                      break;
         default:         $this->triggerError("[Function Map] Unrecognised Operation", array('operation' => $operation), 'validation'); break;
       }
       break;
@@ -331,6 +367,18 @@ class databaseSQL extends database {
       );
       break;
 
+      case 'pdo':
+        $this->tableQuoteStart = '';      $this->tableQuoteEnd = '';    $this->tableAliasQuoteStart = '';    $this->tableAliasQuoteEnd = '';
+        $this->columnQuoteStart = '';     $this->columnQuoteEnd = '';   $this->columnAliasQuoteStart = '';   $this->columnAliasQuoteEnd = '';
+        $this->databaseQuoteStart = '';   $this->databaseQuoteEnd = ''; $this->databaseAliasQuoteStart = ''; $this->databaseAliasQuoteEnd = '';
+        $this->stringQuoteStart = '';     $this->stringQuoteEnd = '';   $this->emptyString = '""';           $this->stringFuzzy = '%';
+        $this->arrayQuoteStart = '(';     $this->arrayQuoteEnd = ')';   $this->arraySeperator = ', ';
+        $this->intQuoteStart = '';        $this->intQuoteEnd = '';
+        $this->tableColumnDivider = '.';  $this->databaseTableDivider = '.';
+        $this->sortOrderAsc = 'ASC';      $this->sortOrderDesc = 'DESC';
+        $this->tableAliasDivider = ' AS '; $this->columnAliasDivider = ' AS ';
+        break;
+
       case 'postgresql':
       $this->tableQuoteStart = '"';    $this->tableQuoteEnd = '"';    $this->tableAliasQuoteStart = '"';    $this->tableAliasQuoteEnd = '"';
       $this->columnQuoteStart = '"';   $this->columnQuoteEnd = '"';   $this->columnAliasQuoteStart = '"';   $this->columnAliasQuoteEnd = '"';
@@ -348,6 +396,7 @@ class databaseSQL extends database {
       case 'mysql':
       case 'mysqli':
       case 'postgresql':
+      case 'pdo':
       $this->comparisonTypes = array(
         'e' => '=',  '!e' => '!=', 'in' => 'IN',  '!in' => 'NOT IN',
         'lt' => '<', 'gt' => '>',  'lte' => '<=', 'gte' => '>=',

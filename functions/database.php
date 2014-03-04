@@ -753,6 +753,12 @@ class databaseResult {
         case 'fetchAsArray' : return (($data = mysqli_fetch_assoc($args[1])) === null ? false : $data); break;
       }
       break;
+
+      case 'pdo':
+      switch ($operation) {
+        case 'fetchAsArray' : return ((($data = $this->queryData->fetch(PDO::FETCH_ASSOC)) === null) ? false : $data); break;
+      }
+      break;
     }
   }
 
