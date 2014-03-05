@@ -76,6 +76,18 @@
 
  * Further Reading:
  ** http://dev.mysql.com/doc/refman/5.0/en/upgrading-from-previous-series.html */
+
+
+/* PostGreSQL (better list @ http://www.postgresql.org/about/featurematrix/)
+ * 8.0: savepoints, ability to alter column type, table spaces
+ * 8.1: Two-phase commit, new permissions system,
+ * 8.2: RETURNING, nulls in arrays,
+ * 8.3: Full text search, XML, ENUM data types, UUID type,
+ * 8.4: Column permissions, per-database locale,
+ * 9.0: 64-bit WIN support, better LISTEN/NOTIFY perfrmance, per-column triggers
+ * 9.1: Sync. replication, foreign tables,
+ * 9.2: Index-only scans, cascading replication, range data types, JSON data type,
+ */
  
 class databaseSQL extends database {
   public $classVersion = 3;
@@ -93,6 +105,8 @@ class databaseSQL extends database {
   public $queryLog = array();
   public $mode = 'SQL';
   public $language = '';
+
+  public $disableEnum = false;
 
   public $returnQueryString = false;
 
@@ -116,7 +130,7 @@ class databaseSQL extends database {
     $args = func_get_args();
 
     /* TODO: consistent responses (e.g. FALSE on failure) */
-    switch ($this->language) {
+    switch ($this->driver) {
       case 'mysql':
       switch ($operation) {
         case 'connect':
@@ -368,25 +382,20 @@ class databaseSQL extends database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   private function setLanguage($language) {
-    $this->language = $language;
+    $this->driver = $language;
+    $this->language = $this->driverMap($this->driver);
 
-    switch ($this->language) {
-      case 'mysql':
-      case 'mysqli':
-      $this->tableQuoteStart = '`';      $this->tableQuoteEnd = '`';    $this->tableAliasQuoteStart = '`';    $this->tableAliasQuoteEnd = '`';
-      $this->columnQuoteStart = '`';     $this->columnQuoteEnd = '`';   $this->columnAliasQuoteStart = '`';   $this->columnAliasQuoteEnd = '`';
-      $this->databaseQuoteStart = '`';   $this->databaseQuoteEnd = '`'; $this->databaseAliasQuoteStart = '`'; $this->databaseAliasQuoteEnd = '`';
-      $this->stringQuoteStart = '"';     $this->stringQuoteEnd = '"';   $this->emptyString = '""';            $this->stringFuzzy = '%';
-      $this->arrayQuoteStart = '(';      $this->arrayQuoteEnd = ')';    $this->arraySeperator = ', ';
-      $this->intQuoteStart = '';         $this->intQuoteEnd = '';
-      $this->tableColumnDivider = '.';   $this->databaseTableDivider = '.';
-      $this->sortOrderAsc = 'ASC';       $this->sortOrderDesc = 'DESC';
-      $this->tableAliasDivider = ' AS '; $this->columnAliasDivider = ' AS ';
-
-      $this->tableTypes = array(
-        'general' => 'InnoDB',
-        'memory' => 'MEMORY',
-      );
+    switch ($this->driver) {
+      case 'mysql': case 'mysqli':
+        $this->tableQuoteStart = '`';      $this->tableQuoteEnd = '`';    $this->tableAliasQuoteStart = '`';    $this->tableAliasQuoteEnd = '`';
+        $this->columnQuoteStart = '`';     $this->columnQuoteEnd = '`';   $this->columnAliasQuoteStart = '`';   $this->columnAliasQuoteEnd = '`';
+        $this->databaseQuoteStart = '`';   $this->databaseQuoteEnd = '`'; $this->databaseAliasQuoteStart = '`'; $this->databaseAliasQuoteEnd = '`';
+        $this->stringQuoteStart = '"';     $this->stringQuoteEnd = '"';   $this->emptyString = '""';            $this->stringFuzzy = '%';
+        $this->arrayQuoteStart = '(';      $this->arrayQuoteEnd = ')';    $this->arraySeperator = ', ';
+        $this->intQuoteStart = '';         $this->intQuoteEnd = '';
+        $this->tableColumnDivider = '.';   $this->databaseTableDivider = '.';
+        $this->sortOrderAsc = 'ASC';       $this->sortOrderDesc = 'DESC';
+        $this->tableAliasDivider = ' AS '; $this->columnAliasDivider = ' AS ';
       break;
 
       case 'pdo':
@@ -399,26 +408,80 @@ class databaseSQL extends database {
         $this->tableColumnDivider = '.';  $this->databaseTableDivider = '.';
         $this->sortOrderAsc = 'ASC';      $this->sortOrderDesc = 'DESC';
         $this->tableAliasDivider = ' AS '; $this->columnAliasDivider = ' AS ';
-        break;
+      break;
 
       case 'pgsql':
-      $this->tableQuoteStart = '"';    $this->tableQuoteEnd = '"';    $this->tableAliasQuoteStart = '"';    $this->tableAliasQuoteEnd = '"';
-      $this->columnQuoteStart = '"';   $this->columnQuoteEnd = '"';   $this->columnAliasQuoteStart = '"';   $this->columnAliasQuoteEnd = '"';
-      $this->databaseQuoteStart = '"'; $this->databaseQuoteEnd = '"'; $this->databaseAliasQuoteStart = '"'; $this->databaseAliasQuoteEnd = '"';
-      $this->stringQuoteStart = '"';   $this->stringQuoteEnd = '"';   $this->emptyString = '""';            $this->stringFuzzy = '%';
-      $this->arrayQuoteStart = '(';    $this->arrayQuoteEnd = ')';    $this->arraySeperator = ', ';
-      $this->intQuoteStart = '';       $this->intQuoteEnd = '';
-      $this->tableColumnDivider = '.'; $this->databaseTableDivider = '.';
-      $this->sortOrderAsc = 'ASC';     $this->sortOrderDesc = 'DESC';
-      $this->tableAliasDivider = ' AS '; $this->columnAliasDivider = ' AS ';
+        $this->tableQuoteStart = '"';    $this->tableQuoteEnd = '"';    $this->tableAliasQuoteStart = '"';    $this->tableAliasQuoteEnd = '"';
+        $this->columnQuoteStart = '"';   $this->columnQuoteEnd = '"';   $this->columnAliasQuoteStart = '"';   $this->columnAliasQuoteEnd = '"';
+        $this->databaseQuoteStart = '"'; $this->databaseQuoteEnd = '"'; $this->databaseAliasQuoteStart = '"'; $this->databaseAliasQuoteEnd = '"';
+        $this->stringQuoteStart = '"';   $this->stringQuoteEnd = '"';   $this->emptyString = '""';            $this->stringFuzzy = '%';
+        $this->arrayQuoteStart = '(';    $this->arrayQuoteEnd = ')';    $this->arraySeperator = ', ';
+        $this->intQuoteStart = '';       $this->intQuoteEnd = '';
+        $this->tableColumnDivider = '.'; $this->databaseTableDivider = '.';
+        $this->sortOrderAsc = 'ASC';     $this->sortOrderDesc = 'DESC';
+        $this->tableAliasDivider = ' AS '; $this->columnAliasDivider = ' AS ';
       break;
     }
 
     switch ($this->language) {
       case 'mysql':
-      case 'mysqli':
+        $this->comparisonTypes = array(
+          'e' => '=',  '!e' => '!=', 'in' => 'IN',  '!in' => 'NOT IN',
+          'lt' => '<', 'gt' => '>',  'lte' => '<=', 'gte' => '>=',
+          'regex' => 'REGEXP',
+          'search' => 'LIKE',
+          'bAnd' => '&',
+        );
+
+        $this->concatTypes = array(
+          'both' => ' AND ', 'either' => ' OR ',
+        );
+
+        $this->keyTypeConstants = array(
+          'primary' => 'PRIMARY KEY',
+          'unique' => 'UNIQUE KEY',
+          'index' => 'KEY',
+        );
+
+        $this->defaultPhrases = array(
+          '__TIME__' => 'CURRENT_TIMESTAMP',
+        );
+
+        $this->dataTypes = array(
+          'columnIntLimits' => array(
+            1 => 'TINYINT',   2 => 'TINYINT',   3 => 'SMALLINT',  4 => 'SMALLINT', 5 => 'MEDIUMINT',
+            6 => 'MEDIUMINT', 7 => 'MEDIUMINT', 8 => 'INT',       9 => 'INT',      'default' => 'BIGINT'
+          ),
+
+          'columnStringPermLimits' => array(
+            1 => 'CHAR', 255 => 'VARCHAR', 1000 => 'TEXT', 8191 => 'MEDIUMTEXT', 2097151 => 'LONGTEXT'
+          ),
+
+          'columnStringTempLimits' => array(
+            255 => 'CHAR', 65535 => 'VARCHAR'
+          ),
+
+          'columnStringNoLength' => array(
+            'MEDIUMTEXT', 'LONGTEXT'
+          ),
+
+          'columnBitLimits' => array(
+            8 => 'TINYINT UNSIGNED',  16 => 'SMALLINT UNSIGNED', 24 => 'MEDIUMINT UNSIGNED',
+            32 => 'INTEGER UNSIGNED', 64 => 'BIGINT UNSIGNED',   'default' => 'INTEGER UNSIGNED',
+          ),
+
+          'bool' => 'TINYINT(1) UNSIGNED',
+          'time' => 'INTEGER UNSIGNED',
+        );
+
+        $this->boolValues = array(
+          true => 1, false => 0,
+        );
+
+        $this->useCreateType = false;
+      break;
+
       case 'pgsql':
-      case 'pdo':
       $this->comparisonTypes = array(
         'e' => '=',  '!e' => '!=', 'in' => 'IN',  '!in' => 'NOT IN',
         'lt' => '<', 'gt' => '>',  'lte' => '<=', 'gte' => '>=',
@@ -441,39 +504,44 @@ class databaseSQL extends database {
         '__TIME__' => 'CURRENT_TIMESTAMP',
       );
 
-      $this->columnIntLimits = array(
-        1 => 'TINYINT',   2 => 'TINYINT',   3 => 'SMALLINT',  4 => 'SMALLINT', 5 => 'MEDIUMINT',
-        6 => 'MEDIUMINT', 7 => 'MEDIUMINT', 8 => 'INT',       9 => 'INT',      0 => 'BIGINT'
+      $this->dataTypes = array(
+        'columnIntLimits' => array(
+          1 => 'SMALLINT',   2 => 'SMALLINT',   3 => 'SMALLINT',  4 => 'SMALLINT', 5 => 'INTEGER',
+          6 => 'INTEGER',    7 => 'INTEGER',    8 => 'INTEGER',   9 => 'INTEGER',  0 => 'BIGINT',
+        ),
+        'columnSerialLimits' => array(
+          1 => 'SERIAL', 2 => 'SERIAL', 3 => 'SERIAL',    4 => 'SERIAL',   5 => 'SERIAL',
+          6 => 'SERIAL', 7 => 'SERIAL', 8 => 'SERIAL',   9 => 'SERIAL',    'default' => 'BIGSERIAL',
+        ),
+        'columnStringPermLimits' => array(
+          1 => 'VARCHAR'
+        ),
+        'columnStringNoLength' => array(
+          'TEXT', // Unused
+        ),
+        'columnBitLimits' => array(
+          15 => 'SMALLINT', 31 => 'INTEGER', 63 => 'BIGINT',
+          127 => 'NUMERIC(40,0)', // Approximately -- maybe TODO
+          'default' => 'INTEGER',
+        ),
+        'bool' => 'SMALLINT', // Note: ENUM(1,2) AS BOOLENUM better.
+        'time' => 'INTEGER',
       );
 
-      $this->columnStringPermLimits = array(
-        1 => 'CHAR', 255 => 'VARCHAR', 1000 => 'TEXT', 8191 => 'MEDIUMTEXT', 2097151 => 'LONGTEXT'
-      );
-
-      $this->columnStringTempLimits = array(
-        255 => 'CHAR', 65535 => 'VARCHAR'
-      );
-
-      $this->columnStringNoLength = array(
-        'MEDIUMTEXT', 'LONGTEXT'
-      );
-
-      $this->columnBitLimits = array(
-        0 => 'TINYINT UNSIGNED',    8 => 'TINYINT UNSIGNED',  16 => 'SMALLINT UNSIGNED',
-        24 => 'MEDIUMINT UNSIGNED', 32 => 'INTEGER UNSIGNED', 64 => 'LONGINT UNSIGNED',
-      );
-
-      $this->globFindArray = array('*', '?');
-      $this->globReplaceArray = array('%', '_');
-      
       $this->boolValues = array(
         true => 1, false => 0,
       );
-      
-      $this->columnTypeConstants = array(
-        'bool' => 'TINYINT(1) UNSIGNED',
-        'time' => 'INTEGER UNSIGNED',
-      );
+
+      $this->useCreateType = true;
+      break;
+    }
+
+    switch ($this->language) {
+      case 'mysql':
+        $this->tableTypes = array(
+          'general' => 'InnoDB',
+          'memory' => 'MEMORY',
+        );
       break;
     }
   }
@@ -671,45 +739,57 @@ class databaseSQL extends database {
 
       switch ($column['type']) {
         case 'int':
-        if (isset($this->columnIntLimits[$column['maxlen']])) {
-          if (in_array($type, $this->columnStringNoLength)) $typePiece = $this->columnIntLimits[$column['maxlen']];
-          else $typePiece = $this->columnIntLimits[$column['maxlen']] . '(' . (int) $column['maxlen'] . ')';
-        }
-        else {
-          $typePiece = $this->columnIntLimits[0];
+        if (isset($this->columnSerialLimits) && isset($column['autoincrement']) && $column['autoincrement']) $intLimits = $this->columnSerialLimits;
+        else $intLimits = $this->dataTypes->columnIntLimits;
+
+        foreach ($intLimits AS $length => $type) {
+          if ($column['maxlen'] <= $length) {
+            $typePiece = $this->dataTypes->columnIntLimits[$column['maxlen']];
+            break;
+          }
         }
 
-        if (isset($column['autoincrement']) && $column['autoincrement']) {
+        if (!strlen($typePiece)) $typePiece = $this->dataTypes->columnIntLimits[0];
+
+        if (!isset($this->columnSerialLimits) && isset($column['autoincrement']) && $column['autoincrement']) {
           $typePiece .= ' AUTO_INCREMENT'; // Ya know, that thing where it sets itself.
           $tableProperties .= ' AUTO_INCREMENT = ' . (int) $column['autoincrement'];
         }
         break;
 
         case 'string':
-        if ($column['restrict']) {
+        if ($column['restrict'] && !$this->disableEnum) {
           $restrictValues = array();
+          foreach ((array) $column['restrict'] AS $value) $restrictValues[] = $this->formatValue("string", $value);
 
-          foreach ((array) $column['restrict'] AS $value) $restrictValues[] = '"' . $this->escape($value) . '"';
+          if ($this->useCreateType) {
+            $this->rawQuery('CREATE TYPE ' . $columnName . ' AS ENUM(
+              ' . implode(',', $restrictValues) . '
+            )');
 
-          $typePiece = 'ENUM(' . implode(',',$restrictValues) . ')';
+            $typePiece = $columnName;
+          }
+          else {
+            $typePiece = 'ENUM(' . implode(',', $restrictValues) . ')';
+          }
         }
         else {
-          if ($engine === 'memory')    $this->columnStringLimits = $this->columnStringTempLimits;
-          else                         $this->columnStringLimits = $this->columnStringPermLimits;
+          if ($engine === 'memory') $stringLimits = $this->dataTypes['columnStringTempLimits'];
+          else                      $stringLimits = $this->dataTypes['columnStringPermLimits'];
 
           $typePiece = '';
 
-          foreach ($this->columnStringLimits AS $length => $type) {
+          foreach ($stringLimits AS $length => $type) {
             if ($column['maxlen'] <= $length) {
-              if (in_array($type, $this->columnStringNoLength)) $typePiece = $type;
+              if (in_array($type, $this->dataTypes['columnStringNoLength'])) $typePiece = $type;
               else $typePiece = $type . '(' . $column['maxlen'] . ')';
 
               break;
             }
           }
 
-          if (!$typePiece) {
-            $typePiece = $this->columnStringNoLength[0];
+          if (!strlen($typePiece)) {
+            $typePiece = $this->dataTypes['columnStringNoLength']['default'];
           }
         }
 
@@ -721,25 +801,27 @@ class databaseSQL extends database {
         
         }
         else {
-          if (!isset($column['bits'])) {
-            $typePiece = 'TINYINT UNSIGNED'; // Sane default
+          if ($column['bits']) {
+            foreach ($this->dataTypes['columnBitLimits'] AS $bits => $type) {
+              if ($column['bits'] <= $bits) {
+                $typePiece = $type;
+                break;
+              }
+            }
           }
-          else {
-            if ($column['bits'] <= 8)      $typePiece = 'TINYINT UNSIGNED';
-            elseif ($column['bits'] <= 16) $typePiece = 'SMALLINT UNSIGNED';
-            elseif ($column['bits'] <= 24) $typePiece = 'MEDIUMINT UNSIGNED';
-            elseif ($column['bits'] <= 32) $typePiece = 'INTEGER UNSIGNED';
-            else                           $typePiece = 'LONGINT UNSIGNED';
+
+          if (!strlen($typePiece)) {
+            $typePiece = $this->dataTypes['columnBitLimits']['default'];
           }
         }
         break;
 
         case 'time':
-        $typePiece = 'INTEGER UNSIGNED'; // Note: replace with LONGINT to avoid the Epoch issues in 2038 (...I'll do it in FIM5 or so). For now, it's more optimized. Also, since its UNSIGNED, we actually have more until 2106 or something like that.
+        $typePiece = $this->dataTypes['time']; // Note: replace with LONGINT to avoid the Epoch issues in 2038 (...I'll do it in FIM5 or so). For now, it's more optimized. Also, since its UNSIGNED, we actually have more until 2106 or something like that.
         break;
 
         case 'bool':
-        $typePiece = 'TINYINT(1) UNSIGNED';
+        $typePiece = $this->dataTypes['bool'];
         break;
 
         default:
@@ -757,11 +839,11 @@ class databaseSQL extends database {
           $typePiece .= ' DEFAULT ' . $this->defaultPhrases[$column['default']];
         }
         else {
-          $typePiece .= ' DEFAULT "' . $this->escape($column['default']) . '"';
+          $typePiece .= ' DEFAULT ' . $this->formatValue('string', $column['default']);
         }
       }
 
-      $columns[] = $this->formatValue('column', $columnName) . $typePiece . ' NOT NULL COMMENT "' . $this->escape($column['comment']) . '"';
+      $columns[] = $this->formatValue('column', $columnName) . $typePiece . ' NOT NULL COMMENT ' . $this->formatValue('string', $column['comment']);
     }
 
 
@@ -797,7 +879,10 @@ class databaseSQL extends database {
     return $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->formatValue('table', $tableName) . ' (
 ' . implode(",\n  ", $columns) . ',
 ' . implode(",\n  ", $indexes) . '
-) ENGINE="' . $this->escape($engineName) . '" COMMENT="' . $this->escape($tableComment) . '" DEFAULT CHARSET="utf8"' . $tableProperties);
+)'
+    . ($this->language === 'mysql' ? ' ENGINE=' . $this->formatValue('string', $engineName) : '')
+    . ' COMMENT=' . $this->formatValue('string', $tableComment)
+    . ' DEFAULT CHARSET=' . $this->formatValue('string', 'utf8') . $tableProperties);
   }
   
   
@@ -816,9 +901,8 @@ class databaseSQL extends database {
   
   public function getTablesAsArray() {
     switch ($this->language) {
-      case 'mysql': case 'mysqli': case 'postgresql':
-      $tables = $this->rawQuery('SELECT * FROM ' . $this->formatValue('databaseTable', 'INFORMATION_SCHEMA', 'TABLES') . ' WHERE TABLE_SCHEMA = "' . $this->escape($this->activeDatabase) . '"');
-      $tables = $tables->getAsArray('TABLE_NAME');
+      case 'mysql': case 'postgresql':
+      $tables = $this->rawQuery('SELECT * FROM ' . $this->formatValue('databaseTable', 'INFORMATION_SCHEMA', 'TABLES') . ' WHERE TABLE_SCHEMA = ' . $this->formatValue('string', $this->activeDatabase))->getAsArray('TABLE_NAME');
       $tables = array_keys($tables);
       break;
     }
