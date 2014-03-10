@@ -106,6 +106,14 @@ class databaseSQL extends database {
   public $mode = 'SQL';
   public $language = '';
 
+  private $driverMap = array(
+    'mysql' => 'mysql',
+    'mysqli' => 'mysql',
+    'pdo-mysql' => 'mysql',
+    'pgsql' => 'pgsql',
+    'pdo-pqsql' => 'pqsql',
+  );
+
   public $disableEnum = false;
 
   public $returnQueryString = false;
@@ -134,19 +142,28 @@ class databaseSQL extends database {
       case 'mysql':
       switch ($operation) {
         case 'connect':
-          $function = mysql_connect("$args[1]:$args[2]", $args[3], $args[4]);
+          $this->connection = mysql_connect("$args[1]:$args[2]", $args[3], $args[4]);
           
-          if ($this->getVersion) $this->version = $this->setDatabaseVersion(mysql_get_server_info($function));
+          if ($this->getVersion) $this->version = $this->setDatabaseVersion(mysql_get_server_info($this->connection));
 
-          return $function;
+          return $this->connection;
         break;
 
-        case 'error':    return mysql_error(isset($this->dbLink) ? $this->dbLink : null);                                             break;
-        case 'close':    $function = mysql_close($this->dbLink); unset($this->dbLink); return $function;                              break;
-        case 'selectdb': return mysql_select_db($args[1], $this->dbLink);                                                             break;
-        case 'escape':   return mysql_real_escape_string($args[1], $this->dbLink);                                                    break;
-        case 'query':    return mysql_query($args[1], $this->dbLink);                                                                 break;
-        case 'insertId': return mysql_insert_id($this->dbLink);                                                                       break;
+        case 'error':    return mysql_error(isset($this->connection) ? $this->connection : null);                                             break;
+        case 'close':
+          if ($this->connection) {
+            $function = mysql_close($this->connection);
+            unset($this->connection);
+            return $function;
+          }
+          else {
+            return true;
+          }
+          break;
+        case 'selectdb': return mysql_select_db($args[1], $this->connection);                                                             break;
+        case 'escape':   return mysql_real_escape_string($args[1], $this->connection);                                                    break;
+        case 'query':    return mysql_query($args[1], $this->connection);                                                                 break;
+        case 'insertId': return mysql_insert_id($this->connection);                                                                       break;
         case 'startTrans': $this->rawQuery('START TRANSACTION'); break;
         case 'endTrans': $this->rawQuery('COMMIT'); break;
         case 'rollbackTrans': $this->rawQuery('ROLLBACK'); break;
@@ -202,7 +219,7 @@ class databaseSQL extends database {
           return $this->connection->errorCode;
         break;
 
-        case 'selectdb': return $this->rawQuery("USE " . $this->formatValue("database", $args[1]);                                 break; // TODO test
+        case 'selectdb': return $this->rawQuery("USE " . $this->formatValue("database", $args[1]));                                 break; // TODO test
         case 'close': unset($this->connection); return true;                                                                       break;
         case 'escape':
           switch ($args[2]) {
@@ -220,7 +237,7 @@ class databaseSQL extends database {
         case 'endTrans':    $this->connection->commit(); break;
         case 'rollbackTrans': $this->connection->rollBack(); break;
         default:         $this->triggerError("[Function Map] Unrecognised Operation", array('operation' => $operation), 'validation'); break;
--      }
+      }
       break;
 
 
@@ -383,7 +400,7 @@ class databaseSQL extends database {
   */
   private function setLanguage($language) {
     $this->driver = $language;
-    $this->language = $this->driverMap($this->driver);
+    $this->language = $this->driverMap[$this->driver];
 
     switch ($this->driver) {
       case 'mysql': case 'mysqli':
@@ -449,12 +466,12 @@ class databaseSQL extends database {
 
         $this->dataTypes = array(
           'columnIntLimits' => array(
-            1 => 'TINYINT',   2 => 'TINYINT',   3 => 'SMALLINT',  4 => 'SMALLINT', 5 => 'MEDIUMINT',
-            6 => 'MEDIUMINT', 7 => 'MEDIUMINT', 8 => 'INT',       9 => 'INT',      'default' => 'BIGINT'
+            2 => 'TINYINT',   4 => 'SMALLINT', 7 => 'MEDIUMINT', 9 => 'INT',
+            'default' => 'BIGINT'
           ),
 
           'columnStringPermLimits' => array(
-            1 => 'CHAR', 255 => 'VARCHAR', 1000 => 'TEXT', 8191 => 'MEDIUMTEXT', 2097151 => 'LONGTEXT'
+            255 => 'CHAR', 1000 => 'VARCHAR', 65535 => 'TEXT', 16777215 => 'MEDIUMTEXT', '4294967295' => 'LONGTEXT' // In MySQL, TEXT types are stored outside of the table. For searching purposes, we only use VARCHAR for relatively small values (I decided 1000 would be reasonable).
           ),
 
           'columnStringTempLimits' => array(
@@ -472,6 +489,7 @@ class databaseSQL extends database {
 
           'bool' => 'TINYINT(1) UNSIGNED',
           'time' => 'INTEGER UNSIGNED',
+          'binary' => 'BLOB',
         );
 
         $this->boolValues = array(
@@ -514,7 +532,7 @@ class databaseSQL extends database {
           6 => 'SERIAL', 7 => 'SERIAL', 8 => 'SERIAL',   9 => 'SERIAL',    'default' => 'BIGSERIAL',
         ),
         'columnStringPermLimits' => array(
-          1 => 'VARCHAR'
+          'default' => 'VARCHAR',
         ),
         'columnStringNoLength' => array(
           'TEXT', // Unused
@@ -526,6 +544,7 @@ class databaseSQL extends database {
         ),
         'bool' => 'SMALLINT', // Note: ENUM(1,2) AS BOOLENUM better.
         'time' => 'INTEGER',
+        'binary' => 'BYTEA',
       );
 
       $this->boolValues = array(
@@ -739,17 +758,17 @@ class databaseSQL extends database {
 
       switch ($column['type']) {
         case 'int':
-        if (isset($this->columnSerialLimits) && isset($column['autoincrement']) && $column['autoincrement']) $intLimits = $this->columnSerialLimits;
-        else $intLimits = $this->dataTypes->columnIntLimits;
+        if (isset($this->columnSerialLimits) && isset($column['autoincrement']) && $column['autoincrement']) $intLimits = $this->dataTypes['columnSerialLimits'];
+        else $intLimits = $this->dataTypes['columnIntLimits'];
 
         foreach ($intLimits AS $length => $type) {
           if ($column['maxlen'] <= $length) {
-            $typePiece = $this->dataTypes->columnIntLimits[$column['maxlen']];
+            $typePiece = $intLimits[$length];
             break;
           }
         }
 
-        if (!strlen($typePiece)) $typePiece = $this->dataTypes->columnIntLimits[0];
+        if (!strlen($typePiece)) $typePiece = $intLimits['default'];
 
         if (!isset($this->columnSerialLimits) && isset($column['autoincrement']) && $column['autoincrement']) {
           $typePiece .= ' AUTO_INCREMENT'; // Ya know, that thing where it sets itself.
@@ -793,7 +812,7 @@ class databaseSQL extends database {
           }
         }
 
-        $typePiece .= ' CHARACTER SET utf8 COLLATE utf8_bin';
+//        $typePiece .= ' CHARACTER SET utf8 COLLATE utf8_bin';
         break;
 
         case 'bitfield':
@@ -843,7 +862,7 @@ class databaseSQL extends database {
         }
       }
 
-      $columns[] = $this->formatValue('column', $columnName) . $typePiece . ' NOT NULL COMMENT ' . $this->formatValue('string', $column['comment']);
+      $columns[] = $this->formatValue('column', $columnName) . ' ' . $typePiece . ' NOT NULL COMMENT ' . $this->formatValue('string', $column['comment']);
     }
 
 
@@ -902,8 +921,7 @@ class databaseSQL extends database {
   public function getTablesAsArray() {
     switch ($this->language) {
       case 'mysql': case 'postgresql':
-      $tables = $this->rawQuery('SELECT * FROM ' . $this->formatValue('databaseTable', 'INFORMATION_SCHEMA', 'TABLES') . ' WHERE TABLE_SCHEMA = ' . $this->formatValue('string', $this->activeDatabase))->getAsArray('TABLE_NAME');
-      $tables = array_keys($tables);
+      $tables = array_keys($this->rawQuery('SELECT * FROM ' . $this->formatValue('databaseTable', 'INFORMATION_SCHEMA', 'TABLES') . ' WHERE TABLE_SCHEMA = ' . $this->formatValue('string', $this->activeDatabase))->getAsArray('TABLE_NAME'));
       break;
     }
     

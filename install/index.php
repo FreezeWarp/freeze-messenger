@@ -63,7 +63,7 @@ if (extension_loaded('mysql')) $installStatusDB += INSTALL_DB_MYSQL;
 if (extension_loaded('mysqli') && PHP_VERSION_ID > 50209) $installStatusDB += INSTALL_DB_MYSQLI; // MySQLi has a weird issue that was fixed in 5.2.9 and 5.3.0; see http://www.php.net/manual/en/mysqli.connect-error.php
 if (extension_loaded('pdo_mysql')) $installStatusDB += INSTALL_DB_PDO_MYSQL;
 if (extension_loaded('pdo_pgsql')) $installStatusDB += INSTALL_DB_PDO_POSTGRESQL;
-if (extension_loaded('postgresql')) $installStatusDB += INSTALL_DB_POSTGRESQL;
+if (extension_loaded('pgsql')) $installStatusDB += INSTALL_DB_POSTGRESQL;
 
 
 // PHP Issues

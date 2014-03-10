@@ -163,7 +163,7 @@
       <column name="sha256hash" type="string" maxlen="64" comment="The SHA256 hash of the file's binary data." />
       <column name="salt" type="int" maxlen="6" comment="The salt number (stored in the product configuration) used for encryption." />
       <column name="iv" type="string" maxlen="255" comment="The base64-encoded IV used for encryption." />
-      <column name="contents" type="string" maxlen="4294967296" comment="The base64-encoded binary data of the file." />
+      <column name="contents" type="string" maxlen="4294967295" comment="The base64-encoded binary data of the file." />
 
       <column name="location" type="string" maxlen="1024" comment="The location of the file on the fileserver, if used." />
 
@@ -187,7 +187,7 @@
     <table name="hooks" type="general" comment="Plugin-created code hooks.">
       <column name="hookId" type="int" maxlen="8" autoincrement="1" comment="A unique ID corrosponding to the hook. It is not used in retrieving hook contents (and thus could, for whatever reason, be changed on a dime)." />
       <column name="hookName" type="string" maxlen="50" comment="The hook's name, which will be used for most identification. These can be compounded (multiple rows with the same hookname can exist) if multiple entries exist for the hook." />
-      <column name="code" type="string" maxlen="4294967296" comment="The code of the particular hook. It will be executed using PHP's EVAL." />
+      <column name="code" type="string" maxlen="4294967295" comment="The code of the particular hook. It will be executed using PHP's EVAL." />
       <column name="state" type="bool" default="1" comment="Whether or not the hook is active." />
 
       <key name="hookId" type="primary" />
@@ -275,7 +275,7 @@
       <column name="text" type="string" maxlen="5000" comment="The text of the message." />
       <column name="flag" type="string" maxlen="10" comment="The content-type flag set for the message." />
 
-      <trigger lang="postgre" comment="A trigger that watches the messagesCached table, returning results in JSON. By default the returned JSON _cannot_ be greater than 8,000 bytes.">
+      <trigger lang="postgres" comment="A trigger that watches the messagesCached table, returning results in JSON. By default the returned JSON _cannot_ be greater than 8,000 bytes.">
         CREATE OR REPLACE FUNCTION notifyMessage() RETURNS trigger AS $$
           DECLARE
         BEGIN

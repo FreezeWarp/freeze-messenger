@@ -807,7 +807,7 @@ class databaseResult {
    * @return array
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
-  public function getAsArray($index = true, $group = false, $index = false) {
+  public function getAsArray($index = true, $group = false) {
     $data = array();
     $indexV = 0;
 

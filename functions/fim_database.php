@@ -932,7 +932,7 @@ class fimDatabase extends databaseSQL
     if (!isset($userData['userId'], $userData['userName'], $userData['userGroup'], $userData['avatar'], $userData['profile'], $userData['userFormatStart'], $userData['userFormatEnd'], $userData['defaultFormatting'], $userData['defaultColor'], $userData['defaultHighlight'], $userData['defaultFontface'])) throw new Exception('database->storeMessage requires userData[userId], userData[userName], userData[userGroup], userData[avatar]. userData[profile], userData[userFormatStart], userData[userFormatEnd], userData[defaultFormatting], userData[defaultColor], userData[defaultHighlight], and userData[defaultFontface]');
 
 
-    // Insert into permenant datastore.
+    // Insert into permanent datastore.
     $this->insert($this->sqlPrefix . "messages", array(
       'roomId'   => (int) $roomData['roomId'],
       'userId'   => (int) $userData['userId'],
@@ -1009,7 +1009,7 @@ class fimDatabase extends databaseSQL
     $lastDayCache = (int) $generalCache->get('fim3_lastDayCache');
 
     $currentTime = time();
-    $lastMidnight = $currentTime - ($currentTime % $config['messageTimesCounter']); // Using some cool math (look it up if you're not familiar), we determine the distance from the last even day, then get the time of the last even day itself. This is the midnight referrence point.
+    $lastMidnight = $currentTime - ($currentTime % $config['messageTimesCounter']); // Using some cool math (look it up if you're not familiar), we determine the distance from the last even day, then get the time of the last even day itself. This is the midnight reference point.
 
     if ($lastDayCache < $lastMidnight) { // If the most recent midnight comes after the period at which the time cache was last updated, handle that.
       $this->insert($this->sqlPrefix . "messageDates", array(

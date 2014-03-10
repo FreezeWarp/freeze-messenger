@@ -80,10 +80,10 @@ switch ($_REQUEST['phase']) {
         }
         elseif ($database->versionPrimary == 5 && $database->versionSecondary == 0 && $database->versionTertiary <= 4) { // MySQL 5.0.0-5.0.4 is also a no-g	o (we require the BIT type, even though in theory we could work without it)
           die('You have attempted to connect to a MySQL version ' . $database->version . ' database. MySQL 5.0.5+ is required for FreezeMessenger.');
-	}
-	elseif ($database->versionPrimary > 5) { // Note: I figure this might be best for now. Note that the code should still run for any version of MySQL 5.x.
-	  die ('You have attempted to connect to a MySQL version greater than 5. Such a thing did not exist when I was writing this code, and there is a good chance it won\'t work as expected. Either download a newer version of FreezeMessenger, or, if one does not yet exist, you can try to modify the source code of the installer script to remove this restriction. If you\'re lucky, things will still work.');
-	}
+        }
+        elseif ($database->versionPrimary > 5) { // Note: I figure this might be best for now. Note that the code should still run for any version of MySQL 5.x.
+          die ('You have attempted to connect to a MySQL version greater than 5. Such a thing did not exist when I was writing this code, and there is a good chance it won\'t work as expected. Either download a newer version of FreezeMessenger, or, if one does not yet exist, you can try to modify the source code of the installer script to remove this restriction. If you\'re lucky, things will still work.');
+        }
       }
 //      elseif ($driver === 'postgresql') {
 //        if ($strippedVersionParts[0] <= 7) { // PostGreSQL 7 is a no-go.
@@ -110,7 +110,7 @@ switch ($_REQUEST['phase']) {
 
 
       // Get Pre-Existing Tables So We Don't Overwrite Any of Them Later
-      $showTable = (array) $database->getTablesAsArray();
+      $showTable = (array) $database->getTablesAsArray('TABLE_NAME');
       $showTables = array_map('strtolower', $showTable); // ...In Windows, table names may not be returned as entered (uppercase letters usually become lowercase), so this is the most efficient work-around I could come up with.
 
       // Read the various XML files.
