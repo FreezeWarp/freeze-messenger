@@ -119,6 +119,7 @@ switch ($request['action']) {
         'kickerId' => (int) $user['userId'],
         'length' => (int) $request['length'],
         'roomId' => (int) $roomData['roomId'],
+        'time' => $database->now(),
       ), array(
         'length' => (int) $request['length'],
         'kickerId' => (int) $user['userId'],

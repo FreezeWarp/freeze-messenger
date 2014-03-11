@@ -697,10 +697,8 @@ abstract class database {
   
   
   // TODO
-  public function now($relative = 0, $comp = 'e') {
-    //return array('timestamp', (int) time() + (int) $relative, $comp);
-    
-    return (int) time();
+  public function now($offset = 0) {
+    return (int) (time() + $offset);
   }
   
   
