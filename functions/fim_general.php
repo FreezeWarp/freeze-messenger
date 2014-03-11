@@ -1035,12 +1035,10 @@ function fim_sanitizeGPC($type, $data) {
   if (!is_array($activeGlobal)) $activeGlobal = array(); // Make sure the active global is populated with data.
 
   foreach ($data AS $indexName => $indexData) {
-    $indexMetaData = $metaDataDefaults; // Store indexMetaData with the defaults.
-    
     /* Validate Metadata */
     foreach ($indexData AS $metaName => $metaData) {
-      if ($metaName === 'default')
-        continue; // Do nothing.
+      if (!in_array($metaName, array('default', 'require', 'trim', 'evaltrue', 'valid', 'min', 'max', 'filter', 'cast')))
+        throw new Exception('Unrecognised metadata: ' . $metaName);
       elseif (($metaName === 'require' || $metaName === 'trim' || $metaName === 'evaltrue')
         && !is_bool($metaData)) throw new Exception('Invalid "' . $metaName . '" in data in fim_sanitizeGPC');
       elseif ($metaName === 'valid' &&
@@ -1050,12 +1048,11 @@ function fim_sanitizeGPC($type, $data) {
       elseif ($metaName === 'filter'
         && !in_array($metaData, array('', 'int', 'bool', 'string'))) throw new Exception('Invalid "filter" in data in fim_sanitizeGPC');
       elseif ($metaName === 'cast' &&
-        !in_array($metaData, array('int', 'bool', 'string', 'json', 'jsonList', 'ascii128', 'alphanum'))) throw new Exception('Invalid "cast" in data in fim_sanitizeGPC');
-      else
-        throw new Exception('Unrecognised metadata: ' . $metaName); // TODO: Allow override/etc.
-      
-      $indexMetaData[$metaName] = $metaData;
+        !in_array($metaData, array('int', 'bool', 'string', 'csv', 'json', 'jsonList', 'ascii128', 'alphanum'))) throw new Exception('Invalid "cast" in data in fim_sanitizeGPC');
     }
+
+
+    $indexMetaData = array_merge($metaDataDefaults, $indexData); // Store indexMetaData with the defaults.
 
 
     /* Process Global */
@@ -1073,6 +1070,17 @@ function fim_sanitizeGPC($type, $data) {
 
 
     switch($indexMetaData['cast']) {
+      case 'csv': // Deprecated; replace with JSON type.
+      // If a cast is set for a CSV list, explode with a comma seperator, make sure all values corrosponding to the filter (int, bool, or string - the latter pretty much changes nothing), and if evaltrue is true, then the preserveAll flag would be false, and vice-versa.
+
+      $newData[$indexName] = fim_arrayValidate(
+            explode(',', $activeGlobal[$indexName]),
+            $indexMetaData['filter'],
+            ($indexMetaData['evaltrue'] ? false : true),
+            (isset($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
+      );
+      break;
+
       case 'json':
         $newData[$indexName] = json_decode(
           $activeGlobal[$indexName],
