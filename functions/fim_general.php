@@ -992,10 +992,6 @@ function fim_requestBodyToGPC($string) {
 function fim_sanitizeGPC($type, $data) {
   global $config;
 
-  /* Get The Request Body */
-  if ($type === 'p' || $type === 'post' || $type === 'u' || $type === 'put' || $type === 'd' || $type === 'delete') $requestBody = file_get_contents('php://input'); // Only get php://input if we want to. Otherwise, it creates some extra overhead we could do without.
-  else $requestBody = '';
-
 
   /* Define Defaults */
   $metaDataDefaults = array(
@@ -1004,27 +1000,23 @@ function fim_sanitizeGPC($type, $data) {
     'trim' => false,
     'filter' => '',
     'evaltrue' => false,
-    
+
     // Others: min, max, valid, default
   );
 
 
+  /* Get The Request Body */
+  if (in_array($type, array('p', 'post', 'u', 'put', 'd', 'delete'))) $requestBody = file_get_contents('php://input'); // Only get php://input if we want to. Otherwise, it creates some extra overhead we could do without.
+  else $requestBody = '';
+
+
   /* Store Request Body */
   if (strlen($requestBody) > 0) { // If a request body exists, we will use it instead of PHP's generated superglobals. This allows for further REST compatibility. We will, however, only use it for GET and POST requests, at the present time.
-    switch ($type) {
-      case 'p': case 'post': // POST can use a request body; it is ultimately the preferrence of the implementor, and for now we will prefer it as long as a REQUEST body exists. (TODO: Should a REQUEST body ever not exist in this case?)
-      if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $activeGlobal = fim_requestBodyToGPC($requestBody);
-      }
-      break;
-      case 'u': case 'put': // PUT __requires__ a request body. It is not currently supported, however.
-      if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
-        $activeGlobal = $requestBody;
-      }
-      break;
-      case 'd': case 'delete': // DELETE is not currently supported.
-      break;
-    }
+    if (($type === 'p' || $type === 'post')
+      && $_SERVER['REQUEST_METHOD'] === 'POST') $activeGlobal = fim_requestBodyToGPC($requestBody); // POST can use a request body; it is ultimately the preferrence of the implementor, and for now we will prefer it as long as a REQUEST body exists. (TODO: Should a REQUEST body ever not exist in this case?)
+    if (($type === 'u' || $type === 'put') &&
+      $_SERVER['REQUEST_METHOD'] === 'PUT') $activeGlobal = $requestBody; // PUT __requires__ a request body. It is not currently supported, however.
+    else throw new Exception('Request body present but unsupported in this instance.');
   }
   else { // Request information is stored in superglobals; get that information.
     switch ($type) { // Set the GLOBAL to a local var for processing.
@@ -1040,108 +1032,47 @@ function fim_sanitizeGPC($type, $data) {
   }
 
   /* Process Request Body */
-  if (!is_array($activeGlobal)) { // Make sure the active global is populated with data.
-    $activeGlobal = array();
-  }
+  if (!is_array($activeGlobal)) $activeGlobal = array(); // Make sure the active global is populated with data.
 
   foreach ($data AS $indexName => $indexData) {
     $indexMetaData = $metaDataDefaults; // Store indexMetaData with the defaults.
     
     /* Validate Metadata */
     foreach ($indexData AS $metaName => $metaData) {
-      if ($metaName === 'default') {
-        // Do nothing.
-      }
-      elseif ($metaName === 'require' || $metaName === 'trim' || $metaName === 'evaltrue') {
-        if (!is_bool($metaData)) throw new Exception('Invalid "' . $metaName . '" in data in fim_sanitizeGPC');
-      }
-      elseif ($metaName === 'valid') {
-        if (!is_array($metaData)) throw new Exception('Invalid "' . $metaName . '" in data in fim_sanitizeGPC');
-      }
-      elseif ($metaName === 'min' || $metaName === 'max') {
-        if (!is_numeric($metaData)) throw new Exception('Invalid "' . $metaName . '" in data in fim_sanitizeGPC');
-      }
-      elseif ($metaName === 'filter') {
-        if (!in_array($metaData, array('', 'int', 'bool', 'string'))) throw new Exception('Invalid "filter" in data in fim_sanitizeGPC');
-      }
-      elseif ($metaName === 'cast') {
-        if (!in_array($metaData, array('int', 'bool', 'string', 'csv', 'array', 'json', 'jsonList', 'ascii128', 'alphanum'))) throw new Exception('Invalid "cast" in data in fim_sanitizeGPC');
-      }
-      else {
+      if ($metaName === 'default')
+        continue; // Do nothing.
+      elseif (($metaName === 'require' || $metaName === 'trim' || $metaName === 'evaltrue')
+        && !is_bool($metaData)) throw new Exception('Invalid "' . $metaName . '" in data in fim_sanitizeGPC');
+      elseif ($metaName === 'valid' &&
+        !is_array($metaData)) throw new Exception('Defined valid values do not correspond to recognized data type (array).');
+      elseif (($metaName === 'min' || $metaName === 'max')
+        && !is_numeric($metaData)) throw new Exception('Invalid "' . $metaName . '" in data in fim_sanitizeGPC');
+      elseif ($metaName === 'filter'
+        && !in_array($metaData, array('', 'int', 'bool', 'string'))) throw new Exception('Invalid "filter" in data in fim_sanitizeGPC');
+      elseif ($metaName === 'cast' &&
+        !in_array($metaData, array('int', 'bool', 'string', 'json', 'jsonList', 'ascii128', 'alphanum'))) throw new Exception('Invalid "cast" in data in fim_sanitizeGPC');
+      else
         throw new Exception('Unrecognised metadata: ' . $metaName); // TODO: Allow override/etc.
-      }
       
       $indexMetaData[$metaName] = $metaData;
     }
 
+
     /* Process Global */
-    /* TODO: Rewrite logic. I'm sure this can be simplified. */
-    if (isset($activeGlobal[$indexName])) { // Only typecast if the global is present.
-      if (isset($indexMetaData['valid'])) { // If a list of valid values is specified...
-        if (is_array($indexMetaData['valid'])) { // And if that list is an array...
-          if (in_array($activeGlobal[$indexName], $indexMetaData['valid'])) { // And if the value specified is in the list of valid values...
-            // Do Nothing; We're Good
-          }
-          else {
-            if ($indexMetaData['require']) throw new Exception('Required data not valid.'); // If the value is required but not valid, throw an exception.
-            elseif (isset($indexMetaData['default'])) $activeGlobal[$indexName] = $indexMetaData['default']; // If the value has a default but is not valid, set it to the default.
-          }
-        }
-        else throw new Exception('Defined valid values do not correspond to recognized data type (array).'); // Throw an exception since valid values are not properly defined.
-      }
-    }
-    else {
-      if ($indexMetaData['require']) { // If the value is required but not specified...
-        if (isset($indexMetaData['default'])) { // If the value has a default and is not specified...
-          $activeGlobal[$indexName] = $indexMetaData['default']; // Set the value to the default.
-        }
-        else throw new Exception('Required data not present (index ' . $indexName . ').'); // Throw an exception.
-      }
-      elseif ($indexMetaData['default']) {
-        $activeGlobal[$indexName] = $indexMetaData['default']; // Set the value to the default.
-      }
-      else continue; // The entry is not set and won't be returned in $request.
+    if (isset($activeGlobal[$indexName], $indexMetaData['valid']) &&
+      !in_array($activeGlobal[$indexName], $indexMetaData['valid'])) unset($activeGlobal[$indexName]); // If the global is provided, check to see if it's valid. If not, unprovide it (used in the next statements). TODO: Throw warning?
+    if (!isset($activeGlobal[$indexName]) &&
+      $indexMetaData['default']) $activeGlobal[$indexName] = $indexMetaData['default']; // If the global is _not_ provided (either because of the above statement or because it was never provided, but has a default, then provide it as the default.
+    if (!isset($activeGlobal[$indexName])) { // Finally, if the global is thus-far unprovided...
+      if ($indexMetaData['require']) throw new Exception('Required data not present (index ' . $indexName . ').'); // And required, throw an exception.
+      else continue; // And not required, just ignore this global and move on to the next one.
     }
     
-    if ($indexMetaData['trim']) { // Trim
-      $activeGlobal[$indexName] = trim($activeGlobal[$indexName]);
-    }
+
+    if ($indexMetaData['trim'] === true) $activeGlobal[$indexName] = trim($activeGlobal[$indexName]); // Trim white space.
+
 
     switch($indexMetaData['cast']) {
-      case 'csv': // Deprecated; replace with JSON type.
-      // If a cast is set for a CSV list, explode with a comma seperator, make sure all values corrosponding to the filter (int, bool, or string - the latter pretty much changes nothing), and if evaltrue is true, then the preserveAll flag would be false, and vice-versa.
-
-      $newData[$indexName] = fim_arrayValidate(
-        explode(',', $activeGlobal[$indexName]),
-        $indexMetaData['filter'],
-        ($indexMetaData['evaltrue'] ? false : true),
-        (isset($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
-      );
-      break;
-
-      case 'array': // Deprecated; replace with JSON type.
-      $arrayParts = explode(',', $activeGlobal[$indexName]);
-      $arrayKeys = array();
-      $arrayVals = array();
-
-      foreach ($arrayParts AS $arrayEntry) {
-        $arrayEntry = explode('=', $arrayEntry);
-
-        if (count($arrayEntry) !== 2) continue; // Must be two parts to every entry.
-
-        $arrayKeys[] = $arrayEntry[0];
-        $arrayVals[] = $arrayEntry[1];
-      }
-
-      $arrayVals = fim_arrayValidate(
-        $arrayVals,
-        $indexMetaData['filter'],
-        ($indexMetaData['evaltrue'] ? false : true),
-        (isset($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
-      );
-      $newData[$indexName] = array_combine($arrayKeys, $arrayVals);
-      break;
-
       case 'json':
         $newData[$indexName] = json_decode(
           $activeGlobal[$indexName],
@@ -1167,19 +1098,15 @@ function fim_sanitizeGPC($type, $data) {
       break;
 
       case 'int':
-      if ($indexMetaData['evaltrue']) { // Only include the value if it is true.
-        if ((int) $activeGlobal[$indexName]) $newData[$indexName] = (int) $activeGlobal[$indexName]; // If true/non-zero... append value as integer-cast.
-      }
-      else { // Include the value whether true or false.
-        $newData[$indexName] = (int) $activeGlobal[$indexName]; // Append value as integer-cast.
-      }
+      if ($indexMetaData['evaltrue'] &&
+        (int) $activeGlobal[$indexName]) $newData[$indexName] = (int) $activeGlobal[$indexName]; // Only include the value if non-zero.
+      else
+        $newData[$indexName] = (int) $activeGlobal[$indexName]; // Include the value whether true or false.
 
-      if (isset($indexMetaData['min'])) {
-        if ($newData[$indexName] < $indexMetaData['min']) $newData[$indexName] = $indexMetaData['min']; // Minimum Value
-      }
-      if (isset($indexMetaData['max'])) {
-        if ($newData[$indexName] > $indexMetaData['max']) $newData[$indexName] = $indexMetaData['max']; // Maximum Value
-      }
+      if (isset($indexMetaData['min']) &&
+        $newData[$indexName] < $indexMetaData['min']) $newData[$indexName] = $indexMetaData['min']; // Minimum Value
+      elseif (isset($indexMetaData['max']) &&
+        $newData[$indexName] > $indexMetaData['max']) $newData[$indexName] = $indexMetaData['max']; // Maximum Value
       break;
 
       case 'bool':
@@ -1200,7 +1127,6 @@ function fim_sanitizeGPC($type, $data) {
 
       default: // String or otherwise.
         $newData[$indexName] = (string) $activeGlobal[$indexName]; // Append value as string-cast.
-      break;
       break;
     }
   }
