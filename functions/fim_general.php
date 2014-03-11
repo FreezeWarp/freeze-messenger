@@ -1011,12 +1011,14 @@ function fim_sanitizeGPC($type, $data) {
 
 
   /* Store Request Body */
+
+  /* Process Request Body */
   if (strlen($requestBody) > 0) { // If a request body exists, we will use it instead of PHP's generated superglobals. This allows for further REST compatibility. We will, however, only use it for GET and POST requests, at the present time.
     if (($type === 'p' || $type === 'post')
       && $_SERVER['REQUEST_METHOD'] === 'POST') $activeGlobal = fim_requestBodyToGPC($requestBody); // POST can use a request body; it is ultimately the preferrence of the implementor, and for now we will prefer it as long as a REQUEST body exists. (TODO: Should a REQUEST body ever not exist in this case?)
-    if (($type === 'u' || $type === 'put') &&
+    elseif (($type === 'u' || $type === 'put') &&
       $_SERVER['REQUEST_METHOD'] === 'PUT') $activeGlobal = $requestBody; // PUT __requires__ a request body. It is not currently supported, however.
-    else throw new Exception('Request body present but unsupported in this instance.');
+    else throw new Exception('Request body present but unsupported in this instance. Type:' . $type);
   }
   else { // Request information is stored in superglobals; get that information.
     switch ($type) { // Set the GLOBAL to a local var for processing.
@@ -1027,11 +1029,9 @@ function fim_sanitizeGPC($type, $data) {
       default:
         throw new Exception('Invalid type in fim_sanitizeGPC');
         return false;
-      break;
+        break;
     }
   }
-
-  /* Process Request Body */
   if (!is_array($activeGlobal)) $activeGlobal = array(); // Make sure the active global is populated with data.
 
   foreach ($data AS $indexName => $indexData) {
@@ -1064,7 +1064,7 @@ function fim_sanitizeGPC($type, $data) {
       if ($indexMetaData['require']) throw new Exception('Required data not present (index ' . $indexName . ').'); // And required, throw an exception.
       else continue; // And not required, just ignore this global and move on to the next one.
     }
-    
+
 
     if ($indexMetaData['trim'] === true) $activeGlobal[$indexName] = trim($activeGlobal[$indexName]); // Trim white space.
 
@@ -1102,7 +1102,7 @@ function fim_sanitizeGPC($type, $data) {
           ),
           ($indexMetaData['filter'] ? $indexMetaData['filter'] : 'string'),
           ($indexMetaData['evaltrue'] ? false : true),
-          (count($indexMetaData['valid']) ? $indexMetaData['valid'] : array())
+          (count($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
         );
       break;
 
