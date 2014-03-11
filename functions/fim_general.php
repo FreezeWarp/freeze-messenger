@@ -1062,10 +1062,10 @@ function fim_sanitizeGPC($type, $data) {
         if (!is_numeric($metaData)) throw new Exception('Invalid "' . $metaName . '" in data in fim_sanitizeGPC');
       }
       elseif ($metaName === 'filter') {
-        if (!in_array($metaData, array('', 'int', 'bool', 'ascii128', 'alphanum'))) throw new Exception('Invalid "filter" in data in fim_sanitizeGPC');
+        if (!in_array($metaData, array('', 'int', 'bool', 'string'))) throw new Exception('Invalid "filter" in data in fim_sanitizeGPC');
       }
       elseif ($metaName === 'cast') {
-        if (!in_array($metaData, array('int', 'bool', 'string', 'csv', 'array'))) throw new Exception('Invalid "cast" in data in fim_sanitizeGPC');
+        if (!in_array($metaData, array('int', 'bool', 'string', 'csv', 'array', 'json', 'jsonList', 'ascii128', 'alphanum'))) throw new Exception('Invalid "cast" in data in fim_sanitizeGPC');
       }
       else {
         throw new Exception('Unrecognised metadata: ' . $metaName); // TODO: Allow override/etc.
@@ -1108,7 +1108,9 @@ function fim_sanitizeGPC($type, $data) {
     }
 
     switch($indexMetaData['cast']) {
-      case 'csv': // If a cast is set for a CSV list, explode with a comma seperator, make sure all values corrosponding to the filter (int, bool, or string - the latter pretty much changes nothing), and if evaltrue is true, then the preserveAll flag would be false, and vice-versa.
+      case 'csv': // Deprecated; replace with JSON type.
+      // If a cast is set for a CSV list, explode with a comma seperator, make sure all values corrosponding to the filter (int, bool, or string - the latter pretty much changes nothing), and if evaltrue is true, then the preserveAll flag would be false, and vice-versa.
+
       $newData[$indexName] = fim_arrayValidate(
         explode(',', $activeGlobal[$indexName]),
         $indexMetaData['filter'],
@@ -1117,7 +1119,7 @@ function fim_sanitizeGPC($type, $data) {
       );
       break;
 
-      case 'array':
+      case 'array': // Deprecated; replace with JSON type.
       $arrayParts = explode(',', $activeGlobal[$indexName]);
       $arrayKeys = array();
       $arrayVals = array();
@@ -1138,6 +1140,30 @@ function fim_sanitizeGPC($type, $data) {
         (isset($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
       );
       $newData[$indexName] = array_combine($arrayKeys, $arrayVals);
+      break;
+
+      case 'json':
+        $newData[$indexName] = json_decode(
+          $activeGlobal[$indexName],
+          true,
+          $config['jsonDecodeRecursionLimit'],
+          JSON_BIGINT_AS_STRING
+        );
+      break;
+
+      case 'jsonList':
+        $newData[$indexName] = fim_arrayValidate(
+          array_values(
+            json_decode(
+              $activeGlobal[$indexName],
+              true,
+              $config['jsonDecodeRecursionLimit'],
+              JSON_BIGINT_AS_STRING
+            )
+          ),
+          $indexMetaData['filter'],
+          ($indexMetaData['evaltrue'] ? false : true)
+        );
       break;
 
       case 'int':
@@ -1164,13 +1190,17 @@ function fim_sanitizeGPC($type, $data) {
       );
       break;
 
-      default: // String or otherwise.
-      $newData[$indexName] = (string) $activeGlobal[$indexName]; // Append value as string-cast.
+      case 'ascii128':
+        $newData[$indexName] = preg_replace('/[^(\x20-\x7F)]*/', '', $output); break; // Remove characters outside of ASCII128 range.
+      break;
 
-      switch ($indexMetaData['filter']) { // TODO optimise
-        case 'ascii128': $newData[$indexName] = preg_replace('/[^(\x20-\x7F)]*/', '', $output); break; // Remove characters outside of ASCII128 range.
-        case 'alphanum': $newData[$indexName] = preg_replace('/[^a-zA-Z0-9]*/', '', str_replace(array_keys($config['romanisation']), array_values($config['romanisation']), $output)); break; // Remove characters that are non-alphanumeric. Note that we will try to romanise what we can.
-      }
+      case 'alphanum':
+        $newData[$indexName] = preg_replace('/[^a-zA-Z0-9]*/', '', str_replace(array_keys($config['romanisation']), array_values($config['romanisation']), $output)); break; // Remove characters that are non-alphanumeric. Note that we will try to romanise what we can.
+      break;
+
+      default: // String or otherwise.
+        $newData[$indexName] = (string) $activeGlobal[$indexName]; // Append value as string-cast.
+      break;
       break;
     }
   }
@@ -1227,30 +1257,10 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false, $allowed
       if (is_array($allowedValues)
         && !in_array($value, $allowedValues)) continue;
 
-      switch ($type) { // What type are we validating to?
-        case 'int': // Integer type.
-        if ($preserveAll) $arrayValidated[] = (int) $value; // If we preserve false entries, simply cast the variable as an interger.
-        else { // If we don't preserve false entries...
-          $preValue = (int) $value; // Cast the value
+      $preValue = fim_cast($type, $value, false);
 
-          if ($preValue) { // If it is non-zero, add it to the new array.
-            $arrayValidated[] = $preValue;
-          }
-        }
-        break;
-
-        case 'bool':
-        $preValue = fim_cast('bool', $value, false);
-
-        if ($preserveAll)           $arrayValidated[] = $preValue; // Add to the array regardless of true/false (arguably what is should be here xD)
-        elseif ($preValue === true) $arrayValidated[] = $preValue; // Only add to the array if true.
-        break;
-
-        default:
-        if ($preserveAll)  $arrayValidated[] = $value; // Add to the array regardless of true/false (arguably what is should be default here xD)
-        elseif ($preValue) $arrayValidated[] = $value; // Only add to the array if true.
-        break;
-      }
+      if ($preserveAll) $arrayValidated[] = (int) $preValue; // If we preserve false entries, simply cast the variable as an interger.
+      elseif ($preValue) $arrayValidated[] = $preValue; // If it is non-zero, add it to the new array.
     }
   }
   else $arrayValidated = array(); // If its not, we will return an empty array.

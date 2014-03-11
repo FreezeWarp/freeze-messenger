@@ -423,5 +423,8 @@ $defaultConfig = array(
     'µ' => 'mu',
     'œ' => 'oe',
   ),
+
+  // NEW; need database entries
+  'jsonDecodeRecursionLimit' => 6, // Places a limit on the maximum recursion depth for json_decode when handling user input. The software generally expects a depth of around 3 to be available, but greater depths may be provided for for plugins, etc.
 );
 ?>

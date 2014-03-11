@@ -1204,10 +1204,13 @@ popup = {
           var roomNameKick = $('#roomNameKick').val(),
             roomId = roomRef[roomNameKick],
             userName = $('#userName').val(),
-            userId = userRef[userName],
             length = Math.floor(Number($('#time').val() * Number($('#interval > option:selected').attr('value'))));
 
-          standard.kick(userId, roomId, length);
+          getUsers({
+            'userNames' : [userName]
+          }, function(userData) {
+            standard.kick(userData.userId, roomId, length);
+          })
 
           return false; // Don't submit the form.
         });

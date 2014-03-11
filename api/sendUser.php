@@ -56,8 +56,7 @@ $request = fim_sanitizeGPC('p', array(
   ),
 
   'passwordSalt' => array(
-    'cast' => 'string',
-    'filter' => 'ascii128',
+    'cast' => 'ascii128',
   ),
 
   'email' => array(

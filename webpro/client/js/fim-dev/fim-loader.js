@@ -809,7 +809,7 @@ var regexs = {
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
  * 
- * TODO - Stop populating everything. That was a bad idea.
+ * TODO - Stop populating everything. That was a bad idea. (Update: Seriously, what was I thinking? I mean, it makes sense in theory... just not in reality.)
  */
 function populate(options) {
   $.when(
@@ -975,36 +975,42 @@ function populate(options) {
 }
 
 /**
- * Obtains information for a single user.
+ * Obtains one or more users.
+ * This function is async.
  * 
  * @param object userId - The ID of the user to obtain info of.
- * 
- * @return mixed - Object of user data on success, "false" on failure.
  * 
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
  * 
  */
-function getUser(userId) {
-  var userData = false;
+function getUsers(params, callback) {
+  var userData = false,
+    data = {
+      'fim3_sessionHash' : sessionHash,
+      'fim3_userId' :  window.userId,
+      'fim3_format' : 'json'
+    },
+    returnValue;
+
+  if ('userIds' in params) data['users'] = JSON.stringify(params.userIds);
+  else if ('userNames' in params) data['userNames'] = JSON.stringify(params.userNames);
+  else throw "getUser() function requires either userIds or userNames in params"; // Error
 
   $.ajax({
-    url: directory + 'api/getUsers.php?users=' + userId + 'fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-    type: 'GET',
+    type: 'get',
+    url: directory + 'api/getUsers.php',
+    data: data,
     timeout: 5000,
-    cache: false,
-    async : false,
-    success: function(json) {
-      for (i in json.getUsers.users) {
-        userData = json.getUsers.users[i];
-      }
-      
-      return false;
-    },
+    cache: false
+  }).done(function(json) {
+    $.each(json.getUsers.users, function(index, value) { console.log(value);
+      callback(value);
+    });
   });
-  
-  return userData;
 }
+
+
 
 /**
  * Obtains information for a single room.

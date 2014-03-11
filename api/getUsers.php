@@ -36,9 +36,15 @@ require('../global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
   'users' => array(
-    'cast' => 'csv',
+    'cast' => 'jsonList',
     'filter' => 'int',
     'evaltrue' => true,
+    'default' => '',
+  ),
+
+  'userNames' => array(
+    'cast' => 'jsonList',
+    'filter' => 'string',
     'default' => '',
   ),
 
