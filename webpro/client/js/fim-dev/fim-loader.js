@@ -1044,6 +1044,32 @@ function getRoom(userId) {
   return roomData;
 }
 
+
+
+function getFiles(params, callback) {
+  var data = {
+      'fim3_sessionHash' : sessionHash,
+      'fim3_userId' :  window.userId,
+      'fim3_format' : 'json'
+    },
+    returnValue;
+
+  if ('userIds' in params) data['users'] = JSON.stringify(params.userIds);
+  else throw "getFiles() function requires userId in params"; // Error
+
+  $.ajax({
+    url: directory + 'api/getFiles.php',
+    data: data,
+    type: 'get',
+    timeout: 2400,
+    cache: false
+  }).done(function(json) {
+    $.each(json.getFiles.files, function(index, value) { console.log(value);
+      callback(value);
+    });
+  });
+}
+
 /*********************************************************
 ************************* END ***************************
 ******************** Data Population ********************

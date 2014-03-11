@@ -187,11 +187,6 @@ if ($config['dev']) $xmlData['request'] = $request;
 
 
 
-/* Plugin Hook End */
-($hook = hook('getUsers_end') ? eval($hook) : '');
-
-
-
 /* Output Data */
 echo fim_outputApi($xmlData);
 ?>
