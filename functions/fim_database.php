@@ -392,6 +392,7 @@ class fimDatabase extends databaseSQL
 
 
 
+
   /**
    * Run a query to obtain current kicks.
    *
@@ -419,7 +420,7 @@ class fimDatabase extends databaseSQL
       $this->sqlPrefix . "kicks"        => 'kickerId kkickerId, userId kuserId, roomId kroomId, length klength, time ktime',
       $this->sqlPrefix . "users user"   => 'userId, userName, userFormatStart, userFormatEnd',
       $this->sqlPrefix . "users kicker" => 'userId kickerId, userName kickerName, userFormatStart kickerFormatStart, userFormatEnd kickerFormatEnd',
-      $this->sqlPrefix . "rooms"        => 'roomId, roomName, owner, options, defaultPermissions, roomType',
+      $this->sqlPrefix . "rooms"        => 'roomId, roomName, owner, options, defaultPermissions, roomType, roomParentalFlags, roomParentalAge',
     );
 
 
