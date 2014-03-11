@@ -216,6 +216,13 @@ abstract class database {
     }
     
     $this->newError($errorMessage . "\nAdditional Information:\n" . print_r($errorData, true));
+
+
+    // If transaction mode is active, then any error will result in a rollback and the closure of the connection. Once transaction mode is ended, errors no longer result in a connection closure.
+    if ($this->transaction) {
+      $this->rollbackTransaction();
+      $this->close();
+    }
   }
 
   

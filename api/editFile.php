@@ -154,6 +154,10 @@ $xmlData = array(
 
 
 
+$database->startTransaction();
+
+
+
 /* Start Processing */
 if ($continue) {
   switch ($request['action']) {
@@ -313,7 +317,7 @@ if ($continue) {
                       ));
 
                       $database->update("{$sqlPrefix}users", array(
-                        'fileCount' => array(
+                        'fileCountsss' => array(
                           'type' => 'equation',
                           'value' => '$fileCount + 1',
                         ),
@@ -405,6 +409,9 @@ if ($continue) {
     break;
   }
 }
+
+
+$database->endTransaction();
 
 
 

@@ -663,21 +663,31 @@ class databaseSQL extends database {
    *********************************************************/
 
 
+  /* Basic Usage:
+   * Transactions are effectively automatic. Scripts should call start and end transaction. A rollback will occur as part of a database error, and the database connection will automatically be closed.
+   * In other words, these transactions are super duper basic. This has benefits -- it means writing less code, which, honestly, is something I'm happy with. */
+
 
   public function startTransaction() {
+    $this->transaction = true;
 
+    $this->functionMap('startTrans', $database);
   }
 
 
 
   public function rollbackTransaction() {
+    $this->transaction = false;
 
+    $this->functionMap('rollbackTrans', $database);
   }
 
 
 
   public function endTransaction() {
+    $this->transaction = false;
 
+    $this->functionMap('endTrans', $database);
   }
 
 

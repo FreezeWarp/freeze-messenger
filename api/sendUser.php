@@ -180,8 +180,12 @@ if ($continue) {
 
     // Insert Data
     if ($continue) {
+      $database->startTransaction();
+
       $database->insert("{$sqlPrefix}users", $userData);
       $userId = $database->insertId;
+
+      $database->endTransaction();
     }
   }
 }
