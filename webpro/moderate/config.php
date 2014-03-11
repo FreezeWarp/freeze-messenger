@@ -23,6 +23,10 @@ else {
       'cast' => 'string',
     ),
 
+    'newDirective' => array(
+      'cast' => 'bool',
+    ),
+
     'value' => array(
       'cast' => 'string',
     ),
@@ -64,33 +68,10 @@ else {
       if ($request['directive']) {
         $config2 = $database->getConfigurations(array('directives' => array($request['directive'])))->getAsArray(false);
         $title = 'Edit Configuration Value "' . $config2['directive'] . '"';
-
-        switch($config2['type']) {
-          case 'bool':
-          $valueBlock = fimHtml_buildSelect('value', array(
-            'true' => 'true',
-            'false' => 'false',
-          ), $config2['value']);
-          break;
-
-          case 'integer':
-          case 'float':
-          $valueBlock = '<input type="number" name="value" required="required" value="' . $config2['value'] . '" />';
-          break;
-
-
-          case 'associative':
-          $valueBlock = '<textarea name="value">' . json_encode(json_decode($config2['value']), JSON_PRETTY_PRINT) . '</textarea>';
-          break;
-
-
-          default:
-          $valueBlock = '<input type="text" name="value" value="' . str_replace('"', '&quot;', $config2['value']) . '" />';
-        }
       }
       else {
         $config2 = array(
-          'directive' => 0,
+          'directive' => '',
           'value' => '',
           'type' => 'string',
         );
@@ -98,11 +79,34 @@ else {
         $title = 'Create New Configuration Value';
       }
 
+      switch($config2['type']) {
+        case 'bool':
+          $valueBlock = fimHtml_buildSelect('value', array(
+            'true' => 'true',
+            'false' => 'false',
+          ), $config2['value']);
+          break;
+
+        case 'integer':
+        case 'float':
+          $valueBlock = '<input type="number" name="value" required="required" value="' . $config2['value'] . '" />';
+          break;
+
+
+        case 'associative':
+          $valueBlock = '<textarea name="value">' . json_encode(json_decode($config2['value']), JSON_PRETTY_PRINT) . '</textarea>';
+          break;
+
+
+        default:
+          $valueBlock = '<input type="text" name="value" value="' . str_replace('"', '&quot;', $config2['value']) . '" />';
+      }
+
       echo container($title, '<form action="./moderate.php?do=config&do2=edit2" method="post">
   <table class="ui-widget page">
     <tr>
       <td>Directive:</td>
-      <td>' . ($config2['directive'] ? '<input type="hidden" name="directive" value="' . $config2['directive'] . '" />' . $config2['directive'] : '<input type="text" name="directive" value="' . $config2['directive'] . '" />') . '</td>
+      <td>' . ($config2['directive'] ? '<input type="hidden" name="newDirective" value="false" /><input type="hidden" name="directive" value="' . $config2['directive'] . '" />' . $config2['directive'] : '<input type="hidden" name="newDirective" value="true" /><input type="text" name="directive" value="' . $config2['directive'] . '" />') . '</td>
     </tr>
     <tr>
       <td>Type:</td>
@@ -133,7 +137,7 @@ else {
       break;
 
       case 'edit2':
-      if ($request['directive']) {
+      if (!$request['newDirective']) {
         $config2 = $database->getConfiguration($request['directive']);
 
         $database->modLog('editConfigDirective', $config2['directive']);

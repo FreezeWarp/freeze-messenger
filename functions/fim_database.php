@@ -260,7 +260,7 @@ class fimDatabase extends databaseSQL
 
   public function getConfiguration($directive)
   {
-    return $this->getConfiguration(array(
+    return $this->getConfigurations(array(
       'directives' => array($directive)
     ))->getAsArray(false);
   }
