@@ -1100,8 +1100,9 @@ function fim_sanitizeGPC($type, $data) {
               JSON_BIGINT_AS_STRING
             )
           ),
-          $indexMetaData['filter'],
-          ($indexMetaData['evaltrue'] ? false : true)
+          ($indexMetaData['filter'] ? $indexMetaData['filter'] : 'string'),
+          ($indexMetaData['evaltrue'] ? false : true),
+          (count($indexMetaData['valid']) ? $indexMetaData['valid'] : array())
         );
       break;
 
@@ -1168,7 +1169,7 @@ function fim_cast($cast, $value, $default = null) {
     case 'float': $value = (float) $value; break;
     case 'string': $value = (string) $value; break;
 
-    default: throw new Exception('Unrecognised cast.'); break;
+    default: throw new Exception('Unrecognised cast in fim_cast: ' . $cast); break;
   }
 
   return $value;
@@ -1186,6 +1187,7 @@ function fim_cast($cast, $value, $default = null) {
  */
 function fim_arrayValidate($array, $type = 'int', $preserveAll = false, $allowedValues = false) {
   $arrayValidated = array(); // Create an empty array we will use to store things.
+
   if (is_array($array)) { // Make sure the array is an array.
     foreach ($array AS $value) { // Run through each value of the array.
       if (is_array($allowedValues)
@@ -1193,11 +1195,10 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false, $allowed
 
       $preValue = fim_cast($type, $value, false);
 
-      if ($preserveAll) $arrayValidated[] = (int) $preValue; // If we preserve false entries, simply cast the variable as an interger.
+      if ($preserveAll) $arrayValidated[] = $preValue; // If we preserve false entries, simply cast the variable as an interger.
       elseif ($preValue) $arrayValidated[] = $preValue; // If it is non-zero, add it to the new array.
     }
   }
-  else $arrayValidated = array(); // If its not, we will return an empty array.
 
   return $arrayValidated; // Return the validated array.
 }

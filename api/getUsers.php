@@ -49,7 +49,7 @@ $request = fim_sanitizeGPC('g', array(
   ),
 
   'showOnly' => array(
-    'cast' => 'csv', // TODO?
+    'cast' => 'jsonList',
     'valid' => array('banned', '!banned', '!friends', 'friends', '!ignored', 'ignored', ''),
     'default' => '',
   ),
@@ -57,6 +57,12 @@ $request = fim_sanitizeGPC('g', array(
   'sort' => array(
     'valid' => array('userId', 'userName'),
     'default' => 'userId',
+  ),
+
+  'info' => array(
+    'cast' => 'jsonList',
+    'valid' => array('profile', 'groups', 'self'),
+    'default' => '["profile", "groups", "self"]',
   ),
 ));
 
@@ -81,85 +87,87 @@ $xmlData = array(
 $users = $slaveDatabase->getUsers(array(
   'userIds' => $request['users'],
   'userNames' => $request['userNames']
-), array($request['sort'] => 'asc'))->getAsArray(true);
+), array($request['sort'] => 'asc'))->getAsArray('userId');
 
 
 
-/* Start Processing */
-foreach ($users AS $userData) {
-  switch ($loginConfig['method']) {
-    case 'vbulletin3':
-    case 'vbulletin4':
-    $userDataForums = $integrationDatabase->select(
-      array(
-        $sqlUserTable => array(
-          'joindate' => 'joinDate',
-          'posts' => 'posts',
-          'usertitle' => 'userTitle',
-          'lastvisit' => 'lastVisit',
-          $sqlUserTableCols['userId'] => 'userId',
-        ),
+/* Run Seperate Queries for Integration Methods
+ * TODO: These should, long term, probably be plugins. */
+switch ($loginConfig['method']) {
+  case 'vbulletin3': case 'vbulletin4':
+  $userDataForums = $integrationDatabase->select(
+    array(
+      $sqlUserTable => array(
+        'joindate' => 'joinDate',
+        'posts' => 'posts',
+        'usertitle' => 'userTitle',
+        'lastvisit' => 'lastVisit',
+        $sqlUserTableCols['userId'] => 'userId',
       ),
-      array('both' => array('userId' => (int) $userData['userId']))
-    );
-    $userDataForums = $userDataForums->getAsArray(false);
-    break;
+    ),
+    array('both' => array('userId' => $this->in(array_keys($users))))
+  )->getAsArray('userId');
+  break;
 
-    case 'phpbb':
-    $userDataForums = $integrationDatabase->select(
-      array(
-        $sqlUserTable => array(
-          'user_posts' => 'posts',
-          'user_regdate' => 'joinDate',
-          $sqlUserTableCols['userId'] => 'userId',
-        ),
+  case 'phpbb':
+  $userDataForums = $integrationDatabase->select(
+    array(
+      $sqlUserTable => array(
+        'user_posts' => 'posts',
+        'user_regdate' => 'joinDate',
+        $sqlUserTableCols['userId'] => 'userId',
       ),
-      array(
-        'both' => array('userId' => (int) $userData['userId']),
-      )
-    );
-    $userDataForums = $userDataForums->getAsArray(false);
-    break;
+    ),
+    array(
+      array('both' => array('userId' => $this->in(array_keys($users))))
+    )
+  )->getAsArray('userId');
+  break;
 
-    case 'vanilla':
+  case 'vanilla':
     $userDataForums = array(
       'joinDate' => $user['joinDate'],
       'posts' => false,
     );
-    break;
+  break;
 
-    default:
-    $userDataForums = array();
-    break;
-  }
-
-
-  ($hook = hook('getUsers_eachUser_postForums') ? eval($hook) : '');
+  default:
+  $userDataForums = array();
+  break;
+}
 
 
+/* Start Processing */
+foreach ($users AS $userId => $userData) {
   $xmlData['getUsers']['users']['user ' . $userData['userId']] = array(
     'userName' => ($userData['userName']),
     'userId' => (int) $userData['userId'],
-    'userGroup' => (int) $userData['userGroup'],
-    'avatar' => ($userData['avatar']),
-    'profile' => ($userData['profile']),
-    'socialGroups' => ($userData['socialGroups']),
-    'startTag' => ($userData['userFormatStart']),
-    'endTag' => ($userData['userFormatEnd']),
-    'defaultFormatting' => array(
+  );
+
+  if (in_array('profile', $request['info'])) {
+    $xmlData['getUsers']['users']['user ' . $userData['userId']]['avatar'] = $userData['avatar'];
+    $xmlData['getUsers']['users']['user ' . $userData['userId']]['profile'] = $userData['profile'];
+    $xmlData['getUsers']['users']['user ' . $userData['userId']]['startTag'] = $userData['userFormatStart'];
+    $xmlData['getUsers']['users']['user ' . $userData['userId']]['endTag'] = $userData['userFormatEnd'];
+    $xmlData['getUsers']['users']['user ' . $userData['userId']]['defaultFormatting'] = array(
       'color' => ($userData['defaultColor']),
       'highlight' => ($userData['defaultHighlight']),
       'fontface' => ($userData['defaultFontface']),
       'general' => (int) $userData['defaultFormatting']
-    ),
-    'postCount' => (int) (isset($userDataForums['posts']) ? $userDataForums['posts'] : 0),
-    'joinDate' => (int) (isset($userDataForums['joinDate']) ? $userDataForums['joinDate'] : 0),
-    'userTitle' => (isset($userDataForums['userTitle']) ? $userDataForums['userTitle'] :
-      (isset($config['defaultUserTitle']) ? $config['defaultUserTitle'] :  '')),
-    'superUser' => (in_array($userData['userId'], $loginConfig['superUsers']) && fim_isSuper() ? true : false), // We only tell other super users if a user is a superuser. It is something of a security risk otherwise.
-  );
+    );
+    $xmlData['getUsers']['users']['user ' . $userData['userId']]['postCount'] = (int) (isset($userDataForums[$userId]['posts']) ? $userDataForums[$userId]['posts'] : 0);
+    $xmlData['getUsers']['users']['user ' . $userData['userId']]['joinDate'] = (int) (isset($userDataForums[$userId]['joinDate']) ? $userDataForums[$userId]['joinDate'] : 0);
+    $xmlData['getUsers']['users']['user ' . $userData['userId']]['userTitle'] = (isset($userDataForums[$userId]['userTitle']) ? $userDataForums[$userId]['userTitle'] : (isset($config['defaultUserTitle']) ? $config['defaultUserTitle'] :  ''));
+  }
 
-  if ($userData['userId'] === $user['userId']) {
+  if (in_array('groups', $request['info'])) {
+    $xmlData['getUsers']['users']['user ' . $userData['userId']]['userGroup'] = (int) $userData['userGroup'];
+    $xmlData['getUsers']['users']['user ' . $userData['userId']]['socialGroups'] = ($userData['socialGroups']);
+    $xmlData['getUsers']['users']['user ' . $userData['userId']]['superUser'] = (in_array($userData['userId'], $loginConfig['superUsers']) && fim_isSuper() ? true : false); // We only tell other super users if a user is a superuser. It is something of a security risk otherwise.
+  }
+
+  if ($userData['userId'] === $user['userId']
+    && in_array('self', $request['info'])) {
     $xmlData['getUsers']['users']['user ' . $userData['userId']]['defaultRoom'] = $userData['defaultRoom'];
     $xmlData['getUsers']['users']['user ' . $userData['userId']]['options'] = $userData['options'];
     $xmlData['getUsers']['users']['user ' . $userData['userId']]['parentalAge'] = $userData['parentalAge'];
@@ -175,6 +183,7 @@ foreach ($users AS $userData) {
 /* Update Data for Errors */
 $xmlData['getUsers']['errStr'] = ($errStr);
 $xmlData['getUsers']['errDesc'] = ($errDesc);
+if ($config['dev']) $xmlData['request'] = $request;
 
 
 
