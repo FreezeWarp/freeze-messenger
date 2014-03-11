@@ -369,7 +369,7 @@ popup = {
           var roomName = active.roomData.roomName,
             roomId = active.roomData.roomId;
 
-          $('table#viewStats > thead > tr').append('<th>' + roomName + '1</th>');
+          $('table#viewStats > thead > tr').append('<th>' + roomName + '</th>');
 
           i = 1;
 
@@ -1046,37 +1046,22 @@ popup = {
       title : 'Manage Kicked Users in This Room',
       width : 1000,
       oF : function() {
-        $.ajax({
-          url: directory + 'api/getKicks.php?rooms=' + roomId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-          timeout: 5000,
-          type: 'GET',
-          cache: false,
-          success: function(json) {
-            active = json.getKicks.kicks;
+        getKicks({
+          'roomIds': [window.roomId] // TODO
+        }, function(active) {
+          var kickerId = active.kickerData.userId,
+            kickerName = active.kickerData.userName,
+            kickerFormatStart = active.kickerData.userFormatStart,
+            kickerFormatEnd = active.kickerData.userFormatEnd,
+            userId = active.userData.userId,
+            userName = active.userData.userName,
+            userFormatStart = active.userData.userFormatStart,
+            userFormatEnd = active.userData.userFormatEnd,
+            length = active.length,
+            set = fim_dateFormat(active.set, true),
+            expires = fim_dateFormat(active.expires, true);
 
-            for (i in active) {
-              var kickerId = active[i].kickerData.userId,
-                kickerName = active[i].kickerData.userName,
-                kickerFormatStart = active[i].kickerData.userFormatStart,
-                kickerFormatEnd = active[i].kickerData.userFormatEnd,
-                userId = active[i].userData.userId,
-                userName = active[i].userData.userName,
-                userFormatStart = active[i].userData.userFormatStart,
-                userFormatEnd = active[i].userData.userFormatEnd,
-                length = active[i].length,
-                set = fim_dateFormat(active[i].set, true),
-                expires = fim_dateFormat(active[i].expires, true);
-
-              $('#kickedUsers').append('<tr><td>' + userFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + userFormatEnd + '</td><td>' + kickerFormatStart + '<span class="userName userNameTable" data-userId="' + kickerId + '">' + kickerName + '</span>' + kickerFormatEnd + '</td><td>' + set + '</td><td>' + expires + '</td><td><button onclick="standard.unkick(' + userId + ', ' + roomId + ')">Unkick</button></td></tr>'); 
-            }
-
-            return false;
-          },
-          error: function() {
-            dia.error('The list of currently kicked users could not be obtained from the server. The action will be cancelled.'); // TODO: Handle Gracefully
-
-            return false;
-          }
+          $('#kickedUsers').append('<tr><td>' + userFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + userFormatEnd + '</td><td>' + kickerFormatStart + '<span class="userName userNameTable" data-userId="' + kickerId + '">' + kickerName + '</span>' + kickerFormatEnd + '</td><td>' + set + '</td><td>' + expires + '</td><td><button onclick="standard.unkick(' + userId + ', ' + roomId + ')">Unkick</button></td></tr>');
         });
       }
     });

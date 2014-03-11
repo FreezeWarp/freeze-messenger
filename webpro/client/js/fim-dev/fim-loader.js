@@ -1046,10 +1046,10 @@ function getRoom(userId) {
 
 function getFiles(params, callback) {
   var data = {
-      'fim3_sessionHash' : sessionHash,
-      'fim3_userId' :  window.userId,
-      'fim3_format' : 'json'
-    };
+    'fim3_sessionHash' : sessionHash,
+    'fim3_userId' :  window.userId,
+    'fim3_format' : 'json'
+  };
 
   if ('userIds' in params) data['users'] = JSON.stringify(params.userIds);
   else throw "getFiles() function requires userId in params"; // Error
@@ -1058,12 +1058,10 @@ function getFiles(params, callback) {
     url: directory + 'api/getFiles.php',
     data: data,
     type: 'get',
-    timeout: 2400,
+    timeout: 5000,
     cache: false
   }).done(function(json) {
-    $.each(json.getFiles.files, function(index, value) { console.log(value);
-      callback(value);
-    });
+    $.each(json.getFiles.files, function(index, value) { callback(value); });
   });
 }
 
@@ -1089,9 +1087,32 @@ function getStats(params, callback) {
     type: 'get',
     cache: false,
   }).done(function(json) {
-    $.each(json.getStats.roomStats, function(index, value) { console.log(value);
-      callback(value);
-    });
+    $.each(json.getStats.roomStats, function(index, value) { callback(value); });
+  });
+}
+
+
+
+function getKicks(params, callback) {
+  var data = {
+    'fim3_sessionHash' : window.sessionHash,
+    'fim3_userId' :  window.userId,
+    'fim3_format' : 'json'
+  };
+
+
+  if ('roomIds' in params) data['rooms'] = JSON.stringify(params.roomIds);
+  else throw "getStats() function requires roomIds"; // Error
+
+
+  $.ajax({
+    type: 'get',
+    url: directory + 'api/getKicks.php',
+    data: data,
+    timeout: 5000,
+    cache: false
+  }).done(function(json) {
+    $.each(json.getKicks.kicks, function(index, value) { callback(value); });
   });
 }
 
@@ -1676,7 +1697,6 @@ function contextMenuParseMessage() {
           text : 'Are you sure you want to delete this message?',
           'true' : function() {
             standard.deleteMessage(messageId);
-
             $(el).parent().fadeOut();
           }
         });
