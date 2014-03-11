@@ -83,6 +83,10 @@ foreach ($files AS $file) {
 
 
 
+if ($config['dev']) $xmlData['request'] = $request;
+
+
+
 /* Output Data */
 echo fim_outputApi($xmlData);
 ?>

@@ -76,40 +76,36 @@ $kicks = $database->getKicks(array(
 
 
 /* Start Processing */
-if (is_array($kicks)) {
-  if (count($kicks) > 0) {
-    foreach ($kicks AS $kick) {
-      $kick['type'] = 'normal';
-      $kick['parentalAge'] = 100; // Over-ride parentalAge/parentalFlags; TODO: needed?
-      $kick['parentalFlags'] = '';
-      
-      if (fim_hasPermission($kick, $user, 'moderate') || $kick['userId'] == $user['userId']) { // The user is allowed to know of all kicks they are subject to, and of all kicks in any rooms they moderate.
-        $xmlData['getKicks']['kicks']['kick ' . $kick['kickId']] = array(
-          'roomData' => array(
-            'roomId' => (int) $kick['roomId'],
-            'roomName' => (string) $kick['roomName'],
-          ),
-          'userData' => array(
-            'userId' => (int) $kick['userId'],
-            'userName' => (string) $kick['userName'],
-            'userFormatStart' => (string) $kick['userFormatStart'],
-            'userFormatEnd' => (string) $kick['userFormatEnd'],
-          ),
-          'kickerData' => array(
-            'userId' => (int) $kick['kickerId'],
-            'userName' => (string) $kick['kickerName'],
-            'userFormatStart' => (string) $kick['kickerFormatStart'],
-            'userFormatEnd' => (string) $kick['kickerFormatEnd'],
-          ),
-          'length' => (int) $kick['klength'],
+foreach ($kicks AS $kick) {
+  $kick['type'] = 'normal';
+  $kick['parentalAge'] = 100; // Over-ride parentalAge/parentalFlags; TODO: needed?
+  $kick['parentalFlags'] = '';
 
-          'set' => (int) $kick['ktime'],
-          'expires' => (int) ($kick['ktime'] + $kick['klength']),
-        );
+  if (fim_hasPermission($kick, $user, 'moderate') || $kick['userId'] == $user['userId']) { // The user is allowed to know of all kicks they are subject to, and of all kicks in any rooms they moderate.
+    $xmlData['getKicks']['kicks']['kick ' . $kick['kickId']] = array(
+      'roomData' => array(
+        'roomId' => (int) $kick['roomId'],
+        'roomName' => (string) $kick['roomName'],
+      ),
+      'userData' => array(
+        'userId' => (int) $kick['userId'],
+        'userName' => (string) $kick['userName'],
+        'userFormatStart' => (string) $kick['userFormatStart'],
+        'userFormatEnd' => (string) $kick['userFormatEnd'],
+      ),
+      'kickerData' => array(
+        'userId' => (int) $kick['kickerId'],
+        'userName' => (string) $kick['kickerName'],
+        'userFormatStart' => (string) $kick['kickerFormatStart'],
+        'userFormatEnd' => (string) $kick['kickerFormatEnd'],
+      ),
+      'length' => (int) $kick['klength'],
 
-        ($hook = hook('getKicks_eachKick') ? eval($hook) : '');
-      }
-    }
+      'set' => (int) $kick['ktime'],
+      'expires' => (int) ($kick['ktime'] + $kick['klength']),
+    );
+
+    ($hook = hook('getKicks_eachKick') ? eval($hook) : '');
   }
 }
 
@@ -118,11 +114,7 @@ if (is_array($kicks)) {
 /* Update Data for Errors */
 $xmlData['getKicks']['errStr'] = (string) $errStr;
 $xmlData['getKicks']['errDesc'] = (string) $errDesc;
-
-
-
-/* Plugin Hook End */
-($hook = hook('getKicks_end') ? eval($hook) : '');
+if ($config['dev']) $xmlData['request'] = $request;
 
 
 

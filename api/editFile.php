@@ -410,11 +410,7 @@ if ($continue) {
 
 /* Update Data for Errors */
 $xmlData['editFile']['errStr'] = ($errStr);
-
-
-
-/* Plugin Hook End */
-($hook = hook('editFile_end') ? eval($hook) : '');
+if ($config['dev']) $xmlData['request'] = $request;
 
 
 
