@@ -38,14 +38,14 @@ require('../global.php');
 $request = fim_sanitizeGPC('g', array(
   'rooms' => array(
     'default' => '',
-    'cast' => 'csv',
+    'cast' => 'jsonList',
     'filter' => 'int',
     'evaltrue' => true,
   ),
 
   'users' => array(
     'default' => '',
-    'cast' => 'csv',
+    'cast' => 'jsonList',
     'filter' => 'int',
     'evaltrue' => true,
   ),
@@ -74,10 +74,8 @@ $kicks = $database->getKicks(array(
 ))->getAsArray(true);
 
 
-
 /* Start Processing */
 foreach ($kicks AS $kick) {
-  $kick['type'] = 'normal';
   $kick['parentalAge'] = 100; // Over-ride parentalAge/parentalFlags; TODO: needed?
   $kick['parentalFlags'] = '';
 

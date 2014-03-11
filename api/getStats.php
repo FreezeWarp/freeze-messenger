@@ -37,13 +37,13 @@ require('../global.php');
 $request = fim_sanitizeGPC('g', array(
   'rooms' => array(
     'default' => '',
-    'cast' => 'csv',
+    'cast' => 'jsonList',
     'filter' => 'int',
     'evaltrue' => true,
   ),
   'users' => array(
     'default' => '',
-    'cast' => 'csv',
+    'cast' => 'jsonList',
     'filter' => 'int',
     'evaltrue' => true,
   ),
@@ -82,17 +82,17 @@ foreach ($totalPosts AS $room) {
       continue;
     }
 
-    if (!isset($xmlData['getStats']['roomStats']['room ' . $room['roomId']])) {
-      $xmlData['getStats']['roomStats']['room ' . $room['roomId']] = array(
+    if (!isset($xmlData['getStats']['roomStats']['room ' . $totalPoster['roomId']])) {
+      $xmlData['getStats']['roomStats']['room ' . $totalPoster['roomId']] = array(
       'roomData' => array(
-        'roomId' => (int) $room['roomId'],
-        'roomName' => $room['name'],
+        'roomId' => (int) $totalPoster['roomId'],
+        'roomName' => $totalPoster['roomName'],
       ),
       'users' => array(),
       );
     }
 
-    $xmlData['getStats']['roomStats']['room ' . $room['roomId']]['users']['user ' . $totalPoster['userId']] = array(
+    $xmlData['getStats']['roomStats']['room ' . $totalPoster['roomId']]['users']['user ' . $totalPoster['userId']] = array(
       'userData' => array(
         'userId' => (int) $totalPoster['userId'],
         'userName' => ($totalPoster['userName']),
