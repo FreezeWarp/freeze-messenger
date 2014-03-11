@@ -985,13 +985,11 @@ function populate(options) {
  * 
  */
 function getUsers(params, callback) {
-  var userData = false,
-    data = {
-      'fim3_sessionHash' : sessionHash,
-      'fim3_userId' :  window.userId,
-      'fim3_format' : 'json'
-    },
-    returnValue;
+  var data = {
+    'fim3_sessionHash' : sessionHash,
+    'fim3_userId' :  window.userId,
+    'fim3_format' : 'json'
+  };
 
   if ('userIds' in params) data['users'] = JSON.stringify(params.userIds);
   else if ('userNames' in params) data['userNames'] = JSON.stringify(params.userNames);
@@ -1051,8 +1049,7 @@ function getFiles(params, callback) {
       'fim3_sessionHash' : sessionHash,
       'fim3_userId' :  window.userId,
       'fim3_format' : 'json'
-    },
-    returnValue;
+    };
 
   if ('userIds' in params) data['users'] = JSON.stringify(params.userIds);
   else throw "getFiles() function requires userId in params"; // Error
@@ -1065,6 +1062,34 @@ function getFiles(params, callback) {
     cache: false
   }).done(function(json) {
     $.each(json.getFiles.files, function(index, value) { console.log(value);
+      callback(value);
+    });
+  });
+}
+
+
+
+function getStats(params, callback) {
+  var data = {
+    'fim3_sessionHash' : window.sessionHash,
+    'fim3_userId' :  window.userId,
+    'fim3_format' : 'json',
+    'number' : 10
+  };
+
+
+  if ('roomId' in params) data['rooms'] = JSON.stringify([params.roomId]);
+  else throw "getStats() function requires roomId"; // Error
+
+
+  $.ajax({
+    url: directory + 'api/getStats.php',
+    data: data,
+    timeout: 5000,
+    type: 'get',
+    cache: false,
+  }).done(function(json) {
+    $.each(json.getStats.roomStats, function(index, value) { console.log(value);
       callback(value);
     });
   });

@@ -350,67 +350,44 @@ popup = {
   /*** START Stats ***/
 
   viewStats : function() {
-    var statsHtml = {}, // Object
-      statsHtml2 = '',
-      roomHtml = '',
-      number = 10,
-      i = 1;
+    var number = 10;
 
-    for (i = 1; i <= number; i += 1) {
-      statsHtml[i] = '';
-    }
-
-    $.ajax({
-      url: directory + 'api/getStats.php?rooms=' + roomId + '&number=' + number + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-      timeout: 5000,
-      type: 'GET',
-      cache: false,
-      success: function(json) {
-        for (i in json.getStats.roomStats) {
-          var roomName = json.getStats.roomStats[i].roomData.roomName,
-            roomId = json.getStats.roomStats[i].roomData.roomId;
-
-          for (j in json.getStats.roomStats[i].users) {
-            var userName = json.getStats.roomStats[i].users[j].userData.userName,
-              userId = json.getStats.roomStats[i].users[j].userData.userId,
-              startTag = json.getStats.roomStats[i].users[j].userData.startTag,
-              endTag = json.getStats.roomStats[i].users[j].userData.endTag,
-              position = json.getStats.roomStats[i].users[j].position,
-              messageCount = json.getStats.roomStats[i].users[j].messageCount;
-
-            statsHtml[position] += '<td><span class="userName userNameTable" data-userId="' + userId + '">' + startTag + userName + endTag + '</span> (' + messageCount + ')</td>';
-          };
-
-
-          roomHtml += '<th>' + roomName + '</th>';
-
-        }
-
+    
+    dia.full({
+      content : $t('viewStats'),
+      title : 'Room Stats',
+      id : 'roomStatsDialogue',
+      width : 600,
+      oF : function() {
         for (i = 1; i <= number; i += 1) {
-          statsHtml2 += '<tr><th>' + i + '</th>' + statsHtml[i] + '</tr>';
+          $('table#viewStats > tbody').append('<tr><th>' + i + '</th></tr>');
         }
 
-        dia.full({
-          content : $t('viewStats'),
-          title : 'Room Stats',
-          id : 'roomStatsDialogue',
-          width : 600,
-          oF : function() {
-            $('table#viewStats > thead > tr').append(roomHtml);
-            $('table#viewStats > tbody').html(statsHtml2);
+        getStats({
+          'roomId' : window.roomId // TODO
+        }, function(active) {
+          var roomName = active.roomData.roomName,
+            roomId = active.roomData.roomId;
+
+          $('table#viewStats > thead > tr').append('<th>' + roomName + '1</th>');
+
+          i = 1;
+
+          for (j in active.users) {
+            var userName = active.users[j].userData.userName,
+              userId = active.users[j].userData.userId,
+              startTag = active.users[j].userData.startTag,
+              endTag = active.users[j].userData.endTag,
+              position = active.users[j].position,
+              messageCount = active.users[j].messageCount;
+
+            $('table#viewStats > tbody > tr').eq(i - 1).append('<td><span class="userName userNameTable" data-userId="' + userId + '">' + startTag + userName + endTag + '</span> (' + messageCount + ')</td>');
+
+            i++;
           }
         });
-
-        return false;
-      },
-      error: function() {
-        dia.error('Failed to obtain stats. The action will be cancelled'); // TODO: Handle Gracefully
-
-        return false;
       }
     });
-
-    return false;
   },
 
   /*** END Stats ***/
