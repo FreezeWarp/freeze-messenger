@@ -81,7 +81,7 @@ var topic,
 
 var roomRef = {}, roomIdRef = {}, modRooms = {}, // Just a whole bunch of objects.
   userRef = {}, userData = {},
-  groupRef = {}, groupIdRef = {}, fontIdRef = {},
+  groupRef = {}, groupIdRef = {},
   roomLists = {},
 
   roomList = [], userList = [], groupList = [], // Arrays that serve different purposes, notably looking up IDs from names.

@@ -52,6 +52,13 @@ $request = fim_sanitizeGPC('g', array(
     'filter' => 'int',
     'evaltrue' => true,
   ),
+
+  'roomNames' => array(
+    'default' => '',
+    'cast' => 'jsonList',
+    'filter' => 'string',
+    'evaltrue' => true,
+  ),
   
 /*  'info' => array(
     'default' => array(),
@@ -91,6 +98,7 @@ $xmlData = array(
 
 $rooms = $database->getRooms(array(
   'roomIds' => $request['rooms'],
+  'roomNames' => $request['roomNames'],
   'showDeleted' => $request['showDeleted'],
   'roomNameSearch' => $request['search']),
 array($request['sort'] => 'asc'))->getAsArray(true);

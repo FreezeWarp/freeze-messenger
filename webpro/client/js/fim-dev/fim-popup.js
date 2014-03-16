@@ -779,7 +779,7 @@ popup = {
 
         /* Censor Lists */
         getCensorLists({
-          'roomIds' : roomIdLocal ? [roomIdLocal] : 0
+          'roomIds' : roomIdLocal ? [roomIdLocal] : [0]
         }, function(active) { console.log(active);
           var listId = active.listId,
             listName = active.listName,
@@ -797,7 +797,7 @@ popup = {
         /* Prepopulate Data if Editing a Room */
         if (roomIdLocal) {
           getRooms({
-            'roomIds' : roomIdLocal
+            'roomIds' : [roomIdLocal]
           }, function(roomData) {
             var data = '',
               roomName = roomData.roomName,
