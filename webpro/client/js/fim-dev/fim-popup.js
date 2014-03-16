@@ -742,97 +742,6 @@ popup = {
       width : 1000,
       tabs : true,
       oF : function() {
-        if (roomIdLocal) {
-          $.ajax({
-            url: directory + 'api/getRooms.php?rooms=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-            type: 'GET',
-            timeout: 2400,
-            cache: false,
-            success: function(json) {
-              for (var i in json.getRooms.rooms) {
-                var data = '',
-                  roomName = json.getRooms.rooms[i].roomName,
-                  roomId = json.getRooms.rooms[i].roomId,
-                  allowedUsers = json.getRooms.rooms[i].allowedUsers,
-                  allowedGroups = json.getRooms.rooms[i].allowedGroups,
-                  defaultPermissions = json.getRooms.rooms[i].defaultPermissions,
-                  parentalAge = json.getRooms.rooms[i].parentalAge,
-                  parentalFlags = json.getRooms.rooms[i].parentalFlags,
-                  allowedUsersArray = [],
-                  moderatorsArray = [],
-                  allowedGroupsArray = [];
-
-                  for (var j in allowedUsers) {
-                    if (allowedUsers[j] & 15 === 15) { moderatorsArray.push(j); } // Are all bits up to 8 present?
-                    if (allowedUsers[j] & 7 === 7) { allowedUsersArray.push(j); } // Are the 1, 2, and 4 bits all present?
-                  }
-
-                  console.log(parentalFlags);
-                  for (i in parentalFlags) {
-                    $('input[data-cat=parentalFlag][data-name=' + parentalFlags[i] + ']').attr('checked', true);
-                  }
-                  $('select#parentalAge option[value=' + parentalAge + ']').attr('selected', 'selected');
-
-                break;
-              }
-
-              $('#name').val(roomName); // Current Room Name
-
-              /* Prepopulate */
-              // User Autocomplete
-              if (allowedUsersArray.length > 0) autoEntry.showEntries('allowedUsers', allowedUsersArray);
-              if (moderatorsArray.length > 0) autoEntry.showEntries('moderators', moderatorsArray);
-              if (allowedGroupsArray.length > 0) autoEntry.showEntries('allowedGroups', allowedGroupsArray);
-
-              if (defaultPermissions == 7) { // Are All Users Allowed Presently?
-                $('#allowAllUsers').attr('checked', true);
-                $('#allowedUsersBridge').attr('disabled', 'disabled');
-                $('#allowedGroupsBridge').attr('disabled', 'disabled');
-                $('#allowedUsersBridge').next().attr('disabled', 'disabled');
-                $('#allowedGroupsBridge').next().attr('disabled', 'disabled');
-              }
-
-              return false;
-            },
-            error: function() {
-              dia.error('Failed to obtain current room settings from server. The action will be cancelled.'); // TODO: Handle Gracefully
-
-              return false;
-            }
-          });
-        }
-
-
-        /* Censor Lists */
-        $.ajax({
-          url: directory + 'api/getCensorLists.php?rooms=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-          type: 'GET',
-          timeout: 2400,
-          cache: false,
-          success: function(json) {
-            for (var i in json.getCensorLists.lists) {
-              var listId = json.getCensorLists.lists[i].listId,
-                listName = json.getCensorLists.lists[i].listName,
-                listType = json.getCensorLists.lists[i].listType,
-                listOptions = json.getCensorLists.lists[i].listOptions;
-
-              for (j in json.getCensorLists.lists[i].active) {
-                var listStatus = json.getCensorLists.lists[i].active[j].status;
-              }
-
-              $('#censorLists').append('<label><input type="checkbox" name="list' + listId + '" data-listId="' + listId + '" data-checkType="list" value="true" ' + (listOptions & 2 ? '' : ' disabled="disabled"') + (listStatus === 'block' ? ' checked="checked"' : '') + ' />' + listName + '</label><br />');
-            }
-
-            return false;
-          },
-          error: function() {
-            dia.error('Failed to obtain current censor list settings from server. The action will be cancelled.'); // TODO: Handle Gracefully
-
-            return false;
-          }
-        });
-
-
         /* Autocomplete Users and Groups */
         $("#moderatorsBridge").autocomplete({ source: userList });
         $("#allowedUsersBridge").autocomplete({ source: userList });
@@ -868,6 +777,65 @@ popup = {
         }
 
 
+        /* Censor Lists */
+        getCensorLists({
+          'roomIds' : roomIdLocal ? [roomIdLocal] : 0
+        }, function(active) { console.log(active);
+          var listId = active.listId,
+            listName = active.listName,
+            listType = active.listType,
+            listOptions = active.listOptions;
+
+          for (j in active.roomStatuses) {
+            var listStatus = active.roomStatuses[j].status;
+          }
+
+          $('#censorLists').append('<label><input type="checkbox" name="list' + listId + '" data-listId="' + listId + '" data-checkType="list" value="true" ' + (listOptions & 2 ? '' : ' disabled="disabled"') + (listStatus === 'block' ? ' checked="checked"' : '') + ' />' + listName + '</label><br />');
+        });
+
+
+        /* Prepopulate Data if Editing a Room */
+        if (roomIdLocal) {
+          getRooms({
+            'roomIds' : roomIdLocal
+          }, function(roomData) {
+            var data = '',
+              roomName = roomData.roomName,
+              roomId = roomData.roomId,
+              allowedUsers = roomData.allowedUsers,
+              allowedGroups = roomData.allowedGroups,
+              defaultPermissions = roomData.defaultPermissions,
+              parentalAge = roomData.parentalAge,
+              parentalFlags = roomData.parentalFlags,
+              allowedUsersArray = [],
+              moderatorsArray = [],
+              allowedGroupsArray = [];
+
+            for (var j in allowedUsers) { /* TODO? */
+              if (allowedUsers[j] & 15 === 15) { moderatorsArray.push(j); } // Are all bits up to 8 present?
+              if (allowedUsers[j] & 7 === 7) { allowedUsersArray.push(j); } // Are the 1, 2, and 4 bits all present?
+            }
+
+            console.log(parentalFlags);
+            for (i in parentalFlags) {
+              $('input[data-cat=parentalFlag][data-name=' + parentalFlags[i] + ']').attr('checked', true);
+            }
+            $('select#parentalAge option[value=' + parentalAge + ']').attr('selected', 'selected');
+            $('#name').val(roomName); // Current Room Name
+
+            /* Prepopulate
+            * TODO: Replace w/ AJAX. */
+            // User Autocomplete
+            if (allowedUsersArray.length > 0) autoEntry.showEntries('allowedUsers', allowedUsersArray);
+            if (moderatorsArray.length > 0) autoEntry.showEntries('moderators', moderatorsArray);
+            if (allowedGroupsArray.length > 0) autoEntry.showEntries('allowedGroups', allowedGroupsArray);
+
+
+            if (defaultPermissions == 7) $('#allowAllUsers').attr('checked', true); // If all users are currently allowed, check the box (which triggers other stuff above).
+          });
+        }
+
+
         /* Submit */
         $("#editRoomForm").submit(function() {
           var name = $('#name').val(),
@@ -884,7 +852,9 @@ popup = {
 
           $('input[data-cat=parentalFlag]:checked').each(function(a, b) {
             parentalFlags.push($(b).attr('data-name'));
-          }); console.log(directory + 'api/editRoom.php', 'action=' + action + '&roomId=' +  roomIdLocal + '&roomName=' + fim_eURL(name) + '&defaultPermissions=' + ($('#allowAllUsers').is(':checked') ? '7' : '0' + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups) + '&moderators=' + moderators + '&parentalAge=' + parentalAge + '&parentalFlags=' + parentalFlags + '&censor=' + censor.join(',') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
+          });
+
+          console.log(directory + 'api/editRoom.php', 'action=' + action + '&roomId=' +  roomIdLocal + '&roomName=' + fim_eURL(name) + '&defaultPermissions=' + ($('#allowAllUsers').is(':checked') ? '7' : '0' + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups) + '&moderators=' + moderators + '&parentalAge=' + parentalAge + '&parentalFlags=' + parentalFlags + '&censor=' + censor.join(',') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
 
           if (name.length > window.serverSettings.rooms.roomLengthMaximum) dia.error('The roomname is too long.');
           else if (name.length < window.serverSettings.rooms.roomLengthMinimum) dia.error('The roomname is too short.');

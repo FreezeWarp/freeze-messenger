@@ -819,7 +819,7 @@ function populate(options) {
       timeout: 5000,
       cache: false,
       success: function(json) {
-        userList = []; // Array // Clear so we don't get repeat values on regeneration.
+        userList = []; // Array // Clear so we don't get repeat values on regeneration; removal notes: only used for autocomplete in fim-popup.js, not used in fim-loader.js or fim-standard.js. Safe to remove!
         userRef = {}; // Object
 
         for (i in json.getUsers.users) {
@@ -977,16 +977,16 @@ function populate(options) {
 /**
  * Obtains one or more users.
  * This function is async.
- * 
+ *
  * @param object userId - The ID of the user to obtain info of.
- * 
+ *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2012
- * 
+ *
  */
 function getUsers(params, callback) {
   var data = {
-    'fim3_sessionHash' : sessionHash,
+    'fim3_sessionHash' : window.sessionHash,
     'fim3_userId' :  window.userId,
     'fim3_format' : 'json'
   };
@@ -1009,37 +1009,28 @@ function getUsers(params, callback) {
 }
 
 
+function getRooms(params, callback) {
+  var data = {
+    'fim3_sessionHash' : window.sessionHash,
+    'fim3_userId' :  window.userId,
+    'fim3_format' : 'json'
+  };
 
-/**
- * Obtains information for a single room.
- * 
- * @param object userId - The ID of the user to obtain info of.
- * 
- * @return mixed - Object of user data on success, "false" on failure.
- * 
- * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2012
- * 
- */
-function getRoom(userId) {
-  var roomData = false;
+  if ('roomIds' in params) data['rooms'] = JSON.stringify(params.roomIds);
+  else if ('roomNames' in params) data['roomNames'] = JSON.stringify(params.roomNames);
+  else throw "getRooms() function requires either roomIds or roomNames in params"; // Error
 
   $.ajax({
-    url: directory + 'api/getRooms.php?rooms=' + userId + 'fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-    type: 'GET',
+    type: 'get',
+    url: directory + 'api/getRooms.php',
+    data: data,
     timeout: 5000,
-    cache: false,
-    async : false,
-    success: function(json) {
-      for (i in json.getRooms.rooms) {
-        roomData = json.getRooms.rooms[i];
-      }
-      
-      return false;
-    },
+    cache: false
+  }).done(function(json) {
+    $.each(json.getRooms.rooms, function(index, value) { console.log(value);
+      callback(value);
+    });
   });
-  
-  return roomData;
 }
 
 
@@ -1113,6 +1104,31 @@ function getKicks(params, callback) {
     cache: false
   }).done(function(json) {
     $.each(json.getKicks.kicks, function(index, value) { callback(value); });
+  });
+}
+
+
+
+function getCensorLists(params, callback) {
+  var data = {
+    'fim3_sessionHash' : window.sessionHash,
+    'fim3_userId' :  window.userId,
+    'fim3_format' : 'json'
+  };
+
+
+  if ('roomIds' in params) data['rooms'] = JSON.stringify(params.roomIds);
+//  else throw "getCensorLists() function requires roomIds"; // Error
+
+
+  $.ajax({
+    type: 'get',
+    url: directory + 'api/getCensorLists.php',
+    data: data,
+    timeout: 5000,
+    cache: false
+  }).done(function(json) {
+    $.each(json.getCensorLists.lists, function(index, value) { callback(value); });
   });
 }
 

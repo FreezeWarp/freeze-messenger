@@ -48,7 +48,7 @@ $request = fim_sanitizeGPC('g', array(
 
   'rooms' => array(
     'default' => '',
-    'cast' => 'csv',
+    'cast' => 'jsonList',
     'filter' => 'int',
     'evaltrue' => true,
   ),
