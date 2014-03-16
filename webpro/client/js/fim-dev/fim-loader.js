@@ -80,7 +80,7 @@ var topic,
 /* Objects for Cleanness, Caching. */
 
 var roomRef = {}, roomIdRef = {}, modRooms = {}, // Just a whole bunch of objects.
-  userRef = {}, userIdRef = {}, userData = {},
+  userRef = {}, userData = {},
   groupRef = {}, groupIdRef = {}, fontIdRef = {},
   roomLists = {},
 
