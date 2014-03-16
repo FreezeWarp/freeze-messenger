@@ -830,7 +830,6 @@ popup = {
             if (moderatorsArray.length > 0) autoEntry.showEntries('moderators', moderatorsArray);
             if (allowedGroupsArray.length > 0) autoEntry.showEntries('allowedGroups', allowedGroupsArray);
 
-
             if (defaultPermissions == 7) $('#allowAllUsers').attr('checked', true); // If all users are currently allowed, check the box (which triggers other stuff above).
           });
         }
