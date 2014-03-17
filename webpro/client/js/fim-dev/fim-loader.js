@@ -984,12 +984,14 @@ function populate(options) {
  * @copyright Joseph T. Parsons 2012
  *
  */
-function getUsers(params, callback) {
+function getUsers(params, callback, async) {
   var data = {
     'fim3_sessionHash' : window.sessionHash,
     'fim3_userId' :  window.userId,
     'fim3_format' : 'json'
   };
+
+  if (typeof async === 'undefined') async = true;
 
   if ('userIds' in params) data['users'] = JSON.stringify(params.userIds);
   else if ('userNames' in params) data['userNames'] = JSON.stringify(params.userNames);
@@ -1000,7 +1002,8 @@ function getUsers(params, callback) {
     url: directory + 'api/getUsers.php',
     data: data,
     timeout: 5000,
-    cache: false
+    cache: false,
+    async: async
   }).done(function(json) {
     $.each(json.getUsers.users, function(index, value) { console.log(value);
       callback(value);

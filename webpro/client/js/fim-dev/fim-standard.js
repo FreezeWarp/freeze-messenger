@@ -330,41 +330,12 @@ var standard = {
   getMessages : function() {
     clearInterval(timers.t1);
 
-    if (roomId) {
-      var encrypt = 'base64',
-        lastMessageId;
-
-      if (requestSettings.firstRequest) {
-        $.ajax({
-          url: directory + 'api/getRooms.php?rooms=' + roomId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-          type: 'GET',
-          timeout: 2400,
-          cache: false,
-          async : false, // We need to complete this request before the next
-          success: function(json) {
-            active = json.getRooms.rooms;
-
-            for (i in active) {
-              lastMessageId = active[i].lastMessageId;
-
-              break;
-            }
-
-            return false;
-          },
-          error: function() {
-            dia.error('Failed to obtain current room settings from the server.'); // TODO: Handle gracefully.
-
-            return false;
-          }
-        });
-      }
+    if (window.roomId) {
+      var encrypt = 'base64';
 
       if (requestSettings.serverSentEvents) { // Note that the event subsystem __requires__ serverSentEvents for various reasons. If you use polling, these events will no longer be fully compatible.
         messageSource = new EventSource(directory + 'apiStream/messageStream.php?roomId=' + roomId + '&lastMessage=' + requestSettings.lastMessage + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
-
         eventSource = new EventSource(directory + 'apiStream/eventStream.php?roomId=' + roomId + '&lastEvent=' + requestSettings.lastEvent + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
-
         console.log('Starting EventSource; roomId: ' + roomId + '; lastEvent: ' + requestSettings.lastEvent + '; lastMessage: ' + requestSettings.lastMessage)
 
         messageSource.addEventListener('time', function(e) {
@@ -422,7 +393,7 @@ var standard = {
       }
       else {
         $.ajax({
-          url: directory + 'api/getMessages.php?roomId=' + roomId + '&messageHardLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest ? '&archive=1&messageIdEnd=' + lastMessageId : '&messageIdStart=' + (requestSettings.lastMessage + 1)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+          url: directory + 'api/getMessages.php?roomId=' + roomId + '&messageHardLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest ? '&archive=1&messageIdStart=' + (requestSettings.lastMessage + 1)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
           type: 'GET',
           timeout: requestSettings.timeout,
           contentType: "text/json; charset=utf-8",
@@ -630,62 +601,43 @@ var standard = {
       });
     }
     else { // Normal procedure otherwise.
-      $.ajax({
-        url: directory + 'api/getRooms.php?rooms=' + roomIdLocal + '&permLevel=view&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-        timeout: 5000,
-        type: 'GET',
-        cache: false,
-        success: function(json) {
-          active = json.getRooms.rooms;
-
-          for (i in active) {
-            var roomName = active[i].roomName,
-              roomId2 = active[i].roomId,
-              roomTopic = active[i].roomTopic,
-              permissions = active[i].permissions;
-
-            if (!permissions.canView) { // If we can not view the room
-              roomId = false; // Set the internal roomId false.
-              popup.selectRoom(); // Prompt the user to select a new room.
-              dia.error('You have been restricted access from this room. Please select a new room.');
-            }
-            else if (!permissions.canPost) { // If we can view, but not post
-              dia.error('You are not allowed to post in this room. You will be able to view it, though.');
-
-              disableSender();
-            }
-            else { // If we can both view and post.
-              enableSender();
-            }
-
-            if (permissions.canView) { // If we can view the room...
-              roomId = roomId2;
-
-              $('#roomName').html(roomName); // Update the room name.
-              $('#topic').html(roomTopic); // Update the room topic.
-              $('#messageList').html(''); // Clear the message list.
+      getRooms({
+        'roomIds' : [roomIdLocal],
+        'permLevel' : 'view'
+      }, function(roomData) {
+        if (!roomData.permissions.canView) { // If we can not view the room
+          window.roomId = false; // Set the internal roomId false.
+          popup.selectRoom(); // Prompt the user to select a new room.
+          dia.error('You have been restricted access from this room. Please select a new room.');
+        }
+        else if (!roomData.permissions.canPost) { // If we can view, but not post
+          dia.error('You are not allowed to post in this room. You will be able to view it, though.');
+          disableSender();
+        }
+        else { // If we can both view and post.
+          enableSender();
+        }
 
 
-              /*** Get Messages ***/
-              $(document).ready(function() {
-                requestSettings.firstRequest = true;
-                requestSettings.lastMessage = 0;
-                messageIndex = [];
+        if (roomData.permissions.canView) { // If we can view the room...
+          roomId = roomData.roomId;
 
-                standard.getMessages();
+          $('#roomName').html(roomData.roomName); // Update the room name.
+          $('#topic').html(roomData.roomTopic); // Update the room topic.
+          $('#messageList').html(''); // Clear the message list.
 
-                windowDraw();
-                windowDynaLinks();
-              });
-            }
 
-            break;
-          }
-        },
-        error: function() {
-          dia.error('Could not fetch room data. Action cancelled.'); // TODO: Handle gracefully
+          /*** Get Messages (TODO: Streamline) ***/
+          $(document).ready(function() {
+            requestSettings.firstRequest = true;
+            requestSettings.lastMessage = 0;
+            messageIndex = [];
 
-          return false;
+            standard.getMessages();
+
+            windowDraw();
+            windowDynaLinks();
+          });
         }
       });
     }
