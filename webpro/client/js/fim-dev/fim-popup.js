@@ -944,28 +944,30 @@ popup = {
       id : 'onlineDialogue',
       position : 'top',
       width : 600,
-      cF : function() {
-        clearInterval(timers.t2);
-      }
+      oF : updateOnline,
+      cF : getActiveUsers({}, {
+        'close' : true
+      })
     });
 
     function updateOnline() {
-      $('#onlineUsers').html('');
 
-      getActiveUsers({}, function(activeUser) {
-        var roomData = [];
-        for (j in activeUser.rooms) {
-          roomData.push('<a href="#room=' + activeUser.rooms[j].roomId + '">' + activeUser.rooms[j].roomName + '</a>');
+      getActiveUsers({}, {
+        'refresh' : 1000
+        'begin' : function() {
+          $('#onlineUsers').html('');
+        },
+        'each' : function(activeUser) {
+          var roomData = [];
+          for (j in activeUser.rooms) roomData.push('<a href="#room=' + activeUser.rooms[j].roomId + '">' + activeUser.rooms[j].roomName + '</a>');
+
+          $('#onlineUsers').append('<tr><td>' + activeUser.userData.startTag + '<span class="userName" data-userId="' + activeUser.userData.userId + '">' + activeUser.userData.userName + '</span>' + activeUser.userData.endTag + '</td><td>' + roomData.join(', ') + '</td></tr>');
+        },
+        'end' : function() {
+          //contextMenuParseUser('#onlineUsers');
         }
-        roomData = roomData.join(', ');
-
-        $('#onlineUsers').append('<tr><td>' + activeUser.userData.startTag + '<span class="userName" data-userId="' + activeUser.userData.userId + '">' + activeUser.userData.userName + '</span>' + activeUser.userData.endTag + '</td><td>' + roomData + '</td></tr>');
       });
-
-      //contextMenuParseUser('#onlineUsers');
     }
-
-    timers.t2 = setInterval(updateOnline, 2500); // TODO: Build into function.
 
     return false;
   },

@@ -1128,27 +1128,61 @@ function getCensorLists(params, callback) {
 
 
 
-function getActiveUsers(params, callback) {
+function getActiveUsers(params, requestSettings, callbackStart, callbackEach, callbackEnd) {
   var data = {
     'fim3_sessionHash' : window.sessionHash,
     'fim3_userId' :  window.userId,
     'fim3_format' : 'json'
   };
 
+/*  var requestSettings = mergeDefaults(requestSettings, {
+    'close' : false,
+    'timerId' : 1
+  });*/
+
+  if (requestSettings.close) {
+    if ('timerId' in requestSettings) clearInterval('getActiveUsers_' + requestSettings.timerId);
+    else clearInterval('getActiveUsers_1');
+  }
+
 
   if ('roomIds' in params) data['rooms'] = JSON.stringify(params.roomIds);
   if ('userIds' in params) data['users'] = JSON.stringify(params.userIds);
 
 
-  $.ajax({
-    type: 'get',
-    url: directory + 'api/getActiveUsers.php',
-    data: data,
-    timeout: 5000,
-    cache: false
-  }).done(function(json) {
-    $.each(json.getActiveUsers.users, function(index, value) { console.log(value); callback(value); });
-  });
+  function getActiveUsers_query() {
+    $.ajax({
+      type: 'get',
+      url: directory + 'api/getActiveUsers.php',
+      data: data,
+      timeout: 5000,
+      cache: false
+    }).done(function(json) {
+      requestSettings.start();
+
+      $.each(json.getActiveUsers.users, function(index, value) { requestSettings.each(value); });
+
+      requestSettings.end();
+    });
+  }
+
+  if ('refresh' in requestSettings) {
+    getActiveUsers_query();
+
+    if (!('timerId' in requestSettings)) requestSettings.timerId = '1';
+    timers['getActiveUsers_' + requestSettings.timerId] = setInterval(getActiveUsers_query, 2500);
+  }
+  else {
+    getActiveUsers_query();
+  }
+}
+
+
+
+function mergeDefaults(object, defaults) {
+  for (i in defaults) {
+    if (!(i in object)) object[i] = defaults[i];
+  }
 }
 
 /*********************************************************
