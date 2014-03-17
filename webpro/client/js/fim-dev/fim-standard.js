@@ -376,58 +376,9 @@ var standard = {
       return false;
     }
 
-    if (typeof messageSource != "undefined") messageSource.close();
-
-    if (roomIdLocal.toString().substr(0,1) === 'p') { // If the roomId string corresponds to a private room, we must query getPrivateRoom, among other things. [[TODO: windowDynaLinks]]
-      $.ajax({
-        url: directory + 'api/getPrivateRoom.php?users=' + roomIdLocal.toString().substr(1) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-        timeout: 5000,
-        type: 'GET',
-        cache: false,
-        success: function(json) {
-          active = json.getPrivateRoom.room;
-          var users = active.roomUsers,
-            roomUsers = [];
-
-
-          for (i in users) { // Run through the user list return by getPrivateRooms
-            var userName = users[i].userName,
-              userFormatStart = users[i].userFormatStart,
-              userFormatEnd = users[i].userFormatEnd;
-
-            roomUsers.push(userName);
-          }
-
-          if (roomUsers) {
-            var roomName = 'Conversation Between: ' + roomUsers.join(', '); // Set the room name to list the users conversing.
-            roomId = 'p' + active.uniqueId; // Set the internal roomId to the uniqueId required by all API calls outside of getPrivateRoom.
-
-            $('#roomName').html(roomName);
-            $('#topic').html(''); // Clear the topic.
-            $('#messageList').html(''); // Clear the messsage list.
-
-            enableSender();
-
-            /*** Get Messages ***/
-            $(document).ready(function() {
-              requestSettings.firstRequest = true;
-              requestSettings.lastMessage = 0;
-              messageIndex = [];
-
-              standard.getMessages();
-
-              windowDraw();
-              windowDynaLinks();
-            });
-          }
-          else {
-            dia.error('You are not allowed to talk to that user.');
-          }
-        },
-        error: function() {
-          dia.error('Could not fetch room data. Action cancelled.'); // TODO: Handle Gracefully1
-        }
-      });
+    isPrivateRoom = false;
+    if (isPrivateRoom) {
+      // TODO
     }
     else { // Normal procedure otherwise.
       getRooms({
