@@ -38,8 +38,7 @@ require('../global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
   'rooms' => array(
-    'default' => array( ),
-    'require' => true,
+    'default' => '',
     'cast' => 'csv',
     'filter' => 'int',
     'evaltrue' => true,
@@ -83,7 +82,7 @@ $activeUsers = $database->getActiveUsers(array(
 
 
 /* Start Processing */
-if (count($request['rooms']) > 0) {
+if (count($request['rooms']) > 0) { /* TODO: Remove? */
   foreach ($activeUsers->getAsArray('roomId', true) AS $roomId => $room) { // Run through each room.
     if (fim_hasPermission($room, $user, 'know', true) === false) { // The user must be able to know the room exists.
       continue; // Skip to next iteration (strictly speaking, redundant)
@@ -118,8 +117,8 @@ else {
   foreach ($activeUsers->getAsArray(true) AS $activeUser) {
     $activeUser['type'] = 'normal';
 
-    if (!isset($xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']])) {
-      $xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']] = array(
+    if (!isset($xmlData['getActiveUsers']['users']['user ' . $activeUser['userId']])) {
+      $xmlData['getActiveUsers']['users']['user ' . $activeUser['userId']] = array(
         'userData' => array(
           'userId' => (int) $activeUser['userId'],
           'userName' => (string) $activeUser['userName'],
@@ -133,7 +132,7 @@ else {
     }
 
     if (fim_hasPermission($activeUser, $user, 'view', false)) { // Only list the room the user is in if the active user has permission to view the room.
-      $xmlData['getAllActiveUsers']['users']['user ' . $activeUser['userId']]['rooms']['room ' . $activeUser['roomId']] = array(
+      $xmlData['getActiveUsers']['users']['user ' . $activeUser['userId']]['rooms']['room ' . $activeUser['roomId']] = array(
         'roomId' => (int) $activeUser['roomId'],
         'roomName' => (string) $activeUser['roomName'],
       );

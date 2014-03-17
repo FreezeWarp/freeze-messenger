@@ -950,47 +950,22 @@ popup = {
     });
 
     function updateOnline() {
-      $.ajax({
-        url: directory + 'api/getActiveUsers.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-        type: 'GET',
-        timeout: 2400,
-        cache: false,
-        success: function(json) {
-          var data = '';
-          $('#onlineUsers').html('');
+      $('#onlineUsers').html('');
 
-          active = json.getAllActiveUsers.users;
-
-          for (i in active) {
-            var userName = active[i].userData.userName,
-              userId = active[i].userData.userId,
-              startTag = active[i].userData.startTag,
-              endTag = active[i].userData.endTag,
-              roomData = [];
-
-            for (j in active[i].rooms) {
-              var roomId = active[i].rooms[j].roomId,
-                roomName = active[i].rooms[j].roomName;
-              roomData.push('<a href="#room=' + roomId + '">' + roomName + '</a>');
-            }
-            roomData = roomData.join(', ');
-
-            $('#onlineUsers').append('<tr><td>' + startTag + '<span class="userName" data-userId="' + userId + '">' + userName + '</span>' + endTag + '</td><td>' + roomData + '</td></tr>');
-          }
-
-          contextMenuParseUser('#onlineUsers');
-
-          return false;
-        },
-        error: function() {
-          $('#onlineUsers').html('Refresh Failed');
+      getActiveUsers({}, function(activeUser) {
+        var roomData = [];
+        for (j in activeUser.rooms) {
+          roomData.push('<a href="#room=' + activeUser.rooms[j].roomId + '">' + activeUser.rooms[j].roomName + '</a>');
         }
+        roomData = roomData.join(', ');
+
+        $('#onlineUsers').append('<tr><td>' + activeUser.userData.startTag + '<span class="userName" data-userId="' + activeUser.userData.userId + '">' + activeUser.userData.userName + '</span>' + activeUser.userData.endTag + '</td><td>' + roomData + '</td></tr>');
       });
 
-      return false;
+      //contextMenuParseUser('#onlineUsers');
     }
 
-    timers.t2 = setInterval(updateOnline, 2500);
+    timers.t2 = setInterval(updateOnline, 2500); // TODO: Build into function.
 
     return false;
   },

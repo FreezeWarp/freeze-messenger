@@ -1126,6 +1126,31 @@ function getCensorLists(params, callback) {
   });
 }
 
+
+
+function getActiveUsers(params, callback) {
+  var data = {
+    'fim3_sessionHash' : window.sessionHash,
+    'fim3_userId' :  window.userId,
+    'fim3_format' : 'json'
+  };
+
+
+  if ('roomIds' in params) data['rooms'] = JSON.stringify(params.roomIds);
+  if ('userIds' in params) data['users'] = JSON.stringify(params.userIds);
+
+
+  $.ajax({
+    type: 'get',
+    url: directory + 'api/getActiveUsers.php',
+    data: data,
+    timeout: 5000,
+    cache: false
+  }).done(function(json) {
+    $.each(json.getActiveUsers.users, function(index, value) { console.log(value); callback(value); });
+  });
+}
+
 /*********************************************************
 ************************* END ***************************
 ******************** Data Population ********************
