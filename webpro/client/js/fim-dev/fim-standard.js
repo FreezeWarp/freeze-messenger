@@ -16,41 +16,43 @@ var standard = {
 
       $('#searchText, #resultLimit, #searchUser, #archiveNext, #archivePrev, #export, .updateArchiveHere').unbind('change');
 
-      $('#searchText, #resultLimit, #searchUser').bind('change', function(event) {
+      $('#searchText, #resultLimit, #searchUser').bind('change', function() {
         standard.archive.update($(this).attr('id'), $(this).val());
+        standard.archive.retrieve();
       });
 
       $('#archiveNext').bind('click', function() {
         standard.archive.nextPage();
+        standard.archive.retrieve();
       });
 
       $('#archivePrev').bind('click', function() {
         standard.archive.prevPage();
+        standard.archive.retrieve();
       });
 
-/*      $('.updateArchiveHere').bind('click', function() {
-        $('#searchUser').val('');
-        $('#searchText').val('');
+      $('#archiveDialogue > table').on('click', '.updateArchiveHere', function() {
+//        $('#searchUser').val(''); // Triggers change event.
+//        $('#searchText').val(''); // "
 
-        standard.archive({
-          idMin : $(this).attr('data-messageId'),
-          roomId: options.roomId,
-          maxResults : $('#resultLimit').val()
-        })
-      });*/
+        standard.archive.update('firstMessage', $(this).attr('data-messageId'));
+        standard.archive.update('lastMessage', 0);
+
+        standard.archive.retrieve();
+      });
 
       $('#export').bind('click', function() {});
     },
 
     retrieve : function() { // TODO: callback?
-      $('#archiveMessageList').html();
+      $('#archiveMessageList').html('');
 
       getMessages({
         'roomId' : standard.archive.options.roomId,
         'userIds' : [standard.archive.options.searchUser],
         'search' : standard.archive.options.searchText,
-        'idMax' : standard.archive.options.lastMessage,
-        'idMin' : standard.archive.options.firstMessage,
+        'messageIdEnd' : standard.archive.options.lastMessage,
+        'messageIdStart' : standard.archive.options.firstMessage,
         'archive' : 1
       }, function(messageData) { console.log(messageData);
         $('#archiveMessageList').append(fim_messageFormat(messageData, 'table'));
@@ -58,9 +60,7 @@ var standard = {
     },
 
     update : function (option, value) {
-      archive.standard.options[option] = value;
-
-      archive.standard.retrieve();
+      standard.archive. options[option] = value;
     }
   },
 

@@ -463,7 +463,7 @@ function fim_messageFormat(json, format) {
   /* Format for Table/List Display */
   switch (format) {
     case 'table':
-      data = '<tr id="archiveMessage' + messageId + '" style="word-wrap: break-word;"><td>' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageId="' + messageId + '" data-roomId="' + roomId + '">' + text + '</td><td><a href="javascript:void();" data-messageId="' + messageId + '"  data-roomId="' + roomId + '" class="updateArchiveHere">Show</a></td></tr>';
+      data = '<tr id="archiveMessage' + messageId + '" style="word-wrap: break-word;"><td>' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageId="' + messageId + '" data-roomId="' + roomId + '">' + text + '</td><td><a href="javascript:void(0);" data-messageId="' + messageId + '"  class="updateArchiveHere">Show</a></td></tr>';
     break;
 
     case 'list':
@@ -1018,9 +1018,16 @@ function getMessages(params, callback) {
     'archive' : (('archive' in params) ? params.archive : 1)
   };
 
+  /* TODO: Uh... shouldn't this all just be a mergey thing? */
   if ('roomId' in params) data['roomId'] = params.roomId;
-//  else if ('roomNames' in params) data['roomNames'] = JSON.stringify(params.roomNames);
-//  else throw "getRooms() function requires either roomIds or roomNames in params"; // Error
+  else throw "getMessages() function requires roomId in params";
+
+  if ('userIds' in params) data['users'] = JSON.stringify(params.userIds);
+
+  if ('search' in params) data['search'] = params.search;
+
+  if ('messageIdEnd' in params) data['messageIdEnd'] = params.messageIdEnd;
+  if ('messageIdStart' in params) data['messageIdStart'] = params.messageIdStart;
 
   $.ajax({
     type: 'get',
