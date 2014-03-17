@@ -512,7 +512,7 @@ class fimDatabase extends databaseSQL
       'roomIds'           => array(),
       'messageIds'        => array(),
       'userIds'           => array(),
-      'messageTextSearch' => '',
+      'messageTextSearch' => '', // Overwrites messageIds.
       'showDeleted'       => true,
       'messagesSince'     => 0,
       'messageIdMax'      => 0,
@@ -542,8 +542,8 @@ class fimDatabase extends databaseSQL
 
 
         /* Modify the Request Filter for Messages */
-        if ($searchMessages) $messages = fim_arrayValidate($searchMessages, 'int', true);
-        else                 $messages = array(0); // This is a fairly dirty approach, but it does work for now. TODO
+        if ($searchMessages) $options['messageIds'] = fim_arrayValidate($searchMessages, 'int', true);
+        else                 $options['messageIds'] = array(0); // This is a fairly dirty approach, but it does work for now. TODO
       }
     }
 

@@ -241,6 +241,7 @@ else {
       'messageDateMax' => $request['messageDateMax'],
       'messageLimit' => $request['messageLimit'],
       'showDeleted' => $request['showDeleted'],
+      'messageTextSearch' => $request['search'],
       'archive' => $request['archive'],
       'longPolling' => $request['longPolling'],
       'userIds' => $request['users'],
