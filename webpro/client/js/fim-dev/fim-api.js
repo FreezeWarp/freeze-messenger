@@ -4,6 +4,7 @@ fimApi = {
     'timerId' : 1,
     'refresh' : -1,
     'timeout' : 5000,
+    'cache' : false,
     'begin' : function() {},
     'each' : function() {},
     'end' : function() {}
@@ -209,27 +210,38 @@ fimApi = {
 
 
 
-  getCensorLists : function(params, callback) {
-    var data = {
+  getCensorLists : function(params, requestSettings) {
+    var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds', 'listIds']), {
       'fim3_sessionHash' : window.sessionHash,
       'fim3_userId' :  window.userId,
-      'fim3_format' : 'json'
-    };
-
-
-    if ('roomIds' in params) data['rooms'] = JSON.stringify(params.roomIds);
-  //  else throw "getCensorLists() function requires roomIds"; // Error
-
-
-    $.ajax({
-      type: 'get',
-      url: directory + 'api/getCensorLists.php',
-      data: data,
-      timeout: 5000,
-      cache: false
-    }).done(function(json) {
-      $.each(json.getCensorLists.lists, function(index, value) { callback(value); });
+      'fim3_format' : 'json',
+      'roomIds' : '',
+      'listIds' : '',
+      'includeWords' : 1 // true
     });
+
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+
+    function getCensorLists_query() {
+      $.ajax({
+        type: 'get',
+        url: directory + 'api/getCensorLists.php',
+        data: params,
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache
+      }).done(function(json) {
+        requestSettings.begin(json);
+        $.each(json.getCensorLists.lists, function(index, value) { requestSettings.each(value); });
+        requestSettings.end(json);
+      });
+    }
+
+
+    if (requestSettings.close) clearInterval('getCensorLists_' + requestSettings.timerId);
+
+    getCensorLists_query();
+    if (requestSettings.refresh > -1) timers['getCensorLists_' + requestSettings.timerId] = setInterval(getCensorLists_query, requestSettings.refresh);
   },
 
 
@@ -240,7 +252,8 @@ fimApi = {
       'fim3_userId' :  window.userId,
       'fim3_format' : 'json',
       'roomIds' : '',
-      'userIds' : ''
+      'userIds' : '',
+      'onlineThreshold' : 15
     });
 
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
@@ -251,7 +264,7 @@ fimApi = {
         url: directory + 'api/getActiveUsers.php',
         data: params,
         timeout: requestSettings.timeout,
-        cache: false
+        cache: requestSettings.cache
       }).done(function(json) {
         requestSettings.begin(json);
         $.each(json.getActiveUsers.users, function(index, value) { requestSettings.each(value); });
@@ -261,7 +274,6 @@ fimApi = {
 
 
     if (requestSettings.close) clearInterval('getActiveUsers_' + requestSettings.timerId);
-
 
     getActiveUsers_query();
     if (requestSettings.refresh > -1) timers['getActiveUsers_' + requestSettings.timerId] = setInterval(getActiveUsers_query, requestSettings.refresh);

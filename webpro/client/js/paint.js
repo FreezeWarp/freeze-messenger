@@ -4,7 +4,7 @@
 //$q($l('errorQuitMessage', 'errorGenericQuit'));
 function $q(message, error) {
   $('body').replaceWith(message);
-  throw new Error(error ? error : message); 
+  throw new Error(error || message);
 }
 
 /** Returns a localised string.
@@ -79,23 +79,17 @@ $.when(
   $.ajax({
     url: 'client/data/config.json',
     dataType: 'json',
-    success: function(data) {
-      window.fim_config = data;
-    }
+    success: function(data) { window.fim_config = data; }
   }),
   $.ajax({
     url: 'client/data/language_enGB.json',
     dataType: 'json',
-    success: function(data) {
-      window.phrases = data;
-    }
+    success: function(data) { window.phrases = data; }
   }),
   $.ajax({
     url: 'client/data/templates.json',
     dataType: 'json',
-    success: function(data) {
-      window.templates = data;
-    }
+    success: function(data) { window.templates = data; }
   }),
   $.ajax({
     url: 'client/js/fim-dev/fim-api.js',
@@ -120,9 +114,6 @@ $.when(
       dataType:'script'
     });
   });
-
-//    $.getScript('client/js/fim-dev/fim-popup.js');
-//    $.getScript('client/js/fim-dev/fim-standard.js');
-//    $.getScript('client/js/fim-dev/fim-loader.js');
-
+}, function() {
+  $q('Loading failed. Please refresh.');
 });

@@ -35,15 +35,15 @@ require('../global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
-  'lists' => array(
+  'listIds' => array(
     'default' => '',
-    'cast' => 'csv',
+    'cast' => 'jsonList',
     'filter' => 'int',
     'evaltrue' => true,
   ),
-  'rooms' => array(
+  'roomIds' => array(
     'default' => '',
-    'cast' => 'csv',
+    'cast' => 'jsonList',
     'filter' => 'int',
     'evaltrue' => true,
   ),
@@ -71,14 +71,14 @@ $xmlData = array(
 
 /* Get Censor Lists from Slave Database */
 $censorLists = $slaveDatabase->getCensorLists(array(
-  'listIds' => $request['lists'],
-  'roomIds' => $request['rooms'],
+  'listIds' => $request['listIds'],
+  'roomIds' => $request['roomIds'],
 ))->getAsArray(array('listId', 'roomId'));
 
 
 if ($request['includeWords']) {
   $censorWords = $slaveDatabase->getCensorWords(array(
-    'listIds' => $request['lists'],
+    'listIds' => $request['listIds'],
   ))->getAsArray(array('listId', 'wordId'));
 }
 
