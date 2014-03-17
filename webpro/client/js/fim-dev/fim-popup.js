@@ -364,7 +364,7 @@ popup = {
         }
 
         getStats({
-          'roomId' : window.roomId // TODO
+          'roomIds' : [window.roomId] // TODO
         }, function(active) {
           var roomName = active.roomData.roomName,
             roomId = active.roomData.roomId;

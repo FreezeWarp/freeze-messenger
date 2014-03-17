@@ -683,8 +683,8 @@ class fimDatabase extends databaseSQL
     );
 
 
-    if (count($options['roomIds']) > 0) $conditions['both']['sroomId'] = $this->in($options['roomIds']);
-    if (count($options['userIds']) > 0) $conditions['both']['suserId'] = $this->in($options['userIds']);
+    if (count($options['roomIds']) > 0) $conditions['both']['sroomId a'] = $this->in($options['roomIds']);
+    if (count($options['userIds']) > 0) $conditions['both']['suserId a'] = $this->in($options['userIds']);
 
 
     return $this->select($columns, $conditions, $sort);

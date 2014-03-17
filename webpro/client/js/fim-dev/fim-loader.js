@@ -336,7 +336,7 @@ function fim_messageFormat(json, format) {
     return ($1 + '&parentalAge=' + userData[window.userId].parentalAge + '&parentalFlags=' + userData[window.userId].parentalFlags.join(','));
   })
 
-  if (text.length > 1000) {
+  if (text.length > 1000) { /* TODO */
     text = '[Message Too Long]';
   }
   else {
@@ -361,8 +361,7 @@ function fim_messageFormat(json, format) {
 
       // Image
       case 'image': // We append the parentalAge flags regardless of an images source. It will potentially allow for other sites to use the same format (as far as I know, I am the first to implement the technology, and there are no related standards.)
-        if (settings.disableImage) text = '<a href="' + fim_eXMLAttr(text) + '" class="imglink" target="_BLANK">[Image]</a>';
-        else text = '<a href="' + text + '" target="_BLANK"><img src="' + fim_eXMLAttr(text) + '" style="max-width: 250px; max-height: 250px;" /></a>';
+        text = '<a href="' + fim_eXMLAttr(text) + '" class="imglink" target="_BLANK">' + (settings.disableImage ? '[Image]' : '<img src="' + fim_eXMLAttr(text) + '" style="max-width: 250px; max-height: 250px;" />') + '</a>';
       break;
 
       // Video
@@ -1076,7 +1075,7 @@ function getStats(params, callback) {
   };
 
 
-  if ('roomId' in params) data['rooms'] = JSON.stringify([params.roomId]);
+  if ('roomIds' in params) data['rooms'] = JSON.stringify(params.roomIds);
   else throw "getStats() function requires roomId"; // Error
 
 
