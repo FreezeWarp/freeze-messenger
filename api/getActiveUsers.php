@@ -37,7 +37,7 @@ require('../global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
-  'rooms' => array(
+  'roomIds' => array(
     'default' => '',
     'cast' => 'csv',
     'filter' => 'int',
@@ -49,7 +49,7 @@ $request = fim_sanitizeGPC('g', array(
     'cast' => 'int',
   ),
 
-  'users' => array(
+  'userIds' => array(
     'default' => '',
     'cast' => 'csv',
     'filter' => 'int',
@@ -74,15 +74,15 @@ $xmlData = array(
 
 $activeUsers = $database->getActiveUsers(array(
   'onlineThreshold' => $request['onlineThreshold'],
-  'roomIds' => $request['rooms'],
-  'userIds' => $request['users']
+  'roomIds' => $request['roomIds'],
+  'userIds' => $request['userIds']
 ));
 
 //var_dump($activeUsers); die();
 
 
 /* Start Processing */
-if (count($request['rooms']) > 0) { /* TODO: Remove? */
+if (count($request['roomIds']) > 0) { /* TODO: Remove? */
   foreach ($activeUsers->getAsArray('roomId', true) AS $roomId => $room) { // Run through each room.
     if (fim_hasPermission($room, $user, 'know', true) === false) { // The user must be able to know the room exists.
       continue; // Skip to next iteration (strictly speaking, redundant)

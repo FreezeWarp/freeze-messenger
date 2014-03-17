@@ -944,16 +944,8 @@ popup = {
       id : 'onlineDialogue',
       position : 'top',
       width : 600,
-      oF : updateOnline,
-      cF : getActiveUsers({}, {
-        'close' : true
-      })
-    });
-
-    function updateOnline() {
-
-      getActiveUsers({}, {
-        'refresh' : 1000
+      oF : getActiveUsers({}, {
+        'refresh' : 1000,
         'begin' : function() {
           $('#onlineUsers').html('');
         },
@@ -966,10 +958,11 @@ popup = {
         'end' : function() {
           //contextMenuParseUser('#onlineUsers');
         }
-      });
-    }
-
-    return false;
+      }),
+      cF : getActiveUsers({}, {
+        'close' : true
+      })
+    });
   },
 
   /*** END Online ***/

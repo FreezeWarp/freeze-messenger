@@ -1128,53 +1128,47 @@ function getCensorLists(params, callback) {
 
 
 
-function getActiveUsers(params, requestSettings, callbackStart, callbackEach, callbackEnd) {
-  var data = {
+function getActiveUsers(params, requestSettings) {
+  var params = mergeDefaults(jsonify(params, ['roomIds', 'userIds']), {
     'fim3_sessionHash' : window.sessionHash,
     'fim3_userId' :  window.userId,
-    'fim3_format' : 'json'
-  };
+    'fim3_format' : 'json',
+    'roomIds' : '',
+    'userIds' : ''
+  });
 
-/*  var requestSettings = mergeDefaults(requestSettings, {
+  var requestSettings = mergeDefaults(requestSettings, {
     'close' : false,
-    'timerId' : 1
-  });*/
+    'timerId' : 1,
+    'refresh' : -1,
+    'begin' : function() {},
+    'each' : function() {},
+    'end' : function() {}
+  });
 
-  if (requestSettings.close) {
-    if ('timerId' in requestSettings) clearInterval('getActiveUsers_' + requestSettings.timerId);
-    else clearInterval('getActiveUsers_1');
-  }
 
-
-  if ('roomIds' in params) data['rooms'] = JSON.stringify(params.roomIds);
-  if ('userIds' in params) data['users'] = JSON.stringify(params.userIds);
+  if (requestSettings.close) clearInterval('getActiveUsers_' + requestSettings.timerId);
 
 
   function getActiveUsers_query() {
     $.ajax({
       type: 'get',
       url: directory + 'api/getActiveUsers.php',
-      data: data,
+      data: params,
       timeout: 5000,
       cache: false
     }).done(function(json) {
-      requestSettings.start();
+      requestSettings.begin(json);
 
       $.each(json.getActiveUsers.users, function(index, value) { requestSettings.each(value); });
 
-      requestSettings.end();
+      requestSettings.end(json);
     });
   }
 
-  if ('refresh' in requestSettings) {
-    getActiveUsers_query();
 
-    if (!('timerId' in requestSettings)) requestSettings.timerId = '1';
-    timers['getActiveUsers_' + requestSettings.timerId] = setInterval(getActiveUsers_query, 2500);
-  }
-  else {
-    getActiveUsers_query();
-  }
+  getActiveUsers_query();
+  if (requestSettings.refresh > -1) timers['getActiveUsers_' + requestSettings.timerId] = setInterval(getActiveUsers_query, requestSettings.refresh);
 }
 
 
@@ -1183,6 +1177,25 @@ function mergeDefaults(object, defaults) {
   for (i in defaults) {
     if (!(i in object)) object[i] = defaults[i];
   }
+console.log(object); console.log(defaults);
+  /*** START STRICT CODE -- NOT NECCESSARY IN PRODUCTION ***/
+  for (i in object) {
+    if (!(i in defaults)) {
+      throw 'Invalid data in object call.';
+    }
+  }
+  /*** END STRICT CODE ***/
+
+  return object;
+}
+
+
+function jsonify(object, properties) {
+  for (i in properties) {
+    if (i in object) object[i] = JSON.stringify(object[i]);
+  }
+
+  return object;
 }
 
 /*********************************************************
