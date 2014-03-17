@@ -774,17 +774,17 @@ popup = {
         /* Censor Lists */
         fimApi.getCensorLists({
           'roomIds' : roomIdLocal ? [roomIdLocal] : [0]
-        }, function(active) { console.log(active);
-          var listId = active.listId,
-            listName = active.listName,
-            listType = active.listType,
-            listOptions = active.listOptions;
+        }, {
+          'each' : function(listData) {
+            var listStatus;
 
-          for (j in active.roomStatuses) {
-            var listStatus = active.roomStatuses[j].status;
+            if (('roomStatus ' + roomIdLocal.listId) in listData.roomStatuses) listStatus = listData.roomStatuses['roomStatus ' + roomIdLocal.listId].status;
+            else if (listData.listType === 'white') listStatus = 'block';
+            else if (listData.listType === 'black') listStatus = 'unblock';
+            else throw 'Bad logic.';
+
+            $('#censorLists').append('<label><input type="checkbox" name="list' + listData.listId + '" data-listId="' + listData.listId + '" data-checkType="list" value="true" ' + (listData.listOptions & 2 ? '' : ' disabled="disabled"') + (listStatus === 'block' ? ' checked="checked"' : '') + ' />' + listData.listName + '</label><br />');
           }
-
-          $('#censorLists').append('<label><input type="checkbox" name="list' + listId + '" data-listId="' + listId + '" data-checkType="list" value="true" ' + (listOptions & 2 ? '' : ' disabled="disabled"') + (listStatus === 'block' ? ' checked="checked"' : '') + ' />' + listName + '</label><br />');
         });
 
 

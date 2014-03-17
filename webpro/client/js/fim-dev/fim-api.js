@@ -282,12 +282,12 @@ fimApi = {
 
 
   mergeDefaults : function(object, defaults) {
-    for (i in defaults) {
+    for (var i in defaults) {
       if (!(i in object)) object[i] = defaults[i];
     }
 
     /*** START STRICT CODE -- NOT NECCESSARY IN PRODUCTION ***/
-    for (i in object) {
+    for (var i in object) {
       if (!(i in defaults)) {
         throw 'Invalid data in object call.';
       }
@@ -300,8 +300,8 @@ fimApi = {
 
 
   jsonify : function(object, properties) {
-    for (i in properties) {
-      if (i in object) object[i] = JSON.stringify(object[i]);
+    for (var i in properties) {
+      if (properties[i] in object) object[properties[i]] = JSON.stringify(object[properties[i]]);
     }
 
     return object;
