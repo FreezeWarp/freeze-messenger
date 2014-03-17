@@ -11,6 +11,8 @@ var standard = {
       roomId : 0
     },
 
+    messageData : {},
+
     init : function(options) {
       for (i in options) standard.archive.options[i] = options[i];
 
@@ -41,11 +43,14 @@ var standard = {
         standard.archive.retrieve();
       });
 
-      $('#export').bind('click', function() {});
+      $('#export').bind('click', function() {
+        popup.exportArchive();
+      });
     },
 
     retrieve : function() { // TODO: callback?
       $('#archiveMessageList').html('');
+      standard.archive.messageData = {};
 
       getMessages({
         'roomId' : standard.archive.options.roomId,
@@ -54,8 +59,9 @@ var standard = {
         'messageIdEnd' : standard.archive.options.lastMessage,
         'messageIdStart' : standard.archive.options.firstMessage,
         'archive' : 1
-      }, function(messageData) { console.log(messageData);
+      }, function(messageData) {
         $('#archiveMessageList').append(fim_messageFormat(messageData, 'table'));
+        standard.archive.messageData[messageData.messageId] = messageData;
       });
     },
 

@@ -1196,7 +1196,8 @@ popup = {
 
 
 
-  export : function(options) {
+  /* TODO: Create a seperate call? */
+  exportArchive : function() {
     dia.full({
       id : 'exportDia',
       content : '<form method="post" action="#" onsubmit="return false;" id="exportDiaForm">How would you like to export the data?<br /><br /><table align="center"><tr><td>Format</td><td><select id="exportFormat"><option value="bbcodetable">BBCode Table</option><option value="csv">CSV List (Excel, etc.)</option></select></td></tr><tr><td colspan="2" align="center"><button type="submit">Export</button></td></tr></table></form>',
