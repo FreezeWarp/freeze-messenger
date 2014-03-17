@@ -1105,21 +1105,7 @@ popup = {
       roomId: options.roomId,
       firstMessage: options.idMin
     });
-/*      callback: function(data) {
-      $('#archiveDialogue').dialog('open');
-      $("#searchUser").autocomplete({
-        source: userList,
-        change : function() {
-          standard.archive({
-            idMax : options.idMax,
-            idMin : options.idMin,
-            roomId : options.roomId,
-            userName : $('#searchUser').val(),
-            search : $('#searchText').val(),
-            maxResults : $('#resultLimit').val()
-          });
-        }
-      }););*/
+
     standard.archive.retrieve();
   },
 
@@ -1148,13 +1134,8 @@ popup = {
 
             for (i in [1,3]) {
               switch (i) {
-                case 1:
-                  var exportItem = exportUser;
-                  break;
-
-                case 3:
-                  var exportItem = exportMessage;
-                  break;
+                case 1: var exportItem = exportUser; break;
+                case 3: var exportItem = exportMessage; break;
               }
 
               var el = $(this).find('td:nth-child(' + i + ') > span'),
@@ -1169,11 +1150,11 @@ popup = {
               if (bold) { exportUser = '[b]' + exportUser + '[/b]'; }
               if (underline) { exportUser = '[u]' + exportUser + '[/u]'; }
               if (strikethrough) { exportUser = '[s]' + exportUser + '[/s]'; }
-            }
 
-            switch (i) {
-              case 1: exportUser = exportItem; break;
-              case 3: exportMessage = exportItem; break;
+              switch (i) {
+                case 1: exportUser = exportItem; break;
+                case 3: exportMessage = exportItem; break;
+              }
             }
 
             exportData += exportUser + "|" + exportTime + "|" + exportMessage + "\n";

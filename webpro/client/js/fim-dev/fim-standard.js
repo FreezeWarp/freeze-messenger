@@ -297,93 +297,21 @@ var standard = {
         }, false);
       }
       else {
-        $.ajax({
-          url: directory + 'api/getMessages.php?roomId=' + roomId + '&messageHardLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest ? '&archive=1&messageIdStart=' + (requestSettings.lastMessage + 1) : '') + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-          type: 'GET',
-          timeout: requestSettings.timeout,
-          contentType: "text/json; charset=utf-8",
-          dataType: "json",
-          cache: false,
-          success: function(json) {
-            var errStr = json.getMessages.errStr,
-              errDesc = json.getMessages.errDesc,
-              sentUserId = 0,
-              messageCount = 0;
+        // TODO: basically, this is a minimal version of the polling call. It actually could work quite well if all of our get*() calls include their own retry code (which is missing here), and thus that is my current plan. Waiting on this, this version will suffice.
+        getMessages({
+          'roomId' : roomId,
+          'archive' : (requestSettings.firstRequest ? 1 : 0),
+          'messageIdStart' : requestSettings.lastMessage + 1
+        }, function(messageData) {
+          var messageId = Number(active[i].messageData.messageId);
+          data = fim_messageFormat(active[i], 'list');
 
-            if (errStr) {
-              sentUserId = json.getMessages.activeUser.userId;
+          if ($.inArray(messageId, messageIndex)) { } // Double post hack
+          else { fim_newMessage(data, messageId); }
 
-              if (errStr === 'noperm') {
-                roomId = false; // Clear the internal roomId.
-
-                if (sentUserId) { popup.selectRoom(); dia.error('You have been restricted access from this room. Please select a new room.'); } // You are still login, but permission has been denied for whatever reason.
-                else { popup.login(); dia.error('You are no longer logged in. Please log-in.'); } // If the API no longer recognises the login, prompt a relogin.
-              }
-              else {
-                roomId = false;
-                dia.error(errDesc);
-              }
-            }
-            else {
-              requestSettings.totalFails = 0;
-              var notifyData = '',
-                activeUserHtml = [];
-
-              $('#activeUsers').html(''); // Clear the active users box.
-
-              active = json.getMessages.activeUsers;
-
-              for (i in active) { // Update active users box.
-                var userName = active[i].userName,
-                  userId = active[i].userId,
-                  userGroup = active[i].userGroup,
-                  startTag = active[i].startTag,
-                  endTag = active[i].endTag;
-
-                activeUserHtml.push('<span class="userName" data-userId="' + userId + '">' + startTag + '<span class="username">' + userName + '</span>' + endTag + '</span>');
-              }
-
-              $('#activeUsers').html(activeUserHtml.join(', '));
-              contextMenuParseUser('#activeUsers');
-
-              active = json.getMessages.messages;
-
-              for (i in active) {
-                var messageId = Number(active[i].messageData.messageId);
-                data = fim_messageFormat(active[i], 'list');
-
-                if ($.inArray(messageId, messageIndex)) { } // Double post hack
-                else { fim_newMessage(data, messageId); }
-
-                messageCount++;
-              }
-
-              if (requestSettings.longPolling) { requestSettings.timeout = 100000; timers.t1 = setTimeout(standard.getMessages, 50); } // TODO: If longPolling were to fail, we'd be screwed. Examine how to handle the possibility to longPolling erroring on the server side without reporting this.
-              else {                             requestSettings.timeout = 2400;   timers.t1 = setTimeout(standard.getMessages, 2500); }
-            }
-
-            requestSettings.firstRequest = false;
-
-            return false;
-          },
-          error: function(err) {
-            console.log('Requesting messages for ' + roomId + '; failed: ' + err + '.');
-            var wait;
-
-            if (requestSettings.longPolling) { timers.t1 = setTimeout(standard.getMessages, 50); } // Begin again without delay.
-            else {
-              requestSettings.totalFails += 1; // Increase total fail count.
-
-              // Delays progressively become greater.
-              if (requestSettings.totalFails > 10) {     wait = 30000; requestSettings.timeout = 29900; } // TODO: Add indicator.
-              else if (requestSettings.totalFails > 5) { wait = 10000; requestSettings.timeout = 9900; } // TODO: Add indicator.
-              else {                                     wait = 5000;  requestSettings.timeout = 4900; }
-
-              timers.t1 = setTimeout(standard.getMessages, wait);
-            }
-
-            return false;
-          }
+          messageCount++;
+        }, function() {
+          timers.t1 = setTimeout(standard.getMessages, 2500);
         });
       }
     }

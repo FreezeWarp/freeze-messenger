@@ -1010,8 +1010,28 @@ function getRooms(params, callbackEach, callbackEnd) {
 }
 
 
+/*            var errStr = json.getMessages.errStr,
+ errDesc = json.getMessages.errDesc,
+ sentUserId = 0,
+ messageCount = 0;
 
-function getMessages(params, callback) {
+ if (errStr) {
+ sentUserId = json.getMessages.activeUser.userId;
+
+ if (errStr === 'noperm') {
+ roomId = false; // Clear the internal roomId.
+
+ if (sentUserId) { popup.selectRoom(); dia.error('You have been restricted access from this room. Please select a new room.'); } // You are still login, but permission has been denied for whatever reason.
+ else { popup.login(); dia.error('You are no longer logged in. Please log-in.'); } // If the API no longer recognises the login, prompt a relogin.
+ }
+ else {
+ roomId = false;
+ dia.error(errDesc);
+ }
+ }
+ else {
+ */
+ function getMessages(params, callback) {
   var data = {
     'fim3_sessionHash' : window.sessionHash,
     'fim3_userId' :  window.userId,
