@@ -80,7 +80,7 @@ var topic,
 /* Objects for Cleanness, Caching. */
 
 var roomRef = {}, roomIdRef = {}, modRooms = {}, // Just a whole bunch of objects.
-  userRef = {}, userData = {},
+  userData = {},
   groupRef = {}, groupIdRef = {},
   roomLists = {},
 
@@ -814,39 +814,6 @@ var regexs = {
 function populate(options) {
   $.when(
     $.ajax({
-      url: directory + 'api/getUsers.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-      type: 'GET',
-      timeout: 5000,
-      cache: false,
-      success: function(json) {
-        userList = []; // Array // Clear so we don't get repeat values on regeneration; removal notes: only used for autocomplete in fim-popup.js, not used in fim-loader.js or fim-standard.js. Safe to remove!
-        userRef = {}; // Object
-
-        for (i in json.getUsers.users) {
-          var userName = json.getUsers.users[i].userName,
-            userId = json.getUsers.users[i].userId;
-
-          if ('parentalFlags' in json.getUsers.users[i]) { // Normally, only for the logged in user.
-            json.getUsers.users[i].parentalFlags = $.map(json.getUsers.users[i].parentalFlags, function (value, key) { return value; }); // The map function here will convert the object to an array.
-          }
-
-          userRef[userName] = userId;
-          userData[userId] = json.getUsers.users[i];
-          userList.push(userName);
-        }
-
-        return false;
-      },
-      error: function() {
-        dia.error(window.phrases.errorUsersNotRetrieved);
-        $q($l('errorQuitMessage'), $l('errorGenericQuit'));
-
-        return false;
-      }
-    }),
-
-
-    $.ajax({
       url: directory + 'api/getRooms.php?permLevel=view&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
       timeout: 5000,
       type: 'GET',
@@ -882,8 +849,8 @@ function populate(options) {
             'messageCount' : messageCount,
             'isAdmin' : isAdmin,
             'isModerator' : isModerator,
-            'isOwner' : isOwner,
-          }
+            'isOwner' : isOwner
+          };
           roomList.push(roomName);
 
 
@@ -1006,6 +973,11 @@ function getUsers(params, callback, async) {
     async: async
   }).done(function(json) {
     $.each(json.getUsers.users, function(index, value) { console.log(value);
+      if (!(value.userId in window.userData)) window.userData[value.userId] = value;
+      else {
+        for (prop in value) window.userData[value.userId][prop] = value[prop];
+      }
+
       callback(value);
     });
   });
@@ -1031,6 +1003,33 @@ function getRooms(params, callback) {
     cache: false
   }).done(function(json) {
     $.each(json.getRooms.rooms, function(index, value) { console.log(value);
+      callback(value);
+    });
+  });
+}
+
+
+
+function getMessages(params, callback) {
+  var data = {
+    'fim3_sessionHash' : window.sessionHash,
+    'fim3_userId' :  window.userId,
+    'fim3_format' : 'json',
+    'archive' : (('archive' in params) ? params.archive : 1)
+  };
+
+  if ('roomId' in params) data['roomId'] = params.roomId;
+//  else if ('roomNames' in params) data['roomNames'] = JSON.stringify(params.roomNames);
+//  else throw "getRooms() function requires either roomIds or roomNames in params"; // Error
+
+  $.ajax({
+    type: 'get',
+    url: directory + 'api/getMessages.php',
+    data: data,
+    timeout: 5000,
+    cache: false
+  }).done(function(json) {
+    $.each(json.getMessages.messages, function(index, value) { console.log(value);
       callback(value);
     });
   });
@@ -1079,7 +1078,7 @@ function getStats(params, callback) {
     data: data,
     timeout: 5000,
     type: 'get',
-    cache: false,
+    cache: false
   }).done(function(json) {
     $.each(json.getStats.roomStats, function(index, value) { callback(value); });
   });

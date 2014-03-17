@@ -1,75 +1,34 @@
 var standard = {
-  archive : function (options) {
-    var encrypt = 'base64',
-      lastMessage = 0,
-      firstMessage = 0,
-      data = '',
-      where = '';
+  // This would be great as a class. In order to avoid Javascript's mess of inheritence, I've just written this to only support one instance. Regrettable, but there you go.
+  archive : {
+    options : {
+      encrypt : 'base64',
+      searchText : '',
+      resultLimit : 40,
+      searchUser : 0,
+      lastMessage : 0,
+      firstMessage : 0,
+      roomId : 0
+    },
 
-    if (options.idMax) where = 'messageIdEnd=' + options.idMax;
-    else if (options.idMin) where = 'messageIdStart=' + options.idMin;
-    else where = 'messageIdStart=1';
+    init : function(options) {
+      for (i in options) standard.archive.options[i] = options[i];
 
-    $('#searchText, #resultLimit, #searchUser').unbind('change');
-    $('#searchText, #resultLimit, #searchUser').bind('change', function() {
-      standard.archive({
-        idMax : options.idMax,
-        idMin : options.idMin,
-        roomId : options.roomId,
-        userId : userRef[$('#searchUser').val()],
-        search : $('#searchText').val(),
-        maxResults : $('#resultLimit').val(),
+      $('#searchText, #resultLimit, #searchUser, #archiveNext, #archivePrev, #export, .updateArchiveHere').unbind('change');
+
+      $('#searchText, #resultLimit, #searchUser').bind('change', function(event) {
+        standard.archive.update($(this).attr('id'), $(this).val());
       });
-    });
-
-    $.when( $.ajax({
-      url: directory + 'api/getMessages.php?roomId=' + options.roomId + '&' + (options.userId ? '&users=' + options.userId : '') + '&archive=1&messageHardLimit=' + (options.maxResults ? options.maxResults : 50) + '&' + where + (options.search ? '&search=' + fim_eURL(options.search) : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-      type: 'GET',
-      timeout: 5000,
-      contentType: "text/json; charset=utf-8",
-      dataType: "json",
-      cache: false,
-      success: function (json) {
-        active = json.getMessages.messages;
-
-        for (i in active) {
-          var messageId = active[i].messageData.messageId;
-
-          data += fim_messageFormat(active[i], 'table');
-
-          if (messageId > lastMessage) { lastMessage = messageId; }
-          if (messageId < firstMessage || !firstMessage) { firstMessage = messageId; }
-        }
-
-        return true;
-      }
-    })).always(function() {
-      $('#archiveMessageList').html(data);
-
-      $('#archiveNext').unbind('click');
-      $('#archivePrev').unbind('click');
-      $('#export').unbind('click');
-      $('.updateArchiveHere').unbind('click');
 
       $('#archiveNext').bind('click', function() {
-        standard.archive({
-          idMin : lastMessage,
-          roomId: options.roomId,
-          userId : userRef[$('#searchUser').val()],
-          search : $('#searchText').val(),
-          maxResults : $('#resultLimit').val()
-        })
+        standard.archive.nextPage();
       });
+
       $('#archivePrev').bind('click', function() {
-        standard.archive({
-          idMax : firstMessage,
-          roomId: options.roomId,
-          userId : userRef[$('#searchUser').val()],
-          search : $('#searchText').val(),
-          maxResults : $('#resultLimit').val()
-        })
+        standard.archive.prevPage();
       });
-      $('.updateArchiveHere').bind('click', function() {
+
+/*      $('.updateArchiveHere').bind('click', function() {
         $('#searchUser').val('');
         $('#searchText').val('');
 
@@ -78,91 +37,31 @@ var standard = {
           roomId: options.roomId,
           maxResults : $('#resultLimit').val()
         })
+      });*/
+
+      $('#export').bind('click', function() {});
+    },
+
+    retrieve : function() { // TODO: callback?
+      $('#archiveMessageList').html();
+
+      getMessages({
+        'roomId' : standard.archive.options.roomId,
+        'userIds' : [standard.archive.options.searchUser],
+        'search' : standard.archive.options.searchText,
+        'idMax' : standard.archive.options.lastMessage,
+        'idMin' : standard.archive.options.firstMessage,
+        'archive' : 1
+      }, function(messageData) { console.log(messageData);
+        $('#archiveMessageList').append(fim_messageFormat(messageData, 'table'));
       });
-      $('#export').bind('click', function() {
-        dia.full({
-          id : 'exportDia',
-          content : '<form method="post" action="#" onsubmit="return false;" id="exportDiaForm">How would you like to export the data?<br /><br /><table align="center"><tr><td>Format</td><td><select id="exportFormat"><option value="bbcodetable">BBCode Table</option><option value="csv">CSV List (Excel, etc.)</option></select></td></tr><tr><td colspan="2" align="center"><button type="submit">Export</button></td></tr></table></form>',
-          width: 600,
-        });
+    },
 
-        $('#exportDiaForm').submit(function() {
-          switch ($('#exportFormat option:selected').val()) {
-            case 'bbcodetable':
-            var exportData = '';
+    update : function (option, value) {
+      archive.standard.options[option] = value;
 
-            $('#archiveMessageList').find('tr').each(function() {
-              var exportUser = $(this).find('td:nth-child(1) .userNameTable').text(),
-                exportTime = $(this).find('td:nth-child(2)').text(),
-                exportMessage = $(this).find('td:nth-child(3)').text();
-
-              for (i in [1,3]) {
-                switch (i) {
-                  case 1:
-                  var exportItem = exportUser;
-                  break;
-
-                  case 3:
-                  var exportItem = exportMessage;
-                  break;
-                }
-
-                var el = $(this).find('td:nth-child(' + i + ') > span'),
-                  colour = el.css('color'),
-                  highlight = el.css('backgroundColor'),
-                  font = el.css('fontFamily'),
-                  bold = (el.css('fontWeight') == 'bold' ? true : false),
-                  underline = (el.css('textDecoration') == 'underline' ? true : false),
-                  strikethrough = (el.css('textDecoration') == 'line-through' ? true : false);
-
-                if (colour || highlight || font) exportUser = '[span="' + (colour ? 'color: ' + colour + ';' : '') + (highlight ? 'background-color: ' + highlight + ';' : '') + (font ? 'font: ' + font + ';' : '') + '"]' + exportUser + '[/span]';
-                if (bold) { exportUser = '[b]' + exportUser + '[/b]'; }
-                if (underline) { exportUser = '[u]' + exportUser + '[/u]'; }
-                if (strikethrough) { exportUser = '[s]' + exportUser + '[/s]'; }
-              }
-
-              switch (i) {
-                case 1: exportUser = exportItem; break;
-                case 3: exportMessage = exportItem; break;
-              }
-
-              exportData += exportUser + "|" + exportTime + "|" + exportMessage + "\n";
-            });
-
-            exportData = "<textarea style=\"width: 100%; height: 1000px;\">[table=head]User|Time|Message\n" + exportData + "[/table]</textarea>";
-            break;
-
-            case 'csv':
-            var exportData = '';
-
-            $('#archiveMessageList').find('tr').each(function() {
-              var exportUser = $(this).find('td:nth-child(1) .userNameTable').text(),
-                exportTime = $(this).find('td:nth-child(2)').text(),
-                exportMessage = $(this).find('td:nth-child(3)').text();
-
-              exportData += "'" + exportUser + "', '" + exportTime + "', '" + exportMessage + "'\n";
-            });
-
-            exportData = "<textarea style=\"width: 100%; height: 600px;\">" + exportData + "</textarea>";
-            break;
-          }
-
-          dia.full({
-            id : 'exportTable',
-            content : exportData,
-            width : '1000',
-          });
-
-          return false;
-        });
-      });
-
-      if (options.callback) {
-        options.callback(data);
-      }
-
-      return true;
-    });
+      archive.standard.retrieve();
+    }
   },
 
   changeAvatar : function(sha256hash) {
@@ -393,7 +292,7 @@ var standard = {
       }
       else {
         $.ajax({
-          url: directory + 'api/getMessages.php?roomId=' + roomId + '&messageHardLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest ? '&archive=1&messageIdStart=' + (requestSettings.lastMessage + 1)) + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
+          url: directory + 'api/getMessages.php?roomId=' + roomId + '&messageHardLimit=100&watchRooms=1&activeUsers=1' + (requestSettings.firstRequest ? '&archive=1&messageIdStart=' + (requestSettings.lastMessage + 1) : '') + (requestSettings.longPolling ? '&longPolling=true' : '') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
           type: 'GET',
           timeout: requestSettings.timeout,
           contentType: "text/json; charset=utf-8",
@@ -594,7 +493,7 @@ var standard = {
           }
         },
         error: function() {
-          dia.error('Could not fetch room data. Action cancelled.'); // TODO: Handle Gracefully
+          dia.error('Could not fetch room data. Action cancelled.'); // TODO: Handle Gracefully1
 
           return false;
         }
@@ -675,10 +574,19 @@ var standard = {
     return false;
   },
 
-  privateRoom : function(userLocalId) {
-    userLocalId = Number(userLocalId);
+  /* TODO */
+  privateRoom : function(params) {
+    var userId;
 
-    if (userLocalId === userId) { dia.error('You can\'t talk to yourself...'); }
+    if (userName in params) {
+      getUsers({
+        'userNames' : [params.userName]
+      }, function(userData) {
+        params.userId = userData.userId;
+      }, false);
+    }
+
+    if (params.userId === window.userId) { dia.error('You can\'t talk to yourself...'); }
     else if (!userLocalId) { dia.error('You have not specified a user.'); }
     else if (!userPermissions.privateRoom) { dia.error('You do not have permission to talk to users privately.'); }
     else {

@@ -922,10 +922,9 @@ popup = {
         });
 
         $("#privateRoomForm").submit(function() {
-          privateUserName = $("#privateRoomForm > #userName").val(); // Serialize the form data for AJAX.
-          privateUserId = userRef[privateUserName];
-
-          standard.privateRoom(privateUserId);
+          standard.privateRoom({
+            'userName' : $("#privateRoomForm > #userName").val()
+          });
 
           return false; // Don't submit the form.
         });
@@ -1162,43 +1161,119 @@ popup = {
 
   /*** START Archive ***/
 
-  archive : function(options) {
+  archive : function(options) { console.log(options);
     dia.full({
       content : $t('archive'),
       title : 'Archive',
       id : 'archiveDialogue',
       position : 'top',
-      width : 1000,
-      autoOpen : false
+      width : 1000
     });
 
-    standard.archive({
+    standard.archive.init({
       roomId: options.roomId,
-      idMin: options.idMin,
-      callback: function(data) {
-        $('#archiveDialogue').dialog('open');
-        $("#searchUser").autocomplete({
-          source: userList,
-          change : function() {
-            standard.archive({
-              idMax : options.idMax,
-              idMin : options.idMin,
-              roomId : options.roomId,
-              userId : userRef[$('#searchUser').val()],
-              search : $('#searchText').val(),
-              maxResults : $('#resultLimit').val(),
-            });
-          }
-        });
-
-        return false;
-      }
+      firstMessage: options.idMin
     });
-
-    return false;
+/*      callback: function(data) {
+      $('#archiveDialogue').dialog('open');
+      $("#searchUser").autocomplete({
+        source: userList,
+        change : function() {
+          standard.archive({
+            idMax : options.idMax,
+            idMin : options.idMin,
+            roomId : options.roomId,
+            userName : $('#searchUser').val(),
+            search : $('#searchText').val(),
+            maxResults : $('#resultLimit').val()
+          });
+        }
+      }););*/
+    standard.archive.retrieve();
   },
 
   /*** END Archive ***/
+
+
+
+  export : function(options) {
+    dia.full({
+      id : 'exportDia',
+      content : '<form method="post" action="#" onsubmit="return false;" id="exportDiaForm">How would you like to export the data?<br /><br /><table align="center"><tr><td>Format</td><td><select id="exportFormat"><option value="bbcodetable">BBCode Table</option><option value="csv">CSV List (Excel, etc.)</option></select></td></tr><tr><td colspan="2" align="center"><button type="submit">Export</button></td></tr></table></form>',
+      width: 600
+    });
+
+
+    $('#exportDiaForm').submit(function() {
+      switch ($('#exportFormat option:selected').val()) {
+        case 'bbcodetable':
+          var exportData = '';
+
+          $('#archiveMessageList').find('tr').each(function() {
+            var exportUser = $(this).find('td:nth-child(1) .userNameTable').text(),
+              exportTime = $(this).find('td:nth-child(2)').text(),
+              exportMessage = $(this).find('td:nth-child(3)').text();
+
+            for (i in [1,3]) {
+              switch (i) {
+                case 1:
+                  var exportItem = exportUser;
+                  break;
+
+                case 3:
+                  var exportItem = exportMessage;
+                  break;
+              }
+
+              var el = $(this).find('td:nth-child(' + i + ') > span'),
+                colour = el.css('color'),
+                highlight = el.css('backgroundColor'),
+                font = el.css('fontFamily'),
+                bold = (el.css('fontWeight') == 'bold' ? true : false),
+                underline = (el.css('textDecoration') == 'underline' ? true : false),
+                strikethrough = (el.css('textDecoration') == 'line-through' ? true : false);
+
+              if (colour || highlight || font) exportUser = '[span="' + (colour ? 'color: ' + colour + ';' : '') + (highlight ? 'background-color: ' + highlight + ';' : '') + (font ? 'font: ' + font + ';' : '') + '"]' + exportUser + '[/span]';
+              if (bold) { exportUser = '[b]' + exportUser + '[/b]'; }
+              if (underline) { exportUser = '[u]' + exportUser + '[/u]'; }
+              if (strikethrough) { exportUser = '[s]' + exportUser + '[/s]'; }
+            }
+
+            switch (i) {
+              case 1: exportUser = exportItem; break;
+              case 3: exportMessage = exportItem; break;
+            }
+
+            exportData += exportUser + "|" + exportTime + "|" + exportMessage + "\n";
+          });
+
+          exportData = "<textarea style=\"width: 100%; height: 1000px;\">[table=head]User|Time|Message\n" + exportData + "[/table]</textarea>";
+          break;
+
+        case 'csv':
+          var exportData = '';
+
+          $('#archiveMessageList').find('tr').each(function() {
+            var exportUser = $(this).find('td:nth-child(1) .userNameTable').text(),
+              exportTime = $(this).find('td:nth-child(2)').text(),
+              exportMessage = $(this).find('td:nth-child(3)').text();
+
+            exportData += "'" + exportUser + "', '" + exportTime + "', '" + exportMessage + "'\n";
+          });
+
+          exportData = "<textarea style=\"width: 100%; height: 600px;\">" + exportData + "</textarea>";
+          break;
+      }
+
+      dia.full({
+        id : 'exportTable',
+        content : exportData,
+        width : '1000'
+      });
+
+      return false;
+    });
+  },
 
 
 
