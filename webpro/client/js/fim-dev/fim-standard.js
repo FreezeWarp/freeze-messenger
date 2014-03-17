@@ -440,8 +440,6 @@ var standard = {
         }
       });
     }
-
-    return false;
   },
 
 
@@ -500,8 +498,6 @@ var standard = {
         },
         error: function() {
           dia.error('Could not fetch room data. Action cancelled.'); // TODO: Handle Gracefully1
-
-          return false;
         }
       });
     }
@@ -568,16 +564,12 @@ var standard = {
     $.post(directory + 'api/editRoomLists.php', 'action=add&roomListName=favRooms&roomIds=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
       return false;
     });
-
-    return false;
   },
 
   unfavRoom : function(roomIdLocal) {
     $.post(directory + 'api/editRoomLists.php', 'action=remove&roomListName=favRooms&roomIds=' + roomIdLocal + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
       return false;
     });
-
-    return false;
   },
 
   /* TODO */

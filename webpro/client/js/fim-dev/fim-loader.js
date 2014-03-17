@@ -983,7 +983,7 @@ function getUsers(params, callback, async) {
 }
 
 
-function getRooms(params, callback) {
+function getRooms(params, callbackEach, callbackEnd) {
   var data = {
     'fim3_sessionHash' : window.sessionHash,
     'fim3_userId' :  window.userId,
@@ -992,7 +992,7 @@ function getRooms(params, callback) {
 
   if ('roomIds' in params) data['rooms'] = JSON.stringify(params.roomIds);
   else if ('roomNames' in params) data['roomNames'] = JSON.stringify(params.roomNames);
-  else throw "getRooms() function requires either roomIds or roomNames in params"; // Error
+//  else throw "getRooms() function requires either roomIds or roomNames in params"; // Error
 
   $.ajax({
     type: 'get',
@@ -1002,8 +1002,10 @@ function getRooms(params, callback) {
     cache: false
   }).done(function(json) {
     $.each(json.getRooms.rooms, function(index, value) { console.log(value);
-      callback(value);
+      callbackEach(value);
     });
+
+    callbackEnd();
   });
 }
 
@@ -1101,7 +1103,8 @@ function getKicks(params, callback) {
 
 
   if ('roomIds' in params) data['rooms'] = JSON.stringify(params.roomIds);
-  else throw "getStats() function requires roomIds"; // Error
+  else if ('userIds' in params) data['users'] = JSON.stringify(params.userIds);
+  else throw "getKicks() function requires roomIds or userIds"; // Error
 
 
   $.ajax({
@@ -1858,7 +1861,8 @@ $(document).ready(function() {
   $('#logout').bind('click', function() { standard.logout(); popup.login(); }); // Logout
   $('a#kick').bind('click', function() { popup.kick(); }); // Kick
   $('a#privateRoom').bind('click', function() { popup.privateRoom(); }); // Private Room
-  $('a#manageKick').bind('click', function() { popup.manageKicks(); }); // Manage Kicks
+  $('a#manageKick').bind('click', function() { popup.manageKicks({'roomIds' : [window.roomId]}); }); // Manage Kicks
+  $('a#myKicks').bind('click', function() { popup.manageKicks({'userIds' : [window.userId]}); }); // Manage Kicks
   $('a#online').bind('click', function() { popup.online(); }); // Online
   $('a#createRoom').bind('click', function() { popup.editRoom();}); // Create Room
   $('a.editRoomMulti').bind('click', function() { popup.editRoom($(this).attr('data-roomId')); }); // Edit Room

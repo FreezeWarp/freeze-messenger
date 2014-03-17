@@ -52,12 +52,8 @@ popup = {
             }
           });
         }
-
-        return false;
       }
     });
-
-    return false;
   },
 
   /*** END Login ***/
@@ -74,42 +70,41 @@ popup = {
       id : 'roomListDialogue',
       width: 1000,
       oF : function() {
-        for (i in roomIdRef) {
-          $('#roomTableHtml').append('<tr id="room' + roomIdRef[i].roomId + '"><td><a href="#room=' + roomIdRef[i].roomId + '">' + roomIdRef[i].roomName + '</a></td><td>' + roomIdRef[i].roomTopic + '</td><td>' + (roomIdRef[i].isAdmin ? '<button data-roomId="' + roomIdRef[i].roomId + '" class="editRoomMulti standard"></button><button data-roomId="' + roomIdRef[i].roomId + '" class="deleteRoomMulti standard"></button>' : '') + '<button data-roomId="' + roomIdRef[i].roomId + '" class="archiveMulti standard"></button><input type="checkbox" data-roomId="' + roomIdRef[i].roomId + '" class="favRoomMulti" id="favRoom' + roomIdRef[i].roomId + '" /><label for="favRoom' + roomIdRef[i].roomId + '" class="standard"></label></td></tr>');
-        }
+        getRooms({
+        }, function(roomData) {
+          $('#roomTableHtml').append('<tr id="room' + roomData.roomId + '"><td><a href="#room=' + roomData.roomId + '">' + roomData.roomName + '</a></td><td>' + roomData.roomTopic + '</td><td>' + (roomData.isAdmin ? '<button data-roomId="' + roomData.roomId + '" class="editRoomMulti standard"></button><button data-roomId="' + roomData.roomId + '" class="deleteRoomMulti standard"></button>' : '') + '<button data-roomId="' + roomData.roomId + '" class="archiveMulti standard"></button><input type="checkbox" data-roomId="' + roomData.roomId + '" class="favRoomMulti" id="favRoom' + roomData.roomId + '" /><label for="favRoom' + roomData.roomId + '" class="standard"></label></td></tr>');
+        }, function() {
+          $('button.editRoomMulti, input[type=checkbox].favRoomMulti, button.archiveMulti, button.deleteRoomMulti').unbind('click'); // Prevent the below from being binded multiple times.
 
-        $('button.editRoomMulti, input[type=checkbox].favRoomMulti, button.archiveMulti, button.deleteRoomMulti').unbind('click'); // Prevent the below from being binded multiple times.
+          /* Favorites */
+          if ('favRooms' in roomLists) {
+            $('input[type=checkbox].favRoomMulti').each(function() {
+              if (roomLists.favRooms.indexOf($(this).attr('data-roomid')) !== -1) $(this).attr('checked', 'checked');
 
-        /* Favorites */
-        if ('favRooms' in roomLists) {
-          $('input[type=checkbox].favRoomMulti').each(function() {
-            if (roomLists.favRooms.indexOf($(this).attr('data-roomid')) !== -1) $(this).attr('checked', 'checked');
-
-            $(this).button({icons : {primary : 'ui-icon-star'}, text : false}).bind('change', function() {
-              if ($(this).is(':checked')) { standard.favRoom($(this).attr('data-roomId')); }
-              else { standard.unfavRoom($(this).attr('data-roomId')); }
+              $(this).button({icons : {primary : 'ui-icon-star'}, text : false}).bind('change', function() {
+                if ($(this).is(':checked')) { standard.favRoom($(this).attr('data-roomId')); }
+                else { standard.unfavRoom($(this).attr('data-roomId')); }
+              });
             });
+          }
+          else {
+            $('input[type=checkbox].favRoomMulti').remove();
+          }
+
+          $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}}).bind('click', function() {
+            popup.editRoom($(this).attr('data-roomId'));
           });
-        }
-        else {
-          $('input[type=checkbox].favRoomMulti').remove();
-        }
 
-        $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}}).bind('click', function() {
-          popup.editRoom($(this).attr('data-roomId'));
-        });
+          $('button.archiveMulti').button({icons : {primary : 'ui-icon-note'}}).bind('click', function() {
+            popup.archive({roomId : $(this).attr('data-roomId')});
+          });
 
-        $('button.archiveMulti').button({icons : {primary : 'ui-icon-note'}}).bind('click', function() {
-          popup.archive({roomId : $(this).attr('data-roomId')});
-        });
-
-        $('button.deleteRoomMulti').button({icons : {primary : 'ui-icon-trash'}}).bind('click', function() {
-          standard.deleteRoom($(this).attr('data-roomId'));
+          $('button.deleteRoomMulti').button({icons : {primary : 'ui-icon-trash'}}).bind('click', function() {
+            standard.deleteRoom($(this).attr('data-roomId'));
+          });
         });
       }
     });
-
-    return false;
   },
 
   /*** END Room List ***/
@@ -352,7 +347,6 @@ popup = {
   viewStats : function() {
     var number = 10;
 
-    
     dia.full({
       content : $t('viewStats'),
       title : 'Room Stats',
@@ -1008,83 +1002,20 @@ popup = {
 
   /*** START Kick Manager ***/
 
-  manageKicks : function() {
+  manageKicks : function(params) {
     dia.full({
       content : $t('manageKicks'),
-      title : 'Manage Kicked Users in This Room',
+      title : 'Manage/View Kicked Users',
       width : 1000,
       oF : function() {
         getKicks({
-          'roomIds': [window.roomId] // TODO
-        }, function(active) {
-          var kickerId = active.kickerData.userId,
-            kickerName = active.kickerData.userName,
-            kickerFormatStart = active.kickerData.userFormatStart,
-            kickerFormatEnd = active.kickerData.userFormatEnd,
-            userId = active.userData.userId,
-            userName = active.userData.userName,
-            userFormatStart = active.userData.userFormatStart,
-            userFormatEnd = active.userData.userFormatEnd,
-            length = active.length,
-            set = fim_dateFormat(active.set, true),
-            expires = fim_dateFormat(active.expires, true);
-
-          $('#kickedUsers').append('<tr><td>' + userFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + userFormatEnd + '</td><td>' + kickerFormatStart + '<span class="userName userNameTable" data-userId="' + kickerId + '">' + kickerName + '</span>' + kickerFormatEnd + '</td><td>' + set + '</td><td>' + expires + '</td><td><button onclick="standard.unkick(' + userId + ', ' + roomId + ')">Unkick</button></td></tr>');
+          'roomIds': ('roomId' in params ? params.roomId : [0]),
+          'userIds': ('userId' in params ? params.userId : [0])
+        }, function(kick) {
+          $('#kickedUsers').append('<tr><td>' + kick.userData.userFormatStart + '<span class="userName userNameTable" data-userId="' + kick.userData.userId + '">' + kick.userData.userName + '</span>' + kick.userData.userFormatEnd + '</td><td>' + kick.kickerData.userFormatStart + '<span class="userName userNameTable" data-userId="' + kick.kickerData.userId + '">' + kick.kickerData.userName + '</span>' + kick.kickerData.userFormatEnd + '</td><td>' + fim_dateFormat(kick.set, true) + '</td><td>' + fim_dateFormat(kick.expires, true) + '</td><td><button onclick="standard.unkick(' + userId + ', ' + roomId + ')">Unkick</button></td></tr>');
         });
       }
     });
-  },
-
-  /*** END Kick Manager ***/
-
-
-
-
-  /*** START My Kicks ***/
-
-  myKicks : function() {
-    var kickHtml = '';
-    
-    dia.full({
-      content : $t('manageKicks'),
-      title : 'You Have Been Kicked From The Following Rooms',
-      width : 1000,
-      oF : function() {
-        $.ajax({
-          url: directory + 'api/getKicks.php?users=' + userId + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-          timeout: 5000,
-          type: 'GET',
-          cache: false,
-          success: function(json) {
-            active = json.getKicks.kicks;
-
-            for (i in active) {
-              var kickerId = active[i].kickerData.userId,
-                kickerName = active[i].kickerData.userName,
-                kickerFormatStart = active[i].kickerData.userFormatStart,
-                kickerFormatEnd = active[i].kickerData.userFormatEnd,
-                userId = active[i].userData.userId,
-                userName = active[i].userData.userName,
-                userFormatStart = active[i].userData.userFormatStart,
-                userFormatEnd = active[i].userData.userFormatEnd,
-                length = active[i].length,
-                set = fim_dateFormat(active[i].set, true),
-                expires = fim_dateFormat(active[i].expires, true);
-
-              $('#kickHtml').append('<tr><td>' + userFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + userFormatEnd + '</td><td>' + kickerFormatStart + '<span class="userName userNameTable" data-userId="' + kickerId + '">' + kickerName + '</span>' + kickerFormatEnd + '</td><td>' + set + '</td><td>' + expires + '</td></tr>');
-            }
-
-            return false;
-          },
-          error: function() {
-            dia.error('The list of currently kicked users could not be obtained from the server. The action will be cancelled.'); // TODO: Handle Gracefully
-
-            return false;
-          }
-        });
-      }
-    });
-
   },
 
   /*** END Kick Manager ***/
