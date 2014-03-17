@@ -77,19 +77,18 @@ function $t(templateName, substitutions) {
 
 $.when(
   $.ajax({
-      url: 'client/data/config.json',
-      dataType: 'json',
-      success: function(data) {
-        window.fim_config = data;
-      }
+    url: 'client/data/config.json',
+    dataType: 'json',
+    success: function(data) {
+      window.fim_config = data;
+    }
   }),
   $.ajax({
     url: 'client/data/language_enGB.json',
     dataType: 'json',
     success: function(data) {
       window.phrases = data;
-    },
-    cache: true,
+    }
   }),
   $.ajax({
     url: 'client/data/templates.json',
@@ -97,22 +96,24 @@ $.when(
     success: function(data) {
       window.templates = data;
     }
+  }),
+  $.ajax({
+    url: 'client/js/fim-dev/fim-api.js',
+    dataType: 'script'
+  }),
+  $.ajax({
+    url: 'client/js/fim-dev/fim-standard.js',
+    dataType: 'script'
+  }),
+  $.ajax({
+    url: 'client/js/fim-dev/fim-popup.js',
+    dataType: 'script'
   })
  ).then(function() {
   $(document).ready(function() {
     $('body').append($t('main'));
     $('body').append($t('contextMenu'));
 
-    $.ajax({
-      async: false,
-      url: 'client/js/fim-dev/fim-popup.js',
-      dataType:'script'
-    });
-    $.ajax({
-      async: false,
-      url: 'client/js/fim-dev/fim-standard.js',
-      dataType:'script'
-    });
     $.ajax({
       async: false,
       url: 'client/js/fim-dev/fim-loader.js',

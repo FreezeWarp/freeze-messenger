@@ -70,7 +70,7 @@ popup = {
       id : 'roomListDialogue',
       width: 1000,
       oF : function() {
-        getRooms({
+        fimApi.getRooms({
         }, function(roomData) {
           $('#roomTableHtml').append('<tr id="room' + roomData.roomId + '"><td><a href="#room=' + roomData.roomId + '">' + roomData.roomName + '</a></td><td>' + roomData.roomTopic + '</td><td>' + (roomData.isAdmin ? '<button data-roomId="' + roomData.roomId + '" class="editRoomMulti standard"></button><button data-roomId="' + roomData.roomId + '" class="deleteRoomMulti standard"></button>' : '') + '<button data-roomId="' + roomData.roomId + '" class="archiveMulti standard"></button><input type="checkbox" data-roomId="' + roomData.roomId + '" class="favRoomMulti" id="favRoom' + roomData.roomId + '" /><label for="favRoom' + roomData.roomId + '" class="standard"></label></td></tr>');
         }, function() {
@@ -357,7 +357,7 @@ popup = {
           $('table#viewStats > tbody').append('<tr><th>' + i + '</th></tr>');
         }
 
-        getStats({
+        fimApi.getStats({
           'roomIds' : [window.roomId] // TODO
         }, function(active) {
           var roomName = active.roomData.roomName,
@@ -415,7 +415,7 @@ popup = {
             usTime : 16777216, twelveHourTime : 33554432, webkitNotifications : 536870912
           };
 
-        getUsers({
+        fimApi.getUsers({
           'userIds' : [userId]
         }, function(active) { console.log(active);
           defaultColour = active.defaultFormatting.color;
@@ -510,7 +510,7 @@ popup = {
           });
 
           // Default Room Value
-          getRooms({'roomIds' : [defaultRoom]}, function(roomData) { $('#defaultRoom').val(roomData.roomName); })
+          fimApi.getRooms({'roomIds' : [defaultRoom]}, function(roomData) { $('#defaultRoom').val(roomData.roomName); })
 
           // Populate Existing Entries for Lists
           autoEntry.showEntries('ignoreList', ignoreList);
@@ -696,7 +696,7 @@ popup = {
       title : 'View My Uploads',
       position : 'top',
       oF : function() {
-        getFiles({
+        fimApi.getFiles({
           'userIds' : [window.userId]
         }, function(active) {
           var fileName = active.fileName,
@@ -772,7 +772,7 @@ popup = {
 
 
         /* Censor Lists */
-        getCensorLists({
+        fimApi.getCensorLists({
           'roomIds' : roomIdLocal ? [roomIdLocal] : [0]
         }, function(active) { console.log(active);
           var listId = active.listId,
@@ -790,7 +790,7 @@ popup = {
 
         /* Prepopulate Data if Editing a Room */
         if (roomIdLocal) {
-          getRooms({
+          fimApi.getRooms({
             'roomIds' : [roomIdLocal]
           }, function(roomData) {
             var data = '',
@@ -944,7 +944,7 @@ popup = {
       id : 'onlineDialogue',
       position : 'top',
       width : 600,
-      oF : getActiveUsers({}, {
+      oF : fimApi.getActiveUsers({}, {
         'refresh' : 1000,
         'begin' : function() {
           $('#onlineUsers').html('');
@@ -959,7 +959,7 @@ popup = {
           //contextMenuParseUser('#onlineUsers');
         }
       }),
-      cF : getActiveUsers({}, {
+      cF : fimApi.getActiveUsers({}, {
         'close' : true
       })
     });
@@ -1008,7 +1008,7 @@ popup = {
             userName = $('#userName').val(),
             length = Math.floor(Number($('#time').val() * Number($('#interval > option:selected').attr('value'))));
 
-          getUsers({
+          fimApi.getUsers({
             'userNames' : [userName]
           }, function(userData) {
             standard.kick(userData.userId, roomId, length);

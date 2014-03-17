@@ -52,7 +52,7 @@ var standard = {
       $('#archiveMessageList').html('');
       standard.archive.messageData = {};
 
-      getMessages({
+      fimApi.getMessages({
         'roomId' : standard.archive.options.roomId,
         'userIds' : [standard.archive.options.searchUser],
         'search' : standard.archive.options.searchText,
@@ -298,7 +298,7 @@ var standard = {
       }
       else {
         // TODO: basically, this is a minimal version of the polling call. It actually could work quite well if all of our get*() calls include their own retry code (which is missing here), and thus that is my current plan. Waiting on this, this version will suffice.
-        getMessages({
+        fimApi.getMessages({
           'roomId' : roomId,
           'archive' : (requestSettings.firstRequest ? 1 : 0),
           'messageIdStart' : requestSettings.lastMessage + 1
@@ -381,7 +381,7 @@ var standard = {
       // TODO
     }
     else { // Normal procedure otherwise.
-      getRooms({
+      fimApi.getRooms({
         'roomIds' : [roomIdLocal],
         'permLevel' : 'view'
       }, function(roomData) {
@@ -456,7 +456,7 @@ var standard = {
     var userId;
 
     if (userName in params) {
-      getUsers({
+      fimApi.getUsers({
         'userNames' : [params.userName]
       }, function(userData) {
         params.userId = userData.userId;
