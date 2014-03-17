@@ -299,6 +299,23 @@ function fim_dateFormat(timestamp, full) {
 }
 
 
+function fim_youtubeParse($1) {
+  if ($1.match(regexs.youtubeFull) || $1.match(regexs.youtubeShort)) {
+    var code = false;
+
+    if ($1.match(regexs.youtubeFull) !== null) { code = $1.replace(regexs.youtubeFull, "$8"); }
+    else if ($1.match(regexs.youtubeShort) !== null) { code = $1.replace(regexs.youtubeShort, "$5"); }
+
+    if (settings.disableVideo) { return '<a href="https://www.youtu.be/' + code + '" target="_BLANK">[Youtube Video]</a>'; }
+    else { return '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>'; }
+  }
+
+  else {
+    return false;
+  }
+}
+
+
 
 /**
  * Formats received message data for display in either the message list or message table.
@@ -341,54 +358,16 @@ function fim_messageFormat(json, format) {
   }
   else {
     switch (flag) {
-      // Youtube, etc.
-      case 'source':
-        text = text.replace(regexs.url, function($1) {
-          if ($1.match(regexs.youtubeFull) || $1.match(regexs.youtubeShort)) {
-            var code = false;
-
-            if (text.match(regexs.youtubeFull) !== null) { code = text.replace(regexs.youtubeFull, "$8"); }
-            else if (text.match(regexs.youtubeShort) !== null) { code = text.replace(regexs.youtubeShort, "$5"); }
-
-            if (code) {
-              if (settings.disableVideo) { return '<a href="https://www.youtu.be/' + code + '" target="_BLANK">[Youtube Video]</a>'; }
-              else { return '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>'; }
-            }
-            else { return '[Logic Error]'; }
-          }
-        });
-      break;
-
-      // Image
-      case 'image': // We append the parentalAge flags regardless of an images source. It will potentially allow for other sites to use the same format (as far as I know, I am the first to implement the technology, and there are no related standards.)
-        text = '<a href="' + fim_eXMLAttr(text) + '" class="imglink" target="_BLANK">' + (settings.disableImage ? '[Image]' : '<img src="' + fim_eXMLAttr(text) + '" style="max-width: 250px; max-height: 250px;" />') + '</a>';
-      break;
-
-      // Video
-      case 'video':
-        if (settings.disableVideo) text = '<a href="' + fim_eXMLAttr(text) + '" target="_BLANK">[Video]</a>';
-        else text = '<video src="' + fim_eXMLAttr(text) + '" controls></video>';
-      break;
-
-      // Audio
-      case 'audio':
-        if (settings.disableVideo) text = '<a href="' + fim_eXMLAttr(text) + '" target="_BLANK">[Video]</a>';
-        else text = '<audio src="' + fim_eXMLAttr(text) + '" controls></audio>';
-      break;
-
-      // Email Link
-      case 'email':
-        text = '<a href="mailto: ' + fim_eXMLAttr(text) + '" target="_BLANK">' + text + '</a>';
-      break;
+      case 'source': text = text.replace(regexs.url, fim_youtubeParse) || '[Unrecognised Source]'; break; // Youtube, etc.
+      case 'image': text = '<a href="' + fim_eXMLAttr(text) + '" class="imglink" target="_BLANK">' + (settings.disableImage ? '[Image]' : '<img src="' + fim_eXMLAttr(text) + '" style="max-width: 250px; max-height: 250px;" />') + '</a>'; break; // // Image; We append the parentalAge flags regardless of an images source. It will potentially allow for other sites to use the same format (as far as I know, I am the first to implement the technology, and there are no related standards.)
+      case 'video': text = (settings.disableVideo ? '<a href="' + fim_eXMLAttr(text) + '" target="_BLANK">[Video]</a>' : '<video src="' + fim_eXMLAttr(text) + '" controls></video>'); break; // Video
+      case 'audio': text = (settings.disableVideo ? '<a href="' + fim_eXMLAttr(text) + '" target="_BLANK">[Video]</a>' : '<audio src="' + fim_eXMLAttr(text) + '" controls></audio>'); break; // Audio
+      case 'email': text = '<a href="mailto: ' + fim_eXMLAttr(text) + '" target="_BLANK">' + text + '</a>'; break; // Email Link
 
       // Various Files and URLs
       case 'url': case 'text': case 'html': case 'archive': case 'other':
-        if (text.match(/^(http|https|ftp|data|gopher|sftp|ssh)/)) { // Certain protocols (e.g. "javascript:") could be malicious. Thus, we use a whitelist of trusted protocols instead.
-          text = '<a href="' + text + '" target="_BLANK">' + text + '</a>';
-        }
-        else {
-          text = '[Hidden Link]';
-        }
+        if (text.match(/^(http|https|ftp|data|gopher|sftp|ssh)/)) text = '<a href="' + text + '" target="_BLANK">' + text + '</a>'; // Certain protocols (e.g. "javascript:") could be malicious. Thus, we use a whitelist of trusted protocols instead.
+        else text = '[Undisplayable Link]';
       break;
 
       // Unspecified
@@ -403,25 +382,9 @@ function fim_messageFormat(json, format) {
             var $2 = '';
           }
 
-          // Youtube Autoparse
-          if ($1.match(regexs.youtubeFull) || $1.match(regexs.youtubeShort)) {
-            var code = false;
-
-            if (text.match(regexs.youtubeFull) !== null) { code = text.replace(regexs.youtubeFull, "$8"); }
-            else if (text.match(regexs.youtubeShort) !== null) { code = text.replace(regexs.youtubeShort, "$5"); }
-
-            if (code) {
-              if (settings.disableVideo) { return '<a href="https://www.youtu.be/' + code + '" target="_BLANK">[Youtube Video]</a>'; }
-              else { return '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>'; }
-            }
-            else { return '[Logic Error]'; }
-          }
-          
-          // Image Autoparse
-          else if ($1.match(regexs.image)) { return '<a href="' + $1 + '" target="_BLANK" class="imglink">' + (settings.disableImage ? '[IMAGE]' : '<img src="' + $1 + '" style="max-width: 250px; max-height: 250px;" />') + '</a>' + $2; }
-          
-          // Normal URL
-          else { return '<a href="' + $1 + '" target="_BLANK">' + $1 + '</a>' + $2; }
+          if (youtubeCode = fim_youtubeParse($1)) return youtubeCode; // Youtube Autoparse
+          else if ($1.match(regexs.image)) { return '<a href="' + $1 + '" target="_BLANK" class="imglink">' + (settings.disableImage ? '[IMAGE]' : '<img src="' + $1 + '" style="max-width: 250px; max-height: 250px;" />') + '</a>' + $2; } // Image Autoparse
+          else { return '<a href="' + $1 + '" target="_BLANK">' + $1 + '</a>' + $2; } // Normal URL
         });
 
         // "/me" parse
@@ -1524,19 +1487,9 @@ function windowDynaLinks() {
   $('#roomListLong > ul').html('<li>My Rooms<ul id="myRooms1"></ul></li>');
   $('#roomListShort > ul').html('<li>My Rooms<ul id="myRooms2"></ul></li>');
 
-  for (i in roomIdRef) {
-    if (roomIdRef[i].isOwner) {
-      $('#myRooms1, #myRooms2').append('<li>' + roomIdRef[i].roomName + '</li>');
-    }
-  }
+  /* TODO: List Owned Rooms */
 
-  for (i in roomLists) {
-    $('#roomListLong > ul').append('<li>' + window.phrases.roomListNames[i] + '<ul id="roomList' + i + '"></ul></li>');
-
-    for (j = 0; j < roomLists[i].length; j++) {
-      $('#roomList' + i).append('<li><a href="#room=' + roomIdRef[roomLists[i][j]].roomId + '" class="room" data-roomId="' + roomIdRef[roomLists[i][j]].roomId + '">' + roomIdRef[roomLists[i][j]].roomName + '</a></li>');
-    }
-  }
+  /* TODO: Room Lists */
 }
 
 

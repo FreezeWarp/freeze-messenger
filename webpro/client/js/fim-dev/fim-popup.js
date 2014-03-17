@@ -510,7 +510,7 @@ popup = {
           });
 
           // Default Room Value
-          $('#defaultRoom').val(roomIdRef[defaultRoom].roomName);
+          getRooms({'roomIds' : [defaultRoom]}, function(roomData) { $('#defaultRoom').val(roomData.roomName); })
 
           // Populate Existing Entries for Lists
           autoEntry.showEntries('ignoreList', ignoreList);
@@ -1032,18 +1032,6 @@ popup = {
       id : 'kickUserDialogue',
       width : 1000,
       oF : function() {
-        var roomModList = [],
-          i = 0;
-
-        for (i = 0; i < roomList.length; i += 1) {
-          if (modRooms[roomRef[roomList[i]]] > 0) {
-            roomModList.push(roomIdRef[roomRef[roomList[i]]].roomName);
-          }
-        }
-
-        $('#userName').autocomplete({ source: userList });
-        $('#roomNameKick').autocomplete({ source: roomModList });
-
         $("#kickUserForm").submit(function() {
           var roomNameKick = $('#roomNameKick').val(),
             roomId = roomRef[roomNameKick],
