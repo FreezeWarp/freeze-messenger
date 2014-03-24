@@ -20,7 +20,7 @@
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2012
+ * @copyright Joseph T. Parsons 2014
  * @param string [listIds] - If specified, only specific room lists are listed. By default, all of the user's roomLists are listed.
  
 */

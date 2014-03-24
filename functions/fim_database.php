@@ -681,6 +681,7 @@ class fimDatabase extends databaseSQL
     $options = array_merge(array(
       'roomIds'            => array(),
       'roomNames'          => array(),
+      'roomAliases'        => array(),
       'ownerIds'           => array(),
       'parentalAgeMin'     => 0,
       'parentalAgeMax'     => 0,
@@ -694,7 +695,7 @@ class fimDatabase extends databaseSQL
 
 
     // Defaults
-    $columns = array($this->sqlPrefix . "rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, roomParentalFlags, roomParentalAge, options, lastMessageId, lastMessageTime, messageCount, roomType');
+    $columns = array($this->sqlPrefix . "rooms" => 'roomId, roomName, roomAlias, roomTopic, owner, defaultPermissions, roomParentalFlags, roomParentalAge, options, lastMessageId, lastMessageTime, messageCount, roomType');
 
 
     // Modify Query Data for Directives
@@ -703,6 +704,7 @@ class fimDatabase extends databaseSQL
 
     if (count($options['roomIds']) > 0) $conditions['both']['either']['roomId'] = $this->in($options['roomIds']);
     if (count($options['roomNames']) > 0) $conditions['both']['either']['roomName'] = $this->in($options['roomNames']);
+    if (count($options['roomAliases']) > 0) $conditions['both']['either']['roomAlias'] = $this->in($options['roomAliases']);
     if ($options['roomNameSearch']) $conditions['both']['either']['roomName'] = $this->type('string', $options['roomNameSearch'], 'search');
 
     if ($options['parentalAgeMin'] > 0) $conditions['both']['roomParentalAge'] = $this->int($options['parentalAgeMin'], 'gte');

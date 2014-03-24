@@ -20,7 +20,7 @@
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2012
+ * @copyright Joseph T. Parsons 2014
  *
  * @param string [users] - A comma-seperated list of user IDs to get. If not specified, all users will be retrieved.
  * @param string [sort=userId] - How to sort the users, either by userId or userName.

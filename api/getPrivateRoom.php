@@ -15,13 +15,14 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 /**
- * Get Rooms from the Server
+ * Obtain a roomId corresponding with a private room between the provided userIds and, if not included, the active userId.
+ * @internal This API, unlike most get*() APIs, will create a new room if one does not alredy exist. This is automatic and can not be controlled.
  *
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2012
- * @param string users - CSV list of users (the active user may be omitted).
+ * @copyright Joseph T. Parsons 2014
+ * @param string users - JSONList of userIds (the active user may be omitted).
  *
  * TODO -- Ignore List
 */
@@ -31,12 +32,11 @@ $apiRequest = true;
 require('../global.php');
 
 
-
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
-  'users' => array(
+  'userIds' => array(
     'default' => '',
-    'cast' => 'csv',
+    'cast' => 'jsonList',
     'filter' => 'int',
     'evaltrue' => true,
   ),
@@ -50,58 +50,44 @@ $xmlData = array(
       'userName' => ($user['userName']),
     ),
     'errStr' => $errStr,
-    'errDesc' => $errDesc,
     'room' => array(),
   ),
 );
 
 
 
-/* Plugin Hook Start */
-($hook = hook('getPrivateRoom_start') ? eval($hook) : '');
-
-if (!$user['userDefs']['privateRooms']) {
+if (!$user['userDefs']['privateRoomsFriends']) {
   $errStr = 'noPerm';
-  $errDesc = 'You do not have permission to create private rooms.';
 }
 else {
+  /** TODO: FREINDLIST **/
+
+
   /* Get Rooms From Database */
-  if (!in_array($user['userId'], $request['users'])) {
-    $request['users'][] = $user['userId'];
+  if (!in_array($user['userId'], $request['userIds'])) $request['userIds'][] = $user['userId']; // The active user is automatically added if not specified. This is to say, this API can _not_ be used to obtain a private room that doesn't involve a user (for administrative purposes, for instance). getRooms.php can be used for this by querying roomAlias.
+
+  $privateAlias = fim_getPrivateRoomAlias($request['userIds']);
+
+  $room = $database->getRooms(array(
+    'roomAliases' => array($privateAlias),
+  ))->getAsArray(false);
+
+
+  if (!count($room)) {
+    $roomId = $database->createPrivateRoom($request['userIds'])->insertId;
   }
-
-
-  $room = $database->getPrivateRoom($request['users']);
 
 
 
   /* Process Rooms Obtained from Database */
-  $xmlData['getPrivateRoom']['room']['uniqueId'] = $room['uniqueId'];
-  $xmlData['getPrivateRoom']['room']['roomUsersHash'] = $room['roomUsersHash'];
-  $xmlData['getPrivateRoom']['room']['roomUsersList'] = $room['roomUsersList'];
-  $xmlData['getPrivateRoom']['room']['lastMessageId'] = $room['lastMessageId'];
-  $xmlData['getPrivateRoom']['room']['lastMessageTime'] = $room['lastMessageTime'];
-  $xmlData['getPrivateRoom']['room']['messageCount'] = $room['messageCount'];
-
-  $xmlData['getPrivateRoom']['room']['roomUsers'] = array();
-
-  foreach (explode(',', $room['roomUsersList']) AS $roomUser) {
-    $userData = $database->getUser($roomUser);
-
-    $xmlData['getPrivateRoom']['room']['roomUsers']['user ' . $roomUser] = $userData;
-  }
+  $xmlData['getPrivateRoom']['roomAlias'] = $privateAlias;
+  $xmlData['getPrivateRoom']['roomId'] = $roomId;
 }
 
 
 
 /* Errors */
 $xmlData['getPrivateRoom']['errStr'] = ($errStr);
-$xmlData['getPrivateRoom']['errDesc'] = ($errDesc);
-
-
-
-/* Plugin Hook End */
-($hook = hook('getPrivateRoom_end') ? eval($hook) : '');
 
 
 

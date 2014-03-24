@@ -23,7 +23,7 @@ die('This feature will be added in FIMv4.');
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2012
+ * @copyright Joseph T. Parsons 2014
  *
  * @param string action - The maintenance action to perform.
  * @param int offset - The ID offset to be used on the task at hand.

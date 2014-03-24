@@ -20,7 +20,7 @@
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2012
+ * @copyright Joseph T. Parsons 2014
  *
  * @param int roomId - A comma-seperated list of room IDs to get.
  * @param string statusType - The type of status.

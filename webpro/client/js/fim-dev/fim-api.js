@@ -19,7 +19,7 @@ window.fimApi = {
    * @param object userId - The ID of the user to obtain info of.
    *
    * @author Jospeph T. Parsons <josephtparsons@gmail.com>
-   * @copyright Joseph T. Parsons 2012
+   * @copyright Joseph T. Parsons 2014
    *
    */
   getUsers : function(params, requestSettings, async) {
@@ -128,7 +128,7 @@ window.fimApi = {
       'messageIdStart' : 0,
       'search' : 0,
       'archive' : 0,
-      'sortOrder' : 'asc',
+      'sortOrder' : 'asc'
     });
 
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);

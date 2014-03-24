@@ -874,7 +874,8 @@ $user['adminDefs'] = array(
 $user['userDefs'] = array(
   'allowed' => ($user['userPrivs'] & 16), // Is not banned
   'createRooms' => ($user['userPrivs'] & 32), // May create rooms
-  'privateRooms' => ($user['userPrivs'] & 64), // May create private rooms
+  'privateRoomsFriends' => ($user['userPrivs'] & 64), // May create private rooms
+  'privateRoomsAll' => ($user['userPrivs'] & 64),
 
   'roomsOnline' => ($user['userPrivs'] & 1024), // May see rooms online (API-handled).
   'postCounts' => ($user['userPrivs'] & 2048), // May see post counts (API-handled).

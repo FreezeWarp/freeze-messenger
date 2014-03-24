@@ -252,6 +252,14 @@ function fim_getMessageRange($roomId, $startId, $endId, $startDate, $endDate) {
 
 
 
+function fim_getPrivateRoomAlias($userIds) {
+  sort($userIds);
+
+  return 'p' . implode(',', $userIds);
+}
+
+
+
 
 
 

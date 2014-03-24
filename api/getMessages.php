@@ -21,7 +21,7 @@
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2012
+ * @copyright Joseph T. Parsons 2014
 
  * Primary Directives:
  * @param string roomId - The ID of the room to fetch messages from.

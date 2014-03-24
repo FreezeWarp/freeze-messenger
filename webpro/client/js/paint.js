@@ -18,7 +18,7 @@ function $q(message, error) {
  * @todo No optimisation has yet been made. We will need to do at least some profiling later on.
  * 
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2012
+ * @copyright Joseph T. Parsons 2014
  */
 function $l(stringName, substitutions, extra) {
   var phrase = false,
@@ -58,7 +58,7 @@ function $l(stringName, substitutions, extra) {
  * @param substitutions - A list of "additional" template substitutions. Those included in the language.json files are automatically included.
  * 
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2012
+ * @copyright Joseph T. Parsons 2014
  */
 function $t(templateName, substitutions) {
   if (undefined === eval("window.templates." + templateName)) {

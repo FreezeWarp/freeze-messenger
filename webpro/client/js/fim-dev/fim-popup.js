@@ -699,19 +699,13 @@ popup = {
         fimApi.getFiles({
           'userIds' : [window.userId]
         }, {'each': function(active) {
-          var fileName = active.fileName,
-            md5hash = active.md5hash,
-            sha256hash = active.sha256hash,
-            fileSizeFormatted = active.fileSizeFormatted,
-            parentalAge = active.parentalAge,
-            parentalFlags = active.parentalFlags,
-            parentalFlagsFormatted = [];
+          var parentalFlagsFormatted = [];
 
-          for (i in parentalFlags) {
-            if (parentalFlags[i]) parentalFlagsFormatted.push($l('parentalFlags.' + parentalFlags[i])); // Yes, this is a very weird line.
+          for (i in active.parentalFlags) {
+            if (active.parentalFlags[i]) parentalFlagsFormatted.push($l('parentalFlags.' + parentalFlags[i])); // Yes, this is a very weird line.
           }
 
-          $('#viewUploadsBody').append('<tr><td align="center"><img src="' + directory + 'file.php?sha256hash=' + sha256hash + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json" style="max-width: 200px; max-height: 200px;" /><br />' + fileName + '</td><td align="center">' + fileSizeFormatted + '</td><td align="center">' + $l('parentalAges.' + parentalAge) + '<br />' + parentalFlagsFormatted.join(', ') + '</td><td align="center"><button onclick="standard.changeAvatar(\'' + sha256hash + '\')">Set to Avatar</button></td></tr>');
+          $('#viewUploadsBody').append('<tr><td align="center"><img src="' + directory + 'file.php?sha256hash=' + active.sha256hash + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json" style="max-width: 200px; max-height: 200px;" /><br />' + active.fileName + '</td><td align="center">' + active.fileSizeFormatted + '</td><td align="center">' + $l('parentalAges.' + active.parentalAge) + '<br />' + parentalFlagsFormatted.join(', ') + '</td><td align="center"><button onclick="standard.changeAvatar(\'' + active.sha256hash + '\')">Set to Avatar</button></td></tr>');
         }});
       }
     });
