@@ -147,7 +147,7 @@ if ($continue) {
     ($hook = hook('sendMessage_topic') ? eval($hook) : '');
 
     if ($continue) {
-      $database->sendMessage($request['message'], '', $user, $roomData);
+      $database->storeMessage($request['message'], '', $user, $roomData);
 
       $database->createEvent('topicChange', false, $roomData['roomId'], false, $topic, false, false); // name, user, room, message, p1, p2, p3
 
@@ -186,7 +186,7 @@ if ($continue) {
     ($hook = hook('sendMessage_send') ? eval($hook) : '');
 
     if ($continue) {
-      $database->sendMessage($request['message'], $request['flag'], $user, $roomData);
+      $database->storeMessage($request['message'], $request['flag'], $user, $roomData);
     }
   }
 }

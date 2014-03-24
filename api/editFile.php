@@ -287,7 +287,7 @@ if ($continue) {
                     $webLocation = "{$installUrl}file.php?sha256hash={$prefile['sha256hash']}";
 
                     if ($roomData) {
-                      $database->sendMessage($webLocation, $container, $user, $roomData);
+                      $database->storeMessage($webLocation, $container, $user, $roomData);
                     }
                   }
                   else {
@@ -335,7 +335,7 @@ if ($continue) {
                       $webLocation = "{$installUrl}file.php?sha256hash={$sha256hash}";
 
                       if ($continue && $roomData) {
-                        $database->sendMessage($webLocation, $container, $user, $roomData);
+                        $database->storeMessage($webLocation, $container, $user, $roomData);
                       }
                     }
                   }

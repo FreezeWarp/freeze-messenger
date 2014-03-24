@@ -27,6 +27,10 @@ class fimDatabase extends databaseSQL
 {
 
 
+
+  /****** Get Functions *****/
+
+
   /**
    * Run a query to obtain users who appear "active."
    * Scans table `ping`, and links in tables `rooms` and `users`, particularly for use in hasPermission().
@@ -226,28 +230,6 @@ class fimDatabase extends databaseSQL
       'listIds' => array_keys($this->getCensorListsActive($roomId)),
       'severities' => $types
     ));
-  }
-
-
-
-  /*
-   * Automatically censors text using censorWords based on replace.
-   * @TODO: Update to remove noparse, and maybe the other stuff. I'm not really sure.
-   */
-  public function censorParse($text, $roomId = 0, $roomOptions) {
-    global $sqlPrefix, $slaveDatabase, $config, $generalCache;
-
-    $searchText = array();
-    $words2 = array();
-
-    foreach ($this->getActiveCensorWords($roomId, array('replace'))->getAsArray(true) AS $word) {
-      $words2[strtolower($word['word'])] = $word['param'];
-      $searchText[] = addcslashes(strtolower($word['word']),'^&|!$?()[]<>\\/.+*');
-    }
-
-    $searchText2 = implode('|', $searchText);
-
-    return preg_replace("/(?<!(\[noparse\]))(?<!(\quot))($searchText2)(?!\[\/noparse\])/ie","fim_indexValue(\$words2,strtolower('\\3'))", $text);
   }
 
 
@@ -833,6 +815,11 @@ class fimDatabase extends databaseSQL
 
 
 
+
+  /****** Insert/Update Functions *******/
+
+
+
   public function setCensorList($roomId, $listId, $status) {
     $this->modLog('unblockCensorList', $roomId . ',' . $listId);
 
@@ -951,42 +938,32 @@ class fimDatabase extends databaseSQL
 
 
 
-  /**
-   * Sends a message. Requires the database to be active.
-   *
-   * @param string messageText - Text of message.
-   * @param string messageFlag - Flag of message, used by clients to automatically display URLs, images, etc.
-   * @param string userData - The data of the user sending the message. (This is not validated with the current user, and is left up to plugins).
-   * @param string roomData - The data of the room. Must be fully populated.
-   *
-   *
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-   */
-  public function sendMessage($messageText, $messageFlag, $userData, $roomData)
-  {
-    $messageParse = new messageParse($messageText, $messageFlag, $userData, $roomData);
-
-    $messageText = $messageParse->getParsed();
-    list($messageTextEncrypted, $iv, $saltNum) = $messageParse->getEncrypted();
-
-    $messageId = $this->storeMessage($userData, $roomData, $messageText, $messageTextEncrypted, $iv, $saltNum, $messageFlag);
-
-    $keyWords = $messageParse->getKeyWords();
-    $this->storeKeyWords($keyWords, $messageId, $userData['userId'], $roomData['roomId']);
-
-//  $database->storeUnreadMessage();
-  }
-
-
-
-  public function storeMessage($userData, $roomData, $messageText, $messageTextEncrypted, $encryptIV, $encryptSalt, $flag)
+  public function storeMessage($messageText, $flag, $userData, $roomData)
   {
     global $config, $user, $generalCache;
 
-    if (!isset($roomData['options'], $roomData['roomId'], $roomData['roomName'], $roomData['roomType'])) throw new Exception('database->storeMessage requires roomData[options], roomData[roomId], roomData[roomName], and roomData[type].');
+    if (!isset($roomData['options'], $roomData['roomId'], $roomData['roomName'], $roomData['roomAlias'], $roomData['roomType'])) throw new Exception('database->storeMessage requires roomData[options], roomData[roomId], roomData[roomName], and roomData[type].');
     if (!isset($userData['userId'], $userData['userName'], $userData['userGroup'], $userData['avatar'], $userData['profile'], $userData['userFormatStart'], $userData['userFormatEnd'], $userData['defaultFormatting'], $userData['defaultColor'], $userData['defaultHighlight'], $userData['defaultFontface'])) throw new Exception('database->storeMessage requires userData[userId], userData[userName], userData[userGroup], userData[avatar]. userData[profile], userData[userFormatStart], userData[userFormatEnd], userData[defaultFormatting], userData[defaultColor], userData[defaultHighlight], and userData[defaultFontface]');
 
 
+
+    /* Format Message Text */
+    if (!in_array($messageFlag, array('image', 'video', 'url', 'email', 'html', 'audio', 'text'))) {
+      $messageText = $this->censorParse($messageText, $roomData['roomId']);
+      $messageText = $this->emotiParse($messageText);
+    }
+
+    list($messageTextEncrypted, $iv, $saltNum) = $this->getEncrypted($messageText);
+
+
+
+    /* Generate (and Insert) Key Words */
+    $keyWords = $this->getKeyWordsFromText($messageText);
+    $this->storeKeyWords($keyWords, $messageId, $userData['userId'], $roomData['roomId']);
+
+
+
+    /* Insert Message Data */
     // Insert into permanent datastore.
     $this->insert($this->sqlPrefix . "messages", array(
       'roomId'   => (int) $roomData['roomId'],
@@ -1002,6 +979,8 @@ class fimDatabase extends databaseSQL
     $messageId = $this->insertId;
 
 
+
+    /* Update the Various Caches */
     // Update room caches.
     $this->update($this->sqlPrefix . "rooms", array(
       'lastMessageTime' => $this->now(),
@@ -1116,7 +1095,7 @@ class fimDatabase extends databaseSQL
 
     // If the contact is a private communication, create an event and add to the message unread table.
     if ($roomData['roomType'] === 'private') {
-      foreach ($generalCache->getPermissions($roomData['roomId'], 'user') AS $sendToUserId => $permissionLevel) {
+      foreach ($generalCache->getPermissions($roomData['roomId'], 'user') AS $sendToUserId => $permissionLevel) { // Todo: use roomAlias.
         if ($sendToUserId == $user['userId']) {
           continue;
         } else {
@@ -1152,6 +1131,13 @@ class fimDatabase extends databaseSQL
     return $messageId;
   }
 
+
+  /**
+   * @param     $counterName
+   * @param int $incrementValue
+   *
+   * @return bool
+   */
   public function incrementCounter($counterName, $incrementValue = 1)
   {
     global $config;
@@ -1171,6 +1157,16 @@ class fimDatabase extends databaseSQL
     }
   }
 
+
+  /**
+   * @param $eventName
+   * @param $userId
+   * @param $roomId
+   * @param $messageId
+   * @param $param1
+   * @param $param2
+   * @param $param3
+   */
   public function createEvent($eventName, $userId, $roomId, $messageId, $param1, $param2, $param3)
   {
     global $config, $user;
@@ -1189,6 +1185,13 @@ class fimDatabase extends databaseSQL
     }
   }
 
+
+  /**
+   * @param $words
+   * @param $messageId
+   * @param $userId
+   * @param $roomId
+   */
   public function storeKeyWords($words, $messageId, $userId, $roomId)
   {
     global $config;
@@ -1292,6 +1295,161 @@ class fimDatabase extends databaseSQL
     foreach ($array AS $bit => $true) {
       if ($true)  $bitfield += $bit;
     }
+  }
+
+
+
+
+  /****** MESSAGE TEXT FUNCTIONS ******/
+
+  /**
+   * Generates keywords to enter into the archive search store.
+   *
+   * @param string $text - The text to generate the big keywords from.
+   * @return array - The keywords found.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  public function getKeyWordsFromText($text) {
+    global $config, $sqlPrefix, $user;
+
+    $puncList = array();
+    $string = fim_makeSearchable($this->messageText);
+
+    $stringPieces = array_unique(explode(' ', $string));
+    $stringPiecesAdd = array();
+
+    foreach ($stringPieces AS $piece) {
+      if (strlen($piece) >= $config['searchWordMinimum'] &&
+        strlen($piece) <= $config['searchWordMaximum'] &&
+        !in_array($piece, $config['searchWordOmissions'])) $stringPiecesAdd[] = str_replace($config['searchWordConvertsFind'], $config['searchWordConvertsReplace'], $piece);
+    }
+
+    if (count($stringPiecesAdd) > 0) {
+      sort($stringPiecesAdd);
+
+      return $stringPiecesAdd;
+    }
+    else {
+      return array();
+    }
+  }
+
+
+
+
+  /**
+   * Automatically censors text using censorWords replace.
+   *
+   * @param text Text to censor.
+   * @param roomId The room ID to use to get applicable censor words.
+   *
+   * @TODO: Update to remove noparse, and maybe the other stuff. I'm not really sure.
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  public function censorParse($text, $roomId = 0) {
+    global $sqlPrefix, $slaveDatabase, $config, $generalCache;
+
+    $searchText = array();
+    $words2 = array();
+
+    foreach ($this->getActiveCensorWords($roomId, array('replace'))->getAsArray(true) AS $word) {
+      $words2[strtolower($word['word'])] = $word['param'];
+      $searchText[] = addcslashes(strtolower($word['word']),'^&|!$?()[]<>\\/.+*');
+    }
+
+    $searchText2 = implode('|', $searchText);
+
+    return preg_replace("/(?<!(\[noparse\]))(?<!(\quot))($searchText2)(?!\[\/noparse\])/ie","fim_indexValue(\$words2,strtolower('\\3'))", $text);
+  }
+
+
+  /**
+   * Retrieve an encrypted version of text.
+   *
+   * @param $messageText
+   *
+   * @return [$messageTextEncrypted, $iv, $saltNum]
+   *
+   */
+  public function getEncrypted($messageText) {
+    global $salts, $encrypt;
+
+    // Encrypt Message Text
+    if ($salts && $encrypt) { // Only encrypt if we have both set salts and encrypt is enabled.
+      list($messageTextEncrypted, $iv, $saltNum) = fim_encrypt($messageText); // Encrypt the values and return the new data, IV, and saltNum.
+    }
+    else { // No encyption
+      $messageTextEncrypted = $messageText;
+      $iv = ''; // Use an empty IV - it will be ignored by the decryptor.
+      $saltNum = 0; // Same as with the IV, salt keys of "0" are ignored.
+    }
+
+    return array($messageTextEncrypted, $iv, $saltNum);
+  }
+
+
+  /**
+   * Finds emotiocn strings (e.g. ":)") and replaces them with URLs corresponding to images.
+   *
+   * @param $text Text to find.
+   *
+   * @return string Modified text.
+   */
+  public function emotiParse($text) {
+    global $room, $forumTablePrefix, $integrationDatabase, $loginConfig;
+
+    switch($loginConfig['method']) {
+      case 'vbulletin3':
+      case 'vbulletin4':
+        $smilies = $integrationDatabase->select(array(
+          "{$forumTablePrefix}smilie" => 'smilietext emoticonText, smiliepath emoticonFile',
+        ))->getAsArray(true);
+        break;
+
+      case 'phpbb':
+        $smilies = $integrationDatabase->select(array(
+          "{$forumTablePrefix}smilies" => 'code emoticonText, smiley_url, emoticonFile'
+        ))->getAsArray(true);
+        break;
+
+      case 'vanilla':
+        // TODO: Convert
+        $smilies = $this->select(array(
+          "{$forumTablePrefix}emoticons" => 'emoticonText, emoticonFile, context'
+        ))->getAsArray(true);
+        break;
+
+      default:
+        $smilies = array();
+        break;
+    }
+
+
+
+    if (count($smilies)) {
+      foreach ($smilies AS $smilie) {
+        $smilies2[strtolower($smilie['emoticonText'])] = $smilie['emoticonFile'];
+        $searchText[] = addcslashes(strtolower($smilie['emoticonText']),'^&|!$?()[]<>\\/.+*');
+      }
+
+      switch ($loginConfig['method']) {
+        case 'phpbb':
+          $forumUrlS = $loginConfig['url'] . 'images/smilies/';
+          break;
+
+        case 'vanilla':
+        case 'vbulletin3':
+        case 'vbulletin4':
+          $forumUrlS = $loginConfig['url'];
+          break;
+      }
+
+      $searchText2 = implode('|', $searchText);
+
+      $text = preg_replace("/(?<!(\[noparse\]))(?<!(quot))(?<!(gt))(?<!(lt))(?<!(apos))(?<!(amp))($searchText2)(?!\[\/noparse\])/ie","'{$forumUrlS}' . fim_indexValue(\$smilies2,strtolower('\\7'))", $text);
+    }
+
+    return $text;
   }
 }
 

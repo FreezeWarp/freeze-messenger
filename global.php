@@ -87,7 +87,6 @@ require(dirname(__FILE__) . '/functions/databaseSQL.php'); // Database (SQL)
 require(dirname(__FILE__) . '/functions/fim_database.php'); // FIM-specific Extension to MySQL OOP Library
 require(dirname(__FILE__) . '/functions/fim_cache.php'); // FIM-specific Extension to APC Wrapper
 require(dirname(__FILE__) . '/functions/fim_general.php'); // Various Functions
-require(dirname(__FILE__) . '/functions/fim_parser.php'); // Message parser
 
 
 

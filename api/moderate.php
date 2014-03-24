@@ -105,7 +105,7 @@ switch ($request['action']) {
     $errStr = 'noKickUser';
     $errDesc = 'The user specified may not be kicked.';
 
-    $database->sendMessage('/me fought the law and the law won.', '', $user, $roomData); // Perhaps this should be removed...
+    $database->storeMessage('/me fought the law and the law won.', '', $user, $roomData); // Perhaps this should be removed...
   }
   elseif (!fim_hasPermission($roomData, $user, 'moderate', true)) { // You have to be a mod yourself.
     $errStr = 'noPerm';
@@ -127,7 +127,7 @@ switch ($request['action']) {
       )
     );
 
-    $database->sendMessage('/me kicked ' . $userData['userName'], '', $user, $roomData);
+    $database->storeMessage('/me kicked ' . $userData['userName'], '', $user, $roomData);
 
     $xmlData['moderate']['response']['success'] = true;
   }
@@ -159,7 +159,7 @@ switch ($request['action']) {
       'roomId' => $roomData['roomId'],
     ));
 
-    $database->sendMessage('/me unkicked ' . $userData['userName'], '', $user, $roomData);
+    $database->storeMessage('/me unkicked ' . $userData['userName'], '', $user, $roomData);
 
     $xmlData['moderate']['response']['success'] = true;
   }
