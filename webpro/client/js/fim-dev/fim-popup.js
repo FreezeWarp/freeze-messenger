@@ -543,9 +543,9 @@ popup = {
         if (window.serverSettings.branding.forumType !== 'vanilla') $('#settings5profile').hide(0);
 
         // Autocomplete Rooms and Users
-        $("#defaultRoom").autocomplete({ source: roomList });
-        $("#watchRoomsBridge").autocomplete({ source: roomList });
-        $("#ignoreListBridge").autocomplete({ source: userList });
+          $("#defaultRoom").autocomplete({ source: fimApi.acHelper('rooms') });
+        $("#watchRoomsBridge").autocomplete({ source: fimApi.acHelper('rooms') });
+        $("#ignoreListBridge").autocomplete({ source: fimApi.acHelper('users') });
 
         // Populate Fontface Checkbox
         for (i in window.serverSettings.formatting.fonts) {
@@ -723,8 +723,8 @@ popup = {
       tabs : true,
       oF : function() {
         /* Autocomplete Users and Groups */
-        $("#moderatorsBridge").autocomplete({ source: userList });
-        $("#allowedUsersBridge").autocomplete({ source: userList });
+        $("#moderatorsBridge").autocomplete({ source: fimApi.acHelper('users') });
+        $("#allowedUsersBridge").autocomplete({ source: fimApi.acHelper('users') });
         $("#allowedGroupsBridge").autocomplete({ source: groupList });
 
         $('#allowAllUsers').change(function() {
@@ -897,9 +897,7 @@ popup = {
       id : 'privateRoomDialogue',
       width : 1000,
       oF : function() {
-        $('#userName').autocomplete({
-          source: userList
-        });
+        $('#userName').autocomplete({source: fimApi.acHelper('users')});
 
         $("#privateRoomForm").submit(function() {
           standard.privateRoom({

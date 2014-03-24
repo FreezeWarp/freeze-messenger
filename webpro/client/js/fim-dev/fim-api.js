@@ -335,6 +335,27 @@ window.fimApi = {
   },
 
 
+  acHelper : function(list) {
+    return function acHelper_query(search, callback) {
+      $.ajax({
+        type: 'get',
+        url: directory + 'api/acHelper.php',
+        data: {
+          'fim3_sessionHash' : window.sessionHash,
+          'fim3_userId' :  window.userId,
+          'fim3_format' : 'json',
+          'list' : list,
+          'search' : search.term
+        },
+        success : function(json) {
+          callback(json.acHelper.entries);
+          console.log(json);
+        }
+      });
+    }
+  },
+
+
 
   mergeDefaults : function(object, defaults) {
     for (var i in defaults) {

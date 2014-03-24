@@ -40,7 +40,7 @@ switch ($request['list']) {
 
 /* Data Predefine */
 $xmlData = array(
-  'editRoom' => array(
+  'acHelper' => array(
     'activeUser' => array(
       'userId' => (int) $user['userId'],
       'userName' => $user['userName'],
