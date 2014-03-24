@@ -34,7 +34,7 @@ switch ($request['list']) {
     ))->getColumnValues('roomName');
      break;
 
-}var_dump($entries); die();
+}
 
 
 
