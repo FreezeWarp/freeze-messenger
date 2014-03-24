@@ -363,7 +363,7 @@
 
 
       <key name="roomId" type="primary" />
-      <key name="roomAlias" type="unique" />
+      <key name="roomAlias" type="index" />
       <key name="roomNameSearchable" type="index" />
       <key name="options" type="index" />
       <key name="owner" type="index" />

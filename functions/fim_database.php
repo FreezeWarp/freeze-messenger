@@ -163,28 +163,13 @@ class fimDatabase extends databaseSQL
     $censorListsReturn = array();
 
     $censorLists = $this->getCensorLists(array(
-      'listIds' => $request['lists'],
-    ))->getAsArray(array('listId', 'roomId'));
+      'roomIds' => array($roomId),
+    ))->getAsArray(array('listId'));
 
-    foreach ($censorLists AS $listId => $lists) { // Run through each censor list retrieved.
-      foreach ($lists AS $roomId => $list) {
-        if (!isset($censorListsReturn[$list['listId']])) {
-          $censorListsReturn[$list['listId']] = array(
-            'listId' => (int) $list['listId'],
-            'listName' => ($list['listName']),
-            'listType' => ($list['listType']),
-            'options' => (int) $list['options'],
-            'words' => array(),
-            'roomStatuses' => array(),
-          );
-        }
+    foreach ($censorLists AS $listId => $list) { // Run through each censor list retrieved.
+      if ($list['status'] === 'unblock' || $list['listType'] === 'black') continue;
 
-
-        $censorListsReturn['lists']['list ' . $list['listId']]['roomStatuses'][$roomId] = array(
-          'roomId' => $roomId,
-          'status' => $list['status'],
-        );
-      }
+      $censorListsReturn[$list['listId']] = $list;
     }
 
     return $censorListsReturn;
@@ -233,6 +218,36 @@ class fimDatabase extends databaseSQL
     return $this->getCensorWords(array(
       'wordIds' => array($censorWordId)
     ))->getAsArray(false);
+  }
+
+
+  public function getCensorWordsActive($roomId, $types = array('replace')) {
+    return $this->getCensorWords(array(
+      'listIds' => array_keys($this->getCensorListsActive($roomId)),
+      'severities' => $types
+    ));
+  }
+
+
+
+  /*
+   * Automatically censors text using censorWords based on replace.
+   * @TODO: Update to remove noparse, and maybe the other stuff. I'm not really sure.
+   */
+  public function censorParse($text, $roomId = 0, $roomOptions) {
+    global $sqlPrefix, $slaveDatabase, $config, $generalCache;
+
+    $searchText = array();
+    $words2 = array();
+
+    foreach ($this->getActiveCensorWords($roomId, array('replace'))->getAsArray(true) AS $word) {
+      $words2[strtolower($word['word'])] = $word['param'];
+      $searchText[] = addcslashes(strtolower($word['word']),'^&|!$?()[]<>\\/.+*');
+    }
+
+    $searchText2 = implode('|', $searchText);
+
+    return preg_replace("/(?<!(\[noparse\]))(?<!(\quot))($searchText2)(?!\[\/noparse\])/ie","fim_indexValue(\$words2,strtolower('\\3'))", $text);
   }
 
 
@@ -610,25 +625,21 @@ class fimDatabase extends databaseSQL
     );
 
 
-
-
     $this->select($columns, $conditions, $sort);
-
-
   }
 
 
 
-  public function getPermissions($rooms = array())
+  public function getPermissions($rooms = array(), $attribute = false, $params = array())
   {
     // Modify Query Data for Directives (First for Performance)
     $columns = array(
       $this->sqlPrefix . "roomPermissions" => 'roomId, attribute, param, permissions',
     );
 
-    if (count($rooms) > 0) {
-      $conditions['both']['roomId'] = $this->in((array) $rooms);
-    }
+    if (count($rooms) > 0) $conditions['both']['roomId'] = $this->in((array) $rooms);
+    if ($attribute) $conditions['both']['attribute'] = $this->str($attribute);
+    if (count($params) > 0) $conditions['both']['param'] = $this->in((array) $params);
 
     return $this->select($columns, $conditions);
   }
@@ -835,10 +846,19 @@ class fimDatabase extends databaseSQL
   }
 
 
-
+  /**
+   * Modify or create a room.
+   * @internal The row will be set to a merge of roomDefaults->existingRow->specifiedOptions.
+   *
+   * @param $roomId - The ID of the room. Set false if creating a new room
+   * @param $options - Corresponds mostly with room columns, though the options tag is seperted.
+   *
+   * @return bool|resource
+   */
   public function editRoom($roomId, $options) {
     $options = array_merge(array(
       'roomName' => '',
+      'roomAlias' => '',
       'roomType' => 'general',
       'owner' => 0,
       'defaultPermissions' => 0,
@@ -848,22 +868,27 @@ class fimDatabase extends databaseSQL
       'hiddenRoom' => false,
       'archivedRoom' => false,
       'deleted' => false,
-    ), $options);
+    ), $this->getRoom(array(
+      'roomIds' => array($roomId)
+    ))->getAsArray(false), $options);
 
     $optionsField = $this->generateBitfield(array(
       ROOM_OFFICIAL => $options['officialRoom'],
       ROOM_DELEETED => $options['deleted'],
       ROOM_HIDDEN => $options['hiddenRoom'],
-      ROOM_ARCHIVED => $optiions['archivedRoom'],
+      ROOM_ARCHIVED => $options['archivedRoom'],
     ));
 
     $columns = array(
       'roomName' => $options['roomName'],
+      'roomNameSearchable' => fim_makeSearchable($options['roomName']), // TODO
+      'roomAlias' => $options['roomAlias'],
+      'roomType' => $options['roomType'],
       'owner' => (int) $options['owner'],
       'defaultPermissions' => (int) $options['defaultPermissions'],
       'roomParentalAge' => $options['roomParentalAge'],
       'roomParentalFlags' => implode(',', $options['roomParentalFlags']),
-      'optionsField' => $optionsField
+      'options' => $optionsField
     );
 
     if (!$roomId) {
@@ -883,6 +908,8 @@ class fimDatabase extends databaseSQL
       'userIds' => $userIds
     ))->getColumnValues('userName');
 
+    if (count($userNames) !== count($userIds)) throw new Exception('Invalid userIds in createPrivateRooms().');
+
     $roomId = $this->editRoom(false, array(
       'roomType' => 'private',
       'roomAlias' => $roomAlias,
@@ -898,7 +925,7 @@ class fimDatabase extends databaseSQL
 
 
   public function setPermission($roomId, $attribute, $param, $permissionsMask) {
-    $this->insert('roomPermissions', array(
+    $this->insert($this->sqlPrefix . 'roomPermissions', array(
       'roomId' => $roomId,
       'attribute' => $attribute,
       'psram' => $param,
@@ -1258,6 +1285,14 @@ class fimDatabase extends databaseSQL
 //    $string = str_replace($escapeChar . $delimiter, fim_encodeEntities($delimiter), $string);
 //    return array_map('fim_decodeEntities', explode($delimiter, $string));
 //  }
+
+  public function generateBitfield($array) {
+    $bitfield = 0;
+
+    foreach ($array AS $bit => $true) {
+      if ($true)  $bitfield += $bit;
+    }
+  }
 }
 
 ?>

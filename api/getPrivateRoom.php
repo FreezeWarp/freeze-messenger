@@ -66,20 +66,25 @@ else {
   /* Get Rooms From Database */
   if (!in_array($user['userId'], $request['userIds'])) $request['userIds'][] = $user['userId']; // The active user is automatically added if not specified. This is to say, this API can _not_ be used to obtain a private room that doesn't involve a user (for administrative purposes, for instance). getRooms.php can be used for this by querying roomAlias.
 
-  $privateAlias = fim_getPrivateRoomAlias($request['userIds']);
+  if (count($request['userIds']) < 2) {
+    $errStr = 'noUsers';
+  }
+  else {
+    $privateAlias = fim_getPrivateRoomAlias($request['userIds']);
 
-  $room = $database->getRooms(array(
-    'roomAliases' => array($privateAlias),
-  ))->getAsArray(false);
+    $room = $database->getRooms(array(
+      'roomAliases' => array($privateAlias),
+    ))->getAsArray(false);
 
 
-  if (!count($room)) $roomId = $database->createPrivateRoom($privateAlias, $request['userIds']);
+    if (!count($room)) $roomId = $database->createPrivateRoom($privateAlias, $request['userIds']);
+    else $roomId = $room['roomId'];
 
 
-
-  /* Process Rooms Obtained from Database */
-  $xmlData['getPrivateRoom']['roomAlias'] = $privateAlias;
-  $xmlData['getPrivateRoom']['roomId'] = $roomId;
+    /* Process Rooms Obtained from Database */
+    $xmlData['getPrivateRoom']['roomAlias'] = $privateAlias;
+    $xmlData['getPrivateRoom']['roomId'] = $roomId;
+  }
 }
 
 

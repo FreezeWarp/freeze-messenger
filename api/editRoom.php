@@ -73,8 +73,7 @@
 $apiRequest = true;
 
 require('../global.php');
-
-
+$database->censorParse('aaaaa', 4); die('b');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
@@ -265,17 +264,12 @@ if (!$errStr) {
           'roomParentalFlags' => implode(',', $request['parentalFlags']),
         );
 
-        if (isset($request['officialRoom']) && $config['officialRooms'] && $user['adminDefs']['modRooms']) {
+        if (isset($request['officialRoom']) && $config['officialRooms'] && $user['adminDefs']['modRooms'])
           $columns['officialRoom'] = $request['officialRoom'];
-        }
-
-        if (isset($request['hiddenRoom']) && $config['hiddenRooms']) {
+        if (isset($request['hiddenRoom']) && $config['hiddenRooms'])
           $columns['hiddenRoom'] = $request['hiddenRoom'];
-        }
-
-        if ($request['action'] === 'create') {
-          $columns['owner'] = (int) $user['userId'],
-        }
+        if ($request['action'] === 'create')
+          $columns['owner'] = (int) $user['userId'];
 
 
         /* Submit */

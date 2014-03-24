@@ -39,7 +39,7 @@ require('../global.php');
 $request = fim_sanitizeGPC('g', array(
   'roomIds' => array(
     'default' => '',
-    'cast' => 'csv',
+    'cast' => 'jsonList',
     'filter' => 'int',
     'evaltrue' => true,
   ),
@@ -51,7 +51,7 @@ $request = fim_sanitizeGPC('g', array(
 
   'userIds' => array(
     'default' => '',
-    'cast' => 'csv',
+    'cast' => 'jsonList',
     'filter' => 'int',
     'evaltrue' => true,
   ),

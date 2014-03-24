@@ -381,6 +381,19 @@ function fim_encrypt($data) {
 
 
 
+function fim_makeSearchable($string) {
+  global $config;
+
+  $string = str_replace(array_values($config['romanisation']), array_keys($config['romanisation']), $string);
+  $string = str_replace($config['searchWordPunctuation'], ' ', $string); // Get rid of punctuation.
+  $string = preg_replace('/\s+/', ' ', $string);
+  $string = strtolower($string); // Lowercase the string.
+
+  return $string;
+}
+
+
+
 
 
 
