@@ -73,7 +73,6 @@
 $apiRequest = true;
 
 require('../global.php');
-$database->censorParse('aaaaa', 4); die('b');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
