@@ -361,27 +361,19 @@ popup = {
 
         fimApi.getStats({
           'roomIds' : [window.roomId] // TODO
-        }, {'each' : function(active) {
-          var roomName = active.roomData.roomName,
-            roomId = active.roomData.roomId;
+        }, {
+          'each' : function(active) { console.log(active);
+            $('table#viewStats > thead > tr').append('<th>' + active.roomData.roomName + '</th>');
 
-          $('table#viewStats > thead > tr').append('<th>' + roomName + '</th>');
+            var i = 0;
 
-          i = 1;
+            for (var j in active.users) {
+              $('table#viewStats > tbody > tr').eq(i).append('<td><span class="userName userNameTable" data-userId="' + active.users[j].userData.userId + '">' + active.users[j].userData.startTag + active.users[j].userData.userName + active.users[j].userData.endTag + '</span> (' + active.users[j].messageCount + ')</td>');
 
-          for (j in active.users) {
-            var userName = active.users[j].userData.userName,
-              userId = active.users[j].userData.userId,
-              startTag = active.users[j].userData.startTag,
-              endTag = active.users[j].userData.endTag,
-              position = active.users[j].position,
-              messageCount = active.users[j].messageCount;
-
-            $('table#viewStats > tbody > tr').eq(i - 1).append('<td><span class="userName userNameTable" data-userId="' + userId + '">' + startTag + userName + endTag + '</span> (' + messageCount + ')</td>');
-
-            i++;
+              i++;
+            }
           }
-        }});
+        });
       }
     });
   },

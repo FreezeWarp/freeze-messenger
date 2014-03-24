@@ -77,7 +77,7 @@ $totalPosts = $database->getPostStats(array(
 //var_dump($totalPosts);
 
 foreach ($totalPosts AS $room) {
-  foreach ($room AS $position => $totalPoster) {
+  foreach ($room AS $roomId => $totalPoster) {
     if (!fim_hasPermission($totalPoster, $totalPoster, 'view', true)) { // Users must be able to view the room to see the respective post counts.
       continue;
     }
@@ -100,7 +100,6 @@ foreach ($totalPosts AS $room) {
         'endTag' => ($totalPoster['userFormatEnd']),
       ),
       'messageCount' => (int) $totalPoster['messages'],
-      'position' => (int) $position,
     );
   }
 }

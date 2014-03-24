@@ -214,7 +214,7 @@ window.fimApi = {
         cache: requestSettings.cache
       }).done(function(json) {
         requestSettings.begin(json);
-        $.each(json.getStats.stats, function(index, value) { requestSettings.each(value); });
+        $.each(json.getStats.roomStats, function(index, value) { requestSettings.each(value); });
         requestSettings.end(json);
       });
     }
