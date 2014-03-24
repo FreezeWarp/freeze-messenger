@@ -953,8 +953,7 @@ class fimDatabase extends databaseSQL
       $messageText = $this->emotiParse($messageText);
     }
 
-    list($messageTextEncrypted, $iv, $saltNum) = $this->getEncrypted($messageText);
-
+    list($messageTextEncrypted, $encryptIV, $encryptSalt) = $this->getEncrypted($messageText);
 
 
     /* Generate (and Insert) Key Words */
