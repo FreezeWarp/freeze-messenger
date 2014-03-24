@@ -73,9 +73,7 @@ else {
   ))->getAsArray(false);
 
 
-  if (!count($room)) {
-    $roomId = $database->createPrivateRoom($request['userIds'])->insertId;
-  }
+  if (!count($room)) $roomId = $database->createPrivateRoom($privateAlias, $request['userIds']);
 
 
 

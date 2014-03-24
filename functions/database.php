@@ -865,6 +865,18 @@ class databaseResult {
   }
 
 
+
+  public function getColumnValues($column) {
+    $columnValues = array();
+
+    while ($row = $this->functionMap('fetchAsArray', $this->queryData)) {
+      $columnValues[] = $row[$column];
+    }
+
+    return $columnValues;
+  }
+
+
   /**
    * Get the database object as a string, using the specified format/template. Each result will be passed to this template and stored in a string, which will be appended to the entire result.
    *

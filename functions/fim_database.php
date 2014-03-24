@@ -839,14 +839,23 @@ class fimDatabase extends databaseSQL
   public function editRoom($roomId, $options) {
     $options = array_merge(array(
       'roomName' => '',
+      'roomType' => 'general',
       'owner' => 0,
       'defaultPermissions' => 0,
       'roomParentalAge' => 0,
       'roomParentalFlags' => array(),
       'officialRoom' => false,
       'hiddenRoom' => false,
+      'archivedRoom' => false,
       'deleted' => false,
     ), $options);
+
+    $optionsField = $this->generateBitfield(array(
+      ROOM_OFFICIAL => $options['officialRoom'],
+      ROOM_DELEETED => $options['deleted'],
+      ROOM_HIDDEN => $options['hiddenRoom'],
+      ROOM_ARCHIVED => $optiions['archivedRoom'],
+    ));
 
     $columns = array(
       'roomName' => $options['roomName'],
@@ -854,19 +863,49 @@ class fimDatabase extends databaseSQL
       'defaultPermissions' => (int) $options['defaultPermissions'],
       'roomParentalAge' => $options['roomParentalAge'],
       'roomParentalFlags' => implode(',', $options['roomParentalFlags']),
-      'options' => $options,
+      'optionsField' => $optionsField
     );
 
     if (!$roomId) {
-      $this->insert($this->sqlPrefix . "rooms", $columns);
-
-      return $this->insertId;
+      return $this->insert($this->sqlPrefix . "rooms", $columns)->insertId;
     }
     else {
       return $this->update($this->sqlPrefix . "rooms", $columns, array(
         'roomId' => $roomId,
       ));
     }
+  }
+
+
+
+  public function createPrivateRoom($roomAlias, $userIds) {
+    $userNames = $this->getUsers(array(
+      'userIds' => $userIds
+    ))->getColumnValues('userName');
+
+    $roomId = $this->editRoom(false, array(
+      'roomType' => 'private',
+      'roomAlias' => $roomAlias,
+      'roomName' => 'Private Conversation Between ' . implode(', ', $userNames),
+      'defaultPermissions' => 0
+    ));
+
+    foreach ($userIds AS $userId) $this->setPermission($roomId, 'user', $userId, ROOM_PERMISSION_VIEW + ROOM_PERMISSION_POST + ROOM_PERMISSION_TOPIC); // Note: Originally, I had intentioned that this would be automatic. Right now, it is not, but it would be fairly easy to remedy by adding the appropriate code to hasPermission. For now, I think it would be best to do both in some regard.
+
+    return $roomId;
+  }
+
+
+
+  public function setPermission($roomId, $attribute, $param, $permissionsMask) {
+    $this->insert('roomPermissions', array(
+      'roomId' => $roomId,
+      'attribute' => $attribute,
+      'psram' => $param,
+      'permissions' => $permissionsMask
+    ), array(
+      'permissions' => $permissionsMask
+    ));
   }
 
 
@@ -882,6 +921,8 @@ class fimDatabase extends databaseSQL
       ));
     }
   }
+
+
 
   /**
    * Sends a message. Requires the database to be active.
