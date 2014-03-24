@@ -1352,7 +1352,7 @@ class fimDatabase extends databaseSQL
     $searchText = array();
     $words2 = array();
 
-    foreach ($this->getActiveCensorWords($roomId, array('replace'))->getAsArray(true) AS $word) {
+    foreach ($this->getCensorWordsActive($roomId, array('replace'))->getAsArray(true) AS $word) {
       $words2[strtolower($word['word'])] = $word['param'];
       $searchText[] = addcslashes(strtolower($word['word']),'^&|!$?()[]<>\\/.+*');
     }

@@ -67,11 +67,7 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
   /* END COMPILE VERBOSE */
 
   if ($roomData['roomType'] === 'otr' || $roomData['roomType'] === 'private') { // We are doing this in hasPermission itself to allow for hooks that might, for instance, deny permission to certain users based on certain criteria.
-    /* START COMPILE VERBOSE */
-    if (!isset($roomData['roomUsersList'])) throw new Exception('hasPermission requires roomData[roomUsersList] to be defined.');
-    /* END COMPILE VERBOSE */
-
-    if (in_array($userData['userId'], $roomData['roomUsersList'])) { // The logic with private rooms is fairly self-explanatory: if the user is in the roomUsersList, they're allowed. Otherwise, nope.
+    if (in_array($userData['userId'], fim_reversePrivateRoomAlias($roomData['roomAlias']))) { // The logic with private rooms is fairly self-explanatory: roomAlias lists all valid userIds, so check to see if the user is in there.
       if ($quick) return true;
       else return array(true, '', 0);
     }
@@ -256,6 +252,10 @@ function fim_getPrivateRoomAlias($userIds) {
   sort($userIds);
 
   return 'p' . implode(',', $userIds);
+}
+
+function fim_reversePrivateRoomAlias($roomAlias) {
+  return explode(',', substr($roomAlias, 1));
 }
 
 
