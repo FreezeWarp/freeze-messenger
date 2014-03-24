@@ -521,8 +521,7 @@ class fimDatabase extends databaseSQL
       'messageIdEnd'      => 0,
       'messageDateMax'    => 0,
       'messageDateMin'    => 0,
-      'archive'           => false,
-      'longPolling'       => false
+      'archive'           => false
     ), $options);
 
 
@@ -589,21 +588,6 @@ class fimDatabase extends databaseSQL
 
 
     $messages = $this->select($columns, $conditions, $sort);
-
-
-    if ($options['longPolling']) {
-      $longPollingRetries = 0;
-
-      while (!count($messages->getAsArray(true))) { // This could be a little inefficient, but is probably fine. Might be worth testing (e.g. replace with ->resultCount or something.
-        $longPollingRetries++;
-
-        $messages = $this->select($columns, $conditions, $sort);
-
-        if ($longPollingRetries <= $config['longPollingMaxRetries']) {
-          sleep($config['longPollingWait']);
-        } else break;
-      }
-    }
 
 
     return $messages;

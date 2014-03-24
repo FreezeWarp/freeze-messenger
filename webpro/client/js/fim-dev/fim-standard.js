@@ -58,11 +58,12 @@ var standard = {
         'search' : standard.archive.options.searchText,
         'messageIdEnd' : standard.archive.options.lastMessage,
         'messageIdStart' : standard.archive.options.firstMessage,
-        'archive' : 1
-      }, function(messageData) {
+        'archive' : 1,
+        'sortOrder' : 'desc'
+      }, {'each' : function(messageData) {
         $('#archiveMessageList').append(fim_messageFormat(messageData, 'table'));
         standard.archive.messageData[messageData.messageId] = messageData;
-      });
+      }});
     },
 
     update : function (option, value) {
@@ -297,21 +298,21 @@ var standard = {
         }, false);
       }
       else {
-        // TODO: basically, this is a minimal version of the polling call. It actually could work quite well if all of our get*() calls include their own retry code (which is missing here), and thus that is my current plan. Waiting on this, this version will suffice.
         fimApi.getMessages({
           'roomId' : roomId,
           'archive' : (requestSettings.firstRequest ? 1 : 0),
           'messageIdStart' : requestSettings.lastMessage + 1
-        }, function(messageData) {
-          var messageId = Number(active[i].messageData.messageId);
-          data = fim_messageFormat(active[i], 'list');
+        }, {
+          'each' : function(messageData) {
+            var messageId = Number(messageData.messageId),
+              data = fim_messageFormat(messageData, 'list');
 
-          if ($.inArray(messageId, messageIndex)) { } // Double post hack
-          else { fim_newMessage(data, messageId); }
+            if ($.inArray(messageId, messageIndex)) { } // Double post hack
+            else { fim_newMessage(data, messageId); }
 
-          messageCount++;
-        }, function() {
-          timers.t1 = setTimeout(standard.getMessages, 2500);
+            window.messageCount++;
+          },
+          'refresh' : 5000 // Todo: implement progressive refresh
         });
       }
     }
@@ -384,7 +385,7 @@ var standard = {
       fimApi.getRooms({
         'roomIds' : [roomIdLocal],
         'permLevel' : 'view'
-      }, function(roomData) {
+      }, {'each' : function(roomData) {
         if (!roomData.permissions.canView) { // If we can not view the room
           window.roomId = false; // Set the internal roomId false.
           popup.selectRoom(); // Prompt the user to select a new room.
@@ -419,7 +420,7 @@ var standard = {
             windowDynaLinks();
           });
         }
-      });
+      }});
     }
   },
 
@@ -453,23 +454,6 @@ var standard = {
 
   /* TODO */
   privateRoom : function(params) {
-    var userId;
-
-    if (userName in params) {
-      fimApi.getUsers({
-        'userNames' : [params.userName]
-      }, function(userData) {
-        params.userId = userData.userId;
-      }, false);
-    }
-
-    if (params.userId === window.userId) { dia.error('You can\'t talk to yourself...'); }
-    else if (!userLocalId) { dia.error('You have not specified a user.'); }
-    else if (!userPermissions.privateRoom) { dia.error('You do not have permission to talk to users privately.'); }
-    else {
-    }
-
-    return false;
   },
 
 

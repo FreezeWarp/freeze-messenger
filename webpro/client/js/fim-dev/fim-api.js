@@ -1,4 +1,6 @@
-fimApi = {
+"use strict";
+
+window.fimApi = {
   requestDefaults : {
     'close' : false,
     'timerId' : 1,
@@ -20,63 +22,76 @@ fimApi = {
    * @copyright Joseph T. Parsons 2012
    *
    */
-  getUsers : function(params, callback, async) {
-    var data = {
+  getUsers : function(params, requestSettings, async) {
+    var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['userIds']), {
       'fim3_sessionHash' : window.sessionHash,
       'fim3_userId' :  window.userId,
-      'fim3_format' : 'json'
-    };
-
-    if (typeof async === 'undefined') async = true;
-
-    if ('userIds' in params) data['users'] = JSON.stringify(params.userIds);
-    else if ('userNames' in params) data['userNames'] = JSON.stringify(params.userNames);
-    else throw "getUser() function requires either userIds or userNames in params"; // Error
-
-    $.ajax({
-      type: 'get',
-      url: directory + 'api/getUsers.php',
-      data: data,
-      timeout: 5000,
-      cache: false,
-      async: async
-    }).done(function(json) {
-      $.each(json.getUsers.users, function(index, value) { console.log(value);
-        if (!(value.userId in window.userData)) window.userData[value.userId] = value;
-        else {
-          for (prop in value) window.userData[value.userId][prop] = value[prop];
-        }
-
-        callback(value);
-      });
+      'fim3_format' : 'json',
+      'userIds' : '',
+      'userNames' : '',
+      'userNameSearch' : ''
     });
+
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+    function getUsers_query() {
+      $.ajax({
+        type: 'get',
+        url: directory + 'api/getUsers.php',
+        data: params,
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache
+      }).done(function(json) {
+        /*$.each(json.getUsers.users, function(index, value) { console.log(value);
+          if (!(value.userId in window.userData)) window.userData[value.userId] = value;
+          else {
+            for (var prop in value) window.userData[value.userId][prop] = value[prop];
+          }
+
+          callback(value);
+        });*/
+
+        requestSettings.begin(json);
+        $.each(json.getRooms.rooms, function(index, value) { requestSettings.each(value); });
+        requestSettings.end(json);
+      });
+    }
   },
 
 
-  getRooms : function(params, callbackEach, callbackEnd) {
-    var data = {
+  getRooms : function(params, requestSettings) {
+    var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds']), {
       'fim3_sessionHash' : window.sessionHash,
       'fim3_userId' :  window.userId,
-      'fim3_format' : 'json'
-    };
-
-    if ('roomIds' in params) data['rooms'] = JSON.stringify(params.roomIds);
-    else if ('roomNames' in params) data['roomNames'] = JSON.stringify(params.roomNames);
-  //  else throw "getRooms() function requires either roomIds or roomNames in params"; // Error
-
-    $.ajax({
-      type: 'get',
-      url: directory + 'api/getRooms.php',
-      data: data,
-      timeout: 5000,
-      cache: false
-    }).done(function(json) {
-      $.each(json.getRooms.rooms, function(index, value) { console.log(value);
-        callbackEach(value);
-      });
-
-      callbackEnd();
+      'fim3_format' : 'json',
+      'roomIds' : '',
+      'roomNames' : '',
+      'roomNameSearch' : '',
+      'permLevel' : ''
     });
+
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+
+    function getRooms_query() {
+      $.ajax({
+        type: 'get',
+        url: directory + 'api/getRooms.php',
+        data: params,
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache
+      }).done(function(json) {
+        requestSettings.begin(json);
+        $.each(json.getRooms.rooms, function(index, value) { requestSettings.each(value); });
+        requestSettings.end(json);
+      });
+    }
+
+
+    if (requestSettings.close) clearInterval('getRooms_' + requestSettings.timerId);
+
+    getRooms_query();
+    if (requestSettings.refresh > -1) timers['getRooms_' + requestSettings.timerId] = setInterval(getRooms_query, requestSettings.refresh);
   },
 
 
@@ -101,111 +116,149 @@ fimApi = {
    }
    else {
    */
-  getMessages : function(params, callback) {
-    var data = {
+  getMessages : function(params, requestSettings) {
+    var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['userIds', 'messageIds']), {
       'fim3_sessionHash' : window.sessionHash,
       'fim3_userId' :  window.userId,
       'fim3_format' : 'json',
-      'archive' : (('archive' in params) ? params.archive : 1)
-    };
+      'roomId' : '',
+      'userIds' : '',
+      'messageIds' : '',
+      'messageIdEnd' : 0,
+      'messageIdStart' : 0,
+      'search' : 0,
+      'archive' : 0,
+      'sortOrder' : 'asc',
+    });
 
-    /* TODO: Uh... shouldn't this all just be a mergey thing? */
-    if ('roomId' in params) data['roomId'] = params.roomId;
-    else throw "getMessages() function requires roomId in params";
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
-    if ('userIds' in params) data['users'] = JSON.stringify(params.userIds);
 
-    if ('search' in params) data['search'] = params.search;
-
-    if ('messageIdEnd' in params) data['messageIdEnd'] = params.messageIdEnd;
-    if ('messageIdStart' in params) data['messageIdStart'] = params.messageIdStart;
-
-    $.ajax({
-      type: 'get',
-      url: directory + 'api/getMessages.php',
-      data: data,
-      timeout: 5000,
-      cache: false
-    }).done(function(json) {
-      $.each(json.getMessages.messages, function(index, value) { console.log(value);
-        callback(value);
+    function getMessages_query() {
+      $.ajax({
+        type: 'get',
+        url: directory + 'api/getMessages.php',
+        data: params,
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache
+      }).done(function(json) {
+        requestSettings.begin(json);
+        $.each(json.getMessages.messages, function(index, value) { requestSettings.each(value); });
+        requestSettings.end(json);
       });
-    });
+    }
+
+
+    if (requestSettings.close) clearInterval('getMessages_' + requestSettings.timerId);
+    else {
+      getMessages_query();
+      if (requestSettings.refresh > -1) timers['getMessages_' + requestSettings.timerId] = setInterval(getMessages_query, requestSettings.refresh);
+    }
   },
 
 
 
-  getFiles : function(params, callback) {
-    var data = {
-      'fim3_sessionHash' : sessionHash,
-      'fim3_userId' :  window.userId,
-      'fim3_format' : 'json'
-    };
-
-    if ('userIds' in params) data['users'] = JSON.stringify(params.userIds);
-    else throw "getFiles() function requires userId in params"; // Error
-
-    $.ajax({
-      url: directory + 'api/getFiles.php',
-      data: data,
-      type: 'get',
-      timeout: 5000,
-      cache: false
-    }).done(function(json) {
-      $.each(json.getFiles.files, function(index, value) { callback(value); });
-    });
-  },
-
-
-
-  getStats : function(params, callback) {
-    var data = {
+  getFiles : function(params, requestSettings) {
+    var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['userIds', 'fileIds']), {
       'fim3_sessionHash' : window.sessionHash,
       'fim3_userId' :  window.userId,
       'fim3_format' : 'json',
-      'number' : 10
-    };
-
-
-    if ('roomIds' in params) data['rooms'] = JSON.stringify(params.roomIds);
-    else throw "getStats() function requires roomId"; // Error
-
-
-    $.ajax({
-      url: directory + 'api/getStats.php',
-      data: data,
-      timeout: 5000,
-      type: 'get',
-      cache: false
-    }).done(function(json) {
-      $.each(json.getStats.roomStats, function(index, value) { callback(value); });
+      'userIds' : '',
+      'fileIds' : ''
     });
+
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+
+    function getFiles_query() {
+      $.ajax({
+        type: 'get',
+        url: directory + 'api/getFiles.php',
+        data: params,
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache
+      }).done(function(json) {
+        requestSettings.begin(json);
+        $.each(json.getFiles.files, function(index, value) { requestSettings.each(value); });
+        requestSettings.end(json);
+      });
+    }
+
+
+    if (requestSettings.close) clearInterval('getFiles_' + requestSettings.timerId);
+
+    getFiles_query();
+    if (requestSettings.refresh > -1) timers['getFiles_' + requestSettings.timerId] = setInterval(getFiles_query, requestSettings.refresh);
   },
 
 
 
-  getKicks : function(params, callback) {
-    var data = {
+  getStats : function(params, requestSettings) {
+    var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds']), {
       'fim3_sessionHash' : window.sessionHash,
       'fim3_userId' :  window.userId,
-      'fim3_format' : 'json'
-    };
-
-
-    if ('roomIds' in params) data['rooms'] = JSON.stringify(params.roomIds);
-    else if ('userIds' in params) data['users'] = JSON.stringify(params.userIds);
-    else throw "getKicks() function requires roomIds or userIds"; // Error
-
-
-    $.ajax({
-      type: 'get',
-      url: directory + 'api/getKicks.php',
-      data: data,
-      timeout: 5000,
-      cache: false
-    }).done(function(json) {
-      $.each(json.getKicks.kicks, function(index, value) { callback(value); });
+      'fim3_format' : 'json',
+      'roomIds' : '',
+      'number' : 10
     });
+
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+
+    function getStats_query() {
+      $.ajax({
+        type: 'get',
+        url: directory + 'api/getStats.php',
+        data: params,
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache
+      }).done(function(json) {
+        requestSettings.begin(json);
+        $.each(json.getStats.stats, function(index, value) { requestSettings.each(value); });
+        requestSettings.end(json);
+      });
+    }
+
+
+    if (requestSettings.close) clearInterval('getStats_' + requestSettings.timerId);
+
+    getStats_query();
+    if (requestSettings.refresh > -1) timers['getStats_' + requestSettings.timerId] = setInterval(getStats_query, requestSettings.refresh);
+  },
+
+
+
+  getKicks : function(params, requestSettings) {
+    var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds', 'userIds']), {
+      'fim3_sessionHash' : window.sessionHash,
+      'fim3_userId' :  window.userId,
+      'fim3_format' : 'json',
+      'roomIds' : '',
+      'userIds' : ''
+    });
+
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+
+    function getKicks_query() {
+      $.ajax({
+        type: 'get',
+        url: directory + 'api/getKicks.php',
+        data: params,
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache
+      }).done(function(json) {
+        requestSettings.begin(json);
+        $.each(json.getKicks.kicks, function(index, value) { requestSettings.each(value); });
+        requestSettings.end(json);
+      });
+    }
+
+
+    if (requestSettings.close) clearInterval('getKicks_' + requestSettings.timerId);
+
+    getKicks_query();
+    if (requestSettings.refresh > -1) timers['getKicks_' + requestSettings.timerId] = setInterval(getKicks_query, requestSettings.refresh);
   },
 
 
@@ -258,6 +311,7 @@ fimApi = {
 
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
+
     function getActiveUsers_query() {
       $.ajax({
         type: 'get',
@@ -274,9 +328,10 @@ fimApi = {
 
 
     if (requestSettings.close) clearInterval('getActiveUsers_' + requestSettings.timerId);
-
-    getActiveUsers_query();
-    if (requestSettings.refresh > -1) timers['getActiveUsers_' + requestSettings.timerId] = setInterval(getActiveUsers_query, requestSettings.refresh);
+    else {
+      getActiveUsers_query();
+      if (requestSettings.refresh > -1) timers['getActiveUsers_' + requestSettings.timerId] = setInterval(getActiveUsers_query, requestSettings.refresh);
+    }
   },
 
 
@@ -289,7 +344,7 @@ fimApi = {
     /*** START STRICT CODE -- NOT NECCESSARY IN PRODUCTION ***/
     for (var i in object) {
       if (!(i in defaults)) {
-        throw 'Invalid data in object call.';
+        throw 'Invalid data in object call: ' + i;
       }
     }
     /*** END STRICT CODE ***/

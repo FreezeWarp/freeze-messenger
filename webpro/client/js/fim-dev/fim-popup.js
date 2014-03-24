@@ -70,38 +70,40 @@ popup = {
       id : 'roomListDialogue',
       width: 1000,
       oF : function() {
-        fimApi.getRooms({
-        }, function(roomData) {
-          $('#roomTableHtml').append('<tr id="room' + roomData.roomId + '"><td><a href="#room=' + roomData.roomId + '">' + roomData.roomName + '</a></td><td>' + roomData.roomTopic + '</td><td>' + (roomData.isAdmin ? '<button data-roomId="' + roomData.roomId + '" class="editRoomMulti standard"></button><button data-roomId="' + roomData.roomId + '" class="deleteRoomMulti standard"></button>' : '') + '<button data-roomId="' + roomData.roomId + '" class="archiveMulti standard"></button><input type="checkbox" data-roomId="' + roomData.roomId + '" class="favRoomMulti" id="favRoom' + roomData.roomId + '" /><label for="favRoom' + roomData.roomId + '" class="standard"></label></td></tr>');
-        }, function() {
-          $('button.editRoomMulti, input[type=checkbox].favRoomMulti, button.archiveMulti, button.deleteRoomMulti').unbind('click'); // Prevent the below from being binded multiple times.
+        fimApi.getRooms({}, {
+          'each' : function(roomData) {
+            $('#roomTableHtml').append('<tr id="room' + roomData.roomId + '"><td><a href="#room=' + roomData.roomId + '">' + roomData.roomName + '</a></td><td>' + roomData.roomTopic + '</td><td>' + (roomData.isAdmin ? '<button data-roomId="' + roomData.roomId + '" class="editRoomMulti standard"></button><button data-roomId="' + roomData.roomId + '" class="deleteRoomMulti standard"></button>' : '') + '<button data-roomId="' + roomData.roomId + '" class="archiveMulti standard"></button><input type="checkbox" data-roomId="' + roomData.roomId + '" class="favRoomMulti" id="favRoom' + roomData.roomId + '" /><label for="favRoom' + roomData.roomId + '" class="standard"></label></td></tr>');
+          },
+          'end' : function() {
+            $('button.editRoomMulti, input[type=checkbox].favRoomMulti, button.archiveMulti, button.deleteRoomMulti').unbind('click'); // Prevent the below from being binded multiple times.
 
-          /* Favorites */
-          if ('favRooms' in roomLists) {
-            $('input[type=checkbox].favRoomMulti').each(function() {
-              if (roomLists.favRooms.indexOf($(this).attr('data-roomid')) !== -1) $(this).attr('checked', 'checked');
+            /* Favorites */
+            if ('favRooms' in roomLists) {
+              $('input[type=checkbox].favRoomMulti').each(function() {
+                if (roomLists.favRooms.indexOf($(this).attr('data-roomid')) !== -1) $(this).attr('checked', 'checked');
 
-              $(this).button({icons : {primary : 'ui-icon-star'}, text : false}).bind('change', function() {
-                if ($(this).is(':checked')) { standard.favRoom($(this).attr('data-roomId')); }
-                else { standard.unfavRoom($(this).attr('data-roomId')); }
+                $(this).button({icons : {primary : 'ui-icon-star'}, text : false}).bind('change', function() {
+                  if ($(this).is(':checked')) { standard.favRoom($(this).attr('data-roomId')); }
+                  else { standard.unfavRoom($(this).attr('data-roomId')); }
+                });
               });
+            }
+            else {
+              $('input[type=checkbox].favRoomMulti').remove();
+            }
+
+            $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}}).bind('click', function() {
+              popup.editRoom($(this).attr('data-roomId'));
+            });
+
+            $('button.archiveMulti').button({icons : {primary : 'ui-icon-note'}}).bind('click', function() {
+              popup.archive({roomId : $(this).attr('data-roomId')});
+            });
+
+            $('button.deleteRoomMulti').button({icons : {primary : 'ui-icon-trash'}}).bind('click', function() {
+              standard.deleteRoom($(this).attr('data-roomId'));
             });
           }
-          else {
-            $('input[type=checkbox].favRoomMulti').remove();
-          }
-
-          $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}}).bind('click', function() {
-            popup.editRoom($(this).attr('data-roomId'));
-          });
-
-          $('button.archiveMulti').button({icons : {primary : 'ui-icon-note'}}).bind('click', function() {
-            popup.archive({roomId : $(this).attr('data-roomId')});
-          });
-
-          $('button.deleteRoomMulti').button({icons : {primary : 'ui-icon-trash'}}).bind('click', function() {
-            standard.deleteRoom($(this).attr('data-roomId'));
-          });
         });
       }
     });
@@ -359,7 +361,7 @@ popup = {
 
         fimApi.getStats({
           'roomIds' : [window.roomId] // TODO
-        }, function(active) {
+        }, {'each' : function(active) {
           var roomName = active.roomData.roomName,
             roomId = active.roomData.roomId;
 
@@ -379,7 +381,7 @@ popup = {
 
             i++;
           }
-        });
+        }});
       }
     });
   },
@@ -417,7 +419,7 @@ popup = {
 
         fimApi.getUsers({
           'userIds' : [userId]
-        }, function(active) { console.log(active);
+        }, {'each' : function(active) { console.log(active);
           defaultColour = active.defaultFormatting.color;
           defaultHighlight = active.defaultFormatting.highlight;
           defaultFontface = active.defaultFormatting.fontface;
@@ -510,7 +512,7 @@ popup = {
           });
 
           // Default Room Value
-          fimApi.getRooms({'roomIds' : [defaultRoom]}, function(roomData) { $('#defaultRoom').val(roomData.roomName); })
+          fimApi.getRooms({'roomIds' : [defaultRoom]}, {'each' : function(roomData) { $('#defaultRoom').val(roomData.roomName); }});
 
           // Populate Existing Entries for Lists
           autoEntry.showEntries('ignoreList', ignoreList);
@@ -521,9 +523,7 @@ popup = {
             $('input[data-cat=parentalFlag][data-name=' + parentalFlags[i] + ']').attr('checked', true);
           }
           $('select#parentalAge option[value=' + parentalAge + ']').attr('selected', 'selected');
-
-          return false;
-        });
+        }});
 
 
         /* Update Default Form Values to Client Settings */
@@ -698,7 +698,7 @@ popup = {
       oF : function() {
         fimApi.getFiles({
           'userIds' : [window.userId]
-        }, function(active) {
+        }, {'each': function(active) {
           var fileName = active.fileName,
             md5hash = active.md5hash,
             sha256hash = active.sha256hash,
@@ -712,7 +712,7 @@ popup = {
           }
 
           $('#viewUploadsBody').append('<tr><td align="center"><img src="' + directory + 'file.php?sha256hash=' + sha256hash + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json" style="max-width: 200px; max-height: 200px;" /><br />' + fileName + '</td><td align="center">' + fileSizeFormatted + '</td><td align="center">' + $l('parentalAges.' + parentalAge) + '<br />' + parentalFlagsFormatted.join(', ') + '</td><td align="center"><button onclick="standard.changeAvatar(\'' + sha256hash + '\')">Set to Avatar</button></td></tr>');
-        });
+        }});
       }
     });
   },
@@ -792,7 +792,7 @@ popup = {
         if (roomIdLocal) {
           fimApi.getRooms({
             'roomIds' : [roomIdLocal]
-          }, function(roomData) {
+          }, {'each' : function(roomData) {
             var data = '',
               roomName = roomData.roomName,
               roomId = roomData.roomId,
@@ -825,7 +825,7 @@ popup = {
             if (allowedGroupsArray.length > 0) autoEntry.showEntries('allowedGroups', allowedGroupsArray);
 
             if (defaultPermissions == 7) $('#allowAllUsers').attr('checked', true); // If all users are currently allowed, check the box (which triggers other stuff above).
-          });
+          }});
         }
 
 
@@ -981,8 +981,10 @@ popup = {
         getKicks({
           'roomIds': ('roomId' in params ? params.roomId : [0]),
           'userIds': ('userId' in params ? params.userId : [0])
-        }, function(kick) {
-          $('#kickedUsers').append('<tr><td>' + kick.userData.userFormatStart + '<span class="userName userNameTable" data-userId="' + kick.userData.userId + '">' + kick.userData.userName + '</span>' + kick.userData.userFormatEnd + '</td><td>' + kick.kickerData.userFormatStart + '<span class="userName userNameTable" data-userId="' + kick.kickerData.userId + '">' + kick.kickerData.userName + '</span>' + kick.kickerData.userFormatEnd + '</td><td>' + fim_dateFormat(kick.set, true) + '</td><td>' + fim_dateFormat(kick.expires, true) + '</td><td><button onclick="standard.unkick(' + userId + ', ' + roomId + ')">Unkick</button></td></tr>');
+        }, {
+          'each' : function(kick) {
+            $('#kickedUsers').append('<tr><td>' + kick.userData.userFormatStart + '<span class="userName userNameTable" data-userId="' + kick.userData.userId + '">' + kick.userData.userName + '</span>' + kick.userData.userFormatEnd + '</td><td>' + kick.kickerData.userFormatStart + '<span class="userName userNameTable" data-userId="' + kick.kickerData.userId + '">' + kick.kickerData.userName + '</span>' + kick.kickerData.userFormatEnd + '</td><td>' + fim_dateFormat(kick.set, true) + '</td><td>' + fim_dateFormat(kick.expires, true) + '</td><td><button onclick="standard.unkick(' + userId + ', ' + roomId + ')">Unkick</button></td></tr>');
+          }
         });
       }
     });
@@ -1010,9 +1012,9 @@ popup = {
 
           fimApi.getUsers({
             'userNames' : [userName]
-          }, function(userData) {
+          }, {'each' : function(userData) {
             standard.kick(userData.userId, roomId, length);
-          })
+          }});
 
           return false; // Don't submit the form.
         });

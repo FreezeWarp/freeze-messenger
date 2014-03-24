@@ -73,25 +73,32 @@ $request = fim_sanitizeGPC('g', array(
     'require' => true,
   ),
 
-  'users' => array(
+  'userIds' => array(
     'default' => '',
     'cast' => 'csv',
     'filter' => 'int',
     'evaltrue' => true,
   ),
 
-  'messages' => array(
+  'messageIds' => array(
     'default' => '',
     'cast' => 'csv',
     'filter' => 'int',
     'evaltrue' => true,
   ),
 
-  'sort' => array(
+  'sortBy' => array(
     'valid' => array(
-      'roomId', 'roomName', 'smart',
+      'messageId',
     ),
-    'default' => 'roomId',
+    'default' => 'messageId',
+  ),
+
+  'sortOrder' => array(
+    'valid' => array(
+      'desc', 'asc'
+    ),
+    'default' => 'asc'
   ),
 
   'showDeleted' => array(
@@ -244,9 +251,10 @@ else {
       'messageTextSearch' => $request['search'],
       'archive' => $request['archive'],
       'longPolling' => $request['longPolling'],
-      'userIds' => $request['users'],
+      'userIds' => $request['userIds'],
       'roomIds' => $request['roomId'],
-    ))->getAsArray(true);
+      'messageIds' => $request['messageIds']
+    ), array($request['sortBy'] => $request['sortOrder']))->getAsArray(true);
 
 
     /* Process Messages */
