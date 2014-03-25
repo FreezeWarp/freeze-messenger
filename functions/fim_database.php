@@ -938,7 +938,7 @@ class fimDatabase extends databaseSQL
 
 
 
-  public function storeMessage($messageText, $flag, $userData, $roomData)
+  public function storeMessage($messageText, $messageFlag, $userData, $roomData)
   {
     global $config, $user, $generalCache;
 
@@ -956,12 +956,6 @@ class fimDatabase extends databaseSQL
     list($messageTextEncrypted, $encryptIV, $encryptSalt) = $this->getEncrypted($messageText);
 
 
-    /* Generate (and Insert) Key Words */
-    $keyWords = $this->getKeyWordsFromText($messageText);
-    $this->storeKeyWords($keyWords, $messageId, $userData['userId'], $roomData['roomId']);
-
-
-
     /* Insert Message Data */
     // Insert into permanent datastore.
     $this->insert($this->sqlPrefix . "messages", array(
@@ -972,10 +966,16 @@ class fimDatabase extends databaseSQL
       'salt'     => $encryptSalt,
       'iv'       => $encryptIV,
       'ip'       => $_SERVER['REMOTE_ADDR'],
-      'flag'     => $flag,
+      'flag'     => $messageFlag,
       'time'     => $this->now(),
     ));
     $messageId = $this->insertId;
+
+
+
+    /* Generate (and Insert) Key Words */
+    $keyWords = $this->getKeyWordsFromText($messageText);
+    $this->storeKeyWords($keyWords, $messageId, $userData['userId'], $roomData['roomId']);
 
 
 
@@ -1075,7 +1075,7 @@ class fimDatabase extends databaseSQL
       'defaultHighlight'  => $userData['defaultHighlight'],
       'defaultFontface'   => $userData['defaultFontface'],
       'text'              => $messageText,
-      'flag'              => $flag,
+      'flag'              => $messageFlag,
       'time'              => $this->now(),
     ));
     $messageId2 = $this->insertId;
@@ -1312,7 +1312,7 @@ class fimDatabase extends databaseSQL
     global $config, $sqlPrefix, $user;
 
     $puncList = array();
-    $string = fim_makeSearchable($this->messageText);
+    $string = fim_makeSearchable($text);
 
     $stringPieces = array_unique(explode(' ', $string));
     $stringPiecesAdd = array();
