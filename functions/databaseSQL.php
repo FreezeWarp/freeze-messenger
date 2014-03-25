@@ -357,7 +357,7 @@ class databaseSQL extends database {
 
     switch ($driver) {
       case 'mysqli':
-      if (PHP_VERSION_ID < 50209) { // if PHP_VERSION_ID isn't defined with versions < 5.2.7, but this obviously isn't a problem here.
+      if (PHP_VERSION_ID < 50209) { // if PHP_VERSION_ID isn't defined with versions < 5.2.7, but this obviously isn't a problem here (it will eval to 0, which is indeed less than 50209).
         throw new Exception('MySQLi not supported on versions of PHP < 5.2.9');
       }
       break;
