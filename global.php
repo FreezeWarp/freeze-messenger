@@ -130,7 +130,7 @@ define("USER_PRIV_POST_COUNTS", 2048);
 
 define("ADMIN_GRANT", 1);
 define("ADMIN_PROTECTED", 2);
-define("ADMIN_MODERATOR", 4);
+define("ADMIN_ROOMS", 4);
 define("ADMIN_VIEW_PRIVATE", 8);
 define("ADMIN_BAN", 16);
 define("ADMIN_FILES", 64);
@@ -282,22 +282,12 @@ require_once(dirname(__FILE__) . '/validate.php'); // This is where all the user
 
 
 
-////* Global Hook *////
-
-($hook = hook('global') ? eval($hook) : '');
-
-
-
 
 ////* Other Stuff *////
 
 if (defined('FIM_LOGINRUN')) {
-  if ($api && $banned) {
-    throw new Exception('The user has been banned.'); // This isn't technically an exception, but the API is designed to throw all quit errors with the exception schema.
-  }
+  if ($api && !$user['userPrivs']['allowed']) throw new Exception('The user has been banned.'); // This isn't technically an exception, but the API is designed to throw all quit errors with the exception schema.
 }
 
-if ($api && $config['compressOutput']) {
-  ob_start('fim_apiCompact');
-}
+if ($api && $config['compressOutput']) ob_start('fim_apiCompact');
 ?>

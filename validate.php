@@ -46,7 +46,6 @@ require(dirname(__FILE__) . '/functions/fim_uac.php');
 
 static $api, $goodVersion;
 
-$banned = false;
 $anonymous = false;
 $noSync = false;
 $userId = 0;
@@ -84,7 +83,7 @@ elseif (isset($_POST['userName'], $_POST['password']) || isset($_POST['userId'],
 
 
     foreach ($apiVersionList AS $version) {
-      $apiVersionSubs = explode(dirname(__FILE__) . '',$_POST['apiVersion']); // Break it up into subversions.
+      $apiVersionSubs = explode(dirname(__FILE__) . '', $_POST['apiVersion']); // Break it up into subversions.
       if (!isset($apiVersionSubs[1])) {
         $apiVersionSubs[1] = 0;
       }
@@ -817,12 +816,8 @@ if ($valid) { // If the user is valid, process their preferences.
 
 
 
-  if ($anonymous) {
-    $user['userName'] .= $anonId;
-  }
-  else {
-    define(FIM_ACTIVEUSERID, $user['userId']);
-  }
+  if ($anonymous) $user['userName'] .= $anonId;
+  else define(FIM_ACTIVEUSERID, $user['userId']);
 
 }
 
@@ -846,63 +841,43 @@ else {
 
 
 
+/* If certain features are disabled, remove user priviledges. The bitfields should be maintained, however, for when a feature is reenabled. */
+if (!$config['userRoomCreation']) $user['userPrivs'] &= ~USER_PRIV_CREATE_ROOMS;
+if (!$config['userPrivateRoomCreation']) $user['userPrivs'] &= ~(USER_PRIV_PRIVATE_ALL + USER_PRIV_PRIVATE_FRIENDS); // Note: does not disable the usage of existing private rooms. Use "disablePrivateRooms" for this.
 
 
-/* The following defines each individual user's options vian associative array. It is highly recommended this be used to referrence settings. */
+/* The following defines each individual user's options via an associative array. It is highly recommended this be used to reference settings. */
 
-if (is_array($loginConfig['superUsers'])) {
-  if (in_array($user['userId'],$loginConfig['superUsers'])) {
-    $user['adminPrivs'] = 65535; // Super-admin, away!!!! (this defines all bitfields up to 32768)
-  }
+if (is_array($loginConfig['superUsers']) && in_array($user['userId'], $loginConfig['superUsers'])) {
+  $user['adminPrivs'] = 65535; // Super-admin, away!!!! (this defines all bitfields up to 32768)
+  $user['userPrivs'] = 65535;
 }
 
 
 $user['adminDefs'] = array(
-  'modPrivs' => ($user['adminPrivs'] & 1), // This effectively allows a user to give himself everything else below
-  'modCore' => ($user['adminPrivs'] & 2), // This the "untouchable" flag, but that's more or less all it means.
-  'modUsers' => ($user['adminPrivs'] & 16), // Ban, Unban, etc.
-  'modRooms' => ($user['adminPrivs'] & 32), // Official room marking, etc.
-  'modFiles' => ($user['adminPrivs'] & 64), // File Uploads
-  'modCensor' => ($user['adminPrivs'] & 256), // Censor
+  'protected' => (bool) ($user['adminPrivs'] & ADMIN_PROTECTED), // This the "untouchable" flag, but that's more or less all it means.
+
+  'modPrivs' => (bool) ($user['adminPrivs'] & ADMIN_GRANT), // This effectively allows a user to give himself everything else below
+  'modRooms' => (bool) ($user['adminPrivs'] & ADMIN_GRANT + ADMIN_ROOMS), // Alter rooms -- kicking users, delete posts, and change hidden/official status
+  'modPrivate' => (bool) ($user['adminPrivs'] & ADMIN_GRANT + ADMIN_VIEW_PRIVATE), // View private communications.
+  'modUsers' => (bool) ($user['adminPrivs'] & ADMIN_GRANT + ADMIN_BAN), // Site-wide bans, mostly.
+  'modFiles' => (bool) ($user['adminPrivs'] & ADMIN_GRANT + ADMIN_FILES), // File Uploads
+  'modCensor' => (bool) ($user['adminPrivs'] & ADMIN_GRANT + ADMIN_CENSOR), // Censor
 
   /* Should Generally Go Together */
-  'modPlugins' => ($user['adminPrivs'] & 4096), // Plugins
-  'modTemplates' => ($user['adminPrivs'] & 8192), // Templates
-  'modHooks' => ($user['adminPrivs'] & 16384), // Hooks
+  'modPlugins' => (bool) ($user['adminPrivs'] & ADMIN_GRANT + ADMIN_PLUGINS), // Plugins
+  'modTemplates' => (bool) ($user['adminPrivs'] & ADMIN_GRANT + ADMIN_INTERFACES), // Templates
 );
 
 $user['userDefs'] = array(
-  'allowed' => ($user['userPrivs'] & 16), // Is not banned
-  'createRooms' => ($user['userPrivs'] & 32), // May create rooms
-  'privateRoomsFriends' => ($user['userPrivs'] & 64), // May create private rooms
-  'privateRoomsAll' => ($user['userPrivs'] & 64),
+  'allowed' => (bool) ($user['userPrivs'] & USER_PRIV_UNBANNED), // Is not banned
+  'createRooms' => (bool) ($user['userPrivs'] & USER_PRIV_CREATE_ROOMS), // May create rooms
+  'privateRoomsFriends' => (bool) ($user['userPrivs'] & USER_PRIV_PRIVATE_FRIENDS), // May create private rooms (friends only)
+  'privateRoomsAll' => ($user['userPrivs'] & USER_PRIV_PRIVATE_FRIENDS && $user['userPrivs'] & USER_PRIV_PRIVATE_ALL), // May create private rooms (anybody)
 
-  'roomsOnline' => ($user['userPrivs'] & 1024), // May see rooms online (API-handled).
-  'postCounts' => ($user['userPrivs'] & 2048), // May see post counts (API-handled).
+  'roomsOnline' => ($user['userPrivs'] & USER_PRIV_ACTIVE_USERS), // May see rooms online (API-handled).
+  'postCounts' => ($user['userPrivs'] & USER_PRIV_POST_COUNTS), // May see post counts (API-handled).
 );
-
-
-
-
-
-/* General "Hard" Ban Generation (If $banned == true, the user will have no permissions) */
-
-if ($valid) {
-
-  if (count($config['bannedUserGroups']) > 0) { // The user is in a usergroup that is banned.
-    if (fim_inArray($config['bannedUserGroups'], explode(',',$user['allGroups']))) {
-      $banned = true;
-    }
-  }
-  elseif (!$user['userDefs']['allowed']) { // The user is not allowed to access the chat.
-    $banned = true;
-  }
-
-  if ($user['adminDefs']['modCore']) { // The user is an admin, ignore the above.
-    $banned = false;
-  }
-
-}
 
 
 
@@ -913,7 +888,7 @@ if ($valid) {
 if ($api) {
 
   if (defined('LOGIN_FLAG')) {
-    switch (LOGIN_FLAG) { // Generate a message based no the LOGIN_FLAG constant (...thishould probably be a variable since it changes, but meh - it seems more logical asuch)
+    switch (LOGIN_FLAG) { // Generate a message based no the LOGIN_FLAG constant (...this should probably be a variable since it changes, but meh - it seems more logical asuch)
       case 'PASSWORD_ENCRYPT': $errDesc = 'The password encryption used was not recognized and could not be decoded.'; break;
       case 'BAD_USERNAME': $errDesc = 'The user was not recognized.'; break;
       case 'BAD_PASSWORD': $errDesc = 'The password was not correct.'; break;
@@ -965,7 +940,6 @@ if ($api) {
 
       'userPermissions' => $user['userDefs'],
       'adminPermissions' => $user['adminDefs'],
-      'banned' => $banned,
     ),
   );
 
@@ -977,5 +951,5 @@ if ($api) {
 }
 
 
-define('FIM_LOGINRUN',true);
+define('FIM_LOGINRUN', true);
 ?>
