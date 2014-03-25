@@ -12,6 +12,8 @@ window.fimApi = {
     'end' : function() {}
   },
 
+  timers : {},
+
   /**
    * Obtains one or more users.
    * This function is async.
@@ -88,10 +90,10 @@ window.fimApi = {
     }
 
 
-    if (requestSettings.close) clearInterval('getRooms_' + requestSettings.timerId);
+    if (requestSettings.close) clearInterval(fimApi.timers['getRooms_' + requestSettings.timerId]);
 
     getRooms_query();
-    if (requestSettings.refresh > -1) timers['getRooms_' + requestSettings.timerId] = setInterval(getRooms_query, requestSettings.refresh);
+    if (requestSettings.refresh > -1) fimApi.timers['getRooms_' + requestSettings.timerId] = setInterval(getRooms_query, requestSettings.refresh);
   },
 
 
@@ -149,10 +151,10 @@ window.fimApi = {
     }
 
 
-    if (requestSettings.close) clearInterval('getMessages_' + requestSettings.timerId);
+    if (requestSettings.close) clearInterval(fimApi.timers['getMessages_' + requestSettings.timerId]);
     else {
       getMessages_query();
-      if (requestSettings.refresh > -1) timers['getMessages_' + requestSettings.timerId] = setInterval(getMessages_query, requestSettings.refresh);
+      if (requestSettings.refresh > -1) fimApi.timers['getMessages_' + requestSettings.timerId] = setInterval(getMessages_query, requestSettings.refresh);
     }
   },
 
@@ -185,10 +187,10 @@ window.fimApi = {
     }
 
 
-    if (requestSettings.close) clearInterval('getFiles_' + requestSettings.timerId);
+    if (requestSettings.close) clearInterval(fimApi.timers['getFiles_' + requestSettings.timerId]);
 
     getFiles_query();
-    if (requestSettings.refresh > -1) timers['getFiles_' + requestSettings.timerId] = setInterval(getFiles_query, requestSettings.refresh);
+    if (requestSettings.refresh > -1) fimApi.timers['getFiles_' + requestSettings.timerId] = setInterval(getFiles_query, requestSettings.refresh);
   },
 
 
@@ -220,10 +222,10 @@ window.fimApi = {
     }
 
 
-    if (requestSettings.close) clearInterval('getStats_' + requestSettings.timerId);
+    if (requestSettings.close) clearInterval(fimApi.timers['getStats_' + requestSettings.timerId]);
 
     getStats_query();
-    if (requestSettings.refresh > -1) timers['getStats_' + requestSettings.timerId] = setInterval(getStats_query, requestSettings.refresh);
+    if (requestSettings.refresh > -1) fimApi.timers['getStats_' + requestSettings.timerId] = setInterval(getStats_query, requestSettings.refresh);
   },
 
 
@@ -255,10 +257,10 @@ window.fimApi = {
     }
 
 
-    if (requestSettings.close) clearInterval('getKicks_' + requestSettings.timerId);
+    if (requestSettings.close) clearInterval(fimApi.timers['getKicks_' + requestSettings.timerId]);
 
     getKicks_query();
-    if (requestSettings.refresh > -1) timers['getKicks_' + requestSettings.timerId] = setInterval(getKicks_query, requestSettings.refresh);
+    if (requestSettings.refresh > -1) fimApi.timers['getKicks_' + requestSettings.timerId] = setInterval(getKicks_query, requestSettings.refresh);
   },
 
 
@@ -291,10 +293,10 @@ window.fimApi = {
     }
 
 
-    if (requestSettings.close) clearInterval('getCensorLists_' + requestSettings.timerId);
+    if (requestSettings.close) clearInterval(fimApi.timers['getCensorLists_' + requestSettings.timerId]);
 
     getCensorLists_query();
-    if (requestSettings.refresh > -1) timers['getCensorLists_' + requestSettings.timerId] = setInterval(getCensorLists_query, requestSettings.refresh);
+    if (requestSettings.refresh > -1) fimApi.timers['getCensorLists_' + requestSettings.timerId] = setInterval(getCensorLists_query, requestSettings.refresh);
   },
 
 
@@ -311,7 +313,6 @@ window.fimApi = {
 
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
-
     function getActiveUsers_query() {
       $.ajax({
         type: 'get',
@@ -327,10 +328,10 @@ window.fimApi = {
     }
 
 
-    if (requestSettings.close) clearInterval('getActiveUsers_' + requestSettings.timerId);
+    if (requestSettings.close) clearInterval(fimApi.timers['getActiveUsers_' + requestSettings.timerId]);
     else {
       getActiveUsers_query();
-      if (requestSettings.refresh > -1) timers['getActiveUsers_' + requestSettings.timerId] = setInterval(getActiveUsers_query, requestSettings.refresh);
+      if (requestSettings.refresh > -1) fimApi.timers['getActiveUsers_' + requestSettings.timerId] = setInterval(getActiveUsers_query, requestSettings.refresh);
     }
   },
 

@@ -943,9 +943,11 @@ popup = {
           //contextMenuParseUser('#onlineUsers');
         }
       }),
-      cF : fimApi.getActiveUsers({}, {
-        'close' : true
-      })
+      cF : function() {
+        fimApi.getActiveUsers({}, {
+          'close' : true
+        })
+      }
     });
   },
 

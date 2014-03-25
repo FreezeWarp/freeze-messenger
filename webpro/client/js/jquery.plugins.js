@@ -1794,20 +1794,14 @@ var dia = {
       hide: "puff",
       buttons: {
         Confirm: function () {
-          if (typeof options['true'] !== 'undefined') {
-            options['true']();
-          }
+          if (typeof options['true'] !== 'undefined') options['true']();
 
           $(this).dialog("close");
-          return true;
         },
         Cancel: function () {
-          if (typeof options['false'] !== 'undefined') {
-            options['false']();
-          }
+          if (typeof options['false'] !== 'undefined') options['false']();s
 
           $(this).dialog("close");
-          return false;
         }
       }
     });
@@ -1829,10 +1823,6 @@ var dia = {
       options.content = '<img src="images/ajax-loader.gif" align="center" />';
       ajax = true;
     }
-    else if (!options.content) {
-      console.log('No content found for dialog; exiting.');
-      return false;
-    }
 
     if (typeof options.autoOpen !== 'undefined' && options.autoOpen === false) autoOpen = false;
     else autoOpen = true;
@@ -1843,7 +1833,7 @@ var dia = {
     if (options.height > windowHeight) options.height = windowHeight;
     else if (!options.height) options.height = "auto";
 
-    if (!options.position) options.position = 'center';
+    if (!options.position) options.position = 'top';
 
     dialogOptions = {
       height: options.height,
@@ -1855,18 +1845,11 @@ var dia = {
       position: options.position,
       autoOpen: autoOpen,
       open: function () {
-        if (typeof options.oF !== 'undefined') {
-          options.oF();
-        }
-        return false;
+        if (typeof options.oF !== 'undefined') options.oF();
       },
       close: function () {
         $('#' + options.id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
-        if (typeof options.cF !== 'undefined') {
-          options.cF();
-        }
-
-        return false;
+        if (typeof options.cF !== 'undefined') options.cF();
       }
     };
 
@@ -1899,12 +1882,8 @@ var dia = {
 
           dialog.html(content);
 
-          if (options.tabs) {
-            dialog.tabbedDialog(dialogOptions, tabsOptions);
-          }
-          else {
-            dialog.dialog(dialogOptions);
-          }
+          if (options.tabs) dialog.tabbedDialog(dialogOptions, tabsOptions);
+          else dialog.dialog(dialogOptions);
 
           windowDraw();
 
@@ -1923,12 +1902,8 @@ var dia = {
       });
     }
     else {
-      if (options.tabs) {
-        dialog.tabbedDialog(dialogOptions, tabsOptions);
-      }
-      else {
-        dialog.dialog(dialogOptions);
-      }
+      if (options.tabs) dialog.tabbedDialog(dialogOptions, tabsOptions);
+      else dialog.dialog(dialogOptions);
 
       windowDraw();
     }
