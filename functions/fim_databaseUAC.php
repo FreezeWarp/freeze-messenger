@@ -168,24 +168,6 @@ class fimDatabaseUAC extends fimDatabase {
     switch ($loginConfig['method']) {
       case 'vbulletin3':
       case 'vbulletin4':
-        if ($integrationUser['options'] & 64) { // DST is autodetect. We'll just set it by hand.
-          if ($generalCache->exists('fim_dst')) $dst = $generalCache->get('fim_dst');
-          else {
-            $currentDate = (int) (date('n') . date('d')); // Example: Janurary 1st would be 101, March 12th would be 312. Thus, every subsequent day is an increase numerically.
-
-            $dstStart = (int) ('3' . date('d', strtotime('second sunday of march')));
-            $dstEnd = (int) ('11' . date('d', strtotime('first sunday of november')));
-
-            if ($currentDate >= $dstStart && $currentDate < $dstEnd) $dst = true;
-            else $dst = false;
-
-            $generalCache->set('fim_dst', $dst, $config['dstRefresh']); // We only call this if using vBulletin because it only slows things down otherwise. In addition, we only check every hour. TODO speed test
-          }
-
-          if ($dst) $integrationUser['timeZone']++;
-        }
-        elseif ($integrationUser['options'] & 128) $integrationUser['timeZone']++; // DST is on, add an hour
-
         if ($user2['userGroup'] || $user2['userGroupAlt']) {
           $adminGroup = $this->getAdminGroup($integrationUser['userGroup'] ? $integrationUser['userGroup'] : $integrationUser['userGroupAlt']);
         }
