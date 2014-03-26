@@ -239,7 +239,7 @@
 
     <table name="messageIndex" type="general" comment="A pseudo-cache that indexes every x (usually 1000) messages made in a room, thus allowing faster lookup. It must be rebuilt if corrupted.">
       <column name="roomId" type="int" maxlen="6" comment="The ID of the room the message was made in." />
-      <column name="interval" type="int" maxlen="15" comment="The interval of messages in the room with which the message ID corrosponds ." />
+      <column name="interval" type="int" maxlen="15" comment="The interval of messages in the room with which the message ID corresponds." />
       <column name="messageId" type="int" maxlen="15" comment="The unique ID of the message." />
 
       <key name="roomId,interval" type="primary" />
@@ -458,6 +458,7 @@
       <column name="ip" type="string" maxlen="128" comment="The user's IP address." />
       <column name="browser" type="string" maxlen="300" comment="The useragent of the user of the session." />
       <column name="magicHash" type="string" maxlen="128" comment="The session hash itself." />
+      <column name="userDataCache" type="string" maxlen="10000" comment="A JSON-encoded cache of the user's core data." />
 
       <key name="sessionId" type="primary" />
       <key name="magicHash" type="unique" />
@@ -519,7 +520,6 @@
       <column name="allGroups" type="string" maxlen="1000" comment="A comma-seperated list of the IDs of all admin-set groups the user is a part of. This is not used on PHPBB and Vanilla logins (both instead use socialGroups)." />
       <column name="socialGroups" type="string" maxlen="1000" comment="A comma-seperated list of the IDs of all groups the user has joined." />
       <column name="options" type="bitfield" bits="16" comment="A bitfield corrosponding to the user's settings." />
-      <column name="timeZone" type="int" maxlen="2" default="0" comment="The timezone of the user." />
       <column name="joinDate" type="time" default="0" comment="The date the user joined." />
       <column name="birthDate" type="time" default="0" comment="The date of the user's birth, used for parental control settings." />
       <column name="email" type="time" comment="The user's email address. Only used in vanilla logins." />

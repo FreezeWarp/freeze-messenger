@@ -523,7 +523,7 @@
 
     <table name="configuration">
       <column name="directive" value="anonymousUserId" />
-      <column name="value" value="0" />
+      <column name="value" value="2" />
       <column name="type" value="integer" />
     </table>
 
@@ -770,12 +770,16 @@
     <!-- Table users -->
     <!-- The addUser function should be tested separately (as with addRoom, etc.) -->
     <table name="users">
+      <column name="userId" value="2" />
+      <column name="userName" value="Anonymous" />
+      <column name="userPrivs" value="" />
+    </table>
+    <table name="users" mode="Dev">
       <column name="userId" value="3" />
       <column name="userName" value="Test Bot 1" />
       <column name="userGroup" value="3" /><!-- TODO -->
       <column name="allGroups" value="3,4,5,6" /><!-- vBulletin Only. TODO -->
       <column name="socialGroups" value="3,4,5,6" /> <!-- PHPBB, Vanilla Only. TODO -->
-      <column name="timeZone" value="" /><!-- TODO -->
       <column name="birthDate" value="" /><!-- TODO -->
       <column name="password" value="pass1" /><!-- Unhashed passwords are only used for testing. -->
       <column name="passwordFormat" value="plaintext" />
