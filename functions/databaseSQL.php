@@ -143,7 +143,6 @@ class databaseSQL extends database {
       switch ($operation) {
         case 'connect':
           $this->connection = mysql_connect("$args[1]:$args[2]", $args[3], $args[4]);
-          
           if ($this->getVersion) $this->version = $this->setDatabaseVersion(mysql_get_server_info($this->connection));
 
           return $this->connection;
@@ -176,7 +175,7 @@ class databaseSQL extends database {
       switch ($operation) {
         case 'connect':
           $this->connection = new mysqli($args[1], $args[3], $args[4], ($args[5] ? $args[5] : null), (int) $args[2]);
-          $this->version = $this->connection->server_info;
+          if ($this->getVersion) $this->version = $this->setDatabaseVersion($this->connection->server_info);
 
           return $this->connection;
         break;
