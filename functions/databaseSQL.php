@@ -186,7 +186,7 @@ class databaseSQL extends database {
         break;
 
         case 'selectdb': return $this->connection->select_db($args[1]);                                                            break;
-        case 'close':    return $this->connection->close();                                                                          break;
+        case 'close':    /*return $this->connection->close();*/                                                                          break;
         case 'escape':   return $this->connection->real_escape_string($args[1]);                                                   break;
         case 'query':    return $this->connection->query($args[1]);                                                                break;
         case 'insertId': return $this->connection->insert_id;                                                                      break;
