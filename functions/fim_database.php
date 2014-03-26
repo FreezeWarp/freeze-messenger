@@ -830,7 +830,7 @@ class fimDatabase extends databaseSQL
 
 
     $columns = array(
-      $this->sqlPrefix . "sessions" => 'anonId, magicHash sessionHash, userId, time sessionTime, ip sessionIp, browser sessionBrowser',
+      $this->sqlPrefix . "sessions" => 'sessionId, anonId, magicHash sessionHash, userId suserId, time sessionTime, ip sessionIp, browser sessionBrowser',
     );
 
     $conditions = array();
@@ -857,6 +857,8 @@ class fimDatabase extends databaseSQL
   public function createSession($userId, $anonId = false) {
     $sessionHash = fim_generateSession();
 
+    $this->cleanSessions(); // Whenever a new user logs in, delete all sessions from 15 or more minutes in the past.
+
     $this->insert($this->sqlPrefix . 'sessions', array(
       'userId' => $userId,
       'anonId' => ($anonId ? $anonId : 0),
@@ -866,8 +868,7 @@ class fimDatabase extends databaseSQL
       'ip' => $_SERVER['REMOTE_ADDR'],
     ));
 
-    // Whenever a new user logs in, delete all sessions from 15 or more minutes in the past.
-    $this->cleanSessions();
+    return $sessionHash;
   }
 
 
