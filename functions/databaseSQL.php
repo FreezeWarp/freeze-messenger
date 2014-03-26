@@ -181,8 +181,8 @@ class databaseSQL extends database {
         break;
 
         case 'error':
-          if (isset($this->connection->connect_errno)) return $this->connection->connect_error;
-          else                                         return $this->connection->error;
+          if ($this->connection->connect_errno) return $this->connection->connect_errno;
+          else                                  return $this->connection->error;
         break;
 
         case 'selectdb': return $this->connection->select_db($args[1]);                                                            break;
@@ -931,7 +931,6 @@ class databaseSQL extends database {
     switch ($this->language) {
       case 'mysql': case 'postgresql':
       $tables = $this->rawQuery('SELECT * FROM ' . $this->formatValue('databaseTable', 'INFORMATION_SCHEMA', 'TABLES') . ' WHERE TABLE_SCHEMA = ' . $this->formatValue('string', $this->activeDatabase))->getColumnValues('TABLE_NAME');
-       var_dump($tables); die();
       break;
     }
     
