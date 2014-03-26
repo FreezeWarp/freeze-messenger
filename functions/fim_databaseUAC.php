@@ -90,39 +90,53 @@ class fimDatabaseUAC extends fimDatabase {
     ),
   );
 
-  public function getUserFromUAC($options) {
-    $queryParts['userSelect']['columns'] = array(
-      "{$sqlPrefix}users" => 'userId, userName, userGroup, allGroups, avatar, profile, socialGroups, userFormatStart, userFormatEnd, password, joinDate, birthDate, lastSync, defaultRoom, interfaceId, status, defaultHighlight, defaultColor, defaultFontface, defaultFormatting, userPrivs, adminPrivs, lang, userParentalAge, userParentalFlags',
-    );
-    $queryParts['userSelectFromUserName']['conditions'] = array(
-      'both' => array(
-        'userName' => $database->str($userName),
-      ),
-    );
-    $queryParts['userSelectFromUserId']['conditions'] = array(
-      'both' => array(
-        'userId' => $database->int($userId),
-      ),
-    );
 
-    return $this->
+  /*
+   * Obtains a user row from an integration table. The row is that processed (and merged into the vanilla table).
+   */
+  public function getUserFromUAC($options) {
+    $options = array_merge(array(
+      'userId' => 0,
+      'userName' => '',
+    ), $options);
+
+    $conditions = array();
+
+    if ($options['userId']) $conditions['both']['userId'] = $this->int($options['userId']);
+    if ($options['userName']) $conditions['both']['userName'] = $this->str($options['userName']);
+
+    $integrationUser = $this->select(array(
+      $this->tableDefinitions['vbulletin4']['users'] => $this->columnDefinitions['vbulletin4']['users']
+    ), $conditions);
+
+    return $this->syncInitial($integrationUser);
   }
 
 
 
-  public function syncInitial() {
+  public function getAdminGroup() {
+
     $queryParts['adminGroupSelect']['conditions'] = array(
       'both' => array(
         'groupId' => $database->int($user2['userGroup'] ? $user2['userGroup'] : $user2['userGroupAlt']), // Pretty much just for VB...
       ),
     );
 
-    $queryParts['userPrefsSelect']['conditions'] = array(
-      'both' => array(
-        'userId' => $database->int($user2['userId']),
+    $group = $integrationDatabase->select(
+      array(
+        $sqlAdminGroupTable => array_flip($sqlAdminGroupTableCols),
       ),
+      $queryParts['adminGroupSelect']['conditions'],
+      false,
+      1
     );
+    $group = $group->getAsArray(false);
+  }
 
+
+
+
+  public function getSocialGroups() {
     $queryParts['socialGroupsSelect']['columns'] = array(
       $sqlMemberGroupTable => array(
         $sqlMemberGroupTableCols['groupId'] => 'groupId',
@@ -138,14 +152,23 @@ class fimDatabaseUAC extends fimDatabase {
       ),
     );
 
+  }
 
+
+
+  /**
+   * Syncs a integration user's data into the vanilla users table.
+   * @internal Aside from modifying a few attributes, this function basically just calls createUser() and is done with it.
+   * @TODO: moderate function to headstart all of this.
+   */
+  public function syncInitial($integrationUser) {
+    global $loginConfig, $generalCache;
 
 
     switch ($loginConfig['method']) {
-
       case 'vbulletin3':
       case 'vbulletin4':
-        if ($user2['options'] & 64) { // DST is autodetect. We'll just set it by hand.
+        if ($integrationUser['options'] & 64) { // DST is autodetect. We'll just set it by hand.
           if ($generalCache->exists('fim_dst')) $dst = $generalCache->get('fim_dst');
           else {
             $currentDate = (int) (date('n') . date('d')); // Example: Janurary 1st would be 101, March 12th would be 312. Thus, every subsequent day is an increase numerically.
@@ -153,178 +176,84 @@ class fimDatabaseUAC extends fimDatabase {
             $dstStart = (int) ('3' . date('d', strtotime('second sunday of march')));
             $dstEnd = (int) ('11' . date('d', strtotime('first sunday of november')));
 
-            if ($currentDate >= $dstStart && $currentDate < $dstEnd) $dst = 1;
-            else $dst = 0;
+            if ($currentDate >= $dstStart && $currentDate < $dstEnd) $dst = true;
+            else $dst = false;
 
-            $generalCache->set('fim_dst', $dst, $ttl = 3600); // We only call this if using vBulletin because it only slows things down otherwise. In addition, we only check every hour.
+            $generalCache->set('fim_dst', $dst, $config['dstRefresh']); // We only call this if using vBulletin because it only slows things down otherwise. In addition, we only check every hour. TODO speed test
           }
 
-          if ($dst) $user2['timeZone']++;
+          if ($dst) $integrationUser['timeZone']++;
         }
-        elseif ($user2['options'] & 128) { // DST is on, add an hour
-          $user2['timeZone']++;
+        elseif ($integrationUser['options'] & 128) $integrationUser['timeZone']++; // DST is on, add an hour
+
+        if ($user2['userGroup'] || $user2['userGroupAlt']) {
+          $adminGroup = $this->getAdminGroup($integrationUser['userGroup'] ? $integrationUser['userGroup'] : $integrationUser['userGroupAlt']);
         }
 
-
-        $group = $integrationDatabase->select(
-          array(
-            $sqlAdminGroupTable => array_flip($sqlAdminGroupTableCols),
-          ),
-          $queryParts['adminGroupSelect']['conditions'],
-          false,
-          1
-        );
-        $group = $group->getAsArray(false);
-
-        $user2['userFormatStart'] = $group['startTag'];
-        $user2['userFormatEnd'] = $group['endTag'];
-        $user2['avatar'] = $loginConfig['url'] . '/image.php?u=' . $user2['userId'];
-        $user2['profile'] = $loginConfig['url'] . '/member.php?u=' . $user2['userId'];
+        $integrationUser['userFormatStart'] = $adminGroup['startTag'];
+        $integrationUser['userFormatEnd'] = $adminGroup['endTag'];
+        $integrationUser['avatar'] = $loginConfig['url'] . '/image.php?u=' . $integrationUser['userId']; // TODO?
+        $integrationUser['profile'] = $loginConfig['url'] . '/member.php?u=' . $integrationUser['userId'];
         break;
 
+      case 'phpbb':
+        if (!$integrationUser['color']) $integrationUser['color'] = $group['color'];
 
+        $integrationUser['userFormatStart'] = "<span style=\"color: #$user2[color]\">";
+        $integrationUser['userFormatEnd'] = '</span>';
 
-        if ($user2['userGroup']) {
-          $group = $integrationDatabase->select(
-            array(
-              $sqlAdminGroupTable => array_flip($sqlAdminGroupTableCols),
-            ),
-            $queryParts['adminGroupSelect']['conditions'],
-            false,
-            1
-          );
-          $group = $group->getAsArray(false);
+        if ($integrationUser['avatar']) {
+          $integrationUser['avatar'] = $loginConfig['url'] . 'do*wnload/file.php?avatar=' . $integrationUser['avatar'];
         }
 
-
-        if (!$user2['color']) {
-          $user2['color'] = $group['color'];
-        }
-
-        $user2['userFormatStart'] = "<span style=\"color: #$user2[color]\">";
-        $user2['userFormatEnd'] = '</span>';
-
-
-        if ($user2['avatar']) {
-          $user2['avatar'] = $loginConfig['url'] . 'download/file.php?avatar=' . $user2['avatar'];
-        }
-
-        $user2['profile'] = $loginConfig['url'] . 'memberlist.php?mode=viewprofile&u=' . $user2['userId'];
+        $integrationUser['profile'] = $loginConfig['url'] . 'memberlist.php?mode=viewprofile&u=' . $integrationUser['userId'];
         break;
     }
 
-    if (!$user2['avatar'] && isset($config['defaultAvatar'])) {
-      $user2['avatar'] = $config['defaultAvatar'];
+
+    if (!$integrationUser['avatar'] && $config['defaultAvatar']) {
+      $integrationUser['avatar'] = $config['defaultAvatar'];
     }
+    
+    
+    $this->createUser(array(
+      'userId' => $integrationUser['userId'],
+      'userName' => $integrationUser['userName'],
+      'userGroup' => $integrationUser['userGroup'],
+      'allGroups' => $integrationUser['allGroups'],
+      'userFormatStart' => ($integrationUser['userFormatStart']),
+      'userFormatEnd' => ($integrationUser['userFormatEnd']),
+      'avatar' => ($integrationUser['avatar']),
+      'profile' => ($integrationUser['profile']),
+      'socialGroups' => ($socialGroups['groups']),
+    ));
 
-
-    $userPrefs = $integrationDatabase->select(
-      $queryParts['userSelect']['columns'],
-      $queryParts['userPrefsSelect']['conditions'],
-      false,
-      1
-    );
-    $userPrefs = $userPrefs->getAsArray(false);
-
-
-    if (!$userPrefs) {
-
-      /* Generate Default User Permissions */
-      $priviledges = 16; // Can post
-
-      if (!$anonymous) { // In theory, you can still manually allow anon users to do the other things.
-        if ($config['userRoomCreation']) $priviledges += 32;
-        if ($config['userPrivateRoomCreation']) $priviledges += 64;
-      }
-
-
-
-      /* Insert User Settings Entry */
-      $database->insert("{$sqlPrefix}users",array(
-        'userId' => (int) $user2['userId'],
-        'userName' => ($user2['userName']),
-        'userGroup' => (int) $user2['userGroup'],
-        'allGroups' => ($user2['allGroups']),
-        'userFormatStart' => ($user2['userFormatStart']),
-        'userFormatEnd' => ($user2['userFormatEnd']),
-        'avatar' => ($user2['avatar']),
-        'profile' => ($user2['profile']),
-        'socialGroups' => ($socialGroups['groups']),
-        'userPrivs' => (int) $priviledges,
-        'lastSync' => $database->now(),
-      ));
-
-
-
-      /* Re-Obtain the User Settings */
-      $userPrefs = $integrationDatabase->select(
-        $queryParts['userSelect']['columns'],
-        $queryParts['userPrefsSelect']['conditions'],
-        false,
-        1
-      );
-      $userPrefs = $userPrefs->getAsArray(false);
-
-
-
-      /* Update Social Groups */
-      $socialGroups = $integrationDatabase->select(
-        $queryParts['socialGroupsSelect']['columns'],
-        $queryParts['socialGroupsSelect']['conditions']
-      );
-      $socialGroups = $socialGroups->getAsArray('groupId');
-      $socialGroupIds = array_keys($socialGroups);
-
-      $database->update("{$sqlPrefix}users", array(
-        'userName' => $user2['userName'],
-        'userGroup' => $user2['userGroup'],
-        'allGroups' => $user2['allGroups'],
-        'userFormatStart' => $user2['userFormatStart'],
-        'userFormatStart' => $user2['userFormatStart'],
-        'avatar' => $user2['avatar'],
-        'profile' => $user2['profile'],
-        'socialGroups' => implode(',', $socialGroupIds),
-        'lastSync' => $database->now(),
-      ), array(
-        'userId' => (int) $user2['userId'],
-      ));
-    }
-
-    public function syncRefresh() {
-      /* Update Social Groups */
-      $socialGroups = $integrationDatabase->select(
-        $queryParts['socialGroupsSelect']['columns'],
-        $queryParts['socialGroupsSelect']['conditions']
-      );
-      $socialGroups = $socialGroups->getAsArray('groupId');
-      $socialGroupIds = array_keys($socialGroups);
-
-      $database->update("{$sqlPrefix}users", array(
-        'userName' => $user2['userName'],
-        'userGroup' => $user2['userGroup'],
-        'allGroups' => $user2['allGroups'],
-        'userFormatStart' => $user2['userFormatStart'],
-        'userFormatEnd' => $user2['userFormatEnd'],
-        'avatar' => $user2['avatar'],
-        'profile' => $user2['profile'],
-        'socialGroups' => implode(',', $socialGroupIds),
-        'lastSync' => $database->now(),
-      ), array(
-        'userId' => (int) $user2['userId'],
-      ));
-    }
-
-
-    $userPrefs = $integrationDatabase->select(
-      $queryParts['userSelect']['columns'],
-      $queryParts['userPrefsSelect']['conditions'],
-      false,
-      1
-    );
-    $userPrefs = $userPrefs->getAsArray(false);
-
-    $user = $userPrefs; // Set user to userPrefs.}
+    syncRefresh();
   }
 
+
+  public function syncRefresh() {
+    /* Update Social Groups */
+    $socialGroups = $integrationDatabase->select(
+      $queryParts['socialGroupsSelect']['columns'],
+      $queryParts['socialGroupsSelect']['conditions']
+    );
+    $socialGroups = $socialGroups->getAsArray('groupId');
+    $socialGroupIds = array_keys($socialGroups);
+
+    $database->update("{$sqlPrefix}users", array(
+      'userName' => $user2['userName'],
+      'userGroup' => $user2['userGroup'],
+      'allGroups' => $user2['allGroups'],
+      'userFormatStart' => $user2['userFormatStart'],
+      'userFormatEnd' => $user2['userFormatEnd'],
+      'avatar' => $user2['avatar'],
+      'profile' => $user2['profile'],
+      'socialGroups' => implode(',', $socialGroupIds),
+      'lastSync' => $database->now(),
+    ), array(
+        'userId' => (int) $user2['userId'],
+      ));
+  }
 }
 ?>

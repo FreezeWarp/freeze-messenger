@@ -28,6 +28,8 @@
  * Standard Directives Required for __ALL__ API Calls:
  * @param string fim3_userId
  * @param string fim3_sessionHash
+ *
+ */
 
 
 ///* Require Base *///
@@ -36,7 +38,26 @@ require_once(dirname(__FILE__) . '/global.php');
 
 
 
-
+$request = fim_sanitizeGPC('p', array(
+  'userId' => array(
+    'cast' => 'int',
+  ),
+  'userName' => array(),
+  'password' => array(),
+  'passwordEncrypt' => array(
+    'valid' => array('base64', 'plaintext', 'md5'),
+  ),
+  'apiVersion' => array(
+    'cast' => 'jsonList',
+    'filter' => 'string',
+    'evaltrue' => true,
+    'require' => true
+  ),
+  'fim3_sessionHash' => array(),
+  'fim3_userId' => array(
+    'cast' => 'int',
+  ),
+));
 
 
 ///* Some Pre-Stuff *///
@@ -46,7 +67,6 @@ require(dirname(__FILE__) . '/functions/fim_uac.php');
 
 static $api, $goodVersion;
 
-$anonymous = false;
 $noSync = false;
 $userId = 0;
 $userName = '';
@@ -54,789 +74,112 @@ $password = '';
 $sessionHash = '';
 $session = '';
 
-$loginDefs['syncMethods'] = array(
-  'phpbb',
-  'vbulletin3',
-  'vbulletin4',
+$loginDefs['syncMethods'] = array('phpbb', 'vbulletin3', 'vbulletin4');
+
+/* Default user object.
+ * Note: As of now, this object should never be used. In all cases the script either quites or the user object is filled with anonymous information or information corresponding with a real user. However, this object is useful for dev purposes, and if a script wants to use $ignoreLogin. */
+$user = array(
+  'userId' => 0,
+  'userName' => 'MISSINGNO.',
+  'adminPrivs' => 0, // Nothing
+  'userPrivs' => 0, // Allowed, but nothing else.
 );
 
 
 
 
 
+///* Create a Valid $user Array *///
 
-///* Obtain Login Data From Different Locations *///
-
-if (isset($ignoreLogin) && $ignoreLogin === true) {
+if (isset($ignoreLogin) && $ignoreLogin === true) { // Used for APIs that explicitly.
   // We do nothing.
 }
 
-elseif (isset($_POST['userName'], $_POST['password']) || isset($_POST['userId'], $_POST['password'])) { // API.
-  $apiVersion = $_POST['apiVersion']; // Gethe version of the software the client intended for.
-
-  if (!$apiVersion) {
-    define('LOGIN_FLAG','API_VERSION_STRING');
-  }
-
-  else {
-    $apiVersionList = explode(',',$_POST['apiVersion']); // Split for all acceptable versions of the API.
 
 
-    foreach ($apiVersionList AS $version) {
-      $apiVersionSubs = explode(dirname(__FILE__) . '', $_POST['apiVersion']); // Break it up into subversions.
-      if (!isset($apiVersionSubs[1])) {
-        $apiVersionSubs[1] = 0;
-      }
-
-      if (!isset($apiVersionSubs[2])) {
-        $apiVersionSubs[2] = 0;
-      }
-
-      if ($apiVersionSubs[0] == 3 && $apiVersionSubs[1] == 0 && $apiVersionSubs[2] == 0) { // This the same as version 3.0.0.
-        $goodVersion = true;
-      }
-    }
-
-    if ($goodVersion) {
-      if (isset($_POST['userName'])) {
-        $userName = fim_urldecode($_POST['userName']);
-      }
-      elseif (isset($_POST['userId'])) {
-        $userId = fim_urldecode($_POST['userId']);
-      }
-
-      $password = fim_urldecode($_POST['password']);
-      $passwordEncrypt = fim_urldecode($_POST['passwordEncrypt']);
-
-      switch ($passwordEncrypt) {
-//        case 'hashed': // Different forums use different encodings. "Hashed" allows the client to figure this out.
-        case 'md5': // Some forums use two levels of md5; this signifies the first.
-        case 'plaintext':
-        // Do nothing, yet.
-        break;
-
-        case 'base64':
-        $password = base64_decode($password);
-        break;
-
-        default:
-        define('LOGIN_FLAG', 'PASSWORD_ENCRYPT');
-        break;
-      }
-    }
-  }
-
-  $api = true;
-}
-
-elseif (isset($_REQUEST['fim3_sessionHash'])) { // Session hash defined via sent data.
-  $sessionHash = $_REQUEST['fim3_sessionHash'];
-
-  $userIdComp = $_REQUEST['fim3_userId'];
-
-  if (isset($_REQUEST['apiLogin'])) { // TODO: This should just be POST. For debugging purposes, it is not right now.
-    $api = true;
-  }
-}
-
-elseif ((int) $config['anonymousUserId'] >= 1 && isset($_REQUEST['apiLogin'])) { // Unregistered user support.
-  $userId = $config['anonymousUserId'];
-  $anonymous = true;
-  $api = true;
-}
-
-elseif (isset($_REQUEST['apiLogin'])) {
-  $userId = false;
-  $api = true;
-}
-
-elseif (isset($hookLogin)) { // Custom Login
+elseif (isset($hookLogin)) { // Custom login to be used by plugins.
   if (is_array($hookLogin)) {
-    if (count($hookLogin) > 0) {
-      if (isset($hookLogin['userName'])) $userName = $hookLogin['userName'];
-      if (isset($hookLogin['password'])) $password = $hookLogin['password'];
-      if (isset($hookLogin['sessionHash'])) $sessionHash = $hookLogin['sessionHash'];
-      if (isset($hookLogin['userIdComp'])) $userIdComp = $hookLogin['userIdComp'];
-    }
+    if (isset($hookLogin['userName'])) $userName = $hookLogin['userName'];
+    if (isset($hookLogin['password'])) $password = $hookLogin['password'];
+    if (isset($hookLogin['sessionHash'])) $sessionHash = $hookLogin['sessionHash'];
+    if (isset($hookLogin['userIdComp'])) $userIdComp = $hookLogin['userIdComp'];
   }
 }
 
-($hook = hook('validate_retrieval') ? eval($hook) : '');
 
 
-
-
-
-
-///* Define Things *///
-
-// These are the table names that are used in different integration methods. "Users" is required, while for the rest, if one is absent functionality will not be supported.
-$tableDefinitions = array(
-  'users' => array(
-    'vbulletin3' => 'user', 'vbulletin4' => 'user',
-    'phpbb' => 'users', 'vanilla' => 'users',
-  ),
-  'adminGroups' => array(
-    'vbulletin3' => 'usergroup', 'vbulletin4' => 'usergroup',
-    'phpbb' => '', 'vanilla' => 'adminGroups',
-  ),
-  'socialGroups' => array(
-    'vbulletin3' => 'socialgroup', 'vbulletin4' => 'socialgroup',
-    'phpbb' => 'groups', 'vanilla' => 'socialGroups',
-  ),
-  'socialGroupMembers' => array(
-    'vbulletin3' => 'socialgroupmember', 'vbulletin4' => 'socialgroupmember',
-    'phpbb' => 'user_group', 'vanilla' => 'socialGroupMembers',
-  ),
-);
-
-// Like above, these define the individual columns used.
-$columnDefinitions = array( // These are only used for syncing. When the original database is queried (such as with password), the field will be used explictly there.
-  'users' => array(
-    'vbulletin3' => array(
-      'userId' => 'userid', 'userName' => 'username',
-      'userGroup' => 'displaygroupid', 'userGroupAlt' => 'usergroupid',
-      'allGroups' => 'membergroupids', 'timeZone' => 'timezoneoffset',
-      'options' => 'options',
-    ),
-    'vbulletin4' => array(
-      'userId' => 'userid', 'userName' => 'username',
-      'userGroup' => 'displaygroupid', 'userGroupAlt' => 'usergroupid',
-      'allGroups' => 'membergroupids', 'timeZone' => 'timezoneoffset',
-      'options' => 'options',
-    ),
-    'phpbb' => array(
-      'userId' => 'user_id', 'userName' => 'username',
-      'userGroup' => 'group_id', 'userGroupAlt' => 'group_id',
-      'allGroups' => 'group_id', 'timeZone' => 'user_timezone',
-      'color' => 'user_colour', 'avatar' => 'user_avatar',
-    ),
-    'vanilla' => array(
-      'userId' => 'userId', 'userName' => 'userName',
-      'userGroupAlt' => 'userGroup', 'userGroup' => 'userGroup', // Note: Put 'userGroupAlt' first, since the array will later be flipped to generate a list of columns to select. (and userGroupAlt with thus be over-written with userGroup)
-      'allGroups' => 'allGroups', 'socialGroups' => 'socialGroups',
-      'timeZone' => 'timeZone', 'avatar' => 'avatar',
-      'password' => 'password', 'passwordSalt' => 'passwordSalt',
-      'passwordSaltNum' => 'passwordSaltNum', 'joinDate' => 'joinDate',
-      'birthDate' => 'birthDate', 'interfaceId' => 'interfaceId',
-      'status' => 'status',
-      'userPrivs' => 'userPrivs', 'adminPrivs' => 'adminPrivs',
-      'defaultRoom' => 'defaultRoom', 'defaultFormatting '=> 'defaultFormatting',
-      'defaultHighlight' => 'defaultHighlight', 'defaultColor' => 'defaultColor',
-      'defaultFontface' => 'defaultFontface', 'profile' => 'profile',
-      'userFormatStart' => 'userFormatStart', 'userFormatEnd' => 'userFormatEnd',
-      'lang' => 'lang',
-      'userParentalAge' => 'userParentalAge', 'userParentalFlags' => 'userParentalFlags',
-    ),
-  ),
-  'adminGroups' => array(
-    'vbulletin3' => array(
-      'groupId' => 'usergroupid', 'groupName' => 'title',
-      'startTag' => 'opentag', 'endTag' => 'closetag',
-    ),
-    'vbulletin4' => array(
-      'groupId' => 'usergroupid', 'groupName' => 'title',
-      'startTag' => 'opentag', 'endTag' => 'closetag',
-    ),
-    'phpbb' => array(),
-    'vanilla' => array(),
-  ),
-  'socialGroups' => array(
-    'vbulletin3' => array(
-      'groupId' => 'groupid', 'groupName' => 'name',
-    ),
-    'vbulletin4' => array(
-      'groupId' => 'groupid', 'groupName' => 'name',
-    ),
-    'phpbb' => array(
-      'groupId' => 'group_id', 'groupName' => 'group_name',
-    ),
-    'vanilla' => array(
-      'groupId' => 'groupId', 'groupName' => 'groupName',
-    ),
-  ),
-  'socialGroupMembers' => array(
-    'vbulletin3' => array(
-      'groupId' => 'groupid', 'userId' => 'userid',
-      'type' => 'type', 'validType' => 'member',
-    ),
-    'vbulletin4' => array(
-      'groupId' => 'groupid', 'userId' => 'userid',
-      'type' => 'type', 'validType' => 'member',
-    ),
-    'phpbb' => array(
-      'groupId' => 'group_id', 'userId' => 'user_id',
-      'type' => 'user_pending', 'validType' => '0',
-    ),
-    'vanilla' => array(
-      'groupId' => 'groupId', 'userId' => 'userId',
-      'type' => 'type', 'validType' => 'member',
-    ),
-  ),
-);
-
-
-$queryParts['userSelect']['columns'] = array(
-  "{$sqlPrefix}users" => 'userId, userName, userGroup, allGroups, avatar, profile, socialGroups, userFormatStart, userFormatEnd, password, joinDate, birthDate, lastSync, defaultRoom, interfaceId, status, defaultHighlight, defaultColor, defaultFontface, defaultFormatting, userPrivs, adminPrivs, lang, userParentalAge, userParentalFlags',
-);
-$queryParts['userSelectFromSessionHash']['columns'] = array(
-  "{$sqlPrefix}sessions" => 'anonId, magicHash, userId suserId, time sessionTime, ip sessionIp, browser sessionBrowser',
-);
-$queryParts['userSelectFromUserName']['conditions'] = array(
-  'both' => array(
-    'userName' => $database->str($userName),
-  ),
-);
-$queryParts['userSelectFromUserId']['conditions'] = array(
-  'both' => array(
-    'userId' => $database->int($userId),
-  ),
-);
-$queryParts['userSelectFromSessionHash']['conditions'] = array(
-  'both' => array(
-    'userId' => $database->col('suserId'),
-    'magicHash' => $database->str($sessionHash),
-  ),
-);
-
-($hook = hook('validate_start') ? eval($hook) : '');
-
-
-
-
-
-
-
-///* Generate Proper Table Names for Integration *///
-
-if (isset($tableDefinitions['users'][$loginConfig['method']])) {
-  if ($loginConfig['method'] === 'vanilla') {
-    $forumTablePrefix = $sqlPrefix; // By setting it like this, if one wishes to switch over to a different login method, it will be much easier.
+elseif (!isset($apiRequest) || !$apiRequest) { // Validate.php called directly.
+  /* Ensure that the client is compatible with the server. Note that this check is only performed when getting a sessionHash, not when doing any other action. */
+  foreach ($request['apiVersionList'] AS $version) {
+    if ($version == 30000) $goodVersion = true; // This the same as version 3.0.0
   }
 
-  $sqlUserTable = $forumTablePrefix . $tableDefinitions['users'][$loginConfig['method']];
-  $sqlAdminGroupTable = $forumTablePrefix . $tableDefinitions['adminGroups'][$loginConfig['method']];
-  $sqlUserGroupTable = $forumTablePrefix . $tableDefinitions['socialGroups'][$loginConfig['method']];
-  $sqlMemberGroupTable = $forumTablePrefix . $tableDefinitions['socialGroupMembers'][$loginConfig['method']];
-
-  $sqlUserTableCols = $columnDefinitions['users'][$loginConfig['method']];
-  $sqlAdminGroupTableCols = $columnDefinitions['adminGroups'][$loginConfig['method']];
-  $sqlUserGroupTableCols = $columnDefinitions['socialGroups'][$loginConfig['method']];
-  $sqlMemberGroupTableCols = $columnDefinitions['socialGroupMembers'][$loginConfig['method']];
-}
-else {
-  die('Integration Subsystem Misconfigured: Login Method "' . $loginConfig['method'] . '" Unrecognized');
-}
-
-
-
-
-
-
-///* Process Login Data *///
-
-if (strlen($sessionHash) > 0) {
-  $user = $database->select(
-    array( // Columns
-      "{$sqlPrefix}users" => $queryParts['userSelect']['columns']["{$sqlPrefix}users"],
-      "{$sqlPrefix}sessions" => $queryParts['userSelectFromSessionHash']['columns']["{$sqlPrefix}sessions"]
-    ),
-    $queryParts['userSelectFromSessionHash']['conditions']
-  );
-  
-  $user = $user->getAsArray(false);
-
-  if ($user) {
-    if ((int) $user['userId'] !== (int) $userIdComp) { // The userid sent has to be the same one in the DB. In theory we could just not require a userId be specified, but there are benefits to this alternative. For instance, this eliminates some forms of injection-based session fixation.
-      define('LOGIN_FLAG','INVALID_SESSION');
-
-      $valid = false;
-    }
-    elseif ($user['sessionBrowser'] !== $_SERVER['HTTP_USER_AGENT']) { // Require the UA match that of the one used to establish the session. Smart clients arencouraged to specify their own with their client name and version.
-      define('LOGIN_FLAG','INVALID_SESSION');
-
-      $valid = false;
-    }
-    elseif ($user['sessionIp'] !== $_SERVER['REMOTE_ADDR']) { // This is a tricky one, but generally the most certain to block any attempted forgeries. That said, IPs can, /theoretically/ be spoofed.
-      define('LOGIN_FLAG','INVALID_SESSION');
-
-      $valid = false;
-    }
-    else {
-      if ($user['anonId']) {
-        $anonId = $user['anonId'];
-        $anonymous = true;
-      }
-
-      $noSync = true;
-      $valid = true;
-
-      if ($user['sessionTime'] < time() - 300) { // If five minutes have passed since the session has been generated, update it.
-        $session = 'update';
-      }
-    }
-  }
+  if (!$goodVersion)
+    throw new Exception('The server API is incompatible with the client API.');
+  elseif (!$config['anonymousUserId'] && !isset($request['userName'], $request['password']) && !isset($request['userId'], $request['password']))
+    throw new Exception('Invalid login parameters: validate requires either [userName or userId] together with password.');
   else {
-    define('LOGIN_FLAG','INVALID_SESSION');
+    if (isset($request['userName']) || isset($request['userId'])) {
+      if (!isset($request['password'])) throw new Exception('passwordRequired');
+      else {
+        if ($request['passwordEncrypt'] === 'base64') $request['password'] = base64_decode($request['password']);
 
-    $valid = false;
-  }
-}
+        // Get the user using a vanilla  request.
+        $userPre = $database->getUsers(array(
+          'userIds' => array($request['userId']),
+          'userNames' => array($request['userId'] ? null : $request['userName'])
+        ))->getAsArray(false);
 
-
-elseif ($userName && $password) {
-  $user = $integrationDatabase->select(
-    array(
-      $sqlUserTable => array_flip($sqlUserTableCols),
-    ),
-    $queryParts['userSelectFromUserName']['conditions'],
-    false,
-    1
-  );
-  $user = $user->getAsArray(false);
-
-  if (processLogin($user, $password, 'plaintext')) {
-    $valid = true;
-    $session = 'create';
-  }
-  else {
-    $valid = false;
-  }
-}
-
-
-elseif ($userId && $password) {
-  $user = $integrationDatabase->select(
-    array(
-      $sqlUserTable => array_flip($sqlUserTableCols),
-    ),
-    $queryParts['userSelectFromUserId']['conditions'],
-    false,
-    1
-  );
-  $user = $user->getAsArray(false);
-
-  if (processLogin($user,$password,'plaintext')) {
-    $valid = true;
-    $session = 'create';
-  }
-  else {
-    $valid = false;
-  }
-}
-
-
-elseif ($config['anonymousUserId'] && $anonymous) {
-  $user = $integrationDatabase->select(
-    array(
-      $sqlUserTable => array_flip($sqlUserTableCols),
-    ),
-    $queryParts['userSelectFromUserId']['conditions'],
-    false,
-    1
-  );
-  $user = $user->getAsArray(false);
-
-  $valid = true;
-  $api = true;
-  $session = 'create';
-}
-
-
-else {
-  $valid = false;
-}
-
-($hook = hook('validate_process') ? eval($hook) : '');
-
-
-
-
-
-
-///* Final Forum-Specific Processing *///
-
-if ($valid) { // If the user is valid, process their preferences.
-
-  if ($noSync || $loginConfig['method'] == 'vanilla') {
-
-  }
-  elseif (in_array($loginConfig['method'], $loginDefs['syncMethods'])) {
-    $user2 = $user; // Create a copy of user, which willater be unset.
-    unset($user); // Unset user, so we don't have to worry about collision.
-
-
-    $queryParts['adminGroupSelect']['conditions'] = array(
-      'both' => array(
-        'groupId' => $database->int($user2['userGroup'] ? $user2['userGroup'] : $user2['userGroupAlt']), // Pretty much just for VB...
-      ),
-    );
-
-    $queryParts['userPrefsSelect']['conditions'] = array(
-      'both' => array(
-        'userId' => $database->int($user2['userId']),
-      ),
-    );
-
-    $queryParts['socialGroupsSelect']['columns'] = array(
-      $sqlMemberGroupTable => array(
-        $sqlMemberGroupTableCols['groupId'] => 'groupId',
-        $sqlMemberGroupTableCols['userId'] => 'userId',
-        $sqlMemberGroupTableCols['type'] => 'groupType',
-      ),
-    );
-
-    $queryParts['socialGroupsSelect']['conditions'] = array(
-      'both' => array(
-        'userId' => $database->int($user2['userId']),
-        'groupType' => $database->str($sqlMemberGroupTableCols['validType']),
-      ),
-    );
-
-
-
-
-    switch ($loginConfig['method']) {
-
-      case 'vbulletin3':
-      case 'vbulletin4':
-      if ($user2['options'] & 64) { // DST is autodetect. We'll just set it by hand.
-        if ($generalCache->exists('fim_dst')) {
-          $dst = $generalCache->get('fim_dst');
-        }
-        else {
-          $currentDate = (int) (date('n') . date('d')); // Example: Janurary 1st would be 101, March 12th would be 312. Thus, every subsequent day is an increase numerically.
-
-          $dstStart = (int) ('3' . date('d', strtotime('second sunday of march')));
-          $dstEnd = (int) ('11' . date('d', strtotime('first sunday of november')));
-
-          if ($currentDate >= $dstStart && $currentDate < $dstEnd) { //
-            $dst = 1;
-          }
-          else {
-            $dst = 0;
-          }
-
-          $generalCache->set('fim_dst', $dst, $ttl = 3600); // We only call this if using vBulletin because it only slows things down otherwise. In addition, we only check every hour.
+        // If this fails, and we support integration, try again using the getUserFromUAC function, which will automatically create vanilla data (and return that data to us).
+        if (!count($userPre)) {
+          $userPre = $integrationDatabase->getUserFromUAC(array(
+            'userName' => $request['userName'],
+            'userId' => $request['userId']
+          ))->getAsArray(false);
         }
 
-        if ($dst) {
-          $user2['timeZone']++;
-        }
+        if (processLogin($userPre, $password, 'plaintext')) $user = $userPre; // Verify that the submitted password matches the stored one.
+        else throw new Exception('invalidLogin');
+
+        $user['anonId'] = 0;
+
+        $database->createSession($user['userId']);
       }
-      elseif ($user2['options'] & 128) { // DST is on, add an hour
-        $user2['timeZone']++;
-      }
-
-
-      $group = $integrationDatabase->select(
-        array(
-          $sqlAdminGroupTable => array_flip($sqlAdminGroupTableCols),
-        ),
-        $queryParts['adminGroupSelect']['conditions'],
-        false,
-        1
-      );
-      $group = $group->getAsArray(false);
-
-      $user2['userFormatStart'] = $group['startTag'];
-      $user2['userFormatEnd'] = $group['endTag'];
-      $user2['avatar'] = $loginConfig['url'] . '/image.php?u=' . $user2['userId'];
-      $user2['profile'] = $loginConfig['url'] . '/member.php?u=' . $user2['userId'];
-      break;
-
-
-
-      if ($user2['userGroup']) {
-        $group = $integrationDatabase->select(
-          array(
-            $sqlAdminGroupTable => array_flip($sqlAdminGroupTableCols),
-          ),
-          $queryParts['adminGroupSelect']['conditions'],
-          false,
-          1
-        );
-        $group = $group->getAsArray(false);
-      }
-
-
-      if (!$user2['color']) {
-        $user2['color'] = $group['color'];
-      }
-
-      $user2['userFormatStart'] = "<span style=\"color: #$user2[color]\">";
-      $user2['userFormatEnd'] = '</span>';
-
-
-      if ($user2['avatar']) {
-        $user2['avatar'] = $loginConfig['url'] . 'download/file.php?avatar=' . $user2['avatar'];
-      }
-
-      $user2['profile'] = $loginConfig['url'] . 'memberlist.php?mode=viewprofile&u=' . $user2['userId'];
-      break;
     }
+    elseif ($config['anonymousUserId']) {
+      $user = $database->getUser(array(
+        'userIds' => array($config['anonymousUserId'])
+      ))->getAsArray(false);
+      $user['anonId'] = rand(1, 10000);
+      $user['userName'] .= $user['anonId'];
 
-    if (!$user2['avatar'] && isset($config['defaultAvatar'])) {
-      $user2['avatar'] = $config['defaultAvatar'];
+      $database->createSession($config['anonymousUserId'], $user['anonId']);
     }
-
-
-    ($hook = hook('validate_preprefs') ? eval($hook) : '');
-
-
-    $userPrefs = $integrationDatabase->select(
-      $queryParts['userSelect']['columns'],
-      $queryParts['userPrefsSelect']['conditions'],
-      false,
-      1
-    );
-    $userPrefs = $userPrefs->getAsArray(false);
-
-
-    if (!$userPrefs) {
-
-      /* Generate Default User Permissions */
-      $priviledges = 16; // Can post
-
-      if (!$anonymous) { // In theory, you can still manually allow anon users to do the other things.
-        if ($config['userRoomCreation']) $priviledges += 32;
-        if ($config['userPrivateRoomCreation']) $priviledges += 64;
-      }
-
-
-
-      /* Insert User Settings Entry */
-      $database->insert("{$sqlPrefix}users",array(
-        'userId' => (int) $user2['userId'],
-        'userName' => ($user2['userName']),
-        'userGroup' => (int) $user2['userGroup'],
-        'allGroups' => ($user2['allGroups']),
-        'userFormatStart' => ($user2['userFormatStart']),
-        'userFormatEnd' => ($user2['userFormatEnd']),
-        'avatar' => ($user2['avatar']),
-        'profile' => ($user2['profile']),
-        'socialGroups' => ($socialGroups['groups']),
-        'userPrivs' => (int) $priviledges,
-        'lastSync' => $database->now(),
-      ));
-
-
-
-      /* Re-Obtain the User Settings */
-      $userPrefs = $integrationDatabase->select(
-        $queryParts['userSelect']['columns'],
-        $queryParts['userPrefsSelect']['conditions'],
-        false,
-        1
-      );
-      $userPrefs = $userPrefs->getAsArray(false);
-
-
-
-      /* Update Social Groups */
-      $socialGroups = $integrationDatabase->select(
-        $queryParts['socialGroupsSelect']['columns'],
-        $queryParts['socialGroupsSelect']['conditions']
-      );
-      $socialGroups = $socialGroups->getAsArray('groupId');
-      $socialGroupIds = array_keys($socialGroups);
-
-      $database->update("{$sqlPrefix}users", array(
-        'userName' => $user2['userName'],
-        'userGroup' => $user2['userGroup'],
-        'allGroups' => $user2['allGroups'],
-        'userFormatStart' => $user2['userFormatStart'],
-        'userFormatStart' => $user2['userFormatStart'],
-        'avatar' => $user2['avatar'],
-        'profile' => $user2['profile'],
-        'socialGroups' => implode(',', $socialGroupIds),
-        'lastSync' => $database->now(),
-      ), array(
-        'userId' => (int) $user2['userId'],
-      ));
-    }
-
-    elseif ($userPrefs['lastSync'] <= (time() - (isset($config['userSyncThreshold']) ? $config['userSyncThreshold'] : 0))) { // This updates various caches every soften. In general, it is a rather slow process, and as such does tend to take a rather long time (that is, compared to normal - it won't exceed 500 miliseconds, really).
-
-      /* Favourite Room Cleanup -- TODO
-      * Remove all favourite groups a user is no longer a part of. */
-/*      if (strlen($userPrefs['favRooms']) > 0) {
-        $favRooms = $database->select(
-          array(
-            "{$sqlPrefix}rooms" => array(
-              'roomId' => 'roomId',
-              'roomName' => 'roomName',
-              'owner' => 'owner',
-              'defaultPermissions' => 'defaultPermissions',
-              'options' => 'options',
-            ),
-          ),
-          array(
-            'both' => array(
-              array(
-                'type' => 'and',
-                'left' => array(
-                  'type' => 'column',
-                  'value' => 'options',
-                ),
-                'right' => array(
-                  'type' => 'int',
-                  'value' => 4,
-                ),
-              ),
-              array(
-                'type' => 'in',
-                'left' => array(
-                  'type' => 'column',
-                  'value' => 'roomId',
-                ),
-                'right' => array(
-                  'type' => 'array',
-                  'value' => fim_arrayValidate(explode(',',$userPrefs['favRooms']),'int',false),
-                ),
-              ),
-            ),
-          )
-        );
-        $favRooms = $favRooms->getAsArray('roomId');
-
-
-        if (is_array($favRooms)) {
-          if (count($favRooms) > 0) {
-            foreach ($favRooms AS $roomId => $room) {
-              eval(hook('templateFavRoomsEachStart'));
-
-              if (!fim_hasPermission($room,$userPrefs,'view')) {
-                $currentRooms = fim_arrayValidate(explode(',',$userPrefs['favRooms']),'int',false);
-
-                foreach ($currentRooms as $room2) {
-                  if ($room2 != $room['roomId']) { // Rebuild the array withouthe room ID.
-                    $currentRooms2[] = (int) $room2;
-                  }
-                }
-              }
-            }
-
-            if (count($currentRooms2) !== count($favRooms)) {
-              $database->update("{$sqlPrefix}users", array(
-                'favRooms' => implode(',',$currentRooms2),
-              ), array(
-                'userId' => $userPrefs['userId'],
-              ));
-            }
-
-            unset($room);
-          }
-        }
-      }*/
-
-
-
-      /* Update Social Groups */
-      $socialGroups = $integrationDatabase->select(
-        $queryParts['socialGroupsSelect']['columns'],
-        $queryParts['socialGroupsSelect']['conditions']
-      );
-      $socialGroups = $socialGroups->getAsArray('groupId');
-      $socialGroupIds = array_keys($socialGroups);
-
-      $database->update("{$sqlPrefix}users", array(
-        'userName' => $user2['userName'],
-        'userGroup' => $user2['userGroup'],
-        'allGroups' => $user2['allGroups'],
-        'userFormatStart' => $user2['userFormatStart'],
-        'userFormatEnd' => $user2['userFormatEnd'],
-        'avatar' => $user2['avatar'],
-        'profile' => $user2['profile'],
-        'socialGroups' => implode(',', $socialGroupIds),
-        'lastSync' => $database->now(),
-      ), array(
-        'userId' => (int) $user2['userId'],
-      ));
-    }
-
-
-    $userPrefs = $integrationDatabase->select(
-      $queryParts['userSelect']['columns'],
-      $queryParts['userPrefsSelect']['conditions'],
-      false,
-      1
-    );
-    $userPrefs = $userPrefs->getAsArray(false);
-
-    $user = $userPrefs; // Set user to userPrefs.
+    else throw new Exception('loginRequired');
   }
-  else {
-    die('Login Subsystem Unconfigured');
-  }
-
-
-
-
-
-  if ($session == 'create') {
-    ($hook = hook('validate_createsession') ? eval($hook) : '');
-
-    $sessionHash = fim_generateSession();
-
-    $anonId = rand(1,10000);
-
-    $database->insert("{$sqlPrefix}sessions", array(
-      'userId' => $user['userId'],
-      'anonId' => ($anonymous ? $anonId : 0),
-      'time' => $database->now(),
-      'magicHash' => $sessionHash,
-      'browser' => $_SERVER['HTTP_USER_AGENT'],
-      'ip' => $_SERVER['REMOTE_ADDR'],
-    ));
-
-    // Whenever a new user logs in, delete all sessions from 15 or more minutes in the past.
-    $database->delete("{$sqlPrefix}sessions",array(
-      'time' => array(
-        'type' => 'equation', // Data in the value column should not be scaped.
-        'cond' => 'lte', // Comparison is "<="
-        'value' => $database->now() - 900,
-      ),
-    ));
-  }
-
-  elseif ($session == 'update' && $sessionHash) {
-    ($hook = hook('validate_updatesession') ? eval($hook) : '');
-
-    $database->update("{$sqlPrefix}sessions", array(
-      'time' => $database->now(),
-    ), array(
-      "magicHash" => $sessionHash,
-    ));
-  }
-
-  else {
-    // I dunno...
-  }
-
-
-
-  if ($anonymous) $user['userName'] .= $anonId;
-  else define(FIM_ACTIVEUSERID, $user['userId']);
-
 }
 
-else {
-  unset($user);
 
-  $user = array(
-    'userId' => ($config['anonymousUserId'] ? $config['anonymousUserId'] : 0), // TODO: Is this handled elsewhere?
-    'userName' => '',
-    'settingsOfficialAjax' => 11264, // Default. TODO: Update w/ config defaults.
-    'userParentalAge' => $config['parentalAgeDefault'],
-    'userParentalFlags' => $config['parentalFlagsDefault'],
-    'adminPrivs' => 0, // Nothing
-    'userPrivs' => 16, // Allowed, but nothing else.
-  );
 
-  ($hook = hook('validate_loginInvalid') ? eval($hook) : '');
+elseif ($apiRequest) { // Validate.php called from API.
+  if (!isset($request['fim3_sessionHash'], $request['fim3_userId'])) {
+    throw new Exception('A sessionHash and userId are required for all API requests. See the API documentation on obtaining these using validate.php.');
+  }
+
+  $session = $database->getSessions(array(
+    'sessionHashes' => array($request['fim3_sessionHash'])
+  ))->getAsArray(false);
+
+  if (!count($session)) throw new Exception('invalidSession');
+  elseif ((int) $session['userId'] !== $request['userId']) throw new Exception('sessionMismatchUserId'); // The userid sent has to be the same one in the DB. In theory we could just not require a userId be specified, but there are benefits to this alternative. For instance, this eliminates some forms of injection-based session fixation.
+  elseif ($session['sessionBrowser'] !== $_SERVER['HTTP_USER_AGENT']) throw new Exception('sessionMismatchBrowser'); // Require the UA match that of the one used to establish the session. Smart clients are encouraged to specify their own with their client name and version.
+  elseif ($session['sessionIp'] !== $_SERVER['REMOTE_ADDR']) throw new Exception('sessionMismatchIp'); // This is a tricky one, but generally the most certain to block any attempted forgeries. That said, IPs can, /theoretically/ be spoofed.
+  else {
+    $user = $session; // Mostly identical, though a few additional properties do exist.
+
+    if ($session['sessionTime'] < time() - 300) $database->refreshSession($session['sessionId']); // If five minutes have passed since the session has been generated, update it.
+  }
 }
-
 
 
 
@@ -885,28 +228,7 @@ $user['userDefs'] = array(
 
 /* API Output */
 
-if ($api) {
-
-  if (defined('LOGIN_FLAG')) {
-    switch (LOGIN_FLAG) { // Generate a message based no the LOGIN_FLAG constant (...this should probably be a variable since it changes, but meh - it seems more logical asuch)
-      case 'PASSWORD_ENCRYPT': $errDesc = 'The password encryption used was not recognized and could not be decoded.'; break;
-      case 'BAD_USERNAME': $errDesc = 'The user was not recognized.'; break;
-      case 'BAD_PASSWORD': $errDesc = 'The password was not correct.'; break;
-      case 'API_VERSION_STRING': $errDesc = 'The API version string specified is not recognized.'; break;
-      case 'DEPRECATED_VERSION': $errDesc = 'The API version specified is deprecated and may no longer be used.'; break;
-      case 'INVALID_SESSION': $errDesc = 'The specified session is no longer valid.'; break;
-    }
-  }
-  elseif ($valid === false) { // Generic login flag
-    define('LOGIN_FLAG','INVALID_LOGIN');
-
-    $errDesc = 'The login was incorrect.';
-  }
-  elseif ($valid !== true) {
-    die('Logic Error - Programmer Oversight');
-  }
-
-
+if (!$apiRequest) {
   $xmlData = array(
     'login' => array(
       'valid' => (bool) $valid,
@@ -915,10 +237,10 @@ if ($api) {
       'loginText' => $errDesc,
 
       'sessionHash' => $sessionHash,
-      'anonId' => ($anonymous ? $anonId : 0),
+      'anonId' => $user['$anonId'],
       'defaultRoomId' => (int) (isset($_GET['room']) ? $_GET['room'] :
         (isset($user['defaultRoom']) ? $user['defaultRoom'] :
-          (isset($config['defaultRoom']) ? $config['defaultRoom'] : 1))), // Get the room we're on. If there is a $_GET variable, use it, otherwise the user's "default", or finally just main.
+          ($config['defaultRoom']))), // Get the room we're on. If there is a $_GET variable, use it, otherwise the user's "default", or finally just main.
 
       'userData' => array(
         'userName' => ($user['userName']),

@@ -985,6 +985,7 @@ function fim_endsWith($haystack, $needle) {
 
 /**
  * Converts a request string to an array. The request string must be able to be urldecoded (thus, "%" characters must be urlencoded, though "&" and "=" can be included via escaping).
+ * Directives in which a default is not provided will not be part of the return.
  *
  * @param string string
  * @return array

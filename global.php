@@ -84,7 +84,8 @@ require(dirname(__FILE__) . '/config.php'); // Configuration Variables
 require(dirname(__FILE__) . '/functions/cache.php'); // APC Wrapper (may use for alteratives like memcached later)
 require(dirname(__FILE__) . '/functions/database.php'); // Database
 require(dirname(__FILE__) . '/functions/databaseSQL.php'); // Database (SQL)
-require(dirname(__FILE__) . '/functions/fim_database.php'); // FIM-specific Extension to MySQL OOP Library
+require(dirname(__FILE__) . '/functions/fim_database.php'); // FIM-specific Extensions
+require(dirname(__FILE__) . '/functions/fim_databaseUAC.php'); // FIM-specific Extensions, UAC (it gets its own file because it might be shipped seperately to support additional intgration methods.)
 require(dirname(__FILE__) . '/functions/fim_cache.php'); // FIM-specific Extension to APC Wrapper
 require(dirname(__FILE__) . '/functions/fim_general.php'); // Various Functions
 
@@ -177,14 +178,8 @@ set_exception_handler('fim_exceptionHandler'); // Defined in fim_general.php
 ////* Database Stuff *////
 
 /* If the connections are the same, do not make multiple below. */
-if ($dbConnect['core'] == $dbConnect['integration']) $integrationConnect = false;
-else $integrationConnect = true;
-
-if ($dbConnect['core'] == $dbConnect['slave']) $slaveConnect = false;
-else $slaveConnect = true;
-
 /* Connect to the Main Database */
-$database = new fimDatabase;
+$database = new fimDatabaseUAC;
 if (!$database->connect($dbConnect['core']['host'],
   $dbConnect['core']['port'],
   $dbConnect['core']['username'],
@@ -198,8 +193,8 @@ if (!$database->connect($dbConnect['core']['host'],
 
 /* Connect to the Integration DB
  * On the whole, the product was designed such that all tables are in one database, but for the advanced users out there... */
-if ($integrationConnect) {
-  $integrationDatabase = new fimDatabase;
+if ($dbConnect['core'] != $dbConnect['integration']) {
+  $integrationDatabase = new fimDatabaseUAC;
 
   if (!$database->connect($dbConnect['integration']['host'],
     $dbConnect['integration']['port'],
@@ -223,7 +218,7 @@ else {
  ** Slave Database should be used, at least in the future, to referrence values that can have high latency. For instance, kicks, which can change within the minute, require relatively low latency, but roomData can have high latency. Thus, when trying to obtain a value for roomData, we should generally use the slave, while if we are trying to obtain kick information, we should use the slave.
  ** In general, things that /don't/ use the slave will be cached. The exception is high-latency databases that are loaded with every single page call. That is to say, config and hooks, both of which are cached and use the slave.
  ** Thus, the rule of thumb, especially for plugins, is that low-latency tables should be accessed via the primary database, while high-latency tables should use the slave. Plugins should never implement both unless the data that is being cached will be accessed constantly, and generally can be delayed by up to an hour. */
-if ($slaveConnect) {
+if ($dbConnect['core'] != $dbConnect['slave']) {
   $slaveDatabase = new fimDatabase;
 
   if (!$database->connect($dbConnect['slave']['host'],
@@ -279,6 +274,15 @@ $censorWordsCache = $generalCache->getCensorWords();
 ////* User Login (Requires Database) *////
 
 require_once(dirname(__FILE__) . '/validate.php'); // This is where all the user validation stuff occurs.
+
+
+
+
+/*** User Cache Cleanup ***/
+
+if (!$user['anonId'] && $user['lastSync'] <= (time() - $config['userSyncThreshold'])) { // This updates various caches every so often. In general, it is a rather slow process, and as such does tend to take a rather long time (that is, compared to normal - it won't exceed 500 miliseconds, really).
+  $database->updateUserCaches();
+}
 
 
 

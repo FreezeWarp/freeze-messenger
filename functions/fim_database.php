@@ -27,6 +27,9 @@ class fimDatabase extends databaseSQL
 {
 
 
+  private $userColumns = 'userId, userName, userFormatStart, userFormatEnd, profile, avatar, socialGroups, defaultColor, defaultHighlight, defaultFontface, defaultFormatting, userGroup, options, defaultRoom, userParentalAge, userParentalFlags, adminPrivs';
+
+
 
   /****** Get Functions *****/
 
@@ -777,7 +780,7 @@ class fimDatabase extends databaseSQL
 
 
     $columns = array(
-      $this->sqlPrefix . "users" => 'userId, userName, userFormatStart, userFormatEnd, profile, avatar, socialGroups, defaultColor, defaultHighlight, defaultFontface, defaultFormatting, userGroup, options, defaultRoom, userParentalAge, userParentalFlags, adminPrivs',
+      $this->sqlPrefix . "users" => $this->userColumns
     );
 
 
@@ -815,8 +818,154 @@ class fimDatabase extends databaseSQL
 
 
 
+  public function getSessions($options, $sort = array('sessionId' => 'asc'), $limit = 0, $pagination = 1)
+  {
+    $options = array_merge(array(
+      'sessionIds' => array(),
+      'sessionHashes'        => array(),
+      'userIds'      => array(),
+      'ips' => array(),
+      'combineUserData' => true,
+    ), $options);
+
+
+    $columns = array(
+      $this->sqlPrefix . "sessions" => 'anonId, magicHash sessionHash, userId, time sessionTime, ip sessionIp, browser sessionBrowser',
+    );
+
+    $conditions = array();
+
+    if ($options['combineUserData']) {
+      $columns[$this->sqlPrefix . "users"] = $this->userColumns;
+      $conditions['both']['userId'] = $this->col('suserId');
+    }
+
+    if (count($options['userIds']) > 0) $conditions['both']['either']['userId'] = $this->in($options['userIds']);
+    if (count($options['sessionIds']) > 0) $conditions['both']['either']['sessionId'] = $this->in($options['sessionIds']);
+    if (count($options['sessionIds']) > 0) $conditions['both']['either']['sessionHash'] = $this->in($options['sessionHash']);
+    if (count($options['ips']) > 0) $conditions['both']['either']['sessionIp'] = $this->in($options['ips']);
+
+
+    return $this->select($columns, $conditions, $sort);
+  }
+
+
+
 
   /****** Insert/Update Functions *******/
+
+  public function createSession($userId, $anonId = false) {
+    $sessionHash = fim_generateSession();
+
+    $this->insert($this->sqlPrefix . 'sessions', array(
+      'userId' => $userId,
+      'anonId' => ($anonId ? $anonId : 0),
+      'time' => $this->now(),
+      'magicHash' => $sessionHash,
+      'browser' => $_SERVER['HTTP_USER_AGENT'],
+      'ip' => $_SERVER['REMOTE_ADDR'],
+    ));
+
+    // Whenever a new user logs in, delete all sessions from 15 or more minutes in the past.
+    $this->cleanSessions();
+  }
+
+
+  public function cleanSessions() {
+    global $config;
+
+    $this->delete($this->sqlPrefix . 'sessions', array(
+      'time' => array(
+        'type' => 'equation', // Data in the value column should not be scaped.
+        'cond' => 'lte', // Comparison is "<="
+        'value' => $this->now() - $config['sessionExpires'],
+      ),
+    ));
+  }
+
+
+  public function refreshSession($sessionId) {
+    $this->update($this->sqlPrefix . "sessions", array(
+      'time' => $this->now(),
+    ), array(
+      "sessionId" => $sessionId,
+    ));
+  }
+
+
+  public function updateUserCaches() {
+      /* Favourite Room Cleanup -- TODO
+      * Remove all favourite groups a user is no longer a part of. */
+      /*      if (strlen($userPrefs['favRooms']) > 0) {
+              $favRooms = $database->select(
+                array(
+                  "{$sqlPrefix}rooms" => array(
+                    'roomId' => 'roomId',
+                    'roomName' => 'roomName',
+                    'owner' => 'owner',
+                    'defaultPermissions' => 'defaultPermissions',
+                    'options' => 'options',
+                  ),
+                ),
+                array(
+                  'both' => array(
+                    array(
+                      'type' => 'and',
+                      'left' => array(
+                        'type' => 'column',
+                        'value' => 'options',
+                      ),
+                      'right' => array(
+                        'type' => 'int',
+                        'value' => 4,
+                      ),
+                    ),
+                    array(
+                      'type' => 'in',
+                      'left' => array(
+                        'type' => 'column',
+                        'value' => 'roomId',
+                      ),
+                      'right' => array(
+                        'type' => 'array',
+                        'value' => fim_arrayValidate(explode(',',$userPrefs['favRooms']),'int',false),
+                      ),
+                    ),
+                  ),
+                )
+              );
+              $favRooms = $favRooms->getAsArray('roomId');
+
+
+              if (is_array($favRooms)) {
+                if (count($favRooms) > 0) {
+                  foreach ($favRooms AS $roomId => $room) {
+                    eval(hook('templateFavRoomsEachStart'));
+
+                    if (!fim_hasPermission($room,$userPrefs,'view')) {
+                      $currentRooms = fim_arrayValidate(explode(',',$userPrefs['favRooms']),'int',false);
+
+                      foreach ($currentRooms as $room2) {
+                        if ($room2 != $room['roomId']) { // Rebuild the array withouthe room ID.
+                          $currentRooms2[] = (int) $room2;
+                        }
+                      }
+                    }
+                  }
+
+                  if (count($currentRooms2) !== count($favRooms)) {
+                    $database->update("{$sqlPrefix}users", array(
+                      'favRooms' => implode(',',$currentRooms2),
+                    ), array(
+                      'userId' => $userPrefs['userId'],
+                    ));
+                  }
+
+                  unset($room);
+                }
+              }
+            }*/
+  }
 
 
 
@@ -1298,8 +1447,7 @@ class fimDatabase extends databaseSQL
 
 
 
-
-  /****** MESSAGE TEXT FUNCTIONS ******/
+/****** MESSAGE TEXT FUNCTIONS ******/
 
   /**
    * Generates keywords to enter into the archive search store.
