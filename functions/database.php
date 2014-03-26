@@ -758,7 +758,7 @@ class databaseResult {
   public function __construct($queryData, $sourceQuery, $language) {
     $this->queryData = $queryData;
     $this->sourceQuery = $sourceQuery;
-    $this->language = $language;
+    $this->driver = $language;
   }
 
 
@@ -770,8 +770,7 @@ class databaseResult {
    */
   public function functionMap($operation) {
     $args = func_get_args();
-
-    switch ($this->language) {
+    switch ($this->driver) {
       case 'mysql':
       switch ($operation) {
         case 'fetchAsArray' : return (($data = mysql_fetch_assoc($args[1])) === false ? false : $data); break;
@@ -780,7 +779,7 @@ class databaseResult {
 
       case 'mysqli':
       switch ($operation) {
-        case 'fetchAsArray' : return (($data = mysqli_fetch_assoc($args[1])) === null ? false : $data); break;
+        case 'fetchAsArray' : return (($data = $this->queryData->fetch_assoc()) === null ? false : $data); break;
       }
       break;
 

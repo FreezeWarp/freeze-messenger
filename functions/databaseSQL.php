@@ -600,7 +600,7 @@ class databaseSQL extends database {
       $this->queryCounter++;
 
       if ($queryData === true) return true; // Insert, Update, Delete, etc.
-      else return new databaseResult($queryData, $query, $this->language); // Select, etc.
+      else return new databaseResult($queryData, $query, $this->driver); // Select, etc.
     }
     else {
       $this->triggerError('Database Error', array(
@@ -930,7 +930,8 @@ class databaseSQL extends database {
   public function getTablesAsArray() {
     switch ($this->language) {
       case 'mysql': case 'postgresql':
-      $tables = array_keys($this->rawQuery('SELECT * FROM ' . $this->formatValue('databaseTable', 'INFORMATION_SCHEMA', 'TABLES') . ' WHERE TABLE_SCHEMA = ' . $this->formatValue('string', $this->activeDatabase))->getAsArray('TABLE_NAME'));
+      $tables = $this->rawQuery('SELECT * FROM ' . $this->formatValue('databaseTable', 'INFORMATION_SCHEMA', 'TABLES') . ' WHERE TABLE_SCHEMA = ' . $this->formatValue('string', $this->activeDatabase))->getColumnValues('TABLE_NAME');
+       var_dump($tables); die();
       break;
     }
     
