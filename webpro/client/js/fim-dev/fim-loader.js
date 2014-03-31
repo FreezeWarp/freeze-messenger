@@ -349,7 +349,7 @@ function fim_messageFormat(json, format) {
 
   text = text.replace(/\</g, '&lt;').replace(/\>/g, '&gt;').replace(/\n/g, '<br />');
   text = text.replace(/(file\.php\?sha256hash\=[a-f0-9]{64})/, function ($1) {
-    return ($1 + '&parentalAge=' + window.activeLogin.userData.parentalAge + '&parentalFlags=' + window.activeLogin.userData.parentalFlags.join(','));
+    return ($1 + '&parentalAge=' + window.activeLogin.userData.parentalAge + '&parentalFlags=' + window.activeLogin.userData.parentalFlags);
   });
 
   if (text.length > 1000) { /* TODO */
