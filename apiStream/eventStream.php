@@ -14,133 +14,32 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+if (defined('FIM_EVENTSOURCE')) {
+  /* Get Events */
+  if ($config['enableEvents']) {
+    $events = $database->getEvents(array(
+      'userIds' => array($user['userId']),
+      'roomIds' => array($request['roomId']),
+      'lastEvent' => $request['lastEvent']
+    ))->getAsArray('eventId');
 
-require('../global.php');
+    if (count($events) > 0) {
+      foreach ($events AS $eventId => $event) {
+        if ($eventId > $request['lastEvent']) $request['lastEvent'] = $eventId;
 
+        echo "id: " . (int) $message['messageId'] . "\n";
+        echo "event: " . $event['eventName'] . "\n";
+        echo "data: " . json_encode($event) . "\n\n";
 
-if (!$config['serverSentEvents']) {
-  die('Not Supported');
-}
-else {
-  /* Send Proper Headers */
-  header('Content-Type: text/event-stream');
-  header('Cache-Control: no-cache'); // recommended to prevent caching of event data.
-
-  set_time_limit($config['serverSentTimeLimit']);
-
-  $serverSentRetries = 0;
-  $outputStarted = false; // used for fastCGI
-
-
-  /* Get Request Data */
-  $request = fim_sanitizeGPC('g', array(
-    'roomId' => array(
-      'require' => true,
-      'cast' => 'int',
-      'evaltrue' => true,
-    ),
-    'lastMessage' => array(
-      'require' => false,
-      'default' => 0,
-      'cast' => 'int',
-      'evaltrue' => false,
-    ),
-    'lastUnreadMessage' => array(
-      'require' => false,
-      'default' => 0,
-      'cast' => 'int',
-      'evaltrue' => false,
-    ),
-    'lastEvent' => array(
-      'require' => false,
-      'default' => 0,
-      'cast' => 'int',
-      'evaltrue' => false,
-    ),
-  ));
-
-
-  if (isset($_SERVER['HTTP_LAST_EVENT_ID'])) {
-    $lastMessageId = $_SERVER['HTTP_LAST_EVENT_ID']; // Get the message ID used for keeping state data; e.g. 1-2-3
-    $lastMessageIdParts = explode('-', $lastMessageId); // Get each state part; e.g. array(1, 2, 3)
-
-    if (count($lastMessageIdParts) === 3) { // There must be three parts
-      $request['lastMessage'] = (int) substr($lastMessageIdParts[0], 1);
-      $request['lastUnreadMessage'] = (int) substr($lastMessageIdParts[1], 1);
-      $request['lastEvent'] = (int) substr($lastMessageIdParts[2], 1);
-    }
-  }
-
-
-  while (true) {
-    $serverSentRetries++;
-
-
-    $queryParts['eventsSelect']['columns'] = array(
-      "{$sqlPrefix}events" => 'eventId, eventName, roomId, userId, messageId, param1, param2, param3',
-    );
-    $queryParts['eventsSelect']['conditions'] = array(
-      'both' => array(
-        'either' => array(
-          'roomId' => $database->int($request['roomId']),
-          'userId' => $database->int($user['userId']),
-        ),
-        'both' => array(
-          'eventId' => $database->int($request['lastEvent']),
-        ),
-      ),
-    );
-    $queryParts['eventsSelect']['sort'] = false;
-    $queryParts['eventsSelect']['limit'] = false;
-
-
-
-
-    /* Get Events */
-    if ($config['enableEvents']) {
-      $events = $database->select($queryParts['eventsSelect']['columns'],
-        $queryParts['eventsSelect']['conditions'],
-        $queryParts['eventsSelect']['sort'],
-        $queryParts['eventsSelect']['limit']);
-      $events = $events->getAsArray('eventId');
-
-      $eventsOutput = array();
-
-      if (count($events) > 0) {
-        foreach ($events AS $event) {
-          echo "event: " . $event['eventName'] . "\n";
-          echo "data: " . json_encode($event) . "\n";
-          echo "id: m" . (int) $request['lastMessage'] . "-u" . (int) $request['lastUnreadMessage'] . "-e" . (int) $request['lastEvent'] . ";\n\n";
-
-          $request['lastEvent'] = $event['eventId'];
-
-          fim_flush();
-          $outputStarted = true;
-        }
+        fim_flush();
+        $outputStarted = true;
       }
 
-      unset($events);
+      fim_flush(); // Force the server to flush.
     }
 
-
-    if ($config['dev']) {
-      $time = date('r');
-      echo "event: time\n";
-      echo "data: {$time}\n\n";
-      fim_flush();
-    }
-
-
-    if (($serverSentRetries > $config['serverSentMaxRetries'])
-      || ($config['serverSentFastCGI'] && $outputStarted)) {
-      echo "id: m" . (int) $request['lastMessage'] . "-u" . (int) $request['lastUnreadMessage'] . "-e" . (int) $request['lastEvent'] . "\n";
-      echo "retry: 0\n";
-
-      exit;
-    }
-    else {
-      usleep($config['serverSentEventsWait'] * 1000000); // Wait before re-requesting. usleep delays in microseconds (millionths of seconds).
-    }
+    unset($events); // Free memory.
   }
 }
+
 ?>

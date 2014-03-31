@@ -163,8 +163,8 @@ var standard = {
       var encrypt = 'base64';
 
       if (requestSettings.serverSentEvents) { // Note that the event subsystem __requires__ serverSentEvents for various reasons. If you use polling, these events will no longer be fully compatible.
-        messageSource = new EventSource(directory + 'apiStream/messageStream.php?roomId=' + roomId + '&lastMessage=' + requestSettings.lastMessage + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
-        eventSource = new EventSource(directory + 'apiStream/eventStream.php?roomId=' + roomId + '&lastEvent=' + requestSettings.lastEvent + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
+        messageSource = new EventSource(directory + 'stream.php?roomId=' + roomId + '&streamType=messages&lastEvent=' + requestSettings.lastMessage + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
+        eventSource = new EventSource(directory + 'stream.php?roomId=' + roomId + '&streamType=events&lastEvent=' + requestSettings.lastEvent + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
         console.log('Starting EventSource; roomId: ' + roomId + '; lastEvent: ' + requestSettings.lastEvent + '; lastMessage: ' + requestSettings.lastMessage)
 
         messageSource.addEventListener('time', function(e) {

@@ -260,7 +260,7 @@ if (isset($sessionHash) && strlen($sessionHash) > 0) {
       <?php echo ($user['adminDefs']['modPlugins'] && false ? '<li><a href="moderate.php?do=plugins">Modify Plugins</a></li>' : ''); ?>
     </ul>
 
-    <h3><a href="#" data-itemId="3">Moderation</a></h3>
+    <h3><a href="#" data-itemId="4">Moderation</a></h3>
     <ul>
       <?php echo ($user['adminDefs']['modUsers'] ? '<li><a href="moderate.php?do=users">Manage Users</a></li>' : ''); ?>
       <?php echo ($user['adminDefs']['modRooms'] ? '<li><a href="moderate.php?do=rooms">Manage Rooms</a></li>' : ''); ?>
@@ -269,7 +269,7 @@ if (isset($sessionHash) && strlen($sessionHash) > 0) {
     </ul>
 
     <?php if ($user['adminDefs']['modPrivs']) { ?>
-    <h3><a href="#" data-itemId="4">Manage Advanced</a></h3>
+    <h3><a href="#" data-itemId="5">Advanced</a></h3>
     <ul>
       <li><a href="moderate.php?do=admin">Admin Permissions</a></li>
       <li><a href="moderate.php?do=sessions">User Sessions</a></li>

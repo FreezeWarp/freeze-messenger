@@ -25,7 +25,6 @@ else {
       phpinfo();
 
       $phpinfo = ob_get_clean();
-      //ob_flush();
 
       $phpinfo = str_replace(array('<body>','<html>','</html>','</body>'), '', $phpinfo);
       $phpinfo = preg_replace(array('/<\!DOCTYPE(.*?)>/', '/\<head\>(.*)\<\/head\>/ism'), '', $phpinfo);
@@ -34,7 +33,7 @@ else {
       echo $phpinfo;
     }
     else {
-      echo container('Well, I Never!', 'I, for one, am apalled that you have disabled the most prestine function in all of the PHP binary. If you find it a security risk, you know nothing of security. ...Or maybe that\'s me. Shall we have a fine lager and discuss?');
+      echo container('Well, I Never!', 'I, for one, am apalled that you have disabled the most prestine function in all of the PHP binary. If you find it a security risk, you know nothing of security. ...Or perhaps it is I that knows nothing. Shall we enjoy a fine lager and discuss?');
     }
   }
   else {

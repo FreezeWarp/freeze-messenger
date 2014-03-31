@@ -228,6 +228,7 @@ class fimDatabase extends databaseSQL
   }
 
 
+
   public function getCensorWordsActive($roomId, $types = array('replace')) {
     return $this->getCensorWords(array(
       'listIds' => array_keys($this->getCensorListsActive($roomId)),
@@ -392,7 +393,6 @@ class fimDatabase extends databaseSQL
 
 
 
-
   /**
    * Run a query to obtain current kicks.
    *
@@ -450,6 +450,7 @@ class fimDatabase extends databaseSQL
   }
 
 
+
   public function getMessagesFromPhrases($options, $sort = array('messageId' => 'asc')) {
     global $config;
 
@@ -492,6 +493,7 @@ class fimDatabase extends databaseSQL
     /* Run the Query */
     return $this->select($columns, $conditions, $sort);
  }
+
 
 
   /**
@@ -850,6 +852,30 @@ class fimDatabase extends databaseSQL
   }
 
 
+  public function getEvents($options = array(), $sort = array('eventId' => 'asc')) {
+    $options = array_merge(array(
+      'roomIds' => array(),
+      'userIds'        => array(),
+      'lastEvent'      => 0,
+    ), $options);
+
+
+    $columns = array(
+      $this->sqlPrefix . "events" => 'eventId, eventName, userId, roomId, messageId, param1, param2, param3, time',
+    );
+
+    $conditions = array(
+      'both' => array()
+    );
+
+    if (count($options['roomIds'])) $conditions['both']['either']['roomId'] = $this->in($options['roomIds']);
+    if (count($options['userIds'])) $conditions['both']['either']['userId'] = $this->in($options['userIds']);
+
+    if ($options['lastEvent']) $conditions['both']['eventId']  = $this->int($options['lastEvent'], 'gt');
+
+    return $this->select($columns, $conditions, $sort);
+  }
+
 
 
   /****** Insert/Update Functions *******/
@@ -872,6 +898,7 @@ class fimDatabase extends databaseSQL
   }
 
 
+
   public function cleanSessions() {
     global $config;
 
@@ -885,6 +912,7 @@ class fimDatabase extends databaseSQL
   }
 
 
+
   public function refreshSession($sessionId) {
     $this->update($this->sqlPrefix . "sessions", array(
       'time' => $this->now(),
@@ -892,6 +920,7 @@ class fimDatabase extends databaseSQL
       "sessionId" => $sessionId,
     ));
   }
+
 
 
   public function updateUserCaches() {
@@ -981,6 +1010,7 @@ class fimDatabase extends databaseSQL
       'status' => $status,
     ));
   }
+
 
 
   /**
@@ -1281,6 +1311,7 @@ class fimDatabase extends databaseSQL
   }
 
 
+
   /**
    * @param     $counterName
    * @param int $incrementValue
@@ -1305,6 +1336,7 @@ class fimDatabase extends databaseSQL
       return false;
     }
   }
+
 
 
   /**
@@ -1333,6 +1365,7 @@ class fimDatabase extends databaseSQL
       ));
     }
   }
+
 
 
   /**
@@ -1373,6 +1406,8 @@ class fimDatabase extends databaseSQL
     }
   }
 
+
+
   /**
    * ModLog container
    *
@@ -1403,6 +1438,8 @@ class fimDatabase extends databaseSQL
     }
   }
 
+
+
   /**
    * Fulllog container
    *
@@ -1431,6 +1468,8 @@ class fimDatabase extends databaseSQL
     }
   }
 
+
+
   /* Originally from fim_general.php TODO */
 //  protected function explodeEscaped($delimiter, $string, $escapeChar = '\\') {
 //    $string = str_replace($escapeChar . $escapeChar, fim_encodeEntities($escapeChar), $string);
@@ -1445,6 +1484,7 @@ class fimDatabase extends databaseSQL
       if ($true)  $bitfield += $bit;
     }
   }
+
 
 
 
@@ -1484,7 +1524,6 @@ class fimDatabase extends databaseSQL
 
 
 
-
   /**
    * Automatically censors text using censorWords replace.
    *
@@ -1511,6 +1550,7 @@ class fimDatabase extends databaseSQL
   }
 
 
+
   /**
    * Retrieve an encrypted version of text.
    *
@@ -1534,6 +1574,7 @@ class fimDatabase extends databaseSQL
 
     return array($messageTextEncrypted, $iv, $saltNum);
   }
+
 
 
   /**
