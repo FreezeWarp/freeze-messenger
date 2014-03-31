@@ -24,7 +24,7 @@ else {
     ),
   ));
 
-  if ($user['adminDefs']['modCore']) {
+  if ($user['adminDefs']['modPrivs']) {
     switch($_GET['tool']) {
       case false:
       echo container('Please Choose a Tool','<ul><li><a href="./moderate.php?do=tools&tool=viewcache">View Cache</a></li><li><a href="./moderate.php?do=tools&tool=clearcache">Clear Cache</a></li></ul>');

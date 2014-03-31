@@ -18,7 +18,7 @@ if (!defined('WEBPRO_INMOD')) {
   die();
 }
 else {
-  if ($user['adminDefs']['modCore']) {
+  if ($user['adminDefs']['modPrivs']) {
     echo container('System Requirements & Status','WIP');
 }
 ?>

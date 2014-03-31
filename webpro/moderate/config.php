@@ -37,7 +37,7 @@ else {
     ),
   ));
 
-  if ($user['adminDefs']['modCore']) {
+  if ($user['adminDefs']['modPrivs']) {
     switch ($_GET['do2']) {
       case 'view':
       case false:

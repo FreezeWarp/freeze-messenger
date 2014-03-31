@@ -77,7 +77,7 @@ $xmlData = array(
 
 
 /* Start Processing */
-if ($user['adminDefs']['modCore']) {
+if ($user['adminDefs']['modPrivs']) {
   switch ($request['action']) {
     case 'disableSystem':
     if (file_exists('.tempStop')) {
