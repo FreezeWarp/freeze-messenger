@@ -1064,7 +1064,7 @@ function fim_sanitizeGPC($type, $data) {
       elseif ($metaName === 'filter'
         && !in_array($metaData, array('', 'int', 'bool', 'string'))) throw new Exception('Invalid "filter" in data in fim_sanitizeGPC');
       elseif ($metaName === 'cast' &&
-        !in_array($metaData, array('int', 'bool', 'string', 'csv', 'json', 'jsonList', 'ascii128', 'alphanum'))) throw new Exception('Invalid "cast" in data in fim_sanitizeGPC');
+        !in_array($metaData, array('int', 'bool', 'string', 'json', 'jsonList', 'ascii128', 'alphanum'))) throw new Exception('Invalid "cast" in data in fim_sanitizeGPC');
     }
 
 
@@ -1086,17 +1086,6 @@ function fim_sanitizeGPC($type, $data) {
 
 
     switch($indexMetaData['cast']) {
-      case 'csv': // Deprecated; replace with JSON type.
-      // If a cast is set for a CSV list, explode with a comma seperator, make sure all values corrosponding to the filter (int, bool, or string - the latter pretty much changes nothing), and if evaltrue is true, then the preserveAll flag would be false, and vice-versa.
-
-      $newData[$indexName] = fim_arrayValidate(
-            explode(',', $activeGlobal[$indexName]),
-            $indexMetaData['filter'],
-            ($indexMetaData['evaltrue'] ? false : true),
-            (isset($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
-      );
-      break;
-
       case 'json':
         $newData[$indexName] = json_decode(
           $activeGlobal[$indexName],
