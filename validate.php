@@ -246,7 +246,7 @@ if ($apiRequest !== true && $streamRequest !== true && $ignoreLogin !== true) {
   $xmlData = array(
     'login' => array(
       'sessionHash' => $sessionHash,
-      'anonId' => $user['$anonId'],
+      'anonId' => $user['anonId'],
       'defaultRoomId' => (int) (isset($_GET['room']) ? $_GET['room'] :
         (isset($user['defaultRoom']) ? $user['defaultRoom'] :
           ($config['defaultRoom']))), // Get the room we're on. If there is a $_GET variable, use it, otherwise the user's "default", or finally just main.

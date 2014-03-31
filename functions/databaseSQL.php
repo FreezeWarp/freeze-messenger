@@ -1195,7 +1195,7 @@ LIMIT
           $i++;
 
           if ($key === 'both' || $key === 'either' || $key === 'neither') {
-            $sideTextFull[$i] = $this->recurseBothEither($cond, $reverseAlias, $d + 1);
+            $sideTextFull[$i] = $this->recurseBothEither(array($key => $value), $reverseAlias, $d + 1);
           }
           else {
             if (strstr($key, ' ') !== false) list($key) = explode(' ', $key); // A space can be used to reference the same key twice in different contexts. It's basically a hack, but it's better than using further arrays.
@@ -1220,7 +1220,7 @@ LIMIT
             else {//var_dump($reverseAlias); echo $key;  var_dump($value); var_dump($sideText); die();
               $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
 
-              $this->triggerError('Query Nullified', array('Key' => $key, 'Value' => $value, 'Side Text' => $sideText, 'Reverse Alias' => $reverseAlias), 'validation'); // Dev, basically. TODO.
+              $this->triggerError('Query Nullified', array('Condition Block' => $cond, 'Key' => $key, 'Value' => $value, 'Side Text' => $sideText, 'Reverse Alias' => $reverseAlias), 'validation'); // Dev, basically. TODO.
             }
           }
         }

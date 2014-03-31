@@ -843,9 +843,8 @@ class fimDatabase extends databaseSQL
 
     if (count($options['userIds']) > 0) $conditions['both']['either']['userId'] = $this->in($options['userIds']);
     if (count($options['sessionIds']) > 0) $conditions['both']['either']['sessionId'] = $this->in($options['sessionIds']);
-    if (count($options['sessionIds']) > 0) $conditions['both']['either']['sessionHash'] = $this->in($options['sessionHash']);
+    if (count($options['sessionHashes']) > 0) $conditions['both']['either']['sessionHash'] = $this->in($options['sessionHashes']);
     if (count($options['ips']) > 0) $conditions['both']['either']['sessionIp'] = $this->in($options['ips']);
-
 
     return $this->select($columns, $conditions, $sort);
   }

@@ -772,7 +772,7 @@
     <table name="users">
       <column name="userId" value="2" />
       <column name="userName" value="Anonymous" />
-      <column name="userPrivs" value="" />
+      <column name="userPrivs" value="1" />
     </table>
     <table name="users" mode="Dev">
       <column name="userId" value="3" />

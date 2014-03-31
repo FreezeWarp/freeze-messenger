@@ -100,8 +100,10 @@ var standard = {
         sessionHash = activeLogin.sessionHash;
 
 
-        $.cookie('webpro_userId', userId, { expires : 14 });
-        $.cookie('webpro_password', options.password, { expires : 14 }); // We will encrypt this in B3 or later -- it isn't a priority for now. (TODO)
+        if (!anonId) {
+          $.cookie('webpro_userId', userId, { expires : 14 });
+          $.cookie('webpro_password', options.password, { expires : 14 }); // We will encrypt this in B3 or later -- it isn't a priority for now. (TODO)
+        }
 
 
         /* Update Permissions */
@@ -110,22 +112,24 @@ var standard = {
         adminPermissions = activeLogin.adminPermissions;
 
 
-        if (options.showMessage) {
+            if (options.showMessage) {
           // Display Dialog to Notify User of Being Logged In
-          if (!userPermissions.allowed) dia.info('You are now logged in as ' + activeLogin.userData.userName + '. However, you are not allowed to post and have been banned by an administrator.', 'Logged In'); // dia.error(window.phrases.errorBanned);
+          if (!userPermissions.view) dia.info('You are now logged in as ' + activeLogin.userData.userName + '. However, you are not allowed to view and have been banned by an administrator.', 'Logged In'); // dia.error(window.phrases.errorBanned);
+          else if (!userPermissions.post) dia.info('You are now logged in as ' + activeLogin.userData.userName + '. However, you are not allowed to post and have been silenced by an administrator. You may still view rooms which allow you access.', 'Logged In'); // dia.error(window.phrases.errorBanned);)
           else dia.info('You are now logged in as ' + activeLogin.userData.userName + '.', 'Logged In');
         }
 
         $('#loginDialogue').dialog('close'); // Close any open login forms.
 
-        console.log('Login valid. Session hash: ' + sessionHash + '; User ID: ' + userId);
-
-
-        if (!anonId && !userId) disableSender(); // The user is not able to post.
-
         if (options.finish) options.finish();
 
-        console.log('Login Finished');
+
+        if (!roomId) {
+          fim_hashParse({defaultRoomId : activeLogin.defaultRoomId}); // When a user logs in, the hash data (such as room and archive) is processed, and subsequently executed.
+
+          /*** A Hack of Sorts to Open Dialogs onLoad ***/
+          if (typeof prepopup === 'function') { prepopup(); prepopup = false; }
+        }
 
         return false;
       },

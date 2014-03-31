@@ -595,13 +595,9 @@ function fim_hashParse(options) {
     break;
   }
 
-  if (!roomIdLocal && options.defaultRoomId) {
-    roomIdLocal = options.defaultRoomId;
-  }
+  if (!roomIdLocal && options.defaultRoomId) roomIdLocal = options.defaultRoomId;
 
-  if (roomId !== roomIdLocal) {
-    standard.changeRoom(roomIdLocal); // If the room is different than current, change it.
-  }
+  if (roomId !== roomIdLocal) standard.changeRoom(roomIdLocal); // If the room is different than current, change it.
 }
 
 /*********************************************************

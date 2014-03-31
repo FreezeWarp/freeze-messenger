@@ -125,9 +125,9 @@
       <column name="userId" type="int" maxlen="8" comment="The user ID, if applicable." />
       <column name="roomId" type="string" maxlen="6" comment="The room ID, if applicable." />
       <column name="messageId" type="int" maxlen="15" comment="The message ID, if applicable." />
-      <column name="param1" type="string" maxlen="20" comment="An addition parameter." />
-      <column name="param2" type="string" maxlen="20" comment="An addition parameter." />
-      <column name="param3" type="string" maxlen="20" comment="An addition parameter." />
+      <column name="param1" type="string" maxlen="20" comment="An additional parameter." />
+      <column name="param2" type="string" maxlen="20" comment="An additional parameter." />
+      <column name="param3" type="string" maxlen="20" comment="An additional parameter." />
       <column name="time" type="time" comment="The time of the event's occurence, primarily for maintence." />
 
       <key name="eventId" type="primary" />
