@@ -267,8 +267,9 @@ if ($apiRequest !== true && $streamRequest !== true && $ignoreLogin !== true) {
           'fontface' => ($user['defaultFontface']),
           'general' => (int) $user['defaultFormatting']
         ),
+        'parentalFlags' => $user['parentalFlags'],
+        'parentalAge' => $user['parentalAge'],
       ),
-
       'userPermissions' => $user['userDefs'],
       'adminPermissions' => $user['adminDefs'],
     ),

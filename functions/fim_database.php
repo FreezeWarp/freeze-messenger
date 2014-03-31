@@ -652,7 +652,7 @@ class fimDatabase extends databaseSQL
 
     $columns = array(
       $this->sqlPrefix . 'roomStats' => 'roomId sroomId, userId suserId, messages',
-      $this->sqlPrefix . 'users'     => 'userId, userName, adminPrivs, userFormatStart, userFormatEnd, userParentalFlags, userParentalAge',
+      $this->sqlPrefix . 'users'     => 'userId, userName, adminPrivs, userPrivs, userFormatStart, userFormatEnd, userParentalFlags, userParentalAge',
       $this->sqlPrefix . 'rooms'     => 'roomId, roomName, owner, defaultPermissions, roomParentalFlags, roomParentalAge, options, messageCount, roomType',
     );
 

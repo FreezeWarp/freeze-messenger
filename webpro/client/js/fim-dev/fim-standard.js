@@ -93,12 +93,14 @@ var standard = {
       'password' : options.password
     }, {
       callback : function(activeLogin) {
+        activeLogin.userData.parentalFlags = activeLogin.userData.parentalFlags.split(',');
+
         window.activeLogin = activeLogin;
-
-        userId = activeLogin.userData.userId;
-        anonId = activeLogin.anonId;
-        sessionHash = activeLogin.sessionHash;
-
+        window.userId = activeLogin.userData.userId;
+        window.anonId = activeLogin.anonId;
+        window.sessionHash = activeLogin.sessionHash;
+        window.userPermissions = activeLogin.userPermissions;
+        window.adminPermissions = activeLogin.adminPermissions;
 
         if (!anonId) {
           $.cookie('webpro_userId', userId, { expires : 14 });
@@ -106,13 +108,7 @@ var standard = {
         }
 
 
-        /* Update Permissions */
-
-        userPermissions = activeLogin.userPermissions;
-        adminPermissions = activeLogin.adminPermissions;
-
-
-            if (options.showMessage) {
+        if (options.showMessage) {
           // Display Dialog to Notify User of Being Logged In
           if (!userPermissions.view) dia.info('You are now logged in as ' + activeLogin.userData.userName + '. However, you are not allowed to view and have been banned by an administrator.', 'Logged In'); // dia.error(window.phrases.errorBanned);
           else if (!userPermissions.post) dia.info('You are now logged in as ' + activeLogin.userData.userName + '. However, you are not allowed to post and have been silenced by an administrator. You may still view rooms which allow you access.', 'Logged In'); // dia.error(window.phrases.errorBanned);)

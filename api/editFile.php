@@ -65,7 +65,6 @@
  *** activeUser
  **** userId
  **** userName
- *** errStr
  *** response [[TODO]]
 */
 
@@ -147,7 +146,6 @@ $xmlData = array(
       'userId' => (int) $user['userId'],
       'userName' => ($user['userName']),
     ),
-    'errStr' => ($errStr),
     'response' => array(),
   ),
 );
@@ -159,255 +157,209 @@ $database->startTransaction();
 
 
 /* Start Processing */
-if ($continue) {
-  switch ($request['action']) {
-    case 'edit':
-    case 'create':
-    $parentalFileId = 0;
+switch ($request['action']) {
+  case 'edit': case 'create':
+  $parentalFileId = 0;
 
-    if ($request['action'] === 'create') {
-      /* Get Room Data, if Applicable */
-      if ($request['roomId']) $roomData = $slaveDatabase->getRoom($request['roomId']);
-      else $roomData = false;
+  if ($request['action'] === 'create') {
+    /* Get Room Data, if Applicable */
+    if ($request['roomId']) $roomData = $slaveDatabase->getRoom($request['roomId']);
+    else $roomData = false;
 
 
-      /* PUT Support (TODO) */
-      if ($request['uploadMethod'] === 'put') { // This is an unsupported alternate upload method. It will not be documented until it is known to work.
-        $putResource = fopen("php://input", "r"); // file data is from stdin
-        $request['fileData'] = ''; // The only real change is that we're getting things from stdin as opposed to from the headers. Thus, we'll just translate the two here.
+    /* PUT Support (TODO) */
+    if ($request['uploadMethod'] === 'put') { // This is an unsupported alternate upload method. It will not be documented until it is known to work.
+      $putResource = fopen("php://input", "r"); // file data is from stdin
+      $request['fileData'] = ''; // The only real change is that we're getting things from stdin as opposed to from the headers. Thus, we'll just translate the two here.
 
-        while ($fileContents = fread($putResource, $config['fileUploadChunkSize'])) { // Read the resource using 1KB chunks. This is slower than a higher chunk, but also avoids issues for now. It can be overridden with the config directive fileUploadChunkSize.
-          $request['fileData'] .= $fileContents; // We're not sure if this will work, since there are indications you have to write to a file instead.
-        }
-
-        fclose($putResource);
+      while ($fileContents = fread($putResource, $config['fileUploadChunkSize'])) { // Read the resource using 1KB chunks. This is slower than a higher chunk, but also avoids issues for now. It can be overridden with the config directive fileUploadChunkSize.
+        $request['fileData'] .= $fileContents; // We're not sure if this will work, since there are indications you have to write to a file instead.
       }
 
-
-      if (!$config['enableUploads']) $errStr = 'uploadsDisabled';
-      elseif (!$roomData && !$config['allowOrphanFiles']) $errStr = 'noOrphanFiles';
-      elseif ($config['uploadMaxFiles'] !== -1 && $database->getCounter('uploads') > $config['uploadMaxFiles']) $errStr = 'tooManyFilesServer';
-      elseif ($config['uploadMaxUserFiles'] !== -1 && $user['fileCount'] > $config['uploadMaxUserFiles']) $errStr = 'tooManyFilesUser';
-      elseif ($continue) {
-        /* Verify the Data, Preprocess */
-        switch ($request['uploadMethod']) {
-          case 'raw': case 'put':
-          switch($request['dataEncode']) {
-            case 'base64': $rawData = base64_decode($request['fileData']); break;
-            case 'binary': $rawData = $request['fileData'];                break; // Binary is buggy and far from confirmed to work. That said... if you're lucky? MDN has some useful information on this type of thing: https://developer.mozilla.org/En/Using_XMLHttpRequest
-            default:      $errStr = 'badEncoding'; $continue = false;      break;
-          }
-
-          $rawSize = strlen($rawData);
-
-
-          if ($request['md5hash']) { // This will allow us to verify that the upload worked.
-            if (md5($rawData) != $request['md5hash']) {
-              $errStr = 'badMd5Hash';
-              $continue = false;
-            }
-          }
-
-          if ($request['sha256hash']) { // This will allow us to verify that the upload worked.
-            if (hash('sha256', $rawData) != $request['sha256hash']) {
-              $errStr = 'badSha256Hash';
-              $continue = false;
-            }
-          }
-
-          if ($request['fileSize']) { // This will allow us to verify that the upload worked as well, can be easier to implement, but doesn't serve the primary purpose of making sure the file upload wasn't intercepted.
-            if ($rawSize != $request['fileSize']) {
-              $errStr = 'badSize';
-              $continue = false;
-            }
-          }
-          break;
-        }
-
-
-
-        /* Start Processing */
-        if ($continue) {
-          if (!$request['fileName']) {
-            $errStr = 'badName';
-          }
-          else {
-            $fileNameParts = explode('.',$request['fileName']);
-
-            if (count($fileNameParts) != 2) $errStr = 'badNameParts';
-            else {
-              if (isset($config['extensionChanges'][$fileNameParts[1]])) { // Certain extensions are considered to be equivilent, so we only keep records for the primary one. For instance, "html" is considered to be the same as "htm" usually.
-                $fileNameParts[1] = $config['extensionChanges'][$fileNameParts[1]];
-              }
-              
-              if (!isset($config['uploadMimes'][$fileNameParts[1]])) { // All files theoretically need to have a mime (at any rate, we will require one). This is different from simply not being allowed, wherein we understand what file you are trying to upload, but aren't going to accept it. (Small diff, I know.)
-                $errStr = 'unrecExt';
-              }
-              elseif (!in_array($fileNameParts[1], $config['allowedExtensions'])) { // Not allowed...
-                $errStr = 'badExt';
-              }
-              else {
-                $mime = ($config['uploadMimes'][$fileNameParts[1]] ? $config['uploadMimes'][$fileNameParts[1]] : 'application/octet-stream');
-                $container = ($config['fileContainers'][$fileNameParts[1]] ? $config['fileContainers'][$fileNameParts[1]] : 'other');
-                $maxSize = ($config['uploadSizeLimits'][$fileNameParts[1]] ? $config['uploadSizeLimits'][$fileNameParts[1]] : 0);
-
-                $sha256hash = hash('sha256', $rawData);
-                $md5hash = hash('md5', $rawData);
-
-                if ($encryptUploads) {
-                  list($contentsEncrypted,$iv,$saltNum) = fim_encrypt($rawData);
-                  $saltNum = intval($saltNum);
-                }
-                else {
-                  $contentsEncrypted = base64_encode($rawData);
-                  $iv = '';
-                  $saltNum = '';
-                }
-
-
-                ($hook = hook('sendFile_postReq') ? eval($hook) : '');
-
-
-                if (!$rawData && !$config['allowEmptyFiles']) {
-                  $errStr = 'emptyFile';
-                }
-                elseif (($rawSize == 0) && !$config['allowEmptyFiles']) {
-                  $errStr = 'emptyFile';
-                }
-                elseif ($rawSize > $maxSize) { // Note: Data is stored as base64 because its easier to handle; thus, the data will be about 33% larger than the normal (thus, if a limit is normally 400KB the file must be smaller than 300KB).
-                  $errStr = 'tooLarge';
-                }
-                else {
-                  $prefile = $database->getFiles(array(
-                    'sha256hashes' => array($sha256hash)
-                  ))->getAsArray(false);
-
-
-                  if ($prefile) {
-                    $webLocation = "{$installUrl}file.php?sha256hash={$prefile['sha256hash']}";
-
-                    if ($roomData) {
-                      $database->storeMessage($webLocation, $container, $user, $roomData);
-                    }
-                  }
-                  else {
-                    if ($continue) {
-                      $database->insert("{$sqlPrefix}files", array(
-                        'userId' => $user['userId'],
-                        'fileName' => $request['fileName'],
-                        'fileType' => $mime,
-                        'fileParentalAge' => $request['parentalAge'],
-                        'fileParentalFlags' => implode(',', $request['parentalFlags']),
-                        'creationTime' => time(),
-                        'fileSize' => $rawSize,
-                      ));
-
-                      $fileId = $database->insertId;
-                      $parentalFileId = $fileId;
-
-                      $database->insert("{$sqlPrefix}fileVersions", array(
-                        'fileId' => $fileId,
-                        'sha256hash' => $sha256hash,
-                        'md5hash' => $md5hash,
-                        'salt' => $saltNum,
-                        'iv' => $iv,
-                        'size' => $rawSize,
-                        'contents' => $contentsEncrypted,
-                        'time' => time(),
-                      ));
-
-                      $database->update("{$sqlPrefix}users", array(
-                        'fileCountsss' => array(
-                          'type' => 'equation',
-                          'value' => '$fileCount + 1',
-                        ),
-                        'fileSize' => array(
-                          'type' => 'equation',
-                          'value' => '$fileSize + ' . (int) $rawSize,
-                        ),
-                      ), array(
-                        'userId' => $user['userId'],
-                      ));
-
-                      $database->incrementCounter('uploads');
-                      $database->incrementCounter('uploadSize', $rawSize);
-
-                      $webLocation = "{$installUrl}file.php?sha256hash={$sha256hash}";
-
-                      if ($continue && $roomData) {
-                        $database->storeMessage($webLocation, $container, $user, $roomData);
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+      fclose($putResource);
     }
-    elseif ($request['action'] === 'edit') {
+
+
+    if (!$config['enableUploads']) throw new Exception('uploadsDisabled');
+    if (!$roomData && !$config['allowOrphanFiles']) throw new Exception('noOrphanFiles');
+    if ($config['uploadMaxFiles'] !== -1 && $database->getCounter('uploads') > $config['uploadMaxFiles']) throw new Exception('tooManyFilesServer');
+    if ($config['uploadMaxUserFiles'] !== -1 && $user['fileCount'] > $config['uploadMaxUserFiles']) throw new Exception('tooManyFilesUser');
+
+
+    /* Verify the Data, Preprocess */
+    switch ($request['uploadMethod']) {
+      case 'raw': case 'put':
+      switch($request['dataEncode']) {
+        case 'base64': $rawData = base64_decode($request['fileData']); break;
+        case 'binary': $rawData = $request['fileData'];                break; // Binary is buggy and far from confirmed to work. That said... if you're lucky? MDN has some useful information on this type of thing: https://developer.mozilla.org/En/Using_XMLHttpRequest
+        default:      throw new Exception('badEncoding');      break;
+      }
+
+      $rawSize = strlen($rawData);
+
+
+      if ($request['md5hash']) { // This will allow us to verify that the upload worked.
+        if (md5($rawData) != $request['md5hash']) throw new Exception('badMd5Hash');
+      }
+
+      if ($request['sha256hash']) { // This will allow us to verify that the upload worked.
+        if (hash('sha256', $rawData) != $request['sha256hash']) throw new Exception('badSha256Hash');
+      }
+
+      if ($request['fileSize']) { // This will allow us to verify that the upload worked as well, can be easier to implement, but doesn't serve the primary purpose of making sure the file upload wasn't intercepted.
+        if ($rawSize != $request['fileSize']) throw new Exception('badSize');
+      }
+      break;
+    }
+
+    if (!$request['fileName']) throw new Exception('badName');
+
+    $fileNameParts = explode('.', $request['fileName']);
+
+    if (count($fileNameParts) != 2) throw new Exception('badNameParts');
+
+    if (isset($config['extensionChanges'][$fileNameParts[1]])) { // Certain extensions are considered to be equivilent, so we only keep records for the primary one. For instance, "html" is considered to be the same as "htm" usually.
+      $fileNameParts[1] = $config['extensionChanges'][$fileNameParts[1]];
+    }
+
+    if (!isset($config['uploadMimes'][$fileNameParts[1]])) throw new Exception('unrecExt'); // All files theoretically need to have a mime (at any rate, we will require one). This is different from simply not being allowed, wherein we understand what file you are trying to upload, but aren't going to accept it. (Small diff, I know.)
+    if (!in_array($fileNameParts[1], $config['allowedExtensions'])) throw new Exception('badExt'); // Not allowed...
+
+    $mime = ($config['uploadMimes'][$fileNameParts[1]] ? $config['uploadMimes'][$fileNameParts[1]] : 'application/octet-stream');
+    $container = ($config['fileContainers'][$fileNameParts[1]] ? $config['fileContainers'][$fileNameParts[1]] : 'other');
+    $maxSize = ($config['uploadSizeLimits'][$fileNameParts[1]] ? $config['uploadSizeLimits'][$fileNameParts[1]] : 0);
+
+    $sha256hash = hash('sha256', $rawData);
+    $md5hash = hash('md5', $rawData);
+
+
+    if ($encryptUploads) {
+      list($contentsEncrypted,$iv,$saltNum) = fim_encrypt($rawData);
+      $saltNum = intval($saltNum);
+    }
+    else {
+      $contentsEncrypted = base64_encode($rawData);
+      $iv = '';
+      $saltNum = '';
+    }
+
+
+    if ((!$rawData || $rawSize === 0) && !$config['allowEmptyFiles']) throw new Exception('emptyFile');
+    if ($rawSize > $maxSize) throw new Exception('tooLarge'); // Note: Data is stored as base64 because its easier to handle; thus, the data will be about 33% larger than the normal (thus, if a limit is normally 400KB the file must be smaller than 300KB).
+
+    $prefile = $database->getFiles(array(
+      'sha256hashes' => array($sha256hash)
+    ))->getAsArray(false);
+
+
+    if (count($prefile) > 0) {
+      $webLocation = "{$installUrl}file.php?sha256hash={$prefile['sha256hash']}";
+
+      if ($roomData) $database->storeMessage($webLocation, $container, $user, $roomData);
+    }
+    else {
+      $database->insert("{$sqlPrefix}files", array(
+        'userId' => $user['userId'],
+        'fileName' => $request['fileName'],
+        'fileType' => $mime,
+        'fileParentalAge' => $request['parentalAge'],
+        'fileParentalFlags' => implode(',', $request['parentalFlags']),
+        'creationTime' => time(),
+        'fileSize' => $rawSize,
+      ));
+
+      $fileId = $database->insertId;
+      $parentalFileId = $fileId;
+
+      $database->insert("{$sqlPrefix}fileVersions", array(
+        'fileId' => $fileId,
+        'sha256hash' => $sha256hash,
+        'md5hash' => $md5hash,
+        'salt' => $saltNum,
+        'iv' => $iv,
+        'size' => $rawSize,
+        'contents' => $contentsEncrypted,
+        'time' => time(),
+      ));
+
+      $database->update("{$sqlPrefix}users", array(
+        'fileCount' => array(
+          'type' => 'equation',
+          'value' => '$fileCount + 1',
+        ),
+        'fileSize' => array(
+          'type' => 'equation',
+          'value' => '$fileSize + ' . (int) $rawSize,
+        ),
+      ), array(
+        'userId' => $user['userId'],
+      ));
+
+      $database->incrementCounter('uploads');
+      $database->incrementCounter('uploadSize', $rawSize);
+
+      $webLocation = "{$installUrl}file.php?sha256hash={$sha256hash}";
+
+      if ($roomData) $database->storeMessage($webLocation, $container, $user, $roomData);
+    }
+
+    $xmlData['editFile']['response']['webLocation'] = $webLocation;
+  }
+  elseif ($request['action'] === 'edit') {
 /*      $fileData = $database->getFile($request['fileId']);
 
-      if (!$fileData) {
-        $errStr = 'invalidFile';
-        $errDesc = 'The file specified is invalid.';
-      }
-      else {
-        $parentalFileId = $request['fileId'];
-      }
-    }
-
-    if ($parentalFileId > 0) {
-      $database->update("{$sqlPrefix}files", array(
-        'parentalAge' => (int) $request['parentalAge'],
-        'parentalFlags' => implode(',', $request['parentalFlags']),
-      ), array(
-        'fileId' => $request['fileId'],
-      )); TODO */
-    }
-    break;
-
-    case 'delete':
-    $fileData = $database->getFile($request['fileId']);
-
-    if ($user['adminDefs']['modImages'] || $user['userId'] == $fileData['userId']) {
-      $database->modLog('deleteImage', $request['fileId']);
-
-      $database->update("{$sqlPrefix}files", array(
-        'deleted' => 1,
-      ), array(
-        'fileId' => $request['fileId'],
-      ));
+    if (!$fileData) {
+      $errStr = 'invalidFile';
+      $errDesc = 'The file specified is invalid.';
     }
     else {
-      $errStr = 'noPerm';
-      $errDesc = 'You do not have permission to delete and undelete images.';
+      $parentalFileId = $request['fileId'];
     }
-    break;
-
-    case 'undelete':
-    $fileData = $database->getFile($request['fileId']);
-
-    if ($user['adminDefs']['modImages']) {
-      modLog('undeleteImage', $request['fileId']);
-
-      $database->update("{$sqlPrefix}files", array(
-        'deleted' => 0,
-      ), array(
-        'fileId' => $request['fileId'],
-      ));
-    }
-    else {
-      $errStr = 'noPerm';
-      $errDesc = 'You do not have permission to delete and undelete images.';
-    }
-    break;
-
-    case 'flag': // TODO: Allows users to flag images that are not appropriate for a room.
-
-    break;
   }
+
+  if ($parentalFileId > 0) {
+    $database->update("{$sqlPrefix}files", array(
+      'parentalAge' => (int) $request['parentalAge'],
+      'parentalFlags' => implode(',', $request['parentalFlags']),
+    ), array(
+      'fileId' => $request['fileId'],
+    )); TODO */
+  }
+  break;
+
+  case 'delete':
+  $fileData = $database->getFile($request['fileId']);
+
+  if ($user['adminDefs']['modImages'] || $user['userId'] == $fileData['userId']) {
+    $database->modLog('deleteImage', $request['fileId']);
+
+    $database->update("{$sqlPrefix}files", array(
+      'deleted' => 1,
+    ), array(
+      'fileId' => $request['fileId'],
+    ));
+  }
+  else throw new Exception('noPerm');
+  break;
+
+  case 'undelete':
+  $fileData = $database->getFile($request['fileId']);
+
+  if ($user['adminDefs']['modImages']) {
+    modLog('undeleteImage', $request['fileId']);
+
+    $database->update("{$sqlPrefix}files", array(
+      'deleted' => 0,
+    ), array(
+      'fileId' => $request['fileId'],
+    ));
+  }
+  else throw new Exception('noPerm');
+  break;
+
+  case 'flag': // TODO: Allows users to flag images that are not appropriate for a room.
+
+  break;
 }
 
 
@@ -416,7 +368,6 @@ $database->endTransaction();
 
 
 /* Update Data for Errors */
-$xmlData['editFile']['errStr'] = ($errStr);
 if ($config['dev']) $xmlData['request'] = $request;
 
 

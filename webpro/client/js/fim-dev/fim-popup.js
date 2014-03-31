@@ -268,7 +268,7 @@ popup = {
                 error : function() {
                   dia.error($l('uploadErrors.other'));
                 },
-                finish : fim_hideLoader(),
+                finish : fim_hideLoader()
               });
 
               return false;

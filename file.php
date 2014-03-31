@@ -24,8 +24,7 @@
  * @param string fileId
 */
 
-$reqPhrases = true;
-
+$ignoreLogin = true;
 require('global.php');
 
 
@@ -109,12 +108,8 @@ if ($parentalBlock) {
   echo $file['contents'];
 }
 else {
-  if ($file['salt']) {
-    $file = fim_decrypt($file,'contents');
-  }
-  else {
-    $file['contents'] = base64_decode($file['contents']);
-  }
+  if ($file['salt']) $file = fim_decrypt($file,'contents');
+  else $file['contents'] = base64_decode($file['contents']);
 
   header('Content-Type: ' . $file['fileType']);
   echo $file['contents'];
