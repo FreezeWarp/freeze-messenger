@@ -256,19 +256,26 @@ popup = {
 
               fim_showLoader();
 
-              $.ajax({
-                url : directory + 'api/editFile.php',
-                type : 'POST',
-                data : 'action=create&dataEncode=base64&uploadMethod=raw&autoInsert=true&roomId=' + roomId + '&fileName=' + fileName + '&parentalAge=' + parentalAge + '&parentalFlags=' + parentalFlags.join(',') + '&fileData=' + fim_eURL(fileContent) + '&md5hash=' + md5hash + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-                cache : false,
-                success : function(json) {
-                  if (json.editFile.errStr) $l('uploadErrors.' + errStr);
-                  else $('#insertDoc').dialog('close');
+              fimApi.editFile({
+                'action' : 'create',
+                'dataEncode' : 'base64',
+                'uploadMethod' : 'raw',
+                'autoInsert' : true,
+                'roomId' : window.roomId,
+                'fileName' : fileName,
+                'fileData' : fileContent,
+                'parentalAge' : parentalAge,
+                'parentalFlags' : parentalFlags,
+                'md5hash' : md5hash
+              }, {
+                'callback' : function(json) {
+                  fim_hideLoader();
+                  $('#insertDoc').dialog('close');
                 },
-                error : function() {
-                  dia.error($l('uploadErrors.other'));
-                },
-                finish : fim_hideLoader()
+                'error' : function() {
+                  fim_hideLoader();
+                  dia.error($l('uploadErrors.other')); // TODO: error string
+                }
               });
 
               return false;

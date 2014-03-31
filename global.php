@@ -135,7 +135,7 @@ define("ADMIN_GRANT", 1);
 define("ADMIN_PROTECTED", 2);
 define("ADMIN_ROOMS", 4);
 define("ADMIN_VIEW_PRIVATE", 8);
-define("ADMIN_BAN", 16);
+define("ADMIN_USERS", 16);
 define("ADMIN_FILES", 64);
 define("ADMIN_CENSOR", 256);
 define("ADMIN_PLUGINS", 4096);

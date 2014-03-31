@@ -30,10 +30,18 @@ elseif (isset($_COOKIE['webproModerate_sessionHash'])) {
   $hookLogin['sessionHash'] = $_COOKIE['webproModerate_sessionHash'];
   $hookLogin['userIdComp'] = $_COOKIE['webproModerate_userId'];
 }
+else {
+  $ignoreLogin = true;
+}
 
 
 /* Here we require the backend. */
-require('../global.php');
+
+try {
+  require('../global.php');
+} catch (Exception $e) {
+  $message = $e->getMessage();
+}
 require('moderateFunctions.php'); // Functions that are used solely by the moderate interfaces.
 
 
@@ -302,7 +310,7 @@ if (isset($sessionHash)) {
 
 <?php
 if (!$user['userId']) {
-  echo container('Please Login','You have not logged in. Please login:<br /><br />
+  echo container('Please Login',($message ? $message : 'You have not logged in. Please login:') . '<br /><br />
 
   <form action="moderate.php" method="post">
     <table>

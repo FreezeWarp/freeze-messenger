@@ -393,6 +393,41 @@ window.fimApi = {
 
 
 
+  editFile : function(params, requestSettings) {
+    var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds', 'userIds']), {
+      'fim3_sessionHash' : window.sessionHash,
+      'fim3_userId' :  window.userId,
+      'fim3_format' : 'json',
+      'action' : 'create',
+      'daataEncode' : 'base64',
+      'uploadMethod' : 'raw',
+      'autoInsert' : true,
+      'roomId' : null,
+      'fileName' : '',
+      'fileData' : '',
+      'parentalFlags' : '[]',
+      'parentalAge' : 0,
+      'md5hash' : null
+    });
+
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+    $.ajax({
+      url : directory + 'api/editFile.php',
+      type : 'POST',
+      data : params,
+      cache : false,
+      success : function(json) {
+        requestSettings.callback(json);
+      },
+      error : function(json) {
+        requestSettings.error(json);
+      }
+    });
+  },
+
+
+
   mergeDefaults : function(object, defaults) {
     for (var i in defaults) {
       if (!(i in object)) object[i] = defaults[i];

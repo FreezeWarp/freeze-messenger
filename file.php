@@ -63,7 +63,7 @@ $request = fim_sanitizeGPC('g', array(
   ),
 
   'parentalFlags' => array(
-    'cast' => 'csv',
+    'cast' => 'jsonList',
     'valid' => $config['parentalFlags'],
   ),
 ));
