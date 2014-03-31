@@ -819,7 +819,7 @@ class fimDatabase extends databaseSQL
 
 
 
-  public function getSessions($options, $sort = array('sessionId' => 'asc'), $limit = 0, $pagination = 1)
+  public function getSessions($options = array(), $sort = array('sessionId' => 'asc'), $limit = 0, $pagination = 1)
   {
     $options = array_merge(array(
       'sessionIds' => array(),

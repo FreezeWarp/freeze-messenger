@@ -86,16 +86,19 @@ if (is_array($hookLogin)) {
   if (isset($hookLogin['userName'], $hookLogin['password'])) {
     $request['userName'] = $hookLogin['userName'];
     $request['password'] = $hookLogin['password'];
+
+    $loginMethod = 'credentials';
   }
 
   if (isset($hookLogin['sessionHash'], $hookLogin['userId'])) {
-    $request['sessionHash'] = $hookLogin['sessionHash'];
-    $request['userId'] = $hookLogin['userId'];
+    $request['fim3_sessionHash'] = $hookLogin['sessionHash'];
+    $request['fim3_userId'] = $hookLogin['userId'];
+
+    $loginMethod = 'session';
   }
 }
 
-
-if ($ignoreLogin === true || $loginMethod !== false) { // Used for APIs that explicitly.
+elseif ($ignoreLogin === true) { // Used for APIs that explicitly.
   // We do nothing.
 }
 

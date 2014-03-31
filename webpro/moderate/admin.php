@@ -22,21 +22,7 @@ else {
     'do2' => array(
       'cast' => 'string',
     ),
-
-    'data' => array(
-      'cast' => 'string',
-    ),
-
-    'languageCode' => array(
-      'cast' => 'string',
-    ),
-
-    'phraseName' => array(
-      'cast' => 'string',
-    ),
   ));
-
-  $config = json_decode(file_get_contents('client/data/config.json'), true);
 
   if ($user['adminDefs']['modPrivs']) {
     switch ($request['do2']) {
@@ -48,19 +34,19 @@ else {
         foreach ($users AS $user2) {
           $adminPrivs = array();
 
-          if ($user2['adminPrivs'] & 1)   $adminPrivs[] = 'Grant';
-          if ($user2['adminPrivs'] & 2)    $adminPrivs[] = '<abbr title="This user cannot be altered by any user other than themself and the site owner.">Protected</abbr>';
-          if ($user2['adminPrivs'] & 4)    $adminPrivs[] = 'Global Room Moderator';
-          if ($user2['adminPrivs'] & 16)  $adminPrivs[] = 'Global Ban Ability';
-          if ($user2['adminPrivs'] & 64)  $adminPrivs[] = 'Global Files Control';
-          if ($user2['adminPrivs'] & 256)  $adminPrivs[] = 'Censor Control';
-          if ($user2['adminPrivs'] & 4096)  $adminPrivs[] = 'Plugins Control';
-          if ($user2['adminPrivs'] & 4096)  $adminPrivs[] = 'Interface Control';
+          if ($user2['adminPrivs'] & ADMIN_GRANT)   $adminPrivs[] = 'Grant';
+          if ($user2['adminPrivs'] & ADMIN_PROTECTED)    $adminPrivs[] = '<abbr title="This user cannot be altered by any user other than themself and the site owner.">Protected</abbr>';
+          if ($user2['adminPrivs'] & ADMIN_ROOMS)    $adminPrivs[] = 'Global Room Moderator';
+          if ($user2['adminPrivs'] & ADMIN_USERS)  $adminPrivs[] = 'Global Ban Ability';
+          if ($user2['adminPrivs'] & ADMIN_FILES)  $adminPrivs[] = 'Global Files Control';
+          if ($user2['adminPrivs'] & ADMIN_CENSOR)  $adminPrivs[] = 'Censor Control';
+          if ($user2['adminPrivs'] & ADMIN_PLUGINS)  $adminPrivs[] = 'Plugins Control';
+          if ($user2['adminPrivs'] & ADMIN_INTERFACES)  $adminPrivs[] = 'Interface Control';
 
           $rows .= "<tr><td>$user2[userId]</td><td>$user2[userName]</td><td>" . implode(', ', $adminPrivs) . "</td><td><a href=\"./moderate.php?do=admin&do2=edit&user=$user2[userId]\"><img src=\"./images/document-edit.png\" /></a></td></tr>";
         }
 
-      echo container('Configurations<a href="./moderate.php?do=config&do2=edit"><img src="./images/document-new.png" style="float: right;" /></a>','<table class="page rowHover">
+      echo container('Administrators<a href="./moderate.php?do=admin&do2=edit"><img src="./images/document-new.png" style="float: right;" /></a>','<table class="page rowHover">
   <thead>
     <tr class="ui-widget-header">
       <td>User ID</td>

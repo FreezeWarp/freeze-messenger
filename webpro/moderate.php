@@ -28,7 +28,7 @@ if (isset($_POST['webproModerate_userName'])) {
 }
 elseif (isset($_COOKIE['webproModerate_sessionHash'])) {
   $hookLogin['sessionHash'] = $_COOKIE['webproModerate_sessionHash'];
-  $hookLogin['userIdComp'] = $_COOKIE['webproModerate_userId'];
+  $hookLogin['userId'] = $_COOKIE['webproModerate_userId'];
 }
 else {
   $ignoreLogin = true;
@@ -46,13 +46,10 @@ require('moderateFunctions.php'); // Functions that are used solely by the moder
 
 
 /* This sets the cookie with the session hash if possible (sessionHash will be set in validate.php). */
-if (isset($sessionHash)) {
-  if (strlen($sessionHash) > 0) {
-    setcookie('webproModerate_sessionHash', $sessionHash);
-    setcookie('webproModerate_userId', $user['userId']);
-  }
+if (isset($sessionHash) && strlen($sessionHash) > 0) {
+  setcookie('webproModerate_sessionHash', $sessionHash);
+  setcookie('webproModerate_userId', $user['userId']);
 }
-
 ?><!DOCTYPE HTML>
 <!-- Original Source Code Copyright © 2011 Joseph T. Parsons. -->
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -192,9 +189,6 @@ if (isset($sessionHash)) {
   <script src="./client/codemirror/lib/codemirror.js"></script>
   <script src="./client/codemirror/mode/xml/xml.js"></script>
   <script src="./client/codemirror/mode/clike/clike.js"></script>
-  <!--<script src="./client/codemirror/lib/overlay.js"></script>-->
-  <!--<script src="./client/codemirror/mode/xml/xml.js"></script>
-  <script src="./client/codemirror/mode/clike/clike.js"></script>-->
 
   <script>
   function windowDraw() {
@@ -212,39 +206,6 @@ if (isset($sessionHash)) {
   }
 
   $(document).ready(function() {
-
-/*    CodeMirror.defineMode("mustache", function(config, parserConfig) {
-      var mustacheOverlay = {
-        token: function(stream, state) {
-          if (stream.match("{{{{")) {
-            while ((ch = stream.next()) != null)
-              if (ch == "}" && stream.next() == "}" && stream.next() == "}" && stream.next() == "}") break;
-            return "mustache";
-          }
-          while (stream.next() != null && !stream.match("{{{{", false)) {}
-          return null;
-        }
-      };
-      return CodeMirror.overlayParser(CodeMirror.getMode(config, parserConfig.backdrop || "text/html"), mustacheOverlay);
-    });
-
-
-    if ($('#textXml').size()) {
-      var editorXml = CodeMirror.fromTextArea(document.getElementById("textXml"), {
-        mode:  "mustache",
-        tabMode: "shift",
-        lineNumbers: true
-      });
-    }
-
-    if ($('#textClike').size()) {
-      var editorClike = CodeMirror.fromTextArea(document.getElementById("textClike"), {
-        mode:  "clike",
-        tabMode: "shift",
-        lineNumbers: true
-      });
-    }*/
-
     if ($('#textXml').size()) {
       var editorXml = CodeMirror.fromTextArea(document.getElementById("textXml"), {
         mode:  "text/html",
@@ -284,26 +245,40 @@ if (isset($sessionHash)) {
       <li><a href="moderate.php?do=copyright">Copyright</a></li>
     </ul>
 
-    <h3><a href="#" data-itemId="2">Manage WebPro</a></h3>
+    <?php if ($user['adminDefs']['modTemplates']) { ?>
+    <h3><a href="#" data-itemId="2">WebPro</a></h3>
     <ul>
-      <?php echo ($user['adminDefs']['modTemplates'] ? '<li><a href="moderate.php?do=phrases">Modify Phrases</a></li>' : ''); ?>
-      <?php echo ($user['adminDefs']['modTemplates'] ? '<li><a     href="moderate.php?do=templates">Modify Templates</a></li>' : ''); ?>
+      <li><a href="moderate.php?do=phrases">Modify Phrases</a></li>
+      <li><a href="moderate.php?do=templates">Modify Templates</a></li>
     </ul>
+    <?php } ?>
 
-    <h3><a href="#" data-itemId="3">Manage Engines</a></h3>
+    <h3><a href="#" data-itemId="3">Engines</a></h3>
     <ul>
       <?php echo ($user['adminDefs']['modCensor'] ? '<li><a href="moderate.php?do=censor">Modify Censor</a></li>' : ''); ?>
+      <?php echo ($user['adminDefs']['modEmotes'] ? '<li><a href="moderate.php?do=emoticons">Modify Emoticons</a></li>' : ''); ?>
       <?php echo ($user['adminDefs']['modPlugins'] && false ? '<li><a href="moderate.php?do=plugins">Modify Plugins</a></li>' : ''); ?>
     </ul>
 
+    <h3><a href="#" data-itemId="3">Moderation</a></h3>
+    <ul>
+      <?php echo ($user['adminDefs']['modUsers'] ? '<li><a href="moderate.php?do=users">Manage Users</a></li>' : ''); ?>
+      <?php echo ($user['adminDefs']['modRooms'] ? '<li><a href="moderate.php?do=rooms">Manage Rooms</a></li>' : ''); ?>
+      <?php echo ($user['adminDefs']['modPrivate'] ? '<li><a href="moderate.php?do=private">Manage Private</a></li>' : ''); ?>
+      <?php echo ($user['adminDefs']['modFiles'] ? '<li><a href="moderate.php?do=files">Manage Files</a></li>' : ''); ?>
+    </ul>
+
+    <?php if ($user['adminDefs']['modPrivs']) { ?>
     <h3><a href="#" data-itemId="4">Manage Advanced</a></h3>
     <ul>
-      <?php echo ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=admin">Admin Permissions</a></li>' : ''); ?>
-      <?php echo ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=config">Configuration Editor</a></li>' : ''); ?>
-      <?php echo ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=sys">System Check</a></li>' : ''); ?>
-      <?php echo ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=tools">Tools</a></li>' : ''); ?>
-      <?php echo ($user['adminDefs']['modCore'] ? '<li><a href="moderate.php?do=phpinfo">PHP Info</a></li>' : ''); ?>
+      <li><a href="moderate.php?do=admin">Admin Permissions</a></li>
+      <li><a href="moderate.php?do=sessions">User Sessions</a></li>
+      <li><a href="moderate.php?do=config">Configuration Editor</a></li>
+      <li><a href="moderate.php?do=sys">System Check</a></li>
+      <li><a href="moderate.php?do=tools">Tools</a></li>
+      <li><a href="moderate.php?do=phpinfo">PHP Info</a></li>
     </ul>
+    <?php } ?>
   </div>
 </div>
 <div id="moderateRight" class="ui-widget">
@@ -331,17 +306,25 @@ if (!$user['userId']) {
 elseif ($user['adminDefs']) { // Check that the user is an admin.
   switch ($_GET['do']) {
     case 'phrases': require('./moderate/phrases.php'); break;
-    case 'hooks': require('./moderate/hooks.php'); break;
     case 'templates': require('./moderate/templates.php'); break;
-    case 'censor': require('./moderate/censor.php'); break;
-    case 'bbcode': require('./moderate/bbcode.php'); break;
-    case 'phpinfo': require('./moderate/phpinfo.php'); break;
-    case 'copyright': require('./moderate/copyright.php'); break;
-    case 'sys': require('./moderate/status.php'); break;
-    case 'config': require('./moderate/config.php'); break;
+
     case 'plugins': require('./moderate/plugins.php'); break;
-    case 'tools': require('./moderate/tools.php'); break;
+    case 'censor': require('./moderate/censor.php'); break;
+    case 'emoticons': require('./moderate/emoticons.php'); break;
+
+    case 'users': require('./moderate/users.php'); break;
+    case 'rooms': require('./moderate/rooms.php'); break;
+    case 'private': require('./moderate/private.php'); break;
+    case 'files': require('./moderate/files.php'); break;
+
     case 'admin': require('./moderate/admin.php'); break;
+    case 'sessions': require('./moderate/sessions.php'); break;
+    case 'config': require('./moderate/config.php'); break;
+    case 'sys': require('./moderate/status.php'); break;
+    case 'tools': require('./moderate/tools.php'); break;
+    case 'phpinfo': require('./moderate/phpinfo.php'); break;
+
+    case 'copyright': require('./moderate/copyright.php'); break;
     default: require('./moderate/main.php'); break;
   }
 }
