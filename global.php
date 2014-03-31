@@ -122,7 +122,9 @@ define("ROOM_PERMISSION_MODERATE", 8);
 define("ROOM_PERMISSION_PROPERTIES", 16);
 define("ROOM_PERMISSION_GRANT", 128);
 
-define("USER_PRIV_UNBANNED", 1);
+define("USER_PRIV_VIEW", 1);
+define("USER_PRIV_POST", 2);
+define("USER_PRIV_TOPIC", 4);
 define("USER_PRIV_CREATE_ROOMS", 32);
 define("USER_PRIV_PRIVATE_FRIENDS", 64);
 define("USER_PRIV_PRIVATE_ALL", 128);
@@ -290,8 +292,8 @@ if (!$user['anonId'] && $user['lastSync'] <= (time() - $config['userSyncThreshol
 ////* Other Stuff *////
 
 if (defined('FIM_LOGINRUN')) {
-  if ($api && !$user['userPrivs']['allowed']) throw new Exception('The user has been banned.'); // This isn't technically an exception, but the API is designed to throw all quit errors with the exception schema.
+  if ($apiRequest && !$ignoreLogin && !$user['userDefs']['view']) throw new Exception('banned'); // This isn't technically an exception, but the API is designed to throw all quit errors with the exception schema.
 }
 
-if ($api && $config['compressOutput']) ob_start('fim_apiCompact');
+if ($apiRequest && $config['compressOutput']) ob_start('fim_apiCompact');
 ?>

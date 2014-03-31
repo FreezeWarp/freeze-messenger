@@ -119,8 +119,6 @@ function processPHPBB($user, $password) {
 */
 function processVanilla($user, $password) {
   if (!$user['userId']) { // The user does not exist.
-    define('LOGIN_FLAG', 'BAD_USERNAME');
-
     return false;
   }
 
@@ -129,8 +127,6 @@ function processVanilla($user, $password) {
   }
 
   else { // The password is not correct.
-    define('LOGIN_FLAG', 'BAD_PASSWORD');
-
     return false;
   }
 }

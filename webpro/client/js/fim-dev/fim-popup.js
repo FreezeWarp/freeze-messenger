@@ -644,7 +644,7 @@ popup = {
             defaultRoom = $('#defaultRoom').val(),
             ignoreList = $('#ignoreList').val(),
             profile = $('#profile').val(),
-            defaultRoomId = (defaultRoom ? roomRef[defaultRoom] : 0),
+//            defaultRoomId = (defaultRoom ? roomRef[defaultRoom] : 0), TODO
             fontId = $('#defaultFace option:selected').val(),
             defaultFormatting = ($('#defaultBold').is(':checked') ? 256 : 0) + ($('#defaultItalics').is(':checked') ? 512 : 0),
             parentalAge = $('#parentalAge option:selected').val(),
@@ -992,7 +992,7 @@ popup = {
       oF : function() {
         $("#kickUserForm").submit(function() {
           var roomNameKick = $('#roomNameKick').val(),
-            roomId = roomRef[roomNameKick],
+//            roomId = roomRef[roomNameKick], TODO
             userName = $('#userName').val(),
             length = Math.floor(Number($('#time').val() * Number($('#interval > option:selected').attr('value'))));
 

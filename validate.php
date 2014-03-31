@@ -22,8 +22,7 @@
  * @param string userName - The username of the user.
  * @param string password - The password of the user.
  * @param string passwordEncrypt - The ecryption used for obtaining a login. "plaintext" and "md5" are both accepted, but the latter can only be used with vBulletin v3. Other forms of encryption will be possible soon.
- * @param string apiVersion - The version of the API being used to login. It can be comma-seperated if multiple versions will work withe client. 3.0.0 is the only currently accepted version.
- * @param bool apiLogin - Pass this when you are trying to obtain a sessionhash from this script. Otherwise, nothing will output.
+ * @param string apiVersions - The version of the API being used to login. It can be comma-seperated if multiple versions will work withe client. 3.0.0 is the only currently accepted version.
 
  * Standard Directives Required for __ALL__ API Calls:
  * @param string fim3_userId
@@ -37,26 +36,24 @@
 require_once(dirname(__FILE__) . '/global.php');
 
 
+if(!isset($ignoreLogin)) $ignoreLogin = false;
+if(!isset($apiRequest)) $apiRequest = false;
 
-$request = fim_sanitizeGPC('p', array(
-  'userId' => array(
-    'cast' => 'int',
-  ),
+
+$request = fim_sanitizeGPC('r', array(
+  'userId' => array('cast' => 'int'),
   'userName' => array(),
   'password' => array(),
   'passwordEncrypt' => array(
     'valid' => array('base64', 'plaintext', 'md5'),
   ),
-  'apiVersion' => array(
+  'apiVersions' => array(
     'cast' => 'jsonList',
     'filter' => 'string',
     'evaltrue' => true,
-    'require' => true
   ),
   'fim3_sessionHash' => array(),
-  'fim3_userId' => array(
-    'cast' => 'int',
-  ),
+  'fim3_userId' => array('cast' => 'int',),
 ));
 
 
@@ -65,12 +62,9 @@ $request = fim_sanitizeGPC('p', array(
 require(dirname(__FILE__) . '/functions/fim_uac.php');
 
 
-static $api, $goodVersion;
+static $goodVersion;
 
 $noSync = false;
-$userId = 0;
-$userName = '';
-$password = '';
 $sessionHash = '';
 $session = '';
 
@@ -91,7 +85,7 @@ $user = array(
 
 ///* Create a Valid $user Array *///
 
-if (isset($ignoreLogin) && $ignoreLogin === true) { // Used for APIs that explicitly.
+if ($ignoreLogin === true) { // Used for APIs that explicitly.
   // We do nothing.
 }
 
@@ -99,18 +93,18 @@ if (isset($ignoreLogin) && $ignoreLogin === true) { // Used for APIs that explic
 
 elseif (isset($hookLogin)) { // Custom login to be used by plugins.
   if (is_array($hookLogin)) {
-    if (isset($hookLogin['userName'])) $userName = $hookLogin['userName'];
-    if (isset($hookLogin['password'])) $password = $hookLogin['password'];
-    if (isset($hookLogin['sessionHash'])) $sessionHash = $hookLogin['sessionHash'];
-    if (isset($hookLogin['userIdComp'])) $userIdComp = $hookLogin['userIdComp'];
+    if (isset($hookLogin['userName'])) $request['userName'] = $hookLogin['userName'];
+    if (isset($hookLogin['password'])) $request['password'] = $hookLogin['password'];
+    if (isset($hookLogin['sessionHash'])) $request['sessionHash'] = $hookLogin['sessionHash'];
+    if (isset($hookLogin['userIdComp'])) $userIdComp = $hookLogin['userIdComp']; // TODO?
   }
 }
 
 
 
-elseif (!isset($apiRequest) || !$apiRequest) { // Validate.php called directly.
+elseif ($apiRequest !== true) { // Validate.php called directly.
   /* Ensure that the client is compatible with the server. Note that this check is only performed when getting a sessionHash, not when doing any other action. */
-  foreach ($request['apiVersionList'] AS $version) {
+  foreach ($request['apiVersions'] AS $version) {
     if ($version == 30000) $goodVersion = true; // This the same as version 3.0.0
   }
 
@@ -124,11 +118,18 @@ elseif (!isset($apiRequest) || !$apiRequest) { // Validate.php called directly.
       else {
         if ($request['passwordEncrypt'] === 'base64') $request['password'] = base64_decode($request['password']);
 
-        // Get the user using a vanilla  request.
-        $userPre = $database->getUsers(array(
-          'userIds' => array($request['userId']),
-          'userNames' => array($request['userId'] ? null : $request['userName'])
-        ))->getAsArray(false);
+        if ($request['userId']) {
+          $userPre = $database->getUsers(array(
+            'userIds' => array($request['userId']),
+            'includePasswords' => true
+          ))->getAsArray(false);
+        }
+        elseif ($request['userName']) {
+          $userPre = $database->getUsers(array(
+            'userNames' => array($request['userName']),
+            'includePasswords' => true
+          ))->getAsArray(false);
+        }
 
         // If this fails, and we support integration, try again using the getUserFromUAC function, which will automatically create vanilla data (and return that data to us).
         if (!count($userPre)) {
@@ -138,22 +139,22 @@ elseif (!isset($apiRequest) || !$apiRequest) { // Validate.php called directly.
           ))->getAsArray(false);
         }
 
-        if (processLogin($userPre, $password, 'plaintext')) $user = $userPre; // Verify that the submitted password matches the stored one.
+        if ($userPre['userId'] == $config['anonymousUserId']) throw new Exception('anonAccount');
+        elseif (processLogin($userPre, $request['password'], 'plaintext')) $user = $userPre; // Verify that the submitted password matches the stored one.
         else throw new Exception('invalidLogin');
 
         $user['anonId'] = 0;
 
-        $database->createSession($user['userId']);
+        $sessionHash = $database->createSession($user['userId']);
       }
     }
     elseif ($config['anonymousUserId']) {
-      $user = $database->getUser(array(
+      $user = $database->getUsers(array(
         'userIds' => array($config['anonymousUserId'])
       ))->getAsArray(false);
       $user['anonId'] = rand(1, 10000);
-      $user['userName'] .= $user['anonId'];
 
-      $database->createSession($config['anonymousUserId'], $user['anonId']);
+      $sessionHash = $database->createSession($config['anonymousUserId'], $user['anonId']);
     }
     else throw new Exception('loginRequired');
   }
@@ -161,7 +162,7 @@ elseif (!isset($apiRequest) || !$apiRequest) { // Validate.php called directly.
 
 
 
-elseif ($apiRequest) { // Validate.php called from API.
+elseif ($apiRequest === true) { // Validate.php called from API.
   if (!isset($request['fim3_sessionHash'], $request['fim3_userId'])) {
     throw new Exception('A sessionHash and userId are required for all API requests. See the API documentation on obtaining these using validate.php.');
   }
@@ -171,7 +172,7 @@ elseif ($apiRequest) { // Validate.php called from API.
   ))->getAsArray(false);
 
   if (!count($session)) throw new Exception('invalidSession');
-  elseif ((int) $session['userId'] !== $request['userId']) throw new Exception('sessionMismatchUserId'); // The userid sent has to be the same one in the DB. In theory we could just not require a userId be specified, but there are benefits to this alternative. For instance, this eliminates some forms of injection-based session fixation.
+  elseif ((int) $session['userId'] !== (int) $request['fim3_userId']) throw new Exception('sessionMismatchUserId'); // The userid sent has to be the same one in the DB. In theory we could just not require a userId be specified, but there are benefits to this alternative. For instance, this eliminates some forms of injection-based session fixation.
   elseif ($session['sessionBrowser'] !== $_SERVER['HTTP_USER_AGENT']) throw new Exception('sessionMismatchBrowser'); // Require the UA match that of the one used to establish the session. Smart clients are encouraged to specify their own with their client name and version.
   elseif ($session['sessionIp'] !== $_SERVER['REMOTE_ADDR']) throw new Exception('sessionMismatchIp'); // This is a tricky one, but generally the most certain to block any attempted forgeries. That said, IPs can, /theoretically/ be spoofed.
   else {
@@ -181,6 +182,13 @@ elseif ($apiRequest) { // Validate.php called from API.
   }
 }
 
+
+
+
+/* Additional Anonymous Processing */
+if ($user['anonId']) {
+  $user['userName'] .= $user['anonId'];
+}
 
 
 
@@ -213,13 +221,15 @@ $user['adminDefs'] = array(
 );
 
 $user['userDefs'] = array(
-  'allowed' => (bool) ($user['userPrivs'] & USER_PRIV_UNBANNED), // Is not banned
+  'view' => (bool) ($user['userPrivs'] & USER_PRIV_VIEW), // Is not banned
+  'post' => (bool) ($user['userPrivs'] & USER_PRIV_POST),
+  'changeTopic' => (bool) ($user['userPrivs'] & USER_PRIV_TOPIC),
   'createRooms' => (bool) ($user['userPrivs'] & USER_PRIV_CREATE_ROOMS), // May create rooms
   'privateRoomsFriends' => (bool) ($user['userPrivs'] & USER_PRIV_PRIVATE_FRIENDS), // May create private rooms (friends only)
-  'privateRoomsAll' => ($user['userPrivs'] & USER_PRIV_PRIVATE_FRIENDS && $user['userPrivs'] & USER_PRIV_PRIVATE_ALL), // May create private rooms (anybody)
+  'privateRoomsAll' => (bool) ($user['userPrivs'] & USER_PRIV_PRIVATE_FRIENDS && $user['userPrivs'] & USER_PRIV_PRIVATE_ALL), // May create private rooms (anybody)
 
-  'roomsOnline' => ($user['userPrivs'] & USER_PRIV_ACTIVE_USERS), // May see rooms online (API-handled).
-  'postCounts' => ($user['userPrivs'] & USER_PRIV_POST_COUNTS), // May see post counts (API-handled).
+  'roomsOnline' => (bool) ($user['userPrivs'] & USER_PRIV_ACTIVE_USERS), // May see rooms online (API-handled).
+  'postCounts' => (bool) ($user['userPrivs'] & USER_PRIV_POST_COUNTS), // May see post counts (API-handled).
 );
 
 
@@ -228,14 +238,9 @@ $user['userDefs'] = array(
 
 /* API Output */
 
-if (!$apiRequest) {
+if ($apiRequest !== true && $ignoreLogin !== true) {
   $xmlData = array(
     'login' => array(
-      'valid' => (bool) $valid,
-
-      'loginFlag' => (defined('LOGIN_FLAG') ? LOGIN_FLAG : ''),
-      'loginText' => $errDesc,
-
       'sessionHash' => $sessionHash,
       'anonId' => $user['$anonId'],
       'defaultRoomId' => (int) (isset($_GET['room']) ? $_GET['room'] :

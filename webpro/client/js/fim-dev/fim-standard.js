@@ -85,48 +85,15 @@ var standard = {
   },
 
   login : function(options) {
-    var data = '',
-      passwordEncrypt = '';
-
-    console.log('Encrypted Password: ' + options.password);
-
     if (options.start) options.start();
 
-    if (options.userName && options.password) {
-      console.log('Login Triggered; Using a Password of "' + options.password + '" and a Username of "' + options.userName + '"');
-
-      passwordEncrypt = 'plaintext';
-      // TODO: Enable for vBulletin
-      // var password = md5(password);
-      // var passwordEncrypt = 'md5';
-
-      data = 'userName=' + fim_eURL(options.userName) + '&password=' + fim_eURL(options.password) + '&passwordEncrypt=' + passwordEncrypt;
-    }
-    else if (options.userId && options.password) {
-      console.log('Login Triggered; Using a Password of "' + options.password + '" and a UserID of "' + options.userId + '"');
-
-      passwordEncrypt = 'plaintext';
-      // TODO: Enable for vBulletin
-      // var password = md5(password);
-      // var passwordEncrypt = 'md5';
-
-      data = 'userId=' + fim_eURL(options.userId) + '&password=' + fim_eURL(options.password) + '&passwordEncrypt=' + passwordEncrypt;
-    }
-    else {
-      data = 'apiLogin=1';
-    }
-
-
-    $.ajax({
-      url: directory + 'validate.php',
-      type: 'POST',
-      data: data + '&apiVersion=3&fim3_format=json',
-      cache: false,
-      timeout: 2500,
-      success: function(json) {
-        console.log('Login Started');
-
-        activeLogin = json.login;
+    fimApi.login({
+      'userId' : options.userId,
+      'userName' : options.userName,
+      'password' : options.password
+    }, {
+      callback : function(activeLogin) {
+        window.activeLogin = activeLogin;
 
         userId = activeLogin.userData.userId;
         anonId = activeLogin.anonId;
@@ -139,85 +106,41 @@ var standard = {
 
         /* Update Permissions */
 
-        userPermissions = {
-          createRoom : activeLogin.userPermissions.createRooms, privateRoom : activeLogin.userPermissions.privateRooms,
-          general : activeLogin.userPermissions.allowed
+        userPermissions = activeLogin.userPermissions;
+        adminPermissions = activeLogin.adminPermissions;
+
+
+        if (options.showMessage) {
+          // Display Dialog to Notify User of Being Logged In
+          if (!userPermissions.allowed) dia.info('You are now logged in as ' + activeLogin.userData.userName + '. However, you are not allowed to post and have been banned by an administrator.', 'Logged In'); // dia.error(window.phrases.errorBanned);
+          else dia.info('You are now logged in as ' + activeLogin.userData.userName + '.', 'Logged In');
         }
 
-        adminPermissions = {
-          modPrivs : activeLogin.adminPermissions.modPrivs, modCore : activeLogin.adminPermissions.modCore,
-          modUsers : activeLogin.adminPermissions.modUsers, modTemplates : activeLogin.adminPermissions.modTemplates,
-          modImages : activeLogin.adminPermissions.modImages, modCensor : activeLogin.adminPermissions.modCensor,
-          modHooks : activeLogin.adminPermissions.modHooks
-        }
+        $('#loginDialogue').dialog('close'); // Close any open login forms.
 
-
-        if (activeLogin.banned) { // The user has been banned, so pretty much nothing will work. In some respects, this really only exists for IP bans, but meh.
-          dia.error(window.phrases.errorBanned);
-
-          userPermissions = {
-            createRoom : false, privateRoom : false, general : false
-          }
-
-          adminPermissions = {
-            modPrivs : false, modCore : false, modUsers : false,
-            modTemplates : false, modImages : false, modCensor : false,
-            modHooks : false
-          }
-        }
-        else if (activeLogin.valid === true) {
-          if (options.showMessage) {
-            // Display Dialog to Notify User of Being Logged In
-            if (!userPermissions.general) dia.info('You are now logged in as ' + activeLogin.userData.userName + '. However, you are not allowed to post and have been banned by an administrator.', 'Logged In');
-            else dia.info('You are now logged in as ' + activeLogin.userData.userName + '.', 'Logged In');
-          }
-
-          $('#loginDialogue').dialog('close'); // Close any open login forms.
-
-          console.log('Login valid. Session hash: ' + sessionHash + '; User ID: ' + userId);
-        }
-        else {
-          switch (activeLogin.loginFlag) {
-            case 'PASSWORD_ENCRYPT': dia.error("The form encryption used was not accepted by the server."); break;
-            case 'BAD_USERNAME': dia.error("A valid user was not provided."); break;
-            case 'BAD_PASSWORD': dia.error("The password was incorrect."); break;
-            case 'API_VERSION_STRING': dia.error("The server was unable to process the API version string specified."); break;
-            case 'DEPRECATED_VERSION': dia.error("The server will not accept this client because it is of a newer version."); break;
-            case 'INVALID_SESSION': sessionHash = ''; break;
-            default: break;
-          }
-
-          console.log('Login Invalid');
-        }
+        console.log('Login valid. Session hash: ' + sessionHash + '; User ID: ' + userId);
 
 
         if (!anonId && !userId) disableSender(); // The user is not able to post.
 
         if (options.finish) options.finish();
 
-        populate({
-          callback : function() {
-            contextMenuParseRoom();
-            windowDynaLinks();
-
-            /* Select Room */
-            if (!roomId) {
-              fim_hashParse({defaultRoomId : activeLogin.defaultRoomId}); // When a user logs in, the hash data (such as room and archive) is processed, and subsequently executed.
-
-              /*** A Hack of Sorts to Open Dialogs onLoad ***/
-              if (typeof prepopup === 'function') { prepopup(); prepopup = false; }
-            }
-
-            return false;
-          }
-        });
-
         console.log('Login Finished');
 
         return false;
       },
-      error: function(err,err2,err3) {
-        dia.error('The login request could not be sent. Please try again.<br /><br />' + err3 + '<br /><br />' + directory + 'validate.php<br /><br />' + data + '&apiVersion=3');
+      error: function(data) { console.log(data);
+         switch (data) {
+         case 'PASSWORD_ENCRYPT': dia.error("The form encryption used was not accepted by the server."); break;
+         case 'BAD_USERNAME': dia.error("A valid user was not provided."); break;
+         case 'BAD_PASSWORD': dia.error("The password was incorrect."); break;
+         case 'API_VERSION_STRING': dia.error("The server was unable to process the API version string specified."); break;
+         case 'DEPRECATED_VERSION': dia.error("The server will not accept this client because it is of a newer version."); break;
+         case 'INVALID_SESSION': sessionHash = ''; break;
+         default: break;
+         }
+
+         console.log('Login Invalid');
 
         return false;
       }

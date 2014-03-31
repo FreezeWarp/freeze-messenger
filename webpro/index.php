@@ -17,7 +17,7 @@
 
     <!-- START Scripts -->
 
-    <!--[if lt IE 7]><script>window.location = "browser.php";</script><![endif]-->
+    <!--[if lt IE8]><script>window.location = "browser.php";</script><![endif]-->
 
     <!--[if lt IE 11]><script src="client/js/fim-ie.js" type="text/javascript"></script><![endif]-->
     <!--<script src="client/js/jquery-1.7.1.min.js" type="text/javascript"></script>-->

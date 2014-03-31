@@ -79,9 +79,8 @@ var topic,
 
 /* Objects for Cleanness, Caching. */
 
-var roomRef = {}, roomIdRef = {}, modRooms = {}, // Just a whole bunch of objects.
+var modRooms = {}, // Just a whole bunch of objects.
   userData = {},
-  groupRef = {}, groupIdRef = {},
   roomLists = {},
 
   roomList = [], userList = [], groupList = [], // Arrays that serve different purposes, notably looking up IDs from names.
@@ -658,20 +657,6 @@ $.ajax({
 
 
 
-/* Permission Dead Defaults
-* Specifically, These All Start False then Change on-Login */
-var userPermissions = {
-  createRoom : false, privateRoom : false
-};
-
-var adminPermissions = {
-  modPrivs : false, modCore : false, modUsers : false,
-  modImages : false, modCensor : false, modPlugins : false,
-  modTemplates: false, modHooks : false, modTranslations : false
-};
-
-
-
 /* Settings
  * These Are Set Based on Cookies */
 var settings = {
@@ -748,164 +733,6 @@ var regexs = {
 /*********************************************************
 ************************* END ***************************
 ******************* Variable Setting ********************
-*********************************************************/
-
-
-
-
-
-
-
-
-/*********************************************************
-************************ START **************************
-******************** Data Population ********************
-*********************************************************/
-
-/**
- * Query and update the various caches.
- * 
- * @param object options - An object containing various options, including:
- ** function 'callback' - A function to execute once populate has finished.
- * 
- * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
- * 
- * TODO - Stop populating everything. That was a bad idea. (Update: Seriously, what was I thinking? I mean, it makes sense in theory... just not in reality.)
- */
-function populate(options) {
-  $.when(
-    $.ajax({
-      url: directory + 'api/getRooms.php?permLevel=view&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-      timeout: 5000,
-      type: 'GET',
-      cache: false,
-      success: function(json) {
-        roomList = []; // Array // Clear so we don't get repeat values on regeneration.
-        roomIdRef = {}; // Object
-        roomRef = {}; // Object
-        roomTableHtml = '';
-        roomUlHtml = '';
-        roomUlMyHtml = '';
-        roomUlFavHtml = '';
-
-        active = json.getRooms.rooms;
-
-        for (i in active) {
-          var roomName = active[i].roomName,
-            roomId = active[i].roomId,
-            roomTopic = active[i].roomTopic,
-            isAdmin = active[i].permissions.canAdmin,
-            isModerator = active[i].permissions.canModerate,
-            messageCount = active[i].messageCount,
-            isOwner = (active[i].owner === userId ? true : false);
-
-          if (isOwner) { roomUlMyHtml += ulText; }
-          else { roomUlHtml += ulText; }
-
-          roomRef[roomName] = roomId;
-          roomIdRef[roomId] = {
-            'roomId' : roomId,
-            'roomName' : roomName,
-            'roomTopic' : roomTopic,
-            'messageCount' : messageCount,
-            'isAdmin' : isAdmin,
-            'isModerator' : isModerator,
-            'isOwner' : isOwner
-          };
-          roomList.push(roomName);
-
-
-          if (isAdmin) { modRooms[roomId] = 2; }
-          else if (isModerator) { modRooms[roomId] = 1; }
-          else { modRooms[roomId] = 0; }
-        }
-
-        if (!roomList.length) {
-          dia.error('You have not be granted access to any rooms. Sorry!');
-
-          disableSender();
-
-          $(document).ready(function() {
-            windowDraw();
-            windowDynaLinks();
-          });
-        }
-
-        return false;
-      },
-      error: function() {
-        dia.error(window.phrases.errorRoomsNotRetrieved);
-        $q($l('errorQuitMessage'), $l('errorGenericQuit'));
-
-        return false;
-      }
-    }),
-
-
-    $.ajax({
-      url: directory + 'api/getRoomLists.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-      timeout: 5000,
-      type: 'GET',
-      cache: false,
-      success: function(json) {
-        for (i in json.getRoomLists.roomLists) {
-          var listId = json.getRoomLists.roomLists[i].listId,
-            listName = json.getRoomLists.roomLists[i].listName;
-
-          roomLists[listName] = new Array();
-
-          for (j in json.getRoomLists.roomLists[i].listEntries) {
-            roomLists[listName].push(json.getRoomLists.roomLists[i].listEntries[j]);
-          }
-        }
-        return false;
-      },
-      error: function() {
-        dia.error(window.phrases.errorRoomListsNotRetrieved);
-
-        return false;
-      }
-    }),
-
-
-    $.ajax({
-      url: directory + 'api/getGroups.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-      timeout: 5000,
-      type: 'GET',
-      cache: false,
-      success: function(json) {
-        for (i in json.getGroups.groups) {
-          var groupName = json.getGroups.groups[i].groupName,
-            groupId = json.getGroups.groups[i].groupId;
-
-          groupRef[groupName] = groupId;
-          groupIdRef[groupId] = groupName;
-          groupList.push(groupName);
-        }
-
-        return false;
-      },
-      error: function() {
-        dia.error(window.phrases.errorUserGroupsNotRetrieved); // TODO: Disable certain features.
-
-        return false;
-      }
-    })
-  ).always(function() {
-    if (typeof options.callback === 'function') {
-      options.callback();
-    }
-
-    return true;
-  });
-
-  return false;
-}
-
-/*********************************************************
-************************* END ***************************
-******************** Data Population ********************
 *********************************************************/
 
 
@@ -1066,16 +893,16 @@ autoEntry = {
     if (!id) {
       val = $("#" + type + "Bridge").val();
       switch(type) {
-        case 'watchRooms': id = roomRef[val]; type2 = 'Room'; break;
-        case 'moderators': case 'allowedUsers': case 'ignoreList': id = userRef[val]; type2 = 'User'; break;
-        case 'allowedGroups': id = groupRef[val]; type2 = 'Group'; break;
+//        case 'watchRooms': id = roomRef[val]; type2 = 'Room'; break; TODO
+//        case 'moderators': case 'allowedUsers': case 'ignoreList': id = userRef[val]; type2 = 'User'; break;
+//        case 'allowedGroups': id = groupRef[val]; type2 = 'Group'; break;
       }
     }
     else {
       switch(type) {
-        case 'watchRooms': val = roomIdRef[id].roomName; type2 = 'Room'; break;
-        case 'moderators': case 'allowedUsers': case 'ignoreList': val = userData[id].userName; type2 = 'User'; break;
-        case 'allowedGroups': val = groupIdRef[id]; type2 = 'Group'; break;
+//        case 'watchRooms': val = roomIdRef[id].roomName; type2 = 'Room'; break; TODO
+//        case 'moderators': case 'allowedUsers': case 'ignoreList': val = userData[id].userName; type2 = 'User'; break;
+//        case 'allowedGroups': val = groupIdRef[id]; type2 = 'Group'; break;
       }
     }
 
@@ -1124,9 +951,9 @@ autoEntry = {
     else { entryList = []; }
 
     switch(type) {
-      case 'watchRooms': source = roomRef; break;
-      case 'moderators': case 'allowedUsers': case 'ignoreList': source = userRef; break;
-      case 'allowedGroups': source = groupRef; break;
+//      case 'watchRooms': source = roomRef; break; TODO
+//      case 'moderators': case 'allowedUsers': case 'ignoreList': source = userRef; break;
+//      case 'allowedGroups': source = groupRef; break;
     }
 
 
@@ -1231,17 +1058,16 @@ function windowDynaLinks() {
 
 
   // Hide DOM Elements Based on User's Permissions
-  if (!window.userPermissions.createRoom) { $('li > #createRoom').parent().hide(); }
-  if (!window.userPermissions.privateRoom) { $('li > #privateRoom').parent().hide(); $('#userMenu a[data-action="private_im"]').parent().hide(); }
+  if (!window.userPermissions.createRooms) { $('li > #createRoom').parent().hide(); }
+  if (!window.userPermissions.privateRoomsFriends) { $('li > #privateRoom').parent().hide(); $('#userMenu a[data-action="private_im"]').parent().hide(); }
   if (!window.adminPermissions.modUsers) { $('li > #modUsers').parent().hide(); $('ul#userMenu > li > a[data-action="ban"]').hide(); noAdminCounter += 1; }
   if (!window.adminPermissions.modRooms) { $('ul#roomMenu > li > a[data-action="delete"]').hide(); noAdminCounter += 1; }
-  if (!window.adminPermissions.modImages) { $('li > #modImages').parent().hide(); $('ul#messageMenu > li > a[data-action="deleteimage"]').hide(); noAdminCounter += 1; }
+  if (!window.adminPermissions.modFiles) { $('li > #modImages').parent().hide(); $('ul#messageMenu > li > a[data-action="deleteimage"]').hide(); noAdminCounter += 1; }
   if (!window.adminPermissions.modCensor) { $('li > #modCensor').parent().hide(); noAdminCounter += 1; }
-  if (!window.adminPermissions.modTemplates) { $('li > #modPhrases').parent().hide(); noAdminCounter += 1; }
-  if (!window.adminPermissions.modTemplates) { $('li > #modTemplates').parent().hide(); noAdminCounter += 1; }
+  if (!window.adminPermissions.modTemplates) { $('li > #modPhrases, li > #modTemplates').parent().hide(); noAdminCounter += 1; }
   if (!window.adminPermissions.modPrivs) { $('li > #modPrivs').parent().hide(); noAdminCounter += 1; }
-  if (!window.adminPermissions.modHooks) { $('li > #modHooks').parent().hide(); noAdminCounter += 1; }
-  if (!window.adminPermissions.modCore) { $('li > #modCore').parent().hide(); noAdminCounter += 1; }
+  if (!window.adminPermissions.modPlugins) { $('li > #modHooks').parent().hide(); noAdminCounter += 1; }
+  if (!window.adminPermissions.modPrivs) { $('li > #modCore').parent().hide(); noAdminCounter += 1; }
 
   if (roomId) {
     if (roomId.toString().substr(0,1) === 'p' || modRooms[roomId] < 1) { $('li > #kick').parent().hide(); $('li > #manageKick').parent().hide(); $('#userMenu a[data-action="kick"]').parent().hide(); $('ul#messageMenu > li > a[data-action="delete"], ul#messageMenuImage > li > a[data-action="delete"], ul#messageMenuLink > li > a[data-action="delete"], ul#messageMenuVideo > li > a[data-action="delete"]').hide(); noModCounter += 2; }
@@ -1260,7 +1086,7 @@ function windowDynaLinks() {
   else { $('li > #login').parent().hide(); $('li > #logout').parent().hide(); }
 
 
-  // Room Lists (this is a bit slow -- we should optimise TODO)
+  // Room Lists (this is a bit slow -- we should optimise (TODO)
   $('#roomListLong > ul').html('<li>My Rooms<ul id="myRooms1"></ul></li>');
   $('#roomListShort > ul').html('<li>My Rooms<ul id="myRooms2"></ul></li>');
 
@@ -1388,7 +1214,7 @@ function contextMenuParseMessage() {
         title : 'Link to this Message',
         id : 'messageLink',
         content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '#page=archive#room=' + roomId + '#message=' + messageId + '" style="width: 100%;" />',
-        width: 600,
+        width: 600
       });
       break;
     }
@@ -1434,7 +1260,7 @@ function contextMenuParseMessage() {
         title : 'Link to this Message',
         id : 'messageLink',
         content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + roomId + '#message=' + messageId + '" style="width: 100%;" />',
-        width: 600,
+        width: 600
       });
       break;
       
@@ -1462,12 +1288,12 @@ function contextMenuParseMessage() {
           title : 'Copy URL',
           position : 'top',
           content : '<iframe style="width: 100%; display: none; height: 0px;"></iframe><a href="javascript:void(0);" onclick="$(this).prev().attr(\'src\',\'' + src.replace(/\'/g, "\\'").replace(/\"/g, '\\"') + '\').show().animate({height : \'80%\'}, 500); $(this).hide();">View<br /></a><br /><input type="text" name="url" value="' + src.replace(/\"/g, '\\"') +  '" style="width: 100%;" />',
-          width : 800,
-          oF : function() {
-            $('input[name=url]', this).first().focus();
-          }
-        });
-      break;
+        width : 800,
+        oF : function() {
+        $('input[name=url]', this).first().focus();
+      }
+    });
+    break;
 
       case 'delete':
         dia.confirm({
@@ -1484,7 +1310,7 @@ function contextMenuParseMessage() {
           title : 'Link to this Message',
           id : 'messageLink',
           content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + roomId + '#message=' + messageId + '" style="width: 100%;" />',
-          width: 600,
+          width: 600
         });
       break;
 

@@ -24,6 +24,7 @@
 */
 
 $apiRequest = true;
+$ignoreLogin = true;
 
 require('../global.php');
 

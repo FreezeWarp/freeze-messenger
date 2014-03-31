@@ -1,5 +1,9 @@
 <?php
 
+
+$ignoreLogin = true;
+
+
 ////* Handle FIM Installation *////
 
 if (!file_exists('./config.php')) {

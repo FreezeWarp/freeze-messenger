@@ -1249,7 +1249,7 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false, $allowed
  */
 
 function fim_exceptionHandler($exception) {
-  global $api, $apiRequest, $config;
+  global $apiRequest, $config;
 
   ob_end_clean(); // Clean the output buffer and end it. This means that when we show the error in a second, there won't be anything else with it.
   header('HTTP/1.1 500 Internal Server Error'); // When an exception is encountered, we throw an error to tell the server that the software effectively is broken.
@@ -1273,14 +1273,9 @@ function fim_exceptionHandler($exception) {
     );
   }
 
-  if ($api || $apiRequest) { // TODO: I don't know why $api doesn't work. $apiRequest does for now, but this will need to be looked into to.
-    echo fim_outputApi(array(
-      'exception' => $errorData,
-    ));
-  }
-  else {
-    echo(nl2br('<fieldset><legend><strong style="color: #ff0000;">Program Exception</strong></legend><strong>Error Text</strong><br />' . $errorData['string'] . '<br /><strong>Error File</strong><br />' . $errorData['file'] . '<br /><strong>Error Line</strong><br />' . $errorData['line'] . '<br /><strong>Error Trace</strong><br />' . $errorData['trace'] . '<br /><br /><strong>What Should I Do Now?</strong><br />' . ($config['email'] ? 'You may wish to <a href="mailto:' . $config['email'] . '">notify the administration</a> of this error.' : 'No contact was specified for this installation, so try to wait it out.')  . '<br /><br /><strong>Are You The Host?</strong><br />Program exceptions are usually a result of either a bug in the program or a corrupted installation. If you have no idea what is going on, please report the problem on <a href="http://code.google.com/p/freeze-messenger/issues/list">FIM\'s bug tracker.</a></fieldset>'));
-  }
+  echo fim_outputApi(array(
+    'exception' => $errorData,
+  ));
 
   if ($config['email'] && $config['emailExceptions']) {
     mail($config['email'], 'FIM3 System Error [' . $_SERVER['SERVER_NAME'] . ']', 'The following error was encountered by the server located at ' . $_SERVER['SERVER_NAME'] . ':<br /><br />' . $errstr);

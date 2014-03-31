@@ -8,11 +8,46 @@ window.fimApi = {
     'timeout' : 5000,
     'cache' : false,
     'begin' : function() {},
+    'callback' : function() {},
+    'error' : function() {},
     'each' : function() {},
     'end' : function() {}
   },
 
   timers : {},
+
+
+
+  login : function(params, requestSettings) {
+    var params = fimApi.mergeDefaults(params, {
+      'fim3_format' : 'json',
+      'userId' : 0,
+      'userName' : '',
+      'password' : '',
+      'passwordEncrypt' : 'plaintext',
+      'apiVersions' : '[30000]'
+    });
+
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+    function login_query() {
+      $.ajax({
+        url: directory + 'validate.php',
+        type: 'POST',
+        data: params,
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache
+      }).done(function(json) {
+        requestSettings.callback(json.login);
+      }, function(json) {
+        requestSettings.error(json.exception);
+      });
+    }
+
+    login_query();
+  },
+
+
 
   /**
    * Obtains one or more users.

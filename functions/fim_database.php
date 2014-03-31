@@ -27,7 +27,7 @@ class fimDatabase extends databaseSQL
 {
 
 
-  private $userColumns = 'userId, userName, userFormatStart, userFormatEnd, profile, avatar, socialGroups, defaultColor, defaultHighlight, defaultFontface, defaultFormatting, userGroup, options, defaultRoom, userParentalAge, userParentalFlags, adminPrivs';
+  private $userColumns = 'userId, userName, userFormatStart, userFormatEnd, profile, avatar, socialGroups, defaultColor, defaultHighlight, defaultFontface, defaultFormatting, userGroup, options, defaultRoom, userParentalAge, userParentalFlags, userPrivs, adminPrivs';
 
 
 
@@ -776,11 +776,12 @@ class fimDatabase extends databaseSQL
       'userNames'      => array(),
       'userNameSearch' => false,
       'bannedStatus'   => false,
+      'includePasswords' => false,
     ), $options);
 
 
     $columns = array(
-      $this->sqlPrefix . "users" => $this->userColumns
+      $this->sqlPrefix . "users" => $this->userColumns . ($options['includePasswords'] ? ', password, passwordSalt, passwordSaltNum, passwordFormat, passwordResetNow, passwordLastReset' : '') // For this particular request, you can also access user password information using the includePasswords flag.
     );
 
 

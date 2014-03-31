@@ -135,7 +135,7 @@ $defaultConfig = array(
     'm4v' => 'video',
     'ogv' => 'video',
     'mov' => 'video',
-    'wmv' => 'video',
+    'wmv' => 'video',-
 
 // archives
     'zip' => 'archive',
@@ -333,7 +333,7 @@ $defaultConfig = array(
   'logExceptionsFile' => '',
   'displayExceptions' => true,
 
-  'anonymousUserId' => 0,
+  'anonymousUserId' => 2,
 
   'bannedUserGroups' => array(),
 
