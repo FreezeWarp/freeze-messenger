@@ -40,7 +40,6 @@
  *
  * @global bool $banned - Whether or not the user is banned outright.
  * @global array $superUsers - The list of superUsers.
- * @global bool $valid - Whether or not the user has a valid login (required for posting, etc.)
  * @global string $sqlPrefix
  *
  * @return mixed - Bool if $trans is false, array if $trans is true.
@@ -48,7 +47,7 @@
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false) {
-  global $sqlPrefix, $banned, $loginConfig, $valid, $database, $config, $generalCache;
+  global $sqlPrefix, $banned, $loginConfig, $database, $config, $generalCache;
   
   /* START TRANSITIONAL */
   /* We'll be removing this soon, but I didn't want to do another overhaul yet. */
@@ -86,7 +85,7 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
     elseif (!isset($roomData['roomParentalFlags'], $roomData['roomParentalAge'])) throw new Exception('hasPermission requires roomData[userParentalFlags] and roomData[userParentalAge] to be defined.');
     elseif (!isset($roomData['defaultPermissions'], $roomData['options'], $roomData['owner'])) throw new Exception('hasPermission requires roomData[defaultPermissions], roomData[options], and roomData[owner]'); // If the default permissions index is missing, through an exception.
     elseif (!isset($userData['userParentalAge'], $userData['userParentalFlags'])) throw new Exception('hasPermission requires userData[userParentalAge] and userData[userParentalFlags] to be defined.');
-    elseif (!isset($userData['adminPrivs'])) throw new Exception('hasPermission requires userData[adminPrivs] to be defined.');
+    elseif (!isset($userData['adminPrivs'], $userData['userPrivs'])) throw new Exception('hasPermission requires userData[adminDefs] and userData[userPrivs] to be defined.');
     /* END COMPILE VERBOSE */
 
 
@@ -124,20 +123,15 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
 
 
     /* Is the Room a Private Room or Deleted? */
-    if ($roomData['options'] & 4) $isRoomDeleted = true; // The room is deleted.
+    if ($roomData['options'] & ROOM_DELETED) $isRoomDeleted = true; // The room is deleted.
 
 
     /* Archived? */
-    if ($roomData['options'] & 16) $isRoomArchived = true; // The room is archived.
-
+    if ($roomData['options'] & ROOM_ARCHIVED) $isRoomArchived = true; // The room is archived.
 
 
     /* Is the user a super user? */
-    if (isset($loginConfig['superUsers'])) {
-      if (in_array($userData['userId'], (array) $loginConfig['superUsers']) || $userData['adminPrivs'] & 1) {
-	$isAdmin = true;
-      }
-    }
+    if (fim_isSuper($userData['userId']) || $userData['adminPrivs'] & ADMIN_GRANT) $isAdmin = true;
 
 
     /* Is the user banned by parental controls? */
@@ -156,15 +150,13 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
       foreach(array('user', 'admingroup', 'group') AS $type3) {
         if ($generalCache->getPermissions($roomData['roomId'], $type3, $userData['userId']) & $permMap[$type2]) { $isAllowedUser = true; break; }
       }
-      if (($roomData['defaultPermissions'] & $permMap[$type2]) && !$isAllowedUserOverride) {
-          $isAllowedUser = true;
-      }
+      if (($roomData['defaultPermissions'] & $permMap[$type2]) && !$isAllowedUserOverride) $isAllowedUser = true;
 
 
         /* Each Type Has a Unique Set of Conditions */
       if ($type2 === 'post') {
-        if ($banned) {                                           $roomValid['post'] = false; $reason = 'banned'; } // admins can disable their own ban
-        elseif (!$valid) {                                       $roomValid['post'] = false; $reason = 'invalid'; }
+        if (!($userData['userPrivs'] & USER_PRIV_VIEW)) {          $roomValid['moderate'] = false; $reason = 'banned';  } // User is -banned, and will not be able to act as a moderator.
+        elseif (!($userData['userPrivs'] & USER_PRIV_POST)) {        $roomValid['post'] = false; $reason = 'silenced'; }
         elseif ($isAdmin || $isOwner || $isModerator) {          $roomValid['post'] = true; }
         elseif ($kick) {                                         $roomValid['post'] = false; $reason = 'kicked'; } // admin overrides this
         elseif ($parentalBlock) {                                $roomValid['view'] = false; $reason = 'parental'; } // admin overrides this
@@ -174,7 +166,7 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
       }
 
       if ($type2 === 'view') {
-        if ($banned) {                                           $roomValid['moderate'] = false; $reason = 'banned';  } // admins can disable their own ban
+        if (!($userData['userPrivs'] & USER_PRIV_VIEW)) {          $roomValid['view'] = false; $reason = 'banned';  } // admins can disable their own ban
         elseif ($isAdmin || $isOwner || $isModerator) {          $roomValid['view'] = true; }
         elseif ($isRoomDeleted) {                                $roomValid['view'] = false; $reason = 'deleted'; } // admin overrides this
         elseif ($parentalBlock) {                                $roomValid['view'] = false; $reason = 'parental'; } // admin overrides this
@@ -183,15 +175,15 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
       }
 
       if ($type2 === 'moderate') { // parental block and kick do not apply to moderator, ignore
-        if ($banned) {                                           $roomValid['moderate'] = false; $reason = 'banned';  } // admins can disable their own ban
-        elseif (!$valid) {                                       $roomValid['moderate'] = false; $reason = 'invalid'; }  // TODO: redundant?
+        if (!($userData['userPrivs'] & USER_PRIV_VIEW)) {          $roomValid['moderate'] = false; $reason = 'banned';  } // User is -banned, and will not be able to act as a moderator.
+        elseif (!($userData['userPrivs'] & USER_PRIV_POST)) {      $roomValid['moderate'] = false; $reason = 'silenced';  } // User is silenced, same as above.
         elseif ($isOwner || $isModerator || $isAdmin) {          $roomValid['moderate'] = true;                       }
         else {                                                   $roomValid['moderate'] = false; $reason = 'general'; }
       }
 
       if ($type2 === 'admin') { // parental block and kick do not apply to admin, ignore
-        if ($banned) {                                           $roomValid['admin'] = false; $reason = 'banned';  } // admins can disable their own ban
-        elseif (!$valid) {                                       $roomValid['admin'] = false; $reason = 'invalid'; } // TODO: redundant?
+        if (!($userData['userPrivs'] & USER_PRIV_VIEW)) {          $roomValid['admin'] = false; $reason = 'banned';  } // User is -banned, and will not be able to act as a moderator.
+        elseif (!($userData['userPrivs'] & USER_PRIV_POST)) {      $roomValid['admin'] = false; $reason = 'silenced';  } // User is silenced, same as above.
         elseif ($isAdmin) {                                      $roomValid['admin'] = true;                       }
         else {                                                   $roomValid['admin'] = false; $reason = 'general'; }
       }
@@ -213,16 +205,18 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
 
 
 /**
- * Determine if the active user is a superuser.
+ * Determine if a user is a superuser. If a userId is not provided, it will check the active user.
  *
  * @return bool - True if the user is super, false otherwise.
  *
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
-function fim_isSuper() {
+function fim_isSuper($userId = false) {
   global $loginConfig;
 
-  if (in_array(FIM_ACTIVEUSERID, $loginConfig['superUsers'])) return true; // The use of FIM_ACTIVEUSERID instead of $user['userId'] is as a precaution against plugins changing it for whatever reason.
+  if (!$userId) $userId = FIM_ACTIVEUSERID;
+
+  if (in_array($userId, $loginConfig['superUsers'])) return true; // The use of FIM_ACTIVEUSERID instead of $user['userId'] is as a precaution against plugins changing it for whatever reason.
   else return false;
 }
 
