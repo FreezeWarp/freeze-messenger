@@ -38,6 +38,7 @@ require_once(dirname(__FILE__) . '/global.php');
 
 if(!isset($ignoreLogin)) $ignoreLogin = false;
 if(!isset($apiRequest)) $apiRequest = false;
+if(!isset($streamRequest)) $streamRequest = false;
 
 
 $request = fim_sanitizeGPC('r', array(
@@ -102,7 +103,7 @@ elseif (isset($hookLogin)) { // Custom login to be used by plugins.
 
 
 
-elseif ($apiRequest !== true) { // Validate.php called directly.
+elseif ($apiRequest !== true && $streamRequest !== true) { // Validate.php called directly.
   /* Ensure that the client is compatible with the server. Note that this check is only performed when getting a sessionHash, not when doing any other action. */
   foreach ($request['apiVersions'] AS $version) {
     if ($version == 30000) $goodVersion = true; // This the same as version 3.0.0
@@ -162,7 +163,7 @@ elseif ($apiRequest !== true) { // Validate.php called directly.
 
 
 
-elseif ($apiRequest === true) { // Validate.php called from API.
+elseif ($apiRequest === true || $streamRequest === true) { // Validate.php called from API.
   if (!isset($request['fim3_sessionHash'], $request['fim3_userId'])) {
     throw new Exception('A sessionHash and userId are required for all API requests. See the API documentation on obtaining these using validate.php.');
   }
@@ -186,9 +187,12 @@ elseif ($apiRequest === true) { // Validate.php called from API.
 
 
 /* Additional Anonymous Processing */
-if ($user['anonId']) {
-  $user['userName'] .= $user['anonId'];
-}
+if ($user['anonId']) $user['userName'] .= $user['anonId'];
+
+
+
+/* Checks */
+if ($user['userId'] < 0) throw new Exception('badUserData');
 
 
 
@@ -199,7 +203,7 @@ if (!$config['userPrivateRoomCreation']) $user['userPrivs'] &= ~(USER_PRIV_PRIVA
 
 /* The following defines each individual user's options via an associative array. It is highly recommended this be used to reference settings. */
 
-if (is_array($loginConfig['superUsers']) && in_array($user['userId'], $loginConfig['superUsers'])) {
+if (fim_isSuper($user['userId'])) {
   $user['adminPrivs'] = 65535; // Super-admin, away!!!! (this defines all bitfields up to 32768)
   $user['userPrivs'] = 65535;
 }
@@ -238,7 +242,7 @@ $user['userDefs'] = array(
 
 /* API Output */
 
-if ($apiRequest !== true && $ignoreLogin !== true) {
+if ($apiRequest !== true && $streamRequest !== true && $ignoreLogin !== true) {
   $xmlData = array(
     'login' => array(
       'sessionHash' => $sessionHash,

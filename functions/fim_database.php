@@ -1545,7 +1545,7 @@ class fimDatabase extends databaseSQL
    * @return string Modified text.
    */
   public function emotiParse($text) {
-    global $room, $forumTablePrefix, $integrationDatabase, $loginConfig;
+    global $forumTablePrefix, $integrationDatabase, $loginConfig;
 
     switch($loginConfig['method']) {
       case 'vbulletin3':
@@ -1564,7 +1564,7 @@ class fimDatabase extends databaseSQL
       case 'vanilla':
         // TODO: Convert
         $smilies = $this->select(array(
-          "{$forumTablePrefix}emoticons" => 'emoticonText, emoticonFile, context'
+          $this->sqlPrefix . "emoticons" => 'emoticonText, emoticonFile, context'
         ))->getAsArray(true);
         break;
 

@@ -211,10 +211,10 @@ function fim_hasPermission($roomData, $userData, $type = 'post', $quick = false)
  *
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
-function fim_isSuper($userId = false) {
+function fim_isSuper($userId = -1) {
   global $loginConfig;
 
-  if (!$userId) $userId = FIM_ACTIVEUSERID;
+  if ($userId === -1) $userId = FIM_ACTIVEUSERID;
 
   if (in_array($userId, $loginConfig['superUsers'])) return true; // The use of FIM_ACTIVEUSERID instead of $user['userId'] is as a precaution against plugins changing it for whatever reason.
   else return false;
@@ -1288,7 +1288,7 @@ function fim_exceptionHandler($exception) {
  */
 
 function fim_errorHandler($errno, $errstr, $errfile, $errline) {
-  global $config, $api, $apiRequest;
+  global $config, $apiRequest;
 
   if (!(error_reporting() & $errno)) { // The error is not to be reported.
     return;
@@ -1305,7 +1305,7 @@ function fim_errorHandler($errno, $errstr, $errfile, $errline) {
       $errstr2 = json_decode(substr($errstr2, 11), true);
     }
 
-    if ($api || $apiRequest) { // TODO: I don't know why $api doesn't work. $apiRequest does for now, but this will need to be looked into to.
+    if ($apiRequest) {
       echo fim_outputApi(array(
         'exception' => array(
           'string' => $errstr2,

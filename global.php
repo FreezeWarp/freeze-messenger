@@ -161,17 +161,6 @@ if (!isset($defaultLanguage)) {
 
 
 
-/* API Mode
- * Determine if we are in the API or not.
- * If we are, we disable th*ings like the error handler.
- * In rare cases (like validate.php, where it can act both as an API and as a part of the core system), this is already defined and will be left alone. Otherwise, API files should set $apiRequest to true, and it will be converted to $api here. */
-if (!isset($api)) {
-  if (isset($apiRequest)) $api = (bool) $apiRequest;
-  else $api = false;
-}
-
-
-
 /* Better Error Handling and Output Buffering */
 set_error_handler('fim_errorHandler'); // Defined in fim_general.php
 set_exception_handler('fim_exceptionHandler'); // Defined in fim_general.php
@@ -253,7 +242,7 @@ $generalCache = new fimCache($cacheConnect['servers'], $cacheConnect['driver'], 
 
 $config = $generalCache->getConfig();
 
-if ($api === true) {
+if ($apiRequest === true) {
   sleep($config['apiPause']); // This prevents flooding the server/DoSing. It's included since I've done it to myself during development...
 }
 else {
