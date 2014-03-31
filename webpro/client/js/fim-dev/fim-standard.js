@@ -93,6 +93,8 @@ var standard = {
       'password' : options.password
     }, {
       callback : function(activeLogin) {
+        activeLogin.userData.parentalFlags = activeLogin.userData.parentalFlags.split(',');
+
         window.activeLogin = activeLogin;
         window.userId = activeLogin.userData.userId;
         window.anonId = activeLogin.anonId;
