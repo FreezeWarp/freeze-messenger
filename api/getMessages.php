@@ -230,13 +230,7 @@ else {
 
     /* Process Ping */
     if (!$request['noping']) {
-      $database->insert("{$sqlPrefix}ping", array(
-        'userId' => $user['userId'],
-        'roomId' => $room['roomId'],
-        'time' => $database->now(),
-      ), array(
-        'time' => $database->now(),
-      ));
+      $database->setUserStatus($room['roomId']);
     }
 
 

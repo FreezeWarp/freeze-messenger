@@ -287,6 +287,21 @@ class databaseSQL extends database {
 
         return $this->arrayQuoteStart . implode($this->arraySeperator, $values[1]) . $this->arrayQuoteEnd; // Combine as list.
       break;
+      case 'columnArray':
+        foreach ($values[1] AS &$item) $this->formatValue('string', $item);
+
+        return $this->arrayQuoteStart . implode($this->arraySeperator, $values[1]) . $this->arrayQuoteEnd; // Combine as list.
+        break;
+      case 'updateArray':
+        list($columns, $values) = $this->splitArray($values[1]);
+        $update = array();
+
+        for ($i = 0; $i < count($columns); $i++) {
+          $update[] = $columns[$i] . $this->comparisonTypes['e'] . $values[$i];
+        }
+
+        return implode($update, $this->statementSeperator);
+        break;
 
       case 'tableColumn':   return $this->formatValue('table', $values[1]) . $this->tableColumnDivider . $this->formatValue('column', $values[2]);     break;
       case 'databaseTable': return $this->formatValue('database', $values[1]) . $this->databaseTableDivider . $this->formatValue('table', $values[2]); break;
@@ -407,7 +422,7 @@ class databaseSQL extends database {
         $this->columnQuoteStart = '`';     $this->columnQuoteEnd = '`';   $this->columnAliasQuoteStart = '`';   $this->columnAliasQuoteEnd = '`';
         $this->databaseQuoteStart = '`';   $this->databaseQuoteEnd = '`'; $this->databaseAliasQuoteStart = '`'; $this->databaseAliasQuoteEnd = '`';
         $this->stringQuoteStart = '"';     $this->stringQuoteEnd = '"';   $this->emptyString = '""';            $this->stringFuzzy = '%';
-        $this->arrayQuoteStart = '(';      $this->arrayQuoteEnd = ')';    $this->arraySeperator = ', ';
+        $this->arrayQuoteStart = '(';      $this->arrayQuoteEnd = ')';    $this->arraySeperator = ', ';         $this->statementSeperator = ', ';
         $this->intQuoteStart = '';         $this->intQuoteEnd = '';
         $this->tableColumnDivider = '.';   $this->databaseTableDivider = '.';
         $this->sortOrderAsc = 'ASC';       $this->sortOrderDesc = 'DESC';
@@ -419,7 +434,7 @@ class databaseSQL extends database {
         $this->columnQuoteStart = '';     $this->columnQuoteEnd = '';   $this->columnAliasQuoteStart = '';   $this->columnAliasQuoteEnd = '';
         $this->databaseQuoteStart = '';   $this->databaseQuoteEnd = ''; $this->databaseAliasQuoteStart = ''; $this->databaseAliasQuoteEnd = '';
         $this->stringQuoteStart = '';     $this->stringQuoteEnd = '';   $this->emptyString = '""';           $this->stringFuzzy = '%';
-        $this->arrayQuoteStart = '(';     $this->arrayQuoteEnd = ')';   $this->arraySeperator = ', ';
+        $this->arrayQuoteStart = '(';     $this->arrayQuoteEnd = ')';   $this->arraySeperator = ', ';         $this->statementSeperator = ', ';
         $this->intQuoteStart = '';        $this->intQuoteEnd = '';
         $this->tableColumnDivider = '.';  $this->databaseTableDivider = '.';
         $this->sortOrderAsc = 'ASC';      $this->sortOrderDesc = 'DESC';
@@ -431,7 +446,7 @@ class databaseSQL extends database {
         $this->columnQuoteStart = '"';   $this->columnQuoteEnd = '"';   $this->columnAliasQuoteStart = '"';   $this->columnAliasQuoteEnd = '"';
         $this->databaseQuoteStart = '"'; $this->databaseQuoteEnd = '"'; $this->databaseAliasQuoteStart = '"'; $this->databaseAliasQuoteEnd = '"';
         $this->stringQuoteStart = '"';   $this->stringQuoteEnd = '"';   $this->emptyString = '""';            $this->stringFuzzy = '%';
-        $this->arrayQuoteStart = '(';    $this->arrayQuoteEnd = ')';    $this->arraySeperator = ', ';
+        $this->arrayQuoteStart = '(';    $this->arrayQuoteEnd = ')';    $this->arraySeperator = ', ';         $this->statementSeperator = ', ';
         $this->intQuoteStart = '';       $this->intQuoteEnd = '';
         $this->tableColumnDivider = '.'; $this->databaseTableDivider = '.';
         $this->sortOrderAsc = 'ASC';     $this->sortOrderDesc = 'DESC';
@@ -1348,7 +1363,33 @@ LIMIT
       return false;
     }
   }
-  
+
+
+  public function upsert($table, $conditionArray, $dataArray) {
+    switch ($this->language) {
+      case 'mysql':
+        list($allColumns, $allValues) = $this->splitArray(array_merge($dataArray, $conditionArray));
+//        var_dump($allColumns); die();
+
+        $update = $this->formatValue('updateArray', $dataArray);
+
+        $query = 'INSERT INTO ' . $this->formatValue('table', $table) . '
+        ' . $this->formatValue('columnArray', $allColumns) . '
+        VALUES ' . $this->formatValue('array', $allValues) . '
+        ON DUPLICATE KEY UPDATE ' . $update;
+
+        if ($queryData = $this->rawQuery($query)) {
+          $this->insertId = $this->functionMap('insertId');
+
+          return $queryData;
+        }
+        else {
+          return false;
+        }
+        break;
+    }
+  }
+
   
   
   public function delete($tableName, $conditionArray = false) {

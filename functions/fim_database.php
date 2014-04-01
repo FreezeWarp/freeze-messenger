@@ -1117,6 +1117,30 @@ class fimDatabase extends databaseSQL
   }
 
 
+  /**
+   * Changes the user's status.
+   *
+   * @param string $status
+   * @param bool   $typing
+   */
+  public function setUserStatus($roomId, $status = null, $typing = null) {
+    global $user;
+
+    $conditions = array(
+      'userId' => $user['userId'],
+      'roomId' => $roomId
+    );
+
+    $data = array(
+      'time' => $this->now()
+    );
+
+    if (!is_null($typing)) $data['typing'] = (bool) $typing;
+    if (!is_null($status)) $data['status'] = $status;
+
+    $this->upsert($this->sqlPrefix . 'ping', $conditions, $data);
+  }
+
 
   public function storeMessage($messageText, $messageFlag, $userData, $roomData)
   {

@@ -30,71 +30,41 @@
 $apiRequest = true;
 
 require('../global.php');
-require('../functions/parserFunctions.php');
 
 
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
-  'roomId' => array(
-    'default' => 'raw',
-    'cast' => 'int',
+  'roomIds' => array(
+    'cast' => 'jsonList',
+    'filter' => 'int'
   ),
 
-  'statusType' => array(),
+  'status' => array(
+    'valid' => array('away', 'busy', 'available', 'invisible', 'offline')
+  ),
 
-  'statusValue' => array()
+  'type' => array(
+    'cast' => 'bool',
+  )
 ));
 
 
 
 /* Get Room Data */
-$room = $slaveDatabase->getRoom($request['roomId']);
+$rooms = $slaveDatabase->getRooms(array(
+  'roomIds' => $request['roomIds'],
+))->getAsArray('roomId');
 
 
 
-/* Plugin Hook Start */
-($hook = hook('setUserStatus_start') ? eval($hook) : '');
+if (!count($rooms)) throw new Exception('invalidRooms');
+else {
+  foreach ($rooms AS $room) {
+    if (!fim_hasPermission($room, $user, 'view', true)) continue;
 
-
-
-/* Start Processing */
-if (!$room) { // Bad room.
-  $errStr = 'badRoom';
-  $errDesc = 'That room could not be found.';
-}
-elseif (!fim_hasPermission($room, $user, 'view', true)) { // Not allowed to see room.
-  $errStr = 'noPerm';
-  $errDesc = 'You are not allowed to post in this room.';
-}
-elseif ($continue) {
-  ($hook = hook('setUserStatus_inner_start') ? eval($hook) : '');
-
-  if ($statusType == 'typing') {
-    $value = (int) $statusValue;
+    $database->setUserStatus($room['roomId']);
   }
-  elseif ($statusType == 'status') {
-    if (in_array($value, array('available','away','busy','invisible','offline'))) {
-      ($hook = hook('setUserStatus_inner_query') ? eval($hook) : '');
-
-      $database->update(array(
-        'status' => $value,
-      ), "{$sqlPrefix}ping", array(
-        'userId' => $user['userId'],
-        'roomId' => $room['roomId'],
-      ));
-    }
-    else {
-      $errStr = 'badStatusValue';
-      $errDesc = 'That status value is not recognized. Only "available", "away", "busy", "invisible", "offline" are supported.';
-    }
-  }
-  else {
-    $errStr = 'badStatusType';
-    $errDesc = 'That status type is not recognized. Only "status" and "typing" are supported.';
-  }
-
-  ($hook = hook('setUserStatus_inner_end') ? eval($hook) : '');
 }
 
 
@@ -104,15 +74,8 @@ $xmlData = array(
       'userId' => (int) $user['userId'],
       'userName' => ($user['userName']),
     ),
-    'errStr' => ($errStr),
-    'errDesc' => ($errDesc),
   ),
 );
-
-
-
-/* Plugin Hook End */
-($hook = hook('setUserStatus_end') ? eval($hook) : '');
 
 
 
