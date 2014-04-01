@@ -187,15 +187,6 @@
     </table>
 
 
-    <table name="kicksCached" type="memory" note="A shortended cache of the kicks table, which should be updated frequently. Note that this is used instead of APC as it gives more flexibility for updates. It is _not_ always reliable, however, and will only be used if enabled." comment="Room-created temporary user bans.">
-      <column name="userId" type="int" maxlen="8" />
-      <column name="roomId" type="int" maxlen="6" />
-      <column name="until" type="time" comment="When the kick expires (a shortening of time and length parameters)." />
-
-      <key name="userId" type="index" />
-    </table>
-
-
     <table name="messages" type="general" comment="User-created messages.">
       <column name="messageId" type="int" maxlen="15" autoincrement="1" comment="The unique ID of the message." />
       <column name="userId" type="int" maxlen="8" comment="The ID of the user who made the message." />
