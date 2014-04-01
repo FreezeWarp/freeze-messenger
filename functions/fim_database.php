@@ -833,7 +833,7 @@ class fimDatabase extends databaseSQL
 
 
     $columns = array(
-      $this->sqlPrefix . "sessions" => 'sessionId, anonId, magicHash sessionHash, userId suserId, time sessionTime, ip sessionIp, browser sessionBrowser',
+      $this->sqlPrefix . "sessions" => 'sessionId, anonId, sessionHash, userId suserId, sessionTime, sessionIp, userAgent',
     );
 
     $conditions = array();
@@ -1490,6 +1490,43 @@ class fimDatabase extends databaseSQL
     } else {
       return false;
     }
+  }
+
+
+
+  /**
+   * Accesslog container.
+   * Accesslog is mainly interested in analytical information about requests -- not about a security log. It can be used to see which users are most active, which clients are most popular, how long a script takes to execute, and where users visit from most.
+   *
+   * @param string $action
+   * @param array  $data
+   *
+   * @return bool
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+
+  public function accessLog($action, $info)
+  {
+    global $config, $user, $globalTime;
+
+    if ($config['enableAccessLog']) {
+      if ($this->insert($this->sqlPrefix . "accessLog", array(
+        'userId' => $user['userId'],
+        'action' => $action,
+        'info ' => json_encode($info),
+        'time'   => $globalTime,
+        'executionTime' => $globalTime - time(),
+        'userAgent' => $_SERVER['HTTP_USER_AGENT'],
+        'ipAddress' => $_SERVER['REMOTE_ADDR'],
+      ))
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    return false;
   }
 
 

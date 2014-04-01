@@ -2,28 +2,18 @@
 
 <dbSchema version="3.0">
   <database name="__CORE__" charset="utf8">
-    <table name="accessLog" type="general" comment="Log of all API calls. [RESERVED FOR VERSION 4]">
+    <table name="accessLog" type="general" comment="Log of all API calls, meant mostly for analytics purposes.">
       <column name="userId" type="int" maxlen="8" comment="The ID of the user." />
+      <column name="sessionHash" type="string" maxlen="128" comment="The sessionHash corresponding with the active session.." />
       <column name="action" type="string" maxlen="64" comment="The action performed." />
       <column name="info" type="int" maxlen="8" comment="Information pertaining to action." />
       <column name="time" type="time" comment="Time of access in milliseconds." />
       <column name="executionTime" type="int" maxlen="10" comment="Milliseconds required to perform action." />
-      <column name="clientId" type="int" maxlen="8" comment="The client used." />
       <column name="userAgent" type="string" maxlen="1000" comment="The environment the agent is running under, usually a web browser or operating system identifer." />
+      <column name="clientCode" type="string" maxlen="10" comment="A code the client identifies itself as, aside from the userAgent (really just meant for browsers, since we can't control those)." />
       <column name="ipAddress" type="string" maxlen="100" comment="The Internet Protocol address used to make the request." />
 
       <key name="userId,time" type="primary" />
-    </table>
-
-
-    <table name="activeClients" type="general" comment="Active clients. [RESERVED FOR VERSION 4]">
-      <column name="clientId" type="int" maxlen="8" comment="The ID of the client." />
-      <column name="session" type="string" maxlen="64" comment="The unique session string used." />
-      <column name="userId" type="int" maxlen="8" comment="The ID of the user." />
-      <column name="lastActive" type="time" comment="Last poll of API." />
-      <column name="userAgent" type="string" maxlen="1000" comment="The environment the agent is running under, usually a web browser or operating system identifer." />
-
-      <key name="session" type="primary" />
     </table>
 
 
@@ -38,17 +28,6 @@
     </table>
 
 
-    <table name="clients" type="general" comment="Registered clients. [RESERVED FOR VERSION 4]">
-      <column name="clientId" type="int" maxlen="8" autoincrement="1" comment="The ID of the client." />
-      <column name="accessLevel" type="int" maxlen="2" comment="The access level granted to the client." />
-      <column name="agent" type="string" maxlen="1000" comment="The descriptive string of the client." />
-      <column name="userAgent" type="string" maxlen="1000" comment="The text/data associated with the template." />
-      <column name="interfaceId" type="int" maxlen="6" comment="The interface that uses this template." />
-
-      <key name="clientId" type="primary" />
-    </table>
-
-
     <table name="configuration" type="general" comment="Configuration directives.">
       <column name="directive" type="string" maxlen="50" comment="The configuration directive." />
       <column name="value" type="string" maxlen="10000" comment="The current value of the configuration directive." />
@@ -58,7 +37,7 @@
     </table>
 
 
-    <table name="confirmations" type="general" comment="Temporary information to store codes for email and other confirmations.">
+    <table name="confirmations" type="memory" comment="Temporary information to store codes for email and other confirmations. (RESERVED)">
       <!-- General -->
       <column name="action" type="string" maxlen="10" comment="The action being performed." />
       <column name="id" type="int" maxlen="8" comment="The ID of the action being performed." />
@@ -195,15 +174,7 @@
     </table>
 
 
-    <table name="ignoredUsers" type="general" comment="A list of ignored users.">
-      <column name="userId" type="int" maxlen="8" comment="The user ID." />
-      <column name="ignoredUserId" type="int" maxlen="8" comment="The user ID." />
-
-      <key name="userId" type="primary" />
-    </table>
-
-
-    <table name="kicks" type="memory" note="This will be made a standard table in FIMv4 so that kicks don't get reset on system restart. We will instead use APC for proper caching." comment="Room-created temporary user bans.">
+    <table name="kicks" type="general" comment="Room-created temporary user bans.">
       <column name="userId" type="int" maxlen="8" comment="The ID of the user who has been kicked." />
       <column name="roomId" type="int" maxlen="6" comment="The ID of the room the kick is active in." />
       <column name="kickerid" type="int" maxlen="8" comment="The ID of the user who made the kick." />
@@ -213,6 +184,15 @@
       <key name="userId,roomId" type="primary" />
       <key name="time" type="index" />
       <key name="length" type="index" />
+    </table>
+
+
+    <table name="kicksCached" type="memory" note="A shortended cache of the kicks table, which should be updated frequently. Note that this is used instead of APC as it gives more flexibility for updates. It is _not_ always reliable, however, and will only be used if enabled." comment="Room-created temporary user bans.">
+      <column name="userId" type="int" maxlen="8" />
+      <column name="roomId" type="int" maxlen="6" />
+      <column name="until" type="time" comment="When the kick expires (a shortening of time and length parameters)." />
+
+      <key name="userId" type="index" />
     </table>
 
 
@@ -403,6 +383,16 @@
     </table>
 
 
+    <table name="roomPermissionsCache" type="memory" content="A simplified cache of room permissions. This table should be used to determine if a user is known to be allowed access to a room. When a row doesn't exist, it should be tested fully and then inserted here. The table should be cleared every few minutes.">
+      <column name="roomId" type="int" maxlen="6" comment="The room ID." />
+      <column name="userId" type="int" maxlen="8" comment="" />
+      <column name="status" type="bool" comment="If the user is allowed." />
+      <column name="expires" type="time" />
+
+      <key name="roomId,userId" type="primary" />
+    </table>
+
+
     <table name="roomStats" type="general" comment="A cache for the number of posts made by different users in rooms.">
       <column name="userId" type="int" maxlen="8" comment="The ID of the user." />
       <column name="roomId" type="int" maxlen="6" comment="The ID of the room." />
@@ -434,16 +424,17 @@
 
     <table name="sessions" type="memory" comment="Active user credentials.">
       <column name="sessionId" type="int" maxlen="10" autoincrement="1" comment="A unique ID corrosponding to all sessions. It is largely unused." />
+      <column name="sesionTime" type="time" comment="The time the session was last renewed." />
+      <column name="sessionHash" type="string" maxlen="128" comment="The session hash itself." />
+      <column name="sessionIp" type="string" maxlen="128" comment="The user's IP address." />
       <column name="userId" type="int" maxlen="8" comment="The ID of the user the session belongs to." />
       <column name="anonId" type="int" maxlen="6" comment="A unique ID that can be used for anonymous users." />
-      <column name="time" type="time" comment="The time the session was last renewed." />
-      <column name="ip" type="string" maxlen="128" comment="The user's IP address." />
-      <column name="browser" type="string" maxlen="300" comment="The useragent of the user of the session." />
-      <column name="magicHash" type="string" maxlen="128" comment="The session hash itself." />
+      <column name="userAgent" type="string" maxlen="300" comment="The useragent of the user of the session." />
+      <column name="clientCode" type="string" maxlen="10" comment="A code the client identifies itself as, aside from the userAgent (really just meant for browsers, since we can't control those)." />
       <column name="userDataCache" type="string" maxlen="10000" comment="A JSON-encoded cache of the user's core data." />
 
       <key name="sessionId" type="primary" />
-      <key name="magicHash" type="unique" />
+      <key name="sessionHash" type="unique" />
     </table>
 
 
@@ -481,16 +472,6 @@
 
       <key name="userId,roomId" type="unique" />
       <key name="time" type="index" />
-    </table>
-
-
-    <table name="uploadTypes" type="general" comment="Admin-defined mime types to corrospond to file types of uploaded files.">
-      <column name="extension" type="string" maxlen="8" comment="The extension that will allow upload of files using these settings." />
-      <column name="mime" type="string" maxlen="300" comment="The content type to output files of this type as." />
-      <column name="maxSize" type="int" maxlen="12" comment="The maximum size (in bytes) files of this type can be." />
-      <column name="container" type="string" restrict="video,image,audio,text,html,archive,other" comment="The container that should be used to output the file. This is recognized by clients for best viewing." />
-
-      <key name="extension" type="primary" />
     </table>
 
 

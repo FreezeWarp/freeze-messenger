@@ -182,7 +182,7 @@ elseif ($loginMethod === 'session') {
 
   if (!count($session)) throw new Exception('invalidSession');
   elseif ((int) $session['userId'] !== (int) $request['fim3_userId']) throw new Exception('sessionMismatchUserId'); // The userid sent has to be the same one in the DB. In theory we could just not require a userId be specified, but there are benefits to this alternative. For instance, this eliminates some forms of injection-based session fixation.
-  elseif ($session['sessionBrowser'] !== $_SERVER['HTTP_USER_AGENT']) throw new Exception('sessionMismatchBrowser'); // Require the UA match that of the one used to establish the session. Smart clients are encouraged to specify their own with their client name and version.
+  elseif ($session['userAgent'] !== $_SERVER['HTTP_USER_AGENT']) throw new Exception('sessionMismatchBrowser'); // Require the UA match that of the one used to establish the session. Smart clients are encouraged to specify their own with their client name and version.
   elseif ($session['sessionIp'] !== $_SERVER['REMOTE_ADDR']) throw new Exception('sessionMismatchIp'); // This is a tricky one, but generally the most certain to block any attempted forgeries. That said, IPs can, /theoretically/ be spoofed.
   else {
     $user = $session; // Mostly identical, though a few additional properties do exist.
