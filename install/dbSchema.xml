@@ -372,24 +372,6 @@
     </table>
 
 
-    <table name="roomLists" type="general" comment="User-created room lists. listId=1 will typically be reserved for the favourite room list, and will be created when adding a favourite room for the first time. However, the database does not make this distinction by default.">
-      <column name="listId" type="int" maxlen="8" comment="The list ID." />
-      <column name="userId" type="int" maxlen="8" comment="The list creator's user ID." />
-      <column name="listName" type="string" maxlen="10" comment="The list's name." />
-      <column name="options" type="bitfield" bits="8" comment="Options for the list." />
-      
-      <key name="listId" type="primary" />
-    </table>
-
-
-    <table name="roomListRooms" type="general" comment="The rooms that are stored in each roomList.">
-      <column name="listId" type="int" maxlen="6" fkey="roomsList.listId" comment="The list ID." />
-      <column name="roomId" type="int" maxlen="6" comment="The room ID." />
-
-      <key name="listId,roomId" type="primary" />
-    </table>
-
-
     <table name="roomHistory" type="general" comment="A history of all changes made to rooms. This is enabled per-installation.">
       <!-- General -->
       <column name="roomId" type="int" maxlen="6" autoincrement="1" comment="The unique ID for the room." />
@@ -566,6 +548,7 @@
       <column name="fileCount" type="int" maxlen="8" default="0" comment="The number of files store on the server by this user." />
       <column name="fileSize" type="int" maxlen="8" default="0" comment="The total size of all files stored on the server by this user." />
       <column name="messageCount" type="int" maxlen="8" default="0" comment="The number of messages made by this user." />
+      <column name="favRoomsCache" type="string" maxlen="10000" comment="A CSV cache of the favRooms table for this user." />
 
       <!-- Parental Controls -->
       <column name="userParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to restrict access to." />
@@ -586,55 +569,59 @@
       <key name="messageCount" type="index" />
       <key name="defaultRoom" type="index" />
     </table>
-    
-    
-    <table name="userLists" type="general" comment="Lists of users; e.g. friend lists.">
+
+
+    <table name="userFavRooms" type="general" comment="A list of starred rooms. Unlike most other lists, this list generally doesn't have any backend effects, but we thought it was too useful not to include. Clients are still encouraged to implement more powerful tagging and lists themselves.">
       <column name="userId" type="int" maxlen="8" comment="The user ID." />
       <column name="roomId" type="int" maxlen="6" comment="The room ID." />
-      <column name="listId" type="int" maxlen="6" comment="The list ID." />
 
-      <key name="userId" type="index" />
-      <key name="listId" type="index" />
+      <key name="userId,subjectId" type="primary" />
+    </table>
+    
+    
+    <table name="userFriendsList" type="general" comment="A list of user friends, with whom private contact may be restricted in some cases. Clients are encouraged to enable more advanced tagging and lists.">
+      <column name="userId" type="int" maxlen="8" comment="The user ID." />
+      <column name="subjectId" type="int" maxlen="8" comment="The user ID friended." />
+
+      <key name="userId,subjectId" type="primary" />
     </table>
 
 
-    <table name="userListNames" type="general" comment="Properties for user lists.">
-      <column name="listId" type="int" maxlen="8" comment="The list ID." />
-      <column name="listName" type="string" maxlen="10" comment="List name." />
-      <column name="owner" type="int" maxlen="8" comment="Creator of the list -- only user able to edit the list, outside of administrators." />
-      <column name="options" type="bitfield" bits="8" comment="Options for the list." />
+    <table name="userIgnoreList" type="general" comment="A list of user's a user wishes to ignore. Ignoring prevents private contact, but few other changes are made -- clients may, at their descretion, let users hide posts by other users, etc.">
+      <column name="userId" type="int" maxlen="8" comment="The user ID." />
+      <column name="subjectId" type="int" maxlen="8" comment="The user ID ignored." />
 
-      <key name="listId" type="primary" />
+      <key name="userId,subjectId" type="primary" />
     </table>
 
 
     <table name="userHistory" type="general" comment="A history of modifications to the user table. This is enabled per-installation.">
       <!-- General -->
-      <column name="userId" type="int" maxlen="8" comment="The unique ID of the user." />
-      <column name="userName" type="string" maxlen="50" comment="The user's name." />
-      <column name="userGroup" type="int" maxlen="6" default="1" comment="The admin-set usergroup ID of the user." />
-      <column name="allGroups" type="string" maxlen="1000" comment="A comma-seperated list of the IDs of all admin-set groups the user is a part of. This is not used on PHPBB and Vanilla logins (both instead use socialGroups)." />
-      <column name="options" type="bitfield" bits="16" comment="A bitfield corrosponding to the user's settings." />
-      <column name="socialGroups" type="string" maxlen="1000" comment="A comma-seperated list of the ids of all groups the user has joined." />
+      <column name="userId" type="int" maxlen="8" />
+      <column name="userName" type="string" maxlen="50" />
+      <column name="userGroup" type="int" maxlen="6" default="1" />
+      <column name="allGroups" type="string" maxlen="1000" />
+      <column name="options" type="bitfield" bits="16" />
+      <column name="socialGroups" type="string" maxlen="1000" />
 
       <!-- Password Fun -->
-      <column name="password" type="string" maxlen="64" comment="The hashed password of the user. It is only used on vanilla logins." />
-      <column name="passwordSalt" type="string" maxlen="50" comment="The salt used for the password of the user. It is only used on vanilla logins." />
-      <column name="passwordSaltNum" type="int" maxlen="6" comment="An additional number corresponding to an encryption salt used to salt the password. It is only used on vanilla logins." />
+      <column name="password" type="string" maxlen="64" />
+      <column name="passwordSalt" type="string" maxlen="50" />
+      <column name="passwordSaltNum" type="int" maxlen="6" />
 
       <!-- User Display -->
-      <column name="avatar" type="string" maxlen="1000" comment="The absolute URI of the user's avatar." />
-      <column name="profile" type="string" maxlen="1000" comment="The absolute URI of the user's profile link or website." />
-      <column name="userFormatStart" type="string" maxlen="300" comment="HTML-formatting to be prepended to the user's name for its display." />
-      <column name="userFormatEnd" type="string" maxlen="300" comment="HTML-formatting to be appended to the user's name for its display." />
+      <column name="avatar" type="string" maxlen="1000" />
+      <column name="profile" type="string" maxlen="1000" />
+      <column name="userFormatStart" type="string" maxlen="300" />
+      <column name="userFormatEnd" type="string" maxlen="300" />
 
       <!-- Permissions -->
-      <column name="userPrivs" type="bitfield" bits="16" default="16" comment="A bitfield corrosponding to admin-set user priviledges." />
-      <column name="adminPrivs" type="bitfield" bits="16" comment="A bitfield corrosponding to admin-set administrative priviledges." />
+      <column name="userPrivs" type="bitfield" bits="16" default="16" />
+      <column name="adminPrivs" type="bitfield" bits="16" />
 
       <!-- Parental Controls -->
-      <column name="userParentalFlags" type="string" maxlen="255" comment="An comma-seperated list of parent content flags to restrict access to." />
-      <column name="userParentalAge" type="int" maxlen="2" comment="Content rated above this rating should be blocked." />
+      <column name="userParentalFlags" type="string" maxlen="255" />
+      <column name="userParentalAge" type="int" maxlen="2" />
 
       <column name="changeTime" type="time" comment="The time at which the above information was altered." />
 
