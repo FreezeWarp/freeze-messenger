@@ -103,7 +103,7 @@
       <column name="eventName" type="string" maxlen="20" comment="The name of the event (e.g. topic-change)." />
       <column name="userId" type="int" maxlen="8" comment="The user ID, if applicable." />
       <column name="roomId" type="string" maxlen="6" comment="The room ID, if applicable." />
-      <column name="messageId" type="int" maxlen="15" comment="The message ID, if applicable." />
+      <column name="messageId" type="int" maxlen="9" comment="The message ID, if applicable." />
       <column name="param1" type="string" maxlen="20" comment="An additional parameter." />
       <column name="param2" type="string" maxlen="20" comment="An additional parameter." />
       <column name="param3" type="string" maxlen="20" comment="An additional parameter." />
@@ -125,7 +125,10 @@
       <column name="roomIdLink" type="int" maxlen="8" comment="If provided, the upload is linked to a particular room, which means that is may only be viewed by those who can view that room. The file will always be viewable by its poster." />
       <column name="fileParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the file." />
       <column name="fileParentalAge" type="int" maxlen="2" comment="The file's parental content age rating." />
-      <column name="deleted" type="bool" default="0" comment="Whether or not the file in question is deleted." />
+      <column name="options" type="bitfield" bits="16" comment="File options." />
+      <column name="flags" type="int" maxlen="3" comment="The number of flags this room has received. After a certain number (proportional to activeUsers, possibly), the room should be marked for moderation." />
+
+      <column name="flags" type="int" maxlen="3" comment="The number of flags this room has received. After a certain number (proportional to activeUsers, possibly), the room should be marked for moderation." />
 
       <key name="fileId" type="primary" />
       <key name="roomIdLink" type="index" />
@@ -188,7 +191,7 @@
 
 
     <table name="messages" type="general" comment="User-created messages.">
-      <column name="messageId" type="int" maxlen="15" autoincrement="1" comment="The unique ID of the message." />
+      <column name="messageId" type="int" maxlen="9" autoincrement="1" comment="The unique ID of the message." />
       <column name="userId" type="int" maxlen="8" comment="The ID of the user who made the message." />
       <column name="roomId" type="int" maxlen="6" comment="The ID of the room the message was made in." />
       <column name="text" type="string" maxlen="5000" comment="The text of the message." />
@@ -211,7 +214,7 @@
     <table name="messageIndex" type="general" comment="A pseudo-cache that indexes every x (usually 1000) messages made in a room, thus allowing faster lookup. It must be rebuilt if corrupted.">
       <column name="roomId" type="int" maxlen="6" comment="The ID of the room the message was made in." />
       <column name="interval" type="int" maxlen="15" comment="The interval of messages in the room with which the message ID corresponds." />
-      <column name="messageId" type="int" maxlen="15" comment="The unique ID of the message." />
+      <column name="messageId" type="int" maxlen="9" comment="The unique ID of the message." />
 
       <key name="roomId,interval" type="primary" />
     </table>
@@ -219,7 +222,7 @@
 
     <table name="messageDates" type="general" comment="A pseudo-cache that indexes the first message made in any given day (or other time range), thus allowing lookup. It must be rebuilt if corrupted.">
       <column name="time" type="time" comment="The day (or appropriate time range) the message was made on." />
-      <column name="messageId" type="int" maxlen="15" comment="The unique ID of the message." />
+      <column name="messageId" type="int" maxlen="9" comment="The unique ID of the message." />
 
       <key name="time" type="primary" />
     </table>
@@ -227,7 +230,7 @@
 
     <table name="messagesCached" type="memory" comment="A cache of user-created messages for scalibility.">
       <column name="id" type="int" maxlen="6" autoincrement="1" comment="A unique (temporary) ID for the message cache entry." />
-      <column name="messageId" type="int" maxlen="15" comment="The ID of the message." />
+      <column name="messageId" type="int" maxlen="9" comment="The ID of the message." />
       <column name="roomId" type="int" maxlen="6" comment="The ID of the room the message is in." />
       <column name="userId" type="int" maxlen="8" comment="The ID of the user who made the message." />
       <column name="userName" type="string" maxlen="50" comment="The name of the user who made the message." />
@@ -268,7 +271,7 @@
 
 
     <table name="messageEditHistory" type="general" comment="A history of editted messages.">
-      <column name="messageId" type="int" maxlen="15" comment="The unique ID of the message." />
+      <column name="messageId" type="int" maxlen="9" comment="The unique ID of the message." />
       <column name="userId" type="int" maxlen="8" comment="The user who editted the message." />
       <column name="oldText" type="string" maxlen="5000" comment="The old raw text of the message." />
       <column name="newText" type="string" maxlen="5000" comment="The new raw text of the message." />
@@ -331,6 +334,7 @@
       <column name="lastMessageTime" type="time" default="0" comment="The time of the last message made in the room." />
       <column name="lastMessageId" type="int" maxlen="15" comment="The ID of the last message made in the room." />
       <column name="messageCount" type="int" maxlen="15" comment="The number of messages in this room." />
+      <column name="flags" type="int" maxlen="3" comment="The number of flags this room has received. After a certain number (proportional to activeUsers, possibly), the room should be marked for moderation." />
 
 
       <key name="roomId" type="primary" />
@@ -340,6 +344,20 @@
       <key name="owner" type="index" />
       <key name="lastMessageId" type="index" />
       <key name="lastMessageTime" type="index" />
+    </table>
+
+
+    <table name="roomEvents" type="memory" comment="Events that relate to a specific room.">
+      <column name="eventId" type="int" maxlen="8" autoincrement="1" comment="A unique identifier for the event." />
+      <column name="eventName" type="string" maxlen="20" comment="The name of the event (e.g. topic-change, edit-message)." />
+      <column name="roomId" type="int" maxlen="8" comment="The rooom ID." />
+      <column name="param1" type="string" maxlen="20" comment="An additional parameter." />
+      <column name="param2" type="string" maxlen="20" comment="An additional parameter." />
+      <column name="time" type="time" comment="The time of the event's occurrence, primarily for maintenance." />
+
+      <key name="eventId" type="primary" />
+      <key name="eventName" type="index" />
+      <key name="roomId" type="index" />
     </table>
 
 
@@ -393,14 +411,14 @@
     </table>
 
 
-    <table name="searchMessages" type="general" note="As of FIMv3B3 this is not as scalable as one might have hoped, though changes may be made further into the future, or at the latest in FIMv4" comment="A cache of messages containing search phrases.">
-      <column name="messageId" type="int" maxlen="15" comment="The ID of the message." />
+    <table name="searchMessages" type="general" comment="A cache of messages containing search phrases.">
+      <column name="phraseId" type="int" maxlen="8" comment="The ID of the phrase found in the message." />
+      <column name="messageId" type="int" maxlen="9" comment="The ID of the message." />
       <column name="userId" type="int" maxlen="8" comment="The user who made the above post." />
       <column name="roomId" type="int" maxlen="6" comment="The room the above post is contained in." />
-      <column name="phraseId" type="int" maxlen="15" comment="The ID of the phrase found in the message." />
 
       <key name="messageId,phraseId" type="primary" />
-      <key name="phraseId" type="index" />
+      <key name="roomId" type="index" />
     </table>
 
 
@@ -410,6 +428,19 @@
 
       <key name="phraseId" type="primary" />
       <key name="phraseName" type="unique" />
+    </table>
+
+
+    <table name="searchCache" type="general" comment="A cache of message searches. Note that this cache is most efficient when fulltext searching is enabled, but that it will still have minor benefits when using searchPhrases instead.">
+      <column name="phraseName" type="string" maxlen="50" comment="The phrase to search." />
+      <column name="userId" type="int" maxlen="8" comment="Limits the search results to this userId." />
+      <column name="roomId" type="int" maxlen="8" comment="Limits the search results to this roomId." />
+      <column name="resultPage" type="int" maxlen="6" comment="The result page this set corresponds with." />
+      <column name="resultLimit" type="int" maxlen="6" comment="The result limit this set corresponds with." />
+      <column name="messageIds" type="string" maxlen="50000" comment="The message IDs that result when searching phraseName, userId, and roomId (CSV)." />
+      <column name="expires" type="time" comment="When the cache is no longer considered valid." />
+
+      <key name="phraseName,userId,roomId,resultPage,resultLimit" type="primary" />
     </table>
 
 
@@ -458,8 +489,8 @@
       <column name="senderFormatEnd" type="string" maxlen="300" fkey="users.userFormatEnd" fkeyWeak="true"  comment="The end formatting of the user who sent the message." />
       <column name="roomId" type="int" maxlen="6" comment="The ID of the room in question. May refer to either rooms.roomId or privateRooms.uniqueId." />
       <column name="roomName" type="string" maxlen="50" comment="The name of the room in question." />
-      <column name="messageId" type="int" maxlen="15" fkey="messages.messageId" comment="The ID of the message." />
-      <column name="time" type="time" fkey="messages.messageId" comment="The time the message was made." />
+      <column name="messageId" type="int" maxlen="9" fkey="messages.messageId" comment="The ID of the message." />
+      <column name="time" type="time" comment="The time the message was made." />
 
       <key name="userId,roomId" type="unique" />
       <key name="time" type="index" />
@@ -519,8 +550,11 @@
       <!-- Counters -->
       <column name="fileCount" type="int" maxlen="8" default="0" comment="The number of files store on the server by this user." />
       <column name="fileSize" type="int" maxlen="8" default="0" comment="The total size of all files stored on the server by this user." />
+      <column name="ownedRooms" type="string" maxlen="10000" comment="Total number of rooms owned by this user (may be used to place a limit on room creation.)" />
       <column name="messageCount" type="int" maxlen="8" default="0" comment="The number of messages made by this user." />
       <column name="favRoomsCache" type="string" maxlen="10000" comment="A CSV cache of the favRooms table for this user." />
+      <column name="ignoredUsers" type="string" maxlen="10000" comment="A CSV cache of users ignored by this user." />
+      <column name="friendedUsers" type="string" maxlen="10000" comment="A CSV cache of users friended by this user." />
 
       <!-- Parental Controls -->
       <column name="userParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to restrict access to." />
@@ -543,6 +577,20 @@
     </table>
 
 
+    <table name="userEvents" type="memory" comment="Events that relate to a specific user.">
+      <column name="eventId" type="int" maxlen="8" autoincrement="1" comment="A unique identifier for the event." />
+      <column name="eventName" type="string" maxlen="20" comment="The name of the event (e.g. friend-request, unread-message)." />
+      <column name="userId" type="int" maxlen="8" comment="The user ID." />
+      <column name="param1" type="string" maxlen="20" comment="An additional parameter." />
+      <column name="param2" type="string" maxlen="20" comment="An additional parameter." />
+      <column name="time" type="time" comment="The time of the event's occurrence, primarily for maintenance." />
+
+      <key name="eventId" type="primary" />
+      <key name="eventName" type="index" />
+      <key name="userId" type="index" />
+    </table>
+
+
     <table name="userFavRooms" type="general" comment="A list of starred rooms. Unlike most other lists, this list generally doesn't have any backend effects, but we thought it was too useful not to include. Clients are still encouraged to implement more powerful tagging and lists themselves.">
       <column name="userId" type="int" maxlen="8" comment="The user ID." />
       <column name="roomId" type="int" maxlen="6" comment="The room ID." />
@@ -554,6 +602,7 @@
     <table name="userFriendsList" type="general" comment="A list of user friends, with whom private contact may be restricted in some cases. Clients are encouraged to enable more advanced tagging and lists.">
       <column name="userId" type="int" maxlen="8" comment="The user ID." />
       <column name="subjectId" type="int" maxlen="8" comment="The user ID friended." />
+      <column name="status" type="string" restrict="friend,request,deny" comment="Whether the relationship is a friend connection, merely a request, or if the request has been denied permanently." />
 
       <key name="userId,subjectId" type="primary" />
     </table>
@@ -607,6 +656,15 @@
 
       <key name="userId" type="primary" />
     </table>
+
+
+    <table name="watchRoomsCache" type="general" comment="A slightly more efficient cache of watch rooms. This _must_ be rebuilt, as is functionally similar to an APC cache (but works without APC, and is mildly more efficient since we can query only one userID.">
+      <column name="userId" type="int" maxlen="8" comment="The user ID." />
+      <column name="roomIds" type="string" maxlen="100000" comment="CSV list of room IDs." />
+      <column name="expires" type="time" comment="After this time, the cache entry is no longer considered valid." />
+
+      <key name="userId" type="primary" />
+    </table>
   </database>
 
 
@@ -616,6 +674,8 @@
       <def bit="4" comment="Deleted rooms are only viewable by administrators, and are otherwise read-only.">Deleted</def>
       <def bit="8" comment="Hidden rooms are not displayed under any circumstances, except to site administrators. Similarly, only administrators may set this flag. Hidden rooms can still be accessed by anyone who both has permission and knows the room ID.">Hidden</def>
       <def bit="16" comment="These rooms may not be posted in, and may be optimised specially. Otherwise, they behave normally, and only people with permission to view or know a room will be able to do such..">Archived</def>
+      <def bit="64" comment="(TODO) A room that needs to be approved by an administrator before it may be used. This room will only be shown to its owner until it has been approved.">Under Review (Moderated)</def>
+      <def bit="128" comment="(TODO) A room that has previously cleared moderation." note="Basically, this should disable the ability to flag a room.">Approved</def>
       <def bit="256">Reserved for R9000. Not supported officially, but marked for extensions that wish to support.</def>
     </bitfield>
 
@@ -645,7 +705,14 @@
     </bitfield>
 
     <bitfield name="options" table="users">
+      <def bit="4" comment="(TODO) Deleted users are treated as non-existent for purposes of logging in. The user's name is, however, reserved.">Deleted</def>
+      <def bit="64" comment="(TODO) A user that needs to be approved by an administrator before it will gain normal permissions" note="Basically, when this feature is active, two sets of default permissions will exist -- one for unapproved users, and another for approved users. When approved, a user's permissions will be set to the new permissions">Under Review (Moderated)</def>
+    </bitfield>
 
+    <bitfield name="options" table="files">
+      <def bit="4" comment="(TODO) Deleted files are only viewable by administrators, and should not be shown even to their poster.">Deleted</def>
+      <def bit="64" comment="(TODO) A file that needs to be approved by an administrator before it will be displayed.">Under Review (Moderated)</def>
+      <def bit="128" comment="(TODO) A file that has previously cleared moderation." note="Basically, this should disable the ability to flag a file.">Approved</def>
     </bitfield>
 
     <bitfield name="adminPrivs" table="users">
