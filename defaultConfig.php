@@ -122,7 +122,7 @@ $defaultConfig = array(
 
 
   /* Active Users */
-  'defaultOnlineThreshold' => 15, // integer The default period of time after which a user is considered inactive. NOTE: This functionality will be modified either in B3 or B4 significantly, such that users are no longer pinged as frequently, and instead will send a signal only when they leave. Thus, this will be increase to around 120.
+  'defaultOnlineThreshold' => 15 * 60, // integer The default period of time after which a user is considered inactive. NOTE: This functionality will be modified either in B3 or B4 significantly, such that users are no longer pinged as frequently, and instead will send a signal only when they leave. Thus, this will be increase to around 120.
 
 
   /* File Uploads */

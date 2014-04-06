@@ -343,7 +343,7 @@ window.fimApi = {
       'fim3_format' : 'json',
       'roomIds' : '',
       'userIds' : '',
-      'onlineThreshold' : 15
+      'onlineThreshold' : null
     });
 
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);

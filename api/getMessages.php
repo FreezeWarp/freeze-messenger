@@ -116,11 +116,6 @@ $request = fim_sanitizeGPC('g', array(
     'cast' => 'bool',
   ),
 
-  'longPolling' => array(
-    'default' => false,
-    'cast' => 'bool',
-  ),
-
   'messageDateMax' => array(
     'default' => 0,
     'cast' => 'int',
@@ -138,11 +133,6 @@ $request = fim_sanitizeGPC('g', array(
 
   'messageIdEnd' => array(
     'default' => 0,
-    'cast' => 'int',
-  ),
-
-  'onlineThreshold' => array(
-    'default' => $config['defaultOnlineThreshold'],
     'cast' => 'int',
   ),
 
