@@ -446,7 +446,7 @@
 
     <table name="sessions" type="memory" comment="Active user credentials.">
       <column name="sessionId" type="int" maxlen="10" autoincrement="1" comment="A unique ID corrosponding to all sessions. It is largely unused." />
-      <column name="sesionTime" type="time" comment="The time the session was last renewed." />
+      <column name="sessionTime" type="time" comment="The time the session was last renewed." />
       <column name="sessionHash" type="string" maxlen="128" comment="The session hash itself." />
       <column name="sessionIp" type="string" maxlen="128" comment="The user's IP address." />
       <column name="userId" type="int" maxlen="8" comment="The ID of the user the session belongs to." />
