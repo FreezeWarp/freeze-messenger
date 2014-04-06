@@ -203,7 +203,7 @@ if ($user['userId'] < 0 || ($user['userId'] === 0 && !$ignoreLogin)) throw new E
 
 // If certain features are disabled, remove user priviledges. The bitfields should be maintained, however, for when a feature is reenabled.
 if (!$config['userRoomCreation']) $user['userPrivs'] &= ~USER_PRIV_CREATE_ROOMS;
-if (!$config['userPrivateRoomCreation']) $user['userPrivs'] &= ~(USER_PRIV_PRIVATE_ALL + USER_PRIV_PRIVATE_FRIENDS); // Note: does not disable the usage of existing private rooms. Use "disablePrivateRooms" for this.
+if (!$config['userPrivateRoomCreation']) $user['userPrivs'] &= ~(USER_PRIV_PRIVATE_ALL + USER_PRIV_PRIVATE_FRIENDS); // Note: does not disable the usage of existing private rooms. Use "privateRoomsEnabled" for this.
 
 if (fim_isSuper()) { // Super admins should get all permissions. The bitfields up to 32768 (2^15) are set to true.
   $user['adminPrivs'] = 65535;
