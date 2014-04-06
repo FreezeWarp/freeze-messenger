@@ -56,13 +56,7 @@ $defaultConfig = array(
   'privateRoomsEnabled' => true,
 
 
-  /* Message Sending */
-  'defaultMessageHardLimit' => 50, // integer The default number of messages that will be returned by api/getMessages.php.
-  'maxMessageHardLimit' => 500, // integer The maximum number of messages that will be returned by api/getMessages.php.
-
-  'defaultMessageLimit' => 10000, // integer The default message range getMessages.php will query.
-  'maxMessageLimit' => 10000, // integer The maximum message range getMessages.php will query.
-
+  /* Default Formatting */
   'defaultFormattingColor' => true,
   'defaultFormattingFont' => true,
   'defaultFormattingHighlight' => true,
@@ -71,6 +65,10 @@ $defaultConfig = array(
   'defaultFormattingUnderline' => false,
   'defaultFormattingStrikethrough' => false,
   'defaultFormattingOverline' => false,
+
+
+  /* Message Sending & Formatting */
+  'maxMessageLength' => 1000,
 
   'fonts' => array(
     'FreeMono' => "FreeMono, TwlgMono, 'Courier New', Consolas, monospace",
@@ -101,6 +99,12 @@ $defaultConfig = array(
 
 
   /* Message Retrieval */
+  'defaultMessageHardLimit' => 50, // integer The default number of messages that will be returned by api/getMessages.php.
+  'maxMessageHardLimit' => 500, // integer The maximum number of messages that will be returned by api/getMessages.php.
+
+  'defaultMessageLimit' => 10000, // integer The default message range getMessages.php will query.
+  'maxMessageLimit' => 10000, // integer The maximum message range getMessages.php will query.
+
   'serverSentEvents' => true, // bool Whether to enable SSE. These are fairly stable, but some server configurations will still have problems with server sent events. Disable if you have issues.
   'serverSentEventsWait' => .5, // float Server sent events are more controlled, so we can call them at a greater frequency.
   'serverSentMaxRetries' => 50, // int The number of tries the server will requery before requiring the client to resend a SSE request.
@@ -357,8 +361,6 @@ $defaultConfig = array(
 
   /*** Output ***/
   'compressOutput' => true, // bool Whether or not to remove whitespace from API responses. Servers that enable GZ probably don't need to enable this, but it is safe eitherway.
-
-  'maxMessageLength' => 1000,
 
   'apiPause' => .125,
 
