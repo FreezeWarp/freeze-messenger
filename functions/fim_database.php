@@ -496,6 +496,34 @@ class fimDatabase extends databaseSQL
 
 
 
+  public function getMessageIdsFromSearchCache($options, $limit, $page) {
+    $options = array_merge(array(
+      'roomIds'           => array(),
+      'userIds'           => array(),
+      'phraseNames' => array(),
+    ), $options);
+
+
+    $columns = array(
+      $this->sqlPrefix . "searchCache"  => 'phraseName, userId, roomId, resultPage, resultLimit, messageIds, expires',
+    );
+
+    $conditions['both']['phraseName'] = $options['phraseNames'];
+    $conditions['both']['resultPage'] = $page;
+    $conditions['both']['resultLimit'] = $limit;
+
+
+    /* Apply User and Room Filters */
+    if (count($options['roomIds']) > 1) $conditions['both']['roomId'] = $this->in((array) $options['roomIds']);
+    if (count($options['userIds']) > 1) $conditions['both']['userId'] = $this->in((array) $options['userIds']);
+
+
+    /* Run the Query */
+    $messageIds = implode(',', $this->select($columns, $conditions)->getColumnValues('messageIds'));
+  }
+
+
+
   /**
    * Run a query to obtain messages.
    * getMessages is by far the most advanced set of database calls in the whole application, and is still in need of much fine-tuning. The mesagEStream file uses its own query and must be teste seerately.
@@ -506,7 +534,7 @@ class fimDatabase extends databaseSQL
    *
    * @return array|bool|object|resource
    */
-  public function getMessages($options = array(), $sort = array('messageId' => 'asc'), $limit = false)
+  public function getMessages($options = array(), $sort = array('messageId' => 'asc'), $limit = false, $page = 0)
   {
     global $config;
 
@@ -537,7 +565,7 @@ class fimDatabase extends databaseSQL
           'roomIds' => $options['roomIds'],
           'userIds' => $options['userIds'],
           'messageTextSearch' => $options['messageTextSearch'],
-        ))->getAsArray('messageId');
+        ), null, $limit, $page)->getAsArray('messageId');
 
         $searchMessages = array_keys($searchMessageIds);
 
@@ -903,7 +931,7 @@ class fimDatabase extends databaseSQL
     global $config;
 
     $this->delete($this->sqlPrefix . 'sessions', array(
-      'time' => array(
+      'sessionTime' => array(
         'type' => 'equation', // Data in the value column should not be scaped.
         'cond' => 'lte', // Comparison is "<="
         'value' => $this->now() - $config['sessionExpires'],
@@ -1509,7 +1537,7 @@ class fimDatabase extends databaseSQL
   {
     global $config, $user, $globalTime;
 
-    if ($config['enableAccessLog']) {
+    if ($config['accessLogEnabled']) {
       if ($this->insert($this->sqlPrefix . "accessLog", array(
         'userId' => $user['userId'],
         'action' => $action,
