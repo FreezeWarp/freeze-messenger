@@ -552,7 +552,8 @@
       <column name="fileSize" type="int" maxlen="8" default="0" comment="The total size of all files stored on the server by this user." />
       <column name="ownedRooms" type="string" maxlen="10000" comment="Total number of rooms owned by this user (may be used to place a limit on room creation.)" />
       <column name="messageCount" type="int" maxlen="8" default="0" comment="The number of messages made by this user." />
-      <column name="favRoomsCache" type="string" maxlen="10000" comment="A CSV cache of the favRooms table for this user." />
+      <column name="favRooms" type="string" maxlen="10000" comment="A CSV cache of the favRooms table for this user." />
+      <column name="watchRooms" type="string" maxlen="10000" comment="A CSV cache of the watchRooms table for this user." />
       <column name="ignoredUsers" type="string" maxlen="10000" comment="A CSV cache of users ignored by this user." />
       <column name="friendedUsers" type="string" maxlen="10000" comment="A CSV cache of users friended by this user." />
 
@@ -595,7 +596,7 @@
       <column name="userId" type="int" maxlen="8" comment="The user ID." />
       <column name="roomId" type="int" maxlen="6" comment="The room ID." />
 
-      <key name="userId,subjectId" type="primary" />
+      <key name="userId,roomId" type="primary" />
     </table>
     
     
@@ -653,15 +654,6 @@
     <table name="watchRooms" type="general">
       <column name="userId" type="int" maxlen="8" comment="The user ID." />
       <column name="roomId" type="int" maxlen="6" comment="The room ID." />
-
-      <key name="userId" type="primary" />
-    </table>
-
-
-    <table name="watchRoomsCache" type="general" comment="A slightly more efficient cache of watch rooms. This _must_ be rebuilt, as is functionally similar to an APC cache (but works without APC, and is mildly more efficient since we can query only one userID.">
-      <column name="userId" type="int" maxlen="8" comment="The user ID." />
-      <column name="roomIds" type="string" maxlen="100000" comment="CSV list of room IDs." />
-      <column name="expires" type="time" comment="After this time, the cache entry is no longer considered valid." />
 
       <key name="userId" type="primary" />
     </table>

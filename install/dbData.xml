@@ -740,33 +740,6 @@
     </table>
 
 
-    <!-- Table uploadTypes -->
-    <table name="uploadTypes">
-      <column name="extension" value="png" />
-      <column name="mime" value="image/png" />
-      <column name="maxSize" value="1048576" />
-      <column name="container" value="image" />
-    </table>
-    <table name="uploadTypes">
-      <column name="extension" value="jpg" />
-      <column name="mime" value="image/jpeg" />
-      <column name="maxSize" value="1048576" />
-      <column name="container" value="image" />
-    </table>
-    <table name="uploadTypes">
-      <column name="extension" value="jpeg" />
-      <column name="mime" value="image/jpeg" />
-      <column name="maxSize" value="1048576" />
-      <column name="container" value="image" />
-    </table>
-    <table name="uploadTypes">
-      <column name="extension" value="gif" />
-      <column name="mime" value="image/gif" />
-      <column name="maxSize" value="1048576" />
-      <column name="container" value="image" />
-    </table>
-
-
     <!-- Table users -->
     <!-- The addUser function should be tested separately (as with addRoom, etc.) -->
     <table name="users">
