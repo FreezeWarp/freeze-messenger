@@ -132,11 +132,10 @@ else {
 
 
 
-/* Get the absolute API path.
- * This is used for a few absolute referrences, and is checked with the server. */
+if (typeof window.EventSource == 'undefined') requestSettings.serverSentEvents = false;
+else requestSettings.serverSentEvents = window.serverSettings.requestMethods.serverSentEvents;
 
-var directory = window.location.pathname.split('/').splice(0, window.location.pathname.split('/').length - 2).join('/') + '/', // splice returns the elements removed (and modifies the original array), in this case the first two; the rest should be self-explanatory
-  currentLocation = window.location.protocol + '//' + window.location.host + directory + 'webpro/';
+if (window.serverSettings.installUrl != (window.location.protocol + '//' + window.location.host + window.directory)) dia.error(window.phrases.errorBadInstall);
 
 
 /*********************************************************
@@ -614,42 +613,6 @@ function fim_hashParse(options) {
 ************************ START **************************
 ******************* Variable Setting ********************
 *********************************************************/
-
-/* Get Server-Specific Variables
-* We Should Not Call This Again */
-
-$.ajax({
-  url: directory + 'api/getServerStatus.php?fim3_format=json',
-  type: 'GET',
-  timeout: 1000,
-  dataType: 'json',
-  success: function(json) {
-    requestSettings.longPolling = json.getServerStatus.serverStatus.requestMethods.longPoll;
-    serverSettings = json.getServerStatus.serverStatus; console.log('forum: ' + serverSettings.branding.forumType);
-
-    if (typeof window.EventSource == 'undefined') { requestSettings.serverSentEvents = false; }
-    else { requestSettings.serverSentEvents = json.getServerStatus.serverStatus.requestMethods.serverSentEvents; }
-
-    if (json.getServerStatus.serverStatus.installUrl != (window.location.protocol + '//' + window.location.host + directory)) {
-      dia.error(window.phrases.errorBadInstall);
-    }
-
-    return false;
-  },
-  error: function() {
-    dia.error('Could not obtain serverStatus. All advanced functionality will be disabled.');
-
-    requestSettings.longPolling = false;
-    requestSettings.serverSentEvents = false;
-    serverSettings: {
-      parentalControls : {
-        parentalEnabled : false
-      }
-    };
-
-    return false;
-  }
-});
 
 
 

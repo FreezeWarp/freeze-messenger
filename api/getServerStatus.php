@@ -58,7 +58,6 @@ $xmlData = array(
       ),
 
       'requestMethods' => array(
-        'longPoll' => (bool) $config['longPolling'],
         'poll' => true,
         'serverSentEvents' => (bool) $config['serverSentEvents'],
       ),

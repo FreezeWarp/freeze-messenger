@@ -75,6 +75,12 @@ function $t(templateName, substitutions) {
   }
 }
 
+
+var directory = window.location.pathname.split('/').splice(0, window.location.pathname.split('/').length - 2).join('/') + '/', // splice returns the elements removed (and modifies the original array), in this case the first two; the rest should be self-explanatory
+  currentLocation = window.location.protocol + '//' + window.location.host + directory + 'webpro/';
+
+
+
 $.when(
   $.ajax({
     url: 'client/data/config.json',
@@ -102,6 +108,13 @@ $.when(
   $.ajax({
     url: 'client/js/fim-dev/fim-popup.js',
     dataType: 'script'
+  }),
+  $.ajax({
+    url: window.directory + 'api/getServerStatus.php?fim3_format=json',
+    dataType: 'json',
+    success: function(json) {
+      window.serverSettings = json.getServerStatus.serverStatus;
+    }
   })
  ).then(function() {
   $(document).ready(function() {
