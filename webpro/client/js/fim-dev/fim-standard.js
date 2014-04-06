@@ -84,6 +84,8 @@ var standard = {
     }); // Send the form data via AJAX.
   },
 
+
+  /* Trigger a login using provided data. This will open a login form if neccessary. */
   login : function(options) {
     if (options.start) options.start();
 
@@ -109,15 +111,6 @@ var standard = {
         }
 
 
-        if (options.showMessage) {
-          // Display Dialog to Notify User of Being Logged In
-          if (!userPermissions.view) dia.info('You are now logged in as ' + activeLogin.userData.userName + '. However, you are not allowed to view and have been banned by an administrator.', 'Logged In'); // dia.error(window.phrases.errorBanned);
-          else if (!userPermissions.post) dia.info('You are now logged in as ' + activeLogin.userData.userName + '. However, you are not allowed to post and have been silenced by an administrator. You may still view rooms which allow you access.', 'Logged In'); // dia.error(window.phrases.errorBanned);)
-          else dia.info('You are now logged in as ' + activeLogin.userData.userName + '.', 'Logged In');
-        }
-
-        $('#loginDialogue').dialog('close'); // Close any open login forms.
-
         if (options.finish) options.finish();
 
 
@@ -130,18 +123,8 @@ var standard = {
 
         return false;
       },
-      error: function(data) { console.log(data);
-         switch (data) {
-         case 'PASSWORD_ENCRYPT': dia.error("The form encryption used was not accepted by the server."); break;
-         case 'BAD_USERNAME': dia.error("A valid user was not provided."); break;
-         case 'BAD_PASSWORD': dia.error("The password was incorrect."); break;
-         case 'API_VERSION_STRING': dia.error("The server was unable to process the API version string specified."); break;
-         case 'DEPRECATED_VERSION': dia.error("The server will not accept this client because it is of a newer version."); break;
-         case 'INVALID_SESSION': sessionHash = ''; break;
-         default: break;
-         }
-
-         console.log('Login Invalid');
+      error: function(data) {
+        if (options.error) options.error(data);
 
         return false;
       }
@@ -153,7 +136,7 @@ var standard = {
     $.cookie('webpro_userId', null);
     $.cookie('webpro_password', null);
 
-    standard.login({});
+    popup.login();
   },
 
 
@@ -249,14 +232,14 @@ var standard = {
 
 
   sendMessage : function(message, confirmed, flag) {
-    if (!roomId) {
+    if (!window.roomId) {
       popup.selectRoom();
     }
     else {
       confirmed = (confirmed === 1 ? 1 : '');
 
       fimApi.sendMessage({
-        'roomId' : roomId,
+        'roomId' : window.roomId,
         'confirmed' : confirmed,
         'message' : fim_eURL(message),
         'flag' : (flag ? flag : '')

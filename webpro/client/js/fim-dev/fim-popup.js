@@ -7,51 +7,50 @@ popup = {
   /*** START Login ***/
 
   login : function() {
+    function login_success(data) {
+      $('#loginDialogue').dialog('close'); // Close any open login forms.
+
+      if (!userPermissions.view) dia.info('You are now logged in as ' + activeLogin.userData.userName + '. However, you are not allowed to view and have been banned by an administrator.', 'Logged In'); // dia.error(window.phrases.errorBanned);
+      else if (!userPermissions.post) dia.info('You are now logged in as ' + activeLogin.userData.userName + '. However, you are not allowed to post and have been silenced by an administrator. You may still view rooms which allow you access.', 'Logged In'); // dia.error(window.phrases.errorBanned);)
+      else dia.info('You are now logged in as ' + activeLogin.userData.userName + '.', 'Logged In');
+    }
+
+    function login_fail(data) {
+      switch (data.string) {
+        case 'sessionMismatchUserId':
+        case 'sessionMismatchBrowser':
+        case 'sessionMismatchIp':
+        case 'invalidSession': dia.error('The server rejected the stored session. Please login.'); break;
+        case 'loginRequired': dia.error("A valid login must be provided. Please login."); break;
+        case 'invalidLogin': dia.error("The login provided is not valid."); break;
+        default: dia.error('Unknown error logging in: ' + data.string); break;
+      }
+    }
+
+    function login_standard() {
+      standard.login({
+        userName : $('#loginForm > #userName').val(),
+        password : $('#loginForm > #password').val(),
+        rememberMe : $('#loginForm > #rememberme').is('checked'),
+        finish : login_success,
+        error : login_fail
+      });
+    }
+
     dia.full({
       content : $t('login'),
       title : 'Login',
       id : 'loginDialogue',
       width : 600,
       oF : function() {
-        // The following is a rather complicated hack that fixes a huge issue with how the login box first displays. It's stupid, but... yeah.
-        manualHeight = ($(window).innerHeight() - 600) / 2;
-        if (manualHeight < 0) manualHeight = 0;
-
-        manualWidth = ($(window).innerWidth() - 600) / 2;
-        if (manualWidth < 0) manualWidth = 0;
-
-        $('#loginDialogue').parent().css('top', manualHeight);
-        $('#loginDialogue').parent().css('left', manualWidth);
-        $('#loginDialogue').parent().css('position', 'absolute');
-        $('body').scrollTop();
-
-
-        // Login Form Processing
         $("#loginForm").submit(function() {
-          var userName = $('#loginForm > #userName').val(),
-            password = $('#loginForm > #password').val(),
-            rememberMe = $('#loginForm > #rememberme').is('checked');
-
-          standard.login({
-            userName : userName, password : password,
-            showMessage : true, rememberMe : rememberMe
-          });
-
-          return false; // Don't submit the form.
+          login_standard();
+          return false;
         });
       },
       cF : function() {
-        if (!userId) {
-          standard.login({
-            start : function() {
-              $('<div class="ui-widget-overlay" id="loginWaitOverlay"></div>').appendTo('body').width($(document).width()).height($(document).height());
-              $('<img src="images/ajax-loader.gif" id="loginWaitThrobber" />').appendTo('body').css('position', 'absolute').offset({ left : (($(window).width() - 220) / 2), top : (($(window).height() - 19) / 2)});
-            },
-            finish : function() {
-              $('#loginWaitOverlay, #loginWaitThrobber').empty().remove();
-            }
-          });
-        }
+        $('#loginForm input').val('');
+        if (!window.userId) login_standard();
       }
     });
   },

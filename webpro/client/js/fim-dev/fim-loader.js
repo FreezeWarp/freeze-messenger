@@ -1077,10 +1077,6 @@ function windowDynaLinks() {
   if (noAdminCounter === 8) { $('li > #modGeneral').parent().hide(); }
   if (noModCounter === 3 && noAdminCounter === 8) { $('#moderateCat').hide(); }
 
-  // Show Login or Logout Only
-  if (userId && !anonId) { $('li > #logout').parent().show(); $('li > #login').parent().hide(); }
-  else { $('li > #login').parent().hide(); $('li > #logout').parent().hide(); }
-
 
   // Room Lists (this is a bit slow -- we should optimise (TODO)
   $('#roomListLong > ul').html('<li>My Rooms<ul id="myRooms1"></ul></li>');
@@ -1162,7 +1158,7 @@ function contextMenuParseUser(container) {
         id : 'messageLink',
         content : (userData[userId].profile ? '<iframe src="' + userData[userId].profile + '" style="width: 100%; height: 90%;" /><br /><a href="' + userData[userId].profile + '" target="_BLANK">Visit The Page Directly</a>' : 'The user has not yet registered a profile.'),
         width: $(window).width() * .8,
-        height: $(window).height() * .9,
+        height: $(window).height() * .9
       });
       break;
 
@@ -1376,27 +1372,7 @@ $(document).ready(function() {
 
 
   if (window.webproDisplay.fontSize) $('body').css('font-size', window.webproDisplay.fontSize + 'em');
-
-
-  if ($.cookie('webpro_userId') > 0) {
-    standard.login({
-      userId : $.cookie('webpro_userId'),
-      password : $.cookie('webpro_password'),
-      finish : function() {
-        if (!userId) { // The user is not actively logged in.
-          popup.login();
-        }
-      }
-    });
-  }
-  else {
-    popup.login();
-  }
-
-
-  if (settings.disableFx) {
-    jQuery.fx.off = true;
-  }
+  if (settings.disableFx) jQuery.fx.off = true;
 
 
   /*** Create the Accordion Menu ***/
@@ -1429,8 +1405,7 @@ $(document).ready(function() {
 
   $('#icon_note, #messageArchive').bind('click', function() { popup.archive({roomId : roomId}); }); // Archive
   $('a#editRoom').bind('click', function() { popup.editRoom(roomId); }); // Edit Room
-  $('#login').bind('click', function() { popup.login(); }); // Login
-  $('#logout').bind('click', function() { standard.logout(); popup.login(); }); // Logout
+  $('#logout').bind('click', function() { standard.logout(); }); // Logout
   $('a#kick').bind('click', function() { popup.kick(); }); // Kick
   $('a#privateRoom').bind('click', function() { popup.privateRoom(); }); // Private Room
   $('a#manageKick').bind('click', function() { popup.manageKicks({'roomIds' : [window.roomId]}); }); // Manage Kicks
@@ -1489,6 +1464,21 @@ $(document).ready(function() {
   $(window).bind('blur', windowBlur);
   $(window).bind('focus', windowFocus);
   $(window).bind('hashchange', fim_hashParse);
+
+
+  /*** Initial Login ***/
+  if ($.cookie('webpro_userId') > 0) {
+    standard.login({
+      userId : $.cookie('webpro_userId'),
+      password : $.cookie('webpro_password'),
+      error : function() {
+        if (!window.userId) popup.login(); // The user is not actively logged in.
+      }
+    });
+  }
+  else {
+    popup.login();
+  }
 
 
   return false;

@@ -40,8 +40,8 @@ window.fimApi = {
         cache: requestSettings.cache
       }).done(function(json) {
         requestSettings.callback(json.login);
-      }, function(json) {
-        requestSettings.error(json.exception);
+      }).fail(function(response) {
+        requestSettings.error(response.responseJSON.exception);
       });
     }
 
