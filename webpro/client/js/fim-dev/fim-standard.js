@@ -90,7 +90,8 @@ var standard = {
     fimApi.login({
       'userId' : options.userId,
       'userName' : options.userName,
-      'password' : options.password
+      'password' : options.password,
+      'clientCode' : 'webpro30000'
     }, {
       callback : function(activeLogin) {
         activeLogin.userData.parentalFlags = activeLogin.userData.parentalFlags.split(',');
@@ -254,13 +255,14 @@ var standard = {
     else {
       confirmed = (confirmed === 1 ? 1 : '');
 
-      $.ajax({
-        url: directory + 'api/sendMessage.php?fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json',
-        type: 'POST',
-        data: 'roomId=' + roomId + '&confirmed=' + confirmed + '&message=' + fim_eURL(message) + '&flag=' + (flag ? flag : ''),
-        cache: false,
-        timeout: 5000,
-        success: function(json) {
+      fimApi.sendMessage({
+        'roomId' : roomId,
+        'confirmed' : confirmed,
+        'message' : fim_eURL(message),
+        'flag' : (flag ? flag : '')
+      },
+      {
+        'callback' : function(json) {
           var errStr = json.sendMessage.errStr,
             errDesc = json.sendMessage.errDesc;
 
@@ -282,11 +284,11 @@ var standard = {
 
           return false;
         },
-        error: function() {
+        'error' : function() {
           if (settings.reversePostOrder) { $('#messageList').append('Your message, "' + message + '", could not be sent and will be retried.'); }
           else { $('#messageList').prepend('Your message, "' + message + '", could not be sent and will be retried.'); }
 
-          window.setTimeout(function() { standard.sendMessage(message) }, 5000);
+          //window.setTimeout(function() { standard.sendMessage(message) }, 5000); TODO
 
           return false;
         }
