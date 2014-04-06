@@ -394,7 +394,7 @@ window.fimApi = {
 
 
   editFile : function(params, requestSettings) {
-    var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds', 'userIds']), {
+    var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['parentalFlags']), {
       'fim3_sessionHash' : window.sessionHash,
       'fim3_userId' :  window.userId,
       'fim3_format' : 'json',
@@ -417,6 +417,36 @@ window.fimApi = {
       type : 'POST',
       data : params,
       cache : false,
+      timeout : requestSettings.timeout,
+      success : function(json) {
+        requestSettings.callback(json);
+      },
+      error : function(json) {
+        requestSettings.error(json);
+      }
+    });
+  },
+
+
+  sendMessage : function(params, requestSettings) {
+    var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['parentalFlags']), {
+      'fim3_sessionHash' : window.sessionHash,
+      'fim3_userId' :  window.userId,
+      'fim3_format' : 'json',
+      'roomId' : null,
+      'confirmed' : false, // TODO
+      'message' : null,
+      'flag' : null
+    });
+
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+    $.ajax({
+      url: directory + 'api/sendMessage.php',
+      type: 'POST',
+      data: params,
+      cache: false,
+      timeout : requestSettings.timeout,
       success : function(json) {
         requestSettings.callback(json);
       },
