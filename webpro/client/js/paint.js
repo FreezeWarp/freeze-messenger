@@ -76,8 +76,140 @@ function $t(templateName, substitutions) {
 }
 
 
+/* Requirements
+ * All of these are pretty universal, but I want to be explicit with them. */
+if (typeof Date === 'undefined') { window.location.href = 'browser.php'; }
+else if (typeof Math === 'undefined') { window.location.href = 'browser.php'; }
+else if (false === ('encodeURIComponent' in window || 'escape' in window)) { window.location.href = 'browser.php'; }
+
+
+
+/* Prototyping
+ * Only for Compatibility */
+
+// Array indexOf
+// Courtesy of https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/indexOf
+if (!Array.prototype.indexOf) {
+  Array.prototype.indexOf = function(elt /*, from*/) {
+    var len = this.length >>> 0;
+
+    var from = Number(arguments[1]) || 0;
+    from = (from < 0)
+      ? Math.ceil(from)
+      : Math.floor(from);
+    if (from < 0)
+      from += len;
+
+    for (; from < len; from++) {
+      if (from in this && this[from] === elt) return from;
+    }
+    return -1;
+  };
+}
+
+
+// Base64 encode/decode
+if (!window.btoa) window.btoa = $.base64.encode;
+if (!window.atob) window.atob = $.base64.decode;
+
+
+// console.log
+if (typeof console !== 'object' || typeof console.log !== 'function') {
+  var console = {
+    log : function() { return false; }
+  };
+}
+
+
+var userId, // The user ID who is logged in.
+  roomId, // The ID of the room we are in.
+  sessionHash, // The session hash of the active user.
+  anonId, // ID used to represent anonymous posters.
+  prepopup,
+  serverSettings;
+
+
+
+/* Function-Specific Variables */
+
+window.isBlurred = false; // By default, we assume the window is active and not blurred.
+var topic,
+  favicon = $('#favicon').attr('href'),
+  uploadSettings = {}, // Object
+  requestSettings = {
+    longPolling : false, // We may set this to true if the server supports it.
+    timeout : 2400, // We may increase this dramatically if the server supports longPolling.
+    firstRequest : true,
+    totalFails : 0,
+    lastMessage : 0,
+    lastEvent : 0
+  },
+  timers = {t1 : false}, // Object
+  messageSource,
+  eventSource;
+
+
+
+/* Objects for Cleanness, Caching. */
+
+var modRooms = {}, // Just a whole bunch of objects.
+  userData = {},
+  roomLists = {},
+
+  roomList = [], userList = [], groupList = [], // Arrays that serve different purposes, notably looking up IDs from names.
+  messageIndex = [],
+
+  roomUlFavHtml = '', roomUlMyHtml = '', // A bunch of strings displayed at different points.
+  roomUlHtml = '', ulText = '', roomTableHtml = '',
+
+  active = {}; // This is used as a placeholder for JSON objects where code cleanity is nice.
+
+
+
+/* Get Cookies */
+window.webproDisplay = {
+  'theme' : $.getCookie('webpro_theme', 'absolution'), // Theme (goes into effect in document.ready)
+  'fontSize' : $.getCookie('webpro_fontSize', 1), // Font Size (goes into effect in document.ready)
+  'settingsBitfield' : $.getCookie('webpro_settings', 8192 + 16777216 + 33554432), // Settings Bitfield (goes into effect all over the place); defaults with US Time, 12-Hour Format, Audio Ding
+  'audioVolume' : $.getCookie('webpro_audioVolume', .5)
+}
+
+
+
+/* Audio File (a hack I placed here just for fun)
+ * Essentially, if a cookie has a custom audio file, we play it instead.
+ * If not, we will try to play the default, either via ogg, mp3, or wav. */
+if (typeof Audio !== 'undefined') {
+  var snd = new Audio();
+
+  if ($.cookie('webpro_audioFile') !== null) audioFile = $.cookie('webpro_audioFile');
+  else {
+    if (snd.canPlayType('audio/ogg; codecs=vorbis')) audioFile = 'images/beep.ogg';
+    else if (snd.canPlayType('audio/mp3')) audioFile = 'images/beep.mp3';
+    else if (snd.canPlayType('audio/wav')) audioFile = 'images/beep.wav';
+    else {
+      audioFile = '';
+      console.log('Audio Disabled');
+    }
+  }
+
+  snd.setAttribute('src', audioFile);
+  snd.volume = window.webproDisplay.audioVolume; // Audio Volume
+}
+else {
+  var snd = {
+    play : function() { return false; },
+    volume : 0
+  }
+}
+
+
+
+
 var directory = window.location.pathname.split('/').splice(0, window.location.pathname.split('/').length - 2).join('/') + '/', // splice returns the elements removed (and modifies the original array), in this case the first two; the rest should be self-explanatory
   currentLocation = window.location.protocol + '//' + window.location.host + directory + 'webpro/';
+
+
 
 
 
@@ -110,6 +242,10 @@ $.when(
     dataType: 'script'
   }),
   $.ajax({
+    url: 'client/js/fim-dev/fim-loader.js',
+    dataType:'script'
+  }),
+  $.ajax({
     url: window.directory + 'api/getServerStatus.php?fim3_format=json',
     dataType: 'json',
     success: function(json) {
@@ -117,15 +253,140 @@ $.when(
     }
   })
  ).then(function() {
+  if (typeof window.EventSource == 'undefined') requestSettings.serverSentEvents = false;
+  else requestSettings.serverSentEvents = window.serverSettings.requestMethods.serverSentEvents;
+
+  if (window.serverSettings.installUrl != (window.location.protocol + '//' + window.location.host + window.directory)) dia.error(window.phrases.errorBadInstall);
+
+
+
+  /**
+   * Blast-off.
+   * There's a million things that happen here
+   *
+   * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+   * @copyright Joseph T. Parsons 2014
+   */
   $(document).ready(function() {
     $('body').append($t('main'));
     $('body').append($t('contextMenu'));
 
-    $.ajax({
-      async: false,
-      url: 'client/js/fim-dev/fim-loader.js',
-      dataType:'script'
+
+    // Start by injecting the stylesheets into the DOM.
+    $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/' + window.webproDisplay.theme + '/jquery-ui-1.10.4.min.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/' + window.webproDisplay.theme + '/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
+
+
+    if (window.webproDisplay.fontSize) $('body').css('font-size', window.webproDisplay.fontSize + 'em');
+    if (settings.disableFx) jQuery.fx.off = true;
+
+
+    /*** Create the Accordion Menu ***/
+    $('#menu').accordion({
+      heightStyle : 'fill',
+      navigation : true,
+      collapsible: true,
+      active : Number($.cookie('webpro_menustate')) - 1,
+      activate: function(event, ui) {
+        var sid = ui.newHeader.children('a').attr('data-itemId');
+
+        $.cookie('webpro_menustate', sid, { expires: 14 });
+      }
     });
+
+
+    /*** Image Buttons! ***/
+    $("#icon_help").button({ icons: {primary:'ui-icon-help'} });
+    $("#icon_note").button({ icons: {primary:'ui-icon-note'} });
+    $("#icon_settings").button({ icons: {primary:'ui-icon-wrench'} });
+    $("#icon_url").button({ icons: {primary: 'ui-icon-link'} });
+    $("#icon_submit").button({ icons: {primary: 'ui-icon-circle-check'} });
+    $("#icon_reset").button({ icons: {primary: 'ui-icon-circle-close'} });
+
+    $("#imageUploadSubmitButton").button("option", "disabled", true);
+
+
+    /*** Button Click Events ***/
+    $('#icon_note, #messageArchive, a#editRoom').unbind('click'); // Cleanup
+
+    $('#icon_note, #messageArchive').bind('click', function() { popup.archive({roomId : roomId}); }); // Archive
+    $('a#editRoom').bind('click', function() { popup.editRoom(roomId); }); // Edit Room
+    $('#logout').bind('click', function() { standard.logout(); }); // Logout
+    $('a#kick').bind('click', function() { popup.kick(); }); // Kick
+    $('a#privateRoom').bind('click', function() { popup.privateRoom(); }); // Private Room
+    $('a#manageKick').bind('click', function() { popup.manageKicks({'roomIds' : [window.roomId]}); }); // Manage Kicks
+    $('a#myKicks').bind('click', function() { popup.manageKicks({'userIds' : [window.userId]}); }); // Manage Kicks
+    $('a#online').bind('click', function() { popup.online(); }); // Online
+    $('a#createRoom').bind('click', function() { popup.editRoom();}); // Create Room
+    $('a.editRoomMulti').bind('click', function() { popup.editRoom($(this).attr('data-roomId')); }); // Edit Room
+    $('#icon_help').bind('click', function() { popup.help(); }); // Help
+    $('#roomList, #roomList2').bind('click', function() { popup.selectRoom(); }); // Room List
+    $('#viewStats').bind('click', function() { popup.viewStats(); }); // Room Post Stats
+    $('#copyrightLink').bind('click', function() { popup.copyright(); }); // Copyright & Credits
+    $('#icon_settings, #changeSettings, a.changeSettingsMulti').bind('click', function() { popup.userSettings(); }); // User Settings
+    $('#viewUploads').bind('click', function() { popup.viewUploads(); }); // View My Uploads
+    $('#icon_url').bind('click', function() { popup.insertDoc('url'); }); // Upload
+
+    // Room Shower Thing
+    $('#showMoreRooms').bind('click', function() { $('#roomListShort').slideUp(); $('#roomListLong').slideDown(); });
+    $('#showFewerRooms').bind('click', function() { $('#roomListLong').slideUp(); $('#roomListShort').slideDown(); });
+
+
+    /*** Youtube Videos for Uploads ***/
+    jQTubeUtil.init({
+      key: 'AI39si5_Dbv6rqUPbSe8e4RZyXkDM3X0MAAtOgCuqxg_dvGTWCPzrtN_JLh9HlTaoC01hCLZCxeEDOaxsjhnH5p7HhZVnah2iQ',
+      orderby: 'relevance',  // *optional -- 'viewCount' is set by default
+      maxResults: 40   // *optional -- defined as 10 results by default
+    });
+
+
+    /*** Send Messages, Yay! ***/
+    $('#sendForm').bind('submit', function() {
+      var message = $('textarea#messageInput').val();
+
+      if (message.length === 0) { dia.error('Please enter your message.'); }
+      else {
+        standard.sendMessage(message); // Send the messaage
+        $('textarea#messageInput').val(''); // Clear the textbox
+      }
+
+      return false;
+    });
+
+
+    /*** Process Enter for Message Input ***/
+    $('#messageInput').bind('keydown', function(e) {
+      if (e.keyCode === 13 && !e.shiftKey) { // Enter w/o shift
+        $('#sendForm').submit();
+        return false;
+      }
+
+      return true;
+    });
+
+
+    /*** Window Manipulation (see below) ***/
+    $(window).bind('resize', windowResize);
+    $(window).bind('blur', windowBlur);
+    $(window).bind('focus', windowFocus);
+    $(window).bind('hashchange', fim_hashParse);
+
+
+    /*** Initial Login ***/
+    if ($.cookie('webpro_userId') > 0) {
+      standard.login({
+        userId : $.cookie('webpro_userId'),
+        password : $.cookie('webpro_password'),
+        error : function() {
+          if (!window.userId) popup.login(); // The user is not actively logged in.
+        }
+      });
+    }
+    else {
+      popup.login();
+    }
+
+
+    return false;
   });
 }, function() {
   $q('Loading failed. Please refresh.');
