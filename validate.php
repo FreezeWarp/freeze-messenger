@@ -187,7 +187,7 @@ elseif ($loginMethod === 'session') {
   else {
     $user = $session; // Mostly identical, though a few additional properties do exist.
 
-    if ($session['sessionTime'] < time() - 300) $database->refreshSession($session['sessionId']); // If five minutes have passed since the session has been generated, update it.
+    if ($session['sessionTime'] < time() - $config['sessionRefresh']) $database->refreshSession($session['sessionId']); // If five minutes have passed since the session has been generated, update it.
   }
 }
 

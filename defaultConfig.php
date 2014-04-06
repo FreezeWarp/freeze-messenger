@@ -34,7 +34,8 @@ $defaultConfig = array(
 
 
   /* Sessions */
-  'sessionExpires' => 60 * 15, // 15 minutes
+  'sessionExpires' => 60 * 15,
+  'sessionRefresh' => 60 * 5,
 
 
   /*** FIM Features ***/

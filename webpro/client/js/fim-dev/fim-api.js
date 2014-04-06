@@ -25,7 +25,8 @@ window.fimApi = {
       'userName' : '',
       'password' : '',
       'passwordEncrypt' : 'plaintext',
-      'apiVersions' : '[30000]'
+      'apiVersions' : '[30000]',
+      'clientCode' : ''
     });
 
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);

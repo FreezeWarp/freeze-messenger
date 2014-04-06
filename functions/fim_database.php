@@ -916,10 +916,11 @@ class fimDatabase extends databaseSQL
     $this->insert($this->sqlPrefix . 'sessions', array(
       'userId' => $userId,
       'anonId' => ($anonId ? $anonId : 0),
-      'time' => $this->now(),
-      'magicHash' => $sessionHash,
-      'browser' => $_SERVER['HTTP_USER_AGENT'],
-      'ip' => $_SERVER['REMOTE_ADDR'],
+      'sessionTime' => $this->now(),
+      'sessionHash' => $sessionHash,
+      'userAgent' => $_SERVER['HTTP_USER_AGENT'],
+      'sessionIp' => $_SERVER['REMOTE_ADDR'],
+      'clientCode' => $_REQUEST['clientCode']
     ));
 
     return $sessionHash;
@@ -943,7 +944,7 @@ class fimDatabase extends databaseSQL
 
   public function refreshSession($sessionId) {
     $this->update($this->sqlPrefix . "sessions", array(
-      'time' => $this->now(),
+      'sessionTime' => $this->now(),
     ), array(
       "sessionId" => $sessionId,
     ));
