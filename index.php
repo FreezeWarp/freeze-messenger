@@ -24,26 +24,13 @@ if (!file_exists('./config.php')) {
 else {
   require('./global.php');
 
-  if ($config['disableWeb']) {
-    die('Web interfaces have been disabled on this server.');
+  // Redirect to the default interface if possible. Note that an interface could be an interface-select screen, should someone desire. As this is part of FIMCore, we don't want to do that check.
+  if (is_dir($config['defaultInterface'])) {
+    header("Location: {$config['defaultInterface']}/");
+    die("Redirecting to <a href=\"{$config['defaultInterface']}/\">default interface.</a>");
   }
   else {
-    $interface = (isset($_REQUEST['interface']) ? $_REQUEST['interface'] :
-      (isset($user['interface']) ? $user['interface'] : ''));
-
-
-    if (!in_array($interface, $config['enabledInterfaces'])) {
-      $interface = $config['defaultInterface']; // If the interface is not enabled, use the default.
-    }
-
-
-   if ($interface) {
-      header("Location: $interface/");
-      die("Redirecting to <a href=\"$interface\">$interface</a>");
-    }
-    else {
-      die('No web-accessible interface found.');
-    }
+    die('No web-accessible interface found.');
   }
 }
 

@@ -411,9 +411,7 @@ $defaultConfig = array(
   /*** MISC ***/
   'dev' => false,
 
-  'enabledInterfaces' => array(),
-  'defaultInterface' => '',
-  'disableWeb' => false,
+  'defaultInterface' => 'webpro',
 
   'recaptchaPublicKey' => '',
   'recaptchaPrivateKey' => '',
