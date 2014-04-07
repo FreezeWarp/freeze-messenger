@@ -72,6 +72,10 @@ class fimDatabase extends databaseSQL
       /* END COMPILE VERBOSE */
 
 
+      $permissionsCached = $this->getPermissionCache($roomData['roomId'], $userData['userId']);
+      if ($permissionsCached > -1) return $permissionsCached;
+
+
       /* Initialise Variables */
       $isAdmin = false;
       $isOwner = false;
@@ -158,6 +162,10 @@ class fimDatabase extends databaseSQL
         if (!($userData['userPrivs'] & USER_PRIV_VIEW)) $permission = 0;
         elseif (!($userData['userPrivs'] & USER_PRIV_POST) && $permission > USER_PRIVLEVEL_VIEW) $permission = ROOM_PERMISSION_VIEW;
       }
+
+
+      $this->updatePermissionsCache($userData['userId'], $roomData['roomId'], $permission);
+
 
       return $permission;
     }
@@ -1051,23 +1059,37 @@ class fimDatabase extends databaseSQL
   }
 
 
-  public function getPermissionCache() {
-    return $this->select(array(
-      'roomPermissionsCache' => 'roomId, userId, status, expires'
-    ));
+  public function getPermissionCache($roomId, $userId) {
+    global $config;
+
+    if (!$config['roomPermissionsCacheEnabled']) return -1;
+    else {
+      $permissions = $this->select(array(
+        'roomPermissionsCache' => 'roomId, userId, permissions, expires'
+      ), array(
+        'roomId' => $this->int($roomId),
+        'userId' => $this->int($userId)
+      ))->getAsArray(false);
+
+      if (!count($permissions)) return -1;
+      elseif ($permissions['expire'] > time()) return -1;
+      else return $permissions['permissions'];
+    }
   }
 
 
-  public function updatePermissionsCache($roomId, $userId, $status) {
+  public function updatePermissionsCache($roomId, $userId, $permissions) {
     global $config;
 
-    $this->upsert($this->sqlPrefix . 'roomPermissionsCache', array(
-      'roomId' => $roomId,
-      'userId' => $userId,
-    ), array(
-      'status' => (bool) $status,
-      'expires' => $this->now() + $config['roomPermissionsCacheExpires']
-    ));
+    if ($config['roomPermissionsCacheEnabled']) {
+      $this->upsert($this->sqlPrefix . 'roomPermissionsCache', array(
+        'roomId' => $roomId,
+        'userId' => $userId,
+      ), array(
+        'permissions' => (bool) $permissions,
+        'expires' => $this->now() + $config['roomPermissionsCacheExpires']
+      ));
+    }
   }
 
 
