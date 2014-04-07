@@ -86,7 +86,7 @@
  ***** newValue
  ***** errStr
  ***** errDesc
- **** defaultRoom
+ **** defaultRoom-
  ***** status - true or false
  ***** newValue
  ***** errStr
@@ -154,6 +154,21 @@ $request = fim_sanitizeGPC('p', array(
     'cast' => 'csv',
     'filter' => 'int',
     'evaltrue' => true,
+    'default' => array(),
+  ),
+
+  'friendsList' => array(
+    'cast' => 'csv',
+    'filter' => 'int',
+    'evaltrue' => true,
+    'default' => array(),
+  ),
+
+  'ignoreList' => array(
+    'cast' => 'csv',
+    'filter' => 'int',
+    'evaltrue' => true,
+    'default' => array(),
   ),
 
   'parentalAge' => array(
@@ -191,6 +206,7 @@ if ($loginConfig['method'] === 'vanilla') {
   /* Avatar */
   if (isset($request['avatar'])) { // TODO: Add regex policy.
     $imageData = getimagesize($request['avatar']);
+
     if ($imageData[0] <= $config['avatarMinimumWidth'] || $imageData[1] <= $config['avatarMinimumHeight']) {
       $xmlData['editUserOptions']['response']['avatar']['status'] = false;
       $xmlData['editUserOptions']['response']['avatar']['errStr'] = 'smallSize';
@@ -277,47 +293,179 @@ if ($request['defaultRoomId'] > 0) {
 }
 
 
+
 /* Watch Rooms (used for notifications of new messages, which are placed in unreadMessages) */
-if (isset($request['watchRooms'])) {
-  $database->delete("{$sqlPrefix}watchRooms", array(
-    'userId' => $user['userId'],
-  ));
+if (count($request['watchRooms'])) {
+  $roomData = $database->getRooms(array(
+    'userIds' => $request['watchRooms']
+  ))->getAsArray('roomId');
 
-  $queryParts['roomSelect'] = array(
-    'columns' => array(
-      "{$sqlPrefix}rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, parentalFlags, parentalAge, options, lastMessageId, lastMessageTime, messageCount',
-    ),
-    'conditions' => array(
-      'both' => array(
-        array(
-          'type' => 'in',
-          'left' => array(
-            'type' => 'column', 'value' => 'roomId',
-          ),
-          'right' => array(
-            'type' => 'array', 'value' => $request['watchRooms'],
-          ),
-        ),
-      ),
-    )
-  );
 
-  $roomData = $database->select(
-    $queryParts['roomSelect']['columns'],
-    $queryParts['roomSelect']['conditions']);
-  $roomData = $roomData->getAsArray('roomId');
+  switch ($_SERVER['REQUEST_METHOD']) {
+    case 'PUT':
+      $database->delete("{$sqlPrefix}watchRooms", array(
+        'userId' => $user['userId'],
+      ));
 
-  foreach ($request['watchRooms'] AS $watchRoomId) {
-    foreach ($roomIds AS $roomId) {
-      if (fim_hasPermission($roomData[$watchRoomId], $user, 'view')) {
-        $this->insert("{$sqlPrefix}watchRooms", array(
-          'userId' => $user['userId'],
-          'roomId' => $watchRoomId,
-        ));
+      foreach ($roomData AS $roomId => $room) {
+        if (fim_hasPermission($room, $user, 'view')) {
+          $this->insert("{$sqlPrefix}watchRooms", array(
+            'userId' => $user['userId'],
+            'roomId' => $watchRoomId,
+          ));
+        }
       }
-    }
+      break;
+
+    case 'POST':
+      foreach ($roomData AS $roomId => $room) {
+        if (fim_hasPermission($room, $user, 'view')) {
+          $this->insert("{$sqlPrefix}watchRooms", array(
+            'userId' => $user['userId'],
+            'roomId' => $watchRoomId,
+          ));
+        }
+      }
+      break;
+
+    case 'DELETE':
+      foreach ($roomData AS $roomId => $room) {
+        if (fim_hasPermission($room, $user, 'view')) {
+          $this->insert("{$sqlPrefix}watchRooms", array(
+            'userId' => $user['userId'],
+            'roomId' => $watchRoomId,
+          ));
+        }
+      }
+      break;
   }
 }
+
+
+
+/* Ignore List */
+if (count($request['ignoreList'])) {
+  switch ($_SERVER['REQUEST_METHOD']) {
+  case 'POST':
+    foreach ($request['ignoredUserId'] AS $ignoredUserId) {
+      if ($slaveDatabase->getUser($ignoredUserId)) {
+        $database->delete("{$sqlPrefix}ignoredUsers", array(
+          'userId' => $user['userId'],
+          'ignoredUserId' => $ignoredUserId,
+        ));
+
+        $database->insert("{$sqlPrefix}ignoredUsers", array(
+          'userId' => $user['userId'],
+          'ignoredUserId' => $ignoredUserId,
+        ));
+      }
+      else {
+        if ($slaveDatabase->getUser($ignoredUserId)) {
+          unset($request['ignoreList'][$key]);
+        }
+      }
+    }
+    break;
+
+  case 'DELETE':
+    foreach ($request['ignoredUserId'] AS $ignoredUserId) {
+      $database->delete("{$sqlPrefix}ignoredUsers", array(
+        'userId' => $user['userId'],
+        'ignoredUserId' => $ignoredUserId,
+      ));
+    }
+    break;
+
+  case 'PUT':
+    $database->delete("{$sqlPrefix}ignoredUsers", array(
+      'userId' => $user['userId'],
+    ));
+
+    foreach ($request['ignoredUserId'] AS $ignoredUserId) {
+      if ($slaveDatabase->getUser($ignoredUserId)) {
+        $database->insert("{$sqlPrefix}ignoredUsers", array(
+          'userId' => $user['userId'],
+          'ignoredUserId' => $ignoredUserId,
+        ));
+      }
+      else {
+        if ($slaveDatabase->getUser($ignoredUserId)) {
+          unset($request['ignoreList'][$key]);
+        }
+      }
+    }
+    break;
+  }
+}
+
+
+
+/* Friends List */
+
+
+
+/* Fav List */
+if (count($request['favRooms'])) {
+  switch ($_SERVER['REQUEST_METHOD']) {
+  case 'POST':
+    foreach ($request['roomIds'] AS $roomId) {
+      if ($roomData = $slaveDatabase->getRoom($roomId)) {
+        $database->delete("{$sqlPrefix}roomLists", array(
+          'userId' => $user['userId'],
+          'roomId' => $roomId,
+          'listId' => $request['roomListId'],
+        ));
+
+        if (fim_hasPermission($roomData, $user, 'view')) {
+          $database->insert("{$sqlPrefix}roomLists", array(
+            'userId' => $user['userId'],
+            'listId' => $request['roomListId'],
+            'roomId' => $roomId,
+          ));
+        }
+        else {
+          $errStr = 'noPerm';
+          $errDesc = 'You do not have permission to access this room.';
+        }
+      }
+    }
+    break;
+
+  case 'DELETE':
+    foreach ($request['roomIds'] AS $roomId) {
+      $database->delete("{$sqlPrefix}roomLists", array(
+        'userId' => $user['userId'],
+        'roomId' => $roomId,
+        'listId' => $request['roomListId'],
+      ));
+    }
+    break;
+
+  case 'PUT':
+    $database->delete("{$sqlPrefix}roomLists", array(
+      'userId' => $user['userId'],
+      'listId' => $request['roomListId'],
+    ));
+
+    foreach ($request['roomIds'] AS $roomId) {
+      if ($roomData = $slaveDatabase->getRoom($roomId)) {
+        if (fim_hasPermission($roomData, $user, 'view')) {
+          $database->insert("{$sqlPrefix}roomLists", array(
+            'userId' => $user['userId'],
+            'listId' => $request['roomListId'],
+            'roomId' => $roomId,
+          ));
+        }
+        else {
+          $errStr = 'noPerm';
+          $errDesc = 'You do not have permission to access this room.';
+        }
+      }
+    }
+    break;
+  }
+}
+
 
 
 /* Default Formatting */
@@ -377,7 +525,6 @@ if (isset($request['defaultFontface'])) {
   else {
     $xmlData['editUserOptions']['response']['defaultFontface']['status'] = false;
     $xmlData['editUserOptions']['response']['defaultFontface']['errStr'] = 'noFont';
-    $xmlData['editUserOptions']['response']['defaultFontface']['errDesc'] = 'The specified font does not exist.';
   }
 }
 
@@ -393,7 +540,6 @@ if (isset($request['parentalAge'])) {
   else {
     $xmlData['editUserOptions']['response']['parentalAge']['status'] = false;
     $xmlData['editUserOptions']['response']['parentalAge']['errStr'] = 'badAge';
-    $xmlData['editUserOptions']['response']['parentalAge']['errDesc'] = 'The parental age specified is not valid.';
   }
 }
 
@@ -407,7 +553,7 @@ if (isset($request['parentalFlags'])) {
 }
 
 
-($hook = hook('editUserOptions_preQuery') ? eval($hook) : '');
+
 
 if (count($updateArray) > 0) {
   $database->update(
@@ -421,12 +567,6 @@ if (count($updateArray) > 0) {
 
 /* Update Data for Errors */
 $xmlData['editUserOptions']['errStr'] = (string) $errStr;
-$xmlData['editUserOptions']['errDesc'] = (string) $errDesc;
-
-
-
-/* Plugin Hook End */
-($hook = hook('editUserOptions_end') ? eval($hook) : '');
 
 
 
