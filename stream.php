@@ -14,6 +14,83 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+
+function stream_event($streamSource, $queryId, $lastEvent) {
+  global $database;
+
+  if ($streamSource === 'user') $events = $database->getUserEventsForId($queryId, $lastEvent)->getAsArray('eventId');
+  elseif ($streamSource === 'room') $events = $database->getRoomEventsForId($queryId, $lastEvent)->getAsArray('eventId');
+
+  if (count($events) > 0) {
+    foreach ($events AS $eventId => $event) {
+      if ($eventId > $lastEvent) $lastEvent = $eventId;
+
+      echo "id: " . (int) $eventId . "\n";
+      echo "event: " . $event['eventName'] . "\n";
+      echo "data: " . json_encode($event) . "\n\n";
+
+      fim_flush();
+      $outputStarted = true;
+    }
+
+    fim_flush(); // Force the server to flush.
+  }
+
+  unset($events); // Free memory.
+
+  return $lastEvent;
+}
+
+
+function stream_messages($roomId, $lastEvent) {
+  global $database;
+
+  $messages = $database->getMessages(array(
+    'roomIds' => array($roomId),
+    'messagesSince' => $lastEvent,
+  ), array('messageId' => 'asc'))->getAsArray('messageId');
+
+
+  foreach ($messages AS $messageId => $message) {
+    if ($messageId > $lastEvent) $lastEvent = $messageId;
+
+    echo "\nid: " . (int) $message['messageId'] . "\n";
+    echo "event: message\n";
+    echo "data: " . json_encode(array(
+        'messageData' => array(
+          'roomId' => (int) $message['roomId'],
+          'messageId' => (int) $message['messageId'],
+          'messageTime' => (int) $message['time'],
+          'messageText' => $message['text'],
+          'flags' => ($message['flag']),
+        ),
+        'userData' => array(
+          'userName' => ($message['userName']),
+          'userId' => (int) $message['userId'],
+          'userGroup' => (int) $message['userGroup'],
+          'avatar' => ($message['avatar']),
+          'socialGroups' => ($message['socialGroups']),
+          'startTag' => ($message['userFormatStart']),
+          'endTag' => ($message['userFormatEnd']),
+          'defaultFormatting' => array(
+            'color' => ($message['defaultColor']),
+            'highlight' => ($message['defaultHighlight']),
+            'fontface' => ($message['defaultFontface']),
+            'general' => (int) $message['defaultFormatting']
+          ),
+        )
+      )) . "\n\n";
+
+    fim_flush(); // Force the server to flush.
+  }
+
+  unset($messages); // Free memory.
+
+  return $lastEvent;
+}
+
+
+
 $streamRequest = true;
 define('FIM_EVENTSOURCE', true);
 require('global.php');
@@ -34,14 +111,14 @@ else {
 
   /* Get Request Data */
   $request = fim_sanitizeGPC('g', array(
-    'roomId' => array(
+    'queryId' => array(
       'require' => true,
       'cast' => 'int',
       'evaltrue' => true,
     ),
     'streamType' => array(
       'require' => true,
-      'valid' => array('messages', 'unreadMessages', 'events'),
+      'valid' => array('messages', 'user', 'room'),
     ),
     'lastEvent' => array(
       'require' => false,
@@ -60,11 +137,10 @@ else {
   while ($serverSentRetries < $config['serverSentMaxRetries']) {
     $serverSentRetries++;
 
-
     switch ($request['streamType']) {
-      case 'messages': require('apiStream/messageStream.php'); break;
-      case 'unreadMessages': require('apiStream/unreadStream.php'); break;
-      case 'events': require('apiStream/eventStream.php'); break;
+      case 'messages': $request['lastEvent'] = stream_messages($request['queryId'], $request['lastEvent']); break;
+      case 'user': $request['lastEvent'] = stream_event('user', $request['queryId'], $request['lastEvent']); break;
+      case 'room': $request['lastEvent'] = stream_event('room', $request['queryId'], $request['lastEvent']); break;
     }
 
     if ($config['dev']) {

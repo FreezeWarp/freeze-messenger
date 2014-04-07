@@ -147,8 +147,8 @@ var standard = {
       var encrypt = 'base64';
 
       if (requestSettings.serverSentEvents) { // Note that the event subsystem __requires__ serverSentEvents for various reasons. If you use polling, these events will no longer be fully compatible.
-        messageSource = new EventSource(directory + 'stream.php?roomId=' + roomId + '&streamType=messages&lastEvent=' + requestSettings.lastMessage + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
-        eventSource = new EventSource(directory + 'stream.php?roomId=' + roomId + '&streamType=events&lastEvent=' + requestSettings.lastEvent + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
+        messageSource = new EventSource(directory + 'stream.php?queryId=' + roomId + '&streamType=messages&lastEvent=' + requestSettings.lastMessage + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
+        roomSource = new EventSource(directory + 'stream.php?queryId=' + roomId + '&streamType=room&lastEvent=' + requestSettings.lastEvent + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
         console.log('Starting EventSource; roomId: ' + roomId + '; lastEvent: ' + requestSettings.lastEvent + '; lastMessage: ' + requestSettings.lastMessage)
 
         messageSource.addEventListener('time', function(e) {
@@ -172,7 +172,7 @@ var standard = {
           return false;
         }, false);
 
-        eventSource.addEventListener('topicChange', function(e) {
+        roomSource.addEventListener('topicChange', function(e) {
           var active = JSON.parse(e.data);
 
           $('#topic').html(active.param1);
@@ -183,7 +183,18 @@ var standard = {
           return false;
         }, false);
 
-        eventSource.addEventListener('missedMessage', function(e) {
+/*        roomSource.addEventListener('deletedMessage', function(e) {
+          var active = JSON.parse(e.data);
+
+          $('#topic').html(active.param1);
+          console.log('Event (Topic Change): ' + active.param1);
+
+          requestSettings.lastEvent = active.eventId;
+
+          return false;
+        }, false);*/
+
+/*        eventSource.addEventListener('missedMessage', function(e) {
           var active = JSON.parse(e.data);
 
           requestSettings.lastEvent = active.eventId;
@@ -191,18 +202,7 @@ var standard = {
           console.log('Event (Missed Message): ' + active.messageId);
 
           return false;
-        }, false);
-
-        eventSource.addEventListener('deletedMessage', function(e) {
-          var active = JSON.parse(e.data);
-
-          $('#topic').html(active.param1);
-          console.log('Event (Topic Change): ' + active.param1);
-
-          requestSettings.lastEvent = active.eventId;
-
-          return false;
-        }, false);
+        }, false);*/
       }
       else {
         fimApi.getMessages({

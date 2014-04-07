@@ -1075,6 +1075,34 @@ class fimDatabase extends databaseSQL
   }
 
 
+  public function getUserEventsForId($userId, $lastEvent) {
+    $columns = array(
+      $this->sqlPrefix . "userEvents" => 'eventId, eventName, userId, param1, param2, time',
+    );
+
+    $conditions = array(
+      'userId' => $this->int($userId),
+      'eventId' => $this->int($lastEvent, 'gt')
+    );
+
+    return $this->select($columns, $conditions);
+  }
+
+
+  public function getRoomEventsForId($roomId, $lastEventTime) {
+    $columns = array(
+      $this->sqlPrefix . "userEvents" => 'eventId, eventName, roomId, param1, param2, time',
+    );
+
+    $conditions = array(
+      'roomId' => $this->int($roomId),
+      'eventId' => $this->int($lastEventTime, 'gt')
+    );
+
+    return $this->select($columns, $conditions);
+  }
+
+
   public function getWatchRoomIds($roomId) {
     $watchRoomIds = $this->select(array(
       $this->sqlPrefix . 'watchRooms' => 'userId, roomId'
