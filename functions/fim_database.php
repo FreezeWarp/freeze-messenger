@@ -1047,13 +1047,13 @@ class fimDatabase extends databaseSQL
       }
     }
 
-    if ($method === 'PUT') [
+    if ($method === 'PUT') {
       foreach ($rooms AS $roomId => $room) {
         $this->delete($this->sqlPrefix . $roomList, array(
           'userId' => $userData['userId'],
         ));
       }
-    ]
+    }
 
     if ($method === 'POST' || $method === 'PUT') {
       foreach ($rooms AS $roomId => $room) {
