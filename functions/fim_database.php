@@ -1027,6 +1027,108 @@ class fimDatabase extends databaseSQL
   }
 
 
+  /**
+   * @param        $roomList - Either 'watchRooms' or 'userFavRooms' (representing those tables)
+   * @param        $userData
+   * @param        $roomIds
+   * @param string $method
+   */
+  public function editRoomList($roomList, $userData, $roomIds, $method = 'PUT') {
+    $rooms = $this->getRooms(array(
+      'roomIds' => $roomIds
+    ))->getAsArray('roomId');
+
+    if ($method === 'DELETE') {
+      foreach ($rooms AS $roomId => $room) {
+        $this->delete($this->sqlPrefix . $roomList, array(
+          'userId' => $userData['userId'],
+          'roomId' => $roomId,
+        ));
+      }
+    }
+
+    if ($method === 'PUT') [
+      foreach ($rooms AS $roomId => $room) {
+        $this->delete($this->sqlPrefix . $roomList, array(
+          'userId' => $userData['userId'],
+        ));
+      }
+    ]
+
+    if ($method === 'POST' || $method === 'PUT') {
+      foreach ($rooms AS $roomId => $room) {
+        if (fim_hasPermission($room, $userData, 'view')) {
+          $this->insert($this->sqlPrefix . $roomList, array(
+            'userId' => $userData['userId'],
+            'roomId' => $roomId,
+          ));
+        }
+      }
+    }
+  }
+
+
+
+  public function editUserLists($userList, $userData, $userIds, $method = 'PUT') {
+    $users = $this->getUsers(array(
+      'userIds' => $userIds
+    ))->getAsArray('userId');
+
+
+    if ($method === 'DELETE') {
+      foreach ($users AS $userId => $userData) {
+        $this->delete($this->sqlPrefix . $userList, array(
+          'userId' => $userData['userId'],
+          'subjectId' => $userId,
+        ));
+      }
+    }
+
+    if ($method === 'PUT') {
+      $this->delete($this->sqlPrefix . $userList, array(
+        'userId' => $userData['userId'],
+      ));
+    }
+
+    if ($method === 'POST' || $method === 'PUT') {
+      foreach ($users AS $userId => $userData) {
+        $conditionArray = array(
+          'userId' => $userData['userId'],
+          'subjectId' => $userId,
+        );
+        if ($userList === 'userFriendsList') $conditionArray['status'] = 'request';
+
+        $this->insert($this->sqlPrefix . $userList, $conditionArray);
+
+        if ($userList === 'userFriendsList') $this->createUserEvent('friendRequest', $userId, $userData['userId']);
+      }
+    }
+  }
+
+
+
+  /**
+   * @param $action string - Either 'friend' or 'deny'.
+   * @param $userId
+   * @param $subjectId
+   */
+  public function alterFriendRequest($action, $userId, $subjectId) {
+    $conditionArray = array(
+      'userId' => $userId,
+      'subjectId' => $subjectId
+    );
+
+    if ($action === 'friend' || $action === 'deny') {
+      $this->update($this->sqlPrefix . 'userFriendsList', array(
+        'status' => $action,
+      ), $conditionArray);
+    }
+    elseif ($action === 'unfriend') {
+      $this->delete($this->sqlPrefix . 'userFriendsList', $conditionArray);
+    }
+  }
+
+
 
   public function setCensorList($roomId, $listId, $status) {
     $this->modLog('unblockCensorList', $roomId . ',' . $listId);
@@ -1403,7 +1505,7 @@ class fimDatabase extends databaseSQL
    */
   public function createEvent($eventName, $userId, $roomId, $messageId, $param1, $param2, $param3)
   {
-    global $config, $user;
+    global $config;
 
     if ($config['enableEvents']) {
       $this->insert($this->sqlPrefix . "events", array(
@@ -1414,6 +1516,22 @@ class fimDatabase extends databaseSQL
         'param1'    => $param1,
         'param2'    => $param2,
         'param3'    => $param3,
+        'time'      => $this->now(),
+      ));
+    }
+  }
+
+
+  public function createUserEvent($eventName, $userId, $param1, $param2)
+  {
+    global $config;
+
+    if ($config['enableEvents']) {
+      $this->insert($this->sqlPrefix . "userEvents", array(
+        'eventName' => $eventName,
+        'userId'    => $userId,
+        'param1'    => $param1,
+        'param2'    => $param2,
         'time'      => $this->now(),
       ));
     }

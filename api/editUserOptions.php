@@ -112,6 +112,9 @@
  **** parentalFlags
  ***** status - true or false
  ***** newValue
+ *
+ * Notes
+ * This API should ideally be possible to represent using these REST requests:
 */
 
 $apiRequest = true;
@@ -150,7 +153,25 @@ $request = fim_sanitizeGPC('p', array(
     'cast' => 'int',
   ),
 
+  'parentalAge' => array(
+    'cast' => 'int',
+  ),
+
+  'parentalFlags' => array(
+    'cast' => 'csv',
+    'valid' => $config['parentalFlags'], // Note that values are dropped automatically if a value is not allowed. We will not tell the client this.
+  ),
+));
+
+$sRequest = fim_sanitizeGPC('pgd', array(
   'watchRooms' => array(
+    'cast' => 'csv',
+    'filter' => 'int',
+    'evaltrue' => true,
+    'default' => array(),
+  ),
+
+  'favRooms' => array(
     'cast' => 'csv',
     'filter' => 'int',
     'evaltrue' => true,
@@ -169,16 +190,7 @@ $request = fim_sanitizeGPC('p', array(
     'filter' => 'int',
     'evaltrue' => true,
     'default' => array(),
-  ),
-
-  'parentalAge' => array(
-    'cast' => 'int',
-  ),
-
-  'parentalFlags' => array(
-    'cast' => 'csv',
-    'valid' => $config['parentalFlags'], // Note that values are dropped automatically if a value is not allowed. We will not tell the client this.
-  ),
+  )
 ));
 
 /* Data Predefine */
@@ -296,174 +308,28 @@ if ($request['defaultRoomId'] > 0) {
 
 /* Watch Rooms (used for notifications of new messages, which are placed in unreadMessages) */
 if (count($request['watchRooms'])) {
-  $roomData = $database->getRooms(array(
-    'userIds' => $request['watchRooms']
-  ))->getAsArray('roomId');
+  $database->editRoomList('watchRooms', $user, $request['watchRooms'], $_SERVER['REQUEST_METHOD']);
+}
 
 
-  switch ($_SERVER['REQUEST_METHOD']) {
-    case 'PUT':
-      $database->delete("{$sqlPrefix}watchRooms", array(
-        'userId' => $user['userId'],
-      ));
 
-      foreach ($roomData AS $roomId => $room) {
-        if (fim_hasPermission($room, $user, 'view')) {
-          $this->insert("{$sqlPrefix}watchRooms", array(
-            'userId' => $user['userId'],
-            'roomId' => $watchRoomId,
-          ));
-        }
-      }
-      break;
-
-    case 'POST':
-      foreach ($roomData AS $roomId => $room) {
-        if (fim_hasPermission($room, $user, 'view')) {
-          $this->insert("{$sqlPrefix}watchRooms", array(
-            'userId' => $user['userId'],
-            'roomId' => $watchRoomId,
-          ));
-        }
-      }
-      break;
-
-    case 'DELETE':
-      foreach ($roomData AS $roomId => $room) {
-        if (fim_hasPermission($room, $user, 'view')) {
-          $this->insert("{$sqlPrefix}watchRooms", array(
-            'userId' => $user['userId'],
-            'roomId' => $watchRoomId,
-          ));
-        }
-      }
-      break;
-  }
+/* Fav List */
+if (count($request['favRooms'])) {
+  $database->editRoomList('userFavRooms', $user, $request['favRooms'], $_SERVER['REQUEST_METHOD']);
 }
 
 
 
 /* Ignore List */
 if (count($request['ignoreList'])) {
-  switch ($_SERVER['REQUEST_METHOD']) {
-  case 'POST':
-    foreach ($request['ignoredUserId'] AS $ignoredUserId) {
-      if ($slaveDatabase->getUser($ignoredUserId)) {
-        $database->delete("{$sqlPrefix}ignoredUsers", array(
-          'userId' => $user['userId'],
-          'ignoredUserId' => $ignoredUserId,
-        ));
-
-        $database->insert("{$sqlPrefix}ignoredUsers", array(
-          'userId' => $user['userId'],
-          'ignoredUserId' => $ignoredUserId,
-        ));
-      }
-      else {
-        if ($slaveDatabase->getUser($ignoredUserId)) {
-          unset($request['ignoreList'][$key]);
-        }
-      }
-    }
-    break;
-
-  case 'DELETE':
-    foreach ($request['ignoredUserId'] AS $ignoredUserId) {
-      $database->delete("{$sqlPrefix}ignoredUsers", array(
-        'userId' => $user['userId'],
-        'ignoredUserId' => $ignoredUserId,
-      ));
-    }
-    break;
-
-  case 'PUT':
-    $database->delete("{$sqlPrefix}ignoredUsers", array(
-      'userId' => $user['userId'],
-    ));
-
-    foreach ($request['ignoredUserId'] AS $ignoredUserId) {
-      if ($slaveDatabase->getUser($ignoredUserId)) {
-        $database->insert("{$sqlPrefix}ignoredUsers", array(
-          'userId' => $user['userId'],
-          'ignoredUserId' => $ignoredUserId,
-        ));
-      }
-      else {
-        if ($slaveDatabase->getUser($ignoredUserId)) {
-          unset($request['ignoreList'][$key]);
-        }
-      }
-    }
-    break;
-  }
+  $database->editUserLists('userIgnoreList', $user, $request['ignoreList'], $_SERVER['REQUEST_METHOD']);
 }
 
 
 
 /* Friends List */
-
-
-
-/* Fav List */
-if (count($request['favRooms'])) {
-  switch ($_SERVER['REQUEST_METHOD']) {
-  case 'POST':
-    foreach ($request['roomIds'] AS $roomId) {
-      if ($roomData = $slaveDatabase->getRoom($roomId)) {
-        $database->delete("{$sqlPrefix}roomLists", array(
-          'userId' => $user['userId'],
-          'roomId' => $roomId,
-          'listId' => $request['roomListId'],
-        ));
-
-        if (fim_hasPermission($roomData, $user, 'view')) {
-          $database->insert("{$sqlPrefix}roomLists", array(
-            'userId' => $user['userId'],
-            'listId' => $request['roomListId'],
-            'roomId' => $roomId,
-          ));
-        }
-        else {
-          $errStr = 'noPerm';
-          $errDesc = 'You do not have permission to access this room.';
-        }
-      }
-    }
-    break;
-
-  case 'DELETE':
-    foreach ($request['roomIds'] AS $roomId) {
-      $database->delete("{$sqlPrefix}roomLists", array(
-        'userId' => $user['userId'],
-        'roomId' => $roomId,
-        'listId' => $request['roomListId'],
-      ));
-    }
-    break;
-
-  case 'PUT':
-    $database->delete("{$sqlPrefix}roomLists", array(
-      'userId' => $user['userId'],
-      'listId' => $request['roomListId'],
-    ));
-
-    foreach ($request['roomIds'] AS $roomId) {
-      if ($roomData = $slaveDatabase->getRoom($roomId)) {
-        if (fim_hasPermission($roomData, $user, 'view')) {
-          $database->insert("{$sqlPrefix}roomLists", array(
-            'userId' => $user['userId'],
-            'listId' => $request['roomListId'],
-            'roomId' => $roomId,
-          ));
-        }
-        else {
-          $errStr = 'noPerm';
-          $errDesc = 'You do not have permission to access this room.';
-        }
-      }
-    }
-    break;
-  }
+if (count($request['friendsList'])) {
+  $database->editUserLists('userFriendsList', $user, $request['friendsList'], $_SERVER['REQUEST_METHOD']);
 }
 
 
@@ -475,6 +341,7 @@ if (isset($request['defaultFormatting'])) {
   $xmlData['editUserOptions']['response']['defaultFormatting']['status'] = true;
   $xmlData['editUserOptions']['response']['defaultFormatting']['newValue'] = (string) implode(',', $defaultFormatting);
 }
+
 
 
 /* Default Highlight & Default Colour */
@@ -512,6 +379,7 @@ foreach (array('defaultHighlight', 'defaultColor') AS $value) {
     }
   }
 }
+
 
 
 /* Default Fontface */

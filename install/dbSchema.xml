@@ -655,7 +655,7 @@
       <column name="userId" type="int" maxlen="8" comment="The user ID." />
       <column name="roomId" type="int" maxlen="6" comment="The room ID." />
 
-      <key name="userId" type="primary" />
+      <key name="userId, roomId" type="primary" />
     </table>
   </database>
 
