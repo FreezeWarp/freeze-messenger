@@ -966,77 +966,6 @@ class fimDatabase extends databaseSQL
 
 
   public function updateUserCaches() {
-      /* Favourite Room Cleanup -- TODO
-      * Remove all favourite groups a user is no longer a part of. */
-      /*      if (strlen($userPrefs['favRooms']) > 0) {
-              $favRooms = $database->select(
-                array(
-                  "{$sqlPrefix}rooms" => array(
-                    'roomId' => 'roomId',
-                    'roomName' => 'roomName',
-                    'owner' => 'owner',
-                    'defaultPermissions' => 'defaultPermissions',
-                    'options' => 'options',
-                  ),
-                ),
-                array(
-                  'both' => array(
-                    array(
-                      'type' => 'and',
-                      'left' => array(
-                        'type' => 'column',
-                        'value' => 'options',
-                      ),
-                      'right' => array(
-                        'type' => 'int',
-                        'value' => 4,
-                      ),
-                    ),
-                    array(
-                      'type' => 'in',
-                      'left' => array(
-                        'type' => 'column',
-                        'value' => 'roomId',
-                      ),
-                      'right' => array(
-                        'type' => 'array',
-                        'value' => fim_arrayValidate(explode(',',$userPrefs['favRooms']),'int',false),
-                      ),
-                    ),
-                  ),
-                )
-              );
-              $favRooms = $favRooms->getAsArray('roomId');
-
-
-              if (is_array($favRooms)) {
-                if (count($favRooms) > 0) {
-                  foreach ($favRooms AS $roomId => $room) {
-                    eval(hook('templateFavRoomsEachStart'));
-
-                    if (!fim_hasPermission($room,$userPrefs,'view')) {
-                      $currentRooms = fim_arrayValidate(explode(',',$userPrefs['favRooms']),'int',false);
-
-                      foreach ($currentRooms as $room2) {
-                        if ($room2 != $room['roomId']) { // Rebuild the array withouthe room ID.
-                          $currentRooms2[] = (int) $room2;
-                        }
-                      }
-                    }
-                  }
-
-                  if (count($currentRooms2) !== count($favRooms)) {
-                    $database->update("{$sqlPrefix}users", array(
-                      'favRooms' => implode(',',$currentRooms2),
-                    ), array(
-                      'userId' => $userPrefs['userId'],
-                    ));
-                  }
-
-                  unset($room);
-                }
-              }
-            }*/
   }
 
 
@@ -1078,6 +1007,8 @@ class fimDatabase extends databaseSQL
         }
       }
     }
+
+    $this->editListCache($roomList, $userData, $roomIds, $method);
   }
 
 
@@ -1116,6 +1047,35 @@ class fimDatabase extends databaseSQL
         if ($userList === 'userFriendsList') $this->createUserEvent('friendRequest', $userId, $userData['userId']);
       }
     }
+
+    $this->editListCache($userList, $userData, $userIds, $method);
+  }
+
+
+  public function editListCache($list, $userData, $itemIds, $method = 'PUT') {
+    $listMap = array(
+      'userFavRooms' => 'favRooms',
+      'watchRooms' => 'watchRooms',
+      'userIgnoreList' => 'ignoredUsers',
+      'userFriendsList' => 'friendedUsers'
+    );
+
+    $listEntries = explode(',', $userData[$listMap[$list]]);
+
+    if ($method === 'PUT') $listEntries = $itemIds;
+    elseif ($method === 'DELETE') $listEntries = array_diff($listEntries, $itemIds);
+    elseif ($method === 'POST') {
+      foreach ($itemIds AS $item) $listEntries[] = $item;
+    }
+
+    $listEntries = array_unique($listEntries);
+    sort($listEntries);
+
+    $this->update($this->sqlPrefix . 'users', array(
+      $this->sqlPrefix . $listMap[$list] => implode(',', $listEntries)
+    ), array(
+      'userId' => $userData['userId'],
+    ));
   }
 
 
@@ -1521,7 +1481,7 @@ class fimDatabase extends databaseSQL
    * @param $param2
    * @param $param3
    */
-  public function createEvent($eventName, $userId, $roomId, $messageId, $param1, $param2, $param3)
+  public function createEvent($eventName, $userId = 0, $roomId = 0, $messageId = 0, $param1 = '', $param2 = '', $param3 = '')
   {
     global $config;
 
@@ -1540,7 +1500,7 @@ class fimDatabase extends databaseSQL
   }
 
 
-  public function createUserEvent($eventName, $userId, $param1, $param2)
+  public function createUserEvent($eventName, $userId, $param1 = '', $param2 = '')
   {
     global $config;
 
