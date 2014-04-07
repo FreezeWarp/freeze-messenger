@@ -905,6 +905,19 @@ class fimDatabase extends databaseSQL
   }
 
 
+  public function getWatchRoomIds($roomId) {
+    $watchRoomIds = $this->select(array(
+      $this->sqlPrefix . 'watchRooms' => 'userId, roomId'
+    ), array(
+      'both' => array(
+        'roomId' => $this->int($roomId)
+      )
+    ))->getColumnValues('userId');
+
+    return $watchRoomIds;
+  }
+
+
 
   /****** Insert/Update Functions *******/
 
@@ -1429,40 +1442,45 @@ class fimDatabase extends databaseSQL
 
     // If the contact is a private communication, create an event and add to the message unread table.
     if ($roomData['roomType'] === 'private') {
-      foreach ($generalCache->getPermissions($roomData['roomId'], 'user') AS $sendToUserId => $permissionLevel) { // Todo: use roomAlias.
+      foreach (fim_reversePrivateRoomAlias($roomData['roomAlias']) AS $sendToUserId) { // Todo: use roomAlias.
         if ($sendToUserId == $user['userId']) {
           continue;
         } else {
-          $this->createEvent('missedMessage', $sendToUserId, $roomData['roomId'], $messageId, false, false, false);
-
-          if ($config['enableUnreadMessages']) {
-            $this->insert($this->sqlPrefix . "unreadMessages", array(
-              'userId'            => $sendToUserId,
-              'senderId'          => $userData['userId'],
-              'senderName'        => $userData['userName'],
-              'senderFormatStart' => $userData['userFormatStart'],
-              'senderFormatEnd'   => $userData['userFormatEnd'],
-              'roomId'            => $roomData['roomId'],
-              'roomName'          => $roomData['roomName'],
-              'messageId'         => $messageId,
-              'time'              => $this->now(),
-            ), array(
-              'senderId'          => $userData['userId'],
-              'senderName'        => $userData['userName'],
-              'senderFormatStart' => $userData['userFormatStart'],
-              'senderFormatEnd'   => $userData['userFormatEnd'],
-              'roomName'          => $roomData['roomName'],
-              'messageId'         => $messageId,
-              'time'              => $this->now(),
-            ));
-          }
+          createUnreadMessage($sendToUserId, $userData, $roomData, $messageId);
         }
+      }
+    }
+    else {
+      foreach ($this->getWatchRoomIds($roomData['roomId']) AS $sendToUserId) {
+        createUnreadMessage($sendToUserId, $userData, $roomData, $messageId);
       }
     }
 
 
     // Return the ID of the inserted message.
     return $messageId;
+  }
+
+
+  public function createUnreadMessage($sendToUserId, $userData, $roomData, $messageId) {
+    global $config;
+
+    $this->createUserEvent('missedMessage', $sendToUserId, $roomData['roomId'], $messageId);
+
+    if ($config['enableUnreadMessages']) {
+      $this->upsert($this->sqlPrefix . "unreadMessages", array(
+        'userId'            => $sendToUserId,
+        'roomId'            => $roomData['roomId']
+      ), array(
+        'senderId'          => $userData['userId'],
+        'senderName'        => $userData['userName'],
+        'senderFormatStart' => $userData['userFormatStart'],
+        'senderFormatEnd'   => $userData['userFormatEnd'],
+        'roomName'          => $roomData['roomName'],
+        'messageId'         => $messageId,
+        'time'              => $this->now(),
+      ));
+    }
   }
 
 

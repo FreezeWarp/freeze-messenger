@@ -492,7 +492,7 @@
       <column name="messageId" type="int" maxlen="9" fkey="messages.messageId" comment="The ID of the message." />
       <column name="time" type="time" comment="The time the message was made." />
 
-      <key name="userId,roomId" type="unique" />
+      <key name="userId,roomId" type="primary" />
       <key name="time" type="index" />
     </table>
 
