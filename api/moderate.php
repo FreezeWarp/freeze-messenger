@@ -98,7 +98,7 @@ switch ($request['action']) {
   elseif ($database->hasPermission($roomData, $userData) >= ROOM_PERMISSION_MODERATE) throw new Exception('noKickUser'); // You can't kick other moderators.
   elseif ($database->hasPermission($roomData, $user) < ROOM_PERMISSION_MODERATE) throw new Exception('noPerm'); // You have to be a mod yourself.
   else {
-    $database->kickUser($userData['userId'], $roomData'roomId'], $request['length']);
+    $database->kickUser($userData['userId'], $roomData['roomId'], $request['length']);
 
     $database->storeMessage('/me kicked ' . $userData['userName'], '', $user, $roomData);
   }
