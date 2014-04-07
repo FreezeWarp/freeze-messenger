@@ -31,6 +31,139 @@ class fimDatabase extends databaseSQL
 
 
 
+  /**
+   * Determines if a user has permission to do an action in a room.
+   *
+   * @param array $roomData - An array containing the room's data; indexes roomId, allowedUsers, allowedGroups, moderators, owner, options, defaultPermissions, type, parentalAge, and parentalFlags are required; index roomUsersList is required if type is "private" or "otr".
+   * @param array $userData - An array containing the user's data; indexes userId, adminPrivs, userPrivs, parentalAge, and parentalFlags are required.
+   * @param string $type - Either "view", "post", "moderate", or "admin", this defines the action the user is trying to do.
+   * @param bool $trans - If true, return will be an information array; otherwise bool.
+   *
+   * @global bool $banned - Whether or not the user is banned outright.
+   * @global array $superUsers - The list of superUsers.
+   * @global string $sqlPrefix
+   *
+   * @return mixed - Bool if $trans is false, array if $trans is true.
+   *
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  function hasPermission($roomData, $userData) {
+    global $config, $generalCache;
+
+    /* START COMPILE VERBOSE -- TODO: Should be able to detect based on ID. */
+    if (!isset($roomData['roomType'])) throw new Exception('hasPermission requires roomData[roomType] to be defined.');
+    elseif (!isset($userData['userId'])) throw new Exception('hasPermission requires userData[userId] to be defined.');
+    /* END COMPILE VERBOSE */
+
+    if ($roomData['roomType'] === 'otr' || $roomData['roomType'] === 'private') { // We are doing this in hasPermission itself to allow for hooks that might, for instance, deny permission to certain users based on certain criteria.
+      if (in_array($userData['userId'], fim_reversePrivateRoomAlias($roomData['roomAlias']))) return true; // The logic with private rooms is fairly self-explanatory: roomAlias lists all valid userIds, so check to see if the user is in there.
+      else return false;
+    }
+    else {
+      /* START COMPILE VERBOSE */
+      /* Make Sure All Data is Present */
+      if (!$roomData['roomId']) { // If the room is not valid...
+        return false;
+      }
+      elseif (!isset($roomData['roomParentalFlags'], $roomData['roomParentalAge'])) throw new Exception('hasPermission requires roomData[userParentalFlags] and roomData[userParentalAge] to be defined.');
+      elseif (!isset($roomData['defaultPermissions'], $roomData['options'], $roomData['owner'])) throw new Exception('hasPermission requires roomData[defaultPermissions], roomData[options], and roomData[owner]'); // If the default permissions index is missing, through an exception.
+      elseif (!isset($userData['userParentalAge'], $userData['userParentalFlags'])) throw new Exception('hasPermission requires userData[userParentalAge] and userData[userParentalFlags] to be defined.');
+      elseif (!isset($userData['adminPrivs'], $userData['userPrivs'])) throw new Exception('hasPermission requires userData[adminPrivs] and userData[userPrivs] to be defined.');
+      /* END COMPILE VERBOSE */
+
+
+      /* Initialise Variables */
+      $isAdmin = false;
+      $isOwner = false;
+      $isRoomDeleted = false;
+      $parentalBlock = false;
+      $kick = false;
+
+
+      /* Get the User's Kick Status */
+      if ($userData['userId'] > 0) { // Is their userId non-zero?
+        if ($generalCache->getKicks($roomData['roomId'], $userData['userId'])) $kick = true; // We're kicked!
+        else $kick = false; // We're not kicked!
+      }
+
+
+      /* Is the User the Room's Owner/Creator */
+      if ($roomData['owner'] === $userData['userId'] && $roomData['owner'] > 0) $isOwner = true;
+
+
+      /* Is the Room a Private Room or Deleted? */
+      if ($roomData['options'] & ROOM_DELETED) $isRoomDeleted = true; // The room is deleted.
+
+
+      /* Archived? */
+      if ($roomData['options'] & ROOM_ARCHIVED) $isRoomArchived = true; // The room is archived.
+
+
+      /* Is the user a super user? */
+      if (fim_isSuper($userData['userId']) || $userData['adminPrivs'] & ADMIN_GRANT) $isAdmin = true;
+
+
+      /* Is the user banned by parental controls? */
+      if ($config['parentalEnabled'] === true) {
+        if ($roomData['roomParentalAge'] > $userData['userParentalAge']) $parentalBlock = true;
+        elseif (fim_inArray(explode(',', $userData['userParentalFlags']), explode(',', $roomData['roomParentalFlags']))) $parentalBlock = true;
+      }
+
+
+      /* Obtain Data from roomPermissions Table
+       * This table is seen as the "final word" on matters. */
+      // Obtains all permissions that apply to the user.
+      $permissions = $this->select($columns = array(
+        $this->sqlPrefix . "roomPermissions" => 'roomId, attribute, param, permissions',
+      ), array(
+        'both' => array(
+          'roomId' => $this->int($roomData['roomId']),
+          'either' => array(
+            'both' => array(
+              'attribute' => $this->str('user'),
+              'param' => $this->int($userData['userId'])
+            ),
+            'both' => array(
+              'attribute' => $this->str('admingroup'),
+              'param' => $this->int($userData['userGroup'])
+            ),
+            'both' => array(
+              'attribute' => $this->str('group'),
+              'param' => $this->in(explode(',', $userData['socialGroups']))
+            )
+          )
+        )
+      ))->getAsArray('attribute', true);
+
+      $highestPermission = 0;
+      foreach ($permissions AS $attribute => $permission) {
+        foreach ($permission AS $p) {
+          if ($attribute === 'user') { // User overrides all others.
+            $highestPermission = $p['permissions'];
+            break;
+          }
+
+          if ($p['permissions'] > $highestPermission) $highestPermission = $p['permissions'];
+        }
+      }
+
+
+      // Basic Permission Calculation
+      if ($isAdmin || $isOwner) $permission = ROOM_PERMISSION_GRANT; // Overrides roomPermissions table, kicks, parental controls, and room deletion (the latter of which should be checked separately when making a post).
+      elseif ($kick || $parentalBlock || $isRoomDeleted) $permission = 0; // Overrides the roomPermissions table
+      else $permission = $highestPermission;
+
+      // Lower permissions if the user does not have VIEW or POST priviledges. This is not checked if the user is an admin, in which case she always has permission.
+      if (!$isAdmin) {
+        if (!($userData['userPrivs'] & USER_PRIV_VIEW)) $permission = 0;
+        elseif (!($userData['userPrivs'] & USER_PRIV_POST) && $permission > USER_PRIVLEVEL_VIEW) $permission = ROOM_PERMISSION_VIEW;
+      }
+
+      return $permission;
+    }
+  }
+
+
   /****** Get Functions *****/
 
 
@@ -918,6 +1051,26 @@ class fimDatabase extends databaseSQL
   }
 
 
+  public function getPermissionCache() {
+    return $this->select(array(
+      'roomPermissionsCache' => 'roomId, userId, status, expires'
+    ));
+  }
+
+
+  public function updatePermissionsCache($roomId, $userId, $status) {
+    global $config;
+
+    $this->upsert($this->sqlPrefix . 'roomPermissionsCache', array(
+      'roomId' => $roomId,
+      'userId' => $userId,
+    ), array(
+      'status' => (bool) $status,
+      'expires' => $this->now() + $config['roomPermissionsCacheExpires']
+    ));
+  }
+
+
 
   /****** Insert/Update Functions *******/
 
@@ -1050,6 +1203,7 @@ class fimDatabase extends databaseSQL
 
     $this->editListCache($userList, $userData, $userIds, $method);
   }
+
 
 
   public function editListCache($list, $userData, $itemIds, $method = 'PUT') {
@@ -1252,6 +1406,10 @@ class fimDatabase extends databaseSQL
 
     if (!isset($roomData['options'], $roomData['roomId'], $roomData['roomName'], $roomData['roomAlias'], $roomData['roomType'])) throw new Exception('database->storeMessage requires roomData[options], roomData[roomId], roomData[roomName], and roomData[type].');
     if (!isset($userData['userId'], $userData['userName'], $userData['userGroup'], $userData['avatar'], $userData['profile'], $userData['userFormatStart'], $userData['userFormatEnd'], $userData['defaultFormatting'], $userData['defaultColor'], $userData['defaultHighlight'], $userData['defaultFontface'])) throw new Exception('database->storeMessage requires userData[userId], userData[userName], userData[userGroup], userData[avatar]. userData[profile], userData[userFormatStart], userData[userFormatEnd], userData[defaultFormatting], userData[defaultColor], userData[defaultHighlight], and userData[defaultFontface]');
+
+
+
+    if ($roomData['options'] & ROOM_ARCHIVED || $roomData['options'] & ROOM_DELETED) throw new Exception('postingDisabled');
 
 
 
