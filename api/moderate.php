@@ -93,43 +93,14 @@ switch ($request['action']) {
   $userData = $slaveDatabase->getUser($request['userId']);
   $roomData = $slaveDatabase->getRoom($request['roomId']);
 
-  if ($userData === false) {
-    $errStr = 'badUser';
-    $errDesc = 'The room specified is not valid.';
-  }
-  elseif ($roomData === false) {
-    $errStr = 'badRoom';
-    $errDesc = 'The room specified is not valid.';
-  }
-  elseif (fim_hasPermission($roomData, $userData, 'moderate', true)) { // You can't kick other moderators.
-    $errStr = 'noKickUser';
-    $errDesc = 'The user specified may not be kicked.';
-
-    $database->storeMessage('/me fought the law and the law won.', '', $user, $roomData); // Perhaps this should be removed...
-  }
-  elseif (!fim_hasPermission($roomData, $user, 'moderate', true)) { // You have to be a mod yourself.
-    $errStr = 'noPerm';
-    $errDesc = 'You are not allowed to moderate this room.';
-  }
+  if (!count($userData)) throw new Exception('badUserId');
+  elseif (!count($roomData)) throw new Exception('badRoomId');
+  elseif ($database->hasPermission($roomData, $userData) >= ROOM_PERMISSION_MODERATE) throw new Exception('noKickUser'); // You can't kick other moderators.
+  elseif ($database->hasPermission($roomData, $user) < ROOM_PERMISSION_MODERATE) throw new Exception('noPerm'); // You have to be a mod yourself.
   else {
-    $database->modLog('kickUser', "$userData[userId],$roomData[roomId]");
-
-    $database->insert("{$sqlPrefix}kicks", array(
-        'userId' => (int) $userData['userId'],
-        'kickerId' => (int) $user['userId'],
-        'length' => (int) $request['length'],
-        'roomId' => (int) $roomData['roomId'],
-        'time' => $database->now(),
-      ), array(
-        'length' => (int) $request['length'],
-        'kickerId' => (int) $user['userId'],
-        'time' => $database->now(),
-      )
-    );
+    $database->kickUser($userData['userId'], $roomData'roomId'], $request['length']);
 
     $database->storeMessage('/me kicked ' . $userData['userName'], '', $user, $roomData);
-
-    $xmlData['moderate']['response']['success'] = true;
   }
   break;
 
@@ -137,169 +108,15 @@ switch ($request['action']) {
   $userData = $slaveDatabase->getUser($request['userId']);
   $roomData = $slaveDatabase->getRoom($request['roomId']);
 
-  if ($userData === false) {
-    $errStr = 'badUser';
-    $errDesc = 'The room specified is not valid.';
-  }
-  elseif ($roomData === false) {
-    $errStr = 'badRoom';
-    $errDesc = 'The room specified is not valid.';
-  }
-  elseif (!fim_hasPermission($roomData, $user, 'moderate', true)) {
-
-  $xmlData['moderate']['response']['success'] = true;
-    $errStr = 'nopermission';
-    $errDesc = 'You are not allowed to moderate this room.';
-  }
+  if (!count($userData)) throw new Exception('badUserId');
+  elseif (!count($roomData)) throw new Exception('badRoomId');
+  elseif ($database->hasPermission($roomData, $user) < ROOM_PERMISSION_MODERATE) throw new Exception('noPerm'); // You have to be a mod.
   else {
-    $database->modLog('unkickUser', "$userData[userId],$roomData[roomId]");
-
-    $database->delete("{$sqlPrefix}kicks", array(
-      'userId' => $userData['userId'],
-      'roomId' => $roomData['roomId'],
-    ));
+    $this->unkickUser($userData['userId'], $roomData['roomId']);
 
     $database->storeMessage('/me unkicked ' . $userData['userName'], '', $user, $roomData);
 
     $xmlData['moderate']['response']['success'] = true;
-  }
-  break;
-
-
-  case 'markRoom':
-  $queryParts['roomListSelect']['columns'] = array(
-    "{$sqlPrefix}roomLists" => 'roomId, userId, listId',
-  );
-  $queryParts['fileSelect']['conditions'] = array(
-    'both' => array(
-      array(
-        'type' => 'e',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'userId',
-        ),
-        'right' => array(
-          'type' => 'int',
-          'value' => $user['userId'],
-        ),
-      ),
-      array(
-        'type' => 'e',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'roomId',
-        ),
-        'right' => array(
-          'type' => 'int',
-          'value' => $request['roomId'],
-        ),
-      ),
-      array(
-        'type' => 'e',
-        'left' => array(
-          'type' => 'column',
-          'value' => 'listId',
-        ),
-        'right' => array(
-          'type' => 'int',
-          'value' => $request['listId'],
-        ),
-      ),
-    ),
-  );
-  $roomListData = $database->select(
-    $queryParts['roomListSelect']['columns'],
-    $queryParts['roomListSelect']['conditions']);
-  $roomListData = $roomListData->getAsArray(true);
-
-
-  if (count($roomListData) > 0) {
-    $errStr = 'badRoom';
-    $errDesc = 'The room specified is not valid.';
-  }
-  elseif (!$roomData['roomId']) {
-    $errStr = 'badRoom';
-    $errDesc = 'The room specified is not valid.';
-  }
-  elseif (!fim_hasPermission($roomData, $user, 'view')) {
-    $errStr = 'nopermission';
-    $errDesc = 'You are not allowed to access this room.';
-  }
-  else {
-    $database->insert("{$sqlPrefix}roomLists", array(
-      'userId' => (int) $user['userId'],
-      'listId' => (int) $request['listId'],
-      'roomId' => (int) $request['roomId'],
-    ));
-  }
-
-  $xmlData['moderate']['response']['success'] = true;
-  break;
-
-  case 'unmarkRoom':
-  $database->delete("{$sqlPrefix}roomLists", array(
-    'userId' => (int) $user['userId'],
-    'listId' => (int) $request['listId'],
-    'roomId' => (int) $request['roomId'],
-  ));
-
-  $xmlData['moderate']['response']['success'] = true;
-  break;
-
-
-  case 'banUser':
-  if ($user['adminDefs']['modUsers']) {
-    $userData = $database->getUser($request['userId']);
-
-    if ($userData['userPrivs'] & 16) { // The user is not banned
-      $database->modLog('banUser', $request['userId']);
-
-      $database->update("{$sqlPrefix}users", array(
-        'userPrivs' => (int) $userData['userPrivs'] - 16,
-      ), array(
-        'userId' => (int) $userData['userId'],
-      ));
-
-      $xmlData['moderate']['response']['success'] = true;
-    }
-    else {
-      $errStr = 'nothingToDo';
-
-      $xmlData['moderate']['response']['success'] = false;
-    }
-  }
-  else {
-    $errStr = 'noPerm';
-
-    $xmlData['moderate']['response']['success'] = false;
-  }
-  break;
-
-  case 'unbanUser':
-  if ($user['adminDefs']['modUsers']) {
-    $userData = $database->getUser($request['userId']);
-
-    if ($userData['userPrivs'] ^ 16) { // The user is banned
-      $database->modLog('unbanUser', $request['userId']);
-
-      $database->update("{$sqlPrefix}users", array(
-        'userPrivs' => (int) $userData['userPrivs'] + 16,
-      ), array(
-        'userId' => (int) $userData['userId'],
-      ));
-
-      $xmlData['moderate']['response']['success'] = true;
-    }
-    else {
-      $errStr = 'nothingToDo';
-
-      $xmlData['moderate']['response']['success'] = false;
-    }
-  }
-  else {
-    $errStr = 'noPerm';
-
-    $xmlData['moderate']['response']['success'] = false;
   }
   break;
 

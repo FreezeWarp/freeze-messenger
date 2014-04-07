@@ -591,6 +591,35 @@ class fimDatabase extends databaseSQL
   }
 
 
+  public function kickUser($userId, $roomId, $length) {
+    global $user;
+
+    $this->modLog('kickUser', "$userId,$roomId");
+
+    $this->upsert($this->sqlPrefix . "kicks", array(
+        'userId' => (int) $userId,
+        'roomId' => (int) $roomId,
+      ), array(
+        'length' => (int) $length,
+        'kickerId' => (int) $user['userId'],
+        'time' => $database->now(),
+      )
+    );
+  }
+
+
+  public function unkickUser($userId, $roomId) {
+    global $user;
+
+    $this->modLog('unkickUser', "$userId,$roomId");
+
+    $this->delete($this->sqlPrefix . "kicks", array(
+      'userId' => $userId,
+      'roomId' => $roomId,
+    ));
+  }
+
+
 
   public function getMessagesFromPhrases($options, $sort = array('messageId' => 'asc')) {
     global $config;
