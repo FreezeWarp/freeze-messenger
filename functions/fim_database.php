@@ -31,147 +31,6 @@ class fimDatabase extends databaseSQL
 
 
 
-  /**
-   * Determines if a user has permission to do an action in a room.
-   *
-   * @param array $roomData - An array containing the room's data; indexes roomId, allowedUsers, allowedGroups, moderators, owner, options, defaultPermissions, type, parentalAge, and parentalFlags are required; index roomUsersList is required if type is "private" or "otr".
-   * @param array $userData - An array containing the user's data; indexes userId, adminPrivs, userPrivs, parentalAge, and parentalFlags are required.
-   * @param string $type - Either "view", "post", "moderate", or "admin", this defines the action the user is trying to do.
-   * @param bool $trans - If true, return will be an information array; otherwise bool.
-   *
-   * @global bool $banned - Whether or not the user is banned outright.
-   * @global array $superUsers - The list of superUsers.
-   * @global string $sqlPrefix
-   *
-   * @return mixed - Bool if $trans is false, array if $trans is true.
-   *
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-   */
-  function hasPermission($roomData, $userData) {
-    global $config, $generalCache;
-
-    /* START COMPILE VERBOSE -- TODO: Should be able to detect based on ID. */
-    if (!isset($roomData['roomType'])) throw new Exception('hasPermission requires roomData[roomType] to be defined.');
-    elseif (!isset($userData['userId'])) throw new Exception('hasPermission requires userData[userId] to be defined.');
-    /* END COMPILE VERBOSE */
-
-    if ($roomData['roomType'] === 'otr' || $roomData['roomType'] === 'private') { // We are doing this in hasPermission itself to allow for hooks that might, for instance, deny permission to certain users based on certain criteria.
-      if (in_array($userData['userId'], fim_reversePrivateRoomAlias($roomData['roomAlias']))) return true; // The logic with private rooms is fairly self-explanatory: roomAlias lists all valid userIds, so check to see if the user is in there.
-      else return false;
-    }
-    else {
-      /* START COMPILE VERBOSE */
-      /* Make Sure All Data is Present */
-      if (!$roomData['roomId']) { // If the room is not valid...
-        return false;
-      }
-      elseif (!isset($roomData['roomParentalFlags'], $roomData['roomParentalAge'])) throw new Exception('hasPermission requires roomData[userParentalFlags] and roomData[userParentalAge] to be defined.');
-      elseif (!isset($roomData['defaultPermissions'], $roomData['options'], $roomData['owner'])) throw new Exception('hasPermission requires roomData[defaultPermissions], roomData[options], and roomData[owner]'); // If the default permissions index is missing, through an exception.
-      elseif (!isset($userData['userParentalAge'], $userData['userParentalFlags'])) throw new Exception('hasPermission requires userData[userParentalAge] and userData[userParentalFlags] to be defined.');
-      elseif (!isset($userData['adminPrivs'], $userData['userPrivs'])) throw new Exception('hasPermission requires userData[adminPrivs] and userData[userPrivs] to be defined.');
-      /* END COMPILE VERBOSE */
-
-
-      $permissionsCached = $this->getPermissionCache($roomData['roomId'], $userData['userId']);
-      if ($permissionsCached > -1) return $permissionsCached;
-
-
-      /* Initialise Variables */
-      $isAdmin = false;
-      $isOwner = false;
-      $isRoomDeleted = false;
-      $parentalBlock = false;
-      $kick = false;
-
-
-      /* Get the User's Kick Status */
-      if ($userData['userId'] > 0) { // Is their userId non-zero?
-        if ($generalCache->getKicks($roomData['roomId'], $userData['userId'])) $kick = true; // We're kicked!
-        else $kick = false; // We're not kicked!
-      }
-
-
-      /* Is the User the Room's Owner/Creator */
-      if ($roomData['owner'] === $userData['userId'] && $roomData['owner'] > 0) $isOwner = true;
-
-
-      /* Is the Room a Private Room or Deleted? */
-      if ($roomData['options'] & ROOM_DELETED) $isRoomDeleted = true; // The room is deleted.
-
-
-      /* Archived? */
-      if ($roomData['options'] & ROOM_ARCHIVED) $isRoomArchived = true; // The room is archived.
-
-
-      /* Is the user a super user? */
-      if (fim_isSuper($userData['userId']) || $userData['adminPrivs'] & ADMIN_GRANT) $isAdmin = true;
-
-
-      /* Is the user banned by parental controls? */
-      if ($config['parentalEnabled'] === true) {
-        if ($roomData['roomParentalAge'] > $userData['userParentalAge']) $parentalBlock = true;
-        elseif (fim_inArray(explode(',', $userData['userParentalFlags']), explode(',', $roomData['roomParentalFlags']))) $parentalBlock = true;
-      }
-
-
-      /* Obtain Data from roomPermissions Table
-       * This table is seen as the "final word" on matters. */
-      // Obtains all permissions that apply to the user.
-      $permissions = $this->select($columns = array(
-        $this->sqlPrefix . "roomPermissions" => 'roomId, attribute, param, permissions',
-      ), array(
-        'both' => array(
-          'roomId' => $this->int($roomData['roomId']),
-          'either' => array(
-            'both' => array(
-              'attribute' => $this->str('user'),
-              'param' => $this->int($userData['userId'])
-            ),
-            'both' => array(
-              'attribute' => $this->str('admingroup'),
-              'param' => $this->int($userData['userGroup'])
-            ),
-            'both' => array(
-              'attribute' => $this->str('group'),
-              'param' => $this->in(explode(',', $userData['socialGroups']))
-            )
-          )
-        )
-      ))->getAsArray('attribute', true);
-
-      $highestPermission = 0;
-      foreach ($permissions AS $attribute => $permission) {
-        foreach ($permission AS $p) {
-          if ($attribute === 'user') { // User overrides all others.
-            $highestPermission = $p['permissions'];
-            break;
-          }
-
-          if ($p['permissions'] > $highestPermission) $highestPermission = $p['permissions'];
-        }
-      }
-
-
-      // Basic Permission Calculation
-      if ($isAdmin || $isOwner) $permission = ROOM_PERMISSION_GRANT; // Overrides roomPermissions table, kicks, parental controls, and room deletion (the latter of which should be checked separately when making a post).
-      elseif ($kick || $parentalBlock || $isRoomDeleted) $permission = 0; // Overrides the roomPermissions table
-      else $permission = $highestPermission;
-
-      // Lower permissions if the user does not have VIEW or POST priviledges. This is not checked if the user is an admin, in which case she always has permission.
-      if (!$isAdmin) {
-        if (!($userData['userPrivs'] & USER_PRIV_VIEW)) $permission = 0;
-        elseif (!($userData['userPrivs'] & USER_PRIV_POST) && $permission > USER_PRIVLEVEL_VIEW) $permission = ROOM_PERMISSION_VIEW;
-      }
-
-
-      $this->updatePermissionsCache($userData['userId'], $roomData['roomId'], $permission);
-
-
-      return $permission;
-    }
-  }
-
-
   /****** Get Functions *****/
 
 
@@ -553,42 +412,55 @@ class fimDatabase extends databaseSQL
       'lengthMin' => 0,
       'lengthMax' => 0,
       'timeMin'   => 0,
-      'timeMax'   => 0
+      'timeMax'   => 0,
+      'includeUserData' => true,
+      'includeKickerData' => true,
+      'includeRoomData' => true,
     ), $options);
 
 
+
+    // Base Query
     $columns = array(
-      $this->sqlPrefix . "kicks"        => 'kickerId kkickerId, userId kuserId, roomId kroomId, length klength, time ktime',
-      $this->sqlPrefix . "users user"   => 'userId, userName, userFormatStart, userFormatEnd',
-      $this->sqlPrefix . "users kicker" => 'userId kickerId, userName kickerName, userFormatStart kickerFormatStart, userFormatEnd kickerFormatEnd',
-      $this->sqlPrefix . "rooms"        => 'roomId, roomName, owner, options, defaultPermissions, roomType, roomParentalFlags, roomParentalAge',
+      $this->sqlPrefix . "kicks" => 'kickerId, userId, roomId, length, time',
     );
+    $conditions = array();
+
+
+
+    // Modify Columns (and Joins)
+    if ($options['includeUserData']) {
+      $columns[$this->sqlPrefix . "users user"]  = 'userId kuserId, userName, userFormatStart, userFormatEnd';
+      $conditions['both']['userId'] = $this->col('kuserId');
+    }
+    if ($options['includeKickerData']) {
+      $columns[$this->sqlPrefix . "users kicker"] = 'userId kkickerId, userName kickerName, userFormatStart kickerFormatStart, userFormatEnd kickerFormatEnd';
+      $conditions['both']['roomId'] = $this->col('kroomId');
+    }
+    if ($options['includeRoomData']) {
+      $columns[$this->sqlPrefix . "rooms"] = 'roomId kroomId, roomName, owner, options, defaultPermissions, roomType, roomParentalFlags, roomParentalAge';
+      $conditions['both']['kickerId'] = $this->col('kkickerId');
+    }
+
 
 
     // Modify Query Data for Directives (First for Performance)
-    if (count($options['userIds']) > 0) $conditions['both']['kuserId'] = $this->in((array) $options['userIds']);
+    if (count($options['userIds']) > 0) $conditions['both']['userId'] = $this->in((array) $options['userIds']);
     if (count($options['roomIds']) > 0) $conditions['both']['roomId'] = $this->in((array) $options['roomIds']);
-    if (count($options['kickerIds']) > 0) $conditions['both']['kuserId'] = $this->in((array) $options['kickerIds']);
+    if (count($options['kickerIds']) > 0) $conditions['both']['userId'] = $this->in((array) $options['kickerIds']);
 
-    if ($options['lengthIdMin'] > 0) $conditions['both']['klength 1'] = $this->int($options['lengthMin'], 'gte');
-    if ($options['lengthIdMax'] > 0) $conditions['both']['klength 2'] = $this->int($options['lengthMax'], 'lte');
+    if ($options['lengthIdMin'] > 0) $conditions['both']['length 1'] = $this->int($options['lengthMin'], 'gte');
+    if ($options['lengthIdMax'] > 0) $conditions['both']['length 2'] = $this->int($options['lengthMax'], 'lte');
 
-    if ($options['timeMin'] > 0) $conditions['both']['ktime 1'] = $this->int($options['timeMin'], 'gte');
-    if ($options['timeMax'] > 0) $conditions['both']['ktime 2'] = $this->int($options['timeMax'], 'lte');
-
-
-    // Default Conditions
-    $conditions = array(
-      'both' => array(
-        'kuserId'   => $this->col('userId'),
-        'kroomId'   => $this->col('roomId'),
-        'kkickerId' => $this->col('kickerId')
-      ),
-    );
+    if ($options['timeMin'] > 0) $conditions['both']['time 1'] = $this->int($options['timeMin'], 'gte');
+    if ($options['timeMax'] > 0) $conditions['both']['time 2'] = $this->int($options['timeMax'], 'lte');
 
 
+
+    // Return
     return $this->select($columns, $conditions, $sort);
   }
+
 
 
   public function kickUser($userId, $roomId, $length) {
@@ -601,7 +473,7 @@ class fimDatabase extends databaseSQL
         'roomId' => (int) $roomId,
       ), array(
         'length' => (int) $length,
-        'kickerId' => (int) $user['userId'],
+        'kickerId' => (int) $user['kickerId'],
         'time' => $database->now(),
       )
     );
@@ -815,7 +687,7 @@ class fimDatabase extends databaseSQL
 
 
 
-  public function getPermissions($rooms = array(), $attribute = false, $params = array())
+  public function getRoomPermissions($rooms = array(), $attribute = false, $params = array())
   {
     // Modify Query Data for Directives (First for Performance)
     $columns = array(
@@ -827,6 +699,54 @@ class fimDatabase extends databaseSQL
     if (count($params) > 0) $conditions['both']['param'] = $this->in((array) $params);
 
     return $this->select($columns, $conditions);
+  }
+
+
+  /**
+   * Queries the roomPermissions table for a specific roomId with three attribute/param pairs: one for $userId, one for $userGroupId, and one for $socialGroupIds. It is faster when looking up data on a specific user, but less versitile: it will return a bitfield representing the user's permissions instead of a result set.
+   *
+   * @param $roomId
+   * @param $userId
+   * @param $userGroupId
+   * @param $socialGroupIds
+   */
+  public function getRoomPermissionForUser($roomId, $userId, $userGroupId, $socialGroupIds) {
+    $permissions = $this->select(array(
+      $this->sqlPrefix . "roomPermissions" => 'roomId, attribute, param, permissions',
+    ), array(
+      'both' => array(
+        'roomId' => $this->int($roomId),
+        'either' => array(
+          'both 1' => array(
+            'attribute' => $this->str('user'),
+            'param' => $this->int($userId)
+          ),
+          'both 2' => array(
+            'attribute' => $this->str('admingroup'),
+            'param' => $this->int($userGroupId)
+          ),
+          'both 3' => array(
+            'attribute' => $this->str('group'),
+            'param' => $this->in($socialGroupIds)
+          )
+        )
+      )
+    ))->getAsArray(array('attribute', 'param'));
+
+
+    if (!count($permissions)) return -1;
+    elseif (isset($permissions['user'][$userId])) { // The user setting overrides group settings. A notable limitation of this is that you can't override specific group-based permissions, but this way is a fair bit simpler (after all, there are very few situations when you want to bar a user from posting but want them to be able to view based on their group -- rather, you want to set the user's specific permissions and be done with it).
+      return $permissions['user'][$userId]['permissions'];
+    }
+    else { // Here we generate a user's permissions by XORing all of the group permissions that apply to them. That is, if any group a user belongs to has a certain permission, then the user will have that permission.
+      $groupBitfield = isset($permissions['admingroup'][$userGroupId]) ? $permissions['admingroup'][$userGroupId]['permissions'] : 0; // Set the group field to the returned admingroup object if available; otherwise, 0.
+
+      foreach ($permissions['group'] AS $s) { // Basically, we do a bitwise OR on all of the permissions returned as part of a social group (with the admingroup permission being our first above).
+        $groupBitfield |= $s['permissions'];
+      }
+
+      return $groupBitfield;
+    }
   }
 
 
@@ -2062,6 +1982,134 @@ class fimDatabase extends databaseSQL
     }
 
     return $text;
+  }
+}
+
+class databaseResultRooms extends databaseResult {
+
+  /**
+   * @return array
+   *
+   * @internal This function may use too much memory. I'm not... exactly sure how to fix this.
+   */
+  function getAsRooms() {
+    $rooms = $this->getAsArray('roomId');
+    $return = array();
+
+    foreach ($rooms AS $roomId => $room) {
+      $return[$roomId] = new databaseObjectRoom($room);
+    }
+
+    return $return;
+  }
+
+}
+
+
+class databaseObjectRoom {
+
+  function __construct($roomData) {
+    if (!isset($roomData['roomId'])) throw new Exception('hasPermission requires roomData[roomId] to be defined.');
+    if (!isset($roomData['roomType'])) throw new Exception('hasPermission requires roomData[roomType] to be defined.');
+    elseif (!isset($roomData['roomParentalFlags'], $roomData['roomParentalAge'])) throw new Exception('hasPermission requires roomData[userParentalFlags] and roomData[userParentalAge] to be defined.');
+    elseif (!isset($roomData['defaultPermissions'], $roomData['options'], $roomData['owner'])) throw new Exception('hasPermission requires roomData[defaultPermissions], roomData[options], and roomData[owner]'); // If the default permissions index is missing, through an exception.
+
+    $this->roomData = $roomData;
+  }
+
+
+
+  /**
+   * Determines if a user has permission to do an action in the active room.
+   *
+   * @param int $userId The ID of the user that permissions is being checked against.
+   *
+   * @global bool $config Several settings affect what permissions users have.
+   * @global object $database Database actions will be taken to resolve permissions, userData, etc.
+   *
+   * @return int A bitfield corresponding with roomPermissions.
+   *
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  function hasPermission($userId) {
+    global $config, $database;
+
+    $permissionsCached = $database->getPermissionCache($this->roomData['roomId'], $userId);
+    if ($permissionsCached > -1) return $permissionsCached; // -1 equals an outdated permission.
+
+    if ($this->roomData['roomType'] === 'otr' || $this->roomData['roomType'] === 'private') { // We are doing this in hasPermission itself to allow for hooks that might, for instance, deny permission to certain users based on certain criteria.
+      if (!$config['privateRoomsEnabled']) return 0;
+      if (in_array($userId, fim_reversePrivateRoomAlias($this->roomData['roomAlias']))) return ROOM_PERMISSION_VIEW | ROOM_PERMISSION_POST | ROOM_PERMISSION_TOPIC; // The logic with private rooms is fairly self-explanatory: roomAlias lists all valid userIds, so check to see if the user is in there.
+      else return 0;
+    }
+    else {
+      $userData = $database->getUser($userId); // TODO: This should be more easily cached. In fact, getUser() and getRoom() should be fairly easy to cache as they don't have any advanced directives. Likewise, getRooms() and getUsers() with only Ids should be fairly easy to cache.
+
+
+      /* Initialise Variables */
+      $parentalBlock = false;
+      $isKicked = false;
+      $isAdmin = false;
+
+
+      /* Set Variables */
+      if (fim_isSuper($userId) || $userData['adminPrivs'] & (ADMIN_GRANT + ADMIN_ROOMS)) $isAdmin = true; // Admin
+
+      if ($config['parentalEnabled']) { // Parental controls
+        if ($this->roomData['roomParentalAge'] > $userData['userParentalAge']) $parentalBlock = true;
+        elseif (fim_inArray(explode(',', $userData['userParentalFlags']), explode(',', $this->roomData['roomParentalFlags']))) $parentalBlock = true;
+      }
+
+      $kicks = $database->getKicks(array( // Kicks
+        'userIds' => array($userId),
+        'roomIds' => array($this->roomData['roomId'])
+      ))->getAsArray(false);
+      if (count($kicks)) $isKicked = true;
+
+
+
+      /* Obtain Data from roomPermissions Table
+       * This table is seen as the "final word" on matters. */
+      $permissionsBitfield = $database->getRoomPermissionForUser($this->roomData['roomId'], $userId, $userData['userGroup'], explode(',', $userData['socialGroups']));
+
+
+
+      /* Base calculation -- these are what permisions a user is supposed to have, before userPrivs and certain room properties are factored in. */
+      if ($isAdmin) $returnBitfield = 65535; // Admins have all permissions.
+      elseif (in_array($userData['userGroup'], $config['bannedUserGroups'])) $returnBitfield = 0; // A list of "banned" user groups can be specified in config. These groups lose all permissions, similar to having userPrivs = 0. But, in the interest of sanity, we don't check it elsewhere.
+      elseif ($this->roomData['owner'] === $userId) $returnBitfield = 65535; // Owners have all permissions.
+      elseif ($isKicked || $parentalBlock) $returnBitfield = 0; // A kicked user (or one blocked by parental controls) has no permissions. This cannot apply to the room owner.
+      elseif ($permissionsBitfield === -1) $returnBitfield = $this->roomData['defaultPermissions'];
+      else $returnBitfield = $permissionsBitfield;
+
+
+
+      /* Remove priviledges under certain circumstances. */
+      // Remove priviledges that a user does not have for any room. (We skip this check on admins, since they should ignore the userPriv calculation.)
+      if (!$isAdmin) {
+        if (!($userData['userPrivs'] & USER_PRIV_VIEW)) $returnBitfield &= ~ROOM_PERMISSION_VIEW; // If banned, a user can't view anything.
+        if (!($userData['userPrivs'] & USER_PRIV_POST)) $returnBitfield &= ~ROOM_PERMISSION_POST; // If silenced, a user can't post anywhere.
+        if (!($userData['userPrivs'] & USER_PRIV_TOPIC)) $returnBitfield &= ~ROOM_PERMISSION_TOPIC;
+      }
+
+      // Deleted and archived rooms act similarly: no one may post in them, while only admins can view deleted rooms.
+      if ($this->roomData['options'] & (ROOM_DELETED + ROOM_ARCHIVED)) { // that is, check if a room is either deleted or archived.
+        if (($this->roomData['options'] & ROOM_DELETED) && !$isAdmin) $returnBitfield &= ~(ROOM_PERMISSION_VIEW); // Only admins may view deleted rooms.
+
+        $returnBitfield &= ~(ROOM_PERMISSION_POST + ROOM_PERMISSION_TOPIC); // And no one can post in them.
+      }
+
+      // And there are a few additional features that may be disabled by the config.
+      if ($config['disableTopic']) $returnBitfield &= ~ROOM_PERMISSION_TOPIC; // Topics are disabled (in fact, this one should also disable the returning of topics; TODO).
+
+
+
+
+      /* Update cache and return. */
+      $this->updatePermissionsCache($userId, $this->roomData['roomId'], $returnBitfield);
+
+      return $returnBitfield;
+    }
   }
 }
 

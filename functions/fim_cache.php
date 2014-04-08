@@ -259,7 +259,7 @@ class fimCache extends generalCache {
       $permissions = $this->get('fim_permissions');
     }
     else {
-      $permissionsDatabase = $this->database->getPermissions()->getAsArray(true);
+      $permissionsDatabase = $this->database->getRoomPermissions()->getAsArray(true);
 
       foreach ($permissionsDatabase AS $permission) {
         $permissions[$permission['roomId']][$permission['attribute']][$permission['param']] = $cachePerm['permissions'];
