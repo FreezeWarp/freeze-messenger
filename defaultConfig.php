@@ -69,7 +69,8 @@ $defaultConfig = array(
 
 
   /* Message Sending & Formatting */
-  'maxMessageLength' => 1000,
+  'messageMaxLength' => 1000,
+  'messageMinLength' => 1,
 
   'fonts' => array(
     'FreeMono' => "FreeMono, TwlgMono, 'Courier New', Consolas, monospace",

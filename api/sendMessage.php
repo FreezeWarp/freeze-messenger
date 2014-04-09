@@ -57,7 +57,7 @@ $ip = $_SERVER['REMOTE_ADDR']; // Get the IP address of the user.
 
 
 /* Get Room for DB */
-$roomData = $database->getRoom($request['roomId']);
+$room = $database->getRoom($request['roomId']);
 
 
 /* Censor Fun */
@@ -100,94 +100,38 @@ if ($censorWordsCache['byWord']) {
 
 /* Start Processing */
 if ($continue) {
-  if (!$roomData['roomId']) { // Bad room.
-    $errStr = 'badRoom';
-    $errDesc = 'That room could not be found.';
-  }
-  elseif (strlen($request['message']) == 0 || strlen($request['message']) > $config['maxMessageLength']) { // Too short/long.
-    $errStr = 'badMessage';
-    $errDesc = 'The message you entered is either too long or too short.';
-  }
-  elseif (preg_match('/^(\ |\n|\r)*$/', $request['message'])) { // All spaces.
-    $errStr = 'spaceMessage';
-    $errDesc = 'In some countries, you could be arrested for posting only spaces. Now aren\'t you glad we stopped you?';
-  }
-  elseif (!fim_hasPermission($roomData, $user, 'post', true)) { // Not allowed to post.
-    $errStr = 'noPerm';
-    $errDesc = 'You are not allowed to post in this room.';
-  }
+  if (!$room->id) throw new Exception('badRoom'); // Room doesn't exist.
+  elseif (strlen($request['message']) < $config['messageMinLength'] || strlen($request['message']) > $config['messageMaxLength']) throw new Exception('messageLength'); // Too short/long.
+  elseif (preg_match('/^(\ |\n|\r)*$/', $request['message'])) throw new Exception('spaceMessage'); // All spaces.
+  elseif (!($room->hasPermission($user['userId']) & ROOM_PERMISSION_POST)) throw new Exception('noPerm');
   // TODO: MB Support
-  elseif (in_array($request['flag'], array('image', 'video', 'url', 'html', 'audio')) && !filter_var($request['message'], FILTER_VALIDATE_URL, FILTER_FLAG_SCHEME_REQUIRED)) { // If the message is suppoed to be a URI, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
-    $errStr = 'badUrl';
-    $errDesc = 'The URL specified is not valid.';
-  }
-  elseif (($request['flag'] === 'email') && !filter_var($request['message'], FILTER_VALIDATE_EMAIL)) { // If the message is suppoed to be an email, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
-    $errStr = 'badEmail';
-    $errDesc = 'The email specified is not valid.';
-  }
-  elseif ($blockedWordSeverity == 'block') {
-    $errStr = 'blockCensor';
-    $errDesc = 'The word ' . $blockedWordText . ' is not allowed: ' . $blockedWordReason;
-
-    $blockWordApi['severity'] = 'block';
-    $blockWordApi['word'] = $blockedWordText;
-    $blockWordApi['reason'] = $blockedWordReason;
-  }
-  elseif ($blockedWordSeverity == 'confirm') {
-    $errStr = 'confirmCensor';
-    $errDesc = 'Warning: The word ' . $blockedWordtext . ' may not be allowed: ' . $blockedWordReason;
-
-    $blockWordApi['severity'] = 'confirm';
-    $blockWordApi['word'] = $blockedWordText;
-    $blockWordApi['reason'] = $blockedWordReason;
-  }
-  elseif (strpos($request['message'], '/topic') === 0 && !$config['disableTopic']) {
-    $topicNew = preg_replace('/^\/topic (.+?)$/i', '$1', $request['message']); // Strip the "/topic" from the message.
-
-    ($hook = hook('sendMessage_topic') ? eval($hook) : '');
-
-    if ($continue) {
-      $database->storeMessage($request['message'], '', $user, $roomData);
-
-      $database->createEvent('topicChange', false, $roomData['roomId'], false, $topic, false, false); // name, user, room, message, p1, p2, p3
-
-      $database->update("{$sqlPrefix}rooms", array(
-        'roomTopic' => $topic,
-      ), array(
-      'roomId' => $roomData['roomId'],
-      ));
-    }
-  }/*
-  elseif (strpos($request['message'], '/kick') === 0) {
+  elseif (in_array($request['flag'], array('image', 'video', 'url', 'html', 'audio')) && !filter_var($request['message'], FILTER_VALIDATE_URL, FILTER_FLAG_SCHEME_REQUIRED)) throw new Exception('badUrl'); // If the message is supposed to be a URI, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
+  elseif (($request['flag'] === 'email') && !filter_var($request['message'], FILTER_VALIDATE_EMAIL)) throw new Exception('badUrl'); // If the message is suppoed to be an email, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
+  elseif ($blockedWordSeverity == 'block') throw new Exception('blockCensor', $blockedWordText, $blockedWordReason); // Todo: multiple parameters
+  elseif ($blockedWordSeverity == 'confirm') throw new Exception('confirmCensor', $blockedWordText, $blockedWordReason);
+  elseif (strpos($request['message'], '/kick') === 0) { // TODO
     $kickData = preg_replace('/^\/kick (.+?)(| ([0-9]+?))$/i','$1,$2',$request['message']);
     $kickData = explode(',',$kickData);
 
-    $userData =
+    $userData = $database->getUsers(array(
+      'userNames' => array($kickData[0])
+    ))->getAsUser();
 
-    $ch = curl_init('./');
-    $fp = fopen("moderate.php", "w");
-
-    curl_setopt($ch, CURLOPT_FILE, $fp);
-    curl_setopt($ch, CURLOPT_HEADER, 0);
-    curl_setopt($agent, CURLOPT_POST, true);
-    curl_setopt($agent, CURLOPT_POSTFIELDS, 'action=kickUser&userId=&roomId=' . $roomId . '&fim3_userId=&fim3_sessionHash=');
-
-    curl_exec($ch);
-    curl_close($ch);
-    fclose($fp);
-  }*/
+    $userData->kick($kickData[1]);
+  }
   else {
-    if ($blockedWordSeverity == 'warn') {
-      $blockWordApi['severity'] = 'warn';
-      $blockWordApi['word'] = $blockedWordText;
-      $blockWordApi['reason'] = $blockedWordReason;
+    if (strpos($request['message'], '/topic') === 0 && ($room->hasPermission($userData['userId']) & ROOM_PERMISSION_TOPIC)) {
+      $topicNew = preg_replace('/^\/topic (.+?)$/i', '$1', $request['message']); // Strip the "/topic" from the message.
+
+      $database->createRoomEvent('topicChange', $roomData['roomId'], $topic); // name, roomId, message
+      $database->update("{$sqlPrefix}rooms", array(
+        'roomTopic' => $topic,
+      ), array(
+        'roomId' => $roomData['roomId'],
+      ));
     }
 
-    ($hook = hook('sendMessage_send') ? eval($hook) : '');
-
-    if ($continue) {
-      $database->storeMessage($request['message'], $request['flag'], $user, $roomData);
-    }
+    $database->storeMessage($request['message'], $request['flag'], $user, $room->getAsArray());
   }
 }
 
@@ -203,9 +147,8 @@ $xmlData = array(
     'errStr' => ($errStr),
     'errDesc' => ($errDesc),
     'censor' => array(
-      'word' => ($blockWordApi['word']),
-      'severity' => ($blockWordApi['severity']),
-      'reason' => ($blockWordApi['reason']),
+      'word' => ($blockedWordText),
+      'reason' => ($blockedWordReason),
     ),
   ),
 );

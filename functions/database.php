@@ -744,6 +744,19 @@ abstract class database {
   ************************* END ***************************
   **************** Type-Casting Functions *****************
   *********************************************************/
+
+
+  /**
+   * Opens a database result object using the specified parameters.
+   *
+   * @param mixed $queryData - Typically the object associated with a query to a database using a certain driver.
+   * @param mixed $sourceQuery - Typically a string or array containing the data used to make the query to the driver that resulted in $queryData. Generally used for debugging.
+   * @param array $driver - The driver used to make the query.
+   *
+   * @return databaseResult
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  abstract protected function databaseResultPipe($queryData, $query, $driver);
 }
 
 class databaseResult {

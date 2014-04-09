@@ -841,9 +841,9 @@ class fimDatabase extends databaseSQL
 
   public function getRoom($roomId)
   {
-    return $room = $this->getRooms(array(
+    return $this->getRooms(array(
       'roomIds' => array($roomId)
-    ))->getAsArray(false);
+    ))->getAsRoom();
   }
 
 
@@ -1042,7 +1042,7 @@ class fimDatabase extends databaseSQL
     if (!$config['roomPermissionsCacheEnabled']) return -1;
     else {
       $permissions = $this->select(array(
-        'roomPermissionsCache' => 'roomId, userId, permissions, expires'
+        $this->sqlPrefix . 'roomPermissionsCache' => 'roomId, userId, permissions, expires'
       ), array(
         'roomId' => $this->int($roomId),
         'userId' => $this->int($userId)
@@ -1292,7 +1292,7 @@ class fimDatabase extends databaseSQL
       'hiddenRoom' => false,
       'archivedRoom' => false,
       'deleted' => false,
-    ), $this->getRoom(array(
+    ), $this->getRooms(array(
       'roomIds' => array($roomId)
     ))->getAsArray(false), $options);
 
@@ -1459,7 +1459,7 @@ class fimDatabase extends databaseSQL
 
 
     // Update the messageIndex if appropriate
-    $roomDataNew = $this->getRoom($roomData['roomId'], false, false); // Get the new room data.
+    $roomDataNew = $this->getRoom($roomData['roomId'], false, false)->getAsArray(); // Get the new room data; TODO
 
     if ($roomDataNew['messageCount'] % $config['messageIndexCounter'] === 0) { // If the current messages in the room is divisible by the messageIndexCounter, insert into the messageIndex cache. Note that we are hoping this is because of the very last query which incremented this value, but it is impossible to know for certain (if we tried to re-order things to get the room data first, we still run this risk, so that doesn't matter; either way accuracy isn't critical).
       $this->insert($this->sqlPrefix . "messageIndex", array(
@@ -1983,9 +1983,19 @@ class fimDatabase extends databaseSQL
 
     return $text;
   }
+
+
+
+  /**
+   * OVERRIDE
+   * Overrides the normal function to use fimDatabaseResult instead.
+   */
+  protected function databaseResultPipe($queryData, $query, $driver) {
+    return new fimDatabaseResult($queryData, $query, $driver);
+  }
 }
 
-class databaseResultRooms extends databaseResult {
+class fimDatabaseResult extends databaseResult {
 
   /**
    * @return array
@@ -2003,18 +2013,47 @@ class databaseResultRooms extends databaseResult {
     return $return;
   }
 
+
+
+  function getAsRoom() {
+    return new databaseObjectRoom($this->getAsArray(false));
+  }
+
+
+
+  function getAsUser() {
+    return new databaseObjectUser($this->getAsArray(false));
+  }
+
 }
 
 
 class databaseObjectRoom {
 
   function __construct($roomData) {
-    if (!isset($roomData['roomId'])) throw new Exception('hasPermission requires roomData[roomId] to be defined.');
-    if (!isset($roomData['roomType'])) throw new Exception('hasPermission requires roomData[roomType] to be defined.');
-    elseif (!isset($roomData['roomParentalFlags'], $roomData['roomParentalAge'])) throw new Exception('hasPermission requires roomData[userParentalFlags] and roomData[userParentalAge] to be defined.');
-    elseif (!isset($roomData['defaultPermissions'], $roomData['options'], $roomData['owner'])) throw new Exception('hasPermission requires roomData[defaultPermissions], roomData[options], and roomData[owner]'); // If the default permissions index is missing, through an exception.
+
+    if (!count($roomData)) {
+      $this->id = false;
+    }
+    else {
+      $this->id = $roomData['roomId'];
+      $this->name = $roomData['roomName'];
+      $this->alias = $roomData['roomAlias'];
+      $this->options = $roomData['options'];
+      $this->ownerId = $roomData['owner'];
+      $this->topic = $roomData['topic'];
+      $this->type = $roomData['roomType'];
+      $this->parentalFlags = explode(',', $roomData['roomParentalFlags']);
+      $this->parentalAge = $roomData['roomParentalAge'];
+      $this->defaultPermissions = $roomData['defaultPermissions'];
+    }
 
     $this->roomData = $roomData;
+  }
+
+
+  public function getAsArray() {
+    return $this->roomData;
   }
 
 
@@ -2031,15 +2070,15 @@ class databaseObjectRoom {
    *
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  function hasPermission($userId) {
+  public function hasPermission($userId) {
     global $config, $database;
 
-    $permissionsCached = $database->getPermissionCache($this->roomData['roomId'], $userId);
+    $permissionsCached = $database->getPermissionCache($this->id, $userId);
     if ($permissionsCached > -1) return $permissionsCached; // -1 equals an outdated permission.
 
-    if ($this->roomData['roomType'] === 'otr' || $this->roomData['roomType'] === 'private') { // We are doing this in hasPermission itself to allow for hooks that might, for instance, deny permission to certain users based on certain criteria.
+    if ($this->type === 'otr' || $this->type === 'private') { // We are doing this in hasPermission itself to allow for hooks that might, for instance, deny permission to certain users based on certain criteria.
       if (!$config['privateRoomsEnabled']) return 0;
-      if (in_array($userId, fim_reversePrivateRoomAlias($this->roomData['roomAlias']))) return ROOM_PERMISSION_VIEW | ROOM_PERMISSION_POST | ROOM_PERMISSION_TOPIC; // The logic with private rooms is fairly self-explanatory: roomAlias lists all valid userIds, so check to see if the user is in there.
+      if (in_array($userId, fim_reversePrivateRoomAlias($this->alias))) return ROOM_PERMISSION_VIEW | ROOM_PERMISSION_POST | ROOM_PERMISSION_TOPIC; // The logic with private rooms is fairly self-explanatory: roomAlias lists all valid userIds, so check to see if the user is in there.
       else return 0;
     }
     else {
@@ -2056,13 +2095,13 @@ class databaseObjectRoom {
       if (fim_isSuper($userId) || $userData['adminPrivs'] & (ADMIN_GRANT + ADMIN_ROOMS)) $isAdmin = true; // Admin
 
       if ($config['parentalEnabled']) { // Parental controls
-        if ($this->roomData['roomParentalAge'] > $userData['userParentalAge']) $parentalBlock = true;
-        elseif (fim_inArray(explode(',', $userData['userParentalFlags']), explode(',', $this->roomData['roomParentalFlags']))) $parentalBlock = true;
+        if ($this->parentalAge > $userData['userParentalAge']) $parentalBlock = true;
+        elseif (fim_inArray(explode(',', $userData['userParentalFlags']), $this->parentalFlags)) $parentalBlock = true;
       }
 
       $kicks = $database->getKicks(array( // Kicks
         'userIds' => array($userId),
-        'roomIds' => array($this->roomData['roomId'])
+        'roomIds' => array($this->id)
       ))->getAsArray(false);
       if (count($kicks)) $isKicked = true;
 
@@ -2070,16 +2109,16 @@ class databaseObjectRoom {
 
       /* Obtain Data from roomPermissions Table
        * This table is seen as the "final word" on matters. */
-      $permissionsBitfield = $database->getRoomPermissionForUser($this->roomData['roomId'], $userId, $userData['userGroup'], explode(',', $userData['socialGroups']));
+      $permissionsBitfield = $database->getRoomPermissionForUser($this->id, $userId, $userData['userGroup'], explode(',', $userData['socialGroups']));
 
 
 
       /* Base calculation -- these are what permisions a user is supposed to have, before userPrivs and certain room properties are factored in. */
       if ($isAdmin) $returnBitfield = 65535; // Admins have all permissions.
       elseif (in_array($userData['userGroup'], $config['bannedUserGroups'])) $returnBitfield = 0; // A list of "banned" user groups can be specified in config. These groups lose all permissions, similar to having userPrivs = 0. But, in the interest of sanity, we don't check it elsewhere.
-      elseif ($this->roomData['owner'] === $userId) $returnBitfield = 65535; // Owners have all permissions.
+      elseif ($this->ownerId === $userId) $returnBitfield = 65535; // Owners have all permissions.
       elseif ($isKicked || $parentalBlock) $returnBitfield = 0; // A kicked user (or one blocked by parental controls) has no permissions. This cannot apply to the room owner.
-      elseif ($permissionsBitfield === -1) $returnBitfield = $this->roomData['defaultPermissions'];
+      elseif ($permissionsBitfield === -1) $returnBitfield = $this->defaultPermissions;
       else $returnBitfield = $permissionsBitfield;
 
 
@@ -2093,8 +2132,8 @@ class databaseObjectRoom {
       }
 
       // Deleted and archived rooms act similarly: no one may post in them, while only admins can view deleted rooms.
-      if ($this->roomData['options'] & (ROOM_DELETED + ROOM_ARCHIVED)) { // that is, check if a room is either deleted or archived.
-        if (($this->roomData['options'] & ROOM_DELETED) && !$isAdmin) $returnBitfield &= ~(ROOM_PERMISSION_VIEW); // Only admins may view deleted rooms.
+      if ($this->options & (ROOM_DELETED + ROOM_ARCHIVED)) { // that is, check if a room is either deleted or archived.
+        if (($this->options & ROOM_DELETED) && !$isAdmin) $returnBitfield &= ~(ROOM_PERMISSION_VIEW); // Only admins may view deleted rooms.
 
         $returnBitfield &= ~(ROOM_PERMISSION_POST + ROOM_PERMISSION_TOPIC); // And no one can post in them.
       }
@@ -2104,9 +2143,8 @@ class databaseObjectRoom {
 
 
 
-
       /* Update cache and return. */
-      $this->updatePermissionsCache($userId, $this->roomData['roomId'], $returnBitfield);
+      $database->updatePermissionsCache($userId, $this->id, $returnBitfield);
 
       return $returnBitfield;
     }

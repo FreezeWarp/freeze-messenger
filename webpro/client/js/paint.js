@@ -61,7 +61,7 @@ function $l(stringName, substitutions, extra) {
  * @copyright Joseph T. Parsons 2014
  */
 function $t(templateName, substitutions) {
-  if (undefined === eval("window.templates." + templateName)) {
+  if (!(templateName in window.templates)) {
     $q('Template Error: ' + templateName + ' not found.');
     
     return false;

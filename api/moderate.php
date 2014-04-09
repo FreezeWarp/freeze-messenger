@@ -93,6 +93,13 @@ switch ($request['action']) {
   $userData = $slaveDatabase->getUser($request['userId']);
   $roomData = $slaveDatabase->getRoom($request['roomId']);
 
+  foreach ($database->getRooms()->getAsRooms() AS $objectRoom) {
+    if ($objectRoom->hasPermission($userId))
+  }
+
+  $database->getRoom()->hasPermission();
+  $database->getRoom()->ownerId;
+
   if (!count($userData)) throw new Exception('badUserId');
   elseif (!count($roomData)) throw new Exception('badRoomId');
   elseif ($database->hasPermission($roomData, $userData) >= ROOM_PERMISSION_MODERATE) throw new Exception('noKickUser'); // You can't kick other moderators.

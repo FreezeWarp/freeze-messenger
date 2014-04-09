@@ -615,7 +615,7 @@ class databaseSQL extends database {
       $this->queryCounter++;
 
       if ($queryData === true) return true; // Insert, Update, Delete, etc.
-      else return new databaseResult($queryData, $query, $this->driver); // Select, etc.
+      else return $this->databaseResultPipe($queryData, $query, $this->driver); // Select, etc.
     }
     else {
       $this->triggerError('Database Error', array(
@@ -625,6 +625,20 @@ class databaseSQL extends database {
 
       return false;
     }
+  }
+
+
+  /**
+   * Creates a new database result from passed parameters.
+   *
+   * @param $queryData
+   * @param $query
+   * @param $driver
+   *
+   * @return databaseResult
+   */
+  protected function databaseResultPipe($queryData, $query, $driver) {
+    return new databaseResult($queryData, $query, $driver);
   }
   
   
@@ -1196,62 +1210,59 @@ LIMIT
    * @return string
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  private function recurseBothEither($conditionArray, $reverseAlias, $d = 0) {
+  private function recurseBothEither($conditionArray, $reverseAlias, $d = 0, $type = 'both') {
     $i = 0;
     $h = 0;
     $whereText = array();
 
-    // $type is either "both", "either", or "neither". $cond is an array of arguments.
-    foreach ($conditionArray AS $type => $cond) {
-      // First, make sure that $cond isn't empty. Pretty simple.
-      if (is_array($cond) && count($cond) > 0) {
-        // $key is usually a column, $value is a formatted value for the select() function.
-        foreach ($cond AS $key => $value) {
-          $i++;
 
-          if ($key === 'both' || $key === 'either' || $key === 'neither') {
-            $sideTextFull[$i] = $this->recurseBothEither(array($key => $value), $reverseAlias, $d + 1);
-          }
-          else {
-            if (strstr($key, ' ') !== false) list($key) = explode(' ', $key); // A space can be used to reference the same key twice in different contexts. It's basically a hack, but it's better than using further arrays.
+    if (!is_array($conditionArray)) throw new Exception('Condition array must be an array.');
 
-            /* Value is currently stored as:
-             * array(TYPE, VALUE, COMPARISON)
-             *
-             * Note: We do not want to include quotes/etc. in VALUE yet, because these theoretically could vary based on the comparison type. */
+    // $key is usually a column, $value is a formatted value for the select() function.
+    foreach ($conditionArray AS $key => $value) {
+      $i++;
 
-            $sideTextFull[$i] = '';
+      if (strstr($key, ' ') !== false) list($key) = explode(' ', $key); // A space can be used to reference the same key twice in different contexts. It's basically a hack, but it's better than using further arrays.
 
-            $sideText['left'] = $reverseAlias[($this->startsWith($key, '!') ? substr($key, 1) : $key)]; // Get the column definition that corresponds with the named column. "!column" signifies negation.
-            $symbol = $this->comparisonTypes[$value[2]];
+      if ($key === 'both' || $key === 'either' || $key === 'neither') {
+        $sideTextFull[$i] = $this->recurseBothEither($value, $reverseAlias, $d + 1, $key);
+      }
+      else {
+        /* Value is currently stored as:
+         * array(TYPE, VALUE, COMPARISON)
+         *
+         * Note: We do not want to include quotes/etc. in VALUE yet, because these theoretically could vary based on the comparison type. */
 
-            if ($value[0] === 'empty') $sideText['right'] = 'IS NULL';
-            elseif ($value[0] === 'column') $sideText['right'] = $reverseAlias[$value[1]]; // The value is a column, and should be returned as a reverseAlias. (Note that reverseAlias should have already called formatValue)
-            else $sideText['right'] = $this->formatValue(($value[2] === 'search' ? $value[2] : $value[0]), $value[1]); // The value is a data type, and should be processed as such.
-            
-            if ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
-              $sideTextFull[$i] = ($this->startsWith($key, '!') ? '!' : '') . "({$sideText['left']} {$symbol} {$sideText['right']})";
-            }
-            else {//var_dump($reverseAlias); echo $key;  var_dump($value); var_dump($sideText); die();
-              $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
+        $sideTextFull[$i] = '';
 
-              $this->triggerError('Query Nullified', array('Condition Block' => $cond, 'Key' => $key, 'Value' => $value, 'Side Text' => $sideText, 'Reverse Alias' => $reverseAlias), 'validation'); // Dev, basically. TODO.
-            }
-          }
+        $sideText['left'] = $reverseAlias[($this->startsWith($key, '!') ? substr($key, 1) : $key)]; // Get the column definition that corresponds with the named column. "!column" signifies negation.
+        $symbol = $this->comparisonTypes[$value[2]];
+
+        if ($value[0] === 'empty') $sideText['right'] = 'IS NULL';
+        elseif ($value[0] === 'column') $sideText['right'] = $reverseAlias[$value[1]]; // The value is a column, and should be returned as a reverseAlias. (Note that reverseAlias should have already called formatValue)
+        else $sideText['right'] = $this->formatValue(($value[2] === 'search' ? $value[2] : $value[0]), $value[1]); // The value is a data type, and should be processed as such.
+
+        if ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
+          $sideTextFull[$i] = ($this->startsWith($key, '!') ? '!' : '') . "({$sideText['left']} {$symbol} {$sideText['right']})";
         }
+        else {//var_dump($reverseAlias); echo $key;  var_dump($value); var_dump($sideText); die();
+          $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
 
-        if (isset($this->concatTypes[$type])) {
-          $condSymbol = $this->concatTypes[$type];
+          $this->triggerError('Query Nullified', array('Condition Block' => $cond, 'Key' => $key, 'Value' => $value, 'Side Text' => $sideText, 'Reverse Alias' => $reverseAlias), 'validation'); // Dev, basically. TODO.
         }
-        else {
-          $this->triggerError('Unrecognised Concatenation Operator', array(
-            'operator' => $type,
-          ), 'validation');
-        }
-
-        $whereText[$h] = implode($condSymbol, $sideTextFull);
       }
     }
+
+    if (isset($this->concatTypes[$type])) {
+      $condSymbol = $this->concatTypes[$type];
+    }
+    else {
+      $this->triggerError('Unrecognised Concatenation Operator', array(
+        'operator' => $type,
+      ), 'validation');
+    }
+
+    $whereText[$h] = implode($condSymbol, $sideTextFull);
 
 
     // Combine the query array if multiple entries exist, or just get the first entry.
