@@ -193,97 +193,69 @@ $xmlData = array(
 );
 
 
-if (!$room) {
-  $errStr = 'badRoom';
-  $errDesc = 'That room could not be found.';
-}
+if (!$room->id) throw new Exception('badRoom'); // Room doesn't exist.
+elseif (!($room->hasPermission($user['userId']) & ROOM_PERMISSION_VIEW)) throw new Exception('noperm'); // Don't have permission.
 else {
-  /* Make sure the user has permission to view posts from the room. */
-  $permission = fim_hasPermission($room, $user, 'view', false);
+  /* Process Ping */
+  if (!$request['noping']) $database->setUserStatus($room->id);
 
-  if (!$permission[0]) { // No Permission
 
-    switch($permission[1]) {
-      case 'kick':
-        $errStr = 'kicked';
-        $errDesc = 'You have been kicked untl ' . fim_date($permission[3]) . '.';
-        break;
+  /* Get Messages from Database */
+  $messages = $database->getMessages(array(
+    'messageIdEnd' => $request['messageIdEnd'],
+    'messageIdStart' => $request['messageIdStart'],
+    'messageDateMin' => $request['messageDateMax'],
+    'messageDateMax' => $request['messageDateMax'],
+    'messageLimit' => $request['messageLimit'],
+    'showDeleted' => $request['showDeleted'],
+    'messageTextSearch' => $request['search'],
+    'archive' => $request['archive'],
+    'longPolling' => $request['longPolling'],
+    'userIds' => $request['userIds'],
+    'roomIds' => $request['roomId'],
+    'messageIds' => $request['messageIds']
+  ), array($request['sortBy'] => $request['sortOrder']))->getAsArray(true);
 
-      default:
-        $errStr = 'noperm';
-        $errDesc = 'You do not have permission to view the room you are trying to view.';
-        break;
+
+  /* Process Messages */
+  if (count($messages) > 0) {
+    if (count($messages) > $request['messageHardLimit']) {
+      if (isset($request['messageIdEnd'])) array_splice($messages, 0, -1 * $request['messageHardLimit']);
+      else array_splice($messages, $request['messageHardLimit']);
     }
 
-  }
-  else { // Has Permission
+    foreach ($messages AS $id => $message) {
+      if (isset($message['iv'], $message['salt'])) $message = fim_decrypt($message, 'text');
 
-    /* Process Ping */
-    if (!$request['noping']) {
-      $database->setUserStatus($room['roomId']);
-    }
-
-
-    /* Get Messages from Database */
-    $messages = $database->getMessages(array(
-      'messageIdEnd' => $request['messageIdEnd'],
-      'messageIdStart' => $request['messageIdStart'],
-      'messageDateMin' => $request['messageDateMax'],
-      'messageDateMax' => $request['messageDateMax'],
-      'messageLimit' => $request['messageLimit'],
-      'showDeleted' => $request['showDeleted'],
-      'messageTextSearch' => $request['search'],
-      'archive' => $request['archive'],
-      'longPolling' => $request['longPolling'],
-      'userIds' => $request['userIds'],
-      'roomIds' => $request['roomId'],
-      'messageIds' => $request['messageIds']
-    ), array($request['sortBy'] => $request['sortOrder']))->getAsArray(true);
-
-
-    /* Process Messages */
-    if (count($messages) > 0) {
-      if (count($messages) > $request['messageHardLimit']) {
-        if (isset($request['messageIdEnd'])) array_splice($messages, 0, -1 * $request['messageHardLimit']);
-        else array_splice($messages, $request['messageHardLimit']);
+      switch ($request['encode']) {
+        case 'plaintext': break; // All Good
+        case 'base64': $message['text'] = base64_encode($message['text']); break;
       }
 
-      foreach ($messages AS $id => $message) {
-        $roomData = $database->getRoom($message['roomId']);
-
-        if (isset($message['iv'], $message['salt'])) $message = fim_decrypt($message, 'text');
-
-        switch ($request['encode']) {
-          case 'plaintext': break; // All Good
-          case 'base64': $message['text'] = base64_encode($message['text']); break;
-        }
-
-
-        $xmlData['getMessages']['messages']['message ' . (int) $message['messageId']] = array(
-          'messageData' => array(
-            'roomId' => (int) $room['roomId'],
-            'messageId' => (int) $message['messageId'],
-            'messageTime' => (int) $message['time'],
-            'messageText' => $message['text'],
-            'flags' => ($message['flag']),
+      $xmlData['getMessages']['messages']['message ' . (int) $message['messageId']] = array(
+        'messageData' => array(
+          'roomId' => (int) $room->id,
+          'messageId' => (int) $message['messageId'],
+          'messageTime' => (int) $message['time'],
+          'messageText' => $message['text'],
+          'flags' => ($message['flag']),
+        ),
+        'userData' => array(
+          'userName' => ($message['userName']),
+          'userId' => (int) $message['userId'],
+          'userGroup' => (int) $message['userGroup'],
+          'avatar' => ($message['avatar']),
+          'socialGroups' => ($message['socialGroups']),
+          'startTag' => ($message['userFormatStart']),
+          'endTag' => ($message['userFormatEnd']),
+          'defaultFormatting' => array(
+            'color' => ($message['defaultColor']),
+            'highlight' => ($message['defaultHighlight']),
+            'fontface' => ($message['defaultFontface']),
+            'general' => (int) $message['defaultFormatting']
           ),
-          'userData' => array(
-            'userName' => ($message['userName']),
-            'userId' => (int) $message['userId'],
-            'userGroup' => (int) $message['userGroup'],
-            'avatar' => ($message['avatar']),
-            'socialGroups' => ($message['socialGroups']),
-            'startTag' => ($message['userFormatStart']),
-            'endTag' => ($message['userFormatEnd']),
-            'defaultFormatting' => array(
-              'color' => ($message['defaultColor']),
-              'highlight' => ($message['defaultHighlight']),
-              'fontface' => ($message['defaultFontface']),
-              'general' => (int) $message['defaultFormatting']
-            ),
-          ),
-        );
-      }
+        ),
+      );
     }
   }
 }
