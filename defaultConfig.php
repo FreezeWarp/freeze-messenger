@@ -108,8 +108,8 @@ $defaultConfig = array(
   'maxMessageLimit' => 10000, // integer The maximum message range getMessages.php will query.
 
   'serverSentEvents' => true, // bool Whether to enable SSE. These are fairly stable, but some server configurations will still have problems with server sent events. Disable if you have issues.
-  'serverSentEventsWait' => .5, // float Server sent events are more controlled, so we can call them at a greater frequency.
-  'serverSentMaxRetries' => 50, // int The number of tries the server will requery before requiring the client to resend a SSE request.
+  'serverSentEventsWait' => 1, // float Server sent events are more controlled, so we can call them at a greater frequency.
+  'serverSentMaxRetries' => 200, // int The number of tries the server will requery before requiring the client to resend a SSE request.
 
 
   /* Searching */

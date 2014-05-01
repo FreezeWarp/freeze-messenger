@@ -246,7 +246,7 @@
       <column name="defaultColor" type="string" maxlen="11" comment="The default color of the user's text." />
       <column name="defaultFontface" type="string" maxlen="50" comment="The default fontface of the user's text." />
       <column name="time" type="time" comment="The time the message was made on." />
-      <column name="text" type="string" maxlen="5000" comment="The text of the message." />
+      <column name="text" type="string" maxlen="100" comment="The text of the message. If this field is empty, then the software will attempt to query the messagesCachedText table for the full text." />
       <column name="flag" type="string" maxlen="10" comment="The content-type flag set for the message." />
 
       <trigger lang="postgres" comment="A trigger that watches the messagesCached table, returning results in JSON. By default the returned JSON _cannot_ be greater than 8,000 bytes.">
@@ -267,6 +267,13 @@
       <key name="messageId" type="index" />
       <key name="roomId" type="index" />
       <key name="time" type="index" />
+    </table>
+
+
+
+    <table name="messagesCachedText" comment="When messages are longer than a certain number of characters, their content will be stored in this table instead. This results in a minor loss of performance, but allows _far_ more messages to be stored effectively in MySQL memory tables. Note that this table is only queried when the messagesCached.text field is empty. Thus, the software can decide whether a message should be inserted here or into messagesCached fairly easily -- and engines that don't support memory, like postGreSQL, should ignore this table entirely.">
+      <column name="id" fkey="messagesCached.id" type="int" maxlen="6" autoincrement="1" />
+      <column name="messageText" type="string" maxlen="5000" />
     </table>
 
 
@@ -449,11 +456,21 @@
       <column name="sessionTime" type="time" comment="The time the session was last renewed." />
       <column name="sessionHash" type="string" maxlen="128" comment="The session hash itself." />
       <column name="sessionIp" type="string" maxlen="128" comment="The user's IP address." />
-      <column name="userId" type="int" maxlen="8" comment="The ID of the user the session belongs to." />
       <column name="anonId" type="int" maxlen="6" comment="A unique ID that can be used for anonymous users." />
       <column name="userAgent" type="string" maxlen="300" comment="The useragent of the user of the session." />
       <column name="clientCode" type="string" maxlen="10" comment="A code the client identifies itself as, aside from the userAgent (really just meant for browsers, since we can't control those)." />
       <column name="userDataCache" type="string" maxlen="10000" comment="A JSON-encoded cache of the user's core data." />
+
+      <!-- User Cache Data (Other Data will need to be re-retrieved; this information is sufficient for most permission checks, room, user, and message requests that don't include advanced parameters, and so-on. -->
+      <column name="userId" type="int" maxlen="8" />
+      <column name="userName" type="string" maxlen="50" />
+      <column name="userGroup" type="int" maxlen="6" default="1" />
+      <column name="userOptions" type="bitfield" bits="16" />
+      <column name="birthDate" type="time" default="0" />
+      <column name="userPrivs" type="bitfield" bits="16" default="16" />
+      <column name="adminPrivs" type="bitfield" bits="16" />
+      <column name="userParentalFlags" type="string" maxlen="255" />
+      <column name="userParentalAge" type="int" maxlen="2" />
 
       <key name="sessionId" type="primary" />
       <key name="sessionHash" type="unique" />
