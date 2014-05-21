@@ -1007,6 +1007,104 @@ class fimDatabase extends databaseSQL
   }
 
 
+  /**
+   * Determines if a user has permission to do an action in the active room.
+   *
+   * @param int $userId The ID of the user that permissions is being checked against.
+   *
+   * @global bool $config Several settings affect what permissions users have.
+   * @global object $database Database actions will be taken to resolve permissions, userData, etc.
+   *
+   * @return int A bitfield corresponding with roomPermissions.
+   *
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  public function hasPermission($user, $room) {
+    global $config;
+
+    $permissionsCached = $this->getPermissionCache($room->id, $user->id);
+    if ($permissionsCached > -1) return $permissionsCached; // -1 equals an outdated permission.
+
+
+    if (!$room->resolve(array('type', 'alias'))) throw new Exception('hasPermission was called without a valid room.'); // Make sure we know the room type and alias in addition to ID.
+
+
+    if ($room->type === 'otr' || $room->type === 'private') { // We are doing this in hasPermission itself to allow for hooks that might, for instance, deny permission to certain users based on certain criteria.
+      if (!$config['privateRoomsEnabled']) return 0;
+      if (in_array($user->id, fim_reversePrivateRoomAlias($room->alias))) return ROOM_PERMISSION_VIEW | ROOM_PERMISSION_POST | ROOM_PERMISSION_TOPIC; // The logic with private rooms is fairly self-explanatory: roomAlias lists all valid userIds, so check to see if the user is in there.
+      else return 0;
+    }
+    else {
+      if (!$user->resolve()) throw new Exception('hasPermission was called without a valid user.'); // Require all user information.
+      if (!$room->resolve()) throw new Exception('hasPermission was called without a valid room.'); // Require all room information.
+
+
+      /* Initialise Variables */
+      $parentalBlock = false;
+      $isKicked = false;
+      $isAdmin = false;
+
+
+      /* Set Variables */
+      if ($user->isSuper || $user->adminPrivs & (ADMIN_GRANT + ADMIN_ROOMS)) $isAdmin = true; // Admin
+
+      if ($config['parentalEnabled']) { // Parental controls
+        if ($room->parentalAge > $user->parentalAge) $parentalBlock = true;
+        elseif (fim_inArray($user->parentalFlags, $room->parentalFlags)) $parentalBlock = true;
+      }
+
+      $kicks = $this->getKicks(array( // Kicks
+        'userIds' => array($user->id),
+        'roomIds' => array($room->id)
+      ))->getAsArray(false);
+      if (count($kicks)) $isKicked = true;
+
+
+
+      /* Obtain Data from roomPermissions Table
+       * This table is seen as the "final word" on matters. */
+      $permissionsBitfield = $room->getUserPermissions($user);
+
+
+
+      /* Base calculation -- these are what permisions a user is supposed to have, before userPrivs and certain room properties are factored in. */
+      if ($isAdmin) $returnBitfield = 65535; // Admins have all permissions.
+      elseif (in_array($user->groupId, $config['bannedUserGroups'])) $returnBitfield = 0; // A list of "banned" user groups can be specified in config. These groups lose all permissions, similar to having userPrivs = 0. But, in the interest of sanity, we don't check it elsewhere.
+      elseif ($room->ownerId === $user->id) $returnBitfield = 65535; // Owners have all permissions.
+      elseif ($isKicked || $parentalBlock) $returnBitfield = 0; // A kicked user (or one blocked by parental controls) has no permissions. This cannot apply to the room owner.
+      elseif ($permissionsBitfield === -1) $returnBitfield = $room->defaultPermissions;
+      else $returnBitfield = $permissionsBitfield;
+
+
+
+      /* Remove priviledges under certain circumstances. */
+      // Remove priviledges that a user does not have for any room. (We skip this check on admins, since they should ignore the userPriv calculation.)
+      if (!$isAdmin) {
+        if (!($user->privs & USER_PRIV_VIEW)) $returnBitfield &= ~ROOM_PERMISSION_VIEW; // If banned, a user can't view anything.
+        if (!($user->privs & USER_PRIV_POST)) $returnBitfield &= ~ROOM_PERMISSION_POST; // If silenced, a user can't post anywhere.
+        if (!($user->privs & USER_PRIV_TOPIC)) $returnBitfield &= ~ROOM_PERMISSION_TOPIC;
+      }
+
+      // Deleted and archived rooms act similarly: no one may post in them, while only admins can view deleted rooms.
+      if ($room->options & (ROOM_DELETED + ROOM_ARCHIVED)) { // that is, check if a room is either deleted or archived.
+        if (($room->options & ROOM_DELETED) && !$isAdmin) $returnBitfield &= ~(ROOM_PERMISSION_VIEW); // Only admins may view deleted rooms.
+
+        $returnBitfield &= ~(ROOM_PERMISSION_POST + ROOM_PERMISSION_TOPIC); // And no one can post in them.
+      }
+
+      // And there are a few additional features that may be disabled by the config.
+      if ($config['disableTopic']) $returnBitfield &= ~ROOM_PERMISSION_TOPIC; // Topics are disabled (in fact, this one should also disable the returning of topics; TODO).
+
+
+
+      /* Update cache and return. */
+      $this->updatePermissionsCache($user->id, $room->id, $returnBitfield);
+
+      return $returnBitfield;
+    }
+  }
+
+
   public function updatePermissionsCache($roomId, $userId, $permissions) {
     global $config;
 
@@ -1961,7 +2059,8 @@ class fimRoom {
 
 
 
-  private function resolveRoomData() {
+  // TODO: Resolve only certain data.
+  private function resolve() {
     global $database;
 
     if (!$this->id) return false; // If no ID is present, return false;
@@ -2017,104 +2116,6 @@ class fimRoom {
 
 
   /**
-   * Determines if a user has permission to do an action in the active room.
-   *
-   * @param int $userId The ID of the user that permissions is being checked against.
-   *
-   * @global bool $config Several settings affect what permissions users have.
-   * @global object $database Database actions will be taken to resolve permissions, userData, etc.
-   *
-   * @return int A bitfield corresponding with roomPermissions.
-   *
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-   */
-  public function hasPermission($userId) {
-    global $config, $database;
-
-    $permissionsCached = $database->getPermissionCache($this->id, $userId);
-    if ($permissionsCached > -1) return $permissionsCached; // -1 equals an outdated permission.
-
-
-    if (!$this->resolveRoomData()) throw new Exception('hasPermission was called without a valid room.'); // Make sure we know more than just the roomID.
-
-
-    if ($this->type === 'otr' || $this->type === 'private') { // We are doing this in hasPermission itself to allow for hooks that might, for instance, deny permission to certain users based on certain criteria.
-      if (!$config['privateRoomsEnabled']) return 0;
-      if (in_array($userId, fim_reversePrivateRoomAlias($this->alias))) return ROOM_PERMISSION_VIEW | ROOM_PERMISSION_POST | ROOM_PERMISSION_TOPIC; // The logic with private rooms is fairly self-explanatory: roomAlias lists all valid userIds, so check to see if the user is in there.
-      else return 0;
-    }
-    else {
-      $userData = $database->getUser($userId); // TODO: This should be more easily cached. In fact, getUser() and getRoom() should be fairly easy to cache as they don't have any advanced directives. Likewise, getRooms() and getUsers() with only Ids should be fairly easy to cache.
-
-
-      /* Initialise Variables */
-      $parentalBlock = false;
-      $isKicked = false;
-      $isAdmin = false;
-
-
-      /* Set Variables */
-      if (fim_isSuper($userId) || $userData['adminPrivs'] & (ADMIN_GRANT + ADMIN_ROOMS)) $isAdmin = true; // Admin
-
-      if ($config['parentalEnabled']) { // Parental controls
-        if ($this->parentalAge > $userData['userParentalAge']) $parentalBlock = true;
-        elseif (fim_inArray(explode(',', $userData['userParentalFlags']), $this->parentalFlags)) $parentalBlock = true;
-      }
-
-      $kicks = $database->getKicks(array( // Kicks
-        'userIds' => array($userId),
-        'roomIds' => array($this->id)
-      ))->getAsArray(false);
-      if (count($kicks)) $isKicked = true;
-
-
-
-      /* Obtain Data from roomPermissions Table
-       * This table is seen as the "final word" on matters. */
-      $permissionsBitfield = $this->getUserPermissions($userId, $userData['userGroup'], explode(',', $userData['socialGroups']));
-
-
-
-      /* Base calculation -- these are what permisions a user is supposed to have, before userPrivs and certain room properties are factored in. */
-      if ($isAdmin) $returnBitfield = 65535; // Admins have all permissions.
-      elseif (in_array($userData['userGroup'], $config['bannedUserGroups'])) $returnBitfield = 0; // A list of "banned" user groups can be specified in config. These groups lose all permissions, similar to having userPrivs = 0. But, in the interest of sanity, we don't check it elsewhere.
-      elseif ($this->ownerId === $userId) $returnBitfield = 65535; // Owners have all permissions.
-      elseif ($isKicked || $parentalBlock) $returnBitfield = 0; // A kicked user (or one blocked by parental controls) has no permissions. This cannot apply to the room owner.
-      elseif ($permissionsBitfield === -1) $returnBitfield = $this->defaultPermissions;
-      else $returnBitfield = $permissionsBitfield;
-
-
-
-      /* Remove priviledges under certain circumstances. */
-      // Remove priviledges that a user does not have for any room. (We skip this check on admins, since they should ignore the userPriv calculation.)
-      if (!$isAdmin) {
-        if (!($userData['userPrivs'] & USER_PRIV_VIEW)) $returnBitfield &= ~ROOM_PERMISSION_VIEW; // If banned, a user can't view anything.
-        if (!($userData['userPrivs'] & USER_PRIV_POST)) $returnBitfield &= ~ROOM_PERMISSION_POST; // If silenced, a user can't post anywhere.
-        if (!($userData['userPrivs'] & USER_PRIV_TOPIC)) $returnBitfield &= ~ROOM_PERMISSION_TOPIC;
-      }
-
-      // Deleted and archived rooms act similarly: no one may post in them, while only admins can view deleted rooms.
-      if ($this->options & (ROOM_DELETED + ROOM_ARCHIVED)) { // that is, check if a room is either deleted or archived.
-        if (($this->options & ROOM_DELETED) && !$isAdmin) $returnBitfield &= ~(ROOM_PERMISSION_VIEW); // Only admins may view deleted rooms.
-
-        $returnBitfield &= ~(ROOM_PERMISSION_POST + ROOM_PERMISSION_TOPIC); // And no one can post in them.
-      }
-
-      // And there are a few additional features that may be disabled by the config.
-      if ($config['disableTopic']) $returnBitfield &= ~ROOM_PERMISSION_TOPIC; // Topics are disabled (in fact, this one should also disable the returning of topics; TODO).
-
-
-
-      /* Update cache and return. */
-      $database->updatePermissionsCache($userId, $this->id, $returnBitfield);
-
-      return $returnBitfield;
-    }
-  }
-
-
-
-  /**
    * Queries the roomPermissions table for a specific roomId with three attribute/param pairs: one for $userId, one for $userGroupId, and one for $socialGroupIds. It is faster when looking up data on a specific user, but less versitile: it will return a bitfield representing the user's permissions instead of a result set.
    *
    * @param $roomId
@@ -2122,8 +2123,10 @@ class fimRoom {
    * @param $userGroupId
    * @param $socialGroupIds
    */
-  public function getUserPermissions($userId, $userGroupId, $socialGroupIds) {
+  public function getUserPermissions($user) {
     global $database;
+
+    if (!$user->resolve('userGroup', 'socialGroups')) throw new Exception('hasPermission was called without a valid user.'); // Require all user information.
 
     $permissions = $database->select(array(
       $database->sqlPrefix . "roomPermissions" => 'roomId, attribute, param, permissions',
@@ -2133,15 +2136,15 @@ class fimRoom {
         'either' => array(
           'both 1' => array(
             'attribute' => $database->str('user'),
-            'param' => $database->int($userId)
+            'param' => $database->int($user->id)
           ),
           'both 2' => array(
             'attribute' => $database->str('admingroup'),
-            'param' => $database->int($userGroupId)
+            'param' => $database->int($user->groupId)
           ),
           'both 3' => array(
             'attribute' => $database->str('group'),
-            'param' => $database->in($socialGroupIds)
+            'param' => $database->in($user->socialGroupIds)
           )
         )
       )
@@ -2149,15 +2152,13 @@ class fimRoom {
 
 
     if (!count($permissions)) return -1;
-    elseif (isset($permissions['user'][$userId])) { // The user setting overrides group settings. A notable limitation of this is that you can't override specific group-based permissions, but this way is a fair bit simpler (after all, there are very few situations when you want to bar a user from posting but want them to be able to view based on their group -- rather, you want to set the user's specific permissions and be done with it).
-      return $permissions['user'][$userId]['permissions'];
+    elseif (isset($permissions['user'][$user->id])) { // The user setting overrides group settings. A notable limitation of this is that you can't override specific group-based permissions, but this way is a fair bit simpler (after all, there are very few situations when you want to bar a user from posting but want them to be able to view based on their group -- rather, you want to set the user's specific permissions and be done with it).
+      return $permissions['user'][$user->id]['permissions'];
     }
     else { // Here we generate a user's permissions by XORing all of the group permissions that apply to them. That is, if any group a user belongs to has a certain permission, then the user will have that permission.
-      $groupBitfield = isset($permissions['admingroup'][$userGroupId]) ? $permissions['admingroup'][$userGroupId]['permissions'] : 0; // Set the group field to the returned admingroup object if available; otherwise, 0.
+      $groupBitfield = isset($permissions['admingroup'][$user->groupId]) ? $permissions['admingroup'][$user->groupId]['permissions'] : 0; // Set the group field to the returned admingroup object if available; otherwise, 0.
 
-      foreach ($permissions['group'] AS $s) { // Basically, we do a bitwise OR on all of the permissions returned as part of a social group (with the admingroup permission being our first above).
-        $groupBitfield |= $s['permissions'];
-      }
+      foreach ($permissions['group'] AS $s) $groupBitfield |= $s['permissions']; // Basically, we do a bitwise OR on all of the permissions returned as part of a social group (with the admingroup permission being our first above).
 
       return $groupBitfield;
     }
@@ -2174,7 +2175,125 @@ class fimRoom {
    * @return bool|resource
    */
   public function set($options) {
-    $this->resolveRoomData();
+    $this->resolve();
+
+    $options = array_merge(array(
+      'roomName' => '',
+      'roomAlias' => '',
+      'roomType' => 'general',
+      'owner' => 0,
+      'defaultPermissions' => 0,
+      'roomParentalAge' => 0,
+      'roomParentalFlags' => array(),
+      'officialRoom' => false,
+      'hiddenRoom' => false,
+      'archivedRoom' => false,
+      'deleted' => false,
+    ), $this->getAsArray(), $options);
+
+    $optionsField = 0;
+
+    $columns = array(
+      'roomName' => $options['roomName'],
+      'roomNameSearchable' => fim_makeSearchable($options['roomName']), // TODO
+      'roomAlias' => $options['roomAlias'],
+      'roomType' => $options['roomType'],
+      'owner' => (int) $options['owner'],
+      'defaultPermissions' => (int) $options['defaultPermissions'],
+      'roomParentalAge' => $options['roomParentalAge'],
+      'roomParentalFlags' => implode(',', $options['roomParentalFlags']),
+      'options' => $optionsField
+    );
+
+
+    /* TODO: upsert? */
+    if ($this->id === false || $this->resolved) {
+      return $this->upsert($this->sqlPrefix . "rooms", array(
+        'roomId' => $this->id,
+      ), $columns);
+    }
+    else {
+      throw new Exception('A valid room was not specified for editRoom().');
+    }
+  }
+}
+
+
+
+
+class fimUser {
+  public $id;
+  public $name;
+  public $privs;
+  public $groupId;
+  public $parentalFlags;
+  public $parentalAge;
+
+  protected $userData;
+  protected $resolved;
+
+
+  /**
+   * @param $roomData mixed Should either be an array or an integer (other values will simply fail to populate the object's data). If an array, should correspond with a row obtained from the `rooms` database, if an integer should correspond with the room ID.
+   */
+  function __construct($userData) {
+    if (is_int($userData)) $this->id = $userData;
+    elseif (is_array($userData)) $this->populateFromArray($userData); // TODO: test contents
+    elseif ($userData === false) $this->id = false;
+    else throw new Exception('Invalid room data specified -- must either be an associative array corresponding to a table row, a room ID, or false (to create a room, etc.)');
+
+    $this->userData = $userData;
+  }
+
+
+
+  // TODO: Resolve only certain data.
+  private function resolve() {
+    global $database;
+
+    if (!$this->id) return false; // If no ID is present, return false;
+    elseif (!$this->resolved) {
+      return $this->populateFromArray($database->getUsers(array(
+        'userIds' => array($this->id)
+      ))->getAsArray(false));
+    }
+    else return true;
+  }
+
+
+
+  private function populateFromArray($userData) {
+    if (!count($userData) || !is_array($userData)) return false;
+
+    $this->id = $userData['userId'];
+    $this->name = $userData['userName'];
+    $this->parentalFlags = explode(',', $userData['userParentalFlags']);
+    $this->parentalAge = $userData['userParentalAge'];
+
+    $this->resolved = true;
+
+    return true;
+  }
+
+
+
+  /* Transitional Function */
+  public function getAsArray() {
+    return $this->roomData;
+  }
+
+
+
+  /**
+   * Modify or create a room.
+   * @internal The row will be set to a merge of roomDefaults->existingRow->specifiedOptions.
+   *
+   * @param $options - Corresponds mostly with room columns, though the options tag is seperted.
+   *
+   * @return bool|resource
+   */
+  public function set($options) {
+    $this->resolve();
 
     $options = array_merge(array(
       'roomName' => '',
