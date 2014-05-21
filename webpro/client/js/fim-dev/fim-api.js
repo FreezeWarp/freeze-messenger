@@ -458,30 +458,6 @@ window.fimApi = {
   },
 
 
-  editMessage : function(params, requestSettings) {
-
-  },
-
-
-  editRoom : function(params, requestSettings) {
-
-  },
-
-
-  editUserOptions : function(params, requestSettings) {
-
-  },
-
-
-  editUserLists : function(params, requestSettings) {
-
-  },
-
-
-  ping : function(params, requestSettings) {
-
-  },
-
 
   mergeDefaults : function(object, defaults) {
     for (var i in defaults) {

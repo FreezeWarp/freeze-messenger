@@ -241,7 +241,7 @@ var standard = {
       fimApi.sendMessage({
         'roomId' : window.roomId,
         'confirmed' : confirmed,
-        'message' : message,
+        'message' : fim_eURL(message),
         'flag' : (flag ? flag : '')
       },
       {

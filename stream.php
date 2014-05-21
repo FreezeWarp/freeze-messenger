@@ -45,64 +45,43 @@ function stream_event($streamSource, $queryId, $lastEvent) {
 function stream_messages($roomId, $lastEvent) {
   global $database;
 
-  if (true) { // Experimental socket support enabled.
-    $server = stream_socket_server('udg://L:/') or die('Iunno.');
-
-    /* Accept a connection */
-    $socket = stream_socket_accept($server);
-
-    /* Grab a packet (1500 is a typical MTU size) of OOB data */
-    echo "Received Out-Of-Band: '" . stream_socket_recvfrom($socket, 1500, STREAM_OOB) . "'\n";
-
-    /* Take a peek at the normal in-band data, but don't comsume it. */
-    echo "Data: '" . stream_socket_recvfrom($socket, 1500, STREAM_PEEK) . "'\n";
-
-    /* Get the exact same packet again, but remove it from the buffer this time. */
-    echo "Data: '" . stream_socket_recvfrom($socket, 1500) . "'\n";
-
-    /* Close it up */
-    fclose($socket);
-    fclose($server);
-  }
-  else {
-    $messages = $database->getMessages(array(
-      'roomIds' => array($roomId),
-      'messagesSince' => $lastEvent,
-    ), array('messageId' => 'asc'))->getAsArray('messageId');
+  $messages = $database->getMessages(array(
+    'roomIds' => array($roomId),
+    'messagesSince' => $lastEvent,
+  ), array('messageId' => 'asc'))->getAsArray('messageId');
 
 
-    foreach ($messages AS $messageId => $message) {
-      if ($messageId > $lastEvent) $lastEvent = $messageId;
+  foreach ($messages AS $messageId => $message) {
+    if ($messageId > $lastEvent) $lastEvent = $messageId;
 
-      echo "\nid: " . (int) $message['messageId'] . "\n";
-      echo "event: message\n";
-      echo "data: " . json_encode(array(
-          'messageData' => array(
-            'roomId' => (int) $message['roomId'],
-            'messageId' => (int) $message['messageId'],
-            'messageTime' => (int) $message['time'],
-            'messageText' => $message['text'],
-            'flags' => ($message['flag']),
+    echo "\nid: " . (int) $message['messageId'] . "\n";
+    echo "event: message\n";
+    echo "data: " . json_encode(array(
+        'messageData' => array(
+          'roomId' => (int) $message['roomId'],
+          'messageId' => (int) $message['messageId'],
+          'messageTime' => (int) $message['time'],
+          'messageText' => $message['text'],
+          'flags' => ($message['flag']),
+        ),
+        'userData' => array(
+          'userName' => ($message['userName']),
+          'userId' => (int) $message['userId'],
+          'userGroup' => (int) $message['userGroup'],
+          'avatar' => ($message['avatar']),
+          'socialGroups' => ($message['socialGroups']),
+          'startTag' => ($message['userFormatStart']),
+          'endTag' => ($message['userFormatEnd']),
+          'defaultFormatting' => array(
+            'color' => ($message['defaultColor']),
+            'highlight' => ($message['defaultHighlight']),
+            'fontface' => ($message['defaultFontface']),
+            'general' => (int) $message['defaultFormatting']
           ),
-          'userData' => array(
-            'userName' => ($message['userName']),
-            'userId' => (int) $message['userId'],
-            'userGroup' => (int) $message['userGroup'],
-            'avatar' => ($message['avatar']),
-            'socialGroups' => ($message['socialGroups']),
-            'startTag' => ($message['userFormatStart']),
-            'endTag' => ($message['userFormatEnd']),
-            'defaultFormatting' => array(
-              'color' => ($message['defaultColor']),
-              'highlight' => ($message['defaultHighlight']),
-              'fontface' => ($message['defaultFontface']),
-              'general' => (int) $message['defaultFormatting']
-            ),
-          )
-        )) . "\n\n";
+        )
+      )) . "\n\n";
 
-      fim_flush(); // Force the server to flush.
-    }
+    fim_flush(); // Force the server to flush.
   }
 
   unset($messages); // Free memory.

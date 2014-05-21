@@ -12,6 +12,24 @@
 *********************************************************/
 
 
+
+/**
+ * Escapes Data for Server Storage
+ * Internally, it will use either encodeURIComponent or escape, with custom replacements.
+ * 
+ * @param str - The string to encode.
+ *
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2014
+ */
+function fim_eURL(str) {
+  if ('encodeURIComponent' in window) { return window.encodeURIComponent(str).replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%20/g, '+'); }
+  else if ('escape' in window) { return window.escape(str).replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%20/g, '+'); } // Escape is a bit overzealous, but it still works.
+  else { throw new Error('You dun goofed.'); }
+}
+
+
+
 /**
  * Encode data for XML attributes.
  * Really, all this does is make sure backslashes and '"' don't throw things off.
@@ -789,8 +807,7 @@ autoEntry = {
  * @copyright Joseph T. Parsons 2014
  */
 function windowDraw() {
-  /*** Call Resize ***/
-  windowResize();
+  console.log('Redrawing window.');
 
 
   /*** Context Menus ***/
@@ -829,10 +846,8 @@ function windowDraw() {
   else { disableSender(); } // The user is _not_ able to post.
 
 
-
   /*** Call Resize ***/
   windowResize();
-
 
 
   /*** Return ***/

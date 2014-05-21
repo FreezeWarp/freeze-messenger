@@ -1632,23 +1632,23 @@ $.fn.tabbedDialog = function (dialogOptions, tabOptions) {
   this.dialog(dialogOptions);
 
 
+
   // Create the Tabbed Dialogue
   var tabul = this.find('ul:first');
-  var drag = this.parent().addClass('ui-tabs').prepend(tabul);
-
+  this.parent().addClass('ui-tabs').prepend(tabul).draggable('option', 'handle', tabul);
   tabul.append($('.ui-dialog-titlebar-close').css({'top': '1.5em', 'right': '1em'}));
   this.prev().remove();
   tabul.addClass('ui-dialog-titlebar-tabbed');
 
   this.attr("tabIndex", -1).attr("role", "dialog");
 
-  if (dialogOptions.draggable) drag.draggable('option', 'handle', tabul); // Make draggable.
-
 
 
   // Make Only The Content of the Tab Tabbable
   this.bind("keydown.ui-dialog", function (event) {
-    if (event.keyCode !== $.ui.keyCode.TAB) return;
+    if (event.keyCode !== $.ui.keyCode.TAB) {
+      return;
+    }
 
 
     var tabbables = $(":tabbable", this).add("ul.ui-tabs-nav.ui-dialog-titlebar-tabbed > li > a"),
@@ -1752,9 +1752,6 @@ var dia = {
     $('<div style="display: none;"><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>' + message + '</div>').dialog({
       title: 'Error',
       modal: true,
-      draggable : false,
-      resizable : false,
-      position : 'top',
       dialogClass: 'error',
       buttons: {
         Close: function () {
@@ -1770,9 +1767,6 @@ var dia = {
     $('<div style="display: none;">' + message + '</div>').dialog({
       title: title,
       modal: true,
-      draggable : false,
-      resizable : false,
-      position : 'top',
       buttons: {
         Okay: function () {
           $(this).dialog("close");
@@ -1785,11 +1779,9 @@ var dia = {
 
   confirm: function (options) {
     $('<div id="dialog-confirm"><span class="ui-icon ui-icon-alert" style="float: left; margin: 0px 7px 20px 0px;"></span>' + options.text + '</div>').dialog({
-      modal: true,
-      draggable : false,
-      resizable : false,
-      position : 'top',
+      resizable: false,
       height: 240,
+      modal: true,
       hide: "puff",
       buttons: {
         Confirm: function () {
@@ -1832,16 +1824,16 @@ var dia = {
     if (options.height > windowHeight) options.height = windowHeight;
     else if (!options.height) options.height = "auto";
 
+    if (!options.position) options.position = 'top';
+
     dialogOptions = {
       height: options.height,
       width: options.width,
       title: options.title,
       hide: "puff",
       modal: true,
-      draggable : false,
-      resizable : false,
       buttons: options.buttons,
-      position: 'top',
+      position: options.position,
       autoOpen: autoOpen,
       open: function () {
         if (typeof options.oF !== 'undefined') options.oF();
