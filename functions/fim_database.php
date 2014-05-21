@@ -1823,7 +1823,7 @@ class fimDatabase extends databaseSQL
    * @return string Modified text.
    */
   public function emotiParse($text) {
-    global $forumTablePrefix, $integrationDatabase, $loginConfig;
+       global $forumTablePrefix, $integrationDatabase, $loginConfig;
 
     switch($loginConfig['method']) {
       case 'vbulletin3':
@@ -2017,104 +2017,6 @@ class fimRoom {
 
 
   /**
-   * Determines if a user has permission to do an action in the active room.
-   *
-   * @param int $userId The ID of the user that permissions is being checked against.
-   *
-   * @global bool $config Several settings affect what permissions users have.
-   * @global object $database Database actions will be taken to resolve permissions, userData, etc.
-   *
-   * @return int A bitfield corresponding with roomPermissions.
-   *
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-   */
-  public function hasPermission($userId) {
-    global $config, $database;
-
-    $permissionsCached = $database->getPermissionCache($this->id, $userId);
-    if ($permissionsCached > -1) return $permissionsCached; // -1 equals an outdated permission.
-
-
-    if (!$this->resolveRoomData()) throw new Exception('hasPermission was called without a valid room.'); // Make sure we know more than just the roomID.
-
-
-    if ($this->type === 'otr' || $this->type === 'private') { // We are doing this in hasPermission itself to allow for hooks that might, for instance, deny permission to certain users based on certain criteria.
-      if (!$config['privateRoomsEnabled']) return 0;
-      if (in_array($userId, fim_reversePrivateRoomAlias($this->alias))) return ROOM_PERMISSION_VIEW | ROOM_PERMISSION_POST | ROOM_PERMISSION_TOPIC; // The logic with private rooms is fairly self-explanatory: roomAlias lists all valid userIds, so check to see if the user is in there.
-      else return 0;
-    }
-    else {
-      $userData = $database->getUser($userId); // TODO: This should be more easily cached. In fact, getUser() and getRoom() should be fairly easy to cache as they don't have any advanced directives. Likewise, getRooms() and getUsers() with only Ids should be fairly easy to cache.
-
-
-      /* Initialise Variables */
-      $parentalBlock = false;
-      $isKicked = false;
-      $isAdmin = false;
-
-
-      /* Set Variables */
-      if (fim_isSuper($userId) || $userData['adminPrivs'] & (ADMIN_GRANT + ADMIN_ROOMS)) $isAdmin = true; // Admin
-
-      if ($config['parentalEnabled']) { // Parental controls
-        if ($this->parentalAge > $userData['userParentalAge']) $parentalBlock = true;
-        elseif (fim_inArray(explode(',', $userData['userParentalFlags']), $this->parentalFlags)) $parentalBlock = true;
-      }
-
-      $kicks = $database->getKicks(array( // Kicks
-        'userIds' => array($userId),
-        'roomIds' => array($this->id)
-      ))->getAsArray(false);
-      if (count($kicks)) $isKicked = true;
-
-
-
-      /* Obtain Data from roomPermissions Table
-       * This table is seen as the "final word" on matters. */
-      $permissionsBitfield = $this->getUserPermissions($userId, $userData['userGroup'], explode(',', $userData['socialGroups']));
-
-
-
-      /* Base calculation -- these are what permisions a user is supposed to have, before userPrivs and certain room properties are factored in. */
-      if ($isAdmin) $returnBitfield = 65535; // Admins have all permissions.
-      elseif (in_array($userData['userGroup'], $config['bannedUserGroups'])) $returnBitfield = 0; // A list of "banned" user groups can be specified in config. These groups lose all permissions, similar to having userPrivs = 0. But, in the interest of sanity, we don't check it elsewhere.
-      elseif ($this->ownerId === $userId) $returnBitfield = 65535; // Owners have all permissions.
-      elseif ($isKicked || $parentalBlock) $returnBitfield = 0; // A kicked user (or one blocked by parental controls) has no permissions. This cannot apply to the room owner.
-      elseif ($permissionsBitfield === -1) $returnBitfield = $this->defaultPermissions;
-      else $returnBitfield = $permissionsBitfield;
-
-
-
-      /* Remove priviledges under certain circumstances. */
-      // Remove priviledges that a user does not have for any room. (We skip this check on admins, since they should ignore the userPriv calculation.)
-      if (!$isAdmin) {
-        if (!($userData['userPrivs'] & USER_PRIV_VIEW)) $returnBitfield &= ~ROOM_PERMISSION_VIEW; // If banned, a user can't view anything.
-        if (!($userData['userPrivs'] & USER_PRIV_POST)) $returnBitfield &= ~ROOM_PERMISSION_POST; // If silenced, a user can't post anywhere.
-        if (!($userData['userPrivs'] & USER_PRIV_TOPIC)) $returnBitfield &= ~ROOM_PERMISSION_TOPIC;
-      }
-
-      // Deleted and archived rooms act similarly: no one may post in them, while only admins can view deleted rooms.
-      if ($this->options & (ROOM_DELETED + ROOM_ARCHIVED)) { // that is, check if a room is either deleted or archived.
-        if (($this->options & ROOM_DELETED) && !$isAdmin) $returnBitfield &= ~(ROOM_PERMISSION_VIEW); // Only admins may view deleted rooms.
-
-        $returnBitfield &= ~(ROOM_PERMISSION_POST + ROOM_PERMISSION_TOPIC); // And no one can post in them.
-      }
-
-      // And there are a few additional features that may be disabled by the config.
-      if ($config['disableTopic']) $returnBitfield &= ~ROOM_PERMISSION_TOPIC; // Topics are disabled (in fact, this one should also disable the returning of topics; TODO).
-
-
-
-      /* Update cache and return. */
-      $database->updatePermissionsCache($userId, $this->id, $returnBitfield);
-
-      return $returnBitfield;
-    }
-  }
-
-
-
-  /**
    * Queries the roomPermissions table for a specific roomId with three attribute/param pairs: one for $userId, one for $userGroupId, and one for $socialGroupIds. It is faster when looking up data on a specific user, but less versitile: it will return a bitfield representing the user's permissions instead of a result set.
    *
    * @param $roomId
@@ -2216,5 +2118,9 @@ class fimRoom {
     }
   }
 }
+
+
+
+
 
 ?>
