@@ -1823,7 +1823,7 @@ class fimDatabase extends databaseSQL
    * @return string Modified text.
    */
   public function emotiParse($text) {
-       global $forumTablePrefix, $integrationDatabase, $loginConfig;
+    global $forumTablePrefix, $integrationDatabase, $loginConfig;
 
     switch($loginConfig['method']) {
       case 'vbulletin3':
@@ -1951,17 +1951,10 @@ class fimRoom {
    * @param $roomData mixed Should either be an array or an integer (other values will simply fail to populate the object's data). If an array, should correspond with a row obtained from the `rooms` database, if an integer should correspond with the room ID.
    */
   function __construct($roomData) {
-
-
-    if (is_int($roomData)) {
-      $this->id = $roomData;
-    }
-    elseif (is_array($roomData)) {
-      $this->populateFromArray($roomData);
-    }
-    else {
-      $this->id = false;
-    }
+    if (is_int($roomData)) $this->id = $roomData;
+    elseif (is_array($roomData)) $this->populateFromArray($roomData); // TODO: test contents
+    elseif ($roomData === false) $this->id = false;
+    else throw new Exception('Invalid room data specified -- must either be an associative array corresponding to a table row, a room ID, or false (to create a room, etc.)');
 
     $this->roomData = $roomData;
   }
@@ -1989,6 +1982,10 @@ class fimRoom {
     $this->name = $roomData['roomName'];
     $this->alias = $roomData['roomAlias'];
     $this->options = $roomData['options'];
+    $this->deleted = $this->options & ROOM_DELETED;
+    $this->official = $this->options & ROOM_OFFICIAL;
+    $this->hidden = $this->options & ROOM_HIDDEN;
+    $this->archived = $this->options & ROOM_ARCHIVED;
     $this->ownerId = $roomData['owner'];
     $this->topic = $roomData['topic'];
     $this->type = $roomData['roomType'];
@@ -2003,6 +2000,15 @@ class fimRoom {
 
 
 
+  private function getOptionsField() {
+/*    if ($options['officialRoom']) $optionsField |= ROOM_OFFICIAL;
+    if ($options['deleted']) $optionsField |= ;
+    if ($options['hiddenRoom']) $optionsField |= ROOM_HIDDEN;
+    if ($options['archivedRoom']) $optionsField |= ROOM_ARCHIVED;*/
+  }
+
+
+
   /* Transitional Function */
   public function getAsArray() {
     return $this->roomData;
@@ -2011,8 +2017,6 @@ class fimRoom {
 
 
   /**
-<<<<<<< local
-=======
    * Determines if a user has permission to do an action in the active room.
    *
    * @param int $userId The ID of the user that permissions is being checked against.
@@ -2067,7 +2071,7 @@ class fimRoom {
 
       /* Obtain Data from roomPermissions Table
        * This table is seen as the "final word" on matters. */
-      $permissionsBitfield = $database->getUserPermissions($userId, $userData['userGroup'], explode(',', $userData['socialGroups']));
+      $permissionsBitfield = $this->getUserPermissions($userId, $userData['userGroup'], explode(',', $userData['socialGroups']));
 
 
 
@@ -2111,7 +2115,6 @@ class fimRoom {
 
 
   /**
->>>>>>> other
    * Queries the roomPermissions table for a specific roomId with three attribute/param pairs: one for $userId, one for $userGroupId, and one for $socialGroupIds. It is faster when looking up data on a specific user, but less versitile: it will return a bitfield representing the user's permissions instead of a result set.
    *
    * @param $roomId
@@ -2123,7 +2126,7 @@ class fimRoom {
     global $database;
 
     $permissions = $database->select(array(
-      $this->sqlPrefix . "roomPermissions" => 'roomId, attribute, param, permissions',
+      $database->sqlPrefix . "roomPermissions" => 'roomId, attribute, param, permissions',
     ), array(
       'both' => array(
         'roomId' => $database->int($this->id),
@@ -2170,7 +2173,7 @@ class fimRoom {
    *
    * @return bool|resource
    */
-  public function editRoom($options) {
+  public function set($options) {
     $this->resolveRoomData();
 
     $options = array_merge(array(
@@ -2189,11 +2192,6 @@ class fimRoom {
 
     $optionsField = 0;
 
-    if ($options['officialRoom']) $optionsField |= ROOM_OFFICIAL;
-    if ($options['deleted']) $optionsField |= ROOM_DELETED;
-    if ($options['hiddenRoom']) $optionsField |= ROOM_HIDDEN;
-    if ($options['archivedRoom']) $optionsField |= ROOM_ARCHIVED;
-
     $columns = array(
       'roomName' => $options['roomName'],
       'roomNameSearchable' => fim_makeSearchable($options['roomName']), // TODO
@@ -2208,19 +2206,15 @@ class fimRoom {
 
 
     /* TODO: upsert? */
-    if (!$this->resolveRoomData()) {
-      return $this->insert($this->sqlPrefix . "rooms", $columns)->insertId;
+    if ($this->id === false || $this->resolved) {
+      return $this->upsert($this->sqlPrefix . "rooms", array(
+        'roomId' => $this->id,
+      ), $columns);
     }
     else {
-      return $this->update($this->sqlPrefix . "rooms", $columns, array(
-        'roomId' => $roomId,
-      ));
+      throw new Exception('A valid room was not specified for editRoom().');
     }
   }
 }
-
-
-
-
 
 ?>
