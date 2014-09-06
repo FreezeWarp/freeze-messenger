@@ -64,52 +64,9 @@ class apiData {
     switch ($this->format) {
       case 'phparray':                                                return $this->outputArray($this->data); break; // print_r
       case 'keys':                                                    return $this->outputKeys($this->data);  break; // HTML List format for the keys only (documentation thing)
-      case 'xml':           header('Content-type: application/xml');  return $this->outputXml($this->data);   break; // No-Attribute XML (all data expressed as nodes)
       case 'jsonp':         header('Content-type: application/json'); return 'fim3_jsonp.parse(' . $this->outputJson($this->data) . ')'; break; // Javascript Object Notion for Cross-Origin Requests
       case 'json': default: header('Content-type: application/json'); return $this->outputJson($this->data);  break; // Javascript Object Notion
     }
-  }
-
-
-  /**
-   * XML Parser
-   *
-   * @param array $array
-   * @param int $level
-   * @return string
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-   */
-  function outputXml($array, $level = 0) {
-    $data = '';
-
-    foreach ($array AS $key => $value) {
-      $data .= "<$key>";
-
-      if (is_array($value))
-        $data .= $this->outputXml($value, $level + 1);
-      else
-        $data .= $this->formatXmlValue($value);
-
-      $data .= "</$key>";
-    }
-
-    if ($level === 0)
-      return "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><!DOCTYPE html [ <!ENTITY nbsp \" \"> ]>$data";
-    else
-      return $data;
-  }
-
-
-  function formatXmlValue($value) {
-    if (is_object($value) && get_class($value) === 'apiOutputList') {
-      $values = $value->getArray();
-      foreach ($values AS &$v) $v = '<item>' . $this->formatXmlValue($v) . '</item>';
-      return implode('', $values);
-    }
-    elseif ($value === true)   return 'true';
-    elseif ($value === false)  return 'false';
-    elseif (is_string($value)) return $this->encodeXml($value);
-    elseif (is_int($value) || is_float($value)) return $value;
   }
 
 
