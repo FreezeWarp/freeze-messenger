@@ -114,11 +114,6 @@ $xmlData = array(
 
 
 
-/* Plugin Hook Start */
-($hook = hook('editRoomPermissions_start') ? eval($hook) : '');
-
-
-
 if (hasPermission()) {
   switch ($request['action']) {
       if ((int) $roomId) {
@@ -176,11 +171,6 @@ if (hasPermission()) {
 /* Update Data for Errors */
 $xmlData['editRoomPermissions']['errStr'] = (string) $errStr;
 $xmlData['editRoomPermissions']['errDesc'] = (string) $errDesc;
-
-
-
-/* Plugin Hook End */
-($hook = hook('editRoomPermissions_end') ? eval($hook) : '');
 
 
 

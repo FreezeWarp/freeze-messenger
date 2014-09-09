@@ -203,7 +203,7 @@
       <column name="roomAlias" value="1" />
       <column name="roomName" value="Your Room!" />
       <column name="roomTopic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
-      <column name="owner" value="0" />
+      <column name="ownerId" value="0" />
       <column name="options" value="1" />
     </table>
     <table name="rooms">
@@ -211,7 +211,7 @@
       <column name="roomAlias" value="2" />
       <column name="roomName" value="Another Room!" />
       <column name="roomTopic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
-      <column name="owner" value="0" />
+      <column name="ownerId" value="0" />
       <column name="options" value="1" />
     </table>
     <table name="rooms" mode="dev">
@@ -219,7 +219,7 @@
       <column name="roomAlias" value="3" />
       <column name="roomName" value="Hidden Room" />
       <column name="roomTopic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
-      <column name="owner" value="1" />
+      <column name="ownerId" value="1" />
       <column name="options" value="8" />
     </table>
     <table name="rooms" mode="dev">
@@ -253,18 +253,15 @@
     <table name="users" mode="Dev">
       <column name="userId" value="3" />
       <column name="userName" value="Test Bot 1" />
-      <column name="userGroup" value="3" /><!-- TODO -->
-      <column name="allGroups" value="3,4,5,6" /><!-- vBulletin Only. TODO -->
-      <column name="socialGroups" value="3,4,5,6" /> <!-- PHPBB, Vanilla Only. TODO -->
+      <column name="userGroupId" value="3" />
+      <column name="socialGroupIds" value="3,4,5,6" />
       <column name="birthDate" value="" /><!-- TODO -->
-      <column name="password" value="pass1" /><!-- Unhashed passwords are only used for testing. -->
+      <column name="passwordHash" value="pass1" /><!-- Unhashed passwords are only used for testing. -->
       <column name="passwordFormat" value="plaintext" />
       <column name="avatar" value="" /><!-- TODO -->
       <column name="profile" value="http://www.josephtparsons.com/" />
-      <column name="userFormatStart" value="&lt;span style=&quot;color: red;&quot;&gt;>" /><!-- TODO -->
-      <column name="userFormatEnd" value="&lt;/span&gt;" /><!-- TODO -->
-      <column name="defaultRoom" value="3" />
-      <column name="interfaceId" value="2" />
+      <column name="userNameFormat" value="color: red;" />
+      <column name="defaultRoomId" value="3" />
       <column name="userParentalFlags" value="" />
     </table>
   </database>

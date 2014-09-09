@@ -96,8 +96,6 @@ var standard = {
       'clientCode' : 'webpro30000'
     }, {
       callback : function(activeLogin) {
-        activeLogin.userData.parentalFlags = activeLogin.userData.parentalFlags.split(',');
-
         window.activeLogin = activeLogin;
         window.userId = activeLogin.userData.userId;
         window.anonId = activeLogin.anonId;

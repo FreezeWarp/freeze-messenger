@@ -95,9 +95,8 @@ foreach ($totalPosts AS $room) {
     $xmlData['getStats']['roomStats']['room ' . $totalPoster['roomId']]['users']['user ' . $totalPoster['userId']] = array(
       'userData' => array(
         'userId' => (int) $totalPoster['userId'],
-        'userName' => ($totalPoster['userName']),
-        'startTag' => ($totalPoster['userFormatStart']),
-        'endTag' => ($totalPoster['userFormatEnd']),
+        'userName' => $totalPoster['userName'],
+        'userNameFormat' => $totalPoster['userNameFormat'],
       ),
       'messageCount' => (int) $totalPoster['messages'],
     );

@@ -88,22 +88,18 @@ foreach ($kicks AS $kick) {
       'userData' => array(
         'userId' => (int) $kick['userId'],
         'userName' => (string) $kick['userName'],
-        'userFormatStart' => (string) $kick['userFormatStart'],
-        'userFormatEnd' => (string) $kick['userFormatEnd'],
+        'userNameFormat' => (string) $kick['userNameFormat'],
       ),
       'kickerData' => array(
         'userId' => (int) $kick['kickerId'],
         'userName' => (string) $kick['kickerName'],
-        'userFormatStart' => (string) $kick['kickerFormatStart'],
-        'userFormatEnd' => (string) $kick['kickerFormatEnd'],
+        'userNameFormat' => (string) $kick['userNameFormat'],
       ),
       'length' => (int) $kick['klength'],
 
       'set' => (int) $kick['ktime'],
       'expires' => (int) ($kick['ktime'] + $kick['klength']),
     );
-
-    ($hook = hook('getKicks_eachKick') ? eval($hook) : '');
   }
 }
 

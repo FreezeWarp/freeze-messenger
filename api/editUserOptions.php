@@ -207,12 +207,6 @@ $xmlData = array(
 );
 
 
-
-/* Plugin Hook Start */
-($hook = hook('editUserOptions_start') ? eval($hook) : '');
-
-
-
 /* Start Processing */
 if ($loginConfig['method'] === 'vanilla') {
   /* Avatar */

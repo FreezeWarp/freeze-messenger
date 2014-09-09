@@ -27,7 +27,7 @@ class fimDatabase extends databaseSQL
 {
 
 
-  private $userColumns = 'userId, userName, userFormatStart, userFormatEnd, profile, avatar, socialGroups, defaultColor, defaultHighlight, defaultFontface, defaultFormatting, userGroup, options, defaultRoom, userParentalAge, userParentalFlags, userPrivs, adminPrivs';
+  private $userColumns = 'userId, userName, userNameFormat, profile, avatar, userGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, userParentalAge, userParentalFlags, userPrivs, adminPrivs';
 
 
 
@@ -37,7 +37,7 @@ class fimDatabase extends databaseSQL
   /**
    * Run a query to obtain users who appear "active."
    * Scans table `ping`, and links in tables `rooms` and `users`, particularly for use in hasPermission().
-   * Returns columns ping[status, typing, ptime, proomId, puserId], rooms[roomId, roomName, roomTopic, owner, defaultPermissions, roomType, roomParentalAge, roomParentalFlags, options], and users[userId, userName, userFormatStart, userFormatEnd, userGroup, socialGroups, status]
+   * Returns columns ping[status, typing, ptime, proomId, puserId], rooms[roomId, roomName, roomTopic, owner, defaultPermissions, roomType, roomParentalAge, roomParentalFlags, options], and users[userId, userName, userNameFormat, userGroupId, socialGroupIds, status]
    *
    * @param       $options
    *              int ['onlineThreshold']
@@ -67,7 +67,7 @@ class fimDatabase extends databaseSQL
     $columns = array(
       $this->sqlPrefix . "ping"  => 'status, typing, time ptime, roomId proomId, userId puserId',
       $this->sqlPrefix . "rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, roomType, roomParentalAge, roomParentalFlags, options',
-      $this->sqlPrefix . "users" => 'userId, userName, userFormatStart, userFormatEnd, userGroup, socialGroups, status',
+      $this->sqlPrefix . "users" => 'userId, userName, userNameFormat, userGroupId, socialGroupIds, status',
     );
 
 
@@ -430,11 +430,11 @@ class fimDatabase extends databaseSQL
 
     // Modify Columns (and Joins)
     if ($options['includeUserData']) {
-      $columns[$this->sqlPrefix . "users user"]  = 'userId kuserId, userName, userFormatStart, userFormatEnd';
+      $columns[$this->sqlPrefix . "users user"]  = 'userId kuserId, userName, userNameFormat';
       $conditions['both']['userId'] = $this->col('kuserId');
     }
     if ($options['includeKickerData']) {
-      $columns[$this->sqlPrefix . "users kicker"] = 'userId kkickerId, userName kickerName, userFormatStart kickerFormatStart, userFormatEnd kickerFormatEnd';
+      $columns[$this->sqlPrefix . "users kicker"] = 'userId kkickerId, userName kickerName, userNameFormat kickerNameFormat';
       $conditions['both']['roomId'] = $this->col('kroomId');
     }
     if ($options['includeRoomData']) {
@@ -623,14 +623,14 @@ class fimDatabase extends databaseSQL
     if ($options['archive']) {
       $columns = array(
         $this->sqlPrefix . "messages" => 'messageId, time, iv, salt, roomId, userId, deleted, flag, text',
-        $this->sqlPrefix . "users"    => 'userId muserId, userName, userGroup, socialGroups, userFormatStart, userFormatEnd, avatar, defaultColor, defaultFontface, defaultHighlight, defaultFormatting'
+        $this->sqlPrefix . "users"    => 'userId muserId, userName, userGroupId, socialGroupIds, userNameFormat, avatar, messageFormatting'
       );
 
       $conditions['both']['muserId'] = $this->col('userId');
     } /* Access the Stream */
     else {
       $columns = array(
-        $this->sqlPrefix . "messagesCached" => "messageId, roomId, time, flag, userId, userName, userGroup, socialGroups, userFormatStart, userFormatEnd, avatar, defaultColor, defaultFontface, defaultHighlight, defaultFormatting, text",
+        $this->sqlPrefix . "messagesCached" => "messageId, roomId, time, flag, userId, userName, userGroupId, socialGroupIds, userNameFormat, avatar, messageFormatting, text",
       );
     }
 
@@ -724,7 +724,7 @@ class fimDatabase extends databaseSQL
 
     $columns = array(
       $this->sqlPrefix . 'roomStats' => 'roomId sroomId, userId suserId, messages',
-      $this->sqlPrefix . 'users'     => 'userId, userName, adminPrivs, userPrivs, userFormatStart, userFormatEnd, userParentalFlags, userParentalAge',
+      $this->sqlPrefix . 'users'     => 'userId, userName, adminPrivs, userPrivs, userNameFormat, userParentalFlags, userParentalAge',
       $this->sqlPrefix . 'rooms'     => 'roomId, roomName, owner, defaultPermissions, roomParentalFlags, roomParentalAge, options, messageCount, roomType',
     );
 
@@ -853,7 +853,7 @@ class fimDatabase extends databaseSQL
 
 
     $columns = array(
-      $this->sqlPrefix . "users" => $this->userColumns . ($options['includePasswords'] ? ', password, passwordSalt, passwordSaltNum, passwordFormat, passwordResetNow, passwordLastReset' : '') // For this particular request, you can also access user password information using the includePasswords flag.
+      $this->sqlPrefix . "users" => $this->userColumns . ($options['includePasswords'] ? ', passwordHash, passwordFormat, passwordResetNow, passwordLastReset' : '') // For this particular request, you can also access user password information using the includePasswords flag.
     );
 
 
@@ -1046,7 +1046,7 @@ class fimDatabase extends databaseSQL
 
 
       /* Set Variables */
-      if ($user->isSuper || $user->adminPrivs & (ADMIN_GRANT + ADMIN_ROOMS)) $isAdmin = true; // Admin
+      if ($user->adminPrivs & (ADMIN_GRANT + ADMIN_ROOMS)) $isAdmin = true; // Admin
 
       if ($config['parentalEnabled']) { // Parental controls
         if ($room->parentalAge > $user->parentalAge) $parentalBlock = true;
@@ -1123,14 +1123,19 @@ class fimDatabase extends databaseSQL
 
   /****** Insert/Update Functions *******/
 
-  public function createSession($userId, $anonId = false) {
-    $sessionHash = fim_generateSession();
+  public function createSession($user) {
+    global $salts;
+
+    /* Hash is prettttty simple. We create a random 32-bit integer, append microtime (as an integer to it). The resulting integer is around 100 bits, and should be treated as a 128-bit integer.
+     * This may seem insecure. It's not, because we prevent guessing by locking users out after x incorrect logins (and a non-existent session token counts as this).
+     * Thus, we just need to make sure that there's enough entropy here that the vast, vast majority of possible session tokens are unused. By having a ~64-bit random integer appended to the ~40-bit microtime, we can be pretty sure that no one's going to be able to guess anytime soon. */
+    $sessionHash = mt_rand(0, 2147483647) . mt_rand(0, 2147483647) . (int) (microtime(true) * 10000);
 
     $this->cleanSessions(); // Whenever a new user logs in, delete all sessions from 15 or more minutes in the past.
 
     $this->insert($this->sqlPrefix . 'sessions', array(
-      'userId' => $userId,
-      'anonId' => ($anonId ? $anonId : 0),
+      'userId' => $user->id,
+      'anonId' => $user->anonId,
       'sessionTime' => $this->now(),
       'sessionHash' => $sessionHash,
       'userAgent' => $_SERVER['HTTP_USER_AGENT'],
@@ -1147,11 +1152,7 @@ class fimDatabase extends databaseSQL
     global $config;
 
     $this->delete($this->sqlPrefix . 'sessions', array(
-      'sessionTime' => array(
-        'type' => 'equation', // Data in the value column should not be scaped.
-        'cond' => 'lte', // Comparison is "<="
-        'value' => $this->now() - $config['sessionExpires'],
-      ),
+      'sessionTime' => $this->now($config['sessionExpires'], 'lte')
     ));
   }
 
@@ -1397,7 +1398,7 @@ class fimDatabase extends databaseSQL
     global $config, $user, $generalCache;
 
     if (!isset($roomData['options'], $roomData['roomId'], $roomData['roomName'], $roomData['roomAlias'], $roomData['roomType'])) throw new Exception('database->storeMessage requires roomData[options], roomData[roomId], roomData[roomName], and roomData[type].');
-    if (!isset($userData['userId'], $userData['userName'], $userData['userGroup'], $userData['avatar'], $userData['profile'], $userData['userFormatStart'], $userData['userFormatEnd'], $userData['defaultFormatting'], $userData['defaultColor'], $userData['defaultHighlight'], $userData['defaultFontface'])) throw new Exception('database->storeMessage requires userData[userId], userData[userName], userData[userGroup], userData[avatar]. userData[profile], userData[userFormatStart], userData[userFormatEnd], userData[defaultFormatting], userData[defaultColor], userData[defaultHighlight], and userData[defaultFontface]');
+    if (!isset($userData['userId'], $userData['userName'], $userData['userGroup'], $userData['avatar'], $userData['profile'], $userData['userNameFormat'], $userData['messageFormatting'])) throw new Exception('database->storeMessage requires userData[userId], userData[userName], userData[userGroup], userData[avatar]. userData[profile], userData[userNameFormat], userData[messageFormatting]');
 
 
 
@@ -1442,10 +1443,7 @@ class fimDatabase extends databaseSQL
     $this->update($this->sqlPrefix . "rooms", array(
       'lastMessageTime' => $this->now(),
       'lastMessageId'   => $messageId,
-      'messageCount'    => array(
-        'type'  => 'equation',
-        'value' => '$messageCount + 1',
-      )
+      'messageCount'    => $this->type('equation', '$messageCount + 1')
     ), array(
       'roomId' => $roomData['roomId'],
     ));
@@ -1455,40 +1453,31 @@ class fimDatabase extends databaseSQL
     $roomDataNew = $this->getRoom($roomData['roomId'], false, false)->getAsArray(); // Get the new room data; TODO
 
     if ($roomDataNew['messageCount'] % $config['messageIndexCounter'] === 0) { // If the current messages in the room is divisible by the messageIndexCounter, insert into the messageIndex cache. Note that we are hoping this is because of the very last query which incremented this value, but it is impossible to know for certain (if we tried to re-order things to get the room data first, we still run this risk, so that doesn't matter; either way accuracy isn't critical).
-      $this->insert($this->sqlPrefix . "messageIndex", array(
+      $this->upsert($this->sqlPrefix . "messageIndex", array(
         'roomId'    => $roomData['roomId'],
         'interval'  => (int) $roomDataNew['messageCount'],
         'messageId' => $messageId
       ), array(
-        'messageId' => array(
-          'type'  => 'equation',
-          'value' => '$messageId + 0',
-        )
+        'messageId' => $this->type('equation', '$messageId + 0')
       ));
     }
 
 
     // Update user caches
     $this->update($this->sqlPrefix . "users", array(
-      'messageCount' => array(
-        'type'  => 'equation',
-        'value' => '$messageCount + 1',
-      )
+      'messageCount' => $this->type('equation', '$messageCount + 1'),
     ), array(
       'userId' => $userData['userId'],
     ));
 
 
     // Insert or update a user's room stats.
-    $this->insert($this->sqlPrefix . "roomStats", array(
+    $this->upsert($this->sqlPrefix . "roomStats", array(
       'userId'   => $userData['userId'],
       'roomId'   => $roomData['roomId'],
       'messages' => 1
     ), array(
-      'messages' => array(
-        'type'  => 'equation',
-        'value' => '$messages + 1',
-      )
+      'messages' => $this->type('equation', '$messages + 1')
     ));
 
 
@@ -1503,14 +1492,11 @@ class fimDatabase extends databaseSQL
     $lastMidnight = $currentTime - ($currentTime % $config['messageTimesCounter']); // Using some cool math (look it up if you're not familiar), we determine the distance from the last even day, then get the time of the last even day itself. This is the midnight reference point.
 
     if ($lastDayCache < $lastMidnight) { // If the most recent midnight comes after the period at which the time cache was last updated, handle that.
-      $this->insert($this->sqlPrefix . "messageDates", array(
+      $this->upsert($this->sqlPrefix . "messageDates", array(
         'time'      => $lastMidnight,
         'messageId' => $messageId
       ), array(
-        'messageId' => array(
-          'type'  => 'equation',
-          'value' => '$messageId + 0',
-        )
+        'messageId' => $this->type('equation', '$messageId + 0')
       ));
 
       $generalCache->set('fim3_lastDayCache', $lastMidnight); // Update the quick cache.
@@ -1526,12 +1512,8 @@ class fimDatabase extends databaseSQL
       'userGroup'         => (int) $userData['userGroup'],
       'avatar'            => $userData['avatar'],
       'profile'           => $userData['profile'],
-      'userFormatStart'   => $userData['userFormatStart'],
-      'userFormatEnd'     => $userData['userFormatEnd'],
-      'defaultFormatting' => $userData['defaultFormatting'],
-      'defaultColor'      => $userData['defaultColor'],
-      'defaultHighlight'  => $userData['defaultHighlight'],
-      'defaultFontface'   => $userData['defaultFontface'],
+      'userNameFormat'    => $userData['userNameFormat'],
+      'messageFormatting' => $userData['messageFormatting'],
       'text'              => $messageText,
       'flag'              => $messageFlag,
       'time'              => $this->now(),
@@ -1584,8 +1566,7 @@ class fimDatabase extends databaseSQL
       ), array(
         'senderId'          => $userData['userId'],
         'senderName'        => $userData['userName'],
-        'senderFormatStart' => $userData['userFormatStart'],
-        'senderFormatEnd'   => $userData['userFormatEnd'],
+        'senderNameFormat'  => $userData['userNameFormat'],
         'roomName'          => $roomData['roomName'],
         'messageId'         => $messageId,
         'time'              => $this->now(),
@@ -1606,14 +1587,10 @@ class fimDatabase extends databaseSQL
     global $config;
 
     if ($this->update($this->sqlPrefix . "counters", array(
-      'counterValue' => array(
-        'type'  => 'equation',
-        'value' => '$counterValue + ' . (int) $incrementValue,
-      )
+      'counterValue' => $this->type('equation', '$counterValue + ' . (int) $incrementValue)
     ), array(
       'counterName' => $counterName,
-    ))
-    ) {
+    ))) {
       return true;
     } else {
       return false;
@@ -2224,10 +2201,13 @@ class fimRoom {
 class fimUser {
   public $id;
   public $name;
-  public $privs;
-  public $groupId;
+  public $socialGroupIds;
+  public $mainGroupId;
+  public $allGroupIds;
   public $parentalFlags;
   public $parentalAge;
+  public $anonId;
+  public $privs;
 
   protected $userData;
   protected $resolved;
@@ -2236,13 +2216,57 @@ class fimUser {
   /**
    * @param $roomData mixed Should either be an array or an integer (other values will simply fail to populate the object's data). If an array, should correspond with a row obtained from the `rooms` database, if an integer should correspond with the room ID.
    */
-  function __construct($userData) {
+  public function __construct($userData) {
     if (is_int($userData)) $this->id = $userData;
     elseif (is_array($userData)) $this->populateFromArray($userData); // TODO: test contents
     elseif ($userData === false) $this->id = false;
-    else throw new Exception('Invalid room data specified -- must either be an associative array corresponding to a table row, a room ID, or false (to create a room, etc.)');
+    else throw new Exception('Invalid room data specified -- must either be an associative array corresponding to a table row, a user ID, or false (to create a user, etc.)');
 
     $this->userData = $userData;
+  }
+
+
+  public function __get($property) {
+    if (in_array($property, array('', '', '', ''))) {
+
+    }
+  }
+
+
+  function checkPassword($password) {
+    switch ($this->userData['passwordFormat']) {
+      case 'phpass':
+        if (!isset($this->userData['passwordHash'])) {
+          throw new Exception('User object was not generated with password hash information.');
+        }
+        else {
+          require 'PasswordHash.php';
+
+          $h = new PasswordHash(8, FALSE);
+
+          return $h->CheckPassword($password, $this->userData['passwordHash']);
+        }
+      break;
+
+      case 'vbmd5':
+        if (!isset($this->userData['passwordHash'], $this->userData['passwordSalt'])) {
+          throw new Exception('User object was not generated with password hash information.');
+        }
+        else {
+          if ($this->userData['passwordHash'] === md5($password . $this->userData['passwordSalt'])) return true;
+          else return false;
+        }
+      break;
+
+      case 'raw':
+        if ($this->userData['passwordHash'] === md5($password . $this->userData['passwordSalt'])) return true;
+        else return false;
+      break;
+
+      default:
+        throw new Exception('Invalid password format.');
+      break;
+    }
   }
 
 
@@ -2263,23 +2287,101 @@ class fimUser {
 
 
   private function populateFromArray($userData) {
-    if (!count($userData) || !is_array($userData)) return false;
+    global $loginConfig, $generalCache;
 
+    /* Make sure userData contains neccessary information. */
+    if (!count($userData) || !is_array($userData) || !isset($userData['userId'], $userData['userName'], $userData['userParentalFlags'], $userData['userParentalAge'], $userData['adminPrivs'], $userData['userPrivs'])) return false;
+
+
+    // If certain features are disabled, remove user priviledges. The bitfields should be maintained, however, for when a feature is reenabled.
+    if (!$generalCache->getConfig('userRoomCreation')) $userData['userPrivs'] &= ~USER_PRIV_CREATE_ROOMS;
+    if (!$generalCache->getConfig('userPrivateRoomCreation')) $userData['userPrivs'] &= ~(USER_PRIV_PRIVATE_ALL + USER_PRIV_PRIVATE_FRIENDS); // Note: does not disable the usage of existing private rooms. Use "privateRoomsEnabled" for this.
+
+
+    /* Set Basic Information */
     $this->id = $userData['userId'];
     $this->name = $userData['userName'];
+
+
+    /* Anon User Information */
+    if ($this->id === $generalCache->getConfig('anonymousUserId')) {
+      $this->anonId = rand($generalCache->getConfig('anonymousUserMinId'), $generalCache->getConfig('anonymousUserMaxId'));
+      $this->name .= $this->anonId;
+    }
+
+
+    /* Set Username Formatting */
+    $this->avatar = $userData['avatar'] ?: $generalCache->getConfig('avatarDefault');
+    $this->nameFormat = $userData['userNameFormat'] ?: $generalCache->getConfig('userNameFormat');
+
+
+    /* Set Default Formatting */
+    $this->messageFormatting = $userData['messageFormatting'];
+
+
+    /* Set Misc Information */
+    $this->defaultRoomId = $userData['defaultRoomId'] ?: $generalCache->getConfig('defaultRoomId');
+    $this->profile = $userData['profile'];
+
+
+    /* Handle Groups */
+    $this->socialGroupIds = explode(',', $userData['socialGroupIds']);
+    $this->mainGroupId = $userData['userGroupId'];
+    $this->allGroupIds = explode(',', $userData['allGroupIds']);
+
+
+    /* Set Parental Information */
     $this->parentalFlags = explode(',', $userData['userParentalFlags']);
     $this->parentalAge = $userData['userParentalAge'];
 
+
+    /* Set Priviledges */
+    if (in_array($this->id, $loginConfig['superUsers'])) { // Super-user override.
+      $userData['adminPrivs'] = 32765;
+      $userData['userPrivs'] = 32765;
+    }
+
+    $this->privs = array(
+      /* Admin Privs */
+      'protected' => (bool) ($userData['adminPrivs'] & ADMIN_PROTECTED), // This the "untouchable" flag, but that's more or less all it means.
+
+      'modPrivs' => (bool) ($userData['adminPrivs'] & ADMIN_GRANT), // This effectively allows a user to give himself everything else below. It is also used for admin functions that can not be delegated effectively -- such as modifying the site configuration.
+      'modRooms' => (bool) ($userData['adminPrivs'] & ADMIN_GRANT + ADMIN_ROOMS), // Alter rooms -- kicking users, delete posts, and change hidden/official status
+      'modPrivate' => (bool) ($userData['adminPrivs'] & ADMIN_GRANT + ADMIN_VIEW_PRIVATE), // View private communications.
+      'modUsers' => (bool) ($userData['adminPrivs'] & ADMIN_GRANT + ADMIN_USERS), // Site-wide bans, mostly.
+      'modFiles' => (bool) ($userData['adminPrivs'] & ADMIN_GRANT + ADMIN_FILES), // File Uploads
+      'modCensor' => (bool) ($userData['adminPrivs'] & ADMIN_GRANT + ADMIN_CENSOR), // Censor
+
+      // Should Generally Go Together
+      'modPlugins' => (bool) ($userData['adminPrivs'] & ADMIN_GRANT + ADMIN_PLUGINS), // Plugins
+      'modTemplates' => (bool) ($userData['adminPrivs'] & ADMIN_GRANT + ADMIN_INTERFACES), // Templates
+
+      /* User Privs */
+      'view' => (bool) ($userData['userPrivs'] & USER_PRIV_VIEW), // Is not banned
+      'post' => (bool) ($userData['userPrivs'] & USER_PRIV_POST),
+      'changeTopic' => (bool) ($userData['userPrivs'] & USER_PRIV_TOPIC),
+      'createRooms' => (bool) ($userData['userPrivs'] & USER_PRIV_CREATE_ROOMS), // May create rooms
+      'privateRoomsFriends' => (bool) ($userData['userPrivs'] & USER_PRIV_PRIVATE_FRIENDS), // May create private rooms (friends only)
+      'privateRoomsAll' => (bool) ($userData['userPrivs'] & USER_PRIV_PRIVATE_FRIENDS && $userData['userPrivs'] & USER_PRIV_PRIVATE_ALL), // May create private rooms (anybody)
+      'roomsOnline' => (bool) ($userData['userPrivs'] & USER_PRIV_ACTIVE_USERS), // May see rooms online.
+      'postCounts' => (bool) ($userData['userPrivs'] & USER_PRIV_POST_COUNTS), // May see post counts.
+    );
+
+
+    /* Mark Resolved */
     $this->resolved = true;
 
+
+    /* Return True */
     return true;
   }
 
 
 
-  /* Transitional Function */
-  public function getAsArray() {
-    return $this->roomData;
+  public function hasPriv($priv) {
+    if (!isset($this->privs[$priv])) throw exception('Undefined priviledge.');
+
+    return $this->privs[$priv];
   }
 
 
@@ -2292,46 +2394,25 @@ class fimUser {
    *
    * @return bool|resource
    */
-  public function set($options) {
-    $this->resolve();
+  public function set($options, $create = false) {
+    global $database;
 
-    $options = array_merge(array(
-      'roomName' => '',
-      'roomAlias' => '',
-      'roomType' => 'general',
-      'owner' => 0,
-      'defaultPermissions' => 0,
-      'roomParentalAge' => 0,
-      'roomParentalFlags' => array(),
-      'officialRoom' => false,
-      'hiddenRoom' => false,
-      'archivedRoom' => false,
-      'deleted' => false,
-    ), $this->getAsArray(), $options);
+    if (isset($options['password'])) {
+      require 'PasswordHash.php';
+      $h = new PasswordHash(8, FALSE);
+      $options['passwordHash'] = $h->HashPassword($options['password']);
+      $options['passwordFormat'] = 'phpass';
 
-    $optionsField = 0;
+      unset($options['password']);
+    }
 
-    $columns = array(
-      'roomName' => $options['roomName'],
-      'roomNameSearchable' => fim_makeSearchable($options['roomName']), // TODO
-      'roomAlias' => $options['roomAlias'],
-      'roomType' => $options['roomType'],
-      'owner' => (int) $options['owner'],
-      'defaultPermissions' => (int) $options['defaultPermissions'],
-      'roomParentalAge' => $options['roomParentalAge'],
-      'roomParentalFlags' => implode(',', $options['roomParentalFlags']),
-      'options' => $optionsField
-    );
-
-
-    /* TODO: upsert? */
-    if ($this->id === false || $this->resolved) {
-      return $this->upsert($this->sqlPrefix . "rooms", array(
-        'roomId' => $this->id,
-      ), $columns);
+    if ($this->id) {
+      return $database->upsert($database->sqlPrefix . "users", array(
+        'userId' => $this->id,
+      ), $options);
     }
     else {
-      throw new Exception('A valid room was not specified for editRoom().');
+      return $database->insert($database->sqlPrefix . "users", $options);
     }
   }
 }

@@ -61,11 +61,6 @@ $xmlData = array(
 );
 
 
-
-/* Plugin Hook Start */
-($hook = hook('editMessage_start') ? eval($hook) : '');
-
-
 $messageData = $slaveDatabase->getMessage($request['messageId']);
 
 
@@ -180,11 +175,6 @@ elseif ($continue) {
 /* Update Data for Errors */
 $xmlData['editMessage']['errStr'] = ($errStr);
 $xmlData['editMessage']['errDesc'] = ($errDesc);
-
-
-
-/* Plugin Hook End */
-($hook = hook('editMessage_end') ? eval($hook) : '');
 
 
 

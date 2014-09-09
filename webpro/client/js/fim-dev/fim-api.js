@@ -25,7 +25,7 @@ window.fimApi = {
       'userName' : '',
       'password' : '',
       'passwordEncrypt' : 'plaintext',
-      'apiVersions' : '[30000]',
+      'apiVersions' : '[10000]',
       'clientCode' : ''
     });
 

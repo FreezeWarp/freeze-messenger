@@ -70,8 +70,7 @@ function stream_messages($roomId, $lastEvent) {
           'userGroup' => (int) $message['userGroup'],
           'avatar' => ($message['avatar']),
           'socialGroups' => ($message['socialGroups']),
-          'startTag' => ($message['userFormatStart']),
-          'endTag' => ($message['userFormatEnd']),
+          'userNameFormat' => ($message['userNameFormat']),
           'defaultFormatting' => array(
             'color' => ($message['defaultColor']),
             'highlight' => ($message['defaultHighlight']),

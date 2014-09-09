@@ -17,17 +17,6 @@
     </table>
 
 
-    <table name="adminGroups" type="general" comment="Admin-created usergroups that can be used with vanilla logins.">
-      <column name="groupId" type="int" maxlen="6" comment="The unique ID of the group." />
-      <column name="groupName" type="string" maxlen="50" comment="The name of the group." />
-      <column name="memberIds" type="string" maxlen="100000" comment="A cached list of members who are part of the group." note="This will be replaced with an APC cache in FIMv4." />
-      <column name="userFormatStart" type="string" maxlen="300" comment="Username formatted to be prepended to the username." />
-      <column name="userFormatEnd" type="string" maxlen="300" comment="Username formatted to be appended to the username." />
-
-      <key name="groupId" type="primary" />
-    </table>
-
-
     <table name="configuration" type="general" comment="Configuration directives.">
       <column name="directive" type="string" maxlen="50" comment="The configuration directive." />
       <column name="value" type="string" maxlen="10000" comment="The current value of the configuration directive." />
@@ -166,17 +155,6 @@
     </table>
 
 
-    <table name="hooks" type="general" comment="Plugin-created code hooks.">
-      <column name="hookId" type="int" maxlen="8" autoincrement="1" comment="A unique ID corrosponding to the hook. It is not used in retrieving hook contents (and thus could, for whatever reason, be changed on a dime)." />
-      <column name="hookName" type="string" maxlen="50" comment="The hook's name, which will be used for most identification. These can be compounded (multiple rows with the same hookname can exist) if multiple entries exist for the hook." />
-      <column name="code" type="string" maxlen="4294967295" comment="The code of the particular hook. It will be executed using PHP's EVAL." />
-      <column name="state" type="bool" default="1" comment="Whether or not the hook is active." />
-
-      <key name="hookId" type="primary" />
-      <key name="hookName" type="index" />
-    </table>
-
-
     <table name="kicks" type="general" comment="Room-created temporary user bans.">
       <column name="userId" type="int" maxlen="8" comment="The ID of the user who has been kicked." />
       <column name="roomId" type="int" maxlen="6" comment="The ID of the room the kick is active in." />
@@ -230,24 +208,19 @@
 
     <table name="messagesCached" type="memory" comment="A cache of user-created messages for scalibility.">
       <column name="id" type="int" maxlen="6" autoincrement="1" comment="A unique (temporary) ID for the message cache entry." />
-      <column name="messageId" type="int" maxlen="9" comment="The ID of the message." />
-      <column name="roomId" type="int" maxlen="6" comment="The ID of the room the message is in." />
-      <column name="userId" type="int" maxlen="8" comment="The ID of the user who made the message." />
-      <column name="userName" type="string" maxlen="50" comment="The name of the user who made the message." />
-      <column name="avatar" type="string" maxlen="1000" comment="The path to the user's display avatar" />
-      <column name="profile" type="string" maxlen="1000" comment="A link to the user's profile or website." />
-      <column name="userGroup" type="int" maxlen="6" default="1" comment="The ID of the admin-defined usergroup of the user." />
-      <column name="allGroups" type="string" maxlen="300" comment="A comma-seperated list of admin-set groups the user is a part of." />
-      <column name="socialGroups" type="string" maxlen="300" comment="A comma-seperated list of groups the user has joined." />
-      <column name="userFormatStart" type="string" maxlen="100" comment="Formatting to be prepended to the user's name." />
-      <column name="userFormatEnd" type="string" maxlen="100" comment="Formatting to be appended to the user's name." />
-      <column name="defaultFormatting" type="bitfield" bits="16" comment="A bitfield corrosponding to the default formatting of the user's text." />
-      <column name="defaultHighlight" type="string" maxlen="11" comment="The default highlight of the user's text." />
-      <column name="defaultColor" type="string" maxlen="11" comment="The default color of the user's text." />
-      <column name="defaultFontface" type="string" maxlen="50" comment="The default fontface of the user's text." />
-      <column name="time" type="time" comment="The time the message was made on." />
-      <column name="text" type="string" maxlen="5000" comment="The text of the message." />
-      <column name="flag" type="string" maxlen="10" comment="The content-type flag set for the message." />
+      <column name="messageId" type="int" maxlen="9" />
+      <column name="roomId" type="int" maxlen="6" />
+      <column name="userId" type="int" maxlen="8" />
+      <column name="userName" type="string" maxlen="50" />
+      <column name="avatar" type="string" maxlen="1000" />
+      <column name="profile" type="string" maxlen="1000" />
+      <column name="userGroupId" type="int" maxlen="6" default="1" />
+      <column name="socialGroupIds" type="string" maxlen="300" />
+      <column name="userNameFormat" type="string" maxlen="100" comment="CSS-formatting to be applied to the user's name." />
+      <column name="messageFormatting" type="string" maxlen="300" />
+      <column name="time" type="time" />
+      <column name="text" type="string" maxlen="5000" />
+      <column name="flag" type="string" maxlen="10" />
 
       <trigger lang="postgres" comment="A trigger that watches the messagesCached table, returning results in JSON. By default the returned JSON _cannot_ be greater than 8,000 bytes.">
         CREATE OR REPLACE FUNCTION notifyMessage() RETURNS trigger AS $$
@@ -312,7 +285,7 @@
     </table>
 
 
-    <table name="rooms" type="general" comment="User-created rooms/groups.">
+    <table name="rooms" type="general" comment="User-created rooms.">
       <!-- General -->
       <column name="roomId" type="int" maxlen="6" autoincrement="1" comment="The unique ID for the room." />
       <column name="roomName" type="string" maxlen="50" comment="The name of the room." />
@@ -323,7 +296,7 @@
 
       <!-- Permissions -->
       <column name="roomType" type="string" default="general" restrict="general,otr,private" comment="The room type." />
-      <column name="owner" type="int" maxlen="10" comment="The owner/creator of the room." />
+      <column name="ownerId" type="int" maxlen="10" comment="The owner/creator of the room." />
       <column name="defaultPermissions" type="bitfield" bits="8" default="7" comment="A bitfield corrosponding to permissions users are granted if they do not exist in the roomPermissions table." />
 
       <!-- Parental Controls -->
@@ -336,12 +309,15 @@
       <column name="messageCount" type="int" maxlen="15" comment="The number of messages in this room." />
       <column name="flags" type="int" maxlen="3" comment="The number of flags this room has received. After a certain number (proportional to activeUsers, possibly), the room should be marked for moderation." />
 
+      <!-- Caches -->
+      <column name="watchedBy" type="string" maxlen="10000" comment="A CSV cache of the users watching this room." />
+
 
       <key name="roomId" type="primary" />
       <key name="roomAlias" type="index" />
       <key name="roomNameSearchable" type="index" />
       <key name="options" type="index" />
-      <key name="owner" type="index" />
+      <key name="ownerId" type="index" />
       <key name="lastMessageId" type="index" />
       <key name="lastMessageTime" type="index" />
     </table>
@@ -369,7 +345,7 @@
       <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options." />
 
       <!-- Permissions -->
-      <column name="owner" type="int" maxlen="10" comment="The owner/creator of the room." />
+      <column name="ownerId" type="int" maxlen="10" comment="The ID of the owner/creator of the room." />
       <column name="defaultPermissions" type="bitfield" bits="8" default="7" comment="A bitfield corrosponding to permissions users are granted if they do not exist in the roomPermissions table." />
 
       <!-- Parental Controls -->
@@ -384,8 +360,8 @@
 
     <table name="roomPermissions" type="general" content="Groups and users who are granted access to rooms.">
       <column name="roomId" type="int" maxlen="6" comment="The room ID." />
-      <column name="attribute" type="string" restrict="user,group,admingroup" comment="Whether the param column corrosponds to a user, group, or admin-defined group." />
-      <column name="param" type="int" maxlen="8" comment="The user ID, group ID, or admin-defined group ID being affected." />
+      <column name="attribute" type="string" restrict="user,group" comment="Whether the param column corresponds to a user or group." />
+      <column name="param" type="int" maxlen="8" comment="The user ID or group ID being affected." />
       <column name="permissions" type="bitfield" bits="8" comment="The permissions granted in the room to the affected user or group." />
 
       <key name="roomId,attribute,param" type="primary" />
@@ -394,9 +370,10 @@
 
     <table name="roomPermissionsCache" type="memory" content="A simplified cache of room permissions. This table should be used to determine if a user is known to be allowed access to a room. When a row doesn't exist, it should be tested fully and then inserted here.">
       <column name="roomId" type="int" maxlen="6" comment="The room ID." />
-      <column name="userId" type="int" maxlen="8" comment="" />
+      <column name="userId" type="int" maxlen="8" comment="The user ID." />
       <column name="permissions" type="int" comment="The user's permissions." />
       <column name="expires" type="time" comment="After this time, the entry will no longer be considered valid. May be disabled if this cache is updated automatically." />
+      <column name="isKicked" type="bool" comment="If an access restriction is because of a kick, this should indicate as much. This can be used to tell a user they have been kicked instead of having to query the kicks table to check each time. It is assumed that if true, then expires corresponds with the kick expiration." />
 
       <key name="roomId,userId" type="primary" />
     </table>
@@ -453,20 +430,29 @@
       <column name="anonId" type="int" maxlen="6" comment="A unique ID that can be used for anonymous users." />
       <column name="userAgent" type="string" maxlen="300" comment="The useragent of the user of the session." />
       <column name="clientCode" type="string" maxlen="10" comment="A code the client identifies itself as, aside from the userAgent (really just meant for browsers, since we can't control those)." />
-      <column name="userDataCache" type="string" maxlen="10000" comment="A JSON-encoded cache of the user's core data." />
 
       <key name="sessionId" type="primary" />
       <key name="sessionHash" type="unique" />
     </table>
 
 
-    <table name="socialGroups" type="general" comment="The members of groups, used with vanilla logins.">
+    <table name="sessionLockout" type="memory" comment="Keeps track of failed login attempts, eventually blocking IP addresses from attempting additional logins.">
+      <column name="ip" type="string" maxlen="128" comment="The user's IP address." />
+      <column name="attempts" type="int" maxlen="2" comment="Failed login attempts." />
+      <column name="expires" type="time" comment="When the entry is considered expired." />
+
+      <key name="ip" type="primary" />
+    </table>
+
+
+    <table name="socialGroups" type="general" comment="The members of user groups.">
       <column name="groupId" type="int" maxlen="6" comment="The group ID." />
       <column name="groupName" type="string" maxlen="50" comment="The group name." />
-      <column name="creatorId" type="int" maxlen="8" fkey="users.userId" comment="The member ID of the group." />
-      <column name="creationTime" type="time" comment="The member ID of the group." />
-      <column name="leaderId" type="int" maxlen="8" fkey="users.userId" comment="The current leader of the group. Allowed to set group options and remove members" />
+      <column name="creatorId" type="int" maxlen="8" fkey="users.userId" comment="The creator userID of the group." />
+      <column name="creationTime" type="time" comment="Time the group was created." />
+      <column name="leaderId" type="int" maxlen="8" fkey="users.userId" comment="The current leader of the group. Allowed to set group options and remove members." />
       <column name="options" type="int" maxlen="6" comment="Group options." />
+      <column name="userNameFormat" type="string" maxlen="300" comment="CSS-formatting to be applied to any users that have  this group as their primary, if they have not specified their own." />
 
       <key name="groupId" type="primary" />
     </table>
@@ -481,16 +467,16 @@
     </table>
 
 
-    <table name="unreadMessages" type="general" comment="Unread private messages.">
+    <table name="unreadMessages" type="general" comment="Unread private messages and messages made to watched rooms. Only the most least recent message should be included.">
       <column name="userId" type="int" maxlen="8" fkey="users.userId" comment="The ID of the user who has yet to read the message." />
       <column name="senderId" type="int" maxlen="8" fkey="users.userId" comment="The ID of the user who sent the message." />
       <column name="senderName" type="string" maxlen="50" fkey="users.userName" fkeyWeak="true" comment="The name of the user who sent the message." />
-      <column name="senderFormatStart" type="string" maxlen="300" fkey="users.userFormatStart" fkeyWeak="true" comment="The start formatting of the user who sent the message." />
-      <column name="senderFormatEnd" type="string" maxlen="300" fkey="users.userFormatEnd" fkeyWeak="true"  comment="The end formatting of the user who sent the message." />
+      <column name="senderNameFormat" type="string" maxlen="300" fkey="users.userNameFormat" fkeyWeak="true" comment="CSS-formatting to be applied to the sender's name." />
       <column name="roomId" type="int" maxlen="6" comment="The ID of the room in question. May refer to either rooms.roomId or privateRooms.uniqueId." />
       <column name="roomName" type="string" maxlen="50" comment="The name of the room in question." />
       <column name="messageId" type="int" maxlen="9" fkey="messages.messageId" comment="The ID of the message." />
       <column name="time" type="time" comment="The time the message was made." />
+      <column name="otherMessages" type="int" comment="The number of other messages that have been sent since this one." />
 
       <key name="userId,roomId" type="primary" />
       <key name="time" type="index" />
@@ -501,9 +487,8 @@
       <!-- General -->
       <column name="userId" type="int" maxlen="8" autoincrement="1" comment="The unique ID of the user." />
       <column name="userName" type="string" maxlen="50" comment="The user's name." />
-      <column name="userGroup" type="int" maxlen="6" default="1" comment="The admin-set usergroup ID of the user." />
-      <column name="allGroups" type="string" maxlen="1000" comment="A comma-seperated list of the IDs of all admin-set groups the user is a part of. This is not used on PHPBB and Vanilla logins (both instead use socialGroups)." />
-      <column name="socialGroups" type="string" maxlen="1000" comment="A comma-seperated list of the IDs of all groups the user has joined." />
+      <column name="userGroupId" type="int" maxlen="6" default="1" comment="The admin-set socialGroup ID of the user." />
+      <column name="socialGroupIds" type="string" maxlen="1000" comment="A comma-seperated list of the IDs of all groups the user has joined." />
       <column name="options" type="bitfield" bits="16" comment="A bitfield corrosponding to the user's settings." />
       <column name="joinDate" type="time" default="0" comment="The date the user joined." />
       <column name="birthDate" type="time" default="0" comment="The date of the user's birth, used for parental control settings." />
@@ -513,49 +498,39 @@
 
       <!-- Password Fun -->
       <!-- Note: The password section is rather verbose in an effort to ensure that it is easy to change algorithms. -->
-      <column name="password" type="string" maxlen="2048" comment="The hashed password of the user. It is only used on vanilla logins." />
-      <column name="passwordSalt" type="string" maxlen="2048" comment="The salt used for the password of the user. It is only used on vanilla logins." />
-      <column name="passwordSaltNum" type="int" maxlen="6" comment="An additional number corresponding to an encryption salt used to salt the password. It is only used on vanilla logins." />
+      <column name="passwordHash" type="string" maxlen="2048" comment="The hashed password of the user. It is only used on vanilla logins." />
       
-      <column name="passwordFormat" type="string" maxlen="2048" comment="The encryption format used for the password. This allows easy transition to safer formats, forcing people using the old format to reset their password." />          
+      <column name="passwordFormat" type="string" restrict="vbmd5,phpass" comment="The encryption format used for the password. This allows easy transition to safer formats, forcing people using the old format to reset their password. VBMD5 is the hashing format used by vBulletin, phpass is the portable PHP hashing format used by PHPBB and Vanilla." />
       <column name="passwordResetNow" type="bool" default="0" comment="When set, the user is required to reset his or her password on next login. This, unfortunately, requires the co-operation of clients, and as such may in theory be delayed or ignored entirely. But, I mean, it's better than nothing." />
       <column name="passwordLastReset" type="time" comment="The last time the user reset his or her password.." />
 
       <!-- User Display -->
       <column name="avatar" type="string" maxlen="1000" comment="The absolute URI of the user's avatar." />
       <column name="profile" type="string" maxlen="1000" comment="The absolute URI of the user's profile link or website." />
-      <column name="userFormatStart" type="string" maxlen="300" comment="HTML-formatting to be prepended to the user's name for its display." />
-      <column name="userFormatEnd" type="string" maxlen="300" comment="HTML-formatting to be appended to the user's name for its display." />
+      <column name="userNameFormat" type="string" maxlen="300" comment="CSS-formatting to be applied to the user's name for its display." />
 
       <!-- Prefs -->
-      <column name="defaultRoom" type="int" maxlen="6" default="1" fkey="rooms.roomId" comment="The user's default room." />
-      <column name="interfaceId" type="string" maxlen="50" comment="The user's default interface." />
+      <column name="defaultRoomId" type="int" maxlen="6" default="1" fkey="rooms.roomId" comment="The user's default room." />
 
       <!-- Status -->
       <column name="status" type="int" maxlen="3" comment="The user's activity status." />
 
       <!-- Formatting -->
-      <column name="defaultFormatting" type="bitfield" bits="16" comment="A bitfield corrosponding to the user's defaulting formatting (e.g. bold, italics) of all messages." />
-      <column name="defaultHighlight" type="string" maxlen="11" comment="The user's default highlight colour used for all messages." />
-      <column name="defaultColor" type="string" maxlen="11" comment="The user's default foreground colour used for all messages." />
-      <column name="defaultFontface" type="string" maxlen="50" comment="The fontface ID used for all of the user's messages." />
+      <column name="messageFormatting" type="string" maxlen="300" comment="CSS-formatting that should be applied to all of the user's messages. This will generally be restricted to what the API allows -- by default, just fontface, colour, highlight, and bold/italics." />
 
       <!-- Permissions -->
       <column name="userPrivs" type="bitfield" bits="16" default="16" comment="A bitfield corrosponding to admin-set user priviledges." />
       <column name="adminPrivs" type="bitfield" bits="16" comment="A bitfield corrosponding to admin-set administrative priviledges." />
 
-      <!-- Localisation -->
-      <column name="lang" type="string" maxlen="5" comment="The user's preferred language code." />
-
       <!-- Counters -->
       <column name="fileCount" type="int" maxlen="8" default="0" comment="The number of files store on the server by this user." />
       <column name="fileSize" type="int" maxlen="8" default="0" comment="The total size of all files stored on the server by this user." />
-      <column name="ownedRooms" type="string" maxlen="10000" comment="Total number of rooms owned by this user (may be used to place a limit on room creation.)" />
+      <column name="ownedRoomIds" type="string" maxlen="10000" comment="Total number of rooms owned by this user (may be used to place a limit on room creation.)" />
       <column name="messageCount" type="int" maxlen="8" default="0" comment="The number of messages made by this user." />
-      <column name="favRooms" type="string" maxlen="10000" comment="A CSV cache of the favRooms table for this user." />
-      <column name="watchRooms" type="string" maxlen="10000" comment="A CSV cache of the watchRooms table for this user." />
-      <column name="ignoredUsers" type="string" maxlen="10000" comment="A CSV cache of users ignored by this user." />
-      <column name="friendedUsers" type="string" maxlen="10000" comment="A CSV cache of users friended by this user." />
+      <column name="favRoomIds" type="string" maxlen="10000" comment="A CSV cache of the favRooms table for this user." />
+      <column name="watchRoomIds" type="string" maxlen="10000" comment="A CSV cache of the watchRooms table for this user." />
+      <column name="ignoredUserIds" type="string" maxlen="10000" comment="A CSV cache of users ignored by this user." />
+      <column name="friendedUserIds" type="string" maxlen="10000" comment="A CSV cache of users friended by this user." />
 
       <!-- Parental Controls -->
       <column name="userParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to restrict access to." />
@@ -563,23 +538,21 @@
 
 
       <key name="userId" type="primary" />
-      <key name="userGroup" type="index" />
-      <key name="interfaceId" type="index" />
+      <key name="userGroupId" type="index" />
       <key name="lastSync" type="index" />
       <key name="userPrivs" type="index" />
       <key name="adminPrivs" type="index" />
-      <key name="lang" type="index" />
 
       <key name="options" type="index" />
       <key name="fileCount" type="index" />
       <key name="fileSize" type="index" />
       <key name="messageCount" type="index" />
-      <key name="defaultRoom" type="index" />
+      <key name="defaultRoomId" type="index" />
     </table>
 
 
     <table name="userEvents" type="memory" comment="Events that relate to a specific user.">
-      <column name="eventId" type="int" maxlen="8" autoincrement="1" comment="A unique identifier for the event." />
+        <column name="eventId" type="int" maxlen="8" autoincrement="1" comment="A unique identifier for the event." />
       <column name="eventName" type="string" maxlen="20" comment="The name of the event (e.g. friend-request, unread-message)." />
       <column name="userId" type="int" maxlen="8" comment="The user ID." />
       <column name="param1" type="string" maxlen="20" comment="An additional parameter." />
@@ -621,10 +594,10 @@
       <!-- General -->
       <column name="userId" type="int" maxlen="8" />
       <column name="userName" type="string" maxlen="50" />
-      <column name="userGroup" type="int" maxlen="6" default="1" />
-      <column name="allGroups" type="string" maxlen="1000" />
+      <column name="userGroupId" type="int" maxlen="6" default="1" />
+      <column name="socialGroupIds" type="string" maxlen="1000" />
       <column name="options" type="bitfield" bits="16" />
-      <column name="socialGroups" type="string" maxlen="1000" />
+      <column name="messageFormatting" type="string" maxlen="300" />
 
       <!-- Password Fun -->
       <column name="password" type="string" maxlen="64" />
@@ -634,8 +607,7 @@
       <!-- User Display -->
       <column name="avatar" type="string" maxlen="1000" />
       <column name="profile" type="string" maxlen="1000" />
-      <column name="userFormatStart" type="string" maxlen="300" />
-      <column name="userFormatEnd" type="string" maxlen="300" />
+      <column name="userNameFormat" type="string" maxlen="300" />
 
       <!-- Permissions -->
       <column name="userPrivs" type="bitfield" bits="16" default="16" />
@@ -651,31 +623,25 @@
     </table>
 
     
-    <table name="watchRooms" type="general">
+    <table name="watchRooms" type="general" comment="A table of rooms being watched by different users.">
       <column name="userId" type="int" maxlen="8" comment="The user ID." />
-      <column name="roomId" type="int" maxlen="6" comment="The room ID." />
-
-      <key name="userId, roomId" type="primary" />
+      <column name="roomId" type="int" maxlen="6" comment="The room ID to be watched." />
     </table>
   </database>
 
 
   <definitions>
-    <bitfield name="options" table="rooms">
-      <def bit="1" comment="'Official' rooms are designated as such, but generally don't alter permissions in any way.">Official</def>
-      <def bit="4" comment="Deleted rooms are only viewable by administrators, and are otherwise read-only.">Deleted</def>
-      <def bit="8" comment="Hidden rooms are not displayed under any circumstances, except to site administrators. Similarly, only administrators may set this flag. Hidden rooms can still be accessed by anyone who both has permission and knows the room ID.">Hidden</def>
-      <def bit="16" comment="These rooms may not be posted in, and may be optimised specially. Otherwise, they behave normally, and only people with permission to view or know a room will be able to do such..">Archived</def>
-      <def bit="64" comment="(TODO) A room that needs to be approved by an administrator before it may be used. This room will only be shown to its owner until it has been approved.">Under Review (Moderated)</def>
-      <def bit="128" comment="(TODO) A room that has previously cleared moderation." note="Basically, this should disable the ability to flag a room.">Approved</def>
-      <def bit="256">Reserved for R9000. Not supported officially, but marked for extensions that wish to support.</def>
-    </bitfield>
-
     <bitfield name="options" table="censorLists">
       <def bit="1" comment="If false, the list is considered inactive and is neither used nor shown to users under any circumstances.">Enabled</def>
       <def bit="2" comment="If true, the list can not be disabled by non-administrators.">Required</def>
       <def bit="4" comment="If true, the list is not 'shown' to users. The authors of FIM really don't like this option, but provide it anyway.">Hidden</def>
       <def bit="256" comment="If true, the list is automatically disabled in private and OTR communication.">Disabled in Private/OTR</def>
+    </bitfield>
+
+    <bitfield name="options" table="files">
+      <def bit="4" comment="(TODO) Deleted files are only viewable by administrators, and should not be shown even to their poster.">Deleted</def>
+      <def bit="64" comment="(TODO) A file that needs to be approved by an administrator before it will be displayed.">Under Review (Moderated)</def>
+      <def bit="128" comment="(TODO) A file that has previously cleared moderation." note="Basically, this should disable the ability to flag a file.">Approved</def>
     </bitfield>
 
     <bitfield name="defaultPermissions" table="rooms">
@@ -687,6 +653,16 @@
       <def bit="128">Can Grant</def>
     </bitfield>
 
+    <bitfield name="options" table="rooms">
+      <def bit="1" comment="'Official' rooms are designated as such, but generally don't alter permissions in any way.">Official</def>
+      <def bit="4" comment="Deleted rooms are only viewable by administrators, and are otherwise read-only.">Deleted</def>
+      <def bit="8" comment="Hidden rooms are not displayed under any circumstances, except to site administrators. Similarly, only administrators may set this flag. Hidden rooms can still be accessed by anyone who both has permission and knows the room ID.">Hidden</def>
+      <def bit="16" comment="These rooms may not be posted in, and may be optimised specially. Otherwise, they behave normally, and only people with permission to view or know a room will be able to do such..">Archived</def>
+      <def bit="64" comment="(TODO) A room that needs to be approved by an administrator before it may be used. This room will only be shown to its owner until it has been approved.">Under Review (Moderated)</def>
+      <def bit="128" comment="(TODO) A room that has previously cleared moderation." note="Basically, this should disable the ability to flag a room.">Approved</def>
+      <def bit="256">Reserved for R9000. Not supported officially, but marked for extensions that wish to support.</def>
+    </bitfield>
+
     <bitfield name="permissions" table="roomPermissions" comment="An argument can be made that these are all sequential, and should instead simply be 1/2/3/4/... That argument is right. We're doing this anyway.">
       <def bit="1" comment="This allows the room's common properties -- topic, name, etc. -- to be known, and its messages to be viewed. The room is effectively read-only if this permission is set alone.">Can View</def>
       <def bit="2" comment="This allows a user to post in a room.">Can Post</def>
@@ -696,15 +672,15 @@
       <def bit="128" comment="Whether a user may alter user permissions for the room.">Can Grant</def>
     </bitfield>
 
+    <bitfield name="options" table="groups">
+      <def bit="1" comment="This prevents users from joining groups. Instead, a user may be put into this group by an administrator.">Admin Group</def>
+      <def bit="2" comment="If set, a user can only join this group once approved by a moderator for the group.">Moderated Group</def>
+      <def bit="16" comment="If set, a user that belongs to such a group will have their username style set to this group's style regardless of their own setting.">Override Username Formatting</def>
+    </bitfield>
+
     <bitfield name="options" table="users">
       <def bit="4" comment="(TODO) Deleted users are treated as non-existent for purposes of logging in. The user's name is, however, reserved.">Deleted</def>
       <def bit="64" comment="(TODO) A user that needs to be approved by an administrator before it will gain normal permissions" note="Basically, when this feature is active, two sets of default permissions will exist -- one for unapproved users, and another for approved users. When approved, a user's permissions will be set to the new permissions">Under Review (Moderated)</def>
-    </bitfield>
-
-    <bitfield name="options" table="files">
-      <def bit="4" comment="(TODO) Deleted files are only viewable by administrators, and should not be shown even to their poster.">Deleted</def>
-      <def bit="64" comment="(TODO) A file that needs to be approved by an administrator before it will be displayed.">Under Review (Moderated)</def>
-      <def bit="128" comment="(TODO) A file that has previously cleared moderation." note="Basically, this should disable the ability to flag a file.">Approved</def>
     </bitfield>
 
     <bitfield name="adminPrivs" table="users">
@@ -722,11 +698,13 @@
 
     <bitfield name="userPrivs" table="users">
       <def bit="1" comment="By default, a user is considered banned -- this is mainly to ease integration headaches, where users automatically gain access to the system where they maybe shouldn't. FIM's default integration servers automatically set this, however.">Allowed</def>
+      <def bit="8">Upload Files</def>
+      <def bit="16">Create Social Groups</def>
       <def bit="32">Create Rooms</def>
-      <def bit="64" comment="Disallows a user from creating and being part of OTR and private rooms.">Contact Friends for Private Contact</def>
-      <def bit="128" comment="Disallows a user from creating and being part of OTR and private rooms where any user is not on the user's friend list.">Contact Non-Friends for Private Contact</def>
-      <def bit="1024">Active Users</def>
-      <def bit="2048">Post Counts</def>
+      <def bit="64" comment="If false, Disallows a user from creating and being part of OTR and private rooms.">Contact Friends for Private Contact</def>
+      <def bit="128" comment="If false, Disallows a user from creating and being part of OTR and private rooms where any user is not on the user's friend list.">Contact Non-Friends for Private Contact</def>
+      <def bit="1024">View Active Users</def>
+      <def bit="2048">View Post Counts</def>
     </bitfield>
   </definitions>
 </dbSchema>

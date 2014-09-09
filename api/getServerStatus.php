@@ -28,8 +28,7 @@ $ignoreLogin = true;
 
 require('../global.php');
 
-
-$xmlData = array(
+$apiData = new apiData(array(
   'getServerStatus' => array(
     'activeUser' => array(
       'userId' => (int) $user['userId'],
@@ -47,8 +46,8 @@ $xmlData = array(
         'parentalForced' => $config['parentalForced'],
         'parentalAgeChangeable' => $config['parentalAgeChangeable'],
         'parentalRegistrationAge' => $config['parentalRegistrationAge'],
-        'parentalFlags' => $config['parentalFlags'],
-        'parentalAges' => $config['parentalAges'],
+        'parentalFlags' => new apiOutputList($config['parentalFlags']),
+        'parentalAges' => new apiOutputList($config['parentalAges']),
         'enableCensor' => $config['censorEnabled'],
       ),
 
@@ -77,8 +76,8 @@ $xmlData = array(
         'chunkSize' => (int) $config['fileUploadChunkSize'],
         'emptyFiles' => (bool) $config['allowEmptyFiles'],
         'orphanFiles' => (bool) $config['allowOrphanFiles'],
-        'allowedExtensions' => (array) $config['allowedExtensions'],
-        'mimes' => (array) $config['uploadMimes'],
+        'allowedExtensions' => new apiOutputList($config['allowedExtensions']),
+        'mimes' => new apiOutputList($config['uploadMimes']),
         'extensionChanges' => $config['extensionChanges'],
         'fileContainers' => $config['fileContainers'],
         'mimeProofs' => $config['uploadMimeTypes'],
@@ -115,15 +114,6 @@ $xmlData = array(
       'phpVersion' => (float) phpversion(), // We won't display the full version as it could pose an unneccessary security risk. We will, however, display the base version.
     ),
   ),
-);
-
-
-
-/* Plugin Hook End */
-($hook = hook('getServerStatus') ? eval($hook) : '');
-
-
-
-/* Output Data */
-echo fim_outputApi($xmlData);
+));
+echo $apiData->output();
 ?>

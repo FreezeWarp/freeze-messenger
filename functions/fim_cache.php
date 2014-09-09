@@ -63,16 +63,13 @@ class fimCache extends generalCache {
    * @param string index - The name of the array index.
    */
   private function returnValue($array) {
-    $arguments = func_num_args();
-      
-    if ($arguments > 1) {
-      for ($i = 2; $i <= $arguments; $i++) {
-        $value = func_get_arg($i);
-        
-        if ($value === false) return $array;
-        if (isset($array[$value])) $array = $array[func_get_arg($i)];
-        else return null;
-      }
+    $arguments = func_get_args();
+
+    for ($i = 1; $i <= count($arguments) - 1; $i++) {
+      if (is_null($arguments[$i])) break;
+      elseif ($arguments[$i] === false) throw new Exception('false is not a valid argument for returnValue.'); // Make sure we don't pass bad data accidentally.
+      elseif (isset($array[$arguments[$i]])) $array = $array[$arguments[$i]];
+      else return null;
     }
 
     return $array;
@@ -127,17 +124,18 @@ class fimCache extends generalCache {
    *
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  public function getConfig($index = false) {
+  public function getConfig($index = null) {
     global $disableConfig, $sqlPrefix;
 
     if ($this->issetMemory('fim_config')) {
-      $hooks = $this->getMemory('fim_config');
+      $config = $this->getMemory('fim_config');
     }
     elseif ($this->exists('fim_config') && !$disableConfig) {
       $config = $this->get('fim_config');
     }
     else {
-      require_once($this->defaultConfigFile); // Not exactly best practice, but the best option for reducing resources. (The alternative is to parse it with JSON, but really, why?)
+      $defaultConfig = array();
+      require_once($this->defaultConfigFile); // Not exactly best practice, but the best option for reducing resources. (The alternative is to parse it with JSON, but really, why?). This should provide $defaultConfig.
 
       $config = array();
 
@@ -173,107 +171,17 @@ class fimCache extends generalCache {
 
       $this->storeMemory('fim_config', $config, $config['configCacheRefresh']);
     }
-    
+
     return $this->returnValue($config, $index);
-  }
-  
-  public function getHooks($index = false) {
-    global $disableHooks, $config, $sqlPrefix;
-    
-    if ($this->issetMemory('fim_hooks')) {
-      $hooks = $this->getMemory('fim_hooks');
-    }
-    elseif ($this->exists('fim_hooks')) {
-      $hooks = $this->get('fim_hooks');
-    }
-    else {
-      $hooks = array();
-
-      if ($disableHooks !== true) {
-        $hooksDatabase = $this->slaveDatabase->select(
-          array(
-            "{$sqlPrefix}hooks" => 'hookId, hookName, code',
-          )
-        );
-        $hooksDatabase = $hooksDatabase->getAsArray('hookId');
-
-        if (is_array($hooksDatabase) && count($hooksDatabase) > 0) {
-          foreach ($hooksDatabase AS $hook) $hooks[$hook['hookName']] = $hook['code'];
-        }
-
-        $this->storeMemory('fim_hooks', $hooks, $config['hooksCacheRefresh']);
-      }
-    }
-    
-    return $this->returnValue($hooks, $index);
   }
   
   public function getRooms($roomIndex) {
     return $this->slaveDatabase->getRoom($roomIndex);
   }
-  
-  ////* Caches Entire Table as kicks[roomId][userId] = true *////
-  public function getKicks($roomIndex = false, $userIndex = false) {
-    global $config, $sqlPrefix;
-
-    if ($this->issetMemory('fim_kicks')) {
-      $kicks = $this->getMemory('fim_kicks');
-    }
-    elseif ($this->exists('fim_kicks')) {
-      $kicks = $this->get('fim_kicks');
-    }
-    else {
-      $kicks = array();
-
-      $kicksDatabase = $this->database->getKicks()->getAsArray(true);
-
-      foreach ($kicksDatabase AS $kick) {
-        if ($kick['ktime'] + $kick['klength'] < time()) { // Automatically delete old entries when cache is regenerated.
-          $this->database->delete("{$sqlPrefix}kicks", array(
-            'userId' => $kick['userId'],
-            'roomId' => $kick['roomId'],
-          ));
-        }
-        else {
-          $kicks[$kick['roomId']][$kick['userId']] = true;
-        }
-      }
-      
-      $this->storeMemory('fim_kicks', $kicks, $config['kicksCacheRefresh']);
-    }
-    
-    return $this->returnValue($kicks, $roomIndex, $userIndex);
-  }
-  
-  
-  ////* Caches Entire Table as roomPermissions[roomId][attibute][param] = permissions *////
-  /* Attribute = user, group, or adminGroup
-   * Param = userId, groupId, or adminGroupId */
-  public function getPermissions($roomIndex = false, $attributeIndex = false, $paramIndex = false) {
-    global $sqlPrefix;
-  	
-  	if ($this->issetMemory('fim_permissions')) {
-      $permissions = $this->getMemory('fim_permissions');
-    }
-    elseif ($this->exists('fim_permissions')) {
-      $permissions = $this->get('fim_permissions');
-    }
-    else {
-      $permissionsDatabase = $this->database->getRoomPermissions()->getAsArray(true);
-
-      foreach ($permissionsDatabase AS $permission) {
-        $permissions[$permission['roomId']][$permission['attribute']][$permission['param']] = $cachePerm['permissions'];
-      }
-
-      $this->storeMemory('fim_permissions', $permissionsCache, $this->getConfig('permissionsCacheRefresh'));
-    }
-
-    return $this->returnValue($permissions, $roomIndex, $attributeIndex, $paramIndex);
-  }
 
   
   ////* Caches Entire Table as watchRooms[userId] = [roomId, userId] *////
-  public function getWatchRooms($userIndex = false) {
+  public function getWatchRooms($userIndex = null) {
     global $sqlPrefix;
     
     if ($this->issetMemory('fim_watchRooms')) {
@@ -308,7 +216,7 @@ class fimCache extends generalCache {
   ////* Censor Lists *////
   ////* Caches Entire Table as censorLists[listId] = [listId, listName, listType, options] *////
   public function getCensorLists($listIndex) {    
-    global $sqlPrefix;
+    global $sqlPrefix, $config;
   	
    if ($this->issetMemory('fim_censorLists')) {
       $censorLists = $this->getMemory('fim_censorLists');
@@ -325,7 +233,7 @@ class fimCache extends generalCache {
 
       $this->storeMemory('fim_censorLists', $censorLists, $this->getConfig('censorListsCacheRefresh'));
     }
-    
+
     return $this->returnValue($censorLists, $listIndex);
   }
 
@@ -395,7 +303,7 @@ class fimCache extends generalCache {
         $censorBlackWhiteLists[$censorBlackWhiteList['roomId']][$censorBlackWhiteList['listId']] = $censorBlackWhiteList;
       }
 
-      $this->storeMemory('fim_censorBlackWhiteLists', $censorBlackWhiteLists, $this->getConfig('$censorBlackWhiteListsCacheRefresh'));
+      $this->storeMemory('fim_censorBlackWhiteLists', $censorBlackWhiteLists, $this->getConfig('censorBlackWhiteListsCacheRefresh'));
     }
     
     return $this->returnValue($censorBlackWhiteLists, $roomIndex, $listIndex);

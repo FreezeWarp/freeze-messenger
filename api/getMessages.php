@@ -198,7 +198,7 @@ elseif (!($room->hasPermission($user['userId']) & ROOM_PERMISSION_VIEW)) throw n
 else {
   /* Process Ping */
   if (!$request['noping']) $database->setUserStatus($room->id);
-
+  
 
   /* Get Messages from Database */
   $messages = $database->getMessages(array(
@@ -246,8 +246,7 @@ else {
           'userGroup' => (int) $message['userGroup'],
           'avatar' => ($message['avatar']),
           'socialGroups' => ($message['socialGroups']),
-          'startTag' => ($message['userFormatStart']),
-          'endTag' => ($message['userFormatEnd']),
+          'userNameFormat' => ($message['userNameFormat']),
           'defaultFormatting' => array(
             'color' => ($message['defaultColor']),
             'highlight' => ($message['defaultHighlight']),
@@ -265,11 +264,6 @@ else {
 /* Update Data for Errors */
 $xmlData['getMessages']['errStr'] = (string) $errStr;
 $xmlData['getMessages']['errDesc'] = (string) $errDesc;
-
-
-
-/* Plugin Hook End */
-($hook = hook('getMessages_end') ? eval($hook) : '');
 
 
 

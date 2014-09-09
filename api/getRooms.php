@@ -141,13 +141,11 @@ foreach ($rooms AS $roomData) {
   }
 
   if ($permissions[0]['moderate']) { // Fetch the allowed users and allowed groups if the user is able to moderate the room.
-    if (isset($permissionsCache['byRoomId'][$roomData['roomId']])) {
+    if (isset($permissionsCache['byRoomId'][$roomData['roomId']])) { // TODO: Fix both of these.
       $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['allowedUsers'] = (array) $generalCache->getPermissions($roomData['roomId'], 'user');
       $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['allowedGroups'] = (array) $generalCache->getPermissions($roomData['roomId'], 'group');
     }
   }
-
-  ($hook = hook('getRooms_eachRoom') ? eval($hook) : '');
 }
 
 
@@ -155,11 +153,6 @@ foreach ($rooms AS $roomData) {
 /* Errors */
 $xmlData['getRooms']['errStr'] = ($errStr);
 $xmlData['getRooms']['errDesc'] = ($errDesc);
-
-
-
-/* Plugin Hook End */
-($hook = hook('getRooms_end') ? eval($hook) : '');
 
 
 

@@ -332,11 +332,6 @@ $xmlData['editRoom']['errDesc'] = (string) $errDesc;
 
 
 
-/* Plugin Hook End */
-($hook = hook('editRoom_end') ? eval($hook) : '');
-
-
-
 /* Output Data */
 echo fim_outputApi($xmlData);
 ?>

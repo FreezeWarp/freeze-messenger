@@ -19,6 +19,7 @@ error_reporting(E_ALL ^ E_NOTICE); // Report All Potential Errors
 require('../functions/xml.php'); // For reading the db*.xml files
 require('../functions/database.php'); // DB Operations
 require('../functions/databaseSQL.php'); // ""
+require('../functions/fim_database.php'); // ""
 
 // If possible, remove the execution time limits (often requires ~40-60 seconds). TODO: Long term, the install script should be split up into seperate HTTP requests.
 if(!ini_get('safe_mode')) {
@@ -159,10 +160,12 @@ switch ($_REQUEST['phase']) {
           }
 
 
-          foreach ($table['key'] AS $key) {
-            $tableIndexes[$key['@name']] = array(
-              'type' => $key['@type'],
-            );
+          if (isset($table['key'])) {
+            foreach ($table['key'] AS $key) {
+              $tableIndexes[$key['@name']] = array(
+                'type' => $key['@type'],
+              );
+            }
           }
 
           if (in_array(strtolower($tableName), $showTables)) { // We are overwriting, so rename the old table to a backup. Someone else can clean it up later, but its for the best.
@@ -210,7 +213,6 @@ switch ($_REQUEST['phase']) {
 
   case 2: // Config File
   require('../functions/fim_general.php');
-  require('../functions/fim_uac_vanilla.php');
 
   // Note: This writes a file to the server, which is a very sensitive action (and for a reason is never done elsewhere). This is NOT secure, but should only be used by users wishing to install the product.
 
@@ -238,29 +240,19 @@ switch ($_REQUEST['phase']) {
 
   $tmpDir = urldecode($_GET['tmp_dir']);
 
-  $salts = array( // This is later written to the config file, but we want to use this properly for now.
-    101 => $encryptSalt
-  );
-
   $base = file_get_contents('config.base.php');
 
-  $userSalt = fim_generateSalt();
-
   if ($forum == 'vanilla') {
-    $database = new databaseSQL($host, $port, $userName, $password, $databaseName, $driver);
+    $database = new fimDatabase($host, $port, $userName, $password, $databaseName, $driver, $prefix);
 
-    $adminPassword = fim_generatePassword($adminPassword, $userSalt, 101, 0);
-
-    if (!$database->insert($prefix . 'users', array(
-      'userId' => 1,
-      'username' => $adminUsername,
+    $user = new fimUser(1);
+    if (!$user->set(array(
+      'userName' => $adminUsername,
       'password' => $adminPassword,
-      'passwordSalt' => $userSalt,
-      'passwordSaltNum' => 101,
       'userPrivs' => 65535,
       'adminPrivs' => 65535,
     ))) {
-      die("Could not insert user.");
+      die("Could not create user.");
     }
   }
 

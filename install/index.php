@@ -59,7 +59,7 @@ define('INSTALL_DB_MSSQL', 32);
 
 
 // Install Status - DB
-if (extension_loaded('mysql')) $installStatusDB += INSTALL_DB_MYSQL;
+if (extension_loaded('mysql') && PHP_VERSION_ID < 50500) $installStatusDB += INSTALL_DB_MYSQL; // MySQL is deprecated in 5.5. We could just ignore this, but instead it seems reasonable to remove the feature entirely -- after all, mysqli and pdo_mysql should both be options.
 if (extension_loaded('mysqli') && PHP_VERSION_ID > 50209) $installStatusDB += INSTALL_DB_MYSQLI; // MySQLi has a weird issue that was fixed in 5.2.9 and 5.3.0; see http://www.php.net/manual/en/mysqli.connect-error.php
 if (extension_loaded('pdo_mysql')) $installStatusDB += INSTALL_DB_PDO_MYSQL;
 if (extension_loaded('pdo_pgsql')) $installStatusDB += INSTALL_DB_PDO_POSTGRESQL;
@@ -496,9 +496,6 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
         <tr>
           <td><strong>Insert Developer Data</strong></td>
           <td><input type="checkbox" name="db_usedev" /><small>This will populate the database with test data. Generally only meant for the developers, you could also probably use this to test drive FreezeMessenger.</small></td>
-        </tr>        <tr>
-          <td><strong>Use Portable Hashing</strong></td>
-          <td><input type="checkbox" name="db_althash" <?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_SHA512 ? 'checked disabled' : ''); ?> /><small>By default FreezeMessenger uses the Crypt() function with the Sha256 algorithm, which potentially requires PHP 5.3. This will instead cause FreezeMessenger to use a portable algorithm that will ensure the software can easily be moved between different versions of PHP 5.x and between servers. The portable algorithm uses 5,000 runs of the SHA-256 algorithm with a salted field, but will cause slowdown if the system does not have the PHP hash() function.</small></td>
         </tr>
       </tbody>
     </table>
@@ -525,6 +522,8 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
         <tr class="ui-widget-header">
           <th colspan="2">Forum Integration</th>
         </tr>
+      </thead>
+      <tbody>
         <tr>
           <td><strong>Forum Integration</strong></td>
           <td>

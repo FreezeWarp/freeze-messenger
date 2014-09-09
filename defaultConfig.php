@@ -13,6 +13,8 @@ $defaultConfig = array(
   /*** User Management ***/
   /* Anonymous Users */
   'anonymousUserId' => 2,
+  'anonymousUserMinId' => 1,
+  'anonymousUserMaxId' => 100000,
 
 
   /* Integration Users */
@@ -32,6 +34,8 @@ $defaultConfig = array(
   'avatarMinimumWidth' => 10,
   'avatarMinimumHeight' => 10,
 
+  'avatarDefault' => '',
+
 
   /* Sessions */
   'sessionExpires' => 60 * 15,
@@ -50,7 +54,7 @@ $defaultConfig = array(
   'userPrivateRoomCreation' => true,
   'hiddenRooms' => true,
   'officialRooms' => true,
-  'defaultRoom' => 1,
+  'defaultRoomId' => 1,
 
 
   /* Private & OTR Rooms */
@@ -345,7 +349,6 @@ $defaultConfig = array(
 
 
   /*** Caching ***/
-  'hooksCacheRefresh' => 3600, // int The number of seconds after which the hooks cache will be refreshed. Because this is a *full* cache, the table will be read in its entirety every time this ammount of time elapses, so it should only be so low. It can be very high, however, because you should be able to manually clear this cache when you update hooks.
   'configCacheRefresh' => 86400, // int The number of seconds after which the config cache will be refreshed. Because this is a *full* cache, the table will be read in its entirety every time this ammount of time elapses, so it should only be so low. It can be very high, however, because you should normally be able to manually clear this cache when you update the config.
   'censorListsCacheRefresh' => 86400, // int The number of seconds after which the censor lists cache will be refreshed. Because this is a *full* cache, the table will be read in its entirety every time this ammount of time elapses, so it should only be so low. It can be very high, however, because you should normally be able to manually clear this cache when you update censor lists.
   'censorWordsCacheRefresh' => 86400, // int The number of seconds after which the censor words cache will be refreshed. Because this is a *full* cache, the table will be read in its entirety every time this ammount of time elapses, so it should only be so low. It can be very high, however, because you should normally be able to manually clear this cache when you update censor words.
@@ -358,11 +361,6 @@ $defaultConfig = array(
 
   'messageIndexCounter' => 1000, // If changed, rebuild the messageIndex table!
   'messageTimesCounter' => 60 * 60 * 24, // If changed, rebuild the messageTimes table!
-
-
-
-  /*** Output ***/
-  'compressOutput' => true, // bool Whether or not to remove whitespace from API responses. Servers that enable GZ probably don't need to enable this, but it is safe eitherway.
 
   'apiPause' => .125,
 

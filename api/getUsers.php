@@ -147,8 +147,7 @@ foreach ($users AS $userId => $userData) {
   if (in_array('profile', $request['info'])) {
     $xmlData['getUsers']['users']['user ' . $userData['userId']]['avatar'] = $userData['avatar'];
     $xmlData['getUsers']['users']['user ' . $userData['userId']]['profile'] = $userData['profile'];
-    $xmlData['getUsers']['users']['user ' . $userData['userId']]['startTag'] = $userData['userFormatStart'];
-    $xmlData['getUsers']['users']['user ' . $userData['userId']]['endTag'] = $userData['userFormatEnd'];
+    $xmlData['getUsers']['users']['user ' . $userData['userId']]['userNameFormat'] = $userData['userNameFormat'];
     $xmlData['getUsers']['users']['user ' . $userData['userId']]['defaultFormatting'] = array(
       'color' => ($userData['defaultColor']),
       'highlight' => ($userData['defaultHighlight']),

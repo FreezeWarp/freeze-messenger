@@ -174,10 +174,6 @@ if ($continue) {
     );
 
 
-    // Hook
-    ($hook = hook('sendUser_preAdd') ? eval($hook) : '');
-
-
     // Insert Data
     if ($continue) {
       $database->startTransaction();

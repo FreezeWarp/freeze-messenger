@@ -73,11 +73,6 @@ $queryParts['unreadMessages']['sort'] = array(
 
 
 
-/* Plugin Hook Start */
-($hook = hook('getUnreadMessages_start') ? eval($hook) : '');
-
-
-
 /* Get Unread Messages from Database */
 if (!$user['userId']) {
   $errStr = 'loginRequired';
@@ -102,8 +97,6 @@ if ($continue) {
           'senderId' => (int) $unreadMessage['senderId'],
           'roomId' => (int) $unreadMessage['roomId'],
         );
-
-        ($hook = hook('getUnreadMessages_eachMessage') ? eval($hook) : '');
       }
     }
   }
@@ -114,11 +107,6 @@ if ($continue) {
 /* Update Data for Errors */
 $xmlData['getMessages']['errStr'] = (string) $errStr;
 $xmlData['getMessages']['errDesc'] = (string) $errDesc;
-
-
-
-/* Plugin Hook End */
-($hook = hook('getUnreadMessages_end') ? eval($hook) : '');
 
 
 

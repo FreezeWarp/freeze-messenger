@@ -72,14 +72,10 @@ $blockWordApi = array(
 );
 
 if ($censorWordsCache['byWord']) {
-  ($hook = hook('sendMessage_censor_start') ? eval($hook) : '');
-
   foreach ($censorWordsCache['byWord'] AS $word) {
     if ($request['ignoreBlock'] && $word['severity'] === 'confirm') continue;
 
     $searchText[] = addcslashes(strtolower($word['word']), '^&|!$?()[]<>\\/.+*');
-
-    ($hook = hook('sendMessage_censor_eachWord') ? eval($hook) : '');
   }
 
 

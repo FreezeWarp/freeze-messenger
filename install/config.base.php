@@ -175,11 +175,6 @@ $tmpDir = '';
 ////* Save Me! *////
 ////* These disable certain customizations in case things go horribly wrong. *////
 
-/* $disableHooks
- * Disable code hooks, used by plugins.
- * If you add a plugin and things break so much that you can't disable the plugin, set this to true. */
-$disableHooks = false;
-
 /* $disableConfig
  * Disables config modifications read from the database, instead forcing the default configuration.
  * Use this if a configuration change makes it impossible to revert said change. */

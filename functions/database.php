@@ -97,7 +97,7 @@ abstract class database {
     @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function __construct($host = false, $port = false, $user = false, $password = false, $database = false, $driver = false, $tablePrefix = '') {
-    if ($host !== false) $this->connect($host, $port, $user, $password, $database, $driver, $tablePrefix = '');
+    if ($host !== false) $this->connect($host, $port, $user, $password, $database, $driver, $tablePrefix);
   }
   
 
@@ -633,6 +633,7 @@ abstract class database {
       case 'flt': case 'float':     return array('float',     (float)  $value, $comp); break;
       case 'bool':                  return array('bool',      (bool)   $value, $comp); break;
       case 'empty':                 return array('empty');                             break;
+      case 'equation':              return array('equation',  (string) $value, $comp); break;
 
       case 'arr': case 'array':
        if (count($value) === 0) {
@@ -640,6 +641,11 @@ abstract class database {
        }
        return array('array',     (array)  $value, ($comp === 'in' || $comp === 'notin' ? $comp : 'in')); break;
     }
+  }
+
+  protected function isTypeObject($type) {
+    if (is_array($type)) return true;
+    else return false;
   }
 
   public function in($value) {
@@ -703,9 +709,14 @@ abstract class database {
   }
   
   
-  // TODO
-  public function now($offset = 0) {
-    return (int) (time() + $offset);
+  /**
+   * An alias for ts('time', time() + $offset). This function is recommended over that alternative, however, because it allows for potentially greater precision than time().
+   *
+   * @param int $offset - A number of seconds that should be added to the current time. Use a negative value for subtraction.
+   * @param str $comp - See ts().
+   */
+  public function now($offset = 0, $comp = 'e') {
+    return $this->ts(time() + $offset, $comp);
   }
   
   
@@ -721,7 +732,7 @@ abstract class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
   */
   public function str($value, $comp = 'e') {
-    return $this->type('str', (string) $value, $comp);
+    return $this->type('string', (string) $value, $comp);
   }
   
   

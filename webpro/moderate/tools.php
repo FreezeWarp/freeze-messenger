@@ -31,7 +31,7 @@ else {
       break;
       
       case 'viewcache':
-      foreach (array('fim_config', 'fim_hooksCache', 'fim_kicksCache', 'fim_permissionsCache', 'fim_watchRoomsCache', 'fim_censorListsCache', 'fim_censorWordsCache', 'fim_roomListNamesCache') AS $cache) {
+      foreach (array('fim_config', 'fim_kicksCache', 'fim_permissionsCache', 'fim_watchRoomsCache', 'fim_censorListsCache', 'fim_censorWordsCache', 'fim_roomListNamesCache') AS $cache) {
         $formattedCache = '';
         
         foreach ($generalCache->get($cache) AS $key => $value) {

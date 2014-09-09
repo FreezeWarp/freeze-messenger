@@ -237,5 +237,9 @@ class fimDatabaseUAC extends fimDatabase {
         'userId' => (int) $user2['userId'],
       ));
   }
+
+  public function lockoutActive() {
+    return false;
+  }
 }
 ?>

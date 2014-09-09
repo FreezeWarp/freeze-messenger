@@ -77,12 +77,6 @@ if (count($request['groups']) > 0) {
 }
 
 
-
-/* Plugin Hook Start */
-($hook = hook('getGroups_start') ? eval($hook) : '');
-
-
-
 /* Get Groups from Database */
 if ($continue) {
   $groups = $integrationDatabase->select($queryParts['groupsSelect']['columns'],
@@ -124,8 +118,6 @@ if ($continue) {
           'groupId' => (int) $group['groupId'],
           'groupName' => (string) $group['groupName'],
         );
-
-        ($hook = hook('getGroups_eachGroup') ? eval($hook) : '');
       }
     }
   }
@@ -136,11 +128,6 @@ if ($continue) {
 /* Update Data for Errors */
 $xmlData['getGroups']['errStr'] = ($errStr);
 $xmlData['getGroups']['errDesc'] = ($errDesc);
-
-
-
-/* Plugin Hook End */
-($hook = hook('getGroups_end') ? eval($hook) : '');
 
 
 

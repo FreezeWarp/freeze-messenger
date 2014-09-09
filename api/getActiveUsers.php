@@ -104,8 +104,7 @@ if (count($request['roomIds']) > 0) { /* TODO: Remove? */
           'userName' => (string) $activeUser['userName'],
           'userGroup' => (int) $activeUser['userGroup'],
           'socialGroups' => (string) $activeUser['socialGroups'],
-          'startTag' => (string) $activeUser['userFormatStart'],
-          'endTag' => (string) $activeUser['userFormatEnd'],
+          'userNameFormat' => (string) $activeUser['userNameFormat'],
           'status' => (string) $activeUser['status'],
           'typing' => (bool) $activeUser['typing'],
         );
@@ -124,8 +123,7 @@ else {
           'userName' => (string) $activeUser['userName'],
           'userGroup' => (string) $activeUser['userGroup'],
           'socialGroups' => (string) $activeUser['socialGroups'],
-          'startTag' => (string) $activeUser['userFormatStart'],
-          'endTag' => (string) $activeUser['userFormatEnd'],
+          'userNameFormat' => (string) $activeUser['userNameFormat'],
         ),
         'rooms' => array(),
       );
@@ -143,11 +141,6 @@ else {
 
 /* Update Data for Errors */
 $xmlData['getActiveUsers']['errStr'] = (string) $errStr;
-
-
-
-/* Plugin Hook End */
-($hook = hook('getActiveUsers_end') ? eval($hook) : '');
 
 
 

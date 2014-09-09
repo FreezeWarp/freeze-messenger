@@ -82,6 +82,7 @@ elseif ($phpVersion <= 5.3) { // Removed outright in 5.4, may as well save a CPU
 /* Require Libraries */
 require(dirname(__FILE__) . '/config.php'); // Configuration Variables
 require(dirname(__FILE__) . '/functions/cache.php'); // APC Wrapper (may use for alteratives like memcached later)
+require(dirname(__FILE__) . '/functions/apiData.php'); // API Data output wrapper.
 require(dirname(__FILE__) . '/functions/database.php'); // Database
 require(dirname(__FILE__) . '/functions/databaseSQL.php'); // Database (SQL)
 require(dirname(__FILE__) . '/functions/fim_database.php'); // FIM-specific Extensions
@@ -89,13 +90,6 @@ require(dirname(__FILE__) . '/functions/fim_databaseUAC.php'); // FIM-specific E
 require(dirname(__FILE__) . '/functions/fim_cache.php'); // FIM-specific Extension to APC Wrapper
 require(dirname(__FILE__) . '/functions/fim_general.php'); // Various Functions
 
-
-
-/* Blanket Defaults */
-$continue = true; // Simple "stop" variable used throughout for hooks and live code. (Not neccissarly best practice, but it works better than most of the alternatives.)
-$hook = false;
-$errStr = '';
-$errDesc = '';
 
 
 
@@ -206,9 +200,7 @@ else {
  * Unfortunately, this can not be reliably used in v3. It will be more of a focus in the future.
  * Still, if you do use it, it can ease load.
  * NOTE:
- ** Slave Database should be used, at least in the future, to referrence values that can have high latency. For instance, kicks, which can change within the minute, require relatively low latency, but roomData can have high latency. Thus, when trying to obtain a value for roomData, we should generally use the slave, while if we are trying to obtain kick information, we should use the slave.
- ** In general, things that /don't/ use the slave will be cached. The exception is high-latency databases that are loaded with every single page call. That is to say, config and hooks, both of which are cached and use the slave.
- ** Thus, the rule of thumb, especially for plugins, is that low-latency tables should be accessed via the primary database, while high-latency tables should use the slave. Plugins should never implement both unless the data that is being cached will be accessed constantly, and generally can be delayed by up to an hour. */
+ ** Slave Database should be used, at least in the future, to referrence values that can have high latency. For instance, kicks, which can change within the minute, require relatively low latency, but roomData can have high latency. Thus, when trying to obtain a value for roomData, we should generally use the slave, while if we are trying to obtain kick information, we should use the slave. */
 if ($dbConnect['core'] != $dbConnect['slave']) {
   $slaveDatabase = new fimDatabase;
 
@@ -232,30 +224,19 @@ unset($dbConnect); // There is no reason the login credentials should still be a
 
 
 
-////* Connect to Cache *////
+////* Bulk Data Caching *////
+/* Only small tables are cached this way. */
 
+// Initiate cache object.
 $generalCache = new fimCache($cacheConnect['servers'], $cacheConnect['driver'], $database, $slaveDatabase);
 
-
-
-////* Get Database-Stored Configuration *////
-
+// Get Configuration Data
 $config = $generalCache->getConfig();
 
-if ($apiRequest === true) {
-  sleep($config['apiPause']); // This prevents flooding the server/DoSing. It's included since I've done it to myself during development...
-}
-else {
-  sleep($config['pause']);
-}
-
-
-
-////* Cache Objects *////
+// Get Censor Data
 /* Transitional note:
  * The new cache system is intended to be used with per-value querying, as opposed to loading the entire cache into memory like this every time. However, this conversion will take a while, so for now, we will go with the old way as shown below. */
 
-$hooks = $generalCache->getHooks();
 $censorListsCache = $generalCache->getCensorLists();
 $censorWordsCache = $generalCache->getCensorWords();
 
@@ -283,6 +264,4 @@ if (!$user['anonId'] && $user['lastSync'] <= (time() - $config['userSyncThreshol
 if (defined('FIM_LOGINRUN')) {
   if ($apiRequest && !$ignoreLogin && !$user['userDefs']['view']) throw new Exception('banned'); // This isn't technically an exception, but the API is designed to throw all quit errors with the exception schema.
 }
-
-if ($apiRequest && $config['compressOutput']) ob_start('fim_apiCompact');
 ?>

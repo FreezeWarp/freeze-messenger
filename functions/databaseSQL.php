@@ -72,7 +72,6 @@
   ** Avoid equals comparison with floating point values.
   ** Timestamps are seriously weird in MySQL. Honestly, avoid them.
   *** 4.1 especially contains oddities: (http://dev.mysql.com/doc/refman/4.1/en/timestamp.html)
-* 
 
  * Further Reading:
  ** http://dev.mysql.com/doc/refman/5.0/en/upgrading-from-previous-series.html */
@@ -175,9 +174,16 @@ class databaseSQL extends database {
       switch ($operation) {
         case 'connect':
           $this->connection = new mysqli($args[1], $args[3], $args[4], ($args[5] ? $args[5] : null), (int) $args[2]);
-          if ($this->getVersion) $this->version = $this->setDatabaseVersion($this->connection->server_info);
 
-          return $this->connection;
+          if ($this->connection->connect_error) {
+            $this->newError('Connect Error (' . $this->connection->connect_errno . ') '
+              . $this->connection->connect_error);
+          }
+          else {
+            if ($this->getVersion) $this->version = $this->setDatabaseVersion($this->connection->server_info);
+
+            return $this->connection;
+          }
         break;
 
         case 'error':
@@ -268,6 +274,12 @@ class databaseSQL extends database {
     $values = func_get_args();
     
     switch ($type) {
+      case 'detect':
+        if (!$this->isTypeObject($values[1])) $values[1] = $this->str($values[1]);
+
+        return $this->formatValue($values[1][0], $values[1][1]);
+      break;
+
       case 'search':    return $this->stringQuoteStart . $this->stringFuzzy . $this->escape($values[1], 'search') . $this->stringFuzzy . $this->stringQuoteEnd; break;
       case 'string':    return $this->stringQuoteStart . $this->escape($values[1], 'string') . $this->stringQuoteEnd;                                           break;
       case 'integer':   return $this->intQuoteStart . (int) $this->escape($values[1], 'integer') . $this->intQuoteEnd;                                          break;
@@ -278,30 +290,33 @@ class databaseSQL extends database {
       case 'tableA':    return $this->tableAliasQuoteStart . $this->escape($values[1], 'tableA') . $this->tableAliasQuoteEnd;                                   break;
       case 'database':  return $this->databaseQuoteStart . $this->escape($values[1], 'database') . $this->databaseQuoteEnd;                                     break;
       case 'index':     return $this->indexQuoteStart . $this->escape($values[1], 'index') . $this->indexQuoteEnd;                                              break;
+      case 'equation':  break; // Only partially implemented, because equations are stupid. Don't use them if possible.
+
       case 'array':
         foreach ($values[1] AS &$item) {
-          if     (is_string($item)) $item = $this->formatValue('string', $item); // Format as a string.
-          elseif (is_int($item))    continue; // Do nothing.
-          else   $this->triggerError('Improper item type in array.', $values[1], 'validation');
+          if (!$this->isTypeObject($item)) $item = $this->str($item);
+
+          $item = $this->formatValue($item[0], $item[1]);
         }
 
         return $this->arrayQuoteStart . implode($this->arraySeperator, $values[1]) . $this->arrayQuoteEnd; // Combine as list.
       break;
+
       case 'columnArray':
-        foreach ($values[1] AS &$item) $this->formatValue('string', $item);
+        foreach ($values[1] AS &$item) $this->formatValue('column', $item);
 
         return $this->arrayQuoteStart . implode($this->arraySeperator, $values[1]) . $this->arrayQuoteEnd; // Combine as list.
-        break;
+      break;
+
       case 'updateArray':
-        list($columns, $values) = $this->splitArray($values[1]);
         $update = array();
 
-        for ($i = 0; $i < count($columns); $i++) {
-          $update[] = $columns[$i] . $this->comparisonTypes['e'] . $values[$i];
+        foreach ($values[1] AS $column => $value) {
+          $update[] = $this->formatValue('column', $column) . $this->comparisonTypes['e'] . $this->formatValue('detect', $value);
         }
 
         return implode($update, $this->statementSeperator);
-        break;
+      break;
 
       case 'tableColumn':   return $this->formatValue('table', $values[1]) . $this->tableColumnDivider . $this->formatValue('column', $values[2]);     break;
       case 'databaseTable': return $this->formatValue('database', $values[1]) . $this->databaseTableDivider . $this->formatValue('table', $values[2]); break;
@@ -904,38 +919,41 @@ class databaseSQL extends database {
     }
 
 
+    if (count($tableIndexes)) {
+      $indexes = array();
 
-    foreach ($tableIndexes AS $indexName => $index) {
-      if (isset($this->keyTypeConstants[$index['type']])) {
-        $typePiece = $this->keyTypeConstants[$index['type']];
+      foreach ($tableIndexes AS $indexName => $index) {
+        if (isset($this->keyTypeConstants[$index['type']])) {
+          $typePiece = $this->keyTypeConstants[$index['type']];
+        }
+        else {
+          $this->triggerError("Unrecognised Index Type", array(
+            'tableName' => $tableName,
+            'indexName' => $indexName,
+            'indexType' => $index['type'],
+          ), 'validation');
+        }
+
+
+        if (strpos($indexName, ',') !== false) {
+          $indexCols = explode(',', $indexName);
+
+          foreach ($indexCols AS &$indexCol) $indexCol = $this->formatValue('column', $indexCol);
+
+          $indexName = implode(',', $indexCols);
+        }
+        else {
+          $this->formatValue('index', $indexName);
+        }
+
+
+        $indexes[] = "{$typePiece} ({$indexName})";
       }
-      else {
-        $this->triggerError("Unrecognised Index Type", array(
-          'tableName' => $tableName,
-          'indexName' => $indexName,
-          'indexType' => $index['type'],
-        ), 'validation');
-      }
-
-
-      if (strpos($indexName, ',') !== false) {
-        $indexCols = explode(',', $indexName);
-
-        foreach ($indexCols AS &$indexCol) $indexCol = $this->formatValue('column', $indexCol);
-
-        $indexName = implode(',', $indexCols);
-      }
-      else {
-        $this->formatValue('index', $indexName);
-      }
-
-
-      $indexes[] = "{$typePiece} ({$indexName})";
     }
 
     return $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->formatValue('table', $tableName) . ' (
-' . implode(",\n  ", $columns) . ',
-' . implode(",\n  ", $indexes) . '
+' . implode(",\n  ", $columns) . (isset($indexes) ? ',
+' . implode(",\n  ", $indexes) : '') . '
 )'
     . ($this->language === 'mysql' ? ' ENGINE=' . $this->formatValue('string', $engineName) : '')
     . ' COMMENT=' . $this->formatValue('string', $tableComment)
@@ -1210,7 +1228,7 @@ LIMIT
    * @return string
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  private function recurseBothEither($conditionArray, $reverseAlias, $d = 0, $type = 'both') {
+  private function recurseBothEither($conditionArray, $reverseAlias = false, $d = 0, $type = 'both') {
     $i = 0;
     $h = 0;
     $whereText = array();
@@ -1229,30 +1247,47 @@ LIMIT
       }
       else {
         /* Value is currently stored as:
-         * array(TYPE, VALUE, COMPARISON)
+         * array(TYPE, VALUE, COMPARISON) or just "VALUE" (which implies equals comparison and string type)
          *
          * Note: We do not want to include quotes/etc. in VALUE yet, because these theoretically could vary based on the comparison type. */
 
+        // Defaults
         $sideTextFull[$i] = '';
+        if (!is_array($value)) $value = $this->str($value); // If value is string, treat it as default.
 
-        $sideText['left'] = $reverseAlias[($this->startsWith($key, '!') ? substr($key, 1) : $key)]; // Get the column definition that corresponds with the named column. "!column" signifies negation.
+
+        // Side Text Left
+        $column = ($this->startsWith($key, '!') ? substr($key, 1) : $key);
+        $sideText['left'] = ($reverseAlias ? $reverseAlias[$column] : $column); // Get the column definition that corresponds with the named column. "!column" signifies negation.
+
+
+        // Comparison Operator
         $symbol = $this->comparisonTypes[$value[2]];
 
-        if ($value[0] === 'empty') $sideText['right'] = 'IS NULL';
-        elseif ($value[0] === 'column') $sideText['right'] = $reverseAlias[$value[1]]; // The value is a column, and should be returned as a reverseAlias. (Note that reverseAlias should have already called formatValue)
-        else $sideText['right'] = $this->formatValue(($value[2] === 'search' ? $value[2] : $value[0]), $value[1]); // The value is a data type, and should be processed as such.
 
+        // Side Text Right
+        if ($value[0] === 'empty')
+          $sideText['right'] = 'IS NULL';
+        elseif ($value[0] === 'column')
+          $sideText['right'] = ($reverseAlias ? $reverseAlias[$value[1]] : $value[1]); // The value is a column, and should be returned as a reverseAlias. (Note that reverseAlias should have already called formatValue)
+        else
+          $sideText['right'] = $this->formatValue(($value[2] === 'search' ? $value[2] : $value[0]), $value[1]); // The value is a data type, and should be processed as such.
+
+
+        // Side Text Full
         if ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
           $sideTextFull[$i] = ($this->startsWith($key, '!') ? '!' : '') . "({$sideText['left']} {$symbol} {$sideText['right']})";
         }
         else {//var_dump($reverseAlias); echo $key;  var_dump($value); var_dump($sideText); die();
           $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
 
-          $this->triggerError('Query Nullified', array('Condition Block' => $cond, 'Key' => $key, 'Value' => $value, 'Side Text' => $sideText, 'Reverse Alias' => $reverseAlias), 'validation'); // Dev, basically. TODO.
+          $this->triggerError('Query Nullified', array('Key' => $key, 'Value' => $value, 'Side Text' => $sideText, 'Reverse Alias' => $reverseAlias), 'validation'); // Dev, basically. TODO.
         }
       }
     }
 
+
+    // Combine the query array if multiple entries exist, or just get the first entry.
     if (isset($this->concatTypes[$type])) {
       $condSymbol = $this->concatTypes[$type];
     }
@@ -1264,8 +1299,6 @@ LIMIT
 
     $whereText[$h] = implode($condSymbol, $sideTextFull);
 
-
-    // Combine the query array if multiple entries exist, or just get the first entry.
     if (count($whereText) === 0) return false;
     elseif (count($whereText) === 1) $whereText = $whereText[0]; // Get the query string from the first (and only) index.
     else $whereText = implode($this->concatTypes['both'], $whereText);
@@ -1275,95 +1308,24 @@ LIMIT
   }
 
 
-
   /**
-   * Divides a multidimensional array into three seperate two-dimensional arrays, and performs some additional processing as defined in the passed array. It is used by the insert(), update(), and delete() functions.
+   * Inserts structured data into a table.
    *
-   * @param string $array - The source array
+   * @param string $table - The table to insert into.
+   * @param array  $dataArray - A two-dimensional array [columnName => value]
    *
-   * @return array - An array containing three seperate arrays.
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */
-  private function splitArray($array) {
-    $columns = array(); // Initialize arrays
-    $values = array(); // Initialize arrays
-
-    foreach($array AS $column => $data) { // Run through each element of the $dataArray, adding escaped columns and values to the above arrays.
-
-      $columns[] = $this->formatValue('column', $column);
-      
-      switch (gettype($data)) {
-        case 'integer':// Safe integer - leave it as-is.
-        $context[] = 'e'; // Equals
-        $values[] = $data;
-        break;
-        
-        case 'boolean':
-        $context[] = 'e'; // Equals
-
-        if ($data === true) $values[] = 1;
-        elseif ($data === false) $values[] = 0;
-        break;
-        
-        case 'NULL': // Null data, simply make it empty.
-        $context[] = 'e';
-
-        $values[] = $this->emptyString;
-        break;
-        
-        case 'array': // This allows for some more advanced datastructures; specifically, we use it here to define metadata that prevents $this->escape.
-        if (isset($data['context'])) {
-          throw new Exception('Deprecated context'); // TODO
-        }
-        
-        if (!isset($data['type'])) $data['type'] = 'string';
-
-        switch($data['type']) {
-          case 'equation':        $values[] = preg_replace('/\$([a-zA-Z\_]+)/', '\\1', $data['value']); break;
-          case 'int':             $values[] = $this->formatValue('integer', $data['value']);            break;
-          case 'string': default: $values[] = $this->formatValue('string', $data['value']);             break;
-        }
-
-        if (isset($data['cond'])) $context[] = $data['cond'];
-        else                      $context[] = 'e';
-        break;
-      
-        case 'string': // Simple Ol' String
-        $values[] = $this->formatValue('string', $data);
-        $context[] = 'e'; // Equals
-        break;
-        
-        default:
-        throw new Exception('Unrecognised data type.');
-        break;
-        
-      }
-    }
-//    print_r($columns);
-    return array($columns, $values, $context);
-  }
-  
-  
-  
+   * @return bool|resource
+   * @throws exception
+   */
   public function insert($table, $dataArray, $updateArray = false) {
-    list($columns, $values) = $this->splitArray($dataArray);
-    
-    $columns = implode(',', $columns); // Convert the column array into to a string.
-    $values = implode(',', $values); // Convert the data array into a string.
+    if ($updateArray) throw new exception('Removed.'); // TODO
 
-    $query = "INSERT INTO $table ($columns) VALUES ($values)";
+    $columns = array_keys($dataArray);
+    $values = array_values($dataArray);
 
-    if ($updateArray) { // This is used for an ON DUPLICATE KEY request.
-      list($columns, $values) = $this->splitArray($updateArray);
-
-      for ($i = 0; $i < count($columns); $i++) {
-        $update[] = $columns[$i] . ' = ' . $values[$i];
-      }
-
-      $update = implode($update, ', ');
-
-      $query = "$query ON DUPLICATE KEY UPDATE $update";
-    }
+    $query = 'INSERT INTO' . $this->formatValue('table', $table) . ' ' .
+      $this->formatValue('columnArray', $columns) . '
+      VALUES ' . $this->formatValue('array', $values);
 
     if ($queryData = $this->rawQuery($query)) {
       $this->insertId = $this->functionMap('insertId');
@@ -1376,18 +1338,48 @@ LIMIT
   }
 
 
+  /**
+   * Deletes data from a table.
+   *
+   * @param string $tableName - Table to delete from.
+   * @param bool   $conditionArray - The conditions for the deletion (uses the same format as the select() call).
+   *
+   * @return bool|resource
+   */
+  public function delete($tableName, $conditionArray = false) {
+    $query = 'DELETE FROM ' . $this->formatValue('table', $tableName) . '
+    WHERE ' . ($conditionArray ? $this->recurseBothEither($conditionArray) : 'TRUE');
+
+    return $this->rawQuery($query);
+  }
+
+
+  /**
+   * @param string $tableName - Table to update.
+   * @param array  $dataArray - The data to replace with. This can include an equation using $this->type('equation', '$columnName + C').
+   * @param bool   $conditionArray - Conditions for selecting data to update (uses the same format as the select() call).
+   *
+   * @return bool|resource
+   */
+  public function update($tableName, $dataArray, $conditionArray = false) {
+    $query = 'UPDATE ' . $this->formatValue('table', $tableName . ' SET ' . $this->formatValue('updateArray', $dataArray) . ' WHERE ' . $this->recurseBothEither($conditionArray));
+
+    return $this->rawQuery($query);
+  }
+
+
+
   public function upsert($table, $conditionArray, $dataArray) {
     switch ($this->language) {
       case 'mysql':
-        list($allColumns, $allValues) = $this->splitArray(array_merge($dataArray, $conditionArray));
-//        var_dump($allColumns); die();
-
-        $update = $this->formatValue('updateArray', $dataArray);
+        $allArray = array_merge($dataArray, $conditionArray);
+        $allColumns = array_keys($allArray);
+        $allValues = array_values($allArray);
 
         $query = 'INSERT INTO ' . $this->formatValue('table', $table) . '
         ' . $this->formatValue('columnArray', $allColumns) . '
         VALUES ' . $this->formatValue('array', $allValues) . '
-        ON DUPLICATE KEY UPDATE ' . $update;
+        ON DUPLICATE KEY UPDATE ' . $this->formatValue('updateArray', $dataArray);
 
         if ($queryData = $this->rawQuery($query)) {
           $this->insertId = $this->functionMap('insertId');
@@ -1400,73 +1392,6 @@ LIMIT
         break;
     }
   }
-
-  
-  
-  public function delete($tableName, $conditionArray = false) {
-    if ($conditionArray === false) {
-      $delete = 'TRUE';
-    }
-    else {
-      list($columns, $values, $conditions) = $this->splitArray($conditionArray);
-
-      for ($i = 0; $i < count($columns); $i++) {
-        if (!$conditions[$i]) {
-          $csym = $this->comparisonTypes['e'];
-        }
-        elseif (isset($this->comparisonTypes[$conditions[$i]])) {
-          $csym = $this->comparisonTypes[$conditions[$i]];
-        }
-        else {
-          $this->triggerError("[Update Table] Unrecognised Comparison Type", array(
-            'tableName' => $tableName,
-            'comparisonType' => $conditions[$i],
-          ), 'validation');
-        }
-
-        $delete[] = $columns[$i] . $csym . $values[$i];
-      }
-
-      $delete = implode($delete, $this->concatTypes['both']);
-    }
-
-    return $this->rawQuery("DELETE FROM $tableName WHERE $delete");
-  }
-  
-  
-  
-  public function update($tableName, $dataArray, $conditionArray = false) {
-    list($columns, $values) = $this->splitArray($dataArray);
-    
-    for ($i = 0; $i < count($columns); $i++) {
-      $update[] = $columns[$i] . ' = ' . $values[$i];
-    }
-
-    $update = implode($update,', ');
-
-    $query = "UPDATE {$tableName} SET {$update}";
-
-    if ($conditionArray) {
-      list($columns, $values, $conditions) = $this->splitArray($conditionArray);
-
-      for ($i = 0; $i < count($columns); $i++) {
-        if (!$conditions[$i]) $csym = $this->comparisonTypes['e'];
-        elseif (isset($this->comparisonTypes[$conditions[$i]])) $csym = $this->comparisonTypes[$conditions[$i]];
-        else $this->triggerError("[Delete Table] Unrecognised Comparison Type", array(
-          'tableName' => $tableName,
-          'comparisonType' => $conditions[$i],
-        ), 'validation');
-
-        $cond[] = $columns[$i] . $csym . $values[$i];
-      }
-
-      $query .= ' WHERE ' . implode($cond, $this->concatTypes['both']);
-    }
-
-
-    return $this->rawQuery($query);
-  }
-  
   /*********************************************************
   ************************* END ***************************
   ******************** Row Functions **********************
