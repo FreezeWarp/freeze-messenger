@@ -34,15 +34,10 @@ require('../global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
-  'permLevel' => array(
-    'default' => '',
-    'valid' => array('post', 'view', 'moderate', 'know', 'admin', ''),
-    'require' => false,
-  ),
-  
+  // No matter what, the user will not be able to see rooms that he is unable to view.
   'permFilter' => array(
     'default' => 'view',
-    'valid' => array('post', 'view', 'moderate', 'own'),
+    'valid' => array('post', 'view', 'moderate', 'alter', 'admin', 'own'),
     'require' => false,
   ),
 
@@ -86,13 +81,21 @@ $request = fim_sanitizeGPC('g', array(
 $xmlData = array(
   'getRooms' => array(
     'activeUser' => array(
-      'userId' => (int) $user['userId'],
-      'userName' => ($user['userName']),
+      'userId' => $user->id,
+      'userName' => $user->name,
     ),
-    'errStr' => $errStr,
-    'errDesc' => $errDesc,
     'rooms' => array(),
   ),
+);
+
+
+$permFilterMatches = array(
+  'post' => ROOM_PERMISSION_POST,
+  'view' => ROOM_PERMISSION_VIEW,
+  'moderate' => ROOM_PERMISSION_MODERATE,
+  'alter' => ROOM_PERMISSION_PROPERTIES,
+  'admin' => ROOM_PERMISSION_GRANT,
+  'own' => ROOM_PERMISSION_VIEW
 );
 
 
@@ -100,62 +103,54 @@ $rooms = $database->getRooms(array(
   'roomIds' => $request['roomIds'],
   'roomNames' => $request['roomNames'],
   'showDeleted' => $request['showDeleted'],
-  'roomNameSearch' => $request['search']),
-array($request['sort'] => 'asc'))->getAsArray(true);
+  'roomNameSearch' => $request['search'],
+  'ownerIds' => ($request['permFilter'] === 'own' ? array($user->id) : array())
+), array($request['sort'] => 'asc'))->getAsRooms();
 
+foreach ($rooms AS $roomId => $room) {
+  $permissions = $database->hasPermission($user, $room);
 
-foreach ($rooms AS $roomData) {
-  $permissions = fim_hasPermission($roomData, $user, array('post', 'view', 'moderate', 'admin'), false);
+//  if (!($permissions & $permFilterMatches[$request['permFilter']])) continue;
 
-  if ($request['permLevel']) {
-    if ($permissions[0][$request['permLevel']] === false) continue;
-  }
-
-  $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']] = array(
-    'roomId' => (int)$roomData['roomId'],
-    'roomName' => ($roomData['roomName']),
-    'defaultPermissions' => (int) $roomData['defaultPermissions'],
-    'parentalFlags' => explode(',', $roomData['roomParentalFlags']),
-    'parentalAge' => $roomData['roomParentalAge'],
-    'options' => (int) $roomData['options'],
-    'optionDefinitions' => array(
-      'official' => (bool) ($roomData['options'] & 1),
-      'deleted' => (bool) ($roomData['options'] & 4),
-      'hidden' => (bool) ($roomData['options'] & 8),
-      'allowViewing' => (bool) ($roomData['options'] & 32),
-    ),
+  $xmlData['getRooms']['rooms']['room ' . $roomId] = array(
+    'roomId' => $room->id,
+    'roomName' => $room->name,
+    'ownerId' => $room->ownerId,
+    'defaultPermissions' => $room->defaultPermissions,
+    'parentalFlags' => new apiOutputList($room->parentalFlags),
+    'parentalAge' => $room->parentalAge,
+    'official' => $room->official,
+    'archived' => $room->archived,
+    'hidden' => $room->hidden,
+    'deleted' => $room->deleted,
     'permissions' => array(
-      'canModerate' => (bool) $permissions[0]['moderate'],
-      'canAdmin' => (bool) $permissions[0]['admin'],
-      'canPost' => (bool) $permissions[0]['post'],
-      'canView' => (bool) $permissions[0]['view'],
+      'view' => (bool) ($permissions & ROOM_PERMISSION_VIEW),
+      'post' => (bool) ($permissions & ROOM_PERMISSION_POST),
+      'topic' => (bool) ($permissions & ROOM_PERMISSION_TOPIC),
+      'moderate' => (bool) ($permissions & ROOM_PERMISSION_MODERATE),
+      'alter' => (bool) ($permissions & ROOM_PERMISSION_PROPERTIES),
+      'admin' => (bool) ($permissions & ROOM_PERMISSION_GRANT),
     ),
   );
 
   if ($permissions[0]['view']) { // These are not shown to users who are not allowed to access the room.
-    $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['roomTopic'] = $roomData['roomTopic'];
-    $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['owner'] = $roomData['owner'];
-    $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['lastMessageId'] = $roomData['lastMessageId'];
-    $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['lastMessageTime'] = $roomData['lastMessageTime'];
-    $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['messageCount'] = $roomData['messageCount'];
+    $xmlData['getRooms']['rooms']['room ' . $roomId]['roomTopic'] = $roomData['roomTopic'];
+    $xmlData['getRooms']['rooms']['room ' . $roomId]['owner'] = $roomData['owner'];
+    $xmlData['getRooms']['rooms']['room ' . $roomId]['lastMessageId'] = $roomData['lastMessageId'];
+    $xmlData['getRooms']['rooms']['room ' . $roomId]['lastMessageTime'] = $roomData['lastMessageTime'];
+    $xmlData['getRooms']['rooms']['room ' . $roomId]['messageCount'] = $roomData['messageCount'];
   }
 
   if ($permissions[0]['moderate']) { // Fetch the allowed users and allowed groups if the user is able to moderate the room.
-    if (isset($permissionsCache['byRoomId'][$roomData['roomId']])) { // TODO: Fix both of these.
-      $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['allowedUsers'] = (array) $generalCache->getPermissions($roomData['roomId'], 'user');
-      $xmlData['getRooms']['rooms']['room ' . $roomData['roomId']]['allowedGroups'] = (array) $generalCache->getPermissions($roomData['roomId'], 'group');
+    if (isset($permissionsCache['byRoomId'][$roomId])) { // TODO: Fix both of these.
+      $xmlData['getRooms']['rooms']['room ' . $roomId]['allowedUsers'] = (array) $generalCache->getPermissions($roomId, 'user');
+      $xmlData['getRooms']['rooms']['room ' . $roomId]['allowedGroups'] = (array) $generalCache->getPermissions($roomId, 'group');
     }
   }
 }
 
 
 
-/* Errors */
-$xmlData['getRooms']['errStr'] = ($errStr);
-$xmlData['getRooms']['errDesc'] = ($errDesc);
-
-
-
 /* Output Data Structure */
-echo fim_outputApi($xmlData);
+new apiData($xmlData, true);
 ?>

@@ -58,10 +58,10 @@ class fimRoom {
     $this->name = $roomData['roomName'];
     $this->alias = $roomData['roomAlias'];
     $this->options = $roomData['options'];
-    $this->deleted = $this->options & ROOM_DELETED;
-    $this->official = $this->options & ROOM_OFFICIAL;
-    $this->hidden = $this->options & ROOM_HIDDEN;
-    $this->archived = $this->options & ROOM_ARCHIVED;
+    $this->deleted = (bool) ($this->options & ROOM_DELETED);
+    $this->official = (bool) ($this->options & ROOM_OFFICIAL);
+    $this->hidden = (bool) ($this->options & ROOM_HIDDEN);
+    $this->archived = (bool) ($this->options & ROOM_ARCHIVED);
     $this->ownerId = (int) $roomData['owner'];
     $this->topic = $roomData['topic'];
     $this->type = $roomData['roomType'];
