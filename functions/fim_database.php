@@ -995,8 +995,8 @@ class fimDatabase extends databaseSQL
       ))->getAsArray(false);
 
       if (!count($permissions)) return -1;
-      elseif ($permissions['expire'] > time()) return -1;
-      else return $permissions['permissions'];
+      elseif (time() > $permissions['expires']) return -1;
+      else return (int) $permissions['permissions'];
     }
   }
 
@@ -1057,8 +1057,8 @@ class fimDatabase extends databaseSQL
       if (!($user->privs & USER_PRIV_TOPIC)) $returnBitfield &= ~ROOM_PERMISSION_TOPIC;
 
       // Deleted and archived rooms act similarly: no one may post in them, while only admins can view deleted rooms.
-      if ($room->options & (ROOM_DELETED | ROOM_ARCHIVED)) { // that is, check if a room is either deleted or archived.
-        if (($room->options & ROOM_DELETED) && !($user->privs & ADMIN_ROOMS)) $returnBitfield &= ~(ROOM_PERMISSION_VIEW); // Only super moderators may view deleted rooms.
+      if ($room->deleted || $room->archived) { // that is, check if a room is either deleted or archived.
+        if ($room->deleted && !($user->privs & ADMIN_ROOMS)) $returnBitfield &= ~(ROOM_PERMISSION_VIEW); // Only super moderators may view deleted rooms.
 
         $returnBitfield &= ~(ROOM_PERMISSION_POST | ROOM_PERMISSION_TOPIC); // And no one can post in them - a rare case where even admins are denied certain abilities.
       }
@@ -1066,21 +1066,22 @@ class fimDatabase extends databaseSQL
 
 
       /* Update cache and return. */
-      $this->updatePermissionsCache($user->id, $room->id, $returnBitfield);
+      $this->updatePermissionsCache($user->id, $room->id, $returnBitfield, ($kicks > 0 ? true : false));
 
       return $returnBitfield;
     }
   }
 
 
-  public function updatePermissionsCache($roomId, $userId, $permissions) {
+  public function updatePermissionsCache($roomId, $userId, $permissions, $isKicked = false) {
     if ($this->config['roomPermissionsCacheEnabled']) {
       $this->upsert($this->sqlPrefix . 'roomPermissionsCache', array(
         'roomId' => $roomId,
         'userId' => $userId,
       ), array(
-        'permissions' => (bool) $permissions,
-        'expires' => $this->now($this->config['roomPermissionsCacheExpires'])
+        'permissions' => $permissions,
+        'expires' => $this->now($this->config['roomPermissionsCacheExpires']),
+        'isKicked' => $isKicked,
       ));
     }
   }

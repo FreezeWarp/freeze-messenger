@@ -292,7 +292,7 @@
       <column name="roomAlias" type="string" maxlen="6" autoincrement="1" comment="An alias that can be used to identify a room by. This should be unique, and is meant to be used for otr and private rooms. Caching recommended." />
       <column name="roomNameSearchable" type="string" maxlen="50" comment="The name of the room, formatted for searching." />
       <column name="roomTopic" type="string" maxlen="200" comment="The current topic of the room." />
-      <column name="options" type="bitfield" bits="8" default="" comment="A bitfield corrosponding to certain room options." />
+      <column name="options" type="bitfield" bits="8" default="0" comment="A bitfield corrosponding to certain room options." />
 
       <!-- Permissions -->
       <column name="roomType" type="string" default="general" restrict="general,otr,private" comment="The room type." />
@@ -301,6 +301,7 @@
 
       <!-- Parental Controls -->
       <column name="roomParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the user." />
+      <column name="roomParentalFlagsField" type="bitfield" bits="16" comment="[TODO] A bitfield corresponding to parentalFlags. The corresponding bits are defined as part of config, and whenever the corresponding config data is modified, all bitfields must be updated. The benefits over a comma-seperated list are the ability to rename flags without requiring a rebuild, less data usage (good for caching), and the ability to query for individual flags." />
       <column name="roomParentalAge" type="int" maxlen="2" comment="The room's parental content age rating." />
 
       <!-- Counters -->
@@ -310,7 +311,7 @@
       <column name="flags" type="int" maxlen="3" comment="The number of flags this room has received. After a certain number (proportional to activeUsers, possibly), the room should be marked for moderation." />
 
       <!-- Caches -->
-      <column name="watchedBy" type="string" maxlen="10000" comment="A CSV cache of the users watching this room." />
+      <column name="watchedBy" type="string" maxlen="50000" comment="A CSV cache of the users watching this room." />
 
 
       <key name="roomId" type="primary" />
@@ -362,7 +363,7 @@
       <column name="roomId" type="int" maxlen="6" comment="The room ID." />
       <column name="attribute" type="string" restrict="user,group" comment="Whether the param column corresponds to a user or group." />
       <column name="param" type="int" maxlen="8" comment="The user ID or group ID being affected." />
-      <column name="permissions" type="bitfield" bits="8" comment="The permissions granted in the room to the affected user or group." />
+      <column name="permissions" type="bitfield" bits="16" comment="The permissions granted in the room to the affected user or group." />
 
       <key name="roomId,attribute,param" type="primary" />
     </table>
@@ -371,7 +372,7 @@
     <table name="roomPermissionsCache" type="memory" content="A simplified cache of room permissions. This table should be used to determine if a user is known to be allowed access to a room. When a row doesn't exist, it should be tested fully and then inserted here.">
       <column name="roomId" type="int" maxlen="6" comment="The room ID." />
       <column name="userId" type="int" maxlen="8" comment="The user ID." />
-      <column name="permissions" type="int" comment="The user's permissions." />
+      <column name="permissions" type="bitfield" bits="16" comment="The user's permissions." />
       <column name="expires" type="time" comment="After this time, the entry will no longer be considered valid. May be disabled if this cache is updated automatically." />
       <column name="isKicked" type="bool" comment="If an access restriction is because of a kick, this should indicate as much. This can be used to tell a user they have been kicked instead of having to query the kicks table to check each time. It is assumed that if true, then expires corresponds with the kick expiration." />
 

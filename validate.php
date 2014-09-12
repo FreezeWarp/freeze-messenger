@@ -200,8 +200,6 @@ elseif ($loginMethod === 'session') {
   }
 }
 
-
-
 /* API Output */
 if ($apiRequest !== true && $streamRequest !== true && $ignoreLogin !== true && $hookLogin === false) {
   $apiData = new apiData();

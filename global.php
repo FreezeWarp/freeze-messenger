@@ -54,9 +54,9 @@ if ((bool) ini_get('allow_url_fopen') === false) {
 
 /* Version Requirement, Magic Quotes, Display Errors and Register Globals */
 
-ini_set('display_errors', 0); // Ideally we would never have to worry about this, but sadly that's not the case. FIMv4 will hopefully make improvements.
-$phpVersion = floatval(PHP_VERSION);
+error_reporting(~E_WARNING & ~E_NOTICE); // There's no shortage of warnings and notices, so let's not show those. (Yes, that's not a good thing. No, I don't really want to fix them all right now.)
 
+$phpVersion = floatval(PHP_VERSION);
 if ($phpVersion < 5.2) { // We won't bother supporting older PHP; too much hassle. We will also raise this to 5.3 in the next version.
   die('The installed version of PHP is out of date. Only PHP versions 5.2 and above are supported. Contact your server host for more information if possible.');
 }
