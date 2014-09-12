@@ -107,16 +107,16 @@ elseif ($apiRequest !== true && $streamRequest !== true) { // Validate.php calle
   }
 
   if (!$goodVersion)
-    throw new Exception('The server API is incompatible with the client API.');
+    trigger_error('The server API is incompatible with the client API.', E_USER_ERROR);
   elseif (!$config['anonymousUserId'] && !isset($request['userName'], $request['password']) && !isset($request['userId'], $request['password']))
-    throw new Exception('Invalid login parameters: validate requires either [userName or userId] together with password.');
+    trigger_error('Invalid login parameters: validate requires either [userName or userId] together with password.', E_USER_ERROR);
 
   $loginMethod = 'credentials';
 }
 
 elseif ($apiRequest === true || $streamRequest === true) { // Validate.php called from API.
   if (!isset($request['fim3_sessionHash'])) {
-    throw new Exception('A sessionHash is required for all API requests. See the API documentation on obtaining these using validate.php.');
+    trigger_error('A sessionHash is required for all API requests. See the API documentation on obtaining these using validate.php.', E_USER_ERROR);
   }
 
   $loginMethod = 'session';
@@ -126,7 +126,7 @@ elseif ($apiRequest === true || $streamRequest === true) { // Validate.php calle
 
 ///* Session Lockout *///
 if ($loginMethod === 'credentials' || $loginMethod === 'session') {
-  if ($database->lockoutActive()) throw new Exception('lockoutActive');
+  if ($database->lockoutActive()) trigger_error('lockoutActive', E_USER_ERROR);
 }
 
 
@@ -136,7 +136,7 @@ if ($loginMethod === 'credentials' || $loginMethod === 'session') {
 if ($loginMethod === 'credentials') {
   if (isset($request['userName']) || isset($request['userId'])) {
     if (!isset($request['password'])) {
-      throw new Exception('passwordRequired');
+      trigger_error('passwordRequired', E_USER_ERROR);
     }
     else {
       if ($request['passwordEncrypt'] === 'base64') $request['password'] = base64_decode($request['password']);
@@ -169,7 +169,7 @@ if ($loginMethod === 'credentials') {
       }
       else {
         $database->lockoutIncrement();
-        throw new Exception('invalidLogin');
+        trigger_error('invalidLogin', E_USER_ERROR);
       }
     }
   }
@@ -177,7 +177,7 @@ if ($loginMethod === 'credentials') {
     $user = new fimUser($config['anonymousUserId']);
   }
   else {
-    throw new Exception('loginRequired');
+    trigger_error('loginRequired', E_USER_ERROR);
   }
 
 
@@ -192,15 +192,15 @@ elseif ($loginMethod === 'session') {
 
   if (!count($session)) {
     $database->lockoutIncrement();
-    throw new Exception('invalidSession');
+    trigger_error('invalidSession', E_USER_ERROR);
   }
   elseif ($session['userAgent'] !== $_SERVER['HTTP_USER_AGENT']) { // Require the UA match that of the one used to establish the session. Smart clients are encouraged to specify their own with their client name and version.
     $database->lockoutIncrement();
-    throw new Exception('sessionMismatchBrowser');
+    trigger_error('sessionMismatchBrowser', E_USER_ERROR);
   }
   elseif ($session['sessionIp'] !== $_SERVER['REMOTE_ADDR']) { // This is a tricky one (in some instances, a user's IP may change throughout their session, especially over mobile), but generally the most certain to block any attempted forgeries. That said, IPs can, /theoretically/ be spoofed.
     $database->lockoutIncrement();
-    throw new Exception('sessionMismatchIp');
+    trigger_error('sessionMismatchIp', E_USER_ERROR);
   }
   else {
     $user = new fimUser($session); // Mostly identical, though a few additional properties do exist.
@@ -224,15 +224,10 @@ if ($apiRequest !== true && $streamRequest !== true && $ignoreLogin !== true && 
         'userName' => $user->name,
         'userNameFormat' => $user->nameFormat,
         'userGroupId' => $user->mainGroupId,
+        'socialGroupIds' => new apiOutputList($user->socialGroupIds),
         'avatar' => $user->avatar,
         'profile' => $user->profile,
-        'socialGroupIds' => new apiOutputList($user->socialGroupIds),
-        'defaultFormatting' => array(
-          'color' => $user->defaultColor,
-          'highlight' => $user->defaultHighlight,
-          'fontface' => $user->defaultFontface,
-          'general' => $user->defaultFormatting
-        ),
+        'messageFormatting' => $user->messageFormatting,
         'parentalFlags' => new apiOutputList($user->parentalFlags),
         'parentalAge' => $user->parentalAge,
       ),

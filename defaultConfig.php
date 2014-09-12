@@ -390,14 +390,7 @@ $defaultConfig = array(
 
   /*** Error Handling and Logging ***/
   'email' => '',
-
-  'emailErrors' => true,
-  'emailExeptions' => true,
-  'logErrors' => true,
-  'logExceptions' => true,
-  'logErrorsFile' => '',
-  'logExceptionsFile' => '',
-  'displayExceptions' => true,
+  'displayExceptions' => true, // TOOD: False by default.
 
   /* Advanced Logging */
   'accessLogEnabled' => true,

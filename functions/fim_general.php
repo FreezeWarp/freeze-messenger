@@ -696,97 +696,66 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false, $allowed
 
 
 /**
- * Custom Exception Handler
+ * Custom exception handler. In general, all classes and functions are going to use exceptions so that they can be caught. But, the lazy coder that I am, I don't normally bother catching them -- these errors will hopefully give a user enough information if I can't be bothered.
  *
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 
 function fim_exceptionHandler($exception) {
-  global $apiRequest, $config;
+  global $config;
 
   ob_end_clean(); // Clean the output buffer and end it. This means that when we show the error in a second, there won't be anything else with it.
   header('HTTP/1.1 500 Internal Server Error'); // When an exception is encountered, we throw an error to tell the server that the software effectively is broken.
 
-  if ($config['displayExceptions']) {
-    $errorData = array(
-      'string' => $exception->getMessage(),
-      'file' => $exception->getFile(),
-      'line' => $exception->getLine(),
-      'trace' => $exception->getTrace(),
-      'contactEmail' => $config['email'],
-    );
-  }
-  else {
-    $errorData = array(
-      'string' => $exception->getMessage(),
-      'file' => '',
-      'line' => 0,
-      'trace' => '',
-      'contactEmail' => $config['email'],
-    );
-  }
+  $errorData = array(
+    'string' => $exception->getMessage(),
+    'contactEmail' => $config['email'],
+  );
 
+  if ($config['displayExceptions']) {
+    $errorData['file'] = $exception->getFile();
+    $errorData['line'] = $exception->getLine();
+    $errorData['trace'] = $exception->getTrace();
+  }
 
   new apiData(array(
     'exception' => $errorData,
   ), true);
-
-
-  if ($config['email'] && $config['emailExceptions']) {
-    mail($config['email'], 'FIM3 System Error [' . $_SERVER['SERVER_NAME'] . ']', 'The following error was encountered by the server located at ' . $_SERVER['SERVER_NAME'] . ':<br /><br />' . print_r($errorData, true));
-  }
-  
-  if ($config['logExceptions  File'] && $config['logExceptions']) {
-    error_log($exception->getFile() . ', ' . $exception->getLine() . ', ' . $exception->getMessage() . ' TRACE: ' . $exception->getTrace());
-  }
 }
 
 
 /**
- * Custom Error Handler
+ * Our custom error handler is meant to display all E_USER_ERRORS to the user (usually via the API). All other errors should be handled by PHP's own error handler.
  *
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 
-function fim_errorHandler($errno, $errstr, $errfile, $errline) {
-  global $config, $apiRequest;
+function fim_errorHandler($code, $string, $file, $line) {
+  global $config;
 
-  if (!(error_reporting() & $errno)) { // The error is not to be reported.
-    return;
+  if ($code === E_USER_ERROR) {
+    ob_end_clean(); // Clean the output buffer and end it. This means that when we show the error in a second, there won't be anything else with it.
+    header('HTTP/1.1 500 Internal Server Error'); // When an exception is encountered, we throw an error to tell the server that the software effectively is broken.
+
+    $errorData = array(
+      'string' => $string,
+      'contactEmail' => $config['email'],
+    );
+
+    if ($config['displayExceptions']) {
+      $errorData['file'] = $file;
+      $errorData['line'] = $line;
+      $errorData['trace'] = debug_backtrace();
+    }
+
+    new apiData(array(
+      'exception' => $errorData,
+    ), true);
+
+    die();
   }
 
-  switch ($errno) {
-    case E_USER_ERROR:
-    ob_end_clean(); // Clean the output buffer and end it. This means when we show the error in a second, there won't be anything else with it.
-    header('HTTP/1.1 500 Internal Server Error');
-
-    $errstr2 = $errstr;
-
-    if (substr($errstr2, 0, 11) === 'JSONencoded') {
-      $errstr2 = json_decode(substr($errstr2, 11), true);
-    }
-
-    if ($apiRequest) {
-      new apiData(array(
-        'exception' => array(
-          'string' => $errstr2,
-          'contactEmail' => $config['email'],
-        ),
-      ), true);
-    }
-    else {
-      die(nl2br('<fieldset><legend><strong style="color: #ff0000;">Unrecoverable Error</strong></legend><strong>Error Text</strong><br />' . print_r($errstr2) . '<br /><br /><strong>What Should I Do Now?</strong><br />' . ($config['email'] ? 'You may wish to <a href="mailto:' . $config['email'] . '">notify the administration</a> of this error.' : 'No contact was specified for this installation, so try to wait it out.')  . '<br /><br /><strong>Are You The Host?</strong><br />Server errors are often database related. These may result from improper installation or a corrupted database. The documentation may provide clues, however.</fieldset>'));
-    }
-
-    if ($config['email'] && $config['emailErrors']) mail($config['email'], 'FIM3 System Error [' . $_SERVER['SERVER_NAME'] . ']', 'The following error was encountered by the server located at ' . $_SERVER['SERVER_NAME'] . ':<br /><br />' . print_r($errstr2));
-    break;
-
-    default:
-    // Do Nothing
-    break;
-  }
-
-  return true; // Don't execute PHP internal error handler
+  return false; // Let PHP run it's own error handler for everything else.
 }
 
 
