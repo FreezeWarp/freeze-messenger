@@ -64,30 +64,16 @@ class fimRoom {
     $this->archived = (bool) ($this->options & ROOM_ARCHIVED);
     $this->ownerId = (int) $roomData['owner'];
     $this->topic = $roomData['topic'];
-    $this->type = $roomData['roomType'];
     $this->parentalFlags = explode(',', $roomData['roomParentalFlags']);
     $this->parentalAge = (int) $roomData['roomParentalAge'];
     $this->defaultPermissions = (int) $roomData['defaultPermissions'];
+    $this->messageCount = (int) $roomData['messageCount'];
+    $this->lastMessageId = (int) $roomData['lastMessageId'];
+    $this->lastMessageTime = (int) $roomData['lastMessageTime'];
 
     $this->resolved = true;
 
     return true;
-  }
-
-
-
-  private function getOptionsField() {
-    /*    if ($options['officialRoom']) $optionsField |= ROOM_OFFICIAL;
-        if ($options['deleted']) $optionsField |= ;
-        if ($options['hiddenRoom']) $optionsField |= ROOM_HIDDEN;
-        if ($options['archivedRoom']) $optionsField |= ROOM_ARCHIVED;*/
-  }
-
-
-
-  /* Transitional Function */
-  public function getAsArray() {
-    return $this->roomData;
   }
 
 
@@ -192,6 +178,17 @@ class fimRoom {
     else {
       throw new Exception('A valid room was not specified for editRoom().');
     }
+  }
+
+  public function changeTopic($topic) {
+    global $database;
+
+    $database->createRoomEvent('topicChange', $this->id, $topic); // name, roomId, message
+    $database->update($database->sqlPrefix . "rooms", array(
+      'roomTopic' => $topic,
+    ), array(
+      'roomId' => $this->id,
+    ));
   }
 }
 ?>
