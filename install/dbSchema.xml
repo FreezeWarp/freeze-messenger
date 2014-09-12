@@ -189,7 +189,7 @@
     </table>
 
 
-    <table name="messageIndex" type="general" comment="A pseudo-cache that indexes every x (usually 1000) messages made in a room, thus allowing faster lookup. It must be rebuilt if corrupted.">
+    <table name="messageIndex" type="general" comment="A pseudo-cache that indexes every x (usually 1000) messages made in a room, thus allowing faster lookup. It must be rebuilt if corrupted. (I haven't had time to check to see the performance of both this and messageDates, but I'm guessing I just somehow was using bad indexes when I came up with this seemingly asinine idea. I'll quite likely remove both, or just keep them in for fun.">
       <column name="roomId" type="int" maxlen="6" comment="The ID of the room the message was made in." />
       <column name="interval" type="int" maxlen="15" comment="The interval of messages in the room with which the message ID corresponds." />
       <column name="messageId" type="int" maxlen="9" comment="The unique ID of the message." />
@@ -212,8 +212,8 @@
       <column name="roomId" type="int" maxlen="6" />
       <column name="userId" type="int" maxlen="8" />
       <column name="userName" type="string" maxlen="50" />
-      <column name="avatar" type="string" maxlen="1000" />
-      <column name="profile" type="string" maxlen="1000" />
+      <column name="avatar" type="string" maxlen="200" />
+      <column name="profile" type="string" maxlen="200" />
       <column name="userGroupId" type="int" maxlen="6" default="1" />
       <column name="socialGroupIds" type="string" maxlen="300" />
       <column name="userNameFormat" type="string" maxlen="100" comment="CSS-formatting to be applied to the user's name." />
@@ -289,7 +289,7 @@
       <!-- General -->
       <column name="roomId" type="int" maxlen="6" autoincrement="1" comment="The unique ID for the room." />
       <column name="roomName" type="string" maxlen="50" comment="The name of the room." />
-      <column name="roomAlias" type="string" maxlen="6" autoincrement="1" comment="An alias that can be used to identify a room by. This should be unique, and is meant to be used for otr and private rooms. Caching recommended." />
+      <column name="roomAlias" type="string" maxlen="6" comment="An alias that can be used to identify a room by. This should be unique, and is meant to be used for otr and private rooms. Caching recommended." />
       <column name="roomNameSearchable" type="string" maxlen="50" comment="The name of the room, formatted for searching." />
       <column name="roomTopic" type="string" maxlen="200" comment="The current topic of the room." />
       <column name="options" type="bitfield" bits="8" default="0" comment="A bitfield corrosponding to certain room options." />
@@ -506,8 +506,8 @@
       <column name="passwordLastReset" type="time" comment="The last time the user reset his or her password.." />
 
       <!-- User Display -->
-      <column name="avatar" type="string" maxlen="1000" comment="The absolute URI of the user's avatar." />
-      <column name="profile" type="string" maxlen="1000" comment="The absolute URI of the user's profile link or website." />
+      <column name="avatar" type="string" maxlen="200" comment="The absolute URI of the user's avatar." />
+      <column name="profile" type="string" maxlen="200" comment="The absolute URI of the user's profile link or website." />
       <column name="userNameFormat" type="string" maxlen="300" comment="CSS-formatting to be applied to the user's name for its display." />
 
       <!-- Prefs -->
@@ -604,8 +604,8 @@
       <column name="passwordSaltNum" type="int" maxlen="6" />
 
       <!-- User Display -->
-      <column name="avatar" type="string" maxlen="1000" />
-      <column name="profile" type="string" maxlen="1000" />
+      <column name="avatar" type="string" maxlen="200" />
+      <column name="profile" type="string" maxlen="200" />
       <column name="userNameFormat" type="string" maxlen="300" />
 
       <!-- Permissions -->
