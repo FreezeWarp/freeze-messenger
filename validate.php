@@ -107,17 +107,16 @@ elseif ($apiRequest !== true && $streamRequest !== true) { // Validate.php calle
   }
 
   if (!$goodVersion)
-    trigger_error('The server API is incompatible with the client API.', E_USER_ERROR);
+    new fimError('incompatibleAPI', 'The server API is incompatible with the client API.');
   elseif (!$config['anonymousUserId'] && !isset($request['userName'], $request['password']) && !isset($request['userId'], $request['password']))
-    trigger_error('Invalid login parameters: validate requires either [userName or userId] together with password.', E_USER_ERROR);
+    new fimError('missingLoginParameters', 'Invalid login parameters: validate requires either [userName or userId] together with password.');
 
   $loginMethod = 'credentials';
 }
 
 elseif ($apiRequest === true || $streamRequest === true) { // Validate.php called from API.
-  if (!isset($request['fim3_sessionHash'])) {
-    trigger_error('A sessionHash is required for all API requests. See the API documentation on obtaining these using validate.php.', E_USER_ERROR);
-  }
+  if (!isset($request['fim3_sessionHash']))
+    new fimError('sessionHashRequired', 'A sessionHash is required for all API requests. See the API documentation on obtaining these using validate.php.');
 
   $loginMethod = 'session';
 }
@@ -126,7 +125,7 @@ elseif ($apiRequest === true || $streamRequest === true) { // Validate.php calle
 
 ///* Session Lockout *///
 if ($loginMethod === 'credentials' || $loginMethod === 'session') {
-  if ($database->lockoutActive()) trigger_error('lockoutActive', E_USER_ERROR);
+  if ($database->lockoutActive()) new fimError('lockoutActive', 'You have attempted to login too many times. Please wait and try again.');
 }
 
 
@@ -135,49 +134,41 @@ if ($loginMethod === 'credentials' || $loginMethod === 'session') {
 ///* Verify the Login *///
 if ($loginMethod === 'credentials') {
   if (isset($request['userName']) || isset($request['userId'])) {
-    if (!isset($request['password'])) {
-      trigger_error('passwordRequired', E_USER_ERROR);
+    if ($request['passwordEncrypt'] === 'base64') $request['password'] = base64_decode($request['password']);
+
+
+    // If non-vanilla, we must use the integration database to authorise a user.
+    if (in_array($loginConfig['method'], $loginDefs['syncMethods'])) {
+      $userPre = $integrationDatabase->getUserFromUAC(array(
+        'userName' => $request['userName'],
+        'userId' => $request['userId']
+      ))->getAsUser(); // TODO
     }
     else {
-      if ($request['passwordEncrypt'] === 'base64') $request['password'] = base64_decode($request['password']);
-
-
-      // If non-vanilla, we must use the integration database to authorise a user.
-      if (in_array($loginConfig['method'], $loginDefs['syncMethods'])) {
-        $userPre = $integrationDatabase->getUserFromUAC(array(
-          'userName' => $request['userName'],
-          'userId' => $request['userId']
-        ))->getAsUser(); // TODO
+      if ($request['userId']) {
+        $userPre = $database->getUsers(array(
+          'userIds' => array($request['userId']),
+          'includePasswords' => true
+        ))->getAsUser();
       }
-      else {
-        if ($request['userId']) {
-          $userPre = $database->getUsers(array(
-            'userIds' => array($request['userId']),
-            'includePasswords' => true
-          ))->getAsUser();
-        }
-        elseif ($request['userName']) {
-          $userPre = $database->getUsers(array(
-            'userNames' => array($request['userName']),
-            'includePasswords' => true
-          ))->getAsUser();
-        }
-      }
-
-      if ($userPre->checkPassword($request['password'])) {
-        $user = $userPre;
-      }
-      else {
-        $database->lockoutIncrement();
-        trigger_error('invalidLogin', E_USER_ERROR);
+      elseif ($request['userName']) {
+        $userPre = $database->getUsers(array(
+          'userNames' => array($request['userName']),
+          'includePasswords' => true
+        ))->getAsUser();
       }
     }
-  }
-  elseif ($config['anonymousUserId']) {
-    $user = new fimUser($config['anonymousUserId']);
+
+    if ($userPre->checkPassword($request['password'])) {
+      $user = $userPre;
+    }
+    else {
+      $database->lockoutIncrement();
+      new fimError('invalidLogin', 'The login credentials supplied are invalid.');
+    }
   }
   else {
-    trigger_error('loginRequired', E_USER_ERROR);
+    $user = new fimUser($config['anonymousUserId']);
   }
 
 
@@ -192,20 +183,20 @@ elseif ($loginMethod === 'session') {
 
   if (!count($session)) {
     $database->lockoutIncrement();
-    trigger_error('invalidSession', E_USER_ERROR);
+    new fimError('invalidSession', 'Your session has expired. Please re-login.');
   }
   elseif ($session['userAgent'] !== $_SERVER['HTTP_USER_AGENT']) { // Require the UA match that of the one used to establish the session. Smart clients are encouraged to specify their own with their client name and version.
     $database->lockoutIncrement();
-    trigger_error('sessionMismatchBrowser', E_USER_ERROR);
+    new fimError('sessionMismatchBrowser', 'Your client or browser has changed. Please re-login.');
   }
   elseif ($session['sessionIp'] !== $_SERVER['REMOTE_ADDR']) { // This is a tricky one (in some instances, a user's IP may change throughout their session, especially over mobile), but generally the most certain to block any attempted forgeries. That said, IPs can, /theoretically/ be spoofed.
     $database->lockoutIncrement();
-    trigger_error('sessionMismatchIp', E_USER_ERROR);
+    new fimError('sessionMismatchIp', 'Your IP address has changed. Please re-login.');
   }
   else {
     $user = new fimUser($session); // Mostly identical, though a few additional properties do exist.
 
-    if ($session['sessionTime'] < time() - $config['sessionRefresh']) $database->refreshSession($session['sessionId']); // If five minutes have passed since the session has been generated, update it.
+    if ($session['sessionTime'] < time() - $config['sessionRefresh']) $database->refreshSession($session['sessionId']); // If five minutes (or whatever $config[sessionTime is set to) have passed since the session has been generated, update it.
   }
 }
 

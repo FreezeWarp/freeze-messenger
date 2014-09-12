@@ -16,13 +16,6 @@
 
 
 
-
-
-
-
-
-
-
 /********************************************************
 ************************ START **************************
 ******************** IM Functions ***********************
@@ -723,66 +716,6 @@ function fim_exceptionHandler($exception) {
   ), true);
 }
 
-
-/**
- * Our custom error handler is meant to display all E_USER_ERRORS to the user (usually via the API). All other errors should be handled by PHP's own error handler.
- *
- * @author Joseph Todd Parsons <josephtparsons@gmail.com>
- */
-
-function fim_errorHandler($code, $string, $file, $line) {
-  global $config;
-
-  if ($code === E_USER_ERROR) {
-    ob_end_clean(); // Clean the output buffer and end it. This means that when we show the error in a second, there won't be anything else with it.
-    header('HTTP/1.1 500 Internal Server Error'); // When an exception is encountered, we throw an error to tell the server that the software effectively is broken.
-
-    $errorData = array(
-      'string' => $string,
-      'contactEmail' => $config['email'],
-    );
-
-    if ($config['displayExceptions']) {
-      $errorData['file'] = $file;
-      $errorData['line'] = $line;
-      $errorData['trace'] = debug_backtrace();
-    }
-
-    new apiData(array(
-      'exception' => $errorData,
-    ), true);
-
-    die();
-  }
-
-  return false; // Let PHP run it's own error handler for everything else.
-}
-
-
-
-/** Format structured error data for string output. Additional information may be appended, such as the current time.
- *
- * @param string errorString
- * @param array errorData - An array of error data, formatted as <code>array($parameter => $value, $parameter => $value, ...)</code>.
- *
- * For instance, say an HTTP request could not be completed. You would want to call this function to format the relevant information:
- * <code>
- * trigger_error(E_USER_ERROR, fim_formatErrors(array(
- *   'errorContext' => 'http',
- *   'errorCode' => '404',
- *   'errorString' => 'File Not Found',
- * )));
- * </code>
- */
-function fim_formatErrors($errorString, $errorData) {
-  $returnString = '';
-  
-  foreach ($errorData AS $param => $value) {
-    $returnString .= "  $param: $value\n";
-  }
-  
-  return "$errorString; Additional Information:\n$returnString";
-}
 
 
 /**

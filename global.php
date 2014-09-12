@@ -90,6 +90,7 @@ require(dirname(__FILE__) . '/functions/fim_databaseUAC.php'); // FIM-specific E
 require(dirname(__FILE__) . '/functions/fim_user.php'); // FIM-specific Extensions
 require(dirname(__FILE__) . '/functions/fim_room.php'); // FIM-specific Extensions
 require(dirname(__FILE__) . '/functions/fim_cache.php'); // FIM-specific Extension to APC Wrapper
+require(dirname(__FILE__) . '/functions/fim_error.php'); // FIM Custom Error Class
 require(dirname(__FILE__) . '/functions/fim_general.php'); // Various Functions
 
 
@@ -155,8 +156,7 @@ if (!isset($defaultLanguage)) {
 
 
 
-/* Better Error Handling and Output Buffering */
-set_error_handler('fim_errorHandler'); // Defined in fim_general.php
+/* Better Error Handling */
 set_exception_handler('fim_exceptionHandler'); // Defined in fim_general.php
 
 

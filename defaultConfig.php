@@ -390,7 +390,7 @@ $defaultConfig = array(
 
   /*** Error Handling and Logging ***/
   'email' => '',
-  'displayExceptions' => true, // TOOD: False by default.
+  'displayBacktrace' => true, // TOOD: False by default.
 
   /* Advanced Logging */
   'accessLogEnabled' => true,
