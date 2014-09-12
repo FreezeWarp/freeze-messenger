@@ -131,7 +131,7 @@ $request = fim_sanitizeGPC('g', array(
     'cast' => 'int',
   ),
 
-  'messageIdEnd' => array(
+    'messageIdEnd' => array(
     'default' => 0,
     'cast' => 'int',
   ),
@@ -182,19 +182,13 @@ $room = $database->getRoom($request['roomId']);
 /* Data Predefine */
 $xmlData = array(
   'getMessages' => array(
-    'activeUser' => array(
-      'userId' => (int) $user['userId'],
-      'userName' => ($user['userName']),
-    ),
-    'errStr' => $errStr,
-    'errDesc' => $errDesc,
     'messages' => array(),
   ),
 );
 
 
-if (!$room->id) throw new Exception('badRoom'); // Room doesn't exist.
-elseif (!($room->hasPermission($user['userId']) & ROOM_PERMISSION_VIEW)) throw new Exception('noperm'); // Don't have permission.
+if (!$room->id) new fimError('badRoom', 'The specified room does not exist.'); // Room doesn't exist.
+elseif (!($database->hasPermission($user, $room) & ROOM_PERMISSION_VIEW)) new fimError('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
 else {
   /* Process Ping */
   if (!$request['noping']) $database->setUserStatus($room->id);
@@ -268,5 +262,5 @@ $xmlData['getMessages']['errDesc'] = (string) $errDesc;
 
 
 /* Output Data */
-echo fim_outputApi($xmlData);
+new apiData($xmlData, true);
 ?>

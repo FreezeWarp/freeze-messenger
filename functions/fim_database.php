@@ -1343,7 +1343,7 @@ class fimDatabase extends databaseSQL
     global $user; // TODO
 
     $conditions = array(
-      'userId' => $user['userId'],
+      'userId' => $user->id,
       'roomId' => $roomId
     );
 
