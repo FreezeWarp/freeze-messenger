@@ -1154,6 +1154,10 @@ class fimDatabase extends databaseSQL
     $this->delete($this->sqlPrefix . 'sessions', array(
       'sessionTime' => $this->now($config['sessionExpires'], 'lte')
     ));
+
+    $this->delete($this->sqlPrefix . 'sessionLockout', array(
+      'expires' => $this->now(0, 'lte')
+    ));
   }
 
 

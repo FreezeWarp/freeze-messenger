@@ -44,6 +44,7 @@ $defaultConfig = array(
 
   /* Lockout */
   'lockoutCount' => 5,
+  'lockoutExpires' => 15 * 60,
 
 
   /*** FIM Features ***/
