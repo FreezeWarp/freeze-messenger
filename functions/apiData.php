@@ -103,9 +103,10 @@ class apiData {
     elseif ($value === true)   return 'true';
     elseif ($value === false)  return 'false';
     elseif (is_string($value)) return '"' . str_replace("\n", '\n', addcslashes($value,"\"\\")) . '"';
-    elseif (is_int($value) || is_float($value))    return $value;
+    elseif (is_int($value) || is_float($value)) return $value;
+    elseif (is_object($value)) return '"[OBJECT]"';
     elseif ($value == '')      return '""';
-    else throw new Exception('Unrecognised value.'); // Note: Uh... this could get caught by itself. Maybe just die()?
+    else die('Unrecognised value type:' . gettype($value)); // We die() instead of throwing here in order to avoid recursion with the stacktrace.
   }
 
 
