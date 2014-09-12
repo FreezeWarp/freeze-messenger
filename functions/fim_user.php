@@ -99,23 +99,24 @@ class fimUser {
     }
 
 
+    /* Set Basic Information */
+    $this->id = (int) $userData['userId'];
+    $this->name = $userData['userName'];
+    $this->privs = (int) $userData['privs'];
+    
+    
+    /* Priviledges */
     // If certain features are disabled, remove user priviledges. The bitfields should be maintained, however, for when a feature is reenabled.
-    if (!$generalCache->getConfig('userRoomCreation')) $userData['userPrivs'] &= ~USER_PRIV_CREATE_ROOMS;
-    if (!$generalCache->getConfig('userPrivateRoomCreation')) $userData['userPrivs'] &= ~(USER_PRIV_PRIVATE_ALL | USER_PRIV_PRIVATE_FRIENDS); // Note: does not disable the usage of existing private rooms. Use "privateRoomsEnabled" for this.
-    if ($generalCache->getConfig('disableTopic')) $userData['userPrivs'] &= ~USER_PRIV_TOPIC; // Topics are disabled (in fact, this one should also disable the returning of topics; TODO).
+    if (!$generalCache->getConfig('userRoomCreation')) $this->privs &= ~USER_PRIV_CREATE_ROOMS;
+    if (!$generalCache->getConfig('userPrivateRoomCreation')) $this->privs &= ~(USER_PRIV_PRIVATE_ALL | USER_PRIV_PRIVATE_FRIENDS); // Note: does not disable the usage of existing private rooms. Use "privateRoomsEnabled" for this.
+    if ($generalCache->getConfig('disableTopic')) $this->privs &= ~USER_PRIV_TOPIC; // Topics are disabled (in fact, this one should also disable the returning of topics; TODO).
 
     // Certain bits imply other bits. Make sure that these are consistent.
-    if ($userData['privs'] & USER_PRIV_PRIVATE_ALL) $userData['privs'] |= USER_PRIV_PRIVATE_FRIENDS;
+    if ($this->privs & USER_PRIV_PRIVATE_ALL) $this->privs |= USER_PRIV_PRIVATE_FRIENDS;
 
     // Superuser override (note that any user with GRANT or in the $config superuser array is automatically given all permissions, and is marked as protected. The only way, normally, to remove a user's GRANT status, because they are automatically protected, is to do so directly in the database.)
-    if (in_array($this->id, $loginConfig['superUsers']) || ($userData['privs'] & ADMIN_GRANT)) $userData['privs'] = 0x7FFFFFFF;
-    elseif ($userData['privs'] & ADMIN_ROOMS) $userData['privs'] |= (USER_PRIV_VIEW | USER_PRIV_POST | USER_PRIV_TOPIC); // Being a super-moderator grants a user the ability to view, post, and make topic changes in all rooms.
-
-
-    /* Set Basic Information */
-    $this->id = $userData['userId'];
-    $this->name = $userData['userName'];
-    $this->privs = $userData['privs'];
+    if (in_array($this->id, $loginConfig['superUsers']) || ($this->privs & ADMIN_GRANT)) $this->privs = 0x7FFFFFFF;
+    elseif ($this->privs & ADMIN_ROOMS) $this->privs |= (USER_PRIV_VIEW | USER_PRIV_POST | USER_PRIV_TOPIC); // Being a super-moderator grants a user the ability to view, post, and make topic changes in all rooms.
 
 
     /* Anon User Information */

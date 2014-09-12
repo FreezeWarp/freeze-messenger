@@ -48,7 +48,7 @@ $request = fim_sanitizeGPC('g', array(
     'default' => '',
   ),
 
-  'showOnly' => array(
+  'showOnly' => array( // TODO
     'cast' => 'jsonList',
     'valid' => array('banned', '!banned', '!friends', 'friends', '!ignored', 'ignored', ''),
     'default' => '',
@@ -72,11 +72,9 @@ $request = fim_sanitizeGPC('g', array(
 $xmlData = array(
   'getUsers' => array(
     'activeUser' => array(
-      'userId' => (int) $user['userId'],
-      'userName' => ($user['userName']),
+      'userId' => (int) $user->id,
+      'userName' => $user->name,
     ),
-    'errStr' => ($errStr),
-    'errDesc' => ($errDesc),
     'users' => array(),
   ),
 );
@@ -87,13 +85,14 @@ $xmlData = array(
 $users = $slaveDatabase->getUsers(array(
   'userIds' => $request['users'],
   'userNames' => $request['userNames']
-), array($request['sort'] => 'asc'))->getAsArray('userId');
+), array($request['sort'] => 'asc'))->getAsUsers();
 
 
 
 /* Run Seperate Queries for Integration Methods
- * TODO: These should, long term, probably be plugins. */
-switch ($loginConfig['method']) {
+ * TODO: These should, long term, probably be plugins.
+ * TODO: vB and PHPBB both broken. */
+/*switch ($loginConfig['method']) {
   case 'vbulletin3': case 'vbulletin4':
   $userDataForums = $integrationDatabase->select(
     array(
@@ -134,58 +133,46 @@ switch ($loginConfig['method']) {
   default:
   $userDataForums = array();
   break;
-}
+}*/
 
 
 /* Start Processing */
 foreach ($users AS $userId => $userData) {
-  $xmlData['getUsers']['users']['user ' . $userData['userId']] = array(
-    'userName' => ($userData['userName']),
-    'userId' => (int) $userData['userId'],
+  $xmlData['getUsers']['users']['user ' . $userId] = array(
+    'userName' => $userData->name,
+    'userId' => $userData->id,
   );
 
   if (in_array('profile', $request['info'])) {
-    $xmlData['getUsers']['users']['user ' . $userData['userId']]['avatar'] = $userData['avatar'];
-    $xmlData['getUsers']['users']['user ' . $userData['userId']]['profile'] = $userData['profile'];
-    $xmlData['getUsers']['users']['user ' . $userData['userId']]['userNameFormat'] = $userData['userNameFormat'];
-    $xmlData['getUsers']['users']['user ' . $userData['userId']]['defaultFormatting'] = array(
-      'color' => ($userData['defaultColor']),
-      'highlight' => ($userData['defaultHighlight']),
-      'fontface' => ($userData['defaultFontface']),
-      'general' => (int) $userData['defaultFormatting']
-    );
-    $xmlData['getUsers']['users']['user ' . $userData['userId']]['postCount'] = (int) (isset($userDataForums[$userId]['posts']) ? $userDataForums[$userId]['posts'] : 0);
-    $xmlData['getUsers']['users']['user ' . $userData['userId']]['joinDate'] = (int) (isset($userDataForums[$userId]['joinDate']) ? $userDataForums[$userId]['joinDate'] : 0);
-    $xmlData['getUsers']['users']['user ' . $userData['userId']]['userTitle'] = (isset($userDataForums[$userId]['userTitle']) ? $userDataForums[$userId]['userTitle'] : (isset($config['defaultUserTitle']) ? $config['defaultUserTitle'] :  ''));
+    $xmlData['getUsers']['users']['user ' . $userId]['avatar'] = $userData->avatar;
+    $xmlData['getUsers']['users']['user ' . $userId]['profile'] = $userData->profile;
+    $xmlData['getUsers']['users']['user ' . $userId]['userNameFormat'] = $userData->nameFormat;
+    $xmlData['getUsers']['users']['user ' . $userId]['messageFormatting'] = $userData->messageFormatting;
+//    $xmlData['getUsers']['users']['user ' . $userId]['postCount'] = (int) (isset($userDataForums[$userId]['posts']) ? $userDataForums[$userId]['posts'] : 0); TODO
+//    $xmlData['getUsers']['users']['user ' . $userId]['joinDate'] = (int) (isset($userDataForums[$userId]['joinDate']) ? $userDataForums[$userId]['joinDate'] : 0);
+//    $xmlData['getUsers']['users']['user ' . $userId]['userTitle'] = (isset($userDataForums[$userId]['userTitle']) ? $userDataForums[$userId]['userTitle'] : (isset($config['defaultUserTitle']) ? $config['defaultUserTitle'] :  ''));
   }
 
   if (in_array('groups', $request['info'])) {
-    $xmlData['getUsers']['users']['user ' . $userData['userId']]['userGroup'] = (int) $userData['userGroup'];
-    $xmlData['getUsers']['users']['user ' . $userData['userId']]['socialGroups'] = ($userData['socialGroups']);
-    $xmlData['getUsers']['users']['user ' . $userData['userId']]['superUser'] = (in_array($userData['userId'], $loginConfig['superUsers']) && fim_isSuper() ? true : false); // We only tell other super users if a user is a superuser. It is something of a security risk otherwise.
+    $xmlData['getUsers']['users']['user ' . $userId]['mainGroupId'] = $userData->mainGroupId;
+    $xmlData['getUsers']['users']['user ' . $userId]['allGroupIds'] = new apiOutputList($userData->allGroupIds);
+    $xmlData['getUsers']['users']['user ' . $userId]['socialGroupIds'] = new apiOutputList($userData->socialGroupIds);
   }
 
-  if ($userData['userId'] === $user['userId']
+  if ($userId === $user->id
     && in_array('self', $request['info'])) {
-    $xmlData['getUsers']['users']['user ' . $userData['userId']]['defaultRoom'] = $userData['defaultRoom'];
-    $xmlData['getUsers']['users']['user ' . $userData['userId']]['options'] = $userData['options'];
-    $xmlData['getUsers']['users']['user ' . $userData['userId']]['parentalAge'] = $userData['parentalAge'];
-    $xmlData['getUsers']['users']['user ' . $userData['userId']]['parentalFlags'] = explode(',', $userData['parentalFlags']);
-//TODO        $xmlData['getUsers']['users']['user ' . $userData['userId']]['ignoreList'] = $userData['ignoreList'];
-//TODO        $xmlData['getUsers']['users']['user ' . $userData['userId']]['favRooms'] = $userData['favRooms'];
-//TODO        $xmlData['getUsers']['users']['user ' . $userData['userId']]['watchRooms'] = $userData['watchRooms'];
+    $xmlData['getUsers']['users']['user ' . $userId]['defaultRoom'] = $userData->defaultRoom;
+    $xmlData['getUsers']['users']['user ' . $userId]['options'] = $userData->options;
+    $xmlData['getUsers']['users']['user ' . $userId]['parentalAge'] = $userData->parentalAge;
+    $xmlData['getUsers']['users']['user ' . $userId]['parentalFlags'] = new apiOutputList($userData->parentalFlags);
+//TODO        $xmlData['getUsers']['users']['user ' . $userId]['ignoreList'] = $userData['ignoreList'];
+//TODO        $xmlData['getUsers']['users']['user ' . $userId]['favRooms'] = $userData['favRooms'];
+//TODO        $xmlData['getUsers']['users']['user ' . $userId]['watchRooms'] = $userData['watchRooms'];
   }
 }
 
 
 
-/* Update Data for Errors */
-$xmlData['getUsers']['errStr'] = ($errStr);
-$xmlData['getUsers']['errDesc'] = ($errDesc);
-if ($config['dev']) $xmlData['request'] = $request;
-
-
-
 /* Output Data */
-echo fim_outputApi($xmlData);
+new apiData($xmlData, true);
 ?>

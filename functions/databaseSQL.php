@@ -1127,12 +1127,8 @@ class databaseSQL extends database {
 
 
     /* Process Conditions (Must be Array) */
-    if ($conditionArray !== false) {
-      if (is_array($conditionArray)) {
-        if (count($conditionArray) > 0) {
-          $finalQuery['where'] = $this->recurseBothEither($conditionArray, $reverseAlias);
-        }
-      }
+    if (is_array($conditionArray) && count($conditionArray)) {
+      $finalQuery['where'] = $this->recurseBothEither($conditionArray, $reverseAlias);
     }
 
 
@@ -1234,18 +1230,15 @@ LIMIT
    *
    * @param array $conditionArray - The conditions to transform into proper SQL.
    * @param array $reverseAlias - An array corrosponding to column aliases and their database counterparts.
-   * @param int $d - The level of recursion.
    *
    * @return string
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  private function recurseBothEither($conditionArray, $reverseAlias = false, $d = 0, $type = 'both') {
+  private function recurseBothEither($conditionArray, $reverseAlias = false, $type = 'both') {
     $i = 0;
-    $h = 0;
-    $whereText = array();
-
 
     if (!is_array($conditionArray)) throw new Exception('Condition array must be an array.');
+    elseif (!count($conditionArray)) return 'true';
 
     // $key is usually a column, $value is a formatted value for the select() function.
     foreach ($conditionArray AS $key => $value) {
@@ -1253,8 +1246,8 @@ LIMIT
 
       if (strstr($key, ' ') !== false) list($key) = explode(' ', $key); // A space can be used to reference the same key twice in different contexts. It's basically a hack, but it's better than using further arrays.
 
-      if ($key === 'both' || $key === 'either' || $key === 'neither') {
-        $sideTextFull[$i] = $this->recurseBothEither($value, $reverseAlias, $d + 1, $key);
+      if ($key === 'both' || $key === 'either' || $key === 'neither') { // TODO: neither?
+        $sideTextFull[$i] = $this->recurseBothEither($value, $reverseAlias, $key);
       }
       else {
         /* Value is currently stored as:
@@ -1298,24 +1291,14 @@ LIMIT
     }
 
 
-    // Combine the query array if multiple entries exist, or just get the first entry.
-    if (isset($this->concatTypes[$type])) {
-      $condSymbol = $this->concatTypes[$type];
-    }
-    else {
+    if (!isset($this->concatTypes[$type])) {
       $this->triggerError('Unrecognised Concatenation Operator', array(
         'operator' => $type,
       ), 'validation');
     }
 
-    $whereText[$h] = implode($condSymbol, $sideTextFull);
 
-    if (count($whereText) === 0) return false;
-    elseif (count($whereText) === 1) $whereText = $whereText[0]; // Get the query string from the first (and only) index.
-    else $whereText = implode($this->concatTypes['both'], $whereText);
-
-
-    return "($whereText)"; // Return condition string. We wrap parens around to support multiple levels of conditions/recursion.
+    return '(' . implode($this->concatTypes[$type], $sideTextFull) . ')'; // Return condition string. We wrap parens around to support multiple levels of conditions/recursion.
   }
 
 

@@ -1937,6 +1937,23 @@ class fimDatabaseResult extends databaseResult {
     return $return;
   }
 
+  
+  /**
+   * @return array
+   *
+   * @internal This function may use too much memory. I'm not... exactly sure how to fix this.
+   */
+  function getAsUsers() {
+    $users = $this->getAsArray('userId');
+    $return = array();
+
+    foreach ($users AS $userId => $user) {
+      $return[$userId] = new fimUser($user);
+    }
+
+    return $return;
+  }
+
 
 
   function getAsRoom() {
