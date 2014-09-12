@@ -292,23 +292,16 @@ class databaseSQL extends database {
       case 'index':     return $this->indexQuoteStart . $this->escape($values[1], 'index') . $this->indexQuoteEnd;                                              break;
 
       case 'equation':  // Only partially implemented, because equations are stupid. Don't use them if possible.
-      if ($values[2] === 'insert') { // TODO: Remove this. It's actually uneeded.
-        return preg_replace_callback('/\$([a-zA-Z]+)/', function($matches) {
-          return '0';
-        }, $values[1]);
-      }
-      else {
         return preg_replace_callback('/\$([a-zA-Z]+)/', function($matches) {
           return $matches[1];
         }, $values[1]);
-      }
       break;
 
       case 'array':
         foreach ($values[1] AS &$item) {
           if (!$this->isTypeObject($item)) $item = $this->str($item);
 
-          $item = $this->formatValue($item[0], $item[1], 'insert');
+          $item = $this->formatValue($item[0], $item[1]);
         }
 
         return $this->arrayQuoteStart . implode($this->arraySeperator, $values[1]) . $this->arrayQuoteEnd; // Combine as list.
