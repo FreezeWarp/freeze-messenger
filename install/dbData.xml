@@ -243,6 +243,28 @@
     </table>
 
 
+    <table name="emoticons">
+      <column name="emoticonText">:|</column>
+      <column name="emoticonFile">webpro/client/smilies/icon_neutral.gif</column>
+    </table>
+    <table name="emoticons">
+      <column name="emoticonText">:(</column>
+      <column name="emoticonFile">webpro/client/smilies/icon_e_sad.gif</column>
+    </table>
+    <table name="emoticons">
+      <column name="emoticonText">:)</column>
+      <column name="emoticonFile">webpro/client/smilies/icon_e_smile.gif</column>
+    </table>
+    <table name="emoticons">
+      <column name="emoticonText">8)</column>
+      <column name="emoticonFile">webpro/client/smilies/icon_cool.gif</column>
+    </table>
+    <table name="emoticons">
+      <column name="emoticonText">:D</column>
+      <column name="emoticonFile">webpro/client/smilies/icon_e_biggrin.gif</column>
+    </table>
+
+
     <!-- Table users -->
     <!-- The addUser function should be tested separately (as with addRoom, etc.) -->
     <table name="users">
