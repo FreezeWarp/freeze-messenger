@@ -125,7 +125,6 @@ elseif ($apiRequest === true || $streamRequest === true) { // Validate.php calle
 
 
 
-
 ///* Session Lockout *///
 if ($loginMethod === 'credentials' || $loginMethod === 'session') {
   if ($database->lockoutActive()) throw new Exception('lockoutActive');

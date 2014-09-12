@@ -798,12 +798,14 @@ class databaseResult {
       case 'mysql':
       switch ($operation) {
         case 'fetchAsArray' : return (($data = mysql_fetch_assoc($args[1])) === false ? false : $data); break;
+        case 'getCount' : return mysql_num_rows($args[1]); break;
       }
       break;
 
       case 'mysqli':
       switch ($operation) {
         case 'fetchAsArray' : return (($data = $this->queryData->fetch_assoc()) === null ? false : $data); break;
+        case 'getCount' : return $args[1]->num_rows; break;
       }
       break;
 
@@ -825,6 +827,11 @@ class databaseResult {
   */
   public function setQuery($queryData) {
     $this->queryData = $queryData;
+  }
+
+
+  public function getCount() {
+    return $this->functionMap('getCount', $this->queryData);
   }
 
 
@@ -897,6 +904,14 @@ class databaseResult {
     }
 
     return $columnValues;
+  }
+
+
+
+  public function getColumnValue($column) {
+    $row = $this->functionMap('fetchAsArray', $this->queryData);
+
+    return $row[$column];
   }
 
 

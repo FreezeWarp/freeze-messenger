@@ -42,6 +42,10 @@ $defaultConfig = array(
   'sessionRefresh' => 60 * 5,
 
 
+  /* Lockout */
+  'lockoutCount' => 5,
+
+
   /*** FIM Features ***/
 
   /* Rooms */

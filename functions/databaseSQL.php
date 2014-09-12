@@ -290,13 +290,25 @@ class databaseSQL extends database {
       case 'tableA':    return $this->tableAliasQuoteStart . $this->escape($values[1], 'tableA') . $this->tableAliasQuoteEnd;                                   break;
       case 'database':  return $this->databaseQuoteStart . $this->escape($values[1], 'database') . $this->databaseQuoteEnd;                                     break;
       case 'index':     return $this->indexQuoteStart . $this->escape($values[1], 'index') . $this->indexQuoteEnd;                                              break;
-      case 'equation':  break; // Only partially implemented, because equations are stupid. Don't use them if possible.
+
+      case 'equation':  // Only partially implemented, because equations are stupid. Don't use them if possible.
+      if ($values[2] === 'insert') { // TODO: Remove this. It's actually uneeded.
+        return preg_replace_callback('/\$([a-zA-Z]+)/', function($matches) {
+          return '0';
+        }, $values[1]);
+      }
+      else {
+        return preg_replace_callback('/\$([a-zA-Z]+)/', function($matches) {
+          return $matches[1];
+        }, $values[1]);
+      }
+      break;
 
       case 'array':
         foreach ($values[1] AS &$item) {
           if (!$this->isTypeObject($item)) $item = $this->str($item);
 
-          $item = $this->formatValue($item[0], $item[1]);
+          $item = $this->formatValue($item[0], $item[1], 'insert');
         }
 
         return $this->arrayQuoteStart . implode($this->arraySeperator, $values[1]) . $this->arrayQuoteEnd; // Combine as list.
@@ -988,16 +1000,16 @@ class databaseSQL extends database {
   ************************* END ***************************
   ******************* Table Functions *********************
   *********************************************************/
-  
-  
-  
+
+
+
   /*********************************************************
-  ************************ START **************************
-  ******************** Row Functions **********************
-  *********************************************************/  
-  
+   ************************ START **************************
+   ******************** Row Functions **********************
+   *********************************************************/
+
   public function select($columns, $conditionArray = false, $sort = false, $limit = false) {
-      /* Define Variables */
+    /* Define Variables */
     $finalQuery = array(
       'columns' => array(),
       'tables' => array(),
@@ -1011,106 +1023,112 @@ class databaseSQL extends database {
     $subQueries = array();
 
 
-    /* Process Columns (Must be Array) */
-    if (is_array($columns)) {
-      if (count($columns) > 0) {
-        foreach ($columns AS $tableName => $tableCols) {
-          if (strpos($tableName, 'sub ') === 0) {
-            $subQueries[substr($tableName, 4)] = $tableCols;
-          }
-          elseif (strlen($tableName) > 0) { // If the tableName is defined...
-            if (isset($subQueries[$tableName])) {
-              $finalQuery['tables'][] = '(' . $subQueries[$tableName] . ') AS ' . $tableName; // TODO, obviously
-//              $finalQuery['tables'][] = $this->formatValue('tableAlias', $tableParts[0], $tableParts[1]); // Identify the table as [tableName] AS [tableAlias]; note: may be removed if the table is part of a join.
+    /* Process Columns */
+    // If columns is a string, then it is a table name, whose columns should be guessed from the other parameters. For now, this guessing is very limited -- just taking the array_keys of $conditionArray (TODO).
+    if (is_string($columns)) {
+      $columns = array(
+        "$columns" => array_keys($conditionArray)
+      );
+    }
+    elseif (!is_array($columns)) {
+      $this->triggerError('Invalid Select Array (Columns Not String or Array)', array(), 'validation');
+    }
+    elseif (!count($columns)) {
+      $this->triggerError('Invalid Select Array (Columns Array Empty)', array(), 'validation');
+    }
+
+
+    // Process $columns
+    foreach ($columns AS $tableName => $tableCols) {
+      // Make sure tableName is a valid string.
+      if (!is_string($tableName) || !strlen($tableName)) {
+        $this->triggerError('Invalid Select Array (Invalid Table Name)', array(
+          'tableName' => $tableName,
+        ), 'validation');
+      }
+
+      if (strpos($tableName, 'sub ') === 0) { // If the table is identified as being part of a subquery. (TODO)
+        $subQueries[substr($tableName, 4)] = $tableCols;
+
+        continue;
+      }
+      elseif (isset($subQueries[$tableName])) { // If the table was earlier defined as a subquery. (TODO)
+        $finalQuery['tables'][] = '(' . $subQueries[$tableName] . ') AS ' . $tableName; // TODO: Format value?
+      }
+      elseif (strstr($tableName, ' ') !== false) { // A space can be used to create a table alias, which is sometimes required for different queries.
+        $tableParts = explode(' ', $tableName);
+
+        $finalQuery['tables'][] = $this->formatValue('tableAlias', $tableParts[0], $tableParts[1]); // Identify the table as [tableName] AS [tableAlias]; note: may be removed if the table is part of a join.
+
+        $tableName = $tableParts[1];
+      }
+      else {
+        $finalQuery['tables'][] = $this->formatValue('table', $tableName); // Identify the table as [tableName]; note: may be removed if the table is part of a join.
+      }
+
+      if (is_array($tableCols)) { // Table columns have been defined with an array, e.g. ["a", "b", "c"]
+        foreach($tableCols AS $colName => $colAlias) {
+          if (is_int($colName)) $colName = $colAlias;
+
+          if (strlen($colName) > 0) {
+            if (strstr($colName, ' ') !== false) { // A space can be used to create identical columns in different contexts, which is sometimes required for different queries.
+              $colParts = explode(' ', $colName);
+              $colName = $colParts[0];
             }
-            elseif (strstr($tableName, ' ') !== false) { // A space can be used to create a table alias, which is sometimes required for different queries.
-              $tableParts = explode(' ', $tableName);
 
-              $finalQuery['tables'][] = $this->formatValue('tableAlias', $tableParts[0], $tableParts[1]); // Identify the table as [tableName] AS [tableAlias]; note: may be removed if the table is part of a join.
+            if (is_array($colAlias)) { // Used for advance structures and function calls.
+              if (isset($colAlias['context'])) {
+                throw new Exception('Deprecated context.'); // TODO
+              }
 
-              $tableName = $tableParts[1];
+              if ($colAlias['joinOn']) {
+                $joinTableName = array_pop($finalQuery['tables']);;
+
+                $finalQuery['join'][] = $joinTableName . ' ON ' . $reverseAlias[$colAlias['joinOn']] . ' = ' . $this->formatValue('tableColumn', $tableName, $colName);
+              }
+              else {
+                $finalQuery['columns'][] = $this->formatValue('tableColumnAlias', $tableName, $colName, $colAlias['alias']);
+              }
+
+              $reverseAlias[$colAlias['alias']] = $this->formatValue('tableColumn', $tableName, $colName);
             }
             else {
-              $finalQuery['tables'][] = $this->formatValue('table', $tableName); // Identify the table as [tableName]; note: may be removed if the table is part of a join.
-            }
-
-            if (is_array($tableCols)) { // Table columns have been defined with an array, e.g. ["a", "b", "c"]
-              foreach($tableCols AS $colName => $colAlias) {
-                if (is_int($colName)) $colName = $colAlias;
-
-                if (strlen($colName) > 0) {
-                  if (strstr($colName, ' ') !== false) { // A space can be used to create identical columns in different contexts, which is sometimes required for different queries.
-                    $colParts = explode(' ', $colName);
-                    $colName = $colParts[0];
-                  }
-
-                  if (is_array($colAlias)) { // Used for advance structures and function calls.
-                    if (isset($colAlias['context'])) {
-                      throw new Exception('Deprecated context.'); // TODO
-                    }
-
-                    if ($colAlias['joinOn']) {
-                      $joinTableName = array_pop($finalQuery['tables']);;
-
-                      $finalQuery['join'][] = $joinTableName . ' ON ' . $reverseAlias[$colAlias['joinOn']] . ' = ' . $this->formatValue('tableColumn', $tableName, $colName);
-                    }
-                    else {
-                      $finalQuery['columns'][] = $this->formatValue('tableColumnAlias', $tableName, $colName, $colAlias['alias']);
-                    }
-
-                    $reverseAlias[$colAlias['alias']] = $this->formatValue('tableColumn', $tableName, $colName);
-                  }
-                  else {
-                    $finalQuery['columns'][] = $this->formatValue('tableColumnAlias', $tableName, $colName, $colAlias);
-                    $reverseAlias[$colAlias] = $this->formatValue('tableColumn', $tableName, $colName);
-                  }
-                }
-                else {
-                  $this->triggerError('Invalid Select Array (Empty Column Name)', array(
-                    'tableName' => $tableName,
-                    'columnName' => $colName,
-                  ), 'validation');
-                }
-              }
-            }
-            elseif (is_string($tableCols)) { // Table columns have been defined with a string list, e.g. "a,b,c"
-              $colParts = explode(',', $tableCols); // Split the list into an array, delimited by commas
-
-              foreach ($colParts AS $colPart) { // Run through each list item
-                $colPart = trim($colPart); // Remove outside whitespace from the item
-
-                if (strpos($colPart, ' ') !== false) { // If a space is within the part, then the part is formatted as "columnName columnAlias"
-                  $colPartParts = explode(' ', $colPart); // Divide the piece
-
-                  $colPartName = $colPartParts[0]; // Set the name equal to the first part of the piece
-                  $colPartAlias = $colPartParts[1]; // Set the alias equal to the second part of the piece
-                }
-                else { // Otherwise, the column name and alias are one in the same.
-                  $colPartName = $colPart; // Set the name and alias equal to the piece
-                  $colPartAlias = $colPart;
-                }
-
-                //$finalQuery['columns'][] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd . $this->tableColumnDivider . $this->columnQuoteStart . $columnPartName . $this->columnQuoteStart . ' AS ' . $this->columnAliasQuoteEnd . $columnPartAlias . $this->columnAliasQuoteStart;
-                // $reverseAlias[$columnPartAlias] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd . $this->tableColumnDivider . $this->columnQuoteStart . $columnPartName . $this->columnQuoteStart;
-
-                $finalQuery['columns'][] = $this->formatValue('tableColumnAlias', $tableName, $colPartName, $colPartAlias);
-                $reverseAlias[$colPartAlias] = $this->formatValue('tableColumn', $tableName, $colPartName);
-              }
+              $finalQuery['columns'][] = $this->formatValue('tableColumnAlias', $tableName, $colName, $colAlias);
+              $reverseAlias[$colAlias] = $this->formatValue('tableColumn', $tableName, $colName);
             }
           }
           else {
-            $this->triggerError('Invalid Select Array (Empty Table Name)', array(
+            $this->triggerError('Invalid Select Array (Empty Column Name)', array(
               'tableName' => $tableName,
+              'columnName' => $colName,
             ), 'validation');
           }
         }
       }
-      else {
-        $this->triggerError('Invalid Select Array (Columns Array Empty)', array(), 'validation');
+      elseif (is_string($tableCols)) { // Table columns have been defined with a string list, e.g. "a,b,c"
+        $colParts = explode(',', $tableCols); // Split the list into an array, delimited by commas
+
+        foreach ($colParts AS $colPart) { // Run through each list item
+          $colPart = trim($colPart); // Remove outside whitespace from the item
+
+          if (strpos($colPart, ' ') !== false) { // If a space is within the part, then the part is formatted as "columnName columnAlias"
+            $colPartParts = explode(' ', $colPart); // Divide the piece
+
+            $colPartName = $colPartParts[0]; // Set the name equal to the first part of the piece
+            $colPartAlias = $colPartParts[1]; // Set the alias equal to the second part of the piece
+          }
+          else { // Otherwise, the column name and alias are one in the same.
+            $colPartName = $colPart; // Set the name and alias equal to the piece
+            $colPartAlias = $colPart;
+          }
+
+          //$finalQuery['columns'][] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd . $this->tableColumnDivider . $this->columnQuoteStart . $columnPartName . $this->columnQuoteStart . ' AS ' . $this->columnAliasQuoteEnd . $columnPartAlias . $this->columnAliasQuoteStart;
+          // $reverseAlias[$columnPartAlias] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd . $this->tableColumnDivider . $this->columnQuoteStart . $columnPartName . $this->columnQuoteStart;
+
+          $finalQuery['columns'][] = $this->formatValue('tableColumnAlias', $tableName, $colPartName, $colPartAlias);
+          $reverseAlias[$colPartAlias] = $this->formatValue('tableColumn', $tableName, $colPartName);
+        }
       }
-    }
-    else {
-      $this->triggerError('Invalid Select Array (Columns Not an Array)', array(), 'validation');
     }
 
 

@@ -238,7 +238,28 @@ class fimDatabaseUAC extends fimDatabase {
       ));
   }
 
+  public function lockoutIncrement() {
+    // Note: As defined, attempts will further increase, and expires will further increase, with each additional query beyond the "lockout". As a result, this function generally shouldn't be called if a user is already lockedout -- otherwise, further attempts just lock them out further, when they could be the user checking to see if they are still locked out. So always call lockoutActive before calling lockoutIncrement.
+    $this->upsert($this->sqlPrefix . 'sessionLockout', array(
+      'ip' => $_SERVER['REMOTE_ADDR'],
+    ), array(
+      'attempts' => $this->type('equation', '$attempts + 1'),
+      'expires' => $this->now(60 * 15) // TOOD: Config
+    ));
+
+    return true;
+  }
+
   public function lockoutActive() {
+    global $config;
+
+    // Note: Select condition format is experimental and untested, and numRows is not yet implemented. So, uh, do that. Lockout count is also unimplemented.
+    if ($this->select(array(
+        $this->sqlPrefix . 'sessionLockout' => 'ip, attempts, expires'
+      ), array(
+        'ip' => $_SERVER['REMOTE_ADDR'],
+      ))->getColumnValue('attempts') >= $config['lockoutCount']) return true;
+
     return false;
   }
 }
