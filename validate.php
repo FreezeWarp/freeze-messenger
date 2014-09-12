@@ -116,8 +116,8 @@ elseif ($apiRequest !== true && $streamRequest !== true) { // Validate.php calle
 }
 
 elseif ($apiRequest === true || $streamRequest === true) { // Validate.php called from API.
-  if (!isset($request['fim3_sessionHash'], $request['fim3_userId'])) {
-    throw new Exception('A sessionHash and userId are required for all API requests. See the API documentation on obtaining these using validate.php.');
+  if (!isset($request['fim3_sessionHash'])) {
+    throw new Exception('A sessionHash is required for all API requests. See the API documentation on obtaining these using validate.php.');
   }
 
   $loginMethod = 'session';
@@ -190,19 +190,23 @@ elseif ($loginMethod === 'session') {
     'sessionHashes' => array($request['fim3_sessionHash'])
   ))->getAsArray(false);
 
-  try {
-    if (!count($session)) throw new Exception('invalidSession');
-    elseif ((int) $session['userId'] !== (int) $request['fim3_userId']) throw new Exception('sessionMismatchUserId'); // The userid sent has to be the same one in the DB. In theory we could just not require a userId be specified, but there are benefits to this alternative. For instance, this eliminates some forms of injection-based session fixation.
-    elseif ($session['userAgent'] !== $_SERVER['HTTP_USER_AGENT']) throw new Exception('sessionMismatchBrowser'); // Require the UA match that of the one used to establish the session Smart clients are encouraged to specify their own with their client name and version.
-    elseif ($session['sessionIp'] !== $_SERVER['REMOTE_ADDR']) throw new Exception('sessionMismatchIp'); // This is a tricky one, but generally the most certain to block any attempted forgeries. That said, IPs can, /theoretically/ be spoofed.
-    else {
-      $user = new fimUser($session); // Mostly identical, though a few additional properties do exist.
-
-      if ($session['sessionTime'] < time() - $config['sessionRefresh']) $database->refreshSession($session['sessionId']); // If five minutes have passed since the session has been generated, update it.
-    }
-  } catch(Exception $e) { // Basically, if an exception is thrown then we also increment the lockout. But we still prevent further script execution.
+  
+  if (!count($session)) {
     $database->lockoutIncrement();
-    die($e);
+    throw new Exception('invalidSession');
+  }
+  elseif ($session['userAgent'] !== $_SERVER['HTTP_USER_AGENT']) { // Require the UA match that of the one used to establish the session. Smart clients are encouraged to specify their own with their client name and version.
+    $database->lockoutIncrement();
+    throw new Exception('sessionMismatchBrowser');
+  }
+  elseif ($session['sessionIp'] !== $_SERVER['REMOTE_ADDR']) { // This is a tricky one (in some instances, a user's IP may change throughout their session, especially over mobile), but generally the most certain to block any attempted forgeries. That said, IPs can, /theoretically/ be spoofed.
+    $database->lockoutIncrement();
+    throw new Exception('sessionMismatchIp');
+  }
+  else {
+    $user = new fimUser($session); // Mostly identical, though a few additional properties do exist.
+
+    if ($session['sessionTime'] < time() - $config['sessionRefresh']) $database->refreshSession($session['sessionId']); // If five minutes have passed since the session has been generated, update it.
   }
 }
 

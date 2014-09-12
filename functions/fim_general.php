@@ -718,7 +718,7 @@ function fim_exceptionHandler($exception) {
   }
   else {
     $errorData = array(
-      'string' => '',
+      'string' => $exception->getMessage(),
       'file' => '',
       'line' => 0,
       'trace' => '',
@@ -730,7 +730,7 @@ function fim_exceptionHandler($exception) {
   $apiData = new apiData(array(
     'exception' => $errorData,
   ));
-  $apiData->output();
+  echo $apiData->output();
 
 
   if ($config['email'] && $config['emailExceptions']) {
