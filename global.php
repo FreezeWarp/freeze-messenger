@@ -232,6 +232,7 @@ $generalCache = new fimCache($cacheConnect['servers'], $cacheConnect['driver'], 
 
 // Get Configuration Data
 $config = $generalCache->getConfig();
+$database->setConfig($config);
 
 // Get Censor Data
 /* Transitional note:

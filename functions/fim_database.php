@@ -25,9 +25,14 @@
 
 class fimDatabase extends databaseSQL
 {
-
-
   private $userColumns = 'userId, userName, userNameFormat, profile, avatar, userGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, userParentalAge, userParentalFlags, userPrivs, adminPrivs';
+  protected $config;
+
+
+
+  public function setConfig($config) {
+    $this->config = $config;
+  }
 
 
 
@@ -53,10 +58,9 @@ class fimDatabase extends databaseSQL
    */
   public function getActiveUsers($options, $sort = array('userName' => 'asc'), $limit = false, $pagination = false)
   {
-    global $config;
 
     $options = array_merge(array(
-      'onlineThreshold' => $config['defaultOnlineThreshold'],
+      'onlineThreshold' => $this->config['defaultOnlineThreshold'],
       'roomIds'         => array(),
       'userIds'         => array(),
       'typing'          => null,
@@ -240,8 +244,6 @@ class fimDatabase extends databaseSQL
 
   public function getConfigurations($options = array(), $sort = array('directive' => 'asc'))
   {
-    global $config, $user;
-
     $options = array_merge(array(
       'directives' => array(),
     ), $options);
@@ -270,8 +272,6 @@ class fimDatabase extends databaseSQL
 
   public function getCounterValue($counterName)
   {
-    global $config;
-
     $queryParts['counterSelect']['columns'] = array(
       $this->sqlPrefix . "counters" => 'counterName, counterValue',
     );
@@ -464,7 +464,7 @@ class fimDatabase extends databaseSQL
 
 
   public function kickUser($userId, $roomId, $length) {
-    global $user;
+    global $user; // TODO
 
     $this->modLog('kickUser', "$userId,$roomId");
 
@@ -474,14 +474,14 @@ class fimDatabase extends databaseSQL
       ), array(
         'length' => (int) $length,
         'kickerId' => (int) $user['kickerId'],
-        'time' => $database->now(),
+        'time' => $this->now(),
       )
     );
   }
 
 
   public function unkickUser($userId, $roomId) {
-    global $user;
+    global $user; // TODO
 
     $this->modLog('unkickUser', "$userId,$roomId");
 
@@ -494,8 +494,6 @@ class fimDatabase extends databaseSQL
 
 
   public function getMessagesFromPhrases($options, $sort = array('messageId' => 'asc')) {
-    global $config;
-
     $options = array_merge(array(
       'roomIds'           => array(),
       'userIds'           => array(),
@@ -505,8 +503,8 @@ class fimDatabase extends databaseSQL
     $searchArray = array();
     foreach (explode(',', $options['messageTextSearch']) AS $searchVal) {
       $searchArray[] = str_replace(
-        array_keys($config['searchWordConverts']),
-        array_values($config['searchWordConverts']),
+        array_keys($this->config['searchWordConverts']),
+        array_values($this->config['searchWordConverts']),
         $searchVal
       );
     }
@@ -525,7 +523,7 @@ class fimDatabase extends databaseSQL
 
 
     /* Determine Whether to Use the Fast or Slow Algorithms */
-    if (!$config['fullTextArchive']) { // Original, Fastest Algorithm
+    if (!$this->config['fullTextArchive']) { // Original, Fastest Algorithm
       $conditions['both']['phraseName'] = $this->in((array) $searchArray);
     } else { // Slower Algorithm
       foreach ($searchArray AS $phrase) $conditions['both']['either'][]['phraseName'] = $this->type('string', $phrase, 'search');
@@ -578,8 +576,6 @@ class fimDatabase extends databaseSQL
    */
   public function getMessages($options = array(), $sort = array('messageId' => 'asc'), $limit = false, $page = 0)
   {
-    global $config;
-
     $options = array_merge(array(
       'roomIds'           => array(),
       'messageIds'        => array(),
@@ -989,9 +985,7 @@ class fimDatabase extends databaseSQL
 
 
   public function getPermissionCache($roomId, $userId) {
-    global $config;
-
-    if (!$config['roomPermissionsCacheEnabled']) return -1;
+    if (!$this->config['roomPermissionsCacheEnabled']) return -1;
     else {
       $permissions = $this->select(array(
         $this->sqlPrefix . 'roomPermissionsCache' => 'roomId, userId, permissions, expires'
@@ -1012,16 +1006,11 @@ class fimDatabase extends databaseSQL
    *
    * @param int $userId The ID of the user that permissions is being checked against.
    *
-   * @global bool $config Several settings affect what permissions users have.
-   * @global object $database Database actions will be taken to resolve permissions, userData, etc.
-   *
    * @return int A bitfield corresponding with roomPermissions.
    *
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function hasPermission($user, $room) {
-    global $config;
-
     $permissionsCached = $this->getPermissionCache($room->id, $user->id);
     if ($permissionsCached > -1) return $permissionsCached; // -1 equals an outdated permission.
 
@@ -1030,7 +1019,7 @@ class fimDatabase extends databaseSQL
 
 
     if ($room->type === 'otr' || $room->type === 'private') { // We are doing this in hasPermission itself to allow for hooks that might, for instance, deny permission to certain users based on certain criteria.
-      if (!$config['privateRoomsEnabled']) return 0;
+      if (!$this->config['privateRoomsEnabled']) return 0;
       if (in_array($user->id, fim_reversePrivateRoomAlias($room->alias))) return ROOM_PERMISSION_VIEW | ROOM_PERMISSION_POST | ROOM_PERMISSION_TOPIC; // The logic with private rooms is fairly self-explanatory: roomAlias lists all valid userIds, so check to see if the user is in there.
       else return 0;
     }
@@ -1048,7 +1037,7 @@ class fimDatabase extends databaseSQL
       /* Set Variables */
       if ($user->adminPrivs & (ADMIN_GRANT + ADMIN_ROOMS)) $isAdmin = true; // Admin
 
-      if ($config['parentalEnabled']) { // Parental controls
+      if ($this->config['parentalEnabled']) { // Parental controls
         if ($room->parentalAge > $user->parentalAge) $parentalBlock = true;
         elseif (fim_inArray($user->parentalFlags, $room->parentalFlags)) $parentalBlock = true;
       }
@@ -1069,7 +1058,7 @@ class fimDatabase extends databaseSQL
 
       /* Base calculation -- these are what permisions a user is supposed to have, before userPrivs and certain room properties are factored in. */
       if ($isAdmin) $returnBitfield = 65535; // Admins have all permissions.
-      elseif (in_array($user->groupId, $config['bannedUserGroups'])) $returnBitfield = 0; // A list of "banned" user groups can be specified in config. These groups lose all permissions, similar to having userPrivs = 0. But, in the interest of sanity, we don't check it elsewhere.
+      elseif (in_array($user->groupId, $this->config['bannedUserGroups'])) $returnBitfield = 0; // A list of "banned" user groups can be specified in config. These groups lose all permissions, similar to having userPrivs = 0. But, in the interest of sanity, we don't check it elsewhere.
       elseif ($room->ownerId === $user->id) $returnBitfield = 65535; // Owners have all permissions.
       elseif ($isKicked || $parentalBlock) $returnBitfield = 0; // A kicked user (or one blocked by parental controls) has no permissions. This cannot apply to the room owner.
       elseif ($permissionsBitfield === -1) $returnBitfield = $room->defaultPermissions;
@@ -1093,7 +1082,7 @@ class fimDatabase extends databaseSQL
       }
 
       // And there are a few additional features that may be disabled by the config.
-      if ($config['disableTopic']) $returnBitfield &= ~ROOM_PERMISSION_TOPIC; // Topics are disabled (in fact, this one should also disable the returning of topics; TODO).
+      if ($this->config['disableTopic']) $returnBitfield &= ~ROOM_PERMISSION_TOPIC; // Topics are disabled (in fact, this one should also disable the returning of topics; TODO).
 
 
 
@@ -1106,15 +1095,13 @@ class fimDatabase extends databaseSQL
 
 
   public function updatePermissionsCache($roomId, $userId, $permissions) {
-    global $config;
-
-    if ($config['roomPermissionsCacheEnabled']) {
+    if ($this->config['roomPermissionsCacheEnabled']) {
       $this->upsert($this->sqlPrefix . 'roomPermissionsCache', array(
         'roomId' => $roomId,
         'userId' => $userId,
       ), array(
         'permissions' => (bool) $permissions,
-        'expires' => $this->now() + $config['roomPermissionsCacheExpires']
+        'expires' => $this->now() + $this->config['roomPermissionsCacheExpires']
       ));
     }
   }
@@ -1124,9 +1111,7 @@ class fimDatabase extends databaseSQL
   /****** Insert/Update Functions *******/
 
   public function createSession($user) {
-    global $salts;
-
-    /* Hash is prettttty simple. We create a random 32-bit integer, append microtime (as an integer to it). The resulting integer is around 100 bits, and should be treated as a 128-bit integer.
+    /* Hash is prettttty simple. We create a random 64-bit integer (done as two 32-bit integers, since mt_rand isn't reliable for anything bigger), append microtime (as an integer to it). The resulting integer is around 100 bits, and should be treated as a 128-bit integer.
      * This may seem insecure. It's not, because we prevent guessing by locking users out after x incorrect logins (and a non-existent session token counts as this).
      * Thus, we just need to make sure that there's enough entropy here that the vast, vast majority of possible session tokens are unused. By having a ~64-bit random integer appended to the ~40-bit microtime, we can be pretty sure that no one's going to be able to guess anytime soon. */
     $sessionHash = mt_rand(0, 2147483647) . mt_rand(0, 2147483647) . (int) (microtime(true) * 10000);
@@ -1149,10 +1134,8 @@ class fimDatabase extends databaseSQL
 
 
   public function cleanSessions() {
-    global $config;
-
     $this->delete($this->sqlPrefix . 'sessions', array(
-      'sessionTime' => $this->now($config['sessionExpires'], 'lte')
+      'sessionTime' => $this->now($this->config['sessionExpires'], 'lte')
     ));
 
     $this->delete($this->sqlPrefix . 'sessionLockout', array(
@@ -1361,9 +1344,7 @@ class fimDatabase extends databaseSQL
 
   public function markMessageRead($messageId, $userId)
   {
-    global $config, $user;
-
-    if ($config['enableUnreadMessages']) {
+    if ($this->config['enableUnreadMessages']) {
       $this->delete($this->sqlPrefix . "unreadMessages", array(
         'messageId' => $messageId,
         'userId'    => $userId
@@ -1379,7 +1360,7 @@ class fimDatabase extends databaseSQL
    * @param bool   $typing
    */
   public function setUserStatus($roomId, $status = null, $typing = null) {
-    global $user;
+    global $user; // TODO
 
     $conditions = array(
       'userId' => $user['userId'],
@@ -1399,7 +1380,7 @@ class fimDatabase extends databaseSQL
 
   public function storeMessage($messageText, $messageFlag, $userData, $roomData)
   {
-    global $config, $user, $generalCache;
+    global $user, $generalCache; // TODO
 
     if (!isset($roomData['options'], $roomData['roomId'], $roomData['roomName'], $roomData['roomAlias'], $roomData['roomType'])) throw new Exception('database->storeMessage requires roomData[options], roomData[roomId], roomData[roomName], and roomData[type].');
     if (!isset($userData['userId'], $userData['userName'], $userData['userGroup'], $userData['avatar'], $userData['profile'], $userData['userNameFormat'], $userData['messageFormatting'])) throw new Exception('database->storeMessage requires userData[userId], userData[userName], userData[userGroup], userData[avatar]. userData[profile], userData[userNameFormat], userData[messageFormatting]');
@@ -1456,7 +1437,7 @@ class fimDatabase extends databaseSQL
     // Update the messageIndex if appropriate
     $roomDataNew = $this->getRoom($roomData['roomId'], false, false)->getAsArray(); // Get the new room data; TODO
 
-    if ($roomDataNew['messageCount'] % $config['messageIndexCounter'] === 0) { // If the current messages in the room is divisible by the messageIndexCounter, insert into the messageIndex cache. Note that we are hoping this is because of the very last query which incremented this value, but it is impossible to know for certain (if we tried to re-order things to get the room data first, we still run this risk, so that doesn't matter; either way accuracy isn't critical).
+    if ($roomDataNew['messageCount'] % $this->config['messageIndexCounter'] === 0) { // If the current messages in the room is divisible by the messageIndexCounter, insert into the messageIndex cache. Note that we are hoping this is because of the very last query which incremented this value, but it is impossible to know for certain (if we tried to re-order things to get the room data first, we still run this risk, so that doesn't matter; either way accuracy isn't critical).
       $this->upsert($this->sqlPrefix . "messageIndex", array(
         'roomId'    => $roomData['roomId'],
         'interval'  => (int) $roomDataNew['messageCount'],
@@ -1493,7 +1474,7 @@ class fimDatabase extends databaseSQL
     $lastDayCache = (int) $generalCache->get('fim3_lastDayCache');
 
     $currentTime = time();
-    $lastMidnight = $currentTime - ($currentTime % $config['messageTimesCounter']); // Using some cool math (look it up if you're not familiar), we determine the distance from the last even day, then get the time of the last even day itself. This is the midnight reference point.
+    $lastMidnight = $currentTime - ($currentTime % $this->config['messageTimesCounter']); // Using some cool math (look it up if you're not familiar), we determine the distance from the last even day, then get the time of the last even day itself. This is the midnight reference point.
 
     if ($lastDayCache < $lastMidnight) { // If the most recent midnight comes after the period at which the time cache was last updated, handle that.
       $this->upsert($this->sqlPrefix . "messageDates", array(
@@ -1526,11 +1507,11 @@ class fimDatabase extends databaseSQL
 
 
     // Delete old messages from the cache, based on the maximum allowed rows.
-    if ($messageId2 > $config['cacheTableMaxRows']) {
+    if ($messageId2 > $this->config['cacheTableMaxRows']) {
       $this->delete($this->sqlPrefix . "messagesCached",
         array('id' => array(
           'cond'  => 'lte',
-          'value' => (int) ($messageId2 - $config['cacheTableMaxRows'])
+          'value' => (int) ($messageId2 - $this->config['cacheTableMaxRows'])
         )
         ));
     }
@@ -1559,11 +1540,9 @@ class fimDatabase extends databaseSQL
 
 
   public function createUnreadMessage($sendToUserId, $userData, $roomData, $messageId) {
-    global $config;
-
     $this->createUserEvent('missedMessage', $sendToUserId, $roomData['roomId'], $messageId);
 
-    if ($config['enableUnreadMessages']) {
+    if ($this->config['enableUnreadMessages']) {
       $this->upsert($this->sqlPrefix . "unreadMessages", array(
         'userId'            => $sendToUserId,
         'roomId'            => $roomData['roomId']
@@ -1588,8 +1567,6 @@ class fimDatabase extends databaseSQL
    */
   public function incrementCounter($counterName, $incrementValue = 1)
   {
-    global $config;
-
     if ($this->update($this->sqlPrefix . "counters", array(
       'counterValue' => $this->type('equation', '$counterValue + ' . (int) $incrementValue)
     ), array(
@@ -1614,9 +1591,7 @@ class fimDatabase extends databaseSQL
    */
   public function createEvent($eventName, $userId = 0, $roomId = 0, $messageId = 0, $param1 = '', $param2 = '', $param3 = '')
   {
-    global $config;
-
-    if ($config['enableEvents']) {
+    if ($this->config['enableEvents']) {
       $this->insert($this->sqlPrefix . "events", array(
         'eventName' => $eventName,
         'userId'    => $userId,
@@ -1633,9 +1608,7 @@ class fimDatabase extends databaseSQL
 
   public function createUserEvent($eventName, $userId, $param1 = '', $param2 = '')
   {
-    global $config;
-
-    if ($config['enableEvents']) {
+    if ($this->config['enableEvents']) {
       $this->insert($this->sqlPrefix . "userEvents", array(
         'eventName' => $eventName,
         'userId'    => $userId,
@@ -1656,9 +1629,6 @@ class fimDatabase extends databaseSQL
    */
   public function storeKeyWords($words, $messageId, $userId, $roomId)
   {
-    global $config;
-
-
     $phraseData = $this->select(
       array(
         $this->sqlPrefix . 'searchPhrases' => 'phraseName, phraseId'
@@ -1700,7 +1670,7 @@ class fimDatabase extends databaseSQL
 
   public function modLog($action, $data)
   {
-    global $config, $user;
+    global $user; // TODO
 
     if (!isset($user['userId'])) throw new Exception('database->modLog requires user[userId]');
 
@@ -1732,7 +1702,7 @@ class fimDatabase extends databaseSQL
 
   public function fullLog($action, $data)
   {
-    global $config, $user;
+    global $user;// TODO
 
     if ($this->insert($this->sqlPrefix . "fulllog", array(
       'user'   => json_encode($user),
@@ -1763,9 +1733,9 @@ class fimDatabase extends databaseSQL
 
   public function accessLog($action, $info)
   {
-    global $config, $user, $globalTime;
+    global $user, $globalTime; // TODO
 
-    if ($config['accessLogEnabled']) {
+    if ($this->config['accessLogEnabled']) {
       if ($this->insert($this->sqlPrefix . "accessLog", array(
         'userId' => $user['userId'],
         'action' => $action,
@@ -1814,8 +1784,9 @@ class fimDatabase extends databaseSQL
    * @return array - The keywords found.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
+  // TODO: Shouldn't be part of fim_database.php.
   public function getKeyWordsFromText($text) {
-    global $config, $sqlPrefix, $user;
+    global $sqlPrefix, $user; // TODO
 
     $puncList = array();
     $string = fim_makeSearchable($text);
@@ -1824,9 +1795,9 @@ class fimDatabase extends databaseSQL
     $stringPiecesAdd = array();
 
     foreach ($stringPieces AS $piece) {
-      if (strlen($piece) >= $config['searchWordMinimum'] &&
-        strlen($piece) <= $config['searchWordMaximum'] &&
-        !in_array($piece, $config['searchWordOmissions'])) $stringPiecesAdd[] = str_replace($config['searchWordConvertsFind'], $config['searchWordConvertsReplace'], $piece);
+      if (strlen($piece) >= $this->config['searchWordMinimum'] &&
+        strlen($piece) <= $this->config['searchWordMaximum'] &&
+        !in_array($piece, $this->config['searchWordOmissions'])) $stringPiecesAdd[] = str_replace($this->config['searchWordConvertsFind'], $this->config['searchWordConvertsReplace'], $piece);
     }
 
     if (count($stringPiecesAdd) > 0) {
@@ -1851,7 +1822,7 @@ class fimDatabase extends databaseSQL
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function censorParse($text, $roomId = 0) {
-    global $sqlPrefix, $slaveDatabase, $config, $generalCache;
+    global $sqlPrefix, $slaveDatabase, $generalCache;
 
     $searchText = array();
     $words2 = array();
