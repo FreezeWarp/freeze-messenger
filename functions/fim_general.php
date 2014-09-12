@@ -727,10 +727,9 @@ function fim_exceptionHandler($exception) {
   }
 
 
-  $apiData = new apiData(array(
+  new apiData(array(
     'exception' => $errorData,
-  ));
-  echo $apiData->output();
+  ), true);
 
 
   if ($config['email'] && $config['emailExceptions']) {
@@ -768,12 +767,12 @@ function fim_errorHandler($errno, $errstr, $errfile, $errline) {
     }
 
     if ($apiRequest) {
-      echo fim_outputApi(array(
+      new apiData(array(
         'exception' => array(
           'string' => $errstr2,
           'contactEmail' => $config['email'],
-        )
-      ));
+        ),
+      ), true);
     }
     else {
       die(nl2br('<fieldset><legend><strong style="color: #ff0000;">Unrecoverable Error</strong></legend><strong>Error Text</strong><br />' . print_r($errstr2) . '<br /><br /><strong>What Should I Do Now?</strong><br />' . ($config['email'] ? 'You may wish to <a href="mailto:' . $config['email'] . '">notify the administration</a> of this error.' : 'No contact was specified for this installation, so try to wait it out.')  . '<br /><br /><strong>Are You The Host?</strong><br />Server errors are often database related. These may result from improper installation or a corrupted database. The documentation may provide clues, however.</fieldset>'));

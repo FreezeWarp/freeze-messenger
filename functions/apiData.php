@@ -8,9 +8,13 @@ class apiData {
   private $xmlAttrEntitiesReplace;
 
 
-  function __construct($data = false, $format = false) {
+  function __construct($data = false, $outputNow = false, $format = false) {
     $this->replaceData($data);
     $this->format = $format ? $format : $_REQUEST['fim3_format'];
+
+    if ($outputNow) {
+      echo $this->output();
+    }
   }
 
 
