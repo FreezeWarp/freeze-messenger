@@ -98,7 +98,7 @@ require(dirname(__FILE__) . '/functions/fim_general.php'); // Various Functions
 
 /* Constants
  * These are mostly beneficial to third-party plugins. */
-define("FIM_VERSION", "3.0"); // Version to be used by plugins if needed.
+define("FIM_VERSION", "1.0"); // Version to be used by plugins if needed.
 define("FIM_LANGUAGE", "EN_US"); // No plans to change this exist, but again, just in case...
 
 define("ROOM_OFFICIAL", 1);
