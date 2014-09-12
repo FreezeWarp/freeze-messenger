@@ -87,6 +87,8 @@ require(dirname(__FILE__) . '/functions/database.php'); // Database
 require(dirname(__FILE__) . '/functions/databaseSQL.php'); // Database (SQL)
 require(dirname(__FILE__) . '/functions/fim_database.php'); // FIM-specific Extensions
 require(dirname(__FILE__) . '/functions/fim_databaseUAC.php'); // FIM-specific Extensions, UAC (it gets its own file because it might be shipped seperately to support additional intgration methods.)
+require(dirname(__FILE__) . '/functions/fim_user.php'); // FIM-specific Extensions
+require(dirname(__FILE__) . '/functions/fim_room.php'); // FIM-specific Extensions
 require(dirname(__FILE__) . '/functions/fim_cache.php'); // FIM-specific Extension to APC Wrapper
 require(dirname(__FILE__) . '/functions/fim_general.php'); // Various Functions
 
@@ -116,24 +118,22 @@ define("ROOM_PERMISSION_MODERATE", 8);
 define("ROOM_PERMISSION_PROPERTIES", 16);
 define("ROOM_PERMISSION_GRANT", 128);
 
-define("USER_PRIV_VIEW", 1);
-define("USER_PRIV_POST", 2);
-define("USER_PRIV_TOPIC", 4);
-define("USER_PRIV_CREATE_ROOMS", 32);
-define("USER_PRIV_PRIVATE_FRIENDS", 64);
-define("USER_PRIV_PRIVATE_ALL", 128);
-define("USER_PRIV_ACTIVE_USERS", 1024);
-define("USER_PRIV_POST_COUNTS", 2048);
+define("USER_PRIV_VIEW", 0x1);
+define("USER_PRIV_POST", 0x2);
+define("USER_PRIV_TOPIC", 0x4);
+define("USER_PRIV_CREATE_ROOMS", 0x20);
+define("USER_PRIV_PRIVATE_FRIENDS", 0x40);
+define("USER_PRIV_PRIVATE_ALL", 0x80);
+define("USER_PRIV_ACTIVE_USERS", 0x400);
+define("USER_PRIV_POST_COUNTS", 0x800);
 
-define("ADMIN_GRANT", 1);
-define("ADMIN_PROTECTED", 2);
-define("ADMIN_ROOMS", 4);
-define("ADMIN_VIEW_PRIVATE", 8);
-define("ADMIN_USERS", 16);
-define("ADMIN_FILES", 64);
-define("ADMIN_CENSOR", 256);
-define("ADMIN_PLUGINS", 4096);
-define("ADMIN_INTERFACES", 8192);
+define("ADMIN_GRANT", 0x10000);
+define("ADMIN_PROTECTED", 0x20000);
+define("ADMIN_ROOMS", 0x40000);
+define("ADMIN_VIEW_PRIVATE", 0x80000);
+define("ADMIN_USERS", 0x100000);
+define("ADMIN_FILES", 0x400000);
+define("ADMIN_CENSOR", 0x1000000);
 
 
 
@@ -245,24 +245,5 @@ $censorWordsCache = $generalCache->getCensorWords();
 
 
 ////* User Login (Requires Database) *////
-
 require_once(dirname(__FILE__) . '/validate.php'); // This is where all the user validation stuff occurs.
-
-
-
-
-/*** User Cache Cleanup ***/
-
-if (!$user['anonId'] && $user['lastSync'] <= (time() - $config['userSyncThreshold'])) { // This updates various caches every so often. In general, it is a rather slow process, and as such does tend to take a rather long time (that is, compared to normal - it won't exceed 500 miliseconds, really).
-  $database->updateUserCaches();
-}
-
-
-
-
-////* Other Stuff *////
-
-if (defined('FIM_LOGINRUN')) {
-  if ($apiRequest && !$ignoreLogin && !$user['userDefs']['view']) throw new Exception('banned'); // This isn't technically an exception, but the API is designed to throw all quit errors with the exception schema.
-}
 ?>

@@ -235,7 +235,7 @@ class fimDatabaseUAC extends fimDatabase {
       'lastSync' => $database->now(),
     ), array(
         'userId' => (int) $user2['userId'],
-      ));
+    ));
   }
 
   public function lockoutIncrement() {

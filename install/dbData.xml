@@ -248,9 +248,9 @@
     <table name="users">
       <column name="userId" value="2" />
       <column name="userName" value="Anonymous" />
-      <column name="userPrivs" value="1" />
+      <column name="privs" value="1" />
     </table>
-    <table name="users" mode="Dev">
+    <table name="users" mode="dev">
       <column name="userId" value="3" />
       <column name="userName" value="Test Bot 1" />
       <column name="userGroupId" value="3" />

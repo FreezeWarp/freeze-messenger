@@ -25,7 +25,7 @@
 
 class fimDatabase extends databaseSQL
 {
-  private $userColumns = 'userId, userName, userNameFormat, profile, avatar, userGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, userParentalAge, userParentalFlags, userPrivs, adminPrivs';
+  private $userColumns = 'userId, userName, userNameFormat, profile, avatar, userGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, userParentalAge, userParentalFlags, privs';
   protected $config;
 
 
@@ -70,7 +70,7 @@ class fimDatabase extends databaseSQL
 
     $columns = array(
       $this->sqlPrefix . "ping"  => 'status, typing, time ptime, roomId proomId, userId puserId',
-      $this->sqlPrefix . "rooms" => 'roomId, roomName, roomTopic, owner, defaultPermissions, roomType, roomParentalAge, roomParentalFlags, options',
+      $this->sqlPrefix . "rooms" => 'roomId, roomName, roomTopic, ownerId, defaultPermissions, roomType, roomParentalAge, roomParentalFlags, options',
       $this->sqlPrefix . "users" => 'userId, userName, userNameFormat, userGroupId, socialGroupIds, status',
     );
 
@@ -438,7 +438,7 @@ class fimDatabase extends databaseSQL
       $conditions['both']['roomId'] = $this->col('kroomId');
     }
     if ($options['includeRoomData']) {
-      $columns[$this->sqlPrefix . "rooms"] = 'roomId kroomId, roomName, owner, options, defaultPermissions, roomType, roomParentalFlags, roomParentalAge';
+      $columns[$this->sqlPrefix . "rooms"] = 'roomId kroomId, roomName, ownerId, options, defaultPermissions, roomType, roomParentalFlags, roomParentalAge';
       $conditions['both']['kickerId'] = $this->col('kkickerId');
     }
 
@@ -720,8 +720,8 @@ class fimDatabase extends databaseSQL
 
     $columns = array(
       $this->sqlPrefix . 'roomStats' => 'roomId sroomId, userId suserId, messages',
-      $this->sqlPrefix . 'users'     => 'userId, userName, adminPrivs, userPrivs, userNameFormat, userParentalFlags, userParentalAge',
-      $this->sqlPrefix . 'rooms'     => 'roomId, roomName, owner, defaultPermissions, roomParentalFlags, roomParentalAge, options, messageCount, roomType',
+      $this->sqlPrefix . 'users'     => 'userId, userName, privs, userNameFormat, userParentalFlags, userParentalAge',
+      $this->sqlPrefix . 'rooms'     => 'roomId, roomName, ownerId, defaultPermissions, roomParentalFlags, roomParentalAge, options, messageCount, roomType',
     );
 
 
@@ -759,7 +759,7 @@ class fimDatabase extends databaseSQL
 
 
     // Defaults
-    $columns = array($this->sqlPrefix . "rooms" => 'roomId, roomName, roomAlias, roomTopic, owner, defaultPermissions, roomParentalFlags, roomParentalAge, options, lastMessageId, lastMessageTime, messageCount, roomType');
+    $columns = array($this->sqlPrefix . "rooms" => 'roomId, roomName, roomAlias, roomTopic, ownerId, defaultPermissions, roomParentalFlags, roomParentalAge, options, lastMessageId, lastMessageTime, messageCount, roomType');
 
 
     // Modify Query Data for Directives
@@ -1002,7 +1002,7 @@ class fimDatabase extends databaseSQL
 
 
   /**
-   * Determines if a user has permission to do an action in the active room.
+   * Determines if a given user has certain permissions in a given room.
    *
    * @param int $userId The ID of the user that permissions is being checked against.
    *
@@ -1042,11 +1042,10 @@ class fimDatabase extends databaseSQL
         elseif (fim_inArray($user->parentalFlags, $room->parentalFlags)) $parentalBlock = true;
       }
 
-      $kicks = $this->getKicks(array( // Kicks
+      if ($kicks = $this->getKicks(array( // Kicks
         'userIds' => array($user->id),
         'roomIds' => array($room->id)
-      ))->getAsArray(false);
-      if (count($kicks)) $isKicked = true;
+      ))->getCount() > 0) $isKicked = true;
 
 
 
@@ -1081,9 +1080,6 @@ class fimDatabase extends databaseSQL
         $returnBitfield &= ~(ROOM_PERMISSION_POST + ROOM_PERMISSION_TOPIC); // And no one can post in them.
       }
 
-      // And there are a few additional features that may be disabled by the config.
-      if ($this->config['disableTopic']) $returnBitfield &= ~ROOM_PERMISSION_TOPIC; // Topics are disabled (in fact, this one should also disable the returning of topics; TODO).
-
 
 
       /* Update cache and return. */
@@ -1101,7 +1097,7 @@ class fimDatabase extends databaseSQL
         'userId' => $userId,
       ), array(
         'permissions' => (bool) $permissions,
-        'expires' => $this->now() + $this->config['roomPermissionsCacheExpires']
+        'expires' => $this->now($this->config['roomPermissionsCacheExpires'])
       ));
     }
   }
@@ -1114,7 +1110,7 @@ class fimDatabase extends databaseSQL
     /* Hash is prettttty simple. We create a random 64-bit integer (done as two 32-bit integers, since mt_rand isn't reliable for anything bigger), append microtime (as an integer to it). The resulting integer is around 100 bits, and should be treated as a 128-bit integer.
      * This may seem insecure. It's not, because we prevent guessing by locking users out after x incorrect logins (and a non-existent session token counts as this).
      * Thus, we just need to make sure that there's enough entropy here that the vast, vast majority of possible session tokens are unused. By having a ~64-bit random integer appended to the ~40-bit microtime, we can be pretty sure that no one's going to be able to guess anytime soon. */
-    $sessionHash = mt_rand(0, 2147483647) . mt_rand(0, 2147483647) . (int) (microtime(true) * 10000);
+    $sessionHash = mt_rand(0x0, 0x7FFFFFFF) . mt_rand(0x0, 0x7FFFFFFF) . (int) (microtime(true) * 10000);
 
     $this->cleanSessions(); // Whenever a new user logs in, delete all sessions from 15 or more minutes in the past.
 
@@ -1970,426 +1966,6 @@ class fimDatabaseResult extends databaseResult {
     return new fimUser($this->getAsArray(false));
   }
 
-}
-
-
-
-/**
- * This object will store actions that only involve a single room. Many of the methods could just as well exist in fimDatabase, but there are certain advantages of storing them together here (caching especially).
- * In general, two instances of this object involving the same room should be functionally identical.
- *
- * General thoughts:
- * This is not exactly the best example of OOP, but it's not the worst either. In general, the way I wrote this, the object can either correspond with a valid room or with nothing at all. Certain functions -- like editRoom() -- will create a room if none exists. There are certain flaws with this -- it would be better if a user explicitly said "createRoom" instead of "editRoom" to create a room. So... that might be worth changing.
-*/
-class fimRoom {
-  public $id;
-  public $name;
-  public $alias;
-  public $options;
-  public $ownerId;
-  public $topic;
-  public $type;
-  public $parentalFlags;
-  public $parentalAge;
-  public $defaultPermissions;
-
-  protected $roomData;
-  protected $resolved;
-
-
-  /**
-   * @param $roomData mixed Should either be an array or an integer (other values will simply fail to populate the object's data). If an array, should correspond with a row obtained from the `rooms` database, if an integer should correspond with the room ID.
-   */
-  function __construct($roomData) {
-    if (is_int($roomData)) $this->id = $roomData;
-    elseif (is_array($roomData)) $this->populateFromArray($roomData); // TODO: test contents
-    elseif ($roomData === false) $this->id = false;
-    else throw new Exception('Invalid room data specified -- must either be an associative array corresponding to a table row, a room ID, or false (to create a room, etc.)');
-
-    $this->roomData = $roomData;
-  }
-
-
-
-  // TODO: Resolve only certain data.
-  private function resolve() {
-    global $database;
-
-    if (!$this->id) return false; // If no ID is present, return false;
-    elseif (!$this->resolved) {
-      return $this->populateFromArray($database->getRooms(array(
-        'roomIds' => array($this->id)
-      ))->getAsArray(false));
-    }
-    else return true;
-  }
-
-
-
-  private function populateFromArray($roomData) {
-    if (!count($roomData) || !is_array($roomData)) return false;
-
-    $this->id = $roomData['roomId'];
-    $this->name = $roomData['roomName'];
-    $this->alias = $roomData['roomAlias'];
-    $this->options = $roomData['options'];
-    $this->deleted = $this->options & ROOM_DELETED;
-    $this->official = $this->options & ROOM_OFFICIAL;
-    $this->hidden = $this->options & ROOM_HIDDEN;
-    $this->archived = $this->options & ROOM_ARCHIVED;
-    $this->ownerId = $roomData['owner'];
-    $this->topic = $roomData['topic'];
-    $this->type = $roomData['roomType'];
-    $this->parentalFlags = explode(',', $roomData['roomParentalFlags']);
-    $this->parentalAge = $roomData['roomParentalAge'];
-    $this->defaultPermissions = $roomData['defaultPermissions'];
-
-    $this->resolved = true;
-
-    return true;
-  }
-
-
-
-  private function getOptionsField() {
-/*    if ($options['officialRoom']) $optionsField |= ROOM_OFFICIAL;
-    if ($options['deleted']) $optionsField |= ;
-    if ($options['hiddenRoom']) $optionsField |= ROOM_HIDDEN;
-    if ($options['archivedRoom']) $optionsField |= ROOM_ARCHIVED;*/
-  }
-
-
-
-  /* Transitional Function */
-  public function getAsArray() {
-    return $this->roomData;
-  }
-
-
-
-  /**
-   * Queries the roomPermissions table for a specific roomId with three attribute/param pairs: one for $userId, one for $userGroupId, and one for $socialGroupIds. It is faster when looking up data on a specific user, but less versitile: it will return a bitfield representing the user's permissions instead of a result set.
-   *
-   * @param $roomId
-   * @param $userId
-   * @param $userGroupId
-   * @param $socialGroupIds
-   */
-  public function getUserPermissions($user) {
-    global $database;
-
-    if (!$user->resolve('userGroup', 'socialGroups')) throw new Exception('hasPermission was called without a valid user.'); // Require all user information.
-
-    $permissions = $database->select(array(
-      $database->sqlPrefix . "roomPermissions" => 'roomId, attribute, param, permissions',
-    ), array(
-      'both' => array(
-        'roomId' => $database->int($this->id),
-        'either' => array(
-          'both 1' => array(
-            'attribute' => $database->str('user'),
-            'param' => $database->int($user->id)
-          ),
-          'both 2' => array(
-            'attribute' => $database->str('admingroup'),
-            'param' => $database->int($user->groupId)
-          ),
-          'both 3' => array(
-            'attribute' => $database->str('group'),
-            'param' => $database->in($user->socialGroupIds)
-          )
-        )
-      )
-    ))->getAsArray(array('attribute', 'param'));
-
-
-    if (!count($permissions)) return -1;
-    elseif (isset($permissions['user'][$user->id])) { // The user setting overrides group settings. A notable limitation of this is that you can't override specific group-based permissions, but this way is a fair bit simpler (after all, there are very few situations when you want to bar a user from posting but want them to be able to view based on their group -- rather, you want to set the user's specific permissions and be done with it).
-      return $permissions['user'][$user->id]['permissions'];
-    }
-    else { // Here we generate a user's permissions by XORing all of the group permissions that apply to them. That is, if any group a user belongs to has a certain permission, then the user will have that permission.
-      $groupBitfield = isset($permissions['admingroup'][$user->groupId]) ? $permissions['admingroup'][$user->groupId]['permissions'] : 0; // Set the group field to the returned admingroup object if available; otherwise, 0.
-
-      foreach ($permissions['group'] AS $s) $groupBitfield |= $s['permissions']; // Basically, we do a bitwise OR on all of the permissions returned as part of a social group (with the admingroup permission being our first above).
-
-      return $groupBitfield;
-    }
-  }
-
-
-
-  /**
-   * Modify or create a room.
-   * @internal The row will be set to a merge of roomDefaults->existingRow->specifiedOptions.
-   *
-   * @param $options - Corresponds mostly with room columns, though the options tag is seperted.
-   *
-   * @return bool|resource
-   */
-  public function set($options) {
-    $this->resolve();
-
-    $options = array_merge(array(
-      'roomName' => '',
-      'roomAlias' => '',
-      'roomType' => 'general',
-      'owner' => 0,
-      'defaultPermissions' => 0,
-      'roomParentalAge' => 0,
-      'roomParentalFlags' => array(),
-      'officialRoom' => false,
-      'hiddenRoom' => false,
-      'archivedRoom' => false,
-      'deleted' => false,
-    ), $this->getAsArray(), $options);
-
-    $optionsField = 0;
-
-    $columns = array(
-      'roomName' => $options['roomName'],
-      'roomNameSearchable' => fim_makeSearchable($options['roomName']), // TODO
-      'roomAlias' => $options['roomAlias'],
-      'roomType' => $options['roomType'],
-      'owner' => (int) $options['owner'],
-      'defaultPermissions' => (int) $options['defaultPermissions'],
-      'roomParentalAge' => $options['roomParentalAge'],
-      'roomParentalFlags' => implode(',', $options['roomParentalFlags']),
-      'options' => $optionsField
-    );
-
-
-    /* TODO: upsert? */
-    if ($this->id === false || $this->resolved) {
-      return $this->upsert($this->sqlPrefix . "rooms", array(
-        'roomId' => $this->id,
-      ), $columns);
-    }
-    else {
-      throw new Exception('A valid room was not specified for editRoom().');
-    }
-  }
-}
-
-
-
-
-class fimUser {
-  public $id;
-  public $name;
-  public $socialGroupIds;
-  public $mainGroupId;
-  public $allGroupIds;
-  public $parentalFlags;
-  public $parentalAge;
-  public $anonId;
-  public $privs;
-
-  protected $userData;
-  protected $resolved;
-
-
-  /**
-   * @param $roomData mixed Should either be an array or an integer (other values will simply fail to populate the object's data). If an array, should correspond with a row obtained from the `rooms` database, if an integer should correspond with the room ID.
-   */
-  public function __construct($userData) {
-    if (is_int($userData)) $this->id = $userData;
-    elseif (is_array($userData)) $this->populateFromArray($userData); // TODO: test contents
-    elseif ($userData === false) $this->id = false;
-    else throw new Exception('Invalid room data specified -- must either be an associative array corresponding to a table row, a user ID, or false (to create a user, etc.)');
-
-    $this->userData = $userData;
-  }
-
-
-  public function __get($property) {
-    if (in_array($property, array('', '', '', ''))) {
-
-    }
-  }
-
-
-  function checkPassword($password) {
-    switch ($this->userData['passwordFormat']) {
-      case 'phpass':
-        if (!isset($this->userData['passwordHash'])) {
-          throw new Exception('User object was not generated with password hash information.');
-        }
-        else {
-          require 'PasswordHash.php';
-
-          $h = new PasswordHash(8, FALSE);
-
-          return $h->CheckPassword($password, $this->userData['passwordHash']);
-        }
-      break;
-
-      case 'vbmd5':
-        if (!isset($this->userData['passwordHash'], $this->userData['passwordSalt'])) {
-          throw new Exception('User object was not generated with password hash information.');
-        }
-        else {
-          if ($this->userData['passwordHash'] === md5($password . $this->userData['passwordSalt'])) return true;
-          else return false;
-        }
-      break;
-
-      case 'raw':
-        if ($this->userData['passwordHash'] === md5($password . $this->userData['passwordSalt'])) return true;
-        else return false;
-      break;
-
-      default:
-        throw new Exception('Invalid password format.');
-      break;
-    }
-  }
-
-
-
-  // TODO: Resolve only certain data.
-  private function resolve() {
-    global $database;
-
-    if (!$this->id) return false; // If no ID is present, return false;
-    elseif (!$this->resolved) {
-      return $this->populateFromArray($database->getUsers(array(
-        'userIds' => array($this->id)
-      ))->getAsArray(false));
-    }
-    else return true;
-  }
-
-
-
-  private function populateFromArray($userData) {
-    global $loginConfig, $generalCache;
-
-    /* Make sure userData contains neccessary information. */
-    if (!count($userData) || !is_array($userData) || !isset($userData['userId'], $userData['userName'], $userData['userParentalFlags'], $userData['userParentalAge'], $userData['adminPrivs'], $userData['userPrivs'])) return false;
-
-
-    // If certain features are disabled, remove user priviledges. The bitfields should be maintained, however, for when a feature is reenabled.
-    if (!$generalCache->getConfig('userRoomCreation')) $userData['userPrivs'] &= ~USER_PRIV_CREATE_ROOMS;
-    if (!$generalCache->getConfig('userPrivateRoomCreation')) $userData['userPrivs'] &= ~(USER_PRIV_PRIVATE_ALL + USER_PRIV_PRIVATE_FRIENDS); // Note: does not disable the usage of existing private rooms. Use "privateRoomsEnabled" for this.
-
-
-    /* Set Basic Information */
-    $this->id = $userData['userId'];
-    $this->name = $userData['userName'];
-
-
-    /* Anon User Information */
-    if ($this->id === $generalCache->getConfig('anonymousUserId')) {
-      $this->anonId = rand($generalCache->getConfig('anonymousUserMinId'), $generalCache->getConfig('anonymousUserMaxId'));
-      $this->name .= $this->anonId;
-    }
-
-
-    /* Set Username Formatting */
-    $this->avatar = $userData['avatar'] ?: $generalCache->getConfig('avatarDefault');
-    $this->nameFormat = $userData['userNameFormat'] ?: $generalCache->getConfig('userNameFormat');
-
-
-    /* Set Default Formatting */
-    $this->messageFormatting = $userData['messageFormatting'];
-
-
-    /* Set Misc Information */
-    $this->defaultRoomId = $userData['defaultRoomId'] ?: $generalCache->getConfig('defaultRoomId');
-    $this->profile = $userData['profile'];
-
-
-    /* Handle Groups */
-    $this->socialGroupIds = explode(',', $userData['socialGroupIds']);
-    $this->mainGroupId = $userData['userGroupId'];
-    $this->allGroupIds = explode(',', $userData['allGroupIds']);
-
-
-    /* Set Parental Information */
-    $this->parentalFlags = explode(',', $userData['userParentalFlags']);
-    $this->parentalAge = $userData['userParentalAge'];
-
-
-    /* Set Priviledges */
-    if (in_array($this->id, $loginConfig['superUsers'])) { // Super-user override.
-      $userData['adminPrivs'] = 32765;
-      $userData['userPrivs'] = 32765;
-    }
-
-    $this->privs = array(
-      /* Admin Privs */
-      'protected' => (bool) ($userData['adminPrivs'] & ADMIN_PROTECTED), // This the "untouchable" flag, but that's more or less all it means.
-
-      'modPrivs' => (bool) ($userData['adminPrivs'] & ADMIN_GRANT), // This effectively allows a user to give himself everything else below. It is also used for admin functions that can not be delegated effectively -- such as modifying the site configuration.
-      'modRooms' => (bool) ($userData['adminPrivs'] & ADMIN_GRANT + ADMIN_ROOMS), // Alter rooms -- kicking users, delete posts, and change hidden/official status
-      'modPrivate' => (bool) ($userData['adminPrivs'] & ADMIN_GRANT + ADMIN_VIEW_PRIVATE), // View private communications.
-      'modUsers' => (bool) ($userData['adminPrivs'] & ADMIN_GRANT + ADMIN_USERS), // Site-wide bans, mostly.
-      'modFiles' => (bool) ($userData['adminPrivs'] & ADMIN_GRANT + ADMIN_FILES), // File Uploads
-      'modCensor' => (bool) ($userData['adminPrivs'] & ADMIN_GRANT + ADMIN_CENSOR), // Censor
-
-      // Should Generally Go Together
-      'modPlugins' => (bool) ($userData['adminPrivs'] & ADMIN_GRANT + ADMIN_PLUGINS), // Plugins
-      'modTemplates' => (bool) ($userData['adminPrivs'] & ADMIN_GRANT + ADMIN_INTERFACES), // Templates
-
-      /* User Privs */
-      'view' => (bool) ($userData['userPrivs'] & USER_PRIV_VIEW), // Is not banned
-      'post' => (bool) ($userData['userPrivs'] & USER_PRIV_POST),
-      'changeTopic' => (bool) ($userData['userPrivs'] & USER_PRIV_TOPIC),
-      'createRooms' => (bool) ($userData['userPrivs'] & USER_PRIV_CREATE_ROOMS), // May create rooms
-      'privateRoomsFriends' => (bool) ($userData['userPrivs'] & USER_PRIV_PRIVATE_FRIENDS), // May create private rooms (friends only)
-      'privateRoomsAll' => (bool) ($userData['userPrivs'] & USER_PRIV_PRIVATE_FRIENDS && $userData['userPrivs'] & USER_PRIV_PRIVATE_ALL), // May create private rooms (anybody)
-      'roomsOnline' => (bool) ($userData['userPrivs'] & USER_PRIV_ACTIVE_USERS), // May see rooms online.
-      'postCounts' => (bool) ($userData['userPrivs'] & USER_PRIV_POST_COUNTS), // May see post counts.
-    );
-
-
-    /* Mark Resolved */
-    $this->resolved = true;
-
-
-    /* Return True */
-    return true;
-  }
-
-
-
-  public function hasPriv($priv) {
-    if (!isset($this->privs[$priv])) throw exception('Undefined priviledge.');
-
-    return $this->privs[$priv];
-  }
-
-
-
-  /**
-   * Modify or create a room.
-   * @internal The row will be set to a merge of roomDefaults->existingRow->specifiedOptions.
-   *
-   * @param $options - Corresponds mostly with room columns, though the options tag is seperted.
-   *
-   * @return bool|resource
-   */
-  public function set($options, $create = false) {
-    global $database;
-
-    if (isset($options['password'])) {
-      require 'PasswordHash.php';
-      $h = new PasswordHash(8, FALSE);
-      $options['passwordHash'] = $h->HashPassword($options['password']);
-      $options['passwordFormat'] = 'phpass';
-
-      unset($options['password']);
-    }
-
-    if ($this->id) {
-      return $database->upsert($database->sqlPrefix . "users", array(
-        'userId' => $this->id,
-      ), $options);
-    }
-    else {
-      return $database->insert($database->sqlPrefix . "users", $options);
-    }
-  }
 }
 
 ?>

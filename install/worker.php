@@ -20,6 +20,7 @@ require('../functions/xml.php'); // For reading the db*.xml files
 require('../functions/database.php'); // DB Operations
 require('../functions/databaseSQL.php'); // ""
 require('../functions/fim_database.php'); // ""
+require('../functions/fim_user.php'); // ""
 
 // If possible, remove the execution time limits (often requires ~40-60 seconds). TODO: Long term, the install script should be split up into seperate HTTP requests.
 if(!ini_get('safe_mode')) {
@@ -249,8 +250,7 @@ switch ($_REQUEST['phase']) {
     if (!$user->set(array(
       'userName' => $adminUsername,
       'password' => $adminPassword,
-      'userPrivs' => 65535,
-      'adminPrivs' => 65535,
+      'privs' => 0x7FFFFFFF,
     ))) {
       die("Could not create user.");
     }

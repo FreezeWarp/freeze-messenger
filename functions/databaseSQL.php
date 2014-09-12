@@ -1373,7 +1373,7 @@ LIMIT
    * @return bool|resource
    */
   public function update($tableName, $dataArray, $conditionArray = false) {
-    $query = 'UPDATE ' . $this->formatValue('table', $tableName . ' SET ' . $this->formatValue('updateArray', $dataArray) . ' WHERE ' . $this->recurseBothEither($conditionArray));
+    $query = 'UPDATE ' . $this->formatValue('table', $tableName) . ' SET ' . $this->formatValue('updateArray', $dataArray) . ' WHERE ' . $this->recurseBothEither($conditionArray);
 
     return $this->rawQuery($query);
   }

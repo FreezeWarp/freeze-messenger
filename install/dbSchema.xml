@@ -519,8 +519,7 @@
       <column name="messageFormatting" type="string" maxlen="300" comment="CSS-formatting that should be applied to all of the user's messages. This will generally be restricted to what the API allows -- by default, just fontface, colour, highlight, and bold/italics." />
 
       <!-- Permissions -->
-      <column name="userPrivs" type="bitfield" bits="16" default="16" comment="A bitfield corrosponding to admin-set user priviledges." />
-      <column name="adminPrivs" type="bitfield" bits="16" comment="A bitfield corrosponding to admin-set administrative priviledges." />
+      <column name="privs" type="bitfield" bits="31" default="0" comment="A bitfield corresponding to admin-set user priviledges. The 31 size is done for portability -- 32-bit PHP systems (those on 32-bit or Windows systems) can only use the first 31 bits, because the 32 bit is used for signing." />
 
       <!-- Counters -->
       <column name="fileCount" type="int" maxlen="8" default="0" comment="The number of files store on the server by this user." />
@@ -540,8 +539,7 @@
       <key name="userId" type="primary" />
       <key name="userGroupId" type="index" />
       <key name="lastSync" type="index" />
-      <key name="userPrivs" type="index" />
-      <key name="adminPrivs" type="index" />
+      <key name="privs" type="index" />
 
       <key name="options" type="index" />
       <key name="fileCount" type="index" />
@@ -552,7 +550,7 @@
 
 
     <table name="userEvents" type="memory" comment="Events that relate to a specific user.">
-        <column name="eventId" type="int" maxlen="8" autoincrement="1" comment="A unique identifier for the event." />
+      <column name="eventId" type="int" maxlen="8" autoincrement="1" comment="A unique identifier for the event." />
       <column name="eventName" type="string" maxlen="20" comment="The name of the event (e.g. friend-request, unread-message)." />
       <column name="userId" type="int" maxlen="8" comment="The user ID." />
       <column name="param1" type="string" maxlen="20" comment="An additional parameter." />
@@ -610,8 +608,7 @@
       <column name="userNameFormat" type="string" maxlen="300" />
 
       <!-- Permissions -->
-      <column name="userPrivs" type="bitfield" bits="16" default="16" />
-      <column name="adminPrivs" type="bitfield" bits="16" />
+      <column name="privs" type="bitfield" bits="31" />
 
       <!-- Parental Controls -->
       <column name="userParentalFlags" type="string" maxlen="255" />
@@ -683,21 +680,10 @@
       <def bit="64" comment="(TODO) A user that needs to be approved by an administrator before it will gain normal permissions" note="Basically, when this feature is active, two sets of default permissions will exist -- one for unapproved users, and another for approved users. When approved, a user's permissions will be set to the new permissions">Under Review (Moderated)</def>
     </bitfield>
 
-    <bitfield name="adminPrivs" table="users">
-      <def bit="1" comment="">Grant Permissions</def>
-      <def bit="2" comment="Only the site owner may alter this user's permissions. The site owner is set in config.php.">Untouchable</def>
-      
-      <def bit="4" comment="Gives the user full moderation to all rooms, except private rooms.">Super-Moderator</def>
-      <def bit="8" comment="Allows the user to review the contents of messages between private users, forbid private communications between particular users."></def>
-      <def bit="16" comment="Allows the administrator to make site-wide bans.">Ban, Unban, Etc.</def>
-      <def bit="64" comment="Allows the administrator to remove uploads made by users, and view uploads made privately.">File Uploads</def>
-      <def bit="256" comment="Allows the administrator to author and modify censor lists.">Censor</def>
-      <def bit="4096" comment="Allows the administrator to modify system plugins. These are not supported in FIMv3.">Plugins</def>
-      <def bit="8192" comment="Allows the administrator to modify interfaces and interface templates.">Templates</def>
-    </bitfield>
-
-    <bitfield name="userPrivs" table="users">
-      <def bit="1" comment="By default, a user is considered banned -- this is mainly to ease integration headaches, where users automatically gain access to the system where they maybe shouldn't. FIM's default integration servers automatically set this, however.">Allowed</def>
+    <bitfield name="privs" table="users">
+      <def bit="1">View</def>
+      <def bit="2">Post</def>
+      <def bit="4">Change Topic</def>
       <def bit="8">Upload Files</def>
       <def bit="16">Create Social Groups</def>
       <def bit="32">Create Rooms</def>
@@ -705,6 +691,15 @@
       <def bit="128" comment="If false, Disallows a user from creating and being part of OTR and private rooms where any user is not on the user's friend list.">Contact Non-Friends for Private Contact</def>
       <def bit="1024">View Active Users</def>
       <def bit="2048">View Post Counts</def>
+
+      <def bit="0x10000" comment="">Grant Permissions</def>
+      <def bit="0x20000" comment="Only the site owner may alter this user's permissions. The site owner is set in config.php.">Untouchable</def>
+      
+      <def bit="0x40000" comment="Gives the user full moderation to all rooms, except private rooms.">Super-Moderator</def>
+      <def bit="0x80000" comment="Allows the user to review the contents of messages between private users, forbid private communications between particular users."></def>
+      <def bit="0x100000" comment="Allows the administrator to make site-wide bans.">Ban, Unban, Etc.</def>
+      <def bit="0x200000" comment="Allows the administrator to remove uploads made by users, and view uploads made privately.">File Uploads</def>
+      <def bit="0x1000000" comment="Allows the administrator to author and modify censor lists.">Censor</def>
     </bitfield>
   </definitions>
 </dbSchema>
