@@ -1358,23 +1358,21 @@ class fimDatabase extends databaseSQL
   }
 
 
-  public function storeMessage($messageText, $messageFlag, $userData, $roomData)
+  /*
+   * Store message does not check for permissions. Make sure that all permissions are cleared before calling storeMessage.
+   */
+  public function storeMessage($messageText, $messageFlag, $user, $room)
   {
-    global $user, $generalCache; // TODO
-
-    if (!isset($roomData['options'], $roomData['roomId'], $roomData['roomName'], $roomData['roomAlias'], $roomData['roomType'])) throw new Exception('database->storeMessage requires roomData[options], roomData[roomId], roomData[roomName], and roomData[type].');
-    if (!isset($userData['userId'], $userData['userName'], $userData['userGroup'], $userData['avatar'], $userData['profile'], $userData['userNameFormat'], $userData['messageFormatting'])) throw new Exception('database->storeMessage requires userData[userId], userData[userName], userData[userGroup], userData[avatar]. userData[profile], userData[userNameFormat], userData[messageFormatting]');
+    global $generalCache; // TODO
 
 
-
-    if ($roomData['options'] & ROOM_ARCHIVED || $roomData['options'] & ROOM_DELETED) throw new Exception('postingDisabled');
-
+    $user->resolve();
+    $room->resolve();
 
 
     /* Format Message Text */
     if (!in_array($messageFlag, array('image', 'video', 'url', 'email', 'html', 'audio', 'text'))) {
-      $messageText = $this->censorParse($messageText, $roomData['roomId']);
-      $messageText = $this->emotiParse($messageText);
+      $messageText = $this->censorParse($messageText, $room->id);
     }
 
     list($messageTextEncrypted, $encryptIV, $encryptSalt) = $this->getEncrypted($messageText);
@@ -1383,8 +1381,8 @@ class fimDatabase extends databaseSQL
     /* Insert Message Data */
     // Insert into permanent datastore.
     $this->insert($this->sqlPrefix . "messages", array(
-      'roomId'   => (int) $roomData['roomId'],
-      'userId'   => (int) $userData['userId'],
+      'roomId'   => $room->id,
+      'userId'   => $user->id,
       'text'     => $messageTextEncrypted,
       'textSha1' => sha1($messageText),
       'salt'     => $encryptSalt,
@@ -1396,10 +1394,28 @@ class fimDatabase extends databaseSQL
     $messageId = $this->insertId;
 
 
+    // Insert into cache/memory datastore.
+    $this->insert($this->sqlPrefix . "messagesCached", array(
+      'messageId'         => $messageId,
+      'roomId'            => $room->id,
+      'userId'            => $user->id,
+      'userName'          => $user->name,
+      'userGroupId'       => $user->mainGroupId,
+      'avatar'            => $user->avatar,
+      'profile'           => $user->profile,
+      'userNameFormat'    => $user->nameFormat,
+      'messageFormatting' => $user->messageFormatting,
+      'text'              => $messageText,
+      'flag'              => $messageFlag,
+      'time'              => $this->now(),
+    ));
+    $messageId2 = $this->insertId;
+
+
 
     /* Generate (and Insert) Key Words */
     $keyWords = $this->getKeyWordsFromText($messageText);
-    $this->storeKeyWords($keyWords, $messageId, $userData['userId'], $roomData['roomId']);
+    $this->storeKeyWords($keyWords, $messageId, $user->id, $room->id);
 
 
 
@@ -1410,44 +1426,20 @@ class fimDatabase extends databaseSQL
       'lastMessageId'   => $messageId,
       'messageCount'    => $this->type('equation', '$messageCount + 1')
     ), array(
-      'roomId' => $roomData['roomId'],
+      'roomId' => $room->id,
     ));
 
 
     // Update the messageIndex if appropriate
-    $roomDataNew = $this->getRoom($roomData['roomId'], false, false)->getAsArray(); // Get the new room data; TODO
+    $room = $this->getRoom($room->id); // Get the new room data. (TODO: UPDATE ... RETURNING for PostGreSQL)
 
-    if ($roomDataNew['messageCount'] % $this->config['messageIndexCounter'] === 0) { // If the current messages in the room is divisible by the messageIndexCounter, insert into the messageIndex cache. Note that we are hoping this is because of the very last query which incremented this value, but it is impossible to know for certain (if we tried to re-order things to get the room data first, we still run this risk, so that doesn't matter; either way accuracy isn't critical).
-      $this->upsert($this->sqlPrefix . "messageIndex", array(
-        'roomId'    => $roomData['roomId'],
-        'interval'  => (int) $roomDataNew['messageCount'],
+    if ($room->messageCount % $this->config['messageIndexCounter'] === 0) { // If the current messages in the room is divisible by the messageIndexCounter, insert into the messageIndex cache. Note that we are hoping this is because of the very last query which incremented this value, but it is impossible to know for certain (if we tried to re-order things to get the room data first, we still run this risk, so that doesn't matter; either way accuracy isn't critical). Postgres would avoid this issue, once implemented.
+      $this->insert($this->sqlPrefix . "messageIndex", array(
+        'roomId'    => $room->id,
+        'interval'  => $room->messageCount,
         'messageId' => $messageId
-      ), array(
-        'messageId' => $this->type('equation', '$messageId + 0')
       ));
     }
-
-
-    // Update user caches
-    $this->update($this->sqlPrefix . "users", array(
-      'messageCount' => $this->type('equation', '$messageCount + 1'),
-    ), array(
-      'userId' => $userData['userId'],
-    ));
-
-
-    // Insert or update a user's room stats.
-    $this->upsert($this->sqlPrefix . "roomStats", array(
-      'userId'   => $userData['userId'],
-      'roomId'   => $roomData['roomId'],
-      'messages' => 1
-    ), array(
-      'messages' => $this->type('equation', '$messages + 1')
-    ));
-
-
-    // Increment the messages counter.
-    $this->incrementCounter('messages');
 
 
     // Update the messageDates if appropriate
@@ -1456,34 +1448,35 @@ class fimDatabase extends databaseSQL
     $currentTime = time();
     $lastMidnight = $currentTime - ($currentTime % $this->config['messageTimesCounter']); // Using some cool math (look it up if you're not familiar), we determine the distance from the last even day, then get the time of the last even day itself. This is the midnight reference point.
 
-    if ($lastDayCache < $lastMidnight) { // If the most recent midnight comes after the period at which the time cache was last updated, handle that.
-      $this->upsert($this->sqlPrefix . "messageDates", array(
+    if ($lastDayCache < $lastMidnight) { // If the most recent midnight comes after the period at which the time cache was last updated, handle that. Note that, though rare-ish, this query may be executed by a few different messages. It's not a big deal, since the primary key will prevent any duplicate entries, but still.
+      $generalCache->set('fim3_lastDayCache', $lastMidnight); // Update the quick cache.
+
+      $this->insert($this->sqlPrefix . "messageDates", array(
         'time'      => $lastMidnight,
         'messageId' => $messageId
-      ), array(
-        'messageId' => $this->type('equation', '$messageId + 0')
       ));
-
-      $generalCache->set('fim3_lastDayCache', $lastMidnight); // Update the quick cache.
     }
 
 
-    // Insert into cache/memory datastore.
-    $this->insert($this->sqlPrefix . "messagesCached", array(
-      'messageId'         => (int) $messageId,
-      'roomId'            => (int) $roomData['roomId'],
-      'userId'            => (int) $userData['userId'],
-      'userName'          => $userData['userName'],
-      'userGroup'         => (int) $userData['userGroup'],
-      'avatar'            => $userData['avatar'],
-      'profile'           => $userData['profile'],
-      'userNameFormat'    => $userData['userNameFormat'],
-      'messageFormatting' => $userData['messageFormatting'],
-      'text'              => $messageText,
-      'flag'              => $messageFlag,
-      'time'              => $this->now(),
+    // Update user caches
+    $this->update($this->sqlPrefix . "users", array(
+      'messageCount' => $this->type('equation', '$messageCount + 1'),
+    ), array(
+      'userId' => $user->id,
     ));
-    $messageId2 = $this->insertId;
+
+
+    // Insert or update a user's room stats.
+    $this->upsert($this->sqlPrefix . "roomStats", array(
+      'userId'   => $user->id,
+      'roomId'   => $room->id,
+    ), array(
+      'messages' => $this->type('equation', '$messages + 1')
+    ));
+
+
+    // Increment the messages counter.
+    $this->incrementCounter('messages');
 
 
     // Delete old messages from the cache, based on the maximum allowed rows.
@@ -1498,18 +1491,18 @@ class fimDatabase extends databaseSQL
 
 
     // If the contact is a private communication, create an event and add to the message unread table.
-    if ($roomData['roomType'] === 'private') {
-      foreach (fim_reversePrivateRoomAlias($roomData['roomAlias']) AS $sendToUserId) { // Todo: use roomAlias.
+    if ($room->type === ROOM_TYPE_PRIVATE) {
+      foreach (fim_reversePrivateRoomAlias($room->alias) AS $sendToUserId) { // Todo: use roomAlias.
         if ($sendToUserId == $user['userId']) {
           continue;
         } else {
-          createUnreadMessage($sendToUserId, $userData, $roomData, $messageId);
+          createUnreadMessage($sendToUserId, $user, $room, $messageId);
         }
       }
     }
     else {
-      foreach ($this->getWatchRoomIds($roomData['roomId']) AS $sendToUserId) {
-        createUnreadMessage($sendToUserId, $userData, $roomData, $messageId);
+      foreach ($this->getWatchRoomIds($room->id) AS $sendToUserId) {
+        createUnreadMessage($sendToUserId, $user, $room, $messageId);
       }
     }
 
@@ -1519,18 +1512,18 @@ class fimDatabase extends databaseSQL
   }
 
 
-  public function createUnreadMessage($sendToUserId, $userData, $roomData, $messageId) {
-    $this->createUserEvent('missedMessage', $sendToUserId, $roomData['roomId'], $messageId);
+  public function createUnreadMessage($sendToUserId, $user, $room, $messageId) {
+    $this->createUserEvent('missedMessage', $sendToUserId, $room->id, $messageId);
 
     if ($this->config['enableUnreadMessages']) {
       $this->upsert($this->sqlPrefix . "unreadMessages", array(
         'userId'            => $sendToUserId,
-        'roomId'            => $roomData['roomId']
+        'roomId'            => $room->id
       ), array(
-        'senderId'          => $userData['userId'],
-        'senderName'        => $userData['userName'],
-        'senderNameFormat'  => $userData['userNameFormat'],
-        'roomName'          => $roomData['roomName'],
+        'senderId'          => $user->id,
+        'senderName'        => $user->name,
+        'senderNameFormat'  => $user->nameFormat,
+        'roomName'          => $room->name,
         'messageId'         => $messageId,
         'time'              => $this->now(),
       ));
@@ -1802,19 +1795,11 @@ class fimDatabase extends databaseSQL
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function censorParse($text, $roomId = 0) {
-    global $sqlPrefix, $slaveDatabase, $generalCache;
-
-    $searchText = array();
-    $words2 = array();
-
     foreach ($this->getCensorWordsActive($roomId, array('replace'))->getAsArray(true) AS $word) {
-      $words2[strtolower($word['word'])] = $word['param'];
-      $searchText[] = addcslashes(strtolower($word['word']),'^&|!$?()[]<>\\/.+*');
+      $text = str_ireplace($word, $word['param'], $text);
     }
 
-    $searchText2 = implode('|', $searchText);
-
-    return preg_replace("/(?<!(\[noparse\]))(?<!(\quot))($searchText2)(?!\[\/noparse\])/ie","fim_indexValue(\$words2,strtolower('\\3'))", $text);
+    return $text;
   }
 
 
@@ -1841,72 +1826,6 @@ class fimDatabase extends databaseSQL
     }
 
     return array($messageTextEncrypted, $iv, $saltNum);
-  }
-
-
-
-  /**
-   * Finds emotiocn strings (e.g. ":)") and replaces them with URLs corresponding to images.
-   *
-   * @param $text Text to find.
-   *
-   * @return string Modified text.
-   */
-  public function emotiParse($text) {
-    global $forumTablePrefix, $integrationDatabase, $loginConfig;
-
-    switch($loginConfig['method']) {
-      case 'vbulletin3':
-      case 'vbulletin4':
-        $smilies = $integrationDatabase->select(array(
-          "{$forumTablePrefix}smilie" => 'smilietext emoticonText, smiliepath emoticonFile',
-        ))->getAsArray(true);
-        break;
-
-      case 'phpbb':
-        $smilies = $integrationDatabase->select(array(
-          "{$forumTablePrefix}smilies" => 'code emoticonText, smiley_url, emoticonFile'
-        ))->getAsArray(true);
-        break;
-
-      case 'vanilla':
-        // TODO: Convert
-        $smilies = $this->select(array(
-          $this->sqlPrefix . "emoticons" => 'emoticonText, emoticonFile, context'
-        ))->getAsArray(true);
-        break;
-
-      default:
-        $smilies = array();
-        break;
-    }
-
-
-
-    if (count($smilies)) {
-      foreach ($smilies AS $smilie) {
-        $smilies2[strtolower($smilie['emoticonText'])] = $smilie['emoticonFile'];
-        $searchText[] = addcslashes(strtolower($smilie['emoticonText']),'^&|!$?()[]<>\\/.+*');
-      }
-
-      switch ($loginConfig['method']) {
-        case 'phpbb':
-          $forumUrlS = $loginConfig['url'] . 'images/smilies/';
-          break;
-
-        case 'vanilla':
-        case 'vbulletin3':
-        case 'vbulletin4':
-          $forumUrlS = $loginConfig['url'];
-          break;
-      }
-
-      $searchText2 = implode('|', $searchText);
-
-      $text = preg_replace("/(?<!(\[noparse\]))(?<!(quot))(?<!(gt))(?<!(lt))(?<!(apos))(?<!(amp))($searchText2)(?!\[\/noparse\])/ie","'{$forumUrlS}' . fim_indexValue(\$smilies2,strtolower('\\7'))", $text);
-    }
-
-    return $text;
   }
 
 

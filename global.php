@@ -119,6 +119,9 @@ define("ROOM_PERMISSION_MODERATE", 8);
 define("ROOM_PERMISSION_PROPERTIES", 16);
 define("ROOM_PERMISSION_GRANT", 128);
 
+define("ROOM_TYPE_PRIVATE", 'private');
+define("ROOM_TYPE_OTR", 'otr');
+
 define("USER_PRIV_VIEW", 0x1);
 define("USER_PRIV_POST", 0x2);
 define("USER_PRIV_TOPIC", 0x4);
