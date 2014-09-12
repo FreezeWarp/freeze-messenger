@@ -101,7 +101,7 @@ class fimUser {
 
     // If certain features are disabled, remove user priviledges. The bitfields should be maintained, however, for when a feature is reenabled.
     if (!$generalCache->getConfig('userRoomCreation')) $userData['userPrivs'] &= ~USER_PRIV_CREATE_ROOMS;
-    if (!$generalCache->getConfig('userPrivateRoomCreation')) $userData['userPrivs'] &= ~(USER_PRIV_PRIVATE_ALL + USER_PRIV_PRIVATE_FRIENDS); // Note: does not disable the usage of existing private rooms. Use "privateRoomsEnabled" for this.
+    if (!$generalCache->getConfig('userPrivateRoomCreation')) $userData['userPrivs'] &= ~(USER_PRIV_PRIVATE_ALL | USER_PRIV_PRIVATE_FRIENDS); // Note: does not disable the usage of existing private rooms. Use "privateRoomsEnabled" for this.
     if ($generalCache->getConfig('disableTopic')) $userData['userPrivs'] &= ~USER_PRIV_TOPIC; // Topics are disabled (in fact, this one should also disable the returning of topics; TODO).
 
     // Certain bits imply other bits. Make sure that these are consistent.
@@ -109,6 +109,7 @@ class fimUser {
 
     // Superuser override (note that any user with GRANT or in the $config superuser array is automatically given all permissions, and is marked as protected. The only way, normally, to remove a user's GRANT status, because they are automatically protected, is to do so directly in the database.)
     if (in_array($this->id, $loginConfig['superUsers']) || ($userData['privs'] & ADMIN_GRANT)) $userData['privs'] = 0x7FFFFFFF;
+    elseif ($userData['privs'] & ADMIN_ROOMS) $userData['privs'] |= (USER_PRIV_VIEW | USER_PRIV_POST | USER_PRIV_TOPIC); // Being a super-moderator grants a user the ability to view, post, and make topic changes in all rooms.
 
 
     /* Set Basic Information */
@@ -145,8 +146,14 @@ class fimUser {
 
 
     /* Set Parental Information */
-    $this->parentalFlags = explode(',', $userData['userParentalFlags']);
-    $this->parentalAge = $userData['userParentalAge'];
+    if ($config['parentalEnabled']) {
+      $this->parentalFlags = explode(',', $userData['userParentalFlags']);
+      $this->parentalAge = $userData['userParentalAge'];
+    }
+    else {
+      $this->parentalFlags = array();
+      $this->parentalAge = 255;
+    }
 
 
     /* Mark Resolved */

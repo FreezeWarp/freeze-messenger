@@ -54,7 +54,7 @@ class fimRoom {
   private function populateFromArray($roomData) {
     if (!count($roomData) || !is_array($roomData)) return false;
 
-    $this->id = $roomData['roomId'];
+    $this->id = (int) $roomData['roomId'];
     $this->name = $roomData['roomName'];
     $this->alias = $roomData['roomAlias'];
     $this->options = $roomData['options'];
@@ -62,12 +62,12 @@ class fimRoom {
     $this->official = $this->options & ROOM_OFFICIAL;
     $this->hidden = $this->options & ROOM_HIDDEN;
     $this->archived = $this->options & ROOM_ARCHIVED;
-    $this->ownerId = $roomData['owner'];
+    $this->ownerId = (int) $roomData['owner'];
     $this->topic = $roomData['topic'];
     $this->type = $roomData['roomType'];
     $this->parentalFlags = explode(',', $roomData['roomParentalFlags']);
-    $this->parentalAge = $roomData['roomParentalAge'];
-    $this->defaultPermissions = $roomData['defaultPermissions'];
+    $this->parentalAge = (int) $roomData['roomParentalAge'];
+    $this->defaultPermissions = (int) $roomData['defaultPermissions'];
 
     $this->resolved = true;
 

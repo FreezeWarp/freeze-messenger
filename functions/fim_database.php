@@ -1018,34 +1018,14 @@ class fimDatabase extends databaseSQL
     if (!$room->resolve(array('type', 'alias'))) throw new Exception('hasPermission was called without a valid room.'); // Make sure we know the room type and alias in addition to ID.
 
 
-    if ($room->type === 'otr' || $room->type === 'private') { // We are doing this in hasPermission itself to allow for hooks that might, for instance, deny permission to certain users based on certain criteria.
+    if ($room->type === 'otr' || $room->type === 'private') {
       if (!$this->config['privateRoomsEnabled']) return 0;
-      if (in_array($user->id, fim_reversePrivateRoomAlias($room->alias))) return ROOM_PERMISSION_VIEW | ROOM_PERMISSION_POST | ROOM_PERMISSION_TOPIC; // The logic with private rooms is fairly self-explanatory: roomAlias lists all valid userIds, so check to see if the user is in there.
+      elseif (in_array($user->id, fim_reversePrivateRoomAlias($room->alias))) return ROOM_PERMISSION_VIEW | ROOM_PERMISSION_POST | ROOM_PERMISSION_TOPIC; // The logic with private rooms is fairly self-explanatory: roomAlias lists all valid userIds, so check to see if the user is in there.
       else return 0;
     }
     else {
       if (!$user->resolve()) throw new Exception('hasPermission was called without a valid user.'); // Require all user information.
       if (!$room->resolve()) throw new Exception('hasPermission was called without a valid room.'); // Require all room information.
-
-
-      /* Initialise Variables */
-      $parentalBlock = false;
-      $isKicked = false;
-      $isAdmin = false;
-
-
-      /* Set Variables */
-      if ($user->adminPrivs & (ADMIN_GRANT + ADMIN_ROOMS)) $isAdmin = true; // Admin
-
-      if ($this->config['parentalEnabled']) { // Parental controls
-        if ($room->parentalAge > $user->parentalAge) $parentalBlock = true;
-        elseif (fim_inArray($user->parentalFlags, $room->parentalFlags)) $parentalBlock = true;
-      }
-
-      if ($kicks = $this->getKicks(array( // Kicks
-        'userIds' => array($user->id),
-        'roomIds' => array($room->id)
-      ))->getCount() > 0) $isKicked = true;
 
 
 
@@ -1056,28 +1036,31 @@ class fimDatabase extends databaseSQL
 
 
       /* Base calculation -- these are what permisions a user is supposed to have, before userPrivs and certain room properties are factored in. */
-      if ($isAdmin) $returnBitfield = 65535; // Admins have all permissions.
+      if ($user->privs & ADMIN_ROOMS) $returnBitfield = 65535; // Super moderators have all permissions.
       elseif (in_array($user->groupId, $this->config['bannedUserGroups'])) $returnBitfield = 0; // A list of "banned" user groups can be specified in config. These groups lose all permissions, similar to having userPrivs = 0. But, in the interest of sanity, we don't check it elsewhere.
       elseif ($room->ownerId === $user->id) $returnBitfield = 65535; // Owners have all permissions.
-      elseif ($isKicked || $parentalBlock) $returnBitfield = 0; // A kicked user (or one blocked by parental controls) has no permissions. This cannot apply to the room owner.
+      elseif (($kicks = $this->getKicks(array(
+            'userIds' => array($user->id),
+            'roomIds' => array($room->id)
+          ))->getCount() > 0)
+        || $room->parentalAge > $user->parentalAge
+        || fim_inArray($user->parentalFlags, $room->parentalFlags)) $returnBitfield = 0; // A kicked user (or one blocked by parental controls) has no permissions. This cannot apply to the room owner.
       elseif ($permissionsBitfield === -1) $returnBitfield = $room->defaultPermissions;
       else $returnBitfield = $permissionsBitfield;
 
 
 
       /* Remove priviledges under certain circumstances. */
-      // Remove priviledges that a user does not have for any room. (We skip this check on admins, since they should ignore the userPriv calculation.)
-      if (!$isAdmin) {
-        if (!($user->privs & USER_PRIV_VIEW)) $returnBitfield &= ~ROOM_PERMISSION_VIEW; // If banned, a user can't view anything.
-        if (!($user->privs & USER_PRIV_POST)) $returnBitfield &= ~ROOM_PERMISSION_POST; // If silenced, a user can't post anywhere.
-        if (!($user->privs & USER_PRIV_TOPIC)) $returnBitfield &= ~ROOM_PERMISSION_TOPIC;
-      }
+      // Remove priviledges that a user does not have for any room.
+      if (!($user->privs & USER_PRIV_VIEW)) $returnBitfield &= ~ROOM_PERMISSION_VIEW; // If banned, a user can't view anything.
+      if (!($user->privs & USER_PRIV_POST)) $returnBitfield &= ~ROOM_PERMISSION_POST; // If silenced, a user can't post anywhere.
+      if (!($user->privs & USER_PRIV_TOPIC)) $returnBitfield &= ~ROOM_PERMISSION_TOPIC;
 
       // Deleted and archived rooms act similarly: no one may post in them, while only admins can view deleted rooms.
-      if ($room->options & (ROOM_DELETED + ROOM_ARCHIVED)) { // that is, check if a room is either deleted or archived.
-        if (($room->options & ROOM_DELETED) && !$isAdmin) $returnBitfield &= ~(ROOM_PERMISSION_VIEW); // Only admins may view deleted rooms.
+      if ($room->options & (ROOM_DELETED | ROOM_ARCHIVED)) { // that is, check if a room is either deleted or archived.
+        if (($room->options & ROOM_DELETED) && !($user->privs & ADMIN_ROOMS)) $returnBitfield &= ~(ROOM_PERMISSION_VIEW); // Only super moderators may view deleted rooms.
 
-        $returnBitfield &= ~(ROOM_PERMISSION_POST + ROOM_PERMISSION_TOPIC); // And no one can post in them.
+        $returnBitfield &= ~(ROOM_PERMISSION_POST | ROOM_PERMISSION_TOPIC); // And no one can post in them - a rare case where even admins are denied certain abilities.
       }
 
 
