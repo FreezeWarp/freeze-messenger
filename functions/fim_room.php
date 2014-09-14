@@ -138,27 +138,18 @@ class fimRoom {
    * @return bool|resource
    */
   public function set($options) {
+    global $database;
+
     $this->resolve();
 
-    $options = array_merge(array(
-      'roomName' => '',
-      'roomAlias' => '',
-      'roomType' => 'general',
-      'owner' => 0,
-      'defaultPermissions' => 0,
-      'roomParentalAge' => 0,
-      'roomParentalFlags' => array(),
-      'officialRoom' => false,
-      'hiddenRoom' => false,
-      'archivedRoom' => false,
-      'deleted' => false,
-    ), $this->getAsArray(), $options);
+    /* The first array is a list of defaults for any new room. The second array is the existing data, if we are editing the room -- that is, the existing room's data will overwrite the defaults (we could, if we wanted, only use one or the other depending on if we are creating or editing, but this way is a bit cleaner, imo). Finally, we overwrite with provided options. */
+    $options = array_merge($this->getPropertiesAsArray(), $options);
 
     $optionsField = 0;
 
     $columns = array(
       'roomName' => $options['roomName'],
-      'roomNameSearchable' => fim_makeSearchable($options['roomName']), // TODO
+      'roomNameSearchable' => $database->makeSearchable($options['roomName']), // TODO
       'roomAlias' => $options['roomAlias'],
       'roomType' => $options['roomType'],
       'owner' => (int) $options['owner'],
@@ -169,16 +160,40 @@ class fimRoom {
     );
 
 
-    /* TODO: upsert? */
-    if ($this->id === false || $this->resolved) {
-      return $this->upsert($this->sqlPrefix . "rooms", array(
+
+    if ($this->id === false) { // Create
+      $columns = array_merge(array(
+
+      ), $columns)
+      return $database->insert($this->sqlPrefix . 'rooms', $columns);
+    }
+    elseif ($this->resolved) { // Update
+      return $database->update($this->sqlPrefix . "rooms", $columns, array(
         'roomId' => $this->id,
-      ), $columns);
+      ));
     }
     else {
-      throw new Exception('A valid room was not specified for editRoom().');
+      throw new Exception('Room not resolved.');
     }
   }
+
+
+  public function getPropertiesAsArray() {
+    return array(
+      'roomName' => ($this->name ?: '[Missingname.]'),
+      'roomAlias' => ($this->alias ?: ''),
+      'roomType' => ($this->type ?: 'general'),
+      'owner' => ($this->ownerId ?: 0),
+      'defaultPermissions' => ($this->defaultPermissions0,
+      'roomParentalAge' => $config['parentalFlagsDefault'],
+      'roomParentalFlags' => array(),
+      'officialRoom' => false,
+      'hiddenRoom' => false,
+      'archivedRoom' => false,
+      'deleted' => false,
+    )
+  }
+
 
   public function changeTopic($topic) {
     global $database;
