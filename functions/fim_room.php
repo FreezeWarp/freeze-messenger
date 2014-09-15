@@ -17,6 +17,10 @@ class fimRoom {
   public $parentalFlags;
   public $parentalAge;
   public $defaultPermissions;
+  public $deleted;
+  public $official;
+  public $hidden;
+  public $archived;
 
   protected $roomData;
   protected $resolved;
@@ -37,11 +41,11 @@ class fimRoom {
 
 
   // TODO: Resolve only certain data.
-  public function resolve() {
+  public function resolve($update = false) {
     global $database;
 
     if (!$this->id) return false; // If no ID is present, return false;
-    elseif (!$this->resolved) {
+    elseif (!$this->resolved || $update) {
       return $this->populateFromArray($database->getRooms(array(
         'roomIds' => array($this->id)
       ))->getAsArray(false));
@@ -79,57 +83,6 @@ class fimRoom {
 
 
   /**
-   * Queries the roomPermissions table for a specific roomId with three attribute/param pairs: one for $userId, one for $userGroupId, and one for $socialGroupIds. It is faster when looking up data on a specific user, but less versitile: it will return a bitfield representing the user's permissions instead of a result set.
-   *
-   * @param $roomId
-   * @param $userId
-   * @param $userGroupId
-   * @param $socialGroupIds
-   */
-  public function getUserPermissions($user) {
-    global $database;
-
-    if (!$user->resolve('userGroup', 'socialGroups')) throw new Exception('hasPermission was called without a valid user.'); // Require all user information.
-
-    $permissions = $database->select(array(
-      $database->sqlPrefix . "roomPermissions" => 'roomId, attribute, param, permissions',
-    ), array(
-      'both' => array(
-        'roomId' => $database->int($this->id),
-        'either' => array(
-          'both 1' => array(
-            'attribute' => $database->str('user'),
-            'param' => $database->int($user->id)
-          ),
-          'both 2' => array(
-            'attribute' => $database->str('admingroup'),
-            'param' => $database->int($user->groupId)
-          ),
-          'both 3' => array(
-            'attribute' => $database->str('group'),
-            'param' => $database->in($user->socialGroupIds)
-          )
-        )
-      )
-    ))->getAsArray(array('attribute', 'param'));
-
-
-    if (!count($permissions)) return -1;
-    elseif (isset($permissions['user'][$user->id])) { // The user setting overrides group settings. A notable limitation of this is that you can't override specific group-based permissions, but this way is a fair bit simpler (after all, there are very few situations when you want to bar a user from posting but want them to be able to view based on their group -- rather, you want to set the user's specific permissions and be done with it).
-      return $permissions['user'][$user->id]['permissions'];
-    }
-    else { // Here we generate a user's permissions by XORing all of the group permissions that apply to them. That is, if any group a user belongs to has a certain permission, then the user will have that permission.
-      $groupBitfield = isset($permissions['admingroup'][$user->groupId]) ? $permissions['admingroup'][$user->groupId]['permissions'] : 0; // Set the group field to the returned admingroup object if available; otherwise, 0.
-
-      foreach ($permissions['group'] AS $s) $groupBitfield |= $s['permissions']; // Basically, we do a bitwise OR on all of the permissions returned as part of a social group (with the admingroup permission being our first above).
-
-      return $groupBitfield;
-    }
-  }
-
-
-
-  /**
    * Modify or create a room.
    * @internal The row will be set to a merge of roomDefaults->existingRow->specifiedOptions.
    *
@@ -143,57 +96,50 @@ class fimRoom {
     $this->resolve();
 
     /* The first array is a list of defaults for any new room. The second array is the existing data, if we are editing the room -- that is, the existing room's data will overwrite the defaults (we could, if we wanted, only use one or the other depending on if we are creating or editing, but this way is a bit cleaner, imo). Finally, we overwrite with provided options. */
-    $options = array_merge($this->getPropertiesAsArray(), $options);
-
-    $optionsField = 0;
+    $options = array_merge(array(
+      'roomName' => $this->resolved ? $this->name : '[Missingname.]',
+      'roomAlias' => $this->resolved ? $this->alias : '',
+      'roomType' => $this->resolved ? $this->type : 'general',
+      'ownerId' => $this->resolved ? $this->ownerId : 0,
+      'defaultPermissions' => $this->resolved ? $this->defaultPermissions : 0,
+      'roomParentalAge' => $this->resolved ? $this->parentalAge : $config['parentalFlagsDefault'],
+      'roomParentalFlags' => $this->resolved ? $this->parentalFlags : array(),
+      'officialRoom' => $this->resolved ? $this->official : false,
+      'hiddenRoom' => $this->resolved ? $this->hidden : false,
+      'archivedRoom' => $this->resolved ? $this->archived : false,
+      'deleted' => $this->resolved ? $this->deleted : false,
+    ), $this->getAsArray(), $options);
 
     $columns = array(
       'roomName' => $options['roomName'],
-      'roomNameSearchable' => $database->makeSearchable($options['roomName']), // TODO
+      'roomNameSearchable' => $database->makeSearchable($options['roomName']),
       'roomAlias' => $options['roomAlias'],
       'roomType' => $options['roomType'],
-      'owner' => (int) $options['owner'],
+      'ownerId' => (int) $options['ownerId'],
       'defaultPermissions' => (int) $options['defaultPermissions'],
       'roomParentalAge' => $options['roomParentalAge'],
       'roomParentalFlags' => implode(',', $options['roomParentalFlags']),
-      'options' => $optionsField
+      'options' => ($options['officialRoom'] ? ROOM_OFFICIAL : 0)
+        + ($options['hiddenRoom'] ? ROOM_HIDDEN : 0)
+        + ($options['archivedRoom'] ? ROOM_ARCHIVED : 0)
+        + ($options['deleted'] ? ROOM_DELETED : 0)
     );
 
-
-
     if ($this->id === false) { // Create
-      $columns = array_merge(array(
-
-      ), $columns)
-      return $database->insert($this->sqlPrefix . 'rooms', $columns);
+      $database->insert($this->sqlPrefix . 'rooms', $columns)->insertId;
+      $this->id = $database->insertId;
     }
     elseif ($this->resolved) { // Update
-      return $database->update($this->sqlPrefix . "rooms", $columns, array(
+      $database->update($this->sqlPrefix . "rooms", $columns, array(
         'roomId' => $this->id,
       ));
     }
     else {
       throw new Exception('Room not resolved.');
     }
+
+    $this->resolve(true);
   }
-
-
-  public function getPropertiesAsArray() {
-    return array(
-      'roomName' => ($this->name ?: '[Missingname.]'),
-      'roomAlias' => ($this->alias ?: ''),
-      'roomType' => ($this->type ?: 'general'),
-      'owner' => ($this->ownerId ?: 0),
-      'defaultPermissions' => ($this->defaultPermissions0,
-      'roomParentalAge' => $config['parentalFlagsDefault'],
-      'roomParentalFlags' => array(),
-      'officialRoom' => false,
-      'hiddenRoom' => false,
-      'archivedRoom' => false,
-      'deleted' => false,
-    )
-  }
-
 
   public function changeTopic($topic) {
     global $database;
@@ -204,6 +150,10 @@ class fimRoom {
     ), array(
       'roomId' => $this->id,
     ));
+  }
+
+  public function replacePermissions($allowedUsers, $allowedGroups) {
+
   }
 }
 ?>
