@@ -136,6 +136,18 @@ $requestP = fim_sanitizeGPC('p', array(
 /* Manual Formatting for Some of the Request Variables */
 $requestP['defaultPermissions'] = getPermissionsField($requestP['defaultPermissions']);
 
+if ($requestG['action'] === 'create' || $requestG['action'] === 'edit') {
+  if (!strlen($request['roomName'])) {
+    new fimError('noName', 'A room name was not supplied.');
+  }
+  elseif (strlen($request['roomName']) < $config['roomLengthMinimum']) {
+    new fimError('shortName', 'The room name specified is too short.', array ('roomLengthMinimum' => $config['roomLengthMinimum']));
+  }
+  elseif (strlen($request['roomName']) > $config['roomLengthMaximum']) {
+    new fimError('longName', 'The room name specified is too long.', array ('roomLengthMinimum' => $config['roomLengthMaximum']));
+  }
+}
+
 $permFilterMatches = array(
   'post' => ROOM_PERMISSION_POST,
   'view' => ROOM_PERMISSION_VIEW,
@@ -211,6 +223,7 @@ if ($requestG['action'] === 'create') {
   else {
     $room = new fimRoom(false);
     $room->set($requestP);
+    $database->setCensorLists($room->id, $requestP['censor']);
     alterRoomPermissions($room, $requestP['userPermissions'], $requestP['groupPermissions']);
   }
 }
@@ -268,12 +281,25 @@ else {
             }
           }
         }
-        break;
+      break;
 
       case 'edit':
-        if ($permissions & ROOM_PERMISSION_PROPERTIES) $room->set($requestP);
+        if ($permissions & ROOM_PERMISSION_PROPERTIES) {
+          $room->set($requestP);
+          $database->setCensorLists($room->id, $requestP['censor']);
+        }
         if ($permissions & ROOM_PERMISSION_GRANT) alterRoomPermissions($room, $requestP['userPermissions'], $requestP['groupPermissions']);
-        break;
+      break;
+
+      case 'delete':
+        if ($room->deleted) new fimError('nothingToDo', 'The room is already deleted.');
+        else $database->editRoom($room['roomId'], array('deleted' => true));
+      break;
+
+      case 'undelete':
+        if (!$room->deleted) new fimError('nothingToDo', 'The room isn\'t deleted.');
+        else $database->editRoom($room['roomId'], array('deleted' => false));
+      break;
     }
   }
 }

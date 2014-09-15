@@ -1318,11 +1318,10 @@ class fimDatabase extends databaseSQL
   }
 
 
-
   public function setCensorList($roomId, $listId, $status) {
     $this->startTransaction();
 
-    $this->modLog('unblockCensorList', "$roomId,$listId");
+    $this->modLog('setCensorList', "$roomId,$listId,$status");
 
     $this->insert($this->sqlPrefix . "censorBlackWhiteLists", array(
       'roomId' => $roomId,
@@ -1333,6 +1332,34 @@ class fimDatabase extends databaseSQL
     ));
 
     $this->endTransaction();
+  }
+
+
+
+  /**
+   * Enables/disables listed censor lists.
+   *
+   * @param int $roomId
+   * @param array $lists - An array where each key is a list ID and each value is true/false -- true to enable a censor, false to disable a censor.
+   */
+  public function setCensorLists($roomId, $lists) {
+    $dbLists = $this->getCensorLists(array(
+      'activeStatus' => 'active',
+      'roomIds' => array($roomId),
+    ))->getAsArray(array('listId'));// var_dump($lists); die();
+
+    foreach ($dbLists AS $listId => $list) {
+      if ($list['type'] == 'black'
+        && $list['status'] == 'block') $checked = true;
+      elseif ($list['type'] == 'white'
+        && $list['status'] != 'unblock') $checked = true;
+      else $checked = false;
+
+      if ($checked == true && !$lists[$listId])
+        $this->setCensorList($roomId, $listId, 'unblock');
+      elseif ($checked == false && $lists[$listId])
+        $this->setCensorList($roomId, $listId, 'block');
+    }
   }
 
 

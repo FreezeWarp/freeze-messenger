@@ -91,7 +91,7 @@ class fimRoom {
    * @return bool|resource
    */
   public function set($options) {
-    global $database;
+    global $database, $config;
 
     $this->resolve();
 
