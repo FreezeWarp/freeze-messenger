@@ -155,7 +155,6 @@ foreach ($users AS $userId => $userData) {
 
   if (in_array('groups', $request['info'])) {
     $xmlData['getUsers']['users']['user ' . $userId]['mainGroupId'] = $userData->mainGroupId;
-    $xmlData['getUsers']['users']['user ' . $userId]['allGroupIds'] = new apiOutputList($userData->allGroupIds);
     $xmlData['getUsers']['users']['user ' . $userId]['socialGroupIds'] = new apiOutputList($userData->socialGroupIds);
   }
 

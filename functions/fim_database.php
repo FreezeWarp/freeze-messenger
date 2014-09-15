@@ -995,6 +995,40 @@ class fimDatabase extends databaseSQL
   }
 
 
+  /**
+   * This is a bit of a silly function that obtains all rows that correspond either with a userId, a list of groups, or both, and returns a bitfield such that, if a user permission exist, it overrides all groups, or, alternatively, an OR of all group permissions. Thus, it can be used to only query the permission of a single group or a single user, or can be used with both a user and all groups the user belongs to.
+   *
+   * @param $roomId
+   * @param $attribute
+   * @param $param
+   */
+  protected function getPermissionsField($roomId, $userId, $groups) {
+    $permissions = $this->select(array(
+      $this->sqlPrefix . "roomPermissions" => 'roomId, attribute, param, permissions',
+    ), array(
+      'roomId' => $this->int($roomId),
+      'either' => array(
+        'both 1' => array(
+          'attribute' => 'user',
+          'param' => $this->int($userId)
+        ),
+        'both 2' => array(
+          'attribute' => 'group',
+          'param' => $this->in($groups)
+        )
+      )
+    ))->getAsArray('attribute');
+
+    $groupBitfield = 0;
+    foreach ($permissions AS $permission) {
+      if ($permission['attribute'] === 'user') return $permission['permissions']; // If a user permission exists, then it overrides group permissions.
+      else $groupBitfield &= $permission['permissions']; // Group permissions, on the other hand, stack. If one group has ['view', 'post'], and another has ['view', 'moderate'], then a user in both groups has all three.
+    }
+
+    return $groupBitfield;
+  }
+
+
   public function getPermissionCache($roomId, $userId) {
     if (!$this->config['roomPermissionsCacheEnabled']) return -1;
     else {
@@ -1015,7 +1049,8 @@ class fimDatabase extends databaseSQL
   /**
    * Determines if a given user has certain permissions in a given room.
    *
-   * @param int $userId The ID of the user that permissions is being checked against.
+   * @param fimUser $user
+   * @param fimRoom $room
    *
    * @return int A bitfield corresponding with roomPermissions.
    *
@@ -1027,7 +1062,6 @@ class fimDatabase extends databaseSQL
 
 
     if (!$room->resolve(array('type', 'alias'))) throw new Exception('hasPermission was called without a valid room.'); // Make sure we know the room type and alias in addition to ID.
-
 
     if ($room->type === 'otr' || $room->type === 'private') {
       if (!$this->config['privateRoomsEnabled']) return 0;
@@ -1042,7 +1076,7 @@ class fimDatabase extends databaseSQL
 
       /* Obtain Data from roomPermissions Table
        * This table is seen as the "final word" on matters. */
-      $permissionsBitfield = $room->getUserPermissions($user);
+      $permissionsBitfield = $this->getPermissionsField($room->id, $user->id, $user->socialGroupIds);
 
 
 
@@ -1321,13 +1355,35 @@ class fimDatabase extends databaseSQL
 
 
   public function setPermission($roomId, $attribute, $param, $permissionsMask) {
+    /* Insert or Replace The Old Permission Setting */
     $this->insert($this->sqlPrefix . 'roomPermissions', array(
       'roomId' => $roomId,
       'attribute' => $attribute,
-      'psram' => $param,
+      'param' => $param,
       'permissions' => $permissionsMask
     ), array(
       'permissions' => $permissionsMask
+    ));
+
+
+    /* Delete Relevant Cached Entries, Forcing Cache Regeneration When Next Needed */
+    /* TODO (obviously) */
+    switch ($attribute) {
+      case 'user':
+        $users = array($param);
+        break;
+
+      case 'group':
+        $users = $this->getSocialGroupMembers(array(
+          'groupIds' => array($param),
+          'type' => array('member', 'moderator')
+        ))->getColumnValues('userId');
+        break;
+    }
+
+    $this->delete($this->prefix . 'roomPermissionsCache', array(
+      'roomId' => $roomId,
+      'userId' => $this->in($users)
     ));
   }
 

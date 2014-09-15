@@ -4,7 +4,6 @@ class fimUser {
   public $name;
   public $socialGroupIds;
   public $mainGroupId;
-  public $allGroupIds;
   public $parentalFlags;
   public $parentalAge;
   public $anonId;
@@ -143,7 +142,6 @@ class fimUser {
     /* Handle Groups */
     $this->socialGroupIds = explode(',', $userData['socialGroupIds']);
     $this->mainGroupId = $userData['userGroupId'];
-    $this->allGroupIds = explode(',', $userData['allGroupIds']);
 
 
     /* Set Parental Information */
