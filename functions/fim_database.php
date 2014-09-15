@@ -35,6 +35,17 @@ class fimDatabase extends databaseSQL
   }
 
 
+  /****** Helper Functions ******/
+  function makeSearchable($string) {
+    $string = str_replace(array_keys($this->config['romanisation']), array_values($this->config['romanisation']), $string); // Romanise.
+    $string = str_replace($this->config['searchWordPunctuation'], ' ', $string); // Get rid of punctuation.
+    $string = preg_replace('/\s+/', ' ', $string); // Get rid of extra spaces.
+    $string = strtolower($string); // Lowercase the string.
+
+    return $string;
+  }
+
+
 
   /****** Get Functions *****/
 
@@ -1761,8 +1772,7 @@ class fimDatabase extends databaseSQL
   public function getKeyWordsFromText($text) {
     global $sqlPrefix, $user; // TODO
 
-    $puncList = array();
-    $string = fim_makeSearchable($text);
+    $string = $this->makeSearchable($text);
 
     $stringPieces = array_unique(explode(' ', $string));
     $stringPiecesAdd = array();

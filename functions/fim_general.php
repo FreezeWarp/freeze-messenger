@@ -176,19 +176,6 @@ function fim_encrypt($data) {
 
 
 
-function fim_makeSearchable($string) {
-  global $config;
-
-  $string = str_replace(array_keys($config['romanisation']), array_values($config['romanisation']), $string);
-  $string = str_replace($config['searchWordPunctuation'], ' ', $string); // Get rid of punctuation.
-  $string = preg_replace('/\s+/', ' ', $string);
-  $string = strtolower($string); // Lowercase the string.
-
-  return $string;
-}
-
-
-
 
 
 
@@ -556,6 +543,12 @@ function fim_sanitizeGPC($type, $data) {
           $config['jsonDecodeRecursionLimit'],
           JSON_BIGINT_AS_STRING
         );
+
+        /* Newer Code -- Breaks Conventions Because I'm Not Sure Which Conventions I Want Yet */
+        $holder = array();
+        foreach ($newData[$indexName] AS $key => $value) {
+          $holder[fim_cast($indexMetaData['filterKey'] ? $indexMetaData['filterKey'] : 'string', $key)] = fim_cast($indexMetaData['filter'] ? $indexMetaData['filter'] : 'string', $key);
+        }
       break;
 
       case 'jsonList':
