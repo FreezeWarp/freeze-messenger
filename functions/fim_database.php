@@ -1766,7 +1766,7 @@ class fimDatabase extends databaseSQL
   {
     global $user;// TODO
 
-    if ($this->insert($this->sqlPrefix . "fulllog", array(
+    if ($this->insert($this->sqlPrefix . "fullLog", array(
       'user'   => json_encode($user),
       'server' => json_encode($_SERVER),
       'action' => $action,

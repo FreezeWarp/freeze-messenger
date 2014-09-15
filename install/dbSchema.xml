@@ -143,7 +143,7 @@
     </table>
 
 
-    <table name="fulllog" type="general" comment="A log of moderator actions that document all update(), insert(), and delete() calls.">
+    <table name="fullLog" type="general" comment="A log of moderator actions that document all update(), insert(), and delete() calls.">
       <column name="id" type="int" maxlen="12" autoincrement="1" comment="A unique ID   for the log entry." />
       <column name="user" type="int" maxlen="8" comment="The JSON-encoded $user data." />
       <column name="time" type="time" comment="The time the action was performed on." />
