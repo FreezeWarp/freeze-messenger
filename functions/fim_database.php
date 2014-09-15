@@ -694,22 +694,6 @@ class fimDatabase extends databaseSQL
 
 
 
-  public function getRoomPermissions($rooms = array(), $attribute = false, $params = array())
-  {
-    // Modify Query Data for Directives (First for Performance)
-    $columns = array(
-      $this->sqlPrefix . "roomPermissions" => 'roomId, attribute, param, permissions',
-    );
-
-    if (count($rooms) > 0) $conditions['both']['roomId'] = $this->in((array) $rooms);
-    if ($attribute) $conditions['both']['attribute'] = $this->str($attribute);
-    if (count($params) > 0) $conditions['both']['param'] = $this->in((array) $params);
-
-    return $this->select($columns, $conditions);
-  }
-
-
-
   /**
    * Run a query to obtain the number of posts made to a room by a user.
    * Use of groupBy highly recommended.
@@ -1043,6 +1027,22 @@ class fimDatabase extends databaseSQL
       elseif (time() > $permissions['expires']) return -1;
       else return (int) $permissions['permissions'];
     }
+  }
+
+
+
+  public function getRoomPermissions($rooms = array(), $attribute = false, $params = array())
+  {
+    // Modify Query Data for Directives (First for Performance)
+    $columns = array(
+      $this->sqlPrefix . "roomPermissions" => 'roomId, attribute, param, permissions',
+    );
+
+    if (count($rooms) > 0) $conditions['both']['roomId'] = $this->in((array) $rooms);
+    if ($attribute) $conditions['both']['attribute'] = $this->str($attribute);
+    if (count($params) > 0) $conditions['both']['param'] = $this->in((array) $params);
+
+    return $this->select($columns, $conditions)->getAsArray(false);
   }
 
 
@@ -1825,14 +1825,6 @@ class fimDatabase extends databaseSQL
 //    $string = str_replace($escapeChar . $delimiter, fim_encodeEntities($delimiter), $string);
 //    return array_map('fim_decodeEntities', explode($delimiter, $string));
 //  }
-
-  public function generateBitfield($array) {
-    $bitfield = 0;
-
-    foreach ($array AS $bit => $true) {
-      if ($true)  $bitfield += $bit;
-    }
-  }
 
 
 
