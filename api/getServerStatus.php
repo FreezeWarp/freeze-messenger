@@ -46,8 +46,8 @@ switch($loginConfig['method']) {
 
   case 'vanilla':
     // TODO: Convert
-    $smilies = $this->select(array(
-      $this->sqlPrefix . "emoticons" => 'emoticonText, emoticonFile'
+    $smilies = $database->select(array(
+      $database->sqlPrefix . "emoticons" => 'emoticonText, emoticonFile'
     ))->getAsArray(true);
     break;
 
