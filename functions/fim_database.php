@@ -1002,7 +1002,7 @@ class fimDatabase extends databaseSQL
    * @param $attribute
    * @param $param
    */
-  protected function getPermissionsField($roomId, $userId, $groups) {
+  public function getPermissionsField($roomId, $userId, $groups = array()) {
     $permissions = $this->select(array(
       $this->sqlPrefix . "roomPermissions" => 'roomId, attribute, param, permissions',
     ), array(
@@ -1320,7 +1320,9 @@ class fimDatabase extends databaseSQL
 
 
   public function setCensorList($roomId, $listId, $status) {
-    $this->modLog('unblockCensorList', $roomId . ',' . $listId);
+    $this->startTransaction();
+
+    $this->modLog('unblockCensorList', "$roomId,$listId");
 
     $this->insert($this->sqlPrefix . "censorBlackWhiteLists", array(
       'roomId' => $roomId,
@@ -1329,6 +1331,8 @@ class fimDatabase extends databaseSQL
     ), array(
       'status' => $status,
     ));
+
+    $this->endTransaction();
   }
 
 
@@ -1355,6 +1359,14 @@ class fimDatabase extends databaseSQL
 
 
   public function setPermission($roomId, $attribute, $param, $permissionsMask) {
+    /* Start Transaction */
+    $this->startTransaction();
+
+
+    /* Modlog */
+    $this->modLog('setPermission', "$roomId,$attribute,$param,$permissionsMask");
+
+
     /* Insert or Replace The Old Permission Setting */
     $this->insert($this->sqlPrefix . 'roomPermissions', array(
       'roomId' => $roomId,
@@ -1385,6 +1397,10 @@ class fimDatabase extends databaseSQL
       'roomId' => $roomId,
       'userId' => $this->in($users)
     ));
+
+
+    /* End Transaction */
+    $this->endTransaction();
   }
 
 
@@ -1443,6 +1459,9 @@ class fimDatabase extends databaseSQL
     }
 
     list($messageTextEncrypted, $encryptIV, $encryptSalt) = $this->getEncrypted($messageText);
+
+
+    $this->startTransaction();
 
 
     /* Insert Message Data */
@@ -1572,6 +1591,9 @@ class fimDatabase extends databaseSQL
         createUnreadMessage($sendToUserId, $user, $room, $messageId);
       }
     }
+
+
+    $this->endTransaction();
 
 
     // Return the ID of the inserted message.
