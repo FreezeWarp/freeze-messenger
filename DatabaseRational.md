@@ -1,0 +1,2 @@
+# fim\_database.php #
+Most (if not quite all) queries are now (or will be) stored in fim\_database.php as separate methods. This is mainly intended to increase usability, which has a couple of important side effects: it becomes easier to improve scalability, implement caching, and reduce query inefficiencies. It also will hopefully make it easier in the future to write plugins and change table structure.
