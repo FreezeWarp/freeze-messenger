@@ -70,7 +70,7 @@
       <column name="listId" type="int" maxlen="6" comment="The ID of the list the word is filed under." />
       <column name="word" type="string" maxlen="100" comment="The word text." />
       <column name="severity" type="string" restrict="replace,warn,confirm,block" default="replace" comment="The severity/type of word." />
-      <column name="param" type="string" maxlen="100" comment="The action data for the word, used in multiple ways based on the word's severity." />
+      <column name="param" type="string" default="" maxlen="100" comment="The action data for the word, used in multiple ways based on the word's severity." />
 
       <key name="wordId" type="primary" />
       <key name="listId" type="index" />
@@ -501,7 +501,7 @@
       <!-- Note: The password section is rather verbose in an effort to ensure that it is easy to change algorithms. -->
       <column name="passwordHash" type="string" maxlen="2048" comment="The hashed password of the user. It is only used on vanilla logins." />
       
-      <column name="passwordFormat" type="string" restrict="vbmd5,phpass" comment="The encryption format used for the password. This allows easy transition to safer formats, forcing people using the old format to reset their password. VBMD5 is the hashing format used by vBulletin, phpass is the portable PHP hashing format used by PHPBB and Vanilla." />
+      <column name="passwordFormat" type="string" restrict="vbmd5,phpass,plaintext" comment="The encryption format used for the password. This allows easy transition to safer formats, forcing people using the old format to reset their password. VBMD5 is the hashing format used by vBulletin, phpass is the portable PHP hashing format used by PHPBB and Vanilla. Plaintext signifies no encryption, mostly used with development." />
       <column name="passwordResetNow" type="bool" default="0" comment="When set, the user is required to reset his or her password on next login. This, unfortunately, requires the co-operation of clients, and as such may in theory be delayed or ignored entirely. But, I mean, it's better than nothing." />
       <column name="passwordLastReset" type="time" comment="The last time the user reset his or her password.." />
 

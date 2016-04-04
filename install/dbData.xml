@@ -166,8 +166,8 @@
     </table>
     <table name="censorWords" mode="dev">
       <column name="listId" value="3" />
-      <column name="word" value="replace" />
-      <column name="severity" value="ann" />
+      <column name="word" value="ann" />
+      <column name="severity" value="replace" />
       <column name="param" value="egg" />
     </table>
     <table name="censorWords" mode="dev">
@@ -277,7 +277,7 @@
       <column name="userName" value="Test Bot 1" />
       <column name="userGroupId" value="3" />
       <column name="socialGroupIds" value="3,4,5,6" />
-      <column name="birthDate" value="" /><!-- TODO -->
+      <column name="birthDate" value="1175052655" />
       <column name="passwordHash" value="pass1" /><!-- Unhashed passwords are only used for testing. -->
       <column name="passwordFormat" value="plaintext" />
       <column name="avatar" value="" /><!-- TODO -->
