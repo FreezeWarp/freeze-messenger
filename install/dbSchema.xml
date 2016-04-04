@@ -168,7 +168,7 @@
     </table>
 
 
-    <table name="messages" type="general" comment="User-created messages.">
+    <table name="messages" type="general" partitionBy="roomId" comment="User-created messages.">
       <column name="messageId" type="int" maxlen="9" autoincrement="1" comment="The unique ID of the message." />
       <column name="userId" type="int" maxlen="8" comment="The ID of the user who made the message." />
       <column name="roomId" type="int" maxlen="6" comment="The ID of the room the message was made in." />
@@ -181,7 +181,8 @@
       <column name="ip" type="string" maxlen="128" comment="The IP of the user who made the message." />
       <column name="flag" type="string" maxlen="10" comment="The content-type flag of the message (e.g. video, image, text, archive, html, url, email)." />
 
-      <key name="messageId" type="primary" />
+      <key name="messageId,roomId" type="primary" />
+      <key name="roomId" type="index" />
       <key name="deleted" type="index" />
       <key name="time" type="index" />
       <key name="roomId" type="index" />
