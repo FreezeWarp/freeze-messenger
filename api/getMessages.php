@@ -262,5 +262,5 @@ $xmlData['getMessages']['errDesc'] = (string) $errDesc;
 
 
 /* Output Data */
-new apiData($xmlData, true);
+echo apiData($xmlData);
 ?>

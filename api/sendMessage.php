@@ -139,5 +139,5 @@ $xmlData = array(
 
 
 /* Output Data */
-new apiData($xmlData, true);
+echo new apiData($xmlData);
 ?>

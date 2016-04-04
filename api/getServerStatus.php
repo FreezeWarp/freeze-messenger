@@ -170,5 +170,5 @@ $apiData = new apiData(array(
     ),
   ),
 ));
-echo $apiData->output();
+echo $apiData;
 ?>

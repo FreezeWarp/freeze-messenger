@@ -152,5 +152,5 @@ foreach ($rooms AS $roomId => $room) {
 
 
 /* Output Data Structure */
-new apiData($xmlData, true);
+echo apiData($xmlData);
 ?>

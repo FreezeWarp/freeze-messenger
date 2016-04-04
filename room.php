@@ -324,5 +324,5 @@ else {
 
 
 /* Output Data Structure */
-new apiData($xmlData, true);
+echo apiData($xmlData, true);
 ?>

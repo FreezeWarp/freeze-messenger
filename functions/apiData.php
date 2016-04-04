@@ -8,17 +8,13 @@ class apiData {
   private $xmlAttrEntitiesReplace;
 
 
-  function __construct($data = false, $outputNow = false, $format = false) {
+  public function __construct($data = false, $format = false) {
     $this->replaceData($data);
     $this->format = $format ? $format : $_REQUEST['fim3_format'];
-
-    if ($outputNow) {
-      echo $this->output();
-    }
   }
 
 
-  function setXMLEntities($find, $replace, $attrFind, $attrReplace) {
+  public function setXMLEntities($find, $replace, $attrFind, $attrReplace) {
     $this->xmlEntitiesFind = $find;
     $this->xmlEntitiesReplace = $replace;
     $this->xmlAttrEntitiesFind = $attrFind;
@@ -26,8 +22,30 @@ class apiData {
   }
 
 
-  function replaceData($data) {
+  public function replaceData($data) {
     $this->data = $data;
+  }
+
+
+  /**
+   * API Layer
+   *
+   * @return string
+   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+   */
+  public function __toString() {
+    header('FIM-API-VERSION: 3b4dev');
+
+    switch ($this->format) {
+      case 'phparray':                                                return $this->outputArray($this->data); break; // print_r
+      case 'keys':                                                    return $this->outputKeys($this->data);  break; // HTML List format for the keys only (documentation thing)
+      case 'jsonp':         header('Content-type: application/json'); return 'fim3_jsonp.parse(' . $this->outputJson($this->data) . ')'; break; // Javascript Object Notion for Cross-Origin Requests
+      case 'json': default: header('Content-type: application/json'); return $this->outputJson($this->data);  break; // Javascript Object Notion
+    }
+  }
+
+  public function s() {
+    return this.__toString();
   }
 
 
@@ -38,7 +56,7 @@ class apiData {
    * @return string - Encoded data.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  function encodeXml($data) {
+  private function encodeXml($data) {
     return str_replace("\n", '&#xA;', str_replace($this->xmlEntitiesFind, $this->xmlEntitiesReplace, $data));
   }
 
@@ -50,27 +68,8 @@ class apiData {
    * @return string - Encoded data.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  function encodeXmlAttr($data) {
+  private function encodeXmlAttr($data) {
     return str_replace($this->xmlAttrEntitiesFind, $this->xmlAttrEntitiesReplace, $data); // Replace the entities defined in $config (these are usually not changed).
-  }
-
-
-  /**
-   * API Layer
-   *
-   * @param array $array
-   * @return string
-   * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-   */
-  function output() {
-    header('FIM-API-VERSION: 3b4dev');
-
-    switch ($this->format) {
-      case 'phparray':                                                return $this->outputArray($this->data); break; // print_r
-      case 'keys':                                                    return $this->outputKeys($this->data);  break; // HTML List format for the keys only (documentation thing)
-      case 'jsonp':         header('Content-type: application/json'); return 'fim3_jsonp.parse(' . $this->outputJson($this->data) . ')'; break; // Javascript Object Notion for Cross-Origin Requests
-      case 'json': default: header('Content-type: application/json'); return $this->outputJson($this->data);  break; // Javascript Object Notion
-    }
   }
 
 
@@ -82,7 +81,7 @@ class apiData {
    * @return string
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  function outputJson($array) {
+  private function outputJson($array) {
     $data = array();
 
     foreach ($array AS $key => $value) {
@@ -118,7 +117,7 @@ class apiData {
    * @return string
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  function outputKeys($array, $level = 0) { // Used only for creating documentation.
+  private function outputKeys($array, $level = 0) { // Used only for creating documentation.
     $indent = '';
     $data = '';
 
@@ -146,7 +145,7 @@ class apiData {
    * @param array $array
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  function outputArray($array) {
+  private function outputArray($array) {
     print_r($array, true);
   }
 }

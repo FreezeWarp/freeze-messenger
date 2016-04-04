@@ -173,5 +173,5 @@ foreach ($users AS $userId => $userData) {
 
 
 /* Output Data */
-new apiData($xmlData, true);
+echo new apiData($xmlData);
 ?>
