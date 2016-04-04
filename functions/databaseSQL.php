@@ -638,7 +638,7 @@ class databaseSQL extends database {
       else return $this->databaseResultPipe($queryData, $query, $this->driver); // Select, etc.
     }
     else {
-      $this->triggerError('Database Error', array(
+      throw new fimError('dbError', 'Database Error', array(
         'query' => $query,
         'error' => $this->functionMap('error')
       ), 'syntax', $suppressErrors); // The query could not complete.
@@ -798,7 +798,7 @@ class databaseSQL extends database {
   ******************* Table Functions *********************
   *********************************************************/
 
-  public function createTable($tableName, $tableComment, $engine, $tableColumns, $tableIndexes) {
+  public function createTable($tableName, $tableComment, $engine, $tableColumns, $tableIndexes, $partitionColumn = false) {
     if (isset($this->tableTypes[$engine])) {
       $engineName = $this->tableTypes[$engine];
     }
@@ -962,7 +962,8 @@ class databaseSQL extends database {
 )'
     . ($this->language === 'mysql' ? ' ENGINE=' . $this->formatValue('string', $engineName) : '')
     . ' COMMENT=' . $this->formatValue('string', $tableComment)
-    . ' DEFAULT CHARSET=' . $this->formatValue('string', 'utf8') . $tableProperties);
+    . ' DEFAULT CHARSET=' . $this->formatValue('string', 'utf8') . $tableProperties
+    . ($partitionColumn ? ' PARTITION BY HASH(' . $this->formatValue('column', $partitionColumn) . ') PARTITIONS 100' : ''));
   }
   
   
