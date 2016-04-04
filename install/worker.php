@@ -175,7 +175,7 @@ switch ($_REQUEST['phase']) {
             }
           }
 
-          if (!$database->createTable($tableName, $tableComment, $tableType, $tableColumns, $tableIndexes)) {
+          if (!$database->createTable($tableName, $tableComment, $tableType, $tableColumns, $tableIndexes, isset($table['@partitionBy']) ? $table['@partitionBy'] : false)) {
             die("Could not create table.\n" . $database->getLastError());
           }
         }
