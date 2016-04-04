@@ -2,6 +2,12 @@
 
 <dbData version="3.0">
   <database>
+    <table name="configuration" mode="dev">
+      <column name="directive" value="displayBacktrace" />
+      <column name="value" value="true" />
+      <column name="type" value="bool" />
+    </table>
+
     <!-- Table censorLists -->
     <table name="censorLists">
       <column name="listId" value="1" />
