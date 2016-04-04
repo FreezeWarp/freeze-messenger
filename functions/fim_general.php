@@ -698,15 +698,15 @@ function fim_exceptionHandler($exception) {
     'contactEmail' => $config['email'],
   );
 
-  if ($config['displayExceptions']) {
+  if ($config['displayBacktrace']) {
     $errorData['file'] = $exception->getFile();
     $errorData['line'] = $exception->getLine();
     $errorData['trace'] = $exception->getTrace();
   }
 
-  new apiData(array(
+  echo new apiData(array(
     'exception' => $errorData,
-  ), true);
+  ));
 }
 
 
