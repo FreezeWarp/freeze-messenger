@@ -911,16 +911,16 @@ class databaseSQL extends database {
       }
 
 
-      if ($column['default']) {
+      if ($column['default']) { // TODO: allow false
         if (isset($this->defaultPhrases[$column['default']])) {
           $typePiece .= ' DEFAULT ' . $this->defaultPhrases[$column['default']];
         }
         else {
-          $typePiece .= ' DEFAULT ' . $this->formatValue('string', $column['default']);
+          $typePiece .= ' DEFAULT ' . $this->formatValue('string', $column['default']); // TODO: non-string?
         }
       }
 
-      $columns[] = $this->formatValue('column', $columnName) . ' ' . $typePiece . ' NOT NULL COMMENT ' . $this->formatValue('string', $column['comment']);
+      $columns[] = $this->formatValue('column', $columnName) . ' ' . $typePiece . ' COMMENT ' . $this->formatValue('string', $column['comment']);
     }
 
 
