@@ -1,5 +1,11 @@
 <?php
-class fimError {
+
+/**
+ * Class fimError
+ *
+ * Note: fimError can not be caught. It is intended to display data to the API.
+ */
+class fimError extends Exception {
   public function __construct($code = false, $string = false, $context = array()) {
     global $config;
 
@@ -20,7 +26,7 @@ class fimError {
       'contactEmail' => $this->email,
     ));
 
-    if ($this->displayExceptions) {
+    if ($this->displayBacktrace) {
       $backtrace = debug_backtrace();
 
       $errorData['file'] = $backtrace[1]['file'];
@@ -28,9 +34,9 @@ class fimError {
       $errorData['trace'] = $backtrace;
     }
 
-    new apiData(array(
+    echo new apiData(array(
       'exception' => $errorData,
-    ), true);
+    ));
 
     die();
   }
