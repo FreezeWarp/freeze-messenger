@@ -10,7 +10,8 @@ if (!$attempt) {
   $server->getResponse()->send();
 }
 else {
-  var_dump(OAuth2\Request::createFromGlobals()->request['access_token']);
+  $token = $server->getAccessTokenData(OAuth2\Request::createFromGlobals());
+  echo json_encode(['token' => OAuth2\Request::createFromGlobals()->request['access_token'], 'userId' => $token['user_id']]);
   //$user = SELECT * FROM sessions WHERE sessionId = token
   //continue normally
 }
