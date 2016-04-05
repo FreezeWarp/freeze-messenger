@@ -4,9 +4,14 @@
 require_once __DIR__.'/server.php';
 
 // Handle a request to a resource and authenticate the access token
-if (!$server->verifyResourceRequest(OAuth2\Request::createFromGlobals())) {
+$attempt = $server->verifyResourceRequest(OAuth2\Request::createFromGlobals());
+if (!$attempt) {
+  //UPDATE sessionFails(ip, count) ($IP, count+1)
   $server->getResponse()->send();
-  die;
 }
-echo json_encode(array('success' => true, 'message' => 'You accessed my APIs!'));
+else {
+  var_dump(OAuth2\Request::createFromGlobals()->request['access_token']);
+  //$user = SELECT * FROM sessions WHERE sessionId = token
+  //continue normally
+}
 ?>
