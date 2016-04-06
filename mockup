@@ -1,0 +1,63 @@
+ _____________________   _____________________   __________________   ________________
+|Room Actions_________| | | Room 1 ########## | | * Room 2 [ED]    | | Room 3         | Room list (tabs), * - new message, [ED] - icon that opens edit dialogue
+|* New Room           | |_____________________| |__________________| |________________|
+|* Browse Rooms       | |                                                             | Message list, [AV] - user avatar (store in database as base64)
+|                     | | [AV] Username  Messssssagee                                 | Context menu for kicking users
+|Uesr Options         | | [AV] Username  Messssssagee                                 |
+|* My files           | | [AV] Username  Messssssagee                                 |
+|* Edit options       | | [AV] Username  Messssssagee                                 |
+|                     | |_____________________________________________________________|
+|                     | |  ________________________________________________           | New message textbook
+|* Global users       | | |                                                | [Attach] | [Attach] - Upload file to submit
+|                     | | |________________________________________________| [Submit] |
+|                     | |_____________________________________________________________|
+|                     | | Users viewing this room: a, b, c                            | Active users list
+|_____________________| |_____________________________________________________________|
+
+
+Basic APIs:
+room - Create rooms, edit rooms (incl. permissions), list rooms (incl. active users)
+    POST /room/ parameters (create room)
+    POST /room/2 parameters (update room 2)
+    POST /room/2 userPermissions={+2:'view',-3:'post'} (give user 2 viewing permission, revoke user 3 posting permission)
+    GET /room/2?data=activeUsers (get room 2, include active users)
+    GET /room/?after=2 (get all rooms after #2, up to limit)
+    GET /room/2,3 (get private room between users 2 and 3)
+    GET /room/?roomIds=[2,3] (get room 2 and room 3)
+user - Edit user options, list users (incl. globally active users)
+    GET /user/ (get user list)
+    GET /user/?filter=active (get active users)
+    GET /user/?filter=friends (get users on active user's friends list)
+    GET /user/2 (get user 2)
+    POST /user/ parameters (set options for logged in user)
+kick - Kick or unkick users, get kicks
+    POST /kick/2/3/3600 (kick user 3 in room 2 for one hour -- replaces previous count)
+    POST /kick/2/3/0 (unkick user 3 in room 2)
+    GET /kick/2 (get kicked users in room 2)
+    GET /kick//3 (get the rooms user 3 is kicked in)
+file - get files, upload file
+    PUT /file/3 ... (upload file for room 3)
+    GET /file/faaf (get file with hash faaf)
+    POST /file/faaf parameters (update file faaf in some way -- content can not be updated)
+    GET /file/ (get all files uploaded by user; general files can not be queried)
+message - send message, edit message (could implement singular message select, but I see no reason)
+    PUT /message/2 messageContent - send message to room 2
+    PUT /message/2/44 messageContent - update message 4 in room 2 with new messageContent
+
+
+Current Plan:
+1. APIs
+2. WebPro(?) - maybe from scratch, but will probably copy some of the dialogues (like the edit user one)
+3. Sockets?
+4. PostGres, Memcahced (both should be semi-easy, though memcached will be heavy beta initially)
+5. Code review: caching 
+6. WebLite, possibly using Node.js
+7. Desktop client, probably Java
+8. Windows client, probably C#
+9. Linux client, probably C++
+10. CLI client, python
+
+Current Considerations:
+1.) Rooms should now be considered self-contained - you can't get messages from across rooms. The current database implementation doesn't respect this, but future ones might act differently: for instance, a different table for each room.
+    a.) One part of this is identifying a message should now only be possible through both the messageId and the roomId. The message ID _will_ continue to increment across all rooms for now, but in the future it could change.
+2.) Highest priority after redoing the API (more or less) and a barebones frontend is getting messages to send over sockets. Dunno how that's going to work, and it might not be possible depending on hardware considerations. But it should be possible if the API implements a (java-based) socket receiver and socket sender.
