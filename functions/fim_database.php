@@ -1136,6 +1136,14 @@ class fimDatabase extends databaseSQL
   /****** Insert/Update Functions *******/
 
   public function createSession($user) {
+    // TODO: implement using database.php
+    global $dbConnect;
+    require_once('oauth2-server-php/src/OAuth2/Autoloader.php');
+    OAuth2\Autoloader::register();
+    $storage = new OAuth2\Storage\Pdo(array('dsn' => 'mysql:dbname=' + $dbConnect['core']['database'] + ';host=' . $dbConnect['core']['host'], 'username' => $dbConnect['core']['username'], 'password' => $dbConnect['core']['password']));// $dsn is the Data Source Name for your database, for exmaple "mysql:dbname=my_oauth2_db;host=localhost"
+    $server = new OAuth2\Server($storage); // Pass a storage object or array of storage objects to the OAuth2 server class
+    $server->addGrantType(new OAuth2\GrantType\ClientCredentials($storage)); // Add the "Client Credentials" grant type (it is the simplest of the grant types)
+    $server->addGrantType(new OAuth2\GrantType\AuthorizationCode($storage)); // Add the "Authorization Code" grant type (this is where the oauth magic happens)
     /* Hash is prettttty simple. We create a random 64-bit integer (done as two 32-bit integers, since mt_rand isn't reliable for anything bigger), append microtime (as an integer to it). The resulting integer is around 100 bits, and should be treated as a 128-bit integer.
      * This may seem insecure. It's not, because we prevent guessing by locking users out after x incorrect logins (and a non-existent session token counts as this).
      * Thus, we just need to make sure that there's enough entropy here that the vast, vast majority of possible session tokens are unused. By having a ~64-bit random integer appended to the ~40-bit microtime, we can be pretty sure that no one's going to be able to guess anytime soon. */
