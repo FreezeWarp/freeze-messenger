@@ -245,6 +245,15 @@ $.when(
     url: 'client/js/fim-dev/fim-loader.js',
     dataType:'script'
   }),
+  $.get('client/css/' + window.webproDisplay.theme + '/jquery-ui-1.10.4.min.css', function(response) {
+    $('#stylesjQ').text(response);
+  }),
+  $.get('client/css/' + window.webproDisplay.theme + '/fim.css', function(response) {
+    $('#stylesVIM').text(response);
+  }),
+  $.get("client/css/stylesv2.css", function(response) {
+    $('#stylesv2').text(response);
+  }),
   $.ajax({
     url: window.directory + 'api/getServerStatus.php?fim3_format=json',
     dataType: 'json',
@@ -270,10 +279,6 @@ $.when(
   $(document).ready(function() {
     $('body').append($t('main'));
     $('body').append($t('contextMenu'));
-
-
-    // Start by injecting the stylesheets into the DOM.
-    $('head').append('<link rel="stylesheet" id="stylesjQ" type="text/css" href="client/css/' + window.webproDisplay.theme + '/jquery-ui-1.10.4.min.css" /><link rel="stylesheet" id="stylesFIM" type="text/css" href="client/css/' + window.webproDisplay.theme + '/fim.css" /><link rel="stylesheet" type="text/css" href="client/css/stylesv2.css" />');
 
 
     if (window.webproDisplay.fontSize) $('body').css('font-size', window.webproDisplay.fontSize + 'em');

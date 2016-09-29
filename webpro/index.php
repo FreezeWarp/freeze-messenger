@@ -14,6 +14,14 @@
 
     <link rel="icon" id="favicon" type="image/x-icon" href="images/favicon.ico" />
 
+    <!-- START CSS Containers -->
+
+    <style id="stylesjQ"></style>
+    <style id="stylesVIM"></style>
+    <style id="stylesv2"></style>
+
+    <!-- END CSS Containers -->
+
 
     <!-- START Scripts -->
 
