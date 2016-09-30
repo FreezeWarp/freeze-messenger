@@ -111,7 +111,6 @@ else if (isset($_REQUEST['grant_type'])) {
   }
 
   $oauthResponse = $oauthServer->handleTokenRequest($oauthRequest);
-
     $user = new fimUser($userC->getUserId());
 
   if ($oauthResponse->getStatusCode() === 200) {
@@ -170,10 +169,8 @@ elseif (isset($_REQUEST['access_token'])) {
       $oauthServer->getResponse()->send();
       die();
   }
-  else {
-//      $oauthServer->getAccessTokenData($oauthServer-)
-      var_dump($oauthServer->getResourceController()->getAccessTokenData($oauthRequest, $oauthServer->getResponse()));
-//      $user = new fimUser(OAuth2\GrantType\GrantTypeInterface->getUserId());
+  else {//var_dump($oauthServer->getResourceController()->getAccessTokenData($oauthRequest, $oauthServer->getResponse())['user_id']); die();
+      $user = new fimUser((int) $oauthServer->getResourceController()->getAccessTokenData($oauthRequest, $oauthServer->getResponse())['user_id']);
 //      var_dump($user);
   }
 }
