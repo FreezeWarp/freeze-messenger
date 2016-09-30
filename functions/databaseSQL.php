@@ -1175,6 +1175,27 @@ class databaseSQL extends database
         $subQueries = array();
 
 
+
+        /* Where()/sort()/limit() overrides */
+        if ($this->conditionArray) {
+            if ($conditionArray) throw new Exception('Condition array declared both in where() and select().');
+
+            $conditionArray = $this->conditionArray; $this->conditionArray = array();
+
+        }
+        if ($this->sortArray) {
+            if ($sort !== false) throw new Exception("Sort array declared both in sort() and select().");
+
+            $sort = $this->sortArray; $this->sortArray = array();
+        }
+
+        if ($this->limitArray) {
+            if ($limit !== false) throw new Exception("Limit array declared both in sort() and select().");
+
+            $limit = $this->limitArray; $this->limitArray = array();
+        }
+
+
         /* Process Columns */
         // If columns is a string, then it is a table name, whose columns should be guessed from the other parameters. For now, this guessing is very limited -- just taking the array_keys of $conditionArray (TODO).
         if (is_string($columns)) {
@@ -1275,13 +1296,6 @@ class databaseSQL extends database
 
 
         /* Process Conditions (Must be Array) */
-        if ($this->conditionArray) {
-            if ($conditionArray) throw new Exception('Condition array declared both in where() and select().');
-
-            $conditionArray = $this->conditionArray;
-            $this->conditionArray = array();
-        }
-
         if (is_array($conditionArray) && count($conditionArray)) {
             $finalQuery['where'] = $this->recurseBothEither($conditionArray, $reverseAlias);
         }
@@ -1290,15 +1304,6 @@ class databaseSQL extends database
 
         /* Process Sorting (Must be Array)
          * TODO: Combine the array and string routines to be more effective. */
-        if ($this->sortArray) {
-            if ($sort !== false) {
-                throw new Exception("Sort array declared both in sort() and select().");
-            }
-
-            $sort = $this->sortArray;
-            $this->sortArray = array();
-        }
-
         if ($sort !== false) {
             if (is_array($sort)) {
                 if (count($sort) > 0) {
@@ -1351,15 +1356,6 @@ class databaseSQL extends database
 
 
         /* Process Limit (Must be Integer) */
-        if ($this->limitArray) {
-            if ($limit !== false) {
-                throw new Exception("Limit array declared both in sort() and select().");
-            }
-
-            $limit = $this->limitArray;
-            $this->limitArray = array();
-        }
-
         if ($limit !== false) {
             if (is_int($limit)) {
                 $finalQuery['limit'] = (int) $limit;
