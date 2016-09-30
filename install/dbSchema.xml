@@ -168,6 +168,78 @@
     </table>
 
 
+    <table name="oauth_clients">
+      <column name="client_id" type="string" maxlen="80" required="true" />
+      <column name="client_secret" type="string" maxlen="80" />
+      <column name="redirect_uri" type="string" maxlen="2000" />
+      <column name="grant_types" type="string" maxlen="80" />
+      <column name="scope" type="string" maxlen="4000" />
+      <column name="user_id" type="string" maxlen="80" />
+
+      <key name="client_id" type="primary" />
+    </table>
+
+    <table name="oauth_access_tokens">
+      <column name="access_token" type="string" maxlen="40" required="true" />
+      <column name="client_id" type="string" maxlen="80" required="true" />
+      <column name="user_id" type="string" maxlen="80" />
+      <column name="expires" type="time" required="true" />
+      <column name="scope" type="string" maxlen="4000" />
+
+      <key name="access_token" type="primary" />
+    </table>
+
+    <table name="oauth_authorization_codes">
+      <column name="authorization_code" type="string" maxlen="40" required="true" />
+      <column name="client_id" type="string" maxlen="80" required="true" />
+      <column name="user_id" type="string" maxlen="80" />
+      <column name="redirect_uri" type="string" maxlen="2000" />
+      <column name="expires" type="time" required="true" />
+      <column name="scope" type="string" maxlen="4000" />
+      <column name="id_token" type="string" maxlen="1000" />
+
+      <key name="authorization_code" type="primary" />
+    </table>
+
+    <table name="oauth_refresh_tokens">
+      <column name="refresh_token" type="string" maxlen="40" required="true" />
+      <column name="client_id" type="string" maxlen="80" required="true" />
+      <column name="user_id" type="string" maxlen="80" />
+      <column name="expires" type="time" required="true" />
+      <column name="scope" type="string" maxlen="4000" />
+
+      <key name="refresh_token" type="primary" />
+    </table>
+
+    <table name="oauth_scopes">
+      <column name="scope" type="string" maxlen="4000" required="true" />
+      <column name="is_default" type="bool" default="0" />
+
+      <key name="scope" type="primary" />
+    </table>
+
+    <table name="oauth_jwt">
+      <column name="client_id" type="string" maxlen="80" required="true" />
+      <column name="subject" type="string" maxlen="80" />
+      <column name="public_key" type="string" maxlen="2000" required="true" />
+    </table>
+
+    <table name="oauth_jti">
+      <column name="issuer" type="string" maxlen="80" required="true" />
+      <column name="subject" type="string" maxlen="80" />
+      <column name="audience" type="string" maxlen="80" />
+      <column name="expires" type="time" required="true" />
+      <column name="jti" type="string" maxlen="2000" required="true" />
+    </table>
+
+    <table name="oauth_public_keys">
+      <column name="client_id" type="string" maxlen="80" />
+      <column name="public_key" type="string" maxlen="2000" />
+      <column name="private_key" type="string" maxlen="2000" />
+      <column name="encryption_algorithm" type="string" maxlen="100" default="RS256" />
+    </table>
+
+
     <table name="messages" type="general" partitionBy="roomId" comment="User-created messages.">
       <column name="messageId" type="int" maxlen="9" autoincrement="1" comment="The unique ID of the message." />
       <column name="userId" type="int" maxlen="8" comment="The ID of the user who made the message." />
@@ -495,6 +567,7 @@
       <column name="joinDate" type="time" default="0" comment="The date the user joined." />
       <column name="birthDate" type="time" default="0" comment="The date of the user's birth, used for parental control settings." />
       <column name="email" type="time" comment="The user's email address. Only used in vanilla logins." />
+      <column name="emailVerified" type="bool" default="0" />
 
       <column name="lastSync" type="time" default="0" comment="The date the userdata was last synced. This is not applicable for vanilla logins." />
 
@@ -505,6 +578,9 @@
       <column name="passwordFormat" type="string" restrict="vbmd5,phpass,plaintext" comment="The encryption format used for the password. This allows easy transition to safer formats, forcing people using the old format to reset their password. VBMD5 is the hashing format used by vBulletin, phpass is the portable PHP hashing format used by PHPBB and Vanilla. Plaintext signifies no encryption, mostly used with development." />
       <column name="passwordResetNow" type="bool" default="0" comment="When set, the user is required to reset his or her password on next login. This, unfortunately, requires the co-operation of clients, and as such may in theory be delayed or ignored entirely. But, I mean, it's better than nothing." />
       <column name="passwordLastReset" type="time" comment="The last time the user reset his or her password.." />
+
+      <!-- OAuth Stuff -->
+      <column name="scope" type="string" maxlen="4000" comment="An OAuth scope string. May or may not actually get implemented, but reserved to make things easier." />
 
       <!-- User Display -->
       <column name="avatar" type="string" maxlen="200" comment="The absolute URI of the user's avatar." />
