@@ -108,6 +108,8 @@ class FIMDatabaseOAuth implements
 
     public function setAccessToken($access_token, $client_id, $user_id, $expires, $scope = null)
     {
+        global $anonId;
+
         return $this->db->upsert($this->config['access_token_table'], array(
             'access_token' => $access_token
         ), array(
