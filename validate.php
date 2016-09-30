@@ -31,7 +31,6 @@
  *
  */
 
-
 ///* Require Base *///
 
 require_once(dirname(__FILE__) . '/global.php');
@@ -60,10 +59,6 @@ $request = fim_sanitizeGPC('r', array(
 
 
 ///* Some Pre-Stuff *///
-$sessionHash = '';
-$loginMethod = false;
-$goodVersion = false;
-
 $loginDefs['syncMethods'] = array('phpbb', 'vbulletin3', 'vbulletin4');
 
 /* Default user object.
@@ -74,174 +69,113 @@ $user = array(
   'privs' => 0, // Nothing
 );
 
+/* If a username and password have been passed to the PHP directly, use them for OAuth authentication. */
+if (is_array($hookLogin) && isset($hookLogin['userName'], $hookLogin['password'])) {
+    $_POST['grant_type'] = 'client_credentials';
+    $_POST['username'] = $hookLogin['userName'];
+    $_POST['password'] = $hookLogin['password'];
+}
 
 
 
+/* Begin OAuth Server
+ * We have not yet added any Grant Types. We add these instead in the next section. */
+require_once('functions/oauth2-server-php/src/OAuth2/Autoloader.php');
+OAuth2\Autoloader::register();
 
-///* Determine How to Verify the Login in the Next Section *///
+$oauthStorage = new OAuth2\Storage\FIMDatabaseOAuth($database);
+$oauthServer = new OAuth2\Server($oauthStorage); // Pass a storage object or array of storage objects to the OAuth2 server class
+$oauthRequest = OAuth2\Request::createFromGlobals();
 
-if (is_array($hookLogin)) {
-  if (isset($hookLogin['userName'], $hookLogin['password'])) {
-    $request['userName'] = $hookLogin['userName'];
-    $request['password'] = $hookLogin['password'];
+/* If $ignoreLogin is set, we run things without processing any logins. */
+if ($ignoreLogin) {
 
-    $loginMethod = 'credentials';
+}
+
+/* If grant_type is not set, we granting a token, not evaluating. */
+else if (isset($_REQUEST['grant_type'])) {
+  /* Depending on which grant_type is set, we interact with the OAuth layer a little bit differently. */
+  switch ($_REQUEST['grant_type']) {
+    case 'password': // User authentication
+      $oauthServer->addGrantType($userC = new OAuth2\GrantType\UserCredentials($oauthStorage));
+      break;
+
+    case 'client_credentials':
+      $oauthServer->addGrantType($userC = new OAuth2\GrantType\ClientCredentials($oauthStorage));
+        break;
+
+      case 'anonymous':
+          global $anonId; // Because we don't want to significantly rearchitect the OAuth code, we use a global that is set by the Anonymous GrantType, and read by the FIMDatabase Storage, in order to support anonymous users
+          $oauthServer->addGrantType($userC = new OAuth2\GrantType\Anonymous($oauthStorage));
+          break;
   }
 
-  if (isset($hookLogin['sessionHash'], $hookLogin['userId'])) {
-    $request['fim3_sessionHash'] = $hookLogin['sessionHash'];
-    $request['fim3_userId'] = $hookLogin['userId'];
+  $oauthResponse = $oauthServer->handleTokenRequest($oauthRequest);
 
-    $loginMethod = 'session';
-  }
-}
+    $user = new fimUser($userC->getUserId());
 
-elseif ($ignoreLogin === true) { // Used for APIs that explicitly.
-  // We do nothing.
-}
+  if ($oauthResponse->getStatusCode() === 200) {
+    $apiData = new apiData();
+    $apiData->replaceData(array(
+        'login' => array(
+            'access_token' => $oauthResponse->getParameter('access_token'),
+            'anonId' => $user->anonId,
+            'defaultRoomId' => $user->defaultRoomId,
+            'userData' => array(
+                'userId' => $user->id,
+                'userName' => $user->name,
+                'userNameFormat' => $user->nameFormat,
+                'userGroupId' => $user->mainGroupId,
+                'socialGroupIds' => new apiOutputList($user->socialGroupIds),
+                'avatar' => $user->avatar,
+                'profile' => $user->profile,
+                'messageFormatting' => $user->messageFormatting,
+                'parentalFlags' => new apiOutputList($user->parentalFlags),
+                'parentalAge' => $user->parentalAge,
+            ),
+            'permissions' => array(
+                'protected' => (bool)($user->privs & ADMIN_PROTECTED), // This the "untouchable" flag, but that's more or less all it means.
+                'modPrivs' => (bool)($user->privs & ADMIN_GRANT), // This effectively allows a user to give himself everything else below. It is also used for admin functions that can not be delegated effectively -- such as modifying the site configuration.
+                'modRooms' => (bool)($user->privs & ADMIN_ROOMS), // Alter rooms -- kicking users, delete posts, and change hidden/official status
+                'modPrivate' => (bool)($user->privs & ADMIN_VIEW_PRIVATE), // View private communications.
+                'modUsers' => (bool)($user->privs & ADMIN_USERS), // Site-wide bans, mostly.
+                'modFiles' => (bool)($user->privs & ADMIN_FILES), // File Uploads
+                'modCensor' => (bool)($user->privs & ADMIN_CENSOR), // Censor
 
-elseif ($apiRequest !== true && $streamRequest !== true) { // Validate.php called directly.
-  /* Ensure that the client is compatible with the server. Note that this check is only performed when getting a sessionHash, not when doing any other action. */
-  foreach ($request['apiVersions'] AS $version) {
-    if ($version == 10000) $goodVersion = true; // This the same as version 1.0.0
-  }
-
-  if (!$goodVersion)
-    new fimError('incompatibleAPI', 'The server API is incompatible with the client API.');
-  elseif (!$config['anonymousUserId'] && !isset($request['userName'], $request['password']) && !isset($request['userId'], $request['password']))
-    new fimError('missingLoginParameters', 'Invalid login parameters: validate requires either [userName or userId] together with password.');
-
-  $loginMethod = 'credentials';
-}
-
-elseif ($apiRequest === true || $streamRequest === true) { // Validate.php called from API.
-  if (!isset($request['fim3_sessionHash']))
-    new fimError('sessionHashRequired', 'A sessionHash is required for all API requests. See the API documentation on obtaining these using validate.php.');
-
-  $loginMethod = 'session';
-}
-
-
-
-///* Session Lockout *///
-if ($loginMethod === 'credentials' || $loginMethod === 'session') {
-  if ($database->lockoutActive()) new fimError('lockoutActive', 'You have attempted to login too many times. Please wait and try again.');
-}
-
-
-
-
-///* Verify the Login *///
-if ($loginMethod === 'credentials') {
-  if (isset($request['userName']) || isset($request['userId'])) {
-    if ($request['passwordEncrypt'] === 'base64') $request['password'] = base64_decode($request['password']);
-
-
-    // If non-vanilla, we must use the integration database to authorise a user.
-    if (in_array($loginConfig['method'], $loginDefs['syncMethods'])) {
-      $userPre = $integrationDatabase->getUserFromUAC(array(
-        'userName' => $request['userName'],
-        'userId' => $request['userId']
-      ))->getAsUser(); // TODO
-    }
-    else {
-      if ($request['userId']) {
-        $userPre = $database->getUsers(array(
-          'userIds' => array($request['userId']),
-          'includePasswords' => true
-        ))->getAsUser();
-      }
-      elseif ($request['userName']) {
-        $userPre = $database->getUsers(array(
-          'userNames' => array($request['userName']),
-          'includePasswords' => true
-        ))->getAsUser();
-      }
-    }
-
-    if ($userPre->checkPassword($request['password'])) {
-      $user = $userPre;
-    }
-    else {
-      $database->lockoutIncrement();
-      new fimError('invalidLogin', 'The login credentials supplied are invalid.');
-    }
+              /* User Privs */
+                'view' => (bool)($user->privs & USER_PRIV_VIEW), // Is not banned
+                'post' => (bool)($user->privs & USER_PRIV_POST),
+                'changeTopic' => (bool)($user->privs & USER_PRIV_TOPIC),
+                'createRooms' => (bool)($user->privs & USER_PRIV_CREATE_ROOMS), // May create rooms
+                'privateRoomsFriends' => (bool)($user->privs & USER_PRIV_PRIVATE_FRIENDS), // May create private rooms (friends only)
+                'privateRoomsAll' => (bool)($user->privs & USER_PRIV_PRIVATE_ALL), // May create private rooms (anybody)
+                'roomsOnline' => (bool)($user->privs & USER_PRIV_ACTIVE_USERS), // May see rooms online.
+                'postCounts' => (bool)($user->privs & USER_PRIV_POST_COUNTS), // May see post counts.
+            )
+        ),
+    ));
+    echo $apiData;
   }
   else {
-    $user = new fimUser($config['anonymousUserId']);
+    $oauthResponse->send();
   }
 
-
-  $sessionHash = $database->createSession($user);
+    die();
 }
 
-elseif ($loginMethod === 'session') {
-  $session = $database->getSessions(array(
-    'sessionHashes' => array($request['fim3_sessionHash'])
-  ))->getAsArray(false);
 
-
-  if (!count($session)) {
-    $database->lockoutIncrement();
-    new fimError('invalidSession', 'Your session has expired. Please re-login.');
-  }
-  elseif ($session['userAgent'] !== $_SERVER['HTTP_USER_AGENT']) { // Require the UA match that of the one used to establish the session. Smart clients are encouraged to specify their own with their client name and version.
-    $database->lockoutIncrement();
-    new fimError('sessionMismatchBrowser', 'Your client or browser has changed. Please re-login.');
-  }
-  elseif ($session['sessionIp'] !== $_SERVER['REMOTE_ADDR']) { // This is a tricky one (in some instances, a user's IP may change throughout their session, especially over mobile), but generally the most certain to block any attempted forgeries. That said, IPs can, /theoretically/ be spoofed.
-    $database->lockoutIncrement();
-    new fimError('sessionMismatchIp', 'Your IP address has changed. Please re-login.');
+/* If access_token has been passed, then we are evaluating a token. */
+elseif (isset($_REQUEST['access_token'])) {
+  if (!$attempt = $oauthServer->verifyResourceRequest($oauthRequest)) {
+      $oauthServer->getResponse()->send();
+      die();
   }
   else {
-    $user = new fimUser($session); // Mostly identical, though a few additional properties do exist.
-
-    if ($session['sessionTime'] < time() - $config['sessionRefresh']) $database->refreshSession($session['sessionId']); // If five minutes (or whatever $config[sessionTime is set to) have passed since the session has been generated, update it.
+//      $oauthServer->getAccessTokenData($oauthServer-)
+      var_dump($oauthServer->getResourceController()->getAccessTokenData($oauthRequest, $oauthServer->getResponse()));
+//      $user = new fimUser(OAuth2\GrantType\GrantTypeInterface->getUserId());
+//      var_dump($user);
   }
-}
-
-/* API Output */
-if ($apiRequest !== true && $streamRequest !== true && $ignoreLogin !== true && $hookLogin === false) {
-  $apiData = new apiData();
-  $apiData->replaceData(array(
-    'login' => array(
-      'sessionHash' => $sessionHash,
-      'anonId' => $user->anonId,
-      'defaultRoomId' => $user->defaultRoomId,
-      'userData' => array(
-        'userId' => $user->id,
-        'userName' => $user->name,
-        'userNameFormat' => $user->nameFormat,
-        'userGroupId' => $user->mainGroupId,
-        'socialGroupIds' => new apiOutputList($user->socialGroupIds),
-        'avatar' => $user->avatar,
-        'profile' => $user->profile,
-        'messageFormatting' => $user->messageFormatting,
-        'parentalFlags' => new apiOutputList($user->parentalFlags),
-        'parentalAge' => $user->parentalAge,
-      ),
-      'permissions' => array(
-        'protected' => (bool) ($user->privs & ADMIN_PROTECTED), // This the "untouchable" flag, but that's more or less all it means.
-        'modPrivs' => (bool) ($user->privs & ADMIN_GRANT), // This effectively allows a user to give himself everything else below. It is also used for admin functions that can not be delegated effectively -- such as modifying the site configuration.
-        'modRooms' => (bool) ($user->privs & ADMIN_ROOMS), // Alter rooms -- kicking users, delete posts, and change hidden/official status
-        'modPrivate' => (bool) ($user->privs & ADMIN_VIEW_PRIVATE), // View private communications.
-        'modUsers' => (bool) ($user->privs & ADMIN_USERS), // Site-wide bans, mostly.
-        'modFiles' => (bool) ($user->privs & ADMIN_FILES), // File Uploads
-        'modCensor' => (bool) ($user->privs & ADMIN_CENSOR), // Censor
-
-        /* User Privs */
-        'view' => (bool) ($user->privs & USER_PRIV_VIEW), // Is not banned
-        'post' => (bool) ($user->privs & USER_PRIV_POST),
-        'changeTopic' => (bool) ($user->privs & USER_PRIV_TOPIC),
-        'createRooms' => (bool) ($user->privs & USER_PRIV_CREATE_ROOMS), // May create rooms
-        'privateRoomsFriends' => (bool) ($user->privs & USER_PRIV_PRIVATE_FRIENDS), // May create private rooms (friends only)
-        'privateRoomsAll' => (bool) ($user->privs & USER_PRIV_PRIVATE_ALL), // May create private rooms (anybody)
-        'roomsOnline' => (bool) ($user->privs & USER_PRIV_ACTIVE_USERS), // May see rooms online.
-        'postCounts' => (bool) ($user->privs & USER_PRIV_POST_COUNTS), // May see post counts.
-      )
-    ),
-  ));
-  die($apiData->output());
 }
 
 
