@@ -40,6 +40,7 @@ abstract class database
     protected $errorLevel = E_USER_ERROR;
     protected $activeDatabase = false;
     protected $dbLink = null;
+    public $connectionInformation = array();
 
     protected $conditionArray = array();
     protected $sortArray = array();
@@ -103,16 +104,6 @@ abstract class database
      */
     public function __construct($host = false, $port = false, $user = false, $password = false, $database = false, $driver = false, $tablePrefix = '')
     {
-        $this->connectionInformation = [
-            'host' => $host,
-            'port' => $port,
-            'user' => $user,
-            'password' => $password,
-            'database' => $database,
-            'driver' => $driver,
-            'tablePrefix' => $tablePrefix
-        ];
-
         if ($host !== false) $this->connect($host, $port, $user, $password, $database, $driver, $tablePrefix);
     }
 
