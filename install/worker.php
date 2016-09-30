@@ -140,7 +140,7 @@ switch ($_REQUEST['phase']) {
         $time = time();
 
         foreach ($xmlData['database'][0]['table'] AS $table) { // Run through each table from the XML
-          $tableType = $table['@type'];
+          $tableType = isset($table['@type']) ? $table['@type'] : 'general';
           $tableName = $prefix . $table['@name'];
           $tableComment = $table['@comment'];
 
