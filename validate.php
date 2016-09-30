@@ -18,13 +18,11 @@
 /**
  * Establishes a Login
  * @internal This script had for the longest time been a fairly large modification of a login script I wrote some five years ago when I first learned PHP. I ended up rewriting it (almost) completely, but in the process have surely added some weird idiosyncracies.
-
  * Directives Used Specifically for Obtaining a SessionHash via This Script:
  * @param string userName - The username of the user.
  * @param string password - The password of the user.
  * @param string passwordEncrypt - The ecryption used for obtaining a login. "plaintext" and "md5" are both accepted, but the latter can only be used with vBulletin v3. Other forms of encryption will be possible soon.
  * @param string apiVersions - The version of the API being used to login. It can be comma-seperated if multiple versions will work withe client. 3.0.0 is the only currently accepted version.
-
  * Standard Directives Required for __ALL__ API Calls:
  * @param string fim3_userId
  * @param string fim3_sessionHash
@@ -35,26 +33,26 @@
 
 require_once(dirname(__FILE__) . '/global.php');
 
-if(!isset($ignoreLogin)) $ignoreLogin = false; // pages without login
-if(!isset($apiRequest)) $apiRequest = false; // /api/ functions
-if(!isset($streamRequest)) $streamRequest = false; // /apiRequest/ functions
-if(!isset($hookLogin)) $hookLogin = false; // pages with custom login
+if (!isset($ignoreLogin)) $ignoreLogin = false; // pages without login
+if (!isset($apiRequest)) $apiRequest = false; // /api/ functions
+if (!isset($streamRequest)) $streamRequest = false; // /apiRequest/ functions
+if (!isset($hookLogin)) $hookLogin = false; // pages with custom login
 
 
 $request = fim_sanitizeGPC('r', array(
-  'userId' => array('cast' => 'int'),
-  'userName' => array(),
-  'password' => array(),
-  'passwordEncrypt' => array(
-    'valid' => array('base64', 'plaintext', 'md5'),
-  ),
-  'apiVersions' => array(
-    'cast' => 'jsonList',
-    'filter' => 'string',
-    'evaltrue' => true,
-  ),
-  'fim3_sessionHash' => array(),
-  'fim3_userId' => array('cast' => 'int'),
+    'userId' => array('cast' => 'int'),
+    'userName' => array(),
+    'password' => array(),
+    'passwordEncrypt' => array(
+        'valid' => array('base64', 'plaintext', 'md5'),
+    ),
+    'apiVersions' => array(
+        'cast' => 'jsonList',
+        'filter' => 'string',
+        'evaltrue' => true,
+    ),
+    'fim3_sessionHash' => array(),
+    'fim3_userId' => array('cast' => 'int'),
 ));
 
 
@@ -64,9 +62,9 @@ $loginDefs['syncMethods'] = array('phpbb', 'vbulletin3', 'vbulletin4');
 /* Default user object.
  * Note: As of now, this object should never be used. In all cases the script either quits or the user object is filled with anonymous information or information corresponding with a real user. However, this object is useful for dev purposes, and if a script wants to use $ignoreLogin. */
 $user = array(
-  'userId' => 0,
-  'userName' => 'MISSINGNO.',
-  'privs' => 0, // Nothing
+    'userId' => 0,
+    'userName' => 'MISSINGNO.',
+    'privs' => 0, // Nothing
 );
 
 /* If a username and password have been passed to the PHP directly, use them for OAuth authentication. */
@@ -75,7 +73,6 @@ if (is_array($hookLogin) && isset($hookLogin['userName'], $hookLogin['password']
     $_POST['username'] = $hookLogin['userName'];
     $_POST['password'] = $hookLogin['password'];
 }
-
 
 
 /* Begin OAuth Server
@@ -90,89 +87,82 @@ $oauthRequest = OAuth2\Request::createFromGlobals();
 /* If $ignoreLogin is set, we run things without processing any logins. */
 if ($ignoreLogin) {
 
-}
-
-/* If grant_type is not set, we granting a token, not evaluating. */
+} /* If grant_type is not set, we granting a token, not evaluating. */
 else if (isset($_REQUEST['grant_type'])) {
-  /* Depending on which grant_type is set, we interact with the OAuth layer a little bit differently. */
-  switch ($_REQUEST['grant_type']) {
-    case 'password': // User authentication
-      $oauthServer->addGrantType($userC = new OAuth2\GrantType\UserCredentials($oauthStorage));
-      break;
+    /* Depending on which grant_type is set, we interact with the OAuth layer a little bit differently. */
+    switch ($_REQUEST['grant_type']) {
+        case 'password': // User authentication
+            $oauthServer->addGrantType($userC = new OAuth2\GrantType\UserCredentials($oauthStorage));
+            break;
 
-    case 'client_credentials':
-      $oauthServer->addGrantType($userC = new OAuth2\GrantType\ClientCredentials($oauthStorage));
-        break;
+        case 'client_credentials':
+            $oauthServer->addGrantType($userC = new OAuth2\GrantType\ClientCredentials($oauthStorage));
+            break;
 
-      case 'anonymous':
-          global $anonId; // Because we don't want to significantly rearchitect the OAuth code, we use a global that is set by the Anonymous GrantType, and read by the FIMDatabase Storage, in order to support anonymous users
-          $oauthServer->addGrantType($userC = new OAuth2\GrantType\Anonymous($oauthStorage));
-          break;
-  }
+        case 'anonymous':
+            global $anonId; // Because we don't want to significantly rearchitect the OAuth code, we use a global that is set by the Anonymous GrantType, and read by the FIMDatabase Storage, in order to support anonymous users
+            $oauthServer->addGrantType($userC = new OAuth2\GrantType\Anonymous($oauthStorage));
+            break;
+    }
 
-  $oauthResponse = $oauthServer->handleTokenRequest($oauthRequest);
+    $oauthResponse = $oauthServer->handleTokenRequest($oauthRequest);
     $user = new fimUser($userC->getUserId());
 
-  if ($oauthResponse->getStatusCode() === 200) {
-    $apiData = new apiData();
-    $apiData->replaceData(array(
-        'login' => array(
-            'access_token' => $oauthResponse->getParameter('access_token'),
-            'anonId' => $user->anonId,
-            'defaultRoomId' => $user->defaultRoomId,
-            'userData' => array(
-                'userId' => $user->id,
-                'userName' => $user->name,
-                'userNameFormat' => $user->nameFormat,
-                'userGroupId' => $user->mainGroupId,
-                'socialGroupIds' => new apiOutputList($user->socialGroupIds),
-                'avatar' => $user->avatar,
-                'profile' => $user->profile,
-                'messageFormatting' => $user->messageFormatting,
-                'parentalFlags' => new apiOutputList($user->parentalFlags),
-                'parentalAge' => $user->parentalAge,
-            ),
-            'permissions' => array(
-                'protected' => (bool)($user->privs & ADMIN_PROTECTED), // This the "untouchable" flag, but that's more or less all it means.
-                'modPrivs' => (bool)($user->privs & ADMIN_GRANT), // This effectively allows a user to give himself everything else below. It is also used for admin functions that can not be delegated effectively -- such as modifying the site configuration.
-                'modRooms' => (bool)($user->privs & ADMIN_ROOMS), // Alter rooms -- kicking users, delete posts, and change hidden/official status
-                'modPrivate' => (bool)($user->privs & ADMIN_VIEW_PRIVATE), // View private communications.
-                'modUsers' => (bool)($user->privs & ADMIN_USERS), // Site-wide bans, mostly.
-                'modFiles' => (bool)($user->privs & ADMIN_FILES), // File Uploads
-                'modCensor' => (bool)($user->privs & ADMIN_CENSOR), // Censor
+    if ($oauthResponse->getStatusCode() === 200) {
+        $apiData = new apiData();
+        $apiData->replaceData(array(
+            'login' => array(
+                'access_token' => $oauthResponse->getParameter('access_token'),
+                'anonId' => $user->anonId,
+                'defaultRoomId' => $user->defaultRoomId,
+                'userData' => array(
+                    'userId' => $user->id,
+                    'userName' => $user->name,
+                    'userNameFormat' => $user->nameFormat,
+                    'userGroupId' => $user->mainGroupId,
+                    'socialGroupIds' => new apiOutputList($user->socialGroupIds),
+                    'avatar' => $user->avatar,
+                    'profile' => $user->profile,
+                    'messageFormatting' => $user->messageFormatting,
+                    'parentalFlags' => new apiOutputList($user->parentalFlags),
+                    'parentalAge' => $user->parentalAge,
+                ),
+                'permissions' => array(
+                    'protected' => (bool)($user->privs & ADMIN_PROTECTED), // This the "untouchable" flag, but that's more or less all it means.
+                    'modPrivs' => (bool)($user->privs & ADMIN_GRANT), // This effectively allows a user to give himself everything else below. It is also used for admin functions that can not be delegated effectively -- such as modifying the site configuration.
+                    'modRooms' => (bool)($user->privs & ADMIN_ROOMS), // Alter rooms -- kicking users, delete posts, and change hidden/official status
+                    'modPrivate' => (bool)($user->privs & ADMIN_VIEW_PRIVATE), // View private communications.
+                    'modUsers' => (bool)($user->privs & ADMIN_USERS), // Site-wide bans, mostly.
+                    'modFiles' => (bool)($user->privs & ADMIN_FILES), // File Uploads
+                    'modCensor' => (bool)($user->privs & ADMIN_CENSOR), // Censor
 
-              /* User Privs */
-                'view' => (bool)($user->privs & USER_PRIV_VIEW), // Is not banned
-                'post' => (bool)($user->privs & USER_PRIV_POST),
-                'changeTopic' => (bool)($user->privs & USER_PRIV_TOPIC),
-                'createRooms' => (bool)($user->privs & USER_PRIV_CREATE_ROOMS), // May create rooms
-                'privateRoomsFriends' => (bool)($user->privs & USER_PRIV_PRIVATE_FRIENDS), // May create private rooms (friends only)
-                'privateRoomsAll' => (bool)($user->privs & USER_PRIV_PRIVATE_ALL), // May create private rooms (anybody)
-                'roomsOnline' => (bool)($user->privs & USER_PRIV_ACTIVE_USERS), // May see rooms online.
-                'postCounts' => (bool)($user->privs & USER_PRIV_POST_COUNTS), // May see post counts.
-            )
-        ),
-    ));
-    echo $apiData;
-  }
-  else {
-    $oauthResponse->send();
-  }
+                    /* User Privs */
+                    'view' => (bool)($user->privs & USER_PRIV_VIEW), // Is not banned
+                    'post' => (bool)($user->privs & USER_PRIV_POST),
+                    'changeTopic' => (bool)($user->privs & USER_PRIV_TOPIC),
+                    'createRooms' => (bool)($user->privs & USER_PRIV_CREATE_ROOMS), // May create rooms
+                    'privateRoomsFriends' => (bool)($user->privs & USER_PRIV_PRIVATE_FRIENDS), // May create private rooms (friends only)
+                    'privateRoomsAll' => (bool)($user->privs & USER_PRIV_PRIVATE_ALL), // May create private rooms (anybody)
+                    'roomsOnline' => (bool)($user->privs & USER_PRIV_ACTIVE_USERS), // May see rooms online.
+                    'postCounts' => (bool)($user->privs & USER_PRIV_POST_COUNTS), // May see post counts.
+                )
+            ),
+        ));
+        echo $apiData;
+    } else {
+        $oauthResponse->send();
+    }
 
     die();
-}
-
-
-/* If access_token has been passed, then we are evaluating a token. */
+} /* If access_token has been passed, then we are evaluating a token. */
 elseif (isset($_REQUEST['access_token'])) {
-  if (!$attempt = $oauthServer->verifyResourceRequest($oauthRequest)) {
-      $oauthServer->getResponse()->send();
-      die();
-  }
-  else {//var_dump($oauthServer->getResourceController()->getAccessTokenData($oauthRequest, $oauthServer->getResponse())['user_id']); die();
-      $user = new fimUser((int) $oauthServer->getResourceController()->getAccessTokenData($oauthRequest, $oauthServer->getResponse())['user_id']);
+    if (!$attempt = $oauthServer->verifyResourceRequest($oauthRequest)) {
+        $oauthServer->getResponse()->send();
+        die();
+    } else {//var_dump($oauthServer->getResourceController()->getAccessTokenData($oauthRequest, $oauthServer->getResponse())['user_id']); die();
+        $user = new fimUser((int)$oauthServer->getResourceController()->getAccessTokenData($oauthRequest, $oauthServer->getResponse())['user_id']);
 //      var_dump($user);
-  }
+    }
 }
 
 
