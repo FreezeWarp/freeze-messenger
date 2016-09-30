@@ -213,7 +213,7 @@ abstract class database
                 throw new $this->errorFormatFunction('dbError', json_encode(array(
                     "Message" => $errorMessage,
                     "Database Error" => $this->getLastError(),
-                    "Source Query" => $this->sourceQuery,
+                    "Source Query" => $this->getLastQuery(),
                     "Stack Trace" => debug_backtrace(false),
                     "Error Data" => $errorData
                 )));
