@@ -876,9 +876,9 @@ class fimDatabase extends databaseSQL
 
   public function getUser($userId)
   {
-    return $user = $this->getUsers(array(
+    return $this->getUsers(array(
       'userIds' => array($userId)
-    ))->getAsArray(false);
+    ))->getAsUser();
   }
 
 
@@ -1169,8 +1169,12 @@ class fimDatabase extends databaseSQL
 
 
   public function cleanSessions() {
-    $this->delete($this->sqlPrefix . 'sessions', array(
-      'sessionTime' => $this->now($this->config['sessionExpires'], 'lte')
+    $this->delete($this->sqlPrefix . 'oauth_access_tokens', array(
+        'expires' => $this->now(-3600, 'lte')
+    ));
+
+    $this->delete($this->sqlPrefix . 'oauth_authorization_codes', array(
+        'expires' => $this->now(-3600, 'lte')
     ));
 
     $this->delete($this->sqlPrefix . 'sessionLockout', array(
@@ -1179,13 +1183,27 @@ class fimDatabase extends databaseSQL
   }
 
 
-
-  public function refreshSession($sessionId) {
-    $this->update($this->sqlPrefix . "sessions", array(
-      'sessionTime' => $this->now(),
+  public function lockoutIncrement() {
+    // Note: As defined, attempts will further increase, and expires will further increase, with each additional query beyond the "lockout". As a result, this function generally shouldn't be called if a user is already lockedout -- otherwise, further attempts just lock them out further, when they could be the user checking to see if they are still locked out. So always call lockoutActive before calling lockoutIncrement.
+    $this->upsert($this->sqlPrefix . 'sessionLockout', array(
+        'ip' => $_SERVER['REMOTE_ADDR'],
     ), array(
-      "sessionId" => $sessionId,
+        'attempts' => $this->type('equation', '$attempts + 1'),
+        'expires' => $this->now($this->config['lockoutExpires']) // TOOD: Config
     ));
+
+    return true;
+  }
+
+  public function lockoutActive() {
+    // Note: Select condition format is experimental and untested, and numRows is not yet implemented. So, uh, do that. Lockout count is also unimplemented.
+    if ($this->select(array(
+            $this->sqlPrefix . 'sessionLockout' => 'ip, attempts, expires'
+        ), array(
+            'ip' => $_SERVER['REMOTE_ADDR'],
+        ))->getColumnValue('attempts') >= $this->config['lockoutCount']) return true;
+
+    return false;
   }
 
 
