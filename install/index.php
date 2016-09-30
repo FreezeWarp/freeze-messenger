@@ -545,11 +545,11 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
         </tr>
         <tr class="vanillaShow">
           <td><strong>Admin Username</strong></td>
-          <td><input type="text" name="admin_userName" /><br /><small>The name you wish to login with.</small></td>
+          <td><input type="text" name="admin_userName" required /><br /><small>The name you wish to login with.</small></td>
         </tr>
         <tr class="vanillaShow">
           <td><strong>Admin Password</strong></td>
-          <td><input id="admin_password"  type="password" name="admin_password" /><input type="button" onclick="$('<input type=\'text\' name=\'admin_password\' />').val($('#admin_password').val()).prependTo($('#admin_password').parent()); $('#admin_password').remove();$(this).remove();" value="Show" /><br /><small>The password you wish to login with.</small></td>
+          <td><input id="admin_password"  type="password" name="admin_password" required /><input type="button" onclick="$('<input type=\'text\' name=\'admin_password\' />').val($('#admin_password').val()).prependTo($('#admin_password').parent()); $('#admin_password').remove();$(this).remove();" value="Show" /><br /><small>The password you wish to login with.</small></td>
         </tr>
       </tbody>
       <thead>
@@ -599,8 +599,8 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
 
   <div style="height: 30px;">
     <form onsubmit="return false;">
-      <button style="float: left;" type="button" onclick="$('#part3').slideUp(); $('#part2').slideDown(); windowDraw();">&larr; Back</button>
-      <button style="float: right;" type="button" onclick="$.get('./worker.php?phase=2',$('#db_connect_form').serialize() + '&' + $('#config_form').serialize(),function(data) { if (data == 'success') { $('#part3').slideUp(); $('#part4').slideDown(); } else { alert('Could not create configuration file. Is the server allowed to write to it?'); } } ); windowDraw();">Finish &rarr;</button>
+        <button style="float: left;" type="button" onclick="$('#part3').slideUp(); $('#part2').slideDown(); windowDraw();">&larr; Back</button>
+        <button style="float: right;" type="button" onclick="if($('#config_form')[0].checkValidity()) { if ($.get('./worker.php?phase=2', $('#db_connect_form').serialize() + '&' + $('#config_form').serialize(), function(data) { if (data == 'success') { $('#part3').slideUp(); $('#part4').slideDown(); } else { alert('Could not create configuration file. Is the server allowed to write to it?'); } } )) windowDraw(); } else { dia.error('Please fill in all required fields.'); }">Finish &rarr;</button>
     </form>
   </div>
   </div>
