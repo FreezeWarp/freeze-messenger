@@ -1,5 +1,5 @@
 <?php
-/* FreezeMessenger Copyright © 2014 Joseph Todd Parsons
+/* FreezeMessenger Copyright c 2014 Joseph Todd Parsons
 
  * This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ abstract class database {
 
   public $classVersion = 3;
   public $classProduct = 'fim';
-  
+
   public $queryCounter = 0;
   public $insertId = null;
   public $errors = array();
@@ -38,48 +38,52 @@ abstract class database {
   protected $errorLevel = E_USER_ERROR;
   protected $activeDatabase = false;
   protected $dbLink = null;
-  
-  public $sqlPrefix;
-  
-  protected $comparisonAliases = array(
-    'eq' => 'e',
-    'equal' => 'e',
-    'ne' => '!e',
-    'notequal' => '!e',
-    '!equal' => '!e',
-    '!eq' => '!e',
-    
-    'lessthan' => 'lt',
-    '!gte' => 'lt',
-    'greaterthan' => 'gt',
-    '!lte' => 'gt',
-    '!gt' => 'lte',
-    '!greaterthan' => 'lte',
-    '!lt' => 'gte',
-    '!lessthan' => 'lte',
 
-    'notin' => '!in',
-    
-    'regexp' => 'regex',
-    
-    'like' => 'search',
-    'glob' => 'search',
+  protected $conditionArray = array();
+  protected $sortArray = array();
+  protected $limitArray = array();
+
+  public $sqlPrefix;
+
+  protected $comparisonAliases = array(
+      'eq' => 'e',
+      'equal' => 'e',
+      'ne' => '!e',
+      'notequal' => '!e',
+      '!equal' => '!e',
+      '!eq' => '!e',
+
+      'lessthan' => 'lt',
+      '!gte' => 'lt',
+      'greaterthan' => 'gt',
+      '!lte' => 'gt',
+      '!gt' => 'lte',
+      '!greaterthan' => 'lte',
+      '!lt' => 'gte',
+      '!lessthan' => 'lte',
+
+      'notin' => '!in',
+
+      'regexp' => 'regex',
+
+      'like' => 'search',
+      'glob' => 'search',
   );
   protected $comparisonTypes = array(
-    'e', '!e',
-    'lt', 'gt',
-    'lte', 'gte',
-    'in', '!in',
-    'regex', 'search',
-    'band',
+      'e', '!e',
+      'lt', 'gt',
+      'lte', 'gte',
+      'in', '!in',
+      'regex', 'search',
+      'band',
   );
-  
-  
-  
+
+
+
   /*********************************************************
-  ************************ START **************************
-  ******************* General Functions *******************
-  *********************************************************/
+   ************************ START **************************
+   ******************* General Functions *******************
+   *********************************************************/
 
   /**
    * Construct
@@ -94,37 +98,37 @@ abstract class database {
    * @param mixed $tablePrefix
    * @return \database
    *
-    @author Joseph Todd Parsons <josephtparsons@gmail.com>
+  @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   public function __construct($host = false, $port = false, $user = false, $password = false, $database = false, $driver = false, $tablePrefix = '') {
     if ($host !== false) $this->connect($host, $port, $user, $password, $database, $driver, $tablePrefix);
   }
-  
 
-  
+
+
   /**
    * Construct
    *
    * @return void
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-    */
+   */
   public function __destruct() {
     if ($this->dbLink !== null) { // When close is called, the dbLink is nulled. This prevents redundancy.
       $this->close();
     }
   }
-  
+
   public function startsWith($haystack, $needle) {
     return (strpos($haystack, $needle) === 0);
   }
-  
-  
+
+
   public function endsWith($haystack, $needle) {
     return (substr($haystack, -strlen($needle)) === $needle);
   }
-  
-  
-  
+
+
+
   /**
    * Connect to a database server.
    *
@@ -151,9 +155,9 @@ abstract class database {
    *
    * @return bool - True if a connection was successfully established, false otherwise.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */
+   */
   abstract public function connect($host, $port, $user, $password, $database, $driver, $tablePrefix);
-  
+
 
 
   /**
@@ -163,20 +167,20 @@ abstract class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   abstract public function close();
-  
+
   /*********************************************************
-  ************************* END ***************************
-  ******************* General Functions *******************
-  *********************************************************/
-  
-  
-  
-  
+   ************************* END ***************************
+   ******************* General Functions *******************
+   *********************************************************/
+
+
+
+
   /*********************************************************
-  ************************ START **************************
-  ******************** Error Handling *********************
-  *********************************************************/
-  
+   ************************ START **************************
+   ******************** Error Handling *********************
+   *********************************************************/
+
   /**
    * Trigger an Error
    * When a database error is encountered, database implementations should call this function. It will both store the error in the $this->errors property and, potentially, log the error. $errorType should be specified to determine whether or not the error is critical (see below).
@@ -202,19 +206,19 @@ abstract class database {
     if (function_exists($this->errorFormatFunction)) {
       $errorMessage = call_user_func($this->errorFormatFunction, $errorMessage, $errorData);
     }
-    
+
     if ($this->printErrors) { // Trigger error is not guaranteed to output the error message to the client. If this flag is set, we send the message before triggering the error. (At the same time, multiple messages may appear.)
       echo $errorMessage;
     }
-    
+
     if (!$suppressErrors) {
       trigger_error('JSONencoded' . json_encode(array(
-        "Message" => $errorMessage,
-        "Stack Trace" => debug_backtrace(false),
-        "Error Data" => $errorData
-      )), $this->errorLevel);
+              "Message" => $errorMessage,
+              "Stack Trace" => debug_backtrace(false),
+              "Error Data" => $errorData
+          )), $this->errorLevel);
     }
-    
+
     $this->newError($errorMessage . "\nAdditional Information:\n" . print_r($errorData, true));
 
 
@@ -225,15 +229,15 @@ abstract class database {
     }
   }
 
-  
-  
+
+
   /**
    * Defines what error level should be used for all database errors called by the class. Class exceptions will not be affected.
    * This function's main purpose in surpressing errors at certain points in script execution, e.g.:
    * <code>
    * $db = new database('localhost', 3306, 'root', 'r00tpassword', 'database1', 'mysqli');
-   * $db->setErrorLevel(E_NOTICE); // Surpress errors 
-   * 
+   * $db->setErrorLevel(E_NOTICE); // Surpress errors
+   *
    * ...
    * if (count($db->select(...)) > 5) {
    *   trigger_error('Too many results in query.', $db->errorLevel);
@@ -248,8 +252,8 @@ abstract class database {
     return $this->errorLevel = $errorLevel;
   }
 
-  
-  
+
+
   /**
    * Get the Current Error Level
    * This function should be used to retrive the current error level. It could be useful, for instance, in showing other errors outside of the database class, e.g:
@@ -267,11 +271,11 @@ abstract class database {
   public function getErrorLevel() {
     return $this->errorLevel;
   }
-  
-  
-  
+
+
+
   /**
-   * Adds a new error to the error log. This should normally only be called by triggerError(), but is left protected if a class wishes to use it. 
+   * Adds a new error to the error log. This should normally only be called by triggerError(), but is left protected if a class wishes to use it.
    *
    * @param string $errorMessage - Text of message to log.
    * @return void
@@ -280,9 +284,9 @@ abstract class database {
   protected function newError($errorMessage) {
     $this->errors[] = $errorMessage;
   }
-  
-  
-  
+
+
+
   /**
    * Retrives the last logged error.
    *
@@ -292,9 +296,9 @@ abstract class database {
   public function getLastError() {
     return end($this->errors);
   }
-  
-  
-  
+
+
+
   /**
    * Clears the error log.
    *
@@ -304,11 +308,11 @@ abstract class database {
   public function clearErrors() {
     $this->errors = array();
   }
-  
+
   /*********************************************************
-  ************************* END ***************************
-  ******************** Error Handling *********************
-  *********************************************************/
+   ************************* END ***************************
+   ******************** Error Handling *********************
+   *********************************************************/
 
 
 
@@ -335,47 +339,47 @@ abstract class database {
    ************************* END ***************************
    ********************* Transactions **********************
    *********************************************************/
-  
-  
+
+
 
   /*********************************************************
-  ************************ START **************************
-  ****************** Database Functions *******************
-  *********************************************************/
-  
+   ************************ START **************************
+   ****************** Database Functions *******************
+   *********************************************************/
+
   /**
    * Creates a new database on the database server. This function is not possible on all drivers (e.g. PostGreSQL).
    *
    * @param string $database - The name of the databse.
    * @return bool - True if the operation was successful, false otherwise.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */
+   */
   abstract public function createDatabase($database);
 
 
-  
+
   /**
    * Alters the active database of the connection.  This function is not possible on all drivers (e.g. PostGreSQL). The connetion character set will also be set to UTF8 on certain drivers (e.g. MySQL).
    *
    * @param string $database - The name of the databse.
    * @return bool - True if the operation was successful, false otherwise.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */
+   */
   abstract public function selectDatabase($database);
-  
+
   /*********************************************************
-  ************************* END ***************************
-  ****************** Database Functions *******************
-  *********************************************************/
+   ************************* END ***************************
+   ****************** Database Functions *******************
+   *********************************************************/
 
 
 
-  
+
   /*********************************************************
-  ************************ START **************************
-  ******************* Table Functions *********************
-  *********************************************************/
-  
+   ************************ START **************************
+   ******************* Table Functions *********************
+   *********************************************************/
+
   /**
    * Creates a table based on the specified data.
    *
@@ -429,7 +433,7 @@ abstract class database {
    */
   abstract public function createTable($tableName, $tableComment, $storeType, $tableColumns, $tableIndexes);
 
-  
+
 
   /**
    * Renames/moves a table. It will remain in the active database.
@@ -449,7 +453,7 @@ abstract class database {
   abstract public function renameTable($oldName, $newName);
 
 
-  
+
   /**
    * Deletes a table.
    *
@@ -467,7 +471,7 @@ abstract class database {
   abstract public function deleteTable($tableName);
 
 
-  
+
   /**
    * Returns an array of the tables in a database. The method used is driver specific, but where possible the SQL-standard INFORMATION_SCHEMA database will be used.
    *
@@ -477,19 +481,39 @@ abstract class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   abstract public function getTablesAsArray();
-  
-  /*********************************************************
-  ************************* END ***************************
-  ******************* Table Functions *********************
-  *********************************************************/
 
-  
-  
-  
   /*********************************************************
-  ************************ START **************************
-  ******************** Row Functions **********************
-  *********************************************************/
+   ************************* END ***************************
+   ******************* Table Functions *********************
+   *********************************************************/
+
+
+
+
+  /*********************************************************
+   ************************ START **************************
+   ******************** Row Functions **********************
+   *********************************************************/
+
+
+  public function where($conditionArray) {
+    $this->conditionArray = $conditionArray;
+
+    return $this;
+  }
+
+  public function sortBy($sortArray) {
+    $this->sortArray = $sortArray;
+
+    return $this;
+  }
+
+  public function limit($limitArray) {
+    $this->limitArray = $limitArray;
+
+    return $this;
+  }
+
 
   /**
    * Retrieves data from the active database connection.
@@ -502,21 +526,21 @@ abstract class database {
    * @return object
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-   
-   /* Formatting:
-    *
-    * To compare a column to a value: 'columnName' => $dB->str('value') (value must be either integer or string, and will be escaped automatically)
-    * To compare a column to multiple values using an IN clause: 'columnName' => 'value' (value must be one-dimensional array, all entries of which should either be strings or integers, which will automatically be escaped.
-    * To compare a column to another column: 'columnName' => 'column columnName2' (columnName2 must be alphanumeric or it will not be accepted; additionally, above strings must not start with "column")
-    *
-    * Next, a few caveats:
-    ** Everything is case sensitive. Live with it.
-  */
+
+  /* Formatting:
+   *
+   * To compare a column to a value: 'columnName' => $dB->str('value') (value must be either integer or string, and will be escaped automatically)
+   * To compare a column to multiple values using an IN clause: 'columnName' => 'value' (value must be one-dimensional array, all entries of which should either be strings or integers, which will automatically be escaped.
+   * To compare a column to another column: 'columnName' => 'column columnName2' (columnName2 must be alphanumeric or it will not be accepted; additionally, above strings must not start with "column")
+   *
+   * Next, a few caveats:
+   ** Everything is case sensitive. Live with it.
+ */
 
   abstract public function select($columns, $conditionArray = false, $sort = false, $limit = false);
 
-  
-  
+
+
   /**
    * Inserts a row into a table of the database.
    *
@@ -544,7 +568,7 @@ abstract class database {
   abstract public function insert($table, $dataArray, $updateArray = false);
 
 
-  
+
   /**
    * Inserts a row into a table of the database.
    *
@@ -571,7 +595,7 @@ abstract class database {
   abstract public function update($table, $dataArray, $conditionArray = false );
 
 
-  
+
   /**
    * Deletes rows from a table of the database.
    *
@@ -591,20 +615,20 @@ abstract class database {
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
   abstract public function delete($table, $conditionArray = false);
-  
+
   /*********************************************************
-  ************************* END ***************************
-  ******************** Row Functions **********************
-  *********************************************************/
+   ************************* END ***************************
+   ******************** Row Functions **********************
+   *********************************************************/
 
 
-  
-  
+
+
   /*********************************************************
-  ************************ START **************************
-  **************** Type-Casting Functions *****************
-  *********************************************************/
-  
+   ************************ START **************************
+   **************** Type-Casting Functions *****************
+   *********************************************************/
+
   /**
    * Define a value as being of a certain type for database operations.
    *
@@ -622,8 +646,8 @@ abstract class database {
    *
    * @return special - Returns a special representation of a column int only for use in database functions.
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */
-  
+   */
+
   public function type($type, $value = '', $comp = 'e') {
     switch ($type) {
       case 'int': case 'integer':   return array('integer',   (int)    $value, $comp); break;
@@ -636,10 +660,10 @@ abstract class database {
       case 'equation':              return array('equation',  (string) $value, $comp); break;
 
       case 'arr': case 'array':
-       if (count($value) === 0) {
-         $this->triggerError('Empty arrays can not be specified.', false, 'validation');
-       }
-       return array('array',     (array)  $value, ($comp === 'in' || $comp === 'notin' ? $comp : 'in')); break;
+      if (count($value) === 0) {
+        $this->triggerError('Empty arrays can not be specified.', false, 'validation');
+      }
+      return array('array',     (array)  $value, ($comp === 'in' || $comp === 'notin' ? $comp : 'in')); break;
     }
   }
 
@@ -650,6 +674,10 @@ abstract class database {
 
   public function in($value) {
     return $this->type('arr', $value, 'in');
+  }
+
+  public function search($value) {
+    return $this->type('string', $value, 'search');
   }
 
   public function bool($value) {
@@ -669,31 +697,31 @@ abstract class database {
   public function int($value, $comp = 'e') {
     return $this->type('int', $value, $comp);
   }
-  
-  
+
+
   // Okay, so I know I'm doing this wrong. Sorry. (It will seriously need to be rewritten later, I know that.)
   public function bitChange($typeArray, $bit, $change) {
     if ($typeArray[0] !== 'integer') throw new Exception('Invalid typeArray');
     else {
       switch ($change) {
         case 'add':
-        if (!($typeArray[1] & $bit === $bit)) $typeArray[1] += $bit; // Increase by $bit if $bit is 
-        break;
-        
+          if (!($typeArray[1] & $bit === $bit)) $typeArray[1] += $bit; // Increase by $bit if $bit is
+          break;
+
         case 'remove':
-        if ($typeArray[1] & $bit === $bit) $typeArray[1] -= $bit; // Decrease by $bit if $bit is in $typeArray.
-        break;
-        
+          if ($typeArray[1] & $bit === $bit) $typeArray[1] -= $bit; // Decrease by $bit if $bit is in $typeArray.
+          break;
+
         case 'flip': // TODO
-        break;
+          break;
       }
     }
-    
+
     return $typeArray;
   }
-  
-  
-  
+
+
+
   /**
    * Define a value as being a timestamp for database operations.
    *
@@ -703,12 +731,12 @@ abstract class database {
    * @return special - Returns a special representation of a timestamp value only for use in database functions.
    *
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */
+   */
   public function ts($value, $comp = 'e') {
     return $this->type('ts', $value, $comp);
   }
-  
-  
+
+
   /**
    * An alias for ts('time', time() + $offset). This function is recommended over that alternative, however, because it allows for potentially greater precision than time().
    *
@@ -718,9 +746,9 @@ abstract class database {
   public function now($offset = 0, $comp = 'e') {
     return $this->ts(time() + $offset, $comp);
   }
-  
-  
-  
+
+
+
   /**
    * Define a value as being an string for database operations.
    *
@@ -730,13 +758,13 @@ abstract class database {
    * @return special - Returns a special representation of a string value only for use in database functions.
    *
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */
+   */
   public function str($value, $comp = 'e') {
     return $this->type('string', (string) $value, $comp);
   }
-  
-  
-  
+
+
+
   /**
    * Define a value as being a column for database operations.
    *
@@ -746,15 +774,15 @@ abstract class database {
    * @return special - Returns a special representation of a column value only for use in database functions.
    *
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */
+   */
   public function col($value, $comp = 'e') {
     return array('column', (string) $value, $comp);
   }
-  
+
   /*********************************************************
-  ************************* END ***************************
-  **************** Type-Casting Functions *****************
-  *********************************************************/
+   ************************* END ***************************
+   **************** Type-Casting Functions *****************
+   *********************************************************/
 
 
   /**
@@ -778,7 +806,7 @@ class databaseResult {
    * @param string $sourceQuery - The source query, which can be stored for referrence.
    * @return void
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */
+   */
   public function __construct($queryData, $sourceQuery, $language) {
     $this->queryData = $queryData;
     $this->sourceQuery = $sourceQuery;
@@ -796,24 +824,24 @@ class databaseResult {
     $args = func_get_args();
     switch ($this->driver) {
       case 'mysql':
-      switch ($operation) {
-        case 'fetchAsArray' : return (($data = mysql_fetch_assoc($args[1])) === false ? false : $data); break;
-        case 'getCount' : return mysql_num_rows($args[1]); break;
-      }
-      break;
+        switch ($operation) {
+          case 'fetchAsArray' : return (($data = mysql_fetch_assoc($args[1])) === false ? false : $data); break;
+          case 'getCount' : return mysql_num_rows($args[1]); break;
+        }
+        break;
 
       case 'mysqli':
-      switch ($operation) {
-        case 'fetchAsArray' : return (($data = $this->queryData->fetch_assoc()) === null ? false : $data); break;
-        case 'getCount' : return $args[1]->num_rows; break;
-      }
-      break;
+        switch ($operation) {
+          case 'fetchAsArray' : return (($data = $this->queryData->fetch_assoc()) === null ? false : $data); break;
+          case 'getCount' : return $args[1]->num_rows; break;
+        }
+        break;
 
       case 'pdo':
-      switch ($operation) {
-        case 'fetchAsArray' : return ((($data = $this->queryData->fetch(PDO::FETCH_ASSOC)) === null) ? false : $data); break;
-      }
-      break;
+        switch ($operation) {
+          case 'fetchAsArray' : return ((($data = $this->queryData->fetch(PDO::FETCH_ASSOC)) === null) ? false : $data); break;
+        }
+        break;
     }
   }
 
@@ -824,7 +852,7 @@ class databaseResult {
    * @param object $queryData - The database object.
    * @return void
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */
+   */
   public function setQuery($queryData) {
     $this->queryData = $queryData;
   }
@@ -841,7 +869,7 @@ class databaseResult {
    * @param mixed $index
    * @return array
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */
+   */
   public function getAsArray($index = true, $group = false) {
     $data = array();
     $indexV = 0;
@@ -851,10 +879,8 @@ class databaseResult {
         while ($row = $this->functionMap('fetchAsArray', $this->queryData)) {
           if ($row === null || $row === false) break;
 
-          if ($index === true) {
-            $indexV++; // If the index is boolean "true", we simply create numbered rows to use. (1,2,3,4,5)
-
-            $data[$indexV] = $row; // Append the data.
+          if ($index === true) { // If the index is boolean "true", we simply create numbered rows to use. (1,2,3,4,5)
+            $data[$indexV++] = $row; // Append the data.
           }
           else { // If the index is not boolean "true", we instead get the column value of the index/column name.
             $index = (array) $index;
@@ -921,7 +947,7 @@ class databaseResult {
    * @param string $format
    * @return mixed
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-  */
+   */
   public function getAsTemplate($format) {
     static $data;
 
