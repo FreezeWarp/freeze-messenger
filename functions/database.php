@@ -204,21 +204,23 @@ abstract class database
      */
     protected function triggerError($errorMessage, $errorData, $errorType, $suppressErrors = false)
     {
-
-        if (function_exists($this->errorFormatFunction)) {
-            $errorMessage = call_user_func($this->errorFormatFunction, $errorMessage, $errorData);
-        }
-
         if ($this->printErrors) { // Trigger error is not guaranteed to output the error message to the client. If this flag is set, we send the message before triggering the error. (At the same time, multiple messages may appear.)
             echo $errorMessage;
         }
 
         if (!$suppressErrors) {
-            trigger_error('JSONencoded' . json_encode(array(
+            if ($this->errorFormatFunction) {
+                throw new $this->errorFormatFunction('dbError', json_encode(array(
                     "Message" => $errorMessage,
+                    "Database Error" => $this->getLastError(),
+                    "Source Query" => $this->sourceQuery,
                     "Stack Trace" => debug_backtrace(false),
                     "Error Data" => $errorData
-                )), $this->errorLevel);
+                )));
+            }
+            else {
+                throw new Exception('A database error has occured.');
+            }
         }
 
         $this->newError($errorMessage . "\nAdditional Information:\n" . print_r($errorData, true));

@@ -22,7 +22,7 @@ class fimError extends Exception {
 
     $errorData = array_merge($context, array(
       'string' => $code,
-      'details' => $string,
+      'details' => (substr($string, 0, 1) === '[' || substr($string, 0, 1) === '{') ? json_decode($string) : $string,
       'contactEmail' => $this->email,
     ));
 
@@ -34,10 +34,10 @@ class fimError extends Exception {
       $errorData['trace'] = $backtrace;
     }
 
-    echo new apiData(array(
-      'exception' => $errorData,
-    ));
 
-    die();
+
+    die(new apiData(array(
+      'exception' => $errorData,
+    )));
   }
 }

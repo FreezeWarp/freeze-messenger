@@ -23,10 +23,10 @@
  * @TODO Limit handling (OFFSET = limit * pagination).
  */
 
-
 class fimDatabase extends databaseSQL
 {
   private $userColumns = 'userId, userName, userNameFormat, profile, avatar, userGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, userParentalAge, userParentalFlags, privs, lastSync';
+  protected $errorFunction = 'fimError';
   protected $config;
 
 

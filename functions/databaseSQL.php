@@ -797,7 +797,7 @@ class databaseSQL extends database
      * @return resource|bool - The database resource returned by the query, or false on failure.
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    protected function rawQuery($query, $suppressErrors = false)
+    protected function rawQuery($query)
     {
         $this->sourceQuery = $query;
 
@@ -806,12 +806,9 @@ class databaseSQL extends database
 
             if ($queryData === true) return true; // Insert, Update, Delete, etc.
             else return $this->databaseResultPipe($queryData, $query, $this->driver); // Select, etc.
-        } else {
-            throw new fimError('dbError', 'Database Error', array(
-                'query' => $query,
-                'error' => $this->functionMap('error')
-            ), 'syntax', $suppressErrors); // The query could not complete.
+        }
 
+        else {
             return false;
         }
     }
