@@ -34,13 +34,15 @@ class fimUser {
 
 
   function checkPassword($password) {
+    /* TODO: IP limit to calling this function. */
+
     switch ($this->userData['passwordFormat']) {
       case 'phpass':
         if (!isset($this->userData['passwordHash'])) {
           throw new Exception('User object was not generated with password hash information.');
         }
         else {
-          require 'PasswordHash.php';
+          require_once('PasswordHash.php');
 
           $h = new PasswordHash(8, FALSE);
 
@@ -53,20 +55,20 @@ class fimUser {
           throw new Exception('User object was not generated with password hash information.');
         }
         else {
-          if ($this->userData['passwordHash'] === md5($password . $this->userData['passwordSalt'])) return true;
-          else return false;
+          return ($this->userData['passwordHash'] === md5(md5($password) . $this->userData['passwordSalt']));
         }
         break;
 
       case 'raw':
-        if ($this->userData['passwordHash'] === md5($password . $this->userData['passwordSalt'])) return true;
-        else return false;
+        return ($this->userData['passwordHash'] === $password);
         break;
 
       default:
         throw new Exception('Invalid password format.');
         break;
     }
+
+    return false;
   }
 
 
