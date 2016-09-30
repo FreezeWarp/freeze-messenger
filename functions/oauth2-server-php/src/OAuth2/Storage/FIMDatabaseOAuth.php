@@ -114,7 +114,10 @@ class FIMDatabaseOAuth implements
             'client_id' => $client_id,
             'expires' => $expires,
             'user_id' => $user_id,
-            'scope' => $scope
+            'scope' => $scope,
+            'http_user_agent' => $_SERVER['HTTP_USER_AGENT'],
+            'ip_address' => $_SERVER['REMOTE_ADDR'],
+            'anon_id' => ($user_id === 0 && $anonId > 0 ? $anonId : 0),
         ));
     }
 
