@@ -186,6 +186,11 @@
       <column name="expires" type="time" required="true" />
       <column name="scope" type="string" maxlen="4000" />
 
+      <!-- FIM Additions -->
+      <column name="ip_address" type="string" maxlen="128" comment="The user's IP address." />
+      <column name="http_user_agent" type="string" maxlen="1000" comment="The user's browser user agent, if applicable." />
+      <column name="anon_id" type="int" maxlen="6" comment="A unique ID that can be used for anonymous users." />
+
       <key name="access_token" type="primary" />
     </table>
 
@@ -214,8 +219,6 @@
     <table name="oauth_scopes">
       <column name="scope" type="string" maxlen="4000" required="true" />
       <column name="is_default" type="bool" default="0" />
-
-      <key name="scope" type="primary" />
     </table>
 
     <table name="oauth_jwt">
@@ -492,21 +495,6 @@
       <column name="expires" type="time" comment="When the cache is no longer considered valid." />
 
       <key name="phraseName,userId,roomId,resultPage,resultLimit" type="primary" />
-    </table>
-
-
-    <table name="sessions" type="memory" comment="Active user credentials.">
-      <column name="sessionId" type="int" maxlen="10" autoincrement="1" comment="A unique ID corrosponding to all sessions. It is largely unused." />
-      <column name="sessionTime" type="time" comment="The time the session was last renewed." />
-      <column name="sessionHash" type="string" maxlen="128" comment="The session hash itself." />
-      <column name="sessionIp" type="string" maxlen="128" comment="The user's IP address." />
-      <column name="userId" type="int" maxlen="8" comment="The ID of the user the session belongs to." />
-      <column name="anonId" type="int" maxlen="6" comment="A unique ID that can be used for anonymous users." />
-      <column name="userAgent" type="string" maxlen="300" comment="The useragent of the user of the session." />
-      <column name="clientCode" type="string" maxlen="10" comment="A code the client identifies itself as, aside from the userAgent (really just meant for browsers, since we can't control those)." />
-
-      <key name="sessionId" type="primary" />
-      <key name="sessionHash" type="unique" />
     </table>
 
 
