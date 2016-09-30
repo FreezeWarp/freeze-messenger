@@ -1279,60 +1279,68 @@ class databaseSQL extends database
 
 
         /* Process Conditions (Must be Array) */
+        if ($this->conditionArray) {
+            if ($conditionArray) throw new Exception('Condition array declared both in where() and select().');
+
+            $conditionArray = $this->conditionArray;
+            $this->conditionArray = array();
+        }
+
         if (is_array($conditionArray) && count($conditionArray)) {
             $finalQuery['where'] = $this->recurseBothEither($conditionArray, $reverseAlias);
         }
 
 
+
         /* Process Sorting (Must be Array)
          * TODO: Combine the array and string routines to be more effective. */
+        if ($this->sortArray) {
+            if ($sort !== false) {
+                throw new Exception("Sort array declared both in sort() and select().");
+            }
+
+            $sort = $this->sortArray;
+            $this->sortArray = array();
+        }
+
         if ($sort !== false) {
             if (is_array($sort)) {
                 if (count($sort) > 0) {
                     foreach ($sort AS $sortColumn => $direction) {
                         if (isset($reverseAlias[$sortColumn])) {
                             switch (strtolower($direction)) {
-                                case 'asc':
-                                    $directionSym = $this->sortOrderAsc;
-                                    break;
-                                case 'desc':
-                                    $directionSym = $this->sortOrderDesc;
-                                    break;
-                                default:
-                                    $directionSym = $this->sortOrderAsc;
-                                    break;
+                                case 'asc': $directionSym = $this->sortOrderAsc; break;
+                                case 'desc': $directionSym = $this->sortOrderDesc; break;
+                                default: $directionSym = $this->sortOrderAsc; break;
                             }
 
                             $finalQuery['sort'][] = $reverseAlias[$sortColumn] . " $directionSym";
-                        } else {
+                        }
+                        else {
                             $this->triggerError('Unrecognised Sort Column', array(
                                 'sortColumn' => $sortColumn,
                             ), 'validation');
                         }
                     }
                 }
-            } elseif (is_string($sort)) {
+            }
+            elseif (is_string($sort)) {
                 $sortParts = explode(',', $sort); // Split the list into an array, delimited by commas
 
                 foreach ($sortParts AS $sortPart) { // Run through each list item
                     $sortPart = trim($sortPart); // Remove outside whitespace from the item
 
-                    if (strpos($sortPart, ' ') !== false) { // If a space is within the part, then the part is formatted as "columnName direction"
-                        $sortPartParts = explode(' ', $sortPart); // Divide the piece
+                    if (strpos($sortPart,' ') !== false) { // If a space is within the part, then the part is formatted as "columnName direction"
+                        $sortPartParts = explode(' ',$sortPart); // Divide the piece
 
                         $sortColumn = $sortPartParts[0]; // Set the name equal to the first part of the piece
                         switch (strtolower($sortPartParts[1])) {
-                            case 'asc':
-                                $directionSym = $this->sortOrderAsc;
-                                break;
-                            case 'desc':
-                                $directionSym = $this->sortOrderDesc;
-                                break;
-                            default:
-                                $directionSym = $this->sortOrderAsc;
-                                break;
+                            case 'asc':  $directionSym = $this->sortOrderAsc;  break;
+                            case 'desc': $directionSym = $this->sortOrderDesc; break;
+                            default:     $directionSym = $this->sortOrderAsc;  break;
                         }
-                    } else { // Otherwise, we assume asscending
+                    }
+                    else { // Otherwise, we assume asscending
                         $sortColumn = $sortPart; // Set the name equal to the sort part.
                         $directionSym = $this->sortOrderAsc; // Set the alias equal to the default, ascending.
                     }
@@ -1345,10 +1353,20 @@ class databaseSQL extends database
         }
 
 
+
         /* Process Limit (Must be Integer) */
+        if ($this->limitArray) {
+            if ($limit !== false) {
+                throw new Exception("Limit array declared both in sort() and select().");
+            }
+
+            $limit = $this->limitArray;
+            $this->limitArray = array();
+        }
+
         if ($limit !== false) {
             if (is_int($limit)) {
-                $finalQuery['limit'] = (int)$limit;
+                $finalQuery['limit'] = (int) $limit;
             }
         }
 
