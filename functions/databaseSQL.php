@@ -799,16 +799,18 @@ class databaseSQL extends database
      */
     protected function rawQuery($query)
     {
-        $this->sourceQuery = $query;
+        $this->newQuery($query);
 
         if ($queryData = $this->functionMap('query', $query)) {
-            $this->queryCounter++;
-
             if ($queryData === true) return true; // Insert, Update, Delete, etc.
             else return $this->databaseResultPipe($queryData, $query, $this->driver); // Select, etc.
         }
 
         else {
+            $this->errors[] = $this->functionMap('error');
+
+            $this->triggerError("badQuery");
+
             return false;
         }
     }
@@ -838,6 +840,7 @@ class databaseSQL extends database
 
     protected function newQuery($queryText)
     {
+        $this->queryCounter++;
         $this->queryLog[] = $queryText;
     }
 
@@ -933,11 +936,7 @@ class databaseSQL extends database
         }
 
         if ($error) {
-            $this->triggerError($error, array(
-                'database' => $database,
-                'query' => $this->getLastQuery(),
-                'sqlError' => $this->getLastError()
-            ), 'function');
+            $this->triggerError($error);
             return false;
         } else {
             $this->activeDatabase = $database;
