@@ -203,6 +203,11 @@
     </table>
 
 
+    <table name="oauth_clients">
+      <column name="client_id" value="WebPro" />
+    </table>
+
+
     <!-- Table rooms -->
     <table name="rooms">
       <column name="roomId" value="1" />
