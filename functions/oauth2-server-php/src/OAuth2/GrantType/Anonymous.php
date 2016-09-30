@@ -39,9 +39,8 @@ class Anonymous implements GrantTypeInterface
         $cache = new \generalCache();
         if ($cache->exists('fim_oauth2_anonymousUserArray'))
             $userInfo = $cache->get('fim_oauth2_anonymousUserArray');
-        else
-            $cache->store('fim_oauth2_anonymousUserArray', $userInfo = $this->storage->getUserDetails(ANONYMOUS_USER_ID));
-
+/        else
+            $cache->set('fim_oauth2_anonymousUserArray', $userInfo = $this->storage->getUserFromId(self::ANONYMOUS_USER_ID), 3600 * 24);
 
         /* Sanity checks */
         if (empty($userInfo)) {
@@ -66,7 +65,7 @@ class Anonymous implements GrantTypeInterface
 
     public function getUserId()
     {
-        return ANONYMOUS_USER_ID;
+        return self::ANONYMOUS_USER_ID;
     }
 
     public function getScope()

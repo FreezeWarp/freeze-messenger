@@ -263,12 +263,28 @@ class FIMDatabaseOAuth implements
 
     public function getUser($username)
     {
+        // if(integration) {
+        //   $userArray = integration->select()
+        //   if (fimUser($userArray['userId'])) update name, etc.
+        //   else create user w/ name
+
         require_once(__DIR__ . '/../../../../fim_user.php');
 
         $userData = $this->db->getUsers(array(
             'userNames' => array($username),
             'includePasswords' => true
         ))->getAsUser();
+
+        return array(
+            'user_id' => $userData->id,
+            'username' => $userData->name,
+            'userObj' => $userData,
+        );
+    }
+
+    public function getUserFromId($userId)
+    {
+        $userData = $this->db->getUser($userId);
 
         return array(
             'user_id' => $userData->id,
