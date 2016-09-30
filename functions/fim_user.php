@@ -90,7 +90,11 @@ class fimUser {
     global $loginConfig, $generalCache, $config; // $config is todo
 
     /* Make sure userData contains neccessary information. */
-    if (!count($userData) || !is_array($userData) || !isset($userData['userId'], $userData['userName'], $userData['userParentalFlags'], $userData['userParentalAge'], $userData['privs'])) return false;
+    if (!count($userData)
+        || !is_array($userData)
+        || !isset($userData['userId'], $userData['userName'], $userData['privs'])
+        || !array_key_exists('userParentalFlags', $userData)
+        || !array_key_exists('userParentalAge', $userData)) throw new Exception("Invalid userData: " . print_r($userData));
 
 
     if (!$userData['lastSync'] <= (time() - $config['userSyncThreshold'])) { // This updates various caches every so often. In general, it is a rather slow process, and as such does tend to take a rather long time (that is, compared to normal - it won't exceed 500 miliseconds, really).

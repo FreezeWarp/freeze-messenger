@@ -23,9 +23,10 @@
  * @TODO Limit handling (OFFSET = limit * pagination).
  */
 
+
 class fimDatabase extends databaseSQL
 {
-  private $userColumns = 'userId, userName, userNameFormat, profile, avatar, userGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, userParentalAge, userParentalFlags, privs';
+  private $userColumns = 'userId, userName, userNameFormat, profile, avatar, userGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, userParentalAge, userParentalFlags, privs, lastSync';
   protected $config;
 
 
@@ -856,7 +857,7 @@ class fimDatabase extends databaseSQL
     if ($options['bannedStatus'] === 'unbanned') $conditions['both']['options'] = $this->int(1, 'bAnd'); // TODO: Test!
 
 
-    if (count($options['hasAdminPrivs']) > 0) {
+    if (isset($options['hasAdminPrivs']) && count($options['hasAdminPrivs']) > 0) {
       foreach ($options['hasAdminPrivs'] AS $adminPriv) $conditions['both']['adminPrivs'] = $this->int($adminPriv, 'bAnd');
     }
 
@@ -1138,9 +1139,10 @@ class fimDatabase extends databaseSQL
   public function createSession($user) {
     // TODO: implement using database.php
     global $dbConnect;
+
     require_once('oauth2-server-php/src/OAuth2/Autoloader.php');
     OAuth2\Autoloader::register();
-    $storage = new OAuth2\Storage\Pdo(array('dsn' => 'mysql:dbname=' + $dbConnect['core']['database'] + ';host=' . $dbConnect['core']['host'], 'username' => $dbConnect['core']['username'], 'password' => $dbConnect['core']['password']));// $dsn is the Data Source Name for your database, for exmaple "mysql:dbname=my_oauth2_db;host=localhost"
+    $storage = new OAuth2\Storage\Pdo(array('dsn' => 'mysql:dbname=' . $this->connectionInformation['database'] . ';host=' . $this->connectionInformation['host'], 'username' => $this->connectionInformation['user'], 'password' => $this->connectionInformation['password']));// $dsn is the Data Source Name for your database, for exmaple "mysql:dbname=my_oauth2_db;host=localhost"
     $server = new OAuth2\Server($storage); // Pass a storage object or array of storage objects to the OAuth2 server class
     $server->addGrantType(new OAuth2\GrantType\ClientCredentials($storage)); // Add the "Client Credentials" grant type (it is the simplest of the grant types)
     $server->addGrantType(new OAuth2\GrantType\AuthorizationCode($storage)); // Add the "Authorization Code" grant type (this is where the oauth magic happens)
