@@ -1,4 +1,9 @@
 <?php
+namespace OAuth2\Storage;
+
+use OAuth2\OpenID\Storage\UserClaimsInterface;
+use OAuth2\OpenID\Storage\AuthorizationCodeInterface as OpenIDAuthorizationCodeInterface;
+
 /**
  * FIMDatabase implementation of OAuth
  *
@@ -29,15 +34,15 @@ class FIMDatabaseOAuth implements
 
         $this->db = $db;
         $this->config = array_merge(array(
-            'client_table' => $db->connectionInformation['tablePrefix'] . 'oauth_clients',
-            'access_token_table' => $db->connectionInformation['tablePrefix'] . 'oauth_access_tokens',
-            'refresh_token_table' => $db->connectionInformation['tablePrefix'] . 'oauth_refresh_tokens',
-            'code_table' => $db->connectionInformation['tablePrefix'] . 'oauth_authorization_codes',
-            'user_table' => $db->connectionInformation['tablePrefix'] . 'oauth_users',
-            'jwt_table'  => $db->connectionInformation['tablePrefix'] . 'oauth_jwt',
-            'jti_table'  => $db->connectionInformation['tablePrefix'] . 'oauth_jti',
-            'scope_table'  => $db->connectionInformation['tablePrefix'] . 'oauth_scopes',
-            'public_key_table'  => $db->connectionInformation['tablePrefix'] . 'oauth_public_keys',
+            'client_table' => $db->sqlPrefix . 'oauth_clients',
+            'access_token_table' => $db->sqlPrefix . 'oauth_access_tokens',
+            'refresh_token_table' => $db->sqlPrefix . 'oauth_refresh_tokens',
+            'code_table' => $db->sqlPrefix . 'oauth_authorization_codes',
+            'user_table' => $db->sqlPrefix . 'oauth_users',
+            'jwt_table'  => $db->sqlPrefix . 'oauth_jwt',
+            'jti_table'  => $db->sqlPrefix . 'oauth_jti',
+            'scope_table'  => $db->sqlPrefix . 'oauth_scopes',
+            'public_key_table'  => $db->sqlPrefix . 'oauth_public_keys',
         ), $config);
     }
 
@@ -55,7 +60,7 @@ class FIMDatabaseOAuth implements
 
         $result = $this->db->where(array('client_id' => $client_id))->select(array($this->config['client_table'] => self::CLIENT_TABLE_FIELDS))->getAsArray(false);
 
-        if (!length($result)) {
+        if (!$result) {
             return false;
         }
 
@@ -230,9 +235,6 @@ class FIMDatabaseOAuth implements
 
     public function setRefreshToken($refresh_token, $client_id, $user_id, $expires, $scope = null)
     {
-        // convert expires to datestring
-        $expires = date('Y-m-d H:i:s', $expires);
-
         return $this->db->insert($this->config['refresh_token_table'], array(
             'refresh_token' => $refresh_token,
             'client_id' => $client_id,
@@ -251,17 +253,37 @@ class FIMDatabaseOAuth implements
 
     protected function checkPassword($user, $password)
     {
-        return $user->checkPassword($password);
+        return $user['userObj']->checkPassword($password);
     }
 
     public function getUser($username)
     {
-        require('../../../../fim_user.php');
+        require_once(__DIR__ . '/../../../../fim_user.php');
 
-        return $this->db->getUsers(array(
+        $userData = $this->db->getUsers(array(
             'userNames' => array($username),
             'includePasswords' => true
         ))->getAsUser();
+
+        return array(
+            'user_id' => $userData->id,
+            'username' => $userData->name,
+            'userObj' => $userData,
+        );
+    }
+
+
+    public function getClientScope($client_id)
+    {
+        if (!$clientDetails = $this->getClientDetails($client_id)) {
+            return false;
+        }
+
+        if (isset($clientDetails['scope'])) {
+            return $clientDetails['scope'];
+        }
+
+        return null;
     }
 }
 ?>
