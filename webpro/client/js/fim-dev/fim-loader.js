@@ -875,16 +875,16 @@ function windowDynaLinks() {
 
 
   // Hide DOM Elements Based on User's Permissions
-  if (!window.userPermissions.createRooms) { $('li > #createRoom').parent().hide(); }
-  if (!window.userPermissions.privateRoomsFriends) { $('li > #privateRoom').parent().hide(); $('#userMenu a[data-action="private_im"]').parent().hide(); }
-  if (!window.adminPermissions.modUsers) { $('li > #modUsers').parent().hide(); $('ul#userMenu > li > a[data-action="ban"]').hide(); noAdminCounter += 1; }
-  if (!window.adminPermissions.modRooms) { $('ul#roomMenu > li > a[data-action="delete"]').hide(); noAdminCounter += 1; }
-  if (!window.adminPermissions.modFiles) { $('li > #modImages').parent().hide(); $('ul#messageMenu > li > a[data-action="deleteimage"]').hide(); noAdminCounter += 1; }
-  if (!window.adminPermissions.modCensor) { $('li > #modCensor').parent().hide(); noAdminCounter += 1; }
-  if (!window.adminPermissions.modTemplates) { $('li > #modPhrases, li > #modTemplates').parent().hide(); noAdminCounter += 1; }
-  if (!window.adminPermissions.modPrivs) { $('li > #modPrivs').parent().hide(); noAdminCounter += 1; }
-  if (!window.adminPermissions.modPlugins) { $('li > #modHooks').parent().hide(); noAdminCounter += 1; }
-  if (!window.adminPermissions.modPrivs) { $('li > #modCore').parent().hide(); noAdminCounter += 1; }
+  if (!window.permissions.createRooms) { $('li > #createRoom').parent().hide(); }
+  if (!window.permissions.privateRoomsFriends) { $('li > #privateRoom').parent().hide(); $('#userMenu a[data-action="private_im"]').parent().hide(); }
+  if (!window.permissions.modUsers) { $('li > #modUsers').parent().hide(); $('ul#userMenu > li > a[data-action="ban"]').hide(); noAdminCounter += 1; }
+  if (!window.permissions.modRooms) { $('ul#roomMenu > li > a[data-action="delete"]').hide(); noAdminCounter += 1; }
+  if (!window.permissions.modFiles) { $('li > #modImages').parent().hide(); $('ul#messageMenu > li > a[data-action="deleteimage"]').hide(); noAdminCounter += 1; }
+  if (!window.permissions.modCensor) { $('li > #modCensor').parent().hide(); noAdminCounter += 1; }
+  if (!window.permissions.modTemplates) { $('li > #modPhrases, li > #modTemplates').parent().hide(); noAdminCounter += 1; }
+  if (!window.permissions.modPrivs) { $('li > #modPrivs').parent().hide(); noAdminCounter += 1; }
+  if (!window.permissions.modPlugins) { $('li > #modHooks').parent().hide(); noAdminCounter += 1; }
+  if (!window.permissions.modPrivs) { $('li > #modCore').parent().hide(); noAdminCounter += 1; }
 
   if (roomId) {
     if (roomId.toString().substr(0,1) === 'p' || modRooms[roomId] < 1) { $('li > #kick').parent().hide(); $('li > #manageKick').parent().hide(); $('#userMenu a[data-action="kick"]').parent().hide(); $('ul#messageMenu > li > a[data-action="delete"], ul#messageMenuImage > li > a[data-action="delete"], ul#messageMenuLink > li > a[data-action="delete"], ul#messageMenuVideo > li > a[data-action="delete"]').hide(); noModCounter += 2; }

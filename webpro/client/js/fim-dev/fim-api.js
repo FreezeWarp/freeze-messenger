@@ -21,12 +21,10 @@ window.fimApi = {
   login : function(params, requestSettings) {
     var params = fimApi.mergeDefaults(params, {
       'fim3_format' : 'json',
-      'userId' : 0,
-      'userName' : '',
+      'grant_type' : 'password',
+      'username' : '',
       'password' : '',
-      'passwordEncrypt' : 'plaintext',
-      'apiVersions' : '[10000]',
-      'clientCode' : ''
+      'client_id' : ''
     });
 
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
@@ -40,7 +38,7 @@ window.fimApi = {
         cache: requestSettings.cache
       }).done(function(json) {
         requestSettings.callback(json.login);
-      }).fail(function(response) {
+      }).fail(function(response) { console.log(response); console.log(this);
         requestSettings.error(response.responseJSON.exception);
       });
     }
@@ -62,8 +60,7 @@ window.fimApi = {
    */
   getUsers : function(params, requestSettings, async) {
     var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['userIds']), {
-      'fim3_sessionHash' : window.sessionHash,
-      'fim3_userId' :  window.userId,
+      'access_token' : window.sessionHash,
       'fim3_format' : 'json',
       'userIds' : '',
       'userNames' : '',
@@ -99,8 +96,7 @@ window.fimApi = {
 
   getRooms : function(params, requestSettings) {
     var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds']), {
-      'fim3_sessionHash' : window.sessionHash,
-      'fim3_userId' :  window.userId,
+      'access_token' : window.sessionHash,
       'fim3_format' : 'json',
       'roomIds' : '',
       'roomNames' : '',
@@ -156,8 +152,7 @@ window.fimApi = {
    */
   getMessages : function(params, requestSettings) {
     var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['userIds', 'messageIds']), {
-      'fim3_sessionHash' : window.sessionHash,
-      'fim3_userId' :  window.userId,
+      'access_token' : window.sessionHash,
       'fim3_format' : 'json',
       'roomId' : '',
       'userIds' : '',
@@ -198,8 +193,7 @@ window.fimApi = {
 
   getFiles : function(params, requestSettings) {
     var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['userIds', 'fileIds']), {
-      'fim3_sessionHash' : window.sessionHash,
-      'fim3_userId' :  window.userId,
+      'access_token' : window.sessionHash,
       'fim3_format' : 'json',
       'userIds' : '',
       'fileIds' : ''
@@ -233,8 +227,7 @@ window.fimApi = {
 
   getStats : function(params, requestSettings) {
     var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds']), {
-      'fim3_sessionHash' : window.sessionHash,
-      'fim3_userId' :  window.userId,
+      'access_token' : window.sessionHash,
       'fim3_format' : 'json',
       'roomIds' : '',
       'number' : 10
@@ -268,8 +261,7 @@ window.fimApi = {
 
   getKicks : function(params, requestSettings) {
     var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds', 'userIds']), {
-      'fim3_sessionHash' : window.sessionHash,
-      'fim3_userId' :  window.userId,
+      'access_token' : window.sessionHash,
       'fim3_format' : 'json',
       'roomIds' : '',
       'userIds' : ''
@@ -303,8 +295,7 @@ window.fimApi = {
 
   getCensorLists : function(params, requestSettings) {
     var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds', 'listIds']), {
-      'fim3_sessionHash' : window.sessionHash,
-      'fim3_userId' :  window.userId,
+      'access_token' : window.sessionHash,
       'fim3_format' : 'json',
       'roomIds' : '',
       'listIds' : '',
@@ -339,8 +330,7 @@ window.fimApi = {
 
   getActiveUsers : function(params, requestSettings) {
     var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds', 'userIds']), {
-      'fim3_sessionHash' : window.sessionHash,
-      'fim3_userId' :  window.userId,
+      'access_token' : window.sessionHash,
       'fim3_format' : 'json',
       'roomIds' : '',
       'userIds' : '',
@@ -378,8 +368,7 @@ window.fimApi = {
         type: 'get',
         url: directory + 'api/acHelper.php',
         data: {
-          'fim3_sessionHash' : window.sessionHash,
-          'fim3_userId' :  window.userId,
+          'access_token' : window.sessionHash,
           'fim3_format' : 'json',
           'list' : list,
           'search' : search.term
@@ -396,8 +385,7 @@ window.fimApi = {
 
   editFile : function(params, requestSettings) {
     var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['parentalFlags']), {
-      'fim3_sessionHash' : window.sessionHash,
-      'fim3_userId' :  window.userId,
+      'access_token' : window.sessionHash,
       'fim3_format' : 'json',
       'action' : 'create',
       'daataEncode' : 'base64',
@@ -431,8 +419,7 @@ window.fimApi = {
 
   sendMessage : function(params, requestSettings) {
     var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['parentalFlags']), {
-      'fim3_sessionHash' : window.sessionHash,
-      'fim3_userId' :  window.userId,
+      'access_token' : window.sessionHash,
       'fim3_format' : 'json',
       'roomId' : null,
       'confirmed' : false, // TODO

@@ -10,8 +10,8 @@ popup = {
     function login_success(data) {
       $('#loginDialogue').dialog('close'); // Close any open login forms.
 
-      if (!userPermissions.view) dia.info('You are now logged in as ' + activeLogin.userData.userName + '. However, you are not allowed to view and have been banned by an administrator.', 'Logged In'); // dia.error(window.phrases.errorBanned);
-      else if (!userPermissions.post) dia.info('You are now logged in as ' + activeLogin.userData.userName + '. However, you are not allowed to post and have been silenced by an administrator. You may still view rooms which allow you access.', 'Logged In'); // dia.error(window.phrases.errorBanned);)
+      if (!permissions.view) dia.info('You are now logged in as ' + activeLogin.userData.userName + '. However, you are not allowed to view and have been banned by an administrator.', 'Logged In'); // dia.error(window.phrases.errorBanned);
+      else if (!permissions.post) dia.info('You are now logged in as ' + activeLogin.userData.userName + '. However, you are not allowed to post and have been silenced by an administrator. You may still view rooms which allow you access.', 'Logged In'); // dia.error(window.phrases.errorBanned);)
       else dia.info('You are now logged in as ' + activeLogin.userData.userName + '.', 'Logged In');
     }
 
@@ -29,7 +29,7 @@ popup = {
 
     function login_standard() {
       standard.login({
-        userName : $('#loginForm > #userName').val(),
+        username : $('#loginForm > #userName').val(),
         password : $('#loginForm > #password').val(),
         rememberMe : $('#loginForm > #rememberme').is('checked'),
         finish : login_success,

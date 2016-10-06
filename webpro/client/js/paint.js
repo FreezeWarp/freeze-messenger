@@ -377,9 +377,9 @@ $.when(
 
 
     /*** Initial Login ***/
-    if ($.cookie('webpro_userId') > 0) {
+    if ($.cookie('webpro_username') > 0) {
       standard.login({
-        userId : $.cookie('webpro_userId'),
+        username : $.cookie('webpro_username'),
         password : $.cookie('webpro_password'),
         error : function() {
           if (!window.userId) popup.login(); // The user is not actively logged in.

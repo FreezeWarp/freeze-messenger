@@ -90,21 +90,19 @@ var standard = {
     if (options.start) options.start();
 
     fimApi.login({
-      'userId' : options.userId,
-      'userName' : options.userName,
+      'username' : options.username,
       'password' : options.password,
-      'clientCode' : 'webpro30000'
+      'client_id' : 'WebPro'
     }, {
       callback : function(activeLogin) {
         window.activeLogin = activeLogin;
         window.userId = activeLogin.userData.userId;
         window.anonId = activeLogin.anonId;
-        window.sessionHash = activeLogin.sessionHash;
-        window.userPermissions = activeLogin.userPermissions;
-        window.adminPermissions = activeLogin.adminPermissions;
+        window.sessionHash = activeLogin.access_token;
+        window.permissions = activeLogin.permissions;
 
         if (!anonId) {
-          $.cookie('webpro_userId', userId, { expires : 14 });
+          $.cookie('webpro_username', options.username, { expires : 14 });
           $.cookie('webpro_password', options.password, { expires : 14 }); // We will encrypt this in B3 or later -- it isn't a priority for now. (TODO)
         }
 
@@ -131,7 +129,7 @@ var standard = {
 
 
   logout : function() {
-    $.cookie('webpro_userId', null);
+    $.cookie('webpro_username', null);
     $.cookie('webpro_password', null);
 
     popup.login();
