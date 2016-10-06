@@ -54,7 +54,7 @@ if ((bool) ini_get('allow_url_fopen') === false) {
 
 /* Version Requirement, Magic Quotes, Display Errors and Register Globals */
 
-error_reporting(~E_WARNING & ~E_NOTICE); // There's no shortage of warnings and notices, so let's not show those. (Yes, that's not a good thing. No, I don't really want to fix them all right now.)
+error_reporting(~E_NOTICE & ~E_USER_NOTICE); // There's no shortage of warnings and notices, so let's not show those. (Yes, that's not a good thing. No, I don't really want to fix them all right now.)
 
 $phpVersion = floatval(PHP_VERSION);
 if ($phpVersion < 5.2) { // We won't bother supporting older PHP; too much hassle. We will also raise this to 5.3 in the next version.
