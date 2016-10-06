@@ -77,8 +77,6 @@ if (count($smilies)) {
   foreach ($smilies AS $smilie) {
     $smilies2[$smilie['emoticonText']] = $forumUrlS . $smilie['emoticonFile'];
   }
-
-  $searchText2 = implode('|', $searchText);
 }
 
 
