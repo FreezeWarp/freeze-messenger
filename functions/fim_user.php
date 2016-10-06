@@ -220,14 +220,33 @@ class fimUser
 
     private function populateFromArray($userData)
     {
-        $this->resolved = array_diff($this->resolved, array_values($userData)); // The resolution process in __set modifies the data based from an array in several ways. As a result, if we're importing from an array a second time, we either need to ignore the new value or, as in this case, uncheck the resolve[] entries to have them reparsed when __set fires.
+        if ($userData) {
+            $this->resolved = array_diff($this->resolved, array_values($userData)); // The resolution process in __set modifies the data based from an array in several ways. As a result, if we're importing from an array a second time, we either need to ignore the new value or, as in this case, uncheck the resolve[] entries to have them reparsed when __set fires.
 
-        foreach ($userData AS $attribute => $value) {
-            if (!isset($this->userDataConversion[$attribute]))
-                trigger_error("fimUser was passed a userData array containing '$attribute', which is unsupported.", E_USER_NOTICE);
-            else
-                $this->__set($this->userDataConversion[$attribute], $value);
+            foreach ($userData AS $attribute => $value) {
+                if (!isset($this->userDataConversion[$attribute]))
+                    trigger_error("fimUser was passed a userData array containing '$attribute', which is unsupported.", E_USER_NOTICE);
+                else
+                    $this->__set($this->userDataConversion[$attribute], $value);
+            }
+
+            return true;
         }
+        else {
+            return false;
+        }
+    }
+
+
+    private function mapDatabaseProperty($property) {
+        return array_flip($this->userDataConversion)[$property];
+    }
+
+
+    public function resolve($properties) {
+        global $database;
+
+        return $this->populateFromArray($database->where(array('userId' => $this->id))->select(array($database->sqlPrefix . 'users' => array_merge(array('userId'), array_map(array($this, 'mapDatabaseProperty'), array_diff($properties, $this->resolved)))))->getAsArray(false));
     }
 
     /* Do I even remember what this was going to be for? Not really. */

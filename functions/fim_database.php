@@ -1070,8 +1070,7 @@ class fimDatabase extends databaseSQL
       else return 0;
     }
     else {
-      if (!$user->resolve()) throw new Exception('hasPermission was called without a valid user.'); // Require all user information.
-      if (!$room->resolve()) throw new Exception('hasPermission was called without a valid room.'); // Require all room information.
+      if (!$user->resolve(array('socialGroupIds', 'parentalAge', 'parentalFlags'))) throw new Exception('hasPermission was called without a valid user.'); // Make sure we know the room type and alias in addition to ID.
 
 
 
