@@ -15,6 +15,7 @@ class fimUser
     private $messageFormatting;
     private $defaultRoomId;
     private $profile;
+    private $options;
 
     private $anonId;
 
@@ -71,7 +72,7 @@ class fimUser
             $this->id = false;
 
         else
-            throw new Exception('Invalid user data specified -- must either be an associative array corresponding to a table row, a user ID, or false (to create a user, etc.)');
+            throw new fimError('fimUserInvalidConstruct', 'Invalid user data specified -- must either be an associative array corresponding to a table row, a user ID, or false (to create a user, etc.)');
 
         $this->userData = $userData;
     }
@@ -86,7 +87,7 @@ class fimUser
             // Find selection group
 
             if (isset(array_flip($this->userDataConversion)[$property])) {
-                echo $needle = array_flip($this->userDataConversion)[$property];
+                $needle = array_flip($this->userDataConversion)[$property];
                 $selectionGroup = array_values(array_filter($this->userDataPullGroups, function ($var) use ($needle) {
                     return strpos($var, $needle) !== false;
                 }))[0];
@@ -108,7 +109,11 @@ class fimUser
     public function __set($property, $value)
     {
         global $config, $loginConfig;
-        $this->{$property} = $value;
+
+        if (property_exists($this, $property))
+            $this->{$property} = $value;
+        else
+            throw new fimError("fimUserBadProperty", "fimUser does not have property '$property'");
 
         // If we've already processed the value once, it generally won't need to be reprocessed. Permissions, for instance, may be altered intentionally. We do make an exception for setting integers to what should be arrays -- we will reprocess in this case.
         if (!in_array($property, $this->resolved) ||
@@ -217,8 +222,12 @@ class fimUser
     {
         $this->resolved = array_diff($this->resolved, array_values($userData)); // The resolution process in __set modifies the data based from an array in several ways. As a result, if we're importing from an array a second time, we either need to ignore the new value or, as in this case, uncheck the resolve[] entries to have them reparsed when __set fires.
 
-        foreach ($userData AS $attribute => $value)
-            $this->__set($this->userDataConversion[$attribute], $value);
+        foreach ($userData AS $attribute => $value) {
+            if (!isset($this->userDataConversion[$attribute]))
+                trigger_error("fimUser was passed a userData array containing '$attribute', which is unsupported.", E_USER_NOTICE);
+            else
+                $this->__set($this->userDataConversion[$attribute], $value);
+        }
     }
 
     /* Do I even remember what this was going to be for? Not really. */
