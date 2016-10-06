@@ -377,7 +377,7 @@ $.when(
 
 
     /*** Initial Login ***/
-    if ($.cookie('webpro_username') > 0) {
+    if ($.cookie('webpro_username')) {
       standard.login({
         username : $.cookie('webpro_username'),
         password : $.cookie('webpro_password'),
