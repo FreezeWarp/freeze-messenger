@@ -27,7 +27,8 @@ class fimError extends Exception {
     ));
 
     if ($this->displayBacktrace) {
-      $backtrace = debug_backtrace();
+      $backtrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
+      array_shift($backtrace); // Omits this function, fimError->trigger, from the backtrace.
 
       $errorData['file'] = $backtrace[1]['file'];
       $errorData['line'] = $backtrace[1]['line'];
