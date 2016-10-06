@@ -106,7 +106,7 @@ else if (isset($_REQUEST['grant_type'])) {
     }
 
     $oauthResponse = $oauthServer->handleTokenRequest($oauthRequest);
-    $user = new fimUser($userC->getUserId());
+    $user = new fimUser((int) $userC->getUserId());
 
     if ($oauthResponse->getStatusCode() === 200) {
         $apiData = new apiData();
