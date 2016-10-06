@@ -215,7 +215,7 @@ class fimCache extends generalCache {
   
   ////* Censor Lists *////
   ////* Caches Entire Table as censorLists[listId] = [listId, listName, listType, options] *////
-  public function getCensorLists($listIndex) {    
+  public function getCensorLists($listIndex) {
     global $sqlPrefix, $config;
   	
    if ($this->issetMemory('fim_censorLists')) {
@@ -265,7 +265,8 @@ class fimCache extends generalCache {
       $censorWords = $this->get('fim_censorWords');
     }
     else {
-      $censorWords = $this->database->getCensorWords()->getAsArray();
+      $censorWordsDatabase = $this->database->getCensorWords()->getAsArray();
+      $censorWords = array();
 
       foreach ($censorWordsDatabase AS $censorWord) {
         $censorWords[$censorWord['word']] = $censorWord;

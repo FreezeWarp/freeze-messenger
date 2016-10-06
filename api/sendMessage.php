@@ -71,22 +71,17 @@ $blockWordApi = array(
   'reason' => '',
 );
 
-if ($censorWordsCache['byWord']) {
-  foreach ($censorWordsCache['byWord'] AS $word) {
-    if ($request['ignoreBlock'] && $word['severity'] === 'confirm') continue;
+foreach ($generalCache->getActiveCensorWords($room->roomId) AS $word) {
+  if ($request['ignoreBlock'] && $word['severity'] === 'confirm') continue;
 
-    $searchText[] = addcslashes(strtolower($word['word']), '^&|!$?()[]<>\\/.+*');
-  }
-
-
-  if ($searchText) {
-    preg_match('/(' . implode('|',$searchText) . ')/i', $request['message'], $matches);
-    
-    if ($matches[1]) {
-      $blockedWord = strtolower($matches[1]);
-      $blockedWordText = $censorWordsCache['byWord'][$blockedWord]['word'];
-      $blockedWordReason = $censorWordsCache['byWord'][$blockedWord]['param'];
-      $blockedWordSeverity = $censorWordsCache['byWord'][$blockedWord]['severity'];
+  if (stripos($request['message'], $word['word']) !== FALSE) {
+    switch ($word['severity']) {
+      case 'block':
+        new fimError('blockCensor', 'The message can not be sent because a word is not allowed.', array('word' => $word['word'], 'reason' => $word['param']));
+        break;
+      case 'confirm':
+        new fimError('confirmCensor', 'The message must be resent because a word may not be allowed.', array('word' => $word['word'], 'reason' => $word['param']));
+        break;
     }
   }
 }
@@ -102,8 +97,6 @@ elseif (in_array($request['flag'], array('image', 'video', 'url', 'html', 'audio
   && !filter_var($request['message'], FILTER_VALIDATE_URL, FILTER_FLAG_SCHEME_REQUIRED)) new fimError('badUrl'); // If the message is supposed to be a URI, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
 elseif ($request['flag'] === 'email'
   && !filter_var($request['message'], FILTER_VALIDATE_EMAIL)) new fimError('badUrl'); // If the message is suppoed to be an email, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
-elseif ($blockedWordSeverity === 'block') new fimError('blockCensor', 'The message can not be sent because a word is not allowed.', array('word' => $blockedWordText, 'reason' => $blockedWordReason));
-elseif ($blockedWordSeverity === 'confirm') new fimError('confirmCensor', 'The message must be resent because a word may not be allowed.', array('word' => $blockedWordText, 'reason' => $blockedWordReason));
 elseif (strpos($request['message'], '/kick') === 0) { // TODO
   $kickData = preg_replace('/^\/kick (.+?)(| ([0-9]+?))$/i','$1,$2',$request['message']);
   $kickData = explode(',',$kickData);
