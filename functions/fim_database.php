@@ -1057,7 +1057,7 @@ class fimDatabase extends databaseSQL
    *
    * @author Joseph Todd Parsons <josephtparsons@gmail.com>
    */
-  public function hasPermission($user, $room) {
+  public function hasPermission(fimUser $user, fimRoom $room) {
     $permissionsCached = $this->getPermissionCache($room->id, $user->id);
     if ($permissionsCached > -1) return $permissionsCached; // -1 equals an outdated permission.
 
