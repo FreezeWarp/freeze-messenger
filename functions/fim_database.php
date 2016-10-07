@@ -1543,7 +1543,7 @@ class fimDatabase extends databaseSQL
       'userGroupId'       => $user->mainGroupId,
       'avatar'            => $user->avatar,
       'profile'           => $user->profile,
-      'userNameFormat'    => $user->nameFormat,
+      'userNameFormat'    => $user->userNameFormat,
       'messageFormatting' => $user->messageFormatting,
       'text'              => $messageText,
       'flag'              => $messageFlag,
@@ -1665,7 +1665,7 @@ class fimDatabase extends databaseSQL
       ), array(
         'senderId'          => $user->id,
         'senderName'        => $user->name,
-        'senderNameFormat'  => $user->nameFormat,
+        'senderNameFormat'  => $user->userNameFormat,
         'roomName'          => $room->name,
         'messageId'         => $messageId,
         'time'              => $this->now(),
