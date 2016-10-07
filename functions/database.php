@@ -180,13 +180,13 @@ abstract class database
                 throw new $this->errorFormatFunction('dbError', json_encode(array(
                     "Message" => $errorMessage,
                     "Database Error" => $this->getLastError(),
-                    "Source Query" => $this->getLastQuery(),
+                    "Error Data" => $errorData,
+                    "Query Log" => $this->queryLog,
                     "Stack Trace" => debug_backtrace(false),
-                    "Error Data" => $errorData
                 )));
             }
             else {
-                throw new Exception('A database error has occured.');
+                throw new Exception('A database error has occured (' . $this->getLastError() . '). Additional Data: "' . $errorData . '"');
             }
         }
 

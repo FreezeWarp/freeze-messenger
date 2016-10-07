@@ -825,7 +825,7 @@ class databaseSQL extends database
         else {
             $this->errors[] = $this->functionMap('error');
 
-            $this->triggerError("badQuery");
+            $this->triggerError("badQuery", $query);
 
             return false;
         }
