@@ -25,20 +25,15 @@ var standard = {
 
             $('#archiveNext').bind('click', function() {
                 standard.archive.nextPage();
-                standard.archive.retrieve();
             });
 
             $('#archivePrev').bind('click', function() {
                 standard.archive.prevPage();
-                standard.archive.retrieve();
             });
 
             $('#archiveDialogue > table').on('click', '.updateArchiveHere', function() {
-//        $('#searchUser').val(''); // Triggers change event.
-//        $('#searchText').val(''); // "
-
-                standard.archive.update('firstMessage', $(this).attr('data-messageId'));
-                standard.archive.update('lastMessage', 0);
+                standard.archive.options.firstMessage = $(this).attr('data-messageId');
+                this.options.lastMessage = 0;
 
                 standard.archive.retrieve();
             });
@@ -58,12 +53,27 @@ var standard = {
                 'search' : standard.archive.options.searchText,
                 'messageIdEnd' : standard.archive.options.lastMessage,
                 'messageIdStart' : standard.archive.options.firstMessage,
+                'messageHardLimit' : $('#resultLimit option:selected').val(),
                 'archive' : 1,
                 'sortOrder' : 'desc'
             }, {'each' : function(messageData) {
                 $('#archiveMessageList').append(fim_messageFormat(messageData, 'table'));
                 standard.archive.messageData[messageData.messageId] = messageData;
             }});
+        },
+
+        nextPage : function () {
+            this.options.lastMessage = $('#archiveMessageList tr:last td[data-messageid]').attr('data-messageid');
+            this.options.firstMessage = 0;
+
+            this.retrieve();
+        },
+
+        prevPage : function () {
+            this.options.firstMessage = $('#archiveMessageList tr:first td[data-messageid]').attr('data-messageid');
+            this.options.lastMessage = 0;
+
+            this.retrieve();
         },
 
         update : function (option, value) {
