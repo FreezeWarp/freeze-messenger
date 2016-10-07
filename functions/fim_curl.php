@@ -5,6 +5,8 @@
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 class curlRequest {
+  public $response;
+
   /**
   * Initialises class.
   *
@@ -94,9 +96,16 @@ class curlRequest {
         return false;
       }
       else {
-        $result = curl_exec($ch);
-        curl_close($ch);
-        return $result;
+        $this->response = curl_exec($ch);
+
+        if (curl_getinfo($ch, CURLINFO_HTTP_CODE) === 200) {
+          curl_close($ch);
+          return $this->response;
+        }
+        else {
+          curl_close($ch);
+          return false;
+        }
       }
     }
     else {
@@ -135,11 +144,24 @@ class curlRequest {
       else {
         // split the result header from the content
         $result = explode("\r\n\r\n", $result, 2); // Return headers in [0], return content in [1].
-        $content = isset($result[1]) ? $result[1] : '';
+        $this->response = isset($result[1]) ? $result[1] : '';
 
         // return as structured array:
-        return $content;
+        return $this->response;
       }
+    }
+  }
+
+
+  function getAsJson() {
+    $json = json_decode($this->response, true);
+
+    if (json_last_error() == JSON_ERROR_NONE) {
+      return $json;
+    }
+    else {
+      return false;
+      // throw new fimError("cURLBadJson", "Invalid JSON from cURL (Error: '" . json_last_error() . "')'")
     }
   }
 }
