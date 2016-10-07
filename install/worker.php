@@ -214,9 +214,11 @@ switch ($_REQUEST['phase']) {
 
   case 2: // Config File
   require('../functions/fim_general.php');
+  require('../functions/cache.php');
+  require('../functions/fim_cache.php'); // Cache (minimally used at this stage, but could be used more in the future)
 
   // Note: This writes a file to the server, which is a very sensitive action (and for a reason is never done elsewhere). This is NOT secure, but should only be used by users wishing to install the product.
-
+//var_dump($_GET); die();
   $driver = urldecode($_GET['db_driver']);
   $host = urldecode($_GET['db_host']);
   $port = urldecode($_GET['db_port']);
@@ -245,6 +247,7 @@ switch ($_REQUEST['phase']) {
 
   if ($forum == 'vanilla') {
     $database = new fimDatabase($host, $port, $userName, $password, $databaseName, $driver, $prefix);
+    $generalCache = new fimCache(null, 'none', $database);
 
     $user = new fimUser(1);
     if (!$user->set(array(
@@ -257,24 +260,12 @@ switch ($_REQUEST['phase']) {
   }
 
   $find = array(
-    '$dbConnect[\'core\'][\'driver\'] = \'mysqli\';
-$dbConnect[\'slave\'][\'driver\'] = \'mysqli\';
-$dbConnect[\'integration\'][\'driver\'] = \'mysqli\';',
-    '$dbConnect[\'core\'][\'host\'] = \'localhost\';
-$dbConnect[\'slave\'][\'host\'] = \'localhost\';
-$dbConnect[\'integration\'][\'host\'] = \'localhost\';',
-    '$dbConnect[\'core\'][\'port\'] = 3306;
-$dbConnect[\'slave\'][\'port\'] = 3306;
-$dbConnect[\'integration\'][\'port\'] = 3306;',
-    '$dbConnect[\'core\'][\'username\'] = \'\';
-$dbConnect[\'slave\'][\'username\'] = \'\';
-$dbConnect[\'integration\'][\'username\'] = \'\';',
-    '$dbConnect[\'core\'][\'password\'] = \'\';
-$dbConnect[\'slave\'][\'password\'] = \'\';
-$dbConnect[\'integration\'][\'password\'] = \'\';',
-    '$dbConnect[\'core\'][\'database\'] = \'\';
-$dbConnect[\'slave\'][\'database\'] = \'\';
-$dbConnect[\'integration\'][\'database\'] = \'\';',
+    "\$dbConnect['core']['driver'] = 'mysqli';\n\$dbConnect['slave']['driver'] = 'mysqli';\n\$dbConnect['integration']['driver'] = 'mysqli';",
+    "\$dbConnect['core']['host'] = 'localhost';\n\$dbConnect['slave']['host'] = 'localhost';\n\$dbConnect['integration']['host'] = 'localhost';",
+    "\$dbConnect['core']['port'] = 3306;\n\$dbConnect['slave']['port'] = 3306;\n\$dbConnect['integration']['port'] = 3306;",
+    "\$dbConnect['core']['username'] = '';\n\$dbConnect['slave']['username'] = '';\n\$dbConnect['integration']['username'] = '';",
+    "\$dbConnect['core']['password'] = '';\n\$dbConnect['slave']['password'] = '';\n\$dbConnect['integration']['password'] = '';",
+    "\$dbConnect['core']['database'] = '';\n\$dbConnect['slave']['database'] = '';\n\$dbConnect['integration']['database'] = '';",
     '$dbConfig[\'vanilla\'][\'tablePrefix\'] = \'\';',
     '$dbConfig[\'integration\'][\'tablePrefix\'] = \'\';',
     '$cacheConnect[\'driver\'] = \'\';',
@@ -293,24 +284,12 @@ $dbConnect[\'integration\'][\'database\'] = \'\';',
   );
 
   $replace = array(
-    '$dbConnect[\'core\'][\'driver\'] = \'' . addslashes($driver) . '\';
-$dbConnect[\'slave\'][\'driver\'] = \'' . addslashes($driver) . '\';
-$dbConnect[\'integration\'][\'driver\'] = \'' . addslashes($driver) . '\';',
-    '$dbConnect[\'core\'][\'host\'] = \'' . addslashes($host) . '\';
-$dbConnect[\'slave\'][\'host\'] = \'' . addslashes($host) . '\';
-$dbConnect[\'integration\'][\'host\'] = \'' . addslashes($host) . '\';',
-    '$dbConnect[\'core\'][\'port\'] = ' . addslashes($port) . ';
-$dbConnect[\'slave\'][\'port\'] = ' . addslashes($port) . ';
-$dbConnect[\'integration\'][\'port\'] = ' . addslashes($port) . ';',
-    '$dbConnect[\'core\'][\'username\'] = \'' . addslashes($userName) . '\';
-$dbConnect[\'slave\'][\'username\'] = \'' . addslashes($userName) . '\';
-$dbConnect[\'integration\'][\'username\'] = \'' . addslashes($userName) . '\';',
-    '$dbConnect[\'core\'][\'password\'] = \'' . addslashes($password) . '\';
-$dbConnect[\'slave\'][\'password\'] = \'' . addslashes($password) . '\';
-$dbConnect[\'integration\'][\'password\'] = \'' . addslashes($password) . '\';',
-    '$dbConnect[\'core\'][\'database\'] = \'' . addslashes($databaseName) . '\';
-$dbConnect[\'slave\'][\'database\'] = \'' . addslashes($databaseName) . '\';
-$dbConnect[\'integration\'][\'database\'] = \'' . addslashes($databaseName) . '\';',
+    "\$dbConnect['core']['driver'] = '" . addslashes($driver) . "';\n\$dbConnect['slave']['driver'] = '" . addslashes($driver) . "';\n\$dbConnect['integration']['driver'] = '" . addslashes($driver) . "';",
+    "\$dbConnect['core']['host'] = '" . addslashes($host) . "';\n\$dbConnect['slave']['host'] = '" . addslashes($host) . "';\n\$dbConnect['integration']['host'] = '" . addslashes($host) . "';",
+    "\$dbConnect['core']['port'] = '" . addslashes($port) . "';\n\$dbConnect['slave']['port'] = '" . addslashes($port) . "';\n\$dbConnect['integration']['port'] = '" . addslashes($port) . "';",
+    "\$dbConnect['core']['username'] = '" . addslashes($userName) . "';\n\$dbConnect['slave']['username'] = '" . addslashes($userName) . "';\n\$dbConnect['integration']['username'] = '" . addslashes($userName) . "';",
+    "\$dbConnect['core']['password'] = '" . addslashes($password) . "';\n\$dbConnect['slave']['password'] = '" . addslashes($password) . "';\n\$dbConnect['integration']['password'] = '" . addslashes($password) . "';",
+    "\$dbConnect['core']['database'] = '" . addslashes($databaseName) . "';\n\$dbConnect['slave']['database'] = '" . addslashes($databaseName) . "';\n\$dbConnect['integration']['database'] = '" . addslashes($databaseName) . "';",
     '$dbConfig[\'vanilla\'][\'tablePrefix\'] = \'' . addslashes($prefix) . '\';',
     '$dbConfig[\'integration\'][\'tablePrefix\'] = \'' . addslashes($forumTablePrefix) . '\';',
     '$cacheConnect[\'driver\'] = \'' . addslashes($cacheMethod) . '\';',
@@ -331,7 +310,6 @@ $dbConnect[\'integration\'][\'database\'] = \'' . addslashes($databaseName) . '\
 
 
   $baseNew = str_replace($find, $replace, $base);
-
   if (file_put_contents('../config.php', $baseNew)) {
     echo 'success';
   }
