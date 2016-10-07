@@ -360,23 +360,24 @@ class databaseSQL extends database
             case 'detect':
                 if (!$this->isTypeObject($values[1])) $values[1] = $this->str($values[1]);
 
-                if (!isset($values[1][0], $values[1][1])) throw new Exception('Invalid data: ' . print_r($values, true));
-                return $this->formatValue($values[1][0], $values[1][1]);
+                return $this->formatValue($values[1]->type, $values[1]->value);
                 break;
 
             case 'search':
                 return $this->stringQuoteStart . $this->stringFuzzy . $this->escape($values[1], 'search') . $this->stringFuzzy . $this->stringQuoteEnd;
                 break;
-            case 'string':
+            case 'string': case DatabaseTypeType::string:
                 return $this->stringQuoteStart . $this->escape($values[1], 'string') . $this->stringQuoteEnd;
                 break;
-            case 'integer':
+            case 'bool': case DatabaseTypeType::bool:
+                return $this->boolValues[$values[1]];
+            case 'integer': case DatabaseTypeType::integer:
                 return $this->intQuoteStart . (int)$this->escape($values[1], 'integer') . $this->intQuoteEnd;
                 break;
-            case 'timestamp':
+            case 'timestamp': case DatabaseTypeType::timestamp:
                 return $this->timestampQuoteStart . (int)$this->escape($values[1], 'timestamp') . $this->timestampQuoteEnd;
                 break;
-            case 'column':
+            case 'column': case DatabaseTypeType::column:
                 return $this->columnQuoteStart . $this->escape($values[1], 'column') . $this->columnQuoteEnd;
                 break;
             case 'columnA':
@@ -395,24 +396,25 @@ class databaseSQL extends database
                 return $this->indexQuoteStart . $this->escape($values[1], 'index') . $this->indexQuoteEnd;
                 break;
 
-            case 'equation':  // Only partially implemented, because equations are stupid. Don't use them if possible.
+            case 'equation': case DatabaseTypeType::equation:  // Only partially implemented, because equations are stupid. Don't use them if possible.
                 return preg_replace_callback('/\$([a-zA-Z]+)/', function ($matches) {
                     return $matches[1];
                 }, $values[1]);
                 break;
 
-            case 'array':
+            case 'array': case DatabaseTypeType::arraylist:
                 foreach ($values[1] AS &$item) {
-                    if (!$this->isTypeObject($item)) $item = $this->str($item);
+                    if (!$this->isTypeObject($item))
+                        $item = $this->str($item);
 
-                    $item = $this->formatValue($item[0], $item[1]);
+                    $item = $this->formatValue($item->type, $item->value);
                 }
 
                 return $this->arrayQuoteStart . implode($this->arraySeperator, $values[1]) . $this->arrayQuoteEnd; // Combine as list.
                 break;
 
             case 'columnArray':
-                foreach ($values[1] AS &$item) $this->formatValue('column', $item);
+                foreach ($values[1] AS &$item) $item = $this->formatValue('column', $item);
 
                 return $this->arrayQuoteStart . implode($this->arraySeperator, $values[1]) . $this->arrayQuoteEnd; // Combine as list.
                 break;
@@ -421,7 +423,7 @@ class databaseSQL extends database
                 $update = array();
 
                 foreach ($values[1] AS $column => $value) {
-                    $update[] = $this->formatValue('column', $column) . $this->comparisonTypes['e'] . $this->formatValue('detect', $value);
+                    $update[] = $this->formatValue('column', $column) . $this->comparisonTypes[DatabaseTypeComparison::assignment] . $this->formatValue('detect', $value);
                 }
 
                 return implode($update, $this->statementSeperator);
@@ -439,6 +441,10 @@ class databaseSQL extends database
                 break;
             case 'tableAlias' :
                 return $this->formatValue('table', $values[1]) . $this->tableAliasDivider . $this->formatValue('tableA', $values[2]);
+                break;
+
+            default:
+                throw new Exception("databaseSQL->formatValue does not recognise type '$type'");
                 break;
         }
     }
@@ -483,7 +489,7 @@ class databaseSQL extends database
 
 
         // Compatibility check. We're really not sure how true any of this, and we have no reason to support older versions, but meh.
-        switch ($driver) {
+        switch ($this->driver) {
             case 'mysql':
             case 'mysqli':
                 if ($strippedVersionParts[0] <= 4) { // MySQL 4 is a no-go.
@@ -647,11 +653,16 @@ class databaseSQL extends database
         switch ($this->language) {
             case 'mysql':
                 $this->comparisonTypes = array(
-                    'e' => '=', '!e' => '!=', 'in' => 'IN', '!in' => 'NOT IN',
-                    'lt' => '<', 'gt' => '>', 'lte' => '<=', 'gte' => '>=',
-                    'regex' => 'REGEXP',
-                    'search' => 'LIKE',
-                    'bAnd' => '&',
+                    DatabaseTypeComparison::equals => '=',
+                    DatabaseTypeComparison::assignment => '=',
+                    DatabaseTypeComparison::in => 'IN',
+                    DatabaseTypeComparison::notin => 'NOT IN',
+                    DatabaseTypeComparison::lessThan => '<',
+                    DatabaseTypeComparison::lessThanEquals=> '<=',
+                    DatabaseTypeComparison::greaterThan => '>',
+                    DatabaseTypeComparison::greaterThanEquals => '>=',
+                    DatabaseTypeComparison::search => 'LIKE',
+                    DatabaseTypeComparison::binaryAnd => '&',
                 );
 
                 $this->concatTypes = array(
@@ -705,11 +716,16 @@ class databaseSQL extends database
 
             case 'pgsql':
                 $this->comparisonTypes = array(
-                    'e' => '=', '!e' => '!=', 'in' => 'IN', '!in' => 'NOT IN',
-                    'lt' => '<', 'gt' => '>', 'lte' => '<=', 'gte' => '>=',
-                    'regex' => 'REGEXP',
-                    'search' => 'LIKE',
-                    'bAnd' => '&',
+                    DatabaseTypeComparison::equals => '=',
+                    DatabaseTypeComparison::assignment => '=',
+                    DatabaseTypeComparison::in => 'IN',
+                    DatabaseTypeComparison::notin => 'NOT IN',
+                    DatabaseTypeComparison::lessThan => '<',
+                    DatabaseTypeComparison::lessThanEquals=> '<=',
+                    DatabaseTypeComparison::greaterThan => '>',
+                    DatabaseTypeComparison::greaterThanEquals => '>=',
+                    DatabaseTypeComparison::search => 'LIKE',
+                    DatabaseTypeComparison::binaryAnd => '&',
                 );
 
                 $this->concatTypes = array(
@@ -1411,6 +1427,8 @@ LIMIT
 
         // $key is usually a column, $value is a formatted value for the select() function.
         foreach ($conditionArray AS $key => $value) {
+            /* @var $value DatabaseType */
+
             $i++;
 
             if (strstr($key, ' ') !== false) list($key) = explode(' ', $key); // A space can be used to reference the same key twice in different contexts. It's basically a hack, but it's better than using further arrays.
@@ -1418,14 +1436,10 @@ LIMIT
             if ($key === 'both' || $key === 'either' || $key === 'neither') { // TODO: neither?
                 $sideTextFull[$i] = $this->recurseBothEither($value, $reverseAlias, $key);
             } else {
-                /* Value is currently stored as:
-                 * array(TYPE, VALUE, COMPARISON) or just "VALUE" (which implies equals comparison and string type)
-                 *
-                 * Note: We do not want to include quotes/etc. in VALUE yet, because these theoretically could vary based on the comparison type. */
-
                 // Defaults
                 $sideTextFull[$i] = '';
-                if (!is_array($value)) $value = $this->str($value); // If value is string, treat it as default.
+                if (!is_object($value)) $value = $this->str($value);  // If value is not a DatabaseType, treat it as a string.
+                else if (get_class($value) !== 'DatabaseType') throw new Exception('Invalid class for value.');
 
 
                 // Side Text Left
@@ -1434,16 +1448,18 @@ LIMIT
 
 
                 // Comparison Operator
-                $symbol = $this->comparisonTypes[$value[2]];
+                $symbol = $this->comparisonTypes[$value->comparison];
 
 
                 // Side Text Right
-                if ($value[0] === 'empty')
+                if ($value->type === DatabaseTypeType::null)
                     $sideText['right'] = 'IS NULL';
-                elseif ($value[0] === 'column')
-                    $sideText['right'] = ($reverseAlias ? $reverseAlias[$value[1]] : $value[1]); // The value is a column, and should be returned as a reverseAlias. (Note that reverseAlias should have already called formatValue)
+
+                elseif ($value->type === DatabaseTypeType::column)
+                    $sideText['right'] = ($reverseAlias ? $reverseAlias[$value->value] : $value->value); // The value is a column, and should be returned as a reverseAlias. (Note that reverseAlias should have already called formatValue)
+
                 else
-                    $sideText['right'] = $this->formatValue(($value[2] === 'search' ? $value[2] : $value[0]), $value[1]); // The value is a data type, and should be processed as such.
+                    $sideText['right'] = $this->formatValue(($value->comparison === DatabaseTypeComparison::search ? 'search' : $value->type), $value->value); // The value is a data type, and should be processed as such.
 
 
                 // Side Text Full

@@ -48,39 +48,6 @@ abstract class database
 
     public $sqlPrefix;
 
-    protected $comparisonAliases = array(
-        'eq' => 'e',
-        'equal' => 'e',
-        'ne' => '!e',
-        'notequal' => '!e',
-        '!equal' => '!e',
-        '!eq' => '!e',
-
-        'lessthan' => 'lt',
-        '!gte' => 'lt',
-        'greaterthan' => 'gt',
-        '!lte' => 'gt',
-        '!gt' => 'lte',
-        '!greaterthan' => 'lte',
-        '!lt' => 'gte',
-        '!lessthan' => 'lte',
-
-        'notin' => '!in',
-
-        'regexp' => 'regex',
-
-        'like' => 'search',
-        'glob' => 'search',
-    );
-    protected $comparisonTypes = array(
-        'e', '!e',
-        'lt', 'gt',
-        'lte', 'gte',
-        'in', '!in',
-        'regex', 'search',
-        'band',
-    );
-
 
     /*********************************************************
      ************************ START **************************
@@ -202,7 +169,7 @@ abstract class database
      * @return void
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    protected function triggerError($errorMessage, $errorData, $errorType, $suppressErrors = false)
+    protected function triggerError($errorMessage, $errorData = '', $errorType = false, $suppressErrors = false)
     {
         if ($this->printErrors) { // Trigger error is not guaranteed to output the error message to the client. If this flag is set, we send the message before triggering the error. (At the same time, multiple messages may appear.)
             echo $errorMessage;
@@ -639,51 +606,98 @@ abstract class database
 
     public function type($type, $value = '', $comp = 'e')
     {
-        switch ($type) {
-            case 'int':
-            case 'integer':
-                return array('integer', (int)$value, $comp);
-                break;
-            case 'ts':
-            case 'timestamp':
-                return array('timestamp', (int)$value, $comp);
-                break;
-            case 'str':
-            case 'string':
-                return array('string', (string)$value, $comp);
-                break;
-            case 'col':
-            case 'column':
-                return array('column', (string)$value, $comp);
-                break;
-            case 'flt':
-            case 'float':
-                return array('float', (float)$value, $comp);
-                break;
-            case 'bool':
-                return array('bool', (bool)$value, $comp);
-                break;
-            case 'empty':
-                return array('empty');
-                break;
-            case 'equation':
-                return array('equation', (string)$value, $comp);
+        switch ($comp) {
+            case 'e':
+                $typeComp = DatabaseTypeComparison::equals;
                 break;
 
-            case 'arr':
-            case 'array':
-                if (count($value) === 0) {
-                    $this->triggerError('Empty arrays can not be specified.', false, 'validation');
-                }
-                return array('array', (array)$value, ($comp === 'in' || $comp === 'notin' ? $comp : 'in'));
+            case 'lt':
+                $typeComp = DatabaseTypeComparison::lessThan;
+                break;
+
+            case 'lte':
+                $typeComp = DatabaseTypeComparison::lessThanEquals;
+                break;
+
+            case 'gt':
+                $typeComp = DatabaseTypeComparison::greaterThan;
+                break;
+
+            case 'gte':
+                $typeComp = DatabaseTypeComparison::greaterThanEquals;
+                break;
+
+            case 'search':
+                $typeComp = DatabaseTypeComparison::search;
+                break;
+
+            case 'in':
+                $typeComp = DatabaseTypeComparison::in;
+                break;
+
+            case 'notin':
+                $typeComp = DatabaseTypeComparison::notin;
+                break;
+
+            case 'bAnd':
+                $typeComp = DatabaseTypeComparison::binaryAnd;
+                break;
+
+            default:
+                throw new Exception("Invalid comparison '$comp'");
+                break;
+        }
+
+
+        switch ($type) {
+            case 'int': case 'integer':
+                return new DatabaseType(DatabaseTypeType::integer, (int)$value, $typeComp);
+                break;
+
+            case 'ts': case 'timestamp':
+            return new DatabaseType(DatabaseTypeType::timestamp, (int)$value, $typeComp);
+                break;
+
+            case 'str': case 'string':
+            return new DatabaseType(DatabaseTypeType::string, (string)$value, $typeComp);
+                break;
+
+            case 'col': case 'column':
+            return new DatabaseType(DatabaseTypeType::column, (string)$value, $typeComp);
+                break;
+
+            case 'flt': case 'float':
+                throw new Exception('Float is currently unimplemented.');
+                return new DatabaseType(DatabaseTypeType::float, (string)$value, $typeComp);
+                break;
+
+            case 'bool':
+                return new DatabaseType(DatabaseTypeType::bool, (bool)$value, DatabaseTypeComparison::equals);
+                break;
+
+            case 'empty':
+                return new DatabaseType(DatabaseTypeType::null, DatabaseType::null, DatabaseTypeComparison::equals);
+                break;
+
+            case 'equation':
+                return new DatabaseType(DatabaseTypeType::equation, (string)$value, $typeComp);
+                break;
+
+            case 'arr': case 'array':
+                if (count($value) === 0) $this->triggerError('Empty arrays can not be specified.', false, 'validation');
+
+                return new DatabaseType(DatabaseTypeType::arraylist, (array)$value, $typeComp);
+                break;
+
+            default:
+                $this->triggerError("Unrecognised type '$type'");
                 break;
         }
     }
 
     protected function isTypeObject($type)
     {
-        if (is_array($type)) return true;
-        else return false;
+        return (is_object($type) && get_class($type) === 'DatabaseType');
     }
 
     public function in($value)
@@ -698,7 +712,7 @@ abstract class database
 
     public function bool($value)
     {
-        return $this->type('bool', $value, 'e');
+        return $this->type('bool', $value);
     }
 
     /**
@@ -796,7 +810,7 @@ abstract class database
      */
     public function col($value, $comp = 'e')
     {
-        return array('column', (string)$value, $comp);
+        return $this->type('column', $value, $comp);
     }
 
     /*********************************************************
@@ -1018,6 +1032,57 @@ class databaseResult
         } else {
             return false; // Query data is false or null, return false.
         }
+    }
+}
+
+class DatabaseTypeType {
+    const __default = self::string;
+
+    const null = 0;
+    const string = 1;
+    const integer = 2;
+    const timestamp = 3;
+    const arraylist = 4;
+    const bool = 5;
+    const column = 6;
+    const equation = 7;
+}
+
+class DatabaseTypeComparison {
+    const __default = self::equals;
+
+    const notin = -4;
+    const lessThan = -2;
+    const lessThanEquals = -1;
+    const equals = 0;
+    const greaterThan = 1;
+    const greaterThanEquals = 2;
+    const search = 3;
+    const in = 4;
+    const binaryAnd = 5;
+
+    const assignment = 1000;
+}
+
+class DatabaseType {
+    const null = null;
+
+    public $type;
+    public $value;
+    public $comparison;
+
+    public function __construct($type, $value, $comparison) {
+        /* Validation Checks */
+        if ($type === DatabaseTypeType::arraylist && !($comparison === DatabaseTypeComparison::in || $comparison === DatabaseTypeComparison::notin))
+            throw new Exception('Arrays can only be compared with in and notin.');
+        if ($type !== DatabaseTypeType::arraylist && ($comparison === DatabaseTypeComparison::in || $comparison === DatabaseTypeComparison::notin)) {
+            throw new Exception('in and notin can only be used with arrays.');
+        }
+
+
+        $this->type = $type;
+        $this->value = $value;
+        $this->comparison = $comparison;
     }
 }
 
