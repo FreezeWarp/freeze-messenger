@@ -290,12 +290,12 @@ var standard = {
         'roomIds' : [roomIdLocal],
         'permLevel' : 'view'
       }, {'each' : function(roomData) {
-        if (!roomData.permissions.canView) { // If we can not view the room
+        if (!roomData.permissions.view) { // If we can not view the room
           window.roomId = false; // Set the internal roomId false.
           popup.selectRoom(); // Prompt the user to select a new room.
           dia.error('You have been restricted access from this room. Please select a new room.');
         }
-        else if (!roomData.permissions.canPost) { // If we can view, but not post
+        else if (!roomData.permissions.post) { // If we can view, but not post
           dia.error('You are not allowed to post in this room. You will be able to view it, though.');
           disableSender();
         }
@@ -304,7 +304,7 @@ var standard = {
         }
 
 
-        if (roomData.permissions.canView) { // If we can view the room...
+        if (roomData.permissions.view) { // If we can view the room...
           roomId = roomData.roomId;
 
           $('#roomName').html(roomData.roomName); // Update the room name.
