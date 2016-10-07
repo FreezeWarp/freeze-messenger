@@ -99,7 +99,7 @@ function fim_decrypt($message, $index = array('text')) {
   if (!isset($message['salt'], $message['iv'])) throw new Exception('fim_decrypt requires message[salt] and message[iv]'); // Make sure the proper indexes exist (just in case).
 
   if ($message['salt'] && $message['iv']) { // Make sure both the salt and the IV are non-false.
-    $salt = $salts[$message['salt']]; // Get the proper salt.
+    $salt = str_pad($salts[$message['salt']], 24, "."); // Get the proper salt.
 
     if ($index) { // If indexes are specified...
       foreach ((array) $index AS $index2) { // Run through each index. If the specified index variable is a string instead of an array, we will cast it as an array ("example" becomes array("example")).
@@ -136,7 +136,7 @@ function fim_decrypt($message, $index = array('text')) {
 function fim_encrypt($data) {
   global $salts, $config;
 
-  $salt = end($salts); // Move the file pointer to the last entry in the array (and return its value)
+  $salt = str_pad(end($salts), 24, "."); // Move the file pointer to the last entry in the array (and return its value)
   $saltNum = key($salts); // Get the key/id of the corrosponding salt.
 
   $iv_size = mcrypt_get_iv_size(MCRYPT_3DES, MCRYPT_MODE_CBC); // Get the length of the IV for the method used
@@ -165,7 +165,7 @@ function fim_encrypt($data) {
     $newData = base64_encode( // See comments above.
       rtrim(
         mcrypt_encrypt(
-          MCRYPT_3DES, str_pad($salt, 24, "."), $data, MCRYPT_MODE_CBC, base64_decode($iv)
+          MCRYPT_3DES, $salt, $data, MCRYPT_MODE_CBC, base64_decode($iv)
         ),"\0"
       )
     );
