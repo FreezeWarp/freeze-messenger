@@ -96,8 +96,14 @@ class apiData {
     if (is_array($value)) return $this->outputJson($value);
     elseif (is_object($value) && get_class($value) === 'apiOutputList') {
       $values = $value->getArray();
-      foreach ($values AS &$v) $v = $this->formatJsonValue($v);
-      return '[' . implode(',', $values) . ']';
+
+      if (count($values)) {
+        foreach ($values AS &$v) $v = $this->formatJsonValue($v);
+        return '[' . implode(',', $values) . ']';
+      }
+      else {
+        return '[]';
+      }
     }
     elseif (is_object($value)) return $this->formatJsonValue(get_object_vars($value));
     elseif ($value === true)   return 'true';
