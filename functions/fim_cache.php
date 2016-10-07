@@ -354,6 +354,46 @@ class fimCache extends generalCache {
     
     return $this->returnValue($activeCensorWords);
   }
+
+
+  /**
+   *
+   * @param $text - The text to censor
+   * @param null $roomId - The roomID whose rules should be applied. If not specified, the global rules (for, e.g., usernames) will be used
+   * @param bool $dontAsk - If true, we won't stop for words that merely trigger confirms
+   * @param $matches - This array will fill with all matched words.
+   *
+   * @return Returns text with substitutions made.
+   */
+  public function censorScan($text, $roomId = null, $dontAsk = false, &$matches) {
+    foreach ($this->getActiveCensorWords($roomId) AS $word) {
+      if ($dontAsk && $word['severity'] === 'confirm') continue;
+
+      if (stripos($text, $word['word']) !== FALSE) {
+        switch ($word['severity']) {
+          // Automatically replaces text
+          case 'replace':
+            $text = str_ireplace($word['word'], $word['param'], $text);
+            break;
+
+          // Passes the word to $matches, to advise the user to be careful
+          case 'warn':
+              $matches[$word['word']] = $word['param'];
+              break;
+
+          // Blocks the word, throwing an exception
+          case 'block':
+            new fimError('blockCensor', 'The message can not be sent because a word is not allowed.', array('word' => $word['word'], 'reason' => $word['param']));
+            break;
+
+          // Blocks the word, throwing an exception, but can be overwridden with $dontAsk
+          case 'confirm':
+            new fimError('confirmCensor', 'The message must be resent because a word may not be allowed.', array('word' => $word['word'], 'reason' => $word['param']));
+            break;
+        }
+      }
+    }
+  }
 }
 
 ?>

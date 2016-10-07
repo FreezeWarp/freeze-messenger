@@ -60,32 +60,8 @@ $ip = $_SERVER['REMOTE_ADDR']; // Get the IP address of the user.
 $room = $database->getRoom($request['roomId']);
 
 
-/* Censor Fun */
-$blockedWord = false;
-$blockedWordText = false;
-$blockedWordReason = false;
-$blockedWordSeverity = false;
-$blockWordApi = array(
-  'word' => '',
-  'severity' => '',
-  'reason' => '',
-);
-
-foreach ($generalCache->getActiveCensorWords($room->roomId) AS $word) {
-  if ($request['ignoreBlock'] && $word['severity'] === 'confirm') continue;
-
-  if (stripos($request['message'], $word['word']) !== FALSE) {
-    switch ($word['severity']) {
-      case 'block':
-        new fimError('blockCensor', 'The message can not be sent because a word is not allowed.', array('word' => $word['word'], 'reason' => $word['param']));
-        break;
-      case 'confirm':
-        new fimError('confirmCensor', 'The message must be resent because a word may not be allowed.', array('word' => $word['word'], 'reason' => $word['param']));
-        break;
-    }
-  }
-}
-
+/* Apply Censor */
+$request['message'] = $generalCache->censorScan($request['message'], $room->id, $request['ignoreBlock'], $censorMatches);
 
 
 /* Start Processing */
@@ -122,10 +98,7 @@ else {
 /* Data Define */
 $xmlData = array(
   'sendMessage' => array(
-    'censor' => array(
-      'word' => $blockedWordText,
-      'reason' => $blockedWordReason,
-    ),
+    'censor' => $censorMatches
   ),
 );
 

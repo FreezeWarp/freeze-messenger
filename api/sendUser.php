@@ -198,10 +198,6 @@ $xmlData = array(
     'errStr' => ($errStr),
     'errDesc' => ($errDesc),
     'censor' => array(
-      'word' => ($blockWordApi['word']),
-      'severity' => ($blockWordApi['severity']),
-      'reason' => ($blockWordApi['reason']),
-    ),
   ),
 );
 
