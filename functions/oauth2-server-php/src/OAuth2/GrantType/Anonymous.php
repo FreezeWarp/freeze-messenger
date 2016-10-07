@@ -12,7 +12,7 @@ use OAuth2\ResponseInterface;
  */
 class Anonymous implements GrantTypeInterface
 {
-    const ANONYMOUS_USER_ID = -1;
+    const ANONYMOUS_USER_ID = -1; // TODO: get from fimUser
 
     private $userInfo;
     protected $storage;
@@ -39,7 +39,7 @@ class Anonymous implements GrantTypeInterface
         $cache = new \generalCache();
         if ($cache->exists('fim_oauth2_anonymousUserArray'))
             $userInfo = $cache->get('fim_oauth2_anonymousUserArray');
-/        else
+        else
             $cache->set('fim_oauth2_anonymousUserArray', $userInfo = $this->storage->getUserFromId(self::ANONYMOUS_USER_ID), 3600 * 24);
 
         /* Sanity checks */

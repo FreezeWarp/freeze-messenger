@@ -3,6 +3,7 @@ namespace OAuth2\Storage;
 
 use OAuth2\OpenID\Storage\UserClaimsInterface;
 use OAuth2\OpenID\Storage\AuthorizationCodeInterface as OpenIDAuthorizationCodeInterface;
+use OAuth2\GrantType\Anonymous as Anonymous;
 
 /**
  * FIMDatabase implementation of OAuth
@@ -119,7 +120,7 @@ class FIMDatabaseOAuth implements
             'scope' => $scope,
             'http_user_agent' => $_SERVER['HTTP_USER_AGENT'],
             'ip_address' => $_SERVER['REMOTE_ADDR'],
-            'anon_id' => ($user_id === 0 && $anonId > 0 ? $anonId : 0),
+            'anon_id' => ($user_id === Anonymous::ANONYMOUS_USER_ID && $anonId > 0 ? $anonId : 0),
         ));
     }
 
