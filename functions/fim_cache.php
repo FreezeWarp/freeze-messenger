@@ -215,7 +215,7 @@ class fimCache extends generalCache {
   
   ////* Censor Lists *////
   ////* Caches Entire Table as censorLists[listId] = [listId, listName, listType, options] *////
-  public function getCensorLists($listIndex) {
+  public function getCensorLists($listIndex = null) {
     global $sqlPrefix, $config;
   	
    if ($this->issetMemory('fim_censorLists')) {
@@ -277,11 +277,8 @@ class fimCache extends generalCache {
     
     return $this->returnValue($censorWords, $listIndex);
   }
-  
-  
-  ////* Censor Words *////
-  ////* Caches Entire Table as censorWords[word] = [listId, word, severity, param] *////
-  public function getCensorBlackWhiteLists($roomIndex, $listIndex) {    
+
+  public function getCensorBlackWhiteLists($roomIndex, $listIndex = null) {
   	global $sqlPrefix;
   	
    if ($this->issetMemory('fim_censorBlackWhiteLists')) {

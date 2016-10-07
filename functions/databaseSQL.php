@@ -905,7 +905,7 @@ class databaseSQL extends database
     {
         $this->transaction = true;
 
-        $this->functionMap('startTrans', $database);
+        $this->functionMap('startTrans');
     }
 
 
@@ -913,7 +913,7 @@ class databaseSQL extends database
     {
         $this->transaction = false;
 
-        $this->functionMap('rollbackTrans', $database);
+        $this->functionMap('rollbackTrans');
     }
 
 
@@ -921,7 +921,7 @@ class databaseSQL extends database
     {
         $this->transaction = false;
 
-        $this->functionMap('endTrans', $database);
+        $this->functionMap('endTrans');
     }
 
 

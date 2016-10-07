@@ -778,7 +778,7 @@ class fimDatabase extends databaseSQL
 
 
     // Perform Query
-    return $this->select($columns, $conditions, $sort);
+    return $this->where($conditions)->sortBy($sort)->select($columns);
   }
 
 
@@ -1126,7 +1126,7 @@ class fimDatabase extends databaseSQL
       ), array(
         'permissions' => $permissions,
         'expires' => $this->now($this->config['roomPermissionsCacheExpires']),
-        'isKicked' => $isKicked,
+        'isKicked' => $this->bool($isKicked),
       ));
     }
   }
@@ -1503,7 +1503,7 @@ class fimDatabase extends databaseSQL
     global $generalCache; // TODO
 
 
-    $user->resolve();
+    $user->resolve(array("messageFormatting", "userNameFormat", "profile", "avatar", "mainGroupId", "name"));
     $room->resolve();
 
 
