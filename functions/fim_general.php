@@ -165,7 +165,7 @@ function fim_encrypt($data) {
     $newData = base64_encode( // See comments above.
       rtrim(
         mcrypt_encrypt(
-          MCRYPT_3DES, $salt, $data, MCRYPT_MODE_CBC, base64_decode($iv)
+          MCRYPT_3DES, str_pad($salt, 24, "."), $data, MCRYPT_MODE_CBC, base64_decode($iv)
         ),"\0"
       )
     );
