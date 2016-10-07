@@ -1,771 +1,771 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <dbSchema version="3.0">
-  <database name="__CORE__" charset="utf8">
-    <table name="accessLog" type="general" comment="Log of all API calls, meant mostly for analytics purposes.">
-      <column name="userId" type="int" maxlen="8" comment="The ID of the user." />
-      <column name="sessionHash" type="string" maxlen="128" comment="The sessionHash corresponding with the active session.." />
-      <column name="action" type="string" maxlen="64" comment="The action performed." />
-      <column name="info" type="int" maxlen="8" comment="Information pertaining to action." />
-      <column name="time" type="time" default="__TIME__" comment="Time of access in milliseconds." />
-      <column name="executionTime" type="int" maxlen="10" comment="Milliseconds required to perform action." />
-      <column name="userAgent" type="string" maxlen="1000" comment="The environment the agent is running under, usually a web browser or operating system identifer." />
-      <column name="clientCode" type="string" maxlen="10" comment="A code the client identifies itself as, aside from the userAgent (really just meant for browsers, since we can't control those)." />
-      <column name="ipAddress" type="string" maxlen="100" comment="The Internet Protocol address used to make the request." />
-
-      <key name="userId,time" type="primary" />
-    </table>
-
-
-    <table name="configuration" type="general" comment="Configuration directives.">
-      <column name="directive" type="string" maxlen="50" comment="The configuration directive." />
-      <column name="value" type="string" maxlen="10000" comment="The current value of the configuration directive." />
-      <column name="type" type="string" restrict="integer,float,string,bool,array,associative" comment="A typecast to be applied to the value after being retrieved. Bool and array behave slightly different, however: bool converts 'true' and '1' to true but everything else to false, while array splits a string using an escape-capable string split function." />
-
-      <key name="directive" type="primary" />
-    </table>
-
+    <database name="__CORE__" charset="utf8">
+        <table name="accessLog" type="general" comment="Log of all API calls, meant mostly for analytics purposes.">
+            <column name="userId" type="int" maxlen="8" comment="The ID of the user." />
+            <column name="sessionHash" type="string" maxlen="128" comment="The sessionHash corresponding with the active session.." />
+            <column name="action" type="string" maxlen="64" comment="The action performed." />
+            <column name="info" type="int" maxlen="8" comment="Information pertaining to action." />
+            <column name="time" type="time" default="__TIME__" comment="Time of access in milliseconds." />
+            <column name="executionTime" type="int" maxlen="10" comment="Milliseconds required to perform action." />
+            <column name="userAgent" type="string" maxlen="1000" comment="The environment the agent is running under, usually a web browser or operating system identifer." />
+            <column name="clientCode" type="string" maxlen="10" comment="A code the client identifies itself as, aside from the userAgent (really just meant for browsers, since we can't control those)." />
+            <column name="ipAddress" type="string" maxlen="100" comment="The Internet Protocol address used to make the request." />
+
+            <key name="userId,time" type="primary" />
+        </table>
+
+
+        <table name="configuration" type="general" comment="Configuration directives.">
+            <column name="directive" type="string" maxlen="50" comment="The configuration directive." />
+            <column name="value" type="string" maxlen="10000" comment="The current value of the configuration directive." />
+            <column name="type" type="string" restrict="integer,float,string,bool,array,associative" comment="A typecast to be applied to the value after being retrieved. Bool and array behave slightly different, however: bool converts 'true' and '1' to true but everything else to false, while array splits a string using an escape-capable string split function." />
+
+            <key name="directive" type="primary" />
+        </table>
+
 
-    <table name="confirmations" type="memory" comment="Temporary information to store codes for email and other confirmations. (RESERVED)">
-      <!-- General -->
-      <column name="action" type="string" maxlen="10" comment="The action being performed." />
-      <column name="id" type="int" maxlen="8" comment="The ID of the action being performed." />
-      <column name="code" type="int" maxlen="6" default="1" comment="The admin-set usergroup ID of the user." />
-      <column name="time" type="time" default="__TIME__" comment="The time the confirmation was issued." />
-
-      <key name="action,id,time" type="primary" />
-    </table>
-
-
-    <table name="counters" type="general" comment="A cached list of counters. Can be rebuilt from other tables (and must be rebuilt for deletions, etc.)">
-      <column name="counterName" type="string" maxlen="50" comment="The name of the counter." />
-      <column name="counterValue" type="int" maxlen="10" default="0" comment="The current value of the counter." />
-
-      <key name="counterName" type="primary" />
-    </table>
-
-
-    <table name="censorBlackWhiteLists" type="general" comment="Room-defined censor list 'on/off'.">
-      <column name="listId" type="int" maxlen="6" comment="The unique ID of the censor list being disabled/enabled." />
-      <column name="roomId" type="int" maxlen="6" comment="The room ID the status is being applied to." />
-      <column name="status" type="string" restrict="block,unblock" comment="The status of the list in regards to the room - either explicit block or explicit unblock." />
-
-      <key name="listId,roomId" type="primary" />
-    </table>
-
-
-    <table name="censorLists" type="general" comment="Admin-defined text censor categories.">
-      <column name="listId" type="int" maxlen="6" autoincrement="1" comment="The unique ID of the list." />
-      <column name="listName" type="string" maxlen="40" comment="The name of the list. It is only used for user identification." />
-      <column name="listType" type="string" restrict="black,white" comment="The list type - black to apply to no rooms automatically, and white to apply to all rooms automatically (opt-in vs. opt-out)" />
-      <column name="options" type="bitfield" bits="6" default="3" comment="A bitfield of specific options for the list (6 bits are alotted, but only three are used by default)." />
-
-      <key name="listId" type="primary" />
-      <key name="options" type="index" />
-    </table>
-
-
-    <table name="censorWords" type="general" comment="Admin-defined text censor items.">
-      <column name="wordId" type="int" maxlen="6" autoincrement="1" comment="A unique identifier for the word." />
-      <column name="listId" type="int" maxlen="6" comment="The ID of the list the word is filed under." />
-      <column name="word" type="string" maxlen="100" comment="The word text." />
-      <column name="severity" type="string" restrict="replace,warn,confirm,block" default="replace" comment="The severity/type of word." />
-      <column name="param" type="string" default="" maxlen="100" comment="The action data for the word, used in multiple ways based on the word's severity." />
-
-      <key name="wordId" type="primary" />
-      <key name="listId" type="index" />
-    </table>
-
-
-    <table name="emoticons" type="general" comment="Emoticon-oriented search/replace list.">
-      <column name="emoticonId" type="int" maxlen="8" autoincrement="1" comment="Emoticon ID." />
-      <column name="emoticonText" type="string" maxlen="20" comment="Text to find." />
-      <column name="emoticonFile" type="string" maxlen="1000" comment="Image source." />
-      <column name="context" type="string" maxlen="20" default="imageReplace" comment="How to parse emoticon. ('imageReplace' only current option.)" />
-
-      <key name="emoticonId" type="primary" />
-    </table>
-
-
-    <table name="events" type="memory" comment="Events that can be queried by event scripts.">
-      <column name="eventId" type="int" maxlen="8" autoincrement="1" comment="A unique identifier for the event." />
-      <column name="eventName" type="string" maxlen="20" comment="The name of the event (e.g. topic-change)." />
-      <column name="userId" type="int" maxlen="8" comment="The user ID, if applicable." />
-      <column name="roomId" type="string" maxlen="6" comment="The room ID, if applicable." />
-      <column name="messageId" type="int" maxlen="9" comment="The message ID, if applicable." />
-      <column name="param1" type="string" maxlen="20" comment="An additional parameter." />
-      <column name="param2" type="string" maxlen="20" comment="An additional parameter." />
-      <column name="param3" type="string" maxlen="20" comment="An additional parameter." />
-      <column name="time" type="time" default="__TIME__" comment="The time of the event's occurence, primarily for maintence." />
-
-      <key name="eventId" type="primary" />
-      <key name="eventName" type="index" />
-    </table>
-
+        <table name="confirmations" type="memory" comment="Temporary information to store codes for email and other confirmations. (RESERVED)">
+            <!-- General -->
+            <column name="action" type="string" maxlen="10" comment="The action being performed." />
+            <column name="id" type="int" maxlen="8" comment="The ID of the action being performed." />
+            <column name="code" type="int" maxlen="6" default="1" comment="The admin-set usergroup ID of the user." />
+            <column name="time" type="time" default="__TIME__" comment="The time the confirmation was issued." />
+
+            <key name="action,id,time" type="primary" />
+        </table>
+
+
+        <table name="counters" type="general" comment="A cached list of counters. Can be rebuilt from other tables (and must be rebuilt for deletions, etc.)">
+            <column name="counterName" type="string" maxlen="50" comment="The name of the counter." />
+            <column name="counterValue" type="int" maxlen="10" default="0" comment="The current value of the counter." />
+
+            <key name="counterName" type="primary" />
+        </table>
+
+
+        <table name="censorBlackWhiteLists" type="general" comment="Room-defined censor list 'on/off'.">
+            <column name="listId" type="int" maxlen="6" comment="The unique ID of the censor list being disabled/enabled." />
+            <column name="roomId" type="int" maxlen="6" comment="The room ID the status is being applied to." />
+            <column name="status" type="string" restrict="block,unblock" comment="The status of the list in regards to the room - either explicit block or explicit unblock." />
+
+            <key name="listId,roomId" type="primary" />
+        </table>
+
+
+        <table name="censorLists" type="general" comment="Admin-defined text censor categories.">
+            <column name="listId" type="int" maxlen="6" autoincrement="1" comment="The unique ID of the list." />
+            <column name="listName" type="string" maxlen="40" comment="The name of the list. It is only used for user identification." />
+            <column name="listType" type="string" restrict="black,white" comment="The list type - black to apply to no rooms automatically, and white to apply to all rooms automatically (opt-in vs. opt-out)" />
+            <column name="options" type="bitfield" bits="6" default="3" comment="A bitfield of specific options for the list (6 bits are alotted, but only three are used by default)." />
+
+            <key name="listId" type="primary" />
+            <key name="options" type="index" />
+        </table>
+
+
+        <table name="censorWords" type="general" comment="Admin-defined text censor items.">
+            <column name="wordId" type="int" maxlen="6" autoincrement="1" comment="A unique identifier for the word." />
+            <column name="listId" type="int" maxlen="6" comment="The ID of the list the word is filed under." />
+            <column name="word" type="string" maxlen="100" comment="The word text." />
+            <column name="severity" type="string" restrict="replace,warn,confirm,block" default="replace" comment="The severity/type of word." />
+            <column name="param" type="string" default="" maxlen="100" comment="The action data for the word, used in multiple ways based on the word's severity." />
+
+            <key name="wordId" type="primary" />
+            <key name="listId" type="index" />
+        </table>
+
+
+        <table name="emoticons" type="general" comment="Emoticon-oriented search/replace list.">
+            <column name="emoticonId" type="int" maxlen="8" autoincrement="1" comment="Emoticon ID." />
+            <column name="emoticonText" type="string" maxlen="20" comment="Text to find." />
+            <column name="emoticonFile" type="string" maxlen="1000" comment="Image source." />
+            <column name="context" type="string" maxlen="20" default="imageReplace" comment="How to parse emoticon. ('imageReplace' only current option.)" />
+
+            <key name="emoticonId" type="primary" />
+        </table>
+
+
+        <table name="events" type="memory" comment="Events that can be queried by event scripts.">
+            <column name="eventId" type="int" maxlen="8" autoincrement="1" comment="A unique identifier for the event." />
+            <column name="eventName" type="string" maxlen="20" comment="The name of the event (e.g. topic-change)." />
+            <column name="userId" type="int" maxlen="8" comment="The user ID, if applicable." />
+            <column name="roomId" type="string" maxlen="6" comment="The room ID, if applicable." />
+            <column name="messageId" type="int" maxlen="9" comment="The message ID, if applicable." />
+            <column name="param1" type="string" maxlen="20" comment="An additional parameter." />
+            <column name="param2" type="string" maxlen="20" comment="An additional parameter." />
+            <column name="param3" type="string" maxlen="20" comment="An additional parameter." />
+            <column name="time" type="time" default="__TIME__" comment="The time of the event's occurence, primarily for maintence." />
+
+            <key name="eventId" type="primary" />
+            <key name="eventName" type="index" />
+        </table>
+
 
-    <table name="files" type="general" comment="User-created files.">
-      <column name="fileId" type="int" maxlen="6" autoincrement="1" comment="A unique ID for the file." />
-      <column name="fileName" type="string" maxlen="255" comment="The file's name to be sent for downloading." />
-      <column name="fileType" type="string" maxlen="255" comment="The file's mime-type/content-type." />
-      <column name="creationTime" type="time" default="__TIME__" comment="The date the file was uploaded." />
-      <column name="fileSize" type="int" maxlen="12" comment="The file's size." />
-      <column name="userId" type="int" maxlen="8" comment="The ID of the user who uploaded the file." />
-      <column name="source" type="string" maxlen="50" default="upload" comment="The file's source - in most cases upload." />
-      <column name="roomIdLink" type="int" maxlen="8" comment="If provided, the upload is linked to a particular room, which means that is may only be viewed by those who can view that room. The file will always be viewable by its poster." />
-      <column name="fileParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the file." />
-      <column name="fileParentalAge" type="int" maxlen="2" comment="The file's parental content age rating." />
-      <column name="options" type="bitfield" bits="16" comment="File options." />
-      <column name="flags" type="int" maxlen="3" comment="The number of flags this room has received. After a certain number (proportional to activeUsers, possibly), the room should be marked for moderation." />
-
-      <column name="flags" type="int" maxlen="3" comment="The number of flags this room has received. After a certain number (proportional to activeUsers, possibly), the room should be marked for moderation." />
-
-      <key name="fileId" type="primary" />
-      <key name="roomIdLink" type="index" />
-      <key name="userId" type="index" />
-    </table>
-
-
-    <table name="fileVersions" type="general" comment="User-created file contents and revisions.">
-      <column name="versionId" type="int" maxlen="6" autoincrement="1" comment="A unique identifier for all file versions, regardless of each file." />
-      <column name="fileId" type="int" maxlen="6" comment="The ID of the parent file." />
-      <column name="time" type="time" default="__TIME__" comment="The time the revision of the file was uploaded." />
-      <column name="size" type="int" maxlen="10" comment="The file size of the revision." />
-      <column name="md5hash" type="string" maxlen="32" comment="The MD5 hash of the file's binary data." />
-      <column name="sha256hash" type="string" maxlen="64" comment="The SHA256 hash of the file's binary data." />
-      <column name="salt" type="int" maxlen="6" comment="The salt number (stored in the product configuration) used for encryption." />
-      <column name="iv" type="string" maxlen="255" comment="The base64-encoded IV used for encryption." />
-      <column name="contents" type="string" maxlen="4294967295" comment="The base64-encoded binary data of the file." />
-
-      <column name="location" type="string" maxlen="1024" comment="The location of the file on the fileserver, if used." />
-
-      <key name="versionId" type="primary" />
-      <key name="fileId" type="index" />
-    </table>
-
-
-    <table name="fullLog" type="general" comment="A log of moderator actions that document all update(), insert(), and delete() calls.">
-      <column name="id" type="int" maxlen="12" autoincrement="1" comment="A unique ID   for the log entry." />
-      <column name="user" type="int" maxlen="8" comment="The JSON-encoded $user data." />
-      <column name="time" type="time" default="__TIME__" comment="The time the action was performed on." />
-      <column name="server" type="string" maxlen="128" comment="The JSON encoding of the $_SERVER variable." />
-      <column name="action" type="string" maxlen="100" comment="The action performed." />
-      <column name="data" type="string" maxlen="100" comment="The associated data of the action, encoded using JSON." />
-
-      <key name="id" type="primary" />
-    </table>
-
-
-    <table name="kicks" type="general" comment="Room-created temporary user bans.">
-      <column name="userId" type="int" maxlen="8" comment="The ID of the user who has been kicked." />
-      <column name="roomId" type="int" maxlen="6" comment="The ID of the room the kick is active in." />
-      <column name="kickerid" type="int" maxlen="8" comment="The ID of the user who made the kick." />
-      <column name="time" type="time" default="__TIME__" comment="The time the kick was made on." />
-      <column name="length" type="int" maxlen="8" comment="The time the kick will remain active for." />
-
-      <key name="userId,roomId" type="primary" />
-      <key name="time" type="index" />
-      <key name="length" type="index" />
-    </table>
-
-
-    <table name="oauth_clients">
-      <column name="client_id" type="string" maxlen="80" required="true" />
-      <column name="client_secret" type="string" maxlen="80" />
-      <column name="redirect_uri" type="string" maxlen="2000" />
-      <column name="grant_types" type="string" maxlen="80" />
-      <column name="scope" type="string" maxlen="4000" />
-      <column name="user_id" type="string" maxlen="80" />
-
-      <key name="client_id" type="primary" />
-    </table>
-
-    <table name="oauth_access_tokens">
-      <column name="access_token" type="string" maxlen="40" required="true" />
-      <column name="client_id" type="string" maxlen="80" required="true" />
-      <column name="user_id" type="string" maxlen="80" />
-      <column name="expires" type="time" required="true" />
-      <column name="scope" type="string" maxlen="4000" />
-
-      <!-- FIM Additions -->
-      <column name="ip_address" type="string" maxlen="128" comment="The user's IP address." />
-      <column name="http_user_agent" type="string" maxlen="1000" comment="The user's browser user agent, if applicable." />
-      <column name="anon_id" type="int" maxlen="6" comment="A unique ID that can be used for anonymous users." />
-
-      <key name="access_token" type="primary" />
-    </table>
-
-    <table name="oauth_authorization_codes">
-      <column name="authorization_code" type="string" maxlen="40" required="true" />
-      <column name="client_id" type="string" maxlen="80" required="true" />
-      <column name="user_id" type="string" maxlen="80" />
-      <column name="redirect_uri" type="string" maxlen="2000" />
-      <column name="expires" type="time" required="true" />
-      <column name="scope" type="string" maxlen="4000" />
-      <column name="id_token" type="string" maxlen="1000" />
-
-      <key name="authorization_code" type="primary" />
-    </table>
-
-    <table name="oauth_refresh_tokens">
-      <column name="refresh_token" type="string" maxlen="40" required="true" />
-      <column name="client_id" type="string" maxlen="80" required="true" />
-      <column name="user_id" type="string" maxlen="80" />
-      <column name="expires" type="time" required="true" />
-      <column name="scope" type="string" maxlen="4000" />
-
-      <key name="refresh_token" type="primary" />
-    </table>
-
-    <table name="oauth_scopes">
-      <column name="scope" type="string" maxlen="4000" required="true" />
-      <column name="is_default" type="bool" default="0" />
-    </table>
-
-    <table name="oauth_jwt">
-      <column name="client_id" type="string" maxlen="80" required="true" />
-      <column name="subject" type="string" maxlen="80" />
-      <column name="public_key" type="string" maxlen="2000" required="true" />
-    </table>
-
-    <table name="oauth_jti">
-      <column name="issuer" type="string" maxlen="80" required="true" />
-      <column name="subject" type="string" maxlen="80" />
-      <column name="audience" type="string" maxlen="80" />
-      <column name="expires" type="time" required="true" />
-      <column name="jti" type="string" maxlen="2000" required="true" />
-    </table>
-
-    <table name="oauth_public_keys">
-      <column name="client_id" type="string" maxlen="80" />
-      <column name="public_key" type="string" maxlen="2000" />
-      <column name="private_key" type="string" maxlen="2000" />
-      <column name="encryption_algorithm" type="string" maxlen="100" default="RS256" />
-    </table>
-
-
-    <table name="messages" type="general" partitionBy="roomId" comment="User-created messages.">
-      <column name="messageId" type="int" maxlen="9" autoincrement="1" comment="The unique ID of the message." />
-      <column name="userId" type="int" maxlen="8" comment="The ID of the user who made the message." />
-      <column name="roomId" type="int" maxlen="6" comment="The ID of the room the message was made in." />
-      <column name="text" type="string" maxlen="5000" comment="The text of the message." />
-      <column name="textSha1" type="string" maxlen="40" comment="A SHA1 hash of the text of the message." />
-      <column name="salt" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
-      <column name="iv" type="string" maxlen="15" comment="The base64-encoded IV used for encryption." />
-      <column name="deleted" type="bool" default="0" comment="Whether or not the message has been deleted by an administrator." />
-      <column name="time" type="time" default="__TIME__" comment="The time the message was made on." />
-      <column name="ip" type="string" maxlen="128" comment="The IP of the user who made the message." />
-      <column name="flag" type="string" maxlen="10" comment="The content-type flag of the message (e.g. video, image, text, archive, html, url, email)." />
-
-      <key name="messageId,roomId" type="primary" />
-      <key name="roomId" type="index" />
-      <key name="deleted" type="index" />
-      <key name="time" type="index" />
-      <key name="roomId" type="index" />
-      <key name="userId" type="index" />
-    </table>
-
-
-    <table name="messageIndex" type="general" comment="A pseudo-cache that indexes every x (usually 1000) messages made in a room, thus allowing faster lookup. It must be rebuilt if corrupted. (I haven't had time to check to see the performance of both this and messageDates, but I'm guessing I just somehow was using bad indexes when I came up with this seemingly asinine idea. I'll quite likely remove both, or just keep them in for fun.">
-      <column name="roomId" type="int" maxlen="6" comment="The ID of the room the message was made in." />
-      <column name="interval" type="int" maxlen="15" comment="The interval of messages in the room with which the message ID corresponds." />
-      <column name="messageId" type="int" maxlen="9" comment="The unique ID of the message." />
-
-      <key name="roomId,interval" type="primary" />
-    </table>
-
-
-    <table name="messageDates" type="general" comment="A pseudo-cache that indexes the first message made in any given day (or other time range), thus allowing lookup. It must be rebuilt if corrupted.">
-      <column name="time" type="time" comment="The day (or appropriate time range) the message was made on." />
-      <column name="messageId" type="int" maxlen="9" comment="The unique ID of the message." />
-
-      <key name="time" type="primary" />
-    </table>
-
-
-    <table name="messagesCached" type="memory" comment="A cache of user-created messages for scalibility.">
-      <column name="id" type="int" maxlen="6" autoincrement="1" comment="A unique (temporary) ID for the message cache entry." />
-      <column name="messageId" type="int" maxlen="9" />
-      <column name="roomId" type="int" maxlen="6" />
-      <column name="userId" type="int" maxlen="8" />
-      <column name="userName" type="string" maxlen="50" />
-      <column name="avatar" type="string" maxlen="200" />
-      <column name="profile" type="string" maxlen="200" />
-      <column name="userGroupId" type="int" maxlen="6" default="1" />
-      <column name="socialGroupIds" type="string" maxlen="300" />
-      <column name="userNameFormat" type="string" maxlen="100" comment="CSS-formatting to be applied to the user's name." />
-      <column name="messageFormatting" type="string" maxlen="300" />
-      <column name="time" default="__TIME__" type="time" />
-      <column name="text" type="string" maxlen="5000" />
-      <column name="flag" type="string" maxlen="10" />
-
-      <trigger lang="postgres" comment="A trigger that watches the messagesCached table, returning results in JSON. By default the returned JSON _cannot_ be greater than 8,000 bytes.">
-        CREATE OR REPLACE FUNCTION notifyMessage() RETURNS trigger AS $$
-          DECLARE
-        BEGIN
-        SELECT row_to_json(NEW, false) AS jsonString
-        SELECT (CASE WHEN octet_length(jsonString) > 8000 THEN NEW.messageId ELSE jsonString) AS jsonStringChecked
-        PERFORM pg_notify('messagesCachedNotify', jsonStringChecked);
-        RETURN NEW;
-        END;
-        $$ LANGUAGE plpgsql;
-
-        CREATE TRIGGER notifyMessage AFTER UPDATE ON messagesCached FOR EACH ROW EXECUTE PROCEDURE notifyMessage();
-      </trigger>
-
-      <key name="id" type="primary" />
-      <key name="messageId" type="index" />
-      <key name="roomId" type="index" />
-      <key name="time" type="index" />
-    </table>
-
-
-    <table name="messageEditHistory" type="general" comment="A history of editted messages.">
-      <column name="messageId" type="int" maxlen="9" comment="The unique ID of the message." />
-      <column name="userId" type="int" maxlen="8" comment="The user who editted the message." />
-      <column name="oldText" type="string" maxlen="5000" comment="The old raw text of the message." />
-      <column name="newText" type="string" maxlen="5000" comment="The new raw text of the message." />
-      <column name="time" type="time" default="__TIME__" comment="The time of the change." />
-      <column name="ip" type="string" maxlen="128" comment="The IP of the user during the change." />
-      <column name="salt1" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
-      <column name="salt2" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
-      <column name="iv1" type="string" maxlen="15" comment="The base64-encoded IV used for encryption." />
-      <column name="iv2" type="string" maxlen="15" comment="The base64-encoded IV used for encryption." />
-
-      <key name="messageId,time" type="primary" />
-    </table>
-
-
-    <table name="modlog" type="general" comment="A log of moderator actions.">
-      <column name="id" type="int" maxlen="12" autoincrement="1" comment="A unique ID for the log entry." />
-      <column name="userId" type="int" maxlen="8" comment="The user ID who performed the action." />
-      <column name="time" type="time" default="__TIME__" comment="The time the action was performed on." />
-      <column name="ip" type="string" maxlen="128" comment="The IP of the user when the action was performed." />
-      <column name="action" type="string" maxlen="100" comment="The action performed." />
-      <column name="data" type="string" maxlen="100" comment="The associated data of the action." />
-
-      <key name="id" type="primary" />
-    </table>
-
-
-    <table name="ping" type="memory" comment="User online statuses.">
-      <column name="userId" type="int" maxlen="8" comment="The ID of the user." />
-      <column name="roomId" type="int" maxlen="6" comment="The ID of the room." />
-      <column name="time" type="time" default="__TIME__" comment="The time of the ping." />
-      <column name="status" type="string" restrict="away,busy,available,invisible,offline," comment="The user's status." />
-      <column name="typing" type="bool" default="0" comment="Whether or not the user is typing." />
-
-      <key name="userId,roomId" type="primary" />
-      <key name="time" type="index" />
-      <key name="userId" type="index" />
-      <key name="roomId" type="index" />
-    </table>
-
-
-    <table name="rooms" type="general" comment="User-created rooms.">
-      <!-- General -->
-      <column name="roomId" type="int" maxlen="6" autoincrement="1" comment="The unique ID for the room." />
-      <column name="roomName" type="string" maxlen="50" comment="The name of the room." />
-      <column name="roomAlias" type="string" maxlen="6" comment="An alias that can be used to identify a room by. This should be unique, and is meant to be used for otr and private rooms. Caching recommended." />
-      <column name="roomNameSearchable" type="string" maxlen="50" comment="The name of the room, formatted for searching." />
-      <column name="roomTopic" type="string" maxlen="200" comment="The current topic of the room." />
-      <column name="options" type="bitfield" bits="8" default="0" comment="A bitfield corrosponding to certain room options." />
-
-      <!-- Permissions -->
-      <column name="roomType" type="string" default="general" restrict="general,otr,private" comment="The room type." />
-      <column name="ownerId" type="int" maxlen="10" comment="The owner/creator of the room." />
-      <column name="defaultPermissions" type="bitfield" bits="8" default="7" comment="A bitfield corrosponding to permissions users are granted if they do not exist in the roomPermissions table." />
-
-      <!-- Parental Controls -->
-      <column name="roomParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the user." />
-      <column name="roomParentalFlagsField" type="bitfield" bits="16" comment="[TODO] A bitfield corresponding to parentalFlags. The corresponding bits are defined as part of config, and whenever the corresponding config data is modified, all bitfields must be updated. The benefits over a comma-seperated list are the ability to rename flags without requiring a rebuild, less data usage (good for caching), and the ability to query for individual flags." />
-      <column name="roomParentalAge" type="int" maxlen="2" comment="The room's parental content age rating." />
-
-      <!-- Counters -->
-      <column name="lastMessageTime" type="time" default="0" comment="The time of the last message made in the room." />
-      <column name="lastMessageId" type="int" maxlen="15" comment="The ID of the last message made in the room." />
-      <column name="messageCount" type="int" maxlen="15" default="0" comment="The number of messages in this room." />
-      <column name="flags" type="int" maxlen="3" comment="The number of flags this room has received. After a certain number (proportional to activeUsers, possibly), the room should be marked for moderation." />
-
-      <!-- Caches -->
-      <column name="watchedBy" type="string" maxlen="50000" comment="A CSV cache of the users watching this room." />
-
-
-      <key name="roomId" type="primary" />
-      <key name="roomAlias" type="index" />
-      <key name="roomNameSearchable" type="index" />
-      <key name="options" type="index" />
-      <key name="ownerId" type="index" />
-      <key name="lastMessageId" type="index" />
-      <key name="lastMessageTime" type="index" />
-    </table>
-
-
-    <table name="roomEvents" type="memory" comment="Events that relate to a specific room.">
-      <column name="eventId" type="int" maxlen="8" autoincrement="1" comment="A unique identifier for the event." />
-      <column name="eventName" type="string" maxlen="20" comment="The name of the event (e.g. topic-change, edit-message)." />
-      <column name="roomId" type="int" maxlen="8" comment="The rooom ID." />
-      <column name="param1" type="string" maxlen="20" comment="An additional parameter." />
-      <column name="param2" type="string" maxlen="20" comment="An additional parameter." />
-      <column name="time" type="time" comment="The time of the event's occurrence, primarily for maintenance." />
-
-      <key name="eventId" type="primary" />
-      <key name="eventName" type="index" />
-      <key name="roomId" type="index" />
-    </table>
-
-
-    <table name="roomHistory" type="general" comment="A history of all changes made to rooms. This is enabled per-installation.">
-      <!-- General -->
-      <column name="roomId" type="int" maxlen="6" autoincrement="1" comment="The unique ID for the room." />
-      <column name="roomName" type="string" maxlen="50" comment="The name of the room." />
-      <column name="roomTopic" type="string" maxlen="200" comment="The current topic of the room." />
-      <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options." />
-
-      <!-- Permissions -->
-      <column name="ownerId" type="int" maxlen="10" comment="The ID of the owner/creator of the room." />
-      <column name="defaultPermissions" type="bitfield" bits="8" default="7" comment="A bitfield corrosponding to permissions users are granted if they do not exist in the roomPermissions table." />
-
-      <!-- Parental Controls -->
-      <column name="roomParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the room." />
-      <column name="roomParentalAge" type="int" maxlen="2" comment="The room's parental content age rating." />
-
-      <column name="changeTime" type="time" default="__TIME__" comment="The time at which the above information was altered." />
-
-      <key name="roomId,changeTime" type="primary" />
-    </table>
-
-
-    <table name="roomPermissions" type="general" content="Groups and users who are granted access to rooms.">
-      <column name="roomId" type="int" maxlen="6" comment="The room ID." />
-      <column name="attribute" type="string" restrict="user,group" comment="Whether the param column corresponds to a user or group." />
-      <column name="param" type="int" maxlen="8" comment="The user ID or group ID being affected." />
-      <column name="permissions" type="bitfield" bits="16" comment="The permissions granted in the room to the affected user or group." />
-
-      <key name="roomId,attribute,param" type="primary" />
-    </table>
-
-
-    <table name="roomPermissionsCache" type="memory" content="A simplified cache of room permissions. This table should be used to determine if a user is known to be allowed access to a room. When a row doesn't exist, it should be tested fully and then inserted here.">
-      <column name="roomId" type="int" maxlen="6" comment="The room ID." />
-      <column name="userId" type="int" maxlen="8" comment="The user ID." />
-      <column name="permissions" type="bitfield" bits="16" comment="The user's permissions." />
-      <column name="expires" type="time" comment="After this time, the entry will no longer be considered valid. May be disabled if this cache is updated automatically." />
-      <column name="isKicked" type="bool" comment="If an access restriction is because of a kick, this should indicate as much. This can be used to tell a user they have been kicked instead of having to query the kicks table to check each time. It is assumed that if true, then expires corresponds with the kick expiration." />
-
-      <key name="roomId,userId" type="primary" />
-    </table>
-
-
-    <table name="roomStats" type="general" comment="A cache for the number of posts made by different users in rooms.">
-      <column name="userId" type="int" maxlen="8" comment="The ID of the user." />
-      <column name="roomId" type="int" maxlen="6" comment="The ID of the room." />
-      <column name="messages" type="int" maxlen="10" comment="The number of messages made by the user in the room." />
-
-      <key name="userId,roomId" type="primary" />
-    </table>
-
-
-    <table name="searchMessages" type="general" comment="A cache of messages containing search phrases.">
-      <column name="phraseId" type="int" maxlen="8" comment="The ID of the phrase found in the message." />
-      <column name="messageId" type="int" maxlen="9" comment="The ID of the message." />
-      <column name="userId" type="int" maxlen="8" comment="The user who made the above post." />
-      <column name="roomId" type="int" maxlen="6" comment="The room the above post is contained in." />
-
-      <key name="messageId,phraseId" type="primary" />
-      <key name="roomId" type="index" />
-    </table>
-
-
-    <table name="searchPhrases" type="general" note="As of FIMv3B3 this is not as scalable as one might have hoped, though changes may be made further into the future, or at the latest in FIMv4" comment="A cache of search phrases to ease message searching in a scalable way.">
-      <column name="phraseId" type="int" maxlen="8" autoincrement="1" comment="A unique ID corrosponding to the phrase name/text." />
-      <column name="phraseName" type="string" maxlen="50" comment="The name/text of the phrase." />
-
-      <key name="phraseId" type="primary" />
-      <key name="phraseName" type="unique" />
-    </table>
-
-
-    <table name="searchCache" type="general" comment="A cache of message searches. Note that this cache is most efficient when fulltext searching is enabled, but that it will still have minor benefits when using searchPhrases instead.">
-      <column name="phraseName" type="string" maxlen="50" comment="The phrase to search." />
-      <column name="userId" type="int" maxlen="8" comment="Limits the search results to this userId." />
-      <column name="roomId" type="int" maxlen="8" comment="Limits the search results to this roomId." />
-      <column name="resultPage" type="int" maxlen="6" comment="The result page this set corresponds with." />
-      <column name="resultLimit" type="int" maxlen="6" comment="The result limit this set corresponds with." />
-      <column name="messageIds" type="string" maxlen="50000" comment="The message IDs that result when searching phraseName, userId, and roomId (CSV)." />
-      <column name="expires" type="time" comment="When the cache is no longer considered valid." />
-
-      <key name="phraseName,userId,roomId,resultPage,resultLimit" type="primary" />
-    </table>
-
-
-    <table name="sessionLockout" type="memory" comment="Keeps track of failed login attempts, eventually blocking IP addresses from attempting additional logins.">
-      <column name="ip" type="string" maxlen="128" comment="The user's IP address." />
-      <column name="attempts" type="int" maxlen="2" comment="Failed login attempts." />
-      <column name="expires" type="time" comment="When the entry is considered expired." />
-
-      <key name="ip" type="primary" />
-    </table>
-
-
-    <table name="socialGroups" type="general" comment="The members of user groups.">
-      <column name="groupId" type="int" maxlen="6" comment="The group ID." />
-      <column name="groupName" type="string" maxlen="50" comment="The group name." />
-      <column name="creatorId" type="int" maxlen="8" fkey="users.userId" comment="The creator userID of the group." />
-      <column name="creationTime" type="time" default="__TIME__" comment="Time the group was created." />
-      <column name="leaderId" type="int" maxlen="8" fkey="users.userId" comment="The current leader of the group. Allowed to set group options and remove members." />
-      <column name="options" type="int" maxlen="6" comment="Group options." />
-      <column name="userNameFormat" type="string" maxlen="300" comment="CSS-formatting to be applied to any users that have this group as their primary, if they have not specified their own." />
-
-      <key name="groupId" type="primary" />
-    </table>
-
-
-    <table name="socialGroupMembers" type="general" comment="The members of groups, used with vanilla logins.">
-      <column name="groupId" type="int" maxlen="6" fkey="socialGroups.groupId" comment="The group ID." />
-      <column name="userId" type="int" maxlen="8" fkey="users.userId" comment="The member ID of the group." />
-      <column name="type" default="pending" restrict="member,moderator,pending,banned" type="string" comment="Whether a group member is a normal member, a moderator (able to add and remove other users from the group), or has been banned from the group (can not requested invitation)." />
-
-      <key name="groupId,userId" type="primary" />
-    </table>
-
-
-    <table name="unreadMessages" type="general" comment="Unread private messages and messages made to watched rooms. Only the most least recent message should be included.">
-      <column name="userId" type="int" maxlen="8" fkey="users.userId" comment="The ID of the user who has yet to read the message." />
-      <column name="senderId" type="int" maxlen="8" fkey="users.userId" comment="The ID of the user who sent the message." />
-      <column name="senderName" type="string" maxlen="50" fkey="users.userName" fkeyWeak="true" comment="The name of the user who sent the message." />
-      <column name="senderNameFormat" type="string" maxlen="300" fkey="users.userNameFormat" fkeyWeak="true" comment="CSS-formatting to be applied to the sender's name." />
-      <column name="roomId" type="int" maxlen="6" comment="The ID of the room in question. May refer to either rooms.roomId or privateRooms.uniqueId." />
-      <column name="roomName" type="string" maxlen="50" comment="The name of the room in question." />
-      <column name="messageId" type="int" maxlen="9" fkey="messages.messageId" comment="The ID of the message." />
-      <column name="time" type="time" default="__TIME__" comment="The time the message was made." />
-      <column name="otherMessages" type="int" comment="The number of other messages that have been sent since this one." />
-
-      <key name="userId,roomId" type="primary" />
-      <key name="time" type="index" />
-    </table>
-
-
-    <table name="users" type="general" comment="The users.">
-      <!-- General -->
-      <column name="userId" type="int" maxlen="8" autoincrement="1" comment="The unique ID of the user." />
-      <column name="userName" type="string" maxlen="50" comment="The user's name." />
-      <column name="userGroupId" type="int" maxlen="6" default="1" comment="The admin-set socialGroup ID of the user." />
-      <column name="socialGroupIds" type="string" maxlen="1000" comment="A comma-seperated list of the IDs of all groups the user has joined." />
-      <column name="options" type="bitfield" bits="16" comment="A bitfield corrosponding to the user's settings." />
-      <column name="joinDate" type="time" default="__TIME__" comment="The date the user joined." />
-      <column name="birthDate" type="time" default="0" comment="The date of the user's birth, used for parental control settings." />
-      <column name="email" type="string" maxlen="254" comment="The user's email address. Only used in vanilla logins." />
-      <column name="emailVerified" type="bool" default="0" />
-
-      <column name="lastSync" type="time" default="0" comment="The date the userdata was last synced. This is not applicable for vanilla logins." />
-
-      <!-- Password Fun -->
-      <!-- Note: The password section is rather verbose in an effort to ensure that it is easy to change algorithms. -->
-      <column name="passwordHash" type="string" maxlen="2048" comment="The hashed password of the user. It is only used on vanilla logins." />
-      
-      <column name="passwordFormat" type="string" restrict="vbmd5,phpass,plaintext" comment="The encryption format used for the password. This allows easy transition to safer formats, forcing people using the old format to reset their password. VBMD5 is the hashing format used by vBulletin, phpass is the portable PHP hashing format used by PHPBB and Vanilla. Plaintext signifies no encryption, mostly used with development." />
-      <column name="passwordResetNow" type="bool" default="0" comment="When set, the user is required to reset his or her password on next login. This, unfortunately, requires the co-operation of clients, and as such may in theory be delayed or ignored entirely. But, I mean, it's better than nothing." />
-      <column name="passwordLastReset" type="time" comment="The last time the user reset his or her password.." />
-
-      <!-- OAuth Stuff -->
-      <column name="scope" type="string" maxlen="4000" comment="An OAuth scope string. May or may not actually get implemented, but reserved to make things easier." />
-
-      <!-- User Display -->
-      <column name="avatar" type="string" maxlen="200" comment="The absolute URI of the user's avatar." />
-      <column name="profile" type="string" maxlen="200" comment="The absolute URI of the user's profile link or website." />
-      <column name="userNameFormat" type="string" maxlen="300" comment="CSS-formatting to be applied to the user's name for its display." />
-
-      <!-- Prefs -->
-      <column name="defaultRoomId" type="int" maxlen="6" default="1" fkey="rooms.roomId" comment="The user's default room." />
-
-      <!-- Status -->
-      <column name="status" type="int" maxlen="3" comment="The user's activity status." />
-
-      <!-- Formatting -->
-      <column name="messageFormatting" type="string" maxlen="300" comment="CSS-formatting that should be applied to all of the user's messages. This will generally be restricted to what the API allows -- by default, just fontface, colour, highlight, and bold/italics." />
-
-      <!-- Permissions -->
-      <column name="privs" type="bitfield" bits="31" default="0" comment="A bitfield corresponding to admin-set user priviledges. The 31 size is done for portability -- 32-bit PHP systems (those on 32-bit or Windows systems) can only use the first 31 bits, because the 32 bit is used for signing." />
-
-      <!-- Counters -->
-      <column name="fileCount" type="int" maxlen="8" default="0" comment="The number of files store on the server by this user." />
-      <column name="fileSize" type="int" maxlen="8" default="0" comment="The total size of all files stored on the server by this user." />
-      <column name="ownedRoomIds" type="string" maxlen="10000" comment="Total number of rooms owned by this user (may be used to place a limit on room creation.)" />
-      <column name="messageCount" type="int" maxlen="8" default="0" comment="The number of messages made by this user." />
-      <column name="favRoomIds" type="string" maxlen="10000" comment="A CSV cache of the favRooms table for this user." />
-      <column name="watchRoomIds" type="string" maxlen="10000" comment="A CSV cache of the watchRooms table for this user." />
-      <column name="ignoredUserIds" type="string" maxlen="10000" comment="A CSV cache of users ignored by this user." />
-      <column name="friendedUserIds" type="string" maxlen="10000" comment="A CSV cache of users friended by this user." />
-
-      <!-- Parental Controls -->
-      <column name="userParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to restrict access to." />
-      <column name="userParentalAge" type="int" maxlen="2" comment="Content rated above this rating should be blocked." />
-
-
-      <key name="userId" type="primary" />
-      <key name="userGroupId" type="index" />
-      <key name="lastSync" type="index" />
-      <key name="privs" type="index" />
-
-      <key name="options" type="index" />
-      <key name="fileCount" type="index" />
-      <key name="fileSize" type="index" />
-      <key name="messageCount" type="index" />
-      <key name="defaultRoomId" type="index" />
-    </table>
-
-
-    <table name="userEvents" type="memory" comment="Events that relate to a specific user.">
-      <column name="eventId" type="int" maxlen="8" autoincrement="1" comment="A unique identifier for the event." />
-      <column name="eventName" type="string" maxlen="20" comment="The name of the event (e.g. friend-request, unread-message)." />
-      <column name="userId" type="int" maxlen="8" comment="The user ID." />
-      <column name="param1" type="string" maxlen="20" comment="An additional parameter." />
-      <column name="param2" type="string" maxlen="20" comment="An additional parameter." />
-      <column name="time" type="time" default="__TIME__" comment="The time of the event's occurrence, primarily for maintenance." />
-
-      <key name="eventId" type="primary" />
-      <key name="eventName" type="index" />
-      <key name="userId" type="index" />
-    </table>
-
-
-    <table name="userFavRooms" type="general" comment="A list of starred rooms. Unlike most other lists, this list generally doesn't have any backend effects, but we thought it was too useful not to include. Clients are still encouraged to implement more powerful tagging and lists themselves.">
-      <column name="userId" type="int" maxlen="8" comment="The user ID." />
-      <column name="roomId" type="int" maxlen="6" comment="The room ID." />
-
-      <key name="userId,roomId" type="primary" />
-    </table>
-    
-    
-    <table name="userFriendsList" type="general" comment="A list of user friends, with whom private contact may be restricted in some cases. Clients are encouraged to enable more advanced tagging and lists.">
-      <column name="userId" type="int" maxlen="8" comment="The user ID." />
-      <column name="subjectId" type="int" maxlen="8" comment="The user ID friended." />
-      <column name="status" type="string" restrict="friend,request,deny" comment="Whether the relationship is a friend connection, merely a request, or if the request has been denied permanently." />
-
-      <key name="userId,subjectId" type="primary" />
-    </table>
-
-
-    <table name="userIgnoreList" type="general" comment="A list of user's a user wishes to ignore. Ignoring prevents private contact, but few other changes are made -- clients may, at their descretion, let users hide posts by other users, etc.">
-      <column name="userId" type="int" maxlen="8" comment="The user ID." />
-      <column name="subjectId" type="int" maxlen="8" comment="The user ID ignored." />
-
-      <key name="userId,subjectId" type="primary" />
-    </table>
-
-
-    <table name="userHistory" type="general" comment="A history of modifications to the user table. This is enabled per-installation.">
-      <!-- General -->
-      <column name="userId" type="int" maxlen="8" />
-      <column name="userName" type="string" maxlen="50" />
-      <column name="userGroupId" type="int" maxlen="6" default="1" />
-      <column name="socialGroupIds" type="string" maxlen="1000" />
-      <column name="options" type="bitfield" bits="16" />
-      <column name="messageFormatting" type="string" maxlen="300" />
-
-      <!-- Password Fun -->
-      <column name="password" type="string" maxlen="64" />
-      <column name="passwordSalt" type="string" maxlen="50" />
-      <column name="passwordSaltNum" type="int" maxlen="6" />
-
-      <!-- User Display -->
-      <column name="avatar" type="string" maxlen="200" />
-      <column name="profile" type="string" maxlen="200" />
-      <column name="userNameFormat" type="string" maxlen="300" />
-
-      <!-- Permissions -->
-      <column name="privs" type="bitfield" bits="31" />
-
-      <!-- Parental Controls -->
-      <column name="userParentalFlags" type="string" maxlen="255" />
-      <column name="userParentalAge" type="int" maxlen="2" />
-
-      <column name="changeTime" type="time" default="__TIME__" comment="The time at which the above information was altered." />
-
-      <key name="userId,changeTime" type="primary" />
-    </table>
-
-    
-    <table name="watchRooms" type="general" comment="A table of rooms being watched by different users.">
-      <column name="userId" type="int" maxlen="8" comment="The user ID." />
-      <column name="roomId" type="int" maxlen="6" comment="The room ID to be watched." />
-    </table>
-  </database>
-
-
-  <definitions>
-    <bitfield name="options" table="censorLists">
-      <def bit="1" comment="If false, the list is considered inactive and is neither used nor shown to users under any circumstances.">Enabled</def>
-      <def bit="2" comment="If true, the list can not be disabled by non-administrators.">Required</def>
-      <def bit="4" comment="If true, the list is not 'shown' to users. The authors of FIM really don't like this option, but provide it anyway.">Hidden</def>
-      <def bit="256" comment="If true, the list is automatically disabled in private and OTR communication.">Disabled in Private/OTR</def>
-    </bitfield>
-
-    <bitfield name="options" table="files">
-      <def bit="4" comment="(TODO) Deleted files are only viewable by administrators, and should not be shown even to their poster.">Deleted</def>
-      <def bit="64" comment="(TODO) A file that needs to be approved by an administrator before it will be displayed.">Under Review (Moderated)</def>
-      <def bit="128" comment="(TODO) A file that has previously cleared moderation." note="Basically, this should disable the ability to flag a file.">Approved</def>
-    </bitfield>
-
-    <bitfield name="defaultPermissions" table="rooms">
-      <def bit="1">Can View</def>
-      <def bit="2">Can Post</def>
-      <def bit="4">Can Change the Topic</def>
-      <def bit="8">Can Modify and Delete Posts</def>
-      <def bit="16">Can Edit Room Properties (e.g. name)</def>
-      <def bit="128">Can Grant</def>
-    </bitfield>
-
-    <bitfield name="options" table="rooms">
-      <def bit="1" comment="'Official' rooms are designated as such, but generally don't alter permissions in any way.">Official</def>
-      <def bit="4" comment="Deleted rooms are only viewable by administrators, and are otherwise read-only.">Deleted</def>
-      <def bit="8" comment="Hidden rooms are not displayed under any circumstances, except to site administrators. Similarly, only administrators may set this flag. Hidden rooms can still be accessed by anyone who both has permission and knows the room ID.">Hidden</def>
-      <def bit="16" comment="These rooms may not be posted in, and may be optimised specially. Otherwise, they behave normally, and only people with permission to view or know a room will be able to do such..">Archived</def>
-      <def bit="64" comment="(TODO) A room that needs to be approved by an administrator before it may be used. This room will only be shown to its owner until it has been approved.">Under Review (Moderated)</def>
-      <def bit="128" comment="(TODO) A room that has previously cleared moderation." note="Basically, this should disable the ability to flag a room.">Approved</def>
-      <def bit="256">Reserved for R9000. Not supported officially, but marked for extensions that wish to support.</def>
-    </bitfield>
-
-    <bitfield name="permissions" table="roomPermissions" comment="An argument can be made that these are all sequential, and should instead simply be 1/2/3/4/... That argument is right. We're doing this anyway.">
-      <def bit="1" comment="This allows the room's common properties -- topic, name, etc. -- to be known, and its messages to be viewed. The room is effectively read-only if this permission is set alone.">Can View</def>
-      <def bit="2" comment="This allows a user to post in a room.">Can Post</def>
-      <def bit="4" comment="Whether a user may modify a room's topic.">Can Change the Topic</def>
-      <def bit="8" comment="Whether a user may edit or delete posts made by other users.">Can Modify and Delete Posts</def>
-      <def bit="16" comment="Whether a user may modify common room properties, such as its name and censor lists.">Can Edit Room Properties (e.g. name)</def>
-      <def bit="128" comment="Whether a user may alter user permissions for the room.">Can Grant</def>
-    </bitfield>
-
-    <bitfield name="options" table="socialGroups">
-      <def bit="1" comment="This prevents users from joining groups. Instead, a user may be put into this group by an administrator.">Admin Group</def>
-      <def bit="2" comment="If set, a user can only join this group once approved by a moderator for the group.">Moderated Group</def>
-      <def bit="16" comment="If set, a user that belongs to such a group will have their username style set to this group's style regardless of their own setting. If not set, a user's group formatting will only be applied when they have not specified one themselves.">Override Username Formatting</def>
-    </bitfield>
-
-    <bitfield name="options" table="users">
-      <def bit="4" comment="(TODO) Deleted users are treated as non-existent for purposes of logging in. The user's name is, however, reserved.">Deleted</def>
-      <def bit="64" comment="(TODO) A user that needs to be approved by an administrator before it will gain normal permissions" note="Basically, when this feature is active, two sets of default permissions will exist -- one for unapproved users, and another for approved users. When approved, a user's permissions will be set to the new permissions">Under Review (Moderated)</def>
-    </bitfield>
-
-    <bitfield name="privs" table="users">
-      <def bit="1">View</def>
-      <def bit="2">Post</def>
-      <def bit="4">Change Topic</def>
-      <def bit="8">Upload Files</def>
-      <def bit="16">Create Social Groups</def>
-      <def bit="32">Create Rooms</def>
-      <def bit="64" comment="If false, Disallows a user from creating and being part of OTR and private rooms.">Contact Friends for Private Contact</def>
-      <def bit="128" comment="If false, Disallows a user from creating and being part of OTR and private rooms where any user is not on the user's friend list.">Contact Non-Friends for Private Contact</def>
-      <def bit="1024">View Active Users</def>
-      <def bit="2048">View Post Counts</def>
-
-      <def bit="0x10000" comment="">Grant Permissions</def>
-      <def bit="0x20000" comment="Only the site owner may alter this user's permissions. The site owner is set in config.php.">Untouchable</def>
-      
-      <def bit="0x40000" comment="Gives the user full moderation to all rooms, except private rooms.">Super-Moderator</def>
-      <def bit="0x80000" comment="Allows the user to review the contents of messages between private users, forbid private communications between particular users."></def>
-      <def bit="0x100000" comment="Allows the administrator to make site-wide bans.">Ban, Unban, Etc.</def>
-      <def bit="0x200000" comment="Allows the administrator to remove uploads made by users, and view uploads made privately.">File Uploads</def>
-      <def bit="0x1000000" comment="Allows the administrator to author and modify censor lists.">Censor</def>
-    </bitfield>
-  </definitions>
+        <table name="files" type="general" comment="User-created files.">
+            <column name="fileId" type="int" maxlen="6" autoincrement="1" comment="A unique ID for the file." />
+            <column name="fileName" type="string" maxlen="255" comment="The file's name to be sent for downloading." />
+            <column name="fileType" type="string" maxlen="255" comment="The file's mime-type/content-type." />
+            <column name="creationTime" type="time" default="__TIME__" comment="The date the file was uploaded." />
+            <column name="fileSize" type="int" maxlen="12" comment="The file's size." />
+            <column name="userId" type="int" maxlen="8" comment="The ID of the user who uploaded the file." />
+            <column name="source" type="string" maxlen="50" default="upload" comment="The file's source - in most cases upload." />
+            <column name="roomIdLink" type="int" maxlen="8" comment="If provided, the upload is linked to a particular room, which means that is may only be viewed by those who can view that room. The file will always be viewable by its poster." />
+            <column name="fileParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the file." />
+            <column name="fileParentalAge" type="int" maxlen="2" comment="The file's parental content age rating." />
+            <column name="options" type="bitfield" bits="16" comment="File options." />
+            <column name="flags" type="int" maxlen="3" comment="The number of flags this room has received. After a certain number (proportional to activeUsers, possibly), the room should be marked for moderation." />
+
+            <column name="flags" type="int" maxlen="3" comment="The number of flags this room has received. After a certain number (proportional to activeUsers, possibly), the room should be marked for moderation." />
+
+            <key name="fileId" type="primary" />
+            <key name="roomIdLink" type="index" />
+            <key name="userId" type="index" />
+        </table>
+
+
+        <table name="fileVersions" type="general" comment="User-created file contents and revisions.">
+            <column name="versionId" type="int" maxlen="6" autoincrement="1" comment="A unique identifier for all file versions, regardless of each file." />
+            <column name="fileId" type="int" maxlen="6" comment="The ID of the parent file." />
+            <column name="time" type="time" default="__TIME__" comment="The time the revision of the file was uploaded." />
+            <column name="size" type="int" maxlen="10" comment="The file size of the revision." />
+            <column name="md5hash" type="string" maxlen="32" comment="The MD5 hash of the file's binary data." />
+            <column name="sha256hash" type="string" maxlen="64" comment="The SHA256 hash of the file's binary data." />
+            <column name="salt" type="int" maxlen="6" comment="The salt number (stored in the product configuration) used for encryption." />
+            <column name="iv" type="string" maxlen="255" comment="The base64-encoded IV used for encryption." />
+            <column name="contents" type="string" maxlen="4294967295" comment="The base64-encoded binary data of the file." />
+
+            <column name="location" type="string" maxlen="1024" comment="The location of the file on the fileserver, if used." />
+
+            <key name="versionId" type="primary" />
+            <key name="fileId" type="index" />
+        </table>
+
+
+        <table name="fullLog" type="general" comment="A log of moderator actions that document all update(), insert(), and delete() calls.">
+            <column name="id" type="int" maxlen="12" autoincrement="1" comment="A unique ID   for the log entry." />
+            <column name="user" type="int" maxlen="8" comment="The JSON-encoded $user data." />
+            <column name="time" type="time" default="__TIME__" comment="The time the action was performed on." />
+            <column name="server" type="string" maxlen="128" comment="The JSON encoding of the $_SERVER variable." />
+            <column name="action" type="string" maxlen="100" comment="The action performed." />
+            <column name="data" type="string" maxlen="100" comment="The associated data of the action, encoded using JSON." />
+
+            <key name="id" type="primary" />
+        </table>
+
+
+        <table name="kicks" type="general" comment="Room-created temporary user bans.">
+            <column name="userId" type="int" maxlen="8" comment="The ID of the user who has been kicked." />
+            <column name="roomId" type="int" maxlen="6" comment="The ID of the room the kick is active in." />
+            <column name="kickerid" type="int" maxlen="8" comment="The ID of the user who made the kick." />
+            <column name="time" type="time" default="__TIME__" comment="The time the kick was made on." />
+            <column name="length" type="int" maxlen="8" comment="The time the kick will remain active for." />
+
+            <key name="userId,roomId" type="primary" />
+            <key name="time" type="index" />
+            <key name="length" type="index" />
+        </table>
+
+
+        <table name="oauth_clients">
+            <column name="client_id" type="string" maxlen="80" required="true" />
+            <column name="client_secret" type="string" maxlen="80" />
+            <column name="redirect_uri" type="string" maxlen="2000" />
+            <column name="grant_types" type="string" maxlen="80" />
+            <column name="scope" type="string" maxlen="4000" />
+            <column name="user_id" type="string" maxlen="80" />
+
+            <key name="client_id" type="primary" />
+        </table>
+
+        <table name="oauth_access_tokens">
+            <column name="access_token" type="string" maxlen="40" required="true" />
+            <column name="client_id" type="string" maxlen="80" required="true" />
+            <column name="user_id" type="string" maxlen="80" />
+            <column name="expires" type="time" required="true" />
+            <column name="scope" type="string" maxlen="4000" />
+
+            <!-- FIM Additions -->
+            <column name="ip_address" type="string" maxlen="128" comment="The user's IP address." />
+            <column name="http_user_agent" type="string" maxlen="1000" comment="The user's browser user agent, if applicable." />
+            <column name="anon_id" type="int" maxlen="6" comment="A unique ID that can be used for anonymous users." />
+
+            <key name="access_token" type="primary" />
+        </table>
+
+        <table name="oauth_authorization_codes">
+            <column name="authorization_code" type="string" maxlen="40" required="true" />
+            <column name="client_id" type="string" maxlen="80" required="true" />
+            <column name="user_id" type="string" maxlen="80" />
+            <column name="redirect_uri" type="string" maxlen="2000" />
+            <column name="expires" type="time" required="true" />
+            <column name="scope" type="string" maxlen="4000" />
+            <column name="id_token" type="string" maxlen="1000" />
+
+            <key name="authorization_code" type="primary" />
+        </table>
+
+        <table name="oauth_refresh_tokens">
+            <column name="refresh_token" type="string" maxlen="40" required="true" />
+            <column name="client_id" type="string" maxlen="80" required="true" />
+            <column name="user_id" type="string" maxlen="80" />
+            <column name="expires" type="time" required="true" />
+            <column name="scope" type="string" maxlen="4000" />
+
+            <key name="refresh_token" type="primary" />
+        </table>
+
+        <table name="oauth_scopes">
+            <column name="scope" type="string" maxlen="4000" required="true" />
+            <column name="is_default" type="bool" default="0" />
+        </table>
+
+        <table name="oauth_jwt">
+            <column name="client_id" type="string" maxlen="80" required="true" />
+            <column name="subject" type="string" maxlen="80" />
+            <column name="public_key" type="string" maxlen="2000" required="true" />
+        </table>
+
+        <table name="oauth_jti">
+            <column name="issuer" type="string" maxlen="80" required="true" />
+            <column name="subject" type="string" maxlen="80" />
+            <column name="audience" type="string" maxlen="80" />
+            <column name="expires" type="time" required="true" />
+            <column name="jti" type="string" maxlen="2000" required="true" />
+        </table>
+
+        <table name="oauth_public_keys">
+            <column name="client_id" type="string" maxlen="80" />
+            <column name="public_key" type="string" maxlen="2000" />
+            <column name="private_key" type="string" maxlen="2000" />
+            <column name="encryption_algorithm" type="string" maxlen="100" default="RS256" />
+        </table>
+
+
+        <table name="messages" type="general" partitionBy="roomId" comment="User-created messages.">
+            <column name="messageId" type="int" maxlen="9" autoincrement="1" comment="The unique ID of the message." />
+            <column name="userId" type="int" maxlen="8" comment="The ID of the user who made the message." />
+            <column name="roomId" type="int" maxlen="6" comment="The ID of the room the message was made in." />
+            <column name="text" type="string" maxlen="5000" comment="The text of the message." />
+            <column name="textSha1" type="string" maxlen="40" comment="A SHA1 hash of the text of the message." />
+            <column name="salt" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
+            <column name="iv" type="string" maxlen="15" comment="The base64-encoded IV used for encryption." />
+            <column name="deleted" type="bool" default="0" comment="Whether or not the message has been deleted by an administrator." />
+            <column name="time" type="time" default="__TIME__" comment="The time the message was made on." />
+            <column name="ip" type="string" maxlen="128" comment="The IP of the user who made the message." />
+            <column name="flag" type="string" maxlen="10" comment="The content-type flag of the message (e.g. video, image, text, archive, html, url, email)." />
+
+            <key name="messageId,roomId" type="primary" />
+            <key name="roomId" type="index" />
+            <key name="deleted" type="index" />
+            <key name="time" type="index" />
+            <key name="roomId" type="index" />
+            <key name="userId" type="index" />
+        </table>
+
+
+        <table name="messageIndex" type="general" comment="A pseudo-cache that indexes every x (usually 1000) messages made in a room, thus allowing faster lookup. It must be rebuilt if corrupted. (I haven't had time to check to see the performance of both this and messageDates, but I'm guessing I just somehow was using bad indexes when I came up with this seemingly asinine idea. I'll quite likely remove both, or just keep them in for fun.">
+            <column name="roomId" type="int" maxlen="6" comment="The ID of the room the message was made in." />
+            <column name="interval" type="int" maxlen="15" comment="The interval of messages in the room with which the message ID corresponds." />
+            <column name="messageId" type="int" maxlen="9" comment="The unique ID of the message." />
+
+            <key name="roomId,interval" type="primary" />
+        </table>
+
+
+        <table name="messageDates" type="general" comment="A pseudo-cache that indexes the first message made in any given day (or other time range), thus allowing lookup. It must be rebuilt if corrupted.">
+            <column name="time" type="time" comment="The day (or appropriate time range) the message was made on." />
+            <column name="messageId" type="int" maxlen="9" comment="The unique ID of the message." />
+
+            <key name="time" type="primary" />
+        </table>
+
+
+        <table name="messagesCached" type="memory" comment="A cache of user-created messages for scalibility.">
+            <column name="id" type="int" maxlen="6" autoincrement="1" comment="A unique (temporary) ID for the message cache entry." />
+            <column name="messageId" type="int" maxlen="9" />
+            <column name="roomId" type="int" maxlen="6" />
+            <column name="userId" type="int" maxlen="8" />
+            <column name="userName" type="string" maxlen="50" />
+            <column name="avatar" type="string" maxlen="200" />
+            <column name="profile" type="string" maxlen="200" />
+            <column name="userGroupId" type="int" maxlen="6" default="1" />
+            <column name="socialGroupIds" type="string" maxlen="300" />
+            <column name="userNameFormat" type="string" maxlen="100" comment="CSS-formatting to be applied to the user's name." />
+            <column name="messageFormatting" type="string" maxlen="300" />
+            <column name="time" default="__TIME__" type="time" />
+            <column name="text" type="string" maxlen="5000" />
+            <column name="flag" type="string" maxlen="10" />
+
+            <trigger lang="postgres" comment="A trigger that watches the messagesCached table, returning results in JSON. By default the returned JSON _cannot_ be greater than 8,000 bytes.">
+                CREATE OR REPLACE FUNCTION notifyMessage() RETURNS trigger AS $$
+                DECLARE
+                BEGIN
+                SELECT row_to_json(NEW, false) AS jsonString
+                SELECT (CASE WHEN octet_length(jsonString) > 8000 THEN NEW.messageId ELSE jsonString) AS jsonStringChecked
+                PERFORM pg_notify('messagesCachedNotify', jsonStringChecked);
+                RETURN NEW;
+                END;
+                $$ LANGUAGE plpgsql;
+
+                CREATE TRIGGER notifyMessage AFTER UPDATE ON messagesCached FOR EACH ROW EXECUTE PROCEDURE notifyMessage();
+            </trigger>
+
+            <key name="id" type="primary" />
+            <key name="messageId" type="index" />
+            <key name="roomId" type="index" />
+            <key name="time" type="index" />
+        </table>
+
+
+        <table name="messageEditHistory" type="general" comment="A history of editted messages.">
+            <column name="messageId" type="int" maxlen="9" comment="The unique ID of the message." />
+            <column name="userId" type="int" maxlen="8" comment="The user who editted the message." />
+            <column name="oldText" type="string" maxlen="5000" comment="The old raw text of the message." />
+            <column name="newText" type="string" maxlen="5000" comment="The new raw text of the message." />
+            <column name="time" type="time" default="__TIME__" comment="The time of the change." />
+            <column name="ip" type="string" maxlen="128" comment="The IP of the user during the change." />
+            <column name="salt1" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
+            <column name="salt2" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
+            <column name="iv1" type="string" maxlen="15" comment="The base64-encoded IV used for encryption." />
+            <column name="iv2" type="string" maxlen="15" comment="The base64-encoded IV used for encryption." />
+
+            <key name="messageId,time" type="primary" />
+        </table>
+
+
+        <table name="modlog" type="general" comment="A log of moderator actions.">
+            <column name="id" type="int" maxlen="12" autoincrement="1" comment="A unique ID for the log entry." />
+            <column name="userId" type="int" maxlen="8" comment="The user ID who performed the action." />
+            <column name="time" type="time" default="__TIME__" comment="The time the action was performed on." />
+            <column name="ip" type="string" maxlen="128" comment="The IP of the user when the action was performed." />
+            <column name="action" type="string" maxlen="100" comment="The action performed." />
+            <column name="data" type="string" maxlen="100" comment="The associated data of the action." />
+
+            <key name="id" type="primary" />
+        </table>
+
+
+        <table name="ping" type="memory" comment="User online statuses.">
+            <column name="userId" type="int" maxlen="8" comment="The ID of the user." />
+            <column name="roomId" type="int" maxlen="6" comment="The ID of the room." />
+            <column name="time" type="time" default="__TIME__" comment="The time of the ping." />
+            <column name="status" type="string" restrict="away,busy,available,invisible,offline," comment="The user's status." />
+            <column name="typing" type="bool" default="0" comment="Whether or not the user is typing." />
+
+            <key name="userId,roomId" type="primary" />
+            <key name="time" type="index" />
+            <key name="userId" type="index" />
+            <key name="roomId" type="index" />
+        </table>
+
+
+        <table name="rooms" type="general" comment="User-created rooms.">
+            <!-- General -->
+            <column name="roomId" type="int" maxlen="6" autoincrement="1" comment="The unique ID for the room." />
+            <column name="roomName" type="string" maxlen="50" comment="The name of the room." />
+            <column name="roomAlias" type="string" maxlen="6" comment="An alias that can be used to identify a room by. This should be unique, and is meant to be used for otr and private rooms. Caching recommended." />
+            <column name="roomNameSearchable" type="string" maxlen="50" comment="The name of the room, formatted for searching." />
+            <column name="roomTopic" type="string" maxlen="200" comment="The current topic of the room." />
+            <column name="options" type="bitfield" bits="8" default="0" comment="A bitfield corrosponding to certain room options." />
+
+            <!-- Permissions -->
+            <column name="roomType" type="string" default="general" restrict="general,otr,private" comment="The room type." />
+            <column name="ownerId" type="int" maxlen="10" comment="The owner/creator of the room." />
+            <column name="defaultPermissions" type="bitfield" bits="8" default="7" comment="A bitfield corrosponding to permissions users are granted if they do not exist in the roomPermissions table." />
+
+            <!-- Parental Controls -->
+            <column name="roomParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the user." />
+            <column name="roomParentalFlagsField" type="bitfield" bits="16" comment="[TODO] A bitfield corresponding to parentalFlags. The corresponding bits are defined as part of config, and whenever the corresponding config data is modified, all bitfields must be updated. The benefits over a comma-seperated list are the ability to rename flags without requiring a rebuild, less data usage (good for caching), and the ability to query for individual flags." />
+            <column name="roomParentalAge" type="int" maxlen="2" comment="The room's parental content age rating." />
+
+            <!-- Counters -->
+            <column name="lastMessageTime" type="time" default="0" comment="The time of the last message made in the room." />
+            <column name="lastMessageId" type="int" maxlen="15" comment="The ID of the last message made in the room." />
+            <column name="messageCount" type="int" maxlen="15" default="0" comment="The number of messages in this room." />
+            <column name="flags" type="int" maxlen="3" comment="The number of flags this room has received. After a certain number (proportional to activeUsers, possibly), the room should be marked for moderation." />
+
+            <!-- Caches -->
+            <column name="watchedBy" type="string" maxlen="50000" comment="A CSV cache of the users watching this room." />
+
+
+            <key name="roomId" type="primary" />
+            <key name="roomAlias" type="index" />
+            <key name="roomNameSearchable" type="index" />
+            <key name="options" type="index" />
+            <key name="ownerId" type="index" />
+            <key name="lastMessageId" type="index" />
+            <key name="lastMessageTime" type="index" />
+        </table>
+
+
+        <table name="roomEvents" type="memory" comment="Events that relate to a specific room.">
+            <column name="eventId" type="int" maxlen="8" autoincrement="1" comment="A unique identifier for the event." />
+            <column name="eventName" type="string" maxlen="20" comment="The name of the event (e.g. topic-change, edit-message)." />
+            <column name="roomId" type="int" maxlen="8" comment="The rooom ID." />
+            <column name="param1" type="string" maxlen="20" comment="An additional parameter." />
+            <column name="param2" type="string" maxlen="20" comment="An additional parameter." />
+            <column name="time" type="time" comment="The time of the event's occurrence, primarily for maintenance." />
+
+            <key name="eventId" type="primary" />
+            <key name="eventName" type="index" />
+            <key name="roomId" type="index" />
+        </table>
+
+
+        <table name="roomHistory" type="general" comment="A history of all changes made to rooms. This is enabled per-installation.">
+            <!-- General -->
+            <column name="roomId" type="int" maxlen="6" autoincrement="1" comment="The unique ID for the room." />
+            <column name="roomName" type="string" maxlen="50" comment="The name of the room." />
+            <column name="roomTopic" type="string" maxlen="200" comment="The current topic of the room." />
+            <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options." />
+
+            <!-- Permissions -->
+            <column name="ownerId" type="int" maxlen="10" comment="The ID of the owner/creator of the room." />
+            <column name="defaultPermissions" type="bitfield" bits="8" default="7" comment="A bitfield corrosponding to permissions users are granted if they do not exist in the roomPermissions table." />
+
+            <!-- Parental Controls -->
+            <column name="roomParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the room." />
+            <column name="roomParentalAge" type="int" maxlen="2" comment="The room's parental content age rating." />
+
+            <column name="changeTime" type="time" default="__TIME__" comment="The time at which the above information was altered." />
+
+            <key name="roomId,changeTime" type="primary" />
+        </table>
+
+
+        <table name="roomPermissions" type="general" content="Groups and users who are granted access to rooms.">
+            <column name="roomId" type="int" maxlen="6" comment="The room ID." />
+            <column name="attribute" type="string" restrict="user,group" comment="Whether the param column corresponds to a user or group." />
+            <column name="param" type="int" maxlen="8" comment="The user ID or group ID being affected." />
+            <column name="permissions" type="bitfield" bits="16" comment="The permissions granted in the room to the affected user or group." />
+
+            <key name="roomId,attribute,param" type="primary" />
+        </table>
+
+
+        <table name="roomPermissionsCache" type="memory" content="A simplified cache of room permissions. This table should be used to determine if a user is known to be allowed access to a room. When a row doesn't exist, it should be tested fully and then inserted here.">
+            <column name="roomId" type="int" maxlen="6" comment="The room ID." />
+            <column name="userId" type="int" maxlen="8" comment="The user ID." />
+            <column name="permissions" type="bitfield" bits="16" comment="The user's permissions." />
+            <column name="expires" type="time" comment="After this time, the entry will no longer be considered valid. May be disabled if this cache is updated automatically." />
+            <column name="isKicked" type="bool" comment="If an access restriction is because of a kick, this should indicate as much. This can be used to tell a user they have been kicked instead of having to query the kicks table to check each time. It is assumed that if true, then expires corresponds with the kick expiration." />
+
+            <key name="roomId,userId" type="primary" />
+        </table>
+
+
+        <table name="roomStats" type="general" comment="A cache for the number of posts made by different users in rooms.">
+            <column name="userId" type="int" maxlen="8" comment="The ID of the user." />
+            <column name="roomId" type="int" maxlen="6" comment="The ID of the room." />
+            <column name="messages" type="int" maxlen="10" comment="The number of messages made by the user in the room." />
+
+            <key name="userId,roomId" type="primary" />
+        </table>
+
+
+        <table name="searchMessages" type="general" comment="A cache of messages containing search phrases.">
+            <column name="phraseId" type="int" maxlen="8" comment="The ID of the phrase found in the message." />
+            <column name="messageId" type="int" maxlen="9" comment="The ID of the message." />
+            <column name="userId" type="int" maxlen="8" comment="The user who made the above post." />
+            <column name="roomId" type="int" maxlen="6" comment="The room the above post is contained in." />
+
+            <key name="messageId,phraseId" type="primary" />
+            <key name="roomId" type="index" />
+        </table>
+
+
+        <table name="searchPhrases" type="general" note="As of FIMv3B3 this is not as scalable as one might have hoped, though changes may be made further into the future, or at the latest in FIMv4" comment="A cache of search phrases to ease message searching in a scalable way.">
+            <column name="phraseId" type="int" maxlen="8" autoincrement="1" comment="A unique ID corrosponding to the phrase name/text." />
+            <column name="phraseName" type="string" maxlen="50" comment="The name/text of the phrase." />
+
+            <key name="phraseId" type="primary" />
+            <key name="phraseName" type="unique" />
+        </table>
+
+
+        <table name="searchCache" type="general" comment="A cache of message searches. Note that this cache is most efficient when fulltext searching is enabled, but that it will still have minor benefits when using searchPhrases instead.">
+            <column name="phraseName" type="string" maxlen="50" comment="The phrase to search." />
+            <column name="userId" type="int" maxlen="8" comment="Limits the search results to this userId." />
+            <column name="roomId" type="int" maxlen="8" comment="Limits the search results to this roomId." />
+            <column name="resultPage" type="int" maxlen="6" comment="The result page this set corresponds with." />
+            <column name="resultLimit" type="int" maxlen="6" comment="The result limit this set corresponds with." />
+            <column name="messageIds" type="string" maxlen="50000" comment="The message IDs that result when searching phraseName, userId, and roomId (CSV)." />
+            <column name="expires" type="time" comment="When the cache is no longer considered valid." />
+
+            <key name="phraseName,userId,roomId,resultPage,resultLimit" type="primary" />
+        </table>
+
+
+        <table name="sessionLockout" type="memory" comment="Keeps track of failed login attempts, eventually blocking IP addresses from attempting additional logins.">
+            <column name="ip" type="string" maxlen="128" comment="The user's IP address." />
+            <column name="attempts" type="int" maxlen="2" comment="Failed login attempts." />
+            <column name="expires" type="time" comment="When the entry is considered expired." />
+
+            <key name="ip" type="primary" />
+        </table>
+
+
+        <table name="socialGroups" type="general" comment="The members of user groups.">
+            <column name="groupId" type="int" maxlen="6" comment="The group ID." />
+            <column name="groupName" type="string" maxlen="50" comment="The group name." />
+            <column name="creatorId" type="int" maxlen="8" fkey="users.userId" comment="The creator userID of the group." />
+            <column name="creationTime" type="time" default="__TIME__" comment="Time the group was created." />
+            <column name="leaderId" type="int" maxlen="8" fkey="users.userId" comment="The current leader of the group. Allowed to set group options and remove members." />
+            <column name="options" type="int" maxlen="6" comment="Group options." />
+            <column name="userNameFormat" type="string" maxlen="300" comment="CSS-formatting to be applied to any users that have this group as their primary, if they have not specified their own." />
+
+            <key name="groupId" type="primary" />
+        </table>
+
+
+        <table name="socialGroupMembers" type="general" comment="The members of groups, used with vanilla logins.">
+            <column name="groupId" type="int" maxlen="6" fkey="socialGroups.groupId" comment="The group ID." />
+            <column name="userId" type="int" maxlen="8" fkey="users.userId" comment="The member ID of the group." />
+            <column name="type" default="pending" restrict="member,moderator,pending,banned" type="string" comment="Whether a group member is a normal member, a moderator (able to add and remove other users from the group), or has been banned from the group (can not requested invitation)." />
+
+            <key name="groupId,userId" type="primary" />
+        </table>
+
+
+        <table name="unreadMessages" type="general" comment="Unread private messages and messages made to watched rooms. Only the most least recent message should be included.">
+            <column name="userId" type="int" maxlen="8" fkey="users.userId" comment="The ID of the user who has yet to read the message." />
+            <column name="senderId" type="int" maxlen="8" fkey="users.userId" comment="The ID of the user who sent the message." />
+            <column name="senderName" type="string" maxlen="50" fkey="users.userName" fkeyWeak="true" comment="The name of the user who sent the message." />
+            <column name="senderNameFormat" type="string" maxlen="300" fkey="users.userNameFormat" fkeyWeak="true" comment="CSS-formatting to be applied to the sender's name." />
+            <column name="roomId" type="int" maxlen="6" comment="The ID of the room in question. May refer to either rooms.roomId or privateRooms.uniqueId." />
+            <column name="roomName" type="string" maxlen="50" comment="The name of the room in question." />
+            <column name="messageId" type="int" maxlen="9" fkey="messages.messageId" comment="The ID of the message." />
+            <column name="time" type="time" default="__TIME__" comment="The time the message was made." />
+            <column name="otherMessages" type="int" comment="The number of other messages that have been sent since this one." />
+
+            <key name="userId,roomId" type="primary" />
+            <key name="time" type="index" />
+        </table>
+
+
+        <table name="users" type="general" comment="The users.">
+            <!-- General -->
+            <column name="userId" type="int" maxlen="8" autoincrement="1" comment="The unique ID of the user." />
+            <column name="userName" type="string" maxlen="50" comment="The user's name." />
+            <column name="userGroupId" type="int" maxlen="6" default="1" comment="The admin-set socialGroup ID of the user." />
+            <column name="socialGroupIds" type="string" maxlen="1000" comment="A comma-seperated list of the IDs of all groups the user has joined." />
+            <column name="options" type="bitfield" bits="16" comment="A bitfield corrosponding to the user's settings." />
+            <column name="joinDate" type="time" default="__TIME__" comment="The date the user joined." />
+            <column name="birthDate" type="time" default="0" comment="The date of the user's birth, used for parental control settings." />
+            <column name="email" type="string" maxlen="254" comment="The user's email address. Only used in vanilla logins." />
+            <column name="emailVerified" type="bool" default="0" />
+
+            <column name="lastSync" type="time" default="0" comment="The date the userdata was last synced. This is not applicable for vanilla logins." />
+
+            <!-- Password Fun -->
+            <!-- Note: The password section is rather verbose in an effort to ensure that it is easy to change algorithms. -->
+            <column name="passwordHash" type="string" maxlen="2048" comment="The hashed password of the user. It is only used on vanilla logins." />
+
+            <column name="passwordFormat" type="string" restrict="vbmd5,phpass,plaintext" comment="The encryption format used for the password. This allows easy transition to safer formats, forcing people using the old format to reset their password. VBMD5 is the hashing format used by vBulletin, phpass is the portable PHP hashing format used by PHPBB and Vanilla. Plaintext signifies no encryption, mostly used with development." />
+            <column name="passwordResetNow" type="bool" default="0" comment="When set, the user is required to reset his or her password on next login. This, unfortunately, requires the co-operation of clients, and as such may in theory be delayed or ignored entirely. But, I mean, it's better than nothing." />
+            <column name="passwordLastReset" type="time" comment="The last time the user reset his or her password.." />
+
+            <!-- OAuth Stuff -->
+            <column name="scope" type="string" maxlen="4000" comment="An OAuth scope string. May or may not actually get implemented, but reserved to make things easier." />
+
+            <!-- User Display -->
+            <column name="avatar" type="string" maxlen="200" comment="The absolute URI of the user's avatar." />
+            <column name="profile" type="string" maxlen="200" comment="The absolute URI of the user's profile link or website." />
+            <column name="userNameFormat" type="string" maxlen="300" comment="CSS-formatting to be applied to the user's name for its display." />
+
+            <!-- Prefs -->
+            <column name="defaultRoomId" type="int" maxlen="6" default="1" fkey="rooms.roomId" comment="The user's default room." />
+
+            <!-- Status -->
+            <column name="status" type="int" maxlen="3" comment="The user's activity status." />
+
+            <!-- Formatting -->
+            <column name="messageFormatting" type="string" maxlen="300" comment="CSS-formatting that should be applied to all of the user's messages. This will generally be restricted to what the API allows -- by default, just fontface, colour, highlight, and bold/italics." />
+
+            <!-- Permissions -->
+            <column name="privs" type="bitfield" bits="31" default="0" comment="A bitfield corresponding to admin-set user priviledges. The 31 size is done for portability -- 32-bit PHP systems (those on 32-bit or Windows systems) can only use the first 31 bits, because the 32 bit is used for signing." />
+
+            <!-- Counters -->
+            <column name="fileCount" type="int" maxlen="8" default="0" comment="The number of files store on the server by this user." />
+            <column name="fileSize" type="int" maxlen="8" default="0" comment="The total size of all files stored on the server by this user." />
+            <column name="ownedRoomIds" type="string" maxlen="10000" comment="Total number of rooms owned by this user (may be used to place a limit on room creation.)" />
+            <column name="messageCount" type="int" maxlen="8" default="0" comment="The number of messages made by this user." />
+            <column name="favRoomIds" type="string" maxlen="10000" comment="A CSV cache of the favRooms table for this user." />
+            <column name="watchRoomIds" type="string" maxlen="10000" comment="A CSV cache of the watchRooms table for this user." />
+            <column name="ignoredUserIds" type="string" maxlen="10000" comment="A CSV cache of users ignored by this user." />
+            <column name="friendedUserIds" type="string" maxlen="10000" comment="A CSV cache of users friended by this user." />
+
+            <!-- Parental Controls -->
+            <column name="userParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to restrict access to." />
+            <column name="userParentalAge" type="int" maxlen="2" comment="Content rated above this rating should be blocked." />
+
+
+            <key name="userId" type="primary" />
+            <key name="userGroupId" type="index" />
+            <key name="lastSync" type="index" />
+            <key name="privs" type="index" />
+
+            <key name="options" type="index" />
+            <key name="fileCount" type="index" />
+            <key name="fileSize" type="index" />
+            <key name="messageCount" type="index" />
+            <key name="defaultRoomId" type="index" />
+        </table>
+
+
+        <table name="userEvents" type="memory" comment="Events that relate to a specific user.">
+            <column name="eventId" type="int" maxlen="8" autoincrement="1" comment="A unique identifier for the event." />
+            <column name="eventName" type="string" maxlen="20" comment="The name of the event (e.g. friend-request, unread-message)." />
+            <column name="userId" type="int" maxlen="8" comment="The user ID." />
+            <column name="param1" type="string" maxlen="20" comment="An additional parameter." />
+            <column name="param2" type="string" maxlen="20" comment="An additional parameter." />
+            <column name="time" type="time" default="__TIME__" comment="The time of the event's occurrence, primarily for maintenance." />
+
+            <key name="eventId" type="primary" />
+            <key name="eventName" type="index" />
+            <key name="userId" type="index" />
+        </table>
+
+
+        <table name="userFavRooms" type="general" comment="A list of starred rooms. Unlike most other lists, this list generally doesn't have any backend effects, but we thought it was too useful not to include. Clients are still encouraged to implement more powerful tagging and lists themselves.">
+            <column name="userId" type="int" maxlen="8" comment="The user ID." />
+            <column name="roomId" type="int" maxlen="6" comment="The room ID." />
+
+            <key name="userId,roomId" type="primary" />
+        </table>
+
+
+        <table name="userFriendsList" type="general" comment="A list of user friends, with whom private contact may be restricted in some cases. Clients are encouraged to enable more advanced tagging and lists.">
+            <column name="userId" type="int" maxlen="8" comment="The user ID." />
+            <column name="subjectId" type="int" maxlen="8" comment="The user ID friended." />
+            <column name="status" type="string" restrict="friend,request,deny" comment="Whether the relationship is a friend connection, merely a request, or if the request has been denied permanently." />
+
+            <key name="userId,subjectId" type="primary" />
+        </table>
+
+
+        <table name="userIgnoreList" type="general" comment="A list of user's a user wishes to ignore. Ignoring prevents private contact, but few other changes are made -- clients may, at their descretion, let users hide posts by other users, etc.">
+            <column name="userId" type="int" maxlen="8" comment="The user ID." />
+            <column name="subjectId" type="int" maxlen="8" comment="The user ID ignored." />
+
+            <key name="userId,subjectId" type="primary" />
+        </table>
+
+
+        <table name="userHistory" type="general" comment="A history of modifications to the user table. This is enabled per-installation.">
+            <!-- General -->
+            <column name="userId" type="int" maxlen="8" />
+            <column name="userName" type="string" maxlen="50" />
+            <column name="userGroupId" type="int" maxlen="6" default="1" />
+            <column name="socialGroupIds" type="string" maxlen="1000" />
+            <column name="options" type="bitfield" bits="16" />
+            <column name="messageFormatting" type="string" maxlen="300" />
+
+            <!-- Password Fun -->
+            <column name="password" type="string" maxlen="64" />
+            <column name="passwordSalt" type="string" maxlen="50" />
+            <column name="passwordSaltNum" type="int" maxlen="6" />
+
+            <!-- User Display -->
+            <column name="avatar" type="string" maxlen="200" />
+            <column name="profile" type="string" maxlen="200" />
+            <column name="userNameFormat" type="string" maxlen="300" />
+
+            <!-- Permissions -->
+            <column name="privs" type="bitfield" bits="31" />
+
+            <!-- Parental Controls -->
+            <column name="userParentalFlags" type="string" maxlen="255" />
+            <column name="userParentalAge" type="int" maxlen="2" />
+
+            <column name="changeTime" type="time" default="__TIME__" comment="The time at which the above information was altered." />
+
+            <key name="userId,changeTime" type="primary" />
+        </table>
+
+
+        <table name="watchRooms" type="general" comment="A table of rooms being watched by different users.">
+            <column name="userId" type="int" maxlen="8" comment="The user ID." />
+            <column name="roomId" type="int" maxlen="6" comment="The room ID to be watched." />
+        </table>
+    </database>
+
+
+    <definitions>
+        <bitfield name="options" table="censorLists">
+            <def bit="1" comment="If false, the list is considered inactive and is neither used nor shown to users under any circumstances.">Enabled</def>
+            <def bit="2" comment="If true, the list can not be disabled by non-administrators.">Required</def>
+            <def bit="4" comment="If true, the list is not 'shown' to users. The authors of FIM really don't like this option, but provide it anyway.">Hidden</def>
+            <def bit="256" comment="If true, the list is automatically disabled in private and OTR communication.">Disabled in Private/OTR</def>
+        </bitfield>
+
+        <bitfield name="options" table="files">
+            <def bit="4" comment="(TODO) Deleted files are only viewable by administrators, and should not be shown even to their poster.">Deleted</def>
+            <def bit="64" comment="(TODO) A file that needs to be approved by an administrator before it will be displayed.">Under Review (Moderated)</def>
+            <def bit="128" comment="(TODO) A file that has previously cleared moderation." note="Basically, this should disable the ability to flag a file.">Approved</def>
+        </bitfield>
+
+        <bitfield name="defaultPermissions" table="rooms">
+            <def bit="1">Can View</def>
+            <def bit="2">Can Post</def>
+            <def bit="4">Can Change the Topic</def>
+            <def bit="8">Can Modify and Delete Posts</def>
+            <def bit="16">Can Edit Room Properties (e.g. name)</def>
+            <def bit="128">Can Grant</def>
+        </bitfield>
+
+        <bitfield name="options" table="rooms">
+            <def bit="1" comment="'Official' rooms are designated as such, but generally don't alter permissions in any way.">Official</def>
+            <def bit="4" comment="Deleted rooms are only viewable by administrators, and are otherwise read-only.">Deleted</def>
+            <def bit="8" comment="Hidden rooms are not displayed under any circumstances, except to site administrators. Similarly, only administrators may set this flag. Hidden rooms can still be accessed by anyone who both has permission and knows the room ID.">Hidden</def>
+            <def bit="16" comment="These rooms may not be posted in, and may be optimised specially. Otherwise, they behave normally, and only people with permission to view or know a room will be able to do such..">Archived</def>
+            <def bit="64" comment="(TODO) A room that needs to be approved by an administrator before it may be used. This room will only be shown to its owner until it has been approved.">Under Review (Moderated)</def>
+            <def bit="128" comment="(TODO) A room that has previously cleared moderation." note="Basically, this should disable the ability to flag a room.">Approved</def>
+            <def bit="256">Reserved for R9000. Not supported officially, but marked for extensions that wish to support.</def>
+        </bitfield>
+
+        <bitfield name="permissions" table="roomPermissions" comment="An argument can be made that these are all sequential, and should instead simply be 1/2/3/4/... That argument is right. We're doing this anyway.">
+            <def bit="1" comment="This allows the room's common properties -- topic, name, etc. -- to be known, and its messages to be viewed. The room is effectively read-only if this permission is set alone.">Can View</def>
+            <def bit="2" comment="This allows a user to post in a room.">Can Post</def>
+            <def bit="4" comment="Whether a user may modify a room's topic.">Can Change the Topic</def>
+            <def bit="8" comment="Whether a user may edit or delete posts made by other users.">Can Modify and Delete Posts</def>
+            <def bit="16" comment="Whether a user may modify common room properties, such as its name and censor lists.">Can Edit Room Properties (e.g. name)</def>
+            <def bit="128" comment="Whether a user may alter user permissions for the room.">Can Grant</def>
+        </bitfield>
+
+        <bitfield name="options" table="socialGroups">
+            <def bit="1" comment="This prevents users from joining groups. Instead, a user may be put into this group by an administrator.">Admin Group</def>
+            <def bit="2" comment="If set, a user can only join this group once approved by a moderator for the group.">Moderated Group</def>
+            <def bit="16" comment="If set, a user that belongs to such a group will have their username style set to this group's style regardless of their own setting. If not set, a user's group formatting will only be applied when they have not specified one themselves.">Override Username Formatting</def>
+        </bitfield>
+
+        <bitfield name="options" table="users">
+            <def bit="4" comment="(TODO) Deleted users are treated as non-existent for purposes of logging in. The user's name is, however, reserved.">Deleted</def>
+            <def bit="64" comment="(TODO) A user that needs to be approved by an administrator before it will gain normal permissions" note="Basically, when this feature is active, two sets of default permissions will exist -- one for unapproved users, and another for approved users. When approved, a user's permissions will be set to the new permissions">Under Review (Moderated)</def>
+        </bitfield>
+
+        <bitfield name="privs" table="users">
+            <def bit="1">View</def>
+            <def bit="2">Post</def>
+            <def bit="4">Change Topic</def>
+            <def bit="8">Upload Files</def>
+            <def bit="16">Create Social Groups</def>
+            <def bit="32">Create Rooms</def>
+            <def bit="64" comment="If false, Disallows a user from creating and being part of OTR and private rooms.">Contact Friends for Private Contact</def>
+            <def bit="128" comment="If false, Disallows a user from creating and being part of OTR and private rooms where any user is not on the user's friend list.">Contact Non-Friends for Private Contact</def>
+            <def bit="1024">View Active Users</def>
+            <def bit="2048">View Post Counts</def>
+
+            <def bit="0x10000" comment="">Grant Permissions</def>
+            <def bit="0x20000" comment="Only the site owner may alter this user's permissions. The site owner is set in config.php.">Untouchable</def>
+
+            <def bit="0x40000" comment="Gives the user full moderation to all rooms, except private rooms.">Super-Moderator</def>
+            <def bit="0x80000" comment="Allows the user to review the contents of messages between private users, forbid private communications between particular users."></def>
+            <def bit="0x100000" comment="Allows the administrator to make site-wide bans.">Ban, Unban, Etc.</def>
+            <def bit="0x200000" comment="Allows the administrator to remove uploads made by users, and view uploads made privately.">File Uploads</def>
+            <def bit="0x1000000" comment="Allows the administrator to author and modify censor lists.">Censor</def>
+        </bitfield>
+    </definitions>
 </dbSchema>
