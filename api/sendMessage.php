@@ -60,13 +60,9 @@ $ip = $_SERVER['REMOTE_ADDR']; // Get the IP address of the user.
 $room = $database->getRoom($request['roomId']);
 
 
-/* Apply Censor */
-$request['message'] = $generalCache->censorScan($request['message'], $room->id, $request['ignoreBlock'], $censorMatches);
-
-
 /* Start Processing */
 if (!$room->id) new fimError('badRoom'); // Room doesn't exist.
-elseif (strlen($request['message']) < $config['messageMinLength'] || strlen($request['message']) > $config['messageMaxLength']) new fimError('messageLength'); // Too short/long.
+elseif (strlen($request['message']) < $generalCache->getConfig('messageMinLength') || strlen($request['message']) > $generalCache->getConfig('messageMaxLength')) new fimError('messageLength', 'Minimum: ' . $generalCache->getConfig('messageMinLength') . ', Maximum: ' . $generalCache->getConfig('messageMaxLength')); // Too short/long.
 elseif (preg_match('/^(\ |\n|\r)*$/', $request['message'])) new fimError('spaceMessage'); // All spaces. TODO: MB Support
 elseif (!($database->hasPermission($user, $room) & ROOM_PERMISSION_POST)) new fimError('noPerm');
 elseif (in_array($request['flag'], array('image', 'video', 'url', 'html', 'audio'))
@@ -88,7 +84,7 @@ else {
     $room->changeTopic(preg_replace('/^\/topic( |)(.+?)$/i', '$2', $request['message']));
   }
 
-  $database->storeMessage($request['message'], $request['flag'], $user, $room);
+  $database->storeMessage($request['message'], $request['flag'], $user, $room, $request['ignoreBlock'], $censorMatches);
 }
 
 

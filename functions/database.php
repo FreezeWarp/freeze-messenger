@@ -176,7 +176,7 @@ abstract class database
         }
 
         if (!$suppressErrors) {
-            if ($this->errorFormatFunction) {
+            if ($this->errorFormatFunction && function_exists($this->errorFormatFunction)) {
                 throw new $this->errorFormatFunction('dbError', json_encode(array(
                     "Message" => $errorMessage,
                     "Database Error" => $this->getLastError(),

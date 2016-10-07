@@ -1188,7 +1188,7 @@ class databaseSQL extends database
      ******************** Row Functions **********************
      *********************************************************/
 
-    public function select($columns, $conditionArray = false, $sort = false, $limit = false)
+    public function select($columns, $conditionArray = false, $sort = false, $limit = false, $page = 0)
     {
         /* Define Variables */
         $finalQuery = array(
@@ -1390,6 +1390,8 @@ class databaseSQL extends database
                 $finalQuery['limit'] = (int) $limit;
             }
         }
+        $finalQuery['page'] = (int) $page;
+        if ($finalQuery['page'] < 0) $finalQuery['page'] = 0;
 
 
         /* Generate Final Query */
@@ -1405,6 +1407,7 @@ WHERE
 ORDER BY
   ' . $finalQuery['sort'] : '') . ($finalQuery['limit'] ? '
 LIMIT
+ ' . $finalQuery['limit'] * $finalQuery['page'] . ',
   ' . $finalQuery['limit'] : '');
 
         /* And Run the Query */

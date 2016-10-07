@@ -159,8 +159,10 @@ window.fimApi = {
             'messageIds' : '',
             'messageIdEnd' : 0,
             'messageIdStart' : 0,
+            'page' : 0,
             'search' : 0,
             'archive' : 0,
+            'messageHardLimit' : 25,
             'sortOrder' : 'asc'
         });
 
@@ -417,15 +419,15 @@ window.fimApi = {
     },
 
 
-    sendMessage : function(params, requestSettings) {
+    sendMessage : function(params, requestSettings) {console.log(params);
         var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['parentalFlags']), {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
             'roomId' : null,
-            'confirmed' : false, // TODO
+            'ignoreBlock' : false, // TODO
             'message' : null,
             'flag' : null
-        });
+        }); console.log(params);
 
         var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 

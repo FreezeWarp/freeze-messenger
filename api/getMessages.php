@@ -131,7 +131,7 @@ $request = fim_sanitizeGPC('g', array(
     'cast' => 'int',
   ),
 
-    'messageIdEnd' => array(
+  'messageIdEnd' => array(
     'default' => 0,
     'cast' => 'int',
   ),
@@ -160,6 +160,11 @@ $request = fim_sanitizeGPC('g', array(
       'plaintext', 'base64',
     ),
   ),
+
+    'page' => array(
+        'default' => 0,
+        'cast' => 'int',
+    ),
 ));
 
 
@@ -207,8 +212,10 @@ else {
     'longPolling' => $request['longPolling'],
     'userIds' => $request['userIds'],
     'roomIds' => $request['roomId'],
-    'messageIds' => $request['messageIds']
-  ), array($request['sortBy'] => $request['sortOrder']))->getAsArray(true);
+    'messageIds' => $request['messageIds'],
+    'messageHardLimit' => $request['messageHardLimit'],
+    'page' => $request['page']
+  ), array($request['sortBy'] => $request['sortOrder']), $request['messageHardLimit'], $request['page'])->getAsArray(true);
 
 
   /* Process Messages */
@@ -262,5 +269,5 @@ $xmlData['getMessages']['errDesc'] = (string) $errDesc;
 
 
 /* Output Data */
-echo apiData($xmlData);
+echo new apiData($xmlData);
 ?>

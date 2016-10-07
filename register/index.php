@@ -176,15 +176,18 @@
       }
 
       $cr = new curlRequest($crA, '/api/sendUser.php');
-      $result = json_decode($cr->execute(), true);
 
-      if (!$result) {
-        echo 'The request could not be completed. (Server Error)';
+      if (!$cr->execute()) {
+        echo 'The request could not be completed (Server Error). Its response is below: ' . $cr->response;
+      }
+      elseif (!($result = $cr->getAsJson()) || !isset($result['sendUser'])) {
+        echo 'The response could not be parsed. It is below: ' . $cr->response;
       }
       elseif ($result['sendUser']['errStr']) {
         echo '<form action="" onsubmit="window.history.back(); return false;" action="./index.php?stage=2">Error "' . $result['sendUser']['errStr'] . '": ' . $result['sendUser']['errDesc'] . '<br /><br /><input type="submit" value="Go back." /></form>';
       }
       else {
+        var_dump(!isset($result['sendUser'])); var_dump($result); die();
         echo 'You are now registered as "' . $result['sendUser']['activeUser']['userName'] . '".<br /><br /><a href="../">Return to chat interface.</a>';
       }
     }

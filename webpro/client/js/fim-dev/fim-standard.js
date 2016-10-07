@@ -6,8 +6,9 @@ var standard = {
             searchText : '',
             resultLimit : 40,
             searchUser : 0,
-            lastMessage : 0,
+//            lastMessage : 0,
             firstMessage : 0,
+            page : 0,
             roomId : 0
         },
 
@@ -51,11 +52,12 @@ var standard = {
                 'roomId' : standard.archive.options.roomId,
                 'userIds' : [standard.archive.options.searchUser],
                 'search' : standard.archive.options.searchText,
-                'messageIdEnd' : standard.archive.options.lastMessage,
-                'messageIdStart' : standard.archive.options.firstMessage,
+//                'messageIdEnd' : standard.archive.options.lastMessage,
+//                'messageIdStart' : standard.archive.options.firstMessage,
                 'messageHardLimit' : $('#resultLimit option:selected').val(),
                 'archive' : 1,
-                'sortOrder' : 'desc'
+                'sortOrder' : 'desc',
+                'page' : standard.archive.options.page
             }, {'each' : function(messageData) {
                 $('#archiveMessageList').append(fim_messageFormat(messageData, 'table'));
                 standard.archive.messageData[messageData.messageId] = messageData;
@@ -63,15 +65,13 @@ var standard = {
         },
 
         nextPage : function () {
-            this.options.lastMessage = $('#archiveMessageList tr:last td[data-messageid]').attr('data-messageid');
-            this.options.firstMessage = 0;
+            this.options.page++;
 
             this.retrieve();
         },
 
         prevPage : function () {
-            this.options.firstMessage = $('#archiveMessageList tr:first td[data-messageid]').attr('data-messageid');
-            this.options.lastMessage = 0;
+            if (this.options.page !== 0) this.options.page--;
 
             this.retrieve();
         },
@@ -237,16 +237,16 @@ var standard = {
     },
 
 
-    sendMessage : function(message, confirmed, flag) {
+    sendMessage : function(message, ignoreBlock, flag) {
         if (!window.roomId) {
             popup.selectRoom();
         }
         else {
-            confirmed = (confirmed === 1 ? 1 : '');
+            ignoreBlock = (ignoreBlock === 1 ? 1 : '');
 
             fimApi.sendMessage({
                     'roomId' : window.roomId,
-                    'confirmed' : confirmed,
+                    'ignoreBlock' : ignoreBlock,
                     'message' : fim_eURL(message),
                     'flag' : (flag ? flag : '')
                 },

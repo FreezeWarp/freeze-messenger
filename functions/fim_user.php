@@ -306,16 +306,20 @@ class fimUser
         if ($this->id) {
             $database->startTransaction();
 
-            $database->insert($database->sqlPrefix . "usersHistory", $database->getUsers(array(
+            if ($existingUserData = $database->getUsers(array(
                 'userIds' => array($this->id),
-                'columns' => fimDatabase::userHistoryColumns,
-            ))->getAsArray(false));
+                'columns' => $database->userHistoryColumns,
+            ))->getAsArray(false)) {
+                $database->insert($database->sqlPrefix . "usersHistory", $existingUserData);
+            }
 
-            return $database->upsert($database->sqlPrefix . "users", array(
+            $return = $database->upsert($database->sqlPrefix . "users", array(
                 'userId' => $this->id,
             ), $databaseFields);
 
             $database->endTransaction();
+
+            return $return;
         } else {
             $databaseFields = array_merge(array(
                 'privs' => $this->generalCache->getConfig('defaultUserPrivs')
