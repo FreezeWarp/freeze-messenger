@@ -155,7 +155,7 @@ switch ($_REQUEST['phase']) {
               'restrict' => (isset($column['@restrict']) ? explode(',', $column['@restrict']) : false),
               'maxlen' => (isset($column['@maxlen']) ? $column['@maxlen'] : false),
               'bits' => (isset($column['@bits']) ? $column['@bits'] : false),
-              'default' => (isset($column['@default']) ? $column['@default'] : false),
+              'default' => (isset($column['@default']) ? $column['@default'] : null),
               'comment' => (isset($column['@comment']) ? $column['@comment'] : false),
             );
           }

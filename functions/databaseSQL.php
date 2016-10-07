@@ -1087,7 +1087,7 @@ class databaseSQL extends database
             }
 
 
-            if ($column['default']) { // TODO: allow false
+            if ($column['default'] !== null) {
                 if (isset($this->defaultPhrases[$column['default']])) {
                     $typePiece .= ' DEFAULT ' . $this->defaultPhrases[$column['default']];
                 } else {

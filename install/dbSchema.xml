@@ -39,7 +39,7 @@
 
     <table name="counters" type="general" comment="A cached list of counters. Can be rebuilt from other tables (and must be rebuilt for deletions, etc.)">
       <column name="counterName" type="string" maxlen="50" comment="The name of the counter." />
-      <column name="counterValue" type="int" maxlen="10" comment="The current value of the counter." />
+      <column name="counterValue" type="int" maxlen="10" default="0" comment="The current value of the counter." />
 
       <key name="counterName" type="primary" />
     </table>
@@ -383,7 +383,7 @@
       <!-- Counters -->
       <column name="lastMessageTime" type="time" default="0" comment="The time of the last message made in the room." />
       <column name="lastMessageId" type="int" maxlen="15" comment="The ID of the last message made in the room." />
-      <column name="messageCount" type="int" maxlen="15" comment="The number of messages in this room." />
+      <column name="messageCount" type="int" maxlen="15" default="0" comment="The number of messages in this room." />
       <column name="flags" type="int" maxlen="3" comment="The number of flags this room has received. After a certain number (proportional to activeUsers, possibly), the room should be marked for moderation." />
 
       <!-- Caches -->
