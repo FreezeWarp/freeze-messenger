@@ -95,5 +95,5 @@ $xmlData['getPrivateRoom']['errStr'] = ($errStr);
 
 
 /* Output Data Structure */
-echo fim_outputApi($xmlData);
+echo new apiData($xmlData);
 ?>

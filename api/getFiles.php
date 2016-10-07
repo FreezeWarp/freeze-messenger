@@ -88,5 +88,5 @@ if ($config['dev']) $xmlData['request'] = $request;
 
 
 /* Output Data */
-echo fim_outputApi($xmlData);
+echo new apiData($xmlData);
 ?>

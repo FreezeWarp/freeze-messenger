@@ -111,5 +111,5 @@ $xmlData['getMessages']['errDesc'] = (string) $errDesc;
 
 
 /* Output Data */
-echo fim_outputApi($xmlData);
+echo new apiData($xmlData);
 ?>
