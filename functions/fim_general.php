@@ -552,15 +552,22 @@ function fim_sanitizeGPC($type, $data) {
       break;
 
       case 'jsonList':
+        if ($activeGlobal[$indexName]) {
+          $arrayFromGlobal = array_values(
+              json_decode(
+                  $activeGlobal[$indexName],
+                  true,
+                  $config['jsonDecodeRecursionLimit'],
+                  JSON_BIGINT_AS_STRING
+              )
+          );
+        }
+        else {
+          $arrayFromGlobal = array();
+        }
+
         $newData[$indexName] = fim_arrayValidate(
-          array_values(
-            json_decode(
-              $activeGlobal[$indexName],
-              true,
-              $config['jsonDecodeRecursionLimit'],
-              JSON_BIGINT_AS_STRING
-            )
-          ),
+          $arrayFromGlobal,
           ($indexMetaData['filter'] ? $indexMetaData['filter'] : 'string'),
           ($indexMetaData['evaltrue'] ? false : true),
           (count($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
