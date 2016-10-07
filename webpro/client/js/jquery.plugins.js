@@ -1746,6 +1746,24 @@ var notify = {
  * Joseph T. Parsons
  * http://www.gnu.org/licenses/gpl.html */
 var dia = {
+    exception: function(exception) {
+        $('<div style="display: none;"><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>' + exception.details + '</div>').dialog({
+            title: 'Exception: ' + exception.string,
+            modal: true,
+            dialogClass: 'error',
+            buttons: {
+                Close: function () {
+                    $(this).dialog("close");
+
+                    return false;
+                }
+            }
+        });
+
+        console.log("Stack trace for " + exception.string + ":");
+        console.log(exception.trace);
+    },
+
     error: function (message) {
         console.log('Error: ' + message);
 
@@ -1790,7 +1808,7 @@ var dia = {
                     $(this).dialog("close");
                 },
                 Cancel: function () {
-                    if (typeof options['false'] !== 'undefined') options['false']();s
+                    if (typeof options['false'] !== 'undefined') options['false']();
 
                     $(this).dialog("close");
                 }
