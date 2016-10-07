@@ -439,7 +439,7 @@ window.fimApi = {
                 requestSettings.callback(json);
             },
             error : function(json) {
-                requestSettings.error(json);
+                requestSettings.error(json.responseJSON);
             }
         });
     },

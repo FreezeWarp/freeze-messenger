@@ -273,9 +273,26 @@ var standard = {
 
                         return false;
                     },
-                    'error' : function() {
-                        if (settings.reversePostOrder) { $('#messageList').append('Your message, "' + message + '", could not be sent and will be retried.'); }
-                        else { $('#messageList').prepend('Your message, "' + message + '", could not be sent and will be retried.'); }
+                    'error' : function(json) { console.log(json.exception);
+                        if (json.exception) {
+                            if (json.exception.string === 'confirmCensor')
+                                dia.confirm({
+                                    'text' : json.exception.details,
+                                    'true' : function() {
+                                        standard.sendMessage(message, 1, flag);
+                                    }
+                                });
+                            else
+                                dia.exception(json.exception);
+                        }
+                        else {
+                            if (settings.reversePostOrder) {
+                                $('#messageList').append('Your message, "' + message + '", could not be sent and will be retried.');
+                            }
+                            else {
+                                $('#messageList').prepend('Your message, "' + message + '", could not be sent and will be retried.');
+                            }
+                        }
 
                         //window.setTimeout(function() { standard.sendMessage(message) }, 5000); TODO
 
