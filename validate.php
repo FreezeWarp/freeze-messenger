@@ -118,7 +118,7 @@ else if (isset($_REQUEST['grant_type'])) {
                 'userData' => array(
                     'userId' => $user->id,
                     'userName' => $user->name,
-                    'userNameFormat' => $user->nameFormat,
+                    'userNameFormat' => $user->userNameFormat,
                     'userGroupId' => $user->mainGroupId,
                     'socialGroupIds' => new apiOutputList($user->socialGroupIds),
                     'avatar' => $user->avatar,

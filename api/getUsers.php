@@ -146,7 +146,7 @@ foreach ($users AS $userId => $userData) {
   if (in_array('profile', $request['info'])) {
     $xmlData['getUsers']['users']['user ' . $userId]['avatar'] = $userData->avatar;
     $xmlData['getUsers']['users']['user ' . $userId]['profile'] = $userData->profile;
-    $xmlData['getUsers']['users']['user ' . $userId]['userNameFormat'] = $userData->nameFormat;
+    $xmlData['getUsers']['users']['user ' . $userId]['userNameFormat'] = $userData->userNameFormat;
     $xmlData['getUsers']['users']['user ' . $userId]['messageFormatting'] = $userData->messageFormatting;
 //    $xmlData['getUsers']['users']['user ' . $userId]['postCount'] = (int) (isset($userDataForums[$userId]['posts']) ? $userDataForums[$userId]['posts'] : 0); TODO
 //    $xmlData['getUsers']['users']['user ' . $userId]['joinDate'] = (int) (isset($userDataForums[$userId]['joinDate']) ? $userDataForums[$userId]['joinDate'] : 0);

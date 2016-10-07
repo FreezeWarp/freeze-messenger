@@ -57,7 +57,7 @@ class fimUser
         $this->generalCache = $generalCache;
 
         $this->avatar = $this->generalCache->getConfig('avatarDefault');
-        $this->userNameFormat = $this->generalCache->getConfig('userNameFormat');
+//        $this->userNameFormat = '';
         $this->defaultRoomId = $this->generalCache->getConfig('defaultRoomId');
 
 
