@@ -1084,12 +1084,12 @@ class fimDatabase extends databaseSQL
       if ($user->privs & ADMIN_ROOMS) $returnBitfield = 65535; // Super moderators have all permissions.
       elseif (in_array($user->groupId, $this->config['bannedUserGroups'])) $returnBitfield = 0; // A list of "banned" user groups can be specified in config. These groups lose all permissions, similar to having userPrivs = 0. But, in the interest of sanity, we don't check it elsewhere.
       elseif ($room->ownerId === $user->id) $returnBitfield = 65535; // Owners have all permissions.
-      elseif (($kicks = $this->getKicks(array(
+      elseif ($room->parentalAge > $user->parentalAge
+          || fim_inArray($user->parentalFlags, $room->parentalFlags)
+          || ($kicks = $this->getKicks(array(
             'userIds' => array($user->id),
             'roomIds' => array($room->id)
-          ))->getCount() > 0)
-        || $room->parentalAge > $user->parentalAge
-        || fim_inArray($user->parentalFlags, $room->parentalFlags)) $returnBitfield = 0; // A kicked user (or one blocked by parental controls) has no permissions. This cannot apply to the room owner.
+          ))->getCount() > 0)) $returnBitfield = 0; // A kicked user (or one blocked by parental controls) has no permissions. This cannot apply to the room owner.
       elseif ($permissionsBitfield === -1) $returnBitfield = $room->defaultPermissions;
       else $returnBitfield = $permissionsBitfield;
 
