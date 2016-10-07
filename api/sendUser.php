@@ -68,122 +68,56 @@ $request = fim_sanitizeGPC('p', array(
   ),
 ));
 
-
 $userAge = fim_dobToAge($request['birthdate']); // Generate the age in years of the user.
 
 /* Start Processing */
-if ($continue) {
-  if ($loginConfig['method'] != 'vanilla') {
-    $errStr = 'notSupported';
-    $errDesc = 'This script only works for servers using vanilla logins.';
-  }
-  elseif ($user['userId'] && (($config['anonymousUserId'] && $user['userId'] != $config['anonymousUserId']) || !$config['anonymousUserId'])) {
-    $errStr = 'loggedIn';
-    $errDesc = 'You are already logged-in.';
-  }
-  elseif (count($slaveDatabase->getUsers(array(
-    'userNames' => $request['userName'],
-  ))->getAsArray(true)) > 0) {
-      $errStr = 'userExists';
-    $errDesc = 'That user specified already exists.';
-  }
-  elseif (!$request['userName']) {
-    $errStr = 'noUserName';
-    $errDesc = 'No user name was specified.';
-  }
-  elseif ($config['requireEmail'] && !$request['email']) {
-    $errStr = 'noEmail';
-    $errDesc = 'No email was specified.';
-  }
-  elseif ($request['email'] && (!filter_var($request['email'], FILTER_VALIDATE_EMAIL))) {
-    $errStr = 'badEmail';
-    $errDesc = 'The email specified is not allowed.';
-  }
-  elseif (!$request['password']) {
-    $errStr = 'noPassword';
-    $errDesc = 'No password was specified.';
-  }
-  elseif (!$request['passwordEncrypt']) {
-    $errStr = 'noPasswordEncrypt ';
-    $errDesc = 'A valid password encryption was not specified.';
-  }
-  elseif ($config['ageRequired'] && !isset($request['birthdate'])) {
-    $errStr = 'ageRequired';
-    $errDesc = 'An age must be specified to continue.';
-  }
-  elseif (isset($request['birthdate']) && ($userAge > $config['ageMaximum'])) {
-    $errStr = 'ageMaximum';
-    $errDesc = 'The age specified exceeds the maximum age allowed by the server.';
-  }
-  elseif (isset($request['birthdate']) && ($userAge < $config['ageMinimum'])) {
-    $errStr = 'ageMinimum';
-    $errDesc = 'The age specified is below the minimum age allowed by the server.';
-  }
-  else {
-    // Get Salts Used For Encryption
-    if ($salts) {
-      $encryptSalt = end($salts); // Move the file pointer to the last entry in the array (and return its value)
-      $encryptSaltNum = key($salts) + 1; // Get the key/id of the corrosponding salt.
-    }
-    else {
-      $encryptSalt = '';
-      $encryptSaltNum = 0;
-    }
-
-    $passwordSalt = fim_generateSalt(); // Generate a random salt.
-
-
-    // Encrypt Sent Password
-    switch ($request['passwordEncrypt']) {
-      case 'plaintext':
-      $password = fim_generatePassword($request['password'], $passwordSalt, $encryptSaltNum, 0);
-      break;
-
-      case 'sha256':
-      $password = fim_generatePassword($request['password'], $passwordSalt, $encryptSaltNum, 1);
-      break;
-
-      case 'sha256-salt':
-      $password = fim_generatePassword($request['password'], $passwordSalt, $encryptSaltNum, 2);
-      break;
-
-      default:
-      $errStr = 'badEncryption';
-      $errDesc = 'The password encryption specified is not supported.';
-
-      $continue = false;
-      break;
-    }
-
-    // Generate Value for User Privs
-    $userPrivs = 16;
-    if ($config['userRoomCreation']) $userPrivs += 32;
-    if ($config['userPrivateRoomCreation']) $userPrivs += 64;
-
-
-    // Create Userdata Array
-    $userData = array(
+if ($loginConfig['method'] != 'vanilla') {
+  throw new Exception('notSupported', 'This script only works for servers using vanilla logins.');
+}
+elseif ($user->id && !$user->isAnonymousUser()) {
+  throw new Exception('loggedIn', 'You are already logged-in.');
+}
+elseif (count($slaveDatabase->getUsers(array(
+  'userNames' => $request['userName'],
+))->getAsArray(true)) > 0) {
+  throw new Exception('userExists', 'That user specified already exists.');
+}
+elseif (!$request['userName']) {
+  throw new Exception('noUserName', 'No user name was specified.');
+}
+elseif (['requireEmail'] && !$request['email']) {
+  throw new Exception('noEmail', 'No email was specified.');
+}
+elseif ($request['email'] && (!filter_var($request['email'], FILTER_VALIDATE_EMAIL))) {
+  throw new Exception('badEmail', 'The email specified is not allowed.');
+}
+elseif (!$request['password']) {
+  throw new Exception('noPassword', 'No password was specified.');
+}
+elseif (!$request['passwordEncrypt']) {
+  throw new Exception('noPasswordEncrypt ', 'A valid password encryption was not specified.');
+}
+elseif ($generalCache->getConfig('ageRequired') && !isset($request['birthdate'])) {
+  throw new Exception('ageRequired', 'An age must be specified to continue.');
+}
+elseif (isset($request['birthdate']) && ($userAge > $generalCache->getConfig('ageMaximum'))) {
+  throw new Exception('ageMaximum', 'The age specified exceeds the maximum age allowed by the server.');
+}
+elseif (isset($request['birthdate']) && ($userAge < $generalCache->getConfig('ageMinimum'))) {
+  throw new Exception('ageMinimum', 'The age specified is below the minimum age allowed by the server.');
+}
+else{
+  // Create Userdata Array
+  if ((new fimUser(0))->setDatabase(array(
       'userName' => $request['userName'],
-      'password' => $password,
-      'passwordSalt' => $passwordSalt,
-      'passwordSaltNum' => $encryptSaltNum,
+      'password' => $request['password'],
       'birthDate' => $request['birthdate'],
-      'joinDate' => time(),
-      'email' => $request['email'],
-      'userPrivs' => $userPrivs,
-    );
-
-
-    // Insert Data
-    if ($continue) {
-      $database->startTransaction();
-
-      $database->insert("{$sqlPrefix}users", $userData);
-      $userId = $database->insertId;
-
-      $database->endTransaction();
-    }
+      'email' => $request['email']
+  ))) {
+    throw new fimError("userCreationFailed", "Could not create user.");
   }
+
+  var_dump($database->queryLog); die('3');
 }
 
 
@@ -197,7 +131,6 @@ $xmlData = array(
     ),
     'errStr' => ($errStr),
     'errDesc' => ($errDesc),
-    'censor' => array(
   ),
 );
 
