@@ -989,6 +989,7 @@ class databaseSQL extends database
         }
 
         $tableProperties = '';
+        $triggers = [];
 
         foreach ($tableColumns AS $columnName => $column) {
             $typePiece = '';
@@ -1088,11 +1089,13 @@ class databaseSQL extends database
 
 
             if ($column['default'] !== null) {
-                if (isset($this->defaultPhrases[$column['default']])) {
+                // We use triggers here when the SQL implementation is otherwise stubborn, but FreezeMessenger is designed to only do this when it would otherwise be tedious. Manual setting of values is preferred in most cases.
+                if ($column['default'] === '__TIME__')
+                    $triggers[] = "CREATE TRIGGER {$columnName}__TIME__ BEFORE INSERT ON $tableName FOR EACH ROW SET NEW.{$columnName} = UNIX_TIMESTAMP(NOW());";
+                else if (isset($this->defaultPhrases[$column['default']]))
                     $typePiece .= ' DEFAULT ' . $this->defaultPhrases[$column['default']];
-                } else {
+                else
                     $typePiece .= ' DEFAULT ' . $this->formatValue('string', $column['default']); // TODO: non-string?
-                }
             }
 
             $columns[] = $this->formatValue('column', $columnName) . ' ' . $typePiece . ' COMMENT ' . $this->formatValue('string', $column['comment']);
@@ -1129,7 +1132,9 @@ class databaseSQL extends database
             }
         }
 
-        return $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->formatValue('table', $tableName) . ' (
+        $this->startTransaction();
+
+        $return = $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->formatValue('table', $tableName) . ' (
 ' . implode(",\n  ", $columns) . (isset($indexes) ? ',
 ' . implode(",\n  ", $indexes) : '') . '
 )'
@@ -1137,6 +1142,14 @@ class databaseSQL extends database
             . ' COMMENT=' . $this->formatValue('string', $tableComment)
             . ' DEFAULT CHARSET=' . $this->formatValue('string', 'utf8') . $tableProperties
             . ($partitionColumn ? ' PARTITION BY HASH(' . $this->formatValue('column', $partitionColumn) . ') PARTITIONS 100' : ''));
+
+        foreach ($triggers AS $trigger) {
+            $return = $this->rawQuery($trigger) && $return; // Make $return false if any query return false.
+        }
+
+        $this->endTransaction();
+
+        return $return;
     }
 
 
