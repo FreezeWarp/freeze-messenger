@@ -192,8 +192,7 @@ function fim_messageFormat(json, format) {
 
     userName = ujson.userName,
     userId = ujson.userId,
-    groupFormatStart = ujson.startTag,
-    groupFormatEnd = ujson.endTag,
+    userNameFormat = ujson.userNameFormat,
     avatar = ujson.avatar,
 
     styleColor = ujson.defaultFormatting.color,
@@ -281,12 +280,12 @@ function fim_messageFormat(json, format) {
   /* Format for Table/List Display */
   switch (format) {
     case 'table':
-      data = '<tr id="archiveMessage' + messageId + '" style="word-wrap: break-word;"><td>' + groupFormatStart + '<span class="userName userNameTable" data-userId="' + userId + '">' + userName + '</span>' + groupFormatEnd + '</td><td>' + messageTime + '</td><td style="' + style + '" data-messageId="' + messageId + '" data-roomId="' + roomId + '">' + text + '</td><td><a href="javascript:void(0);" data-messageId="' + messageId + '"  class="updateArchiveHere">Show</a></td></tr>';
+      data = '<tr id="archiveMessage' + messageId + '" style="word-wrap: break-word;"><td><span class="userName userNameTable" style="' + userNameFormat + '" data-userId="' + userId + '">' + userName + '</span></td><td>' + messageTime + '</td><td style="' + style + '" data-messageId="' + messageId + '" data-roomId="' + roomId + '">' + text + '</td><td><a href="javascript:void(0);" data-messageId="' + messageId + '"  class="updateArchiveHere">Show</a></td></tr>';
     break;
 
     case 'list':
       if (settings.showAvatars) data = '<span id="message' + messageId + '" class="messageLine messageLineAvatar"><span class="userName userNameAvatar" data-userId="' + userId + '" tabindex="1000"><img alt="' + userName + '" src="' + avatar + '" /></span><span style="' + style + '" class="messageText" data-messageId="' + messageId + '" data-roomId="' + roomId + '" data-time="' + messageTime + '" tabindex="1000">' + text + '</span><br />';
-      else data = '<span id="message' + messageId + '" class="messageLine"><span class="userName userNameTable" data-userId="' + userId + '" tabindex="1000">' + groupFormatStart + userName + groupFormatEnd + '</span> @ <em>' + messageTime + '</em>: <span style="' + style + '" class="messageText" data-messageid="' + messageId + '" data-roomId="' + roomId + '" tabindex="1000">' + text + '</span><br />';
+      else data = '<span id="message' + messageId + '" class="messageLine"><span class="userName userNameTable" style="' + userNameFormat + '" data-userId="' + userId + '" tabindex="1000">' + userName + '</span> @ <em>' + messageTime + '</em>: <span style="' + style + '" class="messageText" data-messageid="' + messageId + '" data-roomId="' + roomId + '" tabindex="1000">' + text + '</span><br />';
     break;
   }
 
