@@ -250,21 +250,20 @@ class fimCache extends generalCache {
 
     ////* Censor Words *////
     ////* Caches Entire Table as censorWords[word] = [listId, word, severity, param] *////
-    public function getCensorWords($listIndex) {
+    public function getCensorWords($listIndex = null)
+    {
         global $sqlPrefix;
 
         if ($this->issetMemory('fim_censorWords')) {
             $censorWords = $this->getMemory('fim_censorWords');
-        }
-        elseif ($this->exists('fim_censorWords')) {
+        } elseif ($this->exists('fim_censorWords')) {
             $censorWords = $this->get('fim_censorWords');
-        }
-        else {
-            $censorWordsDatabase = $this->database->getCensorWords()->getAsArray();
+        } else {
+            $censorWordsDatabase = $this->database->getCensorWords()->getAsArray(true);
             $censorWords = array();
 
             foreach ($censorWordsDatabase AS $censorWord) {
-                $censorWords[$censorWord['word']] = $censorWord;
+                $censorWords[$censorWord['listId']][$censorWord['word']] = $censorWord;
             }
 
             $this->storeMemory('fim_censorWords', $censorWords, $this->getConfig('censorWordsCacheRefresh'));
@@ -311,14 +310,14 @@ class fimCache extends generalCache {
         }
         else {
             $censorLists = $this->getCensorLists();
-            $censorBlackWhiteLists = $this->getCensorBlackWhiteLists($roomId);
+            $censorBlackWhiteLists = (array) $this->getCensorBlackWhiteLists($roomId);
             $activeCensorLists = array();
 
-            foreach ($censorLists AS $censorList) {
-                if ($censorList['type'] === 'black' && in_array($censorList['listId'], array_keys($censorBlackWhiteLists))) {
+            foreach ($censorLists['byListId'] AS $censorList) {
+                if ($censorList['listType'] === 'black' && in_array($censorList['listId'], array_keys($censorBlackWhiteLists))) {
                     $activeCensorLists[] = $censorList;
                 }
-                elseif ($censorList['type'] === 'white' && !in_array($censorList['listId'], array_keys($censorBlackWhiteLists))) {
+                elseif ($censorList['listType'] === 'white' && !in_array($censorList['listId'], array_keys($censorBlackWhiteLists))) {
                     $activeCensorLists[] = $censorList;
                 }
             }
@@ -326,19 +325,21 @@ class fimCache extends generalCache {
             $this->storeMemory('fim_activeCensorLists', $activeCensorLists, false); // "false" indicates that the information should not be cached. We include this function in the cache class because the memory store is /really/ useful, and because we exclusively work with other cache functions.
         }
 
+
         return $this->returnValue($activeCensorLists);
     }
 
 
     public function getActiveCensorWords($roomId) {
+
         if ($this->issetMemory('fim_activeCensorWords')) {
             $activeCensorWords = $this->getMemory('fim_activeCensorWords');
         }
         else {
             $activeCensorWords = array();
 
-            foreach ($this->getActiveCensorLists($roomId) AS $list) {
-                foreach ($this->getCensorWords($list) AS $word) {
+            foreach ((array) $this->getActiveCensorLists($roomId) AS $list) {
+                foreach ((array) $this->getCensorWords($list['listId']) AS $word) {
                     $activeCensorWords[] = $word;
                 }
             }
@@ -362,6 +363,7 @@ class fimCache extends generalCache {
      */
     public function censorScan($text, $roomId = null, $dontAsk = false, &$matches) {
         foreach ($this->getActiveCensorWords($roomId) AS $word) {
+
             if ($dontAsk && $word['severity'] === 'confirm') continue;
 
             if (stripos($text, $word['word']) !== FALSE) {
@@ -378,16 +380,18 @@ class fimCache extends generalCache {
 
                     // Blocks the word, throwing an exception
                     case 'block':
-                        new fimError('blockCensor', 'The message can not be sent because a word is not allowed.', array('word' => $word['word'], 'reason' => $word['param']));
+                        new fimError('blockCensor', "The message can not be sent: '{$word['word']}' is not allowed.");
                         break;
 
                     // Blocks the word, throwing an exception, but can be overwridden with $dontAsk
                     case 'confirm':
-                        new fimError('confirmCensor', 'The message must be resent because a word may not be allowed.', array('word' => $word['word'], 'reason' => $word['param']));
+                        new fimError('confirmCensor', "The message must be resent because a word may not be allowed: {$word['word']} is discouraged: {$word['param']}.");
                         break;
                 }
             }
         }
+
+        return $text;
     }
 }
 
