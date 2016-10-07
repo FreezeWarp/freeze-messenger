@@ -11,8 +11,10 @@
 
 $defaultConfig = array(
   /*** User Management ***/
+  /* Default Permissions */
+  'defaultUserPrivs' => USER_PRIV_VIEW | USER_PRIV_POST | USER_PRIV_CREATE_ROOMS | USER_PRIV_PRIVATE_FRIENDS | USER_PRIV_ACTIVE_USERS | USER_PRIV_POST_COUNTS, // int A bitfield of all priviledges users should have by default. Our default variant here omits the ability to create private rooms with non-friends, and change room topics.
+
   /* Anonymous Users */
-  'anonymousUserId' => 2,
   'anonymousUserMinId' => 1,
   'anonymousUserMaxId' => 100000,
 
@@ -55,8 +57,8 @@ $defaultConfig = array(
 
   'disableTopic' => false, // bool Whether or not to disable topic functionality.
 
-  'userRoomCreation' => false,
-  'userPrivateRoomCreation' => true,
+  'userRoomCreation' => false, // bool Whether _any_ user can create rooms, even those with the permission to do so. Setting this false, in effect, disables the entire feature. (Admins are excluded.)
+  'userPrivateRoomCreation' => true, // bool Whether _any_ user can create private rooms, even those with the permission to do so. Setting this false, in effect, disables the entire feature.
   'hiddenRooms' => true,
   'officialRooms' => true,
   'defaultRoomId' => 1,
