@@ -10,7 +10,7 @@ class apiData {
 
   public function __construct($data = false, $format = false) {
     $this->replaceData($data);
-    $this->format = $format ? $format : $_REQUEST['fim3_format'];
+    $this->format = $format ?: (isset($_REQUEST['fim3_format']) ? $_REQUEST['fim3_format'] : 'json');
   }
 
 

@@ -51,8 +51,6 @@ $request = fim_sanitizeGPC('r', array(
         'filter' => 'string',
         'evaltrue' => true,
     ),
-    'fim3_sessionHash' => array(),
-    'fim3_userId' => array('cast' => 'int'),
 ));
 
 

@@ -140,12 +140,7 @@ class fimCache extends generalCache {
       $config = array();
 
       if (!$disableConfig) {
-        $configDatabase = $this->slaveDatabase->select(
-         array(
-            "{$sqlPrefix}configuration" => 'directive, value, type',
-          )
-        );
-        $configDatabase = $configDatabase->getAsArray(true);
+        $configDatabase = $this->slaveDatabase->getConfigurations()->getAsArray(true);
 
         if (is_array($configDatabase) && count($configDatabase) > 0) {
           foreach ($configDatabase AS $configDatabaseRow) {

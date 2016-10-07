@@ -1,4 +1,7 @@
 <?php
+require_once('apiData.php');
+require_once('fim_error.php');
+
 /**
  * Performs a structured CURL request.
  *
