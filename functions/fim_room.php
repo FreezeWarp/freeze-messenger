@@ -56,6 +56,7 @@ class fimRoom {
 
 
   private function populateFromArray($roomData) {
+//      var_dump($roomData); die();
     if (!count($roomData) || !is_array($roomData)) return false;
 
     $this->id = (int) $roomData['roomId'];
