@@ -25,7 +25,9 @@
 
 class fimDatabase extends databaseSQL
 {
-  private $userColumns = 'userId, userName, userNameFormat, profile, avatar, userGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, userParentalAge, userParentalFlags, privs, lastSync';
+  public $userColumns = 'userId, userName, userNameFormat, profile, avatar, userGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, userParentalAge, userParentalFlags, privs, lastSync';
+  public $userPasswordColumns = 'passwordHash, passwordFormat, passwordResetNow, passwordLastReset';
+  public $userHistoryColumns = 'userId, userName, userNameFormat, profile, avatar, userGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, userParentalAge, userParentalFlags, privs';
   public $errorFormatFunction = 'fimError';
   protected $config;
 
@@ -840,12 +842,13 @@ class fimDatabase extends databaseSQL
       'userNames'      => array(),
       'userNameSearch' => false,
       'bannedStatus'   => false,
-      'includePasswords' => false,
+      'columns' => $this->userColumns, // csvstring a list of columns to include in the return; if not specified, this will default to almost everything except passwords
+      'includePasswords' => false, // bool shorthand to add password fields -- whatever they are -- to the otherwise specified columns
     ), $options);
 
 
     $columns = array(
-      $this->sqlPrefix . "users" => $this->userColumns . ($options['includePasswords'] ? ', passwordHash, passwordFormat, passwordResetNow, passwordLastReset' : '') // For this particular request, you can also access user password information using the includePasswords flag.
+      $this->sqlPrefix . "users" => $options['columns'] . ($options['includePasswords'] ? ', ' . $this->userPasswordColumns : '') // For this particular request, you can also access user password information using the includePasswords flag.
     );
 
 

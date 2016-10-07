@@ -2,13 +2,15 @@
 
 class fimUser
 {
+    const ANONYMOUS_USER_ID = -1;
+
     public $id;
     private $name;
     private $socialGroupIds;
     private $mainGroupId;
     private $parentalFlags;
     private $parentalAge;
-    private $privs;
+    private $privs = 0;
     private $lastSync;
     private $avatar;
     private $userNameFormat;
@@ -43,13 +45,14 @@ class fimUser
     private $userDataPullGroups = array(
         'userId,userName,privs,lastSync',
         'userGroupId,socialGroupIds,userParentalFlags,userParentalAge',
-        'messageFormatting,profile,avatar,userNameFormat',
+        'joinDate,messageFormatting,profile,avatar,userNameFormat',
         'options,defaultRoomId',
     );
 
 
     /**
-     * @param $roomData mixed Should either be an array or an integer (other values will simply fail to populate the object's data). If an array, should correspond with a row obtained from the `rooms` database, if an integer should correspond with the room ID.
+     * @param $userData mixed Should either be an array or an integer (other values will simply fail to populate the object's data). If an array, should correspond with a row obtained from the `rooms` database, if an integer should correspond with the room ID.
+     * @return $this
      */
     public function __construct($userData)
     {
@@ -75,6 +78,8 @@ class fimUser
             throw new fimError('fimUserInvalidConstruct', 'Invalid user data specified -- must either be an associative array corresponding to a table row, a user ID, or false (to create a user, etc.)');
 
         $this->userData = $userData;
+
+        return $this;
     }
 
 
@@ -215,6 +220,11 @@ class fimUser
     }
 
 
+    function isAnonymousUser() {
+        return ($this->id === self::ANONYMOUS_USER_ID);
+    }
+
+
     private function getColumns($columns) {
         global $database;
 
@@ -276,29 +286,42 @@ class fimUser
      * Modify or create a user.
      * @internal The row will be set to a merge of roomDefaults->existingRow->specifiedOptions.
      *
-     * @param $options - Corresponds mostly with room columns, though the options tag is seperted.
+     * @param $options - Corresponds mostly with user columns
      *
      * @return bool|resource
      */
-    public function set($options, $create = false)
+    public function setDatabase($databaseFields)
     {
         global $database;
 
-        if (isset($options['password'])) {
+        if (isset($databaseFields['password'])) {
             require 'PasswordHash.php';
             $h = new PasswordHash(8, FALSE);
-            $options['passwordHash'] = $h->HashPassword($options['password']);
-            $options['passwordFormat'] = 'phpass';
+            $databaseFields['passwordHash'] = $h->HashPassword($databaseFields['password']);
+            $databaseFields['passwordFormat'] = 'phpass';
 
-            unset($options['password']);
+            unset($databaseFields['password']);
         }
 
         if ($this->id) {
+            $database->startTransaction();
+
+            $database->insert($database->sqlPrefix . "usersHistory", $database->getUsers(array(
+                'userIds' => array($this->id),
+                'columns' => fimDatabase::userHistoryColumns,
+            ))->getAsArray(false));
+
             return $database->upsert($database->sqlPrefix . "users", array(
                 'userId' => $this->id,
-            ), $options);
+            ), $databaseFields);
+
+            $database->endTransaction();
         } else {
-            return $database->insert($database->sqlPrefix . "users", $options);
+            $databaseFields = array_merge(array(
+                'privs' => $this->generalCache->getConfig('defaultUserPrivs')
+            ), $databaseFields);
+
+            return $database->insert($database->sqlPrefix . "users", $databaseFields);
         }
     }
 }
