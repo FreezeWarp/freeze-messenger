@@ -41,10 +41,10 @@ class fimUser
     );
 
     private $userDataPullGroups = array(
-        'userId, userName, privs, lastSync',
-        'userGroupId, socialGroupIds, userParentalFlags, userParentalAge',
-        'messageFormatting, profile, avatar',
-        'options, defaultRoomId',
+        'userId,userName,privs,lastSync',
+        'userGroupId,socialGroupIds,userParentalFlags,userParentalAge',
+        'messageFormatting,profile,avatar,userNameFormat',
+        'options,defaultRoomId',
     );
 
 
@@ -79,23 +79,20 @@ class fimUser
 
 
     public function __get($property) {
-        global $database;
-
         if (!in_array($property, $this->resolved)) {
             if (!$this->id) throw new Exception('Uninitialised user object.');
 
             // Find selection group
-
             if (isset(array_flip($this->userDataConversion)[$property])) {
                 $needle = array_flip($this->userDataConversion)[$property];
                 $selectionGroup = array_values(array_filter($this->userDataPullGroups, function ($var) use ($needle) {
                     return strpos($var, $needle) !== false;
                 }))[0];
 
-//                var_dump($selectionGroup);
-//                var_dump($needle); var_dump($property); die();
-
-                $this->populateFromArray($database->where(array('userId' => $this->id))->select(array($database->sqlPrefix . 'users' => $selectionGroup . ', userId'))->getAsArray(false));
+                if ($selectionGroup)
+                    $this->getColumns(explode(',', $selectionGroup));
+                else
+                    throw new Exception("Selection group not found for '$property'");
             }
         }
 
@@ -218,6 +215,16 @@ class fimUser
     }
 
 
+    private function getColumns($columns) {
+        global $database;
+
+        if (count($columns) > 0)
+            return $this->populateFromArray($database->where(array('userId' => $this->id))->select(array($database->sqlPrefix . 'users' => array_merge(array('userId'), $columns)))->getAsArray(false));
+        else
+            return true;
+    }
+
+
     private function populateFromArray($userData)
     {
         if ($userData) {
@@ -239,14 +246,19 @@ class fimUser
 
 
     private function mapDatabaseProperty($property) {
-        return array_flip($this->userDataConversion)[$property];
+        if (!isset(array_flip($this->userDataConversion)[$property]))
+            throw new Exception("Unable to map database property '$property'");
+        else
+            return array_flip($this->userDataConversion)[$property];
     }
 
 
     public function resolve($properties) {
-        global $database;
+        return $this->getColumns(array_map(array($this, 'mapDatabaseProperty'), array_diff($properties, $this->resolved)));
+    }
 
-        return $this->populateFromArray($database->where(array('userId' => $this->id))->select(array($database->sqlPrefix . 'users' => array_merge(array('userId'), array_map(array($this, 'mapDatabaseProperty'), array_diff($properties, $this->resolved)))))->getAsArray(false));
+    public function resolveAll() {
+        return $this->getColumns(array_map(array($this, 'mapDatabaseProperty'), array_diff(array_values($this->userDataConversion), $this->resolved)));
     }
 
     /* Do I even remember what this was going to be for? Not really. */
