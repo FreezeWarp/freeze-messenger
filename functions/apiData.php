@@ -92,8 +92,25 @@ class apiData {
     }
 
 
+    private function outputJsonArray($array) {
+        $data = array();
+
+        foreach ($array AS $value)
+            $data[] = $this->formatJsonValue($value);
+
+        return '['. implode(",", $data) . ']';
+    }
+
+
     function formatJsonValue($value) {
-        if (is_array($value)) return $this->outputJson($value);
+        if (is_array($value)) {
+            // http://stackoverflow.com/a/5969617
+            for (reset($value); is_int(key($value)); next($value));
+            if (is_null(key($value))) // The array is not associative (well, doesn't have non-numeric keys)
+                return $this->outputJsonArray($value);
+            else
+                return $this->outputJson($value);
+        }
         elseif (is_object($value) && get_class($value) === 'apiOutputList') {
             $values = $value->getArray();
 

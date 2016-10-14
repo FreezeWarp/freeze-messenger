@@ -233,7 +233,7 @@ else {
         case 'base64': $message['text'] = base64_encode($message['text']); break;
       }
 
-      $xmlData['getMessages']['messages']['message ' . (int) $message['messageId']] = array(
+      $xmlData['getMessages']['messages'][] = array(
         'messageData' => array(
           'roomId' => (int) $room->id,
           'messageId' => (int) $message['messageId'],
@@ -259,12 +259,6 @@ else {
     }
   }
 }
-
-
-
-/* Update Data for Errors */
-$xmlData['getMessages']['errStr'] = (string) $errStr;
-$xmlData['getMessages']['errDesc'] = (string) $errDesc;
 
 
 
