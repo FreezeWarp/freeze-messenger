@@ -173,6 +173,40 @@ class fimUser
         }
     }
 
+    /**
+     * Checks to see if the user has permission to do the specified thing.
+     *
+     * @param $priv The priviledge to check, one of ['protected', 'modPrivs', 'modRooms', 'modPrivate', 'modUsers', 'modFiles', 'modCensor', 'view', 'post', 'changeTopic', 'createRooms', 'privateRoomsFriends', 'privateRoomsAll', 'roomsOnline', 'postCounts']
+     * @return bool True if user has permission, false if not.
+     * @throws Exception for unrecognised priviledges
+     */
+    public function hasPriv(string $priv) : bool
+    {
+        $privs = $this->__get('privs');
+
+        switch ($priv) {
+            /* Admin Privs */
+            case 'protected' :  return (bool)($privs & ADMIN_PROTECTED);     break; // This the "untouchable" flag; break; but that's more or less all it means.
+            case 'modPrivs' :   return (bool)($privs & ADMIN_GRANT);         break; // This effectively allows a user to give himself everything else below. It is also used for admin functions that can not be delegated effectively -- such as modifying the site configuration.
+            case 'modRooms' :   return (bool)($privs & ADMIN_ROOMS);         break; // Alter rooms -- kicking users; break; delete posts; break; and change hidden/official status
+            case 'modPrivate' : return (bool)($privs & ADMIN_VIEW_PRIVATE);  break; // View private communications.
+            case 'modUsers' :   return (bool)($privs & ADMIN_USERS);         break; // Site-wide bans; break; mostly.
+            case 'modFiles' :   return (bool)($privs & ADMIN_FILES);         break; // File Uploads
+            case 'modCensor' :  return (bool)($privs & ADMIN_CENSOR);        break; // Censor
+
+            /* User Privs */
+            case 'view' :                 return (bool)($privs & USER_PRIV_VIEW);            break; // Is not banned
+            case 'post' :                 return (bool)($privs & USER_PRIV_POST);            break;
+            case 'changeTopic':           return (bool)($privs & USER_PRIV_TOPIC);           break;
+            case 'createRooms':           return (bool)($privs & USER_PRIV_CREATE_ROOMS);    break; // May create rooms
+            case 'privateRoomsFriends':   return (bool)($privs & USER_PRIV_PRIVATE_FRIENDS); break; // May create private rooms (friends only)
+            case 'privateRoomsAll':       return (bool)($privs & USER_PRIV_PRIVATE_ALL);     break; // May create private rooms (anybody)
+            case 'roomsOnline':           return (bool)($privs & USER_PRIV_ACTIVE_USERS);    break; // May see rooms online.
+            case 'postCounts':            return (bool)($privs & USER_PRIV_POST_COUNTS);     break; // May see post counts.
+
+            default: throw new Exception("Invalid priv; $priv"); break;
+        }
+    }
 
     function checkPassword($password)
     {

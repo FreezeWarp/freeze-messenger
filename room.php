@@ -42,7 +42,6 @@
  *
  * These aliases don't exist (and maybe never will), but the idea is to support them.
  */
-
 $apiRequest = true;
 
 require('global.php');
@@ -166,13 +165,6 @@ if ($requestG['action'] === 'create' || $requestG['action'] === 'edit') {
 }
 
 $permFilterMatches = array(
-  'post' => ROOM_PERMISSION_POST,
-  'view' => ROOM_PERMISSION_VIEW,
-  'topic' => ROOM_PERMISSION_TOPIC,
-  'moderate' => ROOM_PERMISSION_MODERATE,
-  'properties' => ROOM_PERMISSION_PROPERTIES,
-  'grant' => ROOM_PERMISSION_GRANT,
-  'own' => ROOM_PERMISSION_VIEW
 );
 
 

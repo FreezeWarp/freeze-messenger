@@ -144,6 +144,16 @@ class fimRoom {
 
   public function changeTopic($topic) {
     global $database;
+    public function getPermissionsArray($field) {
+        $permArray = [
+          'post' => ROOM_PERMISSION_POST,
+          'view' => ROOM_PERMISSION_VIEW,
+          'topic' => ROOM_PERMISSION_TOPIC,
+          'moderate' => ROOM_PERMISSION_MODERATE,
+          'properties' => ROOM_PERMISSION_PROPERTIES,
+          'grant' => ROOM_PERMISSION_GRANT,
+          'own' => ROOM_PERMISSION_VIEW
+        ];
 
     $database->createRoomEvent('topicChange', $this->id, $topic); // name, roomId, message
     $database->update($database->sqlPrefix . "rooms", array(

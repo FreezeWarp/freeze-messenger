@@ -107,6 +107,13 @@ else if (isset($_REQUEST['grant_type'])) {
     $user = new fimUser((int) $userC->getUserId());
 
     if ($oauthResponse->getStatusCode() === 200) {
+        /* Get Permissions Array */
+        $privs = [];
+        foreach (array('protected', 'modPrivs', 'modRooms', 'modPrivate', 'modUsers', 'modFiles', 'modCensor', 'view', 'post', 'changeTopic', 'createRooms', 'privateRoomsFriends', 'privateRoomsAll', 'roomsOnline', 'postCounts') AS $priv)
+            $privs[$priv] = $user->hasPriv($priv);
+
+
+        /* Send Data to API */
         $apiData = new apiData();
         $apiData->replaceData(array(
             'login' => array(
@@ -125,25 +132,7 @@ else if (isset($_REQUEST['grant_type'])) {
                     'parentalFlags' => new apiOutputList($user->parentalFlags),
                     'parentalAge' => $user->parentalAge,
                 ),
-                'permissions' => array(
-                    'protected' => (bool)($user->privs & ADMIN_PROTECTED), // This the "untouchable" flag, but that's more or less all it means.
-                    'modPrivs' => (bool)($user->privs & ADMIN_GRANT), // This effectively allows a user to give himself everything else below. It is also used for admin functions that can not be delegated effectively -- such as modifying the site configuration.
-                    'modRooms' => (bool)($user->privs & ADMIN_ROOMS), // Alter rooms -- kicking users, delete posts, and change hidden/official status
-                    'modPrivate' => (bool)($user->privs & ADMIN_VIEW_PRIVATE), // View private communications.
-                    'modUsers' => (bool)($user->privs & ADMIN_USERS), // Site-wide bans, mostly.
-                    'modFiles' => (bool)($user->privs & ADMIN_FILES), // File Uploads
-                    'modCensor' => (bool)($user->privs & ADMIN_CENSOR), // Censor
-
-                    /* User Privs */
-                    'view' => (bool)($user->privs & USER_PRIV_VIEW), // Is not banned
-                    'post' => (bool)($user->privs & USER_PRIV_POST),
-                    'changeTopic' => (bool)($user->privs & USER_PRIV_TOPIC),
-                    'createRooms' => (bool)($user->privs & USER_PRIV_CREATE_ROOMS), // May create rooms
-                    'privateRoomsFriends' => (bool)($user->privs & USER_PRIV_PRIVATE_FRIENDS), // May create private rooms (friends only)
-                    'privateRoomsAll' => (bool)($user->privs & USER_PRIV_PRIVATE_ALL), // May create private rooms (anybody)
-                    'roomsOnline' => (bool)($user->privs & USER_PRIV_ACTIVE_USERS), // May see rooms online.
-                    'postCounts' => (bool)($user->privs & USER_PRIV_POST_COUNTS), // May see post counts.
-                )
+                'permissions' => $privs
             ),
         ));
         echo $apiData;
