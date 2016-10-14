@@ -186,6 +186,28 @@ if (window.webproDisplay.audioVolume > 1 || window.webproDisplay.audioVolume < 0
 
 
 
+/* Load Themes */
+$('<link>', {
+    id: 'stylesjQ',
+    rel: 'stylesheet',
+    type: 'text/css',
+    href: 'client/css/' + window.webproDisplay.theme + '/jquery-ui-1.8.16.custom.css'
+}).appendTo('head');
+$('<link>', {
+    id: 'stylesVIM',
+    rel: 'stylesheet',
+    type: 'text/css',
+    href: 'client/css/' + window.webproDisplay.theme + '/fim.css'
+}).appendTo('head');
+$('<link>', {
+    id: 'stylesv2',
+    rel: 'stylesheet',
+    type: 'text/css',
+    href: "client/css/stylesv2.css"
+}).appendTo('head');
+
+
+
 /* Audio File (a hack I placed here just for fun)
  * Essentially, if a cookie has a custom audio file, we play it instead.
  * If not, we will try to play the default, either via ogg, mp3, or wav. */
@@ -222,7 +244,6 @@ var directory = window.location.pathname.split('/').splice(0, window.location.pa
 
 
 
-
 $.when(
   $.ajax({
     url: 'client/data/config.json',
@@ -255,7 +276,7 @@ $.when(
     url: 'client/js/fim-dev/fim-loader.js',
     dataType:'script'
   }),
-  $.get('client/css/' + window.webproDisplay.theme + '/jquery-ui-1.10.4.min.css', function(response) {
+/*  $.get('client/css/' + window.webproDisplay.theme + '/jquery-ui-1.8.16.custom.css', function(response) {
     $('#stylesjQ').text(response);
   }),
   $.get('client/css/' + window.webproDisplay.theme + '/fim.css', function(response) {
@@ -263,7 +284,7 @@ $.when(
   }),
   $.get("client/css/stylesv2.css", function(response) {
     $('#stylesv2').text(response);
-  }),
+  }),*/
   $.ajax({
     url: window.directory + 'api/getServerStatus.php?fim3_format=json',
     dataType: 'json',
@@ -272,6 +293,7 @@ $.when(
     }
   })
  ).then(function() {
+
   if (typeof window.EventSource == 'undefined') requestSettings.serverSentEvents = false;
   else requestSettings.serverSentEvents = window.serverSettings.requestMethods.serverSentEvents;
 

@@ -16,9 +16,9 @@
 
     <!-- START CSS Containers -->
 
-    <style id="stylesjQ"></style>
+<!--    <style id="stylesjQ"></style>
     <style id="stylesVIM"></style>
-    <style id="stylesv2"></style>
+    <style id="stylesv2"></style>-->
 
     <!-- END CSS Containers -->
 

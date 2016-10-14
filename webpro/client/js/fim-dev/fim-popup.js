@@ -576,7 +576,7 @@ popup = {
                 // Theme -- Update onChange
                 $('#theme').change(function() {
                     $('#stylesjQ').attr('href', 'client/css/' + this.value + '/jquery-ui-1.8.16.custom.css');
-                    $('#stylesFIM').attr('href', 'client/css/' + this.value + '/fim.css');
+                    $('#stylesVIM').attr('href', 'client/css/' + this.value + '/fim.css');
 
                     $.cookie('webpro_theme', this.value, { expires : 14 });
                     window.webproDisplay.theme = this.value;
