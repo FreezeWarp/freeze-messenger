@@ -163,17 +163,9 @@ var standard = {
                 }, false);
 
                 messageSource.addEventListener('message', function(e) {
+                    console.log('Event (New Message): ' + Number(active.messageData.messageId));
 
-                    active = JSON.parse(e.data);
-
-                    var messageId = Number(active.messageData.messageId);
-
-                    console.log('Event (New Message): ' + messageId);
-
-                    data = fim_messageFormat(active, 'list');
-
-                    if ($.inArray(messageId, messageIndex) > -1) { } // Double post hack
-                    else { fim_newMessage(data, messageId); }
+                    fim_newMessage(fim_messageFormat(JSON.parse(e.data), 'list'), Number(active.messageData.messageId));
 
                     return false;
                 }, false);
@@ -217,13 +209,8 @@ var standard = {
                     'messageIdStart' : requestSettings.lastMessage + 1
                 }, {
                     'each' : function(messageData) {
-                        var messageId = Number(messageData.messageId),
-                            data = fim_messageFormat(messageData, 'list');
-
-                        if ($.inArray(messageId, messageIndex)) { } // Double post hack
-                        else { fim_newMessage(data, messageId); }
-
-                        window.messageCount++;
+                        fim_newMessage(fim_messageFormat(messageData, 'list'), Number(messageData.messageId));
+                    },
                     'error' : function() {
                     },
                     'refresh' : 5000 // Todo: implement progressive refresh
@@ -298,7 +285,7 @@ var standard = {
                             }
                         }
 
-                        //window.setTimeout(function() { standard.sendMessage(message) }, 5000); TODO
+                        window.setTimeout(function() { standard.sendMessage(message) }, 5000);
 
                         return false;
                     }
