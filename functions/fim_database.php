@@ -517,8 +517,8 @@ class fimDatabase extends databaseSQL
         $searchArray = array();
         foreach (explode(',', $options['messageTextSearch']) AS $searchVal) {
             $searchArray[] = str_replace(
-                array_keys($this->config['searchWordConverts']),
-                array_values($this->config['searchWordConverts']),
+                $this->config['searchWordConvertsFind'],
+                $this->config['searchWordConvertsReplace'],
                 $searchVal
             );
         }
