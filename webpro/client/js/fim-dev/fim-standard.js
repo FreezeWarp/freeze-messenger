@@ -147,8 +147,6 @@ var standard = {
 
 
     getMessages : function() {
-        clearInterval(timers.t1);
-
         if (window.roomId) {
             var encrypt = 'base64';
 
@@ -163,6 +161,8 @@ var standard = {
                 }, false);
 
                 messageSource.addEventListener('message', function(e) {
+                    active = JSON.parse(e.data);
+
                     console.log('Event (New Message): ' + Number(active.messageData.messageId));
 
                     fim_newMessage(fim_messageFormat(JSON.parse(e.data), 'list'), Number(active.messageData.messageId));
@@ -218,12 +218,12 @@ var standard = {
                             if (requestSettings.firstRequest) requestSettings.firstRequest = false;
                             timeout = 5000;
 
-                            window.setTimeout(getMessages_query, timeout);
+                            window.setTimeout(standard.getMessages, timeout);
                         },
                         'error': function () {
                             if (timeout < 60000) timeout += 5000;
 
-                            if (!requestSettings.serverSentEvents) window.setTimeout(getMessages_query, timeout);
+                            window.setTimeout(standard.getMessages, timeout);
                         }
                     });
                 }
