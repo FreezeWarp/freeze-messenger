@@ -84,7 +84,7 @@ if (count($request['roomIds']) > 0) { /* TODO: Remove? */
     }
     else {
       /* Define Room Summary */
-      $xmlData['getActiveUsers']['rooms']['room ' . $room['roomId']] = array(
+      $xmlData['rooms']['room ' . $room['roomId']] = array(
         'roomData' => array(
           'roomId' => (int) $activeUser['roomId'],
           'roomName' => (string) $activeUser['roomName'],
@@ -94,7 +94,7 @@ if (count($request['roomIds']) > 0) { /* TODO: Remove? */
       );
 
       foreach ($room AS $activeUser) {
-        $xmlData['getActiveUsers']['rooms']['room ' . $room['roomId']]['users']['user ' . $activeUser['userId']] = array(
+        $xmlData['rooms']['room ' . $room['roomId']]['users']['user ' . $activeUser['userId']] = array(
           'userId' => (int) $activeUser['userId'],
           'userName' => (string) $activeUser['userName'],
           'userGroup' => (int) $activeUser['userGroup'],
@@ -111,8 +111,8 @@ else {
   foreach ($activeUsers->getAsArray(true) AS $activeUser) {
     $activeUser['type'] = 'normal';
 
-    if (!isset($xmlData['getActiveUsers']['users']['user ' . $activeUser['userId']])) {
-      $xmlData['getActiveUsers']['users']['user ' . $activeUser['userId']] = array(
+    if (!isset($xmlData['users']['user ' . $activeUser['userId']])) {
+      $xmlData['users']['user ' . $activeUser['userId']] = array(
         'userData' => array(
           'userId' => (int) $activeUser['userId'],
           'userName' => (string) $activeUser['userName'],
@@ -125,7 +125,7 @@ else {
     }
 
     if (fim_hasPermission($activeUser, $user, 'view', false)) { // Only list the room the user is in if the active user has permission to view the room.
-      $xmlData['getActiveUsers']['users']['user ' . $activeUser['userId']]['rooms']['room ' . $activeUser['roomId']] = array(
+      $xmlData['users']['user ' . $activeUser['userId']]['rooms']['room ' . $activeUser['roomId']] = array(
         'roomId' => (int) $activeUser['roomId'],
         'roomName' => (string) $activeUser['roomName'],
       );
@@ -135,7 +135,7 @@ else {
 
 
 /* Update Data for Errors */
-$xmlData['getActiveUsers']['errStr'] = (string) $errStr;
+$xmlData['errStr'] = (string) $errStr;
 
 
 
