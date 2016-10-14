@@ -22,7 +22,7 @@
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2014
  * @todo - Document.
-*/
+ */
 
 $apiRequest = true;
 
@@ -32,144 +32,54 @@ require('../global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
-  'action' => array(
-    'valid' => array(
-      'delete',
-      'undelete',
-      'edit', // FIMv4
+    'action' => array(
+        'valid' => array(
+            'delete',
+            'undelete',
+            'edit', // FIMv4
+        ),
     ),
-  ),
 
-  'messageId' => array(
-    'cast' => 'int',
-  ),
+    'messageId' => array(
+        'cast' => 'int',
+    ),
 ));
 
 
 
 /* Data Predefine */
 $xmlData = array(
-  'editMessage' => array(
     'response' => array(),
-  ),
 );
 
 
-$messageData = $slaveDatabase->getMessage($request['messageId']);
+if (!$messageData = $slaveDatabase->getMessage($request['messageId']))
+    new fimError('invalidMessage', 'The message specified is invalid.');
+
+$room = new fimRoom($messageData['roomId']);
 
 
 
 /* Start Processing */
-if (!$messageData) {
-  $errStr = 'invalidMessage';
-  $errDesc = 'The message specified is invalid.';
-}
-elseif ($continue) {
-  switch ($request['action']) {
-    case 'delete':
-    $roomData = $generalCache->getRooms($messageData['roomId']);
-
-    if (fim_hasPermission($roomData, $user, 'moderate', true)) {
-      $database->update("{$sqlPrefix}messages", array(
-        'deleted' => 1
-        ), array(
-          "messageId" => (int) $request['messageId']
-        )
-      );
-
-      $database->update("{$sqlPrefix}messagesCached",
-        array(
-          'deleted' => 1,
-        ),
-        array(
-          "messageId" => (int) $request['messageId']
-        )
-      );
-
-      $database->createEvent('deletedMessage', $user['userId'], $roomData['roomId'], $messageData['messageId'], false, false, false); // name, user, room, message, p1, p2, p3
-
-      $xmlData['editMessage']['response']['success'] = true;
-    }
-    else {
-      $errStr = 'noPerm';
-      $errDesc = 'You are not allowed to moderate this room.';
-    }
+switch ($request['action']) {
+    case 'delete': case 'undeleted':
+        if (($messageData['userId'] = $user->id && !$user->isAnonymousUser() && $generalCache->getConfig('usersCanDeleteOwnPosts'))
+            || ($database->hasPermission($user, $room) & ROOM_PERMISSION_MODERATE)) {
+            $database->editMessage($messageData['messageId'], array('deleted' => ($request['action'] === 'delete' ? true : false)));
+        }
+        else
+            new fimError('noPerm', 'You are not allowed to delete this message.');
     break;
-
-
-    case 'undelete':
-    $roomData = $generalCache->getRooms($messageData['roomId']);
-
-    if (fim_hasPermission($roomData, $user, 'moderate', true)) {
-      $database->update("{$sqlPrefix}messages", array(
-        'deleted' => 0
-        ), array(
-          "messageId" => (int) $request['messageId']
-        )
-      );
-
-      $database->createEvent('undeletedMessage', $user['userId'], $roomData['roomId'], $messageData['messageId'], false, false, false); // name, user, room, message, p1, p2, p3
-
-      $xmlData['editMessage']['response']['success'] = true;
-    }
-    else {
-      $errStr = 'noPerm';
-      $errDesc = 'You are not allowed to moderate this room.';
-    }
-    break;
-
 
     case 'edit':
-    if (fim_hasPermission($roomData, $user, 'moderate', true)) {
-      list($messageDataNew, $messageDataEncrypted) = fim_sendMessage($request['newMssage'], $user, $room, $request['flag']);
-
-// TODO      fim3parse_keyWords($messageData['text'], $messageId, $roomData['roomId']); // Add message to archive search store.
-
-      $database->insert("{$sqlPrefix}messageEditHistory", array(
-        'oldText' => $messageData['text'],
-        'newText' => $messageDataEncrypted['text'],
-        'iv1' => $messageData['iv'],
-        'iv2' => $messageDataEncrypted['iv'],
-        'salt1' => $messageData['salt'],
-        'salt2' => $messageDataEncrypted['salt'],
-        'time' => $database->now(),
-      ));
-
-      $database->update("{$sqlPrefix}messages", array(
-        'text' => $messageDataEncrypted['text'],
-        'salt' => $messageDataEncrypted['saltNum'],
-        'iv' => $messageDataEncrypted['iv'],
-        'ip' => $_SERVER['REMOTE_ADDR'],
-        'userId' => $user['userId']
-      ), array(
-        "messageId" => (int) $request['messageId']
-      ));
-
-      $database->modLog('editMessage', $messageData['messageId']);
-
-      $database->createEvent('editedMessage', $user['userId'], $roomData['roomId'], $messageData['messageId'], $messageDataNew['text'], false); // name, user, room, message, p1, p2, p3
-
-      $xmlData['editMessage']['response']['success'] = true;
+    if ($messageData['userId'] = $user->id && !$user->isAnonymousUser() && $generalCache->getConfig('usersCanEditOwnPosts')) {
+        $database->editMessage($messageData['messageId'], array('deleted' => ($request['action'] === 'delete' ? true : false)));
     }
-    else {
-      $errStr = 'noPerm';
-      $errDesc = 'You are not allowed to moderate this room.';
-    }
-    break;
+    else
 
-    default:
-    $errStr = 'badAction';
-    $errDesc = 'The action specified does not exist.';
+        new fimError('noPerm', 'You are not allowed to delete this message.');
     break;
-  }
 }
-
-
-
-/* Update Data for Errors */
-$xmlData['editMessage']['errStr'] = ($errStr);
-$xmlData['editMessage']['errDesc'] = ($errDesc);
-
 
 
 /* Output Data */

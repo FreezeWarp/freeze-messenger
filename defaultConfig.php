@@ -54,6 +54,8 @@ $defaultConfig = array(
   /* Rooms */
   'roomLengthMinimum' => 5, // integer Requires all room names to be at least this many characters.
   'roomLengthMaximum' => 20, // integer Requires all room names to not exceed this many characters in length.
+    'usersCanEditOwnPosts' => true,
+    'usersCanDeleteOwnPosts' => true,
 
   'disableTopic' => false, // bool Whether or not to disable topic functionality.
 

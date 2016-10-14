@@ -1674,6 +1674,78 @@ class fimDatabase extends databaseSQL
     }
 
 
+    public function editMessage(int $messageId, $options) : void {
+        global $user;
+
+        $options = array_merge(array(
+            'deleted' => null,
+            'text'    => null,
+            'flag'    => null,
+        ), $options);
+
+        $oldMessage = $this->getMessages(array(
+            'messageIds' => array($messageId)
+        ))->getAsArray(false);
+        $room = new fimRoom($oldMessage['roomId']);
+
+
+        $this->startTransaction();
+
+        if ($options['text']) {
+            list($messageTextEncrypted, $encryptIV, $encryptSalt) = $this->getEncrypted($options['text']);
+
+            $this->insert($this->sqlPrefix . "messageEditHistory", array(
+                'messageId' => $messageId,
+                'user' => $user->id,
+                'oldText' => $oldMessage['text'],
+                'newText' => $messageTextEncrypted,
+                'iv1' => $oldMessage['iv'],
+                'iv2' => $encryptIV,
+                'salt1' => $oldMessage['salt'],
+                'salt2' => $encryptSalt,
+                'time' => $this->now(),
+            ));
+
+            $options = array_merge($options, array(
+                'text' => $messageTextEncrypted,
+                'salt' => $encryptSalt,
+                'iv' => $encryptIV,
+            );
+
+            $this->dropKeyWords($messageId);
+            $keyWords = $this->getKeyWordsFromText($options['text']);
+            $this->storeKeyWords($keyWords, $messageId, $user->id, $room->id);
+        }
+
+        $this->update($this->sqlPrefix . "messages", $options, array(
+            "messageId" => (int) $messageId
+        ));
+
+
+        $this->modLog('editMessage', $messageId);
+
+        $this->insert($this->sqlPrefix . 'messageEditHistory', array(
+           'messageId' => $messageId,
+            'userId' => $user->id
+        ));
+
+
+        $this->update($this->sqlPrefix . "messages", $options, array(
+            "messageId" => $messageId
+        ));
+
+        $this->update($this->sqlPrefix . "messagesCached", $options, array(
+            "messageId" => $messageId
+        ));
+
+        $this->createEvent('editedMessage', $user->id, $messageId, false, $messageId, false, false, false); // name, user, room, message, p1, p2, p3
+
+        $this->endTransaction();
+    }
+
+
+
+
     public function createUnreadMessage($sendToUserId, $user, $room, $messageId) {
         $this->createUserEvent('missedMessage', $sendToUserId, $room->id, $messageId);
 
@@ -1789,6 +1861,13 @@ class fimDatabase extends databaseSQL
             ));
 
         }
+    }
+
+
+    public function dropKeyWords($messageId) {
+        $this->delete($this->sqlPrefix . "searchMessages", array(
+            'messageId' => (int) $messageId,
+        ));
     }
 
 
