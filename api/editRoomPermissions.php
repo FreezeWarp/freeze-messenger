@@ -68,7 +68,7 @@
  *** errDesc
  *** response
  **** insertId - If creating a room, the ID of the created room.
-*/
+ */
 
 $apiRequest = true;
 
@@ -78,93 +78,115 @@ require('../global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
-  'action' => array(
-    'valid' => array(
-      'add', 'remove',
-      'replace',
+    'action' => array(
+        'valid' => array(
+            'add', 'remove',
+            'replace',
+        ),
+        'require' => true,
     ),
-    'require' => true,
-  ),
 
-  'roomId' => array(
-    'cast' => 'int',
-  ),
+    'roomId' => array(
+        'cast' => 'int',
+    ),
 
-  'entries' => array(
-    'cast' => 'csv',
-    'filter' => 'int',
-    'evaltrue' => true,
-  ),
+    'entries' => array(
+        'cast' => 'csv',
+        'filter' => 'int',
+        'evaltrue' => true,
+    ),
 ));
 
 
 
 /* Data Predefine */
 $xmlData = array(
-  'editRoomPermissions' => array(
     'response' => array(),
-  ),
 );
 
 
 
-if (hasPermission()) {
-  switch ($request['action']) {
-      if ((int) $roomId) {
-        // Clear Existing Permissions
+if ($database->hasPermission($user, $room) & ROOM_PERMISSION_GRANT) {
+    $database->startTransaction();
+
+    /* If we're replacing things, then clear existing permissions first. */
+    if ($request['action'] === 'replace') {
         $database->delete("{$sqlPrefix}roomPermissions", array(
-          'roomId' => $roomId,
+            'roomId' => $roomId,
         ));
-
-        foreach ($request['allowedUsers'] AS &$allowedUser) {
-          if (in_array($allowedUser, $request['moderators'])) { // Don't process as an allowed user if the user is to be a moderator as well.
-            unset($allowedUser);
-          }
-          else {
-            $database->insert("{$sqlPrefix}roomPermissions", array(
-                'roomId' => $roomId,
-                'attribute' => 'user',
-                'param' => $allowedUser,
-                'permissions' => 7,
-              ), array(
-                'permissions' => 7,
-              )
-            );
-          }
-        }
-
-        foreach ($request['allowedGroups'] AS &$allowedGroup) {
-          $database->insert("{$sqlPrefix}roomPermissions", array(
-              'roomId' => $roomId,
-              'attribute' => 'group',
-              'param' => $allowedGroup,
-              'permissions' => 7,
-            ), array(
-              'permissions' => 7,
-            )
-          );
-        }
-
-        foreach ($request['moderators'] AS &$moderator) {
-          $database->insert("{$sqlPrefix}roomPermissions", array(
-              'roomId' => $roomId,
-              'attribute' => 'user',
-              'param' => $moderator,
-              'permissions' => 15,
-            ), array(
-              'permissions' => 15,
-            )
-          );
-        }
-      }
     }
+
+
+    /* Process allowedUsers */
+    foreach ($request['allowedUsers'] AS &$allowedUser) {
+        $dataArray = array(
+            'roomId' => $roomId,
+            'attribute' => 'user',
+            'param' => $allowedUser,
+            'permissions' => 7,
+        );
+
+        if ($request['action'] !== 'delete' && in_array($allowedUser, $request['moderators'])) { // Don't process as an allowed user if the user is to be a moderator as well.
+            unset($allowedUser);
+        }
+        else {
+            $database->insert("{$sqlPrefix}roomPermissions", $dataArray, array(
+                    'permissions' => 7,
+            ));
+        }
+    }
+
+
+    /* Process allowedGroups */
+    foreach ($request['allowedGroups'] AS &$allowedGroup) {
+        $dataArray = array(
+            'roomId' => $roomId,
+            'attribute' => 'group',
+            'param' => $allowedGroup,
+            'permissions' => 7,
+        );
+
+        switch ($request['action']) {
+            case 'add': case 'replace':
+                $database->insert("{$sqlPrefix}roomPermissions", $dataArray, array(
+                    'permissions' => 7,
+                ));
+            break;
+
+            case 'remove':
+                $database->delete("{$sqlPrefix}roomPermissions", $dataArray);
+            break;
+        }
+    }
+
+
+    /* Process moderators */
+    foreach ($request['moderators'] AS &$moderator) {
+        $dataArray = array(
+            'roomId' => $roomId,
+            'attribute' => 'user',
+            'param' => $moderator,
+            'permissions' => 15,
+        );
+
+
+        switch ($request['action']) {
+            case 'add': case 'replace': // Add new permission entry, or update to 15 if a duplicate key exists
+                $database->insert("{$sqlPrefix}roomPermissions", $dataArray, array(
+                    'permissions' => 15,
+                ));
+            break;
+
+            case 'remove': // Update the permissions entry, setting it from 15 to 7.
+                $database->update("{$sqlPrefix}roomPermissions", $dataArray, array(
+                    'permissions' => 7,
+                ));
+            break;
+        }
+    }
+
+    $database->endTransaction();
 }
-      
-
-
-/* Update Data for Errors */
-$xmlData['editRoomPermissions']['errStr'] = (string) $errStr;
-$xmlData['editRoomPermissions']['errDesc'] = (string) $errDesc;
 
 
 
