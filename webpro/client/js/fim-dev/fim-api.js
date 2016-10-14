@@ -238,11 +238,7 @@ fimApi.prototype.getFiles = function(params, requestSettings) {
                 data: params,
                 timeout: requestSettings.timeout,
                 cache: requestSettings.cache
-            }).done(function(json) {
-                requestSettings.begin(json);
-                $.each(json.getFiles.files, function(index, value) { requestSettings.each(value); });
-                requestSettings.end(json);
-            });
+            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
         }
 
 
@@ -271,11 +267,7 @@ fimApi.prototype.getStats = function(params, requestSettings) {
                 data: params,
                 timeout: requestSettings.timeout,
                 cache: requestSettings.cache
-            }).done(function(json) {
-                requestSettings.begin(json);
-                $.each(json.getStats.roomStats, function(index, value) { requestSettings.each(value); });
-                requestSettings.end(json);
-            });
+            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
         }
 
 
@@ -305,11 +297,7 @@ fimApi.prototype.getKicks = function(params, requestSettings) {
                 data: params,
                 timeout: requestSettings.timeout,
                 cache: requestSettings.cache
-            }).done(function(json) {
-                requestSettings.begin(json);
-                $.each(json.getKicks.kicks, function(index, value) { requestSettings.each(value); });
-                requestSettings.end(json);
-            });
+            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
         }
 
 
@@ -338,11 +326,7 @@ fimApi.prototype.getCensorLists = function(params, requestSettings) {
                 data: params,
                 timeout: requestSettings.timeout,
                 cache: requestSettings.cache
-            }).done(function(json) {
-                requestSettings.begin(json);
-                $.each(json.getCensorLists.lists, function(index, value) { requestSettings.each(value); });
-                requestSettings.end(json);
-            });
+            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));;
         }
 
 
@@ -372,11 +356,7 @@ fimApi.prototype.getActiveUsers = function(params, requestSettings) {
                 data: params,
                 timeout: requestSettings.timeout,
                 cache: requestSettings.cache
-            }).done(function(json) {
-                requestSettings.begin(json);
-                $.each(json.getActiveUsers.users, function(index, value) { requestSettings.each(value); });
-                requestSettings.end(json);
-            });
+            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
         }
 
 
@@ -430,16 +410,10 @@ fimApi.prototype.editFile = function(params, requestSettings) {
         $.ajax({
             url : directory + 'api/editFile.php',
             type : 'POST',
-            data : params,
-            cache : false,
-            timeout : requestSettings.timeout,
-            success : function(json) {
-                requestSettings.callback(json);
-            },
-            error : function(json) {
-                requestSettings.error(json);
-            }
-        });
+            data: params,
+            timeout: requestSettings.timeout,
+            cache: requestSettings.cache,
+        }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));;
 }
 
 
@@ -459,15 +433,9 @@ fimApi.prototype.sendMessage = function(params, requestSettings) {console.log(pa
             url: directory + 'api/sendMessage.php',
             type: 'POST',
             data: params,
-            cache: false,
-            timeout : requestSettings.timeout,
-            success : function(json) {
-                requestSettings.callback(json);
-            },
-            error : function(json) {
-                requestSettings.error(json.responseJSON);
-            }
-        });
+            timeout: requestSettings.timeout,
+            cache: requestSettings.cache,
+        }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));;
 };
 
 
