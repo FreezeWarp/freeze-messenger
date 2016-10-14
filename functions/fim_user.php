@@ -208,7 +208,14 @@ class fimUser
         }
     }
 
-    function checkPassword($password)
+    /**
+     * Checks if the plaintext password matches the user's password (generally after some hashing).
+     *
+     * @param $password The password to check against.
+     * @return bool True if the password match, false otherwise.
+     * @throws Exception If the user's passwordFormat is not understood.
+     */
+    public function checkPassword($password)
     {
         global $database;
 
@@ -254,12 +261,26 @@ class fimUser
     }
 
 
-    function isAnonymousUser() {
+    /**
+     * Returns true if the user is an anonymous user, false otherwise.
+     *
+     * @return bool
+     */
+    public function isAnonymousUser() : bool
+    {
         return ($this->id === self::ANONYMOUS_USER_ID);
     }
 
 
-    private function getColumns($columns) {
+    /**
+     * Makes sure the user has obtained the specified data columns, obtaining them from cache or database, if not already retrieved
+     *
+     * @param array $columns
+     * @return bool Returns true on success, false on failure.
+     * @throws Exception
+     */
+    private function getColumns(array $columns) : bool
+    {
         global $database;
 
         if (count($columns) > 0)
@@ -269,7 +290,14 @@ class fimUser
     }
 
 
-    private function populateFromArray($userData)
+    /**
+     * Populates the user object's parameters based on an associative array obtained from the DB.
+     *
+     * @param array $userData An array of user data obtained from the database users table.
+     * @return bool Returns false if userData is empty, true otherwise.
+     * @throws fimError
+     */
+    private function populateFromArray(array $userData) : bool
     {
         if ($userData) {
             $this->resolved = array_diff($this->resolved, array_values($userData)); // The resolution process in __set modifies the data based from an array in several ways. As a result, if we're importing from an array a second time, we either need to ignore the new value or, as in this case, uncheck the resolve[] entries to have them reparsed when __set fires.
