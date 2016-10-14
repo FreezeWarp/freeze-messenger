@@ -294,6 +294,9 @@ $.when(
   })
  ).then(function() {
     fimApi = new fimApi();
+    fimApi.registerDefaultExceptionHandler(function(exception) {
+        dia.exception(exception);
+    });
 
   if (typeof window.EventSource == 'undefined') requestSettings.serverSentEvents = false;
   else requestSettings.serverSentEvents = window.serverSettings.requestMethods.serverSentEvents;

@@ -17,6 +17,39 @@ var fimApi = function() {
 
     this.timers = {};
 
+    this.done = function(requestSettings) {
+        return function (json) {
+            requestSettings.begin(json);
+
+            // This digs into the tree a bit to where the array is. Perhaps somewhat inelegant, but it will work for our purposes, and does so quite simply.
+            var firstElement = json["firstIndex" in requestSettings ? requestSettings.firstIndex : Object.keys(json)[0]];
+            var secondElement = firstElement["secondIndex" in requestSettings ? requestSettings.secondIndex : Object.keys(firstElement)[0]];
+
+            $.each(secondElement, function (index, value) {
+                requestSettings.each(value);
+            });
+
+            requestSettings.end(json);
+        }
+    };
+
+    this.fail = function(requestSettings) {
+        return function(response) {
+            if ("exception" in response.responseJSON)
+                return requestSettings.exception(response.responseJSON.exception);
+            else
+                return requestSettings.error(response);
+        }
+    }
+
+    this.registerDefaultExceptionHandler = function (exceptionHandler) {
+        this.requestDefaults.exception = exceptionHandler;
+    },
+
+    this.getDefaultExceptionHandler = function () {
+        return this.requestDefaults.exception;
+    }
+
     return;
 }
 
@@ -80,20 +113,7 @@ fimApi.prototype.getUsers = function(params, requestSettings, async) {
                 data: params,
                 timeout: requestSettings.timeout,
                 cache: requestSettings.cache
-            }).done(function(json) {
-                /*$.each(json.getUsers.users, function(index, value) { console.log(value);
-                 if (!(value.userId in window.userData)) window.userData[value.userId] = value;
-                 else {
-                 for (var prop in value) window.userData[value.userId][prop] = value[prop];
-                 }
-
-                 callback(value);
-                 });*/
-
-                requestSettings.begin(json);
-                $.each(json.getRooms.rooms, function(index, value) { requestSettings.each(value); });
-                requestSettings.end(json);
-            });
+            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
         }
 };
 
@@ -117,11 +137,7 @@ fimApi.prototype.getRooms = function(params, requestSettings) {
                 data: params,
                 timeout: requestSettings.timeout,
                 cache: requestSettings.cache
-            }).done(function(json) {
-                requestSettings.begin(json);
-                $.each(json.getRooms.rooms, function(index, value) { requestSettings.each(value); });
-                requestSettings.end(json);
-            });
+            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
         }
 
 
@@ -179,11 +195,7 @@ fimApi.prototype.getMessages = function(params, requestSettings) {
                 data: params,
                 timeout: requestSettings.timeout,
                 cache: requestSettings.cache
-            }).done(function(json) {
-                requestSettings.begin(json);
-                $.each(json.getMessages.messages, function(index, value) { requestSettings.each(value); });
-                requestSettings.end(json);
-            });
+            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
         }
 
 
