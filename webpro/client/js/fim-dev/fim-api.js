@@ -1,7 +1,7 @@
 "use strict";
 
-window.fimApi = {
-    requestDefaults : {
+var fimApi = function() {
+    this.requestDefaults = {
         'close' : false,
         'timerId' : 1,
         'refresh' : -1,
@@ -10,15 +10,19 @@ window.fimApi = {
         'begin' : function() {},
         'callback' : function() {},
         'error' : function() {},
+        'exception' : function () {},
         'each' : function() {},
         'end' : function() {}
-    },
+    };
 
-    timers : {},
+    this.timers = {};
+
+    return;
+}
 
 
 
-    login : function(params, requestSettings) {
+fimApi.prototype.login = function (params, requestSettings) {
         var params = fimApi.mergeDefaults(params, {
             'fim3_format' : 'json',
             'grant_type' : 'password',
@@ -44,7 +48,7 @@ window.fimApi = {
         }
 
         login_query();
-    },
+}
 
 
 
@@ -58,7 +62,7 @@ window.fimApi = {
      * @copyright Joseph T. Parsons 2014
      *
      */
-    getUsers : function(params, requestSettings, async) {
+fimApi.prototype.getUsers = function(params, requestSettings, async) {
         var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['userIds']), {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
@@ -91,10 +95,10 @@ window.fimApi = {
                 requestSettings.end(json);
             });
         }
-    },
+};
 
 
-    getRooms : function(params, requestSettings) {
+fimApi.prototype.getRooms = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds']), {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
@@ -105,7 +109,6 @@ window.fimApi = {
         });
 
         var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
-
 
         function getRooms_query() {
             $.ajax({
@@ -126,7 +129,7 @@ window.fimApi = {
 
         getRooms_query();
         if (requestSettings.refresh > -1) fimApi.timers['getRooms_' + requestSettings.timerId] = setInterval(getRooms_query, requestSettings.refresh);
-    },
+};
 
 
     /*            var errStr = json.getMessages.errStr,
@@ -150,7 +153,8 @@ window.fimApi = {
      }
      else {
      */
-    getMessages : function(params, requestSettings) {
+
+fimApi.prototype.getMessages = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['userIds', 'messageIds']), {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
@@ -167,7 +171,6 @@ window.fimApi = {
         });
 
         var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
-
 
         function getMessages_query() {
             $.ajax({
@@ -189,11 +192,11 @@ window.fimApi = {
             getMessages_query();
             if (requestSettings.refresh > -1) fimApi.timers['getMessages_' + requestSettings.timerId] = setInterval(getMessages_query, requestSettings.refresh);
         }
-    },
+};
 
 
 
-    getFiles : function(params, requestSettings) {
+fimApi.prototype.getFiles = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['userIds', 'fileIds']), {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
@@ -223,11 +226,11 @@ window.fimApi = {
 
         getFiles_query();
         if (requestSettings.refresh > -1) fimApi.timers['getFiles_' + requestSettings.timerId] = setInterval(getFiles_query, requestSettings.refresh);
-    },
+};
 
 
 
-    getStats : function(params, requestSettings) {
+fimApi.prototype.getStats = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds']), {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
@@ -257,11 +260,11 @@ window.fimApi = {
 
         getStats_query();
         if (requestSettings.refresh > -1) fimApi.timers['getStats_' + requestSettings.timerId] = setInterval(getStats_query, requestSettings.refresh);
-    },
+};
 
 
 
-    getKicks : function(params, requestSettings) {
+fimApi.prototype.getKicks = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds', 'userIds']), {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
@@ -291,11 +294,9 @@ window.fimApi = {
 
         getKicks_query();
         if (requestSettings.refresh > -1) fimApi.timers['getKicks_' + requestSettings.timerId] = setInterval(getKicks_query, requestSettings.refresh);
-    },
+},
 
-
-
-    getCensorLists : function(params, requestSettings) {
+fimApi.prototype.getCensorLists = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds', 'listIds']), {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
@@ -326,11 +327,11 @@ window.fimApi = {
 
         getCensorLists_query();
         if (requestSettings.refresh > -1) fimApi.timers['getCensorLists_' + requestSettings.timerId] = setInterval(getCensorLists_query, requestSettings.refresh);
-    },
+};
 
 
 
-    getActiveUsers : function(params, requestSettings) {
+fimApi.prototype.getActiveUsers = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds', 'userIds']), {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
@@ -361,10 +362,10 @@ window.fimApi = {
             getActiveUsers_query();
             if (requestSettings.refresh > -1) fimApi.timers['getActiveUsers_' + requestSettings.timerId] = setInterval(getActiveUsers_query, requestSettings.refresh);
         }
-    },
+};
 
 
-    acHelper : function(list) {
+fimApi.prototype.acHelper = function(list) {
         return function acHelper_query(search, callback) {
             $.ajax({
                 type: 'get',
@@ -381,11 +382,11 @@ window.fimApi = {
                 }
             });
         }
-    },
+};
 
 
 
-    editFile : function(params, requestSettings) {
+fimApi.prototype.editFile = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['parentalFlags']), {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
@@ -416,10 +417,10 @@ window.fimApi = {
                 requestSettings.error(json);
             }
         });
-    },
+}
 
 
-    sendMessage : function(params, requestSettings) {console.log(params);
+fimApi.prototype.sendMessage = function(params, requestSettings) {console.log(params);
         var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['parentalFlags']), {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
@@ -444,11 +445,11 @@ window.fimApi = {
                 requestSettings.error(json.responseJSON);
             }
         });
-    },
+};
 
 
 
-    mergeDefaults : function(object, defaults) {
+fimApi.prototype.mergeDefaults = function(object, defaults) {
         for (var i in defaults) {
             if (!(i in object)) object[i] = defaults[i];
         }
@@ -462,15 +463,14 @@ window.fimApi = {
         /*** END STRICT CODE ***/
 
         return object;
-    },
+};
 
 
 
-    jsonify : function(object, properties) {
+fimApi.prototype.jsonify = function(object, properties) {
         for (var i in properties) {
             if (properties[i] in object) object[properties[i]] = JSON.stringify(object[properties[i]]);
         }
 
         return object;
-    }
-}
+};

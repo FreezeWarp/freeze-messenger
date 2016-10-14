@@ -293,6 +293,7 @@ $.when(
     }
   })
  ).then(function() {
+    fimApi = new fimApi();
 
   if (typeof window.EventSource == 'undefined') requestSettings.serverSentEvents = false;
   else requestSettings.serverSentEvents = window.serverSettings.requestMethods.serverSentEvents;
