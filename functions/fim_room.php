@@ -5,6 +5,10 @@
  *
  * General thoughts:
  * This is not exactly the best example of OOP, but it's not the worst either. In general, the way I wrote this, the object can either correspond with a valid room or with nothing at all. Certain functions -- like editRoom() -- will create a room if none exists. There are certain flaws with this -- it would be better if a user explicitly said "createRoom" instead of "editRoom" to create a room. So... that might be worth changing.
+ *
+ *
+ * TODO:
+ * Private Room Auto Name Generation
  */
 class fimRoom {
     public $id;
@@ -33,7 +37,7 @@ class fimRoom {
         if (is_int($roomData)) $this->id = $roomData;
         elseif (is_array($roomData)) $this->populateFromArray($roomData); // TODO: test contents
         elseif ($roomData === false) $this->id = false;
-        else throw new Exception('Invalid room data specified -- must either be an associative array corresponding to a table row, a room ID, or false (to create a room, etc.)');
+        else throw new Exception('Invalid room data specified -- must either be an associative array corresponding to a table row, a room ID, or false (to create a room, etc.) Passed: ' . print_r($roomData, true));
 
         $this->roomData = $roomData;
     }

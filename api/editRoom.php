@@ -259,12 +259,12 @@ switch($request['action']) {
 
     case 'delete':
         if ($room->deleted) new fimError('nothingToDo', 'The room is already deleted.');
-        else $database->editRoom($room['roomId'], array('deleted' => true));
+        else $room->set(array('deleted' => true));
     break;
 
     case 'undelete':
         if (!$room->deleted) new fimError('nothingToDo', 'The room isn\'t deleted.');
-        else $database->editRoom($room['roomId'], array('deleted' => false));
+        else $room->set(array('deleted' => false));
     break;
 }
 $database->endTransaction();

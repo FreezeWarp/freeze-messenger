@@ -40,9 +40,7 @@ switch ($request['list']) {
 
 /* Data Predefine */
 $xmlData = array(
-  'acHelper' => array(
     'entries' => $entries,
-  ),
 );
 
 

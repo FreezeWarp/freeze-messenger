@@ -289,15 +289,22 @@ $.when(
         url: window.directory + 'api/getServerStatus.php?fim3_format=json',
         dataType: 'json',
         success: function(json) {
-            window.serverSettings = json.getServerStatus.serverStatus;
+            window.serverSettings = json.serverStatus;
         }
     })
 ).then(function() {
-    fimApi = new fimApi();
+    /* Our handful of global objects */
+    window.fimApi = new fimApi();
     fimApi.registerDefaultExceptionHandler(function(exception) {
         dia.exception(exception);
     });
 
+
+    window.standard = new standard();
+
+
+
+    /* Do some final compat testing */
     if (typeof window.EventSource == 'undefined') requestSettings.serverSentEvents = false;
     else requestSettings.serverSentEvents = window.serverSettings.requestMethods.serverSentEvents;
 

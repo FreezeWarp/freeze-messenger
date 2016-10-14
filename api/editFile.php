@@ -141,9 +141,7 @@ $request = fim_sanitizeGPC('p', array(
 
 /* Data Predefine */
 $xmlData = array(
-  'editFile' => array(
     'response' => array(),
-  ),
 );
 
 
@@ -299,7 +297,7 @@ switch ($request['action']) {
       if ($roomData) $database->storeMessage($webLocation, $container, $user, $roomData);
     }
 
-    $xmlData['editFile']['response']['webLocation'] = $webLocation;
+    $xmlData['response']['webLocation'] = $webLocation;
   }
   elseif ($request['action'] === 'edit') {
 /*      $fileData = $database->getFile($request['fileId']);

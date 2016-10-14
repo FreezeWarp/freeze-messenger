@@ -7,9 +7,9 @@ $(document).ready(function() {
     timeout: 1000,
     dataType: 'json',
     success: function(json) {
-      var registrationPolicies = json.getServerStatus.serverStatus.registrationPolicies;
+      var registrationPolicies = json.serverStatus.registrationPolicies;
 
-      if (json.getServerStatus.serverStatus.installUrl != window.location.origin + directory) {
+      if (json.serverStatus.installUrl != window.location.origin + directory) {
         dia.error('<strong>WARNING</strong>: Your copy of FreezeMessenger has been incorrectly installed. Errors may occur if this is not fixed. <a href="http://code.google.com/p/freeze-messenger/wiki/ChangingDomains">Please see the online documentation for more information.</a>');
       }
 

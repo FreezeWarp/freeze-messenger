@@ -52,17 +52,16 @@ $xmlData = array(
     'response' => array(),
 );
 
-
-if (!$messageData = $slaveDatabase->getMessage($request['messageId']))
+if (!$messageData = $database->getMessage($request['messageId'])->getAsArray(false))
     new fimError('invalidMessage', 'The message specified is invalid.');
 
-$room = new fimRoom($messageData['roomId']);
+$room = new fimRoom((int) $messageData['roomId']);
 
 
 
 /* Start Processing */
 switch ($request['action']) {
-    case 'delete': case 'undeleted':
+    case 'delete': case 'undelete':
         if (($messageData['userId'] = $user->id && !$user->isAnonymousUser() && $generalCache->getConfig('usersCanDeleteOwnPosts'))
             || ($database->hasPermission($user, $room) & ROOM_PERMISSION_MODERATE)) {
             $database->editMessage($messageData['messageId'], array('deleted' => ($request['action'] === 'delete' ? true : false)));
