@@ -152,7 +152,7 @@ var standard = {
         if (window.roomId) {
             var encrypt = 'base64';
 
-            if (requestSettings.serverSentEvents) { // Note that the event subsystem __requires__ serverSentEvents for various reasons. If you use polling, these events will no longer be fully compatible.
+            if (requestSettings.serverSentEvents && !requestSettings.firstRequest) { // Note that the event subsystem __requires__ serverSentEvents for various reasons. If you use polling, these events will no longer be fully compatible.
                 messageSource = new EventSource(directory + 'stream.php?queryId=' + roomId + '&streamType=messages&lastEvent=' + requestSettings.lastMessage + '&access_token=' + sessionHash);
                 roomSource = new EventSource(directory + 'stream.php?queryId=' + roomId + '&streamType=room&lastEvent=' + requestSettings.lastEvent + '&access_token=' + sessionHash);
                 console.log('Starting EventSource; roomId: ' + roomId + '; lastEvent: ' + requestSettings.lastEvent + '; lastMessage: ' + requestSettings.lastMessage)
@@ -203,18 +203,32 @@ var standard = {
                  }, false);*/
             }
             else {
-                fimApi.getMessages({
-                    'roomId' : roomId,
-                    'archive' : (requestSettings.firstRequest ? 1 : 0),
-                    'messageIdStart' : requestSettings.lastMessage + 1
-                }, {
-                    'each' : function(messageData) {
-                        fim_newMessage(fim_messageFormat(messageData, 'list'), Number(messageData.messageId));
-                    },
-                    'error' : function() {
-                    },
-                    'refresh' : 5000 // Todo: implement progressive refresh
-                });
+                var timeout = 5000;
+
+                function getMessages_query() {
+                    fimApi.getMessages({
+                        'roomId': roomId,
+                        'initialRequest': (requestSettings.firstRequest ? 1 : 0),
+                        'messageIdStart': requestSettings.lastMessage + 1,
+                    }, {
+                        'each': function (messageData) {
+                            fim_newMessage(fim_messageFormat(messageData, 'list'), Number(messageData.messageData.messageId));
+                        },
+                        'end': function () {
+                            if (requestSettings.firstRequest) requestSettings.firstRequest = false;
+                            timeout = 5000;
+
+                            window.setTimeout(getMessages_query, timeout);
+                        },
+                        'error': function () {
+                            if (timeout < 60000) timeout += 5000;
+
+                            if (!requestSettings.serverSentEvents) window.setTimeout(getMessages_query, timeout);
+                        }
+                    });
+                }
+
+                getMessages_query();
             }
         }
         else {

@@ -12,6 +12,7 @@ var fimApi = function() {
         'error' : function() {},
         'exception' : function () {},
         'each' : function() {},
+        'reverseEach' : false,
         'end' : function() {}
     };
 
@@ -24,6 +25,8 @@ var fimApi = function() {
             // This digs into the tree a bit to where the array is. Perhaps somewhat inelegant, but it will work for our purposes, and does so quite simply.
             var firstElement = json["firstIndex" in requestSettings ? requestSettings.firstIndex : Object.keys(json)[0]];
             var secondElement = firstElement["secondIndex" in requestSettings ? requestSettings.secondIndex : Object.keys(firstElement)[0]];
+
+            if (requestSettings.reverseEach) secondElement = secondElement.reverse();
 
             $.each(secondElement, function (index, value) {
                 requestSettings.each(value);
@@ -183,10 +186,19 @@ fimApi.prototype.getMessages = function(params, requestSettings) {
             'search' : '',
             'archive' : 0,
             'messageHardLimit' : 25,
-            'sortOrder' : 'asc'
+            'sortOrder' : 'asc',
+            'initialRequest' : false,
         });
 
         var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+        if (params.initialRequest) {
+            requestSettings.reverseEach = true;
+            params.sortOrder = 'desc';
+            params.archive = 1;
+            params.messageIdEnd = 0;
+            params.messageIdStart = 0;
+        }
 
         function getMessages_query() {
             $.ajax({
@@ -237,7 +249,6 @@ fimApi.prototype.getFiles = function(params, requestSettings) {
         if (requestSettings.close) clearInterval(fimApi.timers['getFiles_' + requestSettings.timerId]);
 
         getFiles_query();
-        if (requestSettings.refresh > -1) fimApi.timers['getFiles_' + requestSettings.timerId] = setInterval(getFiles_query, requestSettings.refresh);
 };
 
 

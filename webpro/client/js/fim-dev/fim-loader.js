@@ -322,10 +322,10 @@ function fim_messagePreview(container, content) {
  */
 function fim_newMessage(messageText, messageId) {
   if ($.inArray(messageId, messageIndex) > -1) { return; } // Double post hack
+  if (messageId > requestSettings.lastMessage) requestSettings.lastMessage = messageId; // Update the interal lastMessage.
 
   if (settings.reversePostOrder) $('#messageList').append(messageText); // Put the data at the end of the list if reversePostOrder.
   else $('#messageList').prepend(messageText); // Otherwise, put it at top.
-  if (messageId > requestSettings.lastMessage) requestSettings.lastMessage = messageId; // Update the interal lastMessage.
 
   messageIndex.push(requestSettings.lastMessage); // Update the internal messageIndex array.
 
