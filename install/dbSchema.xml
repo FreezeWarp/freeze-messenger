@@ -330,6 +330,7 @@
             <column name="salt2" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
             <column name="iv1" type="string" maxlen="15" comment="The base64-encoded IV used for encryption." />
             <column name="iv2" type="string" maxlen="15" comment="The base64-encoded IV used for encryption." />
+            <column name="ip_address" type="string" maxlen="128" comment="The IP used to make the edit." />
 
             <key name="messageId,time" type="primary" />
         </table>
