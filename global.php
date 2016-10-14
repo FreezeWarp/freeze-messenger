@@ -35,7 +35,7 @@
  * The following are used, but with safe fallbacks:
  * Hash is present in all versions since PHP 5.1.2; MHash is present in all versions since PHP4
  */
-foreach (array('mysql', 'json', 'mbstring', 'mcrypt', 'pcre', 'dom') AS $module) { // Check that each extension has been loaded.
+foreach (array('json', 'mbstring', 'mcrypt', 'pcre', 'dom') AS $module) { // Check that each extension has been loaded.
   if (!extension_loaded($module)) die("The module <strong>$module</strong> could not be found. Please install PHP <strong>$module</strong> compatibility. See the documentation for help.");
 }
 
