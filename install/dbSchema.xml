@@ -179,7 +179,7 @@
             <key name="client_id" type="primary" />
         </table>
 
-        <table name="oauth_access_tokens">
+        <table name="oauth_access_tokens" type="memory">
             <column name="access_token" type="string" maxlen="40" required="true" />
             <column name="client_id" type="string" maxlen="80" required="true" />
             <column name="user_id" type="string" maxlen="80" />
