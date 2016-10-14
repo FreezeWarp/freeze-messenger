@@ -272,18 +272,11 @@ var standard = {
                         else
                             fimApi.getDefaultExceptionHandler(exception);
                     },
-                    'error' : function(json) { console.log(json.exception);
-                        if (json.exception) {
-                                    'text' : json.exception.details,
-                        }
-                        else {
-                            if (settings.reversePostOrder) {
-                                $('#messageList').append('Your message, "' + message + '", could not be sent and will be retried.');
-                            }
-                            else {
-                                $('#messageList').prepend('Your message, "' + message + '", could not be sent and will be retried.');
-                            }
-                        }
+                    'error' : function(request) {
+                        if (settings.reversePostOrder)
+                            $('#messageList').append('Your message, "' + message + '", could not be sent and will be retried.');
+                        else
+                            $('#messageList').prepend('Your message, "' + message + '", could not be sent and will be retried.');
 
                         window.setTimeout(function() { standard.sendMessage(message) }, 5000);
 
