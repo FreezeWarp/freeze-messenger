@@ -327,7 +327,7 @@ function fim_newMessage(messageText, messageId) {
     if (settings.reversePostOrder) $('#messageList').append(messageText); // Put the data at the end of the list if reversePostOrder.
     else $('#messageList').prepend(messageText); // Otherwise, put it at top.
 
-    messageIndex.push(requestSettings.lastMes   sage); // Update the internal messageIndex array.
+    messageIndex.push(requestSettings.lastMessage); // Update the internal messageIndex array.
 
     if (messageIndex.length === 100) { // Only list 100 messages in the table at any given time. This prevents memory excess (this usually isn't a problem until around 1,000, but 100 is usually all a user is going to need).
         var messageOut = messageIndex[0];
