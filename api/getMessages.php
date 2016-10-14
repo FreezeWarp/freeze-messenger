@@ -186,9 +186,7 @@ $room = $database->getRoom($request['roomId']);
 
 /* Data Predefine */
 $xmlData = array(
-  'getMessages' => array(
     'messages' => array(),
-  ),
 );
 
 
@@ -233,7 +231,7 @@ else {
         case 'base64': $message['text'] = base64_encode($message['text']); break;
       }
 
-      $xmlData['getMessages']['messages'][] = array(
+      $xmlData['messages'][] = array(
         'messageData' => array(
           'roomId' => (int) $room->id,
           'messageId' => (int) $message['messageId'],
