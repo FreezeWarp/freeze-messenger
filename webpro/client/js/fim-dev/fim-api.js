@@ -180,7 +180,7 @@ fimApi.prototype.getMessages = function(params, requestSettings) {
             'messageIdEnd' : 0,
             'messageIdStart' : 0,
             'page' : 0,
-            'search' : 0,
+            'search' : '',
             'archive' : 0,
             'messageHardLimit' : 25,
             'sortOrder' : 'asc'
