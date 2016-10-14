@@ -116,7 +116,8 @@ if (!window.atob) window.atob = $.base64.decode;
 // console.log
 if (typeof console !== 'object' || typeof console.log !== 'function') {
   var console = {
-    log : function() { return false; }
+    log : function() { return false; },
+    assert : function() { return false; }
   };
 }
 
