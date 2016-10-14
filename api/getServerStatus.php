@@ -81,7 +81,6 @@ if (count($smilies)) {
 
 
 $apiData = new apiData(array(
-  'getServerStatus' => array(
     'serverStatus' => array(
       'activeUser' => array(
         'userId' => (int) $user['userId'],
@@ -165,7 +164,6 @@ $apiData = new apiData(array(
 
       'phpVersion' => (float) phpversion(), // We won't display the full version as it could pose an unneccessary security risk. We will, however, display the base version.
     ),
-  ),
 ));
 echo $apiData;
 ?>
