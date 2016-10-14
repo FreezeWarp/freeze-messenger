@@ -32,6 +32,22 @@ class fimDatabase extends databaseSQL
     protected $config;
 
 
+    public function argumentMerge($defaults, $args) {
+        $returnArray = [];
+
+        foreach ($args AS $name => $arg) {
+            if (!in_array($name, array_keys($defaults))) throw new Exception('Unknown argument: ' . $name);
+        }
+
+        foreach ($defaults AS $name => $default) {
+            if (in_array($name, array_keys($args))) $returnArray[$name] = $args[$name];
+            elseif (!is_null($default)) $returnArray[$name] = $default;
+        }
+
+        return $returnArray;
+    }
+
+
 
     public function setConfig($config) {
         $this->config = $config;
@@ -595,7 +611,7 @@ class fimDatabase extends databaseSQL
             'messageIds'        => array(),
             'userIds'           => array(),
             'messageTextSearch' => '', // Overwrites messageIds.
-            'showDeleted'       => true,
+            'showDeleted'       => false,
             'messagesSince'     => 0,
             'messageIdStart'    => 0,
             'messageIdEnd'      => 0,
@@ -661,7 +677,7 @@ class fimDatabase extends databaseSQL
         if ($options['messagesSince'] > 0)
             $conditions['both']['messageId 5'] = $this->int($options['messagesSince'], 'gt');
 
-        if ($options['showDeleted'] === true && $options['archive'] === true) $conditions['both']['deleted'] = $this->bool(false);
+        if (!($options['showDeleted'] === true && $options['archive'] === true)) $conditions['both']['deleted'] = $this->bool(false);
         if (count($options['messageIds']) > 0) $conditions['both']['messageId'] = $this->in($options['messageIds']); // Overrides all other message ID parameters; TODO
         if (count($options['userIds']) > 0) $conditions['both']['userId'] = $this->in($options['userIds']);
         if (count($options['roomIds']) > 0) $conditions['both']['roomId'] = $this->in($options['roomIds']);
@@ -671,6 +687,14 @@ class fimDatabase extends databaseSQL
 //echo ($messages->sourceQuery); die();
 
         return $messages;
+    }
+
+
+    public function getMessage($messageId) {
+        return $this->getMessages(array(
+            'messageIds' => array($messageId),
+            'archive' => true,
+        ));
     }
 
 
@@ -1399,16 +1423,17 @@ class fimDatabase extends databaseSQL
 
         if (count($userNames) !== count($userIds)) throw new Exception('Invalid userIds in createPrivateRooms().');
 
-        $roomId = $this->editRoom(false, array(
+
+        $room = new fimRoom(false);
+        $room->set(array(
             'roomType' => 'private',
             'roomAlias' => $roomAlias,
-            'roomName' => 'Private Conversation Between ' . implode(', ', $userNames),
-            'defaultPermissions' => 0
         ));
 
-        foreach ($userIds AS $userId) $this->setPermission($roomId, 'user', $userId, ROOM_PERMISSION_VIEW + ROOM_PERMISSION_POST + ROOM_PERMISSION_TOPIC); // Note: Originally, I had intentioned that this would be automatic. Right now, it is not, but it would be fairly easy to remedy by adding the appropriate code to hasPermission. For now, I think it would be best to do both in some regard.
+        foreach ($userIds AS $userId)
+            $this->setPermission($room->id, 'user', $userId, ROOM_PERMISSION_VIEW + ROOM_PERMISSION_POST + ROOM_PERMISSION_TOPIC); // Note: Originally, I had intentioned that this would be automatic. Right now, it is not, but it would be fairly easy to remedy by adding the appropriate code to hasPermission. For now, I think it would be best to do both in some regard.
 
-        return $roomId;
+        return $room;
     }
 
 
@@ -1674,22 +1699,22 @@ class fimDatabase extends databaseSQL
     }
 
 
-    public function editMessage(int $messageId, $options) : void {
+    public function editMessage(int $messageId, $options) {
         global $user;
 
-        $options = array_merge(array(
+        $options = $this->argumentMerge(array(
             'deleted' => null,
             'text'    => null,
             'flag'    => null,
         ), $options);
 
-        $oldMessage = $this->getMessages(array(
-            'messageIds' => array($messageId)
-        ))->getAsArray(false);
-        $room = new fimRoom($oldMessage['roomId']);
+        $oldMessage = $this->getMessage($messageId)->getAsArray(false);
+        $room = new fimRoom((int) $oldMessage['roomId']);
 
 
         $this->startTransaction();
+
+        $this->modLog('editMessage', $messageId);
 
         if ($options['text']) {
             list($messageTextEncrypted, $encryptIV, $encryptSalt) = $this->getEncrypted($options['text']);
@@ -1703,14 +1728,14 @@ class fimDatabase extends databaseSQL
                 'iv2' => $encryptIV,
                 'salt1' => $oldMessage['salt'],
                 'salt2' => $encryptSalt,
-                'time' => $this->now(),
+                //'ip_address' => $_SERVER['REMOTE_ADDR'], // Todo: enable once reinstalled
             ));
 
             $options = array_merge($options, array(
                 'text' => $messageTextEncrypted,
                 'salt' => $encryptSalt,
                 'iv' => $encryptIV,
-            );
+            ));
 
             $this->dropKeyWords($messageId);
             $keyWords = $this->getKeyWordsFromText($options['text']);
@@ -1721,24 +1746,11 @@ class fimDatabase extends databaseSQL
             "messageId" => (int) $messageId
         ));
 
-
-        $this->modLog('editMessage', $messageId);
-
-        $this->insert($this->sqlPrefix . 'messageEditHistory', array(
-           'messageId' => $messageId,
-            'userId' => $user->id
-        ));
-
-
-        $this->update($this->sqlPrefix . "messages", $options, array(
+        $this->delete($this->sqlPrefix . "messagesCached", array(
             "messageId" => $messageId
         ));
 
-        $this->update($this->sqlPrefix . "messagesCached", $options, array(
-            "messageId" => $messageId
-        ));
-
-        $this->createEvent('editedMessage', $user->id, $messageId, false, $messageId, false, false, false); // name, user, room, message, p1, p2, p3
+        $this->createEvent('editedMessage', $user->id, false, $messageId, false, false, false); // name, user, room, message, p1, p2, p3
 
         $this->endTransaction();
     }
@@ -1886,10 +1898,10 @@ class fimDatabase extends databaseSQL
     {
         global $user; // TODO
 
-        if (!isset($user['userId'])) throw new Exception('database->modLog requires user[userId]');
+        if (!isset($user->id)) throw new Exception('database->modLog requires user->id');
 
         if ($this->insert($this->sqlPrefix . "modlog", array(
-            'userId' => (int) $user['userId'],
+            'userId' => (int) $user->id,
             'ip'     => $_SERVER['REMOTE_ADDR'],
             'action' => $action,
             'data'   => $data,
