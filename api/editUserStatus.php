@@ -25,7 +25,7 @@
  * @param int roomId - A comma-seperated list of room IDs to get.
  * @param string statusType - The type of status.
  * @param string statusValue - The value of the status type.
-*/
+ */
 
 $apiRequest = true;
 
@@ -35,42 +35,40 @@ require('../global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
-  'roomIds' => array(
-    'cast' => 'jsonList',
-    'filter' => 'int'
-  ),
+    'roomIds' => array(
+        'cast' => 'jsonList',
+        'filter' => 'int'
+    ),
 
-  'status' => array(
-    'valid' => array('away', 'busy', 'available', 'invisible', 'offline')
-  ),
+    'status' => array(
+        'valid' => array('away', 'busy', 'available', 'invisible', 'offline')
+    ),
 
-  'type' => array(
-    'cast' => 'bool',
-  )
+    'type' => array(
+        'cast' => 'bool',
+    )
 ));
 
 
 
 /* Get Room Data */
 $rooms = $slaveDatabase->getRooms(array(
-  'roomIds' => $request['roomIds'],
-))->getAsArray('roomId');
+    'roomIds' => $request['roomIds'],
+))->getAsRooms();
 
 
 
-if (!count($rooms)) throw new Exception('invalidRooms');
+if (!count($rooms)) new fimError('invalidRooms', 'The rooms specified do not exist.');
 else {
-  foreach ($rooms AS $room) {
-    if (!fim_hasPermission($room, $user, 'view', true)) continue;
-
-    $database->setUserStatus($room['roomId']);
-  }
+    foreach ($rooms AS $room) {
+        if ($database->hasPermission($user, $room) & ROOM_PERMISSION_VIEW)
+            $database->setUserStatus($room->roomId);
+    }
 }
 
 
 $xmlData = array(
-  'setUserStatus' => array(
-  ),
+    'reponse' => array(),
 );
 
 
