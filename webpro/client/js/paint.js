@@ -177,6 +177,15 @@ window.webproDisplay = {
 
 
 
+/* Sanity Checks */
+if (window.webproDisplay.audioVolume > 1 || window.webproDisplay.audioVolume < 0) {
+    console.error("audioVolume was " + window.webproDisplay.audioVolume + "; set to .5");
+
+    window.webproDisplay.audioVolume = .5;
+}
+
+
+
 /* Audio File (a hack I placed here just for fun)
  * Essentially, if a cookie has a custom audio file, we play it instead.
  * If not, we will try to play the default, either via ogg, mp3, or wav. */
