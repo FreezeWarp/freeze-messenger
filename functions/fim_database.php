@@ -783,7 +783,7 @@ class fimDatabase extends databaseSQL
 
 
 
-    public function getRoom($roomId)
+    public function getRoom($roomId) : fimRoom
     {
         return $this->getRooms(array(
             'roomIds' => array($roomId)
@@ -1417,10 +1417,8 @@ class fimDatabase extends databaseSQL
         /* Start Transaction */
         $this->startTransaction();
 
-
         /* Modlog */
         $this->modLog('setPermission', "$roomId,$attribute,$param,$permissionsMask");
-
 
         /* Insert or Replace The Old Permission Setting */
         $this->insert($this->sqlPrefix . 'roomPermissions', array(
@@ -1432,30 +1430,50 @@ class fimDatabase extends databaseSQL
             'permissions' => $permissionsMask
         ));
 
+        /* Delete Permissions Cache */
+        $this->deletePermissionCache($roomId, $attribute, $param);
 
+        /* End Transaction */
+        $this->endTransaction();
+    }
+
+    public function clearPermission($roomId, $attribute, $param) {
+        $this->startTransaction();
+
+        $this->modLog('deletePermission', "$roomId,$attribute,$param");
+
+        $this->delete($this->sqlPrefix . 'roomPermissions', array(
+            'roomId' => $roomId,
+            'attribute' => $attribute,
+            'param' => $param,
+        ));
+
+        $this->deletePermissionCache($roomId, $attribute, $param);
+
+        $this->endTransaction();
+    }
+
+
+    public function deletePermissionCache($roomId, $attribute, $param) {
         /* Delete Relevant Cached Entries, Forcing Cache Regeneration When Next Needed */
         /* TODO (obviously) */
         switch ($attribute) {
-            case 'user':
-                $users = array($param);
-                break;
+        case 'user':
+            $users = array($param);
+        break;
 
-            case 'group':
-                $users = $this->getSocialGroupMembers(array(
-                    'groupIds' => array($param),
-                    'type' => array('member', 'moderator')
-                ))->getColumnValues('userId');
-                break;
+        case 'group':
+            $users = $this->getSocialGroupMembers(array(
+                'groupIds' => array($param),
+                'type' => array('member', 'moderator')
+            ))->getColumnValues('userId');
+        break;
         }
 
         $this->delete($this->prefix . 'roomPermissionsCache', array(
             'roomId' => $roomId,
             'userId' => $this->in($users)
         ));
-
-
-        /* End Transaction */
-        $this->endTransaction();
     }
 
 
@@ -1958,11 +1976,11 @@ class fimDatabase extends databaseSQL
 class fimDatabaseResult extends databaseResult {
 
     /**
-     * @return array
+     * @return fimRoom[]
      *
      * @internal This function may use too much memory. I'm not... exactly sure how to fix this.
      */
-    function getAsRooms() {
+    function getAsRooms() : array {
         $rooms = $this->getAsArray('roomId');
         $return = array();
 
@@ -1975,11 +1993,11 @@ class fimDatabaseResult extends databaseResult {
 
 
     /**
-     * @return array
+     * @return fimUser[]
      *
      * @internal This function may use too much memory. I'm not... exactly sure how to fix this.
      */
-    function getAsUsers() {
+    function getAsUsers() : array {
         $users = $this->getAsArray('userId');
         $return = array();
 
@@ -1991,14 +2009,18 @@ class fimDatabaseResult extends databaseResult {
     }
 
 
-
-    function getAsRoom() {
+    /**
+     * @return fimRoom
+     */
+    function getAsRoom() : fimRoom {
         return new fimRoom($this->getAsArray(false));
     }
 
 
-
-    function getAsUser() {
+    /**
+     * @return fimUser
+     */
+    function getAsUser() : fimUser {
         return new fimUser($this->getAsArray(false));
     }
 
