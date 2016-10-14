@@ -68,262 +68,206 @@
  *** errDesc
  *** response
  **** insertId - If creating a room, the ID of the created room.
-*/
+ */
 
 $apiRequest = true;
 
 require('../global.php');
 
+
+/* Special Functions */
+$permFilterMatches = array(
+    'post' => ROOM_PERMISSION_POST,
+    'view' => ROOM_PERMISSION_VIEW,
+    'topic' => ROOM_PERMISSION_TOPIC,
+    'moderate' => ROOM_PERMISSION_MODERATE,
+    'properties' => ROOM_PERMISSION_PROPERTIES,
+    'grant' => ROOM_PERMISSION_GRANT,
+    'own' => ROOM_PERMISSION_VIEW
+);
+
+
+
+/* Helper Functions */
+function getPermissionsField($permissionsArray) {
+    global $permFilterMatches;
+
+    $permissionsField = 0;
+
+    foreach ($permFilterMatches AS $string => $byte) {
+        if (in_array($string, $permissionsArray)) $permissionsField |= $byte;
+    }
+}
+
+/**
+ * Alters a room's permissions based on a specially formatted userArray and groupArray. This function does not check for permissions -- make sure that a user has permission to alter permissions before executing this function.
+ *
+ * @param $roomId
+ * @param $userArray
+ * @param $groupArray
+ */
+function alterRoomPermissions($roomId, $userArray, $groupArray) {
+    global $database;
+
+    foreach (array('users' => $userArray, 'groups' => $groupArray) AS $attribute => $array) {
+        foreach ($array AS $code => $permissionsArray) {
+            $operation = substr($code, 0, 1); // The first character of the code is going to be either '+', '-', or '*', representing which action we are taking.
+            $param = (int) substr($code, 1); // Everything after the first character represents either a group or user ID.
+
+            $permissionsField = getPermissionsField($permissionsArray);
+
+            if ($attribute === 'users') $databasePermissionsField = $database->getPermissionsField($roomId, $param);
+            elseif ($attribute === 'groups') $databasePermissionsField = $database->getPermissionsField($roomId, array(), $param);
+
+            switch ($operation) {
+            case '+': $database->setPermission($roomId, $attribute, $param, $databasePermissionsField | $permissionsField); break; // Add new permissions to any existing permissions.
+            case '-': $database->setPermission($roomId, $attribute, $param, $databasePermissionsField &~ $permissionsField); break; // Remove permissions from any existing permissions.
+            case '*': $database->setPermission($roomId, $attribute, $param, $permissionsField); break; // Replace permissions.
+            }
+        }
+    }
+}
+
+
+
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
-  'action' => array(
-    'valid' => array(
-      'create', 'edit',
-      'delete', 'undelete'
+    'action' => array(
+        'valid' => array(
+            'create', 'edit',
+            'delete', 'undelete'
+        ),
+        'require' => true,
     ),
-    'require' => true,
-  ),
 
-  'roomId' => array(
-    'cast' => 'int',
-  ),
+    'roomId' => array(
+        'cast' => 'int',
+    ),
 
-  'roomName' => array(
-    'require' => false,
-    'trim' => true,
-  ),
+    'roomName' => array(
+        'require' => false,
+        'trim' => true,
+    ),
 
-  'defaultPermissions' => array(
-    'default' => 0,
-    'cast' => 'int',
-  ),
+    'defaultPermissions' => array(
+        'default' => 0,
+        'cast' => 'int',
+    ),
 
-  'moderators' => array(
-    'cast' => 'csv',
-    'filter' => 'int',
-    'evaltrue' => true,
-  ),
+    'userPermissions' => array(
+        'cast' => 'json',
+    ),
 
-  'allowedUsers' => array(
-    'cast' => 'csv',
-    'filter' => 'int',
-    'evaltrue' => true,
-  ),
+    'groupPermissions' => array(
+        'cast' => 'json',
+    ),
 
-  'allowedGroups' => array(
-    'cast' => 'csv',
-    'filter' => 'int',
-    'evaltrue' => true,
-  ),
+    'censor' => array(
+        'cast' => 'array',
+        'filter' => 'bool',
+        'evaltrue' => false,
+    ),
 
-  'censor' => array(
-    'cast' => 'array',
-    'filter' => 'bool',
-    'evaltrue' => false,
-  ),
+    'roomParentalAge' => array(
+        'cast' => 'int',
+        'valid' => $config['parentalAges'],
+        'default' => $config['parentalAgeDefault'],
+    ),
 
-  'parentalAge' => array(
-    'cast' => 'int',
-    'valid' => $config['parentalAges'],
-    'default' => $config['parentalAgeDefault'],
-  ),
-
-  'parentalFlags' => array(
-    'default' => $config['parentalFlagsDefault'],
-    'cast' => 'csv',
-    'valid' => $config['parentalFlags'],
-  ),
-  
-  'allowViewing' => array(
-    'cast' => 'bool',
-    'default' => false,
-  ),
+    'roomParentalFlags' => array(
+        'default' => $config['parentalFlagsDefault'],
+        'cast' => 'csv',
+        'valid' => $config['parentalFlags'],
+    ),
 ));
 
 
 
 /* Data Predefine */
 $xmlData = array(
-  'editRoom' => array(
     'response' => array(),
-  ),
 );
 
 
 
 if ($action !== 'create') {
-  $room = $slaveDatabase->getRoom($request['roomId']);
-
-  if (!fim_hasPermission($room, $user, 'admin', true)) {
-    $errStr = 'noPerm';
-  }
+    $room = $slaveDatabase->getRoom($request['roomId']);
 }
 
 
 
 /* Start Processing */
-if (!$errStr) {
-  switch($request['action']) {
+$database->startTransaction();
+switch($request['action']) {
     case 'create':
     case 'edit':
-    $data = $slaveDatabase->getRooms(array(
-      'roomNames' => array($request['roomName'])
-    ))->getAsArray(false);
+        if (strlen($request['roomName']) == 0)
+            new fimError('noName', 'A room name was not supplied.');
 
+        elseif (strlen($request['roomName']) < $config['roomLengthMinimum'])
+            new fimError('shortName', 'The room name specified is too short. It should be at least ' + $config['roomLengthMinimum'] + ' characters.');
 
-    if ($request['action'] === 'create') {
-      if (!$user['userDefs']['createRooms']) { // Gotta be able to create dem rooms.
-        $errStr = 'noPerm';
-        $errDesc = 'You do not have permission to create rooms.';
-        $continue = false;
-      }
-      elseif (count($data) > 0) { // Make sure no other room exists with the same name.
-        $errStr = 'exists';
-        $errDesc = 'The room specified already exists.';
-        $continue = false;
-      }
+        elseif (strlen($request['roomName']) > $config['roomLengthMaximum'])
+            new fimError('longName', 'The room name specified is too short. It should be at most ' + $config['roomLengthMaximum'] + ' characters.');
 
-      $room['roomId'] = 0;
-    }
-    elseif ($request['action'] === 'edit') {
-      if (!$request['roomName']) { $request['roomName'] = $room['roomName']; } // If only a room ID was provided, we will fill in the room name here.
+        else {
+            if ($request['action'] === 'create') {
+                if (!$user->hasPriv('createRooms'))
+                    new fimError('noPermCreate', 'You do not have permission to create rooms.');
 
-      if ($room === false) {
-        $errStr = 'noRoom';
-        $errDesc = 'The room specified does not exist.';
-      }
-      elseif ($room['roomType'] !== 'general') {
-        $errStr = 'nongeneralRoom';
-      }
-      elseif (!fim_hasPermission($room, $user, 'admin', true)) { // The user must be an admin (or, inherently, the room's owner) to edit rooms.
-        $errStr = 'noPerm';
-        $errDesc = 'You do not have permission to edit this room.';
-      }
-      elseif ($room['settings'] & 4) { // Make sure the room hasn't been deleted.
-        $errStr = 'deleted';
-        $errDesc = 'The room has been deleted - it can not be edited.';
-      }
-      elseif (count($data) > 0 && $data['roomId'] !== $room['roomId']) { // Make sure no other room with that name exists (if no room is found, the result is false), and that, of course, this only applies if the user just specified the current room's existing name.
-        $errStr = 'exists';
-        $errDesc = 'The room name specified already exists.';
-      }
-    }
+                elseif ($slaveDatabase->getRooms(array('roomNames' => array($request['roomName'])))->getCount() > 0)
+                    new fimError('roomExists', 'A room with the name specified already exists.');
 
-
-    if (!$errStr) {
-      if (strlen($request['roomName']) == 0) {
-        $errStr = 'noName';
-        $errDesc = 'A room name was not supplied.';
-      }
-      elseif (strlen($request['roomName']) < $config['roomLengthMinimum']) {
-        $errStr = 'shortName';
-        $errParam = $config['roomLengthMinimum'];
-        $errDesc = 'The room name specified is too short.';
-      }
-      elseif (strlen($request['roomName']) > $config['roomLengthMaximum']) {
-        $errStr = 'longName';
-        $errParam = $config['roomLengthMaximum'];
-        $errDesc = 'The room name specified is too long.';
-      }
-      else {
-        /* Censor */
-        if (count($request['censor']) > 0) {
-          $lists = $database->getCensorLists(array(
-            'activeStatus' => 'active',
-            'roomIds' => array($room['roomId']),
-            ))->getAsArray(array('listId'));// var_dump($lists); die();
-
-          foreach ($lists AS $listId => $list) {
-            if ($list['type'] == 'black' && $lists[$list['listId']] == 'block') $checked = true;
-            elseif ($list['type'] == 'white' && $listStatus[$list['listId']] != 'unblock') $checked = true;
-
-            if ($checked == true && !$request['censor'][$list['listId']]) {
-              $database->setCensorList($room['roomId'], $list['listId'], 'unblock');
+                else {
+                    $room = new fimRoom(false);
+                    $room->set($request);
+                }
             }
-            elseif ($checked == false && $request['censor'][$list['listId']]) {
-              $database->setCensorList($room['roomId'], $list['listId'], 'block');
+
+            elseif ($request['action'] === 'edit') {
+                if ($room === false)
+                    new fimError('roomNotFound', "A room with the specified roomId, {$request['roomId']} does not exist.");
+
+                elseif ($room['roomType'] !== 'general')
+                    new fimError('specialRoom', 'You are trying to edit a special room, which cannot be altered.');
+
+                elseif ($room->deleted) // Make sure the room hasn't been deleted.
+                    new fimError('deletedRoom', 'The room has been deleted - it can not be edited.');
+
+                elseif ($data = $slaveDatabase->getRooms(array('roomNames' => array($request['roomName'])))->getAsArray(false)
+                    && count($data)
+                    && $data['roomId'] !== $room['roomId'])
+                    new fimError('duplicateRoomName', 'The room name specified already belongs to another room.');
+
+                else {
+                    if ($database->hasPermission($user, $room) & ROOM_PERMISSION_PROPERTIES) {
+                        $room->set($request);
+                        $database->setCensorLists($room->id, $request['censor']);
+                    }
+
+                    if ($database->hasPermission($user, $room) & ROOM_PERMISSION_GRANT) {
+                        alterRoomPermissions($room, $request['userPermissions'], $request['groupPermissions']);
+                    }
+                }
             }
-          }
+
+            $database->setCensorLists($room->id, $request['censor']);
+            alterRoomPermissions($room, $request['userPermissions'], $request['groupPermissions']);
         }
-
-
-        /* Options */
-
-
-        $columns = array(
-          'roomName' => $request['roomName'],
-          'defaultPermissions' => (int) $request['defaultPermissions'],
-          'roomParentalAge' => $request['parentalAge'],
-          'roomParentalFlags' => implode(',', $request['parentalFlags']),
-        );
-
-        if (isset($request['officialRoom']) && $config['officialRooms'] && $user['adminDefs']['modRooms'])
-          $columns['officialRoom'] = $request['officialRoom'];
-        if (isset($request['hiddenRoom']) && $config['hiddenRooms'])
-          $columns['hiddenRoom'] = $request['hiddenRoom'];
-        if ($request['action'] === 'create')
-          $columns['owner'] = (int) $user['userId'];
-
-
-        /* Submit */
-        if ($request['action'] === 'create') {
-          if ($roomId = $database->editRoom(0, $columns)) {
-            $xmlData['editRoom']['response']['insertId'] = $roomId;
-          }
-          else {
-            $errStr = 'unknown';
-            $errDesc = 'Room created failed for unknown reasons.';
-
-            $roomId = 0;
-          }
-        }
-        elseif ($request['action'] === 'edit') {
-          if ($database->editRoom($room['roomId'], $columns)) {
-            $xmlData['editRoom']['response']['insertId'] = $room['roomId'];
-          }
-          else {
-            $errStr = 'unknown';
-            $errDesc = 'Room created failed for unknown reasons.';
-
-            $roomId = 0;
-          }
-        }
-      }
-    }
     break;
 
+
     case 'delete':
-    if ($room['options'] & ROOM_DELETED) {
-      $errStr = 'nothingToDo';
-      $errDesc = 'The room is already deleted.';
-    }
-    else {
-      $database->editRoom($room['roomId'], array(
-        'deleted' => true
-      ));
-    }
+        if ($room->deleted) new fimError('nothingToDo', 'The room is already deleted.');
+        else $database->editRoom($room['roomId'], array('deleted' => true));
     break;
 
     case 'undelete':
-    if (!($room['options'] & ROOM_DELETED)) {
-      $errStr = 'nothingToDo';
-      $errDesc = 'The room is already deleted.';
-    }
-    else {
-      $database->editRoom($room['roomId'], array(
-        'deleted' => false
-      ));
-    }
+        if (!$room->deleted) new fimError('nothingToDo', 'The room isn\'t deleted.');
+        else $database->editRoom($room['roomId'], array('deleted' => false));
     break;
-  }
 }
-
-
-
-/* Update Data for Errors */
-$xmlData['editRoom']['errStr'] = (string) $errStr;
-$xmlData['editRoom']['errDesc'] = (string) $errDesc;
-
+$database->endTransaction();
 
 
 /* Output Data */
