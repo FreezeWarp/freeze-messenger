@@ -125,12 +125,7 @@ else{
 /* Data Define */
 $xmlData = array(
   'sendUser' => array(
-    'activeUser' => array(
-      'userId' => (int) $userId,
-      'userName' => ($userData['userName']),
-    ),
-    'errStr' => ($errStr),
-    'errDesc' => ($errDesc),
+
   ),
 );
 

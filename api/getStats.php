@@ -58,11 +58,6 @@ $request = fim_sanitizeGPC('g', array(
 /* Data Predefine */
 $xmlData = array(
   'getStats' => array(
-    'activeUser' => array(
-      'userId' => (int) $user['userId'],
-      'userName' => ($user['userName']),
-    ),
-    'errStr' => $errStr,
     'roomStats' => array(),
   ),
 );

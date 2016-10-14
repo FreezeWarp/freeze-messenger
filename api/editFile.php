@@ -142,10 +142,6 @@ $request = fim_sanitizeGPC('p', array(
 /* Data Predefine */
 $xmlData = array(
   'editFile' => array(
-    'activeUser' => array(
-      'userId' => (int) $user['userId'],
-      'userName' => ($user['userName']),
-    ),
     'response' => array(),
   ),
 );

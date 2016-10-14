@@ -41,12 +41,6 @@ switch ($request['list']) {
 /* Data Predefine */
 $xmlData = array(
   'acHelper' => array(
-    'activeUser' => array(
-      'userId' => (int) $user['userId'],
-      'userName' => $user['userName'],
-    ),
-    'errStr' => $errStr,
-    'errDesc' => $errDesc,
     'entries' => $entries,
   ),
 );

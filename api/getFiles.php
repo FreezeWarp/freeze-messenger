@@ -44,12 +44,6 @@ $request = fim_sanitizeGPC('g', array(
 
 /* Data Pre-Define */
 $xmlData['getFiles'] = array(
-  'activeUser' => array(
-    'userId' => (int) $user['userId'],
-    'userName' => ($user['userName']),
-  ),
-  'errStr' => $errStr,
-  'errDesc' => $errDesc,
   'files' => array()
 );
 

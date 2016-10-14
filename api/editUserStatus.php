@@ -70,10 +70,6 @@ else {
 
 $xmlData = array(
   'setUserStatus' => array(
-    'activeUser' => array(
-      'userId' => (int) $user['userId'],
-      'userName' => ($user['userName']),
-    ),
   ),
 );
 

@@ -47,12 +47,6 @@ $request = fim_sanitizeGPC('g', array(
 /* Data Predefine */
 $xmlData = array(
   'getGroups' => array(
-    'activeUser' => array(
-      'userId' => (int) $user['userId'],
-      'userName' => ($user['userName']),
-    ),
-    'errStr' => ($errStr),
-    'errDesc' => ($errDesc),
     'groups' => array(),
   ),
 );

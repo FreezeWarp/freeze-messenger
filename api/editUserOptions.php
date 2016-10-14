@@ -196,12 +196,6 @@ $sRequest = fim_sanitizeGPC('pgd', array(
 /* Data Predefine */
 $xmlData = array(
   'editUserOptions' => array(
-    'activeUser' => array(
-      'userId' => (int) $user['userId'],
-      'userName' => ($user['userName']),
-    ),
-    'errStr' => ($errStr),
-    'errDesc' => ($errDesc),
     'response' => array(),
   ),
 );

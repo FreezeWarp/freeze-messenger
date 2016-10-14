@@ -57,12 +57,6 @@ $request = fim_sanitizeGPC('g', array(
 /* Data Predefine */
 $xmlData = array(
   'getCensorLists' => array(
-    'activeUser' => array(
-      'userId' => (int) $user['userId'],
-      'userName' => ($user['userName']),
-    ),
-    'errStr' => ($errStr),
-    'errDesc' => ($errDesc),
     'lists' => array(),
   ),
 );

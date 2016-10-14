@@ -82,13 +82,12 @@ if (count($smilies)) {
 
 $apiData = new apiData(array(
   'getServerStatus' => array(
-    'activeUser' => array(
-      'userId' => (int) $user['userId'],
-      'userName' => ($user['userName']),
-    ),
-    'errStr' => ($errStr),
-    'errDesc' => ($errDesc),
     'serverStatus' => array(
+      'activeUser' => array(
+        'userId' => (int) $user['userId'],
+        'userName' => ($user['userName']),
+      ),
+
       'fim_version' => FIM_VERSION,
       'installedPlugins' => array(),
       'installUrl' => $installUrl,

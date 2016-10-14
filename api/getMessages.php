@@ -215,7 +215,7 @@ else {
     'messageIds' => $request['messageIds'],
     'messageHardLimit' => $request['messageHardLimit'],
     'page' => $request['page']
-  ), array($request['sortBy'] => $request['sortOrder']), $request['messageHardLimit'], $request['page'])->getAsArray(true);
+  ), array($request['sortBy'] => $request['sortOrder']), $request['messageHardLimit'], $request['page'])->getAsArray(true);// print($messages->sourceQuery); die('3');
 
 
   /* Process Messages */

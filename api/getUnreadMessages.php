@@ -34,12 +34,6 @@ require('../global.php');
 /* Data Predefine */
 $xmlData = array(
   'getUnreadMessages' => array(
-    'activeUser' => array(
-      'userId' => (int) $user['userId'],
-      'userName' => ($user['userName']),
-    ),
-    'errStr' => ($errStr),
-    'errDesc' => ($errDesc),
     'unreadMessages' => array(),
   ),
 );

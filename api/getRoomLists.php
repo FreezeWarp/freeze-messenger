@@ -50,11 +50,6 @@ $request = fim_sanitizeGPC('g', array(
 /* Data Predefine */
 $xmlData = array(
   'getRoomLists' => array(
-    'activeUser' => array(
-      'userId' => (int) $user['userId'],
-      'userName' => ($user['userName']),
-    ),
-    'errStr' => $errStr,
     'roomLists' => array(),
   ),
 );

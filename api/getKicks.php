@@ -56,12 +56,6 @@ $request = fim_sanitizeGPC('g', array(
 /* Data Predefine */
 $xmlData = array(
   'getKicks' => array(
-    'activeUser' => array(
-      'userId' => (int) $user['userId'],
-      'userName' => fim_encodeXml($user['userName']),
-    ),
-    'errStr' => fim_encodeXml($errStr),
-    'errDesc' => fim_encodeXml($errDesc),
     'kicks' => array(),
   ),
 );

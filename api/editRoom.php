@@ -145,12 +145,6 @@ $request = fim_sanitizeGPC('p', array(
 /* Data Predefine */
 $xmlData = array(
   'editRoom' => array(
-    'activeUser' => array(
-      'userId' => (int) $user['userId'],
-      'userName' => $user['userName'],
-    ),
-    'errStr' => $errStr,
-    'errDesc' => $errDesc,
     'response' => array(),
   ),
 );
