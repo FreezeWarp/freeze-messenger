@@ -107,12 +107,6 @@ else if (isset($_REQUEST['grant_type'])) {
     $user = new fimUser((int) $userC->getUserId());
 
     if ($oauthResponse->getStatusCode() === 200) {
-        /* Get Permissions Array */
-        $privs = [];
-        foreach (array('protected', 'modPrivs', 'modRooms', 'modPrivate', 'modUsers', 'modFiles', 'modCensor', 'view', 'post', 'changeTopic', 'createRooms', 'privateRoomsFriends', 'privateRoomsAll', 'roomsOnline', 'postCounts') AS $priv)
-            $privs[$priv] = $user->hasPriv($priv);
-
-
         /* Send Data to API */
         $apiData = new apiData();
         $apiData->replaceData(array(
@@ -132,7 +126,7 @@ else if (isset($_REQUEST['grant_type'])) {
                     'parentalFlags' => new apiOutputList($user->parentalFlags),
                     'parentalAge' => $user->parentalAge,
                 ),
-                'permissions' => $privs
+                'permissions' => $user->getPermissionsArray()
             ),
         ));
         echo $apiData;

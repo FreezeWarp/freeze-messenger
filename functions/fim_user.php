@@ -214,6 +214,16 @@ class fimUser
         }
     }
 
+
+    public function getPermissionsArray() {
+        $privs = array();
+
+        foreach (array('protected', 'modPrivs', 'modRooms', 'modPrivate', 'modUsers', 'modFiles', 'modCensor', 'view', 'post', 'changeTopic', 'createRooms', 'privateRoomsFriends', 'privateRoomsAll', 'roomsOnline', 'postCounts', 'editOwnPosts', 'deleteOwnPosts') AS $priv)
+            $privs[$priv] = $this->hasPriv($priv);
+
+        return $privs;
+    }
+
     /**
      * Checks if the plaintext password matches the user's password (generally after some hashing).
      *
