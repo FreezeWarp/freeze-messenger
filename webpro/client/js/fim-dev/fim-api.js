@@ -343,8 +343,8 @@ fimApi.prototype.getActiveUsers = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds', 'userIds']), {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
-            'roomIds' : '',
-            'userIds' : '',
+            'roomIds' : null,
+            'userIds' : null,
             'onlineThreshold' : null
         });
 
@@ -533,23 +533,22 @@ fimApi.prototype.changeAvatar = function(avatarHash, requestSettings) {
 
 fimApi.prototype.mergeDefaults = function(object, defaults) {
     if (object === undefined) {
-        return defaults;
+        object = {}
     }
-    else {
-        for (var i in defaults) {
-            if (!(i in object)) object[i] = defaults[i];
-        }
 
-        /*** START STRICT CODE -- NOT NECCESSARY IN PRODUCTION ***/
-        for (var i in object) {
-            if (!(i in defaults)) {
-                throw 'Invalid data in object call: ' + i;
-            }
-        }
-        /*** END STRICT CODE ***/
-
-        return object;
+    for (var i in defaults) {
+        if (!(i in object) && defaults[i] !== null) object[i] = defaults[i];
     }
+
+    /*** START STRICT CODE -- NOT NECCESSARY IN PRODUCTION ***/
+    for (var i in object) {
+        if (!(i in defaults)) {
+            throw 'Invalid data in object call: ' + i;
+        }
+    }
+    /*** END STRICT CODE ***/
+
+    return object;
 };
 
 
