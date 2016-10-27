@@ -532,31 +532,31 @@ fimApi.prototype.changeAvatar = function(avatarHash, requestSettings) {
 
 
 fimApi.prototype.mergeDefaults = function(object, defaults) {
-    if (object === undefined) {
-        object = {}
-    }
+    var returnObject = (object === undefined ? {} : Object.create(object));
 
     for (var i in defaults) {
-        if (!(i in object) && defaults[i] !== null) object[i] = defaults[i];
+        if (!(i in returnObject) && defaults[i] !== null) returnObject[i] = defaults[i];
     }
 
     /*** START STRICT CODE -- NOT NECCESSARY IN PRODUCTION ***/
-    for (var i in object) {
+    for (var i in returnObject) {
         if (!(i in defaults)) {
             throw 'Invalid data in object call: ' + i;
         }
     }
     /*** END STRICT CODE ***/
 
-    return object;
+    return returnObject;
 };
 
 
 
 fimApi.prototype.jsonify = function(object, properties) {
-        for (var i in properties) {
-            if (properties[i] in object) object[properties[i]] = JSON.stringify(object[properties[i]]);
-        }
+    var returnObject = (object === undefined ? {} : Object.create(object));
 
-        return object;
+    for (var i in properties) {
+        if (properties[i] in returnObject) returnObject[properties[i]] = JSON.stringify(returnObject[properties[i]]);
+    }
+
+    return returnObject;
 };
