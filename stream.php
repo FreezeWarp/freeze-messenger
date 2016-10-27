@@ -47,7 +47,7 @@ function stream_messages($roomId, $lastEvent) {
 
   $messages = $database->getMessages(array(
     'roomIds' => array($roomId),
-    'messagesSince' => $lastEvent,
+    'messageIdStart' => $lastEvent + 1,
   ), array('messageId' => 'asc'))->getAsArray('messageId');
 
 
@@ -137,9 +137,9 @@ else {
     $serverSentRetries++;
 
     switch ($request['streamType']) {
-      case 'messages': $request['lastEvent'] = stream_messages($request['queryId'], $request['lastEvent']); break;
-      case 'user': $request['lastEvent'] = stream_event('user', $request['queryId'], $request['lastEvent']); break;
-      case 'room': $request['lastEvent'] = stream_event('room', $request['queryId'], $request['lastEvent']); break;
+      case 'messages': $request['lastEvent'] = stream_messages($request['queryId'], $request['lastEvent']);      break;
+      case 'user':     $request['lastEvent'] = stream_event('user', $request['queryId'], $request['lastEvent']); break;
+      case 'room':     $request['lastEvent'] = stream_event('room', $request['queryId'], $request['lastEvent']); break;
     }
 
     if ($config['dev']) {
