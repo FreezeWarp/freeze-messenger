@@ -1,8 +1,10 @@
-var standard = {
-    // This would be great as a class. In order to avoid Javascript's mess of inheritence, I've just written this to only support one instance. Regrettable, but there you go.
-    archive : {
-        options : {
-            encrypt : 'base64',
+var standard = function() {
+    return;
+}
+
+standard.prototype.archive = function() {
+    this.options = {
+        encrypt : 'base64',
             searchText : '',
             resultLimit : 40,
             searchUser : 0,
@@ -10,433 +12,411 @@ var standard = {
             firstMessage : 0,
             page : 0,
             roomId : 0
-        },
+    };
 
-        messageData : {},
+    this.messageData = {};
 
-        init : function(options) {
-            for (i in options) standard.archive.options[i] = options[i];
+    this.init = function(options) {
+        for (i in options) standard.archive.options[i] = options[i];
 
-            $('#searchText, #resultLimit, #searchUser, #archiveNext, #archivePrev, #export, .updateArchiveHere').unbind('change');
+        $('#searchText, #resultLimit, #searchUser, #archiveNext, #archivePrev, #export, .updateArchiveHere').unbind('change');
 
-            $('#searchText, #resultLimit, #searchUser').bind('change', function() {
-                standard.archive.update($(this).attr('id'), $(this).val());
-                standard.archive.retrieve();
-            });
+        $('#searchText, #resultLimit, #searchUser').bind('change', function() {
+            standard.archive.update($(this).attr('id'), $(this).val());
+            standard.archive.retrieve();
+        });
 
-            $('#archiveNext').bind('click', function() {
-                standard.archive.nextPage();
-            });
+        $('#archiveNext').bind('click', function() {
+            standard.archive.nextPage();
+        });
 
-            $('#archivePrev').bind('click', function() {
-                standard.archive.prevPage();
-            });
+        $('#archivePrev').bind('click', function() {
+            standard.archive.prevPage();
+        });
 
-            $('#archiveDialogue > table').on('click', '.updateArchiveHere', function() {
-                standard.archive.options.firstMessage = $(this).attr('data-messageId');
-                this.options.lastMessage = 0;
+        $('#archiveDialogue > table').on('click', '.updateArchiveHere', function() {
+            standard.archive.options.firstMessage = $(this).attr('data-messageId');
+            this.options.lastMessage = 0;
 
-                standard.archive.retrieve();
-            });
+            standard.archive.retrieve();
+        });
 
-            $('#export').bind('click', function() {
-                popup.exportArchive();
-            });
-        },
+        $('#export').bind('click', function() {
+            popup.exportArchive();
+        });
+    };
 
-        retrieve : function() { // TODO: callback?
-            $('#archiveMessageList').html('');
-            standard.archive.messageData = {};
+    this.retrieve = function() { // TODO: callback?
+        $('#archiveMessageList').html('');
+        standard.archive.messageData = {};
 
-            fimApi.getMessages({
-                'roomId' : standard.archive.options.roomId,
-                'userIds' : [standard.archive.options.searchUser],
-                'search' : standard.archive.options.searchText,
+        fimApi.getMessages({
+            'roomId' : standard.archive.options.roomId,
+            'userIds' : [standard.archive.options.searchUser],
+            'search' : standard.archive.options.searchText,
 //                'messageIdEnd' : standard.archive.options.lastMessage,
 //                'messageIdStart' : standard.archive.options.firstMessage,
-                'messageHardLimit' : $('#resultLimit option:selected').val(),
-                'archive' : 1,
-                'sortOrder' : 'desc',
-                'page' : standard.archive.options.page
-            }, {'each' : function(messageData) {
-                $('#archiveMessageList').append(fim_messageFormat(messageData, 'table'));
-                standard.archive.messageData[messageData.messageId] = messageData;
-            }});
-        },
+            'messageHardLimit' : $('#resultLimit option:selected').val(),
+            'archive' : 1,
+            'sortOrder' : 'desc',
+            'page' : standard.archive.options.page
+        }, {'each' : function(messageData) {
+            $('#archiveMessageList').append(fim_messageFormat(messageData, 'table'));
+            standard.archive.messageData[messageData.messageId] = messageData;
+        }});
+    };
 
-        nextPage : function () {
-            this.options.page++;
+    this.nextPage = function () {
+        this.options.page++;
 
-            this.retrieve();
-        },
+        this.retrieve();
+    };
 
-        prevPage : function () {
-            if (this.options.page !== 0) this.options.page--;
+    this.prevPage = function () {
+        if (this.options.page !== 0) this.options.page--;
 
-            this.retrieve();
-        },
+        this.retrieve();
+    };
 
-        update : function (option, value) {
-            standard.archive. options[option] = value;
+    this.update = function (option, value) {
+        standard.archive. options[option] = value;
+    }
+};
+
+
+standard.prototype.changeAvatar = function(avatarHash) {
+    fimApi.editUserOptions({
+        'avatarHash': avatarHash,
+    }, {
+        'end' : function() {
+            dia.info('Your avatar has been updated. It will not appear in your old messages.');
         }
-    },
+    });
+}
 
-    changeAvatar : function(sha256hash) {
-        $.post(directory + 'api/editUserOptions.php', 'avatar=' + fim_eURL(window.location.protocol + '//' + window.location.host + '/' + directory + '/file.php?sha256hash=' + sha256hash) + '&access_token=' + sessionHash + '&fim3_format=json', function(json) {
-            active = json.editUserOptions;
 
-            if (json.editUserOptions.response.avatar.errStr) {
-                dia.info(json.editUserOptions.response.avatar.errDesc);
+/* Trigger a login using provided data. This will open a login form if neccessary. */
+standard.prototype.login = function(options) {
+    if (options.start) options.start();
+
+    fimApi.login({
+        'username' : options.username,
+        'password' : options.password,
+        'client_id' : 'WebPro'
+    }, {
+        end : function(activeLogin) {
+            window.activeLogin = activeLogin;
+            window.userId = activeLogin.userData.userId;
+            window.anonId = activeLogin.anonId;
+            window.sessionHash = activeLogin.access_token;
+            window.permissions = activeLogin.permissions;
+
+            if (!anonId) {
+                $.cookie('webpro_username', options.username, { expires : 14 });
+                $.cookie('webpro_password', options.password, { expires : 14 }); // We will encrypt this in B3 or later -- it isn't a priority for now. (TODO)
             }
-            else {
-                dia.info('Your avatar has been updated. It will not appear in your old messages.');
+
+
+            if (options.finish) options.finish();
+
+
+            if (!roomId) {
+                fim_hashParse({defaultRoomId : activeLogin.defaultRoomId}); // When a user logs in, the hash data (such as room and archive) is processed, and subsequently executed.
+
+                /*** A Hack of Sorts to Open Dialogs onLoad ***/
+                if (typeof prepopup === 'function') { prepopup(); prepopup = false; }
             }
-        }); // Send the form data via AJAX.
-    },
+
+            return false;
+        },
+        error: function(data) {
+            if (options.error) options.error(data);
+
+            return false;
+        }
+    });
+};
 
 
-    /* Trigger a login using provided data. This will open a login form if neccessary. */
-    login : function(options) {
-        if (options.start) options.start();
+standard.prototype.logout = function() {
+    $.cookie('webpro_username', null);
+    $.cookie('webpro_password', null);
 
-        fimApi.login({
-            'username' : options.username,
-            'password' : options.password,
-            'client_id' : 'WebPro'
-        }, {
-            callback : function(activeLogin) {
-                window.activeLogin = activeLogin;
-                window.userId = activeLogin.userData.userId;
-                window.anonId = activeLogin.anonId;
-                window.sessionHash = activeLogin.access_token;
-                window.permissions = activeLogin.permissions;
-
-                if (!anonId) {
-                    $.cookie('webpro_username', options.username, { expires : 14 });
-                    $.cookie('webpro_password', options.password, { expires : 14 }); // We will encrypt this in B3 or later -- it isn't a priority for now. (TODO)
-                }
+    popup.login();
+};
 
 
-                if (options.finish) options.finish();
+standard.prototype.getMessages = function() {
+    if (window.roomId) {
+        var encrypt = 'base64';
 
+        if (requestSettings.serverSentEvents && !requestSettings.firstRequest) { // Note that the event subsystem __requires__ serverSentEvents for various reasons. If you use polling, these events will no longer be fully compatible.
+            messageSource = new EventSource(directory + 'stream.php?queryId=' + roomId + '&streamType=messages&lastEvent=' + requestSettings.lastMessage + '&access_token=' + sessionHash);
+            roomSource = new EventSource(directory + 'stream.php?queryId=' + roomId + '&streamType=room&lastEvent=' + requestSettings.lastEvent + '&access_token=' + sessionHash);
+            console.log('Starting EventSource; roomId: ' + roomId + '; lastEvent: ' + requestSettings.lastEvent + '; lastMessage: ' + requestSettings.lastMessage)
 
-                if (!roomId) {
-                    fim_hashParse({defaultRoomId : activeLogin.defaultRoomId}); // When a user logs in, the hash data (such as room and archive) is processed, and subsequently executed.
+            messageSource.addEventListener('time', function(e) {
+                console.log('The current time is: ' + e.data);
+                return false;
+            }, false);
 
-                    /*** A Hack of Sorts to Open Dialogs onLoad ***/
-                    if (typeof prepopup === 'function') { prepopup(); prepopup = false; }
-                }
+            messageSource.addEventListener('message', function(e) {
+                active = JSON.parse(e.data);
+
+                console.log('Event (New Message): ' + Number(active.messageData.messageId));
+
+                fim_newMessage(fim_messageFormat(JSON.parse(e.data), 'list'), Number(active.messageData.messageId));
 
                 return false;
-            },
-            error: function(data) {
-                if (options.error) options.error(data);
+            }, false);
+
+            roomSource.addEventListener('topicChange', function(e) {
+                var active = JSON.parse(e.data);
+
+                $('#topic').html(active.param1);
+                console.log('Event (Topic Change): ' + active.param1);
+
+                requestSettings.lastEvent = active.eventId;
 
                 return false;
-            }
-        });
-    },
+            }, false);
 
+            /*        roomSource.addEventListener('deletedMessage', function(e)     {
+             var active = JSON.parse(e.data)    ;
 
-    logout : function() {
-        $.cookie('webpro_username', null);
-        $.cookie('webpro_password', null);
+             $('#topic').html(active.param1    );
+             console.log('Event (Topic Change): ' + active.param1)    ;
 
-        popup.login();
-    },
+             requestSettings.lastEvent = active.eventId    ;
 
+             return fals    e;
+             }, false);    */
 
-    getMessages : function() {
-        if (window.roomId) {
-            var encrypt = 'base64';
+            /*        eventSource.addEventListener('missedMessage', function(e)     {
+             var active = JSON.parse(e.data)    ;
 
-            if (requestSettings.serverSentEvents && !requestSettings.firstRequest) { // Note that the event subsystem __requires__ serverSentEvents for various reasons. If you use polling, these events will no longer be fully compatible.
-                messageSource = new EventSource(directory + 'stream.php?queryId=' + roomId + '&streamType=messages&lastEvent=' + requestSettings.lastMessage + '&access_token=' + sessionHash);
-                roomSource = new EventSource(directory + 'stream.php?queryId=' + roomId + '&streamType=room&lastEvent=' + requestSettings.lastEvent + '&access_token=' + sessionHash);
-                console.log('Starting EventSource; roomId: ' + roomId + '; lastEvent: ' + requestSettings.lastEvent + '; lastMessage: ' + requestSettings.lastMessage)
+             requestSettings.lastEvent = active.eventI    d;
+             $.jGrowl('Missed Message', 'New messages have been made in:<br /><br /><a href="#room=' + active.roomId + '">' + active.roomName + '</a>'    );
+             console.log('Event (Missed Message): ' + active.messageId)    ;
 
-                messageSource.addEventListener('time', function(e) {
-                    console.log('The current time is: ' + e.data);
-                    return false;
-                }, false);
-
-                messageSource.addEventListener('message', function(e) {
-                    active = JSON.parse(e.data);
-
-                    console.log('Event (New Message): ' + Number(active.messageData.messageId));
-
-                    fim_newMessage(fim_messageFormat(JSON.parse(e.data), 'list'), Number(active.messageData.messageId));
-
-                    return false;
-                }, false);
-
-                roomSource.addEventListener('topicChange', function(e) {
-                    var active = JSON.parse(e.data);
-
-                    $('#topic').html(active.param1);
-                    console.log('Event (Topic Change): ' + active.param1);
-
-                    requestSettings.lastEvent = active.eventId;
-
-                    return false;
-                }, false);
-
-                /*        roomSource.addEventListener('deletedMessage', function(e) {
-                 var active = JSON.parse(e.data);
-
-                 $('#topic').html(active.param1);
-                 console.log('Event (Topic Change): ' + active.param1);
-
-                 requestSettings.lastEvent = active.eventId;
-
-                 return false;
-                 }, false);*/
-
-                /*        eventSource.addEventListener('missedMessage', function(e) {
-                 var active = JSON.parse(e.data);
-
-                 requestSettings.lastEvent = active.eventId;
-                 $.jGrowl('Missed Message', 'New messages have been made in:<br /><br /><a href="#room=' + active.roomId + '">' + active.roomName + '</a>');
-                 console.log('Event (Missed Message): ' + active.messageId);
-
-                 return false;
-                 }, false);*/
-            }
-            else {
-                var timeout = 5000;
-
-                function getMessages_query() {
-                    fimApi.getMessages({
-                        'roomId': roomId,
-                        'initialRequest': (requestSettings.firstRequest ? 1 : 0),
-                        'messageIdStart': requestSettings.lastMessage + 1,
-                    }, {
-                        'each': function (messageData) {
-                            fim_newMessage(fim_messageFormat(messageData, 'list'), Number(messageData.messageData.messageId));
-                        },
-                        'end': function () {
-                            if (requestSettings.firstRequest) requestSettings.firstRequest = false;
-                            timeout = 5000;
-
-                            window.setTimeout(standard.getMessages, timeout);
-                        },
-                        'error': function () {
-                            if (timeout < 60000) timeout += 5000;
-
-                            window.setTimeout(standard.getMessages, timeout);
-                        }
-                    });
-                }
-
-                getMessages_query();
-            }
+             return false;
+             }, false);*/
         }
         else {
-            console.log('Not requesting messages; room undefined.');
-        }
+            var timeout = 5000;
 
-        return false;
-    },
-
-
-    sendMessage : function(message, ignoreBlock, flag) {
-        if (!window.roomId) {
-            popup.selectRoom();
-        }
-        else {
-            ignoreBlock = (ignoreBlock === 1 ? 1 : '');
-
-            fimApi.sendMessage({
-                    'roomId' : window.roomId,
-                    'ignoreBlock' : ignoreBlock,
-                    'message' : fim_eURL(message),
-                    'flag' : (flag ? flag : '')
-                },
-                {
-                    'callback' : function(json) {
-                        var errStr = json.sendMessage.errStr,
-                            errDesc = json.sendMessage.errDesc;
-
-                        switch (errStr) {
-                            case '': break;
-                            case 'badRoom': dia.error("A valid room was not provided."); break;
-                            case 'badMessage': dia.error("A valid message was not provided."); break;
-                            case 'spaceMessage': dia.error("Too... many... spaces!"); break;
-                            case 'noPerm': dia.error("You do not have permission to post in this room."); break;
-                            case 'blockCensor': dia.error(errDesc); break;
-                            case 'confirmCensor':
-                                dia.error(errDesc + '<br /><br /><button type="button" onclick="$(this).parent().dialog(&apos;close&apos;);">No</button><button type="button" onclick="standard.sendMessage(&apos;' + escape(message) + '&apos;,1' + (flag ? ', ' + flag : '') + '); $(this).parent().dialog(&apos;close&apos;);">Yes</button>');
-                                break;
-                        }
-
-                        if (json.sendMessage.censor.severity === 'warn') {
-                            dia.info('Please use the word "' + json.sendMessage.censor.word + '" with care: ' + json.sendMessage.censor.reason);
-                        }
-
-                        return false;
+            function getMessages_query() {
+                fimApi.getMessages({
+                    'roomId': roomId,
+                    'initialRequest': (requestSettings.firstRequest ? 1 : 0),
+                    'messageIdStart': requestSettings.lastMessage + 1,
+                }, {
+                    'each': function (messageData) {
+                        fim_newMessage(fim_messageFormat(messageData, 'list'), Number(messageData.messageData.messageId));
                     },
-                    'exception' : function(exception) {
-                        if (exception.string === 'confirmCensor')
-                            dia.confirm({
-                                'text' : exception.details,
-                                'true' : function() {
-                                    standard.sendMessage(message, 1, flag);
-                                }
-                            });
-                        else
-                            fimApi.getDefaultExceptionHandler(exception);
+                    'end': function () {
+                        if (requestSettings.firstRequest) requestSettings.firstRequest = false;
+                        timeout = 5000;
+
+                        window.setTimeout(standard.getMessages, timeout);
                     },
-                    'error' : function(request) {
-                        if (settings.reversePostOrder)
-                            $('#messageList').append('Your message, "' + message + '", could not be sent and will be retried.');
-                        else
-                            $('#messageList').prepend('Your message, "' + message + '", could not be sent and will be retried.');
+                    'error': function () {
+                        if (timeout < 60000) timeout += 5000;
 
-                        window.setTimeout(function() { standard.sendMessage(message) }, 5000);
-
-                        return false;
+                        window.setTimeout(standard.getMessages, timeout);
                     }
                 });
-        }
-    },
-
-
-    changeRoom : function(roomIdLocal) {
-        if (!roomIdLocal) {
-            return false;
-        }
-
-        isPrivateRoom = false;
-        if (isPrivateRoom) {
-            // TODO
-        }
-        else { // Normal procedure otherwise.
-            fimApi.getRooms({
-                'roomIds' : [roomIdLocal],
-                'permLevel' : 'view'
-            }, {'each' : function(roomData) {
-                if (!roomData.permissions.view) { // If we can not view the room
-                    window.roomId = false; // Set the internal roomId false.
-                    popup.selectRoom(); // Prompt the user to select a new room.
-                    dia.error('You have been restricted access from this room. Please select a new room.');
-                }
-                else if (!roomData.permissions.post) { // If we can view, but not post
-                    dia.error('You are not allowed to post in this room. You will be able to view it, though.');
-                    disableSender();
-                }
-                else { // If we can both view and post.
-                    enableSender();
-                }
-
-
-                if (roomData.permissions.view) { // If we can view the room...
-                    roomId = roomData.roomId;
-
-                    $('#roomName').html(roomData.roomName); // Update the room name.
-                    $('#topic').html(roomData.roomTopic); // Update the room topic.
-                    $('#messageList').html(''); // Clear the message list.
-
-
-                    /*** Get Messages (TODO: Streamline) ***/
-                    $(document).ready(function() {
-                        requestSettings.firstRequest = true;
-                        requestSettings.lastMessage = 0;
-                        messageIndex = [];
-
-                        standard.getMessages();
-
-                        windowDraw();
-                        windowDynaLinks();
-                    });
-                }
-            }});
-        }
-    },
-
-
-    deleteRoom : function(roomIdLocal) {
-        $.post(directory + 'api/editRoom.php', 'action=delete&messageId=' + messageId + '&access_token=' + sessionHash + '&fim3_format=json', function(json) {
-            var errStr = json.editRoom.errStr,
-                errDesc = json.editRoom.errDesc;
-
-            switch (errStr) {
-                case '': console.log('Message ' + messageId + ' deleted.'); break;
-                case 'nopermission': dia.error('You do not have permision to administer this room.'); break;
-                case 'badroom': dia.error('The specified room does not exist.'); break;
             }
 
-            return false;
-        }); // Send the form data via AJAX.
-    },
+            getMessages_query();
+        }
+    }
+    else {
+        console.log('Not requesting messages; room un    defined.');
+    }
 
-    favRoom : function(roomIdLocal) {
-        $.post(directory + 'api/editRoomLists.php', 'action=add&roomListName=favRooms&roomIds=' + roomIdLocal + '&access_token=' + sessionHash + '&fim3_format=json', function(json) {
-            return false;
-        });
-    },
-
-    unfavRoom : function(roomIdLocal) {
-        $.post(directory + 'api/editRoomLists.php', 'action=remove&roomListName=favRooms&roomIds=' + roomIdLocal + '&access_token=' + sessionHash + '&fim3_format=json', function(json) {
-            return false;
-        });
-    },
-
-    /* TODO */
-    privateRoom : function(params) {
-    },
+    return false;
+};
 
 
-    kick : function(userLocalId, roomId, length) {
-        $.post(directory + 'api/moderate.php', 'action=kickUser&userId=' + userLocalId + '&roomId=' + roomId + '&length=' + length + '&access_token=' + sessionHash + '&fim3_format=json', function(json) {
-            var errStr = json.moderaate.errStr,
-                errDesc = json.moderaate.errDesc;
+standard.prototype.sendMessage = function(message, ignoreBlock, flag) {
+    if (!window.roomId) {
+        popup.selectRoom();
+    }
+    else {
+        ignoreBlock = (ignoreBlock === 1 ? 1 : '');
 
-            switch (errStr) {
-                case '': dia.info('The user has been kicked.', 'Success'); $("#kickUserDialogue").dialog('close'); break;
-                case 'nopermission': dia.error('You do not have permision to moderate this room.'); break;
-                case 'nokickuser': dia.error('That user may not be kicked!'); break;
-                case 'baduser': dia.error('The user specified does not exist.'); break;
-                case 'badroom': dia.error('The room specified does not exist.'); break;
-            }
+        fimApi.sendMessage({
+                'roomId' : window.roomId,
+                'ignoreBlock' : ignoreBlock,
+                'message' : message,
+                'flag' : (flag ? flag : '')
+            },
+            {
+                'exception' : function(exception) {
+                    if (exception.string === 'confirmCensor')
+                        dia.confirm({
+                            'text' : exception.details,
+                            'true' : function() {
+                                standard.sendMessage(message, 1, flag);
+                            }
+                        });
+                    else if (exception.string === 'spaceMessage') {
+                        dia.error("Too... many... spaces!")
+                    }
+                    else
+                        fimApi.getDefaultExceptionHandler(exception);
+                },
+                'error' : function(request) {
+                    if (settings.reversePostOrder)
+                        $('#messageList').append('Your message, "' + message + '", could not be sent and will be retried.');
+                    else
+                        $('#messageList').prepend('Your message, "' + message + '", could not be sent and will be retried.');
 
-            return false;
-        }); // Send the form data via AJAX.
+                    window.setTimeout(function() { standard.sendMessage(message) }, 5000);
 
-        return false;
-    },
-
-    unkick : function(userId, roomId) {
-        $.post(directory + 'api/moderate.php', 'action=unkickUser&userId=' + userId + '&roomId=' + roomId + '&access_token=' + sessionHash, function(json) {
-            var errStr = json.moderaate.errStr,
-                errDesc = json.moderaate.errDesc;
-
-            switch (errStr) {
-                case '': dia.info('The user has been unkicked.', 'Success'); $("#kickUserDialogue").dialog('close'); break;
-                case 'nopermission': dia.error('You do not have permision to moderate this room.'); break;
-                case 'baduser': case 'badroom': dia.error('Odd error: the user or room sent do not seem to exist.'); break;
-            }
-
-            return false;
-        }); // Send the form data via AJAX.
-
-        return false;
-    },
+                    return false;
+                }
+            });
+    }
+};
 
 
-    deleteMessage : function(messageId) {
-        $.post(directory + 'api/editMessage.php', 'action=delete&messageId=' + messageId + '&access_token=' + sessionHash + 'fim3_format=json', function(json) { // Send the form data via AJAX.
-            var errStr = json.moderaate.errStr,
-                errDesc = json.moderaate.errDesc;
-
-            switch (errStr) {
-                case '': console.log('Message ' + messageId + ' deleted.'); break;
-                case 'nopermission': dia.error('You do not have permision to moderate this room.'); break;
-                case 'badmessage': dia.error('The message does not exist.'); break;
-            }
-
-            return false;
-        });
-
+standard.prototype.changeRoom = function(roomIdLocal) { console.log("Hi.");
+    if (!roomIdLocal) {
         return false;
     }
+    var interval;
+
+    isPrivateRoom = false;
+    if (isPrivateRoom) {
+        // TODO
+    }
+    else { // Normal procedure otherwise.
+        fimApi.getRooms({
+            'roomIds' : [roomIdLocal],
+            'permLevel' : 'view'
+        }, {'each' : function(roomData) {
+            if (!roomData.permissions.view) { // If we can not view the room
+                window.roomId = false; // Set the internal roomId false.
+                popup.selectRoom(); // Prompt the user to select a new room.
+                dia.error('You have been restricted access from this room. Please select a new room.');
+            }
+            else if (!roomData.permissions.post) { // If we can view, but not post
+                dia.error('You are not allowed to post in this room. You will be able to view it, though.');
+                disableSender();
+            }
+            else { // If we can both view and post.
+                enableSender();
+            }
+
+
+            if (roomData.permissions.view) { // If we can view the room...
+                roomId = roomData.roomId;
+
+                $('#roomName').html(roomData.roomName); // Update the room name.
+                $('#topic').html(roomData.roomTopic); // Update the room topic.
+                $('#messageList').html(''); // Clear the message list.
+
+
+                /*** Get Messages (TODO: Streamline) ***/
+                $(document).ready(function() {
+                    requestSettings.firstRequest = true;
+                    requestSettings.lastMessage = 0;
+                    messageIndex = [];
+
+                    standard.getMessages();
+                    clearInterval(interval);
+                    fimApi.ping(roomId);
+                    interval = window.setInterval(function() {
+                        fimApi.ping(roomId)
+                    }, 5 * 60 * 1000);//console.log(interval);
+
+                    windowDraw();
+                    windowDynaLinks();
+                });
+            }
+        }});
+    }
+};
+
+
+standard.prototype.deleteRoom = function(roomIdLocal) {
+    $.post(directory + 'api/editRoom.php', 'action=delete&messageId=' + messageId + '&access_token=' + sessionHash + '&fim3_format=json', function(json) {
+        var errStr = json.editRoom.errStr,
+            errDesc = json.editRoom.errDesc;
+
+        switch (errStr) {
+            case '': console.log('Message ' + messageId + ' deleted.'); break;
+            case 'nopermission': dia.error('You do not have permission to administer this room.'); break;
+            case 'badroom': dia.error('The specified room does not exist.'); break;
+        }
+
+        return false;
+    }); // Send the form data via AJAX.
+};
+
+standard.prototype.favRoom = function(roomIdLocal) {
+    $.post(directory + 'api/editRoomLists.php', 'action=add&roomListName=favRooms&roomIds=' + roomIdLocal + '&access_token=' + sessionHash + '&fim3_format=json', function(json) {
+        return false;
+    });
+};
+
+standard.prototype.unfavRoom = function(roomIdLocal) {
+    $.post(directory + 'api/editRoomLists.php', 'action=remove&roomListName=favRooms&roomIds=' + roomIdLocal + '&access_token=' + sessionHash + '&fim3_format=json', function(json) {
+        return false;
+    });
+};
+
+/* TODO */
+standard.prototype.privateRoom = function(params) {
+};
+
+
+standard.prototype.kick = function(userLocalId, roomId, length) {
+    $.post(directory + 'api/moderate.php', 'action=kickUser&userId=' + userLocalId + '&roomId=' + roomId + '&length=' + length + '&access_token=' + sessionHash + '&fim3_format=json', function(json) {
+        var errStr = json.moderaate.errStr,
+            errDesc = json.moderaate.errDesc;
+
+        switch (errStr    ) {
+            case '': dia.info('The user has been kicked.', 'Success'); $("#kickUserDialogue").dialog('close'); break;
+            case 'nopermission': dia.error('You do not have permision to moderate this room.'); break;
+            case 'nokickuser': dia.error('That user may not be kicked!'); break;
+            case 'baduser': dia.error('The user specified does not exist.'); break;
+            case 'badroom': dia.error('The room specified does not exist.'); break;
+        }
+
+        return false;
+    }); // Send the form data     via AJAX.
+
+    return false;
+};
+
+standard.prototype.unkick = function(userId, roomId) {
+    $.post(directory + 'api/moderate.php', 'action=unkickUser&userId=' + userId + '&roomId=' + roomId + '&access_token=' + sessionHash, function(    json) {
+        var errStr = json.moderaate.errStr,
+            errDesc = json.moderaate.errDesc;
+
+        switch (errStr) {
+            case '': dia.info('The user has been unkicked.', 'Success'); $("#kickUserDialogue").dialog('close'); break;
+            case 'nopermission': dia.error('You do not have permision to moderate this room.'); break;
+            case 'baduser': case 'badroom': dia.error('Odd error: the user or room sent do not seem to exist.'); break;
+        }
+
+        return false;
+    }); // Send the form data     via AJAX.
+
+    return false;
+};
+
+
+standard.prototype.deleteMessage = function(messageId) {
+    fimApi.editMessage({
+        'messageId' : messageId,
+        'action' : 'delete'
+    }, {
+        'end' : function() { dia.info("The message was deleted.") }
+    });
+
+    return false;
 };

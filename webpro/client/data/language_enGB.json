@@ -38,6 +38,7 @@
   "chatPrivateRoom" : "This room is a private room between you and another individual, and is not accessible to any other user or administrator. If you would like to ignore this person right click their userName and choose 'Ignore'.",
   "chatRoomDoesNotExist" : "After hours of intense computation, we have failed to locate the room you selected.",
   "cmenuMessageDelete" : "Delete",
+  "cmenuMessageEdit" : "Edit",
   "cmenuMessageImageClick" : "Open",
   "cmenuMessageImageDelete" : "Delete Message",
   "cmenuMessageImageDeleteImage" : "Delete Image",

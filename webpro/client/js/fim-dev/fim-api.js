@@ -8,7 +8,6 @@ var fimApi = function() {
         'timeout' : 5000,
         'cache' : false,
         'begin' : function() {},
-        'callback' : function() {},
         'error' : function() {},
         'exception' : function () {},
         'each' : function() {},
@@ -20,24 +19,26 @@ var fimApi = function() {
 
     this.done = function(requestSettings) {
         return function (json) {
-            requestSettings.begin(json);
-
             // This digs into the tree a bit to where the array is. Perhaps somewhat inelegant, but it will work for our purposes, and does so quite simply.
             var firstElement = json["firstIndex" in requestSettings ? requestSettings.firstIndex : Object.keys(json)[0]];
-            var secondElement = firstElement["secondIndex" in requestSettings ? requestSettings.secondIndex : Object.keys(firstElement)[0]];
+            //var secondElement = firstElement["secondIndex" in requestSettings ? requestSettings.secondIndex : Object.keys(firstElement)[0]];
 
-            if (requestSettings.reverseEach) secondElement = secondElement.reverse();
-
-            $.each(secondElement, function (index, value) {
+            console.log(firstElement);
+            console.log(requestSettings);
+            requestSettings.begin(firstElement);
+            if (requestSettings.reverseEach) firstElement = firstElement.reverse();
+            $.each(firstElement, function (index, value) {
                 requestSettings.each(value);
             });
 
-            requestSettings.end(json);
+            requestSettings.end(firstElement);
         }
     };
 
     this.fail = function(requestSettings) {
-        return function(response) {
+        return function(response) { console.log(response);
+            if (!("responseJSON" in response)) response.responseJSON = JSON.parse(response.responseText);
+
             if ("exception" in response.responseJSON)
                 return requestSettings.exception(response.responseJSON.exception);
             else
@@ -77,7 +78,7 @@ fimApi.prototype.login = function (params, requestSettings) {
                 timeout: requestSettings.timeout,
                 cache: requestSettings.cache
             }).done(function(json) {
-                requestSettings.callback(json.login);
+                requestSettings.end(json.login);
             }).fail(function(response) { console.log(response); console.log(this);
                 requestSettings.error(response.responseJSON.exception);
             });
@@ -413,12 +414,13 @@ fimApi.prototype.editFile = function(params, requestSettings) {
             data: params,
             timeout: requestSettings.timeout,
             cache: requestSettings.cache,
-        }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));;
+        }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
 }
 
 
+
 fimApi.prototype.sendMessage = function(params, requestSettings) {console.log(params);
-        var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['parentalFlags']), {
+        var params = fimApi.mergeDefaults(params, {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
             'roomId' : null,
@@ -437,6 +439,36 @@ fimApi.prototype.sendMessage = function(params, requestSettings) {console.log(pa
             cache: requestSettings.cache,
         }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));;
 };
+
+
+
+fimApi.prototype.editUserOptions = function(params, requestSettings) {
+    var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['parentalFlags']), {
+        'access_token': window.sessionHash,
+        'fim3_format': 'json',
+        'action': 'create',
+        'daataEncode': 'base64',
+        'uploadMethod': 'raw',
+        'autoInsert': true,
+        'roomId': null,
+        'fileName': '',
+        'fileData': '',
+        'parentalFlags': '[]',
+        'parentalAge': 0,
+        'md5hash': null,
+        'avatarHash' : null
+    });
+
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+    $.ajax({
+        url: directory + 'api/editFile.php',
+        type: 'POST',
+        data: params,
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache,
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+}
 
 
 
@@ -460,7 +492,50 @@ fimApi.prototype.editMessage = function(params, requestSettings) {
         cache: requestSettings.cache,
     }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
 }
+
+
+fimApi.prototype.editUserStatus = function(params, requestSettings) {
+    var params = fimApi.mergeDefaults(params, {
+        'access_token': window.sessionHash,
+        'fim3_format': 'json',
+        'roomId' : null,
+        'status': null,
+        'typing': null,
+    }); console.log(params);
+
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+    $.ajax({
+        url: directory + 'api/editUserStatus.php',
+        type: 'POST',
+        data: params,
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache,
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+}
+
+
+fimApi.prototype.ping = function(roomId, requestSettings) {
+    this.editUserStatus({
+        'roomId' : roomId
+    }, requestSettings);
+}
+
+
+
+fimApi.prototype.changeAvatar = function(avatarHash, requestSettings) {
+    this.editUserOptions({
+        'avatarHash' : avatarHash,
+    }, requestSettings);
+};
+
+
+
 fimApi.prototype.mergeDefaults = function(object, defaults) {
+    if (object === undefined) {
+        return defaults;
+    }
+    else {
         for (var i in defaults) {
             if (!(i in object)) object[i] = defaults[i];
         }
@@ -474,6 +549,7 @@ fimApi.prototype.mergeDefaults = function(object, defaults) {
         /*** END STRICT CODE ***/
 
         return object;
+    }
 };
 
 
