@@ -23,8 +23,6 @@ var fimApi = function() {
             var firstElement = json["firstIndex" in requestSettings ? requestSettings.firstIndex : Object.keys(json)[0]];
             //var secondElement = firstElement["secondIndex" in requestSettings ? requestSettings.secondIndex : Object.keys(firstElement)[0]];
 
-            console.log(firstElement);
-            console.log(requestSettings);
             requestSettings.begin(firstElement);
             if (requestSettings.reverseEach) firstElement = firstElement.reverse();
             $.each(firstElement, function (index, value) {
@@ -36,7 +34,7 @@ var fimApi = function() {
     };
 
     this.fail = function(requestSettings) {
-        return function(response) { console.log(response);
+        return function(response) {
             if (!("responseJSON" in response)) response.responseJSON = JSON.parse(response.responseText);
 
             if ("exception" in response.responseJSON)
@@ -79,7 +77,7 @@ fimApi.prototype.login = function (params, requestSettings) {
                 cache: requestSettings.cache
             }).done(function(json) {
                 requestSettings.end(json.login);
-            }).fail(function(response) { console.log(response); console.log(this);
+            }).fail(function(response) {
                 requestSettings.error(response.responseJSON.exception);
             });
         }
@@ -419,7 +417,7 @@ fimApi.prototype.editFile = function(params, requestSettings) {
 
 
 
-fimApi.prototype.sendMessage = function(params, requestSettings) {console.log(params);
+fimApi.prototype.sendMessage = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(params, {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
@@ -427,7 +425,7 @@ fimApi.prototype.sendMessage = function(params, requestSettings) {console.log(pa
             'ignoreBlock' : false, // TODO
             'message' : null,
             'flag' : null
-        }); console.log(params);
+        });
 
         var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
@@ -501,7 +499,7 @@ fimApi.prototype.editUserStatus = function(params, requestSettings) {
         'roomId' : null,
         'status': null,
         'typing': null,
-    }); console.log(params);
+    });
 
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
