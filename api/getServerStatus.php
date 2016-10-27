@@ -83,8 +83,8 @@ if (count($smilies)) {
 $apiData = new apiData(array(
     'serverStatus' => array(
       'activeUser' => array(
-        'userId' => (int) $user['userId'],
-        'userName' => ($user['userName']),
+        'userId' => $user->id,
+        'userName' => $user->name,
       ),
 
       'fim_version' => FIM_VERSION,

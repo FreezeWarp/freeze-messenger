@@ -4,8 +4,8 @@ class fimUser
 {
     const ANONYMOUS_USER_ID = -1;
 
-    public $id;
-    private $name;
+    public $id = 0;
+    private $name = "MISSINGno.";
     private $socialGroupIds;
     private $mainGroupId;
     private $parentalFlags;
@@ -84,9 +84,7 @@ class fimUser
 
 
     public function __get($property) {
-        if (!in_array($property, $this->resolved)) {
-            if (!$this->id) throw new Exception('Uninitialised user object.');
-
+        if ($this->id && !in_array($property, $this->resolved)) {
             // Find selection group
             if (isset(array_flip($this->userDataConversion)[$property])) {
                 $needle = array_flip($this->userDataConversion)[$property];

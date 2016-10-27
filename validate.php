@@ -59,11 +59,7 @@ $loginDefs['syncMethods'] = array('phpbb', 'vbulletin3', 'vbulletin4');
 
 /* Default user object.
  * Note: As of now, this object should never be used. In all cases the script either quits or the user object is filled with anonymous information or information corresponding with a real user. However, this object is useful for dev purposes, and if a script wants to use $ignoreLogin. */
-$user = array(
-    'userId' => 0,
-    'userName' => 'MISSINGNO.',
-    'privs' => 0, // Nothing
-);
+$user = new fimUser(0);
 
 /* If a username and password have been passed to the PHP directly, use them for OAuth authentication. */
 if (is_array($hookLogin) && isset($hookLogin['userName'], $hookLogin['password'])) {
