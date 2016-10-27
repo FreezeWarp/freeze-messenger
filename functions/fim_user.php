@@ -182,6 +182,7 @@ class fimUser
      */
     public function hasPriv(string $priv) : bool
     {
+        global $generalCache;
         $privs = $this->__get('privs');
 
         switch ($priv) {
@@ -203,6 +204,11 @@ class fimUser
             case 'privateRoomsAll':       return (bool)($privs & USER_PRIV_PRIVATE_ALL);     break; // May create private rooms (anybody)
             case 'roomsOnline':           return (bool)($privs & USER_PRIV_ACTIVE_USERS);    break; // May see rooms online.
             case 'postCounts':            return (bool)($privs & USER_PRIV_POST_COUNTS);     break; // May see post counts.
+
+            /* Config Aliases
+             * (These may become full priviledges in the future.) */
+            case 'editOwnPosts':   return $generalCache->getConfig('usersCanEditOwnPosts') && !$this->isAnonymousUser();   break;
+            case 'deleteOwnPosts': return $generalCache->getConfig('usersCanDeleteOwnPosts') && !$this->isAnonymousUser(); break;
 
             default: throw new Exception("Invalid priv; $priv"); break;
         }

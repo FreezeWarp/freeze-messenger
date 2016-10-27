@@ -62,7 +62,7 @@ $room = new fimRoom((int) $messageData['roomId']);
 /* Start Processing */
 switch ($request['action']) {
     case 'delete': case 'undelete':
-        if (($messageData['userId'] = $user->id && !$user->isAnonymousUser() && $generalCache->getConfig('usersCanDeleteOwnPosts'))
+        if (($messageData['userId'] = $user->id && $user->hasPriv('editOwnPosts'))
             || ($database->hasPermission($user, $room) & ROOM_PERMISSION_MODERATE)) {
             $database->editMessage($messageData['messageId'], array('deleted' => ($request['action'] === 'delete' ? true : false)));
         }
@@ -71,7 +71,7 @@ switch ($request['action']) {
     break;
 
     case 'edit':
-    if ($messageData['userId'] = $user->id && !$user->isAnonymousUser() && $generalCache->getConfig('usersCanEditOwnPosts')) {
+    if ($messageData['userId'] = $user->id && $user->hasPriv('editOwnPosts')) {
         $database->editMessage($messageData['messageId'], array('deleted' => ($request['action'] === 'delete' ? true : false)));
     }
     else
