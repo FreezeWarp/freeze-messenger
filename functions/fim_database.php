@@ -99,8 +99,8 @@ class fimDatabase extends databaseSQL
 
 
         $columns = array(
-            $this->sqlPrefix . "ping"  => 'status, typing, time ptime, roomId proomId, userId puserId',
-            $this->sqlPrefix . "rooms" => 'roomId, roomName, roomTopic, ownerId, defaultPermissions, roomType, roomParentalAge, roomParentalFlags, options',
+            $this->sqlPrefix . "ping"  => 'status pstatus, typing, time ptime, roomId proomId, userId puserId',
+            $this->sqlPrefix . "rooms" => 'roomId, roomName, ownerId, defaultPermissions, roomType, roomParentalAge, roomParentalFlags, options',
             $this->sqlPrefix . "users" => 'userId, userName, userNameFormat, userGroupId, socialGroupIds, status',
         );
 
@@ -113,7 +113,7 @@ class fimDatabase extends databaseSQL
 
 
         $conditions['both'] = array(
-            'ptime'   => $this->int(time() - $options['onlineThreshold'], 'lt'),
+            'ptime'   => $this->int(time() - $options['onlineThreshold'], 'gt'),
             'proomId' => $this->col('roomId'),
             'puserId' => $this->col('userId'),
         );
@@ -1136,7 +1136,7 @@ class fimDatabase extends databaseSQL
 
 
             /* Update cache and return. */
-            $this->updatePermissionsCache($user->id, $room->id, $returnBitfield, ($kicks > 0 ? true : false));
+            $this->updatePermissionsCache($room->id, $user->id, $returnBitfield, ($kicks > 0 ? true : false));
 
             return $returnBitfield;
         }
