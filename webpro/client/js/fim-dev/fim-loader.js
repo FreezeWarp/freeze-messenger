@@ -692,38 +692,155 @@ function updateVids(searchPhrase) {
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2014
  */
-autoEntry = {
-    addEntry : function(type, source, id) {
-        var val,
-            type2;
+var autoEntry = function(target, options) {
+    return this._init(target, options);
+}
+
+autoEntry.prototype = {
+    _init : function(target, options) {
+        this.options = options;
+        var _this = this;
+
+        target.append($('<input type="text" name="' + this.options.name + 'Bridge" id="' + this.options.name + 'Bridge" class="ui-autocomplete-input" autocomplete="off" />').autocomplete({ source: this.options.autoCompleteSource }))
+            .append($('<input type="button" value="Add">').click(function() {
+                _this.addEntry(null, $("#" + _this.options.name + "Bridge").val());
+            }))
+            .append('<input type="hidden" name="' + this.options.name + '" id="' + this.options.name + '">');
+
+        return this;
+    },
+
+
+    setOnAdd : function(onAdd) {
+        this.options.onAdd = onAdd;
+    },
+
+    addEntry : function(id, name) {
+        var _this = this;
+        var id = id;
+
+        if (!id) {
+            this.options.resolve(null, [name], function(data) {
+                id = Object.keys(data)[0];
+                addEntry_dom(id, name)
+            });
+        }
+
+        else if (!name) {
+            this.options.resolve([id], null, function(data) {
+                name = Object.values(data)[0];
+                addEntry_dom(id, name)
+            });
+        }
+
+        addEntry_dom = function(id, name) {
+            $("#" + _this.options.name).val($("#" + _this.options.name).val() + "," + id);
+
+            $("#" + _this.options.name + "List").append("<span id=\"" + _this.options.name + "SubList" + id + "\">" + name + ' (<span class="close"></span>), </span>');
+            $("#" + _this.options.name + "List .close").html($('<a href="javascript:false(0);">×</a>').click(function() {
+                _this.removeEntry(id)
+            }));
+
+            $("#" + _this.options.name + "Bridge").val('');
+
+            _this.options.onAdd(id);
+        }
+    },
+
+    removeEntry : function(id) {
+        $("#" + this.options.name).val().replace(new RegExp("(^|,)" + id + "(,|$)"), "$1$2").replace(/^,|(,),|,$/,'$1')
+
+        $("#" + this.options.name + "SubList" + id).fadeOut(500, function() {
+            $(this).remove();
+
+            this.options.onRemove(id);
+        });
+    },
+
+    displayEntries : function(string) {
+        if (typeof string === 'object' || typeof string === 'array') { entryList = string; } // String is already not a string! (yeah...) Also, "array" doesn't exist as a type far as I know, but I don't really want to remove it for whatever reason.
+        else if (typeof string === 'string' && string.length > 0) { entryList = string.split(','); } // String is a string and not empty.
+        else { entryList = []; }
+
+        names = this.options.resolve(entryList);
+
+        for (i = 0; i < entryList.length; i += 1) {
+            if (!entryList[i]) { continue; }
+
+            this.addEntry(entryList[i], names[entryList[i]]);
+        }
+    },
+
+    getList : function() {
+        return $("#" + this.options.name).val().split(',');
+    }
+};
+
+/*autoEntry.prototype.addEntry = function(type, id) {
+        var val;
+        var id = id;
+        var roomId = $("#" + type + "Bridge").attr('roomId')
 
         if (!id) {
             val = $("#" + type + "Bridge").val();
             switch(type) {
-//        case 'watchRooms': id = roomRef[val]; type2 = 'Room'; break; TODO
-//        case 'moderators': case 'allowedUsers': case 'ignoreList': id = userRef[val]; type2 = 'User'; break;
-//        case 'allowedGroups': id = groupRef[val]; type2 = 'Group'; break;
+                case 'watchRooms':
+                    fimApi.getRooms({'roomNames' : [val]}, {
+                        'each': function(room) { addEntry_dom(type, room.roomId, val); }
+                    });
+                break;
+                case 'moderators': case 'allowedUsers': case 'ignoreList':
+                    fimApi.getUsers({'userNames' : [val]}, {
+                        'each': function(user) {
+                            addEntry_dom(type, user.userId, val);
+
+                            switch (type) {
+                                case 'moderators':    ; break;
+                                case 'allowedUsers' : fimApi.editRoomPermissionUser(roomId, id, ["view", "post", "moderate"]); break;
+                            }
+                        }
+                    });
+                break;
+                case 'allowedGroups':
+                    fimApi.getGroups({'groupNames' : [val]}, {
+                        'each': function(group) { addEntry_dom(type, group.groupId, val); }
+                    });
+                break;
             }
         }
         else {
             switch(type) {
-//        case 'watchRooms': val = roomIdRef[id].roomName; type2 = 'Room'; break; TODO
-//        case 'moderators': case 'allowedUsers': case 'ignoreList': val = userData[id].userName; type2 = 'User'; break;
-//        case 'allowedGroups': val = groupIdRef[id]; type2 = 'Group'; break;
+                case 'watchRooms':
+                    fimApi.getRooms({'roomIds' : [id]}, {
+                        'each': function(room) { addEntry_dom(type, id, room.roomName); }
+                    });
+                break;
+                case 'moderators': case 'allowedUsers': case 'ignoreList':
+                    fimApi.getUsers({'userIds' : [id]}, {
+                        'each': function(user) { addEntry_dom(type, id, user.userName); }
+                    });
+                break;
+                case 'allowedGroups':
+                    fimApi.getGroups({'groupNames' : [id]}, {
+                        'each': function(group) { addEntry_dom(type, id, group.groupName); }
+                    });
+                break;
             }
         }
 
-        if (!id) {
-            dia.error(type2 + ' does not exist.');
-        }
-        else {
-            var currentRooms = $("#" + type).val().split(",");
-            currentRooms.push(id);
+        function addEntry_dom(type, id, val) {
+            if (!id) {
+                dia.error(type + ' does not exist.');
+            }
+            else {
+                var currentRooms = $("#" + type).val().split(",");
+                currentRooms.push(id);
 
-            $("#" + type + "List").append("<span id=\"" + type + "SubList" + id + "\">" + val + " (<a href=\"javascript:false(0);\" onclick=\"autoEntry.removeEntry('" + type + "'," + id + ");\">×</a>), </span>");
-            $("#" + type).val(currentRooms.toString(","));
+                $("#" + type + "List").append("<span id=\"" + type + "SubList" + id + "\">" + val + " (<a href=\"javascript:false(0);\" onclick=\"autoEntry.removeEntry('" + type + "'," + id + ");\">×</a>), </span>");
+                $("#" + type).val(currentRooms.toString(","));
 
-            $("#" + type + "Bridge").val('');
+                $("#" + type + "Bridge").val('');
+            }
         }
 
         return false;
@@ -757,22 +874,20 @@ autoEntry = {
         else if (typeof string === 'string' && string.length > 0) { entryList = string.split(','); } // String is a string and not empty.
         else { entryList = []; }
 
-        switch(type) {
-//      case 'watchRooms': source = roomRef; break; TODO
-//      case 'moderators': case 'allowedUsers': case 'ignoreList': source = userRef; break;
-//      case 'allowedGroups': source = groupRef; break;
-        }
-
 
         for (i = 0; i < entryList.length; i += 1) {
             if (!entryList[i]) { continue; }
 
-            autoEntry.addEntry(type, source, entryList[i]);
+            autoEntry.addEntry(type, entryList[i]);
         }
 
         return false;
     }
-};
+
+    toString : function() {
+
+    }
+};*/
 
 /*********************************************************
  ************************* END ***************************

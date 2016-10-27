@@ -12,7 +12,8 @@ var fimApi = function() {
         'exception' : function () {},
         'each' : function() {},
         'reverseEach' : false,
-        'end' : function() {}
+        'end' : function() {},
+        'async' : true,
     };
 
     this.timers = {};
@@ -107,6 +108,7 @@ fimApi.prototype.getUsers = function(params, requestSettings) {
 
     function getUsers_query() {
         $.ajax({
+//            'async' : false,
             type: 'get',
             url: directory + 'api/getUsers.php',
             data: params,
@@ -588,6 +590,14 @@ fimApi.prototype.mergeDefaults = function(object, defaults) {
             throw 'Invalid data in object call: ' + i;
         }
     }
+
+    /* Debug Data */
+/*    console.log("===BEGIN AJAX QUERY===");
+    console.log("Original Object: ");
+    console.log(object);
+    console.log("New Object: ");
+    console.log(returnObject);*/
+
     /*** END STRICT CODE ***/
 
     return returnObject;

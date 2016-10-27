@@ -328,7 +328,7 @@ standard.prototype.changeRoom = function(roomIdLocal) { console.log("Hi.");
 
                     standard.getMessages();
 
-                    clearInterval(interval);
+                    clearInterval(intervalPing);
                     fimApi.ping(roomId);
                     intervalPing = window.setInterval(function() {
                         fimApi.ping(roomId)

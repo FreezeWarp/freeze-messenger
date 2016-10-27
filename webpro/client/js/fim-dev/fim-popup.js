@@ -729,11 +729,73 @@ popup = {
             tabs : true,
             oF : function() {
                 /* Autocomplete Users and Groups */
-                $("#moderatorsBridge").autocomplete({ source: fimApi.acHelper('users') });
-                $("#allowedUsersBridge").autocomplete({ source: fimApi.acHelper('users') });
-                $("#allowedGroupsBridge").autocomplete({ source: groupList });
+                moderatorsList = new autoEntry($("#moderatorsContainer"), {
+                    'name' : 'moderator',
+                    'autoCompleteSource' : fimApi.acHelper('users'),
+                    'onAdd' : function(id) {
+                        if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, ["post", "moderate"])
+                    },
+                    'onRemove' : function(id) {
+                        if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, ["post"])
+                    },
+                    'resolve' : function(ids, names) {
+                        var returnData = {};
 
-                $('#allowAllUsers').change(function() {
+                        fimApi.getUsers({'userIds' : ids, 'userNames' : names}, {
+                            'each': function(user) {
+                                returnData[user.userId] = user.userName;
+                            }
+                        });
+
+                        return returnData;
+                    }
+                });
+
+                allowedUsersList = new autoEntry($("#allowedUsersContainer"), {
+                    'name' : 'allowedUsers',
+                    'autoCompleteSource' : fimApi.acHelper('users'),
+                    'onAdd' : function(id) {
+                        if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, ["post"])
+                    },
+                    'onRemove' : function(id) {
+                        if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, [])
+                    },
+                    'resolve' : function(ids, names, callback) {
+                        var returnData = {};
+
+                        fimApi.getUsers({'userIds' : ids, 'userNames' : names}, {
+                            'each': function(user) {
+                                returnData[user.userId] = user.userName;
+                            },
+                            'end' : function() {
+                                callback(returnData)
+                            }
+                        });
+                    }
+                });
+
+                allowedGroupsList = new autoEntry($("#allowedGroupsContainer"), {
+                    'name' : 'allowedGroups',
+                    'autoCompleteSource' : fimApi.acHelper('groups'),
+                    'onAdd' : function(id) {
+                        if (action === 'edit') fimApi.editRoomPermissionGroup(roomId, id, ["post"])
+                    },
+                    'onRemove' : function(id) {
+                        if (action === 'edit') fimApi.editRoomPermissionGroup(roomId, id, [])
+                    },
+                    'resolve' : function(ids, names) {
+                        var returnData;
+
+                        fimApi.getGroups({'groupIds' : ids, 'groupNames' : names}, {
+                            'each': function(group) {
+                                returnData[group.groupId] = group.groupName;
+                            }
+                        });
+                        return returnData;
+                    }
+                });
+
+                $('#allowPosting').change(function() {
                     if ($(this).is(':checked')) {
                         $('#allowedUsersBridge').attr('disabled', 'disabled');
                         $('#allowedGroupsBridge').attr('disabled', 'disabled');
@@ -765,12 +827,13 @@ popup = {
 
                 /* Censor Lists */
                 fimApi.getCensorLists({
-                    'roomIds' : roomIdLocal ? [roomIdLocal] : [0]
+                    'roomIds' : roomIdLocal ? [roomIdLocal] : [0],
+                    'includeWords' : 0,
                 }, {
                     'each' : function(listData) {
                         var listStatus;
 
-                        if (('roomStatus ' + roomIdLocal.listId) in listData.roomStatuses) listStatus = listData.roomStatuses['roomStatus ' + roomIdLocal.listId].status;
+                        if (roomIdLocal in listData.roomStatuses) listStatus = listData.roomStatuses['roomStatus ' + roomIdLocal.listId].status;
                         else if (listData.listType === 'white') listStatus = 'block';
                         else if (listData.listType === 'black') listStatus = 'unblock';
                         else throw 'Bad logic.';
@@ -812,9 +875,9 @@ popup = {
                         /* Prepopulate
                          * TODO: Replace w/ AJAX. */
                         // User Autocomplete
-                        if (allowedUsersArray.length > 0) autoEntry.showEntries('allowedUsers', allowedUsersArray);
-                        if (moderatorsArray.length > 0) autoEntry.showEntries('moderators', moderatorsArray);
-                        if (allowedGroupsArray.length > 0) autoEntry.showEntries('allowedGroups', allowedGroupsArray);
+                        if (allowedUsersArray.length > 0) allowedUsers.showEntries();
+                        if (moderatorsArray.length > 0) moderators.showEntries();
+                        if (allowedGroupsArray.length > 0) allowedGroups.showEntries();
 
                         if (defaultPermissions == 7) $('#allowAllUsers').attr('checked', true); // If all users are currently allowed, check the box (which triggers other stuff above).
                     }});
@@ -822,62 +885,74 @@ popup = {
 
 
                 /* Submit */
-                $("#editRoomForm").submit(function() {
+                $("#editRoomForm").submit(function() {console.log(allowedUsersList);
                     var name = $('#name').val(),
-                        allowedUsers = $('#allowedUsers').val(),
-                        allowedGroups = $('#allowedGroups').val(),
-                        moderators = $('#moderators').val(),
-                        censor = [],
+                        censor = {},
                         parentalAge = $('#parentalAge option:selected').val(),
-                        parentalFlags = [];
+                        parentalFlags = [],
+                        combinedUserPermissions = {},
+                        combinedGroupPermissions = {};
+
+                    if (action === 'create') {
+                        allowedUsersList.getList().forEach(function(user) {
+                            combinedUserPermissions["+" + user] = ['post'];
+                        });
+                        moderatorsList.getList().forEach(function(user) {
+                            combinedUserPermissions["+" + user] = ['post', 'moderate'];
+                        });
+                        allowedGroupsList.getList().forEach(function(group) {
+                            combinedGroupPermissions["+" + group] = ['post'];
+                        });
+                    }
 
                     $('input[data-checkType="list"]').each(function() {
-                        censor.push($(this).attr('data-listId') + '=' + ($(this).is(':checked') ? 1 : 0));
+                        censor[$(this).attr('data-listId')] = ($(this).is(':checked') ? 1 : 0);
                     });
 
                     $('input[data-cat=parentalFlag]:checked').each(function(a, b) {
                         parentalFlags.push($(b).attr('data-name'));
                     });
 
-                    console.log(directory + 'api/editRoom.php', 'action=' + action + '&roomId=' +  roomIdLocal + '&roomName=' + fim_eURL(name) + '&defaultPermissions=' + ($('#allowAllUsers').is(':checked') ? '7' : '0' + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups) + '&moderators=' + moderators + '&parentalAge=' + parentalAge + '&parentalFlags=' + parentalFlags + '&censor=' + censor.join(',') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId);
+                    defaultPermissions = [];
+                    if ($('#allowViewing').is(':checked')) defaultPermissions.push("view");
+                    if ($('#allowPosting').is(':checked')) defaultPermissions.push("posting");
 
-                    if (name.length > window.serverSettings.rooms.roomLengthMaximum) dia.error('The roomname is too long.');
-                    else if (name.length < window.serverSettings.rooms.roomLengthMinimum) dia.error('The roomname is too short.');
-                    else {
-                        $.post(directory + 'api/editRoom.php', 'action=' + action + '&roomId=' +  roomIdLocal + '&roomName=' + fim_eURL(name) + '&defaultPermissions=' + ($('#allowAllUsers').is(':checked') ? '7' : '0' + '&allowedUsers=' + allowedUsers + '&allowedGroups=' + allowedGroups) + '&moderators=' + moderators + '&parentalAge=' + parentalAge + '&parentalFlags=' + parentalFlags + '&censor=' + fim_eURL(censor.join(',')) + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId, function(json) {
-                            var errStr = json.editRoom.errStr,
-                                errDesc = json.editRoom.errDesc,
-                                createRoomId = json.editRoom.response.insertId;
+                    fimApi.editRoom({
+                        "action" : action,
+                        "roomId" : roomIdLocal,
+                        "roomName" : name,
+                        "defaultPermissions" : defaultPermissions,
+                        "userPermissions" : combinedUserPermissions,
+                        "groupPermissions" : combinedGroupPermissions,
+                        "parentalAge" : parentalAge,
+                        "parentalFlags" : parentalFlags,
+                        "censorLists" : censor,
+                    }, {
+                        'begin' : function(json) {
+                            dia.full({
+                                content : 'The room has been created at the following URL: <br /><br /><form action="' + currentLocation + '#room=' + json.response.insertId + '" method="post"><input type="text" style="width: 300px;" value="' + currentLocation + '#room=' + createRoomId + '" name="url" /></form>',
+                                title : 'Room Created!',
+                                id : 'editRoomResultsDialogue',
 
-                            if (errStr) {
-                                dia.error('An error has occured: ' + errDesc);
-                            }
-                            else {
-                                dia.full({
-                                    content : 'The room has been created at the following URL:<br /><br /><form action="' + currentLocation + '#room=' + createRoomId + '" method="post"><input type="text" style="width: 300px;" value="' + currentLocation + '#room=' + createRoomId + '" name="url" /></form>',
-                                    title : 'Room Created!',
-                                    id : 'editRoomResultsDialogue',
+                                width : 600,
+                                buttons : {
+                                    Open : function() {
+                                        $('#editRoomResultsDialogue').dialog('close');
+                                        standard.changeRoom(createRoomId);
 
-                                    width : 600,
-                                    buttons : {
-                                        Open : function() {
-                                            $('#editRoomResultsDialogue').dialog('close');
-                                            standard.changeRoom(createRoomId);
+                                        return false;
+                                    },
+                                    Okay : function() {
+                                        $('#editRoomResultsDialogue').dialog('close');
 
-                                            return false;
-                                        },
-                                        Okay : function() {
-                                            $('#editRoomResultsDialogue').dialog('close');
-
-                                            return false;
-                                        }
+                                        return false;
                                     }
-                                });
+                                }
+                            });
 
-                                $("#editRoomDialogue").dialog('close');
-                            }
-                        }); // Send the form data via AJAX.
-                    }
+                            $("#editRoomDialogue").dialog('close');
+                        }
+                    });
 
                     return false; // Don't submit the form.
                 });
@@ -935,7 +1010,7 @@ popup = {
             position : 'top',
             width : 600,
             oF : fimApi.getActiveUsers({}, {
-                'refresh' : 1000,
+                'refresh' : 60 * 1000,
                 'begin' : function() {
                     $('#onlineUsers').html('');
                 },
