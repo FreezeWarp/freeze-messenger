@@ -21,10 +21,6 @@
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2014
- *
- * @param int roomId - A comma-seperated list of room IDs to get.
- * @param string statusType - The type of status.
- * @param string statusValue - The value of the status type.
  */
 
 $apiRequest = true;
@@ -44,7 +40,7 @@ $request = fim_sanitizeGPC('p', array(
         'valid' => array('away', 'busy', 'available', 'invisible', 'offline')
     ),
 
-    'type' => array(
+    'typing' => array(
         'cast' => 'bool',
     )
 ));
@@ -62,7 +58,7 @@ if (!count($rooms)) new fimError('invalidRooms', 'The rooms specified do not exi
 else {
     foreach ($rooms AS $room) {
         if ($database->hasPermission($user, $room) & ROOM_PERMISSION_VIEW)
-            $database->setUserStatus($room->roomId);
+            $database->setUserStatus($room->id);
     }
 }
 
