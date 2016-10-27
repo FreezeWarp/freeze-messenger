@@ -32,7 +32,7 @@ require('../global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
     'roomIds' => array(
-        'cast' => 'jsonList',
+        'cast' => 'list',
         'filter' => 'int'
     ),
 

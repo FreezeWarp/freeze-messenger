@@ -66,7 +66,6 @@ $apiRequest = true;
 
 require('../global.php');
 
-
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
   'roomId' => array(
@@ -75,14 +74,14 @@ $request = fim_sanitizeGPC('g', array(
 
   'userIds' => array(
     'default' => '',
-    'cast' => 'csv',
+    'cast' => 'list',
     'filter' => 'int',
     'evaltrue' => true,
   ),
 
   'messageIds' => array(
     'default' => '',
-    'cast' => 'csv',
+    'cast' => 'list',
     'filter' => 'int',
     'evaltrue' => true,
   ),

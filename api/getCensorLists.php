@@ -37,13 +37,13 @@ require('../global.php');
 $request = fim_sanitizeGPC('g', array(
   'listIds' => array(
     'default' => '',
-    'cast' => 'jsonList',
+    'cast' => 'list',
     'filter' => 'int',
     'evaltrue' => true,
   ),
   'roomIds' => array(
     'default' => '',
-    'cast' => 'jsonList',
+    'cast' => 'list',
     'filter' => 'int',
     'evaltrue' => true,
   ),

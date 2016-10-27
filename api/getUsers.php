@@ -35,21 +35,21 @@ require('../global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
-  'users' => array(
-    'cast' => 'jsonList',
+  'userIds' => array(
+    'cast' => 'list',
     'filter' => 'int',
     'evaltrue' => true,
     'default' => '',
   ),
 
   'userNames' => array(
-    'cast' => 'jsonList',
+    'cast' => 'list',
     'filter' => 'string',
     'default' => '',
   ),
 
   'showOnly' => array( // TODO
-    'cast' => 'jsonList',
+    'cast' => 'list',
     'valid' => array('banned', '!banned', '!friends', 'friends', '!ignored', 'ignored', ''),
     'default' => '',
   ),
@@ -60,9 +60,9 @@ $request = fim_sanitizeGPC('g', array(
   ),
 
   'info' => array(
-    'cast' => 'jsonList',
+    'cast' => 'list',
     'valid' => array('profile', 'groups', 'self'),
-    'default' => '["profile", "groups", "self"]',
+    'default' => ["profile", "groups", "self"],
   ),
 ));
 
@@ -72,7 +72,6 @@ $request = fim_sanitizeGPC('g', array(
 $xmlData = array(
   'getUsers' => array(
     'users' => array(),
-  ),
 );
 
 

@@ -47,7 +47,7 @@ $request = fim_sanitizeGPC('r', array(
         'valid' => array('base64', 'plaintext', 'md5'),
     ),
     'apiVersions' => array(
-        'cast' => 'jsonList',
+        'cast' => 'list',
         'filter' => 'string',
         'evaltrue' => true,
     ),

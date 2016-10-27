@@ -22,7 +22,7 @@
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2014
- * @param string users - JSONList of userIds (the active user may be omitted).
+ * @param string users - list of userIds (the active user may be omitted).
  *
  * TODO -- Ignore List
 */
@@ -36,7 +36,7 @@ require('../global.php');
 $request = fim_sanitizeGPC('g', array(
   'userIds' => array(
     'default' => '',
-    'cast' => 'jsonList',
+    'cast' => 'list',
     'filter' => 'int',
     'evaltrue' => true,
   ),

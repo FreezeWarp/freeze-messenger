@@ -87,41 +87,40 @@ fimApi.prototype.login = function (params, requestSettings) {
 
 
 
-    /**
-     * Obtains one or more users.
-     * This function is async.
-     *
-     * @param object userId - The ID of the user to obtain info of.
-     *
-     * @author Jospeph T. Parsons <josephtparsons@gmail.com>
-     * @copyright Joseph T. Parsons 2014
-     *
-     */
-fimApi.prototype.getUsers = function(params, requestSettings, async) {
-        var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['userIds']), {
-            'access_token' : window.sessionHash,
-            'fim3_format' : 'json',
-            'userIds' : '',
-            'userNames' : '',
-            'userNameSearch' : ''
-        });
+/**
+ * Obtains one or more users.
+ *
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2014
+ *
+ */
+fimApi.prototype.getUsers = function(params, requestSettings) {
+    var params = fimApi.mergeDefaults(params, {
+        'access_token' : window.sessionHash,
+        'fim3_format' : 'json',
+        'userIds' : null,
+        'userNames' : null,
+        'userNameSearch' : null
+    });
 
-        var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
-        function getUsers_query() {
-            $.ajax({
-                type: 'get',
-                url: directory + 'api/getUsers.php',
-                data: params,
-                timeout: requestSettings.timeout,
-                cache: requestSettings.cache
-            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
-        }
+    function getUsers_query() {
+        $.ajax({
+            type: 'get',
+            url: directory + 'api/getUsers.php',
+            data: params,
+            timeout: requestSettings.timeout,
+            cache: requestSettings.cache
+        }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+    }
+
+    getUsers_query();
 };
 
 
 fimApi.prototype.getRooms = function(params, requestSettings) {
-        var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds']), {
+        var params = fimApi.mergeDefaults(params, {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
             'roomIds' : '',
@@ -173,7 +172,7 @@ fimApi.prototype.getRooms = function(params, requestSettings) {
      */
 
 fimApi.prototype.getMessages = function(params, requestSettings) {
-        var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['userIds', 'messageIds']), {
+        var params = fimApi.mergeDefaults(params, {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
             'roomId' : '',
@@ -220,7 +219,7 @@ fimApi.prototype.getMessages = function(params, requestSettings) {
 
 
 fimApi.prototype.getFiles = function(params, requestSettings) {
-        var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['userIds', 'fileIds']), {
+        var params = fimApi.mergeDefaults(params, {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
             'userIds' : '',
@@ -249,7 +248,7 @@ fimApi.prototype.getFiles = function(params, requestSettings) {
 
 
 fimApi.prototype.getStats = function(params, requestSettings) {
-        var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds']), {
+        var params = fimApi.mergeDefaults(params, {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
             'roomIds' : '',
@@ -279,7 +278,7 @@ fimApi.prototype.getStats = function(params, requestSettings) {
 
 
 fimApi.prototype.getKicks = function(params, requestSettings) {
-        var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds', 'userIds']), {
+        var params = fimApi.mergeDefaults(params, {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
             'roomIds' : '',
@@ -309,11 +308,11 @@ fimApi.prototype.getKicks = function(params, requestSettings) {
 
 
 fimApi.prototype.getCensorLists = function(params, requestSettings) {
-        var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds', 'listIds']), {
+        var params = fimApi.mergeDefaults(params, {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
-            'roomIds' : '',
-            'listIds' : '',
+            'roomIds' : null,
+            'listIds' : null,
             'includeWords' : 1 // true
         });
 
@@ -346,7 +345,7 @@ fimApi.prototype.getActiveUsers = function(params, requestSettings) {
         $.ajax({
             type: 'get',
             url: directory + 'api/getActiveUsers.php',
-            data: fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds', 'userIds']), {
+            data: fimApi.mergeDefaults(params, {
                 'access_token' : window.sessionHash,
                 'fim3_format' : 'json',
                 'roomIds' : null,
@@ -378,8 +377,8 @@ fimApi.prototype.acHelper = function(list) {
                     'list' : list,
                     'search' : search.term
                 },
-                success : function(json) {
-                    callback(json.acHelper.entries);
+                success : function(json) { console.log(json);
+                    callback(json.entries);
                     console.log(json);
                 }
             });
@@ -389,11 +388,11 @@ fimApi.prototype.acHelper = function(list) {
 
 
 fimApi.prototype.editFile = function(params, requestSettings) {
-        var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['parentalFlags']), {
+        var params = fimApi.mergeDefaults(params, {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
             'action' : 'create',
-            'daataEncode' : 'base64',
+            'dataEncode' : 'base64',
             'uploadMethod' : 'raw',
             'autoInsert' : true,
             'roomId' : null,
@@ -441,20 +440,19 @@ fimApi.prototype.sendMessage = function(params, requestSettings) {
 
 
 fimApi.prototype.editUserOptions = function(params, requestSettings) {
-    var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['parentalFlags']), {
-        'access_token': window.sessionHash,
-        'fim3_format': 'json',
-        'action': 'create',
-        'daataEncode': 'base64',
-        'uploadMethod': 'raw',
-        'autoInsert': true,
-        'roomId': null,
-        'fileName': '',
-        'fileData': '',
-        'parentalFlags': '[]',
-        'parentalAge': 0,
-        'md5hash': null,
-        'avatarHash' : null
+    var params = fimApi.mergeDefaults(params, {
+        'access_token' : window.sessionHash,
+        'fim3_format' : 'json',
+        'defaultFormatting' : null,
+        'defaultColor' : null,
+        'defaultHighlight' : null,
+        'defaultRoomId' : null,
+        'watchRooms' : null,
+        'ignoreList': null,
+        'profile': null,
+        'defaultFontface': null,
+        'parentalAge': null,
+        'parentalFlags': null,
     });
 
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
@@ -466,6 +464,54 @@ fimApi.prototype.editUserOptions = function(params, requestSettings) {
         timeout: requestSettings.timeout,
         cache: requestSettings.cache,
     }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+};
+
+
+
+fimApi.prototype.editRoom = function(params, requestSettings) {
+    var params = fimApi.mergeDefaults(params, {
+        'access_token': window.sessionHash,
+        'fim3_format': 'json',
+        'action': 'create',
+        'roomId' : null,
+        'roomName' : null,
+        'defaultPermissions' : null,
+        'userPermissions' : null,
+        'groupPermissions' : null,
+        'censorLists' : null,
+        'parentalAge': null,
+        'parentalFlags': null,
+    });
+
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+    $.ajax({
+        url: directory + 'api/editRoom.php',
+        type: 'POST',
+        data: params,
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache,
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+};
+
+
+
+fimApi.prototype.editRoomPermissionUser = function(roomId, userId, permissionsArray) {
+    var permissionsObj = {};
+    permissionsObj['*' + userId] = permissionsArray;
+    fimApi.editRoom({
+        'roomId' : roomId,
+        'userPermissions' : permissionsObj
+    });
+}
+
+fimApi.prototype.editRoomPermissionGroup = function(roomId, groupId, permissionsArray) {
+    var permissionsObj = {};
+    permissionsObj['*' + groupId] = permissionsArray;
+    fimApi.editRoom({
+        'roomId' : roomId,
+        'groupPermissions' : permissionsObj
+    });
 }
 
 

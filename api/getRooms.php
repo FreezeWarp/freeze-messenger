@@ -43,14 +43,14 @@ $request = fim_sanitizeGPC('g', array(
 
     'roomIds' => array(
         'default' => '',
-        'cast' => 'jsonList',
+        'cast' => 'list',
         'filter' => 'int',
         'evaltrue' => true,
     ),
 
     'roomNames' => array(
         'default' => '',
-        'cast' => 'jsonList',
+        'cast' => 'list',
         'filter' => 'string',
         'evaltrue' => true,
     ),
