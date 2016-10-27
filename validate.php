@@ -141,6 +141,9 @@ elseif (isset($_REQUEST['access_token'])) {
 //      var_dump($user);
     }
 }
+else {
+    new fimError('noLogin', 'Please specify login credentials.');
+}
 
 
 define('FIM_LOGINRUN', true);
