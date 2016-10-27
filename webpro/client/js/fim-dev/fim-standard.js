@@ -1,22 +1,23 @@
 var standard = function() {
+
     return;
 }
 
-standard.prototype.archive = function() {
-    this.options = {
+standard.prototype.archive = {
+    options : {
         encrypt : 'base64',
-            searchText : '',
-            resultLimit : 40,
-            searchUser : 0,
+        searchText : '',
+        resultLimit : 40,
+        searchUser : 0,
 //            lastMessage : 0,
-            firstMessage : 0,
-            page : 0,
-            roomId : 0
-    };
+        firstMessage : 0,
+        page : 0,
+        roomId : 0
+    },
 
-    this.messageData = {};
+    messageData : {},
 
-    this.init = function(options) {
+    init : function(options) {
         for (i in options) standard.archive.options[i] = options[i];
 
         $('#searchText, #resultLimit, #searchUser, #archiveNext, #archivePrev, #export, .updateArchiveHere').unbind('change');
@@ -44,9 +45,9 @@ standard.prototype.archive = function() {
         $('#export').bind('click', function() {
             popup.exportArchive();
         });
-    };
+    },
 
-    this.retrieve = function() { // TODO: callback?
+    retrieve : function() { // TODO: callback?
         $('#archiveMessageList').html('');
         standard.archive.messageData = {};
 
@@ -64,21 +65,21 @@ standard.prototype.archive = function() {
             $('#archiveMessageList').append(fim_messageFormat(messageData, 'table'));
             standard.archive.messageData[messageData.messageId] = messageData;
         }});
-    };
+    },
 
-    this.nextPage = function () {
+    nextPage : function () {
         this.options.page++;
 
         this.retrieve();
-    };
+    },
 
-    this.prevPage = function () {
+    prevPage : function () {
         if (this.options.page !== 0) this.options.page--;
 
         this.retrieve();
-    };
+    },
 
-    this.update = function (option, value) {
+    update : function (option, value) {
         standard.archive. options[option] = value;
     }
 };
@@ -286,7 +287,7 @@ standard.prototype.changeRoom = function(roomIdLocal) { console.log("Hi.");
     if (!roomIdLocal) {
         return false;
     }
-    var interval;
+    var intervalPing, intervalWhosOnline;
 
     isPrivateRoom = false;
     if (isPrivateRoom) {
@@ -329,7 +330,7 @@ standard.prototype.changeRoom = function(roomIdLocal) { console.log("Hi.");
 
                     clearInterval(interval);
                     fimApi.ping(roomId);
-                    interval = window.setInterval(function() {
+                    intervalPing = window.setInterval(function() {
                         fimApi.ping(roomId)
                     }, 5 * 60 * 1000);
 
@@ -405,7 +406,7 @@ standard.prototype.unkick = function(userId, roomId) {
         }
 
         return false;
-    }); // Send the form data     via AJAX.
+    }); // Send the form data via AJAX.
 
     return false;
 };
