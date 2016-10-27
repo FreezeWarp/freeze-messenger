@@ -939,14 +939,14 @@ popup = {
                 'begin' : function() {
                     $('#onlineUsers').html('');
                 },
-                'each' : function(activeUser) {
+                'each' : function(user) { console.log(user);
                     var roomData = [];
-                    for (j in activeUser.rooms) roomData.push('<a href="#room=' + activeUser.rooms[j].roomId + '">' + activeUser.rooms[j].roomName + '</a>');
+                    for (room in user.rooms) roomData.push('<a href="#room=' + user.rooms[room].roomId + '">' + user.rooms[room].roomName + '</a>');
 
-                    $('#onlineUsers').append('<tr><td>' + activeUser.userData.startTag + '<span class="userName" data-userId="' + activeUser.userData.userId + '">' + activeUser.userData.userName + '</span>' + activeUser.userData.endTag + '</td><td>' + roomData.join(', ') + '</td></tr>');
+                    $('#onlineUsers').append('<tr><td><span class="userName" data-userId="' + user.userData.userId + '" style=""' + user.userData.userNameFormat + '"">' + user.userData.userName + '</span></td><td>' + roomData.join(', ') + '</td></tr>');
                 },
                 'end' : function() {
-                    //contextMenuParseUser('#onlineUsers');
+                    contextMenuParseUser('#onlineUsers');
                 }
             }),
             cF : function() {

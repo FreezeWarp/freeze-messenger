@@ -72,9 +72,7 @@ if (count($request['roomIds']) > 0) {
 
 /* Data Predefine */
 $xmlData = array(
-    'getActiveUsers' => array(
-        'rooms' => array(),
-    ),
+    'users' => array()
 );
 
 

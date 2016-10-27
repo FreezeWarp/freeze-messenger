@@ -326,11 +326,12 @@ standard.prototype.changeRoom = function(roomIdLocal) { console.log("Hi.");
                     messageIndex = [];
 
                     standard.getMessages();
+
                     clearInterval(interval);
                     fimApi.ping(roomId);
                     interval = window.setInterval(function() {
                         fimApi.ping(roomId)
-                    }, 5 * 60 * 1000);//console.log(interval);
+                    }, 5 * 60 * 1000);
 
                     windowDraw();
                     windowDynaLinks();
