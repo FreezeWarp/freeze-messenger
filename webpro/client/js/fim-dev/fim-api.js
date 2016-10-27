@@ -306,7 +306,9 @@ fimApi.prototype.getKicks = function(params, requestSettings) {
 
         getKicks_query();
         if (requestSettings.refresh > -1) fimApi.timers['getKicks_' + requestSettings.timerId] = setInterval(getKicks_query, requestSettings.refresh);
-},
+};
+
+
 
 fimApi.prototype.getCensorLists = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds', 'listIds']), {
@@ -340,32 +342,30 @@ fimApi.prototype.getCensorLists = function(params, requestSettings) {
 
 
 fimApi.prototype.getActiveUsers = function(params, requestSettings) {
-        var params = fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds', 'userIds']), {
-            'access_token' : window.sessionHash,
-            'fim3_format' : 'json',
-            'roomIds' : null,
-            'userIds' : null,
-            'onlineThreshold' : null
-        });
+    function getActiveUsers_query() {
+        requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
-        var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
-
-        function getActiveUsers_query() {
-            $.ajax({
-                type: 'get',
-                url: directory + 'api/getActiveUsers.php',
-                data: params,
-                timeout: requestSettings.timeout,
-                cache: requestSettings.cache
-            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
-        }
+        $.ajax({
+            type: 'get',
+            url: directory + 'api/getActiveUsers.php',
+            data: fimApi.mergeDefaults(fimApi.jsonify(params, ['roomIds', 'userIds']), {
+                'access_token' : window.sessionHash,
+                'fim3_format' : 'json',
+                'roomIds' : null,
+                'userIds' : null,
+                'onlineThreshold' : null
+            }),
+            timeout: requestSettings.timeout,
+            cache: requestSettings.cache
+        }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+    }
 
 
-        if (requestSettings.close) clearInterval(fimApi.timers['getActiveUsers_' + requestSettings.timerId]);
-        else {
-            getActiveUsers_query();
-            if (requestSettings.refresh > -1) fimApi.timers['getActiveUsers_' + requestSettings.timerId] = setInterval(getActiveUsers_query, requestSettings.refresh);
-        }
+    if (requestSettings.close) clearInterval(fimApi.timers['getActiveUsers_' + requestSettings.timerId]);
+    else {
+        getActiveUsers_query();
+        if (requestSettings.refresh > -1) fimApi.timers['getActiveUsers_' + requestSettings.timerId] = setInterval(getActiveUsers_query, requestSettings.refresh);
+    }
 };
 
 

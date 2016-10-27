@@ -434,6 +434,29 @@ $.when(
         }
 
 
+        /*** Active Users Box ***/
+        fimApi.getActiveUsers({
+            'roomIds' : [1]
+        }, {
+            'refresh' : 15000,
+            'exception' : function(exception) { console.log(exception);
+                // noLogin exceptions will commonly happen if the user is switching logins. We could either surpress the errors, as we do here, or disable the refresh until the user relogins in, which is more trouble than it's really worth.
+                if (exception.string !== 'noLogin') {
+                    fimApi.getDefaultExceptionHandler(exception);
+                }
+            },
+            'begin' : function() {
+                $('#activeUsers').html('');
+            },
+            'each' : function(user) {
+                $('#activeUsers').append('<span class="userName" data-userId="' + user.userData.userId + '" style=""' + user.userData.userNameFormat + '"">' + user.userData.userName + '</span>');
+            },
+            'end' : function() {
+                contextMenuParseUser('#activeUsers');
+            }
+        });
+
+
         return false;
     });
 }, function() {
