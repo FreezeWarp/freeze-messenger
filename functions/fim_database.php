@@ -89,7 +89,7 @@ class fimDatabase extends databaseSQL
     public function getActiveUsers($options, $sort = array('userName' => 'asc'), $limit = false, $pagination = false)
     {
 
-        $options = array_merge(array(
+        $options = $this->argumentMerge(array(
             'onlineThreshold' => $this->config['defaultOnlineThreshold'],
             'roomIds'         => array(),
             'userIds'         => array(),
@@ -131,7 +131,7 @@ class fimDatabase extends databaseSQL
      */
     public function getCensorLists($options = array(), $sort = array('listId' => 'asc'), $limit = false, $pagination = false)
     {
-        $options = array_merge(array(
+        $options = $this->argumentMerge(array(
             'listIds'        => array(),
             'roomIds'        => array(),
             'listNameSearch' => '',
@@ -229,7 +229,7 @@ class fimDatabase extends databaseSQL
 
     public function getCensorWords($options = array(), $sort = array('listId' => 'asc', 'word' => 'asc'), $limit = 0, $pagination = 1)
     {
-        $options = array_merge(array(
+        $options = $this->argumentMerge(array(
             'listIds'     => array(),
             'wordIds'     => array(),
             'wordSearch'  => '',
@@ -274,7 +274,7 @@ class fimDatabase extends databaseSQL
 
     public function getConfigurations($options = array(), $sort = array('directive' => 'asc'))
     {
-        $options = array_merge(array(
+        $options = $this->argumentMerge(array(
             'directives' => array(),
         ), $options);
 
@@ -358,7 +358,7 @@ class fimDatabase extends databaseSQL
      */
     public function getFiles($options = array(), $sort = array('fileId' => 'asc'), $limit = 0, $pagination = 1)
     {
-        $options = array_merge(array(
+        $options = $this->argumentMerge(array(
             'userIds'         => array(),
             'roomIds'         => array(),
             'fileIds'         => array(),
@@ -435,7 +435,7 @@ class fimDatabase extends databaseSQL
      */
     public function getKicks($options = array(), $sort = array('roomId' => 'asc', 'userId' => 'asc'), $limit = 0, $pagination = 1)
     {
-        $options = array_merge(array(
+        $options = $this->argumentMerge(array(
             'userIds'   => array(),
             'roomIds'   => array(),
             'kickerIds' => array(),
@@ -524,7 +524,7 @@ class fimDatabase extends databaseSQL
 
 
     public function getMessagesFromPhrases($options, $sort = array('messageId' => 'asc')) {
-        $options = array_merge(array(
+        $options = $this->argumentMerge(array(
             'roomIds'           => array(),
             'userIds'           => array(),
             'messageTextSearch' => '',
@@ -567,7 +567,7 @@ class fimDatabase extends databaseSQL
 
 
     public function getMessageIdsFromSearchCache($options, $limit, $page) {
-        $options = array_merge(array(
+        $options = $this->argumentMerge(array(
             'roomIds'           => array(),
             'userIds'           => array(),
             'phraseNames' => array(),
@@ -606,7 +606,7 @@ class fimDatabase extends databaseSQL
      */
     public function getMessages($options = array(), $sort = array('messageId' => 'asc'), $limit = false, $page = 0)
     {
-        $options = array_merge(array(
+        $options = $this->argumentMerge(array(
             'roomIds'           => array(),
             'messageIds'        => array(),
             'userIds'           => array(),
@@ -617,8 +617,8 @@ class fimDatabase extends databaseSQL
             'messageIdEnd'      => 0,
             'messageDateMax'    => 0,
             'messageDateMin'    => 0,
-            'messageHardLimit' => 40,
-            'page'               => 0,
+            'messageHardLimit'  => 40,
+            'page'              => 0,
             'archive'           => false
         ), $options);
 
@@ -668,16 +668,13 @@ class fimDatabase extends databaseSQL
 
         if ($options['messageIdStart'] > 0) {
             $conditions['both']['messageId 3'] = $this->int($options['messageIdStart'], 'gte');
-            $conditions['both']['messageId 4'] = $this->int($options['messageIdStart'] + $options['messageLimit'], 'lt');
+            $conditions['both']['messageId 4'] = $this->int($options['messageIdStart'] + $options['messageHardLimit'], 'lt');
         } elseif ($options['messageIdEnd'] > 0) {
             $conditions['both']['messageId 3'] = $this->int($options['messageIdEnd'], 'lte');
-            $conditions['both']['messageId 4'] = $this->int($options['messageIdEnd'] - $options['messageLimit'], 'gt');
+            $conditions['both']['messageId 4'] = $this->int($options['messageIdEnd'] - $options['messageHardLimit'], 'gt');
         }
 
-        if ($options['messagesSince'] > 0)
-            $conditions['both']['messageId 5'] = $this->int($options['messagesSince'], 'gt');
-
-        if (!($options['showDeleted'] === true && $options['archive'] === true)) $conditions['both']['deleted'] = $this->bool(false);
+        if ($options['showDeleted'] === false && $options['archive'] === true) $conditions['both']['deleted'] = $this->bool(false);
         if (count($options['messageIds']) > 0) $conditions['both']['messageId'] = $this->in($options['messageIds']); // Overrides all other message ID parameters; TODO
         if (count($options['userIds']) > 0) $conditions['both']['userId'] = $this->in($options['userIds']);
         if (count($options['roomIds']) > 0) $conditions['both']['roomId'] = $this->in($options['roomIds']);
@@ -701,7 +698,7 @@ class fimDatabase extends databaseSQL
 
     public function getModLog($options, $sort = array('time' => 'asc'), $limit = 0, $pagination = 1) {
 
-        $options = array_merge(array(
+        $options = $this->argumentMerge(array(
             'userIds' => array(),
             'ips' => array(),
             'timeMin' => 0,
@@ -732,7 +729,7 @@ class fimDatabase extends databaseSQL
      */
     public function getPostStats($options, $sort = array('roomId' => 'asc', 'userId' => 'asc'), $limit = 0, $pagination = 1)
     {
-        $options = array_merge(array(
+        $options = $this->argumentMerge(array(
             'userIds' => array(),
             'roomIds' => array(),
         ), $options);
@@ -762,7 +759,7 @@ class fimDatabase extends databaseSQL
 
     public function getRooms($options, $sort = array('roomId' => 'asc'), $limit = 0, $pagination = 1)
     {
-        $options = array_merge(array(
+        $options = $this->argumentMerge(array(
             'roomIds'            => array(),
             'roomNames'          => array(),
             'roomAliases'        => array(),
@@ -829,7 +826,7 @@ class fimDatabase extends databaseSQL
      */
     public function getRoomLists($options, $sort = array('listId' => 'asc'), $limit = 0, $pagination = 1)
     {
-        $options = array_merge(array(
+        $options = $this->argumentMerge(array(
             'userIds'     => array(),
             'roomIds'     => array(),
             'roomListIds' => array(),
@@ -859,7 +856,7 @@ class fimDatabase extends databaseSQL
 
     public function getUsers($options = array(), $sort = array('userId' => 'asc'), $limit = 0, $pagination = 1)
     {
-        $options = array_merge(array(
+        $options = $this->argumentMerge(array(
             'userIds'        => array(),
             'userNames'      => array(),
             'userNameSearch' => false,
@@ -910,7 +907,7 @@ class fimDatabase extends databaseSQL
 
     public function getSessions($options = array(), $sort = array('sessionId' => 'asc'), $limit = 0, $pagination = 1)
     {
-        $options = array_merge(array(
+        $options = $this->argumentMerge(array(
             'sessionIds' => array(),
             'sessionHashes'        => array(),
             'userIds'      => array(),
@@ -940,7 +937,7 @@ class fimDatabase extends databaseSQL
 
 
     public function getEvents($options = array(), $sort = array('eventId' => 'asc')) {
-        $options = array_merge(array(
+        $options = $this->argumentMerge(array(
             'roomIds' => array(),
             'userIds'        => array(),
             'lastEvent'      => 0,
@@ -980,7 +977,7 @@ class fimDatabase extends databaseSQL
 
     public function getRoomEventsForId($roomId, $lastEventTime) {
         $columns = array(
-            $this->sqlPrefix . "userEvents" => 'eventId, eventName, roomId, param1, param2, time',
+            $this->sqlPrefix . "roomEvents" => 'eventId, eventName, roomId, param1, param2, time',
         );
 
         $conditions = array(
@@ -1731,7 +1728,7 @@ class fimDatabase extends databaseSQL
                 //'ip_address' => $_SERVER['REMOTE_ADDR'], // Todo: enable once reinstalled
             ));
 
-            $options = array_merge($options, array(
+            $options = $this->argumentMerge($options, array(
                 'text' => $messageTextEncrypted,
                 'salt' => $encryptSalt,
                 'iv' => $encryptIV,

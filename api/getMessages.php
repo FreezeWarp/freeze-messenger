@@ -136,13 +136,6 @@ $request = fim_sanitizeGPC('g', array(
     'cast' => 'int',
   ),
 
-  'messageLimit' => array(
-    'default' => $config['defaultMessageLimit'],
-    'max' => $config['maxMessageLimit'],
-    'min' => 1,
-    'cast' => 'int',
-  ),
-
   'messageHardLimit' => array(
     'default' => $config['defaultMessageHardLimit'],
     'max' => $config['maxMessageHardLimit'],
@@ -203,17 +196,15 @@ else {
     'messageIdStart' => $request['messageIdStart'],
     'messageDateMin' => $request['messageDateMax'],
     'messageDateMax' => $request['messageDateMax'],
-    'messageLimit' => $request['messageLimit'],
     'showDeleted' => $request['showDeleted'],
     'messageTextSearch' => $request['search'],
     'archive' => $request['archive'],
-    'longPolling' => $request['longPolling'],
     'userIds' => $request['userIds'],
     'roomIds' => $request['roomId'],
     'messageIds' => $request['messageIds'],
     'messageHardLimit' => $request['messageHardLimit'],
     'page' => $request['page']
-  ), array($request['sortBy'] => $request['sortOrder']), $request['messageHardLimit'], $request['page'])->getAsArray(true);// print($messages->sourceQuery); die('3');
+  ), array($request['sortBy'] => $request['sortOrder']), $request['messageLimit'], $request['page'])->getAsArray(true);// print($messages->sourceQuery); die('3');
 
 
   /* Process Messages */
@@ -257,6 +248,7 @@ else {
     }
   }
 }
+//var_dump($xmlData); die();
 
 
 
