@@ -280,12 +280,12 @@ function fim_messageFormat(json, format) {
     /* Format for Table/List Display */
     switch (format) {
         case 'table':
-            data = '<tr id="archiveMessage' + messageId + '" style="word-wrap: break-word;"><td><span class="userName userNameTable" style="' + userNameFormat + '" data-userId="' + userId + '">' + userName + '</span></td><td>' + messageTime + '</td><td style="' + style + '" data-messageId="' + messageId + '" data-roomId="' + roomId + '">' + text + '</td><td><a href="javascript:void(0);" data-messageId="' + messageId + '"  class="updateArchiveHere">Show</a></td></tr>';
+            data = '<tr id="archiveMessage' + messageId + '" style="word-wrap: break-word;"><td><span class="userName userNameTable" style="' + userNameFormat + '" data-userId="' + userId + '">' + userName + '</span></td><td>' + messageTime + '</td><td style="' + style + '" data-messageId="' + messageId + '" data-roomId="' + roomId + '" class="' + (window.userId == userId ? 'editable' : '') + '">' + text + '</td><td><a href="javascript:void(0);" data-messageId="' + messageId + '"  class="updateArchiveHere">Show</a></td></tr>';
             break;
 
         case 'list':
-            if (settings.showAvatars) data = '<span id="message' + messageId + '" class="messageLine messageLineAvatar"><span class="userName userNameAvatar" data-userId="' + userId + '" tabindex="1000"><img alt="' + userName + '" src="' + avatar + '" /></span><span style="' + style + '" class="messageText" data-messageId="' + messageId + '" data-roomId="' + roomId + '" data-time="' + messageTime + '" tabindex="1000">' + text + '</span><br />';
-            else data = '<span id="message' + messageId + '" class="messageLine"><span class="userName userNameTable" style="' + userNameFormat + '" data-userId="' + userId + '" tabindex="1000">' + userName + '</span> @ <em>' + messageTime + '</em>: <span style="' + style + '" class="messageText" data-messageid="' + messageId + '" data-roomId="' + roomId + '" tabindex="1000">' + text + '</span><br />';
+            if (settings.showAvatars) data = '<span id="message' + messageId + '" class="messageLine messageLineAvatar"><span class="userName userNameAvatar" data-userId="' + userId + '" tabindex="1000"><img alt="' + userName + '" src="' + avatar + '" /></span><span style="' + style + '" class="messageText' + (window.userId == userId ? ' editable' : '') + '" data-messageId="' + messageId + '" data-roomId="' + roomId + '" data-time="' + messageTime + '" tabindex="1000" ' + (window.userId == userId ? ' contenteditable="true"' : '') + '>' + text + '</span><br />';
+            else data = '<span id="message' + messageId + '" class="messageLine"><span class="userName userNameTable" style="' + userNameFormat + '" data-userId="' + userId + '" tabindex="1000">' + userName + '</span> @ <em>' + messageTime + '</em>: <span style="' + style + '" class="messageText' + (window.userId == userId ? ' editable' : '') + '" data-messageid="' + messageId + '" data-roomId="' + roomId + '" tabindex="1000">' + text + '</span><br />';
             break;
     }
 
@@ -395,16 +395,6 @@ function fim_newMessage(messageText, messageId) {
         if (e.which === 38) { $(this).parent().prev('.messageLine').children('.userName').focus(); return false; } // Up
         else if (e.which === 39 || e.which === 37) { $(this).parent().children('.messageText').focus(); return false; } // Left+Right
         else if (e.which === 40) { $(this).parent() .next('.messageLine').children('.userName').focus(); return false; } // Down
-    });
-
-    $('body').bind('keydown', function(e) {
-        if ($('input:focus, textarea:focus, button:focus').length === 0) { // Make sure a text-entry field does not have focus
-            if (e.which === 192 || e.which === 49) { // "`", "1"
-                if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) { return true; }
-                else { $('.messageLine .messageText').first().focus(); return false; }
-            }
-            else if (e.which === 32) { $('#messageInput').focus(); return false; } // Space
-        }
     });
 }
 
@@ -1029,6 +1019,11 @@ function contextMenuParseMessage() {
                         content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '#page=archive#room=' + roomId + '#message=' + messageId + '" style="width: 100%;" />',
                         width: 600
                     });
+                    break;
+
+                case 'edit':
+                    $('#message' + messageId + ' .messageText').html('<textarea>' + $('#message' + messageId + ' .messageText').html() + '</textarea>');
+
                     break;
             }
 

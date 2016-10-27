@@ -440,6 +440,26 @@ fimApi.prototype.sendMessage = function(params, requestSettings) {console.log(pa
 
 
 
+fimApi.prototype.editMessage = function(params, requestSettings) {
+    var params = fimApi.mergeDefaults(params, {
+        'access_token': window.sessionHash,
+        'fim3_format': 'json',
+        'messageId' : null,
+        'action': null,
+        'text': null,
+        'flag': null,
+    });
+
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+    $.ajax({
+        url: directory + 'api/editMessage.php',
+        type: 'POST',
+        data: params,
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache,
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+}
 fimApi.prototype.mergeDefaults = function(object, defaults) {
         for (var i in defaults) {
             if (!(i in object)) object[i] = defaults[i];
