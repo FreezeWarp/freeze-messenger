@@ -70,7 +70,6 @@ $request = fim_sanitizeGPC('g', array(
 
 /* Data Predefine */
 $xmlData = array(
-  'getUsers' => array(
     'users' => array(),
 );
 
@@ -133,35 +132,35 @@ $users = $slaveDatabase->getUsers(array(
 
 /* Start Processing */
 foreach ($users AS $userId => $userData) {
-  $xmlData['getUsers']['users']['user ' . $userId] = array(
+  $xmlData['users']['user ' . $userId] = array(
     'userName' => $userData->name,
     'userId' => $userData->id,
   );
 
   if (in_array('profile', $request['info'])) {
-    $xmlData['getUsers']['users']['user ' . $userId]['avatar'] = $userData->avatar;
-    $xmlData['getUsers']['users']['user ' . $userId]['profile'] = $userData->profile;
-    $xmlData['getUsers']['users']['user ' . $userId]['userNameFormat'] = $userData->userNameFormat;
-    $xmlData['getUsers']['users']['user ' . $userId]['messageFormatting'] = $userData->messageFormatting;
-//    $xmlData['getUsers']['users']['user ' . $userId]['postCount'] = (int) (isset($userDataForums[$userId]['posts']) ? $userDataForums[$userId]['posts'] : 0); TODO
-//    $xmlData['getUsers']['users']['user ' . $userId]['joinDate'] = (int) (isset($userDataForums[$userId]['joinDate']) ? $userDataForums[$userId]['joinDate'] : 0);
-//    $xmlData['getUsers']['users']['user ' . $userId]['userTitle'] = (isset($userDataForums[$userId]['userTitle']) ? $userDataForums[$userId]['userTitle'] : (isset($config['defaultUserTitle']) ? $config['defaultUserTitle'] :  ''));
+    $xmlData['users']['user ' . $userId]['avatar'] = $userData->avatar;
+    $xmlData['users']['user ' . $userId]['profile'] = $userData->profile;
+    $xmlData['users']['user ' . $userId]['userNameFormat'] = $userData->userNameFormat;
+    $xmlData['users']['user ' . $userId]['messageFormatting'] = $userData->messageFormatting;
+//    $xmlData['users']['user ' . $userId]['postCount'] = (int) (isset($userDataForums[$userId]['posts']) ? $userDataForums[$userId]['posts'] : 0); TODO
+//    $xmlData['users']['user ' . $userId]['joinDate'] = (int) (isset($userDataForums[$userId]['joinDate']) ? $userDataForums[$userId]['joinDate'] : 0);
+//    $xmlData['users']['user ' . $userId]['userTitle'] = (isset($userDataForums[$userId]['userTitle']) ? $userDataForums[$userId]['userTitle'] : (isset($config['defaultUserTitle']) ? $config['defaultUserTitle'] :  ''));
   }
 
   if (in_array('groups', $request['info'])) {
-    $xmlData['getUsers']['users']['user ' . $userId]['mainGroupId'] = $userData->mainGroupId;
-    $xmlData['getUsers']['users']['user ' . $userId]['socialGroupIds'] = new apiOutputList($userData->socialGroupIds);
+    $xmlData['users']['user ' . $userId]['mainGroupId'] = $userData->mainGroupId;
+    $xmlData['users']['user ' . $userId]['socialGroupIds'] = new apiOutputList($userData->socialGroupIds);
   }
 
   if ($userId === $user->id
     && in_array('self', $request['info'])) {
-    $xmlData['getUsers']['users']['user ' . $userId]['defaultRoom'] = $userData->defaultRoom;
-    $xmlData['getUsers']['users']['user ' . $userId]['options'] = $userData->options;
-    $xmlData['getUsers']['users']['user ' . $userId]['parentalAge'] = $userData->parentalAge;
-    $xmlData['getUsers']['users']['user ' . $userId]['parentalFlags'] = new apiOutputList($userData->parentalFlags);
-//TODO        $xmlData['getUsers']['users']['user ' . $userId]['ignoreList'] = $userData['ignoreList'];
-//TODO        $xmlData['getUsers']['users']['user ' . $userId]['favRooms'] = $userData['favRooms'];
-//TODO        $xmlData['getUsers']['users']['user ' . $userId]['watchRooms'] = $userData['watchRooms'];
+    $xmlData['users']['user ' . $userId]['defaultRoom'] = $userData->defaultRoom;
+    $xmlData['users']['user ' . $userId]['options'] = $userData->options;
+    $xmlData['users']['user ' . $userId]['parentalAge'] = $userData->parentalAge;
+    $xmlData['users']['user ' . $userId]['parentalFlags'] = new apiOutputList($userData->parentalFlags);
+//TODO        $xmlData['users']['user ' . $userId]['ignoreList'] = $userData['ignoreList'];
+//TODO        $xmlData['users']['user ' . $userId]['favRooms'] = $userData['favRooms'];
+//TODO        $xmlData['users']['user ' . $userId]['watchRooms'] = $userData['watchRooms'];
   }
 }
 

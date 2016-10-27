@@ -101,23 +101,10 @@ require(dirname(__FILE__) . '/functions/fim_general.php'); // Various Functions
 define("FIM_VERSION", "1.0"); // Version to be used by plugins if needed.
 define("FIM_LANGUAGE", "EN_US"); // No plans to change this exist, but again, just in case...
 
-define("ROOM_OFFICIAL", 1);
-define("ROOM_DELETED", 4);
-define("ROOM_HIDDEN", 8);
-define("ROOM_ARCHIVED", 16);
-define("ROOM_R9000", 256);
-
 define("CENSORLIST_INACTIVE", 1);
 define("CENSORLIST_FORCED", 2);
 define("CENSORLIST_HIDDEN", 4);
 define("CENSORLIST_DISABLED_PRIVATE", 256);
-
-define("ROOM_PERMISSION_VIEW", 1);
-define("ROOM_PERMISSION_POST", 2);
-define("ROOM_PERMISSION_TOPIC", 4);
-define("ROOM_PERMISSION_MODERATE", 8);
-define("ROOM_PERMISSION_PROPERTIES", 16);
-define("ROOM_PERMISSION_GRANT", 128);
 
 define("ROOM_TYPE_PRIVATE", 'private');
 define("ROOM_TYPE_OTR", 'otr');

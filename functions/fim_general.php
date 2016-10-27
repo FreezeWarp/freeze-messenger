@@ -503,7 +503,7 @@ function fim_sanitizeGPC($type, $data) {
       elseif ($metaName === 'filter'
         && !in_array($metaData, array('', 'int', 'bool', 'string'))) throw new Exception('Invalid "filter" in data in fim_sanitizeGPC');
       elseif ($metaName === 'cast' &&
-        !in_array($metaData, array('int', 'bool', 'string', 'csv', 'json', 'jsonList', 'ascii128', 'alphanum'))) throw new Exception('Invalid "cast" in data in fim_sanitizeGPC');
+        !in_array($metaData, array('int', 'bool', 'string', 'json', 'list', 'ascii128', 'alphanum'))) throw new Exception("Invalid 'cast' (value = $metaData) in data in fim_sanitizeGPC.");
     }
 
 
@@ -525,15 +525,9 @@ function fim_sanitizeGPC($type, $data) {
 
 
     switch($indexMetaData['cast']) {
-      case 'csv': // Deprecated; replace with JSON type.
+      case 'csv':
+          throw new Exception("fim_sanitizeGPC no longer supports CSV casts."); // Deprecated; replace with list type.
       // If a cast is set for a CSV list, explode with a comma seperator, make sure all values corrosponding to the filter (int, bool, or string - the latter pretty much changes nothing), and if evaltrue is true, then the preserveAll flag would be false, and vice-versa.
-
-      $newData[$indexName] = fim_arrayValidate(
-            explode(',', $activeGlobal[$indexName]),
-            $indexMetaData['filter'],
-            ($indexMetaData['evaltrue'] ? false : true),
-            (isset($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
-      );
       break;
 
       case 'json':
@@ -551,7 +545,29 @@ function fim_sanitizeGPC($type, $data) {
         }
       break;
 
-      case 'jsonList':
+        case 'list':
+            if ($activeGlobal[$indexName]) {
+                if (!is_array($activeGlobal[$indexName])) {
+                    throw new Exception("Bad API data: '$indexName' must be array.");
+                }
+
+                $arrayFromGlobal = array_values(
+                    $activeGlobal[$indexName]
+                );
+            }
+            else {
+                $arrayFromGlobal = array();
+            }
+
+            $newData[$indexName] = fim_arrayValidate(
+                $arrayFromGlobal,
+                ($indexMetaData['filter'] ? $indexMetaData['filter'] : 'string'),
+                ($indexMetaData['evaltrue'] ? false : true),
+                (count($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
+            );
+        break;
+
+      case 'list':
         if ($activeGlobal[$indexName]) {
           $arrayFromGlobal = array_values(
               json_decode(

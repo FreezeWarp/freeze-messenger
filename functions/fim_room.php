@@ -1,161 +1,221 @@
 <?php
 /**
- * This object will store actions that only involve a single room. Many of the methods could just as well exist in fimDatabase, but there are certain advantages of storing them together here (caching especially).
- * In general, two instances of this object involving the same room should be functionally identical.
- *
- * General thoughts:
- * This is not exactly the best example of OOP, but it's not the worst either. In general, the way I wrote this, the object can either correspond with a valid room or with nothing at all. Certain functions -- like editRoom() -- will create a room if none exists. There are certain flaws with this -- it would be better if a user explicitly said "createRoom" instead of "editRoom" to create a room. So... that might be worth changing.
  *
  *
  * TODO:
  * Private Room Auto Name Generation
+ * High-Entropy Room Names
  */
+
+define("ROOM_OFFICIAL", 1);
+define("ROOM_DELETED", 4);
+define("ROOM_HIDDEN", 8);
+define("ROOM_ARCHIVED", 16);
+define("ROOM_R9000", 256);
+
+define("ROOM_PERMISSION_VIEW", 1);
+define("ROOM_PERMISSION_POST", 2);
+define("ROOM_PERMISSION_TOPIC", 4);
+define("ROOM_PERMISSION_MODERATE", 8);
+define("ROOM_PERMISSION_PROPERTIES", 16);
+define("ROOM_PERMISSION_GRANT", 128);
+
 class fimRoom {
-    public $id;
-    public $name;
-    public $alias;
-    public $options;
-    public $ownerId;
-    public $topic;
-    public $type;
-    public $parentalFlags;
-    public $parentalAge;
-    public $defaultPermissions;
-    public $deleted;
-    public $official;
-    public $hidden;
-    public $archived;
+    public $id = 0;
+    private $name = "Missingname.";
+    private $alias;
+    private $options;
+    private $deleted;
+    private $official;
+    private $hidden;
+    private $archived;
+    private $ownerId;
+    private $topic;
+    private $type;
+    private $parentalFlags;
+    private $parentalAge;
+    private $defaultPermissions;
+    private $lastMessageId;
+    private $lastMessageTime;
+    private $messageCount;
+    private $flags;
 
     protected $roomData;
-    protected $resolved;
 
+    private $resolved = array();
+    private $roomDataConversion = array(
+        'roomId' => 'id',
+        'roomName' => 'name',
+        'roomAlias' => 'alias',
+        'options' => 'options',
+        'ownerId' => 'ownerId',
+        'roomTopic' => 'topic',
+        'roomType' => 'type',
+        'roomParentalFlags' => 'parentalFlags',
+        'roomParentalAge' => 'parentalAge',
+        'defaultPermissions' => 'defaultPermissions',
+        'lastMessageTime' => 'lastMessageTime',
+        'lastMessageId' => 'lastMessageTime',
+        'messageCount' => 'messageCount',
+        'flags' => 'flags'
+    );
+
+    private $roomDataPullGroups = array(
+        'roomId, roomName',
+        'roomType, defaultPermissions, options',
+        'roomParentalFlags,roomParentalAge,roomTopic',
+        'lastMessageTime,lastMessageId,messageCount,flags'
+    );
+
+    private $generalCache;
 
     /**
      * @param $roomData mixed Should either be an array or an integer (other values will simply fail to populate the object's data). If an array, should correspond with a row obtained from the `rooms` database, if an integer should correspond with the room ID.
      */
     function __construct($roomData) {
-        if (is_int($roomData)) $this->id = $roomData;
-        elseif (is_array($roomData)) $this->populateFromArray($roomData); // TODO: test contents
-        elseif ($roomData === false) $this->id = false;
+        global $generalCache;
+        $this->generalCache = $generalCache;
+
+
+        if (is_int($roomData))
+            $this->id = $roomData;
+        elseif (is_array($roomData))
+            $this->populateFromArray($roomData); // TODO: test contents
+        elseif ($roomData === false)
+            $this->id = false;
         else throw new Exception('Invalid room data specified -- must either be an associative array corresponding to a table row, a room ID, or false (to create a room, etc.) Passed: ' . print_r($roomData, true));
 
         $this->roomData = $roomData;
     }
 
 
+    public function __get($property) {
+        if ($this->id && !in_array($property, $this->resolved)) {
+            // Find selection group
+            if (isset(array_flip($this->roomDataConversion)[$property])) {
+                $needle = array_flip($this->roomDataConversion)[$property];
+                $selectionGroup = array_values(array_filter($this->roomDataPullGroups, function ($var) use ($needle) {
+                    return strpos($var, $needle) !== false;
+                }))[0];
 
-    // TODO: Resolve only certain data.
-    public function resolve($update = false) {
+                if ($selectionGroup)
+                    $this->getColumns(explode(',', $selectionGroup));
+                else
+                    throw new Exception("Selection group not found for '$property'");
+            }
+        }
+
+        return $this->$property;
+    }
+
+
+    public function __set($property, $value)
+    {
+        global $config;
+
+        if (property_exists($this, $property))
+            $this->{$property} = $value;
+        else
+            throw new fimError("fimRoomBadProperty", "fimRoom does not have property '$property'");
+        // If we've already processed the value once, it generally won't need to be reprocessed. Permissions, for instance, may be altered intentionally. We do make an exception for setting integers to what should be arrays -- we will reprocess in this case.
+        if (!in_array($property, $this->resolved) ||
+            (($property === 'parentalFlags' || $property === 'socialGroupIds')
+                && gettype($value) === 'integer')
+        ) {
+            $this->resolved[] = $property;
+
+
+            // Parental Flags: Convert CSV to Array, or empty if disabled
+            if ($property === 'parentalFlags') {
+                if ($config['parentalEnabled']) $this->parentalFlags = explode(',', $value);
+                else                              $this->parentalFlags = array();
+            }
+
+
+            // Parental Age: Disable if feature is disabled.
+            else if ($property === 'parentalAge') {
+                if ($config['parentalEnabled']) $this->parentalAge = $value;
+                else                            $this->parentalAge = 255;
+            }
+
+
+            else if ($property === 'topic' && $config['disableTopic']) {
+                $this->topic = "";
+            }
+
+
+            else if ($property === 'options') {
+                $this->deleted  = ($this->options & ROOM_DELETED);
+                $this->archived = ($this->options & ROOM_ARCHIVED);
+                $this->official = ($this->options & ROOM_OFFICIAL) && $config['officialRooms'];
+                $this->hidden   = ($this->options & ROOM_HIDDEN) && $config['hiddenRooms'];
+            }
+        }
+    }
+
+    private function getColumns(array $columns) : bool
+    {
         global $database;
 
-        if (!$this->id) return false; // If no ID is present, return false;
-        elseif (!$this->resolved || $update) {
-            return $this->populateFromArray($database->getRooms(array(
-                'roomIds' => array($this->id)
-            ))->getAsArray(false));
-        }
-        else return true;
+        if (count($columns) > 0)
+            return $this->populateFromArray($database->where(array('roomId' => $this->id))->select(array($database->sqlPrefix . 'rooms' => array_merge(array('roomId'), $columns)))->getAsArray(false));
+        else
+            return true;
+    }
+
+    private function mapDatabaseProperty($property) {
+        if (!isset(array_flip($this->roomDataConversion)[$property]))
+            throw new Exception("Unable to map database property '$property'");
+        else
+            return array_flip($this->roomDataConversion)[$property];
     }
 
 
+    public function resolve($properties) {
+        return $this->getColumns(array_map(array($this, 'mapDatabaseProperty'), array_diff($properties, $this->resolved)));
+    }
 
-    private function populateFromArray($roomData) {
-//      var_dump($roomData); die();
-        if (!count($roomData) || !is_array($roomData)) return false;
-
-        $this->id = (int) $roomData['roomId'];
-        $this->name = $roomData['roomName'];
-        $this->alias = $roomData['roomAlias'];
-        $this->options = (int) $roomData['options'];
-        $this->deleted = (bool) ($this->options & ROOM_DELETED);
-        $this->official = (bool) ($this->options & ROOM_OFFICIAL);
-        $this->hidden = (bool) ($this->options & ROOM_HIDDEN);
-        $this->archived = (bool) ($this->options & ROOM_ARCHIVED);
-        $this->ownerId = (int) $roomData['owner'];
-        $this->topic = $roomData['topic'];
-        $this->parentalFlags = explode(',', $roomData['roomParentalFlags']);
-        $this->parentalAge = (int) $roomData['roomParentalAge'];
-        $this->defaultPermissions = (int) $roomData['defaultPermissions'];
-        $this->messageCount = (int) $roomData['messageCount'];
-        $this->lastMessageId = (int) $roomData['lastMessageId'];
-        $this->lastMessageTime = (int) $roomData['lastMessageTime'];
-
-        $this->resolved = true;
-
-        return true;
+    public function resolveAll() {
+        return $this->getColumns(array_map(array($this, 'mapDatabaseProperty'), array_diff(array_values($this->roomDataConversion), $this->resolved)));
     }
 
 
+    private function populateFromArray(array $roomData): bool {
+        if ($roomData) {
+//            $this->resolved = array_diff($this->resolved, array_values($roomData)); // The resolution process in __set modifies the data based from an array in several ways. As a result, if we're importing from an array a second time, we either need to ignore the new value or, as in this case, uncheck the resolve[] entries to have them reparsed when __set fires.
 
-    /**
-     * Modify or create a room.
-     * @internal The row will be set to a merge of roomDefaults->existingRow->specifiedOptions.
-     *
-     * @param $options - Corresponds mostly with room columns, though the options tag is seperted.
-     *
-     * @return bool|resource
-     */
-    public function set($options) {
-        global $database, $config;
+            foreach ($roomData AS $attribute => $value) {
+                if (!isset($this->roomDataConversion[$attribute]))
+                    trigger_error("fimRoom was passed a roomData array containing '$attribute', which is unsupported.", E_USER_ERROR);
+                else {
+                    $this->__set($this->roomDataConversion[$attribute], $value);
+                }
+            }
 
-        $this->resolve();
-
-        /* The first array is a list of defaults for any new room. The second array is the existing data, if we are editing the room -- that is, the existing room's data will overwrite the defaults (we could, if we wanted, only use one or the other depending on if we are creating or editing, but this way is a bit cleaner, imo). Finally, we overwrite with provided options. */
-        $options = array_merge(array(
-            'roomName' => $this->resolved ? $this->name : '[Missingname.]',
-            'roomAlias' => $this->resolved ? $this->alias : '',
-            'roomType' => $this->resolved ? $this->type : 'general',
-            'ownerId' => $this->resolved ? $this->ownerId : 0,
-            'defaultPermissions' => $this->resolved ? $this->defaultPermissions : 0,
-            'roomParentalAge' => $this->resolved ? $this->parentalAge : $config['parentalFlagsDefault'],
-            'roomParentalFlags' => $this->resolved ? $this->parentalFlags : array(),
-            'officialRoom' => $this->resolved ? $this->official : false,
-            'hiddenRoom' => $this->resolved ? $this->hidden : false,
-            'archivedRoom' => $this->resolved ? $this->archived : false,
-            'deleted' => $this->resolved ? $this->deleted : false,
-        ), $this->getAsArray(), $options);
-
-        $columns = array(
-            'roomName' => $options['roomName'],
-            'roomNameSearchable' => $database->makeSearchable($options['roomName']),
-            'roomAlias' => $options['roomAlias'],
-            'roomType' => $options['roomType'],
-            'ownerId' => (int) $options['ownerId'],
-            'defaultPermissions' => (int) $options['defaultPermissions'],
-            'roomParentalAge' => $options['roomParentalAge'],
-            'roomParentalFlags' => implode(',', $options['roomParentalFlags']),
-            'options' => ($options['officialRoom'] ? ROOM_OFFICIAL : 0)
-                + ($options['hiddenRoom'] ? ROOM_HIDDEN : 0)
-                + ($options['archivedRoom'] ? ROOM_ARCHIVED : 0)
-                + ($options['deleted'] ? ROOM_DELETED : 0)
-        );
-
-        if ($this->id === false) { // Create
-            $database->insert($this->sqlPrefix . 'rooms', $columns)->insertId;
-            $this->id = $database->insertId;
+            return true;
         }
-        elseif ($this->resolved) { // Update
-            $database->update($this->sqlPrefix . "rooms", $columns, array(
+        else {
+            return false;
+        }
+    }
+
+
+    /* TODO: move to DB */
+    public function changeTopic($topic) {
+        global $config, $database;
+        if ($config['disableTopic']) {
+            throw new fimError('topicsDisabled', 'Topics are disabled on this server.');
+        }
+        else {
+            $database->createRoomEvent('topicChange', $this->id, $topic); // name, roomId, message
+            $database->update($database->sqlPrefix . "rooms", array(
+                'roomTopic' => $topic,
+            ), array(
                 'roomId' => $this->id,
             ));
         }
-        else {
-            throw new Exception('Room not resolved.');
-        }
-
-        $this->resolve(true);
     }
 
-    public function changeTopic($topic) {
-        global $database;
-
-        $database->createRoomEvent('topicChange', $this->id, $topic); // name, roomId, message
-        $database->update($database->sqlPrefix . "rooms", array(
-            'roomTopic' => $topic,
-        ), array(
-            'roomId' => $this->id,
-        ));
-    }
 
     public function getPermissionsArray($field) {
         $permArray = [
@@ -175,6 +235,43 @@ class fimRoom {
         }
 
         return $returnArray;
+    }
+
+
+    /**
+     * Modify or create a room.
+     * @internal The row will be set to a merge of roomDefaults->existingRow->specifiedOptions.
+     *
+     * @param $options - Corresponds mostly with room columns
+     *
+     * @return bool|resource
+     */
+    public function setDatabase(array $databaseFields)
+    {
+        global $database;
+        $this->populateFromArray($databaseFields);
+
+        if ($this->id) {
+            $database->startTransaction();
+
+            if ($existingRoomData = $database->getRooms(array(
+                'roomIds' => array($this->id),
+                'columns' => $database->roomHistoryColumns,
+            ))->getAsArray(false)) {
+                $database->insert($database->sqlPrefix . "roomHistory", $existingRoomData);
+            }
+
+            $return = $database->upsert($database->sqlPrefix . "rooms", array(
+                'roomId' => $this->id,
+            ), $databaseFields);
+
+            $database->endTransaction();
+
+            return $return;
+        } else {
+            $database->insert($database->sqlPrefix . "rooms", $databaseFields);
+            return $this->id = $database->insertId;
+        }
     }
 }
 ?>

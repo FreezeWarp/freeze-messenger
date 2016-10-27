@@ -79,8 +79,8 @@ if ($request['includeWords']) {
 /* Start Processing */
 foreach ($censorLists AS $listId => $lists) { // Run through each censor list retrieved.
   foreach ($lists AS $roomId => $list) {
-    if (!isset($xmlData['lists']['list ' . $list['listId']])) {
-      $xmlData['lists']['list ' . $list['listId']] = array(
+    if (!isset($xmlData['lists'][$list['listId']])) {
+      $xmlData['lists'][$list['listId']] = array(
         'listId' => (int) $list['listId'],
         'listName' => ($list['listName']),
         'listType' => ($list['listType']),
@@ -91,7 +91,7 @@ foreach ($censorLists AS $listId => $lists) { // Run through each censor list re
 
       if ($request['includeWords']) {
         foreach($censorWords[$list['listId']] AS $wordId => $censorListWord) {
-          $xmlData['lists']['list ' . $list['listId']]['words']['word ' . $censorListWord['wordId']] = array(
+          $xmlData['lists'][$list['listId']]['words'][$censorListWord['wordId']] = array(
             'wordId' => $censorListWord['wordId'],
             'word' => $censorListWord['word'],
             'severity' => $censorListWord['severity'],
@@ -101,7 +101,7 @@ foreach ($censorLists AS $listId => $lists) { // Run through each censor list re
       }
     }
 
-    $xmlData['lists']['list ' . $list['listId']]['roomStatuses']['roomStatus ' . $roomId] = array(
+    $xmlData['lists'][$list['listId']]['roomStatuses'][$roomId] = array(
       'roomId' => $roomId,
       'status' => $list['status'],
     );

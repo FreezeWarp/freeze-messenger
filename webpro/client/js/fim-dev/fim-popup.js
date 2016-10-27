@@ -893,7 +893,7 @@ popup = {
                         combinedUserPermissions = {},
                         combinedGroupPermissions = {};
 
-                    if (action === 'create') {
+                    if (action === 'create') { console.log(allowedUsersList.getList());
                         allowedUsersList.getList().forEach(function(user) {
                             combinedUserPermissions["+" + user] = ['post'];
                         });
@@ -930,7 +930,7 @@ popup = {
                     }, {
                         'begin' : function(json) {
                             dia.full({
-                                content : 'The room has been created at the following URL: <br /><br /><form action="' + currentLocation + '#room=' + json.response.insertId + '" method="post"><input type="text" style="width: 300px;" value="' + currentLocation + '#room=' + createRoomId + '" name="url" /></form>',
+                                content : 'The room has been created at the following URL: <br /><br /><form action="' + currentLocation + '#room=' + json.insertId + '" method="post"><input type="text" style="width: 300px;" value="' + currentLocation + '#room=' + json.insertId + '" name="url" /></form>',
                                 title : 'Room Created!',
                                 id : 'editRoomResultsDialogue',
 
@@ -938,7 +938,7 @@ popup = {
                                 buttons : {
                                     Open : function() {
                                         $('#editRoomResultsDialogue').dialog('close');
-                                        standard.changeRoom(createRoomId);
+                                        standard.changeRoom(json.insertId);
 
                                         return false;
                                     },

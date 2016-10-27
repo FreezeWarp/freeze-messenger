@@ -734,21 +734,26 @@ autoEntry.prototype = {
         }
 
         addEntry_dom = function(id, name) {
-            $("#" + _this.options.name).val($("#" + _this.options.name).val() + "," + id);
+            if (!id) {
+                dia.error("Invalid user.");
+            }
+            else {
+                $("#" + _this.options.name).val($("#" + _this.options.name).val() + "," + id);
 
-            $("#" + _this.options.name + "List").append("<span id=\"" + _this.options.name + "SubList" + id + "\">" + name + ' (<span class="close"></span>), </span>');
-            $("#" + _this.options.name + "List .close").html($('<a href="javascript:false(0);">×</a>').click(function() {
-                _this.removeEntry(id)
-            }));
+                $("#" + _this.options.name + "List").append("<span id=\"" + _this.options.name + "SubList" + id + "\">" + name + ' (<span class="close"></span>), </span>');
+                $("#" + _this.options.name + "List .close").html($('<a href="javascript:false(0);">×</a>').click(function() {
+                    _this.removeEntry(id)
+                }));
 
-            $("#" + _this.options.name + "Bridge").val('');
+                $("#" + _this.options.name + "Bridge").val('');
 
-            _this.options.onAdd(id);
+                _this.options.onAdd(id);
+            }
         }
     },
 
     removeEntry : function(id) {
-        $("#" + this.options.name).val().replace(new RegExp("(^|,)" + id + "(,|$)"), "$1$2").replace(/^,|(,),|,$/,'$1')
+        $("#" + this.options.name).val($("#" + this.options.name).val().replace(new RegExp("(^|,)" + id + "(,|$)"), "$1$2").replace(/^,|(,),|,$/,'$1'));
 
         $("#" + this.options.name + "SubList" + id).fadeOut(500, function() {
             $(this).remove();
@@ -772,7 +777,7 @@ autoEntry.prototype = {
     },
 
     getList : function() {
-        return $("#" + this.options.name).val().split(',');
+        return $("#" + this.options.name).val().split(',').filter(Number);
     }
 };
 

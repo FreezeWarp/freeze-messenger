@@ -28,6 +28,7 @@ class fimDatabase extends databaseSQL
     public $userColumns = 'userId, userName, userNameFormat, profile, avatar, userGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, userParentalAge, userParentalFlags, privs, lastSync';
     public $userPasswordColumns = 'passwordHash, passwordFormat, passwordResetNow, passwordLastReset';
     public $userHistoryColumns = 'userId, userName, userNameFormat, profile, avatar, userGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, userParentalAge, userParentalFlags, privs';
+    public $roomHistoryColumns = 'roomId, roomName, roomTopic, options, ownerId, defaultPermissions, roomParentalAge, roomParentalFlags';
     public $errorFormatFunction = 'fimError';
     protected $config;
 
@@ -772,11 +773,12 @@ class fimDatabase extends databaseSQL
             'lastMessageTimeMax' => 0,
             'showDeleted'        => false,
             'roomNameSearch'     => false,
+            'columns'            => array(),
         ), $options);
 
 
         // Defaults
-        $columns = array($this->sqlPrefix . "rooms" => 'roomId, roomName, roomAlias, roomTopic, ownerId, defaultPermissions, roomParentalFlags, roomParentalAge, options, lastMessageId, lastMessageTime, messageCount, roomType');
+        $columns = array($this->sqlPrefix . "rooms" => array_merge(['roomId', 'roomName', 'roomAlias', 'roomTopic', 'ownerId', 'defaultPermissions', 'roomParentalFlags', 'roomParentalAge', 'options', 'lastMessageId', 'lastMessageTime', 'messageCount', 'roomType'], $options['columns']));
 
 
         // Modify Query Data for Directives
@@ -1054,6 +1056,14 @@ class fimDatabase extends databaseSQL
 
 
 
+    /* todo: cache calls */
+    /**
+     * @param array $rooms
+     * @param bool $attribute enum("user", "group")
+     * @param array $params
+     * @return mixed
+     * @throws Exception
+     */
     public function getRoomPermissions($rooms = array(), $attribute = false, $params = array())
     {
         // Modify Query Data for Directives (First for Performance)
@@ -1065,7 +1075,7 @@ class fimDatabase extends databaseSQL
         if ($attribute) $conditions['both']['attribute'] = $this->str($attribute);
         if (count($params) > 0) $conditions['both']['param'] = $this->in((array) $params);
 
-        return $this->select($columns, $conditions)->getAsArray(false);
+        return $this->select($columns, $conditions);
     }
 
 
@@ -1083,8 +1093,6 @@ class fimDatabase extends databaseSQL
         $permissionsCached = $this->getPermissionCache($room->id, $user->id);
         if ($permissionsCached > -1) return $permissionsCached; // -1 equals an outdated permission.
 
-
-        if (!$room->resolve(array('type', 'alias'))) throw new Exception('hasPermission was called without a valid room.'); // Make sure we know the room type and alias in addition to ID.
 
         if ($room->type === 'otr' || $room->type === 'private') {
             if (!$this->config['privateRoomsEnabled']) return 0;
@@ -1129,7 +1137,6 @@ class fimDatabase extends databaseSQL
 
                 $returnBitfield &= ~(ROOM_PERMISSION_POST | ROOM_PERMISSION_TOPIC); // And no one can post in them - a rare case where even admins are denied certain abilities.
             }
-
 
 
             /* Update cache and return. */
@@ -1545,7 +1552,6 @@ class fimDatabase extends databaseSQL
 
 
         $user->resolve(array("messageFormatting", "userNameFormat", "profile", "avatar", "mainGroupId", "name"));
-        $room->resolve();
 
 
         /* Format Message Text */

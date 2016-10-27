@@ -102,6 +102,7 @@ function getPermissionsField($permissionsArray) {
 /**
  * Alters a room's permissions based on a specially formatted userArray and groupArray. This function does not check for permissions -- make sure that a user has permission to alter permissions before executing this function.
  *
+ *
  * @param $roomId
  * @param $userArray
  * @param $groupArray
@@ -110,7 +111,7 @@ function alterRoomPermissions($roomId, $userArray, $groupArray) {
     global $database;
 
     foreach (array('users' => $userArray, 'groups' => $groupArray) AS $attribute => $array) {
-        foreach ($array AS $code => $permissionsArray) {
+        foreach ((array) $array AS $code => $permissionsArray) {
             $operation = substr($code, 0, 1); // The first character of the code is going to be either '+', '-', or '*', representing which action we are taking.
             $param = (int) substr($code, 1); // Everything after the first character represents either a group or user ID.
 
@@ -120,9 +121,9 @@ function alterRoomPermissions($roomId, $userArray, $groupArray) {
             elseif ($attribute === 'groups') $databasePermissionsField = $database->getPermissionsField($roomId, array(), $param);
 
             switch ($operation) {
-            case '+': $database->setPermission($roomId, $attribute, $param, $databasePermissionsField | $permissionsField); break; // Add new permissions to any existing permissions.
-            case '-': $database->setPermission($roomId, $attribute, $param, $databasePermissionsField &~ $permissionsField); break; // Remove permissions from any existing permissions.
-            case '*': $database->setPermission($roomId, $attribute, $param, $permissionsField); break; // Replace permissions.
+                case '+': $database->setPermission($roomId, $attribute, $param, $databasePermissionsField | $permissionsField); break; // Add new permissions to any existing permissions.
+                case '-': $database->setPermission($roomId, $attribute, $param, $databasePermissionsField &~ $permissionsField); break; // Remove permissions from any existing permissions.
+                case '*': $database->setPermission($roomId, $attribute, $param, $permissionsField); break; // Replace permissions.
             }
         }
     }
@@ -150,8 +151,7 @@ $request = fim_sanitizeGPC('p', array(
     ),
 
     'defaultPermissions' => array(
-        'default' => 0,
-        'cast' => 'int',
+        'cast' => 'list',
     ),
 
     'userPermissions' => array(
@@ -163,7 +163,7 @@ $request = fim_sanitizeGPC('p', array(
     ),
 
     'censor' => array(
-        'cast' => 'array',
+        'cast' => 'list',
         'filter' => 'bool',
         'evaltrue' => false,
     ),
@@ -176,16 +176,21 @@ $request = fim_sanitizeGPC('p', array(
 
     'roomParentalFlags' => array(
         'default' => $config['parentalFlagsDefault'],
-        'cast' => 'csv',
+        'cast' => 'list',
         'valid' => $config['parentalFlags'],
     ),
 ));
+
+$requestDB = $request;
+unset($requestDB['action']);
 
 
 
 /* Data Predefine */
 $xmlData = array(
-    'response' => array(),
+    'response' => array(
+        'insertId' => null
+    ),
 );
 
 
@@ -197,6 +202,17 @@ if ($action !== 'create') {
 
 
 /* Start Processing */
+if (isset($request['defaultPermissions'])) {
+    $permissionsField = 0;
+
+    foreach ($request['defaultPermissions'] AS $priv) {
+        $permissionsField &= $permFilterMatches[$priv];
+    }
+
+    $request['defaultPermissions'] = $permissionsField;
+}
+
+
 $database->startTransaction();
 switch($request['action']) {
     case 'create':
@@ -205,10 +221,10 @@ switch($request['action']) {
             new fimError('noName', 'A room name was not supplied.');
 
         elseif (strlen($request['roomName']) < $config['roomLengthMinimum'])
-            new fimError('shortName', 'The room name specified is too short. It should be at least ' + $config['roomLengthMinimum'] + ' characters.');
+            new fimError('shortName', 'The room name specified is too short. It should be at least ' . $config['roomLengthMinimum'] . ' characters.');
 
         elseif (strlen($request['roomName']) > $config['roomLengthMaximum'])
-            new fimError('longName', 'The room name specified is too short. It should be at most ' + $config['roomLengthMaximum'] + ' characters.');
+            new fimError('longName', 'The room name specified is too short. It should be at most ' . $config['roomLengthMaximum'] . ' characters.');
 
         else {
             if ($request['action'] === 'create') {
@@ -220,7 +236,6 @@ switch($request['action']) {
 
                 else {
                     $room = new fimRoom(false);
-                    $room->set($request);
                 }
             }
 
@@ -238,33 +253,33 @@ switch($request['action']) {
                     && count($data)
                     && $data['roomId'] !== $room['roomId'])
                     new fimError('duplicateRoomName', 'The room name specified already belongs to another room.');
-
-                else {
-                    if ($database->hasPermission($user, $room) & ROOM_PERMISSION_PROPERTIES) {
-                        $room->set($request);
-                        $database->setCensorLists($room->id, $request['censor']);
-                    }
-
-                    if ($database->hasPermission($user, $room) & ROOM_PERMISSION_GRANT) {
-                        alterRoomPermissions($room, $request['userPermissions'], $request['groupPermissions']);
-                    }
-                }
             }
 
-            $database->setCensorLists($room->id, $request['censor']);
-            alterRoomPermissions($room, $request['userPermissions'], $request['groupPermissions']);
+
+            if ($request['action'] === 'create' ||
+                ($database->hasPermission($user, $room) & ROOM_PERMISSION_PROPERTIES)) {
+                $room->setDatabase($requestDB);
+                $database->setCensorLists($room->id, $request['censorLists']);
+            }
+
+            if ($request['action'] === 'create' ||
+                ($database->hasPermission($user, $room) & ROOM_PERMISSION_GRANT)) {
+                alterRoomPermissions($room->id, $request['userPermissions'], $request['groupPermissions']);
+            }
+
+            $xmlData['response']['insertId'] = $room->id;
         }
     break;
 
 
     case 'delete':
         if ($room->deleted) new fimError('nothingToDo', 'The room is already deleted.');
-        else $room->set(array('deleted' => true));
+        else $room->setDatabase(array('deleted' => true));
     break;
 
     case 'undelete':
         if (!$room->deleted) new fimError('nothingToDo', 'The room isn\'t deleted.');
-        else $room->set(array('deleted' => false));
+        else $room->setDatabase(array('deleted' => false));
     break;
 }
 $database->endTransaction();

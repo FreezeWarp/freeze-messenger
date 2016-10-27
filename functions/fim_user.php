@@ -136,14 +136,14 @@ class fimUser
 
 
             // Parental Age: Disable if feature is disabled.
-            else if ($property = 'parentalAge') {
+            else if ($property === 'parentalAge') {
                 if ($config['parentalEnabled']) $this->parentalAge = $value;
                 else                              $this->parentalAge = 255;
             }
 
 
             // Priviledges: modify based on global permissions, inconsistencies, and superuser status.
-            else if ($property = 'privs') {
+            else if ($property === 'privs') {
                 // If certain features are disabled, remove user priviledges. The bitfields should be maintained, however, for when a feature is reenabled.
                 if (!$this->generalCache->getConfig('userRoomCreation'))
                     $this->privs &= ~USER_PRIV_CREATE_ROOMS;
@@ -163,7 +163,7 @@ class fimUser
                     $this->privs |= (USER_PRIV_VIEW | USER_PRIV_POST | USER_PRIV_TOPIC); // Being a super-moderator grants a user the ability to view, post, and make topic changes in all rooms.
             }
 
-            else if ($property = 'anonId') {
+            else if ($property === 'anonId') {
                 if ($this->id === $this->generalCache->getConfig('anonymousUserId')) {
                     $this->name .= $this->anonId;
                 }

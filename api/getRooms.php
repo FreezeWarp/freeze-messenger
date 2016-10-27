@@ -93,7 +93,7 @@ $rooms = $database->getRooms(array(
 foreach ($rooms AS $roomId => $room) {
 //  if (!($permissions & $permFilterMatches[$request['permFilter']])) continue;
 
-    $xmlData['rooms']['room ' . $roomId] = array(
+    $xmlData['rooms'][$roomId] = array(
         'roomId' => $room->id,
         'roomName' => $room->name,
         'ownerId' => $room->ownerId,
@@ -108,17 +108,19 @@ foreach ($rooms AS $roomId => $room) {
     );
 
     if ($database->hasPermission($user, $room) & ROOM_PERMISSION_VIEW) { // These are not shown to users who are not allowed to access the room.
-        $xmlData['rooms']['room ' . $roomId]['roomTopic'] = $room->topic;
-        $xmlData['rooms']['room ' . $roomId]['owner'] = $room->ownerId;
-        $xmlData['rooms']['room ' . $roomId]['lastMessageId'] = $roomData['lastMessageId'];
-        $xmlData['rooms']['room ' . $roomId]['lastMessageTime'] = $roomData['lastMessageTime'];
-        $xmlData['rooms']['room ' . $roomId]['messageCount'] = $roomData['messageCount'];
+        $xmlData['rooms'][$roomId]['roomTopic'] = $room->topic;
+        $xmlData['rooms'][$roomId]['owner'] = $room->ownerId;
+        $xmlData['rooms'][$roomId]['lastMessageId'] = $roomData['lastMessageId'];
+        $xmlData['rooms'][$roomId]['lastMessageTime'] = $roomData['lastMessageTime'];
+        $xmlData['rooms'][$roomId]['messageCount'] = $roomData['messageCount'];
     }
 
     if ($database->hasPermission($user, $room) & ROOM_PERMISSION_MODERATE) { // Fetch the allowed users and allowed groups if the user is able to moderate the room.
-        if (isset($permissionsCache['byRoomId'][$roomId])) { // TODO: Fix both of these.
-            $xmlData['rooms']['room ' . $roomId]['allowedUsers'] = (array) $generalCache->getPermissions($roomId, 'user');
-            $xmlData['rooms']['room ' . $roomId]['allowedGroups'] = (array) $generalCache->getPermissions($roomId, 'group');
+        foreach ($database->getRoomPermissions(array($roomId), 'user')->getAsArray() AS $row) { var_dump($row);
+            $xmlData['rooms'][$roomId]['userPermissions'][$row['param']] = $row['permissions'];
+        }
+        foreach ($database->getRoomPermissions(array($roomId), 'group')->getAsArray() AS $row) {
+            $xmlData['rooms'][$roomId]['groupPermissions'][$row['param']] = $row['permissions'];
         }
     }
 }
