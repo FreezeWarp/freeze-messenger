@@ -33,7 +33,8 @@ require('../global.php');
 $request = fim_sanitizeGPC('p', array(
     'roomIds' => array(
         'cast' => 'list',
-        'filter' => 'int'
+        'filter' => 'int',
+        'require' => true,
     ),
 
     'status' => array(
