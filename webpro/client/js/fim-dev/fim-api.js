@@ -544,7 +544,7 @@ fimApi.prototype.editUserStatus = function(params, requestSettings) {
     var params = fimApi.mergeDefaults(params, {
         'access_token': window.sessionHash,
         'fim3_format': 'json',
-        'roomId' : null,
+        'roomIds' : null,
         'status': null,
         'typing': null,
     });
