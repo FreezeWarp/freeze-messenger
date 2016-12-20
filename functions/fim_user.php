@@ -19,6 +19,9 @@ class fimUser
     private $profile;
     private $options;
 
+    private $passwordHash;
+    private $passwordSalt;
+
     private $anonId;
 
     protected $generalCache;
@@ -84,9 +87,25 @@ class fimUser
 
 
     public function __get($property) {
+        global $loginConfig, $integrationDatabase;
+
         if ($this->id && !in_array($property, $this->resolved)) {
+            if ($property === 'passwordSalt') {
+                throw new Exception('Not yet implemented: fetching passwordSalt from integration database.');
+            }
+
+            elseif ($property === 'passwordHash') {
+                if ($loginConfig['method'] !== 'vanilla') {
+                    throw new Exception('Not yet implemented: fetching passwordHash from integration database.');
+                }
+
+                else {
+                    $this->getColumns('passwordHash');
+                }
+            }
+
             // Find selection group
-            if (isset(array_flip($this->userDataConversion)[$property])) {
+            elseif (isset(array_flip($this->userDataConversion)[$property])) {
                 $needle = array_flip($this->userDataConversion)[$property];
                 $selectionGroup = array_values(array_filter($this->userDataPullGroups, function ($var) use ($needle) {
                     return strpos($var, $needle) !== false;
@@ -171,6 +190,11 @@ class fimUser
         }
     }
 
+
+    public function isValid() {
+        return $this->id != 0;
+    }
+
     /**
      * Checks to see if the user has permission to do the specified thing.
      *
@@ -240,38 +264,143 @@ class fimUser
             $database->lockoutIncrement();
             /* TODO: IP limit to calling this function. */
 
-            switch ($this->userData['passwordFormat']) {
+            switch ($this->passwordFormat) {
                 case 'phpass':
-                    if (!isset($this->userData['passwordHash'])) {
+                    if (!isset($this->passwordHash)) {
                         throw new Exception('User object was not generated with password hash information.');
-                    } else {
+                    }
+
+                    else {
                         require_once('PasswordHash.php');
-
                         $h = new PasswordHash(8, FALSE);
-
-                        return $h->CheckPassword($password, $this->userData['passwordHash']);
+                        return $h->CheckPassword($password, $this->passwordHash);
                     }
                     break;
 
                 case 'vbmd5':
-                    if (!isset($this->userData['passwordHash'], $this->userData['passwordSalt'])) {
+                    if (!isset($this->passwordHash, $this->passwordSalt))
                         throw new Exception('User object was not generated with password hash information.');
-                    } else {
-                        return ($this->userData['passwordHash'] === md5(md5($password) . $this->userData['passwordSalt']));
-                    }
+                    else
+                        return ($this->passwordHash === md5(md5($password) . $this->passwordSalt));
                     break;
 
-                case 'raw':
-                    return ($this->userData['passwordHash'] === $password);
+                case 'plaintext':
+                    return ($this->passwordHash === $password);
+                    break;
+
+                case 'phpbb':
+                    return $this->phpbb_check_hash($password, $this->passwordHash);
                     break;
 
                 default:
-                    throw new Exception('Invalid password format.');
+                    throw new Exception('Invalid password format: ' . $this->passwordFormat);
                     break;
             }
 
             return false;
         }
+    }
+
+    function phpbb_hash_crypt_private($password, $setting, &$itoa64) {
+        $itoa64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+        $output = '*';
+
+        // Check for correct hash
+        if (substr($setting, 0, 3) != '$H$') {
+            return $output;
+        }
+
+        $count_log2 = strpos($itoa64, $setting[3]);
+
+        if ($count_log2 < 7 || $count_log2 > 30) {
+            return $output;
+        }
+
+        $count = 1 << $count_log2;
+        $salt = substr($setting, 4, 8);
+
+        if (strlen($salt) != 8) {
+            return $output;
+        }
+
+        $hash = md5($salt . $password, true);
+        do {
+            $hash = md5($hash . $password, true);
+        } while (--$count);
+
+        $output = substr($setting, 0, 12);
+        $output .= phpbb_hash_encode64($hash, 16, $itoa64);
+
+        return $output;
+    }
+
+    /**
+     * Database auth plug-in for phpBB3
+     *
+     * Authentication plug-ins is largely down to Sergey Kanareykin, our thanks to him.
+     *
+     * This is for authentication via the integrated user table
+     *
+     * @package login
+     * @version $Id$
+     * @copyright (c) 2005 phpBB Group
+     * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+     *
+     */
+    function phpbb_hash_encode64($input, $count, &$itoa64) {
+        $output = '';
+        $i = 0;
+
+        do {
+            $value = ord($input[$i++]);
+            $output .= $itoa64[$value & 0x3f];
+
+            if ($i < $count) {
+                $value |= ord($input[$i]) << 8;
+            }
+
+            $output .= $itoa64[($value >> 6) & 0x3f];
+
+            if ($i++ >= $count) {
+                break;
+            }
+
+            if ($i < $count) {
+                $value |= ord($input[$i]) << 16;
+            }
+
+            $output .= $itoa64[($value >> 12) & 0x3f];
+
+            if ($i++ >= $count) {
+                break;
+            }
+
+            $output .= $itoa64[($value >> 18) & 0x3f];
+        } while ($i < $count);
+
+        return $output;
+    }
+
+
+    /**
+     * Database auth plug-in for phpBB3
+     *
+     * Authentication plug-ins is largely down to Sergey Kanareykin, our thanks to him.
+     *
+     * This is for authentication via the integrated user table
+     *
+     * @package login
+     * @version $Id$
+     * @copyright (c) 2005 phpBB Group
+     * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+     *
+     */
+    function phpbb_check_hash($password, $hash) {
+        if (strlen($hash) == 34) {
+            return (phpbb_hash_crypt_private($password, $hash, $itoa64) === $hash) ? true : false;
+        }
+
+        return (md5($password) === $hash) ? true : false;
     }
 
 

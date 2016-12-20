@@ -21,16 +21,17 @@ class FIMDatabaseOAuth implements
 {
     protected $db;
     protected $config;
+    protected $exceptionHandler;
 
     const CLIENT_TABLE_FIELDS = 'client_id, client_secret, redirect_uri, grant_types, scope, user_id';
     const ACCESS_TOKEN_TABLE_FIELDS = 'access_token, client_id, user_id, expires, scope';
     const AUTHORIZATION_CODE_TABLE_FIELDS = 'authorization_code, client_id, user_id, redirect_uri, expires, scope, id_token';
     const REFRESH_TOKEN_TABLE_FIELDS = 'refresh_token, client_id, user_id, expires, scope';
 
-    public function __construct($db, $config = array())
+    public function __construct($db, $exceptionHandler, $config = array())
     {
         if (!$db instanceof \FIMDatabase) {
-            throw new Exception('First argument to OAuth2\Storage\FIMDatabase must be an instance of FIMDatabase');
+            throw new $exceptionHandler('First argument to OAuth2\Storage\FIMDatabase must be an instance of FIMDatabase');
         }
 
         $this->db = $db;
@@ -45,6 +46,7 @@ class FIMDatabaseOAuth implements
             'scope_table'  => $db->sqlPrefix . 'oauth_scopes',
             'public_key_table'  => $db->sqlPrefix . 'oauth_public_keys',
         ), $config);
+        $this->exceptionHandler = $exceptionHandler;
     }
 
     /* OAuth2\Storage\ClientCredentialsInterface */
@@ -271,16 +273,19 @@ class FIMDatabaseOAuth implements
 
         require_once(__DIR__ . '/../../../../fim_user.php');
 
-        $userData = $this->db->getUsers(array(
+        if ($userData = $this->db->getUsers(array(
             'userNames' => array($username),
             'includePasswords' => true
-        ))->getAsUser();
-
-        return array(
-            'user_id' => $userData->id,
-            'username' => $userData->name,
-            'userObj' => $userData,
-        );
+        ))->getAsUser()->isValid()) {
+            return array(
+                'user_id' => $userData->id,
+                'username' => $userData->name,
+                'userObj' => $userData,
+            );
+        }
+        else {
+            throw new $this->exceptionHandler('noUser', 'No user was found by the specified username.');
+        }
     }
 
     public function getUserFromId($userId)
