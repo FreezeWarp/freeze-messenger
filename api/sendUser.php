@@ -38,7 +38,6 @@ $apiRequest = true;
 $ignoreLogin = true;
 
 require('../global.php');
-require('../functions/fim_uac_vanilla.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
