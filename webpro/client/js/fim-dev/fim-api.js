@@ -125,10 +125,10 @@ fimApi.prototype.getRooms = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(params, {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
-            'roomIds' : '',
-            'roomNames' : '',
-            'roomNameSearch' : '',
-            'permLevel' : ''
+            'roomIds' : null,
+            'roomNames' : null,
+            'roomNameSearch' : null,
+            'permLevel' : null
         });
 
         var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
@@ -177,14 +177,14 @@ fimApi.prototype.getMessages = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(params, {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
-            'roomId' : '',
-            'userIds' : '',
-            'messageIds' : '',
-            'messageIdEnd' : 0,
-            'messageIdStart' : 0,
-            'page' : 0,
-            'search' : '',
-            'archive' : 0,
+            'roomId' : null,
+            'userIds' : null,
+            'messageIds' : null,
+            'messageIdEnd' : null,
+            'messageIdStart' : null,
+            'page' : null,
+            'search' : null,
+            'archive' : false,
             'messageHardLimit' : 25,
             'sortOrder' : 'asc',
             'initialRequest' : false,
