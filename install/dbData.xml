@@ -279,7 +279,6 @@
     <!-- Table users -->
     <!-- The addUser function should be tested separately (as with addRoom, etc.) -->
     <table name="users">
-    <table name="users">
       <column name="userId" value="-1" />
       <column name="userName" value="Anonymous" />
       <column name="privs" value="1" />
