@@ -73,14 +73,14 @@ $request = fim_sanitizeGPC('g', array(
   ),
 
   'userIds' => array(
-    'default' => '',
+    'default' => [],
     'cast' => 'list',
     'filter' => 'int',
     'evaltrue' => true,
   ),
 
   'messageIds' => array(
-    'default' => '',
+    'default' => [],
     'cast' => 'list',
     'filter' => 'int',
     'evaltrue' => true,

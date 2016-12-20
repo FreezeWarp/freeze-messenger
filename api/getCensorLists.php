@@ -36,13 +36,13 @@ require('../global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
   'listIds' => array(
-    'default' => '',
+    'default' => [],
     'cast' => 'list',
     'filter' => 'int',
     'evaltrue' => true,
   ),
   'roomIds' => array(
-    'default' => '',
+    'default' => [],
     'cast' => 'list',
     'filter' => 'int',
     'evaltrue' => true,

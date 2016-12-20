@@ -38,7 +38,7 @@ require('../global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
     'roomIds' => array(
-        'default' => '',
+        'default' => [],
         'cast' => 'list',
         'filter' => 'int',
         'evaltrue' => true,
@@ -50,7 +50,7 @@ $request = fim_sanitizeGPC('g', array(
     ),
 
     'userIds' => array(
-        'default' => '',
+        'default' => [],
         'cast' => 'list',
         'filter' => 'int',
         'evaltrue' => true,

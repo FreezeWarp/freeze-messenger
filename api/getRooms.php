@@ -42,14 +42,14 @@ $request = fim_sanitizeGPC('g', array(
     ),
 
     'roomIds' => array(
-        'default' => '',
+        'default' => [],
         'cast' => 'list',
         'filter' => 'int',
         'evaltrue' => true,
     ),
 
     'roomNames' => array(
-        'default' => '',
+        'default' => [],
         'cast' => 'list',
         'filter' => 'string',
         'evaltrue' => true,
@@ -63,6 +63,7 @@ $request = fim_sanitizeGPC('g', array(
       ),*/
 
     'search' => array(
+        'default' => '',
         'cast' => 'string',
     ),
 
