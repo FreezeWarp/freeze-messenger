@@ -1091,7 +1091,7 @@ class databaseSQL extends database
             if ($column['default'] !== null) {
                 // We use triggers here when the SQL implementation is otherwise stubborn, but FreezeMessenger is designed to only do this when it would otherwise be tedious. Manual setting of values is preferred in most cases.
                 if ($column['default'] === '__TIME__')
-                    $triggers[] = "CREATE TRIGGER {$columnName}__TIME__ BEFORE INSERT ON $tableName FOR EACH ROW SET NEW.{$columnName} = UNIX_TIMESTAMP(NOW());";
+                    $triggers[] = "CREATE TRIGGER {$tableName}_{$columnName}__TIME__ BEFORE INSERT ON $tableName FOR EACH ROW SET NEW.{$columnName} = UNIX_TIMESTAMP(NOW());";
                 else if (isset($this->defaultPhrases[$column['default']]))
                     $typePiece .= ' DEFAULT ' . $this->defaultPhrases[$column['default']];
                 else
