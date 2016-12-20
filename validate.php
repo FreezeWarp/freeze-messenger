@@ -126,8 +126,10 @@ else if (isset($_REQUEST['grant_type'])) {
             ),
         ));
         echo $apiData;
-    } else {
-        $oauthResponse->send();
+    }
+
+    else {
+        new fimError($oauthResponse->getParameters()['error'], $oauthResponse->getParameters()['error_description']);
     }
 
     die();

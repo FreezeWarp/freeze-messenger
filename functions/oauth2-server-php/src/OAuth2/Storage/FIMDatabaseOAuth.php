@@ -273,10 +273,12 @@ class FIMDatabaseOAuth implements
 
         require_once(__DIR__ . '/../../../../fim_user.php');
 
-        if ($userData = $this->db->getUsers(array(
+        $userData = $this->db->getUsers(array(
             'userNames' => array($username),
             'includePasswords' => true
-        ))->getAsUser()->isValid()) {
+        ))->getAsUser();
+
+        if ($userData->isValid()) {
             return array(
                 'user_id' => $userData->id,
                 'username' => $userData->name,

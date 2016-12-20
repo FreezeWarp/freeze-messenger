@@ -21,6 +21,7 @@ class fimUser
 
     private $passwordHash;
     private $passwordSalt;
+    private $passwordFormat;
 
     private $anonId;
 
@@ -43,6 +44,8 @@ class fimUser
         'profile' => 'profile',
         'avatar' => 'avatar',
         'options' => 'options',
+        'passwordHash' => 'passwordHash',
+        'passwordFormat' => 'passwordFormat',
     );
 
     private $userDataPullGroups = array(
@@ -50,6 +53,7 @@ class fimUser
         'userGroupId,socialGroupIds,userParentalFlags,userParentalAge',
         'joinDate,messageFormatting,profile,avatar,userNameFormat',
         'options,defaultRoomId',
+        'passwordHash,passwordFormat'
     );
 
 
@@ -289,7 +293,7 @@ class fimUser
                     break;
 
                 case 'phpbb':
-                    return $this->phpbb_check_hash($password, $this->passwordHash);
+                    return strlen($password) > 0 && $this->phpbb_check_hash($password, $this->passwordHash);
                     break;
 
                 default:

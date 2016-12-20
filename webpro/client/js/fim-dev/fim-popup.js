@@ -22,7 +22,7 @@ popup = {
                 case 'sessionMismatchIp':
                 case 'invalidSession': dia.error('The server rejected the stored session. Please login.'); break;
                 case 'loginRequired': dia.error("A valid login must be provided. Please login."); break;
-                case 'invalidLogin': dia.error("The login provided is not valid."); break;
+                case 'invalid_grant': dia.error("The login provided is not valid. You most likely entered an incorrect password."); break;
                 default: dia.error('Unknown error logging in: ' + data.string); break;
             }
         }
