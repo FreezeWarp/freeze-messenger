@@ -39,19 +39,19 @@ $request = fim_sanitizeGPC('g', array(
     'cast' => 'list',
     'filter' => 'int',
     'evaltrue' => true,
-    'default' => '',
+    'default' => [],
   ),
 
   'userNames' => array(
     'cast' => 'list',
     'filter' => 'string',
-    'default' => '',
+    'default' => [],
   ),
 
   'showOnly' => array( // TODO
     'cast' => 'list',
     'valid' => array('banned', '!banned', '!friends', 'friends', '!ignored', 'ignored', ''),
-    'default' => '',
+    'default' => [],
   ),
 
   'sort' => array(
