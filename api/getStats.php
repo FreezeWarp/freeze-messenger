@@ -36,13 +36,13 @@ require('../global.php');
 /* Get Request */
 $request = fim_sanitizeGPC('g', array(
   'rooms' => array(
-    'default' => '',
+    'default' => [],
     'cast' => 'list',
     'filter' => 'int',
     'evaltrue' => true,
   ),
   'users' => array(
-    'default' => '',
+    'default' => [],
     'cast' => 'list',
     'filter' => 'int',
     'evaltrue' => true,
@@ -57,9 +57,7 @@ $request = fim_sanitizeGPC('g', array(
 
 /* Data Predefine */
 $xmlData = array(
-  'getStats' => array(
     'roomStats' => array(),
-  ),
 );
 
 
@@ -73,12 +71,13 @@ $totalPosts = $database->getPostStats(array(
 
 foreach ($totalPosts AS $room) {
   foreach ($room AS $roomId => $totalPoster) {
-    if (!fim_hasPermission($totalPoster, $totalPoster, 'view', true)) { // Users must be able to view the room to see the respective post counts.
+    // Users must be able to view the room to see the respective post counts.
+    if (!($database->hasPermission($user, new fimRoom($roomId)) & ROOM_PERMISSION_VIEW)) {
       continue;
     }
 
-    if (!isset($xmlData['getStats']['roomStats']['room ' . $totalPoster['roomId']])) {
-      $xmlData['getStats']['roomStats']['room ' . $totalPoster['roomId']] = array(
+    if (!isset($xmlData['roomStats']['room ' . $totalPoster['roomId']])) {
+      $xmlData['roomStats']['room ' . $totalPoster['roomId']] = array(
       'roomData' => array(
         'roomId' => (int) $totalPoster['roomId'],
         'roomName' => $totalPoster['roomName'],
@@ -87,21 +86,16 @@ foreach ($totalPosts AS $room) {
       );
     }
 
-    $xmlData['getStats']['roomStats']['room ' . $totalPoster['roomId']]['users']['user ' . $totalPoster['userId']] = array(
+    $xmlData['roomStats']['room ' . $totalPoster['roomId']]['users']['user ' . $totalPoster['userId']] = array(
       'userData' => array(
         'userId' => (int) $totalPoster['userId'],
         'userName' => $totalPoster['userName'],
         'userNameFormat' => $totalPoster['userNameFormat'],
       ),
-      'messageCount' => (int) $totalPoster['messages'],
+      'messageCount' => (int) $totalPoster['messageCount'],
     );
   }
 }
-
-
-
-/* Update Data for Errors */
-$xmlData['getStats']['errStr'] = ($errStr);
 
 
 

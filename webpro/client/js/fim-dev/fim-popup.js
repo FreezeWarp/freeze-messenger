@@ -368,13 +368,13 @@ popup = {
                 fimApi.getStats({
                     'roomIds' : [window.roomId] // TODO
                 }, {
-                    'each' : function(active) { console.log(active);
-                        $('table#viewStats > thead > tr').append('<th>' + active.roomData.roomName + '</th>');
+                    'each' : function(room) {
+                        $('table#viewStats > thead > tr').append('<th>' + room.roomData.roomName + '</th>');
 
                         var i = 0;
 
-                        for (var j in active.users) {
-                            $('table#viewStats > tbody > tr').eq(i).append('<td><span class="userName userNameTable" data-userId="' + active.users[j].userData.userId + '">' + active.users[j].userData.startTag + active.users[j].userData.userName + active.users[j].userData.endTag + '</span> (' + active.users[j].messageCount + ')</td>');
+                        for (var j in room.users) { console.log(room.users[j]);
+                            $('table#viewStats > tbody > tr').eq(i).append('<td><span class="userName userNameTable" data-userId="' + room.users[j].userData.userId + '" style="' + room.users[j].userData.userNameFormat + '">' + room.users[j].userData.userName + '</span> (' + room.users[j].messageCount + ')</td>');
 
                             i++;
                         }
