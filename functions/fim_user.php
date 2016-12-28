@@ -23,6 +23,9 @@ class fimUser
     private $passwordSalt;
     private $passwordFormat;
 
+    private $fileCount;
+    private $fileSize;
+
     private $anonId;
 
     protected $generalCache;
@@ -46,6 +49,8 @@ class fimUser
         'options' => 'options',
         'passwordHash' => 'passwordHash',
         'passwordFormat' => 'passwordFormat',
+        'fileCount' => 'fileCount',
+        'fileSize' => 'fileSize',
     );
 
     private $userDataPullGroups = array(
@@ -53,7 +58,8 @@ class fimUser
         'userGroupId,socialGroupIds,userParentalFlags,userParentalAge',
         'joinDate,messageFormatting,profile,avatar,userNameFormat',
         'options,defaultRoomId',
-        'passwordHash,passwordFormat'
+        'passwordHash,passwordFormat',
+        'fileCount,fileSize'
     );
 
 
