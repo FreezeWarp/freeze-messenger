@@ -190,9 +190,44 @@ popup = {
                             }
                         }
 
+                        $('#imageUploadSubmitButton').removeAttr('disabled').button({ disabled: false });
+                        $('#imageUploadSubmitButton').click(function () {
+                            filesList = $('input#fileUpload[type="file"]').prop('files');
+                            $('#fileUpload').fileupload();
+                            $('#fileUpload').fileupload('add', {
+                                files: filesList,
+                                url: directory + 'api/editFile.php?access_token=' + window.sessionHash + '&_action=create&uploadMethod=put&dataEncode=binary&roomId=' + window.roomId + '&fileName=' + filesList.item(0).name,
+                                type: 'PUT',
+                                multipart: false,
+                            })
+//                                .success(function (result, textStatus, jqXHR) {})
+//                                .error(function (jqXHR, textStatus, errorThrown) {})
+//                                .complete(function (result, textStatus, jqXHR) {});
+
+                            return false;
+                        });
+/*
+
+                        $('#fileUpload').fileupload({
+                            dataType: 'json',
+                            url: directory + 'api/editFile.php?access_token=' + window.sessionHash + '&_action=create&uploadMethod=put&dataEncode=binary',
+                            type: 'PUT',
+                            multipart: false,
+                            add: function (e, data) {
+                                $('#imageUploadSubmitButton').click(function () {
+                                    data.submit();
+                                });
+                            },
+                            done: function (e, data) {
+//                                $.each(data.result.files, function (index, file) {
+//                                    $('<p/>').text(file.name).appendTo(document.body);
+//                                });
+                            }
+                        });*/
+
 
                         /* Previewer for Files */
-                        $('#fileUpload').bind('change', function() {
+/*                        $('#fileUpload').bind('change', function() {
                             var reader = new FileReader(),
                                 reader2 = new FileReader();
 
@@ -241,11 +276,11 @@ popup = {
                                     $('#imageUploadSubmitButton').removeAttr('disabled').button({ disabled: false });
                                 }
                             }
-                        });
+                        });*/
 
 
                         /* Submit Upload */
-                        $('#uploadFileForm').bind('submit', function() {
+/*                        $('#uploadFileForm').bind('submit', function() {
                             parentalAge = $('#parentalAge option:selected').val(),
                                 parentalFlags = [];
 
@@ -267,7 +302,7 @@ popup = {
                                 'parentalFlags' : parentalFlags,
                                 'md5hash' : md5hash
                             }, {
-                                'callback' : function(json) {
+                                'end' : function(json) {
                                     fim_hideLoader();
                                     $('#insertDoc').dialog('close');
                                 },
@@ -278,7 +313,7 @@ popup = {
                             });
 
                             return false;
-                        });
+                        });*/
                     }
                 }
 
