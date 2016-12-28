@@ -848,38 +848,36 @@ popup = {
                     fimApi.getRooms({
                         'roomIds' : [roomIdLocal]
                     }, {'each' : function(roomData) {
-                        var data = '',
-                            roomName = roomData.roomName,
-                            roomId = roomData.roomId,
-                            allowedUsers = roomData.allowedUsers,
-                            allowedGroups = roomData.allowedGroups,
-                            defaultPermissions = roomData.defaultPermissions,
-                            parentalAge = roomData.parentalAge,
-                            parentalFlags = roomData.parentalFlags,
-                            allowedUsersArray = [],
+                        var allowedUsersArray = [],
                             moderatorsArray = [],
                             allowedGroupsArray = [];
 
-                        for (var j in allowedUsers) { /* TODO? */
-                            if (allowedUsers[j] & 15 === 15) { moderatorsArray.push(j); } // Are all bits up to 8 present?
-                            if (allowedUsers[j] & 7 === 7) { allowedUsersArray.push(j); } // Are the 1, 2, and 4 bits all present?
+                        for (var j in roomData.allowedUsers) { /* TODO? */
+                            if (roomData.allowedUsers[j] & 15 === 15) { moderatorsArray.push(j); } // Are all bits up to 8 present?
+                            if (roomData.allowedUsers[j] & 7 === 7) { allowedUsersArray.push(j); } // Are the 1, 2, and 4 bits all present?
                         }
 
-                        console.log(parentalFlags);
-                        for (i in parentalFlags) {
-                            $('input[data-cat=parentalFlag][data-name=' + parentalFlags[i] + ']').attr('checked', true);
+                        // Name
+                        $('#name').val(roomData.roomName);
+
+                        // Options
+                        $('#allowOfficial').attr('checked', roomData.official);
+                        $('#allowHidden').attr('checked', roomData.hidden);
+
+                        // Parental Data
+                        console.log(roomData.parentalFlags);
+                        for (i in roomData.parentalFlags) {
+                            $('input[data-cat=parentalFlag][data-name=' + roomData.parentalFlags[i] + ']').attr('checked', true);
                         }
-                        $('select#parentalAge option[value=' + parentalAge + ']').attr('selected', 'selected');
-                        $('#name').val(roomName); // Current Room Name
+                        $('select#parentalAge option[value=' + roomData.parentalAge + ']').attr('selected', 'selected');
 
-                        /* Prepopulate
-                         * TODO: Replace w/ AJAX. */
-                        // User Autocomplete
-                        if (allowedUsersArray.length > 0) allowedUsers.showEntries();
-                        if (moderatorsArray.length > 0) moderators.showEntries();
-                        if (allowedGroupsArray.length > 0) allowedGroups.showEntries();
+                        // Permissions
+                        allowedUsersList.displayEntries(allowedUsersArray);
+                        moderatorsList.displayEntries(moderatorsArray);
+                        allowedGroupsList.displayEntries(allowedGroupsArray);
 
-                        if (defaultPermissions == 7) $('#allowAllUsers').attr('checked', true); // If all users are currently allowed, check the box (which triggers other stuff above).
+                        // Default Permissions
+                        if (roomData.defaultPermissions == 7) $('#allowAllUsers').attr('checked', true); // If all users are currently allowed, check the box (which triggers other stuff above).
                     }});
                 }
 
@@ -915,19 +913,20 @@ popup = {
 
                     defaultPermissions = [];
                     if ($('#allowViewing').is(':checked')) defaultPermissions.push("view");
-                    if ($('#allowPosting').is(':checked')) defaultPermissions.push("posting");
+                    if ($('#allowPosting').is(':checked')) defaultPermissions.push("post");
 
-                    fimApi.editRoom({
-                        "action" : action,
-                        "roomId" : roomIdLocal,
-                        "roomName" : name,
+                    fimApi.editRoom(roomIdLocal, {
+                        "name" : name,
                         "defaultPermissions" : defaultPermissions,
                         "userPermissions" : combinedUserPermissions,
                         "groupPermissions" : combinedGroupPermissions,
                         "parentalAge" : parentalAge,
                         "parentalFlags" : parentalFlags,
                         "censorLists" : censor,
+                        "official" : $("#allowOfficial").is(":checked"),
+                        "hidden" : $("#allowHidden").is(":checked")
                     }, {
+                        'action' : action,
                         'begin' : function(json) {
                             dia.full({
                                 content : 'The room has been created at the following URL: <br /><br /><form action="' + currentLocation + '#room=' + json.insertId + '" method="post"><input type="text" style="width: 300px;" value="' + currentLocation + '#room=' + json.insertId + '" name="url" /></form>',

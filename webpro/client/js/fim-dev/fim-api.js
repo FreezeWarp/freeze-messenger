@@ -14,6 +14,8 @@ var fimApi = function() {
         'reverseEach' : false,
         'end' : function() {},
         'async' : true,
+//        'method' : null,
+        'action' : null,
     };
 
     this.timers = {};
@@ -470,31 +472,51 @@ fimApi.prototype.editUserOptions = function(params, requestSettings) {
 
 
 
-fimApi.prototype.editRoom = function(params, requestSettings) {
+fimApi.prototype.editRoom = function(id, params, requestSettings) {
     var params = fimApi.mergeDefaults(params, {
-        'access_token': window.sessionHash,
-        'fim3_format': 'json',
-        'action': 'create',
-        'roomId' : null,
-        'roomName' : null,
+        'name' : null,
         'defaultPermissions' : null,
         'userPermissions' : null,
         'groupPermissions' : null,
         'censorLists' : null,
         'parentalAge': null,
         'parentalFlags': null,
+        'hidden' : null,
+        'official' : null,
     });
 
-    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.mergeDefaults({
+        'action': 'edit'
+    }, fimApi.requestDefaults));
 
     $.ajax({
-        url: directory + 'api/editRoom.php',
-        type: 'POST',
+        url: directory + 'api/editRoom.php?_action=' + requestSettings['action'] + '&access_token=' + window.sessionHash + (id ? '&id=' + id : ''),
+        method: 'POST',
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache,
     }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
 };
+
+
+fimApi.prototype.createRoom = function(params, requestSettings) {
+    fimApi.editRoom(null, params, fimApi.mergeDefaults({
+        'action': 'create'
+    }, requestSettings));
+}
+
+
+fimApi.prototype.deleteRoom = function(id, requestSettings) {
+    fimApi.editRoom(id, null, fimApi.mergeDefaults({
+        '_action': 'delete'
+    }, requestSettings));
+}
+
+fimApi.prototype.undeleteRoom = function(id, requestSettings) {
+    fimApi.editRoom(id, null, fimApi.mergeDefaults({
+        '_action': 'undelete'
+    }, requestSettings));
+}
 
 
 
@@ -563,7 +585,7 @@ fimApi.prototype.editUserStatus = function(params, requestSettings) {
 
 fimApi.prototype.ping = function(roomId, requestSettings) {
     this.editUserStatus({
-        'roomId' : roomId
+        'roomIds' : [roomId]
     }, requestSettings);
 }
 

@@ -147,7 +147,7 @@ standard.prototype.logout = function() {
 };
 
 
-standard.prototype.getMessages = function() {
+standard.prototype.getMessages = function() {console.log("Getting messages from roomId: " + window.roomId);
     if (window.roomId) {
         var encrypt = 'base64';
 
@@ -319,8 +319,7 @@ standard.prototype.changeRoom = function(roomIdLocal) { console.log("Hi.");
                 $('#topic').html(roomData.roomTopic); // Update the room topic.
                 $('#messageList').html(''); // Clear the message list.
 
-
-                /*** Get Messages (TODO: Streamline) ***/
+               /*** Get Messages (TODO: Streamline) ***/
                 $(document).ready(function() {
                     requestSettings.firstRequest = true;
                     requestSettings.lastMessage = 0;
