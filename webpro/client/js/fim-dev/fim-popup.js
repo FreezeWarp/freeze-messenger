@@ -190,7 +190,6 @@ popup = {
                             }
                         }
 
-                        $('#imageUploadSubmitButton').removeAttr('disabled').button({ disabled: false });
                         $('#imageUploadSubmitButton').click(function () {
                             filesList = $('input#fileUpload[type="file"]').prop('files');
                             $('#fileUpload').fileupload();
@@ -214,31 +213,12 @@ popup = {
 //                                .success(function (result, textStatus, jqXHR) {})
 //                                .error(function (jqXHR, textStatus, errorThrown) {})
 //                                .complete(function (result, textStatus, jqXHR) {});
-
+                            $('#fileUpload').fileupload('destroy');
                             return false;
                         });
-/*
-
-                        $('#fileUpload').fileupload({
-                            dataType: 'json',
-                            url: directory + 'api/editFile.php?access_token=' + window.sessionHash + '&_action=create&uploadMethod=put&dataEncode=binary',
-                            type: 'PUT',
-                            multipart: false,
-                            add: function (e, data) {
-                                $('#imageUploadSubmitButton').click(function () {
-                                    data.submit();
-                                });
-                            },
-                            done: function (e, data) {
-//                                $.each(data.result.files, function (index, file) {
-//                                    $('<p/>').text(file.name).appendTo(document.body);
-//                                });
-                            }
-                        });*/
-
 
                         /* Previewer for Files */
-/*                        $('#fileUpload').bind('change', function() {
+                        $('#fileUpload').bind('change', function() {
                             var reader = new FileReader(),
                                 reader2 = new FileReader();
 
@@ -287,7 +267,7 @@ popup = {
                                     $('#imageUploadSubmitButton').removeAttr('disabled').button({ disabled: false });
                                 }
                             }
-                        });*/
+                        });
 
 
                         /* Submit Upload */
