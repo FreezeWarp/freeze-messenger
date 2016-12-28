@@ -822,4 +822,11 @@ function fim_flush() {
     flush();
 
 }
+
+
+function fim_removeNullValues(array &$a) {
+    foreach ($a AS $key => $value) {
+        if (is_null($value)) unset($a[$key]);
+    }
+}
 ?>
