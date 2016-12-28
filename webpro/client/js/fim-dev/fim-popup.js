@@ -196,10 +196,21 @@ popup = {
                             $('#fileUpload').fileupload();
                             $('#fileUpload').fileupload('add', {
                                 files: filesList,
-                                url: directory + 'api/editFile.php?access_token=' + window.sessionHash + '&_action=create&uploadMethod=put&dataEncode=binary&roomId=' + window.roomId + '&fileName=' + filesList.item(0).name,
+                                url: directory + 'api/editFile.php?' + $.param({
+                                    "_action" : "create",
+                                    "uploadMethod" : "put",
+                                    "dataEncode" : "binary",
+                                    "roomId" : window.roomId,
+                                    "fileName" : filesList.item(0).name,
+                                    "access_token" : window.sessionHash,
+                                    "parentalAge" : $('#parentalAge option:selected').val(),
+                                    "parentalFlags" : $('input[data-cat=parentalFlag]:checked').map(function(){
+                                        return $(this).attr('data-name');
+                                    }).get(),
+                                }),
                                 type: 'PUT',
                                 multipart: false,
-                            })
+                            });
 //                                .success(function (result, textStatus, jqXHR) {})
 //                                .error(function (jqXHR, textStatus, errorThrown) {})
 //                                .complete(function (result, textStatus, jqXHR) {});
@@ -735,7 +746,7 @@ popup = {
                     var parentalFlagsFormatted = [];
 
                     for (i in active.parentalFlags) {
-                        if (active.parentalFlags[i]) parentalFlagsFormatted.push($l('parentalFlags.' + parentalFlags[i])); // Yes, this is a very weird line.
+                        if (active.parentalFlags[i]) parentalFlagsFormatted.push($l('parentalFlags.' + active.parentalFlags[i])); // Yes, this is a very weird line.
                     }
 
                     $('#viewUploadsBody').append('<tr><td align="center"><img src="' + directory + 'file.php?sha256hash=' + active.sha256hash + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json" style="max-width: 200px; max-height: 200px;" /><br />' + active.fileName + '</td><td align="center">' + active.fileSizeFormatted + '</td><td align="center">' + $l('parentalAges.' + active.parentalAge) + '<br />' + parentalFlagsFormatted.join(', ') + '</td><td align="center"><button onclick="standard.changeAvatar(\'' + active.sha256hash + '\')">Set to Avatar</button></td></tr>');
