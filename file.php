@@ -31,12 +31,6 @@ require('global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
-  'md5hash' => array(
-    'cast' => 'string',
-    'require' => false,
-    'default' => '',
-  ),
-
   'sha256hash' => array(
     'cast' => 'string',
     'require' => false,
@@ -80,7 +74,6 @@ $file = $file->getAsArray(false);*/
 
 $file = $database->getFiles(array(
   'sha256hashes' => $request['sha256hash'] ? array($request['sha256hash']) : array(),
-  'md5hashes' => $request['md5hash'] ? array($request['md5hash']) : array(),
   'fileIds' => $request['fileId'] ? array($request['fileId']) : array(),
   'vfileIds' => $request['vfileId'] ? array($request['vfileId']) : array(),
   'includeContent' => true

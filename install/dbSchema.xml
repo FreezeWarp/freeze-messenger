@@ -130,7 +130,6 @@
             <column name="fileId" type="int" maxlen="6" comment="The ID of the parent file." />
             <column name="time" type="time" default="__TIME__" comment="The time the revision of the file was uploaded." />
             <column name="size" type="int" maxlen="10" comment="The file size of the revision." />
-            <column name="md5hash" type="string" maxlen="32" comment="The MD5 hash of the file's binary data." />
             <column name="sha256hash" type="string" maxlen="64" comment="The SHA256 hash of the file's binary data." />
             <column name="salt" type="int" maxlen="6" comment="The salt number (stored in the product configuration) used for encryption." />
             <column name="iv" type="string" maxlen="255" comment="The base64-encoded IV used for encryption." />
