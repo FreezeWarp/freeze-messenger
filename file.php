@@ -37,18 +37,6 @@ $request = fim_sanitizeGPC('g', array(
         'default' => '',
     ),
 
-    'fileId' =>  array(
-        'cast' => 'int',
-        'require' => false,
-        'default' => '',
-    ),
-
-    'vfileId' => array(
-        'cast' => 'int',
-        'require' => false,
-        'default' => '',
-    ),
-
     // Because file.php must NOT require a session token, we want to allow APIs to define these separately (and, yes, this is very much by design -- again, the parental control system is not locked-down).
     'parentalAge' => array(
         'cast' => 'int',
@@ -59,18 +47,11 @@ $request = fim_sanitizeGPC('g', array(
     'parentalFlags' => array(
         'cast' => 'list',
         'valid' => $config['parentalFlags'],
+        'default' => $config['parentalFlagsDefault'],
     ),
 ));
 
 
-
-
-/*$file = $database->select(
-  $queryParts['fileSelect']['columns'],
-  $queryParts['fileSelect']['conditions'],
-  false,
-  1);
-$file = $file->getAsArray(false);*/
 
 $file = $database->getFiles(array(
     'sha256hashes' => $request['sha256hash'] ? array($request['sha256hash']) : array(),
@@ -83,15 +64,8 @@ $file = $database->getFiles(array(
 
 /* Start Processing */
 if ($config['parentalEnabled']) {
-    if (isset($request['parentalAge'])) $user['parentalAge'] = $request['parentalAge'];
-    if (isset($request['parentalFlags'])) $user['parentalFlags'] = implode(',', $request['parentalFlags']);
-
-    if ($file['parentalAge'] > $user['parentalAge']) $parentalBlock = true;
-    elseif (fim_inArray(explode(',', $user['parentalFlags']), explode(',', $file['parentalFlags']))) $parentalBlock = true;
-}
-
-if ($request['userId'] && ($request['userId'] !== $file['userId'])) {
-    $parentalBlock = false; // Disable the parental block if the user themself uploaded the image.
+    if ($file['parentalAge'] > $request['parentalAge']) $parentalBlock = true;
+    elseif (fim_inArray($request['parentalFlags'], explode(',', $file['parentalFlags']))) $parentalBlock = true;
 }
 
 if ($parentalBlock) {
@@ -106,7 +80,5 @@ else {
 
     header('Content-Type: ' . $file['fileType']);
     echo $file['contents'];
-
-//  print_r($file); var_dump($user);
 }
 ?>
