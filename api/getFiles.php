@@ -33,8 +33,8 @@ require('../global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
     'users' => array(
-        'default' => array($user['userId']),
-        'cast' => 'csv',
+        'default' => array($user->id),
+        'cast' => 'list',
         'filter' => 'int',
         'evaltrue' => true,
     ),
@@ -43,9 +43,7 @@ $request = fim_sanitizeGPC('g', array(
 
 
 /* Data Pre-Define */
-$xmlData['getFiles'] = array(
-    'files' => array()
-);
+$xmlData['files'] = array();
 
 
 
@@ -59,11 +57,11 @@ $files = $database->getFiles(array(
 /* Start Processing */
 foreach ($files AS $file) {
     // Only show if the user has permission.
-    if ($file['roomIdLink'] && $file['userId'] != $user['userId']) { /* TODO: Test */
-        if (!fim_hasPermission($database->getRoom($file['roomIdLink']), $user, 'view', true)) continue;
+    if ($file['roomIdLink'] && $file['userId'] != $user->id) { /* TODO: Test */
+        if (!($database->hasPermission($user, $database->getRoom($file['roomIdLink'])) & ROOM_PERMISSION_VIEW)) continue;
     }
 
-    $xmlData['getFiles']['files']['file ' . $file['fileId']] = array(
+    $xmlData['files']['file ' . $file['fileId']] = array(
         'fileSize' => (int) $file['size'],
         'fileSizeFormatted' => fim_formatSize($file['size']),
         'fileName' => $file['fileName'],
