@@ -43,7 +43,7 @@ class fimRoom {
     protected $roomData;
 
     private $resolved = array();
-    private $roomDataConversion = array(
+    private $roomDataConversion = array( // Eventually, we'll hopefully rename everything in the DB itself, but that'd be too time-consuming right now.
         'roomId' => 'id',
         'roomName' => 'name',
         'roomAlias' => 'alias',
@@ -127,8 +127,8 @@ class fimRoom {
 
             // Parental Flags: Convert CSV to Array, or empty if disabled
             if ($property === 'parentalFlags') {
-                if ($config['parentalEnabled']) $this->parentalFlags = explode(',', $value);
-                else                              $this->parentalFlags = array();
+                if ($config['parentalEnabled']) $this->parentalFlags = (is_array($value) ? $value : explode(',', $value));
+                else                            $this->parentalFlags = array();
             }
 
 
@@ -180,12 +180,15 @@ class fimRoom {
     }
 
 
-    private function populateFromArray(array $roomData): bool {
+    private function populateFromArray(array $roomData, $dbNameMapping = true): bool {
         if ($roomData) {
 //            $this->resolved = array_diff($this->resolved, array_values($roomData)); // The resolution process in __set modifies the data based from an array in several ways. As a result, if we're importing from an array a second time, we either need to ignore the new value or, as in this case, uncheck the resolve[] entries to have them reparsed when __set fires.
 
             foreach ($roomData AS $attribute => $value) {
-                if (!isset($this->roomDataConversion[$attribute]))
+                if (!$dbNameMapping) {
+                    $this->__set($attribute, $value);
+                }
+                elseif (!isset($this->roomDataConversion[$attribute]))
                     trigger_error("fimRoom was passed a roomData array containing '$attribute', which is unsupported.", E_USER_ERROR);
                 else {
                     $this->__set($this->roomDataConversion[$attribute], $value);
@@ -240,36 +243,48 @@ class fimRoom {
 
     /**
      * Modify or create a room.
-     * @internal The row will be set to a merge of roomDefaults->existingRow->specifiedOptions.
      *
-     * @param $options - Corresponds mostly with room columns
+     * @param $roomParameters - The room's data.
+     * @param $dbNameMapping - Set this to true if $databaseFields is using column names (e.g. roomParentalAge) instead of class property names (e.g. parentalAge)
      *
      * @return bool|resource
      */
-    public function setDatabase(array $databaseFields)
+    public function setDatabase(array $roomParameters)
     {
         global $database;
-        $this->populateFromArray($databaseFields);
+        fim_removeNullValues($roomParameters);
+        $this->populateFromArray($roomParameters, true);
 
         if ($this->id) {
             $database->startTransaction();
 
-            if ($existingRoomData = $database->getRooms(array(
-                'roomIds' => array($this->id),
-                'columns' => $database->roomHistoryColumns,
-            ))->getAsArray(false)) {
-                $database->insert($database->sqlPrefix . "roomHistory", $existingRoomData);
-            }
+            if ($existingRoomData = $database->getRooms([
+                'roomIds' => [$this->id],
+                'columns' => explode(', ', $database->roomHistoryColumns), // TODO: uh... shouldn't roomHistoryColumns be array?
+            ])->getAsArray(false)) {
+                $database->insert($database->sqlPrefix . "roomHistory", [
+                    'roomId' => $this->id,
+                    'roomName' => $existingRoomData['roomName'],
+                    'roomTopic' => $existingRoomData['roomTopic'],
+                    'options' => (int) $existingRoomData['options'],
+                    'ownerId' => (int) $existingRoomData['ownerId'],
+                    'defaultPermissions' => (int) $existingRoomData['defaultPermissions'],
+                    'roomParentalFlags' => $existingRoomData['roomParentalFlags'],
+                    'roomParentalAge' => (int) $existingRoomData['roomParentalAge'],
+                ]);
 
-            $return = $database->upsert($database->sqlPrefix . "rooms", array(
-                'roomId' => $this->id,
-            ), $databaseFields);
+                $return = $database->update($database->sqlPrefix . "rooms", $roomParameters, array(
+                    'roomId' => $this->id,
+                ));
+            }
 
             $database->endTransaction();
 
             return $return;
-        } else {
-            $database->insert($database->sqlPrefix . "rooms", $databaseFields);
+        }
+
+        else {
+            $database->insert($database->sqlPrefix . "rooms", $roomParameters);
             return $this->id = $database->insertId;
         }
     }
