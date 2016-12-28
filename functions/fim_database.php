@@ -1379,10 +1379,9 @@ class fimDatabase extends databaseSQL
 
         $this->modLog('setCensorList', "$roomId,$listId,$status");
 
-        $this->insert($this->sqlPrefix . "censorBlackWhiteLists", array(
+        $this->upsert($this->sqlPrefix . "censorBlackWhiteLists", array(
             'roomId' => $roomId,
             'listId' => $listId,
-            'status' => $status
         ), array(
             'status' => $status,
         ));
