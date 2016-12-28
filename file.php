@@ -22,7 +22,7 @@
  * @param string md5hash
  * @param string sha256hash
  * @param string fileId
-*/
+ */
 
 $ignoreLogin = true;
 require('global.php');
@@ -31,35 +31,35 @@ require('global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
-  'sha256hash' => array(
-    'cast' => 'string',
-    'require' => false,
-    'default' => '',
-  ),
+    'sha256hash' => array(
+        'cast' => 'string',
+        'require' => false,
+        'default' => '',
+    ),
 
-  'fileId' =>  array(
-    'cast' => 'int',
-    'require' => false,
-    'default' => '',
-  ),
+    'fileId' =>  array(
+        'cast' => 'int',
+        'require' => false,
+        'default' => '',
+    ),
 
-  'vfileId' => array(
-    'cast' => 'int',
-    'require' => false,
-    'default' => '',
-  ),
+    'vfileId' => array(
+        'cast' => 'int',
+        'require' => false,
+        'default' => '',
+    ),
 
-  // Because file.php must NOT require a session token, we want to allow APIs to define these separately (and, yes, this is very much by design -- again, the parental control system is not locked-down).
-  'parentalAge' => array(
-    'cast' => 'int',
-    'valid' => $config['parentalAges'],
-    'default' => $config['parentalAgeDefault'],
-  ),
+    // Because file.php must NOT require a session token, we want to allow APIs to define these separately (and, yes, this is very much by design -- again, the parental control system is not locked-down).
+    'parentalAge' => array(
+        'cast' => 'int',
+        'valid' => $config['parentalAges'],
+        'default' => $config['parentalAgeDefault'],
+    ),
 
-  'parentalFlags' => array(
-    'cast' => 'list',
-    'valid' => $config['parentalFlags'],
-  ),
+    'parentalFlags' => array(
+        'cast' => 'list',
+        'valid' => $config['parentalFlags'],
+    ),
 ));
 
 
@@ -73,39 +73,39 @@ $request = fim_sanitizeGPC('g', array(
 $file = $file->getAsArray(false);*/
 
 $file = $database->getFiles(array(
-  'sha256hashes' => $request['sha256hash'] ? array($request['sha256hash']) : array(),
-  'fileIds' => $request['fileId'] ? array($request['fileId']) : array(),
-  'vfileIds' => $request['vfileId'] ? array($request['vfileId']) : array(),
-  'includeContent' => true
+    'sha256hashes' => $request['sha256hash'] ? array($request['sha256hash']) : array(),
+    'fileIds' => $request['fileId'] ? array($request['fileId']) : array(),
+    'vfileIds' => $request['vfileId'] ? array($request['vfileId']) : array(),
+    'includeContent' => true
 ))->getAsArray(false);
 
 
 
 /* Start Processing */
 if ($config['parentalEnabled']) {
-  if (isset($request['parentalAge'])) $user['parentalAge'] = $request['parentalAge'];
-  if (isset($request['parentalFlags'])) $user['parentalFlags'] = implode(',', $request['parentalFlags']);
+    if (isset($request['parentalAge'])) $user['parentalAge'] = $request['parentalAge'];
+    if (isset($request['parentalFlags'])) $user['parentalFlags'] = implode(',', $request['parentalFlags']);
 
-  if ($file['parentalAge'] > $user['parentalAge']) $parentalBlock = true;
-  elseif (fim_inArray(explode(',', $user['parentalFlags']), explode(',', $file['parentalFlags']))) $parentalBlock = true;
+    if ($file['parentalAge'] > $user['parentalAge']) $parentalBlock = true;
+    elseif (fim_inArray(explode(',', $user['parentalFlags']), explode(',', $file['parentalFlags']))) $parentalBlock = true;
 }
 
 if ($request['userId'] && ($request['userId'] !== $file['userId'])) {
-  $parentalBlock = false; // Disable the parental block if the user themself uploaded the image.
+    $parentalBlock = false; // Disable the parental block if the user themself uploaded the image.
 }
 
 if ($parentalBlock) {
-  $file['contents'] = ''; // TODO: Placeholder
+    $file['contents'] = ''; // TODO: Placeholder
 
-  header('Content-Type: ' . $file['fileType']);
-  echo $file['contents'];
+    header('Content-Type: ' . $file['fileType']);
+    echo $file['contents'];
 }
 else {
-  if ($file['salt']) $file = fim_decrypt($file,'contents');
-  else $file['contents'] = base64_decode($file['contents']);
+    if ($file['salt']) $file = fim_decrypt($file,'contents');
+    else $file['contents'] = base64_decode($file['contents']);
 
-  header('Content-Type: ' . $file['fileType']);
-  echo $file['contents'];
+    header('Content-Type: ' . $file['fileType']);
+    echo $file['contents'];
 
 //  print_r($file); var_dump($user);
 }
