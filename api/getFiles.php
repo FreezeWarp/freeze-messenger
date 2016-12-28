@@ -23,7 +23,7 @@
  * @copyright Joseph T. Parsons 2014
  *
  * @param string users - A comma-seperated list of user IDs to get.
-*/
+ */
 
 $apiRequest = true;
 
@@ -32,47 +32,47 @@ require('../global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
-  'users' => array(
-    'default' => array($user['userId']),
-    'cast' => 'csv',
-    'filter' => 'int',
-    'evaltrue' => true,
-  ),
+    'users' => array(
+        'default' => array($user['userId']),
+        'cast' => 'csv',
+        'filter' => 'int',
+        'evaltrue' => true,
+    ),
 ));
 
 
 
 /* Data Pre-Define */
 $xmlData['getFiles'] = array(
-  'files' => array()
+    'files' => array()
 );
 
 
 
 /* Get Uploads from Database */
 $files = $database->getFiles(array(
-  'userIds' => $request['users']
+    'userIds' => $request['users']
 ))->getAsArray('fileId');
 
 
 
 /* Start Processing */
 foreach ($files AS $file) {
-  // Only show if the user has permission.
-  if ($file['roomIdLink'] && $file['userId'] != $user['userId']) { /* TODO: Test */
-    if (!fim_hasPermission($database->getRoom($file['roomIdLink']), $user, 'view', true)) continue;
-  }
+    // Only show if the user has permission.
+    if ($file['roomIdLink'] && $file['userId'] != $user['userId']) { /* TODO: Test */
+        if (!fim_hasPermission($database->getRoom($file['roomIdLink']), $user, 'view', true)) continue;
+    }
 
-  $xmlData['getFiles']['files']['file ' . $file['fileId']] = array(
-    'fileSize' => (int) $file['size'],
-    'fileSizeFormatted' => fim_formatSize($file['size']),
-    'fileName' => $file['fileName'],
-    'mime' => $file['mime'],
-    'parentalAge' => $file['fileParentalAge'],
-    'parentalFlags' => explode(',', $file['fileParentalFlags']),
-    'md5hash' => $file['md5hash'],
-    'sha256hash' => $file['sha256hash'],
-  );
+    $xmlData['getFiles']['files']['file ' . $file['fileId']] = array(
+        'fileSize' => (int) $file['size'],
+        'fileSizeFormatted' => fim_formatSize($file['size']),
+        'fileName' => $file['fileName'],
+        'mime' => $file['mime'],
+        'parentalAge' => $file['fileParentalAge'],
+        'parentalFlags' => explode(',', $file['fileParentalFlags']),
+        'md5hash' => $file['md5hash'],
+        'sha256hash' => $file['sha256hash'],
+    );
 }
 
 
