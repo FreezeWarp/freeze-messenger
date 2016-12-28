@@ -415,28 +415,6 @@ function fim_endsWith($haystack, $needle) {
  **************** Data Handling Functions ****************
  *********************************************************/
 
-
-/**
- * Converts a request string to an array. The request string must be able to be urldecoded (thus, "%" characters must be urlencoded, though "&" and "=" can be included via escaping).
- * Directives in which a default is not provided will not be part of the return.
- *
- * @param string string
- * @return array
- * @author Joseph Todd Parsons <josephtparsons@gmail.com>
- */
-function fim_requestBodyToGPC($string) {
-    $arrayEntries = explode('&', $string);
-    $array = array();
-
-    foreach ($arrayEntries AS $arrayEntry) {
-        $arrayEntryParts = explode('=', $arrayEntry);
-        $array[urldecode($arrayEntryParts[0])] = urldecode($arrayEntryParts[1]);
-    }
-
-    return $array;
-}
-
-
 /**
  * Strict Sanitization of GET/POST/COOKIE Globals
  *
@@ -460,167 +438,268 @@ function fim_sanitizeGPC($type, $data) {
     );
 
 
-    /* Get The Request Body */
-    if (in_array($type, array('p', 'post', 'u', 'put', 'd', 'delete'))) $requestBody = file_get_contents('php://input'); // Only get php://input if we want to. Otherwise, it creates some extra overhead we could do without.
-    else $requestBody = '';
 
-
-    /* Store Request Body */
-
-    /* Process Request Body */
-    if (strlen($requestBody) > 0) { // If a request body exists, we will use it instead of PHP's generated superglobals. This allows for further REST compatibility. We will, however, only use it for GET and POST requests, at the present time.
-        if (($type === 'p' || $type === 'post')
-            && $_SERVER['REQUEST_METHOD'] === 'POST') $activeGlobal = fim_requestBodyToGPC($requestBody); // POST can use a request body; it is ultimately the preferrence of the implementor, and for now we will prefer it as long as a REQUEST body exists. (TODO: Should a REQUEST body ever not exist in this case?)
-        elseif (($type === 'u' || $type === 'put') &&
-            $_SERVER['REQUEST_METHOD'] === 'PUT') $activeGlobal = $requestBody; // PUT __requires__ a request body. It is not currently supported, however.
-        else throw new Exception('Request body present but unsupported in this instance. Type:' . $type);
+    /* Store/Parse Request Body */
+    if ($_SERVER['REQUEST_METHOD'] === 'PUT' && in_array($type, array('p', 'post'))) {
+        parse_str(file_get_contents('php://input'), $requestBody);
     }
-    else { // Request information is stored in superglobals; get that information.
-        switch ($type) { // Set the GLOBAL to a local var for processing.
+    else {
+        $requestBody = [];
+    }
+
+    switch ($type) { // Set the GLOBAL to a local var for processing.
         case 'g': case 'get': $activeGlobal = $_GET; break;
-        case 'p': case 'post': $activeGlobal = $_POST; break;
-        case 'c': case 'cookie': $activeGlobal = $_COOKIE; break;
-        case 'r': case 'request': $activeGlobal = $_REQUEST; break;
+        case 'p': case 'post': $activeGlobal = array_merge($_POST, $requestBody); break;
+        case 'r': case 'request': $activeGlobal = array_merge($_REQUEST, $requestBody); break;
         default:
             throw new Exception('Invalid type in fim_sanitizeGPC');
             return false;
         break;
-        }
     }
+
+
     if (!is_array($activeGlobal)) $activeGlobal = array(); // Make sure the active global is populated with data.
 
+
+    /* Process Active Global */
     foreach ($data AS $indexName => $indexData) {
-        /* Validate Metadata */
-        foreach ($indexData AS $metaName => $metaData) {
-            if (!in_array($metaName, array('default', 'require', 'trim', 'evaltrue', 'valid', 'min', 'max', 'filter', 'cast')))
-                throw new Exception('Unrecognised metadata: ' . $metaName);
-            elseif (($metaName === 'require' || $metaName === 'trim' || $metaName === 'evaltrue')
-                && !is_bool($metaData)) throw new Exception('Invalid "' . $metaName . '" in data in fim_sanitizeGPC');
-            elseif ($metaName === 'valid' &&
-                !is_array($metaData)) throw new Exception('Defined valid values do not correspond to recognized data type (array).');
-            elseif (($metaName === 'min' || $metaName === 'max')
-                && !is_numeric($metaData)) throw new Exception('Invalid "' . $metaName . '" in data in fim_sanitizeGPC');
-            elseif ($metaName === 'filter'
-                && !in_array($metaData, array('', 'int', 'bool', 'string'))) throw new Exception('Invalid "filter" in data in fim_sanitizeGPC');
-            elseif ($metaName === 'cast' &&
-                !in_array($metaData, array('int', 'bool', 'string', 'json', 'list', 'ascii128', 'alphanum'))) throw new Exception("Invalid 'cast' (value = $metaData) in data in fim_sanitizeGPC.");
-        }
-
-
-        $indexMetaData = array_merge($metaDataDefaults, $indexData); // Store indexMetaData with the defaults.
-
-
-        /* Process Global */
-        if (isset($activeGlobal[$indexName], $indexMetaData['valid']) &&
-            !in_array($activeGlobal[$indexName], $indexMetaData['valid'])) unset($activeGlobal[$indexName]); // If the global is provided, check to see if it's valid. If not, unprovide it (used in the next statements). TODO: Throw warning?
-        if (!isset($activeGlobal[$indexName]) &&
-            $indexMetaData['default']) $activeGlobal[$indexName] = $indexMetaData['default']; // If the global is _not_ provided (either because of the above statement or because it was never provided, but has a default, then provide it as the default.
-        if (!isset($activeGlobal[$indexName])) { // Finally, if the global is thus-far unprovided...
-            if ($indexMetaData['require']) throw new Exception('Required data not present (index ' . $indexName . ').'); // And required, throw an exception.
-            else continue; // And not required, just ignore this global and move on to the next one.
-        }
-
-
-        if ($indexMetaData['trim'] === true) $activeGlobal[$indexName] = trim($activeGlobal[$indexName]); // Trim white space.
-
-
-        switch($indexMetaData['cast']) {
-        case 'csv':
-            throw new Exception("fim_sanitizeGPC no longer supports CSV casts."); // Deprecated; replace with list type.
-            // If a cast is set for a CSV list, explode with a comma seperator, make sure all values corrosponding to the filter (int, bool, or string - the latter pretty much changes nothing), and if evaltrue is true, then the preserveAll flag would be false, and vice-versa.
-        break;
-
-        case 'json':
-            $newData[$indexName] = json_decode(
-                $activeGlobal[$indexName],
-                true,
-                $config['jsonDecodeRecursionLimit'],
-                JSON_BIGINT_AS_STRING
-            );
-
-            /* Newer Code -- Breaks Conventions Because I'm Not Sure Which Conventions I Want Yet */
-            $holder = array();
-            foreach ($newData[$indexName] AS $key => $value) {
-                $holder[fim_cast($indexMetaData['filterKey'] ? $indexMetaData['filterKey'] : 'string', $key)] = fim_cast($indexMetaData['filter'] ? $indexMetaData['filter'] : 'string', $key);
-            }
-        break;
-
-        case 'list':
-            if ($activeGlobal[$indexName]) {
-                if (!is_array($activeGlobal[$indexName])) {
-                    throw new Exception("Bad API data: '$indexName' must be array.");
+        if ($indexName === '_action') {
+            if (!isset($activeGlobal[$indexName])) {
+                switch ($_SERVER['REQUEST_METHOD']) {
+                    case 'POST':   $newData[$indexName] = 'edit';   break;
+                    case 'PUT':    $newData[$indexName] = 'create'; break;
+                    case 'DELETE': $newData[$indexName] = 'delete'; break;
                 }
-
-                $arrayFromGlobal = array_values(
-                    $activeGlobal[$indexName]
-                );
             }
             else {
-                $arrayFromGlobal = array();
+                $newData[$indexName] = $activeGlobal[$indexName];
+            }
+        }
+
+        else {
+            /* Validate Metadata */
+            foreach ($indexData AS $metaName => $metaData) {
+                if (!in_array($metaName, array('default', 'require', 'trim', 'evaltrue', 'valid', 'min', 'max', 'filter', 'cast', 'transform', 'bitTable', 'flipTable')))
+                    throw new Exception('Unrecognised metadata: ' . $metaName);
+
+                elseif (($metaName === 'require' || $metaName === 'trim' || $metaName === 'evaltrue')
+                    && !is_bool($metaData))
+                    throw new Exception('Invalid "' . $metaName . '" in data in fim_sanitizeGPC');
+
+                elseif ($metaName === 'valid' &&
+                    !is_array($metaData))
+                    throw new Exception('Defined valid values do not correspond to recognized data type (array).');
+
+                elseif (($metaName === 'min' || $metaName === 'max')
+                    && !is_numeric($metaData))
+                    throw new Exception('Invalid "' . $metaName . '" in data in fim_sanitizeGPC');
+
+                elseif ($metaName === 'filter'
+                    && !in_array($metaData, array('', 'int', 'bool', 'string')))
+                    throw new Exception('Invalid "filter" in data in fim_sanitizeGPC');
+
+                elseif ($metaName === 'cast'
+                    && !in_array($metaData, array('int', 'bool', 'string', 'json', 'list', 'dict', 'ascii128', 'alphanum', 'bitfieldEquation')))
+                    throw new Exception("Invalid 'cast' (value = $metaData) in data in fim_sanitizeGPC.");
+
+                elseif ($metaName === 'cast'
+                    && $metaData === 'bitfieldEquation'
+                    && (!isset($indexData['flipTable']) || !is_array($indexData['flipTable'])))
+                    throw new Exception("'bitfieldEquation' cast missing corresponding flipTable parameter in fim_sanitizeGPC.");
+
+                elseif ($metaName === 'transform'
+                    && $metaData === 'bitfield'
+                    && (!isset($indexData['bitTable']) || !is_array($indexData['bitTable'])))
+                    throw new Exception("'bitfield' transform missing corresponding bitTable parameter in fim_sanitizeGPC.");
+
+                elseif ($metaName === 'transform'
+                    && !in_array($metaData, array('bitfield', 'csv')))
+                    throw new Exception("Invalid 'transform' (value = $metaData) in data in fim_sanitizeGPC: valid options are 'bitfield'");
+
+                elseif ($metaName === 'transform'
+                    && $indexData['cast'] !== 'list')
+                    throw new Exception("'transform' used on non-list in fim_sanitizeGPC");
             }
 
-            $newData[$indexName] = fim_arrayValidate(
-                $arrayFromGlobal,
-                ($indexMetaData['filter'] ? $indexMetaData['filter'] : 'string'),
-                ($indexMetaData['evaltrue'] ? false : true),
-                (count($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
-            );
-        break;
 
-            /*      case 'list':
-                    if ($activeGlobal[$indexName]) {
-                      $arrayFromGlobal = array_values(
-                          json_decode(
-                              $activeGlobal[$indexName],
-                              true,
-                              $config['jsonDecodeRecursionLimit'],
-                              JSON_BIGINT_AS_STRING
-                          )
-                      );
+
+            $indexMetaData = array_merge($metaDataDefaults, $indexData); // Store indexMetaData with the defaults.
+
+
+
+            /* Set to Default and Perform Validation */
+            if (!(isset($indexMetaData['cast']) && $indexMetaData['cast'] === 'bitfieldEquation')) { // bitfieldEquation isn't normally set, so our default-setting is irrelevant for it
+                // If the global is provided, check to see if it's valid. If not, throw error.
+                if (isset($activeGlobal[$indexName], $indexMetaData['valid'])) {
+                    if (isset($indexMetaData['cast']) && $indexMetaData['cast'] === 'list') {
+                        if (count(array_diff($activeGlobal[$indexName], $indexMetaData['valid'])) > 0)
+                            throw new Exception("Invalid value(s) for '$indexName': " . implode(',', array_diff($activeGlobal[$indexName], $indexMetaData['valid'])));
                     }
-                    else {
-                      $arrayFromGlobal = array();
+                    elseif (isset($indexMetaData['cast']) && $indexMetaData['cast'] === 'dict')
+                        throw new Exception("A 'valid' parameter was specified for '$indexName', but the 'dict' cast type does not support this parameter.");
+                    elseif (!in_array($activeGlobal[$indexName], $indexMetaData['valid']))
+                        throw new Exception("Invalid value for '$indexName': {$activeGlobal[$indexName]}");
+                }
+
+                // If the global is _not_ provided, then use the default if available.
+                if (!isset($activeGlobal[$indexName]) &&
+                    isset($indexMetaData['default'])) {
+                    $activeGlobal[$indexName] = $indexMetaData['default'];
+                }
+
+                // Finally, if the global is thus-far unprovided...
+                if (!isset($activeGlobal[$indexName])) {
+                    if ($indexMetaData['require']) throw new Exception('Required data not present (index ' . $indexName . ').'); // And required, throw an exception.
+                    else continue; // And not required, just ignore this global and move on to the next one.
+                }
+            }
+
+
+
+            /* Trim */
+            if ($indexMetaData['trim'] === true) $activeGlobal[$indexName] = trim($activeGlobal[$indexName]); // Trim white space.
+
+
+
+            /* Casting */
+            switch($indexMetaData['cast']) {
+            case 'json':
+                $newData[$indexName] = json_decode(
+                    $activeGlobal[$indexName],
+                    true,
+                    $config['jsonDecodeRecursionLimit'],
+                    JSON_BIGINT_AS_STRING
+                );
+
+                /* Newer Code -- Breaks Conventions Because I'm Not Sure Which Conventions I Want Yet */
+                $holder = array();
+                foreach ($newData[$indexName] AS $key => $value) {
+                    $holder[fim_cast($indexMetaData['filterKey'] ? $indexMetaData['filterKey'] : 'string', $key)] = fim_cast($indexMetaData['filter'] ? $indexMetaData['filter'] : 'string', $key);
+                }
+            break;
+
+            case 'dict': // Associative Array
+                if (isset($activeGlobal[$indexName])) {
+                    if (!is_array($activeGlobal[$indexName])) {
+                        throw new Exception("Bad API data: '$indexName' must be array.");
                     }
 
-                    $newData[$indexName] = fim_arrayValidate(
-                      $arrayFromGlobal,
-                      ($indexMetaData['filter'] ? $indexMetaData['filter'] : 'string'),
-                      ($indexMetaData['evaltrue'] ? false : true),
-                      (count($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
+                    $arrayFromGlobal = $activeGlobal[$indexName];
+                }
+                else {
+                    $arrayFromGlobal = array();
+                }
+
+                $newData[$indexName] = fim_arrayValidate(
+                    $arrayFromGlobal,
+                    ($indexMetaData['filter'] ? $indexMetaData['filter'] : 'string'),
+                    ($indexMetaData['evaltrue'] ? false : true),
+                    (count($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
+                );
+            break;
+
+            case 'list': // List Array
+                if (isset($activeGlobal[$indexName])) {
+                    if (!is_array($activeGlobal[$indexName])) {
+                        throw new Exception("Bad API data: '$indexName' must be array.");
+                    }
+
+                    $arrayFromGlobal = array_values(
+                        $activeGlobal[$indexName]
                     );
-                  break;*/
+                }
+                else {
+                    $arrayFromGlobal = array();
+                }
 
-        case 'int':
-            if ($indexMetaData['evaltrue'] &&
-                (int) $activeGlobal[$indexName]) $newData[$indexName] = (int) $activeGlobal[$indexName]; // Only include the value if non-zero.
-            else
-                $newData[$indexName] = (int) $activeGlobal[$indexName]; // Include the value whether true or false.
+                $newData[$indexName] = fim_arrayValidate(
+                    $arrayFromGlobal,
+                    ($indexMetaData['filter'] ? $indexMetaData['filter'] : 'string'),
+                    ($indexMetaData['evaltrue'] ? false : true),
+                    (count($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
+                );
 
-            if (isset($indexMetaData['min']) &&
-                $newData[$indexName] < $indexMetaData['min']) $newData[$indexName] = $indexMetaData['min']; // Minimum Value
-            elseif (isset($indexMetaData['max']) &&
-                $newData[$indexName] > $indexMetaData['max']) $newData[$indexName] = $indexMetaData['max']; // Maximum Value
-        break;
+                if (isset($indexMetaData['transform'])) {
+                    switch ($indexMetaData['transform']) {
+                    case 'bitfield':
+                        $bitfield = 0;
 
-        case 'bool':
-            $newData[$indexName] = fim_cast(
-                'bool',
-                $activeGlobal[$indexName],
-                (isset($indexMetaData['default']) ? $indexMetaData['default'] : null)
-            );
-        break;
+                        foreach ($newData[$indexName] AS $name) {
+                            if (!isset($indexMetaData['bitTable'][$name])) throw new Exception("Bad API data: '$name' is not a recognized value for field '$indexName'");
+                            else $bitfield &= $indexMetaData['bitTable'][$name];
+                        }
 
-        case 'ascii128':
-            $newData[$indexName] = preg_replace('/[^(\x20-\x7F)]*/', '', $output); break; // Remove characters outside of ASCII128 range.
-        break;
+                        $newData[$indexName] = $bitfield;
+                    break;
 
-        case 'alphanum':
-            $newData[$indexName] = preg_replace('/[^a-zA-Z0-9]*/', '', str_replace(array_keys($config['romanisation']), array_values($config['romanisation']), $output)); break; // Remove characters that are non-alphanumeric. Note that we will try to romanise what we can.
-        break;
+                    case 'csv':
+                        $newData[$indexName] = implode(',', $newData[$indexName]);
+                    break;
 
-        default: // String or otherwise.
-            $newData[$indexName] = (string) $activeGlobal[$indexName]; // Append value as string-cast.
-        break;
+                    default:
+                        throw new Exception("Bad transform.");
+                    break;
+                    }
+                }
+            break;
+
+            case 'int':
+                if ($indexMetaData['evaltrue'] &&
+                    (int) $activeGlobal[$indexName]) $newData[$indexName] = (int) $activeGlobal[$indexName]; // Only include the value if non-zero.
+                else
+                    $newData[$indexName] = (int) $activeGlobal[$indexName]; // Include the value whether true or false.
+
+                if (isset($indexMetaData['min']) &&
+                    $newData[$indexName] < $indexMetaData['min']) $newData[$indexName] = $indexMetaData['min']; // Minimum Value
+                elseif (isset($indexMetaData['max']) &&
+                    $newData[$indexName] > $indexMetaData['max']) $newData[$indexName] = $indexMetaData['max']; // Maximum Value
+            break;
+
+            case 'bool':
+                $newData[$indexName] = fim_cast(
+                    'bool',
+                    $activeGlobal[$indexName],
+                    (isset($indexMetaData['default']) ? $indexMetaData['default'] : null)
+                );
+            break;
+
+            case 'ascii128':
+
+                $newData[$indexName] = preg_replace('/[^(\x20-\x7F)]*/', '', $activeGlobal[$indexName]); break; // Remove characters outside of ASCII128 range.
+            break;
+
+            case 'alphanum':
+                $newData[$indexName] = preg_replace('/[^a-zA-Z0-9]*/', '', str_replace(array_keys($config['romanisation']), array_values($config['romanisation']), $activeGlobal[$indexName])); break; // Remove characters that are non-alphanumeric. Note that we will try to romanise what we can.
+            break;
+
+            /* This is a funky one that really helps when dealing with bitfields.
+             * First of all, it uniquely has the "flipTable" parameter, which is an array of [bit => name]s.
+             * A name is a string pointing to another entry in the activeGlobal, while a bit is the bitvalue that name represents.
+             * If the activeGlobal doesn't have the name, we just ignore it. If it does have it, and it evaluates to true, then our string will contain an equation turning that bit on. If it evaluates to false, our equation will try and turn that bit off.
+             * This equation can then be used by $database->equation.
+             */
+            case 'bitfieldEquation':
+                global $database;
+                $equation = '$' . $indexName;
+
+                foreach ($indexMetaData['flipTable'] AS $bit => $name) {
+                    if (!isset($activeGlobal[$name]))
+                        continue;
+
+                    elseif ($activeGlobal[$name])
+                        $equation .= (' | ' . $bit);
+
+                    else
+                        $equation .= (' & ~' . $bit);
+                }
+
+                $newData[$indexName] = $equation;
+            break;
+
+            default: // String or otherwise.
+                $newData[$indexName] = (string) $activeGlobal[$indexName]; // Append value as string-cast.
+            break;
+            }
         }
     }
 
@@ -673,14 +752,13 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false, $allowed
     $arrayValidated = array(); // Create an empty array we will use to store things.
 
     if (is_array($array)) { // Make sure the array is an array.
-        foreach ($array AS $value) { // Run through each value of the array.
+        foreach ($array AS $key => $value) { // Run through each value of the array.
             if (is_array($allowedValues)
                 && !in_array($value, $allowedValues)) continue;
 
             $preValue = fim_cast($type, $value, false);
 
-            if ($preserveAll) $arrayValidated[] = $preValue; // If we preserve false entries, simply cast the variable as an interger.
-            elseif ($preValue) $arrayValidated[] = $preValue; // If it is non-zero, add it to the new array.
+            if ($preValue || $preserveAll) $arrayValidated[$key] = $preValue; // Only keep falsey values if preserveAll is true
         }
     }
 
