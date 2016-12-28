@@ -761,10 +761,10 @@ class fimDatabase extends databaseSQL
     public function getRooms($options, $sort = array('roomId' => 'asc'), $limit = 0, $pagination = 1)
     {
         $options = $this->argumentMerge(array(
-            'roomIds'            => array(),
-            'roomNames'          => array(),
-            'roomAliases'        => array(),
-            'ownerIds'           => array(),
+            'roomIds'            => [],
+            'roomNames'          => [],
+            'roomAliases'        => [],
+            'ownerIds'           => [],
             'parentalAgeMin'     => 0,
             'parentalAgeMax'     => 0,
             'messageCountMin'    => 0,
@@ -773,12 +773,10 @@ class fimDatabase extends databaseSQL
             'lastMessageTimeMax' => 0,
             'showDeleted'        => false,
             'roomNameSearch'     => false,
-            'columns'            => array(),
+            'columns'            => ['roomId', 'roomName', 'roomAlias', 'roomTopic', 'ownerId', 'defaultPermissions', 'roomParentalFlags', 'roomParentalAge', 'options', 'lastMessageId', 'lastMessageTime', 'messageCount', 'roomType'],
         ), $options);
 
-
-        // Defaults
-        $columns = array($this->sqlPrefix . "rooms" => array_merge(['roomId', 'roomName', 'roomAlias', 'roomTopic', 'ownerId', 'defaultPermissions', 'roomParentalFlags', 'roomParentalAge', 'options', 'lastMessageId', 'lastMessageTime', 'messageCount', 'roomType'], $options['columns']));
+        $columns = [$this->sqlPrefix . 'rooms' => $options['columns']];
 
 
         // Modify Query Data for Directives
