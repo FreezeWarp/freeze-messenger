@@ -73,8 +73,8 @@ $apiRequest = true;
 require('../global.php');
 
 /* Get Request Data */
-$request = fim_sanitizeGPC('p', array(
-    'action' => array(
+$requestHead = fim_sanitizeGPC('g', array(
+    '_action' => array(
         'require' => true,
         'valid' => array(
             'create', 'edit',
@@ -82,60 +82,66 @@ $request = fim_sanitizeGPC('p', array(
             'flag', // TODO
         ),
     ),
-
     'uploadMethod' => array(
         'default' => 'raw',
         'valid' => array(
             'raw', 'put',
         ),
     ),
-
-    'fileName' => array(
-        'require' => true,
-        'trim' => true,
-    ),
-
-    'fileData' => array(
-        'default' => '',
-    ),
-
-    'fileSize' => array(
-        'cast' => 'int',
-    ),
-
-    'fileMd5hash' => array(),
-
-    'fileSha256hash' => array(),
-
-    'roomId' => array(
-        'default' => 0,
-        'cast' => 'int',
-    ),
-
     'dataEncode' => array(
         'require' => true,
         'valid' => array(
             'base64', 'binary',
         ),
     ),
-
-    'parentalAge' => array(
-        'cast' => 'int',
-        'valid' => $config['parentalAges'],
-        'default' => $config['parentalAgeDefault'],
-    ),
-
-    'parentalFlags' => array(
-        'default' => $config['parentalFlagsDefault'],
-        'cast' => 'csv',
-        'valid' => $config['parentalFlags'],
-    ),
-
-    'fileId' => array(
-        'default' => 0,
-        'cast' => 'int',
-    ),
 ));
+
+/* If the upload method is put, we read directly from php://input */
+$request = fim_sanitizeGPC(
+    ($requestHead['uploadMethod'] === 'put' ? 'g' : 'p'), // If the uploadMethod is put, then we are reading from stdin, and there likely is no POST data available (since stdin is usually used to send POST data)... so use GET instead for everything.
+    array(
+        'fileName' => array(
+            'require' => true,
+            'trim' => true,
+        ),
+    
+        'fileData' => array(
+            'default' => '',
+        ),
+    
+        'fileSize' => array(
+            'cast' => 'int',
+        ),
+    
+        'md5hash' => array(),
+    
+        'sha256hash' => array(),
+
+        'crc32bhash' => array(),
+    
+        'roomId' => array(
+            'default' => 0,
+            'cast' => 'int',
+        ),
+    
+        'parentalAge' => array(
+            'cast' => 'int',
+            'valid' => $config['parentalAges'],
+            'default' => $config['parentalAgeDefault'],
+        ),
+    
+        'parentalFlags' => array(
+            'default' => $config['parentalFlagsDefault'],
+            'cast' => 'list',
+            'valid' => $config['parentalFlags'],
+        ),
+    
+        'fileId' => array(
+            'default' => 0,
+            'cast' => 'int',
+        ),
+    )
+);
 
 
 
@@ -151,84 +157,104 @@ $database->startTransaction();
 
 
 /* Start Processing */
-switch ($request['action']) {
+switch ($requestHead['_action']) {
 case 'edit': case 'create':
     $parentalFileId = 0;
 
-    if ($request['action'] === 'create') {
+    if ($requestHead['_action'] === 'create') {
         /* Get Room Data, if Applicable */
         if ($request['roomId']) $roomData = $slaveDatabase->getRoom($request['roomId']);
         else $roomData = false;
 
 
+        if (!$config['enableUploads'])
+            throw new fimError('uploadsDisabled', 'Uploads are disabled on this FreezeMessenger server.');
+        if (!$roomData && !$config['allowOrphanFiles'])
+            throw new fimError('noOrphanFiles', 'Files cannot be orphaned on this FreezeMessenger server. You must post them to a room.');
+        if ($config['uploadMaxFiles'] !== -1 && $database->getCounter('uploads') > $config['uploadMaxFiles'])
+            throw new fimError('tooManyFilesServer', 'The server has reached its upload limit. No more uploads can be made.');
+        if ($config['uploadMaxUserFiles'] !== -1 && $user->fileCount > $config['uploadMaxUserFiles'])
+            throw new fimError('tooManyFilesUser', 'You have reached your upload limit. No more uploads can be made.');
+        if ($config['uploadMaxSpace'] !== -1 && $database->getCounter('uploadSize') > $config['uploadMaxSpace'])
+            throw new fimError('tooManyFilesServer', 'The server has reached its upload limit. No more uploads can be made.');
+        if ($config['uploadMaxUserSpace'] !== -1 && $user->fileSize > $config['uploadMaxUserSpace'])
+            throw new fimError('tooManyFilesUser', 'You have reached your upload limit. No more uploads can be made.');
+
+
         /* PUT Support (TODO) */
-        if ($request['uploadMethod'] === 'put') { // This is an unsupported alternate upload method. It will not be documented until it is known to work.
+        if ($requestHead['uploadMethod'] === 'put') {
             $putResource = fopen("php://input", "r"); // file data is from stdin
             $request['fileData'] = ''; // The only real change is that we're getting things from stdin as opposed to from the headers. Thus, we'll just translate the two here.
 
             while ($fileContents = fread($putResource, $config['fileUploadChunkSize'])) { // Read the resource using 1KB chunks. This is slower than a higher chunk, but also avoids issues for now. It can be overridden with the config directive fileUploadChunkSize.
-                $request['fileData'] .= $fileContents; // We're not sure if this will work, since there are indications you have to write to a file instead.
+                $request['fileData'] .= $fileContents;
             }
 
             fclose($putResource);
         }
 
 
-        if (!$config['enableUploads']) throw new Exception('uploadsDisabled');
-        if (!$roomData && !$config['allowOrphanFiles']) throw new Exception('noOrphanFiles');
-        if ($config['uploadMaxFiles'] !== -1 && $database->getCounter('uploads') > $config['uploadMaxFiles']) throw new Exception('tooManyFilesServer');
-        if ($config['uploadMaxUserFiles'] !== -1 && $user['fileCount'] > $config['uploadMaxUserFiles']) throw new Exception('tooManyFilesUser');
-
-
         /* Verify the Data, Preprocess */
-        switch ($request['uploadMethod']) {
-        case 'raw': case 'put':
-            switch($request['dataEncode']) {
+        switch($requestHead['dataEncode']) {
             case 'base64': $rawData = base64_decode($request['fileData']); break;
-            case 'binary': $rawData = $request['fileData'];                break; // Binary is buggy and far from confirmed to work. That said... if you're lucky? MDN has some useful information on this type of thing: https://developer.mozilla.org/En/Using_XMLHttpRequest
+            case 'binary': $rawData = $request['fileData'];                break; // Binary is unlikely to work unless using the PUT method.
             default:      throw new Exception('badEncoding');      break;
-            }
-
-            $rawSize = strlen($rawData);
-
-
-            if ($request['md5hash']) { // This will allow us to verify that the upload worked.
-                if (md5($rawData) != $request['md5hash']) throw new Exception('badMd5Hash');
-            }
-
-            if ($request['sha256hash']) { // This will allow us to verify that the upload worked.
-                if (hash('sha256', $rawData) != $request['sha256hash']) throw new Exception('badSha256Hash');
-            }
-
-            if ($request['fileSize']) { // This will allow us to verify that the upload worked as well, can be easier to implement, but doesn't serve the primary purpose of making sure the file upload wasn't intercepted.
-                if ($rawSize != $request['fileSize']) throw new Exception('badSize');
-            }
-        break;
         }
 
-        if (!$request['fileName']) throw new Exception('badName');
+        $rawSize = strlen($rawData);
 
+
+        /* Verify the file's contents against any sent hashes. */
+        if (isset($request['md5hash']) && md5($rawData) != $request['md5hash'])
+            throw new fimError('badMd5Hash', 'The uploaded file\'s contents did not match those of its sent MD5 hash.');
+
+        if (isset($request['sha256hash']) && hash('sha256', $rawData) != $request['sha256hash'])
+            throw new fimError('badSha256Hash', 'The uploaded file\'s contents did not match those of its sent SHA256 hash.');
+
+        if (isset($request['crc32bhash']) && hash('crc32bhash', $rawData) != $request['crc32bhash'])
+            throw new fimError('badCrc32BHash', 'The uploaded file\'s contents did not match those of its sent CRC32B hash.');
+
+        if (isset($request['fileSize']) && $rawSize != $request['fileSize'])
+            throw new fimError('badSize', 'The uploaded file\'s contents did not match those of its sent filesize.');
+
+        if (!strlen($request['fileName']))
+            throw new fimError('badName', 'The filename is not valid.'); // This error may be expanded in the future.
+
+
+        /* File Type Restrictions */
         $fileNameParts = explode('.', $request['fileName']);
 
-        if (count($fileNameParts) != 2) throw new Exception('badNameParts');
+        if (count($fileNameParts) != 2)
+            throw new fimError('badNameParts', 'Filenames must have a single name and a single extension, e.g. a.tgz, not a.tar.gz. Periods are not allowed in uploaded filenames except to separate the filename. (Personally, I don\'t think this is great design, but it makes it easier for administrators to restrict files based on type.)');
 
-        if (isset($config['extensionChanges'][$fileNameParts[1]])) { // Certain extensions are considered to be equivilent, so we only keep records for the primary one. For instance, "html" is considered to be the same as "htm" usually.
+        if (isset($config['extensionChanges'][$fileNameParts[1]])) // Certain extensions are considered to be equivalent, so we only keep records for the primary one. For instance, "html" is considered to be the same as "htm" usually.
             $fileNameParts[1] = $config['extensionChanges'][$fileNameParts[1]];
-        }
 
-        if (!isset($config['uploadMimes'][$fileNameParts[1]])) throw new Exception('unrecExt'); // All files theoretically need to have a mime (at any rate, we will require one). This is different from simply not being allowed, wherein we understand what file you are trying to upload, but aren't going to accept it. (Small diff, I know.)
-        if (!in_array($fileNameParts[1], $config['allowedExtensions'])) throw new Exception('badExt'); // Not allowed...
+        if (!isset($config['uploadMimes'][$fileNameParts[1]]))
+            throw new fimError('unrecExt', 'The filetype is unrecognised, and thus the file cannot be uploaded.'); // All files theoretically need to have a mime (at any rate, we will require one). This is different from simply not being allowed, wherein we understand what file you are trying to upload, but aren't going to accept it. (Small diff, I know.)
 
+        if (!in_array($fileNameParts[1], $config['allowedExtensions']))
+            throw new fimError('badExt', 'The filetype is forbidden, and thus the file cannot be uploaded.'); // Not allowed...
+
+
+        /* Derived from File Type */
         $mime = ($config['uploadMimes'][$fileNameParts[1]] ? $config['uploadMimes'][$fileNameParts[1]] : 'application/octet-stream');
         $container = ($config['fileContainers'][$fileNameParts[1]] ? $config['fileContainers'][$fileNameParts[1]] : 'other');
         $maxSize = ($config['uploadSizeLimits'][$fileNameParts[1]] ? $config['uploadSizeLimits'][$fileNameParts[1]] : 0);
 
-        $sha256hash = hash('sha256', $rawData);
-        $md5hash = hash('md5', $rawData);
 
+        /* File Size Restrictions */
+        if ((!$rawData || $rawSize === 0) && !$config['allowEmptyFiles'])
+            throw new fimError('emptyFile', "Empty files cannot be uploaded on this server.");
+        if ($rawSize > $maxSize)
+            throw new Exception('tooLarge', 'The file is too large to upload; the maximum size is ' . $maxSize . 'B, and the file you uploaded was ' . $rawSize . '.'); // Note: Data is stored as base64 because its easier to handle; thus, the data will be about 33% larger than the normal (thus, if a limit is normally 400KB the file must be smaller than 300KB).
+
+
+        /* Hashing and Encryption */
+        $sha256hash = hash('sha256', $rawData);
 
         if ($encryptUploads) {
-            list($contentsEncrypted,$iv,$saltNum) = fim_encrypt($rawData);
+            list($contentsEncrypted, $iv, $saltNum) = fim_encrypt($rawData);
             $saltNum = intval($saltNum);
         }
         else {
@@ -238,22 +264,22 @@ case 'edit': case 'create':
         }
 
 
-        if ((!$rawData || $rawSize === 0) && !$config['allowEmptyFiles']) throw new Exception('emptyFile');
-        if ($rawSize > $maxSize) throw new Exception('tooLarge'); // Note: Data is stored as base64 because its easier to handle; thus, the data will be about 33% larger than the normal (thus, if a limit is normally 400KB the file must be smaller than 300KB).
-
+        /* Get Files with Existing, Matching Sha256 */
         $prefile = $database->getFiles(array(
             'sha256hashes' => array($sha256hash)
         ))->getAsArray(false);
 
 
-        if (count($prefile) > 0) {
+        /* Upload or Redirect, if Sha256 Match Found */
+        if (count($prefile) > 0) { // The odds of a collision are astronomically low unless the server is handling an absolutely massive number of files. ...We could make the effort to detect the collision by actually comparing file contents, but it hardly seems worth the processing power.
             $webLocation = "{$installUrl}file.php?sha256hash={$prefile['sha256hash']}";
 
             if ($roomData) $database->storeMessage($webLocation, $container, $user, $roomData);
         }
         else {
+            /* TODO: move to DB */
             $database->insert("{$sqlPrefix}files", array(
-                'userId' => $user['userId'],
+                'userId' => $user->id,
                 'fileName' => $request['fileName'],
                 'fileType' => $mime,
                 'fileParentalAge' => $request['parentalAge'],
@@ -277,16 +303,10 @@ case 'edit': case 'create':
             ));
 
             $database->update("{$sqlPrefix}users", array(
-                'fileCount' => array(
-                    'type' => 'equation',
-                    'value' => '$fileCount + 1',
-                ),
-                'fileSize' => array(
-                    'type' => 'equation',
-                    'value' => '$fileSize + ' . (int) $rawSize,
-                ),
+                'fileCount' => $database->type('equation', '$fileCount + 1'),
+                'fileSize' => $database->type('equation', '$fileSize + ' . (int) $rawSize),
             ), array(
-                'userId' => $user['userId'],
+                'userId' => $user->id,
             ));
 
             $database->incrementCounter('uploads');
@@ -299,7 +319,7 @@ case 'edit': case 'create':
 
         $xmlData['response']['webLocation'] = $webLocation;
     }
-    elseif ($request['action'] === 'edit') {
+    elseif ($requestHead['_action'] === 'edit') {
         /*      $fileData = $database->getFile($request['fileId']);
 
             if (!$fileData) {
@@ -324,7 +344,7 @@ break;
 case 'delete':
     $fileData = $database->getFile($request['fileId']);
 
-    if ($user['adminDefs']['modImages'] || $user['userId'] == $fileData['userId']) {
+    if ($user->hasPriv('modFiles') || $user->id == $fileData['userId']) {
         $database->modLog('deleteImage', $request['fileId']);
 
         $database->update("{$sqlPrefix}files", array(
@@ -339,7 +359,7 @@ break;
 case 'undelete':
     $fileData = $database->getFile($request['fileId']);
 
-    if ($user['adminDefs']['modImages']) {
+    if ($user->hasPriv('modFiles')) {
         modLog('undeleteImage', $request['fileId']);
 
         $database->update("{$sqlPrefix}files", array(
