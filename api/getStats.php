@@ -25,7 +25,7 @@
  *
  * @param string rooms - A comma-seperated list of room IDs to get.
  * @param int [number = 10] - The number of top posters to obtain.
-*/
+ */
 
 $apiRequest = true;
 
@@ -35,22 +35,22 @@ require('../global.php');
 
 /* Get Request */
 $request = fim_sanitizeGPC('g', array(
-  'rooms' => array(
-    'default' => [],
-    'cast' => 'list',
-    'filter' => 'int',
-    'evaltrue' => true,
-  ),
-  'users' => array(
-    'default' => [],
-    'cast' => 'list',
-    'filter' => 'int',
-    'evaltrue' => true,
-  ),
-  'number' => array(
-    'default' => 10,
-    'cast' => 'int',
-  ),
+    'rooms' => array(
+        'default' => [],
+        'cast' => 'list',
+        'filter' => 'int',
+        'evaltrue' => true,
+    ),
+    'users' => array(
+        'default' => [],
+        'cast' => 'list',
+        'filter' => 'int',
+        'evaltrue' => true,
+    ),
+    'number' => array(
+        'default' => 10,
+        'cast' => 'int',
+    ),
 ));
 
 
@@ -65,36 +65,36 @@ $xmlData = array(
 /* Start Processing */
 
 $totalPosts = $database->getPostStats(array(
-  'roomIds' => $request['rooms'],
+    'roomIds' => $request['rooms'],
 ))->getAsArray(array('roomId', 'userId'), false);
 //var_dump($totalPosts);
 
 foreach ($totalPosts AS $room) {
-  foreach ($room AS $roomId => $totalPoster) {
-    // Users must be able to view the room to see the respective post counts.
-    if (!($database->hasPermission($user, new fimRoom($roomId)) & ROOM_PERMISSION_VIEW)) {
-      continue;
-    }
+    foreach ($room AS $roomId => $totalPoster) {
+        // Users must be able to view the room to see the respective post counts.
+        if (!($database->hasPermission($user, new fimRoom($roomId)) & ROOM_PERMISSION_VIEW)) {
+            continue;
+        }
 
-    if (!isset($xmlData['roomStats']['room ' . $totalPoster['roomId']])) {
-      $xmlData['roomStats']['room ' . $totalPoster['roomId']] = array(
-      'roomData' => array(
-        'roomId' => (int) $totalPoster['roomId'],
-        'roomName' => $totalPoster['roomName'],
-      ),
-      'users' => array(),
-      );
-    }
+        if (!isset($xmlData['roomStats']['room ' . $totalPoster['roomId']])) {
+            $xmlData['roomStats']['room ' . $totalPoster['roomId']] = array(
+                'roomData' => array(
+                    'roomId' => (int) $totalPoster['roomId'],
+                    'roomName' => $totalPoster['roomName'],
+                ),
+                'users' => array(),
+            );
+        }
 
-    $xmlData['roomStats']['room ' . $totalPoster['roomId']]['users']['user ' . $totalPoster['userId']] = array(
-      'userData' => array(
-        'userId' => (int) $totalPoster['userId'],
-        'userName' => $totalPoster['userName'],
-        'userNameFormat' => $totalPoster['userNameFormat'],
-      ),
-      'messageCount' => (int) $totalPoster['messageCount'],
-    );
-  }
+        $xmlData['roomStats']['room ' . $totalPoster['roomId']]['users']['user ' . $totalPoster['userId']] = array(
+            'userData' => array(
+                'userId' => (int) $totalPoster['userId'],
+                'userName' => $totalPoster['userName'],
+                'userNameFormat' => $totalPoster['userNameFormat'],
+            ),
+            'messageCount' => (int) $totalPoster['messageCount'],
+        );
+    }
 }
 
 
